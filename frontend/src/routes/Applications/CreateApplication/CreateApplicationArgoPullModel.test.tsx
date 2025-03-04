@@ -21,6 +21,7 @@ import {
   nockGet,
   nockIgnoreApiPaths,
   nockIgnoreOperatorCheck,
+  nockList,
 } from '../../../lib/nock-util'
 import { clickByText, typeByPlaceholderText, typeByTestId, waitForNocks, waitForText } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
@@ -485,12 +486,21 @@ describe('Create Argo Application Set', () => {
   })
 
   test('can render Edit Argo Application Page', async () => {
+    nockList(
+      {
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'applicationsets',
+      },
+      [argoAppSetGit]
+    )
     render(
-      <MemoryRouter initialEntries={[NavigationPath.editApplicationArgo]}>
-        <Routes>
-          <Route path={NavigationPath.editApplicationArgo} element={<EditArgoApplicationSet />} />
-        </Routes>
-      </MemoryRouter>
+      <RecoilRoot>
+        <MemoryRouter initialEntries={[NavigationPath.editApplicationArgo]}>
+          <Routes>
+            <Route path={NavigationPath.editApplicationArgo} element={<EditArgoApplicationSet />} />
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
     )
 
     await new Promise((resolve) => setTimeout(resolve, 500))
