@@ -1,14 +1,9 @@
 # Copyright Contributors to the Open Cluster Management project
 
-FROM registry.ci.openshift.org/stolostron/builder:nodejs20-linux as frontend-packages
+FROM registry.ci.openshift.org/stolostron/builder:nodejs20-linux as dynamic-plugin
 WORKDIR /app/frontend
-# Copy only package.json and package-lock.json so that the docker cache hash only changes if those change
-# This will cause the npm ci to only rerun if the package.json or package-lock.json changes
-COPY ./frontend/package.json ./frontend/package-lock.json ./
-RUN npm ci --legacy-peer-deps
 COPY ./frontend .
-
-FROM frontend-packages as dynamic-plugin
+RUN npm ci --legacy-peer-deps
 RUN npm run build:plugin:acm
 
 FROM registry.ci.openshift.org/stolostron/builder:nodejs20-linux as backend
