@@ -486,17 +486,11 @@ describe('Create Argo Application Set', () => {
 
   test('can render Edit Argo Application Page', async () => {
     render(
-      <RecoilRoot
-      // initializeState={(snapshot) => {
-      //   snapshot.set(applicationSetsState, [argoAppSetGit])
-      // }}
-      >
-        <MemoryRouter initialEntries={[NavigationPath.editApplicationArgo]}>
-          <Routes>
-            <Route path={NavigationPath.editApplicationArgo} element={<EditArgoApplicationSet />} />
-          </Routes>
-        </MemoryRouter>
-      </RecoilRoot>
+      <MemoryRouter initialEntries={[NavigationPath.editApplicationArgo]}>
+        <Routes>
+          <Route path={NavigationPath.editApplicationArgo} element={<EditArgoApplicationSet />} />
+        </Routes>
+      </MemoryRouter>
     )
 
     await new Promise((resolve) => setTimeout(resolve, 500))
