@@ -1,11 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import * as React from 'react'
-import { HostedClusterNetworkStep, LoadingState, NetworkFormValues } from '@openshift-assisted/ui-lib/cim'
+import { HostedClusterNetworkStep, LoadingState, NetworkFormValues, isBMPlatform } from '@openshift-assisted/ui-lib/cim'
 import { FormikProps } from 'formik'
 import isEqual from 'lodash/isEqual'
 
 import { HypershiftAgentContext } from './HypershiftAgentContext'
-import { isBMPlatform } from '../../../../../../InfraEnvironments/utils'
 import { useSharedAtoms, useRecoilValue } from '../../../../../../../../shared-recoil'
 import { getTemplateValue } from '../utils'
 import { defaultHostPrefix, defaultPodCIDR, defaultServiceCIDR } from './constants'

@@ -5,7 +5,6 @@ import { PathParam, generatePath, useLocation, useNavigate, useParams } from 're
 import {
   ACM_ENABLED_FEATURES,
   AgentK8sResource,
-  BareMetalHostK8sResource,
   ClusterDeploymentDetailsValues,
   ClusterDeploymentWizard,
   ClusterDeploymentWizardStepsType,
@@ -16,6 +15,7 @@ import {
   getAgentsHostsNames,
   isAgentOfInfraEnv,
   onAgentChangeHostname,
+  getInfraEnvNMStates,
 } from '@openshift-assisted/ui-lib/cim'
 import { PageSection, Switch } from '@patternfly/react-core'
 import { AcmErrorBoundary, AcmPageContent, AcmPage, AcmPageHeader } from '../../../../../../ui-components'
@@ -23,34 +23,19 @@ import { AcmErrorBoundary, AcmPageContent, AcmPage, AcmPageHeader } from '../../
 import { IResource } from '../../../../../../resources'
 import { patchResource } from '../../../../../../resources/utils'
 import {
-  fetchSecret,
-  getClusterDeploymentLink,
-  getOnCreateBMH,
-  getOnSaveISOParams,
-  onApproveAgent,
   onDiscoveryHostsNext,
   onHostsNext,
-  onChangeHostname,
-  onSaveBMH,
   onSaveNetworking,
   useClusterDeployment,
   useAgentClusterInstall,
   fetchInfraEnv,
-  fetchManagedClusters,
-  fetchKlusterletAddonConfig,
-  useOnDeleteHost,
   useAssistedServiceConfigMap,
   useClusterDeploymentInfraEnv,
-  importYaml,
   onSetInstallationDiskId,
-  useProvisioningConfiguration,
   onEditFinish,
-  onChangeBMHHostname,
 } from '../../CreateCluster/components/assisted-installer/utils'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import { useTranslation } from '../../../../../../lib/acm-i18next'
-import { getInfraEnvNMStates } from '../../../../InfraEnvironments/utils'
-import { BulkActionModal, BulkActionModalProps } from '../../../../../../components/BulkActionModal'
 import { useSharedAtoms, useRecoilValue } from '../../../../../../shared-recoil'
 import { DOC_VERSION } from '../../../../../../lib/doc-util'
 
@@ -85,7 +70,6 @@ const EditAICluster: React.FC = () => {
   const usedHostnames = useMemo(() => getAgentsHostsNames(agents), [agents])
 
   const [isPreviewOpen, setPreviewOpen] = useState(!!localStorage.getItem(TEMPLATE_EDITOR_OPEN_COOKIE))
-  const provisioningConfigResult = useProvisioningConfiguration()
 
   const onSaveDetails = (values: ClusterDeploymentDetailsValues) => {
     return patchResource(agentClusterInstall as IResource, [
@@ -107,11 +91,6 @@ const EditAICluster: React.FC = () => {
     [agents, infraEnv]
   )
 
-  const [bulkModalProps, setBulkModalProps] = useState<
-    BulkActionModalProps<AgentK8sResource | BareMetalHostK8sResource> | { open: false }
-  >({ open: false })
-  const onDeleteHost = useOnDeleteHost(setBulkModalProps, [], agentClusterInstall, infraNMStates)
-
   const hostActions = {
     onEditHost: (agent: AgentK8sResource) => {
       setEditAgent(agent)
@@ -125,7 +104,6 @@ const EditAICluster: React.FC = () => {
         },
       ]).promise as Promise<AgentK8sResource>
     },
-    onDeleteHost,
     onSetInstallationDiskId,
   }
 
@@ -195,7 +173,6 @@ const EditAICluster: React.FC = () => {
       <AcmErrorBoundary>
         <AcmPageContent id="edit-cluster">
           <PageSection variant="light" type="wizard" isFilled>
-            <BulkActionModal<AgentK8sResource | BareMetalHostK8sResource> {...bulkModalProps} />
             {/* @ts-expect-error @openshift-assisted/ui-lib needs React 18 updates */}
             <FeatureGateContextProvider features={ACM_ENABLED_FEATURES}>
               <ClusterDeploymentWizard
@@ -212,16 +189,6 @@ const EditAICluster: React.FC = () => {
                 onSaveHostsSelection={(values) =>
                   onHostsNext({ values, clusterDeployment, agents, agentClusterInstall })
                 }
-                onApproveAgent={onApproveAgent}
-                onChangeHostname={onChangeHostname}
-                onChangeBMHHostname={onChangeBMHHostname}
-                onSaveBMH={onSaveBMH}
-                onCreateBMH={
-                  infraEnv ? getOnCreateBMH(infraEnv) : undefined
-                } /* AI Flow specific. Not called for CIM. */
-                onSaveISOParams={
-                  infraEnv ? getOnSaveISOParams(infraEnv) : undefined /* AI Flow specific. Not called for CIM. */
-                }
                 onSaveHostsDiscovery={() =>
                   onDiscoveryHostsNext({
                     clusterDeployment,
@@ -229,9 +196,7 @@ const EditAICluster: React.FC = () => {
                     agentClusterInstall,
                   })
                 }
-                fetchSecret={fetchSecret}
                 infraNMStates={infraNMStates}
-                getClusterDeploymentLink={getClusterDeploymentLink}
                 hostActions={hostActions}
                 onFinish={async () => {
                   const aci = await onEditFinish(agentClusterInstall, clusterCurator)
@@ -244,11 +209,7 @@ const EditAICluster: React.FC = () => {
                 fetchInfraEnv={fetchInfraEnv}
                 isPreviewOpen={isPreviewOpen}
                 setPreviewOpen={setPreviewOpen}
-                fetchManagedClusters={fetchManagedClusters}
-                fetchKlusterletAddonConfig={fetchKlusterletAddonConfig}
-                onCreateBmcByYaml={importYaml}
                 docVersion={DOC_VERSION}
-                provisioningConfigResult={provisioningConfigResult}
                 isNutanix={isNutanix}
               />
               {editAgent && (
@@ -256,7 +217,7 @@ const EditAICluster: React.FC = () => {
                   agent={editAgent}
                   usedHostnames={usedHostnames}
                   onClose={() => setEditAgent(undefined)}
-                  onSave={onAgentChangeHostname([editAgent], bareMetalHosts, onChangeHostname, onChangeBMHHostname)}
+                  onSave={onAgentChangeHostname([editAgent], bareMetalHosts)}
                 />
               )}
             </FeatureGateContextProvider>
