@@ -55,53 +55,6 @@ export function getAppSetRelatedResources(appSet: IResource, applicationSets: IA
 }
 
 //////////////////////////////////////////////////////////////////
-export const getArgoClusterList = (resources: IArgoApplication[], managedClusters: Cluster[]) => {
-  const clusterSet = new Set<string>()
-  resources.forEach((resource) => {
-    clusterSet.add(getArgoCluster(resource, managedClusters))
-  })
-  return Array.from(clusterSet)
-}
-
-export const isArgoPullModel = (resource: IApplicationSet) => {
-  if (get(resource, 'spec.template.metadata.annotations["apps.open-cluster-management.io/ocm-managed-cluster"]')) {
-    return true
-  }
-  return false
-}
-
-export const getArgoPullModelClusterList = (
-  resource: IApplicationSet,
-  placementDecisions: IPlacementDecision[],
-  hubClusterName: string
-) => {
-  const clusterSet = new Set<string>()
-  const placementName = get(
-    resource,
-    'spec.generators[0].clusterDecisionResource.labelSelector.matchLabels["cluster.open-cluster-management.io/placement"]',
-    ''
-  ) as string
-  const placementNamespace = get(resource, 'metadata.namespace', '') as string
-  const placementDecision = placementDecisions.find(
-    (pd) =>
-      pd.metadata.labels?.['cluster.open-cluster-management.io/placement'] === placementName &&
-      pd.metadata.namespace === placementNamespace
-  )
-  const clusterDecisions = get(placementDecision, 'status.decisions', []) as { clusterName?: string }[]
-  clusterDecisions.forEach((cd: { clusterName?: string }) => {
-    if (cd.clusterName !== hubClusterName) {
-      clusterSet.add(cd.clusterName)
-    }
-  })
-  return Array.from(clusterSet)
-}
-
-export function isOCPAppResourceKind(kind: string) {
-  const ocpAppResourceKinds = ['CronJob', 'DaemonSet', 'Deployment', 'DeploymentConfig', 'Job', 'StatefulSet']
-  return ocpAppResourceKinds.includes(kind)
-}
-
-//////////////////////////////////////////////////////////////////
 ////////////// TRANSFORM /////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
 
