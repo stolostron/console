@@ -20,7 +20,7 @@ import {
 import { nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../../lib/nock-util'
 import { defaultPlugin, PluginContext } from '../../../lib/PluginContext'
 import { waitForText } from '../../../lib/test-util'
-import { ApplicationActionProps } from '../../../plugin-extensions/properties'
+import { ApplicationActionProps } from '@stolostron/multicluster-sdk'
 import { AcmExtension } from '../../../plugin-extensions/types'
 import { GetMessagesDocument, SearchSchemaDocument } from '../../Search/search-sdk/search-sdk'
 import {

@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useResolvedExtensions } from '@openshift-console/dynamic-plugin-sdk'
-import { isApplicationAction, isApplicationListColumn, isOverviewTab } from './extensions'
-import { ApplicationActionProps, ApplicationListColumnProps } from './properties'
+import { isApplicationAction, isApplicationListColumn, isOverviewTab } from '@stolostron/multicluster-sdk'
+import { ApplicationActionProps, ApplicationListColumnProps } from '@stolostron/multicluster-sdk'
 import { AcmExtension } from './types'
 
 // Type guards
