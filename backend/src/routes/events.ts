@@ -147,7 +147,7 @@ const definitions: IWatchOptions[] = [
   { kind: 'PlacementRule', apiVersion: 'apps.open-cluster-management.io/v1' },
   { kind: 'Subscription', apiVersion: 'apps.open-cluster-management.io/v1' },
   { kind: 'SubscriptionReport', apiVersion: 'apps.open-cluster-management.io/v1alpha1' },
-  { kind: 'Application', apiVersion: 'argoproj.io/v1alpha1', isPolled: true },
+  { kind: 'Application', apiVersion: 'argoproj.io/v1alpha1' },
   { kind: 'ApplicationSet', apiVersion: 'argoproj.io/v1alpha1', isPolled: true },
   { kind: 'ArgoCD', apiVersion: 'argoproj.io/v1alpha1' },
   { kind: 'MulticlusterApplicationSetReport', apiVersion: 'apps.open-cluster-management.io/v1alpha1' },

@@ -65,6 +65,7 @@ import {
   getClusterCountField,
   getClusterCountSearchLink,
   getClusterCountString,
+  getClusterList,
   getSearchLink,
   getSubscriptionsFromAnnotation,
   hostingSubAnnotationStr,
@@ -310,14 +311,23 @@ export const getApplicationRepos = (resource: IResource, subscriptions: Subscrip
 export default function ApplicationsOverview() {
   usePageVisitMetricHandler(Pages.application)
   const { t } = useTranslation()
-  const { applicationsState, channelsState, placementRulesState, placementsState, subscriptionsState } =
-    useSharedAtoms()
+  const {
+    applicationsState,
+    argoApplicationsState,
+    channelsState,
+    placementRulesState,
+    placementsState,
+    placementDecisionsState,
+    subscriptionsState,
+  } = useSharedAtoms()
 
   const applications = useRecoilValue(applicationsState)
+  const argoApplications = useRecoilValue(argoApplicationsState)
   const subscriptions = useRecoilValue(subscriptionsState)
   const channels = useRecoilValue(channelsState)
   const placementRules = useRecoilValue(placementRulesState)
   const placements = useRecoilValue(placementsState)
+  const placementDecisions = useRecoilValue(placementDecisionsState)
   const { acmExtensions } = useContext(PluginContext)
   const { dataContext } = useContext(PluginContext)
   const { backendUrl } = useContext(dataContext)
@@ -374,7 +384,14 @@ export default function ApplicationsOverview() {
   const generateTransformData = useCallback(
     (tableItem: IResource) => {
       // Cluster column
-      const clusterList = (tableItem as IUIResource).uidata.clusterList
+      const clusterList = getClusterList(
+        tableItem,
+        argoApplications,
+        placementDecisions,
+        subscriptions,
+        localCluster,
+        managedClusters
+      )
       const clusterCount = getClusterCount(clusterList, localCluster?.name ?? '')
       const clusterTransformData = getClusterCountString(t, clusterCount, clusterList, tableItem)
 
@@ -407,7 +424,7 @@ export default function ApplicationsOverview() {
       // Cannot add properties directly to objects in typescript
       return { ...tableItem, ...transformedObject }
     },
-    [channels, getTimeWindow, localCluster, subscriptions, t]
+    [argoApplications, channels, getTimeWindow, localCluster, managedClusters, placementDecisions, subscriptions, t]
   )
 
   const resultView = useAggregate(SupportedAggregate.applications, requestedView)
@@ -516,7 +533,14 @@ export default function ApplicationsOverview() {
       {
         header: t('Clusters'),
         cell: (resource) => {
-          const clusterList = (resource as IUIResource).uidata.clusterList
+          const clusterList = getClusterList(
+            resource,
+            argoApplications,
+            placementDecisions,
+            subscriptions,
+            localCluster,
+            managedClusters
+          )
           const clusterCount = getClusterCount(clusterList, localCluster?.name ?? '')
           const clusterCountString = getClusterCountString(t, clusterCount, clusterList, resource)
           const clusterCountSearchLink = getClusterCountSearchLink(resource, clusterCount, clusterList)
@@ -528,7 +552,14 @@ export default function ApplicationsOverview() {
         sort: 'transformed.clusterCount',
         search: 'transformed.clusterCount',
         exportContent: (resource) => {
-          const clusterList = (resource as IUIResource).uidata.clusterList
+          const clusterList = getClusterList(
+            resource,
+            argoApplications,
+            placementDecisions,
+            subscriptions,
+            localCluster,
+            managedClusters
+          )
           const clusterCount = getClusterCount(clusterList, localCluster?.name ?? '')
           return getClusterCountString(t, clusterCount, clusterList, resource)
         },
@@ -607,7 +638,18 @@ export default function ApplicationsOverview() {
         },
       },
     ],
-    [t, extensionColumns, systemAppNSPrefixes, subscriptions, localCluster, channels, getTimeWindow]
+    [
+      t,
+      extensionColumns,
+      systemAppNSPrefixes,
+      argoApplications,
+      placementDecisions,
+      subscriptions,
+      localCluster,
+      managedClusters,
+      channels,
+      getTimeWindow,
+    ]
   )
   const filters = useMemo(
     () => [
@@ -901,7 +943,7 @@ export default function ApplicationsOverview() {
               appSetPlacement: appSetRelatedResources[0],
               appSetsSharingPlacement: appSetRelatedResources[1],
               appKind: resource.kind,
-              appSetApps: (resource as IUIResource).uidata.appSetApps,
+              appSetApps: getAppSetApps(argoApplications, resource.metadata?.name!),
               deleted: /* istanbul ignore next */ (app: IResource) => {
                 setDeletedApps((arr) => {
                   arr = [app, ...arr].slice(0, 10)
@@ -952,6 +994,7 @@ export default function ApplicationsOverview() {
       placementRules,
       placements,
       channels,
+      argoApplications,
       canCreateApplication,
       localCluster?.name,
     ]

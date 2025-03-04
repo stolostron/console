@@ -19,6 +19,7 @@ import { atom, useRecoilValue } from 'recoil'
 import {
   AnsibleJob,
   Application,
+  ArgoApplication,
   CertificateSigningRequest,
   Channel,
   ClusterClaim,
@@ -76,6 +77,7 @@ export const agentsState = AtomArray<AgentK8sResource>()
 export const agentServiceConfigsState = AtomArray<AgentServiceConfigK8sResource>()
 export const ansibleJobState = AtomArray<AnsibleJob>()
 export const applicationsState = AtomArray<Application>()
+export const argoApplicationsState = AtomArray<ArgoApplication>()
 export const argoCDsState = AtomArray<IResource>()
 export const bareMetalHostsState = AtomArray<BareMetalHostK8sResource>()
 export const certificateSigningRequestsState = AtomArray<CertificateSigningRequest>()

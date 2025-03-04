@@ -3,7 +3,6 @@ import { render } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import {
-  applicationSetsState,
   channelsState,
   gitOpsClustersState,
   managedClusterSetBindingsState,
@@ -488,9 +487,9 @@ describe('Create Argo Application Set', () => {
   test('can render Edit Argo Application Page', async () => {
     render(
       <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(applicationSetsState, [argoAppSetGit])
-        }}
+      // initializeState={(snapshot) => {
+      //   snapshot.set(applicationSetsState, [argoAppSetGit])
+      // }}
       >
         <MemoryRouter initialEntries={[NavigationPath.editApplicationArgo]}>
           <Routes>

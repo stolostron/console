@@ -36,6 +36,7 @@ import {
   ApplicationKind,
   ApplicationSetDefinition,
   ApplicationSetKind,
+  IUIResource,
 } from '../../../resources'
 import { useRecoilValueGetter, useSharedAtoms } from '../../../shared-recoil'
 import {
@@ -51,12 +52,7 @@ import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/co
 import { searchClient } from '../../Search/search-sdk/search-client'
 import { useSearchCompleteQuery } from '../../Search/search-sdk/search-sdk'
 import { DeleteResourceModal, IDeleteResourceModalProps } from '../components/DeleteResourceModal'
-import {
-  getAppChildResources,
-  getAppSetRelatedResources,
-  getSearchLink,
-  isResourceTypeOf,
-} from '../helpers/resource-helper'
+import { getAppChildResources, getSearchLink, isResourceTypeOf } from '../helpers/resource-helper'
 import { getAppSetApps } from '../Overview'
 import { getApplication } from './ApplicationTopology/model/application'
 import { getResourceStatuses } from './ApplicationTopology/model/resourceStatuses'
@@ -124,6 +120,7 @@ export default function ApplicationDetailsPage() {
   const {
     ansibleJobState,
     applicationsState,
+    argoApplicationsState,
     channelsState,
     placementRulesState,
     placementsState,
@@ -160,9 +157,8 @@ export default function ApplicationDetailsPage() {
     [clusters]
   )
 
-  let modalWarnings: string
-
   const applicationsGetter = useRecoilValueGetter(applicationsState)
+  const argoApplicationsGetter = useRecoilValueGetter(argoApplicationsState)
   const ansibleJobGetter = useRecoilValueGetter(ansibleJobState)
   const channelsGetter = useRecoilValueGetter(channelsState)
   const placementsGetter = useRecoilValueGetter(placementsState)
@@ -175,6 +171,7 @@ export default function ApplicationDetailsPage() {
   const getRecoilStates = useCallback(
     () => ({
       applications: applicationsGetter(),
+      argoApplications: argoApplicationsGetter(),
       ansibleJob: ansibleJobGetter(),
       channels: channelsGetter(),
       placements: placementsGetter(),
@@ -187,6 +184,7 @@ export default function ApplicationDetailsPage() {
     [
       ansibleJobGetter,
       applicationsGetter,
+      argoApplicationsGetter,
       channelsGetter,
       placementDecisionsGetter,
       placementRulesGetter,
@@ -272,21 +270,19 @@ export default function ApplicationDetailsPage() {
                 hubCluster?.name ?? ''
               )
             : [[], []]
-        const appSetRelatedResources =
-          selectedApp.kind === ApplicationSetKind ? getAppSetRelatedResources(selectedApp, []) : ['', []]
+        const appSetRelatedResources = (selectedApp as IUIResource).uidata.appSetRelatedResources
         setModalProps({
           open: true,
           canRemove: selectedApp.kind === ApplicationSetKind ? canDeleteApplicationSet : canDeleteApplication,
           resource: selectedApp,
           errors: undefined,
-          warnings: modalWarnings,
           loading: false,
           selected: appChildResources[0], // children
           shared: appChildResources[1], // shared children
           appSetPlacement: appSetRelatedResources[0],
           appSetsSharingPlacement: appSetRelatedResources[1],
           appKind: selectedApp.kind,
-          appSetApps: getAppSetApps([], selectedApp.metadata?.name),
+          appSetApps: getAppSetApps(recoilStates.argoApplications, selectedApp.metadata?.name),
           close: () => {
             setModalProps({ open: false })
           },

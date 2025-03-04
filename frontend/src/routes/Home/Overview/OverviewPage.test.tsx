@@ -7,7 +7,6 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import {
-  applicationSetsState,
   applicationsState,
   argoApplicationsState,
   clusterManagementAddonsState,
@@ -47,7 +46,6 @@ import {
 import { SearchResultCountDocument } from '../../Search/search-sdk/search-sdk'
 import OverviewPage from './OverviewPage'
 import {
-  appSets,
   managedClusterInfos,
   managedClusters,
   mockAlertMetrics,
@@ -174,7 +172,7 @@ it('should render overview page with expected data', async () => {
     <RecoilRoot
       initializeState={(snapshot) => {
         snapshot.set(applicationsState, mockApplications)
-        snapshot.set(applicationSetsState, appSets)
+        // snapshot.set(applicationSetsState, appSets)
         snapshot.set(argoApplicationsState, mockArgoApplications)
         snapshot.set(managedClustersState, managedClusters)
         snapshot.set(managedClusterInfosState, [
@@ -273,7 +271,7 @@ it('should toggle card sections correctly', async () => {
     <RecoilRoot
       initializeState={(snapshot) => {
         snapshot.set(applicationsState, mockApplications)
-        snapshot.set(applicationSetsState, appSets)
+        // snapshot.set(applicationSetsState, appSets)
         snapshot.set(argoApplicationsState, mockArgoApplications)
         snapshot.set(managedClustersState, managedClusters)
         snapshot.set(managedClusterInfosState, [

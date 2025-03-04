@@ -9,11 +9,7 @@ import {
   IArgoApplication,
   IPlacementDecision,
   ISubscription,
-  ApplicationSetDefinition,
-  ApplicationDefinition,
-  IResourceDefinition,
   IOCPApplication,
-  ArgoApplicationDefinition,
 } from '../../resources/resource'
 import { ITransformedResource } from '../../lib/pagination'
 import { AppColumns, ApplicationCache, ApplicationCacheType } from './applications'
@@ -58,53 +54,6 @@ export function getAppSetRelatedResources(appSet: IResource, applicationSets: IA
   return [currentAppSetPlacement, appSetsSharingPlacement]
 }
 
-export function getAppSetApps(argoApps: IResource[], appSetName: string) {
-  const appSetApps: string[] = []
-
-  argoApps.forEach((app) => {
-    if (app.metadata?.ownerReferences && app.metadata.ownerReferences[0].name === appSetName) {
-      appSetApps.push(app.metadata.name)
-    }
-  })
-
-  return appSetApps
-}
-
-export function getClusterList(
-  resource: IStatusResource,
-  argoApplications: IArgoApplication[],
-  placementDecisions: IPlacementDecision[],
-  subscriptions: ISubscription[],
-  localCluster: Cluster | undefined,
-  managedClusters: Cluster[]
-) {
-  // managed resources using search to fetch
-  if (isOCPAppResourceKind(resource.kind)) {
-    const clusterSet = new Set<string>()
-    if (resource.status.cluster) {
-      clusterSet.add(resource.status.cluster)
-    }
-    return Array.from(clusterSet)
-  }
-
-  if (isResourceTypeOf(resource, ArgoApplicationDefinition)) {
-    return getArgoClusterList([resource as IArgoApplication], managedClusters)
-  } else if (isResourceTypeOf(resource, ApplicationSetDefinition) && isArgoPullModel(resource as IApplicationSet)) {
-    return getArgoPullModelClusterList(resource as IApplicationSet, placementDecisions, localCluster?.name ?? '')
-  } else if (isResourceTypeOf(resource, ApplicationSetDefinition)) {
-    return getArgoClusterList(
-      argoApplications.filter(
-        (app) => app.metadata?.ownerReferences && app.metadata.ownerReferences[0].name === resource.metadata?.name
-      ),
-      managedClusters
-    )
-  } else if (isResourceTypeOf(resource, ApplicationDefinition)) {
-    return getSubscriptionsClusterList(resource, placementDecisions, subscriptions)
-  }
-
-  return [] as string[]
-}
-
 //////////////////////////////////////////////////////////////////
 export const getArgoClusterList = (resources: IArgoApplication[], managedClusters: Cluster[]) => {
   const clusterSet = new Set<string>()
@@ -147,66 +96,9 @@ export const getArgoPullModelClusterList = (
   return Array.from(clusterSet)
 }
 
-const getSubscriptionsClusterList = (
-  resource: IResource,
-  placementDecisions: IPlacementDecision[],
-  subscriptions: ISubscription[]
-) => {
-  const subAnnotationArray = getSubscriptionsFromAnnotation(resource)
-  const clusterSet = new Set<string>()
-
-  for (const sa of subAnnotationArray) {
-    if (isLocalSubscription(sa, subAnnotationArray)) {
-      // skip local sub
-      continue
-    }
-
-    const subDetails = sa.split('/')
-    subscriptions.forEach((sub) => {
-      if (sub.metadata.name === subDetails[1] && sub.metadata.namespace === subDetails[0]) {
-        const placementRef = sub.spec.placement?.placementRef
-        const placement = placementDecisions.find(
-          (placementDecision) =>
-            placementDecision.metadata.labels?.['cluster.open-cluster-management.io/placement'] ===
-              placementRef?.name ||
-            placementDecision.metadata.labels?.['cluster.open-cluster-management.io/placementrule'] ===
-              placementRef?.name
-        )
-
-        const decisions = placement?.status?.decisions
-
-        if (decisions) {
-          decisions.forEach((cluster) => {
-            clusterSet.add(cluster.clusterName)
-          })
-        }
-      }
-    })
-  }
-  return Array.from(clusterSet)
-}
-
 export function isOCPAppResourceKind(kind: string) {
   const ocpAppResourceKinds = ['CronJob', 'DaemonSet', 'Deployment', 'DeploymentConfig', 'Job', 'StatefulSet']
   return ocpAppResourceKinds.includes(kind)
-}
-
-function getSubscriptionsFromAnnotation(app: IResource) {
-  return getSubscriptionAnnotations(app)
-}
-
-function isResourceTypeOf(resource: IResource, resourceType: IResourceDefinition | IResourceDefinition[]) {
-  if (Array.isArray(resourceType)) {
-    let isTypeOf = false
-    resourceType.forEach((rt) => {
-      if (rt.apiVersion === resource.apiVersion && rt.kind === resource.kind) {
-        isTypeOf = true
-      }
-    })
-    return isTypeOf
-  } else {
-    return resource.apiVersion === resourceType.apiVersion && resource.kind === resourceType.kind
-  }
 }
 
 //////////////////////////////////////////////////////////////////

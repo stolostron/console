@@ -18,9 +18,7 @@ export interface IResource extends IResourceDefinition {
 }
 export interface IUIResource extends IResource {
   uidata: {
-    clusterList: any
     appSetRelatedResources: any
-    appSetApps: any
   }
 }
 
