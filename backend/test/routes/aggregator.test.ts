@@ -109,6 +109,7 @@ const responseCount = {
   loading: false,
 }
 
+type RelatedResourcesType = (string | string[])[]
 const responseNoFilter = {
   page: 1,
   items: [
@@ -118,6 +119,9 @@ const responseNoFilter = {
       metadata: {
         name: 'argoapplication-1',
         namespace: 'openshift-gitops',
+      },
+      uidata: {
+        appSetRelatedResources: ['', []] as RelatedResourcesType,
       },
     },
     {
@@ -141,6 +145,9 @@ const responseNoFilter = {
         syncPolicy: {},
       },
       status: {},
+      uidata: {
+        appSetRelatedResources: ['', []] as RelatedResourcesType,
+      },
     },
     {
       apiVersion: 'apps/v1',
@@ -154,6 +161,9 @@ const responseNoFilter = {
         cluster: 'local-cluster',
         resourceName: 'authentication-operator',
       },
+      uidata: {
+        appSetRelatedResources: ['', []] as RelatedResourcesType,
+      },
     },
     {
       apiVersion: 'apps/v1',
@@ -166,6 +176,9 @@ const responseNoFilter = {
       status: {
         cluster: 'test-cluster',
         resourceName: 'authentication-operator',
+      },
+      uidata: {
+        appSetRelatedResources: ['', []] as RelatedResourcesType,
       },
     },
     {
@@ -192,6 +205,9 @@ const responseNoFilter = {
         health: {},
         sync: {},
       },
+      uidata: {
+        appSetRelatedResources: ['', []] as RelatedResourcesType,
+      },
     },
     {
       apiVersion: 'app.k8s.io/v1beta1',
@@ -205,6 +221,9 @@ const responseNoFilter = {
             'default/test-subscription-1,default/test-subscription-1-local',
         },
       },
+      uidata: {
+        appSetRelatedResources: ['', []] as RelatedResourcesType,
+      },
     },
     {
       apiVersion: 'apps/v1',
@@ -217,6 +236,9 @@ const responseNoFilter = {
       status: {
         cluster: 'test-cluster',
         resourceName: 'test-app',
+      },
+      uidata: {
+        appSetRelatedResources: ['', []],
       },
     },
   ],
@@ -248,6 +270,9 @@ const responseFiltered = {
             'default/test-subscription-1,default/test-subscription-1-local',
         },
       },
+      uidata: {
+        appSetRelatedResources: ['', []] as RelatedResourcesType,
+      },
     },
   ],
   processedItemCount: 1,
@@ -266,7 +291,6 @@ const responseFiltered = {
     },
   },
 }
-
 /// to get exact nock request body, put bp at line 303 in /backend/node_modules/nock/lib/intercepted_request_router.js
 function setupNocks(prefixes?: boolean) {
   //

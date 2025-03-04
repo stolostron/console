@@ -29,7 +29,7 @@ const appSetPlacementStr =
 
 export function getAppSetRelatedResources(appSet: IResource, applicationSets: IApplicationSet[]) {
   const appSetsSharingPlacement: string[] = []
-  const currentAppSetGenerators = (appSet as IApplicationSet).spec.generators
+  const currentAppSetGenerators = (appSet as IApplicationSet).spec?.generators
   const currentAppSetPlacement = currentAppSetGenerators
     ? (get(currentAppSetGenerators[0], appSetPlacementStr, '') as string)
     : undefined
