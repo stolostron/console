@@ -7,6 +7,7 @@ import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import {
   applicationsState,
+  argoApplicationsState,
   channelsState,
   managedClusterInfosState,
   managedClustersState,
@@ -24,6 +25,7 @@ import { GetMessagesDocument, SearchSchemaDocument } from '../../Search/search-s
 import {
   mockApplication0,
   mockApplications,
+  mockArgoApplications,
   mockChannels,
   mockManagedClusterInfos,
   mockManagedClusters,
@@ -357,6 +359,7 @@ describe('Applications Page', () => {
           snapshot.set(placementRulesState, mockPlacementrules)
           snapshot.set(placementDecisionsState, mockPlacementsDecisions)
           snapshot.set(managedClustersState, mockManagedClusters)
+          snapshot.set(argoApplicationsState, mockArgoApplications)
           snapshot.set(managedClusterInfosState, mockManagedClusterInfos)
           snapshot.set(namespacesState, mockNamespaces)
         }}
