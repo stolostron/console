@@ -118,13 +118,6 @@ export enum NavigationPath {
   configureDiscovery = '/multicloud/infrastructure/clusters/discovered/configure',
   createDiscovery = '/multicloud/infrastructure/clusters/discovered/create',
 
-  // Infrastructure - Environments
-  infraEnvironments = '/multicloud/infrastructure/environments',
-  createInfraEnv = '/multicloud/infrastructure/environments/create',
-  infraEnvironmentDetails = '/multicloud/infrastructure/environments/details/:namespace/:name',
-  infraEnvironmentHosts = '/multicloud/infrastructure/environments/details/:namespace/:name/hosts',
-  infraEnvironmentOverview = '/multicloud/infrastructure/environments/details/:namespace/:name/overview',
-
   // Infrastructure - Automations
   ansibleAutomations = '/multicloud/infrastructure/automations',
   addAnsibleAutomation = '/multicloud/infrastructure/automations/add',

@@ -2,14 +2,14 @@
 import { ACMNotReadyWarning } from '../../../components/ACMNotReadyWarning'
 import { LoadPluginData } from '../../../components/LoadPluginData'
 import { PluginContextProvider } from '../../../components/PluginContextProvider'
-import InfraEnvironments from './InfraEnvironments'
+import InfraEnvironmentsPage from './InfraEnvironmentsPage'
 
 export default function InfraEnvironmentsPlugin() {
   return (
     <PluginContextProvider>
       <LoadPluginData>
         <ACMNotReadyWarning>
-          <InfraEnvironments />
+          <InfraEnvironmentsPage />
         </ACMNotReadyWarning>
       </LoadPluginData>
     </PluginContextProvider>
