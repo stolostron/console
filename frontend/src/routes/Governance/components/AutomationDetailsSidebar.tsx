@@ -98,16 +98,8 @@ export function AutomationDetailsSidebar(props: {
             name: job.metadata.name!,
             namespace: job.metadata.namespace!,
             status: jobResult?.status ?? 'No status',
-            started: jobResult?.started ? (
-              <AcmTimestamp timestamp={jobResult.started} />
-            ) : (
-              <AcmTimestamp timestamp={ansibleResultCondition?.lastTransitionTime ?? ''} />
-            ),
-            finished: jobResult?.finished ? (
-              <AcmTimestamp timestamp={jobResult.finished} />
-            ) : (
-              <AcmTimestamp timestamp={ansibleResultCondition?.lastTransitionTime ?? ''} />
-            ),
+            started: <AcmTimestamp timestamp={jobResult?.started ?? ansibleResultCondition?.lastTransitionTime} />,
+            finished: <AcmTimestamp timestamp={jobResult?.finished ?? ansibleResultCondition?.lastTransitionTime} />,
           }
         }),
     [ansibleJobs, policyAutomationMatch.metadata.name]

@@ -23,9 +23,6 @@ const apiVersionPath = 'specs.raw.apiVersion'
 export const pulseValueArr = ['red', 'orange', 'yellow', 'green', undefined]
 
 export const getAge = (value) => {
-  if (!value) {
-    return '-'
-  }
   return <AcmTimestamp timestamp={value} />
 }
 

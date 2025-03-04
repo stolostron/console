@@ -36,6 +36,7 @@ import {
 } from '../../../resources'
 import {
   createResource,
+  isRequestAbortedError,
   listAnsibleTowerInventories,
   listAnsibleTowerJobs,
   replaceResource,
@@ -81,7 +82,11 @@ export default function AnsibleAutomationsFormPage() {
         .then((curator) => {
           setClusterCuratorTemplate(curator)
         })
-        .catch(setError)
+        .catch((error) => {
+          if (!isRequestAbortedError(error)) {
+            setError(error)
+          }
+        })
       return result.abort
     }
     return undefined

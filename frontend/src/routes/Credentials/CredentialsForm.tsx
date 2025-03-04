@@ -41,7 +41,7 @@ import {
   Secret,
   unpackProviderConnection,
 } from '../../resources'
-import { createResource, patchResource } from '../../resources/utils'
+import { createResource, isRequestAbortedError, patchResource } from '../../resources/utils'
 import {
   AcmEmptyState,
   AcmIcon,
@@ -105,7 +105,11 @@ export function ViewEditCredentialsFormPage() {
         setError(undefined)
         setProviderConnection(unpackProviderConnection(secret as ProviderConnection))
       })
-      .catch(setError)
+      .catch((error) => {
+        if (!isRequestAbortedError(error)) {
+          setError(error)
+        }
+      })
     return result.abort
   }, [name, namespace])
   if (error) return <ErrorPage error={error} />

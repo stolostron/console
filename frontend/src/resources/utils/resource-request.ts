@@ -60,6 +60,10 @@ export class ResourceError extends Error {
   }
 }
 
+export function isRequestAbortedError(error: any) {
+  return error instanceof ResourceError && error.code === ResourceErrorCode.RequestAborted
+}
+
 export function getBackendUrl() {
   if (process.env.MODE === 'plugin') {
     const proxyPath = process.env.PLUGIN_PROXY_PATH
