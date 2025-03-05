@@ -288,13 +288,25 @@ export default function VirtualMachinesPage() {
     // combine VMI node & ip address data in VM object
     const reducedVMAndVMI: ISearchResult[] = data?.searchResult?.[0]?.items?.reduce((acc, curr) => {
       const key = `${curr.name}/${curr.namespace}/${curr.cluster}`
-      acc[key] = {
-        ...acc[key],
-        ...curr,
+      if (curr.kind === 'VirtualMachine') {
+        acc[key] = {
+          ...acc[key],
+          ...curr,
+        }
+      } else if (curr.kind === 'VirtualMachineInstance') {
+        acc[key] = {
+          ...acc[key],
+          ...curr,
+          // Set kind to VM in case VMI is parsed first in reduce.
+          // If VMI is parsed first the navigation to search details will be for the VMI resource not VM
+          kind: 'VirtualMachine',
+        }
       }
       return acc
     }, {})
-    return Object.values(reducedVMAndVMI ?? {}).filter((vm: any) => vm._uid) // filter out objects that are missing uid - meaning they likely are leftover resources
+    // Status only exists from VM resource data - If there is no status then we only have the VMI data without the associated VM.
+    // We need to remove objects contaning only VMI data as this means the VM is either not present in search data OR does not actually exist at all meaning VMI may be stale.
+    return Object.values(reducedVMAndVMI ?? {}).filter((vm: any) => vm.status)
   }, [data?.searchResult, error, loading])
 
   if (loadStarted) {
@@ -379,7 +391,7 @@ export default function VirtualMachinesPage() {
             savedSearchQueries={[]}
             searchResultData={data}
             refetchSearch={refetch}
-            inputPlaceholder={'Filter VirtualMachines'}
+            inputPlaceholder={currentSearch === '' ? 'Filter VirtualMachines' : ''}
             exportEnabled={false}
           />
         </PageSection>

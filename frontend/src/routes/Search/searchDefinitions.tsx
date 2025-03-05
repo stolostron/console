@@ -392,14 +392,13 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
     },
     virtualmachinespage: {
       columns: [
-        { id: 'name', order: 1, isDefault: true, ...AddColumn('name', t('Name')), search: (item: any) => item.name },
+        { id: 'name', order: 1, isDefault: true, ...AddColumn('name', t('Name')) },
         {
           id: 'status',
           order: 2,
           isDefault: false,
           isFirstVisitChecked: true,
           ...AddColumn('status', t('Status')),
-          search: (item: any) => item.status,
         },
         {
           id: 'cluster',
@@ -407,7 +406,6 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
           isDefault: false,
           isFirstVisitChecked: true,
           ...AddColumn('cluster', t('Cluster')),
-          search: (item: any) => item.cluster,
         },
         {
           id: 'namespace',
@@ -415,7 +413,6 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
           isDefault: false,
           isFirstVisitChecked: true,
           ...AddColumn('namespace', t('Namespace')),
-          search: (item: any) => item.namespace,
         },
         {
           id: 'node',
@@ -423,7 +420,6 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
           isDefault: false,
           isFirstVisitChecked: true,
           ...AddColumn('node', t('Node')),
-          search: (item: any) => item.node,
         },
         {
           id: 'ipaddress',
@@ -431,7 +427,6 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
           isDefault: false,
           isFirstVisitChecked: true,
           ...AddColumn('ipaddress', t('IP address')),
-          search: (item: any) => item.ipaddress,
         },
         {
           id: 'launch-links',
