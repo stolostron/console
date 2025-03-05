@@ -2,7 +2,7 @@
 
 import { TooltipProps } from '@patternfly/react-core'
 
-export type ApplicationActionProps = {
+export type ActionExtensionProps = {
   /** Action identifier */
   id: string
   /** Display a tooltip for this action */
@@ -17,12 +17,12 @@ export type ApplicationActionProps = {
   isDisabled?: (resource: any) => boolean
   /** Visible text for action */
   title: string | React.ReactNode
-  /** Display action for this application type */
-  /** Default action type is OpenShift*/
+  /** Display action for this GVK type */
+  /** For application, default action type is OpenShift*/
   model?: {
     apiVersion: string
     kind: string
   }[]
   /** Modal component type*/
-  component: React.ComponentType<{ isOpen: boolean; close: () => void; resource?: any }>
+  component: React.ComponentType<{ isOpen: boolean; close: () => void; resource?: any; cluster?: string }>
 }

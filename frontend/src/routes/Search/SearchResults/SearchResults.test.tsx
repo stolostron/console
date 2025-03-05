@@ -4,6 +4,7 @@
 import { ApolloError } from '@apollo/client'
 import { MockedProvider } from '@apollo/client/testing'
 import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { GraphQLError } from 'graphql'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
@@ -15,9 +16,30 @@ import {
   SearchResultRelatedItemsDocument,
 } from '../search-sdk/search-sdk'
 import SearchResults from './SearchResults'
+import { defaultPlugin, PluginContext } from '../../../lib/PluginContext'
+import { AcmExtension } from '../../../plugin-extensions/types'
+import { ActionExtensionProps } from '../../../plugin-extensions/properties'
 
 const mockSettings: Settings = {
   SEARCH_RESULT_LIMIT: '1000',
+}
+
+const vmActionProps: ActionExtensionProps[] = [
+  {
+    id: 'DR Action',
+    title: 'Failover',
+    model: [
+      {
+        apiVersion: 'kubevirt.io/v1',
+        kind: 'VirtualMachine',
+      },
+    ],
+    component: () => 'DR Action',
+  },
+]
+
+const acmExtension: AcmExtension = {
+  virtualMachineAction: vmActionProps,
 }
 
 describe('SearchResults Page', () => {
@@ -737,5 +759,110 @@ describe('SearchResults Page', () => {
     await waitFor(() => expect(screen.queryByText('Error querying search results')).toBeTruthy())
     await waitFor(() => expect(screen.queryByText('Error occurred while contacting the search service.')).toBeTruthy())
     await waitFor(() => expect(screen.queryByText('Error getting search data')).toBeTruthy())
+  })
+
+  it('should render the page with the correct data and display actions from the plugin extension', async () => {
+    const mocks = [
+      {
+        request: {
+          query: SearchResultItemsDocument,
+          variables: {
+            input: [
+              {
+                keywords: ['testCluster'],
+                filters: [
+                  {
+                    property: 'kind',
+                    values: ['VirtualMachine'],
+                  },
+                ],
+                limit: 1000,
+              },
+            ],
+          },
+        },
+        result: {
+          data: {
+            searchResult: [
+              {
+                items: [
+                  {
+                    _uid: 'testCluster/42634581-0cc1-4aa9-bec6-69f59049e2d3',
+                    apigroup: 'kubevirt.io',
+                    apiversion: 'v1',
+                    cluster: 'testCluster',
+                    created: '2024-09-09T20:00:42Z',
+                    kind: 'VirtualMachine',
+                    kind_plural: 'virtualmachines',
+                    name: 'testvm1',
+                    namespace: 'openshift-cnv',
+                    ready: 'True',
+                    status: 'Running',
+                  },
+                ],
+                __typename: 'SearchResult',
+              },
+            ],
+          },
+        },
+      },
+    ]
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(settingsState, { VIRTUAL_MACHINE_ACTIONS: 'enabled' })
+        }}
+      >
+        <MemoryRouter>
+          <MockedProvider mocks={mocks}>
+            <PluginContext.Provider
+              value={{
+                ...defaultPlugin,
+                acmExtensions: acmExtension,
+              }}
+            >
+              <SearchResults
+                currentQuery={'kind:VirtualMachine testCluster'}
+                preSelectedRelatedResources={[]}
+                error={undefined}
+                loading={false}
+                data={{
+                  searchResult: [
+                    {
+                      items: [
+                        {
+                          _uid: 'testCluster/42634581-0cc1-4aa9-bec6-69f59049e2d3',
+                          apigroup: 'kubevirt.io',
+                          apiversion: 'v1',
+                          cluster: 'testCluster',
+                          created: '2024-09-09T20:00:42Z',
+                          kind: 'VirtualMachine',
+                          kind_plural: 'virtualmachines',
+                          name: 'testvm1',
+                          namespace: 'openshift-cnv',
+                          ready: 'True',
+                          status: 'Running',
+                        },
+                      ],
+                    },
+                  ],
+                }}
+              />
+            </PluginContext.Provider>
+          </MockedProvider>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    // This wait pauses till apollo query is returning data
+    await wait()
+    // Test that the component has rendered correctly with data
+    await waitFor(() => expect(screen.queryByText('VirtualMachine')).toBeTruthy())
+    await waitFor(() => expect(screen.queryByText('(1)')).toBeTruthy())
+
+    // Click on the row actions dropdown for testVM1 and verify that plugin actions exist
+    await waitFor(() => {
+      userEvent.click(screen.getAllByRole('button', { name: 'Actions' })[0])
+    })
+    await waitFor(() => expect(screen.getByText('Failover')).toBeInTheDocument())
   })
 })

@@ -3,6 +3,7 @@
 // Copyright Contributors to the Open Cluster Management project
 import { MockedProvider } from '@apollo/client/testing'
 import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { GraphQLError } from 'graphql'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
@@ -12,6 +13,9 @@ import { wait, waitForNocks } from '../../../lib/test-util'
 import { SearchOperator } from '../../../resources'
 import { SearchResultItemsDocument } from '../../Search/search-sdk/search-sdk'
 import VirtualMachinesPage from './VirtualMachinesPage'
+import { AcmExtension } from '../../../plugin-extensions/types'
+import { defaultPlugin, PluginContext } from '../../../lib/PluginContext'
+import { ActionExtensionProps, ListColumnExtensionProps } from '../../../plugin-extensions/properties'
 
 const mockHealthySearchOperator: SearchOperator = {
   apiVersion: 'search.open-cluster-management.io/v1alpha1',
@@ -84,6 +88,32 @@ const mockUNHealthySearchOperator: SearchOperator = {
       },
     ],
   },
+}
+
+const vmActionProps: ActionExtensionProps[] = [
+  {
+    id: 'DR Action',
+    title: 'Failover',
+    model: [
+      {
+        apiVersion: 'kubevirt.io/v1',
+        kind: 'VirtualMachine',
+      },
+    ],
+    component: () => 'DR Action',
+  },
+]
+
+const vmListPageColumnProps: ListColumnExtensionProps[] = [
+  {
+    header: 'DR Column',
+    cell: () => 'DR Status',
+  },
+]
+
+const acmExtension: AcmExtension = {
+  virtualMachineAction: vmActionProps,
+  virtualMachineListColumn: vmListPageColumnProps,
 }
 
 describe('VirtualMachinesPage Page', () => {
@@ -168,7 +198,14 @@ describe('VirtualMachinesPage Page', () => {
       >
         <MemoryRouter>
           <MockedProvider mocks={mocks}>
-            <VirtualMachinesPage />
+            <PluginContext.Provider
+              value={{
+                ...defaultPlugin,
+                acmExtensions: acmExtension,
+              }}
+            >
+              <VirtualMachinesPage />
+            </PluginContext.Provider>
           </MockedProvider>
         </MemoryRouter>
       </RecoilRoot>
@@ -187,6 +224,21 @@ describe('VirtualMachinesPage Page', () => {
     await waitFor(() => expect(screen.queryByText('testVM2')).toBeTruthy()) // name
     await waitFor(() => expect(screen.queryByText('Stopped')).toBeTruthy()) // status
     await waitFor(() => expect(screen.queryByText('managed-cluster-2')).toBeTruthy()) // cluster
+
+    // Click on the row actions dropdown for testVM1 and verify that plugin actions exist
+    await waitFor(() => {
+      userEvent.click(screen.getAllByRole('button', { name: 'Actions' })[0])
+    })
+    await waitFor(() => expect(screen.getByText('Failover')).toBeInTheDocument())
+
+    // Click on the row actions dropdown for testVM2 and verify that plugin actions exist
+    await waitFor(() => {
+      userEvent.click(screen.getAllByRole('button', { name: 'Actions' })[1])
+    })
+    await waitFor(() => expect(screen.getByText('Failover')).toBeInTheDocument())
+
+    // Plugin Column Header
+    await waitFor(() => expect(screen.queryByText('DR Column')).toBeTruthy())
   })
 
   it('should render page with search unavailable empty state', async () => {
