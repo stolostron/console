@@ -1,5 +1,5 @@
-query searchSchema {
-  searchSchema
+query searchSchema($query: SearchInput) {
+  searchSchema(query: $query)
 }
 
 query searchComplete($property: String!, $query: SearchInput, $limit: Int) {

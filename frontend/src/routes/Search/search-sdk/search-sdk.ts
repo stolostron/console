@@ -55,7 +55,11 @@ export type Query = {
    * A value of -1 will remove the limit. Use carefully because it may impact the service.
    */
   searchComplete?: Maybe<Array<Maybe<Scalars['String']['output']>>>
-  /** Returns all properties from resources currently in the index. */
+  /**
+   * Returns all fields from resources currently in the index.
+   * Optionally, a query can be included to filter the results.
+   * For example, if we want to only get fields for Pod resources, we can pass a query with the filter `{property: kind, values:['Pod']}`
+   */
   searchSchema?: Maybe<Scalars['Map']['output']>
 }
 
@@ -68,6 +72,11 @@ export type QuerySearchArgs = {
 export type QuerySearchCompleteArgs = {
   limit?: InputMaybe<Scalars['Int']['input']>
   property: Scalars['String']['input']
+  query?: InputMaybe<SearchInput>
+}
+
+/** Queries supported by the Search Query API. */
+export type QuerySearchSchemaArgs = {
   query?: InputMaybe<SearchInput>
 }
 
@@ -145,7 +154,9 @@ export type SearchResult = {
   related?: Maybe<Array<Maybe<SearchRelatedResult>>>
 }
 
-export type SearchSchemaQueryVariables = Exact<{ [key: string]: never }>
+export type SearchSchemaQueryVariables = Exact<{
+  query?: InputMaybe<SearchInput>
+}>
 
 export type SearchSchemaQuery = { searchSchema?: any | null }
 
@@ -205,8 +216,8 @@ export type GetMessagesQuery = {
 }
 
 export const SearchSchemaDocument = gql`
-  query searchSchema {
-    searchSchema
+  query searchSchema($query: SearchInput) {
+    searchSchema(query: $query)
   }
 `
 
@@ -222,6 +233,7 @@ export const SearchSchemaDocument = gql`
  * @example
  * const { data, loading, error } = useSearchSchemaQuery({
  *   variables: {
+ *      query: // value for 'query'
  *   },
  * });
  */
@@ -238,9 +250,9 @@ export function useSearchSchemaLazyQuery(
   return Apollo.useLazyQuery<SearchSchemaQuery, SearchSchemaQueryVariables>(SearchSchemaDocument, options)
 }
 export function useSearchSchemaSuspenseQuery(
-  baseOptions?: Apollo.SuspenseQueryHookOptions<SearchSchemaQuery, SearchSchemaQueryVariables>
+  baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<SearchSchemaQuery, SearchSchemaQueryVariables>
 ) {
-  const options = { ...defaultOptions, ...baseOptions }
+  const options = baseOptions === Apollo.skipToken ? baseOptions : { ...defaultOptions, ...baseOptions }
   return Apollo.useSuspenseQuery<SearchSchemaQuery, SearchSchemaQueryVariables>(SearchSchemaDocument, options)
 }
 export type SearchSchemaQueryHookResult = ReturnType<typeof useSearchSchemaQuery>
@@ -285,9 +297,9 @@ export function useSearchCompleteLazyQuery(
   return Apollo.useLazyQuery<SearchCompleteQuery, SearchCompleteQueryVariables>(SearchCompleteDocument, options)
 }
 export function useSearchCompleteSuspenseQuery(
-  baseOptions?: Apollo.SuspenseQueryHookOptions<SearchCompleteQuery, SearchCompleteQueryVariables>
+  baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<SearchCompleteQuery, SearchCompleteQueryVariables>
 ) {
-  const options = { ...defaultOptions, ...baseOptions }
+  const options = baseOptions === Apollo.skipToken ? baseOptions : { ...defaultOptions, ...baseOptions }
   return Apollo.useSuspenseQuery<SearchCompleteQuery, SearchCompleteQueryVariables>(SearchCompleteDocument, options)
 }
 export type SearchCompleteQueryHookResult = ReturnType<typeof useSearchCompleteQuery>
@@ -334,9 +346,11 @@ export function useSearchResultItemsLazyQuery(
   )
 }
 export function useSearchResultItemsSuspenseQuery(
-  baseOptions?: Apollo.SuspenseQueryHookOptions<SearchResultItemsQuery, SearchResultItemsQueryVariables>
+  baseOptions?:
+    | Apollo.SkipToken
+    | Apollo.SuspenseQueryHookOptions<SearchResultItemsQuery, SearchResultItemsQueryVariables>
 ) {
-  const options = { ...defaultOptions, ...baseOptions }
+  const options = baseOptions === Apollo.skipToken ? baseOptions : { ...defaultOptions, ...baseOptions }
   return Apollo.useSuspenseQuery<SearchResultItemsQuery, SearchResultItemsQueryVariables>(
     SearchResultItemsDocument,
     options
@@ -386,9 +400,11 @@ export function useSearchResultCountLazyQuery(
   )
 }
 export function useSearchResultCountSuspenseQuery(
-  baseOptions?: Apollo.SuspenseQueryHookOptions<SearchResultCountQuery, SearchResultCountQueryVariables>
+  baseOptions?:
+    | Apollo.SkipToken
+    | Apollo.SuspenseQueryHookOptions<SearchResultCountQuery, SearchResultCountQueryVariables>
 ) {
-  const options = { ...defaultOptions, ...baseOptions }
+  const options = baseOptions === Apollo.skipToken ? baseOptions : { ...defaultOptions, ...baseOptions }
   return Apollo.useSuspenseQuery<SearchResultCountQuery, SearchResultCountQueryVariables>(
     SearchResultCountDocument,
     options
@@ -444,9 +460,11 @@ export function useSearchResultRelatedCountLazyQuery(
   )
 }
 export function useSearchResultRelatedCountSuspenseQuery(
-  baseOptions?: Apollo.SuspenseQueryHookOptions<SearchResultRelatedCountQuery, SearchResultRelatedCountQueryVariables>
+  baseOptions?:
+    | Apollo.SkipToken
+    | Apollo.SuspenseQueryHookOptions<SearchResultRelatedCountQuery, SearchResultRelatedCountQueryVariables>
 ) {
-  const options = { ...defaultOptions, ...baseOptions }
+  const options = baseOptions === Apollo.skipToken ? baseOptions : { ...defaultOptions, ...baseOptions }
   return Apollo.useSuspenseQuery<SearchResultRelatedCountQuery, SearchResultRelatedCountQueryVariables>(
     SearchResultRelatedCountDocument,
     options
@@ -514,12 +532,14 @@ export function useSearchResultItemsAndRelatedItemsLazyQuery(
   )
 }
 export function useSearchResultItemsAndRelatedItemsSuspenseQuery(
-  baseOptions?: Apollo.SuspenseQueryHookOptions<
-    SearchResultItemsAndRelatedItemsQuery,
-    SearchResultItemsAndRelatedItemsQueryVariables
-  >
+  baseOptions?:
+    | Apollo.SkipToken
+    | Apollo.SuspenseQueryHookOptions<
+        SearchResultItemsAndRelatedItemsQuery,
+        SearchResultItemsAndRelatedItemsQueryVariables
+      >
 ) {
-  const options = { ...defaultOptions, ...baseOptions }
+  const options = baseOptions === Apollo.skipToken ? baseOptions : { ...defaultOptions, ...baseOptions }
   return Apollo.useSuspenseQuery<SearchResultItemsAndRelatedItemsQuery, SearchResultItemsAndRelatedItemsQueryVariables>(
     SearchResultItemsAndRelatedItemsDocument,
     options
@@ -584,9 +604,11 @@ export function useSearchResultRelatedItemsLazyQuery(
   )
 }
 export function useSearchResultRelatedItemsSuspenseQuery(
-  baseOptions?: Apollo.SuspenseQueryHookOptions<SearchResultRelatedItemsQuery, SearchResultRelatedItemsQueryVariables>
+  baseOptions?:
+    | Apollo.SkipToken
+    | Apollo.SuspenseQueryHookOptions<SearchResultRelatedItemsQuery, SearchResultRelatedItemsQueryVariables>
 ) {
-  const options = { ...defaultOptions, ...baseOptions }
+  const options = baseOptions === Apollo.skipToken ? baseOptions : { ...defaultOptions, ...baseOptions }
   return Apollo.useSuspenseQuery<SearchResultRelatedItemsQuery, SearchResultRelatedItemsQueryVariables>(
     SearchResultRelatedItemsDocument,
     options
@@ -639,9 +661,9 @@ export function useGetMessagesLazyQuery(
   return Apollo.useLazyQuery<GetMessagesQuery, GetMessagesQueryVariables>(GetMessagesDocument, options)
 }
 export function useGetMessagesSuspenseQuery(
-  baseOptions?: Apollo.SuspenseQueryHookOptions<GetMessagesQuery, GetMessagesQueryVariables>
+  baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetMessagesQuery, GetMessagesQueryVariables>
 ) {
-  const options = { ...defaultOptions, ...baseOptions }
+  const options = baseOptions === Apollo.skipToken ? baseOptions : { ...defaultOptions, ...baseOptions }
   return Apollo.useSuspenseQuery<GetMessagesQuery, GetMessagesQueryVariables>(GetMessagesDocument, options)
 }
 export type GetMessagesQueryHookResult = ReturnType<typeof useGetMessagesQuery>
