@@ -110,6 +110,8 @@ function VirtualMachineTable() {
           ...acc[key],
           node: curr.node ?? '-',
           ipaddress: curr.ipaddress ?? '-',
+          osVersion: curr.osVersion ?? '-',
+          vmSize: curr.vmSize ?? '-',
         }
       }
       return acc
