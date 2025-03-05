@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { ResolvedExtension } from '@openshift-console/dynamic-plugin-sdk'
-import { ApplicationActionProps, ApplicationListColumnProps } from './properties'
-import { OverviewTab } from './extensions'
+import { ApplicationActionProps, ApplicationListColumnProps } from '@stolostron/multicluster-sdk'
+import { OverviewTab } from '@stolostron/multicluster-sdk'
 
 export type AcmExtension = Partial<{
   applicationAction: ApplicationActionProps[]

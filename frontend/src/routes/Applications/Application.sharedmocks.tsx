@@ -41,7 +41,7 @@ import {
   SubscriptionOperatorKind,
 } from '../../resources'
 import { AcmExtension } from '../../plugin-extensions/types'
-import { ApplicationActionProps } from '../../plugin-extensions/properties'
+import { ApplicationActionProps } from '@stolostron/multicluster-sdk'
 import { IResultStatuses } from '../../lib/useAggregates'
 
 export const mockArgoCD: IResource = {
