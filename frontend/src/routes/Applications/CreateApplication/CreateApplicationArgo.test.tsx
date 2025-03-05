@@ -3,7 +3,6 @@ import { render } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import {
-  applicationSetsState,
   channelsState,
   gitOpsClustersState,
   managedClusterSetBindingsState,
@@ -21,6 +20,7 @@ import {
   nockGet,
   nockIgnoreApiPaths,
   nockIgnoreOperatorCheck,
+  nockList,
 } from '../../../lib/nock-util'
 import { clickByText, typeByPlaceholderText, typeByTestId, waitForNocks, waitForText } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
@@ -325,6 +325,13 @@ describe('Create Argo Application Set', () => {
   }
 
   test('can create Argo Application Set with Git', async () => {
+    nockList(
+      {
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'applicationsets',
+      },
+      [argoAppSetGit]
+    )
     const initialNocks = [nockGet(gitSecret)]
     render(<AddApplicationSet />)
     await waitForNocks(initialNocks)
@@ -377,6 +384,13 @@ describe('Create Argo Application Set', () => {
   })
 
   test('can create an Application Set with Helm', async () => {
+    nockList(
+      {
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'applicationsets',
+      },
+      [argoAppSetGit]
+    )
     render(<AddApplicationSet />)
 
     // appset name
@@ -422,12 +436,15 @@ describe('Create Argo Application Set', () => {
   })
 
   test('can render Edit Argo Application Page', async () => {
+    nockList(
+      {
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'applicationsets',
+      },
+      [argoAppSetGit]
+    )
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(applicationSetsState, [argoAppSetGit])
-        }}
-      >
+      <RecoilRoot>
         <MemoryRouter initialEntries={[NavigationPath.editApplicationArgo]}>
           <Routes>
             <Route path={NavigationPath.editApplicationArgo} element={<EditArgoApplicationSet />} />

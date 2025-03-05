@@ -1,10 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { getKubeResources } from '../events'
 import { addOCPQueryInputs, addSystemQueryInputs, cacheOCPApplications } from './applicationsOCP'
-import { IResource } from '../../resources/resource'
+import { ApplicationSetKind, IApplicationSet, IResource } from '../../resources/resource'
 import { FilterSelections, ITransformedResource } from '../../lib/pagination'
 import { logger } from '../../lib/logger'
-import { discoverSystemAppNamespacePrefixes, logApplicationCountChanges, transform } from './utils'
+import {
+  discoverSystemAppNamespacePrefixes,
+  getAppSetRelatedResources,
+  logApplicationCountChanges,
+  transform,
+} from './utils'
 import { getSearchResults, ISearchResult, pingSearchAPI } from '../../lib/search'
 import { addArgoQueryInputs, cacheArgoApplications } from './applicationsArgo'
 import { getGiganticApps } from '../../lib/gigantic'
@@ -183,6 +188,24 @@ export function filterApplications(filters: FilterSelections, items: ITransforme
       }
     })
     return isFilterMatch
+  })
+  return items
+}
+
+// add data to the apps that can be used by the ui but
+// w/o downloading all the appsets, apps, etc
+export function addUIData(items: IResource[]) {
+  const argoAppSets = applicationCache['appset'].resources
+  items = items.map((item) => {
+    return {
+      ...item,
+      uidata: {
+        appSetRelatedResources:
+          item.kind === ApplicationSetKind
+            ? getAppSetRelatedResources(item, argoAppSets as IApplicationSet[])
+            : ['', []],
+      },
+    }
   })
   return items
 }

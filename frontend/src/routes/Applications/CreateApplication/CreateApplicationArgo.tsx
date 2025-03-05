@@ -12,13 +12,15 @@ import { useTranslation } from '../../../lib/acm-i18next'
 import { isType } from '../../../lib/is-type'
 import { NavigationPath } from '../../../NavigationPath'
 import {
+  ApplicationSet,
+  ApplicationSetApiVersion,
   ApplicationSetKind,
   getGitChannelBranches,
   getGitChannelPaths,
   GitOpsCluster,
   IResource,
 } from '../../../resources'
-import { createResources } from '../../../resources/utils'
+import { createResources, listResources } from '../../../resources/utils'
 import { argoAppSetQueryString } from './actions'
 import schema from './schema.json'
 import { LostChangesContext } from '../../../components/LostChanges'
@@ -64,7 +66,6 @@ export function CreateApplicationArgo() {
   const {
     channelsState,
     namespacesState,
-    applicationSetsState,
     placementsState,
     gitOpsClustersState,
     managedClustersState,
@@ -72,7 +73,6 @@ export function CreateApplicationArgo() {
     managedClusterSetBindingsState,
   } = useSharedAtoms()
   const navigate = useNavigate()
-  const applicationSets = useRecoilValue(applicationSetsState)
   const toast = useContext(AcmToastContext)
   const placements = useRecoilValue(placementsState)
   const gitOpsClusters = useRecoilValue(gitOpsClustersState)
@@ -96,10 +96,30 @@ export function CreateApplicationArgo() {
 
   const { cancelForm, submitForm } = useContext(LostChangesContext)
   const [createdResource, setCreatedResource] = useState<any>()
+  const [applicationSets, setApplicationSets] = useState<ApplicationSet[]>()
+  const [loadingAppSets, setLoadingAppSets] = useState(true)
+
+  // instead of burdoning recoil with appsets, use old fashioned fetch
+  // opening wizard may take longer, but argo wizards are probably seldom used
+  useEffect(() => {
+    const fetchAppSets = async () => {
+      try {
+        const response = await listResources<ApplicationSet>({
+          apiVersion: ApplicationSetApiVersion,
+          kind: ApplicationSetKind,
+        }).promise
+        setApplicationSets(response)
+        setLoadingAppSets(false)
+      } catch {
+        setLoadingAppSets(false)
+      }
+    }
+    fetchAppSets()
+  }, [])
 
   // don't navigate to details page until application exists in recoil
   useEffect(() => {
-    if (createdResource) {
+    if (createdResource && applicationSets) {
       if (
         applicationSets.findIndex(
           (appset) =>
@@ -118,7 +138,7 @@ export function CreateApplicationArgo() {
     }
   }, [applicationSets, createdResource, navigate])
 
-  return createdResource ? (
+  return createdResource || loadingAppSets ? (
     <LoadingPage />
   ) : (
     <ArgoWizard

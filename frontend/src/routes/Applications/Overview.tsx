@@ -39,6 +39,7 @@ import {
   DiscoveredArgoApplicationDefinition,
   getApiVersionResourceGroup,
   IResource,
+  IUIResource,
   OCPAppResource,
   Subscription,
 } from '../../resources'
@@ -60,7 +61,6 @@ import {
   getAge,
   getAnnotation,
   getAppChildResources,
-  getAppSetRelatedResources,
   getClusterCount,
   getClusterCountField,
   getClusterCountSearchLink,
@@ -312,7 +312,6 @@ export default function ApplicationsOverview() {
   usePageVisitMetricHandler(Pages.application)
   const { t } = useTranslation()
   const {
-    applicationSetsState,
     applicationsState,
     argoApplicationsState,
     channelsState,
@@ -323,7 +322,6 @@ export default function ApplicationsOverview() {
   } = useSharedAtoms()
 
   const applications = useRecoilValue(applicationsState)
-  const applicationSets = useRecoilValue(applicationSetsState)
   const argoApplications = useRecoilValue(argoApplicationsState)
   const subscriptions = useRecoilValue(subscriptionsState)
   const channels = useRecoilValue(channelsState)
@@ -923,8 +921,7 @@ export default function ApplicationsOverview() {
                     localCluster?.name ?? ''
                   )
                 : [[], []]
-            const appSetRelatedResources =
-              resource.kind === ApplicationSetKind ? getAppSetRelatedResources(resource, applicationSets) : ['', []]
+            const appSetRelatedResources = (resource as IUIResource).uidata.appSetRelatedResources
             const hostingSubAnnotation = getAnnotation(resource, hostingSubAnnotationStr)
             let modalWarnings: string | undefined
             if (hostingSubAnnotation) {
@@ -997,7 +994,6 @@ export default function ApplicationsOverview() {
       placementRules,
       placements,
       channels,
-      applicationSets,
       argoApplications,
       canCreateApplication,
       localCluster?.name,
