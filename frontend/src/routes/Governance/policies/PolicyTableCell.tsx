@@ -5,12 +5,12 @@ import { PolicyTableItem } from './Policies'
 import { NavigationPath } from '../../../NavigationPath'
 import { Link, generatePath } from 'react-router-dom-v5-compat'
 import { PolicySetList } from '../common/util'
-import moment from 'moment'
 import { PolicyActionDropdown } from '../components/PolicyActionDropdown'
 import { AcmButton } from '../../../ui-components/AcmButton'
 import { AutomationDetailsSidebar } from '../components/AutomationDetailsSidebar'
 import { ButtonVariant } from '@patternfly/react-core'
 import { TFunction } from 'react-i18next'
+import AcmTimestamp from '../../../lib/AcmTimestamp'
 
 export function handleNameCell(item: PolicyTableItem) {
   return (
@@ -54,7 +54,7 @@ export function handlePolicySetCell(item: PolicyTableItem, policySets: PolicySet
 
 export function handleCreatedCell(item: PolicyTableItem) {
   if (item.policy.metadata?.creationTimestamp) {
-    return <span>{moment(new Date(item.policy.metadata?.creationTimestamp)).fromNow()}</span>
+    return <AcmTimestamp timestamp={item.policy.metadata.creationTimestamp} />
   }
   return '-'
 }

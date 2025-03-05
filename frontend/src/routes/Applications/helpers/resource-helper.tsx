@@ -2,7 +2,6 @@
 
 import { TFunction } from 'react-i18next'
 import _ from 'lodash'
-import moment, { Moment } from 'moment'
 import queryString from 'query-string'
 import { generatePath, Link } from 'react-router-dom-v5-compat'
 import { NavigationPath } from '../../../NavigationPath'
@@ -33,9 +32,11 @@ import {
   SubscriptionApiVersion,
   SubscriptionKind,
 } from '../../../resources'
-import { Cluster, getMoment } from '../../../resources/utils'
+import { Cluster } from '../../../resources/utils'
 import { getArgoDestinationCluster } from '../ApplicationDetails/ApplicationTopology/model/topologyArgo'
 import { getSubscriptionAnnotations, isLocalSubscription } from './subscriptions'
+import AcmTimestamp from '../../../lib/AcmTimestamp'
+
 export const CHANNEL_TYPES = ['git', 'helmrepo', 'namespace', 'objectbucket']
 const appSetPlacementStr =
   'clusterDecisionResource.labelSelector.matchLabels["cluster.open-cluster-management.io/placement"]'
@@ -351,13 +352,10 @@ export const getResourceLabel = (type: string, count: number, t: TFunction) => {
   return label + optionalCount
 }
 
-export const getAge = (item: IResource, locale: string, timestampKey: string) => {
+export const getResourceTimestamp = (item: IResource, timestampKey: string) => {
   const key = timestampKey ? timestampKey : 'created'
   const createdTime = _.get(item, key)
-  if (createdTime) {
-    return getMoment(createdTime, locale).fromNow()
-  }
-  return '-'
+  return <AcmTimestamp timestamp={createdTime} />
 }
 
 export const getSearchLink = (params: any) => {
@@ -401,26 +399,6 @@ export const getEditLink = (params: {
     kind,
     apiversion,
   })}`
-}
-
-export const getShortDateTime = (timestamp: string, now?: Moment) => {
-  const timeFormat = 'h:mm a'
-  const monthDayFormat = 'MMM D'
-  const yearFormat = 'YYYY'
-  if (!timestamp) {
-    return '-'
-  }
-  if (!now) {
-    now = moment()
-  }
-  const date = getMoment(timestamp)
-  if (date.isSame(now, 'day')) {
-    return date.format(timeFormat)
-  } else if (date.isSame(now, 'year')) {
-    return date.format(`${monthDayFormat}, ${timeFormat}`)
-  } else {
-    return date.format(`${monthDayFormat} ${yearFormat}, ${timeFormat}`)
-  }
 }
 
 export const getAppSetRelatedResources = (appSet: IResource, applicationSets: ApplicationSet[]) => {

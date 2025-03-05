@@ -41,7 +41,13 @@ import { AcmExpandableCard, IAcmRowAction, IAcmTableColumn } from '../../ui-comp
 import { IDeleteResourceModalProps } from './components/DeleteResourceModal'
 import ResourceLabels from './components/ResourceLabels'
 import { ApplicationToggleOptions, ToggleSelector } from './components/ToggleSelector'
-import { ClusterCount, getAge, getClusterCountString, getEditLink, getSearchLink } from './helpers/resource-helper'
+import {
+  ClusterCount,
+  getResourceTimestamp,
+  getClusterCountString,
+  getEditLink,
+  getSearchLink,
+} from './helpers/resource-helper'
 import { useHubCluster } from './helpers/useHubCluster'
 import { DeprecatedTitle } from './components/DeprecatedTitle'
 
@@ -528,7 +534,11 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
           {
             header: t('Created'),
             cell: (resource) => {
-              return <span>{getAge(resource, '', 'metadata.creationTimestamp')}</span>
+              return (
+                <span style={{ whiteSpace: 'nowrap' }}>
+                  {getResourceTimestamp(resource, 'metadata.creationTimestamp')}
+                </span>
+              )
             },
             exportContent: (resource) => {
               if (resource.metadata?.creationTimestamp) {
@@ -641,7 +651,7 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
           {
             header: t('Created'),
             cell: (resource) => {
-              return <span>{getAge(resource, '', 'metadata.creationTimestamp')}</span>
+              return <span>{getResourceTimestamp(resource, 'metadata.creationTimestamp')}</span>
             },
             sort: 'metadata.creationTimestamp',
             exportContent: (resource) => {
@@ -693,7 +703,7 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
           {
             header: t('Created'),
             cell: (resource) => {
-              return <span>{getAge(resource, '', 'metadata.creationTimestamp')}</span>
+              return <span>{getResourceTimestamp(resource, 'metadata.creationTimestamp')}</span>
             },
             sort: 'metadata.creationTimestamp',
             exportContent: (resource) => {
@@ -757,7 +767,7 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
           {
             header: t('Created'),
             cell: (resource) => {
-              return <span>{getAge(resource, '', 'metadata.creationTimestamp')}</span>
+              return <span>{getResourceTimestamp(resource, 'metadata.creationTimestamp')}</span>
             },
             sort: 'metadata.creationTimestamp',
             exportContent: (resource) => {

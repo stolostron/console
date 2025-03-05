@@ -2,7 +2,6 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes, generatePath } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import moment from 'moment'
 import { NavigationPath } from '../../NavigationPath'
 import {
   Application,
@@ -82,7 +81,7 @@ const mockApplication0: Application = {
   metadata: {
     name: 'application-0',
     namespace: 'namespace-0',
-    creationTimestamp: `${moment().format()}`,
+    creationTimestamp: '2024-02-26T12:00:00Z',
     annotations: {
       'apps.open-cluster-management.io/subscriptions': 'namespace-0/subscription-0,namespace-0/subscription-0-local',
     },
@@ -489,10 +488,9 @@ describe('Create Subscription Application page', () => {
     await typeByTestId('eman', mockApplication0.metadata.name!)
     await typeByTestId('emanspace', mockApplication0.metadata.namespace!)
     // click git card
-    userEvent.click(screen.getByText(/git/i))
+    await clickByTestId('git')
     await waitForNocks([nockList(mockPlacementRule, mockPlacementRules), nockList(mockPlacement, mockPlacements)])
-    const githubURL = screen.getByLabelText(/url \*/i)
-    userEvent.type(githubURL, gitLink)
+    await typeByTestId('githubURL', gitLink)
     userEvent.type(screen.getByLabelText(/branch/i), 'test-branch')
     userEvent.type(screen.getByLabelText(/path/i), 'test-path')
 

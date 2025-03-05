@@ -276,7 +276,7 @@ export default function PolicyDetailsResults() {
       {
         header: t('Last report'),
         sort: 'timestamp',
-        cell: (item: ResultsTableData) => (item.timestamp ? <AcmTimestamp timestamp={item.timestamp} /> : '—'),
+        cell: (item: ResultsTableData) => <AcmTimestamp timestamp={item.timestamp} />,
         exportContent: (item: ResultsTableData) => {
           if (item.timestamp) {
             return getISOStringTimestamp(item.timestamp.toString())

@@ -231,11 +231,7 @@ export function CredentialsTable(props: {
             sort: 'metadata.creationTimestamp',
             cell: (resource) => (
               <span style={{ whiteSpace: 'nowrap' }}>
-                {resource.metadata?.creationTimestamp ? (
-                  <AcmTimestamp timestamp={resource.metadata.creationTimestamp} />
-                ) : (
-                  '—'
-                )}
+                <AcmTimestamp timestamp={resource.metadata?.creationTimestamp} />
               </span>
             ),
             exportContent: (item: Secret) => {
