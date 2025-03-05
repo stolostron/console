@@ -52,7 +52,11 @@ echo "Console URL: http://localhost:${CONSOLE_PORT}"
 function getBridgePlugins {
     local host=$1
     local endpoint="https://${host}:${BACKEND_PORT}"
-    echo "mce=http://${host}:${MCE_PORT},acm=http://${host}:${ACM_PORT}"
+    local kubevirt
+    if [ -n "$KUBEVIRT_PORT" ]; then
+        kubevirt=",kubevirt-plugin=http://${host}:${KUBEVIRT_PORT}"
+    fi
+    echo "mce=http://${host}:${MCE_PORT},acm=http://${host}:${ACM_PORT}${kubevirt}"
 }
 
 function getBridgePluginProxy {
