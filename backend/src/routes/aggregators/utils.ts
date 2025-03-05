@@ -534,10 +534,19 @@ interface ResultType {
 }
 
 type SelectorType = string | ((item: IResource) => string)
-
+const keyEx = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function get(obj: any, path: string, dflt?: any): any {
-  const keys = path.split('.')
+  // convert path into key array
+  const keys: string[] = []
+  path.replace(keyEx, function (match, number, quote, subString) {
+    keys.push(
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      typeof quote && typeof subString === 'string' ? subString.replace(/\\(\\)?/g, '$1') : number || match
+    )
+    return ''
+  })
+
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   let current = obj
   for (const key of keys) {
