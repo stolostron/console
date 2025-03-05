@@ -67,6 +67,7 @@ import {
   useEffect,
   useLayoutEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react'
 import { AcmButton } from '../AcmButton/AcmButton'
@@ -84,6 +85,7 @@ import { HighlightSearchText } from '../../components/HighlightSearchText'
 import { FilterCounts, IRequestListView, IResultListView, IResultStatuses } from '../../lib/useAggregates'
 import { AcmSearchInput, SearchConstraint, SearchOperator } from '../AcmSearchInput'
 import { PluginContext } from '../../lib/PluginContext'
+import { AcmDropdown, AcmDropdownItems } from '../AcmDropdown'
 
 type SortFn<T> = (a: T, b: T) => number
 type CellFn<T> = (item: T, search: string) => ReactNode
@@ -191,6 +193,8 @@ export interface IAcmTableBulkAction<T> {
   isDisabled?: ((items: T[]) => boolean) | boolean
   tooltip?: string | React.ReactNode
   variant: 'bulk-action'
+  flyoutMenu?: IAcmTableAction<T>[]
+  getCurrentState?: (item: T) => string
 }
 
 /**
@@ -616,7 +620,7 @@ export type AcmTableProps<T> = {
   secondaryFilterIds?: string[]
   advancedFilters?: ITableAdvancedFilter<T>[]
   id?: string
-  showColumManagement?: boolean
+  showColumnManagement?: boolean
   showExportButton?: boolean
   exportFilePrefix?: string
 }
@@ -639,7 +643,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     gridBreakPoint,
     initialSelectedItems,
     onSelect: propsOnSelect,
-    showColumManagement,
+    showColumnManagement,
     showExportButton,
     exportFilePrefix,
     setRequestView,
@@ -742,7 +746,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   const selectedSortedCols = useMemo(() => {
     const sortedColumns: IAcmTableColumn<T>[] = []
 
-    if (!showColumManagement) {
+    if (!showColumnManagement) {
       return columns
     }
 
@@ -765,7 +769,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     }
 
     return sortedSelected
-  }, [columns, selectedColIds, colOrderIds, showColumManagement])
+  }, [columns, selectedColIds, colOrderIds, showColumnManagement])
 
   useEffect(() => {
     localStorage.setItem(id + 'SavedCols', JSON.stringify(selectedColIds))
@@ -1481,7 +1485,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
             {tableActions.length > 0 && (
               <TableActions actions={tableActions} selections={selected} items={items} keyFn={keyFn} />
             )}
-            {showColumManagement && (
+            {showColumnManagement && (
               <AcmManageColumn<T>
                 {...{ selectedColIds, setSelectedColIds, requiredColIds, defaultColIds, setColOrderIds, colOrderIds }}
                 allCols={columns.filter((col) => !col.isActionCol)}
@@ -1946,92 +1950,208 @@ function TableActionsButtons(props: { actions: IAcmTableButtonAction[]; hasSelec
     </ToolbarGroup>
   )
 }
+// ===================
+// old implementation with deprecated components
+// function TableActionsDropdown<T>(props: {
+//   actions: IAcmTableAction<T>[] | IAcmTableBulkAction<T>[]
+//   selections: { [uid: string]: boolean }
+//   items: T[] | undefined
+//   keyFn: (item: T) => string
+//   // showTableButtons?: boolean
+// }) {
+//   /* istanbul ignore next */
+//   const { actions, selections = {}, items = [], keyFn } = props
+//   const [open, setOpen] = useState(false)
+//   const { t } = useTranslation()
+//   function DropdownItems(
+//     actions: IAcmTableAction<T>[] | IAcmTableBulkAction<T>[],
+//     selections: { [uid: string]: boolean },
+//     items: T[],
+//     keyFn: (item: T) => string
+//   ) {
+//     return actions.map((action: IAcmTableAction<T> | IAcmTableBulkAction<T>) => {
+//       switch (action.variant) {
+//         case 'dropdown-action':
+//           return (
+//             <DropdownItem
+//               id={action.id}
+//               key={action.id}
+//               onClick={() => {
+//                 setOpen(false)
+//                 action.click(items!.filter((item) => selections[keyFn(item)]))
+//               }}
+//               isDisabled={
+//                 /* istanbul ignore next */
+//                 typeof action.isDisabled === 'boolean' ? action.isDisabled : action.isDisabled?.(items)
+//               }
+//               tooltip={action.tooltip}
+//             >
+//               {action.title}
+//             </DropdownItem>
+//           )
+//         case 'bulk-action':
+//           return (
+//             <DropdownItem
+//               id={action.id}
+//               key={action.id}
+//               onClick={() => {
+//                 setOpen(false)
+//                 action.click(items!.filter((item) => selections[keyFn(item)]))
+//               }}
+//               isDisabled={
+//                 /* istanbul ignore next */
+//                 (typeof action.isDisabled === 'boolean' ? action.isDisabled : action.isDisabled?.(items)) ||
+//                 (selections && Object.keys(selections).length === 0)
+//               }
+//               tooltip={action.tooltip}
+//             >
+//               {action.title}
+//             </DropdownItem>
+//           )
+//         case 'action-seperator':
+//           return <DropdownSeparator id={action.id} key={action.id} />
+//         case 'action-group':
+//           return (
+//             <DropdownGroup id={action.id} key={action.id} label={action.title}>
+//               {DropdownItems(action.actions, selections, items, keyFn)}
+//             </DropdownGroup>
+//           )
+//         /* istanbul ignore next */
+//         default:
+//           return <Fragment />
+//       }
+//     })
+//   }
+
+//   return (
+//     <Dropdown
+//       toggle={
+//         <DropdownToggle
+//           id="toggle-id"
+//           onToggle={() => setOpen(!open)}
+//           toggleIndicator={CaretDownIcon}
+//           toggleVariant={Object.keys(selections).length > 0 ? 'primary' : undefined}
+//         >
+//           {t('Actions')}
+//         </DropdownToggle>
+//       }
+//       isOpen={open}
+//       dropdownItems={DropdownItems(actions, selections, items, keyFn)}
+//     />
+//   )
+// }
+// ===================
 
 function TableActionsDropdown<T>(props: {
   actions: IAcmTableAction<T>[] | IAcmTableBulkAction<T>[]
   selections: { [uid: string]: boolean }
   items: T[] | undefined
   keyFn: (item: T) => string
-  // showTableButtons?: boolean
 }) {
-  /* istanbul ignore next */
   const { actions, selections = {}, items = [], keyFn } = props
-  const [open, setOpen] = useState(false)
   const { t } = useTranslation()
-  function DropdownItems(
-    actions: IAcmTableAction<T>[] | IAcmTableBulkAction<T>[],
-    selections: { [uid: string]: boolean },
-    items: T[],
-    keyFn: (item: T) => string
-  ) {
-    return actions.map((action: IAcmTableAction<T> | IAcmTableBulkAction<T>) => {
-      switch (action.variant) {
-        case 'dropdown-action':
-          return (
-            <DropdownItem
-              id={action.id}
-              key={action.id}
-              onClick={() => {
-                setOpen(false)
-                action.click(items!.filter((item) => selections[keyFn(item)]))
-              }}
-              isDisabled={
-                /* istanbul ignore next */
-                typeof action.isDisabled === 'boolean' ? action.isDisabled : action.isDisabled?.(items)
+  const hasSelections = Object.keys(selections).length > 0
+
+  const dropdownItems = useMemo(() => {
+    const selectedItems = items!.filter((item) => selections[keyFn(item)])
+    return actions
+      .map((action) => {
+        switch (action.variant) {
+          case 'dropdown-action':
+            return {
+              id: action.id,
+              text: action.title,
+              tooltip: action.tooltip,
+              isAriaDisabled:
+                typeof action.isDisabled === 'boolean'
+                  ? action.isDisabled
+                  : action.isDisabled?.(items) || !hasSelections,
+              click: () => action.click(selectedItems),
+            }
+
+          case 'bulk-action':
+            if (!action.flyoutMenu) {
+              return {
+                id: action.id,
+                text: action.title,
+                tooltip: action.tooltip,
+                isAriaDisabled:
+                  (typeof action.isDisabled === 'boolean' ? action.isDisabled : action.isDisabled?.(items)) ||
+                  !hasSelections,
+                click: hasSelections ? (event?: React.MouseEvent) => action.click(selectedItems) : undefined,
               }
-              tooltip={action.tooltip}
-            >
-              {action.title}
-            </DropdownItem>
-          )
-        case 'bulk-action':
-          return (
-            <DropdownItem
-              id={action.id}
-              key={action.id}
-              onClick={() => {
-                setOpen(false)
-                action.click(items!.filter((item) => selections[keyFn(item)]))
-              }}
-              isDisabled={
-                /* istanbul ignore next */
+            }
+
+            const currentState = action.getCurrentState?.(selectedItems[0])
+
+            return {
+              id: action.id,
+              text: action.title,
+              tooltip: action.tooltip,
+              isAriaDisabled:
                 (typeof action.isDisabled === 'boolean' ? action.isDisabled : action.isDisabled?.(items)) ||
-                (selections && Object.keys(selections).length === 0)
-              }
-              tooltip={action.tooltip}
-            >
-              {action.title}
-            </DropdownItem>
-          )
-        case 'action-seperator':
-          return <DropdownSeparator id={action.id} key={action.id} />
-        case 'action-group':
-          return (
-            <DropdownGroup id={action.id} key={action.id} label={action.title}>
-              {DropdownItems(action.actions, selections, items, keyFn)}
-            </DropdownGroup>
-          )
-        /* istanbul ignore next */
-        default:
-          return <Fragment />
-      }
-    })
-  }
+                !hasSelections,
+              flyoutMenu: action.flyoutMenu
+                .filter(
+                  (subAction): subAction is IAcmTableDropdownAction<T> | IAcmTableBulkAction<T> =>
+                    subAction.variant === 'dropdown-action' || subAction.variant === 'bulk-action'
+                )
+                .map((subAction) => ({
+                  id: subAction.id,
+                  text: subAction.title,
+                  tooltip: subAction.tooltip,
+                  isSelected: currentState !== undefined && currentState === subAction.id,
+                  isAriaDisabled:
+                    (typeof subAction.isDisabled === 'boolean'
+                      ? subAction.isDisabled
+                      : subAction.isDisabled?.(items)) || !hasSelections,
+                  click:
+                    hasSelections && currentState !== subAction.id ? () => subAction.click(selectedItems) : undefined,
+                })),
+            }
+
+          case 'action-group':
+            return {
+              id: action.id,
+              text: action.title,
+              flyoutMenu: action.actions
+                .filter(
+                  (subAction): subAction is IAcmTableDropdownAction<T> | IAcmTableBulkAction<T> =>
+                    subAction.variant === 'dropdown-action' || subAction.variant === 'bulk-action'
+                )
+                .map((subAction) => ({
+                  id: subAction.id,
+                  text: subAction.title,
+                  tooltip: subAction.tooltip,
+                  isAriaDisabled:
+                    typeof subAction.isDisabled === 'boolean'
+                      ? subAction.isDisabled
+                      : subAction.isDisabled?.(items) || !hasSelections,
+                  click: () => subAction.click(selectedItems),
+                })),
+            }
+
+          case 'action-seperator':
+            return {
+              id: action.id,
+              separator: true as const,
+              text: '',
+            }
+
+          default:
+            return null
+        }
+      })
+      .filter((item): item is AcmDropdownItems => item !== null && typeof item === 'object' && 'id' in item)
+  }, [actions, items, selections, keyFn, hasSelections])
 
   return (
-    <Dropdown
-      toggle={
-        <DropdownToggle
-          id="toggle-id"
-          onToggle={() => setOpen(!open)}
-          toggleIndicator={CaretDownIcon}
-          toggleVariant={Object.keys(selections).length > 0 ? 'primary' : undefined}
-        >
-          {t('Actions')}
-        </DropdownToggle>
-      }
-      isOpen={open}
-      dropdownItems={DropdownItems(actions, selections, items, keyFn)}
+    <AcmDropdown
+      id="table-actions-dropdown"
+      onSelect={() => {}}
+      text={t('Actions')}
+      dropdownItems={dropdownItems}
+      isPrimary={hasSelections}
     />
   )
 }

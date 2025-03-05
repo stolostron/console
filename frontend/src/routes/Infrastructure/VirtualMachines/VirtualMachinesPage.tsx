@@ -217,7 +217,7 @@ function VirtualMachineTable() {
             }
           />
         }
-        showColumManagement
+        showColumnManagement
       ></AcmTable>
     </Fragment>
   )
