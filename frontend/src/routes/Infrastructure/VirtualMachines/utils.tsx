@@ -5,7 +5,7 @@ import { TFunction } from 'react-i18next'
 import { NavigateFunction } from 'react-router-dom-v5-compat'
 import { NavigationPath } from '../../../NavigationPath'
 import { Cluster } from '../../../resources/utils'
-import { IAcmRowAction, IAlertContext } from '../../../ui-components'
+import { IAcmRowAction, IAcmTableColumn, IAlertContext } from '../../../ui-components'
 import {
   ClosedDeleteExternalResourceModalProps,
   IDeleteExternalResourceModalProps,
@@ -14,6 +14,56 @@ import { ClosedDeleteModalProps, IDeleteModalProps } from '../../Search/componen
 import { searchClient } from '../../Search/search-sdk/search-client'
 import { GetUrlSearchParam } from '../../Search/searchDefinitions'
 import { handleVMActions } from '../../Search/SearchResults/utils'
+import { ActionExtensionProps, ListColumnExtensionProps } from '../../../plugin-extensions/properties'
+import { IResourceDefinition } from '../../../resources'
+
+export function isResourceTypeOf(item: any, resourceType: IResourceDefinition | IResourceDefinition[]) {
+  const apiVersion = item?.apigroup ? `${item.apigroup}/${item.apiversion}` : item?.apiversion ?? item?.apiVersion
+
+  return Array.isArray(resourceType)
+    ? resourceType.some((rt) => rt.apiVersion === apiVersion && rt.kind === item.kind)
+    : apiVersion === resourceType.apiVersion && item.kind === resourceType.kind
+}
+
+export function getVirtualMachineColumnExtensions(
+  listColumnExtensions: ListColumnExtensionProps[]
+): IAcmTableColumn<any>[] {
+  const columnExtensions: IAcmTableColumn<any>[] = []
+  listColumnExtensions.forEach((listColumnExtension) => {
+    const CellComp = listColumnExtension.cell
+    columnExtensions.push({
+      header: listColumnExtension.header,
+      transforms: listColumnExtension?.transforms,
+      cellTransforms: listColumnExtension?.cellTransforms,
+      tooltip: listColumnExtension?.tooltip,
+      isActionCol: listColumnExtension?.isActionCol ?? true,
+      cell: (item: any) => {
+        return <CellComp resource={item} />
+      },
+    })
+  })
+  return columnExtensions
+}
+
+export function getVirtualMachineRowActionExtensions(
+  item: any,
+  actionExtensions: ActionExtensionProps[],
+  setPluginModal: Dispatch<SetStateAction<JSX.Element | undefined>>
+): IAcmRowAction<any>[] {
+  if (!actionExtensions?.length || !setPluginModal) return []
+
+  return actionExtensions
+    .filter((action) => isResourceTypeOf(item, action.model as IResourceDefinition[]))
+    .map((action) => {
+      const ModalComp = action.component
+      const close = () => setPluginModal(<></>)
+      return {
+        id: action.id,
+        title: action.title,
+        click: (item: any) => setPluginModal(<ModalComp isOpen={true} close={close} resource={item} />),
+      }
+    })
+}
 
 // https://github.com/kubevirt/api/blob/9689e71fe2bed9e7da5f165760bbbf6981cc1087/core/v1/types.go#L1277
 export const printableVMStatus = {
@@ -37,7 +87,8 @@ export function getVirtualMachineRowActions(
   vmActionsEnabled: boolean,
   toast: IAlertContext,
   navigate: NavigateFunction,
-  t: TFunction<string, undefined>
+  t: TFunction<string, undefined>,
+  extensionButtons: IAcmRowAction<any>[] = []
 ): IAcmRowAction<any>[] {
   const printableStatus = item?.status
 
@@ -212,6 +263,7 @@ export function getVirtualMachineRowActions(
         { ...editButton, addSeparator: true },
         viewRelatedButton,
         deleteButton,
+        ...extensionButtons,
       ]
-    : [editButton, viewRelatedButton, deleteButton]
+    : [editButton, viewRelatedButton, deleteButton, ...extensionButtons]
 }
