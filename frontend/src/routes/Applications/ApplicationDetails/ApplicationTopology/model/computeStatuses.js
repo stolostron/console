@@ -9,7 +9,6 @@ import {
   addOCPRouteLocation,
   addPropertyToList,
   createEditLink,
-  getAge,
   getNodePropery,
   pulseValueArr,
 } from '../helpers/diagram-helpers'
@@ -24,6 +23,7 @@ import {
   showMissingClusterDetails,
 } from '../helpers/diagram-helpers-utils'
 import { isSearchAvailable } from '../helpers/search-helper'
+import AcmTimestamp from '../../../../../lib/AcmTimestamp'
 
 const specPulse = 'specs.pulse'
 const specShapeType = 'specs.shapeType'
@@ -1219,7 +1219,7 @@ export const setPodDeployStatus = (node, details, activeFilters, t, hubClusterNa
           },
           {
             labelValue: t('Created'),
-            value: getAge(startedAt),
+            value: <AcmTimestamp timestamp={startedAt} />,
           },
         ])
         clusterDetails.push({

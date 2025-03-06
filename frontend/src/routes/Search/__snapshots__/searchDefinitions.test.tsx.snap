@@ -915,7 +915,7 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-cronjob 1
     "sort": "active",
   },
   {
-    "cell": "-",
+    "cell": <AcmTimestamp />,
     "header": "Last schedule",
     "sort": "lastSchedule",
   },
@@ -2055,7 +2055,7 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-release 1
     "sort": "chartVersion",
   },
   {
-    "cell": "-",
+    "cell": <AcmTimestamp />,
     "header": "Updated",
     "sort": "updated",
   },
@@ -2837,7 +2837,7 @@ exports[`Correctly returns resource with managedHub column: SearchDefinitions-gl
     "sort": "cpu",
   },
   {
-    "cell": "-",
+    "cell": <AcmTimestamp />,
     "header": "Created",
     "sort": "created",
   },

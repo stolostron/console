@@ -7,7 +7,8 @@ import PropTypes from 'prop-types'
 import { Pagination, Accordion, AccordionItem, AccordionContent, AccordionToggle } from '@patternfly/react-core'
 import { Select, SelectOption, SelectVariant } from '@patternfly/react-core/deprecated'
 import { Component } from 'react'
-import { processResourceActionLink, getPercentage, inflateKubeValue, getAge } from '../helpers/diagram-helpers'
+import { processResourceActionLink, getPercentage, inflateKubeValue } from '../helpers/diagram-helpers'
+import AcmTimestamp from '../../../../../lib/AcmTimestamp'
 
 class ClusterDetailsContainer extends Component {
   static propTypes = {
@@ -436,7 +437,7 @@ class ClusterDetailsContainer extends Component {
       const clusterName = displayClusterList[i].name || metadata.name
       const clusterNamespace =
         displayClusterList[i].namespace || displayClusterList[i]._clusterNamespace || metadata.namespace
-      const creationTimestamp = displayClusterList[i].created || metadata.creationTimestamp
+      const creationTimestamp = displayClusterList[i].creationTimestamp || metadata.creationTimestamp
       const cc = displayClusterList[i].cpu ? displayClusterList[i].cpu.toString() : capacity.cpu
       const cm = displayClusterList[i].memory ? displayClusterList[i].memory.toString() : capacity.memory
       const am = allocatable.memory || ''
@@ -505,7 +506,9 @@ class ClusterDetailsContainer extends Component {
               {this.renderMemoryData(cm, am, divClass, labelClass, t, valueClass)}
               <div className={divClass}>
                 <span className={labelClass}>{t('Created')}: </span>
-                <span className={valueClass}>{getAge(creationTimestamp)}</span>
+                <span className={valueClass}>
+                  <AcmTimestamp timestamp={creationTimestamp} />
+                </span>
               </div>
               <div className="spacer" />
             </AccordionContent>

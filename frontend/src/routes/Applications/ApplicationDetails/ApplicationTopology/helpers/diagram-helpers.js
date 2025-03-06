@@ -16,15 +16,10 @@ import { openArgoCDEditor, openRouteURL } from '../model/topologyAppSet'
 import { getURLSearchData } from './diagram-helpers-argo'
 import { getEditLink } from './resource-helper'
 import { isSearchAvailable } from './search-helper'
-import AcmTimestamp from '../../../../../lib/AcmTimestamp'
 
 const showResourceYaml = 'show_resource_yaml'
 const apiVersionPath = 'specs.raw.apiVersion'
 export const pulseValueArr = ['red', 'orange', 'yellow', 'green', undefined]
-
-export const getAge = (value) => {
-  return <AcmTimestamp timestamp={value} />
-}
 
 export const addDetails = (details, dets) => {
   dets.forEach(({ labelValue, value, indent, status }) => {

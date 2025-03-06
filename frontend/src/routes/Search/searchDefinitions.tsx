@@ -451,7 +451,7 @@ export const useSearchDefinitions = () => {
 
 export function GetAge(item: any, key: string) {
   const createdTime = _.get(item, key)
-  return createdTime ? <AcmTimestamp timestamp={createdTime} /> : '-'
+  return <AcmTimestamp timestamp={createdTime} />
 }
 
 export const GetUrlSearchParam = (resource: any) => {
