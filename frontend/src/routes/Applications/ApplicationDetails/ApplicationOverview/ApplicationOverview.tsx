@@ -9,7 +9,17 @@ import {
   ListItems,
 } from '../../../../ui-components'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { ButtonVariant, Card, CardBody, PageSection, Skeleton, Spinner, Text, Tooltip } from '@patternfly/react-core'
+import {
+  ButtonVariant,
+  Card,
+  CardBody,
+  PageSection,
+  Spinner,
+  Flex,
+  FlexItem,
+  Text,
+  Tooltip,
+} from '@patternfly/react-core'
 import { OutlinedQuestionCircleIcon, SyncAltIcon } from '@patternfly/react-icons'
 import { Fragment, useEffect, useState } from 'react'
 import {
@@ -108,10 +118,6 @@ export function ApplicationOverviewPageContent() {
       })
     }
   }, [namespaces])
-
-  function renderData(checkData: any, showData: any, width?: string) {
-    return checkData !== -1 ? showData : <Skeleton width={width} className="loading-skeleton-text" />
-  }
 
   if (applicationData) {
     isArgoApp = applicationData.application?.isArgoApp
@@ -294,11 +300,12 @@ export function ApplicationOverviewPageContent() {
         {
           key: t('Last sync requested'),
           value: (
-            <Fragment>
-              {renderData(lastSynced, <AcmTimestamp timestamp={lastSynced} />, '30%')}
-              {renderData(
-                lastSynced,
-                hasSyncPermission ? (
+            <Flex gap={{ default: 'gapNone' }} alignItems={{ default: 'alignItemsCenter' }}>
+              <FlexItem>
+                <AcmTimestamp timestamp={lastSynced} />
+              </FlexItem>
+              <FlexItem>
+                {hasSyncPermission ? (
                   createSyncButton(
                     applicationData.application.allSubscriptions,
                     setModalProps,
@@ -316,9 +323,9 @@ export function ApplicationOverviewPageContent() {
                       subscriptions
                     )}
                   </Tooltip>
-                )
-              )}
-            </Fragment>
+                )}
+              </FlexItem>
+            </Flex>
           ),
           keyAction: (
             <Tooltip content={t('Date and time of the most recent sync request for application resources.')}>
@@ -345,12 +352,6 @@ export function ApplicationOverviewPageContent() {
           t,
           openTabIcon,
         })}
-
-        {isAppSet && (
-          <div className="overview-cards-sources-section">
-            {renderData(getApplicationRepos(applicationData?.application.app, subscriptions, channels), true, '70%')}
-          </div>
-        )}
       </PageSection>
     </AcmPageContent>
   )
