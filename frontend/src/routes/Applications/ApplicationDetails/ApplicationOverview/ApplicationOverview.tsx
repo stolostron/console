@@ -18,7 +18,6 @@ import {
   getClusterCountSearchLink,
   getClusterCountString,
   getClusterList,
-  getShortDateTime,
   getSearchLink,
 } from '../../helpers/resource-helper'
 import { TimeWindowLabels } from '../../components/TimeWindowLabels'
@@ -48,6 +47,7 @@ import { useAllClusters } from '../../../Infrastructure/Clusters/ManagedClusters
 import { DrawerShapes } from '../ApplicationTopology/components/DrawerShapes'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import LabelWithPopover from '../../components/LabelWithPopover'
+import AcmTimestamp from '../../../../lib/AcmTimestamp'
 
 const clusterResourceStatusText = (t: TFunction) => t('Cluster resource status')
 const clusterResourceStatusTooltipSubscription = (t: TFunction) =>
@@ -240,7 +240,7 @@ export function ApplicationOverviewPageContent() {
         },
         {
           key: t('Created'),
-          value: getShortDateTime(applicationData.application.metadata.creationTimestamp),
+          value: <AcmTimestamp timestamp={applicationData.application.metadata.creationTimestamp} />,
         },
         {
           key: t('Last reconciled'),
@@ -249,7 +249,7 @@ export function ApplicationOverviewPageContent() {
               <OutlinedQuestionCircleIcon className="help-icon" />
             </Tooltip>
           ),
-          value: getShortDateTime(lastSyncedTimeStamp),
+          value: <AcmTimestamp timestamp={lastSyncedTimeStamp} />,
         },
       ]
     } else {
@@ -289,15 +289,15 @@ export function ApplicationOverviewPageContent() {
         },
         {
           key: t('Created'),
-          value: getShortDateTime(applicationData.application.metadata.creationTimestamp),
+          value: <AcmTimestamp timestamp={applicationData.application.metadata.creationTimestamp} />,
         },
         {
           key: t('Last sync requested'),
           value: (
             <Fragment>
-              {renderData(getShortDateTime(lastSynced), getShortDateTime(lastSynced), '30%')}
+              {renderData(lastSynced, <AcmTimestamp timestamp={lastSynced} />, '30%')}
               {renderData(
-                getShortDateTime(lastSynced),
+                lastSynced,
                 hasSyncPermission ? (
                   createSyncButton(
                     applicationData.application.allSubscriptions,
