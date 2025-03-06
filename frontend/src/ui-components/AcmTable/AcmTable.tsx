@@ -22,9 +22,9 @@ import {
 } from '@patternfly/react-core'
 import {
   Dropdown,
-  DropdownGroup,
+  // DropdownGroup,
   DropdownItem,
-  DropdownSeparator,
+  //DropdownSeparator,
   DropdownToggle,
   DropdownToggleCheckbox,
   Select,
@@ -34,7 +34,7 @@ import {
   SelectVariant,
 } from '@patternfly/react-core/deprecated'
 import { EllipsisVIcon, ExportIcon, FilterIcon } from '@patternfly/react-icons'
-import CaretDownIcon from '@patternfly/react-icons/dist/js/icons/caret-down-icon'
+//import CaretDownIcon from '@patternfly/react-icons/dist/js/icons/caret-down-icon'
 import {
   CustomActionsToggleProps,
   expandable,
@@ -67,7 +67,7 @@ import {
   useEffect,
   useLayoutEffect,
   useMemo,
-  useRef,
+  //useRef,
   useState,
 } from 'react'
 import { AcmButton } from '../AcmButton/AcmButton'
@@ -2053,11 +2053,12 @@ function TableActionsDropdown<T>(props: {
   const hasSelections = Object.keys(selections).length > 0
 
   const dropdownItems = useMemo(() => {
-    const selectedItems = items!.filter((item) => selections[keyFn(item)])
+    const selectedItems = items?.filter((item) => selections[keyFn(item)]) || []
+
     return actions
-      .map((action) => {
+      .map((action): AcmDropdownItems | null => {
         switch (action.variant) {
-          case 'dropdown-action':
+          case 'dropdown-action': {
             return {
               id: action.id,
               text: action.title,
@@ -2068,8 +2069,9 @@ function TableActionsDropdown<T>(props: {
                   : action.isDisabled?.(items) || !hasSelections,
               click: () => action.click(selectedItems),
             }
+          }
 
-          case 'bulk-action':
+          case 'bulk-action': {
             if (!action.flyoutMenu) {
               return {
                 id: action.id,
@@ -2083,7 +2085,6 @@ function TableActionsDropdown<T>(props: {
             }
 
             const currentState = action.getCurrentState?.(selectedItems[0])
-
             return {
               id: action.id,
               text: action.title,
@@ -2109,8 +2110,9 @@ function TableActionsDropdown<T>(props: {
                     hasSelections && currentState !== subAction.id ? () => subAction.click(selectedItems) : undefined,
                 })),
             }
+          }
 
-          case 'action-group':
+          case 'action-group': {
             return {
               id: action.id,
               text: action.title,
@@ -2130,19 +2132,23 @@ function TableActionsDropdown<T>(props: {
                   click: () => subAction.click(selectedItems),
                 })),
             }
+          }
 
-          case 'action-seperator':
+          case 'action-seperator': {
             return {
               id: action.id,
               separator: true as const,
               text: '',
             }
+          }
 
           default:
             return null
         }
       })
-      .filter((item): item is AcmDropdownItems => item !== null && typeof item === 'object' && 'id' in item)
+      .filter(
+        (item): item is NonNullable<AcmDropdownItems> => item !== null && typeof item === 'object' && 'id' in item
+      )
   }, [actions, items, selections, keyFn, hasSelections])
 
   return (

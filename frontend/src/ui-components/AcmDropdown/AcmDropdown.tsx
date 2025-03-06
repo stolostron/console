@@ -4,7 +4,6 @@ import {
   Label,
   LabelProps,
   TooltipPosition,
-  MenuToggleElement,
   Menu,
   MenuContent,
   MenuList,
@@ -38,7 +37,19 @@ export type AcmDropdownProps = Props & {
   tooltipPosition?: TooltipPosition
   label?: string | React.ReactNode
   labelColor?: LabelProps['color']
-  dropdownPosition?: MenuToggleElement['position']
+  dropdownPosition?:
+    | 'top'
+    | 'top-start'
+    | 'top-end'
+    | 'bottom'
+    | 'bottom-start'
+    | 'bottom-end'
+    | 'left'
+    | 'left-start'
+    | 'left-end'
+    | 'right'
+    | 'right-start'
+    | 'right-end'
 }
 
 export type AcmDropdownItems = {
@@ -274,9 +285,12 @@ export function AcmDropdown(props: AcmDropdownProps) {
               {isKebab ? <EllipsisVIcon /> : text}
             </MenuToggle>
           }
-          popperMatchesTriggerWidth={false}
           isVisible={isOpen}
-          position={dropdownPosition || (isKebab ? 'right' : 'left')}
+          appendTo={popperContainer.current || document.body}
+          distance={0}
+          enableFlip={true}
+          minWidth="fit-content"
+          placement={dropdownPosition ?? (isKebab ? 'left-start' : 'right-start')}
           popper={<MenuItems ref={menuRef} menuItems={dropdownItems} onSelect={handleSelect} classes={classes} />}
         />
       </div>

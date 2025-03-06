@@ -342,6 +342,7 @@ export default function PoliciesPage() {
       {
         id: 'status',
         variant: 'bulk-action',
+        click: () => {},
         title: t('policy.table.actionGroup.status'),
         flyoutMenu: [
           {
@@ -396,6 +397,7 @@ export default function PoliciesPage() {
                 action: t('policy.table.actions.disable'),
                 processing: t('policy.table.actions.disabling'),
                 items: [...item],
+                emptyState: undefined, // there is always 1 item supplied
                 description: t('policy.modal.message.disable'),
                 columns: bulkModalStatusColumns,
                 keyFn: (item) => item.policy.metadata.uid as string,
@@ -425,6 +427,7 @@ export default function PoliciesPage() {
       {
         id: 'remediation-policy',
         variant: 'bulk-action',
+        click: () => {},
         title: t('Remediation'),
         flyoutMenu: [
           {
@@ -439,6 +442,7 @@ export default function PoliciesPage() {
                 action: t('policy.table.actions.inform'),
                 processing: t('policy.table.actions.informing'),
                 items: [...item],
+                emptyState: undefined, // there is always 1 item supplied
                 description: t('policy.modal.message.inform'),
                 columns: bulkModalRemediationColumns,
                 keyFn: (item) => item.policy.metadata.uid as string,
@@ -474,6 +478,7 @@ export default function PoliciesPage() {
                 action: t('policy.table.actions.enforce'),
                 processing: t('policy.table.actions.enforcing'),
                 items: [...item],
+                emptyState: undefined, // there is always 1 item supplied
                 description: hasInformOnlyPolicies(item)
                   ? t('policy.modal.message.informOnly')
                   : t('policy.modal.message.enforce'),
