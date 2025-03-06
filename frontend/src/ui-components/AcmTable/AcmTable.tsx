@@ -4,6 +4,7 @@ import { css } from '@emotion/css'
 import {
   Badge,
   ButtonVariant,
+  Divider,
   MenuToggle,
   PageSection,
   Pagination,
@@ -22,9 +23,7 @@ import {
 } from '@patternfly/react-core'
 import {
   Dropdown,
-  // DropdownGroup,
   DropdownItem,
-  //DropdownSeparator,
   DropdownToggle,
   DropdownToggleCheckbox,
   Select,
@@ -34,7 +33,6 @@ import {
   SelectVariant,
 } from '@patternfly/react-core/deprecated'
 import { EllipsisVIcon, ExportIcon, FilterIcon } from '@patternfly/react-icons'
-//import CaretDownIcon from '@patternfly/react-icons/dist/js/icons/caret-down-icon'
 import {
   CustomActionsToggleProps,
   expandable,
@@ -67,7 +65,6 @@ import {
   useEffect,
   useLayoutEffect,
   useMemo,
-  //useRef,
   useState,
 } from 'react'
 import { AcmButton } from '../AcmButton/AcmButton'
@@ -1950,97 +1947,6 @@ function TableActionsButtons(props: { actions: IAcmTableButtonAction[]; hasSelec
     </ToolbarGroup>
   )
 }
-// ===================
-// old implementation with deprecated components
-// function TableActionsDropdown<T>(props: {
-//   actions: IAcmTableAction<T>[] | IAcmTableBulkAction<T>[]
-//   selections: { [uid: string]: boolean }
-//   items: T[] | undefined
-//   keyFn: (item: T) => string
-//   // showTableButtons?: boolean
-// }) {
-//   /* istanbul ignore next */
-//   const { actions, selections = {}, items = [], keyFn } = props
-//   const [open, setOpen] = useState(false)
-//   const { t } = useTranslation()
-//   function DropdownItems(
-//     actions: IAcmTableAction<T>[] | IAcmTableBulkAction<T>[],
-//     selections: { [uid: string]: boolean },
-//     items: T[],
-//     keyFn: (item: T) => string
-//   ) {
-//     return actions.map((action: IAcmTableAction<T> | IAcmTableBulkAction<T>) => {
-//       switch (action.variant) {
-//         case 'dropdown-action':
-//           return (
-//             <DropdownItem
-//               id={action.id}
-//               key={action.id}
-//               onClick={() => {
-//                 setOpen(false)
-//                 action.click(items!.filter((item) => selections[keyFn(item)]))
-//               }}
-//               isDisabled={
-//                 /* istanbul ignore next */
-//                 typeof action.isDisabled === 'boolean' ? action.isDisabled : action.isDisabled?.(items)
-//               }
-//               tooltip={action.tooltip}
-//             >
-//               {action.title}
-//             </DropdownItem>
-//           )
-//         case 'bulk-action':
-//           return (
-//             <DropdownItem
-//               id={action.id}
-//               key={action.id}
-//               onClick={() => {
-//                 setOpen(false)
-//                 action.click(items!.filter((item) => selections[keyFn(item)]))
-//               }}
-//               isDisabled={
-//                 /* istanbul ignore next */
-//                 (typeof action.isDisabled === 'boolean' ? action.isDisabled : action.isDisabled?.(items)) ||
-//                 (selections && Object.keys(selections).length === 0)
-//               }
-//               tooltip={action.tooltip}
-//             >
-//               {action.title}
-//             </DropdownItem>
-//           )
-//         case 'action-seperator':
-//           return <DropdownSeparator id={action.id} key={action.id} />
-//         case 'action-group':
-//           return (
-//             <DropdownGroup id={action.id} key={action.id} label={action.title}>
-//               {DropdownItems(action.actions, selections, items, keyFn)}
-//             </DropdownGroup>
-//           )
-//         /* istanbul ignore next */
-//         default:
-//           return <Fragment />
-//       }
-//     })
-//   }
-
-//   return (
-//     <Dropdown
-//       toggle={
-//         <DropdownToggle
-//           id="toggle-id"
-//           onToggle={() => setOpen(!open)}
-//           toggleIndicator={CaretDownIcon}
-//           toggleVariant={Object.keys(selections).length > 0 ? 'primary' : undefined}
-//         >
-//           {t('Actions')}
-//         </DropdownToggle>
-//       }
-//       isOpen={open}
-//       dropdownItems={DropdownItems(actions, selections, items, keyFn)}
-//     />
-//   )
-// }
-// ===================
 
 function TableActionsDropdown<T>(props: {
   actions: IAcmTableAction<T>[] | IAcmTableBulkAction<T>[]
@@ -2080,7 +1986,7 @@ function TableActionsDropdown<T>(props: {
                 isAriaDisabled:
                   (typeof action.isDisabled === 'boolean' ? action.isDisabled : action.isDisabled?.(items)) ||
                   !hasSelections,
-                click: hasSelections ? (event?: React.MouseEvent) => action.click(selectedItems) : undefined,
+                click: hasSelections ? () => action.click(selectedItems) : undefined,
               }
             }
 
@@ -2137,6 +2043,7 @@ function TableActionsDropdown<T>(props: {
           case 'action-seperator': {
             return {
               id: action.id,
+              component: <Divider key={action.id} />,
               separator: true as const,
               text: '',
             }

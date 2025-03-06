@@ -299,6 +299,7 @@ export function PolicyActionDropdown(props: {
           isKebab={props.isKebab}
           text={t('actions')}
           actions={rowActions}
+          dropdownPosition={props.isKebab ? 'right-start' : 'left-start'}
         />
       )}
     </>

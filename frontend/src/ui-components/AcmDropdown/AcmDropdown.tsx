@@ -12,6 +12,7 @@ import {
   Tooltip,
   Popper,
   MenuProps,
+  Divider,
 } from '@patternfly/react-core'
 import { css } from '@emotion/css'
 import { TooltipWrapper } from '../utils'
@@ -68,6 +69,7 @@ export type AcmDropdownItems = {
   isSelected?: boolean
   click?: (event?: React.MouseEvent) => void
   flyoutMenu?: AcmDropdownItems[]
+  component?: React.ReactNode
 }
 
 const useStyles = (props: AcmDropdownProps) => ({
@@ -133,6 +135,13 @@ const MenuItems = forwardRef<HTMLDivElement, MenuItemProps>((props, ref) => {
       <MenuContent>
         <MenuList>
           {menuItems.map((item) => {
+            if (item.separator) {
+              return (
+                <div key={item.id} style={{ width: '100%' }}>
+                  {item.component || <Divider />}
+                </div>
+              )
+            }
             const menuItem = (
               <MenuItem
                 id={item.id}
@@ -290,7 +299,7 @@ export function AcmDropdown(props: AcmDropdownProps) {
           distance={0}
           enableFlip={true}
           minWidth="fit-content"
-          placement={dropdownPosition ?? (isKebab ? 'left-start' : 'right-start')}
+          placement={dropdownPosition ?? (isKebab ? 'bottom-end' : 'bottom-start')}
           popper={<MenuItems ref={menuRef} menuItems={dropdownItems} onSelect={handleSelect} classes={classes} />}
         />
       </div>
