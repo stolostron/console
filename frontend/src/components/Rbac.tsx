@@ -86,7 +86,7 @@ export function RbacDropdown<T = unknown>(props: RbacDropdownProps<T>) {
             } else {
               return action
             }
-          } catch (err) {
+          } catch {
             return action
           }
         })
@@ -97,15 +97,18 @@ export function RbacDropdown<T = unknown>(props: RbacDropdownProps<T>) {
 
   // converts RBAC actions to AcmDropdown format and handles click events
 
-  const convertToAcmDropdownItems = (actionItems: Actions<T>[]): AcmDropdownItems[] => {
-    return actionItems.map((action) => ({
-      ...action,
-      click: action.click ? () => action.click?.(props.item) : undefined,
-      flyoutMenu: action.flyoutMenu ? convertToAcmDropdownItems(action.flyoutMenu) : undefined,
-    }))
-  }
+  const convertToAcmDropdownItems = useCallback(
+    (actionItems: Actions<T>[]): AcmDropdownItems[] => {
+      return actionItems.map((action) => ({
+        ...action,
+        click: action.click ? () => action.click?.(props.item) : undefined,
+        flyoutMenu: action.flyoutMenu ? convertToAcmDropdownItems(action.flyoutMenu) : undefined,
+      }))
+    },
+    [props.item]
+  )
 
-  const dropdownItems = useMemo(() => convertToAcmDropdownItems(actions), [actions, props.item])
+  const dropdownItems = useMemo(() => convertToAcmDropdownItems(actions), [actions, convertToAcmDropdownItems])
   return (
     <AcmDropdown
       id={props.id}

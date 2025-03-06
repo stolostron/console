@@ -276,11 +276,9 @@ export function PolicyActionDropdown(props: {
       },
     ],
     [
+      item,
       bulkModalRemediationColumns,
       bulkModalStatusColumns,
-      item.policy.metadata.name,
-      item.policy.metadata.namespace,
-      item.policy.spec.disabled,
       navigate,
       policyRemediationAction,
       props.isKebab,

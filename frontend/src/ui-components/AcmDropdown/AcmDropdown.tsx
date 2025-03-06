@@ -125,22 +125,19 @@ const MenuItems = forwardRef<HTMLDivElement, MenuItemProps>((props, ref) => {
       item.click(event)
     }
 
-    // calls onSelectn only if flyoutMenu is not present
-    if (!item?.flyoutMenu) {
-      onSelect?.(event, itemId)
+    // calls onSelect only if flyoutMenu is not present
+    if (!item?.flyoutMenu && onSelect) {
+      onSelect(event, itemId)
     }
   }
+
   return (
     <Menu ref={ref} onSelect={onSelect} containsFlyout={true} {...menuProps}>
       <MenuContent>
         <MenuList>
           {menuItems.map((item) => {
             if (item.separator) {
-              return (
-                <div key={item.id} style={{ width: '100%' }}>
-                  {item.component || <Divider />}
-                </div>
-              )
+              return item.component || <Divider key={item.id} />
             }
             const menuItem = (
               <MenuItem
@@ -149,7 +146,7 @@ const MenuItems = forwardRef<HTMLDivElement, MenuItemProps>((props, ref) => {
                 itemId={item.id}
                 isDisabled={item.isAriaDisabled}
                 isSelected={item.isSelected}
-                onClick={(e) => (item.click ? handleItemClick(e, item.id, item) : undefined)}
+                onClick={item.click ? (e) => handleItemClick(e, item.id, item) : undefined}
                 flyoutMenu={
                   item.flyoutMenu?.length ? (
                     <MenuItems menuItems={item.flyoutMenu} classes={classes} onSelect={onSelect} />
@@ -222,7 +219,9 @@ export function AcmDropdown(props: AcmDropdownProps) {
     setTimeout(() => {
       if (menuRef.current) {
         const firstElement = menuRef.current.querySelector('li > button:not(:disabled), li > a:not(:disabled)')
-        firstElement && (firstElement as HTMLElement).focus()
+        if (firstElement) {
+          ;(firstElement as HTMLElement).focus()
+        }
       }
     }, 0)
     toggleMenu()
