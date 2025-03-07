@@ -387,6 +387,11 @@ describe('Applications Page', () => {
     expect(screen.getByText('Topology')).toBeTruthy()
     expect(screen.getByText('Actions')).toBeTruthy()
     userEvent.click(screen.getByText('Actions'))
-    userEvent.click(screen.getByText('Action1'))
+    userEvent.click(
+      screen.getByRole('menuitem', {
+        name: /delete application/i,
+      })
+    )
+    expect(screen.getByText(/permanently delete application application-0\?/i)).toBeTruthy()
   })
 })

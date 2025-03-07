@@ -389,14 +389,16 @@ describe('Create Argo Application Set', () => {
   }
 
   test('can create Argo Application Set with Git', async () => {
-    const initialNocks = [nockGet(gitSecret)]
-    nockList(
-      {
-        apiVersion: 'argoproj.io/v1alpha1',
-        kind: 'applicationsets',
-      },
-      [argoAppSetGit]
-    )
+    const initialNocks = [
+      nockGet(gitSecret),
+      nockList(
+        {
+          apiVersion: 'argoproj.io/v1alpha1',
+          kind: 'applicationsets',
+        },
+        [argoAppSetGit]
+      ),
+    ]
     render(<AddApplicationSet />)
     await waitForNocks(initialNocks)
 

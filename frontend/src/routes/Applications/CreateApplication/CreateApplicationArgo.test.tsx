@@ -325,14 +325,16 @@ describe('Create Argo Application Set', () => {
   }
 
   test('can create Argo Application Set with Git', async () => {
-    nockList(
-      {
-        apiVersion: 'argoproj.io/v1alpha1',
-        kind: 'applicationsets',
-      },
-      [argoAppSetGit]
-    )
-    const initialNocks = [nockGet(gitSecret)]
+    const initialNocks = [
+      nockGet(gitSecret),
+      nockList(
+        {
+          apiVersion: 'argoproj.io/v1alpha1',
+          kind: 'applicationsets',
+        },
+        [argoAppSetGit]
+      ),
+    ]
     render(<AddApplicationSet />)
     await waitForNocks(initialNocks)
 
@@ -436,13 +438,15 @@ describe('Create Argo Application Set', () => {
   })
 
   test('can render Edit Argo Application Page', async () => {
-    nockList(
-      {
-        apiVersion: 'argoproj.io/v1alpha1',
-        kind: 'applicationsets',
-      },
-      [argoAppSetGit]
-    )
+    const initialNocks = [
+      nockList(
+        {
+          apiVersion: 'argoproj.io/v1alpha1',
+          kind: 'applicationsets',
+        },
+        [argoAppSetGit]
+      ),
+    ]
     render(
       <RecoilRoot>
         <MemoryRouter initialEntries={[NavigationPath.editApplicationArgo]}>
@@ -452,6 +456,7 @@ describe('Create Argo Application Set', () => {
         </MemoryRouter>
       </RecoilRoot>
     )
+    await waitForNocks(initialNocks)
 
     await new Promise((resolve) => setTimeout(resolve, 500))
     await waitForText('Edit application set - push model')

@@ -172,7 +172,6 @@ it('should render overview page with expected data', async () => {
     <RecoilRoot
       initializeState={(snapshot) => {
         snapshot.set(applicationsState, mockApplications)
-        // snapshot.set(applicationSetsState, appSets)
         snapshot.set(argoApplicationsState, mockArgoApplications)
         snapshot.set(managedClustersState, managedClusters)
         snapshot.set(managedClusterInfosState, [
@@ -271,7 +270,6 @@ it('should toggle card sections correctly', async () => {
     <RecoilRoot
       initializeState={(snapshot) => {
         snapshot.set(applicationsState, mockApplications)
-        // snapshot.set(applicationSetsState, appSets)
         snapshot.set(argoApplicationsState, mockArgoApplications)
         snapshot.set(managedClustersState, managedClusters)
         snapshot.set(managedClusterInfosState, [

@@ -270,7 +270,8 @@ export default function ApplicationDetailsPage() {
                 hubCluster?.name ?? ''
               )
             : [[], []]
-        const appSetRelatedResources = (selectedApp as IUIResource).uidata.appSetRelatedResources
+        /* istanbul ignore else */
+        const appSetRelatedResources = (selectedApp as IUIResource)?.uidata?.appSetRelatedResources ?? ['', []]
         setModalProps({
           open: true,
           canRemove: selectedApp.kind === ApplicationSetKind ? canDeleteApplicationSet : canDeleteApplication,

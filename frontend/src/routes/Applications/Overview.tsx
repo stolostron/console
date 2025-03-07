@@ -921,7 +921,8 @@ export default function ApplicationsOverview() {
                     localCluster?.name ?? ''
                   )
                 : [[], []]
-            const appSetRelatedResources = (resource as IUIResource).uidata.appSetRelatedResources
+            /* istanbul ignore else */
+            const appSetRelatedResources = (resource as IUIResource)?.uidata?.appSetRelatedResources ?? ['', []]
             const hostingSubAnnotation = getAnnotation(resource, hostingSubAnnotationStr)
             let modalWarnings: string | undefined
             if (hostingSubAnnotation) {
