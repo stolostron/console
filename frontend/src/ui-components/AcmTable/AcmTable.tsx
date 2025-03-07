@@ -182,9 +182,9 @@ export interface IAcmTableBulkAction<T> {
 /**
  * Type for separator line in action dropdown
  */
-export interface IAcmTableActionSeperator {
+export interface IAcmTableActionSeparator {
   id: string
-  variant: 'action-seperator'
+  variant: 'action-separator'
 }
 
 /**
@@ -193,11 +193,11 @@ export interface IAcmTableActionSeperator {
 export interface IAcmTableActionGroup<T> {
   id: string
   title: string | React.ReactNode
-  actions: (IAcmTableBulkAction<T> | IAcmTableActionSeperator)[]
+  actions: (IAcmTableBulkAction<T> | IAcmTableActionSeparator)[]
   variant: 'action-group'
 }
 
-export type IAcmTableAction<T> = IAcmTableBulkAction<T> | IAcmTableActionSeperator | IAcmTableActionGroup<T>
+export type IAcmTableAction<T> = IAcmTableBulkAction<T> | IAcmTableActionSeparator | IAcmTableActionGroup<T>
 
 export interface ExportableIRow extends IRow {
   // content from subrow to include in export document
@@ -1945,13 +1945,13 @@ function TableActionsDropdown<T>(props: {
     function convertAcmTableActionsToAcmDropdownItems(actions: IAcmTableAction<T>[]): AcmDropdownItems[] {
       return actions
         .map((action, index) => {
-          if (action.variant === 'action-seperator') {
+          if (action.variant === 'action-separator') {
             return null
           }
           return {
             id: action.id,
             text: action.title,
-            separator: index > 0 && actions[index - 1].variant === 'action-seperator' ? true : false,
+            separator: index > 0 && actions[index - 1].variant === 'action-separator' ? true : false,
             ...(action.variant === 'action-group'
               ? { flyoutMenu: convertAcmTableActionsToAcmDropdownItems(action.actions) }
               : {

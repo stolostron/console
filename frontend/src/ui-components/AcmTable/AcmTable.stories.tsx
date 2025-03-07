@@ -329,7 +329,7 @@ function commonProperties(
           },
           {
             id: 'separator-1',
-            variant: 'action-seperator',
+            variant: 'action-separator',
           },
           {
             id: 'delete',
