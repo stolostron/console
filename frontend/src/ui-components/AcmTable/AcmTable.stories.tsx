@@ -315,14 +315,14 @@ function commonProperties(
                 title: 'Status 1',
                 // eslint-disable-next-line no-console
                 click: (it: IExampleData[]) => console.log('Status 1 items: ', it),
-                variant: 'dropdown-action',
+                variant: 'bulk-action',
               },
               {
                 id: 'status-2',
                 title: 'Status 2',
                 // eslint-disable-next-line no-console
                 click: (it: IExampleData[]) => console.log('Status 2 items: ', it),
-                variant: 'dropdown-action',
+                variant: 'bulk-action',
               },
             ],
             variant: 'action-group',

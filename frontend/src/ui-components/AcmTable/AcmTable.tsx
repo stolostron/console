@@ -4,7 +4,6 @@ import { css } from '@emotion/css'
 import {
   Badge,
   ButtonVariant,
-  Divider,
   MenuToggle,
   PageSection,
   Pagination,
@@ -169,18 +168,6 @@ export interface IAcmTableButtonAction {
 }
 
 /**
- * Type for table action
- */
-export interface IAcmTableDropdownAction<T> {
-  id: string
-  title: string | React.ReactNode
-  click: (items: T[]) => void
-  isDisabled?: ((items: T[]) => boolean) | boolean
-  tooltip?: string | React.ReactNode
-  variant: 'dropdown-action'
-}
-
-/**
  * Type for bulk actions on table items
  */
 export interface IAcmTableBulkAction<T> {
@@ -190,8 +177,6 @@ export interface IAcmTableBulkAction<T> {
   isDisabled?: ((items: T[]) => boolean) | boolean
   tooltip?: string | React.ReactNode
   variant: 'bulk-action'
-  flyoutMenu?: IAcmTableAction<T>[]
-  getCurrentState?: (item: T) => string
 }
 
 /**
@@ -208,15 +193,11 @@ export interface IAcmTableActionSeperator {
 export interface IAcmTableActionGroup<T> {
   id: string
   title: string | React.ReactNode
-  actions: IAcmTableBulkAction<T>[] | IAcmTableDropdownAction<T>[]
+  actions: (IAcmTableBulkAction<T> | IAcmTableActionSeperator)[]
   variant: 'action-group'
 }
 
-export type IAcmTableAction<T> =
-  | IAcmTableDropdownAction<T>
-  | IAcmTableBulkAction<T>
-  | IAcmTableActionSeperator
-  | IAcmTableActionGroup<T>
+export type IAcmTableAction<T> = IAcmTableBulkAction<T> | IAcmTableActionSeperator | IAcmTableActionGroup<T>
 
 export interface ExportableIRow extends IRow {
   // content from subrow to include in export document
@@ -1949,7 +1930,7 @@ function TableActionsButtons(props: { actions: IAcmTableButtonAction[]; hasSelec
 }
 
 function TableActionsDropdown<T>(props: {
-  actions: IAcmTableAction<T>[] | IAcmTableBulkAction<T>[]
+  actions: IAcmTableAction<T>[]
   selections: { [uid: string]: boolean }
   items: T[] | undefined
   keyFn: (item: T) => string
@@ -1961,101 +1942,31 @@ function TableActionsDropdown<T>(props: {
   const dropdownItems = useMemo(() => {
     const selectedItems = items?.filter((item) => selections[keyFn(item)]) || []
 
-    return actions
-      .map((action): AcmDropdownItems | null => {
-        switch (action.variant) {
-          case 'dropdown-action': {
-            return {
-              id: action.id,
-              text: action.title,
-              tooltip: action.tooltip,
-              isAriaDisabled:
-                typeof action.isDisabled === 'boolean'
-                  ? action.isDisabled
-                  : action.isDisabled?.(items) || !hasSelections,
-              click: () => action.click(selectedItems),
-            }
-          }
-
-          case 'bulk-action': {
-            if (!action.flyoutMenu) {
-              return {
-                id: action.id,
-                text: action.title,
-                tooltip: action.tooltip,
-                isAriaDisabled:
-                  (typeof action.isDisabled === 'boolean' ? action.isDisabled : action.isDisabled?.(items)) ||
-                  !hasSelections,
-                click: hasSelections ? () => action.click(selectedItems) : undefined,
-              }
-            }
-
-            const currentState = action.getCurrentState?.(selectedItems[0])
-            return {
-              id: action.id,
-              text: action.title,
-              tooltip: action.tooltip,
-              isAriaDisabled:
-                (typeof action.isDisabled === 'boolean' ? action.isDisabled : action.isDisabled?.(items)) ||
-                !hasSelections,
-              flyoutMenu: action.flyoutMenu
-                .filter(
-                  (subAction): subAction is IAcmTableDropdownAction<T> | IAcmTableBulkAction<T> =>
-                    subAction.variant === 'dropdown-action' || subAction.variant === 'bulk-action'
-                )
-                .map((subAction) => ({
-                  id: subAction.id,
-                  text: subAction.title,
-                  tooltip: subAction.tooltip,
-                  isSelected: currentState !== undefined && currentState === subAction.id,
-                  isAriaDisabled:
-                    (typeof subAction.isDisabled === 'boolean'
-                      ? subAction.isDisabled
-                      : subAction.isDisabled?.(items)) || !hasSelections,
-                  click:
-                    hasSelections && currentState !== subAction.id ? () => subAction.click(selectedItems) : undefined,
-                })),
-            }
-          }
-
-          case 'action-group': {
-            return {
-              id: action.id,
-              text: action.title,
-              flyoutMenu: action.actions
-                .filter(
-                  (subAction): subAction is IAcmTableDropdownAction<T> | IAcmTableBulkAction<T> =>
-                    subAction.variant === 'dropdown-action' || subAction.variant === 'bulk-action'
-                )
-                .map((subAction) => ({
-                  id: subAction.id,
-                  text: subAction.title,
-                  tooltip: subAction.tooltip,
-                  isAriaDisabled:
-                    typeof subAction.isDisabled === 'boolean'
-                      ? subAction.isDisabled
-                      : subAction.isDisabled?.(items) || !hasSelections,
-                  click: () => subAction.click(selectedItems),
-                })),
-            }
-          }
-
-          case 'action-seperator': {
-            return {
-              id: action.id,
-              component: <Divider key={action.id} />,
-              separator: true as const,
-              text: '',
-            }
-          }
-
-          default:
+    function convertAcmTableActionsToAcmDropdownItems(actions: IAcmTableAction<T>[]): AcmDropdownItems[] {
+      return actions
+        .map((action, index) => {
+          if (action.variant === 'action-seperator') {
             return null
-        }
-      })
-      .filter(
-        (item): item is NonNullable<AcmDropdownItems> => item !== null && typeof item === 'object' && 'id' in item
-      )
+          }
+          return {
+            id: action.id,
+            text: action.title,
+            separator: index > 0 && actions[index - 1].variant === 'action-seperator' ? true : false,
+            ...(action.variant === 'action-group'
+              ? { flyoutMenu: convertAcmTableActionsToAcmDropdownItems(action.actions) }
+              : {
+                  tooltip: action.tooltip,
+                  isAriaDisabled:
+                    (typeof action.isDisabled === 'boolean' ? action.isDisabled : action.isDisabled?.(items)) ||
+                    !hasSelections,
+                  click: hasSelections ? () => action.click(selectedItems) : undefined,
+                }),
+          }
+        })
+        .filter((action) => action !== null)
+    }
+
+    return convertAcmTableActionsToAcmDropdownItems(actions)
   }, [actions, items, selections, keyFn, hasSelections])
 
   return (

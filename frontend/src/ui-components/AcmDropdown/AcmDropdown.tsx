@@ -13,6 +13,7 @@ import {
   Popper,
   MenuProps,
   Divider,
+  PopperProps,
 } from '@patternfly/react-core'
 import { css } from '@emotion/css'
 import { TooltipWrapper } from '../utils'
@@ -38,19 +39,7 @@ export type AcmDropdownProps = Props & {
   tooltipPosition?: TooltipPosition
   label?: string | React.ReactNode
   labelColor?: LabelProps['color']
-  dropdownPosition?:
-    | 'top'
-    | 'top-start'
-    | 'top-end'
-    | 'bottom'
-    | 'bottom-start'
-    | 'bottom-end'
-    | 'left'
-    | 'left-start'
-    | 'left-end'
-    | 'right'
-    | 'right-start'
-    | 'right-end'
+  dropdownPosition?: PopperProps['placement']
 }
 
 export type AcmDropdownItems = {
@@ -132,19 +121,16 @@ const MenuItems = forwardRef<HTMLDivElement, MenuItemProps>((props, ref) => {
   }
 
   return (
-    <Menu ref={ref} onSelect={onSelect} containsFlyout={true} {...menuProps}>
+    <Menu ref={ref} onSelect={onSelect} containsFlyout={menuItems.some((mi) => mi.flyoutMenu)} {...menuProps}>
       <MenuContent>
         <MenuList>
           {menuItems.map((item) => {
-            if (item.separator) {
-              return item.component || <Divider key={item.id} />
-            }
             const menuItem = (
               <MenuItem
                 id={item.id}
                 key={item.id}
                 itemId={item.id}
-                isDisabled={item.isAriaDisabled}
+                isAriaDisabled={item.isDisabled || item.isAriaDisabled}
                 isSelected={item.isSelected}
                 onClick={item.click ? (e) => handleItemClick(e, item.id, item) : undefined}
                 flyoutMenu={
@@ -152,6 +138,7 @@ const MenuItems = forwardRef<HTMLDivElement, MenuItemProps>((props, ref) => {
                     <MenuItems menuItems={item.flyoutMenu} classes={classes} onSelect={onSelect} />
                   ) : undefined
                 }
+                description={item.description}
               >
                 {item.text}
                 {item.label && item.labelColor && (
@@ -161,12 +148,18 @@ const MenuItems = forwardRef<HTMLDivElement, MenuItemProps>((props, ref) => {
                 )}
               </MenuItem>
             )
-            return item.tooltip ? (
+            const wrappedMenuItem = item.tooltip ? (
               <Tooltip key={item.id} position={item.tooltipPosition} content={item.tooltip}>
                 <div>{menuItem}</div>
               </Tooltip>
             ) : (
               menuItem
+            )
+            return (
+              <>
+                {item.separator && <Divider key={item.id} />}
+                {wrappedMenuItem}
+              </>
             )
           })}
         </MenuList>
