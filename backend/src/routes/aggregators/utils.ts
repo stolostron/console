@@ -1,19 +1,62 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { getKubeResources, getHubClusterName } from '../events'
-import { Cluster, ClusterDeployment, IResource, ManagedClusterInfo } from '../../resources/resource'
-import { ITransformedResource } from '../../lib/pagination'
 import {
-  AppColumns,
-  ApplicationCache,
-  ApplicationCacheType,
+  Cluster,
+  IStatusResource,
+  IResource,
+  ManagedClusterInfo,
+  IApplicationSet,
   IArgoApplication,
-  IDecision,
-  IOCPApplication,
+  IPlacementDecision,
   ISubscription,
-} from './applications'
+  IOCPApplication,
+} from '../../resources/resource'
+import { ITransformedResource } from '../../lib/pagination'
+import { AppColumns, ApplicationCache, ApplicationCacheType } from './applications'
 import { logger } from '../../lib/logger'
 import { getMultiClusterHub } from '../../lib/multi-cluster-hub'
 import { getMultiClusterEngine } from '../../lib/multi-cluster-engine'
+
+//////////////////////////////////////////////////////////////////
+////////////// ADD UI DATA /////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
+// add ui data to each app would require all appsets, argo apps etc
+// but we don't want to send all that data to the browser
+// so we add it here in the backend
+
+const appSetPlacementStr =
+  'clusterDecisionResource.labelSelector.matchLabels["cluster.open-cluster-management.io/placement"]'
+
+export function getAppSetRelatedResources(appSet: IResource, applicationSets: IApplicationSet[]) {
+  const appSetsSharingPlacement: string[] = []
+  const currentAppSetGenerators = (appSet as IApplicationSet).spec?.generators
+  /* istanbul ignore next */
+  const currentAppSetPlacement = currentAppSetGenerators
+    ? (get(currentAppSetGenerators[0], appSetPlacementStr, '') as string)
+    : undefined
+
+  /* istanbul ignore if */
+  if (!currentAppSetPlacement) {
+    return ['', []]
+  }
+
+  applicationSets.forEach((item) => {
+    const appSetGenerators = item.spec.generators
+    /* istanbul ignore next */
+    const appSetPlacement = appSetGenerators ? (get(appSetGenerators[0], appSetPlacementStr, '') as string) : ''
+    /* istanbul ignore if */
+    if (
+      item.metadata.name !== appSet.metadata?.name ||
+      (item.metadata.name === appSet.metadata?.name && item.metadata.namespace !== appSet.metadata?.namespace)
+    ) {
+      if (appSetPlacement && appSetPlacement === currentAppSetPlacement && item.metadata.name) {
+        appSetsSharingPlacement.push(item.metadata.name)
+      }
+    }
+  })
+
+  return [currentAppSetPlacement, appSetsSharingPlacement]
+}
 
 //////////////////////////////////////////////////////////////////
 ////////////// TRANSFORM /////////////////////////////////////////
@@ -137,7 +180,7 @@ function getApplicationClusters(
   return [getHubClusterName()]
 }
 
-function getAppSetCluster(resource: IArgoApplication, placementDecisions: IDecision[]) {
+function getAppSetCluster(resource: IArgoApplication, placementDecisions: IPlacementDecision[]) {
   const clusterSet = new Set<string>()
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const placementName =
@@ -162,7 +205,11 @@ function getAppSetCluster(resource: IArgoApplication, placementDecisions: IDecis
   return Array.from(clusterSet)
 }
 
-function getSubscriptionCluster(resource: IResource, subscriptions: ISubscription[], placementDecisions: IDecision[]) {
+function getSubscriptionCluster(
+  resource: IResource,
+  subscriptions: ISubscription[],
+  placementDecisions: IPlacementDecision[]
+) {
   const clusterSet = new Set<string>()
   const subAnnotationArray = getSubscriptionAnnotations(resource)
   for (const sa of subAnnotationArray) {
@@ -428,7 +475,7 @@ export function getClusters(): Cluster[] {
   })
 }
 
-function getKubeApiServer(clusterDeployment?: ClusterDeployment, managedClusterInfo?: ManagedClusterInfo) {
+function getKubeApiServer(clusterDeployment?: IStatusResource, managedClusterInfo?: ManagedClusterInfo) {
   return (
     clusterDeployment?.status?.apiURL ??
     managedClusterInfo?.spec?.masterEndpoint ??
@@ -491,10 +538,19 @@ interface ResultType {
 }
 
 type SelectorType = string | ((item: IResource) => string)
-
+const keyEx = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function get(obj: any, path: string): string {
-  const keys = path.split('.')
+export function get(obj: any, path: string, dflt?: any): any {
+  // convert path into key array
+  const keys: string[] = []
+  path.replace(keyEx, function (match, number, quote, subString) {
+    keys.push(
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      quote && typeof subString === 'string' ? subString.replace(/\\(\\)?/g, '$1') : number || match
+    )
+    return ''
+  })
+
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   let current = obj
   for (const key of keys) {
@@ -502,7 +558,7 @@ function get(obj: any, path: string): string {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       current = current[key]
     } else {
-      return undefined // Path not found
+      return dflt // Path not found
     }
   }
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return
@@ -512,7 +568,7 @@ function get(obj: any, path: string): string {
 function keyBy(array: IResource[], selector: SelectorType) {
   const result: ResultType = {}
   for (const item of array) {
-    const key = typeof selector === 'string' ? get(item, selector) : selector(item)
+    const key = typeof selector === 'string' ? (get(item, selector) as string) : selector(item)
     result[key] = item
   }
   return result
