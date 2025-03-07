@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { css } from '@emotion/css'
-import moment from 'moment'
 import { Spinner } from '@patternfly/react-core'
 import { useTranslation } from '../../lib/acm-i18next'
+import AcmTimestamp from '../../lib/AcmTimestamp'
 
 export type AcmRefreshTimeProps = {
   timestamp: string
@@ -25,13 +25,12 @@ const timestampClass = css({
 
 export const AcmRefreshTime = (props: AcmRefreshTimeProps) => {
   const { reloading, timestamp } = props
-  const time = moment(new Date(timestamp)).format('LTS')
   const { t } = useTranslation()
   return (
     <div className={timestampClass}>
       {reloading && <Spinner size="sm" />}
       <p>
-        {t('Last update:')} {time}
+        {t('Last update:')} <AcmTimestamp timestamp={timestamp} simple />
       </p>
     </div>
   )

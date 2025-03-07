@@ -3,7 +3,6 @@
 import { useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { ArgoWizard } from '../../../wizards/Argo/ArgoWizard'
 import { AcmToastContext } from '../../../ui-components'
-import moment from 'moment-timezone'
 import { useContext, useEffect, useState } from 'react'
 import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
@@ -25,6 +24,7 @@ import { argoAppSetQueryString } from './actions'
 import schema from './schema.json'
 import { LostChangesContext } from '../../../components/LostChanges'
 import { LoadingPage } from '../../../components/LoadingPage'
+import { useTimezones } from '../../../hooks/useTimezone'
 
 export default function CreateArgoApplicationSetPage() {
   return <CreateApplicationArgo />
@@ -73,6 +73,7 @@ export function CreateApplicationArgo() {
     managedClusterSetBindingsState,
   } = useSharedAtoms()
   const navigate = useNavigate()
+  const { timeZones } = useTimezones()
   const toast = useContext(AcmToastContext)
   const placements = useRecoilValue(placementsState)
   const gitOpsClusters = useRecoilValue(gitOpsClustersState)
@@ -88,11 +89,6 @@ export function CreateApplicationArgo() {
   const availableAnsibleCredentials = useRecoilValue(ansibleCredentialsValue)
     .map((ansibleCredential) => ansibleCredential.metadata.name)
     .filter(isType)
-
-  const currentTimeZone = moment.tz.guess(true)
-  const timeZones = currentTimeZone
-    ? [currentTimeZone, ...moment.tz.names().filter((e) => e !== currentTimeZone)]
-    : moment.tz.names()
 
   const { cancelForm, submitForm } = useContext(LostChangesContext)
   const [createdResource, setCreatedResource] = useState<any>()

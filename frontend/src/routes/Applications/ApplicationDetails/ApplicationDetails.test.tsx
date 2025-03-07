@@ -19,7 +19,7 @@ import {
 import { nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../../lib/nock-util'
 import { defaultPlugin, PluginContext } from '../../../lib/PluginContext'
 import { waitForText } from '../../../lib/test-util'
-import { ApplicationActionProps } from '../../../plugin-extensions/properties'
+import { ActionExtensionProps } from '../../../plugin-extensions/properties'
 import { AcmExtension } from '../../../plugin-extensions/types'
 import { GetMessagesDocument, SearchSchemaDocument } from '../../Search/search-sdk/search-sdk'
 import {
@@ -36,7 +36,7 @@ import {
 } from '../Application.sharedmocks'
 import ApplicationDetailsPage from './ApplicationDetails'
 
-const applicationActionProps: ApplicationActionProps[] = [
+const applicationActionProps: ActionExtensionProps[] = [
   {
     id: 'action1',
     title: 'Action1',

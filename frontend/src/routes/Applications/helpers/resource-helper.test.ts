@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import i18next from 'i18next'
-import moment from 'moment'
 import {
   ApplicationSetApiVersionType,
   ApplicationSetKindType,
@@ -20,7 +19,6 @@ import {
   mockSubscriptions,
 } from '../Application.sharedmocks'
 import {
-  getAge,
   getAppChildResources,
   getAppSetRelatedResources,
   getArgoClusterList,
@@ -30,14 +28,16 @@ import {
   getClusterCountString,
   getEditLink,
   getResourceLabel,
+  getResourceTimestamp,
   getResourceType,
   getSearchLink,
-  getShortDateTime,
   groupByRepoType,
   isArgoPullModel,
   normalizeRepoType,
 } from './resource-helper'
 import { Cluster, ClusterStatus } from '../../../resources/utils/get-cluster'
+import { render } from '@testing-library/react'
+import React from 'react'
 
 const t = i18next.t.bind(i18next)
 
@@ -170,27 +170,48 @@ describe('getResourceLabel', () => {
   })
 })
 
-describe('getAge', () => {
-  it('should get valid time', () => {
+describe('getResourceTimestamp', () => {
+  it('should get a valid time', () => {
     const resource = {
-      apiVersion: '',
-      kind: '',
+      apiVersion: 'v1',
+      kind: 'Test',
       metadata: {
-        creationTimestamp: `${moment().format()}`,
+        creationTimestamp: '2024-02-11T12:00:00Z',
       },
     }
-    expect(getAge(resource, '', 'metadata.creationTimestamp')).toEqual('a few seconds ago')
+
+    const result = getResourceTimestamp(resource as any, 'metadata.creationTimestamp')
+    const { container } = render(React.createElement('div', null, result))
+
+    expect(container).toBeInTheDocument()
   })
 
-  it('should get invalid time', () => {
+  it('should handle missing timestamp', () => {
     const resource = {
-      apiVersion: '',
-      kind: '',
+      apiVersion: 'v1',
+      kind: 'Test',
+      metadata: {},
+    }
+
+    const result = getResourceTimestamp(resource as any, 'metadata.creationTimestamp')
+    const { container } = render(React.createElement('div', null, result))
+
+    expect(container).toHaveTextContent('-')
+  })
+
+  it('should handle invalid timestamp path', () => {
+    const resource = {
+      apiVersion: 'v1',
+      kind: 'Test',
       metadata: {
-        creationTimestamp: `${moment().format()}`,
+        creationTimestamp: '2024-02-11T12:00:00Z',
       },
     }
-    expect(getAge(resource, '', 'unknown')).toEqual('-')
+
+    const result = getResourceTimestamp(resource as any, 'unknown')
+    const { container } = render(React.createElement('div', null, result))
+
+    expect(container).toHaveTextContent('-')
   })
 })
 
@@ -246,25 +267,6 @@ describe('getEditLink', () => {
     ).toEqual(
       '/multicloud/search/resources/yaml?apiversion=v1&cluster=magchen-test&kind=Application&name=test-1&namespace=test-1-ns'
     )
-  })
-})
-
-describe('getShortDateTime', () => {
-  const sampleDate = '2020-08-26T13:21:04Z'
-  const sameDay = sampleDate
-  const sameYear = '2020-06-21T09:21:04Z'
-  const futureYear = '2021-12-13T23:21:04Z'
-
-  it('omits date and year for timestamps today', () => {
-    expect(getShortDateTime(sampleDate, moment(sameDay))).toEqual('1:21 pm')
-  })
-
-  it('omits year for timestamps from this year', () => {
-    expect(getShortDateTime(sampleDate, moment(sameYear))).toEqual('Aug 26, 1:21 pm')
-  })
-
-  it('includes all elements for timestamps from a different year', () => {
-    expect(getShortDateTime(sampleDate, moment(futureYear))).toEqual('Aug 26 2020, 1:21 pm')
   })
 })
 

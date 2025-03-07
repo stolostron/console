@@ -26,7 +26,8 @@ import {
   severityCell,
 } from './ByCluster/common'
 import { ClusterPolicyViolationIcons2 } from '../components/ClusterPolicyViolations'
-import { exportObjectString, parseLabel } from '../../../resources/utils'
+import { exportObjectString, filterLabelFn } from '../../../resources/utils'
+import { isEqual } from 'lodash'
 
 function nameCell(item: DiscoverdPolicyTableItem): ReactNode {
   return (
@@ -54,7 +55,7 @@ function clusterCell(item: DiscoverdPolicyTableItem): ReactNode | string {
     kind: item.kind,
     policyName: item.name,
   })
-  if (noncompliant !== 0 || compliant !== 0 || pending != 0 || unknown !== 0) {
+  if (noncompliant !== 0 || compliant !== 0 || pending !== 0 || unknown !== 0) {
     return (
       <ClusterPolicyViolationIcons2
         compliant={compliant}
@@ -140,7 +141,17 @@ export default function DiscoveredPolicies() {
         header: t('Cluster violations'),
         cell: clusterCell,
         tooltip: t('discoveredPolicies.tooltip.clusterViolation'),
-        sort: 'violations',
+        sort: (a: DiscoverdPolicyTableItem, b: DiscoverdPolicyTableItem) => {
+          const aViolation = policyViolationSummary(a.policies)
+          const bViolation = policyViolationSummary(b.policies)
+          if (isEqual(aViolation, bViolation)) return 0
+          if (aViolation.noncompliant > bViolation.noncompliant) return -1
+          if (aViolation.noncompliant < bViolation.noncompliant) return 1
+          if (aViolation.compliant > bViolation.compliant) return -1
+          if (aViolation.compliant < bViolation.compliant) return 1
+
+          return 0
+        },
         search: 'violations',
         id: 'violations',
         exportContent: (item: DiscoverdPolicyTableItem) => {
@@ -236,31 +247,7 @@ export default function DiscoveredPolicies() {
         label: t('Label'),
         options: labelOptions || [],
         supportsInequality: true, // table will allow user to convert filtered values to a=b or a!=b
-        tableFilterFn: (selectedValues, item) => {
-          // if no filters, let all items thru
-          if (!selectedValues.length) return true
-          // if all fillters have != thru all items that don't have that label
-          const allInequity = selectedValues.every((val) => {
-            return val.includes('!=')
-          })
-          const labels = labelMap?.[item.id]?.labels || []
-          if (allInequity) {
-            return selectedValues.every((val) => {
-              const p = parseLabel(val)
-              return !labels.includes(`${p.prefix}=${p.suffix}`)
-            })
-          } else {
-            // else if an item has a match, but doen't have a !=, let it thru
-            let hasEquity = false
-            let hasInequity = false
-            selectedValues.forEach((val) => {
-              const p = parseLabel(val)
-              if (p.oper === '=' && labels.includes(val)) hasEquity = true
-              if (p.oper === '!=' && labels.includes(`${p.prefix}=${p.suffix}`)) hasInequity = true
-            })
-            return !hasInequity && hasEquity
-          }
-        },
+        tableFilterFn: (selectedValues, item) => filterLabelFn(selectedValues, item, labelMap),
       },
       {
         id: 'source',

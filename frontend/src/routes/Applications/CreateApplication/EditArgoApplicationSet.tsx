@@ -2,7 +2,6 @@
 
 import { useData, useItem } from '@patternfly-labs/react-form-wizard'
 import { ArgoWizard } from '../../../wizards/Argo/ArgoWizard'
-import moment from 'moment-timezone'
 import { useContext, useEffect, useState } from 'react'
 import { useParams, useNavigate, PathParam, generatePath } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
@@ -29,6 +28,7 @@ import schema from './schema.json'
 import { GetGitOpsClusters } from './CreateApplicationArgo'
 import { get, set } from 'lodash'
 import { LostChangesContext } from '../../../components/LostChanges'
+import { useTimezones } from '../../../hooks/useTimezone'
 
 export function WizardSyncEditor() {
   const resources = useItem() // Wizard framework sets this context
@@ -53,6 +53,7 @@ function getWizardSyncEditor() {
 
 export function EditArgoApplicationSet() {
   const { t } = useTranslation()
+  const { timeZones } = useTimezones()
   const {
     channelsState,
     namespacesState,
@@ -80,11 +81,6 @@ export function EditArgoApplicationSet() {
   const availableAnsibleCredentials = useRecoilValue(ansibleCredentialsValue)
     .map((ansibleCredential) => ansibleCredential.metadata.name)
     .filter(isType)
-
-  const currentTimeZone = moment.tz.guess(true)
-  const timeZones = currentTimeZone
-    ? [currentTimeZone, ...moment.tz.names().filter((e) => e !== currentTimeZone)]
-    : moment.tz.names()
 
   const [existingResources, setExistingResources] = useState<IResource[]>()
   const [pullModel, setPullModel] = useState<boolean>(false)

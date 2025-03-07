@@ -5,7 +5,7 @@ set -euo pipefail
 source ./port-defaults.sh
 source ./oauth-client-name.sh
 
-CONSOLE_VERSION=${CONSOLE_VERSION:=4.16}
+CONSOLE_VERSION=${CONSOLE_VERSION:=4.17}
 CONSOLE_IMAGE="quay.io/openshift/origin-console:${CONSOLE_VERSION}"
 
 mkdir -p ocp-console

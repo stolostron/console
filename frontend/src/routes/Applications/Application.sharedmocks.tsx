@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import moment from 'moment'
 import {
   Application,
   ApplicationApiVersion,
@@ -41,7 +40,7 @@ import {
   SubscriptionOperatorKind,
 } from '../../resources'
 import { AcmExtension } from '../../plugin-extensions/types'
-import { ApplicationActionProps } from '../../plugin-extensions/properties'
+import { ActionExtensionProps } from '../../plugin-extensions/properties'
 import { IResultStatuses } from '../../lib/useAggregates'
 
 export const mockArgoCD: IResource = {
@@ -92,7 +91,7 @@ export const mockApplication0: Application = {
   metadata: {
     name: 'application-0',
     namespace: 'namespace-0',
-    creationTimestamp: `${moment().format()}`,
+    creationTimestamp: '2024-02-20T15:30:00Z',
     annotations: {
       'apps.open-cluster-management.io/subscriptions': 'namespace-0/subscription-0,namespace-0/subscription-0-local',
     },
@@ -437,7 +436,7 @@ export const mockFluxApplication0: OCPAppResource = {
     cluster: 'test-cluster',
   },
 }
-const applicationActionProps: ApplicationActionProps = {
+const applicationActionProps: ActionExtensionProps = {
   id: 'failover',
   title: 'Failover application',
   model: [
