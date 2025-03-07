@@ -617,7 +617,7 @@
   "channel.type.objectbucket": "オブジェクトストレージ",
   "channel.type.other": "その他",
   "Channels": "チャネル",
-  "Channels point to repositories where Kubernetes resources are stored, such as Git, Helm chart, or object storage repositories, or Namespaces on the local cluster. Channels support multiple subscriptions from multiple targets.": "チャネルは、Git、Helm チャート、オブジェクトストレージリポジトリー、またはローカルクラスターの namespace などの Kubernetes リソースが保存されるリポジトリーを参照します。チャネルでは、複数ターゲットからの複数のサブスクリプションをサポートします。",
+  "Channels point to repositories where Kubernetes resources are stored, such as Git, Helm chart, or object storage repositories. Channels support multiple subscriptions from multiple targets.": "チャネルは、Git、Helm チャート、オブジェクトストレージリポジトリー、またはローカルクラスターの namespace などの Kubernetes リソースが保存されるリポジトリーを参照します。チャネルでは、複数ターゲットからの複数のサブスクリプションをサポートします。",
   "Chart name": "チャート名",
   "Chart Name": "チャート名",
   "Chart path": "チャートパス",

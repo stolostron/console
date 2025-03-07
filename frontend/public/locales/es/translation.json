@@ -626,7 +626,7 @@
   "channel.type.objectbucket": "Almacenamiento de objetos",
   "channel.type.other": "Otro",
   "Channels": "Canales",
-  "Channels point to repositories where Kubernetes resources are stored, such as Git, Helm chart, or object storage repositories, or Namespaces on the local cluster. Channels support multiple subscriptions from multiple targets.": "Los canales apuntan a repositorios donde se almacenan los recursos de Kubernetes, como Git, gráfico de Helm o repositorios de almacenamiento de objetos, o espacios de nombres en el clúster local. Los canales admiten varias suscripciones de múltiples objetivos.",
+  "Channels point to repositories where Kubernetes resources are stored, such as Git, Helm chart, or object storage repositories. Channels support multiple subscriptions from multiple targets.": "Los canales apuntan a repositorios donde se almacenan los recursos de Kubernetes, como Git, gráfico de Helm o repositorios de almacenamiento de objetos, o espacios de nombres en el clúster local. Los canales admiten varias suscripciones de múltiples objetivos.",
   "Chart name": "Nombre del gráfico",
   "Chart Name": "Nombre del gráfico",
   "Chart path": "Ruta del gráfico",
