@@ -178,20 +178,20 @@ describe('AcmTable', () => {
                               id: 'status-1',
                               title: 'Status 1',
                               click: () => null,
-                              variant: 'dropdown-action',
+                              variant: 'bulk-action',
                             },
                             {
                               id: 'status-2',
                               title: 'Status 2',
                               click: () => null,
-                              variant: 'dropdown-action',
+                              variant: 'bulk-action',
                             },
                           ],
                           variant: 'action-group',
                         },
                         {
                           id: 'separator-1',
-                          variant: 'action-seperator',
+                          variant: 'action-separator',
                         },
                         {
                           id: 'delete',

@@ -2,32 +2,37 @@
 
 import { css } from '@emotion/css'
 import { createSubjectAccessReview, ResourceAttributes } from '../resources'
-import { AcmButton, AcmDropdown } from '../ui-components'
-import { useEffect, useState } from 'react'
+import { AcmButton, AcmDropdown, AcmDropdownItems, AcmDropdownProps } from '../ui-components'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../lib/acm-i18next'
 
-type RbacDropdownProps<T = unknown> = {
+type RbacDropdownProps<T = unknown> = Pick<
+  AcmDropdownProps,
+  'dropdownPosition' | 'id' | 'isDisabled' | 'isKebab' | 'text' | 'tooltip'
+> & {
   actions: Actions<T>[]
   item: T
-  isKebab?: boolean
-  text: string
-  id: string
-  isDisabled?: boolean
-  tooltip?: string
 }
 
-type Actions<T = unknown> = {
+type Actions<T = unknown> = Omit<AcmDropdownItems, 'click' | 'flyoutMenu'> & {
   id: string
   text: React.ReactNode
   isAriaDisabled?: boolean
   tooltip?: string
-  click: (item: T) => void
+  flyoutMenu?: Actions<T>[]
+  click?: (item: T) => void
   rbac?: ResourceAttributes[] | Promise<ResourceAttributes>[]
+}
+
+function flattenActions<T>(actions: Actions<T>[]): Actions<T>[] {
+  return actions.flatMap((action) => (action.flyoutMenu ? [...flattenActions(action.flyoutMenu), action] : action))
 }
 
 export function RbacDropdown<T = unknown>(props: RbacDropdownProps<T>) {
   const { t } = useTranslation()
   const [actions, setActions] = useState<Actions<T>[]>([])
+
+  const actionsWithFlyoutActions = useMemo(() => flattenActions(actions), [actions])
 
   useEffect(() => {
     const isUpdated = !props.actions.every((a, i) => a?.id === actions?.[i]?.id)
@@ -36,10 +41,15 @@ export function RbacDropdown<T = unknown>(props: RbacDropdownProps<T>) {
     }
   }, [actions, props.actions])
 
-  const onSelect = (id: string) => {
-    const action = props.actions.find((a) => a.id === id)
-    return action?.click(props.item)
-  }
+  const onSelect = useCallback(
+    (id: string) => {
+      const action = actionsWithFlyoutActions.find((a) => a.id === id)
+      if (action?.click) {
+        action.click(props.item)
+      }
+    },
+    [actionsWithFlyoutActions, props.item]
+  )
 
   const onToggle = async (isOpen?: boolean) => {
     if (isOpen) {
@@ -70,17 +80,32 @@ export function RbacDropdown<T = unknown>(props: RbacDropdownProps<T>) {
     }
   }
 
+  // converts RBAC actions to AcmDropdown format and handles click events
+
+  const convertToAcmDropdownItems = useCallback(
+    (actionItems: Actions<T>[]): AcmDropdownItems[] => {
+      return actionItems.map((action) => ({
+        ...action,
+        click: action.click ? () => action.click?.(props.item) : undefined,
+        flyoutMenu: action.flyoutMenu ? convertToAcmDropdownItems(action.flyoutMenu) : undefined,
+      }))
+    },
+    [props.item]
+  )
+
+  const dropdownItems = useMemo(() => convertToAcmDropdownItems(actions), [actions, convertToAcmDropdownItems])
   return (
     <AcmDropdown
       id={props.id}
       onSelect={onSelect}
-      dropdownItems={actions}
+      dropdownItems={dropdownItems}
       isKebab={props.isKebab}
       isPlain={true}
       text={props.text}
       onToggle={onToggle}
       isDisabled={props.isDisabled}
       tooltip={props.isDisabled ? props.tooltip : undefined}
+      dropdownPosition={props.dropdownPosition}
     />
   )
 }
