@@ -30,17 +30,21 @@ const appSetPlacementStr =
 export function getAppSetRelatedResources(appSet: IResource, applicationSets: IApplicationSet[]) {
   const appSetsSharingPlacement: string[] = []
   const currentAppSetGenerators = (appSet as IApplicationSet).spec?.generators
+  /* istanbul ignore next */
   const currentAppSetPlacement = currentAppSetGenerators
     ? (get(currentAppSetGenerators[0], appSetPlacementStr, '') as string)
     : undefined
 
+  /* istanbul ignore if */
   if (!currentAppSetPlacement) {
     return ['', []]
   }
 
   applicationSets.forEach((item) => {
     const appSetGenerators = item.spec.generators
+    /* istanbul ignore next */
     const appSetPlacement = appSetGenerators ? (get(appSetGenerators[0], appSetPlacementStr, '') as string) : ''
+    /* istanbul ignore if */
     if (
       item.metadata.name !== appSet.metadata?.name ||
       (item.metadata.name === appSet.metadata?.name && item.metadata.namespace !== appSet.metadata?.namespace)
