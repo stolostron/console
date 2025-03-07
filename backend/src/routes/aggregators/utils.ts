@@ -546,7 +546,7 @@ export function get(obj: any, path: string, dflt?: any): any {
   path.replace(keyEx, function (match, number, quote, subString) {
     keys.push(
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      typeof quote && typeof subString === 'string' ? subString.replace(/\\(\\)?/g, '$1') : number || match
+      quote && typeof subString === 'string' ? subString.replace(/\\(\\)?/g, '$1') : number || match
     )
     return ''
   })
