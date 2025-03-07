@@ -2,31 +2,16 @@
 
 import { css } from '@emotion/css'
 import { createSubjectAccessReview, ResourceAttributes } from '../resources'
-import { AcmButton, AcmDropdown, AcmDropdownItems } from '../ui-components'
+import { AcmButton, AcmDropdown, AcmDropdownItems, AcmDropdownProps } from '../ui-components'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../lib/acm-i18next'
 
-type RbacDropdownProps<T = unknown> = {
+type RbacDropdownProps<T = unknown> = Pick<
+  AcmDropdownProps,
+  'dropdownPosition' | 'id' | 'isDisabled' | 'isKebab' | 'text' | 'tooltip'
+> & {
   actions: Actions<T>[]
   item: T
-  isKebab?: boolean
-  text: string
-  id: string
-  isDisabled?: boolean
-  tooltip?: string
-  dropdownPosition?:
-    | 'top'
-    | 'top-start'
-    | 'top-end'
-    | 'bottom'
-    | 'bottom-start'
-    | 'bottom-end'
-    | 'left'
-    | 'left-start'
-    | 'left-end'
-    | 'right'
-    | 'right-start'
-    | 'right-end'
 }
 
 type Actions<T = unknown> = Omit<AcmDropdownItems, 'click' | 'flyoutMenu'> & {

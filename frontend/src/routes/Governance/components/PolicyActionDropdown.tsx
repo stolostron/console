@@ -66,7 +66,6 @@ export function PolicyActionDropdown(props: {
     () => [
       {
         id: 'add-to-set',
-        tooltip: t('Add to policy set'),
         text: t('Add to policy set'),
         click: (policy: PolicyTableItem): void => {
           setModal(<AddToPolicySetModal policyTableItems={[policy]} onClose={() => setModal(undefined)} />)
@@ -81,8 +80,9 @@ export function PolicyActionDropdown(props: {
           {
             id: 'enable-policy',
             text: t('policy.table.actions.enable'),
-            tooltip: item.policy.spec.disabled ? t('Enable policy') : t('Policy is already enabled'),
+            tooltip: item.policy.spec.disabled ? undefined : t('Policy is already enabled'),
             isSelected: !item.policy.spec.disabled,
+            isAriaDisabled: item.policy.spec.disabled === false,
             click: () => {
               if (item.policy?.spec?.disabled) {
                 setModalProps({
@@ -120,8 +120,9 @@ export function PolicyActionDropdown(props: {
           {
             id: 'disable-policy',
             text: t('policy.table.actions.disable'),
-            tooltip: item.policy.spec.disabled ? t('Policy is already disabled') : t('Disable policy'),
+            tooltip: item.policy.spec.disabled ? t('Policy is already disabled') : undefined,
             isSelected: item.policy.spec.disabled,
+            isAriaDisabled: item.policy.spec.disabled,
             click: () => {
               if (!item.policy.spec.disabled) {
                 setModalProps({
@@ -130,7 +131,7 @@ export function PolicyActionDropdown(props: {
                   action: t('policy.table.actions.disable'),
                   processing: t('policy.table.actions.disabling'),
                   items: [item],
-                  emptyState: undefined,
+                  emptyState: undefined, // there is always 1 item supplied
                   description: t('policy.modal.message.disable'),
                   columns: bulkModalStatusColumns,
                   keyFn: (item: PolicyTableItem) => item.policy.metadata.uid as string,
@@ -166,8 +167,9 @@ export function PolicyActionDropdown(props: {
           {
             id: 'inform-policy',
             text: t('policy.table.actions.inform'),
-            tooltip: policyRemediationAction === 'inform' ? t('Already informing') : t('Inform policy'),
+            tooltip: policyRemediationAction === 'inform' ? t('Already informing') : undefined,
             isSelected: policyRemediationAction === 'inform',
+            isAriaDisabled: policyRemediationAction === 'inform',
             click: () => {
               if (policyRemediationAction !== 'inform') {
                 setModalProps({
@@ -176,7 +178,7 @@ export function PolicyActionDropdown(props: {
                   action: t('policy.table.actions.inform'),
                   processing: t('policy.table.actions.informing'),
                   items: [item],
-                  emptyState: undefined,
+                  emptyState: undefined, // there is always 1 item supplied
                   description: t('policy.modal.message.inform'),
                   columns: bulkModalRemediationColumns,
                   keyFn: (item: PolicyTableItem) => item.policy.metadata.uid as string,
@@ -208,8 +210,9 @@ export function PolicyActionDropdown(props: {
           {
             id: 'enforce-policy',
             text: t('policy.table.actions.enforce'),
-            tooltip: policyRemediationAction === 'enforce' ? t('Already enforcing') : t('Enforce policy'),
+            tooltip: policyRemediationAction === 'enforce' ? t('Already enforcing') : undefined,
             isSelected: policyRemediationAction === 'enforce',
+            isAriaDisabled: policyRemediationAction === 'enforce',
             click: () => {
               if (policyRemediationAction !== 'enforce') {
                 setModalProps({
@@ -218,7 +221,7 @@ export function PolicyActionDropdown(props: {
                   action: t('policy.table.actions.enforce'),
                   processing: t('policy.table.actions.enforcing'),
                   items: [item],
-                  emptyState: undefined,
+                  emptyState: undefined, // there is always 1 item supplied
                   description: t('policy.modal.message.enforce'),
                   columns: bulkModalRemediationColumns,
                   keyFn: (item: PolicyTableItem) => item.policy.metadata.uid as string,

@@ -336,20 +336,18 @@ export default function PoliciesPage() {
         click: (item) => {
           setModal(<AddToPolicySetModal policyTableItems={[...item]} onClose={() => setModal(undefined)} />)
         },
-        tooltip: t('Add to policy set'),
         isDisabled: !canPatchPolicy,
       },
       {
         id: 'status',
-        variant: 'bulk-action',
+        variant: 'action-group',
         click: () => {},
         title: t('policy.table.actionGroup.status'),
-        flyoutMenu: [
+        actions: [
           {
             id: 'enable',
             variant: 'bulk-action',
             title: t('Enable'),
-            tooltip: t('Enable policies'),
             click: (item) => {
               setModalProps({
                 open: true,
@@ -389,7 +387,6 @@ export default function PoliciesPage() {
             id: 'disable',
             variant: 'bulk-action',
             title: t('policy.table.actions.disable'),
-            tooltip: t('Disable policies'),
             click: (item: PolicyTableItem[]) => {
               setModalProps({
                 open: true,
@@ -426,15 +423,14 @@ export default function PoliciesPage() {
       },
       {
         id: 'remediation-policy',
-        variant: 'bulk-action',
+        variant: 'action-group',
         click: () => {},
         title: t('Remediation'),
-        flyoutMenu: [
+        actions: [
           {
             id: 'inform-policy',
             variant: 'bulk-action',
             title: t('policy.table.actions.inform'),
-            tooltip: t('Inform policies'),
             click: (item) => {
               setModalProps({
                 open: true,
@@ -470,7 +466,6 @@ export default function PoliciesPage() {
             id: 'enforce-policy',
             variant: 'bulk-action',
             title: t('policy.table.actions.enforce'),
-            tooltip: t('Enforce policies'),
             click: (item) => {
               setModalProps({
                 open: true,
