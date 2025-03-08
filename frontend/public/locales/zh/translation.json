@@ -617,7 +617,7 @@
   "channel.type.objectbucket": "对象存储",
   "channel.type.other": "其他",
   "Channels": "频道",
-  "Channels point to repositories where Kubernetes resources are stored, such as Git, Helm chart, or object storage repositories, or Namespaces on the local cluster. Channels support multiple subscriptions from multiple targets.": "频道指向存储 Kubernetes 资源的仓库，如 Git、Helm Chart 或对象存储仓库，或本地集群中的命名空间。频道支持来自多个目标的多个订阅。",
+  "Channels point to repositories where Kubernetes resources are stored, such as Git, Helm chart, or object storage repositories. Channels support multiple subscriptions from multiple targets.": "频道指向存储 Kubernetes 资源的仓库，如 Git、Helm Chart 或对象存储仓库，或本地集群中的命名空间。频道支持来自多个目标的多个订阅。",
   "Chart name": "Chart 名称",
   "Chart Name": "Chart 名称",
   "Chart path": "Chart 路径",
