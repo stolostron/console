@@ -40,12 +40,7 @@ export const LoadPluginData = (props: { children?: ReactNode }) => {
       NavigationPath.advancedConfiguration,
       NavigationPath.createApplicationArgo,
       NavigationPath.createApplicationArgoPullModel,
-      NavigationPath.editApplicationArgo,
       NavigationPath.createApplicationSubscription,
-      NavigationPath.applicationDetails,
-      NavigationPath.applicationOverview,
-      NavigationPath.applicationTopology,
-      NavigationPath.editApplicationSubscription,
 
       // Governance
       NavigationPath.governance,
@@ -55,7 +50,7 @@ export const LoadPluginData = (props: { children?: ReactNode }) => {
       // Credentials
       NavigationPath.credentials,
     ] as string[]
-  ).includes(location.pathname)
+  ).includes(location.pathname.replace(/\/$/, ''))
   useEffect(() => {
     if (!loadStarted) {
       load()
