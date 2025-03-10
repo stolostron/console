@@ -211,7 +211,8 @@ export function generateTransforms(
       ['t'], // time window
       [app.metadata.creationTimestamp as string],
     ]
-    app.remoteClusters = isRemote && _clusters
+    app.remoteClusters =
+      (isRemote || (type === 'subscription' && _clusters.filter((n) => n !== 'local-cluster')).length > 0) && _clusters
   })
   return { resources: items }
 }
