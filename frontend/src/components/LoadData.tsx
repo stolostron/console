@@ -17,8 +17,6 @@ import {
   AnsibleJobKind,
   ApplicationApiVersion,
   ApplicationKind,
-  ApplicationSetApiVersion,
-  ApplicationSetKind,
   ArgoApplicationApiVersion,
   ArgoApplicationKind,
   BareMetalHostApiVersion,
@@ -121,7 +119,6 @@ import {
   agentServiceConfigsState,
   agentsState,
   ansibleJobState,
-  applicationSetsState,
   applicationsState,
   argoApplicationsState,
   argoCDsState,
@@ -186,7 +183,6 @@ export function LoadData(props: { children?: ReactNode }) {
   const setAgents = useSetRecoilState(agentsState)
   const setAgentServiceConfigs = useSetRecoilState(agentServiceConfigsState)
   const setAnsibleJobs = useSetRecoilState(ansibleJobState)
-  const setApplicationSetsState = useSetRecoilState(applicationSetsState)
   const setApplicationsState = useSetRecoilState(applicationsState)
   const setArgoApplicationsState = useSetRecoilState(argoApplicationsState)
   const setArgoCDsState = useSetRecoilState(argoCDsState)
@@ -290,7 +286,6 @@ export function LoadData(props: { children?: ReactNode }) {
     addSetter(SubscriptionOperatorApiVersion, SubscriptionOperatorKind, setSubscriptionOperatorsState)
     addSetter(SubscriptionReportApiVersion, SubscriptionReportKind, setSubscriptionReportsState)
     addSetter(GitOpsClusterApiVersion, GitOpsClusterKind, setGitOpsClustersState)
-    addSetter(ApplicationSetApiVersion, ApplicationSetKind, setApplicationSetsState)
     addSetter(ArgoApplicationApiVersion, ArgoApplicationKind, setArgoApplicationsState)
     addSetter('argoproj.io/v1alpha1', 'ArgoCD', setArgoCDsState)
     addSetter(AgentKindVersion, AgentKind, setAgents)
@@ -342,7 +337,6 @@ export function LoadData(props: { children?: ReactNode }) {
     setAgents,
     setAgentServiceConfigs,
     setAnsibleJobs,
-    setApplicationSetsState,
     setApplicationsState,
     setArgoApplicationsState,
     setArgoCDsState,

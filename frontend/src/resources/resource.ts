@@ -16,6 +16,11 @@ export interface IResource extends IResourceDefinition {
   kind: string
   metadata?: Metadata
 }
+export interface IUIResource extends IResource {
+  uidata: {
+    appSetRelatedResources: any
+  }
+}
 
 export interface ResourceList<Resource extends IResource> {
   kind: string

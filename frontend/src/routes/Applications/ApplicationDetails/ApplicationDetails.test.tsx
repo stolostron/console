@@ -6,7 +6,6 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import {
-  applicationSetsState,
   applicationsState,
   argoApplicationsState,
   channelsState,
@@ -26,7 +25,6 @@ import { GetMessagesDocument, SearchSchemaDocument } from '../../Search/search-s
 import {
   mockApplication0,
   mockApplications,
-  mockApplicationSets,
   mockArgoApplications,
   mockChannels,
   mockManagedClusterInfos,
@@ -361,7 +359,6 @@ describe('Applications Page', () => {
           snapshot.set(placementRulesState, mockPlacementrules)
           snapshot.set(placementDecisionsState, mockPlacementsDecisions)
           snapshot.set(managedClustersState, mockManagedClusters)
-          snapshot.set(applicationSetsState, mockApplicationSets)
           snapshot.set(argoApplicationsState, mockArgoApplications)
           snapshot.set(managedClusterInfosState, mockManagedClusterInfos)
           snapshot.set(namespacesState, mockNamespaces)
@@ -390,6 +387,11 @@ describe('Applications Page', () => {
     expect(screen.getByText('Topology')).toBeTruthy()
     expect(screen.getByText('Actions')).toBeTruthy()
     userEvent.click(screen.getByText('Actions'))
-    userEvent.click(screen.getByText('Action1'))
+    userEvent.click(
+      screen.getByRole('menuitem', {
+        name: /delete application/i,
+      })
+    )
+    expect(screen.getByText(/permanently delete application application-0\?/i)).toBeTruthy()
   })
 })
