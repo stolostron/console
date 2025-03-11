@@ -33,19 +33,21 @@ export function useProjects() {
 
   const [error, setError] = useState<Error>()
   const [projects, setProjects] = useState<string[]>([])
+  const [loading, setLoading] = useState<boolean>(true)
 
   const getNamespaces = useRecoilValueGetter(namespacesState)
 
   useEffect(() => {
-    rbacCreate(SecretDefinition).then((attributes) => {
+    rbacCreate(SecretDefinition).then((attributes) =>
       getAuthorizedNamespaces([attributes], getNamespaces())
         .then((namespaces: string[]) => {
           namespaces.sort((a, b) => a.localeCompare(b))
           setProjects(namespaces)
         })
         .catch(setError)
-    })
+        .finally(() => setLoading(false))
+    )
   }, [getNamespaces])
 
-  return { projects, error }
+  return { projects, error, loading }
 }
