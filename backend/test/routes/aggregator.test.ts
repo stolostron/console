@@ -309,7 +309,6 @@ function setupNocks(prefixes?: boolean) {
     .post(
       '/searchapi/graphql',
       `{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Application"]},{"property":"apigroup","values":["argoproj.io"]},{"property":"cluster","values":["!local-cluster"]}],"limit":20000}]},"query":"query searchResult($input: [SearchInput]) {\\n  searchResult: search(input: $input) {\\n    items\\n  }\\n}"}`
-      // "{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Application"]},{"property":"apigroup","values":["argoproj.io"]},{"property":"cluster","values":["!local-cluster"]}],"limit":20000}]},"query":"query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  }\n}"}"
     )
     .reply(200, {})
 
@@ -403,6 +402,17 @@ function setupNocks(prefixes?: boolean) {
   nock(process.env.CLUSTER_API_URL)
     .post(
       '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
+      '{"apiVersion":"authorization.k8s.io/v1","kind":"SelfSubjectAccessReview","metadata":{},"spec":{"resourceAttributes":{"group":"view.open-cluster-management.io","namespace":"feng-managed","resource":"managedclusterviews","verb":"create"}}}'
+    )
+    .reply(200, {
+      status: {
+        allowed: true,
+      },
+    })
+
+  nock(process.env.CLUSTER_API_URL)
+    .post(
+      '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
       '{"apiVersion":"authorization.k8s.io/v1","kind":"SelfSubjectAccessReview","metadata":{},"spec":{"resourceAttributes":{"group":"app.k8s.io","resource":"applications","verb":"list"}}}'
     )
     .reply(200, {
@@ -450,6 +460,17 @@ function setupNocks(prefixes?: boolean) {
         allowed: true,
       },
     })
+  nock(process.env.CLUSTER_API_URL)
+    .post(
+      '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
+      '{"apiVersion":"authorization.k8s.io/v1","kind":"SelfSubjectAccessReview","metadata":{},"spec":{"resourceAttributes":{"group":"view.open-cluster-management.io","namespace":"test-cluster","resource":"managedclusterviews","verb":"create"}}}'
+    )
+    .reply(200, {
+      status: {
+        allowed: true,
+      },
+    })
+
   nock(process.env.CLUSTER_API_URL)
     .post(
       '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
