@@ -385,6 +385,17 @@ function setupNocks(prefixes?: boolean) {
   nock(process.env.CLUSTER_API_URL)
     .post(
       '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
+      '{"apiVersion":"authorization.k8s.io/v1","kind":"SelfSubjectAccessReview","metadata":{},"spec":{"resourceAttributes":{"group":"view.open-cluster-management.io","namespace":"feng-managed","resource":"managedclusterviews","verb":"create"}}}'
+    )
+    .reply(200, {
+      status: {
+        allowed: true,
+      },
+    })
+
+  nock(process.env.CLUSTER_API_URL)
+    .post(
+      '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
       '{"apiVersion":"authorization.k8s.io/v1","kind":"SelfSubjectAccessReview","metadata":{},"spec":{"resourceAttributes":{"group":"app.k8s.io","resource":"applications","verb":"list"}}}'
     )
     .reply(200, {
@@ -432,6 +443,17 @@ function setupNocks(prefixes?: boolean) {
         allowed: true,
       },
     })
+  nock(process.env.CLUSTER_API_URL)
+    .post(
+      '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
+      '{"apiVersion":"authorization.k8s.io/v1","kind":"SelfSubjectAccessReview","metadata":{},"spec":{"resourceAttributes":{"group":"view.open-cluster-management.io","namespace":"test-cluster","resource":"managedclusterviews","verb":"create"}}}'
+    )
+    .reply(200, {
+      status: {
+        allowed: true,
+      },
+    })
+
   nock(process.env.CLUSTER_API_URL)
     .post(
       '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
