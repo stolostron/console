@@ -68,6 +68,13 @@ describe('SearchPage', () => {
       {
         request: {
           query: SearchSchemaDocument,
+          variables: {
+            query: {
+              filters: [],
+              keywords: [],
+              limit: 10000,
+            },
+          },
         },
         result: {
           data: {
@@ -122,14 +129,13 @@ describe('SearchPage', () => {
       {
         request: {
           query: SearchSchemaDocument,
-        },
-        result: {
-          errors: [new GraphQLError('Error getting search schema data')],
-        },
-      },
-      {
-        request: {
-          query: SearchSchemaDocument,
+          variables: {
+            query: {
+              filters: [],
+              keywords: [],
+              limit: 10000,
+            },
+          },
         },
         result: {
           errors: [new GraphQLError('Error getting search schema data')],
@@ -186,14 +192,13 @@ describe('SearchPage', () => {
       {
         request: {
           query: SearchSchemaDocument,
-        },
-        result: {
-          errors: ['error sending federated request' as unknown as GraphQLError],
-        },
-      },
-      {
-        request: {
-          query: SearchSchemaDocument,
+          variables: {
+            query: {
+              filters: [],
+              keywords: [],
+              limit: 10000,
+            },
+          },
         },
         result: {
           errors: ['error sending federated request' as unknown as GraphQLError],
@@ -244,6 +249,13 @@ describe('SearchPage', () => {
       {
         request: {
           query: SearchSchemaDocument,
+          variables: {
+            query: {
+              filters: [],
+              keywords: [],
+              limit: 10000,
+            },
+          },
         },
         result: {
           data: {
@@ -333,6 +345,16 @@ describe('SearchPage', () => {
       {
         request: {
           query: SearchSchemaDocument,
+          variables: {
+            query: {
+              filters: [
+                { property: 'kind', values: ['Pod'] },
+                { property: 'name', values: ['testPod'] },
+              ],
+              keywords: [],
+              limit: 10000,
+            },
+          },
         },
         result: {
           data: {

@@ -2627,7 +2627,6 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-virtualma
     "id": "name",
     "isDefault": true,
     "order": 1,
-    "search": [Function],
     "sort": "name",
   },
   {
@@ -2648,7 +2647,6 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-virtualma
     "isDefault": false,
     "isFirstVisitChecked": true,
     "order": 3,
-    "search": [Function],
     "sort": "cluster",
   },
   {
