@@ -72,7 +72,7 @@ export async function getAuthorizedResources(
           : canListResources(token, resource)
       )
         .then((allowResource) => (allowResource ? resource : undefined))
-        .catch((err: unknown) => undefined) as Promise<IResource>
+        .catch(() => undefined) as Promise<IResource>
     })
     while (queue.length) {
       const resource = await queue.shift()
@@ -106,7 +106,7 @@ function canAccessRemoteResource(token: string, clusterNames: string[]): Promise
     )
   })
   return Promise.allSettled(promises).then((results) => {
-    return results.some((result) => result)
+    return results.some((result) => result.status == 'fulfilled' && result.value)
   })
 }
 
