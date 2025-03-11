@@ -2,6 +2,7 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
+import AcmTimestamp from '../../../../../lib/AcmTimestamp'
 import {
   computeNodeStatus,
   getPodState,
@@ -1860,16 +1861,17 @@ describe('setPodDeployStatus  with pod less then desired', () => {
       labelValue: 'Created',
       status: undefined,
       type: 'label',
-      value: '-',
+      value: <AcmTimestamp timestamp={undefined} />,
     },
     { type: 'spacer' },
   ]
+
   it('setPodDeployStatus with pod less then desired', () => {
     expect(setPodDeployStatus(node, [], {}, t)).toEqual(result)
   })
 })
 
-describe('setPodDeployStatus  with pod as desired', () => {
+describe('setPodDeployStatus with pod as desired', () => {
   const node = {
     type: 'pod',
     name: 'mortgage-app-deploy',
@@ -1938,6 +1940,7 @@ describe('setPodDeployStatus  with pod as desired', () => {
       },
     },
   }
+
   const result = [
     { type: 'spacer' },
     { labelValue: 'Pod details for {{0}}', type: 'label' },
@@ -1986,15 +1989,15 @@ describe('setPodDeployStatus  with pod as desired', () => {
       labelValue: 'Created',
       status: undefined,
       type: 'label',
-      value: '-',
+      value: <AcmTimestamp timestamp={undefined} />,
     },
     { type: 'spacer' },
     {
-      type: 'label',
-      labelValue: 'Namespace',
-      value: 'default',
       indent: undefined,
+      labelValue: 'Namespace',
       status: undefined,
+      type: 'label',
+      value: 'default',
     },
     {
       indent: undefined,
@@ -2034,7 +2037,7 @@ describe('setPodDeployStatus  with pod as desired', () => {
       labelValue: 'Created',
       status: undefined,
       type: 'label',
-      value: '-',
+      value: <AcmTimestamp timestamp={undefined} />,
     },
     { type: 'spacer' },
     {
@@ -2082,12 +2085,11 @@ describe('setPodDeployStatus  with pod as desired', () => {
       labelValue: 'Created',
       status: undefined,
       type: 'label',
-      value: '-',
+      value: <AcmTimestamp timestamp={undefined} />,
     },
-    {
-      type: 'spacer',
-    },
+    { type: 'spacer' },
   ]
+
   it('setPodDeployStatus with pod as desired', () => {
     expect(setPodDeployStatus(node, [], {}, t)).toEqual(result)
   })
@@ -2223,10 +2225,11 @@ describe('setPodDeployStatus - pod as desired with green filter', () => {
       labelValue: 'Created',
       status: undefined,
       type: 'label',
-      value: '-',
+      value: <AcmTimestamp timestamp={undefined} />,
     },
     { type: 'spacer' },
   ]
+
   it('setPodDeployStatus - pod as desired green filter', () => {
     expect(setPodDeployStatus(node, [], activeFilters, t)).toEqual(result)
   })

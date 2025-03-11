@@ -31,6 +31,7 @@ import {
   AcmPageHeader,
   AcmTable,
   AcmToastContext,
+  IAcmTableColumn,
 } from '../../../ui-components'
 import {
   ClosedDeleteExternalResourceModalProps,
@@ -59,7 +60,11 @@ import {
 import { useSearchDefinitions } from '../../Search/searchDefinitions'
 import { ISearchResult } from '../../Search/SearchResults/utils'
 import { useAllClusters } from '../Clusters/ManagedClusters/components/useAllClusters'
-import { getVirtualMachineRowActions } from './utils'
+import {
+  getVirtualMachineColumnExtensions,
+  getVirtualMachineRowActionExtensions,
+  getVirtualMachineRowActions,
+} from './utils'
 
 function VirtualMachineTable(props: Readonly<{ searchResultItems: ISearchResult[] | undefined }>) {
   const { searchResultItems } = props
@@ -68,6 +73,7 @@ function VirtualMachineTable(props: Readonly<{ searchResultItems: ISearchResult[
   const { settingsState } = useSharedAtoms()
   const vmActionsEnabled = useRecoilValue(settingsState)?.VIRTUAL_MACHINE_ACTIONS === 'enabled'
   const toast = useContext(AcmToastContext)
+  const { acmExtensions } = useContext(PluginContext)
   const allClusters = useAllClusters(true)
   const [deleteResource, setDeleteResource] = useState<IDeleteModalProps>(ClosedDeleteModalProps)
   const [deleteExternalResource, setDeleteExternalResource] = useState<IDeleteExternalResourceModalProps>(
@@ -78,6 +84,7 @@ function VirtualMachineTable(props: Readonly<{ searchResultItems: ISearchResult[
   const clusterVersions = useRecoilValue(clusterVersionState)
   const clusterVersion = clusterVersions?.[0]
   const ocpVersion = getMajorMinorVersion(getCurrentClusterVersion(clusterVersion)) || 'latest'
+  const [pluginModal, setPluginModal] = useState<JSX.Element>()
 
   const rowActionResolver = useCallback(
     (item: any) => {
@@ -89,14 +96,28 @@ function VirtualMachineTable(props: Readonly<{ searchResultItems: ISearchResult[
         vmActionsEnabled,
         toast,
         navigate,
-        t
+        t,
+        // get the row action extensions for the virtual machine
+        getVirtualMachineRowActionExtensions(item, acmExtensions?.virtualMachineAction || [], setPluginModal)
       )
     },
-    [allClusters, navigate, t, toast, vmActionsEnabled]
+    [allClusters, navigate, t, toast, vmActionsEnabled, acmExtensions]
+  )
+
+  const extensionColumns: IAcmTableColumn<ISearchResult>[] = useMemo(
+    // get the column extensions for the virtual machine
+    () => getVirtualMachineColumnExtensions(acmExtensions?.virtualMachineListColumn || []),
+    [acmExtensions]
+  )
+
+  const columns: IAcmTableColumn<ISearchResult>[] = useMemo(
+    () => [...searchDefinitions['virtualmachinespage'].columns, ...extensionColumns],
+    [searchDefinitions, extensionColumns]
   )
 
   return (
     <Fragment>
+      {pluginModal}
       <DeleteResourceModal
         open={deleteResource.open}
         close={deleteResource.close}
@@ -113,7 +134,7 @@ function VirtualMachineTable(props: Readonly<{ searchResultItems: ISearchResult[
       <AcmTable
         id="virtualMachinesTable"
         items={searchResultItems}
-        columns={searchDefinitions['virtualmachinespage'].columns}
+        columns={columns}
         rowActionResolver={rowActionResolver}
         keyFn={(item: any) => item._uid.toString()}
         emptyState={
