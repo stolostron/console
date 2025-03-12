@@ -66,9 +66,10 @@ const aap_unhealthy: SubscriptionOperator = {
   apiVersion: SubscriptionOperatorApiVersion,
   kind: SubscriptionOperatorKind,
   metadata: {
-    name: 'ansible-automation-platform-operator',
+    name: 'aap',
     namespace: 'ansible-automation-platform-operator',
   },
+  spec: { name: 'ansible-automation-platform-operator' },
   status: {
     conditions: [
       {
@@ -80,16 +81,16 @@ const aap_unhealthy: SubscriptionOperator = {
       },
     ],
   },
-  spec: {},
 }
 
 const aap: SubscriptionOperator = {
   apiVersion: SubscriptionOperatorApiVersion,
   kind: SubscriptionOperatorKind,
   metadata: {
-    name: 'ansible-automation-platform-operator',
+    name: 'aap',
     namespace: 'ansible-automation-platform-operator',
   },
+  spec: { name: 'ansible-automation-platform-operator' },
   status: {
     conditions: [
       {
@@ -101,16 +102,16 @@ const aap: SubscriptionOperator = {
       },
     ],
   },
-  spec: {},
 }
 
 const aap_withWorkflowSupport: SubscriptionOperator = {
   apiVersion: SubscriptionOperatorApiVersion,
   kind: SubscriptionOperatorKind,
   metadata: {
-    name: 'ansible-automation-platform-operator',
+    name: 'aap',
     namespace: 'ansible-automation-platform-operator',
   },
+  spec: { name: 'ansible-automation-platform-operator' },
   status: {
     conditions: [
       {
@@ -123,7 +124,6 @@ const aap_withWorkflowSupport: SubscriptionOperator = {
     ],
     installedCSV: 'aap-operator.v2.2.1+0.1668659261',
   },
-  spec: {},
 }
 
 function WrappedAutomationProviderHint(props: {
