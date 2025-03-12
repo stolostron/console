@@ -629,9 +629,10 @@ const subscriptionOperator: SubscriptionOperator = {
   apiVersion: SubscriptionOperatorApiVersion,
   kind: SubscriptionOperatorKind,
   metadata: {
-    name: 'ansible-automation-platform-operator',
+    name: 'aap',
     namespace: 'ansible-automation-platform-operator',
   },
+  spec: { name: 'ansible-automation-platform-operator' },
   status: {
     conditions: [
       {
@@ -643,7 +644,6 @@ const subscriptionOperator: SubscriptionOperator = {
       },
     ],
   },
-  spec: {},
 }
 
 ///////////////////////////////// TESTS /////////////////////////////////////////////////////
