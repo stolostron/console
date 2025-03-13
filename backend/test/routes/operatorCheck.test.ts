@@ -6,7 +6,8 @@ import nock from 'nock'
 const subscriptionOperators = {
   items: [
     {
-      metadata: { name: 'openshift-gitops-operator' },
+      metadata: { name: 'openshift-gitops' },
+      spec: { name: 'openshift-gitops-operator' },
       status: {
         installedCSV: 'openshift-gitops-operator.v1.8.2',
         conditions: [
