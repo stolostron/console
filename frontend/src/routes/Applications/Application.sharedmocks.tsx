@@ -68,9 +68,10 @@ export const gitOpsOperator: SubscriptionOperator = {
   apiVersion: SubscriptionOperatorApiVersion,
   kind: SubscriptionOperatorKind,
   metadata: {
-    name: 'openshift-gitops-operator',
+    name: 'openshift-gitops',
     namespace: 'openshift-operators',
   },
+  spec: { name: 'openshift-gitops-operator' },
   status: {
     conditions: [
       {
@@ -82,7 +83,6 @@ export const gitOpsOperator: SubscriptionOperator = {
       },
     ],
   },
-  spec: {},
 }
 
 export const mockApplication0: Application = {
