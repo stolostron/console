@@ -606,7 +606,7 @@ export const getOnCreateBMH =
     return createResource(bmh as IResource).promise as InfraEnvK8sResource
   }
 
-export const onSaveAgent = async (agent: AgentK8sResource, hostname: string) =>
+export const onChangeHostname = async (agent: AgentK8sResource, hostname: string) =>
   patchResource(agent as IResource, [
     {
       op: 'replace',
