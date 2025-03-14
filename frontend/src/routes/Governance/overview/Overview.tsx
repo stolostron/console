@@ -162,7 +162,10 @@ function SecurityGroupCard(props: { title: string; group: string; policies: Poli
       <Card isRounded>
         <CardTitle>{props.title}</CardTitle>
         <CardBody>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto auto', gap: 16 }}>
+          <div
+            className="card-body-grid"
+            style={{ display: 'grid', gridTemplateColumns: '1fr auto auto auto', gap: 16 }}
+          >
             {violations.map((violation) => {
               const key = `${props.title}-${violation.name}`
               if (!(violation.compliant || violation.noncompliant || violation.pending)) return <Fragment key={key} />
@@ -401,7 +404,10 @@ function renderClusterList(
   t: TFunction
 ) {
   return (
-    <div style={{ paddingBottom: '10px', display: 'grid', gridTemplateColumns: '1fr auto auto auto auto', gap: 16 }}>
+    <div
+      className="card-body-grid"
+      style={{ paddingBottom: '10px', display: 'grid', gridTemplateColumns: '1fr auto auto auto', gap: 16 }}
+    >
       {clusterList.map(({ cluster, violations }) => {
         const key = `${cluster?.metadata?.name}-card`
         /* istanbul ignore if */
