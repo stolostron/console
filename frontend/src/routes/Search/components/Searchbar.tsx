@@ -53,6 +53,8 @@ type SearchbarProps = {
   savedSearchQueries: SavedSearch[]
   searchResultData: SearchResultItemsQuery | undefined
   refetchSearch: any
+  inputPlaceholder?: string
+  exportEnabled?: boolean
 }
 
 export const convertStringToTags = (searchText: string) => {
@@ -110,6 +112,8 @@ export function Searchbar(props: SearchbarProps) {
     savedSearchQueries,
     searchResultData,
     refetchSearch,
+    inputPlaceholder,
+    exportEnabled,
   } = props
   const [t] = useTranslation()
   const navigate = useNavigate()
@@ -470,6 +474,7 @@ export function Searchbar(props: SearchbarProps) {
           onFocus={() => setMenuIsOpen(true)}
           onKeyDown={handleTextInputKeyDown}
           aria-label={t('Search input')}
+          placeholder={inputPlaceholder}
         >
           <AcmChipGroup aria-label={t('Search filters')}>
             {searchbarTags.map((searchbarTag, idx) => (
@@ -513,74 +518,74 @@ export function Searchbar(props: SearchbarProps) {
         <Button isInline variant="plain" onClick={toggleInfoModal} aria-label={t('Search help modal toggle')}>
           <HelpIcon color={'var(--pf-v5-global--active-color--100)'} />
         </Button>
-        <Divider orientation={{ default: 'vertical' }} />
-        <AcmButton
-          onClick={() =>
-            setSaveSearch({
-              id: '',
-              name: '',
-              description: '',
-              searchText: currentQuery,
-            })
-          }
-          isDisabled={currentQuery === '' || currentQuery.endsWith(':') || disableSaveSearch}
-          tooltip={saveSearchTooltip}
-          variant="plain"
-        >
-          {t('Save search')}
-        </AcmButton>
-        <Divider orientation={{ default: 'vertical' }} />
-        <Tooltip content={t('Export search results')}>
-          <Dropdown
-            onSelect={(event) => {
-              event?.stopPropagation()
-              setIsExportMenuOpen(false)
-            }}
-            className="export-dropdownMenu"
-            toggle={
-              <DropdownToggle
-                toggleIndicator={null}
-                onToggle={(event, value) => {
-                  event.stopPropagation()
-                  setIsExportMenuOpen(value)
+        {setSaveSearch && saveSearchTooltip && (
+          <>
+            <Divider orientation={{ default: 'vertical' }} />
+            <AcmButton
+              onClick={() =>
+                setSaveSearch({
+                  id: '',
+                  name: '',
+                  description: '',
+                  searchText: currentQuery,
+                })
+              }
+              isDisabled={currentQuery === '' || currentQuery.endsWith(':') || disableSaveSearch}
+              tooltip={saveSearchTooltip}
+              variant="plain"
+            >
+              {t('Save search')}
+            </AcmButton>
+          </>
+        )}
+        {exportEnabled && (
+          <>
+            <Divider orientation={{ default: 'vertical' }} />
+            <Tooltip content={t('Export search results')}>
+              <Dropdown
+                onSelect={(event) => {
+                  event?.stopPropagation()
+                  setIsExportMenuOpen(false)
                 }}
-                aria-label="export-search-result"
-                id="export-search-result"
-              >
-                <ExportIcon />
-              </DropdownToggle>
-            }
-            isOpen={isExportMenuOpen}
-            isPlain
-            dropdownItems={[
-              <DropdownItem
-                style={{ width: '10rem' }}
-                key={'csv-export'}
-                onClick={() =>
-                  handleCSVExport(
-                    currentQuery,
-
-                    savedSearchQueries,
-                    searchResultData,
-                    searchDefinitions,
-                    toast,
-                    t
-                  )
+                className="export-dropdownMenu"
+                toggle={
+                  <DropdownToggle
+                    toggleIndicator={null}
+                    onToggle={(event, value) => {
+                      event.stopPropagation()
+                      setIsExportMenuOpen(value)
+                    }}
+                    aria-label="export-search-result"
+                    id="export-search-result"
+                  >
+                    <ExportIcon />
+                  </DropdownToggle>
                 }
-                isDisabled={window.location.search === ''}
-              >
-                {t('Export as CSV')}
-              </DropdownItem>,
-            ]}
-            position={'right'}
-          />
-        </Tooltip>
+                isOpen={isExportMenuOpen}
+                isPlain
+                dropdownItems={[
+                  <DropdownItem
+                    style={{ width: '10rem' }}
+                    key={'csv-export'}
+                    onClick={() =>
+                      handleCSVExport(currentQuery, savedSearchQueries, searchResultData, searchDefinitions, toast, t)
+                    }
+                    isDisabled={window.location.search === ''}
+                  >
+                    {t('Export as CSV')}
+                  </DropdownItem>,
+                ]}
+                position={'right'}
+              />
+            </Tooltip>
+          </>
+        )}
       </TextInputGroup>
     </div>
   )
 
   const menu = (
-    <div style={{ maxWidth: '33%' }} ref={menuRef}>
+    <div ref={menuRef}>
       <Menu isScrollable onSelect={onSelect}>
         <MenuContent maxMenuHeight={'400px'}>
           <MenuList>{menuItems}</MenuList>
@@ -596,6 +601,7 @@ export function Searchbar(props: SearchbarProps) {
       appendTo={() => textInputGroupRef?.current}
       isVisible={menuIsOpen}
       onDocumentClick={handleClick}
+      minWidth={'33%'}
     />
   )
 }

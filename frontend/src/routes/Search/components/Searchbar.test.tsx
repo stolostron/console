@@ -240,6 +240,7 @@ const PrefilledSearchbar = () => (
             ],
           }}
           refetchSearch={() => {}}
+          exportEnabled={true}
         />
       </MockedProvider>
     </MemoryRouter>

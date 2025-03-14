@@ -9,13 +9,13 @@ import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { searchOperatorState } from '../../../atoms'
 import { nockPostRequest } from '../../../lib/nock-util'
-import { wait, waitForNocks } from '../../../lib/test-util'
-import { SearchOperator } from '../../../resources'
-import { SearchResultItemsDocument } from '../../Search/search-sdk/search-sdk'
-import VirtualMachinesPage from './VirtualMachinesPage'
-import { AcmExtension } from '../../../plugin-extensions/types'
 import { defaultPlugin, PluginContext } from '../../../lib/PluginContext'
+import { wait, waitForNocks } from '../../../lib/test-util'
 import { ActionExtensionProps, ListColumnExtensionProps } from '../../../plugin-extensions/properties'
+import { AcmExtension } from '../../../plugin-extensions/types'
+import { SearchOperator } from '../../../resources'
+import { SearchResultItemsDocument, SearchSchemaDocument } from '../../Search/search-sdk/search-sdk'
+import VirtualMachinesPage from './VirtualMachinesPage'
 
 const mockHealthySearchOperator: SearchOperator = {
   apiVersion: 'search.open-cluster-management.io/v1alpha1',
@@ -120,6 +120,25 @@ describe('VirtualMachinesPage Page', () => {
   it('should render page with correct vm data', async () => {
     const metricNock = nockPostRequest('/metrics?virtual-machines', {})
     const mocks = [
+      {
+        request: {
+          query: SearchSchemaDocument,
+          variables: {
+            query: {
+              filters: [{ property: 'kind', values: ['VirtualMachine', 'VirtualMachineInstance'] }],
+              keywords: [],
+              limit: 10000,
+            },
+          },
+        },
+        result: {
+          data: {
+            searchSchema: {
+              allProperties: ['cluster', 'kind', 'label', 'name', 'namespace'],
+            },
+          },
+        },
+      },
       {
         request: {
           query: SearchResultItemsDocument,
@@ -298,6 +317,25 @@ describe('VirtualMachinesPage Page', () => {
   it('should render page with errors', async () => {
     const metricNock = nockPostRequest('/metrics?virtual-machines', {})
     const mocks = [
+      {
+        request: {
+          query: SearchSchemaDocument,
+          variables: {
+            query: {
+              filters: [{ property: 'kind', values: ['VirtualMachine', 'VirtualMachineInstance'] }],
+              keywords: [],
+              limit: 10000,
+            },
+          },
+        },
+        result: {
+          data: {
+            searchSchema: {
+              allProperties: ['cluster', 'kind', 'label', 'name', 'namespace'],
+            },
+          },
+        },
+      },
       {
         request: {
           query: SearchResultItemsDocument,
