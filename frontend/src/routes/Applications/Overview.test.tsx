@@ -41,6 +41,10 @@ import {
   mockSubscriptions,
 } from './Application.sharedmocks'
 import Overview from './Overview'
+import { useIsAnyNamespaceAuthorized } from '../../lib/rbac-util'
+
+jest.mock('../../lib/rbac-util')
+;(useIsAnyNamespaceAuthorized as jest.Mock).mockImplementation(() => true)
 
 const applicationAggregate = {
   req: { page: 1, perPage: 10, search: '', filters: {}, sortBy: { index: 0, direction: 'asc' } },
@@ -235,6 +239,16 @@ describe('Applications Page', () => {
 
     // clear openshift filter
     userEvent.click(screen.getByRole('button', { name: /close openshift/i }))
+  })
+
+  test('should delete application', async () => {
+    // wait for page to load
+    await waitForText('feng-remote-argo8')
+
+    // click delete
+    userEvent.click(screen.getAllByRole('button', { name: /actions/i })[1])
+    userEvent.click(screen.getByText(/delete application/i))
+    expect(screen.getByText(/permanently delete applicationset applicationset-0\?/i)).toBeTruthy()
   })
 
   test('export button should produce a file for download', async () => {

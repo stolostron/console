@@ -282,6 +282,9 @@ export const mockApplicationSet0: ApplicationSet = {
       },
     },
   },
+  uidata: {
+    appSetRelatedResources: ['', []],
+  },
 }
 
 export const mockApplicationSet1: ApplicationSet = {

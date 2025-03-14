@@ -13,6 +13,7 @@ import { useSearchParams } from '../../../lib/search'
 import { NavigationPath } from '../../../NavigationPath'
 import {
   ApplicationSet,
+  ApplicationSetApiVersion,
   ApplicationSetKind,
   getGitChannelBranches,
   getGitChannelPaths,
@@ -20,7 +21,7 @@ import {
   Placement,
   PlacementKind,
 } from '../../../resources'
-import { reconcileResources } from '../../../resources/utils'
+import { listResources, reconcileResources } from '../../../resources/utils'
 import { AcmToastContext } from '../../../ui-components'
 import { argoAppSetQueryString } from './actions'
 import schema from './schema.json'
@@ -56,7 +57,6 @@ export function EditArgoApplicationSet() {
   const {
     channelsState,
     namespacesState,
-    applicationSetsState,
     placementsState,
     gitOpsClustersState,
     managedClustersState,
@@ -69,7 +69,6 @@ export function EditArgoApplicationSet() {
   const searchParams = useSearchParams()
   const toast = useContext(AcmToastContext)
   const { name = '', namespace = '' } = useParams<PathParam<NavigationPath.editApplicationArgo>>()
-  const applicationSets = useRecoilValue(applicationSetsState)
   const placements = useRecoilValue(placementsState)
   const gitOpsClusters = useRecoilValue(gitOpsClustersState)
   const channels = useRecoilValue(channelsState)
@@ -85,54 +84,78 @@ export function EditArgoApplicationSet() {
 
   const [existingResources, setExistingResources] = useState<IResource[]>()
   const [pullModel, setPullModel] = useState<boolean>(false)
+  const [applicationSets, setApplicationSets] = useState<ApplicationSet[]>()
+  const [loadingAppSets, setLoadingAppSets] = useState(true)
+
+  // instead of burdoning recoil with appsets, use old fashioned fetch
+  // opening wizard may take longer, but argo wizards are probably seldom used
+  useEffect(() => {
+    const fetchAppSets = async () => {
+      try {
+        const response = await listResources<ApplicationSet>({
+          apiVersion: ApplicationSetApiVersion,
+          kind: ApplicationSetKind,
+        }).promise
+        setApplicationSets(response)
+        setLoadingAppSets(false)
+      } catch {
+        setLoadingAppSets(false)
+      }
+    }
+    fetchAppSets()
+  }, [])
 
   useEffect(() => {
-    const applicationSet = applicationSets.find(
-      (policySet) => policySet.metadata.namespace == namespace && policySet.metadata.name === name
-    )
+    if (applicationSets) {
+      const applicationSet = applicationSets.find(
+        (policySet) => policySet.metadata.namespace == namespace && policySet.metadata.name === name
+      )
 
-    if (applicationSet?.spec.template?.metadata?.annotations?.['apps.open-cluster-management.io/ocm-managed-cluster']) {
-      setPullModel(true)
-    }
-    const copyOfAppSet = JSON.parse(JSON.stringify(applicationSet))
-    const sources = get(applicationSet, 'spec.template.spec.sources')?.map(
-      (source: { path: string; chart: string }) => {
-        if (source.path) {
+      if (
+        applicationSet?.spec.template?.metadata?.annotations?.['apps.open-cluster-management.io/ocm-managed-cluster']
+      ) {
+        setPullModel(true)
+      }
+      const copyOfAppSet = JSON.parse(JSON.stringify(applicationSet))
+      const sources = get(applicationSet, 'spec.template.spec.sources')?.map(
+        (source: { path: string; chart: string }) => {
+          if (source.path) {
+            return {
+              ...source,
+              repositoryType: 'git',
+            }
+          }
+
+          if (source.chart) {
+            return { ...source, repositoryType: 'helm' }
+          }
+
+          // path is optional
           return {
             ...source,
             repositoryType: 'git',
           }
         }
+      )
 
-        if (source.chart) {
-          return { ...source, repositoryType: 'helm' }
-        }
-
-        // path is optional
-        return {
-          ...source,
-          repositoryType: 'git',
-        }
+      if (sources) {
+        set(copyOfAppSet, 'spec.template.spec.sources', sources)
       }
-    )
 
-    if (sources) {
-      set(copyOfAppSet, 'spec.template.spec.sources', sources)
+      if (applicationSet === undefined) {
+        navigate(NavigationPath.applications)
+        return
+      }
+      const applicationSetPlacements = placements.filter((placement) =>
+        isPlacementUsedByApplicationSet(applicationSet, placement)
+      )
+      setExistingResources([copyOfAppSet, ...applicationSetPlacements])
     }
-
-    if (applicationSet === undefined) {
-      navigate(NavigationPath.applications)
-      return
-    }
-    const applicationSetPlacements = placements.filter((placement) =>
-      isPlacementUsedByApplicationSet(applicationSet, placement)
-    )
-    setExistingResources([copyOfAppSet, ...applicationSetPlacements])
   }, [applicationSets, navigate, name, namespace, placements])
 
   const { cancelForm, submitForm } = useContext(LostChangesContext)
 
-  if (existingResources === undefined) {
+  if (existingResources === undefined || loadingAppSets || !applicationSets) {
     return <LoadingPage />
   }
 

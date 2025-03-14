@@ -84,7 +84,7 @@ describe(`aggregator Route`, function () {
 
     // FILTERED
     const res = await request('POST', '/aggregate/statuses', {
-      clusters: ['local-cluster'],
+      clusters: ['local-cluster', 'mycluster'],
     })
     expect(res.statusCode).toEqual(200)
     expect(JSON.stringify(await parseResponseJsonBody(res))).toEqual(JSON.stringify(responseCount))
@@ -102,13 +102,15 @@ const responseCount = {
       openshift: 1,
     },
     cluster: {
-      'local-cluster': 3,
+      'local-cluster': 2,
+      mycluster: 1,
     },
   },
   systemAppNSPrefixes: systemPrefixes,
   loading: false,
 }
 
+type RelatedResourcesType = (string | string[])[]
 const responseNoFilter = {
   page: 1,
   items: [
@@ -118,6 +120,51 @@ const responseNoFilter = {
       metadata: {
         name: 'argoapplication-1',
         namespace: 'openshift-gitops',
+      },
+      spec: {
+        generators: [
+          {
+            clusterDecisionResource: {
+              configMapRef: 'acm-placement',
+              labelSelector: {
+                matchLabels: {
+                  'cluster.open-cluster-management.io/placement': 'test-placement-1',
+                },
+              },
+              requeueAfterSeconds: 180,
+            },
+          },
+        ],
+        template: {
+          metadata: {
+            labels: {
+              'velero.io/exclude-from-backup': 'true',
+            },
+            name: 'magchen-appset-{{name}}',
+          },
+          spec: {
+            destination: {
+              namespace: 'magchen-ns',
+              server: '{{server}}',
+            },
+            project: 'default',
+            source: {
+              path: 'acmnestedapp',
+              repoURL: 'https://github.com/fxiang1/app-samples',
+              targetRevision: 'main',
+            },
+            syncPolicy: {
+              automated: {
+                prune: true,
+                selfHeal: true,
+              },
+              syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
+            },
+          },
+        },
+      },
+      uidata: {
+        appSetRelatedResources: ['test-placement-1', []] as RelatedResourcesType,
       },
     },
     {
@@ -141,6 +188,9 @@ const responseNoFilter = {
         syncPolicy: {},
       },
       status: {},
+      uidata: {
+        appSetRelatedResources: ['', []] as RelatedResourcesType,
+      },
     },
     {
       apiVersion: 'apps/v1',
@@ -154,6 +204,9 @@ const responseNoFilter = {
         cluster: 'local-cluster',
         resourceName: 'authentication-operator',
       },
+      uidata: {
+        appSetRelatedResources: ['', []] as RelatedResourcesType,
+      },
     },
     {
       apiVersion: 'apps/v1',
@@ -166,6 +219,9 @@ const responseNoFilter = {
       status: {
         cluster: 'test-cluster',
         resourceName: 'authentication-operator',
+      },
+      uidata: {
+        appSetRelatedResources: ['', []],
       },
     },
     {
@@ -192,6 +248,9 @@ const responseNoFilter = {
         health: {},
         sync: {},
       },
+      uidata: {
+        appSetRelatedResources: ['', []] as RelatedResourcesType,
+      },
     },
     {
       apiVersion: 'app.k8s.io/v1beta1',
@@ -205,6 +264,9 @@ const responseNoFilter = {
             'default/test-subscription-1,default/test-subscription-1-local',
         },
       },
+      uidata: {
+        appSetRelatedResources: ['', []] as RelatedResourcesType,
+      },
     },
     {
       apiVersion: 'apps/v1',
@@ -217,6 +279,9 @@ const responseNoFilter = {
       status: {
         cluster: 'test-cluster',
         resourceName: 'test-app',
+      },
+      uidata: {
+        appSetRelatedResources: ['', []],
       },
     },
   ],
@@ -248,6 +313,9 @@ const responseFiltered = {
             'default/test-subscription-1,default/test-subscription-1-local',
         },
       },
+      uidata: {
+        appSetRelatedResources: ['', []] as RelatedResourcesType,
+      },
     },
   ],
   processedItemCount: 1,
@@ -266,7 +334,6 @@ const responseFiltered = {
     },
   },
 }
-
 /// to get exact nock request body, put bp at line 303 in /backend/node_modules/nock/lib/intercepted_request_router.js
 function setupNocks(prefixes?: boolean) {
   //
@@ -588,6 +655,48 @@ const resourceCache = {
           name: 'argoapplication-1',
           namespace: 'openshift-gitops',
         },
+        spec: {
+          generators: [
+            {
+              clusterDecisionResource: {
+                configMapRef: 'acm-placement',
+                labelSelector: {
+                  matchLabels: {
+                    'cluster.open-cluster-management.io/placement': 'test-placement-1',
+                  },
+                },
+                requeueAfterSeconds: 180,
+              },
+            },
+          ],
+          template: {
+            metadata: {
+              labels: {
+                'velero.io/exclude-from-backup': 'true',
+              },
+              name: 'magchen-appset-{{name}}',
+            },
+            spec: {
+              destination: {
+                namespace: 'magchen-ns',
+                server: '{{server}}',
+              },
+              project: 'default',
+              source: {
+                path: 'acmnestedapp',
+                repoURL: 'https://github.com/fxiang1/app-samples',
+                targetRevision: 'main',
+              },
+              syncPolicy: {
+                automated: {
+                  prune: true,
+                  selfHeal: true,
+                },
+                syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
+              },
+            },
+          },
+        },
       },
       eventID: 0,
     },
@@ -718,6 +827,44 @@ const resourceCache = {
           decisions: [
             {
               clusterName: 'local-cluster',
+              reason: '',
+            },
+          ],
+        },
+      },
+      eventID: 31,
+    },
+    '7ba09bb1-5211-490f-a6d1-456392886ab0': {
+      resource: {
+        apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+        kind: 'PlacementDecision',
+        metadata: {
+          creationTimestamp: '2024-07-02T17:45:25Z',
+          generation: 1,
+          labels: {
+            'cluster.open-cluster-management.io/decision-group-index': '0',
+            'cluster.open-cluster-management.io/decision-group-name': '',
+            'cluster.open-cluster-management.io/placement': 'test-placement-1',
+          },
+          name: 'test-placement-1-decision-1',
+          namespace: 'openshift-gitops',
+          ownerReferences: [
+            {
+              apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+              blockOwnerDeletion: true,
+              controller: true,
+              kind: 'Placement',
+              name: 'test-placement-1',
+              uid: '458708a1-f9fd-498b-9c2f-420ba246fe3f',
+            },
+          ],
+          resourceVersion: '1625071',
+          uid: '7ba09bb1-5211-490f-a6d1-456322886ab0',
+        },
+        status: {
+          decisions: [
+            {
+              clusterName: 'mycluster',
               reason: '',
             },
           ],
