@@ -29,8 +29,8 @@ export interface JobTableData {
   name: string
   namespace: string
   status: string
-  started: React.ReactNode
-  finished: React.ReactNode
+  started: string | undefined
+  finished: string | undefined
 }
 
 export function AutomationDetailsSidebar(props: {
@@ -98,8 +98,8 @@ export function AutomationDetailsSidebar(props: {
             name: job.metadata.name!,
             namespace: job.metadata.namespace!,
             status: jobResult?.status ?? 'No status',
-            started: <AcmTimestamp timestamp={jobResult?.started ?? ansibleResultCondition?.lastTransitionTime} />,
-            finished: <AcmTimestamp timestamp={jobResult?.finished ?? ansibleResultCondition?.lastTransitionTime} />,
+            started: jobResult?.started ?? ansibleResultCondition?.lastTransitionTime,
+            finished: jobResult?.finished ?? ansibleResultCondition?.lastTransitionTime,
           }
         }),
     [ansibleJobs, policyAutomationMatch.metadata.name]
@@ -149,12 +149,12 @@ export function AutomationDetailsSidebar(props: {
       },
       {
         header: 'Started',
-        cell: 'started',
+        cell: (item: JobTableData) => <AcmTimestamp timestamp={item.started} />,
         sort: 'started',
       },
       {
         header: 'Finished',
-        cell: 'finished',
+        cell: (item: JobTableData) => <AcmTimestamp timestamp={item.finished} />,
         sort: 'finished',
       },
       {
