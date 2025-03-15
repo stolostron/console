@@ -66,11 +66,11 @@ export function CreateCredentialsFormPage(props: { credentialsType: CredentialsT
   const { t } = useTranslation()
   const { credentialsType } = props
 
-  const { projects, error } = useProjects()
+  const { projects, error, loading } = useProjects()
 
   if (error) return <ErrorPage error={error} />
 
-  if (!projects) return <LoadingPage />
+  if (loading) return <LoadingPage />
   if (projects.length === 0) {
     return (
       <AcmPage

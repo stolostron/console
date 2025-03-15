@@ -22,6 +22,7 @@ import { getMultiClusterEngine } from '../../lib/multi-cluster-engine'
 export function transform(items: ITransformedResource[], clusters?: Cluster[], isRemote?: boolean): ApplicationCache {
   const subscriptions = getKubeResources('Subscription', 'apps.open-cluster-management.io/v1')
   const placementDecisions = getKubeResources('PlacementDecision', 'cluster.open-cluster-management.io/v1beta1')
+  const localCluster = getHubClusterName()
   items.forEach((app) => {
     const type = getApplicationType(app)
     const _clusters = getApplicationClusters(app, type, subscriptions, placementDecisions, clusters)
@@ -34,7 +35,8 @@ export function transform(items: ITransformedResource[], clusters?: Cluster[], i
       ['t'], // time window
       [app.metadata.creationTimestamp as string],
     ]
-    app.remoteClusters = isRemote && _clusters
+    app.remoteClusters =
+      (isRemote || (type === 'subscription' && _clusters.filter((n) => n !== localCluster)).length > 0) && _clusters
   })
   return { resources: items }
 }
