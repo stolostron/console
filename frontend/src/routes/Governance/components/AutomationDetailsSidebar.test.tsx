@@ -256,7 +256,6 @@ describe('AutomationDetailsSidebar', () => {
 
     expect(screen.getByText(/^Status:/)).toBeInTheDocument()
     expect(screen.getByText(/Successful/)).toBeInTheDocument()
-    screen.logTestingPlaygroundURL()
 
     expect(screen.getByText(/^Started:/)).toBeInTheDocument()
     expect(screen.getByText('2023-01-01T12:00:00Z')).toBeInTheDocument()
