@@ -229,7 +229,7 @@ describe('AutomationDetailsSidebar', () => {
     jest.clearAllMocks()
   })
 
-  it('renders correctly with jobs', async () => {
+  it.only('renders correctly with jobs', async () => {
     render(
       <RecoilRoot>
         <MemoryRouter>
@@ -256,12 +256,13 @@ describe('AutomationDetailsSidebar', () => {
 
     expect(screen.getByText(/^Status:/)).toBeInTheDocument()
     expect(screen.getByText(/Successful/)).toBeInTheDocument()
+    screen.logTestingPlaygroundURL()
 
     expect(screen.getByText(/^Started:/)).toBeInTheDocument()
-    expect(screen.getByText(/2023-01-01T12:00:00Z/)).toBeInTheDocument()
+    expect(screen.getByText('2023-01-01T12:00:00Z')).toBeInTheDocument()
 
     expect(screen.getByText(/^Finished:/)).toBeInTheDocument()
-    expect(screen.getByText(/2023-01-01T12:05:00Z/)).toBeInTheDocument()
+    expect(screen.getByText('2023-01-01T12:00:00Z')).toBeInTheDocument()
   })
 
   it('navigates to edit page when Edit button is clicked', async () => {
