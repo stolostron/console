@@ -229,7 +229,7 @@ describe('AutomationDetailsSidebar', () => {
     jest.clearAllMocks()
   })
 
-  it.only('renders correctly with jobs', async () => {
+  it('renders correctly with jobs', async () => {
     render(
       <RecoilRoot>
         <MemoryRouter>
