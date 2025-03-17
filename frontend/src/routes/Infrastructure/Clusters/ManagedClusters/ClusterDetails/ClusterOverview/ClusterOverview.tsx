@@ -274,7 +274,7 @@ export function ClusterOverviewPageContent(props: {
         <>
           <div>{cluster?.labels?.clusterID}</div>
           <a
-            href={`https://console.redhat.com/openshift/details/s/${cluster?.labels?.clusterID}`}
+            href={`https://console.redhat.com/openshift/details/${cluster?.labels?.clusterID}`}
             target="_blank"
             rel="noreferrer"
           >
