@@ -2,7 +2,7 @@
 
 import { KeyboardEvent, useEffect, useState } from 'react'
 import { SyncAltIcon } from '@patternfly/react-icons'
-import { Dropdown, DropdownItem, DropdownToggle } from '@patternfly/react-core/deprecated'
+import { Dropdown, DropdownItem, DropdownList, MenuToggle, MenuToggleElement } from '@patternfly/react-core'
 import { css } from '@emotion/css'
 
 const DEFAULTS = {
@@ -165,22 +165,30 @@ export function AcmAutoRefreshSelect(props: AcmAutoRefreshSelectProps) {
         onSelect={() => setOpen(!isOpen)}
         isOpen={isOpen}
         isPlain
-        toggle={
-          <DropdownToggle
+        toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+          <MenuToggle
+            ref={toggleRef}
             id="refresh-toggle"
             aria-label="refresh-label"
+            onClick={() => {
+              setOpen(!isOpen)
+            }}
             isDisabled={false}
-            onToggle={() => setOpen(!isOpen)}
+            variant="plain"
+            isExpanded={isOpen}
           >
             {conversion(selected)}
-          </DropdownToggle>
-        }
-        dropdownItems={autoRefreshChoices.map((item) => (
-          <DropdownItem key={item.id} {...item} onClick={() => setValue(item.pi)}>
-            {conversion(item.pi)}
-          </DropdownItem>
-        ))}
-      />
+          </MenuToggle>
+        )}
+      >
+        <DropdownList>
+          {autoRefreshChoices.map((item) => (
+            <DropdownItem key={item.id} {...item} onClick={() => setValue(item.pi)}>
+              {conversion(item.pi)}
+            </DropdownItem>
+          ))}
+        </DropdownList>
+      </Dropdown>
     </div>
   )
 }

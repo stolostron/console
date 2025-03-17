@@ -1,18 +1,20 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Fragment, useState } from 'react'
-import { Label, LabelProps, TooltipPosition } from '@patternfly/react-core'
 import {
+  Label,
+  LabelProps,
+  TooltipPosition,
   Dropdown,
-  DropdownToggle,
   DropdownItem,
-  DropdownPosition,
-  KebabToggle,
+  Divider,
+  MenuToggle,
+  MenuToggleElement,
   DropdownProps,
-  DropdownSeparator,
-} from '@patternfly/react-core/deprecated'
+} from '@patternfly/react-core'
 import { css } from '@emotion/css'
 import { TooltipWrapper } from '../utils'
+import { EllipsisVIcon } from '@patternfly/react-icons'
 
 type Props = Omit<DropdownProps, 'toggle' | 'onSelect' | 'dropdownItems'>
 
@@ -32,7 +34,6 @@ export type AcmDropdownProps = Props & {
   tooltipPosition?: TooltipPosition
   label?: string | React.ReactNode
   labelColor?: LabelProps['color']
-  dropdownPosition?: DropdownPosition
 }
 
 export type AcmDropdownItems = {
@@ -117,15 +118,48 @@ export function AcmDropdown(props: AcmDropdownProps) {
       <Dropdown
         className={classes.button}
         onMouseOver={props.onHover}
-        position={props.dropdownPosition || DropdownPosition.right}
-        dropdownItems={props.dropdownItems.map((item) => {
+        onSelect={() => setOpen(!isOpen)}
+        toggle={(toggleRef: React.Ref<MenuToggleElement>) =>
+          props.isKebab ? (
+            <MenuToggle
+              id={props.id}
+              isDisabled={props.isDisabled}
+              onClick={() => {
+                /* istanbul ignore next */
+                if (props.onToggle) {
+                  props.onToggle(!isOpen)
+                }
+                setOpen(!isOpen)
+              }}
+              ref={toggleRef}
+              icon={<EllipsisVIcon />}
+            ></MenuToggle>
+          ) : (
+            <MenuToggle
+              variant={props.isPrimary ? 'primary' : undefined}
+              id={props.id}
+              isDisabled={props.isDisabled}
+              onClick={() => {
+                if (props.onToggle) {
+                  props.onToggle(!isOpen)
+                }
+                setOpen(!isOpen)
+              }}
+            >
+              {props.text}
+            </MenuToggle>
+          )
+        }
+        isOpen={isOpen}
+        isPlain={props.isPlain}
+      >
+        {props.dropdownItems.map((item) => {
           return (
             <Fragment key={item.id}>
-              {item.separator && <DropdownSeparator key="separator" />}
+              {item.separator && <Divider key="separator" />}
               <DropdownItem
                 key={item.id}
-                tooltip={item.tooltip}
-                tooltipProps={{ position: item.tooltipPosition }}
+                tooltipProps={{ content: item.tooltip, position: item.tooltipPosition }}
                 href={item.href}
                 id={item.id}
                 isAriaDisabled={item.isAriaDisabled}
@@ -144,38 +178,7 @@ export function AcmDropdown(props: AcmDropdownProps) {
             </Fragment>
           )
         })}
-        toggle={
-          props.isKebab ? (
-            <KebabToggle
-              id={props.id}
-              isDisabled={props.isDisabled}
-              onToggle={() => {
-                /* istanbul ignore next */
-                if (props.onToggle) {
-                  props.onToggle(!isOpen)
-                }
-                setOpen(!isOpen)
-              }}
-            />
-          ) : (
-            <DropdownToggle
-              toggleVariant={props.isPrimary ? 'primary' : undefined}
-              id={props.id}
-              isDisabled={props.isDisabled}
-              onToggle={() => {
-                if (props.onToggle) {
-                  props.onToggle(!isOpen)
-                }
-                setOpen(!isOpen)
-              }}
-            >
-              {props.text}
-            </DropdownToggle>
-          )
-        }
-        isOpen={isOpen}
-        isPlain={props.isPlain}
-      />
+      </Dropdown>
     </TooltipWrapper>
   )
 }
