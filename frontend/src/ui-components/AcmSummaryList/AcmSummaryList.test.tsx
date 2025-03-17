@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { OptionsMenu, OptionsMenuItem, OptionsMenuToggleWithText } from '@patternfly/react-core/deprecated'
+import { MenuToggle, MenuToggleElement, Select, SelectList, SelectOption } from '@patternfly/react-core'
 import { CaretDownIcon } from '@patternfly/react-icons'
 import { render } from '@testing-library/react'
 import { axe } from 'jest-axe'
@@ -61,21 +61,29 @@ describe('AcmSummaryList', () => {
 
 export const Menu = () => {
   const [isOpen, setOpen] = useState<boolean>(false)
-  const noop = () => null
-  const menuItems = [
-    <OptionsMenuItem id="aws" key="1" onSelect={noop}>
-      Amazon
-    </OptionsMenuItem>,
-    <OptionsMenuItem id="gcp" key="2" onSelect={noop}>
-      Google
-    </OptionsMenuItem>,
-  ]
-  const toggle = (
-    <OptionsMenuToggleWithText
-      toggleText="All providers"
-      toggleButtonContents={<CaretDownIcon />}
-      onToggle={() => setOpen(!isOpen)}
-    />
+  const [selected, setSelected] = useState<string>('')
+
+  return (
+    <Select
+      isOpen={isOpen}
+      onOpenChange={(isOpen) => setOpen(isOpen)}
+      toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+        <MenuToggle ref={toggleRef} onClick={() => setOpen(!isOpen)} isExpanded={isOpen} icon={<CaretDownIcon />}>
+          All providers
+        </MenuToggle>
+      )}
+      id="fake"
+      selected={selected}
+      onSelect={(_ev, value) => value && setSelected(value.toString())}
+    >
+      <SelectList>
+        <SelectOption value="Amazon" isSelected={selected === 'Amazon'}>
+          Amazon
+        </SelectOption>
+        <SelectOption value="Google" isSelected={selected === 'Google'} isDisabled>
+          Google
+        </SelectOption>
+      </SelectList>
+    </Select>
   )
-  return <OptionsMenu id="fake" menuItems={menuItems} isOpen={isOpen} isPlain isText toggle={toggle} />
 }

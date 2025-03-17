@@ -6,15 +6,18 @@ import {
   CardBody,
   CardTitle,
   Divider,
+  Dropdown,
+  DropdownItem,
   Gallery,
   GalleryItem,
+  MenuToggle,
+  MenuToggleElement,
   PageSection,
   Popover,
   Skeleton,
   TextVariants,
 } from '@patternfly/react-core'
-import { Dropdown, DropdownItem, KebabToggle } from '@patternfly/react-core/deprecated'
-import { AngleDownIcon, AngleUpIcon, ExternalLinkAltIcon, HelpIcon } from '@patternfly/react-icons'
+import { AngleDownIcon, AngleUpIcon, ExternalLinkAltIcon, HelpIcon, EllipsisVIcon } from '@patternfly/react-icons'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AcmDynamicGrid } from '../../../components/AcmDynamicGrid'
 import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
@@ -352,27 +355,36 @@ export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Re
                 {t('Worker core count')}
                 <Dropdown
                   onSelect={() => setIsOpen(!isOpen)}
-                  toggle={<KebabToggle id="toggle-kebab" onToggle={(_event, isOpen: boolean) => setIsOpen(isOpen)} />}
+                  toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+                    <MenuToggle
+                      ref={toggleRef}
+                      onClick={() => {
+                        setIsOpen(!isOpen)
+                      }}
+                      variant="plain"
+                      isExpanded={isOpen}
+                      icon={<EllipsisVIcon />}
+                    />
+                  )}
                   isOpen={isOpen}
                   isPlain
-                  dropdownItems={[
-                    <DropdownItem
-                      key="action"
-                      onClick={() =>
-                        setSummarySectionWidgetToggle({
-                          clusterProvider: { visible: true, position: 0 },
-                          appType: { visible: true, position: 1 },
-                          policies: { visible: true, position: 2 },
-                          clusterVersion: { visible: true, position: 3 },
-                          nodes: { visible: true, position: 4 },
-                          coreCount: { visible: false, position: 5 },
-                        })
-                      }
-                    >
-                      {t('Hide card')}
-                    </DropdownItem>,
-                  ]}
-                />
+                >
+                  <DropdownItem
+                    key="action"
+                    onClick={() =>
+                      setSummarySectionWidgetToggle({
+                        clusterProvider: { visible: true, position: 0 },
+                        appType: { visible: true, position: 1 },
+                        policies: { visible: true, position: 2 },
+                        clusterVersion: { visible: true, position: 3 },
+                        nodes: { visible: true, position: 4 },
+                        coreCount: { visible: false, position: 5 },
+                      })
+                    }
+                  >
+                    {t('Hide card')}
+                  </DropdownItem>
+                </Dropdown>
               </CardTitle>
               <CardBody isFilled={false}>
                 <>

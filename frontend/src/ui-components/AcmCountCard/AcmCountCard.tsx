@@ -8,15 +8,19 @@ import {
   CardHeader,
   CardProps,
   CardTitle,
+  Dropdown,
+  DropdownItem,
+  DropdownList,
   EmptyState,
   EmptyStateBody,
   EmptyStateIcon,
+  MenuToggle,
+  MenuToggleElement,
   Skeleton,
   EmptyStateHeader,
   Icon,
 } from '@patternfly/react-core'
-import { Dropdown, DropdownItem, KebabToggle } from '@patternfly/react-core/deprecated'
-import { ExclamationCircleIcon } from '@patternfly/react-icons'
+import { EllipsisVIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
 import { ReactNode, useState } from 'react'
 import { useTranslation } from '../../lib/acm-i18next'
 import { AcmIcon, AcmIconVariant } from '../AcmIcons/AcmIcons'
@@ -117,20 +121,29 @@ export function CardDropdown(props: CardDropdownProps) {
   return (
     <Dropdown
       className="dropdownMenu"
-      onClick={(e) => {
-        setOpen(!isOpen)
-        e.stopPropagation()
-      }}
-      toggle={<KebabToggle onToggle={() => setOpen(!isOpen)} />}
+      onClick={() => setOpen(!isOpen)}
+      toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+        <MenuToggle
+          ref={toggleRef}
+          onClick={() => {
+            setOpen(!isOpen)
+          }}
+          variant="plain"
+          isExpanded={isOpen}
+          icon={<EllipsisVIcon />}
+        ></MenuToggle>
+      )}
       isOpen={isOpen}
       isPlain
-      dropdownItems={props.dropdownItems.map((item) => (
-        <DropdownItem className={css({ width: '10rem' })} key={item.text} onClick={item.handleAction}>
-          {item.text}
-        </DropdownItem>
-      ))}
-      position={'right'}
-    />
+    >
+      <DropdownList>
+        {props.dropdownItems.map((item) => (
+          <DropdownItem className={css({ width: '10rem' })} key={item.text} onClick={item.handleAction}>
+            {item.text}
+          </DropdownItem>
+        ))}
+      </DropdownList>
+    </Dropdown>
   )
 }
 

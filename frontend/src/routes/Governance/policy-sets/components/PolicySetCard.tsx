@@ -17,15 +17,13 @@ import {
   ModalVariant,
   Stack,
   StackItem,
-} from '@patternfly/react-core'
-import {
   Dropdown,
   DropdownItem,
-  DropdownSeparator,
-  KebabToggle,
-  KebabToggleProps,
-} from '@patternfly/react-core/deprecated'
-import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
+  Divider,
+  MenuToggle,
+  MenuToggleElement,
+} from '@patternfly/react-core'
+import { CheckCircleIcon, EllipsisVIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { ReactNode, useCallback, useContext, useState } from 'react'
 import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../lib/acm-i18next'
@@ -78,16 +76,6 @@ export default function PolicySetCard(props: {
     }, 400)
   }
 
-  const onToggle: KebabToggleProps['onToggle'] = (event, isOpen) => {
-    event.stopPropagation()
-    setIsKebabOpen(isOpen)
-  }
-
-  function onSelectOverflow(event?: React.SyntheticEvent<HTMLDivElement>) {
-    event?.stopPropagation()
-    setIsKebabOpen(false)
-  }
-
   return (
     <div>
       {modal !== undefined && modal}
@@ -113,58 +101,67 @@ export default function PolicySetCard(props: {
             actions: (
               <>
                 <Dropdown
-                  onSelect={onSelectOverflow}
-                  toggle={<KebabToggle onToggle={onToggle} />}
+                  onSelect={() => setIsKebabOpen(false)}
+                  toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+                    <MenuToggle
+                      ref={toggleRef}
+                      onClick={() => {
+                        setIsKebabOpen(!isKebabOpen)
+                      }}
+                      variant="plain"
+                      isExpanded={isKebabOpen}
+                    >
+                      <EllipsisVIcon />
+                    </MenuToggle>
+                  )}
                   isOpen={isKebabOpen}
                   isPlain
-                  dropdownItems={[
-                    <DropdownItem
-                      key="view details"
-                      onClick={() => {
-                        const newSelectedCard = cardID === selectedCardID ? '' : cardID
-                        setSelectedCardID(newSelectedCard)
-                        onClick(cardID)
-                      }}
-                    >
-                      {t('View details')}
-                    </DropdownItem>,
-                    <DropdownItem
-                      isAriaDisabled={!canEditPolicySet}
-                      tooltip={!canEditPolicySet ? t('rbac.unauthorized') : ''}
-                      key="edit"
-                      onClick={() => {
-                        navigate(
-                          generatePath(NavigationPath.editPolicySet, {
-                            namespace: policySet.metadata.namespace,
-                            name: policySet.metadata.name,
-                          })
-                        )
-                      }}
-                    >
-                      {t('Edit')}
-                    </DropdownItem>,
-                    <DropdownSeparator key="separator" />,
-                    <DropdownItem
-                      isAriaDisabled={!canDeletePolicySet}
-                      tooltip={!canDeletePolicySet ? t('rbac.unauthorized') : ''}
-                      key="delete"
-                      onClick={() => {
-                        setIsKebabOpen(false)
-                        setModal(
-                          <DeletePolicySetModal
-                            item={policySet}
-                            onClose={() => setModal(undefined)}
-                            setDrawerContext={setDrawerContext}
-                            setSelectedCardID={setSelectedCardID}
-                          />
-                        )
-                      }}
-                    >
-                      {t('Delete')}
-                    </DropdownItem>,
-                  ]}
-                  position={'right'}
-                />
+                >
+                  <DropdownItem
+                    key="view details"
+                    onClick={() => {
+                      const newSelectedCard = cardID === selectedCardID ? '' : cardID
+                      setSelectedCardID(newSelectedCard)
+                      onClick(cardID)
+                    }}
+                  >
+                    {t('View details')}
+                  </DropdownItem>
+                  <DropdownItem
+                    isAriaDisabled={!canEditPolicySet}
+                    tooltipProps={{ content: !canEditPolicySet ? t('rbac.unauthorized') : '' }}
+                    key="edit"
+                    onClick={() => {
+                      navigate(
+                        generatePath(NavigationPath.editPolicySet, {
+                          namespace: policySet.metadata.namespace,
+                          name: policySet.metadata.name,
+                        })
+                      )
+                    }}
+                  >
+                    {t('Edit')}
+                  </DropdownItem>
+                  <Divider component="li" key="separator" />
+                  <DropdownItem
+                    isAriaDisabled={!canDeletePolicySet}
+                    tooltipProps={{ content: !canDeletePolicySet ? t('rbac.unauthorized') : '' }}
+                    key="delete"
+                    onClick={() => {
+                      setIsKebabOpen(false)
+                      setModal(
+                        <DeletePolicySetModal
+                          item={policySet}
+                          onClose={() => setModal(undefined)}
+                          setDrawerContext={setDrawerContext}
+                          setSelectedCardID={setSelectedCardID}
+                        />
+                      )
+                    }}
+                  >
+                    {t('Delete')}
+                  </DropdownItem>
+                </Dropdown>
               </>
             ),
             hasNoOffset: false,
