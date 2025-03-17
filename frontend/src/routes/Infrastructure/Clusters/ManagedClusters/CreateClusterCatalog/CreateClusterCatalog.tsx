@@ -117,7 +117,7 @@ export function CreateClusterCatalog() {
         id: 'kubevirt',
         provider: Provider.kubevirt,
         description: t(
-          'A Red Hat OpenShift cluster that can run and manage virtual machines and container workloads side by side.'
+          'A Red Hat OpenShift cluster with its worker nodes running on OpenShift Virtualization virtual machines.'
         ),
       },
       {
