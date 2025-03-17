@@ -54,18 +54,12 @@ import {
   Tile,
   Title,
   InputGroupItem,
-} from '@patternfly/react-core'
-import {
-  Select,
-  SelectGroup,
-  SelectOption,
-  SelectOptionObject,
-  SelectProps,
-  Wizard,
-  WizardContextConsumer,
-  WizardFooter,
+  useWizardContext,
   WizardStep,
-} from '@patternfly/react-core/deprecated'
+  Wizard,
+  WizardFooterWrapper,
+} from '@patternfly/react-core'
+import { Select, SelectGroup, SelectOption, SelectOptionObject, SelectProps } from '@patternfly/react-core/deprecated'
 import { ValidatedOptions } from '@patternfly/react-core/dist/js/helpers/constants'
 import {
   EditIcon,
@@ -465,7 +459,7 @@ export function AcmDataFormWizard(props: {
     formData.cancel()
   }
 
-  function createStep(section: Section | SectionGroup): WizardStep | undefined {
+  function createStep(section: Section | SectionGroup) {
     if (sectionHidden(section)) return undefined
     const hasError = showFormErrors && sectionHasErrors(t, section)
 
@@ -510,12 +504,12 @@ export function AcmDataFormWizard(props: {
       ),
       steps:
         section.type === 'SectionGroup'
-          ? (section.sections?.map(createStep).filter((step) => step !== undefined) as WizardStep[])
+          ? section.sections?.map(createStep).filter((step) => step !== undefined)
           : undefined,
     }
   }
 
-  const steps: WizardStep[] = formData.sections.map(createStep).filter((step) => step !== undefined) as WizardStep[]
+  const steps = formData.sections.map(createStep).filter((step) => step !== undefined)
 
   steps.push({
     id: 'review',
@@ -537,33 +531,33 @@ export function AcmDataFormWizard(props: {
     canJumpTo: !isSubmitting,
   })
 
-  const Footer = (
-    <WizardFooter>
-      <WizardContextConsumer>
-        {({ activeStep, onNext, onBack, onClose }) => {
-          let section: Section | undefined
-          let firstSection: Section | undefined
-          for (const formSection of formData.sections) {
-            switch (formSection.type) {
-              case 'Section':
-                if (formSection.title === activeStep.id) section = formSection
-                if (!firstSection) firstSection = formSection
-                break
-              case 'SectionGroup':
-                for (const group of formSection.sections ?? []) {
-                  if (group.title === activeStep.id) {
-                    section = group
-                  }
-                  if (!firstSection) firstSection = group
-                }
-                break
+  const Footer = () => {
+    const { goToNextStep, goToPrevStep, activeStep, close } = useWizardContext()
+    let section: Section | undefined
+    let firstSection: Section | undefined
+    for (const formSection of formData.sections) {
+      switch (formSection.type) {
+        case 'Section':
+          if (formSection.title === activeStep.id) section = formSection
+          if (!firstSection) firstSection = formSection
+          break
+        case 'SectionGroup':
+          for (const group of formSection.sections ?? []) {
+            if (group.title === activeStep.id) {
+              section = group
             }
-            if (section) break
+            if (!firstSection) firstSection = group
           }
-
-          if (section) {
-            return (
-              <Fragment>
+          break
+      }
+      if (section) break
+    }
+    if (section) {
+      return (
+        <WizardFooterWrapper>
+          <ActionList>
+            <ActionListGroup>
+              <ActionListItem>
                 <Button
                   variant="primary"
                   onClick={() => {
@@ -576,7 +570,7 @@ export function AcmDataFormWizard(props: {
                       return showSectionErrors
                     })
                     if (sectionHasErrors(t, section)) return
-                    onNext()
+                    goToNextStep()
                   }}
                   isDisabled={
                     ((showFormErrors || showSectionErrors[section.title]) && sectionHasErrors(t, section)) ||
@@ -585,89 +579,97 @@ export function AcmDataFormWizard(props: {
                 >
                   {formData.nextLabel}
                 </Button>
+              </ActionListItem>
+              <ActionListItem>
                 <Button
                   variant="secondary"
-                  onClick={activeStep.id === firstSection?.title && formData.back ? formData.back : onBack}
+                  onClick={activeStep.id === firstSection?.title && formData.back ? formData.back : goToPrevStep}
                   isDisabled={formData.back ? false : activeStep.id === firstSection?.title || isSubmitting}
                 >
                   {formData.backLabel}
                 </Button>
-                <Button variant="link" onClick={onClose} isDisabled={isSubmitting}>
+              </ActionListItem>
+              <ActionListItem>
+                <Button variant="link" onClick={close} isDisabled={isSubmitting}>
                   {formData.cancelLabel}
                 </Button>
-              </Fragment>
-            )
-          }
+              </ActionListItem>
+            </ActionListGroup>
+          </ActionList>
+        </WizardFooterWrapper>
+      )
+    }
 
-          setShowFormErrors(true)
+    setShowFormErrors(true)
 
-          return (
-            <Stack hasGutter style={{ width: '100%' }}>
-              {submitError && <Alert isInline variant="danger" title={submitError} />}
-              <ActionGroup>
-                <ActionList>
-                  <ActionListGroup>
-                    <ActionListItem>
-                      <Button
-                        onClick={() => {
-                          if (!formHasErrors(t, formData)) {
-                            try {
-                              const result = formData.submit()
-                              if ((result as unknown) instanceof Promise) {
-                                setSubmitText(formData.submittingText)
-                                ;(result as unknown as Promise<void>).catch((err) => {
-                                  if (err instanceof Error) setSubmitError(err.message)
-                                  setSubmitText(formData.submitText)
-                                })
-                              }
-                            } catch (err) {
-                              if (err instanceof Error) setSubmitError(err.message)
-                            }
-                          }
-                        }}
-                        variant="primary"
-                        isDisabled={(showFormErrors && formHasErrors(t, formData)) || isSubmitting}
-                        isLoading={isSubmitting}
-                      >
-                        {submitText}
-                      </Button>
-                    </ActionListItem>
-                    <ActionListItem>
-                      <Button variant="secondary" onClick={onBack} isDisabled={isSubmitting}>
-                        {formData.backLabel}
-                      </Button>
-                    </ActionListItem>
-                  </ActionListGroup>
-                  <ActionListGroup>
-                    <ActionListItem>
-                      <Button variant="link" onClick={cancel} isDisabled={isSubmitting}>
-                        {formData.cancelLabel}
-                      </Button>
-                    </ActionListItem>
-                  </ActionListGroup>
-                </ActionList>
-              </ActionGroup>
-            </Stack>
-          )
-        }}
-      </WizardContextConsumer>
-    </WizardFooter>
-  )
+    return (
+      <Stack hasGutter style={{ width: '100%' }}>
+        {submitError && <Alert isInline variant="danger" title={submitError} />}
+        <ActionGroup>
+          <ActionList>
+            <ActionListGroup>
+              <ActionListItem>
+                <Button
+                  onClick={() => {
+                    if (!formHasErrors(t, formData)) {
+                      try {
+                        const result = formData.submit()
+                        if ((result as unknown) instanceof Promise) {
+                          setSubmitText(formData.submittingText)
+                          ;(result as unknown as Promise<void>).catch((err) => {
+                            if (err instanceof Error) setSubmitError(err.message)
+                            setSubmitText(formData.submitText)
+                          })
+                        }
+                      } catch (err) {
+                        if (err instanceof Error) setSubmitError(err.message)
+                      }
+                    }
+                  }}
+                  variant="primary"
+                  isDisabled={(showFormErrors && formHasErrors(t, formData)) || isSubmitting}
+                  isLoading={isSubmitting}
+                >
+                  {submitText}
+                </Button>
+              </ActionListItem>
+              <ActionListItem>
+                <Button variant="secondary" onClick={goToPrevStep} isDisabled={isSubmitting}>
+                  {formData.backLabel}
+                </Button>
+              </ActionListItem>
+            </ActionListGroup>
+            <ActionListGroup>
+              <ActionListItem>
+                <Button variant="link" onClick={cancel} isDisabled={isSubmitting}>
+                  {formData.cancelLabel}
+                </Button>
+              </ActionListItem>
+            </ActionListGroup>
+          </ActionList>
+        </ActionGroup>
+      </Stack>
+    )
+  }
 
   return (
     <Fragment>
       {isModalWizard ? (
-        <Wizard
-          titleId="create-credential-title"
-          descriptionId="create-credential-description"
-          title={formData.title}
-          description={formData.description}
-          steps={steps}
-          footer={Footer}
-          onClose={cancel}
-        />
+        <Wizard title={formData.title} footer={Footer} onClose={cancel}>
+          {steps.map(({ id, name, content }) => {
+            <WizardStep id={id} name={name}>
+              {content}
+            </WizardStep>
+          })}
+        </Wizard>
       ) : (
-        <Wizard steps={steps} footer={Footer} onClose={cancel} />
+        <Wizard footer={Footer} onClose={cancel}>
+          {steps.map(({ id, name, content }) => {
+            <WizardStep id={id} name={name}>
+              {content}
+            </WizardStep>
+          })}
+        </Wizard>
       )}
     </Fragment>
   )
