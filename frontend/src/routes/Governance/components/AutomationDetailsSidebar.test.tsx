@@ -42,11 +42,10 @@ jest.mock('../../../components/AutomationProviderHint', () => ({
 }))
 
 // Mock AcmTimestamp component
-jest.mock('../../../lib/AcmTimestamp', () => {
-  return jest.fn(({ timestamp }: { timestamp: string | Date | number | undefined }) => (
-    <div data-testid="acm-timestamp">{timestamp?.toString()}</div>
-  ))
-})
+jest.mock('../../../lib/AcmTimestamp', () => ({
+  __esModule: true,
+  default: jest.fn(({ timestamp }) => <div data-testid="acm-timestamp-cell">{timestamp}</div>),
+}))
 
 // Mock AcmTable component
 jest.mock('../../../ui-components', () => ({
@@ -57,13 +56,19 @@ jest.mock('../../../ui-components', () => ({
   ),
   AcmTable: ({ items, columns, keyFn }: { items: any[]; columns: any[]; keyFn: (item: any) => string }) => (
     <div data-testid="acm-table">
-      <div>Items: {items.length}</div>
-      <div>Columns: {columns.length}</div>
       {items.map((item) => (
         <div key={keyFn(item)}>
-          <div>Status: {typeof columns[0].cell === 'function' ? 'Function Result' : columns[0].cell}</div>
-          <div>Started: {typeof columns[1].cell === 'string' ? item[columns[1].cell] : 'Object'}</div>
-          <div>Finished: {typeof columns[2].cell === 'string' ? item[columns[2].cell] : 'Object'}</div>
+          {columns.map((column) => {
+            const cellContent =
+              typeof column.cell === 'function'
+                ? column.cell(item) // Call the cell function with the item
+                : item[column.cell]
+            return (
+              <div key={`${keyFn(item)}-${column.header}`}>
+                {column.header}: {cellContent}
+              </div>
+            )
+          })}
         </div>
       ))}
     </div>
@@ -248,7 +253,15 @@ describe('AutomationDetailsSidebar', () => {
 
     // Check tower URL
     expect(screen.getByText('https://ansible-tower.example.com')).toBeInTheDocument()
-    expect(screen.getByText(/2023-01-01T12:00:00Z/)).toBeInTheDocument()
+
+    expect(screen.getByText(/^Status:/)).toBeInTheDocument()
+    expect(screen.getByText(/Successful/)).toBeInTheDocument()
+
+    expect(screen.getByText(/^Started:/)).toBeInTheDocument()
+    expect(screen.getByText('2023-01-01T12:00:00Z')).toBeInTheDocument()
+
+    expect(screen.getByText(/^Finished:/)).toBeInTheDocument()
+    expect(screen.getByText('2023-01-01T12:00:00Z')).toBeInTheDocument()
   })
 
   it('navigates to edit page when Edit button is clicked', async () => {
