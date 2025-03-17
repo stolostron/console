@@ -91,7 +91,7 @@ describe('Edit AI Cluster', () => {
 
     await waitForText('ai:Installation type')
 
-    await waitForText('ai:Cluster details')
+    await waitForText('ai:Cluster details', true)
     await waitForText('ai:Cluster hosts')
     await waitForText('ai:Networking')
     await waitForText('ai:Review and create')

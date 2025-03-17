@@ -200,8 +200,7 @@ const appendPatch = (
 
 export const getNetworkingPatches = (
   agentClusterInstall: AgentClusterInstallK8sResource,
-  values: ClusterDeploymentNetworkingValues,
-  isNutanix: boolean
+  values: ClusterDeploymentNetworkingValues
 ) => {
   const agentClusterInstallPatches: any = []
 
@@ -275,19 +274,23 @@ export const getNetworkingPatches = (
           path: '/spec/apiVIP',
         })
       }
-      appendPatch(agentClusterInstallPatches, '/spec/platformType', 'None', agentClusterInstall.spec?.platformType)
-    } else {
-      if (agentClusterInstall.spec?.platformType && !isNutanix) {
-        agentClusterInstallPatches.push({
-          op: 'remove',
-          path: '/spec/platformType',
-        })
+      if (agentClusterInstall.spec?.platformType == 'BareMetal') {
+        appendPatch(agentClusterInstallPatches, '/spec/platformType', 'None', agentClusterInstall.spec?.platformType)
       }
-      appendPatch(agentClusterInstallPatches, '/spec/apiVIP', values.apiVip, agentClusterInstall.spec?.apiVIP)
+    } else {
+      if (agentClusterInstall.spec?.platformType == 'None') {
+        appendPatch(
+          agentClusterInstallPatches,
+          '/spec/platformType',
+          'BareMetal',
+          agentClusterInstall.spec?.platformType
+        )
+      }
+      appendPatch(agentClusterInstallPatches, '/spec/apiVIP', values.apiVips?.[0]?.ip, agentClusterInstall.spec?.apiVIP)
       appendPatch(
         agentClusterInstallPatches,
         '/spec/ingressVIP',
-        values.ingressVip,
+        values.ingressVips?.[0]?.ip,
         agentClusterInstall.spec?.ingressVIP
       )
     }
@@ -322,11 +325,10 @@ export const getNetworkingPatches = (
 
 export const onSaveNetworking = async (
   agentClusterInstall: AgentClusterInstallK8sResource,
-  values: ClusterDeploymentNetworkingValues,
-  isNutanix: boolean
+  values: ClusterDeploymentNetworkingValues
 ) => {
   try {
-    const patches = getNetworkingPatches(agentClusterInstall, values, isNutanix)
+    const patches = getNetworkingPatches(agentClusterInstall, values)
     if (patches.length > 0) {
       await patchResource(agentClusterInstall as IResource, patches).promise
     }
@@ -606,7 +608,7 @@ export const getOnCreateBMH =
     return createResource(bmh as IResource).promise as InfraEnvK8sResource
   }
 
-export const onSaveAgent = async (agent: AgentK8sResource, hostname: string) =>
+export const onChangeHostname = async (agent: AgentK8sResource, hostname: string) =>
   patchResource(agent as IResource, [
     {
       op: 'replace',
