@@ -53,7 +53,7 @@ describe('networking patch utils', () => {
         networking: {
           userManagedNetworking: false,
         },
-        platformType: 'None',
+        platformType: 'BareMetal',
         provisionRequirements: {
           controlPlaneAgents: 0,
         },
@@ -61,16 +61,12 @@ describe('networking patch utils', () => {
         ingressVIP: '10.10.10.10',
       },
     }
-    const patches = getNetworkingPatches(
-      aci,
-      {
-        managedNetworkingType: 'userManaged',
-        enableProxy: false,
-        editProxy: false,
-      },
-      false
-    )
-    expect(patches.length).toBe(5)
+    const patches = getNetworkingPatches(aci, {
+      managedNetworkingType: 'userManaged',
+      enableProxy: false,
+      editProxy: false,
+    })
+    expect(patches.length).toBe(6)
   })
   it('enables cluster networking', () => {
     const aci: AgentClusterInstallK8sResource = {
@@ -84,18 +80,14 @@ describe('networking patch utils', () => {
         },
       },
     }
-    const patches = getNetworkingPatches(
-      aci,
-      {
-        managedNetworkingType: 'clusterManaged',
-        enableProxy: false,
-        editProxy: false,
-        apiVip: '10.10.10.10',
-        ingressVip: '10.10.10.10',
-      },
-      false
-    )
-    expect(patches.length).toBe(6)
+    const patches = getNetworkingPatches(aci, {
+      managedNetworkingType: 'clusterManaged',
+      enableProxy: false,
+      editProxy: false,
+      apiVip: '10.10.10.10',
+      ingressVip: '10.10.10.10',
+    })
+    expect(patches.length).toBe(4)
   })
 })
 

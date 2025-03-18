@@ -10,10 +10,12 @@ import {
   ClusterDeploymentWizard,
   ClusterDeploymentWizardStepsType,
   ClusterImageSetK8sResource,
+  EditAgentModal,
   FeatureGateContextProvider,
   LoadingState,
   getAgentsHostsNames,
   isAgentOfInfraEnv,
+  onAgentChangeHostname,
 } from '@openshift-assisted/ui-lib/cim'
 import { PageSection, Switch } from '@patternfly/react-core'
 import { AcmErrorBoundary, AcmPageContent, AcmPage, AcmPageHeader } from '../../../../../../ui-components'
@@ -28,7 +30,7 @@ import {
   onApproveAgent,
   onDiscoveryHostsNext,
   onHostsNext,
-  onSaveAgent,
+  onChangeHostname,
   onSaveBMH,
   onSaveNetworking,
   useClusterDeployment,
@@ -43,8 +45,8 @@ import {
   onSetInstallationDiskId,
   useProvisioningConfiguration,
   onEditFinish,
+  onChangeBMHHostname,
 } from '../../CreateCluster/components/assisted-installer/utils'
-import EditAgentModal from './EditAgentModal'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import { useTranslation } from '../../../../../../lib/acm-i18next'
 import { getInfraEnvNMStates } from '../../../../InfraEnvironments/utils'
@@ -61,12 +63,14 @@ const EditAICluster: React.FC = () => {
   const { t } = useTranslation()
   const [patchingHoldInstallation, setPatchingHoldInstallation] = useState(true)
   const navigate = useNavigate()
-  const { agentsState, clusterImageSetsState, nmStateConfigsState, clusterCuratorsState } = useSharedAtoms()
+  const { agentsState, clusterImageSetsState, nmStateConfigsState, clusterCuratorsState, bareMetalHostsState } =
+    useSharedAtoms()
   const [editAgent, setEditAgent] = useState<AgentK8sResource | undefined>()
   const clusterImageSets = useRecoilValue(clusterImageSetsState)
   const agents = useRecoilValue(agentsState)
   const nmStateConfigs = useRecoilValue(nmStateConfigsState)
   const clusterCurators = useRecoilValue(clusterCuratorsState)
+  const bareMetalHosts = useRecoilValue(bareMetalHostsState)
   const aiConfigMap = useAssistedServiceConfigMap()
 
   const clusterDeployment = useClusterDeployment({ name, namespace })
@@ -200,15 +204,17 @@ const EditAICluster: React.FC = () => {
                 clusterDeployment={clusterDeployment}
                 agentClusterInstall={agentClusterInstall}
                 agents={agents}
+                bareMetalHosts={bareMetalHosts}
                 usedClusterNames={[] /* We are in Edit flow - cluster name can not be changed. */}
                 onClose={() => navigate(-1)}
                 onSaveDetails={onSaveDetails}
-                onSaveNetworking={(values) => onSaveNetworking(agentClusterInstall, values, isNutanix)}
+                onSaveNetworking={(values) => onSaveNetworking(agentClusterInstall, values)}
                 onSaveHostsSelection={(values) =>
                   onHostsNext({ values, clusterDeployment, agents, agentClusterInstall })
                 }
                 onApproveAgent={onApproveAgent}
-                onSaveAgent={onSaveAgent}
+                onChangeHostname={onChangeHostname}
+                onChangeBMHHostname={onChangeBMHHostname}
                 onSaveBMH={onSaveBMH}
                 onCreateBMH={
                   infraEnv ? getOnCreateBMH(infraEnv) : undefined
@@ -245,7 +251,14 @@ const EditAICluster: React.FC = () => {
                 provisioningConfigResult={provisioningConfigResult}
                 isNutanix={isNutanix}
               />
-              <EditAgentModal agent={editAgent} setAgent={setEditAgent} usedHostnames={usedHostnames} />
+              {editAgent && (
+                <EditAgentModal
+                  agent={editAgent}
+                  usedHostnames={usedHostnames}
+                  onClose={() => setEditAgent(undefined)}
+                  onSave={onAgentChangeHostname([editAgent], bareMetalHosts, onChangeHostname, onChangeBMHHostname)}
+                />
+              )}
             </FeatureGateContextProvider>
           </PageSection>
         </AcmPageContent>
