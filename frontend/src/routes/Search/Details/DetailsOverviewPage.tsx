@@ -17,17 +17,18 @@ import {
 } from '@patternfly/react-core'
 import { ExternalLinkAltIcon, GlobeAmericasIcon, PencilAltIcon, SearchIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
-import { Fragment, useEffect, useMemo, useState } from 'react'
+import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { generatePath, Link, useNavigate } from 'react-router-dom-v5-compat'
 import { findResourceFieldLineNumber } from '../../../components/YamlEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { canUser } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
-import { ConfigMap, OwnerReference } from '../../../resources'
+import { ConfigMap, getResourceGroup, getResourceVersion, OwnerReference } from '../../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmAlert, AcmButton, AcmLoadingPage, AcmTable, compareStrings } from '../../../ui-components'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { useSearchDetailsContext } from './DetailsPage'
+import { PluginContext } from '../../../lib/PluginContext'
 
 export function ResourceSearchLink(props: {
   cluster: string
@@ -215,7 +216,7 @@ export function ResourceConditions(props: { conditions: ResourceCondition[] }) {
 }
 
 export default function DetailsOverviewPage() {
-  const { cluster, resource, resourceLoading, resourceError, name } = useSearchDetailsContext()
+  const { cluster, resource, resourceLoading, resourceError, name, namespace } = useSearchDetailsContext()
   const { t } = useTranslation()
   const navigate = useNavigate()
   const allClusters = useAllClusters(true)
@@ -354,6 +355,20 @@ export default function DetailsOverviewPage() {
     return ''
   }, [cluster, clusterManagementAddons, configMaps, name, resource, isObservabilityInstalled])
 
+  const group = getResourceGroup(resource)
+  const version = getResourceVersion(resource)
+  const kind = resource?.kind ?? ''
+
+  const { acmExtensions } = useContext(PluginContext)
+
+  // Find matching ResourceDetails extension, first checking for one with matching version, but falling back to a version-agnostic match
+  const ResourceDetails = (
+    acmExtensions?.resourceDetails?.find(
+      ({ model }) => model.group === group && model.kind === kind && model.version === version
+    ) ||
+    acmExtensions?.resourceDetails?.find(({ model }) => model.group === group && model.kind === kind && !model.version)
+  )?.component
+
   if (resourceError) {
     return (
       <PageSection>
@@ -375,7 +390,15 @@ export default function DetailsOverviewPage() {
   }
 
   if (resource && !resourceLoading && !resourceError) {
-    return (
+    return ResourceDetails ? (
+      <ResourceDetails
+        model={{ group, version, kind }}
+        cluster={cluster}
+        namespace={namespace}
+        name={name}
+        resource={{ cluster, ...resource }}
+      />
+    ) : (
       <PageSection>
         <PageSection variant={'light'}>
           <Stack hasGutter>

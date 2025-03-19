@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Metadata } from './metadata'
-import { IResource, IResourceDefinition } from './resource'
+import { IResource } from './resource'
 import { ClusterStatus } from './utils/get-cluster'
 import { listNamespacedResources } from './utils/resource-request'
 import { getLatest } from './utils/utils'
@@ -11,15 +11,11 @@ export type PodApiVersionType = 'v1'
 export const PodKind = 'Pod'
 export type PodKindType = 'Pod'
 
-export const PodDefinition: IResourceDefinition = {
-  apiVersion: PodApiVersion,
-  kind: PodKind,
-}
-
 export interface Pod extends IResource {
   apiVersion: PodApiVersionType
   kind: PodKindType
   metadata: Metadata
+  spec?: { containers: [{ name: string }] }
 }
 
 export const PodListApiVersion = 'v1'
@@ -98,4 +94,8 @@ export async function getMostRecentAnsibleJobPod(namespace: string, jobName: str
   return await response.promise.then((result) => {
     return result.find((pod) => pod.metadata.name?.includes(jobName))
   })
+}
+
+export function isPod(resource?: IResource): resource is Pod {
+  return resource?.apiVersion === PodApiVersion && resource?.kind === PodKind
 }

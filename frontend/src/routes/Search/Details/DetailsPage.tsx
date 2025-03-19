@@ -9,7 +9,7 @@ import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics
 import { useTranslation } from '../../../lib/acm-i18next'
 import { PluginContext } from '../../../lib/PluginContext'
 import { NavigationPath } from '../../../NavigationPath'
-import { IResource, IResourceDefinition } from '../../../resources'
+import { IResource, IResourceDefinition, isPod } from '../../../resources'
 import { fireManagedClusterView } from '../../../resources/managedclusterview'
 import { getBackendUrl, getRequest, getResource } from '../../../resources/utils/resource-request'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
@@ -21,6 +21,7 @@ import {
 } from '../../Infrastructure/VirtualMachines/modals/VMActionModal'
 import { isResourceTypeOf } from '../../Infrastructure/VirtualMachines/utils'
 import { DeleteResourceModal } from '../components/Modals/DeleteResourceModal'
+import { K8sResourceCommon } from '@openshift-console/dynamic-plugin-sdk'
 
 export type SearchDetailsContext = {
   cluster: string
@@ -28,7 +29,7 @@ export type SearchDetailsContext = {
   namespace: string
   apiversion: string
   kind: string
-  resource: any
+  resource?: Required<K8sResourceCommon>
   isHubClusterResource: boolean
   resourceLoading: boolean
   resourceError: string
@@ -81,7 +82,7 @@ export default function DetailsPage() {
     } else if (resourceVersion !== resource?.metadata.resourceVersion || name !== resource?.metadata.name) {
       /* istanbul ignore else */
       if (isHubClusterResource) {
-        getResource<IResource>({
+        getResource<Required<K8sResourceCommon>>({
           apiVersion: apiversion,
           kind,
           metadata: { namespace, name },
@@ -119,12 +120,12 @@ export default function DetailsPage() {
     isFineGrainedRbacEnabled,
     isHubClusterResource,
     resourceVersion,
-    resource?.metadata.resourceVersion,
-    resource?.metadata.name,
+    resource?.metadata?.resourceVersion,
+    resource?.metadata?.name,
   ])
 
   useEffect(() => {
-    setContainers(resource?.spec?.containers?.map((container: any) => container.name) ?? [])
+    setContainers(isPod(resource) ? resource?.spec?.containers?.map((container: any) => container.name) : [])
   }, [resource])
 
   const location: {
