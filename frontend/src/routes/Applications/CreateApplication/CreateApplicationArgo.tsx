@@ -91,12 +91,12 @@ export function CreateApplicationArgo() {
     .filter(isType)
 
   const { cancelForm, submitForm } = useContext(LostChangesContext)
-  const [createdResource, setCreatedResource] = useState<any>()
   const [applicationSets, setApplicationSets] = useState<ApplicationSet[]>()
   const [loadingAppSets, setLoadingAppSets] = useState(true)
 
   // instead of burdoning recoil with appsets, use old fashioned fetch
-  // opening wizard may take longer, but argo wizards are probably seldom used
+  // opening wizard may take longer, but the longer the wait the more likelihood
+  // user is creating appsets with the cli and not this wizard
   useEffect(() => {
     const fetchAppSets = async () => {
       try {
@@ -113,28 +113,7 @@ export function CreateApplicationArgo() {
     fetchAppSets()
   }, [])
 
-  // don't navigate to details page until application exists in recoil
-  useEffect(() => {
-    if (createdResource && applicationSets) {
-      if (
-        applicationSets.findIndex(
-          (appset) =>
-            appset.metadata.name === createdResource.metadata.name! &&
-            appset.metadata.namespace === createdResource.metadata.namespace!
-        ) !== -1
-      ) {
-        navigate({
-          pathname: generatePath(NavigationPath.applicationOverview, {
-            namespace: createdResource?.metadata?.namespace ?? '',
-            name: createdResource?.metadata?.name ?? '',
-          }),
-          search: argoAppSetQueryString,
-        })
-      }
-    }
-  }, [applicationSets, createdResource, navigate])
-
-  return createdResource || loadingAppSets ? (
+  return loadingAppSets ? (
     <LoadingPage />
   ) : (
     <ArgoWizard
@@ -172,7 +151,13 @@ export function CreateApplicationArgo() {
             })
           }
           submitForm()
-          setCreatedResource(applicationSet)
+          navigate({
+            pathname: generatePath(NavigationPath.applicationOverview, {
+              namespace: applicationSet?.metadata?.namespace ?? '',
+              name: applicationSet?.metadata?.name ?? '',
+            }),
+            search: argoAppSetQueryString,
+          })
         })
       }}
       timeZones={timeZones}

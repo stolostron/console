@@ -3,6 +3,7 @@
 import { get, set } from 'lodash'
 import { getSubscriptionApplication } from './applicationSubscription'
 import { fireManagedClusterView } from '../../../../../resources'
+import { getResource } from '../../../../../resources/utils'
 
 export const getApplication = async (namespace, name, selectedChannel, recoilStates, cluster, apiversion, clusters) => {
   let app
@@ -16,7 +17,7 @@ export const getApplication = async (namespace, name, selectedChannel, recoilSta
   const isAppSet = apiVersion === 'applicationset.argoproj.io'
   const isOCPApp = apiVersion === 'ocp'
   const isFluxApp = apiVersion === 'flux'
-  const { applications, applicationSets, argoApplications } = recoilStates
+  const { applications, argoApplications } = recoilStates
   let isAppSetPullModel = false
 
   if (apiVersion === 'application.app.k8s.io') {
@@ -27,10 +28,15 @@ export const getApplication = async (namespace, name, selectedChannel, recoilSta
 
   // get argo app set
   if (!app && isAppSet) {
-    app = applicationSets.find((app) => {
-      return app?.metadata?.name === name && app?.metadata?.namespace === namespace
-    })
-
+    // appset is not part of recoil
+    app = await getResource({
+      apiVersion: 'argoproj.io/v1alpha1',
+      kind: 'ApplicationSet',
+      metadata: {
+        name,
+        namespace,
+      },
+    }).promise
     if (app) {
       placementName = get(
         app,

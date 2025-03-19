@@ -148,7 +148,7 @@ const definitions: IWatchOptions[] = [
   { kind: 'Subscription', apiVersion: 'apps.open-cluster-management.io/v1' },
   { kind: 'SubscriptionReport', apiVersion: 'apps.open-cluster-management.io/v1alpha1' },
   { kind: 'Application', apiVersion: 'argoproj.io/v1alpha1' },
-  { kind: 'ApplicationSet', apiVersion: 'argoproj.io/v1alpha1', isPolled: true },
+  { kind: 'ApplicationSet', apiVersion: 'argoproj.io/v1alpha1', isPolled: true, notStreamed: true },
   { kind: 'ArgoCD', apiVersion: 'argoproj.io/v1alpha1' },
   { kind: 'MulticlusterApplicationSetReport', apiVersion: 'apps.open-cluster-management.io/v1alpha1' },
   { kind: 'Infrastructure', apiVersion: 'config.openshift.io/v1' },
@@ -235,7 +235,10 @@ interface IWatchOptions {
   kind: string
   labelSelector?: Record<string, string>
   fieldSelector?: Record<string, string>
+  // poll the resource list instead of watching it
   isPolled?: boolean
+  // don't stream--will need pagination to get the resources
+  notStreamed?: boolean
 }
 
 // https://kubernetes.io/docs/reference/using-api/api-concepts/
@@ -243,7 +246,7 @@ async function listAndWatch(options: IWatchOptions) {
   const serviceAccountToken = getServiceAccountToken()
   while (!stopping) {
     try {
-      const resourceVersion = await listKubernetesObjects(serviceAccountToken, options)
+      const { resourceVersion } = await listKubernetesObjects(serviceAccountToken, options)
       if (options.isPolled) {
         await pollKubernetesObjects(serviceAccountToken, options)
       } else {
@@ -286,7 +289,7 @@ async function listKubernetesObjects(serviceAccountToken: string, options: IWatc
   let resourceVersion = ''
   let _continue: string | undefined
   let items: IResource[] = []
-  const { isPolled } = options
+  const { isPolled, notStreamed } = options
   while (!stopping) {
     const url = resourceUrl(options, { limit: '100', continue: _continue })
     const request = got
@@ -327,7 +330,7 @@ async function listKubernetesObjects(serviceAccountToken: string, options: IWatc
   })
 
   for (const item of items) {
-    cacheResource(item, isPolled)
+    cacheResource(item, notStreamed)
   }
 
   // Remove items that are no longer in kubernetes
@@ -350,10 +353,10 @@ async function listKubernetesObjects(serviceAccountToken: string, options: IWatc
   }
   for (const uid of removeUids) {
     const resource = cache[uid].resource
-    deleteResource(resource, isPolled)
+    deleteResource(resource, notStreamed)
   }
 
-  return resourceVersion
+  return { resourceVersion, size: items.length }
 }
 
 async function pollKubernetesObjects(serviceAccountToken: string, options: IWatchOptions) {
@@ -366,15 +369,24 @@ async function pollKubernetesObjects(serviceAccountToken: string, options: IWatc
       apiVersion: options.apiVersion,
     })
 
+    let size = 2000
     try {
-      await listKubernetesObjects(serviceAccountToken, options)
+      ;({ size } = await listKubernetesObjects(serviceAccountToken, options))
     } catch (e) {
       logger.error(`poll kubernetes exception ${e}`)
     }
 
     /* istanbul ignore if */
     if (process.env.NODE_ENV !== 'test') {
-      await new Promise((r) => setTimeout(r, 30000))
+      // polling interval should increase up to maxTimeout seconds
+      // for larger kube resource lists
+      const maxAppsets = 5000
+      const minTimeout = 5000
+      const maxTimeout = 45000
+      const timeout = Math.round(
+        size > maxAppsets ? maxTimeout : (size * (maxTimeout - minTimeout)) / maxAppsets + minTimeout
+      )
+      await new Promise((r) => setTimeout(r, timeout))
     } else {
       stopping = true
     }
@@ -401,7 +413,7 @@ async function watchKubernetesObjects(serviceAccountToken: string, options: IWat
       // TODO use abort signal when on node 16
       const cancelObj = { cancel: () => request.destroy() }
       requests.push(cancelObj)
-      const { isPolled } = options
+      const { notStreamed } = options
       try {
         await pipeline(
           request,
@@ -412,10 +424,10 @@ async function watchKubernetesObjects(serviceAccountToken: string, options: IWat
             switch (watchEvent.type) {
               case 'ADDED':
               case 'MODIFIED':
-                cacheResource(watchEvent.object, isPolled)
+                cacheResource(watchEvent.object, notStreamed)
                 break
               case 'DELETED':
-                deleteResource(watchEvent.object, isPolled)
+                deleteResource(watchEvent.object, notStreamed)
                 break
             }
 
@@ -580,7 +592,7 @@ function resourceUrl(options: IWatchOptions, query: Record<string, string>) {
   return url
 }
 
-function cacheResource(resource: IResource, isPolled: boolean) {
+function cacheResource(resource: IResource, notStreamed: boolean) {
   const apiVersionPlural = apiVersionPluralFn(resource)
   let cache = resourceCache[apiVersionPlural]
   if (!cache) {
@@ -592,7 +604,9 @@ function cacheResource(resource: IResource, isPolled: boolean) {
   const existing = cache[uid]
 
   let eventID = -1
-  if (isPolled) {
+  // if not streamed, we are just updating the cache
+  // which can then be grabbed by getKubeResources()
+  if (notStreamed) {
     cache[uid] = { resource, eventID }
   } else {
     if (existing) {
@@ -612,14 +626,14 @@ function cacheResource(resource: IResource, isPolled: boolean) {
   }
 }
 
-function deleteResource(resource: IResource, isPolled: boolean) {
+function deleteResource(resource: IResource, notStreamed: boolean) {
   const apiVersionPlural = apiVersionPluralFn(resource)
   const cache = resourceCache[apiVersionPlural]
   if (!cache) return
 
   const uid = resource.metadata.uid
 
-  if (!isPolled) {
+  if (!notStreamed) {
     const existing = cache[uid]
     if (existing) ServerSideEvents.removeEvent(existing.eventID)
 
