@@ -17,7 +17,7 @@ import {
 } from '@patternfly/react-core'
 import { ExternalLinkAltIcon, GlobeAmericasIcon, PencilAltIcon, SearchIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
-import { Fragment, useEffect, useMemo, useState } from 'react'
+import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { generatePath, Link, useNavigate } from 'react-router-dom-v5-compat'
 import { findResourceFieldLineNumber } from '../../../components/YamlEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -28,6 +28,8 @@ import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmAlert, AcmButton, AcmLoadingPage, AcmTable, compareStrings } from '../../../ui-components'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { useSearchDetailsContext } from './DetailsPage'
+import { ResourceTabComponent } from '@stolostron/multicluster-sdk'
+import { PluginContext } from '../../../lib/PluginContext'
 
 export function ResourceSearchLink(props: {
   cluster: string
@@ -215,7 +217,7 @@ export function ResourceConditions(props: { conditions: ResourceCondition[] }) {
 }
 
 export default function DetailsOverviewPage() {
-  const { cluster, resource, resourceLoading, resourceError, name } = useSearchDetailsContext()
+  const { cluster, resource, resourceLoading, resourceError, name, namespace } = useSearchDetailsContext()
   const { t } = useTranslation()
   const navigate = useNavigate()
   const allClusters = useAllClusters(true)
@@ -355,6 +357,13 @@ export default function DetailsOverviewPage() {
     return ''
   }, [cluster, clusterManagementAddons, configMaps, name, resource, isObservabilityInstalled])
 
+  const { acmExtensions } = useContext(PluginContext)
+  let ResourceDetails: ResourceTabComponent | undefined
+  if (acmExtensions?.resourceDetails && acmExtensions.resourceDetails.length) {
+    // TODO match against model
+    ResourceDetails = acmExtensions.resourceDetails[0].component
+  }
+
   if (resourceError) {
     return (
       <PageSection>
@@ -376,7 +385,15 @@ export default function DetailsOverviewPage() {
   }
 
   if (resource && !resourceLoading && !resourceError) {
-    return (
+    return ResourceDetails ? (
+      <ResourceDetails
+        model={{ group: resource.apiVersion, version: resource.apiVersion, kind: resource.kind }}
+        cluster={cluster}
+        namespace={namespace}
+        name={name}
+        resource={{ cluster, ...resource }}
+      />
+    ) : (
       <PageSection>
         <PageSection variant={'light'}>
           <Stack hasGutter>
