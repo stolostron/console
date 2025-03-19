@@ -83,7 +83,7 @@ export function PolicyActionDropdown(props: {
             tooltip: item.policy.spec.disabled ? undefined : t('Policy is already enabled'),
             isSelected: !item.policy.spec.disabled,
             isAriaDisabled: item.policy.spec.disabled === false,
-            click: () => {
+            click: (item: PolicyTableItem) => {
               if (item.policy?.spec?.disabled) {
                 setModalProps({
                   open: true,
@@ -123,7 +123,7 @@ export function PolicyActionDropdown(props: {
             tooltip: item.policy.spec.disabled ? t('Policy is already disabled') : undefined,
             isSelected: item.policy.spec.disabled,
             isAriaDisabled: item.policy.spec.disabled,
-            click: () => {
+            click: (item: PolicyTableItem) => {
               if (!item.policy.spec.disabled) {
                 setModalProps({
                   open: true,
@@ -170,7 +170,7 @@ export function PolicyActionDropdown(props: {
             tooltip: policyRemediationAction === 'inform' ? t('Already informing') : undefined,
             isSelected: policyRemediationAction === 'inform',
             isAriaDisabled: policyRemediationAction === 'inform',
-            click: () => {
+            click: (item: PolicyTableItem) => {
               if (policyRemediationAction !== 'inform') {
                 setModalProps({
                   open: true,
@@ -182,7 +182,7 @@ export function PolicyActionDropdown(props: {
                   description: t('policy.modal.message.inform'),
                   columns: bulkModalRemediationColumns,
                   keyFn: (item: PolicyTableItem) => item.policy.metadata.uid as string,
-                  actionFn: (item) => {
+                  actionFn: (item: PolicyTableItem) => {
                     return patchResource(
                       {
                         apiVersion: PolicyApiVersion,
@@ -213,7 +213,7 @@ export function PolicyActionDropdown(props: {
             tooltip: policyRemediationAction === 'enforce' ? t('Already enforcing') : undefined,
             isSelected: policyRemediationAction === 'enforce',
             isAriaDisabled: policyRemediationAction === 'enforce',
-            click: () => {
+            click: (item: PolicyTableItem) => {
               if (policyRemediationAction !== 'enforce') {
                 setModalProps({
                   open: true,
@@ -225,7 +225,7 @@ export function PolicyActionDropdown(props: {
                   description: t('policy.modal.message.enforce'),
                   columns: bulkModalRemediationColumns,
                   keyFn: (item: PolicyTableItem) => item.policy.metadata.uid as string,
-                  actionFn: (item) => {
+                  actionFn: (item: PolicyTableItem) => {
                     return patchResource(
                       {
                         apiVersion: PolicyApiVersion,
@@ -256,7 +256,7 @@ export function PolicyActionDropdown(props: {
         id: 'edit-policy',
         text: t('Edit'),
         addSeparator: true,
-        click: () => {
+        click: (item: PolicyTableItem) => {
           let path = generatePath(NavigationPath.editPolicy, {
             namespace: item.policy.metadata.namespace!,
             name: item.policy.metadata.name!,

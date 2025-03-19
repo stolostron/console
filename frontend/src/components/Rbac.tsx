@@ -28,6 +28,66 @@ function flattenActions<T>(actions: Actions<T>[]): Actions<T>[] {
   return actions.flatMap((action) => (action.flyoutMenu ? [...flattenActions(action.flyoutMenu), action] : action))
 }
 
+/**
+ * A role-based access control (RBAC) dropdown component built on top of AcmDropdown.
+ * Extends AcmDropdown functionality by adding permission checks and RBAC controls
+ * to dropdown actions.
+ *
+ * @component
+ * @extends {AcmDropdown}
+ * @example
+ * ```tsx
+ * <RbacDropdown<PolicyType>
+ *   id="policy-actions"
+ *   text="Actions"
+ *   actions={[
+ *     {
+ *       id: 'edit',
+ *       text: 'Edit',
+ *       click: (policy) => handleEdit(policy),
+ *       rbac: [{
+ *         apiGroup: 'policy.open-cluster-management.io',
+ *         resource: 'policies',
+ *         verb: 'update'
+ *       }]
+ *     }
+ *   ]}
+ *   item={policyItem}
+ * />
+ * ```
+ *
+ * @template T - The type of item the dropdown actions will operate on
+ *
+ * @param props - Component props extending from AcmDropdown
+ * @param props.actions - Array of actions with RBAC permissions
+ * @param props.item - The item that actions will operate on
+ * @param props.id - Unique identifier for the dropdown
+ * @param props.isDisabled - Whether the dropdown is disabled
+ * @param props.isKebab - Whether to render as a kebab menu
+ * @param props.text - Text to display on the dropdown button
+ * @param props.tooltip - Tooltip text for disabled state
+ *
+ * @remarks
+ * This component is built on top of AcmDropdown, as shown by its type definition:
+ * ```tsx
+ * type RbacDropdownProps<T = unknown> = Pick<
+ *   AcmDropdownProps,
+ *   'dropdownPosition' | 'id' | 'isDisabled' | 'isKebab' | 'text' | 'tooltip'
+ * > & {
+ *   actions: Actions<T>[]
+ *   item: T
+ * }
+ * ```
+ *
+ * Key differences from AcmDropdown:
+ * - Adds RBAC permission checking
+ * - Handles action disabling based on permissions
+ * - Adds unauthorized tooltips
+ * - Manages nested menu permissions
+ *
+ * @returns A dropdown menu component with RBAC-protected actions
+ */
+
 export function RbacDropdown<T = unknown>(props: RbacDropdownProps<T>) {
   const { t } = useTranslation()
   const [actions, setActions] = useState<Actions<T>[]>([])
@@ -43,7 +103,9 @@ export function RbacDropdown<T = unknown>(props: RbacDropdownProps<T>) {
 
   const onSelect = useCallback(
     (id: string) => {
+      // finds action in the flattened array that includes both the top-level and the nested actions
       const action = actionsWithFlyoutActions.find((a) => a.id === id)
+      // single item action
       if (action?.click) {
         action.click(props.item)
       }
@@ -80,20 +142,18 @@ export function RbacDropdown<T = unknown>(props: RbacDropdownProps<T>) {
     }
   }
 
-  // converts RBAC actions to AcmDropdown format and handles click events
+  // transform RBAC-checked actions into dropdown items while preserving nested menu structure
+  const transformToDropdownItems = useCallback((actionItems: Actions<T>[]): AcmDropdownItems[] => {
+    return actionItems.map((action) => ({
+      ...action,
+      flyoutMenu: action.flyoutMenu ? transformToDropdownItems(action.flyoutMenu) : undefined,
+    }))
+  }, [])
 
-  const convertToAcmDropdownItems = useCallback(
-    (actionItems: Actions<T>[]): AcmDropdownItems[] => {
-      return actionItems.map((action) => ({
-        ...action,
-        click: action.click ? () => action.click?.(props.item) : undefined,
-        flyoutMenu: action.flyoutMenu ? convertToAcmDropdownItems(action.flyoutMenu) : undefined,
-      }))
-    },
-    [props.item]
-  )
+  const dropdownItems = useMemo(() => transformToDropdownItems(actions), [actions, transformToDropdownItems])
 
-  const dropdownItems = useMemo(() => convertToAcmDropdownItems(actions), [actions, convertToAcmDropdownItems])
+  // use the transformed dropdown items to create the dropdown component
+
   return (
     <AcmDropdown
       id={props.id}

@@ -1929,6 +1929,49 @@ function TableActionsButtons(props: { actions: IAcmTableButtonAction[]; hasSelec
   )
 }
 
+/**
+ * A dropdown component that handles bulk actions for selected table rows.
+ * Used internally by AcmTable for rendering table-wide actions that operate on multiple selected items.
+ *
+ * @component
+ * @template T - The type of items in the table
+ *
+ * @example
+ * ```tsx
+ * <TableActionsDropdown
+ *   actions={[
+ *     {
+ *       id: 'delete',
+ *       title: 'Delete selected',
+ *       click: (items) => handleBulkDelete(items),
+ *       variant: 'bulk-action'
+ *     }
+ *   ]}
+ *   selections={{ 'item-1': true, 'item-2': true }}
+ *   items={tableItems}
+ *   keyFn={(item) => item.id}
+ * />
+ * ```
+ *
+ * @param props - Component props
+ * @param props.actions - Array of table actions (bulk actions, separators, action groups)
+ * @param props.selections - Object mapping item keys to their selection state
+ * @param props.items - Array of table items that actions can operate on
+ * @param props.keyFn - Function to generate unique key for each item
+ *
+ * @remarks
+ * - Uses AcmDropdown internally to render the actions menu
+ * - Handles nested action groups and separators
+ * - Converts IAcmTableAction to AcmDropdownItems format
+ * - Executes bulk actions on selected items
+ * - Different from RbacDropdown as it:
+ *   - Operates on multiple selected items
+ *   - Does not perform permission checks
+ *   - Used for table-wide operations
+ *
+ * @returns A dropdown menu component for table bulk actions
+ */
+
 function TableActionsDropdown<T>(props: {
   actions: IAcmTableAction<T>[]
   selections: { [uid: string]: boolean }
@@ -1940,8 +1983,6 @@ function TableActionsDropdown<T>(props: {
   const hasSelections = Object.keys(selections).length > 0
 
   const dropdownItems = useMemo(() => {
-    const selectedItems = items?.filter((item) => selections[keyFn(item)]) || []
-
     function convertAcmTableActionsToAcmDropdownItems(actions: IAcmTableAction<T>[]): AcmDropdownItems[] {
       return actions
         .map((action, index) => {
@@ -1951,7 +1992,7 @@ function TableActionsDropdown<T>(props: {
           return {
             id: action.id,
             text: action.title,
-            separator: index > 0 && actions[index - 1].variant === 'action-separator' ? true : false,
+            separator: !!(index > 0 && actions[index - 1].variant === 'action-separator'),
             ...(action.variant === 'action-group'
               ? { flyoutMenu: convertAcmTableActionsToAcmDropdownItems(action.actions) }
               : {
@@ -1959,7 +2000,6 @@ function TableActionsDropdown<T>(props: {
                   isAriaDisabled:
                     (typeof action.isDisabled === 'boolean' ? action.isDisabled : action.isDisabled?.(items)) ||
                     !hasSelections,
-                  click: hasSelections ? () => action.click(selectedItems) : undefined,
                 }),
           }
         })
@@ -1967,12 +2007,35 @@ function TableActionsDropdown<T>(props: {
     }
 
     return convertAcmTableActionsToAcmDropdownItems(actions)
-  }, [actions, items, selections, keyFn, hasSelections])
+  }, [actions, items, hasSelections])
+
+  const handleSelect = useCallback(
+    (id: string) => {
+      // finds the action in both the top-level and the nested actions
+      const findAction = (actions: IAcmTableAction<T>[]): IAcmTableAction<T> | undefined => {
+        for (const action of actions) {
+          if (action.id === id) return action
+          if (action.variant === 'action-group') {
+            const nestedAction = findAction(action.actions)
+            if (nestedAction) return nestedAction
+          }
+        }
+        return undefined
+      }
+
+      const action = findAction(actions)
+      if (action && action.variant !== 'action-separator' && action.variant !== 'action-group') {
+        const selectedItems = items?.filter((item) => selections[keyFn(item)]) || []
+        action.click(selectedItems)
+      }
+    },
+    [actions, items, selections, keyFn]
+  )
 
   return (
     <AcmDropdown
       id="table-actions-dropdown"
-      onSelect={() => {}}
+      onSelect={handleSelect}
       text={t('Actions')}
       dropdownItems={dropdownItems}
       isPrimary={hasSelections}

@@ -341,7 +341,6 @@ export default function PoliciesPage() {
       {
         id: 'status',
         variant: 'action-group',
-        click: () => {},
         title: t('policy.table.actionGroup.status'),
         actions: [
           {
@@ -387,7 +386,7 @@ export default function PoliciesPage() {
             id: 'disable',
             variant: 'bulk-action',
             title: t('policy.table.actions.disable'),
-            click: (item: PolicyTableItem[]) => {
+            click: (item) => {
               setModalProps({
                 open: true,
                 title: t('policy.modal.title.disable'),
@@ -397,7 +396,7 @@ export default function PoliciesPage() {
                 emptyState: undefined, // there is always 1 item supplied
                 description: t('policy.modal.message.disable'),
                 columns: bulkModalStatusColumns,
-                keyFn: (item) => item.policy.metadata.uid as string,
+                keyFn: (item: PolicyTableItem) => item.policy.metadata.uid as string,
                 actionFn: (item) => {
                   return patchResource(
                     {
@@ -424,7 +423,6 @@ export default function PoliciesPage() {
       {
         id: 'remediation-policy',
         variant: 'action-group',
-        click: () => {},
         title: t('Remediation'),
         actions: [
           {
@@ -441,7 +439,7 @@ export default function PoliciesPage() {
                 emptyState: undefined, // there is always 1 item supplied
                 description: t('policy.modal.message.inform'),
                 columns: bulkModalRemediationColumns,
-                keyFn: (item) => item.policy.metadata.uid as string,
+                keyFn: (item: PolicyTableItem) => item.policy.metadata.uid as string,
                 actionFn: (item) =>
                   patchResource(
                     {
@@ -931,7 +929,7 @@ export function AddToPolicySetModal(
           key="confirm"
           variant="primary"
           onClick={onConfirm}
-          isAriaDisabled={!namespace || namespacedPolicySets.length === 0 || !selectedPolicySetUid}
+          isAriaDisabled={!namespace || namespacedPolicySets.length === 0}
         >
           {isAdding ? t('adding') : t('add')}
         </Button>,

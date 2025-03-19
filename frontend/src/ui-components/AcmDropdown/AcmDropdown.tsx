@@ -56,7 +56,6 @@ export type AcmDropdownItems = {
   isDisabled?: boolean
   description?: string
   isSelected?: boolean
-  click?: (event?: React.MouseEvent) => void
   flyoutMenu?: AcmDropdownItems[]
   component?: React.ReactNode
 }
@@ -108,18 +107,6 @@ type MenuItemProps = {
 const MenuItems = forwardRef<HTMLDivElement, MenuItemProps>((props, ref) => {
   const { menuItems, onSelect, classes, ...menuProps } = props
 
-  // executes item's click handler if present
-  const handleItemClick = (event: React.MouseEvent, itemId: string, item: AcmDropdownItems) => {
-    if (item?.click) {
-      item.click(event)
-    }
-
-    // calls onSelect only if flyoutMenu is not present
-    if (!item?.flyoutMenu && onSelect) {
-      onSelect(event, itemId)
-    }
-  }
-
   return (
     <Menu ref={ref} onSelect={onSelect} containsFlyout={menuItems.some((mi) => mi.flyoutMenu)} {...menuProps}>
       <MenuContent>
@@ -132,10 +119,14 @@ const MenuItems = forwardRef<HTMLDivElement, MenuItemProps>((props, ref) => {
                 itemId={item.id}
                 isAriaDisabled={item.isDisabled || item.isAriaDisabled}
                 isSelected={item.isSelected}
-                onClick={item.click ? (e) => handleItemClick(e, item.id, item) : undefined}
                 flyoutMenu={
                   item.flyoutMenu?.length ? (
-                    <MenuItems menuItems={item.flyoutMenu} classes={classes} onSelect={onSelect} />
+                    <MenuItems
+                      id={`${item.id}-submenu`}
+                      menuItems={item.flyoutMenu}
+                      classes={classes}
+                      onSelect={onSelect}
+                    />
                   ) : undefined
                 }
                 description={item.description}
@@ -168,10 +159,50 @@ const MenuItems = forwardRef<HTMLDivElement, MenuItemProps>((props, ref) => {
   )
 })
 
+/**
+ * A base dropdown component that provides customizable menu functionality with support
+ * for nested items, tooltips, and various styling options.
+ *
+ * @component
+ * @example
+ * ```tsx
+ * <AcmDropdown
+ *   id="my-dropdown"
+ *   text="Actions"
+ *   dropdownItems={[
+ *     {
+ *       id: 'edit',
+ *       text: 'Edit',
+ *       tooltip: 'Edit this item'
+ *     },
+ *     {
+ *       id: 'delete',
+ *       text: 'Delete',
+ *       isDisabled: true
+ *     }
+ *   ]}
+ *   onSelect={(id) => handleAction(id)}
+ * />
+ * ```
+ *
+ * @param props - Component props
+ * @param props.dropdownItems - Array of items to display in the dropdown menu
+ * @param props.text - Text to display on the dropdown button
+ * @param props.onSelect - Callback function called when an item is selected
+ * @param props.id - Unique identifier for the dropdown
+ * @param props.isDisabled - Whether the entire dropdown is disabled
+ * @param props.isKebab - Whether to render as a kebab (three dots) menu
+ * @param props.isPlain - Whether to use plain styling
+ * @param props.isPrimary - Whether to use primary button styling
+ * @param props.tooltip - Tooltip text for the dropdown button
+ * @param props.dropdownPosition - Position of the dropdown menu
+ *
+ * @returns A dropdown menu component
+ */
+
 export function AcmDropdown(props: AcmDropdownProps) {
   const {
     dropdownItems,
-    dropdownPosition,
     id,
     isDisabled,
     isKebab,
@@ -235,6 +266,55 @@ export function AcmDropdown(props: AcmDropdownProps) {
     [isOpen, toggleMenu]
   )
 
+  // handle Enter key globally
+  const handleEnterKey = useCallback(
+    (event: KeyboardEvent) => {
+      // when dropdown is open only -- process Enter key
+      if (event.key !== 'Enter' || !isOpen) return
+
+      // gets the active element
+      const activeElement = document.activeElement as HTMLElement
+      if (!activeElement || activeElement.tagName !== 'BUTTON') {
+        return
+      }
+
+      // checks if it's a menu item
+      const isMenuItem =
+        activeElement.classList.contains('pf-v5-c-menu__item') || activeElement.closest('.pf-v5-c-menu__item')
+
+      if (isMenuItem) {
+        // gets the item ID
+        const itemId = activeElement.id
+        if (!itemId) {
+          return
+        }
+
+        // checking if it has a toggle icon to determine if an item has its own submenu(parent item with submenu)
+        const hasToggleIcon = activeElement.querySelector('.pf-v5-c-menu__item-toggle-icon')
+
+        // handle only non-parent items (items without their own submenus)
+        if (!hasToggleIcon) {
+          event.preventDefault()
+          event.stopPropagation()
+          onSelect(itemId)
+          setOpen(false)
+          toggleRef.current?.focus()
+        }
+      }
+    },
+    [isOpen, onSelect]
+  )
+
+  // useEffect for just the Enter key event
+  useEffect(() => {
+    // key handler for global Enter key
+    document.addEventListener('keydown', handleEnterKey, true) // using `true` = capture phase
+
+    return () => {
+      document.removeEventListener('keydown', handleEnterKey, true)
+    }
+  }, [handleEnterKey])
+
   const handleClickOutside = useCallback(
     (event: MouseEvent) => {
       if (
@@ -291,7 +371,7 @@ export function AcmDropdown(props: AcmDropdownProps) {
           distance={0}
           enableFlip={true}
           minWidth="fit-content"
-          placement={dropdownPosition ?? (isKebab ? 'bottom-end' : 'bottom-start')}
+          placement="bottom-end"
           popper={<MenuItems ref={menuRef} menuItems={dropdownItems} onSelect={handleSelect} classes={classes} />}
         />
       </div>
