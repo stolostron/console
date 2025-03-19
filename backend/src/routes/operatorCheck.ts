@@ -59,7 +59,7 @@ export function operatorCheck(req: Http2ServerRequest, res: Http2ServerResponse)
               if (typeof response === 'object' && 'items' in response && Array.isArray(response.items)) {
                 const items = response.items as unknown[]
                 const subscription = items.find(
-                  (item: unknown) => typeof item === 'object' && get(item, 'metadata.name') === operator
+                  (item: unknown) => typeof item === 'object' && get(item, 'spec.name') === operator
                 ) as object | undefined
                 const subscriptionConditions = get(subscription, 'status.conditions') as unknown[]
                 if (
