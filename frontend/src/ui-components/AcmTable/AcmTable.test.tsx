@@ -178,20 +178,20 @@ describe('AcmTable', () => {
                               id: 'status-1',
                               title: 'Status 1',
                               click: () => null,
-                              variant: 'dropdown-action',
+                              variant: 'bulk-action',
                             },
                             {
                               id: 'status-2',
                               title: 'Status 2',
                               click: () => null,
-                              variant: 'dropdown-action',
+                              variant: 'bulk-action',
                             },
                           ],
                           variant: 'action-group',
                         },
                         {
                           id: 'separator-1',
-                          variant: 'action-seperator',
+                          variant: 'action-separator',
                         },
                         {
                           id: 'delete',
@@ -462,7 +462,7 @@ describe('AcmTable', () => {
     expect(bulkDeleteAction).toHaveBeenCalledWith(defaultSortedItems.slice(0, 1))
   })
 
-  test('can support table actions with multiple selections', () => {
+  test('can support table actions with multiple selections', async () => {
     const { getByLabelText, getByText, getAllByRole, queryAllByText, container } = render(
       <Table useTableActions={true} />
     )
@@ -494,9 +494,9 @@ describe('AcmTable', () => {
     expect(getByText('2 selected')).toBeInTheDocument()
 
     getByText('Actions').click()
-    userEvent.click(getByText('Status 1'))
+    const statusOption = getByText('Status')
+    expect(statusOption).toBeInTheDocument()
 
-    getByText('Actions').click()
     userEvent.click(getByText('Delete'))
     // First arg to bulkDeleteAction is an array with the items in any order
     expect(bulkDeleteAction.mock.calls[0][0]).toHaveLength(2)

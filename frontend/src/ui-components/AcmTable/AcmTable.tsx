@@ -22,9 +22,7 @@ import {
 } from '@patternfly/react-core'
 import {
   Dropdown,
-  DropdownGroup,
   DropdownItem,
-  DropdownSeparator,
   DropdownToggle,
   DropdownToggleCheckbox,
   Select,
@@ -34,7 +32,6 @@ import {
   SelectVariant,
 } from '@patternfly/react-core/deprecated'
 import { EllipsisVIcon, ExportIcon, FilterIcon } from '@patternfly/react-icons'
-import CaretDownIcon from '@patternfly/react-icons/dist/js/icons/caret-down-icon'
 import {
   CustomActionsToggleProps,
   expandable,
@@ -84,6 +81,7 @@ import { HighlightSearchText } from '../../components/HighlightSearchText'
 import { FilterCounts, IRequestListView, IResultListView, IResultStatuses } from '../../lib/useAggregates'
 import { AcmSearchInput, SearchConstraint, SearchOperator } from '../AcmSearchInput'
 import { PluginContext } from '../../lib/PluginContext'
+import { AcmDropdown, AcmDropdownItems } from '../AcmDropdown'
 
 type SortFn<T> = (a: T, b: T) => number
 type CellFn<T> = (item: T, search: string) => ReactNode
@@ -170,18 +168,6 @@ export interface IAcmTableButtonAction {
 }
 
 /**
- * Type for table action
- */
-export interface IAcmTableDropdownAction<T> {
-  id: string
-  title: string | React.ReactNode
-  click: (items: T[]) => void
-  isDisabled?: ((items: T[]) => boolean) | boolean
-  tooltip?: string | React.ReactNode
-  variant: 'dropdown-action'
-}
-
-/**
  * Type for bulk actions on table items
  */
 export interface IAcmTableBulkAction<T> {
@@ -196,9 +182,9 @@ export interface IAcmTableBulkAction<T> {
 /**
  * Type for separator line in action dropdown
  */
-export interface IAcmTableActionSeperator {
+export interface IAcmTableActionSeparator {
   id: string
-  variant: 'action-seperator'
+  variant: 'action-separator'
 }
 
 /**
@@ -207,15 +193,11 @@ export interface IAcmTableActionSeperator {
 export interface IAcmTableActionGroup<T> {
   id: string
   title: string | React.ReactNode
-  actions: IAcmTableBulkAction<T>[] | IAcmTableDropdownAction<T>[]
+  actions: (IAcmTableBulkAction<T> | IAcmTableActionSeparator)[]
   variant: 'action-group'
 }
 
-export type IAcmTableAction<T> =
-  | IAcmTableDropdownAction<T>
-  | IAcmTableBulkAction<T>
-  | IAcmTableActionSeperator
-  | IAcmTableActionGroup<T>
+export type IAcmTableAction<T> = IAcmTableBulkAction<T> | IAcmTableActionSeparator | IAcmTableActionGroup<T>
 
 export interface ExportableIRow extends IRow {
   // content from subrow to include in export document
@@ -616,7 +598,7 @@ export type AcmTableProps<T> = {
   secondaryFilterIds?: string[]
   advancedFilters?: ITableAdvancedFilter<T>[]
   id?: string
-  showColumManagement?: boolean
+  showColumnManagement?: boolean
   showExportButton?: boolean
   exportFilePrefix?: string
 }
@@ -639,7 +621,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     gridBreakPoint,
     initialSelectedItems,
     onSelect: propsOnSelect,
-    showColumManagement,
+    showColumnManagement,
     showExportButton,
     exportFilePrefix,
     setRequestView,
@@ -742,7 +724,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   const selectedSortedCols = useMemo(() => {
     const sortedColumns: IAcmTableColumn<T>[] = []
 
-    if (!showColumManagement) {
+    if (!showColumnManagement) {
       return columns
     }
 
@@ -765,7 +747,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     }
 
     return sortedSelected
-  }, [columns, selectedColIds, colOrderIds, showColumManagement])
+  }, [columns, selectedColIds, colOrderIds, showColumnManagement])
 
   useEffect(() => {
     localStorage.setItem(id + 'SavedCols', JSON.stringify(selectedColIds))
@@ -1481,7 +1463,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
             {tableActions.length > 0 && (
               <TableActions actions={tableActions} selections={selected} items={items} keyFn={keyFn} />
             )}
-            {showColumManagement && (
+            {showColumnManagement && (
               <AcmManageColumn<T>
                 {...{ selectedColIds, setSelectedColIds, requiredColIds, defaultColIds, setColOrderIds, colOrderIds }}
                 allCols={columns.filter((col) => !col.isActionCol)}
@@ -1947,91 +1929,116 @@ function TableActionsButtons(props: { actions: IAcmTableButtonAction[]; hasSelec
   )
 }
 
+/**
+ * A dropdown component that handles bulk actions for selected table rows.
+ * Used internally by AcmTable for rendering table-wide actions that operate on multiple selected items.
+ *
+ * @component
+ * @template T - The type of items in the table
+ *
+ * @example
+ * ```tsx
+ * <TableActionsDropdown
+ *   actions={[
+ *     {
+ *       id: 'delete',
+ *       title: 'Delete selected',
+ *       click: (items) => handleBulkDelete(items),
+ *       variant: 'bulk-action'
+ *     }
+ *   ]}
+ *   selections={{ 'item-1': true, 'item-2': true }}
+ *   items={tableItems}
+ *   keyFn={(item) => item.id}
+ * />
+ * ```
+ *
+ * @param props - Component props
+ * @param props.actions - Array of table actions (bulk actions, separators, action groups)
+ * @param props.selections - Object mapping item keys to their selection state
+ * @param props.items - Array of table items that actions can operate on
+ * @param props.keyFn - Function to generate unique key for each item
+ *
+ * @remarks
+ * - Uses AcmDropdown internally to render the actions menu
+ * - Handles nested action groups and separators
+ * - Converts IAcmTableAction to AcmDropdownItems format
+ * - Executes bulk actions on selected items
+ * - Different from RbacDropdown as it:
+ *   - Operates on multiple selected items
+ *   - Does not perform permission checks
+ *   - Used for table-wide operations
+ *
+ * @returns A dropdown menu component for table bulk actions
+ */
+
 function TableActionsDropdown<T>(props: {
-  actions: IAcmTableAction<T>[] | IAcmTableBulkAction<T>[]
+  actions: IAcmTableAction<T>[]
   selections: { [uid: string]: boolean }
   items: T[] | undefined
   keyFn: (item: T) => string
-  // showTableButtons?: boolean
 }) {
-  /* istanbul ignore next */
   const { actions, selections = {}, items = [], keyFn } = props
-  const [open, setOpen] = useState(false)
   const { t } = useTranslation()
-  function DropdownItems(
-    actions: IAcmTableAction<T>[] | IAcmTableBulkAction<T>[],
-    selections: { [uid: string]: boolean },
-    items: T[],
-    keyFn: (item: T) => string
-  ) {
-    return actions.map((action: IAcmTableAction<T> | IAcmTableBulkAction<T>) => {
-      switch (action.variant) {
-        case 'dropdown-action':
-          return (
-            <DropdownItem
-              id={action.id}
-              key={action.id}
-              onClick={() => {
-                setOpen(false)
-                action.click(items!.filter((item) => selections[keyFn(item)]))
-              }}
-              isDisabled={
-                /* istanbul ignore next */
-                typeof action.isDisabled === 'boolean' ? action.isDisabled : action.isDisabled?.(items)
-              }
-              tooltip={action.tooltip}
-            >
-              {action.title}
-            </DropdownItem>
-          )
-        case 'bulk-action':
-          return (
-            <DropdownItem
-              id={action.id}
-              key={action.id}
-              onClick={() => {
-                setOpen(false)
-                action.click(items!.filter((item) => selections[keyFn(item)]))
-              }}
-              isDisabled={
-                /* istanbul ignore next */
-                (typeof action.isDisabled === 'boolean' ? action.isDisabled : action.isDisabled?.(items)) ||
-                (selections && Object.keys(selections).length === 0)
-              }
-              tooltip={action.tooltip}
-            >
-              {action.title}
-            </DropdownItem>
-          )
-        case 'action-seperator':
-          return <DropdownSeparator id={action.id} key={action.id} />
-        case 'action-group':
-          return (
-            <DropdownGroup id={action.id} key={action.id} label={action.title}>
-              {DropdownItems(action.actions, selections, items, keyFn)}
-            </DropdownGroup>
-          )
-        /* istanbul ignore next */
-        default:
-          return <Fragment />
+  const hasSelections = Object.keys(selections).length > 0
+
+  const dropdownItems = useMemo(() => {
+    function convertAcmTableActionsToAcmDropdownItems(actions: IAcmTableAction<T>[]): AcmDropdownItems[] {
+      return actions
+        .map((action, index) => {
+          if (action.variant === 'action-separator') {
+            return null
+          }
+          return {
+            id: action.id,
+            text: action.title,
+            separator: !!(index > 0 && actions[index - 1].variant === 'action-separator'),
+            ...(action.variant === 'action-group'
+              ? { flyoutMenu: convertAcmTableActionsToAcmDropdownItems(action.actions) }
+              : {
+                  tooltip: action.tooltip,
+                  isAriaDisabled:
+                    (typeof action.isDisabled === 'boolean' ? action.isDisabled : action.isDisabled?.(items)) ||
+                    !hasSelections,
+                }),
+          }
+        })
+        .filter((action) => action !== null)
+    }
+
+    return convertAcmTableActionsToAcmDropdownItems(actions)
+  }, [actions, items, hasSelections])
+
+  const handleSelect = useCallback(
+    (id: string) => {
+      // finds the action in both the top-level and the nested actions
+      const findAction = (actions: IAcmTableAction<T>[]): IAcmTableAction<T> | undefined => {
+        for (const action of actions) {
+          if (action.id === id) return action
+          if (action.variant === 'action-group') {
+            const nestedAction = findAction(action.actions)
+            if (nestedAction) return nestedAction
+          }
+        }
+        return undefined
       }
-    })
-  }
+
+      const action = findAction(actions)
+      if (action && action.variant !== 'action-separator' && action.variant !== 'action-group') {
+        const selectedItems = items?.filter((item) => selections[keyFn(item)]) || []
+        action.click(selectedItems)
+      }
+    },
+    [actions, items, selections, keyFn]
+  )
 
   return (
-    <Dropdown
-      toggle={
-        <DropdownToggle
-          id="toggle-id"
-          onToggle={() => setOpen(!open)}
-          toggleIndicator={CaretDownIcon}
-          toggleVariant={Object.keys(selections).length > 0 ? 'primary' : undefined}
-        >
-          {t('Actions')}
-        </DropdownToggle>
-      }
-      isOpen={open}
-      dropdownItems={DropdownItems(actions, selections, items, keyFn)}
+    <AcmDropdown
+      id="table-actions-dropdown"
+      onSelect={handleSelect}
+      text={t('Actions')}
+      dropdownItems={dropdownItems}
+      isPrimary={hasSelections}
     />
   )
 }

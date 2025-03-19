@@ -544,7 +544,7 @@ export function ClusterPoolsTable(props: {
             },
             variant: 'bulk-action',
           },
-          { id: 'seperator', variant: 'action-seperator' },
+          { id: 'seperator', variant: 'action-separator' },
           {
             id: 'destroyClusterPools',
             title: t('bulk.destroy.clusterPools'),
