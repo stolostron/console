@@ -16,6 +16,7 @@ import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmAlert, AcmLoadingPage } from '../../../ui-components'
 import { useSearchDetailsContext } from './DetailsPage'
 import { LogViewerSearch } from './LogsViewerSearch'
+import { isPod } from '../../../resources'
 
 const toolbarContainer = css({
   alignItems: 'stretch',
@@ -332,7 +333,7 @@ export default function LogsPage() {
   }, [])
 
   useEffect(() => {
-    if (resource) {
+    if (isPod(resource)) {
       const containerStatus = resource.status?.containerStatuses?.find(
         (containerStatus: any) => containerStatus.name === container
       )

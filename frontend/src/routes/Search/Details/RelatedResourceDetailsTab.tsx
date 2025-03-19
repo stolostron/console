@@ -29,7 +29,7 @@ export default function RelatedResourceDetailsTab() {
 
   const { kind, name, namespace, apiGroup } = useMemo(() => {
     return {
-      kind: resource?.kind,
+      kind: resource?.kind ?? '',
       name: resource?.metadata?.name ?? '',
       namespace: resource?.metadata?.namespace ?? '',
       apiGroup: getGroupFromApiVersion(resource?.apiVersion ?? '').apiGroup,

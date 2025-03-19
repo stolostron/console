@@ -86,11 +86,19 @@ export function getApiVersionResourceGroup(apiVersion: string) {
   }
 }
 
-export function getResourceGroup(resourceDefinition: IResourceDefinition) {
-  if (resourceDefinition.apiVersion.includes('/')) {
+export function getResourceGroup(resourceDefinition?: IResourceDefinition): string {
+  if (resourceDefinition?.apiVersion.includes('/')) {
     return resourceDefinition.apiVersion.split('/')[0]
   } else {
     return ''
+  }
+}
+
+export function getResourceVersion(resourceDefinition?: IResourceDefinition): string {
+  if (resourceDefinition?.apiVersion.includes('/')) {
+    return resourceDefinition.apiVersion.split('/')[1]
+  } else {
+    return resourceDefinition?.apiVersion ?? ''
   }
 }
 

@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useResolvedExtensions } from '@openshift-console/dynamic-plugin-sdk'
+import { isResourceDetails } from '@stolostron/multicluster-sdk'
 import {
   isApplicationAction,
   isApplicationListColumn,
@@ -46,6 +47,12 @@ export function useAcmExtension() {
     acmExtension.virtualMachineListColumn = virtualMachineListColumn.map(
       (column) => column.properties as ListColumnExtensionProps
     )
+  }
+
+  // Resolve resource details extensions
+  const [resourceDetails, resolvedResourceDetails] = useResolvedExtensions(isResourceDetails)
+  if (resolvedResourceDetails) {
+    acmExtension.resourceDetails = resourceDetails.map((resolvedDetails) => resolvedDetails.properties)
   }
 
   // list of all acm supported extensions
