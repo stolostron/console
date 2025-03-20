@@ -538,12 +538,12 @@ export function AcmDataFormWizard(props: {
     for (const formSection of formData.sections) {
       switch (formSection.type) {
         case 'Section':
-          if (formSection.title === activeStep.id) section = formSection
+          if (formSection.title === activeStep?.id) section = formSection
           if (!firstSection) firstSection = formSection
           break
         case 'SectionGroup':
           for (const group of formSection.sections ?? []) {
-            if (group.title === activeStep.id) {
+            if (group.title === activeStep?.id) {
               section = group
             }
             if (!firstSection) firstSection = group
@@ -583,8 +583,8 @@ export function AcmDataFormWizard(props: {
               <ActionListItem>
                 <Button
                   variant="secondary"
-                  onClick={activeStep.id === firstSection?.title && formData.back ? formData.back : goToPrevStep}
-                  isDisabled={formData.back ? false : activeStep.id === firstSection?.title || isSubmitting}
+                  onClick={activeStep?.id === firstSection?.title && formData.back ? formData.back : goToPrevStep}
+                  isDisabled={formData.back ? false : activeStep?.id === firstSection?.title || isSubmitting}
                 >
                   {formData.backLabel}
                 </Button>
