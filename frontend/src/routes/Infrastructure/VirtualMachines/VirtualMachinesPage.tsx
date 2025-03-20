@@ -30,7 +30,6 @@ import {
   AcmPageContent,
   AcmPageHeader,
   AcmTable,
-  AcmToastContext,
   IAcmTableColumn,
 } from '../../../ui-components'
 import {
@@ -73,7 +72,6 @@ function VirtualMachineTable(props: Readonly<{ searchResultItems: ISearchResult[
   const navigate = useNavigate()
   const { settingsState } = useSharedAtoms()
   const vmActionsEnabled = useRecoilValue(settingsState)?.VIRTUAL_MACHINE_ACTIONS === 'enabled'
-  const toast = useContext(AcmToastContext)
   const { acmExtensions } = useContext(PluginContext)
   const allClusters = useAllClusters(true)
   const [deleteResource, setDeleteResource] = useState<IDeleteModalProps>(ClosedDeleteModalProps)
@@ -103,7 +101,7 @@ function VirtualMachineTable(props: Readonly<{ searchResultItems: ISearchResult[
         getVirtualMachineRowActionExtensions(item, acmExtensions?.virtualMachineAction || [], setPluginModal)
       )
     },
-    [allClusters, navigate, t, toast, vmActionsEnabled, acmExtensions]
+    [allClusters, navigate, t, vmActionsEnabled, acmExtensions]
   )
 
   const extensionColumns: IAcmTableColumn<ISearchResult>[] = useMemo(

@@ -13,7 +13,7 @@ import { IResource, IResourceDefinition } from '../../../resources'
 import { fireManagedClusterView } from '../../../resources/managedclusterview'
 import { getResource } from '../../../resources/utils/resource-request'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
-import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem, AcmToastContext } from '../../../ui-components'
+import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../ui-components'
 import { isResourceTypeOf } from '../../Infrastructure/VirtualMachines/utils'
 import {
   ClosedVMActionModalProps,
@@ -52,7 +52,6 @@ export default function DetailsPage() {
   usePageVisitMetricHandler(Pages.searchDetails)
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const toast = useContext(AcmToastContext)
   const { settingsState } = useSharedAtoms()
   const vmActionsEnabled = useRecoilValue(settingsState)?.VIRTUAL_MACHINE_ACTIONS === 'enabled'
   const [resource, setResource] = useState<any>(undefined)
@@ -287,19 +286,7 @@ export default function DetailsPage() {
       })
     }
     return actions
-  }, [
-    resource,
-    cluster,
-    kind,
-    name,
-    namespace,
-    isHubClusterResource,
-    vmActionsEnabled,
-    navigate,
-    toast,
-    t,
-    acmExtensions,
-  ])
+  }, [resource, cluster, kind, name, namespace, vmActionsEnabled, navigate, t, acmExtensions])
 
   return (
     <Fragment>

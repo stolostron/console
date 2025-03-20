@@ -23,7 +23,7 @@ import { useNavigate } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { PluginContext } from '../../../lib/PluginContext'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
-import { AcmLoadingPage, AcmTable, AcmToastContext, compareStrings } from '../../../ui-components'
+import { AcmLoadingPage, AcmTable, compareStrings } from '../../../ui-components'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import {
   getVirtualMachineRowActionExtensions,
@@ -94,7 +94,6 @@ function RenderAccordionItem(
   } = props
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const toast = useContext(AcmToastContext)
   const allClusters = useAllClusters(true)
   const { settingsState } = useSharedAtoms()
   const vmActionsEnabled = useRecoilValue(settingsState)?.VIRTUAL_MACHINE_ACTIONS === 'enabled'
@@ -156,10 +155,10 @@ function RenderAccordionItem(
       kindString,
       setDeleteExternalResource,
       setDeleteResource,
+      setVMAction,
       allClusters,
       navigate,
       t,
-      toast,
       vmActionsEnabled,
       acmExtensions,
     ]
