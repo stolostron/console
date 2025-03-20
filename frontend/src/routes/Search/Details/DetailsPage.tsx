@@ -287,7 +287,7 @@ export default function DetailsPage() {
       })
     }
     return actions
-  }, [resource, cluster, kind, name, namespace, vmActionsEnabled, navigate, t, acmExtensions])
+  }, [resource, cluster, kind, name, namespace, vmActionsEnabled, navigate, t, acmExtensions, isHubClusterResource])
 
   return (
     <Fragment>
