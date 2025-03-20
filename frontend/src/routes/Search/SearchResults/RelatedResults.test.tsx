@@ -28,6 +28,7 @@ describe('RelatedResults', () => {
         setSelectedRelatedKinds={setSelectedKinds}
         setDeleteResource={() => {}}
         setDeleteExternalResource={() => {}}
+        setVMAction={() => {}}
       />
     )
   }
