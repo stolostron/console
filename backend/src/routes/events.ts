@@ -148,7 +148,7 @@ const definitions: IWatchOptions[] = [
   { kind: 'Subscription', apiVersion: 'apps.open-cluster-management.io/v1' },
   { kind: 'SubscriptionReport', apiVersion: 'apps.open-cluster-management.io/v1alpha1' },
   { kind: 'Application', apiVersion: 'argoproj.io/v1alpha1' },
-  { kind: 'ApplicationSet', apiVersion: 'argoproj.io/v1alpha1' },
+  { kind: 'ApplicationSet', apiVersion: 'argoproj.io/v1alpha1', isPolled: true, notStreamed: true },
   { kind: 'ArgoCD', apiVersion: 'argoproj.io/v1alpha1' },
   { kind: 'MulticlusterApplicationSetReport', apiVersion: 'apps.open-cluster-management.io/v1alpha1' },
   { kind: 'Infrastructure', apiVersion: 'config.openshift.io/v1' },
@@ -235,14 +235,23 @@ interface IWatchOptions {
   kind: string
   labelSelector?: Record<string, string>
   fieldSelector?: Record<string, string>
+  // poll the resource list instead of watching it
+  isPolled?: boolean
+  // don't stream--will need pagination to get the resources
+  notStreamed?: boolean
 }
 
 // https://kubernetes.io/docs/reference/using-api/api-concepts/
 async function listAndWatch(options: IWatchOptions) {
+  const serviceAccountToken = getServiceAccountToken()
   while (!stopping) {
     try {
-      const resourceVersion = await listKubernetesObjects(options)
-      await watchKubernetesObjects(options, resourceVersion)
+      const { resourceVersion } = await listKubernetesObjects(serviceAccountToken, options)
+      if (options.isPolled) {
+        await pollKubernetesObjects(serviceAccountToken, options)
+      } else {
+        await watchKubernetesObjects(serviceAccountToken, options, resourceVersion)
+      }
     } catch (err: unknown) {
       if (err instanceof SyntaxError) {
         // Happens when the response body is not JSON
@@ -276,11 +285,11 @@ async function listAndWatch(options: IWatchOptions) {
   }
 }
 
-async function listKubernetesObjects(options: IWatchOptions) {
-  const serviceAccountToken = getServiceAccountToken()
+async function listKubernetesObjects(serviceAccountToken: string, options: IWatchOptions) {
   let resourceVersion = ''
   let _continue: string | undefined
   let items: IResource[] = []
+  const { isPolled, notStreamed } = options
   while (!stopping) {
     const url = resourceUrl(options, { limit: '100', continue: _continue })
     const request = got
@@ -305,7 +314,7 @@ async function listKubernetesObjects(options: IWatchOptions) {
   }
 
   logger.info({
-    msg: 'list',
+    msg: isPolled ? 'polled' : 'list',
     kind: options.kind,
     labels: options.labelSelector,
     fields: options.fieldSelector,
@@ -321,7 +330,7 @@ async function listKubernetesObjects(options: IWatchOptions) {
   })
 
   for (const item of items) {
-    cacheResource(item)
+    cacheResource(item, notStreamed)
   }
 
   // Remove items that are no longer in kubernetes
@@ -344,14 +353,47 @@ async function listKubernetesObjects(options: IWatchOptions) {
   }
   for (const uid of removeUids) {
     const resource = cache[uid].resource
-    deleteResource(resource)
+    deleteResource(resource, notStreamed)
   }
 
-  return resourceVersion
+  return { resourceVersion, size: items.length }
 }
 
-async function watchKubernetesObjects(options: IWatchOptions, resourceVersion: string) {
-  const serviceAccountToken = getServiceAccountToken()
+async function pollKubernetesObjects(serviceAccountToken: string, options: IWatchOptions) {
+  while (!stopping) {
+    logger.debug({
+      msg: 'poll',
+      kind: options.kind,
+      labels: options.labelSelector,
+      fields: options.fieldSelector,
+      apiVersion: options.apiVersion,
+    })
+
+    let size = 2000
+    try {
+      ;({ size } = await listKubernetesObjects(serviceAccountToken, options))
+    } catch (e) {
+      logger.error(`poll kubernetes exception ${e}`)
+    }
+
+    /* istanbul ignore if */
+    if (process.env.NODE_ENV !== 'test') {
+      // polling interval should increase up to maxTimeout seconds
+      // for larger kube resource lists
+      const maxAppsets = 5000
+      const minTimeout = 5000
+      const maxTimeout = 45000
+      const timeout = Math.round(
+        size > maxAppsets ? maxTimeout : (size * (maxTimeout - minTimeout)) / maxAppsets + minTimeout
+      )
+      await new Promise((r) => setTimeout(r, timeout))
+    } else {
+      stopping = true
+    }
+  }
+}
+
+async function watchKubernetesObjects(serviceAccountToken: string, options: IWatchOptions, resourceVersion: string) {
   while (!stopping) {
     logger.debug({
       msg: 'watch',
@@ -371,6 +413,7 @@ async function watchKubernetesObjects(options: IWatchOptions, resourceVersion: s
       // TODO use abort signal when on node 16
       const cancelObj = { cancel: () => request.destroy() }
       requests.push(cancelObj)
+      const { notStreamed } = options
       try {
         await pipeline(
           request,
@@ -381,10 +424,10 @@ async function watchKubernetesObjects(options: IWatchOptions, resourceVersion: s
             switch (watchEvent.type) {
               case 'ADDED':
               case 'MODIFIED':
-                cacheResource(watchEvent.object)
+                cacheResource(watchEvent.object, notStreamed)
                 break
               case 'DELETED':
-                deleteResource(watchEvent.object)
+                deleteResource(watchEvent.object, notStreamed)
                 break
             }
 
@@ -549,7 +592,7 @@ function resourceUrl(options: IWatchOptions, query: Record<string, string>) {
   return url
 }
 
-function cacheResource(resource: IResource) {
+function cacheResource(resource: IResource, notStreamed: boolean) {
   const apiVersionPlural = apiVersionPluralFn(resource)
   let cache = resourceCache[apiVersionPlural]
   if (!cache) {
@@ -560,45 +603,53 @@ function cacheResource(resource: IResource) {
   const uid = resource.metadata.uid
   const existing = cache[uid]
 
-  if (existing) {
-    if (existing.resource.metadata.resourceVersion === resource.metadata.resourceVersion)
-      return resource.metadata.resourceVersion
-    ServerSideEvents.removeEvent(existing.eventID)
-  }
+  let eventID = -1
+  // if not streamed, we are just updating the cache
+  // which can then be grabbed by getKubeResources()
+  if (notStreamed) {
+    cache[uid] = { resource, eventID }
+  } else {
+    if (existing) {
+      if (existing.resource.metadata.resourceVersion === resource.metadata.resourceVersion)
+        return resource.metadata.resourceVersion
+      ServerSideEvents.removeEvent(existing.eventID)
+    }
 
-  const eventID = ServerSideEvents.pushEvent({ data: { type: 'MODIFIED', object: resource } })
-  cache[uid] = { resource, eventID }
+    eventID = ServerSideEvents.pushEvent({ data: { type: 'MODIFIED', object: resource } })
+    cache[uid] = { resource, eventID }
 
-  if (resource.kind === 'ManagedCluster') {
-    if (resource?.metadata?.labels['local-cluster'] === 'true') {
-      hubClusterName = resource?.metadata?.name
+    if (resource.kind === 'ManagedCluster') {
+      if (resource?.metadata?.labels['local-cluster'] === 'true') {
+        hubClusterName = resource?.metadata?.name
+      }
     }
   }
 }
 
-function deleteResource(resource: IResource) {
+function deleteResource(resource: IResource, notStreamed: boolean) {
   const apiVersionPlural = apiVersionPluralFn(resource)
   const cache = resourceCache[apiVersionPlural]
   if (!cache) return
 
   const uid = resource.metadata.uid
 
-  const existing = cache[uid]
-  if (existing) ServerSideEvents.removeEvent(existing.eventID)
+  if (!notStreamed) {
+    const existing = cache[uid]
+    if (existing) ServerSideEvents.removeEvent(existing.eventID)
 
-  const deletedID = ServerSideEvents.pushEvent({
-    data: {
-      type: 'DELETED',
-      object: {
-        kind: resource.kind,
-        apiVersion: resource.apiVersion,
-        metadata: { name: resource.metadata.name, namespace: resource.metadata.namespace },
+    const deletedID = ServerSideEvents.pushEvent({
+      data: {
+        type: 'DELETED',
+        object: {
+          kind: resource.kind,
+          apiVersion: resource.apiVersion,
+          metadata: { name: resource.metadata.name, namespace: resource.metadata.namespace },
+        },
       },
-    },
-  })
-  // after deletion has been broadcast to current clients, no need to retain
-  ServerSideEvents.removeEvent(deletedID)
-
+    })
+    // after deletion has been broadcast to current clients, no need to retain
+    ServerSideEvents.removeEvent(deletedID)
+  }
   delete cache[uid]
 }
 
