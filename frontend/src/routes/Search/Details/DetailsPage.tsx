@@ -246,6 +246,7 @@ export default function DetailsPage() {
                     name,
                     namespace,
                     cluster,
+                    _hubClusterResource: isHubClusterResource ? 'true' : 'false',
                   },
                 })
               }
@@ -367,6 +368,7 @@ export default function DetailsPage() {
             name: VMAction.item.name,
             namespace: VMAction.item.namespace,
             cluster: VMAction.item.cluster,
+            _hubClusterResource: VMAction.item?._hubClusterResource,
           }}
         />
         <Outlet context={searchDetailsContext} />

@@ -127,6 +127,7 @@ function VirtualMachineTable(props: Readonly<{ searchResultItems: ISearchResult[
           name: VMAction.item.name,
           namespace: VMAction.item.namespace,
           cluster: VMAction.item.cluster,
+          _hubClusterResource: VMAction.item?._hubClusterResource,
         }}
       />
       <DeleteResourceModal

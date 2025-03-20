@@ -172,6 +172,7 @@ export function getVirtualMachineRowActions(
           name: item.name,
           namespace: item.namespace,
           cluster: item.cluster,
+          _hubClusterResource: item?._hubClusterResource,
         },
       })
     },
@@ -192,6 +193,7 @@ export function getVirtualMachineRowActions(
           name: item.name,
           namespace: item.namespace,
           cluster: item.cluster,
+          _hubClusterResource: item?._hubClusterResource,
         },
       })
     },
@@ -210,6 +212,7 @@ export function getVirtualMachineRowActions(
           name: item.name,
           namespace: item.namespace,
           cluster: item.cluster,
+          _hubClusterResource: item?._hubClusterResource,
         },
       })
     },
@@ -230,6 +233,7 @@ export function getVirtualMachineRowActions(
           name: item.name,
           namespace: item.namespace,
           cluster: item.cluster,
+          _hubClusterResource: item?._hubClusterResource,
         },
       })
     },
@@ -248,6 +252,7 @@ export function getVirtualMachineRowActions(
           name: item.name,
           namespace: item.namespace,
           cluster: item.cluster,
+          _hubClusterResource: item?._hubClusterResource,
         },
       })
     },

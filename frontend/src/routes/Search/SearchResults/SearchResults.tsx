@@ -370,6 +370,7 @@ export default function SearchResults(
           name: VMAction.item.name,
           namespace: VMAction.item.namespace,
           cluster: VMAction.item.cluster,
+          _hubClusterResource: VMAction.item?._hubClusterResource,
         }}
       />
       <DeleteResourceModal

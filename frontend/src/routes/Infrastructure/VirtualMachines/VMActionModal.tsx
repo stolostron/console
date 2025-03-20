@@ -18,6 +18,7 @@ export interface IVMActionModalProps {
     name: string
     namespace: string
     cluster: string
+    _hubClusterResource?: string
   }
 }
 
@@ -30,6 +31,7 @@ export const ClosedVMActionModalProps: IVMActionModalProps = {
     name: '',
     namespace: '',
     cluster: '',
+    _hubClusterResource: '',
   },
 }
 
@@ -42,7 +44,6 @@ export function handleVMActions(
   toast: IAlertContext,
   t: TFunction
 ) {
-  if (process.env.NODE_ENV === 'test') return
   const abortController = new AbortController()
 
   const subResourceKind = action.toLowerCase().includes('pause') ? 'virtualmachineinstances' : 'virtualmachines'
