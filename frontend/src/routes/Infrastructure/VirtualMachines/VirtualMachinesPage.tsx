@@ -65,6 +65,7 @@ import {
   getVirtualMachineRowActionExtensions,
   getVirtualMachineRowActions,
 } from './utils'
+import { ClosedVMActionModalProps, IVMActionModalProps, VMActionModal } from './VMActionModal'
 
 function VirtualMachineTable(props: Readonly<{ searchResultItems: ISearchResult[] | undefined }>) {
   const { searchResultItems } = props
@@ -79,6 +80,7 @@ function VirtualMachineTable(props: Readonly<{ searchResultItems: ISearchResult[
   const [deleteExternalResource, setDeleteExternalResource] = useState<IDeleteExternalResourceModalProps>(
     ClosedDeleteExternalResourceModalProps
   )
+  const [VMAction, setVMAction] = useState<IVMActionModalProps>(ClosedVMActionModalProps)
   const searchDefinitions = useSearchDefinitions()
   const { clusterVersionState } = useSharedAtoms()
   const clusterVersions = useRecoilValue(clusterVersionState)
@@ -93,8 +95,8 @@ function VirtualMachineTable(props: Readonly<{ searchResultItems: ISearchResult[
         allClusters,
         setDeleteResource,
         setDeleteExternalResource,
+        setVMAction,
         vmActionsEnabled,
-        toast,
         navigate,
         t,
         // get the row action extensions for the virtual machine
@@ -118,6 +120,17 @@ function VirtualMachineTable(props: Readonly<{ searchResultItems: ISearchResult[
   return (
     <Fragment>
       {pluginModal}
+      <VMActionModal
+        open={VMAction.open}
+        close={VMAction.close}
+        action={VMAction.action}
+        method={VMAction.method}
+        item={{
+          name: VMAction.item.name,
+          namespace: VMAction.item.namespace,
+          cluster: VMAction.item.cluster,
+        }}
+      />
       <DeleteResourceModal
         open={deleteResource.open}
         close={deleteResource.close}

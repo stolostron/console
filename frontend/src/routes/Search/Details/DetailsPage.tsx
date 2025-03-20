@@ -3,20 +3,24 @@
 
 import { Divider } from '@patternfly/react-core'
 import { Dropdown, DropdownItem, DropdownToggle } from '@patternfly/react-core/deprecated'
-import React, { Dispatch, SetStateAction, useContext, useEffect, useMemo, useState } from 'react'
+import { Dispatch, Fragment, SetStateAction, useContext, useEffect, useMemo, useState } from 'react'
 import { Link, Outlet, useLocation, useNavigate, useOutletContext } from 'react-router-dom-v5-compat'
 import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
 import { useTranslation } from '../../../lib/acm-i18next'
+import { PluginContext } from '../../../lib/PluginContext'
 import { NavigationPath } from '../../../NavigationPath'
 import { IResource, IResourceDefinition } from '../../../resources'
 import { fireManagedClusterView } from '../../../resources/managedclusterview'
 import { getResource } from '../../../resources/utils/resource-request'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem, AcmToastContext } from '../../../ui-components'
-import { DeleteResourceModal } from '../components/Modals/DeleteResourceModal'
-import { handleVMActions } from '../SearchResults/utils'
-import { PluginContext } from '../../../lib/PluginContext'
 import { isResourceTypeOf } from '../../Infrastructure/VirtualMachines/utils'
+import {
+  ClosedVMActionModalProps,
+  IVMActionModalProps,
+  VMActionModal,
+} from '../../Infrastructure/VirtualMachines/VMActionModal'
+import { DeleteResourceModal } from '../components/Modals/DeleteResourceModal'
 
 export type SearchDetailsContext = {
   cluster: string
@@ -57,6 +61,7 @@ export default function DetailsPage() {
   const [resourceError, setResourceError] = useState('')
   const [resourceActionsOpen, setResourceActionsOpen] = useState(false)
   const [isDeleteResourceModalOpen, setIsDeleteResourceModalOpen] = useState(false)
+  const [VMAction, setVMAction] = useState<IVMActionModalProps>(ClosedVMActionModalProps)
   const { cluster, kind, apiversion, namespace, name, isHubClusterResource } = getResourceParams()
   const { acmExtensions } = useContext(PluginContext)
   const [pluginModal, setPluginModal] = useState<JSX.Element>()
@@ -177,6 +182,7 @@ export default function DetailsPage() {
           printableStatus === 'Stopped'
             ? {
                 action: 'Start',
+                method: 'PUT',
                 hubPath: `/apis/subresources.kubevirt.io/v1/namespaces/${namespace}/virtualmachines/${name}/start`,
                 managedPath: '/virtualmachines/start',
                 isDisabled: [
@@ -191,12 +197,14 @@ export default function DetailsPage() {
               }
             : {
                 action: 'Stop',
+                method: 'PUT',
                 hubPath: `/apis/subresources.kubevirt.io/v1/namespaces/${namespace}/virtualmachines/${name}/stop`,
                 managedPath: '/virtualmachines/stop',
                 isDisabled: ['Provisioning', 'Stopped', 'Stopping', 'Terminating', 'Unknown'].includes(printableStatus),
               },
           {
             action: 'Restart',
+            method: 'PUT',
             hubPath: `/apis/subresources.kubevirt.io/v1/namespaces/${namespace}/virtualmachines/${name}/restart`,
             managedPath: '/virtualmachines/restart',
             isDisabled: ['Migrating', 'Provisioning', 'Stopped', 'Stopping', 'Terminating', 'Unknown'].includes(
@@ -206,35 +214,48 @@ export default function DetailsPage() {
           printableStatus === 'Paused'
             ? {
                 action: 'Unpause',
+                method: 'PUT',
                 hubPath: `/apis/subresources.kubevirt.io/v1/namespaces/${namespace}/virtualmachineinstances/${name}/unpause`,
                 managedPath: '/virtualmachineinstances/unpause',
                 isDisabled: printableStatus !== 'Paused',
               }
             : {
                 action: 'Pause',
+                method: 'PUT',
                 hubPath: `/apis/subresources.kubevirt.io/v1/namespaces/${namespace}/virtualmachineinstances/${name}/pause`,
                 managedPath: '/virtualmachineinstances/pause',
                 isDisabled: printableStatus !== 'Running',
               },
-        ].map((action) => (
-          <DropdownItem
-            key={`${action.action}-vm-resource`}
-            component="button"
-            onClick={() =>
-              handleVMActions(
-                action.action.toLowerCase(),
-                isHubClusterResource ? action.hubPath : action.managedPath,
-                { cluster, name, namespace },
-                () => setResourceVersion(''), // trigger resource refetchto update details page data.
-                toast,
-                t
-              )
-            }
-            isDisabled={action.isDisabled}
-          >
-            {t(`{{action}} {{resourceKind}}`, { action: action.action, resourceKind: kind })}
-          </DropdownItem>
-        )),
+        ].map(
+          (action: {
+            action: string
+            method: any // 'PUT' | 'GET' | 'POST' | 'PATCH' | 'DELETE'
+            hubPath: string
+            managedPath: string
+            isDisabled: boolean
+          }) => (
+            <DropdownItem
+              key={`${action.action}-vm-resource`}
+              component="button"
+              onClick={() =>
+                setVMAction({
+                  open: true,
+                  close: () => setVMAction(ClosedVMActionModalProps),
+                  action: action.action,
+                  method: action.method,
+                  item: {
+                    name,
+                    namespace,
+                    cluster,
+                  },
+                })
+              }
+              isDisabled={action.isDisabled}
+            >
+              {t(`{{action}} {{resourceKind}}`, { action: action.action, resourceKind: kind })}
+            </DropdownItem>
+          )
+        ),
         <Divider key={'action-divider'} />
       )
     }
@@ -281,7 +302,7 @@ export default function DetailsPage() {
   ])
 
   return (
-    <React.Fragment>
+    <Fragment>
       {pluginModal}
       <AcmPage
         header={
@@ -350,9 +371,20 @@ export default function DetailsPage() {
             relatedResource={false}
           />
         )}
+        <VMActionModal
+          open={VMAction.open}
+          close={VMAction.close}
+          action={VMAction.action}
+          method={VMAction.method}
+          item={{
+            name: VMAction.item.name,
+            namespace: VMAction.item.namespace,
+            cluster: VMAction.item.cluster,
+          }}
+        />
         <Outlet context={searchDetailsContext} />
       </AcmPage>
-    </React.Fragment>
+    </Fragment>
   )
 }
 
