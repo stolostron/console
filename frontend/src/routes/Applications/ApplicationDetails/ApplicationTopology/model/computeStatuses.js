@@ -848,7 +848,7 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t, hub
   }
 
   const subscriptionReportResults = _.get(node, 'report.results', [])
-  const onlineClusters = getOnlineClusters(node)
+  const onlineClusters = getOnlineClusters(node, hubClusterName)
   Object.values(resourceMap).forEach((subscriptions) => {
     subscriptions.forEach((subscription) => {
       const subsCluster = _.get(subscription, 'cluster', '')
