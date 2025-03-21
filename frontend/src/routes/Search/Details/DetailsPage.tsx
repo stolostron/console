@@ -246,7 +246,7 @@ export default function DetailsPage() {
                     name,
                     namespace,
                     cluster,
-                    _hubClusterResource: isHubClusterResource ? 'true' : 'false',
+                    _hubClusterResource: isHubClusterResource ? 'true' : undefined,
                   },
                 })
               }

@@ -31,7 +31,6 @@ export const ClosedVMActionModalProps: IVMActionModalProps = {
     name: '',
     namespace: '',
     cluster: '',
-    _hubClusterResource: '',
   },
 }
 
@@ -74,7 +73,7 @@ export function handleVMActions(
 
       let errMessage: string = err?.message ?? t('An unexpected error occurred.')
       if (errMessage.includes(':')) errMessage = errMessage.split(':').slice(1).join(':')
-      if (errMessage === 'Unauthorized') errMessage = t('Unauthorized to execute this action.')
+      if (errMessage.trim() === 'Unauthorized') errMessage = t('Unauthorized to execute this action.')
       toast.addAlert({
         title: t('Error triggering action {{action}} on VirtualMachine {{name}}', {
           name: item.name,
@@ -101,6 +100,7 @@ export const VMActionModal = (props: IVMActionModalProps) => {
       onClose={close}
       actions={[
         <AcmButton
+          id="vm-modal-confirm"
           // isDisabled={loadingAccessRequest || !canDelete}
           key="confirm"
           variant={ButtonVariant.danger}
