@@ -13,9 +13,6 @@ describe('VirtualMachines utils', () => {
   }))
   const t = i18next.t.bind(i18next)
   const navigate = jest.fn()
-  const toastContextMock: any = {
-    addAlert: jest.fn(),
-  }
   jest.mock('../../Search/SearchResults/utils', () => ({
     handleVMActions: jest.fn(() => {
       return Promise.resolve()
@@ -46,10 +43,11 @@ describe('VirtualMachines utils', () => {
       [],
       () => {},
       () => {},
+      () => {},
       true,
-      toastContextMock,
       navigate,
-      t
+      t,
+      []
     )
 
     // Assert the correct number of actions are returned
@@ -100,10 +98,11 @@ describe('VirtualMachines utils', () => {
       [],
       () => {},
       () => {},
+      () => {},
       true,
-      toastContextMock,
       navigate,
-      t
+      t,
+      []
     )
 
     // Assert the correct number of actions are returned
@@ -153,10 +152,11 @@ describe('VirtualMachines utils', () => {
       [],
       () => {},
       () => {},
+      () => {},
       true,
-      toastContextMock,
       navigate,
-      t
+      t,
+      []
     )
 
     // Assert the correct number of actions are returned
@@ -206,10 +206,11 @@ describe('VirtualMachines utils', () => {
       [],
       () => {},
       () => {},
+      () => {},
       true,
-      toastContextMock,
       navigate,
-      t
+      t,
+      []
     )
 
     // Assert the correct number of actions are returned
@@ -259,10 +260,11 @@ describe('VirtualMachines utils', () => {
       [],
       () => {},
       () => {},
+      () => {},
       false,
-      toastContextMock,
       navigate,
-      t
+      t,
+      []
     )
 
     // Assert the correct number of actions are returned

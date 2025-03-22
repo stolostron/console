@@ -1,21 +1,19 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { get } from 'lodash'
 import queryString from 'query-string'
-import { useContext, useMemo } from 'react'
+import { useMemo } from 'react'
 import { TFunction } from 'react-i18next'
 import { generatePath, NavigateFunction, useNavigate } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
-import { Cluster, fetchRetry, getBackendUrl } from '../../../resources/utils'
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
-import { AcmToastContext, compareStrings, IAlertContext } from '../../../ui-components'
+import { Cluster } from '../../../resources/utils'
+import { compareStrings, IAlertContext } from '../../../ui-components'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import {
   ClosedDeleteExternalResourceModalProps,
   IDeleteExternalResourceModalProps,
 } from '../components/Modals/DeleteExternalResourceModal'
 import { ClosedDeleteModalProps, IDeleteModalProps } from '../components/Modals/DeleteResourceModal'
-import { searchClient } from '../search-sdk/search-client'
 import { SearchResultItemsQuery } from '../search-sdk/search-sdk'
 import { GetUrlSearchParam, SearchColumnDefinition } from '../searchDefinitions'
 
@@ -27,50 +25,6 @@ export interface ISearchResult {
   __type: string
 }
 
-export function handleVMActions(
-  action: string,
-  path: string,
-  item: any,
-  refetchVM: () => void, // provide a callback fn to refetch the vm
-  toast: IAlertContext,
-  t: TFunction
-) {
-  if (process.env.NODE_ENV === 'test') return
-  const abortController = new AbortController()
-  fetchRetry({
-    method: 'PUT',
-    url: `${getBackendUrl()}${path}`,
-    data: {
-      managedCluster: item.cluster,
-      vmName: item.name,
-      vmNamespace: item.namespace,
-    },
-    signal: abortController.signal,
-    retries: process.env.NODE_ENV === 'production' ? 2 : 0,
-    headers: { Accept: '*/*' },
-    disableRedirectUnauthorizedLogin: true,
-  })
-    .then(() => {
-      // Wait 5 seconds to allow search collector to catch up & refetch search results to update table.
-      setTimeout(refetchVM, 5000)
-    })
-    .catch((err) => {
-      console.error(`VirtualMachine: ${item.name} ${action} error. ${err}`)
-
-      let errMessage: string = err?.message ?? t('An unexpected error occurred.')
-      if (errMessage.includes(':')) errMessage = errMessage.split(':').slice(1).join(':')
-      if (errMessage === 'Unauthorized') errMessage = t('Unauthorized to execute this action.')
-      toast.addAlert({
-        title: t('Error triggering action {{action}} on VirtualMachine {{name}}', {
-          name: item.name,
-          action,
-        }),
-        message: errMessage,
-        type: 'danger',
-      })
-    })
-}
-
 export const useGetRowActions = (
   resourceKind: string,
   currentQuery: string,
@@ -80,9 +34,6 @@ export const useGetRowActions = (
 ) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { settingsState } = useSharedAtoms()
-  const vmActionsEnabled = useRecoilValue(settingsState)?.VIRTUAL_MACHINE_ACTIONS === 'enabled'
-  const toast = useContext(AcmToastContext)
   const allClusters = useAllClusters(true)
 
   return useMemo(
@@ -95,8 +46,6 @@ export const useGetRowActions = (
         setDeleteExternalResource,
         allClusters,
         navigate,
-        toast,
-        vmActionsEnabled,
         t
       ),
     [
@@ -107,8 +56,6 @@ export const useGetRowActions = (
       setDeleteExternalResource,
       allClusters,
       navigate,
-      toast,
-      vmActionsEnabled,
       t,
     ]
   )
@@ -122,8 +69,6 @@ export function getRowActions(
   setDeleteExternalResource: React.Dispatch<React.SetStateAction<IDeleteExternalResourceModalProps>>,
   allClusters: Cluster[],
   navigate: NavigateFunction,
-  toast: IAlertContext,
-  vmActionsEnabled: boolean,
   t: TFunction
 ) {
   const viewApplication = {
@@ -267,92 +212,6 @@ export function getRowActions(
     },
   }
 
-  const startVM = {
-    id: 'startVM',
-    title: t('Start {{resourceKind}}', { resourceKind }),
-    click: (item: any) => {
-      const path = item?._hubClusterResource
-        ? `/apis/subresources.kubevirt.io/v1/namespaces/${item.namespace}/virtualmachines/${item.name}/start`
-        : `/virtualmachines/start`
-      handleVMActions(
-        'start',
-        path,
-        item,
-        () => searchClient.refetchQueries({ include: ['searchResultItems'] }),
-        toast,
-        t
-      )
-    },
-  }
-  const stopVM = {
-    id: 'stopVM',
-    title: t('Stop {{resourceKind}}', { resourceKind }),
-    click: (item: any) => {
-      const path = item?._hubClusterResource
-        ? `/apis/subresources.kubevirt.io/v1/namespaces/${item.namespace}/virtualmachines/${item.name}/stop`
-        : `/virtualmachines/stop`
-      handleVMActions(
-        'stop',
-        path,
-        item,
-        () => searchClient.refetchQueries({ include: ['searchResultItems'] }),
-        toast,
-        t
-      )
-    },
-  }
-  const restartVM = {
-    id: 'restartVM',
-    title: t('Restart {{resourceKind}}', { resourceKind }),
-    click: (item: any) => {
-      const path = item?._hubClusterResource
-        ? `/apis/subresources.kubevirt.io/v1/namespaces/${item.namespace}/virtualmachines/${item.name}/restart`
-        : `/virtualmachines/restart`
-      handleVMActions(
-        'restart',
-        path,
-        item,
-        () => searchClient.refetchQueries({ include: ['searchResultItems'] }),
-        toast,
-        t
-      )
-    },
-  }
-  const pauseVM = {
-    id: 'pauseVM',
-    title: t('Pause {{resourceKind}}', { resourceKind }),
-    click: (item: any) => {
-      const path = item?._hubClusterResource
-        ? `/apis/subresources.kubevirt.io/v1/namespaces/${item.namespace}/virtualmachineinstances/${item.name}/pause`
-        : `/virtualmachineinstances/pause`
-      handleVMActions(
-        'pause',
-        path,
-        item,
-        () => searchClient.refetchQueries({ include: ['searchResultItems'] }),
-        toast,
-        t
-      )
-    },
-  }
-  const unpauseVM = {
-    id: 'unpauseVM',
-    title: t('Unpause {{resourceKind}}', { resourceKind }),
-    click: (item: any) => {
-      const path = item?._hubClusterResource
-        ? `/apis/subresources.kubevirt.io/v1/namespaces/${item.namespace}/virtualmachineinstances/${item.name}/unpause`
-        : `/virtualmachineinstances/unpause`
-      handleVMActions(
-        'unpause',
-        path,
-        item,
-        () => searchClient.refetchQueries({ include: ['searchResultItems'] }),
-        toast,
-        t
-      )
-    },
-  }
-
   if (
     resourceKind.toLowerCase() === 'cluster' ||
     resourceKind.toLowerCase() === 'release' ||
@@ -361,19 +220,6 @@ export function getRowActions(
     return []
   } else if (resourceKind.toLowerCase() === 'application') {
     return [viewApplication, viewAppTopology, editButton, viewRelatedButton, deleteButton]
-  } else if (resourceKind.toLowerCase() === 'virtualmachine') {
-    return vmActionsEnabled
-      ? [
-          startVM,
-          stopVM,
-          restartVM,
-          pauseVM,
-          unpauseVM,
-          { ...editButton, addSeparator: true },
-          viewRelatedButton,
-          deleteButton,
-        ]
-      : [editButton, viewRelatedButton, deleteButton]
   }
   return [editButton, viewRelatedButton, deleteButton]
 }
