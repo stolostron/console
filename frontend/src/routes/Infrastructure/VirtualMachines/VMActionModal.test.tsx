@@ -145,7 +145,7 @@ describe('VMActionModal', () => {
     expect(confirmButton).toBeTruthy()
     userEvent.click(confirmButton)
 
-    expect(fetchRetry).toThrowError()
+    expect(fetchRetry).toThrow()
   })
 
   test('renders VMActionModal correctly and returns unauthorized error', async () => {
@@ -177,6 +177,6 @@ describe('VMActionModal', () => {
     expect(confirmButton).toBeTruthy()
     userEvent.click(confirmButton)
 
-    expect(fetchRetry).toThrowError()
+    expect(fetchRetry).toThrow()
   })
 })
