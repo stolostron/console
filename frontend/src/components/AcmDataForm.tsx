@@ -655,18 +655,22 @@ export function AcmDataFormWizard(props: {
     <Fragment>
       {isModalWizard ? (
         <Wizard title={formData.title} footer={Footer} onClose={cancel}>
-          {steps.map(({ id, name, content }) => {
-            ;<WizardStep id={id} name={name}>
-              {content}
-            </WizardStep>
+          {steps.map(({ id, name, component }) => {
+            return (
+              <WizardStep id={id} key={id} name={name}>
+                {component}
+              </WizardStep>
+            )
           })}
         </Wizard>
       ) : (
         <Wizard footer={Footer} onClose={cancel}>
-          {steps.map(({ id, name, content }) => {
-            ;<WizardStep id={id} name={name}>
-              {content}
-            </WizardStep>
+          {steps.map(({ id, name, component }) => {
+            return (
+              <WizardStep id={id} key={id} name={name}>
+                {component}
+              </WizardStep>
+            )
           })}
         </Wizard>
       )}
