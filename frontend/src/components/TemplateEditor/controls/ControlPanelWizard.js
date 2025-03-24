@@ -315,10 +315,12 @@ class ControlPanelWizard extends React.Component {
         startAtStep={startAtStep}
         footer={CustomFooter}
       >
-        {steps.map(({ title, content }) => {
-          ;<WizardStep id={title.id} name={title.id}>
-            {content}
-          </WizardStep>
+        {steps.map(({ title, component }) => {
+          return (
+            <WizardStep id={title.id} key={title.id} name={title.id}>
+              {component}
+            </WizardStep>
+          )
         })}
       </Wizard>
     )
