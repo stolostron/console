@@ -123,7 +123,7 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
       onClose={close}
       position="top"
     >
-      <AcmForm style={{ gap: 0, display: 'flex', flexDirection: 'column' }}>
+      <AcmForm style={{ gap: 0, display: 'flex', maxWidth: '100%', flexDirection: 'column' }}>
         {!errors?.length ? (
           <Fragment>
             {description}
