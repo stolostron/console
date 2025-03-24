@@ -531,8 +531,7 @@ export function AcmDataFormWizard(props: {
     canJumpTo: !isSubmitting,
   })
 
-  const Footer = () => {
-    const { goToNextStep, goToPrevStep, activeStep, close } = useWizardContext()
+  const Footer = (activeStep, goToNextStep, goToPrevStep, close) => {
     let section: Section | undefined
     let firstSection: Section | undefined
     for (const formSection of formData.sections) {
@@ -657,7 +656,7 @@ export function AcmDataFormWizard(props: {
       {isModalWizard ? (
         <Wizard title={formData.title} footer={Footer} onClose={cancel}>
           {steps.map(({ id, name, content }) => {
-            <WizardStep id={id} name={name}>
+            ;<WizardStep id={id} name={name}>
               {content}
             </WizardStep>
           })}
@@ -665,7 +664,7 @@ export function AcmDataFormWizard(props: {
       ) : (
         <Wizard footer={Footer} onClose={cancel}>
           {steps.map(({ id, name, content }) => {
-            <WizardStep id={id} name={name}>
+            ;<WizardStep id={id} name={name}>
               {content}
             </WizardStep>
           })}
