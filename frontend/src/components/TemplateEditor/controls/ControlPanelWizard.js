@@ -262,8 +262,7 @@ class ControlPanelWizard extends React.Component {
     const isWorking = creationStatus === 'IN_PROGRESS' || isProcessing
     const isDisabled = creationStatus === 'DONE' || isWorking
 
-    const CustomFooter = () => {
-      const { goToNextStep, goToPrevStep, activeStep, close } = useWizardContext()
+    const CustomFooter = (activeStep, goToNextStep, goToPrevStep, close) => {
       return (
         <WizardFooterWrapper>
           <ActionList>
@@ -317,8 +316,8 @@ class ControlPanelWizard extends React.Component {
         footer={CustomFooter}
       >
         {steps.map(({ title, content }) => {
-          <WizardStep id={title.id} name={title.id}>
-            { content }
+          ;<WizardStep id={title.id} name={title.id}>
+            {content}
           </WizardStep>
         })}
       </Wizard>
