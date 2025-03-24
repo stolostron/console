@@ -3,16 +3,6 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { CreateCredentialModal } from './CreateCredentialModal'
 
-// mock for the translation function
-jest.mock('../lib/acm-i18next', () => ({
-  useTranslation: () => ({
-    t: (key: string) => {
-      if (key === 'Add credential') return 'Add credential'
-      return key
-    },
-  }),
-}))
-
 describe('CreateCredentialModal', () => {
   test('renders with default button text', () => {
     const mockHandleModalToggle = jest.fn()
