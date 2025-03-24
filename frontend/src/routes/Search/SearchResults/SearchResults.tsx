@@ -21,13 +21,19 @@ import _ from 'lodash'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../lib/acm-i18next'
+import { PluginContext } from '../../../lib/PluginContext'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
-import { AcmLoadingPage, AcmTable, AcmToastContext, compareStrings } from '../../../ui-components'
+import { AcmLoadingPage, AcmTable, compareStrings } from '../../../ui-components'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import {
-  getVirtualMachineRowActions,
   getVirtualMachineRowActionExtensions,
+  getVirtualMachineRowActions,
 } from '../../Infrastructure/VirtualMachines/utils'
+import {
+  ClosedVMActionModalProps,
+  IVMActionModalProps,
+  VMActionModal,
+} from '../../Infrastructure/VirtualMachines/VMActionModal'
 import {
   ClosedDeleteExternalResourceModalProps,
   DeleteExternalResourceModal,
@@ -44,7 +50,6 @@ import { SearchResultItemsQuery } from '../search-sdk/search-sdk'
 import { useSearchDefinitions } from '../searchDefinitions'
 import RelatedResults from './RelatedResults'
 import { ISearchResult, useGetRowActions } from './utils'
-import { PluginContext } from '../../../lib/PluginContext'
 
 const resultsWrapper = css({ paddingTop: '0' })
 const relatedExpandableWrapper = css({
@@ -65,19 +70,23 @@ const accordionItemGroup = css({
   color: 'var(--pf-v5-global--Color--200)',
 })
 
-function RenderAccordionItem(props: {
-  currentQuery: string
-  setDeleteResource: React.Dispatch<React.SetStateAction<IDeleteModalProps>>
-  setDeleteExternalResource: React.Dispatch<React.SetStateAction<IDeleteExternalResourceModalProps>>
-  kindSearchResultItems: Record<string, ISearchResult[]>
-  kind: string
-  idx: number
-  defaultIsExpanded: boolean
-}) {
+function RenderAccordionItem(
+  props: Readonly<{
+    currentQuery: string
+    setDeleteResource: React.Dispatch<React.SetStateAction<IDeleteModalProps>>
+    setDeleteExternalResource: React.Dispatch<React.SetStateAction<IDeleteExternalResourceModalProps>>
+    setVMAction: React.Dispatch<React.SetStateAction<IVMActionModalProps>>
+    kindSearchResultItems: Record<string, ISearchResult[]>
+    kind: string
+    idx: number
+    defaultIsExpanded: boolean
+  }>
+) {
   const {
     currentQuery,
     setDeleteResource,
     setDeleteExternalResource,
+    setVMAction,
     kindSearchResultItems,
     kind,
     idx,
@@ -85,7 +94,6 @@ function RenderAccordionItem(props: {
   } = props
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const toast = useContext(AcmToastContext)
   const allClusters = useAllClusters(true)
   const { settingsState } = useSharedAtoms()
   const vmActionsEnabled = useRecoilValue(settingsState)?.VIRTUAL_MACHINE_ACTIONS === 'enabled'
@@ -125,8 +133,8 @@ function RenderAccordionItem(props: {
                     allClusters,
                     setDeleteResource,
                     setDeleteExternalResource,
+                    setVMAction,
                     vmActionsEnabled,
-                    toast,
                     navigate,
                     t,
                     // get the row action extensions for the virtual machine
@@ -147,10 +155,10 @@ function RenderAccordionItem(props: {
       kindString,
       setDeleteExternalResource,
       setDeleteResource,
+      setVMAction,
       allClusters,
       navigate,
       t,
-      toast,
       vmActionsEnabled,
       acmExtensions,
     ]
@@ -182,13 +190,16 @@ function RenderAccordionItem(props: {
   )
 }
 
-function SearchResultAccordion(props: {
-  data: ISearchResult[]
-  currentQuery: string
-  setDeleteResource: React.Dispatch<React.SetStateAction<IDeleteModalProps>>
-  setDeleteExternalResource: React.Dispatch<React.SetStateAction<IDeleteExternalResourceModalProps>>
-}) {
-  const { data, currentQuery, setDeleteResource, setDeleteExternalResource } = props
+function SearchResultAccordion(
+  props: Readonly<{
+    data: ISearchResult[]
+    currentQuery: string
+    setDeleteResource: React.Dispatch<React.SetStateAction<IDeleteModalProps>>
+    setDeleteExternalResource: React.Dispatch<React.SetStateAction<IDeleteExternalResourceModalProps>>
+    setVMAction: React.Dispatch<React.SetStateAction<IVMActionModalProps>>
+  }>
+) {
+  const { data, currentQuery, setDeleteResource, setDeleteExternalResource, setVMAction } = props
 
   const { kindSearchResultItems, kinds } = useMemo(() => {
     const kindSearchResultItems: Record<string, ISearchResult[]> = {}
@@ -225,6 +236,7 @@ function SearchResultAccordion(props: {
               currentQuery={currentQuery}
               setDeleteResource={setDeleteResource}
               setDeleteExternalResource={setDeleteExternalResource}
+              setVMAction={setVMAction}
               kindSearchResultItems={kindSearchResultItems}
               kind={kind}
               idx={idx}
@@ -237,13 +249,15 @@ function SearchResultAccordion(props: {
   )
 }
 
-export default function SearchResults(props: {
-  currentQuery: string
-  error: ApolloError | undefined
-  loading: boolean
-  data: SearchResultItemsQuery | undefined
-  preSelectedRelatedResources: string[]
-}) {
+export default function SearchResults(
+  props: Readonly<{
+    currentQuery: string
+    error: ApolloError | undefined
+    loading: boolean
+    data: SearchResultItemsQuery | undefined
+    preSelectedRelatedResources: string[]
+  }>
+) {
   const { currentQuery, error, loading, data, preSelectedRelatedResources } = props
   const { t } = useTranslation()
   const { alerts, addSearchAlert, removeSearchAlert } = useContext(SearchAlertContext)
@@ -256,6 +270,7 @@ export default function SearchResults(props: {
   const [deleteExternalResource, setDeleteExternalResource] = useState<IDeleteExternalResourceModalProps>(
     ClosedDeleteExternalResourceModalProps
   )
+  const [VMAction, setVMAction] = useState<IVMActionModalProps>(ClosedVMActionModalProps)
   const [showRelatedResources, setShowRelatedResources] = useState<boolean>(false)
 
   const hasFederatedError = useMemo(() => {
@@ -346,6 +361,18 @@ export default function SearchResults(props: {
 
   return (
     <Fragment>
+      <VMActionModal
+        open={VMAction.open}
+        close={VMAction.close}
+        action={VMAction.action}
+        method={VMAction.method}
+        item={{
+          name: VMAction.item.name,
+          namespace: VMAction.item.namespace,
+          cluster: VMAction.item.cluster,
+          _hubClusterResource: VMAction.item?._hubClusterResource,
+        }}
+      />
       <DeleteResourceModal
         open={deleteResource.open}
         close={deleteResource.close}
@@ -383,6 +410,7 @@ export default function SearchResults(props: {
                 setSelectedRelatedKinds={setSelectedRelatedKinds}
                 setDeleteResource={setDeleteResource}
                 setDeleteExternalResource={setDeleteExternalResource}
+                setVMAction={setVMAction}
               />
             )}
           </PageSection>
@@ -391,6 +419,7 @@ export default function SearchResults(props: {
             currentQuery={currentQuery}
             setDeleteResource={setDeleteResource}
             setDeleteExternalResource={setDeleteExternalResource}
+            setVMAction={setVMAction}
           />
         </Stack>
       </PageSection>

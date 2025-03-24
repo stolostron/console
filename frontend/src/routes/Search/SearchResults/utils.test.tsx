@@ -14,9 +14,6 @@ jest.mock('react-router-dom-v5-compat', () => ({
 }))
 const t = i18next.t.bind(i18next)
 const navigate = jest.fn()
-const toastContextMock: any = {
-  addAlert: jest.fn(),
-}
 
 jest.mock('../../../resources', () => ({
   ...jest.requireActual('../../../resources'),
@@ -26,9 +23,6 @@ jest.mock('../../../resources', () => ({
 }))
 jest.mock('./utils', () => ({
   ...jest.requireActual('./utils'),
-  handleVMActions: jest.fn(() => {
-    return Promise.resolve()
-  }),
 }))
 
 const allClusters = [
@@ -73,7 +67,6 @@ const allClusters = [
 ]
 
 test('Correctly return row Actions', () => {
-  const vmActionsEnabled = false
   const res = getRowActions(
     'Pod',
     'kind:Pod',
@@ -82,8 +75,6 @@ test('Correctly return row Actions', () => {
     () => {},
     allClusters,
     navigate,
-    toastContextMock,
-    vmActionsEnabled,
     t
   )
   res[0].click({ kind: 'Pod' }) // edit resource
@@ -93,7 +84,6 @@ test('Correctly return row Actions', () => {
 })
 
 test('Correctly return empty row Actions for restricted resource', () => {
-  const vmActionsEnabled = false
   const res = getRowActions(
     'Cluster',
     'kind:Cluster',
@@ -102,15 +92,12 @@ test('Correctly return empty row Actions for restricted resource', () => {
     () => {},
     allClusters,
     navigate,
-    toastContextMock,
-    vmActionsEnabled,
     t
   )
   expect(res).toMatchSnapshot()
 })
 
 test('Correctly return empty row Actions for Application', () => {
-  const vmActionsEnabled = false
   const res = getRowActions(
     'Application',
     'kind:Application',
@@ -119,8 +106,6 @@ test('Correctly return empty row Actions for Application', () => {
     () => {},
     allClusters,
     navigate,
-    toastContextMock,
-    vmActionsEnabled,
     t
   )
   res[0].click({
@@ -141,7 +126,6 @@ test('Correctly return empty row Actions for Application', () => {
 })
 
 test('Correctly return row Actions for Application in global search', () => {
-  const vmActionsEnabled = false
   const res = getRowActions(
     'Application',
     'kind:Application',
@@ -150,8 +134,6 @@ test('Correctly return row Actions for Application in global search', () => {
     () => {},
     allClusters,
     navigate,
-    toastContextMock,
-    vmActionsEnabled,
     t
   )
   res[0].click({
@@ -195,120 +177,6 @@ test('Correctly return row Actions for Application in global search', () => {
     managedHub: 'global-hub',
   }) // delete app
   expect(res).toMatchSnapshot()
-})
-
-test('Correctly return VirtualMachine with actions enabled', () => {
-  const vmActionsEnabled = true
-  const res = getRowActions(
-    'VirtualMachine',
-    'kind:VirtualMachine',
-    false,
-    () => {},
-    () => {},
-    allClusters,
-    navigate,
-    toastContextMock,
-    vmActionsEnabled,
-    t
-  )
-  expect(res).toMatchSnapshot()
-})
-
-test('Correctly return VirtualMachine with actions disabled', () => {
-  const vmActionsEnabled = false
-  const res = getRowActions(
-    'VirtualMachine',
-    'kind:VirtualMachine',
-    false,
-    () => {},
-    () => {},
-    allClusters,
-    navigate,
-    toastContextMock,
-    vmActionsEnabled,
-    t
-  )
-  expect(res).toMatchSnapshot()
-})
-test('should handle managed vm action buttons', () => {
-  const item = {
-    _uid: 'cluster1/42634581-0cc1-4aa9-bec6-69f59049e2d3',
-    apigroup: 'kubevirt.io',
-    apiversion: 'v1',
-    cluster: 'cluster1',
-    created: '2024-09-09T20:00:42Z',
-    kind: 'VirtualMachine',
-    kind_plural: 'virtualmachines',
-    name: 'centos7-gray-owl-35',
-    namespace: 'openshift-cnv',
-    ready: 'False',
-    status: 'Paused',
-  }
-  const vmActionsEnabled = true
-  const actions = getRowActions(
-    'VirtualMachine',
-    'kind:VirtualMachine',
-    false,
-    () => {},
-    () => {},
-    allClusters,
-    navigate,
-    toastContextMock,
-    vmActionsEnabled,
-    t
-  )
-  const startVMAction = actions.find((action) => action.id === 'startVM')
-  const stopVMAction = actions.find((action) => action.id === 'stopVM')
-  const restartVMAction = actions.find((action) => action.id === 'restartVM')
-  const pauseVMAction = actions.find((action) => action.id === 'pauseVM')
-  const unpauseVMAction = actions.find((action) => action.id === 'unpauseVM')
-
-  startVMAction?.click(item)
-  stopVMAction?.click(item)
-  restartVMAction?.click(item)
-  pauseVMAction?.click(item)
-  unpauseVMAction?.click(item)
-})
-
-test('should handle hub vm action buttons', () => {
-  const item = {
-    _hubClusterResource: 'true',
-    _uid: 'local-cluster/42634581-0cc1-4aa9-bec6-69f59049e2d3',
-    apigroup: 'kubevirt.io',
-    apiversion: 'v1',
-    cluster: 'local-cluster',
-    created: '2024-09-09T20:00:42Z',
-    kind: 'VirtualMachine',
-    kind_plural: 'virtualmachines',
-    name: 'centos7-gray-owl-35',
-    namespace: 'openshift-cnv',
-    ready: 'False',
-    status: 'Paused',
-  }
-  const vmActionsEnabled = true
-  const actions = getRowActions(
-    'VirtualMachine',
-    'kind:VirtualMachine',
-    false,
-    () => {},
-    () => {},
-    allClusters,
-    navigate,
-    toastContextMock,
-    vmActionsEnabled,
-    t
-  )
-  const startVMAction = actions.find((action) => action.id === 'startVM')
-  const stopVMAction = actions.find((action) => action.id === 'stopVM')
-  const restartVMAction = actions.find((action) => action.id === 'restartVM')
-  const pauseVMAction = actions.find((action) => action.id === 'pauseVM')
-  const unpauseVMAction = actions.find((action) => action.id === 'unpauseVM')
-
-  startVMAction?.click(item)
-  stopVMAction?.click(item)
-  restartVMAction?.click(item)
-  pauseVMAction?.click(item)
-  unpauseVMAction?.click(item)
 })
 
 test('generateSearchResultExport - Correctly generates and triggers csv download for single resource kind', () => {
