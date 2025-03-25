@@ -95,7 +95,7 @@ const findInstalledSubscription = (name: string, get: GetRecoilValue) => {
   const subscriptionOperators = get(subscriptionOperatorsState)
   return subscriptionOperators.filter(
     (op) =>
-      op.metadata.name === name &&
+      op.spec.name === name &&
       op?.status?.conditions?.find((c) => c.type === 'CatalogSourcesUnhealthy')?.status === 'False'
   )
 }

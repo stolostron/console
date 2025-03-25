@@ -13,8 +13,11 @@ const acm_unhealthy: SubscriptionOperator = {
   apiVersion: SubscriptionOperatorApiVersion,
   kind: SubscriptionOperatorKind,
   metadata: {
-    name: 'advanced-cluster-management',
+    name: 'acm-operator-subscription',
     namespace: 'open-cluster-management',
+  },
+  spec: {
+    name: 'advanced-cluster-management',
   },
   status: {
     installedCSV: 'advanced-cluster-management.v2.8.0',
@@ -28,15 +31,17 @@ const acm_unhealthy: SubscriptionOperator = {
       },
     ],
   },
-  spec: {},
 }
 
 const acm: SubscriptionOperator = {
   apiVersion: SubscriptionOperatorApiVersion,
   kind: SubscriptionOperatorKind,
   metadata: {
-    name: 'advanced-cluster-management',
+    name: 'acm-operator-subscription',
     namespace: 'open-cluster-management',
+  },
+  spec: {
+    name: 'advanced-cluster-management',
   },
   status: {
     installedCSV: 'advanced-cluster-management.v2.8.0',
@@ -50,7 +55,6 @@ const acm: SubscriptionOperator = {
       },
     ],
   },
-  spec: {},
 }
 
 function WrappedACMNotReadyWarning(props: { acmOperators?: SubscriptionOperator[] }) {
