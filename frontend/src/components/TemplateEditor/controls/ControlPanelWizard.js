@@ -4,6 +4,9 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import {
+  ActionList,
+  ActionListGroup,
+  ActionListItem,
   Button,
   Icon,
   Title,
@@ -184,7 +187,7 @@ class ControlPanelWizard extends React.Component {
     }
 
     const validateNextStep = (activeStep, onNext) => {
-      const { type, mutation, disableEditorOnSuccess, disablePreviousControlsOnSuccess } = activeStep.control
+      const { type, mutation, disableEditorOnSuccess, disablePreviousControlsOnSuccess } = activeStep.component
       switch (type) {
         case 'step':
           {
@@ -240,9 +243,9 @@ class ControlPanelWizard extends React.Component {
                       })
                     })
                 }
-                activeStep.control.isComplete = true
-                delete activeStep.control.mutation
-                delete activeStep.control.nextButtonLabel
+                activeStep.component.isComplete = true
+                delete activeStep.component.mutation
+                delete activeStep.component.nextButtonLabel
                 onNext()
                 this.forceUpdate()
               }
@@ -274,7 +277,7 @@ class ControlPanelWizard extends React.Component {
                   spinnerAriaValueText={isWorking ? i18n('Processing') : undefined}
                   onClick={!isWorking ? validateNextStep.bind(null, activeStep, goToNextStep) : noop}
                 >
-                  {processingLabel || activeStep.control.nextButtonLabel || i18n('Next')}
+                  {processingLabel || activeStep.component.nextButtonLabel || i18n('Next')}
                 </Button>
               </ActionListItem>
               <ActionListItem>
@@ -308,10 +311,10 @@ class ControlPanelWizard extends React.Component {
         onClose={onClose}
         footer={CustomFooter}
       >
-        {steps.map(({ title, content }) => {
+        {steps.map(({ id, name, component }) => {
           return (
-            <WizardStep id={title.id} key={title.id} name={title.type}>
-              {content}
+            <WizardStep id={id} key={id} name={name}>
+              {component}
             </WizardStep>
           )
         })}
