@@ -9,7 +9,6 @@ import {
   Title,
   Stack,
   StackItem,
-  useWizardContext,
   WizardFooterWrapper,
   WizardStep,
   Wizard,
@@ -303,22 +302,16 @@ class ControlPanelWizard extends React.Component {
     if (startAtStep < 1) startAtStep = 1
     return (
       <Wizard
-        ref={setWizardRef}
         navAriaLabel={i18n('Create wizard steps')}
-        mainAriaLabel={i18n('Create wizard content')}
         height={'100%'}
-        onNext={onMove}
-        onBack={onMove}
-        onGoToStep={onMove}
         onSave={onSave}
         onClose={onClose}
-        startAtStep={startAtStep}
         footer={CustomFooter}
       >
-        {steps.map(({ title, component }) => {
+        {steps.map(({ title, content }) => {
           return (
-            <WizardStep id={title.id} key={title.id} name={title.id}>
-              {component}
+            <WizardStep id={title.id} key={title.id} name={title.type}>
+              {content}
             </WizardStep>
           )
         })}
