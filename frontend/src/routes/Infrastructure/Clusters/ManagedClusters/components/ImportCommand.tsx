@@ -90,6 +90,9 @@ export function ImportCommand(props: ImportCommandProps) {
             <Card>
               <CardTitle>{t('import.command.generated')}</CardTitle>
               <CardBody>
+                <strong style={{ marginBottom: '12px', fontSize: '14px', display: 'block' }}>
+                  {t('import.command.copy.description')}
+                </strong>
                 <Tooltip isVisible={copied} content={t('copied')} trigger="click">
                   <AcmButton
                     id="import-command"
