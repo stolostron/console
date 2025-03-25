@@ -116,7 +116,7 @@ export class ServerSideEvents {
       client.eventQueue.push(
         this.eventFilter(client.token, event)
           .then((shouldSendEvent) => (shouldSendEvent ? event : undefined))
-          .catch((err) => undefined) as Promise<ServerSideEvent<unknown>>
+          .catch(() => undefined) as Promise<ServerSideEvent<unknown>>
       )
     } else {
       client.eventQueue.push(Promise.resolve(event))
@@ -321,10 +321,12 @@ export class ServerSideEvents {
     const remainder: ServerSideEvent<unknown>[] = []
     parts.forEach((event) => {
       const data = event.data as WatchEvent
+      // see frontend/src/components/LoadPluginData.tsx for what pages are fast loaded
       switch (data.object.kind) {
         case 'ManagedCluster':
         case 'HostedCluster':
         case 'ClusterDeployment':
+        case 'ManagedClusterSet':
           clusters.push(event)
           break
         case 'Policy':
