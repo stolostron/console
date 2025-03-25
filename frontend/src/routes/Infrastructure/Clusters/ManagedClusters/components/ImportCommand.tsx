@@ -89,7 +89,7 @@ export function ImportCommand(props: ImportCommandProps) {
           <Tab eventKey={'first'} title={<TabTitleText>{t('import.command.runcommand')}</TabTitleText>}>
             <Card>
               <CardTitle>{t('import.command.generated')}</CardTitle>
-              <CardBody>                
+              <CardBody>
                 <Tooltip isVisible={copied} content={t('copied')} trigger="click">
                   <AcmButton
                     id="import-command"
