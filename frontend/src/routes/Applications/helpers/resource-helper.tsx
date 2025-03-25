@@ -182,42 +182,6 @@ const getSubscriptionsClusterList = (
   return Array.from(clusterSet)
 }
 
-export const getClusterList = (
-  resource: IResource,
-  argoApplications: ArgoApplication[],
-  placementDecisions: PlacementDecision[],
-  subscriptions: Subscription[],
-  localCluster: Cluster | undefined,
-  managedClusters: Cluster[]
-) => {
-  // managed resources using search to fetch
-  if (isOCPAppResourceKind(resource.kind)) {
-    const clusterSet = new Set<string>()
-    if (resource.status.cluster) {
-      clusterSet.add(resource.status.cluster)
-    }
-    return Array.from(clusterSet)
-  }
-
-  if (isResourceTypeOf(resource, ArgoApplicationDefinition)) {
-    return getArgoClusterList([resource as ArgoApplication], localCluster, managedClusters)
-  } else if (isResourceTypeOf(resource, ApplicationSetDefinition) && isArgoPullModel(resource as ApplicationSet)) {
-    return getArgoPullModelClusterList(resource as ApplicationSet, placementDecisions, localCluster?.name ?? '')
-  } else if (isResourceTypeOf(resource, ApplicationSetDefinition)) {
-    return getArgoClusterList(
-      argoApplications.filter(
-        (app) => app.metadata?.ownerReferences && app.metadata.ownerReferences[0].name === resource.metadata?.name
-      ),
-      localCluster,
-      managedClusters
-    )
-  } else if (isResourceTypeOf(resource, ApplicationDefinition)) {
-    return getSubscriptionsClusterList(resource as Application, placementDecisions, subscriptions)
-  }
-
-  return [] as string[]
-}
-
 export const getClusterCount = (clusterList: string[], hubClusterName: string): ClusterCount => {
   const localPlacement = clusterList.includes(hubClusterName)
   return { localPlacement, remoteCount: clusterList.length - (localPlacement ? 1 : 0) }

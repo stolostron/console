@@ -6,6 +6,8 @@ import { FilterSelections, ITransformedResource } from '../../lib/pagination'
 import { logger } from '../../lib/logger'
 import {
   discoverSystemAppNamespacePrefixes,
+  getApplicationsHelper,
+  getAppSetAppsMap,
   getAppSetRelatedResources,
   logApplicationCountChanges,
   transform,
@@ -85,6 +87,9 @@ appKeys.forEach((key) => {
   applicationCache[key] = { resources: [] }
 })
 
+// a map from an appset name to the apps that it created
+let appSetAppsMap: Record<string, string[]> = {}
+
 export const SEARCH_TIMEOUT = 5 * 60 * 1000
 
 // will divide queries into application prefixes (a*, b*) not to execeed this value: process.env.APP_SEARCH_LIMIT
@@ -132,16 +137,8 @@ export function stopAggregatingApplications(): void {
 }
 
 export function getApplications() {
-  let items: ITransformedResource[] = []
   aggregateLocalApplications()
-  Object.keys(applicationCache).forEach((key) => {
-    if (applicationCache[key].resources) {
-      items.push(...applicationCache[key].resources)
-    } else if (Object.keys(applicationCache[key].resourceMap).length) {
-      const allResources = Object.values(applicationCache[key].resourceMap)
-      items.push(...allResources.flat())
-    }
-  })
+  let items = getApplicationsHelper(applicationCache, Object.keys(applicationCache))
   // mock a large environment
   if (process.env.MOCK_CLUSTERS) {
     items = items.concat(transform(getGiganticApps()).resources)
@@ -194,16 +191,22 @@ export function filterApplications(filters: FilterSelections, items: ITransforme
 
 // add data to the apps that can be used by the ui but
 // w/o downloading all the appsets, apps, etc
-export function addUIData(items: IResource[]) {
+export function addUIData(items: ITransformedResource[]) {
   const argoAppSets = applicationCache['appset'].resources
   items = items.map((item) => {
+    let appSetApps
+    if (item.kind === 'ApplicationSet') {
+      appSetApps = appSetAppsMap[item.metadata.name]
+    }
     return {
       ...item,
       uidata: {
+        clusterList: item.transform[AppColumns.clusters],
         appSetRelatedResources:
           item.kind === ApplicationSetKind
             ? getAppSetRelatedResources(item, argoAppSets as IApplicationSet[])
             : ['', []],
+        appSetApps,
       },
     }
   })
@@ -283,6 +286,7 @@ export async function aggregateRemoteApplications(pass: number) {
     applicationCache,
     (results.data?.searchResult?.[0]?.items || []) as IResource[]
   )
+  appSetAppsMap = getAppSetAppsMap(applicationCache)
   cacheOCPApplications(applicationCache, (results.data?.searchResult?.[1]?.items || []) as IResource[], argoAppSet)
   if (querySystemApps) {
     cacheOCPApplications(

@@ -147,8 +147,8 @@ const definitions: IWatchOptions[] = [
   { kind: 'PlacementRule', apiVersion: 'apps.open-cluster-management.io/v1' },
   { kind: 'Subscription', apiVersion: 'apps.open-cluster-management.io/v1' },
   { kind: 'SubscriptionReport', apiVersion: 'apps.open-cluster-management.io/v1alpha1' },
-  { kind: 'Application', apiVersion: 'argoproj.io/v1alpha1' },
-  { kind: 'ApplicationSet', apiVersion: 'argoproj.io/v1alpha1', isPolled: true, notStreamed: true },
+  { kind: 'Application', apiVersion: 'argoproj.io/v1alpha1', isPolled: true },
+  { kind: 'ApplicationSet', apiVersion: 'argoproj.io/v1alpha1', isPolled: true },
   { kind: 'ArgoCD', apiVersion: 'argoproj.io/v1alpha1' },
   { kind: 'MulticlusterApplicationSetReport', apiVersion: 'apps.open-cluster-management.io/v1alpha1' },
   { kind: 'Infrastructure', apiVersion: 'config.openshift.io/v1' },
@@ -236,9 +236,11 @@ interface IWatchOptions {
   labelSelector?: Record<string, string>
   fieldSelector?: Record<string, string>
   // poll the resource list instead of watching it
+  // resource changes are not streamed
+  // introduced for large argo resources which broke
+  //  the kube watch list changes (too many changes
+  //   happened in the resource list that caused the watch to lose track)
   isPolled?: boolean
-  // don't stream--will need pagination to get the resources
-  notStreamed?: boolean
 }
 
 // https://kubernetes.io/docs/reference/using-api/api-concepts/
@@ -289,7 +291,7 @@ async function listKubernetesObjects(serviceAccountToken: string, options: IWatc
   let resourceVersion = ''
   let _continue: string | undefined
   let items: IResource[] = []
-  const { isPolled, notStreamed } = options
+  const { isPolled } = options
   while (!stopping) {
     const url = resourceUrl(options, { limit: '100', continue: _continue })
     const request = got
@@ -330,7 +332,7 @@ async function listKubernetesObjects(serviceAccountToken: string, options: IWatc
   })
 
   for (const item of items) {
-    cacheResource(item, notStreamed)
+    cacheResource(item, isPolled)
   }
 
   // Remove items that are no longer in kubernetes
@@ -353,7 +355,7 @@ async function listKubernetesObjects(serviceAccountToken: string, options: IWatc
   }
   for (const uid of removeUids) {
     const resource = cache[uid].resource
-    deleteResource(resource, notStreamed)
+    deleteResource(resource, isPolled)
   }
 
   return { resourceVersion, size: items.length }
@@ -413,7 +415,7 @@ async function watchKubernetesObjects(serviceAccountToken: string, options: IWat
       // TODO use abort signal when on node 16
       const cancelObj = { cancel: () => request.destroy() }
       requests.push(cancelObj)
-      const { notStreamed } = options
+      const { isPolled } = options
       try {
         await pipeline(
           request,
@@ -424,10 +426,10 @@ async function watchKubernetesObjects(serviceAccountToken: string, options: IWat
             switch (watchEvent.type) {
               case 'ADDED':
               case 'MODIFIED':
-                cacheResource(watchEvent.object, notStreamed)
+                cacheResource(watchEvent.object, isPolled)
                 break
               case 'DELETED':
-                deleteResource(watchEvent.object, notStreamed)
+                deleteResource(watchEvent.object, isPolled)
                 break
             }
 
@@ -592,7 +594,7 @@ function resourceUrl(options: IWatchOptions, query: Record<string, string>) {
   return url
 }
 
-function cacheResource(resource: IResource, notStreamed: boolean) {
+function cacheResource(resource: IResource, isPolled: boolean) {
   const apiVersionPlural = apiVersionPluralFn(resource)
   let cache = resourceCache[apiVersionPlural]
   if (!cache) {
@@ -606,7 +608,7 @@ function cacheResource(resource: IResource, notStreamed: boolean) {
   let eventID = -1
   // if not streamed, we are just updating the cache
   // which can then be grabbed by getKubeResources()
-  if (notStreamed) {
+  if (isPolled) {
     cache[uid] = { resource, eventID }
   } else {
     if (existing) {
@@ -626,14 +628,14 @@ function cacheResource(resource: IResource, notStreamed: boolean) {
   }
 }
 
-function deleteResource(resource: IResource, notStreamed: boolean) {
+function deleteResource(resource: IResource, isPolled: boolean) {
   const apiVersionPlural = apiVersionPluralFn(resource)
   const cache = resourceCache[apiVersionPlural]
   if (!cache) return
 
   const uid = resource.metadata.uid
 
-  if (!notStreamed) {
+  if (!isPolled) {
     const existing = cache[uid]
     if (existing) ServerSideEvents.removeEvent(existing.eventID)
 

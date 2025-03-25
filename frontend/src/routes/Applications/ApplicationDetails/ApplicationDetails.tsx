@@ -53,7 +53,6 @@ import { searchClient } from '../../Search/search-sdk/search-client'
 import { useSearchCompleteQuery } from '../../Search/search-sdk/search-sdk'
 import { DeleteResourceModal, IDeleteResourceModalProps } from '../components/DeleteResourceModal'
 import { getAppChildResources, getSearchLink, isResourceTypeOf } from '../helpers/resource-helper'
-import { getAppSetApps } from '../Overview'
 import { getApplication } from './ApplicationTopology/model/application'
 import { getResourceStatuses } from './ApplicationTopology/model/resourceStatuses'
 import { getTopology } from './ApplicationTopology/model/topology'
@@ -120,7 +119,6 @@ export default function ApplicationDetailsPage() {
   const {
     ansibleJobState,
     applicationsState,
-    argoApplicationsState,
     channelsState,
     placementRulesState,
     placementsState,
@@ -158,7 +156,6 @@ export default function ApplicationDetailsPage() {
   )
 
   const applicationsGetter = useRecoilValueGetter(applicationsState)
-  const argoApplicationsGetter = useRecoilValueGetter(argoApplicationsState)
   const ansibleJobGetter = useRecoilValueGetter(ansibleJobState)
   const channelsGetter = useRecoilValueGetter(channelsState)
   const placementsGetter = useRecoilValueGetter(placementsState)
@@ -171,7 +168,6 @@ export default function ApplicationDetailsPage() {
   const getRecoilStates = useCallback(
     () => ({
       applications: applicationsGetter(),
-      argoApplications: argoApplicationsGetter(),
       ansibleJob: ansibleJobGetter(),
       channels: channelsGetter(),
       placements: placementsGetter(),
@@ -184,7 +180,6 @@ export default function ApplicationDetailsPage() {
     [
       ansibleJobGetter,
       applicationsGetter,
-      argoApplicationsGetter,
       channelsGetter,
       placementDecisionsGetter,
       placementRulesGetter,
@@ -283,7 +278,7 @@ export default function ApplicationDetailsPage() {
           appSetPlacement: appSetRelatedResources[0],
           appSetsSharingPlacement: appSetRelatedResources[1],
           appKind: selectedApp.kind,
-          appSetApps: getAppSetApps(recoilStates.argoApplications, selectedApp.metadata?.name),
+          appSetApps: (selectedApp as IUIResource)?.uidata?.appSetApps ?? [],
           close: () => {
             setModalProps({ open: false })
           },

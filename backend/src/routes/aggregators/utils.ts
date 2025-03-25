@@ -432,6 +432,49 @@ export function cacheRemoteApps(
 }
 
 //////////////////////////////////////////////////////////////////
+// /////////////////// RECORD WHAT APPS AN APPSET OWNS /////////////////
+//////////////////////////////////////////////////////////////////
+export function getAppSetAppsMap(applicationCache: ApplicationCacheType) {
+  // get all argo apps
+  const argoApps: ITransformedResource[] = getApplicationsHelper(applicationCache, ['localArgoApps', 'remoteArgoApps'])
+
+  if (argoApps[0]?.metadata) {
+    argoApps[0].metadata.ownerReferences = [
+      {
+        name: 'appset-perf-4001',
+        apiVersion: '',
+        kind: '',
+      },
+    ]
+  }
+  //create a map of argo app owners (owning appsets)
+  return argoApps.reduce(
+    (obj, argoApp) => {
+      const appSetName = get(argoApp, 'metadata.ownerReferences[0].name') as string
+      if (appSetName) {
+        if (!obj[appSetName]) obj[appSetName] = []
+        obj[appSetName].push(get(argoApp, 'metadata.name', 'unknown') as string)
+      }
+      return obj
+    },
+    {} as Record<string, string[]>
+  )
+}
+
+export function getApplicationsHelper(applicationCache: ApplicationCacheType, keys: string[]) {
+  const items: ITransformedResource[] = []
+  keys.forEach((key) => {
+    if (applicationCache[key].resources) {
+      items.push(...applicationCache[key].resources)
+    } else if (Object.keys(applicationCache[key].resourceMap).length) {
+      const allResources = Object.values(applicationCache[key].resourceMap)
+      items.push(...allResources.flat())
+    }
+  })
+  return items
+}
+
+//////////////////////////////////////////////////////////////////
 // /////////////////// MINI useAllClusters from frontend /////////////////
 //////////////////////////////////////////////////////////////////
 
@@ -537,10 +580,14 @@ interface ResultType {
   [key: string]: IResource
 }
 
+// just like lodash:
+// obj -- the object you're grabbing from
+// path -- a string path into the object to grab (ex: 'metadata.name')
+// dfault -- if nothing is there, the default value to return
 type SelectorType = string | ((item: IResource) => string)
 const keyEx = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function get(obj: any, path: string, dflt?: any): any {
+export function get(obj: any, path: string, dfault?: any): any {
   // convert path into key array
   const keys: string[] = []
   path.replace(keyEx, function (match, number, quote, subString) {
@@ -558,14 +605,14 @@ export function get(obj: any, path: string, dflt?: any): any {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       current = current[key]
     } else {
-      return dflt // Path not found
+      return dfault // Path not found
     }
   }
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return current
 }
 
-function keyBy(array: IResource[], selector: SelectorType) {
+export function keyBy(array: IResource[], selector: SelectorType) {
   const result: ResultType = {}
   for (const item of array) {
     const key = typeof selector === 'string' ? (get(item, selector) as string) : selector(item)

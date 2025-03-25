@@ -142,11 +142,11 @@ export function paginate(
     // because rbac is expensive. perform it only on the resources the user wants to see
     items = (await getAuthorizedResources(token, items, startIndex, endIndex)) as unknown as ITransformedResource[]
 
-    // remove the transform work attribute
-    items = items.map(({ transform, remoteClusters, ...keepAttrs }) => keepAttrs)
-
     // add data required by ui
     items = addUIData(items)
+
+    // remove the transform work attribute
+    items = items.map(({ transform, remoteClusters, ...keepAttrs }) => keepAttrs)
 
     const results: IResultListView = {
       page: rpage,
