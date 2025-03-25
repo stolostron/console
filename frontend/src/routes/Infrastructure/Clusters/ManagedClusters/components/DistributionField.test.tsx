@@ -1129,7 +1129,7 @@ describe('DistributionField hypershift clusters', () => {
       'managedclusterpage'
     )
 
-    expect(queryAllByText(/upgrading to 4\.11\.22/i).length).toBe(1)
+    expect(queryAllByText(/upgrading to 4\.11\.22-x86_64/i).length).toBe(1)
     expect(queryByRole('progressbar')).toBeTruthy()
   })
 
@@ -1145,7 +1145,7 @@ describe('DistributionField hypershift clusters', () => {
       'hostedcluster'
     )
 
-    expect(queryAllByText(/upgrading to 4\.11\.22/i).length).toBe(1)
+    expect(queryAllByText(/upgrading to 4\.11\.22-x86_64/i).length).toBe(1)
     expect(queryByRole('progressbar')).toBeTruthy()
   })
 
@@ -1200,7 +1200,7 @@ describe('DistributionField hypershift clusters', () => {
       'nodepool'
     )
 
-    expect(queryAllByText(/upgrading to 4\.11\.22/i).length).toBe(0)
+    expect(queryAllByText(/upgrading to 4\.11\.22-x86_64/i).length).toBe(0)
     expect(queryByRole('progressbar')).toBeFalsy()
   })
 
@@ -1274,11 +1274,11 @@ describe('DistributionField hypershift clusters', () => {
       false
     )
 
-    await userEvent.click(screen.getByRole('button', { name: /upgrading to 4\.11\.22/i }))
+    await userEvent.click(screen.getByRole('button', { name: /upgrading to 4\.11\.22-x86_64/i }))
     await waitFor(() =>
-      expect(getByText(/upgrading hypershift-cluster1 to openshift 4\.11\.22\./i)).toBeInTheDocument()
+      expect(getByText(/upgrading hypershift-cluster1 to openshift 4\.11\.22-x86_64\./i)).toBeInTheDocument()
     )
-    expect(queryAllByText(/upgrading to 4\.11\.22/i).length).toBe(1)
+    expect(queryAllByText(/upgrading to 4\.11\.22-x86_64/i).length).toBe(1)
     expect(queryByRole('progressbar')).toBeTruthy()
   })
 })
