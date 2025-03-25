@@ -116,14 +116,14 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
 
   return (
     <AcmModal
-      variant={ModalVariant.medium}
+      variant={ModalVariant.large}
       title={title}
       titleIconVariant={icon}
       isOpen={true}
       onClose={close}
       position="top"
     >
-      <AcmForm style={{ gap: 0, display: 'flex', maxWidth: '100%', flexDirection: 'column' }}>
+      <AcmForm style={{ gap: 0 }}>
         {!errors?.length ? (
           <Fragment>
             {description}
