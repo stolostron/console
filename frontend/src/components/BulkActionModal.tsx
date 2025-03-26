@@ -116,7 +116,7 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
 
   return (
     <AcmModal
-      variant={ModalVariant.medium}
+      variant={ModalVariant.large}
       title={title}
       titleIconVariant={icon}
       isOpen={true}
