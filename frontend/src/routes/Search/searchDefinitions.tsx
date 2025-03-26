@@ -487,6 +487,13 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
           isFirstVisitChecked: false,
           ...AddColumn('vmSize', t('VM Size')),
         },
+        {
+          id: 'labels',
+          order: 15,
+          isDefault: false,
+          isFirstVisitChecked: false,
+          ...AddColumn('labels', t('Labels')),
+        },
       ],
     },
   }

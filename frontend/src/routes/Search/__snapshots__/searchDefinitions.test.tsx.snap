@@ -2762,6 +2762,23 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-virtualma
     "order": 14,
     "sort": "vmSize",
   },
+  {
+    "cell": <AcmLabels
+      collapse={[]}
+      labels={
+        [
+          "testLabel=label",
+          "testLabel1=label1",
+        ]
+      }
+    />,
+    "header": "Labels",
+    "id": "labels",
+    "isDefault": false,
+    "isFirstVisitChecked": false,
+    "order": 15,
+    "sort": "label",
+  },
 ]
 `;
 
