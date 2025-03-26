@@ -142,6 +142,9 @@ export default function ApplicationDetailsPage() {
   const [pluginModal, setPluginModal] = useState<JSX.Element>()
   const { acmExtensions } = useContext(PluginContext)
 
+  const { dataContext } = useContext(PluginContext)
+  const { backendUrl } = useContext(dataContext)
+
   const lastRefreshRef = useRef<any>()
   const navigate = useNavigate()
   const isArgoApp = applicationData?.application?.isArgoApp
@@ -370,6 +373,7 @@ export default function ApplicationDetailsPage() {
           const application = await getApplication(
             namespace,
             name,
+            backendUrl,
             activeChannel,
             recoilStates,
             cluster,

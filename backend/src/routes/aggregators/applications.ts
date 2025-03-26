@@ -88,7 +88,7 @@ appKeys.forEach((key) => {
 })
 
 // a map from an appset name to the apps that it created
-let appSetAppsMap: Record<string, string[]> = {}
+export let appSetAppsMap: Record<string, string[]> = {}
 
 export const SEARCH_TIMEOUT = 5 * 60 * 1000
 

@@ -50,6 +50,7 @@ import { useProjects } from '../../hooks/useProjects'
 import { setAvailableConnections } from '../Infrastructure/Clusters/ManagedClusters/CreateCluster/controlData/ControlDataHelpers'
 import { LoadingPage } from '../../components/LoadingPage'
 import { useHubCluster } from './helpers/useHubCluster'
+import { PluginContext } from '../../lib/PluginContext'
 
 interface CreationStatus {
   status: string
@@ -384,6 +385,9 @@ export function CreateSubscriptionApplication(
   const editApplication = getEditApplication(location)
   const searchParams = useSearchParams()
 
+  const { dataContext } = useContext(PluginContext)
+  const { backendUrl } = useContext(dataContext)
+
   // don't navigate to details page until application exists in recoil
   useEffect(() => {
     if (createdResource) {
@@ -411,7 +415,7 @@ export function CreateSubscriptionApplication(
       const allChannels = '__ALL__/__ALL__//__ALL__/__ALL__'
       const fetchApplication = async () => {
         // get application object from recoil states
-        const application = await getApplication(selectedAppNamespace, selectedAppName, allChannels, {
+        const application = await getApplication(selectedAppNamespace, selectedAppName, backendUrl, allChannels, {
           applications,
           ansibleJob,
           subscriptions,

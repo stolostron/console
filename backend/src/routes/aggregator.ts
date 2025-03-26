@@ -11,6 +11,7 @@ import {
   addUIData,
 } from './aggregators/applications'
 import { requestAggregatedStatuses } from './aggregators/statuses'
+import { requestAggregatedResource } from './aggregators/resource'
 
 export function startAggregating(): void {
   void startAggregatingApplications()
@@ -30,6 +31,8 @@ export async function aggregate(req: Http2ServerRequest, res: Http2ServerRespons
       return paginate(req, res, token, getApplications, filterApplications, addUIData)
     case 'statuses':
       return requestAggregatedStatuses(req, res, token, getApplications)
+    case 'resource':
+      return requestAggregatedResource(req, res)
   }
 
   return notFound(req, res)

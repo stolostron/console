@@ -24,6 +24,13 @@ export interface IResource {
     creationTimestamp?: string | number | Date
   }
 }
+export interface IUIResource extends IResource {
+  uidata: {
+    clusterList: string[]
+    appSetRelatedResources: unknown
+    appSetApps: string[]
+  }
+}
 
 export type Cluster = {
   name: string

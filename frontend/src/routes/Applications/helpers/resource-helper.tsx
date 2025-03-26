@@ -9,10 +9,8 @@ import {
   Application,
   ApplicationDefinition,
   ApplicationSet,
-  ApplicationSetDefinition,
   ArgoApplication,
   ArgoApplicationApiVersion,
-  ArgoApplicationDefinition,
   ArgoApplicationKind,
   Channel,
   CronJobKind,
@@ -140,45 +138,6 @@ export const getArgoPullModelClusterList = (
     }
   })
 
-  return Array.from(clusterSet)
-}
-
-const getSubscriptionsClusterList = (
-  resource: Application,
-  placementDecisions: PlacementDecision[],
-  subscriptions: Subscription[]
-) => {
-  const subAnnotationArray = getSubscriptionsFromAnnotation(resource)
-  const clusterSet = new Set<string>()
-
-  for (const sa of subAnnotationArray) {
-    if (isLocalSubscription(sa, subAnnotationArray)) {
-      // skip local sub
-      continue
-    }
-
-    const subDetails = sa.split('/')
-    subscriptions.forEach((sub) => {
-      if (sub.metadata.name === subDetails[1] && sub.metadata.namespace === subDetails[0]) {
-        const placementRef = sub.spec.placement?.placementRef
-        const placement = placementDecisions.find(
-          (placementDecision) =>
-            placementDecision.metadata.labels?.['cluster.open-cluster-management.io/placement'] ===
-              placementRef?.name ||
-            placementDecision.metadata.labels?.['cluster.open-cluster-management.io/placementrule'] ===
-              placementRef?.name
-        )
-
-        const decisions = placement?.status?.decisions
-
-        if (decisions) {
-          decisions.forEach((cluster) => {
-            clusterSet.add(cluster.clusterName)
-          })
-        }
-      }
-    })
-  }
   return Array.from(clusterSet)
 }
 

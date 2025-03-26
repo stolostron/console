@@ -90,7 +90,7 @@ function getAppNamespace(resource: IResource): string {
   }
   return namespace
 }
-function getApplicationType(resource: IResource | IOCPApplication) {
+export function getApplicationType(resource: IResource | IOCPApplication) {
   if (resource.apiVersion === 'app.k8s.io/v1beta1') {
     if (resource.kind === 'Application') {
       return 'subscription'
@@ -149,7 +149,7 @@ export function isSystemApp(namespace?: string) {
   return namespace && systemAppNamespacePrefixes.some((prefix) => namespace.startsWith(prefix))
 }
 
-function getApplicationClusters(
+export function getApplicationClusters(
   resource: IResource | IOCPApplication | IArgoApplication,
   type: string,
   subscriptions: IResource[],
@@ -438,15 +438,6 @@ export function getAppSetAppsMap(applicationCache: ApplicationCacheType) {
   // get all argo apps
   const argoApps: ITransformedResource[] = getApplicationsHelper(applicationCache, ['localArgoApps', 'remoteArgoApps'])
 
-  if (argoApps[0]?.metadata) {
-    argoApps[0].metadata.ownerReferences = [
-      {
-        name: 'appset-perf-4001',
-        apiVersion: '',
-        kind: '',
-      },
-    ]
-  }
   //create a map of argo app owners (owning appsets)
   return argoApps.reduce(
     (obj, argoApp) => {

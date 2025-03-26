@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { ISortBy } from '@patternfly/react-table'
-import { IResource } from '../resources'
+import { IResource, IUIResource } from '../resources'
 import { fetchRetry, postRequest } from '../resources/utils'
 import { useQuery } from './useQuery'
 import { useCallback, useContext, useEffect } from 'react'
@@ -50,10 +50,8 @@ export interface IResultStatuses {
 
 export enum SupportedAggregate {
   applications = 'applications',
-  applicationDetails = 'applicationDetails',
-  clusters = 'clusters',
-  clusterDetails = 'cluster-details',
   statuses = 'statuses',
+  resource = 'resource',
 }
 
 const defaultListResponse: IResultListView = {
@@ -76,6 +74,7 @@ const defaultStatusResponse: IResultStatuses = {
 
 type RequestStatusesType = IRequestStatuses | undefined
 type RequestListType = IRequestListView | undefined
+type RequestResourceType = IResource | undefined
 type RequestViewType = RequestStatusesType | RequestListType
 type ResultViewType = IResultStatuses | IResultListView | undefined
 export function useAggregate(aggregate: SupportedAggregate, requestedView: RequestStatusesType): IResultStatuses
@@ -183,8 +182,18 @@ function setWithExpiry(key: string, value: any) {
 export async function fetchAggregate(
   aggregate: SupportedAggregate,
   backendUrl: string,
+  requestedView: IResource
+): Promise<IUIResource>
+export async function fetchAggregate(
+  aggregate: SupportedAggregate,
+  backendUrl: string,
   requestedView: RequestListType
-) {
+): Promise<IResultListView>
+export async function fetchAggregate(
+  aggregate: SupportedAggregate,
+  backendUrl: string,
+  requestedView: RequestListType | RequestResourceType | undefined
+): Promise<IResultListView | IUIResource | undefined> {
   const abortController = new AbortController()
   return fetchRetry({
     method: 'POST',
@@ -194,7 +203,14 @@ export async function fetchAggregate(
     retries: process.env.NODE_ENV === 'production' ? 2 : 0,
     disableRedirectUnauthorizedLogin: true,
   })
-    .then((res) => res.data as IResultListView)
+    .then((res) => {
+      switch (aggregate) {
+        case SupportedAggregate.applications:
+          return res.data as IResultListView
+        case SupportedAggregate.resource:
+          return res.data as IUIResource
+      }
+    })
     .catch((error) => {
       // eslint-disable-next-line no-console
       console.error(error)
