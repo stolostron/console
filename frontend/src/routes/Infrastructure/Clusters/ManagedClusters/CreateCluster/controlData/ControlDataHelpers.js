@@ -367,7 +367,7 @@ export const onImageChange = (control, controlData) => {
   if (networkDefault) {
     const { setActive } = networkDefault
     const { active: version } = control
-    if (versionGreater(version, 4, 16)) {
+    if (versionGreater(version, 4, 14)) {
       networkDefault.type = 'text'
       networkDefault.active = 'OVNKubernetes'
       networkDefault.disabled = true
