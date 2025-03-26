@@ -13,7 +13,7 @@ import {
 } from '../../../../resources'
 import { Cluster, ClusterStatus } from '../../../../resources/utils'
 
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
@@ -41,6 +41,7 @@ import {
 } from '../../../../lib/test-util'
 import ClusterPoolsPage, { ClusterPoolsTable } from './ClusterPools'
 import { Provider } from '../../../../ui-components'
+import userEvent from '@testing-library/user-event'
 
 const mockClusterImageSet: ClusterImageSet = {
   apiVersion: ClusterImageSetApiVersion,
@@ -430,43 +431,81 @@ describe('ClusterPools page', () => {
   })
   test('should be able to destroy a cluster pool using a row action', async () => {
     await waitForText(mockClusterPool.metadata.name!)
-    await clickRowAction(1, 'Destroy cluster pool')
-    await typeByText(`Confirm by typing "${mockClusterPool.metadata.name!}" below:`, mockClusterPool.metadata.name!)
+    await clickByLabel(`${mockClusterPool.metadata.name!}-actions`)
+    await clickByText('Destroy cluster pool')
+    await waitForText('Destroy cluster pool')
+
+    await waitForText(`Confirm by typing "${mockClusterPool.metadata.name!}" below:`)
+
+    const confirmInput = document.getElementById('confirm')
+    if (confirmInput instanceof HTMLInputElement) {
+      userEvent.type(confirmInput, mockClusterPool.metadata.name!)
+    }
+
     const deleteNocks: Scope[] = [nockDelete(mockClusterPool)]
-    await clickByText('Destroy')
-    await waitForNocks(deleteNocks)
-  })
-  test('should be able to destroy cluster pools using bulk actions', async () => {
-    await selectTableRow(1)
-    await clickBulkAction('Destroy cluster pools')
-    await typeByText('Confirm by typing "confirm" below:', 'confirm')
-    const deleteNocks: Scope[] = [nockDelete(mockClusterPool)]
-    await clickByText('Destroy')
+
+    const destroyButton = await screen.findByRole('button', { name: 'Destroy' })
+    userEvent.click(destroyButton)
+    await waitForText('Destroying')
+
     await waitForNocks(deleteNocks)
   })
 
   test('should be able to scale a cluster pool size', async () => {
     await waitForText(mockClusterPool.metadata.name!)
-    await clickByLabel('Actions', 0)
+    userEvent.click(screen.getByRole('checkbox', { name: /select row 0/i }))
+    await clickByLabel(`${mockClusterPool.metadata.name!}-actions`)
     await clickByText('Scale cluster pool')
+
     await waitForText('Scale cluster pool')
-    await clickByLabel('Plus', 0)
+    const plusButtons = screen.getAllByRole('button', { name: /plus/i })
+    userEvent.click(plusButtons[0])
+
     const patchNocks: Scope[] = [
       nockPatch(mockClusterPool, [
         { op: 'replace', path: '/spec/size', value: 3 },
         { op: 'replace', path: '/spec/runningCount', value: 2 },
       ]),
     ]
-    await clickByText('Scale')
+    const scaleButton = await screen.findByRole('button', { name: 'Scale' })
+    userEvent.click(scaleButton)
+
+    await waitForText('Scaling')
+
     await waitForNocks(patchNocks)
+  })
+
+  test('should be able to destroy cluster pools using bulk actions', async () => {
+    await selectTableRow(1)
+    await clickBulkAction('Destroy cluster pools')
+
+    const confirmInput = document.getElementById('confirm')
+    if (confirmInput instanceof HTMLInputElement) {
+      userEvent.type(confirmInput, 'confirm')
+    }
+    await waitFor(() => {
+      const destroyButton = screen.getByRole('button', { name: 'Destroy' })
+      expect(destroyButton).not.toBeDisabled()
+    })
+    const deleteNocks: Scope[] = [nockDelete(mockClusterPool)]
+
+    const destroyButton = await screen.findByRole('button', { name: 'Destroy' })
+    userEvent.click(destroyButton)
+
+    await waitForText('Destroying')
+
+    await waitForNocks(deleteNocks)
   })
 
   test('should be able to scale a cluster pool running count', async () => {
     await waitForText(mockClusterPool.metadata.name!)
-    await clickByLabel('Actions', 0)
+    userEvent.click(screen.getByRole('checkbox', { name: /select row 0/i }))
+    await clickByLabel(`${mockClusterPool.metadata.name!}-actions`)
+
     await clickByText('Scale cluster pool')
     await waitForText('Scale cluster pool')
-    await clickByLabel('Minus', 1)
+    const minusButtons = screen.getAllByRole('button', { name: /minus/i })
+    userEvent.click(minusButtons[1]) // second minus button (index 1)
     const patchNocks: Scope[] = [
       nockPatch(mockClusterPool, [
         { op: 'replace', path: '/spec/size', value: 2 },
@@ -493,7 +532,11 @@ describe('ClusterPools page', () => {
         },
       ]),
     ]
-    await clickByText('Update')
+    const updateButton = await screen.findByRole('button', { name: 'Update' })
+    await waitFor(() => {
+      expect(updateButton).not.toBeDisabled()
+    })
+    userEvent.click(updateButton)
     await waitForNocks(patchNocks)
   })
 
@@ -541,7 +584,13 @@ describe('ClusterPools page', () => {
     await waitForText('You are about to delete a cluster claim.')
     await typeByTestId('confirm', mockClusterClaimPending.metadata.name!)
     const deleteNocks: Scope[] = [nockDelete(mockClusterClaimPending)]
-    await clickByText('Delete')
+
+    const deleteButton = await screen.findByRole('button', { name: 'Delete' })
+    await waitFor(() => {
+      expect(deleteButton).not.toBeDisabled()
+    })
+    userEvent.click(deleteButton)
+
     await waitForNocks(deleteNocks)
   })
 })
