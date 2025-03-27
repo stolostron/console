@@ -1,17 +1,24 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { constants, Http2ServerRequest, Http2ServerResponse, OutgoingHttpHeaders } from 'http2'
-import { jsonPut, jsonRequest } from '../lib/json-request'
+import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
+import { HeadersInit } from 'node-fetch'
+import { getServiceAgent } from '../lib/agent'
+import { fetchRetry } from '../lib/fetch-retry'
+import { jsonRequest } from '../lib/json-request'
 import { logger } from '../lib/logger'
 import { getMultiClusterEngine } from '../lib/multi-cluster-engine'
 import { respond, respondInternalServerError } from '../lib/respond'
 import { getServiceAccountToken } from '../lib/serviceAccountToken'
-import { getServiceAgent } from '../lib/agent'
 import { getAuthenticatedToken } from '../lib/token'
 import { ResourceList } from '../resources/resource-list'
 import { Secret } from '../resources/secret'
 import { canAccess } from './events'
 
-const { HTTP_STATUS_INTERNAL_SERVER_ERROR } = constants
+const {
+  HTTP2_HEADER_CONTENT_TYPE,
+  HTTP2_HEADER_AUTHORIZATION,
+  HTTP2_HEADER_ACCEPT,
+  HTTP_STATUS_INTERNAL_SERVER_ERROR,
+} = constants
 const proxyHeaders = [
   constants.HTTP2_HEADER_ACCEPT,
   constants.HTTP2_HEADER_ACCEPT_ENCODING,
@@ -24,6 +31,7 @@ interface ActionBody {
   managedCluster: string
   vmName: string
   vmNamespace: string
+  reqBody?: object
 }
 
 export async function virtualMachineProxy(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
@@ -64,40 +72,74 @@ export async function virtualMachineProxy(req: Http2ServerRequest, res: Http2Ser
               return undefined
             })
 
-          // req.url is one of: /virtualmachines/<action> OR /virtualmachineinstances/<action>
-          // the VM name is needed between the kind and action for the correct api url.
-          const splitURL = req.url.split('/')
-          const joinedURL = `${splitURL[1]}/${body.vmName}/${splitURL[2]}`
           const mce = await getMultiClusterEngine()
           const proxyService = `https://cluster-proxy-addon-user.${mce?.spec?.targetNamespace || 'multicluster-engine'}.svc.cluster.local:9092`
           const proxyURL = process.env.CLUSTER_PROXY_ADDON_USER_ROUTE || proxyService
-          const path = `${proxyURL}/${body.managedCluster}/apis/subresources.kubevirt.io/v1/namespaces/${body.vmNamespace}/${joinedURL}`
-          const headers: OutgoingHttpHeaders = { authorization: `Bearer ${managedClusterToken}` }
-          for (const header of proxyHeaders) {
-            if (req.headers[header]) headers[header] = req.headers[header]
+
+          // req.url is one of:
+          //    /virtualmachines/<action>
+          //    /virtualmachineinstances/<action>
+          //    /virtualmachinesnapshots
+          const action = req.url.split('/')[2]
+          let subResourceKind = ''
+          let path = `${proxyURL}/${body.managedCluster}`
+          let reqBody = undefined
+          switch (req.url) {
+            case '/virtualmachines/start':
+            case '/virtualmachines/stop':
+            case '/virtualmachines/restart':
+              subResourceKind = 'virtualmachines'
+              path = `${path}/apis/subresources.kubevirt.io/v1/namespaces/${body.vmNamespace}/${subResourceKind}/${body.vmName}/${action}`
+              break
+            case '/virtualmachineinstances/pause':
+            case '/virtualmachineinstances/unpause':
+              subResourceKind = 'virtualmachineinstances'
+              path = `${path}/apis/subresources.kubevirt.io/v1/namespaces/${body.vmNamespace}/${subResourceKind}/${body.vmName}/${action}`
+              break
+            case '/virtualmachinesnapshots':
+              subResourceKind = 'virtualmachinesnapshots'
+              path = `${path}/apis/snapshot.kubevirt.io/v1beta1/namespaces/${body.vmNamespace}/${subResourceKind}`
+              reqBody = JSON.stringify(body.reqBody)
+              break
           }
 
-          await jsonPut(path, {}, managedClusterToken, getServiceAgent())
+          const headers: HeadersInit =
+            req.method === 'POST'
+              ? {
+                  [HTTP2_HEADER_AUTHORIZATION]: `Bearer ${managedClusterToken}`,
+                  [HTTP2_HEADER_ACCEPT]: 'application/json',
+                  [HTTP2_HEADER_CONTENT_TYPE]: 'application/json',
+                }
+              : {
+                  [HTTP2_HEADER_AUTHORIZATION]: `Bearer ${managedClusterToken}`,
+                }
+
+          const response = await fetchRetry(path, {
+            method: req.method,
+            headers,
+            agent: getServiceAgent(),
+            body: reqBody,
+            compress: true,
+          })
             .then((results) => {
-              if (results?.statusCode >= 200 && results?.statusCode < 300) {
-                res.setHeader('Content-Type', 'application/json')
-                res.end(JSON.stringify(results))
-              } else {
+              if (results?.status > 300) {
                 logger.error({
                   msg: 'Error in VirtualMachine action response',
-                  error: results.body?.message ?? '',
+                  error: results,
                 })
-                res.setHeader('Content-Type', 'application/json')
-                res.writeHead(results.statusCode ?? HTTP_STATUS_INTERNAL_SERVER_ERROR)
-                delete results.body?.code // code is added via writeHead
-                res.end(JSON.stringify(results.body ?? ''))
               }
+              if (req.method === 'POST') {
+                return results.json() as unknown
+              }
+              return { statusCode: results.status }
             })
             .catch((err: Error) => {
               logger.error({ msg: 'Error on VirtualMachine action request', error: err.message })
-              respondInternalServerError(req, res)
-              return undefined
+              return `Error on VirtualMachine action request: ${err.message}`
             })
+
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify(response))
         } else {
           logger.error({ msg: `Unauthorized request ${req.url.split('/')[2]} on VirtualMachine ${body.vmName}` })
           return respond(res, `Unauthorized request ${req.url.split('/')[2]} on VirtualMachine ${body.vmName}`, 401)
