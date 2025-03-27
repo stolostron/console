@@ -8,7 +8,6 @@ import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import {
   applicationsState,
-  argoApplicationsState,
   clusterManagementAddonsState,
   helmReleaseState,
   managedClusterAddonsState,
@@ -33,7 +32,6 @@ import { waitForNocks } from '../../../lib/test-util'
 import { ManagedClusterInfo, UserPreference } from '../../../resources'
 import {
   mockApplications,
-  mockArgoApplications,
   mockSearchQueryArgoApps,
   mockSearchQueryArgoAppsCount,
   mockSearchQueryOCPApplications,
@@ -172,7 +170,6 @@ it('should render overview page with expected data', async () => {
     <RecoilRoot
       initializeState={(snapshot) => {
         snapshot.set(applicationsState, mockApplications)
-        snapshot.set(argoApplicationsState, mockArgoApplications)
         snapshot.set(managedClustersState, managedClusters)
         snapshot.set(managedClusterInfosState, [
           ...managedClusterInfos,
@@ -270,7 +267,6 @@ it('should toggle card sections correctly', async () => {
     <RecoilRoot
       initializeState={(snapshot) => {
         snapshot.set(applicationsState, mockApplications)
-        snapshot.set(argoApplicationsState, mockArgoApplications)
         snapshot.set(managedClustersState, managedClusters)
         snapshot.set(managedClusterInfosState, [
           ...managedClusterInfos,

@@ -3,7 +3,6 @@ import { render } from '@testing-library/react'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import {
-  argoApplicationsState,
   channelsState,
   managedClustersState,
   namespacesState,
@@ -18,7 +17,6 @@ import {
   ApplicationKind,
   ApplicationSetApiVersion,
   ApplicationSetKind,
-  ArgoApplication,
   ArgoApplicationApiVersion,
   ArgoApplicationKind,
   Channel,
@@ -145,59 +143,6 @@ const mockManagedCluster0: ManagedCluster = {
     conditions: [],
     version: { kubernetes: '' },
   },
-}
-
-const mockArgoApplication0: ArgoApplication = {
-  apiVersion: ArgoApplicationApiVersion,
-  kind: ArgoApplicationKind,
-  metadata: {
-    name: 'applicationset-0-local-cluster',
-    namespace: 'openshift-gitops',
-    ownerReferences: [
-      {
-        apiVersion: ApplicationSetApiVersion,
-        kind: ApplicationSetKind,
-        name: 'applicationset-0',
-      },
-    ],
-  },
-  spec: {
-    destination: {
-      namespace: 'applicationset-0-ns',
-      server: 'https://api.console-aws-48-pwc27.dev02.red-chesterfield.com:6443',
-    },
-    project: 'default',
-    source: {
-      path: 'foo',
-      repoURL: 'https://test.com/test.git',
-      targetRevision: 'HEAD',
-    },
-    syncPolicy: {},
-  },
-  status: {},
-}
-
-const mockArgoApplication1: ArgoApplication = {
-  apiVersion: ArgoApplicationApiVersion,
-  kind: ArgoApplicationKind,
-  metadata: {
-    name: 'argoapplication-1',
-    namespace: 'openshift-gitops',
-  },
-  spec: {
-    destination: {
-      namespace: 'argoapplication-1-ns',
-      server: 'https://api.console-aws-48-pwc27.dev02.red-chesterfield.com:6443',
-    },
-    project: 'default',
-    source: {
-      path: 'foo',
-      repoURL: 'https://test.com/test.git',
-      targetRevision: 'HEAD',
-    },
-    syncPolicy: {},
-  },
-  status: {},
 }
 
 const mockApplicationDataSubscription: ApplicationDataType = {
@@ -524,8 +469,6 @@ const mockPlacementrules: PlacementRule[] = [mockPlacementrule0]
 
 const mockManagedClusters: ManagedCluster[] = [mockManagedCluster0]
 
-const mockArgoApplications: ArgoApplication[] = [mockArgoApplication0, mockArgoApplication1]
-
 //////////////// Test /////////////////
 
 jest.mock('react-router-dom-v5-compat', () => ({
@@ -552,7 +495,6 @@ describe('Overview Tab', () => {
           snapshot.set(channelsState, mockChannels)
           snapshot.set(placementRulesState, mockPlacementrules)
           snapshot.set(managedClustersState, mockManagedClusters)
-          snapshot.set(argoApplicationsState, mockArgoApplications)
           snapshot.set(namespacesState, mockNamespaces)
         }}
       >
@@ -586,7 +528,6 @@ describe('Overview Tab', () => {
           snapshot.set(channelsState, mockChannels)
           snapshot.set(placementRulesState, mockPlacementrules)
           snapshot.set(managedClustersState, mockManagedClusters)
-          snapshot.set(argoApplicationsState, mockArgoApplications)
           snapshot.set(namespacesState, mockNamespaces)
         }}
       >
@@ -621,7 +562,6 @@ describe('Overview Tab', () => {
           snapshot.set(channelsState, mockChannels)
           snapshot.set(placementRulesState, mockPlacementrules)
           snapshot.set(managedClustersState, mockManagedClusters)
-          snapshot.set(argoApplicationsState, mockArgoApplications)
         }}
       >
         <MemoryRouter>

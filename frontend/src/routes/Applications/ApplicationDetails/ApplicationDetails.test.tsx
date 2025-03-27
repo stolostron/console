@@ -6,8 +6,6 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import {
-  applicationsState,
-  argoApplicationsState,
   channelsState,
   managedClusterInfosState,
   managedClustersState,
@@ -24,8 +22,6 @@ import { AcmExtension } from '../../../plugin-extensions/types'
 import { GetMessagesDocument, SearchSchemaDocument } from '../../Search/search-sdk/search-sdk'
 import {
   mockApplication0,
-  mockApplications,
-  mockArgoApplications,
   mockChannels,
   mockManagedClusterInfos,
   mockManagedClusters,
@@ -353,13 +349,11 @@ describe('Applications Page', () => {
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
-          snapshot.set(applicationsState, mockApplications)
           snapshot.set(subscriptionsState, mockSubscriptions)
           snapshot.set(channelsState, mockChannels)
           snapshot.set(placementRulesState, mockPlacementrules)
           snapshot.set(placementDecisionsState, mockPlacementsDecisions)
           snapshot.set(managedClustersState, mockManagedClusters)
-          snapshot.set(argoApplicationsState, mockArgoApplications)
           snapshot.set(managedClusterInfosState, mockManagedClusterInfos)
           snapshot.set(namespacesState, mockNamespaces)
         }}
