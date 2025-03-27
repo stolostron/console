@@ -147,9 +147,24 @@ export const getApplication = async (
       if (isAppSetPullModel) {
         return getAppSetApplicationPullModel(model, app, recoilStates, clusters)
       }
-      app = await fetchAggregate(SupportedAggregate.resource, backendUrl, app)
-      model.appSetApps = app.uidata.appSetApps
-      model.appSetClusters = app.uidata.clusterList
+      // because these values require all argo apps to calculate
+      // we get the data from the backend
+      const uiData = await fetchAggregate(SupportedAggregate.uidata, backendUrl, app)
+      model.appSetApps = uiData.appSetApps
+      // uiData.clusterList = ['local-cluster']
+      model.appSetClusters = uiData.clusterList.reduce((list, clusterName) => {
+        const cluster = clusters.find((cluster) => cluster.name === clusterName)
+        if (cluster) {
+          list.push({
+            name: cluster.name,
+            namespace: cluster.namespace,
+            url: cluster.url,
+            status: cluster.status,
+            created: cluster.creationTimestamp,
+          })
+        }
+        return list
+      }, [])
       return model
     }
 

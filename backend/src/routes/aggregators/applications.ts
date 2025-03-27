@@ -7,13 +7,11 @@ import { logger } from '../../lib/logger'
 import {
   discoverSystemAppNamespacePrefixes,
   getApplicationsHelper,
-  getAppSetAppsMap,
-  getAppSetRelatedResources,
   logApplicationCountChanges,
   transform,
 } from './utils'
 import { getSearchResults, ISearchResult, pingSearchAPI } from '../../lib/search'
-import { addArgoQueryInputs, cacheArgoApplications } from './applicationsArgo'
+import { addArgoQueryInputs, appSetAppsMap, cacheArgoApplications, getAppSetRelatedResources } from './applicationsArgo'
 import { getGiganticApps } from '../../lib/gigantic'
 
 export enum AppColumns {
@@ -86,9 +84,6 @@ const appKeys = [
 appKeys.forEach((key) => {
   applicationCache[key] = { resources: [] }
 })
-
-// a map from an appset name to the apps that it created
-export let appSetAppsMap: Record<string, string[]> = {}
 
 export const SEARCH_TIMEOUT = 5 * 60 * 1000
 
@@ -194,10 +189,6 @@ export function filterApplications(filters: FilterSelections, items: ITransforme
 export function addUIData(items: ITransformedResource[]) {
   const argoAppSets = applicationCache['appset'].resources
   items = items.map((item) => {
-    let appSetApps
-    if (item.kind === 'ApplicationSet') {
-      appSetApps = appSetAppsMap[item.metadata.name]
-    }
     return {
       ...item,
       uidata: {
@@ -206,7 +197,7 @@ export function addUIData(items: ITransformedResource[]) {
           item.kind === ApplicationSetKind
             ? getAppSetRelatedResources(item, argoAppSets as IApplicationSet[])
             : ['', []],
-        appSetApps,
+        appSetApps: item.kind === ApplicationSetKind ? appSetAppsMap[item.metadata.name] || [] : [],
       },
     }
   })
@@ -286,7 +277,6 @@ export async function aggregateRemoteApplications(pass: number) {
     applicationCache,
     (results.data?.searchResult?.[0]?.items || []) as IResource[]
   )
-  appSetAppsMap = getAppSetAppsMap(applicationCache)
   cacheOCPApplications(applicationCache, (results.data?.searchResult?.[1]?.items || []) as IResource[], argoAppSet)
   if (querySystemApps) {
     cacheOCPApplications(

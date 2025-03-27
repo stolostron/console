@@ -5,7 +5,6 @@ import {
   IStatusResource,
   IResource,
   ManagedClusterInfo,
-  IApplicationSet,
   IArgoApplication,
   IPlacementDecision,
   ISubscription,
@@ -16,47 +15,6 @@ import { AppColumns, ApplicationCache, ApplicationCacheType } from './applicatio
 import { logger } from '../../lib/logger'
 import { getMultiClusterHub } from '../../lib/multi-cluster-hub'
 import { getMultiClusterEngine } from '../../lib/multi-cluster-engine'
-
-//////////////////////////////////////////////////////////////////
-////////////// ADD UI DATA /////////////////////////////////////////
-//////////////////////////////////////////////////////////////////
-// add ui data to each app would require all appsets, argo apps etc
-// but we don't want to send all that data to the browser
-// so we add it here in the backend
-
-const appSetPlacementStr =
-  'clusterDecisionResource.labelSelector.matchLabels["cluster.open-cluster-management.io/placement"]'
-
-export function getAppSetRelatedResources(appSet: IResource, applicationSets: IApplicationSet[]) {
-  const appSetsSharingPlacement: string[] = []
-  const currentAppSetGenerators = (appSet as IApplicationSet).spec?.generators
-  /* istanbul ignore next */
-  const currentAppSetPlacement = currentAppSetGenerators
-    ? (get(currentAppSetGenerators[0], appSetPlacementStr, '') as string)
-    : undefined
-
-  /* istanbul ignore if */
-  if (!currentAppSetPlacement) {
-    return ['', []]
-  }
-
-  applicationSets.forEach((item) => {
-    const appSetGenerators = item.spec.generators
-    /* istanbul ignore next */
-    const appSetPlacement = appSetGenerators ? (get(appSetGenerators[0], appSetPlacementStr, '') as string) : ''
-    /* istanbul ignore if */
-    if (
-      item.metadata.name !== appSet.metadata?.name ||
-      (item.metadata.name === appSet.metadata?.name && item.metadata.namespace !== appSet.metadata?.namespace)
-    ) {
-      if (appSetPlacement && appSetPlacement === currentAppSetPlacement && item.metadata.name) {
-        appSetsSharingPlacement.push(item.metadata.name)
-      }
-    }
-  })
-
-  return [currentAppSetPlacement, appSetsSharingPlacement]
-}
 
 //////////////////////////////////////////////////////////////////
 ////////////// TRANSFORM /////////////////////////////////////////
@@ -429,27 +387,6 @@ export function cacheRemoteApps(
   } else {
     applicationCache[remoteCacheKey].resourceMap[applicationPageChunk.keys.join()] = resources
   }
-}
-
-//////////////////////////////////////////////////////////////////
-// /////////////////// RECORD WHAT APPS AN APPSET OWNS /////////////////
-//////////////////////////////////////////////////////////////////
-export function getAppSetAppsMap(applicationCache: ApplicationCacheType) {
-  // get all argo apps
-  const argoApps: ITransformedResource[] = getApplicationsHelper(applicationCache, ['localArgoApps', 'remoteArgoApps'])
-
-  //create a map of argo app owners (owning appsets)
-  return argoApps.reduce(
-    (obj, argoApp) => {
-      const appSetName = get(argoApp, 'metadata.ownerReferences[0].name') as string
-      if (appSetName) {
-        if (!obj[appSetName]) obj[appSetName] = []
-        obj[appSetName].push(get(argoApp, 'metadata.name', 'unknown') as string)
-      }
-      return obj
-    },
-    {} as Record<string, string[]>
-  )
 }
 
 export function getApplicationsHelper(applicationCache: ApplicationCacheType, keys: string[]) {

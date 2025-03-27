@@ -1,9 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { logger } from '../../lib/logger'
-import { Cluster, IResource } from '../../resources/resource'
+import { ITransformedResource } from '../../lib/pagination'
+import { Cluster, IApplicationSet, IResource } from '../../resources/resource'
 import { getKubeResources, getHubClusterName } from '../events'
 import { ApplicationCacheType, IQuery, SEARCH_QUERY_LIMIT } from './applications'
-import { cacheRemoteApps, getClusters, getNextApplicationPageChunk, ApplicationPageChunk, transform } from './utils'
+import {
+  cacheRemoteApps,
+  getClusters,
+  getNextApplicationPageChunk,
+  ApplicationPageChunk,
+  transform,
+  getApplicationsHelper,
+  get,
+} from './utils'
 
 interface IArgoAppLocalResource extends IResource {
   spec: {
@@ -35,6 +44,9 @@ interface IArgoAppRemoteResource {
   healthStatus: string
   syncStatus: string
 }
+
+// a map from an appset name to the apps that it created
+export let appSetAppsMap: Record<string, string[]> = {}
 
 let argoPageChunk: ApplicationPageChunk
 const argoPageChunks: ApplicationPageChunk[] = []
@@ -72,7 +84,7 @@ export function cacheArgoApplications(applicationCache: ApplicationCacheType, re
   const argoAppSet = new Set<string>()
   const clusters: Cluster[] = getClusters()
   try {
-    applicationCache['localArgoApps'] = transform(getLocalArgoApps(argoAppSet, clusters))
+    applicationCache['localArgoApps'] = transform(getLocalArgoApps(argoAppSet, clusters), clusters)
   } catch (e) {
     logger.error(`getLocalArgoApps exception ${e}`)
   }
@@ -82,6 +94,10 @@ export function cacheArgoApplications(applicationCache: ApplicationCacheType, re
   } catch (e) {
     logger.error(`cacheRemoteApps exception ${e}`)
   }
+
+  ///////// CREATE APPSET MAPS TO BE USED IN APPSET DETAILS////////////////////////
+  createAppSetAppsMap(applicationCache)
+
   return argoAppSet
 }
 
@@ -179,4 +195,60 @@ function getArgoDestinationCluster(
     }
   }
   return clusterName
+}
+
+//////////////////////////////////////////////////////////////////
+////////////// APP SET DATA /////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
+
+const appSetPlacementStr =
+  'clusterDecisionResource.labelSelector.matchLabels["cluster.open-cluster-management.io/placement"]'
+
+export function getAppSetRelatedResources(appSet: IResource, applicationSets: IApplicationSet[]) {
+  const appSetsSharingPlacement: string[] = []
+  const currentAppSetGenerators = (appSet as IApplicationSet).spec?.generators
+  /* istanbul ignore next */
+  const currentAppSetPlacement = currentAppSetGenerators
+    ? (get(currentAppSetGenerators[0], appSetPlacementStr, '') as string)
+    : undefined
+
+  /* istanbul ignore if */
+  if (!currentAppSetPlacement) {
+    return ['', []]
+  }
+
+  applicationSets.forEach((item) => {
+    const appSetGenerators = item.spec.generators
+    /* istanbul ignore next */
+    const appSetPlacement = appSetGenerators ? (get(appSetGenerators[0], appSetPlacementStr, '') as string) : ''
+    /* istanbul ignore if */
+    if (
+      item.metadata.name !== appSet.metadata?.name ||
+      (item.metadata.name === appSet.metadata?.name && item.metadata.namespace !== appSet.metadata?.namespace)
+    ) {
+      if (appSetPlacement && appSetPlacement === currentAppSetPlacement && item.metadata.name) {
+        appSetsSharingPlacement.push(item.metadata.name)
+      }
+    }
+  })
+
+  return [currentAppSetPlacement, appSetsSharingPlacement]
+}
+
+//////// CREATE APPSET MAPS TO BE USED IN APP SET DETAILS////////////////////////
+// apps: argo apps created by this appset
+// clusters: clusters on which this appset has deployed
+function createAppSetAppsMap(applicationCache: ApplicationCacheType) {
+  const argoApps: ITransformedResource[] = getApplicationsHelper(applicationCache, ['localArgoApps', 'remoteArgoApps'])
+  appSetAppsMap = argoApps.reduce(
+    (obj, argoApp) => {
+      const appSetName = get(argoApp, 'metadata.ownerReferences[0].name') as string
+      if (appSetName) {
+        if (!obj[appSetName]) obj[appSetName] = []
+        obj[appSetName].push(get(argoApp, 'metadata.name', 'unknown') as string)
+      }
+      return obj
+    },
+    {} as Record<string, string[]>
+  )
 }

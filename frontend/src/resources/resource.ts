@@ -16,14 +16,15 @@ export interface IResource extends IResourceDefinition {
   kind: string
   metadata?: Metadata
 }
-export interface IUIResource extends IResource {
-  uidata: {
-    clusterList: string[]
-    appSetRelatedResources: any
-    appSetApps: string[]
-  }
+export interface IUIData {
+  clusterList: string[]
+  appSetRelatedResources: any
+  appSetApps: string[]
 }
 
+export interface IUIResource extends IResource {
+  uidata: IUIData
+}
 export interface ResourceList<Resource extends IResource> {
   kind: string
   items?: Resource[]
