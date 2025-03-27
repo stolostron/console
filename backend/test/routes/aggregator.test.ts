@@ -111,6 +111,7 @@ const responseCount = {
 }
 
 type RelatedResourcesType = (string | string[])[]
+
 const responseNoFilter = {
   page: 1,
   items: [
@@ -164,7 +165,9 @@ const responseNoFilter = {
         },
       },
       uidata: {
+        clusterList: ['mycluster'],
         appSetRelatedResources: ['test-placement-1', []] as RelatedResourcesType,
+        appSetApps: [] as string[],
       },
     },
     {
@@ -189,7 +192,9 @@ const responseNoFilter = {
       },
       status: {},
       uidata: {
+        clusterList: ['unknown'],
         appSetRelatedResources: ['', []] as RelatedResourcesType,
+        appSetApps: [] as string[],
       },
     },
     {
@@ -205,7 +210,9 @@ const responseNoFilter = {
         resourceName: 'authentication-operator',
       },
       uidata: {
+        clusterList: ['local-cluster'],
         appSetRelatedResources: ['', []] as RelatedResourcesType,
+        appSetApps: [] as string[],
       },
     },
     {
@@ -221,7 +228,9 @@ const responseNoFilter = {
         resourceName: 'authentication-operator',
       },
       uidata: {
-        appSetRelatedResources: ['', []],
+        clusterList: ['test-cluster'],
+        appSetRelatedResources: ['', []] as RelatedResourcesType,
+        appSetApps: [] as string[],
       },
     },
     {
@@ -249,7 +258,9 @@ const responseNoFilter = {
         sync: {},
       },
       uidata: {
+        clusterList: ['feng-managed'],
         appSetRelatedResources: ['', []] as RelatedResourcesType,
+        appSetApps: [] as string[],
       },
     },
     {
@@ -265,7 +276,9 @@ const responseNoFilter = {
         },
       },
       uidata: {
+        clusterList: ['local-cluster'],
         appSetRelatedResources: ['', []] as RelatedResourcesType,
+        appSetApps: [] as string[],
       },
     },
     {
@@ -281,7 +294,9 @@ const responseNoFilter = {
         resourceName: 'test-app',
       },
       uidata: {
-        appSetRelatedResources: ['', []],
+        clusterList: ['test-cluster'],
+        appSetRelatedResources: ['', []] as RelatedResourcesType,
+        appSetApps: [] as string[],
       },
     },
   ],
@@ -314,7 +329,9 @@ const responseFiltered = {
         },
       },
       uidata: {
+        clusterList: ['local-cluster'],
         appSetRelatedResources: ['', []] as RelatedResourcesType,
+        appSetApps: [] as string[],
       },
     },
   ],
