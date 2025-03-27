@@ -130,6 +130,9 @@ spec:
   {{#if ai.cpuArchitecture}}
   cpuArchitecture: {{{ai.cpuArchitecture}}}
   {{/if}}
+  nmStateConfigLabelSelector:	
+    matchLabels:	
+      infraenvs.agent-install.openshift.io: {{ ai.name }}
 status:
   agentLabelSelector:
     matchLabels:
