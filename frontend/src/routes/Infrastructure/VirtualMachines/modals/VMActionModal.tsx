@@ -123,7 +123,7 @@ export const VMActionModal = (props: IVMActionModalProps) => {
     case 'stop':
     case 'restart':
     case 'pause':
-    case 'unpasue':
+    case 'unpause':
       modalBody = <WarningBody action={action} item={item} />
       break
     case 'snapshot':
