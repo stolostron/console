@@ -5,7 +5,7 @@ import { RecoilRoot } from 'recoil'
 import { fetchRetry } from '../../../../resources/utils/resource-request'
 import { VMActionModal } from './VMActionModal'
 
-jest.mock('../../../resources/utils/resource-request', () => ({
+jest.mock('../../../../resources/utils/resource-request', () => ({
   getBackendUrl: jest.fn(() => ''),
   fetchRetry: jest.fn(({ url }) => {
     if (url === '/apis/subresources.kubevirt.io/v1/namespaces/testVMNamespace/virtualmachines/testVM/noop') {
@@ -33,7 +33,7 @@ describe('VMActionModal', () => {
           item={{
             name: 'testVM',
             namespace: 'testVMNamespace',
-            cluster: 'test-cluster',
+            cluster: 'local-cluster',
             _hubClusterResource: 'true',
           }}
         />
@@ -52,12 +52,7 @@ describe('VMActionModal', () => {
     userEvent.click(confirmButton)
 
     expect(fetchRetry).toHaveBeenCalledWith({
-      data: {
-        body: {},
-        managedCluster: 'test-cluster',
-        vmName: 'testVM',
-        vmNamespace: 'testVMNamespace',
-      },
+      data: {},
       disableRedirectUnauthorizedLogin: true,
       headers: {
         Accept: '*/*',
@@ -100,7 +95,7 @@ describe('VMActionModal', () => {
 
     expect(fetchRetry).toHaveBeenCalledWith({
       data: {
-        body: {},
+        reqBody: {},
         managedCluster: 'test-cluster',
         vmName: 'testVM',
         vmNamespace: 'testVMNamespace',

@@ -35,7 +35,6 @@ export function handleVMActions(
   toast: IAlertContext,
   t: TFunction
 ) {
-  if (process.env.NODE_ENV === 'test') return
   const abortController = new AbortController()
 
   let subResourceKind = undefined
@@ -68,8 +67,6 @@ export function handleVMActions(
   if (!item?._hubClusterResource) {
     body = { reqBody, managedCluster: item.cluster, vmName: item.name, vmNamespace: item.namespace }
   }
-
-  console.log(body)
 
   fetchRetry({
     method,
@@ -153,6 +150,7 @@ export const VMActionModal = (props: IVMActionModalProps) => {
       onClose={close}
       actions={[
         <AcmButton
+          id="vm-modal-confirm"
           isDisabled={!!getVMError}
           key="confirm"
           onClick={() => {
