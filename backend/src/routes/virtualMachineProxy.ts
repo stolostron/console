@@ -63,7 +63,7 @@ export async function virtualMachineProxy(req: Http2ServerRequest, res: Http2Ser
           const secretPath = process.env.CLUSTER_API_URL + `/api/v1/namespaces/${body.managedCluster}/secrets`
           const managedClusterToken: string = await jsonRequest(secretPath, serviceAccountToken)
             .then((response: ResourceList<Secret>) => {
-              const secret = response.items.find((secret) => secret.metadata.name === 'vm-actor')
+              const secret = response.items.find((secret) => secret.metadata.name === 'virtual-machine-actor')
               const proxyToken = secret.data?.token ?? ''
               return Buffer.from(proxyToken, 'base64').toString('ascii')
             })
@@ -114,32 +114,38 @@ export async function virtualMachineProxy(req: Http2ServerRequest, res: Http2Ser
                   [HTTP2_HEADER_AUTHORIZATION]: `Bearer ${managedClusterToken}`,
                 }
 
-          const response = await fetchRetry(path, {
+          await fetchRetry(path, {
             method: req.method,
             headers,
             agent: getServiceAgent(),
             body: reqBody,
             compress: true,
           })
-            .then((results) => {
+            .then(async (results) => {
               if (results?.status > 300) {
                 logger.error({
                   msg: 'Error in VirtualMachine action response',
                   error: results,
                 })
+                res.setHeader('Content-Type', 'application/json')
+                res.writeHead(results.status ?? HTTP_STATUS_INTERNAL_SERVER_ERROR)
+                res.end(JSON.stringify(results))
               }
+              let response = undefined
               if (req.method === 'POST') {
-                return results.json() as unknown
+                response = (await results.json()) as unknown
+              } else {
+                response = { statusCode: results.status }
               }
-              return { statusCode: results.status }
+              logger.warn(response)
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify(response))
             })
             .catch((err: Error) => {
               logger.error({ msg: 'Error on VirtualMachine action request', error: err.message })
+              respondInternalServerError(req, res)
               return `Error on VirtualMachine action request: ${err.message}`
             })
-
-          res.setHeader('Content-Type', 'application/json')
-          res.end(JSON.stringify(response))
         } else {
           logger.error({ msg: `Unauthorized request ${req.url.split('/')[2]} on VirtualMachine ${body.vmName}` })
           return respond(res, `Unauthorized request ${req.url.split('/')[2]} on VirtualMachine ${body.vmName}`, 401)
