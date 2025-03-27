@@ -142,7 +142,7 @@ type RelatedResourcesType = (string | string[])[]
 const uidata = {
   clusterList: ['local-cluster'],
   appSetRelatedResources: ['', []] as RelatedResourcesType,
-  appSetApps: [] as string[],
+  appSetApps: ['argoapplication-1'],
 }
 
 const responseNoFilter = {
@@ -200,7 +200,7 @@ const responseNoFilter = {
       uidata: {
         clusterList: ['mycluster'],
         appSetRelatedResources: ['test-placement-1', []] as RelatedResourcesType,
-        appSetApps: [] as string[],
+        appSetApps: ['argoapplication-1'],
       },
     },
     {
@@ -209,6 +209,13 @@ const responseNoFilter = {
       metadata: {
         name: 'argoapplication-1',
         namespace: 'openshift-gitops',
+        ownerReferences: [
+          {
+            name: 'argoapplication-1',
+            apiVersion: '',
+            kind: '',
+          },
+        ],
       },
       spec: {
         destination: {
@@ -654,6 +661,7 @@ const resourceCache = {
         metadata: {
           name: 'argoapplication-1',
           namespace: 'openshift-gitops',
+          ownerReferences: [{ name: 'argoapplication-1', apiVersion: '', kind: '' }],
         },
         spec: {
           destination: {
