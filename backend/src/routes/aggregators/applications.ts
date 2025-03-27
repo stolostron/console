@@ -11,7 +11,12 @@ import {
   transform,
 } from './utils'
 import { getSearchResults, ISearchResult, pingSearchAPI } from '../../lib/search'
-import { addArgoQueryInputs, appSetAppsMap, cacheArgoApplications, getAppSetRelatedResources } from './applicationsArgo'
+import {
+  addArgoQueryInputs,
+  getAppSetAppsMap,
+  cacheArgoApplications,
+  getAppSetRelatedResources,
+} from './applicationsArgo'
 import { getGiganticApps } from '../../lib/gigantic'
 
 export enum AppColumns {
@@ -197,7 +202,7 @@ export function addUIData(items: ITransformedResource[]) {
           item.kind === ApplicationSetKind
             ? getAppSetRelatedResources(item, argoAppSets as IApplicationSet[])
             : ['', []],
-        appSetApps: item.kind === ApplicationSetKind ? appSetAppsMap[item.metadata.name] || [] : [],
+        appSetApps: item.kind === ApplicationSetKind ? getAppSetAppsMap()[item.metadata.name] || [] : [],
       },
     }
   })

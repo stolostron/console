@@ -4,7 +4,7 @@ import { applicationCache } from './applications'
 import { getApplicationClusters, getApplicationType, getClusters } from './utils'
 import { IApplicationSet, IResource, IUIData } from '../../resources/resource'
 import { getKubeResources } from '../events'
-import { appSetAppsMap, getAppSetRelatedResources } from './applicationsArgo'
+import { getAppSetAppsMap, getAppSetRelatedResources } from './applicationsArgo'
 
 export function requestAggregatedUIData(req: Http2ServerRequest, res: Http2ServerResponse): void {
   const chucks: string[] = []
@@ -25,7 +25,7 @@ export function requestAggregatedUIData(req: Http2ServerRequest, res: Http2Serve
         resource.kind === 'ApplicationSet'
           ? getAppSetRelatedResources(resource, argoAppSets as IApplicationSet[])
           : ['', []],
-      appSetApps: appSetAppsMap[resource.metadata.name] || [],
+      appSetApps: getAppSetAppsMap()[resource.metadata.name] || [],
     }
     res.setHeader('Content-Type', 'application/json')
     res.end(JSON.stringify(result))

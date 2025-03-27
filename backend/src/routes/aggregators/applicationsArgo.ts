@@ -238,6 +238,10 @@ export function getAppSetRelatedResources(appSet: IResource, applicationSets: IA
 //////// CREATE APPSET MAPS TO BE USED IN APP SET DETAILS////////////////////////
 // apps: argo apps created by this appset
 // clusters: clusters on which this appset has deployed
+export function getAppSetAppsMap() {
+  return appSetAppsMap || {}
+}
+
 function createAppSetAppsMap(applicationCache: ApplicationCacheType) {
   const argoApps: ITransformedResource[] = getApplicationsHelper(applicationCache, ['localArgoApps', 'remoteArgoApps'])
   appSetAppsMap = argoApps.reduce(

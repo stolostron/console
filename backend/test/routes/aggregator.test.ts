@@ -89,6 +89,33 @@ describe(`aggregator Route`, function () {
     expect(res.statusCode).toEqual(200)
     expect(JSON.stringify(await parseResponseJsonBody(res))).toEqual(JSON.stringify(responseCount))
   })
+  it(`should return ui data`, async function () {
+    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+
+    // initialize events
+    initResourceCache(resourceCache)
+
+    // setup nocks
+    setupNocks(true)
+
+    // fill in application cache from resourceCache and search api mocks
+    const prefixes = await discoverSystemAppNamespacePrefixes()
+    expect(JSON.stringify(prefixes)).toEqual(JSON.stringify(systemPrefixes))
+    aggregateLocalApplications()
+    await aggregateRemoteApplications(1)
+
+    // FILTERED
+    const res = await request('POST', '/aggregate/uidata', {
+      apiVersion: 'argoproj.io/v1alpha1',
+      kind: 'ApplicationSet',
+      metadata: {
+        name: 'argoapplication-1',
+        namespace: 'openshift-gitops',
+      },
+    })
+    expect(res.statusCode).toEqual(200)
+    expect(JSON.stringify(await parseResponseJsonBody(res))).toEqual(JSON.stringify(uidata))
+  })
 })
 
 const systemPrefixes = ['openshift', 'hive', 'open-cluster-management', 'multicluster-engine']
@@ -111,6 +138,12 @@ const responseCount = {
 }
 
 type RelatedResourcesType = (string | string[])[]
+
+const uidata = {
+  clusterList: ['local-cluster'],
+  appSetRelatedResources: ['', []] as RelatedResourcesType,
+  appSetApps: [] as string[],
+}
 
 const responseNoFilter = {
   page: 1,
