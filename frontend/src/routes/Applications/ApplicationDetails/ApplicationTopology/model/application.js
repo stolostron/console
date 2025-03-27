@@ -158,9 +158,9 @@ export const getApplication = async (
           list.push({
             name: cluster.name,
             namespace: cluster.namespace,
-            url: cluster.url,
+            url: cluster.kubeApiServer,
             status: cluster.status,
-            created: cluster.creationTimestamp,
+            creationTimestamp: cluster.creationTimestamp,
           })
         }
         return list
