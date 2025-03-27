@@ -61,6 +61,8 @@ export const DOC_LINKS = {
   HYPERSHIFT_MANAGE_KUBEVIRT: `${OCP_DOC_BASE_PATH}/hosted_control_planes/hosted-control-planes-overview#deploying-hosted-control-planes-on-openshift-virtualization`,
   HOSTED_ENABLE_FEATURE_AWS: `${OCP_DOC_BASE_PATH}/hosted_control_planes/hosted-control-planes-overview#hcp-enable-manual_hcp-enable-disable`,
   HYPERSHIFT_OIDC: `${OCP_DOC_BASE_PATH}/hosted_control_planes/hosted-control-planes-overview#hcp-aws-prereqs_hcp-deploy-aws`,
+  // Virtualization
+  VM_SNAPSHOT: `${OCP_DOC_BASE_PATH}/storage/using-container-storage-interface-csi#persistent-storage-csi-snapshots`,
   // AI doc links
   NUTANIX_POST_INSTALL: `https://docs.redhat.com/en/documentation/assisted_installer_for_openshift_container_platform/2024/html/installing_openshift_container_platform_with_the_assisted_installer/assembly_installing-on-nutanix#nutanix-post-installation-configuration_installing-on-nutanix`,
 }

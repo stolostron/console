@@ -26,14 +26,14 @@ import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmLoadingPage, AcmTable, compareStrings } from '../../../ui-components'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import {
-  getVirtualMachineRowActionExtensions,
-  getVirtualMachineRowActions,
-} from '../../Infrastructure/VirtualMachines/utils'
-import {
   ClosedVMActionModalProps,
   IVMActionModalProps,
   VMActionModal,
-} from '../../Infrastructure/VirtualMachines/VMActionModal'
+} from '../../Infrastructure/VirtualMachines/modals/VMActionModal'
+import {
+  getVirtualMachineRowActionExtensions,
+  getVirtualMachineRowActions,
+} from '../../Infrastructure/VirtualMachines/utils'
 import {
   ClosedDeleteExternalResourceModalProps,
   DeleteExternalResourceModal,
@@ -366,12 +366,7 @@ export default function SearchResults(
         close={VMAction.close}
         action={VMAction.action}
         method={VMAction.method}
-        item={{
-          name: VMAction.item.name,
-          namespace: VMAction.item.namespace,
-          cluster: VMAction.item.cluster,
-          _hubClusterResource: VMAction.item?._hubClusterResource,
-        }}
+        item={VMAction.item}
       />
       <DeleteResourceModal
         open={deleteResource.open}
