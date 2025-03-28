@@ -3,7 +3,7 @@
 import { PlacementKind } from '../../../../../resources'
 import { PlacementApiVersion } from '../../../../../wizards/common/resources/IPlacement'
 import { getApplication } from './application'
-import { nockGet, nockIgnoreApiPaths } from '../../../../../lib/nock-util'
+import { nockGet, nockAggegateRequest, nockIgnoreApiPaths } from '../../../../../lib/nock-util'
 import { waitForNocks } from '../../../../../lib/test-util'
 
 describe('getApplication Argo', () => {
@@ -11,68 +11,7 @@ describe('getApplication Argo', () => {
     namespace: 'openshift-gitops',
     name: 'feng-argo',
     selectedChannel: undefined,
-    recoilStates: {
-      argoApplications: [
-        {
-          apiVersion: 'argoproj.io/v1alpha1',
-          kind: 'Application',
-          metadata: {
-            annotations: [
-              {
-                'argocd.argoproj.io/refresh': 'normal',
-              },
-            ],
-            creationTimestamp: '2022-02-25T16:33:00Z',
-            name: 'feng-argo',
-            namespace: 'openshift-gitops',
-          },
-          spec: {
-            destination: { name: 'in-cluster', namespace: 'feng-argo' },
-            project: 'default',
-            source: {
-              path: 'helloworld',
-              repoURL: 'https://github.com/fxiang1/app-samples.git',
-              targetRevision: 'HEAD',
-            },
-            syncPolicy: {
-              automated: { prune: true, selfHeal: true },
-              syncOptions: ['CreateNamespace=true'],
-            },
-          },
-          status: {
-            health: { status: 'Healthy' },
-            resources: [
-              {
-                health: { status: 'Healthy' },
-                kind: 'Service',
-                name: 'helloworld-app-svc',
-                namespace: 'feng-argo',
-                status: 'Synced',
-                version: 'v1',
-              },
-              {
-                group: 'apps',
-                health: { status: 'Healthy' },
-                kind: 'Deployment',
-                name: 'helloworld-app-deploy',
-                namespace: 'feng-argo',
-                status: 'Synced',
-                version: 'v1',
-              },
-              {
-                group: 'route.openshift.io',
-                health: { message: 'Route is healthy', status: 'Healthy' },
-                kind: 'Route',
-                name: 'helloworld-app-route',
-                namespace: 'feng-argo',
-                status: 'Synced',
-                version: 'v1',
-              },
-            ],
-          },
-        },
-      ],
-    },
+    recoilStates: {},
     cluster: undefined,
     apiversion: 'application.argoproj.io',
     clusters: [
@@ -101,6 +40,65 @@ describe('getApplication Argo', () => {
         statusMessage: undefined,
       },
     ],
+  }
+
+  const mockArgoApp = {
+    apiVersion: 'argoproj.io/v1alpha1',
+    kind: 'Application',
+    metadata: {
+      annotations: [
+        {
+          'argocd.argoproj.io/refresh': 'normal',
+        },
+      ],
+      creationTimestamp: '2022-02-25T16:33:00Z',
+      name: 'feng-argo',
+      namespace: 'openshift-gitops',
+    },
+    spec: {
+      destination: { name: 'in-cluster', namespace: 'feng-argo' },
+      project: 'default',
+      source: {
+        path: 'helloworld',
+        repoURL: 'https://github.com/fxiang1/app-samples.git',
+        targetRevision: 'HEAD',
+      },
+      syncPolicy: {
+        automated: { prune: true, selfHeal: true },
+        syncOptions: ['CreateNamespace=true'],
+      },
+    },
+    status: {
+      health: { status: 'Healthy' },
+      resources: [
+        {
+          health: { status: 'Healthy' },
+          kind: 'Service',
+          name: 'helloworld-app-svc',
+          namespace: 'feng-argo',
+          status: 'Synced',
+          version: 'v1',
+        },
+        {
+          group: 'apps',
+          health: { status: 'Healthy' },
+          kind: 'Deployment',
+          name: 'helloworld-app-deploy',
+          namespace: 'feng-argo',
+          status: 'Synced',
+          version: 'v1',
+        },
+        {
+          group: 'route.openshift.io',
+          health: { message: 'Route is healthy', status: 'Healthy' },
+          kind: 'Route',
+          name: 'helloworld-app-route',
+          namespace: 'feng-argo',
+          status: 'Synced',
+          version: 'v1',
+        },
+      ],
+    },
   }
 
   const result = {
@@ -197,15 +195,19 @@ describe('getApplication Argo', () => {
     placement: undefined,
   }
   it('returns Argo app model', async () => {
+    nockIgnoreApiPaths()
+    const nock = nockGet(mockArgoApp)
     const model = await getApplication(
       appData.namespace,
       appData.name,
+      'backendUrl',
       appData.selectedChannel,
       appData.recoilStates,
       appData.cluster,
       appData.apiversion,
       appData.clusters
     )
+    await waitForNocks([nock])
     expect(model).toEqual(result)
   })
 })
@@ -21956,10 +21958,10 @@ describe('getApplication AppSet', () => {
     ],
     appSetClusters: [
       {
-        created: '2023-05-24T17:41:41Z',
+        creationTimestamp: '2023-05-24T17:41:41Z',
         name: 'local-cluster',
         namespace: 'local-cluster',
-        status: 'ok',
+        status: 'ready',
         url: 'https://api.app-aws-central1-412-hub-n6kwd.dev11.red-chesterfield.com:6443',
       },
     ],
@@ -22125,19 +22127,180 @@ describe('getApplication AppSet', () => {
     },
   }
 
+  const uidata = {
+    clusterList: ['local-cluster'],
+    appSetApps: [
+      {
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'Application',
+        metadata: {
+          creationTimestamp: '2023-06-19T15:38:26Z',
+          finalizers: ['resources-finalizer.argocd.argoproj.io'],
+          generation: 364,
+          labels: {
+            'velero.io/exclude-from-backup': 'true',
+          },
+          name: 'magchen-old-appset-local-cluster',
+          namespace: 'openshift-gitops',
+          ownerReferences: [
+            {
+              apiVersion: 'argoproj.io/v1alpha1',
+              blockOwnerDeletion: true,
+              controller: true,
+              kind: 'ApplicationSet',
+              name: 'magchen-old-appset',
+              uid: '225ca82c-80c2-4850-9c0a-080aa1649bdd',
+            },
+          ],
+          resourceVersion: '40271054',
+          uid: '5583b297-cb6d-478a-944f-a656c665551d',
+        },
+        spec: {
+          destination: {
+            namespace: 'philip-app',
+            server: 'https://api.app-aws-central1-412-hub-n6kwd.dev11.red-chesterfield.com:6443',
+          },
+          project: 'default',
+          source: {
+            path: 'app1',
+            repoURL: 'https://github.com/philipwu08/example-k8s-app',
+            targetRevision: 'master',
+          },
+          syncPolicy: {
+            automated: {
+              prune: true,
+              selfHeal: true,
+            },
+            syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
+          },
+        },
+        status: {
+          health: {
+            status: 'Degraded',
+          },
+          history: [
+            {
+              deployStartedAt: '2023-06-19T15:38:26Z',
+              deployedAt: '2023-06-19T15:38:29Z',
+              id: 0,
+              revision: 'f56b7e6ce4501a8cb8cd446043a694fcba733dce',
+              source: {
+                path: 'app1',
+                repoURL: 'https://github.com/philipwu08/example-k8s-app',
+                targetRevision: 'master',
+              },
+            },
+          ],
+          operationState: {
+            finishedAt: '2023-06-19T15:38:29Z',
+            message: 'successfully synced (all tasks run)',
+            operation: {
+              initiatedBy: {
+                automated: true,
+              },
+              retry: {
+                limit: 5,
+              },
+              sync: {
+                prune: true,
+                revision: 'f56b7e6ce4501a8cb8cd446043a694fcba733dce',
+                syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
+              },
+            },
+            phase: 'Succeeded',
+            startedAt: '2023-06-19T15:38:26Z',
+            syncResult: {
+              resources: [
+                {
+                  group: '',
+                  hookPhase: 'Running',
+                  kind: 'Namespace',
+                  message: 'namespace/sandbox created',
+                  name: 'sandbox',
+                  namespace: 'philip-app',
+                  status: 'Synced',
+                  syncPhase: 'Sync',
+                  version: 'v1',
+                },
+                {
+                  group: 'apps',
+                  hookPhase: 'Running',
+                  kind: 'Deployment',
+                  message: 'deployment.apps/example created',
+                  name: 'example',
+                  namespace: 'sandbox',
+                  status: 'Synced',
+                  syncPhase: 'Sync',
+                  version: 'v1',
+                },
+              ],
+              revision: 'f56b7e6ce4501a8cb8cd446043a694fcba733dce',
+              source: {
+                path: 'app1',
+                repoURL: 'https://github.com/philipwu08/example-k8s-app',
+                targetRevision: 'master',
+              },
+            },
+          },
+          reconciledAt: '2023-06-21T14:28:42Z',
+          resources: [
+            {
+              kind: 'Namespace',
+              name: 'sandbox',
+              status: 'Synced',
+              version: 'v1',
+            },
+            {
+              group: 'apps',
+              health: {
+                message: 'Deployment "example" exceeded its progress deadline',
+                status: 'Degraded',
+              },
+              kind: 'Deployment',
+              name: 'example',
+              namespace: 'sandbox',
+              status: 'Synced',
+              version: 'v1',
+            },
+          ],
+          sourceType: 'Kustomize',
+          summary: {
+            images: ['alpinelinux/darkhttpd'],
+          },
+          sync: {
+            comparedTo: {
+              destination: {
+                namespace: 'philip-app',
+                server: 'https://api.app-aws-central1-412-hub-n6kwd.dev11.red-chesterfield.com:6443',
+              },
+              source: {
+                path: 'app1',
+                repoURL: 'https://github.com/philipwu08/example-k8s-app',
+                targetRevision: 'master',
+              },
+            },
+            revision: 'f56b7e6ce4501a8cb8cd446043a694fcba733dce',
+            status: 'Synced',
+          },
+        },
+      },
+    ],
+  }
+
   it('returns AppSet app model', async () => {
     nockIgnoreApiPaths()
-    const nock = nockGet(mockAppset)
+    const nocks = [nockGet(mockAppset), nockAggegateRequest('uidata', mockAppset, uidata)]
     const model = await getApplication(
       appData.namespace,
       appData.name,
+      process.env.JEST_DEFAULT_HOST,
       appData.selectedChannel,
       appData.recoilStates,
       appData.cluster,
       appData.apiversion,
       appData.clusters
     )
-    await waitForNocks([nock])
+    await waitForNocks(nocks)
     expect(model).toEqual(result)
   })
 })
@@ -30545,6 +30708,7 @@ describe('getApplication AppSet pull model', () => {
     const model = await getApplication(
       appData.namespace,
       appData.name,
+      'backendUrl',
       appData.selectedChannel,
       appData.recoilStates,
       appData.cluster,
