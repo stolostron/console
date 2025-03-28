@@ -437,6 +437,13 @@ export function AcmDataFormDefault(props: {
     </Form>
   )
 }
+interface AcmDataFormStepProps {
+  name: React.ReactNode
+  id: string | number
+  component: React.ReactNode | undefined
+  steps?: AcmDataFormStepProps[] | undefined
+  canJumpTo?: boolean
+}
 
 export function AcmDataFormWizard(props: {
   formData: FormData
@@ -459,7 +466,7 @@ export function AcmDataFormWizard(props: {
     formData.cancel()
   }
 
-  function createStep(section: Section | SectionGroup) {
+  function createStep(section: Section | SectionGroup): AcmDataFormStepProps | undefined {
     if (sectionHidden(section)) return undefined
     const hasError = showFormErrors && sectionHasErrors(t, section)
 
@@ -655,26 +662,34 @@ export function AcmDataFormWizard(props: {
     <Fragment>
       {isModalWizard ? (
         <Wizard title={formData.title} footer={Footer} onClose={cancel}>
-          {steps.map(({ id, name, component }) => {
-            return (
-              <WizardStep id={id} key={id} name={name}>
-                {component}
-              </WizardStep>
-            )
-          })}
+          {steps.map((step) => renderStep(step))}
         </Wizard>
       ) : (
         <Wizard footer={Footer} onClose={cancel}>
-          {steps.map(({ id, name, component }) => {
-            return (
-              <WizardStep id={id} key={id} name={name}>
-                {component}
-              </WizardStep>
-            )
-          })}
+          {steps.map((step) => renderStep(step))}
         </Wizard>
       )}
     </Fragment>
+  )
+}
+
+function renderStep(step: AcmDataFormStepProps): JSX.Element {
+  const { id, name, component, steps } = step
+  return steps ? (
+    <WizardStep
+      id={id}
+      key={id}
+      name={name}
+      steps={steps.map(({ id, name, component }) => (
+        <WizardStep id={id} key={id} name={name}>
+          {component}
+        </WizardStep>
+      ))}
+    />
+  ) : (
+    <WizardStep id={id} key={id} name={name}>
+      {component}
+    </WizardStep>
   )
 }
 
