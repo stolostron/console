@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { act, ByRoleMatcher, ByRoleOptions, screen, waitFor } from '@testing-library/react'
+import { act, ByRoleMatcher, ByRoleOptions, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Scope } from 'nock/types'
 
@@ -355,8 +355,11 @@ export async function clickBulkAction(text: string) {
   await clickByText(text)
 }
 
-export async function clickRowAction(row: number, text: string) {
-  await clickByLabel('Actions', row - 1)
+export async function clickRowAction(row: number, text: string, table = 'Simple Table') {
+  await waitForRole('grid', { name: table })
+  within(screen.getByRole('grid', { name: table }))
+    .getAllByLabelText('Actions')
+    [row - 1].click()
   await clickByText(text)
 }
 
