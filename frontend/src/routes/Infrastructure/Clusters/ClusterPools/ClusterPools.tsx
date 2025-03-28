@@ -522,7 +522,7 @@ export function ClusterPoolsTable(props: {
                     id={`${clusterPool.metadata.name}-actions`}
                     item={clusterPool}
                     isKebab={true}
-                    text={`${clusterPool.metadata.name}-actions`}
+                    text={t('Actions')}
                     actions={actions}
                   />
                 )

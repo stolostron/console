@@ -27,6 +27,7 @@ import {
   clickBulkAction,
   clickByLabel,
   clickByText,
+  clickRowAction,
   getCSVDownloadLink,
   getCSVExportSpies,
   selectTableRow,
@@ -210,8 +211,7 @@ describe('Automations page', () => {
     const deleteNock = nockDelete(clusterCurator2)
     render(<TestIntegrationPage providerConnections={mockProviderConnections} clusterCurators={clusterCurators} />)
     await waitForText(clusterCurator2.metadata!.name!)
-    await clickByLabel('Actions', 1) // Click the action button on the first table row
-    await clickByText('Delete')
+    await clickRowAction(1, 'Delete')
     await clickByText('Delete')
     await waitForNock(deleteNock)
   })
@@ -220,8 +220,7 @@ describe('Automations page', () => {
     const badRequestStatus = nockDelete(clusterCurator2, mockBadRequestStatus)
     render(<TestIntegrationPage providerConnections={mockProviderConnections} clusterCurators={clusterCurators} />)
     await waitForText(clusterCurator2.metadata!.name!)
-    await clickByLabel('Actions', 1) // Click the action button on the first table row
-    await clickByText('Delete')
+    await clickRowAction(1, 'Delete')
     await clickByText('Delete')
     await waitForNock(badRequestStatus)
     await waitForText(`Could not process request because of invalid data.`)
@@ -230,8 +229,7 @@ describe('Automations page', () => {
   test('should be able to cancel delete a template', async () => {
     render(<TestIntegrationPage providerConnections={mockProviderConnections} clusterCurators={clusterCurators} />)
     await waitForText(clusterCurator2.metadata!.name!)
-    await clickByLabel('Actions', 1) // Click the action button on the first table row
-    await clickByText('Delete')
+    await clickRowAction(1, 'Delete')
     await clickByText('Cancel')
     await waitForNotText('Cancel')
   })
