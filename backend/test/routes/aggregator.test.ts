@@ -232,7 +232,7 @@ const responseNoFilter = {
       },
       status: {},
       uidata: {
-        clusterList: ['Local'],
+        clusterList: ['unknown'],
         appSetRelatedResources: ['', []] as RelatedResourcesType,
         appSetApps: [] as string[],
       },
