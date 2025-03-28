@@ -1,16 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { getKubeResources, getHubClusterName } from '../events'
-import { Cluster, ClusterDeployment, IResource, ManagedClusterInfo } from '../../resources/resource'
-import { ITransformedResource } from '../../lib/pagination'
 import {
-  AppColumns,
-  ApplicationCache,
-  ApplicationCacheType,
+  Cluster,
+  IStatusResource,
+  IResource,
+  ManagedClusterInfo,
   IArgoApplication,
-  IDecision,
-  IOCPApplication,
+  IPlacementDecision,
   ISubscription,
-} from './applications'
+  IOCPApplication,
+} from '../../resources/resource'
+import { ITransformedResource } from '../../lib/pagination'
+import { AppColumns, ApplicationCache, ApplicationCacheType } from './applications'
 import { logger } from '../../lib/logger'
 import { getMultiClusterHub } from '../../lib/multi-cluster-hub'
 import { getMultiClusterEngine } from '../../lib/multi-cluster-engine'
@@ -49,7 +50,7 @@ function getAppNamespace(resource: IResource): string {
   }
   return namespace
 }
-function getApplicationType(resource: IResource | IOCPApplication) {
+export function getApplicationType(resource: IResource | IOCPApplication) {
   if (resource.apiVersion === 'app.k8s.io/v1beta1') {
     if (resource.kind === 'Application') {
       return 'subscription'
@@ -108,7 +109,7 @@ export function isSystemApp(namespace?: string) {
   return namespace && systemAppNamespacePrefixes.some((prefix) => namespace.startsWith(prefix))
 }
 
-function getApplicationClusters(
+export function getApplicationClusters(
   resource: IResource | IOCPApplication | IArgoApplication,
   type: string,
   subscriptions: IResource[],
@@ -139,7 +140,7 @@ function getApplicationClusters(
   return [getHubClusterName()]
 }
 
-function getAppSetCluster(resource: IArgoApplication, placementDecisions: IDecision[]) {
+function getAppSetCluster(resource: IArgoApplication, placementDecisions: IPlacementDecision[]) {
   const clusterSet = new Set<string>()
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const placementName =
@@ -164,7 +165,11 @@ function getAppSetCluster(resource: IArgoApplication, placementDecisions: IDecis
   return Array.from(clusterSet)
 }
 
-function getSubscriptionCluster(resource: IResource, subscriptions: ISubscription[], placementDecisions: IDecision[]) {
+function getSubscriptionCluster(
+  resource: IResource,
+  subscriptions: ISubscription[],
+  placementDecisions: IPlacementDecision[]
+) {
   const clusterSet = new Set<string>()
   const subAnnotationArray = getSubscriptionAnnotations(resource)
   for (const sa of subAnnotationArray) {
@@ -386,6 +391,19 @@ export function cacheRemoteApps(
   }
 }
 
+export function getApplicationsHelper(applicationCache: ApplicationCacheType, keys: string[]) {
+  const items: ITransformedResource[] = []
+  keys.forEach((key) => {
+    if (applicationCache[key].resources) {
+      items.push(...applicationCache[key].resources)
+    } else if (Object.keys(applicationCache[key].resourceMap).length) {
+      const allResources = Object.values(applicationCache[key].resourceMap)
+      items.push(...allResources.flat())
+    }
+  })
+  return items
+}
+
 //////////////////////////////////////////////////////////////////
 // /////////////////// MINI useAllClusters from frontend /////////////////
 //////////////////////////////////////////////////////////////////
@@ -430,7 +448,7 @@ export function getClusters(): Cluster[] {
   })
 }
 
-function getKubeApiServer(clusterDeployment?: ClusterDeployment, managedClusterInfo?: ManagedClusterInfo) {
+function getKubeApiServer(clusterDeployment?: IStatusResource, managedClusterInfo?: ManagedClusterInfo) {
   return (
     clusterDeployment?.status?.apiURL ??
     managedClusterInfo?.spec?.masterEndpoint ??
@@ -492,11 +510,24 @@ interface ResultType {
   [key: string]: IResource
 }
 
+// just like lodash:
+// obj -- the object you're grabbing from
+// path -- a string path into the object to grab (ex: 'metadata.name')
+// dfault -- if nothing is there, the default value to return
 type SelectorType = string | ((item: IResource) => string)
-
+const keyEx = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function get(obj: any, path: string): string {
-  const keys = path.split('.')
+export function get(obj: any, path: string, dfault?: any): any {
+  // convert path into key array
+  const keys: string[] = []
+  path.replace(keyEx, function (match, number, quote, subString) {
+    keys.push(
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      quote && typeof subString === 'string' ? subString.replace(/\\(\\)?/g, '$1') : number || match
+    )
+    return ''
+  })
+
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   let current = obj
   for (const key of keys) {
@@ -504,17 +535,17 @@ function get(obj: any, path: string): string {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       current = current[key]
     } else {
-      return undefined // Path not found
+      return dfault // Path not found
     }
   }
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return current
 }
 
-function keyBy(array: IResource[], selector: SelectorType) {
+export function keyBy(array: IResource[], selector: SelectorType) {
   const result: ResultType = {}
   for (const item of array) {
-    const key = typeof selector === 'string' ? get(item, selector) : selector(item)
+    const key = typeof selector === 'string' ? (get(item, selector) as string) : selector(item)
     result[key] = item
   }
   return result

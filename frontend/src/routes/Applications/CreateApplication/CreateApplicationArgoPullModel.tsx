@@ -11,13 +11,15 @@ import { useTranslation } from '../../../lib/acm-i18next'
 import { isType } from '../../../lib/is-type'
 import { NavigationPath } from '../../../NavigationPath'
 import {
+  ApplicationSet,
+  ApplicationSetApiVersion,
   ApplicationSetKind,
   getGitChannelBranches,
   getGitChannelPaths,
   GitOpsCluster,
   IResource,
 } from '../../../resources'
-import { createResources } from '../../../resources/utils'
+import { createResources, listResources } from '../../../resources/utils'
 import { argoAppSetQueryString } from './actions'
 import schema from './pullmodelschema.json'
 import { LostChangesContext } from '../../../components/LostChanges'
@@ -64,7 +66,6 @@ export function CreateApplicationArgoPullModel() {
   const {
     channelsState,
     namespacesState,
-    applicationSetsState,
     placementsState,
     gitOpsClustersState,
     managedClustersState,
@@ -73,7 +74,6 @@ export function CreateApplicationArgoPullModel() {
   } = useSharedAtoms()
   const navigate = useNavigate()
   const { timeZones } = useTimezones()
-  const applicationSets = useRecoilValue(applicationSetsState)
   const toast = useContext(AcmToastContext)
   const placements = useRecoilValue(placementsState)
   const gitOpsClusters = useRecoilValue(gitOpsClustersState)
@@ -91,30 +91,29 @@ export function CreateApplicationArgoPullModel() {
     .filter(isType)
 
   const { cancelForm, submitForm } = useContext(LostChangesContext)
-  const [createdResource, setCreatedResource] = useState<any>()
+  const [applicationSets, setApplicationSets] = useState<ApplicationSet[]>()
+  const [loadingAppSets, setLoadingAppSets] = useState(true)
 
-  // don't navigate to details page until application exists in recoil
+  // instead of burdoning recoil with appsets, use old fashioned fetch
+  // opening wizard may take longer, but the longer the wait the more likelihood
+  // user is creating appsets with the cli and not this wizard
   useEffect(() => {
-    if (createdResource) {
-      if (
-        applicationSets.findIndex(
-          (appset) =>
-            appset.metadata.name === createdResource.metadata.name! &&
-            appset.metadata.namespace === createdResource.metadata.namespace!
-        ) !== -1
-      ) {
-        navigate({
-          pathname: generatePath(NavigationPath.applicationOverview, {
-            namespace: createdResource?.metadata?.namespace ?? '',
-            name: createdResource?.metadata?.name ?? '',
-          }),
-          search: argoAppSetQueryString,
-        })
+    const fetchAppSets = async () => {
+      try {
+        const response = await listResources<ApplicationSet>({
+          apiVersion: ApplicationSetApiVersion,
+          kind: ApplicationSetKind,
+        }).promise
+        setApplicationSets(response)
+        setLoadingAppSets(false)
+      } catch {
+        setLoadingAppSets(false)
       }
     }
-  }, [applicationSets, createdResource, navigate])
+    fetchAppSets()
+  }, [])
 
-  return createdResource ? (
+  return loadingAppSets ? (
     <LoadingPage />
   ) : (
     <ArgoWizard
@@ -152,7 +151,13 @@ export function CreateApplicationArgoPullModel() {
             })
           }
           submitForm()
-          setCreatedResource(applicationSet)
+          navigate({
+            pathname: generatePath(NavigationPath.applicationOverview, {
+              namespace: applicationSet?.metadata?.namespace ?? '',
+              name: applicationSet?.metadata?.name ?? '',
+            }),
+            search: argoAppSetQueryString,
+          })
         })
       }}
       timeZones={timeZones}

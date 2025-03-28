@@ -9,10 +9,8 @@ import {
   Application,
   ApplicationDefinition,
   ApplicationSet,
-  ApplicationSetDefinition,
   ArgoApplication,
   ArgoApplicationApiVersion,
-  ArgoApplicationDefinition,
   ArgoApplicationKind,
   Channel,
   CronJobKind,
@@ -141,81 +139,6 @@ export const getArgoPullModelClusterList = (
   })
 
   return Array.from(clusterSet)
-}
-
-const getSubscriptionsClusterList = (
-  resource: Application,
-  placementDecisions: PlacementDecision[],
-  subscriptions: Subscription[]
-) => {
-  const subAnnotationArray = getSubscriptionsFromAnnotation(resource)
-  const clusterSet = new Set<string>()
-
-  for (const sa of subAnnotationArray) {
-    if (isLocalSubscription(sa, subAnnotationArray)) {
-      // skip local sub
-      continue
-    }
-
-    const subDetails = sa.split('/')
-    subscriptions.forEach((sub) => {
-      if (sub.metadata.name === subDetails[1] && sub.metadata.namespace === subDetails[0]) {
-        const placementRef = sub.spec.placement?.placementRef
-        const placement = placementDecisions.find(
-          (placementDecision) =>
-            placementDecision.metadata.labels?.['cluster.open-cluster-management.io/placement'] ===
-              placementRef?.name ||
-            placementDecision.metadata.labels?.['cluster.open-cluster-management.io/placementrule'] ===
-              placementRef?.name
-        )
-
-        const decisions = placement?.status?.decisions
-
-        if (decisions) {
-          decisions.forEach((cluster) => {
-            clusterSet.add(cluster.clusterName)
-          })
-        }
-      }
-    })
-  }
-  return Array.from(clusterSet)
-}
-
-export const getClusterList = (
-  resource: IResource,
-  argoApplications: ArgoApplication[],
-  placementDecisions: PlacementDecision[],
-  subscriptions: Subscription[],
-  localCluster: Cluster | undefined,
-  managedClusters: Cluster[]
-) => {
-  // managed resources using search to fetch
-  if (isOCPAppResourceKind(resource.kind)) {
-    const clusterSet = new Set<string>()
-    if (resource.status.cluster) {
-      clusterSet.add(resource.status.cluster)
-    }
-    return Array.from(clusterSet)
-  }
-
-  if (isResourceTypeOf(resource, ArgoApplicationDefinition)) {
-    return getArgoClusterList([resource as ArgoApplication], localCluster, managedClusters)
-  } else if (isResourceTypeOf(resource, ApplicationSetDefinition) && isArgoPullModel(resource as ApplicationSet)) {
-    return getArgoPullModelClusterList(resource as ApplicationSet, placementDecisions, localCluster?.name ?? '')
-  } else if (isResourceTypeOf(resource, ApplicationSetDefinition)) {
-    return getArgoClusterList(
-      argoApplications.filter(
-        (app) => app.metadata?.ownerReferences && app.metadata.ownerReferences[0].name === resource.metadata?.name
-      ),
-      localCluster,
-      managedClusters
-    )
-  } else if (isResourceTypeOf(resource, ApplicationDefinition)) {
-    return getSubscriptionsClusterList(resource as Application, placementDecisions, subscriptions)
-  }
-
-  return [] as string[]
 }
 
 export const getClusterCount = (clusterList: string[], hubClusterName: string): ClusterCount => {

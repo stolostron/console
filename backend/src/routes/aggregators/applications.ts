@@ -1,12 +1,22 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { getKubeResources } from '../events'
 import { addOCPQueryInputs, addSystemQueryInputs, cacheOCPApplications } from './applicationsOCP'
-import { IResource } from '../../resources/resource'
+import { ApplicationSetKind, IApplicationSet, IResource } from '../../resources/resource'
 import { FilterSelections, ITransformedResource } from '../../lib/pagination'
 import { logger } from '../../lib/logger'
-import { discoverSystemAppNamespacePrefixes, logApplicationCountChanges, transform } from './utils'
+import {
+  discoverSystemAppNamespacePrefixes,
+  getApplicationsHelper,
+  logApplicationCountChanges,
+  transform,
+} from './utils'
 import { getSearchResults, ISearchResult, pingSearchAPI } from '../../lib/search'
-import { addArgoQueryInputs, cacheArgoApplications } from './applicationsArgo'
+import {
+  addArgoQueryInputs,
+  getAppSetAppsMap,
+  cacheArgoApplications,
+  getAppSetRelatedResources,
+} from './applicationsArgo'
 import { getGiganticApps } from '../../lib/gigantic'
 
 export enum AppColumns {
@@ -127,16 +137,8 @@ export function stopAggregatingApplications(): void {
 }
 
 export function getApplications() {
-  let items: ITransformedResource[] = []
   aggregateLocalApplications()
-  Object.keys(applicationCache).forEach((key) => {
-    if (applicationCache[key].resources) {
-      items.push(...applicationCache[key].resources)
-    } else if (Object.keys(applicationCache[key].resourceMap).length) {
-      const allResources = Object.values(applicationCache[key].resourceMap)
-      items.push(...allResources.flat())
-    }
-  })
+  let items = getApplicationsHelper(applicationCache, Object.keys(applicationCache))
   // mock a large environment
   if (process.env.MOCK_CLUSTERS) {
     items = items.concat(transform(getGiganticApps()).resources)
@@ -183,6 +185,26 @@ export function filterApplications(filters: FilterSelections, items: ITransforme
       }
     })
     return isFilterMatch
+  })
+  return items
+}
+
+// add data to the apps that can be used by the ui but
+// w/o downloading all the appsets, apps, etc
+export function addUIData(items: ITransformedResource[]) {
+  const argoAppSets = applicationCache['appset'].resources
+  items = items.map((item) => {
+    return {
+      ...item,
+      uidata: {
+        clusterList: item.transform[AppColumns.clusters],
+        appSetRelatedResources:
+          item.kind === ApplicationSetKind
+            ? getAppSetRelatedResources(item, argoAppSets as IApplicationSet[])
+            : ['', []],
+        appSetApps: item.kind === ApplicationSetKind ? getAppSetAppsMap()[item.metadata.name] || [] : [],
+      },
+    }
   })
   return items
 }
