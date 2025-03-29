@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render, screen } from '@testing-library/react'
+import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { RecoilRoot } from 'recoil'
 import { machinePoolsState } from '../../../../../../atoms'
 import { nockDelete, nockIgnoreApiPaths, nockIgnoreRBAC, nockPatch } from '../../../../../../lib/nock-util'
-import { clickByLabel, clickByText, waitForNocks, waitForText } from '../../../../../../lib/test-util'
+import { clickByLabel, clickByText, clickRowAction, waitForNocks, waitForText } from '../../../../../../lib/test-util'
 import { ClusterDetailsContext } from '../ClusterDetails'
 import { MachinePoolsPageContent } from './ClusterMachinePools'
 import {
@@ -42,10 +42,7 @@ describe('ClusterMachinePools', () => {
   it('should be able to manually scale a machine pool', async () => {
     await waitForText(mockMachinePoolManual.metadata.name!)
     await waitForText('nova-default') // Check OpenStack flavor displays as Instance type
-    const actionButton = screen.getByLabelText(`${mockMachinePoolManual.metadata.name!}-actions`)
-    userEvent.click(actionButton)
-    await clickByText('Scale machine pool')
-    await waitForText('Scale machine pool')
+    await clickRowAction(2, 'Scale machine pool')
     await clickByLabel('Plus')
     const patchNocks: Scope[] = [
       nockPatch(mockMachinePoolManual, [
@@ -58,11 +55,8 @@ describe('ClusterMachinePools', () => {
   it('should be able to enable autoscaling for a machine pool', async () => {
     await waitForText(mockMachinePoolManual.metadata.name!)
     await waitForText('m4.xlarge') // Check AWS type displays as Instance type
-    const actionButton = screen.getByLabelText(`${mockMachinePoolManual.metadata.name!}-actions`)
-    userEvent.click(actionButton)
-    await clickByText('Enable autoscale')
-    await waitForText('Enable autoscale')
 
+    await clickRowAction(2, 'Enable autoscale')
     await clickByLabel('Plus', 1)
     const patchNocks: Scope[] = [
       nockPatch(mockMachinePoolManual, [
@@ -82,10 +76,7 @@ describe('ClusterMachinePools', () => {
   })
   it('should be able to edit autoscaling for a machine pool', async () => {
     await waitForText(mockMachinePoolAuto.metadata.name!)
-    const actionButton = screen.getByLabelText(`${mockMachinePoolAuto.metadata.name!}-actions`)
-    userEvent.click(actionButton)
-    await clickByText('Edit autoscale')
-    await waitForText('Edit autoscale')
+    await clickRowAction(1, 'Edit autoscale')
     await clickByLabel('Plus', 1)
     const patchNocks: Scope[] = [
       nockPatch(mockMachinePoolAuto, [
@@ -100,14 +91,12 @@ describe('ClusterMachinePools', () => {
       ]),
     ]
     await clickByText('Scale')
+
     await waitForNocks(patchNocks)
   })
   it('should be able to disable autoscaling for a machine pool', async () => {
     await waitForText(mockMachinePoolAuto.metadata.name!)
-    const actionButton = screen.getByLabelText(`${mockMachinePoolAuto.metadata.name!}-actions`)
-    userEvent.click(actionButton)
-    await clickByText('Disable autoscale')
-    await waitForText('Disable autoscale')
+    await clickRowAction(1, 'Disable autoscale')
     const patchNocks: Scope[] = [
       nockPatch(mockMachinePoolAuto, [
         { op: 'remove', path: '/spec/autoscaling' },
@@ -126,9 +115,8 @@ describe('ClusterMachinePools', () => {
     await waitForText(mockMachinePoolManual.metadata.name!)
     await waitForText(mockMachinePoolOther.metadata.name!)
     await waitForText('high_performance') // Check RHV vmType displays as Instance type
-    const actionButton = screen.getByLabelText(`${mockMachinePoolAuto.metadata.name!}-actions`)
-    userEvent.click(actionButton)
-    await clickByText('Delete machine pool')
+    await clickRowAction(1, 'Delete machine pool')
+    // await clickByText('Delete machine pool')
 
     await waitForText('Permanently delete machine pools?')
     const confirmInput = document.getElementById('confirm')

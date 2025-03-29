@@ -357,9 +357,12 @@ export async function clickBulkAction(text: string) {
 
 export async function clickRowAction(row: number, text: string, table = 'Simple Table') {
   await waitForRole('grid', { name: table })
-  within(screen.getByRole('grid', { name: table }))
-    .getAllByLabelText('Actions')
-    [row - 1].click()
+  const grid = screen.getByRole('grid', { name: table })
+  const actionButtons = within(grid).getAllByRole('button', { name: 'Actions' })
+
+  // click the action button for the specified row (row is 1-based, so we subtract 1)
+  actionButtons[row - 1].click()
+  await waitFor(() => screen.getByText(text))
   await clickByText(text)
 }
 

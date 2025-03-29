@@ -20,12 +20,13 @@ import { TooltipWrapper } from '../utils'
 import { forwardRef, useCallback, useEffect, useRef, useState } from 'react'
 import { EllipsisVIcon } from '@patternfly/react-icons'
 import { ClassNameMap } from '@mui/material'
+import { t } from 'i18next'
 
 type Props = Omit<MenuProps, 'children' | 'onSelect'>
 
 export type AcmDropdownProps = Props & {
   dropdownItems: AcmDropdownItems[]
-  text: string
+  text?: string
   isDisabled?: boolean
   onSelect: (id: string) => void
   id: string
@@ -348,6 +349,8 @@ export function AcmDropdown(props: AcmDropdownProps) {
     variant = 'default'
   }
 
+  const ariaLabel = isKebab && !text ? t('Actions') : text
+
   return (
     <TooltipWrapper showTooltip={!!tooltip} tooltip={tooltip} tooltipPosition={tooltipPosition}>
       <div ref={popperContainer} className={classes.button}>
@@ -361,7 +364,7 @@ export function AcmDropdown(props: AcmDropdownProps) {
               onClick={handleToggleClick}
               onMouseOver={onHover}
               isExpanded={isOpen}
-              aria-label={text}
+              aria-label={ariaLabel}
             >
               {isKebab ? <EllipsisVIcon /> : text}
             </MenuToggle>
