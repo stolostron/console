@@ -210,7 +210,7 @@ export function MachinePoolsTable() {
             id={`${machinePool.metadata.name}-actions`}
             item={machinePool}
             isKebab={true}
-            text={`${machinePool.metadata.name}-actions`}
+            text={t('Actions')}
             actions={actions}
             tooltip={t('machinePool.menu.disabled.tooltip', { status: t(`status.${cluster.status}`) })}
             isDisabled={![ClusterStatus.ready, ClusterStatus.degraded].includes(cluster.status)}

@@ -5,7 +5,7 @@ import { Scope } from 'nock/types'
 import { RecoilRoot } from 'recoil'
 import { machinePoolsState } from '../../../../../../atoms'
 import { nockDelete, nockIgnoreApiPaths, nockIgnoreRBAC, nockPatch } from '../../../../../../lib/nock-util'
-import { clickByLabel, clickByText, typeByText, waitForNocks, waitForText } from '../../../../../../lib/test-util'
+import { clickByLabel, clickByText, clickRowAction, waitForNocks, waitForText } from '../../../../../../lib/test-util'
 import { ClusterDetailsContext } from '../ClusterDetails'
 import { MachinePoolsPageContent } from './ClusterMachinePools'
 import {
@@ -15,6 +15,7 @@ import {
   mockMachinePoolOther,
 } from '../ClusterDetails.sharedmocks'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'
+import userEvent from '@testing-library/user-event'
 
 describe('ClusterMachinePools', () => {
   beforeEach(() => {
@@ -41,9 +42,7 @@ describe('ClusterMachinePools', () => {
   it('should be able to manually scale a machine pool', async () => {
     await waitForText(mockMachinePoolManual.metadata.name!)
     await waitForText('nova-default') // Check OpenStack flavor displays as Instance type
-    await clickByLabel('Actions', 1)
-    await clickByText('Scale machine pool')
-    await waitForText('Scale machine pool')
+    await clickRowAction(2, 'Scale machine pool')
     await clickByLabel('Plus')
     const patchNocks: Scope[] = [
       nockPatch(mockMachinePoolManual, [
@@ -56,9 +55,8 @@ describe('ClusterMachinePools', () => {
   it('should be able to enable autoscaling for a machine pool', async () => {
     await waitForText(mockMachinePoolManual.metadata.name!)
     await waitForText('m4.xlarge') // Check AWS type displays as Instance type
-    await clickByLabel('Actions', 1)
-    await clickByText('Enable autoscale')
-    await waitForText('Enable autoscale')
+
+    await clickRowAction(2, 'Enable autoscale')
     await clickByLabel('Plus', 1)
     const patchNocks: Scope[] = [
       nockPatch(mockMachinePoolManual, [
@@ -78,9 +76,7 @@ describe('ClusterMachinePools', () => {
   })
   it('should be able to edit autoscaling for a machine pool', async () => {
     await waitForText(mockMachinePoolAuto.metadata.name!)
-    await clickByLabel('Actions', 0)
-    await clickByText('Edit autoscale')
-    await waitForText('Edit autoscale')
+    await clickRowAction(1, 'Edit autoscale')
     await clickByLabel('Plus', 1)
     const patchNocks: Scope[] = [
       nockPatch(mockMachinePoolAuto, [
@@ -95,13 +91,12 @@ describe('ClusterMachinePools', () => {
       ]),
     ]
     await clickByText('Scale')
+
     await waitForNocks(patchNocks)
   })
   it('should be able to disable autoscaling for a machine pool', async () => {
     await waitForText(mockMachinePoolAuto.metadata.name!)
-    await clickByLabel('Actions', 0)
-    await clickByText('Disable autoscale')
-    await waitForText('Disable autoscale')
+    await clickRowAction(1, 'Disable autoscale')
     const patchNocks: Scope[] = [
       nockPatch(mockMachinePoolAuto, [
         { op: 'remove', path: '/spec/autoscaling' },
@@ -120,15 +115,19 @@ describe('ClusterMachinePools', () => {
     await waitForText(mockMachinePoolManual.metadata.name!)
     await waitForText(mockMachinePoolOther.metadata.name!)
     await waitForText('high_performance') // Check RHV vmType displays as Instance type
-    await clickByLabel('Actions', 0)
-    await clickByText('Delete machine pool')
+    await clickRowAction(1, 'Delete machine pool')
+    // await clickByText('Delete machine pool')
+
     await waitForText('Permanently delete machine pools?')
-    await typeByText(
-      `Confirm by typing "${mockMachinePoolAuto.metadata.name!}" below:`,
-      mockMachinePoolAuto.metadata.name!
-    )
+    const confirmInput = document.getElementById('confirm')
+    if (confirmInput instanceof HTMLInputElement) {
+      userEvent.type(confirmInput, mockMachinePoolAuto.metadata.name!)
+    }
+
     const deleteNocks: Scope[] = [nockDelete(mockMachinePoolAuto)]
     await clickByText('Delete')
+    await waitForText('Deleting')
+
     await waitForNocks(deleteNocks)
   })
 })

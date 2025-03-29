@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { act, ByRoleMatcher, ByRoleOptions, screen, waitFor } from '@testing-library/react'
+import { act, ByRoleMatcher, ByRoleOptions, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Scope } from 'nock/types'
 
@@ -355,9 +355,24 @@ export async function clickBulkAction(text: string) {
   await clickByText(text)
 }
 
-export async function clickRowAction(row: number, text: string) {
-  await clickByLabel('Actions', row - 1)
+export async function clickRowAction(row: number, text: string, table = 'Simple Table') {
+  await waitForRole('grid', { name: table })
+  const grid = screen.getByRole('grid', { name: table })
+  const actionButtons = within(grid).getAllByRole('button', { name: 'Actions' })
+
+  // click the action button for the specified row (row is 1-based, so we subtract 1)
+  actionButtons[row - 1].click()
+  await waitFor(() => screen.getByText(text))
   await clickByText(text)
+}
+
+export async function clickRowActionButton(row: number, table = 'Simple Table') {
+  await waitForRole('grid', { name: table })
+  const grid = screen.getByRole('grid', { name: table })
+  const actionButtons = within(grid).getAllByRole('button', { name: 'Actions' })
+
+  // click the action button for the specified row (row is 1-based, so we subtract 1)
+  actionButtons[row - 1].click()
 }
 
 export async function selectByText(placeholdText: string, text: string) {

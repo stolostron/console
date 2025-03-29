@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes, generatePath } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import * as YAML from 'yaml'
@@ -75,6 +75,7 @@ import {
 } from '../../ManagedClusters/ManagedClusters.sharedmocks'
 import ClusterSetDetails from './ClusterSetDetails'
 import Clusters from '../../Clusters'
+import userEvent from '@testing-library/user-event'
 
 const clusterSetCluster: ManagedCluster = mockManagedClusters.find(
   (mc: ManagedCluster) => mc.metadata.labels?.[managedClusterSetLabel] === mockManagedClusterSet.metadata.name!
@@ -1857,7 +1858,12 @@ describe('ClusterSetDetails page', () => {
     await clickByText('Submariner add-ons', 0)
 
     await waitForText(mockSubmarinerAddOn!.metadata.namespace!)
-    await clickByLabel('Actions', 0)
+    userEvent.click(
+      screen.getByRole('button', {
+        name: /submariner-actions/i,
+      })
+    )
+    await new Promise((resolve) => setTimeout(resolve, 500))
     await clickByText('Uninstall add-on')
     await waitForText('Uninstall Submariner add-ons?')
 
@@ -1873,8 +1879,12 @@ describe('ClusterSetDetails page', () => {
     await clickByText('Submariner add-ons', 0)
 
     await waitForText(mockSubmarinerAddOn!.metadata.namespace!)
-
-    await clickByLabel('Actions', 0)
+    userEvent.click(
+      screen.getByRole('button', {
+        name: /submariner-actions/i,
+      })
+    )
+    await new Promise((resolve) => setTimeout(resolve, 500))
     await clickByText('Edit configuration')
     await waitForText('Edit Submariner configuration')
 
@@ -1910,7 +1920,8 @@ describe('ClusterSetDetails page', () => {
     await clickByText('User management', 0)
     await waitForNocks([nock])
     await waitForText('mock-user')
-    await clickByLabel('Actions', 0)
+    userEvent.click(screen.getByRole('checkbox', { name: /select row 0/i }))
+    await clickByLabel('Actions', 1)
     await clickByText('Remove')
     await waitForText('Remove users or groups?')
     const deleteNock = nockDelete(mockClusterRoleBinding)

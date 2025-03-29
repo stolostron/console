@@ -14,6 +14,7 @@ import {
   PageSection,
   Stack,
   StackItem,
+  // SelectOption,
 } from '@patternfly/react-core'
 import { SelectOption } from '@patternfly/react-core/deprecated'
 import { fitContent } from '@patternfly/react-table'
@@ -335,23 +336,17 @@ export default function PoliciesPage() {
         click: (item) => {
           setModal(<AddToPolicySetModal policyTableItems={[...item]} onClose={() => setModal(undefined)} />)
         },
-        tooltip: t('Add to policy set'),
         isDisabled: !canPatchPolicy,
       },
       {
-        id: 'seperator-1',
-        variant: 'action-seperator',
-      },
-      {
-        variant: 'action-group',
         id: 'status',
+        variant: 'action-group',
         title: t('policy.table.actionGroup.status'),
         actions: [
           {
-            variant: 'bulk-action',
             id: 'enable',
-            title: t('policy.table.actions.enable'),
-            tooltip: t('Enable policies'),
+            variant: 'bulk-action',
+            title: t('Enable'),
             click: (item) => {
               setModalProps({
                 open: true,
@@ -388,10 +383,9 @@ export default function PoliciesPage() {
             isDisabled: !canPatchPolicy,
           },
           {
-            variant: 'bulk-action',
             id: 'disable',
+            variant: 'bulk-action',
             title: t('policy.table.actions.disable'),
-            tooltip: t('Disable policies'),
             click: (item) => {
               setModalProps({
                 open: true,
@@ -416,33 +410,25 @@ export default function PoliciesPage() {
                     [{ op: 'replace', path: '/spec/disabled', value: true }]
                   )
                 },
-                close: () => {
-                  setModalProps({ open: false })
-                },
+                close: () => setModalProps({ open: false }),
                 hasExternalResources:
                   [...item].filter((item) => {
                     return item.source !== 'Local'
                   }).length > 0,
               })
             },
-            isDisabled: !canPatchPolicy,
           },
         ],
       },
       {
-        id: 'seperator-2',
-        variant: 'action-seperator',
-      },
-      {
+        id: 'remediation-policy',
         variant: 'action-group',
-        id: 'remediation',
-        title: t('policy.table.actionGroup.remediation'),
+        title: t('Remediation'),
         actions: [
           {
+            id: 'inform-policy',
             variant: 'bulk-action',
-            id: 'inform',
             title: t('policy.table.actions.inform'),
-            tooltip: t('Inform policies'),
             click: (item) => {
               setModalProps({
                 open: true,
@@ -454,8 +440,8 @@ export default function PoliciesPage() {
                 description: t('policy.modal.message.inform'),
                 columns: bulkModalRemediationColumns,
                 keyFn: (item: PolicyTableItem) => item.policy.metadata.uid as string,
-                actionFn: (item) => {
-                  return patchResource(
+                actionFn: (item) =>
+                  patchResource(
                     {
                       apiVersion: PolicyApiVersion,
                       kind: PolicyKind,
@@ -465,24 +451,19 @@ export default function PoliciesPage() {
                       },
                     } as Policy,
                     [{ op: 'replace', path: '/spec/remediationAction', value: 'inform' }]
-                  )
-                },
-                close: () => {
-                  setModalProps({ open: false })
-                },
+                  ),
+                close: () => setModalProps({ open: false }),
                 hasExternalResources:
                   [...item].filter((item) => {
                     return item.source !== 'Local'
                   }).length > 0,
               })
             },
-            isDisabled: !canPatchPolicy,
           },
           {
+            id: 'enforce-policy',
             variant: 'bulk-action',
-            id: 'enforce',
             title: t('policy.table.actions.enforce'),
-            tooltip: t('Enforce policies'),
             click: (item) => {
               setModalProps({
                 open: true,
@@ -496,8 +477,8 @@ export default function PoliciesPage() {
                   : t('policy.modal.message.enforce'),
                 columns: bulkModalRemediationColumns,
                 keyFn: (item: PolicyTableItem) => item.policy.metadata.uid as string,
-                actionFn: (item) => {
-                  return patchResource(
+                actionFn: (item) =>
+                  patchResource(
                     {
                       apiVersion: PolicyApiVersion,
                       kind: PolicyKind,
@@ -507,23 +488,19 @@ export default function PoliciesPage() {
                       },
                     } as Policy,
                     [{ op: 'replace', path: '/spec/remediationAction', value: 'enforce' }]
-                  )
-                },
-                close: () => {
-                  setModalProps({ open: false })
-                },
+                  ),
+                close: () => setModalProps({ open: false }),
                 hasExternalResources:
                   [...item].filter((item) => {
                     return item.source !== 'Local'
                   }).length > 0,
               })
             },
-            isDisabled: !canPatchPolicy,
           },
         ],
       },
     ],
-    [t, bulkModalStatusColumns, bulkModalRemediationColumns, canPatchPolicy]
+    [t, canPatchPolicy, bulkModalStatusColumns, bulkModalRemediationColumns]
   )
 
   const getSourceOptions = useCallback(() => {
@@ -661,7 +638,7 @@ export default function PoliciesPage() {
             click: () => navigate(NavigationPath.createPolicy),
           },
         ]}
-        showColumManagement
+        showColumnManagement
         addSubRows={(item: PolicyTableItem) => {
           const standards = item.policy.metadata.annotations?.['policy.open-cluster-management.io/standards']
           const controls = item.policy.metadata.annotations?.['policy.open-cluster-management.io/controls']
@@ -988,7 +965,7 @@ export function AddToPolicySetModal(
           <StackItem>
             <AcmSelect
               id="policy-sets"
-              label=""
+              label={t('Policy set')}
               onChange={(key) => setSelectedPolicySetUid(key)}
               value={selectedPolicySetUid}
               placeholder={t('Select a policy set')}

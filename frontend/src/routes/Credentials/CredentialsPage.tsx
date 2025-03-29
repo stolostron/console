@@ -302,7 +302,7 @@ export function CredentialsTable(props: {
                   id={`${secret.metadata.name}-actions`}
                   item={secret}
                   isKebab={true}
-                  text={`${secret.metadata.name}-actions`}
+                  text={t('Actions')}
                   actions={actions}
                 />
               )

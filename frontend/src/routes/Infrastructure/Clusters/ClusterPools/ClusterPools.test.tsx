@@ -447,8 +447,7 @@ describe('ClusterPools page', () => {
 
   test('should be able to scale a cluster pool size', async () => {
     await waitForText(mockClusterPool.metadata.name!)
-    await clickByLabel('Actions', 0)
-    await clickByText('Scale cluster pool')
+    await clickRowAction(1, 'Scale cluster pool')
     await waitForText('Scale cluster pool')
     await clickByLabel('Plus', 0)
     const patchNocks: Scope[] = [
@@ -463,8 +462,7 @@ describe('ClusterPools page', () => {
 
   test('should be able to scale a cluster pool running count', async () => {
     await waitForText(mockClusterPool.metadata.name!)
-    await clickByLabel('Actions', 0)
-    await clickByText('Scale cluster pool')
+    await clickRowAction(1, 'Scale cluster pool')
     await waitForText('Scale cluster pool')
     await clickByLabel('Minus', 1)
     const patchNocks: Scope[] = [
@@ -479,8 +477,7 @@ describe('ClusterPools page', () => {
 
   test('should be able to change the release image for a cluster pool', async () => {
     await waitForText(mockClusterPool.metadata.name!)
-    await clickByLabel('Actions', 0)
-    await clickByText('Update release image')
+    await clickRowAction(1, 'Update release image')
     await waitForText('Update release images')
     await clickByText('Select release image')
     await clickByText(mockClusterImageSet.spec!.releaseImage)

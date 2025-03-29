@@ -522,7 +522,7 @@ export function ClusterPoolsTable(props: {
                     id={`${clusterPool.metadata.name}-actions`}
                     item={clusterPool}
                     isKebab={true}
-                    text={`${clusterPool.metadata.name}-actions`}
+                    text={t('Actions')}
                     actions={actions}
                   />
                 )
@@ -544,7 +544,7 @@ export function ClusterPoolsTable(props: {
             },
             variant: 'bulk-action',
           },
-          { id: 'seperator', variant: 'action-seperator' },
+          { id: 'seperator', variant: 'action-separator' },
           {
             id: 'destroyClusterPools',
             title: t('bulk.destroy.clusterPools'),

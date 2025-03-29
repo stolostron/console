@@ -215,7 +215,7 @@ function AnsibleJobTemplateTable() {
                   id={`${curator.metadata.name}-actions`}
                   item={curator}
                   isKebab={true}
-                  text={`${curator.metadata.name}-actions`}
+                  text={t('Actions')}
                   actions={actions}
                 />
               )
