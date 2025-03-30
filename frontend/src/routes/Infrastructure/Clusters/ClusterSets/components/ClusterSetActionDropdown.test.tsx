@@ -16,6 +16,7 @@ import { mockManagedClusterSet } from '../../../../../lib/test-metadata'
 import {
   clickByPlaceholderText,
   clickByText,
+  clickRowKebabAction,
   typeByText,
   waitForNock,
   waitForNocks,
@@ -423,11 +424,12 @@ describe('ClusterSetActionDropdown', () => {
     await clickByText('Save')
     await waitForNocks([deleteNock, createNock])
   })
+
   test('delete action should delete the managed cluster set', async () => {
     nockIgnoreRBAC()
     const nock = nockDelete(mockManagedClusterSet)
-    await clickByText('Actions')
-    await clickByText('Delete cluster set')
+
+    await clickRowKebabAction(mockManagedClusterSet.metadata.name!, 'Delete cluster set')
     await typeByText(
       `Confirm by typing "${mockManagedClusterSet.metadata.name!}" below:`,
       mockManagedClusterSet.metadata.name!

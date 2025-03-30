@@ -422,3 +422,17 @@ export const getMultipleMocks = (obj: unknown, repeat: number) => {
     return template({ name: `cluster${inx + 1}` })
   })
 }
+
+/**
+ * Clicks an action in the kebab menu for a specific cluster set
+ * @param clusterSetName The name of the cluster set (e.g., "default", "global")
+ * @param actionText The text of the action to click
+ */
+export async function clickRowKebabAction(clusterSetName: string, actionText: string) {
+  const kebabButtonId = `${clusterSetName}-actions`
+  await waitForText('Actions')
+  const kebabButton = document.getElementById(kebabButtonId)
+
+  ;(kebabButton as HTMLElement).click()
+  await clickByText(actionText)
+}

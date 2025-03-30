@@ -19,7 +19,6 @@ import {
   clickBulkAction,
   clickByLabel,
   clickByText,
-  clickRowAction,
   selectTableRow,
   typeByText,
   waitForNock,
@@ -29,6 +28,7 @@ import {
   waitForText,
   getCSVExportSpies,
   getCSVDownloadLink,
+  clickRowKebabAction,
 } from '../../../../lib/test-util'
 import { ManagedCluster, ManagedClusterDefinition, ManagedClusterInfo, ResourceAttributes } from '../../../../resources'
 import ManagedClusters from './ManagedClusters'
@@ -101,13 +101,14 @@ describe('Clusters Page', () => {
   })
 
   test('should be able to delete cluster using row action', async () => {
-    await clickRowAction(1, 'Destroy cluster')
+    await clickRowKebabAction(mockManagedCluster0.metadata!.name!, 'Destroy cluster')
     await typeByText(
       `Confirm by typing "${mockManagedCluster0.metadata!.name!}" below:`,
       mockManagedCluster0.metadata!.name!
     )
     const deleteNocks: Scope[] = [nockDelete(mockManagedCluster0), nockDelete(mockClusterDeployment0)]
     await clickByText('Destroy')
+    await waitForText('Destroying')
     await waitForNocks(deleteNocks)
   })
 
@@ -121,13 +122,14 @@ describe('Clusters Page', () => {
   })
 
   test('should be able to detach cluster using row action', async () => {
-    await clickRowAction(1, 'Detach cluster')
+    await clickRowKebabAction(mockManagedCluster0.metadata!.name!, 'Detach cluster')
     await typeByText(
       `Confirm by typing "${mockManagedCluster0.metadata!.name!}" below:`,
       mockManagedCluster0.metadata!.name!
     )
     const deleteNocks: Scope[] = [nockDelete(mockManagedCluster0)]
     await clickByText('Detach')
+    await waitForText('Detaching')
     await waitForNocks(deleteNocks)
   })
 
