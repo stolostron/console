@@ -405,7 +405,7 @@ describe('ClusterSetActionDropdown', () => {
     nockCreate(createSelfsubjectaccessreviews8.req, createSelfsubjectaccessreviews8.res).persist() // create 'SelfSubjectAccessReview'
     nockCreate(createSelfsubjectaccessreviews9.req, createSelfsubjectaccessreviews9.res).persist() // create 'SelfSubjectAccessReview'
     nockCreate(createSelfsubjectaccessreviews10.req, createSelfsubjectaccessreviews10.res).persist() // create 'SelfSubjectAccessReview'
-
+    await waitForText('Actions')
     await clickByText('Actions')
     await clickByText('Edit namespace bindings')
 
@@ -422,6 +422,7 @@ describe('ClusterSetActionDropdown', () => {
     const createNock = nockCreate(createSecondNamespaceBinding)
 
     await clickByText('Save')
+    await waitForText('Saving')
     await waitForNocks([deleteNock, createNock])
   })
 
