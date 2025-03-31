@@ -8,13 +8,15 @@ import {
   NamespaceApiVersion,
   NamespaceKind,
 } from '../../../../../resources'
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { RecoilRoot } from 'recoil'
 import { managedClusterSetBindingsState, namespacesState } from '../../../../../atoms'
 import { nockCreate, nockDelete, nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../../lib/nock-util'
 import { mockManagedClusterSet } from '../../../../../lib/test-metadata'
 import {
+  clickByLabel,
   clickByPlaceholderText,
+  clickByRole,
   clickByText,
   clickDropdownAction,
   typeByText,
@@ -406,11 +408,14 @@ describe('ClusterSetActionDropdown', () => {
     nockCreate(createSelfsubjectaccessreviews9.req, createSelfsubjectaccessreviews9.res).persist() // create 'SelfSubjectAccessReview'
     nockCreate(createSelfsubjectaccessreviews10.req, createSelfsubjectaccessreviews10.res).persist() // create 'SelfSubjectAccessReview'
 
-    await clickDropdownAction('Edit namespace bindings')
+    await clickByLabel('Actions')
+    await clickByRole('menuitem', { name: 'Edit namespace bindings' })
+    await clickByText('Edit namespace bindings')
 
     // verify existing binding is selected
     await waitForText(firstNamespaceBinding.metadata.namespace!)
     await clickByPlaceholderText('Select namespaces')
+    screen.logTestingPlaygroundURL()
 
     // unselect existing binding
     await clickByText(firstNamespaceBinding.metadata.namespace!, 1)
@@ -429,6 +434,9 @@ describe('ClusterSetActionDropdown', () => {
     render(<Component />)
     nockIgnoreRBAC()
     const nock = nockDelete(mockManagedClusterSet)
+    await clickByLabel('Actions')
+    await clickByRole('menuitem', { name: 'Delete cluster set' })
+    await clickByText('Delete cluster set')
 
     await clickDropdownAction('Delete cluster set')
     await typeByText(

@@ -435,9 +435,8 @@ export async function clickRowKebabAction(row: number, actionText: string, table
   // click to open the menu
   userEvent.click(kebabButton)
 
-  // wait for and click the menu item
-  await waitFor(() => screen.getByText(actionText))
-  await clickByText(actionText)
+  // wait for the menu to appear, then find the action item by text and click it
+  await clickByRole('menuitem', { name: actionText })
 }
 
 /**
