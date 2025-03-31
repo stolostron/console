@@ -100,6 +100,15 @@ describe('Clusters Page', () => {
     waitForTestId('add-ons')
   })
 
+  test('should be able to delete cluster using bulk action', async () => {
+    await selectTableRow(1)
+    await clickBulkAction('Destroy clusters')
+    await typeByText('Confirm by typing "confirm" below:', 'confirm')
+    const deleteNocks: Scope[] = [nockDelete(mockManagedCluster0), nockDelete(mockClusterDeployment0)]
+    await clickByText('Destroy')
+    await waitForNocks(deleteNocks)
+  })
+
   test('should be able to delete cluster using row action', async () => {
     await clickRowKebabAction(1, 'Destroy cluster')
     await typeByText(
@@ -109,15 +118,6 @@ describe('Clusters Page', () => {
     const deleteNocks: Scope[] = [nockDelete(mockManagedCluster0), nockDelete(mockClusterDeployment0)]
     await clickByText('Destroy')
     await waitForText('Destroying')
-    await waitForNocks(deleteNocks)
-  })
-
-  test('should be able to delete cluster using bulk action', async () => {
-    await selectTableRow(1)
-    await clickBulkAction('Destroy clusters')
-    await typeByText('Confirm by typing "confirm" below:', 'confirm')
-    const deleteNocks: Scope[] = [nockDelete(mockManagedCluster0), nockDelete(mockClusterDeployment0)]
-    await clickByText('Destroy')
     await waitForNocks(deleteNocks)
   })
 

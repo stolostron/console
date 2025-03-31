@@ -23,6 +23,7 @@ import { rbacCreate, rbacDelete, rbacPatch } from '../../../../../lib/rbac-util'
 import {
   clickByLabel,
   clickByText,
+  clickDropdownAction,
   waitForNock,
   waitForNocks,
   waitForNotText,
@@ -410,9 +411,7 @@ describe('ClusterActionDropdown', () => {
     const nockPatch = nockPatchClusterDeployment('replace', '/spec/powerState', 'Hibernating')
     const cluster = JSON.parse(JSON.stringify(mockCluster))
     render(<Component cluster={cluster} />)
-    await clickByLabel('Actions')
-    await clickByText('Hibernate cluster')
-    await clickByText('Hibernate')
+    await clickDropdownAction('Hibernate cluster')
     await waitForNock(nockPatch)
   })
 
@@ -421,9 +420,7 @@ describe('ClusterActionDropdown', () => {
     const cluster = JSON.parse(JSON.stringify(mockCluster))
     cluster.status = ClusterStatus.hibernating
     render(<Component cluster={cluster} />)
-    await clickByLabel('Actions')
-    await clickByText('Resume cluster')
-    await clickByText('Resume')
+    await clickDropdownAction('Resume cluster')
     await waitForNock(nockPatch)
   })
 

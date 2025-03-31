@@ -439,3 +439,16 @@ export async function clickRowKebabAction(row: number, actionText: string, table
   await waitFor(() => screen.getByText(actionText))
   await clickByText(actionText)
 }
+
+/**
+ * Clicks a dropdown action - works for both table row kebabs and standalone dropdowns
+ */
+export async function clickDropdownAction(actionText: string, buttonLabel = 'Actions') {
+  // Find and click the actions button
+  const actionsButton = screen.getByRole('button', { name: buttonLabel })
+  userEvent.click(actionsButton)
+
+  // Wait for and click the menu item
+  await waitFor(() => screen.getByText(actionText))
+  await clickByText(actionText)
+}
