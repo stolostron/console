@@ -2,10 +2,10 @@
 import { cleanup, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { RecoilRoot } from 'recoil'
-import { fetchRetry } from '../../../resources/utils/resource-request'
+import { fetchRetry } from '../../../../resources/utils/resource-request'
 import { VMActionModal } from './VMActionModal'
 
-jest.mock('../../../resources/utils/resource-request', () => ({
+jest.mock('../../../../resources/utils/resource-request', () => ({
   getBackendUrl: jest.fn(() => ''),
   fetchRetry: jest.fn(({ url }) => {
     if (url === '/apis/subresources.kubevirt.io/v1/namespaces/testVMNamespace/virtualmachines/testVM/noop') {
@@ -33,7 +33,7 @@ describe('VMActionModal', () => {
           item={{
             name: 'testVM',
             namespace: 'testVMNamespace',
-            cluster: 'test-cluster',
+            cluster: 'local-cluster',
             _hubClusterResource: 'true',
           }}
         />
@@ -52,12 +52,7 @@ describe('VMActionModal', () => {
     userEvent.click(confirmButton)
 
     expect(fetchRetry).toHaveBeenCalledWith({
-      data: {
-        body: {},
-        managedCluster: 'test-cluster',
-        vmName: 'testVM',
-        vmNamespace: 'testVMNamespace',
-      },
+      data: {},
       disableRedirectUnauthorizedLogin: true,
       headers: {
         Accept: '*/*',
@@ -100,7 +95,7 @@ describe('VMActionModal', () => {
 
     expect(fetchRetry).toHaveBeenCalledWith({
       data: {
-        body: {},
+        reqBody: {},
         managedCluster: 'test-cluster',
         vmName: 'testVM',
         vmNamespace: 'testVMNamespace',
@@ -113,6 +108,49 @@ describe('VMActionModal', () => {
       retries: 0,
       signal: abortController.signal,
       url: '/virtualmachines/start',
+    })
+  })
+
+  test('renders VMActionModal correctly and successfully calls unpause action on hub vm', async () => {
+    const abortController = new AbortController()
+    const { getByTestId } = render(
+      <RecoilRoot>
+        <VMActionModal
+          open={true}
+          close={() => {}}
+          action={'unpause'}
+          method={'PUT'}
+          item={{
+            name: 'testVM',
+            namespace: 'testVMNamespace',
+            cluster: 'local-cluster',
+            _hubClusterResource: 'true',
+          }}
+        />
+      </RecoilRoot>
+    )
+    await waitFor(() => expect(screen.queryByText('unpause VirtualMachine?')).toBeInTheDocument())
+    await waitFor(() =>
+      expect(
+        screen.queryByText('Are you sure you want to unpause testVM in namespace testVMNamespace?')
+      ).toBeInTheDocument()
+    )
+
+    // verify click launch button
+    const confirmButton = getByTestId('vm-modal-confirm')
+    expect(confirmButton).toBeTruthy()
+    userEvent.click(confirmButton)
+
+    expect(fetchRetry).toHaveBeenCalledWith({
+      data: {},
+      disableRedirectUnauthorizedLogin: true,
+      headers: {
+        Accept: '*/*',
+      },
+      method: 'PUT',
+      retries: 0,
+      signal: abortController.signal,
+      url: '/apis/subresources.kubevirt.io/v1/namespaces/testVMNamespace/virtualmachineinstances/testVM/unpause',
     })
   })
 

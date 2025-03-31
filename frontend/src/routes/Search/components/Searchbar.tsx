@@ -45,7 +45,7 @@ export type DropdownSuggestionsProps = {
 type SearchbarProps = {
   queryString: string
   saveSearchTooltip: string | undefined
-  setSaveSearch: Dispatch<SetStateAction<SavedSearch | undefined>>
+  setSaveSearch?: Dispatch<SetStateAction<SavedSearch | undefined>>
   suggestions: DropdownSuggestionsProps[]
   currentQueryCallback: (query: string) => void
   toggleInfoModal: () => void
@@ -502,6 +502,7 @@ export function Searchbar(props: SearchbarProps) {
           isInline
           variant="plain"
           onClick={() => {
+            // Needs to suppport vm page refresh...
             // If run search is pressed but the query hasn't changed - we are refetching
             if (transformBrowserUrlToSearchString(window.location.search).presetSearchQuery === currentQuery) {
               refetchSearch() // if refetching we dont need to update browser url
@@ -518,7 +519,7 @@ export function Searchbar(props: SearchbarProps) {
         <Button isInline variant="plain" onClick={toggleInfoModal} aria-label={t('Search help modal toggle')}>
           <HelpIcon color={'var(--pf-v5-global--active-color--100)'} />
         </Button>
-        {setSaveSearch && saveSearchTooltip && (
+        {setSaveSearch && (
           <>
             <Divider orientation={{ default: 'vertical' }} />
             <AcmButton

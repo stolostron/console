@@ -14,7 +14,7 @@ import {
 } from '../../Search/components/Modals/DeleteExternalResourceModal'
 import { ClosedDeleteModalProps, IDeleteModalProps } from '../../Search/components/Modals/DeleteResourceModal'
 import { GetUrlSearchParam } from '../../Search/searchDefinitions'
-import { ClosedVMActionModalProps, IVMActionModalProps } from './VMActionModal'
+import { ClosedVMActionModalProps, IVMActionModalProps } from './modals/VMActionModal'
 
 export function isResourceTypeOf(item: any, resourceType: IResourceDefinition | IResourceDefinition[]) {
   const apiVersion = item?.apigroup ? `${item.apigroup}/${item.apiversion}` : item?.apiversion ?? item?.apiVersion
@@ -168,12 +168,7 @@ export function getVirtualMachineRowActions(
         close: () => setVMAction(ClosedVMActionModalProps),
         action: 'Start',
         method: 'PUT',
-        item: {
-          name: item.name,
-          namespace: item.namespace,
-          cluster: item.cluster,
-          _hubClusterResource: item?._hubClusterResource,
-        },
+        item,
       })
     },
     isDisabled: ['Migrating', 'Provisioning', 'Running', 'Starting', 'Stopping', 'Terminating', 'Unknown'].includes(
@@ -189,12 +184,7 @@ export function getVirtualMachineRowActions(
         close: () => setVMAction(ClosedVMActionModalProps),
         action: 'Stop',
         method: 'PUT',
-        item: {
-          name: item.name,
-          namespace: item.namespace,
-          cluster: item.cluster,
-          _hubClusterResource: item?._hubClusterResource,
-        },
+        item,
       })
     },
     isDisabled: ['Provisioning', 'Stopped', 'Stopping', 'Terminating', 'Unknown'].includes(printableStatus),
@@ -208,12 +198,7 @@ export function getVirtualMachineRowActions(
         close: () => setVMAction(ClosedVMActionModalProps),
         action: 'Restart',
         method: 'PUT',
-        item: {
-          name: item.name,
-          namespace: item.namespace,
-          cluster: item.cluster,
-          _hubClusterResource: item?._hubClusterResource,
-        },
+        item,
       })
     },
     isDisabled: ['Migrating', 'Provisioning', 'Stopped', 'Stopping', 'Terminating', 'Unknown'].includes(
@@ -229,12 +214,7 @@ export function getVirtualMachineRowActions(
         close: () => setVMAction(ClosedVMActionModalProps),
         action: 'Pause',
         method: 'PUT',
-        item: {
-          name: item.name,
-          namespace: item.namespace,
-          cluster: item.cluster,
-          _hubClusterResource: item?._hubClusterResource,
-        },
+        item,
       })
     },
     isDisabled: printableStatus !== 'Running',
@@ -248,15 +228,23 @@ export function getVirtualMachineRowActions(
         close: () => setVMAction(ClosedVMActionModalProps),
         action: 'Unpause',
         method: 'PUT',
-        item: {
-          name: item.name,
-          namespace: item.namespace,
-          cluster: item.cluster,
-          _hubClusterResource: item?._hubClusterResource,
-        },
+        item,
       })
     },
     isDisabled: printableStatus !== 'Paused',
+  }
+  const snapshotVM = {
+    id: 'snapshotVM',
+    title: t('Take snapshot'),
+    click: (item: any) => {
+      setVMAction({
+        open: true,
+        close: () => setVMAction(ClosedVMActionModalProps),
+        action: 'Snapshot',
+        method: 'POST',
+        item,
+      })
+    },
   }
   // OCP console vm actions - https://github.com/kubevirt-ui/kubevirt-plugin/blob/519d55ee9489ad7dc1caf81b4306676a95aee96a/src/views/virtualmachines/actions/hooks/useVirtualMachineActionsProvider.ts#L36
   return vmActionsEnabled
@@ -264,6 +252,7 @@ export function getVirtualMachineRowActions(
         printableStatus === 'Stopped' ? startVM : stopVM,
         restartVM,
         printableStatus === 'Paused' ? unpauseVM : pauseVM,
+        snapshotVM,
         { ...editButton, addSeparator: true },
         viewRelatedButton,
         deleteButton,
