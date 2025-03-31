@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import get from 'get-value'
 import { getKubeResources, getHubClusterName } from '../events'
 import {
   Cluster,
@@ -507,39 +508,7 @@ export function logApplicationCountChanges(applicationCache: ApplicationCacheTyp
 interface ResultType {
   [key: string]: IResource
 }
-
-// just like lodash:
-// obj -- the object you're grabbing from
-// path -- a string path into the object to grab (ex: 'metadata.name')
-// dfault -- if nothing is there, the default value to return
 type SelectorType = string | ((item: IResource) => string)
-const keyEx = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function get(obj: any, path: string, dfault?: any): any {
-  // convert path into key array
-  const keys: string[] = []
-  path.replace(keyEx, function (match, number, quote, subString) {
-    keys.push(
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      quote && typeof subString === 'string' ? subString.replace(/\\(\\)?/g, '$1') : number || match
-    )
-    return ''
-  })
-
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  let current = obj
-  for (const key of keys) {
-    if (current && key in current) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-      current = current[key]
-    } else {
-      return dfault // Path not found
-    }
-  }
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  return current
-}
-
 export function keyBy(array: IResource[], selector: SelectorType) {
   const result: ResultType = {}
   for (const item of array) {

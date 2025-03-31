@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import get from 'get-value'
 import { logger } from '../../lib/logger'
 import { ITransformedResource } from '../../lib/pagination'
 import { Cluster, IApplicationSet, IResource } from '../../resources/resource'
@@ -11,7 +12,6 @@ import {
   ApplicationPageChunk,
   transform,
   getApplicationsHelper,
-  get,
 } from './utils'
 
 interface IArgoAppLocalResource extends IResource {
@@ -201,15 +201,18 @@ function getArgoDestinationCluster(
 ////////////// APP SET DATA /////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
 
-const appSetPlacementStr =
-  'clusterDecisionResource.labelSelector.matchLabels["cluster.open-cluster-management.io/placement"]'
-
+const appSetPlacementStr = [
+  'clusterDecisionResource',
+  'labelSelector',
+  'matchLabels',
+  'cluster.open-cluster-management.io/placement',
+]
 export function getAppSetRelatedResources(appSet: IResource, applicationSets: IApplicationSet[]) {
   const appSetsSharingPlacement: string[] = []
   const currentAppSetGenerators = (appSet as IApplicationSet).spec?.generators
   /* istanbul ignore next */
   const currentAppSetPlacement = currentAppSetGenerators
-    ? (get(currentAppSetGenerators[0], appSetPlacementStr, '') as string)
+    ? (get(currentAppSetGenerators[0], appSetPlacementStr, { default: '' }) as string)
     : undefined
 
   /* istanbul ignore if */
@@ -220,7 +223,9 @@ export function getAppSetRelatedResources(appSet: IResource, applicationSets: IA
   applicationSets.forEach((item) => {
     const appSetGenerators = item.spec.generators
     /* istanbul ignore next */
-    const appSetPlacement = appSetGenerators ? (get(appSetGenerators[0], appSetPlacementStr, '') as string) : ''
+    const appSetPlacement = appSetGenerators
+      ? (get(appSetGenerators[0], appSetPlacementStr, { default: '' }) as string)
+      : ''
     /* istanbul ignore if */
     if (
       item.metadata.name !== appSet.metadata?.name ||
