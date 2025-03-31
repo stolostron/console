@@ -187,7 +187,7 @@ class ControlPanelWizard extends React.Component {
     }
 
     const validateNextStep = (activeStep, onNext) => {
-      const { type, mutation, disableEditorOnSuccess, disablePreviousControlsOnSuccess } = activeStep.component
+      const { type, mutation, disableEditorOnSuccess, disablePreviousControlsOnSuccess } = activeStep.control
       switch (type) {
         case 'step':
           {
@@ -243,9 +243,9 @@ class ControlPanelWizard extends React.Component {
                       })
                     })
                 }
-                activeStep.component.isComplete = true
-                delete activeStep.component.mutation
-                delete activeStep.component.nextButtonLabel
+                activeStep.control.isComplete = true
+                delete activeStep.control.mutation
+                delete activeStep.control.nextButtonLabel
                 onNext()
                 this.forceUpdate()
               }
@@ -265,7 +265,7 @@ class ControlPanelWizard extends React.Component {
     const isDisabled = creationStatus === 'DONE' || isWorking
 
     const CustomFooter = (activeStep, goToNextStep, goToPrevStep, close) => {
-            return (
+      return (
         <WizardFooterWrapper>
           <ActionList>
             <ActionListGroup>
@@ -275,15 +275,21 @@ class ControlPanelWizard extends React.Component {
                   isDisabled={isDisabled}
                   variant="primary"
                   spinnerAriaValueText={isWorking ? i18n('Processing') : undefined}
-                  onClick={!isWorking ? validateNextStep.bind(null, activeStep, goToNextStep) : noop}
+                  onClick={() => {
+                    onMove()
+                    !isWorking ? validateNextStep.bind(null, activeStep, goToNextStep) : noop
+                  }}
                 >
-                  {processingLabel || activeStep.component.nextButtonLabel || i18n('Next')}
+                  {processingLabel || activeStep.control.nextButtonLabel || i18n('Next')}
                 </Button>
               </ActionListItem>
               <ActionListItem>
                 <Button
                   variant="secondary"
-                  onClick={activeStep.index === 0 && backButtonOverride ? backButtonOverride : goToPrevStep}
+                  onClick={() => {
+                    onMove()
+                    activeStep.index === 0 && backButtonOverride ? backButtonOverride : goToPrevStep
+                  }}
                   isAriaDisabled={activeStep.index === 0 && !backButtonOverride}
                 >
                   {i18n('Back')}
@@ -297,7 +303,7 @@ class ControlPanelWizard extends React.Component {
             </ActionListGroup>
           </ActionList>
         </WizardFooterWrapper>
-    )
+      )
     }
 
     let startAtStep = get(steps[0], 'control.startAtStep')
@@ -306,6 +312,7 @@ class ControlPanelWizard extends React.Component {
     return (
       <Wizard
         navAriaLabel={i18n('Create wizard steps')}
+        title={i18n('Create wizard content')}
         height={'100%'}
         onSave={onSave}
         onClose={onClose}
