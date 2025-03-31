@@ -355,17 +355,6 @@ export async function clickBulkAction(text: string) {
   await clickByText(text)
 }
 
-export async function clickRowAction(row: number, text: string, table = 'Simple Table') {
-  await waitForRole('grid', { name: table })
-  const grid = screen.getByRole('grid', { name: table })
-  const actionButtons = within(grid).getAllByRole('button', { name: 'Actions' })
-
-  // click the action button for the specified row (row is 1-based, so we subtract 1)
-  actionButtons[row - 1].click()
-  await waitFor(() => screen.getByText(text))
-  await clickByText(text)
-}
-
 export async function clickRowActionButton(row: number, table = 'Simple Table') {
   await waitForRole('grid', { name: table })
   const grid = screen.getByRole('grid', { name: table })
@@ -424,15 +413,29 @@ export const getMultipleMocks = (obj: unknown, repeat: number) => {
 }
 
 /**
- * Clicks an action in the kebab menu for a specific cluster set
- * @param clusterSetName The name of the cluster set (e.g., "default", "global")
- * @param actionText The text of the action to click
+ * Clicks a kebab menu action for a table row (PF5 compatible)
+ * @param row Row number (1-based)
+ * @param actionText Text of the menu item to click
+ * @param table Optional table name, defaults to 'Simple Table'
  */
-export async function clickRowKebabAction(clusterSetName: string, actionText: string) {
-  const kebabButtonId = `${clusterSetName}-actions`
-  await waitForText('Actions')
-  const kebabButton = document.getElementById(kebabButtonId)
+export async function clickRowKebabAction(row: number, actionText: string, table = 'Simple Table') {
+  //  get table
+  await waitForRole('grid', { name: table })
+  const grid = screen.getByRole('grid', { name: table })
 
-  ;(kebabButton as HTMLElement).click()
+  // get all the rows including header
+  const rows = within(grid).getAllByRole('row')
+
+  // target row (accounting for header row)
+  const targetRow = rows[row]
+
+  // finds the kebab button in the row
+  const kebabButton = within(targetRow).getByRole('button', { name: 'Actions' })
+
+  // click to open the menu
+  userEvent.click(kebabButton)
+
+  // wait for and click the menu item
+  await waitFor(() => screen.getByText(actionText))
   await clickByText(actionText)
 }

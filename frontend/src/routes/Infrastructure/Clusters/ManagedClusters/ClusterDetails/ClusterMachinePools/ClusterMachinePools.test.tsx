@@ -5,7 +5,13 @@ import { Scope } from 'nock/types'
 import { RecoilRoot } from 'recoil'
 import { machinePoolsState } from '../../../../../../atoms'
 import { nockDelete, nockIgnoreApiPaths, nockIgnoreRBAC, nockPatch } from '../../../../../../lib/nock-util'
-import { clickByLabel, clickByText, clickRowAction, waitForNocks, waitForText } from '../../../../../../lib/test-util'
+import {
+  clickByLabel,
+  clickByText,
+  clickRowKebabAction,
+  waitForNocks,
+  waitForText,
+} from '../../../../../../lib/test-util'
 import { ClusterDetailsContext } from '../ClusterDetails'
 import { MachinePoolsPageContent } from './ClusterMachinePools'
 import {
@@ -42,7 +48,7 @@ describe('ClusterMachinePools', () => {
   it('should be able to manually scale a machine pool', async () => {
     await waitForText(mockMachinePoolManual.metadata.name!)
     await waitForText('nova-default') // Check OpenStack flavor displays as Instance type
-    await clickRowAction(2, 'Scale machine pool')
+    await clickRowKebabAction(2, 'Scale machine pool')
     await clickByLabel('Plus')
     const patchNocks: Scope[] = [
       nockPatch(mockMachinePoolManual, [
@@ -56,7 +62,7 @@ describe('ClusterMachinePools', () => {
     await waitForText(mockMachinePoolManual.metadata.name!)
     await waitForText('m4.xlarge') // Check AWS type displays as Instance type
 
-    await clickRowAction(2, 'Enable autoscale')
+    await clickRowKebabAction(2, 'Enable autoscale')
     await clickByLabel('Plus', 1)
     const patchNocks: Scope[] = [
       nockPatch(mockMachinePoolManual, [
@@ -76,7 +82,7 @@ describe('ClusterMachinePools', () => {
   })
   it('should be able to edit autoscaling for a machine pool', async () => {
     await waitForText(mockMachinePoolAuto.metadata.name!)
-    await clickRowAction(1, 'Edit autoscale')
+    await clickRowKebabAction(1, 'Edit autoscale')
     await clickByLabel('Plus', 1)
     const patchNocks: Scope[] = [
       nockPatch(mockMachinePoolAuto, [
@@ -96,7 +102,7 @@ describe('ClusterMachinePools', () => {
   })
   it('should be able to disable autoscaling for a machine pool', async () => {
     await waitForText(mockMachinePoolAuto.metadata.name!)
-    await clickRowAction(1, 'Disable autoscale')
+    await clickRowKebabAction(1, 'Disable autoscale')
     const patchNocks: Scope[] = [
       nockPatch(mockMachinePoolAuto, [
         { op: 'remove', path: '/spec/autoscaling' },
@@ -115,7 +121,7 @@ describe('ClusterMachinePools', () => {
     await waitForText(mockMachinePoolManual.metadata.name!)
     await waitForText(mockMachinePoolOther.metadata.name!)
     await waitForText('high_performance') // Check RHV vmType displays as Instance type
-    await clickRowAction(1, 'Delete machine pool')
+    await clickRowKebabAction(1, 'Delete machine pool')
     // await clickByText('Delete machine pool')
 
     await waitForText('Permanently delete machine pools?')
