@@ -81,7 +81,7 @@ export function ClusterSetActionDropdown(props: { managedClusterSet: ManagedClus
             isValidError: errorIsNot([ResourceErrorCode.NotFound]),
           })
         },
-        isAriaDisabled: true,
+        isAriaDisabled: false,
         rbac: [rbacDelete(ManagedClusterSetDefinition, undefined, props.managedClusterSet.metadata.name)],
       },
     ]

@@ -8,7 +8,7 @@ import {
   NamespaceApiVersion,
   NamespaceKind,
 } from '../../../../../resources'
-import { render, screen } from '@testing-library/react'
+import { render } from '@testing-library/react'
 import { RecoilRoot } from 'recoil'
 import { managedClusterSetBindingsState, namespacesState } from '../../../../../atoms'
 import { nockCreate, nockDelete, nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../../lib/nock-util'
@@ -18,7 +18,6 @@ import {
   clickByPlaceholderText,
   clickByRole,
   clickByText,
-  clickDropdownAction,
   typeByText,
   waitForNock,
   waitForNocks,
@@ -415,7 +414,6 @@ describe('ClusterSetActionDropdown', () => {
     // verify existing binding is selected
     await waitForText(firstNamespaceBinding.metadata.namespace!)
     await clickByPlaceholderText('Select namespaces')
-    screen.logTestingPlaygroundURL()
 
     // unselect existing binding
     await clickByText(firstNamespaceBinding.metadata.namespace!, 1)
@@ -435,14 +433,14 @@ describe('ClusterSetActionDropdown', () => {
     nockIgnoreRBAC()
     const nock = nockDelete(mockManagedClusterSet)
     await clickByLabel('Actions')
-    await clickByRole('menuitem', { name: 'Delete cluster set' })
+
     await clickByText('Delete cluster set')
 
-    await clickDropdownAction('Delete cluster set')
     await typeByText(
       `Confirm by typing "${mockManagedClusterSet.metadata.name!}" below:`,
       mockManagedClusterSet.metadata.name!
     )
+
     await clickByText('Delete')
     await waitForNock(nock)
   })
