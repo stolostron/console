@@ -265,7 +265,7 @@ class ControlPanelWizard extends React.Component {
     const isDisabled = creationStatus === 'DONE' || isWorking
 
     const CustomFooter = (activeStep, goToNextStep, goToPrevStep, close) => {
-      return (
+            return (
         <WizardFooterWrapper>
           <ActionList>
             <ActionListGroup>
@@ -297,7 +297,7 @@ class ControlPanelWizard extends React.Component {
             </ActionListGroup>
           </ActionList>
         </WizardFooterWrapper>
-      )
+    )
     }
 
     let startAtStep = get(steps[0], 'control.startAtStep')
@@ -311,16 +311,30 @@ class ControlPanelWizard extends React.Component {
         onClose={onClose}
         footer={CustomFooter}
       >
-        {steps.map(({ id, name, component }) => {
-          return (
-            <WizardStep id={id} key={id} name={name}>
-              {component}
-            </WizardStep>
-          )
-        })}
+        {steps.map((step) => renderStep(step))}
       </Wizard>
     )
   }
+}
+
+function renderStep(step) {
+  const { id, name, component, steps } = step
+  return steps ? (
+    <WizardStep
+      id={id}
+      key={id}
+      name={name}
+      steps={steps.map(({ id, name, component }) => (
+        <WizardStep id={id} key={id} name={name}>
+          {component}
+        </WizardStep>
+      ))}
+    />
+  ) : (
+    <WizardStep id={id} key={id} name={name}>
+      {component}
+    </WizardStep>
+  )
 }
 
 ControlPanelWizard.propTypes = {
