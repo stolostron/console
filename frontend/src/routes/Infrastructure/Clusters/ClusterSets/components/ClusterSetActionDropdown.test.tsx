@@ -430,7 +430,7 @@ describe('ClusterSetActionDropdown', () => {
     nockIgnoreRBAC()
     const nock = nockDelete(mockManagedClusterSet)
 
-    await clickRowKebabAction(mockManagedClusterSet.metadata.name!, 'Delete cluster set')
+    await clickRowKebabAction(1, 'Delete cluster set')
     await typeByText(
       `Confirm by typing "${mockManagedClusterSet.metadata.name!}" below:`,
       mockManagedClusterSet.metadata.name!

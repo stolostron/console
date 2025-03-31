@@ -101,7 +101,7 @@ describe('Clusters Page', () => {
   })
 
   test('should be able to delete cluster using row action', async () => {
-    await clickRowKebabAction(mockManagedCluster0.metadata!.name!, 'Destroy cluster')
+    await clickRowKebabAction(1, 'Destroy cluster')
     await typeByText(
       `Confirm by typing "${mockManagedCluster0.metadata!.name!}" below:`,
       mockManagedCluster0.metadata!.name!
@@ -122,7 +122,7 @@ describe('Clusters Page', () => {
   })
 
   test('should be able to detach cluster using row action', async () => {
-    await clickRowKebabAction(mockManagedCluster0.metadata!.name!, 'Detach cluster')
+    await clickRowKebabAction(1, 'Detach cluster')
     await typeByText(
       `Confirm by typing "${mockManagedCluster0.metadata!.name!}" below:`,
       mockManagedCluster0.metadata!.name!
