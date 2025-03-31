@@ -276,8 +276,11 @@ class ControlPanelWizard extends React.Component {
                   variant="primary"
                   spinnerAriaValueText={isWorking ? i18n('Processing') : undefined}
                   onClick={() => {
-                    onMove()
-                    !isWorking ? validateNextStep.bind(null, activeStep, goToNextStep) : noop
+                    let activeStepIndex = steps.findIndex((step) => step.id == activeStep.id)
+                    onMove(activeStep, activeStep.id > 0 ? steps[activeStepIndex - 1] : null)
+                    if (!isWorking) {
+                      validateNextStep(activeStep, goToNextStep)
+                    }
                   }}
                 >
                   {processingLabel || activeStep.control.nextButtonLabel || i18n('Next')}
@@ -287,8 +290,11 @@ class ControlPanelWizard extends React.Component {
                 <Button
                   variant="secondary"
                   onClick={() => {
-                    onMove()
-                    activeStep.index === 0 && backButtonOverride ? backButtonOverride : goToPrevStep
+                    let activeStepIndex = steps.findIndex((step) => step.id == activeStep.id)
+                    onMove(activeStep, activeStep.id > 0 ? steps[activeStepIndex - 1] : null)
+                    if (activeStep.index === 0 && backButtonOverride) {
+                      backButtonOverride()
+                    } else goToPrevStep()
                   }}
                   isAriaDisabled={activeStep.index === 0 && !backButtonOverride}
                 >
