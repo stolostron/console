@@ -145,14 +145,14 @@ export function getApplicationName(application: IApplicationResource, search: st
           search: `?apiVersion=${apiVersion}${clusterQuery}`,
         }}
       >
-        <HighlightSearchText text={application.metadata?.name} searchText={search} />
+        <HighlightSearchText text={application.metadata?.name} searchText={search} isTruncate />
       </Link>
     </span>
   )
 }
 
 export function getApplicationNamespace(resource: IApplicationResource, search: string) {
-  return <HighlightSearchText text={getAppNamespace(resource)} searchText={search} />
+  return <HighlightSearchText text={getAppNamespace(resource)} searchText={search} isTruncate />
 }
 
 // Map resource kind to type column
@@ -324,40 +324,6 @@ export default function ApplicationsOverview() {
 
   const [pluginModal, setPluginModal] = useState<JSX.Element>()
 
-  const getTimeWindow = useCallback(
-    (app: IResource) => {
-      if (!(app.apiVersion === ApplicationApiVersion && app.kind === ApplicationKind)) {
-        return ''
-      }
-
-      const subAnnotations = getSubscriptionsFromAnnotation(app)
-      let hasTimeWindow = false
-
-      for (let i = 0; i < subAnnotations.length; i++) {
-        if (isLocalSubscription(subAnnotations[i], subAnnotations)) {
-          // skip local sub
-          continue
-        }
-        const subDetails = subAnnotations[i].split('/')
-
-        for (let j = 0; j < subscriptions.length; j++) {
-          if (
-            subscriptions[j].metadata.name === subDetails[1] &&
-            subscriptions[j].metadata.namespace === subDetails[0]
-          ) {
-            if (subscriptions[j].spec.timewindow) {
-              hasTimeWindow = true
-              break
-            }
-          }
-        }
-      }
-
-      return hasTimeWindow ? t('Yes') : ''
-    },
-    [subscriptions, t]
-  )
-
   // Cache cell text for sorting and searching
   const generateTransformData = useCallback(
     (tableItem: IResource) => {
@@ -377,7 +343,6 @@ export default function ApplicationsOverview() {
         resourceMap[repo.type] = repo.type
       })
 
-      const timeWindow = getTimeWindow(tableItem)
       const transformedNamespace = getAppNamespace(tableItem)
       const transformedObject = {
         transformed: {
@@ -385,7 +350,6 @@ export default function ApplicationsOverview() {
           clusterList: clusterList,
           resourceText: resourceText,
           createdText: getResourceTimestamp(tableItem, 'metadata.creationTimestamp'),
-          timeWindow: timeWindow,
           namespace: transformedNamespace,
           healthStatus: getAppHealthStatus(tableItem),
           syncStatus: getAppSyncStatus(tableItem),
@@ -395,7 +359,7 @@ export default function ApplicationsOverview() {
       // Cannot add properties directly to objects in typescript
       return { ...tableItem, ...transformedObject }
     },
-    [channels, getTimeWindow, localCluster, subscriptions, t]
+    [channels, localCluster, subscriptions, t]
   )
 
   const resultView = useAggregate(SupportedAggregate.applications, requestedView)
@@ -569,18 +533,6 @@ export default function ApplicationsOverview() {
           return get(resource, 'status.sync.status', '')
         },
       },
-      {
-        header: t('Time window'),
-        cell: (resource) => {
-          return getTimeWindow(resource)
-        },
-        tooltip: t('Indicates if updates to any of the application resources are subject to a deployment time window.'),
-        sort: 'transformed.timeWindow',
-        search: 'transformed.timeWindow',
-        exportContent: (resource) => {
-          return getTimeWindow(resource)
-        },
-      },
       ...extensionColumns,
       {
         header: t('Created'),
@@ -599,7 +551,7 @@ export default function ApplicationsOverview() {
         },
       },
     ],
-    [t, extensionColumns, systemAppNSPrefixes, subscriptions, localCluster, channels, getTimeWindow]
+    [t, extensionColumns, systemAppNSPrefixes, subscriptions, localCluster, channels]
   )
   const filters = useMemo(
     () => [
