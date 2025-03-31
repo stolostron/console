@@ -325,7 +325,7 @@ exports[`DetailsForm it renders 1`] = `
               class=""
               value="ocp-release48"
             >
-              OpenShift 4.8.15
+              OpenShift 4.8.15-x86_64
             </option>
           </select>
           <span

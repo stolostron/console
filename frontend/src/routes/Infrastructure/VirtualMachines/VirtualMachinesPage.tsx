@@ -30,6 +30,7 @@ import {
   AcmPageContent,
   AcmPageHeader,
   AcmTable,
+  AcmTablePaginationContextProvider,
   IAcmTableColumn,
 } from '../../../ui-components'
 import {
@@ -59,12 +60,12 @@ import {
 import { useSearchDefinitions } from '../../Search/searchDefinitions'
 import { ISearchResult } from '../../Search/SearchResults/utils'
 import { useAllClusters } from '../Clusters/ManagedClusters/components/useAllClusters'
+import { ClosedVMActionModalProps, IVMActionModalProps, VMActionModal } from './modals/VMActionModal'
 import {
   getVirtualMachineColumnExtensions,
   getVirtualMachineRowActionExtensions,
   getVirtualMachineRowActions,
 } from './utils'
-import { ClosedVMActionModalProps, IVMActionModalProps, VMActionModal } from './VMActionModal'
 
 function VirtualMachineTable(props: Readonly<{ searchResultItems: ISearchResult[] | undefined }>) {
   const { searchResultItems } = props
@@ -123,12 +124,7 @@ function VirtualMachineTable(props: Readonly<{ searchResultItems: ISearchResult[
         close={VMAction.close}
         action={VMAction.action}
         method={VMAction.method}
-        item={{
-          name: VMAction.item.name,
-          namespace: VMAction.item.namespace,
-          cluster: VMAction.item.cluster,
-          _hubClusterResource: VMAction.item?._hubClusterResource,
-        }}
+        item={VMAction.item}
       />
       <DeleteResourceModal
         open={deleteResource.open}
@@ -143,31 +139,33 @@ function VirtualMachineTable(props: Readonly<{ searchResultItems: ISearchResult[
         resource={deleteExternalResource.resource}
         hubCluster={deleteExternalResource.hubCluster}
       />
-      <AcmTable
-        id="virtualMachinesTable"
-        items={searchResultItems}
-        columns={columns}
-        rowActionResolver={rowActionResolver}
-        keyFn={(item: any) => item._uid.toString()}
-        emptyState={
-          <AcmEmptyState
-            key="virtual-machine-empty-state"
-            title={t('No VirtualMachines found')}
-            action={
-              <AcmButton
-                variant={'link'}
-                component={TextVariants.a}
-                href={`${OCP_DOC}/${ocpVersion}/html-single/virtualization/about#about-virt`}
-                target="_blank"
-              >
-                {t('Learn more about OpenShift Virtualization')}
-                <ExternalLinkAltIcon style={{ marginLeft: '8px' }} />
-              </AcmButton>
-            }
-          />
-        }
-        showColumnManagement
-      ></AcmTable>
+      <AcmTablePaginationContextProvider localStorageKey="vm-page-table">
+        <AcmTable
+          id="virtualMachinesTable"
+          items={searchResultItems}
+          columns={columns}
+          rowActionResolver={rowActionResolver}
+          keyFn={(item: any) => item._uid.toString()}
+          emptyState={
+            <AcmEmptyState
+              key="virtual-machine-empty-state"
+              title={t('No VirtualMachines found')}
+              action={
+                <AcmButton
+                  variant={'link'}
+                  component={TextVariants.a}
+                  href={`${OCP_DOC}/${ocpVersion}/html-single/virtualization/about#about-virt`}
+                  target="_blank"
+                >
+                  {t('Learn more about OpenShift Virtualization')}
+                  <ExternalLinkAltIcon style={{ marginLeft: '8px' }} />
+                </AcmButton>
+              }
+            />
+          }
+          showColumManagement
+        />
+      </AcmTablePaginationContextProvider>
     </Fragment>
   )
 }

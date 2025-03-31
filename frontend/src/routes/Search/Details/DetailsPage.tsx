@@ -14,12 +14,12 @@ import { fireManagedClusterView } from '../../../resources/managedclusterview'
 import { getResource } from '../../../resources/utils/resource-request'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../ui-components'
-import { isResourceTypeOf } from '../../Infrastructure/VirtualMachines/utils'
 import {
   ClosedVMActionModalProps,
   IVMActionModalProps,
   VMActionModal,
-} from '../../Infrastructure/VirtualMachines/VMActionModal'
+} from '../../Infrastructure/VirtualMachines/modals/VMActionModal'
+import { isResourceTypeOf } from '../../Infrastructure/VirtualMachines/utils'
 import { DeleteResourceModal } from '../components/Modals/DeleteResourceModal'
 
 export type SearchDetailsContext = {
@@ -180,6 +180,7 @@ export default function DetailsPage() {
         ...[
           printableStatus === 'Stopped'
             ? {
+                displayText: t('Start VirtualMachine'),
                 action: 'Start',
                 method: 'PUT',
                 hubPath: `/apis/subresources.kubevirt.io/v1/namespaces/${namespace}/virtualmachines/${name}/start`,
@@ -195,6 +196,7 @@ export default function DetailsPage() {
                 ].includes(printableStatus),
               }
             : {
+                displayText: t('Stop VirtualMachine'),
                 action: 'Stop',
                 method: 'PUT',
                 hubPath: `/apis/subresources.kubevirt.io/v1/namespaces/${namespace}/virtualmachines/${name}/stop`,
@@ -202,6 +204,7 @@ export default function DetailsPage() {
                 isDisabled: ['Provisioning', 'Stopped', 'Stopping', 'Terminating', 'Unknown'].includes(printableStatus),
               },
           {
+            displayText: t('Restart VirtualMachine'),
             action: 'Restart',
             method: 'PUT',
             hubPath: `/apis/subresources.kubevirt.io/v1/namespaces/${namespace}/virtualmachines/${name}/restart`,
@@ -212,6 +215,7 @@ export default function DetailsPage() {
           },
           printableStatus === 'Paused'
             ? {
+                displayText: t('Unpause VirtualMachine'),
                 action: 'Unpause',
                 method: 'PUT',
                 hubPath: `/apis/subresources.kubevirt.io/v1/namespaces/${namespace}/virtualmachineinstances/${name}/unpause`,
@@ -219,14 +223,24 @@ export default function DetailsPage() {
                 isDisabled: printableStatus !== 'Paused',
               }
             : {
+                displayText: t('Pause VirtualMachine'),
                 action: 'Pause',
                 method: 'PUT',
                 hubPath: `/apis/subresources.kubevirt.io/v1/namespaces/${namespace}/virtualmachineinstances/${name}/pause`,
                 managedPath: '/virtualmachineinstances/pause',
                 isDisabled: printableStatus !== 'Running',
               },
+          {
+            displayText: t('Take snapshot'),
+            action: 'Snapshot',
+            method: 'POST',
+            hubPath: `/apis/snapshot.kubevirt.io/v1beta1/namespaces/${namespace}/virtualmachinesnapshots`,
+            managedPath: '/virtualmachinesnapshots',
+            isDisabled: false,
+          },
         ].map(
           (action: {
+            displayText: string
             action: string
             method: any // 'PUT' | 'GET' | 'POST' | 'PATCH' | 'DELETE'
             hubPath: string
@@ -243,16 +257,18 @@ export default function DetailsPage() {
                   action: action.action,
                   method: action.method,
                   item: {
+                    cluster,
+                    kind,
+                    apiversion,
                     name,
                     namespace,
-                    cluster,
                     _hubClusterResource: isHubClusterResource ? 'true' : undefined,
                   },
                 })
               }
               isDisabled={action.isDisabled}
             >
-              {t(`{{action}} {{resourceKind}}`, { action: action.action, resourceKind: kind })}
+              {action.displayText}
             </DropdownItem>
           )
         ),
@@ -287,7 +303,19 @@ export default function DetailsPage() {
       })
     }
     return actions
-  }, [resource, cluster, kind, name, namespace, vmActionsEnabled, navigate, t, acmExtensions, isHubClusterResource])
+  }, [
+    apiversion,
+    resource,
+    cluster,
+    kind,
+    name,
+    namespace,
+    vmActionsEnabled,
+    navigate,
+    t,
+    acmExtensions,
+    isHubClusterResource,
+  ])
 
   return (
     <Fragment>
@@ -364,12 +392,7 @@ export default function DetailsPage() {
           close={VMAction.close}
           action={VMAction.action}
           method={VMAction.method}
-          item={{
-            name: VMAction.item.name,
-            namespace: VMAction.item.namespace,
-            cluster: VMAction.item.cluster,
-            _hubClusterResource: VMAction.item?._hubClusterResource,
-          }}
+          item={VMAction.item}
         />
         <Outlet context={searchDetailsContext} />
       </AcmPage>
