@@ -163,7 +163,7 @@ function VirtualMachineTable(props: Readonly<{ searchResultItems: ISearchResult[
               }
             />
           }
-          showColumManagement
+          showColumnManagement
         />
       </AcmTablePaginationContextProvider>
     </Fragment>
