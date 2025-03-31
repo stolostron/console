@@ -153,7 +153,7 @@ export async function pollImportYamlSecret(clusterName: string): Promise<Secret>
 }
 
 function getImportCommand(importSecret: Secret, t: TFunction, oc?: boolean) {
-  const klusterletCRD = importSecret.data?.['crdsv1.yaml']
+  const klusterletCRD = importSecret.data?.['crds.yaml']
   const importYaml = importSecret.data?.['import.yaml']
   const alreadyImported = t('import.command.alreadyimported')
   const alreadyImported64 = Buffer.from(alreadyImported).toString('base64')
