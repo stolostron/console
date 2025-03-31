@@ -14,7 +14,7 @@ type RbacDropdownProps<T = unknown> = Pick<
   item: T
 }
 
-type Actions<T = unknown> = Omit<AcmDropdownItems, 'click' | 'flyoutMenu'> & {
+type Actions<T = unknown> = Omit<AcmDropdownItems, 'flyoutMenu'> & {
   id: string
   text: React.ReactNode
   isAriaDisabled?: boolean
@@ -142,23 +142,11 @@ export function RbacDropdown<T = unknown>(props: RbacDropdownProps<T>) {
     }
   }
 
-  // transform RBAC-checked actions into dropdown items while preserving nested menu structure
-  const transformToDropdownItems = useCallback((actionItems: Actions<T>[]): AcmDropdownItems[] => {
-    return actionItems.map((action) => ({
-      ...action,
-      flyoutMenu: action.flyoutMenu ? transformToDropdownItems(action.flyoutMenu) : undefined,
-    }))
-  }, [])
-
-  const dropdownItems = useMemo(() => transformToDropdownItems(actions), [actions, transformToDropdownItems])
-
-  // use the transformed dropdown items to create the dropdown component
-
   return (
     <AcmDropdown
       id={props.id}
       onSelect={onSelect}
-      dropdownItems={dropdownItems}
+      dropdownItems={actions}
       isKebab={props.isKebab}
       isPlain={true}
       text={props.text}
