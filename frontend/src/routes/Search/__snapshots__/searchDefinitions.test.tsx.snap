@@ -2627,7 +2627,6 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-virtualma
     "id": "name",
     "isDefault": true,
     "order": 1,
-    "search": [Function],
     "sort": "name",
   },
   {
@@ -2648,7 +2647,6 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-virtualma
     "isDefault": false,
     "isFirstVisitChecked": true,
     "order": 3,
-    "search": [Function],
     "sort": "cluster",
   },
   {
@@ -2763,6 +2761,23 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-virtualma
     "isFirstVisitChecked": false,
     "order": 14,
     "sort": "vmSize",
+  },
+  {
+    "cell": <AcmLabels
+      collapse={[]}
+      labels={
+        [
+          "testLabel=label",
+          "testLabel1=label1",
+        ]
+      }
+    />,
+    "header": "Labels",
+    "id": "labels",
+    "isDefault": false,
+    "isFirstVisitChecked": false,
+    "order": 15,
+    "sort": "label",
   },
 ]
 `;

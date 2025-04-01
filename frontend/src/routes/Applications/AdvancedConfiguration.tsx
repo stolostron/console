@@ -811,7 +811,7 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
           <TerminologyCard
             title={<DeprecatedTitle title={t('Channels')} />}
             description={t(
-              'Channels point to repositories where Kubernetes resources are stored, such as Git, Helm chart, or object storage repositories, or Namespaces on the local cluster. Channels support multiple subscriptions from multiple targets.'
+              'Channels point to repositories where Kubernetes resources are stored, such as Git, Helm chart, or object storage repositories. Channels support multiple subscriptions from multiple targets.'
             )}
           />
           <TerminologyCard

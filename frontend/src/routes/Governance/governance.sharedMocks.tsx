@@ -111,6 +111,11 @@ const rootPolicy: Policy = {
     name: 'policy-set-with-1-placement-policy',
     namespace: 'test',
     uid: '20761783-5b48-4f9c-b12c-d5a6b2fac4b5',
+    annotations: {
+      'policy.open-cluster-management.io/categories': 'CM Configuration Management',
+      'policy.open-cluster-management.io/controls': 'CM-2 Baseline Configuration',
+      'policy.open-cluster-management.io/standards': 'NIST SP 800-53',
+    },
   },
   spec: {
     disabled: false,
@@ -790,9 +795,10 @@ export const mockSubscriptionOperator: SubscriptionOperator = {
   apiVersion: SubscriptionOperatorApiVersion,
   kind: SubscriptionOperatorKind,
   metadata: {
-    name: 'ansible-automation-platform-operator',
+    name: 'aap',
     namespace: 'ansible-automation-platform-operator',
   },
+  spec: { name: 'ansible-automation-platform-operator' },
   status: {
     conditions: [
       {
@@ -804,7 +810,6 @@ export const mockSubscriptionOperator: SubscriptionOperator = {
       },
     ],
   },
-  spec: {},
 }
 
 export const mockPolicyAutomation: PolicyAutomation = {

@@ -10,12 +10,13 @@ import {
   StackItem,
 } from '@patternfly/react-core'
 import _ from 'lodash'
-import { useContext, useMemo } from 'react'
+import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
-import { AcmLoadingPage, AcmTable, AcmToastContext, compareStrings } from '../../../ui-components'
+import { AcmLoadingPage, AcmTable, compareStrings } from '../../../ui-components'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
+import { IVMActionModalProps } from '../../Infrastructure/VirtualMachines/modals/VMActionModal'
 import { getVirtualMachineRowActions } from '../../Infrastructure/VirtualMachines/utils'
 import { IDeleteExternalResourceModalProps } from '../components/Modals/DeleteExternalResourceModal'
 import { IDeleteModalProps } from '../components/Modals/DeleteResourceModal'
@@ -31,13 +32,14 @@ export function RenderItemContent(
     relatedKind: string
     setDeleteResource: React.Dispatch<React.SetStateAction<IDeleteModalProps>>
     setDeleteExternalResource: React.Dispatch<React.SetStateAction<IDeleteExternalResourceModalProps>>
+    setVMAction: React.Dispatch<React.SetStateAction<IVMActionModalProps>>
     hasFederatedError: boolean
   }>
 ) {
-  const { currentQuery, relatedKind, setDeleteResource, setDeleteExternalResource, hasFederatedError } = props
+  const { currentQuery, relatedKind, setDeleteResource, setDeleteExternalResource, setVMAction, hasFederatedError } =
+    props
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const toast = useContext(AcmToastContext)
   const allClusters = useAllClusters(true)
   const { settingsState } = useSharedAtoms()
   const vmActionsEnabled = useRecoilValue(settingsState)?.VIRTUAL_MACHINE_ACTIONS === 'enabled'
@@ -89,8 +91,8 @@ export function RenderItemContent(
                 allClusters,
                 setDeleteResource,
                 setDeleteExternalResource,
+                setVMAction,
                 vmActionsEnabled,
-                toast,
                 navigate,
                 t
               )
@@ -107,10 +109,17 @@ export default function RelatedResults(
     setSelectedRelatedKinds: React.Dispatch<React.SetStateAction<string[]>>
     setDeleteResource: React.Dispatch<React.SetStateAction<IDeleteModalProps>>
     setDeleteExternalResource: React.Dispatch<React.SetStateAction<IDeleteExternalResourceModalProps>>
+    setVMAction: React.Dispatch<React.SetStateAction<IVMActionModalProps>>
   }>
 ) {
-  const { currentQuery, selectedRelatedKinds, setSelectedRelatedKinds, setDeleteResource, setDeleteExternalResource } =
-    props
+  const {
+    currentQuery,
+    selectedRelatedKinds,
+    setSelectedRelatedKinds,
+    setDeleteResource,
+    setDeleteExternalResource,
+    setVMAction,
+  } = props
   const { t } = useTranslation()
   const { useSearchResultLimit, isGlobalHubState, settingsState } = useSharedAtoms()
   const isGlobalHub = useRecoilValue(isGlobalHubState)
@@ -217,6 +226,7 @@ export default function RelatedResults(
                   relatedKind={currentKind}
                   setDeleteResource={setDeleteResource}
                   setDeleteExternalResource={setDeleteExternalResource}
+                  setVMAction={setVMAction}
                   hasFederatedError={hasFederatedError}
                 />
               )}

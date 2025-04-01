@@ -91,14 +91,14 @@ describe('Edit AI Cluster', () => {
 
     await waitForText('ai:Installation type')
 
-    await waitForText('ai:Cluster details')
+    await waitForText('ai:Cluster details', true)
     await waitForText('ai:Cluster hosts')
     await waitForText('ai:Networking')
     await waitForText('ai:Review and create')
 
     await waitForTestId('form-static-openshiftVersion-field')
 
-    await waitForText('ai:OpenShift 4.8.15')
+    await waitForText('ai:OpenShift 4.8.15-x86_64')
 
     await clickByText('ai:Next')
     await waitForNocks(nocks)

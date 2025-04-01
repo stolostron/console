@@ -3,8 +3,9 @@ import { useCallback } from 'react'
 import { patchResource } from '../../../../../../resources/utils'
 import {
   useClusterDeployment,
-  onSaveAgent,
+  onChangeHostname,
   onSetInstallationDiskId,
+  onChangeBMHHostname,
 } from '../../CreateCluster/components/assisted-installer/utils'
 import { useSharedAtoms, useRecoilValue } from '../../../../../../shared-recoil'
 import { IResource } from '../../../../../../resources'
@@ -17,8 +18,9 @@ type ScaleUpDialogProps = {
 }
 
 const ScaleUpDialog = ({ isOpen, closeDialog, clusterName }: ScaleUpDialogProps) => {
-  const { agentsState, agentClusterInstallsState } = useSharedAtoms()
+  const { agentsState, agentClusterInstallsState, bareMetalHostsState } = useSharedAtoms()
   const agents = useRecoilValue(agentsState)
+  const bareMetalHosts = useRecoilValue(bareMetalHostsState)
   const agentClusterInstalls = useRecoilValue(agentClusterInstallsState)
   const clusterDeployment = useClusterDeployment({ name: clusterName, namespace: clusterName })
 
@@ -68,8 +70,10 @@ const ScaleUpDialog = ({ isOpen, closeDialog, clusterName }: ScaleUpDialogProps)
       onClose={closeDialog}
       clusterDeployment={clusterDeployment}
       agents={agents}
+      bareMetalHosts={bareMetalHosts}
       addHostsToCluster={addHostsToCluster}
-      onChangeHostname={onSaveAgent}
+      onChangeHostname={onChangeHostname}
+      onChangeBMHHostname={onChangeBMHHostname}
       onSetInstallationDiskId={onSetInstallationDiskId}
       isNutanix={agentClusterInstall?.spec?.platformType === 'Nutanix'}
     />

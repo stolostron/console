@@ -11,8 +11,10 @@ type HypershiftKubeconfigDownloadProps = {
 
 const HypershiftKubeconfigDownload = ({ hostedCluster, fetchSecret }: HypershiftKubeconfigDownloadProps) => {
   const { t } = useTranslation()
+  const kubeconfigSecretName = hostedCluster?.status?.customKubeconfig
+    ? hostedCluster.status.customKubeconfig?.name
+    : hostedCluster?.status?.kubeconfig?.name
   const handleKubeconfigDownload = async () => {
-    const kubeconfigSecretName = hostedCluster?.status?.kubeconfig?.name
     const kubeconfigSecretNamespace = hostedCluster?.metadata?.namespace
 
     if (kubeconfigSecretName && kubeconfigSecretNamespace) {
@@ -33,11 +35,7 @@ const HypershiftKubeconfigDownload = ({ hostedCluster, fetchSecret }: Hypershift
   }
 
   return (
-    <Button
-      variant={ButtonVariant.link}
-      onClick={handleKubeconfigDownload}
-      isDisabled={!hostedCluster?.status?.kubeconfig?.name}
-    >
+    <Button variant={ButtonVariant.link} onClick={handleKubeconfigDownload} isDisabled={!kubeconfigSecretName}>
       {t('Download kubeconfig')}
     </Button>
   )

@@ -113,7 +113,7 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
     fetchCredentials()
   }, [name, namespace])
 
-  const { v1ImportCommand, loading, error: importErr } = useImportCommand(true)
+  const { importCommand, loading, error: importErr } = useImportCommand(true)
 
   const loginCommand = `oc login ${hypershiftKubeAPI} -u kubeadmin -p ${credentials?.password}`
   // support all hypershift operator versions
@@ -123,7 +123,7 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
       (c.reason === 'AsExpected' && c.message === 'The hosted control plane is available')
   )
 
-  if (!v1ImportCommand && cluster?.isHypershift && !managedCluster) {
+  if (!importCommand && cluster?.isHypershift && !managedCluster) {
     // import alert
     return (
       <div style={{ marginBottom: '12px' }}>
@@ -161,7 +161,7 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
   }
   return (
     <>
-      {!!cluster && !loading && !importErr && !error && !!v1ImportCommand && (
+      {!!cluster && !loading && !importErr && !error && !!importCommand && (
         <div style={{ marginBottom: '12px' }}>
           <AcmAlert
             isInline
@@ -183,7 +183,7 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
                     </ListItem>
                     <ListItem>
                       <Trans>
-                        <CopyCommandButton variant="link" isInline loading={loading} command={v1ImportCommand}>
+                        <CopyCommandButton variant="link" isInline loading={loading} command={importCommand}>
                           Run this command
                         </CopyCommandButton>{' '}
                         to import your cluster

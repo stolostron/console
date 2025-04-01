@@ -7,11 +7,11 @@ import {
   ButtonVariant,
   EmptyState,
   EmptyStateBody,
+  EmptyStateHeader,
   EmptyStateIcon,
   PageSection,
   Stack,
   StackItem,
-  EmptyStateHeader,
 } from '@patternfly/react-core'
 import { ExclamationCircleIcon, ExternalLinkAltIcon, InfoCircleIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
@@ -82,7 +82,7 @@ function HandleErrors(
           icon={<EmptyStateIcon icon={InfoCircleIcon} color={'var(--pf-v5-global--info-color--100)'} />}
           headingLevel="h4"
         />
-        <EmptyStateBody>{schemaError?.message || completeError?.message}</EmptyStateBody>
+        <EmptyStateBody>{schemaError?.message ?? completeError?.message}</EmptyStateBody>
       </EmptyState>
     )
   } else if (schemaError || completeError) {
@@ -160,6 +160,9 @@ function RenderSearchBar(props: Readonly<SearchbarProps>) {
     skip: currentSearch.endsWith(':') || operators.some((operator: string) => currentSearch.endsWith(operator)),
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
     fetchPolicy: 'cache-first',
+    variables: {
+      query: convertStringToQuery(currentSearch, searchAutocompleteLimit),
+    },
   })
 
   const { searchCompleteValue, searchCompleteQuery } = useMemo(() => {
@@ -289,6 +292,7 @@ function RenderSearchBar(props: Readonly<SearchbarProps>) {
         savedSearchQueries={savedSearchQueries}
         searchResultData={searchResultData}
         refetchSearch={refetchSearch}
+        exportEnabled={true}
       />
       {HandleErrors(searchSchemaError, searchCompleteError, hasFederatedError)}
     </PageSection>

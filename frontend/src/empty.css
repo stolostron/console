@@ -1,0 +1,3 @@
+/* used to prevent acm from loading conflicting css files */
+/* see frontend/webpack.plugin.ts NormalModuleReplacementPlugin */
+/* currently used to prevent suggest.css from acm's monaco editor 0.34.1 from conflicting with ocp's 0.20.0 */

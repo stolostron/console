@@ -2,10 +2,9 @@
 
 import { getSecret, Secret } from '../../../../../resources'
 import { ClusterStatus, ResourceError } from '../../../../../resources/utils'
-import { AcmAlert, AcmButton, AcmInlineCopy } from '../../../../../ui-components'
+import { AcmAlert, AcmButton } from '../../../../../ui-components'
 import { onCopy } from '../../../../../ui-components/utils'
 import {
-  Alert,
   AlertVariant,
   ButtonProps,
   Card,
@@ -29,7 +28,7 @@ export function ImportCommandContainer() {
   const { t } = useTranslation()
   const { cluster } = useClusterDetailsContext()
 
-  const { loading, error, v1ImportCommand, v1Beta1ImportCommand } = useImportCommand()
+  const { loading, error, importCommand } = useImportCommand()
 
   if (loading) {
     return (
@@ -53,7 +52,7 @@ export function ImportCommandContainer() {
             <AcmAlert isInline variant={AlertVariant.info} title={t('import.command.pendingimport')} />
           </div>
         )}
-        <ImportCommand v1ImportCommand={v1ImportCommand} v1Beta1ImportCommand={v1Beta1ImportCommand} />
+        <ImportCommand importCommand={importCommand} />
       </>
     )
   }
@@ -65,8 +64,7 @@ type ImportCommandProps = {
   loading?: boolean
   error?: string
   children?: React.ReactNode
-  v1ImportCommand?: string
-  v1Beta1ImportCommand?: string
+  importCommand?: string
 }
 
 export function ImportCommand(props: ImportCommandProps) {
@@ -80,7 +78,7 @@ export function ImportCommand(props: ImportCommandProps) {
     }
   }, [copied])
 
-  if (props.loading || props.error || !props.v1ImportCommand || !props.v1Beta1ImportCommand) {
+  if (props.loading || props.error || !props.importCommand) {
     return null
   }
 
@@ -102,28 +100,13 @@ export function ImportCommand(props: ImportCommandProps) {
                     icon={<CopyIcon />}
                     iconPosition="right"
                     onClick={(e: any) => {
-                      onCopy(e, props.v1ImportCommand!)
+                      onCopy(e, props.importCommand!)
                       setCopied(true)
                     }}
                   >
                     {t('import.command.copy')}
                   </AcmButton>
                 </Tooltip>
-                <Alert
-                  isInline
-                  title={t('import.command.311.title')}
-                  variant={AlertVariant.info}
-                  style={{ marginTop: '16px' }}
-                  actionLinks={
-                    <AcmInlineCopy
-                      text={props.v1Beta1ImportCommand!}
-                      displayText={t('import.command.311.copyText')}
-                      id="3.11-copy"
-                    />
-                  }
-                >
-                  <div>{t('import.command.311.description')}</div>
-                </Alert>
               </CardBody>
               <CardTitle>{t('import.command.configurecluster')}</CardTitle>
               <CardBody>{t('import.command.configureclusterdescription')}</CardBody>
@@ -169,11 +152,8 @@ export async function pollImportYamlSecret(clusterName: string): Promise<Secret>
   return new Promise(poll)
 }
 
-function getImportCommand(importSecret: Secret, version: 'v1' | 'v1beta1', t: TFunction, oc?: boolean) {
-  let klusterletCRD = importSecret.data?.['crdsv1.yaml']
-  if (version === 'v1beta1') {
-    klusterletCRD = importSecret.data?.['crdsv1beta1.yaml']
-  }
+function getImportCommand(importSecret: Secret, t: TFunction, oc?: boolean) {
+  const klusterletCRD = importSecret.data?.['crds.yaml']
   const importYaml = importSecret.data?.['import.yaml']
   const alreadyImported = t('import.command.alreadyimported')
   const alreadyImported64 = Buffer.from(alreadyImported).toString('base64')
@@ -216,9 +196,9 @@ export const useImportCommand = (oc?: boolean) => {
     }
   }, [cluster, error, loading, importSecret, autoImportSecret])
 
-  const v1ImportCommand = importSecret ? getImportCommand(importSecret, 'v1', t, oc) : undefined
-  const v1Beta1ImportCommand = importSecret ? getImportCommand(importSecret, 'v1beta1', t, oc) : undefined
-  return { v1ImportCommand, v1Beta1ImportCommand, loading, error, autoImportSecret }
+  const importCommand = importSecret ? getImportCommand(importSecret, t, oc) : undefined
+
+  return { importCommand, loading, error, autoImportSecret }
 }
 
 type CopyCommandButtonProps = {
