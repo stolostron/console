@@ -374,7 +374,7 @@ export function AcmDropdown(props: AcmDropdownProps) {
           distance={0}
           enableFlip={true}
           minWidth="fit-content"
-          placement="bottom-end"
+          placement={props.dropdownPosition || (isKebab ? 'right-start' : 'bottom-end')}
           popper={<MenuItems ref={menuRef} menuItems={dropdownItems} onSelect={handleSelect} classes={classes} />}
         />
       </div>
