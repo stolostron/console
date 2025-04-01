@@ -33,7 +33,7 @@ export function transform(
 ): ApplicationCache {
   const subscriptions = getKubeResources('Subscription', 'apps.open-cluster-management.io/v1')
   const placementDecisions = getKubeResources('PlacementDecision', 'cluster.open-cluster-management.io/v1beta1')
-  const localCluster = getHubClusterName()
+  const localClusterName = getHubClusterName()
   items.forEach((app) => {
     const type = getApplicationType(app)
     const _clusters = getApplicationClusters(app, type, subscriptions, placementDecisions, localCluster, clusters)
@@ -46,7 +46,7 @@ export function transform(
       [app.metadata.creationTimestamp as string],
     ]
     app.remoteClusters =
-      (isRemote || (type === 'subscription' && _clusters.filter((n) => n !== localCluster)).length > 0) && _clusters
+      (isRemote || (type === 'subscription' && _clusters.filter((n) => n !== localClusterName)).length > 0) && _clusters
   })
   return { resources: items }
 }
