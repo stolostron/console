@@ -187,7 +187,7 @@ class ControlPanelWizard extends React.Component {
     }
 
     const validateNextStep = (activeStep, onNext) => {
-      const { type, mutation, disableEditorOnSuccess, disablePreviousControlsOnSuccess } = activeStep.control
+      const { type, mutation, disableEditorOnSuccess, disablePreviousControlsOnSuccess } = activeStep.component
       switch (type) {
         case 'step':
           {
@@ -209,9 +209,9 @@ class ControlPanelWizard extends React.Component {
                   hasErrors = !isEmpty(result.value)
                   return hasErrors
                 })
-                activeStep.control.exception = hasErrors
+                activeStep.component.exception = hasErrors
                 if (!hasErrors) {
-                  activeStep.control.isComplete = true
+                  activeStep.component.isComplete = true
                   onNext()
                 }
                 this.forceUpdate()
@@ -243,9 +243,9 @@ class ControlPanelWizard extends React.Component {
                       })
                     })
                 }
-                activeStep.control.isComplete = true
-                delete activeStep.control.mutation
-                delete activeStep.control.nextButtonLabel
+                activeStep.component.isComplete = true
+                delete activeStep.component.mutation
+                delete activeStep.component.nextButtonLabel
                 onNext()
                 this.forceUpdate()
               }
@@ -283,7 +283,7 @@ class ControlPanelWizard extends React.Component {
                     }
                   }}
                 >
-                  {processingLabel || activeStep.control.nextButtonLabel || i18n('Next')}
+                  {processingLabel || activeStep?.component.nextButtonLabel || i18n('Next')}
                 </Button>
               </ActionListItem>
               <ActionListItem>
