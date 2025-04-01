@@ -29,6 +29,7 @@ import {
   getCSVExportSpies,
   getCSVDownloadLink,
   clickRowKebabAction,
+  clickByRole,
 } from '../../../../lib/test-util'
 import { ManagedCluster, ManagedClusterDefinition, ManagedClusterInfo, ResourceAttributes } from '../../../../resources'
 import ManagedClusters from './ManagedClusters'
@@ -152,20 +153,20 @@ describe('Clusters Page', () => {
   })
 
   test('overflow menu should hide upgrade and channel select options if currently upgrading', async () => {
-    await clickByLabel('Actions', 4)
+    await clickByLabel('Actions', 5)
     await waitForNotText('Upgrade cluster')
     await waitForNotText('Select channel')
   })
 
   test('overflow menu should allow upgrade if has available upgrade', async () => {
-    await clickByLabel('Actions', 3)
-    await clickByText('Upgrade cluster')
+    await clickByLabel('Actions', 4)
+    await clickByRole('menuitem', { name: 'Upgrade cluster' })
     await waitForText('Current version')
   })
 
   test('overflow menu should allow channel select if has available channels', async () => {
-    await clickByLabel('Actions', 3)
-    await clickByText('Select channel')
+    await clickByLabel('Actions', 4)
+    await clickByRole('menuitem', { name: 'Select channel' })
     await waitForText('Current channel')
   })
 
