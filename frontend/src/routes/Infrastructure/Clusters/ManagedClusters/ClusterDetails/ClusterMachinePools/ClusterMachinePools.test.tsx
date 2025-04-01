@@ -9,6 +9,7 @@ import {
   clickByLabel,
   clickByText,
   clickRowKebabAction,
+  typeByText,
   waitForNocks,
   waitForText,
 } from '../../../../../../lib/test-util'
@@ -21,7 +22,6 @@ import {
   mockMachinePoolOther,
 } from '../ClusterDetails.sharedmocks'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'
-import userEvent from '@testing-library/user-event'
 
 describe('ClusterMachinePools', () => {
   beforeEach(() => {
@@ -122,14 +122,11 @@ describe('ClusterMachinePools', () => {
     await waitForText(mockMachinePoolOther.metadata.name!)
     await waitForText('high_performance') // Check RHV vmType displays as Instance type
     await clickRowKebabAction(1, 'Delete machine pool')
-    // await clickByText('Delete machine pool')
-
     await waitForText('Permanently delete machine pools?')
-    const confirmInput = document.getElementById('confirm')
-    if (confirmInput instanceof HTMLInputElement) {
-      userEvent.type(confirmInput, mockMachinePoolAuto.metadata.name!)
-    }
-
+    await typeByText(
+      `Confirm by typing "${mockMachinePoolAuto.metadata.name!}" below:`,
+      mockMachinePoolAuto.metadata.name!
+    )
     const deleteNocks: Scope[] = [nockDelete(mockMachinePoolAuto)]
     await clickByText('Delete')
     await waitForText('Deleting')

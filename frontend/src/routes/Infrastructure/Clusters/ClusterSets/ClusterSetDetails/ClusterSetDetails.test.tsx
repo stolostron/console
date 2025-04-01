@@ -31,6 +31,7 @@ import {
   clearByTestId,
   clickByLabel,
   clickByPlaceholderText,
+  clickByRole,
   clickByText,
   typeByTestId,
   waitForNocks,
@@ -1858,12 +1859,8 @@ describe('ClusterSetDetails page', () => {
     await clickByText('Submariner add-ons', 0)
 
     await waitForText(mockSubmarinerAddOn!.metadata.namespace!)
-    userEvent.click(
-      screen.getByRole('button', {
-        name: /submariner-actions/i,
-      })
-    )
-    await new Promise((resolve) => setTimeout(resolve, 500))
+
+    await clickByRole('button', { name: /submariner-actions/i })
     await clickByText('Uninstall add-on')
     await waitForText('Uninstall Submariner add-ons?')
 
@@ -1879,12 +1876,7 @@ describe('ClusterSetDetails page', () => {
     await clickByText('Submariner add-ons', 0)
 
     await waitForText(mockSubmarinerAddOn!.metadata.namespace!)
-    userEvent.click(
-      screen.getByRole('button', {
-        name: /submariner-actions/i,
-      })
-    )
-    await new Promise((resolve) => setTimeout(resolve, 500))
+    await clickByRole('button', { name: /submariner-actions/i })
     await clickByText('Edit configuration')
     await waitForText('Edit Submariner configuration')
 

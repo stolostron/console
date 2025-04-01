@@ -462,7 +462,7 @@ describe('AcmTable', () => {
     expect(bulkDeleteAction).toHaveBeenCalledWith(defaultSortedItems.slice(0, 1))
   })
 
-  test('can support table actions with multiple selections', async () => {
+  test('can support table actions with multiple selections', () => {
     const { getByLabelText, getByText, getAllByRole, queryAllByText, container } = render(
       <Table useTableActions={true} />
     )

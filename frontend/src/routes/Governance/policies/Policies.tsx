@@ -14,7 +14,6 @@ import {
   PageSection,
   Stack,
   StackItem,
-  // SelectOption,
 } from '@patternfly/react-core'
 import { SelectOption } from '@patternfly/react-core/deprecated'
 import { fitContent } from '@patternfly/react-table'
@@ -965,7 +964,7 @@ export function AddToPolicySetModal(
           <StackItem>
             <AcmSelect
               id="policy-sets"
-              label={t('Policy set')}
+              label=""
               onChange={(key) => setSelectedPolicySetUid(key)}
               value={selectedPolicySetUid}
               placeholder={t('Select a policy set')}

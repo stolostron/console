@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
@@ -167,6 +167,7 @@ describe('Clusters Page', () => {
   test('overflow menu should allow channel select if has available channels', async () => {
     await clickByLabel('Actions', 4)
     await clickByRole('menuitem', { name: 'Select channel' })
+    screen.logTestingPlaygroundURL()
     await waitForText('Current channel')
   })
 
