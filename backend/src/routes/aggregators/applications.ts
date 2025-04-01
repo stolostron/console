@@ -25,7 +25,6 @@ export enum AppColumns {
   'namespace',
   'clusters',
   'repo',
-  'timeWindow',
   'created',
 }
 export interface IArgoApplication extends IResource {
@@ -154,13 +153,6 @@ export function aggregateLocalApplications() {
   } catch (e) {
     logger.error(`aggregateLocalApplications subscription exception ${e}`)
   }
-
-  // AppSets
-  try {
-    applicationCache['appset'] = transform(structuredClone(getKubeResources('ApplicationSet', 'argoproj.io/v1alpha1')))
-  } catch (e) {
-    logger.error(`aggregateLocalApplications appset exception ${e}`)
-  }
 }
 
 export function filterApplications(filters: FilterSelections, items: ITransformedResource[]) {
@@ -193,6 +185,7 @@ export function filterApplications(filters: FilterSelections, items: ITransforme
 // w/o downloading all the appsets, apps, etc
 export function addUIData(items: ITransformedResource[]) {
   const argoAppSets = applicationCache['appset'].resources
+  const appSetAppsMap = getAppSetAppsMap()
   items = items.map((item) => {
     return {
       ...item,
@@ -202,7 +195,10 @@ export function addUIData(items: ITransformedResource[]) {
           item.kind === ApplicationSetKind
             ? getAppSetRelatedResources(item, argoAppSets as IApplicationSet[])
             : ['', []],
-        appSetApps: item.kind === ApplicationSetKind ? getAppSetAppsMap()[item.metadata.name] || [] : [],
+        appSetApps:
+          item.kind === ApplicationSetKind
+            ? appSetAppsMap[item.metadata.name].map((app) => app.metadata.name) || []
+            : [],
       },
     }
   })

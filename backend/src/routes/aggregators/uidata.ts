@@ -2,8 +2,8 @@
 import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { applicationCache } from './applications'
 import { getApplicationClusters, getApplicationType, getClusters } from './utils'
-import { IApplicationSet, IResource, IUIData } from '../../resources/resource'
-import { getKubeResources } from '../events'
+import { Cluster, IApplicationSet, IResource, IUIData } from '../../resources/resource'
+import { getHubClusterName, getKubeResources } from '../events'
 import { getAppSetAppsMap, getAppSetRelatedResources } from './applicationsArgo'
 
 export function requestAggregatedUIData(req: Http2ServerRequest, res: Http2ServerResponse): void {
@@ -18,7 +18,17 @@ export function requestAggregatedUIData(req: Http2ServerRequest, res: Http2Serve
     const subscriptions = getKubeResources('Subscription', 'apps.open-cluster-management.io/v1')
     const placementDecisions = getKubeResources('PlacementDecision', 'cluster.open-cluster-management.io/v1beta1')
     const type = getApplicationType(resource)
-    const clusterList = getApplicationClusters(resource, type, subscriptions, placementDecisions, getClusters())
+    const hubClusterName = getHubClusterName()
+    const clusters: Cluster[] = getClusters()
+    const localCluster = clusters.find((cls) => cls.name === hubClusterName)
+    const clusterList = getApplicationClusters(
+      resource,
+      type,
+      subscriptions,
+      placementDecisions,
+      localCluster,
+      clusters
+    )
     const result: IUIData = {
       clusterList,
       appSetRelatedResources:

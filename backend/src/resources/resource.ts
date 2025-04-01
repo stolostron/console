@@ -27,14 +27,15 @@ export interface IResource {
 export interface IUIData {
   clusterList: string[]
   appSetRelatedResources: unknown
-  appSetApps: string[]
+  appSetApps: IResource[]
 }
 
 export type Cluster = {
   name: string
   kubeApiServer?: string
+  consoleUrl?: string
 }
-export interface IStatusResource extends IResource {
+export interface ClusterDeployment extends IResource {
   spec?: {
     // from ClusterDeployment
     baseDomain?: string
@@ -46,13 +47,30 @@ export interface IStatusResource extends IResource {
       name: string
     }
   }
-  status?: {
+  status: {
+    webConsoleURL?: string
     // from ClusterDeployment
     apiURL?: string
     cluster?: string
   }
 }
+export interface ManagedCluster extends IResource {
+  status: {
+    clusterClaims: {
+      name: string
+      value: string
+    }[]
+  }
+}
 export interface ManagedClusterInfo extends IResource {
+  spec?: {
+    masterEndpoint: string
+  }
+  status: {
+    consoleURL?: string
+  }
+}
+export interface HostedClusterK8sResource extends IResource {
   spec?: {
     masterEndpoint: string
   }
@@ -105,7 +123,12 @@ export interface IArgoApplication extends IResource {
   cluster?: string
   spec: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [x: string]: any
+    source?: {
+      path?: string
+      repoURL: string
+      targetRevision?: string
+      chart?: string
+    }
     destination: {
       name?: string
       namespace: string
@@ -128,12 +151,39 @@ export const ApplicationSetDefinition: IResourceDefinition = {
   apiVersion: ApplicationSetApiVersion,
   kind: ApplicationSetKind,
 }
+
+export interface Selector {
+  matchLabels?: Record<string, string>
+}
 export interface IApplicationSet extends IResource {
   apiVersion: ApplicationSetApiVersionType
   kind: ApplicationSetKindType
   spec: {
+    template?: {
+      spec?: {
+        destination?: {
+          namespace: string
+          server: string
+        }
+        project: string
+        source?: {
+          path?: string
+          repoURL: string
+          targetRevision?: string
+          chart?: string
+        }
+        sources?: {
+          path?: string
+          repoURL: string
+          targetRevision?: string
+          chart?: string
+          repositoryType?: string
+        }[]
+      }
+    }
     generators?: {
       clusterDecisionResource?: {
+        labelSelector?: Selector
         configMapRef?: string
         requeueAfterSeconds?: number
       }

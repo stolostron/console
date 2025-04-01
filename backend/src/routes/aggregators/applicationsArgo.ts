@@ -46,7 +46,8 @@ interface IArgoAppRemoteResource {
 }
 
 // a map from an appset name to the apps that it created
-export let appSetAppsMap: Record<string, string[]> = {}
+export let appSetAppsMap: Record<string, IResource[]> = {}
+export let allArgoApplications: ITransformedResource[] = []
 
 let argoPageChunk: ApplicationPageChunk
 const argoPageChunks: ApplicationPageChunk[] = []
@@ -82,9 +83,22 @@ export function addArgoQueryInputs(applicationCache: ApplicationCacheType, query
 
 export function cacheArgoApplications(applicationCache: ApplicationCacheType, remoteArgoApps: IResource[]) {
   const argoAppSet = new Set<string>()
+  const hubClusterName = getHubClusterName()
   const clusters: Cluster[] = getClusters()
+  const localCluster = clusters.find((cls) => cls.name === hubClusterName)
+
   try {
-    applicationCache['localArgoApps'] = transform(getLocalArgoApps(argoAppSet, clusters), clusters)
+    applicationCache['appset'] = transform(
+      structuredClone(getKubeResources('ApplicationSet', 'argoproj.io/v1alpha1')),
+      localCluster,
+      clusters
+    )
+  } catch (e) {
+    logger.error(`aggregateLocalApplications appset exception ${e}`)
+  }
+
+  try {
+    applicationCache['localArgoApps'] = transform(getLocalArgoApps(argoAppSet, clusters), localCluster, clusters)
   } catch (e) {
     logger.error(`getLocalArgoApps exception ${e}`)
   }
@@ -246,18 +260,24 @@ export function getAppSetRelatedResources(appSet: IResource, applicationSets: IA
 export function getAppSetAppsMap() {
   return appSetAppsMap || {}
 }
+export function getAllArgoApplications() {
+  return allArgoApplications || []
+}
 
 function createAppSetAppsMap(applicationCache: ApplicationCacheType) {
-  const argoApps: ITransformedResource[] = getApplicationsHelper(applicationCache, ['localArgoApps', 'remoteArgoApps'])
-  appSetAppsMap = argoApps.reduce(
+  allArgoApplications = [
+    ...getKubeResources('Application', 'argoproj.io/v1alpha1'),
+    ...(getApplicationsHelper(applicationCache, ['remoteArgoApps']) || []),
+  ]
+  appSetAppsMap = allArgoApplications.reduce(
     (obj, argoApp) => {
-      const appSetName = get(argoApp, 'metadata.ownerReferences[0].name') as string
+      const appSetName = get(argoApp, ['metadata', 'ownerReferences', '0', 'name']) as string
       if (appSetName) {
         if (!obj[appSetName]) obj[appSetName] = []
-        obj[appSetName].push(get(argoApp, 'metadata.name', 'unknown') as string)
+        obj[appSetName].push(argoApp)
       }
       return obj
     },
-    {} as Record<string, string[]>
+    {} as Record<string, IResource[]>
   )
 }
