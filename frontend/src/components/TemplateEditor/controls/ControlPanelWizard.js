@@ -145,7 +145,6 @@ class ControlPanelWizard extends React.Component {
       steps.push({
         id: 'review',
         name: i18n('Review and create'),
-        control: { nextButtonLabel: isEditing ? i18n('Save') : i18n('Create') },
         component: (
           <div className={controlClasses}>
             <Stack hasGutter>
@@ -187,7 +186,7 @@ class ControlPanelWizard extends React.Component {
     }
 
     const validateNextStep = (activeStep, onNext) => {
-      const { type, mutation, disableEditorOnSuccess, disablePreviousControlsOnSuccess } = activeStep.component
+      const { type, mutation, disableEditorOnSuccess, disablePreviousControlsOnSuccess } = activeStep.control
       switch (type) {
         case 'step':
           {
@@ -245,7 +244,6 @@ class ControlPanelWizard extends React.Component {
                 }
                 activeStep.component.isComplete = true
                 delete activeStep.component.mutation
-                delete activeStep.component.nextButtonLabel
                 onNext()
                 this.forceUpdate()
               }
@@ -283,7 +281,8 @@ class ControlPanelWizard extends React.Component {
                     }
                   }}
                 >
-                  {processingLabel || activeStep?.component.nextButtonLabel || i18n('Next')}
+                  {processingLabel ||
+                    (activeStep.id === 'review' ? (isEditing ? i18n('Save') : i18n('Create')) : i18n('Next'))}
                 </Button>
               </ActionListItem>
               <ActionListItem>
