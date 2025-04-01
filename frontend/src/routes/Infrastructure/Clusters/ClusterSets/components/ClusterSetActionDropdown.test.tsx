@@ -409,7 +409,6 @@ describe('ClusterSetActionDropdown', () => {
 
     await clickByLabel('Actions')
     await clickByRole('menuitem', { name: 'Edit namespace bindings' })
-    await clickByText('Edit namespace bindings')
 
     // verify existing binding is selected
     await waitForText(firstNamespaceBinding.metadata.namespace!)
@@ -433,8 +432,7 @@ describe('ClusterSetActionDropdown', () => {
     nockIgnoreRBAC()
     const nock = nockDelete(mockManagedClusterSet)
     await clickByLabel('Actions')
-
-    await clickByText('Delete cluster set')
+    await clickByRole('menuitem', { name: 'Delete cluster set' })
 
     await typeByText(
       `Confirm by typing "${mockManagedClusterSet.metadata.name!}" below:`,
