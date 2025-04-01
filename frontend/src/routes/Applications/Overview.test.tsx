@@ -271,14 +271,14 @@ describe('Applications Page', () => {
 
     expect(blobConstructorSpy).toHaveBeenCalledWith(
       [
-        'Name,Type,Namespace,Clusters,Repository,Health Status,Sync Status,Time window,Created\n' +
-          `"application-0","Subscription","namespace-0","Local",-,-,-,-,"${getISOStringTimestamp(applicationAggregate.res.items[0].metadata?.creationTimestamp || '')}"\n` +
-          '"applicationset-0","Application set","openshift-gitops","None","git",-,-,-,-\n' +
-          '"applicationset-1","Application set","openshift-gitops","None","git",-,-,-,-\n' +
-          '"argoapplication-1","Argo CD","argoapplication-1-ns","None","git",-,-,-,-\n' +
-          '"feng-remote-argo8","Argo CD","argoapplication-1-ns","None","git",-,-,-,-\n' +
-          '"authentication-operator","OpenShift","authentication-operator-ns","None",-,-,-,-,-\n' +
-          '"authentication-operatorf","Flux","authentication-operator-ns","None",-,-,-,-,-',
+        'Name,Type,Namespace,Clusters,Repository,Health Status,Sync Status,Created\n' +
+          `"application-0","Subscription","namespace-0","Local",-,-,-,"${getISOStringTimestamp(applicationAggregate.res.items[0].metadata?.creationTimestamp || '')}"\n` +
+          '"applicationset-0","Application set","openshift-gitops","None","git",-,-,-\n' +
+          '"applicationset-1","Application set","openshift-gitops","None","git",-,-,-\n' +
+          '"argoapplication-1","Argo CD","argoapplication-1-ns","None","git",-,-,-\n' +
+          '"feng-remote-argo8","Argo CD","argoapplication-1-ns","None","git",-,-,-\n' +
+          '"authentication-operator","OpenShift","authentication-operator-ns","None",-,-,-,-\n' +
+          '"authentication-operatorf","Flux","authentication-operator-ns","None",-,-,-,-',
       ],
       { type: 'text/csv' }
     )
