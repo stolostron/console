@@ -216,7 +216,7 @@ function cacheRemoteSystemApps(
   clusterNameChunk.forEach((clustername) => {
     applicationCache['remoteSysApps'].resourceMap[clustername] = []
   })
-  const resources = transform(remoteSysApps, undefined, true).resources
+  const resources = transform(remoteSysApps, true).resources
   resources.forEach((resource) => {
     const clustername = resource.transform[AppColumns.clusters].join()
     const clusterResources = applicationCache['remoteSysApps'].resourceMap[clustername]

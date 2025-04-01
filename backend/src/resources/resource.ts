@@ -73,6 +73,9 @@ export interface ManagedClusterInfo extends IResource {
 export interface HostedClusterK8sResource extends IResource {
   spec?: {
     masterEndpoint: string
+    dns: {
+      baseDomain: string
+    }
   }
 }
 

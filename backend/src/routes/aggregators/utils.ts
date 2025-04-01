@@ -27,9 +27,9 @@ import { getAllArgoApplications } from './applicationsArgo'
 
 export function transform(
   items: ITransformedResource[],
+  isRemote?: boolean,
   localCluster?: Cluster,
-  clusters?: Cluster[],
-  isRemote?: boolean
+  clusters?: Cluster[]
 ): ApplicationCache {
   const subscriptions = getKubeResources('Subscription', 'apps.open-cluster-management.io/v1')
   const placementDecisions = getKubeResources('PlacementDecision', 'cluster.open-cluster-management.io/v1beta1')
@@ -478,7 +478,7 @@ export function cacheRemoteApps(
   applicationPageChunk: ApplicationPageChunk,
   remoteCacheKey: string
 ) {
-  const resources = transform(remoteApps, undefined, true).resources
+  const resources = transform(remoteApps, true).resources
   if (!applicationPageChunk) {
     applicationCache[remoteCacheKey].resources = resources
   } else {

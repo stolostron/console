@@ -90,6 +90,7 @@ export function cacheArgoApplications(applicationCache: ApplicationCacheType, re
   try {
     applicationCache['appset'] = transform(
       structuredClone(getKubeResources('ApplicationSet', 'argoproj.io/v1alpha1')),
+      false,
       localCluster,
       clusters
     )
@@ -98,7 +99,7 @@ export function cacheArgoApplications(applicationCache: ApplicationCacheType, re
   }
 
   try {
-    applicationCache['localArgoApps'] = transform(getLocalArgoApps(argoAppSet, clusters), localCluster, clusters)
+    applicationCache['localArgoApps'] = transform(getLocalArgoApps(argoAppSet, clusters), false, localCluster, clusters)
   } catch (e) {
     logger.error(`getLocalArgoApps exception ${e}`)
   }
