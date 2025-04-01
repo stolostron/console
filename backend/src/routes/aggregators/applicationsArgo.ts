@@ -88,17 +88,6 @@ export function cacheArgoApplications(applicationCache: ApplicationCacheType, re
   const localCluster = clusters.find((cls) => cls.name === hubClusterName)
 
   try {
-    applicationCache['appset'] = transform(
-      structuredClone(getKubeResources('ApplicationSet', 'argoproj.io/v1alpha1')),
-      false,
-      localCluster,
-      clusters
-    )
-  } catch (e) {
-    logger.error(`aggregateLocalApplications appset exception ${e}`)
-  }
-
-  try {
     applicationCache['localArgoApps'] = transform(getLocalArgoApps(argoAppSet, clusters), false, localCluster, clusters)
   } catch (e) {
     logger.error(`getLocalArgoApps exception ${e}`)
@@ -110,8 +99,23 @@ export function cacheArgoApplications(applicationCache: ApplicationCacheType, re
     logger.error(`cacheRemoteApps exception ${e}`)
   }
 
+  allArgoApplications = [
+    ...getKubeResources('Application', 'argoproj.io/v1alpha1'),
+    ...(getApplicationsHelper(applicationCache, ['remoteArgoApps']) || []),
+  ]
+  try {
+    applicationCache['appset'] = transform(
+      structuredClone(getKubeResources('ApplicationSet', 'argoproj.io/v1alpha1')),
+      false,
+      localCluster,
+      clusters
+    )
+  } catch (e) {
+    logger.error(`aggregateLocalApplications appset exception ${e}`)
+  }
+
   ///////// CREATE APPSET MAPS TO BE USED IN APPSET DETAILS////////////////////////
-  createAppSetAppsMap(applicationCache)
+  createAppSetAppsMap()
 
   return argoAppSet
 }
@@ -265,11 +269,7 @@ export function getAllArgoApplications() {
   return allArgoApplications || []
 }
 
-function createAppSetAppsMap(applicationCache: ApplicationCacheType) {
-  allArgoApplications = [
-    ...getKubeResources('Application', 'argoproj.io/v1alpha1'),
-    ...(getApplicationsHelper(applicationCache, ['remoteArgoApps']) || []),
-  ]
+function createAppSetAppsMap() {
   appSetAppsMap = allArgoApplications.reduce(
     (obj, argoApp) => {
       const appSetName = get(argoApp, ['metadata', 'ownerReferences', '0', 'name']) as string

@@ -243,7 +243,7 @@ function isLocalClusterURL(url: string, localCluster: Cluster | undefined) {
 
   let argoServerURL
   const localClusterURL = new URL(
-    localCluster ? (get(localCluster, 'consoleURL', { default: 'https://localhost' }) as string) : 'https://localhost'
+    (get(localCluster || {}, 'consoleURL', { default: 'https://localhost' }) as string) || 'https://localhost'
   )
 
   try {

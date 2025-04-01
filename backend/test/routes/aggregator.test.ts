@@ -84,7 +84,7 @@ describe(`aggregator Route`, function () {
 
     // FILTERED
     const res = await request('POST', '/aggregate/statuses', {
-      clusters: ['local-cluster', 'mycluster'],
+      clusters: ['local-cluster', 'feng-managed'],
     })
     expect(res.statusCode).toEqual(200)
     expect(JSON.stringify(await parseResponseJsonBody(res))).toEqual(JSON.stringify(responseCount))
@@ -121,28 +121,60 @@ describe(`aggregator Route`, function () {
 const systemPrefixes = ['openshift', 'hive', 'open-cluster-management', 'multicluster-engine']
 
 const responseCount = {
-  itemCount: '3',
+  itemCount: '4',
   filterCounts: {
     type: {
       subscription: 1,
       appset: 1,
+      argo: 1,
       openshift: 1,
     },
     cluster: {
-      'local-cluster': 2,
-      mycluster: 1,
+      'local-cluster': 3,
+      'feng-managed': 1,
     },
   },
-  systemAppNSPrefixes: systemPrefixes,
+  systemAppNSPrefixes: ['openshift', 'hive', 'open-cluster-management', 'multicluster-engine'],
   loading: false,
 }
-
 type RelatedResourcesType = (string | string[])[]
 
 const uidata = {
   clusterList: ['local-cluster'],
   appSetRelatedResources: ['', []] as RelatedResourcesType,
-  appSetApps: ['argoapplication-1'],
+  appSetApps: [
+    {
+      apiVersion: 'argoproj.io/v1alpha1',
+      kind: 'Application',
+      metadata: {
+        name: 'argoapplication-1',
+        namespace: 'openshift-gitops',
+        ownerReferences: [
+          {
+            name: 'argoapplication-1',
+            apiVersion: '',
+            kind: '',
+          },
+        ],
+      },
+      spec: {
+        destination: {
+          namespace: 'argoapplication-1-ns',
+          server: 'https://api.console-aws-48-pwc27.dev02.red-chesterfield.com:6443',
+        },
+        project: 'default',
+        source: {
+          path: 'foo',
+          repoURL: 'https://test.com/test.git',
+          targetRevision: 'HEAD',
+        },
+        syncPolicy: {},
+      },
+      status: {},
+      transform: [['argoapplication-1'], ['argo'], ['argoapplication-1-ns'], ['unknown'], ['r'], [null]],
+      remoteClusters: false,
+    },
+  ],
 }
 
 const responseNoFilter = {
@@ -198,7 +230,7 @@ const responseNoFilter = {
         },
       },
       uidata: {
-        clusterList: ['mycluster'],
+        clusterList: ['local-cluster'],
         appSetRelatedResources: ['test-placement-1', []] as RelatedResourcesType,
         appSetApps: ['argoapplication-1'],
       },
@@ -269,8 +301,8 @@ const responseNoFilter = {
       },
       uidata: {
         clusterList: ['test-cluster'],
-        appSetRelatedResources: ['', []] as RelatedResourcesType,
-        appSetApps: [] as string[],
+        appSetRelatedResources: ['', []],
+        appSetApps: [],
       },
     },
     {
@@ -335,8 +367,8 @@ const responseNoFilter = {
       },
       uidata: {
         clusterList: ['test-cluster'],
-        appSetRelatedResources: ['', []] as RelatedResourcesType,
-        appSetApps: [] as string[],
+        appSetRelatedResources: ['', []],
+        appSetApps: [],
       },
     },
   ],
@@ -649,6 +681,22 @@ const resourceCache = {
           name: 'local-cluster',
           resourceVersion: '7522024',
           uid: '29496936-2d1d-4460-af37-f68471293e75',
+        },
+      },
+      eventID: 89,
+    },
+  },
+  // cluster info
+  '/internal.open-cluster-management.io/v1beta1/managedclusterinfos': {
+    '29496936-2d1d-4460-af37-f68471293e66': {
+      resource: {
+        apiVersion: 'internal.open-cluster-management.io/v1beta1',
+        kind: 'ManagedClusterInfo',
+        metadata: {
+          name: 'local-cluster',
+        },
+        status: {
+          consoleURL: 'https://api.console-aws-48-pwc27.dev02.red-chesterfield.com:6443',
         },
       },
       eventID: 89,
