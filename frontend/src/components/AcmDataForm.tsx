@@ -54,7 +54,6 @@ import {
   Tile,
   Title,
   InputGroupItem,
-  useWizardContext,
   WizardStep,
   Wizard,
   WizardFooterWrapper,
