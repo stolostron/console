@@ -347,6 +347,11 @@ export default function DetailsPage() {
                     {t('Related resources')}
                   </Link>
                 </AcmSecondaryNavItem>
+                {kind.toLowerCase() === 'virtualmachine' && (
+                  <AcmSecondaryNavItem isActive={location.pathname === NavigationPath.vmSnapshots}>
+                    <Link to={`${NavigationPath.vmSnapshots}${window.location.search}`}>{t('Snapshots')}</Link>
+                  </AcmSecondaryNavItem>
+                )}
                 {(kind.toLowerCase() === 'pod' || kind.toLowerCase() === 'pods') && (
                   <AcmSecondaryNavItem isActive={location.pathname === NavigationPath.resourceLogs}>
                     <Link to={`${NavigationPath.resourceLogs}${window.location.search}`}>{t('Logs')}</Link>

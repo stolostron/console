@@ -522,6 +522,61 @@ exports[`Correctly returns VMLaunchLinks 1`] = `
 </body>
 `;
 
+exports[`Correctly returns VirtualMachineSnapshot indications 1`] = `
+<body>
+  <div>
+    <div
+      class="pf-v5-c-label-group pf-m-vertical"
+    >
+      <div
+        class="pf-v5-c-label-group__main"
+      >
+        <ul
+          aria-label="Label group category"
+          class="pf-v5-c-label-group__list"
+          role="list"
+        >
+          <li
+            class="pf-v5-c-label-group__list-item"
+          >
+            <span
+              class="pf-v5-c-label css-wm1cuv"
+            >
+              <span
+                class="pf-v5-c-label__content"
+              >
+                <span
+                  class="pf-v5-c-label__text"
+                >
+                  indication1
+                </span>
+              </span>
+            </span>
+          </li>
+          <li
+            class="pf-v5-c-label-group__list-item"
+          >
+            <span
+              class="pf-v5-c-label css-wm1cuv"
+            >
+              <span
+                class="pf-v5-c-label__content"
+              >
+                <span
+                  class="pf-v5-c-label__text"
+                >
+                  indication2
+                </span>
+              </span>
+            </span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</body>
+`;
+
 exports[`Correctly returns all resource definitions: SearchDefinitions-application 1`] = `
 [
   {
@@ -2607,6 +2662,70 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-virtualma
 ]
 `;
 
+exports[`Correctly returns all resource definitions: SearchDefinitions-virtualmachinesnapshot 1`] = `
+[
+  {
+    "cell": <CreateDetailsLink
+      item={
+        {
+          "cluster": "testCluster",
+          "created": "2021-01-01T00:00:00Z",
+          "kind": "Pod",
+          "label": "testLabel=label; testLabel1=label1",
+          "name": "testName",
+          "namespace": "testNamespace",
+          "selfLink": "/apigroup/cluster/name",
+        }
+      }
+    />,
+    "header": "Name",
+    "search": "name",
+    "sort": "name",
+  },
+  {
+    "cell": "testNamespace",
+    "header": "Namespace",
+    "sort": "namespace",
+  },
+  {
+    "cell": <React.Fragment>
+      testCluster
+    </React.Fragment>,
+    "header": "Cluster",
+    "sort": "cluster",
+  },
+  {
+    "cell": "-",
+    "header": "Status",
+    "sort": "status",
+  },
+  {
+    "cell": <VMSnapshotIndications
+      item={
+        {
+          "cluster": "testCluster",
+          "created": "2021-01-01T00:00:00Z",
+          "kind": "Pod",
+          "label": "testLabel=label; testLabel1=label1",
+          "name": "testName",
+          "namespace": "testNamespace",
+          "selfLink": "/apigroup/cluster/name",
+        }
+      }
+    />,
+    "header": "Indications",
+    "id": "vmsnapshot-indications",
+  },
+  {
+    "cell": <AcmTimestamp
+      timestamp="2021-01-01T00:00:00Z"
+    />,
+    "header": "Created",
+    "sort": "created",
+  },
+]
+`;
+
 exports[`Correctly returns all resource definitions: SearchDefinitions-virtualmachinespage 1`] = `
 [
   {
@@ -2807,6 +2926,14 @@ exports[`Correctly returns empty CreateApplicationTopologyLink 1`] = `
 exports[`Correctly returns empty CreateExternalLink 1`] = `"-"`;
 
 exports[`Correctly returns empty CreateExternalVMLink 1`] = `
+<body>
+  <div>
+    -
+  </div>
+</body>
+`;
+
+exports[`Correctly returns empty VirtualMachineSnapshot indications 1`] = `
 <body>
   <div>
     -
