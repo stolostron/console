@@ -406,7 +406,7 @@ function renderClusterList(
   return (
     <div
       className="card-body-grid"
-      style={{ paddingBottom: '10px', display: 'grid', gridTemplateColumns: '1fr auto auto auto', gap: 16 }}
+      style={{ paddingBottom: '10px', display: 'grid', gridTemplateColumns: '1fr auto auto auto auto', rowGap: 16 }}
     >
       {clusterList.map(({ cluster, violations }) => {
         const key = `${cluster?.metadata?.name}-card`
@@ -414,14 +414,14 @@ function renderClusterList(
         if (!violations) return <Fragment key={key} />
         return (
           <Fragment key={key}>
-            <span>{cluster?.metadata?.name}</span>
+            <span style={{ marginRight: 16 }}>{cluster?.metadata?.name}</span>
             {violations.compliant ? (
               <Tooltip
                 content={t('policies.noviolations', {
                   count: violations.compliant,
                 })}
               >
-                <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
+                <span style={{ whiteSpace: 'nowrap', textAlign: 'right', marginRight: 16 }}>
                   <Fragment>
                     <Button isInline variant={ButtonVariant.link} onClick={() => onClick(cluster, 'compliant')}>
                       {violations.compliant}
@@ -442,7 +442,7 @@ function renderClusterList(
                   count: violations.noncompliant,
                 })}
               >
-                <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
+                <span style={{ whiteSpace: 'nowrap', textAlign: 'right', marginRight: 16 }}>
                   <Button isInline variant={ButtonVariant.link} onClick={() => onClick(cluster, 'noncompliant')}>
                     {violations.noncompliant}
                   </Button>{' '}
@@ -461,7 +461,7 @@ function renderClusterList(
                   count: violations.pending,
                 })}
               >
-                <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
+                <span style={{ whiteSpace: 'nowrap', textAlign: 'right', marginRight: 16 }}>
                   <Fragment>
                     <Button isInline variant={ButtonVariant.link} onClick={() => onClick(cluster, 'pending')}>
                       {violations.pending}
@@ -482,7 +482,7 @@ function renderClusterList(
                   count: violations.unknown,
                 })}
               >
-                <span style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
+                <span style={{ whiteSpace: 'nowrap', textAlign: 'right', marginRight: 16 }}>
                   <Button isInline variant={ButtonVariant.link} onClick={() => onClick(cluster, 'unknown')}>
                     {violations.unknown}
                   </Button>{' '}
