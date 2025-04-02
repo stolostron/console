@@ -139,6 +139,13 @@ async function searchAPILoop() {
       await promiseTimeout(aggregateSearchAPIApplications(pass), SEARCH_TIMEOUT * 2).catch((e) =>
         logger.error(`searchAPILoop exception ${e}`)
       )
+      // process every APP_SEARCH_INTERVAL seconds
+      /* istanbul ignore if */
+      if (process.env.NODE_ENV !== 'test') {
+        await new Promise((r) => setTimeout(r, pass <= 3 ? 15000 : Number(process.env.APP_SEARCH_INTERVAL) || 60000))
+      } else {
+        stopping = true
+      }
     } catch (e) {
       logger.error(`searchAPILoop exception ${e}`)
     }
