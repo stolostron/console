@@ -2,32 +2,97 @@
 
 import { css } from '@emotion/css'
 import { createSubjectAccessReview, ResourceAttributes } from '../resources'
-import { AcmButton, AcmDropdown } from '../ui-components'
-import { useEffect, useState } from 'react'
+import { AcmButton, AcmDropdown, AcmDropdownItems, AcmDropdownProps } from '../ui-components'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../lib/acm-i18next'
 
-type RbacDropdownProps<T = unknown> = {
+type RbacDropdownProps<T = unknown> = Pick<
+  AcmDropdownProps,
+  'dropdownPosition' | 'id' | 'isDisabled' | 'isKebab' | 'text' | 'tooltip'
+> & {
   actions: Actions<T>[]
   item: T
-  isKebab?: boolean
-  text: string
-  id: string
-  isDisabled?: boolean
-  tooltip?: string
 }
 
-type Actions<T = unknown> = {
+type Actions<T = unknown> = Omit<AcmDropdownItems, 'flyoutMenu'> & {
   id: string
   text: React.ReactNode
   isAriaDisabled?: boolean
   tooltip?: string
-  click: (item: T) => void
+  flyoutMenu?: Actions<T>[]
+  click?: (item: T) => void
   rbac?: ResourceAttributes[] | Promise<ResourceAttributes>[]
 }
+
+function flattenActions<T>(actions: Actions<T>[]): Actions<T>[] {
+  return actions.flatMap((action) => (action.flyoutMenu ? [...flattenActions(action.flyoutMenu), action] : action))
+}
+
+/**
+ * A role-based access control (RBAC) dropdown component built on top of AcmDropdown.
+ * Extends AcmDropdown functionality by adding permission checks and RBAC controls
+ * to dropdown actions.
+ *
+ * @component
+ * @extends {AcmDropdown}
+ * @example
+ * ```tsx
+ * <RbacDropdown<PolicyType>
+ *   id="policy-actions"
+ *   text="Actions"
+ *   actions={[
+ *     {
+ *       id: 'edit',
+ *       text: 'Edit',
+ *       click: (policy) => handleEdit(policy),
+ *       rbac: [{
+ *         apiGroup: 'policy.open-cluster-management.io',
+ *         resource: 'policies',
+ *         verb: 'update'
+ *       }]
+ *     }
+ *   ]}
+ *   item={policyItem}
+ * />
+ * ```
+ *
+ * @template T - The type of item the dropdown actions will operate on
+ *
+ * @param props - Component props extending from AcmDropdown
+ * @param props.actions - Array of actions with RBAC permissions
+ * @param props.item - The item that actions will operate on
+ * @param props.id - Unique identifier for the dropdown
+ * @param props.isDisabled - Whether the dropdown is disabled
+ * @param props.isKebab - Whether to render as a kebab menu
+ * @param props.text - Text to display on the dropdown button
+ * @param props.tooltip - Tooltip text for disabled state
+ *
+ * @remarks
+ * This component is built on top of AcmDropdown, as shown by its type definition:
+ * ```tsx
+ * type RbacDropdownProps<T = unknown> = Pick<
+ *   AcmDropdownProps,
+ *   'dropdownPosition' | 'id' | 'isDisabled' | 'isKebab' | 'text' | 'tooltip'
+ * > & {
+ *   actions: Actions<T>[]
+ *   item: T
+ * }
+ * ```
+ *
+ * Key differences from AcmDropdown:
+ * - Adds RBAC permission checking
+ * - Handles action disabling based on permissions
+ * - Adds unauthorized tooltips
+ * - Manages nested menu permissions
+ *
+ * @returns A dropdown menu component with RBAC-protected actions
+ */
 
 export function RbacDropdown<T = unknown>(props: RbacDropdownProps<T>) {
   const { t } = useTranslation()
   const [actions, setActions] = useState<Actions<T>[]>([])
+
+  const actionsWithFlyoutActions = useMemo(() => flattenActions(actions), [actions])
 
   useEffect(() => {
     const isUpdated = !props.actions.every((a, i) => a?.id === actions?.[i]?.id)
@@ -36,10 +101,17 @@ export function RbacDropdown<T = unknown>(props: RbacDropdownProps<T>) {
     }
   }, [actions, props.actions])
 
-  const onSelect = (id: string) => {
-    const action = props.actions.find((a) => a.id === id)
-    return action?.click(props.item)
-  }
+  const onSelect = useCallback(
+    (id: string) => {
+      // finds action in the flattened array that includes both the top-level and the nested actions
+      const action = actionsWithFlyoutActions.find((a) => a.id === id)
+      // single item action
+      if (action?.click) {
+        action.click(props.item)
+      }
+    },
+    [actionsWithFlyoutActions, props.item]
+  )
 
   const onToggle = async (isOpen?: boolean) => {
     if (isOpen) {
@@ -81,6 +153,7 @@ export function RbacDropdown<T = unknown>(props: RbacDropdownProps<T>) {
       onToggle={onToggle}
       isDisabled={props.isDisabled}
       tooltip={props.isDisabled ? props.tooltip : undefined}
+      dropdownPosition={props.dropdownPosition}
     />
   )
 }
