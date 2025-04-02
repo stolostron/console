@@ -349,7 +349,7 @@ function ClustersCard() {
         <ExpandableSection
           toggleContent={
             <div>
-              <span style={{ whiteSpace: 'pre' }}>{`${t(`Show {{count}} more`, { count: xtraList.length })}  `}</span>
+              <span style={{ whiteSpace: 'pre' }}>{t('Show {{count}} more', { count: xtraList.length })}</span>
               {icon}
             </div>
           }
@@ -400,7 +400,7 @@ function ClustersCard() {
 
 function renderClusterList(
   clusterList: { cluster: ManagedCluster; violations: ViolationSummary }[],
-  onClick: { (cluster: ManagedCluster, compliance: string): void },
+  onClick: (cluster: ManagedCluster, compliance: string) => void,
   t: TFunction
 ) {
   return (
