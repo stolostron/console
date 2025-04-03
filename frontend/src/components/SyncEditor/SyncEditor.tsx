@@ -188,7 +188,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
       'paste',
       (event: { stopPropagation: () => void; preventDefault: () => void; originalEvent: any; target: any }) => {
         const selection = editorRef.current?.getSelection()
-        const pasteText = (event.originalEvent || event).clipboardData.getData('text/plain').trim()
+        const pasteText = (event.originalEvent ?? event).clipboardData.getData('text/plain').trim()
         const model = editorRef.current?.getModel()
         const lines = pasteText.split(/\r?\n/)
 
@@ -516,7 +516,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
       if (!editorHasErrors) {
         const clonedUnredactedChange = cloneDeep(unredactedChange)
         setResourceChanges(clonedUnredactedChange)
-        customErrors = setFormValues(syncs, clonedUnredactedChange) || []
+        customErrors = setFormValues(syncs, clonedUnredactedChange) ?? []
         setCustomValidationErrors(customErrors)
       }
       setEditorHasErrors(editorHasErrors)
@@ -552,7 +552,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
       const model = editorRef.current?.getModel()
       const editStack = model['_commandManager']
       setHasRedo(editStack?.future.length > 0)
-      setHasUndo(editStack?.currentOpenStackElement || editStack?.past.length > 0)
+      setHasUndo(editStack?.currentOpenStackElement ?? editStack?.past.length > 0)
     }
   }
 
