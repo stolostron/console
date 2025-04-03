@@ -183,13 +183,13 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
 
   useEffect(() => {
     // if user is pasting a certificate, fix the indent
-    const domNode = editorRef.current.getDomNode()
+    const domNode = editorRef.current?.getDomNode()
     domNode.addEventListener(
       'paste',
       (event: { stopPropagation: () => void; preventDefault: () => void; originalEvent: any; target: any }) => {
-        const selection = editorRef.current.getSelection()
+        const selection = editorRef.current?.getSelection()
         const pasteText = (event.originalEvent || event).clipboardData.getData('text/plain').trim()
-        const model = editorRef.current.getModel()
+        const model = editorRef.current?.getModel()
         const lines = pasteText.split(/\r?\n/)
 
         if (selection.selectionStartLineNumber - 1 > 0 && pasteText.startsWith('-----BEGIN')) {
@@ -351,7 +351,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
 
   // if editor loses focus, do form changes immediately
   useEffect(() => {
-    editorRef.current.onDidBlurEditorWidget(() => {
+    editorRef.current?.onDidBlurEditorWidget(() => {
       const editorHasFocus = !!document.querySelector('.monaco-editor.focused')
       const activeId = document.activeElement?.id as string
       if (!editorHasFocus && ['undo-button', 'redo-button'].indexOf(activeId) === -1) {
@@ -415,7 +415,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
       const viewState = editorRef.current?.saveViewState()
       model.setValue(yaml)
       editorRef.current?.restoreViewState(viewState)
-      editorRef.current.deltaDecorations([], saveDecorations)
+      editorRef.current?.deltaDecorations([], saveDecorations)
       setHasRedo(false)
       setHasUndo(false)
 
@@ -663,7 +663,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             aria-label={t('Copy to clipboard')}
             disabled={false}
             onClick={() => {
-              const selectedText = editorRef.current.getModel().getValueInRange(editorRef.current.getSelection())
+              const selectedText = editorRef.current?.getModel().getValueInRange(editorRef.current?.getSelection())
               navigator.clipboard.writeText(selectedText.length === 0 ? lastUnredactedChange?.yaml : selectedText)
               setCopyHint(selectedText.length === 0 ? allCopiedCopy : copiedCopy)
               setTimeout(() => {
