@@ -197,7 +197,7 @@ export function CreateSubscriptionApplication(
   )
 
   const hubCluster = useHubCluster(true)
-  const isLocalCluster = hubCluster ? true : false
+  const isLocalCluster = !!hubCluster
 
   // create button
   const [creationStatus, setCreationStatus] = useState<CreationStatus>()

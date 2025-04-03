@@ -153,14 +153,14 @@ export const getApplication = async (
       model.appSetApps = uiData.appSetApps
       // uiData.clusterList = ['local-cluster']
       model.appSetClusters = uiData.clusterList.reduce((list, clusterName) => {
-        const cluster = clusters.find((cluster) => cluster.name === clusterName)
-        if (cluster) {
+        const _cluster = clusters.find((c) => c.name === clusterName)
+        if (_cluster) {
           list.push({
-            name: cluster.name,
-            namespace: cluster.namespace,
-            url: cluster.kubeApiServer,
-            status: cluster.status,
-            creationTimestamp: cluster.creationTimestamp,
+            name: _cluster.name,
+            namespace: _cluster.namespace,
+            url: _cluster.kubeApiServer,
+            status: _cluster.status,
+            creationTimestamp: _cluster.creationTimestamp,
           })
         }
         return list

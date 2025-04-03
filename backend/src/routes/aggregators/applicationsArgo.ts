@@ -2,7 +2,15 @@
 import get from 'get-value'
 import { logger } from '../../lib/logger'
 import { ITransformedResource } from '../../lib/pagination'
-import { Cluster, IApplicationSet, IResource } from '../../resources/resource'
+import {
+  ApplicationSetApiVersion,
+  ApplicationSetKind,
+  ArgoApplicationApiVersion,
+  ArgoApplicationKind,
+  Cluster,
+  IApplicationSet,
+  IResource,
+} from '../../resources/resource'
 import { getKubeResources, getHubClusterName } from '../events'
 import { ApplicationCacheType, IQuery, SEARCH_QUERY_LIMIT } from './applications'
 import {
@@ -46,8 +54,8 @@ interface IArgoAppRemoteResource {
 }
 
 // a map from an appset name to the apps that it created
-export let appSetAppsMap: Record<string, IResource[]> = {}
-export let allArgoApplications: ITransformedResource[] = []
+let appSetAppsMap: Record<string, IResource[]> = {}
+let allArgoApplications: ITransformedResource[] = []
 
 let argoPageChunk: ApplicationPageChunk
 const argoPageChunks: ApplicationPageChunk[] = []
@@ -100,12 +108,12 @@ export function cacheArgoApplications(applicationCache: ApplicationCacheType, re
   }
 
   allArgoApplications = [
-    ...getKubeResources('Application', 'argoproj.io/v1alpha1'),
+    ...getKubeResources(ArgoApplicationKind, ArgoApplicationApiVersion),
     ...(getApplicationsHelper(applicationCache, ['remoteArgoApps']) || []),
   ]
   try {
     applicationCache['appset'] = transform(
-      structuredClone(getKubeResources('ApplicationSet', 'argoproj.io/v1alpha1')),
+      structuredClone(getKubeResources(ApplicationSetKind, ApplicationSetApiVersion)),
       false,
       localCluster,
       clusters
@@ -121,7 +129,7 @@ export function cacheArgoApplications(applicationCache: ApplicationCacheType, re
 }
 
 function getLocalArgoApps(argoAppSet: Set<string>, clusters: Cluster[]) {
-  const argoApps = getKubeResources('Application', 'argoproj.io/v1alpha1')
+  const argoApps = getKubeResources(ArgoApplicationKind, ArgoApplicationApiVersion)
   return argoApps.filter((app) => {
     const argoApp = app as IArgoAppLocalResource
     const resources = argoApp.status ? argoApp.status.resources : undefined
@@ -150,8 +158,8 @@ function getRemoteArgoApps(argoAppSet: Set<string>, remoteArgoApps: IResource[])
     if (!argoApp._hostingResource) {
       // Skip apps created by Argo pull model
       apps.push({
-        apiVersion: 'argoproj.io/v1alpha1',
-        kind: 'Application',
+        apiVersion: ArgoApplicationApiVersion,
+        kind: ArgoApplicationKind,
         metadata: {
           name: argoApp.name,
           namespace: argoApp.namespace,

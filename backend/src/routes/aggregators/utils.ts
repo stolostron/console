@@ -206,30 +206,28 @@ export const getArgoPushModelClusterList = (
   const clusterSet = new Set<string>()
 
   resources.forEach((resource) => {
-    const isRemoteArgoApp = resource.status?.cluster ? true : false
+    const isRemoteArgoApp = !!resource.status?.cluster
 
     if (
       (resource.spec.destination?.name === 'in-cluster' ||
         resource.spec.destination?.name === localCluster?.name ||
-        isLocalClusterURL(resource.spec.destination?.server || '', localCluster)) &&
+        isLocalClusterURL(resource.spec.destination?.server ?? '', localCluster)) &&
       !isRemoteArgoApp
     ) {
       clusterSet.add(localCluster?.name ?? '')
+    } else if (isRemoteArgoApp) {
+      clusterSet.add(
+        getArgoDestinationCluster(
+          resource.spec.destination,
+          managedClusters,
+          resource.status.cluster,
+          localCluster?.name
+        )
+      )
     } else {
-      if (isRemoteArgoApp) {
-        clusterSet.add(
-          getArgoDestinationCluster(
-            resource.spec.destination,
-            managedClusters,
-            resource.status.cluster,
-            localCluster?.name
-          )
-        )
-      } else {
-        clusterSet.add(
-          getArgoDestinationCluster(resource.spec.destination, managedClusters, undefined, localCluster?.name)
-        )
-      }
+      clusterSet.add(
+        getArgoDestinationCluster(resource.spec.destination, managedClusters, undefined, localCluster?.name)
+      )
     }
   })
 
@@ -335,7 +333,7 @@ export function getArgoDestinationCluster(
   const serverApi = destination?.server
   if (serverApi) {
     if (serverApi === 'https://kubernetes.default.svc') {
-      clusterName = cluster ? cluster : hubClusterName
+      clusterName = cluster || hubClusterName
     } else {
       const server = clusters.find((cls) => cls.kubeApiServer === serverApi)
       clusterName = server ? server.name : 'unknown'
