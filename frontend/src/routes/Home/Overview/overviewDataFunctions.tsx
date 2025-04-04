@@ -253,7 +253,7 @@ export function getPolicySummary(
   return {
     mainSection: {
       title: `${totalPolicies}`,
-      description: 'enabled policies',
+      description: t('enabled policies'),
       link: `${NavigationPath.policies}?enabled=True`,
     },
     statusSection: [

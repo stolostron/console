@@ -369,7 +369,7 @@ export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Re
                         })
                       }
                     >
-                      Hide card
+                      {t('Hide card')}
                     </DropdownItem>,
                   ]}
                 />
