@@ -718,473 +718,473 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
       {
         type: 'SectionGroup',
         title: t('submariner.install.step.configure.title'),
-        sections: selectedClusters
-          .filter((selected) => !withoutSubmarinerConfigClusters.find((c) => c.displayName === selected))
-          .map((c) => {
-            const cluster = availableClusters.find((ac) => ac.displayName === c)!
-            const clusterName = cluster.displayName!
-            return {
-              title: clusterName,
-              wizardTitle: t('submariner.install.form.config.title', {
-                clusterName,
-                provider: ProviderLongTextMap[cluster.provider!],
-              }),
-              type: 'Section',
-              description: (
-                <AcmButton
-                  onClick={() => window.open(DOC_LINKS.SUBMARINER, '_blank')}
-                  icon={<ExternalLinkAltIcon />}
-                  iconPosition="right"
-                  variant="link"
-                  isInline
-                >
-                  {t('submariner.install.form.config.doc')}
-                </AcmButton>
-              ),
-              inputs: [
-                {
-                  id: 'credential-secret',
-                  type: 'Text',
-                  label: t('submariner.install.form.credential.secret'),
-                  placeholder: '',
-                  labelHelp: t('submariner.install.form.credential.secret.labelHelp'),
-                  value: providerSecretMap[clusterName],
-                  isHidden:
-                    providerSecretMap[clusterName] === null ||
-                    cluster.provider === Provider.vmware ||
-                    cluster.provider === Provider.baremetal ||
-                    cluster.provider === Provider.hostinventory ||
-                    cluster.distribution?.isManagedOpenShift,
-                  isRequired:
-                    [Provider.aws, Provider.gcp, Provider.azure].includes(cluster.provider!) &&
-                    providerSecretMap[clusterName] !== null,
-                  isDisabled: providerSecretMap[clusterName] !== null,
-                  onChange: () => {},
+        sections: selectedClusters.map((c) => {
+          const isHidden = !withoutSubmarinerConfigClusters.find((cluster) => cluster.displayName === c)
+          const cluster = availableClusters.find((ac) => ac.displayName === c)!
+          const clusterName = cluster.displayName!
+          return {
+            title: clusterName,
+            wizardTitle: t('submariner.install.form.config.title', {
+              clusterName,
+              provider: ProviderLongTextMap[cluster.provider!],
+            }),
+            type: 'Section',
+            isHidden,
+            description: (
+              <AcmButton
+                onClick={() => window.open(DOC_LINKS.SUBMARINER, '_blank')}
+                icon={<ExternalLinkAltIcon />}
+                iconPosition="right"
+                variant="link"
+                isInline
+              >
+                {t('submariner.install.form.config.doc')}
+              </AcmButton>
+            ),
+            inputs: [
+              {
+                id: 'credential-secret',
+                type: 'Text',
+                label: t('submariner.install.form.credential.secret'),
+                placeholder: '',
+                labelHelp: t('submariner.install.form.credential.secret.labelHelp'),
+                value: providerSecretMap[clusterName],
+                isHidden:
+                  providerSecretMap[clusterName] === null ||
+                  cluster.provider === Provider.vmware ||
+                  cluster.provider === Provider.baremetal ||
+                  cluster.provider === Provider.hostinventory ||
+                  cluster.distribution?.isManagedOpenShift,
+                isRequired:
+                  [Provider.aws, Provider.gcp, Provider.azure].includes(cluster.provider!) &&
+                  providerSecretMap[clusterName] !== null,
+                isDisabled: providerSecretMap[clusterName] !== null,
+                onChange: () => {},
+              },
+              {
+                id: 'awsAccessKeyID',
+                type: 'Text',
+                label: t('credentialsForm.aws_access_key_id.label'),
+                placeholder: t('credentialsForm.aws_access_key_id.placeholder'),
+                labelHelp: t('credentialsForm.aws_access_key_id.labelHelp'),
+                value: awsAccessKeyIDs[clusterName] ?? '', // without the ?? '' the UI repeats the values across sub-pages
+                onChange: (value: string) => {
+                  const copy = { ...awsAccessKeyIDs }
+                  copy[clusterName] = value
+                  setAwsAccessKeyIDs(copy)
                 },
-                {
-                  id: 'awsAccessKeyID',
-                  type: 'Text',
-                  label: t('credentialsForm.aws_access_key_id.label'),
-                  placeholder: t('credentialsForm.aws_access_key_id.placeholder'),
-                  labelHelp: t('credentialsForm.aws_access_key_id.labelHelp'),
-                  value: awsAccessKeyIDs[clusterName] ?? '', // without the ?? '' the UI repeats the values across sub-pages
-                  onChange: (value: string) => {
-                    const copy = { ...awsAccessKeyIDs }
-                    copy[clusterName] = value
-                    setAwsAccessKeyIDs(copy)
-                  },
-                  isHidden:
-                    cluster.provider !== Provider.aws ||
-                    providerSecretMap[clusterName] !== null ||
-                    cluster.distribution?.isManagedOpenShift,
-                  isRequired: cluster.provider === Provider.aws && providerSecretMap[clusterName] === null,
+                isHidden:
+                  cluster.provider !== Provider.aws ||
+                  providerSecretMap[clusterName] !== null ||
+                  cluster.distribution?.isManagedOpenShift,
+                isRequired: cluster.provider === Provider.aws && providerSecretMap[clusterName] === null,
+              },
+              {
+                id: 'awsSecretAccessKeyID',
+                type: 'Text',
+                label: t('credentialsForm.aws_secret_access_key.label'),
+                placeholder: t('credentialsForm.aws_secret_access_key.placeholder'),
+                labelHelp: t('credentialsForm.aws_secret_access_key.labelHelp'),
+                value: awsSecretAccessKeyIDs[clusterName] ?? '',
+                onChange: (value: string) => {
+                  const copy = { ...awsSecretAccessKeyIDs }
+                  copy[clusterName] = value
+                  setAwsSecretAccessKeyIDs(copy)
                 },
-                {
-                  id: 'awsSecretAccessKeyID',
-                  type: 'Text',
-                  label: t('credentialsForm.aws_secret_access_key.label'),
-                  placeholder: t('credentialsForm.aws_secret_access_key.placeholder'),
-                  labelHelp: t('credentialsForm.aws_secret_access_key.labelHelp'),
-                  value: awsSecretAccessKeyIDs[clusterName] ?? '',
-                  onChange: (value: string) => {
-                    const copy = { ...awsSecretAccessKeyIDs }
-                    copy[clusterName] = value
-                    setAwsSecretAccessKeyIDs(copy)
-                  },
-                  isHidden:
-                    cluster.provider !== Provider.aws ||
-                    providerSecretMap[clusterName] !== null ||
-                    cluster.distribution?.isManagedOpenShift,
-                  isRequired: cluster.provider === Provider.aws && providerSecretMap[clusterName] === null,
-                  isSecret: true,
+                isHidden:
+                  cluster.provider !== Provider.aws ||
+                  providerSecretMap[clusterName] !== null ||
+                  cluster.distribution?.isManagedOpenShift,
+                isRequired: cluster.provider === Provider.aws && providerSecretMap[clusterName] === null,
+                isSecret: true,
+              },
+              {
+                id: 'gcServiceAccountKey',
+                type: 'TextArea',
+                label: t('credentialsForm.osServiceAccount.json.label'),
+                placeholder: t('credentialsForm.osServiceAccount.json.placeholder'),
+                labelHelp: t('credentialsForm.osServiceAccount.json.labelHelp'),
+                value: gcServiceAccountKeys[clusterName] ?? '',
+                onChange: (value) => {
+                  const copy = { ...gcServiceAccountKeys }
+                  copy[clusterName] = value
+                  setGcServiceAccountKeys(copy)
                 },
-                {
-                  id: 'gcServiceAccountKey',
-                  type: 'TextArea',
-                  label: t('credentialsForm.osServiceAccount.json.label'),
-                  placeholder: t('credentialsForm.osServiceAccount.json.placeholder'),
-                  labelHelp: t('credentialsForm.osServiceAccount.json.labelHelp'),
-                  value: gcServiceAccountKeys[clusterName] ?? '',
-                  onChange: (value) => {
-                    const copy = { ...gcServiceAccountKeys }
-                    copy[clusterName] = value
-                    setGcServiceAccountKeys(copy)
-                  },
-                  validation: (value) => validateJSON(value, t),
-                  isHidden: cluster.provider !== Provider.gcp || providerSecretMap[clusterName] !== null,
-                  isRequired: cluster.provider === Provider.gcp && providerSecretMap[clusterName] === null,
-                  isSecret: true,
+                validation: (value) => validateJSON(value, t),
+                isHidden: cluster.provider !== Provider.gcp || providerSecretMap[clusterName] !== null,
+                isRequired: cluster.provider === Provider.gcp && providerSecretMap[clusterName] === null,
+                isSecret: true,
+              },
+              {
+                id: 'baseDomainResourceGroupName',
+                type: 'Text',
+                label: t('Base domain resource group name'),
+                placeholder: t('Enter your base domain resource group name'),
+                labelHelp: t(
+                  'Azure Resource Groups are logical collections of virtual machines, storage accounts, virtual networks, web apps, databases, and/or database servers. You can group together related resources for an application and divide them into groups for production and non-production.'
+                ),
+                value: baseDomainResourceGroupNames[clusterName] ?? '',
+                onChange: (value: string) => {
+                  const copy = { ...baseDomainResourceGroupNames }
+                  copy[clusterName] = value
+                  setBaseDomainResourceGroupNames(copy)
                 },
-                {
-                  id: 'baseDomainResourceGroupName',
-                  type: 'Text',
-                  label: t('Base domain resource group name'),
-                  placeholder: t('Enter your base domain resource group name'),
-                  labelHelp: t(
-                    'Azure Resource Groups are logical collections of virtual machines, storage accounts, virtual networks, web apps, databases, and/or database servers. You can group together related resources for an application and divide them into groups for production and non-production.'
-                  ),
-                  value: baseDomainResourceGroupNames[clusterName] ?? '',
-                  onChange: (value: string) => {
-                    const copy = { ...baseDomainResourceGroupNames }
-                    copy[clusterName] = value
-                    setBaseDomainResourceGroupNames(copy)
-                  },
-                  isHidden:
-                    cluster.provider !== Provider.azure ||
-                    providerSecretMap[clusterName] !== null ||
-                    cluster.distribution?.isManagedOpenShift,
-                  isRequired: cluster.provider === Provider.azure && providerSecretMap[clusterName] === null,
+                isHidden:
+                  cluster.provider !== Provider.azure ||
+                  providerSecretMap[clusterName] !== null ||
+                  cluster.distribution?.isManagedOpenShift,
+                isRequired: cluster.provider === Provider.azure && providerSecretMap[clusterName] === null,
+              },
+              {
+                id: 'clientId',
+                type: 'Text',
+                label: t('Client ID'),
+                placeholder: t('Enter your client ID'),
+                labelHelp: t(
+                  "Your client ID. This value is generated as the 'appId' property when you create a service principal with the following command: 'az ad sp create-for-rbac --role Contributor --name <service_principal> --scopes <list_of_scopes>'."
+                ),
+                value: clientIds[clusterName] ?? '',
+                onChange: (value: string) => {
+                  const copy = { ...clientIds }
+                  copy[clusterName] = value
+                  setClientIds(copy)
                 },
-                {
-                  id: 'clientId',
-                  type: 'Text',
-                  label: t('Client ID'),
-                  placeholder: t('Enter your client ID'),
-                  labelHelp: t(
-                    "Your client ID. This value is generated as the 'appId' property when you create a service principal with the following command: 'az ad sp create-for-rbac --role Contributor --name <service_principal> --scopes <list_of_scopes>'."
-                  ),
-                  value: clientIds[clusterName] ?? '',
-                  onChange: (value: string) => {
-                    const copy = { ...clientIds }
-                    copy[clusterName] = value
-                    setClientIds(copy)
-                  },
-                  isHidden:
-                    cluster.provider !== Provider.azure ||
-                    providerSecretMap[clusterName] !== null ||
-                    cluster.distribution?.isManagedOpenShift,
-                  isRequired: cluster.provider === Provider.azure && providerSecretMap[clusterName] === null,
+                isHidden:
+                  cluster.provider !== Provider.azure ||
+                  providerSecretMap[clusterName] !== null ||
+                  cluster.distribution?.isManagedOpenShift,
+                isRequired: cluster.provider === Provider.azure && providerSecretMap[clusterName] === null,
+              },
+              {
+                id: 'clientSecret',
+                type: 'Text',
+                label: t('Client secret'),
+                placeholder: t('Enter your client secret'),
+                labelHelp: t(
+                  "Your client password. This value is generated as the 'password' property when you create a service principal with the following command: 'az ad sp create-for-rbac --role Contributor --name <service_principal> --scopes <list_of_scopes>'."
+                ),
+                value: clientSecrets[clusterName] ?? '',
+                onChange: (value: string) => {
+                  const copy = { ...clientSecrets }
+                  copy[clusterName] = value
+                  setClientSecrets(copy)
                 },
-                {
-                  id: 'clientSecret',
-                  type: 'Text',
-                  label: t('Client secret'),
-                  placeholder: t('Enter your client secret'),
-                  labelHelp: t(
-                    "Your client password. This value is generated as the 'password' property when you create a service principal with the following command: 'az ad sp create-for-rbac --role Contributor --name <service_principal> --scopes <list_of_scopes>'."
-                  ),
-                  value: clientSecrets[clusterName] ?? '',
-                  onChange: (value: string) => {
-                    const copy = { ...clientSecrets }
-                    copy[clusterName] = value
-                    setClientSecrets(copy)
-                  },
-                  isHidden:
-                    cluster.provider !== Provider.azure ||
-                    providerSecretMap[clusterName] !== null ||
-                    cluster.distribution?.isManagedOpenShift,
-                  isRequired: cluster.provider === Provider.azure && providerSecretMap[clusterName] === null,
-                  isSecret: true,
+                isHidden:
+                  cluster.provider !== Provider.azure ||
+                  providerSecretMap[clusterName] !== null ||
+                  cluster.distribution?.isManagedOpenShift,
+                isRequired: cluster.provider === Provider.azure && providerSecretMap[clusterName] === null,
+                isSecret: true,
+              },
+              {
+                id: 'subscriptionId',
+                type: 'Text',
+                label: t('Subscription ID'),
+                placeholder: t('Enter your subscription ID'),
+                labelHelp: t(
+                  "Your subscription ID. This is the value of the 'id' property in the output of the following command: 'az account show'"
+                ),
+                value: subscriptionIds[clusterName] ?? '',
+                onChange: (value: string) => {
+                  const copy = { ...subscriptionIds }
+                  copy[clusterName] = value
+                  setSubscriptionIds(copy)
                 },
-                {
-                  id: 'subscriptionId',
-                  type: 'Text',
-                  label: t('Subscription ID'),
-                  placeholder: t('Enter your subscription ID'),
-                  labelHelp: t(
-                    "Your subscription ID. This is the value of the 'id' property in the output of the following command: 'az account show'"
-                  ),
-                  value: subscriptionIds[clusterName] ?? '',
-                  onChange: (value: string) => {
-                    const copy = { ...subscriptionIds }
-                    copy[clusterName] = value
-                    setSubscriptionIds(copy)
-                  },
-                  isHidden:
-                    cluster.provider !== Provider.azure ||
-                    providerSecretMap[clusterName] !== null ||
-                    cluster.distribution?.isManagedOpenShift,
-                  isRequired: cluster.provider === Provider.azure && providerSecretMap[clusterName] === null,
+                isHidden:
+                  cluster.provider !== Provider.azure ||
+                  providerSecretMap[clusterName] !== null ||
+                  cluster.distribution?.isManagedOpenShift,
+                isRequired: cluster.provider === Provider.azure && providerSecretMap[clusterName] === null,
+              },
+              {
+                id: 'tenantId',
+                type: 'Text',
+                label: t('Tenant ID'),
+                placeholder: t('Enter your tenant ID'),
+                labelHelp: t(
+                  "Your tenant ID. This is the value of the 'tenantId' property in the output of the following command: 'az account show'"
+                ),
+                value: tenantIds[clusterName] ?? '',
+                onChange: (value: string) => {
+                  const copy = { ...tenantIds }
+                  copy[clusterName] = value
+                  setTenantIds(copy)
                 },
-                {
-                  id: 'tenantId',
-                  type: 'Text',
-                  label: t('Tenant ID'),
-                  placeholder: t('Enter your tenant ID'),
-                  labelHelp: t(
-                    "Your tenant ID. This is the value of the 'tenantId' property in the output of the following command: 'az account show'"
-                  ),
-                  value: tenantIds[clusterName] ?? '',
-                  onChange: (value: string) => {
-                    const copy = { ...tenantIds }
-                    copy[clusterName] = value
-                    setTenantIds(copy)
-                  },
-                  isHidden:
-                    cluster.provider !== Provider.azure ||
-                    providerSecretMap[clusterName] !== null ||
-                    cluster.distribution?.isManagedOpenShift,
-                  isRequired: cluster.provider === Provider.azure && providerSecretMap[clusterName] === null,
+                isHidden:
+                  cluster.provider !== Provider.azure ||
+                  providerSecretMap[clusterName] !== null ||
+                  cluster.distribution?.isManagedOpenShift,
+                isRequired: cluster.provider === Provider.azure && providerSecretMap[clusterName] === null,
+              },
+              {
+                id: 'clouds.yaml',
+                type: 'TextArea',
+                label: t('OpenStack clouds.yaml'),
+                placeholder: t('Enter the contents of the OpenStack clouds.yaml'),
+                labelHelp: t(
+                  'The OpenStack clouds.yaml file, including the password, to connect to the OpenStack server.'
+                ),
+                value: cloudsYamls[clusterName] ?? '',
+                isHidden: cluster.provider !== Provider.openstack || providerSecretMap[clusterName] !== null,
+                isRequired: cluster.provider === Provider.openstack && providerSecretMap[clusterName] === null,
+                onChange: (value: string) => {
+                  const copy = { ...cloudsYamls }
+                  copy[clusterName] = value
+                  setOpenstackCloudsYamls(copy)
                 },
-                {
-                  id: 'clouds.yaml',
-                  type: 'TextArea',
-                  label: t('OpenStack clouds.yaml'),
-                  placeholder: t('Enter the contents of the OpenStack clouds.yaml'),
-                  labelHelp: t(
-                    'The OpenStack clouds.yaml file, including the password, to connect to the OpenStack server.'
-                  ),
-                  value: cloudsYamls[clusterName] ?? '',
-                  isHidden: cluster.provider !== Provider.openstack || providerSecretMap[clusterName] !== null,
-                  isRequired: cluster.provider === Provider.openstack && providerSecretMap[clusterName] === null,
-                  onChange: (value: string) => {
-                    const copy = { ...cloudsYamls }
-                    copy[clusterName] = value
-                    setOpenstackCloudsYamls(copy)
-                  },
-                  isSecret: true,
-                  validation: (value) => validateCloudsYaml(value, clouds[clusterName] as string, '', t),
+                isSecret: true,
+                validation: (value) => validateCloudsYaml(value, clouds[clusterName] as string, '', t),
+              },
+              {
+                id: 'cloud',
+                type: 'Text',
+                label: t('Cloud name'),
+                placeholder: t('Enter the OpenStack cloud name to reference in the clouds.yaml'),
+                labelHelp: t(
+                  'The name of the cloud section of the clouds.yaml to use for establishing communication to the OpenStack server.'
+                ),
+                value: clouds[clusterName] ?? '',
+                onChange: (value: string) => {
+                  const copy = { ...clouds }
+                  copy[clusterName] = value
+                  setOpenstackClouds(copy)
                 },
-                {
-                  id: 'cloud',
-                  type: 'Text',
-                  label: t('Cloud name'),
-                  placeholder: t('Enter the OpenStack cloud name to reference in the clouds.yaml'),
-                  labelHelp: t(
-                    'The name of the cloud section of the clouds.yaml to use for establishing communication to the OpenStack server.'
-                  ),
-                  value: clouds[clusterName] ?? '',
-                  onChange: (value: string) => {
-                    const copy = { ...clouds }
-                    copy[clusterName] = value
-                    setOpenstackClouds(copy)
-                  },
-                  isHidden: cluster.provider !== Provider.openstack || providerSecretMap[clusterName] !== null,
-                  isRequired: cluster.provider === Provider.openstack && providerSecretMap[clusterName] === null,
+                isHidden: cluster.provider !== Provider.openstack || providerSecretMap[clusterName] !== null,
+                isRequired: cluster.provider === Provider.openstack && providerSecretMap[clusterName] === null,
+              },
+              {
+                id: 'aws-instance-type',
+                type: 'Text',
+                label: t('submariner.install.form.instancetype'),
+                placeholder: t('submariner.install.form.instancetype.placeholder'),
+                labelHelp: t('submariner.install.form.instancetype.labelHelp.aws'),
+                value: awsInstanceTypes[clusterName] ?? submarinerConfigDefault.awsInstanceType,
+                isHidden: cluster.provider !== Provider.aws || cluster.distribution?.isManagedOpenShift,
+                onChange: (value) => {
+                  const copy = { ...awsInstanceTypes }
+                  copy[clusterName] = value
+                  setAwsInstanceTypes(copy)
                 },
-                {
-                  id: 'aws-instance-type',
-                  type: 'Text',
-                  label: t('submariner.install.form.instancetype'),
-                  placeholder: t('submariner.install.form.instancetype.placeholder'),
-                  labelHelp: t('submariner.install.form.instancetype.labelHelp.aws'),
-                  value: awsInstanceTypes[clusterName] ?? submarinerConfigDefault.awsInstanceType,
-                  isHidden: cluster.provider !== Provider.aws || cluster.distribution?.isManagedOpenShift,
-                  onChange: (value) => {
-                    const copy = { ...awsInstanceTypes }
-                    copy[clusterName] = value
-                    setAwsInstanceTypes(copy)
-                  },
+              },
+              {
+                id: 'az-instance-type',
+                type: 'Text',
+                label: t('submariner.install.form.instancetype'),
+                placeholder: t('submariner.install.form.instancetype.placeholder'),
+                labelHelp: t('submariner.install.form.instancetype.labelHelp.azure'),
+                value: azInstanceTypes[clusterName] ?? submarinerConfigDefault.azureInstanceType,
+                isHidden: cluster.provider !== Provider.azure || cluster.distribution?.isManagedOpenShift,
+                onChange: (value) => {
+                  const copy = { ...azInstanceTypes }
+                  copy[clusterName] = value
+                  setAzInstanceTypes(copy)
                 },
-                {
-                  id: 'az-instance-type',
-                  type: 'Text',
-                  label: t('submariner.install.form.instancetype'),
-                  placeholder: t('submariner.install.form.instancetype.placeholder'),
-                  labelHelp: t('submariner.install.form.instancetype.labelHelp.azure'),
-                  value: azInstanceTypes[clusterName] ?? submarinerConfigDefault.azureInstanceType,
-                  isHidden: cluster.provider !== Provider.azure || cluster.distribution?.isManagedOpenShift,
-                  onChange: (value) => {
-                    const copy = { ...azInstanceTypes }
-                    copy[clusterName] = value
-                    setAzInstanceTypes(copy)
-                  },
+              },
+              {
+                id: 'openstack-instance-type',
+                type: 'Text',
+                label: t('submariner.install.form.instancetype'),
+                placeholder: t('submariner.install.form.instancetype.placeholder'),
+                labelHelp: t(
+                  'The OpenStack instance type of the gateway node that will be created on the managed cluster (default PnTAE.CPU_4_Memory_8192_Disk_50).'
+                ),
+                value: openStackInstanceTypes[clusterName] ?? submarinerConfigDefault.openStackInstanceType,
+                isHidden: cluster.provider !== Provider.openstack,
+                onChange: (value) => {
+                  const copy = { ...openStackInstanceTypes }
+                  copy[clusterName] = value
+                  setOpenStackInstanceTypes(copy)
                 },
-                {
-                  id: 'openstack-instance-type',
-                  type: 'Text',
-                  label: t('submariner.install.form.instancetype'),
-                  placeholder: t('submariner.install.form.instancetype.placeholder'),
-                  labelHelp: t(
-                    'The OpenStack instance type of the gateway node that will be created on the managed cluster (default PnTAE.CPU_4_Memory_8192_Disk_50).'
-                  ),
-                  value: openStackInstanceTypes[clusterName] ?? submarinerConfigDefault.openStackInstanceType,
-                  isHidden: cluster.provider !== Provider.openstack,
-                  onChange: (value) => {
-                    const copy = { ...openStackInstanceTypes }
-                    copy[clusterName] = value
-                    setOpenStackInstanceTypes(copy)
-                  },
+              },
+              {
+                id: 'isAirGappedDeployment',
+                type: 'Checkbox',
+                label: t('Disconnected cluster'),
+                labelHelp: t(
+                  'Enable this option to instruct Submariner not to access any external servers for public IP resolution.'
+                ),
+                value:
+                  airGappedDeployments[clusterName] !== undefined
+                    ? airGappedDeployments[clusterName]
+                    : submarinerConfigDefault.airGappedDeployment,
+                onChange: (value: boolean) => {
+                  const copy = { ...airGappedDeployments }
+                  copy[clusterName] = value
+                  setAirGappedDeployments(copy)
                 },
-                {
-                  id: 'isAirGappedDeployment',
-                  type: 'Checkbox',
-                  label: t('Disconnected cluster'),
-                  labelHelp: t(
-                    'Enable this option to instruct Submariner not to access any external servers for public IP resolution.'
-                  ),
-                  value:
-                    airGappedDeployments[clusterName] !== undefined
-                      ? airGappedDeployments[clusterName]
-                      : submarinerConfigDefault.airGappedDeployment,
-                  onChange: (value: boolean) => {
-                    const copy = { ...airGappedDeployments }
-                    copy[clusterName] = value
-                    setAirGappedDeployments(copy)
-                  },
+              },
+              {
+                id: 'natt-port',
+                type: 'TextNumber',
+                label: t('submariner.install.form.nattport'),
+                placeholder: t('submariner.install.form.port.placeholder'),
+                labelHelp: t('submariner.install.form.nattport.labelHelp'),
+                value: nattPorts[clusterName] ?? submarinerConfigDefault.nattPort.toString(),
+                onChange: (value: number) => {
+                  const copy = { ...nattPorts }
+                  copy[clusterName] = value
+                  setNattPorts(copy)
                 },
-                {
-                  id: 'natt-port',
-                  type: 'TextNumber',
-                  label: t('submariner.install.form.nattport'),
-                  placeholder: t('submariner.install.form.port.placeholder'),
-                  labelHelp: t('submariner.install.form.nattport.labelHelp'),
-                  value: nattPorts[clusterName] ?? submarinerConfigDefault.nattPort.toString(),
-                  onChange: (value: number) => {
-                    const copy = { ...nattPorts }
-                    copy[clusterName] = value
-                    setNattPorts(copy)
-                  },
+              },
+              {
+                id: 'natt-enable',
+                type: 'Checkbox',
+                label: t('submariner.install.form.nattenable'),
+                // placeholder: t('submariner.install.form.nattenable.placeholder'),
+                // labelHelp: t('submariner.install.form.nattenable.labelHelp'),
+                value:
+                  nattEnables[clusterName] !== undefined
+                    ? nattEnables[clusterName]
+                    : submarinerConfigDefault.nattEnable,
+                onChange: (value: boolean) => {
+                  const copy = { ...nattEnables }
+                  copy[clusterName] = value
+                  setNattEnables(copy)
                 },
-                {
-                  id: 'natt-enable',
-                  type: 'Checkbox',
-                  label: t('submariner.install.form.nattenable'),
-                  // placeholder: t('submariner.install.form.nattenable.placeholder'),
-                  // labelHelp: t('submariner.install.form.nattenable.labelHelp'),
-                  value:
-                    nattEnables[clusterName] !== undefined
-                      ? nattEnables[clusterName]
-                      : submarinerConfigDefault.nattEnable,
-                  onChange: (value: boolean) => {
-                    const copy = { ...nattEnables }
-                    copy[clusterName] = value
-                    setNattEnables(copy)
-                  },
+              },
+              {
+                id: 'global-net-cidr',
+                type: 'Text',
+                label: t('Globalnet CIDR'),
+                placeholder: t('Enter Globalnet CIDR'),
+                labelHelp: t(
+                  'The Globalnet CIDR to be used for the managed cluster (If left blank, a CIDR will be allocated from clusterset pool).'
+                ),
+                value: globalNetCIDRs[clusterName] ?? '',
+                isHidden: !globalnetEnabled,
+                onChange: (value) => {
+                  const copy = { ...globalNetCIDRs }
+                  copy[clusterName] = value
+                  setglobalNetCIDRs(copy)
                 },
-                {
-                  id: 'global-net-cidr',
-                  type: 'Text',
-                  label: t('Globalnet CIDR'),
-                  placeholder: t('Enter Globalnet CIDR'),
-                  labelHelp: t(
-                    'The Globalnet CIDR to be used for the managed cluster (If left blank, a CIDR will be allocated from clusterset pool).'
-                  ),
-                  value: globalNetCIDRs[clusterName] ?? '',
-                  isHidden: !globalnetEnabled,
-                  onChange: (value) => {
-                    const copy = { ...globalNetCIDRs }
-                    copy[clusterName] = value
-                    setglobalNetCIDRs(copy)
-                  },
-                  validation: (value) => validateCidr(value, t),
+                validation: (value) => validateCidr(value, t),
+              },
+              {
+                id: 'gateways',
+                type: 'Number',
+                label: t('submariner.install.form.gateways'),
+                placeholder: t('submariner.install.form.gateways.placeholder'),
+                labelHelp: t('submariner.install.form.gateways.labelHelp'),
+                value: gateways[clusterName] ?? submarinerConfigDefault.gateways,
+                onChange: (value: number) => {
+                  const copy = { ...gateways }
+                  copy[clusterName] = value
+                  setGateways(copy)
                 },
-                {
-                  id: 'gateways',
-                  type: 'Number',
-                  label: t('submariner.install.form.gateways'),
-                  placeholder: t('submariner.install.form.gateways.placeholder'),
-                  labelHelp: t('submariner.install.form.gateways.labelHelp'),
-                  value: gateways[clusterName] ?? submarinerConfigDefault.gateways,
-                  onChange: (value: number) => {
-                    const copy = { ...gateways }
-                    copy[clusterName] = value
-                    setGateways(copy)
-                  },
-                  min: 1,
-                  step: 1,
+                min: 1,
+                step: 1,
+              },
+              {
+                id: 'cable-driver',
+                type: 'Select',
+                label: t('submariner.install.form.cabledriver'),
+                placeholder: t('submariner.install.form.cabledriver.placeholder'),
+                labelHelp: t('submariner.install.form.cabledriver.labelHelp'),
+                value: cableDrivers[clusterName] ?? submarinerConfigDefault.cableDriver,
+                onChange: (value) => {
+                  const copy = { ...cableDrivers }
+                  copy[clusterName] = value as CableDriver
+                  setCableDrivers(copy)
                 },
-                {
-                  id: 'cable-driver',
-                  type: 'Select',
-                  label: t('submariner.install.form.cabledriver'),
-                  placeholder: t('submariner.install.form.cabledriver.placeholder'),
-                  labelHelp: t('submariner.install.form.cabledriver.labelHelp'),
-                  value: cableDrivers[clusterName] ?? submarinerConfigDefault.cableDriver,
-                  onChange: (value) => {
-                    const copy = { ...cableDrivers }
-                    copy[clusterName] = value as CableDriver
-                    setCableDrivers(copy)
-                  },
-                  options: Object.values(CableDriver).map((cb) => ({ id: cb, value: cb })),
+                options: Object.values(CableDriver).map((cb) => ({ id: cb, value: cb })),
+              },
+              {
+                id: 'isCustomSubscription',
+                type: 'Checkbox',
+                label: t('Use custom Submariner subscription'),
+                labelHelp: t('Enable this option to use a custom Submariner subscription.'),
+                value: isCustomSubscriptions[clusterName] !== undefined ? isCustomSubscriptions[clusterName] : false,
+                onChange: (value: boolean) => {
+                  const copy = { ...isCustomSubscriptions }
+                  copy[clusterName] = value
+                  setIsCustomSubscriptions(copy)
                 },
-                {
-                  id: 'isCustomSubscription',
-                  type: 'Checkbox',
-                  label: t('Use custom Submariner subscription'),
-                  labelHelp: t('Enable this option to use a custom Submariner subscription.'),
-                  value: isCustomSubscriptions[clusterName] !== undefined ? isCustomSubscriptions[clusterName] : false,
-                  onChange: (value: boolean) => {
-                    const copy = { ...isCustomSubscriptions }
-                    copy[clusterName] = value
-                    setIsCustomSubscriptions(copy)
-                  },
+              },
+              {
+                id: 'source',
+                type: 'Text',
+                label: t('Source'),
+                placeholder: t('Enter the catalog source'),
+                labelHelp: t(
+                  'Enter the catalog source of a Submariner subscription. If left blank, the default values will' +
+                    ' be used.'
+                ),
+                value: sources[clusterName] ?? submarinerConfigDefault.source,
+                isHidden: !isCustomSubscriptions[clusterName],
+                onChange: (value) => {
+                  const copy = { ...sources }
+                  copy[clusterName] = value
+                  setsourcess(copy)
                 },
-                {
-                  id: 'source',
-                  type: 'Text',
-                  label: t('Source'),
-                  placeholder: t('Enter the catalog source'),
-                  labelHelp: t(
-                    'Enter the catalog source of a Submariner subscription. If left blank, the default values will' +
-                      ' be used.'
-                  ),
-                  value: sources[clusterName] ?? submarinerConfigDefault.source,
-                  isHidden: !isCustomSubscriptions[clusterName],
-                  onChange: (value) => {
-                    const copy = { ...sources }
-                    copy[clusterName] = value
-                    setsourcess(copy)
-                  },
-                  isRequired: isCustomSubscriptions[clusterName],
+                isRequired: isCustomSubscriptions[clusterName],
+              },
+              {
+                id: 'source-namespace',
+                type: 'Text',
+                label: t('Source Namespace'),
+                placeholder: t('Enter the SourceNamespace'),
+                labelHelp: t(
+                  'Enter the SourceNamespace  of the catalog source namespace of a Submariner subscription.' +
+                    ' if left blank the default values will be used.'
+                ),
+                value: sourceNamespaces[clusterName] ?? submarinerConfigDefault.sourceNamespace,
+                isHidden: !isCustomSubscriptions[clusterName],
+                onChange: (value) => {
+                  const copy = { ...sourceNamespaces }
+                  copy[clusterName] = value
+                  setSourceNamespaces(copy)
                 },
-                {
-                  id: 'source-namespace',
-                  type: 'Text',
-                  label: t('Source Namespace'),
-                  placeholder: t('Enter the SourceNamespace'),
-                  labelHelp: t(
-                    'Enter the SourceNamespace  of the catalog source namespace of a Submariner subscription.' +
-                      ' if left blank the default values will be used.'
-                  ),
-                  value: sourceNamespaces[clusterName] ?? submarinerConfigDefault.sourceNamespace,
-                  isHidden: !isCustomSubscriptions[clusterName],
-                  onChange: (value) => {
-                    const copy = { ...sourceNamespaces }
-                    copy[clusterName] = value
-                    setSourceNamespaces(copy)
-                  },
-                  isRequired: isCustomSubscriptions[clusterName],
+                isRequired: isCustomSubscriptions[clusterName],
+              },
+              {
+                id: 'channel',
+                type: 'Text',
+                label: t('Channel'),
+                placeholder: t('Enter the channel'),
+                labelHelp: t('Enter the channel of a Submariner subscription.'),
+                value: channels[clusterName],
+                isHidden: !isCustomSubscriptions[clusterName],
+                onChange: (value) => {
+                  const copy = { ...channels }
+                  copy[clusterName] = value
+                  setChannels(copy)
                 },
-                {
-                  id: 'channel',
-                  type: 'Text',
-                  label: t('Channel'),
-                  placeholder: t('Enter the channel'),
-                  labelHelp: t('Enter the channel of a Submariner subscription.'),
-                  value: channels[clusterName],
-                  isHidden: !isCustomSubscriptions[clusterName],
-                  onChange: (value) => {
-                    const copy = { ...channels }
-                    copy[clusterName] = value
-                    setChannels(copy)
-                  },
-                  isRequired: isCustomSubscriptions[clusterName],
+                isRequired: isCustomSubscriptions[clusterName],
+              },
+              {
+                id: 'starting-csv',
+                type: 'Text',
+                label: t('Starting CSV'),
+                placeholder: t('Enter the startingCSV'),
+                labelHelp: t('Enter the startingCSV of a Submariner subscription'),
+                value: startingCSVs[clusterName],
+                isHidden: !isCustomSubscriptions[clusterName],
+                onChange: (value) => {
+                  const copy = { ...startingCSVs }
+                  copy[clusterName] = value
+                  setStartingCSVs(copy)
                 },
-                {
-                  id: 'starting-csv',
-                  type: 'Text',
-                  label: t('Starting CSV'),
-                  placeholder: t('Enter the startingCSV'),
-                  labelHelp: t('Enter the startingCSV of a Submariner subscription'),
-                  value: startingCSVs[clusterName],
-                  isHidden: !isCustomSubscriptions[clusterName],
-                  onChange: (value) => {
-                    const copy = { ...startingCSVs }
-                    copy[clusterName] = value
-                    setStartingCSVs(copy)
-                  },
+              },
+              {
+                id: 'installPlanApproval',
+                type: 'Select',
+                label: t('Install Plan Approval'),
+                placeholder: t('Enter InstallPlanApproval'),
+                labelHelp: t(
+                  'InstallPlanApproval determines if subscription installation plans are applied automatically.'
+                ),
+                value: installPlanApprovals[clusterName] ?? submarinerConfigDefault.installPlanApporval,
+                isHidden: !isCustomSubscriptions[clusterName],
+                onChange: (value) => {
+                  const copy = { ...installPlanApprovals }
+                  copy[clusterName] = value as InstallPlanApproval
+                  setInstallPlanApprovals(copy)
                 },
-                {
-                  id: 'installPlanApproval',
-                  type: 'Select',
-                  label: t('Install Plan Approval'),
-                  placeholder: t('Enter InstallPlanApproval'),
-                  labelHelp: t(
-                    'InstallPlanApproval determines if subscription installation plans are applied automatically.'
-                  ),
-                  value: installPlanApprovals[clusterName] ?? submarinerConfigDefault.installPlanApporval,
-                  isHidden: !isCustomSubscriptions[clusterName],
-                  onChange: (value) => {
-                    const copy = { ...installPlanApprovals }
-                    copy[clusterName] = value as InstallPlanApproval
-                    setInstallPlanApprovals(copy)
-                  },
-                  options: Object.values(InstallPlanApproval).map((cb) => ({ id: cb, value: cb })),
-                },
-              ],
-            } as Section
-          }),
+                options: Object.values(InstallPlanApproval).map((cb) => ({ id: cb, value: cb })),
+              },
+            ],
+          } as Section
+        }),
       },
     ],
     submit: () => {

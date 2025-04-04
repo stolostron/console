@@ -57,6 +57,8 @@ import {
   WizardStep,
   Wizard,
   WizardFooterWrapper,
+  WizardFooterType,
+  WizardStepProps,
 } from '@patternfly/react-core'
 import { Select, SelectGroup, SelectOption, SelectOptionObject, SelectProps } from '@patternfly/react-core/deprecated'
 import { ValidatedOptions } from '@patternfly/react-core/dist/js/helpers/constants'
@@ -72,7 +74,7 @@ import {
   TrashIcon,
 } from '@patternfly/react-icons'
 import useResizeObserver from '@react-hook/resize-observer'
-import { Fragment, ReactNode, useCallback, useContext, useRef, useState } from 'react'
+import { Fragment, ReactElement, ReactNode, useCallback, useContext, useRef, useState } from 'react'
 import { TFunction } from 'react-i18next'
 import YAML from 'yaml'
 import { useTranslation } from '../lib/acm-i18next'
@@ -439,6 +441,7 @@ export function AcmDataFormDefault(props: {
 interface AcmDataFormStepProps {
   name: React.ReactNode
   id: string | number
+  isHidden?: boolean
   component: React.ReactNode | undefined
   steps?: AcmDataFormStepProps[] | undefined
   canJumpTo?: boolean
@@ -466,7 +469,6 @@ export function AcmDataFormWizard(props: {
   }
 
   function createStep(section: Section | SectionGroup): AcmDataFormStepProps | undefined {
-    if (sectionHidden(section)) return undefined
     const hasError = showFormErrors && sectionHasErrors(t, section)
 
     return {
@@ -481,6 +483,7 @@ export function AcmDataFormWizard(props: {
           )}
         </Split>
       ),
+      isHidden: sectionHidden(section),
       component: section.type === 'Section' && (
         <Form isHorizontal={isHorizontal}>
           {globalWizardAlert && <AlertGroup>{globalWizardAlert}</AlertGroup>}
@@ -537,7 +540,7 @@ export function AcmDataFormWizard(props: {
     canJumpTo: !isSubmitting,
   })
 
-  const Footer = (activeStep, goToNextStep, goToPrevStep, close) => {
+  const Footer: WizardFooterType = (activeStep, goToNextStep, goToPrevStep, close) => {
     let section: Section | undefined
     let firstSection: Section | undefined
     for (const formSection of formData.sections) {
@@ -565,7 +568,7 @@ export function AcmDataFormWizard(props: {
               <ActionListItem>
                 <Button
                   variant="primary"
-                  onClick={() => {
+                  onClick={(event) => {
                     setShowSectionErrors((showSectionErrors) => {
                       if (section) {
                         if (!showSectionErrors[section.title]) {
@@ -575,7 +578,7 @@ export function AcmDataFormWizard(props: {
                       return showSectionErrors
                     })
                     if (sectionHasErrors(t, section)) return
-                    goToNextStep()
+                    goToNextStep(event)
                   }}
                   isDisabled={
                     ((showFormErrors || showSectionErrors[section.title]) && sectionHasErrors(t, section)) ||
@@ -672,21 +675,10 @@ export function AcmDataFormWizard(props: {
   )
 }
 
-function renderStep(step: AcmDataFormStepProps): JSX.Element {
-  const { id, name, component, steps } = step
-  return steps ? (
-    <WizardStep
-      id={id}
-      key={id}
-      name={name}
-      steps={steps.map(({ id, name, component }) => (
-        <WizardStep id={id} key={id} name={name}>
-          {component}
-        </WizardStep>
-      ))}
-    />
-  ) : (
-    <WizardStep id={id} key={id} name={name}>
+function renderStep(step: AcmDataFormStepProps): ReactElement<WizardStepProps> {
+  const { id, name, isHidden, component, steps } = step
+  return (
+    <WizardStep id={id} key={id} isHidden={isHidden} name={name} steps={steps?.map((step) => renderStep(step))}>
       {component}
     </WizardStep>
   )
