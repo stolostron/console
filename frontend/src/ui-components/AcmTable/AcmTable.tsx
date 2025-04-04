@@ -1362,6 +1362,8 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     onPerPageSelect: (_event, perPage) => updatePerPage(perPage),
   }
 
+  const rowKeyFn = useCallback(({ rowData }: { rowData: any }) => rowData?.props?.key, [])
+
   return (
     <Fragment>
       {props.extraToolbarControls && (
@@ -1543,7 +1545,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
             <div ref={tableDivRef} className={tableDivClass}>
               <Table
                 className={tableClass}
-                cells={selectedSortedCols.map((column) => {
+                cells={selectedSortedCols.map((column, cellIndex) => {
                   return {
                     title: column.header,
                     header: column.tooltip
@@ -1556,6 +1558,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                     transforms: [nowrap, ...(column.transforms || []), ...(column.sort ? [sortable] : [])],
                     cellTransforms: column.cellTransforms || [],
                     cellFormatters: onCollapse ? [expandable] : [],
+                    props: { key: `cell-${cellIndex}` },
                   }
                 })}
                 rows={rows}
@@ -1583,7 +1586,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                 gridBreakPoint={gridBreakPoint ?? breakpoint}
               >
                 <TableHeader />
-                <TableBody />
+                <TableBody rowKey={rowKeyFn} />
               </Table>
             </div>
           </div>
