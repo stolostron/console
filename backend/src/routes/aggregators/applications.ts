@@ -197,7 +197,7 @@ export function addUIData(items: ITransformedResource[]) {
             : ['', []],
         appSetApps:
           item.kind === ApplicationSetKind
-            ? appSetAppsMap[item.metadata.name].map((app) => app.metadata.name) || []
+            ? appSetAppsMap[item.metadata.name]?.map((app) => app.metadata.name) || []
             : [],
       },
     }
