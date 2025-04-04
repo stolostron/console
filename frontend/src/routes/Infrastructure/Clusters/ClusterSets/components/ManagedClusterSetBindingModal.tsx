@@ -14,11 +14,11 @@ import {
   AcmAlertGroup,
   AcmForm,
   AcmModal,
-  AcmMultiSelect,
+  AcmSelect,
   AcmSubmit,
+  SelectVariant,
 } from '../../../../../ui-components'
-import { ActionGroup, Button, ModalVariant } from '@patternfly/react-core'
-import { SelectOption, SelectVariant } from '@patternfly/react-core/deprecated'
+import { ActionGroup, Button, ModalVariant, SelectOption } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
@@ -120,15 +120,15 @@ export function ManagedClusterSetBindingModal(props: { clusterSet?: ManagedClust
             <div style={{ marginBottom: '16px' }}>
               <Trans i18nKey="clusterSetBinding.edit.message.rbac" components={{ bold: <strong /> }} />
             </div>
-            <AcmMultiSelect
+            <AcmSelect
               id="namespaces"
               variant={SelectVariant.typeaheadMulti}
               label={t('clusterSetBinding.edit.select.label')}
               placeholder={t('clusterSetBinding.edit.select.placeholder')}
-              value={selectedNamespaces}
+              values={selectedNamespaces}
               menuAppendTo="parent"
               maxHeight="18em"
-              onChange={(namespaces) => setSelectedNamespaces(namespaces)}
+              onChanges={(namespaces) => setSelectedNamespaces(namespaces)}
               isLoading={!loaded}
             >
               {rbacNamespaces &&
@@ -139,7 +139,7 @@ export function ManagedClusterSetBindingModal(props: { clusterSet?: ManagedClust
                     </SelectOption>
                   )
                 })}
-            </AcmMultiSelect>
+            </AcmSelect>
 
             <AcmAlertGroup isInline canClose />
             <ActionGroup>

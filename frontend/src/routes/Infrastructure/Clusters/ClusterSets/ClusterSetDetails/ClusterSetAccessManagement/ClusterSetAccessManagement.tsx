@@ -27,6 +27,7 @@ import {
   AcmTable,
   compareStrings,
   IAcmTableColumn,
+  SelectVariant,
 } from '../../../../../../ui-components'
 import {
   ActionGroup,
@@ -354,7 +355,7 @@ function AddUsersModal(props: {
                   <SplitItem isFilled>
                     <AcmSelect
                       id="role"
-                      variant="typeahead"
+                      variant={SelectVariant.typeahead}
                       maxHeight="12em"
                       menuAppendTo="parent"
                       isRequired
