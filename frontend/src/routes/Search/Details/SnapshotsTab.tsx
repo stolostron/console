@@ -106,7 +106,7 @@ export default function SnapshotsTab() {
               rowActions={[
                 {
                   id: 'delete',
-                  title: t('Delete virtualmachinesnapshot'),
+                  title: t('Delete VirtualMachineSnapshot'),
                   click: (item: any) => {
                     if (item.managedHub && item.managedHub !== 'global-hub') {
                       setDeleteExternalResource({
