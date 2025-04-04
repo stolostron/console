@@ -10,8 +10,8 @@ import {
   PageSection,
   Text,
   TextVariants,
+  SelectOption,
 } from '@patternfly/react-core'
-import { SelectOption } from '@patternfly/react-core/deprecated'
 import { Fragment, useCallback, useContext, useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom-v5-compat'
 import { ConfirmModal, IConfirmModalProps } from '../../../../../components/ConfirmModal'
@@ -37,7 +37,6 @@ import {
   AcmButton,
   AcmForm,
   AcmFormSection,
-  AcmMultiSelect,
   AcmPage,
   AcmPageContent,
   AcmPageHeader,
@@ -45,6 +44,7 @@ import {
   AcmSubmit,
   AcmToastContext,
   Provider,
+  SelectVariant,
 } from '../../../../../ui-components'
 import { CredentialsForm } from '../../../../Credentials/CredentialsForm'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
@@ -508,13 +508,14 @@ export function DiscoveryConfigPageContent(props: {
               </SelectOption>
             ))}
           </AcmSelect>
-          <AcmMultiSelect
+          <AcmSelect
             id="discoveryVersions"
+            variant={SelectVariant.checkboxMulti}
             label={t('discoveryConfig.discoveryVersions.label')}
             labelHelp={t('discoveryConfig.discoveryVersions.labelHelp')}
-            value={discoveryConfig?.spec?.filters?.openShiftVersions}
+            values={discoveryConfig?.spec?.filters?.openShiftVersions}
             placeholder={t('discoveryConfig.discoveryVersions.placeholder')}
-            onChange={(versions) => {
+            onChanges={(versions) => {
               updateDiscoveryConfig((discoveryConfig) => {
                 if (!discoveryConfig.spec.filters) {
                   discoveryConfig.spec.filters = {}
@@ -528,7 +529,7 @@ export function DiscoveryConfigPageContent(props: {
                 {version}
               </SelectOption>
             ))}
-          </AcmMultiSelect>
+          </AcmSelect>
         </Fragment>
       ) : null}
       <ActionGroup>
