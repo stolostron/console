@@ -1642,7 +1642,6 @@
   "Include namespaces": "Include namespaces",
   "Increased resiliency with closely interconnected control plane and worker nodes.": "Increased resiliency with closely interconnected control plane and worker nodes.",
   "Increases resiliency with closely interconnected control plane and worker nodes.": "Increases resiliency with closely interconnected control plane and worker nodes.",
-  "Indicates if updates to any of the application resources are subject to a deployment time window.": "Indicates if updates to any of the application resources are subject to a deployment time window.",
   "Indicates if updates to the subscription resources are subject to an active or blocked deployment time window.": "Indicates if updates to the subscription resources are subject to an active or blocked deployment time window.",
   "Indications": "Indications",
   "Info": "Info",

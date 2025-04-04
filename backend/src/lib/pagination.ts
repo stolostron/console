@@ -60,7 +60,8 @@ export function paginate(
   res: Http2ServerResponse,
   token: string,
   getItems: () => ITransformedResource[],
-  filterItems: (filters: FilterSelections, items: ITransformedResource[]) => IResource[]
+  filterItems: (filters: FilterSelections, items: ITransformedResource[]) => IResource[],
+  addUIData: (items: ITransformedResource[]) => ITransformedResource[]
 ): void {
   const chucks: string[] = []
   req.on('data', (chuck: string) => {
@@ -140,6 +141,9 @@ export function paginate(
 
     // because rbac is expensive. perform it only on the resources the user wants to see
     items = (await getAuthorizedResources(token, items, startIndex, endIndex)) as unknown as ITransformedResource[]
+
+    // add data required by ui
+    items = addUIData(items)
 
     // remove the transform work attribute
     items = items.map(({ transform, remoteClusters, ...keepAttrs }) => keepAttrs)

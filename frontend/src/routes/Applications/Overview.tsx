@@ -39,6 +39,7 @@ import {
   DiscoveredArgoApplicationDefinition,
   getApiVersionResourceGroup,
   IResource,
+  IUIResource,
   OCPAppResource,
   Subscription,
 } from '../../resources'
@@ -60,12 +61,10 @@ import {
   getResourceTimestamp,
   getAnnotation,
   getAppChildResources,
-  getAppSetRelatedResources,
   getClusterCount,
   getClusterCountField,
   getClusterCountSearchLink,
   getClusterCountString,
-  getClusterList,
   getSearchLink,
   getSubscriptionsFromAnnotation,
   hostingSubAnnotationStr,
@@ -146,14 +145,14 @@ export function getApplicationName(application: IApplicationResource, search: st
           search: `?apiVersion=${apiVersion}${clusterQuery}`,
         }}
       >
-        <HighlightSearchText text={application.metadata?.name} searchText={search} />
+        <HighlightSearchText text={application.metadata?.name} searchText={search} isTruncate />
       </Link>
     </span>
   )
 }
 
 export function getApplicationNamespace(resource: IApplicationResource, search: string) {
-  return <HighlightSearchText text={getAppNamespace(resource)} searchText={search} />
+  return <HighlightSearchText text={getAppNamespace(resource)} searchText={search} isTruncate />
 }
 
 // Map resource kind to type column
@@ -182,18 +181,6 @@ export function getApplicationType(resource: IApplicationResource, systemAppNSPr
 
 function isSystemApp(systemAppNSPrefixes: string[], namespace?: string) {
   return namespace && systemAppNSPrefixes.some((prefix) => namespace.startsWith(prefix))
-}
-
-export function getAppSetApps(argoApps: IResource[], appSetName: string) {
-  const appSetApps: string[] = []
-
-  argoApps.forEach((app) => {
-    if (app.metadata?.ownerReferences && app.metadata.ownerReferences[0].name === appSetName) {
-      appSetApps.push(app.metadata.name!)
-    }
-  })
-
-  return appSetApps
 }
 
 export function getAppNamespace(resource: IResource) {
@@ -311,25 +298,14 @@ export const getApplicationRepos = (resource: IResource, subscriptions: Subscrip
 export default function ApplicationsOverview() {
   usePageVisitMetricHandler(Pages.application)
   const { t } = useTranslation()
-  const {
-    applicationSetsState,
-    applicationsState,
-    argoApplicationsState,
-    channelsState,
-    placementRulesState,
-    placementsState,
-    placementDecisionsState,
-    subscriptionsState,
-  } = useSharedAtoms()
+  const { applicationsState, channelsState, placementRulesState, placementsState, subscriptionsState } =
+    useSharedAtoms()
 
   const applications = useRecoilValue(applicationsState)
-  const applicationSets = useRecoilValue(applicationSetsState)
-  const argoApplications = useRecoilValue(argoApplicationsState)
   const subscriptions = useRecoilValue(subscriptionsState)
   const channels = useRecoilValue(channelsState)
   const placementRules = useRecoilValue(placementRulesState)
   const placements = useRecoilValue(placementsState)
-  const placementDecisions = useRecoilValue(placementDecisionsState)
   const { acmExtensions } = useContext(PluginContext)
   const { dataContext } = useContext(PluginContext)
   const { backendUrl } = useContext(dataContext)
@@ -348,52 +324,11 @@ export default function ApplicationsOverview() {
 
   const [pluginModal, setPluginModal] = useState<JSX.Element>()
 
-  const getTimeWindow = useCallback(
-    (app: IResource) => {
-      if (!(app.apiVersion === ApplicationApiVersion && app.kind === ApplicationKind)) {
-        return ''
-      }
-
-      const subAnnotations = getSubscriptionsFromAnnotation(app)
-      let hasTimeWindow = false
-
-      for (let i = 0; i < subAnnotations.length; i++) {
-        if (isLocalSubscription(subAnnotations[i], subAnnotations)) {
-          // skip local sub
-          continue
-        }
-        const subDetails = subAnnotations[i].split('/')
-
-        for (let j = 0; j < subscriptions.length; j++) {
-          if (
-            subscriptions[j].metadata.name === subDetails[1] &&
-            subscriptions[j].metadata.namespace === subDetails[0]
-          ) {
-            if (subscriptions[j].spec.timewindow) {
-              hasTimeWindow = true
-              break
-            }
-          }
-        }
-      }
-
-      return hasTimeWindow ? t('Yes') : ''
-    },
-    [subscriptions, t]
-  )
-
   // Cache cell text for sorting and searching
   const generateTransformData = useCallback(
     (tableItem: IResource) => {
       // Cluster column
-      const clusterList = getClusterList(
-        tableItem,
-        argoApplications,
-        placementDecisions,
-        subscriptions,
-        localCluster,
-        managedClusters
-      )
+      const clusterList = (tableItem as IUIResource)?.uidata?.clusterList ?? []
       const clusterCount = getClusterCount(clusterList, localCluster?.name ?? '')
       const clusterTransformData = getClusterCountString(t, clusterCount, clusterList, tableItem)
 
@@ -408,7 +343,6 @@ export default function ApplicationsOverview() {
         resourceMap[repo.type] = repo.type
       })
 
-      const timeWindow = getTimeWindow(tableItem)
       const transformedNamespace = getAppNamespace(tableItem)
       const transformedObject = {
         transformed: {
@@ -416,7 +350,6 @@ export default function ApplicationsOverview() {
           clusterList: clusterList,
           resourceText: resourceText,
           createdText: getResourceTimestamp(tableItem, 'metadata.creationTimestamp'),
-          timeWindow: timeWindow,
           namespace: transformedNamespace,
           healthStatus: getAppHealthStatus(tableItem),
           syncStatus: getAppSyncStatus(tableItem),
@@ -426,7 +359,7 @@ export default function ApplicationsOverview() {
       // Cannot add properties directly to objects in typescript
       return { ...tableItem, ...transformedObject }
     },
-    [argoApplications, channels, getTimeWindow, localCluster, managedClusters, placementDecisions, subscriptions, t]
+    [channels, localCluster, subscriptions, t]
   )
 
   const resultView = useAggregate(SupportedAggregate.applications, requestedView)
@@ -536,14 +469,7 @@ export default function ApplicationsOverview() {
       {
         header: t('Clusters'),
         cell: (resource) => {
-          const clusterList = getClusterList(
-            resource,
-            argoApplications,
-            placementDecisions,
-            subscriptions,
-            localCluster,
-            managedClusters
-          )
+          const clusterList = (resource as IUIResource)?.uidata?.clusterList ?? []
           const clusterCount = getClusterCount(clusterList, localCluster?.name ?? '')
           const clusterCountString = getClusterCountString(t, clusterCount, clusterList, resource)
           const clusterCountSearchLink = getClusterCountSearchLink(resource, clusterCount, clusterList)
@@ -555,14 +481,7 @@ export default function ApplicationsOverview() {
         sort: 'transformed.clusterCount',
         search: 'transformed.clusterCount',
         exportContent: (resource) => {
-          const clusterList = getClusterList(
-            resource,
-            argoApplications,
-            placementDecisions,
-            subscriptions,
-            localCluster,
-            managedClusters
-          )
+          const clusterList = (resource as IUIResource)?.uidata?.clusterList ?? []
           const clusterCount = getClusterCount(clusterList, localCluster?.name ?? '')
           return getClusterCountString(t, clusterCount, clusterList, resource)
         },
@@ -614,18 +533,6 @@ export default function ApplicationsOverview() {
           return get(resource, 'status.sync.status', '')
         },
       },
-      {
-        header: t('Time window'),
-        cell: (resource) => {
-          return getTimeWindow(resource)
-        },
-        tooltip: t('Indicates if updates to any of the application resources are subject to a deployment time window.'),
-        sort: 'transformed.timeWindow',
-        search: 'transformed.timeWindow',
-        exportContent: (resource) => {
-          return getTimeWindow(resource)
-        },
-      },
       ...extensionColumns,
       {
         header: t('Created'),
@@ -644,18 +551,7 @@ export default function ApplicationsOverview() {
         },
       },
     ],
-    [
-      t,
-      extensionColumns,
-      systemAppNSPrefixes,
-      argoApplications,
-      placementDecisions,
-      subscriptions,
-      localCluster,
-      managedClusters,
-      channels,
-      getTimeWindow,
-    ]
+    [t, extensionColumns, systemAppNSPrefixes, subscriptions, localCluster, channels]
   )
   const filters = useMemo(
     () => [
@@ -927,8 +823,8 @@ export default function ApplicationsOverview() {
                     localCluster?.name ?? ''
                   )
                 : [[], []]
-            const appSetRelatedResources =
-              resource.kind === ApplicationSetKind ? getAppSetRelatedResources(resource, applicationSets) : ['', []]
+            /* istanbul ignore else */
+            const appSetRelatedResources = (resource as IUIResource)?.uidata?.appSetRelatedResources ?? ['', []]
             const hostingSubAnnotation = getAnnotation(resource, hostingSubAnnotationStr)
             let modalWarnings: string | undefined
             if (hostingSubAnnotation) {
@@ -950,7 +846,7 @@ export default function ApplicationsOverview() {
               appSetPlacement: appSetRelatedResources[0],
               appSetsSharingPlacement: appSetRelatedResources[1],
               appKind: resource.kind,
-              appSetApps: getAppSetApps(argoApplications, resource.metadata?.name!),
+              appSetApps: (resource as IUIResource)?.uidata?.appSetApps ?? [],
               deleted: /* istanbul ignore next */ (app: IResource) => {
                 setDeletedApps((arr) => {
                   arr = [app, ...arr].slice(0, 10)
@@ -1001,8 +897,6 @@ export default function ApplicationsOverview() {
       placementRules,
       placements,
       channels,
-      applicationSets,
-      argoApplications,
       canCreateApplication,
       localCluster?.name,
     ]

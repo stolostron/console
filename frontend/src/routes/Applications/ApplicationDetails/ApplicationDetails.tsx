@@ -36,6 +36,7 @@ import {
   ApplicationKind,
   ApplicationSetDefinition,
   ApplicationSetKind,
+  IUIResource,
 } from '../../../resources'
 import { useRecoilValueGetter, useSharedAtoms } from '../../../shared-recoil'
 import {
@@ -51,13 +52,7 @@ import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/co
 import { searchClient } from '../../Search/search-sdk/search-client'
 import { useSearchCompleteQuery } from '../../Search/search-sdk/search-sdk'
 import { DeleteResourceModal, IDeleteResourceModalProps } from '../components/DeleteResourceModal'
-import {
-  getAppChildResources,
-  getAppSetRelatedResources,
-  getSearchLink,
-  isResourceTypeOf,
-} from '../helpers/resource-helper'
-import { getAppSetApps } from '../Overview'
+import { getAppChildResources, getSearchLink, isResourceTypeOf } from '../helpers/resource-helper'
 import { getApplication } from './ApplicationTopology/model/application'
 import { getResourceStatuses } from './ApplicationTopology/model/resourceStatuses'
 import { getTopology } from './ApplicationTopology/model/topology'
@@ -123,9 +118,7 @@ export default function ApplicationDetailsPage() {
   const { t } = useTranslation()
   const {
     ansibleJobState,
-    applicationSetsState,
     applicationsState,
-    argoApplicationsState,
     channelsState,
     placementRulesState,
     placementsState,
@@ -149,6 +142,9 @@ export default function ApplicationDetailsPage() {
   const [pluginModal, setPluginModal] = useState<JSX.Element>()
   const { acmExtensions } = useContext(PluginContext)
 
+  const { dataContext } = useContext(PluginContext)
+  const { backendUrl } = useContext(dataContext)
+
   const lastRefreshRef = useRef<any>()
   const navigate = useNavigate()
   const isArgoApp = applicationData?.application?.isArgoApp
@@ -162,11 +158,7 @@ export default function ApplicationDetailsPage() {
     [clusters]
   )
 
-  let modalWarnings: string
-
   const applicationsGetter = useRecoilValueGetter(applicationsState)
-  const applicationSetsGetter = useRecoilValueGetter(applicationSetsState)
-  const argoApplicationsGetter = useRecoilValueGetter(argoApplicationsState)
   const ansibleJobGetter = useRecoilValueGetter(ansibleJobState)
   const channelsGetter = useRecoilValueGetter(channelsState)
   const placementsGetter = useRecoilValueGetter(placementsState)
@@ -179,8 +171,6 @@ export default function ApplicationDetailsPage() {
   const getRecoilStates = useCallback(
     () => ({
       applications: applicationsGetter(),
-      applicationSets: applicationSetsGetter(),
-      argoApplications: argoApplicationsGetter(),
       ansibleJob: ansibleJobGetter(),
       channels: channelsGetter(),
       placements: placementsGetter(),
@@ -192,9 +182,7 @@ export default function ApplicationDetailsPage() {
     }),
     [
       ansibleJobGetter,
-      applicationSetsGetter,
       applicationsGetter,
-      argoApplicationsGetter,
       channelsGetter,
       placementDecisionsGetter,
       placementRulesGetter,
@@ -280,23 +268,20 @@ export default function ApplicationDetailsPage() {
                 hubCluster?.name ?? ''
               )
             : [[], []]
-        const appSetRelatedResources =
-          selectedApp.kind === ApplicationSetKind
-            ? getAppSetRelatedResources(selectedApp, recoilStates.applicationSets)
-            : ['', []]
+        /* istanbul ignore else */
+        const appSetRelatedResources = (selectedApp as IUIResource)?.uidata?.appSetRelatedResources ?? ['', []]
         setModalProps({
           open: true,
           canRemove: selectedApp.kind === ApplicationSetKind ? canDeleteApplicationSet : canDeleteApplication,
           resource: selectedApp,
           errors: undefined,
-          warnings: modalWarnings,
           loading: false,
           selected: appChildResources[0], // children
           shared: appChildResources[1], // shared children
           appSetPlacement: appSetRelatedResources[0],
           appSetsSharingPlacement: appSetRelatedResources[1],
           appKind: selectedApp.kind,
-          appSetApps: getAppSetApps(recoilStates.argoApplications, selectedApp.metadata?.name),
+          appSetApps: (selectedApp as IUIResource)?.uidata?.appSetApps ?? [],
           close: () => {
             setModalProps({ open: false })
           },
@@ -388,6 +373,7 @@ export default function ApplicationDetailsPage() {
           const application = await getApplication(
             namespace,
             name,
+            backendUrl,
             activeChannel,
             recoilStates,
             cluster,

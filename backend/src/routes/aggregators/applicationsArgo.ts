@@ -1,9 +1,26 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import get from 'get-value'
 import { logger } from '../../lib/logger'
-import { Cluster, IResource } from '../../resources/resource'
+import { ITransformedResource } from '../../lib/pagination'
+import {
+  ApplicationSetApiVersion,
+  ApplicationSetKind,
+  ArgoApplicationApiVersion,
+  ArgoApplicationKind,
+  Cluster,
+  IApplicationSet,
+  IResource,
+} from '../../resources/resource'
 import { getKubeResources, getHubClusterName } from '../events'
 import { ApplicationCacheType, IQuery, SEARCH_QUERY_LIMIT } from './applications'
-import { cacheRemoteApps, getClusters, getNextApplicationPageChunk, ApplicationPageChunk, transform } from './utils'
+import {
+  cacheRemoteApps,
+  getClusters,
+  getNextApplicationPageChunk,
+  ApplicationPageChunk,
+  transform,
+  getApplicationsHelper,
+} from './utils'
 
 interface IArgoAppLocalResource extends IResource {
   spec: {
@@ -35,6 +52,10 @@ interface IArgoAppRemoteResource {
   healthStatus: string
   syncStatus: string
 }
+
+// a map from an appset name to the apps that it created
+let appSetAppsMap: Record<string, IResource[]> = {}
+let allArgoApplications: ITransformedResource[] = []
 
 let argoPageChunk: ApplicationPageChunk
 const argoPageChunks: ApplicationPageChunk[] = []
@@ -70,9 +91,12 @@ export function addArgoQueryInputs(applicationCache: ApplicationCacheType, query
 
 export function cacheArgoApplications(applicationCache: ApplicationCacheType, remoteArgoApps: IResource[]) {
   const argoAppSet = new Set<string>()
+  const hubClusterName = getHubClusterName()
   const clusters: Cluster[] = getClusters()
+  const localCluster = clusters.find((cls) => cls.name === hubClusterName)
+
   try {
-    applicationCache['localArgoApps'] = transform(getLocalArgoApps(argoAppSet, clusters))
+    applicationCache['localArgoApps'] = transform(getLocalArgoApps(argoAppSet, clusters), false, localCluster, clusters)
   } catch (e) {
     logger.error(`getLocalArgoApps exception ${e}`)
   }
@@ -82,11 +106,30 @@ export function cacheArgoApplications(applicationCache: ApplicationCacheType, re
   } catch (e) {
     logger.error(`cacheRemoteApps exception ${e}`)
   }
+
+  allArgoApplications = [
+    ...getKubeResources(ArgoApplicationKind, ArgoApplicationApiVersion),
+    ...(getApplicationsHelper(applicationCache, ['remoteArgoApps']) || []),
+  ]
+  try {
+    applicationCache['appset'] = transform(
+      structuredClone(getKubeResources(ApplicationSetKind, ApplicationSetApiVersion)),
+      false,
+      localCluster,
+      clusters
+    )
+  } catch (e) {
+    logger.error(`aggregateLocalApplications appset exception ${e}`)
+  }
+
+  ///////// CREATE APPSET MAPS TO BE USED IN APPSET DETAILS////////////////////////
+  createAppSetAppsMap()
+
   return argoAppSet
 }
 
 function getLocalArgoApps(argoAppSet: Set<string>, clusters: Cluster[]) {
-  const argoApps = getKubeResources('Application', 'argoproj.io/v1alpha1')
+  const argoApps = getKubeResources(ArgoApplicationKind, ArgoApplicationApiVersion)
   return argoApps.filter((app) => {
     const argoApp = app as IArgoAppLocalResource
     const resources = argoApp.status ? argoApp.status.resources : undefined
@@ -115,8 +158,8 @@ function getRemoteArgoApps(argoAppSet: Set<string>, remoteArgoApps: IResource[])
     if (!argoApp._hostingResource) {
       // Skip apps created by Argo pull model
       apps.push({
-        apiVersion: 'argoproj.io/v1alpha1',
-        kind: 'Application',
+        apiVersion: ArgoApplicationApiVersion,
+        kind: ArgoApplicationKind,
         metadata: {
           name: argoApp.name,
           namespace: argoApp.namespace,
@@ -179,4 +222,71 @@ function getArgoDestinationCluster(
     }
   }
   return clusterName
+}
+
+//////////////////////////////////////////////////////////////////
+////////////// APP SET DATA /////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
+
+const appSetPlacementStr = [
+  'clusterDecisionResource',
+  'labelSelector',
+  'matchLabels',
+  'cluster.open-cluster-management.io/placement',
+]
+export function getAppSetRelatedResources(appSet: IResource, applicationSets: IApplicationSet[]) {
+  const appSetsSharingPlacement: string[] = []
+  const currentAppSetGenerators = (appSet as IApplicationSet).spec?.generators
+  /* istanbul ignore next */
+  const currentAppSetPlacement = currentAppSetGenerators
+    ? (get(currentAppSetGenerators[0], appSetPlacementStr, { default: '' }) as string)
+    : undefined
+
+  /* istanbul ignore if */
+  if (!currentAppSetPlacement) {
+    return ['', []]
+  }
+
+  applicationSets.forEach((item) => {
+    const appSetGenerators = item.spec.generators
+    /* istanbul ignore next */
+    const appSetPlacement = appSetGenerators
+      ? (get(appSetGenerators[0], appSetPlacementStr, { default: '' }) as string)
+      : ''
+    /* istanbul ignore if */
+    if (
+      item.metadata.name !== appSet.metadata?.name ||
+      (item.metadata.name === appSet.metadata?.name && item.metadata.namespace !== appSet.metadata?.namespace)
+    ) {
+      if (appSetPlacement && appSetPlacement === currentAppSetPlacement && item.metadata.name) {
+        appSetsSharingPlacement.push(item.metadata.name)
+      }
+    }
+  })
+
+  return [currentAppSetPlacement, appSetsSharingPlacement]
+}
+
+//////// CREATE APPSET MAPS TO BE USED IN APP SET DETAILS////////////////////////
+// apps: argo apps created by this appset
+// clusters: clusters on which this appset has deployed
+export function getAppSetAppsMap() {
+  return appSetAppsMap || {}
+}
+export function getAllArgoApplications() {
+  return allArgoApplications || []
+}
+
+function createAppSetAppsMap() {
+  appSetAppsMap = allArgoApplications.reduce(
+    (obj, argoApp) => {
+      const appSetName = get(argoApp, ['metadata', 'ownerReferences', '0', 'name']) as string
+      if (appSetName) {
+        if (!obj[appSetName]) obj[appSetName] = []
+        obj[appSetName].push(argoApp)
+      }
+      return obj
+    },
+    {} as Record<string, IResource[]>
+  )
 }

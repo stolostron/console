@@ -1,42 +1,52 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import get from 'get-value'
 import { getKubeResources, getHubClusterName } from '../events'
-import { Cluster, ClusterDeployment, IResource, ManagedClusterInfo } from '../../resources/resource'
-import { ITransformedResource } from '../../lib/pagination'
 import {
-  AppColumns,
-  ApplicationCache,
-  ApplicationCacheType,
+  Cluster,
+  IResource,
+  ManagedClusterInfo,
   IArgoApplication,
-  IDecision,
-  IOCPApplication,
+  IPlacementDecision,
   ISubscription,
-} from './applications'
+  IOCPApplication,
+  IApplicationSet,
+  ManagedCluster,
+  ClusterDeployment,
+  HostedClusterK8sResource,
+} from '../../resources/resource'
+import { ITransformedResource } from '../../lib/pagination'
+import { AppColumns, ApplicationCache, ApplicationCacheType } from './applications'
 import { logger } from '../../lib/logger'
 import { getMultiClusterHub } from '../../lib/multi-cluster-hub'
 import { getMultiClusterEngine } from '../../lib/multi-cluster-engine'
+import { getAllArgoApplications } from './applicationsArgo'
 
 //////////////////////////////////////////////////////////////////
 ////////////// TRANSFORM /////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
 
-export function transform(items: ITransformedResource[], clusters?: Cluster[], isRemote?: boolean): ApplicationCache {
+export function transform(
+  items: ITransformedResource[],
+  isRemote?: boolean,
+  localCluster?: Cluster,
+  clusters?: Cluster[]
+): ApplicationCache {
   const subscriptions = getKubeResources('Subscription', 'apps.open-cluster-management.io/v1')
   const placementDecisions = getKubeResources('PlacementDecision', 'cluster.open-cluster-management.io/v1beta1')
-  const localCluster = getHubClusterName()
+  const localClusterName = getHubClusterName()
   items.forEach((app) => {
     const type = getApplicationType(app)
-    const _clusters = getApplicationClusters(app, type, subscriptions, placementDecisions, clusters)
+    const _clusters = getApplicationClusters(app, type, subscriptions, placementDecisions, localCluster, clusters)
     app.transform = [
       [app.metadata.name],
       [type],
       [getAppNamespace(app)],
       _clusters,
-      ['r'], // repo
-      ['t'], // time window
+      ['r'],
       [app.metadata.creationTimestamp as string],
     ]
     app.remoteClusters =
-      (isRemote || (type === 'subscription' && _clusters.filter((n) => n !== localCluster)).length > 0) && _clusters
+      (isRemote || (type === 'subscription' && _clusters.filter((n) => n !== localClusterName)).length > 0) && _clusters
   })
   return { resources: items }
 }
@@ -49,7 +59,7 @@ function getAppNamespace(resource: IResource): string {
   }
   return namespace
 }
-function getApplicationType(resource: IResource | IOCPApplication) {
+export function getApplicationType(resource: IResource | IOCPApplication) {
   if (resource.apiVersion === 'app.k8s.io/v1beta1') {
     if (resource.kind === 'Application') {
       return 'subscription'
@@ -108,11 +118,12 @@ export function isSystemApp(namespace?: string) {
   return namespace && systemAppNamespacePrefixes.some((prefix) => namespace.startsWith(prefix))
 }
 
-function getApplicationClusters(
+export function getApplicationClusters(
   resource: IResource | IOCPApplication | IArgoApplication,
   type: string,
   subscriptions: IResource[],
   placementDecisions: IResource[],
+  localCluster: Cluster,
   clusters: Cluster[] = []
 ) {
   switch (type) {
@@ -130,7 +141,15 @@ function getApplicationClusters(
       break
     case 'appset': //(also argo)
       if ('spec' in resource) {
-        return getAppSetCluster(resource, placementDecisions as IArgoApplication[])
+        if (isArgoPullModel(resource as IApplicationSet)) {
+          return getArgoPullModelClusterList(resource as IApplicationSet, placementDecisions)
+        } else {
+          const apps = getAllArgoApplications().filter(
+            (app) => app.metadata?.ownerReferences && app.metadata.ownerReferences[0].name === resource.metadata?.name
+          ) as IArgoApplication[]
+
+          return getArgoPushModelClusterList(apps, localCluster, clusters)
+        }
       }
       break
     case 'subscription':
@@ -139,7 +158,22 @@ function getApplicationClusters(
   return [getHubClusterName()]
 }
 
-function getAppSetCluster(resource: IArgoApplication, placementDecisions: IDecision[]) {
+const isArgoPullModel = (resource: IApplicationSet) => {
+  if (
+    get(resource, [
+      'spec',
+      'template',
+      'metadata',
+      'annotations',
+      'apps.open-cluster-management.io/ocm-managed-cluster',
+    ])
+  ) {
+    return true
+  }
+  return false
+}
+
+function getArgoPullModelClusterList(resource: IApplicationSet, placementDecisions: IPlacementDecision[]) {
   const clusterSet = new Set<string>()
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const placementName =
@@ -164,7 +198,71 @@ function getAppSetCluster(resource: IArgoApplication, placementDecisions: IDecis
   return Array.from(clusterSet)
 }
 
-function getSubscriptionCluster(resource: IResource, subscriptions: ISubscription[], placementDecisions: IDecision[]) {
+export const getArgoPushModelClusterList = (
+  resources: IArgoApplication[],
+  localCluster: Cluster | undefined,
+  managedClusters: Cluster[]
+) => {
+  const clusterSet = new Set<string>()
+
+  resources.forEach((resource) => {
+    const isRemoteArgoApp = !!resource.status?.cluster
+
+    if (
+      (resource.spec.destination?.name === 'in-cluster' ||
+        resource.spec.destination?.name === localCluster?.name ||
+        isLocalClusterURL(resource.spec.destination?.server ?? '', localCluster)) &&
+      !isRemoteArgoApp
+    ) {
+      clusterSet.add(localCluster?.name ?? '')
+    } else if (isRemoteArgoApp) {
+      clusterSet.add(
+        getArgoDestinationCluster(
+          resource.spec.destination,
+          managedClusters,
+          resource.status.cluster,
+          localCluster?.name
+        )
+      )
+    } else {
+      clusterSet.add(
+        getArgoDestinationCluster(resource.spec.destination, managedClusters, undefined, localCluster?.name)
+      )
+    }
+  })
+
+  return Array.from(clusterSet)
+}
+
+function isLocalClusterURL(url: string, localCluster: Cluster | undefined) {
+  if (url === 'https://kubernetes.default.svc') {
+    return true
+  }
+
+  let argoServerURL
+  const localClusterURL = new URL(
+    (get(localCluster || {}, 'consoleURL', { default: 'https://localhost' }) as string) || 'https://localhost'
+  )
+
+  try {
+    argoServerURL = new URL(url)
+  } catch {
+    return false
+  }
+
+  const hostnameWithOutAPI = argoServerURL.hostname.substring(argoServerURL.hostname.indexOf('api.') + 4)
+
+  if (localClusterURL.host.indexOf(hostnameWithOutAPI) > -1) {
+    return true
+  }
+  return false
+}
+
+function getSubscriptionCluster(
+  resource: IResource,
+  subscriptions: ISubscription[],
+  placementDecisions: IPlacementDecision[]
+) {
   const clusterSet = new Set<string>()
   const subAnnotationArray = getSubscriptionAnnotations(resource)
   for (const sa of subAnnotationArray) {
@@ -227,14 +325,15 @@ function getArgoCluster(resource: IArgoApplication, clusters: Cluster[]) {
 export function getArgoDestinationCluster(
   destination: { name?: string; namespace: string; server?: string },
   clusters: Cluster[],
-  cluster?: string
+  cluster?: string,
+  hubClusterName?: string
 ) {
   // cluster is the name of the managed cluster where the Argo app is defined
-  let clusterName = ''
+  let clusterName
   const serverApi = destination?.server
   if (serverApi) {
     if (serverApi === 'https://kubernetes.default.svc') {
-      clusterName = cluster ?? 'Local'
+      clusterName = cluster || hubClusterName
     } else {
       const server = clusters.find((cls) => cls.kubeApiServer === serverApi)
       clusterName = server ? server.name : 'unknown'
@@ -242,14 +341,15 @@ export function getArgoDestinationCluster(
   } else {
     // target destination was set using the name property
     clusterName = destination?.name || 'unknown'
-    if (cluster && (clusterName === 'in-cluster' || clusterName === getHubClusterName())) {
+    if (cluster && (clusterName === 'in-cluster' || clusterName === hubClusterName)) {
       clusterName = cluster
     }
 
     if (clusterName === 'in-cluster') {
-      clusterName = getHubClusterName()
+      clusterName = hubClusterName
     }
   }
+
   return clusterName
 }
 
@@ -378,12 +478,25 @@ export function cacheRemoteApps(
   applicationPageChunk: ApplicationPageChunk,
   remoteCacheKey: string
 ) {
-  const resources = transform(remoteApps, undefined, true).resources
+  const resources = transform(remoteApps, true).resources
   if (!applicationPageChunk) {
     applicationCache[remoteCacheKey].resources = resources
   } else {
     applicationCache[remoteCacheKey].resourceMap[applicationPageChunk.keys.join()] = resources
   }
+}
+
+export function getApplicationsHelper(applicationCache: ApplicationCacheType, keys: string[]) {
+  const items: ITransformedResource[] = []
+  keys.forEach((key) => {
+    if (applicationCache[key].resources) {
+      items.push(...applicationCache[key].resources)
+    } else if (Object.keys(applicationCache[key].resourceMap).length) {
+      const allResources = Object.values(applicationCache[key].resourceMap)
+      items.push(...allResources.flat())
+    }
+  })
+  return items
 }
 
 //////////////////////////////////////////////////////////////////
@@ -414,10 +527,11 @@ export function getClusters(): Cluster[] {
   const clusterDeploymentsMap = keyBy(cds, 'metadata.name')
   const managedClusterInfosMap = keyBy(managedClusterInfos, 'metadata.name')
   return uniqueClusterNames.map((cluster) => {
-    const managedCluster = managedClusterMap[cluster]
+    const managedCluster = managedClusterMap[cluster] as ManagedCluster
     const hostedCluster = hostedClusterMap[cluster]
-    const clusterDeployment = clusterDeploymentsMap[cluster]
-    const managedClusterInfo = managedClusterInfosMap[cluster]
+    const clusterDeployment = clusterDeploymentsMap[cluster] as ClusterDeployment
+    const managedClusterInfo = managedClusterInfosMap[cluster] as ManagedClusterInfo
+    const consoleURL = getConsoleUrl(clusterDeployment, managedClusterInfo, managedCluster, hostedCluster)
     return {
       name:
         clusterDeployment?.metadata.name ??
@@ -426,6 +540,7 @@ export function getClusters(): Cluster[] {
         hostedCluster?.metadata?.name ??
         '',
       kubeApiServer: getKubeApiServer(clusterDeployment, managedClusterInfo),
+      consoleURL,
     }
   })
 }
@@ -436,6 +551,29 @@ function getKubeApiServer(clusterDeployment?: ClusterDeployment, managedClusterI
     managedClusterInfo?.spec?.masterEndpoint ??
     `https://api.${clusterDeployment?.spec?.clusterName || ''}.${clusterDeployment?.spec?.baseDomain || ''}`
   )
+}
+export function getConsoleUrl(
+  clusterDeployment?: ClusterDeployment,
+  managedClusterInfo?: ManagedClusterInfo,
+  managedCluster?: ManagedCluster,
+  hostedCluster?: HostedClusterK8sResource
+) {
+  const consoleUrlClaim = managedCluster?.status?.clusterClaims?.find(
+    (cc) => cc.name === 'consoleurl.cluster.open-cluster-management.io'
+  )
+  if (consoleUrlClaim) return consoleUrlClaim.value
+  return (
+    clusterDeployment?.status?.webConsoleURL ??
+    managedClusterInfo?.status?.consoleURL ??
+    getHypershiftConsoleURL(hostedCluster)
+  )
+}
+
+const getHypershiftConsoleURL = (hostedCluster?: HostedClusterK8sResource) => {
+  if (!hostedCluster) {
+    return undefined
+  }
+  return `https://console-openshift-console.apps.${hostedCluster.metadata?.name}.${hostedCluster.spec?.dns.baseDomain}`
 }
 
 //////////////////////////////////////////////////////////////////
@@ -491,30 +629,11 @@ export function logApplicationCountChanges(applicationCache: ApplicationCacheTyp
 interface ResultType {
   [key: string]: IResource
 }
-
 type SelectorType = string | ((item: IResource) => string)
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function get(obj: any, path: string): string {
-  const keys = path.split('.')
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  let current = obj
-  for (const key of keys) {
-    if (current && key in current) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-      current = current[key]
-    } else {
-      return undefined // Path not found
-    }
-  }
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  return current
-}
-
-function keyBy(array: IResource[], selector: SelectorType) {
+export function keyBy(array: IResource[], selector: SelectorType) {
   const result: ResultType = {}
   for (const item of array) {
-    const key = typeof selector === 'string' ? get(item, selector) : selector(item)
+    const key = typeof selector === 'string' ? (get(item, selector) as string) : selector(item)
     result[key] = item
   }
   return result
