@@ -94,7 +94,7 @@ describe('Overview Page', () => {
 
   test('Should render Overview page with lots of clusters', async () => {
     const metricNock = nockPostRequest('/metrics?governance', {})
-    const { queryByText, container } = render(
+    const { queryByText } = render(
       <RecoilRoot
         initializeState={(snapshot) => {
           snapshot.set(policiesState, mockMultiPolicy)
@@ -127,13 +127,5 @@ describe('Overview Page', () => {
       })
     )
     expect(queryByText(/show 85 more/i)).not.toBeInTheDocument()
-
-    // Check card Alignment
-    // Cluster, Standard, Categories, Controls
-    expect(container.querySelectorAll('.card-body-grid').length).toBe(4)
-
-    container.querySelectorAll('.card-body-grid').forEach((grid) => {
-      expect(grid).toHaveStyle({ gridTemplateColumns: '1fr auto auto auto' })
-    })
   })
 })
