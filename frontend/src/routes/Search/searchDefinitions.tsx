@@ -10,12 +10,12 @@ import { useMemo } from 'react'
 import { TFunction } from 'react-i18next'
 import { generatePath, Link } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../lib/acm-i18next'
+import AcmTimestamp from '../../lib/AcmTimestamp'
 import { NavigationPath } from '../../NavigationPath'
 import { ConfigMap } from '../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { AcmButton, AcmLabels } from '../../ui-components'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
-import AcmTimestamp from '../../lib/AcmTimestamp'
 export interface ResourceDefinitions {
   application: Record<'columns', SearchColumnDefinition[]>
   cluster: Record<'columns', SearchColumnDefinition[]>
@@ -49,6 +49,7 @@ export interface ResourceDefinitions {
   virtualmachine: Record<'columns', SearchColumnDefinition[]>
   virtualmachinespage: Record<'columns', SearchColumnDefinition[]>
   virtualmachineinstance: Record<'columns', SearchColumnDefinition[]>
+  virtualmachinesnapshot: Record<'columns', SearchColumnDefinition[]>
 }
 
 export interface SearchColumnDefinition {
@@ -389,6 +390,22 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
     },
     virtualmachineinstance: {
       columns: AddDefaultColumns(t, [AddColumn('node', t('Node')), AddColumn('ipaddress', t('IP address'))]),
+    },
+    virtualmachinesnapshot: {
+      columns: [
+        { search: 'name', ...AddColumn('name', t('Name')) },
+        AddColumn('namespace', t('Namespace')),
+        AddColumn('cluster', t('Cluster')),
+        AddColumn('status', t('Status')),
+        {
+          id: 'vmsnapshot-indications',
+          header: t('Indications'),
+          cell: (item: any) => {
+            return <VMSnapshotIndications item={item} />
+          },
+        },
+        AddColumn('created', t('Created')),
+      ],
     },
     virtualmachinespage: {
       columns: [
@@ -986,4 +1003,14 @@ export function VMLaunchLinks(props: Readonly<{ item: any; t: TFunction }>) {
       </Label>
     </Popover>
   )
+}
+
+export function VMSnapshotIndications(props: Readonly<{ item: any }>) {
+  const { item } = props
+  if (item.indications) {
+    const indications = item.indications.split('; ')
+    const indicationsToHide = indications.slice(3).map((l: string) => l.split('=')[0])
+    return <AcmLabels labels={indications} collapse={indicationsToHide} />
+  }
+  return <>{'-'}</>
 }
