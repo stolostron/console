@@ -14,20 +14,27 @@ import {
   TextInputGroupUtilities,
   SelectOptionProps,
   SelectOption,
+  Badge,
+  Skeleton,
 } from '@patternfly/react-core'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
-import { Children, Fragment, isValidElement, ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import {
+  Children,
+  cloneElement,
+  Fragment,
+  isValidElement,
+  ReactElement,
+  ReactNode,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react'
 import { useTranslation } from '../../lib/acm-i18next'
 import { useValidationContext } from '../AcmForm/AcmForm'
 import { AcmHelperText } from '../AcmHelperText/AcmHelperText'
 import TimesIcon from '@patternfly/react-icons/dist/esm/icons/times-icon'
 
-export enum SelectVariant {
-  single = 'single',
-  checkbox = 'checkbox',
-  typeahead = 'typeahead',
-  typeaheadMulti = 'typeaheadmulti',
-}
 export interface SelectOptionObject {
   /** Function returns a string to represent the select option object */
   toString(): string
@@ -36,14 +43,34 @@ export interface SelectOptionObject {
 }
 let currentId = 0
 
+export enum SelectVariant {
+  single = 'single',
+  typeahead = 'typeahead',
+  checkboxMulti = 'checkboxMulti',
+  typeaheadMulti = 'typeaheadmulti',
+}
+type ConditionalProps =
+  | {
+      value: string | undefined
+      onChange: (value: string | undefined) => void
+      variant?: SelectVariant.single | SelectVariant.typeahead
+    }
+  | {
+      values: string[] | undefined
+      onChanges: (values: string[] | undefined) => void
+      variant?: SelectVariant.checkboxMulti | SelectVariant.typeaheadMulti
+    }
+
 type AcmSelectProps = Pick<
   SelectProps,
   Exclude<keyof SelectProps, 'toggle' | 'onToggle' | 'onChange' | 'selections' | 'onSelect'>
 > & {
   id: string
   label: string
-  value: string | undefined
-  onChange: (value: string | undefined) => void
+  value?: string | undefined
+  values?: string[] | undefined
+  onChange?: (value: string | undefined) => void
+  onChanges?: (value: string[] | undefined) => void
   validation?: (value: string | undefined) => string | undefined
   placeholder?: string
   labelHelp?: string
@@ -51,13 +78,13 @@ type AcmSelectProps = Pick<
   helperText?: ReactNode
   isRequired?: boolean
   isDisabled?: boolean
-  variant?: SelectVariant | string
   toggleId?: string
   maxHeight?: string
   menuAppendTo?: string
-
+  isLoading?: boolean
   footer?: React.ReactNode
-}
+} & ConditionalProps
+
 const NO_RESULTS = 'no results'
 
 export function AcmSelect(props: AcmSelectProps) {
@@ -65,14 +92,17 @@ export function AcmSelect(props: AcmSelectProps) {
   const [selected, setSelected] = useState<string>(props.value || '')
   const [inputValue, setInputValue] = useState<string>('')
   const [filterValue, setFilterValue] = useState<string>('')
-  const initialSelectOptions = Children.toArray(props.children).map((child) => {
+  const initialFilteredOptions = Children.toArray(props.children).map((child) => {
     const value = (child as React.ReactElement).props.value
     return {
       value,
       children: value,
     }
   })
-  const [selectOptions, setSelectOptions] = useState<SelectOptionProps[]>(initialSelectOptions)
+  // for typeahead-- filtered options
+  const [filteredOptions, setFilteredOptions] = useState<SelectOptionProps[]>(initialFilteredOptions)
+  // for multiselect--what's been checkmarked
+  const [selectedItems, setSelectedItems] = useState<string[]>([])
   const [focusedItemIndex, setFocusedItemIndex] = useState<number | null>(null)
   const [activeItemId, setActiveItemId] = useState<string | null>(null)
   const ValidationContext = useValidationContext()
@@ -89,10 +119,13 @@ export function AcmSelect(props: AcmSelectProps) {
     isDisabled,
     onChange,
     value,
+    onChanges,
+    values,
     placeholder,
     toggleId,
     maxHeight,
     menuAppendTo,
+    isLoading,
     variant,
     children,
     ...selectProps
@@ -152,39 +185,39 @@ export function AcmSelect(props: AcmSelectProps) {
       setIsOpen(true)
     }
 
-    if (selectOptions.every((option) => option.isDisabled)) {
+    if (filteredOptions.every((option) => option.isDisabled)) {
       return
     }
 
     if (key === 'ArrowUp') {
       // When no index is set or at the first index, focus to the last, otherwise decrement focus index
       if (focusedItemIndex === null || focusedItemIndex === 0) {
-        indexToFocus = selectOptions.length - 1
+        indexToFocus = filteredOptions.length - 1
       } else {
         indexToFocus = focusedItemIndex - 1
       }
 
       // Skip disabled options
-      while (selectOptions[indexToFocus].isDisabled) {
+      while (filteredOptions[indexToFocus].isDisabled) {
         indexToFocus--
         if (indexToFocus === -1) {
-          indexToFocus = selectOptions.length - 1
+          indexToFocus = filteredOptions.length - 1
         }
       }
     }
 
     if (key === 'ArrowDown') {
       // When no index is set or at the last index, focus to the first, otherwise increment focus index
-      if (focusedItemIndex === null || focusedItemIndex === selectOptions.length - 1) {
+      if (focusedItemIndex === null || focusedItemIndex === filteredOptions.length - 1) {
         indexToFocus = 0
       } else {
         indexToFocus = focusedItemIndex + 1
       }
 
       // Skip disabled options
-      while (selectOptions[indexToFocus].isDisabled) {
+      while (filteredOptions[indexToFocus].isDisabled) {
         indexToFocus++
-        if (indexToFocus === selectOptions.length) {
+        if (indexToFocus === filteredOptions.length) {
           indexToFocus = 0
         }
       }
@@ -194,7 +227,7 @@ export function AcmSelect(props: AcmSelectProps) {
   }
 
   const onInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    const focusedItem = focusedItemIndex !== null ? selectOptions[focusedItemIndex] : null
+    const focusedItem = focusedItemIndex !== null ? filteredOptions[focusedItemIndex] : null
 
     switch (event.key) {
       case 'Enter':
@@ -224,28 +257,24 @@ export function AcmSelect(props: AcmSelectProps) {
   }
 
   const selectOption = (value: string | number, content: string | number) => {
-    // eslint-disable-next-line no-console
-    console.log('selected', content)
-
     setInputValue(String(content))
     setFilterValue('')
     setSelected(String(value))
-
     closeMenu()
   }
 
   useEffect(() => {
-    let newSelectOptions: SelectOptionProps[] = initialSelectOptions
+    let newFilteredOptions: SelectOptionProps[] = initialFilteredOptions
 
     // Filter menu items based on the text input value when one exists
     if (filterValue) {
-      newSelectOptions = initialSelectOptions.filter((menuItem) =>
+      newFilteredOptions = initialFilteredOptions.filter((menuItem) =>
         String(menuItem.children).toLowerCase().includes(filterValue.toLowerCase())
       )
 
       // When no options are found after filtering, display 'No results found'
-      if (!newSelectOptions.length) {
-        newSelectOptions = [{ isAriaDisabled: true, children: t('No results found'), value: NO_RESULTS }]
+      if (!newFilteredOptions.length) {
+        newFilteredOptions = [{ isAriaDisabled: true, children: t('No results found'), value: NO_RESULTS }]
       }
 
       // Open the menu when the input value changes and the new value is not empty
@@ -254,13 +283,13 @@ export function AcmSelect(props: AcmSelectProps) {
       }
     }
 
-    setSelectOptions(newSelectOptions)
+    setFilteredOptions(newFilteredOptions)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterValue])
 
   const setActiveAndFocusedItem = (itemIndex: number) => {
     setFocusedItemIndex(itemIndex)
-    const focusedItem = selectOptions[itemIndex]
+    const focusedItem = filteredOptions[itemIndex]
     setActiveItemId(createItemId(focusedItem.value))
   }
 
@@ -275,6 +304,7 @@ export function AcmSelect(props: AcmSelectProps) {
 
   const onClearButtonClick = () => {
     setSelected('')
+    setSelectedItems([])
     setInputValue('')
     setFilterValue('')
     resetActiveAndFocusedItem()
@@ -288,17 +318,30 @@ export function AcmSelect(props: AcmSelectProps) {
       default:
       case SelectVariant.single:
         setSelected(value as string)
+        onChange?.(value as string)
         setIsOpen(false)
         break
       case SelectVariant.typeahead:
         if (value && value !== NO_RESULTS) {
-          const optionText = selectOptions.find((option) => option.value === value)?.children
-          onChange(value as string)
+          const optionText = filteredOptions.find((option) => option.value === value)?.children
+          onChange?.(value as string)
           selectOption(value, optionText as string)
+        }
+        break
+      case SelectVariant.checkboxMulti:
+      case SelectVariant.typeaheadMulti:
+        if (selectedItems.includes(value as string)) {
+          setSelectedItems(selectedItems.filter((id) => id !== value))
+        } else {
+          setSelectedItems([...selectedItems, value as string])
         }
         break
     }
   }
+  useEffect(() => {
+    onChanges?.(selectedItems as string[])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(selectedItems)])
 
   const renderMenuToggle = (toggleRef: React.Ref<MenuToggleElement>) => {
     switch (variant) {
@@ -318,6 +361,54 @@ export function AcmSelect(props: AcmSelectProps) {
             }
           >
             {getDisplay(selected, props)}
+          </MenuToggle>
+        )
+      case SelectVariant.typeaheadMulti:
+      case SelectVariant.checkboxMulti:
+        return (
+          <MenuToggle
+            id={selectToggleId}
+            ref={toggleRef}
+            onClick={onToggleClick}
+            isExpanded={isOpen}
+            isDisabled={isDisabled}
+            style={
+              {
+                width: '100%',
+              } as React.CSSProperties
+            }
+          >
+            {selectedItems.length === 0 ? (
+              placeholder
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <div>
+                  {selectedItems
+                    .filter((item) => item !== undefined)
+                    .map((node: ReactNode, index) => {
+                      if (index === 0) {
+                        return <Fragment key={`${index}`}>{node}</Fragment>
+                      } else {
+                        return (
+                          <Fragment key={`${index}`}>
+                            <span>, </span>
+                            {node}
+                          </Fragment>
+                        )
+                      }
+                    })}
+                </div>
+                <Badge style={{ marginLeft: '14px' }} isRead>
+                  {selectedItems.length}
+                </Badge>
+                <Button
+                  variant="plain"
+                  onClick={onClearButtonClick}
+                  aria-label="Clear input value"
+                  icon={<TimesIcon aria-hidden />}
+                />
+              </div>
+            )}
           </MenuToggle>
         )
       case SelectVariant.typeahead:
@@ -365,10 +456,25 @@ export function AcmSelect(props: AcmSelectProps) {
       default:
       case SelectVariant.single:
         return <SelectList style={{ maxHeight: maxHeight, overflowY: 'auto' }}>{children}</SelectList>
+      case SelectVariant.checkboxMulti:
+      case SelectVariant.typeaheadMulti:
+        return (
+          <SelectList style={{ maxHeight: maxHeight, overflowY: 'auto' }}>
+            {Children.map(children, (child) => {
+              if (isValidElement(child)) {
+                return cloneElement(child as ReactElement<any>, {
+                  hasCheckbox: true,
+                  isSelected: selectedItems.includes(child.props.value),
+                })
+              }
+              return child
+            })}
+          </SelectList>
+        )
       case SelectVariant.typeahead:
         return (
           <SelectList id="select-typeahead-listbox" style={{ maxHeight: maxHeight, overflowY: 'auto' }}>
-            {selectOptions.map((option, index) => (
+            {filteredOptions.map((option, index) => (
               <SelectOption
                 key={option.value || option.children}
                 isFocused={focusedItemIndex === index}
@@ -414,21 +520,23 @@ export function AcmSelect(props: AcmSelectProps) {
         )
       }
     >
-      <Select
-        style={{ width: 'auto' }}
-        aria-labelledby={`${props.id}-label`}
-        {...selectProps}
-        isOpen={isOpen}
-        toggle={renderMenuToggle}
-        onSelect={onSelect}
-      >
-        {renderSelectList()}
-      </Select>
-      {validated === 'error' ? (
-        <div style={{ borderTop: '1.75px solid red', paddingBottom: '6px' }}></div>
+      {isLoading ? (
+        <Skeleton height="36px" screenreaderText={t('Loading')} />
       ) : (
-        <Fragment />
+        <Select
+          style={{ width: 'auto' }}
+          aria-labelledby={`${props.id}-label`}
+          {...selectProps}
+          isOpen={isOpen}
+          toggle={renderMenuToggle}
+          onSelect={onSelect}
+        >
+          {renderSelectList()}
+        </Select>
       )}
+      <div
+        style={{ borderTop: `1.75px solid ${validated === 'error' ? 'red' : 'transparent'}`, paddingBottom: '10px' }}
+      ></div>
       <AcmHelperText controlId={props.id} helperText={helperText} validated={validated} error={error} />
     </FormGroup>
   )
