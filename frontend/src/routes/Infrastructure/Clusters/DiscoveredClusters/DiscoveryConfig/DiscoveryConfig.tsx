@@ -37,6 +37,7 @@ import {
   AcmButton,
   AcmForm,
   AcmFormSection,
+  AcmMultiSelect,
   AcmPage,
   AcmPageContent,
   AcmPageHeader,
@@ -44,7 +45,6 @@ import {
   AcmSubmit,
   AcmToastContext,
   Provider,
-  SelectVariant,
 } from '../../../../../ui-components'
 import { CredentialsForm } from '../../../../Credentials/CredentialsForm'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
@@ -508,14 +508,13 @@ export function DiscoveryConfigPageContent(props: {
               </SelectOption>
             ))}
           </AcmSelect>
-          <AcmSelect
+          <AcmMultiSelect
             id="discoveryVersions"
-            variant={SelectVariant.checkboxMulti}
             label={t('discoveryConfig.discoveryVersions.label')}
             labelHelp={t('discoveryConfig.discoveryVersions.labelHelp')}
-            values={discoveryConfig?.spec?.filters?.openShiftVersions}
+            value={discoveryConfig?.spec?.filters?.openShiftVersions}
             placeholder={t('discoveryConfig.discoveryVersions.placeholder')}
-            onChanges={(versions) => {
+            onChange={(versions) => {
               updateDiscoveryConfig((discoveryConfig) => {
                 if (!discoveryConfig.spec.filters) {
                   discoveryConfig.spec.filters = {}
@@ -529,7 +528,7 @@ export function DiscoveryConfigPageContent(props: {
                 {version}
               </SelectOption>
             ))}
-          </AcmSelect>
+          </AcmMultiSelect>
         </Fragment>
       ) : null}
       <ActionGroup>

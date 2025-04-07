@@ -16,6 +16,8 @@ import {
   SelectOption,
   Badge,
   Skeleton,
+  ChipGroup,
+  Chip,
 } from '@patternfly/react-core'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import {
@@ -63,7 +65,7 @@ type ConditionalProps =
 
 type AcmSelectProps = Pick<
   SelectProps,
-  Exclude<keyof SelectProps, 'toggle' | 'onToggle' | 'onChange' | 'selections' | 'onSelect'>
+  Exclude<keyof SelectProps, 'toggle' | 'onToggle' | 'onChange' | 'selections' | 'onSelect' | 'variant'>
 > & {
   id: string
   label: string
@@ -101,6 +103,8 @@ export function AcmSelect(props: AcmSelectProps) {
   })
   // for typeahead-- filtered options
   const [filteredOptions, setFilteredOptions] = useState<SelectOptionProps[]>(initialFilteredOptions)
+  const getMultiTypeaheadChildren = (value: string) =>
+    initialFilteredOptions.find((option) => option.value === value)?.children
   // for multiselect--what's been checkmarked
   const [selectedItems, setSelectedItems] = useState<string[]>([])
   const [focusedItemIndex, setFocusedItemIndex] = useState<number | null>(null)
@@ -121,10 +125,10 @@ export function AcmSelect(props: AcmSelectProps) {
     value,
     onChanges,
     values,
-    placeholder,
     toggleId,
     maxHeight,
     menuAppendTo,
+    placeholder,
     isLoading,
     variant,
     children,
@@ -338,6 +342,18 @@ export function AcmSelect(props: AcmSelectProps) {
         break
     }
   }
+
+  const onDelete = (value: string | number | undefined) => {
+    if (value && typeof value === 'string' && value !== NO_RESULTS) {
+      setSelectedItems(
+        selectedItems.includes(value)
+          ? selectedItems.filter((selection) => selection !== value)
+          : [...selectedItems, value]
+      )
+    }
+    textInputRef.current?.focus()
+  }
+
   useEffect(() => {
     onChanges?.(selectedItems as string[])
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -363,7 +379,6 @@ export function AcmSelect(props: AcmSelectProps) {
             {getDisplay(selected, props)}
           </MenuToggle>
         )
-      case SelectVariant.typeaheadMulti:
       case SelectVariant.checkboxMulti:
         return (
           <MenuToggle
@@ -375,13 +390,14 @@ export function AcmSelect(props: AcmSelectProps) {
             style={
               {
                 width: '100%',
+                maxHeight: '36px',
               } as React.CSSProperties
             }
           >
             {selectedItems.length === 0 ? (
               placeholder
             ) : (
-              <div style={{ display: 'flex', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', padding: '0px' }}>
                 <div>
                   {selectedItems
                     .filter((item) => item !== undefined)
@@ -436,7 +452,6 @@ export function AcmSelect(props: AcmSelectProps) {
                 isExpanded={isOpen}
                 aria-controls="select-typeahead-listbox"
               />
-
               <TextInputGroupUtilities {...(!inputValue ? { style: { display: 'none' } } : {})}>
                 <Button
                   variant="plain"
@@ -444,6 +459,53 @@ export function AcmSelect(props: AcmSelectProps) {
                   aria-label="Clear input value"
                   icon={<TimesIcon aria-hidden />}
                 />
+              </TextInputGroupUtilities>
+            </TextInputGroup>
+          </MenuToggle>
+        )
+      case SelectVariant.typeaheadMulti:
+        return (
+          <MenuToggle
+            variant="typeahead"
+            aria-label="Multi typeahead menu toggle"
+            onClick={onToggleClick}
+            innerRef={toggleRef}
+            isExpanded={isOpen}
+            isFullWidth
+          >
+            <TextInputGroup isPlain>
+              <TextInputGroupMain
+                value={inputValue}
+                onClick={onInputClick}
+                onChange={onTextInputChange}
+                onKeyDown={onInputKeyDown}
+                id="multi-typeahead-select-input"
+                autoComplete="off"
+                innerRef={textInputRef}
+                placeholder={placeholder}
+                {...(activeItemId && { 'aria-activedescendant': activeItemId })}
+                role="combobox"
+                isExpanded={isOpen}
+                aria-controls="select-multi-typeahead-listbox"
+              >
+                <ChipGroup aria-label="Current selections">
+                  {selectedItems.map((selection, index) => (
+                    <Chip
+                      key={index}
+                      onClick={(ev) => {
+                        ev.stopPropagation()
+                        onDelete(selection)
+                      }}
+                    >
+                      {getMultiTypeaheadChildren(selection)}
+                    </Chip>
+                  ))}
+                </ChipGroup>
+              </TextInputGroupMain>
+              <TextInputGroupUtilities {...(selected.length === 0 ? { style: { display: 'none' } } : {})}>
+                <Button variant="plain" onClick={onClearButtonClick} aria-label="Clear input value">
+                  <TimesIcon aria-hidden />
+                </Button>
               </TextInputGroupUtilities>
             </TextInputGroup>
           </MenuToggle>
@@ -457,7 +519,6 @@ export function AcmSelect(props: AcmSelectProps) {
       case SelectVariant.single:
         return <SelectList style={{ maxHeight: maxHeight, overflowY: 'auto' }}>{children}</SelectList>
       case SelectVariant.checkboxMulti:
-      case SelectVariant.typeaheadMulti:
         return (
           <SelectList style={{ maxHeight: maxHeight, overflowY: 'auto' }}>
             {Children.map(children, (child) => {
@@ -474,6 +535,21 @@ export function AcmSelect(props: AcmSelectProps) {
       case SelectVariant.typeahead:
         return (
           <SelectList id="select-typeahead-listbox" style={{ maxHeight: maxHeight, overflowY: 'auto' }}>
+            {filteredOptions.map((option, index) => (
+              <SelectOption
+                key={option.value || option.children}
+                isFocused={focusedItemIndex === index}
+                className={option.className}
+                id={createItemId(option.value)}
+                {...option}
+                ref={null}
+              />
+            ))}
+          </SelectList>
+        )
+      case SelectVariant.typeaheadMulti:
+        return (
+          <SelectList style={{ maxHeight: maxHeight, overflowY: 'auto' }}>
             {filteredOptions.map((option, index) => (
               <SelectOption
                 key={option.value || option.children}
@@ -529,6 +605,7 @@ export function AcmSelect(props: AcmSelectProps) {
           {...selectProps}
           isOpen={isOpen}
           toggle={renderMenuToggle}
+          onOpenChange={(isOpen) => setIsOpen(isOpen)}
           onSelect={onSelect}
         >
           {renderSelectList()}

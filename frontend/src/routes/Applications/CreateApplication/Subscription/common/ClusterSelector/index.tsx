@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Fragment, useCallback, useState } from 'react'
-import { AcmSelect, SelectVariant } from '../../../../../../ui-components'
+import { AcmMultiSelect, AcmSelect, SelectVariant } from '../../../../../../ui-components'
 import {
   Radio,
   FormGroup,
@@ -299,20 +299,19 @@ const ClusterSelector = (props: {
 
                     <FlexItem>
                       {!hideValue && (
-                        <AcmSelect
-                          variant={SelectVariant.checkboxMulti}
+                        <AcmMultiSelect
                           id={`labelValue-${id}-${controlId}`}
                           label={i18n('clusterSelector.value.field.ui')}
-                          values={matchLabelValue}
+                          value={matchLabelValue}
                           placeholder={i18n('Select the values')}
-                          onChanges={(value) => handleChange(value!, 'labelValue', id)}
+                          onChange={(value) => handleChange(value!, 'labelValue', id)}
                         >
                           {labelValuesMap[labelName]?.map((value: any) => (
                             <SelectOption key={value} value={value}>
                               {value}
                             </SelectOption>
                           ))}
-                        </AcmSelect>
+                        </AcmMultiSelect>
                       )}
                     </FlexItem>
                   </Flex>
@@ -394,13 +393,13 @@ const ClusterSelector = (props: {
                       style={{ display: 'block' }}
                       id={`clusterSelector-labels-section-${controlId}`}
                     >
-                      <AcmSelect
-                        variant={SelectVariant.typeaheadMulti}
+                      <AcmMultiSelect
                         id="cluster-sets"
                         label={i18n('Cluster sets')}
                         placeholder={i18n('Select the cluster sets')}
-                        values={selectedClusterSets}
-                        onChanges={(clusterSets) => addClusterSetToControl(clusterSets!)}
+                        value={selectedClusterSets}
+                        variant={SelectVariant.typeaheadMulti}
+                        onChange={(clusterSets) => addClusterSetToControl(clusterSets!)}
                         isRequired
                       >
                         {clusterSets.map((clusterset: ManagedClusterSet) => (
@@ -408,7 +407,7 @@ const ClusterSelector = (props: {
                             {clusterset.metadata.name}
                           </SelectOption>
                         ))}
-                      </AcmSelect>
+                      </AcmMultiSelect>
                       {renderClusterLabels(control, isReadOnly, controlId, i18n)}
                       {hasLabels && (
                         <Button

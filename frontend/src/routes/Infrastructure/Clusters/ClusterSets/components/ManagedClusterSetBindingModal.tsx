@@ -14,7 +14,7 @@ import {
   AcmAlertGroup,
   AcmForm,
   AcmModal,
-  AcmSelect,
+  AcmMultiSelect,
   AcmSubmit,
   SelectVariant,
 } from '../../../../../ui-components'
@@ -120,15 +120,15 @@ export function ManagedClusterSetBindingModal(props: { clusterSet?: ManagedClust
             <div style={{ marginBottom: '16px' }}>
               <Trans i18nKey="clusterSetBinding.edit.message.rbac" components={{ bold: <strong /> }} />
             </div>
-            <AcmSelect
+            <AcmMultiSelect
               id="namespaces"
               variant={SelectVariant.typeaheadMulti}
               label={t('clusterSetBinding.edit.select.label')}
               placeholder={t('clusterSetBinding.edit.select.placeholder')}
-              values={selectedNamespaces}
+              value={selectedNamespaces}
               menuAppendTo="parent"
               maxHeight="18em"
-              onChanges={(namespaces) => setSelectedNamespaces(namespaces)}
+              onChange={(namespaces) => setSelectedNamespaces(namespaces)}
               isLoading={!loaded}
             >
               {rbacNamespaces &&
@@ -139,7 +139,7 @@ export function ManagedClusterSetBindingModal(props: { clusterSet?: ManagedClust
                     </SelectOption>
                   )
                 })}
-            </AcmSelect>
+            </AcmMultiSelect>
 
             <AcmAlertGroup isInline canClose />
             <ActionGroup>
