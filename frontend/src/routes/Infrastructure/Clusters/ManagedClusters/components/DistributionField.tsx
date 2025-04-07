@@ -407,7 +407,7 @@ export function DistributionField(props: {
         </span>
       </>
     )
-  } else if ((props.cluster?.isHostedCluster || props.cluster?.isHypershift) && isUpdateAvailable) {
+  } else if (props.cluster?.isHypershift && isUpdateAvailable) {
     // UPGRADE AVAILABLE HYPERSHIFT
 
     return (
