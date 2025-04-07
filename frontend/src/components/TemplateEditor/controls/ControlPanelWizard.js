@@ -282,7 +282,13 @@ class ControlPanelWizard extends React.Component {
                   }}
                 >
                   {processingLabel ||
-                    (activeStep.id === 'review' ? (isEditing ? i18n('Save') : i18n('Create')) : i18n('Next'))}
+                    (activeStep.id === 'reviewSave'
+                      ? i18n('Save')
+                      : activeStep.id === 'review'
+                        ? isEditing
+                          ? i18n('Save')
+                          : i18n('Create')
+                        : i18n('Next'))}
                 </Button>
               </ActionListItem>
               <ActionListItem>
