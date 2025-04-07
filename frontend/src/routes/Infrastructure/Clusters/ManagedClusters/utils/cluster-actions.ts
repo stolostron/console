@@ -63,7 +63,8 @@ export function clusterSupportsAction(
       return (
         !!cluster.name &&
         cluster.status === ClusterStatus.ready &&
-        (!!cluster.distribution?.upgradeInfo?.isReadyUpdates || (cluster.isHostedCluster && isHypershiftUpdatesReady))
+        ((!!cluster.distribution?.upgradeInfo?.isReadyUpdates && !cluster?.isHostedCluster) ||
+          (cluster.isHypershift && isHypershiftUpdatesReady))
       )
     case ClusterAction.SelectChannel:
       return (
