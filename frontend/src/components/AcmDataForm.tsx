@@ -442,8 +442,8 @@ interface AcmDataFormStepProps {
   name: React.ReactNode
   id: string | number
   isHidden?: boolean
-  component: React.ReactNode | undefined
-  steps?: AcmDataFormStepProps[] | undefined
+  component?: React.ReactNode
+  steps?: AcmDataFormStepProps[]
   canJumpTo?: boolean
 }
 

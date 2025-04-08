@@ -272,7 +272,7 @@ class ControlPanelWizard extends React.Component {
                   variant="primary"
                   spinnerAriaValueText={isWorking ? i18n('Processing') : undefined}
                   onClick={() => {
-                    let activeStepIndex = steps.findIndex((step) => step.id == activeStep.id)
+                    const activeStepIndex = steps.findIndex((step) => step.id === activeStep.id)
                     onMove(activeStep, activeStep.id > 0 ? steps[activeStepIndex - 1] : null)
                     if (!isWorking) {
                       validateNextStep(activeStep, goToNextStep)
@@ -293,11 +293,13 @@ class ControlPanelWizard extends React.Component {
                 <Button
                   variant="secondary"
                   onClick={() => {
-                    let activeStepIndex = steps.findIndex((step) => step.id == activeStep.id)
+                    const activeStepIndex = steps.findIndex((step) => step.id === activeStep.id)
                     onMove(activeStep, activeStep.id > 0 ? steps[activeStepIndex - 1] : null)
                     if (activeStep.index === 0 && backButtonOverride) {
                       backButtonOverride()
-                    } else goToPrevStep()
+                    } else {
+                      goToPrevStep()
+                    }
                   }}
                   isAriaDisabled={activeStep.index === 0 && !backButtonOverride}
                 >
@@ -335,20 +337,8 @@ class ControlPanelWizard extends React.Component {
 
 function renderStep(step) {
   const { id, name, component, enabled, steps } = step
-  return steps ? (
-    <WizardStep
-      id={id}
-      key={id}
-      name={name}
-      isDisabled={!enabled}
-      steps={steps.map(({ id, name, component }) => (
-        <WizardStep id={id} key={id} name={name}>
-          {component}
-        </WizardStep>
-      ))}
-    />
-  ) : (
-    <WizardStep id={id} key={id} name={name} isDisabled={!enabled}>
+  return (
+    <WizardStep id={id} key={id} name={name} isDisabled={!enabled} steps={steps?.map((step) => renderStep(step))}>
       {component}
     </WizardStep>
   )
