@@ -121,7 +121,7 @@ export function CardDropdown(props: CardDropdownProps) {
   return (
     <Dropdown
       className="dropdownMenu"
-      onClick={() => setOpen(!isOpen)}
+      onSelect={() => setOpen(!isOpen)}
       toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
         <MenuToggle
           ref={toggleRef}
@@ -130,11 +130,10 @@ export function CardDropdown(props: CardDropdownProps) {
           }}
           variant="plain"
           isExpanded={isOpen}
-          icon={<EllipsisVIcon />}
-        ></MenuToggle>
+          ><EllipsisVIcon /></MenuToggle>
       )}
       isOpen={isOpen}
-      isPlain
+      isPlain={true}
     >
       <DropdownList>
         {props.dropdownItems.map((item) => (

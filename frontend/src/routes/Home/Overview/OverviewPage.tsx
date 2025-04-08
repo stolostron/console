@@ -363,10 +363,10 @@ export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Re
                       }}
                       variant="plain"
                       isExpanded={isOpen}
-                      icon={<EllipsisVIcon />}
-                    />
+                    ><EllipsisVIcon /></MenuToggle>
                   )}
                   isOpen={isOpen}
+                  isPlain={true}
                 >
                   <DropdownItem
                     key="hide card"

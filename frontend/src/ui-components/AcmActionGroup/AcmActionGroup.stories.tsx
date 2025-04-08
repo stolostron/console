@@ -80,6 +80,7 @@ const CreateDropdown = () => {
   return (
     <Dropdown
       isOpen={isOpen}
+      onSelect={() => setOpen(!isOpen)}
       toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
         <MenuToggle
           ref={toggleRef}

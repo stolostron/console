@@ -22,6 +22,7 @@ import {
   Divider,
   MenuToggle,
   MenuToggleElement,
+  DropdownList,
 } from '@patternfly/react-core'
 import { CheckCircleIcon, EllipsisVIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { ReactNode, useCallback, useContext, useState } from 'react'
@@ -101,7 +102,7 @@ export default function PolicySetCard(props: {
             actions: (
               <>
                 <Dropdown
-                  onSelect={() => setIsKebabOpen(false)}
+                  onSelect={() => setIsKebabOpen(!isKebabOpen)}
                   toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
                     <MenuToggle
                       ref={toggleRef}
@@ -115,8 +116,9 @@ export default function PolicySetCard(props: {
                     </MenuToggle>
                   )}
                   isOpen={isKebabOpen}
-                  isPlain
+                  isPlain={true}
                 >
+                  <DropdownList>
                   <DropdownItem
                     key="view details"
                     onClick={() => {
@@ -161,6 +163,7 @@ export default function PolicySetCard(props: {
                   >
                     {t('Delete')}
                   </DropdownItem>
+                  </DropdownList>
                 </Dropdown>
               </>
             ),
