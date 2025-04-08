@@ -59,6 +59,7 @@ import {
   WizardFooterWrapper,
   WizardFooterType,
   WizardStepProps,
+  WizardHeader,
 } from '@patternfly/react-core'
 import { Select, SelectGroup, SelectOption, SelectOptionObject, SelectProps } from '@patternfly/react-core/deprecated'
 import { ValidatedOptions } from '@patternfly/react-core/dist/js/helpers/constants'
@@ -663,7 +664,11 @@ export function AcmDataFormWizard(props: {
   return (
     <Fragment>
       {isModalWizard ? (
-        <Wizard title={formData.title} footer={Footer} onClose={cancel}>
+        <Wizard
+          header={<WizardHeader title={formData.title} description={formData.description} onClose={cancel} />}
+          footer={Footer}
+          onClose={cancel}
+        >
           {steps.map((step) => renderStep(step))}
         </Wizard>
       ) : (
