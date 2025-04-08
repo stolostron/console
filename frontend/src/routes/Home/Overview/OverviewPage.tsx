@@ -367,10 +367,9 @@ export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Re
                     />
                   )}
                   isOpen={isOpen}
-                  isPlain
                 >
                   <DropdownItem
-                    key="action"
+                    key="hide card"
                     onClick={() =>
                       setSummarySectionWidgetToggle({
                         clusterProvider: { visible: true, position: 0 },
