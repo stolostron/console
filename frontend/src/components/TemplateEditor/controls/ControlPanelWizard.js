@@ -20,7 +20,6 @@ import { ExclamationCircleIcon } from '@patternfly/react-icons'
 import ControlPanelFinish from './ControlPanelFinish'
 import get from 'lodash/get'
 import set from 'lodash/set'
-import noop from 'lodash/noop'
 import isEmpty from 'lodash/isEmpty'
 
 class ControlPanelWizard extends React.Component {
@@ -34,7 +33,6 @@ class ControlPanelWizard extends React.Component {
   render() {
     const {
       controlClasses,
-      setWizardRef,
       renderControlSections,
       renderNotifications,
       isEditing,
@@ -122,7 +120,7 @@ class ControlPanelWizard extends React.Component {
         ),
         control,
         controls,
-        canJumpTo: inx <= validStepIndex,
+        enabled: inx <= validStepIndex,
         component: (
           <div key={id} className={controlClasses}>
             <Stack hasGutter>
@@ -157,7 +155,7 @@ class ControlPanelWizard extends React.Component {
             </Stack>
           </div>
         ),
-        canJumpTo: steps.length + 1 <= validStepIndex,
+        enabled: steps.length + 1 <= validStepIndex,
       })
     }
 
@@ -336,12 +334,13 @@ class ControlPanelWizard extends React.Component {
 }
 
 function renderStep(step) {
-  const { id, name, component, steps } = step
+  const { id, name, component, enabled, steps } = step
   return steps ? (
     <WizardStep
       id={id}
       key={id}
       name={name}
+      isDisabled={!enabled}
       steps={steps.map(({ id, name, component }) => (
         <WizardStep id={id} key={id} name={name}>
           {component}
@@ -349,7 +348,7 @@ function renderStep(step) {
       ))}
     />
   ) : (
-    <WizardStep id={id} key={id} name={name}>
+    <WizardStep id={id} key={id} name={name} isDisabled={!enabled}>
       {component}
     </WizardStep>
   )
