@@ -612,7 +612,7 @@ export function AcmDataFormWizard(props: {
     setShowFormErrors(true)
 
     return (
-      <Stack hasGutter style={{ width: '100%' }}>
+      <WizardFooterWrapper>
         {submitError && <Alert isInline variant="danger" title={submitError} />}
         <ActionGroup>
           <ActionList>
@@ -657,7 +657,7 @@ export function AcmDataFormWizard(props: {
             </ActionListGroup>
           </ActionList>
         </ActionGroup>
-      </Stack>
+      </WizardFooterWrapper>
     )
   }
 
