@@ -665,6 +665,7 @@ export function AcmDataFormWizard(props: {
     <Fragment>
       {isModalWizard ? (
         <Wizard
+          height={640}
           header={<WizardHeader title={formData.title} description={formData.description} onClose={cancel} />}
           footer={Footer}
           onClose={cancel}
