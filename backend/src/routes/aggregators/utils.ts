@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import get from 'get-value'
-import { getKubeResources, getHubClusterName } from '../events'
+import sizeof from 'object-sizeof'
+import { getKubeResources, getHubClusterName, getEventCache } from '../events'
 import {
   Cluster,
   IResource,
@@ -20,6 +21,7 @@ import { logger } from '../../lib/logger'
 import { getMultiClusterHub } from '../../lib/multi-cluster-hub'
 import { getMultiClusterEngine } from '../../lib/multi-cluster-engine'
 import { getAllArgoApplications } from './applicationsArgo'
+import { ServerSideEvents } from '../../lib/server-side-events'
 
 //////////////////////////////////////////////////////////////////
 ////////////// TRANSFORM /////////////////////////////////////////
@@ -621,6 +623,21 @@ export function logApplicationCountChanges(applicationCache: ApplicationCacheTyp
       appCount,
     })
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const memUsed = (cache: any) => {
+    return `${Math.round(sizeof(cache) / 1024)
+      .toString()
+      .replace(/\B(?=(\d{3})+(?!\d))/g, ',')} KB`
+  }
+  logger.info({
+    msg: 'memory',
+    caches: {
+      appCache: memUsed(applicationCache),
+      eventCache: memUsed(getEventCache()),
+      clients: Object.keys(ServerSideEvents.getClients()).length,
+      events: memUsed(ServerSideEvents.getEvents()),
+    },
+  })
 }
 
 //////////////////////////////////////////////////////////////////

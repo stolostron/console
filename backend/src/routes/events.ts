@@ -129,7 +129,10 @@ export function initResourceCache(cache: ResourceCache) {
   resourceCache = cache
 }
 
-export let resourceCache: ResourceCache = {}
+let resourceCache: ResourceCache = {}
+export function getEventCache() {
+  return resourceCache
+}
 
 const accessCache: Record<string, Record<string, { time: number; promise: Promise<boolean> }>> = {}
 
@@ -380,13 +383,14 @@ async function pollKubernetesObjects(serviceAccountToken: string, options: IWatc
 
     /* istanbul ignore if */
     if (process.env.NODE_ENV !== 'test') {
-      // polling interval should increase up to maxTimeout seconds
+      // polling interval starting at minTimeout and increasing up to maxTimeout seconds
+      // where anything above maxApp will get the maximum maxTimeout
       // for larger kube resource lists
-      const maxAppsets = 5000
-      const minTimeout = 5000
+      const maxApps = 5000
+      const minTimeout = 15000
       const maxTimeout = 45000
       const timeout = Math.round(
-        size > maxAppsets ? maxTimeout : (size * (maxTimeout - minTimeout)) / maxAppsets + minTimeout
+        size > maxApps ? maxTimeout : (size * (maxTimeout - minTimeout)) / maxApps + minTimeout
       )
       await new Promise((r) => setTimeout(r, timeout))
     } else {
