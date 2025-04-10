@@ -134,10 +134,11 @@ export function CredentialsForm(
     hideYaml?: boolean
     newCredentialCallback?: (resource: Secret) => void
     isHosted?: boolean
+    modalHeight?: number
   } & ProviderConnectionOrCredentialsType
 ) {
   const { t } = useTranslation()
-  const { namespaces, providerConnection, isEditing, isViewing, handleModalToggle, hideYaml, newCredentialCallback } =
+  const { namespaces, providerConnection, isEditing, isViewing, handleModalToggle, hideYaml, newCredentialCallback, modalHeight } =
     props
   const credentialsType =
     props.credentialsType || providerConnection?.metadata.labels?.['cluster.open-cluster-management.io/type'] || ''
@@ -1601,6 +1602,7 @@ export function CredentialsForm(
         }
       }}
       isModalWizard={!!handleModalToggle}
+      modalHeight={modalHeight}
     />
   )
 }
