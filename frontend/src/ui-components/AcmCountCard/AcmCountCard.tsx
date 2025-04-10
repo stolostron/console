@@ -130,10 +130,11 @@ export function CardDropdown(props: CardDropdownProps) {
           }}
           variant="plain"
           isExpanded={isOpen}
-          ><EllipsisVIcon /></MenuToggle>
+        >
+          <EllipsisVIcon />
+        </MenuToggle>
       )}
       isOpen={isOpen}
-      isPlain={true}
     >
       <DropdownList>
         {props.dropdownItems.map((item) => (
@@ -177,7 +178,6 @@ export const AcmCountCard = (props: AcmCountCardProps) => {
     <Card
       id={id}
       className={classes.card}
-      onClick={props.onCardClick}
       isClickable={!!props.onCardClick}
       isFlat={!props.onCardClick}
       onKeyPress={props.onKeyPress}
@@ -187,7 +187,6 @@ export const AcmCountCard = (props: AcmCountCardProps) => {
           {...(cardHeader.actions &&
             cardHeader.actions.length > 0 && {
               actions: {
-                className: classes.actions,
                 actions: (
                   <>
                     <CardDropdown dropdownItems={cardHeader.actions} />
