@@ -7,6 +7,7 @@ import DetailsOverviewPage from './Details/DetailsOverviewPage'
 import DetailsPage from './Details/DetailsPage'
 import LogsPage from './Details/LogsPage'
 import RelatedResourceDetailsTab from './Details/RelatedResourceDetailsTab'
+import SnapshotsTab from './Details/SnapshotsTab'
 import YAMLPage from './Details/YAMLPage'
 import SearchPage from './SearchPage'
 
@@ -34,6 +35,7 @@ export default function Search() {
           <Route path={searchChildPath(NavigationPath.resourceRelated)} element={<RelatedResourceDetailsTab />} />
           <Route path={searchChildPath(NavigationPath.resourceLogs)} element={<LogsPage />} />
           <Route path={searchChildPath(NavigationPath.resources)} element={<DetailsOverviewPage />} />
+          <Route path={searchChildPath(NavigationPath.vmSnapshots)} element={<SnapshotsTab />} />
         </Route>
         <Route path={searchChildPath(NavigationPath.search)} element={<SearchPage />} />
         <Route path="*" element={<Navigate to={NavigationPath.search} replace />} />

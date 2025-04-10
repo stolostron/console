@@ -14,7 +14,9 @@ import { managedClusterSetBindingsState, namespacesState } from '../../../../../
 import { nockCreate, nockDelete, nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../../lib/nock-util'
 import { mockManagedClusterSet } from '../../../../../lib/test-metadata'
 import {
+  clickByLabel,
   clickByPlaceholderText,
+  clickByRole,
   clickByText,
   typeByText,
   waitForNock,
@@ -392,9 +394,9 @@ const Component = () => (
 describe('ClusterSetActionDropdown', () => {
   beforeEach(() => {
     nockIgnoreApiPaths()
-    render(<Component />)
   })
   test('can edit managed cluster set bindings for a cluster set', async () => {
+    render(<Component />)
     nockCreate(createSelfsubjectaccessreviews2.req, createSelfsubjectaccessreviews2.res).persist() // create 'SelfSubjectAccessReview'
     nockCreate(createSelfsubjectaccessreviews3.req, createSelfsubjectaccessreviews3.res).persist() // create 'SelfSubjectAccessReview'
     nockCreate(createSelfsubjectaccessreviews4.req, createSelfsubjectaccessreviews4.res).persist() // create 'SelfSubjectAccessReview'
@@ -405,8 +407,8 @@ describe('ClusterSetActionDropdown', () => {
     nockCreate(createSelfsubjectaccessreviews9.req, createSelfsubjectaccessreviews9.res).persist() // create 'SelfSubjectAccessReview'
     nockCreate(createSelfsubjectaccessreviews10.req, createSelfsubjectaccessreviews10.res).persist() // create 'SelfSubjectAccessReview'
 
-    await clickByText('Actions')
-    await clickByText('Edit namespace bindings')
+    await clickByLabel('Actions')
+    await clickByRole('menuitem', { name: 'Edit namespace bindings' })
 
     // verify existing binding is selected
     await waitForText(firstNamespaceBinding.metadata.namespace!)
@@ -421,17 +423,22 @@ describe('ClusterSetActionDropdown', () => {
     const createNock = nockCreate(createSecondNamespaceBinding)
 
     await clickByText('Save')
+    await waitForText('Saving')
     await waitForNocks([deleteNock, createNock])
   })
+
   test('delete action should delete the managed cluster set', async () => {
+    render(<Component />)
     nockIgnoreRBAC()
     const nock = nockDelete(mockManagedClusterSet)
-    await clickByText('Actions')
-    await clickByText('Delete cluster set')
+    await clickByLabel('Actions')
+    await clickByRole('menuitem', { name: 'Delete cluster set' })
+
     await typeByText(
       `Confirm by typing "${mockManagedClusterSet.metadata.name!}" below:`,
       mockManagedClusterSet.metadata.name!
     )
+
     await clickByText('Delete')
     await waitForNock(nock)
   })

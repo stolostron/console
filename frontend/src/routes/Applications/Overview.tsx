@@ -152,7 +152,11 @@ export function getApplicationName(application: IApplicationResource, search: st
 }
 
 export function getApplicationNamespace(resource: IApplicationResource, search: string) {
-  return <HighlightSearchText text={getAppNamespace(resource)} searchText={search} isTruncate />
+  return (
+    <span style={{ whiteSpace: 'nowrap' }}>
+      <HighlightSearchText text={getAppNamespace(resource)} searchText={search} isTruncate />
+    </span>
+  )
 }
 
 // Map resource kind to type column

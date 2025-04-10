@@ -21,6 +21,7 @@ import {
   getSearchDefinitions,
   GetUrlSearchParam,
   VMLaunchLinks,
+  VMSnapshotIndications,
 } from './searchDefinitions'
 const t = i18next.t.bind(i18next)
 
@@ -730,6 +731,37 @@ test('Correctly returns VMLaunchLinks', () => {
     >
       <MemoryRouter>
         <VMLaunchLinks item={item} t={t} />
+      </MemoryRouter>
+    </RecoilRoot>
+  )
+  expect(baseElement).toMatchSnapshot()
+})
+
+test('Correctly returns VirtualMachineSnapshot indications', () => {
+  const item = {
+    name: 'test-snapshot',
+    namespace: 'testNamespace',
+    indications: 'indication1; indication2',
+  }
+  const { baseElement } = render(
+    <RecoilRoot>
+      <MemoryRouter>
+        <VMSnapshotIndications item={item} />
+      </MemoryRouter>
+    </RecoilRoot>
+  )
+  expect(baseElement).toMatchSnapshot()
+})
+
+test('Correctly returns empty VirtualMachineSnapshot indications', () => {
+  const item = {
+    name: 'test-snapshot',
+    namespace: 'testNamespace',
+  }
+  const { baseElement } = render(
+    <RecoilRoot>
+      <MemoryRouter>
+        <VMSnapshotIndications item={item} />
       </MemoryRouter>
     </RecoilRoot>
   )
