@@ -28,7 +28,6 @@ In the case of 4.10+ we will install addition [resources](https://github.com/ope
 
 ### Prerequisites
 
-- python
 - [jq](https://stedolan.github.io/jq/download/)
 - [oc](https://docs.openshift.com/container-platform/4.10/cli_reference/openshift_cli/getting-started-cli.html)
 - podman or docker
