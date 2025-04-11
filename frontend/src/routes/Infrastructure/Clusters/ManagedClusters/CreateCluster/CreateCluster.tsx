@@ -661,7 +661,6 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
                     newCredentialCallback={setNewSecret}
                   />
                 </Modal>
-
                 <TemplateEditor
                   wizardClassName={wizardBody}
                   type={'cluster'}
