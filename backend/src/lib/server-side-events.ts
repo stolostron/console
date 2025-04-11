@@ -210,6 +210,14 @@ export class ServerSideEvents {
     delete this.events[eventID]
   }
 
+  public static getClients() {
+    return this.clients
+  }
+
+  public static getEvents() {
+    return this.events
+  }
+
   public static handleRequest(token: string, req: Http2ServerRequest, res: Http2ServerResponse): ServerSideEventClient {
     const [writableStream, compressionStream, encoding] = getEncodeStream(
       res as unknown as NodeJS.WritableStream,
