@@ -156,8 +156,6 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
   const managedClusters = useRecoilValue(managedClustersState)
   const namespaces = useRecoilValue(namespacesState)
   const validCuratorTemplates = useRecoilValue(validClusterCuratorTemplatesValue)
-  const modalRef = useRef<HTMLDivElement>(null)
-  const [modalHeight, setModalHeight] = useState<number>(0)
 
   const subscriptionOperators = useRecoilValue(subscriptionOperatorsState)
   const isKubevirtEnabled = useMemo(() => {
@@ -498,11 +496,6 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
     }
   }
 
-  useEffect(()=>{
-    if(modalRef.current)
-      setModalHeight(modalRef.current.clientHeight)
-  },[])
-
   useEffect(() => {
     if (
       (infrastructureType === HostInventoryInfrastructureType.CIM ||
@@ -649,7 +642,6 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
           <PageSection variant="light" isFilled type="wizard">
             <WarningContext.Provider value={warning}>
               <HypershiftAgentContext.Provider value={hypershiftValues}>
-              <div ref={modalRef}>
                 <Modal
                   variant={ModalVariant.large}
                   showClose={false}
@@ -659,7 +651,6 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
                   onClose={handleModalToggle}
                   hasNoBodyWrapper
                 >
-                  
                   <CredentialsForm
                     namespaces={projects}
                     isEditing={false}
@@ -668,12 +659,9 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
                     handleModalToggle={handleModalToggle}
                     hideYaml={true}
                     newCredentialCallback={setNewSecret}
-                    modalHeight={modalHeight}
                   />
-                  
                 </Modal>
-                </div>
-               
+
                 <TemplateEditor
                   wizardClassName={wizardBody}
                   type={'cluster'}

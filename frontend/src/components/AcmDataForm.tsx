@@ -105,7 +105,6 @@ export interface AcmDataFormProps {
   globalWizardAlert?: ReactNode
   hideYaml?: boolean
   isModalWizard?: boolean
-  modalHeight?: number
 }
 
 export function generalValidationMessage(t: TFunction) {
@@ -123,7 +122,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
   const pageRef = useRef(null)
   const { t } = useTranslation()
 
-  const { editorTitle, schema, secrets, immutables, formData, globalWizardAlert, hideYaml, isModalWizard, modalHeight } = props
+  const { editorTitle, schema, secrets, immutables, formData, globalWizardAlert, hideYaml, isModalWizard } = props
   const [showFormErrors, setShowFormErrors] = useState(false)
 
   const mode = props.mode ?? 'form'
@@ -219,7 +218,6 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                   isHorizontal={isHorizontal}
                   globalWizardAlert={globalWizardAlert}
                   isModalWizard={isModalWizard}
-                  modalHeight={modalHeight}
                 />
               </PageSection>
             ) : (
@@ -308,7 +306,7 @@ export function AcmDataForm(
     isModalWizard?: boolean
   }
 ): JSX.Element {
-  const { formData, isHorizontal, globalWizardAlert, showFormErrors, setShowFormErrors, isModalWizard, mode, modalHeight } = props
+  const { formData, isHorizontal, globalWizardAlert, showFormErrors, setShowFormErrors, isModalWizard, mode } = props
   if (mode === 'details') {
     return (
       <Form>
@@ -327,7 +325,6 @@ export function AcmDataForm(
             setShowFormErrors={setShowFormErrors}
             globalWizardAlert={globalWizardAlert}
             isModalWizard={isModalWizard}
-            modalHeight={modalHeight}
           />
         ) : (
           <AcmDataFormDefault
@@ -457,16 +454,20 @@ export function AcmDataFormWizard(props: {
   globalWizardAlert?: ReactNode
   showFormErrors: boolean
   isModalWizard?: boolean
-  modalHeight?: number
   setShowFormErrors: (showFormErrors: boolean) => void
 }): JSX.Element {
   const { t } = useTranslation()
-  const { formData, isHorizontal, globalWizardAlert, showFormErrors, setShowFormErrors, isModalWizard, modalHeight } = props
+  const { formData, isHorizontal, globalWizardAlert, showFormErrors, setShowFormErrors, isModalWizard } = props
   const [showSectionErrors, setShowSectionErrors] = useState<Record<string, boolean>>({})
   const [submitText, setSubmitText] = useState(formData.submitText)
   const [submitError, setSubmitError] = useState('')
   const isSubmitting = submitText !== formData.submitText
   const { cancelForm } = useContext(LostChangesContext)
+  const [modalHeight, setModalHeight] = useState<number>()
+  const wizardRef = useRef<HTMLDivElement>(null)
+  useResizeObserver(wizardRef, (entry) => {
+    setModalHeight(entry.contentRect.height)
+  })
 
   const cancel = () => {
     cancelForm()
@@ -668,14 +669,16 @@ export function AcmDataFormWizard(props: {
   return (
     <Fragment>
       {isModalWizard ? (
-        <Wizard
-          height={modalHeight}
-          header={<WizardHeader title={formData.title} description={formData.description} onClose={cancel} />}
-          footer={Footer}
-          onClose={cancel}
-        >
-          {steps.map((step) => renderStep(step))}
-        </Wizard>
+        <div ref={wizardRef} style={{ height: '100%' }}>
+          <Wizard
+            height={modalHeight}
+            header={<WizardHeader title={formData.title} description={formData.description} onClose={cancel} />}
+            footer={Footer}
+            onClose={cancel}
+          >
+            {steps.map((step) => renderStep(step))}
+          </Wizard>
+        </div>
       ) : (
         <Wizard footer={Footer} onClose={cancel}>
           {steps.map((step) => renderStep(step))}
