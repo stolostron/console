@@ -129,6 +129,7 @@ export function CardDropdown(props: CardDropdownProps) {
             setOpen(!isOpen)
           }}
           variant="plain"
+          aria-label="Actions"
           isExpanded={isOpen}
         >
           <EllipsisVIcon />
@@ -175,15 +176,13 @@ export const AcmCountCard = (props: AcmCountCardProps) => {
   }
   if (loading) return LoadingCard(props)
   return (
-    <Card
-      id={id}
-      className={classes.card}
-      isClickable={!!props.onCardClick}
-      isFlat={!props.onCardClick}
-      onKeyPress={props.onKeyPress}
-    >
+    <Card id={id} className={classes.card}>
       {cardHeader && (
         <CardHeader
+          selectableActions={{
+            onClickAction : props.onCardClick,
+            selectableActionId: id || '',
+          }}
           {...(cardHeader.actions &&
             cardHeader.actions.length > 0 && {
               actions: {
