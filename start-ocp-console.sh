@@ -13,10 +13,6 @@ mkdir -p ocp-console
 oc get oauthclient $OAUTH_CLIENT_NAME -o jsonpath='{.secret}' > ocp-console/console-client-secret
 oc extract secret/off-cluster-token -n openshift-console --to ocp-console --confirm
 
-# INSTALLATION_NAMESPACE_MCE=`oc get multiclusterengine -A -o jsonpath='{.items[0].spec.targetNamespace}'`
-# oc get secrets -n $INSTALLATION_NAMESPACE_MCE --field-selector type=kubernetes.io/service-account-token -o json | \
-#     jq '.items[0].data."ca.crt"' -r | base64 -d > ocp-console/ca.crt
-
 echo "Starting local OpenShift console..."
 
 BRIDGE_BASE_ADDRESS="http://localhost:${CONSOLE_PORT}"
