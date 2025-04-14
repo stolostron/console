@@ -15,11 +15,9 @@ import {
   Divider,
   PopperProps,
 } from '@patternfly/react-core'
-import { css } from '@emotion/css'
 import { TooltipWrapper } from '../utils'
 import { forwardRef, useCallback, useEffect, useRef, useState } from 'react'
 import { EllipsisVIcon } from '@patternfly/react-icons'
-import { ClassNameMap } from '@mui/material'
 import { t } from 'i18next'
 
 type Props = Omit<MenuProps, 'children' | 'onSelect'>
@@ -61,56 +59,13 @@ export type AcmDropdownItems = {
   component?: React.ReactNode
 }
 
-const getBackgroundColor = (props: AcmDropdownProps): string => {
-  if (props.isDisabled) {
-    return 'var(--pf-v5-global--disabled-color--200)'
-  }
-  if (props.isPrimary) {
-    return 'var(--pf-v5-global--primary-color--100)'
-  }
-  return 'transparent !important'
-}
-
-const useStyles = (props: AcmDropdownProps) => ({
-  button: css({
-    '& .pf-v5-c-menu-toggle': {
-      backgroundColor: getBackgroundColor(props),
-
-      '&:hover, &:focus, &:active': {
-        backgroundColor: props.isPrimary ? 'var(--pf-v5-global--primary-color--200)' : 'transparent !important',
-        color: props.isPrimary ? 'var(--pf-v5-global--Color--light-100)' : 'var(--pf-v5-global--Color--100)',
-      },
-    },
-    // styles for the menu container
-    '& .pf-v5-c-menu': {
-      backgroundColor: 'var(--pf-v5-global--BackgroundColor--100)',
-
-      // menu items and menu item containers
-      '& .pf-v5-c-menu__list-item, & .pf-v5-c-menu__item': {
-        '&, &:hover, &:focus, &:active, &.pf-m-selected': {
-          backgroundColor: 'transparent !important',
-        },
-
-        // target focus outline
-        '&:focus': {
-          outline: 'none !important',
-        },
-      },
-    },
-  }),
-  label: css({
-    marginLeft: 'var(--pf-v5-global--spacer--sm)',
-  }),
-})
-
 type MenuItemProps = {
   menuItems: AcmDropdownItems[]
   onSelect: MenuProps['onSelect']
-  classes: ClassNameMap<'label'>
 } & MenuProps
 
 const MenuItems = forwardRef<HTMLDivElement, MenuItemProps>((props, ref) => {
-  const { menuItems, onSelect, classes, ...menuProps } = props
+  const { menuItems, onSelect, ...menuProps } = props
 
   return (
     <Menu ref={ref} onSelect={onSelect} containsFlyout={menuItems.some((mi) => mi.flyoutMenu)} {...menuProps}>
@@ -126,22 +81,13 @@ const MenuItems = forwardRef<HTMLDivElement, MenuItemProps>((props, ref) => {
                 isSelected={item.isSelected}
                 flyoutMenu={
                   item.flyoutMenu?.length ? (
-                    <MenuItems
-                      id={`${item.id}-submenu`}
-                      menuItems={item.flyoutMenu}
-                      classes={classes}
-                      onSelect={onSelect}
-                    />
+                    <MenuItems id={`${item.id}-submenu`} menuItems={item.flyoutMenu} onSelect={onSelect} />
                   ) : undefined
                 }
                 description={item.description}
               >
                 {item.text}
-                {item.label && item.labelColor && (
-                  <Label className={classes.label} color={item.labelColor}>
-                    {item.label}
-                  </Label>
-                )}
+                {item.label && item.labelColor && <Label color={item.labelColor}>{item.label}</Label>}
               </MenuItem>
             )
             const wrappedMenuItem = item.tooltip ? (
@@ -224,7 +170,6 @@ export function AcmDropdown(props: AcmDropdownProps) {
   const popperContainer = useRef<HTMLDivElement>(null)
   const toggleRef = useRef<HTMLButtonElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
-  const classes = useStyles(props)
 
   const toggleMenu = useCallback(() => {
     if (onToggle) {
@@ -245,6 +190,14 @@ export function AcmDropdown(props: AcmDropdownProps) {
   )
 
   const handleToggleClick = useCallback(() => {
+    setTimeout(() => {
+      if (menuRef.current) {
+        const firstElement = menuRef.current.querySelector('li > button:not(:disabled), li > a:not(:disabled)')
+        if (firstElement) {
+          ;(firstElement as HTMLElement).focus()
+        }
+      }
+    }, 0)
     toggleMenu()
   }, [toggleMenu])
 
@@ -349,7 +302,7 @@ export function AcmDropdown(props: AcmDropdownProps) {
 
   return (
     <TooltipWrapper showTooltip={!!tooltip} tooltip={tooltip} tooltipPosition={tooltipPosition}>
-      <div ref={popperContainer} className={classes.button}>
+      <div ref={popperContainer}>
         <Popper
           trigger={
             <MenuToggle
@@ -371,7 +324,7 @@ export function AcmDropdown(props: AcmDropdownProps) {
           enableFlip={true}
           minWidth="fit-content"
           placement={props.dropdownPosition ?? (isKebab ? 'bottom-end' : 'bottom-start')}
-          popper={<MenuItems ref={menuRef} menuItems={dropdownItems} onSelect={handleSelect} classes={classes} />}
+          popper={<MenuItems ref={menuRef} menuItems={dropdownItems} onSelect={handleSelect} />}
         />
       </div>
     </TooltipWrapper>
