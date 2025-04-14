@@ -61,37 +61,41 @@ export type AcmDropdownItems = {
   component?: React.ReactNode
 }
 
+const getBackgroundColor = (props: AcmDropdownProps): string => {
+  if (props.isDisabled) {
+    return 'var(--pf-v5-global--disabled-color--200)'
+  }
+  if (props.isPrimary) {
+    return 'var(--pf-v5-global--primary-color--100)'
+  }
+  return 'transparent !important'
+}
+
 const useStyles = (props: AcmDropdownProps) => ({
   button: css({
-    '& button': {
-      backgroundColor: props.isDisabled
-        ? 'var(--pf-v5-global--disabled-color--200)'
-        : props.isPrimary
-          ? 'var(--pf-v5-global--primary-color--100)'
-          : 'transparent',
-      '&:hover': {
-        backgroundColor: props.isPrimary
-          ? 'var(--pf-v5-global--primary-color--200)'
-          : 'var(--pf-v5-global--BackgroundColor--200)',
+    '& .pf-v5-c-menu-toggle': {
+      backgroundColor: getBackgroundColor(props),
+
+      '&:hover, &:focus, &:active': {
+        backgroundColor: props.isPrimary ? 'var(--pf-v5-global--primary-color--200)' : 'transparent !important',
+        color: props.isPrimary ? 'var(--pf-v5-global--Color--light-100)' : 'var(--pf-v5-global--Color--100)',
       },
     },
     // styles for the menu container
     '& .pf-v5-c-menu': {
       backgroundColor: 'var(--pf-v5-global--BackgroundColor--100)',
-    },
-    // menu items styles
-    '& .pf-v5-c-menu__item': {
-      backgroundColor: 'transparent',
-      '&:hover': {
-        backgroundColor: 'var(--pf-v5-global--BackgroundColor--200)',
+
+      // menu items and menu item containers
+      '& .pf-v5-c-menu__list-item, & .pf-v5-c-menu__item': {
+        '&, &:hover, &:focus, &:active, &.pf-m-selected': {
+          backgroundColor: 'transparent !important',
+        },
+
+        // target focus outline
+        '&:focus': {
+          outline: 'none !important',
+        },
       },
-      '&.pf-m-selected': {
-        backgroundColor: 'var(--pf-v5-global--BackgroundColor--200)',
-      },
-    },
-    // expanded state styles
-    '& .pf-v5-c-menu__item.pf-m-expanded': {
-      backgroundColor: 'var(--pf-v5-global--BackgroundColor--100)',
     },
   }),
   label: css({
@@ -231,7 +235,7 @@ export function AcmDropdown(props: AcmDropdownProps) {
 
   const handleSelect = useCallback(
     (_event?: React.MouseEvent, itemId?: string | number) => {
-      onSelect((itemId || '').toString())
+      onSelect((itemId ?? '').toString())
       setOpen(false)
       const element = document.getElementById(id)
       /* istanbul ignore else */
@@ -241,14 +245,6 @@ export function AcmDropdown(props: AcmDropdownProps) {
   )
 
   const handleToggleClick = useCallback(() => {
-    setTimeout(() => {
-      if (menuRef.current) {
-        const firstElement = menuRef.current.querySelector('li > button:not(:disabled), li > a:not(:disabled)')
-        if (firstElement) {
-          ;(firstElement as HTMLElement).focus()
-        }
-      }
-    }, 0)
     toggleMenu()
   }, [toggleMenu])
 
@@ -374,7 +370,7 @@ export function AcmDropdown(props: AcmDropdownProps) {
           distance={0}
           enableFlip={true}
           minWidth="fit-content"
-          placement={props.dropdownPosition || (isKebab ? 'right-start' : 'bottom-end')}
+          placement={props.dropdownPosition ?? (isKebab ? 'bottom-end' : 'bottom-start')}
           popper={<MenuItems ref={menuRef} menuItems={dropdownItems} onSelect={handleSelect} classes={classes} />}
         />
       </div>
