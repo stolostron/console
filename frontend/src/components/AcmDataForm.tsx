@@ -463,7 +463,7 @@ export function AcmDataFormWizard(props: {
   const [submitError, setSubmitError] = useState('')
   const isSubmitting = submitText !== formData.submitText
   const { cancelForm } = useContext(LostChangesContext)
-  const [modalHeight, setModalHeight] = useState<number>()
+  const [modalHeight, setModalHeight] = useState<number>(640)
   const wizardRef = useRef<HTMLDivElement>(null)
   useResizeObserver(wizardRef, (entry) => {
     setModalHeight(entry.contentRect.height)
