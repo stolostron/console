@@ -222,6 +222,40 @@ export function AcmDropdown(props: AcmDropdownProps) {
   const menuRef = useRef<HTMLDivElement>(null)
   const classes = useStyles(props)
 
+  // handles the stale DOM reference issue - visibility change handler to automatically close dropdowns when the tab becomes inactive
+  useEffect(() => {
+    // handle visibility changes
+    const handleVisibilityChange = () => {
+      // If the page becomes hidden (user switches tabs) and menu is open
+      if (document.visibilityState === 'hidden' && isOpen) {
+        setOpen(false)
+        if (onToggle) {
+          onToggle(false)
+        }
+      }
+    }
+
+    // event listener for visibility changes
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [isOpen, onToggle])
+
+  useEffect(() => {
+    const handleWindowFocus = () => {
+      // ensure dropdowns are closed, when the window regains focus
+      if (isOpen) {
+        setOpen(false)
+        if (onToggle) onToggle(false)
+      }
+    }
+
+    window.addEventListener('focus', handleWindowFocus)
+    return () => window.removeEventListener('focus', handleWindowFocus)
+  }, [isOpen, onToggle])
+
   const toggleMenu = useCallback(() => {
     if (onToggle) {
       onToggle(!isOpen)
@@ -229,15 +263,38 @@ export function AcmDropdown(props: AcmDropdownProps) {
     setOpen(!isOpen)
   }, [isOpen, onToggle])
 
+  const findItemById = useCallback((items: AcmDropdownItems[], targetId: string): AcmDropdownItems | undefined => {
+    for (const item of items) {
+      if (item.id === targetId) return item
+      if (item.flyoutMenu?.length) {
+        const found = findItemById(item.flyoutMenu, targetId)
+        if (found) return found
+      }
+    }
+    return undefined
+  }, [])
+
   const handleSelect = useCallback(
     (_event?: React.MouseEvent, itemId?: string | number) => {
+      // add this safety check
+      if (!menuRef.current || !document.body.contains(menuRef.current)) {
+        setOpen(false)
+        return
+      }
+      const selectedItem = findItemById(dropdownItems, String(itemId))
+
+      if (!itemId) return // prevents triggering if no itemId
+
+      // prevent triggering if it's a flyout parent
+      if (selectedItem?.flyoutMenu?.length) return
+
       onSelect((itemId || '').toString())
       setOpen(false)
+
       const element = document.getElementById(id)
-      /* istanbul ignore else */
       if (element) element.focus()
     },
-    [id, onSelect]
+    [id, dropdownItems, findItemById, onSelect]
   )
 
   const handleToggleClick = useCallback(() => {
