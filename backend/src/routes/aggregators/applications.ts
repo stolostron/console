@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { getKubeResources } from '../events'
+import { getKubeResources, IWatchOptions } from '../events'
 import { addOCPQueryInputs, addSystemQueryInputs, cacheOCPApplications } from './applicationsOCP'
 import { ApplicationSetKind, IApplicationSet, IResource } from '../../resources/resource'
 import { FilterSelections, ITransformedResource } from '../../lib/pagination'
@@ -16,6 +16,7 @@ import {
   getAppSetAppsMap,
   cacheArgoApplications,
   getAppSetRelatedResources,
+  polledArgoApplicationAggregation,
 } from './applicationsArgo'
 import { getGiganticApps } from '../../lib/gigantic'
 
@@ -70,6 +71,7 @@ export interface ISubscription extends IResource {
 export type ApplicationCache = {
   resources?: ITransformedResource[]
   resourceMap?: { [key: string]: ITransformedResource[] }
+  resourceUidMap?: { [key: string]: ITransformedResource }
 }
 export type ApplicationCacheType = {
   [type: string]: ApplicationCache
@@ -135,6 +137,14 @@ export function stopAggregatingApplications(): void {
   stopping = true
 }
 
+export function polledApplicationAggregation(
+  options: IWatchOptions,
+  items: IResource[],
+  shouldPostProcess: boolean
+): void {
+  polledArgoApplicationAggregation(options, items, shouldPostProcess)
+}
+
 export function getApplications() {
   aggregateLocalApplications()
   let items = getApplicationsHelper(applicationCache, Object.keys(applicationCache))
@@ -184,7 +194,7 @@ export function filterApplications(filters: FilterSelections, items: ITransforme
 // add data to the apps that can be used by the ui but
 // w/o downloading all the appsets, apps, etc
 export function addUIData(items: ITransformedResource[]) {
-  const argoAppSets = applicationCache['appset'].resources
+  const argoAppSets = getApplicationsHelper(applicationCache, ['appset'])
   const appSetAppsMap = getAppSetAppsMap()
   items = items.map((item) => {
     return {
