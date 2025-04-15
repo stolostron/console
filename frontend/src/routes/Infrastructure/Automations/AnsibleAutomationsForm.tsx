@@ -133,6 +133,7 @@ export function AnsibleAutomationsForm(props: {
   const supportedCurations = useRecoilValue(clusterCuratorSupportedCurationsValue)
 
   const navigate = useNavigate()
+  const [nextDisabled, setNextDisabled] = useState(false)
   const [editAnsibleJob, setEditAnsibleJob] = useState<ClusterCuratorAnsibleJob | undefined>()
   const [editAnsibleJobList, setEditAnsibleJobList] = useState<{
     jobs: ClusterCuratorAnsibleJob[]
@@ -195,6 +196,7 @@ export function AnsibleAutomationsForm(props: {
     setAnsibleTowerJobTemplateList([])
     setAnsibleTowerWorkflowTemplateList([])
     setAnsibleTowerInventoryList([])
+    setNextDisabled(false)
 
     if (ansibleSelection) {
       const selectedCred = ansibleCredentials.find((credential) => credential.metadata.name === ansibleSelection)
@@ -247,6 +249,7 @@ export function AnsibleAutomationsForm(props: {
             ? t('validate.ansible.reason', { reason: err.reason })
             : t('validate.ansible.host')
         )
+        setNextDisabled(true)
         // clear lists again in case only some requests failed
         setAnsibleTowerJobTemplateList([])
         setAnsibleTowerWorkflowTemplateList([])
@@ -743,6 +746,7 @@ export function AnsibleAutomationsForm(props: {
         ],
       },
     ],
+    disableNext: nextDisabled,
     submit: () => {
       if (isEditing) {
         return replaceResource(stateToData() as IResource).promise.then(async () => {
