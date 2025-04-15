@@ -153,43 +153,45 @@ type ResourceUrlProps = {
   resource?: K8sResourceCommon
 }
 
-/**
- * function for getting a resource URL
- * @param {ResourceUrlProps} urlProps - object with model, resource to get the URL from (optional) and active namespace/project name (optional)
- * @returns {string} the URL for the resource
- */
-export const getResourceUrl = (urlProps: ResourceUrlProps): string | null => {
-  const { activeNamespace, model, resource } = urlProps
+export const getResourceUrlOverride = (clusterName?: string) => {
+  /**
+   * function for getting a resource URL
+   * @param {ResourceUrlProps} urlProps - object with model, resource to get the URL from (optional) and active namespace/project name (optional)
+   * @returns {string} the URL for the resource
+   */
+  return (urlProps: ResourceUrlProps): string | null => {
+    const { activeNamespace, model, resource } = urlProps
 
-  if (!model) return null
-  const { crd, namespaced, plural, kind, apiGroup, apiVersion } = model
+    if (!model) return null
+    const { crd, namespaced, plural, kind, apiGroup, apiVersion } = model
 
-  const namespace = resource?.metadata?.namespace || (activeNamespace !== ALL_NAMESPACES_SESSION_KEY && activeNamespace)
-  const name = resource?.metadata?.name || ''
-  // TODO - parameterize cluster
-  const cluster = 'local-cluster'
-  if (apiGroup === 'kubevirt.io' && apiVersion === 'v1' && kind == 'VirtualMachine') {
-    if (name && namespace) {
-      const searchParams = GetUrlSearchParam({
-        cluster,
-        kind,
-        apigroup: apiGroup,
-        apiversion: apiVersion,
-        name,
-        namespace,
-      })
-      return `${NavigationPath.resources}${searchParams}`
-    } else if (namespace) {
-      return generatePath(NavigationPath.virtualMachinesForNamespace, { cluster, namespace })
-    } else {
-      return NavigationPath.virtualMachines
+    const namespace =
+      resource?.metadata?.namespace || (activeNamespace !== ALL_NAMESPACES_SESSION_KEY && activeNamespace)
+    const name = resource?.metadata?.name || ''
+    // TODO - parameterize cluster
+    const cluster = clusterName || 'local-cluster'
+    if (apiGroup === 'kubevirt.io' && apiVersion === 'v1' && kind == 'VirtualMachine') {
+      if (name && namespace) {
+        const searchParams = GetUrlSearchParam({
+          cluster,
+          kind,
+          apigroup: apiGroup,
+          apiversion: apiVersion,
+          name,
+          namespace,
+        })
+        return `${NavigationPath.resources}${searchParams}`
+      } else if (namespace) {
+        return generatePath(NavigationPath.virtualMachinesForNamespace, { cluster, namespace })
+      } else {
+        return NavigationPath.virtualMachines
+      }
     }
+    const namespaceUrl = namespace ? `ns/${namespace}` : 'all-namespaces'
+    const ref = crd ? `${model.apiGroup || 'core'}~${model.apiVersion}~${model.kind}` : plural || ''
+
+    return `/k8s/${namespaced ? namespaceUrl : 'cluster'}/${ref}/${name}`
   }
-
-  const namespaceUrl = namespace ? `ns/${namespace}` : 'all-namespaces'
-  const ref = crd ? `${model.apiGroup || 'core'}~${model.apiVersion}~${model.kind}` : plural || ''
-
-  return `/k8s/${namespaced ? namespaceUrl : 'cluster'}/${ref}/${name}`
 }
 
 const useMulticlusterSearchWatch: KubevirtPluginData['useMulticlusterSearchWatch'] = (
@@ -206,7 +208,7 @@ const useMulticlusterSearchWatch: KubevirtPluginData['useMulticlusterSearchWatch
     variables: {
       input: [
         convertStringToQuery(
-          `apigroup:${group} apiversion:${version} kind:${kind}${namespaced && namespace ? ` ${namespace}` : ''}`,
+          `${group ? `apigroup:${group}` : ''} apiversion:${version} kind:${kind}${namespaced && namespace ? ` namespace:${namespace}` : ''}`,
           limit ?? -1
         ),
       ],
@@ -215,6 +217,10 @@ const useMulticlusterSearchWatch: KubevirtPluginData['useMulticlusterSearchWatch
   const data = useMemo(
     () =>
       result?.searchResult?.[0]?.items?.map((item) => {
+        let label: Record<string, string> = {}
+        if (item?.label) {
+          label = Object.fromEntries(item.label.split(';').map((pair: string) => pair.trimStart().split('=')))
+        }
         const resource: any = {
           cluster: item.cluster,
           apiVersion: `${item.apigroup ? `${item.apigroup}/` : ''}${item.apiversion}`,
@@ -223,6 +229,7 @@ const useMulticlusterSearchWatch: KubevirtPluginData['useMulticlusterSearchWatch
             creationTimestamp: item.created,
             name: item.name,
             namespace: item.namespace,
+            labels: label,
           },
         }
         // Reverse the flattening of specific resources by the search-collector
@@ -300,6 +307,7 @@ const KubevirtPluginWrapper = ({
 
   const KubevirtPluginContext = useKubevirtPluginContext()
   const { getStandaloneVMConsoleUrl } = useContext(KubevirtPluginContext)
+  const getResourceUrl = useMemo(() => getResourceUrlOverride(defaultClusterName), [defaultClusterName])
   const contextValue = useMemo(() => {
     const withCluster = getWithCluster(localHubName)
     return {
@@ -315,8 +323,17 @@ const KubevirtPluginWrapper = ({
       supportsMulticluster: true,
       useMulticlusterSearchWatch,
       useUtilizationQueries,
+      getResourceUrlOverride,
     }
-  }, [currentCluster, currentNamespace, defaultClusterName, getStandaloneVMConsoleUrl, isLocalHub, localHubName])
+  }, [
+    currentCluster,
+    currentNamespace,
+    defaultClusterName,
+    getResourceUrl,
+    getStandaloneVMConsoleUrl,
+    isLocalHub,
+    localHubName,
+  ])
 
   return (
     <KubevirtPluginContext.Provider value={contextValue}>

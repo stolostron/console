@@ -6,7 +6,7 @@ import {
   useResolvedExtensions,
 } from '@openshift-console/dynamic-plugin-sdk'
 import { AcmTablePaginationContextProvider, AcmToastGroup, AcmToastProvider } from '../ui-components'
-import { useMemo, useEffect, useState, Context, PropsWithChildren } from 'react'
+import { useMemo, Context, PropsWithChildren } from 'react'
 import { PluginContext } from '../lib/PluginContext'
 import { useAcmExtension } from '../plugin-extensions/handler'
 import { LoadingPage } from './LoadingPage'
@@ -23,9 +23,6 @@ export function PluginContextProvider({
   pluginDataContext: pluginDataContextOverride,
   children,
 }: PropsWithChildren<{ pluginDataContext?: Context<PluginData> }>) {
-  const [ocpApi, setOcpApi] = useState<{ useK8sWatchResource: UseK8sWatchResource }>({
-    useK8sWatchResource: () => [[] as any, false, undefined],
-  })
   const [hrefs] = useResolvedExtensions(isHrefNavItem)
 
   const [pluginDataContexts, extensionsReady] = useResolvedExtensions(isPluginDataContext)

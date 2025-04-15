@@ -205,33 +205,8 @@ function VirtualMachineTable() {
         resource={deleteExternalResource.resource}
         hubCluster={deleteExternalResource.hubCluster}
       />
-      <AcmTable
-        id="virtualMachinesTable"
-        items={searchResultItems}
-        columns={searchDefinitions['virtualmachinespage'].columns}
-        filters={filters}
-        rowActionResolver={rowActionResolver}
-        keyFn={(item: any) => item._uid.toString()}
-        emptyState={
-          <AcmEmptyState
-            key="virtual-machine-empty-state"
-            title={t('No VirtualMachines found')}
-            action={
-              <AcmButton
-                variant={'link'}
-                component={TextVariants.a}
-                href={`${OCP_DOC}/${ocpVersion}/html-single/virtualization/about#about-virt`}
-                target="_blank"
-              >
-                {t('Learn more about OpenShift Virtualization')}
-                <ExternalLinkAltIcon style={{ marginLeft: '8px' }} />
-              </AcmButton>
-            }
-          />
-        }
-        showColumManagement
-      />
-      {VirtualMachinesList && (
+
+      {VirtualMachinesList ? (
         <KubevirtPluginWrapper currentCluster={cluster} currentNamespace={namespace}>
           <VirtualMachinesList
           // namespace={namespace}
@@ -239,6 +214,33 @@ function VirtualMachineTable() {
           // model={{ group: 'kubevirt.io', version: 'v1', kind: 'VirtualMachine' }}
           />
         </KubevirtPluginWrapper>
+      ) : (
+        <AcmTable
+          id="virtualMachinesTable"
+          items={searchResultItems}
+          columns={searchDefinitions['virtualmachinespage'].columns}
+          filters={filters}
+          rowActionResolver={rowActionResolver}
+          keyFn={(item: any) => item._uid.toString()}
+          emptyState={
+            <AcmEmptyState
+              key="virtual-machine-empty-state"
+              title={t('No VirtualMachines found')}
+              action={
+                <AcmButton
+                  variant={'link'}
+                  component={TextVariants.a}
+                  href={`${OCP_DOC}/${ocpVersion}/html-single/virtualization/about#about-virt`}
+                  target="_blank"
+                >
+                  {t('Learn more about OpenShift Virtualization')}
+                  <ExternalLinkAltIcon style={{ marginLeft: '8px' }} />
+                </AcmButton>
+              }
+            />
+          }
+          showColumManagement
+        />
       )}
     </Fragment>
   )
