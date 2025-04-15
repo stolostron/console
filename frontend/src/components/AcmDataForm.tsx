@@ -588,6 +588,7 @@ export function AcmDataFormWizard(props: {
                   }}
                   isDisabled={
                     ((showFormErrors || showSectionErrors[section.title]) && sectionHasErrors(t, section)) ||
+                    formData.disableNext ||
                     isSubmitting
                   }
                 >
