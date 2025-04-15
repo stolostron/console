@@ -413,4 +413,33 @@ describe('add automation template page', () => {
 
     await waitForNocks([ansibleJobNock, ansibleInventoryNock])
   })
+  it('should disable the Next button when an invalid credential is selected', async () => {
+    render(<AddAnsibleTemplateTest />)
+
+    // mock API calls to simulate an invalid credential
+    const ansibleError = {
+      message: 'Internal Server Error',
+      code: ResourceErrorCode.InternalServerError,
+      reason: 'self-signed certificate',
+    }
+    const ansibleJobNock = nockAnsibleTowerError(mockAnsibleCredential, ansibleError)
+    const ansibleInventoryNock = nockAnsibleTowerError(mockAnsibleCredentialInventory, ansibleError)
+
+    // enter the template name
+    await typeByPlaceholderText('Enter the name for the template', mockClusterCurator.metadata.name!)
+
+    // select the Ansible credential
+    await clickByPlaceholderText('Select an existing Ansible credential')
+    await clickByText(mockSecret.metadata.name!)
+
+    // wait for the error message to appear
+    await waitForText('The credential returned an error response from Ansible Tower. Please review the host and token.')
+
+    // Assert that the Next button is disabled
+    const nextButton = screen.getByText('Next')
+    await waitFor(() => expect(nextButton).toBeDisabled())
+
+    // wait for the nocks to complete
+    await waitForNocks([ansibleJobNock, ansibleInventoryNock])
+  })
 })
