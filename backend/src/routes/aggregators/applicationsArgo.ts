@@ -21,7 +21,7 @@ import {
   getApplicationsHelper,
   getApplicationType,
   getApplicationClusters,
-  getAppNamespace,
+  getTransform,
 } from './utils'
 
 interface IArgoAppLocalResource extends IResource {
@@ -164,14 +164,7 @@ export function polledArgoApplicationAggregation(
     if (!transform) {
       const type = getApplicationType(item)
       const _clusters = getApplicationClusters(item, type, [], placementDecisions, localCluster, clusters)
-      transform = [
-        [item.metadata.name],
-        [type],
-        [getAppNamespace(item)],
-        _clusters,
-        ['r'],
-        [item.metadata.creationTimestamp as string],
-      ]
+      transform = getTransform(item, type, _clusters)
     }
     resourceUidMap[uid] = item
     item.transform = transform

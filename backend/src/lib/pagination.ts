@@ -116,8 +116,10 @@ export function paginate(
       // sort
       if (sortBy && sortBy.index >= 0) {
         items = items.sort((a, b) => {
-          const sortInx = sortBy.index > a.transform.length ? a.transform.length - 1 : sortBy.index
-          return a.transform[sortInx][0].localeCompare(b.transform[sortInx][0])
+          if (sortBy.index > a.transform.length || !Array.isArray(a.transform[sortBy.index])) return 0
+          const acmp = a.transform[sortBy.index][0] || 'none'
+          const bcmp = b.transform[sortBy.index][0] || 'none'
+          return acmp.localeCompare(bcmp)
         })
         if (sortBy.direction === 'desc') {
           items = items.reverse()

@@ -39,18 +39,24 @@ export function transform(
   items.forEach((app) => {
     const type = getApplicationType(app)
     const _clusters = getApplicationClusters(app, type, subscriptions, placementDecisions, localCluster, clusters)
-    app.transform = [
-      [app.metadata.name],
-      [type],
-      [getAppNamespace(app)],
-      _clusters,
-      ['r'],
-      [app.metadata.creationTimestamp as string],
-    ]
+    app.transform = getTransform(app, type, _clusters)
     app.remoteClusters =
       (isRemote || (type === 'subscription' && _clusters.filter((n) => n !== localClusterName)).length > 0) && _clusters
   })
   return { resources: items }
+}
+
+export function getTransform(app: IResource, type: string, clusters: string[]): string[][] {
+  return [
+    [app.metadata.name],
+    [type],
+    [getAppNamespace(app)],
+    clusters,
+    ['r'],
+    [get(app, 'status.health.status', '') as string],
+    [get(app, 'status.sync.status', '') as string],
+    [app.metadata.creationTimestamp as string],
+  ]
 }
 
 export function getAppNamespace(resource: IResource): string {

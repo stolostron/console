@@ -26,6 +26,8 @@ export enum AppColumns {
   'namespace',
   'clusters',
   'repo',
+  'health',
+  'sync',
   'created',
 }
 export interface IArgoApplication extends IResource {
