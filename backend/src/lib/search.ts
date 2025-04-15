@@ -62,12 +62,9 @@ export async function getSearchOptions(headers: OutgoingHttpHeaders): Promise<Re
 // we don't want to do this letter by letter because that would take 36 searches
 // so we create 6 groupings of letters and we try to make each group search return about the same number of apps
 export const pagedSearchQueries: string[][] = [
-  ['a*', 'i*', 'n*'],
-  ['e*', 'r*', 'o*'],
-  ['s*', 't*', 'u*', 'l*', 'm*', 'c*'],
-  ['d*', 'b*', 'g*', '0*', '1*', '2*', '3*', '4*'],
-  ['h*', 'p*', 'k*', 'y*', 'v*', 'z*', 'w*', 'f*'],
-  ['j*', 'q*', 'x*', '5*', '6*', '7*', '8*', '9*'],
+  ['a*', 'i*', 'n*', 'e*', 'r*', 'o*'],
+  ['s*', 't*', 'u*', 'l*', 'm*', 'c*', 'd*', 'b*', 'g*', '0*', '1*', '2*', '3*', '4*'],
+  ['h*', 'p*', 'k*', 'y*', 'v*', 'z*', 'w*', 'f*', 'j*', 'q*', 'x*', '5*', '6*', '7*', '8*', '9*'],
 ]
 
 export async function getPagedSearchResources(
@@ -103,9 +100,7 @@ export async function getPagedSearchResources(
     const items = (results.data?.searchResult?.[0]?.items || []) as IResource[]
     resources = resources.concat(items)
     if (process.env.NODE_ENV !== 'test') {
-      let timeout = 10000
-      if (items.length < 1000) timeout = 2000
-      await new Promise((r) => setTimeout(r, timeout))
+      await new Promise((r) => setTimeout(r, 15000))
     }
     if (!usePagedQuery) break
     i++
