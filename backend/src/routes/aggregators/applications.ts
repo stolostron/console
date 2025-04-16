@@ -202,7 +202,7 @@ export function addUIData(items: ITransformedResource[]) {
     return {
       ...item,
       uidata: {
-        clusterList: item.transform[AppColumns.clusters],
+        clusterList: item?.transform?.[AppColumns.clusters] || [],
         appSetRelatedResources:
           item.kind === ApplicationSetKind
             ? getAppSetRelatedResources(item, argoAppSets as IApplicationSet[])

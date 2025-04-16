@@ -391,9 +391,9 @@ export function getNextApplicationPageChunk(
   if (applicationPageChunks.length === 0) {
     // get all apps
     let applications: ITransformedResource[] = []
-    if (applicationCache[remoteCacheKey].resources) {
+    if (applicationCache[remoteCacheKey]?.resources) {
       applications = applicationCache[remoteCacheKey].resources
-    } else if (applicationCache[remoteCacheKey].resourceMap) {
+    } else if (applicationCache[remoteCacheKey]?.resourceMap) {
       applications = Object.values(applicationCache[remoteCacheKey].resourceMap).flat()
     }
     if (applications.length) {
@@ -467,7 +467,7 @@ export function getNextApplicationPageChunk(
           reverse[name[0]].push(app)
         })
       }
-    } else {
+    } else if (applicationCache[remoteCacheKey]?.resources) {
       // if no keys but there were keys before, delete old resourceMap
       applicationCache[remoteCacheKey].resources = applications
       delete applicationCache[remoteCacheKey].resourceMap
@@ -494,12 +494,12 @@ export function cacheRemoteApps(
 export function getApplicationsHelper(applicationCache: ApplicationCacheType, keys: string[]) {
   const items: ITransformedResource[] = []
   keys.forEach((key) => {
-    if (applicationCache[key].resources) {
+    if (applicationCache[key]?.resources) {
       items.push(...applicationCache[key].resources)
-    } else if (applicationCache[key].resourceUidMap) {
+    } else if (applicationCache[key]?.resourceUidMap) {
       const allResources = Object.values(applicationCache[key].resourceUidMap)
       items.push(...allResources)
-    } else if (applicationCache[key].resourceMap) {
+    } else if (applicationCache[key]?.resourceMap) {
       const allResources = Object.values(applicationCache[key].resourceMap)
       items.push(...allResources.flat())
     }
@@ -608,11 +608,11 @@ export function logApplicationCountChanges(applicationCache: ApplicationCacheTyp
   let change = false
   appCountKeys.forEach((key) => {
     let count
-    if (applicationCache[key].resourceMap) {
+    if (applicationCache[key]?.resourceMap) {
       count = Object.values(applicationCache[key].resourceMap).flat().length
-    } else if (applicationCache[key].resourceUidMap) {
+    } else if (applicationCache[key]?.resourceUidMap) {
       count = Object.values(applicationCache[key].resourceUidMap).length
-    } else {
+    } else if (applicationCache[key]?.resources) {
       count = applicationCache[key].resources.length
     }
     if (count !== appCount[key]) {
