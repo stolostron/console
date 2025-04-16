@@ -193,123 +193,140 @@ export default function ApplicationDetailsPage() {
     ]
   )
 
-  const actions: any = [
-    {
-      id: 'search-application',
-      text: t('Search application'),
-      click: () => {
-        if (applicationData) {
-          const [apigroup, apiversion] = applicationData.application.app.apiVersion.split('/')
-          const isOCPorFluxApp = applicationData.application.isOCPApp || applicationData.application.isFluxApp
-          const searchLink = isOCPorFluxApp
-            ? getSearchLink({
-                properties: {
-                  namespace: applicationData?.application.app.metadata?.namespace,
-                  label: applicationData?.application.isOCPApp
-                    ? `app=${applicationData?.application.app.metadata?.name},app.kubernetes.io/part-of=${applicationData?.application.app.metadata?.name}`
-                    : `kustomize.toolkit.fluxcd.io/name=${applicationData?.application.app.metadata?.name},helm.toolkit.fluxcd.io/name=${applicationData?.application.app.metadata?.name}`,
-                  cluster: applicationData?.application.app.cluster.name,
-                },
-              })
-            : getSearchLink({
-                properties: {
-                  name: applicationData?.application.app.metadata?.name,
-                  namespace: applicationData?.application.app.metadata?.namespace,
-                  kind: applicationData?.application.app.kind.toLowerCase(),
-                  apigroup: apigroup as string,
-                  apiversion: apiversion as string,
-                },
-              })
-          navigate(searchLink)
-        }
+  const getActions = useCallback(() => {
+    const actions: any = [
+      {
+        id: 'search-application',
+        text: t('Search application'),
+        click: () => {
+          if (applicationData) {
+            const [apigroup, apiversion] = applicationData.application.app.apiVersion.split('/')
+            const isOCPorFluxApp = applicationData.application.isOCPApp || applicationData.application.isFluxApp
+            const searchLink = isOCPorFluxApp
+              ? getSearchLink({
+                  properties: {
+                    namespace: applicationData?.application.app.metadata?.namespace,
+                    label: applicationData?.application.isOCPApp
+                      ? `app=${applicationData?.application.app.metadata?.name},app.kubernetes.io/part-of=${applicationData?.application.app.metadata?.name}`
+                      : `kustomize.toolkit.fluxcd.io/name=${applicationData?.application.app.metadata?.name},helm.toolkit.fluxcd.io/name=${applicationData?.application.app.metadata?.name}`,
+                    cluster: applicationData?.application.app.cluster.name,
+                  },
+                })
+              : getSearchLink({
+                  properties: {
+                    name: applicationData?.application.app.metadata?.name,
+                    namespace: applicationData?.application.app.metadata?.namespace,
+                    kind: applicationData?.application.app.kind.toLowerCase(),
+                    apigroup: apigroup as string,
+                    apiversion: apiversion as string,
+                  },
+                })
+            navigate(searchLink)
+          }
+        },
       },
-    },
-  ]
+    ]
 
-  if (!isArgoApp && !isOCPApp && !isFluxApp) {
-    const selectedApp = applicationData?.application.app
-    actions.push({
-      id: 'edit-application',
-      text: t('Edit application'),
-      click: () => {
-        if (isAppSet) {
-          navigate(
-            NavigationPath.editApplicationArgo
-              .replace(namespaceString, selectedApp.metadata?.namespace)
-              .replace(nameString, selectedApp.metadata?.name)
-          )
-        } else {
-          navigate(
-            NavigationPath.editApplicationSubscription
-              .replace(namespaceString, selectedApp.metadata?.namespace)
-              .replace(nameString, selectedApp.metadata?.name)
-          )
-        }
-      },
-      rbac: [
-        selectedApp && rbacPatch(selectedApp, selectedApp?.metadata.namespace ?? '', selectedApp?.metadata.name ?? ''),
-      ],
-    })
-    actions.push({
-      id: 'delete-application',
-      text: t('Delete application'),
-      click: () => {
-        const recoilStates = getRecoilStates()
+    if (applicationData && !isArgoApp && !isOCPApp && !isFluxApp) {
+      const selectedApp = applicationData?.application.app
+      actions.push({
+        id: 'edit-application',
+        text: t('Edit application'),
+        click: () => {
+          if (isAppSet) {
+            navigate(
+              NavigationPath.editApplicationArgo
+                .replace(namespaceString, selectedApp.metadata?.namespace)
+                .replace(nameString, selectedApp.metadata?.name)
+            )
+          } else {
+            navigate(
+              NavigationPath.editApplicationSubscription
+                .replace(namespaceString, selectedApp.metadata?.namespace)
+                .replace(nameString, selectedApp.metadata?.name)
+            )
+          }
+        },
+        rbac: [
+          selectedApp &&
+            rbacPatch(selectedApp, selectedApp?.metadata.namespace ?? '', selectedApp?.metadata.name ?? ''),
+        ],
+      })
+      actions.push({
+        id: 'delete-application',
+        text: t('Delete application'),
+        click: () => {
+          const recoilStates = getRecoilStates()
 
-        const appChildResources =
-          selectedApp.kind === ApplicationKind
-            ? getAppChildResources(
-                selectedApp,
-                recoilStates.applications,
-                recoilStates.subscriptions,
-                recoilStates.placementRules,
-                recoilStates.placements,
-                recoilStates.channels,
-                hubCluster?.name ?? ''
-              )
-            : [[], []]
-        /* istanbul ignore else */
-        const appSetRelatedResources = (selectedApp as IUIResource)?.uidata?.appSetRelatedResources ?? ['', []]
-        setModalProps({
-          open: true,
-          canRemove: selectedApp.kind === ApplicationSetKind ? canDeleteApplicationSet : canDeleteApplication,
-          resource: selectedApp,
-          errors: undefined,
-          loading: false,
-          selected: appChildResources[0], // children
-          shared: appChildResources[1], // shared children
-          appSetPlacement: appSetRelatedResources[0],
-          appSetsSharingPlacement: appSetRelatedResources[1],
-          appKind: selectedApp.kind,
-          appSetApps: (selectedApp as IUIResource)?.uidata?.appSetApps ?? [],
-          close: () => {
-            setModalProps({ open: false })
-          },
-          t,
-          redirect: NavigationPath.applications,
-        })
-      },
-    })
-  }
-
-  if (acmExtensions?.applicationAction?.length) {
-    if (applicationData) {
-      const selectedApp = applicationData.application.app
-      acmExtensions.applicationAction.forEach((appAction) => {
-        if (appAction?.model ? isResourceTypeOf(selectedApp, appAction?.model) : isOCPApp) {
-          const ModalComp = appAction.component
-          const close = () => setPluginModal(<></>)
-          actions.push({
-            id: appAction.id,
-            text: appAction.title,
-            click: async (item: any) => {
-              setPluginModal(<ModalComp isOpen={true} close={close} resource={item} />)
+          const appChildResources =
+            selectedApp.kind === ApplicationKind
+              ? getAppChildResources(
+                  selectedApp,
+                  recoilStates.applications,
+                  recoilStates.subscriptions,
+                  recoilStates.placementRules,
+                  recoilStates.placements,
+                  recoilStates.channels,
+                  hubCluster?.name ?? ''
+                )
+              : [[], []]
+          /* istanbul ignore else */
+          const appSetRelatedResources = (selectedApp as IUIResource)?.uidata?.appSetRelatedResources ?? ['', []]
+          setModalProps({
+            open: true,
+            canRemove: selectedApp.kind === ApplicationSetKind ? canDeleteApplicationSet : canDeleteApplication,
+            resource: selectedApp,
+            errors: undefined,
+            loading: false,
+            selected: appChildResources[0], // children
+            shared: appChildResources[1], // shared children
+            appSetPlacement: appSetRelatedResources[0],
+            appSetsSharingPlacement: appSetRelatedResources[1],
+            appKind: selectedApp.kind,
+            appSetApps: (selectedApp as IUIResource)?.uidata?.appSetApps ?? [],
+            close: () => {
+              setModalProps({ open: false })
             },
+            t,
+            redirect: NavigationPath.applications,
           })
-        }
+        },
       })
     }
-  }
+
+    if (acmExtensions?.applicationAction?.length) {
+      if (applicationData) {
+        const selectedApp = applicationData.application.app
+        acmExtensions.applicationAction.forEach((appAction) => {
+          if (appAction?.model ? isResourceTypeOf(selectedApp, appAction?.model) : isOCPApp) {
+            const ModalComp = appAction.component
+            const close = () => setPluginModal(<></>)
+            actions.push({
+              id: appAction.id,
+              text: appAction.title,
+              click: async (item: any) => {
+                setPluginModal(<ModalComp isOpen={true} close={close} resource={item} />)
+              },
+            })
+          }
+        })
+      }
+    }
+    return actions
+  }, [
+    t,
+    applicationData,
+    isArgoApp,
+    isOCPApp,
+    isFluxApp,
+    acmExtensions.applicationAction,
+    navigate,
+    isAppSet,
+    getRecoilStates,
+    hubCluster?.name,
+    canDeleteApplicationSet,
+    canDeleteApplication,
+  ])
 
   const searchCompleteResults = useSearchCompleteQuery({
     skip: false,
@@ -467,7 +484,7 @@ export default function ApplicationDetailsPage() {
             </AcmSecondaryNav>
           }
           actions={
-            applicationNotFound ? (
+            applicationNotFound || !applicationData ? (
               <Fragment />
             ) : (
               <AcmActionGroup>
@@ -478,7 +495,7 @@ export default function ApplicationDetailsPage() {
                     item={applicationData?.application.app}
                     isKebab={false}
                     text={t('actions')}
-                    actions={actions}
+                    actions={getActions()}
                   />,
                 ]}
               </AcmActionGroup>

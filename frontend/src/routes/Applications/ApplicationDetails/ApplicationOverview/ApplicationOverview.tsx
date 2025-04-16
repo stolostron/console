@@ -38,7 +38,6 @@ import {
   ApplicationSet,
   Channel,
   IResource,
-  IUIResource,
   Subscription,
   SubscriptionDefinition,
 } from '../../../../resources'
@@ -135,7 +134,7 @@ export function ApplicationOverviewPageContent() {
     const { name, namespace } = applicationData.application.metadata
     const applicationResource = applicationData.application.app
 
-    const clusterList = (applicationResource as IUIResource)?.uidata?.clusterList ?? []
+    const clusterList = applicationData.application?.clusterList ?? []
     const clusterCount = getClusterCount(clusterList, localCluster?.name ?? '')
     const clusterCountString = getClusterCountString(t, clusterCount, clusterList, applicationResource)
     const clusterCountSearchLink = getClusterCountSearchLink(applicationResource, clusterCount, clusterList)
