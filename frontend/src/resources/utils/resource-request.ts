@@ -66,7 +66,7 @@ export function isRequestAbortedError(error: any) {
 
 export function getBackendUrl() {
   if (process.env.NODE_ENV === 'test') {
-    return process.env.JEST_DEFAULT_HOST
+    return process.env.JEST_DEFAULT_HOST ?? ''
   }
   if (process.env.MODE === 'plugin') {
     const proxyPath = process.env.PLUGIN_PROXY_PATH
