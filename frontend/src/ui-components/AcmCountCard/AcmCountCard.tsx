@@ -122,14 +122,18 @@ export function CardDropdown(props: CardDropdownProps) {
     <Dropdown
       className="dropdownMenu"
       onSelect={() => setOpen(!isOpen)}
+      onOpenChange={(isOpen: boolean) => setOpen(isOpen)}
+      shouldFocusToggleOnSelect
+      popperProps={{ position: 'right' }}
       toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
         <MenuToggle
           ref={toggleRef}
-          onClick={() => {
-            setOpen(!isOpen)
-          }}
+          aria-label="kebab dropdown toggle"
           variant="plain"
-          aria-label="Actions"
+          onClick={(e) => {
+            setOpen(!isOpen)
+            e.stopPropagation()
+          }}
           isExpanded={isOpen}
         >
           <EllipsisVIcon />
@@ -137,7 +141,7 @@ export function CardDropdown(props: CardDropdownProps) {
       )}
       isOpen={isOpen}
     >
-      <DropdownList>
+      <DropdownList onClick={(e) => e.stopPropagation()}>
         {props.dropdownItems.map((item) => (
           <DropdownItem className={css({ width: '10rem' })} key={item.text} onClick={item.handleAction}>
             {item.text}
@@ -176,16 +180,13 @@ export const AcmCountCard = (props: AcmCountCardProps) => {
   }
   if (loading) return LoadingCard(props)
   return (
-    <Card id={id} className={classes.card}>
+    <Card id={id} className={classes.card} onClick={props.onCardClick}>
       {cardHeader && (
         <CardHeader
-          selectableActions={{
-            onClickAction : props.onCardClick,
-            selectableActionId: id || '',
-          }}
           {...(cardHeader.actions &&
             cardHeader.actions.length > 0 && {
               actions: {
+                className: classes.actions,
                 actions: (
                   <>
                     <CardDropdown dropdownItems={cardHeader.actions} />
