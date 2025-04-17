@@ -50,6 +50,9 @@ const Applications = lazy(() => import('./routes/Applications/Applications'))
 // CREDENTIALS
 const Credentials = lazy(() => import('./routes/Credentials/Credentials'))
 
+// CREDENTIALS
+const AccessControlManagement = lazy(() => import('./routes/AccessControlManagement/AccessControlManagement'))
+
 interface IRoute {
   type: 'route'
   path: NavigationPath
@@ -214,13 +217,19 @@ const routes: (IRoute | IRouteGroup)[] = [
     match: MatchType.SubRoutes,
     element: <Governance />,
   },
-
   {
     title: 'Credentials',
     type: 'route',
     path: NavigationPath.credentials,
     match: MatchType.SubRoutes,
     element: <Credentials />,
+  },
+  {
+    title: 'Access Control Management',
+    type: 'route',
+    path: NavigationPath.accessControlManagement,
+    match: MatchType.SubRoutes,
+    element: <AccessControlManagement />,
   },
 ]
 
