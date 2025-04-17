@@ -612,7 +612,9 @@ export default function DetailsOverviewPage() {
             </DescriptionList>
           </Stack>
         </PageSection>
-        {resource.status?.conditions && <ResourceConditions conditions={resource.status.conditions} />}
+        {(resource as any).status?.conditions && (
+          <ResourceConditions conditions={(resource as any).status.conditions} />
+        )}
       </PageSection>
     )
   }

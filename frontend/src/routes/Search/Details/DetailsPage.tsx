@@ -263,7 +263,7 @@ export default function DetailsPage() {
       )
     }
     if (vmActionsEnabled && kind.toLowerCase() === 'virtualmachine') {
-      const printableStatus = resource?.status?.printableStatus ?? ''
+      const printableStatus = (resource as any)?.status?.printableStatus ?? ''
       actions.unshift(
         ...createVMDropdownItems([
           printableStatus === 'Stopped'
