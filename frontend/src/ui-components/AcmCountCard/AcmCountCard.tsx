@@ -8,15 +8,19 @@ import {
   CardHeader,
   CardProps,
   CardTitle,
+  Dropdown,
+  DropdownItem,
+  DropdownList,
   EmptyState,
   EmptyStateBody,
   EmptyStateIcon,
+  MenuToggle,
+  MenuToggleElement,
   Skeleton,
   EmptyStateHeader,
   Icon,
 } from '@patternfly/react-core'
-import { Dropdown, DropdownItem, KebabToggle } from '@patternfly/react-core/deprecated'
-import { ExclamationCircleIcon } from '@patternfly/react-icons'
+import { EllipsisVIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
 import { ReactNode, useState } from 'react'
 import { useTranslation } from '../../lib/acm-i18next'
 import { AcmIcon, AcmIconVariant } from '../AcmIcons/AcmIcons'
@@ -117,20 +121,34 @@ export function CardDropdown(props: CardDropdownProps) {
   return (
     <Dropdown
       className="dropdownMenu"
-      onClick={(e) => {
-        setOpen(!isOpen)
-        e.stopPropagation()
-      }}
-      toggle={<KebabToggle onToggle={() => setOpen(!isOpen)} />}
+      onSelect={() => setOpen(!isOpen)}
+      onOpenChange={(isOpen: boolean) => setOpen(isOpen)}
+      shouldFocusToggleOnSelect
+      popperProps={{ position: 'right' }}
+      toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+        <MenuToggle
+          ref={toggleRef}
+          aria-label="kebab dropdown toggle"
+          variant="plain"
+          onClick={(e) => {
+            setOpen(!isOpen)
+            e.stopPropagation()
+          }}
+          isExpanded={isOpen}
+        >
+          <EllipsisVIcon />
+        </MenuToggle>
+      )}
       isOpen={isOpen}
-      isPlain
-      dropdownItems={props.dropdownItems.map((item) => (
-        <DropdownItem className={css({ width: '10rem' })} key={item.text} onClick={item.handleAction}>
-          {item.text}
-        </DropdownItem>
-      ))}
-      position={'right'}
-    />
+    >
+      <DropdownList onClick={(e) => e.stopPropagation()}>
+        {props.dropdownItems.map((item) => (
+          <DropdownItem className={css({ width: '10rem' })} key={item.text} onClick={item.handleAction}>
+            {item.text}
+          </DropdownItem>
+        ))}
+      </DropdownList>
+    </Dropdown>
   )
 }
 
@@ -162,14 +180,7 @@ export const AcmCountCard = (props: AcmCountCardProps) => {
   }
   if (loading) return LoadingCard(props)
   return (
-    <Card
-      id={id}
-      className={classes.card}
-      onClick={props.onCardClick}
-      isClickable={!!props.onCardClick}
-      isFlat={!props.onCardClick}
-      onKeyPress={props.onKeyPress}
-    >
+    <Card id={id} className={classes.card} onClick={props.onCardClick}>
       {cardHeader && (
         <CardHeader
           {...(cardHeader.actions &&
