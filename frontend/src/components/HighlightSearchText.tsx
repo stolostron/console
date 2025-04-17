@@ -54,11 +54,11 @@ export function HighlightSearchText(
       </>
     )
   } else if (isTruncate) {
-    return truncate(text)
+    return truncate(text) ?? null
   } else if (supportsInequality && text) {
     return renderToggleButton(text, toggleEquality)
   }
-  return text
+  return text ?? null
 }
 
 const renderToggleButton = (label: string, toggleEquality: MouseEventHandler<HTMLButtonElement> | undefined) => {
