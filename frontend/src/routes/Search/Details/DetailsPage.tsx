@@ -176,7 +176,7 @@ export default function DetailsPage() {
       </DropdownItem>,
     ]
     if (vmActionsEnabled && kind.toLowerCase() === 'virtualmachine') {
-      const printableStatus = resource?.status?.printableStatus ?? ''
+      const printableStatus = (resource as any)?.status?.printableStatus ?? ''
       actions.unshift(
         ...[
           printableStatus === 'Stopped'
