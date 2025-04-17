@@ -6,7 +6,6 @@ import '@patternfly/react-core/dist/styles/base.css'
 import { Meta } from '@storybook/react'
 import { Fragment, useState } from 'react'
 import { AlertGroupStory } from '../AcmAlert/AcmAlert.stories'
-import { AcmAutoRefreshSelect } from '../AcmAutoRefreshSelect/AcmAutoRefreshSelect'
 import { DescriptionList as DescriptionListStory } from '../AcmDescriptionList/AcmDescriptionList.stories'
 import { FormStory as FormStory } from '../AcmForm/AcmForm.stories'
 import { LoadingPage as LoadingPageStory } from '../AcmLoadingPage/AcmLoadingPage.stories'
@@ -72,7 +71,6 @@ export const Page = (args: {
           controls={
             args.showControls && (
               <Fragment>
-                <AcmAutoRefreshSelect refetch={() => null} />
                 <AcmRefreshTime
                   timestamp={'Wed Jan 06 2021 00:00:00 GMT+0000 (Coordinated Universal Time)'}
                   reloading={true}
