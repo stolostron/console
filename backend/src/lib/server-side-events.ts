@@ -286,17 +286,6 @@ export class ServerSideEvents {
       logger.info({ msg: 'event stream close' })
     })
 
-    let lastEventID = 0
-    if (req.headers['last-event-id']) {
-      const last = Number(req.headers['last-event-id'])
-      if (Number.isInteger(last)) {
-        const cookies = parseCookies(req)
-        if (cookies['watch'] === instanceID) {
-          lastEventID = last
-        }
-      }
-    }
-
     // SORT EVENTS INTO SMALLER PACKETS
     // SO THAT BROWSER PAGE LOADS QUICKER
     // split events into packets

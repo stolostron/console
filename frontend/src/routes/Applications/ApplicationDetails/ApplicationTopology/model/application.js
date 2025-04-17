@@ -2,7 +2,13 @@
 
 import { get, set } from 'lodash'
 import { getSubscriptionApplication } from './applicationSubscription'
-import { fireManagedClusterView } from '../../../../../resources'
+import {
+  fireManagedClusterView,
+  ArgoApplicationApiVersion,
+  ArgoApplicationKind,
+  ApplicationSetApiVersion,
+  ApplicationSetKind,
+} from '../../../../../resources'
 import { getResource } from '../../../../../resources/utils'
 import { fetchAggregate, SupportedAggregate } from '../../../../../lib/useAggregates'
 
@@ -40,8 +46,8 @@ export const getApplication = async (
   if (!app && isAppSet) {
     // appset is not part of recoil
     app = await getResource({
-      apiVersion: 'argoproj.io/v1alpha1',
-      kind: 'ApplicationSet',
+      apiVersion: ApplicationSetApiVersion,
+      kind: ApplicationSetKind,
       metadata: {
         name,
         namespace,
@@ -79,13 +85,13 @@ export const getApplication = async (
   if (!app && apiVersion === 'application.argoproj.io') {
     if (cluster) {
       // get argo app definition from managed cluster
-      app = await getRemoteArgoApp(cluster, 'application', 'argoproj.io/v1alpha1', name, namespace)
+      app = await getRemoteArgoApp(cluster, 'application', ArgoApplicationApiVersion, name, namespace)
       set(app, 'status.cluster', cluster)
     } else {
       // argo app is not part of recoil
       app = await getResource({
-        apiVersion: 'argoproj.io/v1alpha1',
-        kind: 'Application',
+        apiVersion: ArgoApplicationApiVersion,
+        kind: ArgoApplicationKind,
         metadata: {
           name,
           namespace,
@@ -188,8 +194,8 @@ export const getAppSetApplicationPullModel = (model, app, recoilStates, clusters
     const appData = appStr ? appStr.split('/') : []
     const conditions = get(argoApp, 'conditions', [])
     appSetApps.push({
-      apiVersion: 'argoproj.io/v1alpha1',
-      kind: 'Application',
+      apiVersion: ArgoApplicationApiVersion,
+      kind: ArgoApplicationKind,
       metadata: {
         name: appData[1],
         namespace: appData[0],

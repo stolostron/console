@@ -288,13 +288,13 @@ export async function aggregateRemoteApplications(pass: number) {
   // //////////// SAVE RESULTS ///////////////////
   const argoAppSet = cacheArgoApplications(
     applicationCache,
-    (results.data?.searchResult?.[0]?.items || []) as IResource[]
+    (results.data?.searchResult?.[0]?.items ?? []) as IResource[]
   )
   cacheOCPApplications(applicationCache, (results.data?.searchResult?.[1]?.items || []) as IResource[], argoAppSet)
   if (querySystemApps) {
     cacheOCPApplications(
       applicationCache,
-      (results.data?.searchResult?.[2]?.items || []) as IResource[],
+      (results.data?.searchResult?.[2]?.items ?? []) as IResource[],
       argoAppSet,
       true
     )

@@ -201,7 +201,7 @@ export default function ApplicationDetailsPage() {
         click: () => {
           if (applicationData) {
             const [apigroup, apiversion] = applicationData.application.app.apiVersion.split('/')
-            const isOCPorFluxApp = applicationData.application.isOCPApp || applicationData.application.isFluxApp
+            const isOCPorFluxApp = applicationData.application.isOCPApp ?? applicationData.application.isFluxApp
             const searchLink = isOCPorFluxApp
               ? getSearchLink({
                   properties: {
