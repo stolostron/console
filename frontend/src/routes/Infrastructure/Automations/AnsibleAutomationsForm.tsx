@@ -132,7 +132,7 @@ export function AnsibleAutomationsForm(props: {
   const supportedCurations = useRecoilValue(clusterCuratorSupportedCurationsValue)
 
   const navigate = useNavigate()
-  const [forceErrors] = useState(false)
+  const [forceErrors, setForceErrors] = useState(false)
   const [editAnsibleJob, setEditAnsibleJob] = useState<ClusterCuratorAnsibleJob | undefined>()
   const [editAnsibleJobList, setEditAnsibleJobList] = useState<{
     jobs: ClusterCuratorAnsibleJob[]
@@ -247,7 +247,7 @@ export function AnsibleAutomationsForm(props: {
             ? t('validate.ansible.reason', { reason: err.reason })
             : t('validate.ansible.host')
         )
-
+        setForceErrors(true)
         // clear lists again in case only some requests failed
         setAnsibleTowerJobTemplateList([])
         setAnsibleTowerWorkflowTemplateList([])
