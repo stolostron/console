@@ -16,6 +16,7 @@ import {
   Skeleton,
   ChipGroup,
   Chip,
+  Icon,
 } from '@patternfly/react-core'
 import {
   Children,
@@ -32,6 +33,7 @@ import {
 import { useTranslation } from '../lib/acm-i18next'
 import FilterIcon from '@patternfly/react-icons/dist/esm/icons/filter-icon'
 import TimesIcon from '@patternfly/react-icons/dist/esm/icons/times-icon'
+import { css } from '@emotion/css'
 
 export interface SelectOptionObject {
   /** Function returns a string to represent the select option object */
@@ -52,7 +54,7 @@ type SelectProps = Pick<
   SelectPropsCore,
   Exclude<keyof SelectPropsCore, 'toggle' | 'onToggle' | 'onChange' | 'selections' | 'onSelect' | 'variant' | 'width'>
 > & {
-  id: string
+  id?: string
   label?: string
   value?: string
   selections?: string | SelectOptionObject | (string | SelectOptionObject)[]
@@ -75,6 +77,10 @@ type SelectProps = Pick<
 }
 
 const NO_RESULTS = 'no results'
+
+const filterIconClass = css({
+  padding: '0 8px 0 16px',
+})
 
 export function Select(props: SelectProps) {
   const [isOpen, setIsOpen] = useState(false)
@@ -426,7 +432,11 @@ export function Select(props: SelectProps) {
             variant="typeahead"
             aria-label="Typeahead menu toggle"
             onClick={onToggleClick}
-            icon={<FilterIcon />}
+            icon={
+              <Icon className={filterIconClass}>
+                <FilterIcon />
+              </Icon>
+            }
             isExpanded={isOpen}
             style={
               {
@@ -467,7 +477,11 @@ export function Select(props: SelectProps) {
             aria-label="Multi typeahead menu toggle"
             onClick={onToggleClick}
             innerRef={toggleRef}
-            icon={<FilterIcon />}
+            icon={
+              <Icon className={filterIconClass}>
+                <FilterIcon />
+              </Icon>
+            }
             isExpanded={isOpen}
             style={
               {
