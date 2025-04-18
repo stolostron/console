@@ -1968,6 +1968,7 @@
   "No release image is available. Follow cluster creation prerequisite documentation to learn how to add release images.": "No release image is available. Follow cluster creation prerequisite documentation to learn how to add release images.",
   "No resources match the current filter": "No resources match the current filter",
   "No results found": "No results found",
+  "No results found for {{filterValue}}": "No results found for {{filterValue}}",
   "No results found for the current search criteria.": "No results found for the current search criteria.",
   "No results match the filter criteria. Clear filters to show results.": "No results match the filter criteria. Clear filters to show results.",
   "No risks found": "No risks found",
