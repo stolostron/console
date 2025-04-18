@@ -126,14 +126,13 @@ export function AnsibleAutomationsForm(props: {
 }) {
   const { t } = useTranslation()
   const { ansibleCredentials, clusterCurator, isEditing, isViewing } = props
-
   const { settingsState } = useSharedAtoms()
   const settings = useRecoilValue(settingsState)
   const { clusterCuratorSupportedCurationsValue } = useSharedSelectors()
   const supportedCurations = useRecoilValue(clusterCuratorSupportedCurationsValue)
 
   const navigate = useNavigate()
-  const [nextDisabled, setNextDisabled] = useState(false)
+  const [forceErrors] = useState(false)
   const [editAnsibleJob, setEditAnsibleJob] = useState<ClusterCuratorAnsibleJob | undefined>()
   const [editAnsibleJobList, setEditAnsibleJobList] = useState<{
     jobs: ClusterCuratorAnsibleJob[]
@@ -196,7 +195,6 @@ export function AnsibleAutomationsForm(props: {
     setAnsibleTowerJobTemplateList([])
     setAnsibleTowerWorkflowTemplateList([])
     setAnsibleTowerInventoryList([])
-    setNextDisabled(false)
 
     if (ansibleSelection) {
       const selectedCred = ansibleCredentials.find((credential) => credential.metadata.name === ansibleSelection)
@@ -249,7 +247,7 @@ export function AnsibleAutomationsForm(props: {
             ? t('validate.ansible.reason', { reason: err.reason })
             : t('validate.ansible.host')
         )
-        setNextDisabled(true)
+
         // clear lists again in case only some requests failed
         setAnsibleTowerJobTemplateList([])
         setAnsibleTowerWorkflowTemplateList([])
@@ -462,6 +460,7 @@ export function AnsibleAutomationsForm(props: {
   const handleModalToggle = () => {
     setIsModalOpen(!isModalOpen)
   }
+
   const formData: FormData = {
     title: isEditing ? t('template.edit.title') : t('template.create.title'),
     titleTooltip: isEditing ? t('template.edit.tooltip') : t('template.create.tooltip'),
@@ -506,9 +505,8 @@ export function AnsibleAutomationsForm(props: {
             footer: <CreateCredentialModal handleModalToggle={handleModalToggle} />,
             isDisabled: isEditing,
             validation: () => {
-              if (AnsibleTowerAuthError) return AnsibleTowerAuthError
+              return AnsibleTowerAuthError || undefined
             },
-            validate: !!AnsibleTowerAuthError,
           },
           {
             id: 'Inventory',
@@ -746,7 +744,7 @@ export function AnsibleAutomationsForm(props: {
         ],
       },
     ],
-    disableNext: nextDisabled,
+    showErrors: forceErrors,
     submit: () => {
       if (isEditing) {
         return replaceResource(stateToData() as IResource).promise.then(async () => {
