@@ -8,8 +8,11 @@ RUN npm run build:plugin:mce
 
 FROM registry.ci.openshift.org/stolostron/builder:nodejs20-linux as backend
 WORKDIR /app/backend
-COPY ./backend .
+# Copy only package.json and package-lock.json so that the docker layer cache only changes if those change
+# This will cause the npm ci to only rerun if the package.json or package-lock.json changes
+COPY ./backend/package.json ./backend/package-lock.json ./
 RUN npm ci --omit=optional
+COPY ./backend .
 RUN npm run build
 
 FROM registry.ci.openshift.org/stolostron/builder:nodejs20-linux as production
