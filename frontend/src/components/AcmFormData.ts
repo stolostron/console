@@ -14,6 +14,7 @@ export interface FormData {
   cancel: () => void
   back?: () => void
   submitText: string
+  showErrors?: boolean
   submittingText: string
   reviewTitle: string
   reviewDescription: string
