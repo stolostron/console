@@ -2,12 +2,10 @@
 
 import {
   Button,
-  FormGroup,
   MenuToggle,
   MenuToggleElement,
-  Popover,
-  Select,
-  SelectProps,
+  Select as SelectCore,
+  SelectProps as SelectPropsCore,
   SelectList,
   TextInputGroup,
   TextInputGroupMain,
@@ -18,8 +16,8 @@ import {
   Skeleton,
   ChipGroup,
   Chip,
+  Icon,
 } from '@patternfly/react-core'
-import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import {
   Children,
   cloneElement,
@@ -27,15 +25,15 @@ import {
   isValidElement,
   ReactElement,
   ReactNode,
+  useCallback,
   useEffect,
-  useLayoutEffect,
   useRef,
   useState,
 } from 'react'
-import { useTranslation } from '../../lib/acm-i18next'
-import { useValidationContext } from '../AcmForm/AcmForm'
-import { AcmHelperText } from '../AcmHelperText/AcmHelperText'
+import { useTranslation } from '../lib/acm-i18next'
+import FilterIcon from '@patternfly/react-icons/dist/esm/icons/filter-icon'
 import TimesIcon from '@patternfly/react-icons/dist/esm/icons/times-icon'
+import { css } from '@emotion/css'
 
 export interface SelectOptionObject {
   /** Function returns a string to represent the select option object */
@@ -48,50 +46,44 @@ let currentId = 0
 export enum SelectVariant {
   single = 'single',
   typeahead = 'typeahead',
-  checkboxMulti = 'checkboxMulti',
+  checkbox = 'checkbox',
   typeaheadMulti = 'typeaheadmulti',
 }
-type ConditionalProps =
-  | {
-      value: string | undefined
-      onChange: (value: string | undefined) => void
-      variant?: SelectVariant.single | SelectVariant.typeahead
-    }
-  | {
-      values: string[] | undefined
-      onChanges: (values: string[] | undefined) => void
-      variant?: SelectVariant.checkboxMulti | SelectVariant.typeaheadMulti
-    }
 
-type AcmSelectProps = Pick<
-  SelectProps,
-  Exclude<keyof SelectProps, 'toggle' | 'onToggle' | 'onChange' | 'selections' | 'onSelect' | 'variant'>
+type SelectProps = Pick<
+  SelectPropsCore,
+  Exclude<keyof SelectPropsCore, 'toggle' | 'onToggle' | 'onChange' | 'selections' | 'onSelect' | 'variant' | 'width'>
 > & {
-  id: string
-  label: string
-  value?: string | undefined
-  values?: string[] | undefined
-  onChange?: (value: string | undefined) => void
-  onChanges?: (value: string[] | undefined) => void
+  id?: string
+  label?: string
+  value?: string
+  selections?: string | SelectOptionObject | (string | SelectOptionObject)[]
+  variant: SelectVariant
+  onChange?: (value: string | string[] | undefined) => void
   validation?: (value: string | undefined) => string | undefined
   placeholder?: string
+  placeholderText?: string
   labelHelp?: string
   labelHelpTitle?: ReactNode
   helperText?: ReactNode
   isRequired?: boolean
   isDisabled?: boolean
   toggleId?: string
+  width?: string | number
   maxHeight?: string
   menuAppendTo?: string
   isLoading?: boolean
   footer?: React.ReactNode
-} & ConditionalProps
+}
 
 const NO_RESULTS = 'no results'
 
-export function AcmSelect(props: AcmSelectProps) {
+const filterIconClass = css({
+  padding: '0 8px 0 16px',
+})
+
+export function Select(props: SelectProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const [selected, setSelected] = useState<string>(props.value || '')
   const [inputValue, setInputValue] = useState<string>('')
   const [filterValue, setFilterValue] = useState<string>('')
   const initialFilteredOptions = Children.toArray(props.children).map((child) => {
@@ -105,16 +97,12 @@ export function AcmSelect(props: AcmSelectProps) {
   const [filteredOptions, setFilteredOptions] = useState<SelectOptionProps[]>(initialFilteredOptions)
   const getMultiTypeaheadChildren = (value: string) =>
     initialFilteredOptions.find((option) => option.value === value)?.children
-  // for multiselect--what's been checkmarked
-  const [selectedItems, setSelectedItems] = useState<string[]>([])
   const [focusedItemIndex, setFocusedItemIndex] = useState<number | null>(null)
   const [activeItemId, setActiveItemId] = useState<string | null>(null)
-  const ValidationContext = useValidationContext()
-  const [validated, setValidated] = useState<'default' | 'success' | 'error' | 'warning'>('default')
-  const [error, setError] = useState<string>('')
   const textInputRef = useRef<HTMLInputElement>()
   const { t } = useTranslation()
   const {
+    value,
     validation,
     labelHelp,
     labelHelpTitle,
@@ -122,49 +110,35 @@ export function AcmSelect(props: AcmSelectProps) {
     isRequired,
     isDisabled,
     onChange,
-    value,
-    onChanges,
-    values,
+    selections: selectionProps,
     toggleId,
     maxHeight,
+    width,
     menuAppendTo,
     placeholder,
+    placeholderText,
     isLoading,
+    isPlain,
     variant,
     children,
     ...selectProps
   } = props
-
-  useLayoutEffect(() => {
-    let error: string | undefined = undefined
-    /* istanbul ignore else */
-    if (props.hidden !== true) {
-      if (isRequired) {
-        if (props.value === undefined) {
-          error = t('Required')
-        } else if (props.value.trim() === '') {
-          error = t('Required')
-        }
-      }
-      if (!error && validation) {
-        error = validation(props.value)
+  const selections = value ?? selectionProps
+  const selected = !Array.isArray(selections) ? (selections as string) : ''
+  const selectedItems = Array.isArray(selections) ? (selections as string[]) : []
+  useEffect(() => {
+    if (!selections) {
+      setInputValue('')
+      setFilterValue('')
+      if (props.width === 'auto') {
+        if (textInputRef?.current) textInputRef.current.size = 20
+        if (textInputRef?.current) textInputRef.current.style.width = 'auto'
       }
     }
-    setError(error ?? '')
-    /* istanbul ignore next */
-    if (ValidationContext.validate) {
-      setValidated(error ? 'error' : 'default')
-    }
-    ValidationContext.setError(props.id, error)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.value, props.hidden])
-
-  useLayoutEffect(() => {
-    setValidated(error ? 'error' : 'default')
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ValidationContext.validate])
+  }, [props.width, selections])
 
   const createItemId = (value: any) => `select-typeahead-${value.replace(' ', '-')}`
+  const selectToggleId = toggleId || `pf-select-toggle-id-${currentId++}`
 
   const closeMenu = () => {
     setIsOpen(false)
@@ -178,7 +152,7 @@ export function AcmSelect(props: AcmSelectProps) {
     resetActiveAndFocusedItem()
 
     if (value !== selected) {
-      setSelected('')
+      onChange?.('')
     }
   }
 
@@ -255,6 +229,7 @@ export function AcmSelect(props: AcmSelectProps) {
   const onInputClick = () => {
     if (!isOpen) {
       setIsOpen(true)
+      if (textInputRef?.current) textInputRef.current.select()
     } else if (!inputValue) {
       closeMenu()
     }
@@ -263,8 +238,12 @@ export function AcmSelect(props: AcmSelectProps) {
   const selectOption = (value: string | number, content: string | number) => {
     setInputValue(String(content))
     setFilterValue('')
-    setSelected(String(value))
+    onChange?.(String(value))
     closeMenu()
+
+    if (props.width === 'auto') {
+      if (textInputRef?.current) textInputRef.current.size = String(content).length
+    }
   }
 
   useEffect(() => {
@@ -278,7 +257,13 @@ export function AcmSelect(props: AcmSelectProps) {
 
       // When no options are found after filtering, display 'No results found'
       if (!newFilteredOptions.length) {
-        newFilteredOptions = [{ isAriaDisabled: true, children: t('No results found'), value: NO_RESULTS }]
+        newFilteredOptions = [
+          {
+            isAriaDisabled: true,
+            children: t(`No results found for {{filterValue}}`, { filterValue }),
+            value: NO_RESULTS,
+          },
+        ]
       }
 
       // Open the menu when the input value changes and the new value is not empty
@@ -306,46 +291,54 @@ export function AcmSelect(props: AcmSelectProps) {
     setIsOpen(!isOpen)
   }
 
-  const onClearButtonClick = () => {
-    setSelected('')
-    setSelectedItems([])
-    setInputValue('')
-    setFilterValue('')
-    resetActiveAndFocusedItem()
-    textInputRef?.current?.focus()
-  }
+  const onClearSelection = useCallback(
+    (focus: boolean = true) => {
+      onChange?.('')
+      setInputValue('')
+      setFilterValue('')
+      resetActiveAndFocusedItem()
+      if (focus) textInputRef?.current?.focus()
+      if (props.width === 'auto') {
+        if (textInputRef?.current) textInputRef.current.size = 20
+        if (textInputRef?.current) textInputRef.current.style.width = 'auto'
+      }
+    },
+    [onChange, props.width]
+  )
 
-  const selectToggleId = toggleId || `pf-select-toggle-id-${currentId++}`
-
-  const onSelect = (_event: React.MouseEvent<Element, MouseEvent> | undefined, value: string | number | undefined) => {
+  const onSelect = (
+    _event: React.MouseEvent<Element, MouseEvent> | undefined,
+    value: string | string[] | number | undefined
+  ) => {
     switch (variant) {
       default:
       case SelectVariant.single:
-        setSelected(value as string)
-        onChange?.(value as string)
+        onChange?.(value?.toString())
         setIsOpen(false)
         break
       case SelectVariant.typeahead:
         if (value && value !== NO_RESULTS) {
           const optionText = filteredOptions.find((option) => option.value === value)?.children
-          onChange?.(value as string)
-          selectOption(value, optionText as string)
+          selectOption(value.toString(), optionText as string)
         }
         break
-      case SelectVariant.checkboxMulti:
+      case SelectVariant.checkbox:
       case SelectVariant.typeaheadMulti:
-        if (selectedItems.includes(value as string)) {
-          setSelectedItems(selectedItems.filter((id) => id !== value))
-        } else {
-          setSelectedItems([...selectedItems, value as string])
+        if (!Array.isArray(value)) {
+          selectOption(String(value), String(value))
         }
+        // if (selectedItems.includes(value as string)) {
+        //   onChange?.(selectedItems.filter((id) => id !== value))
+        // } else {
+        //   onChange?.([...selectedItems, value as string])
+        // }
         break
     }
   }
 
   const onDelete = (value: string | number | undefined) => {
     if (value && typeof value === 'string' && value !== NO_RESULTS) {
-      setSelectedItems(
+      onChange?.(
         selectedItems.includes(value)
           ? selectedItems.filter((selection) => selection !== value)
           : [...selectedItems, value]
@@ -353,11 +346,6 @@ export function AcmSelect(props: AcmSelectProps) {
     }
     textInputRef.current?.focus()
   }
-
-  useEffect(() => {
-    onChanges?.(selectedItems as string[])
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(selectedItems)])
 
   const renderMenuToggle = (toggleRef: React.Ref<MenuToggleElement>) => {
     switch (variant) {
@@ -372,14 +360,14 @@ export function AcmSelect(props: AcmSelectProps) {
             isDisabled={isDisabled}
             style={
               {
-                width: '100%',
+                width: width || '100%',
               } as React.CSSProperties
             }
           >
-            {getDisplay(selected, props)}
+            {renderSingleSelection(selected, props)}
           </MenuToggle>
         )
-      case SelectVariant.checkboxMulti:
+      case SelectVariant.checkbox:
         return (
           <MenuToggle
             id={selectToggleId}
@@ -389,42 +377,52 @@ export function AcmSelect(props: AcmSelectProps) {
             isDisabled={isDisabled}
             style={
               {
-                width: '100%',
+                width: width || '100%',
                 maxHeight: '36px',
               } as React.CSSProperties
             }
           >
-            {selectedItems.length === 0 ? (
-              placeholder
-            ) : (
-              <div style={{ display: 'flex', alignItems: 'center', padding: '0px' }}>
-                <div>
-                  {selectedItems
-                    .filter((item) => item !== undefined)
-                    .map((node: ReactNode, index) => {
-                      if (index === 0) {
-                        return <Fragment key={`${index}`}>{node}</Fragment>
-                      } else {
-                        return (
-                          <Fragment key={`${index}`}>
-                            <span>, </span>
-                            {node}
-                          </Fragment>
-                        )
-                      }
-                    })}
-                </div>
-                <Badge style={{ marginLeft: '14px' }} isRead>
-                  {selectedItems.length}
-                </Badge>
-                <Button
-                  variant="plain"
-                  onClick={onClearButtonClick}
-                  aria-label="Clear input value"
-                  icon={<TimesIcon aria-hidden />}
-                />
-              </div>
-            )}
+            {(() => {
+              switch (true) {
+                case selectedItems.length === 0:
+                  return placeholder ?? placeholderText
+                case isPlain:
+                  return (
+                    <>
+                      {placeholder ?? placeholderText}
+                      {selectedItems.length > 0 && <Badge isRead>{selectedItems.length}</Badge>}
+                    </>
+                  )
+                default:
+                  return (
+                    <div style={{ display: 'flex', alignItems: 'center', padding: '0px' }}>
+                      {selectedItems
+                        .filter((item) => item !== undefined)
+                        .map((node: ReactNode, index) => {
+                          if (index === 0) {
+                            return <Fragment key={`${index}`}>{node}</Fragment>
+                          } else {
+                            return (
+                              <Fragment key={`${index}`}>
+                                <span>, </span>
+                                {node}
+                              </Fragment>
+                            )
+                          }
+                        })}
+                      <Badge style={{ marginLeft: '14px' }} isRead>
+                        {selectedItems.length}
+                      </Badge>
+                      <Button
+                        variant="plain"
+                        onClick={() => onClearSelection(true)}
+                        aria-label="Clear input value"
+                        icon={<TimesIcon aria-hidden />}
+                      />
+                    </div>
+                  )
+              }
+            })()}
           </MenuToggle>
         )
       case SelectVariant.typeahead:
@@ -434,8 +432,17 @@ export function AcmSelect(props: AcmSelectProps) {
             variant="typeahead"
             aria-label="Typeahead menu toggle"
             onClick={onToggleClick}
+            icon={
+              <Icon className={filterIconClass}>
+                <FilterIcon />
+              </Icon>
+            }
             isExpanded={isOpen}
-            isFullWidth
+            style={
+              {
+                width: width || '100%',
+              } as React.CSSProperties
+            }
           >
             <TextInputGroup isPlain>
               <TextInputGroupMain
@@ -446,7 +453,7 @@ export function AcmSelect(props: AcmSelectProps) {
                 id="typeahead-select-input"
                 autoComplete="off"
                 innerRef={textInputRef}
-                placeholder={placeholder}
+                placeholder={placeholder ?? placeholderText}
                 {...(activeItemId && { 'aria-activedescendant': activeItemId })}
                 role="combobox"
                 isExpanded={isOpen}
@@ -455,7 +462,7 @@ export function AcmSelect(props: AcmSelectProps) {
               <TextInputGroupUtilities {...(!inputValue ? { style: { display: 'none' } } : {})}>
                 <Button
                   variant="plain"
-                  onClick={onClearButtonClick}
+                  onClick={() => onClearSelection()}
                   aria-label="Clear input value"
                   icon={<TimesIcon aria-hidden />}
                 />
@@ -470,8 +477,17 @@ export function AcmSelect(props: AcmSelectProps) {
             aria-label="Multi typeahead menu toggle"
             onClick={onToggleClick}
             innerRef={toggleRef}
+            icon={
+              <Icon className={filterIconClass}>
+                <FilterIcon />
+              </Icon>
+            }
             isExpanded={isOpen}
-            isFullWidth
+            style={
+              {
+                width: width || '100%',
+              } as React.CSSProperties
+            }
           >
             <TextInputGroup isPlain>
               <TextInputGroupMain
@@ -482,7 +498,7 @@ export function AcmSelect(props: AcmSelectProps) {
                 id="multi-typeahead-select-input"
                 autoComplete="off"
                 innerRef={textInputRef}
-                placeholder={placeholder}
+                placeholder={placeholder ?? placeholderText}
                 {...(activeItemId && { 'aria-activedescendant': activeItemId })}
                 role="combobox"
                 isExpanded={isOpen}
@@ -503,7 +519,7 @@ export function AcmSelect(props: AcmSelectProps) {
                 </ChipGroup>
               </TextInputGroupMain>
               <TextInputGroupUtilities {...(selected.length === 0 ? { style: { display: 'none' } } : {})}>
-                <Button variant="plain" onClick={onClearButtonClick} aria-label="Clear input value">
+                <Button variant="plain" onClick={() => onClearSelection()} aria-label="Clear input value">
                   <TimesIcon aria-hidden />
                 </Button>
               </TextInputGroupUtilities>
@@ -518,15 +534,19 @@ export function AcmSelect(props: AcmSelectProps) {
       default:
       case SelectVariant.single:
         return <SelectList style={{ maxHeight: maxHeight, overflowY: 'auto' }}>{children}</SelectList>
-      case SelectVariant.checkboxMulti:
+      case SelectVariant.checkbox:
         return (
           <SelectList style={{ maxHeight: maxHeight, overflowY: 'auto' }}>
             {Children.map(children, (child) => {
               if (isValidElement(child)) {
-                return cloneElement(child as ReactElement<any>, {
-                  hasCheckbox: true,
-                  isSelected: selectedItems.includes(child.props.value),
-                })
+                return cloneElement(
+                  child as ReactElement<any>,
+                  {
+                    hasCheckbox: true,
+                    isSelected: selectedItems.includes(child.props.value),
+                  },
+                  child.props.children ? child.props.children : child.props.value
+                )
               }
               return child
             })}
@@ -565,62 +585,26 @@ export function AcmSelect(props: AcmSelectProps) {
     }
   }
 
-  return (
-    <FormGroup
-      id={`${props.id}-label`}
-      label={props.label}
-      isRequired={isRequired}
-      fieldId={props.id}
-      hidden={props.hidden}
-      onKeyDown={(event) => {
-        if (event.key === 'Enter') {
-          event.preventDefault()
-        }
-      }}
-      labelIcon={
-        /* istanbul ignore next */
-        props.labelHelp ? (
-          <Popover id={`${props.id}-label-help-popover`} headerContent={labelHelpTitle} bodyContent={labelHelp}>
-            <Button
-              variant="plain"
-              id={`${props.id}-label-help-button`}
-              aria-label={t('More info')}
-              onClick={(e) => e.preventDefault()}
-              className="pf-v5-c-form__group-label-help"
-              style={{ ['--pf-v5-c-form__group-label-help--TranslateY' as any]: 0 }}
-              icon={<HelpIcon />}
-            />
-          </Popover>
-        ) : (
-          <Fragment />
-        )
-      }
+  return isLoading ? (
+    <Skeleton height="36px" screenreaderText={t('Loading')} />
+  ) : (
+    <SelectCore
+      style={{ width: 'auto' }}
+      aria-labelledby={`${props.id}-label`}
+      {...selectProps}
+      isOpen={isOpen}
+      toggle={renderMenuToggle}
+      onOpenChange={(isOpen) => setIsOpen(isOpen)}
+      selected={selected}
+      onSelect={onSelect}
     >
-      {isLoading ? (
-        <Skeleton height="36px" screenreaderText={t('Loading')} />
-      ) : (
-        <Select
-          style={{ width: 'auto' }}
-          aria-labelledby={`${props.id}-label`}
-          {...selectProps}
-          isOpen={isOpen}
-          toggle={renderMenuToggle}
-          onOpenChange={(isOpen) => setIsOpen(isOpen)}
-          onSelect={onSelect}
-        >
-          {renderSelectList()}
-        </Select>
-      )}
-      <div
-        style={{ borderTop: `1.75px solid ${validated === 'error' ? 'red' : 'transparent'}`, paddingBottom: '10px' }}
-      ></div>
-      <AcmHelperText controlId={props.id} helperText={helperText} validated={validated} error={error} />
-    </FormGroup>
+      {renderSelectList()}
+    </SelectCore>
   )
 }
 
 // getting selected displayable value from options (from old patternfly)
-function getDisplay(value: string | undefined, props: AcmSelectProps, type: 'node' | 'text' = 'node') {
+function renderSingleSelection(value: string | undefined, props: SelectProps, type: 'node' | 'text' = 'node') {
   if (value) {
     const item = Children.toArray(props.children).find(
       (child) =>
@@ -637,11 +621,7 @@ function getDisplay(value: string | undefined, props: AcmSelectProps, type: 'nod
       return item.props.value.toString()
     }
   }
-  return props.variant == SelectVariant.typeahead || props.variant == SelectVariant.typeaheadMulti ? (
-    props.placeholder
-  ) : (
-    <span style={{ color: '#666' }}>{props.placeholder}</span>
-  )
+  return props.placeholder ?? props.placeholderText
 }
 
 function findText(item: React.ReactNode) {

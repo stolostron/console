@@ -14,7 +14,8 @@ import {
   Stack,
   StackItem,
 } from '@patternfly/react-core'
-import { Select, SelectOption, SelectVariant } from '@patternfly/react-core/deprecated'
+import { SelectOption } from '@patternfly/react-core'
+import { Select, SelectVariant } from '../../../components/Select'
 import {
   InfraEnvFormPage,
   EnvironmentStepFormValues,
@@ -151,8 +152,7 @@ const InfraEnvForm: React.FC<InfraEnvFormProps> = ({ control, handleChange }) =>
                   variant={SelectVariant.typeahead}
                   placeholderText={t('creation.ocp.cloud.select.connection')}
                   aria-label="Select credentials"
-                  onToggle={(_event, val) => setCredentialsOpen(val)}
-                  onSelect={(_, v) => {
+                  onChange={(v) => {
                     setCredentialsUID(v as string)
                     setCredentialsOpen(false)
                   }}
@@ -161,7 +161,6 @@ const InfraEnvForm: React.FC<InfraEnvFormProps> = ({ control, handleChange }) =>
                   footer={
                     <CreateCredentialModal handleModalToggle={() => setCredentialsModalOpen(!isCredentialsModalOpen)} />
                   }
-                  noResultsFoundText={t('No results found')}
                 >
                   {providerConnections.map((p) => (
                     <SelectOption key={p.metadata.uid} value={p.metadata.uid}>
