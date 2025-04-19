@@ -52,6 +52,24 @@ export const addRowsForHasVapb = (
   }
 }
 
+export const addRowsForConstraint = (cols: ListItems[], clusterName: string, apiGroup: string, kind: string) => {
+  // Gatekeeper mutation should not have this row
+  if (apiGroup === 'constraints.gatekeeper.sh') {
+    cols.push({
+      key: 'Constraint Template',
+      value: (
+        <a
+          target="_blank"
+          rel="noopener noreferrer"
+          href={`${NavigationPath.resourceYAML}?cluster=${clusterName}&kind=ConstraintTemplate&apiversion=templates.gatekeeper.sh%2Fv1&name=${kind.toLowerCase()}`}
+        >
+          {kind.toLowerCase()} <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
+        </a>
+      ),
+    })
+  }
+}
+
 export const addRowsForVapb = (cols: ListItems[], template: any, clusterName: string, kind: string) => {
   if (kind !== 'ValidatingAdmissionPolicyBinding') {
     return

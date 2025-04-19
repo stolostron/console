@@ -830,6 +830,14 @@ describe('Policy Template Details Page', () => {
       `/multicloud/search/resources/yaml?cluster=test-cluster&kind=Namespace&apiversion=v1&name=default-broker`
     )
 
+    await waitForText('Constraint Template')
+    const constraintTempalteLink = screen.getByRole('link', {
+      name: 'k8srequiredlabels',
+    })
+    expect(constraintTempalteLink.getAttribute('href')).toEqual(
+      `/multicloud/search/resources/yaml?cluster=test-cluster&kind=ConstraintTemplate&apiversion=templates.gatekeeper.sh%2Fv1&name=k8srequiredlabels`
+    )
+
     // Verify the generated ValidatingAdmissionPolicyBinding
     await waitForText('gatekeeper-ns-must-have-gk')
     await waitForText('Validating Admission Policy Binding')
