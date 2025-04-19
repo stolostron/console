@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import get from 'get-value'
-import { getKubeResources, getHubClusterName } from '../events'
+import sizeof from 'object-sizeof'
+import { getKubeResources, getHubClusterName, getEventCache } from '../events'
 import {
   Cluster,
   IResource,
@@ -19,7 +20,8 @@ import { AppColumns, ApplicationCache, ApplicationCacheType } from './applicatio
 import { logger } from '../../lib/logger'
 import { getMultiClusterHub } from '../../lib/multi-cluster-hub'
 import { getMultiClusterEngine } from '../../lib/multi-cluster-engine'
-import { getAllArgoApplications } from './applicationsArgo'
+import { ServerSideEvents } from '../../lib/server-side-events'
+import { getAppSetAppsMap } from './applicationsArgo'
 
 //////////////////////////////////////////////////////////////////
 ////////////// TRANSFORM /////////////////////////////////////////
@@ -37,21 +39,27 @@ export function transform(
   items.forEach((app) => {
     const type = getApplicationType(app)
     const _clusters = getApplicationClusters(app, type, subscriptions, placementDecisions, localCluster, clusters)
-    app.transform = [
-      [app.metadata.name],
-      [type],
-      [getAppNamespace(app)],
-      _clusters,
-      ['r'],
-      [app.metadata.creationTimestamp as string],
-    ]
+    app.transform = getTransform(app, type, _clusters)
     app.remoteClusters =
       (isRemote || (type === 'subscription' && _clusters.filter((n) => n !== localClusterName)).length > 0) && _clusters
   })
   return { resources: items }
 }
 
-function getAppNamespace(resource: IResource): string {
+export function getTransform(app: IResource, type: string, clusters: string[]): string[][] {
+  return [
+    [app.metadata.name],
+    [type],
+    [getAppNamespace(app)],
+    clusters,
+    ['r'],
+    [get(app, 'status.health.status', '') as string],
+    [get(app, 'status.sync.status', '') as string],
+    [app.metadata.creationTimestamp as string],
+  ]
+}
+
+export function getAppNamespace(resource: IResource): string {
   let namespace = resource.metadata?.namespace
   if (resource.apiVersion === 'argoproj.io/v1alpha1' && resource.kind === 'Application') {
     const argoApp = resource as IArgoApplication
@@ -139,15 +147,12 @@ export function getApplicationClusters(
         return [getArgoCluster(resource, clusters)]
       }
       break
-    case 'appset': //(also argo)
+    case 'appset':
       if ('spec' in resource) {
         if (isArgoPullModel(resource as IApplicationSet)) {
           return getArgoPullModelClusterList(resource as IApplicationSet, placementDecisions)
         } else {
-          const apps = getAllArgoApplications().filter(
-            (app) => app.metadata?.ownerReferences && app.metadata.ownerReferences[0].name === resource.metadata?.name
-          ) as IArgoApplication[]
-
+          const apps = getAppSetAppsMap()[resource.metadata?.name] || []
           return getArgoPushModelClusterList(apps, localCluster, clusters)
         }
       }
@@ -386,9 +391,9 @@ export function getNextApplicationPageChunk(
   if (applicationPageChunks.length === 0) {
     // get all apps
     let applications: ITransformedResource[] = []
-    if (applicationCache[remoteCacheKey].resources) {
+    if (applicationCache[remoteCacheKey]?.resources) {
       applications = applicationCache[remoteCacheKey].resources
-    } else if (applicationCache[remoteCacheKey].resourceMap) {
+    } else if (applicationCache[remoteCacheKey]?.resourceMap) {
       applications = Object.values(applicationCache[remoteCacheKey].resourceMap).flat()
     }
     if (applications.length) {
@@ -462,7 +467,7 @@ export function getNextApplicationPageChunk(
           reverse[name[0]].push(app)
         })
       }
-    } else {
+    } else if (applicationCache[remoteCacheKey]?.resources) {
       // if no keys but there were keys before, delete old resourceMap
       applicationCache[remoteCacheKey].resources = applications
       delete applicationCache[remoteCacheKey].resourceMap
@@ -489,9 +494,12 @@ export function cacheRemoteApps(
 export function getApplicationsHelper(applicationCache: ApplicationCacheType, keys: string[]) {
   const items: ITransformedResource[] = []
   keys.forEach((key) => {
-    if (applicationCache[key].resources) {
+    if (applicationCache[key]?.resources) {
       items.push(...applicationCache[key].resources)
-    } else if (Object.keys(applicationCache[key].resourceMap).length) {
+    } else if (applicationCache[key]?.resourceUidMap) {
+      const allResources = Object.values(applicationCache[key].resourceUidMap)
+      items.push(...allResources)
+    } else if (applicationCache[key]?.resourceMap) {
       const allResources = Object.values(applicationCache[key].resourceMap)
       items.push(...allResources.flat())
     }
@@ -600,9 +608,11 @@ export function logApplicationCountChanges(applicationCache: ApplicationCacheTyp
   let change = false
   appCountKeys.forEach((key) => {
     let count
-    if (applicationCache[key].resourceMap) {
+    if (applicationCache[key]?.resourceMap) {
       count = Object.values(applicationCache[key].resourceMap).flat().length
-    } else {
+    } else if (applicationCache[key]?.resourceUidMap) {
+      count = Object.values(applicationCache[key].resourceUidMap).length
+    } else if (applicationCache[key]?.resources) {
       count = applicationCache[key].resources.length
     }
     if (count !== appCount[key]) {
@@ -621,6 +631,21 @@ export function logApplicationCountChanges(applicationCache: ApplicationCacheTyp
       appCount,
     })
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const memUsed = (cache: any) => {
+    return `${Math.round(sizeof(cache) / 1024)
+      .toString()
+      .replace(/\B(?=(\d{3})+(?!\d))/g, ',')} KB`
+  }
+  logger.info({
+    msg: 'memory',
+    caches: {
+      appCache: memUsed(applicationCache),
+      eventCache: memUsed(getEventCache()),
+      clients: Object.keys(ServerSideEvents.getClients()).length,
+      events: memUsed(ServerSideEvents.getEvents()),
+    },
+  })
 }
 
 //////////////////////////////////////////////////////////////////

@@ -46,7 +46,7 @@ process.on('uncaughtException', (err) => {
 
 process.on('multipleResolves', (type: unknown, _promise, reason: unknown) => {
   // node-fetch throws multipleResolves on aborted resolved request
-  if ((reason as { type?: string }).type === 'aborted') return
+  if (!reason || (reason as { type?: string }).type === 'aborted') return
   logger.error({ msg: 'process multipleResolves', type, reason })
 })
 

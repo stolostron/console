@@ -9,6 +9,7 @@ import { initResourceCache } from '../../src/routes/events'
 import { request } from '../mock-request'
 import nock from 'nock'
 import { discoverSystemAppNamespacePrefixes } from '../../src/routes/aggregators/utils'
+import { polledAggregation } from '../../src/routes/aggregator'
 
 /// to get exact nock request body, put bp at line 303 in /backend/node_modules/nock/lib/intercepted_request_router.js
 describe(`aggregator Route`, function () {
@@ -17,6 +18,22 @@ describe(`aggregator Route`, function () {
 
     // initialize events
     initResourceCache(resourceCache)
+    polledAggregation(
+      {
+        kind: 'Application',
+        apiVersion: '',
+      },
+      argoApps,
+      true
+    )
+    polledAggregation(
+      {
+        kind: 'ApplicationSet',
+        apiVersion: '',
+      },
+      argoAppSets,
+      true
+    )
 
     // setup nocks
     setupNocks()
@@ -94,6 +111,22 @@ describe(`aggregator Route`, function () {
 
     // initialize events
     initResourceCache(resourceCache)
+    polledAggregation(
+      {
+        kind: 'Application',
+        apiVersion: '',
+      },
+      argoApps,
+      true
+    )
+    polledAggregation(
+      {
+        kind: 'ApplicationSet',
+        apiVersion: '',
+      },
+      argoAppSets,
+      true
+    )
 
     // setup nocks
     setupNocks(true)
@@ -109,7 +142,7 @@ describe(`aggregator Route`, function () {
       apiVersion: 'argoproj.io/v1alpha1',
       kind: 'ApplicationSet',
       metadata: {
-        name: 'argoapplication-1',
+        name: 'argoapplicationset-1',
         namespace: 'openshift-gitops',
       },
     })
@@ -147,6 +180,42 @@ const uidata = {
       apiVersion: 'argoproj.io/v1alpha1',
       kind: 'Application',
       metadata: {
+        name: 'argoapplication-2',
+        namespace: 'openshift-gitops',
+        ownerReferences: [
+          {
+            name: 'argoapplicationset-1',
+            apiVersion: '',
+            kind: 'ApplicationSet',
+          },
+        ],
+        uid: 'cc84e62f-edb9-413b-8bd7-38a32a21ce79',
+      },
+      spec: {
+        destination: {
+          namespace: 'argoapplication-2-ns',
+          server: 'https://api.console-aws-48-pwc27.dev02.red-chesterfield.com:6443',
+        },
+        project: 'default',
+        source: {
+          path: 'foo',
+          repoURL: 'https://test.com/test.git',
+          targetRevision: 'HEAD',
+        },
+        syncPolicy: {},
+      },
+      status: {},
+    },
+  ],
+}
+
+const responseNoFilter = {
+  page: 1,
+  items: [
+    {
+      apiVersion: 'argoproj.io/v1alpha1',
+      kind: 'Application',
+      metadata: {
         name: 'argoapplication-1',
         namespace: 'openshift-gitops',
         ownerReferences: [
@@ -156,6 +225,7 @@ const uidata = {
             kind: '',
           },
         ],
+        uid: 'cc84e62f-edb9-413b-8bd7-38a32a21ce72',
       },
       spec: {
         destination: {
@@ -171,21 +241,19 @@ const uidata = {
         syncPolicy: {},
       },
       status: {},
-      transform: [['argoapplication-1'], ['argo'], ['argoapplication-1-ns'], ['unknown'], ['r'], [null]],
-      remoteClusters: false,
+      uidata: {
+        clusterList: ['unknown'],
+        appSetRelatedResources: ['', []] as RelatedResourcesType,
+        appSetApps: [] as string[],
+      },
     },
-  ],
-}
-
-const responseNoFilter = {
-  page: 1,
-  items: [
     {
       apiVersion: 'argoproj.io/v1alpha1',
       kind: 'ApplicationSet',
       metadata: {
-        name: 'argoapplication-1',
+        name: 'argoapplicationset-1',
         namespace: 'openshift-gitops',
+        uid: 'cc84e62f-edb9-413b-8bd7-38a32a21ce76',
       },
       spec: {
         generators: [
@@ -232,41 +300,7 @@ const responseNoFilter = {
       uidata: {
         clusterList: ['local-cluster'],
         appSetRelatedResources: ['test-placement-1', []] as RelatedResourcesType,
-        appSetApps: ['argoapplication-1'],
-      },
-    },
-    {
-      apiVersion: 'argoproj.io/v1alpha1',
-      kind: 'Application',
-      metadata: {
-        name: 'argoapplication-1',
-        namespace: 'openshift-gitops',
-        ownerReferences: [
-          {
-            name: 'argoapplication-1',
-            apiVersion: '',
-            kind: '',
-          },
-        ],
-      },
-      spec: {
-        destination: {
-          namespace: 'argoapplication-1-ns',
-          server: 'https://api.console-aws-48-pwc27.dev02.red-chesterfield.com:6443',
-        },
-        project: 'default',
-        source: {
-          path: 'foo',
-          repoURL: 'https://test.com/test.git',
-          targetRevision: 'HEAD',
-        },
-        syncPolicy: {},
-      },
-      status: {},
-      uidata: {
-        clusterList: ['unknown'],
-        appSetRelatedResources: ['', []] as RelatedResourcesType,
-        appSetApps: [] as string[],
+        appSetApps: ['argoapplication-2'] as string[],
       },
     },
     {
@@ -721,92 +755,6 @@ const resourceCache = {
       eventID: 0,
     },
   },
-
-  // local argo app
-  '/argoproj.io/v1alpha1/applications': {
-    'cc84e62f-edb9-413b-8bd7-38a32a21ce72': {
-      resource: {
-        apiVersion: 'argoproj.io/v1alpha1',
-        kind: 'Application',
-        metadata: {
-          name: 'argoapplication-1',
-          namespace: 'openshift-gitops',
-          ownerReferences: [{ name: 'argoapplication-1', apiVersion: '', kind: '' }],
-        },
-        spec: {
-          destination: {
-            namespace: 'argoapplication-1-ns',
-            server: 'https://api.console-aws-48-pwc27.dev02.red-chesterfield.com:6443',
-          },
-          project: 'default',
-          source: {
-            path: 'foo',
-            repoURL: 'https://test.com/test.git',
-            targetRevision: 'HEAD',
-          },
-          syncPolicy: {},
-        },
-        status: {},
-      },
-      eventID: 0,
-    },
-  },
-  // app set
-  '/argoproj.io/v1alpha1/applicationsets': {
-    'cc84e62f-edb9-413b-8bd7-38a32a21ce72': {
-      resource: {
-        apiVersion: 'argoproj.io/v1alpha1',
-        kind: 'ApplicationSet',
-        metadata: {
-          name: 'argoapplication-1',
-          namespace: 'openshift-gitops',
-        },
-        spec: {
-          generators: [
-            {
-              clusterDecisionResource: {
-                configMapRef: 'acm-placement',
-                labelSelector: {
-                  matchLabels: {
-                    'cluster.open-cluster-management.io/placement': 'test-placement-1',
-                  },
-                },
-                requeueAfterSeconds: 180,
-              },
-            },
-          ],
-          template: {
-            metadata: {
-              labels: {
-                'velero.io/exclude-from-backup': 'true',
-              },
-              name: 'magchen-appset-{{name}}',
-            },
-            spec: {
-              destination: {
-                namespace: 'magchen-ns',
-                server: '{{server}}',
-              },
-              project: 'default',
-              source: {
-                path: 'acmnestedapp',
-                repoURL: 'https://github.com/fxiang1/app-samples',
-                targetRevision: 'main',
-              },
-              syncPolicy: {
-                automated: {
-                  prune: true,
-                  selfHeal: true,
-                },
-                syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
-              },
-            },
-          },
-        },
-      },
-      eventID: 0,
-    },
-  },
   '/apps.open-cluster-management.io/v1/subscriptions': {
     '8b6d6503-dc8c-4ed6-b420-aa0df015fbf1': {
       resource: {
@@ -1018,3 +966,108 @@ const resourceCache = {
     },
   },
 }
+
+const argoApps = [
+  {
+    apiVersion: 'argoproj.io/v1alpha1',
+    kind: 'Application',
+    metadata: {
+      name: 'argoapplication-1',
+      namespace: 'openshift-gitops',
+      ownerReferences: [{ name: 'argoapplication-1', apiVersion: '', kind: '' }],
+      uid: 'cc84e62f-edb9-413b-8bd7-38a32a21ce72',
+    },
+    spec: {
+      destination: {
+        namespace: 'argoapplication-1-ns',
+        server: 'https://api.console-aws-48-pwc27.dev02.red-chesterfield.com:6443',
+      },
+      project: 'default',
+      source: {
+        path: 'foo',
+        repoURL: 'https://test.com/test.git',
+        targetRevision: 'HEAD',
+      },
+      syncPolicy: {},
+    },
+    status: {},
+  },
+  {
+    apiVersion: 'argoproj.io/v1alpha1',
+    kind: 'Application',
+    metadata: {
+      name: 'argoapplication-2',
+      namespace: 'openshift-gitops',
+      ownerReferences: [{ name: 'argoapplicationset-1', apiVersion: '', kind: 'ApplicationSet' }],
+      uid: 'cc84e62f-edb9-413b-8bd7-38a32a21ce79',
+    },
+    spec: {
+      destination: {
+        namespace: 'argoapplication-2-ns',
+        server: 'https://api.console-aws-48-pwc27.dev02.red-chesterfield.com:6443',
+      },
+      project: 'default',
+      source: {
+        path: 'foo',
+        repoURL: 'https://test.com/test.git',
+        targetRevision: 'HEAD',
+      },
+      syncPolicy: {},
+    },
+    status: {},
+  },
+]
+
+const argoAppSets = [
+  {
+    apiVersion: 'argoproj.io/v1alpha1',
+    kind: 'ApplicationSet',
+    metadata: {
+      name: 'argoapplicationset-1',
+      namespace: 'openshift-gitops',
+      uid: 'cc84e62f-edb9-413b-8bd7-38a32a21ce76',
+    },
+    spec: {
+      generators: [
+        {
+          clusterDecisionResource: {
+            configMapRef: 'acm-placement',
+            labelSelector: {
+              matchLabels: {
+                'cluster.open-cluster-management.io/placement': 'test-placement-1',
+              },
+            },
+            requeueAfterSeconds: 180,
+          },
+        },
+      ],
+      template: {
+        metadata: {
+          labels: {
+            'velero.io/exclude-from-backup': 'true',
+          },
+          name: 'magchen-appset-{{name}}',
+        },
+        spec: {
+          destination: {
+            namespace: 'magchen-ns',
+            server: '{{server}}',
+          },
+          project: 'default',
+          source: {
+            path: 'acmnestedapp',
+            repoURL: 'https://github.com/fxiang1/app-samples',
+            targetRevision: 'main',
+          },
+          syncPolicy: {
+            automated: {
+              prune: true,
+              selfHeal: true,
+            },
+            syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
+          },
+        },
+      },
+    },
+  },
+]

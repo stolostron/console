@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { getKubeResources } from '../events'
+import { getKubeResources, IWatchOptions } from '../events'
 import { addOCPQueryInputs, addSystemQueryInputs, cacheOCPApplications } from './applicationsOCP'
 import { ApplicationSetKind, IApplicationSet, IResource } from '../../resources/resource'
 import { FilterSelections, ITransformedResource } from '../../lib/pagination'
@@ -16,6 +16,7 @@ import {
   getAppSetAppsMap,
   cacheArgoApplications,
   getAppSetRelatedResources,
+  polledArgoApplicationAggregation,
 } from './applicationsArgo'
 import { getGiganticApps } from '../../lib/gigantic'
 
@@ -25,6 +26,8 @@ export enum AppColumns {
   'namespace',
   'clusters',
   'repo',
+  'health',
+  'sync',
   'created',
 }
 export interface IArgoApplication extends IResource {
@@ -70,6 +73,7 @@ export interface ISubscription extends IResource {
 export type ApplicationCache = {
   resources?: ITransformedResource[]
   resourceMap?: { [key: string]: ITransformedResource[] }
+  resourceUidMap?: { [key: string]: ITransformedResource }
 }
 export type ApplicationCacheType = {
   [type: string]: ApplicationCache
@@ -135,6 +139,14 @@ export function stopAggregatingApplications(): void {
   stopping = true
 }
 
+export function polledApplicationAggregation(
+  options: IWatchOptions,
+  items: IResource[],
+  shouldPostProcess: boolean
+): void {
+  polledArgoApplicationAggregation(options, items, shouldPostProcess)
+}
+
 export function getApplications() {
   aggregateLocalApplications()
   let items = getApplicationsHelper(applicationCache, Object.keys(applicationCache))
@@ -184,13 +196,13 @@ export function filterApplications(filters: FilterSelections, items: ITransforme
 // add data to the apps that can be used by the ui but
 // w/o downloading all the appsets, apps, etc
 export function addUIData(items: ITransformedResource[]) {
-  const argoAppSets = applicationCache['appset'].resources
+  const argoAppSets = getApplicationsHelper(applicationCache, ['appset'])
   const appSetAppsMap = getAppSetAppsMap()
   items = items.map((item) => {
     return {
       ...item,
       uidata: {
-        clusterList: item.transform[AppColumns.clusters],
+        clusterList: item?.transform?.[AppColumns.clusters] || [],
         appSetRelatedResources:
           item.kind === ApplicationSetKind
             ? getAppSetRelatedResources(item, argoAppSets as IApplicationSet[])
@@ -276,13 +288,13 @@ export async function aggregateRemoteApplications(pass: number) {
   // //////////// SAVE RESULTS ///////////////////
   const argoAppSet = cacheArgoApplications(
     applicationCache,
-    (results.data?.searchResult?.[0]?.items || []) as IResource[]
+    (results.data?.searchResult?.[0]?.items ?? []) as IResource[]
   )
   cacheOCPApplications(applicationCache, (results.data?.searchResult?.[1]?.items || []) as IResource[], argoAppSet)
   if (querySystemApps) {
     cacheOCPApplications(
       applicationCache,
-      (results.data?.searchResult?.[2]?.items || []) as IResource[],
+      (results.data?.searchResult?.[2]?.items ?? []) as IResource[],
       argoAppSet,
       true
     )

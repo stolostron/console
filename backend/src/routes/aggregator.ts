@@ -6,12 +6,15 @@ import { paginate } from '../lib/pagination'
 import {
   startAggregatingApplications,
   stopAggregatingApplications,
+  polledApplicationAggregation,
   getApplications,
   filterApplications,
   addUIData,
 } from './aggregators/applications'
 import { requestAggregatedStatuses } from './aggregators/statuses'
 import { requestAggregatedUIData } from './aggregators/uidata'
+import { IResource } from '../resources/resource'
+import { IWatchOptions } from './events'
 
 export function startAggregating(): void {
   void startAggregatingApplications()
@@ -19,6 +22,10 @@ export function startAggregating(): void {
 
 export function stopAggregating(): void {
   stopAggregatingApplications()
+}
+
+export function polledAggregation(options: IWatchOptions, items: IResource[], shouldPostProcess: boolean): void {
+  polledApplicationAggregation(options, items, shouldPostProcess)
 }
 
 export async function aggregate(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {

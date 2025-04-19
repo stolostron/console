@@ -55,10 +55,19 @@ import {
   waitForNocks,
   waitForText,
 } from '../../lib/test-util'
-import { nockCreate, nockGet, nockIgnoreApiPaths, nockIgnoreRBAC, nockList, nockPatch } from '../../lib/nock-util'
+import {
+  nockAggegateRequest,
+  nockCreate,
+  nockGet,
+  nockIgnoreApiPaths,
+  nockIgnoreRBAC,
+  nockList,
+  nockPatch,
+} from '../../lib/nock-util'
 import userEvent from '@testing-library/user-event'
 import { Scope } from 'nock/types'
 import { mockGlobalClusterSet } from '../../lib/test-metadata'
+import { uidata } from './Application.sharedmocks'
 
 ///////////////////////////////// Mock Data /////////////////////////////////////////////////////
 
@@ -646,6 +655,7 @@ describe('Create Subscription Application page', () => {
       nockGet(mockSubscriptionPlacement),
       nockGet(mockChannelNamespace),
       nockGet(mockPlacement),
+      nockAggegateRequest('uidata', mockApplication0, uidata, 200, true),
     ]
     render(
       <RecoilRoot
