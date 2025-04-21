@@ -363,13 +363,15 @@ export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Re
                       }}
                       variant="plain"
                       isExpanded={isOpen}
-                    ><EllipsisVIcon /></MenuToggle>
+                    >
+                      <EllipsisVIcon />
+                    </MenuToggle>
                   )}
                   isOpen={isOpen}
                   isPlain={true}
                 >
                   <DropdownItem
-                    key="hide card"
+                    key="action"
                     onClick={() =>
                       setSummarySectionWidgetToggle({
                         clusterProvider: { visible: true, position: 0 },

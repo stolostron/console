@@ -127,7 +127,7 @@ export function CardDropdown(props: CardDropdownProps) {
       toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
         <MenuToggle
           ref={toggleRef}
-          aria-label="kebab dropdown toggle"
+          aria-label="Actions"
           variant="plain"
           onClick={(e) => {
             setOpen(!isOpen)
