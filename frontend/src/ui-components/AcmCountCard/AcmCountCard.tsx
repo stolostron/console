@@ -124,7 +124,6 @@ export function CardDropdown(props: CardDropdownProps) {
       onSelect={() => setOpen(!isOpen)}
       onOpenChange={(isOpen: boolean) => setOpen(isOpen)}
       shouldFocusToggleOnSelect
-      popperProps={{ position: 'right' }}
       toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
         <MenuToggle
           ref={toggleRef}
@@ -186,7 +185,6 @@ export const AcmCountCard = (props: AcmCountCardProps) => {
           {...(cardHeader.actions &&
             cardHeader.actions.length > 0 && {
               actions: {
-                className: classes.actions,
                 actions: (
                   <>
                     <CardDropdown dropdownItems={cardHeader.actions} />
