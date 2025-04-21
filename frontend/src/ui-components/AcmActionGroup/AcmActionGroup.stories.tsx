@@ -1,7 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { useState } from 'react'
-import { Card, CardBody, Dropdown, DropdownItem, DropdownList, MenuToggle, MenuToggleElement } from '@patternfly/react-core'
+import {
+  Card,
+  CardBody,
+  Dropdown,
+  DropdownItem,
+  DropdownList,
+  MenuToggle,
+  MenuToggleElement,
+} from '@patternfly/react-core'
 import { CaretDownIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { AcmActionGroup } from './AcmActionGroup'
 import { AcmDropdown } from '../AcmDropdown/AcmDropdown'
@@ -97,12 +105,12 @@ const CreateDropdown = () => {
       )}
     >
       <DropdownList>
-      <DropdownItem key="create" component="a" onClick={() => alert('create-cluster')} value="create-cluster">
-        Create cluster
-      </DropdownItem>
-      <DropdownItem key="import" component="a" onClick={() => alert('import-cluster')} value="import-cluster">
-        Import cluster
-      </DropdownItem>
+        <DropdownItem key="create" component="a" onClick={() => alert('create-cluster')} value="create-cluster">
+          Create cluster
+        </DropdownItem>
+        <DropdownItem key="import" component="a" onClick={() => alert('import-cluster')} value="import-cluster">
+          Import cluster
+        </DropdownItem>
       </DropdownList>
     </Dropdown>
   )

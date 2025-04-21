@@ -119,50 +119,50 @@ export default function PolicySetCard(props: {
                   isPlain={true}
                 >
                   <DropdownList>
-                  <DropdownItem
-                    key="view details"
-                    onClick={() => {
-                      const newSelectedCard = cardID === selectedCardID ? '' : cardID
-                      setSelectedCardID(newSelectedCard)
-                      onClick(cardID)
-                    }}
-                  >
-                    {t('View details')}
-                  </DropdownItem>
-                  <DropdownItem
-                    isAriaDisabled={!canEditPolicySet}
-                    tooltipProps={{ content: !canEditPolicySet ? t('rbac.unauthorized') : '' }}
-                    key="edit"
-                    onClick={() => {
-                      navigate(
-                        generatePath(NavigationPath.editPolicySet, {
-                          namespace: policySet.metadata.namespace,
-                          name: policySet.metadata.name,
-                        })
-                      )
-                    }}
-                  >
-                    {t('Edit')}
-                  </DropdownItem>
-                  <Divider component="li" key="separator" />
-                  <DropdownItem
-                    isAriaDisabled={!canDeletePolicySet}
-                    tooltipProps={{ content: !canDeletePolicySet ? t('rbac.unauthorized') : '' }}
-                    key="delete"
-                    onClick={() => {
-                      setIsKebabOpen(false)
-                      setModal(
-                        <DeletePolicySetModal
-                          item={policySet}
-                          onClose={() => setModal(undefined)}
-                          setDrawerContext={setDrawerContext}
-                          setSelectedCardID={setSelectedCardID}
-                        />
-                      )
-                    }}
-                  >
-                    {t('Delete')}
-                  </DropdownItem>
+                    <DropdownItem
+                      key="view details"
+                      onClick={() => {
+                        const newSelectedCard = cardID === selectedCardID ? '' : cardID
+                        setSelectedCardID(newSelectedCard)
+                        onClick(cardID)
+                      }}
+                    >
+                      {t('View details')}
+                    </DropdownItem>
+                    <DropdownItem
+                      isAriaDisabled={!canEditPolicySet}
+                      tooltipProps={{ content: !canEditPolicySet ? t('rbac.unauthorized') : '' }}
+                      key="edit"
+                      onClick={() => {
+                        navigate(
+                          generatePath(NavigationPath.editPolicySet, {
+                            namespace: policySet.metadata.namespace,
+                            name: policySet.metadata.name,
+                          })
+                        )
+                      }}
+                    >
+                      {t('Edit')}
+                    </DropdownItem>
+                    <Divider component="li" key="separator" />
+                    <DropdownItem
+                      isAriaDisabled={!canDeletePolicySet}
+                      tooltipProps={{ content: !canDeletePolicySet ? t('rbac.unauthorized') : '' }}
+                      key="delete"
+                      onClick={() => {
+                        setIsKebabOpen(false)
+                        setModal(
+                          <DeletePolicySetModal
+                            item={policySet}
+                            onClose={() => setModal(undefined)}
+                            setDrawerContext={setDrawerContext}
+                            setSelectedCardID={setSelectedCardID}
+                          />
+                        )
+                      }}
+                    >
+                      {t('Delete')}
+                    </DropdownItem>
                   </DropdownList>
                 </Dropdown>
               </>
