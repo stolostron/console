@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render } from '@testing-library/react'
+import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
 import { AcmCountCard } from './AcmCountCard'
@@ -112,11 +112,13 @@ describe('AcmCountCard', () => {
     expect(getByText('9.9k')).toBeInTheDocument()
   })
 
-  test('supports single menu action', () => {
+  test('supports single menu action', async () => {
     const { getAllByLabelText, getByText } = render(<SuggestedSearchCardWithActions />)
     expect(getAllByLabelText('Actions')).toHaveLength(1)
     userEvent.click(getAllByLabelText('Actions')[0])
-    expect(getByText('Share')).toBeVisible()
+    await waitFor(() => {
+      expect(getByText('Share')).toBeVisible()
+    })
     userEvent.click(getByText('Share'))
     expect(shareAction).toHaveBeenCalled()
   })
