@@ -541,7 +541,7 @@
   "Automatically runs remediation action that is defined in the source, if this feature is supported.": "Automatically runs remediation action that is defined in the source, if this feature is supported.",
   "Automatically sync when cluster state changes": "Automatically sync when cluster state changes",
   "Automation": "Automation",
-  "Automation is only supported for Red Hat OpenShift clusters that are not provisioned by a managed Kubernetes service. The automation template can be updated only for ready clusters that do not have an upgrade in progress.": "Automation is only supported for Red Hat OpenShift clusters that are not provisioned by a managed Kubernetes service. The automation template can be updated only for ready clusters that do not have an upgrade in progress.",
+  "Automation is only supported for Red Hat OpenShift clusters that are not provisioned by a managed Kubernetes service and managed Azure Red Hat OpenShift cluster. The automation template can be updated only for ready clusters that do not have an upgrade in progress.": "Automation is only supported for Red Hat OpenShift clusters that are not provisioned by a managed Kubernetes service and managed Azure Red Hat OpenShift cluster. The automation template can be updated only for ready clusters that do not have an upgrade in progress.",
   "Automation template": "Automation template",
   "Automation template for {{curatorName}}": "Automation template for {{curatorName}}",
   "Automation templates are configured": "Automation templates are configured",
