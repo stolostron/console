@@ -170,7 +170,7 @@ const AccessControlManagementTable = (props: {
                                     isDisabled={!canAddCredential}
                                     tooltip={!canAddCredential ? unauthorizedMessage : ''}
                                     component={Link}
-                                    {...getBackCancelLocationLinkProps(NavigationPath.addCredentials)}
+                                    {...getBackCancelLocationLinkProps(NavigationPath.addAccessControlManagement)}
                                 >
                                     {t('Add Access Control')}
                                 </AcmButton>
@@ -275,9 +275,8 @@ const AccessControlManagementTable = (props: {
                                     isAriaDisabled: true,
                                     click: (secret: Secret) => {
                                         navigate(
-                                            generatePath(NavigationPath.editCredentials, {
-                                                namespace: secret.metadata.namespace!,
-                                                name: secret.metadata.name!,
+                                            generatePath(NavigationPath.editAccessControlManagement, {
+                                                id: secret.metadata.namespace!,
                                             })
                                         )
                                     },
@@ -339,7 +338,7 @@ const AccessControlManagementTable = (props: {
                         id: 'add',
                         title: t('Add Access Control'),
                         click: () => {
-                            navigateToBackCancelLocation(navigate, NavigationPath.addCredentials)
+                            navigateToBackCancelLocation(navigate, NavigationPath.addAccessControlManagement)
                         },
                         variant: ButtonVariant.primary,
                         isDisabled: !canAddCredential,
