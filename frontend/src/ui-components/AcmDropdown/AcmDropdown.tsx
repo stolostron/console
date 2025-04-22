@@ -178,15 +178,38 @@ export function AcmDropdown(props: AcmDropdownProps) {
     setOpen(!isOpen)
   }, [isOpen, onToggle])
 
+  const findItemById = useCallback((items: AcmDropdownItems[], targetId: string): AcmDropdownItems | undefined => {
+    for (const item of items) {
+      if (item.id === targetId) return item
+      if (item.flyoutMenu?.length) {
+        const found = findItemById(item.flyoutMenu, targetId)
+        if (found) return found
+      }
+    }
+    return undefined
+  }, [])
+
   const handleSelect = useCallback(
     (_event?: React.MouseEvent, itemId?: string | number) => {
-      onSelect((itemId ?? '').toString())
+      // add this safety check
+      if (!menuRef.current || !document.body.contains(menuRef.current)) {
+        setOpen(false)
+        return
+      }
+      const selectedItem = findItemById(dropdownItems, String(itemId))
+
+      if (!itemId) return // prevents triggering if no itemId
+
+      // prevent triggering if it's a flyout parent
+      if (selectedItem?.flyoutMenu?.length) return
+
+      onSelect((itemId || '').toString())
       setOpen(false)
+
       const element = document.getElementById(id)
-      /* istanbul ignore else */
       if (element) element.focus()
     },
-    [id, onSelect]
+    [id, dropdownItems, findItemById, onSelect]
   )
 
   const handleToggleClick = useCallback(() => {
@@ -324,7 +347,18 @@ export function AcmDropdown(props: AcmDropdownProps) {
           enableFlip={true}
           minWidth="fit-content"
           placement={props.dropdownPosition ?? (isKebab ? 'bottom-end' : 'bottom-start')}
-          popper={<MenuItems ref={menuRef} menuItems={dropdownItems} onSelect={handleSelect} />}
+          popper={
+            <MenuItems
+              ref={menuRef}
+              menuItems={dropdownItems}
+              onBlur={(e) => {
+                if (!e.currentTarget.contains(e.relatedTarget)) {
+                  setOpen(false)
+                }
+              }}
+              onSelect={handleSelect}
+            />
+          }
         />
       </div>
     </TooltipWrapper>
