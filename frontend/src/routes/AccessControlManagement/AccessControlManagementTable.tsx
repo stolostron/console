@@ -1,22 +1,24 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { ButtonVariant } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
-import { Fragment, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import { generatePath, Link, useNavigate } from 'react-router-dom-v5-compat'
-import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
-import { RbacDropdown } from '../../../components/Rbac'
-import { Trans, useTranslation } from '../../../lib/acm-i18next'
-import AcmTimestamp from '../../../lib/AcmTimestamp'
-import { DOC_LINKS, ViewDocumentationLink } from '../../../lib/doc-util'
-import { rbacCreate, rbacDelete, rbacPatch, useIsAnyNamespaceAuthorized } from '../../../lib/rbac-util'
-import { getBackCancelLocationLinkProps, navigateToBackCancelLocation, NavigationPath } from '../../../NavigationPath'
+import { BulkActionModal, BulkActionModalProps } from '../../components/BulkActionModal'
+import { RbacDropdown } from '../../components/Rbac'
+import { Trans, useTranslation } from '../../lib/acm-i18next'
+import AcmTimestamp from '../../lib/AcmTimestamp'
+import { DOC_LINKS, ViewDocumentationLink } from '../../lib/doc-util'
+import { rbacCreate, rbacDelete, rbacPatch, useIsAnyNamespaceAuthorized } from '../../lib/rbac-util'
+import { getBackCancelLocationLinkProps, navigateToBackCancelLocation, NavigationPath } from '../../NavigationPath'
 import {
     DiscoveryConfig,
+    IResource,
+    OCPAppResource,
     ProviderConnection,
     Secret,
     SecretDefinition
-} from '../../../resources'
-import { deleteResource, getISOStringTimestamp } from '../../../resources/utils'
+} from '../../resources'
+import { deleteResource, getISOStringTimestamp } from '../../resources/utils'
 import {
     AcmButton,
     AcmEmptyState,
@@ -25,7 +27,8 @@ import {
     compareStrings,
     Provider,
     ProviderLongTextMap
-} from '../../../ui-components'
+} from '../../ui-components'
+import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 
 const getProviderName = (labels: Record<string, string> | undefined) => {
     const label = labels?.['cluster.open-cluster-management.io/type']
@@ -91,6 +94,61 @@ const AccessControlManagementTable = (props: {
         }
     }
 
+    const managedClusters = useAllClusters(true)
+    const filters = useMemo(
+        () => [
+            {
+                id: 'cluster',
+                label: t('Cluster'),
+                options: Object.values(managedClusters)
+                    .map((cluster) => ({
+                        label: cluster.name,
+                        value: cluster.name,
+                    }))
+                    .sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
+                // TODO: to properly filter
+                tableFilterFn: (selectedValues: string[], item: IResource | OCPAppResource) => true,
+            },
+            {
+                id: 'user',
+                label: t('access.add.userGroup'),
+                // TODO: to get users 
+                options: [{
+                    label: "user-x",
+                    value: "user-x",
+                }, {
+                    label: "user-y",
+                    value: "user-y",
+                }, {
+                    label: "user-z",
+                    value: "user-z",
+                }]
+                    .sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
+                // TODO: to properly filter
+                tableFilterFn: (selectedValues: string[], item: IResource | OCPAppResource) => true,
+            },
+            {
+                id: 'role',
+                label: t('Role'),
+                // TODO: to get roles 
+                options: [{
+                    label: "role-x",
+                    value: "role-x",
+                }, {
+                    label: "role-y",
+                    value: "role-y",
+                }, {
+                    label: "role-z",
+                    value: "role-z",
+                }]
+                    .sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
+                // TODO: to properly filter
+                tableFilterFn: (selectedValues: string[], item: IResource | OCPAppResource) => true,
+            },
+        ],
+        [t, managedClusters]
+    )
+
     return (
         <Fragment>
             <BulkActionModal<Secret> {...modalProps} />
@@ -122,6 +180,7 @@ const AccessControlManagementTable = (props: {
                     />
                 }
                 items={props.secrets}
+                filters={filters}
                 columns={[
                     {
                         header: t('Name'),

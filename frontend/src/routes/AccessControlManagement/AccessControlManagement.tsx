@@ -5,7 +5,7 @@ import { AccessControlManagementPage } from './AccessControlManagementPage'
 
 const accessControlManagementChildPath = createRoutePathFunction(NavigationPath.accessControlManagement)
 
-export default function Credentials() {
+export default function AccessControlManagement() {
   return (
     <Routes>
       <Route path={accessControlManagementChildPath(NavigationPath.addAccessControlManagement)} element={<AccessControlManagementPage />} />

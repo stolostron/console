@@ -11,7 +11,7 @@ import {
   AcmPageContent,
   AcmPageHeader
 } from '../../ui-components'
-import { AccessControlManagementTable } from './list/AccessControlManagementTable'
+import { AccessControlManagementTable } from './AccessControlManagementTable'
 
 const AccessControlManagementPage = () => {
   const { secretsState, discoveryConfigState } = useSharedAtoms()
