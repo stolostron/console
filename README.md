@@ -191,3 +191,5 @@ And if the logs are inspected right after running `npm start` command an error i
 The problems is about the certs not being generated properly, `./backend/certs` folder is most probably empty.
 
 The solution is about to completely remove `./backend/certs` folder and then to execute `npm run ci:backend` at the root level of the project.
+
+> Be sure openssl library is installed before running `npm run ci:backend` command.
