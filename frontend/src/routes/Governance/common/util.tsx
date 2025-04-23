@@ -27,7 +27,7 @@ import { IAlertContext } from '../../../ui-components'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { PolicyTableItem } from '../policies/Policies'
 import { LostChangesContext } from '../../../components/LostChanges'
-import { DiscoverdPolicyTableItem, DiscoveredPolicyItem } from '../discovered/useFetchPolicies'
+import { DiscoveredPolicyTableItem, DiscoveredPolicyItem } from '../discovered/useFetchPolicies'
 import GatekeeperSvg from '../../../logos/gatekeeper.svg'
 import OcmSvg from '../../../logos/ocm.svg'
 import Kubernetes from '../../../logos/kubernetes.svg'
@@ -764,7 +764,7 @@ export function getEngineWithSvg(apiGroup: string): JSX.Element {
   )
 }
 
-export function parseDiscoveredPolicyLabels(data: DiscoverdPolicyTableItem[]) {
+export function parseDiscoveredPolicyLabels(data: DiscoveredPolicyTableItem[]) {
   const allLabels = new Set<string>()
   const labelMap: Record<string, { pairs: Record<string, string>; labels: string[] }> = {}
   data?.forEach((item) => {

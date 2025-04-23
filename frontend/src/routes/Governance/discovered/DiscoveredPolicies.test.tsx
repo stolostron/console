@@ -337,7 +337,7 @@ describe('useFetchPolicies custom hook', () => {
   })
 
   test('Should get source filter list properly', () => {
-    const data: useFetchPolicies.DiscoverdPolicyTableItem[] = [
+    const data: useFetchPolicies.DiscoveredPolicyTableItem[] = [
       {
         id: 'check-policy-reportsConfigurationPolicy',
         apigroup: 'policy.open-cluster-management.io',

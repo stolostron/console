@@ -51,7 +51,7 @@ export interface DiscoveredPolicyItem {
   validationFailureAction?: string
 }
 
-export interface DiscoverdPolicyTableItem {
+export interface DiscoveredPolicyTableItem {
   id: string
   name: string
   severity: string
@@ -65,7 +65,7 @@ export interface DiscoverdPolicyTableItem {
 // If id (`policyName` + `policyKind` + `apiGroup`) exists, it returns a filtered `DiscoveredPolicyTable` based on `clusterName`.
 export function useFetchPolicies(policyName?: string, policyKind?: string, apiGroup?: string) {
   const [isFetching, setIsFetching] = useState(true)
-  const [data, setData] = useState<DiscoverdPolicyTableItem[]>()
+  const [data, setData] = useState<DiscoveredPolicyTableItem[]>()
   const [labelData, setLabelData] = useState<{
     labelOptions: { label: string; value: string }[]
     labelMap: Record<string, { pairs: Record<string, string>; labels: string[] }>
@@ -211,7 +211,7 @@ export function useFetchPolicies(policyName?: string, policyKind?: string, apiGr
       const worker = new Worker(blobURL)
 
       worker.onmessage = (e: MessageEvent<any>) => {
-        const parsedData = parseDiscoveredPolicies(e.data) as DiscoverdPolicyTableItem[]
+        const parsedData = parseDiscoveredPolicies(e.data) as DiscoveredPolicyTableItem[]
         setData(parsedData)
         setLabelData(parseDiscoveredPolicyLabels(parsedData))
         setIsFetching(false)
