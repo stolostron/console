@@ -27,8 +27,8 @@ function clusterSupportsAutomationTemplateChange(cluster: Cluster) {
     !!cluster.distribution?.ocp?.version && // is OpenShift
     cluster.labels?.cloud !== 'auto-detect' && // cloud label is set
     cluster.status === ClusterStatus.ready && // cluster is ready
-    (!cluster.distribution?.isManagedOpenShift ||
-      (cluster.distribution?.isManagedOpenShift && cluster.provider === Provider.azure)) && // is not managed OpenShift or ARO
+    (!cluster.distribution?.isManagedOpenShift || // is not managed OpenShift
+      (cluster.distribution?.isManagedOpenShift && !cluster.isHostedCluster && cluster.provider === Provider.azure)) && // is ARO Classic
     !cluster.distribution?.upgradeInfo?.isUpgrading && // is not currently upgrading
     cluster.provider !== Provider.ibm && // is not ROKS
     !cluster.isHostedCluster // is not HyperShift
