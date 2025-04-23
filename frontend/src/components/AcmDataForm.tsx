@@ -124,7 +124,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
 
   const { editorTitle, schema, secrets, immutables, formData, globalWizardAlert, hideYaml, isModalWizard } = props
   const [showFormErrors, setShowFormErrors] = useState(false)
-  const showErrors = props.mode === 'wizard' ? showFormErrors : formData.showErrors ?? false
+  const showErrors = showFormErrors
 
   const mode = props.mode ?? 'form'
   const isHorizontal = props.isHorizontal ?? false
