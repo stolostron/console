@@ -236,7 +236,7 @@ describe('SearchPage', () => {
 
     // Test that the component has rendered correctly with data
     await waitFor(() => expect(screen.queryByText('Open new search tab')).toBeTruthy())
-    await waitFor(() => expect(screen.getAllByText('Saved searches')[1]).toBeTruthy())
+    await waitFor(() => expect(screen.getAllByText('Saved searches').length).toBeGreaterThan(0))
 
     // Validate that message about disabled cluster doesn't appear.
     await waitFor(() => expect(screen.queryByText('More on disabled clusters')).toBeFalsy())

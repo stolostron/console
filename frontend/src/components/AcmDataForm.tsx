@@ -123,7 +123,9 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
   const { t } = useTranslation()
 
   const { editorTitle, schema, secrets, immutables, formData, globalWizardAlert, hideYaml, isModalWizard } = props
-  const [showFormErrors, setShowFormErrors] = useState(false)
+  const [internalShowFormErrors, setShowFormErrors] = useState(false)
+  // showFormErrors is true once validation starts or is forced for async validation
+  const showFormErrors = formData.showErrors || internalShowFormErrors
 
   const mode = props.mode ?? 'form'
   const isHorizontal = props.isHorizontal ?? false
