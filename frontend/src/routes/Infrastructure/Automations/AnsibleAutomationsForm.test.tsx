@@ -395,38 +395,32 @@ describe('add automation template page', () => {
     waitForNotText('The Ansible Automation Platform Operator is required to use automation templates.')
   })
 
-  it('should show validation error when clicking Next with an invalid credential', async () => {
+  it('should show validation error and disable Next when selecting an invalid credential', async () => {
     render(<AddAnsibleTemplateTest />)
+
     const ansibleError = {
       message: 'Internal Server Error',
       code: ResourceErrorCode.InternalServerError,
       reason: 'self-signed certificate',
     }
+
     const ansibleJobNock = nockAnsibleTowerError(mockAnsibleCredential, ansibleError)
     const ansibleInventoryNock = nockAnsibleTowerError(mockAnsibleCredentialInventory, ansibleError)
+
     await typeByPlaceholderText('Enter the name for the template', mockClusterCurator.metadata.name!)
 
     // select the Ansible credential
     await clickByPlaceholderText('Select an existing Ansible credential')
     await clickByText(mockSecret.metadata.name!)
 
-    // no error message should be visible yet
-    expect(
-      screen.queryByText(
-        'The credential returned an error response from Ansible Tower. Please review the host and token.'
-      )
-    ).not.toBeInTheDocument()
-
-    // click Next to trigger validation
-    await clickByText('Next')
-
-    // now the error message should appear
+    // wait for the async error to be displayed
     await waitForText('The credential returned an error response from Ansible Tower. Please review the host and token.')
 
-    // verify we're still on the first page by checking for presence of credential selection
-    expect(screen.getByPlaceholderText('Select an existing Ansible credential')).toBeInTheDocument()
+    // assert that the "Next" button is disabled before it's clicked
+    const nextButton = screen.getByRole('button', { name: /Next/i })
+    expect(nextButton).toBeDisabled()
 
-    // wait for the nocks to complete
+    // ensure the mocks completed successfully
     await waitForNocks([ansibleJobNock, ansibleInventoryNock])
   })
 })
