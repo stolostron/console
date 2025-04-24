@@ -301,7 +301,7 @@ class ControlPanelWizard extends React.Component {
                       goToPrevStep()
                     }
                   }}
-                  isAriaDisabled={activeStep.index === 0 || !backButtonOverride}
+                  isAriaDisabled={activeStep.index === 0 && !backButtonOverride}
                   isDisabled={activeStep.index - 1 === 0}
                 >
                   {i18n('Back')}
