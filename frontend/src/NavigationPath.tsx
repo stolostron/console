@@ -156,6 +156,7 @@ export enum NavigationPath {
   editPolicyAutomation = '/multicloud/governance/policyautomation/edit/:namespace/:name',
   policyDetails = '/multicloud/governance/policies/details/:namespace/:name',
   discoveredByCluster = '/multicloud/governance/discovered/:apiGroup/:apiVersion/:kind/:policyName',
+  discoveredResources = '/multicloud/governance/discovered/:apiGroup/:apiVersion/:kind/:policyName/resources',
   policyDetailsResults = '/multicloud/governance/policies/details/:namespace/:name/results',
   policyDetailsHistory = '/multicloud/governance/policies/details/:namespace/:name/status/:clusterName/templates/:templateName/history',
   policyTemplateDetails = '/multicloud/governance/policies/details/:namespace/:name/template/:clusterName/:apiGroup?/:apiVersion/:kind/:templateName',

@@ -24,7 +24,7 @@ import {
   policyViolationSummary,
   responseActionCell,
   severityCell,
-} from './ByCluster/common'
+} from './details/common'
 import { ClusterPolicyViolationIcons2 } from '../components/ClusterPolicyViolations'
 import { exportObjectString, filterLabelFn } from '../../../resources/utils'
 import { isEqual } from 'lodash'

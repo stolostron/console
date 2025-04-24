@@ -1,17 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import * as useFetchPolicies from '../useFetchPolicies'
 import { render, screen, within } from '@testing-library/react'
-import { generatePath, MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
+import { generatePath, MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'
 import { NavigationPath } from '../../../../NavigationPath'
-import DiscoveredByClusterPage from './DiscoveredByClusterPage'
+import { DiscoveredDetailsContext } from './DiscoveredPolicyDetailsPage'
 import { waitForNotText, waitForText } from '../../../../lib/test-util'
 import { RecoilRoot } from 'recoil'
 import { channelsState, helmReleaseState, subscriptionsState } from '../../../../atoms'
 import { ApolloError } from '@apollo/client'
+import DiscoveredByCluster from './DiscoveredByCluster'
 
-describe('DiscoveredByClusterPage', () => {
+describe('DiscoveredByCluster', () => {
   test('Should render DiscoveredByCluster for ConfigurationPolicy', async () => {
-    jest.spyOn(useFetchPolicies, 'useFetchPolicies').mockReturnValue({
+    const context: DiscoveredDetailsContext = {
       isFetching: false,
       data: [
         {
@@ -67,8 +67,9 @@ describe('DiscoveredByClusterPage', () => {
         },
       ],
       err: undefined,
-      labelData: undefined,
-    })
+      policyKind: 'ConfigurationPolicy',
+      apiGroup: 'policy.open-cluster-management.io',
+    }
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -88,17 +89,13 @@ describe('DiscoveredByClusterPage', () => {
           ]}
         >
           <Routes>
-            <Route path={NavigationPath.discoveredByCluster} element={<DiscoveredByClusterPage />} />
+            <Route element={<Outlet context={context} />}>
+              <Route path={NavigationPath.discoveredByCluster} element={<DiscoveredByCluster />} />
+            </Route>
           </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )
-
-    // Header
-    await waitForText('Discovered policies')
-
-    await waitForText('check-policy-reports', true)
-    await waitForText('Open Cluster Management')
 
     await waitForText('Response action')
     await waitForText('enforce')
@@ -116,7 +113,7 @@ describe('DiscoveredByClusterPage', () => {
     await waitForText('ConfigurationPolicy cluster violations', true)
   })
   test('Should render DiscoveredByCluster for CertificatePolicy', async () => {
-    jest.spyOn(useFetchPolicies, 'useFetchPolicies').mockReturnValue({
+    const context: DiscoveredDetailsContext = {
       isFetching: false,
       data: [
         {
@@ -152,8 +149,9 @@ describe('DiscoveredByClusterPage', () => {
         },
       ],
       err: undefined,
-      labelData: undefined,
-    })
+      policyKind: 'CertificatePolicy',
+      apiGroup: 'policy.open-cluster-management.io',
+    }
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -173,17 +171,13 @@ describe('DiscoveredByClusterPage', () => {
           ]}
         >
           <Routes>
-            <Route path={NavigationPath.discoveredByCluster} element={<DiscoveredByClusterPage />} />
+            <Route element={<Outlet context={context} />}>
+              <Route path={NavigationPath.discoveredByCluster} element={<DiscoveredByCluster />} />
+            </Route>
           </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )
-
-    // Header
-    await waitForText('Discovered policies')
-
-    await waitForText('check-policy-reports', true)
-    await waitForText('Open Cluster Management')
 
     await waitForText('Response action')
     await waitForText('enforce')
@@ -200,7 +194,7 @@ describe('DiscoveredByClusterPage', () => {
     await waitForText('CertificatePolicy cluster violations', true)
   })
   test('Should render DiscoveredByCluster for OperatorPolicy', async () => {
-    jest.spyOn(useFetchPolicies, 'useFetchPolicies').mockReturnValue({
+    const context: DiscoveredDetailsContext = {
       isFetching: false,
       data: [
         {
@@ -258,8 +252,9 @@ describe('DiscoveredByClusterPage', () => {
         },
       ],
       err: undefined,
-      labelData: undefined,
-    })
+      policyKind: 'OperatorPolicy',
+      apiGroup: 'policy.open-cluster-management.io',
+    }
     const { container } = render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -279,17 +274,13 @@ describe('DiscoveredByClusterPage', () => {
           ]}
         >
           <Routes>
-            <Route path={NavigationPath.discoveredByCluster} element={<DiscoveredByClusterPage />} />
+            <Route element={<Outlet context={context} />}>
+              <Route path={NavigationPath.discoveredByCluster} element={<DiscoveredByCluster />} />
+            </Route>
           </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )
-
-    // Header
-    await waitForText('Discovered policies')
-
-    await waitForText('check-policy-reports', true)
-    await waitForText('Open Cluster Management')
 
     await waitForText('Cluster')
     await waitForText('managed2')
@@ -390,7 +381,7 @@ describe('DiscoveredByClusterPage', () => {
   })
 
   test('Should render DiscoveredByCluster for a Gatekeeper constraint', async () => {
-    jest.spyOn(useFetchPolicies, 'useFetchPolicies').mockReturnValue({
+    const context: DiscoveredDetailsContext = {
       isFetching: false,
       data: [
         {
@@ -442,8 +433,9 @@ describe('DiscoveredByClusterPage', () => {
         },
       ],
       err: undefined,
-      labelData: undefined,
-    })
+      policyKind: 'K8sRequiredLabels',
+      apiGroup: 'constraints.gatekeeper.sh',
+    }
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -463,17 +455,13 @@ describe('DiscoveredByClusterPage', () => {
           ]}
         >
           <Routes>
-            <Route path={NavigationPath.discoveredByCluster} element={<DiscoveredByClusterPage />} />
+            <Route element={<Outlet context={context} />}>
+              <Route path={NavigationPath.discoveredByCluster} element={<DiscoveredByCluster />} />
+            </Route>
           </Routes>
         </MemoryRouter>
       </RecoilRoot>
     )
-
-    // Header
-    await waitForText('Discovered policies')
-
-    await waitForText('ns-must-have-gk', true)
-    await waitForText('Gatekeeper', true)
 
     await waitForText('Response action')
     await waitForText('deny')
@@ -495,12 +483,13 @@ describe('DiscoveredByClusterPage', () => {
   })
 
   test('Should render empty policy warning page for OperatorPolicy', async () => {
-    jest.spyOn(useFetchPolicies, 'useFetchPolicies').mockReturnValue({
+    const context: DiscoveredDetailsContext = {
       isFetching: false,
       data: undefined,
       err: undefined,
-      labelData: undefined,
-    })
+      policyKind: 'OperatorPolicy',
+      apiGroup: 'policy.open-cluster-management.io',
+    }
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -520,7 +509,9 @@ describe('DiscoveredByClusterPage', () => {
           ]}
         >
           <Routes>
-            <Route path={NavigationPath.discoveredByCluster} element={<DiscoveredByClusterPage />} />
+            <Route element={<Outlet context={context} />}>
+              <Route path={NavigationPath.discoveredByCluster} element={<DiscoveredByCluster />} />
+            </Route>
           </Routes>
         </MemoryRouter>
       </RecoilRoot>
@@ -532,12 +523,13 @@ describe('DiscoveredByClusterPage', () => {
   })
 
   test('Should render empty policy warning page for ConfigurationPolicy', async () => {
-    jest.spyOn(useFetchPolicies, 'useFetchPolicies').mockReturnValue({
+    const context: DiscoveredDetailsContext = {
       isFetching: false,
       data: undefined,
       err: undefined,
-      labelData: undefined,
-    })
+      policyKind: 'ConfigurationPolicy',
+      apiGroup: 'policy.open-cluster-management.io',
+    }
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -557,7 +549,9 @@ describe('DiscoveredByClusterPage', () => {
           ]}
         >
           <Routes>
-            <Route path={NavigationPath.discoveredByCluster} element={<DiscoveredByClusterPage />} />
+            <Route element={<Outlet context={context} />}>
+              <Route path={NavigationPath.discoveredByCluster} element={<DiscoveredByCluster />} />
+            </Route>
           </Routes>
         </MemoryRouter>
       </RecoilRoot>
@@ -569,12 +563,13 @@ describe('DiscoveredByClusterPage', () => {
   })
 
   test('Should render empty policy warning page for CertificatePolicy', async () => {
-    jest.spyOn(useFetchPolicies, 'useFetchPolicies').mockReturnValue({
+    const context: DiscoveredDetailsContext = {
       isFetching: false,
       data: undefined,
       err: undefined,
-      labelData: undefined,
-    })
+      policyKind: 'CertificatePolicy',
+      apiGroup: 'policy.open-cluster-management.io',
+    }
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -594,7 +589,9 @@ describe('DiscoveredByClusterPage', () => {
           ]}
         >
           <Routes>
-            <Route path={NavigationPath.discoveredByCluster} element={<DiscoveredByClusterPage />} />
+            <Route element={<Outlet context={context} />}>
+              <Route path={NavigationPath.discoveredByCluster} element={<DiscoveredByCluster />} />
+            </Route>
           </Routes>
         </MemoryRouter>
       </RecoilRoot>
@@ -605,50 +602,14 @@ describe('DiscoveredByClusterPage', () => {
     await waitForText('There are no search results for certificate policies.')
   })
 
-  test('Should render error page', async () => {
-    jest.spyOn(useFetchPolicies, 'useFetchPolicies').mockReturnValue({
-      isFetching: false,
-      data: undefined,
-      err: { message: 'Error getting fetching data' } as ApolloError,
-      labelData: undefined,
-    })
-    render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(channelsState, [])
-          snapshot.set(helmReleaseState, [])
-          snapshot.set(subscriptionsState, [])
-        }}
-      >
-        <MemoryRouter
-          initialEntries={[
-            generatePath(NavigationPath.discoveredByCluster, {
-              kind: 'CertificatePolicy',
-              policyName: 'check-policy-reports',
-              apiGroup: 'policy.open-cluster-management.io',
-              apiVersion: 'v1',
-            }),
-          ]}
-        >
-          <Routes>
-            <Route path={NavigationPath.discoveredByCluster} element={<DiscoveredByClusterPage />} />
-          </Routes>
-        </MemoryRouter>
-      </RecoilRoot>
-    )
-
-    await waitForText('Error getting fetching data')
-    const withViolations = screen.queryByText('with violations')
-    expect(withViolations).not.toBeInTheDocument()
-  })
-
   test('Should render loading page', async () => {
-    jest.spyOn(useFetchPolicies, 'useFetchPolicies').mockReturnValue({
+    const context: DiscoveredDetailsContext = {
       isFetching: true,
       data: undefined,
       err: { message: 'Error getting fetching data' } as ApolloError,
-      labelData: undefined,
-    })
+      policyKind: 'CertificatePolicy',
+      apiGroup: 'policy.open-cluster-management.io',
+    }
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -668,7 +629,9 @@ describe('DiscoveredByClusterPage', () => {
           ]}
         >
           <Routes>
-            <Route path={NavigationPath.discoveredByCluster} element={<DiscoveredByClusterPage />} />
+            <Route element={<Outlet context={context} />}>
+              <Route path={NavigationPath.discoveredByCluster} element={<DiscoveredByCluster />} />
+            </Route>
           </Routes>
         </MemoryRouter>
       </RecoilRoot>
@@ -680,7 +643,7 @@ describe('DiscoveredByClusterPage', () => {
   })
 
   test('Should render DiscoveredByCluster for Kyverno Policy in multiple namespaces', async () => {
-    jest.spyOn(useFetchPolicies, 'useFetchPolicies').mockReturnValue({
+    const context: DiscoveredDetailsContext = {
       isFetching: false,
       data: [
         {
@@ -744,8 +707,9 @@ describe('DiscoveredByClusterPage', () => {
         },
       ],
       err: undefined,
-      labelData: undefined,
-    })
+      policyKind: 'Policy',
+      apiGroup: 'kyverno.io',
+    }
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -765,7 +729,9 @@ describe('DiscoveredByClusterPage', () => {
           ]}
         >
           <Routes>
-            <Route path={NavigationPath.discoveredByCluster} element={<DiscoveredByClusterPage />} />
+            <Route element={<Outlet context={context} />}>
+              <Route path={NavigationPath.discoveredByCluster} element={<DiscoveredByCluster />} />
+            </Route>
           </Routes>
         </MemoryRouter>
       </RecoilRoot>

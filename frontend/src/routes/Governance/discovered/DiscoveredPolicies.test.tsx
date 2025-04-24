@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import * as useFetchPolicies from './useFetchPolicies'
 import DiscoveredPolicies from './DiscoveredPolicies'
-import { getSourceFilterOptions } from './ByCluster/common'
+import { getSourceFilterOptions } from './details/common'
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import { waitForText, waitForNotText, getCSVExportSpies, getCSVDownloadLink } from '../../../lib/test-util'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
