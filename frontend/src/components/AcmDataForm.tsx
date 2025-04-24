@@ -123,9 +123,9 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
   const { t } = useTranslation()
 
   const { editorTitle, schema, secrets, immutables, formData, globalWizardAlert, hideYaml, isModalWizard } = props
-  const [showFormErrors, setShowFormErrors] = useState(false)
-  const showFieldErrors = showFormErrors || (formData.showErrors ?? false)
-  const showGlobalErrors = showFormErrors
+  const [internalShowFormErrors, setShowFormErrors] = useState(false)
+  // showFormErrors is true once validation starts or is forced for async validation
+  const showFormErrors = formData.showErrors || internalShowFormErrors
 
   const mode = props.mode ?? 'form'
   const isHorizontal = props.isHorizontal ?? false
@@ -215,7 +215,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                 <AcmDataForm
                   {...props}
                   mode={mode}
-                  showFormErrors={mode === 'wizard' ? showFormErrors : showFieldErrors}
+                  showFormErrors={showFormErrors}
                   setShowFormErrors={setShowFormErrors}
                   isHorizontal={isHorizontal}
                   globalWizardAlert={globalWizardAlert}
@@ -227,7 +227,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                 <AcmDataForm
                   {...props}
                   mode={mode}
-                  showFormErrors={showFieldErrors}
+                  showFormErrors={showFormErrors}
                   setShowFormErrors={setShowFormErrors}
                   isHorizontal={isHorizontal}
                 />
@@ -278,7 +278,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                   )
                 }
               />
-              {showGlobalErrors && mode === 'form' && formHasErrors(t, formData) && (
+              {showFormErrors && mode === 'form' && formHasErrors(t, formData) && (
                 <PageSection variant="light" style={{ paddingTop: 0 }}>
                   <AlertGroup>
                     {formHasRequiredErrors(formData) ? (
