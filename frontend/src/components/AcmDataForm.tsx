@@ -124,7 +124,8 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
 
   const { editorTitle, schema, secrets, immutables, formData, globalWizardAlert, hideYaml, isModalWizard } = props
   const [showFormErrors, setShowFormErrors] = useState(false)
-  const showErrors = showFormErrors
+  const showFieldErrors = showFormErrors || (formData.showErrors ?? false)
+  const showGlobalErrors = showFormErrors
 
   const mode = props.mode ?? 'form'
   const isHorizontal = props.isHorizontal ?? false
@@ -214,7 +215,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                 <AcmDataForm
                   {...props}
                   mode={mode}
-                  showFormErrors={showErrors}
+                  showFormErrors={mode === 'wizard' ? showFormErrors : showFieldErrors}
                   setShowFormErrors={setShowFormErrors}
                   isHorizontal={isHorizontal}
                   globalWizardAlert={globalWizardAlert}
@@ -226,7 +227,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                 <AcmDataForm
                   {...props}
                   mode={mode}
-                  showFormErrors={showErrors}
+                  showFormErrors={showFieldErrors}
                   setShowFormErrors={setShowFormErrors}
                   isHorizontal={isHorizontal}
                 />
@@ -277,7 +278,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                   )
                 }
               />
-              {showErrors && mode === 'form' && formHasErrors(t, formData) && (
+              {showGlobalErrors && mode === 'form' && formHasErrors(t, formData) && (
                 <PageSection variant="light" style={{ paddingTop: 0 }}>
                   <AlertGroup>
                     {formHasRequiredErrors(formData) ? (
