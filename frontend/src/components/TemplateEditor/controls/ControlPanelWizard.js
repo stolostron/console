@@ -261,6 +261,7 @@ class ControlPanelWizard extends React.Component {
     const isDisabled = creationStatus === 'DONE' || isWorking
 
     const CustomFooter = (activeStep, goToNextStep, goToPrevStep, close) => {
+      const activeStepIndex = steps.findIndex((step) => step.id === activeStep.id)
       return (
         <WizardFooterWrapper>
           <ActionList>
@@ -272,8 +273,7 @@ class ControlPanelWizard extends React.Component {
                   variant="primary"
                   spinnerAriaValueText={isWorking ? i18n('Processing') : undefined}
                   onClick={() => {
-                    const activeStepIndex = steps.findIndex((step) => step.id === activeStep.id)
-                    onMove(activeStep, activeStepIndex > 0 ? steps[activeStepIndex - 1] : null)
+                    onMove(activeStep, activeStepIndex + 1 < steps.length ? steps[activeStepIndex + 1] : null)
                     if (!isWorking) {
                       validateNextStep(activeStep, goToNextStep)
                     }
@@ -293,16 +293,14 @@ class ControlPanelWizard extends React.Component {
                 <Button
                   variant="secondary"
                   onClick={() => {
-                    const activeStepIndex = steps.findIndex((step) => step.id === activeStep.id)
                     onMove(activeStep, activeStepIndex > 0 ? steps[activeStepIndex - 1] : null)
-                    if (activeStep.index === 0 && backButtonOverride) {
+                    if (activeStepIndex === 0 && backButtonOverride) {
                       backButtonOverride()
                     } else {
                       goToPrevStep()
                     }
                   }}
-                  isAriaDisabled={activeStep.index === 0 && !backButtonOverride}
-                  isDisabled={activeStep.index - 1 === 0}
+                  isAriaDisabled={activeStepIndex === 0 && !backButtonOverride}
                 >
                   {i18n('Back')}
                 </Button>
