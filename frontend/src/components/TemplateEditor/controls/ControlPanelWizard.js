@@ -273,7 +273,7 @@ class ControlPanelWizard extends React.Component {
                   spinnerAriaValueText={isWorking ? i18n('Processing') : undefined}
                   onClick={() => {
                     const activeStepIndex = steps.findIndex((step) => step.id === activeStep.id)
-                    onMove(activeStep, activeStep.id > 0 ? steps[activeStepIndex - 1] : null)
+                    onMove(activeStep, activeStepIndex > 0 ? steps[activeStepIndex - 1] : null)
                     if (!isWorking) {
                       validateNextStep(activeStep, goToNextStep)
                     }
@@ -294,14 +294,15 @@ class ControlPanelWizard extends React.Component {
                   variant="secondary"
                   onClick={() => {
                     const activeStepIndex = steps.findIndex((step) => step.id === activeStep.id)
-                    onMove(activeStep, activeStep.id > 0 ? steps[activeStepIndex - 1] : null)
+                    onMove(activeStep, activeStepIndex > 0 ? steps[activeStepIndex - 1] : null)
                     if (activeStep.index === 0 && backButtonOverride) {
                       backButtonOverride()
                     } else {
                       goToPrevStep()
                     }
                   }}
-                  isAriaDisabled={activeStep.index === 0 && !backButtonOverride}
+                  isAriaDisabled={activeStep.index === 0 || !backButtonOverride}
+                  isDisabled={activeStep.index - 1 === 0}
                 >
                   {i18n('Back')}
                 </Button>
