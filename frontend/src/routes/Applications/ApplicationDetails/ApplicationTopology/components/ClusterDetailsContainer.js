@@ -72,7 +72,7 @@ class ClusterDetailsContainer extends Component {
     processResourceActionLink(resource)
   }
 
-  handleSelection = (_event, selection) => {
+  handleSelection = (selection) => {
     const {
       clusterDetailsContainerControl: { handleClusterDetailsContainerUpdate },
       clusterList,

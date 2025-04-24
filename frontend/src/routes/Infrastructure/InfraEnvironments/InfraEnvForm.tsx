@@ -74,7 +74,6 @@ const InfraEnvForm: React.FC<InfraEnvFormProps> = ({ control, handleChange }) =>
   const { t } = useTranslation()
 
   const [isCredentialsModalOpen, setCredentialsModalOpen] = useState(false)
-  const [isCredentialsOpen, setCredentialsOpen] = useState(false)
   const [credentialsUID, setCredentialsUID] = useState<string>()
   const { providerConnectionsValue } = useSharedSelectors()
   const allProviderConnections = useRecoilValue(providerConnectionsValue)
@@ -152,12 +151,10 @@ const InfraEnvForm: React.FC<InfraEnvFormProps> = ({ control, handleChange }) =>
                   variant={SelectVariant.typeahead}
                   placeholderText={t('creation.ocp.cloud.select.connection')}
                   aria-label="Select credentials"
-                  onChange={(v) => {
+                  onSelect={(v) => {
                     setCredentialsUID(v as string)
-                    setCredentialsOpen(false)
                   }}
                   selections={credentialsUID}
-                  isOpen={isCredentialsOpen}
                   footer={
                     <CreateCredentialModal handleModalToggle={() => setCredentialsModalOpen(!isCredentialsModalOpen)} />
                   }

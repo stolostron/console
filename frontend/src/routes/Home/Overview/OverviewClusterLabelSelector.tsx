@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Button, Chip, ChipGroup, PageSection } from '@patternfly/react-core'
 import { SelectOption } from '@patternfly/react-core'
+import { FilterIcon } from '@patternfly/react-icons'
 import { Dispatch, SetStateAction, useMemo, useState } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { Cluster } from '../../../resources/utils'
@@ -80,10 +81,11 @@ export default function OverviewClusterLabelSelector(props: {
           id="cluster-label-key"
           key="cluster-label-key"
           aria-label="cluster-label-key"
+          toggleIcon={<FilterIcon />}
           width={'auto'}
           maxHeight={'400px'}
           variant={SelectVariant.typeahead}
-          onChange={(selection) => {
+          onSelect={(selection) => {
             if (selectedClusterLabel === selection) {
               setSelectedClusterLabel('')
             } else {
@@ -91,7 +93,7 @@ export default function OverviewClusterLabelSelector(props: {
             }
           }}
           selections={selectedClusterLabel}
-          placeholderText={t('Select cluster label')}
+          placeholder={t('Select cluster label')}
           aria-labelledby={'cluster-label-key'}
         >
           {Object.keys(allClusterLabels).map((labelKey: string) => (
@@ -103,9 +105,8 @@ export default function OverviewClusterLabelSelector(props: {
           aria-label="cluster-label-value"
           width={'auto'}
           maxHeight={'400px'}
-          variant={SelectVariant.checkbox}
-          isPlain
-          onChange={(selection) => {
+          variant={SelectVariant.typeaheadCheckbox}
+          onSelect={(selection) => {
             const tempLabels = { ...selectedClusterLabels }
             const tempValues = tempLabels[selectedClusterLabel ?? ''] ?? []
             if (tempValues?.includes(selection as string)) {

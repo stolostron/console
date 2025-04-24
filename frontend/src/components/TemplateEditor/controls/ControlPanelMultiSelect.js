@@ -4,7 +4,8 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Spinner } from '@patternfly/react-core'
-import { Select, SelectOption, SelectVariant } from '@patternfly/react-core/deprecated'
+import { SelectOption } from '@patternfly/react-core'
+import { Select, SelectVariant } from '../../../components/Select'
 import ControlPanelFormGroup from './ControlPanelFormGroup'
 import get from 'lodash/get'
 
@@ -28,7 +29,6 @@ class ControlPanelMultiSelect extends React.Component {
   }
 
   render() {
-    const { open } = this.state
     const { controlId, i18n, control, controlData, handleChange } = this.props
     const { available = [], availableMap, exception, disabled, isLoading, isFailed } = control
     let { active, placeholder = '' } = control
@@ -55,10 +55,6 @@ class ControlPanelMultiSelect extends React.Component {
       placeholder = activeKeys.join(', ')
     }
 
-    const setOpen = (open) => {
-      this.setState({ open })
-    }
-
     const onChange = (value) => {
       if (value) {
         if (active.includes(value)) {
@@ -78,17 +74,6 @@ class ControlPanelMultiSelect extends React.Component {
       return <SelectOption key={inx} value={item} />
     })
 
-    const onFilter = (evt) => {
-      const textInput = get(evt, 'target.value', '')
-      if (textInput === '') {
-        return this.options
-      } else {
-        return this.options.filter((item) => {
-          return item.props.value.toLowerCase().includes(textInput.toLowerCase())
-        })
-      }
-    }
-
     const validated = exception ? 'error' : undefined
     return (
       <React.Fragment>
@@ -102,13 +87,8 @@ class ControlPanelMultiSelect extends React.Component {
             ) : (
               <Select
                 ariaLabelledBy={`${controlId}-label`}
-                spellCheck={false}
-                isOpen={open}
-                onToggle={() => {
-                  setOpen(!open)
-                }}
-                variant={SelectVariant.checkbox}
-                onSelect={(_event, value) => {
+                variant={SelectVariant.typeaheadCheckbox}
+                onSelect={(value) => {
                   onChange(value)
                 }}
                 selections={active}
@@ -117,10 +97,7 @@ class ControlPanelMultiSelect extends React.Component {
                 }}
                 placeholderText={placeholder}
                 isDisabled={disabled}
-                onFilter={onFilter}
-                hasInlineFilter
                 data-testid={`multi-${controlId}`}
-                noResultsFoundText={i18n('No results found')}
               >
                 {this.options}
               </Select>

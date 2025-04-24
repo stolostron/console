@@ -14,7 +14,8 @@ import {
   TimePicker,
   ButtonVariant,
 } from '@patternfly/react-core'
-import { Select, SelectOption, SelectVariant } from '@patternfly/react-core/deprecated'
+import { SelectOption } from '@patternfly/react-core'
+import { Select, SelectVariant } from '../../../../../../components/Select'
 import { Fragment, Component } from 'react'
 import { PlusCircleIcon, TimesCircleIcon } from '@patternfly/react-icons'
 import { Tooltip, getSourcePath, removeVs } from '../../../../../../components/TemplateEditor'
@@ -45,7 +46,6 @@ export class TimeWindow extends Component {
     this.state = {
       timezoneCache: { isSelected: false, tz: '' },
       isExpanded: this.props.control.active.mode,
-      isTimeZoneOpen: false,
     }
     this.props.control.validation = this.validation.bind(this)
 
@@ -115,7 +115,7 @@ export class TimeWindow extends Component {
   }
 
   render() {
-    const { isExpanded, isTimeZoneOpen } = this.state
+    const { isExpanded } = this.state
     const onToggle = (toggleStatus) => {
       this.setState({ isExpanded: !toggleStatus })
     }
@@ -227,26 +227,12 @@ export class TimeWindow extends Component {
                         selections={timezone || ''}
                         isDisabled={!modeSelected}
                         maxHeight={180}
-                        onFilter={(e) => {
-                          let input
-                          try {
-                            input = new RegExp(e.target.value, 'i')
-                          } catch {
-                            // Nothing to do
-                          }
-                          return e.target.value !== ''
-                            ? this.timezoneList.filter((child) => input.test(child.props.value))
-                            : this.timezoneList
-                        }}
-                        isOpen={isTimeZoneOpen}
-                        onToggle={this.handleTimeZoneToggle}
-                        onSelect={(_event, value) => {
+                        onSelect={(value) => {
                           this.handleTimeZone.bind(this)(value)
                         }}
                         onClear={() => {
                           this.handleTimeZone.bind(this)(undefined)
                         }}
-                        noResultsFoundText={i18n('No results found')}
                       >
                         {this.timezoneList}
                       </Select>
@@ -435,11 +421,6 @@ export class TimeWindow extends Component {
     }
   }
 
-  handleTimeZoneToggle = () => {
-    const { isTimeZoneOpen } = this.state
-    this.setState({ isTimeZoneOpen: !isTimeZoneOpen })
-  }
-
   handleTimeZone = (value) => {
     const { control, handleChange } = this.props
 
@@ -448,14 +429,12 @@ export class TimeWindow extends Component {
       control.active.timezone = value
       this.setState({
         timezoneCache: { isSelected: true, tz: value },
-        isTimeZoneOpen: false,
       })
     } else {
       // Reset timezone and reset cached tz
       control.active.timezone = ''
       this.setState({
         timezoneCache: { isSelected: false, tz: '' },
-        isTimeZoneOpen: false,
       })
     }
 
