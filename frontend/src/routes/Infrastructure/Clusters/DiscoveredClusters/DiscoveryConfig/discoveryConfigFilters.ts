@@ -5,6 +5,13 @@ import { Provider } from '../../../../../ui-components'
 
 // InfrastructureProviders is the list of infrastructure providers to discover. This can be
 // a list of cloud providers or platforms (e.g., AWS, Azure, GCP) where clusters might be running.
+/**
+ * Converts a provider string to a normalized Provider enum value.
+ * Maps various provider name formats to their standardized enum representation.
+ *
+ * @param provider - The infrastructure provider name as a string (case insensitive)
+ * @returns The normalized Provider enum value
+ */
 
 export function getInfrastructureProvider(provider: string): Provider {
   switch (provider) {
@@ -41,6 +48,63 @@ export function getInfrastructureProvider(provider: string): Provider {
       return Provider.other
   }
 }
+
+/**
+ * Returns a localized display name for the given infrastructure provider for UI display
+ * Uses i18next translations for consistent naming across the application.
+ *
+ * @param provider - The infrastructure provider name as a string (case insensitive)
+ * @returns The localized display name for the provider
+ */
+
+export function getDisplayNameForInfrastructureProvider(provider: string): string {
+  switch (provider.toLowerCase()) {
+    case 'aws':
+      return t('infra.aws')
+    case 'azure':
+      return t('infra.azure')
+    case 'baremetal':
+      return t('infra.baremetal')
+    case 'external':
+      return t('infra.external')
+    case 'gcp':
+      return t('infra.gcp')
+    case 'ibmcloud':
+      return t('infra.ibmcloud')
+    case 'kubevirt':
+      return t('infra.kubevirt')
+    case 'libvirt':
+      return t('infra.libvirt')
+    case 'none':
+      return t('infra.none')
+    case 'nutanix':
+      return t('infra.nutanix')
+    case 'openstack':
+      return t('infra.openstack')
+    case 'ovirt':
+      return t('infra.ovirt')
+    case 'powervs':
+      return t('infra.powervs')
+    case 'vsphere':
+      return t('infra.vsphere')
+    default:
+      return provider
+  }
+}
+
+/**
+ * Returns an array of search terms related to the given infrastructure provider.
+ * Used specifically for table filtering functionality to match against provider cells
+ * that contain icons rather than plain text.
+ *
+ * Since table search is case insensitive, this function provides standardized
+ * searchable text values that represent each provider, including common alternative names.
+ * This ensures users can find providers regardless of how they type the search term
+ * (e.g., "aws", "amazon", "amazon web services").
+ *
+ * @param provider - The infrastructure provider name as a string (case insensitive)
+ * @returns An array of strings containing the provider name and related search terms
+ */
 
 export function searchInfrastructureProvider(provider: string) {
   switch (provider.toLowerCase()) {
