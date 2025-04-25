@@ -148,8 +148,8 @@ export const discoveryConfigUpdated: DiscoveryConfig = {
     filters: {
       lastActive: 30,
       openShiftVersions: ['4.17', '4.18'],
-      clusterTypes: ['ARO', 'OSD'],
-      infrastructureProviders: ['gcp', 'vsphere'],
+      clusterTypes: ['ROSA', 'OCP'],
+      infrastructureProviders: ['aws', 'azure'],
     },
     credential: mockRHOCMSecrets[0].metadata.name!,
   },
