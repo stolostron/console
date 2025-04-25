@@ -188,7 +188,7 @@ describe('Discovery Config page', () => {
     await waitForText('You can configure settings in Clusters > Discovered clusters')
   })
 
-  it.only('Edit DiscoveryConfig', async () => {
+  it('Edit DiscoveryConfig', async () => {
     const discoveryConfigUpdateNock = nockCreate(
       discoveryConfigUpdateSelfSubjectAccessRequest,
       discoveryConfigUpdateSelfSubjectAccessResponse
