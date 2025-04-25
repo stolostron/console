@@ -11,7 +11,7 @@ import {
   Radio,
   SelectOption,
 } from '@patternfly/react-core'
-import { SelectVariant } from '../../../ui-components'
+import { SelectVariant } from '../../../components/Select'
 import { Fragment, SetStateAction, useCallback, useContext, useEffect, useState } from 'react'
 import { useParams, useNavigate, useMatch } from 'react-router-dom-v5-compat'
 import { AcmDataFormPage } from '../../../components/AcmDataForm'

@@ -16,8 +16,9 @@ import {
   AcmModal,
   AcmMultiSelect,
   AcmSubmit,
-  SelectVariant,
 } from '../../../../../ui-components'
+import { SelectVariant } from '../../../../../components/Select'
+
 import { ActionGroup, Button, ModalVariant, SelectOption } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'

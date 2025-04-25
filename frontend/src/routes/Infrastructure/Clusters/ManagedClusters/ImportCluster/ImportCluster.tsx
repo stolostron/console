@@ -17,8 +17,8 @@ import {
   AcmPageHeader,
   AcmSelect,
   AcmToastContext,
-  SelectVariant,
 } from '../../../../../ui-components'
+import { SelectVariant } from '../../../../../components/Select'
 import { cloneDeep, get, groupBy, isEqual, pick } from 'lodash'
 import { Dispatch, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useReducer, useState } from 'react'
 import { Link, generatePath, useNavigate } from 'react-router-dom-v5-compat'

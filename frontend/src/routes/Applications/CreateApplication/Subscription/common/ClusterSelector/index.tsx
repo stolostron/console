@@ -1,7 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Fragment, useCallback, useState } from 'react'
-import { AcmMultiSelect, AcmSelect, SelectVariant } from '../../../../../../ui-components'
+import { AcmMultiSelect, AcmSelect } from '../../../../../../ui-components'
+import { SelectVariant } from '../../../../../../components/Select'
 import {
   Radio,
   FormGroup,
