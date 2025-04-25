@@ -51,9 +51,9 @@ import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import {
   DISCOVERY_CLUSTER_TYPES,
+  getDisplayNameForInfrastructureProvider,
   getFullTypeByAcronymForDiscoveryClustersType,
   INFRASTRUCTURE_PROVIDERS,
-  searchInfrastructureProvider,
 } from '../DiscoveryConfig/discoveryConfigFilters'
 
 const discoveryVersions = ['4.17', '4.18', '4.19', '4.20']
@@ -570,7 +570,7 @@ export function DiscoveryConfigPageContent(props: {
           >
             {INFRASTRUCTURE_PROVIDERS.map((provider) => (
               <SelectOption key={provider} value={provider}>
-                {searchInfrastructureProvider(provider)[1] || provider}
+                {getDisplayNameForInfrastructureProvider(provider)}
               </SelectOption>
             ))}
           </AcmMultiSelect>
