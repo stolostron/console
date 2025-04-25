@@ -35,13 +35,7 @@ spec:
   - name: build-source-image
     value: "true"
   - name: prefetch-input
-    value:
-    - path: .
-      type: npm
-    - path: ./frontend
-      type: npm
-    - path: ./backend
-      type: npm
+    value: '[{"path":".","type":"npm"},{"path":"./frontend","type":"npm"},{"path":"./backend","type":"npm"}]'
   pipelineSpec:
     description: |
       This pipeline is ideal for building multi-arch container images from a Containerfile while maintaining trust after pipeline customization.
@@ -611,7 +605,8 @@ spec:
       optional: true
     - name: netrc
       optional: true
-  taskRunTemplate: {}
+  taskRunTemplate:
+    serviceAccountName: build-pipeline-console-mce-mce-28
   workspaces:
   - name: git-auth
     secret:
