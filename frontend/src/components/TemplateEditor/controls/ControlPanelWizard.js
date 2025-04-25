@@ -19,7 +19,6 @@ import {
 import { ExclamationCircleIcon } from '@patternfly/react-icons'
 import ControlPanelFinish from './ControlPanelFinish'
 import get from 'lodash/get'
-import set from 'lodash/set'
 import isEmpty from 'lodash/isEmpty'
 
 class ControlPanelWizard extends React.Component {
