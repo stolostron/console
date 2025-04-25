@@ -115,6 +115,8 @@ export const discoveryConfig: DiscoveryConfig = {
     filters: {
       lastActive: 14,
       openShiftVersions: ['4.17'],
+      clusterTypes: ['ROSA', 'OCP'],
+      infrastructureProviders: ['aws', 'azure'],
     },
     credential: mockRHOCMSecrets[0].metadata.name!,
   },
@@ -143,9 +145,13 @@ export const discoveryConfigUpdated: DiscoveryConfig = {
     namespace: mockRHOCMSecrets[0].metadata.namespace,
   },
   spec: {
+    ...discoveryConfig.spec,
     filters: {
+      ...discoveryConfig.spec.filters,
       lastActive: 30,
       openShiftVersions: ['4.17', '4.18'],
+      clusterTypes: ['ARO', 'OSD'],
+      infrastructureProviders: ['gcp', 'vsphere'],
     },
     credential: mockRHOCMSecrets[0].metadata.name!,
   },
