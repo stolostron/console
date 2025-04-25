@@ -21,7 +21,7 @@
 
 ### General
 
-- [ ] PR title follows the convention (e.g. `[ACM-1234] Fix bug with...`)
+- [ ] PR title follows the convention (e.g. `ACM-12340 Fix bug with...`)
 - [ ] Code builds and runs locally without errors
 - [ ] No console logs, commented-out code, or unnecessary files
 - [ ] All commits are meaningful and well-labeled
