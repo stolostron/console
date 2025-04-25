@@ -545,7 +545,7 @@
   "Automation template for {{curatorName}}": "Automation template for {{curatorName}}",
   "Automation templates are configured": "Automation templates are configured",
   "Automation YAML": "Automation YAML",
-  "automation.template.update.support": "Only Red Hat OpenShift clusters that are not provisioned by a managed Kubernetes service and Azure Red Hat OpenShift (ARO) clusters support automation. The automation template can be updated only for ready clusters that do not have an upgrade in progress.",
+  "automation.template.update.support": "Only Red Hat OpenShift clusters that are not provisioned by a managed Kubernetes service and Azure Red Hat OpenShift (ARO) clusters support automation. You can only update the automation template for ready clusters that have no upgrade in progress.",
   "Autoscaling": "Autoscaling",
   "Av2-series": "Av2-series",
   "available": "available",
