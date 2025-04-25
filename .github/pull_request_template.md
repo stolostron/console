@@ -10,10 +10,10 @@
 <!-- Select one -->
 - [ ] 🐞 Bug Fix  
 - [ ] ✨ Feature  
-- [ ] 🔧 Refactor  
+- [ ] 🔧 Refactor
+- [ ] 💸 Tech Debt
 - [ ] 🧪 Test-related  
-- [ ] 📄 Docs  
-- [ ] ⛔️ Breaking Change
+- [ ] 📄 Docs
 
 ---
 
@@ -21,11 +21,11 @@
 
 ### General
 
-- [ ] PR title follows the convention (e.g. `[FEATURE]`, `[BUGFIX]`, `[TECH-DEBT]`)
-- [ ] Ticket link is included above
+- [ ] PR title follows the convention (e.g. `[ACM-1234] Fix bug with...`)
 - [ ] Code builds and runs locally without errors
 - [ ] No console logs, commented-out code, or unnecessary files
 - [ ] All commits are meaningful and well-labeled
+- [ ] All new display strings are externalized for localization (English only)
 
 #### If Feature
 
@@ -36,7 +36,7 @@
 
 #### If Bugfix
 
-- [ ] Root cause explained in ticket or PR description
+- [ ] Root cause and fix summary are documented in the ticket (for future reference / errata)
 - [ ] Fix tested thoroughly and resolves the issue
 - [ ] Test(s) added to prevent regression
 
