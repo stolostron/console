@@ -8,7 +8,8 @@ metadata:
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/cancel-in-progress: "true"
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch == "main"
+    pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch
+      == "main"
   creationTimestamp: null
   labels:
     appstudio.openshift.io/application: release-acm-214
@@ -38,13 +39,7 @@ spec:
   - name: build-source-image
     value: "true"
   - name: prefetch-input
-    value:
-    - path: .
-      type: npm
-    - path: ./frontend
-      type: npm
-    - path: ./backend
-      type: npm
+    value: '[{"path":".","type":"npm"},{"path":"./frontend","type":"npm"},{"path":"./backend","type":"npm"}]'
   pipelineSpec:
     description: |
       This pipeline is ideal for building multi-arch container images from a Containerfile while maintaining trust after pipeline customization.
@@ -614,7 +609,8 @@ spec:
       optional: true
     - name: netrc
       optional: true
-  taskRunTemplate: {}
+  taskRunTemplate:
+    serviceAccountName: build-pipeline-console-acm-214
   workspaces:
   - name: git-auth
     secret:
