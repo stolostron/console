@@ -145,7 +145,6 @@ function EmptyStateAwaitingDiscoveredClusters() {
 export function DiscoveredClustersPageContent() {
   const { discoveredClusterState, discoveryConfigState, secretsState } = useSharedAtoms()
   const discoveredClusters = useRecoilValue(discoveredClusterState)
-  console.log(discoveredClusters, 'Discovered Clusters')
   const secrets = useRecoilValue(secretsState)
   const credentials = secrets.map(unpackProviderConnection)
   const discoveryConfigs = useRecoilValue(discoveryConfigState)

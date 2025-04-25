@@ -145,9 +145,7 @@ export const discoveryConfigUpdated: DiscoveryConfig = {
     namespace: mockRHOCMSecrets[0].metadata.namespace,
   },
   spec: {
-    ...discoveryConfig.spec,
     filters: {
-      ...discoveryConfig.spec.filters,
       lastActive: 30,
       openShiftVersions: ['4.17', '4.18'],
       clusterTypes: ['ARO', 'OSD'],
