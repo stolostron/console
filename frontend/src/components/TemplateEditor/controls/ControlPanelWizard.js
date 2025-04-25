@@ -19,7 +19,6 @@ import {
 import { ExclamationCircleIcon } from '@patternfly/react-icons'
 import ControlPanelFinish from './ControlPanelFinish'
 import get from 'lodash/get'
-import set from 'lodash/set'
 import isEmpty from 'lodash/isEmpty'
 
 class ControlPanelWizard extends React.Component {
@@ -159,19 +158,6 @@ class ControlPanelWizard extends React.Component {
       })
     }
 
-    const onMove = (curr, prev) => {
-      // if wizard is stopped, remember where it left off
-      set(steps[0], 'control.startAtStep', curr.id)
-
-      // custom step change actions
-      if (this.props.onStepChange) {
-        this.props.onStepChange(
-          steps.find(({ id }) => id === curr.id),
-          steps.find(({ id }) => id === prev.id)
-        )
-      }
-    }
-
     const onSave = () => {
       // if last step was a review, it already did  a mutate
       if (lastType !== 'review') {
@@ -261,6 +247,7 @@ class ControlPanelWizard extends React.Component {
     const isDisabled = creationStatus === 'DONE' || isWorking
 
     const CustomFooter = (activeStep, goToNextStep, goToPrevStep, close) => {
+      const activeStepIndex = steps.findIndex((step) => step.id === activeStep.id)
       return (
         <WizardFooterWrapper>
           <ActionList>
@@ -272,8 +259,6 @@ class ControlPanelWizard extends React.Component {
                   variant="primary"
                   spinnerAriaValueText={isWorking ? i18n('Processing') : undefined}
                   onClick={() => {
-                    const activeStepIndex = steps.findIndex((step) => step.id === activeStep.id)
-                    onMove(activeStep, activeStep.id > 0 ? steps[activeStepIndex - 1] : null)
                     if (!isWorking) {
                       validateNextStep(activeStep, goToNextStep)
                     }
@@ -293,15 +278,13 @@ class ControlPanelWizard extends React.Component {
                 <Button
                   variant="secondary"
                   onClick={() => {
-                    const activeStepIndex = steps.findIndex((step) => step.id === activeStep.id)
-                    onMove(activeStep, activeStep.id > 0 ? steps[activeStepIndex - 1] : null)
-                    if (activeStep.index === 0 && backButtonOverride) {
+                    if (activeStepIndex === 0 && backButtonOverride) {
                       backButtonOverride()
                     } else {
                       goToPrevStep()
                     }
                   }}
-                  isAriaDisabled={activeStep.index === 0 && !backButtonOverride}
+                  isAriaDisabled={activeStepIndex === 0 && !backButtonOverride}
                 >
                   {i18n('Back')}
                 </Button>
@@ -351,7 +334,6 @@ ControlPanelWizard.propTypes = {
   handleCancelCreate: PropTypes.func,
   handleCreateResource: PropTypes.func,
   isEditing: PropTypes.bool,
-  onStepChange: PropTypes.func,
   renderControlSections: PropTypes.func,
   renderNotifications: PropTypes.func,
   resetStatus: PropTypes.func,
