@@ -159,19 +159,6 @@ class ControlPanelWizard extends React.Component {
       })
     }
 
-    const onMove = (curr, prev) => {
-      // if wizard is stopped, remember where it left off
-      set(steps[0], 'control.startAtStep', curr.id)
-
-      // custom step change actions
-      if (this.props.onStepChange) {
-        this.props.onStepChange(
-          steps.find(({ id }) => id === curr.id),
-          steps.find(({ id }) => id === prev.id)
-        )
-      }
-    }
-
     const onSave = () => {
       // if last step was a review, it already did  a mutate
       if (lastType !== 'review') {
@@ -273,7 +260,6 @@ class ControlPanelWizard extends React.Component {
                   variant="primary"
                   spinnerAriaValueText={isWorking ? i18n('Processing') : undefined}
                   onClick={() => {
-                    onMove(activeStep, activeStepIndex + 1 < steps.length ? steps[activeStepIndex + 1] : null)
                     if (!isWorking) {
                       validateNextStep(activeStep, goToNextStep)
                     }
@@ -293,7 +279,6 @@ class ControlPanelWizard extends React.Component {
                 <Button
                   variant="secondary"
                   onClick={() => {
-                    onMove(activeStep, activeStepIndex > 0 ? steps[activeStepIndex - 1] : null)
                     if (activeStepIndex === 0 && backButtonOverride) {
                       backButtonOverride()
                     } else {
@@ -350,7 +335,6 @@ ControlPanelWizard.propTypes = {
   handleCancelCreate: PropTypes.func,
   handleCreateResource: PropTypes.func,
   isEditing: PropTypes.bool,
-  onStepChange: PropTypes.func,
   renderControlSections: PropTypes.func,
   renderNotifications: PropTypes.func,
   resetStatus: PropTypes.func,

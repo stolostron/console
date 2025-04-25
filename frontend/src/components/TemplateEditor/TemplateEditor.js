@@ -79,7 +79,6 @@ export default class TemplateEditor extends React.Component {
     onControlChange: PropTypes.func,
     onControlInitialize: PropTypes.func,
     onControlValidation: PropTypes.func,
-    onStepChange: PropTypes.func,
     portals: PropTypes.object,
     template: PropTypes.func.isRequired,
     title: PropTypes.string,
@@ -392,7 +391,6 @@ export default class TemplateEditor extends React.Component {
         creationStatus={this.props.createControl.creationStatus}
         i18n={i18n}
         onChange={this.props.onControlChange}
-        onStepChange={this.props.onStepChange}
         templateYAML={this.state.templateYAML}
         setEditorReadOnly={this.setEditorReadOnly.bind(this)}
         controlProps={this.props.controlProps}
