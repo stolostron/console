@@ -642,8 +642,8 @@ export function logApplicationCountChanges(applicationCache: ApplicationCacheTyp
     caches: {
       appCache: memUsed(applicationCache),
       eventCache: memUsed(getEventCache()),
-      clients: Object.keys(ServerSideEvents.getClients()).length,
-      events: memUsed(ServerSideEvents.getEvents()),
+      // clients: Object.keys(ServerSideEvents.getClients()).length,
+      // events: memUsed(ServerSideEvents.getEvents()),
     },
   })
 }
