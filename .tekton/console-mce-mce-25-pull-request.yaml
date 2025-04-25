@@ -7,7 +7,8 @@ metadata:
     build.appstudio.redhat.com/pull_request_number: '{{pull_request_number}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch == "release-2.10"
+    pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch
+      == "release-2.10"
   creationTimestamp: null
   labels:
     appstudio.openshift.io/application: release-mce-25
@@ -54,9 +55,6 @@ spec:
         value: $(params.output-image)
       - name: build-task-status
         value: $(tasks.build-container.status)
-      workspaces:
-      - name: workspace
-        workspace: workspace
       taskRef:
         params:
         - name: name
@@ -66,6 +64,9 @@ spec:
         - name: kind
           value: task
         resolver: bundles
+      workspaces:
+      - name: workspace
+        workspace: workspace
     params:
     - description: Source Repository URL
       name: git-url
@@ -306,6 +307,11 @@ spec:
         values:
         - "false"
     - name: sast-snyk-check
+      params:
+      - name: image-digest
+        value: $(tasks.build-container.results.IMAGE_DIGEST)
+      - name: image-url
+        value: $(tasks.build-container.results.IMAGE_URL)
       runAfter:
       - clone-repository
       taskRef:
@@ -325,11 +331,6 @@ spec:
       workspaces:
       - name: workspace
         workspace: workspace
-      params:
-      - name: image-digest
-        value: $(tasks.build-container.results.IMAGE_DIGEST)
-      - name: image-url
-        value: $(tasks.build-container.results.IMAGE_URL)
     - name: clamav-scan
       params:
       - name: image-digest
@@ -356,7 +357,8 @@ spec:
     - name: workspace
     - name: git-auth
       optional: true
-  taskRunTemplate: {}
+  taskRunTemplate:
+    serviceAccountName: build-pipeline-console-mce-mce-25
   workspaces:
   - name: workspace
     volumeClaimTemplate:
