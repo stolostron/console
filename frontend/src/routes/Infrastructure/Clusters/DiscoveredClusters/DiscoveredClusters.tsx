@@ -250,8 +250,8 @@ export function DiscoveredClustersTable(props: {
       header: t('dcTbl.type'),
       sort: (a: DiscoveredCluster, b: DiscoveredCluster) =>
         compareStrings(
-          getFullTypeByAcronymForDiscoveryClustersType(a?.spec?.type || ''),
-          getFullTypeByAcronymForDiscoveryClustersType(b?.spec?.type || '')
+          getFullTypeByAcronymForDiscoveryClustersType(a?.spec?.type ?? ''),
+          getFullTypeByAcronymForDiscoveryClustersType(b?.spec?.type ?? '')
         ),
       search: (discoveredCluster) => {
         if (discoveredCluster.spec.type) {

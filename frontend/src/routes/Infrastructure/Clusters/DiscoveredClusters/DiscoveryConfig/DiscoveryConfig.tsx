@@ -540,9 +540,7 @@ export function DiscoveryConfigPageContent(props: {
             placeholder={t('discoveryConfig.ClusterTypes.placeholder')}
             onChange={(clusterTypes) => {
               updateDiscoveryConfig((discoveryConfig) => {
-                if (!discoveryConfig.spec.filters) {
-                  discoveryConfig.spec.filters ??= {}
-                }
+                discoveryConfig.spec.filters ??= {}
                 discoveryConfig.spec.filters.clusterTypes = clusterTypes
               })
             }}
@@ -561,9 +559,7 @@ export function DiscoveryConfigPageContent(props: {
             placeholder={t('discoveryConfig.InfrastructureProviders.placeholder')}
             onChange={(infrastructureProviders) => {
               updateDiscoveryConfig((discoveryConfig) => {
-                if (!discoveryConfig.spec.filters) {
-                  discoveryConfig.spec.filters ??= {}
-                }
+                discoveryConfig.spec.filters ??= {}
                 discoveryConfig.spec.filters.infrastructureProviders = infrastructureProviders
               })
             }}

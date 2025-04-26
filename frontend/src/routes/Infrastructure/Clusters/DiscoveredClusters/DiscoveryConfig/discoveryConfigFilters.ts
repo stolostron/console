@@ -3,8 +3,6 @@
 import { t } from 'i18next'
 import { Provider } from '../../../../../ui-components'
 
-// InfrastructureProviders is the list of infrastructure providers to discover. This can be
-// a list of cloud providers or platforms (e.g., AWS, Azure, GCP) where clusters might be running.
 /**
  * Converts a provider string to a normalized Provider enum value.
  * Maps various provider name formats to their standardized enum representation.
@@ -142,8 +140,27 @@ export function searchInfrastructureProvider(provider: string) {
   }
 }
 
-// ClusterTypes is the list of cluster types to discover. These types represent the platform
-// the cluster is running on, such as OpenShift Container Platform (OCP), Azure Red Hat OpenShift (ARO), or others.
+/**
+ * Converts a cluster type acronym to its full localized display name.
+ * This function translates abbreviated cluster types used in discovery to human-readable names
+ * that are properly localized using i18n.
+ *
+ * Supported acronyms include:
+ * - MOA: Maps to ROSA (Red Hat OpenShift on AWS)
+ * - MOA-HostedControlPlane: Maps to ROSA with hosted control plane
+ * - ROSA: Red Hat OpenShift on AWS
+ * - ROSA-HCP: ROSA with HyperShift
+ * - OCP-ASSISTEDINSTALL: OpenShift Assisted Installer
+ * - OCP: OpenShift Container Platform
+ * - OSD: OpenShift Dedicated
+ * - OSD-TRIAL: Trial version of OpenShift Dedicated
+ * - ARO: Azure Red Hat OpenShift
+ * - RHMI: Red Hat Managed Integration
+ * - RHOIC: Red Hat OpenShift on IBM Cloud
+ *
+ * @param acronym - The cluster type acronym to convert (case insensitive)
+ * @returns The localized full display name of the cluster type, or the original acronym if not recognized
+ */
 
 export function getFullTypeByAcronymForDiscoveryClustersType(acronym: string) {
   switch (acronym.toUpperCase()) {
@@ -175,6 +192,8 @@ export function getFullTypeByAcronymForDiscoveryClustersType(acronym: string) {
   }
 }
 
+// ClusterTypes is the list of cluster types to discover. These types represent the platform the cluster is running on
+
 export const DISCOVERY_CLUSTER_TYPES = [
   'OSD',
   'OSDTrial',
@@ -189,6 +208,7 @@ export const DISCOVERY_CLUSTER_TYPES = [
   'OCP-ASSISTEDINSTALL',
 ]
 
+// InfrastructureProviders is the list of infrastructure providers to discover. This can be a list of cloud providers or platforms (e.g., AWS, Azure, GCP) where clusters might be running.
 export const INFRASTRUCTURE_PROVIDERS = [
   'aws',
   'azure',
