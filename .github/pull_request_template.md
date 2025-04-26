@@ -26,6 +26,7 @@
 - [ ] No console logs, commented-out code, or unnecessary files
 - [ ] All commits are meaningful and well-labeled
 - [ ] All new display strings are externalized for localization (English only)
+- [ ] *(Nice to have)* JSDoc comments added for new functions and interfaces
 
 #### If Feature
 
