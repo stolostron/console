@@ -57,6 +57,7 @@ import { getApplication } from './ApplicationTopology/model/application'
 import { getResourceStatuses } from './ApplicationTopology/model/resourceStatuses'
 import { getTopology } from './ApplicationTopology/model/topology'
 import { getApplicationData } from './ApplicationTopology/model/utils'
+import { useLocalHubName } from '../../../hooks/use-local-hub'
 
 export const ApplicationContext = createContext<{
   readonly actions: null | ReactNode
@@ -153,10 +154,7 @@ export default function ApplicationDetailsPage() {
   const isFluxApp = applicationData?.application?.isFluxApp
   const clusters = useAllClusters(true)
 
-  const hubCluster = useMemo(
-    () => clusters.find((cls) => cls.labels && cls.labels['local-cluster'] === 'true'),
-    [clusters]
-  )
+  const hubCluster = useLocalHubName()
 
   const applicationsGetter = useRecoilValueGetter(applicationsState)
   const ansibleJobGetter = useRecoilValueGetter(ansibleJobState)
@@ -267,7 +265,7 @@ export default function ApplicationDetailsPage() {
                   recoilStates.placementRules,
                   recoilStates.placements,
                   recoilStates.channels,
-                  hubCluster?.name ?? ''
+                  hubCluster ?? ''
                 )
               : [[], []]
           /* istanbul ignore else */
@@ -323,7 +321,7 @@ export default function ApplicationDetailsPage() {
     navigate,
     isAppSet,
     getRecoilStates,
-    hubCluster?.name,
+    hubCluster,
     canDeleteApplicationSet,
     canDeleteApplication,
   ])

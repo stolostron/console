@@ -54,6 +54,11 @@ export function getHubClusterName() {
   return hubClusterName
 }
 
+let isHubSelfManaged : boolean | undefined = undefined
+export function getIsHubSelfManaged() {
+  return isHubSelfManaged
+}
+
 // because rbac checks are expensive,
 // run them only on the resources requested by the UI
 export async function getAuthorizedResources(
@@ -624,6 +629,7 @@ function cacheResource(resource: IResource) {
   if (resource.kind === 'ManagedCluster') {
     if (resource?.metadata?.labels['local-cluster'] === 'true') {
       hubClusterName = resource?.metadata?.name
+      isHubSelfManaged = true
     }
   }
 }

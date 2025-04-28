@@ -52,11 +52,11 @@ import { isSearchAvailable } from '../ApplicationTopology/helpers/search-helper'
 import { getDiagramElements } from '../ApplicationTopology/model/topology'
 import { getAuthorizedNamespaces, rbacCreate } from '../../../../lib/rbac-util'
 import { generatePath, Link } from 'react-router-dom-v5-compat'
-import { useAllClusters } from '../../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { DrawerShapes } from '../ApplicationTopology/components/DrawerShapes'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import LabelWithPopover from '../../components/LabelWithPopover'
 import AcmTimestamp from '../../../../lib/AcmTimestamp'
+import { useLocalHubName } from '../../../../hooks/use-local-hub'
 
 const clusterResourceStatusText = (t: TFunction) => t('Cluster resource status')
 const clusterResourceStatusTooltipSubscription = (t: TFunction) =>
@@ -66,16 +66,13 @@ const clusterResourceStatusTooltipOther = (t: TFunction) => t('Status of resourc
 export function ApplicationOverviewPageContent() {
   const { applicationData } = useApplicationDetailsContext()
   const { t } = useTranslation()
-  const localClusterStr = 'local-cluster'
 
   const { channelsState, namespacesState, subscriptionsState } = useSharedAtoms()
 
   const channels = useRecoilValue(channelsState)
   const subscriptions = useRecoilValue(subscriptionsState)
   const namespaces = useRecoilValue(namespacesState)
-
-  const managedClusters = useAllClusters(true)
-  const localCluster = managedClusters.find((cls) => cls.labels && cls.labels[localClusterStr] === 'true')
+  const localCluster = useLocalHubName()
   const [modalProps, setModalProps] = useState<ISyncResourceModalProps | { open: false }>({
     open: false,
   })
@@ -135,7 +132,7 @@ export function ApplicationOverviewPageContent() {
     const applicationResource = applicationData.application.app
 
     const clusterList = applicationData.application?.clusterList ?? []
-    const clusterCount = getClusterCount(clusterList, localCluster?.name ?? '')
+    const clusterCount = getClusterCount(clusterList, localCluster ?? '')
     const clusterCountString = getClusterCountString(t, clusterCount, clusterList, applicationResource)
     const clusterCountSearchLink = getClusterCountSearchLink(applicationResource, clusterCount, clusterList)
 
