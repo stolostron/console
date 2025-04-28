@@ -101,10 +101,12 @@ export function cacheArgoApplications(applicationCache: ApplicationCacheType, re
   const clusters: Cluster[] = getClusters()
   const localCluster = clusters.find((cls) => cls.name === hubClusterName)
 
-  try {
-    transform(Object.values(applicationCache['localArgoApps'].resourceUidMap), false, localCluster, clusters)
-  } catch (e) {
-    logger.error(`getLocalArgoApps exception ${e}`)
+  if (applicationCache['localArgoApps']?.resourceUidMap) {
+    try {
+      transform(Object.values(applicationCache['localArgoApps'].resourceUidMap), false, localCluster, clusters)
+    } catch (e) {
+      logger.error(`getLocalArgoApps exception ${e}`)
+    }
   }
   try {
     // cache remote argo apps
