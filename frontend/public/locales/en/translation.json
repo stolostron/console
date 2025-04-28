@@ -21,6 +21,7 @@
   "{{count}} clusters without violations": "{{count}} cluster without violations",
   "{{count}} clusters without violations_plural": "{{count}} clusters without violations",
   "{{count}} items selected": "{{count}} items selected",
+  "{{count}} items selected_plural": "{{count}} items selected",
   "{{count}} labels": "{{count}} label",
   "{{count}} labels_plural": "{{count}} labels",
   "{{count}} more": "{{count}} more",
