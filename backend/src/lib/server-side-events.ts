@@ -210,6 +210,14 @@ export class ServerSideEvents {
     delete this.events[eventID]
   }
 
+  public static getClients() {
+    return this.clients
+  }
+
+  public static getEvents() {
+    return this.events
+  }
+
   public static handleRequest(token: string, req: Http2ServerRequest, res: Http2ServerResponse): ServerSideEventClient {
     const [writableStream, compressionStream, encoding] = getEncodeStream(
       res as unknown as NodeJS.WritableStream,
@@ -277,17 +285,6 @@ export class ServerSideEvents {
 
       logger.info({ msg: 'event stream close' })
     })
-
-    let lastEventID = 0
-    if (req.headers['last-event-id']) {
-      const last = Number(req.headers['last-event-id'])
-      if (Number.isInteger(last)) {
-        const cookies = parseCookies(req)
-        if (cookies['watch'] === instanceID) {
-          lastEventID = last
-        }
-      }
-    }
 
     // SORT EVENTS INTO SMALLER PACKETS
     // SO THAT BROWSER PAGE LOADS QUICKER

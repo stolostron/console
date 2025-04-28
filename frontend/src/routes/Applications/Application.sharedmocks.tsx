@@ -120,6 +120,13 @@ export const mockApplication0: Application & IUIResource = {
     appSetApps: [],
   },
 }
+
+export const uidata = {
+  appSetRelatedResources: ['', []],
+  clusterList: ['local-cluster'],
+  appSetApps: [],
+}
+
 const mockSubscription0: Subscription = {
   apiVersion: SubscriptionApiVersion,
   kind: SubscriptionKind,
