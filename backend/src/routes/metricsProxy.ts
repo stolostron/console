@@ -3,10 +3,10 @@ import { constants, Http2ServerRequest, Http2ServerResponse, OutgoingHttpHeaders
 import { request, RequestOptions } from 'https'
 import { pipeline } from 'stream'
 import { URL } from 'url'
+import { getServiceAgent } from '../lib/agent'
 import { jsonRequest } from '../lib/json-request'
 import { logger } from '../lib/logger'
 import { notFound, respondInternalServerError, unauthorized } from '../lib/respond'
-import { getCACertificate } from '../lib/serviceAccountToken'
 import { getToken } from '../lib/token'
 import { Route } from '../resources/route'
 
@@ -42,7 +42,8 @@ export async function prometheusProxy(req: Http2ServerRequest, res: Http2ServerR
       return undefined
     })
 
-  metricsProxy(req, res, token, prometheusProxyRoute)
+  metricsProxy(req, res, token, 'https://prometheus-k8s.openshift-monitoring.svc.cluster.local:9092')
+  // metricsProxy(req, res, token, prometheusProxyRoute)
 }
 
 export async function observabilityProxy(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
@@ -82,7 +83,8 @@ function metricsProxy(req: Http2ServerRequest, res: Http2ServerResponse, token: 
     path,
     method: req.method,
     headers,
-    ca: getCACertificate(),
+    // ca: getServiceCACertificate(),
+    agent: getServiceAgent(),
   }
   pipeline(
     req,
