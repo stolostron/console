@@ -13,6 +13,7 @@ import {
   ChannelApiVersion,
   ChannelKind,
   IResource,
+  IUIResource,
   ManagedCluster,
   ManagedClusterApiVersion,
   ManagedClusterInfo,
@@ -85,7 +86,7 @@ export const gitOpsOperator: SubscriptionOperator = {
   },
 }
 
-export const mockApplication0: Application = {
+export const mockApplication0: Application & IUIResource = {
   apiVersion: ApplicationApiVersion,
   kind: ApplicationKind,
   metadata: {
@@ -113,7 +114,19 @@ export const mockApplication0: Application = {
       ],
     },
   },
+  uidata: {
+    appSetRelatedResources: ['', []],
+    clusterList: ['local-cluster'],
+    appSetApps: [],
+  },
 }
+
+export const uidata = {
+  appSetRelatedResources: ['', []],
+  clusterList: ['local-cluster'],
+  appSetApps: [],
+}
+
 const mockSubscription0: Subscription = {
   apiVersion: SubscriptionApiVersion,
   kind: SubscriptionKind,
@@ -282,6 +295,9 @@ export const mockApplicationSet0: ApplicationSet = {
       },
     },
   },
+  uidata: {
+    appSetRelatedResources: ['', []],
+  },
 }
 
 export const mockApplicationSet1: ApplicationSet = {
@@ -357,7 +373,7 @@ const mockArgoApplication0: ArgoApplication = {
   },
   status: {},
 }
-export const mockArgoApplication1: ArgoApplication = {
+export const mockArgoApplication1: ArgoApplication & IUIResource = {
   apiVersion: ArgoApplicationApiVersion,
   kind: ArgoApplicationKind,
   metadata: {
@@ -378,6 +394,11 @@ export const mockArgoApplication1: ArgoApplication = {
     syncPolicy: {},
   },
   status: {},
+  uidata: {
+    clusterList: ['None'],
+    appSetRelatedResources: ['', []],
+    appSetApps: [],
+  },
 }
 export const mockArgoApplication2: ArgoApplication = {
   apiVersion: ArgoApplicationApiVersion,

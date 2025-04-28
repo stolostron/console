@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { act, ByRoleMatcher, ByRoleOptions, screen, waitFor } from '@testing-library/react'
+import { act, ByRoleMatcher, ByRoleOptions, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Scope } from 'nock/types'
 
@@ -355,9 +355,13 @@ export async function clickBulkAction(text: string) {
   await clickByText(text)
 }
 
-export async function clickRowAction(row: number, text: string) {
-  await clickByLabel('Actions', row - 1)
-  await clickByText(text)
+export async function clickRowActionButton(row: number, table = 'Simple Table') {
+  await waitForRole('grid', { name: table })
+  const grid = screen.getByRole('grid', { name: table })
+  const actionButtons = within(grid).getAllByRole('button', { name: 'Actions' })
+
+  // click the action button for the specified row (row is 1-based, so we subtract 1)
+  actionButtons[row - 1].click()
 }
 
 export async function selectByText(placeholdText: string, text: string) {
@@ -406,4 +410,44 @@ export const getMultipleMocks = (obj: unknown, repeat: number) => {
   return Array.from(Array(repeat).keys()).map((inx) => {
     return template({ name: `cluster${inx + 1}` })
   })
+}
+
+/**
+ * Clicks a kebab menu action for a table row (PF5 compatible)
+ * @param row Row number (1-based)
+ * @param actionText Text of the menu item to click
+ * @param table Optional table name, defaults to 'Simple Table'
+ */
+export async function clickRowKebabAction(row: number, actionText: string, table = 'Simple Table') {
+  //  get table
+  await waitForRole('grid', { name: table })
+  const grid = screen.getByRole('grid', { name: table })
+
+  // get all the rows including header
+  const rows = within(grid).getAllByRole('row')
+
+  // target row (accounting for header row)
+  const targetRow = rows[row]
+
+  // finds the kebab button in the row
+  const kebabButton = within(targetRow).getByRole('button', { name: 'Actions' })
+
+  // click to open the menu
+  userEvent.click(kebabButton)
+
+  // wait for the menu to appear, then find the action item by text and click it
+  await clickByRole('menuitem', { name: actionText })
+}
+
+/**
+ * Clicks a dropdown action - works for both table row kebabs and standalone dropdowns
+ */
+export async function clickDropdownAction(actionText: string, buttonLabel = 'Actions') {
+  // Find and click the actions button
+  const actionsButton = screen.getByRole('button', { name: buttonLabel })
+  userEvent.click(actionsButton)
+
+  // Wait for and click the menu item
+  await waitFor(() => screen.getByText(actionText))
+  await clickByText(actionText)
 }

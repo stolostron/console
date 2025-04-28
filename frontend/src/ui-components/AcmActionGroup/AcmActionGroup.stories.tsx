@@ -1,13 +1,19 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { useState } from 'react'
-import { Card, CardBody } from '@patternfly/react-core'
-import { Dropdown, DropdownItem, DropdownToggle } from '@patternfly/react-core/deprecated'
-import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import {
+  Card,
+  CardBody,
+  Dropdown,
+  DropdownItem,
+  DropdownList,
+  MenuToggle,
+  MenuToggleElement,
+} from '@patternfly/react-core'
+import { CaretDownIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { AcmActionGroup } from './AcmActionGroup'
 import { AcmDropdown } from '../AcmDropdown/AcmDropdown'
 import { AcmLaunchLink } from '../AcmLaunchLink/AcmLaunchLink'
-import CaretDownIcon from '@patternfly/react-icons/dist/js/icons/caret-down-icon'
 
 export default {
   title: 'ActionGroup',
@@ -82,24 +88,30 @@ const CreateDropdown = () => {
   return (
     <Dropdown
       isOpen={isOpen}
-      toggle={
-        <DropdownToggle
-          onToggle={() => setOpen(!isOpen)}
-          toggleIndicator={CaretDownIcon}
-          toggleVariant="primary"
+      onSelect={() => setOpen(!isOpen)}
+      toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+        <MenuToggle
+          ref={toggleRef}
+          onClick={() => {
+            setOpen(!isOpen)
+          }}
+          variant="primary"
+          isExpanded={isOpen}
           id="cluster-actions"
+          icon={<CaretDownIcon />}
         >
           Add cluster
-        </DropdownToggle>
-      }
-      dropdownItems={[
-        <DropdownItem key="create" component="a" onClick={() => alert('create-cluster')} id="create-cluster">
+        </MenuToggle>
+      )}
+    >
+      <DropdownList>
+        <DropdownItem key="create" component="a" onClick={() => alert('create-cluster')} value="create-cluster">
           Create cluster
-        </DropdownItem>,
-        <DropdownItem key="import" component="a" onClick={() => alert('import-cluster')} id="import-cluster">
+        </DropdownItem>
+        <DropdownItem key="import" component="a" onClick={() => alert('import-cluster')} value="import-cluster">
           Import cluster
-        </DropdownItem>,
-      ]}
-    />
+        </DropdownItem>
+      </DropdownList>
+    </Dropdown>
   )
 }

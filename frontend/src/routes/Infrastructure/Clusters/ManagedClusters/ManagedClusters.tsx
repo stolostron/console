@@ -305,7 +305,7 @@ export function ClustersTable(props: {
         },
         variant: 'bulk-action',
       },
-      { id: 'seperator-0', variant: 'action-seperator' },
+      { id: 'seperator-0', variant: 'action-separator' },
       {
         id: 'updateAutomationTemplates',
         title: t('Update automation template'),
@@ -324,7 +324,7 @@ export function ClustersTable(props: {
         },
         variant: 'bulk-action',
       },
-      { id: 'seperator-1', variant: 'action-seperator' },
+      { id: 'seperator-1', variant: 'action-separator' },
       {
         id: 'hibernate-cluster',
         title: t('managed.hibernate.plural'),
@@ -405,7 +405,7 @@ export function ClustersTable(props: {
         },
         variant: 'bulk-action',
       },
-      { id: 'seperator-2', variant: 'action-seperator' },
+      { id: 'seperator-2', variant: 'action-separator' },
       {
         id: 'detachCluster',
         title: t('managed.detach.plural'),

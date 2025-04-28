@@ -25,6 +25,7 @@ echo FRONTEND_URL=$FRONTEND_URL >> ./backend/.env
 INSTALLATION_NAMESPACE=`oc get multiclusterhub -A -o jsonpath='{.items[0].metadata.namespace}' || true`
 INSTALLATION_NAMESPACE_MCE=`oc get multiclusterengine -A -o jsonpath='{.items[0].spec.targetNamespace}'`
 
+# Look up or create service account token secret for multicluster-engine console-mce ServiceAccount
 SA=$(oc get serviceaccounts -n $INSTALLATION_NAMESPACE_MCE console-mce -o jsonpath='{.metadata.name}')
 SA_SECRET=$(oc get secrets -n $INSTALLATION_NAMESPACE_MCE -o json | jq -r "[.items[] | select(.metadata.annotations[\"kubernetes.io/service-account.name\"] == \"$SA\" and .type == \"kubernetes.io/service-account-token\")][0].metadata.name // \"\"")
 if [[ -z "$SA_SECRET" ]]; then
@@ -48,6 +49,23 @@ SERVICE_CA_CERT=`oc get secret -n $INSTALLATION_NAMESPACE_MCE ${SA_SECRET} -o="j
 echo TOKEN=$SA_TOKEN >> ./backend/.env
 echo CA_CERT=$CA_CERT >> ./backend/.env
 echo SERVICE_CA_CERT=$SERVICE_CA_CERT >> ./backend/.env
+
+# Look up or create service account token secret for openshift-console console ServiceAccount
+CONSOLE_SA="console"
+CONSOLE_SA_SECRET=$(oc get secrets -n openshift-console -o json | jq -r "[.items[] | select(.metadata.annotations[\"kubernetes.io/service-account.name\"] == \"$CONSOLE_SA\" and .type == \"kubernetes.io/service-account-token\")][0].metadata.name // \"\"")
+if [[ -z "$CONSOLE_SA_SECRET" ]]; then
+  oc apply -f - << EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  name: off-cluster-token
+  namespace: openshift-console
+  annotations:
+    kubernetes.io/service-account.name: $CONSOLE_SA 
+type: kubernetes.io/service-account-token 
+EOF
+  CONSOLE_SA_SECRET="off-cluster-token"
+fi
 
 # Create or update OAuthClient
 REDIRECT_URL=http://localhost:${CONSOLE_PORT}/auth/callback

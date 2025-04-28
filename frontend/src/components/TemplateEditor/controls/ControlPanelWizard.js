@@ -3,13 +3,22 @@
 
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Button, Icon, Title, Stack, StackItem } from '@patternfly/react-core'
-import { Wizard, WizardFooter, WizardContextConsumer } from '@patternfly/react-core/deprecated'
+import {
+  ActionList,
+  ActionListGroup,
+  ActionListItem,
+  Button,
+  Icon,
+  Title,
+  Stack,
+  StackItem,
+  WizardFooterWrapper,
+  WizardStep,
+  Wizard,
+} from '@patternfly/react-core'
 import { ExclamationCircleIcon } from '@patternfly/react-icons'
 import ControlPanelFinish from './ControlPanelFinish'
 import get from 'lodash/get'
-import set from 'lodash/set'
-import noop from 'lodash/noop'
 import isEmpty from 'lodash/isEmpty'
 
 class ControlPanelWizard extends React.Component {
@@ -23,7 +32,6 @@ class ControlPanelWizard extends React.Component {
   render() {
     const {
       controlClasses,
-      setWizardRef,
       renderControlSections,
       renderNotifications,
       isEditing,
@@ -111,7 +119,7 @@ class ControlPanelWizard extends React.Component {
         ),
         control,
         controls,
-        canJumpTo: inx <= validStepIndex,
+        enabled: inx <= validStepIndex,
         component: (
           <div key={id} className={controlClasses}>
             <Stack hasGutter>
@@ -134,7 +142,6 @@ class ControlPanelWizard extends React.Component {
       steps.push({
         id: 'review',
         name: i18n('Review and create'),
-        control: { nextButtonLabel: isEditing ? i18n('Save') : i18n('Create') },
         component: (
           <div className={controlClasses}>
             <Stack hasGutter>
@@ -147,21 +154,8 @@ class ControlPanelWizard extends React.Component {
             </Stack>
           </div>
         ),
-        canJumpTo: steps.length + 1 <= validStepIndex,
+        enabled: steps.length + 1 <= validStepIndex,
       })
-    }
-
-    const onMove = (curr, prev) => {
-      // if wizard is stopped, remember where it left off
-      set(steps[0], 'control.startAtStep', curr.id)
-
-      // custom step change actions
-      if (this.props.onStepChange) {
-        this.props.onStepChange(
-          steps.find(({ id }) => id === curr.id),
-          steps.find(({ id }) => id === prev.id)
-        )
-      }
     }
 
     const onSave = () => {
@@ -176,7 +170,7 @@ class ControlPanelWizard extends React.Component {
     }
 
     const validateNextStep = (activeStep, onNext) => {
-      const { type, mutation, disableEditorOnSuccess, disablePreviousControlsOnSuccess } = activeStep.control
+      const { type, mutation, disableEditorOnSuccess, disablePreviousControlsOnSuccess } = activeStep.component
       switch (type) {
         case 'step':
           {
@@ -198,9 +192,9 @@ class ControlPanelWizard extends React.Component {
                   hasErrors = !isEmpty(result.value)
                   return hasErrors
                 })
-                activeStep.control.exception = hasErrors
+                activeStep.component.exception = hasErrors
                 if (!hasErrors) {
-                  activeStep.control.isComplete = true
+                  activeStep.component.isComplete = true
                   onNext()
                 }
                 this.forceUpdate()
@@ -232,9 +226,8 @@ class ControlPanelWizard extends React.Component {
                       })
                     })
                 }
-                activeStep.control.isComplete = true
-                delete activeStep.control.mutation
-                delete activeStep.control.nextButtonLabel
+                activeStep.component.isComplete = true
+                delete activeStep.component.mutation
                 onNext()
                 this.forceUpdate()
               }
@@ -252,58 +245,86 @@ class ControlPanelWizard extends React.Component {
     const { isProcessing, processingLabel } = this.state
     const isWorking = creationStatus === 'IN_PROGRESS' || isProcessing
     const isDisabled = creationStatus === 'DONE' || isWorking
-    const CustomFooter = (
-      <WizardFooter>
-        <WizardContextConsumer>
-          {({ activeStep, onNext, onBack, onClose }) => {
-            return (
-              <React.Fragment>
+
+    const CustomFooter = (activeStep, goToNextStep, goToPrevStep, close) => {
+      const activeStepIndex = steps.findIndex((step) => step.id === activeStep.id)
+      return (
+        <WizardFooterWrapper>
+          <ActionList>
+            <ActionListGroup>
+              <ActionListItem>
                 <Button
                   isLoading={isWorking}
                   isDisabled={isDisabled}
                   variant="primary"
                   spinnerAriaValueText={isWorking ? i18n('Processing') : undefined}
-                  onClick={!isWorking ? validateNextStep.bind(null, activeStep, onNext) : noop}
+                  onClick={() => {
+                    if (!isWorking) {
+                      validateNextStep(activeStep, goToNextStep)
+                    }
+                  }}
                 >
-                  {processingLabel || activeStep.control.nextButtonLabel || i18n('Next')}
+                  {processingLabel ||
+                    (activeStep.id === 'reviewSave'
+                      ? i18n('Save')
+                      : activeStep.id === 'review'
+                        ? isEditing
+                          ? i18n('Save')
+                          : i18n('Create')
+                        : i18n('Next'))}
                 </Button>
+              </ActionListItem>
+              <ActionListItem>
                 <Button
                   variant="secondary"
-                  onClick={activeStep.index === 0 && backButtonOverride ? backButtonOverride : onBack}
-                  isAriaDisabled={activeStep.index === 0 && !backButtonOverride}
+                  onClick={() => {
+                    if (activeStepIndex === 0 && backButtonOverride) {
+                      backButtonOverride()
+                    } else {
+                      goToPrevStep()
+                    }
+                  }}
+                  isAriaDisabled={activeStepIndex === 0 && !backButtonOverride}
                 >
                   {i18n('Back')}
                 </Button>
-                <Button variant="link" onClick={onClose}>
+              </ActionListItem>
+              <ActionListItem>
+                <Button variant="link" onClick={close}>
                   {i18n('Cancel')}
                 </Button>
-              </React.Fragment>
-            )
-          }}
-        </WizardContextConsumer>
-      </WizardFooter>
-    )
+              </ActionListItem>
+            </ActionListGroup>
+          </ActionList>
+        </WizardFooterWrapper>
+      )
+    }
 
     let startAtStep = get(steps[0], 'control.startAtStep')
     startAtStep = steps.findIndex(({ id }) => id === startAtStep) + 1
     if (startAtStep < 1) startAtStep = 1
     return (
       <Wizard
-        ref={setWizardRef}
         navAriaLabel={i18n('Create wizard steps')}
-        mainAriaLabel={i18n('Create wizard content')}
-        steps={steps}
+        title={i18n('Create wizard content')}
         height={'100%'}
-        onNext={onMove}
-        onBack={onMove}
-        onGoToStep={onMove}
         onSave={onSave}
         onClose={onClose}
-        startAtStep={startAtStep}
         footer={CustomFooter}
-      />
+      >
+        {steps.map((step) => renderStep(step))}
+      </Wizard>
     )
   }
+}
+
+function renderStep(step) {
+  const { id, name, component, enabled, steps } = step
+  return (
+    <WizardStep id={id} key={id} name={name} isDisabled={!enabled} steps={steps?.map((step) => renderStep(step))}>
+      {component}
+    </WizardStep>
+  )
 }
 
 ControlPanelWizard.propTypes = {
@@ -313,7 +334,6 @@ ControlPanelWizard.propTypes = {
   handleCancelCreate: PropTypes.func,
   handleCreateResource: PropTypes.func,
   isEditing: PropTypes.bool,
-  onStepChange: PropTypes.func,
   renderControlSections: PropTypes.func,
   renderNotifications: PropTypes.func,
   resetStatus: PropTypes.func,

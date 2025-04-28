@@ -2,17 +2,20 @@
 import {
   Button,
   Divider,
+  Dropdown,
+  DropdownItem,
   Menu,
   MenuContent,
   MenuItem,
   MenuList,
+  MenuToggle,
+  MenuToggleElement,
   Popper,
   TextInputGroup,
   TextInputGroupMain,
   TextInputGroupUtilities,
   Tooltip,
 } from '@patternfly/react-core'
-import { Dropdown, DropdownItem, DropdownToggle } from '@patternfly/react-core/deprecated'
 import { ArrowRightIcon, ExportIcon } from '@patternfly/react-icons'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import SearchIcon from '@patternfly/react-icons/dist/js/icons/search-icon'
@@ -544,40 +547,36 @@ export function Searchbar(props: SearchbarProps) {
             <Divider orientation={{ default: 'vertical' }} />
             <Tooltip content={t('Export search results')}>
               <Dropdown
-                onSelect={(event) => {
-                  event?.stopPropagation()
-                  setIsExportMenuOpen(false)
-                }}
+                onSelect={() => setIsExportMenuOpen(false)}
                 className="export-dropdownMenu"
-                toggle={
-                  <DropdownToggle
-                    toggleIndicator={null}
-                    onToggle={(event, value) => {
-                      event.stopPropagation()
-                      setIsExportMenuOpen(value)
+                toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+                  <MenuToggle
+                    ref={toggleRef}
+                    onClick={() => {
+                      setIsExportMenuOpen(!isExportMenuOpen)
                     }}
+                    variant="plain"
+                    isExpanded={isExportMenuOpen}
                     aria-label="export-search-result"
                     id="export-search-result"
                   >
                     <ExportIcon />
-                  </DropdownToggle>
-                }
+                  </MenuToggle>
+                )}
                 isOpen={isExportMenuOpen}
                 isPlain
-                dropdownItems={[
-                  <DropdownItem
-                    style={{ width: '10rem' }}
-                    key={'csv-export'}
-                    onClick={() =>
-                      handleCSVExport(currentQuery, savedSearchQueries, searchResultData, searchDefinitions, toast, t)
-                    }
-                    isDisabled={window.location.search === ''}
-                  >
-                    {t('Export as CSV')}
-                  </DropdownItem>,
-                ]}
-                position={'right'}
-              />
+              >
+                <DropdownItem
+                  style={{ width: '10rem' }}
+                  key={'csv-export'}
+                  onClick={() =>
+                    handleCSVExport(currentQuery, savedSearchQueries, searchResultData, searchDefinitions, toast, t)
+                  }
+                  isDisabled={window.location.search === ''}
+                >
+                  {t('Export as CSV')}
+                </DropdownItem>
+              </Dropdown>
             </Tooltip>
           </>
         )}

@@ -27,7 +27,6 @@ import {
   getClusterCountField,
   getClusterCountSearchLink,
   getClusterCountString,
-  getClusterList,
   getSearchLink,
 } from '../../helpers/resource-helper'
 import { TimeWindowLabels } from '../../components/TimeWindowLabels'
@@ -69,13 +68,10 @@ export function ApplicationOverviewPageContent() {
   const { t } = useTranslation()
   const localClusterStr = 'local-cluster'
 
-  const { argoApplicationsState, channelsState, namespacesState, placementDecisionsState, subscriptionsState } =
-    useSharedAtoms()
+  const { channelsState, namespacesState, subscriptionsState } = useSharedAtoms()
 
-  const argoApplications = useRecoilValue(argoApplicationsState)
   const channels = useRecoilValue(channelsState)
   const subscriptions = useRecoilValue(subscriptionsState)
-  const placementDecisions = useRecoilValue(placementDecisionsState)
   const namespaces = useRecoilValue(namespacesState)
 
   const managedClusters = useAllClusters(true)
@@ -138,14 +134,7 @@ export function ApplicationOverviewPageContent() {
     const { name, namespace } = applicationData.application.metadata
     const applicationResource = applicationData.application.app
 
-    const clusterList = getClusterList(
-      applicationResource,
-      argoApplications,
-      placementDecisions,
-      subscriptions,
-      localCluster,
-      managedClusters
-    )
+    const clusterList = applicationData.application?.clusterList ?? []
     const clusterCount = getClusterCount(clusterList, localCluster?.name ?? '')
     const clusterCountString = getClusterCountString(t, clusterCount, clusterList, applicationResource)
     const clusterCountSearchLink = getClusterCountSearchLink(applicationResource, clusterCount, clusterList)

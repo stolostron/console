@@ -27,6 +27,7 @@ import {
   clickBulkAction,
   clickByLabel,
   clickByText,
+  clickRowKebabAction,
   getCSVDownloadLink,
   getCSVExportSpies,
   selectTableRow,
@@ -206,32 +207,29 @@ describe('Automations page', () => {
     await waitForText(clusterCurator1.metadata!.name!)
   })
 
-  test('should be able to delete a template', async () => {
+  test('should be able to delete a template when using row action menu', async () => {
     const deleteNock = nockDelete(clusterCurator2)
     render(<TestIntegrationPage providerConnections={mockProviderConnections} clusterCurators={clusterCurators} />)
     await waitForText(clusterCurator2.metadata!.name!)
-    await clickByLabel('Actions', 1) // Click the action button on the first table row
-    await clickByText('Delete')
+    await clickRowKebabAction(2, 'Delete')
     await clickByText('Delete')
     await waitForNock(deleteNock)
   })
 
-  test('should show error if delete a template fails', async () => {
+  test('should show error if delete a template fails when using row action menu', async () => {
     const badRequestStatus = nockDelete(clusterCurator2, mockBadRequestStatus)
     render(<TestIntegrationPage providerConnections={mockProviderConnections} clusterCurators={clusterCurators} />)
     await waitForText(clusterCurator2.metadata!.name!)
-    await clickByLabel('Actions', 1) // Click the action button on the first table row
-    await clickByText('Delete')
+    await clickRowKebabAction(2, 'Delete')
     await clickByText('Delete')
     await waitForNock(badRequestStatus)
     await waitForText(`Could not process request because of invalid data.`)
   })
 
-  test('should be able to cancel delete a template', async () => {
+  test('should be able to cancel delete a template when using row action menu', async () => {
     render(<TestIntegrationPage providerConnections={mockProviderConnections} clusterCurators={clusterCurators} />)
     await waitForText(clusterCurator2.metadata!.name!)
-    await clickByLabel('Actions', 1) // Click the action button on the first table row
-    await clickByText('Delete')
+    await clickRowKebabAction(1, 'Delete')
     await clickByText('Cancel')
     await waitForNotText('Cancel')
   })

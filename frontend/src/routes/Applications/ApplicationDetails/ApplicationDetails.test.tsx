@@ -6,9 +6,7 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import {
-  applicationSetsState,
   applicationsState,
-  argoApplicationsState,
   channelsState,
   managedClusterInfosState,
   managedClustersState,
@@ -17,17 +15,15 @@ import {
   placementRulesState,
   subscriptionsState,
 } from '../../../atoms'
-import { nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../../lib/nock-util'
+import { nockAggegateRequest, nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../../lib/nock-util'
 import { defaultPlugin, PluginContext } from '../../../lib/PluginContext'
-import { waitForText } from '../../../lib/test-util'
+import { waitForNocks, waitForText } from '../../../lib/test-util'
 import { ActionExtensionProps } from '../../../plugin-extensions/properties'
 import { AcmExtension } from '../../../plugin-extensions/types'
 import { GetMessagesDocument, SearchSchemaDocument } from '../../Search/search-sdk/search-sdk'
 import {
   mockApplication0,
   mockApplications,
-  mockApplicationSets,
-  mockArgoApplications,
   mockChannels,
   mockManagedClusterInfos,
   mockManagedClusters,
@@ -35,6 +31,7 @@ import {
   mockPlacementrules,
   mockPlacementsDecisions,
   mockSubscriptions,
+  uidata,
 } from '../Application.sharedmocks'
 import ApplicationDetailsPage from './ApplicationDetails'
 
@@ -328,6 +325,7 @@ describe('Applications Page', () => {
     nockIgnoreRBAC()
     nockSearch(mockSearchQuery, mockSearchResponse)
     nockIgnoreApiPaths()
+    const nock = nockAggegateRequest('uidata', mockApplication0, uidata, 200, true)
     const mocks = [
       {
         request: {
@@ -361,8 +359,6 @@ describe('Applications Page', () => {
           snapshot.set(placementRulesState, mockPlacementrules)
           snapshot.set(placementDecisionsState, mockPlacementsDecisions)
           snapshot.set(managedClustersState, mockManagedClusters)
-          snapshot.set(applicationSetsState, mockApplicationSets)
-          snapshot.set(argoApplicationsState, mockArgoApplications)
           snapshot.set(managedClusterInfosState, mockManagedClusterInfos)
           snapshot.set(namespacesState, mockNamespaces)
         }}
@@ -383,13 +379,19 @@ describe('Applications Page', () => {
     )
     // wait for page to load
     await waitForText(mockApplication0.metadata.name!, true)
+    await waitForNocks([nock])
   })
 
   test('Render ApplicationDetailsPage', async () => {
     expect(screen.getByText('Overview')).toBeTruthy()
     expect(screen.getByText('Topology')).toBeTruthy()
-    expect(screen.getByText('Actions')).toBeTruthy()
+    await waitForText('Actions', true)
     userEvent.click(screen.getByText('Actions'))
-    userEvent.click(screen.getByText('Action1'))
+    userEvent.click(
+      screen.getByRole('menuitem', {
+        name: /delete application/i,
+      })
+    )
+    expect(screen.getByText(/permanently delete application application-0\?/i)).toBeTruthy()
   })
 })

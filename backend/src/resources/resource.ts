@@ -24,10 +24,16 @@ export interface IResource {
     creationTimestamp?: string | number | Date
   }
 }
+export interface IUIData {
+  clusterList: string[]
+  appSetRelatedResources: unknown
+  appSetApps: IResource[]
+}
 
 export type Cluster = {
   name: string
   kubeApiServer?: string
+  consoleUrl?: string
 }
 export interface ClusterDeployment extends IResource {
   spec?: {
@@ -41,13 +47,158 @@ export interface ClusterDeployment extends IResource {
       name: string
     }
   }
-  status?: {
+  status: {
+    webConsoleURL?: string
     // from ClusterDeployment
     apiURL?: string
+    cluster?: string
+  }
+}
+export interface ManagedCluster extends IResource {
+  status: {
+    clusterClaims: {
+      name: string
+      value: string
+    }[]
   }
 }
 export interface ManagedClusterInfo extends IResource {
   spec?: {
     masterEndpoint: string
+  }
+  status: {
+    consoleURL?: string
+  }
+}
+export interface HostedClusterK8sResource extends IResource {
+  spec?: {
+    masterEndpoint: string
+    dns: {
+      baseDomain: string
+    }
+  }
+}
+
+export interface IResourceDefinition {
+  apiVersion: string
+  kind: string
+}
+export interface IPlacementDecision extends IResource {
+  status?: {
+    decisions?: [{ clusterName: string }]
+  }
+}
+export interface ISubscription extends IResource {
+  spec?: {
+    placement?: {
+      placementRef?: {
+        name: string
+      }
+    }
+  }
+  status?: {
+    decisions?: [{ clusterName: string }]
+  }
+}
+
+export const ApplicationApiVersion = 'app.k8s.io/v1beta1'
+export type ApplicationApiVersionType = 'app.k8s.io/v1beta1'
+
+export const ApplicationKind = 'Application'
+export type ApplicationKindType = 'Application'
+
+export const ApplicationDefinition: IResourceDefinition = {
+  apiVersion: ApplicationApiVersion,
+  kind: ApplicationKind,
+}
+
+export const ArgoApplicationApiVersion = 'argoproj.io/v1alpha1'
+export type ArgoApplicationApiVersionType = 'argoproj.io/v1alpha1'
+
+export const ArgoApplicationKind = 'Application'
+export type ArgoApplicationKindType = 'Application'
+
+export const ArgoApplicationDefinition: IResourceDefinition = {
+  apiVersion: ArgoApplicationApiVersion,
+  kind: ArgoApplicationKind,
+}
+export interface IArgoApplication extends IResource {
+  cluster?: string
+  spec: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    source?: {
+      path?: string
+      repoURL: string
+      targetRevision?: string
+      chart?: string
+    }
+    destination: {
+      name?: string
+      namespace: string
+      server?: string
+    }
+  }
+  status?: {
+    cluster?: string
+    decisions?: [{ clusterName: string }]
+  }
+}
+
+export const ApplicationSetApiVersion = 'argoproj.io/v1alpha1'
+export type ApplicationSetApiVersionType = 'argoproj.io/v1alpha1'
+
+export const ApplicationSetKind = 'ApplicationSet'
+export type ApplicationSetKindType = 'ApplicationSet'
+
+export const ApplicationSetDefinition: IResourceDefinition = {
+  apiVersion: ApplicationSetApiVersion,
+  kind: ApplicationSetKind,
+}
+
+export interface Selector {
+  matchLabels?: Record<string, string>
+}
+export interface IApplicationSet extends IResource {
+  apiVersion: ApplicationSetApiVersionType
+  kind: ApplicationSetKindType
+  spec: {
+    template?: {
+      spec?: {
+        destination?: {
+          namespace: string
+          server: string
+        }
+        project: string
+        source?: {
+          path?: string
+          repoURL: string
+          targetRevision?: string
+          chart?: string
+        }
+        sources?: {
+          path?: string
+          repoURL: string
+          targetRevision?: string
+          chart?: string
+          repositoryType?: string
+        }[]
+      }
+    }
+    generators?: {
+      clusterDecisionResource?: {
+        labelSelector?: Selector
+        configMapRef?: string
+        requeueAfterSeconds?: number
+      }
+    }[]
+  }
+  transformed?: {
+    clusterCount?: string
+  }
+}
+export interface IOCPApplication extends IResource {
+  label?: string
+  status?: {
+    cluster?: string
   }
 }

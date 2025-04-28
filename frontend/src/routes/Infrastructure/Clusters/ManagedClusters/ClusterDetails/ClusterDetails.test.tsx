@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import _ from 'lodash'
 import { Scope } from 'nock/types'
 import { AgentClusterInstallK8sResource, HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
@@ -37,6 +36,7 @@ import {
 import { mockManagedClusterSet, mockOpenShiftConsoleConfigMap } from '../../../../../lib/test-metadata'
 import {
   clickByLabel,
+  clickByRole,
   clickByText,
   typeByText,
   waitForCalled,
@@ -1544,11 +1544,7 @@ describe('ClusterDetails with not found', () => {
       </RecoilRoot>
     )
     await waitForText('Not found')
-    userEvent.click(
-      screen.getByRole('button', {
-        name: /back to clusters/i,
-      })
-    )
+    await clickByRole('button', { name: /back to clusters/i })
     expect(window.location.pathname).toEqual('/')
     await waitForNock(metricNock)
   })
@@ -1598,11 +1594,8 @@ describe('ClusterDetails with not found', () => {
       nockCreate(mockNamespace, mockNamespace),
     ]
 
-    userEvent.click(
-      screen.getByRole('button', {
-        name: /import cluster/i,
-      })
-    )
+    await clickByRole('button', { name: /import cluster/i })
+
     await waitForNocks(mockImportHostedCluster)
   })
 })

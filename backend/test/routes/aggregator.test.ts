@@ -9,6 +9,7 @@ import { initResourceCache } from '../../src/routes/events'
 import { request } from '../mock-request'
 import nock from 'nock'
 import { discoverSystemAppNamespacePrefixes } from '../../src/routes/aggregators/utils'
+import { polledAggregation } from '../../src/routes/aggregator'
 
 /// to get exact nock request body, put bp at line 303 in /backend/node_modules/nock/lib/intercepted_request_router.js
 describe(`aggregator Route`, function () {
@@ -17,6 +18,22 @@ describe(`aggregator Route`, function () {
 
     // initialize events
     initResourceCache(resourceCache)
+    polledAggregation(
+      {
+        kind: 'Application',
+        apiVersion: '',
+      },
+      argoApps,
+      true
+    )
+    polledAggregation(
+      {
+        kind: 'ApplicationSet',
+        apiVersion: '',
+      },
+      argoAppSets,
+      true
+    )
 
     // setup nocks
     setupNocks()
@@ -84,29 +101,112 @@ describe(`aggregator Route`, function () {
 
     // FILTERED
     const res = await request('POST', '/aggregate/statuses', {
-      clusters: ['local-cluster'],
+      clusters: ['local-cluster', 'feng-managed'],
     })
     expect(res.statusCode).toEqual(200)
     expect(JSON.stringify(await parseResponseJsonBody(res))).toEqual(JSON.stringify(responseCount))
+  })
+  it(`should return ui data`, async function () {
+    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+
+    // initialize events
+    initResourceCache(resourceCache)
+    polledAggregation(
+      {
+        kind: 'Application',
+        apiVersion: '',
+      },
+      argoApps,
+      true
+    )
+    polledAggregation(
+      {
+        kind: 'ApplicationSet',
+        apiVersion: '',
+      },
+      argoAppSets,
+      true
+    )
+
+    // setup nocks
+    setupNocks(true)
+
+    // fill in application cache from resourceCache and search api mocks
+    const prefixes = await discoverSystemAppNamespacePrefixes()
+    expect(JSON.stringify(prefixes)).toEqual(JSON.stringify(systemPrefixes))
+    aggregateLocalApplications()
+    await aggregateRemoteApplications(1)
+
+    // FILTERED
+    const res = await request('POST', '/aggregate/uidata', {
+      apiVersion: 'argoproj.io/v1alpha1',
+      kind: 'ApplicationSet',
+      metadata: {
+        name: 'argoapplicationset-1',
+        namespace: 'openshift-gitops',
+      },
+    })
+    expect(res.statusCode).toEqual(200)
+    expect(JSON.stringify(await parseResponseJsonBody(res))).toEqual(JSON.stringify(uidata))
   })
 })
 
 const systemPrefixes = ['openshift', 'hive', 'open-cluster-management', 'multicluster-engine']
 
 const responseCount = {
-  itemCount: '3',
+  itemCount: '4',
   filterCounts: {
     type: {
       subscription: 1,
       appset: 1,
+      argo: 1,
       openshift: 1,
     },
     cluster: {
       'local-cluster': 3,
+      'feng-managed': 1,
     },
   },
-  systemAppNSPrefixes: systemPrefixes,
+  systemAppNSPrefixes: ['openshift', 'hive', 'open-cluster-management', 'multicluster-engine'],
   loading: false,
+}
+type RelatedResourcesType = (string | string[])[]
+
+const uidata = {
+  clusterList: ['local-cluster'],
+  appSetRelatedResources: ['', []] as RelatedResourcesType,
+  appSetApps: [
+    {
+      apiVersion: 'argoproj.io/v1alpha1',
+      kind: 'Application',
+      metadata: {
+        name: 'argoapplication-2',
+        namespace: 'openshift-gitops',
+        ownerReferences: [
+          {
+            name: 'argoapplicationset-1',
+            apiVersion: '',
+            kind: 'ApplicationSet',
+          },
+        ],
+        uid: 'cc84e62f-edb9-413b-8bd7-38a32a21ce79',
+      },
+      spec: {
+        destination: {
+          namespace: 'argoapplication-2-ns',
+          server: 'https://api.console-aws-48-pwc27.dev02.red-chesterfield.com:6443',
+        },
+        project: 'default',
+        source: {
+          path: 'foo',
+          repoURL: 'https://test.com/test.git',
+          targetRevision: 'HEAD',
+        },
+        syncPolicy: {},
+      },
+      status: {},
+    },
+  ],
 }
 
 const responseNoFilter = {
@@ -114,18 +214,18 @@ const responseNoFilter = {
   items: [
     {
       apiVersion: 'argoproj.io/v1alpha1',
-      kind: 'ApplicationSet',
-      metadata: {
-        name: 'argoapplication-1',
-        namespace: 'openshift-gitops',
-      },
-    },
-    {
-      apiVersion: 'argoproj.io/v1alpha1',
       kind: 'Application',
       metadata: {
         name: 'argoapplication-1',
         namespace: 'openshift-gitops',
+        ownerReferences: [
+          {
+            name: 'argoapplication-1',
+            apiVersion: '',
+            kind: '',
+          },
+        ],
+        uid: 'cc84e62f-edb9-413b-8bd7-38a32a21ce72',
       },
       spec: {
         destination: {
@@ -141,6 +241,67 @@ const responseNoFilter = {
         syncPolicy: {},
       },
       status: {},
+      uidata: {
+        clusterList: ['unknown'],
+        appSetRelatedResources: ['', []] as RelatedResourcesType,
+        appSetApps: [] as string[],
+      },
+    },
+    {
+      apiVersion: 'argoproj.io/v1alpha1',
+      kind: 'ApplicationSet',
+      metadata: {
+        name: 'argoapplicationset-1',
+        namespace: 'openshift-gitops',
+        uid: 'cc84e62f-edb9-413b-8bd7-38a32a21ce76',
+      },
+      spec: {
+        generators: [
+          {
+            clusterDecisionResource: {
+              configMapRef: 'acm-placement',
+              labelSelector: {
+                matchLabels: {
+                  'cluster.open-cluster-management.io/placement': 'test-placement-1',
+                },
+              },
+              requeueAfterSeconds: 180,
+            },
+          },
+        ],
+        template: {
+          metadata: {
+            labels: {
+              'velero.io/exclude-from-backup': 'true',
+            },
+            name: 'magchen-appset-{{name}}',
+          },
+          spec: {
+            destination: {
+              namespace: 'magchen-ns',
+              server: '{{server}}',
+            },
+            project: 'default',
+            source: {
+              path: 'acmnestedapp',
+              repoURL: 'https://github.com/fxiang1/app-samples',
+              targetRevision: 'main',
+            },
+            syncPolicy: {
+              automated: {
+                prune: true,
+                selfHeal: true,
+              },
+              syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
+            },
+          },
+        },
+      },
+      uidata: {
+        clusterList: ['local-cluster'],
+        appSetRelatedResources: ['test-placement-1', []] as RelatedResourcesType,
+        appSetApps: ['argoapplication-2'] as string[],
+      },
     },
     {
       apiVersion: 'apps/v1',
@@ -154,6 +315,11 @@ const responseNoFilter = {
         cluster: 'local-cluster',
         resourceName: 'authentication-operator',
       },
+      uidata: {
+        clusterList: ['local-cluster'],
+        appSetRelatedResources: ['', []] as RelatedResourcesType,
+        appSetApps: [] as string[],
+      },
     },
     {
       apiVersion: 'apps/v1',
@@ -166,6 +332,11 @@ const responseNoFilter = {
       status: {
         cluster: 'test-cluster',
         resourceName: 'authentication-operator',
+      },
+      uidata: {
+        clusterList: ['test-cluster'],
+        appSetRelatedResources: ['', []],
+        appSetApps: [],
       },
     },
     {
@@ -192,6 +363,11 @@ const responseNoFilter = {
         health: {},
         sync: {},
       },
+      uidata: {
+        clusterList: ['feng-managed'],
+        appSetRelatedResources: ['', []] as RelatedResourcesType,
+        appSetApps: [] as string[],
+      },
     },
     {
       apiVersion: 'app.k8s.io/v1beta1',
@@ -205,6 +381,11 @@ const responseNoFilter = {
             'default/test-subscription-1,default/test-subscription-1-local',
         },
       },
+      uidata: {
+        clusterList: ['local-cluster'],
+        appSetRelatedResources: ['', []] as RelatedResourcesType,
+        appSetApps: [] as string[],
+      },
     },
     {
       apiVersion: 'apps/v1',
@@ -217,6 +398,11 @@ const responseNoFilter = {
       status: {
         cluster: 'test-cluster',
         resourceName: 'test-app',
+      },
+      uidata: {
+        clusterList: ['test-cluster'],
+        appSetRelatedResources: ['', []],
+        appSetApps: [],
       },
     },
   ],
@@ -248,6 +434,11 @@ const responseFiltered = {
             'default/test-subscription-1,default/test-subscription-1-local',
         },
       },
+      uidata: {
+        clusterList: ['local-cluster'],
+        appSetRelatedResources: ['', []] as RelatedResourcesType,
+        appSetApps: [] as string[],
+      },
     },
   ],
   processedItemCount: 1,
@@ -266,7 +457,6 @@ const responseFiltered = {
     },
   },
 }
-
 /// to get exact nock request body, put bp at line 303 in /backend/node_modules/nock/lib/intercepted_request_router.js
 function setupNocks(prefixes?: boolean) {
   //
@@ -530,6 +720,22 @@ const resourceCache = {
       eventID: 89,
     },
   },
+  // cluster info
+  '/internal.open-cluster-management.io/v1beta1/managedclusterinfos': {
+    '29496936-2d1d-4460-af37-f68471293e66': {
+      resource: {
+        apiVersion: 'internal.open-cluster-management.io/v1beta1',
+        kind: 'ManagedClusterInfo',
+        metadata: {
+          name: 'local-cluster',
+        },
+        status: {
+          consoleURL: 'https://api.console-aws-48-pwc27.dev02.red-chesterfield.com:6443',
+        },
+      },
+      eventID: 89,
+    },
+  },
   // subscription app
   '/app.k8s.io/v1beta1/applications': {
     'cc84e62f-edb9-413b-8bd7-38a32a21ce72': {
@@ -544,49 +750,6 @@ const resourceCache = {
             'apps.open-cluster-management.io/subscriptions':
               'default/test-subscription-1,default/test-subscription-1-local',
           },
-        },
-      },
-      eventID: 0,
-    },
-  },
-
-  // local argo app
-  '/argoproj.io/v1alpha1/applications': {
-    'cc84e62f-edb9-413b-8bd7-38a32a21ce72': {
-      resource: {
-        apiVersion: 'argoproj.io/v1alpha1',
-        kind: 'Application',
-        metadata: {
-          name: 'argoapplication-1',
-          namespace: 'openshift-gitops',
-        },
-        spec: {
-          destination: {
-            namespace: 'argoapplication-1-ns',
-            server: 'https://api.console-aws-48-pwc27.dev02.red-chesterfield.com:6443',
-          },
-          project: 'default',
-          source: {
-            path: 'foo',
-            repoURL: 'https://test.com/test.git',
-            targetRevision: 'HEAD',
-          },
-          syncPolicy: {},
-        },
-        status: {},
-      },
-      eventID: 0,
-    },
-  },
-  // app set
-  '/argoproj.io/v1alpha1/applicationsets': {
-    'cc84e62f-edb9-413b-8bd7-38a32a21ce72': {
-      resource: {
-        apiVersion: 'argoproj.io/v1alpha1',
-        kind: 'ApplicationSet',
-        metadata: {
-          name: 'argoapplication-1',
-          namespace: 'openshift-gitops',
         },
       },
       eventID: 0,
@@ -725,6 +888,44 @@ const resourceCache = {
       },
       eventID: 31,
     },
+    '7ba09bb1-5211-490f-a6d1-456392886ab0': {
+      resource: {
+        apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+        kind: 'PlacementDecision',
+        metadata: {
+          creationTimestamp: '2024-07-02T17:45:25Z',
+          generation: 1,
+          labels: {
+            'cluster.open-cluster-management.io/decision-group-index': '0',
+            'cluster.open-cluster-management.io/decision-group-name': '',
+            'cluster.open-cluster-management.io/placement': 'test-placement-1',
+          },
+          name: 'test-placement-1-decision-1',
+          namespace: 'openshift-gitops',
+          ownerReferences: [
+            {
+              apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+              blockOwnerDeletion: true,
+              controller: true,
+              kind: 'Placement',
+              name: 'test-placement-1',
+              uid: '458708a1-f9fd-498b-9c2f-420ba246fe3f',
+            },
+          ],
+          resourceVersion: '1625071',
+          uid: '7ba09bb1-5211-490f-a6d1-456322886ab0',
+        },
+        status: {
+          decisions: [
+            {
+              clusterName: 'mycluster',
+              reason: '',
+            },
+          ],
+        },
+      },
+      eventID: 31,
+    },
     'c93db359-83b3-435b-9e30-065ac8a10143': {
       resource: {
         apiVersion: 'cluster.open-cluster-management.io/v1beta1',
@@ -765,3 +966,108 @@ const resourceCache = {
     },
   },
 }
+
+const argoApps = [
+  {
+    apiVersion: 'argoproj.io/v1alpha1',
+    kind: 'Application',
+    metadata: {
+      name: 'argoapplication-1',
+      namespace: 'openshift-gitops',
+      ownerReferences: [{ name: 'argoapplication-1', apiVersion: '', kind: '' }],
+      uid: 'cc84e62f-edb9-413b-8bd7-38a32a21ce72',
+    },
+    spec: {
+      destination: {
+        namespace: 'argoapplication-1-ns',
+        server: 'https://api.console-aws-48-pwc27.dev02.red-chesterfield.com:6443',
+      },
+      project: 'default',
+      source: {
+        path: 'foo',
+        repoURL: 'https://test.com/test.git',
+        targetRevision: 'HEAD',
+      },
+      syncPolicy: {},
+    },
+    status: {},
+  },
+  {
+    apiVersion: 'argoproj.io/v1alpha1',
+    kind: 'Application',
+    metadata: {
+      name: 'argoapplication-2',
+      namespace: 'openshift-gitops',
+      ownerReferences: [{ name: 'argoapplicationset-1', apiVersion: '', kind: 'ApplicationSet' }],
+      uid: 'cc84e62f-edb9-413b-8bd7-38a32a21ce79',
+    },
+    spec: {
+      destination: {
+        namespace: 'argoapplication-2-ns',
+        server: 'https://api.console-aws-48-pwc27.dev02.red-chesterfield.com:6443',
+      },
+      project: 'default',
+      source: {
+        path: 'foo',
+        repoURL: 'https://test.com/test.git',
+        targetRevision: 'HEAD',
+      },
+      syncPolicy: {},
+    },
+    status: {},
+  },
+]
+
+const argoAppSets = [
+  {
+    apiVersion: 'argoproj.io/v1alpha1',
+    kind: 'ApplicationSet',
+    metadata: {
+      name: 'argoapplicationset-1',
+      namespace: 'openshift-gitops',
+      uid: 'cc84e62f-edb9-413b-8bd7-38a32a21ce76',
+    },
+    spec: {
+      generators: [
+        {
+          clusterDecisionResource: {
+            configMapRef: 'acm-placement',
+            labelSelector: {
+              matchLabels: {
+                'cluster.open-cluster-management.io/placement': 'test-placement-1',
+              },
+            },
+            requeueAfterSeconds: 180,
+          },
+        },
+      ],
+      template: {
+        metadata: {
+          labels: {
+            'velero.io/exclude-from-backup': 'true',
+          },
+          name: 'magchen-appset-{{name}}',
+        },
+        spec: {
+          destination: {
+            namespace: 'magchen-ns',
+            server: '{{server}}',
+          },
+          project: 'default',
+          source: {
+            path: 'acmnestedapp',
+            repoURL: 'https://github.com/fxiang1/app-samples',
+            targetRevision: 'main',
+          },
+          syncPolicy: {
+            automated: {
+              prune: true,
+              selfHeal: true,
+            },
+            syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
+          },
+        },
+      },
+    },
+  },
+]

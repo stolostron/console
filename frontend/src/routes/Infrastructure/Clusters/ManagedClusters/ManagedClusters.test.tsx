@@ -19,7 +19,6 @@ import {
   clickBulkAction,
   clickByLabel,
   clickByText,
-  clickRowAction,
   selectTableRow,
   typeByText,
   waitForNock,
@@ -29,6 +28,8 @@ import {
   waitForText,
   getCSVExportSpies,
   getCSVDownloadLink,
+  clickRowKebabAction,
+  clickByRole,
 } from '../../../../lib/test-util'
 import { ManagedCluster, ManagedClusterDefinition, ManagedClusterInfo, ResourceAttributes } from '../../../../resources'
 import ManagedClusters from './ManagedClusters'
@@ -100,17 +101,6 @@ describe('Clusters Page', () => {
     waitForTestId('add-ons')
   })
 
-  test('should be able to delete cluster using row action', async () => {
-    await clickRowAction(1, 'Destroy cluster')
-    await typeByText(
-      `Confirm by typing "${mockManagedCluster0.metadata!.name!}" below:`,
-      mockManagedCluster0.metadata!.name!
-    )
-    const deleteNocks: Scope[] = [nockDelete(mockManagedCluster0), nockDelete(mockClusterDeployment0)]
-    await clickByText('Destroy')
-    await waitForNocks(deleteNocks)
-  })
-
   test('should be able to delete cluster using bulk action', async () => {
     await selectTableRow(1)
     await clickBulkAction('Destroy clusters')
@@ -120,14 +110,27 @@ describe('Clusters Page', () => {
     await waitForNocks(deleteNocks)
   })
 
+  test('should be able to delete cluster using row action', async () => {
+    await clickRowKebabAction(1, 'Destroy cluster')
+    await typeByText(
+      `Confirm by typing "${mockManagedCluster0.metadata!.name!}" below:`,
+      mockManagedCluster0.metadata!.name!
+    )
+    const deleteNocks: Scope[] = [nockDelete(mockManagedCluster0), nockDelete(mockClusterDeployment0)]
+    await clickByText('Destroy')
+    await waitForText('Destroying')
+    await waitForNocks(deleteNocks)
+  })
+
   test('should be able to detach cluster using row action', async () => {
-    await clickRowAction(1, 'Detach cluster')
+    await clickRowKebabAction(1, 'Detach cluster')
     await typeByText(
       `Confirm by typing "${mockManagedCluster0.metadata!.name!}" below:`,
       mockManagedCluster0.metadata!.name!
     )
     const deleteNocks: Scope[] = [nockDelete(mockManagedCluster0)]
     await clickByText('Detach')
+    await waitForText('Detaching')
     await waitForNocks(deleteNocks)
   })
 
@@ -150,20 +153,20 @@ describe('Clusters Page', () => {
   })
 
   test('overflow menu should hide upgrade and channel select options if currently upgrading', async () => {
-    await clickByLabel('Actions', 4)
+    await clickByLabel('Actions', 5)
     await waitForNotText('Upgrade cluster')
     await waitForNotText('Select channel')
   })
 
   test('overflow menu should allow upgrade if has available upgrade', async () => {
-    await clickByLabel('Actions', 3)
-    await clickByText('Upgrade cluster')
+    await clickByLabel('Actions', 4)
+    await clickByRole('menuitem', { name: 'Upgrade cluster' })
     await waitForText('Current version')
   })
 
   test('overflow menu should allow channel select if has available channels', async () => {
-    await clickByLabel('Actions', 3)
-    await clickByText('Select channel')
+    await clickByLabel('Actions', 4)
+    await clickByRole('menuitem', { name: 'Select channel' })
     await waitForText('Current channel')
   })
 

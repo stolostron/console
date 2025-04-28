@@ -17,6 +17,8 @@ import {
   clickBulkAction,
   clickByLabel,
   clickByText,
+  clickRowKebabAction,
+  clickRowActionButton,
   getCSVDownloadLink,
   getCSVExportSpies,
   selectTableRow,
@@ -177,43 +179,39 @@ describe('provider connections page', () => {
     await waitForText(mockProviderConnection1.metadata!.name!)
   })
 
-  test('should goto the edit connection page', async () => {
+  test('should open credential edit page when using row action menu', async () => {
     nockGet(getSecrets1.req, getSecrets1.res) // get 'secrets' in 'provider-connection-namespace' namespace
-    render(<TestProviderConnectionsPage providerConnections={mockProviderConnections} />)
+    render(<TestProviderConnectionsPage providerConnections={[mockProviderConnection1]} />)
     await waitForText(mockProviderConnection1.metadata!.name!)
-    await clickByLabel('Actions', 0) // Click the action button on the first table row
-    await clickByText('Edit credential')
+    await clickRowKebabAction(1, 'Edit credential')
     // Verify the information shows up
     await waitForText('A credential stores the access credentials and configuration information for creating clusters.')
     await waitForText('Basic information')
   })
 
-  test('should be able to delete a provider connection', async () => {
+  test('should be able to delete a provider connection when using row action menu', async () => {
     const deleteNock = nockDelete(mockProviderConnection1)
-    render(<TestProviderConnectionsPage providerConnections={mockProviderConnections} />)
+    render(<TestProviderConnectionsPage providerConnections={[mockProviderConnection1]} />)
     await waitForText(mockProviderConnection1.metadata!.name!)
-    await clickByLabel('Actions', 0) // Click the action button on the first table row
-    await clickByText('Delete credential')
+    await clickRowKebabAction(1, 'Delete credential')
     await clickByText('Delete')
     await waitForNock(deleteNock)
   })
 
-  test('should show error if delete a provider connection fails', async () => {
+  test('should show error if delete a provider connection fails when using row action menu', async () => {
     const badRequestStatus = nockDelete(mockProviderConnection1, mockBadRequestStatus)
-    render(<TestProviderConnectionsPage providerConnections={mockProviderConnections} />)
+    render(<TestProviderConnectionsPage providerConnections={[mockProviderConnection1]} />)
     await waitForText(mockProviderConnection1.metadata!.name!)
-    await clickByLabel('Actions', 0) // Click the action button on the first table row
-    await clickByText('Delete credential')
+    await clickRowKebabAction(1, 'Delete credential')
     await clickByText('Delete')
     await waitForNock(badRequestStatus)
     await waitForText(`Could not process request because of invalid data.`)
   })
 
-  test('should be able to cancel delete a provider connection', async () => {
-    render(<TestProviderConnectionsPage providerConnections={mockProviderConnections} />)
+  test('should be able to cancel delete a provider connection when using row action menu', async () => {
+    render(<TestProviderConnectionsPage providerConnections={[mockProviderConnection1]} />)
     await waitForText(mockProviderConnection1.metadata!.name!)
-    await clickByLabel('Actions', 0) // Click the action button on the first table row
-    await clickByText('Delete credential')
+    await clickRowKebabAction(1, 'Delete credential')
     await clickByText('Cancel')
     await waitForNotText('Cancel')
   })
@@ -263,7 +261,7 @@ describe('provider connections page RBAC', () => {
     ]
     render(<TestProviderConnectionsPage providerConnections={mockProviderConnections} />)
     await waitForText(mockProviderConnection1.metadata!.name!)
-    await clickByLabel('Actions', 0) // Click the action button on the first table row
+    await clickRowActionButton(1)
     await waitForNocks(rbacNocks)
   })
 })

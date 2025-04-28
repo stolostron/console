@@ -828,6 +828,8 @@ export function getDistributionInfo(
     (cc) => cc.name === 'product.open-cluster-management.io'
   )?.value
 
+  const isHostedCluster = getIsHostedCluster(managedCluster) || !hasControlPlaneNodes()
+
   let isManagedOpenShift = false // OSD (and ARO, ROKS once supported)
   let distributionValue = 'OpenShift'
   switch (productClaim) {
@@ -836,7 +838,7 @@ export function getDistributionInfo(
       isManagedOpenShift = true
       break
     case 'ROSA':
-      distributionValue = hasControlPlaneNodes() ? 'ROSA Classic' : 'ROSA'
+      distributionValue = isHostedCluster ? 'ROSA' : 'ROSA Classic'
       isManagedOpenShift = true
       break
     case 'ARO':
@@ -1007,11 +1009,13 @@ export function getDistributionInfo(
           return !!version
         }) || []
 
+    const isAROClassic = productClaim === 'ARO' && !isHostedCluster
+
     const isReadyUpdates =
       upgradeInfo.availableUpdates &&
       upgradeInfo.availableUpdates.length > 0 &&
       !upgradeInfo.upgradeFailed &&
-      (!isManagedOpenShift || productClaim === 'ARO') &&
+      (!isManagedOpenShift || isAROClassic) &&
       !upgradeInfo.isUpgrading &&
       curatorIsIdle
     upgradeInfo.isReadyUpdates = !!isReadyUpdates
@@ -1020,7 +1024,7 @@ export function getDistributionInfo(
     const isReadySelectChannels =
       upgradeInfo.availableChannels &&
       upgradeInfo.availableChannels.length > 0 &&
-      (!isManagedOpenShift || productClaim == 'ARO') &&
+      (!isManagedOpenShift || isAROClassic) &&
       !upgradeInfo.isSelectingChannel &&
       curatorIsIdle
     upgradeInfo.isReadySelectChannels = !!isReadySelectChannels

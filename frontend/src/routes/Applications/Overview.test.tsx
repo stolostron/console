@@ -41,6 +41,10 @@ import {
   mockSubscriptions,
 } from './Application.sharedmocks'
 import Overview from './Overview'
+import { useIsAnyNamespaceAuthorized } from '../../lib/rbac-util'
+
+jest.mock('../../lib/rbac-util')
+;(useIsAnyNamespaceAuthorized as jest.Mock).mockImplementation(() => true)
 
 const applicationAggregate = {
   req: { page: 1, perPage: 10, search: '', filters: {}, sortBy: { index: 0, direction: 'asc' } },
@@ -237,6 +241,16 @@ describe('Applications Page', () => {
     userEvent.click(screen.getByRole('button', { name: /close openshift/i }))
   })
 
+  test('should delete application', async () => {
+    // wait for page to load
+    await waitForText('feng-remote-argo8')
+
+    // click delete
+    userEvent.click(screen.getAllByRole('button', { name: /actions/i })[1])
+    userEvent.click(screen.getByText(/delete application/i))
+    expect(screen.getByText(/permanently delete applicationset applicationset-0\?/i)).toBeTruthy()
+  })
+
   test('export button should produce a file for download', async () => {
     nockAggegateRequest('applications', fetchAggregate.req, fetchAggregate.res)
 
@@ -257,14 +271,14 @@ describe('Applications Page', () => {
 
     expect(blobConstructorSpy).toHaveBeenCalledWith(
       [
-        'Name,Type,Namespace,Clusters,Repository,Health Status,Sync Status,Time window,Created\n' +
-          `"application-0","Subscription","namespace-0","Local",-,-,-,-,"${getISOStringTimestamp(applicationAggregate.res.items[0].metadata?.creationTimestamp || '')}"\n` +
-          '"applicationset-0","Application set","openshift-gitops","None","git",-,-,-,-\n' +
-          '"applicationset-1","Application set","openshift-gitops","None","git",-,-,-,-\n' +
-          '"argoapplication-1","Argo CD","argoapplication-1-ns","unknown","git",-,-,-,-\n' +
-          '"feng-remote-argo8","Argo CD","argoapplication-1-ns","unknown","git",-,-,-,-\n' +
-          '"authentication-operator","OpenShift","authentication-operator-ns","None",-,-,-,-,-\n' +
-          '"authentication-operatorf","Flux","authentication-operator-ns","None",-,-,-,-,-',
+        'Name,Type,Namespace,Clusters,Repository,Health Status,Sync Status,Created\n' +
+          `"application-0","Subscription","namespace-0","Local",-,-,-,"${getISOStringTimestamp(applicationAggregate.res.items[0].metadata?.creationTimestamp || '')}"\n` +
+          '"applicationset-0","Application set","openshift-gitops","None","git",-,-,-\n' +
+          '"applicationset-1","Application set","openshift-gitops","None","git",-,-,-\n' +
+          '"argoapplication-1","Argo CD","argoapplication-1-ns","None","git",-,-,-\n' +
+          '"feng-remote-argo8","Argo CD","argoapplication-1-ns","None","git",-,-,-\n' +
+          '"authentication-operator","OpenShift","authentication-operator-ns","None",-,-,-,-\n' +
+          '"authentication-operatorf","Flux","authentication-operator-ns","None",-,-,-,-',
       ],
       { type: 'text/csv' }
     )

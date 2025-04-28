@@ -28,7 +28,6 @@ In the case of 4.10+ we will install addition [resources](https://github.com/ope
 
 ### Prerequisites
 
-- python
 - [jq](https://stedolan.github.io/jq/download/)
 - [oc](https://docs.openshift.com/container-platform/4.10/cli_reference/openshift_cli/getting-started-cli.html)
 - podman or docker
@@ -44,7 +43,17 @@ npm run plugins
 
 This will concurrently start the backend server, frontend webpack development server and OCP console.
 
-The console will be running at localhost:9000.
+The console will be running at http://localhost:<CONSOLE_PORT>.
+
+If you are running [kubevirt-plugin](https://github.com/kubevirt-ui/kubevirt-plugin), you can have it loaded into the OpenShift console as well by specifying the port it is served on with the `KUBEVIRT_PORT` environment variable.
+```
+KUBEVIRT_PORT=9001 npm run plugins
+```
+
+To specify the version of OpenShift console to run, you can specify the `CONSOLE_VERSION` environment variable.
+```
+CONSOLE_VERSION=4.19 npm run plugins
+```
 
 ## Running against local development build of OCP console
 

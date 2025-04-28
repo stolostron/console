@@ -1,12 +1,23 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { getKubeResources } from '../events'
+import { getKubeResources, IWatchOptions } from '../events'
 import { addOCPQueryInputs, addSystemQueryInputs, cacheOCPApplications } from './applicationsOCP'
-import { IResource } from '../../resources/resource'
+import { ApplicationSetKind, IApplicationSet, IResource } from '../../resources/resource'
 import { FilterSelections, ITransformedResource } from '../../lib/pagination'
 import { logger } from '../../lib/logger'
-import { discoverSystemAppNamespacePrefixes, logApplicationCountChanges, transform } from './utils'
+import {
+  discoverSystemAppNamespacePrefixes,
+  getApplicationsHelper,
+  logApplicationCountChanges,
+  transform,
+} from './utils'
 import { getSearchResults, ISearchResult, pingSearchAPI } from '../../lib/search'
-import { addArgoQueryInputs, cacheArgoApplications } from './applicationsArgo'
+import {
+  addArgoQueryInputs,
+  getAppSetAppsMap,
+  cacheArgoApplications,
+  getAppSetRelatedResources,
+  polledArgoApplicationAggregation,
+} from './applicationsArgo'
 import { getGiganticApps } from '../../lib/gigantic'
 
 export enum AppColumns {
@@ -15,7 +26,8 @@ export enum AppColumns {
   'namespace',
   'clusters',
   'repo',
-  'timeWindow',
+  'health',
+  'sync',
   'created',
 }
 export interface IArgoApplication extends IResource {
@@ -61,6 +73,7 @@ export interface ISubscription extends IResource {
 export type ApplicationCache = {
   resources?: ITransformedResource[]
   resourceMap?: { [key: string]: ITransformedResource[] }
+  resourceUidMap?: { [key: string]: ITransformedResource }
 }
 export type ApplicationCacheType = {
   [type: string]: ApplicationCache
@@ -126,17 +139,17 @@ export function stopAggregatingApplications(): void {
   stopping = true
 }
 
+export function polledApplicationAggregation(
+  options: IWatchOptions,
+  items: IResource[],
+  shouldPostProcess: boolean
+): void {
+  polledArgoApplicationAggregation(options, items, shouldPostProcess)
+}
+
 export function getApplications() {
-  let items: ITransformedResource[] = []
   aggregateLocalApplications()
-  Object.keys(applicationCache).forEach((key) => {
-    if (applicationCache[key].resources) {
-      items.push(...applicationCache[key].resources)
-    } else if (Object.keys(applicationCache[key].resourceMap).length) {
-      const allResources = Object.values(applicationCache[key].resourceMap)
-      items.push(...allResources.flat())
-    }
-  })
+  let items = getApplicationsHelper(applicationCache, Object.keys(applicationCache))
   // mock a large environment
   if (process.env.MOCK_CLUSTERS) {
     items = items.concat(transform(getGiganticApps()).resources)
@@ -151,13 +164,6 @@ export function aggregateLocalApplications() {
     applicationCache['subscription'] = transform(structuredClone(getKubeResources('Application', 'app.k8s.io/v1beta1')))
   } catch (e) {
     logger.error(`aggregateLocalApplications subscription exception ${e}`)
-  }
-
-  // AppSets
-  try {
-    applicationCache['appset'] = transform(structuredClone(getKubeResources('ApplicationSet', 'argoproj.io/v1alpha1')))
-  } catch (e) {
-    logger.error(`aggregateLocalApplications appset exception ${e}`)
   }
 }
 
@@ -183,6 +189,30 @@ export function filterApplications(filters: FilterSelections, items: ITransforme
       }
     })
     return isFilterMatch
+  })
+  return items
+}
+
+// add data to the apps that can be used by the ui but
+// w/o downloading all the appsets, apps, etc
+export function addUIData(items: ITransformedResource[]) {
+  const argoAppSets = getApplicationsHelper(applicationCache, ['appset'])
+  const appSetAppsMap = getAppSetAppsMap()
+  items = items.map((item) => {
+    return {
+      ...item,
+      uidata: {
+        clusterList: item?.transform?.[AppColumns.clusters] || [],
+        appSetRelatedResources:
+          item.kind === ApplicationSetKind
+            ? getAppSetRelatedResources(item, argoAppSets as IApplicationSet[])
+            : ['', []],
+        appSetApps:
+          item.kind === ApplicationSetKind
+            ? appSetAppsMap[item.metadata.name]?.map((app) => app.metadata.name) || []
+            : [],
+      },
+    }
   })
   return items
 }
@@ -258,13 +288,13 @@ export async function aggregateRemoteApplications(pass: number) {
   // //////////// SAVE RESULTS ///////////////////
   const argoAppSet = cacheArgoApplications(
     applicationCache,
-    (results.data?.searchResult?.[0]?.items || []) as IResource[]
+    (results.data?.searchResult?.[0]?.items ?? []) as IResource[]
   )
   cacheOCPApplications(applicationCache, (results.data?.searchResult?.[1]?.items || []) as IResource[], argoAppSet)
   if (querySystemApps) {
     cacheOCPApplications(
       applicationCache,
-      (results.data?.searchResult?.[2]?.items || []) as IResource[],
+      (results.data?.searchResult?.[2]?.items ?? []) as IResource[],
       argoAppSet,
       true
     )
