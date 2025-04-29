@@ -7,6 +7,8 @@ describe('metrics proxy route', function () {
     nock(process.env.CLUSTER_API_URL).get('/apis').reply(200, {
       status: 200,
     })
+    const res = await request('GET', '/prometheus/query')
+    expect(res.statusCode).toEqual(200)
   })
   it(`Successfully calls observability endpoint`, async function () {
     nock(process.env.CLUSTER_API_URL).get('/apis').reply(200, {

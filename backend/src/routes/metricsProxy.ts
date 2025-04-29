@@ -4,11 +4,9 @@ import { request, RequestOptions } from 'https'
 import { pipeline } from 'stream'
 import { URL } from 'url'
 import { getServiceAgent } from '../lib/agent'
-import { jsonRequest } from '../lib/json-request'
 import { logger } from '../lib/logger'
 import { notFound, respondInternalServerError, unauthorized } from '../lib/respond'
 import { getToken } from '../lib/token'
-import { Route } from '../resources/route'
 
 const proxyHeaders = [
   constants.HTTP2_HEADER_ACCEPT,
@@ -25,9 +23,9 @@ const proxyResponseHeaders = [
   constants.HTTP2_HEADER_ETAG,
 ]
 
-export async function prometheusProxy(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
+export function prometheusProxy(req: Http2ServerRequest, res: Http2ServerResponse) {
   const token = getToken(req)
-  if (!token) return unauthorized(req, res)
+  if (!token) unauthorized(req, res)
 
   const prometheusProxyService = 'https://prometheus-k8s.openshift-monitoring.svc.cluster.local:9091'
   const promURL = process.env.PROMETHEUS_ROUTE || prometheusProxyService
@@ -35,9 +33,9 @@ export async function prometheusProxy(req: Http2ServerRequest, res: Http2ServerR
   metricsProxy(req, res, token, promURL)
 }
 
-export async function observabilityProxy(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
+export function observabilityProxy(req: Http2ServerRequest, res: Http2ServerResponse) {
   const token = getToken(req)
-  if (!token) return unauthorized(req, res)
+  if (!token) unauthorized(req, res)
 
   const obsProxyService = 'https://rbac-query-proxy.open-cluster-management-observability.svc.cluster.local:8443'
   const obsURL = process.env.OBSERVABILITY_ROUTE || obsProxyService
