@@ -29,41 +29,20 @@ export async function prometheusProxy(req: Http2ServerRequest, res: Http2ServerR
   const token = getToken(req)
   if (!token) return unauthorized(req, res)
 
-  const prometheusProxyRoute = await jsonRequest(
-    process.env.CLUSTER_API_URL + '/apis/route.openshift.io/v1/namespaces/openshift-monitoring/routes/prometheus-k8s',
-    token
-  )
-    .then((response: Route) => {
-      const scheme = response?.spec?.tls?.termination ? 'https' : 'http'
-      return response?.spec?.host ? `${scheme}://${response.spec.host}` : ''
-    })
-    .catch((err: Error): undefined => {
-      logger.error({ msg: 'Error getting Prometheus Route', error: err.message })
-      return undefined
-    })
+  const prometheusProxyService = 'https://prometheus-k8s.openshift-monitoring.svc.cluster.local:9091'
+  const promURL = process.env.PROMETHEUS_ROUTE || prometheusProxyService
 
-  metricsProxy(req, res, token, 'https://prometheus-k8s.openshift-monitoring.svc.cluster.local:9091')
+  metricsProxy(req, res, token, promURL)
 }
 
 export async function observabilityProxy(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
   const token = getToken(req)
   if (!token) return unauthorized(req, res)
 
-  const observabilityProxyRoute = await jsonRequest(
-    process.env.CLUSTER_API_URL +
-      `/apis/route.openshift.io/v1/namespaces/open-cluster-management-observability/routes/rbac-query-proxy`,
-    token
-  )
-    .then((response: Route) => {
-      const scheme = response?.spec?.tls?.termination ? 'https' : 'http'
-      return response?.spec?.host ? `${scheme}://${response.spec.host}` : ''
-    })
-    .catch((err: Error): undefined => {
-      logger.error({ msg: 'Error getting Observability Route', error: err.message })
-      return undefined
-    })
+  const obsProxyService = 'https://rbac-query-proxy.open-cluster-management-observability.svc.cluster.local:8443'
+  const obsURL = process.env.OBSERVABILITY_ROUTE || obsProxyService
 
-  metricsProxy(req, res, token, 'https://rbac-query-proxy.open-cluster-management-observability.svc.cluster.local:8443')
+  metricsProxy(req, res, token, obsURL)
 }
 
 function metricsProxy(req: Http2ServerRequest, res: Http2ServerResponse, token: string, route: string): void {
@@ -82,7 +61,6 @@ function metricsProxy(req: Http2ServerRequest, res: Http2ServerResponse, token: 
     path,
     method: req.method,
     headers,
-    // ca: getServiceCACertificate(),
     agent: getServiceAgent(),
   }
   pipeline(
