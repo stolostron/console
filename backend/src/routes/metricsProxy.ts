@@ -42,7 +42,7 @@ export async function prometheusProxy(req: Http2ServerRequest, res: Http2ServerR
       return undefined
     })
 
-  metricsProxy(req, res, token, 'https://prometheus-k8s.openshift-monitoring.svc.cluster.local:9092')
+  metricsProxy(req, res, token, 'https://prometheus-k8s.openshift-monitoring.svc.cluster.local:9091')
   // metricsProxy(req, res, token, prometheusProxyRoute)
 }
 
