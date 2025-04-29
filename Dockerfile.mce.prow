@@ -1,23 +1,23 @@
 # Copyright Contributors to the Open Cluster Management project
 
-FROM registry.ci.openshift.org/stolostron/builder:nodejs20-linux as dynamic-plugin
+FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:25be11c4ded58e78cfb268fe34cb41d63bad6fe674c64b8fa72b9a39a54670bf as dynamic-plugin
 WORKDIR /app/frontend
 COPY ./frontend .
 RUN npm ci --legacy-peer-deps
 RUN npm run build:plugin:mce
 
-FROM registry.ci.openshift.org/stolostron/builder:nodejs20-linux as backend
+FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:25be11c4ded58e78cfb268fe34cb41d63bad6fe674c64b8fa72b9a39a54670bf as backend
 WORKDIR /app/backend
 COPY ./backend .
 RUN npm ci --omit=optional
 RUN npm run build
 
-FROM registry.ci.openshift.org/stolostron/builder:nodejs20-linux as production
+FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:25be11c4ded58e78cfb268fe34cb41d63bad6fe674c64b8fa72b9a39a54670bf as production
 WORKDIR /app/backend
 COPY ./backend/package-lock.json ./backend/package.json ./
 RUN npm ci --omit=optional --only=production
 
-FROM registry.ci.openshift.org/stolostron/common-nodejs-parent:nodejs-20
+FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:25be11c4ded58e78cfb268fe34cb41d63bad6fe674c64b8fa72b9a39a54670bf
 WORKDIR /app
 ENV NODE_ENV production
 COPY --from=production /app/backend/node_modules ./node_modules
