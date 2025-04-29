@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { InfraEnvK8sResource } from '@openshift-assisted/ui-lib/cim'
+import { AgentClusterInstallK8sResource, InfraEnvK8sResource } from '@openshift-assisted/ui-lib/cim'
 import {
   ClusterClaimApiVersion,
   ClusterClaimKind,
@@ -22,17 +22,20 @@ import { Cluster, deleteResource, patchResource, ResourceError, ResourceErrorCod
 import { clusterDestroyable } from '../routes/Infrastructure/Clusters/ManagedClusters/utils/cluster-actions'
 import { deleteResources } from './delete-resources'
 import { Provider } from '../ui-components'
+import { MachineConfigApiVersion, MachineConfigKind } from '../resources/machine-config'
 
 export function deleteCluster({
   cluster,
   ignoreClusterDeploymentNotFound,
   infraEnvs,
   deletePullSecret,
+  agentClusterInstalls,
 }: {
   cluster: Cluster
   ignoreClusterDeploymentNotFound: boolean
   infraEnvs: InfraEnvK8sResource[]
   deletePullSecret: boolean
+  agentClusterInstalls: AgentClusterInstallK8sResource[]
 }) {
   let resources: IResource[] = []
 
@@ -104,6 +107,15 @@ export function deleteCluster({
           metadata: { name, namespace: cluster.namespace },
         })
       })
+    }
+
+    if (agentClusterInstalls) {
+      const agentClusterInstall = agentClusterInstalls.find(
+        (aci) => aci.spec?.clusterDeploymentRef?.name === cluster.name
+      )
+      agentClusterInstall?.spec?.manifestsConfigMapRefs?.forEach(({ name }) =>
+        resources.push({ apiVersion: MachineConfigApiVersion, kind: MachineConfigKind, metadata: { name } })
+      )
     }
 
     if (cluster.provider === Provider.hostinventory || cluster.provider === Provider.nutanix) {

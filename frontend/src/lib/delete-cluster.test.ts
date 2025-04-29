@@ -442,6 +442,7 @@ describe('deleteCluster', () => {
       deletePullSecret: false,
       infraEnvs: [],
       ignoreClusterDeploymentNotFound: true,
+      agentClusterInstalls: [],
     })
 
     await waitForNocks(nocks)
@@ -457,6 +458,7 @@ describe('deleteCluster', () => {
       deletePullSecret: false,
       infraEnvs: [infraEnv],
       ignoreClusterDeploymentNotFound: true,
+      agentClusterInstalls: [],
     })
 
     await waitForNocks(deleteNocks)
@@ -507,6 +509,7 @@ describe('deleteCluster', () => {
         },
       ],
       ignoreClusterDeploymentNotFound: true,
+      agentClusterInstalls: [],
     })
 
     await waitForNocks(deleteNocks)
@@ -560,6 +563,7 @@ describe('deleteCluster', () => {
         },
       ],
       ignoreClusterDeploymentNotFound: true,
+      agentClusterInstalls: [],
     })
 
     await waitForNocks(deleteNocks)
@@ -613,6 +617,7 @@ describe('deleteCluster hostedcluster', () => {
       deletePullSecret: false,
       infraEnvs: [],
       ignoreClusterDeploymentNotFound: true,
+      agentClusterInstalls: [],
     })
 
     await waitForNocks(nocks)

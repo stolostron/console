@@ -62,12 +62,19 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
   const [modalProps, setModalProps] = useState<BulkActionModalProps<Cluster> | { open: false }>({
     open: false,
   })
-  const { hostedClustersState, infraEnvironmentsState, agentMachinesState, agentsState, clusterImageSetsState } =
-    useSharedAtoms()
+  const {
+    hostedClustersState,
+    infraEnvironmentsState,
+    agentMachinesState,
+    agentsState,
+    clusterImageSetsState,
+    agentClusterInstallsState,
+  } = useSharedAtoms()
   const agents = useRecoilValue(agentsState)
   const agentMachines = useRecoilValue(agentMachinesState)
   const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
   const infraEnvs = useRecoilValue(infraEnvironmentsState)
+  const agentClusterInstalls = useRecoilValue(agentClusterInstallsState)
   const hostedClusters = useRecoilValue(hostedClustersState)
   const clusterImageSets = useRecoilValue(clusterImageSetsState)
   const localHubName = useLocalHubName()
@@ -430,6 +437,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                   ignoreClusterDeploymentNotFound: false,
                   infraEnvs,
                   deletePullSecret: !!options?.deletePullSecret,
+                  agentClusterInstalls,
                 }),
               close: () => {
                 setModalProps({ open: false })
@@ -507,6 +515,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
     [
       t,
       cluster,
+      agentClusterInstalls,
       isSearchAvailable,
       importTemplate,
       destroyRbac,

@@ -482,6 +482,7 @@ export function ClustersTable(props: {
                 ignoreClusterDeploymentNotFound: true,
                 infraEnvs,
                 deletePullSecret: !!options?.deletePullSecret,
+                agentClusterInstalls,
               }),
             close: () => setModalProps({ open: false }),
             isDanger: true,
@@ -494,7 +495,7 @@ export function ClustersTable(props: {
         variant: 'bulk-action',
       },
     ],
-    [modalColumns, infraEnvs, t]
+    [modalColumns, infraEnvs, agentClusterInstalls, t]
   )
 
   const rowActions = useMemo(() => [], [])

@@ -90,9 +90,9 @@ const EditAICluster: React.FC = () => {
   const onSaveDetails = (values: ClusterDeploymentDetailsValues) => {
     return patchResource(agentClusterInstall as IResource, [
       {
-        op: 'replace',
-        path: '/spec/imageSetRef/name',
-        value: values.openshiftVersion,
+        op: values.addCustomManifests ? 'add' : 'remove',
+        path: '/metadata/labels',
+        value: { addCustomManifests: 'true' },
       },
     ]).promise
   }
