@@ -43,7 +43,6 @@ export async function prometheusProxy(req: Http2ServerRequest, res: Http2ServerR
     })
 
   metricsProxy(req, res, token, 'https://prometheus-k8s.openshift-monitoring.svc.cluster.local:9091')
-  // metricsProxy(req, res, token, prometheusProxyRoute)
 }
 
 export async function observabilityProxy(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
@@ -64,7 +63,7 @@ export async function observabilityProxy(req: Http2ServerRequest, res: Http2Serv
       return undefined
     })
 
-  metricsProxy(req, res, token, observabilityProxyRoute)
+  metricsProxy(req, res, token, 'https://rbac-query-proxy.open-cluster-management-observability.svc.cluster.local:8443')
 }
 
 function metricsProxy(req: Http2ServerRequest, res: Http2ServerResponse, token: string, route: string): void {
