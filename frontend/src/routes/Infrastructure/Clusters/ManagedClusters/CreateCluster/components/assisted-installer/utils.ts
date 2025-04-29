@@ -37,6 +37,7 @@ import {
   getResource,
   listResources,
   createResources,
+  reconcileResources,
 } from '../../../../../../../resources/utils'
 import { NavigationPath } from '../../../../../../../NavigationPath'
 import { ModalProps } from './types'
@@ -44,8 +45,9 @@ import { deleteResources } from '../../../../../../../lib/delete-resources'
 import { BulkActionModalProps } from '../../../../../../../components/BulkActionModal'
 import { AgentK8sResource, BareMetalHostK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { useSharedAtoms, useRecoilValue } from '../../../../../../../shared-recoil'
-import { K8sResourceCommon } from '@openshift-console/dynamic-plugin-sdk'
+import { K8sResourceCommon, useK8sWatchResources } from '@openshift-console/dynamic-plugin-sdk'
 import { PluginContext } from '../../../../../../../lib/PluginContext'
+import { load } from 'js-yaml'
 
 type OnHostsNext = {
   values: any
@@ -410,6 +412,59 @@ export const useClusterDeploymentInfraEnv = (cdName: string, cdNamespace: string
     () => findInfraEnvByClusterRef({ name: cdName, namespace: cdNamespace }, infraEnvs),
     [cdName, cdNamespace, infraEnvs]
   )
+}
+
+export const useCustomManifests = (agentClusterInstall: AgentClusterInstallK8sResource) => {
+  const params = Object.fromEntries(
+    [...(agentClusterInstall.spec?.manifestsConfigMapRefs || [])]?.map((manifest) => [
+      manifest.name,
+      {
+        name: manifest.name,
+        groupVersionKind: {
+          group: 'machineconfiguration.openshift.io',
+          version: 'v1',
+          kind: 'MachineConfig',
+        },
+      },
+    ])
+  )
+
+  return useK8sWatchResources(params)
+}
+
+export const onSyncCustomManifests = async (
+  agentClusterInstall?: AgentClusterInstallK8sResource,
+  values?: {
+    manifests: {
+      manifestYaml: string
+      filename?: string
+      created: boolean
+    }[]
+  },
+  existingManifests?: K8sResourceCommon[]
+) => {
+  if (agentClusterInstall) {
+    try {
+      const manifestNames = values?.manifests?.map((manifest) => ({
+        name: (load(manifest.manifestYaml) as IResource).metadata?.name,
+      }))
+      const manifests = values?.manifests.map((manifest) => load(manifest.manifestYaml) as IResource)
+
+      console.log('reconsile', manifests, existingManifests)
+
+      const customManifestPatches: any[] = [
+        {
+          op: agentClusterInstall.spec?.manifestsConfigMapRefs ? 'replace' : 'add',
+          path: '/spec/manifestsConfigMapRefs',
+          value: manifestNames,
+        },
+      ]
+      await patchResource(agentClusterInstall as IResource, customManifestPatches).promise
+      await reconcileResources(manifests || [], existingManifests as IResource[]).catch((err) => console.error('err', err))
+    } catch (error) {
+      console.error('console error', error)
+    }
+  }
 }
 
 export const findInfraEnvByClusterRef = (
