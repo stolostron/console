@@ -14,18 +14,10 @@ import {
 import { AccessControlManagementTable } from './AccessControlManagementTable'
 
 const AccessControlManagementPage = () => {
-  const { secretsState, discoveryConfigState } = useSharedAtoms()
+  const { accessControlState, discoveryConfigState } = useSharedAtoms()
   const { t } = useTranslation()
-  const secrets = useRecoilValue(secretsState)
-  const credentialsSecrets = useMemo(
-    () =>
-      secrets.filter(
-        (secret) => secret?.metadata?.labels?.['cluster.open-cluster-management.io/credentials'] !== undefined
-      ),
-    [secrets]
-  )
+  const accessControls = useRecoilValue(accessControlState)
 
-  const providerConnections = secrets.map(unpackProviderConnection)
   const discoveryConfigs = useRecoilValue(discoveryConfigState)
 
   return (
@@ -33,9 +25,8 @@ const AccessControlManagementPage = () => {
       <AcmPageContent id="access-control-management">
         <PageSection>
           <AccessControlManagementTable
-            providerConnections={providerConnections}
             discoveryConfigs={discoveryConfigs}
-            secrets={credentialsSecrets}
+            accessControls={accessControls}
           />
         </PageSection>
       </AcmPageContent>

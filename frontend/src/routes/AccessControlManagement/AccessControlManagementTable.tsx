@@ -1,5 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { ButtonVariant } from '@patternfly/react-core'
+import { ButtonVariant, Label } from '@patternfly/react-core'
+import {
+    CheckCircleIcon,
+    TimesCircleIcon
+} from '@patternfly/react-icons'
 import { fitContent } from '@patternfly/react-table'
 import { Fragment, useMemo, useState } from 'react'
 import { generatePath, Link, useNavigate } from 'react-router-dom-v5-compat'
@@ -15,14 +19,13 @@ import {
     IResource,
     OCPAppResource,
     ProviderConnection,
-    Secret,
-    SecretDefinition
 } from '../../resources'
+import { AccessControl, AccessControlDefinition } from '../../resources/access-control'
 import { deleteResource, getISOStringTimestamp } from '../../resources/utils'
 import {
     AcmButton,
     AcmEmptyState,
-    AcmInlineProvider,
+    AcmLabels,
     AcmTable,
     compareStrings,
     Provider,
@@ -42,19 +45,18 @@ const getProviderName = (labels: Record<string, string> | undefined) => {
 const AccessControlManagementTable = (props: {
     providerConnections?: ProviderConnection[]
     discoveryConfigs?: DiscoveryConfig[]
-    secrets?: Secret[]
+    accessControls?: AccessControl[]
 }) => {
+    const LABELS_LENGTH = 5
     const { t } = useTranslation()
     const navigate = useNavigate()
-    const [modalProps, setModalProps] = useState<BulkActionModalProps<Secret> | { open: false }>({
+    const [modalProps, setModalProps] = useState<BulkActionModalProps<AccessControl> | { open: false }>({
         open: false,
     })
     const unauthorizedMessage = t('rbac.unauthorized')
-    const canAddCredential = useIsAnyNamespaceAuthorized(rbacCreate(SecretDefinition))
+    const canAddAccessControl = useIsAnyNamespaceAuthorized(rbacCreate(AccessControlDefinition))
 
-    sessionStorage.removeItem('DiscoveryCredential')
-
-    function getAdditionalActions(item: Secret) {
+    function getAdditionalActions(item: AccessControl) {
         const label = item.metadata.labels?.['cluster.open-cluster-management.io/type']
         if (label === Provider.redhatcloud && !CredentialIsInUseByDiscovery(item)) {
             return t('Create cluster discovery')
@@ -63,7 +65,7 @@ const AccessControlManagementTable = (props: {
         }
     }
 
-    function CredentialIsInUseByDiscovery(credential: Secret) {
+    function CredentialIsInUseByDiscovery(credential: AccessControl) {
         let inUse = false
         if (props.discoveryConfigs) {
             props.discoveryConfigs.forEach((discoveryConfig) => {
@@ -81,7 +83,7 @@ const AccessControlManagementTable = (props: {
         return inUse
     }
 
-    const getAdditionalActionsText = (item: Secret) => {
+    const getAdditionalActionsText = (item: AccessControl) => {
         const label = item.metadata.labels?.['cluster.open-cluster-management.io/type']
         if (label === Provider.redhatcloud) {
             if (CredentialIsInUseByDiscovery(item)) {
@@ -151,8 +153,8 @@ const AccessControlManagementTable = (props: {
 
     return (
         <Fragment>
-            <BulkActionModal<Secret> {...modalProps} />
-            <AcmTable<Secret>
+            <BulkActionModal<AccessControl> {...modalProps} />
+            <AcmTable<AccessControl>
                 showExportButton
                 exportFilePrefix="access-control-management"
                 emptyState={
@@ -167,8 +169,8 @@ const AccessControlManagementTable = (props: {
                         action={
                             <div>
                                 <AcmButton
-                                    isDisabled={!canAddCredential}
-                                    tooltip={!canAddCredential ? unauthorizedMessage : ''}
+                                    isDisabled={!canAddAccessControl}
+                                    tooltip={!canAddAccessControl ? unauthorizedMessage : ''}
                                     component={Link}
                                     {...getBackCancelLocationLinkProps(NavigationPath.addAccessControlManagement)}
                                 >
@@ -179,151 +181,170 @@ const AccessControlManagementTable = (props: {
                         }
                     />
                 }
-                items={props.secrets}
+                items={props.accessControls}
                 filters={filters}
                 columns={[
                     {
-                        header: t('Name'),
-                        sort: 'metadata.name',
-                        search: 'metadata.name',
-                        cell: (secret) => (
+                        header: t('ID'),
+                        sort: 'data.id',
+                        search: 'data.id',
+                        cell: (accessControl) => (
                             <span style={{ whiteSpace: 'nowrap' }}>
                                 <Link
-                                    to={generatePath(NavigationPath.viewCredentials, {
-                                        namespace: secret.metadata.namespace!,
-                                        name: secret.metadata.name!,
+                                    to={generatePath(NavigationPath.viewAccessControlManagement, {
+                                        id: accessControl.data?.id!,
                                     })}
                                 >
-                                    {secret.metadata.name}
+                                    {accessControl.data?.id}
                                 </Link>
                             </span>
                         ),
-                        exportContent: (secret) => secret.metadata.name,
-                    },
-                    {
-                        header: t('Credential type'),
-                        sort: /* istanbul ignore next */ (a: Secret, b: Secret) => {
-                            return compareStrings(getProviderName(a.metadata?.labels), getProviderName(b.metadata?.labels))
-                        },
-                        cell: (item: Secret) => {
-                            const provider = item.metadata.labels?.['cluster.open-cluster-management.io/type']
-                            if (provider) return <AcmInlineProvider provider={provider as Provider} />
-                            else return <Fragment />
-                        },
-                        search: (item: Secret) => {
-                            return getProviderName(item.metadata?.labels)
-                        },
-                        exportContent: (item: Secret) => {
-                            return getProviderName(item.metadata.labels)
-                        },
-                    },
-                    {
-                        header: t('Namespace'),
-                        sort: 'metadata.namespace',
-                        search: 'metadata.namespace',
-                        cell: 'metadata.namespace',
-                        exportContent: (item: Secret) => {
-                            return item.metadata.namespace
-                        },
-                    },
-                    {
-                        header: t('Additional actions'),
-                        search: (item: Secret) => {
-                            return getAdditionalActions(item)
-                        },
-                        cell: (item: Secret) => {
-                            const label = item.metadata.labels?.['cluster.open-cluster-management.io/type']
-                            if (label === Provider.redhatcloud) {
-                                if (CredentialIsInUseByDiscovery(item)) {
-                                    return <Link to={NavigationPath.configureDiscovery}>{t('Configure cluster discovery')}</Link>
-                                } else {
-                                    return <Link to={NavigationPath.createDiscovery}>{t('Create cluster discovery')}</Link>
+                        exportContent: (accessControl) => accessControl.data?.id!,
+                    }, {
+                        header: t('Clusters'),
+                        sort: 'data.clusters',
+                        search: 'data.clusters',
+                        cell: (accessControl) => accessControl.data?.clusters ? (
+                            <AcmLabels
+                                labels={accessControl.data.clusters}
+                                expandedText={t('Show less')}
+                                collapsedText={t('show.more', { count: accessControl.data.clusters.length })}
+                                // TODO: To properly translate 'count.items'
+                                allCollapsedText={t('count.items', { count: accessControl.data.clusters.length })}
+                                isCompact={accessControl.data.clusters.length > LABELS_LENGTH}
+                            />
+                        ) : '-',
+                        exportContent: (accessControl) => accessControl.data?.clusters!,
+                    }, {
+                        header: t('Users/Groups'),
+                        // TODO: users or groups
+                        sort: 'data.users',
+                        search: 'data.users',
+                        cell: (accessControl) => accessControl.data?.users ? (
+                            <AcmLabels
+                                labels={accessControl.data.users}
+                                expandedText={t('Show less')}
+                                collapsedText={t('show.more', { count: accessControl.data.users.length })}
+                                // TODO: To properly translate 'count.items'
+                                allCollapsedText={t('count.items', { count: accessControl.data.users.length })}
+                                isCompact={accessControl.data.users.length > LABELS_LENGTH}
+                            />
+                        ) : '-',
+                        exportContent: (accessControl) => accessControl.data?.users!,
+                    }, {
+                        header: t('Roles'),
+                        sort: 'data.roles',
+                        search: 'data.roles',
+                        cell: (accessControl) => accessControl.data?.roles ? (
+                            <AcmLabels
+                                labels={accessControl.data.roles}
+                                expandedText={t('Show less')}
+                                collapsedText={t('show.more', { count: accessControl.data.roles.length })}
+                                // TODO: To properly translate 'count.items'
+                                allCollapsedText={t('count.items', { count: accessControl.data.roles.length })}
+                                isCompact={accessControl.data.roles.length > LABELS_LENGTH}
+                            />
+                        ) : '-',
+                        exportContent: (accessControl) => accessControl.data?.roles!,
+                    }, {
+                        header: t('Namespaces'),
+                        sort: 'data.namespaces',
+                        search: 'data.namespaces',
+                        cell: (accessControl) => accessControl.data?.namespaces ? (
+                            <AcmLabels
+                                labels={accessControl.data.namespaces}
+                                expandedText={t('Show less')}
+                                collapsedText={t('show.more', { count: accessControl.data.namespaces.length })}
+                                // TODO: To properly translate 'count.items'
+                                allCollapsedText={t('count.items', { count: accessControl.data.namespaces.length })}
+                                isCompact={accessControl.data.namespaces.length > LABELS_LENGTH}
+                            />
+                        ) : '-',
+                        exportContent: (accessControl) => accessControl.data?.namespaces!,
+                    }, {
+                        header: t('Status'),
+                        sort: 'data.id',
+                        search: 'data.id',
+                        cell: (accessControl) => {
+                            return <span style={{ whiteSpace: 'nowrap' }}>
+                                {
+                                    accessControl.data?.isActive ?
+                                        <Label color="green" icon={<CheckCircleIcon />}>{t('Active')}</Label>
+                                        : <Label color="red" icon={<TimesCircleIcon />}>{t('Disabled')}</Label>
                                 }
-                            } else {
-                                return <span>-</span>
-                            }
+                            </span>
                         },
-                        exportContent: (item: Secret) => {
-                            return getAdditionalActionsText(item)
-                        },
-                        sort: /* istanbul ignore next */ (a: Secret, b: Secret) => {
-                            return compareStrings(getAdditionalActions(a), getAdditionalActions(b))
-                        },
+                        exportContent: (accessControl) => accessControl.data?.isActive ? 'Active' : 'Disabled',
                     },
                     {
                         header: t('Created'),
-                        sort: 'metadata.creationTimestamp',
+                        sort: 'data.creationTimestamp',
                         cell: (resource) => (
                             <span style={{ whiteSpace: 'nowrap' }}>
-                                <AcmTimestamp timestamp={resource.metadata?.creationTimestamp} />
+                                <AcmTimestamp timestamp={resource.data?.creationTimestamp} />
                             </span>
                         ),
-                        exportContent: (item: Secret) => {
-                            if (item.metadata.creationTimestamp) {
-                                return getISOStringTimestamp(item.metadata.creationTimestamp)
+                        exportContent: (item: AccessControl) => {
+                            if (item.data?.creationTimestamp) {
+                                return getISOStringTimestamp(item.data?.creationTimestamp)
                             }
                         },
                     },
                     {
                         header: '',
                         cellTransforms: [fitContent],
-                        cell: (secret: Secret) => {
+                        cell: (accessControl: AccessControl) => {
                             const actions = [
                                 {
                                     id: 'editConnection',
-                                    text: t('Edit credential'),
+                                    text: t('Edit Access Control'),
                                     isAriaDisabled: true,
-                                    click: (secret: Secret) => {
+                                    click: (accessControl: AccessControl) => {
                                         navigate(
                                             generatePath(NavigationPath.editAccessControlManagement, {
-                                                id: secret.metadata.namespace!,
+                                                id: accessControl.data?.id!,
                                             })
                                         )
                                     },
-                                    rbac: [rbacPatch(secret)], // validate that this is working
+                                    rbac: [rbacPatch(accessControl)], // validate that this is working
                                 },
                                 {
                                     id: 'deleteConnection',
-                                    text: t('Delete credential'),
+                                    text: t('Delete Access Control'),
                                     isAriaDisabled: true,
-                                    click: (secret: Secret) => {
+                                    click: (accessControl: AccessControl) => {
                                         setModalProps({
                                             open: true,
                                             title: t('Permanently delete Access Control?'),
                                             action: t('Delete'),
                                             processing: t('Deleting'),
-                                            items: [secret],
+                                            items: [accessControl],
                                             emptyState: undefined, // there is always 1 item supplied
                                             description: t(
                                                 'You cannot create new clusters from deleted Access Control. Clusters that you previously created will not be affected.'
                                             ),
                                             columns: [
                                                 {
-                                                    header: t('Name'),
-                                                    cell: 'metadata.name',
-                                                    sort: 'metadata.name',
-                                                },
-                                                {
-                                                    header: t('Namespace'),
-                                                    cell: 'metadata.namespace',
-                                                    sort: 'metadata.namespace',
+                                                    header: t('ID'),
+                                                    cell: 'data.id',
+                                                    sort: 'data.id',
                                                 },
                                             ],
-                                            keyFn: (secret: Secret) => secret.metadata.uid as string,
+                                            keyFn: (accessControl: AccessControl) => accessControl.data?.id as string,
                                             actionFn: deleteResource,
                                             close: () => setModalProps({ open: false }),
                                             isDanger: true,
                                             icon: 'warning',
                                         })
                                     },
-                                    rbac: [rbacDelete(secret)],
+                                    rbac: [rbacDelete(accessControl)],
                                 },
                             ]
 
                             return (
-                                <RbacDropdown<Secret>
-                                    id={`${secret.metadata.name}-actions`}
-                                    item={secret}
+                                <RbacDropdown<AccessControl>
+                                    id={`${accessControl.metadata.name}-actions`}
+                                    item={accessControl}
                                     isKebab={true}
                                     text={t('Actions')}
                                     actions={actions}
@@ -332,7 +353,10 @@ const AccessControlManagementTable = (props: {
                         },
                     },
                 ]}
-                keyFn={(secret) => secret.metadata?.uid as string}
+                keyFn={(accessControl) => {
+                    console.log("KIKE keyFn", accessControl)
+                    return accessControl.data?.id as string
+                }}
                 tableActionButtons={[
                     {
                         id: 'add',
@@ -341,21 +365,21 @@ const AccessControlManagementTable = (props: {
                             navigateToBackCancelLocation(navigate, NavigationPath.addAccessControlManagement)
                         },
                         variant: ButtonVariant.primary,
-                        isDisabled: !canAddCredential,
-                        tooltip: !canAddCredential ? unauthorizedMessage : '',
+                        isDisabled: !canAddAccessControl,
+                        tooltip: !canAddAccessControl ? unauthorizedMessage : '',
                     },
                 ]}
                 tableActions={[
                     {
                         id: 'deleteConnection',
                         title: t('Delete Access Controls'),
-                        click: (secrets: Secret[]) => {
+                        click: (accessControls: AccessControl[]) => {
                             setModalProps({
                                 open: true,
                                 title: t('Permanently delete Access Controls?'),
                                 action: t('Delete'),
                                 processing: t('Deleting'),
-                                items: [...secrets],
+                                items: [...accessControls],
                                 emptyState: undefined, // table action is only enabled when items are selected
                                 description: t(
                                     'You cannot create new clusters from deleted Access Controls. Clusters that you previously created will not be affected.'
@@ -372,7 +396,7 @@ const AccessControlManagementTable = (props: {
                                         sort: 'metadata.namespace',
                                     },
                                 ],
-                                keyFn: (secret: Secret) => secret.metadata.uid as string,
+                                keyFn: (accessControl: AccessControl) => accessControl.metadata.uid as string,
                                 actionFn: deleteResource,
                                 close: () => setModalProps({ open: false }),
                                 isDanger: true,

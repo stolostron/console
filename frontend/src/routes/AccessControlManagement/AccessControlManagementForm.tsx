@@ -26,7 +26,6 @@ const AccessControlManagementForm = ({ }: AccessControlManagementFormProps) => {
 
   const managedClusters = useAllClusters(true)
 
-
   const [isUser, setIsUser] = useState(true)
 
   const [selectedClusterUid, setSelectedClusterUid] = useState<string>();
