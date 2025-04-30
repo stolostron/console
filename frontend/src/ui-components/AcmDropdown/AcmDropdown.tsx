@@ -301,14 +301,31 @@ export function AcmDropdown(props: AcmDropdownProps) {
     [isOpen, toggleMenu]
   )
 
+  const handleWindowFocus = useCallback(() => {
+    if (isOpen) {
+      setOpen(false)
+    }
+  }, [isOpen])
+
+  const handleVisibilityChange = useCallback(() => {
+    // when tab becomes hidden (user switches tabs or apps), closes the dropdown
+    if (document.visibilityState === 'hidden' && isOpen) {
+      setOpen(false)
+    }
+  }, [isOpen])
+
   useEffect(() => {
     window.addEventListener('keydown', handleMenuKeys)
     window.addEventListener('click', handleClickOutside)
+    window.addEventListener('focus', handleWindowFocus)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
     return () => {
       window.removeEventListener('keydown', handleMenuKeys)
       window.removeEventListener('click', handleClickOutside)
+      window.removeEventListener('focus', handleWindowFocus)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
-  }, [handleMenuKeys, handleClickOutside])
+  }, [handleMenuKeys, handleClickOutside, handleWindowFocus, handleVisibilityChange])
 
   let variant: 'default' | 'plain' | 'primary' | 'plainText' | 'secondary' | 'typeahead'
   if (isKebab) {
@@ -352,7 +369,7 @@ export function AcmDropdown(props: AcmDropdownProps) {
               ref={menuRef}
               menuItems={dropdownItems}
               onBlur={(e) => {
-                if (!e.currentTarget.contains(e.relatedTarget)) {
+                if (e.relatedTarget !== null && !e.currentTarget.contains(e.relatedTarget)) {
                   setOpen(false)
                 }
               }}
