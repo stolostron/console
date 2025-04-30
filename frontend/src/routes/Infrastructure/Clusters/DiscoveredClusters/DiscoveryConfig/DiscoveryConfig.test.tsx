@@ -87,12 +87,9 @@ describe('discovery config page', () => {
     const { container } = render(<TestAddDiscoveryConfigPage />)
     waitForNocks([discoveryConfigCreateNock])
 
-    // click add credential to show the modal
-    userEvent.click(
-      screen.getByRole('button', {
-        name: /credential options menu/i,
-      })
-    )
+    await waitFor(() => expect(container.querySelectorAll(`[aria-labelledby^="credentials-label"]`)).toHaveLength(1))
+    container.querySelector<HTMLButtonElement>(`[aria-labelledby^="credentials-label"]`)!.click()
+    await waitForText('Add credential')
     userEvent.click(screen.getByText(/add credential/i))
     await waitForText('Enter the basic credentials information')
     userEvent.click(

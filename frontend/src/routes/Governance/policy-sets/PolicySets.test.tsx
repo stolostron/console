@@ -45,7 +45,7 @@ describe('PolicySets Page', () => {
 
     screen
       .getByRole('button', {
-        name: /options menu/i,
+        name: /toggle/i,
       })
       .click()
 

@@ -58,22 +58,22 @@ describe('OverviewClusterLabelSelector', () => {
   }
 
   test('Renders selection correctly', async () => {
-    const { container, getAllByText, getByText } = render(<RenderOverviewClusterLabelSelector />)
+    const { getAllByText, getByText } = render(<RenderOverviewClusterLabelSelector />)
 
     // pick the label key - cloud
-    await waitFor(() => expect(container.querySelectorAll('.pf-v5-c-select__toggle')[0]).toBeTruthy())
-    userEvent.click(container.querySelectorAll('.pf-v5-c-select__toggle')[0] as TargetElement)
+    await waitFor(() => expect(screen.getAllByRole('button', { name: /typeahead menu toggle/i })[0]).toBeTruthy())
+    userEvent.click(screen.getAllByRole('button', { name: /typeahead menu toggle/i })[0] as TargetElement)
     await waitFor(() => expect(getByText('cloud')).toBeTruthy())
     userEvent.click(getByText('cloud'))
 
     // pick the label value - Amazon
-    await waitFor(() => expect(container.querySelectorAll('.pf-v5-c-select__toggle')[1]).toBeTruthy())
-    userEvent.click(container.querySelectorAll('.pf-v5-c-select__toggle')[1] as TargetElement)
+    await waitFor(() => expect(screen.getAllByRole('button', { name: /typeahead menu toggle/i })[1]).toBeTruthy())
+    userEvent.click(screen.getAllByRole('button', { name: /typeahead menu toggle/i })[1] as TargetElement)
     await waitFor(() => expect(screen.getByText('Amazon')).toBeTruthy())
     userEvent.click(screen.getByText('Amazon'))
 
     // Validate chips
-    await waitFor(() => expect(getAllByText('cloud')[1]).toBeTruthy())
+    await waitFor(() => expect(getAllByText('cloud')[0]).toBeTruthy())
     await waitFor(() => expect(getAllByText('Amazon')[1]).toBeTruthy())
   })
 

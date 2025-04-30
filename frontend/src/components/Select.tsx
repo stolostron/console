@@ -81,11 +81,22 @@ const filterIconClass = css({
   padding: '0 8px 0 16px',
 })
 
-const closeBtnClass = css({
+const placeholderClass = css({
   display: 'flex',
   alignItems: 'center',
   paddingRight: '20px',
+  width: '100%',
 })
+
+const menuToggleClass = css`
+  span.pf-v5-c-menu-toggle__text {
+    width: 100%;
+  }
+  span.pf-v5-c-menu-toggle__controls {
+    padding-inline-start: 0;
+  }
+`
+
 interface CheckboxChildren {
   hasCheckbox?: boolean
   isSelected?: boolean
@@ -112,6 +123,7 @@ const addCheckboxes = (children: ReactNode, selectedItems: string | any[]): any 
   })
 
 export function Select(props: SelectProps) {
+  const { t } = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
   const [inputValue, setInputValue] = useState<string>('')
 
@@ -121,8 +133,20 @@ export function Select(props: SelectProps) {
     props.variant === SelectVariant.typeaheadMulti ||
     props.variant === SelectVariant.typeaheadCheckbox
   const [filterValue, setFilterValue] = useState<string>('')
-  const initialFilteredOptions = useFilter
-    ? Children.toArray(props.children).map((child) => {
+  let initialFilteredOptions:
+    | {
+        value: any
+        children: any
+      }[]
+    | {
+        value: string
+        children?: any
+        disabled: boolean
+      }[] = []
+  if (useFilter) {
+    const children = Children.toArray(props.children)
+    if (children.length > 0) {
+      initialFilteredOptions = children.map((child) => {
         const props = (child as React.ReactElement).props
         const { value, children } = props
         return {
@@ -130,7 +154,17 @@ export function Select(props: SelectProps) {
           children: children ?? value,
         }
       })
-    : []
+    } else {
+      initialFilteredOptions = [
+        {
+          value: NO_RESULTS,
+          children: t('No results found'),
+          disabled: true,
+        },
+      ]
+    }
+  }
+
   const [filteredOptions, setFilteredOptions] = useState<SelectOptionProps[]>(initialFilteredOptions)
 
   const getMultiTypeaheadChildren = (value: string) =>
@@ -138,7 +172,6 @@ export function Select(props: SelectProps) {
   const [focusedItemIndex, setFocusedItemIndex] = useState<number | null>(null)
   const [activeItemId, setActiveItemId] = useState<string | null>(null)
   const textInputRef = useRef<HTMLInputElement>()
-  const { t } = useTranslation()
   const {
     value,
     isDisabled,
@@ -153,15 +186,22 @@ export function Select(props: SelectProps) {
     isLoading,
     variant = SelectVariant.single,
     children,
+    footer,
     ...selectProps
   } = props
   const selections = value ?? selectionProps
   const isMulti = Array.isArray(selections)
-  const placeholder =
-    props.placeholderText ||
-    (isMulti && selections.length > 0 && t('{{count}} items selected', { count: selections.length })) ||
-    props.placeholder ||
-    ''
+  const isSingle = typeof selections === 'string' && selections?.length !== 0
+  let placeholder = props.placeholderText
+  if (!placeholder) {
+    if (isMulti && selections.length > 0) {
+      placeholder = selections.join(', ')
+    } else if (isSingle) {
+      placeholder = selections
+    } else {
+      placeholder = props.placeholder || ''
+    }
+  }
   const selectedItem = !Array.isArray(selections) ? (selections as string) : undefined
   const selectedItems = Array.isArray(selections) ? (selections as string[]) : []
 
@@ -371,7 +411,11 @@ export function Select(props: SelectProps) {
     }
     setFilterValue('')
     onSelect?.(String(value))
-    if (variant !== SelectVariant.checkbox && variant !== SelectVariant.typeaheadCheckbox) {
+    if (
+      variant !== SelectVariant.checkbox &&
+      variant !== SelectVariant.typeaheadCheckbox &&
+      variant !== SelectVariant.typeaheadMulti
+    ) {
       closeMenu()
     }
 
@@ -448,33 +492,28 @@ export function Select(props: SelectProps) {
         return item.props.value.toString()
       }
     }
-    return props.placeholder ?? props.placeholderText
+    return placeholder
   }
 
-  const isClearButtonHidden = () => {
-    if (variant === SelectVariant.single) {
-      return selectedItem?.length === 0
-    } else if (variant === SelectVariant.checkbox) {
-      return selectedItems.length === 0
-    }
+  const hasClearButton = () => {
     if (onClear) {
-      return false
+      return isMulti || isSingle
     }
-    return !inputValue
+    return !!inputValue
   }
   return isLoading ? (
     <Skeleton height="36px" screenreaderText={t('Loading')} />
   ) : (
     <SelectCore
+      {...selectProps}
       style={{ width: 'auto' }}
       spellCheck={false}
-      aria-labelledby={`${props.id}-label`}
-      {...selectProps}
       isOpen={isOpen}
       toggle={(toggleRef: React.Ref<MenuToggleElement>) => {
         return (
           <MenuToggle
             id={selectToggleId}
+            aria-labelledby={`${props.id}-label`}
             ref={toggleRef}
             variant={variant === SelectVariant.single || variant === SelectVariant.checkbox ? 'default' : 'typeahead'}
             aria-label={
@@ -486,6 +525,7 @@ export function Select(props: SelectProps) {
             onClick={onToggleClick}
             icon={toggleIcon && <Icon className={filterIconClass}>{toggleIcon}</Icon>}
             isExpanded={isOpen}
+            className={menuToggleClass}
             style={
               {
                 width: width || '100%',
@@ -494,12 +534,17 @@ export function Select(props: SelectProps) {
             }
           >
             {variant === SelectVariant.single || variant === SelectVariant.checkbox ? (
-              <TextInputGroup isPlain>
-                <div className={closeBtnClass}>
+              <TextInputGroup style={{ width: '100%' }} isPlain>
+                <div className={placeholderClass} style={{ width: '100%' }}>
                   {variant === SelectVariant.single ? renderSinglePlaceholder() : <span>{placeholder}</span>}
                 </div>
-                <TextInputGroupUtilities {...(isClearButtonHidden() ? { style: { display: 'none' } } : {})}>
-                  <Button variant="plain" onClick={() => onClearSelection()} aria-label="Clear input value">
+                <TextInputGroupUtilities {...(!hasClearButton() ? { style: { display: 'none' } } : {})}>
+                  <Button
+                    variant="plain"
+                    onClick={() => onClearSelection()}
+                    aria-label="Clear input value"
+                    style={{ paddingInlineStart: 0 }}
+                  >
                     <TimesCircleIcon aria-hidden />
                   </Button>
                 </TextInputGroupUtilities>
@@ -536,7 +581,7 @@ export function Select(props: SelectProps) {
                     </ChipGroup>
                   )}
                 </TextInputGroupMain>
-                <TextInputGroupUtilities {...(isClearButtonHidden() ? { style: { display: 'none' } } : {})}>
+                <TextInputGroupUtilities {...(!hasClearButton() ? { style: { display: 'none' } } : {})}>
                   <Button variant="plain" onClick={() => onClearSelection()} aria-label="Clear input value">
                     <TimesCircleIcon aria-hidden />
                   </Button>
@@ -551,6 +596,7 @@ export function Select(props: SelectProps) {
       onSelect={_onSelect}
     >
       {renderSelectList()}
+      {footer}
     </SelectCore>
   )
 }

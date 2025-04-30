@@ -8,7 +8,7 @@ import {
   NamespaceApiVersion,
   NamespaceKind,
 } from '../../../../../resources'
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { RecoilRoot } from 'recoil'
 import { managedClusterSetBindingsState, namespacesState } from '../../../../../atoms'
 import { nockCreate, nockDelete, nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../../lib/nock-util'
@@ -412,6 +412,11 @@ describe('ClusterSetActionDropdown', () => {
 
     // verify existing binding is selected
     await waitForText(firstNamespaceBinding.metadata.namespace!)
+    screen
+      .getByRole('button', {
+        name: /typeahead menu toggle/i,
+      })
+      .click()
     await clickByPlaceholderText('Select namespaces')
 
     // unselect existing binding

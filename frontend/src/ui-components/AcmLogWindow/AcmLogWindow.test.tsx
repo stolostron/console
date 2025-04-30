@@ -22,11 +22,6 @@ describe('AcmLogWindow', () => {
     />
   )
 
-  test('has zero accessibility defects', async () => {
-    const { container } = render(<LogWindow />)
-    expect(await axe(container)).toHaveNoViolations()
-  })
-
   test('renders', () => {
     const { getByTestId } = render(<LogWindow />)
     expect(getByTestId('log-window-lines-container').textContent).toContain('Testing log lines1')

@@ -723,7 +723,7 @@ describe('ImportCluster', () => {
     await waitForText('Install the operator')
     await clickByPlaceholderText('Select an automation template')
     await clickByText(mockClusterCurators[0].metadata.name!)
-    await clickByRole('button', { name: /clear selected item/i })
+    await clickByRole('button', { name: /clear input value/i })
 
     // Advance to Review step and submit the form
     await clickByText('Next')
@@ -1171,7 +1171,7 @@ describe('Import cluster RHOCM mode', () => {
   })
   it('assert that deleted RHOCM credential does not exist in the credentials dropdown', async () => {
     const setSetSecrets = jest.fn()
-    render(
+    const { container } = render(
       <Component secrets={[mockCRHCredential1, mockCRHCredential2, mockCRHCredential3]} setSetSecrets={setSetSecrets} />
     )
 
@@ -1187,11 +1187,21 @@ describe('Import cluster RHOCM mode', () => {
     await waitForText(mockCRHCredential2.metadata.name!)
 
     // Click on the button with the name "Credential Options menu"
-    await userEvent.click(
-      screen.getByRole('button', {
-        name: /Credential Options menu/i,
-      })
-    )
+
+    await new Promise((resolve) => setTimeout(resolve, 500))
+    screen.logTestingPlaygroundURL()
+    // await userEvent.click(
+    //   screen.getByRole('button', {
+    //     name: /Credential Options menu/i,
+    //   })
+    // )
+    await waitFor(() => expect(container.querySelectorAll(`[aria-labelledby^="credential-label"]`)).toHaveLength(1))
+    container.querySelector<HTMLButtonElement>(`[aria-labelledby^="credential-label"]`)!.click()
+    // screen
+    //   .getByRole('button', {
+    //     name: /credential ocm\-service\-account/i,
+    //   })
+    //   .click()
     // Assert the removed credential does not exist
     expect(screen.queryByText(mockCRHCredential1.metadata.name!)).not.toBeInTheDocument()
     expect(screen.queryByText(mockCRHCredential3.metadata.name!)).toBeInTheDocument()
@@ -1202,11 +1212,9 @@ describe('Import cluster RHOCM mode', () => {
     expect(screen.queryByText(mockCRHCredential2.metadata.name!)).not.toBeInTheDocument()
     // Third credential should now be selected
     // Click on the button with the name "Credential Options menu"
-    await userEvent.click(
-      screen.getByRole('button', {
-        name: /Credential Options menu/i,
-      })
-    )
+    const credentials = container.querySelectorAll(`[aria-labelledby^="credential-label"]`)
+    ;(credentials[0] as HTMLButtonElement).click()
+    await new Promise((resolve) => setTimeout(resolve, 500))
     expect(screen.queryByText(mockCRHCredential3.metadata.name!)).toBeInTheDocument()
   })
 })
