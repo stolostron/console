@@ -166,11 +166,11 @@ export function getFullTypeByAcronymForDiscoveryClustersType(acronym: string) {
   switch (acronym.toUpperCase()) {
     case 'MOA':
       return t('type.rosa')
-    case 'MOA-HostedControlPlane': //MOA-HostedControlPlane
+    case 'MOA-HOSTEDCONTROLPLANE': //MOA-HostedControlPlane
       return t('type.rosa.hcp')
     case 'ROSA': //ROSA (Red Hat OpenShift on AWS)
       return t('type.rosa')
-    case 'ROSA-HCP': //ROSA-HyperShift (ROSA with HyperShift)
+    case 'ROSA-HYPERSHIFT': //ROSA-HyperShift (ROSA with HyperShift)
       return t('type.rosa.hcp')
     case 'OCP-ASSISTEDINSTALL': //OCP-AssistedInstall (OpenShift Assisted Installer)
       return t('type.ocp.assisted.install')
@@ -178,7 +178,7 @@ export function getFullTypeByAcronymForDiscoveryClustersType(acronym: string) {
       return t('type.ocp')
     case 'OSD': //OSD (OpenShift Dedicated)
       return t('type.osd')
-    case 'OSD-TRIAL': //OSDTrial (Trial version of OpenShift Dedicated)
+    case 'OSDTRIAL': //OSDTrial (Trial version of OpenShift Dedicated)
       return t('type.osd.trial')
     case 'ARO': //ARO (Azure Red Hat OpenShift)
       return t('type.aro')
