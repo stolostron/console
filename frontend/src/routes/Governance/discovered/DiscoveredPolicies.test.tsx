@@ -23,7 +23,7 @@ describe('useFetchPolicies custom hook', () => {
     })
     jest.spyOn(useFetchPolicies, 'useFetchPolicies').mockReturnValue({
       isFetching: false,
-      data: [
+      policyItems: [
         {
           id: 'check-policy-reportsConfigurationPolicy',
           name: 'check-policy-reports',
@@ -231,7 +231,7 @@ describe('useFetchPolicies custom hook', () => {
   test('Should render error page', async () => {
     jest.spyOn(useFetchPolicies, 'useFetchPolicies').mockReturnValue({
       isFetching: false,
-      data: undefined,
+      policyItems: undefined,
       err: { message: 'Error getting fetching data' } as ApolloError,
       labelData: undefined,
     })
@@ -248,7 +248,7 @@ describe('useFetchPolicies custom hook', () => {
   test('Should render loading page', async () => {
     jest.spyOn(useFetchPolicies, 'useFetchPolicies').mockReturnValue({
       isFetching: true,
-      data: undefined,
+      policyItems: undefined,
       err: { message: 'Error getting fetching data' } as ApolloError,
       labelData: undefined,
     })
@@ -267,7 +267,7 @@ describe('useFetchPolicies custom hook', () => {
   test('Should render severity with hyphen', async () => {
     jest.spyOn(useFetchPolicies, 'useFetchPolicies').mockReturnValue({
       isFetching: false,
-      data: [
+      policyItems: [
         {
           id: 'check-policy-reportsConfigurationPolicy',
           name: 'check-policy-reports',
@@ -436,7 +436,7 @@ describe('useFetchPolicies custom hook', () => {
   test('Should render ValidatingAdmissionPolicyBinding', async () => {
     jest.spyOn(useFetchPolicies, 'useFetchPolicies').mockReturnValue({
       isFetching: false,
-      data: [
+      policyItems: [
         {
           id: 'machine-configuration-guards-bindingValidatingAdmissionPolicyBindingadmissionregistration.k8s.io',
           apigroup: 'admissionregistration.k8s.io',
@@ -512,7 +512,7 @@ describe('useFetchPolicies custom hook', () => {
   test('Should render Kyverno Policy in multiple namespaces and ClusterPolicy', async () => {
     jest.spyOn(useFetchPolicies, 'useFetchPolicies').mockReturnValue({
       isFetching: false,
-      data: [
+      policyItems: [
         {
           id: 'require-owner-labelsClusterPolicykyverno.io',
           apigroup: 'kyverno.io',

@@ -23,8 +23,7 @@ export function grouping(): {
     parseStringMap: TParseStringMap
   ) => ISourceType
   createMessage: (
-    data: any[],
-    kyvernoPolicyReports: any[],
+    data: any,
     helmReleases: any[],
     channels: any[],
     subscriptions: any[],
@@ -32,7 +31,10 @@ export function grouping(): {
     getSourceText: string,
     parseStringMap: string,
     parseDiscoveredPolicies: string
-  ) => any[]
+  ) => {
+    policyItems: any[]
+    kyvernoPolicyReports: any[]
+  }
 } {
   const getPolicySource = (
     policy: any,
@@ -127,8 +129,7 @@ export function grouping(): {
   }
 
   const createMessage = (
-    data: any[],
-    kyvernoPolicyReports: any[],
+    data: any,
     helmReleases: any[],
     channels: any[],
     subscriptions: any[],
@@ -136,9 +137,28 @@ export function grouping(): {
     getSourceTextStr: string,
     parseStringMapStr: string,
     parseDiscoveredPoliciesStr: string
-  ): any[] => {
-    if (data?.length === 0) {
-      return []
+  ): {
+    policyItems: any[]
+    kyvernoPolicyReports: any[]
+  } => {
+    let searchDataItems: any[] = []
+    let kyvernoPolicyReports: any[] = []
+
+    data?.searchResult?.forEach((result: any) => {
+      searchDataItems = searchDataItems.concat(result?.items || [])
+      if (result?.items?.[0]?.apigroup === 'kyverno.io') {
+        result.related?.forEach((related: any) => {
+          if (['PolicyReport', 'ClusterPolicyReport'].includes(related?.kind ?? ''))
+            kyvernoPolicyReports = kyvernoPolicyReports.concat(related?.items || [])
+        })
+      }
+    })
+
+    if (searchDataItems?.length === 0) {
+      return {
+        policyItems: [],
+        kyvernoPolicyReports: [],
+      }
     }
 
     const resolveSource = eval(resolveSourceStr) as TResolveSource
@@ -160,7 +180,7 @@ export function grouping(): {
       })
     }
 
-    const policiesWithSource = (parseDiscoveredPolicies(data) as any[])
+    const policiesWithSource = (parseDiscoveredPolicies(searchDataItems) as any[])
       ?.filter(
         // Filter out ValidatingAdmissionPolicyBinding instances created by Gatekeeper and Kyverno.
         (policy: any): any =>
@@ -209,7 +229,7 @@ export function grouping(): {
     const keys = Object.keys(groupByNameKindGroup)
 
     // NOSONAR
-    return keys.map((nameKindGroup) => {
+    const policyItems = keys.map((nameKindGroup) => {
       const group = groupByNameKindGroup[nameKindGroup] || []
 
       let highestSeverity = 0
@@ -282,12 +302,16 @@ export function grouping(): {
         source,
       }
     })
+
+    return {
+      policyItems,
+      kyvernoPolicyReports,
+    }
   }
 
   self.onmessage = (e: MessageEvent<any>) => {
     const {
-      data,
-      kyvernoPolicyReports,
+      searchData,
       helmReleases,
       channels,
       subscriptions,
@@ -299,8 +323,7 @@ export function grouping(): {
 
     self.postMessage(
       createMessage(
-        data,
-        kyvernoPolicyReports,
+        searchData,
         helmReleases,
         channels,
         subscriptions,

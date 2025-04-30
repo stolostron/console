@@ -80,7 +80,7 @@ function labelsCell(
 }
 
 export default function DiscoveredPolicies() {
-  const { isFetching, data, labelData, err } = useFetchPolicies()
+  const { isFetching, policyItems: data, labelData, err } = useFetchPolicies()
   const { labelOptions, labelMap } = labelData || {}
   const { t } = useTranslation()
 

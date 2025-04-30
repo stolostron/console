@@ -265,8 +265,7 @@ describe('OnMessage test', () => {
 
   test('OnMessage should create result properly', () => {
     const result = createMessage(
-      mockSearchResults,
-      [],
+      { searchResult: [{ items: mockSearchResults }] },
       helmRelease,
       channels,
       subscriptions,
@@ -275,7 +274,7 @@ describe('OnMessage test', () => {
       parseStringMap.toString(),
       parseDiscoveredPolicies.toString()
     )
-    expect(result).toEqual([
+    expect(result.policyItems).toEqual([
       {
         id: 'check-policy-reportsConfigurationPolicypolicy.open-cluster-management.io',
         apigroup: 'policy.open-cluster-management.io',
@@ -386,8 +385,7 @@ describe('OnMessage test', () => {
 
   test('OnMessage with empty search results', () => {
     const result = createMessage(
-      [],
-      [],
+      { searchResult: [{ items: [] }] },
       helmRelease,
       channels,
       subscriptions,
@@ -396,7 +394,7 @@ describe('OnMessage test', () => {
       parseStringMap.toString(),
       parseDiscoveredPolicies.toString()
     )
-    expect(result).toEqual([])
+    expect(result.policyItems).toEqual([])
   })
 
   test('Should filter out ValidatingAdmissionPolicyBinding created by Gatekeeper constraints', () => {
@@ -443,8 +441,7 @@ describe('OnMessage test', () => {
       },
     ]
     const result = createMessage(
-      mock,
-      [],
+      { searchResult: [{ items: mock }] },
       helmRelease,
       channels,
       subscriptions,
@@ -453,7 +450,7 @@ describe('OnMessage test', () => {
       parseStringMap.toString(),
       parseDiscoveredPolicies.toString()
     )
-    expect(result).toEqual([
+    expect(result.policyItems).toEqual([
       {
         id: 'machine-configuration-guards-bindingValidatingAdmissionPolicyBindingadmissionregistration.k8s.io',
         apigroup: 'admissionregistration.k8s.io',
@@ -655,8 +652,7 @@ describe('OnMessage test', () => {
       },
     ]
     const result = createMessage(
-      mock,
-      relatedMock,
+      { searchResult: [{ items: mock, related: [{ kind: 'PolicyReport', items: relatedMock }] }] },
       helmRelease,
       channels,
       subscriptions,
@@ -665,7 +661,7 @@ describe('OnMessage test', () => {
       parseStringMap.toString(),
       parseDiscoveredPolicies.toString()
     )
-    expect(result).toEqual([
+    expect(result.policyItems).toEqual([
       {
         id: 'require-owner-labelsClusterPolicykyverno.io',
         apigroup: 'kyverno.io',
@@ -775,8 +771,7 @@ describe('OnMessage test', () => {
       },
     ]
     const result = createMessage(
-      mock,
-      relatedMock,
+      { searchResult: [{ items: mock, related: [{ kind: 'PolicyReport', items: relatedMock }] }] },
       helmRelease,
       channels,
       subscriptions,
@@ -785,7 +780,7 @@ describe('OnMessage test', () => {
       parseStringMap.toString(),
       parseDiscoveredPolicies.toString()
     )
-    expect(result).toEqual([
+    expect(result.policyItems).toEqual([
       {
         apigroup: 'kyverno.io',
         id: 'require-team-labelPolicykyverno.io',

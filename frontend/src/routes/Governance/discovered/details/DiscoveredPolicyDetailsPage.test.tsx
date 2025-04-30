@@ -13,7 +13,7 @@ describe('DiscoveredPolicyDetailsPage', () => {
   test('Should render the heading and tabs', async () => {
     jest.spyOn(useFetchPolicies, 'useFetchPolicies').mockReturnValue({
       isFetching: false,
-      data: [
+      policyItems: [
         {
           id: 'check-policy-reportsConfigurationPolicy',
           apigroup: 'policy.open-cluster-management.io',
@@ -105,7 +105,7 @@ describe('DiscoveredPolicyDetailsPage', () => {
   test('Should render error page', async () => {
     jest.spyOn(useFetchPolicies, 'useFetchPolicies').mockReturnValue({
       isFetching: false,
-      data: undefined,
+      policyItems: undefined,
       err: { message: 'Error getting fetching data' } as ApolloError,
       labelData: undefined,
     })

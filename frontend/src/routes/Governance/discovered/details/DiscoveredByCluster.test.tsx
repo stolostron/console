@@ -13,7 +13,7 @@ describe('DiscoveredByCluster', () => {
   test('Should render DiscoveredByCluster for ConfigurationPolicy', async () => {
     const context: DiscoveredDetailsContext = {
       isFetching: false,
-      data: [
+      policyItems: [
         {
           id: 'check-policy-reportsConfigurationPolicy',
           apigroup: 'policy.open-cluster-management.io',
@@ -115,7 +115,7 @@ describe('DiscoveredByCluster', () => {
   test('Should render DiscoveredByCluster for CertificatePolicy', async () => {
     const context: DiscoveredDetailsContext = {
       isFetching: false,
-      data: [
+      policyItems: [
         {
           id: 'check-policy-reportsCertificatePolicy',
           apigroup: 'policy.open-cluster-management.io',
@@ -196,7 +196,7 @@ describe('DiscoveredByCluster', () => {
   test('Should render DiscoveredByCluster for OperatorPolicy', async () => {
     const context: DiscoveredDetailsContext = {
       isFetching: false,
-      data: [
+      policyItems: [
         {
           id: 'check-policy-reportsOperatorPolicy',
           apigroup: 'policy.open-cluster-management.io',
@@ -383,7 +383,7 @@ describe('DiscoveredByCluster', () => {
   test('Should render DiscoveredByCluster for a Gatekeeper constraint', async () => {
     const context: DiscoveredDetailsContext = {
       isFetching: false,
-      data: [
+      policyItems: [
         {
           id: 'ns-must-have-gk_K8sRequiredLabels_',
           apigroup: 'constraints.gatekeeper.sh',
@@ -485,7 +485,7 @@ describe('DiscoveredByCluster', () => {
   test('Should render empty policy warning page for OperatorPolicy', async () => {
     const context: DiscoveredDetailsContext = {
       isFetching: false,
-      data: undefined,
+      policyItems: undefined,
       err: undefined,
       policyKind: 'OperatorPolicy',
       apiGroup: 'policy.open-cluster-management.io',
@@ -525,7 +525,7 @@ describe('DiscoveredByCluster', () => {
   test('Should render empty policy warning page for ConfigurationPolicy', async () => {
     const context: DiscoveredDetailsContext = {
       isFetching: false,
-      data: undefined,
+      policyItems: undefined,
       err: undefined,
       policyKind: 'ConfigurationPolicy',
       apiGroup: 'policy.open-cluster-management.io',
@@ -565,7 +565,7 @@ describe('DiscoveredByCluster', () => {
   test('Should render empty policy warning page for CertificatePolicy', async () => {
     const context: DiscoveredDetailsContext = {
       isFetching: false,
-      data: undefined,
+      policyItems: undefined,
       err: undefined,
       policyKind: 'CertificatePolicy',
       apiGroup: 'policy.open-cluster-management.io',
@@ -605,7 +605,7 @@ describe('DiscoveredByCluster', () => {
   test('Should render loading page', async () => {
     const context: DiscoveredDetailsContext = {
       isFetching: true,
-      data: undefined,
+      policyItems: undefined,
       err: { message: 'Error getting fetching data' } as ApolloError,
       policyKind: 'CertificatePolicy',
       apiGroup: 'policy.open-cluster-management.io',
@@ -645,7 +645,7 @@ describe('DiscoveredByCluster', () => {
   test('Should render DiscoveredByCluster for Kyverno Policy in multiple namespaces', async () => {
     const context: DiscoveredDetailsContext = {
       isFetching: false,
-      data: [
+      policyItems: [
         {
           id: 'require-team-labelPolicykyverno.io',
           apigroup: 'kyverno.io',

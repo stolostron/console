@@ -27,7 +27,7 @@ import { EmptyState, EmptyStateIcon, PageSection, Spinner, EmptyStateHeader } fr
 
 export default function DiscoveredByCluster() {
   const { policyKind, apiGroup, ...details } = useDiscoveredDetailsContext()
-  const policies = details.data?.[0]?.policies
+  const policies = details.policyItems?.[0]?.policies
 
   const { t } = useTranslation()
   const { channelsState, helmReleaseState, subscriptionsState } = useSharedAtoms()
@@ -235,7 +235,7 @@ export default function DiscoveredByCluster() {
     return filters
   }, [t, policyKind, policies, isGatekeeperMutation])
 
-  if (details.isFetching && !details.data) {
+  if (details.isFetching && !details.policyItems) {
     return (
       <PageSection>
         <EmptyState>
