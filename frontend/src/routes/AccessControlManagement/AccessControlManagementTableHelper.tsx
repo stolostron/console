@@ -166,7 +166,7 @@ const COLUMN_CELLS = {
                     text: t('Edit Access Control'),
                     isAriaDisabled: true,
                     click: (accessControl) => ACTIONS.EDIT({ accessControl, navigate }),
-                    rbac: [rbacPatch(accessControl)], // validate that this is working
+                    rbac: [rbacPatch(accessControl)], // TODO: is this the proper way for checking RBAC
                 },
                 {
                     id: 'deleteAccessControl',
