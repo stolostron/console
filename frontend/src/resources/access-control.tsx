@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Metadata } from './metadata'
 import { IResource, IResourceDefinition } from './resource'
-import { getResource, listNamespacedResources } from './utils/resource-request'
 
 export const AccessControlApiVersion = 'clusterview.open-cluster-management.io/v1'
 export type AccessControlApiVersionType = 'clusterview.open-cluster-management.io/v1'
@@ -26,7 +25,7 @@ export interface AccessControl extends IResource {
   data?: {
     id: string
     namespaces: string[]
-    clusters: string[]
+    cluster: string
     users?: string[]
     groups?: string[]
     roles: string[]

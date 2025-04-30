@@ -22,7 +22,7 @@ export const accessControlResponse = {
             data: {
                 id: '2b84f22b-e4b3-4d8b-9d0d-f20dbb87cb20',
                 namespaces: ["ns1", "ns2"],
-                clusters: ["cluster1", "cluster2"],
+                cluster: "jg-test-1",
                 users: ["user1", "user2"],
                 roles: ["role1", "role2"],
                 creationTimestamp: '2025-04-01T04:56:17Z',
@@ -47,7 +47,7 @@ export const accessControlResponse = {
             data: {
                 id: '2b84f22b-e4b3-4d8b-9d0d-f20dbb87cb21',
                 namespaces: ["*"],
-                clusters: ["*"],
+                cluster: "local-cluster",
                 users: ["*"],
                 roles: ["*"],
                 creationTimestamp: '2025-04-02T04:56:17Z',
@@ -72,7 +72,7 @@ export const accessControlResponse = {
             data: {
                 id: '2b84f22b-e4b3-4d8b-9d0d-f20dbb87cb22',
                 namespaces: ["ns1"],
-                clusters: ["cluster1"],
+                cluster: "jg-test-1",
                 users: ["user1"],
                 roles: ["role2"],
                 creationTimestamp: '2025-04-03T04:56:17Z',
@@ -97,7 +97,7 @@ export const accessControlResponse = {
             data: {
                 id: '2b84f22b-e4b3-4d8b-9d0d-f20dbb87cb23',
                 namespaces: ["ns3"],
-                clusters: ["cluster1", "cluster2"],
+                cluster: "local-cluster",
                 groups: ["group1", "group2"],
                 roles: ["role1"],
                 creationTimestamp: '2025-04-04T04:56:17Z',
@@ -122,7 +122,7 @@ export const accessControlResponse = {
             data: {
                 id: '2b84f22b-e4b3-4d8b-9d0d-f20dbb87cb24',
                 namespaces: Array(5).fill(0).map((e, index) => `ns${index + 1}`),
-                clusters: Array(15).fill(0).map((e, index) => `cluster${index + 1}`),
+                cluster: "local-cluster",
                 users: Array(9).fill(0).map((e, index) => `user${index + 1}`),
                 roles: Array(25).fill(0).map((e, index) => `role${index + 1}`),
                 creationTimestamp: '2025-04-05T04:56:17Z',
@@ -147,7 +147,7 @@ export const accessControlResponse = {
             data: {
                 id: '2b84f22b-e4b3-4d8b-9d0d-f20dbb87cb25',
                 namespaces: ["*"],
-                clusters: ["*"],
+                cluster: "*",
                 groups: ["*"],
                 roles: ["*"],
                 creationTimestamp: '2025-04-06T04:56:17Z',
