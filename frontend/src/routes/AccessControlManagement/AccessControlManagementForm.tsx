@@ -42,28 +42,6 @@ const AccessControlManagementForm = (
     setCluster(accessControl?.data?.cluster ?? '')
   }, [accessControl?.data])
 
-  // user changes yaml, update cloud to first cloud in yaml
-  // const [cloudsYaml, setOpenstackCloudsYaml] = useState(() => providerConnection?.stringData?.['clouds.yaml'] ?? '')
-  // useEffect(() => {
-  //   try {
-  //     const yamlData = YAML.parse(cloudsYaml) as {
-  //       clouds: {
-  //         [cloud: string]: {
-  //           cacert?: string
-  //         }
-  //       }
-  //     }
-  //     const clouds = Object.keys(yamlData?.clouds)
-  //     if (clouds.length) {
-  //       setOpenstackCloud(clouds[0])
-  //       if (osCABundle && !yamlData?.clouds[clouds[0]]?.cacert) {
-  //         set(yamlData, `clouds[${clouds[0]}].cacert`, '/etc/openstack-ca/ca.crt')
-  //         setOpenstackCloudsYaml(YAML.stringify(yamlData))
-  //       }
-  //     }
-  //   } catch { }
-  // }, [cloudsYaml, osCABundle])
-
   const { cancelForm } = useContext(LostChangesContext)
   const guardedHandleModalToggle = useCallback(() => cancelForm(handleModalToggle), [cancelForm, handleModalToggle])
 
