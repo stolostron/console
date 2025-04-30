@@ -54,7 +54,7 @@ export function getHubClusterName() {
   return hubClusterName
 }
 
-let isHubSelfManaged : boolean | undefined = undefined
+let isHubSelfManaged: boolean | undefined = undefined
 export function getIsHubSelfManaged() {
   return isHubSelfManaged
 }
