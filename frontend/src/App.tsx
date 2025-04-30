@@ -50,7 +50,7 @@ const Applications = lazy(() => import('./routes/Applications/Applications'))
 // CREDENTIALS
 const Credentials = lazy(() => import('./routes/Credentials/Credentials'))
 
-// CREDENTIALS
+// ACCESS CONTROL
 const AccessControlManagement = lazy(() => import('./routes/AccessControlManagement/AccessControlManagement'))
 
 interface IRoute {
