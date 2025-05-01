@@ -11,7 +11,9 @@ import { getOCPFluxAppTopology } from './topologyOCPFluxApp'
 
 export const getTopology = async (application, managedClusters, relatedResources, argoData) => {
   let topology
-  const hubCluster = managedClusters.find((cls) => cls.labels && cls.labels['local-cluster'] === 'true')
+  const hubCluster = managedClusters.find((cls) => cls.labels && cls.labels['local-cluster'] === 'true') || {
+    name: 'local-cluster',
+  }
 
   if (application) {
     if (application.isArgoApp) {
