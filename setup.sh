@@ -122,3 +122,10 @@ fi
 
 CLUSTER_PROXY_ADDON_USER_ROUTE=https://$(oc get route cluster-proxy-addon-user -n $INSTALLATION_NAMESPACE_MCE -o="jsonpath={.status.ingress[0].host}")
 echo CLUSTER_PROXY_ADDON_USER_ROUTE=$CLUSTER_PROXY_ADDON_USER_ROUTE >> ./backend/.env
+
+# ACM Observability will need to be installed first to set this env variable. Instructions: https://github.com/stolostron/multicluster-observability-operator
+OBSERVABILITY_ROUTE=https://$(oc get route rbac-query-proxy -n open-cluster-management-observability -o="jsonpath={.status.ingress[0].host}")
+echo OBSERVABILITY_ROUTE=$OBSERVABILITY_ROUTE >> ./backend/.env
+
+PROMETHEUS_ROUTE=https://$(oc get route prometheus-k8s -n openshift-monitoring -o="jsonpath={.status.ingress[0].host}")
+echo PROMETHEUS_ROUTE=$PROMETHEUS_ROUTE >> ./backend/.env
