@@ -191,7 +191,7 @@ export function AcmDropdown(props: AcmDropdownProps) {
 
   const handleSelect = useCallback(
     (_event?: React.MouseEvent, itemId?: string | number) => {
-      // add this safety check
+      // safety check
       if (!menuRef.current || !document.body.contains(menuRef.current)) {
         setOpen(false)
         return
