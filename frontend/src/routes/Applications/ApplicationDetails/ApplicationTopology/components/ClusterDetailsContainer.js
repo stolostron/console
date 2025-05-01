@@ -516,6 +516,7 @@ class ClusterDetailsContainer extends Component {
           variant={SelectVariant.typeahead}
           onSelect={this.handleSelection}
           selections={selected}
+          aria-label={findClusterMsg}
           aria-labelledby={titleId}
           placeholderText={findClusterMsg}
           onClear={this.handleSelectionClear}

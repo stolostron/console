@@ -80,7 +80,7 @@ export default function CardViewToolbarFilter(props: {
     <Select
       key={'card-view-filter-select-key'}
       variant={SelectVariant.checkbox}
-      aria-label={'card-view-filter-select-key'}
+      aria-label={'Select filter options'}
       onSelect={(selection) => onFilterSelect(selection as string)}
       selections={selectedFilters}
       toggleIcon={<FilterIcon />}

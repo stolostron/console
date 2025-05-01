@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render } from '@testing-library/react'
-import { axe } from 'jest-axe'
 
 import userEvent from '@testing-library/user-event'
 import { AcmLogWindow } from './AcmLogWindow'

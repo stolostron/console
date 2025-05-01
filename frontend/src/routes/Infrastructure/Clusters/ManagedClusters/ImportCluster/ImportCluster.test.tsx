@@ -1171,7 +1171,7 @@ describe('Import cluster RHOCM mode', () => {
   })
   it('assert that deleted RHOCM credential does not exist in the credentials dropdown', async () => {
     const setSetSecrets = jest.fn()
-    const { container } = render(
+    render(
       <Component secrets={[mockCRHCredential1, mockCRHCredential2, mockCRHCredential3]} setSetSecrets={setSetSecrets} />
     )
 
@@ -1187,21 +1187,11 @@ describe('Import cluster RHOCM mode', () => {
     await waitForText(mockCRHCredential2.metadata.name!)
 
     // Click on the button with the name "Credential Options menu"
-
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    screen.logTestingPlaygroundURL()
-    // await userEvent.click(
-    //   screen.getByRole('button', {
-    //     name: /Credential Options menu/i,
-    //   })
-    // )
-    await waitFor(() => expect(container.querySelectorAll(`[aria-labelledby^="credential-label"]`)).toHaveLength(1))
-    container.querySelector<HTMLButtonElement>(`[aria-labelledby^="credential-label"]`)!.click()
-    // screen
-    //   .getByRole('button', {
-    //     name: /credential ocm\-service\-account/i,
-    //   })
-    //   .click()
+    screen
+      .getByRole('combobox', {
+        name: 'Select your Red Hat OpenShift Cluster Manager credential',
+      })
+      .click()
     // Assert the removed credential does not exist
     expect(screen.queryByText(mockCRHCredential1.metadata.name!)).not.toBeInTheDocument()
     expect(screen.queryByText(mockCRHCredential3.metadata.name!)).toBeInTheDocument()
@@ -1212,9 +1202,12 @@ describe('Import cluster RHOCM mode', () => {
     expect(screen.queryByText(mockCRHCredential2.metadata.name!)).not.toBeInTheDocument()
     // Third credential should now be selected
     // Click on the button with the name "Credential Options menu"
-    const credentials = container.querySelectorAll(`[aria-labelledby^="credential-label"]`)
-    ;(credentials[0] as HTMLButtonElement).click()
-    await new Promise((resolve) => setTimeout(resolve, 500))
+    screen
+      .getByRole('combobox', {
+        name: 'Select your Red Hat OpenShift Cluster Manager credential',
+      })
+      .click()
+    // await new Promise((resolve) => setTimeout(resolve, 500))
     expect(screen.queryByText(mockCRHCredential3.metadata.name!)).toBeInTheDocument()
   })
 })

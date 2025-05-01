@@ -41,8 +41,8 @@ describe('ArgoAppDetailsContainer with no apps', () => {
   })
   it('renders as expected', async () => {
     expect(
-      screen.getByRole('button', {
-        name: /typeahead menu toggle/i,
+      screen.getByRole('combobox', {
+        name: 'Find application',
       })
     ).toBeTruthy()
   })

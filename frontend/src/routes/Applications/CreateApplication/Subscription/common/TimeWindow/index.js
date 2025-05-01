@@ -221,7 +221,7 @@ export class TimeWindow extends Component {
                       <Select
                         id="timeZoneSelect"
                         variant={SelectVariant.typeahead}
-                        aria-label="timezoneComboBox"
+                        aria-label="Select timezone"
                         className="config-timezone-combo-box"
                         placeholder={i18n('Choose a location')}
                         selections={timezone || ''}

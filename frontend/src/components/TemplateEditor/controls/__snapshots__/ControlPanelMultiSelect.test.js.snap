@@ -58,9 +58,9 @@ exports[`ControlPanelMultiSelect component renders as expected 1`] = `
           class="pf-v5-c-form__group-control"
         >
           <div
-            aria-labelledby="undefined-label"
             class="pf-v5-c-menu-toggle css-gxe00f pf-m-typeahead"
             id="pf-select-toggle-id-1"
+            role="combobox"
             style="width: 100%; max-height: 36px;"
           >
             <div
@@ -77,7 +77,7 @@ exports[`ControlPanelMultiSelect component renders as expected 1`] = `
                   <input
                     aria-controls="select-multi-typeahead-listbox"
                     aria-expanded="false"
-                    aria-label="Type to filter"
+                    aria-label="Select undefined"
                     class="pf-v5-c-text-input-group__text-input"
                     placeholder="None"
                     role="combobox"
@@ -104,11 +104,11 @@ exports[`ControlPanelMultiSelect component renders as expected 1`] = `
                     fill="currentColor"
                     height="1em"
                     role="img"
-                    viewBox="0 0 512 512"
+                    viewBox="0 0 352 512"
                     width="1em"
                   >
                     <path
-                      d="M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm121.6 313.1c4.7 4.7 4.7 12.3 0 17L338 377.6c-4.7 4.7-12.3 4.7-17 0L256 312l-65.1 65.6c-4.7 4.7-12.3 4.7-17 0L134.4 338c-4.7-4.7-4.7-12.3 0-17l65.6-65-65.6-65.1c-4.7-4.7-4.7-12.3 0-17l39.6-39.6c4.7-4.7 12.3-4.7 17 0l65 65.7 65.1-65.6c4.7-4.7 12.3-4.7 17 0l39.6 39.6c4.7 4.7 4.7 12.3 0 17L312 256l65.6 65.1z"
+                      d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"
                     />
                   </svg>
                 </button>
@@ -116,7 +116,7 @@ exports[`ControlPanelMultiSelect component renders as expected 1`] = `
             </div>
             <button
               aria-expanded="false"
-              aria-label="Typeahead menu toggle"
+              aria-label="Select undefined"
               class="pf-v5-c-menu-toggle__button"
               data-ouia-component-id="OUIA-Generated-MenuToggle-typeahead-1"
               data-ouia-component-type="PF5/MenuToggle"

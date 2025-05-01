@@ -490,6 +490,7 @@ class ArgoAppDetailsContainer extends Component {
           typeAheadAriaLabel={findAppMsg}
           onSelect={this.handleSelection}
           selections={selected}
+          aria-label={findAppMsg}
           aria-labelledby={titleId}
           placeholderText={findAppMsg}
           onClear={this.handleSelectionClear}

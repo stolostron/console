@@ -15,7 +15,6 @@ import { nockCreate, nockDelete, nockIgnoreApiPaths, nockIgnoreRBAC } from '../.
 import { mockManagedClusterSet } from '../../../../../lib/test-metadata'
 import {
   clickByLabel,
-  clickByPlaceholderText,
   clickByRole,
   clickByText,
   typeByText,
@@ -413,11 +412,10 @@ describe('ClusterSetActionDropdown', () => {
     // verify existing binding is selected
     await waitForText(firstNamespaceBinding.metadata.namespace!)
     screen
-      .getByRole('button', {
-        name: /typeahead menu toggle/i,
+      .getByRole('combobox', {
+        name: 'Select namespaces',
       })
       .click()
-    await clickByPlaceholderText('Select namespaces')
 
     // unselect existing binding
     await clickByText(firstNamespaceBinding.metadata.namespace!, 1)

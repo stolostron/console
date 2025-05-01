@@ -84,12 +84,13 @@ describe('discovery config page', () => {
       discoveryConfigCreateSelfSubjectAccessRequest,
       discoveryConfigCreateSelfSubjectAccessResponse
     )
-    const { container } = render(<TestAddDiscoveryConfigPage />)
+    render(<TestAddDiscoveryConfigPage />)
     waitForNocks([discoveryConfigCreateNock])
-
-    await waitFor(() => expect(container.querySelectorAll(`[aria-labelledby^="credentials-label"]`)).toHaveLength(1))
-    container.querySelector<HTMLButtonElement>(`[aria-labelledby^="credentials-label"]`)!.click()
-    await waitForText('Add credential')
+    screen
+      .getByRole('combobox', {
+        name: 'Select a credential',
+      })
+      .click()
     userEvent.click(screen.getByText(/add credential/i))
     await waitForText('Enter the basic credentials information')
     userEvent.click(
@@ -99,8 +100,11 @@ describe('discovery config page', () => {
     )
 
     // Select Credential
-    await waitFor(() => expect(container.querySelectorAll(`[aria-labelledby^="credentials-label"]`)).toHaveLength(1))
-    container.querySelector<HTMLButtonElement>(`[aria-labelledby^="credentials-label"]`)!.click()
+    screen
+      .getByRole('combobox', {
+        name: 'Select a credential',
+      })
+      .click()
     await clickByText(mockRHOCMSecrets[0].metadata.namespace! + '/' + mockRHOCMSecrets[0].metadata.name!)
 
     // Submit form
@@ -118,25 +122,32 @@ describe('discovery config page', () => {
       discoveryConfigCreateSelfSubjectAccessRequest,
       discoveryConfigCreateSelfSubjectAccessResponse
     )
-    const { container } = render(<TestAddDiscoveryConfigPage />)
+    render(<TestAddDiscoveryConfigPage />)
 
     // Select Credential
-    await waitFor(() => expect(container.querySelectorAll(`[aria-labelledby^="credentials-label"]`)).toHaveLength(1))
-    container.querySelector<HTMLButtonElement>(`[aria-labelledby^="credentials-label"]`)!.click()
+    screen
+      .getByRole('combobox', {
+        name: 'Select a credential',
+      })
+      .click()
     await clickByText(mockRHOCMSecrets[0].metadata.namespace! + '/' + mockRHOCMSecrets[0].metadata.name!)
     waitForNocks([discoveryConfigCreateNock])
 
     // Select LastActive
-    await waitFor(() =>
-      expect(container.querySelectorAll(`[aria-labelledby^="lastActiveFilter-label"]`)).toHaveLength(1)
-    )
-    container.querySelector<HTMLButtonElement>(`[aria-labelledby^="lastActiveFilter-label"]`)!.click()
+    screen
+      .getByRole('combobox', {
+        name: /select lastactivefilter/i,
+      })
+      .click()
     await waitForText('14 days')
     await clickByText('14 days')
 
     // Select Version
-    expect(container.querySelectorAll(`[aria-labelledby^="discoveryVersions-label"]`)).toHaveLength(1)
-    container.querySelector<HTMLButtonElement>(`[aria-labelledby^="discoveryVersions-label"]`)!.click()
+    screen
+      .getByRole('combobox', {
+        name: 'All available Red Hat OpenShift versions are included by default',
+      })
+      .click()
     await clickByText('4.17')
 
     // Submit form
@@ -156,12 +167,15 @@ describe('discovery config page', () => {
     )
     const nocks = [nockGet(discoveryConfig, discoveryConfig)]
 
-    const { container } = render(<TestEditConnectionPage />)
+    render(<TestEditConnectionPage />)
     await waitForNocks(nocks)
 
     // Select Namespace
-    await waitFor(() => expect(container.querySelectorAll(`[aria-labelledby^="namespaces-label"]`)).toHaveLength(1))
-    container.querySelector<HTMLButtonElement>(`[aria-labelledby^="namespaces-label"]`)!.click()
+    screen
+      .getByRole('combobox', {
+        name: 'Select a namespace',
+      })
+      .click()
     await clickByText(discoveryConfig.metadata.namespace!)
 
     await waitForNocks([discoveryConfigUpdateNock])
@@ -172,10 +186,18 @@ describe('discovery config page', () => {
     await waitForText(mockRHOCMSecrets[0].metadata.namespace + '/' + mockRHOCMSecrets[0].metadata.name!)
 
     // Change form
-    container.querySelector<HTMLButtonElement>(`[aria-labelledby^="lastActiveFilter-label"]`)!.click()
+    screen
+      .getByRole('combobox', {
+        name: /select lastactivefilter/i,
+      })
+      .click()
     await clickByText('30 days')
 
-    container.querySelector<HTMLButtonElement>(`[aria-labelledby^="discoveryVersions-label"]`)!.click()
+    screen
+      .getByRole('combobox', {
+        name: 'All available Red Hat OpenShift versions are included by default',
+      })
+      .click()
     await clickByText('4.18')
 
     const replaceNock = nockReplace(discoveryConfigUpdated)
@@ -189,12 +211,15 @@ describe('discovery config page', () => {
 
   it('Delete DiscoveryConfig', async () => {
     const nocks = [nockGet(discoveryConfig, discoveryConfig)]
-    const { container } = render(<TestEditConnectionPage />)
+    render(<TestEditConnectionPage />)
     await waitForNocks(nocks)
 
     // Select Namespace
-    await waitFor(() => expect(container.querySelectorAll(`[aria-labelledby^="namespaces-label"]`)).toHaveLength(1))
-    container.querySelector<HTMLButtonElement>(`[aria-labelledby^="namespaces-label"]`)!.click()
+    screen
+      .getByRole('combobox', {
+        name: 'Select a namespace',
+      })
+      .click()
     await clickByText(discoveryConfig.metadata.namespace!)
 
     // Ensure Form is prepopulated

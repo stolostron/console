@@ -394,8 +394,8 @@ describe('add credentials page', () => {
 
     // Open the dropdown
     fireEvent.click(
-      screen.getByRole('button', {
-        name: /typeahead menu toggle/i,
+      screen.getByRole('combobox', {
+        name: 'Select ocmAuthMethod',
       })
     )
 
@@ -438,11 +438,11 @@ describe('add credentials page', () => {
     expect(serviceAccountTokenLink).toBeInTheDocument()
 
     // Open the dropdown
-    fireEvent.click(
-      screen.getByRole('button', {
-        name: /typeahead menu toggle/i,
+    screen
+      .getByRole('combobox', {
+        name: 'Select ocmAuthMethod',
       })
-    )
+      .click()
 
     // Select the "Service Account" option
     const serviceAccountOption = screen.getByText('Service account')

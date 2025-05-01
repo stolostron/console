@@ -41,8 +41,8 @@ describe('ClusterDetailsContainer with no clusters', () => {
 
   it('renders as expected', () => {
     expect(
-      screen.getByRole('button', {
-        name: /typeahead menu toggle/i,
+      screen.getByRole('combobox', {
+        name: 'Find cluster',
       })
     ).toBeTruthy()
   })

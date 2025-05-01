@@ -25,7 +25,6 @@ import {
 import { defaultPlugin, PluginContext } from '../../../../../lib/PluginContext'
 import {
   clickByPlaceholderText,
-  clickByRole,
   clickByTestId,
   clickByText,
   pasteByTestId,
@@ -875,16 +874,11 @@ describe('CreateCluster AWS', () => {
     await waitForText(mockClusterCurators[0].spec!.upgrade!.posthook![0].name!)
 
     // clear template
-
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    screen.logTestingPlaygroundURL()
     screen
       .getByRole('button', {
         name: /clear input value/i,
       })
       .click()
-    // const clearButtons = screen.getAllByRole('button', { name: /clear selected item/i })
-    // fireEvent.click(clearButtons[0])
     await waitForNotText('View test')
     await clickByText('Next')
 
@@ -2476,17 +2470,17 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     await typeByTestId('additionalLabels', 'myLabelKey=myValue')
     await clickByPlaceholderText('kubevirt-with-ei')
     screen
-      .getByRole('button', {
-        name: /add credential/i,
+      .getByRole('combobox', {
+        name: 'Select a credential',
       })
       .click()
+    await clickByText('Add credential')
     await typeByTestId('credentialsName', 'kubevirt-with-ei')
     screen
       .getByRole('combobox', {
-        name: /type to filter/i,
+        name: 'Select namespaceName',
       })
       .click()
-
     await clickByText('new-ns')
     await clickByText('Next', 1)
     await clickByTestId('isExternalInfra')
@@ -2958,7 +2952,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     await typeByTestId('credentialsName', 'kubevirt-noei')
     screen
       .getByRole('combobox', {
-        name: /type to filter/i,
+        name: 'Select namespaceName',
       })
       .click()
     await clickByText('test-ns')
@@ -3452,7 +3446,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     await typeByTestId('credentialsName', 'kubevirt-noei')
     screen
       .getByRole('combobox', {
-        name: /type to filter/i,
+        name: 'Select namespaceName',
       })
       .click()
     await clickByText('test-ns')
@@ -3988,7 +3982,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     await typeByTestId('credentialsName', 'kubevirt-noei')
     screen
       .getByRole('combobox', {
-        name: /type to filter/i,
+        name: 'Select namespaceName',
       })
       .click()
     await clickByText('test-ns')

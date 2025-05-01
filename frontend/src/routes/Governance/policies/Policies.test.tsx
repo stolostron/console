@@ -285,7 +285,11 @@ describe('Add Policy to policy set', () => {
         </MemoryRouter>
       </RecoilRoot>
     )
-    screen.getByLabelText(/select a policy set/i, { selector: 'button' }).click()
+    screen
+      .getByRole('combobox', {
+        name: 'Select a policy set',
+      })
+      .click()
     screen.getByRole('option', { name: 'policy-set-with-1-placement' }).click()
     screen.getByRole('button', { name: 'Add' }).click()
     await new Promise((resolve) => setTimeout(resolve, 500))

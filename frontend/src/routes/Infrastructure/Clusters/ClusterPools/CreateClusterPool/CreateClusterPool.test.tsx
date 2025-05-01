@@ -26,7 +26,6 @@ import { RecoilRoot } from 'recoil'
 import { managedClusterSetsState, namespacesState, secretsState, Settings, settingsState } from '../../../../../atoms'
 import { nockCreate, nockIgnoreApiPaths, nockIgnoreRBAC, nockList, nockReplace } from '../../../../../lib/nock-util'
 import {
-  clickByPlaceholderText,
   clickByTestId,
   clickByText,
   selectByText,
@@ -287,7 +286,11 @@ describe('CreateClusterPool AWS', () => {
     await waitForNocks(initialNocks)
 
     // connection
-    screen.queryByPlaceholderText(/connection/i)!.click()
+    screen
+      .getByRole('combobox', {
+        name: 'Select a credential',
+      })
+      .click()
 
     // Should show the modal wizard
     await clickByText('Add credential')
@@ -297,7 +300,11 @@ describe('CreateClusterPool AWS', () => {
     await selectByText('Select a namespace for the credential', newProviderConnection.metadata.namespace!)
     await clickByText('Cancel', 1)
 
-    screen.queryByPlaceholderText(/connection/i)!.click()
+    screen
+      .getByRole('combobox', {
+        name: 'Select a credential',
+      })
+      .click()
     await clickByText(providerConnection.metadata.name!)
 
     // step 2 -- the name, namespace and imageset

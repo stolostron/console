@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent, { TargetElement } from '@testing-library/user-event'
+import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { RecoilRoot } from 'recoil'
 import {
@@ -61,14 +61,20 @@ describe('OverviewClusterLabelSelector', () => {
     const { getAllByText, getByText } = render(<RenderOverviewClusterLabelSelector />)
 
     // pick the label key - cloud
-    await waitFor(() => expect(screen.getAllByRole('button', { name: /typeahead menu toggle/i })[0]).toBeTruthy())
-    userEvent.click(screen.getAllByRole('button', { name: /typeahead menu toggle/i })[0] as TargetElement)
+    screen
+      .getByRole('combobox', {
+        name: 'Select cluster label',
+      })
+      .click()
     await waitFor(() => expect(getByText('cloud')).toBeTruthy())
     userEvent.click(getByText('cloud'))
 
     // pick the label value - Amazon
-    await waitFor(() => expect(screen.getAllByRole('button', { name: /typeahead menu toggle/i })[1]).toBeTruthy())
-    userEvent.click(screen.getAllByRole('button', { name: /typeahead menu toggle/i })[1] as TargetElement)
+    screen
+      .getByRole('combobox', {
+        name: 'Select cluster label value',
+      })
+      .click()
     await waitFor(() => expect(screen.getByText('Amazon')).toBeTruthy())
     userEvent.click(screen.getByText('Amazon'))
 

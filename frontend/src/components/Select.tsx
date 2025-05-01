@@ -17,6 +17,7 @@ import {
   Chip,
   Icon,
   SelectGroup,
+  Badge,
 } from '@patternfly/react-core'
 import {
   Children,
@@ -30,7 +31,7 @@ import {
   useState,
 } from 'react'
 import { useTranslation } from '../lib/acm-i18next'
-import TimesCircleIcon from '@patternfly/react-icons/dist/esm/icons/times-circle-icon'
+import TimesIcon from '@patternfly/react-icons/dist/esm/icons/times-icon'
 import { css } from '@emotion/css'
 
 export interface SelectOptionObject {
@@ -192,10 +193,16 @@ export function Select(props: SelectProps) {
   const selections = value ?? selectionProps
   const isMulti = Array.isArray(selections)
   const isSingle = typeof selections === 'string' && selections?.length !== 0
+  let badge: React.ReactNode = null
   let placeholder = props.placeholderText
   if (!placeholder) {
     if (isMulti && selections.length > 0) {
       placeholder = selections.join(', ')
+      badge = selections.length > 0 && (
+        <Badge key={selections.length} isRead>
+          {selections.length}
+        </Badge>
+      )
     } else if (isSingle) {
       placeholder = selections
     } else {
@@ -501,6 +508,7 @@ export function Select(props: SelectProps) {
     }
     return !!inputValue
   }
+  const ariaLabel = props['aria-label'] ?? props.placeholder ?? `Select ${props.id}`
   return isLoading ? (
     <Skeleton height="36px" screenreaderText={t('Loading')} />
   ) : (
@@ -513,14 +521,11 @@ export function Select(props: SelectProps) {
         return (
           <MenuToggle
             id={selectToggleId}
-            aria-labelledby={`${props.id}-label`}
             ref={toggleRef}
             variant={variant === SelectVariant.single || variant === SelectVariant.checkbox ? 'default' : 'typeahead'}
-            aria-label={
-              variant === SelectVariant.single || variant === SelectVariant.checkbox
-                ? 'Toggle'
-                : 'Typeahead menu toggle'
-            }
+            role="combobox"
+            aria-label={ariaLabel}
+            badge={badge}
             isDisabled={isDisabled}
             onClick={onToggleClick}
             icon={toggleIcon && <Icon className={filterIconClass}>{toggleIcon}</Icon>}
@@ -541,11 +546,14 @@ export function Select(props: SelectProps) {
                 <TextInputGroupUtilities {...(!hasClearButton() ? { style: { display: 'none' } } : {})}>
                   <Button
                     variant="plain"
-                    onClick={() => onClearSelection()}
+                    onClick={(e) => {
+                      onClearSelection()
+                      e.stopPropagation()
+                    }}
                     aria-label="Clear input value"
                     style={{ paddingInlineStart: 0 }}
                   >
-                    <TimesCircleIcon aria-hidden />
+                    <TimesIcon aria-hidden />
                   </Button>
                 </TextInputGroupUtilities>
               </TextInputGroup>
@@ -562,6 +570,7 @@ export function Select(props: SelectProps) {
                   placeholder={placeholder}
                   {...(activeItemId && { 'aria-activedescendant': activeItemId })}
                   role="combobox"
+                  aria-label={ariaLabel}
                   isExpanded={isOpen}
                   aria-controls="select-multi-typeahead-listbox"
                 >
@@ -583,7 +592,7 @@ export function Select(props: SelectProps) {
                 </TextInputGroupMain>
                 <TextInputGroupUtilities {...(!hasClearButton() ? { style: { display: 'none' } } : {})}>
                   <Button variant="plain" onClick={() => onClearSelection()} aria-label="Clear input value">
-                    <TimesCircleIcon aria-hidden />
+                    <TimesIcon aria-hidden />
                   </Button>
                 </TextInputGroupUtilities>
               </TextInputGroup>
