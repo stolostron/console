@@ -3,12 +3,10 @@ import { constants, Http2ServerRequest, Http2ServerResponse, OutgoingHttpHeaders
 import { request, RequestOptions } from 'https'
 import { pipeline } from 'stream'
 import { URL } from 'url'
-import { jsonRequest } from '../lib/json-request'
+import { getServiceAgent } from '../lib/agent'
 import { logger } from '../lib/logger'
 import { notFound, respondInternalServerError, unauthorized } from '../lib/respond'
-import { getCACertificate } from '../lib/serviceAccountToken'
 import { getToken } from '../lib/token'
-import { Route } from '../resources/route'
 
 const proxyHeaders = [
   constants.HTTP2_HEADER_ACCEPT,
@@ -25,45 +23,24 @@ const proxyResponseHeaders = [
   constants.HTTP2_HEADER_ETAG,
 ]
 
-export async function prometheusProxy(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
+export function prometheusProxy(req: Http2ServerRequest, res: Http2ServerResponse) {
   const token = getToken(req)
-  if (!token) return unauthorized(req, res)
+  if (!token) unauthorized(req, res)
 
-  const prometheusProxyRoute = await jsonRequest(
-    process.env.CLUSTER_API_URL + '/apis/route.openshift.io/v1/namespaces/openshift-monitoring/routes/prometheus-k8s',
-    token
-  )
-    .then((response: Route) => {
-      const scheme = response?.spec?.tls?.termination ? 'https' : 'http'
-      return response?.spec?.host ? `${scheme}://${response.spec.host}` : ''
-    })
-    .catch((err: Error): undefined => {
-      logger.error({ msg: 'Error getting Prometheus Route', error: err.message })
-      return undefined
-    })
+  const prometheusProxyService = 'https://prometheus-k8s.openshift-monitoring.svc.cluster.local:9091'
+  const promURL = process.env.PROMETHEUS_ROUTE || prometheusProxyService
 
-  metricsProxy(req, res, token, prometheusProxyRoute)
+  metricsProxy(req, res, token, promURL)
 }
 
-export async function observabilityProxy(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
+export function observabilityProxy(req: Http2ServerRequest, res: Http2ServerResponse) {
   const token = getToken(req)
-  if (!token) return unauthorized(req, res)
+  if (!token) unauthorized(req, res)
 
-  const observabilityProxyRoute = await jsonRequest(
-    process.env.CLUSTER_API_URL +
-      `/apis/route.openshift.io/v1/namespaces/open-cluster-management-observability/routes/rbac-query-proxy`,
-    token
-  )
-    .then((response: Route) => {
-      const scheme = response?.spec?.tls?.termination ? 'https' : 'http'
-      return response?.spec?.host ? `${scheme}://${response.spec.host}` : ''
-    })
-    .catch((err: Error): undefined => {
-      logger.error({ msg: 'Error getting Observability Route', error: err.message })
-      return undefined
-    })
+  const obsProxyService = 'https://rbac-query-proxy.open-cluster-management-observability.svc.cluster.local:8443'
+  const obsURL = process.env.OBSERVABILITY_ROUTE || obsProxyService
 
-  metricsProxy(req, res, token, observabilityProxyRoute)
+  metricsProxy(req, res, token, obsURL)
 }
 
 function metricsProxy(req: Http2ServerRequest, res: Http2ServerResponse, token: string, route: string): void {
@@ -82,7 +59,7 @@ function metricsProxy(req: Http2ServerRequest, res: Http2ServerResponse, token: 
     path,
     method: req.method,
     headers,
-    ca: getCACertificate(),
+    agent: getServiceAgent(),
   }
   pipeline(
     req,
