@@ -53,11 +53,13 @@ export function generateTopology(application, resources, searchResults, hubClust
   const clusters = []
   const clusterNames = []
 
-  clusterNames.push(application.app.cluster.name)
-  clusters.push({
-    metadata: { name: application.app.cluster.name, namespace: application.app.cluster.namespace },
-    status: application.app.cluster.status,
-  })
+  if (application.app.cluster) {
+    clusterNames.push(application.app.cluster.name)
+    clusters.push({
+      metadata: { name: application.app.cluster.name, namespace: application.app.cluster.namespace },
+      status: application.app.cluster.status,
+    })
+  }
 
   const appId = `application--${name}`
   nodes.push({
@@ -156,8 +158,8 @@ const addOCPFluxResource = (clusterId, clusterNames, resource, links, nodes, hub
 
 // Put all search results together
 export function processSearchResults(searchResults) {
-  const items = get(searchResults, 'data.searchResult[0].items', [])
-  const related = get(searchResults, 'data.searchResult[0].related', [])
+  const items = get(searchResults, 'data.searchResult[0].items', []) ?? []
+  const related = get(searchResults, 'data.searchResult[0].related', []) ?? []
   let allItems = items.slice()
 
   related.forEach((itm) => {
