@@ -201,7 +201,7 @@ export function AcmDropdown(props: AcmDropdownProps) {
       onSelect((itemId || '').toString())
       setOpen(false)
     },
-    [id, dropdownItems, findItemById, onSelect]
+    [dropdownItems, findItemById, onSelect]
   )
 
   const handleToggleClick = useCallback(() => {
