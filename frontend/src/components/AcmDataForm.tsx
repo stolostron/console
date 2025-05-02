@@ -42,6 +42,8 @@ import {
   Page,
   PageSection,
   Popover,
+  SelectOption,
+  SelectGroup,
   Split,
   SplitItem,
   Stack,
@@ -61,7 +63,6 @@ import {
   WizardStepProps,
   WizardHeader,
 } from '@patternfly/react-core'
-import { SelectOption, SelectGroup } from '@patternfly/react-core'
 import { Select, SelectProps, SelectOptionObject, SelectVariant } from '../components/Select'
 import {
   EditIcon,

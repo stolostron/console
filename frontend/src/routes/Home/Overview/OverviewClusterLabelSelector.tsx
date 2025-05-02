@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Button, Chip, ChipGroup, PageSection } from '@patternfly/react-core'
-import { SelectOption } from '@patternfly/react-core'
+import { Button, Chip, ChipGroup, PageSection, SelectOption } from '@patternfly/react-core'
 import { FilterIcon } from '@patternfly/react-icons'
 import { Dispatch, SetStateAction, useMemo, useState } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'

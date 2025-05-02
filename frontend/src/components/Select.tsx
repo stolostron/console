@@ -25,6 +25,7 @@ import {
   isValidElement,
   ReactElement,
   ReactNode,
+  Ref,
   useCallback,
   useEffect,
   useRef,
@@ -206,7 +207,7 @@ export function Select(props: SelectProps) {
     } else if (isSingle) {
       placeholder = selections
     } else {
-      placeholder = props.placeholder || ''
+      placeholder = props.placeholder ?? ''
     }
   }
   const selectedItem = !Array.isArray(selections) ? (selections as string) : undefined
@@ -224,7 +225,7 @@ export function Select(props: SelectProps) {
   }, [props.width, selections])
 
   const createItemId = (value: any) => `select-typeahead-${value.replace(' ', '-')}`
-  const selectToggleId = toggleId || `pf-select-toggle-id-${currentId++}`
+  const selectToggleId = toggleId ?? `pf-select-toggle-id-${currentId++}`
 
   const closeMenu = () => {
     setIsOpen(false)
@@ -391,11 +392,6 @@ export function Select(props: SelectProps) {
     value: string | string[] | number | undefined
   ) => {
     switch (variant) {
-      default:
-      case SelectVariant.single:
-        onSelect?.(String(value))
-        setIsOpen(false)
-        break
       case SelectVariant.typeahead:
         if (value && value !== NO_RESULTS) {
           const optionText = filteredOptions.find((option) => option.value === value)?.children
@@ -408,6 +404,11 @@ export function Select(props: SelectProps) {
         if (!Array.isArray(value)) {
           selectOption(String(value), String(placeholder))
         }
+        break
+      default:
+      case SelectVariant.single:
+        onSelect?.(String(value))
+        setIsOpen(false)
         break
     }
   }
@@ -467,7 +468,7 @@ export function Select(props: SelectProps) {
           <SelectList style={{ maxHeight: maxHeight, overflowY: 'auto' }}>
             {filteredOptions.map((option, index) => (
               <SelectOption
-                key={option.value || option.children}
+                key={option.value ?? option.children}
                 isFocused={focusedItemIndex === index}
                 className={option.className}
                 hasCheckbox={variant === SelectVariant.typeaheadCheckbox}
@@ -492,12 +493,10 @@ export function Select(props: SelectProps) {
           (child as React.ReactElement).props.value &&
           (child as React.ReactElement).props.value.toString() === selections.toString()
       ) as any
-      if (item) {
-        if (item && item.props.children) {
-          return item.props.children
-        }
-        return item.props.value.toString()
+      if (item?.props.children) {
+        return item.props.children
       }
+      return item.props.value.toString()
     }
     return placeholder
   }
@@ -509,6 +508,91 @@ export function Select(props: SelectProps) {
     return !!inputValue
   }
   const ariaLabel = props['aria-label'] ?? props.placeholder ?? `Select ${props.id}`
+
+  function renderMenuToggle(toggleRef: Ref<MenuToggleElement> | undefined): ReactNode {
+    return (
+      <MenuToggle
+        id={selectToggleId}
+        ref={toggleRef}
+        variant={variant === SelectVariant.single || variant === SelectVariant.checkbox ? 'default' : 'typeahead'}
+        role="combobox"
+        aria-label={ariaLabel}
+        badge={badge}
+        isDisabled={isDisabled}
+        onClick={onToggleClick}
+        icon={toggleIcon && <Icon className={filterIconClass}>{toggleIcon}</Icon>}
+        isExpanded={isOpen}
+        className={menuToggleClass}
+        style={
+          {
+            width: width ?? '100%',
+            maxHeight: '36px',
+          } as React.CSSProperties
+        }
+      >
+        {variant === SelectVariant.single || variant === SelectVariant.checkbox ? (
+          <TextInputGroup style={{ width: '100%' }} isPlain>
+            <div className={placeholderClass} style={{ width: '100%' }}>
+              {variant === SelectVariant.single ? renderSinglePlaceholder() : <span>{placeholder}</span>}
+            </div>
+            <TextInputGroupUtilities {...(!hasClearButton() ? { style: { display: 'none' } } : {})}>
+              <Button
+                variant="plain"
+                onClick={(e) => {
+                  onClearSelection()
+                  e.stopPropagation()
+                }}
+                aria-label="Clear input value"
+                style={{ paddingInlineStart: 0 }}
+              >
+                <TimesIcon aria-hidden />
+              </Button>
+            </TextInputGroupUtilities>
+          </TextInputGroup>
+        ) : (
+          <TextInputGroup isPlain>
+            <TextInputGroupMain
+              value={inputValue || selectedItem}
+              onClick={onInputClick}
+              onChange={onTextInputChange}
+              onKeyDown={onInputKeyDown}
+              id="multi-typeahead-select-input"
+              autoComplete="off"
+              innerRef={textInputRef}
+              placeholder={placeholder}
+              {...(activeItemId && { 'aria-activedescendant': activeItemId })}
+              role="combobox"
+              aria-label={ariaLabel}
+              isExpanded={isOpen}
+              aria-controls="select-multi-typeahead-listbox"
+            >
+              {variant === SelectVariant.typeaheadMulti && (
+                <ChipGroup aria-label="Current selections">
+                  {selectedItems.map((selection, index) => (
+                    <Chip
+                      key={index}
+                      onClick={(ev) => {
+                        ev.stopPropagation()
+                        _onSelect(ev, selection)
+                      }}
+                    >
+                      {getMultiTypeaheadChildren(selection)}
+                    </Chip>
+                  ))}
+                </ChipGroup>
+              )}
+            </TextInputGroupMain>
+            <TextInputGroupUtilities {...(!hasClearButton() ? { style: { display: 'none' } } : {})}>
+              <Button variant="plain" onClick={() => onClearSelection()} aria-label="Clear input value">
+                <TimesIcon aria-hidden />
+              </Button>
+            </TextInputGroupUtilities>
+          </TextInputGroup>
+        )}
+      </MenuToggle>
+    )
+  }
+
   return isLoading ? (
     <Skeleton height="36px" screenreaderText={t('Loading')} />
   ) : (
@@ -518,87 +602,7 @@ export function Select(props: SelectProps) {
       spellCheck={false}
       isOpen={isOpen}
       toggle={(toggleRef: React.Ref<MenuToggleElement>) => {
-        return (
-          <MenuToggle
-            id={selectToggleId}
-            ref={toggleRef}
-            variant={variant === SelectVariant.single || variant === SelectVariant.checkbox ? 'default' : 'typeahead'}
-            role="combobox"
-            aria-label={ariaLabel}
-            badge={badge}
-            isDisabled={isDisabled}
-            onClick={onToggleClick}
-            icon={toggleIcon && <Icon className={filterIconClass}>{toggleIcon}</Icon>}
-            isExpanded={isOpen}
-            className={menuToggleClass}
-            style={
-              {
-                width: width || '100%',
-                maxHeight: '36px',
-              } as React.CSSProperties
-            }
-          >
-            {variant === SelectVariant.single || variant === SelectVariant.checkbox ? (
-              <TextInputGroup style={{ width: '100%' }} isPlain>
-                <div className={placeholderClass} style={{ width: '100%' }}>
-                  {variant === SelectVariant.single ? renderSinglePlaceholder() : <span>{placeholder}</span>}
-                </div>
-                <TextInputGroupUtilities {...(!hasClearButton() ? { style: { display: 'none' } } : {})}>
-                  <Button
-                    variant="plain"
-                    onClick={(e) => {
-                      onClearSelection()
-                      e.stopPropagation()
-                    }}
-                    aria-label="Clear input value"
-                    style={{ paddingInlineStart: 0 }}
-                  >
-                    <TimesIcon aria-hidden />
-                  </Button>
-                </TextInputGroupUtilities>
-              </TextInputGroup>
-            ) : (
-              <TextInputGroup isPlain>
-                <TextInputGroupMain
-                  value={inputValue || selectedItem}
-                  onClick={onInputClick}
-                  onChange={onTextInputChange}
-                  onKeyDown={onInputKeyDown}
-                  id="multi-typeahead-select-input"
-                  autoComplete="off"
-                  innerRef={textInputRef}
-                  placeholder={placeholder}
-                  {...(activeItemId && { 'aria-activedescendant': activeItemId })}
-                  role="combobox"
-                  aria-label={ariaLabel}
-                  isExpanded={isOpen}
-                  aria-controls="select-multi-typeahead-listbox"
-                >
-                  {variant === SelectVariant.typeaheadMulti && (
-                    <ChipGroup aria-label="Current selections">
-                      {selectedItems.map((selection, index) => (
-                        <Chip
-                          key={index}
-                          onClick={(ev) => {
-                            ev.stopPropagation()
-                            _onSelect(ev, selection)
-                          }}
-                        >
-                          {getMultiTypeaheadChildren(selection)}
-                        </Chip>
-                      ))}
-                    </ChipGroup>
-                  )}
-                </TextInputGroupMain>
-                <TextInputGroupUtilities {...(!hasClearButton() ? { style: { display: 'none' } } : {})}>
-                  <Button variant="plain" onClick={() => onClearSelection()} aria-label="Clear input value">
-                    <TimesIcon aria-hidden />
-                  </Button>
-                </TextInputGroupUtilities>
-              </TextInputGroup>
-            )}
-          </MenuToggle>
-        )
+        return renderMenuToggle(toggleRef)
       }}
       onOpenChange={() => closeMenu()}
       selected={selections}

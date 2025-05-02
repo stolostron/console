@@ -13,8 +13,8 @@ import {
   Radio,
   TimePicker,
   ButtonVariant,
+  SelectOption,
 } from '@patternfly/react-core'
-import { SelectOption } from '@patternfly/react-core'
 import { Select, SelectVariant } from '../../../../../../components/Select'
 import { Fragment, Component } from 'react'
 import { PlusCircleIcon, TimesCircleIcon } from '@patternfly/react-icons'

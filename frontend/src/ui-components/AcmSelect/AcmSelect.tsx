@@ -14,8 +14,9 @@ type AcmSelectProps = Pick<
   Exclude<keyof SelectProps, 'toggle' | 'onToggle' | 'onChange' | 'selections' | 'onSelect' | 'variant' | 'width'>
 > & {
   id: string
+  label: string
   variant?: SelectVariant
-  value?: string | undefined
+  value: string | undefined
   onChange: (value: string | undefined) => void
   validation?: (value: string | undefined) => string | undefined
   placeholder?: string

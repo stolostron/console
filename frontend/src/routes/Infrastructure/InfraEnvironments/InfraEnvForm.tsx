@@ -9,12 +9,12 @@ import {
   Modal,
   ModalVariant,
   PageSection,
+  SelectOption,
   Split,
   SplitItem,
   Stack,
   StackItem,
 } from '@patternfly/react-core'
-import { SelectOption } from '@patternfly/react-core'
 import { Select, SelectVariant } from '../../../components/Select'
 import {
   InfraEnvFormPage,

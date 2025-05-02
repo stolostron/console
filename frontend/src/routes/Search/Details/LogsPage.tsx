@@ -2,8 +2,7 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 import { css } from '@emotion/css'
-import { Button, Checkbox, PageSection, Tooltip } from '@patternfly/react-core'
-import { SelectOption } from '@patternfly/react-core'
+import { Button, Checkbox, PageSection, Tooltip, SelectOption } from '@patternfly/react-core'
 import { Select, SelectVariant, SelectOptionObject } from '../../../components/Select'
 import { CompressIcon, DownloadIcon, ExpandIcon, OutlinedWindowRestoreIcon } from '@patternfly/react-icons'
 import { LogViewer } from '@patternfly/react-log-viewer'

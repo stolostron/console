@@ -4,8 +4,14 @@
 'use strict'
 
 import PropTypes from 'prop-types'
-import { Pagination, Accordion, AccordionItem, AccordionContent, AccordionToggle } from '@patternfly/react-core'
-import { SelectOption } from '@patternfly/react-core'
+import {
+  Pagination,
+  Accordion,
+  AccordionItem,
+  AccordionContent,
+  AccordionToggle,
+  SelectOption,
+} from '@patternfly/react-core'
 import { Select, SelectVariant } from '../../../../../components/Select'
 import { Component } from 'react'
 import { processResourceActionLink, getPercentage, inflateKubeValue } from '../helpers/diagram-helpers'

@@ -2,8 +2,7 @@
 'use strict'
 
 import React, { SyntheticEvent, useCallback } from 'react'
-import { Spinner } from '@patternfly/react-core'
-import { SelectOption } from '@patternfly/react-core'
+import { Spinner, SelectOption } from '@patternfly/react-core'
 import { Select, SelectVariant, SelectOptionObject } from '../../../components/Select'
 import ControlPanelFormGroup from './ControlPanelFormGroup'
 import get from 'lodash/get'
