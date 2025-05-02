@@ -493,10 +493,12 @@ export function Select(props: SelectProps) {
           (child as React.ReactElement).props.value &&
           (child as React.ReactElement).props.value.toString() === selections.toString()
       ) as any
-      if (item?.props.children) {
-        return item.props.children
+      if (item) {
+        if (item?.props.children) {
+          return item.props.children
+        }
+        return item.props.value.toString()
       }
-      return item.props.value.toString()
     }
     return placeholder
   }
