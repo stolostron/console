@@ -9,14 +9,14 @@ import { addClusters, getClusterName, processMultiples } from './utils'
 
 const excludedKindList = ['Cluster', 'Pod', 'ReplicaSet', 'ReplicationController']
 
-export async function getOCPFluxAppTopology(application) {
+export async function getOCPFluxAppTopology(application, hubClusterName) {
   let searchResults = {}
   // Need to get data from search first before we can generate the topology
   searchResults = await getResourcesWithAppLabel(application)
 
   const resources = processSearchResults(searchResults)
 
-  return generateTopology(application, resources, searchResults)
+  return generateTopology(application, resources, searchResults, hubClusterName)
 }
 
 // Fetch data from search
@@ -26,7 +26,7 @@ async function getResourcesWithAppLabel(application) {
   const label = application.isOCPApp
     ? `label:app=${name},app.kubernetes.io/part-of=${name}`
     : `label:kustomize.toolkit.fluxcd.io/name=${name},helm.toolkit.fluxcd.io/name=${name}`
-  const query = getQueryStringForLabel(label, namespace, cluster.name)
+  const query = getQueryStringForLabel(label, namespace, cluster?.name)
 
   return searchClient.query({
     query: SearchResultItemsAndRelatedItemsDocument,
