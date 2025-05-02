@@ -375,6 +375,8 @@ export default function ApplicationDetailsPage() {
     }
   }, [applicationNotFound, THROTTLE_EVENTS_DELAY])
 
+  const localHubName = useLocalHubName()
+
   // refresh application the first time and then every n seconds
   useEffect(() => {
     setApplicationData(undefined)
@@ -399,9 +401,15 @@ export default function ApplicationDetailsPage() {
             setApplicationNotFound(true)
           } else {
             setApplicationNotFound(false)
-            const topology: any = await getTopology(application, clusters, lastRefreshRef?.current?.relatedResources, {
-              cluster,
-            })
+            const topology: any = await getTopology(
+              application,
+              clusters,
+              localHubName,
+              lastRefreshRef?.current?.relatedResources,
+              {
+                cluster,
+              }
+            )
             const appData = getApplicationData(topology?.nodes, topology?.hubClusterName)
 
             // when first opened, refresh topology with wait statuses
@@ -422,7 +430,7 @@ export default function ApplicationDetailsPage() {
               appData,
               topology
             )
-            const topologyWithRelated = await getTopology(application, clusters, relatedResources, {
+            const topologyWithRelated = await getTopology(application, clusters, localHubName, relatedResources, {
               topology,
               cluster,
             })
