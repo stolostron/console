@@ -138,7 +138,7 @@ export function ApplicationOverviewPageContent() {
 
     ////////////////////////////////// argo items ////////////////////////////////////
     if (isOCPApp || isFluxApp) {
-      const cluster = applicationData.application?.app.cluster.name
+      const cluster = applicationData.application?.app?.cluster?.name
       leftItems = [
         { key: t('Name'), value: name },
         {
