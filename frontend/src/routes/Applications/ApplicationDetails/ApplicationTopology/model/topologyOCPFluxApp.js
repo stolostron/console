@@ -9,14 +9,14 @@ import { addClusters, getClusterName, processMultiples } from './utils'
 
 const excludedKindList = ['Cluster', 'Pod', 'ReplicaSet', 'ReplicationController']
 
-export async function getOCPFluxAppTopology(application) {
+export async function getOCPFluxAppTopology(application, hubClusterName) {
   let searchResults = {}
   // Need to get data from search first before we can generate the topology
   searchResults = await getResourcesWithAppLabel(application)
 
   const resources = processSearchResults(searchResults)
 
-  return generateTopology(application, resources, searchResults)
+  return generateTopology(application, resources, searchResults, hubClusterName)
 }
 
 // Fetch data from search
