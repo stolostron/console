@@ -80,3 +80,10 @@ EOF
   SEARCH_API_URL=https://$(oc get route search-api -n $INSTALLATION_NAMESPACE -o="jsonpath={.status.ingress[0].host}")
   echo SEARCH_API_URL=$SEARCH_API_URL >> ./backend/.env
 fi
+
+# ACM Observability will need to be installed first to set this env variable. Instructions: https://github.com/stolostron/multicluster-observability-operator
+OBSERVABILITY_ROUTE=https://$(oc get route rbac-query-proxy -n open-cluster-management-observability -o="jsonpath={.status.ingress[0].host}")
+echo OBSERVABILITY_ROUTE=$OBSERVABILITY_ROUTE >> ./backend/.env
+
+PROMETHEUS_ROUTE=https://$(oc get route prometheus-k8s -n openshift-monitoring -o="jsonpath={.status.ingress[0].host}")
+echo PROMETHEUS_ROUTE=$PROMETHEUS_ROUTE >> ./backend/.env
