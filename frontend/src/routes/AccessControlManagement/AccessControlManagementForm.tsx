@@ -50,8 +50,8 @@ const AccessControlManagementForm = (
     kind: AccessControlKind,
     type: 'Opaque',
     metadata: {
-      name: 'TBD',
-      namespace: 'TBD',
+      name: 'tbd', //TODO: proper name and namespace
+      namespace: 'tbd',
     },
     data: {
       id: '',
@@ -63,7 +63,7 @@ const AccessControlManagementForm = (
   })
 
   const stateToSyncs = () => [
-    { path: 'Secret[0].data.cluster', setState: setCluster },// TODO: select element does not react
+    { path: 'AccessControl[0].data.cluster', setState: setCluster },
   ]
 
   const title = isViewing ? accessControl?.data?.id! : isEditing ? t('Edit access control') : t('Add access control')
