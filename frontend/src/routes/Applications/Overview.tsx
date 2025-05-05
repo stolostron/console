@@ -331,7 +331,7 @@ export default function ApplicationsOverview() {
     (tableItem: IResource) => {
       // Cluster column
       const clusterList = (tableItem as IUIResource)?.uidata?.clusterList ?? []
-      const clusterCount = getClusterCount(clusterList, localCluster ?? '')
+      const clusterCount = getClusterCount(clusterList, localCluster)
       const clusterTransformData = getClusterCountString(t, clusterCount, clusterList, tableItem)
 
       // Resource column
@@ -472,7 +472,7 @@ export default function ApplicationsOverview() {
         header: t('Clusters'),
         cell: (resource) => {
           const clusterList = (resource as IUIResource)?.uidata?.clusterList ?? []
-          const clusterCount = getClusterCount(clusterList, localCluster ?? '')
+          const clusterCount = getClusterCount(clusterList, localCluster)
           const clusterCountString = getClusterCountString(t, clusterCount, clusterList, resource)
           const clusterCountSearchLink = getClusterCountSearchLink(resource, clusterCount, clusterList)
           return getClusterCountField(clusterCount, clusterCountString, clusterCountSearchLink)
@@ -484,7 +484,7 @@ export default function ApplicationsOverview() {
         search: 'transformed.clusterCount',
         exportContent: (resource) => {
           const clusterList = (resource as IUIResource)?.uidata?.clusterList ?? []
-          const clusterCount = getClusterCount(clusterList, localCluster ?? '')
+          const clusterCount = getClusterCount(clusterList, localCluster)
           return getClusterCountString(t, clusterCount, clusterList, resource)
         },
       },
@@ -822,7 +822,7 @@ export default function ApplicationsOverview() {
                     placementRules,
                     placements,
                     channels,
-                    localCluster ?? ''
+                    localCluster
                   )
                 : [[], []]
             /* istanbul ignore else */

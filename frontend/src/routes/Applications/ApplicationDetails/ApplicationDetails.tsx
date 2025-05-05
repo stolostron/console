@@ -265,7 +265,7 @@ export default function ApplicationDetailsPage() {
                   recoilStates.placementRules,
                   recoilStates.placements,
                   recoilStates.channels,
-                  hubCluster ?? ''
+                  hubCluster
                 )
               : [[], []]
           /* istanbul ignore else */

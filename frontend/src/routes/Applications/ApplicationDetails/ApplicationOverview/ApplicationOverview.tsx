@@ -132,7 +132,7 @@ export function ApplicationOverviewPageContent() {
     const applicationResource = applicationData.application.app
 
     const clusterList = applicationData.application?.clusterList ?? []
-    const clusterCount = getClusterCount(clusterList, localCluster ?? '')
+    const clusterCount = getClusterCount(clusterList, localCluster)
     const clusterCountString = getClusterCountString(t, clusterCount, clusterList, applicationResource)
     const clusterCountSearchLink = getClusterCountSearchLink(applicationResource, clusterCount, clusterList)
 

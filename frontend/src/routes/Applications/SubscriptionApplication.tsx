@@ -467,7 +467,7 @@ export function CreateSubscriptionApplication(
         break
     }
 
-    control.hubClusterName = localHubName ?? ''
+    control.hubClusterName = localHubName
   }
 
   useEffect(() => {

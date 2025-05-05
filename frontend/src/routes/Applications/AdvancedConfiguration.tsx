@@ -168,7 +168,7 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
             selectedPlacementDecision,
             clusterCount,
             placementDecisions,
-            localHubName ?? ''
+            localHubName
           )
           if (clusterCount.remoteCount && showSearchLink) {
             const subscriptionName = _.get(resource, 'metadata.name')
@@ -258,7 +258,7 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
       }
       case 'PlacementRule':
       case 'Placement': {
-        clusterCount = getPlacementDecisionClusterCount(tableItem, clusterCount, placementDecisions, localHubName ?? '')
+        clusterCount = getPlacementDecisionClusterCount(tableItem, clusterCount, placementDecisions, localHubName)
         const clusterString = getClusterCountString(t, clusterCount)
         _.set(transformedObject.transformed, 'clusterCount', clusterString)
         break
