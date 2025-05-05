@@ -16,7 +16,7 @@ import {
   PopperProps,
 } from '@patternfly/react-core'
 import { TooltipWrapper } from '../utils'
-import { forwardRef, useCallback, useEffect, useRef, useState } from 'react'
+import { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { EllipsisVIcon } from '@patternfly/react-icons'
 import { t } from 'i18next'
 
@@ -191,11 +191,6 @@ export function AcmDropdown(props: AcmDropdownProps) {
 
   const handleSelect = useCallback(
     (_event?: React.MouseEvent, itemId?: string | number) => {
-      // add this safety check
-      if (!menuRef.current || !document.body.contains(menuRef.current)) {
-        setOpen(false)
-        return
-      }
       const selectedItem = findItemById(dropdownItems, String(itemId))
 
       if (!itemId) return // prevents triggering if no itemId
@@ -205,11 +200,8 @@ export function AcmDropdown(props: AcmDropdownProps) {
 
       onSelect((itemId || '').toString())
       setOpen(false)
-
-      const element = document.getElementById(id)
-      if (element) element.focus()
     },
-    [id, dropdownItems, findItemById, onSelect]
+    [dropdownItems, findItemById, onSelect]
   )
 
   const handleToggleClick = useCallback(() => {
@@ -301,14 +293,26 @@ export function AcmDropdown(props: AcmDropdownProps) {
     [isOpen, toggleMenu]
   )
 
+  const containsFlyout = useMemo(() => dropdownItems.some((item) => item.flyoutMenu), [dropdownItems])
+
+  const handleWindowFocus = useCallback(() => {
+    // Workaround for PF bug: https://github.com/patternfly/patternfly-react/issues/11802
+    // For flyout menus, when focus leaves the window, close the dropdown to avoid bug if user clicks flyout
+    if (containsFlyout && isOpen) {
+      setOpen(false)
+    }
+  }, [containsFlyout, isOpen])
+
   useEffect(() => {
     window.addEventListener('keydown', handleMenuKeys)
     window.addEventListener('click', handleClickOutside)
+    window.addEventListener('focus', handleWindowFocus)
     return () => {
       window.removeEventListener('keydown', handleMenuKeys)
       window.removeEventListener('click', handleClickOutside)
+      window.removeEventListener('focus', handleWindowFocus)
     }
-  }, [handleMenuKeys, handleClickOutside])
+  }, [handleMenuKeys, handleClickOutside, handleWindowFocus])
 
   let variant: 'default' | 'plain' | 'primary' | 'plainText' | 'secondary' | 'typeahead'
   if (isKebab) {
@@ -347,18 +351,7 @@ export function AcmDropdown(props: AcmDropdownProps) {
           enableFlip={true}
           minWidth="fit-content"
           placement={props.dropdownPosition ?? (isKebab ? 'bottom-end' : 'bottom-start')}
-          popper={
-            <MenuItems
-              ref={menuRef}
-              menuItems={dropdownItems}
-              onBlur={(e) => {
-                if (!e.currentTarget.contains(e.relatedTarget)) {
-                  setOpen(false)
-                }
-              }}
-              onSelect={handleSelect}
-            />
-          }
+          popper={<MenuItems ref={menuRef} menuItems={dropdownItems} onSelect={handleSelect} />}
         />
       </div>
     </TooltipWrapper>
