@@ -8,8 +8,9 @@ import { getServiceAccountToken } from '../lib/serviceAccountToken'
 import { getAuthenticatedToken } from '../lib/token'
 import { IResource } from '../resources/resource'
 import { ResourceList } from '../resources/resource-list'
+import { getHubClusterName, getIsHubSelfManaged } from './events'
 
-export async function globalHub(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
+export async function hub(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
   const token = await getAuthenticatedToken(req, res)
   if (token) {
     const serviceAccountToken = getServiceAccountToken()
@@ -21,7 +22,11 @@ export async function globalHub(req: Http2ServerRequest, res: Http2ServerRespons
           const mcgh = response.items.find(
             (crd) => crd.metadata.name === 'multiclusterglobalhubs.operator.open-cluster-management.io'
           )
-          return { isGlobalHub: mcgh !== undefined }
+          return {
+            isGlobalHub: mcgh !== undefined,
+            localHubName: getHubClusterName(),
+            isHubSelfManaged: getIsHubSelfManaged(),
+          }
         })
         .catch((err: Error): undefined => {
           logger.error({ msg: 'Error getting Multicluster Global Hubs', error: err.message })
