@@ -19,8 +19,6 @@ import {
 import { ExclamationCircleIcon } from '@patternfly/react-icons'
 import ControlPanelFinish from './ControlPanelFinish'
 import get from 'lodash/get'
-import set from 'lodash/set'
-import isEmpty from 'lodash/isEmpty'
 
 class ControlPanelWizard extends React.Component {
   constructor(props) {
@@ -159,19 +157,6 @@ class ControlPanelWizard extends React.Component {
       })
     }
 
-    const onMove = (curr, prev) => {
-      // if wizard is stopped, remember where it left off
-      set(steps[0], 'control.startAtStep', curr.id)
-
-      // custom step change actions
-      if (this.props.onStepChange) {
-        this.props.onStepChange(
-          steps.find(({ id }) => id === curr.id),
-          steps.find(({ id }) => id === prev.id)
-        )
-      }
-    }
-
     const onSave = () => {
       // if last step was a review, it already did  a mutate
       if (lastType !== 'review') {
@@ -184,75 +169,40 @@ class ControlPanelWizard extends React.Component {
     }
 
     const validateNextStep = (activeStep, onNext) => {
-      const { type, mutation, disableEditorOnSuccess, disablePreviousControlsOnSuccess } = activeStep.component
-      switch (type) {
-        case 'step':
-          {
-            this.props.resetStatus()
-            const validateControls = activeStep.controls.filter((control) => control.validate)
-            if (validateControls.length > 0) {
-              let hasErrors = false
-              const promises = validateControls.map((control) => control.validate())
-              this.setState({
-                isProcessing: true,
-                processingLabel: i18n('Validating...'),
-              })
-              Promise.allSettled(promises).then((results) => {
-                this.setState({
-                  isProcessing: false,
-                  processingLabel: undefined,
-                })
-                results.some((result) => {
-                  hasErrors = !isEmpty(result.value)
-                  return hasErrors
-                })
-                activeStep.component.exception = hasErrors
-                if (!hasErrors) {
-                  activeStep.component.isComplete = true
-                  onNext()
-                }
-                this.forceUpdate()
-              })
-            } else {
-              onNext()
-            }
-          }
-          break
-        case 'review':
-          if (mutation) {
-            this.setState({ isProcessing: true })
-            setTimeout(() => {
-              this.setState({ isProcessing: false })
-            }, 2000)
-            mutation(this.props.controlData).then((status) => {
-              this.setState({ isProcessing: false })
-              if (status !== 'ERROR') {
-                if (disableEditorOnSuccess) {
-                  this.props.setEditorReadOnly(true)
-                }
-                if (disablePreviousControlsOnSuccess) {
-                  steps
-                    .slice(0, activeStep.index)
-                    .reverse()
-                    .forEach((step) => {
-                      step.controls.forEach((control) => {
-                        control.disabled = true
-                      })
-                    })
-                }
-                activeStep.component.isComplete = true
-                delete activeStep.component.mutation
-                onNext()
-                this.forceUpdate()
+      const activeControlData = (this.props.controlData || []).find((step) => step.id === activeStep.id)
+      const { type, mutation, disableEditorOnSuccess, disablePreviousControlsOnSuccess } = activeControlData || {}
+      if (type === 'review') {
+        if (mutation) {
+          this.setState({ isProcessing: true })
+          setTimeout(() => {
+            this.setState({ isProcessing: false })
+          }, 2000)
+          mutation(this.props.controlData).then((status) => {
+            this.setState({ isProcessing: false })
+            if (status !== 'ERROR') {
+              if (disableEditorOnSuccess) {
+                this.props.setEditorReadOnly(true)
               }
-            })
-          } else {
-            onNext()
-          }
-          break
-        default:
+              if (disablePreviousControlsOnSuccess) {
+                steps
+                  .slice(0, activeStep.index)
+                  .reverse()
+                  .forEach((step) => {
+                    step.controls.forEach((control) => {
+                      control.disabled = true
+                    })
+                  })
+              }
+              activeControlData.isComplete = true
+              delete activeControlData.mutation
+              this.forceUpdate()
+            }
+          })
+        } else {
           onNext()
-          break
+        }
+      } else {
+        onNext()
       }
     }
 
@@ -261,6 +211,7 @@ class ControlPanelWizard extends React.Component {
     const isDisabled = creationStatus === 'DONE' || isWorking
 
     const CustomFooter = (activeStep, goToNextStep, goToPrevStep, close) => {
+      const activeStepIndex = steps.findIndex((step) => step.id === activeStep.id)
       return (
         <WizardFooterWrapper>
           <ActionList>
@@ -272,8 +223,6 @@ class ControlPanelWizard extends React.Component {
                   variant="primary"
                   spinnerAriaValueText={isWorking ? i18n('Processing') : undefined}
                   onClick={() => {
-                    const activeStepIndex = steps.findIndex((step) => step.id === activeStep.id)
-                    onMove(activeStep, activeStep.id > 0 ? steps[activeStepIndex - 1] : null)
                     if (!isWorking) {
                       validateNextStep(activeStep, goToNextStep)
                     }
@@ -293,15 +242,13 @@ class ControlPanelWizard extends React.Component {
                 <Button
                   variant="secondary"
                   onClick={() => {
-                    const activeStepIndex = steps.findIndex((step) => step.id === activeStep.id)
-                    onMove(activeStep, activeStep.id > 0 ? steps[activeStepIndex - 1] : null)
-                    if (activeStep.index === 0 && backButtonOverride) {
+                    if (activeStepIndex === 0 && backButtonOverride) {
                       backButtonOverride()
                     } else {
                       goToPrevStep()
                     }
                   }}
-                  isAriaDisabled={activeStep.index === 0 && !backButtonOverride}
+                  isAriaDisabled={activeStepIndex === 0 && !backButtonOverride}
                 >
                   {i18n('Back')}
                 </Button>
@@ -351,7 +298,6 @@ ControlPanelWizard.propTypes = {
   handleCancelCreate: PropTypes.func,
   handleCreateResource: PropTypes.func,
   isEditing: PropTypes.bool,
-  onStepChange: PropTypes.func,
   renderControlSections: PropTypes.func,
   renderNotifications: PropTypes.func,
   resetStatus: PropTypes.func,

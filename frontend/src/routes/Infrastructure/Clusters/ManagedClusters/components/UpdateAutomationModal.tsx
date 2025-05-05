@@ -255,9 +255,7 @@ export function UpdateAutomationModal(props: {
               <AcmAlert
                 variant="warning"
                 title={t('{{count}} cluster cannot be edited ', { count: nonUpdatableCount })}
-                message={t(
-                  'Automation is only supported for Red Hat OpenShift clusters that are not provisioned by a managed Kubernetes service. The automation template can be updated only for ready clusters that do not have an upgrade in progress.'
-                )}
+                message={t('automation.template.update.support')}
                 isInline
                 noClose
               />

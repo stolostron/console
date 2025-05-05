@@ -395,22 +395,32 @@ describe('add automation template page', () => {
     waitForNotText('The Ansible Automation Platform Operator is required to use automation templates.')
   })
 
-  it('should display Ansible connection errors', async () => {
+  it('should show validation error and disable Next when selecting an invalid credential', async () => {
     render(<AddAnsibleTemplateTest />)
 
-    // template information
     const ansibleError = {
       message: 'Internal Server Error',
       code: ResourceErrorCode.InternalServerError,
       reason: 'self-signed certificate',
     }
+
     const ansibleJobNock = nockAnsibleTowerError(mockAnsibleCredential, ansibleError)
     const ansibleInventoryNock = nockAnsibleTowerError(mockAnsibleCredentialInventory, ansibleError)
+
     await typeByPlaceholderText('Enter the name for the template', mockClusterCurator.metadata.name!)
+
+    // select the Ansible credential
     await clickByPlaceholderText('Select an existing Ansible credential')
     await clickByText(mockSecret.metadata.name!)
+
+    // wait for the async error to be displayed
     await waitForText('The credential returned an error response from Ansible Tower. Please review the host and token.')
 
+    // assert that the "Next" button is disabled before it's clicked
+    const nextButton = screen.getByRole('button', { name: /Next/i })
+    expect(nextButton).toBeDisabled()
+
+    // ensure the mocks completed successfully
     await waitForNocks([ansibleJobNock, ansibleInventoryNock])
   })
 })

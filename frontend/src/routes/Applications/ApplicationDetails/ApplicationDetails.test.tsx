@@ -15,9 +15,9 @@ import {
   placementRulesState,
   subscriptionsState,
 } from '../../../atoms'
-import { nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../../lib/nock-util'
+import { nockAggegateRequest, nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../../lib/nock-util'
 import { defaultPlugin, PluginContext } from '../../../lib/PluginContext'
-import { waitForText } from '../../../lib/test-util'
+import { waitForNocks, waitForText } from '../../../lib/test-util'
 import { ActionExtensionProps } from '../../../plugin-extensions/properties'
 import { AcmExtension } from '../../../plugin-extensions/types'
 import { GetMessagesDocument, SearchSchemaDocument } from '../../Search/search-sdk/search-sdk'
@@ -31,6 +31,7 @@ import {
   mockPlacementrules,
   mockPlacementsDecisions,
   mockSubscriptions,
+  uidata,
 } from '../Application.sharedmocks'
 import ApplicationDetailsPage from './ApplicationDetails'
 
@@ -324,6 +325,7 @@ describe('Applications Page', () => {
     nockIgnoreRBAC()
     nockSearch(mockSearchQuery, mockSearchResponse)
     nockIgnoreApiPaths()
+    const nock = nockAggegateRequest('uidata', mockApplication0, uidata, 200, true)
     const mocks = [
       {
         request: {
@@ -377,12 +379,13 @@ describe('Applications Page', () => {
     )
     // wait for page to load
     await waitForText(mockApplication0.metadata.name!, true)
+    await waitForNocks([nock])
   })
 
   test('Render ApplicationDetailsPage', async () => {
     expect(screen.getByText('Overview')).toBeTruthy()
     expect(screen.getByText('Topology')).toBeTruthy()
-    expect(screen.getByText('Actions')).toBeTruthy()
+    await waitForText('Actions', true)
     userEvent.click(screen.getByText('Actions'))
     userEvent.click(
       screen.getByRole('menuitem', {

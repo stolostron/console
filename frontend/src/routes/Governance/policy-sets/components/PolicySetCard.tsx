@@ -17,15 +17,14 @@ import {
   ModalVariant,
   Stack,
   StackItem,
-} from '@patternfly/react-core'
-import {
   Dropdown,
   DropdownItem,
-  DropdownSeparator,
-  KebabToggle,
-  KebabToggleProps,
-} from '@patternfly/react-core/deprecated'
-import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
+  Divider,
+  MenuToggle,
+  MenuToggleElement,
+  DropdownList,
+} from '@patternfly/react-core'
+import { CheckCircleIcon, EllipsisVIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { ReactNode, useCallback, useContext, useState } from 'react'
 import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../lib/acm-i18next'
@@ -78,16 +77,6 @@ export default function PolicySetCard(props: {
     }, 400)
   }
 
-  const onToggle: KebabToggleProps['onToggle'] = (event, isOpen) => {
-    event.stopPropagation()
-    setIsKebabOpen(isOpen)
-  }
-
-  function onSelectOverflow(event?: React.SyntheticEvent<HTMLDivElement>) {
-    event?.stopPropagation()
-    setIsKebabOpen(false)
-  }
-
   return (
     <div>
       {modal !== undefined && modal}
@@ -113,11 +102,23 @@ export default function PolicySetCard(props: {
             actions: (
               <>
                 <Dropdown
-                  onSelect={onSelectOverflow}
-                  toggle={<KebabToggle onToggle={onToggle} />}
+                  onSelect={() => setIsKebabOpen(!isKebabOpen)}
+                  toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+                    <MenuToggle
+                      ref={toggleRef}
+                      onClick={() => {
+                        setIsKebabOpen(!isKebabOpen)
+                      }}
+                      variant="plain"
+                      isExpanded={isKebabOpen}
+                    >
+                      <EllipsisVIcon />
+                    </MenuToggle>
+                  )}
                   isOpen={isKebabOpen}
-                  isPlain
-                  dropdownItems={[
+                  isPlain={true}
+                >
+                  <DropdownList>
                     <DropdownItem
                       key="view details"
                       onClick={() => {
@@ -127,10 +128,10 @@ export default function PolicySetCard(props: {
                       }}
                     >
                       {t('View details')}
-                    </DropdownItem>,
+                    </DropdownItem>
                     <DropdownItem
                       isAriaDisabled={!canEditPolicySet}
-                      tooltip={!canEditPolicySet ? t('rbac.unauthorized') : ''}
+                      tooltipProps={{ content: !canEditPolicySet ? t('rbac.unauthorized') : '' }}
                       key="edit"
                       onClick={() => {
                         navigate(
@@ -142,11 +143,11 @@ export default function PolicySetCard(props: {
                       }}
                     >
                       {t('Edit')}
-                    </DropdownItem>,
-                    <DropdownSeparator key="separator" />,
+                    </DropdownItem>
+                    <Divider component="li" key="separator" />
                     <DropdownItem
                       isAriaDisabled={!canDeletePolicySet}
-                      tooltip={!canDeletePolicySet ? t('rbac.unauthorized') : ''}
+                      tooltipProps={{ content: !canDeletePolicySet ? t('rbac.unauthorized') : '' }}
                       key="delete"
                       onClick={() => {
                         setIsKebabOpen(false)
@@ -161,10 +162,9 @@ export default function PolicySetCard(props: {
                       }}
                     >
                       {t('Delete')}
-                    </DropdownItem>,
-                  ]}
-                  position={'right'}
-                />
+                    </DropdownItem>
+                  </DropdownList>
+                </Dropdown>
               </>
             ),
             hasNoOffset: false,

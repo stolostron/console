@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { applicationCache } from './applications'
-import { getApplicationClusters, getApplicationType, getClusters } from './utils'
+import { getApplicationClusters, getApplicationsHelper, getApplicationType, getClusters } from './utils'
 import { Cluster, IApplicationSet, IResource, IUIData } from '../../resources/resource'
 import { getHubClusterName, getKubeResources } from '../events'
 import { getAppSetAppsMap, getAppSetRelatedResources } from './applicationsArgo'
@@ -14,7 +14,7 @@ export function requestAggregatedUIData(req: Http2ServerRequest, res: Http2Serve
   req.on('end', () => {
     const body = chucks.join()
     const resource = JSON.parse(body) as IResource
-    const argoAppSets = applicationCache['appset'].resources
+    const argoAppSets = getApplicationsHelper(applicationCache, ['appset'])
     const subscriptions = getKubeResources('Subscription', 'apps.open-cluster-management.io/v1')
     const placementDecisions = getKubeResources('PlacementDecision', 'cluster.open-cluster-management.io/v1beta1')
     const type = getApplicationType(resource)

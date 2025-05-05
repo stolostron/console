@@ -16,6 +16,7 @@ import { getCACertificate, getServiceAccountToken } from '../lib/serviceAccountT
 import { getAuthenticatedToken } from '../lib/token'
 import { IResource } from '../resources/resource'
 import { accessControlResponse } from './mockResponses'
+import { polledAggregation } from './aggregator'
 
 const { map, split } = eventStream
 const pipeline = promisify(Stream.pipeline)
@@ -78,7 +79,7 @@ export async function getAuthorizedResources(
           : canListResources(token, resource)
       )
         .then((allowResource) => (allowResource ? resource : undefined))
-        .catch(() => undefined) as Promise<IResource>
+        .catch(() => {}) as Promise<IResource>
     })
     while (queue.length) {
       const resource = await queue.shift()
@@ -130,7 +131,10 @@ export function initResourceCache(cache: ResourceCache) {
   resourceCache = cache
 }
 
-export let resourceCache: ResourceCache = {}
+let resourceCache: ResourceCache = {}
+export function getEventCache() {
+  return resourceCache
+}
 
 const accessCache: Record<string, Record<string, { time: number; promise: Promise<boolean> }>> = {}
 
@@ -232,16 +236,13 @@ export function startWatching(): void {
   }
 }
 
-interface IWatchOptions {
+export interface IWatchOptions {
   apiVersion: string
   kind: string
   labelSelector?: Record<string, string>
   fieldSelector?: Record<string, string>
   // poll the resource list instead of watching it
-  // resource changes are not streamed
-  // introduced for large argo resources which broke
-  //  the kube watch list changes (too many changes
-  //   happened in the resource list that caused the watch to lose track)
+  // process the items in its own cache so not to overload event cache
   isPolled?: boolean
 }
 
@@ -292,6 +293,7 @@ async function listAndWatch(options: IWatchOptions) {
 async function listKubernetesObjects(serviceAccountToken: string, options: IWatchOptions) {
   let resourceVersion = ''
   let _continue: string | undefined
+  let itemCount = 0
   let items: IResource[] = []
   const { isPolled } = options
   while (!stopping) {
@@ -308,32 +310,37 @@ async function listKubernetesObjects(serviceAccountToken: string, options: IWatc
     try {
       requests.push(request)
       const body = options?.kind === 'AccessControl' ? accessControlResponse : await request
-      items = items.concat(body.items)
-      resourceVersion = body.metadata.resourceVersion
       _continue = body.metadata._continue ?? body.metadata.continue
+      const pruned = pruneResources(options, body.items)
+      if (isPolled) {
+        polledAggregation(options, pruned, !_continue)
+        itemCount += pruned.length
+      } else {
+        items = items.concat(pruned)
+        resourceVersion = body.metadata.resourceVersion
+      }
     } finally {
       requests = requests.filter((r) => r !== request)
     }
     if (!_continue) break
   }
-  logger.info({
-    msg: isPolled ? 'polled' : 'list',
-    kind: options.kind,
-    labels: options.labelSelector,
-    fields: options.fieldSelector,
-    apiVersion: options.apiVersion,
-    count: items.length,
-  })
 
-  items = items.map((resource) => {
-    resource.kind = options.kind
-    resource.apiVersion = options.apiVersion
-    pruneResource(resource)
-    return resource
-  })
+  if (!isPolled || itemCount > 1000) {
+    logger.info({
+      msg: isPolled ? 'polled' : 'list',
+      kind: options.kind,
+      labels: options.labelSelector,
+      fields: options.fieldSelector,
+      apiVersion: options.apiVersion,
+      count: itemCount || items.length,
+    })
+  }
+  if (isPolled) {
+    return { size: itemCount }
+  }
 
   for (const item of items) {
-    cacheResource(item, isPolled)
+    cacheResource(item)
   }
 
   // Remove items that are no longer in kubernetes
@@ -356,7 +363,7 @@ async function listKubernetesObjects(serviceAccountToken: string, options: IWatc
   }
   for (const uid of removeUids) {
     const resource = cache[uid].resource
-    deleteResource(resource, isPolled)
+    deleteResource(resource)
   }
 
   return { resourceVersion, size: items.length }
@@ -381,13 +388,14 @@ async function pollKubernetesObjects(serviceAccountToken: string, options: IWatc
 
     /* istanbul ignore if */
     if (process.env.NODE_ENV !== 'test') {
-      // polling interval should increase up to maxTimeout seconds
+      // polling interval starting at minTimeout and increasing up to maxTimeout seconds
+      // where anything above maxApp will get the maximum maxTimeout
       // for larger kube resource lists
-      const maxAppsets = 5000
-      const minTimeout = 5000
+      const maxApps = 5000
+      const minTimeout = 15000
       const maxTimeout = 45000
       const timeout = Math.round(
-        size > maxAppsets ? maxTimeout : (size * (maxTimeout - minTimeout)) / maxAppsets + minTimeout
+        size > maxApps ? maxTimeout : (size * (maxTimeout - minTimeout)) / maxApps + minTimeout
       )
       await new Promise((r) => setTimeout(r, timeout))
     } else {
@@ -421,21 +429,20 @@ async function watchKubernetesObjects(serviceAccountToken: string, options: IWat
       // TODO use abort signal when on node 16
       const cancelObj = { cancel: () => request.destroy() }
       requests.push(cancelObj)
-      const { isPolled } = options
       try {
         await pipeline(
           request,
           split('\n'),
           map(function (data: string) {
             const watchEvent = JSON.parse(data) as WatchEvent
-            pruneResource(watchEvent.object)
+            pruneResources(options, [watchEvent.object])
             switch (watchEvent.type) {
               case 'ADDED':
               case 'MODIFIED':
-                cacheResource(watchEvent.object, isPolled)
+                cacheResource(watchEvent.object)
                 break
               case 'DELETED':
-                deleteResource(watchEvent.object, isPolled)
+                deleteResource(watchEvent.object)
                 break
             }
 
@@ -600,7 +607,7 @@ function resourceUrl(options: IWatchOptions, query: Record<string, string>) {
   return url
 }
 
-function cacheResource(resource: IResource, isPolled: boolean) {
+function cacheResource(resource: IResource) {
   const apiVersionPlural = apiVersionPluralFn(resource)
   let cache = resourceCache[apiVersionPlural]
   if (!cache) {
@@ -612,52 +619,44 @@ function cacheResource(resource: IResource, isPolled: boolean) {
   const existing = cache[uid]
 
   let eventID = -1
-  // if not streamed, we are just updating the cache
-  // which can then be grabbed by getKubeResources()
-  if (isPolled) {
-    cache[uid] = { resource, eventID }
-  } else {
-    if (existing) {
-      if (existing.resource.metadata.resourceVersion === resource.metadata.resourceVersion)
-        return resource.metadata.resourceVersion
-      ServerSideEvents.removeEvent(existing.eventID)
-    }
+  if (existing) {
+    if (existing.resource.metadata.resourceVersion === resource.metadata.resourceVersion)
+      return resource.metadata.resourceVersion
+    ServerSideEvents.removeEvent(existing.eventID)
+  }
 
-    eventID = ServerSideEvents.pushEvent({ data: { type: 'MODIFIED', object: resource } })
-    cache[uid] = { resource, eventID }
+  eventID = ServerSideEvents.pushEvent({ data: { type: 'MODIFIED', object: resource } })
+  cache[uid] = { resource, eventID }
 
-    if (resource.kind === 'ManagedCluster') {
-      if (resource?.metadata?.labels['local-cluster'] === 'true') {
-        hubClusterName = resource?.metadata?.name
-      }
+  if (resource.kind === 'ManagedCluster') {
+    if (resource?.metadata?.labels['local-cluster'] === 'true') {
+      hubClusterName = resource?.metadata?.name
     }
   }
 }
 
-function deleteResource(resource: IResource, isPolled: boolean) {
+function deleteResource(resource: IResource) {
   const apiVersionPlural = apiVersionPluralFn(resource)
   const cache = resourceCache[apiVersionPlural]
   if (!cache) return
 
   const uid = resource.metadata.uid
 
-  if (!isPolled) {
-    const existing = cache[uid]
-    if (existing) ServerSideEvents.removeEvent(existing.eventID)
+  const existing = cache[uid]
+  if (existing) ServerSideEvents.removeEvent(existing.eventID)
 
-    const deletedID = ServerSideEvents.pushEvent({
-      data: {
-        type: 'DELETED',
-        object: {
-          kind: resource.kind,
-          apiVersion: resource.apiVersion,
-          metadata: { name: resource.metadata.name, namespace: resource.metadata.namespace },
-        },
+  const deletedID = ServerSideEvents.pushEvent({
+    data: {
+      type: 'DELETED',
+      object: {
+        kind: resource.kind,
+        apiVersion: resource.apiVersion,
+        metadata: { name: resource.metadata.name, namespace: resource.metadata.namespace },
       },
-    })
-    // after deletion has been broadcast to current clients, no need to retain
-    ServerSideEvents.removeEvent(deletedID)
-  }
+    },
+  })
+  // after deletion has been broadcast to current clients, no need to retain
+  ServerSideEvents.removeEvent(deletedID)
   delete cache[uid]
 }
 
@@ -784,11 +783,16 @@ export function stopWatching(): void {
   }
 }
 
-function pruneResource(resource: IResource) {
-  switch (resource.kind) {
-    case 'Policy':
-      break
-    default:
-      delete resource.metadata.managedFields
-  }
+function pruneResources(option: IWatchOptions, items: IResource[]) {
+  return items.map((resource) => {
+    resource.kind = option.kind
+    resource.apiVersion = option.apiVersion
+    switch (resource.kind) {
+      case 'Policy':
+        break
+      default:
+        delete resource.metadata.managedFields
+    }
+    return resource
+  })
 }

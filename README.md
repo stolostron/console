@@ -126,3 +126,70 @@ Enabling this feature will allow the user to create a cluster that only contains
 ## References
 
 `console` is an add-on for the open-cluster-management community. For more information, visit: [open-cluster-management.io](https://open-cluster-management.io)
+
+## Troubleshooting
+
+### [webpack-cli] Failed to load './console/frontend/webpack.config.ts'
+
+After executing the `npm start` command (either T the root level of the project or at `./frontend` folder) an error on `frontend` project is produced like
+
+```
+[start:frontend] [webpack-cli] Failed to load 'console/frontend/webpack.config.ts' config
+[start:frontend] [webpack-cli] Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'console/frontend/src/lib/supportedLanguages' imported from console/frontend/webpack.config.ts
+[start:frontend]     at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+[start:frontend]     at moduleResolve (node:internal/modules/esm/resolve:860:10)
+[start:frontend]     at defaultResolve (node:internal/modules/esm/resolve:984:11)
+[start:frontend]     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:719:12)
+[start:frontend]     at #cachedDefaultResolve (node:internal/modules/esm/loader:643:25)
+[start:frontend]     at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:678:38)
+[start:frontend]     at ModuleLoader.resolveSync (node:internal/modules/esm/loader:701:52)
+[start:frontend]     at #cachedResolveSync (node:internal/modules/esm/loader:662:25)
+[start:frontend]     at ModuleLoader.getModuleJobForRequire (node:internal/modules/esm/loader:390:50)
+[start:frontend]     at new ModuleJobSync (node:internal/modules/esm/module_job:342:34) {
+[start:frontend]   code: 'ERR_MODULE_NOT_FOUND',
+[start:frontend]   url: 'file://console/frontend/src/lib/supportedLanguages'
+[start:frontend] }
+[start:frontend] npm run start:frontend exited with code 2
+```
+
+This is due to wrond node/npm set of versions. See [Prerequisites section](#prerequisites)
+
+### [start:backend] ERROR:Error reading service account token
+
+After executing the `npm start` command (either at the root level of the project or at `./backend` folder) an error on `backend` project is produced like
+
+```
+[start:backend] ERROR:Error reading service account token
+[start:backend] ERROR:process exit, code:1
+[start:backend] [nodemon] app crashed - waiting for file changes before starting...
+```
+
+`./backend/.env` file is not present or it is wrongly produced. Please follow [Running section guidelines](#running).
+
+### certs issues
+
+The application starts up apparently normally but the browser produces an error `Error occurred while trying to proxy: localhost:3000/multicloud/login`
+
+In the logs there are errors like
+
+```
+[start:frontend] (node:1777197) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [Server]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+[start:frontend] <e> [webpack-dev-server] [HPM] Error occurred while proxying request localhost:3000/multicloud/username to https://localhost:4000/ [EPROTO] (https://nodejs.org/api/errors.html#errors_common_system_errors)
+[start:frontend] <e> [webpack-dev-server] [HPM] Error occurred while proxying request localhost:3000/multicloud/events to https://localhost:4000/ [EPROTO] (https://nodejs.org/api/errors.html#errors_common_system_errors)
+[start:frontend] <e> [webpack-dev-server] [HPM] Error occurred while proxying request localhost:3000/multicloud/authenticated to https://localhost:4000/ [EPROTO] (https://nodejs.org/api/errors.html#errors_common_system_errors)
+[start:frontend] <e> [webpack-dev-server] [HPM] Error occurred while proxying request localhost:3000/multicloud/events to https://localhost:4000/ [EPROTO] (https://nodejs.org/api/errors.html#errors_common_system_errors)
+[start:frontend] <e> [webpack-dev-server] [HPM] Error occurred while proxying request localhost:3000/multicloud/username to https://localhost:4000/ [EPROTO] (https://nodejs.org/api/errors.html#errors_common_system_errors)
+[start:frontend] <e> [webpack-dev-server] [HPM] Error occurred while proxying request localhost:3000/multicloud/globalhub to https://localhost:4000/ [EPROTO] (https://nodejs.org/api/errors.html#errors_common_system_errors)
+[start:frontend] <e> [webpack-dev-server] [HPM] Error occurred while proxying request localhost:3000/multicloud/authenticated to https://localhost:4000/ [EPROTO] (https://nodejs.org/api/errors.html#errors_common_system_errors)
+[start:frontend] <e> [webpack-dev-server] [HPM] Error occurred while proxying request localhost:3000/multicloud/login to https://localhost:4000/ [EPROTO] (https://nodejs.org/api/errors.html#errors_common_system_errors)
+```
+
+And if the logs are inspected right after running `npm start` command an error is produced
+
+`[start:backend] ERROR:no certs`
+
+The problems is about the certs not being generated properly, `./backend/certs` folder is most probably empty.
+
+The solution is about to completely remove `./backend/certs` folder and then to execute `npm run ci:backend` at the root level of the project.
+
+> Be sure openssl library is installed before running `npm run ci:backend` command.

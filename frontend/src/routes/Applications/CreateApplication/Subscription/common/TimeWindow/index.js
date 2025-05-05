@@ -518,10 +518,13 @@ export default TimeWindow
 export const reverse = (control, templateObject) => {
   if (!control.active) {
     let showTimeSection = false
+    let timezoneValue = ''
+
+    // getting timezone and preparing value without setting properties
     const timezone = _.get(templateObject, getSourcePath('Subscription[0].spec.timewindow.location'))
     if (timezone) {
       const allTimezones = Intl.supportedValuesOf('timeZone')
-      control.active.timezone = allTimezones.includes(timezone.$v) ? timezone.$v : ''
+      timezoneValue = allTimezones.includes(timezone.$v) ? timezone.$v : ''
     }
 
     const mode = _.get(templateObject, getSourcePath('Subscription[0].spec.timewindow.windowtype'))
@@ -529,6 +532,7 @@ export const reverse = (control, templateObject) => {
     weekdays = (removeVs(weekdays && weekdays.$v) || []).map((day) => {
       return `"${day}"`
     })
+
     let timeList = _.get(templateObject, getSourcePath('Subscription[0].spec.timewindow.hours'))
     if (timeList) {
       timeList = removeVs(timeList)
@@ -548,10 +552,11 @@ export const reverse = (control, templateObject) => {
     } else {
       timeList = [{ id: 0, start: '', end: '', validTime: true }]
     }
+
     control.active = {
       mode: mode && mode.$v,
       days: weekdays,
-      timezone: timezone && timezone.$v,
+      timezone: timezone ? timezone.$v : timezoneValue,
       showTimeSection,
       timeList,
       timeListID: timeList.length,
