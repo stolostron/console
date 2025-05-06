@@ -154,7 +154,7 @@ describe('Discovery Config page', () => {
     expect(container.querySelectorAll(`[aria-labelledby^="discoveryClusterTypes-label"]`)).toHaveLength(1)
     container.querySelector<HTMLButtonElement>(`[aria-labelledby^="discoveryClusterTypes-label"]`)!.click()
 
-    const rosaCheckbox = container.querySelector('input[id$="-ROSA"]')
+    const rosaCheckbox = container.querySelector('input[id$="-ROSA_CLASSIC"]')
     if (rosaCheckbox) {
       userEvent.click(rosaCheckbox)
     }
@@ -244,7 +244,10 @@ describe('Discovery Config page', () => {
     const deleteNock = nockDelete(discoveryConfigUpdated)
     await clickByText('Delete')
     await waitForText('Delete discovery settings')
-    await clickByText('Delete', 1)
+
+    const deleteButtons = screen.getAllByRole('button', { name: /delete/i })
+    await userEvent.click(deleteButtons[deleteButtons.length - 1])
+
     await waitFor(() => expect(deleteNock.isDone()).toBeTruthy())
 
     // Wait For Notification on DiscoveredClusters page
