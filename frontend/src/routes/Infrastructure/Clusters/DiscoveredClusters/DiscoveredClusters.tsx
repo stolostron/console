@@ -26,6 +26,8 @@ import {
   getInfrastructureProvider,
   searchInfrastructureProvider,
   getFullTypeByAcronymForDiscoveryClustersType,
+  getClusterTypeGroup,
+  CLUSTER_TYPE_GROUPS,
 } from './DiscoveryConfig/discoveryConfigFilters'
 
 export default function DiscoveredClustersPage() {
@@ -255,10 +257,15 @@ export function DiscoveredClustersTable(props: {
         ),
       search: (discoveredCluster) => {
         if (discoveredCluster.spec.type) {
-          return [
-            discoveredCluster.spec.type,
-            getFullTypeByAcronymForDiscoveryClustersType(discoveredCluster.spec.type) || '-',
-          ]
+          // get the specific cluster type display name
+          const typeName = getFullTypeByAcronymForDiscoveryClustersType(discoveredCluster.spec.type) || '-'
+
+          // get the group this type belongs to, for searching by group name)
+          const group = getClusterTypeGroup(discoveredCluster.spec.type)
+          const groupName = group ? CLUSTER_TYPE_GROUPS[group].displayName : ''
+
+          // returning raw type code, display name and the group name (if it is there)
+          return [discoveredCluster.spec.type, typeName, groupName].filter(Boolean)
         } else {
           return '-'
         }
