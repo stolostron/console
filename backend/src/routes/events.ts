@@ -225,7 +225,7 @@ const definitions: IWatchOptions[] = [
     apiVersion: 'v1',
     fieldSelector: { 'metadata.name': 'grafana-dashboard-acm-openshift-virtualization-single-vm-view' },
   },
-  { kind: 'AccessControl', apiVersion: 'clusterview.open-cluster-management.io/v1' },
+  { kind: 'ClusterPermission', apiVersion: 'rbac.open-cluster-management.io/v1alpha1', },
 ]
 
 export function startWatching(): void {
@@ -309,7 +309,7 @@ async function listKubernetesObjects(serviceAccountToken: string, options: IWatc
       }>()
     try {
       requests.push(request)
-      const body = options?.kind === 'AccessControl' ? accessControlResponse : await request
+      const body = await request
       _continue = body.metadata._continue ?? body.metadata.continue
       const pruned = pruneResources(options, body.items)
       if (isPolled) {
@@ -416,12 +416,7 @@ async function watchKubernetesObjects(serviceAccountToken: string, options: IWat
 
     try {
       const url = resourceUrl(options, { watch: undefined, allowWatchBookmarks: undefined, resourceVersion })
-      const request = options.kind === "AccessControl" ? new Stream.Readable({
-        read(size) {
-          this.push(JSON.stringify({ type: "BOOKMARK", object: accessControlResponse }));
-          this.push(null);
-        }
-      }) : got.stream(url, {
+      const request = got.stream(url, {
         headers: { authorization: `Bearer ${serviceAccountToken}` },
         https: { certificateAuthority: getCACertificate() },
         timeout: { socket: 5 * 60 * 1000 + Math.ceil(Math.random() * 10 * 1000) },
