@@ -197,6 +197,7 @@ export function getFullTypeByAcronymForDiscoveryClustersType(acronym: string) {
 export const DISCOVERY_CLUSTER_TYPES = [
   'OSD',
   'OSDTrial',
+  'OSD-Trial',
   'OCP',
   'RHMI',
   'ROSA',
@@ -225,3 +226,88 @@ export const INFRASTRUCTURE_PROVIDERS = [
   'powervs',
   'vsphere',
 ]
+
+export const CLUSTER_TYPE_GROUPS: {
+  [key: string]: { displayName: string; types: string[] }
+} = {
+  OCP: {
+    displayName: t('type.group.ocp'),
+    types: ['OCP', 'OCP-ASSISTEDINSTALL'],
+  },
+  OSD: {
+    displayName: t('type.group.osd'),
+    types: ['OSD', 'OSDTrial', 'OSD-Trial'],
+  },
+  ROSA_CLASSIC: {
+    displayName: t('type.group.rosa.classic'),
+    types: ['ROSA', 'MOA'],
+  },
+  ROSA_HCP: {
+    displayName: t('type.group.rosa.hcp'),
+    types: ['ROSA-HyperShift', 'MOA-HostedControlPlane'],
+  },
+  ARO: {
+    displayName: t('type.group.aro'),
+    types: ['ARO'],
+  },
+  RHOIC: {
+    displayName: t('type.group.rhoic'),
+    types: ['RHOIC'],
+  },
+  RHMI: {
+    displayName: t('type.group.rhmi'),
+    types: ['RHMI'],
+  },
+}
+
+/**
+ * Maps a specific cluster type to its group key
+ */
+export function getClusterTypeGroup(clusterType: string): string | undefined {
+  if (!clusterType) return undefined
+
+  const clusterTypeUpperCase = clusterType.toUpperCase()
+
+  for (const [groupKey, groupInfo] of Object.entries(CLUSTER_TYPE_GROUPS)) {
+    if (groupInfo.types.some((type) => type.toUpperCase() === clusterTypeUpperCase)) {
+      return groupKey
+    }
+  }
+
+  return undefined
+}
+
+/**
+ * Gets all cluster types that are from a group
+ */
+export function getClusterTypesInGroup(groupKey: string): string[] {
+  return CLUSTER_TYPE_GROUPS[groupKey]?.types ?? []
+}
+
+/**
+ * Maps an array of cluster types to an array of group keys, transforms API data into UI groups and selection
+ */
+export function getGroupsFromClusterTypes(clusterTypes: string[] | undefined): string[] {
+  if (!clusterTypes || clusterTypes.length === 0) return []
+
+  const groups = new Set<string>()
+
+  clusterTypes.forEach((type) => {
+    const group = getClusterTypeGroup(type)
+    if (group) {
+      groups.add(group)
+    }
+  })
+
+  return Array.from(groups)
+}
+
+/**
+ * Gets all cluster types from multiple groups
+ * Used when converting selected groups back to types for the API
+ */
+export function getAllClusterTypesFromGroups(groupKeys: string[]): string[] {
+  if (!groupKeys || groupKeys.length === 0) return []
+
+  return groupKeys.flatMap((group) => getClusterTypesInGroup(group))
+}
