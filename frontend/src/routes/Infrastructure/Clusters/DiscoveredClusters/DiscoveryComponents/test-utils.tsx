@@ -115,7 +115,7 @@ export const discoveryConfig: DiscoveryConfig = {
     filters: {
       lastActive: 14,
       openShiftVersions: ['4.17'],
-      clusterTypes: ['ROSA', 'OCP'],
+      clusterTypes: ['ROSA', 'MOA', 'OCP', 'OCP-ASSISTEDINSTALL'],
       infrastructureProviders: ['aws', 'azure'],
     },
     credential: mockRHOCMSecrets[0].metadata.name!,
@@ -148,7 +148,7 @@ export const discoveryConfigUpdated: DiscoveryConfig = {
     filters: {
       lastActive: 30,
       openShiftVersions: ['4.17', '4.18'],
-      clusterTypes: ['ROSA', 'OCP'],
+      clusterTypes: ['ROSA', 'MOA', 'OCP', 'OCP-ASSISTEDINSTALL'],
       infrastructureProviders: ['aws', 'azure'],
     },
     credential: mockRHOCMSecrets[0].metadata.name!,
