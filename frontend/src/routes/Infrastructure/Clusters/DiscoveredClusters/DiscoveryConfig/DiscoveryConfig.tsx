@@ -50,10 +50,11 @@ import { CredentialsForm } from '../../../../Credentials/CredentialsForm'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import {
-  DISCOVERY_CLUSTER_TYPES,
   getDisplayNameForInfrastructureProvider,
-  getFullTypeByAcronymForDiscoveryClustersType,
   INFRASTRUCTURE_PROVIDERS,
+  CLUSTER_TYPE_GROUPS,
+  getGroupsFromClusterTypes,
+  getAllClusterTypesFromGroups,
 } from '../DiscoveryConfig/discoveryConfigFilters'
 
 const discoveryVersions = ['4.17', '4.18', '4.19', '4.20']
@@ -536,18 +537,18 @@ export function DiscoveryConfigPageContent(props: {
             id="discoveryClusterTypes"
             label={t('discoveryConfig.ClusterTypes.label')}
             labelHelp={t('discoveryConfig.ClusterTypes.labelHelp')}
-            value={discoveryConfig?.spec?.filters?.clusterTypes}
+            value={getGroupsFromClusterTypes(discoveryConfig?.spec?.filters?.clusterTypes)}
             placeholder={t('discoveryConfig.ClusterTypes.placeholder')}
-            onChange={(clusterTypes) => {
+            onChange={(selectedGroups) => {
               updateDiscoveryConfig((discoveryConfig) => {
                 discoveryConfig.spec.filters ??= {}
-                discoveryConfig.spec.filters.clusterTypes = clusterTypes
+                discoveryConfig.spec.filters.clusterTypes = getAllClusterTypesFromGroups(selectedGroups || [])
               })
             }}
           >
-            {DISCOVERY_CLUSTER_TYPES.map((clusterTypeAcronym) => (
-              <SelectOption key={clusterTypeAcronym} value={clusterTypeAcronym}>
-                {getFullTypeByAcronymForDiscoveryClustersType(clusterTypeAcronym)}
+            {Object.entries(CLUSTER_TYPE_GROUPS).map(([key, group]) => (
+              <SelectOption key={key} value={key}>
+                {group.displayName}
               </SelectOption>
             ))}
           </AcmMultiSelect>
