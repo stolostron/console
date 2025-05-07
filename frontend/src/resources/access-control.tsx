@@ -12,25 +12,18 @@ export const AccessControlDefinition: IResourceDefinition = {
   kind: AccessControlKind
 }
 
-type RoleBindingKind = "User" | "Role"
 
-export interface RoleBinding {
+interface RoleBinding {
   namespace: string
   roleRef: {
     apiGroup: string
-    kind: RoleBindingKind
+    kind: "Role"
     name: string
   }
   subject: {
     apiGroup: string
-    kind: RoleBindingKind
+    kind: "User" | "Group"
     name: string
-  }
-}
-
-export interface AccessControlItem extends IResource {
-  spec: {
-    roleBindings: RoleBinding[]
   }
 }
 
@@ -39,10 +32,6 @@ export interface AccessControl extends IResource {
    * APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
    */
   apiVersion: AccessControlApiVersionType
-  /**
-   * Data contains the access control data. Each key must consist of alphanumeric characters \'-\' \'_\' or \'.\'. The serialized form of the access control data is a base64 encoded string representing the arbitrary (possibly non-string) data value here. Described in https://tools.ietf.org/html/rfc4648#section-4
-   */
-  items: AccessControlItem[]
   /**
    * Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
    */

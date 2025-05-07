@@ -1,9 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Label } from '@patternfly/react-core'
-import {
-    CheckCircleIcon,
-    TimesCircleIcon
-} from '@patternfly/react-icons'
 import { fitContent } from '@patternfly/react-table'
 import jsYaml from 'js-yaml'
 import { Dispatch, SetStateAction, useMemo } from 'react'
@@ -35,7 +30,7 @@ const ACTIONS = {
     EDIT: ({ accessControl, navigate }: { accessControl: AccessControl } & Pick<AccessControlManagementTableHelperProps, 'navigate'>) => {
         navigate(
             generatePath(NavigationPath.editAccessControlManagement, {
-                id: accessControl.data?.id!,
+                id: accessControl.metadata?.uid!,
             })
         )
     },
@@ -53,32 +48,23 @@ const ACTIONS = {
             columns: [
                 {
                     header: t('ID'),
-                    sort: 'data.id',
-                    search: 'data.id',
-                    cell: (accessControl: AccessControl) => accessControl.data?.id,
+                    sort: 'metadata.uid',
+                    search: 'metadata.uid',
+                    cell: (accessControl: AccessControl) => accessControl.metadata?.uid,
 
                 }, {
                     header: t('Cluster'),
-                    sort: 'data.cluster',
-                    search: 'data.cluster',
-                    cell: (accessControl: AccessControl) => accessControl.data?.cluster,
-                }, {
-                    header: t('Status'),
-                    sort: (itemA: AccessControl, itemB: AccessControl) => {
-                        const statusA = itemA.data?.isActive === true ? t('Active') : t('Disabled')
-                        const statusB = itemB.data?.isActive === true ? t('Active') : t('Disabled')
-                        return compareStrings(statusA, statusB)
-                    },
-                    search: (accessControl: AccessControl) => accessControl.data?.isActive ? 'Active' : 'Disabled',
-                    cell: (accessControl: AccessControl) => COLUMN_CELLS.STATUS(accessControl, t),
+                    sort: 'metadata.namespace',
+                    search: 'metadata.namespace',
+                    cell: (accessControl: AccessControl) => accessControl.metadata?.namespace,
                 },
                 {
                     header: t('Created'),
-                    sort: 'data.creationTimestamp',
+                    sort: 'metadata.creationTimestamp',
                     cell: COLUMN_CELLS.CREATION_DATE,
                 },
             ],
-            keyFn: (accessControl: AccessControl) => accessControl.metadata.uid as string,
+            keyFn: (accessControl: AccessControl) => accessControl.metadata?.uid! as string,
             actionFn: deleteResource,
             close: () => setModalProps({ open: false }),
             isDanger: true,
@@ -86,8 +72,8 @@ const ACTIONS = {
     },
     EXPORT_YAML: (accessControl: AccessControl, exportFilePrefix: string) => {
         // TODO: assure proper content from the AccessControl
-        const yamlContent = jsYaml.dump(accessControl.data)
-        const fileName = `${exportFilePrefix}-${accessControl.data?.id}-${Date.now()}.yaml`
+        const yamlContent = jsYaml.dump(accessControl)
+        const fileName = `${exportFilePrefix}-${accessControl.metadata?.uid}-${Date.now()}.yaml`
         createDownloadFile(fileName, yamlContent, 'application/yaml')
     }
 }
@@ -97,66 +83,72 @@ const COLUMN_CELLS = {
         <span style={{ whiteSpace: 'nowrap' }}>
             <Link
                 to={generatePath(NavigationPath.viewAccessControlManagement, {
-                    id: accessControl.data?.id!,
+                    id: accessControl.metadata?.uid!,
                 })}
             >
-                {accessControl.data?.id}
+                {accessControl.metadata?.uid}
             </Link>
         </span>
     ),
-    CLUSTER: (accessControl: AccessControl) => accessControl.data?.cluster !== '*' ? (<Link
-        to={generatePath(NavigationPath.clusterDetails, {
-            name: accessControl.data?.cluster!,
-            namespace: accessControl.data?.cluster!,
-        })}
-    >
-        {accessControl.data?.cluster}
-    </Link>) : '*',
-    USER_GROUP: (accessControl: AccessControl, t: TFunction) => accessControl.data?.users ? (
-        <AcmLabels
-            labels={accessControl.data.users}
-            expandedText={t('Show less')}
-            collapsedText={t('show.more', { count: accessControl.data.users.length })}
-            // TODO: To properly translate 'count.items'
-            allCollapsedText={t('count.items', { count: accessControl.data.users.length })}
-            isCompact={accessControl.data.users.length > LABELS_LENGTH}
-        />
-    ) : '-',
-    ROLES: (accessControl: AccessControl, t: TFunction) => accessControl.data?.roles ? (
-        <AcmLabels
-            labels={accessControl.data.roles}
-            expandedText={t('Show less')}
-            collapsedText={t('show.more', { count: accessControl.data.roles.length })}
-            // TODO: To properly translate 'count.items'
-            allCollapsedText={t('count.items', { count: accessControl.data.roles.length })}
-            isCompact={accessControl.data.roles.length > LABELS_LENGTH}
-        />
-    ) : '-',
-    NAMESPACES: (accessControl: AccessControl, t: TFunction) => accessControl.data?.namespaces ? (
-        <AcmLabels
-            labels={accessControl.data.namespaces}
-            expandedText={t('Show less')}
-            collapsedText={t('show.more', { count: accessControl.data.namespaces.length })}
-            // TODO: To properly translate 'count.items'
-            allCollapsedText={t('count.items', { count: accessControl.data.namespaces.length })}
-            isCompact={accessControl.data.namespaces.length > LABELS_LENGTH}
-        />
-    ) : '-',
-    STATUS: (accessControl: AccessControl, t: TFunction) => <span style={{ whiteSpace: 'nowrap' }}>
-        {
-            accessControl.data?.isActive ?
-                <Label color="green" icon={<CheckCircleIcon />}>{t('Active')}</Label>
-                : <Label color="red" icon={<TimesCircleIcon />}>{t('Disabled')}</Label>
-        }
-    </span>,
+    CLUSTER: (accessControl: AccessControl) => (
+        <span style={{ whiteSpace: 'nowrap' }}>
+            {accessControl.metadata?.namespace ? <Link
+                to={generatePath(NavigationPath.clusterDetails, {
+                    name: accessControl.metadata?.namespace!,
+                    namespace: accessControl.metadata?.namespace!,
+                })}
+            >
+                {accessControl.metadata?.namespace}
+            </Link> : '-'}
+        </span>
+    ),
+    USER_GROUP: (accessControl: AccessControl, t: TFunction) => {
+        const users_groups = accessControl.spec.roleBindings.map(e => `${e.subject.kind}: ${e.subject.name}`); // TODO: translate kind
+        return users_groups ? (
+            <AcmLabels
+                labels={users_groups}
+                expandedText={t('Show less')}
+                collapsedText={t('show.more', { count: users_groups.length })}
+                // TODO: To properly translate 'count.items'
+                allCollapsedText={t('count.items', { count: users_groups.length })}
+                isCompact={users_groups.length > LABELS_LENGTH}
+            />
+        ) : <span style={{ whiteSpace: 'nowrap' }}>'-'</span>
+    },
+    ROLES: (accessControl: AccessControl, t: TFunction) => {
+        const roles = accessControl.spec.roleBindings.map(e => e.roleRef.name);
+        return roles ? (
+            <AcmLabels
+                labels={roles}
+                expandedText={t('Show less')}
+                collapsedText={t('show.more', { count: roles.length })}
+                // TODO: To properly translate 'count.items'
+                allCollapsedText={t('count.items', { count: roles.length })}
+                isCompact={roles.length > LABELS_LENGTH}
+            />
+        ) : <span style={{ whiteSpace: 'nowrap' }}>'-'</span>
+    },
+    NAMESPACES: (accessControl: AccessControl, t: TFunction) => {
+        const namespaces = accessControl.spec.roleBindings.map(e => e.namespace);
+        return namespaces ? (
+            <AcmLabels
+                labels={namespaces}
+                expandedText={t('Show less')}
+                collapsedText={t('show.more', { count: namespaces.length })}
+                // TODO: To properly translate 'count.items'
+                allCollapsedText={t('count.items', { count: namespaces.length })}
+                isCompact={namespaces.length > LABELS_LENGTH}
+            />
+        ) : <span style={{ whiteSpace: 'nowrap' }}>'-'</span>
+    },
     CREATION_DATE: (accessControl: AccessControl) => (
         <span style={{ whiteSpace: 'nowrap' }}>
-            <AcmTimestamp timestamp={accessControl.data?.creationTimestamp} />
+            <AcmTimestamp timestamp={accessControl.metadata?.creationTimestamp} />
         </span>
     ),
     ACTIONS: (accessControl: AccessControl, t: AccessControlManagementTableHelperProps['t'], setModalProps: AccessControlManagementTableHelperProps['setModalProps'], navigate: AccessControlManagementTableHelperProps['navigate']) => (
         <RbacDropdown<AccessControl>
-            id={`${accessControl.metadata.name}-actions`}
+            id={`${accessControl.metadata?.uid}-actions`}
             item={accessControl}
             isKebab={true}
             text={t('Actions')}
@@ -190,51 +182,38 @@ const COLUMN_CELLS = {
 const accessControlTableColumns = ({ t, setModalProps, navigate }: AccessControlManagementTableHelperProps) => [
     {
         header: t('ID'),
-        sort: 'data.id',
-        search: 'data.id',
+        sort: 'metadata.uid',
+        search: 'metadata.uid',
         cell: COLUMN_CELLS.ID,
-        exportContent: (accessControl: AccessControl) => accessControl.data?.id!,
+        exportContent: (accessControl: AccessControl) => accessControl.metadata?.uid!,
     }, {
         header: t('Cluster'),
-        sort: 'data.cluster',
-        search: 'data.cluster',
+        sort: 'metadata.namespace',
+        search: 'metadata.namespace',
         cell: COLUMN_CELLS.CLUSTER,
-        exportContent: (accessControl: AccessControl) => accessControl.data?.cluster!,
+        exportContent: (accessControl: AccessControl) => accessControl.metadata?.namespace, // TODO: to clarify
     }, {
         header: t('Users/Groups'),
         // TODO: users or groups
-        sort: 'data.users',
         search: 'data.users',
         cell: (accessControl: AccessControl) => COLUMN_CELLS.USER_GROUP(accessControl, t),
-        exportContent: (accessControl: AccessControl) => accessControl.data?.users!,
+        exportContent: (accessControl: AccessControl) => accessControl.spec.roleBindings.map(e => e.subject.name),
     }, {
         header: t('Roles'),
-        sort: 'data.roles',
-        search: 'data.roles',
+        search: 'spec.roleBindings',
         cell: (accessControl: AccessControl) => COLUMN_CELLS.ROLES(accessControl, t),
-        exportContent: (accessControl: AccessControl) => accessControl.data?.roles!,
+        exportContent: (accessControl: AccessControl) => accessControl.spec.roleBindings.map(e => e.roleRef.name),
     }, {
         header: t('Namespaces'),
-        sort: 'data.namespaces',
-        search: 'data.namespaces',
+        search: 'spec.roleBindings',
         cell: (accessControl: AccessControl) => COLUMN_CELLS.NAMESPACES(accessControl, t),
-        exportContent: (accessControl: AccessControl) => accessControl.data?.namespaces!,
-    }, {
-        header: t('Status'),
-        sort: (itemA: AccessControl, itemB: AccessControl) => {
-            const statusA = itemA.data?.isActive === true ? t('Active') : t('Disabled')
-            const statusB = itemB.data?.isActive === true ? t('Active') : t('Disabled')
-            return compareStrings(statusA, statusB)
-        },
-        search: (item: AccessControl) => item.data?.isActive ? 'Active' : 'Disabled',
-        cell: (accessControl: AccessControl) => COLUMN_CELLS.STATUS(accessControl, t),
-        exportContent: (accessControl: AccessControl) => accessControl.data?.isActive ? 'Active' : 'Disabled',
+        exportContent: (accessControl: AccessControl) => accessControl.spec.roleBindings.map(e => e.namespace),
     },
     {
         header: t('Created'),
-        sort: 'data.creationTimestamp',
+        sort: 'metadata.creationTimestamp',
         cell: COLUMN_CELLS.CREATION_DATE,
-        exportContent: (accessControl: AccessControl) => accessControl.data?.creationTimestamp ? getISOStringTimestamp(accessControl.data?.creationTimestamp) : '',
+        exportContent: (accessControl: AccessControl) => accessControl.metadata?.creationTimestamp ? getISOStringTimestamp(accessControl.metadata?.creationTimestamp) : '',
     },
     {
         header: '',
@@ -255,30 +234,25 @@ const useFilters = ({ managedClusters, accessControls, t }: { managedClusters: C
                         value: cluster.name,
                     }))
                     .sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
-                tableFilterFn: (selectedValues: string[], item: AccessControl) => selectedValues.includes(item.data?.cluster ?? ''),
-            }, {
-                id: 'status',
-                label: t('Status'),
-                options: ['Active', 'Disabled'].map(e => ({ label: e, value: e })),
-                tableFilterFn: (selectedValues: string[], item: AccessControl) => selectedValues.map(e => e === 'Active').some(e => item.data?.isActive === e),
+                tableFilterFn: (selectedValues: string[], item: AccessControl) => selectedValues.some(e => item.spec.roleBindings.map(e => e.namespace).includes(e)),
             },
             {
                 id: 'user',
                 label: t('access.add.user'),
-                options: [...new Set(accessControls?.flatMap(accessControl => accessControl.data?.users ?? []))].map(e => ({ label: e, value: e })).sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
-                tableFilterFn: (selectedValues: string[], item: AccessControl) => selectedValues.some(e => item.data?.users?.includes(e)),
+                options: [...new Set(accessControls?.flatMap(accessControl => accessControl.spec.roleBindings.filter(e => e.subject.kind === "User").map(e => e.subject.name) ?? []))].map(e => ({ label: e, value: e })).sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
+                tableFilterFn: (selectedValues: string[], item: AccessControl) => selectedValues.some(e => item.spec.roleBindings.filter(e => e.subject.kind === "User").map(e => e.subject.name).includes(e)),
             },
             {
                 id: 'group',
                 label: t('access.add.group'),
-                options: [...new Set(accessControls?.flatMap(accessControl => accessControl.data?.groups ?? []))].map(e => ({ label: e, value: e })).sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
-                tableFilterFn: (selectedValues: string[], item: AccessControl) => selectedValues.some(e => item.data?.groups?.includes(e)),
+                options: [...new Set(accessControls?.flatMap(accessControl => accessControl.spec.roleBindings.filter(e => e.subject.kind === "User").map(e => e.subject.name) ?? []))].map(e => ({ label: e, value: e })).sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
+                tableFilterFn: (selectedValues: string[], item: AccessControl) => selectedValues.some(e => item.spec.roleBindings.filter(e => e.subject.kind === "User").map(e => e.subject.name).includes(e)),
             },
             {
                 id: 'role',
                 label: t('Role'),
-                options: [...new Set(accessControls?.flatMap(accessControl => accessControl.data?.roles ?? []))].map(e => ({ label: e, value: e })).sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
-                tableFilterFn: (selectedValues: string[], item: AccessControl) => selectedValues.some(e => item.data?.roles?.includes(e)),
+                options: [...new Set(accessControls?.flatMap(accessControl => accessControl.spec.roleBindings.filter(e => e.subject.kind === "Role").map(e => e.subject.name) ?? []))].map(e => ({ label: e, value: e })).sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
+                tableFilterFn: (selectedValues: string[], item: AccessControl) => selectedValues.some(e => item.spec.roleBindings.filter(e => e.subject.kind === "Role").map(e => e.subject.name).includes(e)),
             },
         ],
         [t, managedClusters, accessControls]
