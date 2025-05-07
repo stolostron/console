@@ -195,19 +195,19 @@ const accessControlTableColumns = ({ t, setModalProps, navigate }: AccessControl
     }, {
         header: t('Users/Groups'),
         // TODO: users or groups
-        search: 'data.users',
+        search: (accessControl: AccessControl) => accessControl.spec.roleBindings.map(e => e.subject.name).join(),
         cell: (accessControl: AccessControl) => COLUMN_CELLS.USER_GROUP(accessControl, t),
         exportContent: (accessControl: AccessControl) => accessControl.spec.roleBindings.map(e => e.subject.name),
     }, {
         header: t('Roles'),
-        search: 'spec.roleBindings',
+        search: (accessControl: AccessControl) => accessControl.spec.roleBindings.map(e => e.roleRef.name).join(),
         cell: (accessControl: AccessControl) => COLUMN_CELLS.ROLES(accessControl, t),
-        exportContent: (accessControl: AccessControl) => accessControl.spec.roleBindings.map(e => e.roleRef.name),
+        exportContent: (accessControl: AccessControl) => [...new Set(accessControl.spec.roleBindings.map(e => e.roleRef.name))],
     }, {
         header: t('Namespaces'),
-        search: 'spec.roleBindings',
+        search: (accessControl: AccessControl) => accessControl.spec.roleBindings.map(e => e.namespace).join(),
         cell: (accessControl: AccessControl) => COLUMN_CELLS.NAMESPACES(accessControl, t),
-        exportContent: (accessControl: AccessControl) => accessControl.spec.roleBindings.map(e => e.namespace),
+        exportContent: (accessControl: AccessControl) => [...new Set(accessControl.spec.roleBindings.map(e => e.namespace))],
     },
     {
         header: t('Created'),
