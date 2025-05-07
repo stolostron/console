@@ -132,6 +132,16 @@ export const isGlobalHubState = atom<boolean>({
   default: false,
 })
 
+export const localHubNameState = atom<string>({
+  key: 'localHubName',
+  default: 'local-cluster',
+})
+
+export const isHubSelfManagedState = atom<boolean | undefined>({
+  key: 'isHubSelfManaged',
+  default: undefined,
+})
+
 export interface Settings {
   LOG_LEVEL?: string
   SAVED_SEARCH_LIMIT?: string

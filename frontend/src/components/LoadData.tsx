@@ -140,6 +140,8 @@ import {
   infraEnvironmentsState,
   infrastructuresState,
   isGlobalHubState,
+  isHubSelfManagedState,
+  localHubNameState,
   machinePoolsState,
   managedClusterAddonsState,
   managedClusterInfosState,
@@ -170,8 +172,8 @@ import {
   subscriptionsState,
   WatchEvent,
 } from '../atoms'
-import { useQuery } from '../lib/useQuery'
 import { PluginDataContext } from '../lib/PluginDataContext'
+import { useQuery } from '../lib/useQuery'
 import { AccessControlApiVersion, AccessControlKind } from '../resources/access-control'
 
 export function LoadData(props: { children?: ReactNode }) {
@@ -232,6 +234,8 @@ export function LoadData(props: { children?: ReactNode }) {
   const setNodePoolsState = useSetRecoilState(nodePoolsState)
   const setAgentMachinesState = useSetRecoilState(agentMachinesState)
   const setIsGlobalHub = useSetRecoilState(isGlobalHubState)
+  const setlocalHubName = useSetRecoilState(localHubNameState)
+  const setIsHubSelfManaged = useSetRecoilState(isHubSelfManagedState)
   const setAccessControls = useSetRecoilState(accessControlState)
 
   const { setters, mappers, caches } = useMemo(() => {
@@ -543,7 +547,9 @@ export function LoadData(props: { children?: ReactNode }) {
     loading: globalHubLoading,
     startPolling: globalHubStartPoll,
     stopPolling: globalHubStopPoll,
-  } = useQuery(globalHubQueryFn, [{ isGlobalHub: false }], { pollInterval: 30 })
+  } = useQuery(globalHubQueryFn, [{ isGlobalHub: false, localHubName: 'local-cluster', isHubSelfManaged: undefined }], {
+    pollInterval: 30,
+  })
 
   // Start all Polls for Global values here
   useEffect(() => {
@@ -558,6 +564,8 @@ export function LoadData(props: { children?: ReactNode }) {
   const isGlobalHub = useRecoilValue(isGlobalHubState)
   if (globalHubRes && !globalHubLoading && !isGlobalHub) {
     setIsGlobalHub(globalHubRes[0]?.isGlobalHub)
+    setlocalHubName(globalHubRes[0]?.localHubName)
+    setIsHubSelfManaged(globalHubRes[0]?.isHubSelfManaged)
   }
 
   // If all data not loaded (!loaded) & events data is loaded (eventsLoaded) && global hub value is loaded (!globalHubLoading) -> set loaded to true
@@ -598,9 +606,11 @@ export function LoadData(props: { children?: ReactNode }) {
   return children
 }
 
-// Query for GlobalHub check
+// Query for GlobalHub check and name
 const globalHubQueryFn = () => {
   return getRequest<{
     isGlobalHub: boolean
-  }>(getBackendUrl() + '/globalhub')
+    localHubName: string
+    isHubSelfManaged: boolean | undefined
+  }>(getBackendUrl() + '/hub')
 }

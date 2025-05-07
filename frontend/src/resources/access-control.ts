@@ -12,7 +12,6 @@ export const AccessControlDefinition: IResourceDefinition = {
   kind: AccessControlKind
 }
 
-
 interface RoleBinding {
   namespace: string
   roleRef: {

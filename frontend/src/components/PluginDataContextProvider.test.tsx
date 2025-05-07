@@ -35,7 +35,7 @@ describe('PluginDataContextProvider', () => {
   })
   it('renders LoadData when requested', async () => {
     const mockGlobalHubReq: any = { isGlobalHub: true }
-    nockRequest('/globalhub', mockGlobalHubReq)
+    nockRequest('/hub', mockGlobalHubReq)
     const pluginData: PluginData = {
       ...defaultContext,
       startLoading: true,

@@ -55,6 +55,11 @@ export function getHubClusterName() {
   return hubClusterName
 }
 
+let isHubSelfManaged: boolean | undefined = undefined
+export function getIsHubSelfManaged() {
+  return isHubSelfManaged
+}
+
 // because rbac checks are expensive,
 // run them only on the resources requested by the UI
 export async function getAuthorizedResources(
@@ -309,7 +314,7 @@ async function listKubernetesObjects(serviceAccountToken: string, options: IWatc
       }>()
     try {
       requests.push(request)
-      const body = await request
+      const body = options?.kind === 'AccessControl' ? accessControlResponse : await request
       _continue = body.metadata._continue ?? body.metadata.continue
       const pruned = pruneResources(options, body.items)
       if (isPolled) {
@@ -416,7 +421,12 @@ async function watchKubernetesObjects(serviceAccountToken: string, options: IWat
 
     try {
       const url = resourceUrl(options, { watch: undefined, allowWatchBookmarks: undefined, resourceVersion })
-      const request = got.stream(url, {
+      const request = options.kind === "AccessControl" ? new Stream.Readable({
+        read(size) {
+          this.push(JSON.stringify({ type: "BOOKMARK", object: accessControlResponse }));
+          this.push(null);
+        }
+      }) : got.stream(url, {
         headers: { authorization: `Bearer ${serviceAccountToken}` },
         https: { certificateAuthority: getCACertificate() },
         timeout: { socket: 5 * 60 * 1000 + Math.ceil(Math.random() * 10 * 1000) },
@@ -626,6 +636,7 @@ function cacheResource(resource: IResource) {
   if (resource.kind === 'ManagedCluster') {
     if (resource?.metadata?.labels['local-cluster'] === 'true') {
       hubClusterName = resource?.metadata?.name
+      isHubSelfManaged = true
     }
   }
 }
