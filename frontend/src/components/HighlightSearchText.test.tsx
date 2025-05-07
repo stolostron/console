@@ -22,8 +22,7 @@ describe('HighlightSearchText', () => {
   })
 
   it('should truncate the text when isTruncate is true and text exceeds max length', () => {
-    const { container } = render(<HighlightSearchText text="very-very-very-long-key=value" isTruncate={true} />)
-    console.log(container.innerHTML)
+    render(<HighlightSearchText text="very-very-very-long-key=value" isTruncate={true} />)
     expect(screen.getByText('very-very..ery-long-key=value')).toBeInTheDocument()
   })
 
