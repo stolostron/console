@@ -39,7 +39,12 @@ export function SnapshotRestoreModalBody(
 
   return (
     <Stack hasGutter>
-      <StackItem>{t(`Are you sure you want to restore ${item.sourceVM} from snapshot ${item.name}`)}</StackItem>
+      <StackItem>
+        {t('Are you sure you want to restore {{sourceVM}} from snapshot {{snapshotName}}', {
+          sourceVM: item.sourceVM,
+          snapshotName: item.name,
+        })}
+      </StackItem>
       <StackItem>
         <Trans
           i18nKey={t(
