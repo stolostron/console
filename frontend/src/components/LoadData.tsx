@@ -112,6 +112,7 @@ import {
 import { getBackendUrl, getRequest } from '../resources/utils'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import {
+  accessControlState,
   agentClusterInstallsState,
   agentMachinesState,
   agentServiceConfigsState,
@@ -171,6 +172,7 @@ import {
 } from '../atoms'
 import { useQuery } from '../lib/useQuery'
 import { PluginDataContext } from '../lib/PluginDataContext'
+import { AccessControlApiVersion, AccessControlKind } from '../resources/access-control'
 
 export function LoadData(props: { children?: ReactNode }) {
   const { loadCompleted, setLoadStarted, setLoadCompleted } = useContext(PluginDataContext)
@@ -230,6 +232,7 @@ export function LoadData(props: { children?: ReactNode }) {
   const setNodePoolsState = useSetRecoilState(nodePoolsState)
   const setAgentMachinesState = useSetRecoilState(agentMachinesState)
   const setIsGlobalHub = useSetRecoilState(isGlobalHubState)
+  const setAccessControls = useSetRecoilState(accessControlState)
 
   const { setters, mappers, caches } = useMemo(() => {
     const setters: Record<string, Record<string, SetterOrUpdater<any[]>>> = {}
@@ -326,6 +329,8 @@ export function LoadData(props: { children?: ReactNode }) {
     addSetter(HostedClusterApiVersion, HostedClusterKind, setHostedClustersState)
     addSetter(NodePoolApiVersion, NodePoolKind, setNodePoolsState)
     addSetter(AgentMachineApiVersion, AgentMachineKind, setAgentMachinesState)
+    addSetter(AccessControlApiVersion, AccessControlKind, setAccessControls)
+
     return { setters, mappers, caches }
   }, [
     setAgentClusterInstalls,
@@ -380,6 +385,7 @@ export function LoadData(props: { children?: ReactNode }) {
     setHostedClustersState,
     setNodePoolsState,
     setAgentMachinesState,
+    setAccessControls,
   ])
 
   useEffect(() => {

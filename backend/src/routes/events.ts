@@ -15,6 +15,7 @@ import { ServerSideEvent, ServerSideEvents } from '../lib/server-side-events'
 import { getCACertificate, getServiceAccountToken } from '../lib/serviceAccountToken'
 import { getAuthenticatedToken } from '../lib/token'
 import { IResource } from '../resources/resource'
+import { accessControlResponse } from './mockResponses'
 import { polledAggregation } from './aggregator'
 
 const { map, split } = eventStream
@@ -224,6 +225,7 @@ const definitions: IWatchOptions[] = [
     apiVersion: 'v1',
     fieldSelector: { 'metadata.name': 'grafana-dashboard-acm-openshift-virtualization-single-vm-view' },
   },
+  { kind: 'AccessControl', apiVersion: 'clusterview.open-cluster-management.io/v1' },
 ]
 
 export function startWatching(): void {
@@ -307,7 +309,7 @@ async function listKubernetesObjects(serviceAccountToken: string, options: IWatc
       }>()
     try {
       requests.push(request)
-      const body = await request
+      const body = options?.kind === 'AccessControl' ? accessControlResponse : await request
       _continue = body.metadata._continue ?? body.metadata.continue
       const pruned = pruneResources(options, body.items)
       if (isPolled) {
@@ -414,7 +416,12 @@ async function watchKubernetesObjects(serviceAccountToken: string, options: IWat
 
     try {
       const url = resourceUrl(options, { watch: undefined, allowWatchBookmarks: undefined, resourceVersion })
-      const request = got.stream(url, {
+      const request = options.kind === "AccessControl" ? new Stream.Readable({
+        read(size) {
+          this.push(JSON.stringify({ type: "BOOKMARK", object: accessControlResponse }));
+          this.push(null);
+        }
+      }) : got.stream(url, {
         headers: { authorization: `Bearer ${serviceAccountToken}` },
         https: { certificateAuthority: getCACertificate() },
         timeout: { socket: 5 * 60 * 1000 + Math.ceil(Math.random() * 10 * 1000) },
