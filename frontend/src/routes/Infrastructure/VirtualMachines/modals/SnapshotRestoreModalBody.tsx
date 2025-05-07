@@ -35,7 +35,7 @@ export function SnapshotRestoreModalBody(
         virtualMachineSnapshotName: item.name,
       },
     })
-  }, [item, vm])
+  }, [item, setSnapshotRestoreReqBody, vm])
 
   return (
     <Stack hasGutter>
