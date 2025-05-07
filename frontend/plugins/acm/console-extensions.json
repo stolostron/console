@@ -99,5 +99,12 @@
             "path": "/multicloud/governance",
             "component": { "$codeRef": "governance.default" }
         }
+    },
+    {
+        "type": "acm.multicluster-sdk",
+        "properties": {
+            "version": "0.1.0-alpha.1",
+            "sdkProvider": { "$codeRef": "sdkProvider.default"}
+        }
     }
 ]
