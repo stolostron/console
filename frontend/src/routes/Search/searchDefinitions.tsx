@@ -393,7 +393,7 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
     },
     virtualmachinesnapshot: {
       columns: [
-        { search: 'name', ...AddColumn('name', t('Name')) },
+        AddColumn('name', t('Name')),
         AddColumn('namespace', t('Namespace')),
         AddColumn('cluster', t('Cluster')),
         AddColumn('status', t('Status')),
