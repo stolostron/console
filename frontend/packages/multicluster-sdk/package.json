@@ -35,5 +35,6 @@
     "prettier": "^3.2.5",
     "typescript": "^5.6.3"
   },
-  "prettier": "@stolostron/prettier-config"
+  "prettier": "@stolostron/prettier-config",
+  "eslint": "@stolostron/eslint-config"
 }

@@ -16,7 +16,6 @@ export type MulticlusterSDKProvider = {
     hubClusterName: string,
     initResource: FleetWatchK8sResource | null
   ) => WatchK8sResult<R>
-
 }
 
 export type MulticlusterSDKExtensionProperties = {
