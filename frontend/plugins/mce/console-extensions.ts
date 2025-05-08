@@ -1,12 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Extension } from '@openshift-console/dynamic-plugin-sdk'
 
 /**
  * Defines Multicluster Engine UI integration points with OpenShift Console.
  * Provides core multicluster functionality extensions including cluster lifecycle management.
  * Extends console with cluster provisioning, importing, and monitoring features.
  */
-export const extensions: Extension[] = [
+type EncodedExtension = {
+    type: string
+    properties: Record<string, any>
+  }
+  
+export const extensions: EncodedExtension[] = [
     {
         type: 'console.context-provider',
         properties: {

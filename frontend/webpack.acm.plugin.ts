@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { ConsoleRemotePlugin } from '@openshift-console/dynamic-plugin-sdk-webpack'
 import * as path from 'path'
-import baseConfig from '../../webpack.base'
+const webpackConfig = require('./webpack.config')
 import { extensions } from './plugins/acm/console-extensions'
-import { pluginMetadata } from './plugins/acm/console-plugin';
+import { pluginMetadata } from './plugins/acm/console-plugin-metadata';
 
 /**
  * @fileoverview ACM Plugin Webpack Configuration
@@ -11,8 +11,8 @@ import { pluginMetadata } from './plugins/acm/console-plugin';
  * Configures output path, bundle naming, and registers the ConsoleRemotePlugin.
  * Packages ACM-specific extensions and metadata for runtime integration.
  */
-module.exports = function(env, argv) {
-  const config = baseConfig(env, argv)
+module.exports = function(env: any, argv: { hot?: boolean; mode?: string }) {
+  const config = webpackConfig(env, argv)
   
   config.output.path = path.join(__dirname, 'dist')
   config.output.filename = '[name]-bundle.js'
