@@ -19,7 +19,7 @@ describe('SnapshotRestoreModalBody', () => {
             name: 'centos9-01-snapshot-20250506-102417',
             namespace: 'openshift-cnv',
             ready: 'True',
-            sourceVM: 'centos9-01',
+            _sourceVM: 'centos9-01',
             status: 'Operation complete',
           }}
           setSnapshotRestoreReqBody={() => {}}

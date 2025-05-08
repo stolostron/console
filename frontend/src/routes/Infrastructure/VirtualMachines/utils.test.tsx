@@ -290,7 +290,7 @@ describe('VirtualMachineSnapshots utils', () => {
       namespace: 'openshift-cnv',
       ready: 'True',
       phase: 'Succeeded',
-      sourceVM: 'centos9-01',
+      _sourceVM: 'centos9-01',
       status: 'Operation complete',
     }
     const result = getVMSnapshotActions(
@@ -336,7 +336,7 @@ describe('VirtualMachineSnapshots utils', () => {
       namespace: 'openshift-cnv',
       ready: 'True',
       phase: 'Succeeded',
-      sourceVM: 'centos9-01',
+      _sourceVM: 'centos9-01',
       status: 'Operation complete',
       managedHub: 'leaf-hub',
     }

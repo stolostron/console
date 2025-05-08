@@ -72,7 +72,7 @@ export default function SnapshotsTab() {
           keywords: [],
           filters: [
             { property: 'kind', values: ['VirtualMachineSnapshot'] },
-            { property: 'sourceVM', values: [name] },
+            { property: '_sourceVM', values: [name] },
           ],
           limit: searchResultLimit,
         },
