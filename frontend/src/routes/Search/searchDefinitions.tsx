@@ -396,7 +396,7 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
         AddColumn('name', t('Name')),
         AddColumn('namespace', t('Namespace')),
         AddColumn('cluster', t('Cluster')),
-        AddColumn('status', t('Status')),
+        AddColumn('_conditionReadyReason', t('Status')),
         {
           id: 'vmsnapshot-indications',
           header: t('Indications'),

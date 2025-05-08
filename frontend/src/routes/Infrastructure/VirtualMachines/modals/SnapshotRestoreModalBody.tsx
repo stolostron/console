@@ -41,17 +41,12 @@ export function SnapshotRestoreModalBody(
     <Stack hasGutter>
       <StackItem>
         {t('Are you sure you want to restore {{sourceVM}} from snapshot {{snapshotName}}', {
-          sourceVM: item._sourceVM,
+          sourceVM: item.sourceName,
           snapshotName: item.name,
         })}
       </StackItem>
       <StackItem>
-        <Trans
-          i18nKey={t(
-            '<bold>Note:</bold> Data from the last snapshot taken will be lost. To prevent losing current data, take another snapshot before restoring from this one.'
-          )}
-          components={{ bold: <strong /> }}
-        />
+        <Trans i18nKey={t('snapshot.restore.modal.body')} components={{ bold: <strong /> }} />
       </StackItem>
     </Stack>
   )

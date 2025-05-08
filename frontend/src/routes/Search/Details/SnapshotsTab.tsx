@@ -72,7 +72,7 @@ export default function SnapshotsTab() {
           keywords: [],
           filters: [
             { property: 'kind', values: ['VirtualMachineSnapshot'] },
-            { property: '_sourceVM', values: [name] },
+            { property: 'sourceName', values: [name] },
           ],
           limit: searchResultLimit,
         },
@@ -101,7 +101,11 @@ export default function SnapshotsTab() {
   if (!loading && !error && snapshotItems.length === 0) {
     return (
       <PageSection>
-        <Alert variant={'info'} isInline={true} title={t('There are no resources related to your search results.')}>
+        <Alert
+          variant={'info'}
+          isInline={true}
+          title={t('No VirtualMachineSnapshots found. Take a snapshot of the VirtualMachine to view snapshots here.')}
+        >
           {error}
         </Alert>
       </PageSection>
