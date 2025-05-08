@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { PluginMetadata } from '@openshift-console/dynamic-plugin-sdk-webpack'
+import { ConsolePluginBuildMetadata } from "@openshift-console/dynamic-plugin-sdk-webpack"
 
 /**
  * Contains required information to register this plugin with the OpenShift Console.
@@ -7,7 +7,7 @@ import { PluginMetadata } from '@openshift-console/dynamic-plugin-sdk-webpack'
  * Used by the dynamic plugin system to validate and load the ACM functionality.
  */
 
-export const pluginMetadata: PluginMetadata = {
+export const pluginMetadata: ConsolePluginBuildMetadata = {
   name: 'acm',
   version: '2.14.0',
   displayName: 'Red Hat Advanced Cluster Management for Kubernetes',
