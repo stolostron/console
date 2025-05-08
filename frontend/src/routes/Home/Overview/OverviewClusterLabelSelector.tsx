@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Button, Chip, ChipGroup, PageSection } from '@patternfly/react-core'
-import { Select, SelectOption, SelectVariant } from '@patternfly/react-core/deprecated'
+import { Button, Chip, ChipGroup, PageSection, SelectOption } from '@patternfly/react-core'
 import { FilterIcon } from '@patternfly/react-icons'
-import { Dispatch, SetStateAction, useCallback, useMemo, useState } from 'react'
+import { Dispatch, SetStateAction, useMemo, useState } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { Cluster } from '../../../resources/utils'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
+import { Select, SelectVariant } from '../../../components/Select'
 
 export default function OverviewClusterLabelSelector(props: {
   selectedClusterLabels: Record<string, string[]>
@@ -14,8 +14,6 @@ export default function OverviewClusterLabelSelector(props: {
   const { t } = useTranslation()
   const { selectedClusterLabels, setSelectedClusterLabels } = props
   const allClusters: Cluster[] = useAllClusters()
-  const [labelSelectIsOpen, setLabelSelectIsOpen] = useState<boolean>(false)
-  const [valuesSelectIsOpen, setValuesSelectIsOpen] = useState<boolean>(false)
   const [selectedClusterLabel, setSelectedClusterLabel] = useState<string>('')
 
   const allClusterLabels = useMemo(() => {
@@ -47,20 +45,6 @@ export default function OverviewClusterLabelSelector(props: {
     }
     return labelValuesMap
   }, [allClusters])
-
-  const onFilter = useCallback(
-    (_: any, filterValue: string) => {
-      if (allClusterLabels[selectedClusterLabel]) {
-        return allClusterLabels[selectedClusterLabel]
-          .filter((option) => {
-            if (typeof option !== 'string') return false
-            return option.includes(filterValue)
-          })
-          .map((option) => <SelectOption key={option} value={option} />)
-      }
-    },
-    [allClusterLabels, selectedClusterLabel]
-  )
 
   const deleteChip = (groupLabel: string, chipLabel: string) => {
     const tempClusterLabels = { ...selectedClusterLabels }
@@ -95,24 +79,20 @@ export default function OverviewClusterLabelSelector(props: {
         <Select
           id="cluster-label-key"
           key="cluster-label-key"
-          aria-label="cluster-label-key"
+          aria-label="Select cluster label"
           toggleIcon={<FilterIcon />}
           width={'auto'}
           maxHeight={'400px'}
-          variant={SelectVariant.single}
-          onToggle={(_event, isExpanded) => setLabelSelectIsOpen(isExpanded)}
-          hasInlineFilter
-          onSelect={(_, selection) => {
+          variant={SelectVariant.typeahead}
+          onSelect={(selection) => {
             if (selectedClusterLabel === selection) {
               setSelectedClusterLabel('')
             } else {
               setSelectedClusterLabel(selection as string)
             }
-            setLabelSelectIsOpen(false)
           }}
           selections={selectedClusterLabel}
-          isOpen={labelSelectIsOpen}
-          placeholderText={t('Select cluster label')}
+          placeholder={t('Select cluster label')}
           aria-labelledby={'cluster-label-key'}
         >
           {Object.keys(allClusterLabels).map((labelKey: string) => (
@@ -121,14 +101,11 @@ export default function OverviewClusterLabelSelector(props: {
         </Select>
         <Select
           id="cluster-label-value"
-          aria-label="cluster-label-value"
+          aria-label="Select cluster label value"
           width={'auto'}
           maxHeight={'400px'}
-          variant={SelectVariant.checkbox}
-          onToggle={(_event, isExpanded) => setValuesSelectIsOpen(isExpanded)}
-          onFilter={onFilter}
-          hasInlineFilter
-          onSelect={(_, selection) => {
+          variant={SelectVariant.typeaheadCheckbox}
+          onSelect={(selection) => {
             const tempLabels = { ...selectedClusterLabels }
             const tempValues = tempLabels[selectedClusterLabel ?? ''] ?? []
             if (tempValues?.includes(selection as string)) {
@@ -139,7 +116,6 @@ export default function OverviewClusterLabelSelector(props: {
             }
           }}
           selections={selectedClusterLabels[selectedClusterLabel ?? '']}
-          isOpen={valuesSelectIsOpen}
           placeholderText={t('Select label value')}
           aria-labelledby={'cluster-label-value'}
         >

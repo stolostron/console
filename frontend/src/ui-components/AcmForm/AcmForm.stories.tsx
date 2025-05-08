@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { ActionGroup, PageSection } from '@patternfly/react-core'
-import { SelectOption } from '@patternfly/react-core/deprecated'
+import { SelectOption } from '@patternfly/react-core'
 import { Meta } from '@storybook/react'
 import { useState } from 'react'
 import { AcmAlertGroup } from '../AcmAlert/AcmAlert'

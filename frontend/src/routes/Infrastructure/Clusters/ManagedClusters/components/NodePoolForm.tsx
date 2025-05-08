@@ -24,8 +24,8 @@ import {
   PanelMainBody,
   Stack,
   StackItem,
+  SelectOption,
 } from '@patternfly/react-core'
-import { SelectOption } from '@patternfly/react-core/deprecated'
 import {
   ClusterImageSetK8sResource,
   getOCPVersions,
