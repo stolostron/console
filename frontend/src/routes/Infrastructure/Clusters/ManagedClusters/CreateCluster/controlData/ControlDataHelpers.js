@@ -14,7 +14,6 @@ import {
   VALIDATE_BASE_DNS_NAME_REQUIRED,
   VALID_DNS_LABEL,
 } from '../../../../../../components/TemplateEditor'
-import { handleSemverOperatorComparison } from '../../../../../../lib/search-utils'
 import { TemplateLinkOutControl, TemplateSummaryControl } from '../../../../../../components/TemplateSummaryModal'
 import { getControlByID } from '../../../../../../lib/temptifly-utils'
 import { NavigationPath } from '../../../../../../NavigationPath'
@@ -788,22 +787,6 @@ function versionGreater(version, x, y) {
   return matches && parseInt(matches[1], 10) >= x && parseInt(matches[2], 10) > y
 }
 
-export const isHidden_lt_OCP412 = (_control, controlData) => {
-  const imageSet = getControlByID(controlData, 'imageSet')
-  if (imageSet && imageSet.active) {
-    return handleSemverOperatorComparison(imageSet.active, '4.12.0', '<')
-  }
-  return false
-}
-
-export const isHidden_gteq_OCP412 = (_control, controlData) => {
-  const imageSet = getControlByID(controlData, 'imageSet')
-  if (imageSet && imageSet.active) {
-    return handleSemverOperatorComparison(imageSet.active, '4.12.0', '>=')
-  }
-  return true
-}
-
 export const isHidden_lt_OCP48 = (control, controlData) => {
   const singleNodeFeatureFlag = getControlByID(controlData, 'singleNodeFeatureFlag')
   const imageSet = getControlByID(controlData, 'imageSet')
@@ -902,24 +885,24 @@ const updateMultitextControlData = (ctrl, entriesArray) => {
   }
 }
 
-export const ingressVIPsReverse = (ctrl, path) => {
-  const ingressVIPsVal = _.get(path, getSourcePath('unknown[0].platform.vsphere.ingressVIPs'))
+export const reverseMultitext = (valuePath) => (ctrl, path) => {
+  const multitextVal = _.get(path, getSourcePath(`unknown[0].${valuePath}`))
 
-  if (ingressVIPsVal && ingressVIPsVal?.['$v']?.length) {
-    const ingressArray = ingressVIPsVal['$v'].map((object) => {
+  if (multitextVal && multitextVal?.['$v']?.length) {
+    const multitextArray = multitextVal['$v'].map((object) => {
       const value = object['$v']
       return typeof value === 'string' ? value : ''
     })
 
-    updateMultitextControlData(ctrl, ingressArray)
-    ctrl.active.multitextEntries = ingressArray
+    updateMultitextControlData(ctrl, multitextArray)
+    ctrl.active.multitextEntries = multitextArray
 
-    ingressArray.forEach((entry, index) => {
+    multitextArray.forEach((entry, index) => {
       if (ctrl.controlData?.[index]) {
         ctrl.controlData[index].active = entry
       }
     })
-  } else if (ctrl.controlData.length > 1 && ingressVIPsVal) {
+  } else if (ctrl.controlData.length > 1 && multitextVal) {
     resetMultitextControlData(ctrl)
     ctrl.active.multitextEntries = ['']
   }
