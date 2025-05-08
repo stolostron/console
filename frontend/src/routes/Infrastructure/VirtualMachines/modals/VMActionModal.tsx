@@ -9,6 +9,7 @@ import { fetchRetry, getBackendUrl } from '../../../../resources/utils'
 import { AcmButton, AcmModal, AcmToastContext, IAlertContext } from '../../../../ui-components'
 import { searchClient } from '../../../Search/search-sdk/search-client'
 import { SnapshotModalBody } from './snapshotModalBody'
+import { SnapshotRestoreModalBody } from './SnapshotRestoreModalBody'
 
 export interface IVMActionModalProps {
   open: boolean
@@ -16,6 +17,7 @@ export interface IVMActionModalProps {
   action: string
   method: 'PUT' | 'GET' | 'POST' | 'PATCH' | 'DELETE'
   item: any
+  vm?: any // vm yaml needs to be passed for some actions because modal does not always have context of the specific vm
 }
 
 export const ClosedVMActionModalProps: IVMActionModalProps = {
@@ -57,6 +59,12 @@ export function handleVMActions(
       break
     case 'snapshot':
       subResourceKind = 'virtualmachinesnapshots'
+      path = item?._hubClusterResource
+        ? `/apis/snapshot.kubevirt.io/v1beta1/namespaces/${item.namespace}/${subResourceKind}`
+        : `/${subResourceKind}`
+      break
+    case 'restore':
+      subResourceKind = 'virtualmachinerestores'
       path = item?._hubClusterResource
         ? `/apis/snapshot.kubevirt.io/v1beta1/namespaces/${item.namespace}/${subResourceKind}`
         : `/${subResourceKind}`
@@ -111,7 +119,7 @@ function WarningBody(props: Readonly<{ action: string; item: any }>) {
 }
 
 export const VMActionModal = (props: IVMActionModalProps) => {
-  const { open, close, action, method, item } = props
+  const { open, close, action, method, item, vm } = props
   const { t } = useTranslation()
   const toast = useContext(AcmToastContext)
   const [reqBody, setReqBody] = useState({})
@@ -135,6 +143,9 @@ export const VMActionModal = (props: IVMActionModalProps) => {
           setGetVMError={setGetVMError}
         />
       )
+      break
+    case 'restore':
+      modalBody = <SnapshotRestoreModalBody item={item} vm={vm} setSnapshotRestoreReqBody={setReqBody} />
       break
     default:
       modalBody = <WarningBody action={action} item={item} />

@@ -2679,7 +2679,6 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-virtualma
       }
     />,
     "header": "Name",
-    "search": "name",
     "sort": "name",
   },
   {
@@ -2697,7 +2696,7 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-virtualma
   {
     "cell": "-",
     "header": "Status",
-    "sort": "status",
+    "sort": "_conditionReadyReason",
   },
   {
     "cell": <VMSnapshotIndications
