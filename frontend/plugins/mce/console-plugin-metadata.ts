@@ -1,12 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { PluginMetadata } from '@openshift-console/dynamic-plugin-sdk-webpack'
+import { ConsolePluginBuildMetadata } from "@openshift-console/dynamic-plugin-sdk-webpack"
 
 /**
  * Defines core information for registering the Multicluster Engine plugin.
  * Includes plugin identifier, version constraints, and required dependencies.
  * Enables the OpenShift Console to discover and load MCE capabilities.
  */
-export const pluginMetadata: PluginMetadata = {
+export const pluginMetadata: ConsolePluginBuildMetadata = {
   name: 'mce',
   version: '2.9.0',
   displayName: 'Red Hat Multicluster Engine for Kubernetes',
