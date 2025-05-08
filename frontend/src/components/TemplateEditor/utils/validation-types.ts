@@ -90,7 +90,9 @@ export const getIPValidator = (
       if (differentFrom) {
         const controlsWithSameValue = differentFrom
           .map((id) => getControlByID(controlData, id))
-          .filter((control) => control && control.active === active)
+          .filter((control) => {
+            return control && (control.active === active || control.active?.multitextEntries?.includes(active))
+          })
         if (controlsWithSameValue.length) {
           return t('creation.ocp.cluster.duplicate.ip.address', {
             controlList: controlsWithSameValue.map((control) => control.name).join(', '),

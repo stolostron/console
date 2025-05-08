@@ -363,13 +363,6 @@ export function validateAppSetName(value: string, resource: unknown, t?: TFuncti
   return undefined
 }
 
-export function validateRequiredPrefix(value: string, requiredPrefix: string, t: TFunction) {
-  if (value && !value?.startsWith(requiredPrefix)) {
-    return t("The path must begin with '{{prefix}}'", { prefix: requiredPrefix })
-  }
-  return undefined
-}
-
 export function validateVCenterServer(value: string, t: TFunction) {
   if (!validator.isFQDN(value) && !validator.isIP(value)) {
     if (value && value.indexOf('://') > 0) {
