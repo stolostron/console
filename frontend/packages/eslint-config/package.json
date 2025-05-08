@@ -1,0 +1,11 @@
+{
+  "name": "@stolostron/eslint-config",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": "./index.json",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "eslint": "^8.57.0"
+  }
+}

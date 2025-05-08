@@ -8,7 +8,7 @@
     "launch": ". ../port-defaults.sh && TS_NODE_PROJECT=webpack.tsconfig.json webpack serve --mode development --env LAUNCH --stats-children",
     "storybook": "storybook dev",
     "build": "NODE_OPTIONS=--max-old-space-size=8192 TS_NODE_PROJECT=webpack.tsconfig.json webpack --mode production",
-    "tsc": "tsc --noEmit",
+    "tsc": "tsc --noEmit && npm run tsc:workspaces",
     "build:plugins": "concurrently npm:build:plugin:* -c green,blue,cyan,magenta",
     "build:plugin": "./scripts/checkPlugin.sh && cd plugins/${PLUGIN} && node ../../scripts/generatePluginPackage.js && TS_NODE_PROJECT=../../webpack.tsconfig.json webpack -c ../../webpack.plugin.ts --env plugin=$PLUGIN --mode production",
     "build:plugin:acm": "PLUGIN=acm npm run build:plugin",
@@ -20,11 +20,11 @@
     "test": "npm run jest --",
     "jest": "TZ=UTC jest",
     "jest:update-snapshot": "npm run jest -- --updateSnapshot",
-    "lint": "eslint src --ext .js,.jsx,.ts,.tsx --max-warnings=0",
+    "lint": "eslint src packages --ext .js,.jsx,.ts,.tsx --max-warnings=0",
     "lint:fix": "npm run lint -- --fix",
     "postinstall": "npm run build:workspaces",
-    "prettier": "prettier --check src public",
-    "prettier:fix": "prettier --write src public",
+    "prettier": "prettier --check src public packages",
+    "prettier:fix": "prettier --write src public packages",
     "i18n": "i18next --fail-on-warnings && git diff --exit-code public/locales/en/translation.json",
     "i18n:fix": "i18next --fail-on-warnings",
     "i18n-generate": "rm -rf public/locales/upload && MODE=generate i18next --fail-on-warnings",
@@ -165,7 +165,6 @@
     "crypto-browserify": "^3.12.0",
     "css-loader": "^6.11.0",
     "css-minimizer-webpack-plugin": "4.0.0",
-    "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-jest": "^28.9.0",
@@ -237,134 +236,22 @@
     }
   },
   "eslintConfig": {
-    "parser": "@typescript-eslint/parser",
+    "extends": "@stolostron/eslint-config",
     "parserOptions": {
       "project": "./tsconfig.json"
+    }},
+    "browserslist": {
+      "production": [
+        ">0.2%",
+        "not dead",
+        "not op_mini all"
+      ],
+      "development": [
+        "last 1 chrome version",
+        "last 1 firefox version",
+        "last 1 safari version"
+      ]
     },
-    "extends": [
-      "eslint:recommended",
-      "plugin:@typescript-eslint/recommended",
-      "plugin:jest/recommended",
-      "plugin:react-hooks/recommended",
-      "prettier",
-      "plugin:jsx-a11y/recommended"
-    ],
-    "plugins": [
-      "react",
-      "@typescript-eslint",
-      "jest",
-      "react-hooks",
-      "prettier",
-      "jsx-a11y"
-    ],
-    "env": {
-      "browser": true,
-      "node": true
-    },
-    "rules": {
-      "@typescript-eslint/ban-types": "off",
-      "@typescript-eslint/explicit-module-boundary-types": "off",
-      "@typescript-eslint/no-empty-function": "off",
-      "@typescript-eslint/no-explicit-any": "off",
-      "@typescript-eslint/no-extra-semi": "off",
-      "@typescript-eslint/no-floating-promises": [
-        "off",
-        {
-          "ignoreVoid": true
-        }
-      ],
-      "@typescript-eslint/no-misused-promises": [
-        "error",
-        {
-          "checksVoidReturn": false
-        }
-      ],
-      "@typescript-eslint/no-non-null-asserted-optional-chain": "off",
-      "@typescript-eslint/no-non-null-assertion": "off",
-      "@typescript-eslint/no-restricted-imports": [
-        "error",
-        {
-          "paths": [
-            {
-              "message": "Please use <Trans /> and useTranslation() from ./src/lib/acm-i18next and avoid other exports from react-i18next",
-              "name": "react-i18next",
-              "importNames": [
-                "Trans",
-                "useTranslation"
-              ]
-            },
-            {
-              "message": "Please use hooks from ./src/shared-recoil for ACM/MCE dynamic plugins common RecoilRoot",
-              "name": "recoil"
-            },
-            {
-              "message": "Please use hooks from ./src/hooks/shared-react-query for ACM/MCE dynamic plugins common QueryClientProvider",
-              "name": "@tanstack/react-query"
-            },
-            {
-              "message": "Truncate component is not available on OpenShift 4.10; use src/components/Trucate instead",
-              "name": "@patternfly/react-core",
-              "importNames": [
-                "Truncate"
-              ]
-            }
-          ],
-          "patterns": [
-            {
-              "message": "Please use useSharedAtoms() or useSharedSelectors() from ./src/shared-recoil to access atoms/selectors for ACM/MCE dynamic plugins common RecoilRoot",
-              "group": [
-                "**/atoms",
-                "**/selectors"
-              ]
-            }
-          ]
-        }
-      ],
-      "@typescript-eslint/no-unused-vars": [
-        "error",
-        {
-          "ignoreRestSiblings": true
-        }
-      ],
-      "jest/expect-expect": "off",
-      "jest/no-disabled-tests": "off",
-      "jest/no-export": "off",
-      "jest/no-identical-title": "off",
-      "no-async-promise-executor": "off",
-      "no-constant-condition": "off",
-      "no-empty": "off",
-      "prettier/prettier": "error",
-      "react/jsx-key": 1,
-      "react/react-in-jsx-scope": "off"
-    },
-    "overrides": [
-      {
-        "files": [
-          "**/*.test.ts?"
-        ],
-        "rules": {
-          "@typescript-eslint/no-restricted-imports": "off"
-        }
-      }
-    ],
-    "settings": {
-      "react": {
-        "version": "detect"
-      }
-    }
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
   "prettier": "@stolostron/prettier-config",
   "workspaces": [
     "packages/*"
