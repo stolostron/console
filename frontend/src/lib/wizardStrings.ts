@@ -27,6 +27,8 @@ export const useWizardStrings = (
       cancelButtonText: t('Cancel'),
       nextButtonText: t('Next'),
       fixValidationErrorsMsg: t('Please fix validation errors'),
+      fixEditorValidationErrorsMsg: t('Please fix editor syntax errors'),
+      waitforEditorValidationErrorsMsg: t('Please wait for editor syntax check'),
       submitText: t('Submit'),
       submittingText: t('Submitting'),
       moreInfo: t('More info'),
