@@ -232,7 +232,7 @@ export const CLUSTER_TYPE_GROUPS: {
 } = {
   OCP: {
     displayName: t('type.group.ocp'),
-    types: ['OCP', 'OCP-ASSISTEDINSTALL'],
+    types: ['OCP', 'OCP-AssistedInstall'],
   },
   OSD: {
     displayName: t('type.group.osd'),
