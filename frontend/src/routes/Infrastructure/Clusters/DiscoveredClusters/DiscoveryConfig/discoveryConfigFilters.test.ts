@@ -285,7 +285,7 @@ describe('Cluster type group functions', () => {
 
   describe('getClusterTypesInGroup', () => {
     it('returns correct types for OCP group', () => {
-      expect(getClusterTypesInGroup('OCP')).toEqual(['OCP', 'OCP-ASSISTEDINSTALL'])
+      expect(getClusterTypesInGroup('OCP')).toEqual(['OCP', 'OCP-AssistedInstall'])
     })
 
     it('returns correct types for OSD group', () => {
@@ -311,7 +311,7 @@ describe('Cluster type group functions', () => {
     })
 
     it('returns correct groups when there are duplicates in the same group', () => {
-      expect(getGroupsFromClusterTypes(['OCP', 'OCP-ASSISTEDINSTALL'])).toEqual(['OCP'])
+      expect(getGroupsFromClusterTypes(['OCP', 'OCP-AssistedInstall'])).toEqual(['OCP'])
     })
 
     it('returns correct groups when types are case insensitive', () => {
@@ -332,7 +332,7 @@ describe('Cluster type group functions', () => {
     it('returns correct types for a list of groups', () => {
       expect(getAllClusterTypesFromGroups(['OCP', 'ROSA_CLASSIC'])).toEqual([
         'OCP',
-        'OCP-ASSISTEDINSTALL',
+        'OCP-AssistedInstall',
         'ROSA',
         'MOA',
       ])
