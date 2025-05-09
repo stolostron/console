@@ -57,6 +57,7 @@ import { getApplication } from './ApplicationTopology/model/application'
 import { getResourceStatuses } from './ApplicationTopology/model/resourceStatuses'
 import { getTopology } from './ApplicationTopology/model/topology'
 import { getApplicationData } from './ApplicationTopology/model/utils'
+import { useLocalHubName } from '../../../hooks/use-local-hub'
 
 export const ApplicationContext = createContext<{
   readonly actions: null | ReactNode
@@ -153,10 +154,7 @@ export default function ApplicationDetailsPage() {
   const isFluxApp = applicationData?.application?.isFluxApp
   const clusters = useAllClusters(true)
 
-  const hubCluster = useMemo(
-    () => clusters.find((cls) => cls.labels && cls.labels['local-cluster'] === 'true'),
-    [clusters]
-  )
+  const hubCluster = useLocalHubName()
 
   const applicationsGetter = useRecoilValueGetter(applicationsState)
   const ansibleJobGetter = useRecoilValueGetter(ansibleJobState)
@@ -267,7 +265,7 @@ export default function ApplicationDetailsPage() {
                   recoilStates.placementRules,
                   recoilStates.placements,
                   recoilStates.channels,
-                  hubCluster?.name ?? ''
+                  hubCluster
                 )
               : [[], []]
           /* istanbul ignore else */
@@ -323,7 +321,7 @@ export default function ApplicationDetailsPage() {
     navigate,
     isAppSet,
     getRecoilStates,
-    hubCluster?.name,
+    hubCluster,
     canDeleteApplicationSet,
     canDeleteApplication,
   ])
@@ -377,6 +375,8 @@ export default function ApplicationDetailsPage() {
     }
   }, [applicationNotFound, THROTTLE_EVENTS_DELAY])
 
+  const localHubName = useLocalHubName()
+
   // refresh application the first time and then every n seconds
   useEffect(() => {
     setApplicationData(undefined)
@@ -401,9 +401,15 @@ export default function ApplicationDetailsPage() {
             setApplicationNotFound(true)
           } else {
             setApplicationNotFound(false)
-            const topology: any = await getTopology(application, clusters, lastRefreshRef?.current?.relatedResources, {
-              cluster,
-            })
+            const topology: any = await getTopology(
+              application,
+              clusters,
+              localHubName,
+              lastRefreshRef?.current?.relatedResources,
+              {
+                cluster,
+              }
+            )
             const appData = getApplicationData(topology?.nodes, topology?.hubClusterName)
 
             // when first opened, refresh topology with wait statuses
@@ -424,7 +430,7 @@ export default function ApplicationDetailsPage() {
               appData,
               topology
             )
-            const topologyWithRelated = await getTopology(application, clusters, relatedResources, {
+            const topologyWithRelated = await getTopology(application, clusters, localHubName, relatedResources, {
               topology,
               cluster,
             })

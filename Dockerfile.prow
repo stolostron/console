@@ -1,14 +1,9 @@
 # Copyright Contributors to the Open Cluster Management project
 
-FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:da3324c50916a2b17908d01bffad91cf3aff38653e030f5dd1df9266098b6861 as frontend-packages
+FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:da3324c50916a2b17908d01bffad91cf3aff38653e030f5dd1df9266098b6861 as dynamic-plugin
 WORKDIR /app/frontend
-# Copy only package.json and package-lock.json so that the docker cache hash only changes if those change
-# This will cause the npm ci to only rerun if the package.json or package-lock.json changes
-COPY ./frontend/package.json ./frontend/package-lock.json ./
-RUN npm ci --legacy-peer-deps
 COPY ./frontend .
-
-FROM frontend-packages as dynamic-plugin
+RUN npm ci --legacy-peer-deps
 RUN npm run build:plugin:acm
 
 FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:da3324c50916a2b17908d01bffad91cf3aff38653e030f5dd1df9266098b6861 as backend

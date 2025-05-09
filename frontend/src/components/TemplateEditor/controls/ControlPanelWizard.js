@@ -19,7 +19,6 @@ import {
 import { ExclamationCircleIcon } from '@patternfly/react-icons'
 import ControlPanelFinish from './ControlPanelFinish'
 import get from 'lodash/get'
-import isEmpty from 'lodash/isEmpty'
 
 class ControlPanelWizard extends React.Component {
   constructor(props) {
@@ -170,75 +169,40 @@ class ControlPanelWizard extends React.Component {
     }
 
     const validateNextStep = (activeStep, onNext) => {
-      const { type, mutation, disableEditorOnSuccess, disablePreviousControlsOnSuccess } = activeStep.component
-      switch (type) {
-        case 'step':
-          {
-            this.props.resetStatus()
-            const validateControls = activeStep.controls.filter((control) => control.validate)
-            if (validateControls.length > 0) {
-              let hasErrors = false
-              const promises = validateControls.map((control) => control.validate())
-              this.setState({
-                isProcessing: true,
-                processingLabel: i18n('Validating...'),
-              })
-              Promise.allSettled(promises).then((results) => {
-                this.setState({
-                  isProcessing: false,
-                  processingLabel: undefined,
-                })
-                results.some((result) => {
-                  hasErrors = !isEmpty(result.value)
-                  return hasErrors
-                })
-                activeStep.component.exception = hasErrors
-                if (!hasErrors) {
-                  activeStep.component.isComplete = true
-                  onNext()
-                }
-                this.forceUpdate()
-              })
-            } else {
-              onNext()
-            }
-          }
-          break
-        case 'review':
-          if (mutation) {
-            this.setState({ isProcessing: true })
-            setTimeout(() => {
-              this.setState({ isProcessing: false })
-            }, 2000)
-            mutation(this.props.controlData).then((status) => {
-              this.setState({ isProcessing: false })
-              if (status !== 'ERROR') {
-                if (disableEditorOnSuccess) {
-                  this.props.setEditorReadOnly(true)
-                }
-                if (disablePreviousControlsOnSuccess) {
-                  steps
-                    .slice(0, activeStep.index)
-                    .reverse()
-                    .forEach((step) => {
-                      step.controls.forEach((control) => {
-                        control.disabled = true
-                      })
-                    })
-                }
-                activeStep.component.isComplete = true
-                delete activeStep.component.mutation
-                onNext()
-                this.forceUpdate()
+      const activeControlData = (this.props.controlData || []).find((step) => step.id === activeStep.id)
+      const { type, mutation, disableEditorOnSuccess, disablePreviousControlsOnSuccess } = activeControlData || {}
+      if (type === 'review') {
+        if (mutation) {
+          this.setState({ isProcessing: true })
+          setTimeout(() => {
+            this.setState({ isProcessing: false })
+          }, 2000)
+          mutation(this.props.controlData).then((status) => {
+            this.setState({ isProcessing: false })
+            if (status !== 'ERROR') {
+              if (disableEditorOnSuccess) {
+                this.props.setEditorReadOnly(true)
               }
-            })
-          } else {
-            onNext()
-          }
-          break
-        default:
+              if (disablePreviousControlsOnSuccess) {
+                steps
+                  .slice(0, activeStep.index)
+                  .reverse()
+                  .forEach((step) => {
+                    step.controls.forEach((control) => {
+                      control.disabled = true
+                    })
+                  })
+              }
+              activeControlData.isComplete = true
+              delete activeControlData.mutation
+              this.forceUpdate()
+            }
+          })
+        } else {
           onNext()
-          break
+        }
+      } else {
+        onNext()
       }
     }
 

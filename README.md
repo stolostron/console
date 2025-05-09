@@ -179,7 +179,7 @@ In the logs there are errors like
 [start:frontend] <e> [webpack-dev-server] [HPM] Error occurred while proxying request localhost:3000/multicloud/authenticated to https://localhost:4000/ [EPROTO] (https://nodejs.org/api/errors.html#errors_common_system_errors)
 [start:frontend] <e> [webpack-dev-server] [HPM] Error occurred while proxying request localhost:3000/multicloud/events to https://localhost:4000/ [EPROTO] (https://nodejs.org/api/errors.html#errors_common_system_errors)
 [start:frontend] <e> [webpack-dev-server] [HPM] Error occurred while proxying request localhost:3000/multicloud/username to https://localhost:4000/ [EPROTO] (https://nodejs.org/api/errors.html#errors_common_system_errors)
-[start:frontend] <e> [webpack-dev-server] [HPM] Error occurred while proxying request localhost:3000/multicloud/globalhub to https://localhost:4000/ [EPROTO] (https://nodejs.org/api/errors.html#errors_common_system_errors)
+[start:frontend] <e> [webpack-dev-server] [HPM] Error occurred while proxying request localhost:3000/multicloud/hub to https://localhost:4000/ [EPROTO] (https://nodejs.org/api/errors.html#errors_common_system_errors)
 [start:frontend] <e> [webpack-dev-server] [HPM] Error occurred while proxying request localhost:3000/multicloud/authenticated to https://localhost:4000/ [EPROTO] (https://nodejs.org/api/errors.html#errors_common_system_errors)
 [start:frontend] <e> [webpack-dev-server] [HPM] Error occurred while proxying request localhost:3000/multicloud/login to https://localhost:4000/ [EPROTO] (https://nodejs.org/api/errors.html#errors_common_system_errors)
 ```
