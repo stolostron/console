@@ -46,6 +46,8 @@ import {
   useProvisioningConfiguration,
   onEditFinish,
   onChangeBMHHostname,
+  useCustomManifests,
+  onSyncCustomManifests,
 } from '../../CreateCluster/components/assisted-installer/utils'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import { useTranslation } from '../../../../../../lib/acm-i18next'
@@ -90,9 +92,9 @@ const EditAICluster: React.FC = () => {
   const onSaveDetails = (values: ClusterDeploymentDetailsValues) => {
     return patchResource(agentClusterInstall as IResource, [
       {
-        op: 'replace',
-        path: '/spec/imageSetRef/name',
-        value: values.openshiftVersion,
+        op: values.addCustomManifests ? 'add' : 'remove',
+        path: '/metadata/labels',
+        value: { addCustomManifests: 'true' },
       },
     ]).promise
   }
@@ -205,6 +207,8 @@ const EditAICluster: React.FC = () => {
                 agentClusterInstall={agentClusterInstall}
                 agents={agents}
                 bareMetalHosts={bareMetalHosts}
+                useCustomManifests={useCustomManifests}
+                onSyncCustomManifests={onSyncCustomManifests}
                 usedClusterNames={[] /* We are in Edit flow - cluster name can not be changed. */}
                 onClose={() => navigate(-1)}
                 onSaveDetails={onSaveDetails}

@@ -34,6 +34,10 @@ kind: AgentClusterInstall
 metadata:
   name: '{{{ai.name}}}'
   namespace: '{{{ai.name}}}'
+  {{#if ai.addCustomManifests}}
+  labels:
+    addCustomManifests: 'true'
+  {{/if}}
 spec:
   clusterDeploymentRef:
     name: '{{{ai.name}}}'
