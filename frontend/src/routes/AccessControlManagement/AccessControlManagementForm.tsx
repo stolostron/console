@@ -9,21 +9,27 @@ import { NavigationPath, useBackCancelNavigation } from '../../NavigationPath'
 import {
   IResource
 } from '../../resources'
-import { AccessControl, AccessControlApiVersion, AccessControlKind } from '../../resources/access-control'
+import { AccessControl, AccessControlApiVersion } from '../../resources/access-control'
 import { createResource, patchResource } from '../../resources/utils'
 import {
+  AcmLabels,
   AcmToastContext
 } from '../../ui-components'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import schema from './schema.json'
+import { RoleBinding } from '../../resources/access-control'
+import { Stack, StackItem, Title } from '@patternfly/react-core'
+
 
 const AccessControlManagementForm = (
-  { isEditing, isViewing, handleModalToggle, hideYaml, accessControl }: {
+  { isEditing, isViewing, handleModalToggle, hideYaml, accessControl, namespaces: namespacesProp,isCreatable }: {
     isEditing: boolean
     isViewing: boolean
+    isCreatable: boolean
     handleModalToggle?: () => void
     hideYaml?: boolean
     accessControl?: AccessControl
+    namespaces?: string[]
   }
 ) => {
   const { t } = useTranslation()
@@ -33,41 +39,120 @@ const AccessControlManagementForm = (
 
   // Data
   const managedClusters = useAllClusters(true)
+  const roles = [{id:"1", value:"kubevirt.io:view"},{id:"2", value:"kubevirt.io:edit"},{id:"1", value:"kubevirt.io:admin"}]
+  const allUsers = ['Bob', 'Matt', 'Kike', 'Kurtis', 'Oksana']
+  const allGroups = ['devs', 'admins', 'qa']
 
   // Form Values
-  const [cluster, setCluster] = useState('')
+  const [namespace, setNamespace] = useState('')
+  const [createdDate, setCreatedDate] = useState('')
+  const [selectedUsers, setSelectedUsers] = useState<RoleBinding[]>([])
+  const [name, setName] = useState('')
+
+  const [selectedUserNames, setSelectedUserNames] = useState<string[]>([])
+  const [selectedRoles, setSelectedRoles] = useState<string[]>([])
+  const [selectedNamespaces, setSelectedNamespaces] = useState<string[]>([])
+  
+  const [subjectType, setSubjectType] = useState<'User' | 'Group'>('User')
+
+
   const { submitForm } = useContext(LostChangesContext)
 
+
   useEffect(() => {
-    setCluster(accessControl?.data?.cluster ?? '')
-  }, [accessControl?.data])
+    setNamespace(accessControl?.metadata?.namespace ?? '')
+    setCreatedDate(accessControl?.metadata?.creationTimestamp ?? '')
+    setSelectedUsers((accessControl?.spec?.roleBindings ?? []) as RoleBinding[])
+    setName(accessControl?.metadata?.name ?? '')
+  
+    if (accessControl?.spec?.roleBindings) {
+      setSelectedUserNames([
+        ...new Set(accessControl.spec.roleBindings.map(rb => rb.subject.name)),
+      ])
+      setSelectedRoles([
+        ...new Set(accessControl.spec.roleBindings.map(rb => rb.roleRef.name)),
+      ])
+      setSelectedNamespaces([
+        ...new Set(accessControl.spec.roleBindings.map(rb => rb.namespace)),
+      ])
+    }
+  }, [accessControl?.metadata])
+
+  useEffect(() => {
+    if (!isEditing && !isViewing && selectedUsers.length === 0) {
+      setSelectedUsers([
+        {
+          namespace, 
+          roleRef: {
+            name: '',
+            apiGroup: 'rbac.authorization.k8s.io',
+            kind:'Role',
+          },
+          subject: {
+            name: '',
+            apiGroup: 'rbac.authorization.k8s.io',
+            kind: 'User',
+          },
+        },
+      ])
+    }
+  }, [isEditing, isViewing, selectedUsers.length])
+  
+  
 
   const { cancelForm } = useContext(LostChangesContext)
   const guardedHandleModalToggle = useCallback(() => cancelForm(handleModalToggle), [cancelForm, handleModalToggle])
 
-  const stateToData = () => ({
-    apiVersion: AccessControlApiVersion,
-    kind: AccessControlKind,
-    type: 'Opaque',
-    metadata: {
-      name: 'tbd', //TODO: proper name and namespace
-      namespace: 'tbd',
-    },
-    data: {
-      id: '',
-      namespaces: [],
-      cluster: cluster,
-      roles: [],
-      creationTimestamp: ''
-    },
-  })
-
+  const stateToData = () => {
+    const roleBindings = selectedNamespaces.flatMap((ns) =>
+      selectedUserNames.flatMap((user) =>
+        selectedRoles.map((role) => ({
+          namespace: ns,
+          roleRef: {
+            name: role,
+            apiGroup: 'rbac.authorization.k8s.io',
+            kind: 'Role',
+          },
+          subject: {
+            name: user,
+            apiGroup: 'rbac.authorization.k8s.io',
+            kind: subjectType,
+          },
+        }))
+      )
+    )
+    
+  
+    return [
+      {
+        apiVersion: AccessControlApiVersion,
+        kind: accessControl ? accessControl?.kind : 'ClusterPermission',
+        metadata: {
+          name,
+          namespace,
+        },
+        spec: {
+          roleBindings,
+        },
+      },
+    ]
+  }
+  
   const stateToSyncs = () => [
-    { path: 'AccessControl[0].data.cluster', setState: setCluster },
+    { path: 'AccessControl[0].metadata.namespace', setState: setNamespace },
+    { path: 'AccessControl[0].metadata.name', setState: setName },
+    { path: 'AccessControl[0].spec.roleBindings', setState: setSelectedUsers },
   ]
-
-  const title = isViewing ? accessControl?.data?.id! : isEditing ? t('Edit access control') : t('Add access control')
+  
+ 
+  const title = isViewing ? accessControl?.metadata?.uid! : isEditing ? t('Edit access control') : t('Add access control')
   const breadcrumbs = [{ text: t('Access Controls'), to: NavigationPath.accessControlManagement }, { text: title }]
+
+  const namespaceOptions = (namespacesProp ?? managedClusters.map(c => c.name)).map(ns => ({
+    id: ns,
+    value: ns,
+    text: ns,
+  }))
 
   const formData: FormData = {
     title,
@@ -77,24 +162,122 @@ const AccessControlManagementForm = (
       {
         type: 'Section',
         title: t('Basic information'),
-        wizardTitle: t('Enter the basic Access Control information'),
+        wizardTitle: t('Basic information'),
         inputs: [
           {
-            id: 'cluster',
+            id: 'namespace',
             type: 'Select',
             label: t('Cluster'),
-            value: cluster,
-            onChange: setCluster,
-            options: managedClusters.map(cluster => ({
-              id: cluster.name,
-              value: cluster.name,
-              text: cluster.name,
+            placeholder:'Select or enter cluster name',
+            value: namespace,
+            onChange: (value) => {
+              setNamespace(value)
+            },
+            options: namespaceOptions,
+            isRequired: true,
+          },
+          {
+            id: 'name',
+            type: 'Text',
+            label: 'Name',
+            placeholder: 'Enter access control name',
+            value: name,
+            onChange: setName,
+            isRequired: true,
+          },
+          {
+            id: 'date',
+            type: 'Text',
+            label: t('Created at'),
+            value: createdDate,
+            onChange: setCreatedDate,
+            isRequired: true,
+            isDisabled: false,
+            isHidden: isCreatable || isEditing,
+          },             
+        ],
+      },    
+      {
+        type: 'Section',
+        title: t('Role Bindings'),
+        wizardTitle: t('Role Bindings'),
+        inputs: [
+          {
+            id: 'namespaces',
+            type: 'Multiselect',
+            label: t('Namespaces'),
+            placeholder:'Select or enter namespace',
+            value: selectedNamespaces,
+            onChange: (values) => setSelectedNamespaces(values),
+            options: namespaceOptions,
+            isRequired: true,
+            isHidden: isViewing,
+          },
+          {
+            id: 'selectionType',
+            type: 'Radio',
+            label: '',
+            value: subjectType.toLowerCase(),
+            onChange: (value: string) => {
+              setSelectedUserNames([])
+              setSubjectType(value === 'group' ? 'Group' : 'User')
+            },
+            options: [
+              { id: 'user', value: 'user', text: t('User') },
+              { id: 'group', value: 'group', text: t('Group') },
+            ],
+            isRequired: true,
+            isHidden: isViewing,
+          },
+          {
+            id: 'subject',
+            type: 'Multiselect',
+            label: subjectType === 'Group' ? t('Groups') : t('Users'),
+            placeholder: subjectType === 'Group'? t('Select or enter group name') : t('Select or enter user name'),
+            value: selectedUserNames,
+            onChange: (values) => setSelectedUserNames(values),
+            options: (subjectType === 'Group' ? allGroups : allUsers).map((val) => ({
+              id: val,
+              value: val,
             })),
             isRequired: true,
-            isDisabled: false
+            isHidden: isViewing,
           },
+          {
+            id: 'roles',
+            type: 'Multiselect',
+            label: t('Roles'),
+            placeholder:'Select or enter roles',
+            value: selectedRoles,
+            onChange: (values) => setSelectedRoles(values),
+            options: roles.map(r => ({ id: r.id, value: r.value })),
+            isRequired: true,
+            isHidden: isViewing,
+          },
+          {
+            id: 'custom-labels',
+            type: 'Custom',
+            isHidden: !isViewing,
+            component: (
+              <Stack hasGutter>
+                <StackItem>
+                  <Title headingLevel="h6">{t('Namespaces')}</Title>
+                  <AcmLabels isVertical={false}  labels={selectedNamespaces} />
+                </StackItem>
+                <StackItem>
+                  <Title headingLevel="h6">{t('Users')}</Title>
+                  <AcmLabels isVertical={false}  labels={selectedUserNames}/>
+                </StackItem>
+                <StackItem>
+                  <Title headingLevel="h6">{t('Roles')}</Title>
+                  <AcmLabels isVertical={false} labels={selectedRoles} />
+                </StackItem>
+              </Stack>
+            ),
+          }
         ],
       }
+      
     ],
     submit: () => {
       let accessControlData = formData?.customData ?? stateToData()
@@ -104,12 +287,12 @@ const AccessControlManagementForm = (
       if (isEditing) {
         const accessControl = accessControlData as AccessControl
         const patch: { op: 'replace'; path: string; value: unknown }[] = []
-        const data: AccessControl['data'] = { ...accessControl.data!, cluster } // TODO: the rest of fields
-        patch.push({ op: 'replace', path: `/data`, value: data })
+        const metadata: AccessControl['metadata'] = accessControl.metadata!
+        patch.push({ op: 'replace', path: `/spec/roleBindings`, value: accessControl.spec.roleBindings })
         return patchResource(accessControl, patch).promise.then(() => {
           toastContext.addAlert({
             title: t('Acccess Control updated'),
-            message: t('accessControlForm.updated.message', { id: data.id }),
+            message: t('accessControlForm.updated.message', { id: metadata.uid }),
             type: 'success',
             autoClose: true,
           })
@@ -120,7 +303,7 @@ const AccessControlManagementForm = (
         return createResource(accessControlData as IResource).promise.then((resource) => {
           toastContext.addAlert({
             title: t('Access Control created'),
-            message: t('accessControlForm.created.message', { id: (resource as AccessControl).data?.id }),
+            message: t('accessControlForm.created.message', { id: (resource as AccessControl).metadata?.uid }),
             type: 'success',
             autoClose: true,
           })
@@ -162,7 +345,7 @@ const AccessControlManagementForm = (
       }
       edit={() => navigate(
         generatePath(NavigationPath.editAccessControlManagement, {
-          id: accessControl?.data?.id!,
+          id: accessControl?.metadata?.uid!,
         })
       )}
       isModalWizard={!!handleModalToggle}

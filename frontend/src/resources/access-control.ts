@@ -12,7 +12,7 @@ export const AccessControlDefinition: IResourceDefinition = {
   kind: AccessControlKind
 }
 
-interface RoleBinding {
+export interface RoleBinding {
   namespace: string
   roleRef: {
     apiGroup: string

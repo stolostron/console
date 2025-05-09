@@ -12,7 +12,7 @@ const ViewAccessControlManagementPage = () => {
 
     useEffect(() => {
         if (id) {
-            setAccessControl(accessControls.find(e => e.data?.id === id))
+            setAccessControl(accessControls.find(e => e.metadata?.uid === id))
         }
     }, [accessControls, id])
 

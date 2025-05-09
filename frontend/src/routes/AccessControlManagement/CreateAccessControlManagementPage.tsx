@@ -39,7 +39,7 @@ const CreateAccessControlManagementPage = () => {
           </AcmPage>)
       default:
         return (
-          <AccessControlManagementForm namespaces={projects} isEditing={false} isViewing={false} credentialsType={Provider.ansible} />
+          <AccessControlManagementForm isCreatable={true} namespaces={projects} isEditing={false} isViewing={false} credentialsType={Provider.ansible} />
         )
     }
   })();
