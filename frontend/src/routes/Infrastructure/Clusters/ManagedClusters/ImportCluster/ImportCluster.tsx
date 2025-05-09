@@ -21,7 +21,7 @@ import {
 import { cloneDeep, get, groupBy, isEqual, pick } from 'lodash'
 import { Dispatch, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useReducer, useState } from 'react'
 import { Link, generatePath, useNavigate } from 'react-router-dom-v5-compat'
-import { SyncEditor } from '../../../../../components/SyncEditor/SyncEditor'
+import { SyncEditor, ValidationStatus } from '../../../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { PluginContext } from '../../../../../lib/PluginContext'
@@ -64,6 +64,8 @@ import {
   WizTextArea,
   WizTextInput,
   useSetHasValue,
+  useEditorValidationStatus,
+  EditorValidationStatus,
 } from '@patternfly-labs/react-form-wizard'
 import { TemplateLinkOut, TemplateSummaryExpandable } from '../../../../../components/TemplateSummaryModal'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
@@ -511,6 +513,7 @@ export default function ImportClusterPage() {
 
   function WizardSyncEditor() {
     const resources = useItem() // Wizard framework sets this context
+    const { setEditorValidationStatus } = useEditorValidationStatus()
     const { update } = useData() // Wizard framework sets this context
 
     return (
@@ -529,6 +532,9 @@ export default function ImportClusterPage() {
         syncs={syncs}
         onEditorChange={(changes: { resources: any[] }): void => {
           update(changes?.resources)
+        }}
+        onStatusChange={(editorStatus: ValidationStatus): void => {
+          setEditorValidationStatus(editorStatus as unknown as EditorValidationStatus)
         }}
       />
     )
