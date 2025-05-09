@@ -22,6 +22,8 @@ export interface DiscoveryConfig extends IResource {
     filters?: {
       lastActive?: number
       openShiftVersions?: string[]
+      clusterTypes?: string[]
+      infrastructureProviders?: string[]
     }
     credential: string
   }

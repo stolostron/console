@@ -49,6 +49,13 @@ import {
 import { CredentialsForm } from '../../../../Credentials/CredentialsForm'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import {
+  getDisplayNameForInfrastructureProvider,
+  INFRASTRUCTURE_PROVIDERS,
+  CLUSTER_TYPE_GROUPS,
+  getGroupsFromClusterTypes,
+  getAllClusterTypesFromGroups,
+} from '../DiscoveryConfig/discoveryConfigFilters'
 
 const discoveryVersions = ['4.17', '4.18', '4.19', '4.20']
 
@@ -433,12 +440,13 @@ export function DiscoveryConfigPageContent(props: {
                   discoveryConfig.metadata.namespace = props.discoveryConfigs[i].metadata.namespace
                   discoveryConfig.metadata.resourceVersion = props.discoveryConfigs[i].metadata.resourceVersion
                   discoveryConfig.spec.credential = props.discoveryConfigs[i].spec.credential
-                  if (!discoveryConfig.spec.filters) {
-                    discoveryConfig.spec.filters = {}
-                  }
+                  discoveryConfig.spec.filters ??= {}
                   discoveryConfig.spec.filters.lastActive = props.discoveryConfigs[i].spec.filters?.lastActive
                   discoveryConfig.spec.filters.openShiftVersions =
                     props.discoveryConfigs[i].spec.filters?.openShiftVersions
+                  discoveryConfig.spec.filters.clusterTypes = props.discoveryConfigs[i].spec.filters?.clusterTypes
+                  discoveryConfig.spec.filters.infrastructureProviders =
+                    props.discoveryConfigs[i].spec.filters?.infrastructureProviders
                 })
                 break
               }
@@ -493,9 +501,7 @@ export function DiscoveryConfigPageContent(props: {
             onChange={(lastActive) => {
               updateDiscoveryConfig((discoveryConfig) => {
                 if (lastActive) {
-                  if (!discoveryConfig.spec.filters) {
-                    discoveryConfig.spec.filters = {}
-                  }
+                  discoveryConfig.spec.filters ??= {}
                   discoveryConfig.spec.filters.lastActive = parseInt(lastActive.substring(0, lastActive.length - 1))
                 }
               })
@@ -516,9 +522,7 @@ export function DiscoveryConfigPageContent(props: {
             placeholder={t('discoveryConfig.discoveryVersions.placeholder')}
             onChange={(versions) => {
               updateDiscoveryConfig((discoveryConfig) => {
-                if (!discoveryConfig.spec.filters) {
-                  discoveryConfig.spec.filters = {}
-                }
+                discoveryConfig.spec.filters ??= {}
                 discoveryConfig.spec.filters.openShiftVersions = versions
               })
             }}
@@ -526,6 +530,44 @@ export function DiscoveryConfigPageContent(props: {
             {discoveryVersions.map((version) => (
               <SelectOption key={version} value={version}>
                 {version}
+              </SelectOption>
+            ))}
+          </AcmMultiSelect>
+          <AcmMultiSelect
+            id="discoveryClusterTypes"
+            label={t('discoveryConfig.ClusterTypes.label')}
+            labelHelp={t('discoveryConfig.ClusterTypes.labelHelp')}
+            value={getGroupsFromClusterTypes(discoveryConfig?.spec?.filters?.clusterTypes)}
+            placeholder={t('discoveryConfig.ClusterTypes.placeholder')}
+            onChange={(selectedGroups) => {
+              updateDiscoveryConfig((discoveryConfig) => {
+                discoveryConfig.spec.filters ??= {}
+                discoveryConfig.spec.filters.clusterTypes = getAllClusterTypesFromGroups(selectedGroups || [])
+              })
+            }}
+          >
+            {Object.entries(CLUSTER_TYPE_GROUPS).map(([key, group]) => (
+              <SelectOption key={key} value={key}>
+                {group.displayName}
+              </SelectOption>
+            ))}
+          </AcmMultiSelect>
+          <AcmMultiSelect
+            id="discoveryInfrastructureProviders"
+            label={t('discoveryConfig.InfrastructureProviders.label')}
+            labelHelp={t('discoveryConfig.InfrastructureProviders.labelHelp')}
+            value={discoveryConfig?.spec?.filters?.infrastructureProviders}
+            placeholder={t('discoveryConfig.InfrastructureProviders.placeholder')}
+            onChange={(infrastructureProviders) => {
+              updateDiscoveryConfig((discoveryConfig) => {
+                discoveryConfig.spec.filters ??= {}
+                discoveryConfig.spec.filters.infrastructureProviders = infrastructureProviders
+              })
+            }}
+          >
+            {INFRASTRUCTURE_PROVIDERS.map((provider) => (
+              <SelectOption key={provider} value={provider}>
+                {getDisplayNameForInfrastructureProvider(provider)}
               </SelectOption>
             ))}
           </AcmMultiSelect>
