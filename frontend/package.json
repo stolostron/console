@@ -31,8 +31,8 @@
     "update": "npx npm-check-updates -x @testing-library/user-event,monaco-editor,eslint,react-router-dom --doctor --upgrade && npm audit fix && npm dedup",
     "serve:plugins": "concurrently npm:serve:plugin:* -c green,blue,cyan,magenta",
     "serve:plugin": "./scripts/checkPlugin.sh && cd plugins/${PLUGIN} && node ../../scripts/generatePluginPackage.js && CONSOLE_PLUGIN_SKIP_EXT_VALIDATOR=true TS_NODE_PROJECT=../../webpack.tsconfig.json webpack serve -c ../../webpack.plugin.ts --env plugin=$PLUGIN --env port=$PORT --mode development",
-    "serve:plugin:acm": ". ../port-defaults.sh && PLUGIN=acm PORT=${ACM_PORT} npm run serve:plugin",
-    "serve:plugin:mce": ". ../port-defaults.sh && PLUGIN=mce PORT=${MCE_PORT} npm run serve:plugin"
+    "serve:plugin:mce": ". ../port-defaults.sh && ./scripts/checkPlugin.sh && TS_NODE_PROJECT=webpack.tsconfig.json webpack serve -c webpack.mce.plugin.ts --env port=${MCE_PORT} --mode development",
+    "serve:plugin:acm": ". ../port-defaults.sh && ./scripts/checkPlugin.sh && TS_NODE_PROJECT=webpack.tsconfig.json webpack serve -c webpack.acm.plugin.ts --env port=${ACM_PORT} --mode development"
   },
   "dependencies": {
     "@apollo/client": "3.10.8",
