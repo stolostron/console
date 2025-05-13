@@ -5,7 +5,7 @@ import { Dispatch, SetStateAction, useMemo, useState } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { Cluster } from '../../../resources/utils'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
-import { Select, SelectVariant } from '../../../components/Select'
+import { AcmSelectBase, SelectVariant } from '../../../components/AcmSelectBase'
 
 export default function OverviewClusterLabelSelector(props: {
   selectedClusterLabels: Record<string, string[]>
@@ -76,7 +76,7 @@ export default function OverviewClusterLabelSelector(props: {
   return (
     <PageSection variant={'light'}>
       <div>
-        <Select
+        <AcmSelectBase
           id="cluster-label-key"
           key="cluster-label-key"
           aria-label="Select cluster label"
@@ -98,8 +98,8 @@ export default function OverviewClusterLabelSelector(props: {
           {Object.keys(allClusterLabels).map((labelKey: string) => (
             <SelectOption key={`cluster-label-key-${labelKey}`} value={labelKey} />
           ))}
-        </Select>
-        <Select
+        </AcmSelectBase>
+        <AcmSelectBase
           id="cluster-label-value"
           aria-label="Select cluster label value"
           width={'auto'}
@@ -120,7 +120,7 @@ export default function OverviewClusterLabelSelector(props: {
           aria-labelledby={'cluster-label-value'}
         >
           {allClusterLabels[selectedClusterLabel ?? '']?.map((label) => <SelectOption key={label} value={label} />)}
-        </Select>
+        </AcmSelectBase>
         <div style={{ display: 'flex', flexWrap: 'wrap' }}>
           {Object.keys(selectedClusterLabels).map((label) => {
             return (

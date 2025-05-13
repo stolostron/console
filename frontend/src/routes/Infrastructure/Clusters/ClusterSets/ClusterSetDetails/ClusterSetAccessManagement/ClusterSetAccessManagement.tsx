@@ -28,7 +28,7 @@ import {
   compareStrings,
   IAcmTableColumn,
 } from '../../../../../../ui-components'
-import { SelectVariant } from '../../../../../../components/Select'
+import { SelectVariant } from '../../../../../../components/AcmSelectBase'
 import {
   ActionGroup,
   ButtonVariant,

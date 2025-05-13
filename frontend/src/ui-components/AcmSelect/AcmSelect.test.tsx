@@ -5,7 +5,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { useState } from 'react'
 import { AcmForm, AcmSubmit } from '../AcmForm/AcmForm'
 import { AcmSelect } from './AcmSelect'
-import { SelectVariant } from '../../components/Select'
+import { SelectVariant } from '../../components/AcmSelectBase'
 
 describe('AcmSelect', () => {
   const Select = () => {

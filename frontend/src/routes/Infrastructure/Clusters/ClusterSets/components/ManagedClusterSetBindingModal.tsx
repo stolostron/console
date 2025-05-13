@@ -17,7 +17,7 @@ import {
   AcmMultiSelect,
   AcmSubmit,
 } from '../../../../../ui-components'
-import { SelectVariant } from '../../../../../components/Select'
+import { SelectVariant } from '../../../../../components/AcmSelectBase'
 
 import { ActionGroup, Button, ModalVariant, SelectOption } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'

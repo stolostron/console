@@ -3,7 +3,7 @@
 
 import React, { SyntheticEvent, useCallback } from 'react'
 import { Spinner, SelectOption } from '@patternfly/react-core'
-import { Select, SelectVariant, SelectOptionObject } from '../../../components/Select'
+import { AcmSelectBase, SelectVariant, SelectOptionObject } from '../../AcmSelectBase'
 import ControlPanelFormGroup from './ControlPanelFormGroup'
 import get from 'lodash/get'
 import { TFunction } from 'react-i18next'
@@ -86,7 +86,7 @@ const ControlPanelSingleSelect = (props: {
             </div>
           ) : (
             <div style={{ position: 'relative' }}>
-              <Select
+              <AcmSelectBase
                 id={controlId}
                 key={key}
                 aria-labelledby={`${controlId}-label`}
@@ -108,7 +108,7 @@ const ControlPanelSingleSelect = (props: {
                   /* eslint-disable-next-line react/no-array-index-key */
                   return <SelectOption key={inx} value={item} />
                 })}
-              </Select>
+              </AcmSelectBase>
               {fetchAvailable && !active && (
                 <div
                   style={{

@@ -13,7 +13,7 @@ import {
   AccordionToggle,
   SelectOption,
 } from '@patternfly/react-core'
-import { Select, SelectVariant } from '../../../../../components/Select'
+import { AcmSelectBase, SelectVariant } from '../../../../../components/AcmSelectBase'
 import { processResourceActionLink, createEditLink } from '../helpers/diagram-helpers'
 
 class ArgoAppDetailsContainer extends Component {
@@ -491,7 +491,7 @@ class ArgoAppDetailsContainer extends Component {
 
     return (
       <div className="appDetails">
-        <Select
+        <AcmSelectBase
           variant={SelectVariant.typeahead}
           typeAheadAriaLabel={findAppMsg}
           onSelect={this.handleSelection}
@@ -504,7 +504,7 @@ class ArgoAppDetailsContainer extends Component {
           {this.props.argoAppList.map((app) => (
             <SelectOption key={app.name} value={app.name} />
           ))}
-        </Select>
+        </AcmSelectBase>
         <div className="spacer" />
         {this.props.argoAppList.length > 5 && (
           <Pagination

@@ -2,7 +2,7 @@
 
 import { Fragment, useCallback, useState } from 'react'
 import { AcmMultiSelect, AcmSelect } from '../../../../../../ui-components'
-import { SelectVariant } from '../../../../../../components/Select'
+import { SelectVariant } from '../../../../../../components/AcmSelectBase'
 import {
   Radio,
   FormGroup,

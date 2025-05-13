@@ -12,7 +12,7 @@ import {
   AccordionToggle,
   SelectOption,
 } from '@patternfly/react-core'
-import { Select, SelectVariant } from '../../../../../components/Select'
+import { AcmSelectBase, SelectVariant } from '../../../../../components/AcmSelectBase'
 import { Component } from 'react'
 import { processResourceActionLink, getPercentage, inflateKubeValue } from '../helpers/diagram-helpers'
 import AcmTimestamp from '../../../../../lib/AcmTimestamp'
@@ -518,7 +518,7 @@ class ClusterDetailsContainer extends Component {
 
     return (
       <div className="clusterDetails">
-        <Select
+        <AcmSelectBase
           variant={SelectVariant.typeahead}
           onSelect={this.handleSelection}
           selections={selected}
@@ -530,7 +530,7 @@ class ClusterDetailsContainer extends Component {
           {this.props.clusterList.map((cluster) => (
             <SelectOption key={cluster.name || cluster.metadata.name} value={cluster.name || cluster.metadata.name} />
           ))}
-        </Select>
+        </AcmSelectBase>
         <div className="spacer" />
         {this.props.clusterList.length > 5 && (
           <Pagination

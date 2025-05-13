@@ -63,7 +63,7 @@ import {
   WizardStepProps,
   WizardHeader,
 } from '@patternfly/react-core'
-import { Select, SelectProps, SelectOptionObject, SelectVariant } from '../components/Select'
+import { AcmSelectBase, AcmSelectBaseProps, SelectOptionObject, SelectVariant } from './AcmSelectBase'
 import {
   EditIcon,
   ExclamationCircleIcon,
@@ -1385,17 +1385,17 @@ function inputsHidden(inputs?: Input[]): boolean {
   return true
 }
 
-function SelectWithToggle(props: SelectProps): JSX.Element {
+function SelectWithToggle(props: AcmSelectBaseProps): JSX.Element {
   // TODO support isReadOnly
   return (
-    <Select
+    <AcmSelectBase
       {...props}
       onSelect={(v) => {
         props.onSelect?.(v)
       }}
     >
       {props.children}
-    </Select>
+    </AcmSelectBase>
   )
 }
 

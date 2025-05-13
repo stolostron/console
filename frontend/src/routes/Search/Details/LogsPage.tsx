@@ -3,7 +3,7 @@
 // Copyright Contributors to the Open Cluster Management project
 import { css } from '@emotion/css'
 import { Button, Checkbox, PageSection, Tooltip, SelectOption } from '@patternfly/react-core'
-import { Select, SelectVariant, SelectOptionObject } from '../../../components/Select'
+import { AcmSelectBase, SelectVariant, SelectOptionObject } from '../../../components/AcmSelectBase'
 import { CompressIcon, DownloadIcon, ExpandIcon, OutlinedWindowRestoreIcon } from '@patternfly/react-icons'
 import { LogViewer } from '@patternfly/react-log-viewer'
 import { Dispatch, MutableRefObject, ReactNode, SetStateAction, useEffect, useMemo, useRef, useState } from 'react'
@@ -113,7 +113,7 @@ export function LogsToolbar(props: {
 
   const previousLogsDropdown = useMemo(() => {
     return (
-      <Select
+      <AcmSelectBase
         id={'previous-log-select'}
         aria-label={'previous-log-select'}
         variant={SelectVariant.single}
@@ -129,7 +129,7 @@ export function LogsToolbar(props: {
         <SelectOption key={'previous-log'} value={'previous-log'}>
           {t('Previous log')}
         </SelectOption>
-      </Select>
+      </AcmSelectBase>
     )
   }, [containerHasPreviousLogs, previousLogs, setPreviousLogs, t])
 
@@ -137,7 +137,7 @@ export function LogsToolbar(props: {
     <div className={isFullscreen ? toolbarContainerFullscreen : toolbarContainer}>
       <div className={toolbarGroup}>
         <div className={toolbarGroupItem}>
-          <Select
+          <AcmSelectBase
             id={'container-select'}
             aria-label={'container-select'}
             variant={SelectVariant.single}
@@ -158,7 +158,7 @@ export function LogsToolbar(props: {
                 </SelectOption>
               )
             })}
-          </Select>
+          </AcmSelectBase>
         </div>
         {/* If previious logs are disabled then show a tooltip with - "Only the current log is available for this container." */}
         <div className={toolbarGroupItem}>

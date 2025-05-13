@@ -15,7 +15,7 @@ import {
   ButtonVariant,
   SelectOption,
 } from '@patternfly/react-core'
-import { Select, SelectVariant } from '../../../../../../components/Select'
+import { AcmSelectBase, SelectVariant } from '../../../../../../components/AcmSelectBase'
 import { Fragment, Component } from 'react'
 import { PlusCircleIcon, TimesCircleIcon } from '@patternfly/react-icons'
 import { Tooltip, getSourcePath, removeVs } from '../../../../../../components/TemplateEditor'
@@ -218,7 +218,7 @@ export class TimeWindow extends Component {
                         {i18n('Time zone')}
                         <div className="config-title-required">*</div>
                       </div>
-                      <Select
+                      <AcmSelectBase
                         id="timeZoneSelect"
                         variant={SelectVariant.typeahead}
                         aria-label="Select timezone"
@@ -235,7 +235,7 @@ export class TimeWindow extends Component {
                         }}
                       >
                         {this.timezoneList}
-                      </Select>
+                      </AcmSelectBase>
                     </div>
 
                     <div style={{ display: 'block' }}>

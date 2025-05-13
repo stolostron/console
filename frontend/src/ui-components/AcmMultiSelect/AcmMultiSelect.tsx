@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Button, FormGroup, Popover, Skeleton } from '@patternfly/react-core'
-import { Select, SelectProps, SelectVariant } from '../../components/Select'
+import { AcmSelectBase, AcmSelectBaseProps, SelectVariant } from '../../components/AcmSelectBase'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import { Fragment, ReactNode, useLayoutEffect, useState } from 'react'
 import { useTranslation } from '../../lib/acm-i18next'
@@ -9,8 +9,8 @@ import { useValidationContext } from '../AcmForm/AcmForm'
 import { AcmHelperText } from '../AcmHelperText/AcmHelperText'
 
 type AcmMultiSelectProps = Pick<
-  SelectProps,
-  Exclude<keyof SelectProps, 'onToggle' | 'onChange' | 'selections' | 'onSelect' | 'placeholder'>
+  AcmSelectBaseProps,
+  Exclude<keyof AcmSelectBaseProps, 'onToggle' | 'onChange' | 'selections' | 'onSelect' | 'placeholder'>
 > & {
   id: string
   label: string
@@ -22,6 +22,7 @@ type AcmMultiSelectProps = Pick<
   labelHelpTitle?: ReactNode
   helperText?: ReactNode
   isRequired?: boolean
+  variant?: SelectVariant.checkbox | SelectVariant.typeaheadMulti | SelectVariant.typeaheadCheckbox
   isLoading?: boolean
 }
 
@@ -102,7 +103,7 @@ export function AcmMultiSelect(props: AcmMultiSelectProps) {
       {isLoading ? (
         <Skeleton height="36px" screenreaderText={t('Loading')} />
       ) : (
-        <Select
+        <AcmSelectBase
           {...selectProps}
           aria-labelledby={`${props.id}-label`}
           variant={variant}

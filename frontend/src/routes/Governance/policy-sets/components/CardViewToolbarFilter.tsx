@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Badge, SelectOption, SelectGroup } from '@patternfly/react-core'
-import { Select, SelectVariant } from '../../../../components/Select'
+import { AcmSelectBase, SelectVariant } from '../../../../components/AcmSelectBase'
 import { FilterIcon } from '@patternfly/react-icons'
 import { useCallback, useMemo, useState } from 'react'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
@@ -76,7 +76,7 @@ export default function CardViewToolbarFilter(props: {
   )
 
   return (
-    <Select
+    <AcmSelectBase
       key={'card-view-filter-select-key'}
       variant={SelectVariant.checkbox}
       aria-label={'Select filter options'}
@@ -86,6 +86,6 @@ export default function CardViewToolbarFilter(props: {
       placeholder={t('Filter')}
     >
       {selectOptions}
-    </Select>
+    </AcmSelectBase>
   )
 }

@@ -15,7 +15,7 @@ import {
   Stack,
   StackItem,
 } from '@patternfly/react-core'
-import { Select, SelectVariant } from '../../../components/Select'
+import { AcmSelectBase, SelectVariant } from '../../../components/AcmSelectBase'
 import {
   InfraEnvFormPage,
   EnvironmentStepFormValues,
@@ -147,7 +147,7 @@ const InfraEnvForm: React.FC<InfraEnvFormProps> = ({ control, handleChange }) =>
               osImages={osImages}
             >
               <FormGroup fieldId="credentials" label={t('Infrastructure provider credentials')}>
-                <Select
+                <AcmSelectBase
                   variant={SelectVariant.typeahead}
                   placeholderText={t('creation.ocp.cloud.select.connection')}
                   aria-label="Select credentials"
@@ -164,7 +164,7 @@ const InfraEnvForm: React.FC<InfraEnvFormProps> = ({ control, handleChange }) =>
                       {p.metadata.name}
                     </SelectOption>
                   ))}
-                </Select>
+                </AcmSelectBase>
               </FormGroup>
             </InfraEnvFormPage>
           </GridItem>

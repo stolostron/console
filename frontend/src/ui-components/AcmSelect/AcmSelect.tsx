@@ -3,15 +3,18 @@
 import { Button, FormGroup, Popover } from '@patternfly/react-core'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import { Fragment, ReactNode, useLayoutEffect, useState } from 'react'
-import { Select, SelectProps, SelectVariant } from '../../components/Select'
+import { AcmSelectBase, AcmSelectBaseProps, SelectVariant } from '../../components/AcmSelectBase'
 
 import { useTranslation } from '../../lib/acm-i18next'
 import { useValidationContext } from '../AcmForm/AcmForm'
 import { AcmHelperText } from '../AcmHelperText/AcmHelperText'
 
 type AcmSelectProps = Pick<
-  SelectProps,
-  Exclude<keyof SelectProps, 'toggle' | 'onToggle' | 'onChange' | 'selections' | 'onSelect' | 'variant' | 'width'>
+  AcmSelectBaseProps,
+  Exclude<
+    keyof AcmSelectBaseProps,
+    'toggle' | 'onToggle' | 'onChange' | 'selections' | 'onSelect' | 'variant' | 'width'
+  >
 > & {
   id: string
   label: string
@@ -105,7 +108,7 @@ export function AcmSelect(props: AcmSelectProps) {
         )
       }
     >
-      <Select
+      <AcmSelectBase
         aria-labelledby={`${props.id}-label`}
         {...selectProps}
         selections={value}

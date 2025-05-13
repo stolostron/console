@@ -4,8 +4,8 @@ import {
   Button,
   MenuToggle,
   MenuToggleElement,
-  Select as SelectCore,
-  SelectProps as SelectPropsCore,
+  Select,
+  SelectProps,
   SelectList,
   TextInputGroup,
   TextInputGroupMain,
@@ -51,10 +51,10 @@ export enum SelectVariant {
   typeaheadMulti = 'typeaheadmulti',
 }
 
-export type SelectProps = Pick<
-  SelectPropsCore,
+export type AcmSelectBaseProps = Pick<
+  SelectProps,
   Exclude<
-    keyof SelectPropsCore,
+    keyof SelectProps,
     'toggle' | 'onToggle' | 'isOpen' | 'onChange' | 'selections' | 'onSelect' | 'variant' | 'width'
   >
 > & {
@@ -124,7 +124,7 @@ const addCheckboxes = (children: ReactNode, selectedItems: string | any[]): any 
     }
   })
 
-export function Select(props: SelectProps) {
+export function AcmSelectBase(props: AcmSelectBaseProps) {
   const { t } = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
   const [inputValue, setInputValue] = useState<string>('')
@@ -598,7 +598,7 @@ export function Select(props: SelectProps) {
   return isLoading ? (
     <Skeleton height="36px" screenreaderText={t('Loading')} />
   ) : (
-    <SelectCore
+    <Select
       {...selectProps}
       style={{ width: 'auto' }}
       spellCheck={false}
@@ -612,6 +612,6 @@ export function Select(props: SelectProps) {
     >
       {renderSelectList()}
       {footer}
-    </SelectCore>
+    </Select>
   )
 }

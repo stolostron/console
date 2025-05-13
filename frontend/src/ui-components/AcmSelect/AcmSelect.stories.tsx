@@ -4,7 +4,7 @@ import { SelectOption } from '@patternfly/react-core'
 import { useState } from 'react'
 import { AcmForm } from '../AcmForm/AcmForm'
 import { AcmSelect } from './AcmSelect'
-import { SelectVariant } from '../../components/Select'
+import { SelectVariant } from '../../components/AcmSelectBase'
 
 export default {
   title: 'Select',
