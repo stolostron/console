@@ -1,17 +1,12 @@
 # Copyright Contributors to the Open Cluster Management project
 
-FROM registry.ci.openshift.org/stolostron/builder:nodejs20-linux as frontend-packages
+FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:39e45fb57afe2da2a571f1f4be5c4a1d24990c24a1c7a523ef187699a9b57c73 as dynamic-plugin
 WORKDIR /app/frontend
-# Copy only package.json and package-lock.json so that the docker cache hash only changes if those change
-# This will cause the npm ci to only rerun if the package.json or package-lock.json changes
-COPY ./frontend/package.json ./frontend/package-lock.json ./
-RUN npm ci --legacy-peer-deps
 COPY ./frontend .
-
-FROM frontend-packages as dynamic-plugin
+RUN npm ci --legacy-peer-deps
 RUN npm run build:plugin:acm
 
-FROM registry.ci.openshift.org/stolostron/builder:nodejs20-linux as backend
+FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:39e45fb57afe2da2a571f1f4be5c4a1d24990c24a1c7a523ef187699a9b57c73 as backend
 WORKDIR /app/backend
 # Copy only package.json and package-lock.json so that the docker layer cache only changes if those change
 # This will cause the npm ci to only rerun if the package.json or package-lock.json changes
@@ -20,12 +15,12 @@ RUN npm ci --omit=optional
 COPY ./backend .
 RUN npm run build
 
-FROM registry.ci.openshift.org/stolostron/builder:nodejs20-linux as production
+FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:39e45fb57afe2da2a571f1f4be5c4a1d24990c24a1c7a523ef187699a9b57c73 as production
 WORKDIR /app/backend
 COPY ./backend/package-lock.json ./backend/package.json ./
 RUN npm ci --omit=optional --only=production
 
-FROM registry.ci.openshift.org/stolostron/common-nodejs-parent:nodejs-20
+FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:39e45fb57afe2da2a571f1f4be5c4a1d24990c24a1c7a523ef187699a9b57c73
 WORKDIR /app
 ENV NODE_ENV production
 COPY --from=production /app/backend/node_modules ./node_modules

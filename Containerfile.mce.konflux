@@ -1,4 +1,4 @@
-FROM registry.redhat.io/ubi9/nodejs-20-minimal:1-63.1726695170 AS builder
+FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:39e45fb57afe2da2a571f1f4be5c4a1d24990c24a1c7a523ef187699a9b57c73 AS builder
 
 USER root
 ENV NPM_CONFIG_NODEDIR=/usr
@@ -16,7 +16,7 @@ RUN cd frontend && npm run build:plugin:mce
 # Remove build-time dependencies before packaging
 RUN cd backend && npm ci --omit=optional --only=production --unsafe-perm
 
-FROM brew.registry.redhat.io/rh-osbs/rhacm2-nodejs-parent:v2.10.0_20-49
+FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:39e45fb57afe2da2a571f1f4be5c4a1d24990c24a1c7a523ef187699a9b57c73
 
 WORKDIR /app
 ENV NODE_ENV production

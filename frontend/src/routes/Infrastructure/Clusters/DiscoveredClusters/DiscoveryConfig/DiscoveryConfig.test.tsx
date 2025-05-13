@@ -75,8 +75,7 @@ beforeEach(() => {
   sessionStorage.clear()
 })
 
-// discovery config page
-describe('discovery config page', () => {
+describe('Discovery Config page', () => {
   beforeEach(() => {
     nockIgnoreApiPaths()
   })
@@ -108,6 +107,13 @@ describe('discovery config page', () => {
       .click()
     await clickByText(mockRHOCMSecrets[0].metadata.namespace! + '/' + mockRHOCMSecrets[0].metadata.name!)
 
+    // Wait for the RBAC check to complete
+    await waitForNocks([discoveryConfigCreateNock])
+
+    // Verify create button is enabled
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Create' })).not.toBeDisabled()
+    })
     // Submit form
     const createDiscoveryConfigNock = nockCreate(minDiscoveryConfig, minDiscoveryConfig)
     await clickByText('Create')
@@ -123,7 +129,7 @@ describe('discovery config page', () => {
       discoveryConfigCreateSelfSubjectAccessRequest,
       discoveryConfigCreateSelfSubjectAccessResponse
     )
-    render(<TestAddDiscoveryConfigPage />)
+    const { container } = render(<TestAddDiscoveryConfigPage />)
 
     // Select Credential
     screen
@@ -132,7 +138,8 @@ describe('discovery config page', () => {
       })
       .click()
     await clickByText(mockRHOCMSecrets[0].metadata.namespace! + '/' + mockRHOCMSecrets[0].metadata.name!)
-    waitForNocks([discoveryConfigCreateNock])
+
+    await waitForNocks([discoveryConfigCreateNock])
 
     // Select LastActive
     screen
@@ -150,6 +157,34 @@ describe('discovery config page', () => {
       })
       .click()
     await clickByText('4.17')
+
+    // Select Cluster Types
+    expect(container.querySelectorAll(`[aria-labelledby^="discoveryClusterTypes-label"]`)).toHaveLength(1)
+    container.querySelector<HTMLButtonElement>(`[aria-labelledby^="discoveryClusterTypes-label"]`)!.click()
+
+    const rosaCheckbox = container.querySelector('input[id$="-ROSA_CLASSIC"]')
+    if (rosaCheckbox) {
+      userEvent.click(rosaCheckbox)
+    }
+
+    const ocpCheckBox = container.querySelector('input[id$="-OCP"]')
+    if (ocpCheckBox) {
+      userEvent.click(ocpCheckBox)
+    }
+
+    // Select Infrastructure Providers
+    expect(container.querySelectorAll(`[aria-labelledby^="discoveryInfrastructureProviders-label"]`)).toHaveLength(1)
+    container.querySelector<HTMLButtonElement>(`[aria-labelledby^="discoveryInfrastructureProviders-label"]`)!.click()
+
+    const awsCheckbox = container.querySelector('input[id$="-aws"]')
+    if (awsCheckbox) {
+      userEvent.click(awsCheckbox)
+    }
+
+    const azureCheckbox = container.querySelector('input[id$="-azure"]')
+    if (azureCheckbox) {
+      userEvent.click(azureCheckbox)
+    }
 
     // Submit form
     const createDiscoveryConfigNock = nockCreate(discoveryConfig, discoveryConfig)
@@ -231,7 +266,10 @@ describe('discovery config page', () => {
     const deleteNock = nockDelete(discoveryConfigUpdated)
     await clickByText('Delete')
     await waitForText('Delete discovery settings')
-    await clickByText('Delete', 1)
+
+    const deleteButtons = screen.getAllByRole('button', { name: /delete/i })
+    await userEvent.click(deleteButtons[deleteButtons.length - 1])
+
     await waitFor(() => expect(deleteNock.isDone()).toBeTruthy())
 
     // Wait For Notification on DiscoveredClusters page

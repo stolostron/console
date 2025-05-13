@@ -1,10 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Alert, PageSection, Stack } from '@patternfly/react-core'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../lib/acm-i18next'
-import { useSharedAtoms } from '../../../shared-recoil'
+import { fireManagedClusterView } from '../../../resources/managedclusterview'
+import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmLoadingPage, AcmTable } from '../../../ui-components'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
+import {
+  ClosedVMActionModalProps,
+  IVMActionModalProps,
+  VMActionModal,
+} from '../../Infrastructure/VirtualMachines/modals/VMActionModal'
+import { getVMSnapshotActions } from '../../Infrastructure/VirtualMachines/utils'
 import {
   ClosedDeleteExternalResourceModalProps,
   DeleteExternalResourceModal,
@@ -19,17 +27,42 @@ import { searchClient } from '../search-sdk/search-client'
 import { useSearchResultItemsQuery } from '../search-sdk/search-sdk'
 import { useSearchDefinitions } from '../searchDefinitions'
 import { ISearchResult } from '../SearchResults/utils'
+import { getResourceParams } from './DetailsPage'
 
 export default function SnapshotsTab() {
   const { t } = useTranslation()
-  const { useSearchResultLimit } = useSharedAtoms()
+  const { cluster, kind, apiversion, namespace, name } = getResourceParams()
+  const { useSearchResultLimit, settingsState } = useSharedAtoms()
   const searchResultLimit = useSearchResultLimit()
   const searchDefinitions = useSearchDefinitions()
+  const vmActionsEnabled = useRecoilValue(settingsState)?.VIRTUAL_MACHINE_ACTIONS === 'enabled'
+  const navigate = useNavigate()
   const allClusters = useAllClusters(true)
+  const [VMAction, setVMAction] = useState<IVMActionModalProps>(ClosedVMActionModalProps)
+  const [vmLoading, setVMLoading] = useState<any>(true)
+  const [vm, setVM] = useState<any>({})
   const [deleteResource, setDeleteResource] = useState<IDeleteModalProps>(ClosedDeleteModalProps)
   const [deleteExternalResource, setDeleteExternalResource] = useState<IDeleteExternalResourceModalProps>(
     ClosedDeleteExternalResourceModalProps
   )
+
+  useEffect(() => {
+    fireManagedClusterView(cluster, kind, apiversion, name, namespace)
+      .then((viewResponse) => {
+        setVMLoading(false)
+        if (viewResponse?.message) {
+          console.error('Error fetching parent VM')
+        } else {
+          setVM(viewResponse?.result)
+        }
+      })
+      .catch((err) => {
+        console.error('Error getting VirtualMachine: ', err)
+        setVMLoading(false)
+      })
+  }, [cluster, kind, apiversion, name, namespace])
+
+  const isVMRunning = useMemo(() => vm?.status?.printableStatus === 'Running', [vm?.status?.printableStatus])
 
   const { data, loading, error } = useSearchResultItemsQuery({
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
@@ -37,7 +70,10 @@ export default function SnapshotsTab() {
       input: [
         {
           keywords: [],
-          filters: [{ property: 'kind', values: ['VirtualMachineSnapshot'] }],
+          filters: [
+            { property: 'kind', values: ['VirtualMachineSnapshot'] },
+            { property: 'sourceName', values: [name] },
+          ],
           limit: searchResultLimit,
         },
       ],
@@ -45,7 +81,7 @@ export default function SnapshotsTab() {
   })
   const snapshotItems: ISearchResult[] = useMemo(() => data?.searchResult?.[0]?.items || [], [data?.searchResult])
 
-  if (loading) {
+  if (loading || vmLoading) {
     return (
       <PageSection>
         <AcmLoadingPage />
@@ -65,7 +101,11 @@ export default function SnapshotsTab() {
   if (!loading && !error && snapshotItems.length === 0) {
     return (
       <PageSection>
-        <Alert variant={'info'} isInline={true} title={t('There are no resources related to your search results.')}>
+        <Alert
+          variant={'info'}
+          isInline={true}
+          title={t('No VirtualMachineSnapshots found. Take a snapshot of the VirtualMachine to view snapshots here.')}
+        >
           {error}
         </Alert>
       </PageSection>
@@ -74,6 +114,14 @@ export default function SnapshotsTab() {
 
   return (
     <>
+      <VMActionModal
+        open={VMAction.open}
+        close={VMAction.close}
+        action={VMAction.action}
+        method={VMAction.method}
+        item={VMAction.item}
+        vm={vm}
+      />
       <DeleteResourceModal
         open={deleteResource.open}
         close={deleteResource.close}
@@ -103,30 +151,19 @@ export default function SnapshotsTab() {
               items={snapshotItems}
               emptyState={undefined} // table only shown for kinds with related resources
               columns={searchDefinitions['virtualmachinesnapshot'].columns}
-              rowActions={[
-                {
-                  id: 'delete',
-                  title: t('Delete VirtualMachineSnapshot'),
-                  click: (item: any) => {
-                    if (item.managedHub && item.managedHub !== 'global-hub') {
-                      setDeleteExternalResource({
-                        open: true,
-                        close: () => setDeleteExternalResource(ClosedDeleteExternalResourceModalProps),
-                        resource: item,
-                        hubCluster: allClusters.find((cluster) => cluster.name === item.managedHub),
-                      })
-                    } else {
-                      setDeleteResource({
-                        open: true,
-                        close: () => setDeleteResource(ClosedDeleteModalProps),
-                        resource: item,
-                        currentQuery: 'kind:VirtualMachineSnapshot',
-                        relatedResource: false,
-                      })
-                    }
-                  },
-                },
-              ]}
+              rowActionResolver={(item: any) =>
+                getVMSnapshotActions(
+                  item,
+                  isVMRunning,
+                  allClusters,
+                  vmActionsEnabled,
+                  setVMAction,
+                  setDeleteResource,
+                  setDeleteExternalResource,
+                  navigate,
+                  t
+                )
+              }
               keyFn={(item: any) => item._uid.toString()}
             />
           </PageSection>

@@ -158,7 +158,7 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
         '/multicloud/configure',
         '/multicloud/console-links',
         '/multicloud/events',
-        '/multicloud/globalhub',
+        '/multicloud/hub',
         '/multicloud/upgrade-risks-prediction',
         '/multicloud/metrics',
         '/multicloud/login',
@@ -174,6 +174,7 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
         '/multicloud/virtualmachines',
         '/multicloud/virtualmachineinstances',
         '/multicloud/virtualmachinesnapshots',
+        '/multicloud/virtualmachinerestores',
       ].map((backendPath) => ({
         path: backendPath,
         target: `https://localhost:${process.env.BACKEND_PORT}`,

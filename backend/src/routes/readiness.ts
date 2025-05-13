@@ -2,12 +2,12 @@
 import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { respondInternalServerError, respondOK } from '../lib/respond'
 import { isLive } from './liveness'
-import { getOauthInfoPromise } from './oauth'
 
 // The kubelet uses readiness probes to know when a container is ready to start accepting traffic
-export async function readiness(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
-  if (!isLive) return respondInternalServerError(req, res)
-  const oauthInfo = await getOauthInfoPromise()
-  if (!oauthInfo.authorization_endpoint) return respondInternalServerError(req, res)
-  return respondOK(req, res)
+export function readiness(req: Http2ServerRequest, res: Http2ServerResponse): void {
+  if (!isLive) {
+    respondInternalServerError(req, res)
+  } else {
+    respondOK(req, res)
+  }
 }
