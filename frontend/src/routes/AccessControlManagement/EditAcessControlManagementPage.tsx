@@ -3,13 +3,11 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom-v5-compat'
 import { useRecoilValue } from 'recoil'
 import { AccessControl } from '../../resources/access-control'
-import { useSharedAtoms } from '../../shared-recoil'
 import { AccessControlManagementForm } from './AccessControlManagementForm'
 import { filteredAccessControlState } from '../../filtered-atoms/AccessControlManagement'
 
 const EditAcessControlManagementPage = () => {
     const { id = undefined } = useParams()
-    const { accessControlState } = useSharedAtoms()
     const accessControls = useRecoilValue(filteredAccessControlState)
     const [accessControl, setAccessControl] = useState<AccessControl | undefined>();
 
