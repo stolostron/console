@@ -5,11 +5,12 @@ import { useRecoilValue } from 'recoil'
 import { AccessControl } from '../../resources/access-control'
 import { useSharedAtoms } from '../../shared-recoil'
 import { AccessControlManagementForm } from './AccessControlManagementForm'
+import { filteredAccessControlState } from '../../filtered-atoms/AccessControlManagement'
 
 const ViewAccessControlManagementPage = () => {
     const { id = undefined } = useParams()
     const { accessControlState } = useSharedAtoms()
-    const accessControls = useRecoilValue(accessControlState)
+    const accessControls = useRecoilValue(filteredAccessControlState)
     const [accessControl, setAccessControl] = useState<AccessControl | undefined>();
 
     useEffect(() => {

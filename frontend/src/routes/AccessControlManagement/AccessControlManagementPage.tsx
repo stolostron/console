@@ -8,11 +8,12 @@ import {
   AcmPageHeader
 } from '../../ui-components'
 import { AccessControlManagementTable } from './AccessControlManagementTable'
+import { filteredAccessControlState } from '../../filtered-atoms/AccessControlManagement'
 
 const AccessControlManagementPage = () => {
   const { accessControlState, discoveryConfigState } = useSharedAtoms()
   const { t } = useTranslation()
-  const accessControls = useRecoilValue(accessControlState)
+  const accessControls = useRecoilValue(filteredAccessControlState)
 
   const discoveryConfigs = useRecoilValue(discoveryConfigState)
 
