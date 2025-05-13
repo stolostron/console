@@ -129,7 +129,7 @@ describe('Discovery Config page', () => {
       discoveryConfigCreateSelfSubjectAccessRequest,
       discoveryConfigCreateSelfSubjectAccessResponse
     )
-    const { container } = render(<TestAddDiscoveryConfigPage />)
+    render(<TestAddDiscoveryConfigPage />)
 
     // Select Credential
     screen
@@ -157,34 +157,31 @@ describe('Discovery Config page', () => {
       })
       .click()
     await clickByText('4.17')
-
+ 
     // Select Cluster Types
-    expect(container.querySelectorAll(`[aria-labelledby^="discoveryClusterTypes-label"]`)).toHaveLength(1)
-    container.querySelector<HTMLButtonElement>(`[aria-labelledby^="discoveryClusterTypes-label"]`)!.click()
+    screen.getByRole('combobox', {
+      name: /select cluster types/i
+    }).click()
+     await new Promise((resolve) => setTimeout(resolve, 500))
+        screen.logTestingPlaygroundURL()
 
-    const rosaCheckbox = container.querySelector('input[id$="-ROSA_CLASSIC"]')
-    if (rosaCheckbox) {
-      userEvent.click(rosaCheckbox)
-    }
-
-    const ocpCheckBox = container.querySelector('input[id$="-OCP"]')
-    if (ocpCheckBox) {
-      userEvent.click(ocpCheckBox)
-    }
+    screen.getByRole('checkbox', {
+      name: /rosa classic/i
+    }).click()
+    screen.getByRole('checkbox', {
+    name: /openshift container platform/i
+    }).click()
 
     // Select Infrastructure Providers
-    expect(container.querySelectorAll(`[aria-labelledby^="discoveryInfrastructureProviders-label"]`)).toHaveLength(1)
-    container.querySelector<HTMLButtonElement>(`[aria-labelledby^="discoveryInfrastructureProviders-label"]`)!.click()
+    screen.getByText(/select infrastructure providers/i).click()
+ 
+    screen.getByRole('checkbox', {
+      name: /amazon web services/i
+    }).click()
 
-    const awsCheckbox = container.querySelector('input[id$="-aws"]')
-    if (awsCheckbox) {
-      userEvent.click(awsCheckbox)
-    }
-
-    const azureCheckbox = container.querySelector('input[id$="-azure"]')
-    if (azureCheckbox) {
-      userEvent.click(azureCheckbox)
-    }
+    screen.getByRole('checkbox', {
+      name: /microsoft azure/i
+    }).click()
 
     // Submit form
     const createDiscoveryConfigNock = nockCreate(discoveryConfig, discoveryConfig)
