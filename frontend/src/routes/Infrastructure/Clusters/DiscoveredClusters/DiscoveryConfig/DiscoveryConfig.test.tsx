@@ -75,6 +75,7 @@ beforeEach(() => {
   sessionStorage.clear()
 })
 
+// discovery config page
 describe('discovery config page', () => {
   beforeEach(() => {
     nockIgnoreApiPaths()
