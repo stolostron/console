@@ -1,0 +1,8 @@
+{
+  "name": "@stolostron/prettier-config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": "./index.json",
+  "license": "Apache-2.0"
+}

@@ -15,7 +15,7 @@ import { ansibleTower } from './routes/ansibletower'
 import { apiPaths } from './routes/apiPaths'
 import { configure } from './routes/configure'
 import { events, startWatching, stopWatching } from './routes/events'
-import { globalHub } from './routes/globalHub'
+import { hub } from './routes/hub'
 import { liveness } from './routes/liveness'
 import { metrics } from './routes/metrics'
 import { observabilityProxy, prometheusProxy } from './routes/metricsProxy'
@@ -66,12 +66,13 @@ router.post('/ansibletower', ansibleTower)
 router.get('/username', username)
 router.all('/userpreference', userpreference)
 router.all('/metrics', metrics)
-router.get('/globalhub', globalHub)
+router.get('/hub', hub)
 router.post('/upgrade-risks-prediction', upgradeRiskPredictions)
 router.post('/aggregate/*', aggregate)
 router.put('/virtualmachines/*', virtualMachineProxy)
 router.put('/virtualmachineinstances/*', virtualMachineProxy)
 router.post('/virtualmachinesnapshots', virtualMachineProxy)
+router.post('/virtualmachinerestores', virtualMachineProxy)
 router.get('/*', serveHandler)
 
 export async function requestHandler(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {

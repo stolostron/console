@@ -1,0 +1,39 @@
+{
+  "name": "@stolostron/multicluster-sdk",
+  "version": "0.1.0-alpha.5",
+  "description": "Provides extensions and APIs that dynamic plugins can use to leverage multicluster capabilities provided by Red Hat Advanced Cluster Management.",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stolostron/console.git"
+  },
+  "keywords": [
+    "multicluster",
+    "RHACM",
+    "ACM",
+    "SDK",
+    "OpenShift",
+    "dynamic plugin",
+    "Red Hat"
+  ],
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/stolostron/console/tree/main/frontend/packages/multicluster-sdk#readme",
+  "scripts": {
+    "build": "tsc --build",
+    "tsc": "tsc --noEmit",
+    "prettier": "prettier --check src",
+    "prettier:fix": "prettier --write src"
+  },
+  "peerDependencies": {
+    "@openshift-console/dynamic-plugin-sdk": "1.x"
+  },
+  "devDependencies": {
+    "prettier": "^3.2.5",
+    "typescript": "^5.6.3"
+  },
+  "prettier": "@stolostron/prettier-config"
+}

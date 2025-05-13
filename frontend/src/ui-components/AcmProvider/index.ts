@@ -4,7 +4,7 @@ import { AcmIconVariant } from '../AcmIcons/AcmIcons'
 
 export * from './AcmInlineProvider/AcmInlineProvider'
 
-// These connect change as they are used in existing resources ass identifiers
+// These cannot change as they are used in existing resources as identifiers
 export enum Provider {
   redhatcloud = 'rhocm',
   ansible = 'ans',
@@ -27,6 +27,10 @@ export enum Provider {
   kubevirt = 'kubevirt',
   microshift = 'microshift',
   nutanix = 'nutanix',
+  ovirt = 'ovirt',
+  external = 'external',
+  libvirt = 'libvirt',
+  none = 'none',
 }
 
 export const ProviderShortTextMap = {
@@ -51,6 +55,10 @@ export const ProviderShortTextMap = {
   [Provider.kubevirt]: 'OpenShift Virtualization',
   [Provider.microshift]: 'Red Hat Device Edge',
   [Provider.nutanix]: 'Nutanix',
+  [Provider.ovirt]: 'oVirt',
+  [Provider.external]: 'External',
+  [Provider.libvirt]: 'Libvirt',
+  [Provider.none]: 'None',
 }
 
 export const ProviderLongTextMap = {
@@ -75,6 +83,10 @@ export const ProviderLongTextMap = {
   [Provider.kubevirt]: 'Red Hat OpenShift Virtualization',
   [Provider.microshift]: 'Red Hat Device Edge',
   [Provider.nutanix]: 'Nutanix',
+  [Provider.ovirt]: 'Red Hat oVirt',
+  [Provider.external]: 'External Provider',
+  [Provider.libvirt]: 'Libvirt Virtualization',
+  [Provider.none]: 'No Provider',
 }
 
 export const ProviderIconMap = {
@@ -99,4 +111,8 @@ export const ProviderIconMap = {
   [Provider.kubevirt]: AcmIconVariant.kubevirt,
   [Provider.microshift]: AcmIconVariant.redhat,
   [Provider.nutanix]: AcmIconVariant.nutanix,
+  [Provider.ovirt]: AcmIconVariant.redhat,
+  [Provider.external]: AcmIconVariant.cloud,
+  [Provider.libvirt]: AcmIconVariant.cloud,
+  [Provider.none]: AcmIconVariant.cloud,
 }

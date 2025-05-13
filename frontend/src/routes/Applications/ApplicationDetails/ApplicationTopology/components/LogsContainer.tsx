@@ -9,7 +9,7 @@ import { ReactNode, useEffect, useState } from 'react'
 import { fetchRetry, getBackendUrl } from '../../../../../resources/utils'
 import { createResourceURL } from '../helpers/diagram-helpers'
 import './LogsContainer.css'
-import { useHubCluster } from '../../../helpers/useHubCluster'
+import { useLocalHubName } from '../../../../../hooks/use-local-hub'
 
 export interface ILogsContainerProps {
   node: any[]
@@ -22,7 +22,7 @@ export function LogsContainer(props: ILogsContainerProps) {
   const t = props.t
   const podModel = _.get(props.node, 'specs.podModel')
   const pods = podModel && Object.keys(podModel).length > 0 ? podModel[Object.keys(podModel)[0]] : []
-  const hubCluster = useHubCluster()
+  const localHubName = useLocalHubName()
 
   if (pods.length === 0) {
     resourceError = t('No pods found')
@@ -70,7 +70,7 @@ export function LogsContainer(props: ILogsContainerProps) {
   const [cluster, setCluster] = useState<string>(initialCluster)
 
   useEffect(() => {
-    if (cluster !== hubCluster?.metadata?.name && container !== '') {
+    if (cluster !== localHubName && container !== '') {
       const abortController = new AbortController()
       const logsResult = fetchRetry({
         method: 'GET',
@@ -88,7 +88,7 @@ export function LogsContainer(props: ILogsContainerProps) {
         .catch((err) => {
           setLogsError(err.message)
         })
-    } else if (cluster === hubCluster?.metadata?.name && container !== '') {
+    } else if (cluster === localHubName && container !== '') {
       const abortController = new AbortController()
       const logsResult = fetchRetry({
         method: 'GET',
@@ -107,7 +107,7 @@ export function LogsContainer(props: ILogsContainerProps) {
           setLogsError(err.message)
         })
     }
-  }, [cluster, container, currentNamespace, selectedPod, hubCluster?.metadata?.name])
+  }, [cluster, container, currentNamespace, selectedPod, localHubName])
 
   if (resourceError !== '') {
     return (

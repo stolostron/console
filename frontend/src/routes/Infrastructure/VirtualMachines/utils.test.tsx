@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import i18next from 'i18next'
-import { getVirtualMachineRowActions } from './utils'
+import { getVirtualMachineRowActions, getVMSnapshotActions } from './utils'
 
 const mockHistoryPush = jest.fn()
 describe('VirtualMachines utils', () => {
@@ -269,5 +269,103 @@ describe('VirtualMachines utils', () => {
 
     // Assert the correct number of actions are returned
     expect(result).toHaveLength(3)
+  })
+})
+
+describe('VirtualMachineSnapshots utils', () => {
+  const t = i18next.t.bind(i18next)
+  const navigate = jest.fn()
+
+  it('should return actions for VM Snapshots', () => {
+    const item = {
+      _uid: 'bm-4-vms/8cfbff5d-ac86-41f6-9a35-e5ee55c7f6a8',
+      apigroup: 'snapshot.kubevirt.io',
+      apiversion: 'v1beta1',
+      cluster: 'bm-4-vms',
+      created: '2025-05-06T14:26:00Z',
+      indications: 'guestagent; online',
+      kind: 'VirtualMachineSnapshot',
+      kind_plural: 'virtualmachinesnapshots',
+      name: 'centos9-01-snapshot-20250506-102417',
+      namespace: 'openshift-cnv',
+      ready: 'True',
+      phase: 'Succeeded',
+      sourceName: 'centos9-01',
+      _conditionReadyReason: 'Operation complete',
+    }
+    const result = getVMSnapshotActions(
+      item,
+      false,
+      [],
+      true,
+      () => {},
+      () => {},
+      () => {},
+      navigate,
+      t
+    )
+
+    // Assert the correct number of actions are returned
+    expect(result).toHaveLength(4)
+
+    expect(result[0].isDisabled).toBe(false) // restore should be enabled
+
+    // Check if the correct click handler is set for actions
+    const restoreVMAction = result.find((action) => action.id === 'restoreVM')
+    const editVM = result.find((action) => action.id === 'edit')
+    const viewVMRelatedRes = result.find((action) => action.id === 'view-related')
+    const deleteVM = result.find((action) => action.id === 'delete')
+
+    restoreVMAction?.click(item)
+    editVM?.click(item)
+    viewVMRelatedRes?.click(item)
+    deleteVM?.click(item)
+  })
+
+  it('should return actions for VM Snapshots in global hub', () => {
+    const item = {
+      _uid: 'bm-4-vms/8cfbff5d-ac86-41f6-9a35-e5ee55c7f6a8',
+      apigroup: 'snapshot.kubevirt.io',
+      apiversion: 'v1beta1',
+      cluster: 'bm-4-vms',
+      created: '2025-05-06T14:26:00Z',
+      indications: 'guestagent; online',
+      kind: 'VirtualMachineSnapshot',
+      kind_plural: 'virtualmachinesnapshots',
+      name: 'centos9-01-snapshot-20250506-102417',
+      namespace: 'openshift-cnv',
+      ready: 'True',
+      phase: 'Succeeded',
+      sourceName: 'centos9-01',
+      _conditionReadyReason: 'Operation complete',
+      managedHub: 'leaf-hub',
+    }
+    const result = getVMSnapshotActions(
+      item,
+      false,
+      [],
+      true,
+      () => {},
+      () => {},
+      () => {},
+      navigate,
+      t
+    )
+
+    // Assert the correct number of actions are returned
+    expect(result).toHaveLength(4)
+
+    expect(result[0].isDisabled).toBe(false) // restore should be enabled
+
+    // Check if the correct click handler is set for actions
+    const restoreVMAction = result.find((action) => action.id === 'restoreVM')
+    const editVM = result.find((action) => action.id === 'edit')
+    const viewVMRelatedRes = result.find((action) => action.id === 'view-related')
+    const deleteVM = result.find((action) => action.id === 'delete')
+
+    restoreVMAction?.click(item)
+    editVM?.click(item)
+    viewVMRelatedRes?.click(item)
+    deleteVM?.click(item)
   })
 })

@@ -13,6 +13,7 @@
     "build:plugin": "./scripts/checkPlugin.sh && cd plugins/${PLUGIN} && node ../../scripts/generatePluginPackage.js && TS_NODE_PROJECT=../../webpack.tsconfig.json webpack -c ../../webpack.plugin.ts --env plugin=$PLUGIN --mode production",
     "build:plugin:acm": "PLUGIN=acm npm run build:plugin",
     "build:plugin:mce": "PLUGIN=mce npm run build:plugin",
+    "build:workspaces": "npm run build --workspaces --if-present",
     "check": "npm run i18n && npm run prettier && npm run lint && npm run tsc",
     "check:fix": "npm run i18n:fix && npm run prettier:fix && npm run lint:fix && npm run tsc",
     "clean": "rm -rf coverage build",
@@ -21,6 +22,7 @@
     "jest:update-snapshot": "npm run jest -- --updateSnapshot",
     "lint": "eslint src --ext .js,.jsx,.ts,.tsx --max-warnings=0",
     "lint:fix": "npm run lint -- --fix",
+    "postinstall": "npm run build:workspaces",
     "prettier": "prettier --check src public",
     "prettier:fix": "prettier --write src public",
     "i18n": "i18next --fail-on-warnings && git diff --exit-code public/locales/en/translation.json",
@@ -44,8 +46,8 @@
     "@mui/material": "^5.11.1",
     "@octokit/rest": "19.0.3",
     "@octokit/types": "6.40.0",
-    "@openshift-assisted/locales": "2.14.4-cim",
-    "@openshift-assisted/ui-lib": "2.14.4-cim",
+    "@openshift-assisted/locales": "2.14.5-cim",
+    "@openshift-assisted/ui-lib": "2.14.5-cim",
     "@patternfly-labs/react-form-wizard": "^2.5.0",
     "@patternfly/patternfly": "^5.4.2",
     "@patternfly/react-charts": "^7.4.7",
@@ -363,11 +365,8 @@
       "last 1 safari version"
     ]
   },
-  "prettier": {
-    "printWidth": 120,
-    "tabWidth": 2,
-    "semi": false,
-    "singleQuote": true,
-    "trailingComma": "es5"
-  }
+  "prettier": "@stolostron/prettier-config",
+  "workspaces": [
+    "packages/*"
+  ]
 }

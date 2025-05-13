@@ -74,6 +74,7 @@ import {
 import { isLocalSubscription } from './helpers/subscriptions'
 import { getISOStringTimestamp } from '../../resources/utils'
 import { DeprecatedTitle } from './components/DeprecatedTitle'
+import { useLocalHubName } from '../../hooks/use-local-hub'
 
 const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
 const gitPathAnnotationStr = 'apps.open-cluster-management.io/git-path'
@@ -315,10 +316,7 @@ export default function ApplicationsOverview() {
   const { backendUrl } = useContext(dataContext)
 
   const managedClusters = useAllClusters(true)
-  const localCluster = useMemo(
-    () => managedClusters.find((cls) => cls.labels && cls.labels[localClusterStr] === 'true'),
-    [managedClusters]
-  )
+  const localCluster = useLocalHubName()
   const [modalProps, setModalProps] = useState<IDeleteResourceModalProps | { open: false }>({
     open: false,
   })
@@ -333,7 +331,7 @@ export default function ApplicationsOverview() {
     (tableItem: IResource) => {
       // Cluster column
       const clusterList = (tableItem as IUIResource)?.uidata?.clusterList ?? []
-      const clusterCount = getClusterCount(clusterList, localCluster?.name ?? '')
+      const clusterCount = getClusterCount(clusterList, localCluster)
       const clusterTransformData = getClusterCountString(t, clusterCount, clusterList, tableItem)
 
       // Resource column
@@ -474,7 +472,7 @@ export default function ApplicationsOverview() {
         header: t('Clusters'),
         cell: (resource) => {
           const clusterList = (resource as IUIResource)?.uidata?.clusterList ?? []
-          const clusterCount = getClusterCount(clusterList, localCluster?.name ?? '')
+          const clusterCount = getClusterCount(clusterList, localCluster)
           const clusterCountString = getClusterCountString(t, clusterCount, clusterList, resource)
           const clusterCountSearchLink = getClusterCountSearchLink(resource, clusterCount, clusterList)
           return getClusterCountField(clusterCount, clusterCountString, clusterCountSearchLink)
@@ -486,7 +484,7 @@ export default function ApplicationsOverview() {
         search: 'transformed.clusterCount',
         exportContent: (resource) => {
           const clusterList = (resource as IUIResource)?.uidata?.clusterList ?? []
-          const clusterCount = getClusterCount(clusterList, localCluster?.name ?? '')
+          const clusterCount = getClusterCount(clusterList, localCluster)
           return getClusterCountString(t, clusterCount, clusterList, resource)
         },
       },
@@ -788,7 +786,7 @@ export default function ApplicationsOverview() {
                   kind: resource.kind.toLowerCase(),
                   apigroup,
                   apiversion,
-                  cluster: resource.status?.cluster ? resource.status?.cluster : localCluster?.name,
+                  cluster: resource.status?.cluster ? resource.status?.cluster : localCluster,
                 },
               })
           navigate(searchLink)
@@ -824,7 +822,7 @@ export default function ApplicationsOverview() {
                     placementRules,
                     placements,
                     channels,
-                    localCluster?.name ?? ''
+                    localCluster
                   )
                 : [[], []]
             /* istanbul ignore else */
@@ -902,7 +900,7 @@ export default function ApplicationsOverview() {
       placements,
       channels,
       canCreateApplication,
-      localCluster?.name,
+      localCluster,
     ]
   )
 

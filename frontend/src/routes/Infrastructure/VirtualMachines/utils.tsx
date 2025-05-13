@@ -260,3 +260,103 @@ export function getVirtualMachineRowActions(
       ]
     : [editButton, viewRelatedButton, deleteButton, ...extensionButtons]
 }
+
+export function getVMSnapshotActions(
+  item: any,
+  isVMRunning: boolean,
+  allClusters: Cluster[],
+  vmActionsEnabled: boolean,
+  setVMAction: Dispatch<SetStateAction<IVMActionModalProps>>,
+  setDeleteResource: Dispatch<SetStateAction<IDeleteModalProps>>,
+  setDeleteExternalResource: Dispatch<SetStateAction<IDeleteExternalResourceModalProps>>,
+  navigate: NavigateFunction,
+  t: TFunction<string, undefined>
+): IAcmRowAction<any>[] {
+  const restoreSnapshot = {
+    id: 'restoreVM',
+    title: t('Restore VirtualMachine from snapshot'),
+    click: (item: any) => {
+      setVMAction({
+        open: true,
+        close: () => setVMAction(ClosedVMActionModalProps),
+        action: 'Restore',
+        method: 'POST',
+        item,
+      })
+    },
+    isDisabled: isVMRunning || item?.phase !== 'Succeeded',
+  }
+  const editSnapshot = {
+    id: 'edit',
+    title: t('Edit VirtualMachine'),
+    click: (item: any) => {
+      const searchParams = GetUrlSearchParam(item)
+      if (item.managedHub && item.managedHub !== 'global-hub') {
+        // If resource lives on a cluster managed by a managed hub we need to launch user to the managed hub for actions / viewing
+        const hubUrl = allClusters.find((cluster) => cluster.name === item.managedHub)?.consoleURL
+        return window.open(`${hubUrl}${NavigationPath.resourceYAML}${searchParams}`, '_blank')
+      }
+      return navigate(
+        {
+          pathname: NavigationPath.resourceYAML,
+          search: searchParams,
+        },
+        {
+          state: {
+            from: NavigationPath.search,
+            fromSearch: window.location.search,
+          },
+        }
+      )
+    },
+  }
+  const viewRelatedButton = {
+    id: 'view-related',
+    title: t('View related resources'),
+    click: (item: any) => {
+      const searchParams = GetUrlSearchParam(item)
+      if (item.managedHub && item.managedHub !== 'global-hub') {
+        const hubUrl = allClusters.find((cluster) => cluster.name === item.managedHub)?.consoleURL
+        return window.open(`${hubUrl}${NavigationPath.resourceRelated}${GetUrlSearchParam(item)}`, '_blank')
+      }
+      return navigate(
+        {
+          pathname: NavigationPath.resourceRelated,
+          search: searchParams,
+        },
+        {
+          state: {
+            from: NavigationPath.search,
+            fromSearch: window.location.search,
+          },
+        }
+      )
+    },
+  }
+  const deleteSnapshot = {
+    id: 'delete',
+    title: t('Delete VirtualMachineSnapshot'),
+    click: (item: any) => {
+      if (item.managedHub && item.managedHub !== 'global-hub') {
+        setDeleteExternalResource({
+          open: true,
+          close: () => setDeleteExternalResource(ClosedDeleteExternalResourceModalProps),
+          resource: item,
+          hubCluster: allClusters.find((cluster) => cluster.name === item.managedHub),
+        })
+      } else {
+        setDeleteResource({
+          open: true,
+          close: () => setDeleteResource(ClosedDeleteModalProps),
+          resource: item,
+          currentQuery: 'kind:VirtualMachineSnapshot',
+          relatedResource: false,
+        })
+      }
+    },
+  }
+
+  return vmActionsEnabled
+    ? [restoreSnapshot, { ...editSnapshot, addSeparator: true }, viewRelatedButton, deleteSnapshot]
+    : [editSnapshot, viewRelatedButton, deleteSnapshot]
+}

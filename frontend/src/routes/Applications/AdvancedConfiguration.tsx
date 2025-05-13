@@ -48,8 +48,8 @@ import {
   getEditLink,
   getSearchLink,
 } from './helpers/resource-helper'
-import { useHubCluster } from './helpers/useHubCluster'
 import { DeprecatedTitle } from './components/DeprecatedTitle'
+import { useLocalHubName } from '../../hooks/use-local-hub'
 
 export interface AdvancedConfigurationPageProps {
   readonly defaultToggleOption?: ApplicationToggleOptions
@@ -89,7 +89,7 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
   const PlacementRuleTableItems: IResource[] = []
   const PlacementTableItems: IResource[] = []
 
-  const hubCluster = useHubCluster()
+  const localHubName = useLocalHubName()
 
   useEffect(() => {
     const canDeleteSubscriptionPromise = canUser('delete', SubscriptionDefinition)
@@ -134,7 +134,7 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
               name,
               namespace,
               kind,
-              cluster: hubCluster?.metadata?.name,
+              cluster: localHubName,
               apiversion,
             },
           }
@@ -143,7 +143,7 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
         }
       }
     },
-    [hubCluster?.metadata?.name]
+    [localHubName]
   )
 
   const getSubscriptionClusterCount = useCallback(
@@ -168,7 +168,7 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
             selectedPlacementDecision,
             clusterCount,
             placementDecisions,
-            hubCluster?.metadata?.name ?? ''
+            localHubName
           )
           if (clusterCount.remoteCount && showSearchLink) {
             const subscriptionName = _.get(resource, 'metadata.name')
@@ -189,7 +189,7 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
         }
       }
     },
-    [placementDecisions, t, hubCluster?.metadata?.name]
+    [placementDecisions, t, localHubName]
   )
 
   // Cache cell text for sorting and searching
@@ -258,12 +258,7 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
       }
       case 'PlacementRule':
       case 'Placement': {
-        clusterCount = getPlacementDecisionClusterCount(
-          tableItem,
-          clusterCount,
-          placementDecisions,
-          hubCluster?.metadata?.name ?? ''
-        )
+        clusterCount = getPlacementDecisionClusterCount(tableItem, clusterCount, placementDecisions, localHubName)
         const clusterString = getClusterCountString(t, clusterCount)
         _.set(transformedObject.transformed, 'clusterCount', clusterString)
         break
@@ -332,7 +327,7 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
             name: item.metadata?.name,
             namespace: item.metadata?.namespace,
             kind: item.kind,
-            cluster: hubCluster?.metadata?.name,
+            cluster: localHubName,
             apiversion: item.apiVersion,
           },
         }

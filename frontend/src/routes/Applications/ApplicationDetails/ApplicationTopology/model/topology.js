@@ -9,24 +9,22 @@ import { getSubscriptionTopology } from './topologySubscription'
 import { getAppSetTopology } from './topologyAppSet'
 import { getOCPFluxAppTopology } from './topologyOCPFluxApp'
 
-export const getTopology = async (application, managedClusters, relatedResources, argoData) => {
+export const getTopology = async (application, managedClusters, localHubName, relatedResources, argoData) => {
   let topology
-  const hubCluster = managedClusters.find((cls) => cls.labels && cls.labels['local-cluster'] === 'true')
-
   if (application) {
     if (application.isArgoApp) {
-      topology = getArgoTopology(application, argoData, managedClusters, hubCluster?.name)
+      topology = getArgoTopology(application, argoData, managedClusters, localHubName)
     } else if (application.isAppSet) {
-      topology = getAppSetTopology(application, hubCluster?.name)
+      topology = getAppSetTopology(application, localHubName)
     } else if (application.isOCPApp || application.isFluxApp) {
-      topology = await getOCPFluxAppTopology(application, hubCluster?.name)
+      topology = await getOCPFluxAppTopology(application, localHubName)
     } else {
-      topology = getSubscriptionTopology(application, managedClusters, relatedResources, hubCluster?.name)
+      topology = getSubscriptionTopology(application, managedClusters, relatedResources, localHubName)
     }
   }
 
   if (topology) {
-    _.set(topology, 'hubClusterName', hubCluster?.name)
+    _.set(topology, 'hubClusterName', localHubName)
   }
   return topology
 }

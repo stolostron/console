@@ -49,8 +49,8 @@ import { CredentialsForm } from '../Credentials/CredentialsForm'
 import { useProjects } from '../../hooks/useProjects'
 import { setAvailableConnections } from '../Infrastructure/Clusters/ManagedClusters/CreateCluster/controlData/ControlDataHelpers'
 import { LoadingPage } from '../../components/LoadingPage'
-import { useHubCluster } from './helpers/useHubCluster'
 import { PluginContext } from '../../lib/PluginContext'
+import { useIsHubSelfManaged, useLocalHubName } from '../../hooks/use-local-hub'
 
 interface CreationStatus {
   status: string
@@ -196,8 +196,8 @@ export function CreateSubscriptionApplication(
     (providerConnection) => providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans'
   )
 
-  const hubCluster = useHubCluster(true)
-  const isLocalCluster = !!hubCluster
+  const isLocalCluster = !!useIsHubSelfManaged()
+  const localHubName = useLocalHubName()
 
   // create button
   const [creationStatus, setCreationStatus] = useState<CreationStatus>()
@@ -467,7 +467,7 @@ export function CreateSubscriptionApplication(
         break
     }
 
-    control.hubClusterName = hubCluster ? hubCluster.metadata?.name : ''
+    control.hubClusterName = localHubName
   }
 
   useEffect(() => {

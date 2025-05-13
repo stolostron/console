@@ -21,9 +21,9 @@ describe('global hub', function () {
           },
         ],
       })
-    const res = await request('GET', '/globalhub')
+    const res = await request('GET', '/hub')
     expect(res.statusCode).toEqual(200)
     const parsed = await parsePipedJsonBody(res)
-    expect(parsed).toEqual({ isGlobalHub: true })
+    expect(parsed).toEqual({ localHubName: 'local-cluster', isGlobalHub: true, isHubSelfManaged: undefined })
   })
 })

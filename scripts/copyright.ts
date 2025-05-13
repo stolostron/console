@@ -2,7 +2,7 @@
 import { lstat, readdir, readFile, writeFile } from 'fs/promises'
 import { join } from 'path'
 
-const ignoreDirectories = ['.git', 'node_modules', 'coverage', 'build', 'dist']
+const ignoreDirectories = ['.git', 'node_modules', 'coverage', 'build', 'dist', 'lib']
 const extensions = ['.ts', '.tsx', '.js']
 
 export type CopyrightAction = (path: string) => Promise<boolean>
