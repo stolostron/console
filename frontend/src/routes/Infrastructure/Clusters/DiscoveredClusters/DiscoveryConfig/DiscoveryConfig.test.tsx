@@ -157,31 +157,41 @@ describe('Discovery Config page', () => {
       })
       .click()
     await clickByText('4.17')
- 
-    // Select Cluster Types
-    screen.getByRole('combobox', {
-      name: /select cluster types/i
-    }).click()
-     await new Promise((resolve) => setTimeout(resolve, 500))
-        screen.logTestingPlaygroundURL()
 
-    screen.getByRole('checkbox', {
-      name: /rosa classic/i
-    }).click()
-    screen.getByRole('checkbox', {
-    name: /openshift container platform/i
-    }).click()
+    // Select Cluster Types
+    screen
+      .getByRole('combobox', {
+        name: /select cluster types/i,
+      })
+      .click()
+    await new Promise((resolve) => setTimeout(resolve, 500))
+    screen.logTestingPlaygroundURL()
+
+    screen
+      .getByRole('checkbox', {
+        name: /rosa classic/i,
+      })
+      .click()
+    screen
+      .getByRole('checkbox', {
+        name: /openshift container platform/i,
+      })
+      .click()
 
     // Select Infrastructure Providers
     screen.getByText(/select infrastructure providers/i).click()
- 
-    screen.getByRole('checkbox', {
-      name: /amazon web services/i
-    }).click()
 
-    screen.getByRole('checkbox', {
-      name: /microsoft azure/i
-    }).click()
+    screen
+      .getByRole('checkbox', {
+        name: /amazon web services/i,
+      })
+      .click()
+
+    screen
+      .getByRole('checkbox', {
+        name: /microsoft azure/i,
+      })
+      .click()
 
     // Submit form
     const createDiscoveryConfigNock = nockCreate(discoveryConfig, discoveryConfig)
