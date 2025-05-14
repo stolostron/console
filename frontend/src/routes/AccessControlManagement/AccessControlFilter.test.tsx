@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react'
 import { RecoilRoot } from 'recoil'
 import { accessControlState } from '../../atoms'
 import { AccessControl } from '../../resources/access-control'
-import { useFilterAccessControls } from './AccessControlManagementTableHelper'
+import { useAccessControlFilter } from './AccessControlManagementTableHelper'
 
 function TestFilteredAccessControlMiniPage(props: { mockState: AccessControl[] }) {
   return (
@@ -17,7 +17,7 @@ function TestFilteredAccessControlMiniPage(props: { mockState: AccessControl[] }
 }
 
 function FilteredAccessControlDisplay() {
-  const accessControls = useFilterAccessControls()
+  const accessControls = useAccessControlFilter()
   return <div id="filtered">{JSON.stringify(accessControls)}</div>
 }
 
@@ -56,8 +56,8 @@ describe('test useFilterAccessControl', () => {
     expect(screen.getByTestId('filtered').textContent).toBe('[]')
   })
 
-  test('should include entries with at least one matching roleRef.name', () => {
-    const filterKeep: AccessControl = {
+  test('should keep first two because of matching rolebinding name', () => {
+    const filterKeep1: AccessControl = {
       apiVersion: 'rbac.open-cluster-management.io/v1alpha1',
       kind: 'ClusterPermission',
       metadata: { name: 'test1', namespace: 'cluster1' },
@@ -71,7 +71,7 @@ describe('test useFilterAccessControl', () => {
         ],
       },
     }
-    const filterOut: AccessControl = {
+    const filterKeep2: AccessControl = {
       apiVersion: 'rbac.open-cluster-management.io/v1alpha1',
       kind: 'ClusterPermission',
       metadata: { name: 'test2', namespace: 'cluster1' },
@@ -79,17 +79,31 @@ describe('test useFilterAccessControl', () => {
         roleBindings: [
           {
             namespace: 'ns2',
+            roleRef: { apiGroup: 'rbac.authorization.k8s.io', kind: 'Role', name: 'kubevirt.io:edit' },
+            subject: { apiGroup: 'rbac.authorization.k8s.io', kind: 'User', name: 'user1' },
+          },
+        ],
+      },
+    }
+    const filterOut: AccessControl = {
+      apiVersion: 'rbac.open-cluster-management.io/v1alpha1',
+      kind: 'ClusterPermission',
+      metadata: { name: 'test3', namespace: 'cluster1' },
+      spec: {
+        roleBindings: [
+          {
+            namespace: 'ns3',
             roleRef: { apiGroup: 'rbac.authorization.k8s.io', kind: 'Role', name: 'randomrole' },
             subject: { apiGroup: 'rbac.authorization.k8s.io', kind: 'User', name: 'user1' },
           },
         ],
       },
     }
-    render(<TestFilteredAccessControlMiniPage mockState={[filterKeep, filterOut]} />)
-    expect(screen.getByTestId('filtered').textContent).toBe(JSON.stringify([filterKeep]))
+    render(<TestFilteredAccessControlMiniPage mockState={[filterKeep1, filterKeep2, filterOut]} />)
+    expect(screen.getByTestId('filtered').textContent).toBe(JSON.stringify([filterKeep1, filterKeep2]))
   })
 
-  test('should include entry if any of multiple roleBindings match', () => {
+  test('should keep if any of multiple rolebinding names match, even if other rolebinding does not match', () => {
     const filterKeep: AccessControl = {
       apiVersion: 'rbac.open-cluster-management.io/v1alpha1',
       kind: 'ClusterPermission',
@@ -98,7 +112,7 @@ describe('test useFilterAccessControl', () => {
         roleBindings: [
           {
             namespace: 'ns1',
-            roleRef: { apiGroup: 'rbac.authorization.k8s.io', kind: 'Role', name: 'foo' },
+            roleRef: { apiGroup: 'rbac.authorization.k8s.io', kind: 'Role', name: 'randomrole' },
             subject: { apiGroup: 'rbac.authorization.k8s.io', kind: 'User', name: 'user1' },
           },
           {

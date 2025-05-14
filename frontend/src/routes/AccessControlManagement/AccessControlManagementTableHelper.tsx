@@ -259,7 +259,7 @@ const useFilters = ({ managedClusters, accessControls, t }: { managedClusters: C
 
 export { accessControlTableColumns, ACTIONS, COLUMN_CELLS, EXPORT_FILE_PREFIX, useFilters }
 
-export function useFilterAccessControls() {
+export function useAccessControlFilter() {
   const { accessControlState } = useSharedAtoms()
   const all = useRecoilValue(accessControlState)
   const filters = ['kubevirt.io:view', 'kubevirt.io:edit', 'kubevirt.io:admin']
