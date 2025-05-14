@@ -52,26 +52,26 @@ export function getInfrastructureProvider(provider: string): Provider {
  * @param provider - The infrastructure provider name as a string (case insensitive)
  * @returns The display name for the provider
  */
-export function getDisplayNameForInfrastructureProvider(provider: string): string {
+export function getDisplayNameForInfrastructureProvider(provider: string, t?: any): string {
   switch (provider.toLowerCase()) {
     case 'aws':
       return 'Amazon Web Services'
     case 'azure':
       return 'Microsoft Azure'
     case 'baremetal':
-      return 'Bare Metal'
+      return t && typeof t === 'function' ? t('infra.baremetal') : 'Bare Metal'
     case 'external':
-      return 'External'
+      return t && typeof t === 'function' ? t('infra.external') : 'External'
+    case 'libvirt':
+      return t && typeof t === 'function' ? t('infra.libvirt') : 'Libvirt'
+    case 'none':
+      return t && typeof t === 'function' ? t('infra.none') : 'None'
     case 'gcp':
       return 'Google Cloud Platform'
     case 'ibmcloud':
       return 'IBM Cloud'
     case 'kubevirt':
       return 'Red Hat OpenShift Virtualization'
-    case 'libvirt':
-      return 'Libvirt'
-    case 'none':
-      return 'None'
     case 'nutanix':
       return 'Nutanix'
     case 'openstack':
@@ -143,7 +143,7 @@ export function searchInfrastructureProvider(provider: string) {
  * @param acronym - The cluster type acronym to convert (case insensitive)
  * @returns The full display name of the cluster type, or the original acronym if not recognized
  */
-export function getFullTypeByAcronymForDiscoveryClustersType(acronym: string) {
+export function getFullTypeByAcronymForDiscoveryClustersType(acronym: string, t?: any) {
   switch (acronym.toUpperCase()) {
     case 'MOA':
       return 'Red Hat OpenShift Service on AWS'
@@ -160,7 +160,9 @@ export function getFullTypeByAcronymForDiscoveryClustersType(acronym: string) {
     case 'OSD':
       return 'OpenShift Dedicated'
     case 'OSDTRIAL':
-      return 'Trial version of OpenShift Dedicated'
+      return t && typeof t === 'function'
+        ? `OpenShift Container Platform ${t('type.assistedInstaller')}`
+        : 'Trial version of OpenShift Dedicated'
     case 'ARO':
       return 'Azure Red Hat OpenShift'
     case 'RHMI':
