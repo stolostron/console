@@ -11,10 +11,8 @@ import { rbacDelete, rbacGet, rbacPatch } from '../../lib/rbac-util'
 import { NavigationPath } from '../../NavigationPath'
 import { AccessControl } from '../../resources/access-control'
 import { Cluster, createDownloadFile, deleteResource, getISOStringTimestamp } from '../../resources/utils'
-import {
-    AcmLabels,
-    compareStrings
-} from '../../ui-components'
+import { AcmLabels, compareStrings } from '../../ui-components'
+import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 
 const LABELS_LENGTH = 5
 const EXPORT_FILE_PREFIX = "access-control-management"
@@ -261,3 +259,10 @@ const useFilters = ({ managedClusters, accessControls, t }: { managedClusters: C
 
 export { accessControlTableColumns, ACTIONS, COLUMN_CELLS, EXPORT_FILE_PREFIX, useFilters }
 
+export function useAccessControlFilter() {
+  const { accessControlState } = useSharedAtoms()
+  const all = useRecoilValue(accessControlState)
+  const filters = ['kubevirt.io:view', 'kubevirt.io:edit', 'kubevirt.io:admin']
+  const accessControls = all.filter((ac) => ac.spec.roleBindings?.some((rb) => filters.includes(rb.roleRef.name)))
+  return accessControls
+}

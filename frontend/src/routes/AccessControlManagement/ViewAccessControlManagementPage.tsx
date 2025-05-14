@@ -1,15 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom-v5-compat'
-import { useRecoilValue } from 'recoil'
 import { AccessControl } from '../../resources/access-control'
-import { useSharedAtoms } from '../../shared-recoil'
 import { AccessControlManagementForm } from './AccessControlManagementForm'
+import { useAccessControlFilter } from './AccessControlManagementTableHelper'
 
 const ViewAccessControlManagementPage = () => {
     const { id = undefined } = useParams()
-    const { accessControlState } = useSharedAtoms()
-    const accessControls = useRecoilValue(accessControlState)
+    const accessControls = useAccessControlFilter()
     const [accessControl, setAccessControl] = useState<AccessControl | undefined>();
 
     useEffect(() => {
