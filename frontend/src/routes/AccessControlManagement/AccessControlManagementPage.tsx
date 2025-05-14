@@ -1,26 +1,19 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { PageSection } from '@patternfly/react-core'
 import { useTranslation } from '../../lib/acm-i18next'
-import { useRecoilValue } from '../../shared-recoil'
-import {
-  AcmPage,
-  AcmPageContent,
-  AcmPageHeader
-} from '../../ui-components'
+import { AcmPage, AcmPageContent, AcmPageHeader } from '../../ui-components'
 import { AccessControlManagementTable } from './AccessControlManagementTable'
-import { filteredAccessControlState } from '../../filtered-atoms/AccessControlManagement'
+import { useFilterAccessControls } from './AccessControlManagementTableHelper'
 
 const AccessControlManagementPage = () => {
   const { t } = useTranslation()
-  const accessControls = useRecoilValue(filteredAccessControlState)
+  const accessControls = useFilterAccessControls()
 
   return (
     <AcmPage header={<AcmPageHeader title={t('Access Control Management')} />}>
       <AcmPageContent id="access-control-management">
         <PageSection>
-          <AccessControlManagementTable
-            accessControls={accessControls}
-          />
+          <AccessControlManagementTable accessControls={accessControls} />
         </PageSection>
       </AcmPageContent>
     </AcmPage>
