@@ -626,6 +626,15 @@ export const onChangeBMHHostname = async (bmh: BareMetalHostK8sResource, hostnam
     },
   ]).promise as Promise<BareMetalHostK8sResource>
 
+export const onEditHostRole = async (agent: AgentK8sResource, role?: string) =>
+  patchResource(agent as IResource, [
+    {
+      op: 'replace',
+      path: '/spec/role',
+      value: role,
+    },
+  ]).promise as Promise<AgentK8sResource>
+
 export const useAgentsOfAIFlow = ({ name, namespace }: { name: string; namespace: string }): AgentK8sResource[] => {
   const { agentsState } = useSharedAtoms()
   const agents = useRecoilValue(agentsState)
