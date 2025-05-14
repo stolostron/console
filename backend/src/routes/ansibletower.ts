@@ -6,7 +6,6 @@ import { URL } from 'url'
 import { logger } from '../lib/logger'
 import { catchInternalServerError, notFound, respond, respondBadRequest } from '../lib/respond'
 import { getAuthenticatedToken } from '../lib/token'
-import { getProxyAgent } from '../lib/agent'
 
 interface AnsibleCredential {
   towerHost: string
@@ -48,7 +47,6 @@ export function ansibleTower(req: Http2ServerRequest, res: Http2ServerResponse):
           headers: {
             Authorization: `Bearer ${ansibleCredential.token}`,
           },
-          agent: getProxyAgent(),
           rejectUnauthorized: false, // NOSONAR - AAP connects insecurely by default
         }
 
