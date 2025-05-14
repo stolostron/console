@@ -4,7 +4,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Spinner, SelectOption } from '@patternfly/react-core'
-import { Select, SelectVariant } from '../../AcmSelectBase'
+import { AcmSelectBase, SelectVariant } from '../../AcmSelectBase'
 import ControlPanelFormGroup from './ControlPanelFormGroup'
 import get from 'lodash/get'
 
@@ -84,7 +84,7 @@ class ControlPanelMultiSelect extends React.Component {
                 <div>{active}</div>
               </div>
             ) : (
-              <Select
+              <AcmSelectBase
                 ariaLabelledBy={`${controlId}-label`}
                 variant={SelectVariant.typeaheadCheckbox}
                 onSelect={(value) => {
@@ -99,7 +99,7 @@ class ControlPanelMultiSelect extends React.Component {
                 data-testid={`multi-${controlId}`}
               >
                 {this.options}
-              </Select>
+              </AcmSelectBase>
             )}
             {validated === 'error' ? (
               <div

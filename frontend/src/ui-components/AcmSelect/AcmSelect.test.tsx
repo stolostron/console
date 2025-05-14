@@ -25,10 +25,6 @@ describe('AcmSelect', () => {
   test('can apply and clear selections', async () => {
     const { queryByText } = render(<Select />)
     expect(queryByText('Select one')).toBeVisible()
-
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    screen.logTestingPlaygroundURL()
-
     screen
       .getByRole('combobox', {
         name: 'Select one',

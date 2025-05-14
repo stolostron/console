@@ -164,8 +164,6 @@ describe('Discovery Config page', () => {
         name: /select cluster types/i,
       })
       .click()
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    screen.logTestingPlaygroundURL()
 
     screen
       .getByRole('checkbox', {
