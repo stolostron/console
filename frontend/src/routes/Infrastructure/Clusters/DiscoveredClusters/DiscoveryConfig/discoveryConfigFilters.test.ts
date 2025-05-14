@@ -210,7 +210,9 @@ describe('getFullTypeByAcronymForDiscoveryClustersType', () => {
   })
 
   it('returns correct translated type for OCP-AssistedInstall', () => {
-    expect(getFullTypeByAcronymForDiscoveryClustersType('OCP-AssistedInstall')).toBe('OpenShift Assisted Installer')
+    expect(getFullTypeByAcronymForDiscoveryClustersType('OCP-AssistedInstall')).toBe(
+      'OpenShift Container Platform (Assisted Installer)'
+    )
   })
 
   it('returns correct translated type for OCP', () => {
