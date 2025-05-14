@@ -14,7 +14,7 @@ import { wait, waitForNocks } from '../../../lib/test-util'
 import { ActionExtensionProps, ListColumnExtensionProps } from '../../../plugin-extensions/properties'
 import { AcmExtension } from '../../../plugin-extensions/types'
 import { SearchOperator } from '../../../resources'
-import { SearchResultItemsDocument, SearchSchemaDocument } from '../../Search/search-sdk/search-sdk'
+import { SearchResultItemsAndRelatedItemsDocument, SearchSchemaDocument } from '../../Search/search-sdk/search-sdk'
 import VirtualMachinesPage from './VirtualMachinesPage'
 
 const mockHealthySearchOperator: SearchOperator = {
@@ -141,7 +141,7 @@ describe('VirtualMachinesPage Page', () => {
       },
       {
         request: {
-          query: SearchResultItemsDocument,
+          query: SearchResultItemsAndRelatedItemsDocument,
           variables: {
             input: [
               {
@@ -153,6 +153,7 @@ describe('VirtualMachinesPage Page', () => {
                   },
                 ],
                 limit: -1,
+                relatedKinds: ['VirtualMachine', 'VirtualMachineInstance'],
               },
             ],
           },
@@ -202,6 +203,7 @@ describe('VirtualMachinesPage Page', () => {
                     status: 'Stopped',
                   },
                 ],
+                related: [],
                 __typename: 'SearchResult',
               },
             ],
@@ -265,7 +267,7 @@ describe('VirtualMachinesPage Page', () => {
     const mocks = [
       {
         request: {
-          query: SearchResultItemsDocument,
+          query: SearchResultItemsAndRelatedItemsDocument,
           variables: {
             input: [
               {
@@ -277,6 +279,7 @@ describe('VirtualMachinesPage Page', () => {
                   },
                 ],
                 limit: -1,
+                relatedKinds: ['VirtualMachine', 'VirtualMachineInstance'],
               },
             ],
           },
@@ -338,7 +341,7 @@ describe('VirtualMachinesPage Page', () => {
       },
       {
         request: {
-          query: SearchResultItemsDocument,
+          query: SearchResultItemsAndRelatedItemsDocument,
           variables: {
             input: [
               {
@@ -350,6 +353,7 @@ describe('VirtualMachinesPage Page', () => {
                   },
                 ],
                 limit: -1,
+                relatedKinds: ['VirtualMachine', 'VirtualMachineInstance'],
               },
             ],
           },
