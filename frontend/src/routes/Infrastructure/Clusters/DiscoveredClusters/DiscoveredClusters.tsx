@@ -22,6 +22,13 @@ import { DiscoveredCluster, DiscoveryConfig, ProviderConnection, unpackProviderC
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { getISOStringTimestamp } from '../../../../resources/utils'
 import AcmTimestamp from '../../../../lib/AcmTimestamp'
+import {
+  getInfrastructureProvider,
+  searchInfrastructureProvider,
+  getFullTypeByAcronymForDiscoveryClustersType,
+  getClusterTypeGroup,
+  CLUSTER_TYPE_GROUPS,
+} from './DiscoveryConfig/discoveryConfigFilters'
 
 export default function DiscoveredClustersPage() {
   return (
@@ -244,18 +251,29 @@ export function DiscoveredClustersTable(props: {
     {
       header: t('dcTbl.type'),
       sort: (a: DiscoveredCluster, b: DiscoveredCluster) =>
-        compareStrings(getFullTypeByAcronym(a?.spec?.type || ''), getFullTypeByAcronym(b?.spec?.type || '')),
+        compareStrings(
+          getFullTypeByAcronymForDiscoveryClustersType(a?.spec?.type ?? ''),
+          getFullTypeByAcronymForDiscoveryClustersType(b?.spec?.type ?? '')
+        ),
       search: (discoveredCluster) => {
         if (discoveredCluster.spec.type) {
-          return [discoveredCluster.spec.type, getFullTypeByAcronym(discoveredCluster.spec.type) || '-']
+          // get the specific cluster type display name
+          const typeName = getFullTypeByAcronymForDiscoveryClustersType(discoveredCluster.spec.type) || '-'
+
+          // get the group this type belongs to, for searching by group name)
+          const group = getClusterTypeGroup(discoveredCluster.spec.type)
+          const groupName = group ? CLUSTER_TYPE_GROUPS[group].displayName : ''
+
+          // returning raw type code, display name and the group name (if it is there)
+          return [discoveredCluster.spec.type, typeName, groupName].filter(Boolean)
         } else {
           return '-'
         }
       },
       cell: (discoveredCluster) =>
-        discoveredCluster?.spec.type ? getFullTypeByAcronym(discoveredCluster?.spec.type) : '-',
+        discoveredCluster?.spec.type ? getFullTypeByAcronymForDiscoveryClustersType(discoveredCluster?.spec.type) : '-',
       exportContent: (discoveredCluster) =>
-        discoveredCluster?.spec.type ? getFullTypeByAcronym(discoveredCluster?.spec.type) : '-',
+        discoveredCluster?.spec.type ? getFullTypeByAcronymForDiscoveryClustersType(discoveredCluster?.spec.type) : '-',
     },
     {
       header: t('dcTbl.openShiftVersion'),
@@ -274,14 +292,14 @@ export function DiscoveredClustersTable(props: {
       header: t('dcTbl.infrastructureProvider'),
       sort: 'spec.cloudProvider',
       search: (discoveredCluster) =>
-        discoveredCluster?.spec.cloudProvider ? searchCloudProvider(discoveredCluster.spec.cloudProvider) : '',
+        discoveredCluster?.spec.cloudProvider ? searchInfrastructureProvider(discoveredCluster.spec.cloudProvider) : '',
       cell: (discoveredCluster) =>
         discoveredCluster?.spec.cloudProvider ? (
-          <AcmInlineProvider provider={getProvider(discoveredCluster?.spec.cloudProvider)} />
+          <AcmInlineProvider provider={getInfrastructureProvider(discoveredCluster?.spec.cloudProvider)} />
         ) : (
           '-'
         ),
-      exportContent: (discoveredCluster) => getProvider(discoveredCluster?.spec.cloudProvider) || '-',
+      exportContent: (discoveredCluster) => getInfrastructureProvider(discoveredCluster?.spec.cloudProvider) || '-',
     },
     {
       header: t('dcTbl.created'),
@@ -312,30 +330,6 @@ export function DiscoveredClustersTable(props: {
       },
     },
   ]
-
-  function getFullTypeByAcronym(acronym: string) {
-    switch (acronym.toUpperCase()) {
-      case 'MOA':
-        return t('type.rosa')
-      case 'ROSA':
-        return t('type.rosa')
-      case 'MOA-HostedControlPlane':
-        return t('type.rosa.hcp')
-      case 'ROSA-HCP':
-        return t('type.rosa.hcp')
-      case 'OCP-ASSISTEDINSTALL':
-        return t('type.ocp')
-      case 'OCP':
-        return t('type.ocp')
-      case 'OSD':
-        return t('type.osd')
-      case 'ARO':
-        return t('type.aro')
-      default:
-        // Unable to find match, return existing acronym
-        return acronym
-    }
-  }
 
   const rowActionResolver = useCallback(
     (item: DiscoveredCluster) => {
@@ -392,52 +386,4 @@ export function DiscoveredClustersTable(props: {
 
 function dckeyFn(cluster: DiscoveredCluster) {
   return cluster.metadata.uid!
-}
-
-function getProvider(provider: string) {
-  switch (provider) {
-    case Provider.gcp:
-      return Provider.gcp
-    case Provider.aws:
-      return Provider.aws
-    case 'azure':
-      return Provider.azure
-    case 'vsphere':
-      return Provider.vmware
-    case 'baremetal':
-      return Provider.baremetal
-    case 'openstack':
-      return Provider.openstack
-    case 'kubevirt':
-      return Provider.kubevirt
-    case 'powervs':
-      return Provider.ibmpowervs
-    case Provider.other:
-    default:
-      return Provider.other
-  }
-}
-
-function searchCloudProvider(provider: string) {
-  switch (provider.toLowerCase()) {
-    case Provider.gcp:
-      return [Provider.gcp, 'google cloud platform']
-    case Provider.aws:
-      return [Provider.aws, 'amazon web services']
-    case 'azure':
-      return [Provider.azure, 'microsoft azure']
-    case 'vsphere':
-      return [Provider.vmware, 'vsphere', 'vmware vsphere']
-    case 'baremetal':
-      return [Provider.baremetal, 'bare metal']
-    case 'openstack':
-      return [Provider.openstack, 'red hat openstack']
-    case 'kubevirt':
-      return [Provider.kubevirt, 'red hat openshift virtualization']
-    case 'powervs':
-      return [Provider.ibmpowervs, 'ibm power virtual server']
-    case Provider.other:
-    default:
-      return [Provider.other, provider]
-  }
 }

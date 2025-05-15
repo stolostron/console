@@ -63,7 +63,7 @@ export async function virtualMachineProxy(req: Http2ServerRequest, res: Http2Ser
           const secretPath = process.env.CLUSTER_API_URL + `/api/v1/namespaces/${body.managedCluster}/secrets`
           const managedClusterToken: string = await jsonRequest(secretPath, serviceAccountToken)
             .then((response: ResourceList<Secret>) => {
-              const secret = response.items.find((secret) => secret.metadata.name === 'virtual-machine-actor')
+              const secret = response.items.find((secret) => secret.metadata.name === 'vm-actor')
               const proxyToken = secret.data?.token ?? ''
               return Buffer.from(proxyToken, 'base64').toString('ascii')
             })
@@ -80,25 +80,26 @@ export async function virtualMachineProxy(req: Http2ServerRequest, res: Http2Ser
           //    /virtualmachines/<action>
           //    /virtualmachineinstances/<action>
           //    /virtualmachinesnapshots
+          //    /virtualmachinerestores
           const action = req.url.split('/')[2]
-          let subResourceKind = ''
           let path = `${proxyURL}/${body.managedCluster}`
           let reqBody = undefined
           switch (req.url) {
             case '/virtualmachines/start':
             case '/virtualmachines/stop':
             case '/virtualmachines/restart':
-              subResourceKind = 'virtualmachines'
-              path = `${path}/apis/subresources.kubevirt.io/v1/namespaces/${body.vmNamespace}/${subResourceKind}/${body.vmName}/${action}`
+              path = `${path}/apis/subresources.kubevirt.io/v1/namespaces/${body.vmNamespace}/virtualmachines/${body.vmName}/${action}`
               break
             case '/virtualmachineinstances/pause':
             case '/virtualmachineinstances/unpause':
-              subResourceKind = 'virtualmachineinstances'
-              path = `${path}/apis/subresources.kubevirt.io/v1/namespaces/${body.vmNamespace}/${subResourceKind}/${body.vmName}/${action}`
+              path = `${path}/apis/subresources.kubevirt.io/v1/namespaces/${body.vmNamespace}/virtualmachineinstances/${body.vmName}/${action}`
               break
             case '/virtualmachinesnapshots':
-              subResourceKind = 'virtualmachinesnapshots'
-              path = `${path}/apis/snapshot.kubevirt.io/v1beta1/namespaces/${body.vmNamespace}/${subResourceKind}`
+              path = `${path}/apis/snapshot.kubevirt.io/v1beta1/namespaces/${body.vmNamespace}/virtualmachinesnapshots`
+              reqBody = JSON.stringify(body.reqBody)
+              break
+            case '/virtualmachinerestores':
+              path = `${path}/apis/snapshot.kubevirt.io/v1beta1/namespaces/${body.vmNamespace}/virtualmachinerestores`
               reqBody = JSON.stringify(body.reqBody)
               break
           }
