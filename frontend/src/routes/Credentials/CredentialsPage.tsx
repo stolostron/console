@@ -243,6 +243,7 @@ export function CredentialsTable(props: {
           {
             header: '',
             cellTransforms: [fitContent],
+            isActionCol: true,
             cell: (secret: Secret) => {
               const actions = [
                 {
