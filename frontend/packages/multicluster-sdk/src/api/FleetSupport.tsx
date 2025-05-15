@@ -1,10 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useResolvedExtensions } from '@openshift-console/dynamic-plugin-sdk'
-import { isMulticlusterSDK } from '../internal'
-import { FC, PropsWithChildren, ReactNode, useContext, useEffect, useMemo, useState } from 'react'
+import { isMulticlusterSDK, MulticlusterSDKProvider } from '../internal'
+import { FC, PropsWithChildren, useContext, useEffect, useMemo, useState } from 'react'
 import { FleetSupportContext } from '../internal/context/FleetSupportContext'
+import { Bullseye, Spinner } from '@patternfly/react-core'
 
-export const FleetSupport: FC<PropsWithChildren<{ loading: ReactNode }>> = ({ children, loading }) => {
+export const useFleetValue = () => {
   const [multiclusterSDKs, extensionsResolved] = useResolvedExtensions(isMulticlusterSDK)
   const [hubClusterName, setHubClusterName] = useState<string>()
 
@@ -28,7 +29,28 @@ export const FleetSupport: FC<PropsWithChildren<{ loading: ReactNode }>> = ({ ch
     [ready, sdkProvider, hubClusterName]
   )
 
-  return ready ? <FleetSupportContext.Provider value={contextValue}>{children}</FleetSupportContext.Provider> : loading
+  return contextValue
+}
+
+export const FleetSupport: FC<
+  PropsWithChildren<{
+    value: {
+      sdkProvider: MulticlusterSDKProvider
+      hubClusterName: string
+    }
+  }>
+> = ({ children, value }) => {
+  return (
+    <FleetSupportContext.Provider value={value || {}}>
+      {value?.sdkProvider ? (
+        children
+      ) : (
+        <Bullseye>
+          <Spinner />
+        </Bullseye>
+      )}
+    </FleetSupportContext.Provider>
+  )
 }
 
 export const useIsFleetSupported = () => {

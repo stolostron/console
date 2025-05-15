@@ -32,8 +32,12 @@
     "@openshift-console/dynamic-plugin-sdk": "1.x"
   },
   "devDependencies": {
+    "@types/path-browserify": "^1.0.3",
     "prettier": "^3.2.5",
     "typescript": "^5.6.3"
   },
-  "prettier": "@stolostron/prettier-config"
+  "prettier": "@stolostron/prettier-config",
+  "dependencies": {
+    "path-browserify": "^1.0.1"
+  }
 }

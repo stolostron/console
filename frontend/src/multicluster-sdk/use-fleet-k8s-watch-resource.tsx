@@ -9,11 +9,10 @@ import { MulticlusterSDKProvider } from '@stolostron/multicluster-sdk/lib/intern
 export const useFleetK8sWatchResource: MulticlusterSDKProvider['useFleetK8sWatchResource'] = <
   R extends FleetK8sResourceCommon | FleetK8sResourceCommon[],
 >(
-  hubClusterName: string,
   initResource: FleetWatchK8sResource | null
 ): WatchK8sResult<R> => {
   const { cluster, ...resource } = initResource ?? {}
-  const useFleet = cluster && cluster !== hubClusterName
+  const useFleet = cluster && cluster !== 'local-host'
   const nullResource = resource === null
   const { isList, groupVersionKind, namespace, name } = resource ?? {}
   const { group, version, kind = '' } = groupVersionKind ?? {}
