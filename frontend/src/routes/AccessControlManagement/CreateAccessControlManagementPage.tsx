@@ -16,33 +16,43 @@ const CreateAccessControlManagementPage = () => {
   return (() => {
     switch (true) {
       case error !== undefined:
-        return (
-          <ErrorPage error={error} />
-        )
+        return <ErrorPage error={error} />
       case loading:
-        return (
-          <LoadingPage />
-        )
+        return <LoadingPage />
       case projects.length === 0:
         return (
           <AcmPage
             header={
               <AcmPageHeader
                 title={t('Add Access Control Management')}
-                breadcrumb={[{ text: t('AccessControlManagements'), to: NavigationPath.accessControlManagement }, { text: t('Add Access Control Management') }]}
+                breadcrumb={[
+                  { text: t('AccessControlManagements'), to: NavigationPath.accessControlManagement },
+                  { text: t('Add Access Control Management') },
+                ]}
               />
             }
           >
             <PageSection variant="light" isFilled>
-              <AcmEmptyState title={t('Unauthorized')} message={t('rbac.unauthorized.namespace')} showSearchIcon={true} />
+              <AcmEmptyState
+                title={t('Unauthorized')}
+                message={t('rbac.unauthorized.namespace')}
+                showSearchIcon={true}
+              />
             </PageSection>
-          </AcmPage>)
+          </AcmPage>
+        )
       default:
         return (
-          <AccessControlManagementForm isCreatable={true} namespaces={projects} isEditing={false} isViewing={false} credentialsType={Provider.ansible} />
+          <AccessControlManagementForm
+            isCreatable={true}
+            namespaces={projects}
+            isEditing={false}
+            isViewing={false}
+            credentialsType={Provider.ansible}
+          />
         )
     }
-  })();
+  })()
 }
 
 export { CreateAccessControlManagementPage }

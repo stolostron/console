@@ -12,11 +12,13 @@ const EditAcessControlManagementPage = () => {
 
   useEffect(() => {
     if (id) {
-      setAccessControl(accessControls.find(e => e.metadata?.uid === id))
+      setAccessControl(accessControls.find((e) => e.metadata?.uid === id))
     }
   }, [accessControls, id])
 
-  return <AccessControlManagementForm isCreatable={false} isEditing={true} isViewing={false} accessControl={accessControl} />
+  return (
+    <AccessControlManagementForm isCreatable={false} isEditing={true} isViewing={false} accessControl={accessControl} />
+  )
 }
 
 export { EditAcessControlManagementPage }
