@@ -296,6 +296,7 @@ export function ClusterSetSubmarinerPageContent() {
                 {
                   header: '',
                   cellTransforms: [fitContent],
+                  isActionCol: true,
                   cell: (mca: ManagedClusterAddOn) => {
                     const submarinerConfig = submarinerConfigs.find(
                       (sc) => sc.metadata.namespace === mca.metadata.namespace

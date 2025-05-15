@@ -125,6 +125,7 @@ export function MachinePoolsTable() {
     {
       header: '',
       cellTransforms: [fitContent],
+      isActionCol: true,
       cell: (machinePool: MachinePool) => {
         let actions = [
           {

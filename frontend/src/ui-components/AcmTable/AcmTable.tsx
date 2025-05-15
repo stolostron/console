@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { css } from '@emotion/css'
+import { css as cssPF } from '@patternfly/react-styles'
 import {
   Badge,
   ButtonVariant,
@@ -18,6 +19,7 @@ import {
   ToolbarGroup,
   ToolbarItem,
   Tooltip,
+  TooltipPosition,
   TooltipProps,
 } from '@patternfly/react-core'
 import {
@@ -33,28 +35,33 @@ import {
 } from '@patternfly/react-core/deprecated'
 import { EllipsisVIcon, ExportIcon, FilterIcon } from '@patternfly/react-icons'
 import {
+  ActionsColumn,
   CustomActionsToggleProps,
-  expandable,
+  ExpandableRowContent,
   IAction,
   IExtraData,
   IRow,
+  IRowCell,
   IRowData,
   ISortBy,
   ITransform,
   nowrap,
-  RowWrapper,
-  RowWrapperProps,
-  sortable,
   SortByDirection,
+  Table,
   TableGridBreakpoint,
   TableVariant,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr,
 } from '@patternfly/react-table'
-import { Table, TableBody, TableHeader } from '@patternfly/react-table/deprecated'
 import useResizeObserver from '@react-hook/resize-observer'
 import { debounce } from 'debounce'
 import Fuse from 'fuse.js'
 import get from 'get-value'
 import {
+  cloneElement,
   createContext,
   FormEvent,
   Fragment,
@@ -82,6 +89,7 @@ import { FilterCounts, IRequestListView, IResultListView, IResultStatuses } from
 import { AcmSearchInput, SearchConstraint, SearchOperator } from '../AcmSearchInput'
 import { PluginContext } from '../../lib/PluginContext'
 import { AcmDropdown, AcmDropdownItems } from '../AcmDropdown'
+import { mergeWith } from 'lodash'
 
 type SortFn<T> = (a: T, b: T) => number
 type CellFn<T> = (item: T, search: string) => ReactNode
@@ -504,10 +512,6 @@ const tableClass = css({
   },
 })
 
-function OuiaIdRowWrapper(props: RowWrapperProps) {
-  return <RowWrapper {...props} ouiaId={get(props, 'row.props.key')} />
-}
-
 export const SEARCH_DEBOUNCE_TIME = 500
 
 const DEFAULT_ITEMS_PER_PAGE = 10
@@ -555,6 +559,32 @@ const applyFilters = <T, S>(
       (filter: string) => findFilterMatch(filter, filterArray)?.tableFilterFn(filterSelections[filter], item) ?? true
     )
   )
+}
+
+function mergeProps(...props: any) {
+  const firstProps = props[0]
+  const restProps = props.slice(1)
+
+  if (!restProps.length) {
+    return { ...firstProps }
+  }
+
+  return mergeWith({ ...firstProps }, ...restProps, (a: any, b: any, key: any) => {
+    if (key === 'children') {
+      if (a && b) {
+        return cloneElement(a, {
+          children: b,
+        })
+      }
+      return { ...b, ...a }
+    }
+
+    if (key === 'className') {
+      return cssPF(a, b)
+    }
+
+    return undefined
+  })
 }
 
 export type AcmTableProps<T> = {
@@ -1098,8 +1128,14 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     }
   }, [isPreProcessed, actualPage, perPage, sorted])
 
-  const { rows, addedSubRowCount } = useMemo<{ rows: IRow[]; addedSubRowCount: number }>(() => {
+  const { rows, primaryRows, addedSubRows, addedSubRowCount } = useMemo<{
+    rows: IRow[]
+    primaryRows: IRow[]
+    addedSubRows: IRow[]
+    addedSubRowCount: number
+  }>(() => {
     const newRows: IRow[] = []
+    const newSubRows: IRow[] = []
     const itemToCells = (item: T, key: string) =>
       selectedSortedCols.map((column) => {
         return typeof column.cell === 'string'
@@ -1119,37 +1155,45 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         cells: itemToCells(item, key),
       })
       if (subRows) {
-        subRows.forEach((subRow) => newRows.push({ ...subRow, parent: i + addedSubRowCount }))
+        subRows.forEach((subRow) => {
+          newRows.push({ ...subRow, parent: i + addedSubRowCount })
+          newSubRows[i] = { ...subRow, parent: i + addedSubRowCount }
+        })
         addedSubRowCount += subRows.length
       }
     })
-    return { rows: newRows, addedSubRowCount }
+    return {
+      rows: newRows,
+      primaryRows: newRows.filter((row) => row.parent == undefined),
+      addedSubRows: newSubRows,
+      addedSubRowCount,
+    }
   }, [paged, selectedSortedCols, internalSearch, expanded, selected, disabled])
 
   const onCollapse = useMemo<((_event: unknown, rowIndex: number, isOpen: boolean) => void) | undefined>(() => {
     if (addSubRows && addedSubRowCount) {
       return (_event, rowIndex, isOpen) => {
         /* istanbul ignore next */
-        if (!rows[rowIndex] && isOpen) {
+        if (!primaryRows[rowIndex] && isOpen) {
           // Expand all
           let tempExpanded = {}
-          rows.forEach((_, idx) => {
-            const rowKey = rows[idx]?.props?.key.toString()
+          primaryRows.forEach((_, idx) => {
+            const rowKey = primaryRows[idx]?.props?.key.toString()
             tempExpanded = rowKey ? { ...tempExpanded, [rowKey]: true } : tempExpanded
           })
           setExpanded(tempExpanded)
-        } else if (!rows[rowIndex] && !isOpen) {
+        } else if (!primaryRows[rowIndex] && !isOpen) {
           // Collapse all
           setExpanded({})
-        } else if (rows[rowIndex]) {
+        } else if (primaryRows[rowIndex]) {
           // Expand/collpase single row
-          const rowKey = rows[rowIndex].props.key.toString()
+          const rowKey = primaryRows[rowIndex].props.key.toString()
           setExpanded({ ...expanded, [rowKey]: isOpen })
         }
       }
     }
     return undefined
-  }, [rows, addedSubRowCount, expanded, addSubRows])
+  }, [primaryRows, addedSubRowCount, expanded, addSubRows])
 
   // Compensate for PF auto-added columns
   // sort state always contains the data index
@@ -1158,11 +1202,10 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   const hasSelectionColumn =
     tableActions?.some((action) => action.variant === 'action-group' || action.variant === 'bulk-action') ||
     !!propsOnSelect
-  const adjustedSortIndexOffset = (hasSelectionColumn ? 1 : 0) + (onCollapse ? 1 : 0)
   const adjustedSort =
     sort && sort.index !== undefined && sort.index !== null && sort.direction && filtered.length > 0
       ? {
-          index: sort.index + adjustedSortIndexOffset,
+          index: sort.index,
           direction: sort.direction,
         }
       : sort
@@ -1218,7 +1261,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         setSort(newSort)
       } else {
         setSort({
-          index: (newSort && newSort.index ? newSort.index : 0) - adjustedSortIndexOffset,
+          index: newSort && newSort.index ? newSort.index : 0,
           direction: newSort && newSort.direction,
         })
       }
@@ -1227,7 +1270,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         setPreFilterSort(undefined)
       }
     },
-    [filtered.length, internalSearch, setSort, adjustedSortIndexOffset]
+    [filtered.length, internalSearch, setSort]
   )
 
   const updatePerPage = useCallback(
@@ -1244,9 +1287,9 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     (_event: FormEvent, isSelected: boolean, rowId: number) => {
       const newSelected = { ...selected }
       if (isSelected) {
-        newSelected[rows[rowId].props.key] = true
+        newSelected[primaryRows[rowId]?.props?.key] = true
       } else {
-        delete newSelected[rows[rowId].props.key]
+        delete newSelected[primaryRows[rowId]?.props?.key]
       }
       setSelected(newSelected)
       /* istanbul ignore next */
@@ -1254,7 +1297,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         propsOnSelect(items.filter((item) => newSelected[keyFn(item)]))
       }
     },
-    [items, propsOnSelect, selected, rows, keyFn]
+    [items, primaryRows, propsOnSelect, selected, keyFn]
   )
 
   const resolveTableItem = useCallback(
@@ -1360,6 +1403,32 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     page: isPreProcessed ? resultView?.page : page,
     onSetPage: (_event, page) => setPage(page),
     onPerPageSelect: (_event, perPage) => updatePerPage(perPage),
+  }
+
+  const onSelectCallback = useCallback(() => {
+    return rows.length &&
+      (tableActions?.some((action) => action.variant === 'action-group' || action.variant === 'bulk-action') ||
+        !!propsOnSelect)
+      ? onSelect
+      : undefined
+  }, [rows, tableActions, propsOnSelect, onSelect])
+
+  const isActionMenu = (cellIndex: number): boolean => {
+    return selectedSortedCols[cellIndex].isActionCol ?? false
+  }
+
+  function renderCellContent(cell: ReactNode | IRowCell<any> | string): ReactNode {
+    if (cell) {
+      if (typeof cell === 'object') {
+        if ('title' in cell && cell.title !== undefined) {
+          return cell.title as ReactNode
+        }
+        return cell as ReactNode
+      } else if (typeof cell === 'string' || typeof cell === 'number') {
+        return cell as ReactNode
+      }
+    }
+    return null
   }
 
   return (
@@ -1543,47 +1612,134 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
             <div ref={tableDivRef} className={tableDivClass}>
               <Table
                 className={tableClass}
-                cells={selectedSortedCols.map((column) => {
-                  return {
-                    title: column.header,
-                    header: column.tooltip
-                      ? {
-                          info: {
-                            popover: column.tooltip,
-                          },
-                        }
-                      : {},
-                    transforms: [nowrap, ...(column.transforms || []), ...(column.sort ? [sortable] : [])],
-                    cellTransforms: column.cellTransforms || [],
-                    cellFormatters: onCollapse ? [expandable] : [],
-                  }
-                })}
-                rows={rows}
-                rowWrapper={OuiaIdRowWrapper}
-                actionResolver={actionResolver}
-                actions={actions}
-                actionsToggle={actionsToggle}
                 aria-label={t('Simple Table')}
-                sortBy={adjustedSort}
-                onSort={(_event, index, direction) => updateSort({ index, direction })}
-                onSelect={
-                  /* istanbul ignore next */
-                  rows.length &&
-                  (tableActions?.some(
-                    (action) => action.variant === 'action-group' || action.variant === 'bulk-action'
-                  ) ||
-                    !!propsOnSelect)
-                    ? onSelect
-                    : undefined
-                }
-                canSelectAll={false}
-                onCollapse={onCollapse}
                 borders={!props.noBorders}
                 variant={TableVariant.compact}
                 gridBreakPoint={gridBreakPoint ?? breakpoint}
               >
-                <TableHeader />
-                <TableBody />
+                <Thead>
+                  <Tr>
+                    {onCollapse && <Th screenReaderText={t('Row collapse')} />}
+                    {hasSelectionColumn && <Th screenReaderText={t('Row select')} />}
+                    {selectedSortedCols
+                      .filter((column) => !!column.header)
+                      .map((column, columnIndex) => {
+                        // setup column props, including column transforms
+                        const transforms: ITransform[] | undefined = [nowrap, ...(column.transforms || [])]
+                        const iTransformColumnProps = transforms
+                          ? mergeProps(...transforms.map((transform: ITransform) => transform()))
+                          : []
+                        const sortProps = column.sort
+                          ? {
+                              sort: {
+                                sortBy: adjustedSort || {},
+                                onSort: (_event: React.MouseEvent, index: number, direction: SortByDirection) => {
+                                  return updateSort({ index, direction })
+                                },
+                                columnIndex: columnIndex,
+                              },
+                            }
+                          : {}
+                        const tooltipProps = column.tooltip
+                          ? {
+                              tooltip: column.tooltip,
+                              tooltipProps: { position: TooltipPosition.left },
+                              info: {
+                                popover: column.tooltip,
+                              },
+                            }
+                          : undefined
+                        return (
+                          <Th
+                            key={column.id}
+                            dataLabel={column.header}
+                            {...tooltipProps}
+                            {...sortProps}
+                            {...iTransformColumnProps}
+                          >
+                            {column.header}
+                          </Th>
+                        )
+                      })}
+                  </Tr>
+                </Thead>
+                {primaryRows.map((row, rowIndex) => {
+                  return (
+                    <Tbody isExpanded={row.isOpen} key={`${row.props.key}-tablebody`}>
+                      <Tr key={`${row.props.key}-tablerow`} ouiaId={row?.props?.key}>
+                        {onCollapse && (
+                          <Td
+                            expand={{
+                              isExpanded: row.isOpen || false,
+                              rowIndex,
+                              onToggle: onCollapse,
+                              expandId: 'expandable-toggle',
+                            }}
+                          />
+                        )}
+                        {hasSelectionColumn && (
+                          <Td
+                            key={`${row.props.key}-select`}
+                            select={{
+                              rowIndex,
+                              onSelect: onSelectCallback(),
+                              isSelected: selected[row.props.key],
+                              isDisabled: row.disableSelection,
+                            }}
+                          />
+                        )}
+                        {row?.cells?.map((cell, cellIndex) => {
+                          // setup row props, including celltransforms
+                          const transforms: ITransform[] | undefined = selectedSortedCols[cellIndex]?.cellTransforms
+                          const iTransformCellProps = transforms
+                            ? mergeProps(
+                                ...transforms.map((transform: ITransform) =>
+                                  transform(row, {
+                                    rowIndex,
+                                  })
+                                )
+                              )
+                            : []
+                          const isActionKebab = isActionMenu(cellIndex)
+                          const rowProps = {
+                            dataLabel: isActionKebab ? undefined : columns[cellIndex].header,
+                            ...iTransformCellProps,
+                          }
+                          return (
+                            <Td key={`row-${rowIndex}-cell-${cellIndex}`} {...rowProps} isActionCell={isActionKebab}>
+                              {renderCellContent(cell)}
+                            </Td>
+                          )
+                        })}
+                        {(!!actionResolver || actions.length > 0) && (
+                          <Td isActionCell>
+                            {((!!actionResolver && actionResolver?.(row, { rowIndex }).length > 0) ||
+                              actions.length > 0) && (
+                              <ActionsColumn
+                                items={actionResolver ? actionResolver(row, { rowIndex }) : actions}
+                                actionsToggle={actionsToggle}
+                                extraData={{ rowIndex }}
+                                rowData={row}
+                              />
+                            )}
+                          </Td>
+                        )}
+                      </Tr>
+                      {addedSubRowCount > 0 && (
+                        <Tr isExpanded={row.isOpen} key={addedSubRows[rowIndex]?.props?.key}>
+                          {/* include spacing for expandable and selection columns in subrow */}
+                          {onCollapse && <Td />}
+                          {hasSelectionColumn && <Td />}
+                          <Td key={addedSubRows[rowIndex]?.props?.key} colSpan={selectedSortedCols.length}>
+                            <ExpandableRowContent>
+                              {addedSubRows[rowIndex]?.cells?.map((cell) => renderCellContent(cell))}
+                            </ExpandableRowContent>
+                          </Td>
+                        </Tr>
+                      )}
+                    </Tbody>
+                  )
+                })}
               </Table>
             </div>
           </div>
