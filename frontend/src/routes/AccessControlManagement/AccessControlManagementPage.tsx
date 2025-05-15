@@ -7,6 +7,7 @@ import { useAccessControlFilter } from './AccessControlManagementTableHelper'
 
 const AccessControlManagementPage = () => {
   const { t } = useTranslation()
+
   const accessControls = useAccessControlFilter()
 
   return (
