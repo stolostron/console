@@ -93,6 +93,9 @@ export async function requestHandler(req: Http2ServerRequest, res: Http2ServerRe
     return notFound(req, res)
   }
 
+  logger.info('ROUTE')
+  logger.info(req.url)
+
   try {
     const result: unknown = route.handler(req, res, route.params, route.store, route.searchParams)
     if (result instanceof Promise) await result

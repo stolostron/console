@@ -79,6 +79,18 @@ export async function managedClusterProxy(
     if (isHttp2ServerResponse(resOrSocket)) {
       await proxy.web(req, resOrSocket, proxyOptions, proxyHandler)
     } else {
+      logger.info(`\n\nWEBSOCKET: `)
+      logger.info(req)
+
+      logger.info('PROXY')
+      logger.info(proxyOptions.hostname)
+      logger.info(req.url)
+      // logger.info('resorsocket')
+      // logger.info(resOrSocket)
+      // logger.info('head')
+      // logger.info(head.toString())
+      logger.info('\n\n')
+
       await proxy.ws(req, resOrSocket, head, proxyOptions, proxyHandler)
     }
   } catch (err) {
