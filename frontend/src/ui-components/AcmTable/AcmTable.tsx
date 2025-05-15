@@ -1730,7 +1730,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                           {/* include spacing for expandable and selection columns in subrow */}
                           {onCollapse && <Td />}
                           {hasSelectionColumn && <Td />}
-                          <Td key={addedSubRows[rowIndex]?.props?.key} colSpan={columns.length}>
+                          <Td key={addedSubRows[rowIndex]?.props?.key} colSpan={selectedSortedCols.length}>
                             <ExpandableRowContent>
                               {addedSubRows[rowIndex]?.cells?.map((cell) => renderCellContent(cell))}
                             </ExpandableRowContent>
