@@ -6,21 +6,17 @@ import { AccessControlManagementForm } from './AccessControlManagementForm'
 import { useAccessControlFilter } from './AccessControlManagementTableHelper'
 
 const ViewAccessControlManagementPage = () => {
-    const { id = undefined } = useParams()
-    const accessControls = useAccessControlFilter()
-    const [accessControl, setAccessControl] = useState<AccessControl | undefined>();
+  const { id = undefined } = useParams()
+  const accessControls = useAccessControlFilter()
+  const [accessControl, setAccessControl] = useState<AccessControl | undefined>()
 
-    useEffect(() => {
-        if (id) {
-            setAccessControl(accessControls.find(e => e.metadata?.uid === id))
-        }
-    }, [accessControls, id])
+  useEffect(() => {
+    if (id) {
+      setAccessControl(accessControls.find((e) => e.metadata?.uid === id))
+    }
+  }, [accessControls, id])
 
-    return <AccessControlManagementForm
-        isEditing={false}
-        isViewing={true}
-        accessControl={accessControl}
-    />
+  return <AccessControlManagementForm isEditing={false} isViewing={true} accessControl={accessControl} />
 }
 
 export { ViewAccessControlManagementPage }

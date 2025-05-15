@@ -229,7 +229,7 @@ const definitions: IWatchOptions[] = [
     apiVersion: 'v1',
     fieldSelector: { 'metadata.name': 'grafana-dashboard-acm-openshift-virtualization-single-vm-view' },
   },
-  { kind: 'ClusterPermission', apiVersion: 'rbac.open-cluster-management.io/v1alpha1', },
+  { kind: 'ClusterPermission', apiVersion: 'rbac.open-cluster-management.io/v1alpha1' },
 ]
 
 export function startWatching(): void {

@@ -11,10 +11,22 @@ const accessControlManagementChildPath = createRoutePathFunction(NavigationPath.
 export default function AccessControlManagement() {
   return (
     <Routes>
-      <Route path={accessControlManagementChildPath(NavigationPath.addAccessControlManagement)} element={<CreateAccessControlManagementPage />} />
-      <Route path={accessControlManagementChildPath(NavigationPath.editAccessControlManagement)} element={<EditAcessControlManagementPage />} />
-      <Route path={accessControlManagementChildPath(NavigationPath.viewAccessControlManagement)} element={<ViewAccessControlManagementPage />} />
-      <Route path={accessControlManagementChildPath(NavigationPath.accessControlManagement)} element={<AccessControlManagementPage />} />
+      <Route
+        path={accessControlManagementChildPath(NavigationPath.addAccessControlManagement)}
+        element={<CreateAccessControlManagementPage />}
+      />
+      <Route
+        path={accessControlManagementChildPath(NavigationPath.editAccessControlManagement)}
+        element={<EditAcessControlManagementPage />}
+      />
+      <Route
+        path={accessControlManagementChildPath(NavigationPath.viewAccessControlManagement)}
+        element={<ViewAccessControlManagementPage />}
+      />
+      <Route
+        path={accessControlManagementChildPath(NavigationPath.accessControlManagement)}
+        element={<AccessControlManagementPage />}
+      />
       <Route path="*" element={<Navigate to={NavigationPath.accessControlManagement} replace />} />
     </Routes>
   )

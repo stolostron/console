@@ -9,19 +9,19 @@ export type AccessControlKindType = 'ClusterPermission'
 
 export const AccessControlDefinition: IResourceDefinition = {
   apiVersion: AccessControlApiVersion,
-  kind: AccessControlKind
+  kind: AccessControlKind,
 }
 
 export interface RoleBinding {
   namespace: string
   roleRef: {
     apiGroup: string
-    kind: "Role"
+    kind: 'Role'
     name: string
   }
   subject: {
     apiGroup: string
-    kind: "User" | "Group"
+    kind: 'User' | 'Group'
     name: string
   }
 }
