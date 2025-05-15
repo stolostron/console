@@ -10,7 +10,7 @@
     "build": "NODE_OPTIONS=--max-old-space-size=8192 TS_NODE_PROJECT=webpack.tsconfig.json webpack --mode production",
     "tsc": "tsc --noEmit",
     "build:plugins": "concurrently npm:build:plugin:* -c green,blue,cyan,magenta",
-    "build:plugin": "./scripts/checkPlugin.sh && PLUGIN=${PLUGIN} TS_NODE_PROJECT=webpack.tsconfig.json webpack -c webpack.${PLUGIN}.plugin.ts --mode production",
+    "build:plugin": "./scripts/checkPlugin.sh && PLUGIN=${PLUGIN} TS_NODE_PROJECT=webpack.tsconfig.json webpack -c plugins/${PLUGIN}/webpack.${PLUGIN}.plugin.ts --mode production",
     "build:plugin:acm": "PLUGIN=acm npm run build:plugin",
     "build:plugin:mce": "PLUGIN=mce npm run build:plugin",
     "build:workspaces": "npm run build --workspaces --if-present",
