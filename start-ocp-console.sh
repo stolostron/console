@@ -16,7 +16,7 @@ oc extract secret/off-cluster-token -n openshift-console --to ocp-console --conf
 echo "Starting local OpenShift console..."
 
 BRIDGE_BASE_ADDRESS="http://localhost:${CONSOLE_PORT}"
-
+BRIDGE_BRANDING=openshift
 BRIDGE_USER_AUTH="openshift"
 BRIDGE_K8S_MODE="off-cluster"
 BRIDGE_CA_FILE="/tmp/ca.crt"

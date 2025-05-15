@@ -1,15 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useFleetSupport } from '../internal/hooks/useFleetSupport'
-import { shouldUseFleetSupport } from '../internal/utils/shouldUseFleetSupport'
 import { UseFleetK8sAPIPath } from '../types'
+import { getBackendUrl } from './utils/fetchRetry'
 
 export const useFleetK8sAPIPath: UseFleetK8sAPIPath = (cluster) => {
-  const fleetSupport = useFleetSupport()
-  if (shouldUseFleetSupport(fleetSupport, cluster)) {
-    const {
-      sdkProvider: { getFleetK8sAPIPath },
-    } = fleetSupport
-    return getFleetK8sAPIPath(cluster)
+  if (cluster) {
+    return `${getBackendUrl()}/managedclusterproxy/${cluster}`
+  } else {
+    return '/api/kubernetes'
+  }
+}
+
+export const getBaseURLApiPath = (cluster?: string) => {
+  if (cluster) {
+    return `${getBackendUrl()}/managedclusterproxy/${cluster}`
   } else {
     return '/api/kubernetes'
   }
