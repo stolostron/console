@@ -916,23 +916,6 @@ function AcmInputDescription(props: { input: Input }): JSX.Element {
         </DescriptionListGroup>
       )
     }
-    case 'Radio':{
-      return (
-        <FormGroup label={input.label} isRequired={input.isRequired} fieldId={input.id}>
-          {input.options.map((option) => (
-            <Radio
-              key={option.id}
-              id={option.id}
-              name={input.id}
-              label={option.text}
-              value={option.value}
-              isChecked={input.value === option.value}
-              onChange={() => input.onChange(option.value)}
-            />
-          ))}
-        </FormGroup>
-      )
-    }
     case 'Custom':
       return input.component
   }
