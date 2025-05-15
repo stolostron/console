@@ -1261,7 +1261,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         setSort(newSort)
       } else {
         setSort({
-          index: newSort && newSort.index ? newSort.index : 0,
+          index: newSort?.index ? newSort.index : 0,
           direction: newSort && newSort.direction,
         })
       }
