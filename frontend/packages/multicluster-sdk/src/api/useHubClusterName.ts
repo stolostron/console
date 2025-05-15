@@ -2,5 +2,5 @@
 import { UseHubClusterName } from '../types'
 
 export const useHubClusterName: UseHubClusterName = () => {
-  return 'local-host'
+  return 'local-cluster'
 }
