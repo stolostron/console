@@ -2,8 +2,8 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 import { css } from '@emotion/css'
-import { Button, Checkbox, PageSection, Tooltip } from '@patternfly/react-core'
-import { Select, SelectOption, SelectOptionObject, SelectVariant } from '@patternfly/react-core/deprecated'
+import { Button, Checkbox, PageSection, Tooltip, SelectOption } from '@patternfly/react-core'
+import { AcmSelectBase, SelectVariant, SelectOptionObject } from '../../../components/AcmSelectBase'
 import { CompressIcon, DownloadIcon, ExpandIcon, OutlinedWindowRestoreIcon } from '@patternfly/react-icons'
 import { LogViewer } from '@patternfly/react-log-viewer'
 import { Dispatch, MutableRefObject, ReactNode, SetStateAction, useEffect, useMemo, useRef, useState } from 'react'
@@ -96,8 +96,6 @@ export function LogsToolbar(props: {
     setPreviousLogs,
   } = props
   const { t } = useTranslation()
-  const [isContainerSelectOpen, setIsContainerSelectOpen] = useState(false)
-  const [isPreviousSelectOpen, setIsPreviousSelectOpen] = useState(false)
 
   const openRawTab = () => {
     const rawWindow = window.open('about:blank')
@@ -115,22 +113,15 @@ export function LogsToolbar(props: {
 
   const previousLogsDropdown = useMemo(() => {
     return (
-      <Select
+      <AcmSelectBase
         id={'previous-log-select'}
         aria-label={'previous-log-select'}
         variant={SelectVariant.single}
-        onToggle={() => setIsPreviousSelectOpen(!isPreviousSelectOpen)}
-        onSelect={(
-          _event: React.MouseEvent<Element, MouseEvent> | React.ChangeEvent<Element>,
-          selection: string | SelectOptionObject
-        ) => {
+        onSelect={(selection) => {
           setPreviousLogs(selection === 'previous-log')
-          setIsPreviousSelectOpen(false)
         }}
         selections={previousLogs ? 'previous-log' : 'current-log'}
-        isOpen={isPreviousSelectOpen}
         isDisabled={!containerHasPreviousLogs}
-        noResultsFoundText={t('No results found')}
       >
         <SelectOption key={'current-log'} value={'current-log'}>
           {t('Current log')}
@@ -138,34 +129,27 @@ export function LogsToolbar(props: {
         <SelectOption key={'previous-log'} value={'previous-log'}>
           {t('Previous log')}
         </SelectOption>
-      </Select>
+      </AcmSelectBase>
     )
-  }, [containerHasPreviousLogs, isPreviousSelectOpen, previousLogs, setPreviousLogs, t])
+  }, [containerHasPreviousLogs, previousLogs, setPreviousLogs, t])
 
   return (
     <div className={isFullscreen ? toolbarContainerFullscreen : toolbarContainer}>
       <div className={toolbarGroup}>
         <div className={toolbarGroupItem}>
-          <Select
+          <AcmSelectBase
             id={'container-select'}
             aria-label={'container-select'}
             variant={SelectVariant.single}
-            onToggle={() => setIsContainerSelectOpen(!isContainerSelectOpen)}
-            onSelect={(
-              _event: React.MouseEvent<Element, MouseEvent> | React.ChangeEvent<Element>,
-              selection: string | SelectOptionObject
-            ) => {
+            onSelect={(selection: string | SelectOptionObject) => {
               setContainer(/* istanbul ignore next */ (selection as string) ?? container)
               sessionStorage.setItem(
                 `${name}-${cluster}-container`,
                 /* istanbul ignore next */ (selection as string) || container
               )
-              setIsContainerSelectOpen(false)
               setPreviousLogs(false)
             }}
             selections={container}
-            isOpen={isContainerSelectOpen}
-            noResultsFoundText={t('No results found')}
           >
             {containers.map((container) => {
               return (
@@ -174,7 +158,7 @@ export function LogsToolbar(props: {
                 </SelectOption>
               )
             })}
-          </Select>
+          </AcmSelectBase>
         </div>
         {/* If previious logs are disabled then show a tooltip with - "Only the current log is available for this container." */}
         <div className={toolbarGroupItem}>

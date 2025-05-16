@@ -2,6 +2,7 @@
 
 import { Fragment, useCallback, useState } from 'react'
 import { AcmMultiSelect, AcmSelect } from '../../../../../../ui-components'
+import { SelectVariant } from '../../../../../../components/AcmSelectBase'
 import {
   Radio,
   FormGroup,
@@ -13,8 +14,8 @@ import {
   ButtonVariant,
   Flex,
   FlexItem,
+  SelectOption,
 } from '@patternfly/react-core'
-import { SelectOption, SelectVariant } from '@patternfly/react-core/deprecated'
 import PlusCircleIcon from '@patternfly/react-icons/dist/js/icons/plus-circle-icon'
 import TimesCircleIcon from '@patternfly/react-icons/dist/js/icons/times-circle-icon'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'

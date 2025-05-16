@@ -9,12 +9,13 @@ import {
   Modal,
   ModalVariant,
   PageSection,
+  SelectOption,
   Split,
   SplitItem,
   Stack,
   StackItem,
 } from '@patternfly/react-core'
-import { Select, SelectOption, SelectVariant } from '@patternfly/react-core/deprecated'
+import { AcmSelectBase, SelectVariant } from '../../../components/AcmSelectBase'
 import {
   InfraEnvFormPage,
   EnvironmentStepFormValues,
@@ -73,7 +74,6 @@ const InfraEnvForm: React.FC<InfraEnvFormProps> = ({ control, handleChange }) =>
   const { t } = useTranslation()
 
   const [isCredentialsModalOpen, setCredentialsModalOpen] = useState(false)
-  const [isCredentialsOpen, setCredentialsOpen] = useState(false)
   const [credentialsUID, setCredentialsUID] = useState<string>()
   const { providerConnectionsValue } = useSharedSelectors()
   const allProviderConnections = useRecoilValue(providerConnectionsValue)
@@ -147,28 +147,24 @@ const InfraEnvForm: React.FC<InfraEnvFormProps> = ({ control, handleChange }) =>
               osImages={osImages}
             >
               <FormGroup fieldId="credentials" label={t('Infrastructure provider credentials')}>
-                <Select
+                <AcmSelectBase
                   variant={SelectVariant.typeahead}
                   placeholderText={t('creation.ocp.cloud.select.connection')}
                   aria-label="Select credentials"
-                  onToggle={(_event, val) => setCredentialsOpen(val)}
-                  onSelect={(_, v) => {
+                  onSelect={(v) => {
                     setCredentialsUID(v as string)
-                    setCredentialsOpen(false)
                   }}
                   selections={credentialsUID}
-                  isOpen={isCredentialsOpen}
                   footer={
                     <CreateCredentialModal handleModalToggle={() => setCredentialsModalOpen(!isCredentialsModalOpen)} />
                   }
-                  noResultsFoundText={t('No results found')}
                 >
                   {providerConnections.map((p) => (
                     <SelectOption key={p.metadata.uid} value={p.metadata.uid}>
                       {p.metadata.name}
                     </SelectOption>
                   ))}
-                </Select>
+                </AcmSelectBase>
               </FormGroup>
             </InfraEnvFormPage>
           </GridItem>

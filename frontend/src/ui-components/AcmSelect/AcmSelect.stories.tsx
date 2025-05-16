@@ -1,9 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { SelectOption, SelectVariant } from '@patternfly/react-core/deprecated'
+import { SelectOption } from '@patternfly/react-core'
 import { useState } from 'react'
 import { AcmForm } from '../AcmForm/AcmForm'
 import { AcmSelect } from './AcmSelect'
+import { SelectVariant } from '../../components/AcmSelectBase'
 
 export default {
   title: 'Select',
