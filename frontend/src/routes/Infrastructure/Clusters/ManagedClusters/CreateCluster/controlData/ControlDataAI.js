@@ -80,6 +80,12 @@ export const getControlDataAI = (t, handleModalToggle, includeKlusterletAddonCon
       title: t('Networking'),
       disabled: true,
     },
+    {
+      id: 'aiCustomManifests',
+      type: 'step',
+      title: t('Custom manifests'),
+      disabled: true,
+    },
   ]
 
   appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlData)

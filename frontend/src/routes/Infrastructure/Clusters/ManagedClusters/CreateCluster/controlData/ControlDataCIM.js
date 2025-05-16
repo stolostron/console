@@ -79,6 +79,12 @@ export const getControlDataCIM = (t, handleModalToggle, warning, includeKlusterl
       title: t('Networking'),
       disabled: true,
     },
+    {
+      id: 'aiCustomManifests',
+      type: 'step',
+      title: t('Custom manifests'),
+      disabled: true,
+    },
   ]
   appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlData)
   if (warning) {

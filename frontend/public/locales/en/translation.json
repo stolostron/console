@@ -1079,6 +1079,7 @@
   "Currently blocked": "Currently blocked",
   "Currently, search is disabled on some of your managed clusters. Some data might be missing from the console view.": "Currently, search is disabled on some of your managed clusters. Some data might be missing from the console view.",
   "Currently, search is disabled on some of your managed clusters. Some data might be missing from the topology view.": "Currently, search is disabled on some of your managed clusters. Some data might be missing from the topology view.",
+  "Custom manifests": "Custom manifests",
   "D2 - Up to 48 TB of HDD-based local storage": "D2 - Up to 48 TB of HDD-based local storage",
   "danger": "danger",
   "Date and time of the most recent reconcile for application resources.": "Date and time of the most recent reconcile for application resources.",
