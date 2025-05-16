@@ -97,30 +97,30 @@ const AccessControlManagementForm = ({
     }
   }, [isEditing, isViewing, selectedUsers.length])
 
-  const [getSearchResults, { data, loading, error, refetch }] = useSearchCompleteLazyQuery({
+  const [getSearchResults, { data }] = useSearchCompleteLazyQuery({
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
   })
   useEffect(() => {
-      getSearchResults({
-        client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
-        variables: {
-          property: 'namespace',
-          query: {
-            keywords: [],
-            filters: [
-              {
-                property: 'cluster',
-                values: [namespace],
-              },
-            ],
-          },
-          limit: -1,
+    getSearchResults({
+      client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
+      variables: {
+        property: 'namespace',
+        query: {
+          keywords: [],
+          filters: [
+            {
+              property: 'cluster',
+              values: [namespace],
+            },
+          ],
         },
-      })
+        limit: -1,
+      },
+    })
   }, [namespace])
 
   const namespaceItems: string[] = useMemo(() => get(data || [], 'searchComplete') ?? [], [data?.searchComplete])
-  
+
   const { cancelForm } = useContext(LostChangesContext)
   const guardedHandleModalToggle = useCallback(() => cancelForm(handleModalToggle), [cancelForm, handleModalToggle])
 
@@ -232,7 +232,7 @@ const AccessControlManagementForm = ({
             placeholder: 'Select or enter namespace',
             value: selectedNamespaces,
             onChange: (values) => setSelectedNamespaces(values),
-            options: namespaceItems.map(namespace => ({
+            options: namespaceItems.map((namespace) => ({
               id: namespace,
               value: namespace,
               text: namespace,
