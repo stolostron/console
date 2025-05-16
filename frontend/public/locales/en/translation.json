@@ -3349,6 +3349,7 @@
   "Virtual machine details": "Virtual machine details",
   "Virtual machines": "Virtual machines",
   "Virtual Machines": "Virtual Machines",
+  "VirtualMachine is either running or delete protected and cannot be deleted. To enable deletion, stop the VirtualMachine if running, or go to VirtualMachine details and disable deletion protection.": "VirtualMachine is either running or delete protected and cannot be deleted. To enable deletion, stop the VirtualMachine if running, or go to VirtualMachine details and disable deletion protection.",
   "VM size": "VM size",
   "VM Size": "VM Size",
   "VMware": "VMware",
