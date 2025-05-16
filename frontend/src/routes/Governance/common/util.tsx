@@ -23,7 +23,7 @@ import {
 import { reconcileResources } from '../../../resources/utils'
 import { PlacementDecision } from '../../../resources/placement-decision'
 import ResourceLabels from '../../Applications/components/ResourceLabels'
-import { IAlertContext } from '../../../ui-components'
+import { AcmEmptyState, IAlertContext } from '../../../ui-components'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { PolicyTableItem } from '../policies/Policies'
 import { LostChangesContext } from '../../../components/LostChanges'
@@ -807,4 +807,31 @@ export const parseDiscoveredPolicies = (data: any): any => {
 
     return v
   })
+}
+
+export const emptyResources = (isVAPB: boolean, isGatekeeperMutation: boolean, t: TFunction): JSX.Element => {
+  if (isVAPB) {
+    return (
+      <AcmEmptyState
+        title={t('No parameter resources')}
+        message={t('There are no parameter resources for this ValidatingAdmissionPolicyBinding.')}
+      />
+    )
+  }
+
+  if (isGatekeeperMutation) {
+    return (
+      <AcmEmptyState
+        title={t('No related resources')}
+        message={t('grc.gatekeeper.mutation.no.resources', { flag: '--mutations-annotations' })}
+      />
+    )
+  }
+
+  return (
+    <AcmEmptyState
+      title={t('No related resources')}
+      message={t('There are no resources related to this policy template.')}
+    />
+  )
 }

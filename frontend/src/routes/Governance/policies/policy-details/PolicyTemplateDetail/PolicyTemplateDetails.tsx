@@ -13,7 +13,6 @@ import { NavigationPath } from '../../../../../NavigationPath'
 import {
   AcmAlert,
   AcmDescriptionList,
-  AcmEmptyState,
   AcmTable,
   AcmTablePaginationContextProvider,
   compareStrings,
@@ -23,7 +22,7 @@ import {
 import { DiffModal } from '../../../components/DiffModal'
 import { useTemplateDetailsContext } from './PolicyTemplateDetailsPage'
 import { useParams } from 'react-router-dom-v5-compat'
-import { getEngineWithSvg } from '../../../common/util'
+import { emptyResources, getEngineWithSvg } from '../../../common/util'
 import { useFetchKyvernoRelated, useFetchVapb, useFetchOnlyRelatedResources } from './PolicyTemplateDetailHooks'
 import {
   addRowsForConstraint,
@@ -373,30 +372,7 @@ export function PolicyTemplateDetails() {
   )
 
   const emptyState: JSX.Element = useMemo(() => {
-    if (isVAPB) {
-      return (
-        <AcmEmptyState
-          title={t('No parameter resources')}
-          message={t('There are no parameter resources for this ValidatingAdmissionPolicyBinding.')}
-        />
-      )
-    }
-
-    if (isGatekeeperMutation) {
-      return (
-        <AcmEmptyState
-          title={t('No related resources')}
-          message={t('grc.gatekeeper.mutation.no.resources', { flag: '--mutations-annotations' })}
-        />
-      )
-    }
-
-    return (
-      <AcmEmptyState
-        title={t('No related resources')}
-        message={t('There are no resources related to this policy template.')}
-      />
-    )
+    return emptyResources(isVAPB, isGatekeeperMutation, t)
   }, [isVAPB, isGatekeeperMutation, t])
 
   return (
