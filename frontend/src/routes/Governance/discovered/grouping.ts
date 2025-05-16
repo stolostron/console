@@ -33,6 +33,7 @@ export function grouping(): {
     parseDiscoveredPolicies: string
   ) => {
     policyItems: any[]
+    relatedResources: any[]
     kyvernoPolicyReports: any[]
   }
 } {
@@ -128,6 +129,13 @@ export function grouping(): {
     return null
   }
 
+  // related resources for policy types listed in search fields are minified
+  const expandResource = (obj: any): any => {
+    const { g: apigroup, v: apiversion, k: kind, ns: namespace, n: name } = obj
+    const groupversion = apigroup ? apigroup + '/' + apiversion : apiversion
+    return { apigroup, apiversion, groupversion, kind, namespace, name }
+  }
+
   const createMessage = (
     data: any,
     helmReleases: any[],
@@ -139,24 +147,98 @@ export function grouping(): {
     parseDiscoveredPoliciesStr: string
   ): {
     policyItems: any[]
+    relatedResources: any[]
     kyvernoPolicyReports: any[]
   } => {
     let searchDataItems: any[] = []
     let kyvernoPolicyReports: any[] = []
 
+    const resources = new Map() // keys like cluster:groupversion:kind:namespace:name
+
     data?.searchResult?.forEach((result: any) => {
       searchDataItems = searchDataItems.concat(result?.items || [])
-      if (result?.items?.[0]?.apigroup === 'kyverno.io') {
+
+      const polInfo = result?.items?.[0] // useful for most template information
+
+      if (polInfo?.apigroup === 'kyverno.io') {
         result.related?.forEach((related: any) => {
           if (['PolicyReport', 'ClusterPolicyReport'].includes(related?.kind ?? ''))
             kyvernoPolicyReports = kyvernoPolicyReports.concat(related?.items || [])
         })
       }
+
+      const templateNamespace = new Map()
+      result?.items?.forEach((polItem: any) => {
+        templateNamespace.set(polItem.cluster, polItem.namespace)
+      })
+
+      result?.related?.forEach((related: any) => {
+        related?.items?.forEach((item: any) => {
+          const { apigroup, apiversion, kind, cluster, namespace, name } = item
+          const groupversion = apigroup ? apigroup + '/' + apiversion : apiversion
+
+          // exclude these kinds
+          switch (apigroup + ':' + kind) {
+            case 'internal.open-cluster-management.io:Cluster':
+              return
+            case 'policy.open-cluster-management.io:Policy':
+              return
+          }
+
+          item.compliant = 'compliant' // if it is noncompliant, it will be in _nonCompliantResources
+          item.groupversion = groupversion
+          item.templateInfo = {
+            clusterName: cluster,
+            apiVersion: polInfo?.apiversion,
+            apiGroup: polInfo?.apigroup,
+            kind: polInfo?.kind,
+            templateName: polInfo?.name,
+            templateNamespace: templateNamespace.get(cluster),
+          }
+
+          resources.set(`${cluster}:${groupversion}:${kind}:${namespace}:${name}`, item)
+        })
+      })
+
+      result?.items?.forEach((polItem: any) => {
+        const cluster = polItem?.cluster
+
+        const missing = JSON.parse(polItem?._missingResources || '[]')
+        missing?.forEach((miniObj: any) => {
+          const obj = expandResource(miniObj)
+          const key = `${cluster}:${obj.groupversion}:${obj.kind}:${obj.namespace}:${obj.name}`
+          resources.set(key, {
+            ...obj,
+            cluster,
+            compliant: 'compliant', // if it is noncompliant, it will also be in the _nonCompliantResources
+            templateInfo: {
+              clusterName: cluster,
+              apiVersion: polInfo?.apiversion,
+              apiGroup: polInfo?.apigroup,
+              kind: polInfo?.kind,
+              templateName: polInfo?.name,
+              templateNamespace: templateNamespace.get(cluster),
+            },
+          })
+        })
+
+        const nonComp = JSON.parse(polItem?._nonCompliantResources || '[]')
+        nonComp?.forEach((miniObj: any) => {
+          const obj = expandResource(miniObj)
+          const key = `${cluster}:${obj.groupversion}:${obj.kind}:${obj.namespace}:${obj.name}`
+          if (resources.has(key)) {
+            resources.get(key).compliant = 'noncompliant'
+          }
+        })
+      })
     })
+
+    const relatedResources = Array.from(resources.values())
 
     if (searchDataItems?.length === 0) {
       return {
         policyItems: [],
+        relatedResources: [],
         kyvernoPolicyReports: [],
       }
     }
@@ -305,13 +387,14 @@ export function grouping(): {
 
     return {
       policyItems,
+      relatedResources,
       kyvernoPolicyReports,
     }
   }
 
   self.onmessage = (e: MessageEvent<any>) => {
     const {
-      searchData,
+      data: searchData,
       helmReleases,
       channels,
       subscriptions,

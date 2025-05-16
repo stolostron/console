@@ -66,6 +66,7 @@ describe('DiscoveredPolicyDetailsPage', () => {
           source: { type: 'Multiple', parentName: '', parentNs: '' },
         },
       ],
+      relatedResources: [],
       err: undefined,
       labelData: undefined,
     })
@@ -106,6 +107,7 @@ describe('DiscoveredPolicyDetailsPage', () => {
     jest.spyOn(useFetchPolicies, 'useFetchPolicies').mockReturnValue({
       isFetching: false,
       policyItems: undefined,
+      relatedResources: undefined,
       err: { message: 'Error getting fetching data' } as ApolloError,
       labelData: undefined,
     })

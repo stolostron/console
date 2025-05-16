@@ -23,6 +23,7 @@ import { ErrorPage } from '../../../../components/ErrorPage'
 export type DiscoveredDetailsContext = {
   isFetching: boolean
   policyItems: DiscoveredPolicyTableItem[] | undefined
+  relatedResources: any[] | undefined
   err: ApolloError | undefined
   policyKind: string
   apiGroup: string
@@ -53,17 +54,18 @@ export function DiscoveredPolicyDetailsPage() {
     policyName: policyName,
   })
 
-  const { isFetching, policyItems, err } = useFetchPolicies(policyName, policyKind, apiGroup)
+  const { isFetching, policyItems, relatedResources, err } = useFetchPolicies(policyName, policyKind, apiGroup)
 
   const disoveredDetailsContext = useMemo<DiscoveredDetailsContext>(
     () => ({
       isFetching: isFetching,
       policyItems: policyItems,
+      relatedResources: relatedResources,
       err: err,
       policyKind: policyKind,
       apiGroup: apiGroup,
     }),
-    [isFetching, policyItems, err, policyKind, apiGroup]
+    [isFetching, policyItems, relatedResources, err, policyKind, apiGroup]
   )
 
   if (err && !isFetching) {

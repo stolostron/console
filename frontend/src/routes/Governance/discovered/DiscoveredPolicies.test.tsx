@@ -23,6 +23,7 @@ describe('useFetchPolicies custom hook', () => {
     })
     jest.spyOn(useFetchPolicies, 'useFetchPolicies').mockReturnValue({
       isFetching: false,
+      relatedResources: [],
       policyItems: [
         {
           id: 'check-policy-reportsConfigurationPolicy',
@@ -231,6 +232,7 @@ describe('useFetchPolicies custom hook', () => {
   test('Should render error page', async () => {
     jest.spyOn(useFetchPolicies, 'useFetchPolicies').mockReturnValue({
       isFetching: false,
+      relatedResources: [],
       policyItems: undefined,
       err: { message: 'Error getting fetching data' } as ApolloError,
       labelData: undefined,
@@ -248,6 +250,7 @@ describe('useFetchPolicies custom hook', () => {
   test('Should render loading page', async () => {
     jest.spyOn(useFetchPolicies, 'useFetchPolicies').mockReturnValue({
       isFetching: true,
+      relatedResources: [],
       policyItems: undefined,
       err: { message: 'Error getting fetching data' } as ApolloError,
       labelData: undefined,
@@ -267,6 +270,7 @@ describe('useFetchPolicies custom hook', () => {
   test('Should render severity with hyphen', async () => {
     jest.spyOn(useFetchPolicies, 'useFetchPolicies').mockReturnValue({
       isFetching: false,
+      relatedResources: [],
       policyItems: [
         {
           id: 'check-policy-reportsConfigurationPolicy',
@@ -436,6 +440,7 @@ describe('useFetchPolicies custom hook', () => {
   test('Should render ValidatingAdmissionPolicyBinding', async () => {
     jest.spyOn(useFetchPolicies, 'useFetchPolicies').mockReturnValue({
       isFetching: false,
+      relatedResources: [],
       policyItems: [
         {
           id: 'machine-configuration-guards-bindingValidatingAdmissionPolicyBindingadmissionregistration.k8s.io',
@@ -512,6 +517,7 @@ describe('useFetchPolicies custom hook', () => {
   test('Should render Kyverno Policy in multiple namespaces and ClusterPolicy', async () => {
     jest.spyOn(useFetchPolicies, 'useFetchPolicies').mockReturnValue({
       isFetching: false,
+      relatedResources: [],
       policyItems: [
         {
           id: 'require-owner-labelsClusterPolicykyverno.io',

@@ -32,7 +32,7 @@ import { isEqual } from 'lodash'
 function nameCell(item: DiscoveredPolicyTableItem): ReactNode {
   return (
     <Link
-      to={generatePath(NavigationPath.discoveredByCluster, {
+      to={generatePath(NavigationPath.discoveredResources, {
         kind: item.kind,
         policyName: item.name,
         apiGroup: item.policies[0].apigroup,
