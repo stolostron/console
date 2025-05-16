@@ -169,6 +169,11 @@ export interface CustomInput {
   component: JSX.Element
   isHidden?: boolean
 }
+export interface CreatableMultiselectInput extends SelectOptionsBase<string[]> {
+  type: 'CreatableMultiselect'
+  variant?: 'typeaheadmulti'
+  isCreatable?: boolean
+}
 
 export interface FormDataOrderedInput<T = any> extends InputBase<T[]> {
   type: 'OrderedItems'
@@ -195,3 +200,4 @@ export type Input =
   | CheckboxInput
   | RadioInput
   | CustomInput
+  | CreatableMultiselectInput
