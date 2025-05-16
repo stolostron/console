@@ -11,20 +11,32 @@ export const AccessControlDefinition: IResourceDefinition = {
   apiVersion: AccessControlApiVersion,
   kind: AccessControlKind,
 }
-export type SubjectType = 'User' | 'Group' | 'Role'
 
 export interface RoleBinding {
   namespace: string
-  roleRef: {
-    apiGroup: string
-    kind: 'Role'
-    name: string
-  }
-  subject?: {
-    apiGroup: string
-    kind: SubjectType
-    name: string
-  }
+  roleRef: RoleRef
+  subject?: Subject
+  subjects?: Subject[]
+}
+
+export interface ClusterRoleBinding {
+  name?: string
+  roleRef: RoleRef
+  subject?: Subject
+  subjects?: Subject[]
+}
+
+interface RoleRef {
+  apiGroup: string
+  kind: 'Role' | 'ClusterRole'
+  name: string
+}
+
+interface Subject {
+  apiGroup: string
+  kind: 'User' | 'Group'
+  name: string
+  namespace?: string
 }
 
 export interface Condition {
@@ -44,16 +56,10 @@ interface Status {
 }
 
 export interface AccessControl extends IResource<Status> {
-  /**
-   * APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
-   */
   apiVersion: AccessControlApiVersionType
-  /**
-   * Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
-   */
   kind: AccessControlKindType
-
   spec: {
-    roleBindings: RoleBinding[]
+    roleBindings?: RoleBinding[]
+    clusterRoleBinding?: ClusterRoleBinding
   }
 }

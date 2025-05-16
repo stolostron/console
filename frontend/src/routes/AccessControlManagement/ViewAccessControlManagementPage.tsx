@@ -16,7 +16,9 @@ const ViewAccessControlManagementPage = () => {
     }
   }, [accessControls, id])
 
-  return <AccessControlManagementForm isEditing={false} isViewing={true} accessControl={accessControl} />
+  return (
+    <AccessControlManagementForm isEditing={false} isViewing={true} accessControl={accessControl} isCreatable={false} />
+  )
 }
 
 export { ViewAccessControlManagementPage }
