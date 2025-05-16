@@ -3,11 +3,11 @@ import { HTMLProps, ReactNode, useRef, useEffect, useState, useCallback, useMemo
 import useResizeObserver from '@react-hook/resize-observer'
 import { CodeEditor, CodeEditorControl, Language } from '@patternfly/react-code-editor'
 import { RedoIcon, UndoIcon, SearchIcon, EyeIcon, EyeSlashIcon, CloseIcon } from '@patternfly/react-icons'
-import { Alert, ClipboardCopyButton } from '@patternfly/react-core'
+import { ClipboardCopyButton } from '@patternfly/react-core'
 import { debounce, noop, isEqual, cloneDeep } from 'lodash'
 import { processForm, processUser, ProcessedType } from './process'
-import { compileAjvSchemas, ErrorType, formatErrors } from './validation'
-import { getFormChanges, getUserChanges, formatChanges } from './changes'
+import { compileAjvSchemas } from './validation'
+import { getFormChanges, getUserChanges } from './changes'
 import { decorate, getResourceEditorDecorations } from './decorate'
 import { setFormValues, updateReferences } from './synchronize'
 import { global_BackgroundColor_200 as globalBackground200 } from '@patternfly/react-tokens/dist/js/global_BackgroundColor_200'
@@ -22,6 +22,12 @@ import { loader, Monaco } from '@monaco-editor/react'
 
 // loader can be null in tests
 loader?.config({ monaco })
+
+export enum ValidationStatus {
+  success = 'success',
+  pending = 'pending',
+  failure = 'failure',
+}
 
 export interface SyncEditorProps extends HTMLProps<HTMLPreElement> {
   variant?: string
@@ -38,7 +44,7 @@ export interface SyncEditorProps extends HTMLProps<HTMLPreElement> {
   mock?: boolean
   autoCreateNs?: boolean
   onClose?: () => void
-  onStatusChange?: (editorState: any) => void
+  onStatusChange?: (status: ValidationStatus) => void
   onEditorChange?: (editorResources: any) => void
 }
 
@@ -97,15 +103,6 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
   const [filteredRows, setFilteredRows] = useState<number[]>([])
   const [userEdits, setUserEdits] = useState<any>([])
   const [customValidationErrors, setCustomValidationErrors] = useState<any>([])
-  const [statusChanges, setStatusChanges] = useState<{
-    changes: any[]
-    errors: any[]
-    redactedChange: {
-      mappings: { [name: string]: any[] }
-      parsed: { [name: string]: any[] }
-      resources: any[]
-    }
-  }>()
   const [lastUserEdits, setLastUserEdits] = useState<any>([])
   const [squigglyTooltips, setSquigglyTooltips] = useState<any>([])
   const [lastChange, setLastChange] = useState<ProcessedType>()
@@ -434,8 +431,8 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
           setHasRedo(false)
           setHasUndo(false)
 
-          // if there were remaining edits, report to form
-          setStatusChanges(cloneDeep({ changes: remainingEdits, redactedChange: change, errors: allErrors }))
+          // report to form
+          onStatusChange?.(allErrors.length === 0 ? ValidationStatus.success : ValidationStatus.failure)
 
           // user edits that haven't been incorporated into form
           setLastUserEdits(remainingEdits)
@@ -554,7 +551,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             setCustomValidationErrors(customErrors)
           }
           setEditorHasErrors(editorHasErrors)
-          setStatusChanges(cloneDeep({ changes, redactedChange: change, errors: allErrors }))
+          onStatusChange?.(allErrors.length === 0 ? ValidationStatus.success : ValidationStatus.failure)
 
           // decorate errors, changes
           const squigglyTooltips = decorate(
@@ -610,37 +607,17 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
       showSecrets,
       syncs,
       xreferences,
+      onStatusChange,
     ]
   )
 
-  const debouncedEditorChange = useMemo(() => debounce(editorChanged, 300), [editorChanged])
-
-  useEffect(() => {
-    return () => {
-      debouncedEditorChange.cancel()
-    }
-  }, [debouncedEditorChange])
-
   const editorChange = useCallback<ChangeHandler>(
     (value, e) => {
-      debouncedEditorChange(value, e)
+      onStatusChange?.(ValidationStatus.pending)
+      editorChanged(value, e)
     },
-    [debouncedEditorChange]
+    [editorChanged, onStatusChange]
   )
-
-  // report errors/user edits to form
-  useEffect(() => {
-    if (statusChanges && onStatusChange && editor && monaco) {
-      const { changes, errors, redactedChange } = statusChanges
-
-      // report just errors and user changes
-      onStatusChange({
-        warnings: formatErrors(errors, ErrorType.warning),
-        errors: formatErrors(errors, ErrorType.error),
-        changes: formatChanges(editor, monaco, changes, redactedChange, syncs),
-      })
-    }
-  }, [editor, monaco, onStatusChange, statusChanges, syncs])
 
   /* eslint-enable react-hooks/exhaustive-deps */
   const toolbarControls = useMemo(
@@ -782,9 +759,6 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
 
   return (
     <div ref={pageRef} className="sync-editor__container">
-      {editorHasErrors && (
-        <Alert variant="danger" title={t('Form edits will be ignored until YAML syntax errors are fixed.')} />
-      )}
       <CodeEditor
         isLineNumbersVisible={true}
         isReadOnly={readonly}

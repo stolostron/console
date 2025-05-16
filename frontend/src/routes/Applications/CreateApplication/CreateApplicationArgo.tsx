@@ -1,12 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useData, useItem } from '@patternfly-labs/react-form-wizard'
+import { EditorValidationStatus, useData, useEditorValidationStatus, useItem } from '@patternfly-labs/react-form-wizard'
 import { ArgoWizard } from '../../../wizards/Argo/ArgoWizard'
 import { AcmToastContext } from '../../../ui-components'
 import { useContext, useEffect, useState } from 'react'
 import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
-import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
+import { SyncEditor, ValidationStatus } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { isType } from '../../../lib/is-type'
 import { NavigationPath } from '../../../NavigationPath'
@@ -43,6 +43,7 @@ export function GetGitOpsClusters(gitOpsClusters: GitOpsCluster[]) {
 export function WizardSyncEditor() {
   const resources = useItem() // Wizard framework sets this context
   const { update } = useData() // Wizard framework sets this context
+  const { setEditorValidationStatus } = useEditorValidationStatus()
   const { t } = useTranslation()
   return (
     <SyncEditor
@@ -52,6 +53,9 @@ export function WizardSyncEditor() {
       schema={schema}
       onEditorChange={(changes: { resources: any[] }): void => {
         update(changes?.resources)
+      }}
+      onStatusChange={(editorStatus: ValidationStatus): void => {
+        setEditorValidationStatus(editorStatus as unknown as EditorValidationStatus)
       }}
     />
   )
