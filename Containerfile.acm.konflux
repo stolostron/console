@@ -1,4 +1,4 @@
-FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:3c04bf8fb06d79d8bee26a606f64cfbad75081e60df8249155da29e77a79bf8b AS builder
+FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:ae1c763a0e806ab4867aaf8421e8883d05f30fe2812f95b99dae60424a571e29 AS builder
 
 USER root
 ENV NPM_CONFIG_NODEDIR=/usr
@@ -16,7 +16,7 @@ RUN cd frontend && npm run build:plugin:acm
 # Remove build-time dependencies before packaging
 RUN cd backend && npm ci --omit=optional --only=production --unsafe-perm
 
-FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:3c04bf8fb06d79d8bee26a606f64cfbad75081e60df8249155da29e77a79bf8b
+FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:ae1c763a0e806ab4867aaf8421e8883d05f30fe2812f95b99dae60424a571e29
 
 WORKDIR /app
 ENV NODE_ENV production
