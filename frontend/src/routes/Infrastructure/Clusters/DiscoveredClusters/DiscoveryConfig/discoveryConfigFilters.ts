@@ -2,6 +2,8 @@
 
 import { Provider } from '../../../../../ui-components'
 
+export type TranslationFunction = (key: string, params?: Record<string, string>) => string
+
 /**
  * Converts a provider string to a normalized Provider enum value.
  * Maps various provider name formats to their standardized enum representation.
@@ -52,20 +54,20 @@ export function getInfrastructureProvider(provider: string): Provider {
  * @param provider - The infrastructure provider name as a string (case insensitive)
  * @returns The display name for the provider
  */
-export function getDisplayNameForInfrastructureProvider(provider: string, t?: any): string {
+export function getDisplayNameForInfrastructureProvider(provider: string, t?: TranslationFunction): string {
   switch (provider.toLowerCase()) {
     case 'aws':
       return 'Amazon Web Services'
     case 'azure':
       return 'Microsoft Azure'
     case 'baremetal':
-      return t && typeof t === 'function' ? t('infra.baremetal') : 'Bare Metal'
+      return t ? t('infra.baremetal') : 'Bare Metal'
     case 'external':
-      return t && typeof t === 'function' ? t('infra.external') : 'External'
+      return t ? t('infra.external') : 'External'
     case 'libvirt':
-      return t && typeof t === 'function' ? t('infra.libvirt') : 'Libvirt'
+      return t ? t('infra.libvirt') : 'Libvirt'
     case 'none':
-      return t && typeof t === 'function' ? t('infra.none') : 'None'
+      return t ? t('infra.none') : 'None'
     case 'gcp':
       return 'Google Cloud Platform'
     case 'ibmcloud':
@@ -143,7 +145,8 @@ export function searchInfrastructureProvider(provider: string) {
  * @param acronym - The cluster type acronym to convert (case insensitive)
  * @returns The full display name of the cluster type, or the original acronym if not recognized
  */
-export function getFullTypeByAcronymForDiscoveryClustersType(acronym: string, t?: any) {
+
+export function getFullTypeByAcronymForDiscoveryClustersType(acronym: string, t?: TranslationFunction) {
   switch (acronym.toUpperCase()) {
     case 'MOA':
       return 'Red Hat OpenShift Service on AWS'
@@ -160,9 +163,7 @@ export function getFullTypeByAcronymForDiscoveryClustersType(acronym: string, t?
     case 'OSD':
       return 'OpenShift Dedicated'
     case 'OSDTRIAL':
-      return t && typeof t === 'function'
-        ? `OpenShift Container Platform ${t('type.assistedInstaller')}`
-        : 'Trial version of OpenShift Dedicated'
+      return t ? t('type.trialVersionOf', { product: 'OpenShift Dedicated' }) : 'Trial version of OpenShift Dedicated'
     case 'ARO':
       return 'Azure Red Hat OpenShift'
     case 'RHMI':
