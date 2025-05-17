@@ -350,3 +350,32 @@ describe('Cluster type group functions', () => {
     })
   })
 })
+
+describe('getFullTypeByAcronymForDiscoveryClustersType with translation function', () => {
+  it('uses translation function when provided', () => {
+    const mockTranslate = jest.fn((key) => key)
+
+    expect(getFullTypeByAcronymForDiscoveryClustersType('OSDTrial', mockTranslate)).toBe('type.trialVersionOf')
+    expect(mockTranslate).toHaveBeenCalledWith('type.trialVersionOf', { product: 'OpenShift Dedicated' })
+  })
+
+  it('handles interpolation with translation function', () => {
+    const mockTranslate = jest.fn((key, params) => {
+      if (key === 'type.trialVersionOf' && params?.product) {
+        return `TEST: ${params.product}`
+      }
+      return key
+    })
+
+    expect(getFullTypeByAcronymForDiscoveryClustersType('OSDTrial', mockTranslate)).toBe('TEST: OpenShift Dedicated')
+  })
+})
+
+describe('getDisplayNameForInfrastructureProvider with translation function', () => {
+  it('uses translation function when provided', () => {
+    const mockTranslate = jest.fn((key) => key)
+
+    expect(getDisplayNameForInfrastructureProvider('baremetal', mockTranslate)).toBe('infra.baremetal')
+    expect(mockTranslate).toHaveBeenCalledWith('infra.baremetal')
+  })
+})
