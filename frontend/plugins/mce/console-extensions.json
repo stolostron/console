@@ -7,7 +7,7 @@
         }
     },
     {
-        "type": "acm.shared-context",
+        "type": "test-acm.shared-context",
         "properties": {
             "id": "mce-data-context",
             "context": { "$codeRef": "context.PluginDataContext" }
@@ -16,7 +16,7 @@
     {
         "type": "console.perspective",
         "properties": {
-            "id": "acm",
+            "id": "test-acm",
             "name": "%plugin__mce~Fleet Management%",
             "icon": { "$codeRef": "perspective.icon" },
             "landingPageURL": { "$codeRef": "perspective.getLandingPageURL" },
@@ -27,14 +27,14 @@
         "type": "console.navigation/section",
         "properties": {
             "id": "mce-infrastructure",
-            "perspective": "acm",
+            "perspective": "test-acm",
             "name": "%plugin__mce~Infrastructure%"
         }
     },
     {
         "type": "console.navigation/href",
         "properties": {
-            "perspective": "acm",
+            "perspective": "test-acm",
             "section": "mce-infrastructure",
             "id": "mce-clusters",
             "name": "%plugin__mce~Clusters%",
@@ -51,7 +51,7 @@
     {
         "type": "console.navigation/href",
         "properties": {
-            "perspective": "acm",
+            "perspective": "test-acm",
             "section": "mce-infrastructure",
             "id": "mce-automations",
             "name": "%plugin__mce~Automation%",
@@ -68,7 +68,7 @@
     {
         "type": "console.navigation/href",
         "properties": {
-            "perspective": "acm",
+            "perspective": "test-acm",
             "section": "mce-infrastructure",
             "id": "mce-host-inventory",
             "name": "%plugin__mce~Host inventory%",
@@ -85,7 +85,7 @@
     {
         "type": "console.navigation/href",
         "properties": {
-            "perspective": "acm",
+            "perspective": "test-acm",
             "section": "mce-infrastructure",
             "id": "mce-virtual-machines",
             "name": "%plugin__mce~Virtual machines%",
@@ -102,7 +102,7 @@
     {
         "type": "console.navigation/href",
         "properties": {
-            "perspective": "acm",
+            "perspective": "test-acm",
             "id": "mce-credentials",
             "name": "%plugin__mce~Credentials%",
             "href": "/multicloud/credentials"

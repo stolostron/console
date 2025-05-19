@@ -2,18 +2,18 @@
     {
         "type": "console.navigation/section",
         "properties": {
-            "perspective": "acm",
-            "id": "acm-home",
+            "perspective": "acm-test",
+            "id": "acm-test-home",
             "name": "%plugin__acm~Home%",
-            "insertBefore": "acm-search"
+            "insertBefore": "acm-test-search"
         }
     },
     {
         "type": "console.navigation/href",
         "properties": {
-            "perspective": "acm",
-            "section": "acm-home",
-            "id": "acm-welcome",
+            "perspective": "acm-test",
+            "section": "acm-test-home",
+            "id": "acm-test-welcome",
             "name": "%plugin__acm~Welcome%",
             "href": "/multicloud/home/welcome"
         }
@@ -28,9 +28,9 @@
     {
         "type": "console.navigation/href",
         "properties": {
-            "perspective": "acm",
-            "section": "acm-home",
-            "id": "acm-overview",
+            "perspective": "acm-test",
+            "section": "acm-test-home",
+            "id": "acm-test-overview",
             "name": "%plugin__acm~Overview%",
             "href": "/multicloud/home/overview"
         }
@@ -45,8 +45,8 @@
     {
         "type": "console.navigation/href",
         "properties": {
-            "perspective": "acm",
-            "id": "acm-search",
+            "perspective": "acm-test",
+            "id": "acm-test-search",
             "name": "%plugin__acm~Search%",
             "href": "/multicloud/search",
             "insertBefore": "mce-infrastructure"
@@ -69,8 +69,8 @@
     {
         "type": "console.navigation/href",
         "properties": {
-            "perspective": "acm",
-            "id": "acm-applications",
+            "perspective": "acm-test",
+            "id": "acm-test-applications",
             "name": "%plugin__acm~Applications%",
             "href": "/multicloud/applications",
             "insertBefore": "mce-credentials"
@@ -86,8 +86,8 @@
     {
         "type": "console.navigation/href",
         "properties": {
-            "perspective": "acm",
-            "id": "acm-governance",
+            "perspective": "acm-test",
+            "id": "acm-test-governance",
             "name": "%plugin__acm~Governance%",
             "href": "/multicloud/governance",
             "insertBefore": "mce-credentials"
