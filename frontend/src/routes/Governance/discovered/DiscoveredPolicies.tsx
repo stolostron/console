@@ -174,7 +174,6 @@ export default function DiscoveredPolicies() {
         search: (item: DiscoverdPolicyTableItem) => item.source?.type ?? '',
         id: 'source',
         exportContent: getSourceExportCSV,
-        tooltip: t('discoveredPolicies.tooltip.source'),
       },
     ],
     [labelMap, t]
