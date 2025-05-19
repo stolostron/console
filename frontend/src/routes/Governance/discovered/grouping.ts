@@ -154,11 +154,13 @@ export function grouping(): {
     let kyvernoPolicyReports: any[] = []
 
     const resources = new Map() // keys like cluster:groupversion:kind:namespace:name
+    let templateName = ''
 
     data?.searchResult?.forEach((result: any) => {
       searchDataItems = searchDataItems.concat(result?.items || [])
 
       const polInfo = result?.items?.[0] // useful for most template information
+      templateName = polInfo?.name
 
       if (polInfo?.apigroup === 'kyverno.io') {
         result.related?.forEach((related: any) => {
@@ -180,9 +182,12 @@ export function grouping(): {
           // exclude these kinds
           switch (apigroup + ':' + kind) {
             case 'internal.open-cluster-management.io:Cluster':
-              return
             case 'policy.open-cluster-management.io:Policy':
               return
+            case 'wgpolicyk8s.io:PolicyReport':
+            case 'wgpolicyk8s.io:ClusterPolicyReport':
+              if (polInfo?.apigroup === 'kyverno.io') return
+              break
           }
 
           item.compliant = 'compliant' // if it is noncompliant, it will be in _nonCompliantResources
@@ -249,15 +254,32 @@ export function grouping(): {
     const parseDiscoveredPolicies = eval(parseDiscoveredPoliciesStr) as TParseDiscoveredPolicies
 
     const kyvernoViolationMap: { [policyNamespaceName: string]: number } = {}
+    const reportMap: { [resourceUid: string]: any } = {}
 
     if (kyvernoPolicyReports.length > 0) {
       kyvernoPolicyReports.forEach((cr) => {
         // NOSONAR
         for (const violationMapValue of ((cr?._policyViolationCounts ?? '') as string).split('; ')) {
           const nsPolicyNameViolation = violationMapValue.split('=') ?? []
-          const clusterNsPolicyName = cr.cluster + '/' + nsPolicyNameViolation[0]
+          const clusterNsPolicyName = cr.cluster + '/' + nsPolicyNameViolation[0] // eg 'local-cluster/require-labels'
           kyvernoViolationMap[clusterNsPolicyName] =
             (kyvernoViolationMap[clusterNsPolicyName] ?? 0) + Number(nsPolicyNameViolation[1])
+
+          reportMap[cr.cluster + '/' + cr.name] = cr
+        }
+      })
+
+      relatedResources.forEach((item) => {
+        const report = reportMap[item._uid]
+        if (report) {
+          item.policyReport = report
+
+          report?._policyViolationCounts.split('; ').forEach((violation: string) => {
+            const violationInfo = violation.split('=', 2)
+            if (violationInfo[0] === templateName && Number(violationInfo[1]) > 0) {
+              item.compliant = 'noncompliant'
+            }
+          })
         }
       })
     }

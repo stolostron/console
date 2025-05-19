@@ -16,6 +16,7 @@ import { DiffModal } from '../../components/DiffModal'
 import { useDiscoveredDetailsContext } from './DiscoveredPolicyDetailsPage'
 import { fireManagedClusterView } from '../../../../resources'
 import { emptyResources } from '../../common/util'
+import { flexKyvernoMessages } from '../../policies/policy-details/PolicyTemplateDetail/KyvernoTable'
 
 export function DiscoveredResources() {
   const { policyKind, apiGroup, isFetching, relatedResources } = useDiscoveredDetailsContext()
@@ -67,8 +68,6 @@ export function DiscoveredResources() {
           )
         }
 
-        // TODO: connect policyReport to kyverno related resources (probably in grouping.ts)
-        // until then, this next bit won't do anything.
         let policyReportLink: ReactNode = <></>
         if (item.policyReport) {
           const { cluster, kind, name, namespace, apigroup, apiversion, _hubClusterResource } = item.policyReport
@@ -127,17 +126,22 @@ export function DiscoveredResources() {
                     diff: relObj?.properties?.diff,
                   }
                 })
+                reasonCache[tmplKey] = { tmpl, reasons, loading: false }
                 break
               case 'CertificatePolicy':
                 // TODO
                 break
-              case 'Policy':
-              case 'ClusterPolicy':
-                // TODO
+              case 'PolicyReport':
+              case 'ClusterPolicyReport':
+                reasonCache[tmplKey] = {
+                  tmpl,
+                  kyvernoMessages: viewResponse?.result?.results.map((r: any) => {
+                    return { ruleName: r.rule, message: r.message }
+                  }),
+                  loading: false,
+                }
                 break
             }
-
-            reasonCache[tmplKey] = { tmpl, reasons, loading: false }
             setReasonCache({ ...reasonCache })
           })
           .catch((err: Error) => {
@@ -148,11 +152,25 @@ export function DiscoveredResources() {
   }, [reasonCache])
 
   const reasonColumn: IAcmTableColumn<any> = useMemo(() => {
-    if (apiGroup === 'policy.open-cluster-management.io') {
+    if (apiGroup === 'policy.open-cluster-management.io' || apiGroup === 'kyverno.io') {
       return {
         header: t('Reason'),
         cell: (item: any) => {
-          const tmpl = item.templateInfo
+          let tmpl: any = {}
+
+          if (apiGroup === 'kyverno.io' && item.policyReport) {
+            tmpl = {
+              ...item.policyReport,
+              clusterName: item.policyReport.cluster,
+              templateName: item.policyReport.name,
+              templateNamespace: item.policyReport.namespace,
+              apiGroup: item.policyReport.apigroup,
+              apiVersion: item.policyReport.apiversion,
+            }
+          } else {
+            tmpl = item.templateInfo
+          }
+
           const tmplApiVersion = tmpl.apiGroup ? tmpl.apiGroup + '/' + tmpl.apiVersion : tmpl.apiVersion
           const tmplKey = `${tmpl.clusterName}:${tmpl.kind}:${tmplApiVersion}:${tmpl.templateName}:${tmpl.templateNamespace}`
 
@@ -161,20 +179,24 @@ export function DiscoveredResources() {
             reasonCache[tmplKey] = { tmpl }
             setReasonCache({ ...reasonCache })
           } else if (foundReasons.loading === false) {
-            const key = `${item.cluster}:${item.kind}:${item.groupversion}:${item.namespace}:${item.name}`
-            const reasonInfo = foundReasons.reasons?.[key]
+            if (apiGroup === 'kyverno.io' && foundReasons?.kyvernoMessages) {
+              return flexKyvernoMessages(foundReasons.kyvernoMessages)
+            } else if (apiGroup === 'policy.open-cluster-management.io') {
+              const key = `${item.cluster}:${item.kind}:${item.groupversion}:${item.namespace}:${item.name}`
+              const reasonInfo = foundReasons.reasons?.[key]
 
-            if (reasonInfo && !reasonInfo.reason) {
-              // resource must be newer than the cached view: need to fetch it again
-              reasonCache[tmplKey] = { tmpl, state: 'fire' }
-              setReasonCache({ ...reasonCache })
-            } else {
-              return (
-                <>
-                  {reasonInfo?.reason}
-                  <DiffModal diff={reasonInfo?.diff} kind={item.kind} namespace={item.namespace} name={item.name} />
-                </>
-              )
+              if (reasonInfo && !reasonInfo.reason) {
+                // resource must be newer than the cached view: need to fetch it again
+                reasonCache[tmplKey] = { tmpl, state: 'fire' }
+                setReasonCache({ ...reasonCache })
+              } else {
+                return (
+                  <>
+                    {reasonInfo?.reason}
+                    <DiffModal diff={reasonInfo?.diff} kind={item.kind} namespace={item.namespace} name={item.name} />
+                  </>
+                )
+              }
             }
           }
 

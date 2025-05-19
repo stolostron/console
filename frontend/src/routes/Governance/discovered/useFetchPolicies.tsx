@@ -80,7 +80,11 @@ export function useFetchPolicies(policyName?: string, policyKind?: string, apiGr
 
   const discoveredRelatedKinds = (apiGroup: string, kind: string) => {
     if (apiGroup === 'kyverno.io') {
-      return ['ClusterPolicyReport', 'PolicyReport']
+      if (policyName) {
+        return [] // All resources when the page is specific to one kyverno policy
+      } else {
+        return ['ClusterPolicyReport', 'PolicyReport'] // only reports when looking at multiple policies
+      }
     }
 
     if (kind == 'CertificatePolicy') {
