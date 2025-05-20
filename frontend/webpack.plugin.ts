@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* eslint-disable @typescript-eslint/no-var-requires */
 import CompressionPlugin from 'compression-webpack-plugin'
-import { ConsoleRemotePlugin } from '@openshift-console/dynamic-plugin-sdk-webpack'
 import CssMinimizerPlugin from 'css-minimizer-webpack-plugin'
 import { Configuration as DevServerConfiguration } from 'webpack-dev-server'
 import MergeJsonWebpackPlugin from 'merge-jsons-webpack-plugin'
@@ -71,7 +70,6 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
     },
     plugins: [
       new webpack.NormalModuleReplacementPlugin(/media\/suggest\.css$/, path.resolve(__dirname, 'src/empty.css')),
-      // new ConsoleRemotePlugin({ validateSharedModules: false, validateExtensionIntegrity: false }),
       new webpack.DefinePlugin({
         'process.env.NODE_ENV': JSON.stringify('production'),
         'process.env.REACT_APP_BACKEND_PATH': JSON.stringify('/multicloud'),
