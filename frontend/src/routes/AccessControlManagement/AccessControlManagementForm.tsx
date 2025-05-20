@@ -273,7 +273,7 @@ const AccessControlManagementForm = ({
             placeholder: subjectType === 'Group' ? t('Select or enter group name') : t('Select or enter user name'),
             value: selectedUserNames,
             onChange: (values) => setSelectedUserNames(values),
-            options: (subjectType === 'Group' ? groups ?? [] : users ?? []).map((val) => ({
+            options: ((subjectType === 'Group' ? groups : users) || []).map((val) => ({
               id: val.metadata.uid!,
               value: val.metadata.name!,
             })),
