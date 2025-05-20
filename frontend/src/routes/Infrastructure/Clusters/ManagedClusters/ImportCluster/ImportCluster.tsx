@@ -881,8 +881,7 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
 
   if (prevImportMode !== importMode || prevCredential !== credential) {
     // Preserve anything added to the secret by the user, like annotations
-    const { ...currentAutoImportSecretRest } = getSecretTemplate() ?? {}
-    const newAutoImportSecret = { ...autoImportSecret, ...currentAutoImportSecretRest }
+    const newAutoImportSecret = { ...autoImportSecret, ...(getSecretTemplate() ?? {}), ...{ type: 'Opaque' } }
 
     switch (importMode) {
       case ImportMode.manual:
