@@ -69,7 +69,7 @@ const AccessControlManagementForm = ({
   const [selectedUserNames, setSelectedUserNames] = useState<string[]>([])
   const [selectedRoles, setSelectedRoles] = useState<string[]>([])
   const [selectedNamespaces, setSelectedNamespaces] = useState<string[]>([])
-
+  
   const [subjectType, setSubjectType] = useState<'User' | 'Group'>('User')
 
   const { submitForm } = useContext(LostChangesContext)
@@ -173,12 +173,8 @@ const AccessControlManagementForm = ({
     { path: 'AccessControl[0].metadata.name', setState: setName },
     { path: 'AccessControl[0].spec.roleBindings', setState: setSelectedUsers },
   ]
-
-  const title = isViewing
-    ? accessControl?.metadata?.uid!
-    : isEditing
-      ? t('Edit access control')
-      : t('Add access control')
+  
+  const title = isViewing ? accessControl?.metadata?.uid! : isEditing ? t('Edit access control') : t('Add access control')
   const breadcrumbs = [{ text: t('Access Controls'), to: NavigationPath.accessControlManagement }, { text: title }]
 
   const namespaceOptions = (namespacesProp ?? managedClusters.map((c) => c.name)).map((ns) => ({
@@ -268,7 +264,7 @@ const AccessControlManagementForm = ({
           },
           {
             id: 'subject',
-            type: 'Multiselect',
+            type: 'CreatableMultiselect',
             label: subjectType === 'Group' ? t('Groups') : t('Users'),
             placeholder: subjectType === 'Group' ? t('Select or enter group name') : t('Select or enter user name'),
             value: selectedUserNames,
@@ -279,6 +275,7 @@ const AccessControlManagementForm = ({
             })),
             isRequired: true,
             isHidden: isViewing,
+            isCreatable: true,
           },
           {
             id: 'roles',
