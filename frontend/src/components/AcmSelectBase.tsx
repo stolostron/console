@@ -509,7 +509,8 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
     }
     return !!inputValue
   }
-  const ariaLabel = props['aria-label'] ?? props.placeholder ?? `Select ${props.id}`
+  const ariaLabel =
+    props['aria-labelledby'] ?? props['aria-label'] ?? props.placeholder ?? props.label ?? t('Options menu')
 
   function renderMenuToggle(toggleRef: Ref<MenuToggleElement> | undefined): ReactNode {
     return (

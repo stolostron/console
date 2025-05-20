@@ -2471,14 +2471,14 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     await clickByPlaceholderText('kubevirt-with-ei')
     screen
       .getByRole('combobox', {
-        name: 'Select a credential',
+        name: 'connection-label',
       })
       .click()
     await clickByText('Add credential')
     await typeByTestId('credentialsName', 'kubevirt-with-ei')
     screen
       .getByRole('combobox', {
-        name: 'Select namespaceName',
+        name: /namespace/i,
       })
       .click()
     await clickByText('new-ns')
@@ -2952,7 +2952,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     await typeByTestId('credentialsName', 'kubevirt-noei')
     screen
       .getByRole('combobox', {
-        name: 'Select namespaceName',
+        name: 'Namespace',
       })
       .click()
     await clickByText('test-ns')
@@ -3446,7 +3446,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     await typeByTestId('credentialsName', 'kubevirt-noei')
     screen
       .getByRole('combobox', {
-        name: 'Select namespaceName',
+        name: 'Namespace',
       })
       .click()
     await clickByText('test-ns')
@@ -3982,7 +3982,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     await typeByTestId('credentialsName', 'kubevirt-noei')
     screen
       .getByRole('combobox', {
-        name: 'Select namespaceName',
+        name: 'Namespace',
       })
       .click()
     await clickByText('test-ns')

@@ -287,7 +287,7 @@ describe('Add Policy to policy set', () => {
     )
     screen
       .getByRole('combobox', {
-        name: 'Select a policy set',
+        name: 'policy-sets-label',
       })
       .click()
     screen.getByRole('option', { name: 'policy-set-with-1-placement' }).click()

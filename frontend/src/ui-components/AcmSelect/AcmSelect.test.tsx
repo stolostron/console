@@ -27,7 +27,7 @@ describe('AcmSelect', () => {
     expect(queryByText('Select one')).toBeVisible()
     screen
       .getByRole('combobox', {
-        name: 'Select one',
+        name: 'acm-select-label',
       })
       .click()
     await waitFor(() => expect(screen.getByText(/red/i)).toBeVisible())
@@ -89,7 +89,7 @@ describe('AcmSelect', () => {
     expect(getByTestId('input-label')).toContainHTML('pf-m-error')
     screen
       .getByRole('combobox', {
-        name: 'Select input',
+        name: 'input-label',
       })
       .click()
     getAllByRole('option')[0].click()
@@ -115,7 +115,7 @@ describe('AcmSelect', () => {
     expect(getByTestId('input-label')).toContainHTML('pf-m-error')
     screen
       .getByRole('combobox', {
-        name: 'Select input',
+        name: 'input-label',
       })
       .click()
     getAllByRole('option')[0].click()

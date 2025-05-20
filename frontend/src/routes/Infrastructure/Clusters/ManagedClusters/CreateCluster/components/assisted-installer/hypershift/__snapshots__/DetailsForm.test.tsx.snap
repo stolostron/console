@@ -118,7 +118,7 @@ exports[`DetailsForm it renders 1`] = `
       >
         <button
           aria-expanded="false"
-          aria-label="No cluster sets available"
+          aria-label="managedClusterSet-label"
           class="pf-v5-c-menu-toggle pf-m-disabled css-gxe00f"
           data-ouia-component-id="OUIA-Generated-MenuToggle-default-1"
           data-ouia-component-type="PF5/MenuToggle"

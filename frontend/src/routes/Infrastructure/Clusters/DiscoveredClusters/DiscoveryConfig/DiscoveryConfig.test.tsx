@@ -88,7 +88,7 @@ describe('Discovery Config page', () => {
     waitForNocks([discoveryConfigCreateNock])
     screen
       .getByRole('combobox', {
-        name: 'Select a credential',
+        name: 'credentials-label',
       })
       .click()
     userEvent.click(screen.getByText(/add credential/i))
@@ -102,7 +102,7 @@ describe('Discovery Config page', () => {
     // Select Credential
     screen
       .getByRole('combobox', {
-        name: 'Select a credential',
+        name: 'credentials-label',
       })
       .click()
     await clickByText(mockRHOCMSecrets[0].metadata.namespace! + '/' + mockRHOCMSecrets[0].metadata.name!)
@@ -134,7 +134,7 @@ describe('Discovery Config page', () => {
     // Select Credential
     screen
       .getByRole('combobox', {
-        name: 'Select a credential',
+        name: 'credentials-label',
       })
       .click()
     await clickByText(mockRHOCMSecrets[0].metadata.namespace! + '/' + mockRHOCMSecrets[0].metadata.name!)
@@ -144,7 +144,7 @@ describe('Discovery Config page', () => {
     // Select LastActive
     screen
       .getByRole('combobox', {
-        name: /select lastactivefilter/i,
+        name: /lastActiveFilter-label/i,
       })
       .click()
     await waitForText('14 days')
@@ -153,7 +153,7 @@ describe('Discovery Config page', () => {
     // Select Version
     screen
       .getByRole('combobox', {
-        name: 'All available Red Hat OpenShift versions are included by default',
+        name: 'discoveryVersions-label',
       })
       .click()
     await clickByText('4.17')
@@ -161,7 +161,7 @@ describe('Discovery Config page', () => {
     // Select Cluster Types
     screen
       .getByRole('combobox', {
-        name: /select cluster types/i,
+        name: /discoveryClusterTypes-label/i,
       })
       .click()
 
@@ -214,7 +214,7 @@ describe('Discovery Config page', () => {
     // Select Namespace
     screen
       .getByRole('combobox', {
-        name: 'Select a namespace',
+        name: 'namespaces-label',
       })
       .click()
     await clickByText(discoveryConfig.metadata.namespace!)
@@ -229,14 +229,14 @@ describe('Discovery Config page', () => {
     // Change form
     screen
       .getByRole('combobox', {
-        name: /select lastactivefilter/i,
+        name: /lastActiveFilter-label/i,
       })
       .click()
     await clickByText('30 days')
 
     screen
       .getByRole('combobox', {
-        name: 'All available Red Hat OpenShift versions are included by default',
+        name: 'discoveryVersions-label',
       })
       .click()
     await clickByText('4.18')
@@ -258,7 +258,7 @@ describe('Discovery Config page', () => {
     // Select Namespace
     screen
       .getByRole('combobox', {
-        name: 'Select a namespace',
+        name: 'namespaces-label',
       })
       .click()
     await clickByText(discoveryConfig.metadata.namespace!)

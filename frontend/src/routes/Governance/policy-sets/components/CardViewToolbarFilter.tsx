@@ -79,7 +79,7 @@ export default function CardViewToolbarFilter(props: {
     <AcmSelectBase
       key={'card-view-filter-select-key'}
       variant={SelectVariant.checkbox}
-      aria-label={'Select filter options'}
+      aria-label={t('Select filter options')}
       onSelect={(selection) => onFilterSelect(selection as string)}
       selections={selectedFilters}
       toggleIcon={<FilterIcon />}

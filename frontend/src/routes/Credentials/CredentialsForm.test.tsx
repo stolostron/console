@@ -395,7 +395,7 @@ describe('add credentials page', () => {
     // Open the dropdown
     fireEvent.click(
       screen.getByRole('combobox', {
-        name: 'Select ocmAuthMethod',
+        name: 'Authentication method',
       })
     )
 
@@ -440,7 +440,7 @@ describe('add credentials page', () => {
     // Open the dropdown
     screen
       .getByRole('combobox', {
-        name: 'Select ocmAuthMethod',
+        name: 'Authentication method',
       })
       .click()
 

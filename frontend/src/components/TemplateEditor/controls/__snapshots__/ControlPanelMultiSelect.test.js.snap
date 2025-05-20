@@ -77,7 +77,7 @@ exports[`ControlPanelMultiSelect component renders as expected 1`] = `
                   <input
                     aria-controls="select-multi-typeahead-listbox"
                     aria-expanded="false"
-                    aria-label="Select undefined"
+                    aria-label="Options menu"
                     class="pf-v5-c-text-input-group__text-input"
                     placeholder="None"
                     role="combobox"
@@ -116,7 +116,7 @@ exports[`ControlPanelMultiSelect component renders as expected 1`] = `
             </div>
             <button
               aria-expanded="false"
-              aria-label="Select undefined"
+              aria-label="Options menu"
               class="pf-v5-c-menu-toggle__button"
               data-ouia-component-id="OUIA-Generated-MenuToggle-typeahead-1"
               data-ouia-component-type="PF5/MenuToggle"

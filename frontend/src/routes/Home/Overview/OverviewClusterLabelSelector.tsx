@@ -79,7 +79,7 @@ export default function OverviewClusterLabelSelector(props: {
         <AcmSelectBase
           id="cluster-label-key"
           key="cluster-label-key"
-          aria-label="Select cluster label"
+          aria-label={t('Select cluster label')}
           toggleIcon={<FilterIcon />}
           width={'auto'}
           maxHeight={'400px'}
@@ -101,7 +101,7 @@ export default function OverviewClusterLabelSelector(props: {
         </AcmSelectBase>
         <AcmSelectBase
           id="cluster-label-value"
-          aria-label="Select cluster label value"
+          aria-label={t('Select cluster label value')}
           width={'auto'}
           maxHeight={'400px'}
           variant={SelectVariant.typeaheadCheckbox}

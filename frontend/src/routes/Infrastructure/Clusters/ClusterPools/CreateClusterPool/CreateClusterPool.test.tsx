@@ -288,7 +288,7 @@ describe('CreateClusterPool AWS', () => {
     // connection
     screen
       .getByRole('combobox', {
-        name: 'Select a credential',
+        name: /connection-label/i,
       })
       .click()
 
@@ -302,7 +302,7 @@ describe('CreateClusterPool AWS', () => {
 
     screen
       .getByRole('combobox', {
-        name: 'Select a credential',
+        name: /connection-label/i,
       })
       .click()
     await clickByText(providerConnection.metadata.name!)

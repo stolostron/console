@@ -105,7 +105,7 @@ describe('DiscoveredClusters', () => {
     await waitForText(mockRHOCMSecrets[0].metadata.namespace + '/' + mockRHOCMSecrets[0].metadata.name)
     await clickByText(mockRHOCMSecrets[0].metadata.namespace + '/' + mockRHOCMSecrets[0].metadata.name)
     screen.getByRole('combobox', {
-      name: 'Select a credential',
+      name: 'credentials-label',
     })
     await waitForText(mockRHOCMSecrets[0].metadata.namespace + '/' + mockRHOCMSecrets[0].metadata.name)
     await waitForNocks([discoveryConfigCreateNock])

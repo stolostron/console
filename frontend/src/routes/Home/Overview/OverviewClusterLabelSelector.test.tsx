@@ -63,7 +63,7 @@ describe('OverviewClusterLabelSelector', () => {
     // pick the label key - cloud
     screen
       .getByRole('combobox', {
-        name: 'Select cluster label',
+        name: 'cluster-label-key',
       })
       .click()
     await waitFor(() => expect(getByText('cloud')).toBeTruthy())
@@ -72,7 +72,7 @@ describe('OverviewClusterLabelSelector', () => {
     // pick the label value - Amazon
     screen
       .getByRole('combobox', {
-        name: 'Select cluster label value',
+        name: 'cluster-label-value',
       })
       .click()
     await waitFor(() => expect(screen.getByText('Amazon')).toBeTruthy())
