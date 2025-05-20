@@ -89,8 +89,8 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
       ...locales.map((locale) => {
         return new MergeJsonWebpackPlugin({
           files: [
-            `../../public/locales/${locale}/translation.json`,
-            `../../node_modules/@openshift-assisted/locales/lib/${locale}/translation.json`,
+            `./public/locales/${locale}/translation.json`,
+            `./node_modules/@openshift-assisted/locales/lib/${locale}/translation.json`,
           ],
           output: {
             fileName: `locales/${locale}/plugin__${env.plugin}.json`,
