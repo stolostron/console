@@ -53,8 +53,9 @@ import {
 } from '../../Search/search-helper'
 import { searchClient } from '../../Search/search-sdk/search-client'
 import {
+  SearchInput,
   useSearchCompleteQuery,
-  useSearchResultItemsLazyQuery,
+  useSearchResultItemsAndRelatedItemsLazyQuery,
   useSearchSchemaQuery,
 } from '../../Search/search-sdk/search-sdk'
 import { useSearchDefinitions } from '../../Search/searchDefinitions'
@@ -175,12 +176,14 @@ export default function VirtualMachinesPage() {
   const { dataContext } = useContext(PluginContext)
   const { loadStarted } = useContext(dataContext)
   const {
-    useIsSearchAvailable,
-    useIsObservabilityInstalled,
-    useSearchAutocompleteLimit,
     clusterManagementAddonsState,
     configMapsState,
+    useIsObservabilityInstalled,
+    useIsSearchAvailable,
+    useSearchAutocompleteLimit,
+    useVitualMachineSearchResultLimit,
   } = useSharedAtoms()
+  const vmResultLimit = useVitualMachineSearchResultLimit()
   const isSearchAvailable = useIsSearchAvailable()
   const searchAutocompleteLimit = useSearchAutocompleteLimit()
   const isObservabilityInstalled = useIsObservabilityInstalled()
@@ -190,7 +193,7 @@ export default function VirtualMachinesPage() {
   const [toggleOpen, setToggleOpen] = useState<boolean>(false)
   const [currentSearch, setCurrentSearch] = useState<string>('')
 
-  const [getSearchResults, { data, loading, error, refetch }] = useSearchResultItemsLazyQuery({
+  const [getSearchResults, { data, loading, error, refetch }] = useSearchResultItemsAndRelatedItemsLazyQuery({
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
   })
 
@@ -207,14 +210,16 @@ export default function VirtualMachinesPage() {
       !currentSearch.endsWith(':') &&
       !operators.some((operator: string) => currentSearch.endsWith(operator))
     ) {
+      const searchQuery: SearchInput = convertStringToQuery(parsedCurrentSearch, vmResultLimit ?? -1) // no limit by deafult. vmResultLimit is optional for users if VM page becomes unresponsive
+      searchQuery.relatedKinds = ['VirtualMachine', 'VirtualMachineInstance']
       getSearchResults({
         client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
         variables: {
-          input: [convertStringToQuery(parsedCurrentSearch, -1)],
-        }, // no limit - return all resources
+          input: [searchQuery],
+        },
       })
     }
-  }, [currentSearch, getSearchResults, isSearchAvailable, parsedCurrentSearch])
+  }, [currentSearch, getSearchResults, isSearchAvailable, parsedCurrentSearch, vmResultLimit])
 
   const vmMetricLink = useMemo(() => {
     const obsCont = clusterManagementAddons.filter((cma) => cma.metadata.name === 'observability-controller')
@@ -311,33 +316,51 @@ export default function VirtualMachinesPage() {
   ])
 
   const searchResultItems: ISearchResult[] | undefined = useMemo(() => {
-    if (error) {
-      return []
-    } else if (loading) {
-      return undefined // undefined items triggers loading state table
-    }
-    // combine VMI node & ip address data in VM object
-    const reducedVMAndVMI: ISearchResult[] = data?.searchResult?.[0]?.items?.reduce((acc, curr) => {
-      const key = `${curr.name}/${curr.namespace}/${curr.cluster}`
-      if (curr.kind === 'VirtualMachine') {
-        acc[key] = {
-          ...acc[key],
-          ...curr,
-        }
-      } else if (curr.kind === 'VirtualMachineInstance') {
-        acc[key] = {
-          ...acc[key],
-          ...curr,
-          // Set kind to VM in case VMI is parsed first in reduce.
-          // If VMI is parsed first the navigation to search details will be for the VMI resource not VM
-          kind: 'VirtualMachine',
-        }
+    if (error) return []
+    else if (loading) return undefined // undefined items triggers loading state table
+
+    // combine VMI data into VM object
+    const combinedMap = new Map<string, any>()
+    data?.searchResult?.[0]?.items?.forEach((item) => {
+      const key = `${item.name}/${item.namespace}/${item.cluster}`
+      const existing = combinedMap.get(key)
+      const labels = [item?.label, combinedMap.get(key)?.label].filter(Boolean).join('; ') // have to combine label stings from VMs & VMIs
+      const mergedItem: ISearchResult = {
+        ...existing,
+        ...item,
+        labels,
+        // Set kind to VM in case VMI is parsed first in reduce.
+        // If VMI is parsed first the navigation to search details will be for the VMI resource not VM
+        kind: 'VirtualMachine',
       }
-      return acc
-    }, {})
+      combinedMap.set(key, mergedItem)
+    })
+
+    // If there are any related VM/VMI resources - they need to be added to the existing VM/VMI from main search results.
+    // Related VM/VMIs would result from search parameters that only match one resource type.
+    // ex: searching for nodes would only return VMIs (as that data point does not exist in VM CR definition) so we would get related VMs.
+    // We need to reduce the related data with the main data so there is no missing data in the table.
+    const relatedItemsMap = new Map<string, any>()
+    const searchRelatedData = data?.searchResult?.[0]?.related ?? []
+    searchRelatedData.forEach((relatedKindData) => {
+      relatedKindData?.items?.forEach((relatedItem) => {
+        const key = `${relatedItem.name}/${relatedItem.namespace}/${relatedItem.cluster}`
+        relatedItemsMap.set(key, relatedItem)
+        for (const [key, existing] of combinedMap) {
+          if (existing.name === relatedItem.name) {
+            combinedMap.set(key, {
+              ...existing,
+              ...relatedItemsMap.get(key),
+              kind: 'VirtualMachine',
+            })
+          }
+        }
+      })
+    })
+
     // Status only exists from VM resource data - If there is no status then we only have the VMI data without the associated VM.
     // We need to remove objects contaning only VMI data as this means the VM is either not present in search data OR does not actually exist at all meaning VMI may be stale.
-    return Object.values(reducedVMAndVMI ?? {}).filter((vm: any) => vm.status)
+    return Array.from(combinedMap.values()).filter((item) => item.status)
   }, [data?.searchResult, error, loading])
 
   if (loadStarted) {

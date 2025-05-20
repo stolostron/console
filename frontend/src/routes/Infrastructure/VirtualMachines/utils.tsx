@@ -90,6 +90,9 @@ export function getVirtualMachineRowActions(
   extensionButtons: IAcmRowAction<any>[] = []
 ): IAcmRowAction<any>[] {
   const printableStatus = item?.status
+  // https://github.com/kubevirt-ui/kubevirt-plugin/blob/main/src/views/virtualmachines/actions/VirtualMachineActionFactory.tsx#L141
+  const isVMDeleteDisabled = (printableStatus: string, item: any) =>
+    printableStatus === 'Running' || item?.label?.split('; ').includes('kubevirt.io/vm-delete-protection=true')
 
   const editButton = {
     id: 'edit',
@@ -157,6 +160,12 @@ export function getVirtualMachineRowActions(
             relatedResource: false,
           })
     },
+    isDisabled: isVMDeleteDisabled(printableStatus, item),
+    tooltip: isVMDeleteDisabled(printableStatus, item)
+      ? t(
+          'VirtualMachine is either running or delete protected and cannot be deleted. To enable deletion, stop the VirtualMachine if running, or go to VirtualMachine details and disable deletion protection.'
+        )
+      : undefined,
   }
 
   const startVM = {

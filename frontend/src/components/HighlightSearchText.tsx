@@ -6,14 +6,20 @@ import { MouseEventHandler } from 'react'
 
 const MAX_LABEL_WIDTH = 28
 
+const buttonDivClass = css({
+  '&:hover > button:after': {
+    borderColor: 'rgb(21, 21, 21) !important',
+  },
+  '&:hover > button': {
+    backgroundColor: 'white !important',
+  },
+})
+
 const buttonClass = css({
-  padding: '4px 2px !important',
+  padding: '4px 0px !important',
   lineHeight: '10px !important',
   margin: '0 2px',
-  minWidth: '24px',
-  ':before, :after': {
-    borderColor: 'lightgray !important',
-  },
+  minWidth: '16px',
 })
 
 const highlightClass = css({
@@ -64,13 +70,13 @@ export function HighlightSearchText(
 const renderToggleButton = (label: string, toggleEquality: MouseEventHandler<HTMLButtonElement> | undefined) => {
   const { prefix, oper, suffix } = parseLabel(label)
   return (
-    <>
+    <div className={buttonDivClass}>
       <span>{prefix}</span>
       <Button variant="plain" className={buttonClass} onClick={toggleEquality}>
         {oper}
       </Button>
       <span style={{ marginRight: '4px' }}>{suffix}</span>
-    </>
+    </div>
   )
 }
 

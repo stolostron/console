@@ -31,10 +31,6 @@ import {
   VMActionModal,
 } from '../../Infrastructure/VirtualMachines/modals/VMActionModal'
 import {
-  getVirtualMachineRowActionExtensions,
-  getVirtualMachineRowActions,
-} from '../../Infrastructure/VirtualMachines/utils'
-import {
   ClosedDeleteExternalResourceModalProps,
   DeleteExternalResourceModal,
   IDeleteExternalResourceModalProps,
@@ -49,7 +45,7 @@ import { federatedErrorText } from '../search-helper'
 import { SearchResultItemsQuery } from '../search-sdk/search-sdk'
 import { useSearchDefinitions } from '../searchDefinitions'
 import RelatedResults from './RelatedResults'
-import { ISearchResult, useGetRowActions } from './utils'
+import { getRowActions, ISearchResult } from './utils'
 
 const resultsWrapper = css({ paddingTop: '0' })
 const relatedExpandableWrapper = css({
@@ -97,6 +93,7 @@ function RenderAccordionItem(
   const allClusters = useAllClusters(true)
   const { settingsState } = useSharedAtoms()
   const vmActionsEnabled = useRecoilValue(settingsState)?.VIRTUAL_MACHINE_ACTIONS === 'enabled'
+  const { acmExtensions } = useContext(PluginContext)
   const [isExpanded, setIsExpanded] = useState<boolean>(defaultIsExpanded)
   const searchDefinitions = useSearchDefinitions()
 
@@ -104,9 +101,38 @@ function RenderAccordionItem(
   const items = kindSearchResultItems[kind]
   const apiGroup = items[0].apigroup ? `${items[0].apigroup}/${items[0].apiversion}` : items[0].apiversion
   const kindString = kind.split('.').pop() ?? ''
-  const rowActions = useGetRowActions(kindString, currentQuery, false, setDeleteResource, setDeleteExternalResource)
-  const { acmExtensions } = useContext(PluginContext)
   const [pluginModal, setPluginModal] = useState<JSX.Element>()
+  const rowActions = useCallback(
+    (item: any) =>
+      getRowActions(
+        item,
+        kindString,
+        currentQuery,
+        false,
+        allClusters,
+        setDeleteResource,
+        setDeleteExternalResource,
+        vmActionsEnabled,
+        setVMAction,
+        acmExtensions,
+        setPluginModal,
+        navigate,
+        t
+      ),
+    [
+      kindString,
+      currentQuery,
+      allClusters,
+      setDeleteResource,
+      setDeleteExternalResource,
+      vmActionsEnabled,
+      setVMAction,
+      acmExtensions,
+      setPluginModal,
+      navigate,
+      t,
+    ]
+  )
 
   const renderContent = useCallback(
     (kind: string, items: ISearchResult[]) => {
@@ -123,45 +149,11 @@ function RenderAccordionItem(
             searchDefinitions['genericresource'].columns
           )}
           keyFn={(item: any) => item._uid.toString()}
-          rowActions={kindString.toLowerCase() !== 'virtualmachine' ? rowActions : undefined}
-          rowActionResolver={
-            // use the row action resolvers so we can dynamically display/enabled certain actions based on the resource status.
-            kindString.toLowerCase() === 'virtualmachine'
-              ? (item: any) =>
-                  getVirtualMachineRowActions(
-                    item,
-                    allClusters,
-                    setDeleteResource,
-                    setDeleteExternalResource,
-                    setVMAction,
-                    vmActionsEnabled,
-                    navigate,
-                    t,
-                    // get the row action extensions for the virtual machine
-                    getVirtualMachineRowActionExtensions(
-                      item,
-                      acmExtensions?.virtualMachineAction || [],
-                      setPluginModal
-                    )
-                  )
-              : undefined
-          }
+          rowActionResolver={rowActions}
         />
       )
     },
-    [
-      rowActions,
-      searchDefinitions,
-      kindString,
-      setDeleteExternalResource,
-      setDeleteResource,
-      setVMAction,
-      allClusters,
-      navigate,
-      t,
-      vmActionsEnabled,
-      acmExtensions,
-    ]
+    [rowActions, searchDefinitions]
   )
 
   return (

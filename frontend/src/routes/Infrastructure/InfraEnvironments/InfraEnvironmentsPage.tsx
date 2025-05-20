@@ -565,6 +565,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
               {
                 header: '',
                 cellTransforms: [fitContent],
+                isActionCol: true,
                 cell: (infraEnv) => {
                   const { infraAgents } = infraAgentsFiltered[infraEnv.metadata?.uid!]
 

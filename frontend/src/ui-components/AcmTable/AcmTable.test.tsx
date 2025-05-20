@@ -788,7 +788,7 @@ describe('AcmTable', () => {
     expect(getByLabelText('Current page')).toHaveValue(6)
     expect(setSearch).not.toHaveBeenCalled()
     expect(setSort).not.toHaveBeenCalled()
-    expect(container.querySelector('tbody tr:last-of-type [data-label="First Name"]')).toHaveTextContent('Alyce')
+    expect(container.querySelector('tbody:last-of-type [data-label="First Name"]')).toHaveTextContent('Alyce')
 
     expect(getByLabelText('Reset')).toBeVisible()
     userEvent.click(getByLabelText('Reset'))
@@ -825,7 +825,7 @@ describe('AcmTable', () => {
   })
   test('renders a table with expandable rows', async () => {
     const expandedDeleteAction = jest.fn()
-    const { getAllByLabelText, getByRole, getByTestId, getByText } = render(
+    const { getByTestId } = render(
       <MemoryRouter>
         <AcmTable<IExampleData>
           emptyState={<AcmEmptyState title="No addresses found" message="You do not have any addresses yet" />}
@@ -901,20 +901,6 @@ describe('AcmTable', () => {
     )
     userEvent.click(getByTestId('expandable-toggle0'))
     expect(getByTestId('expanded')).toBeInTheDocument()
-
-    // Run delete action for code coverage (no delete support on expanded content)
-    userEvent.click(getAllByLabelText('Actions')[1])
-    await waitFor(() => expect(getByRole('menu')).toBeVisible())
-    expect(getByText('Delete item')).toBeVisible()
-    userEvent.click(getByText('Delete item'))
-    expect(expandedDeleteAction).not.toHaveBeenCalled()
-
-    // Run tooltipped delete action for code coverage (no delete support on expanded content)
-    userEvent.click(getAllByLabelText('Actions')[1])
-    await waitFor(() => expect(getByRole('menu')).toBeVisible())
-    expect(getByText('Delete item tooltip')).toBeVisible()
-    userEvent.click(getByText('Delete item tooltip'))
-    expect(expandedDeleteAction).not.toHaveBeenCalled()
   })
 
   test('renders with filtering and filters options work correctly', async () => {

@@ -274,6 +274,7 @@ export function ClusterSetsTable(props: { managedClusterSets?: ManagedClusterSet
           },
           {
             header: '',
+            isActionCol: true,
             cell: (managedClusterSet) => {
               return <ClusterSetActionDropdown managedClusterSet={managedClusterSet} isKebab={true} />
             },

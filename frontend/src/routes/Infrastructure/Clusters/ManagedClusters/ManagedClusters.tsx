@@ -269,6 +269,7 @@ export function ClustersTable(props: {
           return <ClusterActionDropdown cluster={cluster} isKebab={true} />
         },
         cellTransforms: [fitContent],
+        isActionCol: true,
       },
     ],
     [

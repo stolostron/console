@@ -145,6 +145,7 @@ function AnsibleJobTemplateTable() {
           {
             header: '',
             cellTransforms: [fitContent],
+            isActionCol: true,
             cell: (curator: ClusterCurator) => {
               const actions = [
                 {

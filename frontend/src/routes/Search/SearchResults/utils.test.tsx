@@ -68,12 +68,25 @@ const allClusters = [
 
 test('Correctly return row Actions', () => {
   const res = getRowActions(
+    {
+      apiversion: 'v1',
+      cluster: 'test-cluster',
+      created: '2025-05-06T14:37:29Z',
+      kind: 'Pod',
+      kind_plural: 'pods',
+      name: 'test-pod',
+      namespace: 'test-ns',
+    },
     'Pod',
     'kind:Pod',
     false,
-    () => {},
-    () => {},
     allClusters,
+    () => {},
+    () => {},
+    false,
+    () => {},
+    {},
+    () => {},
     navigate,
     t
   )
@@ -85,12 +98,25 @@ test('Correctly return row Actions', () => {
 
 test('Correctly return empty row Actions for restricted resource', () => {
   const res = getRowActions(
+    {
+      apiversion: 'v1',
+      cluster: 'test-cluster',
+      created: '2025-05-06T14:37:29Z',
+      kind: 'Cluster',
+      kind_plural: 'clusters',
+      name: 'test-cluster',
+      namespace: 'test-ns',
+    },
     'Cluster',
     'kind:Cluster',
     false,
-    () => {},
-    () => {},
     allClusters,
+    () => {},
+    () => {},
+    false,
+    () => {},
+    {},
+    () => {},
     navigate,
     t
   )
@@ -99,12 +125,25 @@ test('Correctly return empty row Actions for restricted resource', () => {
 
 test('Correctly return empty row Actions for Application', () => {
   const res = getRowActions(
+    {
+      apiversion: 'v1',
+      cluster: 'test-cluster',
+      created: '2025-05-06T14:37:29Z',
+      kind: 'Application',
+      kind_plural: 'applications',
+      name: 'test-application',
+      namespace: 'test-ns',
+    },
     'Application',
     'kind:Application',
     false,
-    () => {},
-    () => {},
     allClusters,
+    () => {},
+    () => {},
+    false,
+    () => {},
+    {},
+    () => {},
     navigate,
     t
   )
@@ -127,12 +166,25 @@ test('Correctly return empty row Actions for Application', () => {
 
 test('Correctly return row Actions for Application in global search', () => {
   const res = getRowActions(
+    {
+      apiversion: 'v1',
+      cluster: 'test-cluster',
+      created: '2025-05-06T14:37:29Z',
+      kind: 'Application',
+      kind_plural: 'applications',
+      name: 'test-application',
+      namespace: 'test-ns',
+    },
     'Application',
     'kind:Application',
     false,
-    () => {},
-    () => {},
     allClusters,
+    () => {},
+    () => {},
+    false,
+    () => {},
+    {},
+    () => {},
     navigate,
     t
   )

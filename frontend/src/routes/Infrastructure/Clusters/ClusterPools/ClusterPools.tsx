@@ -454,6 +454,7 @@ export function ClusterPoolsTable(props: {
           {
             header: '',
             cellTransforms: [fitContent],
+            isActionCol: true,
             cell: (clusterPool: ClusterPool) => {
               if (!isClusterPoolDeleting(clusterPool)) {
                 const actions = [
