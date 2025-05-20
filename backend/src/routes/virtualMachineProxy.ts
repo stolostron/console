@@ -98,7 +98,7 @@ export async function virtualMachineProxy(req: Http2ServerRequest, res: Http2Ser
               res.setHeader('Content-Type', 'application/json')
               res.writeHead(results.status ?? HTTP_STATUS_INTERNAL_SERVER_ERROR)
               res.end(JSON.stringify(results))
-              return `Error on VirtualMachine action request: ${results}`
+              return 'Error on VirtualMachine action request'
             }
             let response = undefined
             if (req.method === 'POST') {
