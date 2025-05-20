@@ -12,9 +12,9 @@ export const pluginMetadata: ConsolePluginBuildMetadata = {
   displayName: 'Red Hat Multicluster Engine for Kubernetes',
   description: 'Integrates Multicluster Engine functionality into the OpenShift Container Platform web console',
   exposedModules: {
-    contextProvider: './src/context-provider',
-    context: './src/context',
-    perspective: './src/perspective',
+    contextProvider: './src/components/PluginDataContextProvider.tsx',
+    context: './src/lib/PluginDataContext.tsx',
+    perspective: './src/perspective.tsx',
     clusters: './src/routes/Infrastructure/Clusters/ClustersPlugin.tsx',
     automations: './src/routes/Infrastructure/Automations/AutomationsPlugin.tsx',
     environments: './src/routes/Infrastructure/Environments/InfraEnvironmentsPlugin.tsx',
