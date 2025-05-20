@@ -39,7 +39,7 @@ const perspective: EncodedExtension<Perspective> = {
   type: 'console.perspective',
   properties: {
     id: 'acm',
-    name: '%plugin__mce~All clusters%',
+    name: '%plugin__mce~Fleet Management%',
     icon: { $codeRef: 'perspective.icon' },
     landingPageURL: { $codeRef: 'perspective.getLandingPageURL' },
     importRedirectURL: { $codeRef: 'perspective.getImportRedirectURL' }
