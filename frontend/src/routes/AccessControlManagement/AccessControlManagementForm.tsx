@@ -6,7 +6,7 @@ import { FormData } from '../../components/AcmFormData'
 import { LostChangesContext } from '../../components/LostChanges'
 import { useTranslation } from '../../lib/acm-i18next'
 import { NavigationPath, useBackCancelNavigation } from '../../NavigationPath'
-import { IResource } from '../../resources'
+import { IResource, listGroups, listUsers } from '../../resources'
 import { AccessControl, AccessControlApiVersion } from '../../resources/access-control'
 import { createResource, patchResource } from '../../resources/utils'
 import { AcmLabels, AcmToastContext } from '../../ui-components'
@@ -17,6 +17,7 @@ import { Stack, StackItem, Title } from '@patternfly/react-core'
 import { get } from 'lodash'
 import { useSearchCompleteLazyQuery } from '../Search/search-sdk/search-sdk'
 import { searchClient } from '../Search/search-sdk/search-client'
+import { useQuery } from '../../lib/useQuery'
 
 const AccessControlManagementForm = ({
   isEditing,
@@ -45,10 +46,19 @@ const AccessControlManagementForm = ({
   const roles = [
     { id: '1', value: 'kubevirt.io:view' },
     { id: '2', value: 'kubevirt.io:edit' },
-    { id: '1', value: 'kubevirt.io:admin' },
+    { id: '3', value: 'kubevirt.io:admin' },
   ]
-  const allUsers = ['Bob', 'Matt', 'Kike', 'Kurtis', 'Oksana']
-  const allGroups = ['devs', 'admins', 'qa']
+  const { data: users, startPolling: usersStartPolling, stopPolling: usersStopPolling } = useQuery(listUsers)
+  const { data: groups, startPolling: groupsStartPolling, stopPolling: groupsStopPolling } = useQuery(listGroups)
+
+  useEffect(() => {
+    usersStartPolling()
+    groupsStartPolling()
+    return () => {
+      usersStopPolling()
+      groupsStopPolling()
+    }
+  }, [groupsStartPolling, groupsStopPolling, usersStartPolling, usersStopPolling, users, groups])
 
   // Form Values
   const [namespace, setNamespace] = useState('')
@@ -263,9 +273,9 @@ const AccessControlManagementForm = ({
             placeholder: subjectType === 'Group' ? t('Select or enter group name') : t('Select or enter user name'),
             value: selectedUserNames,
             onChange: (values) => setSelectedUserNames(values),
-            options: (subjectType === 'Group' ? allGroups : allUsers).map((val) => ({
-              id: val,
-              value: val,
+            options: ((subjectType === 'Group' ? groups : users) || []).map((val) => ({
+              id: val.metadata.uid!,
+              value: val.metadata.name!,
             })),
             isRequired: true,
             isHidden: isViewing,
