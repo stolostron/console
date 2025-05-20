@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { TFunction } from 'i18next'
 import { Provider } from '../../../../../ui-components'
 
 export type TranslationFunction = (key: string, params?: Record<string, string>) => string
@@ -146,7 +147,7 @@ export function searchInfrastructureProvider(provider: string) {
  * @returns The full display name of the cluster type, or the original acronym if not recognized
  */
 
-export function getFullTypeByAcronymForDiscoveryClustersType(acronym: string, t?: TranslationFunction) {
+export function getFullTypeByAcronymForDiscoveryClustersType(acronym: string, t: TFunction) {
   switch (acronym.toUpperCase()) {
     case 'MOA':
       return 'Red Hat OpenShift Service on AWS'
@@ -163,7 +164,7 @@ export function getFullTypeByAcronymForDiscoveryClustersType(acronym: string, t?
     case 'OSD':
       return 'OpenShift Dedicated'
     case 'OSDTRIAL':
-      return t ? t('type.trialVersionOf', { product: 'OpenShift Dedicated' }) : 'Trial version of OpenShift Dedicated'
+      return t('type.trialVersionOf', { product: 'OpenShift Dedicated' })
     case 'ARO':
       return 'Azure Red Hat OpenShift'
     case 'RHMI':
