@@ -49,8 +49,8 @@ export function RenderItemContent(
   const { t } = useTranslation()
   const navigate = useNavigate()
   const allClusters = useAllClusters(true)
-  const { settingsState } = useSharedAtoms()
-  const vmActionsEnabled = useRecoilValue(settingsState)?.VIRTUAL_MACHINE_ACTIONS === 'enabled'
+  const { useVitualMachineActionsEnabled } = useSharedAtoms()
+  const vmActionsEnabled = useVitualMachineActionsEnabled()
   const { useSearchResultLimit } = useSharedAtoms()
   const searchResultLimit = useSearchResultLimit()
   const { acmExtensions } = useContext(PluginContext)
