@@ -17,7 +17,7 @@ export const pluginMetadata: ConsolePluginBuildMetadata = {
     perspective: './src/perspective',
     clusters: './src/routes/Infrastructure/Clusters/ClustersPlugin.tsx',
     automations: './src/routes/Infrastructure/Automations/AutomationsPlugin.tsx',
-    environments: './src/routes/Infrastructure/Environments/EnvironmentsPlugin.tsx',
+    environments: './src/routes/Infrastructure/Environments/InfraEnvironmentsPlugin.tsx',
     virtualmachines: './src/routes/Infrastructure/VirtualMachines/VirtualMachinesPlugin.tsx',
     credentials: './src/routes/Credentials/CredentialsPlugin.tsx'
   },
