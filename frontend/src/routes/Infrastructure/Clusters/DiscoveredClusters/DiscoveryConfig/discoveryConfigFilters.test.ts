@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import i18n from '../../../../../lib/i18n'
 import { Provider } from '../../../../../ui-components'
 import {
   getInfrastructureProvider,
@@ -13,6 +14,8 @@ import {
   INFRASTRUCTURE_PROVIDERS,
   getDisplayNameForInfrastructureProvider,
 } from './discoveryConfigFilters'
+
+const t = i18n.t.bind(i18n)
 
 // Testing getDisplayNameForInfrastructureProvider function
 describe('getDisplayNameForInfrastructureProvider', () => {
@@ -190,53 +193,53 @@ describe('searchInfrastructureProvider', () => {
 // Testing getFullTypeByAcronymForDiscoveryClustersType function
 describe('getFullTypeByAcronymForDiscoveryClustersType', () => {
   it('returns correct translated type for MOA', () => {
-    expect(getFullTypeByAcronymForDiscoveryClustersType('MOA')).toBe('Red Hat OpenShift Service on AWS')
+    expect(getFullTypeByAcronymForDiscoveryClustersType('MOA', t)).toBe('Red Hat OpenShift Service on AWS')
   })
 
   it('returns correct translated type for MOA-HostedControlPlane', () => {
-    expect(getFullTypeByAcronymForDiscoveryClustersType('MOA-HostedControlPlane')).toBe(
+    expect(getFullTypeByAcronymForDiscoveryClustersType('MOA-HostedControlPlane', t)).toBe(
       'Red Hat OpenShift Service on AWS Hosted Control Plane'
     )
   })
 
   it('returns correct translated type for ROSA', () => {
-    expect(getFullTypeByAcronymForDiscoveryClustersType('ROSA')).toBe('Red Hat OpenShift Service on AWS')
+    expect(getFullTypeByAcronymForDiscoveryClustersType('ROSA', t)).toBe('Red Hat OpenShift Service on AWS')
   })
 
   it('returns correct translated type for ROSA-HyperShift', () => {
-    expect(getFullTypeByAcronymForDiscoveryClustersType('ROSA-HyperShift')).toBe(
+    expect(getFullTypeByAcronymForDiscoveryClustersType('ROSA-HyperShift', t)).toBe(
       'Red Hat OpenShift Service on AWS Hosted Control Plane'
     )
   })
 
   it('returns correct translated type for OCP-AssistedInstall', () => {
-    expect(getFullTypeByAcronymForDiscoveryClustersType('OCP-AssistedInstall')).toBe(
+    expect(getFullTypeByAcronymForDiscoveryClustersType('OCP-AssistedInstall', t)).toBe(
       'OpenShift Container Platform (Assisted Installer)'
     )
   })
 
   it('returns correct translated type for OCP', () => {
-    expect(getFullTypeByAcronymForDiscoveryClustersType('OCP')).toBe('OpenShift Container Platform')
+    expect(getFullTypeByAcronymForDiscoveryClustersType('OCP', t)).toBe('OpenShift Container Platform')
   })
 
   it('returns correct translated type for OSD', () => {
-    expect(getFullTypeByAcronymForDiscoveryClustersType('OSD')).toBe('OpenShift Dedicated')
+    expect(getFullTypeByAcronymForDiscoveryClustersType('OSD', t)).toBe('OpenShift Dedicated')
   })
 
   it('returns correct translated type for OSDTrial', () => {
-    expect(getFullTypeByAcronymForDiscoveryClustersType('OSDTrial')).toBe('Trial version of OpenShift Dedicated')
+    expect(getFullTypeByAcronymForDiscoveryClustersType('OSDTrial', t)).toBe('Trial version of OpenShift Dedicated')
   })
 
   it('returns correct translated type for ARO', () => {
-    expect(getFullTypeByAcronymForDiscoveryClustersType('ARO')).toBe('Azure Red Hat OpenShift')
+    expect(getFullTypeByAcronymForDiscoveryClustersType('ARO', t)).toBe('Azure Red Hat OpenShift')
   })
 
   it('returns correct translated type for RHMI', () => {
-    expect(getFullTypeByAcronymForDiscoveryClustersType('RHMI')).toBe('Red Hat Managed Integration')
+    expect(getFullTypeByAcronymForDiscoveryClustersType('RHMI', t)).toBe('Red Hat Managed Integration')
   })
 
   it('returns correct translated type for RHOIC', () => {
-    expect(getFullTypeByAcronymForDiscoveryClustersType('RHOIC')).toBe('Red Hat OpenShift on IBM Cloud')
+    expect(getFullTypeByAcronymForDiscoveryClustersType('RHOIC', t)).toBe('Red Hat OpenShift on IBM Cloud')
   })
 })
 
@@ -348,26 +351,6 @@ describe('Cluster type group functions', () => {
     it('returns empty array for unknown groups', () => {
       expect(getAllClusterTypesFromGroups(['UNKNOWN'])).toEqual([])
     })
-  })
-})
-
-describe('getFullTypeByAcronymForDiscoveryClustersType with translation function', () => {
-  it('uses translation function when provided', () => {
-    const mockTranslate = jest.fn((key) => key)
-
-    expect(getFullTypeByAcronymForDiscoveryClustersType('OSDTrial', mockTranslate)).toBe('type.trialVersionOf')
-    expect(mockTranslate).toHaveBeenCalledWith('type.trialVersionOf', { product: 'OpenShift Dedicated' })
-  })
-
-  it('handles interpolation with translation function', () => {
-    const mockTranslate = jest.fn((key, params) => {
-      if (key === 'type.trialVersionOf' && params?.product) {
-        return `TEST: ${params.product}`
-      }
-      return key
-    })
-
-    expect(getFullTypeByAcronymForDiscoveryClustersType('OSDTrial', mockTranslate)).toBe('TEST: OpenShift Dedicated')
   })
 })
 

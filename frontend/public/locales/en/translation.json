@@ -3133,7 +3133,7 @@
   "True": "True",
   "Type": "Type",
   "type.to.confirm": "Confirm by typing \"{{confirm}}\" below:",
-  "type.trialVersionOf": "Trial version of",
+  "type.trialVersionOf": "Trial version of {{product}}",
   "Unable to communicate with the server because of a bad gateway.": "Unable to communicate with the server because of a bad gateway.",
   "Unable to communicate with the server because of a network error.": "Unable to communicate with the server because of a network error.",
   "Unable to communicate with the server because of an unexpected error.": "Unable to communicate with the server because of an unexpected error.",
