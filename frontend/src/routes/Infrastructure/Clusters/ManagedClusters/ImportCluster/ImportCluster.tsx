@@ -329,14 +329,16 @@ export default function ImportClusterPage() {
 
           const credentialExists = doesCredentialExist(filteredCredentials, state.credential)
 
+          let newCredential = ''
+          if (credentialExists) {
+            newCredential = state.credential
+          } else if (filteredCredentials.length > 0) {
+            newCredential = filteredCredentials[0].metadata.name ?? ''
+          }
           return {
             ...state,
             namespace: namespaceExists ? state.namespace : '',
-            credential: credentialExists
-              ? state.credential
-              : filteredCredentials.length > 0
-                ? filteredCredentials[0].metadata.name || ''
-                : '',
+            credential: newCredential,
             credentials: filteredCredentials,
           }
         }
@@ -403,7 +405,6 @@ export default function ImportClusterPage() {
           namespace: initialClusterName,
         },
         stringData: {
-          autoImportRetry: '2',
           cluster_id: initialClusterID,
           auth_method: initialAuthMethod,
           api_token: initialAPIToken,
@@ -423,7 +424,6 @@ export default function ImportClusterPage() {
           namespace: initialClusterName,
         },
         stringData: {
-          autoImportRetry: '2',
           token: '',
           server: initialServer,
         },
@@ -790,9 +790,7 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
         name: AUTO_IMPORT_SECRET,
         namespace: clusterName,
       },
-      stringData: {
-        autoImportRetry: '2',
-      },
+      stringData: {},
       type: 'Opaque',
     }),
     [clusterName]
@@ -801,11 +799,10 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
   const updateROSAImportSecret = useCallback(
     (credentialName: string, discoverySecret: Secret) => {
       const selectedCredential = ocmCredentials.find((credential) => credential.metadata.name === credentialName)
-      const authMethod = selectedCredential?.stringData?.auth_method || 'offline-token'
+      const authMethod = selectedCredential?.stringData?.auth_method ?? 'offline-token'
       // Updating the discovery secret based on the auth_method
       if (authMethod === 'service-account') {
         discoverySecret.stringData = {
-          ...discoverySecret.stringData,
           cluster_id: clusterID,
           auth_method: 'service-account',
           client_id: selectedCredential?.stringData?.client_id ?? '',
@@ -813,7 +810,6 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
         }
       } else if (authMethod === 'offline-token') {
         discoverySecret.stringData = {
-          ...discoverySecret.stringData,
           cluster_id: clusterID,
           auth_method: 'offline-token',
           api_token: selectedCredential?.stringData?.ocmAPIToken ?? '',
@@ -885,12 +881,8 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
 
   if (prevImportMode !== importMode || prevCredential !== credential) {
     // Preserve anything added to the secret by the user, like annotations
-    // For the stringData, preserve only changes to the autoImportRetry count
-    const {
-      stringData: { autoImportRetry = autoImportSecret?.stringData?.autoImportRetry ?? '' } = {},
-      ...currentAutoImportSecretRest
-    } = getSecretTemplate() ?? {}
-    const newAutoImportSecret = { ...autoImportSecret, stringData: { autoImportRetry }, ...currentAutoImportSecretRest }
+    const newAutoImportSecret = { ...autoImportSecret, ...(getSecretTemplate() ?? {}), ...{ type: 'Opaque' } }
+
     switch (importMode) {
       case ImportMode.manual:
         // Delete auto-import secret
@@ -898,13 +890,13 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
         break
       case ImportMode.kubeconfig: {
         // Insert/Replace auto-import secret
-        newAutoImportSecret.stringData = { ...newAutoImportSecret.stringData, kubeconfig }
+        newAutoImportSecret.stringData = { kubeconfig }
         replaceSecretTemplate(newAutoImportSecret)
         break
       }
       case ImportMode.token: {
         // Insert/Replace auto-import secret
-        newAutoImportSecret.stringData = { ...newAutoImportSecret.stringData, token, server }
+        newAutoImportSecret.stringData = { token, server }
         replaceSecretTemplate(newAutoImportSecret)
         break
       }
