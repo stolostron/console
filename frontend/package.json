@@ -32,7 +32,7 @@
     "i18n-download": "i18n-scripts/memsource-download.sh",
     "update": "npx npm-check-updates -x @testing-library/user-event,monaco-editor,eslint,react-router-dom --doctor --upgrade && npm audit fix && npm dedup",
     "serve:plugins": "concurrently npm:serve:plugin:* -c green,blue,cyan,magenta",
-    "serve:plugin": ". ../port-defaults.sh && ./scripts/checkPlugin.sh && PLUGIN=${PLUGIN} CONSOLE_PLUGIN_SKIP_EXT_VALIDATOR=true TS_NODE_PROJECT=webpack.tsconfig.json webpack serve -c webpack.${PLUGIN}.plugin.ts --env port=$PORT --mode development",
+    "serve:plugin": ". ../port-defaults.sh && ./scripts/checkPlugin.sh && PLUGIN=${PLUGIN} CONSOLE_PLUGIN_SKIP_EXT_VALIDATOR=true TS_NODE_PROJECT=webpack.tsconfig.json webpack serve -c plugins/${PLUGIN}/webpack.${PLUGIN}.plugin.ts --env port=$PORT --mode development",
     "serve:plugin:acm": "PLUGIN=acm PORT=${ACM_PORT} npm run serve:plugin",
     "serve:plugin:mce": "PLUGIN=mce PORT=${MCE_PORT} npm run serve:plugin"
   },

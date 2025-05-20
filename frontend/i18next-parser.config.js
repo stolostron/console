@@ -84,7 +84,6 @@ module.exports = {
     './src/**/*.tsx',
     './src/**/*.ts',
     './src/**/*.js',
-    './plugins/**/*.tsx',
     './plugins/**/*.ts',
     './plugins/**/*.js',
     './plugins/**/console-extensions.ts',
