@@ -71,7 +71,7 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
     },
     plugins: [
       new webpack.NormalModuleReplacementPlugin(/media\/suggest\.css$/, path.resolve(__dirname, 'src/empty.css')),
-      new ConsoleRemotePlugin({ validateSharedModules: false, validateExtensionIntegrity: false }),
+      // new ConsoleRemotePlugin({ validateSharedModules: false, validateExtensionIntegrity: false }),
       new webpack.DefinePlugin({
         'process.env.NODE_ENV': JSON.stringify('production'),
         'process.env.REACT_APP_BACKEND_PATH': JSON.stringify('/multicloud'),

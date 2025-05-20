@@ -13,11 +13,11 @@ export const pluginMetadata: ConsolePluginBuildMetadata = {
   displayName: 'Red Hat Advanced Cluster Management for Kubernetes',
   description: 'Integrates Advanced Cluster Management functionality into the OpenShift Container Platform web console',
   exposedModules: {
-    welcome: '../../src/routes/Home/Welcome/WelcomePlugin.tsx',
-    overview: '../../src/routes/Home/Overview/OverviewPlugin.tsx',
-    search: '../../src/routes/Search/SearchPlugin.tsx',
-    applications: '../../src/routes/Applications/ApplicationsPlugin.tsx',
-    governance: '../../src/routes/Governance/GovernancePlugin.tsx'
+    welcome: './src/routes/Home/Welcome/WelcomePlugin.tsx',
+    overview: './src/routes/Home/Overview/OverviewPlugin.tsx',
+    search: './src/routes/Search/SearchPlugin.tsx',
+    applications: './src/routes/Applications/ApplicationsPlugin.tsx',
+    governance: './src/routes/Governance/GovernancePlugin.tsx'
   },
   dependencies: {
     "@console/pluginAPI": ">=4.15.0",
