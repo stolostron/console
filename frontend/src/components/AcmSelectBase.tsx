@@ -18,6 +18,7 @@ import {
   Icon,
   SelectGroup,
   Badge,
+  KeyTypes,
 } from '@patternfly/react-core'
 import {
   Children,
@@ -99,30 +100,12 @@ const menuToggleClass = css`
   }
 `
 
-interface CheckboxChildren {
+interface ICheckboxChildren {
   hasCheckbox?: boolean
   isSelected?: boolean
+  onKeyDown?: (event: React.KeyboardEvent) => void
   children?: React.ReactNode
 }
-
-const addCheckboxes = (children: ReactNode, selectedItems: string | any[]): any =>
-  Children.map(children, (child) => {
-    if (!isValidElement<CheckboxChildren>(child)) {
-      return child
-    }
-    if (child.type === SelectGroup) {
-      return cloneElement<CheckboxChildren>(child, {
-        children: addCheckboxes(child.props.children, selectedItems),
-      })
-    } else if (child.type === SelectOption) {
-      return cloneElement(child, {
-        hasCheckbox: true,
-        isSelected: selectedItems.includes((child as ReactElement<any>).props.value),
-      })
-    } else {
-      return child
-    }
-  })
 
 export function AcmSelectBase(props: AcmSelectBaseProps) {
   const { t } = useTranslation()
@@ -173,6 +156,7 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
     initialFilteredOptions.find((option) => option.value === value)?.children
   const [focusedItemIndex, setFocusedItemIndex] = useState<number | null>(null)
   const [activeItemId, setActiveItemId] = useState<string | null>(null)
+  const menuRef = useRef<HTMLDivElement>()
   const textInputRef = useRef<HTMLInputElement>()
   const {
     value,
@@ -453,6 +437,35 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
     [filterValue.length, onClear, onSelect, props.width, variant]
   )
 
+  const renderCheckboxes = (children: ReactNode, selectedItems: string | any[]): any => {
+    return Children.map(children, (child, index) => {
+      if (!isValidElement<ICheckboxChildren>(child)) {
+        return child
+      }
+      if (child.type === SelectGroup) {
+        return cloneElement<ICheckboxChildren>(child, {
+          children: renderCheckboxes(child.props.children, selectedItems),
+        })
+      } else if (child.type === SelectOption) {
+        return cloneElement(child, {
+          hasCheckbox: true,
+          isSelected: selectedItems.includes((child as ReactElement<any>).props.value),
+          onKeyDown: (event: React.KeyboardEvent) => {
+            if (event.key === KeyTypes.Enter) {
+              event.preventDefault()
+              const checkboxes = menuRef?.current?.querySelectorAll(
+                'input[type=checkbox]'
+              ) as NodeListOf<HTMLDivElement>
+              checkboxes[index].click()
+            }
+          },
+        })
+      } else {
+        return child
+      }
+    })
+  }
+
   const renderSelectList = () => {
     switch (true) {
       case variant === SelectVariant.single:
@@ -460,7 +473,7 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
       case variant === SelectVariant.checkbox:
         return (
           <SelectList style={{ maxHeight: maxHeight, overflowY: 'auto' }}>
-            {addCheckboxes(children, selectedItems)}
+            {renderCheckboxes(children, selectedItems)}
           </SelectList>
         )
       default:
@@ -519,6 +532,24 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
         ref={toggleRef}
         variant={variant === SelectVariant.single || variant === SelectVariant.checkbox ? 'default' : 'typeahead'}
         role="combobox"
+        onKeyDown={(event: React.KeyboardEvent) => {
+          if (SelectVariant.single || variant === SelectVariant.checkbox) {
+            event.preventDefault()
+            if (
+              (event.key === KeyTypes.Tab || event.key === KeyTypes.Enter || event.key === KeyTypes.Space) &&
+              isOpen
+            ) {
+              setIsOpen(false)
+            } else if ((event.key === KeyTypes.Enter || event.key === KeyTypes.Space) && !isOpen) {
+              setIsOpen(true)
+              setTimeout(() => {
+                const firstElement = menuRef?.current?.querySelector('li button:not(:disabled),li input:not(:disabled)')
+                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+                firstElement && (firstElement as HTMLElement).focus({ preventScroll: true })
+              }, 0)
+            }
+          }
+        }}
         aria-label={ariaLabel}
         badge={badge}
         isDisabled={isDisabled}
@@ -610,6 +641,7 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
       onOpenChange={() => closeMenu()}
       selected={selections}
       onSelect={_onSelect}
+      innerRef={menuRef as React.MutableRefObject<any>}
     >
       {renderSelectList()}
       {footer}
