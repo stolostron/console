@@ -161,7 +161,14 @@ export default function DiscoveredPolicies() {
       },
       {
         header: t('Source'),
-        cell: (item: DiscoverdPolicyTableItem) => discoveredSourceCell(t, item.source),
+        cell: (item: DiscoverdPolicyTableItem) => (
+          <div
+            style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+            title={item.source?.type ?? ''}
+          >
+            {discoveredSourceCell(t, item.source)}
+          </div>
+        ),
         sort: (a: DiscoverdPolicyTableItem, b: DiscoverdPolicyTableItem) =>
           compareStrings(a.source?.type, b.source?.type),
         search: (item: DiscoverdPolicyTableItem) => item.source?.type ?? '',

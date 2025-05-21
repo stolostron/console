@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { css } from '@emotion/css'
-import { css as cssPF } from '@patternfly/react-styles'
 import {
   Badge,
   ButtonVariant,
@@ -34,6 +33,7 @@ import {
   SelectVariant,
 } from '@patternfly/react-core/deprecated'
 import { EllipsisVIcon, ExportIcon, FilterIcon } from '@patternfly/react-icons'
+import { css as cssPF } from '@patternfly/react-styles'
 import {
   ActionsColumn,
   CustomActionsToggleProps,
@@ -60,6 +60,8 @@ import useResizeObserver from '@react-hook/resize-observer'
 import { debounce } from 'debounce'
 import Fuse from 'fuse.js'
 import get from 'get-value'
+import { mergeWith } from 'lodash'
+import { parse, ParsedQuery, stringify } from 'query-string'
 import {
   cloneElement,
   createContext,
@@ -73,23 +75,21 @@ import {
   useMemo,
   useState,
 } from 'react'
-import { AcmButton } from '../AcmButton/AcmButton'
-import { AcmEmptyState } from '../AcmEmptyState/AcmEmptyState'
-import { AcmToastContext } from '../AcmAlert/AcmToast'
+import { useLocation, useNavigate } from 'react-router-dom-v5-compat'
+import { HighlightSearchText } from '../../components/HighlightSearchText'
 import { useTranslation } from '../../lib/acm-i18next'
 import { usePaginationTitles } from '../../lib/paginationStrings'
-import { filterLabelMargin, filterOption, filterOptionBadge } from './filterStyles'
-import { AcmManageColumn } from './AcmManageColumn'
-import { useNavigate, useLocation } from 'react-router-dom-v5-compat'
-import { ParsedQuery, parse, stringify } from 'query-string'
-import { IAlertContext } from '../AcmAlert/AcmAlert'
-import { createDownloadFile, returnCSVSafeString, parseLabel, matchesFilterValue } from '../../resources/utils'
-import { HighlightSearchText } from '../../components/HighlightSearchText'
-import { FilterCounts, IRequestListView, IResultListView, IResultStatuses } from '../../lib/useAggregates'
-import { AcmSearchInput, SearchConstraint, SearchOperator } from '../AcmSearchInput'
 import { PluginContext } from '../../lib/PluginContext'
+import { FilterCounts, IRequestListView, IResultListView, IResultStatuses } from '../../lib/useAggregates'
+import { createDownloadFile, matchesFilterValue, parseLabel, returnCSVSafeString } from '../../resources/utils'
+import { IAlertContext } from '../AcmAlert/AcmAlert'
+import { AcmToastContext } from '../AcmAlert/AcmToast'
+import { AcmButton } from '../AcmButton/AcmButton'
 import { AcmDropdown, AcmDropdownItems } from '../AcmDropdown'
-import { mergeWith } from 'lodash'
+import { AcmEmptyState } from '../AcmEmptyState/AcmEmptyState'
+import { AcmSearchInput, SearchConstraint, SearchOperator } from '../AcmSearchInput'
+import { AcmManageColumn } from './AcmManageColumn'
+import { filterLabelMargin, filterOption, filterOptionBadge } from './filterStyles'
 
 type SortFn<T> = (a: T, b: T) => number
 type CellFn<T> = (item: T, search: string) => ReactNode
@@ -1261,7 +1261,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         setSort(newSort)
       } else {
         setSort({
-          index: newSort && newSort.index ? newSort.index : 0,
+          index: newSort?.index ? newSort.index : 0,
           direction: newSort && newSort.direction,
         })
       }
@@ -1329,6 +1329,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
               isAriaDisabled={action.isDisabled}
               tooltip={action.tooltip}
               tooltipProps={action.tooltipProps}
+              component={'span'} // default component is <a> which causes link styling
               style={{ padding: 0, cursor: action.isDisabled ? 'not-allowed' : 'pointer' }}
             >
               {action.title}
