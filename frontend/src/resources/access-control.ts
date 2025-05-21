@@ -11,6 +11,7 @@ export const AccessControlDefinition: IResourceDefinition = {
   apiVersion: AccessControlApiVersion,
   kind: AccessControlKind,
 }
+export type SubjectType = 'User' | 'Group' | 'Role'
 
 export interface RoleBinding {
   namespace: string
@@ -21,7 +22,7 @@ export interface RoleBinding {
   }
   subject: {
     apiGroup: string
-    kind: 'User' | 'Group' | 'Role'
+    kind: SubjectType
     name: string
   }
 }

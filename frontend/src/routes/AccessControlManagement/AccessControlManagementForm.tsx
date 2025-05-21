@@ -9,7 +9,7 @@ import { useTranslation } from '../../lib/acm-i18next'
 import { useQuery } from '../../lib/useQuery'
 import { NavigationPath, useBackCancelNavigation } from '../../NavigationPath'
 import { IResource, listGroups, listUsers } from '../../resources'
-import { AccessControl, AccessControlApiVersion, RoleBinding } from '../../resources/access-control'
+import { AccessControl, AccessControlApiVersion, RoleBinding, SubjectType } from '../../resources/access-control'
 import { createResource, patchResource } from '../../resources/utils'
 import { AcmLabels, AcmToastContext } from '../../ui-components'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
@@ -61,20 +61,22 @@ const AccessControlManagementForm = ({
   // Form Values
   const [namespace, setNamespace] = useState('')
   const [createdDate, setCreatedDate] = useState('')
-  const [selectedUsers, setSelectedUsers] = useState<RoleBinding[]>([])
+  const [selectedRoleBindings, setSelectedRoleBindings] = useState<RoleBinding[]>([])
   const [name, setName] = useState('')
 
   const [selectedUserNames, setSelectedUserNames] = useState<string[]>([])
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([])
+  const [selectedGroups, setSelectedGroups] = useState<string[]>([])
   const [selectedRoles, setSelectedRoles] = useState<string[]>([])
   const [selectedNamespaces, setSelectedNamespaces] = useState<string[]>([])
-  const [subjectType, setSubjectType] = useState<'User' | 'Group'>('User')
+  const [subjectType, setSubjectType] = useState<SubjectType>('User')
 
   const { submitForm } = useContext(LostChangesContext)
 
   useEffect(() => {
     setNamespace(accessControl?.metadata?.namespace ?? '')
     setCreatedDate(accessControl?.metadata?.creationTimestamp ?? '')
-    setSelectedUsers((accessControl?.spec?.roleBindings ?? []) as RoleBinding[])
+    setSelectedRoleBindings((accessControl?.spec?.roleBindings ?? []) as RoleBinding[])
     setName(accessControl?.metadata?.name ?? '')
 
     if (accessControl?.spec?.roleBindings) {
@@ -85,8 +87,8 @@ const AccessControlManagementForm = ({
   }, [accessControl?.metadata, accessControl?.spec.roleBindings])
 
   useEffect(() => {
-    if (!isEditing && !isViewing && selectedUsers.length === 0) {
-      setSelectedUsers([
+    if (!isEditing && !isViewing && !selectedRoleBindings.length) {
+      setSelectedRoleBindings([
         {
           namespace,
           roleRef: {
@@ -102,7 +104,7 @@ const AccessControlManagementForm = ({
         },
       ])
     }
-  }, [isEditing, isViewing, namespace, selectedUsers.length])
+  }, [isEditing, isViewing, namespace, selectedRoleBindings.length])
 
   const [getSearchResults, { data }] = useSearchCompleteLazyQuery({
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
@@ -125,6 +127,17 @@ const AccessControlManagementForm = ({
       },
     })
   }, [getSearchResults, namespace])
+
+  useEffect(() => {
+    switch (subjectType) {
+      case 'Group':
+        setSelectedGroups(selectedUserNames)
+        break
+      case 'User':
+        setSelectedUsers(selectedUserNames)
+        break
+    }
+  }, [selectedUserNames, subjectType])
 
   const namespaceItems: string[] = useMemo(
     () => data?.searchComplete?.filter((e) => e !== null) ?? [],
@@ -171,7 +184,7 @@ const AccessControlManagementForm = ({
   const stateToSyncs = () => [
     { path: 'AccessControl[0].metadata.namespace', setState: setNamespace },
     { path: 'AccessControl[0].metadata.name', setState: setName },
-    { path: 'AccessControl[0].spec.roleBindings', setState: setSelectedUsers },
+    { path: 'AccessControl[0].spec.roleBindings', setState: setSelectedRoleBindings },
   ]
 
   const title = isViewing
@@ -256,7 +269,7 @@ const AccessControlManagementForm = ({
             label: '',
             value: subjectType.toLowerCase(),
             onChange: (value: string) => {
-              setSelectedUserNames([])
+              setSelectedUserNames(value === 'group' ? selectedGroups : selectedUsers)
               setSubjectType(value === 'group' ? 'Group' : 'User')
             },
             options: [
