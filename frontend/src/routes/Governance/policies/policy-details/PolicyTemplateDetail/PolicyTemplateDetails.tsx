@@ -109,13 +109,50 @@ export function PolicyTemplateDetails() {
       setRelatedObjects(relObjs)
 
       return
+    } else if (kind === 'CertificatePolicy') {
+      const relObjs = []
+
+      for (const ns in template?.status?.compliancyDetails) {
+        const nsinfo = template.status.compliancyDetails[ns]
+        const msglines = nsinfo?.message?.split('\n')
+        for (const certname in nsinfo?.nonCompliantCertificatesList) {
+          const message = msglines.filter((m: string) => m.startsWith(certname)).join('\n')
+          relObjs.push({
+            cluster: clusterName,
+            compliant: 'NonCompliant',
+            object: {
+              apiVersion: 'v1',
+              kind: 'Secret',
+              metadata: {
+                name: nsinfo.nonCompliantCertificatesList[certname].secretName,
+                namespace: ns,
+              },
+            },
+            reason: <div style={{ whiteSpace: 'pre-wrap' }}>{message}</div>,
+          })
+        }
+      }
+
+      setRelatedObjects(relObjs)
+
+      return
     }
 
     // Data from Search-api handles their loading page
     if (!templateLoading && !isKyverno && !isGatekeeperMutation && !isVAPB) {
       setRelatedObjects([])
     }
-  }, [apiGroup, clusterName, template, templateLoading, isKyverno, handleAuditViolation, isGatekeeperMutation, isVAPB])
+  }, [
+    apiGroup,
+    clusterName,
+    template,
+    templateLoading,
+    isKyverno,
+    handleAuditViolation,
+    isGatekeeperMutation,
+    isVAPB,
+    kind,
+  ])
 
   const descriptionItems = useMemo(() => {
     let cols: ListItems[] = [

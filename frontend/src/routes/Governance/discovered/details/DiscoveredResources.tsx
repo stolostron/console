@@ -129,7 +129,11 @@ export function DiscoveredResources() {
                 reasonCache[tmplKey] = { tmpl, reasons, loading: false }
                 break
               case 'CertificatePolicy':
-                // TODO
+                reasonCache[tmplKey] = {
+                  tmpl,
+                  certificateMessages: viewResponse?.result?.status?.compliancyDetails,
+                  loading: false,
+                }
                 break
               case 'PolicyReport':
               case 'ClusterPolicyReport':
@@ -181,7 +185,7 @@ export function DiscoveredResources() {
           } else if (foundReasons.loading === false) {
             if (apiGroup === 'kyverno.io' && foundReasons?.kyvernoMessages) {
               return flexKyvernoMessages(foundReasons.kyvernoMessages)
-            } else if (apiGroup === 'policy.open-cluster-management.io') {
+            } else if (policyKind === 'ConfigurationPolicy' || policyKind === 'OperatorPolicy') {
               const key = `${item.cluster}:${item.kind}:${item.groupversion}:${item.namespace}:${item.name}`
               const reasonInfo = foundReasons.reasons?.[key]
 
@@ -197,6 +201,12 @@ export function DiscoveredResources() {
                   </>
                 )
               }
+            } else if (policyKind === 'CertificatePolicy') {
+              const message = foundReasons?.certificateMessages?.[item.namespace]?.message
+                ?.split('\n')
+                .filter((m: string) => m.startsWith(item.name))
+                .join('\n')
+              return <div style={{ whiteSpace: 'pre-wrap' }}>{message}</div>
             }
           }
 
@@ -209,7 +219,7 @@ export function DiscoveredResources() {
       header: t('Reason'),
       cell: () => '-',
     }
-  }, [t, apiGroup, reasonCache])
+  }, [t, apiGroup, reasonCache, policyKind])
 
   const resourceCols = useMemo(() => {
     const cols = [
