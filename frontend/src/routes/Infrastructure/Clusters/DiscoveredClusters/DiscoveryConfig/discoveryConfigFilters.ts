@@ -1,7 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { t } from 'i18next'
+import { TFunction } from 'i18next'
 import { Provider } from '../../../../../ui-components'
+
+export type TranslationFunction = (key: string, params?: Record<string, string>) => string
 
 /**
  * Converts a provider string to a normalized Provider enum value.
@@ -48,43 +50,41 @@ export function getInfrastructureProvider(provider: string): Provider {
 }
 
 /**
- * Returns a localized display name for the given infrastructure provider for UI display
- * Uses i18next translations for consistent naming across the application.
- *
+ * Returns a display name for the given infrastructure provider for UI display
+ * *
  * @param provider - The infrastructure provider name as a string (case insensitive)
- * @returns The localized display name for the provider
+ * @returns The display name for the provider
  */
-
-export function getDisplayNameForInfrastructureProvider(provider: string): string {
+export function getDisplayNameForInfrastructureProvider(provider: string, t?: TranslationFunction): string {
   switch (provider.toLowerCase()) {
     case 'aws':
-      return t('infra.aws')
+      return 'Amazon Web Services'
     case 'azure':
-      return t('infra.azure')
+      return 'Microsoft Azure'
     case 'baremetal':
-      return t('infra.baremetal')
+      return t ? t('infra.baremetal') : 'Bare Metal'
     case 'external':
-      return t('infra.external')
-    case 'gcp':
-      return t('infra.gcp')
-    case 'ibmcloud':
-      return t('infra.ibmcloud')
-    case 'kubevirt':
-      return t('infra.kubevirt')
+      return t ? t('infra.external') : 'External'
     case 'libvirt':
-      return t('infra.libvirt')
+      return t ? t('infra.libvirt') : 'Libvirt'
     case 'none':
-      return t('infra.none')
+      return t ? t('infra.none') : 'None'
+    case 'gcp':
+      return 'Google Cloud Platform'
+    case 'ibmcloud':
+      return 'IBM Cloud'
+    case 'kubevirt':
+      return 'Red Hat OpenShift Virtualization'
     case 'nutanix':
-      return t('infra.nutanix')
+      return 'Nutanix'
     case 'openstack':
-      return t('infra.openstack')
+      return 'Red Hat OpenStack'
     case 'ovirt':
-      return t('infra.ovirt')
+      return 'Red Hat Virtualization'
     case 'powervs':
-      return t('infra.powervs')
+      return 'IBM Power Virtual Server'
     case 'vsphere':
-      return t('infra.vsphere')
+      return 'VMware vSphere'
     default:
       return provider
   }
@@ -141,53 +141,37 @@ export function searchInfrastructureProvider(provider: string) {
 }
 
 /**
- * Converts a cluster type acronym to its full localized display name.
- * This function translates abbreviated cluster types used in discovery to human-readable names
- * that are properly localized using i18n.
- *
- * Supported acronyms include:
- * - MOA: Maps to ROSA (Red Hat OpenShift on AWS)
- * - MOA-HostedControlPlane: Maps to ROSA with hosted control plane
- * - ROSA: Red Hat OpenShift on AWS
- * - ROSA-HCP: ROSA with HyperShift
- * - OCP-ASSISTEDINSTALL: OpenShift Assisted Installer
- * - OCP: OpenShift Container Platform
- * - OSD: OpenShift Dedicated
- * - OSD-TRIAL: Trial version of OpenShift Dedicated
- * - ARO: Azure Red Hat OpenShift
- * - RHMI: Red Hat Managed Integration
- * - RHOIC: Red Hat OpenShift on IBM Cloud
+ * Converts a cluster type acronym to its full display name.
  *
  * @param acronym - The cluster type acronym to convert (case insensitive)
- * @returns The localized full display name of the cluster type, or the original acronym if not recognized
+ * @returns The full display name of the cluster type, or the original acronym if not recognized
  */
 
-export function getFullTypeByAcronymForDiscoveryClustersType(acronym: string) {
+export function getFullTypeByAcronymForDiscoveryClustersType(acronym: string, t: TFunction) {
   switch (acronym.toUpperCase()) {
     case 'MOA':
-      return t('type.rosa')
-    case 'MOA-HOSTEDCONTROLPLANE': //MOA-HostedControlPlane
-      return t('type.rosa.hcp')
-    case 'ROSA': //ROSA (Red Hat OpenShift on AWS)
-      return t('type.rosa')
-    case 'ROSA-HYPERSHIFT': //ROSA-HyperShift (ROSA with HyperShift)
-      return t('type.rosa.hcp')
-    case 'OCP-ASSISTEDINSTALL': //OCP-AssistedInstall (OpenShift Assisted Installer)
-      return t('type.ocp.assisted.install')
-    case 'OCP': //OCP (OpenShift Container Platform)
-      return t('type.ocp')
-    case 'OSD': //OSD (OpenShift Dedicated)
-      return t('type.osd')
-    case 'OSDTRIAL': //OSDTrial (Trial version of OpenShift Dedicated)
-      return t('type.osd.trial')
-    case 'ARO': //ARO (Azure Red Hat OpenShift)
-      return t('type.aro')
-    case 'RHMI': //RHMI (Red Hat Managed Integration)
-      return t('type.rhmi')
-    case 'RHOIC': //RHOIC (Red Hat OpenShift on IBM Cloud)
-      return t('type.rhoic')
+      return 'Red Hat OpenShift Service on AWS'
+    case 'MOA-HOSTEDCONTROLPLANE':
+      return 'Red Hat OpenShift Service on AWS Hosted Control Plane'
+    case 'ROSA':
+      return 'Red Hat OpenShift Service on AWS'
+    case 'ROSA-HYPERSHIFT':
+      return 'Red Hat OpenShift Service on AWS Hosted Control Plane'
+    case 'OCP-ASSISTEDINSTALL':
+      return 'OpenShift Container Platform (Assisted Installer)'
+    case 'OCP':
+      return 'OpenShift Container Platform'
+    case 'OSD':
+      return 'OpenShift Dedicated'
+    case 'OSDTRIAL':
+      return t('type.trialVersionOf', { product: 'OpenShift Dedicated' })
+    case 'ARO':
+      return 'Azure Red Hat OpenShift'
+    case 'RHMI':
+      return 'Red Hat Managed Integration'
+    case 'RHOIC':
+      return 'Red Hat OpenShift on IBM Cloud'
     default:
-      // Unable to find match, return existing acronym
       return acronym
   }
 }
@@ -231,31 +215,31 @@ export const CLUSTER_TYPE_GROUPS: {
   [key: string]: { displayName: string; types: string[] }
 } = {
   OCP: {
-    displayName: t('type.group.ocp'),
+    displayName: 'OpenShift Container Platform',
     types: ['OCP', 'OCP-AssistedInstall'],
   },
   OSD: {
-    displayName: t('type.group.osd'),
+    displayName: 'OpenShift Dedicated',
     types: ['OSD', 'OSDTrial', 'OSD-Trial'],
   },
   ROSA_CLASSIC: {
-    displayName: t('type.group.rosa.classic'),
+    displayName: 'ROSA Classic',
     types: ['ROSA', 'MOA'],
   },
   ROSA_HCP: {
-    displayName: t('type.group.rosa.hcp'),
+    displayName: 'ROSA - Hosted Control Plane',
     types: ['ROSA-HyperShift', 'MOA-HostedControlPlane'],
   },
   ARO: {
-    displayName: t('type.group.aro'),
+    displayName: 'Azure Red Hat OpenShift',
     types: ['ARO'],
   },
   RHOIC: {
-    displayName: t('type.group.rhoic'),
+    displayName: 'Red Hat OpenShift on IBM Cloud',
     types: ['RHOIC'],
   },
   RHMI: {
-    displayName: t('type.group.rhmi'),
+    displayName: 'Red Hat Managed Integration',
     types: ['RHMI'],
   },
 }

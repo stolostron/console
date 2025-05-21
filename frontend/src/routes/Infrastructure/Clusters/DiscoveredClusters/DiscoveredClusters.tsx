@@ -252,13 +252,13 @@ export function DiscoveredClustersTable(props: {
       header: t('dcTbl.type'),
       sort: (a: DiscoveredCluster, b: DiscoveredCluster) =>
         compareStrings(
-          getFullTypeByAcronymForDiscoveryClustersType(a?.spec?.type ?? ''),
-          getFullTypeByAcronymForDiscoveryClustersType(b?.spec?.type ?? '')
+          getFullTypeByAcronymForDiscoveryClustersType(a?.spec?.type ?? '', t),
+          getFullTypeByAcronymForDiscoveryClustersType(b?.spec?.type ?? '', t)
         ),
       search: (discoveredCluster) => {
         if (discoveredCluster.spec.type) {
           // get the specific cluster type display name
-          const typeName = getFullTypeByAcronymForDiscoveryClustersType(discoveredCluster.spec.type) || '-'
+          const typeName = getFullTypeByAcronymForDiscoveryClustersType(discoveredCluster.spec.type, t) || '-'
 
           // get the group this type belongs to, for searching by group name)
           const group = getClusterTypeGroup(discoveredCluster.spec.type)
@@ -271,9 +271,13 @@ export function DiscoveredClustersTable(props: {
         }
       },
       cell: (discoveredCluster) =>
-        discoveredCluster?.spec.type ? getFullTypeByAcronymForDiscoveryClustersType(discoveredCluster?.spec.type) : '-',
+        discoveredCluster?.spec.type
+          ? getFullTypeByAcronymForDiscoveryClustersType(discoveredCluster?.spec.type, t)
+          : '-',
       exportContent: (discoveredCluster) =>
-        discoveredCluster?.spec.type ? getFullTypeByAcronymForDiscoveryClustersType(discoveredCluster?.spec.type) : '-',
+        discoveredCluster?.spec.type
+          ? getFullTypeByAcronymForDiscoveryClustersType(discoveredCluster?.spec.type, t)
+          : '-',
     },
     {
       header: t('dcTbl.openShiftVersion'),
