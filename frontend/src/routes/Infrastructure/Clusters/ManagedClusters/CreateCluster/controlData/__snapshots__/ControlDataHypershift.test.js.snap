@@ -44,7 +44,6 @@ exports[`Cluster creation control data for Hypershift generates correctly 1`] = 
       "pullSecret",
     ],
     "id": "hypershift",
-    "mustValidate": true,
     "providerId": "hypershift",
     "type": "custom",
   },
@@ -57,7 +56,6 @@ exports[`Cluster creation control data for Hypershift generates correctly 1`] = 
   {
     "component": <HostsForm />,
     "id": "hypershift-hosts",
-    "mustValidate": true,
     "providerId": "hypershift",
     "type": "custom",
   },
@@ -70,7 +68,6 @@ exports[`Cluster creation control data for Hypershift generates correctly 1`] = 
   {
     "component": <NetworkForm />,
     "id": "hypershift-network",
-    "mustValidate": true,
     "providerId": "hypershift",
     "type": "custom",
   },
@@ -215,7 +212,6 @@ exports[`Cluster creation control data for Hypershift generates correctly for MC
       "pullSecret",
     ],
     "id": "hypershift",
-    "mustValidate": true,
     "providerId": "hypershift",
     "type": "custom",
   },
@@ -228,7 +224,6 @@ exports[`Cluster creation control data for Hypershift generates correctly for MC
   {
     "component": <HostsForm />,
     "id": "hypershift-hosts",
-    "mustValidate": true,
     "providerId": "hypershift",
     "type": "custom",
   },
@@ -241,7 +236,6 @@ exports[`Cluster creation control data for Hypershift generates correctly for MC
   {
     "component": <NetworkForm />,
     "id": "hypershift-network",
-    "mustValidate": true,
     "providerId": "hypershift",
     "type": "custom",
   },
