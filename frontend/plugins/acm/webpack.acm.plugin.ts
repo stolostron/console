@@ -14,9 +14,6 @@ import { pluginMetadata } from './console-plugin-metadata'
 module.exports = function(env: any, argv: { hot?: boolean; mode?: string }) {
   const config = webpackConfig(env, argv)
   
-  config.output.path = path.join(__dirname, 'dist')
-  config.output.filename = '[name]-bundle.js'
-  
   config.plugins.push(
     new ConsoleRemotePlugin({
       pluginMetadata,
