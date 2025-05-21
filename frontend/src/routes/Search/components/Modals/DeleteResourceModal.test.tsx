@@ -102,6 +102,7 @@ describe('DeleteResourceModal', () => {
             _hubClusterResource: 'true',
           }}
           close={() => {}}
+          relatedResource={false}
         />
       </RecoilRoot>
     )
