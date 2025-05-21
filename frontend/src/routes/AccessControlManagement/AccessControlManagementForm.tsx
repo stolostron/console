@@ -1,23 +1,21 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { Stack, StackItem, Title } from '@patternfly/react-core'
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { AcmDataFormPage } from '../../components/AcmDataForm'
 import { FormData } from '../../components/AcmFormData'
 import { LostChangesContext } from '../../components/LostChanges'
 import { useTranslation } from '../../lib/acm-i18next'
+import { useQuery } from '../../lib/useQuery'
 import { NavigationPath, useBackCancelNavigation } from '../../NavigationPath'
 import { IResource, listGroups, listUsers } from '../../resources'
-import { AccessControl, AccessControlApiVersion } from '../../resources/access-control'
+import { AccessControl, AccessControlApiVersion, RoleBinding } from '../../resources/access-control'
 import { createResource, patchResource } from '../../resources/utils'
 import { AcmLabels, AcmToastContext } from '../../ui-components'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
-import schema from './schema.json'
-import { RoleBinding } from '../../resources/access-control'
-import { Stack, StackItem, Title } from '@patternfly/react-core'
-import { get } from 'lodash'
-import { useSearchCompleteLazyQuery } from '../Search/search-sdk/search-sdk'
 import { searchClient } from '../Search/search-sdk/search-client'
-import { useQuery } from '../../lib/useQuery'
+import { useSearchCompleteLazyQuery } from '../Search/search-sdk/search-sdk'
+import schema from './schema.json'
 
 const AccessControlManagementForm = ({
   isEditing,
@@ -69,7 +67,6 @@ const AccessControlManagementForm = ({
   const [selectedUserNames, setSelectedUserNames] = useState<string[]>([])
   const [selectedRoles, setSelectedRoles] = useState<string[]>([])
   const [selectedNamespaces, setSelectedNamespaces] = useState<string[]>([])
-  
   const [subjectType, setSubjectType] = useState<'User' | 'Group'>('User')
 
   const { submitForm } = useContext(LostChangesContext)
@@ -85,7 +82,7 @@ const AccessControlManagementForm = ({
       setSelectedRoles([...new Set(accessControl.spec.roleBindings.map((rb) => rb.roleRef.name))])
       setSelectedNamespaces([...new Set(accessControl.spec.roleBindings.map((rb) => rb.namespace))])
     }
-  }, [accessControl?.metadata])
+  }, [accessControl?.metadata, accessControl?.spec.roleBindings])
 
   useEffect(() => {
     if (!isEditing && !isViewing && selectedUsers.length === 0) {
@@ -105,7 +102,7 @@ const AccessControlManagementForm = ({
         },
       ])
     }
-  }, [isEditing, isViewing, selectedUsers.length])
+  }, [isEditing, isViewing, namespace, selectedUsers.length])
 
   const [getSearchResults, { data }] = useSearchCompleteLazyQuery({
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
@@ -127,9 +124,12 @@ const AccessControlManagementForm = ({
         limit: -1,
       },
     })
-  }, [namespace])
+  }, [getSearchResults, namespace])
 
-  const namespaceItems: string[] = useMemo(() => get(data || [], 'searchComplete') ?? [], [data?.searchComplete])
+  const namespaceItems: string[] = useMemo(
+    () => data?.searchComplete?.filter((e) => e !== null) ?? [],
+    [data?.searchComplete]
+  )
 
   const { cancelForm } = useContext(LostChangesContext)
   const guardedHandleModalToggle = useCallback(() => cancelForm(handleModalToggle), [cancelForm, handleModalToggle])
@@ -173,8 +173,12 @@ const AccessControlManagementForm = ({
     { path: 'AccessControl[0].metadata.name', setState: setName },
     { path: 'AccessControl[0].spec.roleBindings', setState: setSelectedUsers },
   ]
-  
-  const title = isViewing ? accessControl?.metadata?.uid! : isEditing ? t('Edit access control') : t('Add access control')
+
+  const title = isViewing
+    ? accessControl?.metadata?.uid!
+    : isEditing
+      ? t('Edit access control')
+      : t('Add access control')
   const breadcrumbs = [{ text: t('Access Controls'), to: NavigationPath.accessControlManagement }, { text: title }]
 
   const namespaceOptions = (namespacesProp ?? managedClusters.map((c) => c.name)).map((ns) => ({

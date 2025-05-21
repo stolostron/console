@@ -21,7 +21,7 @@ export interface RoleBinding {
   }
   subject: {
     apiGroup: string
-    kind: 'User' | 'Group'
+    kind: 'User' | 'Group' | 'Role'
     name: string
   }
 }
