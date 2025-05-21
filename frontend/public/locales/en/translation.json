@@ -829,6 +829,8 @@
   "Could not process request because of invalid data.": "Could not process request because of invalid data.",
   "count.labels": "{{count}} label",
   "count.labels_plural": "{{count}} labels",
+  "count.items": "{{count}} item",
+  "count.items_plural": "{{count}} items",
   "CPU": "CPU",
   "CPU architecture": "CPU architecture",
   "create": "Create",
