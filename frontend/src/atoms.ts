@@ -193,22 +193,6 @@ export function useIsObservabilityInstalled() {
   }, [clusterManagementAddons])
 }
 
-// Search is available if api, collector, indexer & postgres are in ready state
-export function useIsSearchAvailable() {
-  const searchOperator = useRecoilValue(searchOperatorState)
-  return useMemo(() => {
-    const isReady = (type: string) =>
-      searchOperator[0]?.status?.conditions.some((c) => c.type.toLowerCase() === type && c.status === 'True')
-    const searchServices = [
-      'ready--search-api',
-      'ready--search-collector',
-      'ready--search-indexer',
-      'ready--search-postgres',
-    ]
-    return searchOperator.length > 0 && searchServices.every(isReady)
-  }, [searchOperator])
-}
-
 export function useSavedSearchLimit() {
   const settings = useRecoilValue(settingsState)
   return useMemo(() => parseInt(settings.SAVED_SEARCH_LIMIT ?? '10'), [settings])
@@ -232,6 +216,20 @@ export function useAppArgoSearchResultLimit() {
 export function useAppOCPSearchResultLimit() {
   const settings = useRecoilValue(settingsState)
   return useMemo(() => parseInt(settings.APP_OCP_SEARCH_RESULT_LIMIT ?? '1000'), [settings])
+}
+
+export function useVirtualMachineActionsEnabled() {
+  const settings = useRecoilValue(settingsState)
+  return useMemo(
+    // default actions to enabled
+    () => {
+      if (settings.VIRTUAL_MACHINE_ACTIONS) {
+        return settings?.VIRTUAL_MACHINE_ACTIONS === 'enabled'
+      }
+      return true
+    },
+    [settings]
+  )
 }
 
 export function useVitualMachineSearchResultLimit() {
