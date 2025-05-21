@@ -195,7 +195,7 @@ export default function PoliciesPage() {
         isFirstVisitChecked: true,
         exportContent: (item) => handlePolicySetCell(item, policySets, true),
       },
-      { ...policyClusterViolationsColumn, id: 'cv', isDefault: true, order: 6 },
+      { ...policyClusterViolationsColumn, id: 'clusterviolations', isDefault: true, order: 6 },
       {
         header: t('Source'),
         sort: (itemA: PolicyTableItem, itemB: PolicyTableItem) => {

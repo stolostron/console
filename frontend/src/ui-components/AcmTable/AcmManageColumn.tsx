@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { FormEvent, useState } from 'react'
+import { FormEvent, useEffect, useState } from 'react'
 import {
   Button,
   DataList,
@@ -30,6 +30,7 @@ interface AcmManageColumnProps<T> {
   defaultColIds?: string[]
   setColOrderIds: (colOrderIds: string[]) => void
   colOrderIds: string[]
+  tableId?: string
 }
 
 export function AcmManageColumn<T>({
@@ -40,6 +41,7 @@ export function AcmManageColumn<T>({
   setSelectedColIds,
   requiredColIds,
   defaultColIds,
+  tableId,
 }: AcmManageColumnProps<T>) {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
   const { t } = useTranslation()
@@ -52,6 +54,7 @@ export function AcmManageColumn<T>({
     <>
       <ManageColumnModal<T>
         {...{
+          tableId,
           isModalOpen,
           selectedColIds,
           allCols,
@@ -86,6 +89,12 @@ function sortByList<T>(colOrderIds: string[], items: IAcmTableColumn<T>[]) {
       sortedColumns.push(find)
     }
   })
+  items.forEach((val) => {
+    if (!colOrderIds.includes(val.header.toLocaleLowerCase().replace(/ +/g, ''))) {
+      colOrderIds.push(val.header.toLocaleLowerCase().replace(/ +/g, ''))
+      sortedColumns.push(val)
+    }
+  })
   return sortedColumns
 }
 
@@ -99,6 +108,7 @@ interface ManageColumnModalProps<T> {
   defaultColIds?: string[]
   colOrderIds: string[]
   setColOrderIds: (colOrderIds: string[]) => void
+  tableId?: string
 }
 
 function ManageColumnModal<T>(props: ManageColumnModalProps<T>) {
@@ -113,9 +123,18 @@ function ManageColumnModal<T>(props: ManageColumnModalProps<T>) {
     setColOrderIds,
     requiredColIds,
     defaultColIds,
+    tableId,
   } = props
   const [items, setItems] = useState<IAcmTableColumn<T>[]>(sortByList(colOrderIds, allCols))
   const [localSelectedIds, setlocalSelectedIds] = useState<string[]>(selectedColIds)
+
+  useEffect(() => {
+    localStorage.setItem(tableId + 'SavedColOrder', JSON.stringify(colOrderIds))
+  }, [tableId, colOrderIds])
+
+  useEffect(() => {
+    localStorage.setItem(tableId + 'SavedCols', JSON.stringify(localSelectedIds))
+  }, [localSelectedIds, tableId])
 
   const onDrop = (source: any, dest?: any) => {
     if (dest) {

@@ -745,12 +745,15 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         .map((col) => col.id as string),
     [columns]
   )
-  const localSavedCols = JSON.parse(localStorage.getItem(id + 'SavedCols')!)
-  const localSavedColOrder = JSON.parse(localStorage.getItem(id + 'SavedColOrder')!)
-  const [colOrderIds, setColOrderIds] = useState<string[]>(localSavedColOrder || defaultOrderIds)
-  const [selectedColIds, setSelectedColIds] = useState<string[]>(
-    localSavedCols || [...requiredColIds, ...defaultColIds]
+  const localSavedCols = JSON.parse(localStorage.getItem(id + 'SavedCols') || '[]')
+  const localSavedColOrder = JSON.parse(localStorage.getItem(id + 'SavedColOrder') || '[]')
+  const [colOrderIds, setColOrderIds] = useState<string[]>(
+    localSavedColOrder?.length > 0 ? localSavedColOrder : defaultOrderIds
   )
+  const [selectedColIds, setSelectedColIds] = useState<string[]>(
+    localSavedCols?.length > 0 ? localSavedCols : [...requiredColIds, ...defaultColIds]
+  )
+  const [tableId] = useState<string>(id || '')
   const selectedSortedCols = useMemo(() => {
     const sortedColumns: IAcmTableColumn<T>[] = []
 
@@ -1535,7 +1538,15 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
             )}
             {showColumnManagement && (
               <AcmManageColumn<T>
-                {...{ selectedColIds, setSelectedColIds, requiredColIds, defaultColIds, setColOrderIds, colOrderIds }}
+                {...{
+                  selectedColIds,
+                  setSelectedColIds,
+                  requiredColIds,
+                  defaultColIds,
+                  setColOrderIds,
+                  colOrderIds,
+                  tableId,
+                }}
                 allCols={columns.filter((col) => !col.isActionCol)}
               />
             )}
