@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useData, useItem } from '@patternfly-labs/react-form-wizard'
+import { EditorValidationStatus, useData, useEditorValidationStatus, useItem } from '@patternfly-labs/react-form-wizard'
 import { useContext, useState } from 'react'
 import { AcmDataFormPage } from '../../components/AcmDataForm'
 import { FormData } from '../../components/AcmFormData'
-import { SyncEditor } from '../../components/SyncEditor/SyncEditor'
+import { SyncEditor, ValidationStatus } from '../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../lib/acm-i18next'
 import {
   GitOpsCluster,
@@ -32,6 +32,7 @@ export interface ICreateArgoResourcesModalProps {
 export function WizardSyncEditor() {
   const resources = useItem() // Wizard framework sets this context
   const { update } = useData() // Wizard framework sets this context
+  const { setEditorValidationStatus } = useEditorValidationStatus()
   const { t } = useTranslation()
   return (
     <SyncEditor
@@ -41,6 +42,9 @@ export function WizardSyncEditor() {
       schema={schema}
       onEditorChange={(changes: { resources: any[] }): void => {
         update(changes?.resources)
+      }}
+      onStatusChange={(editorStatus: ValidationStatus): void => {
+        setEditorValidationStatus(editorStatus as unknown as EditorValidationStatus)
       }}
     />
   )
