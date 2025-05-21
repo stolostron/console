@@ -56,7 +56,7 @@ const AccessControlManagementForm = ({
       usersStopPolling()
       groupsStopPolling()
     }
-  }, [groupsStartPolling, groupsStopPolling, usersStartPolling, usersStopPolling, users, groups])
+  }, [groupsStartPolling, groupsStopPolling, usersStartPolling, usersStopPolling])
 
   // Form Values
   const [namespace, setNamespace] = useState('')
