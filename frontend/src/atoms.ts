@@ -218,7 +218,7 @@ export function useAppOCPSearchResultLimit() {
   return useMemo(() => parseInt(settings.APP_OCP_SEARCH_RESULT_LIMIT ?? '1000'), [settings])
 }
 
-export function useVitualMachineActionsEnabled() {
+export function useVirtualMachineActionsEnabled() {
   const settings = useRecoilValue(settingsState)
   return useMemo(
     // default actions to enabled

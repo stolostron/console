@@ -72,8 +72,8 @@ function VirtualMachineTable(props: Readonly<{ searchResultItems: ISearchResult[
   const { searchResultItems } = props
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { useVitualMachineActionsEnabled } = useSharedAtoms()
-  const vmActionsEnabled = useVitualMachineActionsEnabled()
+  const { useVirtualMachineActionsEnabled } = useSharedAtoms()
+  const vmActionsEnabled = useVirtualMachineActionsEnabled()
   const { acmExtensions } = useContext(PluginContext)
   const allClusters = useAllClusters(true)
   const [deleteResource, setDeleteResource] = useState<IDeleteModalProps>(ClosedDeleteModalProps)

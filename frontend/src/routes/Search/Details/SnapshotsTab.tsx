@@ -32,10 +32,10 @@ import { getResourceParams } from './DetailsPage'
 export default function SnapshotsTab() {
   const { t } = useTranslation()
   const { cluster, kind, apiversion, namespace, name } = getResourceParams()
-  const { useSearchResultLimit, useVitualMachineActionsEnabled } = useSharedAtoms()
+  const { useSearchResultLimit, useVirtualMachineActionsEnabled } = useSharedAtoms()
   const searchResultLimit = useSearchResultLimit()
   const searchDefinitions = useSearchDefinitions()
-  const vmActionsEnabled = useVitualMachineActionsEnabled()
+  const vmActionsEnabled = useVirtualMachineActionsEnabled()
   const navigate = useNavigate()
   const allClusters = useAllClusters(true)
   const [VMAction, setVMAction] = useState<IVMActionModalProps>(ClosedVMActionModalProps)
