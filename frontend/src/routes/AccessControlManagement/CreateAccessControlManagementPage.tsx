@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { PageSection } from '@patternfly/react-core'
-import { useTranslation } from 'react-i18next'
 import { ErrorPage } from '../../components/ErrorPage'
 import { LoadingPage } from '../../components/LoadingPage'
 import { useProjects } from '../../hooks/useProjects'
+import { useTranslation } from '../../lib/acm-i18next'
 import { NavigationPath } from '../../NavigationPath'
 import { AcmEmptyState, AcmPage, AcmPageHeader, Provider } from '../../ui-components'
 import { AccessControlManagementForm } from './AccessControlManagementForm'

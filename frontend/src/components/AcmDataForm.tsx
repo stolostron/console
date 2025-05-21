@@ -865,8 +865,8 @@ function AcmInputDescription(props: { input: Input }): JSX.Element {
         </DescriptionListGroup>
       )
     }
-    case 'Multiselect': 
-    case 'CreatableMultiselect':{
+    case 'Multiselect':
+    case 'CreatableMultiselect': {
       const selectedOptions: SelectOptionInput[] = []
       for (const option of input.options) {
         if (input.value.includes(option.value)) {
@@ -1056,8 +1056,8 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
     case 'Select':
     case 'GroupedSelect':
     case 'Multiselect':
-    case 'GroupedMultiselect': 
-    case 'CreatableMultiselect':{
+    case 'GroupedMultiselect':
+    case 'CreatableMultiselect': {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { onChange, placeholder, validate, validation, isRequired, ...inputProps } = input
       const onSelect = (_event: unknown, selection: string | SelectOptionObject) => {
@@ -1252,7 +1252,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
         </Alert>
       )
     }
-    case 'Radio':{
+    case 'Radio': {
       return (
         <FormGroup label={input.label} isRequired={input.isRequired} fieldId={input.id} isInline>
           {input.options.map((option) => (

@@ -68,7 +68,12 @@ export function AcmLabels(props: {
 
   const renderLabelGroup = () => {
     return (
-      <LabelGroup isVertical={props.isVertical ?? true} numLabels={labels.length} expandedText={expandedText} collapsedText={collapsedText}>
+      <LabelGroup
+        isVertical={props.isVertical ?? true}
+        numLabels={labels.length}
+        expandedText={expandedText}
+        collapsedText={collapsedText}
+      >
         {labels.map((label) => (
           <Label key={label} className={acmLabel} isCompact={labelCount > 10}>
             {label}
