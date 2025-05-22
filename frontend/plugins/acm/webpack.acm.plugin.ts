@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { ConsoleRemotePlugin } from '@openshift-console/dynamic-plugin-sdk-webpack'
-import * as path from 'path'
 const webpackConfig = require('../../webpack.plugin')
 import { extensions } from './console-extensions'
 import { pluginMetadata } from './console-plugin-metadata'
