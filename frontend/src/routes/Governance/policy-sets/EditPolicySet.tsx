@@ -1,5 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { EditMode, useData, useItem } from '@patternfly-labs/react-form-wizard'
+import {
+  EditMode,
+  EditorValidationStatus,
+  useData,
+  useEditorValidationStatus,
+  useItem,
+} from '@patternfly-labs/react-form-wizard'
 import { IResource, PolicySetKind } from '../../../resources'
 import { PathParam, useNavigate, useParams } from 'react-router-dom-v5-compat'
 import { getPlacementBindingsForResource, getPlacementsForResource } from '../common/util'
@@ -11,7 +17,7 @@ import { LoadingPage } from '../../../components/LoadingPage'
 import { LostChangesContext } from '../../../components/LostChanges'
 import { NavigationPath } from '../../../NavigationPath'
 import { PolicySetWizard } from '../../../wizards/Governance/PolicySet/PolicySetWizard'
-import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
+import { SyncEditor, ValidationStatus } from '../../../components/SyncEditor/SyncEditor'
 import { reconcileResources } from '../../../resources/utils'
 import schema from './schema.json'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -19,6 +25,7 @@ import { useTranslation } from '../../../lib/acm-i18next'
 export function WizardSyncEditor() {
   const resources = useItem() // Wizard framework sets this context
   const { update } = useData() // Wizard framework sets this context
+  const { setEditorValidationStatus } = useEditorValidationStatus()
   const { t } = useTranslation()
   return (
     <SyncEditor
@@ -30,6 +37,9 @@ export function WizardSyncEditor() {
       immutables={['PlacementBinding.0.*']}
       onEditorChange={(changes: { resources: any[] }): void => {
         update(changes?.resources)
+      }}
+      onStatusChange={(editorStatus: ValidationStatus): void => {
+        setEditorValidationStatus(editorStatus as unknown as EditorValidationStatus)
       }}
     />
   )

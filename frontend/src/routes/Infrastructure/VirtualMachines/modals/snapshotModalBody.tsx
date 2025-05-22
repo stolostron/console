@@ -192,8 +192,8 @@ export function SnapshotModalBody(
   props: Readonly<{
     item: any
     setSnapshotReqBody: Dispatch<SetStateAction<object>>
-    getVMError: string | undefined
-    setGetVMError: Dispatch<SetStateAction<string | undefined>>
+    getVMError: boolean | undefined
+    setGetVMError: Dispatch<SetStateAction<boolean | undefined>>
   }>
 ) {
   const { item, setSnapshotReqBody, getVMError, setGetVMError } = props
@@ -210,16 +210,19 @@ export function SnapshotModalBody(
       .then((viewResponse) => {
         setVMLoading(false)
         if (viewResponse?.message) {
-          setGetVMError(viewResponse.message)
+          setGetVMError(true)
         } else {
           setVM(viewResponse?.result)
+          setGetVMError(false)
         }
       })
       .catch((err) => {
         console.error('Error getting VirtualMachine: ', err)
-        setGetVMError(err)
+        setGetVMError(true)
         setVMLoading(false)
       })
+
+    return () => setGetVMError(false)
   }, [item, setGetVMError])
 
   const isVMRunning = item?.status === printableVMStatus.Running

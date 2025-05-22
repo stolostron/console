@@ -567,7 +567,7 @@ export function DiscoveryConfigPageContent(props: {
           >
             {INFRASTRUCTURE_PROVIDERS.map((provider) => (
               <SelectOption key={provider} value={provider}>
-                {getDisplayNameForInfrastructureProvider(provider)}
+                {getDisplayNameForInfrastructureProvider(provider, t)}
               </SelectOption>
             ))}
           </AcmMultiSelect>

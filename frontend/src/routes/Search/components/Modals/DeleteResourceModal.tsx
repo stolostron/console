@@ -203,7 +203,7 @@ export function deleteResourceFn(
   }
 }
 
-export const DeleteResourceModal = (props: any) => {
+export const DeleteResourceModal = (props: IDeleteModalProps) => {
   const { t } = useTranslation()
   const { open, close, resource, currentQuery, relatedResource } = props
   const { useSearchResultLimit } = useSharedAtoms()
@@ -240,11 +240,16 @@ export const DeleteResourceModal = (props: any) => {
           setAccessError(null)
         })
         .catch((err) => {
-          console.error(err.message)
-          setLoadingAccessRequest(false)
-          setAccessError(err)
+          if (err.message !== 'RequestAborted') {
+            console.error(err.message)
+            setLoadingAccessRequest(false)
+            setAccessError(err.message)
+          }
         })
-      return () => canDeleteResource.abort()
+      return () => {
+        canDeleteResource.abort()
+        setAccessError(null)
+      }
     }
   }, [apiGroup, resource])
 

@@ -2,93 +2,20 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 import { MockedProvider } from '@apollo/client/testing'
+import { UseK8sWatchResource } from '@openshift-console/dynamic-plugin-sdk'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { GraphQLError } from 'graphql'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { searchOperatorState } from '../../../atoms'
 import { nockPostRequest } from '../../../lib/nock-util'
 import { defaultPlugin, PluginContext } from '../../../lib/PluginContext'
+import { PluginDataContext } from '../../../lib/PluginDataContext'
 import { wait, waitForNocks } from '../../../lib/test-util'
 import { ActionExtensionProps, ListColumnExtensionProps } from '../../../plugin-extensions/properties'
 import { AcmExtension } from '../../../plugin-extensions/types'
-import { SearchOperator } from '../../../resources'
 import { SearchResultItemsAndRelatedItemsDocument, SearchSchemaDocument } from '../../Search/search-sdk/search-sdk'
 import VirtualMachinesPage from './VirtualMachinesPage'
-
-const mockHealthySearchOperator: SearchOperator = {
-  apiVersion: 'search.open-cluster-management.io/v1alpha1',
-  kind: 'Search',
-  metadata: {
-    name: 'search-v2-operator',
-    namespace: 'open-cluster-management',
-  },
-  status: {
-    conditions: [
-      {
-        message: 'None',
-        reason: 'None',
-        status: 'True',
-        type: 'Ready--search-postgres',
-      },
-      {
-        message: 'None',
-        reason: 'None',
-        status: 'True',
-        type: 'Ready--search-collector',
-      },
-      {
-        message: 'None',
-        reason: 'None',
-        status: 'True',
-        type: 'Ready--search-indexer',
-      },
-      {
-        message: 'None',
-        reason: 'None',
-        status: 'True',
-        type: 'Ready--search-api',
-      },
-    ],
-  },
-}
-const mockUNHealthySearchOperator: SearchOperator = {
-  apiVersion: 'search.open-cluster-management.io/v1alpha1',
-  kind: 'Search',
-  metadata: {
-    name: 'search-v2-operator',
-    namespace: 'open-cluster-management',
-  },
-  status: {
-    conditions: [
-      {
-        message: 'None',
-        reason: 'None',
-        status: 'True',
-        type: 'Ready--search-postgres',
-      },
-      {
-        message: 'None',
-        reason: 'None',
-        status: 'True',
-        type: 'Ready--search-collector',
-      },
-      {
-        message: 'None',
-        reason: 'None',
-        status: 'True',
-        type: 'Ready--search-indexer',
-      },
-      {
-        message: 'None',
-        reason: 'None',
-        status: 'False',
-        type: 'Ready--search-api',
-      },
-    ],
-  },
-}
 
 const vmActionProps: ActionExtensionProps[] = [
   {
@@ -212,11 +139,7 @@ describe('VirtualMachinesPage Page', () => {
       },
     ]
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(searchOperatorState, [mockHealthySearchOperator])
-        }}
-      >
+      <RecoilRoot>
         <MemoryRouter>
           <MockedProvider mocks={mocks}>
             <PluginContext.Provider
@@ -263,6 +186,20 @@ describe('VirtualMachinesPage Page', () => {
   })
 
   it('should render page with search unavailable empty state', async () => {
+    const mockUseK8sWatchResource: UseK8sWatchResource = jest.fn()
+    const mockPluginContextValue = {
+      ocpApi: {
+        useK8sWatchResource: mockUseK8sWatchResource,
+      },
+      isACMAvailable: true,
+      isOverviewAvailable: true,
+      isSubmarinerAvailable: true,
+      isApplicationsAvailable: true,
+      isGovernanceAvailable: true,
+      isSearchAvailable: false,
+      dataContext: PluginDataContext,
+      acmExtensions: {},
+    }
     const metricNock = nockPostRequest('/metrics?virtual-machines', {})
     const mocks = [
       {
@@ -291,17 +228,15 @@ describe('VirtualMachinesPage Page', () => {
       },
     ]
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(searchOperatorState, [mockUNHealthySearchOperator])
-        }}
-      >
-        <MemoryRouter>
-          <MockedProvider mocks={mocks}>
-            <VirtualMachinesPage />
-          </MockedProvider>
-        </MemoryRouter>
-      </RecoilRoot>
+      <PluginContext.Provider value={mockPluginContextValue}>
+        <RecoilRoot>
+          <MemoryRouter>
+            <MockedProvider mocks={mocks}>
+              <VirtualMachinesPage />
+            </MockedProvider>
+          </MemoryRouter>
+        </RecoilRoot>
+      </PluginContext.Provider>
     )
     await waitForNocks([metricNock])
     // This wait pauses till apollo query is returning data
@@ -365,11 +300,7 @@ describe('VirtualMachinesPage Page', () => {
       },
     ]
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(searchOperatorState, [mockHealthySearchOperator])
-        }}
-      >
+      <RecoilRoot>
         <MemoryRouter>
           <MockedProvider mocks={mocks}>
             <VirtualMachinesPage />

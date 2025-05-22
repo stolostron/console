@@ -240,7 +240,7 @@ const mockAutoSecretResponse: Secret = {
     name: 'auto-import-secret',
     namespace: 'foobar',
   },
-  data: { autoImportRetry: '2', kubeconfig: 'Test text' },
+  data: { kubeconfig: 'Test text' },
   type: 'Opaque',
 }
 
@@ -252,7 +252,6 @@ const mockAutoSecret: Secret = {
     namespace: 'foobar',
   },
   stringData: {
-    autoImportRetry: '2',
     kubeconfig: 'Test text',
   },
   type: 'Opaque',
@@ -265,7 +264,7 @@ const mockAutoTokenSecretResponse: Secret = {
     name: 'auto-import-secret',
     namespace: 'foobar',
   },
-  data: { autoImportRetry: '2', token: 'Test token', server: 'Test server' },
+  data: { token: 'Test token', server: 'Test server' },
   type: 'Opaque',
 }
 
@@ -277,7 +276,6 @@ const mockAutoTokenSecret: Secret = {
     namespace: 'foobar',
   },
   stringData: {
-    autoImportRetry: '2',
     token: 'Test token',
     server: 'Test server',
   },
@@ -291,7 +289,6 @@ const mockROSAAutoTokenSecretAPIToken: Secret = {
     namespace: 'rosa-discovery-cluster',
   },
   stringData: {
-    autoImportRetry: '2',
     cluster_id: '39ldt3r51vjjsho1eqntrg3m',
     auth_method: 'offline-token',
     api_token: 'fake_token',
@@ -307,7 +304,6 @@ const mockROSAAutoTokenSecretServiceAcc: Secret = {
     namespace: 'rosa-discovery-cluster',
   },
   stringData: {
-    autoImportRetry: '2',
     cluster_id: '39ldt3r51vjjsho1eqntrg3m',
     auth_method: 'service-account',
     client_id: 'fake_client_id1234',

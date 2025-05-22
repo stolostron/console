@@ -72,8 +72,8 @@ function VirtualMachineTable(props: Readonly<{ searchResultItems: ISearchResult[
   const { searchResultItems } = props
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { settingsState } = useSharedAtoms()
-  const vmActionsEnabled = useRecoilValue(settingsState)?.VIRTUAL_MACHINE_ACTIONS === 'enabled'
+  const { useVirtualMachineActionsEnabled } = useSharedAtoms()
+  const vmActionsEnabled = useVirtualMachineActionsEnabled()
   const { acmExtensions } = useContext(PluginContext)
   const allClusters = useAllClusters(true)
   const [deleteResource, setDeleteResource] = useState<IDeleteModalProps>(ClosedDeleteModalProps)
@@ -173,18 +173,16 @@ function VirtualMachineTable(props: Readonly<{ searchResultItems: ISearchResult[
 
 export default function VirtualMachinesPage() {
   const { t } = useTranslation()
-  const { dataContext } = useContext(PluginContext)
+  const { dataContext, isSearchAvailable } = useContext(PluginContext)
   const { loadStarted } = useContext(dataContext)
   const {
     clusterManagementAddonsState,
     configMapsState,
     useIsObservabilityInstalled,
-    useIsSearchAvailable,
     useSearchAutocompleteLimit,
     useVitualMachineSearchResultLimit,
   } = useSharedAtoms()
   const vmResultLimit = useVitualMachineSearchResultLimit()
-  const isSearchAvailable = useIsSearchAvailable()
   const searchAutocompleteLimit = useSearchAutocompleteLimit()
   const isObservabilityInstalled = useIsObservabilityInstalled()
   const configMaps = useRecoilValue(configMapsState)

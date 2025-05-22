@@ -91,8 +91,8 @@ function RenderAccordionItem(
   const { t } = useTranslation()
   const navigate = useNavigate()
   const allClusters = useAllClusters(true)
-  const { settingsState } = useSharedAtoms()
-  const vmActionsEnabled = useRecoilValue(settingsState)?.VIRTUAL_MACHINE_ACTIONS === 'enabled'
+  const { useVirtualMachineActionsEnabled } = useSharedAtoms()
+  const vmActionsEnabled = useVirtualMachineActionsEnabled()
   const { acmExtensions } = useContext(PluginContext)
   const [isExpanded, setIsExpanded] = useState<boolean>(defaultIsExpanded)
   const searchDefinitions = useSearchDefinitions()
