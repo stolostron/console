@@ -110,49 +110,47 @@ export function DiscoveredResources() {
     Object.keys(reasonCache).forEach((tmplKey) => {
       const foundReasons = reasonCache[tmplKey]
       if (foundReasons.loading === undefined) {
-        reasonCache[tmplKey] = { ...foundReasons, loading: true }
-        setReasonCache({ ...reasonCache })
+        setReasonCache((cache: any) => {
+          return { ...cache, [tmplKey]: { ...foundReasons, loading: true } }
+        })
 
         const tmpl = foundReasons.tmpl
 
         const tmplApiVersion = tmpl.apiGroup ? tmpl.apiGroup + '/' + tmpl.apiVersion : tmpl.apiVersion
         fireManagedClusterView(tmpl.clusterName, tmpl.kind, tmplApiVersion, tmpl.templateName, tmpl.templateNamespace)
           .then((viewResponse) => {
-            const reasons: any = {}
+            const update: any = { tmpl, loading: false }
 
             switch (tmpl.kind) {
               case 'ConfigurationPolicy':
               case 'OperatorPolicy':
-                viewResponse?.result?.status?.relatedObjects?.forEach((relObj: any) => {
+                update.reasons = viewResponse?.result?.status?.relatedObjects?.reduce((acc: any, relObj: any) => {
                   const key =
                     `${tmpl.clusterName}:${relObj?.object?.kind}:${relObj?.object?.apiVersion}` +
                     `:${relObj?.object?.metadata?.namespace}:${relObj?.object?.metadata?.name}`
-                  reasons[key] = {
-                    reason: relObj?.reason,
-                    diff: relObj?.properties?.diff,
+                  return {
+                    ...acc,
+                    [key]: {
+                      reason: relObj?.reason,
+                      diff: relObj?.properties?.diff,
+                    },
                   }
-                })
-                reasonCache[tmplKey] = { tmpl, reasons, loading: false }
+                }, {})
+
                 break
               case 'CertificatePolicy':
-                reasonCache[tmplKey] = {
-                  tmpl,
-                  certificateMessages: viewResponse?.result?.status?.compliancyDetails,
-                  loading: false,
-                }
+                update.certificateMessages = viewResponse?.result?.status?.compliancyDetails
                 break
               case 'PolicyReport':
               case 'ClusterPolicyReport':
-                reasonCache[tmplKey] = {
-                  tmpl,
-                  kyvernoMessages: viewResponse?.result?.results.map((r: any) => {
-                    return { ruleName: r.rule, message: r.message }
-                  }),
-                  loading: false,
-                }
+                update.kyvernoMessages = viewResponse?.result?.results.map((r: any) => {
+                  return { ruleName: r.rule, message: r.message }
+                })
                 break
             }
-            setReasonCache({ ...reasonCache })
+            setReasonCache((cache: any) => {
+              return { ...cache, [tmplKey]: update }
+            })
           })
           .catch((err: Error) => {
             console.error('Error getting resource: ', err)
@@ -166,28 +164,26 @@ export function DiscoveredResources() {
       return {
         header: t('Reason'),
         cell: (item: any) => {
-          let tmpl: any = {}
-
-          if (apiGroup === 'kyverno.io' && item.policyReport) {
-            tmpl = {
-              ...item.policyReport,
-              clusterName: item.policyReport.cluster,
-              templateName: item.policyReport.name,
-              templateNamespace: item.policyReport.namespace,
-              apiGroup: item.policyReport.apigroup,
-              apiVersion: item.policyReport.apiversion,
-            }
-          } else {
-            tmpl = item.templateInfo
-          }
+          const tmpl: any =
+            apiGroup === 'kyverno.io' && item.policyReport
+              ? {
+                  ...item.policyReport,
+                  clusterName: item.policyReport.cluster,
+                  templateName: item.policyReport.name,
+                  templateNamespace: item.policyReport.namespace,
+                  apiGroup: item.policyReport.apigroup,
+                  apiVersion: item.policyReport.apiversion,
+                }
+              : item.templateInfo
 
           const tmplApiVersion = tmpl.apiGroup ? tmpl.apiGroup + '/' + tmpl.apiVersion : tmpl.apiVersion
           const tmplKey = `${tmpl.clusterName}:${tmpl.kind}:${tmplApiVersion}:${tmpl.templateName}:${tmpl.templateNamespace}`
 
           const foundReasons = reasonCache[tmplKey]
           if (foundReasons === undefined) {
-            reasonCache[tmplKey] = { tmpl }
-            setReasonCache({ ...reasonCache })
+            setReasonCache((cache: any) => {
+              return { ...cache, [tmplKey]: { tmpl } }
+            })
           } else if (foundReasons.loading === false) {
             if (apiGroup === 'kyverno.io' && foundReasons?.kyvernoMessages) {
               return flexKyvernoMessages(foundReasons.kyvernoMessages)
@@ -197,8 +193,9 @@ export function DiscoveredResources() {
 
               if (reasonInfo && !reasonInfo.reason) {
                 // resource must be newer than the cached view: need to fetch it again
-                reasonCache[tmplKey] = { tmpl, state: 'fire' }
-                setReasonCache({ ...reasonCache })
+                setReasonCache((cache: any) => {
+                  return { ...cache, [tmplKey]: { tmpl } }
+                })
               } else {
                 return (
                   <>
