@@ -16,6 +16,7 @@ import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/compo
 import { searchClient } from '../Search/search-sdk/search-client'
 import { useSearchCompleteLazyQuery } from '../Search/search-sdk/search-sdk'
 import schema from './schema.json'
+import { validateArrayNotEmpty, validateKubernetesResourceName } from '../../lib/validation'
 
 const AccessControlManagementForm = ({
   isEditing,
@@ -230,6 +231,7 @@ const AccessControlManagementForm = ({
             value: name,
             onChange: setName,
             isRequired: true,
+            validation: (value) => validateKubernetesResourceName(value, undefined, t),
           },
           {
             id: 'date',
@@ -293,6 +295,7 @@ const AccessControlManagementForm = ({
             isRequired: true,
             isHidden: isViewing,
             isCreatable: true,
+            validation: (value: string[]) => validateArrayNotEmpty(value, t),
           },
           {
             id: 'roles',

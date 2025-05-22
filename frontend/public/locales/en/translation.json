@@ -3286,6 +3286,7 @@
   "validate.ansible.host": "The credential returned an error response from Ansible Tower. Please review the host and token.",
   "validate.ansible.reason": "The credential returned an error response from Ansible Tower: {{reason}}",
   "validate.ansible.url.not.valid": "The provided URL is not a valid Ansible Tower host URL.",
+  "validate.array.notempty": "validate.array.notempty",
   "validate.baseDnsName.char": "Must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an alphanumeric character",
   "validate.baseDnsName.start": "The base DNS domain must not begin with a period.",
   "validate.baseDomain.baseDNSPeriod": "The base DNS domain must not begin with a period.",
