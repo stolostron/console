@@ -103,7 +103,7 @@ export const handleCSVExport = (
   )
 }
 
-export function Searchbar(props: SearchbarProps) {
+export function Searchbar(props: Readonly<SearchbarProps>) {
   const {
     currentQueryCallback,
     saveSearchTooltip,
@@ -228,7 +228,7 @@ export function Searchbar(props: SearchbarProps) {
         const lowerCaseParsedInput = parsedInputValue.toLowerCase()
         const replacedSpecialChars = lowerCaseParsedInput.replace(/[/,?_\-.<>:;"'[\]{}\\+=()!&@^#%$]/g, '\\$&') // insert \ before all special characters so Regex doesn't break in processing
         const regex = handlePartialRegex(replacedSpecialChars)
-        const regexMatch = currentValue.name.toLowerCase().match(regex)?.[0] ?? ''
+        const regexMatch = RegExp(regex).exec(currentValue.name.toLowerCase())?.[0] ?? ''
         if (regexMatch === '') {
           // If match is null -> return item without marks
           return currentValue.name
@@ -259,7 +259,7 @@ export function Searchbar(props: SearchbarProps) {
           const regex = handlePartialRegex(replacedSpecialChars)
           return (
             index !== 0 && // filter the headerItem suggestion
-            (!inputValue || item.name.toLowerCase().match(regex))
+            (!inputValue || RegExp(regex).exec(item.name.toLowerCase()))
           )
         }
         return (
@@ -280,10 +280,28 @@ export function Searchbar(props: SearchbarProps) {
 
     /** in the menu show a disabled "no result" when all menu items are filtered out */
     if (filteredMenuItems.length === 0) {
+      let noResultItemText = ''
+      if (currentQuery === '') {
+        // key word search (ex: str)
+        noResultItemText = `Search by ${inputValue}`
+      } else if (!currentQuery.includes(':')) {
+        // multi keyword search (ex: str str1)
+        noResultItemText = t('Search with applied keywords')
+      } else if (searchbarTags.length > 1 && currentQuery.endsWith(':')) {
+        // multi key:value pair search (ex: kind:Pod name:test)
+        noResultItemText = t('Search with applied filters')
+      } else if (searchbarTags.length > 0 && currentQuery.endsWith(':')) {
+        // single key:value pair search (ex: name:test)
+        noResultItemText = `Search by ${currentQuery}${inputValue}`
+      } else if (searchbarTags.length > 0 && !currentQuery.endsWith(':')) {
+        // single key:value pair search with keyword (ex: kind:Pod test)
+        noResultItemText = `Search by ${inputValue} with applied filters`
+      }
+
       const noResultItem = (
         // eslint-disable-next-line jsx-a11y/aria-role
         <MenuItem role={'search-suggestion-item'} isDisabled itemId={'no-matching-filters'} key={'no-matching-filters'}>
-          {t('No matching filters')}
+          {noResultItemText}
         </MenuItem>
       )
       setMenuItems([noResultItem])
@@ -317,7 +335,7 @@ export function Searchbar(props: SearchbarProps) {
       name: string
     }[] = []
     if (newChipId?.startsWith('filter')) {
-      newQueryString = `${currentQuery === '' ? '' : `${currentQuery} `}${newChipText}:`
+      newQueryString = currentQuery === '' ? `${newChipText}:` : `${currentQuery} ${newChipText}:`
       newQueryTags = convertStringToTags(newQueryString)
     } else if (newChipId?.startsWith('value') || currentQuery.endsWith(':')) {
       const opIdx = operators.findIndex((op: string) => inputValue.startsWith(op))
@@ -345,7 +363,7 @@ export function Searchbar(props: SearchbarProps) {
       newQueryString = newQueryTags.map((t) => t.name).join(' ')
     } else {
       // adding a keyword - not an item from dropdown suggestions
-      newQueryString = `${currentQuery === '' ? '' : `${currentQuery} `}${newChipText}`
+      newQueryString = currentQuery === '' ? newChipText : `${currentQuery} ${newChipText}`
       newQueryTags = convertStringToTags(newQueryString)
     }
     setCurrentQuery(newQueryString)
