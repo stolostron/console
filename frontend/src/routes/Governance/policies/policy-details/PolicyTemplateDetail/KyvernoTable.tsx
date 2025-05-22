@@ -152,9 +152,13 @@ export const KyvernoMessages = ({
     return <Spinner size="md" />
   }
 
+  return flexKyvernoMessages(ruleMsg)
+}
+
+export const flexKyvernoMessages = (messages: IRuleMessage[] | undefined) => {
   return (
     <Flex direction={{ default: 'column' }} style={{ gap: 4 }}>
-      {ruleMsg?.map((rm) => {
+      {messages?.map((rm) => {
         return (
           <FlexItem key={rm.ruleName} style={{ margin: 0 }}>
             {rm.message ? (

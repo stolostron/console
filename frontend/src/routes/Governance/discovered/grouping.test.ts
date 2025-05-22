@@ -88,6 +88,9 @@ const mockSearchResults: any[] = [
     disabled: 'false',
     _isExternal: 'true',
     annotation: 'apps.open-cluster-management.io/hosting-subscription=mysub-ns/mysub; cluster-namespace=local-cluster',
+    _missingResources: '[{"g":"rbac.authorization.k8s.io","v":"v1","k":"Role","ns":"default","n":"hopefully-present"}]',
+    _nonCompliantResources:
+      '[{"g":"rbac.authorization.k8s.io","v":"v1","k":"Role","ns":"default","n":"hopefully-present"}]',
   },
   {
     _hubClusterResource: true,
@@ -265,8 +268,7 @@ describe('OnMessage test', () => {
 
   test('OnMessage should create result properly', () => {
     const result = createMessage(
-      mockSearchResults,
-      [],
+      { searchResult: [{ items: mockSearchResults }] },
       helmRelease,
       channels,
       subscriptions,
@@ -275,7 +277,7 @@ describe('OnMessage test', () => {
       parseStringMap.toString(),
       parseDiscoveredPolicies.toString()
     )
-    expect(result).toEqual([
+    expect(result.policyItems).toEqual([
       {
         id: 'check-policy-reportsConfigurationPolicypolicy.open-cluster-management.io',
         apigroup: 'policy.open-cluster-management.io',
@@ -382,12 +384,31 @@ describe('OnMessage test', () => {
         },
       },
     ])
+    expect(result.relatedResources).toEqual([
+      {
+        apigroup: 'rbac.authorization.k8s.io',
+        apiversion: 'v1',
+        cluster: 'managed1',
+        compliant: 'noncompliant',
+        groupversion: 'rbac.authorization.k8s.io/v1',
+        kind: 'Role',
+        name: 'hopefully-present',
+        namespace: 'default',
+        templateInfo: {
+          apiGroup: 'policy.open-cluster-management.io',
+          apiVersion: 'v1',
+          clusterName: 'managed1',
+          kind: 'ConfigurationPolicy',
+          templateName: 'check-policy-reports',
+          templateNamespace: 'managed1',
+        },
+      },
+    ])
   })
 
   test('OnMessage with empty search results', () => {
     const result = createMessage(
-      [],
-      [],
+      { searchResult: [{ items: [] }] },
       helmRelease,
       channels,
       subscriptions,
@@ -396,7 +417,7 @@ describe('OnMessage test', () => {
       parseStringMap.toString(),
       parseDiscoveredPolicies.toString()
     )
-    expect(result).toEqual([])
+    expect(result.policyItems).toEqual([])
   })
 
   test('Should filter out ValidatingAdmissionPolicyBinding created by Gatekeeper constraints', () => {
@@ -443,8 +464,7 @@ describe('OnMessage test', () => {
       },
     ]
     const result = createMessage(
-      mock,
-      [],
+      { searchResult: [{ items: mock }] },
       helmRelease,
       channels,
       subscriptions,
@@ -453,7 +473,7 @@ describe('OnMessage test', () => {
       parseStringMap.toString(),
       parseDiscoveredPolicies.toString()
     )
-    expect(result).toEqual([
+    expect(result.policyItems).toEqual([
       {
         id: 'machine-configuration-guards-bindingValidatingAdmissionPolicyBindingadmissionregistration.k8s.io',
         apigroup: 'admissionregistration.k8s.io',
@@ -655,8 +675,7 @@ describe('OnMessage test', () => {
       },
     ]
     const result = createMessage(
-      mock,
-      relatedMock,
+      { searchResult: [{ items: mock, related: [{ kind: 'PolicyReport', items: relatedMock }] }] },
       helmRelease,
       channels,
       subscriptions,
@@ -665,7 +684,7 @@ describe('OnMessage test', () => {
       parseStringMap.toString(),
       parseDiscoveredPolicies.toString()
     )
-    expect(result).toEqual([
+    expect(result.policyItems).toEqual([
       {
         id: 'require-owner-labelsClusterPolicykyverno.io',
         apigroup: 'kyverno.io',
@@ -748,8 +767,7 @@ describe('OnMessage test', () => {
         validationFailureAction: 'Audit',
       },
     ]
-
-    const relatedMock: any[] = [
+    const relatedMockReports: any[] = [
       {
         _hubClusterResource: 'true',
         _policyViolationCounts: 'open-cluster-management-agent-addon/require-team-label=1; require-owner-labels=1',
@@ -774,9 +792,37 @@ describe('OnMessage test', () => {
         scope: 'require-team-label',
       },
     ]
+    const relatedMockPods: any[] = [
+      {
+        _hubClusterResource: 'true',
+        _ownerUID: 'local-cluster/b5bd8334-0938-480e-a047-f277324d2651',
+        _relatedUids: ['local-cluster/74902617-c1b6-4746-a23b-96e7715364b1'],
+        _uid: 'local-cluster/801ecf12-8a5b-4c82-8e6a-2a7ee16b4619',
+        apiversion: 'v1',
+        cluster: 'local-cluster',
+        container: 'controller',
+        created: '2025-05-22T02:58:14Z',
+        kind: 'Pod',
+        kind_plural: 'pods',
+        label:
+          'app.kubernetes.io/component=cleanup-controller; app.kubernetes.io/instance=kyverno; app.kubernetes.io/part-of=kyverno; app.kubernetes.io/version=v1.13.0; pod-template-hash=7c7d9844f',
+        name: 'kyverno-cleanup-controller-7c7d9844f-nf8s2',
+        namespace: 'kyverno',
+        startedAt: '2025-05-22T02:58:14Z',
+      },
+    ]
     const result = createMessage(
-      mock,
-      relatedMock,
+      {
+        searchResult: [
+          {
+            items: mock,
+            related: [
+              { kind: 'PolicyReport', items: relatedMockReports },
+              { kind: 'Pods', items: relatedMockPods },
+            ],
+          },
+        ],
+      },
       helmRelease,
       channels,
       subscriptions,
@@ -785,7 +831,7 @@ describe('OnMessage test', () => {
       parseStringMap.toString(),
       parseDiscoveredPolicies.toString()
     )
-    expect(result).toEqual([
+    expect(result.policyItems).toEqual([
       {
         apigroup: 'kyverno.io',
         id: 'require-team-labelPolicykyverno.io',
@@ -846,6 +892,58 @@ describe('OnMessage test', () => {
           parentName: '',
           parentNs: '',
           type: 'Local',
+        },
+      },
+    ])
+    expect(result.relatedResources).toEqual([
+      {
+        _hubClusterResource: 'true',
+        _ownerUID: 'local-cluster/b5bd8334-0938-480e-a047-f277324d2651',
+        _relatedUids: ['local-cluster/74902617-c1b6-4746-a23b-96e7715364b1'],
+        _uid: 'local-cluster/801ecf12-8a5b-4c82-8e6a-2a7ee16b4619',
+        apiversion: 'v1',
+        cluster: 'local-cluster',
+        compliant: 'noncompliant',
+        container: 'controller',
+        created: '2025-05-22T02:58:14Z',
+        groupversion: 'v1',
+        kind: 'Pod',
+        kind_plural: 'pods',
+        label:
+          'app.kubernetes.io/component=cleanup-controller; app.kubernetes.io/instance=kyverno; app.kubernetes.io/part-of=kyverno; app.kubernetes.io/version=v1.13.0; pod-template-hash=7c7d9844f',
+        name: 'kyverno-cleanup-controller-7c7d9844f-nf8s2',
+        namespace: 'kyverno',
+        policyReport: {
+          _hubClusterResource: 'true',
+          _policyViolationCounts: 'open-cluster-management-agent-addon/require-team-label=1; require-owner-labels=1',
+          _relatedUids: ['local-cluster/801ecf12-8a5b-4c82-8e6a-2a7ee16b4619'],
+          _uid: 'local-cluster/36f465ae-51e1-4d4a-890c-5aed38fa4d34',
+          apigroup: 'wgpolicyk8s.io',
+          apiversion: 'v1beta1',
+          category: '',
+          cluster: 'local-cluster',
+          created: '2024-11-07T15:10:00Z',
+          critical: '0',
+          important: '0',
+          kind: 'PolicyReport',
+          kind_plural: 'policyreports',
+          label: 'app.kubernetes.io/managed-by=kyverno',
+          low: '0',
+          moderate: '0',
+          name: '801ecf12-8a5b-4c82-8e6a-2a7ee16b4619',
+          namespace: 'open-cluster-management-agent-addon',
+          numRuleViolations: '2',
+          rules: 'open-cluster-management-agent-addon/require-team-label; require-owner-labels',
+          scope: 'require-team-label',
+        },
+        startedAt: '2025-05-22T02:58:14Z',
+        templateInfo: {
+          apiGroup: 'kyverno.io',
+          apiVersion: 'v1',
+          clusterName: 'local-cluster',
+          kind: 'Policy',
+          templateName: 'require-team-label',
+          templateNamespace: 'open-cluster-management-agent-addon',
         },
       },
     ])

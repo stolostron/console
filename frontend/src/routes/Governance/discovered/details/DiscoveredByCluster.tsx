@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { PageSection } from '@patternfly/react-core'
 import { DiscoveredPolicyItem } from '../useFetchPolicies'
 import {
   AcmDonutChart,
@@ -23,12 +22,13 @@ import {
 } from './common'
 import { useMemo } from 'react'
 import { useLocation } from 'react-router-dom-v5-compat'
+import { useDiscoveredDetailsContext } from './DiscoveredPolicyDetailsPage'
+import { EmptyState, EmptyStateIcon, PageSection, Spinner, EmptyStateHeader } from '@patternfly/react-core'
 
-export default function DiscoveredByCluster({
-  policies = [],
-  policyKind,
-  apiGroup,
-}: Readonly<{ policies: DiscoveredPolicyItem[] | undefined | null; policyKind: string; apiGroup: string }>) {
+export default function DiscoveredByCluster() {
+  const { policyKind, apiGroup, ...details } = useDiscoveredDetailsContext()
+  const policies = details.policyItems?.[0]?.policies
+
   const { t } = useTranslation()
   const { channelsState, helmReleaseState, subscriptionsState } = useSharedAtoms()
   const helmReleases = useRecoilValue(helmReleaseState)
@@ -234,6 +234,16 @@ export default function DiscoveredByCluster({
     }
     return filters
   }, [t, policyKind, policies, isGatekeeperMutation])
+
+  if (details.isFetching && !details.policyItems) {
+    return (
+      <PageSection>
+        <EmptyState>
+          <EmptyStateHeader titleText={t('Loading')} icon={<EmptyStateIcon icon={Spinner} />} headingLevel="h4" />
+        </EmptyState>
+      </PageSection>
+    )
+  }
 
   return (
     <>

@@ -9,7 +9,7 @@ import {
   AcmTable,
   AcmLabels,
 } from '../../../ui-components'
-import { DiscoverdPolicyTableItem, useFetchPolicies } from './useFetchPolicies'
+import { DiscoveredPolicyTableItem, useFetchPolicies } from './useFetchPolicies'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { ReactNode, useMemo } from 'react'
 import { Link, generatePath } from 'react-router-dom-v5-compat'
@@ -24,15 +24,18 @@ import {
   policyViolationSummary,
   responseActionCell,
   severityCell,
-} from './ByCluster/common'
+} from './details/common'
 import { ClusterPolicyViolationIcons2 } from '../components/ClusterPolicyViolations'
 import { exportObjectString, filterLabelFn } from '../../../resources/utils'
 import { isEqual } from 'lodash'
 
-function nameCell(item: DiscoverdPolicyTableItem): ReactNode {
+function nameCell(item: DiscoveredPolicyTableItem): ReactNode {
+  const destination = item.policies[0].apigroup.includes('gatekeeper')
+    ? NavigationPath.discoveredByCluster
+    : NavigationPath.discoveredResources
   return (
     <Link
-      to={generatePath(NavigationPath.discoveredByCluster, {
+      to={generatePath(destination, {
         kind: item.kind,
         policyName: item.name,
         apiGroup: item.policies[0].apigroup,
@@ -47,7 +50,7 @@ function nameCell(item: DiscoverdPolicyTableItem): ReactNode {
   )
 }
 
-function clusterCell(item: DiscoverdPolicyTableItem): ReactNode | string {
+function clusterCell(item: DiscoveredPolicyTableItem): ReactNode | string {
   const { noncompliant, compliant, pending, unknown } = policyViolationSummary(item.policies)
   const path = generatePath(NavigationPath.discoveredByCluster, {
     apiGroup: item.policies[0].apigroup,
@@ -72,7 +75,7 @@ function clusterCell(item: DiscoverdPolicyTableItem): ReactNode | string {
 }
 
 function labelsCell(
-  item: DiscoverdPolicyTableItem,
+  item: DiscoveredPolicyTableItem,
   labelMap: Record<string, { pairs?: Record<string, string>; labels?: string[] }> | undefined
 ): ReactNode | string {
   const labels = labelMap?.[item.id]?.pairs
@@ -80,11 +83,11 @@ function labelsCell(
 }
 
 export default function DiscoveredPolicies() {
-  const { isFetching, data, labelData, err } = useFetchPolicies()
+  const { isFetching, policyItems: data, labelData, err } = useFetchPolicies()
   const { labelOptions, labelMap } = labelData || {}
   const { t } = useTranslation()
 
-  const discoveredPoliciesCols = useMemo<IAcmTableColumn<DiscoverdPolicyTableItem>[]>(
+  const discoveredPoliciesCols = useMemo<IAcmTableColumn<DiscoveredPolicyTableItem>[]>(
     () => [
       {
         header: t('Name'),
@@ -97,12 +100,12 @@ export default function DiscoveredPolicies() {
       },
       {
         header: t('Engine'),
-        cell: (item: DiscoverdPolicyTableItem) => getEngineWithSvg(item.apigroup),
-        sort: (a: DiscoverdPolicyTableItem, b: DiscoverdPolicyTableItem) =>
+        cell: (item: DiscoveredPolicyTableItem) => getEngineWithSvg(item.apigroup),
+        sort: (a: DiscoveredPolicyTableItem, b: DiscoveredPolicyTableItem) =>
           compareStrings(getEngineString(a.apigroup), getEngineString(b.apigroup)),
-        search: (item: DiscoverdPolicyTableItem) => getEngineString(item.apigroup),
+        search: (item: DiscoveredPolicyTableItem) => getEngineString(item.apigroup),
         id: 'engine',
-        exportContent: (item: DiscoverdPolicyTableItem) => getEngineString(item.apigroup),
+        exportContent: (item: DiscoveredPolicyTableItem) => getEngineString(item.apigroup),
       },
       {
         header: t('Kind'),
@@ -110,12 +113,12 @@ export default function DiscoveredPolicies() {
         sort: 'kind',
         search: 'kind',
         id: 'kind',
-        exportContent: (item: DiscoverdPolicyTableItem) => item.kind,
+        exportContent: (item: DiscoveredPolicyTableItem) => item.kind,
       },
       {
         header: t('table.labels'),
-        cell: (item: DiscoverdPolicyTableItem) => labelsCell(item, labelMap),
-        exportContent: (item: DiscoverdPolicyTableItem) => {
+        cell: (item: DiscoveredPolicyTableItem) => labelsCell(item, labelMap),
+        exportContent: (item: DiscoveredPolicyTableItem) => {
           return exportObjectString(labelMap ? labelMap[item.id]?.pairs : {})
         },
       },
@@ -126,7 +129,7 @@ export default function DiscoveredPolicies() {
         search: 'responseAction',
         id: 'responseAction',
         tooltip: t('discoveredPolicies.tooltip.responseAction'),
-        exportContent: (item: DiscoverdPolicyTableItem) => item.responseAction ?? '-',
+        exportContent: (item: DiscoveredPolicyTableItem) => item.responseAction ?? '-',
       },
       {
         header: t('Severity'),
@@ -141,7 +144,7 @@ export default function DiscoveredPolicies() {
         header: t('Cluster violations'),
         cell: clusterCell,
         tooltip: t('discoveredPolicies.tooltip.clusterViolation'),
-        sort: (a: DiscoverdPolicyTableItem, b: DiscoverdPolicyTableItem) => {
+        sort: (a: DiscoveredPolicyTableItem, b: DiscoveredPolicyTableItem) => {
           const aViolation = policyViolationSummary(a.policies)
           const bViolation = policyViolationSummary(b.policies)
           if (isEqual(aViolation, bViolation)) return 0
@@ -154,14 +157,14 @@ export default function DiscoveredPolicies() {
         },
         search: 'violations',
         id: 'violations',
-        exportContent: (item: DiscoverdPolicyTableItem) => {
+        exportContent: (item: DiscoveredPolicyTableItem) => {
           const { noncompliant, compliant, pending, unknown } = policyViolationSummary(item.policies)
           return `${t('no violations: {{count}} cluster', { count: compliant })}, ${t('violations: {{count}} cluster', { count: noncompliant })}, ${t('pending: {{count}} cluster', { count: pending })}, ${t('unknown: {{count}} cluster', { count: unknown })}`
         },
       },
       {
         header: t('Source'),
-        cell: (item: DiscoverdPolicyTableItem) => (
+        cell: (item: DiscoveredPolicyTableItem) => (
           <div
             style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
             title={item.source?.type ?? ''}
@@ -169,9 +172,9 @@ export default function DiscoveredPolicies() {
             {discoveredSourceCell(t, item.source)}
           </div>
         ),
-        sort: (a: DiscoverdPolicyTableItem, b: DiscoverdPolicyTableItem) =>
+        sort: (a: DiscoveredPolicyTableItem, b: DiscoveredPolicyTableItem) =>
           compareStrings(a.source?.type, b.source?.type),
-        search: (item: DiscoverdPolicyTableItem) => item.source?.type ?? '',
+        search: (item: DiscoveredPolicyTableItem) => item.source?.type ?? '',
         id: 'source',
         exportContent: getSourceExportCSV,
       },
@@ -179,7 +182,7 @@ export default function DiscoveredPolicies() {
     [labelMap, t]
   )
 
-  const filters = useMemo<ITableFilter<DiscoverdPolicyTableItem>[]>(
+  const filters = useMemo<ITableFilter<DiscoveredPolicyTableItem>[]>(
     () => [
       {
         id: 'violations',
@@ -280,7 +283,7 @@ export default function DiscoveredPolicies() {
 
   return (
     <PageSection>
-      <AcmTable<DiscoverdPolicyTableItem>
+      <AcmTable<DiscoveredPolicyTableItem>
         id="discoveredPolicyTable"
         columns={discoveredPoliciesCols}
         keyFn={(item) => item.id}

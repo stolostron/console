@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import * as useFetchPolicies from './useFetchPolicies'
 import DiscoveredPolicies from './DiscoveredPolicies'
-import { getSourceFilterOptions } from './ByCluster/common'
+import { getSourceFilterOptions } from './details/common'
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import { waitForText, waitForNotText, getCSVExportSpies, getCSVDownloadLink } from '../../../lib/test-util'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
@@ -23,7 +23,8 @@ describe('useFetchPolicies custom hook', () => {
     })
     jest.spyOn(useFetchPolicies, 'useFetchPolicies').mockReturnValue({
       isFetching: false,
-      data: [
+      relatedResources: [],
+      policyItems: [
         {
           id: 'check-policy-reportsConfigurationPolicy',
           name: 'check-policy-reports',
@@ -231,7 +232,8 @@ describe('useFetchPolicies custom hook', () => {
   test('Should render error page', async () => {
     jest.spyOn(useFetchPolicies, 'useFetchPolicies').mockReturnValue({
       isFetching: false,
-      data: undefined,
+      relatedResources: [],
+      policyItems: undefined,
       err: { message: 'Error getting fetching data' } as ApolloError,
       labelData: undefined,
     })
@@ -248,7 +250,8 @@ describe('useFetchPolicies custom hook', () => {
   test('Should render loading page', async () => {
     jest.spyOn(useFetchPolicies, 'useFetchPolicies').mockReturnValue({
       isFetching: true,
-      data: undefined,
+      relatedResources: [],
+      policyItems: undefined,
       err: { message: 'Error getting fetching data' } as ApolloError,
       labelData: undefined,
     })
@@ -267,7 +270,8 @@ describe('useFetchPolicies custom hook', () => {
   test('Should render severity with hyphen', async () => {
     jest.spyOn(useFetchPolicies, 'useFetchPolicies').mockReturnValue({
       isFetching: false,
-      data: [
+      relatedResources: [],
+      policyItems: [
         {
           id: 'check-policy-reportsConfigurationPolicy',
           name: 'check-policy-reports',
@@ -337,7 +341,7 @@ describe('useFetchPolicies custom hook', () => {
   })
 
   test('Should get source filter list properly', () => {
-    const data: useFetchPolicies.DiscoverdPolicyTableItem[] = [
+    const data: useFetchPolicies.DiscoveredPolicyTableItem[] = [
       {
         id: 'check-policy-reportsConfigurationPolicy',
         apigroup: 'policy.open-cluster-management.io',
@@ -436,7 +440,8 @@ describe('useFetchPolicies custom hook', () => {
   test('Should render ValidatingAdmissionPolicyBinding', async () => {
     jest.spyOn(useFetchPolicies, 'useFetchPolicies').mockReturnValue({
       isFetching: false,
-      data: [
+      relatedResources: [],
+      policyItems: [
         {
           id: 'machine-configuration-guards-bindingValidatingAdmissionPolicyBindingadmissionregistration.k8s.io',
           apigroup: 'admissionregistration.k8s.io',
@@ -512,7 +517,8 @@ describe('useFetchPolicies custom hook', () => {
   test('Should render Kyverno Policy in multiple namespaces and ClusterPolicy', async () => {
     jest.spyOn(useFetchPolicies, 'useFetchPolicies').mockReturnValue({
       isFetching: false,
-      data: [
+      relatedResources: [],
+      policyItems: [
         {
           id: 'require-owner-labelsClusterPolicykyverno.io',
           apigroup: 'kyverno.io',
