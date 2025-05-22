@@ -2309,6 +2309,7 @@
   "Related applications ({{0}})": "Related applications ({{0}})",
   "Related Kubernetes resources can be displayed to help aid in the correlation of data from one object to another.": "Related Kubernetes resources can be displayed to help aid in the correlation of data from one object to another.",
   "Related resources": "Related resources",
+  "Related resources are not collected for Gatekeeper resources across clusters.": "Related resources are not collected for Gatekeeper resources across clusters.",
   "Release Name": "Release Name",
   "Reload": "Reload",
   "Remediation": "Remediation",

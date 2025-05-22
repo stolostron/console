@@ -10,7 +10,13 @@ import { ReactNode, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { generatePath, Link } from 'react-router-dom-v5-compat'
 import { NavigationPath } from '../../../../NavigationPath'
-import { AcmTable, AcmTablePaginationContextProvider, compareStrings, IAcmTableColumn } from '../../../../ui-components'
+import {
+  AcmEmptyState,
+  AcmTable,
+  AcmTablePaginationContextProvider,
+  compareStrings,
+  IAcmTableColumn,
+} from '../../../../ui-components'
 import { DiffModal } from '../../components/DiffModal'
 
 import { useDiscoveredDetailsContext } from './DiscoveredPolicyDetailsPage'
@@ -281,8 +287,16 @@ export function DiscoveredResources() {
   }, [isVAPB, isGatekeeperMutation, violationColumn, reasonColumn, t])
 
   const emptyState: JSX.Element = useMemo(() => {
+    if (apiGroup.includes('gatekeeper')) {
+      return (
+        <AcmEmptyState
+          title={t('No related resources')}
+          message={t('Related resources are not collected for Gatekeeper resources across clusters.')}
+        />
+      )
+    }
     return emptyResources(isVAPB, isGatekeeperMutation, t)
-  }, [isVAPB, isGatekeeperMutation, t])
+  }, [isVAPB, isGatekeeperMutation, apiGroup, t])
 
   return (
     <div>

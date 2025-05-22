@@ -183,6 +183,7 @@ export function grouping(): {
           switch (apigroup + ':' + kind) {
             case 'internal.open-cluster-management.io:Cluster':
             case 'policy.open-cluster-management.io:Policy':
+            case 'policy.open-cluster-management.io:ConfigurationPolicy':
               return
             case 'wgpolicyk8s.io:PolicyReport':
             case 'wgpolicyk8s.io:ClusterPolicyReport':
