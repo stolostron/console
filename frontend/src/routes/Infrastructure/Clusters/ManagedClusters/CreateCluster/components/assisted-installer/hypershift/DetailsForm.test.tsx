@@ -41,6 +41,7 @@ describe('DetailsForm', () => {
                       userManagedNetworking: false,
                       customOpenshiftSelect: null,
                       controlPlaneCount: 3,
+                      addCustomManifests: false,
                     },
                     step: {
                       title: {
