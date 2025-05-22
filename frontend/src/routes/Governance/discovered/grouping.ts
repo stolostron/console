@@ -160,7 +160,7 @@ export function grouping(): {
       searchDataItems = searchDataItems.concat(result?.items || [])
 
       const polInfo = result?.items?.[0] // useful for most template information
-      templateName = polInfo?.name
+      templateName = polInfo?.namespace ? polInfo.namespace + '/' + polInfo?.name : polInfo?.name
 
       if (polInfo?.apigroup === 'kyverno.io') {
         result.related?.forEach((related: any) => {

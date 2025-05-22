@@ -49,6 +49,8 @@ export interface DiscoveredPolicyItem {
   validationActions?: string
   // Kyverno resources: ClusterPolicy, Policy
   validationFailureAction?: string
+  _missingResources?: string
+  _nonCompliantResources?: string
 }
 
 export interface DiscoveredPolicyTableItem {

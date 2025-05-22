@@ -212,7 +212,7 @@ export function DiscoveredResources() {
                 ?.split('\n')
                 .filter((m: string) => m.startsWith(item.name))
                 .join('\n')
-              return <div style={{ whiteSpace: 'pre-wrap' }}>{message}</div>
+              return <span style={{ whiteSpace: 'pre-wrap' }}>{message}</span>
             }
           }
 
