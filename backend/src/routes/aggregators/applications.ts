@@ -2,7 +2,7 @@
 import { getKubeResources, IWatchOptions } from '../events'
 import { addOCPQueryInputs, addSystemQueryInputs, cacheOCPApplications } from './applicationsOCP'
 import { ApplicationSetKind, IApplicationSet, IResource } from '../../resources/resource'
-import { FilterSelections, ITransformedResource } from '../../lib/pagination'
+import { FilterSelections } from '../../lib/pagination'
 import { logger } from '../../lib/logger'
 import {
   discoverSystemAppNamespacePrefixes,
@@ -19,6 +19,7 @@ import {
   polledArgoApplicationAggregation,
 } from './applicationsArgo'
 import { getGiganticApps } from '../../lib/gigantic'
+import { createDictionary, inflateApps } from '../../lib/compression'
 
 export enum AppColumns {
   'name' = 0,
@@ -69,12 +70,27 @@ export interface ISubscription extends IResource {
     decisions?: [{ clusterName: string }]
   }
 }
+export interface ITransformedResource extends IResource {
+  transform?: string[][]
+  remoteClusters?: string[]
+}
+export interface ICompressedResource {
+  compressed: Buffer
+  transform?: string[][]
+  remoteClusters?: string[]
+}
 
 export type ApplicationCache = {
-  resources?: ITransformedResource[]
-  resourceMap?: { [key: string]: ITransformedResource[] }
-  resourceUidMap?: { [key: string]: ITransformedResource }
+  resources?: ICompressedResource[]
+  resourceMap?: { [key: string]: ICompressedResource[] }
+  resourceUidMap?: { [key: string]: ICompressedResource }
 }
+
+const appDict = createDictionary()
+export function getAppDict() {
+  return appDict
+}
+
 export type ApplicationCacheType = {
   [type: string]: ApplicationCache
 }
@@ -167,7 +183,7 @@ export function aggregateLocalApplications() {
   }
 }
 
-export function filterApplications(filters: FilterSelections, items: ITransformedResource[]) {
+export function filterApplications(filters: FilterSelections, items: ICompressedResource[]) {
   const filterCategories = Object.keys(filters)
   items = items.filter((item) => {
     let isFilterMatch = true
@@ -196,7 +212,7 @@ export function filterApplications(filters: FilterSelections, items: ITransforme
 // add data to the apps that can be used by the ui but
 // w/o downloading all the appsets, apps, etc
 export function addUIData(items: ITransformedResource[]) {
-  const argoAppSets = getApplicationsHelper(applicationCache, ['appset'])
+  const argoAppSets = inflateApps(getApplicationsHelper(applicationCache, ['appset']))
   const appSetAppsMap = getAppSetAppsMap()
   items = items.map((item) => {
     return {
