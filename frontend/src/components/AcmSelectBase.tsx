@@ -522,8 +522,10 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
     }
     return !!inputValue
   }
-  const ariaLabel =
-    props['aria-labelledby'] ?? props['aria-label'] ?? props.placeholder ?? props.label ?? t('Options menu')
+  const ariaLabelledBy = props['aria-labelledby'] ?? undefined
+  const ariaLabel = props['aria-labelledby']
+    ? undefined
+    : props['aria-label'] ?? props.placeholder ?? props.label ?? t('Options menu')
 
   function renderMenuToggle(toggleRef: Ref<MenuToggleElement> | undefined): ReactNode {
     return (
@@ -550,6 +552,7 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
             }
           }
         }}
+        aria-labelledby={ariaLabelledBy}
         aria-label={ariaLabel}
         badge={badge}
         isDisabled={isDisabled}
