@@ -111,7 +111,7 @@ const COLUMN_CELLS = {
     </span>
   ),
   USER_GROUP: (accessControl: AccessControl, t: TFunction) => {
-    const users_groups = accessControl.spec.roleBindings.map((e) => `${e.subject.kind}: ${e.subject.name}`) // TODO: translate kind
+    const users_groups = accessControl.spec.roleBindings.map((e) => `${e.subject?.kind}: ${e.subject?.name}`) // TODO: translate kind
     return users_groups ? (
       <AcmLabels
         labels={users_groups}
@@ -216,9 +216,9 @@ const accessControlTableColumns = ({ t, setModalProps, navigate }: AccessControl
   {
     header: t('Users/Groups'),
     // TODO: users or groups
-    search: (accessControl: AccessControl) => accessControl.spec.roleBindings.map((e) => e.subject.name).join(),
+    search: (accessControl: AccessControl) => accessControl.spec.roleBindings.map((e) => e.subject?.name).join(),
     cell: (accessControl: AccessControl) => COLUMN_CELLS.USER_GROUP(accessControl, t),
-    exportContent: (accessControl: AccessControl) => accessControl.spec.roleBindings.map((e) => e.subject.name),
+    exportContent: (accessControl: AccessControl) => accessControl.spec.roleBindings.map((e) => e.subject?.name),
   },
   {
     header: t('Roles'),
@@ -280,7 +280,7 @@ const useFilters = ({
           ...new Set(
             accessControls?.flatMap(
               (accessControl) =>
-                accessControl.spec.roleBindings.filter((e) => e.subject.kind === 'User').map((e) => e.subject.name) ??
+                accessControl.spec.roleBindings.filter((e) => e.subject?.kind === 'User').map((e) => e.subject?.name) ??
                 []
             )
           ),
@@ -290,8 +290,8 @@ const useFilters = ({
         tableFilterFn: (selectedValues: string[], item: AccessControl) =>
           selectedValues.some((e) =>
             item.spec.roleBindings
-              .filter((e) => e.subject.kind === 'User')
-              .map((e) => e.subject.name)
+              .filter((e) => e.subject?.kind === 'User')
+              .map((e) => e.subject?.name)
               .includes(e)
           ),
       },
@@ -302,7 +302,7 @@ const useFilters = ({
           ...new Set(
             accessControls?.flatMap(
               (accessControl) =>
-                accessControl.spec.roleBindings.filter((e) => e.subject.kind === 'User').map((e) => e.subject.name) ??
+                accessControl.spec.roleBindings.filter((e) => e.subject?.kind === 'User').map((e) => e.subject?.name) ??
                 []
             )
           ),
@@ -312,8 +312,8 @@ const useFilters = ({
         tableFilterFn: (selectedValues: string[], item: AccessControl) =>
           selectedValues.some((e) =>
             item.spec.roleBindings
-              .filter((e) => e.subject.kind === 'User')
-              .map((e) => e.subject.name)
+              .filter((e) => e.subject?.kind === 'User')
+              .map((e) => e.subject?.name)
               .includes(e)
           ),
       },
@@ -324,7 +324,7 @@ const useFilters = ({
           ...new Set(
             accessControls?.flatMap(
               (accessControl) =>
-                accessControl.spec.roleBindings.filter((e) => e.subject.kind === 'Role').map((e) => e.subject.name) ??
+                accessControl.spec.roleBindings.filter((e) => e.subject?.kind === 'Role').map((e) => e.subject?.name) ??
                 []
             )
           ),
@@ -334,8 +334,8 @@ const useFilters = ({
         tableFilterFn: (selectedValues: string[], item: AccessControl) =>
           selectedValues.some((e) =>
             item.spec.roleBindings
-              .filter((e) => e.subject.kind === 'Role')
-              .map((e) => e.subject.name)
+              .filter((e) => e.subject?.kind === 'Role')
+              .map((e) => e.subject?.name)
               .includes(e)
           ),
       },

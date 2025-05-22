@@ -81,7 +81,9 @@ const AccessControlManagementForm = ({
     setName(accessControl?.metadata?.name ?? '')
 
     if (accessControl?.spec?.roleBindings) {
-      setSelectedUserNames([...new Set(accessControl.spec.roleBindings.map((rb) => rb.subject.name))])
+      setSelectedUserNames([
+        ...new Set(accessControl.spec.roleBindings.filter((e) => e.subject).map((rb) => rb.subject!.name)),
+      ])
       setSelectedRoles([...new Set(accessControl.spec.roleBindings.map((rb) => rb.roleRef.name))])
       setSelectedNamespaces([...new Set(accessControl.spec.roleBindings.map((rb) => rb.namespace))])
     }

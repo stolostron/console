@@ -20,7 +20,7 @@ export interface RoleBinding {
     kind: 'Role'
     name: string
   }
-  subject: {
+  subject?: {
     apiGroup: string
     kind: SubjectType
     name: string
