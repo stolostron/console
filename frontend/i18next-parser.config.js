@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // i18next-parser.config.js
 const { readFileSync } = require('fs')
-const { CustomJSONLexer } = require('./i18n-scripts/lexers/json.js')
+const { CustomTypescriptLexer } = require('./i18n-scripts/lexers/typescript.js')
 
 const JavascriptLexer = { lexer: 'JavascriptLexer', functions: ['t', 'i18n'] }
 const JsxLexer = { lexer: 'JsxLexer', functions: ['t', 'i18n'] }
@@ -53,10 +53,9 @@ module.exports = {
 
     mjs: [JavascriptLexer],
     js: [JavascriptLexer], // if you're writing jsx inside .js files, change this to JsxLexer
-    ts: [JavascriptLexer],
+    ts: [{ lexer: CustomTypescriptLexer, functions: ['t', 'i18n'] }],
     jsx: [JsxLexer],
-    tsx: [JsxLexer],
-    json: [CustomJSONLexer],
+    tsx: [JsxLexer, { lexer: CustomTypescriptLexer, functions: ['t', 'i18n'] }, { lexer: CustomTypescriptLexer }],
 
     default: [JavascriptLexer],
   },
@@ -84,8 +83,6 @@ module.exports = {
     './src/**/*.tsx',
     './src/**/*.ts',
     './src/**/*.js',
-    './plugins/**/*.ts',
-    './plugins/**/*.js',
     './plugins/**/console-extensions.ts',
     './plugins/**/console-plugin-metadata.ts'
   ],
