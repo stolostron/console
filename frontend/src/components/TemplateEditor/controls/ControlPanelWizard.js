@@ -118,7 +118,7 @@ class ControlPanelWizard extends React.Component {
         ),
         control,
         controls,
-        enabled: inx <= validStepIndex,
+        enabled: true,
         component: (
           <div key={id} className={controlClasses}>
             <Stack hasGutter>
