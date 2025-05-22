@@ -90,8 +90,8 @@ function sortByList<T>(colOrderIds: string[], items: IAcmTableColumn<T>[]) {
     }
   })
   items.forEach((val) => {
-    if (!colOrderIds.includes(val.header.toLocaleLowerCase().replace(/ +/g, ''))) {
-      colOrderIds.push(val.header.toLocaleLowerCase().replace(/ +/g, ''))
+    if (val.id && !colOrderIds.includes(val.id)) {
+      colOrderIds.push(val.id)
       sortedColumns.push(val)
     }
   })

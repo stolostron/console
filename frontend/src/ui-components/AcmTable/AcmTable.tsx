@@ -745,14 +745,17 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         .map((col) => col.id as string),
     [columns]
   )
-  const localSavedCols = JSON.parse(localStorage.getItem(id + 'SavedCols') || '[]')
-  const localSavedColOrder = JSON.parse(localStorage.getItem(id + 'SavedColOrder') || '[]')
+  const localSavedCols = getLocalStorage(id + 'SavedCols', [])
+  const localSavedColOrder = getLocalStorage(id + 'SavedColOrder', [])
   const [colOrderIds, setColOrderIds] = useState<string[]>(
     localSavedColOrder?.length > 0 ? localSavedColOrder : defaultOrderIds
   )
   const [selectedColIds, setSelectedColIds] = useState<string[]>(
-    localSavedCols?.length > 0 ? localSavedCols : [...requiredColIds, ...defaultColIds]
+    localSavedCols?.length > 0
+      ? [...requiredColIds, ...localSavedCols.filter((val: string) => !requiredColIds.includes(val))]
+      : [...requiredColIds, ...defaultColIds]
   )
+
   const [tableId] = useState<string>(id || '')
   const selectedSortedCols = useMemo(() => {
     const sortedColumns: IAcmTableColumn<T>[] = []
@@ -781,14 +784,6 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
 
     return sortedSelected
   }, [columns, selectedColIds, colOrderIds, showColumnManagement])
-
-  useEffect(() => {
-    localStorage.setItem(id + 'SavedCols', JSON.stringify(selectedColIds))
-  }, [selectedColIds, id])
-
-  useEffect(() => {
-    localStorage.setItem(id + 'SavedColOrder', JSON.stringify(colOrderIds))
-  }, [colOrderIds, id])
 
   /* istanbul ignore next */
   const updateBreakpoint = useCallback(
