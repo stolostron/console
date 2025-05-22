@@ -246,7 +246,7 @@ class ControlPanelTreeSelect extends React.Component {
                 >
                   <input
                     className="pf-v5-c-combo-control"
-                    aria-label={i18n('ListBox input field')}
+                    aria-label={name}
                     ref={this.setInputRef}
                     spellCheck="false"
                     role="combobox"

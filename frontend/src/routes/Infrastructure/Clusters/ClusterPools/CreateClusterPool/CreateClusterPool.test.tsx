@@ -20,13 +20,12 @@ import {
   SecretApiVersion,
   SecretKind,
 } from '../../../../../resources'
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { managedClusterSetsState, namespacesState, secretsState, Settings, settingsState } from '../../../../../atoms'
 import { nockCreate, nockIgnoreApiPaths, nockIgnoreRBAC, nockList, nockReplace } from '../../../../../lib/nock-util'
 import {
-  clickByPlaceholderText,
   clickByTestId,
   clickByText,
   selectByText,
@@ -287,7 +286,11 @@ describe('CreateClusterPool AWS', () => {
     await waitForNocks(initialNocks)
 
     // connection
-    await clickByPlaceholderText('Select a credential')
+    screen
+      .getByRole('combobox', {
+        name: /connection-label/i,
+      })
+      .click()
 
     // Should show the modal wizard
     await clickByText('Add credential')
@@ -297,7 +300,11 @@ describe('CreateClusterPool AWS', () => {
     await selectByText('Select a namespace for the credential', newProviderConnection.metadata.namespace!)
     await clickByText('Cancel', 1)
 
-    await clickByPlaceholderText('Select a credential')
+    screen
+      .getByRole('combobox', {
+        name: /connection-label/i,
+      })
+      .click()
     await clickByText(providerConnection.metadata.name!)
 
     // step 2 -- the name, namespace and imageset
@@ -352,7 +359,7 @@ describe('CreateClusterPool AWS', () => {
     await waitForNocks(initialNocks)
 
     // connection
-    await clickByPlaceholderText('Select a credential')
+    screen.queryByPlaceholderText(/connection/i)!.click()
 
     // Should show the modal wizard
     await clickByText('Add credential')
@@ -362,7 +369,7 @@ describe('CreateClusterPool AWS', () => {
     await selectByText('Select a namespace for the credential', newProviderConnection.metadata.namespace!)
     await clickByText('Cancel', 1)
 
-    await clickByPlaceholderText('Select a credential')
+    screen.queryByPlaceholderText(/connection/i)!.click()
     await clickByText(providerConnection.metadata.name!)
 
     // step 2 -- the name, namespace and imageset

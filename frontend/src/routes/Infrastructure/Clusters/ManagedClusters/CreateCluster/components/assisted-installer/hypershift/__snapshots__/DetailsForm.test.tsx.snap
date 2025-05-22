@@ -116,41 +116,72 @@ exports[`DetailsForm it renders 1`] = `
       <div
         class="pf-v5-c-form__group-control"
       >
-        <div
-          class="pf-v5-c-select"
-          data-ouia-component-id="OUIA-Generated-Select-single-1"
-          data-ouia-component-type="PF5/Select"
+        <button
+          aria-expanded="false"
+          aria-label="Cluster set"
+          class="pf-v5-c-menu-toggle pf-m-disabled css-gxe00f"
+          data-ouia-component-id="OUIA-Generated-MenuToggle-default-1"
+          data-ouia-component-type="PF5/MenuToggle"
           data-ouia-safe="true"
+          disabled=""
+          id="pf-select-toggle-id-2"
+          role="combobox"
+          style="width: 100%; max-height: 36px;"
+          type="button"
         >
-          <div
-            class="pf-v5-c-select__toggle pf-m-disabled pf-m-typeahead"
+          <span
+            class="pf-v5-c-menu-toggle__text"
           >
             <div
-              class="pf-v5-c-select__toggle-wrapper"
+              class="pf-v5-c-text-input-group pf-m-plain"
+              style="width: 100%;"
             >
-              <span
-                class="pf-v5-c-select__toggle-text"
+              <div
+                class="css-1ghsi1q"
+                style="width: 100%;"
               >
-                <span
-                  style="color: rgb(102, 102, 102);"
+                No cluster sets available
+              </div>
+              <div
+                class="pf-v5-c-text-input-group__utilities"
+                style="display: none;"
+              >
+                <button
+                  aria-disabled="false"
+                  aria-label="Clear input value"
+                  class="pf-v5-c-button pf-m-plain"
+                  data-ouia-component-id="OUIA-Generated-Button-plain-2"
+                  data-ouia-component-type="PF5/Button"
+                  data-ouia-safe="true"
+                  style="padding-inline-start: 0;"
+                  type="button"
                 >
-                  No cluster sets available
-                </span>
-              </span>
+                  <svg
+                    aria-hidden="true"
+                    class="pf-v5-svg"
+                    fill="currentColor"
+                    height="1em"
+                    role="img"
+                    viewBox="0 0 352 512"
+                    width="1em"
+                  >
+                    <path
+                      d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"
+                    />
+                  </svg>
+                </button>
+              </div>
             </div>
-            <button
-              aria-expanded="false"
-              aria-haspopup="listbox"
-              aria-label="Options menu"
-              aria-labelledby="managedClusterSet-label pf-select-toggle-id-1"
-              class="pf-v5-c-button pf-v5-c-select__toggle-button pf-m-plain"
-              disabled=""
-              id="pf-select-toggle-id-1"
-              type="button"
+          </span>
+          <span
+            class="pf-v5-c-menu-toggle__controls"
+          >
+            <span
+              class="pf-v5-c-menu-toggle__toggle-icon"
             >
               <svg
                 aria-hidden="true"
-                class="pf-v5-svg pf-v5-c-select__toggle-arrow"
+                class="pf-v5-svg"
                 fill="currentColor"
                 height="1em"
                 role="img"
@@ -161,9 +192,12 @@ exports[`DetailsForm it renders 1`] = `
                   d="M31.3 192h257.3c17.8 0 26.7 21.5 14.1 34.1L174.1 354.8c-7.8 7.8-20.5 7.8-28.3 0L17.2 226.1C4.6 213.5 13.5 192 31.3 192z"
                 />
               </svg>
-            </button>
-          </div>
-        </div>
+            </span>
+          </span>
+        </button>
+        <div
+          style="border-top: 1.75px solid transparent; padding-bottom: 10px;"
+        />
         <div
           class="pf-v5-c-form__helper-text"
           id="managedClusterSet-helper"

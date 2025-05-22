@@ -1,19 +1,24 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Button, FormGroup, Popover } from '@patternfly/react-core'
-import { Select, SelectProps, SelectVariant } from '@patternfly/react-core/deprecated'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import { Fragment, ReactNode, useLayoutEffect, useState } from 'react'
+import { AcmSelectBase, AcmSelectBaseProps, SelectVariant } from '../../components/AcmSelectBase'
+
 import { useTranslation } from '../../lib/acm-i18next'
 import { useValidationContext } from '../AcmForm/AcmForm'
 import { AcmHelperText } from '../AcmHelperText/AcmHelperText'
 
 type AcmSelectProps = Pick<
-  SelectProps,
-  Exclude<keyof SelectProps, 'onToggle' | 'onChange' | 'selections' | 'onSelect'>
+  AcmSelectBaseProps,
+  Exclude<
+    keyof AcmSelectBaseProps,
+    'toggle' | 'onToggle' | 'onChange' | 'selections' | 'onSelect' | 'variant' | 'width'
+  >
 > & {
   id: string
   label: string
+  variant?: SelectVariant
   value: string | undefined
   onChange: (value: string | undefined) => void
   validation?: (value: string | undefined) => string | undefined
@@ -22,22 +27,23 @@ type AcmSelectProps = Pick<
   labelHelpTitle?: ReactNode
   helperText?: ReactNode
   isRequired?: boolean
+  toggleId?: string
+  footer?: React.ReactNode
 }
 
 export function AcmSelect(props: AcmSelectProps) {
-  const [open, setOpen] = useState(false)
   const ValidationContext = useValidationContext()
   const [validated, setValidated] = useState<'default' | 'success' | 'error' | 'warning'>('default')
   const [error, setError] = useState<string>('')
   const { t } = useTranslation()
   const {
+    value,
     validation,
     labelHelp,
     labelHelpTitle,
     helperText,
     isRequired,
     onChange,
-    value,
     placeholder,
     ...selectProps
   } = props
@@ -92,7 +98,6 @@ export function AcmSelect(props: AcmSelectProps) {
               id={`${props.id}-label-help-button`}
               aria-label={t('More info')}
               onClick={(e) => e.preventDefault()}
-              // aria-describedby="simple-form-name"
               className="pf-v5-c-form__group-label-help"
               style={{ ['--pf-v5-c-form__group-label-help--TranslateY' as any]: 0 }}
               icon={<HelpIcon />}
@@ -103,45 +108,26 @@ export function AcmSelect(props: AcmSelectProps) {
         )
       }
     >
-      <Select
-        aria-labelledby={`${props.id}-label`}
+      <AcmSelectBase
+        aria-label={props.label}
         {...selectProps}
-        isOpen={open}
-        onToggle={() => {
-          setOpen(!open)
-        }}
         selections={value}
-        onSelect={(_event, value) => {
+        onSelect={(value) => {
           onChange(value as string)
-          setOpen(false)
         }}
         onClear={
           !props.isRequired
             ? () => {
-                onChange(undefined)
+                onChange?.(undefined)
               }
             : undefined
         }
-        placeholderText={
-          props.variant == SelectVariant.typeahead || props.variant == SelectVariant.typeaheadMulti ? (
-            placeholder
-          ) : (
-            <span style={{ color: '#666' }}>{placeholder}</span>
-          )
-        }
+        placeholder={placeholder}
         isDisabled={props.isDisabled || ValidationContext.isReadOnly}
-        clearSelectionsAriaLabel={
-          selectProps.variant !== SelectVariant.single && selectProps.variant !== SelectVariant.typeahead
-            ? t('Clear all')
-            : t('Clear selected item')
-        }
-        noResultsFoundText={t('No results found')}
       />
-      {validated === 'error' ? (
-        <div style={{ borderTop: '1.75px solid red', paddingBottom: '6px' }}></div>
-      ) : (
-        <Fragment />
-      )}
+      <div
+        style={{ borderTop: `1.75px solid ${validated === 'error' ? 'red' : 'transparent'}`, paddingBottom: '10px' }}
+      ></div>
       <AcmHelperText controlId={props.id} helperText={helperText} validated={validated} error={error} />
     </FormGroup>
   )

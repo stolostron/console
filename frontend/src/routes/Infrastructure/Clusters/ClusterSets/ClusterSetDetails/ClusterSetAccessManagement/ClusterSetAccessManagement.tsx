@@ -28,6 +28,7 @@ import {
   compareStrings,
   IAcmTableColumn,
 } from '../../../../../../ui-components'
+import { SelectVariant } from '../../../../../../components/AcmSelectBase'
 import {
   ActionGroup,
   ButtonVariant,
@@ -38,8 +39,8 @@ import {
   SplitItem,
   ToggleGroup,
   ToggleGroupItem,
+  SelectOption,
 } from '@patternfly/react-core'
-import { SelectOption } from '@patternfly/react-core/deprecated'
 import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
 import { useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
@@ -354,7 +355,7 @@ function AddUsersModal(props: {
                   <SplitItem isFilled>
                     <AcmSelect
                       id="role"
-                      variant="typeahead"
+                      variant={SelectVariant.typeahead}
                       maxHeight="12em"
                       menuAppendTo="parent"
                       isRequired

@@ -585,9 +585,8 @@ describe('Create Subscription Application page', () => {
     await clickByText(mockPlacement.metadata.name!)
 
     // open and close the credential modal
-    const dropdownButton = screen.getByRole('button', {
-      name: /Ansible Automation Platform credential options menu/i,
-    })
+
+    const dropdownButton = screen.getByPlaceholderText(/select an existing secret from the list\./i)
     userEvent.click(dropdownButton)
     userEvent.click(screen.getByText(/add credential/i))
 

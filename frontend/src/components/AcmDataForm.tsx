@@ -42,6 +42,8 @@ import {
   Page,
   PageSection,
   Popover,
+  SelectOption,
+  SelectGroup,
   Split,
   SplitItem,
   Stack,
@@ -61,8 +63,7 @@ import {
   WizardStepProps,
   WizardHeader,
 } from '@patternfly/react-core'
-import { Select, SelectGroup, SelectOption, SelectOptionObject, SelectProps } from '@patternfly/react-core/deprecated'
-import { ValidatedOptions } from '@patternfly/react-core/dist/js/helpers/constants'
+import { AcmSelectBase, AcmSelectBaseProps, SelectOptionObject, SelectVariant } from './AcmSelectBase'
 import {
   EditIcon,
   ExclamationCircleIcon,
@@ -1070,7 +1071,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
     case 'GroupedMultiselect': {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { onChange, placeholder, validate, validation, isRequired, ...inputProps } = input
-      const onSelect = (_event: unknown, selection: string | SelectOptionObject) => {
+      const onSelect = (selection: string | SelectOptionObject) => {
         switch (input.type) {
           case 'Select':
           case 'GroupedSelect':
@@ -1161,16 +1162,16 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
           }
           break
       }
-      let variant = input.variant
+      let variant = input.variant as SelectVariant
       if (!variant) {
         switch (input.type) {
           case 'Select':
           case 'GroupedSelect':
-            variant = hasIcons ? 'single' : 'typeahead'
+            variant = hasIcons ? SelectVariant.single : SelectVariant.typeahead
             break
           case 'Multiselect':
           case 'GroupedMultiselect':
-            variant = 'typeaheadmulti'
+            variant = SelectVariant.typeaheadMulti
             break
         }
       }
@@ -1181,11 +1182,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
           selections={selections}
           onSelect={onSelect}
           onClear={onClear}
-          isCreatable={false}
           isDisabled={isReadOnly || input.isDisabled}
-          validated={validated}
-          autoClose={input.type === 'Select' || input.type === 'GroupedSelect'}
-          isGrouped={input.type === 'GroupedSelect' || input.type === 'GroupedMultiselect'}
           variant={variant}
           placeholderText={input.placeholder}
         >
@@ -1403,27 +1400,17 @@ function inputsHidden(inputs?: Input[]): boolean {
   return true
 }
 
-type selectWithToggleProps = Omit<SelectProps, 'onToggle'> & { autoClose: boolean }
-function SelectWithToggle(props: selectWithToggleProps): JSX.Element {
+function SelectWithToggle(props: AcmSelectBaseProps): JSX.Element {
   // TODO support isReadOnly
-  const { validated, autoClose: closeOnSelect } = props
-  const [open, setOpen] = useState(false)
-  const { autoClose, ...selectProps } = props
-  const { t } = useTranslation()
   return (
-    <Select
-      {...selectProps}
-      isOpen={open}
-      onToggle={() => setOpen(!open)}
-      onSelect={(e, v) => {
-        props.onSelect?.(e, v)
-        if (closeOnSelect) setOpen(false)
+    <AcmSelectBase
+      {...props}
+      onSelect={(v) => {
+        props.onSelect?.(v)
       }}
-      aria-invalid={validated === ValidatedOptions.error}
-      noResultsFoundText={t('No results found')}
     >
       {props.children}
-    </Select>
+    </AcmSelectBase>
   )
 }
 
