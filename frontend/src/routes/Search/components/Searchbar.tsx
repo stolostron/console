@@ -311,7 +311,7 @@ export function Searchbar(props: Readonly<SearchbarProps>) {
     const divider = <Divider key="divider" />
 
     setMenuItems([headingItem, divider, ...filteredMenuItems])
-  }, [inputValue, suggestions, t])
+  }, [currentQuery, inputValue, searchbarTags.length, suggestions, t])
 
   useEffect(() => {
     const suggestionFiltering = setTimeout(() => {
