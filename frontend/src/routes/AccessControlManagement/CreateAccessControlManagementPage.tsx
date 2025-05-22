@@ -42,9 +42,7 @@ const CreateAccessControlManagementPage = () => {
           </AcmPage>
         )
       default:
-        return (
-          <AccessControlManagementForm isCreatable={true} namespaces={projects} isEditing={false} isViewing={false} />
-        )
+        return <AccessControlManagementForm isCreatable={true} isEditing={false} isViewing={false} />
     }
   })()
 }

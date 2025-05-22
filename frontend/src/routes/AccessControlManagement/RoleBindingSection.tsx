@@ -2,7 +2,7 @@ import { useTranslation } from '../../lib/acm-i18next'
 import { Stack, StackItem, Title } from '@patternfly/react-core'
 import { AcmLabels } from '../../ui-components'
 
-export interface RoleBindingSectionProps {
+interface RoleBindingSectionProps {
   title: string
   clusterRoles: any[]
   idPrefix: string
