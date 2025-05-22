@@ -83,7 +83,7 @@ export async function getAuthorizedResources(
           : canListResources(token, resource)
       )
         .then((allowResource) => (allowResource ? resource : undefined))
-        .catch(() => {}) as Promise<IResource>
+        .catch(() => { }) as Promise<IResource>
     })
     while (queue.length) {
       const resource = await queue.shift()
@@ -229,6 +229,7 @@ const definitions: IWatchOptions[] = [
     apiVersion: 'v1',
     fieldSelector: { 'metadata.name': 'grafana-dashboard-acm-openshift-virtualization-single-vm-view' },
   },
+  { kind: 'ClusterPermission', apiVersion: 'rbac.open-cluster-management.io/v1alpha1' },
 ]
 
 export function startWatching(): void {
@@ -384,7 +385,7 @@ async function pollKubernetesObjects(serviceAccountToken: string, options: IWatc
 
     let size = 2000
     try {
-      ;({ size } = await listKubernetesObjects(serviceAccountToken, options))
+      ; ({ size } = await listKubernetesObjects(serviceAccountToken, options))
     } catch (e) {
       logger.error(`poll kubernetes exception ${e}`)
     }

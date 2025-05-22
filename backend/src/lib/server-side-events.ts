@@ -341,6 +341,8 @@ export class ServerSideEvents {
           break
         case 'Search':
         case 'Secret':
+        // // TODO: is other the proper case for AccessControl?
+        case 'AccessControl':
           other.push(event)
           break
         default:
