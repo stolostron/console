@@ -189,6 +189,9 @@ export function grouping(): {
             case 'wgpolicyk8s.io:ClusterPolicyReport':
               if (polInfo?.apigroup === 'kyverno.io') return
               break
+            case 'admissionregistration.k8s.io:ValidatingAdmissionPolicy':
+              if (polInfo?.apigroup === 'admissionregistration.k8s.io') return
+              break
           }
 
           item.compliant = 'compliant' // if it is noncompliant, it will be in _nonCompliantResources
