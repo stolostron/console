@@ -109,7 +109,7 @@ export function AcmSelect(props: AcmSelectProps) {
       }
     >
       <AcmSelectBase
-        aria-labelledby={`${props.id}-label`}
+        aria-label={props.label}
         {...selectProps}
         selections={value}
         onSelect={(value) => {

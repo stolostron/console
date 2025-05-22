@@ -105,7 +105,7 @@ export function AcmMultiSelect(props: AcmMultiSelectProps) {
       ) : (
         <AcmSelectBase
           {...selectProps}
-          aria-labelledby={`${props.id}-label`}
+          aria-label={props.label}
           variant={variant}
           selections={value}
           onSelect={(selection) => {
