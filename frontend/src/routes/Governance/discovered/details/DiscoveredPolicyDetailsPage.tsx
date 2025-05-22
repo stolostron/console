@@ -104,9 +104,11 @@ export function DiscoveredPolicyDetailsPage() {
           popoverPosition="bottom"
           navigation={
             <AcmSecondaryNav>
-              <AcmSecondaryNavItem isActive={isResourcesTab}>
-                <Link to={resourcesUrl}>{t('Related resources')}</Link>
-              </AcmSecondaryNavItem>
+              {!apiGroup.includes('gatekeeper') && (
+                <AcmSecondaryNavItem isActive={isResourcesTab}>
+                  <Link to={resourcesUrl}>{t('Related resources')}</Link>
+                </AcmSecondaryNavItem>
+              )}
               <AcmSecondaryNavItem isActive={!isResourcesTab}>
                 <Link to={byClusterUrl}>{t('Clusters')}</Link>
               </AcmSecondaryNavItem>
