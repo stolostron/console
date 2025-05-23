@@ -283,7 +283,7 @@ export function Searchbar(props: Readonly<SearchbarProps>) {
       let noResultItemText = ''
       if (currentQuery === '') {
         // key word search (ex: str)
-        noResultItemText = `Search by ${inputValue}`
+        noResultItemText = t('Search by {{inputValue}}', { inputValue })
       } else if (!currentQuery.includes(':')) {
         // multi keyword search (ex: str str1)
         noResultItemText = t('Search with applied keywords')
@@ -292,10 +292,10 @@ export function Searchbar(props: Readonly<SearchbarProps>) {
         noResultItemText = t('Search with applied filters')
       } else if (searchbarTags.length > 0 && currentQuery.endsWith(':')) {
         // single key:value pair search (ex: name:test)
-        noResultItemText = `Search by ${currentQuery}${inputValue}`
+        noResultItemText = t('Search by {{currentQuery}}{{inputValue}}', { currentQuery, inputValue })
       } else if (searchbarTags.length > 0 && !currentQuery.endsWith(':')) {
         // single key:value pair search with keyword (ex: kind:Pod test)
-        noResultItemText = `Search by ${inputValue} with applied filters`
+        noResultItemText = t('Search by {{inputValue}} with applied filters', { inputValue })
       }
 
       const noResultItem = (
