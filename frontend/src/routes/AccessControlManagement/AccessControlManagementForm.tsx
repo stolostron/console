@@ -143,6 +143,18 @@ const AccessControlManagementForm = ({
     }
   }, [selectedUserNames, subjectType])
 
+  useEffect(() => {
+    switch (selectedRoleBindings?.[0]?.subject?.kind) {
+      case 'Group':
+        setSubjectType('Group')
+        break
+      case 'User':
+      default:
+        setSubjectType('User')
+        break
+    }
+  }, [selectedRoleBindings, selectedUserNames, subjectType])
+
   const namespaceItems: string[] = useMemo(
     () => data?.searchComplete?.filter((e) => e !== null) ?? [],
     [data?.searchComplete]
@@ -185,11 +197,20 @@ const AccessControlManagementForm = ({
     ]
   }
 
-  const stateToSyncs = () => [
-    { path: 'AccessControl[0].metadata.namespace', setState: setNamespace },
-    { path: 'AccessControl[0].metadata.name', setState: setName },
-    { path: 'AccessControl[0].spec.roleBindings', setState: setSelectedRoleBindings },
-  ]
+  const stateToSyncs = () => {
+    const pathPrefix = accessControl?.kind ?? 'ClusterPermission'
+    const syncs = [
+      {
+        path: `${pathPrefix}[0].metadata.namespace`,
+        setState: setNamespace,
+      },
+      {
+        path: `${pathPrefix}[0].metadata.name`,
+        setState: setName,
+      },
+    ]
+    return syncs
+  }
 
   const title = isViewing
     ? accessControl?.metadata?.name!
@@ -336,7 +357,7 @@ const AccessControlManagementForm = ({
                   <AcmLabels isVertical={false} labels={selectedNamespaces} />
                 </StackItem>
                 <StackItem>
-                  <Title headingLevel="h6">{t('Users')}</Title>
+                  <Title headingLevel="h6">{subjectType === 'Group' ? t('Groups') : t('Users')}</Title>
                   <AcmLabels isVertical={false} labels={selectedUserNames} />
                 </StackItem>
                 <StackItem>
