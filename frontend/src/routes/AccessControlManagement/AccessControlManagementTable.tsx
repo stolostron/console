@@ -65,7 +65,7 @@ const AccessControlManagementTable = (props: {
         items={props.accessControls}
         filters={filters}
         columns={accessControlTableColumns({ t, setModalProps, navigate })}
-        keyFn={(accessControl) => accessControl.metadata?.uid as string}
+        keyFn={(accessControl) => accessControl.metadata?.uid!}
         tableActionButtons={[
           {
             id: 'add',

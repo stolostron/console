@@ -251,7 +251,7 @@ const AccessControlManagementForm = ({
             type: 'Custom',
             label: t('Status'),
             isHidden: isCreatable || isEditing,
-            component: <AccessControlStatus condition={accessControl?.status?.conditions?.[0]} t={t} />,
+            component: <AccessControlStatus condition={accessControl?.status?.conditions?.[0]} />,
           },
           {
             id: 'date',

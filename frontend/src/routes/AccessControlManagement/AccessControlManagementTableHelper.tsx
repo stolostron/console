@@ -75,7 +75,7 @@ const ACTIONS = {
           cell: COLUMN_CELLS.CREATION_DATE,
         },
       ],
-      keyFn: (accessControl: AccessControl) => accessControl.metadata?.uid! as string,
+      keyFn: (accessControl: AccessControl) => accessControl.metadata?.uid!,
       actionFn: deleteResource,
       close: () => setModalProps({ open: false }),
       isDanger: true,
@@ -162,9 +162,7 @@ const COLUMN_CELLS = {
       <span style={{ whiteSpace: 'nowrap' }}>'-'</span>
     )
   },
-  STATUS: (accessControl: AccessControl, t: AccessControlManagementTableHelperProps['t']) => (
-    <AccessControlStatus condition={accessControl.status?.conditions?.[0]} t={t} />
-  ),
+  STATUS: (accessControl: AccessControl) => <AccessControlStatus condition={accessControl.status?.conditions?.[0]} />,
   CREATION_DATE: (accessControl: AccessControl) => (
     <span style={{ whiteSpace: 'nowrap' }}>
       <AcmTimestamp timestamp={accessControl.metadata?.creationTimestamp} />
@@ -219,7 +217,7 @@ const accessControlTableColumns = ({ t, setModalProps, navigate }: AccessControl
   {
     header: t('Status'),
     sort: 'accessControl.status?.conditions[0].status',
-    cell: (accessControl: AccessControl) => COLUMN_CELLS.STATUS(accessControl, t),
+    cell: (accessControl: AccessControl) => COLUMN_CELLS.STATUS(accessControl),
     exportContent: (accessControl: AccessControl) => accessControl.status?.conditions[0].status, // TODO to properly export
   },
   {
