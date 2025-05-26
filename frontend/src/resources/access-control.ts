@@ -27,7 +27,23 @@ export interface RoleBinding {
   }
 }
 
-export interface AccessControl extends IResource {
+export interface Condition {
+  type: 'AppliedRBACManifestWork' | 'Validation'
+  status: 'True' | 'False'
+  reason?:
+    | 'AppliedRBACManifestWork'
+    | 'FailedValidationNoBindingsDefined'
+    | 'FailedValidationNotInManagedClusterNamespace'
+    | 'FailedBuildManifestWork'
+  message: string
+  lastTransitionTime: string
+}
+
+interface Status {
+  conditions: Condition[]
+}
+
+export interface AccessControl extends IResource<Status> {
   /**
    * APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
    */

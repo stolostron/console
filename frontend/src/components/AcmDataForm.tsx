@@ -918,7 +918,14 @@ function AcmInputDescription(props: { input: Input }): JSX.Element {
       )
     }
     case 'Custom':
-      return input.component
+      return input.label ? (
+        <DescriptionListGroup key={input.label}>
+          <DescriptionListTerm>{input.label}</DescriptionListTerm>
+          <DescriptionListDescription>{input.component}</DescriptionListDescription>
+        </DescriptionListGroup>
+      ) : (
+        input.component
+      )
   }
 }
 

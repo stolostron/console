@@ -13,6 +13,7 @@ import { AccessControl } from '../../resources/access-control'
 import { Cluster, createDownloadFile, deleteResource, getISOStringTimestamp } from '../../resources/utils'
 import { AcmLabels, compareStrings } from '../../ui-components'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
+import { AccessControlStatus } from './AccessControlStatus'
 
 const LABELS_LENGTH = 5
 const EXPORT_FILE_PREFIX = 'access-control-management'
@@ -57,6 +58,11 @@ const ACTIONS = {
           cell: (accessControl: AccessControl) => accessControl.metadata?.uid,
         },
         {
+          header: t('Status'),
+          sort: 'accessControl.status?.conditions[0].status',
+          cell: (accessControl: AccessControl) => COLUMN_CELLS.STATUS(accessControl, t),
+        },
+        {
           header: t('Cluster'),
           sort: 'metadata.namespace',
           search: 'metadata.namespace',
@@ -83,14 +89,14 @@ const ACTIONS = {
 }
 
 const COLUMN_CELLS = {
-  ID: (accessControl: AccessControl) => (
+  NAME: (accessControl: AccessControl) => (
     <span style={{ whiteSpace: 'nowrap' }}>
       <Link
         to={generatePath(NavigationPath.viewAccessControlManagement, {
           id: accessControl.metadata?.uid!,
         })}
       >
-        {accessControl.metadata?.uid}
+        {accessControl.metadata?.name}
       </Link>
     </span>
   ),
@@ -155,6 +161,9 @@ const COLUMN_CELLS = {
       <span style={{ whiteSpace: 'nowrap' }}>'-'</span>
     )
   },
+  STATUS: (accessControl: AccessControl, t: AccessControlManagementTableHelperProps['t']) => (
+    <AccessControlStatus condition={accessControl.status?.conditions?.[0]} t={t} />
+  ),
   CREATION_DATE: (accessControl: AccessControl) => (
     <span style={{ whiteSpace: 'nowrap' }}>
       <AcmTimestamp timestamp={accessControl.metadata?.creationTimestamp} />
@@ -200,11 +209,17 @@ const COLUMN_CELLS = {
 
 const accessControlTableColumns = ({ t, setModalProps, navigate }: AccessControlManagementTableHelperProps) => [
   {
-    header: t('ID'),
-    sort: 'metadata.uid',
-    search: 'metadata.uid',
-    cell: COLUMN_CELLS.ID,
+    header: t('Name'),
+    sort: 'metadata.name',
+    search: 'metadata.name',
+    cell: COLUMN_CELLS.NAME,
     exportContent: (accessControl: AccessControl) => accessControl.metadata?.uid!,
+  },
+  {
+    header: t('Status'),
+    sort: 'accessControl.status?.conditions[0].status',
+    cell: (accessControl: AccessControl) => COLUMN_CELLS.STATUS(accessControl, t),
+    exportContent: (accessControl: AccessControl) => accessControl.status?.conditions[0].status, // TODO to properly export
   },
   {
     header: t('Cluster'),

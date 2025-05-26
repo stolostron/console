@@ -17,6 +17,7 @@ import { searchClient } from '../Search/search-sdk/search-client'
 import { useSearchCompleteLazyQuery } from '../Search/search-sdk/search-sdk'
 import schema from './schema.json'
 import { validateArrayNotEmpty, validateKubernetesResourceName } from '../../lib/validation'
+import { AccessControlStatus } from './AccessControlStatus'
 
 const AccessControlManagementForm = ({
   isEditing,
@@ -191,7 +192,7 @@ const AccessControlManagementForm = ({
   ]
 
   const title = isViewing
-    ? accessControl?.metadata?.uid!
+    ? accessControl?.metadata?.name!
     : isEditing
       ? t('Edit access control')
       : t('Add access control')
@@ -214,6 +215,13 @@ const AccessControlManagementForm = ({
         wizardTitle: t('Basic information'),
         inputs: [
           {
+            id: 'id',
+            type: 'Custom',
+            isHidden: !isViewing,
+            label: t('ID'),
+            component: <span>{accessControl?.metadata?.uid}</span>,
+          },
+          {
             id: 'namespace',
             type: 'Select',
             label: t('Cluster'),
@@ -234,6 +242,13 @@ const AccessControlManagementForm = ({
             onChange: setName,
             isRequired: true,
             validation: (value) => validateKubernetesResourceName(value, undefined, t),
+          },
+          {
+            id: 'status',
+            type: 'Custom',
+            label: t('Status'),
+            isHidden: isCreatable || isEditing,
+            component: <AccessControlStatus condition={accessControl?.status?.conditions?.[0]} t={t} />,
           },
           {
             id: 'date',
