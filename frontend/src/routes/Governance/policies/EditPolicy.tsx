@@ -1,11 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { EditMode, useData, useItem } from '@patternfly-labs/react-form-wizard'
+import {
+  EditMode,
+  EditorValidationStatus,
+  useData,
+  useEditorValidationStatus,
+  useItem,
+} from '@patternfly-labs/react-form-wizard'
 import { PolicyWizard } from '../../../wizards/Governance/Policy/PolicyWizard'
 import { useContext, useEffect, useMemo, useState } from 'react'
 import { useParams, useNavigate, generatePath } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { LoadingPage } from '../../../components/LoadingPage'
-import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
+import { SyncEditor, ValidationStatus } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { useSearchParams } from '../../../lib/search'
 import { NavigationPath } from '../../../NavigationPath'
@@ -24,6 +30,7 @@ import { LostChangesContext } from '../../../components/LostChanges'
 export function WizardSyncEditor() {
   const resources = useItem() // Wizard framework sets this context
   const { update } = useData() // Wizard framework sets this context
+  const { setEditorValidationStatus } = useEditorValidationStatus()
   const { t } = useTranslation()
   return (
     <SyncEditor
@@ -35,6 +42,9 @@ export function WizardSyncEditor() {
       immutables={['PlacementBinding.0.*']}
       onEditorChange={(changes: { resources: any[] }): void => {
         update(changes?.resources)
+      }}
+      onStatusChange={(editorStatus: ValidationStatus): void => {
+        setEditorValidationStatus(editorStatus as unknown as EditorValidationStatus)
       }}
     />
   )

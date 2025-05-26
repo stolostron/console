@@ -90,7 +90,7 @@ import {
   SectionGroup,
   SelectOptionInput,
 } from './AcmFormData'
-import { SyncEditor } from './SyncEditor/SyncEditor'
+import { SyncEditor, ValidationStatus } from './SyncEditor/SyncEditor'
 import { LostChangesContext, LostChangesPrompt } from './LostChanges'
 import { AcmHelperText } from '../ui-components/AcmHelperText/AcmHelperText'
 
@@ -135,6 +135,20 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
   const [copyHint, setCopyHint] = useState<ReactNode>(
     <span style={{ wordBreak: 'keep-all' }}>{t('Copy to clipboard')}</span>
   )
+  const [editorValidationStatus, setEditorValidationStatus] = useState<ValidationStatus>(ValidationStatus.success)
+  const renderErrors = (showErrors: boolean, hasRequiredErrors: boolean) => {
+    if (showErrors || editorValidationStatus === ValidationStatus.failure) {
+      return (
+        <AlertGroup>
+          {showErrors && hasRequiredErrors && <Alert isInline variant="danger" title={requiredValidationMessage(t)} />}
+          {showErrors && !hasRequiredErrors && <Alert isInline variant="danger" title={generalValidationMessage(t)} />}
+          {editorValidationStatus === ValidationStatus.failure && (
+            <Alert isInline variant="danger" title={t('You must fix editor syntax errors.')} />
+          )}
+        </AlertGroup>
+      )
+    }
+  }
 
   const resources = formData.stateToData()
 
@@ -174,6 +188,9 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                     }}
                     onEditorChange={(changes: { resources: any[] }): void => {
                       formData.customData = changes?.resources
+                    }}
+                    onStatusChange={(editorStatus: ValidationStatus): void => {
+                      setEditorValidationStatus(editorStatus)
                     }}
                   />
                 ) : (
@@ -218,6 +235,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                   mode={mode}
                   showFormErrors={showFormErrors}
                   setShowFormErrors={setShowFormErrors}
+                  renderErrors={renderErrors}
                   isHorizontal={isHorizontal}
                   globalWizardAlert={globalWizardAlert}
                   isModalWizard={isModalWizard}
@@ -228,6 +246,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                 <AcmDataForm
                   {...props}
                   mode={mode}
+                  renderErrors={renderErrors}
                   showFormErrors={showFormErrors}
                   setShowFormErrors={setShowFormErrors}
                   isHorizontal={isHorizontal}
@@ -279,17 +298,13 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                   )
                 }
               />
-              {showFormErrors && mode === 'form' && formHasErrors(t, formData) && (
-                <PageSection variant="light" style={{ paddingTop: 0 }}>
-                  <AlertGroup>
-                    {formHasRequiredErrors(formData) ? (
-                      <Alert isInline variant="danger" title={requiredValidationMessage(t)} />
-                    ) : (
-                      <Alert isInline variant="danger" title={generalValidationMessage(t)} />
-                    )}
-                  </AlertGroup>
-                </PageSection>
-              )}
+              {showFormErrors &&
+                mode === 'form' &&
+                (editorValidationStatus === ValidationStatus.failure || formHasErrors(t, formData)) && (
+                  <PageSection variant="light" style={{ paddingTop: 0 }}>
+                    {renderErrors(true, formHasRequiredErrors(formData))}
+                  </PageSection>
+                )}
             </Fragment>
           }
           groupProps={{ stickyOnBreakpoint: { default: 'top' } }}
@@ -304,12 +319,22 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
 export function AcmDataForm(
   props: AcmDataFormProps & {
     showFormErrors: boolean
+    renderErrors: (showErrors: boolean, hasRequiredErrors: boolean) => ReactNode
     setShowFormErrors: (showFormErrors: boolean) => void
     globalWizardAlert?: ReactNode
     isModalWizard?: boolean
   }
 ): JSX.Element {
-  const { formData, isHorizontal, globalWizardAlert, showFormErrors, setShowFormErrors, isModalWizard, mode } = props
+  const {
+    formData,
+    isHorizontal,
+    globalWizardAlert,
+    showFormErrors,
+    setShowFormErrors,
+    renderErrors,
+    isModalWizard,
+    mode,
+  } = props
   if (mode === 'details') {
     return (
       <Form>
@@ -324,6 +349,7 @@ export function AcmDataForm(
           <AcmDataFormWizard
             formData={formData}
             isHorizontal={isHorizontal ?? false}
+            renderErrors={renderErrors}
             showFormErrors={showFormErrors}
             setShowFormErrors={setShowFormErrors}
             globalWizardAlert={globalWizardAlert}
@@ -457,10 +483,12 @@ export function AcmDataFormWizard(props: {
   globalWizardAlert?: ReactNode
   showFormErrors: boolean
   isModalWizard?: boolean
+  renderErrors: (showErrors: boolean, hasRequiredErrors: boolean) => ReactNode
   setShowFormErrors: (showFormErrors: boolean) => void
 }): JSX.Element {
   const { t } = useTranslation()
-  const { formData, isHorizontal, globalWizardAlert, showFormErrors, setShowFormErrors, isModalWizard } = props
+  const { formData, isHorizontal, globalWizardAlert, showFormErrors, setShowFormErrors, renderErrors, isModalWizard } =
+    props
   const [showSectionErrors, setShowSectionErrors] = useState<Record<string, boolean>>({})
   const [submitText, setSubmitText] = useState(formData.submitText)
   const [submitError, setSubmitError] = useState('')
@@ -496,14 +524,9 @@ export function AcmDataFormWizard(props: {
       component: section.type === 'Section' && (
         <Form isHorizontal={isHorizontal}>
           {globalWizardAlert && <AlertGroup>{globalWizardAlert}</AlertGroup>}
-          {(showFormErrors || showSectionErrors[section.title]) && hasError && (
-            <AlertGroup>
-              {sectionHasRequiredErrors(section) ? (
-                <Alert isInline variant="danger" title={requiredValidationMessage(t)} />
-              ) : (
-                <Alert isInline variant="danger" title={generalValidationMessage(t)} />
-              )}
-            </AlertGroup>
+          {renderErrors(
+            (showFormErrors || showSectionErrors[section.title]) && hasError,
+            sectionHasRequiredErrors(section)
           )}
           {section.alerts && <AlertGroup>{section.alerts}</AlertGroup>}
           <Title headingLevel="h2">{section.wizardTitle ?? section.title}</Title>
@@ -534,15 +557,7 @@ export function AcmDataFormWizard(props: {
     name: t('Review'),
     component: (
       <Form>
-        {showFormErrors && formHasErrors(t, formData) && (
-          <AlertGroup>
-            {formHasRequiredErrors(formData) ? (
-              <Alert isInline variant="danger" title={requiredValidationMessage(t)} />
-            ) : (
-              <Alert isInline variant="danger" title={generalValidationMessage(t)} />
-            )}
-          </AlertGroup>
-        )}
+        {renderErrors(showFormErrors && formHasErrors(t, formData), formHasRequiredErrors(formData))}
         <AcmDataFormDetails formData={formData} wizardSummary={true} />
       </Form>
     ),

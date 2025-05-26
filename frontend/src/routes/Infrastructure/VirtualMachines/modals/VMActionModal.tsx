@@ -123,7 +123,7 @@ export const VMActionModal = (props: IVMActionModalProps) => {
   const { t } = useTranslation()
   const toast = useContext(AcmToastContext)
   const [reqBody, setReqBody] = useState({})
-  const [getVMError, setGetVMError] = useState<string | undefined>()
+  const [getVMError, setGetVMError] = useState<boolean>()
 
   let modalBody = undefined
   switch (action.toLowerCase()) {
@@ -162,7 +162,7 @@ export const VMActionModal = (props: IVMActionModalProps) => {
       actions={[
         <AcmButton
           id="vm-modal-confirm"
-          isDisabled={!!getVMError}
+          isDisabled={getVMError}
           key="confirm"
           onClick={() => {
             handleVMActions(
