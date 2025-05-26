@@ -52,10 +52,11 @@ const ACTIONS = {
       ),
       columns: [
         {
-          header: t('ID'),
-          sort: 'metadata.uid',
-          search: 'metadata.uid',
-          cell: (accessControl: AccessControl) => accessControl.metadata?.uid,
+          header: t('Name'),
+          sort: 'metadata.name',
+          search: 'metadata.name',
+          cell: COLUMN_CELLS.NAME,
+          exportContent: (accessControl: AccessControl) => accessControl.metadata?.uid!,
         },
         {
           header: t('Status'),

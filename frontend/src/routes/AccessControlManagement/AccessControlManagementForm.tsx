@@ -80,33 +80,20 @@ const AccessControlManagementForm = ({
     setCreatedDate(accessControl?.metadata?.creationTimestamp ?? '')
     setSelectedRoleBindings((accessControl?.spec?.roleBindings ?? []) as RoleBinding[])
     setName(accessControl?.metadata?.name ?? '')
-
-    if (accessControl?.spec?.roleBindings) {
-      setSelectedUserNames([
-        ...new Set(accessControl.spec.roleBindings.filter((e) => e.subject).map((rb) => rb.subject!.name)),
-      ])
-      setSelectedRoles([...new Set(accessControl.spec.roleBindings.map((rb) => rb.roleRef.name))])
-      setSelectedNamespaces([...new Set(accessControl.spec.roleBindings.map((rb) => rb.namespace))])
-    }
+    setSubjectType(accessControl?.spec?.roleBindings?.[0]?.subject?.kind ?? 'User')
   }, [accessControl?.metadata, accessControl?.spec.roleBindings])
 
   useEffect(() => {
+    setSelectedUserNames([
+      ...new Set(selectedRoleBindings?.filter((e) => e.subject).map((rb) => rb.subject!.name) ?? []),
+    ])
+    setSelectedRoles([...new Set(selectedRoleBindings?.map((rb) => rb.roleRef.name) ?? [])])
+    setSelectedNamespaces([...(new Set(selectedRoleBindings?.map((rb) => rb.namespace)) ?? [])])
+  }, [selectedRoleBindings])
+
+  useEffect(() => {
     if (!isEditing && !isViewing && !selectedRoleBindings.length) {
-      setSelectedRoleBindings([
-        {
-          namespace,
-          roleRef: {
-            name: '',
-            apiGroup: 'rbac.authorization.k8s.io',
-            kind: 'Role',
-          },
-          subject: {
-            name: '',
-            apiGroup: 'rbac.authorization.k8s.io',
-            kind: 'User',
-          },
-        },
-      ])
+      setSelectedRoleBindings([])
     }
   }, [isEditing, isViewing, namespace, selectedRoleBindings.length])
 
@@ -142,18 +129,6 @@ const AccessControlManagementForm = ({
         break
     }
   }, [selectedUserNames, subjectType])
-
-  useEffect(() => {
-    switch (selectedRoleBindings?.[0]?.subject?.kind) {
-      case 'Group':
-        setSubjectType('Group')
-        break
-      case 'User':
-      default:
-        setSubjectType('User')
-        break
-    }
-  }, [selectedRoleBindings, selectedUserNames, subjectType])
 
   const namespaceItems: string[] = useMemo(
     () => data?.searchComplete?.filter((e) => e !== null) ?? [],
@@ -207,6 +182,13 @@ const AccessControlManagementForm = ({
       {
         path: `${pathPrefix}[0].metadata.name`,
         setState: setName,
+      },
+      {
+        path: `${pathPrefix}[0].spec.roleBindings`,
+        setState: (roleBindings: RoleBinding[]) => {
+          setSelectedRoleBindings(roleBindings?.length ? roleBindings : [])
+          setSubjectType(roleBindings?.[0]?.subject?.kind ?? subjectType)
+        },
       },
     ]
     return syncs
