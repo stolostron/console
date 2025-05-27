@@ -385,13 +385,30 @@ export class TimeWindow extends Component {
     }
 
     try {
-      // Create a date object with the time
-      const [hours, minutes] = timeStr.split(':')
-      const date = new Date()
-      date.setHours(parseInt(hours, 10))
-      date.setMinutes(parseInt(minutes, 10))
+      // parse hours, minutes, and AM/PM
+      const match = timeStr.match(/(\d{1,2}):(\d{2})\s*([APap][Mm])?/)
+      if (!match) {
+        return ''
+      }
 
-      // Format in 12-hour format with AM/PM
+      let hours = parseInt(match[1], 10)
+      const minutes = parseInt(match[2], 10)
+      const period = match[3] ? match[3].toUpperCase() : null
+
+      // create Date object with correct hours based on AM/PM
+      const date = new Date()
+
+      // handle AM/PM conversion properly
+      if (period === 'AM' && hours === 12) {
+        hours = 0 // 12 AM is 0 in 24-hour time
+      } else if (period === 'PM' && hours < 12) {
+        hours += 12 // converts PM times to 24-hour format
+      }
+
+      date.setHours(hours)
+      date.setMinutes(minutes)
+
+      // format as 12-hour time with AM/PM
       return date.toLocaleTimeString('en-US', {
         hour: 'numeric',
         minute: '2-digit',
