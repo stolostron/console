@@ -4,8 +4,15 @@
 'use strict'
 
 import PropTypes from 'prop-types'
-import { Pagination, Accordion, AccordionItem, AccordionContent, AccordionToggle } from '@patternfly/react-core'
-import { Select, SelectOption, SelectVariant } from '@patternfly/react-core/deprecated'
+import {
+  Pagination,
+  Accordion,
+  AccordionItem,
+  AccordionContent,
+  AccordionToggle,
+  SelectOption,
+} from '@patternfly/react-core'
+import { AcmSelectBase, SelectVariant } from '../../../../../components/AcmSelectBase'
 import { Component } from 'react'
 import { processResourceActionLink, getPercentage, inflateKubeValue } from '../helpers/diagram-helpers'
 import AcmTimestamp from '../../../../../lib/AcmTimestamp'
@@ -71,7 +78,7 @@ class ClusterDetailsContainer extends Component {
     processResourceActionLink(resource)
   }
 
-  handleSelection = (_event, selection) => {
+  handleSelection = (selection) => {
     const {
       clusterDetailsContainerControl: { handleClusterDetailsContainerUpdate },
       clusterList,
@@ -409,17 +416,8 @@ class ClusterDetailsContainer extends Component {
   }
 
   render() {
-    const {
-      selected,
-      clusterList,
-      page,
-      perPage,
-      startIdx,
-      t,
-      clusterSearchToggle,
-      expandSectionToggleMap,
-      selectedClusterList,
-    } = this.state
+    const { selected, clusterList, page, perPage, startIdx, t, expandSectionToggleMap, selectedClusterList } =
+      this.state
     const titleId = 'cluster-select-id-1'
     const findClusterMsg = 'Find cluster'
     const clusterItems = []
@@ -520,22 +518,19 @@ class ClusterDetailsContainer extends Component {
 
     return (
       <div className="clusterDetails">
-        <Select
+        <AcmSelectBase
           variant={SelectVariant.typeahead}
-          typeAheadAriaLabel={findClusterMsg}
           onSelect={this.handleSelection}
           selections={selected}
+          aria-label={findClusterMsg}
           aria-labelledby={titleId}
           placeholderText={findClusterMsg}
-          onToggle={this.handleSelectToggle}
-          isOpen={clusterSearchToggle}
           onClear={this.handleSelectionClear}
-          noResultsFoundText={t('No results found')}
         >
           {this.props.clusterList.map((cluster) => (
             <SelectOption key={cluster.name || cluster.metadata.name} value={cluster.name || cluster.metadata.name} />
           ))}
-        </Select>
+        </AcmSelectBase>
         <div className="spacer" />
         {this.props.clusterList.length > 5 && (
           <Pagination

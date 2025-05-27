@@ -10,8 +10,8 @@ import {
   PageSection,
   Text,
   TextVariants,
+  SelectOption,
 } from '@patternfly/react-core'
-import { SelectOption } from '@patternfly/react-core/deprecated'
 import { Fragment, useCallback, useContext, useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom-v5-compat'
 import { ConfirmModal, IConfirmModalProps } from '../../../../../components/ConfirmModal'

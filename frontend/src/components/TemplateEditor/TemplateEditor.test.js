@@ -77,7 +77,7 @@ describe('TemplateEditor component', () => {
     )
     userEvent.type(
       screen.getByRole('combobox', {
-        name: /listbox input field/i,
+        name: /creation.app.namespace/i,
       }),
       'testing'
     )

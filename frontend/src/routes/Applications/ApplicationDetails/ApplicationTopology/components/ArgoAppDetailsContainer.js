@@ -5,8 +5,15 @@
 
 import { Component } from 'react'
 import PropTypes from 'prop-types'
-import { Pagination, Accordion, AccordionItem, AccordionContent, AccordionToggle } from '@patternfly/react-core'
-import { Select, SelectOption, SelectVariant } from '@patternfly/react-core/deprecated'
+import {
+  Pagination,
+  Accordion,
+  AccordionItem,
+  AccordionContent,
+  AccordionToggle,
+  SelectOption,
+} from '@patternfly/react-core'
+import { AcmSelectBase, SelectVariant } from '../../../../../components/AcmSelectBase'
 import { processResourceActionLink, createEditLink } from '../helpers/diagram-helpers'
 
 class ArgoAppDetailsContainer extends Component {
@@ -86,7 +93,7 @@ class ArgoAppDetailsContainer extends Component {
     })
   }
 
-  handleSelection = (_event, selection) => {
+  handleSelection = (selection) => {
     const {
       argoAppDetailsContainerControl: { handleArgoAppDetailsContainerUpdate },
       argoAppList,
@@ -381,17 +388,8 @@ class ArgoAppDetailsContainer extends Component {
   }
 
   render() {
-    const {
-      selected,
-      argoAppList,
-      page,
-      perPage,
-      startIdx,
-      t,
-      argoAppSearchToggle,
-      expandSectionToggleMap,
-      selectedArgoAppList,
-    } = this.state
+    const { selected, argoAppList, page, perPage, startIdx, t, expandSectionToggleMap, selectedArgoAppList } =
+      this.state
     const titleId = 'app-select-id-1'
     const findAppMsg = 'Find application'
     const appItems = []
@@ -493,22 +491,20 @@ class ArgoAppDetailsContainer extends Component {
 
     return (
       <div className="appDetails">
-        <Select
+        <AcmSelectBase
           variant={SelectVariant.typeahead}
           typeAheadAriaLabel={findAppMsg}
           onSelect={this.handleSelection}
           selections={selected}
+          aria-label={findAppMsg}
           aria-labelledby={titleId}
           placeholderText={findAppMsg}
-          onToggle={this.handleSelectToggle}
-          isOpen={argoAppSearchToggle}
           onClear={this.handleSelectionClear}
-          noResultsFoundText={t('No results found')}
         >
           {this.props.argoAppList.map((app) => (
             <SelectOption key={app.name} value={app.name} />
           ))}
-        </Select>
+        </AcmSelectBase>
         <div className="spacer" />
         {this.props.argoAppList.length > 5 && (
           <Pagination

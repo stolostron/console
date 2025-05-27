@@ -10,8 +10,7 @@ import {
   ResourceErrorCode,
 } from '../../../../../resources/utils'
 import { AcmEmptyState, AcmSelect } from '../../../../../ui-components'
-import { Text, TextContent, TextVariants } from '@patternfly/react-core'
-import { SelectOption } from '@patternfly/react-core/deprecated'
+import { Text, TextContent, TextVariants, SelectOption } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { BulkActionModal } from '../../../../../components/BulkActionModal'

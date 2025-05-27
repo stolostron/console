@@ -207,7 +207,7 @@ class ControlPanelComboBox extends React.Component {
                     <div className={inputClasses}>
                       <input
                         className="pf-v5-c-combo-control pf-v5-c-form-control"
-                        aria-label={i18n('ListBox input field')}
+                        aria-label={name || i18n('Options menu')}
                         spellCheck="false"
                         role="combobox"
                         disabled={disabled}

@@ -601,7 +601,7 @@ describe('LogsPage', () => {
     await waitFor(() => expect(containerBtn).toBeInTheDocument())
     userEvent.click(containerBtn)
     await waitFor(() => expect(screen.getByText(/testcontainer1/i)).toBeInTheDocument())
-    userEvent.click(screen.getByText(/testcontainer1/i))
+    screen.getByText(/testcontainer1/i).click()
   })
 
   it('should render logs toolbar in fullescreen mode', async () => {

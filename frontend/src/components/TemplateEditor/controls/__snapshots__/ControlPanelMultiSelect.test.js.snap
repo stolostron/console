@@ -58,70 +58,94 @@ exports[`ControlPanelMultiSelect component renders as expected 1`] = `
           class="pf-v5-c-form__group-control"
         >
           <div
-            class="pf-v5-c-select"
-            data-ouia-component-id="OUIA-Generated-Select-checkbox-1"
-            data-ouia-component-type="PF5/Select"
-            data-ouia-safe="true"
+            class="pf-v5-c-menu-toggle css-gxe00f pf-m-typeahead"
+            id="pf-select-toggle-id-1"
+            role="combobox"
+            style="width: 100%; max-height: 36px;"
           >
             <div
-              class="pf-v5-c-select__toggle pf-m-typeahead"
+              class="pf-v5-c-text-input-group pf-m-plain"
             >
               <div
-                class="pf-v5-c-select__toggle-wrapper"
+                autocomplete="off"
+                class="pf-v5-c-text-input-group__main"
+                id="multi-typeahead-select-input"
               >
                 <span
-                  class="pf-v5-c-select__toggle-text"
-                />
-                <div
-                  class="pf-v5-c-select__toggle-badge"
+                  class="pf-v5-c-text-input-group__text"
                 >
-                  <span
-                    class="pf-v5-c-badge pf-m-read"
+                  <input
+                    aria-controls="select-multi-typeahead-listbox"
+                    aria-expanded="false"
+                    aria-label="Options menu"
+                    class="pf-v5-c-text-input-group__text-input"
+                    placeholder="None"
+                    role="combobox"
+                    type="text"
+                    value="None"
                   />
-                </div>
+                </span>
               </div>
-              <button
-                aria-label="Clear all"
-                class="pf-v5-c-button pf-m-plain pf-v5-c-select__toggle-clear"
-                type="button"
+              <div
+                class="pf-v5-c-text-input-group__utilities"
               >
-                <svg
-                  aria-hidden="true"
-                  class="pf-v5-svg"
-                  fill="currentColor"
-                  height="1em"
-                  role="img"
-                  viewBox="0 0 512 512"
-                  width="1em"
+                <button
+                  aria-disabled="false"
+                  aria-label="Clear input value"
+                  class="pf-v5-c-button pf-m-plain"
+                  data-ouia-component-id="OUIA-Generated-Button-plain-2"
+                  data-ouia-component-type="PF5/Button"
+                  data-ouia-safe="true"
+                  type="button"
                 >
-                  <path
-                    d="M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm121.6 313.1c4.7 4.7 4.7 12.3 0 17L338 377.6c-4.7 4.7-12.3 4.7-17 0L256 312l-65.1 65.6c-4.7 4.7-12.3 4.7-17 0L134.4 338c-4.7-4.7-4.7-12.3 0-17l65.6-65-65.6-65.1c-4.7-4.7-4.7-12.3 0-17l39.6-39.6c4.7-4.7 12.3-4.7 17 0l65 65.7 65.1-65.6c4.7-4.7 12.3-4.7 17 0l39.6 39.6c4.7 4.7 4.7 12.3 0 17L312 256l65.6 65.1z"
-                  />
-                </svg>
-              </button>
-              <button
-                aria-expanded="false"
-                aria-label="Options menu"
-                aria-labelledby=" pf-select-toggle-id-0"
-                class="pf-v5-c-button pf-v5-c-select__toggle-button pf-m-plain"
-                id="pf-select-toggle-id-0"
-                type="button"
-              >
-                <svg
-                  aria-hidden="true"
-                  class="pf-v5-svg pf-v5-c-select__toggle-arrow"
-                  fill="currentColor"
-                  height="1em"
-                  role="img"
-                  viewBox="0 0 320 512"
-                  width="1em"
-                >
-                  <path
-                    d="M31.3 192h257.3c17.8 0 26.7 21.5 14.1 34.1L174.1 354.8c-7.8 7.8-20.5 7.8-28.3 0L17.2 226.1C4.6 213.5 13.5 192 31.3 192z"
-                  />
-                </svg>
-              </button>
+                  <svg
+                    aria-hidden="true"
+                    class="pf-v5-svg"
+                    fill="currentColor"
+                    height="1em"
+                    role="img"
+                    viewBox="0 0 352 512"
+                    width="1em"
+                  >
+                    <path
+                      d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"
+                    />
+                  </svg>
+                </button>
+              </div>
             </div>
+            <button
+              aria-expanded="false"
+              aria-label="Options menu"
+              class="pf-v5-c-menu-toggle__button"
+              data-ouia-component-id="OUIA-Generated-MenuToggle-typeahead-1"
+              data-ouia-component-type="PF5/MenuToggle"
+              data-ouia-safe="true"
+              tabindex="-1"
+              type="button"
+            >
+              <span
+                class="pf-v5-c-menu-toggle__controls"
+              >
+                <span
+                  class="pf-v5-c-menu-toggle__toggle-icon"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="pf-v5-svg"
+                    fill="currentColor"
+                    height="1em"
+                    role="img"
+                    viewBox="0 0 320 512"
+                    width="1em"
+                  >
+                    <path
+                      d="M31.3 192h257.3c17.8 0 26.7 21.5 14.1 34.1L174.1 354.8c-7.8 7.8-20.5 7.8-28.3 0L17.2 226.1C4.6 213.5 13.5 192 31.3 192z"
+                    />
+                  </svg>
+                </span>
+              </span>
+            </button>
           </div>
         </div>
       </div>

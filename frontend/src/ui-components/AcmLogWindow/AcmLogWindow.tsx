@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { css } from '@emotion/css'
-import { SelectOption } from '@patternfly/react-core/deprecated'
+import { SelectOption } from '@patternfly/react-core'
 import { useState } from 'react'
 import { AcmSelect } from '../AcmSelect/AcmSelect'
 

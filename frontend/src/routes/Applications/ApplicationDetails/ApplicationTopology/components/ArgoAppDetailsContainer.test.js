@@ -39,8 +39,12 @@ describe('ArgoAppDetailsContainer with no apps', () => {
 
     await waitFor(() => container.querySelector(`input[placeholder="Find application"]`))
   })
-  it('renders as expected', () => {
-    expect(container.querySelector(`button[aria-label="Options menu"]`)).toBeTruthy()
+  it('renders as expected', async () => {
+    expect(
+      screen.getByRole('combobox', {
+        name: 'Type to filter',
+      })
+    ).toBeTruthy()
   })
 })
 
@@ -151,8 +155,8 @@ describe('ArgoAppDetailsContainer test functions', () => {
   it('works as expected', () => {
     Object.prototype.toString.call(instance.toggleLinkLoading())
     Object.prototype.toString.call(instance.handleExpandSectionToggle(0))
-    Object.prototype.toString.call(instance.handleSelection({}, 'test1'))
-    Object.prototype.toString.call(instance.handleSelection({}, undefined))
+    Object.prototype.toString.call(instance.handleSelection('test1'))
+    Object.prototype.toString.call(instance.handleSelection(undefined))
     Object.prototype.toString.call(instance.handleSelectToggle())
     Object.prototype.toString.call(instance.handleSelectionClear())
     Object.prototype.toString.call(instance.handleFirstClick())

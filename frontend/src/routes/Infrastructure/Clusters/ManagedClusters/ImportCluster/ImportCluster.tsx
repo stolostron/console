@@ -7,8 +7,8 @@ import {
   SplitItem,
   Switch,
   Text,
+  SelectOption,
 } from '@patternfly/react-core'
-import { SelectOption, SelectVariant } from '@patternfly/react-core/deprecated'
 import '@patternfly/react-styles/css/components/CodeEditor/code-editor.css'
 import {
   AcmButton,
@@ -18,6 +18,7 @@ import {
   AcmSelect,
   AcmToastContext,
 } from '../../../../../ui-components'
+import { SelectVariant } from '../../../../../components/AcmSelectBase'
 import { cloneDeep, get, groupBy, isEqual, pick } from 'lodash'
 import { Dispatch, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useReducer, useState } from 'react'
 import { Link, generatePath, useNavigate } from 'react-router-dom-v5-compat'

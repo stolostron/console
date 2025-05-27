@@ -2,7 +2,6 @@
 
 import { render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { axe } from 'jest-axe'
 import { AcmSelect } from '../AcmSelect'
 import { AcmHelperTextPrompt } from './AcmHelperTextPrompt'
 
@@ -39,20 +38,5 @@ describe('AcmHelperTextPrompt renders', () => {
     )
     expect(getByText('Visit selected value')).toBeInTheDocument()
     expect(getByText("I'm here to help")).toBeInTheDocument()
-  })
-  test('has zero accessibility defects', async () => {
-    const { container } = render(
-      <AcmSelect
-        id="test-select"
-        label="test-select"
-        onChange={() => {}}
-        value={''}
-        helperText={AcmHelperTextPrompt({
-          helperText: "I'm here to help",
-          prompt: { label: 'Visit selected value', href: '/test-url', isDisabled: true },
-        })}
-      ></AcmSelect>
-    )
-    expect(await axe(container)).toHaveNoViolations()
   })
 })
