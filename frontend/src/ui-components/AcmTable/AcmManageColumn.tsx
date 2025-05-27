@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { FormEvent, useEffect, useState } from 'react'
+import { FormEvent, useState } from 'react'
 import {
   Button,
   DataList,
@@ -21,6 +21,7 @@ import {
 import { IAcmTableColumn } from './AcmTable'
 import { useTranslation } from '../../lib/acm-i18next'
 import ColumnsIcon from '@patternfly/react-icons/dist/js/icons/columns-icon'
+import { setColumnValues } from './localColumnStorage'
 
 interface AcmManageColumnProps<T> {
   allCols: IAcmTableColumn<T>[]
@@ -30,7 +31,6 @@ interface AcmManageColumnProps<T> {
   defaultColIds?: string[]
   setColOrderIds: (colOrderIds: string[]) => void
   colOrderIds: string[]
-  tableId?: string
 }
 
 export function AcmManageColumn<T>({
@@ -41,7 +41,6 @@ export function AcmManageColumn<T>({
   setSelectedColIds,
   requiredColIds,
   defaultColIds,
-  tableId,
 }: AcmManageColumnProps<T>) {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
   const { t } = useTranslation()
@@ -54,7 +53,6 @@ export function AcmManageColumn<T>({
     <>
       <ManageColumnModal<T>
         {...{
-          tableId,
           isModalOpen,
           selectedColIds,
           allCols,
@@ -87,12 +85,6 @@ function sortByList<T>(colOrderIds: string[], items: IAcmTableColumn<T>[]) {
     const find = items.find((col) => col.id === id)
     if (find) {
       sortedColumns.push(find)
-    }
-  })
-  items.forEach((val) => {
-    if (val.id && !colOrderIds.includes(val.id)) {
-      colOrderIds.push(val.id)
-      sortedColumns.push(val)
     }
   })
   return sortedColumns
@@ -128,14 +120,6 @@ function ManageColumnModal<T>(props: ManageColumnModalProps<T>) {
   const [items, setItems] = useState<IAcmTableColumn<T>[]>(sortByList(colOrderIds, allCols))
   const [localSelectedIds, setlocalSelectedIds] = useState<string[]>(selectedColIds)
 
-  useEffect(() => {
-    localStorage.setItem(tableId + 'SavedColOrder', JSON.stringify(colOrderIds))
-  }, [tableId, colOrderIds])
-
-  useEffect(() => {
-    localStorage.setItem(tableId + 'SavedCols', JSON.stringify(localSelectedIds))
-  }, [localSelectedIds, tableId])
-
   const onDrop = (source: any, dest?: any) => {
     if (dest) {
       const newItems = reorder<T>(items, source.index, dest.index)
@@ -157,7 +141,9 @@ function ManageColumnModal<T>(props: ManageColumnModalProps<T>) {
 
   const onSave = () => {
     setSelectedColIds(localSelectedIds)
-    setColOrderIds(items.map((col) => col.id!))
+    const order = items.map((col) => col.id!)
+    setColOrderIds(order)
+    setColumnValues(tableId || '', localSelectedIds, order)
     toggleModal()
   }
 
