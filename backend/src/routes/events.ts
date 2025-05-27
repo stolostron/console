@@ -135,12 +135,7 @@ export interface ResourceCache {
   }
 }
 
-// for testing
-export function initResourceCache(cache: ResourceCache) {
-  resourceCache = cache
-}
-
-let resourceCache: ResourceCache = {}
+const resourceCache: ResourceCache = {}
 export function getEventCache() {
   return resourceCache
 }
@@ -615,7 +610,7 @@ function resourceUrl(options: IWatchOptions, query: Record<string, string>) {
   return url
 }
 
-function cacheResource(resource: IResource) {
+export function cacheResource(resource: IResource) {
   const apiVersionPlural = apiVersionPluralFn(resource)
   let cache = resourceCache[apiVersionPlural]
   if (!cache) {
