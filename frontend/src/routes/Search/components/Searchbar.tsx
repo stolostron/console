@@ -306,7 +306,7 @@ export function Searchbar(props: Readonly<SearchbarProps>) {
 
     /** in the menu show a disabled "no result" when all menu items are filtered out */
     if (filteredMenuItems.length === 0) {
-      let noResultItemText = getNoFilterText(currentQuery, searchbarTags, inputValue, t)
+      const noResultItemText = getNoFilterText(currentQuery, searchbarTags, inputValue, t)
       const noResultItem = (
         // eslint-disable-next-line jsx-a11y/aria-role
         <MenuItem role={'search-suggestion-item'} isDisabled itemId={'no-matching-filters'} key={'no-matching-filters'}>
@@ -320,7 +320,7 @@ export function Searchbar(props: Readonly<SearchbarProps>) {
     const divider = <Divider key="divider" />
 
     setMenuItems([headingItem, divider, ...filteredMenuItems])
-  }, [currentQuery, inputValue, searchbarTags.length, suggestions, t])
+  }, [currentQuery, inputValue, searchbarTags, suggestions, t])
 
   useEffect(() => {
     const suggestionFiltering = setTimeout(() => {
