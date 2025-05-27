@@ -732,7 +732,9 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     ? getColumnValues(id)
     : { localSavedCols: [], localSavedColOrder: [] }
   const [colOrderIds, setColOrderIds] = useState<string[]>(
-    localSavedColOrder?.length > 0 ? localSavedColOrder : defaultOrderIds
+    localSavedColOrder?.length > 0
+      ? [...localSavedColOrder, ...defaultOrderIds.filter((val: string) => !localSavedColOrder.includes(val))]
+      : defaultOrderIds
   )
   const [selectedColIds, setSelectedColIds] = useState<string[]>(
     localSavedCols?.length > 0
