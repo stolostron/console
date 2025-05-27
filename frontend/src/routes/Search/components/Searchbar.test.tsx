@@ -10,13 +10,13 @@ import { RecoilRoot } from 'recoil'
 import { getSearchDefinitions } from '../searchDefinitions'
 import { generateSearchResultExport } from '../SearchResults/utils'
 import { updateBrowserUrl } from '../urlQuery'
-import { convertStringToTags, DropdownSuggestionsProps, handleCSVExport, Searchbar } from './Searchbar'
+import { convertStringToTags, DropdownSuggestionsProps, getNoFilterText, handleCSVExport, Searchbar } from './Searchbar'
 
 jest.mock('../SearchResults/utils')
 const toastContextMock: any = {
   addAlert: jest.fn(),
 }
-const t = jest.fn()
+const t = (key: string) => key
 
 export const BlankSearchbar = () => {
   const [currentQuery, setCurrentQuery] = useState('')
@@ -255,6 +255,35 @@ describe('Searchbar tests', () => {
 
   it('convertStringToTags correctly returns an array of tags', () => {
     const result = convertStringToTags('kind:Pod name:testPod')
+    expect(result).toMatchSnapshot()
+  })
+
+  it('getNoFilterText correctly returns correct keyword search hint', () => {
+    const result = getNoFilterText('', [], 'testing', t)
+    expect(result).toMatchSnapshot()
+  })
+  it('getNoFilterText correctly returns correct multi keyword hint', () => {
+    const result = getNoFilterText('test1', [{ id: 'test1', name: 'test1' }], 'test2', t)
+    expect(result).toMatchSnapshot()
+  })
+  it('getNoFilterText correctly returns correct single key:value hint', () => {
+    const result = getNoFilterText('name:', [{ id: 'name:', name: 'name:' }], 'testing', t)
+    expect(result).toMatchSnapshot()
+  })
+  it('getNoFilterText correctly returns correct multi key:value hint', () => {
+    const result = getNoFilterText(
+      'kind:Pod name:',
+      [
+        { id: 'kind:Pod', name: 'kind:Pod' },
+        { id: 'name:', name: 'name:' },
+      ],
+      'testing',
+      t
+    )
+    expect(result).toMatchSnapshot()
+  })
+  it('getNoFilterText correctly returns correct key:value & keyword hint', () => {
+    const result = getNoFilterText('kind:Pod', [{ id: 'kind:Pod', name: 'kind:Pod' }], 'testing', t)
     expect(result).toMatchSnapshot()
   })
 

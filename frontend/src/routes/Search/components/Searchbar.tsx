@@ -103,6 +103,32 @@ export const handleCSVExport = (
   )
 }
 
+export const getNoFilterText = (
+  currentQuery: string,
+  searchbarTags: SearchbarTag[],
+  inputValue: string,
+  t: TFunction<string, undefined>
+) => {
+  let noResultItemText = ''
+  if (currentQuery === '') {
+    // key word search (ex: str)
+    noResultItemText = t('Search by {{inputValue}}', { inputValue })
+  } else if (!currentQuery.includes(':')) {
+    // multi keyword search (ex: str str1)
+    noResultItemText = t('Search with applied keywords')
+  } else if (searchbarTags.length > 1 && currentQuery.endsWith(':')) {
+    // multi key:value pair search (ex: kind:Pod name:test)
+    noResultItemText = t('Search with applied filters')
+  } else if (searchbarTags.length > 0 && currentQuery.endsWith(':')) {
+    // single key:value pair search (ex: name:test)
+    noResultItemText = t('Search by {{currentQuery}}{{inputValue}}', { currentQuery, inputValue })
+  } else if (searchbarTags.length > 0 && !currentQuery.endsWith(':')) {
+    // single key:value pair search with keyword (ex: kind:Pod test)
+    noResultItemText = t('Search by {{inputValue}} with applied filters', { inputValue })
+  }
+  return noResultItemText
+}
+
 export function Searchbar(props: Readonly<SearchbarProps>) {
   const {
     currentQueryCallback,
@@ -280,24 +306,7 @@ export function Searchbar(props: Readonly<SearchbarProps>) {
 
     /** in the menu show a disabled "no result" when all menu items are filtered out */
     if (filteredMenuItems.length === 0) {
-      let noResultItemText = ''
-      if (currentQuery === '') {
-        // key word search (ex: str)
-        noResultItemText = t('Search by {{inputValue}}', { inputValue })
-      } else if (!currentQuery.includes(':')) {
-        // multi keyword search (ex: str str1)
-        noResultItemText = t('Search with applied keywords')
-      } else if (searchbarTags.length > 1 && currentQuery.endsWith(':')) {
-        // multi key:value pair search (ex: kind:Pod name:test)
-        noResultItemText = t('Search with applied filters')
-      } else if (searchbarTags.length > 0 && currentQuery.endsWith(':')) {
-        // single key:value pair search (ex: name:test)
-        noResultItemText = t('Search by {{currentQuery}}{{inputValue}}', { currentQuery, inputValue })
-      } else if (searchbarTags.length > 0 && !currentQuery.endsWith(':')) {
-        // single key:value pair search with keyword (ex: kind:Pod test)
-        noResultItemText = t('Search by {{inputValue}} with applied filters', { inputValue })
-      }
-
+      let noResultItemText = getNoFilterText(currentQuery, searchbarTags, inputValue, t)
       const noResultItem = (
         // eslint-disable-next-line jsx-a11y/aria-role
         <MenuItem role={'search-suggestion-item'} isDisabled itemId={'no-matching-filters'} key={'no-matching-filters'}>

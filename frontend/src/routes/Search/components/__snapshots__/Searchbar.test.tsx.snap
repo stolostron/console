@@ -14,3 +14,13 @@ exports[`Searchbar tests convertStringToTags correctly returns an array of tags 
 `;
 
 exports[`Searchbar tests convertStringToTags correctly returns an empty array when searchText is empty 1`] = `[]`;
+
+exports[`Searchbar tests getNoFilterText correctly returns correct key:value & keyword hint 1`] = `"Search by {{inputValue}} with applied filters"`;
+
+exports[`Searchbar tests getNoFilterText correctly returns correct keyword search hint 1`] = `"Search by {{inputValue}}"`;
+
+exports[`Searchbar tests getNoFilterText correctly returns correct multi key:value hint 1`] = `"Search with applied filters"`;
+
+exports[`Searchbar tests getNoFilterText correctly returns correct multi keyword hint 1`] = `"Search with applied keywords"`;
+
+exports[`Searchbar tests getNoFilterText correctly returns correct single key:value hint 1`] = `"Search by {{currentQuery}}{{inputValue}}"`;
