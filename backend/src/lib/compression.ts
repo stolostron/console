@@ -182,7 +182,9 @@ export function inflateApp(app: ITransformedResource | ICompressedResource): ITr
 }
 
 function decompressResource(resource: CompressedResourceType, dictionary: Dictionary): UncompressedResourceType {
-  if (resource) {
+  if (typeof resource === 'boolean') {
+    return resource
+  } else if (resource) {
     if (Array.isArray(resource)) {
       return resource.map((item: CompressedResourceType) => decompressResource(item, dictionary))
     } else if (typeof resource === 'object') {
