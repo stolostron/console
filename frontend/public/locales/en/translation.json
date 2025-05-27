@@ -1270,6 +1270,7 @@
   "Edit the disk or contact your cluster admin for further details._plural": "Edit the disk or contact your cluster admin for further details.",
   "Edit time window": "Edit time window",
   "Edit VirtualMachine": "Edit VirtualMachine",
+  "Edit VirtualMachineSnapshot": "Edit VirtualMachineSnapshot",
   "edit.yaml.off": "YAML: Off",
   "edit.yaml.on": "YAML: On",
   "edit.yaml.on.ro": "YAML (read only): On",
