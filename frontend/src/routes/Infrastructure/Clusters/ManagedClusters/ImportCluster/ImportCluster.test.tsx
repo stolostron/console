@@ -1189,7 +1189,7 @@ describe('Import cluster RHOCM mode', () => {
     // Click on the button with the name "Credential Options menu"
     screen
       .getByRole('combobox', {
-        name: 'credential-label',
+        name: 'Credential',
       })
       .click()
     // Assert the removed credential does not exist
@@ -1204,7 +1204,7 @@ describe('Import cluster RHOCM mode', () => {
     // Click on the button with the name "Credential Options menu"
     screen
       .getByRole('combobox', {
-        name: 'credential-label',
+        name: 'Credential',
       })
       .click()
     // await new Promise((resolve) => setTimeout(resolve, 500))

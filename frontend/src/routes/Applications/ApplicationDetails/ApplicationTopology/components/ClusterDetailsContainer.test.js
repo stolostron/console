@@ -42,7 +42,7 @@ describe('ClusterDetailsContainer with no clusters', () => {
   it('renders as expected', () => {
     expect(
       screen.getByRole('combobox', {
-        name: 'cluster-select-id-1',
+        name: 'Type to filter',
       })
     ).toBeTruthy()
   })

@@ -2471,7 +2471,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     await clickByPlaceholderText('kubevirt-with-ei')
     screen
       .getByRole('combobox', {
-        name: 'connection-label',
+        name: 'Infrastructure provider credential',
       })
       .click()
     await clickByText('Add credential')

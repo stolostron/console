@@ -28,7 +28,7 @@ describe('AcmMultiSelect', () => {
     expect(container.querySelector<HTMLSpanElement>('.pf-v5-c-badge')).toBeNull()
     screen
       .getByRole('combobox', {
-        name: /acm-select-label/i,
+        name: /ACM select/i,
       })
       .click()
     screen
@@ -73,7 +73,7 @@ describe('AcmMultiSelect', () => {
     expect(getByTestId('input-label')).toContainHTML('pf-m-error')
     screen
       .getByRole('combobox', {
-        name: /input-label/i,
+        name: /label/i,
       })
       .click()
     container.querySelector<HTMLInputElement>('.pf-v5-c-check__input')?.click()
@@ -103,7 +103,7 @@ describe('AcmMultiSelect', () => {
     expect(getByTestId('input-label')).toContainHTML('pf-m-error')
     screen
       .getByRole('combobox', {
-        name: /input-label/i,
+        name: /label/i,
       })
       .click()
     container.querySelector<HTMLInputElement>('.pf-v5-c-check__input')?.click()

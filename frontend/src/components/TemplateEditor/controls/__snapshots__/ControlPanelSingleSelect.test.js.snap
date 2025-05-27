@@ -71,6 +71,7 @@ exports[`ControlPanelSingleSelect component renders as expected 1`] = `
                 class="pf-v5-c-text-input-group pf-m-plain"
               >
                 <div
+                  aria-labelledby="controlId-label"
                   autocomplete="off"
                   class="pf-v5-c-text-input-group__main"
                   id="multi-typeahead-select-input"

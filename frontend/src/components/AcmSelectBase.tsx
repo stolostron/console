@@ -523,9 +523,10 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
     return !!inputValue
   }
   const ariaLabelledBy = props['aria-labelledby'] ?? undefined
-  const ariaLabel = props['aria-labelledby']
-    ? undefined
-    : props['aria-label'] ?? props.placeholder ?? props.label ?? t('Options menu')
+  let ariaLabel = props['aria-labelledby'] ? undefined : props['aria-label']
+  if (!ariaLabel && !ariaLabelledBy) {
+    ariaLabel = props.placeholder ?? props.label ?? t('Options menu')
+  }
 
   function renderMenuToggle(toggleRef: Ref<MenuToggleElement> | undefined): ReactNode {
     return (
@@ -533,7 +534,6 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
         id={selectToggleId}
         ref={toggleRef}
         variant={variant === SelectVariant.single || variant === SelectVariant.checkbox ? 'default' : 'typeahead'}
-        role="combobox"
         onKeyDown={(event: React.KeyboardEvent) => {
           if (SelectVariant.single || variant === SelectVariant.checkbox) {
             event.preventDefault()
@@ -552,6 +552,7 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
             }
           }
         }}
+        role="combobox"
         aria-labelledby={ariaLabelledBy}
         aria-label={ariaLabel}
         badge={badge}
@@ -600,6 +601,7 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
               {...(activeItemId && { 'aria-activedescendant': activeItemId })}
               role="combobox"
               aria-label={ariaLabel}
+              aria-labelledby={ariaLabelledBy}
               isExpanded={isOpen}
               aria-controls="select-multi-typeahead-listbox"
             >

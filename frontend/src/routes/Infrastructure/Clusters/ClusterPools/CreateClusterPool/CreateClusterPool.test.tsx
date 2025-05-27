@@ -286,11 +286,10 @@ describe('CreateClusterPool AWS', () => {
     await waitForNocks(initialNocks)
 
     // connection
-    screen
-      .getByRole('combobox', {
-        name: /connection-label/i,
-      })
-      .click()
+    let select = screen
+      .getByRole('combobox', { name: /Infrastructure provider credential/i })
+      .querySelector('input[type="text"]') as HTMLElement
+    select.click()
 
     // Should show the modal wizard
     await clickByText('Add credential')
@@ -300,11 +299,10 @@ describe('CreateClusterPool AWS', () => {
     await selectByText('Select a namespace for the credential', newProviderConnection.metadata.namespace!)
     await clickByText('Cancel', 1)
 
-    screen
-      .getByRole('combobox', {
-        name: /connection-label/i,
-      })
-      .click()
+    select = screen
+      .getByRole('combobox', { name: /Infrastructure provider credential/i })
+      .querySelector('input[type="text"]') as HTMLElement
+    select.click()
     await clickByText(providerConnection.metadata.name!)
 
     // step 2 -- the name, namespace and imageset

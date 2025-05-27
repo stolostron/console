@@ -42,7 +42,7 @@ describe('ArgoAppDetailsContainer with no apps', () => {
   it('renders as expected', async () => {
     expect(
       screen.getByRole('combobox', {
-        name: 'app-select-id-1',
+        name: 'Type to filter',
       })
     ).toBeTruthy()
   })

@@ -413,7 +413,7 @@ describe('ClusterSetActionDropdown', () => {
     await waitForText(firstNamespaceBinding.metadata.namespace!)
     screen
       .getByRole('combobox', {
-        name: /namespaces-label/i,
+        name: /Namespaces/i,
       })
       .click()
 

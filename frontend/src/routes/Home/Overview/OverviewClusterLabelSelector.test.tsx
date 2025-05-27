@@ -62,18 +62,18 @@ describe('OverviewClusterLabelSelector', () => {
 
     // pick the label key - cloud
     screen
-      .getByRole('combobox', {
-        name: 'cluster-label-key',
-      })
+      .getAllByRole('combobox', {
+        name: 'Type to filter',
+      })[0]
       .click()
     await waitFor(() => expect(getByText('cloud')).toBeTruthy())
     userEvent.click(getByText('cloud'))
 
     // pick the label value - Amazon
     screen
-      .getByRole('combobox', {
-        name: 'cluster-label-value',
-      })
+      .getAllByRole('combobox', {
+        name: 'Type to filter',
+      })[1]
       .click()
     await waitFor(() => expect(screen.getByText('Amazon')).toBeTruthy())
     userEvent.click(screen.getByText('Amazon'))
