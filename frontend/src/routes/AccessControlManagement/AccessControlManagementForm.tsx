@@ -14,7 +14,7 @@ import { createResource, patchResource } from '../../resources/utils'
 import { AcmLabels, AcmToastContext } from '../../ui-components'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { searchClient } from '../Search/search-sdk/search-client'
-import { useSearchCompleteLazyQuery } from '../Search/search-sdk/search-sdk'
+import { useSearchCompleteLazyQuery, useSearchResultItemsQuery } from '../Search/search-sdk/search-sdk'
 import schema from './schema.json'
 import { validateArrayNotEmpty, validateKubernetesResourceName } from '../../lib/validation'
 import { AccessControlStatus } from './AccessControlStatus'
@@ -43,11 +43,28 @@ const AccessControlManagementForm = ({
 
   // Data
   const managedClusters = useAllClusters(true)
-  const roles = [
-    { id: '1', value: 'kubevirt.io:view' },
-    { id: '2', value: 'kubevirt.io:edit' },
-    { id: '3', value: 'kubevirt.io:admin' },
-  ]
+
+  const CLUSTER_ROLES_LABEL = 'rbac.open-cluster-management.io/filter=vm-clusterroles'
+
+  const { data: clusterRolesQuery } = useSearchResultItemsQuery({
+    client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
+    variables: {
+      input: [
+        {
+          keywords: [],
+          filters: [
+            { property: 'kind', values: ['ClusterRole'] },
+            { property: 'cluster', values: ['local-cluster'] },
+            { property: 'label', values: [CLUSTER_ROLES_LABEL] },
+          ],
+          limit: -1,
+        },
+      ],
+    },
+  })
+
+  const clusterRoles = clusterRolesQuery?.searchResult?.flatMap((roles) => roles?.items) ?? []
+
   const { data: users, startPolling: usersStartPolling, stopPolling: usersStopPolling } = useQuery(listUsers)
   const { data: groups, startPolling: groupsStartPolling, stopPolling: groupsStopPolling } = useQuery(listGroups)
 
@@ -324,7 +341,7 @@ const AccessControlManagementForm = ({
             placeholder: 'Select or enter roles',
             value: selectedRoles,
             onChange: (values) => setSelectedRoles(values),
-            options: roles.map((r) => ({ id: r.id, value: r.value })),
+            options: clusterRoles.filter((r) => r !== null).map((r) => ({ id: r._uid, value: r.name })),
             isRequired: true,
             isHidden: isViewing,
           },
