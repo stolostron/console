@@ -99,5 +99,12 @@
             "path": "/multicloud/governance",
             "component": { "$codeRef": "governance.default" }
         }
+    },
+    {
+      "type": "console.page/route",
+      "properties": {
+        "path": "/multicloud/access-control-management",
+        "component": { "$codeRef": "accessControlManagement.default" }
+      }
     }
 ]
