@@ -9,7 +9,8 @@
     "search": "../../src/routes/Search/SearchPlugin.tsx",
     "applications": "../../src/routes/Applications/ApplicationsPlugin.tsx",
     "governance": "../../src/routes/Governance/GovernancePlugin.tsx",
-    "accessControlManagement": "../../src/routes/AccessControlManagement/AccessControlManagementPlugin.tsx"
+    "accessControlManagement": "../../src/routes/AccessControlManagement/AccessControlManagementPlugin.tsx",
+    "consoleFlags": "../../src/utils/flags"
   },
   "dependencies": {
     "@console/pluginAPI": ">=4.15.0",

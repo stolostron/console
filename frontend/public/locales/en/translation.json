@@ -380,6 +380,7 @@
   "access.usersInGroup.view": "View users in group",
   "accessControlForm.created.message": "accessControlForm.created.message",
   "accessControlForm.updated.message": "accessControlForm.updated.message",
+  "AccessControlManagement": "AccessControlManagement",
   "AccessControlManagements": "AccessControlManagements",
   "acm.logs.error": "Red Hat Advanced Cluster Management version 2.10 and newer requires the <code>cluster-proxy</code> and <code>managed-serviceaccount</code> add-ons to retrieve logs. Make sure that these add-ons are enabled on the hub cluster.",
   "acm.plugin.not.ready": "The <bold>Red Hat Advanced Cluster Management for Kubernetes</bold> operator is installed, but the console plugin is not available. If you just completed the installation procedure within the last few minutes, wait a few moments for a web console update alert to appear. Click the link in the alert to refresh the web console to the latest version.",

@@ -124,7 +124,7 @@ const AccessControlManagementForm = ({
       setSelectedSubjectNamesRB([
         ...new Set(
           accessControl.spec.roleBindings?.flatMap((rb) =>
-            rb.subject ? [rb.subject.name] : (rb.subjects?.map((s) => s.name) ?? [])
+            rb.subject ? [rb.subject.name] : rb.subjects?.map((s) => s.name) ?? []
           )
         ),
       ])
