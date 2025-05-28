@@ -12,7 +12,6 @@ import { NavigationPath } from '../../NavigationPath'
 import { AccessControl } from '../../resources/access-control'
 import { Cluster, createDownloadFile, deleteResource, getISOStringTimestamp } from '../../resources/utils'
 import { AcmLabels, compareStrings } from '../../ui-components'
-import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { AccessControlStatus } from './AccessControlStatus'
 
 const LABELS_LENGTH = 5
@@ -412,16 +411,3 @@ const useFilters = ({
 }
 
 export { accessControlTableColumns, ACTIONS, COLUMN_CELLS, EXPORT_FILE_PREFIX, useFilters }
-
-export function useAccessControlFilter() {
-  const { accessControlState } = useSharedAtoms()
-  const allAccessControls = useRecoilValue(accessControlState)
-  const filters = ['kubevirt.io:view', 'kubevirt.io:edit', 'kubevirt.io:admin']
-  const roleBindingMatches = allAccessControls.filter((ac) =>
-    ac.spec.roleBindings?.some((rb) => filters.includes(rb.roleRef.name))
-  )
-  const clusterRoleBindingMatches = allAccessControls.filter(
-    (ac) => ac.spec.clusterRoleBinding?.roleRef?.name && filters.includes(ac.spec.clusterRoleBinding.roleRef.name)
-  )
-  return [...new Set([...roleBindingMatches, ...clusterRoleBindingMatches])]
-}
