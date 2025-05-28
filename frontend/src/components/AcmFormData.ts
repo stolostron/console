@@ -169,6 +169,15 @@ export interface CustomInput {
   component: JSX.Element
   isHidden?: boolean
   label?: string
+  isRequired?: any
+  value?: any
+  validation?: any
+  title?: any
+  labelHelp?: any
+  helperText?: any
+  labelHelpTitle?: any
+  prompt?: any
+  validate?: any
 }
 export interface CreatableMultiselectInput extends SelectOptionsBase<string[]> {
   type: 'CreatableMultiselect'

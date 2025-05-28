@@ -802,6 +802,140 @@ export function AcmDataFormDetails(props: { formData: FormData; wizardSummary?: 
   )
 }
 
+// function AcmInputDescription(props: { input: Input }): JSX.Element {
+//   const [showSecrets, setShowSecrets] = useState(false)
+//   const { input } = props
+//   if (input.isHidden) return <Fragment />
+//   if (!inputHasValue(input)) return <Fragment />
+//   switch (input.type) {
+//     case 'Text':
+//     case 'TextArea':
+//       return (
+//         <DescriptionListGroup key={input.label}>
+//           <DescriptionListTerm>{input.label}</DescriptionListTerm>
+//           <DescriptionListDescription style={{ whiteSpace: 'pre-wrap' }}>
+//             <Split>
+//               <SplitItem isFilled>
+//                 {input.isSecret && !showSecrets
+//                   ? '****************'
+//                   : input.value?.split('\n').map((line) => <div key={`input-value-line-${line}`}>{line}</div>)}
+//               </SplitItem>
+//               {input.isSecret && (
+//                 <Stack>
+//                   <Button variant="plain" style={{ marginTop: '-8px' }} onClick={() => setShowSecrets(!showSecrets)}>
+//                     {showSecrets ? <EyeIcon /> : <EyeSlashIcon />}
+//                   </Button>
+//                   <StackItem isFilled />
+//                 </Stack>
+//               )}
+//             </Split>
+//           </DescriptionListDescription>
+//         </DescriptionListGroup>
+//       )
+//     case 'Alert':
+//     case 'TextNumber':
+//     case 'Number':
+//       return (
+//         <DescriptionListGroup key={input.label}>
+//           <DescriptionListTerm>{input.label}</DescriptionListTerm>
+//           <DescriptionListDescription>{input.value}</DescriptionListDescription>
+//         </DescriptionListGroup>
+//       )
+//     case 'Select':
+//     case 'Tiles': {
+//       const selectedOption = input.options.find((option) => option.value === input.value)
+//       if (!selectedOption)
+//         return (
+//           <DescriptionListGroup key={input.label}>
+//             <DescriptionListTerm>{input.label}</DescriptionListTerm>
+//             <DescriptionListDescription>{input.value}</DescriptionListDescription>
+//           </DescriptionListGroup>
+//         )
+//       return (
+//         <DescriptionListGroup key={input.label}>
+//           <DescriptionListTerm>{input.label}</DescriptionListTerm>
+//           <DescriptionListDescription>{selectedOption.text ?? selectedOption.value}</DescriptionListDescription>
+//         </DescriptionListGroup>
+//       )
+//     }
+//     case 'Checkbox': {
+//       return (
+//         <DescriptionListGroup key={input.label}>
+//           <DescriptionListTerm>{input.label}</DescriptionListTerm>
+//           <DescriptionListDescription>{input.value ? 'True' : 'False'}</DescriptionListDescription>
+//         </DescriptionListGroup>
+//       )
+//     }
+//     case 'GroupedSelect':
+//     case 'GroupedTiles': {
+//       let selectedOption: SelectOptionInput | undefined
+//       for (const group of input.groups) {
+//         selectedOption = group.options.find((option) => option.value === input.value)
+//         if (selectedOption !== undefined) break
+//       }
+//       if (!selectedOption) return <Fragment />
+//       return (
+//         <DescriptionListGroup key={input.label}>
+//           <DescriptionListTerm>{input.label}</DescriptionListTerm>
+//           <DescriptionListDescription>{selectedOption.text ?? selectedOption.value}</DescriptionListDescription>
+//         </DescriptionListGroup>
+//       )
+//     }
+//     case 'Multiselect':
+//     case 'CreatableMultiselect': {
+//       const selectedOptions: SelectOptionInput[] = []
+//       for (const option of input.options) {
+//         if (input.value.includes(option.value)) {
+//           selectedOptions.push(option)
+//         }
+//       }
+//       if (selectedOptions.length === 0) return <Fragment />
+//       return (
+//         <DescriptionListGroup key={input.label}>
+//           <DescriptionListTerm>{input.label}</DescriptionListTerm>
+//           <DescriptionListDescription>
+//             {selectedOptions.map((option) => option.text ?? option.value).join(', ')}
+//           </DescriptionListDescription>
+//         </DescriptionListGroup>
+//       )
+//     }
+//     case 'GroupedMultiselect': {
+//       const selectedOptions: SelectOptionInput[] = []
+//       for (const group of input.groups) {
+//         for (const option of group.options) {
+//           if (input.value.includes(option.value)) {
+//             selectedOptions.push(option)
+//           }
+//         }
+//       }
+//       if (selectedOptions.length === 0) return <Fragment />
+//       return (
+//         <DescriptionListGroup key={input.label}>
+//           <DescriptionListTerm>{input.label}</DescriptionListTerm>
+//           <DescriptionListDescription>
+//             {selectedOptions.map((option) => option.text ?? option.value).join(', ')}
+//           </DescriptionListDescription>
+//         </DescriptionListGroup>
+//       )
+//     }
+//     case 'OrderedItems': {
+//       if (input.value.length === 0) return <Fragment />
+//       return (
+//         <DescriptionListGroup key={input.label}>
+//           <DescriptionListTerm>{input.label}</DescriptionListTerm>
+//           <DescriptionListDescription>
+//             <Stack>
+//               {input.value.map((value, index) => (
+//                 <div key={input.keyFn(value, index)}>{input.summaryFn(value)}</div>
+//               ))}
+//             </Stack>
+//           </DescriptionListDescription>
+//         </DescriptionListGroup>
+//       )
+//     }
+//     // case 'Custom':
+//   }
+// }
 function AcmInputDescription(props: { input: Input }): JSX.Element {
   const [showSecrets, setShowSecrets] = useState(false)
   const { input } = props
@@ -881,8 +1015,7 @@ function AcmInputDescription(props: { input: Input }): JSX.Element {
         </DescriptionListGroup>
       )
     }
-    case 'Multiselect':
-    case 'CreatableMultiselect': {
+    case 'Multiselect': {
       const selectedOptions: SelectOptionInput[] = []
       for (const option of input.options) {
         if (input.value.includes(option.value)) {
@@ -933,17 +1066,9 @@ function AcmInputDescription(props: { input: Input }): JSX.Element {
         </DescriptionListGroup>
       )
     }
-    case 'Custom':
-      return input.label ? (
-        <DescriptionListGroup key={input.label}>
-          <DescriptionListTerm>{input.label}</DescriptionListTerm>
-          <DescriptionListDescription>{input.component}</DescriptionListDescription>
-        </DescriptionListGroup>
-      ) : (
-        input.component
-      )
   }
 }
+
 
 export function AcmDataFormInputs(props: {
   inputs?: Input[]
