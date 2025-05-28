@@ -463,7 +463,7 @@
   "Already informing": "Already informing",
   "Amazon Web Services": "Amazon Web Services",
   "Amazon Web Services credential": "Amazon Web Services credential",
-  "An access control stores the... TO BE DEFINED": "An access control stores the... TO BE DEFINED",
+  "Access Control Management using ClusterPermissions": "Access Control Management using ClusterPermissions",
   "An infrastructure environment manages your hosts and creates clusters that share network, proxy, and location settings.": "An infrastructure environment manages your hosts and creates clusters that share network, proxy, and location settings.",
   "An Operator policy creates operators on managed clusters.": "An Operator policy creates operators on managed clusters.",
   "An unexpected error occurred while retrieving metrics.": "An unexpected error occurred while retrieving metrics.",

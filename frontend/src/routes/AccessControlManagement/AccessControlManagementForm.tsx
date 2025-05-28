@@ -269,7 +269,7 @@ const AccessControlManagementForm = ({
 
   const formData: FormData = {
     title,
-    description: t('An access control stores the... TO BE DEFINED'),
+    description: t('Access Control Management using ClusterPermissions'),
     breadcrumb: breadcrumbs,
     sections: [
       {
