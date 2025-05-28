@@ -386,7 +386,7 @@ const AccessControlManagementForm = ({
       }),
     ].filter(Boolean) as Section[],
 
-    submit: () => {
+    submit: async () => {
       if (!isRBValid && !isCRBValid) {
         toastContext.addAlert({
           title: t('Validation error'),
@@ -394,8 +394,9 @@ const AccessControlManagementForm = ({
           type: 'danger',
           autoClose: true,
         })
-        return Promise.reject()
+        throw new Error('At least one Role Binding or Cluster Role Binding is required')
       }
+
       let accessControlData = formData?.customData ?? stateToData()
       if (Array.isArray(accessControlData)) {
         accessControlData = accessControlData[0]
