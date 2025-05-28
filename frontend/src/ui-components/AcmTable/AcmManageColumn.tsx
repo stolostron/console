@@ -21,6 +21,7 @@ import {
 import { IAcmTableColumn } from './AcmTable'
 import { useTranslation } from '../../lib/acm-i18next'
 import ColumnsIcon from '@patternfly/react-icons/dist/js/icons/columns-icon'
+import { setColumnValues } from './localColumnStorage'
 
 interface AcmManageColumnProps<T> {
   allCols: IAcmTableColumn<T>[]
@@ -99,6 +100,7 @@ interface ManageColumnModalProps<T> {
   defaultColIds?: string[]
   colOrderIds: string[]
   setColOrderIds: (colOrderIds: string[]) => void
+  tableId?: string
 }
 
 function ManageColumnModal<T>(props: ManageColumnModalProps<T>) {
@@ -113,6 +115,7 @@ function ManageColumnModal<T>(props: ManageColumnModalProps<T>) {
     setColOrderIds,
     requiredColIds,
     defaultColIds,
+    tableId,
   } = props
   const [items, setItems] = useState<IAcmTableColumn<T>[]>(sortByList(colOrderIds, allCols))
   const [localSelectedIds, setlocalSelectedIds] = useState<string[]>(selectedColIds)
@@ -138,7 +141,9 @@ function ManageColumnModal<T>(props: ManageColumnModalProps<T>) {
 
   const onSave = () => {
     setSelectedColIds(localSelectedIds)
-    setColOrderIds(items.map((col) => col.id!))
+    const order = items.map((col) => col.id!)
+    setColOrderIds(order)
+    setColumnValues(tableId || '', localSelectedIds, order)
     toggleModal()
   }
 
