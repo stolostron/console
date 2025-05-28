@@ -828,10 +828,14 @@ export async function fetchRetry<T>(options: {
         case 504: // Gateway Timeout
         case 522: // Connection timed out
         case 524: // A Timeout Occurred
-          try {
-            const retryAfter = Number(response.headers.get('retry-after'))
-            if (Number.isInteger(retryAfter)) delay = retryAfter
-          } catch {}
+          if (process.env.NODE_ENV === 'development' && response.status === 504) {
+            window.location.reload()
+          } else {
+            try {
+              const retryAfter = Number(response.headers.get('retry-after'))
+              if (Number.isInteger(retryAfter)) delay = retryAfter
+            } catch {}
+          }
           break
 
         default:

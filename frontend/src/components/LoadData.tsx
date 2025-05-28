@@ -578,7 +578,11 @@ export function LoadData(props: { children?: ReactNode }) {
             case 200:
               break
             default:
-              tokenExpired()
+              if (process.env.NODE_ENV === 'development') {
+                window.location.reload()
+              } else {
+                tokenExpired()
+              }
               break
           }
         })

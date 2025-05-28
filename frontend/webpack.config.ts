@@ -14,7 +14,7 @@ import webpack from 'webpack'
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 import { Configuration as DevServerConfiguration } from 'webpack-dev-server'
 import { supportedLanguages } from './src/lib/supportedLanguages'
-const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
+import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
 
 module.exports = function (env: any, argv: { hot?: boolean; mode: string | undefined }) {
   const isProduction = argv.mode === 'production' || argv.mode === undefined
@@ -124,6 +124,8 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
       new BundleAnalyzerPlugin({ analyzerMode: 'disabled' }),
     ].filter(Boolean) as webpack.WebpackPluginInstance[],
     output: {
+      devtoolModuleFilenameTemplate: (info: { absoluteResourcePath: string }) =>
+        path.resolve(info.absoluteResourcePath).replace(/\\/g, '/'),
       assetModuleFilename: 'assets/[name].[contenthash:8][ext][query]',
       filename: '[name].[contenthash:8].js',
       chunkFilename: '[name].[contenthash:8].js',
