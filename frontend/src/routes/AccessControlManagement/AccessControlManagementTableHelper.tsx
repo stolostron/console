@@ -120,27 +120,31 @@ const COLUMN_CELLS = {
   USER_GROUP: (accessControl: AccessControl, t: TFunction) => {
     // TODO: translate kind
     const roleBindingsSubjectNames =
-      accessControl.spec.roleBindings
-        ?.filter((e) => e.subject?.kind && e.subject?.name)
-        .map((e) => `${e.subject?.kind}: ${e.subject?.name}`) ?? []
+      accessControl.spec.roleBindings?.flatMap((rb) =>
+        rb.subject
+          ? [`${rb.subject.kind}: ${rb.subject.name}`]
+          : (rb.subjects?.map((s) => `${s.kind}: ${s.name}`) ?? [])
+      ) ?? []
 
-    const clusterRoleBindingSubjectName =
-      accessControl.spec.clusterRoleBinding?.subject?.kind && accessControl.spec.clusterRoleBinding?.subject?.name
-        ? `${accessControl.spec.clusterRoleBinding.subject.kind}: ${accessControl.spec.clusterRoleBinding.subject.name}`
-        : undefined
+    const clusterRoleBindingSubjectNames =
+      accessControl.spec.clusterRoleBinding?.subjects?.map((s) => `${s.kind}: ${s.name}`) ??
+      (accessControl.spec.clusterRoleBinding?.subject
+        ? [
+            `${accessControl.spec.clusterRoleBinding.subject.kind}: ${accessControl.spec.clusterRoleBinding.subject.name}`,
+          ]
+        : [])
 
-    const users_groups = [
-      ...roleBindingsSubjectNames,
-      ...(clusterRoleBindingSubjectName ? [clusterRoleBindingSubjectName] : []),
-    ]
+    const users_groups = [...roleBindingsSubjectNames, ...clusterRoleBindingSubjectNames]
+
+    const uniqueUsersGroups = Array.from(new Set(users_groups))
     return users_groups ? (
       <AcmLabels
-        labels={users_groups}
+        labels={uniqueUsersGroups}
         expandedText={t('Show less')}
         collapsedText={t('show.more', { count: users_groups.length })}
         // TODO: To properly translate 'count.items'
         allCollapsedText={t('count.items', { count: users_groups.length })}
-        isCompact={users_groups.length > LABELS_LENGTH}
+        isCompact={uniqueUsersGroups.length > LABELS_LENGTH}
       />
     ) : (
       <span style={{ whiteSpace: 'nowrap' }}>'-'</span>
@@ -149,15 +153,19 @@ const COLUMN_CELLS = {
   ROLES: (accessControl: AccessControl, t: TFunction) => {
     const roleBindingRoles = accessControl.spec.roleBindings?.map((e) => e.roleRef.name) ?? []
     const clusterRoleBindingRole = accessControl.spec.clusterRoleBinding?.roleRef?.name
-    const roles = [...roleBindingRoles, clusterRoleBindingRole].filter((role) => role !== undefined)
-    return roles ? (
+
+    const allRoles = [...roleBindingRoles, clusterRoleBindingRole].filter((role): role is string => !!role)
+
+    const uniqueRoles = Array.from(new Set(allRoles))
+
+    return uniqueRoles.length > 0 ? (
       <AcmLabels
-        labels={roles}
+        labels={uniqueRoles}
         expandedText={t('Show less')}
-        collapsedText={t('show.more', { count: roles.length })}
+        collapsedText={t('show.more', { count: uniqueRoles.length })}
         // TODO: To properly translate 'count.items'
-        allCollapsedText={t('count.items', { count: roles.length })}
-        isCompact={roles.length > LABELS_LENGTH}
+        allCollapsedText={t('count.items', { count: uniqueRoles.length })}
+        isCompact={uniqueRoles.length > LABELS_LENGTH}
       />
     ) : (
       <span style={{ whiteSpace: 'nowrap' }}>'-'</span>
@@ -165,18 +173,19 @@ const COLUMN_CELLS = {
   },
   NAMESPACES: (accessControl: AccessControl, t: TFunction) => {
     const roleBindingNamespaces = accessControl.spec.roleBindings?.map((e) => e.namespace) ?? []
-    const namespaces = [
-      ...roleBindingNamespaces,
-      ...(accessControl.spec.clusterRoleBinding?.roleRef ? ['All Namespaces'] : []),
-    ]
-    return namespaces ? (
+    const hasCRB = !!accessControl.spec.clusterRoleBinding?.roleRef
+    const allNamespaces = [...roleBindingNamespaces, ...(hasCRB ? ['All Namespaces'] : [])]
+
+    const uniqueNamespaces = Array.from(new Set(allNamespaces))
+
+    return uniqueNamespaces.length > 0 ? (
       <AcmLabels
-        labels={namespaces}
+        labels={uniqueNamespaces}
         expandedText={t('Show less')}
-        collapsedText={t('show.more', { count: namespaces.length })}
+        collapsedText={t('show.more', { count: uniqueNamespaces.length })}
         // TODO: To properly translate 'count.items'
-        allCollapsedText={t('count.items', { count: namespaces.length })}
-        isCompact={namespaces.length > LABELS_LENGTH}
+        allCollapsedText={t('count.items', { count: uniqueNamespaces.length })}
+        isCompact={uniqueNamespaces.length > LABELS_LENGTH}
       />
     ) : (
       <span style={{ whiteSpace: 'nowrap' }}>'-'</span>
