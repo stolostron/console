@@ -6,6 +6,7 @@ import { FormData, Section } from '../../components/AcmFormData'
 import { LostChangesContext } from '../../components/LostChanges'
 import { useTranslation } from '../../lib/acm-i18next'
 import { useQuery } from '../../lib/useQuery'
+import { validateKubernetesResourceName } from '../../lib/validation'
 import { NavigationPath, useBackCancelNavigation } from '../../NavigationPath'
 import { IResource, listGroups, listUsers } from '../../resources'
 import { AccessControl, AccessControlApiVersion, RoleBinding } from '../../resources/access-control'
@@ -14,11 +15,10 @@ import { AcmToastContext } from '../../ui-components'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { searchClient } from '../Search/search-sdk/search-client'
 import { useSearchCompleteLazyQuery, useSearchResultItemsQuery } from '../Search/search-sdk/search-sdk'
+import { AccessControlStatus } from './AccessControlStatus'
 import { RoleBindingHook } from './RoleBindingHook'
 import { RoleBindingSection } from './RoleBindingSection'
 import schema from './schema.json'
-import { validateKubernetesResourceName } from '../../lib/validation'
-import { AccessControlStatus } from './AccessControlStatus'
 
 const AccessControlManagementForm = ({
   isEditing,
@@ -187,22 +187,25 @@ const AccessControlManagementForm = ({
   const isCRBValid = !!selectedRoleNameCRB && selectedSubjectNamesCRB.length > 0
 
   const stateToData = () => {
-    const spec: any = isRBValid ? { roleBindings: selectedNamespacesRB.flatMap((ns) =>
-        selectedRoleNamesRB.map((role) => ({
-          namespace: ns,
-          roleRef: {
-            name: role,
-            apiGroup: 'rbac.authorization.k8s.io',
-            kind: 'Role',
-          },
-          subjects: selectedSubjectNamesRB.map((name) => ({
-            name,
-            apiGroup: 'rbac.authorization.k8s.io',
-            kind: selectedSubjectTypeRB,
-          })),
-        }))
-      )} : {}
-    }
+    const spec: any = isRBValid
+      ? {
+          roleBindings: selectedNamespacesRB.flatMap((ns) =>
+            selectedRoleNamesRB.map((role) => ({
+              namespace: ns,
+              roleRef: {
+                name: role,
+                apiGroup: 'rbac.authorization.k8s.io',
+                kind: 'Role',
+              },
+              subjects: selectedSubjectNamesRB.map((name) => ({
+                name,
+                apiGroup: 'rbac.authorization.k8s.io',
+                kind: selectedSubjectTypeRB,
+              })),
+            }))
+          ),
+        }
+      : {}
 
     if (isCRBValid) {
       spec.clusterRoleBinding = {
