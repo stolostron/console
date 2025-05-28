@@ -8,7 +8,10 @@ import { RecoilRoot } from 'recoil'
 jest.mock('../../Search/search-sdk/search-sdk', () => ({
   useSearchResultItemsAndRelatedItemsQuery: jest.fn(() => {
     return {
-      data: { searchResult: [{ items }] },
+      // This is obviously not a real search result, but it matches the format
+      // of the data after the worker would be done with it. It currently passes
+      // unchanged to `worker.postMessage` as a quirk.
+      data: { policyItems: items },
       loading: false,
     }
   }),

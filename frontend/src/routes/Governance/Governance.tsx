@@ -16,7 +16,9 @@ import GovernanceOverview from './overview/Overview'
 import PolicySetsPage from './policy-sets/PolicySets'
 import PoliciesPage from './policies/Policies'
 import DiscoveredPolicies from './discovered/DiscoveredPolicies'
-import DiscoveredByClusterPage from './discovered/ByCluster/DiscoveredByClusterPage'
+import { DiscoveredPolicyDetailsPage } from './discovered/details/DiscoveredPolicyDetailsPage'
+import DiscoveredByCluster from './discovered/details/DiscoveredByCluster'
+import { DiscoveredResources } from './discovered/details/DiscoveredResources'
 import PolicyTemplateYaml from './policies/policy-details/PolicyTemplateYaml'
 import { PolicyTemplateDetailsPage } from './policies/policy-details/PolicyTemplateDetail/PolicyTemplateDetailsPage'
 import { PolicyTemplateDetails } from './policies/policy-details/PolicyTemplateDetail/PolicyTemplateDetails'
@@ -41,7 +43,10 @@ export default function Governance() {
         <Route path={governanceChildPath(NavigationPath.policyDetails)} element={<PolicyDetailsOverview />} />
         <Route path={governanceChildPath(NavigationPath.policyDetailsResults)} element={<PolicyDetailsResults />} />
       </Route>
-      <Route path={governanceChildPath(NavigationPath.discoveredByCluster)} element={<DiscoveredByClusterPage />} />
+      <Route element={<DiscoveredPolicyDetailsPage />}>
+        <Route path={governanceChildPath(NavigationPath.discoveredResources)} element={<DiscoveredResources />} />
+        <Route path={governanceChildPath(NavigationPath.discoveredByCluster)} element={<DiscoveredByCluster />} />
+      </Route>
       <Route path={governanceChildPath(NavigationPath.createPolicySet)} element={<CreatePolicySet />} />
       <Route path={governanceChildPath(NavigationPath.editPolicySet)} element={<EditPolicySet />} />
       <Route element={<GovernancePage />}>

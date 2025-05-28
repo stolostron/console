@@ -23,8 +23,7 @@ export function grouping(): {
     parseStringMap: TParseStringMap
   ) => ISourceType
   createMessage: (
-    data: any[],
-    kyvernoPolicyReports: any[],
+    data: any,
     helmReleases: any[],
     channels: any[],
     subscriptions: any[],
@@ -32,7 +31,11 @@ export function grouping(): {
     getSourceText: string,
     parseStringMap: string,
     parseDiscoveredPolicies: string
-  ) => any[]
+  ) => {
+    policyItems: any[]
+    relatedResources: any[]
+    kyvernoPolicyReports: any[]
+  }
 } {
   const getPolicySource = (
     policy: any,
@@ -126,9 +129,15 @@ export function grouping(): {
     return null
   }
 
+  // related resources for policy types listed in search fields are minified
+  const expandResource = (obj: any): any => {
+    const { g: apigroup, v: apiversion, k: kind, ns: namespace, n: name } = obj
+    const groupversion = apigroup ? apigroup + '/' + apiversion : apiversion
+    return { apigroup, apiversion, groupversion, kind, namespace, name }
+  }
+
   const createMessage = (
-    data: any[],
-    kyvernoPolicyReports: any[],
+    data: any,
     helmReleases: any[],
     channels: any[],
     subscriptions: any[],
@@ -136,9 +145,111 @@ export function grouping(): {
     getSourceTextStr: string,
     parseStringMapStr: string,
     parseDiscoveredPoliciesStr: string
-  ): any[] => {
-    if (data?.length === 0) {
-      return []
+  ): {
+    policyItems: any[]
+    relatedResources: any[]
+    kyvernoPolicyReports: any[]
+  } => {
+    let searchDataItems: any[] = []
+    let kyvernoPolicyReports: any[] = []
+
+    const resources = new Map() // keys like cluster:groupversion:kind:namespace:name
+    let templateName = ''
+
+    data?.searchResult?.forEach((result: any) => {
+      searchDataItems = searchDataItems.concat(result?.items || [])
+
+      const polInfo = result?.items?.[0] // useful for most template information
+      templateName = polInfo?.namespace ? polInfo.namespace + '/' + polInfo?.name : polInfo?.name
+
+      if (polInfo?.apigroup === 'kyverno.io') {
+        result.related?.forEach((related: any) => {
+          if (['PolicyReport', 'ClusterPolicyReport'].includes(related?.kind ?? ''))
+            kyvernoPolicyReports = kyvernoPolicyReports.concat(related?.items || [])
+        })
+      }
+
+      const templateNamespace = new Map()
+      result?.items?.forEach((polItem: any) => {
+        templateNamespace.set(polItem.cluster, polItem.namespace)
+      })
+
+      result?.related?.forEach((related: any) => {
+        related?.items?.forEach((item: any) => {
+          const { apigroup, apiversion, kind, cluster, namespace, name } = item
+          const groupversion = apigroup ? apigroup + '/' + apiversion : apiversion
+
+          // exclude these kinds
+          switch (apigroup + ':' + kind) {
+            case 'internal.open-cluster-management.io:Cluster':
+            case 'policy.open-cluster-management.io:Policy':
+            case 'policy.open-cluster-management.io:ConfigurationPolicy':
+              return
+            case 'wgpolicyk8s.io:PolicyReport':
+            case 'wgpolicyk8s.io:ClusterPolicyReport':
+              if (polInfo?.apigroup === 'kyverno.io') return
+              break
+            case 'admissionregistration.k8s.io:ValidatingAdmissionPolicy':
+              if (polInfo?.apigroup === 'admissionregistration.k8s.io') return
+              break
+          }
+
+          item.compliant = 'compliant' // if it is noncompliant, it will be in _nonCompliantResources
+          item.groupversion = groupversion
+          item.templateInfo = {
+            clusterName: cluster,
+            apiVersion: polInfo?.apiversion,
+            apiGroup: polInfo?.apigroup,
+            kind: polInfo?.kind,
+            templateName: polInfo?.name,
+            templateNamespace: templateNamespace.get(cluster),
+          }
+
+          resources.set(`${cluster}:${groupversion}:${kind}:${namespace}:${name}`, item)
+        })
+      })
+
+      result?.items?.forEach((polItem: any) => {
+        const cluster = polItem?.cluster
+
+        const missing = JSON.parse(polItem?._missingResources || '[]')
+        missing?.forEach((miniObj: any) => {
+          const obj = expandResource(miniObj)
+          const key = `${cluster}:${obj.groupversion}:${obj.kind}:${obj.namespace}:${obj.name}`
+          resources.set(key, {
+            ...obj,
+            cluster,
+            compliant: 'compliant', // if it is noncompliant, it will also be in the _nonCompliantResources
+            templateInfo: {
+              clusterName: cluster,
+              apiVersion: polInfo?.apiversion,
+              apiGroup: polInfo?.apigroup,
+              kind: polInfo?.kind,
+              templateName: polInfo?.name,
+              templateNamespace: templateNamespace.get(cluster),
+            },
+          })
+        })
+
+        const nonComp = JSON.parse(polItem?._nonCompliantResources || '[]')
+        nonComp?.forEach((miniObj: any) => {
+          const obj = expandResource(miniObj)
+          const key = `${cluster}:${obj.groupversion}:${obj.kind}:${obj.namespace}:${obj.name}`
+          if (resources.has(key)) {
+            resources.get(key).compliant = 'noncompliant'
+          }
+        })
+      })
+    })
+
+    const relatedResources = Array.from(resources.values())
+
+    if (searchDataItems?.length === 0) {
+      return {
+        policyItems: [],
+        relatedResources: [],
+        kyvernoPolicyReports: [],
+      }
     }
 
     const resolveSource = eval(resolveSourceStr) as TResolveSource
@@ -147,20 +258,37 @@ export function grouping(): {
     const parseDiscoveredPolicies = eval(parseDiscoveredPoliciesStr) as TParseDiscoveredPolicies
 
     const kyvernoViolationMap: { [policyNamespaceName: string]: number } = {}
+    const reportMap: { [resourceUid: string]: any } = {}
 
     if (kyvernoPolicyReports.length > 0) {
       kyvernoPolicyReports.forEach((cr) => {
         // NOSONAR
         for (const violationMapValue of ((cr?._policyViolationCounts ?? '') as string).split('; ')) {
           const nsPolicyNameViolation = violationMapValue.split('=') ?? []
-          const clusterNsPolicyName = cr.cluster + '/' + nsPolicyNameViolation[0]
+          const clusterNsPolicyName = cr.cluster + '/' + nsPolicyNameViolation[0] // eg 'local-cluster/require-labels'
           kyvernoViolationMap[clusterNsPolicyName] =
             (kyvernoViolationMap[clusterNsPolicyName] ?? 0) + Number(nsPolicyNameViolation[1])
+
+          reportMap[cr.cluster + '/' + cr.name] = cr
+        }
+      })
+
+      relatedResources.forEach((item) => {
+        const report = reportMap[item._uid]
+        if (report) {
+          item.policyReport = report
+
+          report?._policyViolationCounts.split('; ').forEach((violation: string) => {
+            const violationInfo = violation.split('=', 2)
+            if (violationInfo[0] === templateName && Number(violationInfo[1]) > 0) {
+              item.compliant = 'noncompliant'
+            }
+          })
         }
       })
     }
 
-    const policiesWithSource = (parseDiscoveredPolicies(data) as any[])
+    const policiesWithSource = (parseDiscoveredPolicies(searchDataItems) as any[])
       ?.filter(
         // Filter out ValidatingAdmissionPolicyBinding instances created by Gatekeeper and Kyverno.
         (policy: any): any =>
@@ -209,7 +337,7 @@ export function grouping(): {
     const keys = Object.keys(groupByNameKindGroup)
 
     // NOSONAR
-    return keys.map((nameKindGroup) => {
+    const policyItems = keys.map((nameKindGroup) => {
       const group = groupByNameKindGroup[nameKindGroup] || []
 
       let highestSeverity = 0
@@ -282,12 +410,17 @@ export function grouping(): {
         source,
       }
     })
+
+    return {
+      policyItems,
+      relatedResources,
+      kyvernoPolicyReports,
+    }
   }
 
   self.onmessage = (e: MessageEvent<any>) => {
     const {
-      data,
-      kyvernoPolicyReports,
+      data: searchData,
       helmReleases,
       channels,
       subscriptions,
@@ -299,8 +432,7 @@ export function grouping(): {
 
     self.postMessage(
       createMessage(
-        data,
-        kyvernoPolicyReports,
+        searchData,
         helmReleases,
         channels,
         subscriptions,
