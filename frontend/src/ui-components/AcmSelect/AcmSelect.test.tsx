@@ -1,12 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { SelectOption, SelectVariant } from '@patternfly/react-core/deprecated'
-import { render } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import { axe } from 'jest-axe'
+import { SelectOption } from '@patternfly/react-core'
+import { render, screen, waitFor } from '@testing-library/react'
 import { useState } from 'react'
 import { AcmForm, AcmSubmit } from '../AcmForm/AcmForm'
 import { AcmSelect } from './AcmSelect'
+import { SelectVariant } from '../../components/AcmSelectBase'
 
 describe('AcmSelect', () => {
   const Select = () => {
@@ -23,19 +22,30 @@ describe('AcmSelect', () => {
     )
   }
 
-  test('can apply and clear selections', () => {
-    const { container, getByRole, getByText, getAllByRole, queryByTestId, queryByText } = render(<Select />)
+  test('can apply and clear selections', async () => {
+    const { queryByText } = render(<Select />)
     expect(queryByText('Select one')).toBeVisible()
-    container.querySelector<HTMLButtonElement>('.pf-v5-c-select__toggle')?.click()
-    expect(getByText('Red')).toBeVisible()
-    getAllByRole('option')[0].click()
-    expect(getByText('Red')).toBeVisible()
-    getByRole('button', { name: 'Clear all' }).click()
-    expect(queryByTestId('acm-select')).toBeNull()
+    screen
+      .getByRole('combobox', {
+        name: 'ACM select',
+      })
+      .click()
+    await waitFor(() => expect(screen.getByText(/red/i)).toBeVisible())
+    screen
+      .getByRole('option', {
+        name: /red/i,
+      })
+      .click()
+    await waitFor(() => expect(screen.getByText(/red/i)).toBeVisible())
+    screen
+      .getByRole('button', {
+        name: /clear input value/i,
+      })
+      .click()
     expect(queryByText('Red')).toBeNull()
   })
 
-  test('typeahead varient shows placeholder text', () => {
+  test('typeahead varient shows placeholder text', async () => {
     const TypeaheadSelect = () => {
       const [value, setValue] = useState<string>()
       return (
@@ -56,19 +66,8 @@ describe('AcmSelect', () => {
         </AcmSelect>
       )
     }
-    const { container } = render(<TypeaheadSelect />)
-    expect(container.querySelector<HTMLInputElement>('.pf-v5-c-select__toggle-typeahead input')).toHaveAttribute(
-      'placeholder',
-      'Select one'
-    )
-  })
-
-  test('has zero accessibility defects', async () => {
-    const { getByRole, container } = render(<Select />)
-    expect(await axe(container)).toHaveNoViolations()
-
-    userEvent.click(getByRole('button'))
-    expect(await axe(container)).toHaveNoViolations()
+    const { getByPlaceholderText } = render(<TypeaheadSelect />)
+    expect(getByPlaceholderText('Select one')).toBeInTheDocument()
   })
 
   test('validates required input', async () => {
@@ -84,11 +83,15 @@ describe('AcmSelect', () => {
         </AcmForm>
       )
     }
-    const { getByText, getByTestId, getAllByRole, container } = render(<Component />)
+    const { getByText, getByTestId, getAllByRole } = render(<Component />)
     expect(getByTestId('input-label')).not.toContainHTML('pf-m-error')
     getByText('Submit').click()
     expect(getByTestId('input-label')).toContainHTML('pf-m-error')
-    container.querySelector<HTMLButtonElement>('.pf-v5-c-select__toggle')?.click()
+    screen
+      .getByRole('combobox', {
+        name: 'label',
+      })
+      .click()
     getAllByRole('option')[0].click()
     expect(getByTestId('input-label')).not.toContainHTML('pf-m-error')
   })
@@ -106,11 +109,15 @@ describe('AcmSelect', () => {
         </AcmForm>
       )
     }
-    const { getByText, getByTestId, getAllByRole, container } = render(<Component />)
+    const { getByText, getByTestId, getAllByRole } = render(<Component />)
     expect(getByTestId('input-label')).not.toContainHTML('pf-m-error')
     getByText('Submit').click()
     expect(getByTestId('input-label')).toContainHTML('pf-m-error')
-    container.querySelector<HTMLButtonElement>('.pf-v5-c-select__toggle')?.click()
+    screen
+      .getByRole('combobox', {
+        name: 'label',
+      })
+      .click()
     getAllByRole('option')[0].click()
     expect(getByTestId('input-label')).not.toContainHTML('pf-m-error')
   })

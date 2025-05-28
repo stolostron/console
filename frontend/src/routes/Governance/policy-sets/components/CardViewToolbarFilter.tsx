@@ -1,14 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Badge } from '@patternfly/react-core'
-import { Select, SelectGroup, SelectOption, SelectOptionObject, SelectVariant } from '@patternfly/react-core/deprecated'
+import { Badge, SelectOption, SelectGroup } from '@patternfly/react-core'
+import { AcmSelectBase, SelectVariant } from '../../../../components/AcmSelectBase'
 import { FilterIcon } from '@patternfly/react-icons'
 import { useCallback, useMemo, useState } from 'react'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { NavigationPath } from '../../../../NavigationPath'
 import { PolicySet } from '../../../../resources/policy-set'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { filterLabelMargin, filterOption, filterOptionBadge } from '../../../../ui-components/AcmTable/filterStyles'
+import { filterOption, filterOptionBadge } from '../../../../ui-components/AcmTable/filterStyles'
 
 export default function CardViewToolbarFilter(props: {
   preSelectedFilters: string[]
@@ -16,7 +16,6 @@ export default function CardViewToolbarFilter(props: {
 }) {
   const { setViolationFilters, preSelectedFilters } = props
   const { policySetsState } = useSharedAtoms()
-  const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [selectedFilters, setSelectedFilters] = useState<string[]>(preSelectedFilters ?? [])
   const policySets = useRecoilValue(policySetsState)
   const { t } = useTranslation()
@@ -62,7 +61,7 @@ export default function CardViewToolbarFilter(props: {
             complianceValue: undefined,
           },
         ].map(({ key, label, complianceValue }) => (
-          <SelectOption key={key} inputId={key} value={key}>
+          <SelectOption key={key} value={key}>
             <div className={filterOption}>
               {label}
               <Badge className={filterOptionBadge} key={`${key}-count`} isRead>
@@ -77,27 +76,16 @@ export default function CardViewToolbarFilter(props: {
   )
 
   return (
-    <Select
+    <AcmSelectBase
       key={'card-view-filter-select-key'}
       variant={SelectVariant.checkbox}
-      aria-label={'card-view-filter-select-key'}
-      onToggle={() => setIsFilterOpen(!isFilterOpen)}
-      onSelect={(
-        _event: React.MouseEvent<Element, MouseEvent> | React.ChangeEvent<Element>,
-        selection: string | SelectOptionObject
-      ) => onFilterSelect(selection as string)}
+      aria-label={t('Select filter options')}
+      onSelect={(selection) => onFilterSelect(selection as string)}
       selections={selectedFilters}
-      isGrouped
-      isOpen={isFilterOpen}
-      placeholderText={
-        <div>
-          <FilterIcon className={filterLabelMargin} />
-          {t('Filter')}
-        </div>
-      }
-      noResultsFoundText={t('No results found')}
+      toggleIcon={<FilterIcon />}
+      placeholder={t('Filter')}
     >
       {selectOptions}
-    </Select>
+    </AcmSelectBase>
   )
 }

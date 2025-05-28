@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent, { TargetElement } from '@testing-library/user-event'
+import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { RecoilRoot } from 'recoil'
 import {
@@ -58,22 +58,28 @@ describe('OverviewClusterLabelSelector', () => {
   }
 
   test('Renders selection correctly', async () => {
-    const { container, getAllByText, getByText } = render(<RenderOverviewClusterLabelSelector />)
+    const { getAllByText, getByText } = render(<RenderOverviewClusterLabelSelector />)
 
     // pick the label key - cloud
-    await waitFor(() => expect(container.querySelectorAll('.pf-v5-c-select__toggle')[0]).toBeTruthy())
-    userEvent.click(container.querySelectorAll('.pf-v5-c-select__toggle')[0] as TargetElement)
+    screen
+      .getAllByRole('combobox', {
+        name: 'Type to filter',
+      })[0]
+      .click()
     await waitFor(() => expect(getByText('cloud')).toBeTruthy())
     userEvent.click(getByText('cloud'))
 
     // pick the label value - Amazon
-    await waitFor(() => expect(container.querySelectorAll('.pf-v5-c-select__toggle')[1]).toBeTruthy())
-    userEvent.click(container.querySelectorAll('.pf-v5-c-select__toggle')[1] as TargetElement)
+    screen
+      .getAllByRole('combobox', {
+        name: 'Type to filter',
+      })[1]
+      .click()
     await waitFor(() => expect(screen.getByText('Amazon')).toBeTruthy())
     userEvent.click(screen.getByText('Amazon'))
 
     // Validate chips
-    await waitFor(() => expect(getAllByText('cloud')[1]).toBeTruthy())
+    await waitFor(() => expect(getAllByText('cloud')[0]).toBeTruthy())
     await waitFor(() => expect(getAllByText('Amazon')[1]).toBeTruthy())
   })
 

@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 'use strict'
 
-import React, { SyntheticEvent, useCallback, useState } from 'react'
-import { Spinner } from '@patternfly/react-core'
-import { Select, SelectOption, SelectOptionObject, SelectVariant } from '@patternfly/react-core/deprecated'
+import React, { SyntheticEvent, useCallback } from 'react'
+import { Spinner, SelectOption } from '@patternfly/react-core'
+import { AcmSelectBase, SelectVariant, SelectOptionObject } from '../../AcmSelectBase'
 import ControlPanelFormGroup from './ControlPanelFormGroup'
 import get from 'lodash/get'
 import { TFunction } from 'react-i18next'
@@ -18,7 +18,6 @@ const ControlPanelSingleSelect = (props: {
 }) => {
   const { controlId, i18n, control, controlData, handleChange } = props
   const { footer } = useDynamicPropertyValues(control, controlData, i18n, ['footer'])
-  const [open, setOpen] = useState(false)
 
   const setControlRef = useCallback(
     (ref: HTMLDivElement | null) => {
@@ -87,37 +86,29 @@ const ControlPanelSingleSelect = (props: {
             </div>
           ) : (
             <div style={{ position: 'relative' }}>
-              <Select
+              <AcmSelectBase
                 id={controlId}
                 key={key}
                 aria-labelledby={`${controlId}-label`}
                 spellCheck={false}
-                autoComplete="new-password"
-                isOpen={open}
-                onToggle={() => {
-                  setOpen(!open)
-                }}
                 variant={SelectVariant.typeahead}
-                clearSelectionsAriaLabel={i18n('Clear selected item')}
-                onSelect={(_event, value) => {
+                onSelect={(value) => {
                   onChange(value)
-                  setOpen(false)
                 }}
                 selections={active}
                 onClear={() => {
                   onChange(undefined)
                 }}
-                placeholderText={placeholder}
+                placeholder={placeholder}
                 isDisabled={disabled}
                 data-testid={`select-${controlId}`}
                 footer={footer}
-                noResultsFoundText={i18n('No results found')}
               >
                 {available.map((item: any, inx: React.Key) => {
                   /* eslint-disable-next-line react/no-array-index-key */
                   return <SelectOption key={inx} value={item} />
                 })}
-              </Select>
+              </AcmSelectBase>
               {fetchAvailable && !active && (
                 <div
                   style={{

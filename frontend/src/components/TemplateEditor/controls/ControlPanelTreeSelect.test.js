@@ -78,7 +78,7 @@ describe('ControlPanelTreeSelect component', () => {
     const { rerender } = render(<ControlPanelTreeSelect {...propz} />)
 
     const input = screen.getByRole('combobox', {
-      name: /listbox input field/i,
+      name: /Instance type/i,
     })
     // // select item
     expect(input).toHaveValue('c2-standard-4 - 4 vCPU, 16 GiB RAM - Compute Optimized')
@@ -123,7 +123,7 @@ describe('ControlPanelTreeSelect component', () => {
     render(<ControlPanelTreeSelect {...props} />)
 
     const input = screen.getByRole('combobox', {
-      name: /listbox input field/i,
+      name: /Instance type/i,
     })
     // search
     userEvent.type(input, 'm2-ultramem-4164')

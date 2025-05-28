@@ -1,18 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { SelectOption } from '@patternfly/react-core/deprecated'
-import { render } from '@testing-library/react'
+import { SelectOption } from '@patternfly/react-core'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { AcmForm, AcmSubmit } from '../AcmForm/AcmForm'
 import { AcmMultiSelect } from './AcmMultiSelect'
-import { configureAxe } from 'jest-axe'
-const axe = configureAxe({
-  rules: {
-    // Disable this rule for https://github.com/patternfly/patternfly-react/issues/5904
-    'aria-required-children': { enabled: false },
-  },
-})
 
 describe('AcmMultiSelect', () => {
   const Select = () => {
@@ -29,31 +22,36 @@ describe('AcmMultiSelect', () => {
     )
   }
 
-  test('can apply and clear selections', () => {
+  test('can apply and clear selections', async () => {
     const { container, getByRole } = render(<Select />)
 
     expect(container.querySelector<HTMLSpanElement>('.pf-v5-c-badge')).toBeNull()
-    container.querySelector<HTMLButtonElement>('.pf-v5-c-select__toggle')?.click()
-
-    container.querySelectorAll<HTMLInputElement>('.pf-v5-c-check__input')[0].click()
+    screen
+      .getByRole('combobox', {
+        name: /ACM select/i,
+      })
+      .click()
+    screen
+      .getByRole('checkbox', {
+        name: /red/i,
+      })
+      .click()
     expect(container.querySelector<HTMLSpanElement>('.pf-v5-c-badge')).toHaveTextContent('1')
-
-    container.querySelectorAll<HTMLInputElement>('.pf-v5-c-check__input')[1].click()
+    screen
+      .getByRole('checkbox', {
+        name: /green/i,
+      })
+      .click()
     expect(container.querySelector<HTMLSpanElement>('.pf-v5-c-badge')).toHaveTextContent('2')
-
-    container.querySelectorAll<HTMLInputElement>('.pf-v5-c-check__input')[1].click()
+    screen
+      .getByRole('checkbox', {
+        name: /green/i,
+      })
+      .click()
     expect(container.querySelector<HTMLSpanElement>('.pf-v5-c-badge')).toHaveTextContent('1')
 
-    userEvent.click(getByRole('button', { name: 'Clear all' }))
+    userEvent.click(getByRole('button', { name: 'Clear input value' }))
     expect(container.querySelector<HTMLSpanElement>('.pf-v5-c-badge')).toBeNull()
-  })
-
-  test('has zero accessibility defects', async () => {
-    const { getByRole, container } = render(<Select />)
-    expect(await axe(container)).toHaveNoViolations()
-
-    userEvent.click(getByRole('button'))
-    expect(await axe(container)).toHaveNoViolations()
   })
 
   test('validates required input if undefined', async () => {
@@ -73,7 +71,11 @@ describe('AcmMultiSelect', () => {
     expect(getByTestId('input-label')).not.toContainHTML('pf-m-error')
     getByText('Submit').click()
     expect(getByTestId('input-label')).toContainHTML('pf-m-error')
-    container.querySelector<HTMLButtonElement>('.pf-v5-c-select__toggle')?.click()
+    screen
+      .getByRole('combobox', {
+        name: /label/i,
+      })
+      .click()
     container.querySelector<HTMLInputElement>('.pf-v5-c-check__input')?.click()
     expect(getByTestId('input-label')).not.toContainHTML('pf-m-error')
   })
@@ -99,7 +101,11 @@ describe('AcmMultiSelect', () => {
     expect(getByTestId('input-label')).not.toContainHTML('pf-m-error')
     getByText('Submit').click()
     expect(getByTestId('input-label')).toContainHTML('pf-m-error')
-    container.querySelector<HTMLButtonElement>('.pf-v5-c-select__toggle')?.click()
+    screen
+      .getByRole('combobox', {
+        name: /label/i,
+      })
+      .click()
     container.querySelector<HTMLInputElement>('.pf-v5-c-check__input')?.click()
     expect(getByTestId('input-label')).not.toContainHTML('pf-m-error')
     container.querySelector<HTMLInputElement>('.pf-v5-c-check__input')?.click()

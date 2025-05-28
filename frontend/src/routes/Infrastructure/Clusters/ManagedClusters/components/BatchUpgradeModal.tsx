@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Skeleton, Stack, StackItem, Text, TextContent, TextVariants } from '@patternfly/react-core'
-import { SelectOption } from '@patternfly/react-core/deprecated'
+import { Skeleton, Stack, StackItem, Text, TextContent, TextVariants, SelectOption } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { useEffect, useMemo, useState } from 'react'
 import { BulkActionModal } from '../../../../../components/BulkActionModal'

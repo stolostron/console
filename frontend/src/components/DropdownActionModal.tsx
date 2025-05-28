@@ -1,8 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { AcmAlert, AcmForm, AcmFormProvider, AcmModal, AcmSelect, AcmSubmit } from '../ui-components'
-import { ActionGroup, Button, ButtonVariant, ModalVariant } from '@patternfly/react-core'
-import { SelectOption } from '@patternfly/react-core/deprecated'
+import { ActionGroup, Button, ButtonVariant, ModalVariant, SelectOption } from '@patternfly/react-core'
 import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from '../lib/acm-i18next'
 import { IRequestResult } from '../resources/utils'

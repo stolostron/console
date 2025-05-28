@@ -40,7 +40,11 @@ describe('ClusterDetailsContainer with no clusters', () => {
   })
 
   it('renders as expected', () => {
-    expect(container.querySelector(`button[aria-label="Options menu"]`)).toBeTruthy()
+    expect(
+      screen.getByRole('combobox', {
+        name: 'Type to filter',
+      })
+    ).toBeTruthy()
   })
 })
 
@@ -161,8 +165,8 @@ describe('ClusterDetailsContainer test functions', () => {
   })
 
   it('work as expected', () => {
-    Object.prototype.toString.call(instance.handleSelection({}, 'vbirsan1-remote'))
-    Object.prototype.toString.call(instance.handleSelection({}, undefined))
+    Object.prototype.toString.call(instance.handleSelection('vbirsan1-remote'))
+    Object.prototype.toString.call(instance.handleSelection(undefined))
     Object.prototype.toString.call(instance.handleSelectionClear())
     Object.prototype.toString.call(instance.handleFirstClick())
     Object.prototype.toString.call(instance.handleLastClick())

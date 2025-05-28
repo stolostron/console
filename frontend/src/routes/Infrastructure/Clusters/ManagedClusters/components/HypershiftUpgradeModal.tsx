@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ActionGroup, Button, ButtonVariant, Checkbox, ModalVariant } from '@patternfly/react-core'
-import { SelectOption } from '@patternfly/react-core/deprecated'
+import { ActionGroup, Button, ButtonVariant, Checkbox, ModalVariant, SelectOption } from '@patternfly/react-core'
 import { Table /* data-codemods */, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table'
 import {
   AgentK8sResource,
