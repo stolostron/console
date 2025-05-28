@@ -326,7 +326,7 @@ const AccessControlManagementForm = ({
         ],
       },
       RoleBindingSection({
-        title: 'Role Bindings',
+        title: t('Role Bindings'),
         clusterRoles,
         idPrefix: 'rb',
         isViewing,
@@ -351,7 +351,7 @@ const AccessControlManagementForm = ({
       }),
 
       RoleBindingSection({
-        title: 'Cluster Role Binding',
+        title: t('Cluster Role Binding'),
         clusterRoles,
         idPrefix: 'crb',
         isViewing,

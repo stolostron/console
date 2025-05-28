@@ -42,8 +42,8 @@ export const RoleBindingSection = ({
 
   return {
     type: 'Section' as const,
-    title: t(title),
-    wizardTitle: t(title),
+    title: title,
+    wizardTitle: title,
     inputs: [
       {
         id: `${idPrefix}-namespaces`,
