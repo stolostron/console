@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { useTranslation } from '../../lib/acm-i18next'
 import { Stack, StackItem, Title } from '@patternfly/react-core'
 import { AcmLabels } from '../../ui-components'

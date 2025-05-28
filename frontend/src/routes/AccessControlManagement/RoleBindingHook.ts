@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { useEffect, useState } from 'react'
 
 const RoleBindingHook = <T>() => {
