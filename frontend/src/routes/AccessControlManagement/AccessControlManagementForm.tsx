@@ -195,7 +195,7 @@ const AccessControlManagementForm = ({
               roleRef: {
                 name: role,
                 apiGroup: 'rbac.authorization.k8s.io',
-                kind: 'Role',
+                kind: 'ClusterRole',
               },
               subjects: selectedSubjectNamesRB.map((name) => ({
                 name,
