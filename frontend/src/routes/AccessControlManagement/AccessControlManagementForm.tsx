@@ -122,7 +122,11 @@ const AccessControlManagementForm = ({
     setSelectedRB((accessControl?.spec?.roleBindings ?? []) as RoleBinding[])
     if (accessControl?.spec?.roleBindings) {
       setSelectedSubjectNamesRB([
-        ...new Set(accessControl.spec.roleBindings.filter((e) => e.subject).map((rb) => rb.subject!.name)),
+        ...new Set(
+          accessControl.spec.roleBindings?.flatMap((rb) =>
+            rb.subject ? [rb.subject.name] : (rb.subjects?.map((s) => s.name) ?? [])
+          )
+        ),
       ])
       setSelectedRoleNamesRB([...new Set(accessControl.spec.roleBindings.map((rb) => rb.roleRef.name))])
       setSelectedNamespacesRB([...new Set(accessControl.spec.roleBindings.map((rb) => rb.namespace))])
@@ -137,8 +141,10 @@ const AccessControlManagementForm = ({
 
   useEffect(() => {
     if (accessControl?.spec?.clusterRoleBinding) {
-      setSelectedSubjectNamesCRB([accessControl.spec.clusterRoleBinding.subject?.name ?? ''])
-      setSelectedRoleNameCRB(accessControl.spec.clusterRoleBinding.roleRef?.name ?? '')
+      const crb = accessControl.spec.clusterRoleBinding
+      const names = crb.subjects?.map((s) => s.name) ?? (crb.subject ? [crb.subject.name] : [])
+      setSelectedSubjectNamesCRB([...new Set(names)])
+      setSelectedRoleNameCRB(crb.roleRef?.name ?? '')
     }
   }, [accessControl?.spec.clusterRoleBinding, setSelectedRoleNameCRB, setSelectedSubjectNamesCRB])
 
@@ -180,21 +186,19 @@ const AccessControlManagementForm = ({
 
   const stateToData = () => {
     const roleBindings = selectedNamespacesRB.flatMap((ns) =>
-      selectedSubjectNamesRB.flatMap((user) =>
-        selectedRoleNamesRB.map((role) => ({
-          namespace: ns,
-          roleRef: {
-            name: role,
-            apiGroup: 'rbac.authorization.k8s.io',
-            kind: 'ClusterRole',
-          },
-          subject: {
-            name: user,
-            apiGroup: 'rbac.authorization.k8s.io',
-            kind: selectedSubjectTypeRB,
-          },
-        }))
-      )
+      selectedRoleNamesRB.map((role) => ({
+        namespace: ns,
+        roleRef: {
+          name: role,
+          apiGroup: 'rbac.authorization.k8s.io',
+          kind: 'Role',
+        },
+        subjects: selectedSubjectNamesRB.map((name) => ({
+          name,
+          apiGroup: 'rbac.authorization.k8s.io',
+          kind: selectedSubjectTypeRB,
+        })),
+      }))
     )
 
     const spec: any = {
@@ -211,11 +215,11 @@ const AccessControlManagementForm = ({
           apiGroup: 'rbac.authorization.k8s.io',
           kind: 'ClusterRole',
         },
-        subject: {
-          name: selectedSubjectNamesCRB[0],
+        subjects: selectedSubjectNamesCRB.map((name) => ({
+          name,
           apiGroup: 'rbac.authorization.k8s.io',
           kind: selectedSubjectTypeCRB,
-        },
+        })),
       }
     }
 
@@ -340,10 +344,15 @@ const AccessControlManagementForm = ({
           value: namespace,
           text: namespace,
         })),
-        subjectOptions: ((selectedSubjectTypeRB === 'Group' ? groups : users) || []).map((val) => ({
-          id: val.metadata.uid!,
-          value: val.metadata.name!,
-        })),
+        subjectOptions: Array.from(
+          new Set([
+            ...((selectedSubjectTypeRB === 'Group' ? groups : users) || []).map((val) => ({
+              id: val.metadata.uid!,
+              value: val.metadata.name!,
+            })),
+            ...selectedSubjectNamesRB.map((name) => ({ id: name, value: name })),
+          ])
+        ),
         onNamespaceChange: onNamespaceChangeRB,
         onSubjectTypeChange: onSubjectTypeChangeRB,
         onSubjectNameChange: onSubjectNameChangeRB,
@@ -361,10 +370,15 @@ const AccessControlManagementForm = ({
         selectedRoles: selectedRoleNameCRB ? [selectedRoleNameCRB] : [],
         selectedSubjectType: selectedSubjectTypeCRB,
         namespaceOptions: [{ id: 'all', value: 'All Namespaces', text: 'All Namespaces', isDisabled: true }],
-        subjectOptions: ((selectedSubjectTypeCRB === 'Group' ? groups : users) || []).map((val) => ({
-          id: val.metadata.uid!,
-          value: val.metadata.name!,
-        })),
+        subjectOptions: Array.from(
+          new Set([
+            ...((selectedSubjectTypeCRB === 'Group' ? groups : users) || []).map((val) => ({
+              id: val.metadata.uid!,
+              value: val.metadata.name!,
+            })),
+            ...selectedSubjectNamesCRB.map((name) => ({ id: name, value: name })),
+          ])
+        ),
         onNamespaceChange: () => {},
         onSubjectTypeChange: onSubjectTypeChangeCRB,
         onSubjectNameChange: onSubjectNameChangeCRB,
@@ -382,6 +396,7 @@ const AccessControlManagementForm = ({
         const patch: { op: 'replace'; path: string; value: unknown }[] = []
         const metadata: AccessControl['metadata'] = accessControl.metadata!
         patch.push({ op: 'replace', path: `/spec/roleBindings`, value: accessControl.spec.roleBindings })
+        patch.push({ op: 'replace', path: `/spec/clusterRoleBinding`, value: accessControl.spec.clusterRoleBinding })
         return patchResource(accessControl, patch).promise.then(() => {
           toastContext.addAlert({
             title: t('Acccess Control updated'),

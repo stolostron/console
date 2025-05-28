@@ -1110,6 +1110,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
               break
             case 'Multiselect':
             case 'GroupedMultiselect':
+            case 'CreatableMultiselect':
               input.onChange([])
               break
           }
