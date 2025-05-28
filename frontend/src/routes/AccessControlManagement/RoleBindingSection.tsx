@@ -40,7 +40,7 @@ export const RoleBindingSection = ({
 }: RoleBindingSectionProps) => {
   const { t } = useTranslation()
 
-  return {
+  return isViewing && selectedRoles.length === 0 && selectedSubjectNames.length === 0 ? null : {
     type: 'Section' as const,
     title: title,
     wizardTitle: title,

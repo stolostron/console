@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { SetStateAction, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { AcmDataFormPage } from '../../components/AcmDataForm'
-import { FormData } from '../../components/AcmFormData'
+import { FormData, Section } from '../../components/AcmFormData'
 import { LostChangesContext } from '../../components/LostChanges'
 import { useTranslation } from '../../lib/acm-i18next'
 import { useQuery } from '../../lib/useQuery'
@@ -183,33 +183,29 @@ const AccessControlManagementForm = ({
 
   const { cancelForm } = useContext(LostChangesContext)
   const guardedHandleModalToggle = useCallback(() => cancelForm(handleModalToggle), [cancelForm, handleModalToggle])
+  const isRBValid = selectedRoleNamesRB.length > 0 && selectedSubjectNamesRB.length > 0
+  const isCRBValid = !!selectedRoleNameCRB && selectedSubjectNamesCRB.length > 0
 
   const stateToData = () => {
-    const roleBindings = selectedNamespacesRB.flatMap((ns) =>
-      selectedRoleNamesRB.map((role) => ({
-        namespace: ns,
-        roleRef: {
-          name: role,
-          apiGroup: 'rbac.authorization.k8s.io',
-          kind: 'Role',
-        },
-        subjects: selectedSubjectNamesRB.map((name) => ({
-          name,
-          apiGroup: 'rbac.authorization.k8s.io',
-          kind: selectedSubjectTypeRB,
-        })),
-      }))
-    )
-
-    const spec: any = {
-      roleBindings,
+    const spec: any = isRBValid ? { roleBindings: selectedNamespacesRB.flatMap((ns) =>
+        selectedRoleNamesRB.map((role) => ({
+          namespace: ns,
+          roleRef: {
+            name: role,
+            apiGroup: 'rbac.authorization.k8s.io',
+            kind: 'Role',
+          },
+          subjects: selectedSubjectNamesRB.map((name) => ({
+            name,
+            apiGroup: 'rbac.authorization.k8s.io',
+            kind: selectedSubjectTypeRB,
+          })),
+        }))
+      )} : {}
     }
 
-    if (selectedSubjectNamesCRB.length && selectedRoleNameCRB) {
+    if (isCRBValid) {
       spec.clusterRoleBinding = {
-        ...(accessControl?.spec.clusterRoleBinding?.name && {
-          name: accessControl.spec.clusterRoleBinding.name,
-        }),
         roleRef: {
           name: selectedRoleNameCRB,
           apiGroup: 'rbac.authorization.k8s.io',
@@ -294,11 +290,10 @@ const AccessControlManagementForm = ({
             label: t('Cluster'),
             placeholder: 'Select or enter cluster name',
             value: namespace,
-            onChange: (value) => {
+            onChange: (value: SetStateAction<string>) => {
               setNamespace(value)
             },
             options: clusters,
-            isRequired: true,
           },
           {
             id: 'name',
@@ -307,8 +302,7 @@ const AccessControlManagementForm = ({
             placeholder: 'Enter access control name',
             value: name,
             onChange: setName,
-            isRequired: true,
-            validation: (value) => validateKubernetesResourceName(value, undefined, t),
+            validation: (value: string) => validateKubernetesResourceName(value, undefined, t),
           },
           {
             id: 'status',
@@ -323,7 +317,6 @@ const AccessControlManagementForm = ({
             label: t('Created at'),
             value: createdDate,
             onChange: setCreatedDate,
-            isRequired: true,
             isDisabled: false,
             isHidden: isCreatable || isEditing,
           },
@@ -334,7 +327,7 @@ const AccessControlManagementForm = ({
         clusterRoles,
         idPrefix: 'rb',
         isViewing,
-        isRequired: !selectedRoleNameCRB && !selectedSubjectNamesCRB.length,
+        isRequired: false,
         selectedNamespaces: selectedNamespacesRB,
         selectedSubjectNames: selectedSubjectNamesRB,
         selectedRoles: selectedRoleNamesRB,
@@ -345,13 +338,15 @@ const AccessControlManagementForm = ({
           text: namespace,
         })),
         subjectOptions: Array.from(
-          new Set([
-            ...((selectedSubjectTypeRB === 'Group' ? groups : users) || []).map((val) => ({
-              id: val.metadata.uid!,
-              value: val.metadata.name!,
-            })),
-            ...selectedSubjectNamesRB.map((name) => ({ id: name, value: name })),
-          ])
+          new Map(
+            [
+              ...((selectedSubjectTypeRB === 'Group' ? groups : users) || []).map((val) => ({
+                id: val.metadata.uid!,
+                value: val.metadata.name!,
+              })),
+              ...selectedSubjectNamesRB.map((name) => ({ id: name, value: name })),
+            ].map((item) => [item.value, item])
+          ).values()
         ),
         onNamespaceChange: onNamespaceChangeRB,
         onSubjectTypeChange: onSubjectTypeChangeRB,
@@ -364,29 +359,40 @@ const AccessControlManagementForm = ({
         clusterRoles,
         idPrefix: 'crb',
         isViewing,
-        isRequired: !selectedSubjectNamesRB.length && !selectedRoleNamesRB.length,
+        isRequired: false,
         selectedNamespaces: ['All Namespaces'],
         selectedSubjectNames: selectedSubjectNamesCRB,
         selectedRoles: selectedRoleNameCRB ? [selectedRoleNameCRB] : [],
         selectedSubjectType: selectedSubjectTypeCRB,
         namespaceOptions: [{ id: 'all', value: 'All Namespaces', text: 'All Namespaces', isDisabled: true }],
         subjectOptions: Array.from(
-          new Set([
-            ...((selectedSubjectTypeCRB === 'Group' ? groups : users) || []).map((val) => ({
-              id: val.metadata.uid!,
-              value: val.metadata.name!,
-            })),
-            ...selectedSubjectNamesCRB.map((name) => ({ id: name, value: name })),
-          ])
+          new Map(
+            [
+              ...((selectedSubjectTypeCRB === 'Group' ? groups : users) || []).map((val) => ({
+                id: val.metadata.uid!,
+                value: val.metadata.name!,
+              })),
+              ...selectedSubjectNamesCRB.map((name) => ({ id: name, value: name })),
+            ].map((item) => [item.value, item])
+          ).values()
         ),
         onNamespaceChange: () => {},
         onSubjectTypeChange: onSubjectTypeChangeCRB,
         onSubjectNameChange: onSubjectNameChangeCRB,
         onRoleChange: onRoleChangeCRB,
       }),
-    ],
+    ].filter(Boolean) as Section[],
 
     submit: () => {
+      if (!isRBValid && !isCRBValid) {
+        toastContext.addAlert({
+          title: t('Validation error'),
+          message: t('You must define at least one Role Binding or Cluster Role Binding.'),
+          type: 'danger',
+          autoClose: true,
+        })
+        return Promise.reject()
+      }
       let accessControlData = formData?.customData ?? stateToData()
       if (Array.isArray(accessControlData)) {
         accessControlData = accessControlData[0]
