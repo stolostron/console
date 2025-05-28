@@ -45,6 +45,6 @@ export async function getMultiClusterHub(noCache?: boolean): Promise<MultiCluste
 }
 
 export async function getMultiClusterHubComponents(noCache?: boolean): Promise<MultiClusterHubComponent[] | undefined> {
-  const components = await getMultiClusterHub(noCache)
-  return components.spec?.overrides?.components
+  const multiClusterHub = await getMultiClusterHub(noCache)
+  return multiClusterHub.spec?.overrides?.components
 }
