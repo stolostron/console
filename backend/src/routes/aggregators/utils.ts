@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import get from 'get-value'
-import sizeof from 'object-sizeof'
-import { getKubeResources, getHubClusterName, getEventCache } from '../events'
+import { getKubeResources, getHubClusterName, getEventCache, getEventDict } from '../events'
 import {
   Cluster,
   IResource,
@@ -15,20 +14,27 @@ import {
   ClusterDeployment,
   HostedClusterK8sResource,
 } from '../../resources/resource'
-import { ITransformedResource } from '../../lib/pagination'
-import { AppColumns, ApplicationCache, ApplicationCacheType } from './applications'
+import {
+  AppColumns,
+  ApplicationCache,
+  ApplicationCacheType,
+  getAppDict,
+  ICompressedResource,
+  ITransformedResource,
+} from './applications'
 import { logger } from '../../lib/logger'
 import { getMultiClusterHub } from '../../lib/multi-cluster-hub'
 import { getMultiClusterEngine } from '../../lib/multi-cluster-engine'
 import { ServerSideEvents } from '../../lib/server-side-events'
 import { getAppSetAppsMap } from './applicationsArgo'
+import { deflateResource, inflateApp } from '../../lib/compression'
 
 //////////////////////////////////////////////////////////////////
 ////////////// TRANSFORM /////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
 
 export function transform(
-  items: ITransformedResource[],
+  items: ITransformedResource[] | ICompressedResource[],
   isRemote?: boolean,
   localCluster?: Cluster,
   clusters?: Cluster[]
@@ -36,14 +42,19 @@ export function transform(
   const subscriptions = getKubeResources('Subscription', 'apps.open-cluster-management.io/v1')
   const placementDecisions = getKubeResources('PlacementDecision', 'cluster.open-cluster-management.io/v1beta1')
   const localClusterName = getHubClusterName()
-  items.forEach((app) => {
+  items.forEach((app, inx) => {
+    app = inflateApp(app)
     const type = getApplicationType(app)
     const _clusters = getApplicationClusters(app, type, subscriptions, placementDecisions, localCluster, clusters)
-    app.transform = getTransform(app, type, _clusters)
-    app.remoteClusters =
-      (isRemote || (type === 'subscription' && _clusters.filter((n) => n !== localClusterName)).length > 0) && _clusters
-  })
-  return { resources: items }
+    items[inx] = {
+      transform: getTransform(app, type, _clusters),
+      remoteClusters:
+        (isRemote || (type === 'subscription' && _clusters.filter((n) => n !== localClusterName)).length > 0) &&
+        _clusters,
+      compressed: deflateResource(app, getAppDict()),
+    }
+  }) as unknown as ICompressedResource[]
+  return { resources: items as unknown as ICompressedResource[] }
 }
 
 export function getTransform(app: IResource, type: string, clusters: string[]): string[][] {
@@ -390,7 +401,7 @@ export function getNextApplicationPageChunk(
   // if no cluster name chucks left, create a new array of chunks
   if (applicationPageChunks.length === 0) {
     // get all apps
-    let applications: ITransformedResource[] = []
+    let applications: ICompressedResource[] = []
     if (applicationCache[remoteCacheKey]?.resources) {
       applications = applicationCache[remoteCacheKey].resources
     } else if (applicationCache[remoteCacheKey]?.resourceMap) {
@@ -455,7 +466,7 @@ export function getNextApplicationPageChunk(
         })
 
         // create a key to values map
-        const reverse: Record<string, IResource[]> = {}
+        const reverse: Record<string, ICompressedResource[]> = {}
         Object.entries(applicationCache[remoteCacheKey].resourceMap).forEach(([key, value]) => {
           key.split(',').forEach((k) => {
             reverse[k[0]] = value
@@ -492,7 +503,7 @@ export function cacheRemoteApps(
 }
 
 export function getApplicationsHelper(applicationCache: ApplicationCacheType, keys: string[]) {
-  const items: ITransformedResource[] = []
+  const items: ICompressedResource[] = []
   keys.forEach((key) => {
     if (applicationCache[key]?.resources) {
       items.push(...applicationCache[key].resources)
@@ -633,19 +644,33 @@ export function logApplicationCountChanges(applicationCache: ApplicationCacheTyp
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const memUsed = (cache: any) => {
-    return `${Math.round(sizeof(cache) / 1024)
+    return `${Math.round(sizeOf(cache) / 1024)
       .toString()
       .replace(/\B(?=(\d{3})+(?!\d))/g, ',')} KB`
   }
   logger.info({
     msg: 'memory',
     caches: {
-      appCache: memUsed(applicationCache),
-      eventCache: memUsed(getEventCache()),
       clients: Object.keys(ServerSideEvents.getClients()).length,
-      events: memUsed(ServerSideEvents.getEvents()),
+      appCache: memUsed(applicationCache),
+      appDict: memUsed(getAppDict()),
+      eventCache: memUsed(getEventCache()),
+      eventDict: memUsed(getEventDict()),
     },
   })
+}
+
+export function sizeOf(data: unknown) {
+  let arraySize = 0
+  const serializedObj = JSON.stringify(data, (key, value) => {
+    if (key === 'data' && Array.isArray(value)) {
+      arraySize += value.length
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      return value
+    }
+  })
+  return Buffer.byteLength(serializedObj ?? '', 'utf8') + arraySize
 }
 
 //////////////////////////////////////////////////////////////////
