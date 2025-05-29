@@ -16,7 +16,7 @@ import { getCACertificate, getServiceAccountToken } from '../lib/serviceAccountT
 import { getAuthenticatedToken } from '../lib/token'
 import { IResource } from '../resources/resource'
 import { polledAggregation } from './aggregator'
-import { IWatchOptions } from '../resources/wath-options'
+import { IWatchOptions } from '../resources/watch-options'
 
 const { map, split } = eventStream
 const pipeline = promisify(Stream.pipeline)

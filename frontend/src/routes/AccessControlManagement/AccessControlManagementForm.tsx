@@ -93,8 +93,9 @@ const AccessControlManagementForm = ({
     setSelectedSubjectNames: setSelectedSubjectNamesRB,
     setSelectedRoleNames: setSelectedRoleNamesRB,
     setSelectedNamespaces: setSelectedNamespacesRB,
+    setSelectedSubjectKind: setSelectedSubjectKindRB,
     onNamespaceChange: onNamespaceChangeRB,
-    onSubjectTypeChange: onSubjectTypeChangeRB,
+    onSubjectKindChange: onSubjectTypeChangeRB,
     onSubjectNameChange: onSubjectNameChangeRB,
     onRoleChange: onRoleChangeRB,
   } = RoleBindingHook<RoleBinding>()
@@ -105,8 +106,9 @@ const AccessControlManagementForm = ({
     selectedSubjectNames: selectedSubjectNamesCRB,
     selectedRoleName: selectedRoleNameCRB,
     setSelectedSubjectNames: setSelectedSubjectNamesCRB,
+    setSelectedSubjectKind: setSelectedSubjectKindCRB,
     setSelectedRoleName: setSelectedRoleNameCRB,
-    onSubjectTypeChange: onSubjectTypeChangeCRB,
+    onSubjectKindChange: onSubjectKindChangeCRB,
     onSubjectNameChange: onSubjectNameChangeCRB,
     onRoleChange: onRoleChangeCRB,
   } = RoleBindingHook<string>()
@@ -131,6 +133,11 @@ const AccessControlManagementForm = ({
       ])
       setSelectedRoleNamesRB([...new Set(accessControl.spec.roleBindings.map((rb) => rb.roleRef.name))])
       setSelectedNamespacesRB([...new Set(accessControl.spec.roleBindings.map((rb) => rb.namespace))])
+      const firstSubject =
+        accessControl.spec.roleBindings[0]?.subject || accessControl.spec.roleBindings[0]?.subjects?.[0]
+      if (firstSubject) {
+        setSelectedSubjectKindRB(firstSubject.kind)
+      }
     }
   }, [
     accessControl?.spec.roleBindings,
@@ -138,16 +145,27 @@ const AccessControlManagementForm = ({
     setSelectedRoleNamesRB,
     setSelectedSubjectNamesRB,
     setSelectedRB,
+    setSelectedSubjectKindRB,
   ])
 
   useEffect(() => {
     if (accessControl?.spec?.clusterRoleBinding) {
       const crb = accessControl.spec.clusterRoleBinding
-      const names = crb.subjects?.map((s) => s.name) ?? (crb.subject ? [crb.subject.name] : [])
-      setSelectedSubjectNamesCRB([...new Set(names)])
+      const subjectNames = crb.subjects?.map((s) => s.name) ?? (crb.subject ? [crb.subject.name] : [])
+      setSelectedSubjectNamesCRB([...new Set(subjectNames)])
       setSelectedRoleNameCRB(crb.roleRef?.name ?? '')
+      const firstSubject =
+        accessControl.spec.clusterRoleBinding.subject || accessControl.spec.clusterRoleBinding.subjects?.[0]
+      if (firstSubject) {
+        setSelectedSubjectKindCRB(firstSubject.kind)
+      }
     }
-  }, [accessControl?.spec.clusterRoleBinding, setSelectedRoleNameCRB, setSelectedSubjectNamesCRB])
+  }, [
+    accessControl?.spec.clusterRoleBinding,
+    setSelectedRoleNameCRB,
+    setSelectedSubjectKindCRB,
+    setSelectedSubjectNamesCRB,
+  ])
 
   useEffect(() => {
     if (!isEditing && !isViewing && accessControl?.spec?.roleBindings && !selectedRoleBindings.length) {
@@ -370,7 +388,7 @@ const AccessControlManagementForm = ({
           ).values()
         ),
         onNamespaceChange: () => {},
-        onSubjectTypeChange: onSubjectTypeChangeCRB,
+        onSubjectTypeChange: onSubjectKindChangeCRB,
         onSubjectNameChange: onSubjectNameChangeCRB,
         onRoleChange: onRoleChangeCRB,
       }),

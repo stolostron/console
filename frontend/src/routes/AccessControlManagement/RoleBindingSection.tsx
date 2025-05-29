@@ -106,7 +106,7 @@ export const RoleBindingSection = ({
                   <AcmLabels isVertical={false} labels={selectedNamespaces} />
                 </StackItem>
                 <StackItem>
-                  <Title headingLevel="h6">{t('Users')}</Title>
+                  <Title headingLevel="h6">{selectedSubjectType === 'User' ? t('Users') : t('Groups')}</Title>
                   <AcmLabels isVertical={false} labels={selectedSubjectNames} />
                 </StackItem>
                 <StackItem>

@@ -23,7 +23,7 @@ import {
   getApplicationClusters,
   getTransform,
 } from './utils'
-import { IWatchOptions } from '../../resources/wath-options'
+import { IWatchOptions } from '../../resources/watch-options'
 
 interface IArgoAppLocalResource extends IResource {
   spec: {
