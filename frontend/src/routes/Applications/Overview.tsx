@@ -388,7 +388,9 @@ export default function ApplicationsOverview() {
   }, [allApplications, deletedApps, generateTransformData, resultCounts])
 
   const keyFn = useCallback(
-    (resource: IResource) => resource.metadata!.uid ?? `${resource.metadata!.namespace}/${resource.metadata!.name}`,
+    (resource: IResource) =>
+      resource.metadata!.uid ??
+      `${resource.status?.cluster ?? 'local-cluster'}/${resource.metadata!.namespace}/${resource.metadata!.name}`,
     []
   )
   const extensionColumns: IAcmTableColumn<IApplicationResource>[] = useMemo(
