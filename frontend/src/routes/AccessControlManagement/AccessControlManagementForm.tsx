@@ -405,7 +405,8 @@ const AccessControlManagementForm = ({
           submitForm()
           navigate(NavigationPath.accessControlManagement)
         })
-      } else {
+      }
+      if (isCreatable) {
         return createResource(accessControlData as IResource).promise.then((resource) => {
           toastContext.addAlert({
             title: t('Access Control created'),
