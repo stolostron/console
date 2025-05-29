@@ -1,16 +1,27 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* istanbul ignore file */
 import { useMediaQuery } from '@mui/material'
-import { Nav, NavExpandable, NavItem, NavList, Page, PageSidebar, Title, PageSidebarBody } from '@patternfly/react-core'
 import {
-  ApplicationLauncher,
-  ApplicationLauncherItem,
-  PageHeader,
-  PageHeaderTools,
-  PageHeaderToolsGroup,
-  PageHeaderToolsItem,
-} from '@patternfly/react-core/deprecated'
-import { CaretDownIcon } from '@patternfly/react-icons'
+  Nav,
+  NavExpandable,
+  NavItem,
+  NavList,
+  Page,
+  PageSidebar,
+  Title,
+  PageSidebarBody,
+  Dropdown,
+  MenuToggleElement,
+  MenuToggle,
+  DropdownItem,
+  Masthead,
+  MastheadBrand,
+  MastheadContent,
+  MastheadToggle,
+  PageToggleButton,
+  Flex,
+} from '@patternfly/react-core'
+import { BarsIcon, CaretDownIcon } from '@patternfly/react-icons'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import React, { lazy, ReactNode, Suspense, useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import { BrowserRouter, Link, Navigate, Route, Routes, useLocation } from 'react-router-dom-v5-compat'
@@ -67,9 +78,9 @@ interface IRouteGroup {
   routes: IRoute[]
 }
 
-function UserDropdownToggle() {
+function UserDropdown() {
+  const [userIsOpen, userSetOpen] = useState<boolean>(false)
   const [name, setName] = useState<string>('loading...')
-
   useEffect(() => {
     // Get the username from the console backend
     const resp = getUsername()
@@ -84,17 +95,6 @@ function UserDropdownToggle() {
       })
     return resp.abort
   }, [])
-
-  return (
-    <span className="pf-v5-c-dropdown__toggle">
-      <span data-test="username">{name}</span>
-      <CaretDownIcon className="pf-v5-c-dropdown__toggle-icon" />
-    </span>
-  )
-}
-
-function UserDropdown() {
-  const [userIsOpen, userSetOpen] = useState<boolean>(false)
 
   function configureClient() {
     // Get the user token endpoint from the console backend to launch to the OCP Display Token page
@@ -111,33 +111,37 @@ function UserDropdown() {
       })
   }
 
-  function LogoutButton() {
-    return (
-      <ApplicationLauncherItem component="button" id="logout" onClick={logout}>
-        Logout
-      </ApplicationLauncherItem>
-    )
-  }
-  function ConfigureButton() {
-    return (
-      <ApplicationLauncherItem component="button" id="configure" onClick={() => configureClient()}>
-        Configure client
-      </ApplicationLauncherItem>
-    )
-  }
-
   return (
-    <ApplicationLauncher
+    <Dropdown
       aria-label="user-menu"
       data-test="user-dropdown"
-      onSelect={() => userSetOpen(false)}
-      onToggle={() => userSetOpen(!userIsOpen)}
-      isOpen={userIsOpen}
-      items={[<ConfigureButton key="user_configure" />, <LogoutButton key="user_logout" />]}
       data-quickstart-id="qs-masthead-usermenu"
-      position="right"
-      toggleIcon={<UserDropdownToggle />}
-    />
+      onSelect={() => userSetOpen(false)}
+      toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+        <MenuToggle
+          ref={toggleRef}
+          onClick={() => {
+            userSetOpen(!userIsOpen)
+          }}
+          variant="plain"
+          isExpanded={userIsOpen}
+        >
+          <span className="pf-v5-c-dropdown__toggle">
+            <span data-test="username">{name}</span>
+            <CaretDownIcon className="pf-v5-c-dropdown__toggle-icon" />
+          </span>
+        </MenuToggle>
+      )}
+      isOpen={userIsOpen}
+      isPlain={true}
+    >
+      <DropdownItem key="user_configure" onClick={configureClient}>
+        Configure client
+      </DropdownItem>
+      <DropdownItem key="user_logout" onClick={logout}>
+        Logout
+      </DropdownItem>
+    </Dropdown>
   )
 }
 
@@ -291,6 +295,10 @@ export default function App() {
 function AppHeader() {
   const isFullWidthPage = useMediaQuery('(min-width: 1200px)', { noSsr: true })
   const [isNavOpen, setNavOpen] = useState(window?.localStorage?.getItem('isNavOpen') !== 'false')
+  const toggleNav = () => {
+    setNavOpen(!isNavOpen)
+    window.localStorage.setItem('isNavOpen', String(isNavOpen))
+  }
   useEffect(() => {
     if (!isFullWidthPage) {
       setNavOpen(false)
@@ -301,47 +309,38 @@ function AppHeader() {
     }
   }, [isFullWidthPage])
 
-  const headerTools = (
-    <PageHeaderTools>
-      <PageHeaderToolsGroup
-        visibility={{
-          default: 'hidden',
-          lg: 'visible',
-        }}
-      >
-        {process.env.NODE_ENV === 'development' && (
-          <PageHeaderToolsItem>
-            <ThemeSwitcher />
-          </PageHeaderToolsItem>
-        )}
-      </PageHeaderToolsGroup>
-      <PageHeaderToolsGroup>
-        <PageHeaderToolsItem>
-          <UserDropdown />
-        </PageHeaderToolsItem>
-      </PageHeaderToolsGroup>
-    </PageHeaderTools>
-  )
-
   return (
-    <PageHeader
-      logo={
-        <div style={{ display: 'flex', gap: 8, alignItems: 'start' }}>
-          <div style={{ color: 'white' }}>
-            <Title headingLevel="h4" style={{ fontWeight: 'bold', lineHeight: 1.2 }}>
-              @stolostron/console
-            </Title>
-            <Title headingLevel="h3" style={{ fontWeight: 'lighter', lineHeight: 1.2 }}>
-              <Truncate content="Development Console" />
-            </Title>
+    <Masthead style={{ gridTemplateColumns: '1fr auto' }}>
+      <Flex>
+        <MastheadToggle>
+          <PageToggleButton
+            variant="plain"
+            aria-label="Global navigation"
+            isSidebarOpen={isNavOpen}
+            onSidebarToggle={toggleNav}
+            id="vertical-nav-toggle"
+          >
+            <BarsIcon />
+          </PageToggleButton>
+        </MastheadToggle>
+        <MastheadBrand>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'start' }}>
+            <div style={{ color: 'white' }}>
+              <Title headingLevel="h4" style={{ fontWeight: 'bold', lineHeight: 1.2 }}>
+                @stolostron/console
+              </Title>
+              <Title headingLevel="h3" style={{ fontWeight: 'lighter', lineHeight: 1.2 }}>
+                <Truncate content="Development Console" />
+              </Title>
+            </div>
           </div>
-        </div>
-      }
-      logoProps={{ style: { textDecoration: 'none', cursor: 'default' } }}
-      headerTools={headerTools}
-      showNavToggle
-      isNavOpen={isNavOpen}
-    />
+        </MastheadBrand>
+        <MastheadContent style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+          {process.env.NODE_ENV === 'development' && <ThemeSwitcher />}
+          <UserDropdown />
+        </MastheadContent>
+      </Flex>
+    </Masthead>
   )
 }
 
