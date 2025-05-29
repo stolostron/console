@@ -15,6 +15,7 @@ import { AcmToastContext } from '../../ui-components'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { searchClient } from '../Search/search-sdk/search-client'
 import { useSearchCompleteLazyQuery, useSearchResultItemsQuery } from '../Search/search-sdk/search-sdk'
+import { selectedNamespacesToRoleBinding } from './AccessControlManagementFormHelper'
 import { AccessControlStatus } from './AccessControlStatus'
 import { RoleBindingHook } from './RoleBindingHook'
 import { RoleBindingSection } from './RoleBindingSection'
@@ -119,8 +120,8 @@ const AccessControlManagementForm = ({
   }, [accessControl?.metadata])
 
   useEffect(() => {
-    setSelectedRB((accessControl?.spec?.roleBindings ?? []) as RoleBinding[])
-    if (accessControl?.spec?.roleBindings) {
+    setSelectedRB((accessControl?.spec.roleBindings ?? []) as RoleBinding[])
+    if (accessControl?.spec.roleBindings) {
       setSelectedSubjectNamesRB([
         ...new Set(
           accessControl.spec.roleBindings?.flatMap((rb) =>
@@ -189,20 +190,11 @@ const AccessControlManagementForm = ({
   const stateToData = () => {
     const spec: any = isRBValid
       ? {
-          roleBindings: selectedNamespacesRB.flatMap((ns) =>
-            selectedRoleNamesRB.map((role) => ({
-              namespace: ns,
-              roleRef: {
-                name: role,
-                apiGroup: 'rbac.authorization.k8s.io',
-                kind: 'ClusterRole',
-              },
-              subjects: selectedSubjectNamesRB.map((name) => ({
-                name,
-                apiGroup: 'rbac.authorization.k8s.io',
-                kind: selectedSubjectTypeRB,
-              })),
-            }))
+          roleBindings: selectedNamespacesToRoleBinding(
+            selectedNamespacesRB,
+            selectedRoleNamesRB,
+            selectedSubjectNamesRB,
+            selectedSubjectTypeRB
           ),
         }
       : {}
@@ -246,14 +238,6 @@ const AccessControlManagementForm = ({
         path: `${pathPrefix}[0].metadata.name`,
         setState: setName,
       },
-      // TODO: correct below for role bindings, cluster role bindings, and multiple subjects for both
-      // {
-      //   path: `${pathPrefix}[0].spec.roleBindings`,
-      //   setState: (roleBindings: RoleBinding[]) => {
-      //     setSelectedRoleBindings(roleBindings?.length ? roleBindings : [])
-      //     setSubjectType(roleBindings?.[0]?.subject?.kind ?? subjectType)
-      //   },
-      // },
     ]
     return syncs
   }
@@ -400,7 +384,6 @@ const AccessControlManagementForm = ({
           type: 'danger',
           autoClose: true,
         })
-        return Promise.reject()
       }
       let accessControlData = formData?.customData ?? stateToData()
       if (Array.isArray(accessControlData)) {

@@ -23,6 +23,11 @@ type AccessControlManagementTableHelperProps = {
   navigate: NavigateFunction
 }
 
+const accessControlRoleBindingsFilter = (accessControl: AccessControl, kind: 'User' | 'Role') =>
+  accessControl.spec.roleBindings
+    ?.filter((e) => e.subject?.kind === kind && e.subject?.name)
+    .map((e) => e.subject?.name) ?? []
+
 const ACTIONS = {
   EDIT: ({
     accessControl,
@@ -81,7 +86,6 @@ const ACTIONS = {
     })
   },
   EXPORT_YAML: (accessControl: AccessControl, exportFilePrefix: string) => {
-    // TODO: assure proper content from the AccessControl
     const yamlContent = jsYaml.dump(accessControl)
     const fileName = `${exportFilePrefix}-${accessControl.metadata?.uid}-${Date.now()}.yaml`
     createDownloadFile(fileName, yamlContent, 'application/yaml')
@@ -117,7 +121,6 @@ const COLUMN_CELLS = {
     </span>
   ),
   USER_GROUP: (accessControl: AccessControl, t: TFunction) => {
-    // TODO: translate kind
     const roleBindingsSubjectNames =
       accessControl.spec.roleBindings?.flatMap((rb) =>
         rb.subject ? [`${rb.subject.kind}: ${rb.subject.name}`] : rb.subjects?.map((s) => `${s.kind}: ${s.name}`) ?? []
@@ -139,7 +142,6 @@ const COLUMN_CELLS = {
         labels={uniqueUsersGroups}
         expandedText={t('Show less')}
         collapsedText={t('show.more', { count: users_groups.length })}
-        // TODO: To properly translate 'count.items'
         allCollapsedText={t('count.items', { count: users_groups.length })}
         isCompact={uniqueUsersGroups.length > LABELS_LENGTH}
       />
@@ -160,7 +162,6 @@ const COLUMN_CELLS = {
         labels={uniqueRoles}
         expandedText={t('Show less')}
         collapsedText={t('show.more', { count: uniqueRoles.length })}
-        // TODO: To properly translate 'count.items'
         allCollapsedText={t('count.items', { count: uniqueRoles.length })}
         isCompact={uniqueRoles.length > LABELS_LENGTH}
       />
@@ -180,7 +181,6 @@ const COLUMN_CELLS = {
         labels={uniqueNamespaces}
         expandedText={t('Show less')}
         collapsedText={t('show.more', { count: uniqueNamespaces.length })}
-        // TODO: To properly translate 'count.items'
         allCollapsedText={t('count.items', { count: uniqueNamespaces.length })}
         isCompact={uniqueNamespaces.length > LABELS_LENGTH}
       />
@@ -211,7 +211,7 @@ const COLUMN_CELLS = {
           text: t('Edit Access Control'),
           isAriaDisabled: true,
           click: (accessControl) => ACTIONS.EDIT({ accessControl, navigate }),
-          rbac: [rbacPatch(accessControl)], // TODO: is this the proper way for checking RBAC
+          rbac: [rbacPatch(accessControl)],
         },
         {
           id: 'deleteAccessControl',
@@ -244,18 +244,17 @@ const accessControlTableColumns = ({ t, setModalProps, navigate }: AccessControl
     header: t('Status'),
     sort: 'accessControl.status?.conditions[0].status',
     cell: (accessControl: AccessControl) => COLUMN_CELLS.STATUS(accessControl),
-    exportContent: (accessControl: AccessControl) => accessControl.status?.conditions[0].status, // TODO to properly export
+    exportContent: (accessControl: AccessControl) => accessControl.status?.conditions[0].status,
   },
   {
     header: t('Cluster'),
     sort: 'metadata.namespace',
     search: 'metadata.namespace',
     cell: COLUMN_CELLS.CLUSTER,
-    exportContent: (accessControl: AccessControl) => accessControl.metadata?.namespace, // TODO: to clarify
+    exportContent: (accessControl: AccessControl) => accessControl.metadata?.namespace,
   },
   {
     header: t('Users/Groups'),
-    // TODO: users or groups
     search: (accessControl: AccessControl) => {
       const roleBindingUsers = accessControl.spec.roleBindings?.map((e) => e.subject?.name).join() ?? ''
       const clusterRoleBindingUser = accessControl.spec.clusterRoleBinding?.subject?.name ?? ''
@@ -338,60 +337,35 @@ const useFilters = ({
         label: t('access.add.user'),
         options: [
           ...new Set(
-            accessControls?.flatMap(
-              (accessControl) =>
-                accessControl.spec.roleBindings
-                  ?.filter((e) => e.subject?.kind === 'User' && e.subject?.name)
-                  .map((e) => e.subject?.name) ?? []
-            )
+            accessControls?.flatMap((accessControl) => accessControlRoleBindingsFilter(accessControl, 'User'))
           ),
         ]
           .filter((name): name is string => name !== undefined)
           .map((e) => ({ label: e, value: e }))
           .sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
         tableFilterFn: (selectedValues: string[], item: AccessControl) =>
-          selectedValues.some((e) =>
-            item.spec.roleBindings
-              ?.filter((e) => e.subject?.kind === 'User' && e.subject?.name)
-              .map((e) => e.subject?.name)
-              .includes(e)
-          ),
+          selectedValues.some((e) => accessControlRoleBindingsFilter(item, 'User').includes(e)),
       },
       {
         id: 'group',
         label: t('access.add.group'),
         options: [
           ...new Set(
-            accessControls?.flatMap(
-              (accessControl) =>
-                accessControl.spec.roleBindings
-                  ?.filter((e) => e.subject?.kind === 'User' && e.subject?.name)
-                  .map((e) => e.subject?.name) ?? []
-            )
+            accessControls?.flatMap((accessControl) => accessControlRoleBindingsFilter(accessControl, 'User'))
           ),
         ]
           .filter((name): name is string => name !== undefined)
           .map((e) => ({ label: e, value: e }))
           .sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
         tableFilterFn: (selectedValues: string[], item: AccessControl) =>
-          selectedValues.some((e) =>
-            item.spec.roleBindings
-              ?.filter((e) => e.subject?.kind === 'User' && e.subject?.name)
-              .map((e) => e.subject?.name)
-              .includes(e)
-          ),
+          selectedValues.some((e) => accessControlRoleBindingsFilter(item, 'User').includes(e)),
       },
       {
         id: 'role',
         label: t('Role'),
         options: [
           ...new Set(
-            accessControls?.flatMap(
-              (accessControl) =>
-                accessControl.spec.roleBindings
-                  ?.filter((e) => e.roleRef.kind === 'Role' && e.subject?.name)
-                  .map((e) => e.subject?.name) ?? []
-            )
+            accessControls?.flatMap((accessControl) => accessControlRoleBindingsFilter(accessControl, 'Role'))
           ),
         ]
           .filter((name): name is string => name !== undefined)

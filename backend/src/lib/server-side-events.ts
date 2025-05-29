@@ -4,10 +4,10 @@ import { Transform } from 'stream'
 import { clearInterval } from 'timers'
 import { Zlib } from 'zlib'
 import { getEncodeStream } from './compression'
-import { parseCookies, setCookie } from './cookies'
+import { setCookie } from './cookies'
+import { getGiganticEvents } from './gigantic'
 import { logger } from './logger'
 import { randomString } from './random-string'
-import { getGiganticEvents } from './gigantic'
 
 // TODO - RESET EVENT
 // TODO BOOKMARK EVENT

@@ -16,6 +16,7 @@ import { getCACertificate, getServiceAccountToken } from '../lib/serviceAccountT
 import { getAuthenticatedToken } from '../lib/token'
 import { IResource } from '../resources/resource'
 import { polledAggregation } from './aggregator'
+import { IWatchOptions } from '../resources/wath-options'
 
 const { map, split } = eventStream
 const pipeline = promisify(Stream.pipeline)
@@ -239,17 +240,6 @@ export function startWatching(): void {
     void listAndWatch(definition)
   }
 }
-
-export interface IWatchOptions {
-  apiVersion: string
-  kind: string
-  labelSelector?: Record<string, string>
-  fieldSelector?: Record<string, string>
-  // poll the resource list instead of watching it
-  // process the items in its own cache so not to overload event cache
-  isPolled?: boolean
-}
-
 // https://kubernetes.io/docs/reference/using-api/api-concepts/
 async function listAndWatch(options: IWatchOptions) {
   const serviceAccountToken = getServiceAccountToken()
