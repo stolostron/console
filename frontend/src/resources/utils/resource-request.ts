@@ -828,6 +828,7 @@ export async function fetchRetry<T>(options: {
         case 504: // Gateway Timeout
         case 522: // Connection timed out
         case 524: // A Timeout Occurred
+          /* istanbul ignore if */
           if (process.env.NODE_ENV === 'development' && response.status === 504) {
             window.location.reload()
           } else {
