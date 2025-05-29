@@ -258,11 +258,17 @@ const AccessControlManagementForm = ({
     return syncs
   }
 
-  const title = isViewing
-    ? accessControl?.metadata?.name!
-    : isEditing
-      ? t('Edit access control')
-      : t('Add access control')
+  const getTitle = () => {
+    if (isViewing) {
+      return accessControl?.metadata?.name!
+    }
+    if (isEditing) {
+      return t('Edit access control')
+    }
+    return t('Add access control')
+  }
+
+  const title = getTitle()
   const breadcrumbs = [{ text: t('Access Controls'), to: NavigationPath.accessControlManagement }, { text: title }]
 
   const clusters = managedClusters.map((c) => ({
@@ -403,13 +409,13 @@ const AccessControlManagementForm = ({
       if (isEditing) {
         const accessControl = accessControlData as AccessControl
         const patch: { op: 'replace'; path: string; value: unknown }[] = []
-        const metadata: AccessControl['metadata'] = accessControl.metadata!
+        const metadata: AccessControl['metadata'] = accessControl.metadata
         patch.push({ op: 'replace', path: `/spec/roleBindings`, value: accessControl.spec.roleBindings })
         patch.push({ op: 'replace', path: `/spec/clusterRoleBinding`, value: accessControl.spec.clusterRoleBinding })
         return patchResource(accessControl, patch).promise.then(() => {
           toastContext.addAlert({
             title: t('Acccess Control updated'),
-            message: t('accessControlForm.updated.message', { id: metadata.uid }),
+            message: t('accessControlForm.updated.message', { id: metadata?.uid }),
             type: 'success',
             autoClose: true,
           })
@@ -447,12 +453,18 @@ const AccessControlManagementForm = ({
     stateToData,
   }
 
+  const getFormMode = () => {
+    if (isViewing) return 'details'
+    if (isEditing) return 'form'
+    return 'wizard'
+  }
+
   return (
     <AcmDataFormPage
       formData={formData}
       editorTitle={t('Access Control YAML')}
       schema={schema}
-      mode={isViewing ? 'details' : isEditing ? 'form' : 'wizard'}
+      mode={getFormMode()}
       hideYaml={hideYaml}
       secrets={[]}
       immutables={isEditing ? ['*.metadata.name', '*.metadata.namespace', '*.data.id', '*.data.creationTimestamp'] : []}

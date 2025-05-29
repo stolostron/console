@@ -105,8 +105,8 @@ const COLUMN_CELLS = {
       {accessControl.metadata?.namespace ? (
         <Link
           to={generatePath(NavigationPath.clusterDetails, {
-            name: accessControl.metadata?.namespace!,
-            namespace: accessControl.metadata?.namespace!,
+            name: accessControl.metadata?.namespace,
+            namespace: accessControl.metadata?.namespace,
           })}
         >
           {accessControl.metadata?.namespace}
