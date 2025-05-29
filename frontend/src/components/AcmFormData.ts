@@ -158,6 +158,33 @@ export interface NumberInput extends InputBase<number> {
   unit?: ReactNode
 }
 
+export interface RadioInput extends SelectOptionsBase<string> {
+  type: 'Radio'
+  isInline?: boolean
+}
+
+export interface CustomInput {
+  type: 'Custom'
+  component: JSX.Element
+  id: string
+  label?: string
+  title?: string
+  value: unknown
+  validation?: (value: unknown) => string | undefined
+  validate?: boolean
+  isRequired?: boolean
+  isHidden?: boolean
+  helperText?: string
+  labelHelp?: string
+  labelHelpTitle?: string
+  prompt?: Prompt
+}
+export interface CreatableMultiselectInput extends SelectOptionsBase<string[]> {
+  type: 'CreatableMultiselect'
+  variant?: 'typeaheadmulti'
+  isCreatable?: boolean
+}
+
 export interface FormDataOrderedInput<T = any> extends InputBase<T[]> {
   type: 'OrderedItems'
   keyFn: (item: T, index: number) => string
@@ -181,3 +208,6 @@ export type Input =
   | NumberInput
   | FormDataOrderedInput
   | CheckboxInput
+  | RadioInput
+  | CustomInput
+  | CreatableMultiselectInput

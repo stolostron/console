@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { getKubeResources, IWatchOptions } from '../events'
+import { getKubeResources } from '../events'
 import { addOCPQueryInputs, addSystemQueryInputs, cacheOCPApplications } from './applicationsOCP'
 import { ApplicationSetKind, IApplicationSet, IResource } from '../../resources/resource'
 import { FilterSelections, ITransformedResource } from '../../lib/pagination'
@@ -19,6 +19,7 @@ import {
   polledArgoApplicationAggregation,
 } from './applicationsArgo'
 import { getGiganticApps } from '../../lib/gigantic'
+import { IWatchOptions } from '../../resources/wath-options'
 
 export enum AppColumns {
   'name' = 0,

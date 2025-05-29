@@ -62,6 +62,7 @@ import {
   WizardFooterType,
   WizardStepProps,
   WizardHeader,
+  Radio,
 } from '@patternfly/react-core'
 import { AcmSelectBase, AcmSelectBaseProps, SelectOptionObject, SelectVariant } from './AcmSelectBase'
 import {
@@ -880,7 +881,8 @@ function AcmInputDescription(props: { input: Input }): JSX.Element {
         </DescriptionListGroup>
       )
     }
-    case 'Multiselect': {
+    case 'Multiselect':
+    case 'CreatableMultiselect': {
       const selectedOptions: SelectOptionInput[] = []
       for (const option of input.options) {
         if (input.value.includes(option.value)) {
@@ -931,6 +933,17 @@ function AcmInputDescription(props: { input: Input }): JSX.Element {
         </DescriptionListGroup>
       )
     }
+    case 'Custom':
+      return input.label ? (
+        <DescriptionListGroup key={input.label}>
+          <DescriptionListTerm>{input.label}</DescriptionListTerm>
+          <DescriptionListDescription>{input.component}</DescriptionListDescription>
+        </DescriptionListGroup>
+      ) : (
+        input.component
+      )
+    default:
+      return <Fragment />
   }
 }
 
@@ -1068,7 +1081,8 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
     case 'Select':
     case 'GroupedSelect':
     case 'Multiselect':
-    case 'GroupedMultiselect': {
+    case 'GroupedMultiselect':
+    case 'CreatableMultiselect': {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { onChange, placeholder, validate, validation, isRequired, ...inputProps } = input
       const onSelect = (selection: string | SelectOptionObject) => {
@@ -1079,6 +1093,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
             break
           case 'Multiselect':
           case 'GroupedMultiselect':
+          case 'CreatableMultiselect':
             if (!input.value.includes(selection as string)) {
               input.onChange([...input.value, ...[selection as string]])
             } else {
@@ -1097,6 +1112,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
               break
             case 'Multiselect':
             case 'GroupedMultiselect':
+            case 'CreatableMultiselect':
               input.onChange([])
               break
           }
@@ -1171,6 +1187,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
             break
           case 'Multiselect':
           case 'GroupedMultiselect':
+          case 'CreatableMultiselect':
             variant = SelectVariant.typeaheadMulti
             break
         }
@@ -1182,11 +1199,12 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
           selections={selections}
           onSelect={onSelect}
           onClear={onClear}
+          // isCreatable={input.type === 'CreatableMultiselect'}
           isDisabled={isReadOnly || input.isDisabled}
           variant={variant}
           placeholderText={input.placeholder}
         >
-          {input.type === 'Select' || input.type === 'Multiselect'
+          {input.type === 'Select' || input.type === 'Multiselect' || input.type === 'CreatableMultiselect'
             ? input.options.map((option) => {
                 return (
                   <SelectOption key={option.value} value={option.value} description={option.description}>
@@ -1257,6 +1275,25 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
         </Alert>
       )
     }
+    case 'Radio': {
+      return (
+        <FormGroup label={input.label} isRequired={input.isRequired} fieldId={input.id} isInline>
+          {input.options.map((option) => (
+            <Radio
+              key={option.id}
+              id={option.id}
+              name={input.id}
+              label={option.text}
+              value={option.value}
+              isChecked={input.value === option.value}
+              onChange={() => input.onChange(option.value)}
+            />
+          ))}
+        </FormGroup>
+      )
+    }
+    case 'Custom':
+      return input.component
   }
 }
 
