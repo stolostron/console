@@ -164,11 +164,20 @@ export interface RadioInput extends SelectOptionsBase<string> {
 }
 
 export interface CustomInput {
-  id: string
   type: 'Custom'
   component: JSX.Element
-  isHidden?: boolean
+  id: string
   label?: string
+  title?: string
+  value: unknown
+  validation?: (value: unknown) => string | undefined
+  validate?: boolean
+  isRequired?: boolean
+  isHidden?: boolean
+  helperText?: string
+  labelHelp?: string
+  labelHelpTitle?: string
+  prompt?: Prompt
 }
 export interface CreatableMultiselectInput extends SelectOptionsBase<string[]> {
   type: 'CreatableMultiselect'

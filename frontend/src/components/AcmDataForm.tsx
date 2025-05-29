@@ -942,6 +942,8 @@ function AcmInputDescription(props: { input: Input }): JSX.Element {
       ) : (
         input.component
       )
+    default:
+      return <Fragment />
   }
 }
 
