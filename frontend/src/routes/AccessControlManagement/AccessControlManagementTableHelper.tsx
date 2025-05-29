@@ -123,7 +123,9 @@ const COLUMN_CELLS = {
   USER_GROUP: (accessControl: AccessControl, t: TFunction) => {
     const roleBindingsSubjectNames =
       accessControl.spec.roleBindings?.flatMap((rb) =>
-        rb.subject ? [`${rb.subject.kind}: ${rb.subject.name}`] : rb.subjects?.map((s) => `${s.kind}: ${s.name}`) ?? []
+        rb.subject
+          ? [`${rb.subject.kind}: ${rb.subject.name}`]
+          : (rb.subjects?.map((s) => `${s.kind}: ${s.name}`) ?? [])
       ) ?? []
 
     const clusterRoleBindingSubjectNames =

@@ -120,7 +120,7 @@ const AccessControlManagementForm = ({
   }, [accessControl?.metadata])
 
   useEffect(() => {
-    setSelectedRB((accessControl?.spec.roleBindings ?? []) as RoleBinding[])
+    setSelectedRB(accessControl?.spec.roleBindings ?? [])
     if (accessControl?.spec.roleBindings) {
       setSelectedSubjectNamesRB([
         ...new Set(
@@ -384,6 +384,7 @@ const AccessControlManagementForm = ({
           type: 'danger',
           autoClose: true,
         })
+        return
       }
       let accessControlData = formData?.customData ?? stateToData()
       if (Array.isArray(accessControlData)) {
@@ -395,7 +396,7 @@ const AccessControlManagementForm = ({
         const metadata: AccessControl['metadata'] = accessControl.metadata
         patch.push({ op: 'replace', path: `/spec/roleBindings`, value: accessControl.spec.roleBindings })
         patch.push({ op: 'replace', path: `/spec/clusterRoleBinding`, value: accessControl.spec.clusterRoleBinding })
-        return patchResource(accessControl, patch).promise.then(() => {
+        patchResource(accessControl, patch).promise.then(() => {
           toastContext.addAlert({
             title: t('Acccess Control updated'),
             message: t('accessControlForm.updated.message', { id: metadata?.uid }),
@@ -406,7 +407,7 @@ const AccessControlManagementForm = ({
           navigate(NavigationPath.accessControlManagement)
         })
       } else {
-        return createResource(accessControlData as IResource).promise.then((resource) => {
+        createResource(accessControlData as IResource).promise.then((resource) => {
           toastContext.addAlert({
             title: t('Access Control created'),
             message: t('accessControlForm.created.message', { id: (resource as AccessControl).metadata?.uid }),
