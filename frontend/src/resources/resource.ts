@@ -10,8 +10,8 @@ export interface IResourceDefinition {
   kind: string
 }
 
-export interface IResource extends IResourceDefinition {
-  status?: any
+export interface IResource<StatusType = any> extends IResourceDefinition {
+  status?: StatusType
   apiVersion: string
   kind: string
   metadata?: Metadata

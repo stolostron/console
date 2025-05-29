@@ -10,7 +10,7 @@ import {
   IApplicationSet,
   IResource,
 } from '../../resources/resource'
-import { getKubeResources, getHubClusterName, IWatchOptions } from '../events'
+import { getKubeResources, getHubClusterName } from '../events'
 import { applicationCache, ApplicationCacheType, IArgoApplication, IQuery, SEARCH_QUERY_LIMIT } from './applications'
 import {
   cacheRemoteApps,
@@ -23,6 +23,7 @@ import {
   getApplicationClusters,
   getTransform,
 } from './utils'
+import { IWatchOptions } from '../../resources/wath-options'
 
 interface IArgoAppLocalResource extends IResource {
   spec: {
