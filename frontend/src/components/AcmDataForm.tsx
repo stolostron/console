@@ -802,7 +802,7 @@ export function AcmDataFormDetails(props: { formData: FormData; wizardSummary?: 
   )
 }
 
-function AcmInputDescription(props: { input: Input }): JSX.Element {
+function AcmInputDescription(props: { input: Input }): JSX.Element | null {
   const [showSecrets, setShowSecrets] = useState(false)
   const { input } = props
   if (input.isHidden) return <Fragment />
@@ -943,7 +943,7 @@ function AcmInputDescription(props: { input: Input }): JSX.Element {
         input.component
       )
     default:
-      return <Fragment />
+      return null
   }
 }
 
