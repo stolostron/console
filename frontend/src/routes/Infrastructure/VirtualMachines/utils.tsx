@@ -297,7 +297,7 @@ export function getVMSnapshotActions(
   }
   const editSnapshot = {
     id: 'edit',
-    title: t('Edit VirtualMachine'),
+    title: t('Edit VirtualMachineSnapshot'),
     click: (item: any) => {
       const searchParams = GetUrlSearchParam(item)
       if (item.managedHub && item.managedHub !== 'global-hub') {

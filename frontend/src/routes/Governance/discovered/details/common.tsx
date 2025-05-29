@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { ViolationsCard, ViolationSummary } from '../../overview/PolicyViolationSummary'
-import { DiscoveredPolicyItem, DiscoverdPolicyTableItem, ISourceType } from '../useFetchPolicies'
+import { DiscoveredPolicyItem, DiscoveredPolicyTableItem, ISourceType } from '../useFetchPolicies'
 import { compareStrings, IAcmTableColumn, ITableFilter } from '../../../../ui-components'
 import { TFunction } from 'react-i18next'
 import { getPolicySource } from '../../common/util'
@@ -99,10 +99,10 @@ export const getTotalViolationsCompliance = (totalViolations?: number): string =
   return '-'
 }
 
-export const getSourceFilterOptions = (data: DiscoverdPolicyTableItem[] | DiscoveredPolicyItem[]): ISourceFilter[] => {
+export const getSourceFilterOptions = (data: DiscoveredPolicyTableItem[] | DiscoveredPolicyItem[]): ISourceFilter[] => {
   const uniqueSources = new Set<string>()
 
-  data?.forEach((data: DiscoverdPolicyTableItem | DiscoveredPolicyItem) => {
+  data?.forEach((data: DiscoveredPolicyTableItem | DiscoveredPolicyItem) => {
     if (data.source?.type) {
       uniqueSources.add(data.source.type)
     }
@@ -322,7 +322,7 @@ export function discoveredSourceCell(t: TFunction, source: ISourceType | undefin
   return source?.type ? translateSource(source.type, t) : '-'
 }
 
-export function getSeverityFilter(t: TFunction): ITableFilter<DiscoverdPolicyTableItem | DiscoveredPolicyItem> {
+export function getSeverityFilter(t: TFunction): ITableFilter<DiscoveredPolicyTableItem | DiscoveredPolicyItem> {
   return {
     id: 'severity',
     label: t('Severity'),
@@ -344,7 +344,7 @@ export function getSeverityFilter(t: TFunction): ITableFilter<DiscoverdPolicyTab
         value: 'low',
       },
     ],
-    tableFilterFn: (selectedValues: string[], item: DiscoverdPolicyTableItem | DiscoveredPolicyItem) => {
+    tableFilterFn: (selectedValues: string[], item: DiscoveredPolicyTableItem | DiscoveredPolicyItem) => {
       const lcSeverity = item?.severity?.toLowerCase()
 
       if (!lcSeverity) {
@@ -362,7 +362,7 @@ export function getSeverityFilter(t: TFunction): ITableFilter<DiscoverdPolicyTab
   }
 }
 
-export function getResponseActionFilter(t: TFunction): ITableFilter<DiscoverdPolicyTableItem | DiscoveredPolicyItem> {
+export function getResponseActionFilter(t: TFunction): ITableFilter<DiscoveredPolicyTableItem | DiscoveredPolicyItem> {
   return {
     id: 'responseAction',
     label: t('Response action'),
@@ -403,7 +403,7 @@ export function getResponseActionFilter(t: TFunction): ITableFilter<DiscoverdPol
   }
 }
 
-export function severityCell(item: Readonly<DiscoverdPolicyTableItem | DiscoveredPolicyItem>) {
+export function severityCell(item: Readonly<DiscoveredPolicyTableItem | DiscoveredPolicyItem>) {
   const { severity } = item
 
   if (!severity || severity == 'unknown') return <>-</>
@@ -431,7 +431,7 @@ export const convertYesNoCell = (val: string | boolean | undefined | null, t: TF
   return val === true ? 'yes' : 'no'
 }
 
-export const getSourceExportCSV = (item: DiscoveredPolicyItem | DiscoverdPolicyTableItem): string => {
+export const getSourceExportCSV = (item: DiscoveredPolicyItem | DiscoveredPolicyTableItem): string => {
   if (!item.source?.type) {
     return '-'
   }
@@ -443,7 +443,7 @@ export const getSourceExportCSV = (item: DiscoveredPolicyItem | DiscoverdPolicyT
   return item.source?.type
 }
 
-export function responseActionCell(item: Readonly<DiscoverdPolicyTableItem | DiscoveredPolicyItem>) {
+export function responseActionCell(item: Readonly<DiscoveredPolicyTableItem | DiscoveredPolicyItem>) {
   const { responseAction } = item
 
   if (!responseAction) return <>-</>

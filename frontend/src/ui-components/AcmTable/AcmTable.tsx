@@ -90,6 +90,7 @@ import { AcmEmptyState } from '../AcmEmptyState/AcmEmptyState'
 import { AcmSearchInput, SearchConstraint, SearchOperator } from '../AcmSearchInput'
 import { AcmManageColumn } from './AcmManageColumn'
 import { filterLabelMargin, filterOption, filterOptionBadge } from './filterStyles'
+import { setLocalStorage, getLocalStorage, setColumnValues, getColumnValues } from './localColumnStorage'
 
 type SortFn<T> = (a: T, b: T) => number
 type CellFn<T> = (item: T, search: string) => ReactNode
@@ -465,24 +466,6 @@ export function useTableFilterSelections<T>({ id, filters }: { id?: string; filt
   return { filterSelections, addFilterValue, removeFilterValue, negateFilterValue, removeFilter, clearFilters }
 }
 
-function setLocalStorage(key: string | undefined, value: any) {
-  try {
-    window.localStorage.setItem(key as string, JSON.stringify(value))
-  } catch {
-    // catch possible errors
-  }
-}
-
-function getLocalStorage(key: string | undefined, initialValue: object) {
-  try {
-    const value = window.localStorage.getItem(key as string)
-    return value ? JSON.parse(value) : initialValue
-  } catch {
-    // if error, return initial value
-    return initialValue
-  }
-}
-
 type FilterSelectOptionObject = SelectOptionObject & {
   filterId: string
   value: FilterOptionValueT
@@ -745,12 +728,22 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         .map((col) => col.id as string),
     [columns]
   )
-  const localSavedCols = JSON.parse(localStorage.getItem(id + 'SavedCols')!)
-  const localSavedColOrder = JSON.parse(localStorage.getItem(id + 'SavedColOrder')!)
-  const [colOrderIds, setColOrderIds] = useState<string[]>(localSavedColOrder || defaultOrderIds)
-  const [selectedColIds, setSelectedColIds] = useState<string[]>(
-    localSavedCols || [...requiredColIds, ...defaultColIds]
+  const { localSavedCols, localSavedColOrder } = id
+    ? getColumnValues(id)
+    : { localSavedCols: [], localSavedColOrder: [] }
+  const [colOrderIds, setColOrderIds] = useState<string[]>(
+    localSavedColOrder?.length > 0
+      ? [...localSavedColOrder, ...defaultOrderIds.filter((val: string) => !localSavedColOrder.includes(val))]
+      : defaultOrderIds
   )
+  const [selectedColIds, setSelectedColIds] = useState<string[]>(
+    localSavedCols?.length > 0
+      ? [...requiredColIds, ...localSavedCols.filter((val: string) => !requiredColIds.includes(val))]
+      : [...requiredColIds, ...defaultColIds]
+  )
+  setColumnValues(id || '', selectedColIds, colOrderIds)
+
+  const [tableId] = useState<string>(id || '')
   const selectedSortedCols = useMemo(() => {
     const sortedColumns: IAcmTableColumn<T>[] = []
 
@@ -780,12 +773,8 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   }, [columns, selectedColIds, colOrderIds, showColumnManagement])
 
   useEffect(() => {
-    localStorage.setItem(id + 'SavedCols', JSON.stringify(selectedColIds))
-  }, [selectedColIds, id])
-
-  useEffect(() => {
-    localStorage.setItem(id + 'SavedColOrder', JSON.stringify(colOrderIds))
-  }, [colOrderIds, id])
+    setColumnValues(id || '', selectedColIds, colOrderIds)
+  }, [selectedColIds, colOrderIds, id])
 
   /* istanbul ignore next */
   const updateBreakpoint = useCallback(
@@ -1535,7 +1524,15 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
             )}
             {showColumnManagement && (
               <AcmManageColumn<T>
-                {...{ selectedColIds, setSelectedColIds, requiredColIds, defaultColIds, setColOrderIds, colOrderIds }}
+                {...{
+                  selectedColIds,
+                  setSelectedColIds,
+                  requiredColIds,
+                  defaultColIds,
+                  setColOrderIds,
+                  colOrderIds,
+                  tableId,
+                }}
                 allCols={columns.filter((col) => !col.isActionCol)}
               />
             )}
