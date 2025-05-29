@@ -24,9 +24,6 @@
         "--runTestsByPath",
         "${jest.testFile}"
       ],
-      "env": {
-        "LAUNCH": "true"
-      },
       "cwd": "${workspaceFolder}/frontend",
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
@@ -45,9 +42,6 @@
         "--runTestsByPath",
         "${jest.testFile}"
       ],
-      "env": {
-        "LAUNCH": "true"
-      },
       "cwd": "${workspaceFolder}/backend",
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
