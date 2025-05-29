@@ -23,7 +23,7 @@ type AccessControlManagementTableHelperProps = {
   navigate: NavigateFunction
 }
 
-const accessControlRoleBindingsFilter = (accessControl: AccessControl, kind: 'User' | 'Role') =>
+const accessControlRoleBindingsFilter = (accessControl: AccessControl, kind: 'User' | 'Role' | 'Group') =>
   accessControl.spec.roleBindings
     ?.filter((e) => e.subject?.kind === kind && e.subject?.name)
     .map((e) => e.subject?.name) ?? []
@@ -308,6 +308,25 @@ const accessControlTableColumns = ({ t, setModalProps, navigate }: AccessControl
     cell: (accessControl: AccessControl) => COLUMN_CELLS.ACTIONS(accessControl, t, setModalProps, navigate),
   },
 ]
+const buildClusterOptions = (clusters: Cluster[]) =>
+  clusters
+    .map((cluster) => ({
+      label: cluster.name,
+      value: cluster.name,
+    }))
+    .sort((lhs, rhs) => compareStrings(lhs.label, rhs.label))
+
+const buildOptions = (names: (string | undefined)[]) =>
+  [...new Set(names)]
+    .filter((name): name is string => name !== undefined)
+    .map((e) => ({ label: e, value: e }))
+    .sort((lhs, rhs) => compareStrings(lhs.label, rhs.label))
+
+const filterByCluster = (selectedValues: string[], item: AccessControl) =>
+  selectedValues.some((e) => item.spec.roleBindings?.map((e) => e.namespace).includes(e))
+
+const createTableFilterFn = (kind: 'User' | 'Group' | 'Role') => (selectedValues: string[], item: AccessControl) =>
+  selectedValues.some((e) => accessControlRoleBindingsFilter(item, kind).includes(e))
 
 const useFilters = ({
   managedClusters,
@@ -323,61 +342,26 @@ const useFilters = ({
       {
         id: 'cluster',
         label: t('Cluster'),
-        options: Object.values(managedClusters)
-          .map((cluster) => ({
-            label: cluster.name,
-            value: cluster.name,
-          }))
-          .sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
-        tableFilterFn: (selectedValues: string[], item: AccessControl) =>
-          selectedValues.some((e) => item.spec.roleBindings?.map((e) => e.namespace).includes(e)),
+        options: buildClusterOptions(Object.values(managedClusters)),
+        tableFilterFn: filterByCluster,
       },
       {
         id: 'user',
         label: t('access.add.user'),
-        options: [
-          ...new Set(
-            accessControls?.flatMap((accessControl) => accessControlRoleBindingsFilter(accessControl, 'User'))
-          ),
-        ]
-          .filter((name): name is string => name !== undefined)
-          .map((e) => ({ label: e, value: e }))
-          .sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
-        tableFilterFn: (selectedValues: string[], item: AccessControl) =>
-          selectedValues.some((e) => accessControlRoleBindingsFilter(item, 'User').includes(e)),
+        options: buildOptions(accessControls?.flatMap((ac) => accessControlRoleBindingsFilter(ac, 'User')) ?? []),
+        tableFilterFn: createTableFilterFn('User'),
       },
       {
         id: 'group',
         label: t('access.add.group'),
-        options: [
-          ...new Set(
-            accessControls?.flatMap((accessControl) => accessControlRoleBindingsFilter(accessControl, 'User'))
-          ),
-        ]
-          .filter((name): name is string => name !== undefined)
-          .map((e) => ({ label: e, value: e }))
-          .sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
-        tableFilterFn: (selectedValues: string[], item: AccessControl) =>
-          selectedValues.some((e) => accessControlRoleBindingsFilter(item, 'User').includes(e)),
+        options: buildOptions(accessControls?.flatMap((ac) => accessControlRoleBindingsFilter(ac, 'Group')) ?? []),
+        tableFilterFn: createTableFilterFn('Group'),
       },
       {
         id: 'role',
         label: t('Role'),
-        options: [
-          ...new Set(
-            accessControls?.flatMap((accessControl) => accessControlRoleBindingsFilter(accessControl, 'Role'))
-          ),
-        ]
-          .filter((name): name is string => name !== undefined)
-          .map((e) => ({ label: e, value: e }))
-          .sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
-        tableFilterFn: (selectedValues: string[], item: AccessControl) =>
-          selectedValues.some((e) =>
-            item.spec.roleBindings
-              ?.filter((e) => e.roleRef.kind === 'Role' && e.subject?.name)
-              .map((e) => e.subject?.name)
-              .includes(e)
-          ),
+        options: buildOptions(accessControls?.flatMap((ac) => accessControlRoleBindingsFilter(ac, 'Role')) ?? []),
+        tableFilterFn: createTableFilterFn('Role'),
       },
     ],
     [t, managedClusters, accessControls]
