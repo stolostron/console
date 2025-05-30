@@ -10,7 +10,7 @@
         "alwaysStrict": true,
         "strictBindCallApply": true,
         "strictBuiltinIteratorReturn": true,
-        "strictFunctionTypes": false,
+        "strictFunctionTypes": true,
         "strictNullChecks": false,
         "strictPropertyInitialization": false,
         "noUnusedLocals": true,
