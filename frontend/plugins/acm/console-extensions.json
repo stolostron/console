@@ -1,5 +1,11 @@
 [
     {
+      "type": "console.flag/hookProvider",
+      "properties": {
+        "handler": { "$codeRef": "featureFlags.default" }
+      }
+    },
+    {
         "type": "console.navigation/section",
         "properties": {
             "perspective": "acm",
@@ -99,12 +105,6 @@
             "path": "/multicloud/governance",
             "component": { "$codeRef": "governance.default" }
         }
-    },
-    {
-      "type": "console.flag/hookProvider",
-      "properties": {
-        "handler": { "$codeRef": "consoleFlags.useEnableAccessControlManagementMenuFlag" }
-      }
     },
     {
       "type": "console.navigation/href",
