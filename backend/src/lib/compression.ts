@@ -61,7 +61,7 @@ export function getEncodeStream(
   }
 
   if (compressionStream) {
-    pipeline(compressionStream, stream, (err) => {
+    pipeline(compressionStream, stream, (_err) => {
       // Client might close stream while we are still writing to it
       // ignore it for now as there is no issue here
       // TODO - long term should we close the compression stream

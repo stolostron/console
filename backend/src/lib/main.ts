@@ -38,7 +38,7 @@ process.on('SIGTERM', () => {
   void stop()
 })
 
-process.on('uncaughtException', (err) => {
+process.on('uncaughtException', (_err) => {
   // console.error(err)
   // logger.error({ msg: `process uncaughtException`, error: err.message })
   // console.log(err.stack)

@@ -12,7 +12,7 @@ let watcher: FSWatcher
 let timeout: NodeJS.Timeout
 export function loadSettings(): void {
   void loadConfigSettings()
-  watcher = watch('./config', (eventType, filename) => {
+  watcher = watch('./config', (_eventType, _filename) => {
     if (timeout) clearTimeout(timeout)
     timeout = setTimeout(() => {
       timeout = undefined

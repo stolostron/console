@@ -39,7 +39,7 @@ export function requestRetry(options: {
   let delay = 10000
   let retries = 0
 
-  function requestAttempt(url?: string, requestOptions?: RequestOptions): void {
+  function requestAttempt(requestOptions?: RequestOptions): void {
     function handleError(err: Error) {
       let retry = false
       if (err instanceof Error) {
@@ -136,7 +136,7 @@ export function requestRetry(options: {
   }
 
   try {
-    requestAttempt(options.url, requestOptions)
+    requestAttempt(requestOptions)
   } catch (err) {
     if (err instanceof Error) options.onError(err)
     throw err
