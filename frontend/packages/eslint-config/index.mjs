@@ -34,6 +34,9 @@ export default defineConfig([
         project: './tsconfig.json',
       },
     },
+    ignores: [
+      '*.json'
+    ],
 
     settings: {
       react: {
