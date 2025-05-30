@@ -229,10 +229,6 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
     setFilterValue(value)
 
     resetActiveAndFocusedItem()
-
-    // if (value !== selections) {
-    //   onSelect?.('')
-    // }
   }
 
   const handleMenuArrowKeys = (key: string) => {
@@ -535,7 +531,7 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
         ref={toggleRef}
         variant={variant === SelectVariant.single || variant === SelectVariant.checkbox ? 'default' : 'typeahead'}
         onKeyDown={(event: React.KeyboardEvent) => {
-          if (SelectVariant.single || variant === SelectVariant.checkbox) {
+          if (variant === SelectVariant.single || variant === SelectVariant.checkbox) {
             event.preventDefault()
             if (
               (event.key === KeyTypes.Tab || event.key === KeyTypes.Enter || event.key === KeyTypes.Space) &&
