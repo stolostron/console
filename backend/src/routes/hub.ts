@@ -17,7 +17,7 @@ export async function hub(req: Http2ServerRequest, res: Http2ServerResponse): Pr
 
     try {
       const path = process.env.CLUSTER_API_URL + '/apis/apiextensions.k8s.io/v1/customresourcedefinitions'
-      const getResponse = await jsonRequest(path, serviceAccountToken)
+      const getResponse = await jsonRequest<ResourceList<IResource>>(path, serviceAccountToken)
         .then((response: ResourceList<IResource>) => {
           const mcgh = response.items.find(
             (crd) => crd.metadata.name === 'multiclusterglobalhubs.operator.open-cluster-management.io'

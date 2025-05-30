@@ -29,7 +29,7 @@ export async function events(req: Http2ServerRequest, res: Http2ServerResponse):
 }
 
 interface WatchEvent {
-  type: 'ADDED' | 'DELETED' | 'MODIFIED' | 'BOOKMARK' | 'ERROR' | 'EOP'
+  type: 'ADDED' | 'DELETED' | 'MODIFIED' | 'BOOKMARK' | 'ERROR'
   object: IResource
 }
 
@@ -38,7 +38,7 @@ export interface SettingsEvent {
   settings: Record<string, string>
 }
 
-type ServerSideEventData = WatchEvent | SettingsEvent | { type: 'START' | 'LOADED' }
+export type ServerSideEventData = WatchEvent | SettingsEvent | { type: 'START' | 'LOADED' | 'EOP' }
 
 let requests: { cancel: () => void }[] = []
 
@@ -234,7 +234,10 @@ const definitions: IWatchOptions[] = [
 ]
 
 export function startWatching(): void {
-  ServerSideEvents.eventFilter = eventFilter
+  ServerSideEvents.eventFilter = eventFilter as (
+    clientID: string,
+    event: Readonly<ServerSideEvent<unknown>>
+  ) => Promise<boolean>
 
   for (const definition of definitions) {
     void listAndWatch(definition)

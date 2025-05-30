@@ -28,7 +28,7 @@ export async function upgradeRiskPredictions(req: Http2ServerRequest, res: Http2
     try {
       // console-mce ClusterRole does not allow for GET on secrets. Have to list in a namespace
       const secretPath = process.env.CLUSTER_API_URL + '/api/v1/namespaces/openshift-config/secrets'
-      const crcToken: string = await jsonRequest(secretPath, serviceAccountToken)
+      const crcToken: string = await jsonRequest<ResourceList<Secret>>(secretPath, serviceAccountToken)
         .then((response: ResourceList<Secret>) => {
           const pullSecret = response.items.find((secret) => secret.metadata.name === 'pull-secret')
           const dockerconfigjson = pullSecret.data['.dockerconfigjson'] ?? ''

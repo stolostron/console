@@ -1,9 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
 import { ITransformedResource } from './pagination'
 import { ServerSideEvent } from './server-side-events'
-
-export function getGiganticEvents(): ServerSideEvent[] {
+import { ServerSideEventData } from '../routes/events'
+export function getGiganticEvents(): ServerSideEvent<ServerSideEventData>[] {
   const MOCK_CLUSTERS = Number(process.env.MOCK_CLUSTERS)
   return [
     ...getMockClusters(MOCK_CLUSTERS),
@@ -18,26 +17,28 @@ export function getGiganticApps(): ITransformedResource[] {
   const apps: ITransformedResource[] = []
   const template = templateMaker(applicationsTemplate)
   Array.from(Array(MOCK_CLUSTERS).keys()).forEach((inx) => {
-    apps.push(...(template({ name: `cluster${inx + 1}` }) as ITransformedResource[]))
+    apps.push(...template({ name: `cluster${inx + 1}` }))
   })
   return apps
 }
 
-const templateMaker = function (obj: unknown) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return function (context: { [x: string]: any }) {
+type Template<T> = {
+  [Property in keyof T]: Template<T[Property]> | (() => Template<T[Property]>)
+}
+
+const templateMaker = function <T>(obj: Template<T>) {
+  return function (context: { [x: string]: unknown }) {
     const replacer = function (_key: string, val: () => string | number) {
       if (typeof val === 'function') {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return context[val()]
       }
       return val
     }
-    return JSON.parse(JSON.stringify(obj, replacer)) as unknown
+    return JSON.parse(JSON.stringify(obj, replacer)) as T
   }
 }
 
-function getMockClusters(n: number): ServerSideEvent[] {
+function getMockClusters(n: number): ServerSideEvent<ServerSideEventData>[] {
   const template = templateMaker(clusterTemplate)
   return [template({ name: 'local-cluster' })].concat(
     Array.from(Array(n).keys()).map((inx) => {
@@ -46,7 +47,7 @@ function getMockClusters(n: number): ServerSideEvent[] {
   )
 }
 
-function getMockClusterInfo(n: number): ServerSideEvent[] {
+function getMockClusterInfo(n: number): ServerSideEvent<ServerSideEventData>[] {
   const template = templateMaker(managedClusterInfoTemplate)
   return [template({ name: 'local-cluster' })].concat(
     Array.from(Array(n).keys()).map((inx) => {
@@ -55,7 +56,7 @@ function getMockClusterInfo(n: number): ServerSideEvent[] {
   )
 }
 
-function getMockClusterAddsons(n: number): ServerSideEvent[] {
+function getMockClusterAddsons(n: number): ServerSideEvent<ServerSideEventData>[] {
   let addons
   let template = templateMaker(appmanager)
   addons = [template({ name: 'local-cluster' })].concat(
@@ -127,11 +128,10 @@ const NONCOMPLIANT = [
   [1, 33, 43, 68],
   [5, 33, 69, 20, 45, 32],
 ]
-type PolicyTemplateType = typeof policyTemplate
-function getMockPolicies(n: number): ServerSideEvent[] {
+function getMockPolicies(n: number): ServerSideEvent<ServerSideEventData>[] {
   const template = templateMaker(policyTemplate)
   return Array.from(Array(3).keys()).map((pinx) => {
-    const mockPolicy = template({ name: `policy${pinx + 1}` }) as PolicyTemplateType
+    const mockPolicy = template({ name: `policy${pinx + 1}` })
     Array.from(Array(n).keys()).forEach((inx) => {
       let compliant = NONCOMPLIANT[pinx].indexOf(inx) !== -1 ? 'NonCompliant' : 'Compliant'
       switch (pinx) {
@@ -148,7 +148,8 @@ function getMockPolicies(n: number): ServerSideEvent[] {
           // if (inx == 22 || inx === 98) compliant = 'Unknown'
           break
       }
-      mockPolicy?.data?.object.status.status.push({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+      ;(mockPolicy.data as any)?.object?.status?.status?.push({
         clustername: `cluster${inx + 1}`,
         clusternamespace: `cluster${inx + 1}`,
         compliant,
@@ -226,7 +227,7 @@ const policyTemplate = {
     },
   },
   id: '115',
-}
+} as Template<ServerSideEvent<ServerSideEventData>>
 
 const clusterTemplate = {
   data: {
@@ -329,7 +330,7 @@ const clusterTemplate = {
     },
   },
   id: '115',
-}
+} as Template<ServerSideEvent<ServerSideEventData>>
 
 const managedClusterInfoTemplate = {
   data: {
@@ -549,9 +550,9 @@ const managedClusterInfoTemplate = {
     },
   },
   id: '153',
-}
+} as Template<ServerSideEvent<ServerSideEventData>>
 
-const appmanager: ServerSideEvent = {
+const appmanager = {
   data: {
     type: 'MODIFIED',
     object: {
@@ -612,8 +613,8 @@ const appmanager: ServerSideEvent = {
     },
   },
   id: '115',
-}
-const certpolicy: ServerSideEvent = {
+} as Template<ServerSideEvent<ServerSideEventData>>
+const certpolicy = {
   data: {
     type: 'MODIFIED',
     object: {
@@ -710,7 +711,7 @@ const certpolicy: ServerSideEvent = {
     },
   },
   id: '115',
-}
+} as Template<ServerSideEvent<ServerSideEventData>>
 const clusterProxy = {
   data: {
     type: 'MODIFIED',
@@ -834,7 +835,7 @@ const clusterProxy = {
     },
   },
   id: '115',
-}
+} as Template<ServerSideEvent<ServerSideEventData>>
 const configPolicy = {
   data: {
     type: 'MODIFIED',
@@ -933,7 +934,7 @@ const configPolicy = {
     },
   },
   id: '115',
-}
+} as Template<ServerSideEvent<ServerSideEventData>>
 const govPolicy = {
   data: {
     type: 'MODIFIED',
@@ -1031,7 +1032,7 @@ const govPolicy = {
     },
   },
   id: '115',
-}
+} as Template<ServerSideEvent<ServerSideEventData>>
 const hypershiftPolicy = {
   data: {
     type: 'MODIFIED',
@@ -1167,7 +1168,7 @@ const hypershiftPolicy = {
     },
   },
   id: '115',
-}
+} as Template<ServerSideEvent<ServerSideEventData>>
 const managedSrv = {
   data: {
     type: 'MODIFIED',
@@ -1288,7 +1289,7 @@ const managedSrv = {
     },
   },
   id: '115',
-}
+} as Template<ServerSideEvent<ServerSideEventData>>
 const workManager = {
   data: {
     type: 'MODIFIED',
@@ -1386,7 +1387,7 @@ const workManager = {
     },
   },
   id: '115',
-}
+} as Template<ServerSideEvent<ServerSideEventData>>
 
 const applicationsTemplate = [
   {
@@ -1403,7 +1404,7 @@ const applicationsTemplate = [
       cluster: () => 'name',
       resourceName: 'prometheus-operator',
     },
-  },
+  } as Template<ITransformedResource>,
   {
     apiVersion: 'apps/v1',
     kind: 'Deployment',
@@ -1988,4 +1989,4 @@ const applicationsTemplate = [
       resourceName: 'authentication-operator',
     },
   },
-]
+] as Template<ITransformedResource>[]

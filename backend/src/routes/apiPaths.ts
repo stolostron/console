@@ -36,7 +36,7 @@ export function apiPaths(req: Http2ServerRequest, res: Http2ServerResponse): voi
   getAuthenticatedToken(req, res)
     .then(() => {
       const serviceAccountToken = getServiceAccountToken()
-      jsonRequest<unknown>(process.env.CLUSTER_API_URL + '/', serviceAccountToken)
+      jsonRequest<APIPathResponse>(process.env.CLUSTER_API_URL + '/', serviceAccountToken)
         .then(async (response: APIPathResponse) => {
           const apiResourceLists = await Promise.allSettled(
             response.paths
