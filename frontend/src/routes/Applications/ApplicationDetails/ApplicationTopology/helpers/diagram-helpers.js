@@ -617,7 +617,6 @@ export const addNodeServiceLocationForCluster = (node, typeObject, details, t) =
   return details
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const processResourceActionLink = (resource, toggleLoading, t, hubClusterName) => {
   let targetLink = ''
   const linkPath = R.pathOr('', ['action'])(resource)

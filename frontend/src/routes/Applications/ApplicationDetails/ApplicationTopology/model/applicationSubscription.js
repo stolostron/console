@@ -293,7 +293,6 @@ const getAllAppChannels = (appAllChannels, allSubscriptions, channels) => {
   allSubscriptions.forEach((subscription) => {
     const chnlData = get(subscription, 'spec.channel', '').split('/')
     if (chnlData.length === 2) {
-      // eslint-disable-next-line prefer-destructuring
       channelsMap[chnlData[0]] = chnlData[1]
     }
   })

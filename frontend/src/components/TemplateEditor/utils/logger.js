@@ -9,8 +9,6 @@ import set from 'lodash/set'
 
 export const logSourceErrors = (logging, templateYAML, controlData, otherYAMLTabs, templateExceptionMap) => {
   if (logging) {
-    /* eslint-disable no-console */
-
     //////////////////////////////// SOURCE ERRORS //////////////////////////////////////
     const errors = []
     const tabIds = ['Main YAML']
@@ -82,8 +80,6 @@ export const logSourceErrors = (logging, templateYAML, controlData, otherYAMLTab
 
 export const logCreateErrors = (logging, creationMsg, resourceJSON) => {
   if (logging) {
-    /* eslint-disable no-console */
-
     console.group('!!!!!!!!!!!!!!!!!! CREATE ERRORS !!!!!!!!!!!!!!!!!!!!!!')
 
     creationMsg.forEach(({ message }) => {
