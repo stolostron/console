@@ -19,7 +19,7 @@ import {
   polledArgoApplicationAggregation,
 } from './applicationsArgo'
 import { getGiganticApps } from '../../lib/gigantic'
-import { IWatchOptions } from '../../resources/wath-options'
+import { IWatchOptions } from '../../resources/watch-options'
 
 export enum AppColumns {
   'name' = 0,

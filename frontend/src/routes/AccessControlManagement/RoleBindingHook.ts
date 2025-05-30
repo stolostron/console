@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 
 const RoleBindingHook = <T>() => {
   const [selected, setSelected] = useState<T[]>([])
-  const [selectedSubjectType, setSelectedSubjectType] = useState<'User' | 'Group'>('User')
+  const [selectedSubjectKind, setSelectedSubjectKind] = useState<'User' | 'Group'>('User')
   const [selectedSubjectNames, setSelectedSubjectNames] = useState<string[]>([])
   const [selectedUsers, setSelectedUsers] = useState<string[]>([])
   const [selectedGroups, setSelectedGroups] = useState<string[]>([])
@@ -12,7 +12,7 @@ const RoleBindingHook = <T>() => {
   const [selectedNamespaces, setSelectedNamespaces] = useState<string[]>([])
 
   useEffect(() => {
-    switch (selectedSubjectType) {
+    switch (selectedSubjectKind) {
       case 'Group':
         setSelectedGroups(selectedSubjectNames)
         break
@@ -20,12 +20,12 @@ const RoleBindingHook = <T>() => {
         setSelectedUsers(selectedSubjectNames)
         break
     }
-  }, [selectedSubjectNames, selectedSubjectType])
+  }, [selectedSubjectNames, selectedSubjectKind])
 
   const onNamespaceChange = (values: string[]) => setSelectedNamespaces(values)
   const onSubjectTypeChange = (value: string) => {
     setSelectedSubjectNames(value === 'group' ? selectedGroups : selectedUsers)
-    setSelectedSubjectType(value === 'group' ? 'Group' : 'User')
+    setSelectedSubjectKind(value === 'group' ? 'Group' : 'User')
   }
   const onSubjectNameChange = (values: string[]) => setSelectedSubjectNames(values)
   const onRoleChange = (values: string[]) => {
@@ -36,7 +36,7 @@ const RoleBindingHook = <T>() => {
   return {
     selected,
     setSelected,
-    selectedSubjectType,
+    selectedSubjectType: selectedSubjectKind,
     selectedSubjectNames,
     setSelectedSubjectNames,
     selectedRoleName,
@@ -45,8 +45,9 @@ const RoleBindingHook = <T>() => {
     setSelectedRoleNames,
     selectedNamespaces,
     setSelectedNamespaces,
+    setSelectedSubjectKind: setSelectedSubjectKind,
     onNamespaceChange,
-    onSubjectTypeChange,
+    onSubjectKindChange: onSubjectTypeChange,
     onSubjectNameChange,
     onRoleChange,
   }
