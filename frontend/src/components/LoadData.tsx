@@ -579,7 +579,7 @@ export function LoadData(props: { children?: ReactNode }) {
               break
             default:
               /* istanbul ignore if */
-              if (process.env.NODE_ENV === 'development') {
+              if (process.env.NODE_ENV === 'development' && res.status === 504) {
                 window.location.reload()
               } else {
                 tokenExpired()
