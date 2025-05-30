@@ -10,11 +10,14 @@ describe('useFeatureFlags', () => {
     jest.resetAllMocks()
   })
 
-  it('components undefined', async () => {
+  it.each([
+    ['components undefined', undefined],
+    ['no flags exist at multiclusterhub', []],
+  ])('%s', async (_title: string, components: any[] | undefined) => {
     // Arrange
     const getRequestMock = getRequest as jest.Mock
     getRequestMock.mockReturnValueOnce({
-      promise: new Promise((resolve) => resolve(undefined)),
+      promise: new Promise((resolve) => resolve(components)),
     })
 
     // Act
@@ -27,25 +30,11 @@ describe('useFeatureFlags', () => {
     )
   })
 
-  it('all flags exist at multiclusterhub', async () => {
+  it.each([[true], [false]])('all flags exist at multiclusterhub and enabled: %s', async (enabled: boolean) => {
     // Arrange
     const getRequestMock = getRequest as jest.Mock
     getRequestMock.mockReturnValueOnce({
-      promise: new Promise((resolve) => resolve(Object.values(FEATURE_FLAGS).map((e) => ({ name: e, enabled: true })))),
-    })
-
-    // Act
-    await useFeatureFlags(setFeatureFlagMock)
-
-    // Assert
-    expect(setFeatureFlagMock).toHaveBeenCalledTimes(Object.entries(FEATURE_FLAGS).length)
-  })
-
-  it('no flags exist at multiclusterhub', async () => {
-    // Arrange
-    const getRequestMock = getRequest as jest.Mock
-    getRequestMock.mockReturnValueOnce({
-      promise: new Promise((resolve) => resolve([])),
+      promise: new Promise((resolve) => resolve(Object.values(FEATURE_FLAGS).map((e) => ({ name: e, enabled })))),
     })
 
     // Act
@@ -54,7 +43,7 @@ describe('useFeatureFlags', () => {
     // Assert
     expect(setFeatureFlagMock).toHaveBeenCalledTimes(Object.entries(FEATURE_FLAGS).length)
     Object.keys(FEATURE_FLAGS).forEach((featureFlag) =>
-      expect(setFeatureFlagMock).toHaveBeenCalledWith(featureFlag, false)
+      expect(setFeatureFlagMock).toHaveBeenCalledWith(featureFlag, enabled)
     )
   })
 })
