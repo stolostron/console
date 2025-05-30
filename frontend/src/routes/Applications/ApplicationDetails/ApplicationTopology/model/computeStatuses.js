@@ -39,8 +39,17 @@ export const warningCode = 2
 export const pendingCode = 1
 export const failureCode = 0
 //pod state contains any of these strings
-const resGreenStates = ['running']
-const resErrorStates = ['err', 'off', 'invalid', 'kill', 'propagationfailed', 'imagepullbackoff', 'crashloopbackoff']
+const resGreenStates = ['running', 'bound']
+const resErrorStates = [
+  'err',
+  'off',
+  'invalid',
+  'kill',
+  'propagationfailed',
+  'imagepullbackoff',
+  'crashloopbackoff',
+  'lost',
+]
 const resWarningStates = [pendingStatus, 'creating', 'terminating']
 const apiVersionPath = 'specs.raw.apiVersion'
 
