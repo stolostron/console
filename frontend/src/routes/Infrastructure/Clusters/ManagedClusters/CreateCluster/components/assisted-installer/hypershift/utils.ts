@@ -32,4 +32,17 @@ export const getFieldLabels = (t: TFunction): Partial<{ [K in FieldName]: string
   openshiftVersion: t('OpenShift version'),
   cpuArchitecture: t('CPU architecture'),
   controlPlaneCount: t('Number of control plane nodes'),
+  platform: t('Integrate with external partner platforms'),
 })
+
+export type PlatformType = 'none' | 'baremetal' | 'vsphere' | 'nutanix' | 'external'
+
+const CIMPlatforms: { [key in PlatformType]: string } = {
+  none: 'None',
+  baremetal: 'BareMetal',
+  vsphere: 'VSphere',
+  nutanix: 'Nutanix',
+  external: 'External',
+}
+
+export const getPlatform = (a: PlatformType) => (a ? CIMPlatforms[a] : CIMPlatforms['none'])
