@@ -239,4 +239,110 @@ describe('DetailsPage', () => {
       ).toBeTruthy()
     )
   })
+
+  it('should render VirtualMachineSnapshot resource details correctly', async () => {
+    jest.mock('react-router-dom-v5-compat', () => {
+      const originalModule = jest.requireActual('react-router-dom-v5-compat')
+      return {
+        __esModule: true,
+        ...originalModule,
+        useLocation: () => ({
+          pathname: '/multicloud/search/resources',
+          search:
+            '?cluster=local-cluster&kind=VirtualMachineSnapshot&apiversion=snapshot.kubevirt.io/v1beta1&namespace=openshift-cnv&name=test-vm-snapshot&_hubClusterResource=true',
+          state: {
+            from: '/multicloud/search',
+            fromSearch: '?filters={%22textsearch%22:%22kind%3AVirtualMachineSnapshot%22}',
+          },
+        }),
+        useNavigate: () => jest.fn(),
+      }
+    })
+    Object.defineProperty(window, 'location', {
+      value: {
+        pathname: '/multicloud/search/resources',
+        search:
+          '?cluster=local-cluster&kind=VirtualMachineSnapshot&apiversion=snapshot.kubevirt.io/v1beta1&namespace=openshift-cnv&name=test-vm-snapshot&_hubClusterResource=true',
+        state: {
+          from: '/multicloud/search',
+          fromSearch: '?filters={%22textsearch%22:%22kind%3AVirtualMachineSnapshot%2',
+        },
+      },
+    })
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(settingsState, { VIRTUAL_MACHINE_ACTIONS: 'enabled' })
+        }}
+      >
+        <MemoryRouter initialEntries={[NavigationPath.resources]}>
+          <Routes>
+            <Route path={`${NavigationPath.search}/*`} element={<Search />} />
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    // Wait for delete resource requests to finish
+    await waitForNocks([
+      metricNock,
+      nockGet({
+        apiVersion: 'snapshot.kubevirt.io/v1beta1',
+        kind: 'VirtualMachineSnapshot',
+        metadata: {
+          creationTimestamp: '2025-05-13T12:41:24Z',
+          name: 'test-vm-snapshot',
+          namespace: 'default',
+          ownerReferences: [
+            {
+              apiVersion: 'kubevirt.io/v1',
+              blockOwnerDeletion: false,
+              kind: 'VirtualMachine',
+              name: 'test-vm',
+            },
+          ],
+        },
+        spec: {
+          source: {
+            apiGroup: 'kubevirt.io',
+            kind: 'VirtualMachine',
+            name: 'test-vm',
+          },
+        },
+        status: {
+          conditions: [
+            {
+              lastProbeTime: null,
+              lastTransitionTime: '2025-05-13T12:41:24Z',
+              reason: 'Operation complete',
+              status: 'False',
+              type: 'Progressing',
+            },
+            {
+              lastProbeTime: null,
+              lastTransitionTime: '2025-05-13T12:41:24Z',
+              reason: 'Operation complete',
+              status: 'True',
+              type: 'Ready',
+            },
+          ],
+          creationTime: '2025-05-13T12:41:24Z',
+          phase: 'Succeeded',
+          readyToUse: true,
+          snapshotVolumes: {
+            excludedVolumes: ['rootdisk', 'cloudinitdisk'],
+          },
+        },
+      }),
+    ])
+
+    // Test that the component has rendered correctly with data
+    await waitFor(() =>
+      expect(
+        screen.getByRole('heading', {
+          name: /test-vm-snapshot/i,
+        })
+      ).toBeTruthy()
+    )
+  })
 })

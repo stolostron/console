@@ -53,7 +53,6 @@
         "stringData": {
           "type": "object",
           "properties": {
-            "autoImportRetry": { "type": "string" },
             "host": { "type": "string" },
             "kubeconfig": { "type": "string" },
             "server": { "type": "string" },
@@ -65,8 +64,8 @@
           },
           "oneOf": [
             { "required": ["host", "token"] },
-            { "required": ["autoImportRetry", "token", "server"] },
-            { "required": ["autoImportRetry", "kubeconfig"] },
+            { "required": ["token", "server"] },
+            { "required": ["kubeconfig"] },
             { "required": ["api_token", "cluster_id"] },
             { "required": ["client_id", "client_secret", "cluster_id"] }
           ]

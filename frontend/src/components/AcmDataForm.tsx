@@ -42,6 +42,8 @@ import {
   Page,
   PageSection,
   Popover,
+  SelectOption,
+  SelectGroup,
   Split,
   SplitItem,
   Stack,
@@ -60,9 +62,9 @@ import {
   WizardFooterType,
   WizardStepProps,
   WizardHeader,
+  Radio,
 } from '@patternfly/react-core'
-import { Select, SelectGroup, SelectOption, SelectOptionObject, SelectProps } from '@patternfly/react-core/deprecated'
-import { ValidatedOptions } from '@patternfly/react-core/dist/js/helpers/constants'
+import { AcmSelectBase, AcmSelectBaseProps, SelectOptionObject, SelectVariant } from './AcmSelectBase'
 import {
   EditIcon,
   ExclamationCircleIcon,
@@ -89,7 +91,7 @@ import {
   SectionGroup,
   SelectOptionInput,
 } from './AcmFormData'
-import { SyncEditor } from './SyncEditor/SyncEditor'
+import { SyncEditor, ValidationStatus } from './SyncEditor/SyncEditor'
 import { LostChangesContext, LostChangesPrompt } from './LostChanges'
 import { AcmHelperText } from '../ui-components/AcmHelperText/AcmHelperText'
 
@@ -134,6 +136,20 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
   const [copyHint, setCopyHint] = useState<ReactNode>(
     <span style={{ wordBreak: 'keep-all' }}>{t('Copy to clipboard')}</span>
   )
+  const [editorValidationStatus, setEditorValidationStatus] = useState<ValidationStatus>(ValidationStatus.success)
+  const renderErrors = (showErrors: boolean, hasRequiredErrors: boolean) => {
+    if (showErrors || editorValidationStatus === ValidationStatus.failure) {
+      return (
+        <AlertGroup>
+          {showErrors && hasRequiredErrors && <Alert isInline variant="danger" title={requiredValidationMessage(t)} />}
+          {showErrors && !hasRequiredErrors && <Alert isInline variant="danger" title={generalValidationMessage(t)} />}
+          {editorValidationStatus === ValidationStatus.failure && (
+            <Alert isInline variant="danger" title={t('You must fix editor syntax errors.')} />
+          )}
+        </AlertGroup>
+      )
+    }
+  }
 
   const resources = formData.stateToData()
 
@@ -173,6 +189,9 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                     }}
                     onEditorChange={(changes: { resources: any[] }): void => {
                       formData.customData = changes?.resources
+                    }}
+                    onStatusChange={(editorStatus: ValidationStatus): void => {
+                      setEditorValidationStatus(editorStatus)
                     }}
                   />
                 ) : (
@@ -217,6 +236,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                   mode={mode}
                   showFormErrors={showFormErrors}
                   setShowFormErrors={setShowFormErrors}
+                  renderErrors={renderErrors}
                   isHorizontal={isHorizontal}
                   globalWizardAlert={globalWizardAlert}
                   isModalWizard={isModalWizard}
@@ -227,6 +247,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                 <AcmDataForm
                   {...props}
                   mode={mode}
+                  renderErrors={renderErrors}
                   showFormErrors={showFormErrors}
                   setShowFormErrors={setShowFormErrors}
                   isHorizontal={isHorizontal}
@@ -278,17 +299,13 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                   )
                 }
               />
-              {showFormErrors && mode === 'form' && formHasErrors(t, formData) && (
-                <PageSection variant="light" style={{ paddingTop: 0 }}>
-                  <AlertGroup>
-                    {formHasRequiredErrors(formData) ? (
-                      <Alert isInline variant="danger" title={requiredValidationMessage(t)} />
-                    ) : (
-                      <Alert isInline variant="danger" title={generalValidationMessage(t)} />
-                    )}
-                  </AlertGroup>
-                </PageSection>
-              )}
+              {showFormErrors &&
+                mode === 'form' &&
+                (editorValidationStatus === ValidationStatus.failure || formHasErrors(t, formData)) && (
+                  <PageSection variant="light" style={{ paddingTop: 0 }}>
+                    {renderErrors(true, formHasRequiredErrors(formData))}
+                  </PageSection>
+                )}
             </Fragment>
           }
           groupProps={{ stickyOnBreakpoint: { default: 'top' } }}
@@ -303,12 +320,22 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
 export function AcmDataForm(
   props: AcmDataFormProps & {
     showFormErrors: boolean
+    renderErrors: (showErrors: boolean, hasRequiredErrors: boolean) => ReactNode
     setShowFormErrors: (showFormErrors: boolean) => void
     globalWizardAlert?: ReactNode
     isModalWizard?: boolean
   }
 ): JSX.Element {
-  const { formData, isHorizontal, globalWizardAlert, showFormErrors, setShowFormErrors, isModalWizard, mode } = props
+  const {
+    formData,
+    isHorizontal,
+    globalWizardAlert,
+    showFormErrors,
+    setShowFormErrors,
+    renderErrors,
+    isModalWizard,
+    mode,
+  } = props
   if (mode === 'details') {
     return (
       <Form>
@@ -323,6 +350,7 @@ export function AcmDataForm(
           <AcmDataFormWizard
             formData={formData}
             isHorizontal={isHorizontal ?? false}
+            renderErrors={renderErrors}
             showFormErrors={showFormErrors}
             setShowFormErrors={setShowFormErrors}
             globalWizardAlert={globalWizardAlert}
@@ -456,10 +484,12 @@ export function AcmDataFormWizard(props: {
   globalWizardAlert?: ReactNode
   showFormErrors: boolean
   isModalWizard?: boolean
+  renderErrors: (showErrors: boolean, hasRequiredErrors: boolean) => ReactNode
   setShowFormErrors: (showFormErrors: boolean) => void
 }): JSX.Element {
   const { t } = useTranslation()
-  const { formData, isHorizontal, globalWizardAlert, showFormErrors, setShowFormErrors, isModalWizard } = props
+  const { formData, isHorizontal, globalWizardAlert, showFormErrors, setShowFormErrors, renderErrors, isModalWizard } =
+    props
   const [showSectionErrors, setShowSectionErrors] = useState<Record<string, boolean>>({})
   const [submitText, setSubmitText] = useState(formData.submitText)
   const [submitError, setSubmitError] = useState('')
@@ -495,14 +525,9 @@ export function AcmDataFormWizard(props: {
       component: section.type === 'Section' && (
         <Form isHorizontal={isHorizontal}>
           {globalWizardAlert && <AlertGroup>{globalWizardAlert}</AlertGroup>}
-          {(showFormErrors || showSectionErrors[section.title]) && hasError && (
-            <AlertGroup>
-              {sectionHasRequiredErrors(section) ? (
-                <Alert isInline variant="danger" title={requiredValidationMessage(t)} />
-              ) : (
-                <Alert isInline variant="danger" title={generalValidationMessage(t)} />
-              )}
-            </AlertGroup>
+          {renderErrors(
+            (showFormErrors || showSectionErrors[section.title]) && hasError,
+            sectionHasRequiredErrors(section)
           )}
           {section.alerts && <AlertGroup>{section.alerts}</AlertGroup>}
           <Title headingLevel="h2">{section.wizardTitle ?? section.title}</Title>
@@ -533,15 +558,7 @@ export function AcmDataFormWizard(props: {
     name: t('Review'),
     component: (
       <Form>
-        {showFormErrors && formHasErrors(t, formData) && (
-          <AlertGroup>
-            {formHasRequiredErrors(formData) ? (
-              <Alert isInline variant="danger" title={requiredValidationMessage(t)} />
-            ) : (
-              <Alert isInline variant="danger" title={generalValidationMessage(t)} />
-            )}
-          </AlertGroup>
-        )}
+        {renderErrors(showFormErrors && formHasErrors(t, formData), formHasRequiredErrors(formData))}
         <AcmDataFormDetails formData={formData} wizardSummary={true} />
       </Form>
     ),
@@ -864,7 +881,8 @@ function AcmInputDescription(props: { input: Input }): JSX.Element {
         </DescriptionListGroup>
       )
     }
-    case 'Multiselect': {
+    case 'Multiselect':
+    case 'CreatableMultiselect': {
       const selectedOptions: SelectOptionInput[] = []
       for (const option of input.options) {
         if (input.value.includes(option.value)) {
@@ -915,6 +933,17 @@ function AcmInputDescription(props: { input: Input }): JSX.Element {
         </DescriptionListGroup>
       )
     }
+    case 'Custom':
+      return input.label ? (
+        <DescriptionListGroup key={input.label}>
+          <DescriptionListTerm>{input.label}</DescriptionListTerm>
+          <DescriptionListDescription>{input.component}</DescriptionListDescription>
+        </DescriptionListGroup>
+      ) : (
+        input.component
+      )
+    default:
+      return <Fragment />
   }
 }
 
@@ -1052,10 +1081,11 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
     case 'Select':
     case 'GroupedSelect':
     case 'Multiselect':
-    case 'GroupedMultiselect': {
+    case 'GroupedMultiselect':
+    case 'CreatableMultiselect': {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { onChange, placeholder, validate, validation, isRequired, ...inputProps } = input
-      const onSelect = (_event: unknown, selection: string | SelectOptionObject) => {
+      const onSelect = (selection: string | SelectOptionObject) => {
         switch (input.type) {
           case 'Select':
           case 'GroupedSelect':
@@ -1063,6 +1093,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
             break
           case 'Multiselect':
           case 'GroupedMultiselect':
+          case 'CreatableMultiselect':
             if (!input.value.includes(selection as string)) {
               input.onChange([...input.value, ...[selection as string]])
             } else {
@@ -1081,6 +1112,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
               break
             case 'Multiselect':
             case 'GroupedMultiselect':
+            case 'CreatableMultiselect':
               input.onChange([])
               break
           }
@@ -1146,16 +1178,17 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
           }
           break
       }
-      let variant = input.variant
+      let variant = input.variant as SelectVariant
       if (!variant) {
         switch (input.type) {
           case 'Select':
           case 'GroupedSelect':
-            variant = hasIcons ? 'single' : 'typeahead'
+            variant = hasIcons ? SelectVariant.single : SelectVariant.typeahead
             break
           case 'Multiselect':
           case 'GroupedMultiselect':
-            variant = 'typeaheadmulti'
+          case 'CreatableMultiselect':
+            variant = SelectVariant.typeaheadMulti
             break
         }
       }
@@ -1166,15 +1199,12 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
           selections={selections}
           onSelect={onSelect}
           onClear={onClear}
-          isCreatable={false}
+          // isCreatable={input.type === 'CreatableMultiselect'}
           isDisabled={isReadOnly || input.isDisabled}
-          validated={validated}
-          autoClose={input.type === 'Select' || input.type === 'GroupedSelect'}
-          isGrouped={input.type === 'GroupedSelect' || input.type === 'GroupedMultiselect'}
           variant={variant}
           placeholderText={input.placeholder}
         >
-          {input.type === 'Select' || input.type === 'Multiselect'
+          {input.type === 'Select' || input.type === 'Multiselect' || input.type === 'CreatableMultiselect'
             ? input.options.map((option) => {
                 return (
                   <SelectOption key={option.value} value={option.value} description={option.description}>
@@ -1245,6 +1275,25 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
         </Alert>
       )
     }
+    case 'Radio': {
+      return (
+        <FormGroup label={input.label} isRequired={input.isRequired} fieldId={input.id} isInline>
+          {input.options.map((option) => (
+            <Radio
+              key={option.id}
+              id={option.id}
+              name={input.id}
+              label={option.text}
+              value={option.value}
+              isChecked={input.value === option.value}
+              onChange={() => input.onChange(option.value)}
+            />
+          ))}
+        </FormGroup>
+      )
+    }
+    case 'Custom':
+      return input.component
   }
 }
 
@@ -1388,27 +1437,17 @@ function inputsHidden(inputs?: Input[]): boolean {
   return true
 }
 
-type selectWithToggleProps = Omit<SelectProps, 'onToggle'> & { autoClose: boolean }
-function SelectWithToggle(props: selectWithToggleProps): JSX.Element {
+function SelectWithToggle(props: AcmSelectBaseProps): JSX.Element {
   // TODO support isReadOnly
-  const { validated, autoClose: closeOnSelect } = props
-  const [open, setOpen] = useState(false)
-  const { autoClose, ...selectProps } = props
-  const { t } = useTranslation()
   return (
-    <Select
-      {...selectProps}
-      isOpen={open}
-      onToggle={() => setOpen(!open)}
-      onSelect={(e, v) => {
-        props.onSelect?.(e, v)
-        if (closeOnSelect) setOpen(false)
+    <AcmSelectBase
+      {...props}
+      onSelect={(v) => {
+        props.onSelect?.(v)
       }}
-      aria-invalid={validated === ValidatedOptions.error}
-      noResultsFoundText={t('No results found')}
     >
       {props.children}
-    </Select>
+    </AcmSelectBase>
   )
 }
 

@@ -427,3 +427,7 @@ export function validateKubeconfig(value: string, t: TFunction) {
   }
   return undefined
 }
+
+export function validateArrayNotEmpty(value: any[], t: TFunction) {
+  return !value.length ? t('validate.array.notempty') : undefined
+}

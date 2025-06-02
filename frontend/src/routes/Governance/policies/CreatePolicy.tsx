@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useData, useItem } from '@patternfly-labs/react-form-wizard'
+import { useData, useItem, useEditorValidationStatus, EditorValidationStatus } from '@patternfly-labs/react-form-wizard'
 import { PolicyWizard } from '../../../wizards/Governance/Policy/PolicyWizard'
 import { AcmToastContext } from '../../../ui-components'
 import { useContext, useEffect, useMemo, useState } from 'react'
 import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
-import { SyncEditor } from '../../../components/SyncEditor/SyncEditor'
+import { SyncEditor, ValidationStatus } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { IResource, Policy, PolicyKind } from '../../../resources'
@@ -16,6 +16,8 @@ import { LostChangesContext } from '../../../components/LostChanges'
 export function WizardSyncEditor() {
   const resources = useItem() // Wizard framework sets this context
   const { update } = useData() // Wizard framework sets this context
+  const { setEditorValidationStatus } = useEditorValidationStatus()
+
   const { t } = useTranslation()
   return (
     <SyncEditor
@@ -25,6 +27,9 @@ export function WizardSyncEditor() {
       schema={schema}
       onEditorChange={(changes: { resources: any[] }): void => {
         update(changes?.resources)
+      }}
+      onStatusChange={(editorStatus: ValidationStatus): void => {
+        setEditorValidationStatus(editorStatus as unknown as EditorValidationStatus)
       }}
       editableUidSiblings={true}
       autoCreateNs

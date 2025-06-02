@@ -88,7 +88,7 @@ describe('ControlPanelComboBox component', () => {
     render(<ControlPanelComboBox {...propsPlain} />)
 
     const input = screen.getByRole('combobox', {
-      name: /listbox input field/i,
+      name: /Instance type/i,
     })
     // select item
     expect(input).toHaveValue('m5.xlarge - 4 vCPU, 16 GiB RAM - General Purpose')
@@ -122,7 +122,7 @@ describe('ControlPanelComboBox component', () => {
     render(<ControlPanelComboBox {...propsPlain} />)
 
     const input = screen.getByRole('combobox', {
-      name: /listbox input field/i,
+      name: /Instance type/i,
     })
     // search
     userEvent.type(input, '256')
@@ -134,7 +134,7 @@ describe('ControlPanelComboBox component', () => {
     render(<ControlPanelComboBox {...propsPlain} />)
 
     const input = screen.getByRole('combobox', {
-      name: /listbox input field/i,
+      name: /Instance type/i,
     })
 
     // edit
@@ -155,7 +155,7 @@ describe('ControlPanelComboBox component', () => {
     render(<ControlPanelComboBox {...propsMulti} />)
 
     const input = screen.getByRole('combobox', {
-      name: /listbox input field/i,
+      name: /Options menu/i,
     })
 
     userEvent.click(input)
@@ -167,7 +167,7 @@ describe('ControlPanelComboBox component', () => {
     render(<ControlPanelComboBox {...propsMulti} />)
 
     const input = screen.getByRole('combobox', {
-      name: /listbox input field/i,
+      name: /Options menu/i,
     })
     userEvent.click(input)
     userEvent.type(screen.getByText(/test-placement-1 deploys only to local cluster/i), '{enter}')

@@ -15,8 +15,8 @@ import {
   SearchInput,
   SearchInputProps,
   Tooltip,
+  SelectOption,
 } from '@patternfly/react-core'
-import { SelectOption } from '@patternfly/react-core/deprecated'
 import { useTranslation } from '../../lib/acm-i18next'
 import { AcmSelect } from '../AcmSelect'
 import { PlusCircleIcon, TimesCircleIcon } from '@patternfly/react-icons'

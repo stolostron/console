@@ -13,8 +13,9 @@ import {
   Radio,
   TimePicker,
   ButtonVariant,
+  SelectOption,
 } from '@patternfly/react-core'
-import { Select, SelectOption, SelectVariant } from '@patternfly/react-core/deprecated'
+import { AcmSelectBase, SelectVariant } from '../../../../../../components/AcmSelectBase'
 import { Fragment, Component } from 'react'
 import { PlusCircleIcon, TimesCircleIcon } from '@patternfly/react-icons'
 import { Tooltip, getSourcePath, removeVs } from '../../../../../../components/TemplateEditor'
@@ -45,7 +46,6 @@ export class TimeWindow extends Component {
     this.state = {
       timezoneCache: { isSelected: false, tz: '' },
       isExpanded: this.props.control.active.mode,
-      isTimeZoneOpen: false,
     }
     this.props.control.validation = this.validation.bind(this)
 
@@ -115,7 +115,7 @@ export class TimeWindow extends Component {
   }
 
   render() {
-    const { isExpanded, isTimeZoneOpen } = this.state
+    const { isExpanded } = this.state
     const onToggle = (toggleStatus) => {
       this.setState({ isExpanded: !toggleStatus })
     }
@@ -218,38 +218,24 @@ export class TimeWindow extends Component {
                         {i18n('Time zone')}
                         <div className="config-title-required">*</div>
                       </div>
-                      <Select
+                      <AcmSelectBase
                         id="timeZoneSelect"
                         variant={SelectVariant.typeahead}
-                        aria-label="timezoneComboBox"
+                        aria-label={i18n('Select timezone')}
                         className="config-timezone-combo-box"
                         placeholder={i18n('Choose a location')}
                         selections={timezone || ''}
                         isDisabled={!modeSelected}
                         maxHeight={180}
-                        onFilter={(e) => {
-                          let input
-                          try {
-                            input = new RegExp(e.target.value, 'i')
-                          } catch {
-                            // Nothing to do
-                          }
-                          return e.target.value !== ''
-                            ? this.timezoneList.filter((child) => input.test(child.props.value))
-                            : this.timezoneList
-                        }}
-                        isOpen={isTimeZoneOpen}
-                        onToggle={this.handleTimeZoneToggle}
-                        onSelect={(_event, value) => {
+                        onSelect={(value) => {
                           this.handleTimeZone.bind(this)(value)
                         }}
                         onClear={() => {
                           this.handleTimeZone.bind(this)(undefined)
                         }}
-                        noResultsFoundText={i18n('No results found')}
                       >
                         {this.timezoneList}
-                      </Select>
+                      </AcmSelectBase>
                     </div>
 
                     <div style={{ display: 'block' }}>
@@ -385,13 +371,30 @@ export class TimeWindow extends Component {
     }
 
     try {
-      // Create a date object with the time
-      const [hours, minutes] = timeStr.split(':')
-      const date = new Date()
-      date.setHours(parseInt(hours, 10))
-      date.setMinutes(parseInt(minutes, 10))
+      // parse hours, minutes, and AM/PM
+      const match = timeStr.match(/(\d{1,2}):(\d{2})\s*([APap][Mm])?/)
+      if (!match) {
+        return ''
+      }
 
-      // Format in 12-hour format with AM/PM
+      let hours = parseInt(match[1], 10)
+      const minutes = parseInt(match[2], 10)
+      const period = match[3] ? match[3].toUpperCase() : null
+
+      // create Date object with correct hours based on AM/PM
+      const date = new Date()
+
+      // handle AM/PM conversion properly
+      if (period === 'AM' && hours === 12) {
+        hours = 0 // 12 AM is 0 in 24-hour time
+      } else if (period === 'PM' && hours < 12) {
+        hours += 12 // converts PM times to 24-hour format
+      }
+
+      date.setHours(hours)
+      date.setMinutes(minutes)
+
+      // format as 12-hour time with AM/PM
       return date.toLocaleTimeString('en-US', {
         hour: 'numeric',
         minute: '2-digit',
@@ -435,11 +438,6 @@ export class TimeWindow extends Component {
     }
   }
 
-  handleTimeZoneToggle = () => {
-    const { isTimeZoneOpen } = this.state
-    this.setState({ isTimeZoneOpen: !isTimeZoneOpen })
-  }
-
   handleTimeZone = (value) => {
     const { control, handleChange } = this.props
 
@@ -448,14 +446,12 @@ export class TimeWindow extends Component {
       control.active.timezone = value
       this.setState({
         timezoneCache: { isSelected: true, tz: value },
-        isTimeZoneOpen: false,
       })
     } else {
       // Reset timezone and reset cached tz
       control.active.timezone = ''
       this.setState({
         timezoneCache: { isSelected: false, tz: '' },
-        isTimeZoneOpen: false,
       })
     }
 

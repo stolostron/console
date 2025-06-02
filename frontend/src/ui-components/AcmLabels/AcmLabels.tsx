@@ -17,6 +17,7 @@ export function AcmLabels(props: {
   expandedText?: string
   allCollapsedText?: string
   isCompact?: boolean
+  isVertical?: boolean
 }) {
   const { t } = useTranslation()
   const labelsRecord: Record<string, string> = useMemo(() => {
@@ -67,7 +68,12 @@ export function AcmLabels(props: {
 
   const renderLabelGroup = () => {
     return (
-      <LabelGroup isVertical numLabels={labels.length} expandedText={expandedText} collapsedText={collapsedText}>
+      <LabelGroup
+        isVertical={props.isVertical ?? true}
+        numLabels={labels.length}
+        expandedText={expandedText}
+        collapsedText={collapsedText}
+      >
         {labels.map((label) => (
           <Label key={label} className={acmLabel} isCompact={labelCount > 10}>
             {label}
@@ -90,7 +96,9 @@ export function AcmLabels(props: {
         flipBehavior={['left', 'left-end', 'left-end']}
         hasAutoWidth
       >
-        <Label isOverflowLabel>{t('{{count}} labels', { count: labelCount })}</Label>
+        <Label style={{ width: 'fit-content' }} isOverflowLabel>
+          {t('{{count}} labels', { count: labelCount })}
+        </Label>
       </Popover>
     ) : (
       renderLabelGroup()

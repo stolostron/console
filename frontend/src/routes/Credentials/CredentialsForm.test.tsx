@@ -393,8 +393,11 @@ describe('add credentials page', () => {
     expect(ocmTokenLink).toBeInTheDocument()
 
     // Open the dropdown
-    const dropdownToggle = screen.getByLabelText('Options menu')
-    fireEvent.click(dropdownToggle)
+    fireEvent.click(
+      screen.getByRole('combobox', {
+        name: 'Authentication method',
+      })
+    )
 
     // Select the "API Token" option
     const apiTokenOption = screen.getByRole('option', { name: 'API token' })
@@ -435,8 +438,11 @@ describe('add credentials page', () => {
     expect(serviceAccountTokenLink).toBeInTheDocument()
 
     // Open the dropdown
-    const dropdownToggle = screen.getByLabelText('Options menu')
-    fireEvent.click(dropdownToggle)
+    screen
+      .getByRole('combobox', {
+        name: 'Authentication method',
+      })
+      .click()
 
     // Select the "Service Account" option
     const serviceAccountOption = screen.getByText('Service account')

@@ -10,21 +10,21 @@ import {
   StackItem,
 } from '@patternfly/react-core'
 import _ from 'lodash'
-import { useMemo } from 'react'
+import { Fragment, useCallback, useContext, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../lib/acm-i18next'
+import { PluginContext } from '../../../lib/PluginContext'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmLoadingPage, AcmTable, compareStrings } from '../../../ui-components'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { IVMActionModalProps } from '../../Infrastructure/VirtualMachines/modals/VMActionModal'
-import { getVirtualMachineRowActions } from '../../Infrastructure/VirtualMachines/utils'
 import { IDeleteExternalResourceModalProps } from '../components/Modals/DeleteExternalResourceModal'
 import { IDeleteModalProps } from '../components/Modals/DeleteResourceModal'
 import { convertStringToQuery, federatedErrorText } from '../search-helper'
 import { searchClient } from '../search-sdk/search-client'
 import { useSearchResultRelatedCountQuery, useSearchResultRelatedItemsQuery } from '../search-sdk/search-sdk'
 import { useSearchDefinitions } from '../searchDefinitions'
-import { useGetRowActions } from './utils'
+import { getRowActions } from './utils'
 
 export function RenderItemContent(
   props: Readonly<{
@@ -34,18 +34,57 @@ export function RenderItemContent(
     setDeleteExternalResource: React.Dispatch<React.SetStateAction<IDeleteExternalResourceModalProps>>
     setVMAction: React.Dispatch<React.SetStateAction<IVMActionModalProps>>
     hasFederatedError: boolean
+    setPluginModal: React.Dispatch<React.SetStateAction<JSX.Element | undefined>>
   }>
 ) {
-  const { currentQuery, relatedKind, setDeleteResource, setDeleteExternalResource, setVMAction, hasFederatedError } =
-    props
+  const {
+    currentQuery,
+    relatedKind,
+    setDeleteResource,
+    setDeleteExternalResource,
+    setVMAction,
+    hasFederatedError,
+    setPluginModal,
+  } = props
   const { t } = useTranslation()
   const navigate = useNavigate()
   const allClusters = useAllClusters(true)
-  const { settingsState } = useSharedAtoms()
-  const vmActionsEnabled = useRecoilValue(settingsState)?.VIRTUAL_MACHINE_ACTIONS === 'enabled'
+  const { useVirtualMachineActionsEnabled } = useSharedAtoms()
+  const vmActionsEnabled = useVirtualMachineActionsEnabled()
   const { useSearchResultLimit } = useSharedAtoms()
   const searchResultLimit = useSearchResultLimit()
-  const rowActions = useGetRowActions(relatedKind, currentQuery, false, setDeleteResource, setDeleteExternalResource)
+  const { acmExtensions } = useContext(PluginContext)
+  const rowActions = useCallback(
+    (item: any) =>
+      getRowActions(
+        item,
+        relatedKind,
+        currentQuery,
+        false,
+        allClusters,
+        setDeleteResource,
+        setDeleteExternalResource,
+        vmActionsEnabled,
+        setVMAction,
+        acmExtensions,
+        setPluginModal,
+        navigate,
+        t
+      ),
+    [
+      relatedKind,
+      currentQuery,
+      allClusters,
+      setDeleteResource,
+      setDeleteExternalResource,
+      vmActionsEnabled,
+      setVMAction,
+      acmExtensions,
+      setPluginModal,
+      navigate,
+      t,
+    ]
+  )
   const { data, loading, error } = useSearchResultRelatedItemsQuery({
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
     variables: {
@@ -81,23 +120,7 @@ export function RenderItemContent(
       emptyState={undefined} // table only shown for kinds with related resources
       columns={colDefs}
       keyFn={(item: any) => item?._uid.toString() ?? `${item.name}-${item.namespace}-${item.cluster}`}
-      rowActions={relatedKind.toLowerCase() !== 'virtualmachine' ? rowActions : undefined}
-      rowActionResolver={
-        // use the row action resolvers so we can dynamically display/enabled certain actions based on the resource status.
-        relatedKind.toLowerCase() === 'virtualmachine'
-          ? (item: any) =>
-              getVirtualMachineRowActions(
-                item,
-                allClusters,
-                setDeleteResource,
-                setDeleteExternalResource,
-                setVMAction,
-                vmActionsEnabled,
-                navigate,
-                t
-              )
-          : undefined
-      }
+      rowActionResolver={rowActions}
     />
   )
 }
@@ -121,6 +144,7 @@ export default function RelatedResults(
     setVMAction,
   } = props
   const { t } = useTranslation()
+  const [pluginModal, setPluginModal] = useState<JSX.Element>()
   const { useSearchResultLimit, isGlobalHubState, settingsState } = useSharedAtoms()
   const isGlobalHub = useRecoilValue(isGlobalHubState)
   const settings = useRecoilValue(settingsState)
@@ -187,53 +211,57 @@ export default function RelatedResults(
   }
 
   return (
-    <Accordion isBordered asDefinitionList={true}>
-      {relatedCounts.map((count: any, idx: number) => {
-        const currentKind = count!.kind
-        const accordionItemKey = `${currentKind}-${idx}`
-        const isExpanded = selectedRelatedKinds.indexOf(currentKind.toLowerCase()) > -1
-        return (
-          <AccordionItem key={`${currentKind}-accordion-item`}>
-            <AccordionToggle
-              onClick={() => {
-                const updatedKinds = isExpanded
-                  ? selectedRelatedKinds.filter((kind) => kind !== currentKind.toLowerCase())
-                  : [currentKind.toLowerCase(), ...selectedRelatedKinds]
-                setSelectedRelatedKinds(updatedKinds)
-              }}
-              isExpanded={isExpanded}
-              id={accordionItemKey}
-            >
-              <span style={{ flexDirection: 'row' }}>
-                <span style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
-                  {currentKind}
-                  <div
-                    style={{
-                      marginLeft: '10px',
-                      fontSize: 'var(--pf-v5-global--FontSize--sm)',
-                      color: 'var(--pf-v5-global--Color--200)',
-                    }}
-                  >
-                    {`(${count!.count})`}
-                  </div>
+    <Fragment>
+      {pluginModal}
+      <Accordion isBordered asDefinitionList={true}>
+        {relatedCounts.map((count: any, idx: number) => {
+          const currentKind = count!.kind
+          const accordionItemKey = `${currentKind}-${idx}`
+          const isExpanded = selectedRelatedKinds.indexOf(currentKind.toLowerCase()) > -1
+          return (
+            <AccordionItem key={`${currentKind}-accordion-item`}>
+              <AccordionToggle
+                onClick={() => {
+                  const updatedKinds = isExpanded
+                    ? selectedRelatedKinds.filter((kind) => kind !== currentKind.toLowerCase())
+                    : [currentKind.toLowerCase(), ...selectedRelatedKinds]
+                  setSelectedRelatedKinds(updatedKinds)
+                }}
+                isExpanded={isExpanded}
+                id={accordionItemKey}
+              >
+                <span style={{ flexDirection: 'row' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                    {currentKind}
+                    <div
+                      style={{
+                        marginLeft: '10px',
+                        fontSize: 'var(--pf-v5-global--FontSize--sm)',
+                        color: 'var(--pf-v5-global--Color--200)',
+                      }}
+                    >
+                      {`(${count!.count})`}
+                    </div>
+                  </span>
                 </span>
-              </span>
-            </AccordionToggle>
-            <AccordionContent isHidden={!isExpanded}>
-              {isExpanded && (
-                <RenderItemContent
-                  currentQuery={currentQuery}
-                  relatedKind={currentKind}
-                  setDeleteResource={setDeleteResource}
-                  setDeleteExternalResource={setDeleteExternalResource}
-                  setVMAction={setVMAction}
-                  hasFederatedError={hasFederatedError}
-                />
-              )}
-            </AccordionContent>
-          </AccordionItem>
-        )
-      })}
-    </Accordion>
+              </AccordionToggle>
+              <AccordionContent isHidden={!isExpanded}>
+                {isExpanded && (
+                  <RenderItemContent
+                    currentQuery={currentQuery}
+                    relatedKind={currentKind}
+                    setDeleteResource={setDeleteResource}
+                    setDeleteExternalResource={setDeleteExternalResource}
+                    setVMAction={setVMAction}
+                    hasFederatedError={hasFederatedError}
+                    setPluginModal={setPluginModal}
+                  />
+                )}
+              </AccordionContent>
+            </AccordionItem>
+          )
+        })}
+      </Accordion>
+    </Fragment>
   )
 }

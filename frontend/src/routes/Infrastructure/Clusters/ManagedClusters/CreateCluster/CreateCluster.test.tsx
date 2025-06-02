@@ -25,7 +25,6 @@ import {
 import { defaultPlugin, PluginContext } from '../../../../../lib/PluginContext'
 import {
   clickByPlaceholderText,
-  clickByRole,
   clickByTestId,
   clickByText,
   pasteByTestId,
@@ -875,7 +874,11 @@ describe('CreateCluster AWS', () => {
     await waitForText(mockClusterCurators[0].spec!.upgrade!.posthook![0].name!)
 
     // clear template
-    await clickByRole('button', { name: /clear selected item/i })
+    screen
+      .getByRole('button', {
+        name: /clear input value/i,
+      })
+      .click()
     await waitForNotText('View test')
     await clickByText('Next')
 
@@ -1934,8 +1937,6 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
 
     const inputField = await waitFor(() => screen.getByTestId('emanspace'))
     expect(inputField).toHaveValue('clusters')
-    const clearButtons = screen.getAllByRole('button', { name: /clear selected item/i })
-    fireEvent.click(clearButtons[1])
 
     await clickByTestId('emanspace')
     await typeByTestId('emanspace', 'new-hns')
@@ -2461,19 +2462,25 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
 
     const inputField = await waitFor(() => screen.getByTestId('emanspace'))
     expect(inputField).toHaveValue('clusters')
-    const clearButtons = screen.getAllByRole('button', { name: /clear selected item/i })
-    fireEvent.click(clearButtons[1])
 
     await clickByTestId('emanspace')
     await typeByTestId('emanspace', 'new-ns')
     fireEvent.keyDown(screen.getByTestId('emanspace'), { key: 'Enter', code: 'Enter' })
 
     await typeByTestId('additionalLabels', 'myLabelKey=myValue')
-    await clickByPlaceholderText('Select a credential')
+    await clickByPlaceholderText('kubevirt-with-ei')
+    screen
+      .getByRole('combobox', {
+        name: 'Infrastructure provider credential',
+      })
+      .click()
     await clickByText('Add credential')
     await typeByTestId('credentialsName', 'kubevirt-with-ei')
-    await clickByTestId('namespaceName-input-toggle-select-typeahead')
-
+    screen
+      .getByRole('combobox', {
+        name: /namespace/i,
+      })
+      .click()
     await clickByText('new-ns')
     await clickByText('Next', 1)
     await clickByTestId('isExternalInfra')
@@ -2940,11 +2947,14 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     const inputElement = screen.getByTestId('emanspace')
     expect(inputElement).toHaveValue('clusters')
     await typeByTestId('additionalLabels', 'myLabelKey=myValue')
-
-    await clickByPlaceholderText('Select a credential')
+    await clickByPlaceholderText('kubevirt-no-ei')
     await clickByText('Add credential')
     await typeByTestId('credentialsName', 'kubevirt-noei')
-    await clickByTestId('namespaceName-input-toggle-select-typeahead')
+    screen
+      .getByRole('combobox', {
+        name: 'Namespace',
+      })
+      .click()
     await clickByText('test-ns')
     await clickByText('Next', 1)
     await clickByText('Next', 1)
@@ -3409,7 +3419,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     expect(inputElement).toHaveValue('clusters')
 
     const clearButtons = screen.getAllByRole('button', { name: /clear selected item/i })
-    fireEvent.click(clearButtons[1])
+    fireEvent.click(clearButtons[0])
     expect(inputElement).toHaveValue('')
 
     await clickByTestId('emanspace')
@@ -3426,15 +3436,19 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
       expect(screen.getByText('The namespace cannot be the same as the cluster name.')).toBeInTheDocument()
     })
 
-    fireEvent.click(clearButtons[1])
+    fireEvent.click(clearButtons[0])
     userEvent.type(inputField, 'test-namespace{enter}')
 
     await typeByTestId('additionalLabels', 'myLabelKey=myValue')
 
-    await clickByPlaceholderText('Select a credential')
+    await clickByPlaceholderText('kubevirt-no-ei')
     await clickByText('Add credential')
     await typeByTestId('credentialsName', 'kubevirt-noei')
-    await clickByTestId('namespaceName-input-toggle-select-typeahead')
+    screen
+      .getByRole('combobox', {
+        name: 'Namespace',
+      })
+      .click()
     await clickByText('test-ns')
     await clickByText('Next', 1)
     await clickByText('Next', 1)
@@ -3941,7 +3955,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     expect(inputElement).toHaveValue('clusters')
 
     const clearButtons = screen.getAllByRole('button', { name: /clear selected item/i })
-    fireEvent.click(clearButtons[1])
+    fireEvent.click(clearButtons[0])
     expect(inputElement).toHaveValue('')
 
     await clickByTestId('emanspace')
@@ -3958,15 +3972,19 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
       expect(screen.getByText('The namespace cannot be the same as the cluster name.')).toBeInTheDocument()
     })
 
-    fireEvent.click(clearButtons[1])
+    fireEvent.click(clearButtons[0])
     userEvent.type(inputField, 'test-namespace{enter}')
 
     await typeByTestId('additionalLabels', 'myLabelKey=myValue')
 
-    await clickByPlaceholderText('Select a credential')
+    await clickByPlaceholderText('kubevirt-no-ei')
     await clickByText('Add credential')
     await typeByTestId('credentialsName', 'kubevirt-noei')
-    await clickByTestId('namespaceName-input-toggle-select-typeahead')
+    screen
+      .getByRole('combobox', {
+        name: 'Namespace',
+      })
+      .click()
     await clickByText('test-ns')
     await clickByText('Next', 1)
     await clickByText('Next', 1)

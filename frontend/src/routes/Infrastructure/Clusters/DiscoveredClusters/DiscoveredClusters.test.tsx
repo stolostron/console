@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render, waitFor } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { discoveredClusterState, discoveryConfigState, secretsState } from '../../../../atoms'
@@ -81,7 +81,7 @@ describe('DiscoveredClusters', () => {
       discoveryConfigCreateSelfSubjectAccessResponse
     )
 
-    const { container } = render(
+    render(
       <RecoilRoot
         initializeState={(snapshot) => {
           snapshot.set(discoveredClusterState, [])
@@ -104,7 +104,9 @@ describe('DiscoveredClusters', () => {
 
     await waitForText(mockRHOCMSecrets[0].metadata.namespace + '/' + mockRHOCMSecrets[0].metadata.name)
     await clickByText(mockRHOCMSecrets[0].metadata.namespace + '/' + mockRHOCMSecrets[0].metadata.name)
-    await waitFor(() => expect(container.querySelectorAll(`[aria-labelledby^="credentials-label"]`)).toHaveLength(1))
+    screen.getByRole('combobox', {
+      name: 'Credential',
+    })
     await waitForText(mockRHOCMSecrets[0].metadata.namespace + '/' + mockRHOCMSecrets[0].metadata.name)
     await waitForNocks([discoveryConfigCreateNock])
   })

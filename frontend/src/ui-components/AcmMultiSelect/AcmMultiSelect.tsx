@@ -1,16 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Button, FormGroup, Popover, Skeleton } from '@patternfly/react-core'
-import { Select, SelectOption, SelectProps, SelectVariant } from '@patternfly/react-core/deprecated'
+import { AcmSelectBase, AcmSelectBaseProps, SelectVariant } from '../../components/AcmSelectBase'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
-import { Children, Fragment, ReactNode, useLayoutEffect, useState } from 'react'
+import { Fragment, ReactNode, useLayoutEffect, useState } from 'react'
 import { useTranslation } from '../../lib/acm-i18next'
 import { useValidationContext } from '../AcmForm/AcmForm'
 import { AcmHelperText } from '../AcmHelperText/AcmHelperText'
 
 type AcmMultiSelectProps = Pick<
-  SelectProps,
-  Exclude<keyof SelectProps, 'onToggle' | 'onChange' | 'selections' | 'onSelect'>
+  AcmSelectBaseProps,
+  Exclude<keyof AcmSelectBaseProps, 'onToggle' | 'onChange' | 'selections' | 'onSelect' | 'placeholder'>
 > & {
   id: string
   label: string
@@ -22,11 +22,11 @@ type AcmMultiSelectProps = Pick<
   labelHelpTitle?: ReactNode
   helperText?: ReactNode
   isRequired?: boolean
+  variant?: SelectVariant.checkbox | SelectVariant.typeaheadMulti | SelectVariant.typeaheadCheckbox
   isLoading?: boolean
 }
 
 export function AcmMultiSelect(props: AcmMultiSelectProps) {
-  const [open, setOpen] = useState(false)
   const ValidationContext = useValidationContext()
   const [validated, setValidated] = useState<'default' | 'success' | 'error' | 'warning'>('default')
   const [error, setError] = useState<string>('')
@@ -37,13 +37,12 @@ export function AcmMultiSelect(props: AcmMultiSelectProps) {
     helperText,
     isRequired,
     onChange,
+    variant = SelectVariant.checkbox,
     value,
-    placeholder,
     isLoading,
     ...selectProps
   } = props
 
-  const [placeholderText, setPlaceholderText] = useState<ReactNode | undefined>(props.placeholder)
   const { t } = useTranslation()
 
   useLayoutEffect(() => {
@@ -75,40 +74,6 @@ export function AcmMultiSelect(props: AcmMultiSelectProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ValidationContext.validate])
 
-  useLayoutEffect(() => {
-    if (value === undefined || value.length === 0) {
-      setPlaceholderText(<span style={{ color: '#666' }}>{placeholder}</span>)
-    } else {
-      const selectedItems = Children.map(props.children, (child) => {
-        const option = child as unknown as SelectOption
-        if (value.includes(option.props.value as string)) return option.props.children
-        return undefined
-      })
-      /* istanbul ignore if */
-      if (selectedItems === undefined) {
-        setPlaceholderText(<span style={{ color: '#666' }}>{placeholder}</span>)
-      } else {
-        setPlaceholderText(
-          selectedItems
-            .filter((item) => item !== undefined)
-            .map((node: ReactNode, index) => {
-              if (index === 0) {
-                return <Fragment key={`${index}`}>{node}</Fragment>
-              } else {
-                return (
-                  <Fragment key={`${index}`}>
-                    <span>, </span>
-                    {node}
-                  </Fragment>
-                )
-              }
-            })
-        )
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value])
-
   return (
     <FormGroup
       id={`${props.id}-label`}
@@ -138,16 +103,12 @@ export function AcmMultiSelect(props: AcmMultiSelectProps) {
       {isLoading ? (
         <Skeleton height="36px" screenreaderText={t('Loading')} />
       ) : (
-        <Select
-          variant={SelectVariant.checkbox}
-          aria-labelledby={`${props.id}-label`}
+        <AcmSelectBase
           {...selectProps}
-          isOpen={open}
-          onToggle={() => {
-            setOpen(!open)
-          }}
+          aria-label={props.label}
+          variant={variant}
           selections={value}
-          onSelect={(_event, selection) => {
+          onSelect={(selection) => {
             if (value === undefined) {
               onChange([selection as string])
             } else {
@@ -165,18 +126,13 @@ export function AcmMultiSelect(props: AcmMultiSelectProps) {
                 }
               : undefined
           }
-          placeholderText={
-            /* istanbul ignore next */ props.variant === SelectVariant.typeaheadMulti ? placeholder : placeholderText
-          }
+          placeholder={props.placeholder}
           isDisabled={props.isDisabled || ValidationContext.isReadOnly}
-          noResultsFoundText={t('No results found')}
         />
       )}
-      {validated === 'error' ? (
-        <div style={{ borderTop: '1.75px solid red', paddingBottom: '6px' }}></div>
-      ) : (
-        <Fragment />
-      )}
+      <div
+        style={{ borderTop: `1.75px solid ${validated === 'error' ? 'red' : 'transparent'}`, paddingBottom: '10px' }}
+      ></div>
       <AcmHelperText controlId={props.id} helperText={helperText} validated={validated} error={error} />
     </FormGroup>
   )

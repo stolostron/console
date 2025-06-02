@@ -3,7 +3,7 @@
 
 import { Divider } from '@patternfly/react-core'
 import { Dropdown, DropdownItem, DropdownToggle } from '@patternfly/react-core/deprecated'
-import { Dispatch, Fragment, SetStateAction, useContext, useEffect, useMemo, useState } from 'react'
+import { Dispatch, Fragment, SetStateAction, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { Link, Outlet, useLocation, useNavigate, useOutletContext } from 'react-router-dom-v5-compat'
 import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -12,7 +12,7 @@ import { NavigationPath } from '../../../NavigationPath'
 import { IResource, IResourceDefinition } from '../../../resources'
 import { fireManagedClusterView } from '../../../resources/managedclusterview'
 import { getResource } from '../../../resources/utils/resource-request'
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { useSharedAtoms } from '../../../shared-recoil'
 import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../ui-components'
 import {
   ClosedVMActionModalProps,
@@ -52,8 +52,8 @@ export default function DetailsPage() {
   usePageVisitMetricHandler(Pages.searchDetails)
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { settingsState } = useSharedAtoms()
-  const vmActionsEnabled = useRecoilValue(settingsState)?.VIRTUAL_MACHINE_ACTIONS === 'enabled'
+  const { useVirtualMachineActionsEnabled } = useSharedAtoms()
+  const vmActionsEnabled = useVirtualMachineActionsEnabled()
   const [resource, setResource] = useState<any>(undefined)
   const [containers, setContainers] = useState<string[]>()
   const [resourceVersion, setResourceVersion] = useState<string>('')
@@ -153,6 +153,45 @@ export default function DetailsPage() {
     [apiversion, cluster, containers, kind, name, namespace, resource, resourceError, isHubClusterResource]
   )
 
+  const createVMDropdownItems = useCallback(
+    (
+      actions: {
+        displayText: string
+        action: string
+        method: 'PUT' | 'GET' | 'POST' | 'PATCH' | 'DELETE'
+        hubPath: string
+        managedPath: string
+        isDisabled: boolean
+      }[]
+    ) => {
+      return actions.map((action) => (
+        <DropdownItem
+          key={`${action.action}-vm-resource-action`}
+          component="button"
+          onClick={() =>
+            setVMAction({
+              open: true,
+              close: () => setVMAction(ClosedVMActionModalProps),
+              action: action.action,
+              method: action.method,
+              item: {
+                cluster,
+                kind,
+                apiversion,
+                name,
+                namespace,
+                _hubClusterResource: isHubClusterResource ? 'true' : undefined,
+              },
+            })
+          }
+          isDisabled={action.isDisabled}
+        >
+          {action.displayText}
+        </DropdownItem>
+      ))
+    },
+    [apiversion, cluster, isHubClusterResource, kind, name, namespace]
+  )
   const getResourceActions = useMemo(() => {
     const actions = [
       <DropdownItem
@@ -174,10 +213,25 @@ export default function DetailsPage() {
         {t('Delete {{resourceKind}}', { resourceKind: kind })}
       </DropdownItem>,
     ]
+    if (vmActionsEnabled && kind.toLowerCase() === 'virtualmachinesnapshot') {
+      actions.unshift(
+        ...createVMDropdownItems([
+          {
+            displayText: t('Restore VirtualMachine from snapshot'),
+            action: 'Restart',
+            method: 'PUT',
+            hubPath: `/apis/subresources.kubevirt.io/v1/namespaces/${namespace}/virtualmachines/${name}/restart`,
+            managedPath: '/virtualmachines/restart',
+            isDisabled: false,
+          },
+        ]),
+        <Divider key={'action-divider'} />
+      )
+    }
     if (vmActionsEnabled && kind.toLowerCase() === 'virtualmachine') {
       const printableStatus = resource?.status?.printableStatus ?? ''
       actions.unshift(
-        ...[
+        ...createVMDropdownItems([
           printableStatus === 'Stopped'
             ? {
                 displayText: t('Start VirtualMachine'),
@@ -238,40 +292,7 @@ export default function DetailsPage() {
             managedPath: '/virtualmachinesnapshots',
             isDisabled: false,
           },
-        ].map(
-          (action: {
-            displayText: string
-            action: string
-            method: any // 'PUT' | 'GET' | 'POST' | 'PATCH' | 'DELETE'
-            hubPath: string
-            managedPath: string
-            isDisabled: boolean
-          }) => (
-            <DropdownItem
-              key={`${action.action}-vm-resource`}
-              component="button"
-              onClick={() =>
-                setVMAction({
-                  open: true,
-                  close: () => setVMAction(ClosedVMActionModalProps),
-                  action: action.action,
-                  method: action.method,
-                  item: {
-                    cluster,
-                    kind,
-                    apiversion,
-                    name,
-                    namespace,
-                    _hubClusterResource: isHubClusterResource ? 'true' : undefined,
-                  },
-                })
-              }
-              isDisabled={action.isDisabled}
-            >
-              {action.displayText}
-            </DropdownItem>
-          )
-        ),
+        ]),
         <Divider key={'action-divider'} />
       )
     }
@@ -303,19 +324,7 @@ export default function DetailsPage() {
       })
     }
     return actions
-  }, [
-    apiversion,
-    resource,
-    cluster,
-    kind,
-    name,
-    namespace,
-    vmActionsEnabled,
-    navigate,
-    t,
-    acmExtensions,
-    isHubClusterResource,
-  ])
+  }, [acmExtensions, cluster, createVMDropdownItems, kind, name, namespace, navigate, resource, t, vmActionsEnabled])
 
   return (
     <Fragment>

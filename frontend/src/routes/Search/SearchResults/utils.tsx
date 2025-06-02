@@ -1,14 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { get } from 'lodash'
 import queryString from 'query-string'
-import { useMemo } from 'react'
 import { TFunction } from 'react-i18next'
-import { generatePath, NavigateFunction, useNavigate } from 'react-router-dom-v5-compat'
-import { useTranslation } from '../../../lib/acm-i18next'
+import { generatePath, NavigateFunction } from 'react-router-dom-v5-compat'
 import { NavigationPath } from '../../../NavigationPath'
 import { Cluster } from '../../../resources/utils'
 import { compareStrings, IAlertContext } from '../../../ui-components'
-import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
+import { IVMActionModalProps } from '../../Infrastructure/VirtualMachines/modals/VMActionModal'
+import {
+  getVirtualMachineRowActionExtensions,
+  getVirtualMachineRowActions,
+  getVMSnapshotActions,
+} from '../../Infrastructure/VirtualMachines/utils'
 import {
   ClosedDeleteExternalResourceModalProps,
   IDeleteExternalResourceModalProps,
@@ -25,49 +28,18 @@ export interface ISearchResult {
   __type: string
 }
 
-export const useGetRowActions = (
-  resourceKind: string,
-  currentQuery: string,
-  relatedResource: boolean,
-  setDeleteResource: React.Dispatch<React.SetStateAction<IDeleteModalProps>>,
-  setDeleteExternalResource: React.Dispatch<React.SetStateAction<IDeleteExternalResourceModalProps>>
-) => {
-  const { t } = useTranslation()
-  const navigate = useNavigate()
-  const allClusters = useAllClusters(true)
-
-  return useMemo(
-    () =>
-      getRowActions(
-        resourceKind,
-        currentQuery,
-        relatedResource,
-        setDeleteResource,
-        setDeleteExternalResource,
-        allClusters,
-        navigate,
-        t
-      ),
-    [
-      resourceKind,
-      currentQuery,
-      relatedResource,
-      setDeleteResource,
-      setDeleteExternalResource,
-      allClusters,
-      navigate,
-      t,
-    ]
-  )
-}
-
 export function getRowActions(
+  item: any,
   resourceKind: string,
   currentQuery: string,
   relatedResource: boolean,
+  allClusters: Cluster[],
   setDeleteResource: React.Dispatch<React.SetStateAction<IDeleteModalProps>>,
   setDeleteExternalResource: React.Dispatch<React.SetStateAction<IDeleteExternalResourceModalProps>>,
-  allClusters: Cluster[],
+  vmActionsEnabled: boolean,
+  setVMAction: React.Dispatch<React.SetStateAction<IVMActionModalProps>>,
+  acmExtensions: any,
+  setPluginModal: React.Dispatch<React.SetStateAction<JSX.Element | undefined>>,
   navigate: NavigateFunction,
   t: TFunction
 ) {
@@ -220,6 +192,32 @@ export function getRowActions(
     return []
   } else if (resourceKind.toLowerCase() === 'application') {
     return [viewApplication, viewAppTopology, editButton, viewRelatedButton, deleteButton]
+  } else if (resourceKind.toLowerCase() === 'virtualmachinesnapshot') {
+    const isVMRunning = item?.status === 'Running'
+    return getVMSnapshotActions(
+      item,
+      isVMRunning,
+      allClusters,
+      vmActionsEnabled,
+      setVMAction,
+      setDeleteResource,
+      setDeleteExternalResource,
+      navigate,
+      t
+    )
+  } else if (resourceKind.toLowerCase() === 'virtualmachine') {
+    return getVirtualMachineRowActions(
+      item,
+      allClusters,
+      setDeleteResource,
+      setDeleteExternalResource,
+      setVMAction,
+      vmActionsEnabled,
+      navigate,
+      t,
+      // get the row action extensions for the virtual machine
+      getVirtualMachineRowActionExtensions(item, acmExtensions?.virtualMachineAction ?? [], setPluginModal)
+    )
   }
   return [editButton, viewRelatedButton, deleteButton]
 }

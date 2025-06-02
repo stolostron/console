@@ -9,7 +9,7 @@ import {
   IApplicationSet,
   IResource,
 } from '../../resources/resource'
-import { getKubeResources, getHubClusterName, IWatchOptions } from '../events'
+import { getKubeResources, getHubClusterName } from '../events'
 import {
   applicationCache,
   ApplicationCacheType,
@@ -31,6 +31,7 @@ import {
   getTransform,
 } from './utils'
 import { deflateResource } from '../../lib/compression'
+import { IWatchOptions } from '../../resources/wath-options'
 
 interface IArgoAppLocalResource extends IResource {
   spec: {

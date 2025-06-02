@@ -240,7 +240,7 @@ const mockAutoSecretResponse: Secret = {
     name: 'auto-import-secret',
     namespace: 'foobar',
   },
-  data: { autoImportRetry: '2', kubeconfig: 'Test text' },
+  data: { kubeconfig: 'Test text' },
   type: 'Opaque',
 }
 
@@ -252,7 +252,6 @@ const mockAutoSecret: Secret = {
     namespace: 'foobar',
   },
   stringData: {
-    autoImportRetry: '2',
     kubeconfig: 'Test text',
   },
   type: 'Opaque',
@@ -265,7 +264,7 @@ const mockAutoTokenSecretResponse: Secret = {
     name: 'auto-import-secret',
     namespace: 'foobar',
   },
-  data: { autoImportRetry: '2', token: 'Test token', server: 'Test server' },
+  data: { token: 'Test token', server: 'Test server' },
   type: 'Opaque',
 }
 
@@ -277,7 +276,6 @@ const mockAutoTokenSecret: Secret = {
     namespace: 'foobar',
   },
   stringData: {
-    autoImportRetry: '2',
     token: 'Test token',
     server: 'Test server',
   },
@@ -291,7 +289,6 @@ const mockROSAAutoTokenSecretAPIToken: Secret = {
     namespace: 'rosa-discovery-cluster',
   },
   stringData: {
-    autoImportRetry: '2',
     cluster_id: '39ldt3r51vjjsho1eqntrg3m',
     auth_method: 'offline-token',
     api_token: 'fake_token',
@@ -307,7 +304,6 @@ const mockROSAAutoTokenSecretServiceAcc: Secret = {
     namespace: 'rosa-discovery-cluster',
   },
   stringData: {
-    autoImportRetry: '2',
     cluster_id: '39ldt3r51vjjsho1eqntrg3m',
     auth_method: 'service-account',
     client_id: 'fake_client_id1234',
@@ -723,7 +719,7 @@ describe('ImportCluster', () => {
     await waitForText('Install the operator')
     await clickByPlaceholderText('Select an automation template')
     await clickByText(mockClusterCurators[0].metadata.name!)
-    await clickByRole('button', { name: /clear selected item/i })
+    await clickByRole('button', { name: /clear input value/i })
 
     // Advance to Review step and submit the form
     await clickByText('Next')
@@ -1187,11 +1183,11 @@ describe('Import cluster RHOCM mode', () => {
     await waitForText(mockCRHCredential2.metadata.name!)
 
     // Click on the button with the name "Credential Options menu"
-    await userEvent.click(
-      screen.getByRole('button', {
-        name: /Credential Options menu/i,
+    screen
+      .getByRole('combobox', {
+        name: 'Credential',
       })
-    )
+      .click()
     // Assert the removed credential does not exist
     expect(screen.queryByText(mockCRHCredential1.metadata.name!)).not.toBeInTheDocument()
     expect(screen.queryByText(mockCRHCredential3.metadata.name!)).toBeInTheDocument()
@@ -1202,11 +1198,12 @@ describe('Import cluster RHOCM mode', () => {
     expect(screen.queryByText(mockCRHCredential2.metadata.name!)).not.toBeInTheDocument()
     // Third credential should now be selected
     // Click on the button with the name "Credential Options menu"
-    await userEvent.click(
-      screen.getByRole('button', {
-        name: /Credential Options menu/i,
+    screen
+      .getByRole('combobox', {
+        name: 'Credential',
       })
-    )
+      .click()
+    // await new Promise((resolve) => setTimeout(resolve, 500))
     expect(screen.queryByText(mockCRHCredential3.metadata.name!)).toBeInTheDocument()
   })
 })

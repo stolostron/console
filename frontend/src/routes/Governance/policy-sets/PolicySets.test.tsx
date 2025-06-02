@@ -44,8 +44,8 @@ describe('PolicySets Page', () => {
     )
 
     screen
-      .getByRole('button', {
-        name: /options menu/i,
+      .getByRole('combobox', {
+        name: 'Select filter options',
       })
       .click()
 

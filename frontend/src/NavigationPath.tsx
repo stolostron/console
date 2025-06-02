@@ -156,6 +156,7 @@ export enum NavigationPath {
   editPolicyAutomation = '/multicloud/governance/policyautomation/edit/:namespace/:name',
   policyDetails = '/multicloud/governance/policies/details/:namespace/:name',
   discoveredByCluster = '/multicloud/governance/discovered/:apiGroup/:apiVersion/:kind/:policyName',
+  discoveredResources = '/multicloud/governance/discovered/:apiGroup/:apiVersion/:kind/:policyName/resources',
   policyDetailsResults = '/multicloud/governance/policies/details/:namespace/:name/results',
   policyDetailsHistory = '/multicloud/governance/policies/details/:namespace/:name/status/:clusterName/templates/:templateName/history',
   policyTemplateDetails = '/multicloud/governance/policies/details/:namespace/:name/template/:clusterName/:apiGroup?/:apiVersion/:kind/:templateName',
@@ -172,6 +173,12 @@ export enum NavigationPath {
   addAWSType = '/multicloud/credentials/create/aws/type',
   editCredentials = '/multicloud/credentials/edit/:namespace/:name',
   viewCredentials = '/multicloud/credentials/details/:namespace/:name',
+
+  // RBAC
+  accessControlManagement = '/multicloud/access-control-management',
+  addAccessControlManagement = '/multicloud/access-control-management/create',
+  editAccessControlManagement = '/multicloud/access-control-management/edit/:id',
+  viewAccessControlManagement = '/multicloud/access-control-management/details/:id',
 
   emptyPath = '',
 }
