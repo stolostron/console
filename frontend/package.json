@@ -22,7 +22,9 @@
     "jest": "TZ=UTC jest",
     "jest:update-snapshot": "npm run jest -- --updateSnapshot",
     "lint": "eslint src --ext .js,.jsx,.ts,.tsx --max-warnings=0",
+    "lint:all": "npm run lint --workspaces --include-workspace-root --if-present",
     "lint:fix": "npm run lint -- --fix",
+    "lint:fix:all": "npm run lint:all -- --fix",
     "postinstall": "npm run build:workspaces",
     "prettier": "prettier --check src public plugins",
     "prettier:all": "npm run prettier --workspaces --include-workspace-root --if-present",
@@ -113,6 +115,7 @@
     "@openshift-console/dynamic-plugin-sdk-webpack": "1.0.2",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.15",
     "@sentry/browser": "6.19.7",
+    "@stolostron/eslint-config": "workspace:packages/eslint-config",
     "@storybook/addon-a11y": "8.0.9",
     "@storybook/addon-actions": "8.0.9",
     "@storybook/addon-docs": "8.0.9",
@@ -237,123 +240,6 @@
     "@openshift-assisted/ui-lib": {
       "@openshift-console/dynamic-plugin-sdk": "1.0.0",
       "monaco-editor": "^0.34.1"
-    }
-  },
-  "eslintConfig": {
-    "parser": "@typescript-eslint/parser",
-    "parserOptions": {
-      "project": "./tsconfig.json"
-    },
-    "extends": [
-      "eslint:recommended",
-      "plugin:@typescript-eslint/recommended",
-      "plugin:jest/recommended",
-      "plugin:react-hooks/recommended",
-      "prettier",
-      "plugin:jsx-a11y/recommended"
-    ],
-    "plugins": [
-      "react",
-      "@typescript-eslint",
-      "jest",
-      "react-hooks",
-      "prettier",
-      "jsx-a11y"
-    ],
-    "env": {
-      "browser": true,
-      "node": true
-    },
-    "rules": {
-      "@typescript-eslint/ban-types": "off",
-      "@typescript-eslint/explicit-module-boundary-types": "off",
-      "@typescript-eslint/no-empty-function": "off",
-      "@typescript-eslint/no-explicit-any": "off",
-      "@typescript-eslint/no-extra-semi": "off",
-      "@typescript-eslint/no-floating-promises": [
-        "off",
-        {
-          "ignoreVoid": true
-        }
-      ],
-      "@typescript-eslint/no-misused-promises": [
-        "error",
-        {
-          "checksVoidReturn": false
-        }
-      ],
-      "@typescript-eslint/no-non-null-asserted-optional-chain": "off",
-      "@typescript-eslint/no-non-null-assertion": "off",
-      "@typescript-eslint/no-restricted-imports": [
-        "error",
-        {
-          "paths": [
-            {
-              "message": "Please use <Trans /> and useTranslation() from ./src/lib/acm-i18next and avoid other exports from react-i18next",
-              "name": "react-i18next",
-              "importNames": [
-                "Trans",
-                "useTranslation"
-              ]
-            },
-            {
-              "message": "Please use hooks from ./src/shared-recoil for ACM/MCE dynamic plugins common RecoilRoot",
-              "name": "recoil"
-            },
-            {
-              "message": "Please use hooks from ./src/hooks/shared-react-query for ACM/MCE dynamic plugins common QueryClientProvider",
-              "name": "@tanstack/react-query"
-            },
-            {
-              "message": "Truncate component is not available on OpenShift 4.10; use src/components/Trucate instead",
-              "name": "@patternfly/react-core",
-              "importNames": [
-                "Truncate"
-              ]
-            }
-          ],
-          "patterns": [
-            {
-              "message": "Please use useSharedAtoms() or useSharedSelectors() from ./src/shared-recoil to access atoms/selectors for ACM/MCE dynamic plugins common RecoilRoot",
-              "group": [
-                "**/atoms",
-                "**/selectors"
-              ]
-            }
-          ]
-        }
-      ],
-      "@typescript-eslint/no-unused-vars": [
-        "error",
-        {
-          "ignoreRestSiblings": true
-        }
-      ],
-      "jest/expect-expect": "off",
-      "jest/no-disabled-tests": "off",
-      "jest/no-export": "off",
-      "jest/no-identical-title": "off",
-      "no-async-promise-executor": "off",
-      "no-constant-condition": "off",
-      "no-empty": "off",
-      "prettier/prettier": "error",
-      "react/jsx-key": 1,
-      "react/react-in-jsx-scope": "off"
-    },
-    "overrides": [
-      {
-        "files": [
-          "**/*.test.ts?"
-        ],
-        "rules": {
-          "@typescript-eslint/no-restricted-imports": "off"
-        }
-      }
-    ],
-    "settings": {
-      "react": {
-        "version": "detect"
-      }
     }
   },
   "browserslist": {
