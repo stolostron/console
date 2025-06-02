@@ -1663,7 +1663,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                 </Thead>
                 {primaryRows.map((row, rowIndex) => {
                   return (
-                    <Tbody isExpanded={row.isOpen} key={`${row.props.key}-tablebody`}>
+                    <Tbody key={`${row.props.key}-tablebody`} isExpanded={row.isOpen}>
                       <Tr key={`${row.props.key}-tablerow`} ouiaId={row?.props?.key}>
                         {onCollapse && (
                           <Td
@@ -1704,7 +1704,11 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                             ...iTransformCellProps,
                           }
                           return (
-                            <Td key={`row-${rowIndex}-cell-${cellIndex}`} {...rowProps} isActionCell={isActionKebab}>
+                            <Td
+                              key={`cell-${row.props.key}-${selectedSortedCols[cellIndex]?.header}`}
+                              {...rowProps}
+                              isActionCell={isActionKebab}
+                            >
                               {renderCellContent(cell)}
                             </Td>
                           )
@@ -1724,7 +1728,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                         )}
                       </Tr>
                       {addedSubRowCount > 0 && (
-                        <Tr isExpanded={row.isOpen} key={addedSubRows[rowIndex]?.props?.key}>
+                        <Tr isExpanded={row.isOpen} key={`${addedSubRows[rowIndex]?.props?.key}-subrow`}>
                           {/* include spacing for expandable and selection columns in subrow */}
                           {onCollapse && <Td />}
                           {hasSelectionColumn && <Td />}
