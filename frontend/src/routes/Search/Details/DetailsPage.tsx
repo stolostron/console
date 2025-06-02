@@ -153,6 +153,10 @@ export default function DetailsPage() {
     [apiversion, cluster, containers, kind, name, namespace, resource, resourceError, isHubClusterResource]
   )
 
+  const closeModal = () => {
+    setVMAction(ClosedVMActionModalProps)
+  }
+
   const createVMDropdownItems = useCallback(
     (
       actions: {
@@ -171,7 +175,7 @@ export default function DetailsPage() {
           onClick={() =>
             setVMAction({
               open: true,
-              close: () => setVMAction(ClosedVMActionModalProps),
+              close: closeModal,
               action: action.action,
               method: action.method,
               item: {
@@ -218,10 +222,10 @@ export default function DetailsPage() {
         ...createVMDropdownItems([
           {
             displayText: t('Restore VirtualMachine from snapshot'),
-            action: 'Restart',
+            action: 'Restore',
             method: 'PUT',
-            hubPath: `/apis/subresources.kubevirt.io/v1/namespaces/${namespace}/virtualmachines/${name}/restart`,
-            managedPath: '/virtualmachines/restart',
+            hubPath: `/apis/snapshot.kubevirt.io/v1beta1/namespaces/${namespace}/virtualmachinerestores`,
+            managedPath: '/virtualmachinerestores',
             isDisabled: false,
           },
         ]),
