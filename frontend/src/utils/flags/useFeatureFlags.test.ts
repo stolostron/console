@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { getRequest } from '../../resources/utils'
 import { FEATURE_FLAGS } from './consts'
 import useFeatureFlags from './useFeatureFlags'
