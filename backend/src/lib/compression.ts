@@ -45,8 +45,6 @@ export function createDictionary(): Dictionary {
   }
 }
 
-// keys that point to values we should filter out
-const filterKeys = new Set(['finalizers', 'flags'])
 // keys that point to unique values (don't index)
 const valueAsIsKeys = new Set(['uid', 'name', 'resourceVersion', 'generation'])
 // keys that point to values that are likely to be repeated (we should index)
@@ -83,14 +81,6 @@ function compressResource(
 ): CompressedResourceType {
   if (resource) {
     if (Array.isArray(resource)) {
-      // filter out all but the 3 most recent conditions
-      if (parentKey === 'conditions') {
-        resource = resource
-          .sort((a: SortTimeType, b: SortTimeType) => {
-            return new Date(b?.lastTransitionTime).getTime() - new Date(a?.lastTransitionTime).getTime()
-          })
-          .slice(0, 3)
-      }
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call
       return resource.map((item: UncompressedResourceType) => compressResource(item, dictionary))
     } else if (typeof resource === 'object') {
@@ -99,25 +89,23 @@ function compressResource(
       for (const key in resource) {
         if (Object.prototype.hasOwnProperty.call(resource, key)) {
           // filter out these key/values
-          if (!filterKeys.has(key)) {
-            // dont try to index the values pointed to by key
-            if (
-              valueAsIsKeys.has(key) ||
-              (key === 'message' &&
-                'message' in resource &&
-                typeof resource[key] === 'string' &&
-                resource[key].length > 32) ||
-              key.includes('Time')
-            ) {
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-              res[dictionary.add(key)] = resource[key]
+          // dont try to index the values pointed to by key
+          if (
+            valueAsIsKeys.has(key) ||
+            (key === 'message' &&
+              'message' in resource &&
+              typeof resource[key] === 'string' &&
+              resource[key].length > 32) ||
+            key.includes('Time')
+          ) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            res[dictionary.add(key)] = resource[key]
+          } else {
+            const inx = dictionary.add(key)
+            if (valueInDictionaryKeys.has(key)) {
+              res[inx] = dictionary.add(resource[key] as string)
             } else {
-              const inx = dictionary.add(key)
-              if (valueInDictionaryKeys.has(key)) {
-                res[inx] = dictionary.add(resource[key] as string)
-              } else {
-                res[inx] = compressResource(resource[key] as UncompressedResourceType, dictionary, key)
-              }
+              res[inx] = compressResource(resource[key] as UncompressedResourceType, dictionary, key)
             }
           }
         }
