@@ -7,6 +7,8 @@ jest.mock('../../resources/utils')
 
 describe('useFeatureFlags', () => {
   const setFeatureFlagMock = jest.fn()
+  const getRequestMock = getRequest as jest.Mock
+
   beforeEach(() => {
     jest.resetAllMocks()
   })
@@ -16,7 +18,6 @@ describe('useFeatureFlags', () => {
     ['no flags exist at multiclusterhub', []],
   ])('%s', async (_title: string, components: any[] | undefined) => {
     // Arrange
-    const getRequestMock = getRequest as jest.Mock
     getRequestMock.mockReturnValueOnce({
       promise: new Promise((resolve) => resolve(components)),
     })
@@ -33,7 +34,6 @@ describe('useFeatureFlags', () => {
 
   it.each([[true], [false]])('all flags exist at multiclusterhub and enabled: %s', async (enabled: boolean) => {
     // Arrange
-    const getRequestMock = getRequest as jest.Mock
     getRequestMock.mockReturnValueOnce({
       promise: new Promise((resolve) => resolve(Object.values(FEATURE_FLAGS).map((e) => ({ name: e, enabled })))),
     })
