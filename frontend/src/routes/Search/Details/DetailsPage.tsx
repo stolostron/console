@@ -153,6 +153,10 @@ export default function DetailsPage() {
     [apiversion, cluster, containers, kind, name, namespace, resource, resourceError, isHubClusterResource]
   )
 
+  const closeModal = () => {
+    setVMAction(ClosedVMActionModalProps)
+  }
+
   const createVMDropdownItems = useCallback(
     (
       actions: {
@@ -171,7 +175,7 @@ export default function DetailsPage() {
           onClick={() =>
             setVMAction({
               open: true,
-              close: () => setVMAction(ClosedVMActionModalProps),
+              close: closeModal,
               action: action.action,
               method: action.method,
               item: {
