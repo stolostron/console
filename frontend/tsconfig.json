@@ -34,5 +34,5 @@
         "isolatedModules": true,
         "noEmit": true
     },
-    "include": ["src", "webpack.config.ts", "webpack.plugin.ts", "*.ts"],
+    "include": ["src", "webpack.config.ts", "plugins/webpack.plugin.base.ts", "*.ts", "plugins/**/webpack.plugin.ts"],
 }

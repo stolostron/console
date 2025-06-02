@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // i18next-parser.config.js
 const { readFileSync } = require('fs')
-const { CustomJSONLexer } = require('./i18n-scripts/lexers/json.js')
+const { CustomPluginExtensionsLexer } = require('./i18n-scripts/lexers/plugin-extensions.js')
 
 const JavascriptLexer = { lexer: 'JavascriptLexer', functions: ['t', 'i18n'] }
 const JsxLexer = { lexer: 'JsxLexer', functions: ['t', 'i18n'] }
@@ -53,10 +53,9 @@ module.exports = {
 
     mjs: [JavascriptLexer],
     js: [JavascriptLexer], // if you're writing jsx inside .js files, change this to JsxLexer
-    ts: [JavascriptLexer],
+    ts: [JavascriptLexer, CustomPluginExtensionsLexer],
     jsx: [JsxLexer],
     tsx: [JsxLexer],
-    json: [CustomJSONLexer],
 
     default: [JavascriptLexer],
   },
@@ -80,7 +79,7 @@ module.exports = {
   // Plural separator used in your translation keys
   // If you want to use plain english keys, separators such as `_` might conflict. You might want to set `pluralSeparator` to a different string that does not occur in your keys.
 
-  input: ['./src/**/*.tsx', './src/**/*.ts', './src/**/*.js', './plugins/**/console-extensions.json'],
+  input: ['./src/**/*.tsx', './src/**/*.ts', './src/**/*.js', './plugins/**/console-extensions.ts'],
   // An array of globs that describe where to look for source files
   // relative to the location of the configuration file
 
