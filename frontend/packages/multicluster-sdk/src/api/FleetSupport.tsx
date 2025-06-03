@@ -25,7 +25,7 @@ export const FleetSupport: FC<PropsWithChildren<{ loading: ReactNode }>> = ({ ch
   const ready = (extensionsResolved && !sdkProvider) || hubClusterName
   const contextValue = useMemo(
     () => (sdkProvider && hubClusterName ? { sdkProvider, hubClusterName } : undefined),
-    [ready, sdkProvider, hubClusterName]
+    [sdkProvider, hubClusterName]
   )
 
   return ready ? <FleetSupportContext.Provider value={contextValue}>{children}</FleetSupportContext.Provider> : loading
