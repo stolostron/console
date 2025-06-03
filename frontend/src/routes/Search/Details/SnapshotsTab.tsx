@@ -88,25 +88,26 @@ export default function SnapshotsTab() {
       </PageSection>
     )
   }
-  if (error) {
-    return (
-      <PageSection>
-        <Alert variant={'danger'} isInline={true} title={t('An unexpected error occurred.')}>
-          {error.message}
-        </Alert>
-      </PageSection>
-    )
-  }
-
-  if (!loading && !error && snapshotItems.length === 0) {
+  if (
+    (!loading && !error && snapshotItems.length === 0) ||
+    // check error message - this message is only found if no snapshots have been created and the sourceName property is not initialized in search db.
+    error?.message.includes('fetching data type for property: [sourceName]')
+  ) {
     return (
       <PageSection>
         <Alert
           variant={'info'}
           isInline={true}
           title={t('No VirtualMachineSnapshots found. Take a snapshot of the VirtualMachine to view snapshots here.')}
-        >
-          {error}
+        />
+      </PageSection>
+    )
+  }
+  if (error) {
+    return (
+      <PageSection>
+        <Alert variant={'danger'} isInline={true} title={t('An unexpected error occurred.')}>
+          {error.message}
         </Alert>
       </PageSection>
     )

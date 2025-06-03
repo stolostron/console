@@ -114,7 +114,7 @@ describe('SnapshotsTab', () => {
     expect(screen.getByText('Loading')).toBeInTheDocument()
   })
 
-  it('should render tab with errors', async () => {
+  it('should render tab with GraphQL errors', async () => {
     const getVMManagedClusterViewNock = nockGet(getMCVRequest, getMCVResponse)
     const mocks = [
       {
@@ -161,6 +161,60 @@ describe('SnapshotsTab', () => {
     // Test that the component has rendered errors correctly
     await waitFor(() => expect(screen.queryByText('An unexpected error occurred.')).toBeTruthy())
     await waitFor(() => expect(screen.queryByText('Error getting search data')).toBeTruthy())
+  })
+
+  it('should render tab with no snapshots found errors', async () => {
+    const getVMManagedClusterViewNock = nockGet(getMCVRequest, getMCVResponse)
+    const mocks = [
+      {
+        request: {
+          query: SearchResultItemsDocument,
+          variables: {
+            input: [
+              {
+                keywords: [],
+                filters: [
+                  {
+                    property: 'kind',
+                    values: ['VirtualMachineSnapshot'],
+                  },
+                  { property: 'sourceName', values: ['centos-stream9'] },
+                ],
+                limit: 1000,
+              },
+            ],
+          },
+        },
+        result: {
+          data: {},
+          errors: [new GraphQLError('error [%!s(<nil>)] fetching data type for property: [sourceName]')],
+        },
+      },
+    ]
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(settingsState, mockSettings)
+        }}
+      >
+        <MemoryRouter>
+          <MockedProvider mocks={mocks}>
+            <SnapshotsTab />
+          </MockedProvider>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    // Wait for managed cluster view requests to finish
+    await waitForNocks([getVMManagedClusterViewNock])
+    await wait()
+    // Test that the component has rendered errors correctly
+    await waitFor(() =>
+      expect(
+        screen.queryByText(
+          'No VirtualMachineSnapshots found. Take a snapshot of the VirtualMachine to view snapshots here.'
+        )
+      ).toBeTruthy()
+    )
   })
 
   it('should render tab with correct snapshot data from search', async () => {
