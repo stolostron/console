@@ -310,7 +310,7 @@ function getSubscriptionAnnotations(resource: IResource) {
 }
 
 const isLocalSubscription = (subName: string, subList: string[]) => {
-  return subName.endsWith(localSubSuffixStr) && subList.indexOf(subName.replace(localSubSuffixStr, '')) !== -1
+  return subName.endsWith(localSubSuffixStr) && subList.indexOf(subName.slice(0, -localSubSuffixStr.length)) !== -1
 }
 
 function getArgoCluster(resource: IArgoApplication, clusters: Cluster[]) {
