@@ -153,7 +153,7 @@ const accessControlNavItem: EncodedExtension<HrefNavItem> = {
     insertAfter: 'mce-credentials',
   },
   flags: {
-    required: ['ACCESS_CONTROL_MANAGEMENT'],
+    required: ['ACM_ACCESS_CONTROL_MANAGEMENT'],
   },
 }
 
@@ -165,7 +165,7 @@ const accessConrolRoute: EncodedExtension<RoutePage> = {
     component: { $codeRef: 'accessControlManagement.default' },
   },
   flags: {
-    required: ['ACCESS_CONTROL_MANAGEMENT'],
+    required: ['ACM_ACCESS_CONTROL_MANAGEMENT'],
   },
 }
 
