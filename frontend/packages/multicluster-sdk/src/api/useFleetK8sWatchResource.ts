@@ -11,8 +11,10 @@ export const useFleetK8sWatchResource: UseFleetK8sWatchResource = (...args) => {
       sdkProvider: { useFleetK8sWatchResource },
       hubClusterName,
     } = fleetSupport
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     return useFleetK8sWatchResource(hubClusterName, ...args)
   } else {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     return useK8sWatchResource(...args)
   }
 }
