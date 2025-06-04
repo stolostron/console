@@ -11,16 +11,16 @@ const ADMIN_TOKEN = 'admin-token'
 
 export function getToken(req: Http2ServerRequest): string | undefined {
   let token = parseCookies(req)['acm-access-token-cookie']
-  /* istanbul ignore if */
-  if (!token && process.env.NODE_ENV === 'development') {
-    const localStorage = new LocalStorage(LOCAL_STORAGE)
-    token = localStorage.getItem(ADMIN_TOKEN)
-  }
   if (!token) {
     const authorizationHeader = req.headers[HTTP2_HEADER_AUTHORIZATION]
     if (typeof authorizationHeader === 'string' && authorizationHeader.startsWith('Bearer ')) {
       token = authorizationHeader.slice(7)
     }
+  }
+  /* istanbul ignore if */
+  if (!token && process.env.NODE_ENV === 'development') {
+    const localStorage = new LocalStorage(LOCAL_STORAGE)
+    token = localStorage.getItem(ADMIN_TOKEN)
   }
   return token
 }
