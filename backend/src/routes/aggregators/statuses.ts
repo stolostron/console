@@ -16,11 +16,6 @@ export interface IResultStatuses {
   loading: boolean
 }
 
-let stopping = false
-export function stopAggregatingStatuses(): void {
-  stopping = true
-}
-
 export function requestAggregatedStatuses(
   req: Http2ServerRequest,
   res: Http2ServerResponse,

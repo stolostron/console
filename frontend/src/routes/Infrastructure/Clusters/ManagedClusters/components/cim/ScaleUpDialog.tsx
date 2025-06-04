@@ -6,6 +6,7 @@ import {
   onChangeHostname,
   onSetInstallationDiskId,
   onChangeBMHHostname,
+  onEditHostRole,
 } from '../../CreateCluster/components/assisted-installer/utils'
 import { useSharedAtoms, useRecoilValue } from '../../../../../../shared-recoil'
 import { IResource } from '../../../../../../resources'
@@ -50,7 +51,7 @@ const ScaleUpDialog = ({ isOpen, closeDialog, clusterName }: ScaleUpDialogProps)
           {
             op: 'replace',
             path: '/spec/role',
-            value: 'worker',
+            value: agent.spec?.role,
           },
         ]).promise
       })
@@ -76,6 +77,7 @@ const ScaleUpDialog = ({ isOpen, closeDialog, clusterName }: ScaleUpDialogProps)
       onChangeBMHHostname={onChangeBMHHostname}
       onSetInstallationDiskId={onSetInstallationDiskId}
       isNutanix={agentClusterInstall?.spec?.platformType === 'Nutanix'}
+      onEditHostRole={onEditHostRole}
     />
   )
 }

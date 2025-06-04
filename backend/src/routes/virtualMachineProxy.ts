@@ -14,13 +14,6 @@ const {
   HTTP2_HEADER_ACCEPT,
   HTTP_STATUS_INTERNAL_SERVER_ERROR,
 } = constants
-const proxyHeaders = [
-  constants.HTTP2_HEADER_ACCEPT,
-  constants.HTTP2_HEADER_ACCEPT_ENCODING,
-  constants.HTTP2_HEADER_CONTENT_ENCODING,
-  constants.HTTP2_HEADER_CONTENT_LENGTH,
-  constants.HTTP2_HEADER_CONTENT_TYPE,
-]
 
 interface ActionBody {
   managedCluster: string
