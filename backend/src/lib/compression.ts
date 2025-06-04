@@ -58,9 +58,6 @@ const valueInDictionaryKeys = new Set([
   'ocpClusterId',
 ])
 
-type SortTimeType = {
-  lastTransitionTime?: Date
-}
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type UncompressedResourceType = Record<string, any> | Record<string, any[]> | string | number
 
@@ -74,11 +71,7 @@ export function deflateResource(resource: IResource, dictionary: Dictionary): Bu
   return deflateRawSync(JSON.stringify(res))
 }
 
-function compressResource(
-  resource: UncompressedResourceType,
-  dictionary: Dictionary,
-  parentKey?: string
-): CompressedResourceType {
+function compressResource(resource: UncompressedResourceType, dictionary: Dictionary): CompressedResourceType {
   if (resource) {
     if (Array.isArray(resource)) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call
@@ -105,7 +98,7 @@ function compressResource(
             if (valueInDictionaryKeys.has(key)) {
               res[inx] = dictionary.add(resource[key] as string)
             } else {
-              res[inx] = compressResource(resource[key] as UncompressedResourceType, dictionary, key)
+              res[inx] = compressResource(resource[key] as UncompressedResourceType, dictionary)
             }
           }
         }
