@@ -25,6 +25,8 @@
   "scripts": {
     "build": "tsc --build",
     "tsc": "tsc --noEmit",
+    "lint": "eslint src --ext .js,.jsx,.ts,.tsx --max-warnings=0",
+    "lint:fix": "npm run lint -- --fix",
     "prettier": "prettier --check src",
     "prettier:fix": "prettier --write src"
   },

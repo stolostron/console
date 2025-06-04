@@ -1,12 +1,12 @@
 # Copyright Contributors to the Open Cluster Management project
 
-FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:ae1c763a0e806ab4867aaf8421e8883d05f30fe2812f95b99dae60424a571e29 as dynamic-plugin
+FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:405c0e281a762fe7f18518ada47fb830a838dfbda6d9222f9353b26426048649 as dynamic-plugin
 WORKDIR /app/frontend
 COPY ./frontend .
 RUN npm ci --legacy-peer-deps
 RUN npm run build:plugin:mce
 
-FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:ae1c763a0e806ab4867aaf8421e8883d05f30fe2812f95b99dae60424a571e29 as backend
+FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:405c0e281a762fe7f18518ada47fb830a838dfbda6d9222f9353b26426048649 as backend
 WORKDIR /app/backend
 # Copy only package.json and package-lock.json so that the docker layer cache only changes if those change
 # This will cause the npm ci to only rerun if the package.json or package-lock.json changes
@@ -15,12 +15,12 @@ RUN npm ci --omit=optional
 COPY ./backend .
 RUN npm run build
 
-FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:ae1c763a0e806ab4867aaf8421e8883d05f30fe2812f95b99dae60424a571e29 as production
+FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:405c0e281a762fe7f18518ada47fb830a838dfbda6d9222f9353b26426048649 as production
 WORKDIR /app/backend
 COPY ./backend/package-lock.json ./backend/package.json ./
 RUN npm ci --omit=optional --only=production
 
-FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:ae1c763a0e806ab4867aaf8421e8883d05f30fe2812f95b99dae60424a571e29
+FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:405c0e281a762fe7f18518ada47fb830a838dfbda6d9222f9353b26426048649
 WORKDIR /app
 ENV NODE_ENV production
 COPY --from=production /app/backend/node_modules ./node_modules

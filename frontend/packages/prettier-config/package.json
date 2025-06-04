@@ -4,5 +4,8 @@
   "private": true,
   "type": "module",
   "exports": "./index.json",
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "prettier": "^3.2.5"
+  }
 }
