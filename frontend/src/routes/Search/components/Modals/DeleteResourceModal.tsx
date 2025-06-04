@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
-import { ButtonVariant, ModalVariant } from '@patternfly/react-core'
+import { ButtonVariant, ModalVariant, Skeleton } from '@patternfly/react-core'
 import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { canUser } from '../../../../lib/rbac-util'
@@ -295,9 +295,13 @@ export const DeleteResourceModal = (props: IDeleteModalProps) => {
       {deleteResourceError && (
         <AcmAlert data-testid={'delete-resource-error'} noClose={true} variant={'danger'} title={deleteResourceError} />
       )}
-      <div style={{ paddingTop: '1rem' }}>
-        {t('Are you sure that you want to delete {{resourceName}}?', { resourceName: resource?.name })}
-      </div>
+      {loadingAccessRequest ? (
+        <Skeleton width={'50%'} />
+      ) : (
+        <div style={{ paddingTop: '1rem' }}>
+          {t('Are you sure that you want to delete {{resourceName}}?', { resourceName: resource?.name })}
+        </div>
+      )}
     </AcmModal>
   )
 }
