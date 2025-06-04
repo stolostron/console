@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import get from 'get-value'
 import { logger } from '../../lib/logger'
-import { ITransformedResource } from '../../lib/pagination'
 import {
   ApplicationKind,
   ArgoApplicationApiVersion,
@@ -11,7 +10,15 @@ import {
   IResource,
 } from '../../resources/resource'
 import { getKubeResources, getHubClusterName } from '../events'
-import { applicationCache, ApplicationCacheType, IArgoApplication, IQuery, SEARCH_QUERY_LIMIT } from './applications'
+import {
+  applicationCache,
+  ApplicationCacheType,
+  getAppDict,
+  IArgoApplication,
+  IQuery,
+  ITransformedResource,
+  SEARCH_QUERY_LIMIT,
+} from './applications'
 import {
   cacheRemoteApps,
   getClusters,
@@ -23,6 +30,7 @@ import {
   getApplicationClusters,
   getTransform,
 } from './utils'
+import { deflateResource } from '../../lib/compression'
 import { IWatchOptions } from '../../resources/wath-options'
 
 interface IArgoAppLocalResource extends IResource {
@@ -169,8 +177,7 @@ export function polledArgoApplicationAggregation(
       const _clusters = getApplicationClusters(item, type, [], placementDecisions, localCluster, clusters)
       transform = getTransform(item, type, _clusters)
     }
-    resourceUidMap[uid] = item
-    item.transform = transform
+    resourceUidMap[uid] = { compressed: deflateResource(item, getAppDict()), transform }
     oldResourceUidSets[appKey].delete(uid)
   })
 

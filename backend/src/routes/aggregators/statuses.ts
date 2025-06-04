@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Http2ServerRequest, Http2ServerResponse } from 'http2'
-import { FilterCounts, ITransformedResource } from '../../lib/pagination'
+import { FilterCounts } from '../../lib/pagination'
 import { getAuthorizedResources } from '../events'
-import { AppColumns } from './applications'
+import { AppColumns, ICompressedResource, ITransformedResource } from './applications'
 import { systemAppNamespacePrefixes } from './utils'
 
 export interface IRequestStatuses {
@@ -20,7 +20,7 @@ export function requestAggregatedStatuses(
   req: Http2ServerRequest,
   res: Http2ServerResponse,
   token: string,
-  getItems: () => ITransformedResource[]
+  getItems: () => ICompressedResource[]
 ): void {
   const chucks: string[] = []
   req.on('data', (chuck: string) => {
@@ -38,11 +38,16 @@ export function requestAggregatedStatuses(
       })
     }
     // filter by rbac
-    items = (await getAuthorizedResources(token, items, 0, items.length)) as unknown as ITransformedResource[]
+    const authorizedItems = (await getAuthorizedResources(
+      token,
+      items,
+      0,
+      items.length
+    )) as unknown as ITransformedResource[]
 
     // count types
     const filterCounts: FilterCounts = { type: {}, cluster: {} }
-    items.forEach((item) => {
+    authorizedItems.forEach((item) => {
       if (item.transform) {
         incFilterCounts(filterCounts, 'type', item.transform[AppColumns.type])
         incFilterCounts(filterCounts, 'cluster', item.transform[AppColumns.clusters])
@@ -50,7 +55,7 @@ export function requestAggregatedStatuses(
     })
 
     const results: IResultStatuses = {
-      itemCount: items.length.toString(),
+      itemCount: authorizedItems.length.toString(),
       filterCounts,
       systemAppNSPrefixes: systemAppNamespacePrefixes,
       loading: false,

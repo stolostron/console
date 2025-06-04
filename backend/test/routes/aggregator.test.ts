@@ -5,11 +5,12 @@ import {
   aggregateRemoteApplications,
   searchLoop,
 } from '../../src/routes/aggregators/applications'
-import { initResourceCache } from '../../src/routes/events'
+import { cacheResource } from '../../src/routes/events'
 import { request } from '../mock-request'
 import nock from 'nock'
 import { discoverSystemAppNamespacePrefixes } from '../../src/routes/aggregators/utils'
 import { polledAggregation } from '../../src/routes/aggregator'
+import { IResource } from '../../src/resources/resource'
 
 /// to get exact nock request body, put bp at line 303 in /backend/node_modules/nock/lib/intercepted_request_router.js
 describe(`aggregator Route`, function () {
@@ -17,7 +18,8 @@ describe(`aggregator Route`, function () {
     nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
 
     // initialize events
-    initResourceCache(resourceCache)
+    resources.forEach((resource) => cacheResource(resource))
+
     polledAggregation(
       {
         kind: 'Application',
@@ -53,13 +55,13 @@ describe(`aggregator Route`, function () {
       },
     })
     expect(res.statusCode).toEqual(200)
-    expect(JSON.stringify(await parseResponseJsonBody(res))).toEqual(JSON.stringify(responseNoFilter))
+    expect(await parseResponseJsonBody(res)).toEqual(responseNoFilter)
   })
   it(`should page Filtered Applications`, async function () {
     nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
 
     // initialize events
-    initResourceCache(resourceCache)
+    resources.forEach((resource) => cacheResource(resource))
 
     // setup nocks
     setupNocks()
@@ -82,13 +84,14 @@ describe(`aggregator Route`, function () {
       },
     })
     expect(res.statusCode).toEqual(200)
+    // const f = await parseResponseJsonBody(res)
     expect(JSON.stringify(await parseResponseJsonBody(res))).toEqual(JSON.stringify(responseFiltered))
   })
   it(`should return application  counts`, async function () {
     nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
 
     // initialize events
-    initResourceCache(resourceCache)
+    resources.forEach((resource) => cacheResource(resource))
 
     // setup nocks
     setupNocks(true)
@@ -110,7 +113,7 @@ describe(`aggregator Route`, function () {
     nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
 
     // initialize events
-    initResourceCache(resourceCache)
+    resources.forEach((resource) => cacheResource(resource))
     polledAggregation(
       {
         kind: 'Application',
@@ -225,7 +228,7 @@ const responseNoFilter = {
             kind: '',
           },
         ],
-        uid: 'cc84e62f-edb9-413b-8bd7-38a32a21ce72',
+        uid: 'cc84e62f-edb9-413b-8bd7-38a32a21cf72',
       },
       spec: {
         destination: {
@@ -375,6 +378,7 @@ const responseNoFilter = {
       metadata: {
         name: 'test',
         namespace: 'default',
+        uid: 'cc84e62f-edb9-413b-8bd7-38a32a21ce72',
         annotations: {
           'apps.open-cluster-management.io/deployables': '',
           'apps.open-cluster-management.io/subscriptions':
@@ -401,8 +405,8 @@ const responseNoFilter = {
       },
       uidata: {
         clusterList: ['test-cluster'],
-        appSetRelatedResources: ['', []],
-        appSetApps: [],
+        appSetRelatedResources: ['', []] as RelatedResourcesType,
+        appSetApps: [] as string[],
       },
     },
   ],
@@ -428,6 +432,7 @@ const responseFiltered = {
       metadata: {
         name: 'test',
         namespace: 'default',
+        uid: 'cc84e62f-edb9-413b-8bd7-38a32a21ce72',
         annotations: {
           'apps.open-cluster-management.io/deployables': '',
           'apps.open-cluster-management.io/subscriptions':
@@ -670,302 +675,268 @@ function setupNocks(prefixes?: boolean) {
   }
 }
 
-//////////////////////////////////////////////////////////////////////////
-const resourceCache = {
+const resources = [
   // cluster
-  '/cluster.open-cluster-management.io/v1/managedclusters': {
-    '29496936-2d1d-4460-af37-f68471293e75': {
-      resource: {
-        apiVersion: 'cluster.open-cluster-management.io/v1',
-        kind: 'ManagedCluster',
-        metadata: {
-          annotations: {
-            'installer.multicluster.openshift.io/release-version': '2.7.0',
-            'open-cluster-management/created-via': 'other',
-          },
-          creationTimestamp: '2024-09-12T13:39:41Z',
-          finalizers: [
-            'managedcluster-import-controller.open-cluster-management.io/cleanup',
-            'open-cluster-management.io/managedclusterrole',
-            'cluster.open-cluster-management.io/api-resource-cleanup',
-            'managedclusterinfo.finalizers.open-cluster-management.io',
-            'managedcluster-import-controller.open-cluster-management.io/manifestwork-cleanup',
-          ],
-          generation: 4,
-          labels: {
-            cloud: 'Amazon',
-            'cluster.open-cluster-management.io/clusterset': 'default',
-            clusterID: '075c2ab5-a818-468c-935b-ebbbc45a42f8',
-            'feature.open-cluster-management.io/addon-application-manager': 'available',
-            'feature.open-cluster-management.io/addon-cert-policy-controller': 'available',
-            'feature.open-cluster-management.io/addon-cluster-proxy': 'available',
-            'feature.open-cluster-management.io/addon-config-policy-controller': 'available',
-            'feature.open-cluster-management.io/addon-governance-policy-framework': 'available',
-            'feature.open-cluster-management.io/addon-hypershift-addon': 'available',
-            'feature.open-cluster-management.io/addon-managed-serviceaccount': 'available',
-            'feature.open-cluster-management.io/addon-work-manager': 'available',
-            'local-cluster': 'true',
-            name: 'local-cluster',
-            openshiftVersion: '4.17.0-rc.2',
-            'openshiftVersion-major': '4',
-            'openshiftVersion-major-minor': '4.17',
-            'velero.io/exclude-from-backup': 'true',
-            vendor: 'OpenShift',
-          },
-          name: 'local-cluster',
-          resourceVersion: '7522024',
-          uid: '29496936-2d1d-4460-af37-f68471293e75',
-        },
+  {
+    apiVersion: 'cluster.open-cluster-management.io/v1',
+    kind: 'ManagedCluster',
+    metadata: {
+      annotations: {
+        'installer.multicluster.openshift.io/release-version': '2.7.0',
+        'open-cluster-management/created-via': 'other',
       },
-      eventID: 89,
+      creationTimestamp: '2024-09-12T13:39:41Z',
+      finalizers: [
+        'managedcluster-import-controller.open-cluster-management.io/cleanup',
+        'open-cluster-management.io/managedclusterrole',
+        'cluster.open-cluster-management.io/api-resource-cleanup',
+        'managedclusterinfo.finalizers.open-cluster-management.io',
+        'managedcluster-import-controller.open-cluster-management.io/manifestwork-cleanup',
+      ],
+      generation: 4,
+      labels: {
+        cloud: 'Amazon',
+        'cluster.open-cluster-management.io/clusterset': 'default',
+        clusterID: '075c2ab5-a818-468c-935b-ebbbc45a42f8',
+        'feature.open-cluster-management.io/addon-application-manager': 'available',
+        'feature.open-cluster-management.io/addon-cert-policy-controller': 'available',
+        'feature.open-cluster-management.io/addon-cluster-proxy': 'available',
+        'feature.open-cluster-management.io/addon-config-policy-controller': 'available',
+        'feature.open-cluster-management.io/addon-governance-policy-framework': 'available',
+        'feature.open-cluster-management.io/addon-hypershift-addon': 'available',
+        'feature.open-cluster-management.io/addon-managed-serviceaccount': 'available',
+        'feature.open-cluster-management.io/addon-work-manager': 'available',
+        'local-cluster': 'true',
+        name: 'local-cluster',
+        openshiftVersion: '4.17.0-rc.2',
+        'openshiftVersion-major': '4',
+        'openshiftVersion-major-minor': '4.17',
+        'velero.io/exclude-from-backup': 'true',
+        vendor: 'OpenShift',
+      },
+      name: 'local-cluster',
+      resourceVersion: '7522024',
+      uid: '29496936-2d1d-4460-af37-f68471293e75',
     },
   },
   // cluster info
-  '/internal.open-cluster-management.io/v1beta1/managedclusterinfos': {
-    '29496936-2d1d-4460-af37-f68471293e66': {
-      resource: {
-        apiVersion: 'internal.open-cluster-management.io/v1beta1',
-        kind: 'ManagedClusterInfo',
-        metadata: {
-          name: 'local-cluster',
-        },
-        status: {
-          consoleURL: 'https://api.console-aws-48-pwc27.dev02.red-chesterfield.com:6443',
-        },
-      },
-      eventID: 89,
+  {
+    apiVersion: 'internal.open-cluster-management.io/v1beta1',
+    kind: 'ManagedClusterInfo',
+    metadata: {
+      name: 'local-cluster',
+      uid: '29496936-2d1d-4460-af37-f68471293e66',
+    },
+    status: {
+      consoleURL: 'https://api.console-aws-48-pwc27.dev02.red-chesterfield.com:6443',
     },
   },
   // subscription app
-  '/app.k8s.io/v1beta1/applications': {
-    'cc84e62f-edb9-413b-8bd7-38a32a21ce72': {
-      resource: {
-        apiVersion: 'app.k8s.io/v1beta1',
-        kind: 'Application',
-        metadata: {
-          name: 'test',
-          namespace: 'default',
-          annotations: {
-            'apps.open-cluster-management.io/deployables': '',
-            'apps.open-cluster-management.io/subscriptions':
-              'default/test-subscription-1,default/test-subscription-1-local',
-          },
-        },
+  {
+    apiVersion: 'app.k8s.io/v1beta1',
+    kind: 'Application',
+    metadata: {
+      name: 'test',
+      namespace: 'default',
+      uid: 'cc84e62f-edb9-413b-8bd7-38a32a21ce72',
+      annotations: {
+        'apps.open-cluster-management.io/deployables': '',
+        'apps.open-cluster-management.io/subscriptions':
+          'default/test-subscription-1,default/test-subscription-1-local',
       },
-      eventID: 0,
     },
   },
-  '/apps.open-cluster-management.io/v1/subscriptions': {
-    '8b6d6503-dc8c-4ed6-b420-aa0df015fbf1': {
-      resource: {
-        apiVersion: 'apps.open-cluster-management.io/v1',
-        kind: 'Subscription',
-        metadata: {
-          annotations: {
-            'apps.open-cluster-management.io/git-branch': 'main',
-            'apps.open-cluster-management.io/git-current-commit': '8f862b04775d23ba4aefe3064d031c968fdc5a3f',
-            'apps.open-cluster-management.io/git-path': 'helloworld',
-            'apps.open-cluster-management.io/reconcile-option': 'merge',
-            'open-cluster-management.io/user-group': 'c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk',
-            'open-cluster-management.io/user-identity': 'a3ViZTphZG1pbg==',
-          },
-          creationTimestamp: '2024-07-02T17:45:25Z',
-          generation: 1,
-          labels: {
-            app: 'test',
-            'app.kubernetes.io/part-of': 'test',
-            'apps.open-cluster-management.io/reconcile-rate': 'medium',
-          },
-          name: 'test-subscription-1',
-          namespace: 'default',
-          resourceVersion: '1625088',
-          uid: '8b6d6503-dc8c-4ed6-b420-aa0df015fbf1',
-        },
-        spec: {
-          channel: 'ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples',
-          placement: {
-            placementRef: {
-              kind: 'Placement',
-              name: 'test-placement-1',
-            },
-          },
-        },
-        status: {
-          lastUpdateTime: '2024-07-02T17:45:26Z',
-          message: 'Active',
-          phase: 'Propagated',
-        },
+  {
+    apiVersion: 'apps.open-cluster-management.io/v1',
+    kind: 'Subscription',
+    metadata: {
+      annotations: {
+        'apps.open-cluster-management.io/git-branch': 'main',
+        'apps.open-cluster-management.io/git-current-commit': '8f862b04775d23ba4aefe3064d031c968fdc5a3f',
+        'apps.open-cluster-management.io/git-path': 'helloworld',
+        'apps.open-cluster-management.io/reconcile-option': 'merge',
+        'open-cluster-management.io/user-group': 'c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk',
+        'open-cluster-management.io/user-identity': 'a3ViZTphZG1pbg==',
       },
-      eventID: 7,
+      creationTimestamp: '2024-07-02T17:45:25Z',
+      generation: 1,
+      labels: {
+        app: 'test',
+        'app.kubernetes.io/part-of': 'test',
+        'apps.open-cluster-management.io/reconcile-rate': 'medium',
+      },
+      name: 'test-subscription-1',
+      namespace: 'default',
+      resourceVersion: '1625088',
+      uid: '8b6d6503-dc8c-4ed6-b420-aa0df015fbf1',
     },
-
-    'b7009958-d850-4ffc-9b04-57baa403ce47': {
-      resource: {
-        apiVersion: 'apps.open-cluster-management.io/v1',
-        kind: 'Subscription',
-        metadata: {
-          annotations: {
-            'apps.open-cluster-management.io/git-branch': 'main',
-            'apps.open-cluster-management.io/git-path': 'helloworld',
-            'apps.open-cluster-management.io/hosting-subscription': 'default/test-subscription-1',
-            'apps.open-cluster-management.io/reconcile-option': 'merge',
-            'open-cluster-management.io/user-group': 'c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk',
-            'open-cluster-management.io/user-identity': 'a3ViZTphZG1pbg==',
-          },
-          creationTimestamp: '2024-07-02T17:45:26Z',
-          generation: 1,
-          labels: {
-            app: 'test',
-            'app.kubernetes.io/part-of': 'test',
-            'apps.open-cluster-management.io/reconcile-rate': 'medium',
-          },
-          name: 'test-subscription-1-local',
-          namespace: 'default',
-          ownerReferences: [
-            {
-              apiVersion: 'work.open-cluster-management.io/v1',
-              kind: 'AppliedManifestWork',
-              name: '099081ddd1c54a21bda5eae2f2c5013f0947c6ba3b8bdb1ceb7c38d7cfae3685-default-test-subscription-1',
-              uid: 'e9054859-bfca-46d2-8952-bea381adc6fa',
-            },
-          ],
-          resourceVersion: '2441151',
-          uid: 'b7009958-d850-4ffc-9b04-57baa403ce47',
-        },
-        spec: {
-          channel: 'ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples',
-          placement: {
-            local: true,
-          },
-        },
-        status: {
-          ansiblejobs: {},
-          appstatusReference: 'kubectl get appsubstatus -n default test-subscription-1',
-          lastUpdateTime: '2024-07-03T13:05:00Z',
-          message: 'Active',
-          phase: 'Subscribed',
+    spec: {
+      channel: 'ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples',
+      placement: {
+        placementRef: {
+          kind: 'Placement',
+          name: 'test-placement-1',
         },
       },
-      eventID: 627,
+    },
+    status: {
+      lastUpdateTime: '2024-07-02T17:45:26Z',
+      message: 'Active',
+      phase: 'Propagated',
     },
   },
-  '/cluster.open-cluster-management.io/v1beta1/placementdecisions': {
-    '7ba09bb1-5211-490f-a6d1-456322886ab0': {
-      resource: {
-        apiVersion: 'cluster.open-cluster-management.io/v1beta1',
-        kind: 'PlacementDecision',
-        metadata: {
-          creationTimestamp: '2024-07-02T17:45:25Z',
-          generation: 1,
-          labels: {
-            'cluster.open-cluster-management.io/decision-group-index': '0',
-            'cluster.open-cluster-management.io/decision-group-name': '',
-            'cluster.open-cluster-management.io/placement': 'test-placement-1',
-          },
-          name: 'test-placement-1-decision-1',
-          namespace: 'default',
-          ownerReferences: [
-            {
-              apiVersion: 'cluster.open-cluster-management.io/v1beta1',
-              blockOwnerDeletion: true,
-              controller: true,
-              kind: 'Placement',
-              name: 'test-placement-1',
-              uid: '458708a1-f9fd-498b-9c2f-420ba246fe3f',
-            },
-          ],
-          resourceVersion: '1625071',
-          uid: '7ba09bb1-5211-490f-a6d1-456322886ab0',
-        },
-        status: {
-          decisions: [
-            {
-              clusterName: 'local-cluster',
-              reason: '',
-            },
-          ],
-        },
+  {
+    apiVersion: 'apps.open-cluster-management.io/v1',
+    kind: 'Subscription',
+    metadata: {
+      annotations: {
+        'apps.open-cluster-management.io/git-branch': 'main',
+        'apps.open-cluster-management.io/git-path': 'helloworld',
+        'apps.open-cluster-management.io/hosting-subscription': 'default/test-subscription-1',
+        'apps.open-cluster-management.io/reconcile-option': 'merge',
+        'open-cluster-management.io/user-group': 'c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk',
+        'open-cluster-management.io/user-identity': 'a3ViZTphZG1pbg==',
       },
-      eventID: 31,
+      creationTimestamp: '2024-07-02T17:45:26Z',
+      generation: 1,
+      labels: {
+        app: 'test',
+        'app.kubernetes.io/part-of': 'test',
+        'apps.open-cluster-management.io/reconcile-rate': 'medium',
+      },
+      uid: 'b7009958-d850-4ffc-9b04-57baa403ce47',
+      name: 'test-subscription-1-local',
+      namespace: 'default',
+      ownerReferences: [
+        {
+          apiVersion: 'work.open-cluster-management.io/v1',
+          kind: 'AppliedManifestWork',
+          name: '099081ddd1c54a21bda5eae2f2c5013f0947c6ba3b8bdb1ceb7c38d7cfae3685-default-test-subscription-1',
+          uid: 'e9054859-bfca-46d2-8952-bea381adc6fa',
+        },
+      ],
+      resourceVersion: '2441151',
     },
-    '7ba09bb1-5211-490f-a6d1-456392886ab0': {
-      resource: {
-        apiVersion: 'cluster.open-cluster-management.io/v1beta1',
-        kind: 'PlacementDecision',
-        metadata: {
-          creationTimestamp: '2024-07-02T17:45:25Z',
-          generation: 1,
-          labels: {
-            'cluster.open-cluster-management.io/decision-group-index': '0',
-            'cluster.open-cluster-management.io/decision-group-name': '',
-            'cluster.open-cluster-management.io/placement': 'test-placement-1',
-          },
-          name: 'test-placement-1-decision-1',
-          namespace: 'openshift-gitops',
-          ownerReferences: [
-            {
-              apiVersion: 'cluster.open-cluster-management.io/v1beta1',
-              blockOwnerDeletion: true,
-              controller: true,
-              kind: 'Placement',
-              name: 'test-placement-1',
-              uid: '458708a1-f9fd-498b-9c2f-420ba246fe3f',
-            },
-          ],
-          resourceVersion: '1625071',
-          uid: '7ba09bb1-5211-490f-a6d1-456322886ab0',
-        },
-        status: {
-          decisions: [
-            {
-              clusterName: 'mycluster',
-              reason: '',
-            },
-          ],
-        },
+    spec: {
+      channel: 'ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples',
+      placement: {
+        local: true,
       },
-      eventID: 31,
     },
-    'c93db359-83b3-435b-9e30-065ac8a10143': {
-      resource: {
-        apiVersion: 'cluster.open-cluster-management.io/v1beta1',
-        kind: 'PlacementDecision',
-        metadata: {
-          creationTimestamp: '2024-07-01T04:36:10Z',
-          generation: 1,
-          labels: {
-            'cluster.open-cluster-management.io/decision-group-index': '0',
-            'cluster.open-cluster-management.io/decision-group-name': '',
-            'cluster.open-cluster-management.io/placement': 'global',
-          },
-          name: 'global-decision-1',
-          namespace: 'open-cluster-management-global-set',
-          ownerReferences: [
-            {
-              apiVersion: 'cluster.open-cluster-management.io/v1beta1',
-              blockOwnerDeletion: true,
-              controller: true,
-              kind: 'Placement',
-              name: 'global',
-              uid: '8e2ff464-d716-4be2-95e5-498cd5a14258',
-            },
-          ],
-          resourceVersion: '33592',
-          uid: 'c93db359-83b3-435b-9e30-065ac8a10143',
-        },
-        status: {
-          decisions: [
-            {
-              clusterName: 'local-cluster',
-              reason: '',
-            },
-          ],
-        },
-      },
-      eventID: 33,
+    status: {
+      ansiblejobs: {},
+      appstatusReference: 'kubectl get appsubstatus -n default test-subscription-1',
+      lastUpdateTime: '2024-07-03T13:05:00Z',
+      message: 'Active',
+      phase: 'Subscribed',
     },
   },
-}
+  {
+    apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+    kind: 'PlacementDecision',
+    metadata: {
+      creationTimestamp: '2024-07-02T17:45:25Z',
+      generation: 1,
+      labels: {
+        'cluster.open-cluster-management.io/decision-group-index': '0',
+        'cluster.open-cluster-management.io/decision-group-name': '',
+        'cluster.open-cluster-management.io/placement': 'test-placement-1',
+      },
+      name: 'test-placement-1-decision-1',
+      namespace: 'default',
+      uid: '7ba09bb1-5211-490f-a6d1-456322886ab0',
+      ownerReferences: [
+        {
+          apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+          blockOwnerDeletion: true,
+          controller: true,
+          kind: 'Placement',
+          name: 'test-placement-1',
+          uid: '458708a1-f9fd-498b-9c2f-420ba246fe3f',
+        },
+      ],
+      resourceVersion: '1625071',
+    },
+    status: {
+      decisions: [
+        {
+          clusterName: 'local-cluster',
+          reason: '',
+        },
+      ],
+    },
+  },
+  {
+    apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+    kind: 'PlacementDecision',
+    metadata: {
+      creationTimestamp: '2024-07-02T17:45:25Z',
+      generation: 1,
+      labels: {
+        'cluster.open-cluster-management.io/decision-group-index': '0',
+        'cluster.open-cluster-management.io/decision-group-name': '',
+        'cluster.open-cluster-management.io/placement': 'test-placement-1',
+      },
+      name: 'test-placement-1-decision-1',
+      namespace: 'openshift-gitops',
+      uid: '7ba09bb1-5211-490f-a6d1-456392886ab0',
+      ownerReferences: [
+        {
+          apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+          blockOwnerDeletion: true,
+          controller: true,
+          kind: 'Placement',
+          name: 'test-placement-1',
+          uid: '458708a1-f9fd-498b-9c2f-420ba246fe3f',
+        },
+      ],
+      resourceVersion: '1625071',
+    },
+    status: {
+      decisions: [
+        {
+          clusterName: 'mycluster',
+          reason: '',
+        },
+      ],
+    },
+  },
+  {
+    apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+    kind: 'PlacementDecision',
+    metadata: {
+      creationTimestamp: '2024-07-01T04:36:10Z',
+      generation: 1,
+      labels: {
+        'cluster.open-cluster-management.io/decision-group-index': '0',
+        'cluster.open-cluster-management.io/decision-group-name': '',
+        'cluster.open-cluster-management.io/placement': 'global',
+      },
+      name: 'global-decision-1',
+      namespace: 'open-cluster-management-global-set',
+      uid: 'c93db359-83b3-435b-9e30-065ac8a10143',
+      ownerReferences: [
+        {
+          apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+          blockOwnerDeletion: true,
+          controller: true,
+          kind: 'Placement',
+          name: 'global',
+          uid: '8e2ff464-d716-4be2-95e5-498cd5a14258',
+        },
+      ],
+      resourceVersion: '33592',
+    },
+    status: {
+      decisions: [
+        {
+          clusterName: 'local-cluster',
+          reason: '',
+        },
+      ],
+    },
+  },
+]
 
 const argoApps = [
   {
@@ -975,7 +946,7 @@ const argoApps = [
       name: 'argoapplication-1',
       namespace: 'openshift-gitops',
       ownerReferences: [{ name: 'argoapplication-1', apiVersion: '', kind: '' }],
-      uid: 'cc84e62f-edb9-413b-8bd7-38a32a21ce72',
+      uid: 'cc84e62f-edb9-413b-8bd7-38a32a21cf72',
     },
     spec: {
       destination: {
@@ -1070,4 +1041,4 @@ const argoAppSets = [
       },
     },
   },
-]
+] as unknown as IResource[]

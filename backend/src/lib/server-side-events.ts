@@ -3,11 +3,12 @@ import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { Transform } from 'stream'
 import { clearInterval } from 'timers'
 import { Zlib } from 'zlib'
-import { getEncodeStream } from './compression'
+import { getEncodeStream, inflateEvent } from './compression'
 import { setCookie } from './cookies'
-import { getGiganticEvents } from './gigantic'
 import { logger } from './logger'
 import { randomString } from './random-string'
+import { getGiganticEvents } from './gigantic'
+import { sizeOf } from '../routes/aggregators/utils'
 
 // TODO - RESET EVENT
 // TODO BOOKMARK EVENT
@@ -112,6 +113,7 @@ export class ServerSideEvents {
     if (!client) return
     if (client.events && !client.events[event.name]) return
     if (client.namespaces && !client.namespaces[event.namespace]) return
+    event = inflateEvent(event)
     if (this.eventFilter) {
       client.eventQueue.push(
         this.eventFilter(client.token, event)
@@ -288,8 +290,12 @@ export class ServerSideEvents {
 
     // SORT EVENTS INTO SMALLER PACKETS
     // SO THAT BROWSER PAGE LOADS QUICKER
-    // split events into packets
-    let parts = Object.values(this.events)
+    // uncompress and split events into packets
+    const values = Object.values(this.events)
+    const compressed = sizeOf(values)
+    let parts = values.map((event) => {
+      return inflateEvent(event)
+    })
 
     // mock a large environment
     if (process.env.MOCK_CLUSTERS) {
@@ -387,8 +393,9 @@ export class ServerSideEvents {
       this.sendEvent(clientID, event)
       sentCount++
     })
+    const uncompressed = sizeOf(sending)
 
-    logger.info({ msg: 'event stream start', events: sentCount })
+    logger.info({ msg: 'event stream start', events: sentCount, compression: 100 - (compressed / uncompressed) * 100 })
 
     return eventClient
   }

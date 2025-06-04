@@ -10,12 +10,13 @@ import { Stream } from 'stream'
 import { promisify } from 'util'
 import { jsonPost } from '../lib/json-request'
 import { logger } from '../lib/logger'
-import { ITransformedResource } from '../lib/pagination'
 import { ServerSideEvent, ServerSideEvents } from '../lib/server-side-events'
 import { getCACertificate, getServiceAccountToken } from '../lib/serviceAccountToken'
 import { getAuthenticatedToken } from '../lib/token'
 import { IResource } from '../resources/resource'
 import { polledAggregation } from './aggregator'
+import { createDictionary, deflateResource, inflateResource } from '../lib/compression'
+import { getAppDict, ICompressedResource, ITransformedResource } from './aggregators/applications'
 import { IWatchOptions } from '../resources/wath-options'
 
 const { map, split } = eventStream
@@ -46,7 +47,7 @@ export function getKubeResources(kind: string, apiVersion: string) {
   const option = { apiVersion, kind }
   const apiVersionPlural = apiVersionPluralFn(option)
   return Object.values(resourceCache[apiVersionPlural] || {}).map((event) => {
-    return event.resource
+    return inflateResource(event.compressed, eventDict)
   })
 }
 
@@ -64,11 +65,11 @@ export function getIsHubSelfManaged() {
 // run them only on the resources requested by the UI
 export async function getAuthorizedResources(
   token: string,
-  resources: IResource[],
+  resources: ICompressedResource[],
   startInx: number,
   stopInx: number
-): Promise<IResource[]> {
-  const authorized: IResource[] = []
+): Promise<ITransformedResource[]> {
+  const authorized: ITransformedResource[] = []
 
   // check every resource until we have reached just the requested number of items
   // anything more is a waste of response time
@@ -76,8 +77,12 @@ export async function getAuthorizedResources(
   const chunkSize = stopInx > 100 ? 100 : 50
   while (resources.length > inx && authorized.length < stopInx) {
     // perform it in item chunks
-    const _resources = resources.slice(inx, inx + chunkSize)
-    const queue = (_resources as ITransformedResource[]).map((resource) => {
+    const _resources = resources.slice(inx, inx + chunkSize).map((compressedResource) => {
+      const { compressed, transform, remoteClusters } = compressedResource
+      const resource = inflateResource(compressed, getAppDict())
+      return { ...resource, transform, remoteClusters }
+    }) as ITransformedResource[]
+    const queue = _resources.map((resource) => {
       return (
         resource.remoteClusters
           ? canAccessRemoteResource(token, resource.remoteClusters)
@@ -125,20 +130,20 @@ function canAccessRemoteResource(token: string, clusterNames: string[]): Promise
 export interface ResourceCache {
   [apiVersionKind: string]: {
     [uid: string]: {
-      resource: IResource
+      compressed: Buffer
       eventID: number
     }
   }
 }
 
-// for testing
-export function initResourceCache(cache: ResourceCache) {
-  resourceCache = cache
-}
-
-let resourceCache: ResourceCache = {}
+const resourceCache: ResourceCache = {}
 export function getEventCache() {
   return resourceCache
+}
+
+const eventDict = createDictionary()
+export function getEventDict() {
+  return eventDict
 }
 
 const accessCache: Record<string, Record<string, { time: number; promise: Promise<boolean> }>> = {}
@@ -340,23 +345,23 @@ async function listKubernetesObjects(serviceAccountToken: string, options: IWatc
   // Remove items that are no longer in kubernetes
   const apiVersionPlural = apiVersionPluralFn(options)
   const cache = resourceCache[apiVersionPlural]
-  const removeUids: string[] = []
+  const removeResources: IResource[] = []
   for (const uid in cache) {
     const existing = cache[uid]
-    if (options.fieldSelector && !matchesSelector(existing.resource, options.fieldSelector)) {
+    const resource = inflateResource(existing.compressed, eventDict)
+    if (options.fieldSelector && !matchesSelector(resource, options.fieldSelector)) {
       // skip as this object would not be in the items result for this list operation
       continue
     }
-    if (options.labelSelector && !matchesSelector(existing.resource.metadata?.labels, options.labelSelector)) {
+    if (options.labelSelector && !matchesSelector(resource.metadata?.labels, options.labelSelector)) {
       // skip as this object would not be in the items result for this list operation
       continue
     }
     if (!items.find((resource) => resource.metadata.uid === uid)) {
-      removeUids.push(uid)
+      removeResources.push(resource)
     }
   }
-  for (const uid of removeUids) {
-    const resource = cache[uid].resource
+  for (const resource of removeResources) {
     deleteResource(resource)
   }
 
@@ -596,7 +601,7 @@ function resourceUrl(options: IWatchOptions, query: Record<string, string>) {
   return url
 }
 
-function cacheResource(resource: IResource) {
+export function cacheResource(resource: IResource) {
   const apiVersionPlural = apiVersionPluralFn(resource)
   let cache = resourceCache[apiVersionPlural]
   if (!cache) {
@@ -609,13 +614,14 @@ function cacheResource(resource: IResource) {
 
   let eventID = -1
   if (existing) {
-    if (existing.resource.metadata.resourceVersion === resource.metadata.resourceVersion)
+    if (inflateResource(existing.compressed, eventDict).metadata.resourceVersion === resource.metadata.resourceVersion)
       return resource.metadata.resourceVersion
     ServerSideEvents.removeEvent(existing.eventID)
   }
 
-  eventID = ServerSideEvents.pushEvent({ data: { type: 'MODIFIED', object: resource } })
-  cache[uid] = { resource, eventID }
+  const compressed = deflateResource(resource, eventDict)
+  eventID = ServerSideEvents.pushEvent({ data: { type: 'MODIFIED', object: compressed } })
+  cache[uid] = { compressed, eventID }
 
   if (resource.kind === 'ManagedCluster') {
     if (resource?.metadata?.labels['local-cluster'] === 'true') {

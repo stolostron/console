@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ITransformedResource } from './pagination'
+import { ITransformedResource } from '../routes/aggregators/applications'
 import { ServerSideEvent } from './server-side-events'
 
 export function getGiganticEvents(): ServerSideEvent[] {
