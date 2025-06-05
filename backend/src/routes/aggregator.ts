@@ -14,7 +14,7 @@ import {
 import { requestAggregatedStatuses } from './aggregators/statuses'
 import { requestAggregatedUIData } from './aggregators/uidata'
 import { IResource } from '../resources/resource'
-import { IWatchOptions } from '../resources/wath-options'
+import { IWatchOptions } from '../resources/watch-options'
 
 export function startAggregating(): void {
   void startAggregatingApplications()

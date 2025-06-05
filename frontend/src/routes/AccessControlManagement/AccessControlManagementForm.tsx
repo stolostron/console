@@ -9,15 +9,15 @@ import { useQuery } from '../../lib/useQuery'
 import { validateKubernetesResourceName } from '../../lib/validation'
 import { NavigationPath, useBackCancelNavigation } from '../../NavigationPath'
 import { IResource, listGroups, listUsers } from '../../resources'
-import { AccessControl, AccessControlApiVersion, RoleBinding } from '../../resources/access-control'
+import { AccessControl } from '../../resources/access-control'
 import { createResource, patchResource } from '../../resources/utils'
 import { AcmToastContext } from '../../ui-components'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { searchClient } from '../Search/search-sdk/search-client'
 import { useSearchCompleteLazyQuery, useSearchResultItemsQuery } from '../Search/search-sdk/search-sdk'
-import { selectedNamespacesToRoleBinding } from './AccessControlManagementFormHelper'
+import { buildAccessControlFromState } from './AccessControlManagementFormHelper'
 import { AccessControlStatus } from './AccessControlStatus'
-import { RoleBindingHook } from './RoleBindingHook'
+import { useRoleBinding } from './RoleBindingHook'
 import { RoleBindingSection } from './RoleBindingSection'
 import schema from './schema.json'
 
@@ -84,32 +84,24 @@ const AccessControlManagementForm = ({
 
   // RoleBinding states
   const {
-    selected: selectedRoleBindings,
-    selectedSubjectType: selectedSubjectTypeRB,
-    selectedSubjectNames: selectedSubjectNamesRB,
-    selectedRoleNames: selectedRoleNamesRB,
-    selectedNamespaces: selectedNamespacesRB,
-    setSelected: setSelectedRB,
-    setSelectedSubjectNames: setSelectedSubjectNamesRB,
-    setSelectedRoleNames: setSelectedRoleNamesRB,
-    setSelectedNamespaces: setSelectedNamespacesRB,
-    onNamespaceChange: onNamespaceChangeRB,
-    onSubjectTypeChange: onSubjectTypeChangeRB,
-    onSubjectNameChange: onSubjectNameChangeRB,
-    onRoleChange: onRoleChangeRB,
-  } = RoleBindingHook<RoleBinding>()
+    roleBinding: roleBindingRB,
+    isValid: isRBValid,
+    setNamespaces: setNamespacesRB,
+    setSubjectKind: setSubjectKindRB,
+    setSubjectNames: setSubjectNamesRB,
+    setRoleNames: setRoleNamesRB,
+    onRoleBindingChange: onRoleBindingChangeRB,
+  } = useRoleBinding()
 
   // ClusterRoleBinding states
   const {
-    selectedSubjectType: selectedSubjectTypeCRB,
-    selectedSubjectNames: selectedSubjectNamesCRB,
-    selectedRoleName: selectedRoleNameCRB,
-    setSelectedSubjectNames: setSelectedSubjectNamesCRB,
-    setSelectedRoleName: setSelectedRoleNameCRB,
-    onSubjectTypeChange: onSubjectTypeChangeCRB,
-    onSubjectNameChange: onSubjectNameChangeCRB,
-    onRoleChange: onRoleChangeCRB,
-  } = RoleBindingHook<string>()
+    roleBinding: roleBindingCRB,
+    isValid: isCRBValid,
+    setSubjectKind: setSubjectKindCRB,
+    setSubjectNames: setSubjectNamesCRB,
+    setRoleNames: setRoleNamesCRB,
+    onRoleBindingChange: onRoleBindingChangeCRB,
+  } = useRoleBinding()
 
   const { submitForm } = useContext(LostChangesContext)
 
@@ -120,40 +112,18 @@ const AccessControlManagementForm = ({
   }, [accessControl?.metadata])
 
   useEffect(() => {
-    setSelectedRB(accessControl?.spec.roleBindings ?? [])
-    if (accessControl?.spec.roleBindings) {
-      setSelectedSubjectNamesRB([
-        ...new Set(
-          accessControl.spec.roleBindings?.flatMap((rb) =>
-            rb.subject ? [rb.subject.name] : rb.subjects?.map((s) => s.name) ?? []
-          )
-        ),
-      ])
-      setSelectedRoleNamesRB([...new Set(accessControl.spec.roleBindings.map((rb) => rb.roleRef.name))])
-      setSelectedNamespacesRB([...new Set(accessControl.spec.roleBindings.map((rb) => rb.namespace))])
+    const roleBindings = accessControl?.spec.roleBindings
+    if (roleBindings) {
+      onRoleBindingChangeRB(roleBindings)
     }
-  }, [
-    accessControl?.spec.roleBindings,
-    setSelectedNamespacesRB,
-    setSelectedRoleNamesRB,
-    setSelectedSubjectNamesRB,
-    setSelectedRB,
-  ])
+  }, [accessControl?.spec.roleBindings, onRoleBindingChangeRB])
 
   useEffect(() => {
-    if (accessControl?.spec?.clusterRoleBinding) {
-      const crb = accessControl.spec.clusterRoleBinding
-      const names = crb.subjects?.map((s) => s.name) ?? (crb.subject ? [crb.subject.name] : [])
-      setSelectedSubjectNamesCRB([...new Set(names)])
-      setSelectedRoleNameCRB(crb.roleRef?.name ?? '')
+    const clusterRoleBinding = accessControl?.spec.clusterRoleBinding
+    if (clusterRoleBinding) {
+      onRoleBindingChangeCRB(clusterRoleBinding)
     }
-  }, [accessControl?.spec.clusterRoleBinding, setSelectedRoleNameCRB, setSelectedSubjectNamesCRB])
-
-  useEffect(() => {
-    if (!isEditing && !isViewing && accessControl?.spec?.roleBindings && !selectedRoleBindings.length) {
-      setSelectedRB([])
-    }
-  }, [accessControl?.spec?.roleBindings, isEditing, isViewing, namespace, selectedRoleBindings.length, setSelectedRB])
+  }, [accessControl?.spec.clusterRoleBinding, onRoleBindingChangeCRB])
 
   const [getSearchResults, { data }] = useSearchCompleteLazyQuery({
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
@@ -184,47 +154,9 @@ const AccessControlManagementForm = ({
 
   const { cancelForm } = useContext(LostChangesContext)
   const guardedHandleModalToggle = useCallback(() => cancelForm(handleModalToggle), [cancelForm, handleModalToggle])
-  const isRBValid = selectedRoleNamesRB.length > 0 && selectedSubjectNamesRB.length > 0
-  const isCRBValid = !!selectedRoleNameCRB && selectedSubjectNamesCRB.length > 0
 
   const stateToData = () => {
-    const spec: any = isRBValid
-      ? {
-          roleBindings: selectedNamespacesToRoleBinding(
-            selectedNamespacesRB,
-            selectedRoleNamesRB,
-            selectedSubjectNamesRB,
-            selectedSubjectTypeRB
-          ),
-        }
-      : {}
-
-    if (isCRBValid) {
-      spec.clusterRoleBinding = {
-        roleRef: {
-          name: selectedRoleNameCRB,
-          apiGroup: 'rbac.authorization.k8s.io',
-          kind: 'ClusterRole',
-        },
-        subjects: selectedSubjectNamesCRB.map((name) => ({
-          name,
-          apiGroup: 'rbac.authorization.k8s.io',
-          kind: selectedSubjectTypeCRB,
-        })),
-      }
-    }
-
-    return [
-      {
-        apiVersion: AccessControlApiVersion,
-        kind: accessControl ? accessControl?.kind : 'ClusterPermission',
-        metadata: {
-          name,
-          namespace,
-        },
-        spec,
-      },
-    ]
+    return buildAccessControlFromState(isRBValid, isCRBValid, roleBindingRB, roleBindingCRB, name, namespace)
   }
 
   const stateToSyncs = () => {
@@ -321,10 +253,10 @@ const AccessControlManagementForm = ({
         idPrefix: 'rb',
         isViewing,
         isRequired: false,
-        selectedNamespaces: selectedNamespacesRB,
-        selectedSubjectNames: selectedSubjectNamesRB,
-        selectedRoles: selectedRoleNamesRB,
-        selectedSubjectType: selectedSubjectTypeRB,
+        selectedNamespaces: roleBindingRB.namespaces,
+        selectedSubjectNames: roleBindingRB.subjectNames,
+        selectedRoles: roleBindingRB.roleNames,
+        selectedSubjectKind: roleBindingRB.subjectKind,
         namespaceOptions: namespaceItems.map((namespace) => ({
           id: namespace,
           value: namespace,
@@ -333,18 +265,18 @@ const AccessControlManagementForm = ({
         subjectOptions: Array.from(
           new Map(
             [
-              ...((selectedSubjectTypeRB === 'Group' ? groups : users) || []).map((val) => ({
+              ...((roleBindingRB.subjectKind === 'Group' ? groups : users) || []).map((val) => ({
                 id: val.metadata.uid!,
                 value: val.metadata.name!,
               })),
-              ...selectedSubjectNamesRB.map((name) => ({ id: name, value: name })),
+              ...roleBindingRB.subjectNames.map((name) => ({ id: name, value: name })),
             ].map((item) => [item.value, item])
           ).values()
         ),
-        onNamespaceChange: onNamespaceChangeRB,
-        onSubjectTypeChange: onSubjectTypeChangeRB,
-        onSubjectNameChange: onSubjectNameChangeRB,
-        onRoleChange: onRoleChangeRB,
+        onNamespaceChange: setNamespacesRB,
+        onSubjectKindChange: setSubjectKindRB,
+        onSubjectNameChange: setSubjectNamesRB,
+        onRoleChange: setRoleNamesRB,
       }),
 
       RoleBindingSection({
@@ -354,25 +286,25 @@ const AccessControlManagementForm = ({
         isViewing,
         isRequired: false,
         selectedNamespaces: ['All Namespaces'],
-        selectedSubjectNames: selectedSubjectNamesCRB,
-        selectedRoles: selectedRoleNameCRB ? [selectedRoleNameCRB] : [],
-        selectedSubjectType: selectedSubjectTypeCRB,
+        selectedSubjectNames: roleBindingCRB.subjectNames,
+        selectedRoles: roleBindingCRB.roleNames,
+        selectedSubjectKind: roleBindingCRB.subjectKind,
         namespaceOptions: [{ id: 'all', value: 'All Namespaces', text: 'All Namespaces', isDisabled: true }],
         subjectOptions: Array.from(
           new Map(
             [
-              ...((selectedSubjectTypeCRB === 'Group' ? groups : users) || []).map((val) => ({
+              ...((roleBindingCRB.subjectKind === 'Group' ? groups : users) || []).map((val) => ({
                 id: val.metadata.uid!,
                 value: val.metadata.name!,
               })),
-              ...selectedSubjectNamesCRB.map((name) => ({ id: name, value: name })),
+              ...roleBindingCRB.subjectNames.map((name) => ({ id: name, value: name })),
             ].map((item) => [item.value, item])
           ).values()
         ),
         onNamespaceChange: () => {},
-        onSubjectTypeChange: onSubjectTypeChangeCRB,
-        onSubjectNameChange: onSubjectNameChangeCRB,
-        onRoleChange: onRoleChangeCRB,
+        onSubjectKindChange: setSubjectKindCRB,
+        onSubjectNameChange: setSubjectNamesCRB,
+        onRoleChange: setRoleNamesCRB,
       }),
     ].filter(Boolean) as Section[],
 

@@ -20,7 +20,7 @@ import {
 } from './applicationsArgo'
 import { getGiganticApps } from '../../lib/gigantic'
 import { createDictionary, inflateApps } from '../../lib/compression'
-import { IWatchOptions } from '../../resources/wath-options'
+import { IWatchOptions } from '../../resources/watch-options'
 
 export enum AppColumns {
   'name' = 0,
