@@ -178,6 +178,7 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
         '/multicloud/virtualmachinesnapshots',
         '/multicloud/virtualmachinerestores',
         '/multicloud/multiclusterhub/components',
+        '/multicloud/vmResourceUsage',
       ].map((backendPath) => ({
         path: backendPath,
         target: `https://localhost:${process.env.BACKEND_PORT}`,
