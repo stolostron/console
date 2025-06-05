@@ -304,7 +304,7 @@ export function PolicyWizardTemplates(props: { policies: IResource[] }) {
         path="spec.policy-templates"
         label={t('Policy templates')}
         placeholder={t('Add policy template')}
-        // required
+        required
         dropdownItems={Specifications.map((specification) => {
           return {
             label: specification.description,
