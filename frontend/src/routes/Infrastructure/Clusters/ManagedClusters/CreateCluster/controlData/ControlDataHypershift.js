@@ -52,7 +52,6 @@ export const getControlDataHypershift = (
       type: 'custom',
       component: <DetailsForm />,
       providerId: 'hypershift',
-      mustValidate: true,
       encodeValues: ['pullSecret'],
       additionalProps: {
         promptSshPublicKey: false,
@@ -69,7 +68,6 @@ export const getControlDataHypershift = (
       type: 'custom',
       component: <HostsForm />,
       providerId: 'hypershift',
-      mustValidate: true,
     },
     {
       id: 'hyperhisftNetworkStep',
@@ -82,7 +80,6 @@ export const getControlDataHypershift = (
       type: 'custom',
       component: <NetworkForm />,
       providerId: 'hypershift',
-      mustValidate: true,
     },
   ]
   appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlData)
