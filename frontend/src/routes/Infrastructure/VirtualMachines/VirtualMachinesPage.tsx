@@ -236,7 +236,9 @@ export default function VirtualMachinesPage() {
           )
           const dashboardId = parsedDashboardData?.uid
           return `${grafanaLink}/d/${dashboardId}/executive-dashboards-clusters-overview?orgId=1`
-        } catch (error) {}
+        } catch (error) {
+          console.error(error)
+        }
       }
     }
     return ''
