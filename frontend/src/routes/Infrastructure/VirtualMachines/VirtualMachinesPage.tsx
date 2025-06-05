@@ -2,6 +2,8 @@
 
 import { getCurrentClusterVersion, getMajorMinorVersion } from '@openshift-assisted/ui-lib/cim'
 import {
+  Alert,
+  AlertActionCloseButton,
   EmptyState,
   EmptyStateBody,
   EmptyStateHeader,
@@ -15,7 +17,7 @@ import {
 import { ExclamationCircleIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { get } from 'lodash'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom-v5-compat'
+import { useLocation, useNavigate } from 'react-router-dom-v5-compat'
 import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { OCP_DOC } from '../../../lib/doc-util'
@@ -53,13 +55,13 @@ import {
 } from '../../Search/search-helper'
 import { searchClient } from '../../Search/search-sdk/search-client'
 import {
-  SearchInput,
   useSearchCompleteQuery,
-  useSearchResultItemsAndRelatedItemsLazyQuery,
+  useSearchResultItemsAndRelatedItemsQuery,
   useSearchSchemaQuery,
 } from '../../Search/search-sdk/search-sdk'
 import { useSearchDefinitions } from '../../Search/searchDefinitions'
 import { ISearchResult } from '../../Search/SearchResults/utils'
+import { transformBrowserUrlToSearchString, updateBrowserUrl } from '../../Search/urlQuery'
 import { useAllClusters } from '../Clusters/ManagedClusters/components/useAllClusters'
 import { ClosedVMActionModalProps, IVMActionModalProps, VMActionModal } from './modals/VMActionModal'
 import {
@@ -172,7 +174,10 @@ function VirtualMachineTable(props: Readonly<{ searchResultItems: ISearchResult[
 }
 
 export default function VirtualMachinesPage() {
+  const { search } = useLocation()
+  const { presetSearchQuery = '' } = transformBrowserUrlToSearchString(search)
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const { dataContext, isSearchAvailable } = useContext(PluginContext)
   const { loadStarted } = useContext(dataContext)
   const {
@@ -189,35 +194,31 @@ export default function VirtualMachinesPage() {
   const clusterManagementAddons = useRecoilValue(clusterManagementAddonsState)
   usePageVisitMetricHandler(Pages.virtualMachines)
   const [toggleOpen, setToggleOpen] = useState<boolean>(false)
-  const [currentSearch, setCurrentSearch] = useState<string>('')
-
-  const [getSearchResults, { data, loading, error, refetch }] = useSearchResultItemsAndRelatedItemsLazyQuery({
-    client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
-  })
+  const [currentSearch, setCurrentSearch] = useState<string>(presetSearchQuery)
+  const [isLimitAlertOpen, setIsLimitAlertOpen] = useState(false)
 
   const parsedCurrentSearch = useMemo(() => {
-    if (currentSearch) {
-      return `kind:VirtualMachine,VirtualMachineInstance ${currentSearch}`
+    if (presetSearchQuery) {
+      return `kind:VirtualMachine,VirtualMachineInstance ${presetSearchQuery}`
     }
     return 'kind:VirtualMachine,VirtualMachineInstance'
-  }, [currentSearch])
+  }, [presetSearchQuery])
 
-  useEffect(() => {
-    if (
-      isSearchAvailable &&
-      !currentSearch.endsWith(':') &&
-      !operators.some((operator: string) => currentSearch.endsWith(operator))
-    ) {
-      const searchQuery: SearchInput = convertStringToQuery(parsedCurrentSearch, vmResultLimit ?? -1) // no limit by deafult. vmResultLimit is optional for users if VM page becomes unresponsive
-      searchQuery.relatedKinds = ['VirtualMachine', 'VirtualMachineInstance']
-      getSearchResults({
-        client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
-        variables: {
-          input: [searchQuery],
+  const { data, loading, error, refetch } = useSearchResultItemsAndRelatedItemsQuery({
+    skip:
+      !isSearchAvailable &&
+      currentSearch.endsWith(':') &&
+      operators.some((operator: string) => currentSearch.endsWith(operator)),
+    client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
+    variables: {
+      input: [
+        {
+          ...convertStringToQuery(parsedCurrentSearch, vmResultLimit ?? -1),
+          relatedKinds: ['VirtualMachine', 'VirtualMachineInstance'],
         },
-      })
-    }
-  }, [currentSearch, getSearchResults, isSearchAvailable, parsedCurrentSearch, vmResultLimit])
+      ],
+    },
+  })
 
   const vmMetricLink = useMemo(() => {
     const obsCont = clusterManagementAddons.filter((cma) => cma.metadata.name === 'observability-controller')
@@ -247,20 +248,20 @@ export default function VirtualMachinesPage() {
   } = useSearchSchemaQuery({
     skip: currentSearch.endsWith(':') || operators.some((operator: string) => currentSearch.endsWith(operator)),
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
-    fetchPolicy: 'cache-first',
+    fetchPolicy: 'cache-and-network',
     variables: {
       query: convertStringToQuery(parsedCurrentSearch, searchAutocompleteLimit),
     },
   })
 
   const { searchCompleteValue, searchCompleteQuery } = useMemo(() => {
-    const value = getSearchCompleteString(parsedCurrentSearch)
+    const value = getSearchCompleteString(currentSearch)
     const query = convertStringToQuery(parsedCurrentSearch, -1)
     query.filters = query.filters.filter((filter) => {
       return filter.property !== value
     })
     return { searchCompleteValue: value, searchCompleteQuery: query }
-  }, [parsedCurrentSearch])
+  }, [currentSearch, parsedCurrentSearch])
 
   const {
     data: searchCompleteData,
@@ -298,28 +299,28 @@ export default function VirtualMachinesPage() {
       : formatSearchbarSuggestions(
           get(searchCompleteData || [], 'searchComplete') ?? [],
           'value',
-          parsedCurrentSearch, // pass current search query in order to de-dupe already selected values
+          currentSearch, // pass current search query in order to de-dupe already selected values
           -1,
           searchCompleteLoading,
           t
         )
   }, [
     currentSearch,
-    parsedCurrentSearch,
+    // parsedCurrentSearch,
     searchSchemaData,
     searchSchemaLoading,
     searchCompleteData,
     searchCompleteLoading,
     t,
   ])
-
-  const searchResultItems: ISearchResult[] | undefined = useMemo(() => {
+  const searchResultItems = useMemo(() => data?.searchResult?.[0]?.items ?? [], [data?.searchResult])
+  const vmTableItems: ISearchResult[] | undefined = useMemo(() => {
     if (error) return []
     else if (loading) return undefined // undefined items triggers loading state table
 
     // combine VMI data into VM object
     const combinedMap = new Map<string, any>()
-    data?.searchResult?.[0]?.items?.forEach((item) => {
+    searchResultItems?.forEach((item) => {
       const key = `${item.name}/${item.namespace}/${item.cluster}`
       const existing = combinedMap.get(key)
       const labels = [item?.label, combinedMap.get(key)?.label].filter(Boolean).join('; ') // have to combine label stings from VMs & VMIs
@@ -330,6 +331,7 @@ export default function VirtualMachinesPage() {
         // Set kind to VM in case VMI is parsed first in reduce.
         // If VMI is parsed first the navigation to search details will be for the VMI resource not VM
         kind: 'VirtualMachine',
+        kind_plural: 'virtualmachines',
       }
       combinedMap.set(key, mergedItem)
     })
@@ -359,7 +361,11 @@ export default function VirtualMachinesPage() {
     // Status only exists from VM resource data - If there is no status then we only have the VMI data without the associated VM.
     // We need to remove objects contaning only VMI data as this means the VM is either not present in search data OR does not actually exist at all meaning VMI may be stale.
     return Array.from(combinedMap.values()).filter((item) => item.status)
-  }, [data?.searchResult, error, loading])
+  }, [data?.searchResult, searchResultItems, error, loading])
+
+  useEffect(() => {
+    setIsLimitAlertOpen(vmResultLimit !== -1 && searchResultItems.length >= vmResultLimit)
+  }, [searchResultItems.length, vmResultLimit])
 
   if (loadStarted) {
     if (!isSearchAvailable) {
@@ -429,17 +435,32 @@ export default function VirtualMachinesPage() {
     >
       <SearchInfoModal isOpen={toggleOpen} onClose={() => setToggleOpen(false)} />
       <AcmPageContent id="virtual-machines">
+        {isLimitAlertOpen ? (
+          <PageSection style={{ paddingBottom: '0' }}>
+            <Alert
+              variant={'warning'}
+              isInline={true}
+              title={t(
+                'VirtualMachine result limit has been reached. Your table items have been truncated. Update or remove the "VM_RESULT_LIMIT" environment variable to view more VirtualMachines.'
+              )}
+              actionClose={<AlertActionCloseButton onClose={() => setIsLimitAlertOpen(false)} />}
+            />
+          </PageSection>
+        ) : null}
         <PageSection>
           <Searchbar
             queryString={currentSearch}
-            saveSearchTooltip={''}
-            setSaveSearch={() => {}}
+            saveSearchTooltip={undefined}
+            setSaveSearch={undefined}
             suggestions={suggestions}
             currentQueryCallback={(newQuery) => {
               setCurrentSearch(newQuery)
+              if (newQuery === '') {
+                updateBrowserUrl(navigate, newQuery)
+              }
             }}
             toggleInfoModal={() => setToggleOpen(!toggleOpen)}
-            updateBrowserUrl={() => {}}
+            updateBrowserUrl={updateBrowserUrl}
             savedSearchQueries={[]}
             searchResultData={data}
             refetchSearch={refetch}
@@ -448,7 +469,7 @@ export default function VirtualMachinesPage() {
           />
         </PageSection>
         <PageSection>
-          <VirtualMachineTable searchResultItems={searchResultItems} />
+          <VirtualMachineTable searchResultItems={vmTableItems} />
         </PageSection>
       </AcmPageContent>
     </AcmPage>
