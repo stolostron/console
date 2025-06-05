@@ -28,7 +28,7 @@ import { serveHandler } from './routes/serve'
 import { upgradeRiskPredictions } from './routes/upgrade-risks-prediction'
 import { username } from './routes/username'
 import { userpreference } from './routes/userpreference'
-import { virtualMachineProxy } from './routes/virtualMachineProxy'
+import { virtualMachineProxy, vmResourceUsageProxy } from './routes/virtualMachineProxy'
 import { multiClusterHubComponents } from './routes/multiClusterHubComponents'
 
 const isProduction = process.env.NODE_ENV === 'production'
@@ -74,6 +74,7 @@ router.put('/virtualmachines/*', virtualMachineProxy)
 router.put('/virtualmachineinstances/*', virtualMachineProxy)
 router.post('/virtualmachinesnapshots', virtualMachineProxy)
 router.post('/virtualmachinerestores', virtualMachineProxy)
+router.get('/vmResourceUsage/cluster/:cluster/namespace/:namespace', vmResourceUsageProxy)
 router.get('/multiclusterhub/components', multiClusterHubComponents)
 router.get('/*', serveHandler)
 
