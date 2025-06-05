@@ -9,7 +9,7 @@ import { useQuery } from '../../lib/useQuery'
 import { validateKubernetesResourceName } from '../../lib/validation'
 import { NavigationPath, useBackCancelNavigation } from '../../NavigationPath'
 import { IResource, listGroups, listUsers } from '../../resources'
-import { AccessControl } from '../../resources/access-control'
+import { AccessControl, RoleBinding } from '../../resources/access-control'
 import { createResource, patchResource } from '../../resources/utils'
 import { AcmToastContext } from '../../ui-components'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
@@ -169,6 +169,22 @@ const AccessControlManagementForm = ({
       {
         path: `${pathPrefix}[0].metadata.name`,
         setState: setName,
+      },
+      {
+        path: `${pathPrefix}[0].spec.roleBindings`,
+        setState: (value: unknown) => {
+          const rbs = Array.isArray(value) ? (value as RoleBinding[]) : []
+          onRoleBindingChangeRB(rbs)
+        },
+      },
+      {
+        path: `${pathPrefix}[0].spec.clusterRoleBinding`,
+        setState: (value: unknown) => {
+          const crb = value as AccessControl['spec']['clusterRoleBinding']
+          if (crb) {
+            onRoleBindingChangeCRB(crb)
+          }
+        },
       },
     ]
     return syncs
