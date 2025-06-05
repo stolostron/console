@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import {
+  consoleFetchJSON,
   k8sCreate,
   k8sDelete,
   k8sGet,
@@ -10,8 +11,9 @@ import {
   QueryParams,
   Selector,
 } from '@openshift-console/dynamic-plugin-sdk'
-import { fetchRetry, getBackendUrl } from './utils/fetchRetry'
 import { selectorToString } from './utils/requirements'
+import { WSFactory } from '@openshift-console/dynamic-plugin-sdk/lib/utils/k8s/ws-factory'
+import { getBackendUrl } from './utils/api-resource-list'
 
 export type BaseOptions = {
   name?: string
@@ -63,6 +65,10 @@ export type Options = {
   path?: string
   queryParams?: QueryParams
   cluster?: string
+}
+
+const commonHeaders = {
+  'Content-Type': 'application/json',
 }
 
 const getK8sAPIPath = ({ apiGroup = 'core', apiVersion }: K8sModel): string => {
@@ -118,39 +124,7 @@ export async function fleetGet<R extends K8sResourceCommon>(options: OptionsGet)
 
   const requestPath = getResourceURL({ model, ns, name, cluster, queryParams: options.queryParams })
 
-  const { data } = await fetchRetry<R>({
-    method: 'GET',
-    url: requestPath,
-    disableRedirectUnauthorizedLogin: true,
-  })
-
-  return data
-}
-
-export async function fleetCreate<R extends K8sResourceCommon>(options: OptionsCreate<R>): Promise<R> {
-  const { data, model, ns, name } = options
-
-  const cluster = options.cluster || data.cluster
-
-  if (cluster === undefined) {
-    return k8sCreate<R>(options)
-  }
-  const requestPath = getResourceURL({
-    model,
-    ns: data?.metadata?.namespace || ns,
-    name: data.metadata?.name || name,
-    cluster,
-    queryParams: options.queryParams,
-  })
-
-  const { data: createdData } = await fetchRetry<R>({
-    method: 'POST',
-    url: requestPath,
-    data,
-    disableRedirectUnauthorizedLogin: true,
-  })
-
-  return createdData
+  return consoleFetchJSON(requestPath, 'GET') as Promise<R>
 }
 
 export async function fleetUpdateResource<R extends K8sResourceCommon>(options: OptionsUpdate<R>): Promise<R> {
@@ -170,14 +144,7 @@ export async function fleetUpdateResource<R extends K8sResourceCommon>(options: 
     queryParams: options.queryParams,
   })
 
-  const { data: updatedData } = await fetchRetry<R>({
-    method: 'PUT',
-    url: requestPath,
-    data,
-    disableRedirectUnauthorizedLogin: true,
-  })
-
-  return updatedData
+  return consoleFetchJSON(requestPath, 'PUT') as Promise<R>
 }
 
 export async function fleetPatchResource<R extends K8sResourceCommon>(options: OptionsPatch<R>): Promise<R> {
@@ -204,15 +171,29 @@ export async function fleetPatchResource<R extends K8sResourceCommon>(options: O
     queryParams: options.queryParams,
   })
 
-  const { data: updatedData } = await fetchRetry<R>({
-    method: 'PATCH',
-    url: requestPath,
-    data: options.data,
-    headers,
-    disableRedirectUnauthorizedLogin: true,
+  return consoleFetchJSON(requestPath, 'PATCH', { body: JSON.stringify(options.data), headers }) as Promise<R>
+}
+
+export async function fleetCreate<R extends K8sResourceCommon>(options: OptionsCreate<R>): Promise<R> {
+  const { data, model, ns, name } = options
+
+  const cluster = options.cluster || data.cluster
+
+  if (cluster === undefined) {
+    return k8sCreate<R>(options)
+  }
+  const requestPath = getResourceURL({
+    model,
+    ns: data?.metadata?.namespace || ns,
+    name: data.metadata?.name || name,
+    cluster,
+    queryParams: options.queryParams,
   })
 
-  return updatedData
+  return consoleFetchJSON(requestPath, 'POST', {
+    body: JSON.stringify(data),
+    headers: commonHeaders,
+  }) as Promise<R>
 }
 
 export async function fleetDeleteResource<R extends K8sResourceCommon>(options: OptionsDelete<R>): Promise<R> {
@@ -235,13 +216,10 @@ export async function fleetDeleteResource<R extends K8sResourceCommon>(options: 
     queryParams: options?.queryParams,
   })
 
-  const { data } = await fetchRetry<R>({
-    method: 'DELETE',
-    url: requestPath,
-    data: jsonData,
-    disableRedirectUnauthorizedLogin: true,
-  })
-  return data
+  return consoleFetchJSON(requestPath, 'DELETE', {
+    headers: commonHeaders,
+    body: JSON.stringify(jsonData),
+  }) as Promise<R>
 }
 
 export const isConnectionEncrypted = () => window.location.protocol === 'https:'
@@ -260,7 +238,7 @@ export const fleetWatch = (
     fieldSelector?: string
     cluster?: string
   } = {}
-) => {
+): WSFactory => {
   const queryParams: QueryParams = { watch: 'true' }
 
   const { labelSelector } = query
@@ -281,11 +259,16 @@ export const fleetWatch = (
 
   const requestPath = getResourceURL({ model, cluster: query.cluster, queryParams, ns: query.ns })
 
-  const host = `${isConnectionEncrypted() ? WSS : WS}://${window.location.hostname}:${
-    window.location.port || (isConnectionEncrypted() ? SECURE : INSECURE)
-  }`
+  const wsOptionsUpdated = {
+    host: 'auto',
+    reconnect: true,
+    jsonParse: true,
+    bufferFlushInterval: 500,
+    bufferMax: 1000,
+    timeout: 60 * 1000,
+    path: requestPath,
+    subprotocols: [],
+  }
 
-  const socket = new WebSocket(new URL(requestPath, host))
-
-  return socket
+  return new WSFactory(requestPath, wsOptionsUpdated)
 }

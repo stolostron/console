@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { UseFleetK8sAPIPath } from '../types'
-import { getBackendUrl } from './utils/fetchRetry'
+import { getBackendUrl } from './utils/api-resource-list'
 
 export const useFleetK8sAPIPath: UseFleetK8sAPIPath = (cluster) => {
   if (cluster) {
