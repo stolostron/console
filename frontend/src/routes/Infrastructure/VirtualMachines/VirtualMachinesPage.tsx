@@ -409,7 +409,7 @@ export default function VirtualMachinesPage() {
         <AcmPageHeader
           title={t('Virtual machines')}
           actions={
-            isObservabilityInstalled ? (
+            isObservabilityInstalled && vmMetricLink ? (
               <AcmActionGroup>
                 {[
                   <AcmButton
