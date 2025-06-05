@@ -81,6 +81,7 @@ const AccessControlManagementForm = ({
   const [namespace, setNamespace] = useState('')
   const [createdDate, setCreatedDate] = useState('')
   const [name, setName] = useState('')
+  const [rbName, setRbName] = useState<string[]>([])
 
   // RoleBinding states
   const {
@@ -117,7 +118,8 @@ const AccessControlManagementForm = ({
     setName(accessControl?.metadata?.name ?? '')
     setNamespace(accessControl?.metadata?.namespace ?? '')
     setCreatedDate(accessControl?.metadata?.creationTimestamp ?? '')
-  }, [accessControl?.metadata])
+    setRbName(accessControl?.spec?.roleBindings?.map((rb) => rb.name ?? '') ?? [])
+  }, [accessControl?.metadata, accessControl?.spec?.roleBindings])
 
   useEffect(() => {
     setSelectedRB(accessControl?.spec.roleBindings ?? [])
@@ -188,16 +190,24 @@ const AccessControlManagementForm = ({
   const isCRBValid = !!selectedRoleNameCRB && selectedSubjectNamesCRB.length > 0
 
   const stateToData = () => {
-    const spec: any = isRBValid
-      ? {
-          roleBindings: selectedNamespacesToRoleBinding(
-            selectedNamespacesRB,
-            selectedRoleNamesRB,
-            selectedSubjectNamesRB,
-            selectedSubjectTypeRB
-          ),
+    const rbList = selectedNamespacesToRoleBinding(
+      selectedNamespacesRB,
+      selectedRoleNamesRB,
+      selectedSubjectNamesRB,
+      selectedSubjectTypeRB
+    )
+
+    if (rbList.length > 0) {
+      rbList.forEach((rb, index) => {
+        const preservedName = rbName?.[index]?.trim()
+
+        if (!rb.name || rb.name.trim() === '') {
+          rb.name = preservedName || `${name}-${index}`
         }
-      : {}
+      })
+    }
+
+    const spec: any = isRBValid ? { roleBindings: rbList } : {}
 
     if (isCRBValid) {
       spec.clusterRoleBinding = {

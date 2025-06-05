@@ -1,10 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { RoleBinding } from '../../resources/access-control'
+
 const selectedNamespacesToRoleBinding = (
   selectedNamespaces: string[],
   selectedRoleNames: string[],
   selectedSubjectNames: string[],
   selectedSubjectType: 'User' | 'Group'
-) =>
+): RoleBinding[] =>
   selectedNamespaces.flatMap((ns) =>
     selectedRoleNames.map((role) => ({
       namespace: ns,
