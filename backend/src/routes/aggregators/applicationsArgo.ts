@@ -68,7 +68,8 @@ interface IArgoAppRemoteResource {
 export function getAppSetAppsMap() {
   return appSetAppsMap || {}
 }
-const appSetAppsMap: Record<string, IArgoApplication[]> = {}
+let appSetAppsMap: Record<string, IArgoApplication[]> = {}
+let tempAppSetAppsMap: Record<string, IArgoApplication[]> = {}
 
 let argoPageChunk: ApplicationPageChunk
 const argoPageChunks: ApplicationPageChunk[] = []
@@ -165,7 +166,7 @@ export function polledArgoApplicationAggregation(
 
   // filter out apps that belong to an appset
   if (kind === ApplicationKind) {
-    items = filterArgoApps(items, clusters, localArgoAppSet, appSetAppsMap)
+    items = filterArgoApps(items, clusters, localArgoAppSet, tempAppSetAppsMap)
   }
 
   // add uidata transforms
@@ -187,6 +188,15 @@ export function polledArgoApplicationAggregation(
       delete resourceUidMap[uid]
     }
     delete oldResourceUidSets[appKey]
+
+    // we have built up a map of appsets -> a list of its argo apps
+    // if argo apps have finished polling, set that temp appset map into the real one
+    // the real one will be used while a new temp map is being created
+    // this fixes the problem where the argo app moves to a new appset of the same name in a new cluster
+    if (kind === ApplicationKind) {
+      appSetAppsMap = tempAppSetAppsMap
+      tempAppSetAppsMap = {}
+    }
   }
 }
 
