@@ -17,7 +17,7 @@ import { IResource } from '../resources/resource'
 import { polledAggregation } from './aggregator'
 import { createDictionary, deflateResource, inflateResource } from '../lib/compression'
 import { getAppDict, ICompressedResource, ITransformedResource } from './aggregators/applications'
-import { IWatchOptions } from '../resources/wath-options'
+import { IWatchOptions } from '../resources/watch-options'
 
 const { map, split } = eventStream
 const pipeline = promisify(Stream.pipeline)

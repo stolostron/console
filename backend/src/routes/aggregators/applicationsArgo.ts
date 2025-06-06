@@ -31,7 +31,7 @@ import {
   getTransform,
 } from './utils'
 import { deflateResource } from '../../lib/compression'
-import { IWatchOptions } from '../../resources/wath-options'
+import { IWatchOptions } from '../../resources/watch-options'
 
 interface IArgoAppLocalResource extends IResource {
   spec: {

@@ -12,11 +12,11 @@ interface RoleBindingSectionProps {
   selectedNamespaces: string[]
   selectedSubjectNames: string[]
   selectedRoles: string[]
-  selectedSubjectType: 'User' | 'Group'
+  selectedSubjectKind: 'User' | 'Group'
   namespaceOptions: { id: string; value: string; text: string; isDisabled?: boolean }[]
   subjectOptions: { id: string; value: string }[]
   onNamespaceChange: (values: string[]) => void
-  onSubjectTypeChange: (value: string) => void
+  onSubjectKindChange: (value: string) => void
   onSubjectNameChange: (values: string[]) => void
   onRoleChange: (values: string[]) => void
 }
@@ -30,11 +30,11 @@ export const RoleBindingSection = ({
   selectedNamespaces,
   selectedSubjectNames,
   selectedRoles,
-  selectedSubjectType,
+  selectedSubjectKind,
   namespaceOptions,
   subjectOptions,
   onNamespaceChange,
-  onSubjectTypeChange,
+  onSubjectKindChange,
   onSubjectNameChange,
   onRoleChange,
 }: RoleBindingSectionProps) => {
@@ -59,11 +59,13 @@ export const RoleBindingSection = ({
             isHidden: isViewing,
           },
           {
-            id: `${idPrefix}-subject-type`,
+            id: `${idPrefix}-subject-kind`,
             type: 'Radio' as const,
             label: '',
-            value: selectedSubjectType.toLowerCase(),
-            onChange: onSubjectTypeChange,
+            value: selectedSubjectKind.toLowerCase(),
+            onChange: (value: string) => {
+              onSubjectKindChange(value)
+            },
             options: [
               { id: `${idPrefix}-user`, value: 'user', text: t('User') },
               { id: `${idPrefix}-group`, value: 'group', text: t('Group') },
@@ -74,11 +76,13 @@ export const RoleBindingSection = ({
           {
             id: `${idPrefix}-subject`,
             type: 'CreatableMultiselect' as const,
-            label: selectedSubjectType === 'Group' ? t('Groups') : t('Users'),
+            label: selectedSubjectKind === 'Group' ? t('Groups') : t('Users'),
             placeholder:
-              selectedSubjectType === 'Group' ? t('Select or enter group name') : t('Select or enter user name'),
+              selectedSubjectKind === 'Group' ? t('Select or enter group name') : t('Select or enter user name'),
             value: selectedSubjectNames,
-            onChange: onSubjectNameChange,
+            onChange: (values: string[]) => {
+              onSubjectNameChange(values)
+            },
             options: subjectOptions,
             isRequired: isRequired,
             isHidden: isViewing,
@@ -106,7 +110,7 @@ export const RoleBindingSection = ({
                   <AcmLabels isVertical={false} labels={selectedNamespaces} />
                 </StackItem>
                 <StackItem>
-                  <Title headingLevel="h6">{t('Users')}</Title>
+                  <Title headingLevel="h6">{selectedSubjectKind === 'User' ? t('Users') : t('Groups')}</Title>
                   <AcmLabels isVertical={false} labels={selectedSubjectNames} />
                 </StackItem>
                 <StackItem>
