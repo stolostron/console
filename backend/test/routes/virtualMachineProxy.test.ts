@@ -320,3 +320,79 @@ describe('Virtual Machine actions', function () {
     expect(res.statusCode).toEqual(200)
   })
 })
+
+describe('vmResourceUsageProxy', () => {
+  beforeEach(() => {
+    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+  })
+  afterEach(() => {
+    nock.cleanAll()
+  })
+  it('returns 400 if cluster or namespace param is missing', async () => {
+    const clusterName = ''
+    const namespace = 'vmNamespace'
+    const res = await request('GET', `/vmResourceUsage/cluster/${clusterName}/namespace/${namespace}`)
+    expect(res.statusCode).toEqual(400)
+  })
+  it('aggregates cpu, memory, storage and returns 200', async () => {
+    const clusterName = 'testCluster'
+    const namespace = 'vmNamespace'
+    const vmiName = 'centos'
+
+    nock('https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local:9092')
+      .get(
+        `/${clusterName}/apis/metrics.k8s.io/v1beta1/namespaces/${namespace}/pods?labelSelector=kubevirt.io=virt-launcher`
+      )
+      .reply(200, {
+        kind: 'PodMetricsList',
+        apiVersion: 'metrics.k8s.io/v1beta1',
+        metadata: {},
+        items: [
+          {
+            metadata: {
+              name: 'virt-launcher-centos-stream9-white-mackerel-48-fjd5p',
+              namespace: 'default',
+              creationTimestamp: '2025-06-05T15:57:55Z',
+              labels: {
+                'kubevirt.io': 'virt-launcher',
+                'kubevirt.io/created-by': '113966b8-3b80-48cc-92da-71631d06a03f',
+                'kubevirt.io/nodeName': 'worker-0-2',
+                'network.kubevirt.io/headlessService': 'headless',
+                'vm.kubevirt.io/name': vmiName,
+              },
+            },
+            timestamp: '2025-06-05T15:57:41Z',
+            window: '12.508s',
+            containers: [
+              {
+                name: 'compute',
+                usage: {
+                  cpu: '6894867n',
+                  memory: '908492Ki',
+                },
+              },
+            ],
+          },
+        ],
+      })
+    nock('https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local:9092')
+      .get(
+        `/${clusterName}/apis/subresources.kubevirt.io/v1/namespaces/${namespace}/virtualmachineinstances/${vmiName}/filesystemlist`
+      )
+      .reply(200, {
+        items: [
+          {
+            diskName: 'vda1',
+            fileSystemType: 'ext4',
+            mountPoint: '/',
+            totalBytes: 3927900160,
+            usedBytes: 1029201920,
+          },
+        ],
+        metadata: {},
+      })
+
+    const res = await request('GET', `/vmResourceUsage/cluster/${clusterName}/namespace/${namespace}`)
+    expect(res.statusCode).toEqual(200)
+  })
+})
