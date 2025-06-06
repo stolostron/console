@@ -182,7 +182,7 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
   let placeholder = props.placeholderText
   if (!placeholder) {
     if (isMulti && selections.length > 0) {
-      placeholder = selections.join(', ')
+      placeholder = props.placeholder ?? t('Select choices')
       badge = selections.length > 0 && (
         <span style={{ display: 'flex', alignItems: 'center' }}>
           <Badge key={selections.length} isRead>
