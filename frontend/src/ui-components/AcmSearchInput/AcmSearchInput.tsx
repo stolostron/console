@@ -249,21 +249,23 @@ export function AcmSearchInput(props: Readonly<AcmSearchInputProps>) {
                         }}
                       />
                     </FlexItem>
-                    <FlexItem>
-                      <Button
-                        id="remove-constraint"
-                        style={{ marginTop: '2em' }}
-                        variant={ButtonVariant.link}
-                        onClick={(event) => {
-                          const newConstraintArray = [...pendingConstraints]
-                          newConstraintArray.splice(index, 1)
-                          setPendingConstraints(newConstraintArray)
-                          setActiveConstraints?.(newConstraintArray)
-                          event?.stopPropagation()
-                        }}
-                        aria-label={t('Remove constraint')}
-                        icon={<TimesCircleIcon id="remove-constraint-icon" />}
-                      />
+                    <FlexItem style={{ width: '2%', marginLeft: '-8px' }}>
+                      <div style={{ marginTop: '28px' }}>
+                        <Button
+                          id="remove-constraint"
+                          style={{ padding: '8px' }}
+                          variant={ButtonVariant.link}
+                          onClick={(event) => {
+                            const newConstraintArray = [...pendingConstraints]
+                            newConstraintArray.splice(index, 1)
+                            setPendingConstraints(newConstraintArray)
+                            setActiveConstraints?.(newConstraintArray)
+                            event?.stopPropagation()
+                          }}
+                          aria-label={t('Remove constraint')}
+                          icon={<TimesCircleIcon id="remove-constraint-icon" />}
+                        />
+                      </div>
                     </FlexItem>
                   </Flex>
                 )
