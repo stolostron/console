@@ -231,11 +231,15 @@ export default function VirtualMachinesPage() {
         (cm: ConfigMap) => cm.metadata.name === 'grafana-dashboard-acm-openshift-virtualization-clusters-overview'
       )
       if (vmDashboard.length > 0) {
-        const parsedDashboardData = JSON.parse(
-          vmDashboard[0].data?.['acm-openshift-virtualization-clusters-overview.json']
-        )
-        const dashboardId = parsedDashboardData?.uid
-        return `${grafanaLink}/d/${dashboardId}/executive-dashboards-clusters-overview?orgId=1`
+        try {
+          const parsedDashboardData = JSON.parse(
+            vmDashboard[0].data?.['acm-openshift-virtualization-clusters-overview.json']
+          )
+          const dashboardId = parsedDashboardData?.uid
+          return `${grafanaLink}/d/${dashboardId}/executive-dashboards-clusters-overview?orgId=1`
+        } catch (error) {
+          console.error(error)
+        }
       }
     }
     return ''
@@ -411,7 +415,7 @@ export default function VirtualMachinesPage() {
         <AcmPageHeader
           title={t('Virtual machines')}
           actions={
-            isObservabilityInstalled ? (
+            isObservabilityInstalled && vmMetricLink ? (
               <AcmActionGroup>
                 {[
                   <AcmButton
