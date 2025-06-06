@@ -154,6 +154,76 @@ describe('VMActionModal', () => {
     })
   })
 
+  test('renders VMActionModal correctly and successfully calls restore snapshot action', async () => {
+    Date.now = jest.fn(() => 1234)
+    const abortController = new AbortController()
+    const { getByTestId } = render(
+      <RecoilRoot>
+        <VMActionModal
+          open={true}
+          close={() => {}}
+          action={'restore'}
+          method={'POST'}
+          item={{
+            kind: 'VirtualMachineSnapshot',
+            name: 'testVM-snapshot',
+            namespace: 'testVMNamespace',
+            cluster: 'local-cluster',
+            sourceName: 'testVM',
+            _hubClusterResource: 'true',
+          }}
+        />
+      </RecoilRoot>
+    )
+    await waitFor(() => expect(screen.queryByText('restore VirtualMachine?')).toBeInTheDocument())
+    await waitFor(() =>
+      expect(
+        screen.queryByText('Are you sure you want to restore testVM from snapshot testVM-snapshot')
+      ).toBeInTheDocument()
+    )
+
+    // verify click launch button
+    const confirmButton = getByTestId('vm-modal-confirm')
+    expect(confirmButton).toBeTruthy()
+    userEvent.click(confirmButton)
+
+    expect(fetchRetry).toHaveBeenCalledWith({
+      data: {
+        apiVersion: 'snapshot.kubevirt.io/v1beta1',
+        kind: 'VirtualMachineRestore',
+        metadata: {
+          name: 'testVM-snapshot-1234',
+          namespace: 'testVMNamespace',
+          ownerReferences: [
+            {
+              apiVersion: undefined,
+              blockOwnerDeletion: false,
+              kind: undefined,
+              name: undefined,
+              uid: undefined,
+            },
+          ],
+        },
+        spec: {
+          target: {
+            apiGroup: 'kubevirt.io',
+            kind: 'VirtualMachine',
+            name: undefined,
+          },
+          virtualMachineSnapshotName: 'testVM-snapshot',
+        },
+      },
+      disableRedirectUnauthorizedLogin: true,
+      headers: {
+        Accept: '*/*',
+      },
+      method: 'POST',
+      retries: 0,
+      signal: abortController.signal,
+      url: '/apis/snapshot.kubevirt.io/v1beta1/namespaces/testVMNamespace/virtualmachinerestores',
+    })
+  })
+
   test('renders VMActionModal correctly and returns action error', async () => {
     const { getByTestId } = render(
       <RecoilRoot>
