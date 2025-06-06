@@ -2489,6 +2489,7 @@
   "Select an inventory": "Select an inventory",
   "Select an operator": "Select an operator",
   "Select at least one cluster set to deploy application resources.": "Select at least one cluster set to deploy application resources.",
+  "Select choices": "Select choices",
   "Select cluster label": "Select cluster label",
   "Select cluster label value": "Select cluster label value",
   "Select cluster sets from which to select clusters. If you do not select a cluster set, all clusters are selected from all cluster sets bound to the namespace.": "Select cluster sets from which to select clusters. If you do not select a cluster set, all clusters are selected from all cluster sets bound to the namespace.",
