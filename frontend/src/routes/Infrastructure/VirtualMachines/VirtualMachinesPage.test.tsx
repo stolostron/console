@@ -44,7 +44,7 @@ const acmExtension: AcmExtension = {
 }
 
 describe('VirtualMachinesPage Page', () => {
-  it('should render page with correct vm data', async () => {
+  it('should render page and run namespace search', async () => {
     const metricNock = nockPostRequest('/metrics?virtual-machines', {})
     const mocks = [
       {
@@ -183,6 +183,18 @@ describe('VirtualMachinesPage Page', () => {
 
     // Plugin Column Header
     await waitFor(() => expect(screen.queryByText('DR Column')).toBeTruthy())
+
+    // should run a search and verify output.
+    const searchbar = screen.getByPlaceholderText('Filter VirtualMachines')
+    expect(searchbar).toBeTruthy()
+    userEvent.click(searchbar)
+    userEvent.type(searchbar, 'namespace ')
+    expect(screen.queryByText('namespace:')).toBeTruthy()
+    expect(screen.getByLabelText('Search input')).toBeTruthy()
+    userEvent.type(searchbar, 'openshift-cnv ')
+
+    // check searchbar updated properly
+    await waitFor(() => expect(screen.queryByText('namespace:openshift-cnv')).toBeTruthy())
   })
 
   it('should render page with search unavailable empty state', async () => {

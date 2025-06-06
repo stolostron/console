@@ -3373,6 +3373,7 @@
   "Virtual machines": "Virtual machines",
   "Virtual Machines": "Virtual Machines",
   "VirtualMachine is either running or delete protected and cannot be deleted. To enable deletion, stop the VirtualMachine if running, or go to VirtualMachine details and disable deletion protection.": "VirtualMachine is either running or delete protected and cannot be deleted. To enable deletion, stop the VirtualMachine if running, or go to VirtualMachine details and disable deletion protection.",
+  "VirtualMachine result limit has been reached. Your table items have been truncated. Update or remove the \"VM_RESULT_LIMIT\" environment variable to view more VirtualMachines.": "VirtualMachine result limit has been reached. Your table items have been truncated. Update or remove the \"VM_RESULT_LIMIT\" environment variable to view more VirtualMachines.",
   "VM size": "VM size",
   "VM Size": "VM Size",
   "VMware": "VMware",
