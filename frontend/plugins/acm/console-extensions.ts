@@ -134,11 +134,11 @@ const governanceRoute: EncodedExtension<RoutePage> = {
   },
 }
 
-// Flag hook provider to enable Access Control Management navigation link
+// Flag hook provider to enable/disable feature flags
 const hookProvider: EncodedExtension<FeatureFlagHookProvider> = {
   type: 'console.flag/hookProvider',
   properties: {
-    handler: { $codeRef: 'consoleFlags.useEnableAccessControlManagementMenuFlag' },
+    handler: { $codeRef: 'featureFlags.default' },
   },
 }
 
@@ -153,7 +153,7 @@ const accessControlNavItem: EncodedExtension<HrefNavItem> = {
     insertAfter: 'mce-credentials',
   },
   flags: {
-    required: ['ACCESS_CONTROL_MANAGEMENT'],
+    required: ['ACM_ACCESS_CONTROL_MANAGEMENT'],
   },
 }
 
@@ -165,7 +165,7 @@ const accessConrolRoute: EncodedExtension<RoutePage> = {
     component: { $codeRef: 'accessControlManagement.default' },
   },
   flags: {
-    required: ['ACCESS_CONTROL_MANAGEMENT'],
+    required: ['ACM_ACCESS_CONTROL_MANAGEMENT'],
   },
 }
 

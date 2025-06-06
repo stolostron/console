@@ -19,7 +19,7 @@ export const pluginMetadata: ConsolePluginBuildMetadata = {
     applications: '../../src/routes/Applications/ApplicationsPlugin.tsx',
     governance: '../../src/routes/Governance/GovernancePlugin.tsx',
     accessControlManagement: '../../src/routes/AccessControlManagement/AccessControlManagementPlugin.tsx',
-    consoleFlags: '../../src/utils/flags',
+    featureFlags: '../../src/utils/flags/useFeatureFlags.ts',
   },
   dependencies: {
     '@console/pluginAPI': '>=4.15.0',
