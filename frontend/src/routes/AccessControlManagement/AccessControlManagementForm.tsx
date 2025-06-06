@@ -170,6 +170,32 @@ const AccessControlManagementForm = ({
         path: `${pathPrefix}[0].metadata.name`,
         setState: setName,
       },
+      {
+        path: `${pathPrefix}[0].spec.roleBindings`,
+        setState: (value: unknown) => {
+          const rbs = Array.isArray(value) ? (value as RoleBinding[]) : []
+          setSelectedRB(rbs)
+
+          const subjectNames = [
+            ...new Set(rbs.flatMap((rb) => (rb.subject ? [rb.subject.name] : rb.subjects?.map((s) => s.name) ?? []))),
+          ] as string[]
+          const roleNames = [...new Set(rbs.map((rb) => rb.roleRef.name))] as string[]
+          const namespaces = [...new Set(rbs.map((rb) => rb.namespace))] as string[]
+
+          setSelectedSubjectNamesRB(subjectNames)
+          setSelectedRoleNamesRB(roleNames)
+          setSelectedNamespacesRB(namespaces)
+        },
+      },
+      {
+        path: `${pathPrefix}[0].spec.clusterRoleBinding`,
+        setState: (value: unknown) => {
+          const crb = value as AccessControl['spec']['clusterRoleBinding']
+          const names = crb?.subjects?.map((s) => s.name) ?? (crb?.subject ? [crb.subject.name] : [])
+          setSelectedSubjectNamesCRB([...new Set(names)] as string[])
+          setSelectedRoleNameCRB(crb?.roleRef?.name ?? '')
+        },
+      },
     ]
     return syncs
   }
