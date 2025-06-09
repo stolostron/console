@@ -54,11 +54,10 @@ import { getVirtualMachineRowActions } from './utils'
 function VirtualMachineTable() {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { settingsState, useIsSearchAvailable } = useSharedAtoms()
+  const { settingsState } = useSharedAtoms()
   const vmActionsEnabled = useRecoilValue(settingsState)?.VIRTUAL_MACHINE_ACTIONS === 'enabled'
-  const isSearchAvailable = useIsSearchAvailable()
   const toast = useContext(AcmToastContext)
-  const { dataContext } = useContext(PluginContext)
+  const { dataContext, isSearchAvailable } = useContext(PluginContext)
   const { loadStarted } = useContext(dataContext)
   const allClusters = useAllClusters(true)
   const [deleteResource, setDeleteResource] = useState<IDeleteModalProps>(ClosedDeleteModalProps)

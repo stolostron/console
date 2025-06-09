@@ -185,22 +185,6 @@ export function useIsObservabilityInstalled() {
   }, [clusterManagementAddons])
 }
 
-// Search is available if api, collector, indexer & postgres are in ready state
-export function useIsSearchAvailable() {
-  const searchOperator = useRecoilValue(searchOperatorState)
-  return useMemo(() => {
-    const isReady = (type: string) =>
-      searchOperator[0]?.status?.conditions.some((c) => c.type.toLowerCase() === type && c.status === 'True')
-    const searchServices = [
-      'ready--search-api',
-      'ready--search-collector',
-      'ready--search-indexer',
-      'ready--search-postgres',
-    ]
-    return searchOperator.length > 0 && searchServices.every(isReady)
-  }, [searchOperator])
-}
-
 export function useSavedSearchLimit() {
   const settings = useRecoilValue(settingsState)
   return useMemo(() => parseInt(settings.SAVED_SEARCH_LIMIT ?? '10'), [settings])
