@@ -1,23 +1,44 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { RoleBindingHookType } from './RoleBindingHook'
-import { AccessControlApiVersion, AccessControlKind } from '../../resources/access-control'
+import { AccessControl, AccessControlApiVersion, AccessControlKind } from '../../resources/access-control'
 
-const buildRoleBindingsFromState = (roleBinding: RoleBindingHookType) =>
-  roleBinding.namespaces.flatMap((ns) =>
-    roleBinding.roleNames.map((role) => ({
-      namespace: ns,
-      roleRef: {
-        name: role,
-        apiGroup: 'rbac.authorization.k8s.io',
-        kind: 'ClusterRole',
-      },
-      subjects: roleBinding.subjectNames.map((name) => ({
+export const getRoleBindingNames = (accessControl?: AccessControl): string[] => {
+  return accessControl?.spec?.roleBindings?.map((rb) => rb.name ?? '') ?? []
+}
+
+const buildRoleBindingsFromState = (
+  roleBinding: RoleBindingHookType,
+  baseName?: string,
+  preservedNames?: (string | undefined)[]
+) => {
+  let globalIndex = 0
+  const bindings = []
+
+  for (const ns of roleBinding.namespaces) {
+    for (const role of roleBinding.roleNames) {
+      const name = preservedNames?.[globalIndex]?.trim() || `${baseName}-${globalIndex}`
+
+      bindings.push({
         name,
-        apiGroup: 'rbac.authorization.k8s.io',
-        kind: roleBinding.subjectKind,
-      })),
-    }))
-  )
+        namespace: ns,
+        roleRef: {
+          name: role,
+          apiGroup: 'rbac.authorization.k8s.io',
+          kind: 'ClusterRole',
+        },
+        subjects: roleBinding.subjectNames.map((name) => ({
+          name,
+          apiGroup: 'rbac.authorization.k8s.io',
+          kind: roleBinding.subjectKind,
+        })),
+      })
+
+      globalIndex++
+    }
+  }
+
+  return bindings
+}
 
 const buildClusterRoleBindingFromState = (roleBinding: RoleBindingHookType) => ({
   roleRef: {
@@ -38,11 +59,12 @@ const buildAccessControlFromState = (
   roleBindingRB: RoleBindingHookType,
   roleBindingCRB: RoleBindingHookType,
   name: string,
-  namespace: string
+  namespace: string,
+  preservedNames?: (string | undefined)[]
 ) => {
   const spec: any = isRBValid
     ? {
-        roleBindings: buildRoleBindingsFromState(roleBindingRB),
+        roleBindings: buildRoleBindingsFromState(roleBindingRB, name, preservedNames),
       }
     : {}
 

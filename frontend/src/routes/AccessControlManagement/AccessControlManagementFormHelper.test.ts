@@ -1,12 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import {
+  AccessControl,
   AccessControlApiVersion,
   AccessControlKind,
   ClusterRoleBinding,
   RoleBinding,
 } from '../../resources/access-control'
 import { RoleBindingHookType } from './RoleBindingHook'
-import { buildAccessControlFromState } from './AccessControlManagementFormHelper'
+import { buildAccessControlFromState, getRoleBindingNames } from './AccessControlManagementFormHelper'
 import {
   mockClusterRoleBinding1,
   mockClusterRoleBinding2,
@@ -96,6 +97,7 @@ describe('AccessControlManagementFormHelper', () => {
         roleBindingHookData: usersRoleBindingHookData,
         clusterRoleBindingHookData: usersClusterRoleBindingHookData,
         expectedSpec: { roleBindings: mockRoleBindings1 },
+        preservedNames: undefined,
       },
       {
         description:
@@ -105,6 +107,7 @@ describe('AccessControlManagementFormHelper', () => {
         roleBindingHookData: usersRoleBindingHookData,
         clusterRoleBindingHookData: usersClusterRoleBindingHookData,
         expectedSpec: { clusterRoleBinding: mockClusterRoleBinding1 },
+        preservedNames: undefined,
       },
       {
         description:
@@ -114,6 +117,7 @@ describe('AccessControlManagementFormHelper', () => {
         roleBindingHookData: usersRoleBindingHookData,
         clusterRoleBindingHookData: usersClusterRoleBindingHookData,
         expectedSpec: { roleBindings: mockRoleBindings1, clusterRoleBinding: mockClusterRoleBinding1 },
+        preservedNames: undefined,
       },
       {
         description: 'should build AccessControl with empty spec when both isRBValid and isCRBValid are false',
@@ -122,6 +126,7 @@ describe('AccessControlManagementFormHelper', () => {
         roleBindingHookData: usersRoleBindingHookData,
         clusterRoleBindingHookData: usersClusterRoleBindingHookData,
         expectedSpec: {},
+        preservedNames: undefined,
       },
       {
         description: 'should handle Group subjects in RoleBindings',
@@ -130,6 +135,7 @@ describe('AccessControlManagementFormHelper', () => {
         roleBindingHookData: groupsRoleBindingHookData,
         clusterRoleBindingHookData: usersClusterRoleBindingHookData,
         expectedSpec: { roleBindings: mockRoleBindings2 },
+        preservedNames: undefined,
       },
       {
         description: 'should handle Group subjects in ClusterRoleBinding',
@@ -138,6 +144,7 @@ describe('AccessControlManagementFormHelper', () => {
         roleBindingHookData: usersRoleBindingHookData,
         clusterRoleBindingHookData: groupClusterRoleBindingHookData,
         expectedSpec: { clusterRoleBinding: mockClusterRoleBinding2 },
+        preservedNames: undefined,
       },
       {
         description: 'should handle empty rolebinding data',
@@ -146,6 +153,7 @@ describe('AccessControlManagementFormHelper', () => {
         roleBindingHookData: emptyRoleBindingHookData,
         clusterRoleBindingHookData: usersClusterRoleBindingHookData,
         expectedSpec: { roleBindings: [] },
+        preservedNames: undefined,
       },
       {
         description: 'should handle single namespace and role in RoleBindings',
@@ -154,25 +162,55 @@ describe('AccessControlManagementFormHelper', () => {
         roleBindingHookData: singleRoleBindingHookData,
         clusterRoleBindingHookData: usersClusterRoleBindingHookData,
         expectedSpec: { roleBindings: mockRoleBindings3 },
+        preservedNames: undefined,
       },
-    ])('$description', ({ isRBValid, isCRBValid, roleBindingHookData, clusterRoleBindingHookData, expectedSpec }) => {
-      const result = buildAccessControlFromState(
-        isRBValid,
-        isCRBValid,
-        roleBindingHookData,
-        clusterRoleBindingHookData,
-        accessControlName,
-        clusterName
-      )
+    ])(
+      '$description',
+      ({ isRBValid, isCRBValid, roleBindingHookData, clusterRoleBindingHookData, expectedSpec, preservedNames }) => {
+        const result = buildAccessControlFromState(
+          isRBValid,
+          isCRBValid,
+          roleBindingHookData,
+          clusterRoleBindingHookData,
+          accessControlName,
+          clusterName,
+          preservedNames
+        )
 
-      const expected = generateAccessControl(expectedSpec)
+        const expected = generateAccessControl(expectedSpec)
 
-      expect(result).toEqual(expected)
-      expect(result).toHaveLength(1)
-      expect(result[0].metadata.name).toBe(accessControlName)
-      expect(result[0].metadata.namespace).toBe(clusterName)
-      expect(result[0].apiVersion).toBe(AccessControlApiVersion)
-      expect(result[0].kind).toBe(AccessControlKind)
-    })
+        expect(result).toEqual(expected)
+        expect(result).toHaveLength(1)
+        expect(result[0].metadata.name).toBe(accessControlName)
+        expect(result[0].metadata.namespace).toBe(clusterName)
+        expect(result[0].apiVersion).toBe(AccessControlApiVersion)
+        expect(result[0].kind).toBe(AccessControlKind)
+
+        const actualRoleBindings = result[0].spec?.roleBindings ?? []
+        const expectedCount = expectedSpec.roleBindings?.length ?? 0
+
+        expect(actualRoleBindings).toHaveLength(expectedCount)
+
+        for (let index = 0; index < expectedCount; index++) {
+          expect(actualRoleBindings[index].name).toBe(`${accessControlName}-${index}`)
+        }
+      }
+    )
+  })
+})
+describe('getRoleBindingNames', () => {
+  it('should return roleBinding names when present', () => {
+    const accessControl = {
+      spec: {
+        roleBindings: [{ name: 'rb1' }, { name: 'rb2' }],
+      },
+    } as AccessControl
+
+    expect(getRoleBindingNames(accessControl)).toEqual(['rb1', 'rb2'])
+  })
+
+  it('should return empty array when roleBindings are missing', () => {
+    expect(getRoleBindingNames(undefined)).toEqual([])
+    expect(getRoleBindingNames({} as AccessControl)).toEqual([])
   })
 })

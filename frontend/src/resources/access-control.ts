@@ -13,6 +13,7 @@ export const AccessControlDefinition: IResourceDefinition = {
 }
 
 export interface RoleBinding {
+  name?: string
   namespace: string
   roleRef: RoleRef
   subject?: Subject

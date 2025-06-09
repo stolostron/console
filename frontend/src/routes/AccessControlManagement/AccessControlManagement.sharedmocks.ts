@@ -3,6 +3,7 @@ import { ClusterRoleBinding, RoleBinding } from '../../resources/access-control'
 
 export const mockRoleBindings1: RoleBinding[] = [
   {
+    name: 'accesscontrol-1-0',
     namespace: 'dev',
     roleRef: {
       apiGroup: 'rbac.authorization.k8s.io',
@@ -23,6 +24,7 @@ export const mockRoleBindings1: RoleBinding[] = [
     ],
   },
   {
+    name: 'accesscontrol-1-1',
     namespace: 'dev',
     roleRef: {
       apiGroup: 'rbac.authorization.k8s.io',
@@ -43,6 +45,7 @@ export const mockRoleBindings1: RoleBinding[] = [
     ],
   },
   {
+    name: 'accesscontrol-1-2',
     namespace: 'test',
     roleRef: {
       apiGroup: 'rbac.authorization.k8s.io',
@@ -63,6 +66,7 @@ export const mockRoleBindings1: RoleBinding[] = [
     ],
   },
   {
+    name: 'accesscontrol-1-3',
     namespace: 'test',
     roleRef: {
       apiGroup: 'rbac.authorization.k8s.io',
@@ -86,6 +90,7 @@ export const mockRoleBindings1: RoleBinding[] = [
 
 export const mockRoleBindings2: RoleBinding[] = [
   {
+    name: 'accesscontrol-1-0',
     namespace: 'development',
     roleRef: {
       apiGroup: 'rbac.authorization.k8s.io',
@@ -109,6 +114,7 @@ export const mockRoleBindings2: RoleBinding[] = [
 
 export const mockRoleBindings3: RoleBinding[] = [
   {
+    name: 'accesscontrol-1-0',
     namespace: 'single-namespace',
     roleRef: {
       apiGroup: 'rbac.authorization.k8s.io',
