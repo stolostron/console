@@ -252,6 +252,10 @@ describe('add credentials page', () => {
     await typeByTestId('defaultDatastore', providerConnection.stringData?.defaultDatastore!)
     await clickByPlaceholderText('Select the vSphere disk type')
     await clickByText(providerConnection.stringData?.vsphereDiskType!)
+    await clearByTestId('vsphereFolder')
+    await typeByTestId('vsphereFolder', providerConnection.stringData?.vsphereFolder!)
+    await clearByTestId('vsphereResourcePool')
+    await typeByTestId('vsphereResourcePool', providerConnection.stringData?.vsphereResourcePool!)
     await clickByText('Next')
 
     // Confirm validation messages appear
