@@ -12,6 +12,10 @@
 /coverage
 test-report.xml
 
+#testing multicluster-sdk
+/packages/multicluster-sdk/coverage
+/packages/multicluster-sdk/test-report.xml
+
 # production
 /build
 /dist
