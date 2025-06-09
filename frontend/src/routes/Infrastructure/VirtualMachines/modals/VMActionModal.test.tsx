@@ -5,6 +5,24 @@ import { RecoilRoot } from 'recoil'
 import { fetchRetry } from '../../../../resources/utils/resource-request'
 import { VMActionModal } from './VMActionModal'
 
+jest.mock('../../../../resources/managedclusterview', () => ({
+  fireManagedClusterView: jest.fn(() => {
+    return Promise.resolve({
+      result: {
+        apiVersion: 'kubevirt.io/v1',
+        kind: 'VirtualMachine',
+        metadata: {
+          name: 'centos-stream9',
+          namespace: 'openshift-cnv',
+        },
+        status: {
+          printableStatus: 'Running',
+          ready: true,
+        },
+      },
+    })
+  }),
+}))
 jest.mock('../../../../resources/utils/resource-request', () => ({
   getBackendUrl: jest.fn(() => ''),
   fetchRetry: jest.fn(({ url }) => {
@@ -196,10 +214,10 @@ describe('VMActionModal', () => {
           namespace: 'testVMNamespace',
           ownerReferences: [
             {
-              apiVersion: undefined,
+              apiVersion: 'kubevirt.io/v1',
               blockOwnerDeletion: false,
-              kind: undefined,
-              name: undefined,
+              kind: 'VirtualMachine',
+              name: 'centos-stream9',
               uid: undefined,
             },
           ],
@@ -208,7 +226,7 @@ describe('VMActionModal', () => {
           target: {
             apiGroup: 'kubevirt.io',
             kind: 'VirtualMachine',
-            name: undefined,
+            name: 'centos-stream9',
           },
           virtualMachineSnapshotName: 'testVM-snapshot',
         },
