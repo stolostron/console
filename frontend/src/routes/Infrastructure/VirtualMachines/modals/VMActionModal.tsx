@@ -2,9 +2,10 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 import { ButtonVariant, ModalVariant } from '@patternfly/react-core'
-import { useContext, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { TFunction } from 'react-i18next'
 import { useTranslation } from '../../../../lib/acm-i18next'
+import { fireManagedClusterView } from '../../../../resources/managedclusterview'
 import { fetchRetry, getBackendUrl } from '../../../../resources/utils'
 import { AcmButton, AcmModal, AcmToastContext, IAlertContext } from '../../../../ui-components'
 import { searchClient } from '../../../Search/search-sdk/search-client'
@@ -17,7 +18,6 @@ export interface IVMActionModalProps {
   action: string
   method: 'PUT' | 'GET' | 'POST' | 'PATCH' | 'DELETE'
   item: any
-  vm?: any // vm yaml needs to be passed for some actions because modal does not always have context of the specific vm
 }
 
 export const ClosedVMActionModalProps: IVMActionModalProps = {
@@ -119,11 +119,34 @@ function WarningBody(props: Readonly<{ action: string; item: any }>) {
 }
 
 export const VMActionModal = (props: IVMActionModalProps) => {
-  const { open, close, action, method, item, vm } = props
+  const { open, close, action, method, item } = props
   const { t } = useTranslation()
   const toast = useContext(AcmToastContext)
+  const [vm, setVM] = useState<any>({})
+  const [vmLoading, setVMLoading] = useState<any>(true)
   const [reqBody, setReqBody] = useState({})
   const [getVMError, setGetVMError] = useState<boolean>()
+
+  useEffect(() => {
+    if (item.kind === 'VirtualMachineSnapshot' && item.sourceName) {
+      const name = item.kind === 'VirtualMachineSnapshot' ? item.sourceName : item.name
+      fireManagedClusterView(item.cluster, 'VirtualMachine', 'kubevirt.io/v1', name, item.namespace)
+        .then((viewResponse) => {
+          setVMLoading(false)
+          if (viewResponse?.message) {
+            console.error('Error fetching parent VM')
+          } else {
+            setVM(viewResponse?.result)
+          }
+        })
+        .catch((err) => {
+          console.error('Error getting VirtualMachine: ', err)
+          setVMLoading(false)
+        })
+    } else {
+      setVMLoading(false)
+    }
+  }, [item])
 
   let modalBody = undefined
   switch (action.toLowerCase()) {
@@ -162,7 +185,7 @@ export const VMActionModal = (props: IVMActionModalProps) => {
       actions={[
         <AcmButton
           id="vm-modal-confirm"
-          isDisabled={getVMError}
+          isDisabled={getVMError || vmLoading}
           key="confirm"
           onClick={() => {
             handleVMActions(

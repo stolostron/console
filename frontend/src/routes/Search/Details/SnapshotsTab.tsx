@@ -120,7 +120,6 @@ export default function SnapshotsTab() {
         action={VMAction.action}
         method={VMAction.method}
         item={VMAction.item}
-        vm={vm}
       />
       <DeleteResourceModal
         open={deleteResource.open}
