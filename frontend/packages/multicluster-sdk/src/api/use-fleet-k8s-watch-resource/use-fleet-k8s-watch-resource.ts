@@ -8,7 +8,6 @@ import {
 } from '@openshift-console/dynamic-plugin-sdk'
 import { useEffect, useMemo, useState } from 'react'
 
-import { MulticlusterSDKProvider } from '../../internal'
 import { FleetK8sResourceCommon, FleetWatchK8sResource } from '../../types'
 import { buildResourceURL, fleetWatch } from '../apiRequests'
 import { handleWebsocketEvent } from './utils'
@@ -31,15 +30,13 @@ const getCacheKey = ({
   return [cluster, model?.apiVersion, model?.kind, namespace, name].join('|')
 }
 
-export const useFleetK8sWatchResource: MulticlusterSDKProvider['useFleetK8sWatchResource'] = <
-  R extends FleetK8sResourceCommon | FleetK8sResourceCommon[],
->(
+export const useFleetK8sWatchResource = <R extends FleetK8sResourceCommon | FleetK8sResourceCommon[]>(
   hubClusterName: string,
   initResource: FleetWatchK8sResource | null
-): WatchK8sResult<R> => {
+): WatchK8sResult<R> | [undefined, boolean, any] => {
   const { cluster, ...resource } = initResource ?? {}
   const useFleet = cluster && cluster !== hubClusterName
-  const nullResource = resource === null
+  const nullResource = resource === null || resource === undefined || resource?.groupVersionKind === undefined
   const { isList, groupVersionKind, namespace, name } = resource ?? {}
   const [model] = useK8sModel(groupVersionKind)
   const [backendAPIPath, backendPathLoaded] = useFleetK8sAPIPath(cluster)
@@ -48,7 +45,7 @@ export const useFleetK8sWatchResource: MulticlusterSDKProvider['useFleetK8sWatch
 
   const requestPath = useMemo(
     () =>
-      backendPathLoaded
+      backendPathLoaded && model
         ? buildResourceURL({
             model,
             ns: namespace,
@@ -134,6 +131,9 @@ export const useFleetK8sWatchResource: MulticlusterSDKProvider['useFleetK8sWatch
   }, [cluster, isList, requestPath, name, namespace, nullResource, useFleet])
 
   const [defaultData, defaultLoaded, defaultError] = useK8sWatchResource<R>(useFleet ? null : resource)
+
+  console.log(resource, nullResource)
+  if (nullResource) return [undefined, false, undefined]
 
   return useFleet
     ? [
