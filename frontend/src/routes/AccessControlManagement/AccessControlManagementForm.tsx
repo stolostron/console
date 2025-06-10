@@ -15,7 +15,7 @@ import { AcmToastContext } from '../../ui-components'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { searchClient } from '../Search/search-sdk/search-client'
 import { useSearchCompleteLazyQuery, useSearchResultItemsQuery } from '../Search/search-sdk/search-sdk'
-import { buildAccessControlFromState } from './AccessControlManagementFormHelper'
+import { buildAccessControlFromState, getRoleBindingNames } from './AccessControlManagementFormHelper'
 import { AccessControlStatus } from './AccessControlStatus'
 import { useRoleBinding } from './RoleBindingHook'
 import { RoleBindingSection } from './RoleBindingSection'
@@ -81,6 +81,7 @@ const AccessControlManagementForm = ({
   const [namespace, setNamespace] = useState('')
   const [createdDate, setCreatedDate] = useState('')
   const [name, setName] = useState('')
+  const [rbName, setRbName] = useState<string[]>([])
 
   // RoleBinding states
   const {
@@ -109,7 +110,8 @@ const AccessControlManagementForm = ({
     setName(accessControl?.metadata?.name ?? '')
     setNamespace(accessControl?.metadata?.namespace ?? '')
     setCreatedDate(accessControl?.metadata?.creationTimestamp ?? '')
-  }, [accessControl?.metadata])
+    setRbName(getRoleBindingNames(accessControl))
+  }, [accessControl, accessControl?.metadata, accessControl?.spec.roleBindings])
 
   useEffect(() => {
     const roleBindings = accessControl?.spec.roleBindings
@@ -156,7 +158,7 @@ const AccessControlManagementForm = ({
   const guardedHandleModalToggle = useCallback(() => cancelForm(handleModalToggle), [cancelForm, handleModalToggle])
 
   const stateToData = () => {
-    return buildAccessControlFromState(isRBValid, isCRBValid, roleBindingRB, roleBindingCRB, name, namespace)
+    return buildAccessControlFromState(isRBValid, isCRBValid, roleBindingRB, roleBindingCRB, name, namespace, rbName)
   }
 
   const stateToSyncs = () => {
