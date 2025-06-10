@@ -1,17 +1,71 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { ResourceLink } from '@openshift-console/dynamic-plugin-sdk'
+import { ResourceIcon, ResourceLink } from '@openshift-console/dynamic-plugin-sdk'
 import { FleetResourceLinkProps } from '../types/fleet'
-import { useFleetSupport } from '../internal/hooks/useFleetSupport'
+import classNames from 'classnames'
+import { Link } from 'react-router-dom-v5-compat'
+import { getURLSearchParam } from './utils/searchPaths'
 
-export const FleetResourceLink: React.FC<FleetResourceLinkProps> = ({ cluster, ...props }) => {
-  const fleetSupport = useFleetSupport()
-  // not using shouldUseFleetSupport check here so that we always link to pages within "All Clusters" perspective
-  if (fleetSupport) {
+export const FleetResourceLink: React.FC<FleetResourceLinkProps> = ({ cluster, ...resourceLinkProps }) => {
+  if (cluster) {
     const {
-      sdkProvider: { FleetResourceLink },
-    } = fleetSupport
-    return <FleetResourceLink cluster={cluster} {...props} />
+      className,
+      displayName,
+      inline = false,
+      groupVersionKind,
+      name,
+      nameSuffix,
+      namespace,
+      hideIcon,
+      title,
+      children,
+      dataTest,
+      onClick,
+      truncate,
+    } = resourceLinkProps
+
+    const value = displayName ? displayName : name
+    const classes = classNames('co-resource-item', className || '', {
+      'co-resource-item--inline': inline,
+      'co-resource-item--truncate': truncate,
+    })
+
+    const path =
+      groupVersionKind?.kind === 'VirtualMachine'
+        ? `/multicloud/infrastructure/virtualmachines/${cluster}/${namespace}/${name}`
+        : getURLSearchParam({
+            cluster,
+            kind: groupVersionKind?.kind,
+            apigroup: groupVersionKind?.group,
+            apiversion: groupVersionKind?.version,
+            name,
+            namespace,
+          })
+
+    return (
+      <span className={classes}>
+        {!hideIcon && <ResourceIcon groupVersionKind={groupVersionKind} />}
+        {path ? (
+          <Link
+            to={path}
+            title={title}
+            className="co-resource-item__resource-name"
+            data-test-id={value}
+            data-test={dataTest ?? value}
+            onClick={onClick}
+          >
+            {value}
+            {nameSuffix}
+          </Link>
+        ) : (
+          <span className="co-resource-item__resource-name" data-test-id={value} data-test={dataTest ?? value}>
+            {value}
+            {nameSuffix}
+          </span>
+        )}
+        {children}
+      </span>
+    )
   } else {
-    return <ResourceLink {...props} />
+    return <ResourceLink {...resourceLinkProps} />
   }
 }
