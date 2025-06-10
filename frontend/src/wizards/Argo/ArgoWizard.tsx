@@ -221,7 +221,6 @@ export function ArgoWizard(props: ArgoWizardProps) {
     return [...sourceHelmChannels, ...createdChannels, ...(helmArgoAppSetRepoURLs ?? [])].filter(onlyUnique)
   }, [createdChannels, props.applicationSets, sourceHelmChannels])
 
-  const [filteredClusterSets, setFilteredClusterSets] = useState<IResource[]>([])
   const [gitRevisionsAsyncCallback, setGitRevisionsAsyncCallback] = useState<() => Promise<string[]>>()
   const [gitPathsAsyncCallback, setGitPathsAsyncCallback] = useState<() => Promise<string[]>>()
   const editMode = useEditMode()
@@ -521,26 +520,6 @@ export function ArgoWizard(props: ArgoWizardProps) {
                   <CreateCredentialModal buttonText={t('Add Argo Server')} handleModalToggle={handleModalToggle} />
                 }
                 onValueChange={(value: any, item: ApplicationSet) => {
-                  const placementRefName = value.spec?.placementRef?.name
-                  const placement = props.placements.find(
-                    (placement) =>
-                      placement.metadata?.namespace === value.metadata.namespace &&
-                      placement.metadata?.name === placementRefName
-                  )
-
-                  // set filtered cluster set
-                  const clusterSets: IResource[] = props.clusterSets.filter((clusterSet) => {
-                    if (placement?.spec?.clusterSets) {
-                      if (placement?.spec?.clusterSets.length > 0) {
-                        return placement?.spec?.clusterSets.includes(clusterSet.metadata?.name!)
-                      }
-                    } else {
-                      return clusterSet
-                    }
-                  })
-
-                  setFilteredClusterSets(clusterSets)
-
                   // set namespace
                   if (value) {
                     item.metadata.namespace = value.metadata.namespace
@@ -689,7 +668,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
           <ArgoWizardPlacementSection
             placements={props.placements}
             clusters={props.clusters}
-            clusterSets={filteredClusterSets}
+            clusterSets={props.clusterSets}
             clusterSetBindings={props.clusterSetBindings}
             createClusterSetCallback={props.createClusterSetCallback}
             isPullModel={isPullModel}
