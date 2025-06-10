@@ -65,17 +65,17 @@ spec:
 
   {{#case 'vSphere'}}
     vsphere:
-      cluster: {{{cluster}}}
+      cluster: {{{clusterPath cluster datacenter true}}}
       certificatesSecretRef:
         name: {{{name}}}-vsphere-certs
       credentialsSecretRef:
         name: {{{name}}}-vsphere-creds
       vCenter: {{{vCenter}}}
       datacenter: {{{datacenter}}}
-      defaultDatastore: {{{defaultDatastore}}}
+      defaultDatastore: {{{datastorePath defaultDatastore datacenter true}}}
       network: '{{{networkName}}}'  ##networkName
       {{#if_truthy vsphereFolder}}
-      folder: '{{{vsphereFolder}}}'
+      folder: '{{{folderPath vsphereFolder datacenter true}}}'
       {{/if_truthy}}
   {{/case}}
 

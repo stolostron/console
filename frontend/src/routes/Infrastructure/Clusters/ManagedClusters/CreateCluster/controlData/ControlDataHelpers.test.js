@@ -1,7 +1,7 @@
 // Copyright (c) 2022 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
-import { ingressVIPsReverse } from './ControlDataHelpers'
+import { reverseMultitext } from './ControlDataHelpers'
 
 const controlTemplate = {
   tooltip: 'Add the ingress to be created',
@@ -80,7 +80,7 @@ describe('ControlDataHelper', () => {
     expect(control.active.multitextEntries[0]).toEqual('10.0.0.0')
     expect(control.controlData[1].active).toEqual('10.0.0.9')
 
-    ingressVIPsReverse(control, path)
+    reverseMultitext('platform.vsphere.ingressVIPs')(control, path)
     expect(control.active.multitextEntries.length).toEqual(5)
     expect(control.controlData.length).toEqual(5)
     expect(control.active.multitextEntries[0]).toEqual('10.0.0.2')
@@ -141,7 +141,7 @@ describe('ControlDataHelper', () => {
     expect(control.active.multitextEntries.length).toEqual(1)
     expect(control.controlData.length).toEqual(2)
 
-    ingressVIPsReverse(control, path)
+    reverseMultitext('platform.vsphere.ingressVIPs')(control, path)
     expect(control.active.multitextEntries.length).toEqual(1)
     expect(control.controlData.length).toEqual(1)
     expect(control.active.multitextEntries[0]).toEqual('')
