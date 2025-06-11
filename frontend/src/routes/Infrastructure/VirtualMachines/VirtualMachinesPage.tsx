@@ -331,7 +331,7 @@ export default function VirtualMachinesPage() {
       const mergedItem: ISearchResult = {
         ...existing,
         ...item,
-        labels,
+        label: labels,
         // Set kind to VM in case VMI is parsed first in reduce.
         // If VMI is parsed first the navigation to search details will be for the VMI resource not VM
         kind: 'VirtualMachine',
