@@ -182,8 +182,7 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
   let placeholder = props.placeholderText
   if (!placeholder) {
     if (isMulti && selections.length > 0) {
-      placeholder =
-        variant !== SelectVariant.typeaheadMulti ? selections.join(', ') : props.placeholder ?? t('Select choices')
+      placeholder = variant !== SelectVariant.typeaheadMulti ? selections.join(', ') : props.placeholder
       badge = selections.length > 0 && (
         <span style={{ display: 'flex', alignItems: 'center' }}>
           <Badge key={selections.length} isRead>
@@ -375,6 +374,11 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
     value: string | string[] | number | undefined
   ) => {
     switch (variant) {
+      default:
+      case SelectVariant.single:
+        onSelect?.(String(value))
+        setIsOpen(false)
+        break
       case SelectVariant.typeahead:
         if (value && value !== NO_RESULTS) {
           const optionText = filteredOptions.find((option) => option.value === value)?.children
@@ -387,11 +391,6 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
         if (!Array.isArray(value)) {
           selectOption(String(value), String(placeholder))
         }
-        break
-      default:
-      case SelectVariant.single:
-        onSelect?.(String(value))
-        setIsOpen(false)
         break
     }
   }
@@ -589,7 +588,7 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
               onClearSelection()
               e.stopPropagation()
             }}
-            aria-label="Clear input value"
+            aria-label={t('Clear input value')}
             style={{ paddingInlineStart: 0 }}
           >
             <TimesIcon aria-hidden />
@@ -619,10 +618,10 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
           aria-controls="select-multi-typeahead-listbox"
         >
           {variant === SelectVariant.typeaheadMulti && (
-            <ChipGroup aria-label="Current selections">
-              {selectedItems.map((selection, index) => (
+            <ChipGroup aria-label={t('Current selections')}>
+              {selectedItems.map((selection) => (
                 <Chip
-                  key={index}
+                  key={selection}
                   onClick={(ev) => {
                     ev.stopPropagation()
                     _onSelect(ev, selection)
@@ -635,7 +634,7 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
           )}
         </TextInputGroupMain>
         <TextInputGroupUtilities {...getClearBtnDisplayStyle()}>
-          <Button variant="plain" onClick={() => onClearSelection()} aria-label="Clear input value">
+          <Button variant="plain" onClick={() => onClearSelection()} aria-label={t('Clear input value')}>
             <TimesIcon aria-hidden />
           </Button>
         </TextInputGroupUtilities>
