@@ -196,7 +196,7 @@ export function AcmSearchInput(props: Readonly<AcmSearchInputProps>) {
               {pendingConstraints?.map((constraint, index) => {
                 return (
                   <Flex alignItems={{ default: 'alignItemsFlexStart' }} key={`${constraint.columnId}-${index}`}>
-                    <FlexItem style={{ width: '28%' }}>
+                    <FlexItem style={{ width: '26%' }}>
                       <AcmSelect
                         label={t('Column')}
                         id="search-column"
@@ -235,7 +235,7 @@ export function AcmSearchInput(props: Readonly<AcmSearchInputProps>) {
                         </AcmSelect>
                       </Tooltip>
                     </FlexItem>
-                    <FlexItem style={{ width: '28%' }}>
+                    <FlexItem style={{ width: '26%' }}>
                       <AcmTextInput
                         label={t('Value')}
                         placeholder={t('Enter a value')}
@@ -249,10 +249,9 @@ export function AcmSearchInput(props: Readonly<AcmSearchInputProps>) {
                         }}
                       />
                     </FlexItem>
-                    <FlexItem>
+                    <FlexItem style={{ width: '1%', paddingTop: '1.5em' }} alignSelf={{ default: 'alignSelfCenter' }}>
                       <Button
                         id="remove-constraint"
-                        style={{ marginTop: '2em' }}
                         variant={ButtonVariant.link}
                         onClick={(event) => {
                           const newConstraintArray = [...pendingConstraints]
