@@ -221,6 +221,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
     return [...sourceHelmChannels, ...createdChannels, ...(helmArgoAppSetRepoURLs ?? [])].filter(onlyUnique)
   }, [createdChannels, props.applicationSets, sourceHelmChannels])
 
+  const [filteredClusterSets, setFilteredClusterSets] = useState<IResource[]>([])
   const [gitRevisionsAsyncCallback, setGitRevisionsAsyncCallback] = useState<() => Promise<string[]>>()
   const [gitPathsAsyncCallback, setGitPathsAsyncCallback] = useState<() => Promise<string[]>>()
   const editMode = useEditMode()
@@ -237,6 +238,27 @@ export function ArgoWizard(props: ArgoWizardProps) {
 
   const targetRevision = get(applicationSet, 'spec.template.spec.source.targetRevision')
   const repoURL = get(applicationSet, 'spec.template.spec.source.repoURL')
+
+  useEffect(() => {
+    if(!props.argoServers?.length) return
+    const argoServer = props.argoServers[0]?.value
+    const placementRefName = argoServer.spec?.placementRef?.name
+    const placement = props.placements.find(
+      (placement) =>
+        placement.metadata?.namespace === argoServer.metadata.namespace && placement.metadata?.name === placementRefName
+    )
+    const clusterSets: IResource[] = props.clusterSets.filter((clusterSet) => {
+      if (placement?.spec?.clusterSets) {
+        if (placement?.spec?.clusterSets.length > 0) {
+          return placement?.spec?.clusterSets.includes(clusterSet.metadata?.name!)
+        }
+      } else {
+        return clusterSet
+      }
+    })
+
+    setFilteredClusterSets(clusterSets)
+  }, [props.argoServers, props.placements, props.clusterSets])
 
   useEffect(() => {
     if (source && !sources) {
@@ -520,6 +542,26 @@ export function ArgoWizard(props: ArgoWizardProps) {
                   <CreateCredentialModal buttonText={t('Add Argo Server')} handleModalToggle={handleModalToggle} />
                 }
                 onValueChange={(value: any, item: ApplicationSet) => {
+                  const placementRefName = value.spec?.placementRef?.name
+                  const placement = props.placements.find(
+                    (placement) =>
+                      placement.metadata?.namespace === value.metadata.namespace &&
+                      placement.metadata?.name === placementRefName
+                  )
+
+                  // set filtered cluster set
+                  const clusterSets: IResource[] = props.clusterSets.filter((clusterSet) => {
+                    if (placement?.spec?.clusterSets) {
+                      if (placement?.spec?.clusterSets.length > 0) {
+                        return placement?.spec?.clusterSets.includes(clusterSet.metadata?.name!)
+                      }
+                    } else {
+                      return clusterSet
+                    }
+                  })
+
+                  setFilteredClusterSets(clusterSets)
+
                   // set namespace
                   if (value) {
                     item.metadata.namespace = value.metadata.namespace
@@ -668,7 +710,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
           <ArgoWizardPlacementSection
             placements={props.placements}
             clusters={props.clusters}
-            clusterSets={props.clusterSets}
+            clusterSets={filteredClusterSets}
             clusterSetBindings={props.clusterSetBindings}
             createClusterSetCallback={props.createClusterSetCallback}
             isPullModel={isPullModel}
