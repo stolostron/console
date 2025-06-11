@@ -196,7 +196,7 @@ export function AcmSearchInput(props: Readonly<AcmSearchInputProps>) {
               {pendingConstraints?.map((constraint, index) => {
                 return (
                   <Flex alignItems={{ default: 'alignItemsFlexStart' }} key={`${constraint.columnId}-${index}`}>
-                    <FlexItem style={{ width: '28%' }}>
+                    <FlexItem style={{ width: '26%' }}>
                       <AcmSelect
                         label={t('Column')}
                         id="search-column"
@@ -235,7 +235,7 @@ export function AcmSearchInput(props: Readonly<AcmSearchInputProps>) {
                         </AcmSelect>
                       </Tooltip>
                     </FlexItem>
-                    <FlexItem style={{ width: '28%' }}>
+                    <FlexItem style={{ width: '26%' }}>
                       <AcmTextInput
                         label={t('Value')}
                         placeholder={t('Enter a value')}
@@ -249,23 +249,20 @@ export function AcmSearchInput(props: Readonly<AcmSearchInputProps>) {
                         }}
                       />
                     </FlexItem>
-                    <FlexItem style={{ width: '2%', marginLeft: '-8px' }}>
-                      <div style={{ marginTop: '28px' }}>
-                        <Button
-                          id="remove-constraint"
-                          style={{ padding: '8px' }}
-                          variant={ButtonVariant.link}
-                          onClick={(event) => {
-                            const newConstraintArray = [...pendingConstraints]
-                            newConstraintArray.splice(index, 1)
-                            setPendingConstraints(newConstraintArray)
-                            setActiveConstraints?.(newConstraintArray)
-                            event?.stopPropagation()
-                          }}
-                          aria-label={t('Remove constraint')}
-                          icon={<TimesCircleIcon id="remove-constraint-icon" />}
-                        />
-                      </div>
+                    <FlexItem style={{ width: '1%', paddingTop: '28px' }} alignSelf={{ default: 'alignSelfCenter' }}>
+                      <Button
+                        id="remove-constraint"
+                        variant={ButtonVariant.link}
+                        onClick={(event) => {
+                          const newConstraintArray = [...pendingConstraints]
+                          newConstraintArray.splice(index, 1)
+                          setPendingConstraints(newConstraintArray)
+                          setActiveConstraints?.(newConstraintArray)
+                          event?.stopPropagation()
+                        }}
+                        aria-label={t('Remove constraint')}
+                        icon={<TimesCircleIcon id="remove-constraint-icon" />}
+                      />
                     </FlexItem>
                   </Flex>
                 )
