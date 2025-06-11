@@ -128,11 +128,10 @@ export const useFleetK8sWatchResource = <R extends FleetK8sResourceCommon | Flee
       }
     }
     fetchData()
-  }, [cluster, isList, requestPath, name, namespace, nullResource, useFleet])
+  }, [cluster, isList, requestPath, name, namespace, nullResource, useFleet, backendPathLoaded, model, backendAPIPath])
 
   const [defaultData, defaultLoaded, defaultError] = useK8sWatchResource<R>(useFleet ? null : resource)
 
-  console.log(resource, nullResource)
   if (nullResource) return [undefined, false, undefined]
 
   return useFleet
