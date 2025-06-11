@@ -4,7 +4,7 @@ import * as _ from 'lodash'
 import { List as VirtualList, CellMeasurerCache } from 'react-virtualized'
 import { CSSTransition } from 'react-transition-group'
 import { css } from '@patternfly/react-styles'
-import { EventKind } from '@openshift-console/dynamic-plugin-sdk/lib/api/internal-types'
+import { EventKind } from './constants'
 
 // Keep track of seen events so we only animate new ones.
 const seen = new Set()
