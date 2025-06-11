@@ -65,7 +65,10 @@ export function PolicyTemplateDetails() {
       relatedResourcesFromSearch.relatedItems !== undefined &&
       relatedResourcesFromSearch.relatedItems
     ) {
-      setRelatedObjects(relatedResourcesFromSearch.relatedItems)
+      const filteredRelated = relatedResourcesFromSearch.relatedItems.filter((item) => {
+        return item.kind !== 'ConfigurationPolicy'
+      })
+      setRelatedObjects(filteredRelated)
     }
   }, [relatedResourcesFromSearch, apiGroup, kind, isVAPB, isGatekeeperMutation])
 
