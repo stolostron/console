@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { GroupVersionKind, K8sModel } from '@openshift-console/dynamic-plugin-sdk'
-import { EventKind } from '@openshift-console/dynamic-plugin-sdk/lib/api/internal-types'
 import { getGroupVersionKindForModel } from '@openshift-console/dynamic-plugin-sdk'
 import * as _ from 'lodash'
+import { EventKind } from './constants'
 
 export const EventModel: K8sModel = {
   apiVersion: 'v1',
