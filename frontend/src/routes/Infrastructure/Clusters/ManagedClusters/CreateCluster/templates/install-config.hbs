@@ -275,36 +275,47 @@ publish: Internal
 
 {{#case 'vSphere'}}
   vsphere:
-    vCenter: {{{vCenter}}}
-    username: {{{escapeYAML username}}}
-    password: {{{escapeYAML password}}}
-    datacenter: {{{datacenter}}}
-    defaultDatastore: {{{defaultDatastore}}}
-    cluster: {{{cluster}}}
-    apiVIP: {{{apiVIP}}}    ##apiVIP
-    {{#if (isSingleIngressVipSupported imageSet)}}
-    ingressVIP: {{ingressVIP}}  ##ingressVIP
-    {{else}}
-    ingressVIPs: 
-    {{#each ingressVIPs.multitextEntries}} 
+    apiVIPs:
+    {{#each apiVIPs.multitextEntries}}
+    {{#if .}}
+    - {{.}} ##apiVIPs
+    {{/if}}
+    {{/each}}
+    ingressVIPs:
+    {{#each ingressVIPs.multitextEntries}}
     {{#if .}}
     - {{.}} ##ingressVIPs
     {{/if}}
     {{/each}}
-    {{/if}}
-    network: '{{{networkName}}}' ##networkName
+    failureDomains:
+    - name: default_domain
+      region: default_region
+      zone: default_zone
+      server: {{{vCenter}}}
+      topology:
+        computeCluster: {{{clusterPath cluster datacenter}}}
+        datacenter: {{{datacenter}}}
+        datastore: {{{datastorePath defaultDatastore datacenter}}}
+        networks:
+        - '{{{networkName}}}' ##networkName
+        {{#if_truthy vsphereFolder}}
+        folder: '{{{folderPath vsphereFolder datacenter}}}'
+        {{/if_truthy}}
+        {{#if_truthy vsphereResourcePool}}
+        resourcePool: '{{{resourcePoolPath vsphereResourcePool datacenter cluster}}}'
+        {{/if_truthy}}
+    vcenters:
+    - datacenters:
+      - {{{datacenter}}}
+      server: {{{vCenter}}}
+      user: {{{escapeYAML username}}}
+      password: {{{escapeYAML password}}}
     {{#if clusterOSImage}}
     clusterOSImage: >-
       {{{clusterOSImage}}}
     {{/if}}
     {{#if_truthy vsphereDiskType}}
     diskType: '{{{vsphereDiskType}}}'
-    {{/if_truthy}}
-    {{#if_truthy vsphereFolder}}
-    folder: '{{{vsphereFolder}}}'
-    {{/if_truthy}}
-    {{#if_truthy vsphereResourcePool}}
-    resourcePool: '{{{vsphereResourcePool}}}'
     {{/if_truthy}}
 {{/case}}
 
