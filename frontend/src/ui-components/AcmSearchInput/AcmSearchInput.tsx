@@ -249,7 +249,7 @@ export function AcmSearchInput(props: Readonly<AcmSearchInputProps>) {
                         }}
                       />
                     </FlexItem>
-                    <FlexItem style={{ width: '1%', paddingTop: '28px' }} alignSelf={{ default: 'alignSelfCenter' }}>
+                    <FlexItem style={{ width: '1%', paddingTop: '1.5em' }} alignSelf={{ default: 'alignSelfCenter' }}>
                       <Button
                         id="remove-constraint"
                         variant={ButtonVariant.link}
