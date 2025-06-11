@@ -240,7 +240,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
   const repoURL = get(applicationSet, 'spec.template.spec.source.repoURL')
 
   useEffect(() => {
-    if(!props.argoServers?.length) return
+    if (!props.argoServers?.length) return
     const argoServer = props.argoServers[0]?.value
     const placementRefName = argoServer.spec?.placementRef?.name
     const placement = props.placements.find(
