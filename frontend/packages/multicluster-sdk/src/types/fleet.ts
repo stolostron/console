@@ -17,3 +17,4 @@ export type FleetResourceLinkProps = Fleet<ResourceLinkProps>
 export type UseFleetK8sWatchResource = <R extends FleetK8sResourceCommon | FleetK8sResourceCommon[]>(
   initResource: FleetWatchK8sResource | null
 ) => WatchK8sResult<R>
+export type UseFleetClusterNames = () => [string[], boolean, any]
