@@ -93,7 +93,7 @@ describe('Edit AI Cluster', () => {
 
     await waitForTestId('form-static-openshiftVersion-field')
 
-    await waitForText('ai:OpenShift 4.8.15')
+    await waitForText('ai:OpenShift 4.8.15-x86_64')
 
     await clickByText('ai:Next')
     await waitForNocks(nocks)
