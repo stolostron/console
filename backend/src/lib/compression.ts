@@ -108,9 +108,6 @@ function compressResource(resource: UncompressedResourceType, dictionary: Dictio
       if (resource.length < 32 && !resource.endsWith('==')) {
         // index short strings that aren't a base64
         return dictionary.add(resource)
-      } else if (isJSON(resource)) {
-        // filter json
-        return
       }
     } else if (typeof resource === 'number' && Number.isInteger(resource)) {
       // to differentiate between an index and a value that is actually a number
@@ -118,18 +115,6 @@ function compressResource(resource: UncompressedResourceType, dictionary: Dictio
     }
   }
   return resource
-}
-
-export function isJSON(resource: string): boolean {
-  if (resource.startsWith('{')) {
-    try {
-      JSON.parse(resource)
-      return true
-    } catch (error) {
-      // drop thru
-    }
-  }
-  return false
 }
 
 export function inflateResource(buffer: Buffer, dictionary: Dictionary): IResource {
