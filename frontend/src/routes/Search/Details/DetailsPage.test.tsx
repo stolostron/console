@@ -60,7 +60,7 @@ const mockLocalClusterPod = {
     ],
   },
 }
-
+const originalLocation = window.location
 describe('DetailsPage', () => {
   beforeEach(async () => {
     // jest.resetAllMocks()
@@ -69,9 +69,10 @@ describe('DetailsPage', () => {
   })
   afterEach(() => {
     jest.resetAllMocks()
-    // Object.defineProperty(window, 'location', {
-    //   value: {},
-    // })
+    Object.defineProperty(window, 'location', {
+      value: originalLocation,
+      writable: true,
+    })
   })
   const metricNock = nockPostRequest('/metrics?search-details', {})
 
@@ -95,6 +96,7 @@ describe('DetailsPage', () => {
     })
     Object.defineProperty(window, 'location', {
       value: {
+        ...originalLocation,
         pathname: '/multicloud/search/resources',
         search:
           '?cluster=local-cluster&kind=Pod&apiversion=v1&namespace=testNamespace&name=testLocalPod&_hubClusterResource=true',
@@ -103,6 +105,7 @@ describe('DetailsPage', () => {
           fromSearch: '?filters={%22textsearch%22:%22kind%3APod%2',
         },
       },
+      writable: true,
     })
     render(
       <RecoilRoot>
@@ -144,6 +147,7 @@ describe('DetailsPage', () => {
   test('Should return the url search params incorrectly', () => {
     Object.defineProperty(window, 'location', {
       value: {
+        ...originalLocation,
         pathname: '/multicloud/search/resources',
         search: '?',
         state: {
@@ -151,6 +155,7 @@ describe('DetailsPage', () => {
           fromSearch: '?filters={%22textsearch%22:%22kind%3APod%2',
         },
       },
+      writable: true,
     })
     const res = getResourceParams()
     expect(res).toMatchSnapshot()
@@ -176,6 +181,7 @@ describe('DetailsPage', () => {
     })
     Object.defineProperty(window, 'location', {
       value: {
+        ...originalLocation,
         pathname: '/multicloud/search/resources',
         search:
           '?cluster=local-cluster&kind=VirtualMachine&apiversion=kubevirt.io/v1&namespace=openshift-cnv&name=test-vm&_hubClusterResource=true',
@@ -184,6 +190,7 @@ describe('DetailsPage', () => {
           fromSearch: '?filters={%22textsearch%22:%22kind%3AVirtualMachine%2',
         },
       },
+      writable: true,
     })
     render(
       <RecoilRoot
@@ -260,6 +267,7 @@ describe('DetailsPage', () => {
     })
     Object.defineProperty(window, 'location', {
       value: {
+        ...originalLocation,
         pathname: '/multicloud/search/resources',
         search:
           '?cluster=local-cluster&kind=VirtualMachineSnapshot&apiversion=snapshot.kubevirt.io/v1beta1&namespace=openshift-cnv&name=test-vm-snapshot&_hubClusterResource=true',
@@ -268,6 +276,7 @@ describe('DetailsPage', () => {
           fromSearch: '?filters={%22textsearch%22:%22kind%3AVirtualMachineSnapshot%2',
         },
       },
+      writable: true,
     })
     render(
       <RecoilRoot
