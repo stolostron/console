@@ -1018,7 +1018,7 @@ describe('CreateCluster on premise', () => {
       await waitForText('ai:SNO enables you to install OpenShift using only one host.')
       await clickByTestId('form-input-highAvailabilityMode-field')
 
-      await waitForText('OpenShift 4.8.15') // single value of combobox
+      await waitForText('OpenShift 4.8.15-x86_64') // single value of combobox
       await typeByTestId('additionalLabels', 'myLabelKey=myValue')
       await clickByTestId('form-input-pullSecret-field')
 
