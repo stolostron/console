@@ -1227,7 +1227,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                             : []
                           const isActionKebab = isActionMenu(cellIndex)
                           const rowProps = {
-                            dataLabel: isActionKebab ? undefined : columns[cellIndex].header,
+                            dataLabel: isActionKebab ? undefined : selectedSortedCols[cellIndex].header,
                             ...iTransformCellProps,
                           }
                           return (

@@ -28,7 +28,6 @@ import {
   validateNoProxyList,
   validatePrivateSshKey,
   validatePublicSshKey,
-  validateRequiredPrefix,
   validateVCenterServer,
   validateVcenterUsername,
 } from '../../lib/validation'
@@ -1026,8 +1025,8 @@ export function CredentialsForm(
             isHidden: credentialsType !== Provider.vmware,
             type: 'Text',
             label: t('vSphere cluster name'),
-            placeholder: t('Enter your vSphere cluster name'),
-            labelHelp: t('The name of the vSphere cluster to use.'),
+            placeholder: t('credentialsForm.cluster.placeholder'),
+            labelHelp: t('credentialsForm.cluster.labelHelp'),
             value: cluster,
             onChange: setVmClusterName,
             isRequired: true,
@@ -1037,8 +1036,8 @@ export function CredentialsForm(
             isHidden: credentialsType !== Provider.vmware,
             type: 'Text',
             label: t('vSphere default datastore'),
-            placeholder: t('Enter your vSphere default datastore'),
-            labelHelp: t('The name of the default vSphere datastore to use.'),
+            placeholder: t('credentialsForm.defaultDatastore.placeholder'),
+            labelHelp: t('credentialsForm.defaultDatastore.labelHelp'),
             value: defaultDatastore,
             onChange: setDatastore,
             isRequired: true,
@@ -1066,7 +1065,6 @@ export function CredentialsForm(
             labelHelp: t('credentialsForm.vsphereFolder.labelHelp'),
             value: vsphereFolder,
             onChange: setVsphereFolder,
-            validation: (value) => validateRequiredPrefix(value, `/${datacenter || 'DATACENTER'}/vm/`, t),
             isRequired: false,
           },
           {
@@ -1078,12 +1076,6 @@ export function CredentialsForm(
             labelHelp: t('credentialsForm.vsphereResourcePool.labelHelp'),
             value: vsphereResourcePool,
             onChange: setVsphereResourcePool,
-            validation: (value) =>
-              validateRequiredPrefix(
-                value,
-                `/${datacenter || 'DATACENTER'}/host/${cluster || 'CLUSTER'}/Resources/`,
-                t
-              ),
             isRequired: false,
           },
         ],

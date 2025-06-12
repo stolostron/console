@@ -1725,6 +1725,29 @@ describe('Policy Template Details Page', () => {
                     },
                   ],
                 },
+                {
+                  kind: 'ConfigurationPolicy',
+                  items: [
+                    {
+                      _hubClusterResource: 'true',
+                      _isExternal: 'false',
+                      _relatedUids: ['local-cluster/0d76dcdd-c5d6-4b61-a85c-34079188b16c'],
+                      _uid: 'local-cluster/e277dd21-02d9-43cd-9506-d10c759acc49',
+                      apigroup: 'policy.open-cluster-management.io',
+                      apiversion: 'v1',
+                      cluster: 'local-cluster',
+                      compliant: 'Compliant',
+                      created: '2025-06-10T18:55:46Z',
+                      disabled: 'false',
+                      kind: 'ConfigurationPolicy',
+                      kind_plural: 'configurationpolicies',
+                      name: 'jkuli-vapb-check',
+                      namespace: 'local-cluster',
+                      remediationAction: 'inform',
+                      severity: 'low',
+                    },
+                  ],
+                },
               ],
             },
           ],
@@ -1850,5 +1873,6 @@ describe('Policy Template Details Page', () => {
     const parameterTable = screen.getByRole('grid')
     expect(within(parameterTable).queryByText('ValidatingAdmissionPolicy')).not.toBeInTheDocument()
     expect(within(parameterTable).queryByText('Cluster')).not.toBeInTheDocument()
+    expect(within(parameterTable).queryByText('ConfigurationPolicy')).not.toBeInTheDocument()
   })
 })

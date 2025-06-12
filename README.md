@@ -127,6 +127,13 @@ Enabling this feature will allow the user to create a cluster that only contains
 
 `console` is an add-on for the open-cluster-management community. For more information, visit: [open-cluster-management.io](https://open-cluster-management.io)
 
+## Development
+
+### Feature Flags
+
+It is possible to enable/disable certain features by changing `spec.overrides.components[*].enabled` values from the ACM MultiClusterHub. In order to take a particular flag into account just add a new entry to `FEATURE_FLAGS` from `frontend/src/utils/flags/consts.ts` file, meaning the key as the name for the feature flag on console application side, and the value as the `spec.overrides.components[*].name`.
+
+
 ## Troubleshooting
 
 ### [webpack-cli] Failed to load './console/frontend/webpack.config.ts'

@@ -185,6 +185,7 @@ export default function DetailsPage() {
                 name,
                 namespace,
                 _hubClusterResource: isHubClusterResource ? 'true' : undefined,
+                sourceName: kind === 'VirtualMachineSnapshot' ? resource?.spec?.source?.name : undefined, // only set for snapshot restore action
               },
             })
           }
@@ -194,7 +195,7 @@ export default function DetailsPage() {
         </DropdownItem>
       ))
     },
-    [apiversion, cluster, isHubClusterResource, kind, name, namespace]
+    [apiversion, cluster, isHubClusterResource, kind, name, namespace, resource]
   )
   const getResourceActions = useMemo(() => {
     const actions = [
@@ -218,15 +219,16 @@ export default function DetailsPage() {
       </DropdownItem>,
     ]
     if (vmActionsEnabled && kind.toLowerCase() === 'virtualmachinesnapshot') {
+      const snapshotPhaseSucceeded = resource?.status?.phase === 'Succeeded'
       actions.unshift(
         ...createVMDropdownItems([
           {
             displayText: t('Restore VirtualMachine from snapshot'),
             action: 'Restore',
-            method: 'PUT',
+            method: 'POST',
             hubPath: `/apis/snapshot.kubevirt.io/v1beta1/namespaces/${namespace}/virtualmachinerestores`,
             managedPath: '/virtualmachinerestores',
-            isDisabled: false,
+            isDisabled: !snapshotPhaseSucceeded,
           },
         ]),
         <Divider key={'action-divider'} />

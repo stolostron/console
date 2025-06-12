@@ -8,8 +8,6 @@ import {
   automationControlData,
   getWorkerName,
   isHidden_lt_OCP48,
-  isHidden_lt_OCP412,
-  isHidden_gteq_OCP412,
   isHidden_SNO,
   onChangeSNO,
   onChangeConnection,
@@ -22,23 +20,55 @@ import {
   clusterDetailsControlData,
   disabledForFirstInGroup,
   reverseImageSet,
-  ingressVIPsReverse,
+  reverseMultitext,
 } from './ControlDataHelpers'
-import { handleSemverOperatorComparison } from '../../../../../../lib/search-utils'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 import installConfigHbs from '../templates/install-config.hbs'
 import Handlebars from 'handlebars'
 import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
 
 const installConfig = Handlebars.compile(installConfigHbs)
-const INGRESSVIPS_MIN_SUPPORT_VERSION = '4.12.0'
 
-Handlebars.registerHelper('isSingleIngressVipSupported', function (version) {
-  if (version) {
-    return handleSemverOperatorComparison(version, INGRESSVIPS_MIN_SUPPORT_VERSION, '<')
+function processHelperArgs(args) {
+  // extract first values from arrays and ignore final HelperOptions arg
+  return args.slice(0, -1).map((a) => (Array.isArray(a) ? a[0] : a))
+}
+
+function computePath(prefix, value, relative = false) {
+  // vSphere install-config format for OCP 4.13 and up requires absolute paths
+  // OCP 4.12 and earlier and the ClusterDeployment spec require just the name of any vSphere resource (final segment)
+  if (relative) {
+    const lastSlash = value.lastIndexOf('/')
+    return value.substring(lastSlash >= 0 ? lastSlash + 1 : 0)
+  } else {
+    return value.startsWith('/') ? value : `${prefix}${value}`
   }
-  return false
-})
+}
+
+export function clusterPath(...args) {
+  const [cluster = '', datacenter = '', relative = false] = processHelperArgs(args)
+  return computePath(`/${datacenter}/host/`, cluster, relative)
+}
+
+export function datastorePath(...args) {
+  const [datastore = '', datacenter = '', relative = false] = processHelperArgs(args)
+  return computePath(`/${datacenter}/datastore/`, datastore, relative)
+}
+
+export function folderPath(...args) {
+  const [folder = '', datacenter = '', relative = false] = processHelperArgs(args)
+  return computePath(`/${datacenter}/vm/`, folder, relative)
+}
+
+export function resourcePoolPath(...args) {
+  const [resourcePool = '', datacenter = '', cluster = '', relative = false] = processHelperArgs(args)
+  return computePath(`/${datacenter}/host/${cluster}/Resources/`, resourcePool, relative)
+}
+
+Handlebars.registerHelper('clusterPath', clusterPath)
+Handlebars.registerHelper('datastorePath', datastorePath)
+Handlebars.registerHelper('folderPath', folderPath)
+Handlebars.registerHelper('resourcePoolPath', resourcePoolPath)
 
 export const getControlDataVMW = (
   t,
@@ -304,34 +334,29 @@ export const getControlDataVMW = (
       },
     },
     {
-      id: 'apiVIP',
-      type: 'text',
-      name: t('creation.ocp.api.vip'),
+      id: 'apiVIPs',
+      type: 'multitext',
+      name: t('API VIPs'),
       tooltip: t('tooltip.creation.ocp.api.vip'),
       placeholder: t('creation.ocp.api.vip.placeholder'),
-      active: '',
+      active: { multitextEntries: [''] },
+      controlData: [
+        {
+          id: 'apiVIPs',
+          type: 'multitextMember',
+          active: '',
+        },
+      ],
+      reverse: reverseMultitext('platform.vsphere.apiVIPs'),
       validation: getIPValidator({
         subnet: { controlID: 'machineCIDR', groupID: 'networks' },
-        differentFrom: ['ingressVIP'],
+        differentFrom: ['ingressVIPs'],
       }),
-    },
-    {
-      id: 'ingressVIP',
-      type: 'text',
-      name: t('creation.ocp.ingress.vip'),
-      tooltip: t('tooltip.creation.ocp.ingress.vip'),
-      placeholder: t('creation.ocp.ingress.vip.placeholder'),
-      hidden: isHidden_gteq_OCP412,
-      active: '',
-      validation: getIPValidator({
-        subnet: { controlID: 'machineCIDR', groupID: 'networks' },
-        differentFrom: ['apiVIP'],
-      }),
+      addButtonText: t('Add API VIP'),
     },
     {
       id: 'ingressVIPs',
       type: 'multitext',
-      hidden: isHidden_lt_OCP412,
       name: t('Ingress VIPs'),
       tooltip: t('tooltip.creation.ocp.ingress.vip'),
       placeholder: t('creation.ocp.ingress.vip.placeholder'),
@@ -343,10 +368,10 @@ export const getControlDataVMW = (
           active: '',
         },
       ],
-      reverse: ingressVIPsReverse,
+      reverse: reverseMultitext('platform.vsphere.ingressVIPs'),
       validation: getIPValidator({
         subnet: { controlID: 'machineCIDR', groupID: 'networks' },
-        differentFrom: ['apiVIP'],
+        differentFrom: ['apiVIPs'],
       }),
       addButtonText: t('Add Ingress VIP'),
     },

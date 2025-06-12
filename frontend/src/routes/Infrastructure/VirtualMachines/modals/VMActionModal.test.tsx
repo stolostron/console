@@ -5,6 +5,24 @@ import { RecoilRoot } from 'recoil'
 import { fetchRetry } from '../../../../resources/utils/resource-request'
 import { VMActionModal } from './VMActionModal'
 
+jest.mock('../../../../resources/managedclusterview', () => ({
+  fireManagedClusterView: jest.fn(() => {
+    return Promise.resolve({
+      result: {
+        apiVersion: 'kubevirt.io/v1',
+        kind: 'VirtualMachine',
+        metadata: {
+          name: 'centos-stream9',
+          namespace: 'openshift-cnv',
+        },
+        status: {
+          printableStatus: 'Running',
+          ready: true,
+        },
+      },
+    })
+  }),
+}))
 jest.mock('../../../../resources/utils/resource-request', () => ({
   getBackendUrl: jest.fn(() => ''),
   fetchRetry: jest.fn(({ url }) => {
@@ -151,6 +169,76 @@ describe('VMActionModal', () => {
       retries: 0,
       signal: abortController.signal,
       url: '/apis/subresources.kubevirt.io/v1/namespaces/testVMNamespace/virtualmachineinstances/testVM/unpause',
+    })
+  })
+
+  test('renders VMActionModal correctly and successfully calls restore snapshot action', async () => {
+    Date.now = jest.fn(() => 1234)
+    const abortController = new AbortController()
+    const { getByTestId } = render(
+      <RecoilRoot>
+        <VMActionModal
+          open={true}
+          close={() => {}}
+          action={'restore'}
+          method={'POST'}
+          item={{
+            kind: 'VirtualMachineSnapshot',
+            name: 'testVM-snapshot',
+            namespace: 'testVMNamespace',
+            cluster: 'local-cluster',
+            sourceName: 'testVM',
+            _hubClusterResource: 'true',
+          }}
+        />
+      </RecoilRoot>
+    )
+    await waitFor(() => expect(screen.queryByText('restore VirtualMachine?')).toBeInTheDocument())
+    await waitFor(() =>
+      expect(
+        screen.queryByText('Are you sure you want to restore testVM from snapshot testVM-snapshot')
+      ).toBeInTheDocument()
+    )
+
+    // verify click launch button
+    const confirmButton = getByTestId('vm-modal-confirm')
+    expect(confirmButton).toBeTruthy()
+    userEvent.click(confirmButton)
+
+    expect(fetchRetry).toHaveBeenCalledWith({
+      data: {
+        apiVersion: 'snapshot.kubevirt.io/v1beta1',
+        kind: 'VirtualMachineRestore',
+        metadata: {
+          name: 'testVM-snapshot-1234',
+          namespace: 'testVMNamespace',
+          ownerReferences: [
+            {
+              apiVersion: 'kubevirt.io/v1',
+              blockOwnerDeletion: false,
+              kind: 'VirtualMachine',
+              name: 'centos-stream9',
+              uid: undefined,
+            },
+          ],
+        },
+        spec: {
+          target: {
+            apiGroup: 'kubevirt.io',
+            kind: 'VirtualMachine',
+            name: 'centos-stream9',
+          },
+          virtualMachineSnapshotName: 'testVM-snapshot',
+        },
+      },
+      disableRedirectUnauthorizedLogin: true,
+      headers: {
+        Accept: '*/*',
+      },
+      method: 'POST',
+      retries: 0,
+      signal: abortController.signal,
+      url: '/apis/snapshot.kubevirt.io/v1beta1/namespaces/testVMNamespace/virtualmachinerestores',
     })
   })
 

@@ -395,11 +395,14 @@ export class TimeWindow extends Component {
       date.setMinutes(minutes)
 
       // format as 12-hour time with AM/PM
-      return date.toLocaleTimeString('en-US', {
+      const formattedTime = date.toLocaleTimeString('en-US', {
         hour: 'numeric',
         minute: '2-digit',
         hour12: true,
       })
+
+      // remove spaces between time and AM/PM
+      return formattedTime.replace(/\s+/g, '')
     } catch {
       return ''
     }

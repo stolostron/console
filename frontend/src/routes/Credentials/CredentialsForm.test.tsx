@@ -252,27 +252,20 @@ describe('add credentials page', () => {
     await typeByTestId('defaultDatastore', providerConnection.stringData?.defaultDatastore!)
     await clickByPlaceholderText('Select the vSphere disk type')
     await clickByText(providerConnection.stringData?.vsphereDiskType!)
-
-    await typeByTestId('vsphereFolder', 'folder')
-    await typeByTestId('vsphereResourcePool', 'resource pool')
+    await clearByTestId('vsphereFolder')
+    await typeByTestId('vsphereFolder', providerConnection.stringData?.vsphereFolder!)
+    await clearByTestId('vsphereResourcePool')
+    await typeByTestId('vsphereResourcePool', providerConnection.stringData?.vsphereResourcePool!)
     await clickByText('Next')
 
     // Confirm validation messages appear
     await waitForText(
       "The value must be a fully-qualified host name or IP address. Do not include the 'ftp://' URL scheme."
     )
-    await waitForText(`The path must begin with '/${providerConnection.stringData?.datacenter}/vm/'`)
-    await waitForText(
-      `The path must begin with '/${providerConnection.stringData?.datacenter}/host/${providerConnection.stringData?.cluster}/Resources/'`
-    )
 
-    // Fix vCenter server, folder, and resource pool and continue
+    // Fix vCenter server and continue
     await clearByTestId('vCenter')
     await typeByTestId('vCenter', providerConnection.stringData?.vCenter!)
-    await clearByTestId('vsphereFolder')
-    await typeByTestId('vsphereFolder', providerConnection.stringData?.vsphereFolder!)
-    await clearByTestId('vsphereResourcePool')
-    await typeByTestId('vsphereResourcePool', providerConnection.stringData?.vsphereResourcePool!)
     await clickByText('Next')
 
     // skip disconnected
