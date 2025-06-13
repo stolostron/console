@@ -57,7 +57,7 @@ export async function virtualMachineProxy(req: Http2ServerRequest, res: Http2Ser
           chucks.push(chuck)
         })
         req.on('end', async () => {
-          let body = JSON.parse(chucks.join()) as ActionBody
+          const body = JSON.parse(chucks.join()) as ActionBody
           const action = req.url.split('/')[2]
           let path = `${proxyURL}/${body.managedCluster}`
           let reqBody = undefined
