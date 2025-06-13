@@ -200,3 +200,13 @@ The problems is about the certs not being generated properly, `./backend/certs` 
 The solution is about to completely remove `./backend/certs` folder and then to execute `npm run ci:backend` at the root level of the project.
 
 > Be sure openssl library is installed before running `npm run ci:backend` command.
+
+## Related Packages
+
+### Multicluster SDK
+
+The [Multicluster SDK for OpenShift Console](frontend/packages/multicluster-sdk/README.md) provides extensions and APIs that dynamic plugins can use to leverage multicluster capabilities provided by Red Hat Advanced Cluster Management. It aims to provide similar functionality to the dynamic plugin SDK but for multicluster scenarios.
+
+For complete documentation and usage examples, see the [Multicluster SDK README](frontend/packages/multicluster-sdk/README.md).
+
+[![npm version](https://img.shields.io/npm/v/@stolostron/multicluster-sdk.svg?style=flat-square)](https://www.npmjs.com/package/@stolostron/multicluster-sdk)
