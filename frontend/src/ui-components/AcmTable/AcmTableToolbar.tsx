@@ -11,26 +11,24 @@ import {
   ToolbarItem,
   Tooltip,
 } from '@patternfly/react-core'
-import {
-  forwardRef,
-  Fragment,
-  ReactNode,
-  Ref,
-  useCallback,
-  useEffect,
-  useImperativeHandle,
-  useMemo,
-  useState,
-} from 'react'
+import { forwardRef, Fragment, Ref, useCallback, useEffect, useImperativeHandle, useMemo, useState } from 'react'
 import { useTranslation } from '../../lib/acm-i18next'
 import {
   AcmTableProps,
   CommonPaginationPropsType,
+  CurrentFilters,
+  FilterSelection,
+  FilterSelectOptionObject,
   IAcmTableAction,
   IAcmTableButtonAction,
+  ITableFilter,
   ITableItem,
-} from './AcmTable'
-import { AcmSearchInput, SearchConstraint, SearchOperator } from '../AcmSearchInput'
+  IValidFilters,
+  TableFilterBase,
+  TableFilterOption,
+  TableFilterOptions,
+} from './AcmTableTypes'
+import { AcmSearchInput, SearchConstraint } from '../AcmSearchInput'
 import { AcmDropdown, AcmDropdownItems } from '../AcmDropdown'
 import {
   Dropdown,
@@ -64,55 +62,13 @@ const MAXIMUM_OPTIONS = 200
 
 export const SEARCH_DEBOUNCE_TIME = 500
 
-type FilterOptionValueT = string
-type FilterSelection = FilterOptionValueT[]
-type TableFilterOption<FilterOptionValueT> = { label: ReactNode; value: FilterOptionValueT }
-
-export type AdvancedFilterSelection = {
-  operator: SearchOperator
-  value: string
-}
-
-type FilterSelectOptionObject = SelectOptionObject & {
-  filterId: string
-  value: FilterOptionValueT
-}
-
-const createFilterSelectOptionObject = (filterId: string, value: FilterOptionValueT): FilterSelectOptionObject => ({
+const createFilterSelectOptionObject = (filterId: string, value: string): FilterSelectOptionObject => ({
   filterId,
   value,
   toString: () => value,
   compareTo: (selectOption: FilterSelectOptionObject) =>
     selectOption.filterId === filterId && selectOption.value === value,
 })
-export type CurrentFilters<S> = {
-  [filter: string]: S
-}
-
-type TableFilterBase<T, S> = {
-  /** unique identifier for the filter */
-  id: string
-  /** string displayed in the UI */
-  label: string
-  /** A required function that returns a boolean if the item is a match to the current filters */
-  tableFilterFn: (selection: S, item: T) => boolean
-}
-export interface ITableFilter<T> extends TableFilterBase<T, FilterSelection> {
-  /** Options is an array to define the exact filter options */
-  options: TableFilterOption<FilterOptionValueT>[]
-  showEmptyOptions?: boolean
-  supportsInequality?: boolean
-}
-interface IValidFilters<T> {
-  filter: ITableFilter<T>
-  options: { option: TableFilterOption<string>; count: number }[]
-}
-
-export interface ITableAdvancedFilter<T> extends TableFilterBase<T, AdvancedFilterSelection> {
-  availableOperators: SearchOperator[]
-}
-
-type TableFilterOptions = { option: TableFilterOption<string>; count: number }
 
 // render filter options with highlights for searched filter text
 // if option is a label like 'key=value', add a toggle button that toggles between = and !=
@@ -348,7 +304,7 @@ export type AcmTableToolbarProps<T> = Pick<AcmTableProps<T>, Exclude<keyof AcmTa
   disabled: { [uid: string]: boolean }
   internalSearch: string
   setInternalSearch: React.Dispatch<React.SetStateAction<string>>
-  exportTable: () => void
+  exportTable: () => Promise<void>
   renderColumnManagement: () => JSX.Element | undefined
   setActiveAdvancedFilters: React.Dispatch<React.SetStateAction<SearchConstraint[]>>
   perPage: number
@@ -401,14 +357,14 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
   } = props
 
   const { t } = useTranslation()
-  const initialSearch = props.initialSearch || ''
+  const initialSearch = props.initialSearch ?? ''
   const [stateSearch, stateSetSearch] = useState(initialSearch)
-  const search = props.search || stateSearch
-  const setSearch = props.setSearch || stateSetSearch
-  const searchPlaceholder = props.searchPlaceholder || t('Search')
+  const search = props.search ?? stateSearch
+  const setSearch = props.setSearch ?? stateSetSearch
+  const searchPlaceholder = props.searchPlaceholder ?? t('Search')
   const hasSearch = useMemo(() => columns.some((column) => column.search), [columns])
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false)
-  const { filterCounts } = resultCounts || {}
+  const { filterCounts } = resultCounts ?? {}
 
   const { clearFilters } = useTableFilterSelections({ id, filters })
   const [pendingConstraints, setPendingConstraints] = useState<SearchConstraint[]>([
@@ -490,7 +446,7 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
         {hasSelectionColumn && (
           <ToolbarItem>
             <TableSelectionDropdown
-              itemCount={commonPaginationProps.itemCount || 0}
+              itemCount={commonPaginationProps.itemCount ?? 0}
               selectedCount={Object.keys(selected).length}
               perPage={perPage}
               onSelectNone={() => {
@@ -706,7 +662,7 @@ function TableColumnFilters<T>(
 
         // if the selection is a key!=value we can't use the original option (key=value)
         // so we create a new option instead
-        const opt: TableFilterOption<string> =
+        const opt: TableFilterOption =
           supportsInequality && selectedOption
             ? { label: selectedOption.value, value: selectedOption.value }
             : { ...option }
@@ -730,7 +686,7 @@ function TableColumnFilters<T>(
       if (options.length) {
         if (options.length > SPLIT_FILTER_THRESHOLD || secondaryFilterIds?.includes(filter.id)) {
           options.sort((a, b) => {
-            return a?.option?.label?.toString().localeCompare(b?.option?.label?.toString() || '') || 0
+            return a?.option?.label?.toString().localeCompare(b?.option?.label?.toString() ?? '') || 0
           })
 
           filterGroups.push({
@@ -830,10 +786,10 @@ function TableColumnFilters<T>(
       } else {
         // else we need to get the correct label/value from derived table
         return current.options
-          .filter((option: TableFilterOption<string>) => {
+          .filter((option: TableFilterOption) => {
             return currentCategorySelected.includes(option.value)
           })
-          .map<ToolbarChip>((option: TableFilterOption<string>) => {
+          .map<ToolbarChip>((option: TableFilterOption) => {
             return { key: option.value, node: option.label }
           })
       }
@@ -895,19 +851,21 @@ function TableColumnFilters<T>(
   )
 }
 
-function TableActions<T>(props: {
-  actions: IAcmTableAction<T>[]
-  selections: { [uid: string]: boolean }
-  items: T[] | undefined
-  keyFn: (item: T) => string
-}) {
+function TableActions<T>(
+  props: Readonly<{
+    actions: IAcmTableAction<T>[]
+    selections: { [uid: string]: boolean }
+    items: T[] | undefined
+    keyFn: (item: T) => string
+  }>
+) {
   const { actions, selections, items, keyFn } = props
   /* istanbul ignore if */
   if (actions.length === 0) return <Fragment />
   return <TableActionsDropdown actions={actions} selections={selections} items={items} keyFn={keyFn} />
 }
 
-function TableActionsButtons(props: { actions: IAcmTableButtonAction[]; hasSelections?: boolean }) {
+function TableActionsButtons(props: Readonly<{ actions: IAcmTableButtonAction[]; hasSelections?: boolean }>) {
   return (
     <ToolbarGroup variant="button-group">
       {props.actions.map((action) => {
@@ -932,12 +890,14 @@ function TableActionsButtons(props: { actions: IAcmTableButtonAction[]; hasSelec
   )
 }
 
-function TableActionsDropdown<T>(props: {
-  actions: IAcmTableAction<T>[]
-  selections: { [uid: string]: boolean }
-  items: T[] | undefined
-  keyFn: (item: T) => string
-}) {
+function TableActionsDropdown<T>(
+  props: Readonly<{
+    actions: IAcmTableAction<T>[]
+    selections: { [uid: string]: boolean }
+    items: T[] | undefined
+    keyFn: (item: T) => string
+  }>
+) {
   const { actions, selections = {}, items = [], keyFn } = props
   const { t } = useTranslation()
   const hasSelections = Object.keys(selections).length > 0
@@ -1012,7 +972,7 @@ export interface TableSelectionDropdownProps {
   onSelectAll: () => void
 }
 
-export function TableSelectionDropdown(props: TableSelectionDropdownProps) {
+export function TableSelectionDropdown(props: Readonly<TableSelectionDropdownProps>) {
   const [isOpen, setIsOpen] = useState(false)
   const { itemCount, perPage, selectedCount, onSelectAll, onSelectNone, onSelectPage } = props
   const [t] = useTranslation()
