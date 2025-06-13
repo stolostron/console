@@ -500,6 +500,6 @@ describe('ClusterActionDropdown hostedcluster', () => {
   test('render with hostedcluster', async () => {
     expect(screen.getByRole('button')).toBeTruthy()
     userEvent.click(screen.getByRole('button'))
-    expect(screen.getByText('Upgrade cluster')).toBeTruthy()
+    expect(screen.getByText('Destroy cluster')).toBeTruthy()
   })
 })
