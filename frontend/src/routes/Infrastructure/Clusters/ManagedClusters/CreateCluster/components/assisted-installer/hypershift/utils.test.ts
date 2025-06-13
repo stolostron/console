@@ -43,6 +43,6 @@ describe('Hypeshift utility functions', () => {
 
   test('getClusterImageVersion', () => {
     expect(getClusterImageVersion([], '4.12')).toBe('4.12')
-    expect(getClusterImageVersion(mockClusterImageSet, 'ocp-release411')).toBe('4.11.15')
+    expect(getClusterImageVersion(mockClusterImageSet, 'ocp-release411')).toBe('4.11.15-x86_64')
   })
 })
