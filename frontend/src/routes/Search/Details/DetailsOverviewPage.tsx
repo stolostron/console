@@ -344,10 +344,9 @@ export default function DetailsOverviewPage() {
       const vmDashboard = configMaps.filter(
         (cm: ConfigMap) => cm.metadata.name === 'grafana-dashboard-acm-openshift-virtualization-single-vm-view'
       )
-      if (vmDashboard.length > 0) {
-        const parsedDashboardData = JSON.parse(
-          vmDashboard[0].data?.['acm-openshift-virtualization-single-vm-view.json']
-        )
+      const singleVMDashboard = vmDashboard?.[0]?.data?.['acm-openshift-virtualization-single-vm-view.json']
+      if (vmDashboard.length > 0 && singleVMDashboard) {
+        const parsedDashboardData = JSON.parse(singleVMDashboard)
         const dashboardId = parsedDashboardData?.uid
         return `${grafanaLink}/d/${dashboardId}/executive-dashboards-single-virtual-machine-view?orgId=1&var-name=${name}&var-namespace=${resource?.metadata?.namespace}&var-cluster=${cluster}`
       }

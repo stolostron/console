@@ -230,11 +230,10 @@ export default function VirtualMachinesPage() {
       const vmDashboard = configMaps.filter(
         (cm: ConfigMap) => cm.metadata.name === 'grafana-dashboard-acm-openshift-virtualization-clusters-overview'
       )
-      if (vmDashboard.length > 0) {
+      const overviewDashboard = vmDashboard?.[0]?.data?.['acm-openshift-virtualization-clusters-overview.json']
+      if (vmDashboard.length > 0 && overviewDashboard) {
         try {
-          const parsedDashboardData = JSON.parse(
-            vmDashboard[0].data?.['acm-openshift-virtualization-clusters-overview.json']
-          )
+          const parsedDashboardData = JSON.parse(overviewDashboard)
           const dashboardId = parsedDashboardData?.uid
           return `${grafanaLink}/d/${dashboardId}/executive-dashboards-clusters-overview?orgId=1`
         } catch (error) {
@@ -356,6 +355,7 @@ export default function VirtualMachinesPage() {
               ...existing,
               ...relatedItemsMap.get(key),
               kind: 'VirtualMachine',
+              kind_plural: 'virtualmachines',
             })
           }
         }
