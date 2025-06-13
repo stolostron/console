@@ -182,11 +182,13 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
   let placeholder = props.placeholderText
   if (!placeholder) {
     if (isMulti && selections.length > 0) {
-      placeholder = selections.join(', ')
+      placeholder = variant !== SelectVariant.typeaheadMulti ? selections.join(', ') : props.placeholder
       badge = selections.length > 0 && (
-        <Badge key={selections.length} isRead>
-          {selections.length}
-        </Badge>
+        <span style={{ display: 'flex', alignItems: 'center' }}>
+          <Badge key={selections.length} isRead>
+            {selections.length}
+          </Badge>
+        </span>
       )
     } else if (isSingle) {
       placeholder = selections
@@ -372,6 +374,11 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
     value: string | string[] | number | undefined
   ) => {
     switch (variant) {
+      default:
+      case SelectVariant.single:
+        onSelect?.(String(value))
+        setIsOpen(false)
+        break
       case SelectVariant.typeahead:
         if (value && value !== NO_RESULTS) {
           const optionText = filteredOptions.find((option) => option.value === value)?.children
@@ -384,11 +391,6 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
         if (!Array.isArray(value)) {
           selectOption(String(value), String(placeholder))
         }
-        break
-      default:
-      case SelectVariant.single:
-        onSelect?.(String(value))
-        setIsOpen(false)
         break
     }
   }
@@ -512,12 +514,15 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
     return placeholder
   }
 
-  const hasClearButton = () => {
-    if (onClear) {
-      return isMulti || isSingle
+  const getClearBtnDisplayStyle = () => {
+    const hasClearButton = onClear ? isMulti || isSingle : !!inputValue
+    if (hasClearButton) {
+      return {}
+    } else {
+      return { style: { display: 'none' } }
     }
-    return !!inputValue
   }
+
   const ariaLabelledBy = props['aria-labelledby'] ?? undefined
   let ariaLabel = props['aria-labelledby'] ? undefined : props['aria-label']
   if (!ariaLabel && !ariaLabelledBy) {
@@ -564,67 +569,76 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
           } as React.CSSProperties
         }
       >
-        {variant === SelectVariant.single || variant === SelectVariant.checkbox ? (
-          <TextInputGroup style={{ width: '100%' }} isPlain>
-            <div className={placeholderClass} style={{ width: '100%' }}>
-              {variant === SelectVariant.single ? renderSinglePlaceholder() : <span>{placeholder}</span>}
-            </div>
-            <TextInputGroupUtilities {...(!hasClearButton() ? { style: { display: 'none' } } : {})}>
-              <Button
-                variant="plain"
-                onClick={(e) => {
-                  onClearSelection()
-                  e.stopPropagation()
-                }}
-                aria-label="Clear input value"
-                style={{ paddingInlineStart: 0 }}
-              >
-                <TimesIcon aria-hidden />
-              </Button>
-            </TextInputGroupUtilities>
-          </TextInputGroup>
-        ) : (
-          <TextInputGroup isPlain>
-            <TextInputGroupMain
-              value={inputValue || selectedItem}
-              onClick={onInputClick}
-              onChange={onTextInputChange}
-              onKeyDown={onInputKeyDown}
-              id="multi-typeahead-select-input"
-              autoComplete="off"
-              innerRef={textInputRef}
-              placeholder={placeholder}
-              {...(activeItemId && { 'aria-activedescendant': activeItemId })}
-              role="combobox"
-              aria-label={ariaLabel}
-              aria-labelledby={ariaLabelledBy}
-              isExpanded={isOpen}
-              aria-controls="select-multi-typeahead-listbox"
-            >
-              {variant === SelectVariant.typeaheadMulti && (
-                <ChipGroup aria-label="Current selections">
-                  {selectedItems.map((selection, index) => (
-                    <Chip
-                      key={index}
-                      onClick={(ev) => {
-                        ev.stopPropagation()
-                        _onSelect(ev, selection)
-                      }}
-                    >
-                      {getMultiTypeaheadChildren(selection)}
-                    </Chip>
-                  ))}
-                </ChipGroup>
-              )}
-            </TextInputGroupMain>
-            <TextInputGroupUtilities {...(!hasClearButton() ? { style: { display: 'none' } } : {})}>
-              <Button variant="plain" onClick={() => onClearSelection()} aria-label="Clear input value">
-                <TimesIcon aria-hidden />
-              </Button>
-            </TextInputGroupUtilities>
-          </TextInputGroup>
-        )}
+        {variant === SelectVariant.single || variant === SelectVariant.checkbox
+          ? renderSingleTextInput()
+          : renderMultipleTextInput()}
       </MenuToggle>
+    )
+  }
+  function renderSingleTextInput(): ReactNode {
+    return (
+      <TextInputGroup style={{ width: '100%' }} isPlain>
+        <div className={placeholderClass} style={{ width: '100%' }}>
+          {variant === SelectVariant.single ? renderSinglePlaceholder() : <span>{placeholder}</span>}
+        </div>
+        <TextInputGroupUtilities {...getClearBtnDisplayStyle()}>
+          <Button
+            variant="plain"
+            onClick={(e) => {
+              onClearSelection()
+              e.stopPropagation()
+            }}
+            aria-label={t('Clear input value')}
+            style={{ paddingInlineStart: 0 }}
+          >
+            <TimesIcon aria-hidden />
+          </Button>
+        </TextInputGroupUtilities>
+      </TextInputGroup>
+    )
+  }
+
+  function renderMultipleTextInput(): ReactNode {
+    return (
+      <TextInputGroup isPlain>
+        <TextInputGroupMain
+          value={inputValue || selectedItem}
+          onClick={onInputClick}
+          onChange={onTextInputChange}
+          onKeyDown={onInputKeyDown}
+          id="multi-typeahead-select-input"
+          autoComplete="off"
+          innerRef={textInputRef}
+          placeholder={placeholder}
+          {...(activeItemId && { 'aria-activedescendant': activeItemId })}
+          role="combobox"
+          aria-label={ariaLabel}
+          aria-labelledby={ariaLabelledBy}
+          isExpanded={isOpen}
+          aria-controls="select-multi-typeahead-listbox"
+        >
+          {variant === SelectVariant.typeaheadMulti && (
+            <ChipGroup aria-label={t('Current selections')}>
+              {selectedItems.map((selection) => (
+                <Chip
+                  key={selection}
+                  onClick={(ev) => {
+                    ev.stopPropagation()
+                    _onSelect(ev, selection)
+                  }}
+                >
+                  {getMultiTypeaheadChildren(selection)}
+                </Chip>
+              ))}
+            </ChipGroup>
+          )}
+        </TextInputGroupMain>
+        <TextInputGroupUtilities {...getClearBtnDisplayStyle()}>
+          <Button variant="plain" onClick={() => onClearSelection()} aria-label={t('Clear input value')}>
+            <TimesIcon aria-hidden />
+          </Button>
+        </TextInputGroupUtilities>
+      </TextInputGroup>
     )
   }
 
