@@ -8,7 +8,6 @@
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=open-cluster-management_console&metric=sqale_rating&token=678092fc6e15fad203b8883681417cca4c477c6b)](https://sonarcloud.io/dashboard?id=open-cluster-management_console)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=open-cluster-management_console&metric=security_rating&token=678092fc6e15fad203b8883681417cca4c477c6b)](https://sonarcloud.io/dashboard?id=open-cluster-management_console)
 [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=open-cluster-management_console&metric=vulnerabilities&token=678092fc6e15fad203b8883681417cca4c477c6b)](https://sonarcloud.io/dashboard?id=open-cluster-management_console)
-[![npm version](https://img.shields.io/npm/v/@stolostron/multicluster-sdk.svg?style=flat-square)](https://www.npmjs.com/package/@stolostron/multicluster-sdk)
 
 ## What is console?
 
@@ -200,5 +199,7 @@ The solution is about to completely remove `./backend/certs` folder and then to 
 ### Multicluster SDK
 
 The [Multicluster SDK for OpenShift Console](frontend/packages/multicluster-sdk/README.md) provides extensions and APIs that dynamic plugins can use to leverage multicluster capabilities provided by Red Hat Advanced Cluster Management. It aims to provide similar functionality to the dynamic plugin SDK but for multicluster scenarios.
+
+For complete documentation and usage examples, see the [Multicluster SDK README](frontend/packages/multicluster-sdk/README.md).
 
 [![npm version](https://img.shields.io/npm/v/@stolostron/multicluster-sdk.svg?style=flat-square)](https://www.npmjs.com/package/@stolostron/multicluster-sdk)
