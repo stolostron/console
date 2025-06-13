@@ -11,7 +11,7 @@ import { PluginContext } from '../../../lib/PluginContext'
 import { NavigationPath } from '../../../NavigationPath'
 import { IResource, IResourceDefinition } from '../../../resources'
 import { fireManagedClusterView } from '../../../resources/managedclusterview'
-import { getResource } from '../../../resources/utils/resource-request'
+import { getBackendUrl, getRequest, getResource } from '../../../resources/utils/resource-request'
 import { useSharedAtoms } from '../../../shared-recoil'
 import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../ui-components'
 import {
@@ -66,36 +66,49 @@ export default function DetailsPage() {
   const [pluginModal, setPluginModal] = useState<JSX.Element>()
 
   useEffect(() => {
-    if (resourceVersion !== resource?.metadata.resourceVersion || name !== resource?.metadata.name) {
-      /* istanbul ignore else */
-      if (isHubClusterResource) {
-        getResource<IResource>({
-          apiVersion: apiversion,
-          kind,
-          metadata: { namespace, name },
+    if (kind === 'VirtualMachine' || kind === 'VirtualMachineSnapshot') {
+      const url = getBackendUrl() + `/${kind.toLowerCase()}s/get/${cluster}/${name}/${namespace}` // need the plural kind either virtualmachines || virtualmachinesnapshots
+      getRequest<IResource>(url)
+        .promise.then((response) => {
+          setResource(response)
+          setResourceVersion(response?.metadata?.resourceVersion ?? '')
         })
-          .promise.then((response) => {
-            setResource(response)
-            setResourceVersion(response?.metadata?.resourceVersion ?? '')
+        .catch((err) => {
+          console.error('Error getting VM resource: ', err)
+          setResourceError(err.message)
+        })
+    } else {
+      if (resourceVersion !== resource?.metadata.resourceVersion || name !== resource?.metadata.name) {
+        /* istanbul ignore else */
+        if (isHubClusterResource) {
+          getResource<IResource>({
+            apiVersion: apiversion,
+            kind,
+            metadata: { namespace, name },
           })
-          .catch((err) => {
-            console.error('Error getting resource: ', err)
-            setResourceError(err.message)
-          })
-      } else {
-        fireManagedClusterView(cluster, kind, apiversion, name, namespace)
-          .then((viewResponse) => {
-            if (viewResponse?.message) {
-              setResourceError(viewResponse.message)
-            } else {
-              setResource(viewResponse?.result)
-              setResourceVersion(viewResponse?.result?.metadata.resourceVersion ?? '')
-            }
-          })
-          .catch((err) => {
-            console.error('Error getting resource: ', err)
-            setResourceError(err)
-          })
+            .promise.then((response) => {
+              setResource(response)
+              setResourceVersion(response?.metadata?.resourceVersion ?? '')
+            })
+            .catch((err) => {
+              console.error('Error getting resource: ', err)
+              setResourceError(err.message)
+            })
+        } else {
+          fireManagedClusterView(cluster, kind, apiversion, name, namespace)
+            .then((viewResponse) => {
+              if (viewResponse?.message) {
+                setResourceError(viewResponse.message)
+              } else {
+                setResource(viewResponse?.result)
+                setResourceVersion(viewResponse?.result?.metadata.resourceVersion ?? '')
+              }
+            })
+            .catch((err) => {
+              console.error('Error getting resource: ', err)
+              setResourceError(err)
+            })
+        }
       }
     }
   }, [
@@ -163,8 +176,6 @@ export default function DetailsPage() {
         displayText: string
         action: string
         method: 'PUT' | 'GET' | 'POST' | 'PATCH' | 'DELETE'
-        hubPath: string
-        managedPath: string
         isDisabled: boolean
       }[]
     ) => {
@@ -212,7 +223,25 @@ export default function DetailsPage() {
         component="button"
         key="delete-resource"
         onClick={() => {
-          setIsDeleteResourceModalOpen(true)
+          if (kind.startsWith('VirtualMachine')) {
+            setVMAction({
+              open: true,
+              close: closeModal,
+              action: 'Delete',
+              method: 'DELETE',
+              item: {
+                cluster,
+                kind,
+                apiversion,
+                name,
+                namespace,
+                _hubClusterResource: isHubClusterResource ? 'true' : undefined,
+                sourceName: kind === 'VirtualMachineSnapshot' ? resource?.spec?.source?.name : undefined, // only set for snapshot restore action
+              },
+            })
+          } else {
+            setIsDeleteResourceModalOpen(true)
+          }
         }}
       >
         {t('Delete {{resourceKind}}', { resourceKind: kind })}
@@ -226,8 +255,6 @@ export default function DetailsPage() {
             displayText: t('Restore VirtualMachine from snapshot'),
             action: 'Restore',
             method: 'POST',
-            hubPath: `/apis/snapshot.kubevirt.io/v1beta1/namespaces/${namespace}/virtualmachinerestores`,
-            managedPath: '/virtualmachinerestores',
             isDisabled: !snapshotPhaseSucceeded,
           },
         ]),
@@ -243,8 +270,6 @@ export default function DetailsPage() {
                 displayText: t('Start VirtualMachine'),
                 action: 'Start',
                 method: 'PUT',
-                hubPath: `/apis/subresources.kubevirt.io/v1/namespaces/${namespace}/virtualmachines/${name}/start`,
-                managedPath: '/virtualmachines/start',
                 isDisabled: [
                   'Migrating',
                   'Provisioning',
@@ -259,16 +284,12 @@ export default function DetailsPage() {
                 displayText: t('Stop VirtualMachine'),
                 action: 'Stop',
                 method: 'PUT',
-                hubPath: `/apis/subresources.kubevirt.io/v1/namespaces/${namespace}/virtualmachines/${name}/stop`,
-                managedPath: '/virtualmachines/stop',
                 isDisabled: ['Provisioning', 'Stopped', 'Stopping', 'Terminating', 'Unknown'].includes(printableStatus),
               },
           {
             displayText: t('Restart VirtualMachine'),
             action: 'Restart',
             method: 'PUT',
-            hubPath: `/apis/subresources.kubevirt.io/v1/namespaces/${namespace}/virtualmachines/${name}/restart`,
-            managedPath: '/virtualmachines/restart',
             isDisabled: ['Migrating', 'Provisioning', 'Stopped', 'Stopping', 'Terminating', 'Unknown'].includes(
               printableStatus
             ),
@@ -278,24 +299,18 @@ export default function DetailsPage() {
                 displayText: t('Unpause VirtualMachine'),
                 action: 'Unpause',
                 method: 'PUT',
-                hubPath: `/apis/subresources.kubevirt.io/v1/namespaces/${namespace}/virtualmachineinstances/${name}/unpause`,
-                managedPath: '/virtualmachineinstances/unpause',
                 isDisabled: printableStatus !== 'Paused',
               }
             : {
                 displayText: t('Pause VirtualMachine'),
                 action: 'Pause',
                 method: 'PUT',
-                hubPath: `/apis/subresources.kubevirt.io/v1/namespaces/${namespace}/virtualmachineinstances/${name}/pause`,
-                managedPath: '/virtualmachineinstances/pause',
                 isDisabled: printableStatus !== 'Running',
               },
           {
             displayText: t('Take snapshot'),
             action: 'Snapshot',
             method: 'POST',
-            hubPath: `/apis/snapshot.kubevirt.io/v1beta1/namespaces/${namespace}/virtualmachinesnapshots`,
-            managedPath: '/virtualmachinesnapshots',
             isDisabled: false,
           },
         ]),
@@ -330,7 +345,20 @@ export default function DetailsPage() {
       })
     }
     return actions
-  }, [acmExtensions, cluster, createVMDropdownItems, kind, name, namespace, navigate, resource, t, vmActionsEnabled])
+  }, [
+    acmExtensions,
+    apiversion,
+    cluster,
+    createVMDropdownItems,
+    isHubClusterResource,
+    kind,
+    name,
+    namespace,
+    navigate,
+    resource,
+    t,
+    vmActionsEnabled,
+  ])
 
   return (
     <Fragment>

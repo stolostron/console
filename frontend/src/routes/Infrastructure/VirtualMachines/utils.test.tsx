@@ -38,17 +38,7 @@ describe('VirtualMachines utils', () => {
       ready: 'True',
       status: 'Running',
     }
-    const result = getVirtualMachineRowActions(
-      item,
-      [],
-      () => {},
-      () => {},
-      () => {},
-      true,
-      navigate,
-      t,
-      []
-    )
+    const result = getVirtualMachineRowActions(item, [], () => {}, true, navigate, t, [])
 
     // Assert the correct number of actions are returned
     expect(result).toHaveLength(7)
@@ -93,17 +83,7 @@ describe('VirtualMachines utils', () => {
       ready: 'True',
       status: 'Running',
     }
-    const result = getVirtualMachineRowActions(
-      item,
-      [],
-      () => {},
-      () => {},
-      () => {},
-      true,
-      navigate,
-      t,
-      []
-    )
+    const result = getVirtualMachineRowActions(item, [], () => {}, true, navigate, t, [])
 
     // Assert the correct number of actions are returned
     expect(result).toHaveLength(7)
@@ -147,17 +127,7 @@ describe('VirtualMachines utils', () => {
       ready: 'True',
       status: 'Stopped',
     }
-    const result = getVirtualMachineRowActions(
-      item,
-      [],
-      () => {},
-      () => {},
-      () => {},
-      true,
-      navigate,
-      t,
-      []
-    )
+    const result = getVirtualMachineRowActions(item, [], () => {}, true, navigate, t, [])
 
     // Assert the correct number of actions are returned
     expect(result).toHaveLength(7)
@@ -201,17 +171,7 @@ describe('VirtualMachines utils', () => {
       ready: 'True',
       status: 'Paused',
     }
-    const result = getVirtualMachineRowActions(
-      item,
-      [],
-      () => {},
-      () => {},
-      () => {},
-      true,
-      navigate,
-      t,
-      []
-    )
+    const result = getVirtualMachineRowActions(item, [], () => {}, true, navigate, t, [])
 
     // Assert the correct number of actions are returned
     expect(result).toHaveLength(7)
@@ -255,17 +215,7 @@ describe('VirtualMachines utils', () => {
       ready: 'True',
       status: 'Stopped',
     }
-    const result = getVirtualMachineRowActions(
-      item,
-      [],
-      () => {},
-      () => {},
-      () => {},
-      false,
-      navigate,
-      t,
-      []
-    )
+    const result = getVirtualMachineRowActions(item, [], () => {}, false, navigate, t, [])
 
     // Assert the correct number of actions are returned
     expect(result).toHaveLength(3)
@@ -293,17 +243,7 @@ describe('VirtualMachineSnapshots utils', () => {
       sourceName: 'centos9-01',
       _conditionReadyReason: 'Operation complete',
     }
-    const result = getVMSnapshotActions(
-      item,
-      false,
-      [],
-      true,
-      () => {},
-      () => {},
-      () => {},
-      navigate,
-      t
-    )
+    const result = getVMSnapshotActions(item, false, [], true, () => {}, navigate, t)
 
     // Assert the correct number of actions are returned
     expect(result).toHaveLength(4)
@@ -340,17 +280,7 @@ describe('VirtualMachineSnapshots utils', () => {
       _conditionReadyReason: 'Operation complete',
       managedHub: 'leaf-hub',
     }
-    const result = getVMSnapshotActions(
-      item,
-      false,
-      [],
-      true,
-      () => {},
-      () => {},
-      () => {},
-      navigate,
-      t
-    )
+    const result = getVMSnapshotActions(item, false, [], true, () => {}, navigate, t)
 
     // Assert the correct number of actions are returned
     expect(result).toHaveLength(4)
