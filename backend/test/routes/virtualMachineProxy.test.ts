@@ -140,7 +140,7 @@ describe('Virtual Machine actions', function () {
       .reply(200, {
         statusCode: 200,
       })
-    const res = await request('POST', '/virtualmachinesnapshots', {
+    const res = await request('POST', '/virtualmachinesnapshots/create', {
       managedCluster: 'testCluster',
       vmName: 'vmName',
       vmNamespace: 'vmNamespace',
