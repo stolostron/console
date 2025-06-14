@@ -43,7 +43,7 @@ export function OnboardingModal(props: IOnboardingModalProps) {
         id: 'onboardingdiscoverbutton',
         icon: <ConnectedIcon />,
         text: t('Discover hosts to create host inventory'),
-        link: NavigationPath.infraEnvironments,
+        link: '/k8s/all-namespaces/agent-install.openshift.io~v1beta1~InfraEnv',
         style: {
           paddingRight: '24px',
         },
