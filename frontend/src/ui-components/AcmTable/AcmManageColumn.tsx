@@ -18,7 +18,7 @@ import {
   Droppable,
   Draggable,
 } from '@patternfly/react-core'
-import { IAcmTableColumn } from './AcmTable'
+import { IAcmTableColumn } from './AcmTableTypes'
 import { useTranslation } from '../../lib/acm-i18next'
 import ColumnsIcon from '@patternfly/react-icons/dist/js/icons/columns-icon'
 import { setColumnValues } from './localColumnStorage'

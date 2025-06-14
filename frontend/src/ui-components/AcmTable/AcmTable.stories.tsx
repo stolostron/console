@@ -17,7 +17,8 @@ import { AcmInlineStatus, StatusType } from '../AcmInlineStatus/AcmInlineStatus'
 import { AcmPage, AcmPageContent, AcmPageHeader } from '../AcmPage/AcmPage'
 import { Provider } from '../AcmProvider'
 import { AcmInlineProvider } from '../AcmProvider/AcmInlineProvider/AcmInlineProvider'
-import { AcmTable, IAcmTableColumn, IAcmTableAction, IAcmTableButtonAction, IAcmRowAction } from '../AcmTable/AcmTable'
+import { AcmTable } from '../AcmTable/AcmTable'
+import { IAcmTableColumn, IAcmTableAction, IAcmTableButtonAction, IAcmRowAction } from '../AcmTable/AcmTableTypes'
 
 interface IExampleData {
   uid: number
