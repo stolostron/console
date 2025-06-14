@@ -5,8 +5,8 @@ import { ButtonVariant, ModalVariant } from '@patternfly/react-core'
 import { useContext, useEffect, useState } from 'react'
 import { TFunction } from 'react-i18next'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { fireManagedClusterView } from '../../../../resources/managedclusterview'
-import { fetchRetry, getBackendUrl } from '../../../../resources/utils'
+import { IResource } from '../../../../resources'
+import { fetchRetry, getBackendUrl, getRequest } from '../../../../resources/utils'
 import { AcmButton, AcmModal, AcmToastContext, IAlertContext } from '../../../../ui-components'
 import { searchClient } from '../../../Search/search-sdk/search-client'
 import { SnapshotModalBody } from './snapshotModalBody'
@@ -39,47 +39,33 @@ export function handleVMActions(
 ) {
   const abortController = new AbortController()
 
-  let subResourceKind = undefined
   let path = ''
   switch (action.toLowerCase()) {
     case 'start':
     case 'stop':
     case 'restart':
-      subResourceKind = 'virtualmachines'
-      path = item?._hubClusterResource
-        ? `/apis/subresources.kubevirt.io/v1/namespaces/${item.namespace}/${subResourceKind}/${item.name}/${action.toLowerCase()}`
-        : `/${subResourceKind}/${action.toLowerCase()}`
+      path = `/virtualmachines/${action.toLowerCase()}`
       break
     case 'pause':
     case 'unpause':
-      subResourceKind = 'virtualmachineinstances'
-      path = item?._hubClusterResource
-        ? `/apis/subresources.kubevirt.io/v1/namespaces/${item.namespace}/${subResourceKind}/${item.name}/${action.toLowerCase()}`
-        : `/${subResourceKind}/${action.toLowerCase()}`
+      path = `/virtualmachineinstances/${action.toLowerCase()}`
       break
     case 'snapshot':
-      subResourceKind = 'virtualmachinesnapshots'
-      path = item?._hubClusterResource
-        ? `/apis/snapshot.kubevirt.io/v1beta1/namespaces/${item.namespace}/${subResourceKind}`
-        : `/${subResourceKind}`
+      path = `/virtualmachinesnapshots/create`
       break
     case 'restore':
-      subResourceKind = 'virtualmachinerestores'
-      path = item?._hubClusterResource
-        ? `/apis/snapshot.kubevirt.io/v1beta1/namespaces/${item.namespace}/${subResourceKind}`
-        : `/${subResourceKind}`
+      path = `/virtualmachinerestores`
       break
-  }
-
-  let body = reqBody
-  if (!item?._hubClusterResource) {
-    body = { reqBody, managedCluster: item.cluster, vmName: item.name, vmNamespace: item.namespace }
+    case 'delete':
+      // need the plural kind either virtualmachines || virtualmachinesnapshots
+      path = `/${item.kind.toLowerCase()}s/delete`
+      break
   }
 
   fetchRetry({
     method,
     url: `${getBackendUrl()}${path}`,
-    data: body,
+    data: { reqBody, managedCluster: item.cluster, vmName: item.name, vmNamespace: item.namespace },
     signal: abortController.signal,
     retries: process.env.NODE_ENV === 'production' ? 2 : 0,
     headers: { Accept: '*/*' },
@@ -94,8 +80,9 @@ export function handleVMActions(
 
       const errMessage: string = err?.message ?? t('An unexpected error occurred.')
       toast.addAlert({
-        title: t('Error triggering action {{action}} on VirtualMachine {{name}}', {
+        title: t('Error triggering action {{action}} on {{itemKind}} {{name}}', {
           name: item.name,
+          itemKind: item.kind,
           action,
         }),
         message: errMessage,
@@ -130,18 +117,15 @@ export const VMActionModal = (props: IVMActionModalProps) => {
   useEffect(() => {
     if (item.kind === 'VirtualMachineSnapshot' && item.sourceName) {
       const name = item.kind === 'VirtualMachineSnapshot' ? item.sourceName : item.name
-      fireManagedClusterView(item.cluster, 'VirtualMachine', 'kubevirt.io/v1', name, item.namespace)
-        .then((viewResponse) => {
+      const url = getBackendUrl() + `/virtualmachines/get/${item.cluster}/${name}/${item.namespace}` // need the plural kind either virtualmachines || virtualmachinesnapshots
+      getRequest<IResource>(url)
+        .promise.then((response) => {
           setVMLoading(false)
-          if (viewResponse?.message) {
-            console.error('Error fetching parent VM')
-          } else {
-            setVM(viewResponse?.result)
-          }
+          setVM(response)
         })
         .catch((err) => {
-          console.error('Error getting VirtualMachine: ', err)
           setVMLoading(false)
+          console.error('Error getting VM resource: ', err)
         })
     } else {
       setVMLoading(false)
@@ -179,7 +163,7 @@ export const VMActionModal = (props: IVMActionModalProps) => {
       id={'vm-action-modal'}
       variant={ModalVariant.medium}
       isOpen={open}
-      title={t('{{action}} VirtualMachine?', { action })}
+      title={t('{{action}} {{itemKind}}?', { action, itemKind: item.kind })}
       titleIconVariant={'warning'}
       onClose={close}
       actions={[
@@ -193,7 +177,7 @@ export const VMActionModal = (props: IVMActionModalProps) => {
               method,
               item,
               reqBody,
-              () => searchClient.refetchQueries({ include: ['searchResultItems'] }),
+              () => searchClient.refetchQueries({ include: ['searchResultItems', 'searchResultRelatedItems'] }),
               toast,
               t
             )

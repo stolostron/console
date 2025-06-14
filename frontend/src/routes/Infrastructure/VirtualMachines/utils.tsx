@@ -8,11 +8,6 @@ import { ActionExtensionProps, ListColumnExtensionProps } from '../../../plugin-
 import { IResourceDefinition } from '../../../resources'
 import { Cluster } from '../../../resources/utils'
 import { IAcmRowAction, IAcmTableColumn } from '../../../ui-components'
-import {
-  ClosedDeleteExternalResourceModalProps,
-  IDeleteExternalResourceModalProps,
-} from '../../Search/components/Modals/DeleteExternalResourceModal'
-import { ClosedDeleteModalProps, IDeleteModalProps } from '../../Search/components/Modals/DeleteResourceModal'
 import { GetUrlSearchParam } from '../../Search/searchDefinitions'
 import { ClosedVMActionModalProps, IVMActionModalProps } from './modals/VMActionModal'
 
@@ -81,8 +76,6 @@ export const printableVMStatus = {
 export function getVirtualMachineRowActions(
   item: any,
   allClusters: Cluster[],
-  setDeleteResource: Dispatch<SetStateAction<IDeleteModalProps>>,
-  setDeleteExternalResource: Dispatch<SetStateAction<IDeleteExternalResourceModalProps>>,
   setVMAction: Dispatch<SetStateAction<IVMActionModalProps>>,
   vmActionsEnabled: boolean,
   navigate: NavigateFunction,
@@ -145,20 +138,13 @@ export function getVirtualMachineRowActions(
     id: 'delete',
     title: t('Delete VirtualMachine'),
     click: (item: any) => {
-      return item.managedHub && item.managedHub !== 'global-hub'
-        ? setDeleteExternalResource({
-            open: true,
-            close: () => setDeleteExternalResource(ClosedDeleteExternalResourceModalProps),
-            resource: item,
-            hubCluster: allClusters.find((cluster) => cluster.name === item.managedHub),
-          })
-        : setDeleteResource({
-            open: true,
-            close: () => setDeleteResource(ClosedDeleteModalProps),
-            resource: item,
-            currentQuery: 'kind:VirtualMachine,VirtualMachineInstance',
-            relatedResource: false,
-          })
+      setVMAction({
+        open: true,
+        close: () => setVMAction(ClosedVMActionModalProps),
+        action: 'Delete',
+        method: 'DELETE',
+        item,
+      })
     },
     isDisabled: isVMDeleteDisabled(printableStatus, item),
     tooltip: isVMDeleteDisabled(printableStatus, item)
@@ -276,8 +262,6 @@ export function getVMSnapshotActions(
   allClusters: Cluster[],
   vmActionsEnabled: boolean,
   setVMAction: Dispatch<SetStateAction<IVMActionModalProps>>,
-  setDeleteResource: Dispatch<SetStateAction<IDeleteModalProps>>,
-  setDeleteExternalResource: Dispatch<SetStateAction<IDeleteExternalResourceModalProps>>,
   navigate: NavigateFunction,
   t: TFunction<string, undefined>
 ): IAcmRowAction<any>[] {
@@ -346,22 +330,13 @@ export function getVMSnapshotActions(
     id: 'delete',
     title: t('Delete VirtualMachineSnapshot'),
     click: (item: any) => {
-      if (item.managedHub && item.managedHub !== 'global-hub') {
-        setDeleteExternalResource({
-          open: true,
-          close: () => setDeleteExternalResource(ClosedDeleteExternalResourceModalProps),
-          resource: item,
-          hubCluster: allClusters.find((cluster) => cluster.name === item.managedHub),
-        })
-      } else {
-        setDeleteResource({
-          open: true,
-          close: () => setDeleteResource(ClosedDeleteModalProps),
-          resource: item,
-          currentQuery: 'kind:VirtualMachineSnapshot',
-          relatedResource: false,
-        })
-      }
+      setVMAction({
+        open: true,
+        close: () => setVMAction(ClosedVMActionModalProps),
+        action: 'Delete',
+        method: 'DELETE',
+        item,
+      })
     },
   }
 

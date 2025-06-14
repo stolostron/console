@@ -13,16 +13,6 @@ import {
   VMActionModal,
 } from '../../Infrastructure/VirtualMachines/modals/VMActionModal'
 import { getVMSnapshotActions } from '../../Infrastructure/VirtualMachines/utils'
-import {
-  ClosedDeleteExternalResourceModalProps,
-  DeleteExternalResourceModal,
-  IDeleteExternalResourceModalProps,
-} from '../components/Modals/DeleteExternalResourceModal'
-import {
-  ClosedDeleteModalProps,
-  DeleteResourceModal,
-  IDeleteModalProps,
-} from '../components/Modals/DeleteResourceModal'
 import { searchClient } from '../search-sdk/search-client'
 import { useSearchResultItemsQuery } from '../search-sdk/search-sdk'
 import { useSearchDefinitions } from '../searchDefinitions'
@@ -41,10 +31,6 @@ export default function SnapshotsTab() {
   const [VMAction, setVMAction] = useState<IVMActionModalProps>(ClosedVMActionModalProps)
   const [vmLoading, setVMLoading] = useState<any>(true)
   const [vm, setVM] = useState<any>({})
-  const [deleteResource, setDeleteResource] = useState<IDeleteModalProps>(ClosedDeleteModalProps)
-  const [deleteExternalResource, setDeleteExternalResource] = useState<IDeleteExternalResourceModalProps>(
-    ClosedDeleteExternalResourceModalProps
-  )
 
   useEffect(() => {
     fireManagedClusterView(cluster, kind, apiversion, name, namespace)
@@ -121,19 +107,6 @@ export default function SnapshotsTab() {
         method={VMAction.method}
         item={VMAction.item}
       />
-      <DeleteResourceModal
-        open={deleteResource.open}
-        close={deleteResource.close}
-        resource={deleteResource.resource}
-        currentQuery={deleteResource.currentQuery}
-        relatedResource={deleteResource.relatedResource}
-      />
-      <DeleteExternalResourceModal
-        open={deleteExternalResource.open}
-        close={deleteExternalResource.close}
-        resource={deleteExternalResource.resource}
-        hubCluster={deleteExternalResource.hubCluster}
-      />
       <PageSection>
         <Stack hasGutter>
           {snapshotItems.length >= searchResultLimit ? (
@@ -151,17 +124,7 @@ export default function SnapshotsTab() {
               emptyState={undefined} // table only shown for kinds with related resources
               columns={searchDefinitions['virtualmachinesnapshot'].columns}
               rowActionResolver={(item: any) =>
-                getVMSnapshotActions(
-                  item,
-                  isVMRunning,
-                  allClusters,
-                  vmActionsEnabled,
-                  setVMAction,
-                  setDeleteResource,
-                  setDeleteExternalResource,
-                  navigate,
-                  t
-                )
+                getVMSnapshotActions(item, isVMRunning, allClusters, vmActionsEnabled, setVMAction, navigate, t)
               }
               keyFn={(item: any) => item._uid.toString()}
             />

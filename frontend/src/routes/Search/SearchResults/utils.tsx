@@ -194,23 +194,11 @@ export function getRowActions(
     return [viewApplication, viewAppTopology, editButton, viewRelatedButton, deleteButton]
   } else if (resourceKind.toLowerCase() === 'virtualmachinesnapshot') {
     const isVMRunning = item?.status === 'Running'
-    return getVMSnapshotActions(
-      item,
-      isVMRunning,
-      allClusters,
-      vmActionsEnabled,
-      setVMAction,
-      setDeleteResource,
-      setDeleteExternalResource,
-      navigate,
-      t
-    )
+    return getVMSnapshotActions(item, isVMRunning, allClusters, vmActionsEnabled, setVMAction, navigate, t)
   } else if (resourceKind.toLowerCase() === 'virtualmachine') {
     return getVirtualMachineRowActions(
       item,
       allClusters,
-      setDeleteResource,
-      setDeleteExternalResource,
       setVMAction,
       vmActionsEnabled,
       navigate,
