@@ -240,6 +240,27 @@ export function ArgoWizard(props: ArgoWizardProps) {
   const repoURL = get(applicationSet, 'spec.template.spec.source.repoURL')
 
   useEffect(() => {
+    if (!props.argoServers?.length) return
+    const argoServer = props.argoServers[0]?.value
+    const placementRefName = argoServer.spec?.placementRef?.name
+    const placement = props.placements.find(
+      (placement) =>
+        placement.metadata?.namespace === argoServer.metadata.namespace && placement.metadata?.name === placementRefName
+    )
+    const clusterSets: IResource[] = props.clusterSets.filter((clusterSet) => {
+      if (placement?.spec?.clusterSets) {
+        if (placement?.spec?.clusterSets.length > 0) {
+          return placement?.spec?.clusterSets.includes(clusterSet.metadata?.name!)
+        }
+      } else {
+        return clusterSet
+      }
+    })
+
+    setFilteredClusterSets(clusterSets)
+  }, [props.argoServers, props.placements, props.clusterSets])
+
+  useEffect(() => {
     if (source && !sources) {
       const channel = gitChannels.find((channel: any) => channel === repoURL)
       if (channel) {
