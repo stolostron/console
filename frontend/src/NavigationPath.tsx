@@ -74,6 +74,7 @@ export enum NavigationPath {
   resourceRelated = '/multicloud/search/resources/related',
   resourceLogs = '/multicloud/search/resources/logs',
   vmSnapshots = '/multicloud/search/resources/snapshots',
+  vmConsole = '/multicloud/search/resources/console',
 
   // Infrastructure
   infrastructure = '/multicloud/infrastructure',
