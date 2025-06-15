@@ -5,25 +5,23 @@ import { RecoilRoot } from 'recoil'
 import { fetchRetry } from '../../../../resources/utils/resource-request'
 import { VMActionModal } from './VMActionModal'
 
-jest.mock('../../../../resources/managedclusterview', () => ({
-  fireManagedClusterView: jest.fn(() => {
-    return Promise.resolve({
-      result: {
-        apiVersion: 'kubevirt.io/v1',
-        kind: 'VirtualMachine',
-        metadata: {
-          name: 'centos-stream9',
-          namespace: 'openshift-cnv',
-        },
-        status: {
-          printableStatus: 'Running',
-          ready: true,
-        },
-      },
-    })
-  }),
-}))
 jest.mock('../../../../resources/utils/resource-request', () => ({
+  getRequest: jest.fn((url) => {
+    if (url === '/virtualmachines/get/local-cluster/testVM/testVMNamespace') {
+      return {
+        promise: Promise.resolve({
+          apiVersion: 'kubevirt.io/v1',
+          kind: 'VirtualMachine',
+          metadata: {
+            name: 'test-vm',
+            namespace: 'testVMNamespace',
+          },
+        }),
+      }
+    } else {
+      return Promise.resolve()
+    }
+  }),
   getBackendUrl: jest.fn(() => ''),
   fetchRetry: jest.fn(({ url }) => {
     if (url === '/apis/subresources.kubevirt.io/v1/namespaces/testVMNamespace/virtualmachines/testVM/noop') {
@@ -49,6 +47,7 @@ describe('VMActionModal', () => {
           action={'start'}
           method={'PUT'}
           item={{
+            kind: 'VirtualMachine',
             name: 'testVM',
             namespace: 'testVMNamespace',
             cluster: 'local-cluster',
@@ -70,51 +69,9 @@ describe('VMActionModal', () => {
     userEvent.click(confirmButton)
 
     expect(fetchRetry).toHaveBeenCalledWith({
-      data: {},
-      disableRedirectUnauthorizedLogin: true,
-      headers: {
-        Accept: '*/*',
-      },
-      method: 'PUT',
-      retries: 0,
-      signal: abortController.signal,
-      url: '/apis/subresources.kubevirt.io/v1/namespaces/testVMNamespace/virtualmachines/testVM/start',
-    })
-  })
-
-  test('renders VMActionModal correctly and successfully calls start action on managed cluster vm', async () => {
-    const abortController = new AbortController()
-    const { getByTestId } = render(
-      <RecoilRoot>
-        <VMActionModal
-          open={true}
-          close={() => {}}
-          action={'start'}
-          method={'PUT'}
-          item={{
-            name: 'testVM',
-            namespace: 'testVMNamespace',
-            cluster: 'test-cluster',
-          }}
-        />
-      </RecoilRoot>
-    )
-    await waitFor(() => expect(screen.queryByText('start VirtualMachine?')).toBeInTheDocument())
-    await waitFor(() =>
-      expect(
-        screen.queryByText('Are you sure you want to start testVM in namespace testVMNamespace?')
-      ).toBeInTheDocument()
-    )
-
-    // verify click launch button
-    const confirmButton = getByTestId('vm-modal-confirm')
-    expect(confirmButton).toBeTruthy()
-    userEvent.click(confirmButton)
-
-    expect(fetchRetry).toHaveBeenCalledWith({
       data: {
+        managedCluster: 'local-cluster',
         reqBody: {},
-        managedCluster: 'test-cluster',
         vmName: 'testVM',
         vmNamespace: 'testVMNamespace',
       },
@@ -139,6 +96,7 @@ describe('VMActionModal', () => {
           action={'unpause'}
           method={'PUT'}
           item={{
+            kind: 'VirtualMachine',
             name: 'testVM',
             namespace: 'testVMNamespace',
             cluster: 'local-cluster',
@@ -160,7 +118,12 @@ describe('VMActionModal', () => {
     userEvent.click(confirmButton)
 
     expect(fetchRetry).toHaveBeenCalledWith({
-      data: {},
+      data: {
+        managedCluster: 'local-cluster',
+        reqBody: {},
+        vmName: 'testVM',
+        vmNamespace: 'testVMNamespace',
+      },
       disableRedirectUnauthorizedLogin: true,
       headers: {
         Accept: '*/*',
@@ -168,7 +131,7 @@ describe('VMActionModal', () => {
       method: 'PUT',
       retries: 0,
       signal: abortController.signal,
-      url: '/apis/subresources.kubevirt.io/v1/namespaces/testVMNamespace/virtualmachineinstances/testVM/unpause',
+      url: '/virtualmachineinstances/unpause',
     })
   })
 
@@ -193,7 +156,7 @@ describe('VMActionModal', () => {
         />
       </RecoilRoot>
     )
-    await waitFor(() => expect(screen.queryByText('restore VirtualMachine?')).toBeInTheDocument())
+    await waitFor(() => expect(screen.queryByText('restore VirtualMachineSnapshot?')).toBeInTheDocument())
     await waitFor(() =>
       expect(
         screen.queryByText('Are you sure you want to restore testVM from snapshot testVM-snapshot')
@@ -207,29 +170,34 @@ describe('VMActionModal', () => {
 
     expect(fetchRetry).toHaveBeenCalledWith({
       data: {
-        apiVersion: 'snapshot.kubevirt.io/v1beta1',
-        kind: 'VirtualMachineRestore',
-        metadata: {
-          name: 'testVM-snapshot-1234',
-          namespace: 'testVMNamespace',
-          ownerReferences: [
-            {
-              apiVersion: 'kubevirt.io/v1',
-              blockOwnerDeletion: false,
-              kind: 'VirtualMachine',
-              name: 'centos-stream9',
-              uid: undefined,
-            },
-          ],
-        },
-        spec: {
-          target: {
-            apiGroup: 'kubevirt.io',
-            kind: 'VirtualMachine',
-            name: 'centos-stream9',
+        managedCluster: 'local-cluster',
+        reqBody: {
+          apiVersion: 'snapshot.kubevirt.io/v1beta1',
+          kind: 'VirtualMachineRestore',
+          metadata: {
+            name: 'testVM-snapshot-1234',
+            namespace: 'testVMNamespace',
+            ownerReferences: [
+              {
+                apiVersion: 'kubevirt.io/v1',
+                blockOwnerDeletion: false,
+                kind: 'VirtualMachine',
+                name: 'test-vm',
+                uid: undefined,
+              },
+            ],
           },
-          virtualMachineSnapshotName: 'testVM-snapshot',
+          spec: {
+            target: {
+              apiGroup: 'kubevirt.io',
+              kind: 'VirtualMachine',
+              name: 'test-vm',
+            },
+            virtualMachineSnapshotName: 'testVM-snapshot',
+          },
         },
+        vmName: 'testVM-snapshot',
+        vmNamespace: 'testVMNamespace',
       },
       disableRedirectUnauthorizedLogin: true,
       headers: {
@@ -238,7 +206,7 @@ describe('VMActionModal', () => {
       method: 'POST',
       retries: 0,
       signal: abortController.signal,
-      url: '/apis/snapshot.kubevirt.io/v1beta1/namespaces/testVMNamespace/virtualmachinerestores',
+      url: '/virtualmachinerestores',
     })
   })
 
@@ -251,6 +219,7 @@ describe('VMActionModal', () => {
           action={'noop'}
           method={'PUT'}
           item={{
+            kind: 'VirtualMachine',
             name: 'testVM',
             namespace: 'testVMNamespace',
             cluster: 'test-cluster',
@@ -283,6 +252,7 @@ describe('VMActionModal', () => {
           action={'unauthorized'}
           method={'PUT'}
           item={{
+            kind: 'VirtualMachine',
             name: 'testVM',
             namespace: 'testVMNamespace',
             cluster: 'test-cluster',
