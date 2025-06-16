@@ -8,16 +8,16 @@ import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import pluralize from 'pluralize'
 import { Stream } from 'stream'
 import { promisify } from 'util'
+import { createDictionary, deflateResource, inflateResource } from '../lib/compression'
 import { jsonPost } from '../lib/json-request'
 import { logger } from '../lib/logger'
 import { ServerSideEvent, ServerSideEvents } from '../lib/server-side-events'
 import { getCACertificate, getServiceAccountToken } from '../lib/serviceAccountToken'
 import { getAuthenticatedToken } from '../lib/token'
 import { IResource } from '../resources/resource'
-import { polledAggregation } from './aggregator'
-import { createDictionary, deflateResource, inflateResource } from '../lib/compression'
-import { getAppDict, ICompressedResource, ITransformedResource } from './aggregators/applications'
 import { IWatchOptions } from '../resources/watch-options'
+import { polledAggregation } from './aggregator'
+import { getAppDict, ICompressedResource, ITransformedResource } from './aggregators/applications'
 
 const { map, split } = eventStream
 const pipeline = promisify(Stream.pipeline)
@@ -193,6 +193,7 @@ const definitions: IWatchOptions[] = [
   { kind: 'ManagedClusterInfo', apiVersion: 'internal.open-cluster-management.io/v1beta1' },
   { kind: 'BareMetalHost', apiVersion: 'metal3.io/v1alpha1' },
   { kind: 'MultiClusterEngine', apiVersion: 'multicluster.openshift.io/v1' },
+  { kind: 'MultiClusterHub', apiVersion: 'operator.open-cluster-management.io/v1' },
   { kind: 'ClusterVersion', apiVersion: 'config.openshift.io/v1' },
   { kind: 'StorageClass', apiVersion: 'storage.k8s.io/v1' },
   { kind: 'PlacementBinding', apiVersion: 'policy.open-cluster-management.io/v1' },

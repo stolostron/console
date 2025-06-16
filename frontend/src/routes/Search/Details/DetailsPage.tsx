@@ -52,7 +52,8 @@ export default function DetailsPage() {
   usePageVisitMetricHandler(Pages.searchDetails)
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { useVirtualMachineActionsEnabled } = useSharedAtoms()
+  const { useVirtualMachineActionsEnabled, useIsFineGrainedRbacEnabled } = useSharedAtoms()
+  const isFineGrainedRbacEnabled = useIsFineGrainedRbacEnabled()
   const vmActionsEnabled = useVirtualMachineActionsEnabled()
   const [resource, setResource] = useState<any>(undefined)
   const [containers, setContainers] = useState<string[]>()
@@ -66,7 +67,7 @@ export default function DetailsPage() {
   const [pluginModal, setPluginModal] = useState<JSX.Element>()
 
   useEffect(() => {
-    if (kind === 'VirtualMachine' || kind === 'VirtualMachineSnapshot') {
+    if (isFineGrainedRbacEnabled && (kind === 'VirtualMachine' || kind === 'VirtualMachineSnapshot')) {
       const url = getBackendUrl() + `/${kind.toLowerCase()}s/get/${cluster}/${name}/${namespace}` // need the plural kind either virtualmachines || virtualmachinesnapshots
       getRequest<IResource>(url)
         .promise.then((response) => {
@@ -77,38 +78,36 @@ export default function DetailsPage() {
           console.error('Error getting VM resource: ', err)
           setResourceError(err.message)
         })
-    } else {
-      if (resourceVersion !== resource?.metadata.resourceVersion || name !== resource?.metadata.name) {
-        /* istanbul ignore else */
-        if (isHubClusterResource) {
-          getResource<IResource>({
-            apiVersion: apiversion,
-            kind,
-            metadata: { namespace, name },
+    } else if (resourceVersion !== resource?.metadata.resourceVersion || name !== resource?.metadata.name) {
+      /* istanbul ignore else */
+      if (isHubClusterResource) {
+        getResource<IResource>({
+          apiVersion: apiversion,
+          kind,
+          metadata: { namespace, name },
+        })
+          .promise.then((response) => {
+            setResource(response)
+            setResourceVersion(response?.metadata?.resourceVersion ?? '')
           })
-            .promise.then((response) => {
-              setResource(response)
-              setResourceVersion(response?.metadata?.resourceVersion ?? '')
-            })
-            .catch((err) => {
-              console.error('Error getting resource: ', err)
-              setResourceError(err.message)
-            })
-        } else {
-          fireManagedClusterView(cluster, kind, apiversion, name, namespace)
-            .then((viewResponse) => {
-              if (viewResponse?.message) {
-                setResourceError(viewResponse.message)
-              } else {
-                setResource(viewResponse?.result)
-                setResourceVersion(viewResponse?.result?.metadata.resourceVersion ?? '')
-              }
-            })
-            .catch((err) => {
-              console.error('Error getting resource: ', err)
-              setResourceError(err)
-            })
-        }
+          .catch((err) => {
+            console.error('Error getting resource: ', err)
+            setResourceError(err.message)
+          })
+      } else {
+        fireManagedClusterView(cluster, kind, apiversion, name, namespace)
+          .then((viewResponse) => {
+            if (viewResponse?.message) {
+              setResourceError(viewResponse.message)
+            } else {
+              setResource(viewResponse?.result)
+              setResourceVersion(viewResponse?.result?.metadata.resourceVersion ?? '')
+            }
+          })
+          .catch((err) => {
+            console.error('Error getting resource: ', err)
+            setResourceError(err)
+          })
       }
     }
   }, [
@@ -117,6 +116,7 @@ export default function DetailsPage() {
     apiversion,
     name,
     namespace,
+    isFineGrainedRbacEnabled,
     isHubClusterResource,
     resourceVersion,
     resource?.metadata.resourceVersion,
@@ -223,7 +223,7 @@ export default function DetailsPage() {
         component="button"
         key="delete-resource"
         onClick={() => {
-          if (kind.startsWith('VirtualMachine')) {
+          if (kind.startsWith('VirtualMachine') && isFineGrainedRbacEnabled) {
             setVMAction({
               open: true,
               close: closeModal,
@@ -350,6 +350,7 @@ export default function DetailsPage() {
     apiversion,
     cluster,
     createVMDropdownItems,
+    isFineGrainedRbacEnabled,
     isHubClusterResource,
     kind,
     name,

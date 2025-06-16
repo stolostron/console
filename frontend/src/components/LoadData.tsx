@@ -72,6 +72,8 @@ import {
   MulticlusterApplicationSetReportKind,
   MultiClusterEngineApiVersion,
   MultiClusterEngineKind,
+  MultiClusterHubApiVersion,
+  MultiClusterHubKind,
   NamespaceApiVersion,
   NamespaceKind,
   NMStateConfigApiVersion,
@@ -150,6 +152,7 @@ import {
   managedClustersState,
   multiclusterApplicationSetReportState,
   multiClusterEnginesState,
+  multiClusterHubsState,
   namespacesState,
   nmStateConfigsState,
   nodePoolsState,
@@ -210,6 +213,7 @@ export function LoadData(props: { children?: ReactNode }) {
   const setManagedClusterSetBindings = useSetRecoilState(managedClusterSetBindingsState)
   const setManagedClusterSets = useSetRecoilState(managedClusterSetsState)
   const setManagedClusters = useSetRecoilState(managedClustersState)
+  const setMultiClusterHubs = useSetRecoilState(multiClusterHubsState)
   const setMultiClusterEngines = useSetRecoilState(multiClusterEnginesState)
   const setMulticlusterApplicationSetReportState = useSetRecoilState(multiclusterApplicationSetReportState)
   const setNamespaces = useSetRecoilState(namespacesState)
@@ -313,6 +317,7 @@ export function LoadData(props: { children?: ReactNode }) {
     addSetter(ManagedClusterInfoApiVersion, ManagedClusterInfoKind, setManagedClusterInfos)
     addSetter(ManagedClusterSetApiVersion, ManagedClusterSetKind, setManagedClusterSets)
     addSetter(ManagedClusterSetBindingApiVersion, ManagedClusterSetBindingKind, setManagedClusterSetBindings)
+    addSetter(MultiClusterHubApiVersion, MultiClusterHubKind, setMultiClusterHubs)
     addSetter(MultiClusterEngineApiVersion, MultiClusterEngineKind, setMultiClusterEngines)
     addSetter(
       MulticlusterApplicationSetReportApiVersion,
@@ -367,6 +372,7 @@ export function LoadData(props: { children?: ReactNode }) {
     setManagedClusterSetBindings,
     setManagedClusterSets,
     setManagedClusters,
+    setMultiClusterHubs,
     setMultiClusterEngines,
     setMulticlusterApplicationSetReportState,
     setNamespaces,

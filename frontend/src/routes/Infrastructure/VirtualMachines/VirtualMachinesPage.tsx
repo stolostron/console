@@ -35,6 +35,16 @@ import {
   AcmTablePaginationContextProvider,
   IAcmTableColumn,
 } from '../../../ui-components'
+import {
+  ClosedDeleteExternalResourceModalProps,
+  DeleteExternalResourceModal,
+  IDeleteExternalResourceModalProps,
+} from '../../Search/components/Modals/DeleteExternalResourceModal'
+import {
+  ClosedDeleteModalProps,
+  DeleteResourceModal,
+  IDeleteModalProps,
+} from '../../Search/components/Modals/DeleteResourceModal'
 import { SearchInfoModal } from '../../Search/components/Modals/SearchInfoModal'
 import { Searchbar } from '../../Search/components/Searchbar'
 import {
@@ -64,10 +74,15 @@ function VirtualMachineTable(props: Readonly<{ searchResultItems: ISearchResult[
   const { searchResultItems } = props
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { useVirtualMachineActionsEnabled } = useSharedAtoms()
+  const { useVirtualMachineActionsEnabled, useIsFineGrainedRbacEnabled } = useSharedAtoms()
+  const isFineGrainedRbacEnabled = useIsFineGrainedRbacEnabled()
   const vmActionsEnabled = useVirtualMachineActionsEnabled()
   const { acmExtensions } = useContext(PluginContext)
   const allClusters = useAllClusters(true)
+  const [deleteResource, setDeleteResource] = useState<IDeleteModalProps>(ClosedDeleteModalProps)
+  const [deleteExternalResource, setDeleteExternalResource] = useState<IDeleteExternalResourceModalProps>(
+    ClosedDeleteExternalResourceModalProps
+  )
   const [VMAction, setVMAction] = useState<IVMActionModalProps>(ClosedVMActionModalProps)
   const searchDefinitions = useSearchDefinitions()
   const { clusterVersionState } = useSharedAtoms()
@@ -81,7 +96,10 @@ function VirtualMachineTable(props: Readonly<{ searchResultItems: ISearchResult[
       return getVirtualMachineRowActions(
         item,
         allClusters,
+        setDeleteResource,
+        setDeleteExternalResource,
         setVMAction,
+        isFineGrainedRbacEnabled,
         vmActionsEnabled,
         navigate,
         t,
@@ -89,7 +107,7 @@ function VirtualMachineTable(props: Readonly<{ searchResultItems: ISearchResult[
         getVirtualMachineRowActionExtensions(item, acmExtensions?.virtualMachineAction || [], setPluginModal)
       )
     },
-    [allClusters, navigate, t, vmActionsEnabled, acmExtensions]
+    [allClusters, navigate, t, isFineGrainedRbacEnabled, vmActionsEnabled, acmExtensions]
   )
 
   const extensionColumns: IAcmTableColumn<ISearchResult>[] = useMemo(
@@ -112,6 +130,19 @@ function VirtualMachineTable(props: Readonly<{ searchResultItems: ISearchResult[
         action={VMAction.action}
         method={VMAction.method}
         item={VMAction.item}
+      />
+      <DeleteResourceModal
+        open={deleteResource.open}
+        close={deleteResource.close}
+        resource={deleteResource.resource}
+        currentQuery={deleteResource.currentQuery}
+        relatedResource={deleteResource.relatedResource}
+      />
+      <DeleteExternalResourceModal
+        open={deleteExternalResource.open}
+        close={deleteExternalResource.close}
+        resource={deleteExternalResource.resource}
+        hubCluster={deleteExternalResource.hubCluster}
       />
       <AcmTablePaginationContextProvider localStorageKey="vm-page-table">
         <AcmTable

@@ -5,8 +5,9 @@ import { ButtonVariant, ModalVariant } from '@patternfly/react-core'
 import { useContext, useEffect, useState } from 'react'
 import { TFunction } from 'react-i18next'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { IResource } from '../../../../resources'
+import { fireManagedClusterView, IResource } from '../../../../resources'
 import { fetchRetry, getBackendUrl, getRequest } from '../../../../resources/utils'
+import { useSharedAtoms } from '../../../../shared-recoil'
 import { AcmButton, AcmModal, AcmToastContext, IAlertContext } from '../../../../ui-components'
 import { searchClient } from '../../../Search/search-sdk/search-client'
 import { SnapshotModalBody } from './snapshotModalBody'
@@ -109,6 +110,8 @@ export const VMActionModal = (props: IVMActionModalProps) => {
   const { open, close, action, method, item } = props
   const { t } = useTranslation()
   const toast = useContext(AcmToastContext)
+  const { useIsFineGrainedRbacEnabled } = useSharedAtoms()
+  const isFineGrainedRbacEnabled = useIsFineGrainedRbacEnabled()
   const [vm, setVM] = useState<any>({})
   const [vmLoading, setVMLoading] = useState<any>(true)
   const [reqBody, setReqBody] = useState({})
@@ -117,20 +120,33 @@ export const VMActionModal = (props: IVMActionModalProps) => {
   useEffect(() => {
     if (item.kind === 'VirtualMachineSnapshot' && item.sourceName) {
       const name = item.kind === 'VirtualMachineSnapshot' ? item.sourceName : item.name
-      const url = getBackendUrl() + `/virtualmachines/get/${item.cluster}/${name}/${item.namespace}` // need the plural kind either virtualmachines || virtualmachinesnapshots
-      getRequest<IResource>(url)
-        .promise.then((response) => {
-          setVMLoading(false)
-          setVM(response)
-        })
-        .catch((err) => {
-          setVMLoading(false)
-          console.error('Error getting VM resource: ', err)
-        })
+      if (isFineGrainedRbacEnabled) {
+        const url = getBackendUrl() + `/virtualmachines/get/${item.cluster}/${name}/${item.namespace}` // need the plural kind either virtualmachines || virtualmachinesnapshots
+        getRequest<IResource>(url)
+          .promise.then((response) => {
+            setVMLoading(false)
+            setVM(response)
+          })
+          .catch((err) => {
+            setVMLoading(false)
+            console.error('Error getting VM resource: ', err)
+          })
+      } else {
+        fireManagedClusterView(item.cluster, 'VirtualMachine', 'kubevirt.io/v1', name, item.namespace).then(
+          (viewResponse) => {
+            setVMLoading(false)
+            if (viewResponse?.message) {
+              console.error('Error fetching parent VM')
+            } else {
+              setVM(viewResponse?.result)
+            }
+          }
+        )
+      }
     } else {
       setVMLoading(false)
     }
-  }, [item])
+  }, [item, isFineGrainedRbacEnabled])
 
   let modalBody = undefined
   switch (action.toLowerCase()) {

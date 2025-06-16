@@ -29,7 +29,7 @@ import { serveHandler } from './routes/serve'
 import { upgradeRiskPredictions } from './routes/upgrade-risks-prediction'
 import { username } from './routes/username'
 import { userpreference } from './routes/userpreference'
-import { virtualMachineProxy, vmResourceUsageProxy } from './routes/virtualMachineProxy'
+import { virtualMachineGETProxy, virtualMachineProxy, vmResourceUsageProxy } from './routes/virtualMachineProxy'
 
 const isProduction = process.env.NODE_ENV === 'production'
 const isDevelopment = process.env.NODE_ENV === 'development'
@@ -70,8 +70,10 @@ router.all('/metrics', metrics)
 router.get('/hub', hub)
 router.post('/upgrade-risks-prediction', upgradeRiskPredictions)
 router.post('/aggregate/*', aggregate)
+router.get('/virtualmachines/get', virtualMachineGETProxy)
 router.all('/virtualmachines/*', virtualMachineProxy)
 router.all('/virtualmachineinstances/*', virtualMachineProxy)
+router.get('/virtualmachinesnapshots/get', virtualMachineGETProxy)
 router.all('/virtualmachinesnapshots/*', virtualMachineProxy)
 router.all('/virtualmachinerestores', virtualMachineProxy)
 router.get('/vmResourceUsage/cluster/:cluster/namespace/:namespace', vmResourceUsageProxy)
