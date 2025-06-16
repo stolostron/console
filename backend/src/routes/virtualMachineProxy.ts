@@ -8,20 +8,19 @@ import { logger } from '../lib/logger'
 import { getMultiClusterEngine } from '../lib/multi-cluster-engine'
 import { respondInternalServerError } from '../lib/respond'
 import { getAuthenticatedToken } from '../lib/token'
-import { jsonRequest } from '../lib/json-request'
 import {
-  PodMetricsList,
-  PodMetric,
-  convertNanocoresToMillicores,
-  convertKibibytesToMebibytes,
-  convertBytesToGibibytes,
-  FilesystemType,
-  VmiUsageType,
-  PodListType,
-  toMillicores,
-  toMebibytes,
   calUsagePercent,
+  convertBytesToGibibytes,
+  convertKibibytesToMebibytes,
+  convertNanocoresToMillicores,
+  FilesystemType,
+  PodListType,
+  PodMetric,
+  PodMetricsList,
   PodType,
+  toMebibytes,
+  toMillicores,
+  VmiUsageType,
 } from '../lib/virtual-machine'
 
 const {
