@@ -102,7 +102,7 @@ export async function virtualMachineProxy(req: Http2ServerRequest, res: Http2Ser
             method: req.method,
             headers,
             agent: getServiceAgent(),
-            body: req.method !== 'GET' ? reqBody : undefined,
+            body: reqBody,
             compress: true,
           })
             .then(async (results) => {

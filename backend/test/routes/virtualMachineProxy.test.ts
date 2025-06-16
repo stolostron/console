@@ -363,6 +363,49 @@ describe('Virtual Machine actions', function () {
     expect(res.statusCode).toEqual(200)
   })
 
+  it('should successfully get VM snapshot', async function () {
+    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+    nock(process.env.CLUSTER_API_URL)
+      .post(
+        '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
+        '{"apiVersion":"authorization.k8s.io/v1","kind":"SelfSubjectAccessReview","metadata":{},"spec":{"resourceAttributes":{"group":"action.open-cluster-management.io","namespace":"testCluster","resource":"managedclusteractions","verb":"create"}}}'
+      )
+      .reply(200, {
+        status: {
+          allowed: true,
+        },
+      })
+    nock(process.env.CLUSTER_API_URL)
+      .get('/api/v1/namespaces/testCluster/secrets')
+      .reply(200, {
+        statusCode: 200,
+        apiVersion: 'v1',
+        kind: 'SecretList',
+        items: [
+          {
+            kind: 'Secret',
+            apiVersion: 'v1',
+            metadata: {
+              name: 'vm-actor',
+              namespace: 'testCluster',
+            },
+            data: {
+              // test-vm-token
+              token: 'dGVzdC12bS10b2tlbg==', // notsecret
+            },
+            type: 'Opaque',
+          },
+        ],
+      })
+    nock('https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local:9092')
+      .get('/testCluster/apis/snapshot.kubevirt.io/v1beta1/namespaces/vmNamespace/virtualmachinesnapshots/vmName')
+      .reply(200, {
+        statusCode: 200,
+      })
+    const res = await request('GET', '/virtualmachinesnapshots/get')
+    expect(res.statusCode).toEqual(200)
+  })
+
   it('should successfully delete VM', async function () {
     nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
     nock(process.env.CLUSTER_API_URL)
