@@ -177,6 +177,7 @@ export const VMActionModal = (props: IVMActionModalProps) => {
               method,
               item,
               reqBody,
+              /* istanbul ignore next */
               () => searchClient.refetchQueries({ include: ['searchResultItems', 'searchResultRelatedItems'] }),
               toast,
               t

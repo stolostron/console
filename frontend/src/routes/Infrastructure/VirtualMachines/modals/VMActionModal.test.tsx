@@ -135,6 +135,55 @@ describe('VMActionModal', () => {
     })
   })
 
+  test('renders VMActionModal correctly and successfully calls delete vm action', async () => {
+    const abortController = new AbortController()
+    const { getByTestId } = render(
+      <RecoilRoot>
+        <VMActionModal
+          open={true}
+          close={() => {}}
+          action={'delete'}
+          method={'DELETE'}
+          item={{
+            kind: 'VirtualMachine',
+            name: 'testVM',
+            namespace: 'testVMNamespace',
+            cluster: 'local-cluster',
+            _hubClusterResource: 'true',
+          }}
+        />
+      </RecoilRoot>
+    )
+    await waitFor(() => expect(screen.queryByText('delete VirtualMachine?')).toBeInTheDocument())
+    await waitFor(() =>
+      expect(
+        screen.queryByText('Are you sure you want to delete testVM in namespace testVMNamespace?')
+      ).toBeInTheDocument()
+    )
+
+    // verify click launch button
+    const confirmButton = getByTestId('vm-modal-confirm')
+    expect(confirmButton).toBeTruthy()
+    userEvent.click(confirmButton)
+
+    expect(fetchRetry).toHaveBeenCalledWith({
+      data: {
+        managedCluster: 'local-cluster',
+        reqBody: {},
+        vmName: 'testVM',
+        vmNamespace: 'testVMNamespace',
+      },
+      disableRedirectUnauthorizedLogin: true,
+      headers: {
+        Accept: '*/*',
+      },
+      method: 'DELETE',
+      retries: 0,
+      signal: abortController.signal,
+      url: '/virtualmachines/delete',
+    })
+  })
+
   test('renders VMActionModal correctly and successfully calls restore snapshot action', async () => {
     Date.now = jest.fn(() => 1234)
     const abortController = new AbortController()
