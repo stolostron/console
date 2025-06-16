@@ -23,7 +23,8 @@ import { ExclamationCircleIcon } from '@patternfly/react-icons'
 import { Dispatch, FC, FormEvent, SetStateAction, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../../lib/doc-util'
-import { fireManagedClusterView } from '../../../../resources/managedclusterview'
+import { IResource } from '../../../../resources'
+import { getBackendUrl, getRequest } from '../../../../resources/utils/resource-request'
 import { printableVMStatus } from '../utils'
 
 // kubevirt modal - https://github.com/kubevirt-ui/kubevirt-plugin/blob/5f2e9729034fcd97ebdb2ad2e8fed214a16d77a9/src/utils/components/SnapshotModal/SnapshotModal.tsx
@@ -206,15 +207,11 @@ export function SnapshotModalBody(
   const [deadlineUnit, setDeadlineUnit] = useState<deadlineUnits>(deadlineUnits.Seconds)
 
   useEffect(() => {
-    fireManagedClusterView(item.cluster, item.kind, item.apiversion, item.name, item.namespace)
-      .then((viewResponse) => {
+    const url = getBackendUrl() + `/virtualmachines/get/${item.cluster}/${item.name}/${item.namespace}`
+    getRequest<IResource>(url)
+      .promise.then((response) => {
         setVMLoading(false)
-        if (viewResponse?.message) {
-          setGetVMError(true)
-        } else {
-          setVM(viewResponse?.result)
-          setGetVMError(false)
-        }
+        setVM(response)
       })
       .catch((err) => {
         console.error('Error getting VirtualMachine: ', err)
