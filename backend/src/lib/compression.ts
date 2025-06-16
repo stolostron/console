@@ -161,7 +161,7 @@ function decompressResource(resource: CompressedResourceType, dictionary: Dictio
           const key = dictionary.get(Number(inx))
           if (
             valueAsIsKeys.has(key) ||
-            (key === 'message' && inx in resource && typeof resource[inx] !== 'number') ||
+            (key === 'message' && inx in resource && !Number.isInteger(Number(resource[inx]))) ||
             key.includes('Time')
           ) {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
