@@ -50,6 +50,7 @@ spec:
       {{/if}}
       {{#if (or storageClassMapping.length volumeSnapshotClassMapping.length )}}
       storageDriver:
+        type: Manual
         manual:
           {{#if storageClassMapping}}
           storageClassMapping:
