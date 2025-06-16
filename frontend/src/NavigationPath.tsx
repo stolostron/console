@@ -180,6 +180,10 @@ export enum NavigationPath {
   editAccessControlManagement = '/multicloud/access-control-management/edit/:id',
   viewAccessControlManagement = '/multicloud/access-control-management/details/:id',
 
+  // Virtualization
+  virtualizationManagement = '/multicloud/virtualization',
+  migration = '/multicloud/virtualization/migration',
+
   emptyPath = '',
 }
 
