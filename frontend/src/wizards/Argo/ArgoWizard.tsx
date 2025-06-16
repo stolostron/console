@@ -240,25 +240,13 @@ export function ArgoWizard(props: ArgoWizardProps) {
   const repoURL = get(applicationSet, 'spec.template.spec.source.repoURL')
 
   useEffect(() => {
-    if (!props.argoServers?.length) return
-    const argoServer = props.argoServers[0]?.value
-    const placementRefName = argoServer.spec?.placementRef?.name
-    const placement = props.placements.find(
-      (placement) =>
-        placement.metadata?.namespace === argoServer.metadata.namespace && placement.metadata?.name === placementRefName
-    )
-    const clusterSets: IResource[] = props.clusterSets.filter((clusterSet) => {
-      if (placement?.spec?.clusterSets) {
-        if (placement?.spec?.clusterSets.length > 0) {
-          return placement?.spec?.clusterSets.includes(clusterSet.metadata?.name!)
-        }
-      } else {
-        return clusterSet
-      }
-    })
-
-    setFilteredClusterSets(clusterSets)
-  }, [props.argoServers, props.placements, props.clusterSets])
+    if (!props.resources) return
+    const placement: any = props.resources.find((resource) => resource.kind === PlacementKind)
+    const selectedClusterSets = placement?.spec?.clusterSets.map((clusterSet: string) => ({
+      metadata: { name: clusterSet },
+    }))
+    setFilteredClusterSets(selectedClusterSets)
+  }, [props.resources])
 
   useEffect(() => {
     if (source && !sources) {
@@ -880,15 +868,17 @@ function ArgoWizardPlacementSection(props: {
     (placement) => placement.metadata?.namespace === applicationSet?.metadata?.namespace
   )
   const namespaceClusterSetNames =
-    props.clusterSetBindings
-      .filter((clusterSetBinding) =>
-        props.clusterSets?.find(
-          (clusterSet) =>
-            clusterSet.metadata?.name === clusterSetBinding.spec?.clusterSet &&
-            clusterSetBinding.metadata?.namespace === applicationSet?.metadata?.namespace
-        )
-      )
-      .map((clusterSetBinding) => clusterSetBinding.spec?.clusterSet ?? '') ?? []
+    (editMode === EditMode.Edit
+      ? props.clusterSets.map((clusterSet) => clusterSet.metadata?.name).filter((name) => name !== undefined)
+      : props.clusterSetBindings
+          .filter((clusterSetBinding) =>
+            props.clusterSets?.find(
+              (clusterSet) =>
+                clusterSet.metadata?.name === clusterSetBinding.spec?.clusterSet &&
+                clusterSetBinding.metadata?.namespace === applicationSet?.metadata?.namespace
+            )
+          )
+          .map((clusterSetBinding) => clusterSetBinding.spec?.clusterSet ?? '')) ?? []
   const { update } = useData()
   const { isPullModel = false } = props
   return (
