@@ -157,7 +157,7 @@ export async function virtualMachineProxy(req: Http2ServerRequest, res: Http2Ser
         }
 
         const headers: HeadersInit =
-          req.method === 'POST'
+          req.method !== 'PUT'
             ? {
                 [HTTP2_HEADER_AUTHORIZATION]: `Bearer ${token}`,
                 [HTTP2_HEADER_ACCEPT]: 'application/json',
@@ -177,13 +177,13 @@ export async function virtualMachineProxy(req: Http2ServerRequest, res: Http2Ser
           .then(async (results) => {
             if (results?.status > 300) {
               logger.error({
-                msg: 'Error in VirtualMachine action response (fine grained RBAC)',
+                msg: 'Error in VirtualMachine action results (fine grained RBAC)',
                 error: results,
               })
               res.setHeader('Content-Type', 'application/json')
               res.writeHead(results.status ?? HTTP_STATUS_INTERNAL_SERVER_ERROR)
               res.end(JSON.stringify(results))
-              return 'Error in VirtualMachine action request (fine grained RBAC)'
+              return 'Error in VirtualMachine action results (fine grained RBAC)'
             }
             let response = undefined
             if (req.method === 'POST') {

@@ -39,7 +39,7 @@ export function handleVMActions(
   t: TFunction
 ) {
   const abortController = new AbortController()
-
+  let name = item.name
   let path = ''
   switch (action.toLowerCase()) {
     case 'start':
@@ -52,9 +52,11 @@ export function handleVMActions(
       path = `/virtualmachineinstances/${action.toLowerCase()}`
       break
     case 'snapshot':
+      name = item.kind === 'VirtualMachineSnapshot' ? item.sourceName : item.name
       path = `/virtualmachinesnapshots/create`
       break
     case 'restore':
+      name = item.kind === 'VirtualMachineSnapshot' ? item.sourceName : item.name
       path = `/virtualmachinerestores`
       break
     case 'delete':
@@ -66,7 +68,7 @@ export function handleVMActions(
   fetchRetry({
     method,
     url: `${getBackendUrl()}${path}`,
-    data: { reqBody, managedCluster: item.cluster, vmName: item.name, vmNamespace: item.namespace },
+    data: { reqBody, managedCluster: item.cluster, vmName: name, vmNamespace: item.namespace },
     signal: abortController.signal,
     retries: process.env.NODE_ENV === 'production' ? 2 : 0,
     headers: { Accept: '*/*' },

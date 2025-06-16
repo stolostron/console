@@ -361,7 +361,7 @@ describe('Virtual Machine actions', function () {
       .reply(200, {
         statusCode: 200,
       })
-    const res = await request('GET', '/virtualmachines/get')
+    const res = await request('GET', '/virtualmachines/get/testCluster/vmName/vmNamespace')
     expect(res.statusCode).toEqual(200)
   })
 
@@ -404,7 +404,7 @@ describe('Virtual Machine actions', function () {
       .reply(200, {
         statusCode: 200,
       })
-    const res = await request('GET', '/virtualmachinesnapshots/get')
+    const res = await request('GET', '/virtualmachinesnapshots/get/testCluster/vmName/vmNamespace')
     expect(res.statusCode).toEqual(200)
   })
 
