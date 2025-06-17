@@ -36,6 +36,7 @@ export function getRowActions(
   allClusters: Cluster[],
   setDeleteResource: React.Dispatch<React.SetStateAction<IDeleteModalProps>>,
   setDeleteExternalResource: React.Dispatch<React.SetStateAction<IDeleteExternalResourceModalProps>>,
+  isFineGrainedRbacEnabled: boolean,
   vmActionsEnabled: boolean,
   setVMAction: React.Dispatch<React.SetStateAction<IVMActionModalProps>>,
   acmExtensions: any,
@@ -199,9 +200,10 @@ export function getRowActions(
       isVMRunning,
       allClusters,
       vmActionsEnabled,
-      setVMAction,
+      isFineGrainedRbacEnabled,
       setDeleteResource,
       setDeleteExternalResource,
+      setVMAction,
       navigate,
       t
     )
@@ -212,6 +214,7 @@ export function getRowActions(
       setDeleteResource,
       setDeleteExternalResource,
       setVMAction,
+      isFineGrainedRbacEnabled,
       vmActionsEnabled,
       navigate,
       t,
