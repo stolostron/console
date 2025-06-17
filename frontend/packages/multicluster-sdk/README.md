@@ -41,6 +41,7 @@ The multicluster-sdk provides components and hooks that enable your dynamic plug
 - `useFleetK8sWatchResource`: Watch Kubernetes resources across clusters
 - `useFleetK8sAPIPath`: Get the API path for a specific cluster
 - `useHubClusterName`: Get the name of the hub cluster
+- `useFleetClusterNames`: Get the list of managed cluster names
 
 ### Utilities
 
