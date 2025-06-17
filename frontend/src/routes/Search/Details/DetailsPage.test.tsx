@@ -61,20 +61,6 @@ const mockLocalClusterPod = {
   },
 }
 
-const mockVM = {
-  apiVersion: 'kubevirt.io/v1',
-  kind: 'VirtualMachine',
-  metadata: {
-    creationTimestamp: '2025-06-16T21:21:12Z',
-    name: 'testVM',
-    namespace: 'testNamespace',
-    resourceVersion: '663635',
-  },
-  spec: {
-    runStrategy: 'Always',
-  },
-}
-
 describe('DetailsPage', () => {
   beforeEach(async () => {
     // jest.resetAllMocks()
@@ -423,7 +409,7 @@ describe('DetailsPage', () => {
     )
 
     // Wait for delete resource requests to finish
-    await waitForNocks([metricNock]) // , nockRequest('/virtualmachines/get/local-cluster/testVM/testNamespace', mockVM)])
+    await waitForNocks([metricNock])
     screen.logTestingPlaygroundURL()
     // Test that the component has rendered correctly with data
     await waitFor(() =>
