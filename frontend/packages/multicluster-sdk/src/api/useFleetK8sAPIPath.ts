@@ -7,6 +7,8 @@ import { useBackendURL } from './useBackendURL'
 export const useFleetK8sAPIPath: UseFleetK8sAPIPath = (cluster) => {
   const [backendURL, loaded, error] = useBackendURL(cluster)
 
+  if (!cluster) return [BASE_K8S_API_PATH, true, undefined]
+
   const fleetK8sApiPath = backendURL ? `${backendURL}/${MANAGED_CLUSTER_API_PATH}/${cluster}` : undefined
   return [fleetK8sApiPath, loaded, error]
 }

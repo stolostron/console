@@ -230,13 +230,6 @@ export async function fleetK8sDelete<R extends K8sResourceCommon>(options: Optio
   }) as Promise<R>
 }
 
-export const isConnectionEncrypted = () => window.location.protocol === 'https:'
-
-export const WS = 'ws'
-export const WSS = 'wss'
-export const SECURE = '443'
-export const INSECURE = '80'
-
 export const fleetWatch = (
   model: K8sModel,
   query: {
