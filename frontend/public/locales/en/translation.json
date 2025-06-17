@@ -870,6 +870,7 @@
   "Create disconnected installation": "Create disconnected installation",
   "Create infrastructure environment": "Create infrastructure environment",
   "Create item": "Create item",
+  "Create new {{filterValue}}": "Create new {{filterValue}}",
   "Create policy": "Create policy",
   "Create policy automation": "Create policy automation",
   "Create policy set": "Create policy set",
