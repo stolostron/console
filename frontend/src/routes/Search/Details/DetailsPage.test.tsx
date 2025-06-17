@@ -5,7 +5,7 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { settingsState } from '../../../atoms'
+import { isFineGrainedRbacEnabledState, settingsState } from '../../../atoms'
 import { nockGet, nockIgnoreApiPaths, nockIgnoreRBAC, nockPostRequest } from '../../../lib/nock-util'
 import { waitForNocks } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
@@ -58,6 +58,20 @@ const mockLocalClusterPod = {
         lastTransitionTime: '2022-11-18T11:34:09Z',
       },
     ],
+  },
+}
+
+const mockVM = {
+  apiVersion: 'kubevirt.io/v1',
+  kind: 'VirtualMachine',
+  metadata: {
+    creationTimestamp: '2025-06-16T21:21:12Z',
+    name: 'testVM',
+    namespace: 'testNamespace',
+    resourceVersion: '663635',
+  },
+  spec: {
+    runStrategy: 'Always',
   },
 }
 
@@ -344,5 +358,83 @@ describe('DetailsPage', () => {
         })
       ).toBeTruthy()
     )
+  })
+
+  it('should render VirtualMachine details with fine-grained RBAC', async () => {
+    jest.mock('../../../resources/utils/resource-request', () => ({
+      getBackendUrl: jest.fn(() => ''),
+      getRequest: jest.fn((url) => {
+        if (url === '/virtualmachines/get/local-cluster/testVM/testNamespace') {
+          return {
+            promise: Promise.resolve({
+              apiVersion: 'kubevirt.io/v1',
+              kind: 'VirtualMachine',
+              metadata: {
+                name: 'testVM',
+                namespace: 'testNamespace',
+              },
+            }),
+          }
+        } else {
+          return Promise.resolve()
+        }
+      }),
+    }))
+    jest.mock('react-router-dom-v5-compat', () => {
+      const originalModule = jest.requireActual('react-router-dom-v5-compat')
+      return {
+        __esModule: true,
+        ...originalModule,
+        useLocation: () => ({
+          pathname: '/multicloud/search/resources',
+          search:
+            '?cluster=local-cluster&kind=VirtualMachine&apiversion=kubevirt.io/v1&namespace=testNamespace&name=testVM&_hubClusterResource=true',
+          state: {
+            from: '/multicloud/search',
+            fromSearch: '?filters={%22textsearch%22:%22kind%3AVirtualMachine%22}',
+          },
+        }),
+        useNavigate: () => jest.fn(),
+      }
+    })
+    Object.defineProperty(window, 'location', {
+      value: {
+        pathname: '/multicloud/search/resources',
+        search:
+          '?cluster=local-cluster&kind=VirtualMachine&apiversion=kubevirt.io/v1&namespace=testNamespace&name=testVM&_hubClusterResource=true',
+        state: {
+          from: '/multicloud/search',
+          fromSearch: '?filters={%22textsearch%22:%22kind%3AVirtualMachine%2',
+        },
+      },
+    })
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(isFineGrainedRbacEnabledState, true)
+        }}
+      >
+        <MemoryRouter initialEntries={[NavigationPath.resources]}>
+          <Routes>
+            <Route path={`${NavigationPath.search}/*`} element={<Search />} />
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    // Wait for delete resource requests to finish
+    await waitForNocks([metricNock]) // , nockRequest('/virtualmachines/get/local-cluster/testVM/testNamespace', mockVM)])
+    screen.logTestingPlaygroundURL()
+    // Test that the component has rendered correctly with data
+    await waitFor(() =>
+      expect(
+        screen.getByRole('heading', {
+          name: /testvm/i,
+        })
+      ).toBeTruthy()
+    )
+
+    // Wait for the details page to be loaded
+    await waitFor(() => expect(screen.getByText(/virtualmachine details/i)).toBeTruthy())
   })
 })
