@@ -12,7 +12,7 @@ import { NavigationPath } from '../../../NavigationPath'
 import { IResource, IResourceDefinition } from '../../../resources'
 import { fireManagedClusterView } from '../../../resources/managedclusterview'
 import { getBackendUrl, getRequest, getResource } from '../../../resources/utils/resource-request'
-import { useSharedAtoms } from '../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../ui-components'
 import {
   ClosedVMActionModalProps,
@@ -52,8 +52,8 @@ export default function DetailsPage() {
   usePageVisitMetricHandler(Pages.searchDetails)
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { useVirtualMachineActionsEnabled, useIsFineGrainedRbacEnabled } = useSharedAtoms()
-  const isFineGrainedRbacEnabled = useIsFineGrainedRbacEnabled()
+  const { useVirtualMachineActionsEnabled, isFineGrainedRbacEnabledState } = useSharedAtoms()
+  const isFineGrainedRbacEnabled = useRecoilValue(isFineGrainedRbacEnabledState)
   const vmActionsEnabled = useVirtualMachineActionsEnabled()
   const [resource, setResource] = useState<any>(undefined)
   const [containers, setContainers] = useState<string[]>()

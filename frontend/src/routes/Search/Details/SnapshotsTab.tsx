@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { fireManagedClusterView } from '../../../resources/managedclusterview'
-import { useSharedAtoms } from '../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmLoadingPage, AcmTable } from '../../../ui-components'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import {
@@ -32,8 +32,8 @@ import { getResourceParams } from './DetailsPage'
 export default function SnapshotsTab() {
   const { t } = useTranslation()
   const { cluster, kind, apiversion, namespace, name } = getResourceParams()
-  const { useSearchResultLimit, useVirtualMachineActionsEnabled, useIsFineGrainedRbacEnabled } = useSharedAtoms()
-  const isFineGrainedRbacEnabled = useIsFineGrainedRbacEnabled()
+  const { useSearchResultLimit, useVirtualMachineActionsEnabled, isFineGrainedRbacEnabledState } = useSharedAtoms()
+  const isFineGrainedRbacEnabled = useRecoilValue(isFineGrainedRbacEnabledState)
   const searchResultLimit = useSearchResultLimit()
   const searchDefinitions = useSearchDefinitions()
   const vmActionsEnabled = useVirtualMachineActionsEnabled()

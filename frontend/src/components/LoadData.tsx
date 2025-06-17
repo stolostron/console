@@ -72,8 +72,6 @@ import {
   MulticlusterApplicationSetReportKind,
   MultiClusterEngineApiVersion,
   MultiClusterEngineKind,
-  MultiClusterHubApiVersion,
-  MultiClusterHubKind,
   NamespaceApiVersion,
   NamespaceKind,
   NMStateConfigApiVersion,
@@ -141,6 +139,7 @@ import {
   hostedClustersState,
   infraEnvironmentsState,
   infrastructuresState,
+  isFineGrainedRbacEnabledState,
   isGlobalHubState,
   isHubSelfManagedState,
   localHubNameState,
@@ -152,7 +151,6 @@ import {
   managedClustersState,
   multiclusterApplicationSetReportState,
   multiClusterEnginesState,
-  multiClusterHubsState,
   namespacesState,
   nmStateConfigsState,
   nodePoolsState,
@@ -178,6 +176,7 @@ import {
 import { PluginDataContext } from '../lib/PluginDataContext'
 import { useQuery } from '../lib/useQuery'
 import { AccessControlApiVersion, AccessControlKind } from '../resources/access-control'
+import { MultiClusterHubComponent } from '../resources/multi-cluster-hub-component'
 
 export function LoadData(props: { children?: ReactNode }) {
   const { loadCompleted, setLoadStarted, setLoadCompleted } = useContext(PluginDataContext)
@@ -213,7 +212,6 @@ export function LoadData(props: { children?: ReactNode }) {
   const setManagedClusterSetBindings = useSetRecoilState(managedClusterSetBindingsState)
   const setManagedClusterSets = useSetRecoilState(managedClusterSetsState)
   const setManagedClusters = useSetRecoilState(managedClustersState)
-  const setMultiClusterHubs = useSetRecoilState(multiClusterHubsState)
   const setMultiClusterEngines = useSetRecoilState(multiClusterEnginesState)
   const setMulticlusterApplicationSetReportState = useSetRecoilState(multiclusterApplicationSetReportState)
   const setNamespaces = useSetRecoilState(namespacesState)
@@ -237,6 +235,7 @@ export function LoadData(props: { children?: ReactNode }) {
   const setHostedClustersState = useSetRecoilState(hostedClustersState)
   const setNodePoolsState = useSetRecoilState(nodePoolsState)
   const setAgentMachinesState = useSetRecoilState(agentMachinesState)
+  const setIsFineGrainedRbacEnabled = useSetRecoilState(isFineGrainedRbacEnabledState)
   const setIsGlobalHub = useSetRecoilState(isGlobalHubState)
   const setlocalHubName = useSetRecoilState(localHubNameState)
   const setIsHubSelfManaged = useSetRecoilState(isHubSelfManagedState)
@@ -317,7 +316,6 @@ export function LoadData(props: { children?: ReactNode }) {
     addSetter(ManagedClusterInfoApiVersion, ManagedClusterInfoKind, setManagedClusterInfos)
     addSetter(ManagedClusterSetApiVersion, ManagedClusterSetKind, setManagedClusterSets)
     addSetter(ManagedClusterSetBindingApiVersion, ManagedClusterSetBindingKind, setManagedClusterSetBindings)
-    addSetter(MultiClusterHubApiVersion, MultiClusterHubKind, setMultiClusterHubs)
     addSetter(MultiClusterEngineApiVersion, MultiClusterEngineKind, setMultiClusterEngines)
     addSetter(
       MulticlusterApplicationSetReportApiVersion,
@@ -372,7 +370,6 @@ export function LoadData(props: { children?: ReactNode }) {
     setManagedClusterSetBindings,
     setManagedClusterSets,
     setManagedClusters,
-    setMultiClusterHubs,
     setMultiClusterEngines,
     setMulticlusterApplicationSetReportState,
     setNamespaces,
@@ -574,6 +571,30 @@ export function LoadData(props: { children?: ReactNode }) {
     setIsHubSelfManaged(globalHubRes[0]?.isHubSelfManaged)
   }
 
+  const {
+    data: mchResponse,
+    loading: mchLoading,
+    startPolling: startMCHPoll,
+    stopPolling: stopMCHPoll,
+  } = useQuery(mchQueryFn, [], {
+    pollInterval: 30,
+  })
+
+  // Start all Polls for MCH resource
+  useEffect(() => {
+    startMCHPoll()
+    return () => {
+      // Stop polls on dismount
+      stopMCHPoll()
+    }
+  }, [startMCHPoll, stopMCHPoll])
+
+  // Update fine-grained RBAC state from mch response
+  const isFineGrainedRbacEnabled = useRecoilValue(isFineGrainedRbacEnabledState)
+  if (mchResponse && !mchLoading && !isFineGrainedRbacEnabled) {
+    setIsFineGrainedRbacEnabled(mchResponse?.find((e) => e?.name === 'fine-grained-rbac-preview')?.enabled ?? false)
+  }
+
   // If all data not loaded (!loaded) & events data is loaded (eventsLoaded) && global hub value is loaded (!globalHubLoading) -> set loaded to true
   if (!loadCompleted && eventsLoaded && !globalHubLoading) {
     setLoadCompleted(true)
@@ -624,4 +645,9 @@ const globalHubQueryFn = () => {
     localHubName: string
     isHubSelfManaged: boolean | undefined
   }>(getBackendUrl() + '/hub')
+}
+
+// Query for GlobalHub check and name
+const mchQueryFn = () => {
+  return getRequest<MultiClusterHubComponent[] | undefined>(getBackendUrl() + '/multiclusterhub/components')
 }

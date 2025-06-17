@@ -193,7 +193,6 @@ const definitions: IWatchOptions[] = [
   { kind: 'ManagedClusterInfo', apiVersion: 'internal.open-cluster-management.io/v1beta1' },
   { kind: 'BareMetalHost', apiVersion: 'metal3.io/v1alpha1' },
   { kind: 'MultiClusterEngine', apiVersion: 'multicluster.openshift.io/v1' },
-  { kind: 'MultiClusterHub', apiVersion: 'operator.open-cluster-management.io/v1' },
   { kind: 'ClusterVersion', apiVersion: 'config.openshift.io/v1' },
   { kind: 'StorageClass', apiVersion: 'storage.k8s.io/v1' },
   { kind: 'PlacementBinding', apiVersion: 'policy.open-cluster-management.io/v1' },

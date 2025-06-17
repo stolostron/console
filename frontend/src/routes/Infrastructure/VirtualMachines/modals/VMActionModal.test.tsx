@@ -2,7 +2,7 @@
 import { cleanup, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { RecoilRoot } from 'recoil'
-import { multiClusterHubsState } from '../../../../atoms'
+import { isFineGrainedRbacEnabledState } from '../../../../atoms'
 import { fetchRetry } from '../../../../resources/utils/resource-request'
 import { VMActionModal } from './VMActionModal'
 
@@ -191,29 +191,7 @@ describe('VMActionModal', () => {
     const { getByTestId } = render(
       <RecoilRoot
         initializeState={(snapshot) => {
-          snapshot.set(multiClusterHubsState, [
-            {
-              apiVersion: 'operator.open-cluster-management.io/v1',
-              kind: 'MultiClusterHub',
-              metadata: {
-                name: 'multiclusterhub',
-                creationTimestamp: '2025-06-16T14:12:40Z',
-              },
-              spec: {
-                overrides: {
-                  components: [
-                    {
-                      enabled: true,
-                      name: 'fine-grained-rbac-preview',
-                    },
-                  ],
-                },
-              },
-              status: {
-                currentVersion: '2.14.0',
-              },
-            },
-          ])
+          snapshot.set(isFineGrainedRbacEnabledState, true)
         }}
       >
         <VMActionModal

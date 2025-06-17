@@ -74,8 +74,8 @@ function VirtualMachineTable(props: Readonly<{ searchResultItems: ISearchResult[
   const { searchResultItems } = props
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { useVirtualMachineActionsEnabled, useIsFineGrainedRbacEnabled } = useSharedAtoms()
-  const isFineGrainedRbacEnabled = useIsFineGrainedRbacEnabled()
+  const { useVirtualMachineActionsEnabled, isFineGrainedRbacEnabledState } = useSharedAtoms()
+  const isFineGrainedRbacEnabled = useRecoilValue(isFineGrainedRbacEnabledState)
   const vmActionsEnabled = useVirtualMachineActionsEnabled()
   const { acmExtensions } = useContext(PluginContext)
   const allClusters = useAllClusters(true)

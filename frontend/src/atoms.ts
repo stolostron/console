@@ -42,7 +42,6 @@ import {
   ManagedClusterSetBinding,
   MulticlusterApplicationSetReport,
   MultiClusterEngine,
-  MultiClusterHub,
   Namespace,
   Placement,
   PlacementBinding,
@@ -102,7 +101,6 @@ export const managedClusterInfosState = AtomArray<ManagedClusterInfo>()
 export const managedClusterSetBindingsState = AtomArray<ManagedClusterSetBinding>()
 export const managedClusterSetsState = AtomArray<ManagedClusterSet>()
 export const managedClustersState = AtomArray<ManagedCluster>()
-export const multiClusterHubsState = AtomArray<MultiClusterHub>()
 export const multiClusterEnginesState = AtomArray<MultiClusterEngine>()
 export const multiclusterApplicationSetReportState = AtomArray<MulticlusterApplicationSetReport>()
 export const namespacesState = AtomArray<Namespace>()
@@ -131,6 +129,11 @@ export const settingsState = atom<Settings>({ key: 'settings', default: {} })
 
 export const isGlobalHubState = atom<boolean>({
   key: 'isGlobalHub',
+  default: false,
+})
+
+export const isFineGrainedRbacEnabledState = atom<boolean>({
+  key: 'isFineGrainedRbacEnabled',
   default: false,
 })
 
@@ -239,15 +242,4 @@ export function useVirtualMachineActionsEnabled() {
 export function useVitualMachineSearchResultLimit() {
   const settings = useRecoilValue(settingsState)
   return useMemo(() => parseInt(settings.VM_RESULT_LIMIT ?? '-1'), [settings])
-}
-
-export function useIsFineGrainedRbacEnabled() {
-  const mch = useRecoilValue(multiClusterHubsState)
-  return useMemo(
-    () =>
-      mch[0]?.spec?.overrides?.components?.find(
-        (e: { enabled: boolean; name: string }) => e.name === 'fine-grained-rbac-preview'
-      )?.enabled ?? false,
-    [mch]
-  )
 }
