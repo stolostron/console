@@ -9,6 +9,7 @@ export type RoleBindingHookType = {
   groups: string[]
   roleNames: string[]
   namespaces: string[]
+  wasPreFilled: boolean
 }
 
 const useRoleBinding = () => {
@@ -19,6 +20,7 @@ const useRoleBinding = () => {
     groups: [],
     roleNames: [],
     namespaces: [],
+    wasPreFilled: false,
   })
   const [isValid, setIsValid] = useState<boolean>(false)
 
@@ -70,6 +72,10 @@ const useRoleBinding = () => {
         ? [...new Set(rb.map((rb) => rb.roleRef.name))]
         : clusterRoleBindingRoleName
 
+      const wasPreFilled: boolean = Array.isArray(rb)
+        ? rb.some((e) => !!e.roleRef?.name)
+        : rb.roleRef?.name !== undefined && rb.roleRef?.name !== ''
+
       setRoleBinding((rb) => ({
         ...rb,
         namespaces,
@@ -78,6 +84,7 @@ const useRoleBinding = () => {
         roleNames,
         users: subjectKind === 'User' ? subjectNames : rb.users,
         groups: subjectKind === 'Group' ? subjectNames : rb.groups,
+        wasPreFilled,
       }))
     }
   }, [])
