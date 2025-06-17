@@ -76,6 +76,7 @@ export type AcmSelectBaseProps = Pick<
   menuAppendTo?: string
   isLoading?: boolean
   footer?: React.ReactNode
+  isCreatable?: boolean
 }
 
 const NO_RESULTS = 'no results'
@@ -323,14 +324,22 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
 
       // When no options are found after filtering, display 'No results found'
       if (!newFilteredOptions.length) {
-        newFilteredOptions = [
-          {
-            isAriaDisabled: true,
-            hasCheckbox: false,
-            children: t(`No results found for {{filterValue}}`, { filterValue }),
-            value: NO_RESULTS,
-          },
-        ]
+        newFilteredOptions = props.isCreatable
+          ? [
+              {
+                hasCheckbox: false,
+                children: t(`Create new {{filterValue}}`, { filterValue }),
+                value: filterValue,
+              },
+            ]
+          : [
+              {
+                isAriaDisabled: true,
+                hasCheckbox: false,
+                children: t(`No results found for {{filterValue}}`, { filterValue }),
+                value: NO_RESULTS,
+              },
+            ]
       }
 
       // Open the menu when the input value changes and the new value is not empty
@@ -341,7 +350,7 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
 
     setFilteredOptions(newFilteredOptions)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filterValue])
+  }, [filterValue, props.isCreatable])
 
   const initialOptionsStr = JSON.stringify(initialFilteredOptions)
   useEffect(() => {
