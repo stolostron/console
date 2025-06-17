@@ -272,7 +272,7 @@ describe('VMActionModal', () => {
             virtualMachineSnapshotName: 'testVM-snapshot',
           },
         },
-        vmName: 'testVM-snapshot',
+        vmName: 'testVM',
         vmNamespace: 'testVMNamespace',
       },
       disableRedirectUnauthorizedLogin: true,
