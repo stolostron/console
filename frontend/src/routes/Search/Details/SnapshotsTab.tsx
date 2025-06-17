@@ -76,7 +76,7 @@ export default function SnapshotsTab() {
           setVMLoading(false)
         })
     }
-  }, [cluster, kind, apiversion, name, namespace])
+  }, [cluster, isFineGrainedRbacEnabled, kind, apiversion, name, namespace])
 
   const isVMRunning = useMemo(() => vm?.status?.printableStatus === 'Running', [vm?.status?.printableStatus])
 
