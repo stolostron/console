@@ -1199,7 +1199,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
           selections={selections}
           onSelect={onSelect}
           onClear={onClear}
-          // isCreatable={input.type === 'CreatableMultiselect'}
+          isCreatable={input.type === 'CreatableMultiselect'}
           isDisabled={isReadOnly || input.isDisabled}
           variant={variant}
           placeholderText={input.placeholder}
