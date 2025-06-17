@@ -6,6 +6,7 @@ import { useState } from 'react'
 import { AcmForm, AcmSubmit } from '../AcmForm/AcmForm'
 import { AcmSelect } from './AcmSelect'
 import { SelectVariant } from '../../components/AcmSelectBase'
+import userEvent from '@testing-library/user-event'
 
 describe('AcmSelect', () => {
   const Select = () => {
@@ -45,7 +46,7 @@ describe('AcmSelect', () => {
     expect(queryByText('Red')).toBeNull()
   })
 
-  test('typeahead varient shows placeholder text', async () => {
+  test('typeahead variant shows placeholder text', async () => {
     const TypeaheadSelect = () => {
       const [value, setValue] = useState<string>()
       return (
@@ -143,5 +144,50 @@ describe('AcmSelect', () => {
     const { getByText } = render(<Component />)
     getByText('Submit').click()
     expect(mockFn).toHaveBeenCalled()
+  })
+
+  describe('typeahead multi variant', () => {
+    const TypeaheadMultiSelect = () => {
+      const [value, setValue] = useState<string>()
+      return (
+        <AcmSelect
+          variant={SelectVariant.typeaheadMulti}
+          id="acm-select"
+          label="ACM select"
+          value={value}
+          onChange={setValue}
+          placeholder="Select one"
+          isCreatable
+        >
+          <SelectOption key="red" value="red">
+            Red
+          </SelectOption>
+          <SelectOption key="green" value="green">
+            Green
+          </SelectOption>
+        </AcmSelect>
+      )
+    }
+
+    it('shows placeholder text', async () => {
+      // Act
+      const { getByPlaceholderText } = render(<TypeaheadMultiSelect />)
+
+      // Assert
+      expect(getByPlaceholderText('Select one')).toBeInTheDocument()
+    })
+
+    it('is able to create a new option', async () => {
+      // Arrange
+      const { getByPlaceholderText, getAllByRole, container } = render(<TypeaheadMultiSelect />)
+
+      // Act
+      userEvent.type(getByPlaceholderText('Select one'), 'Yellow')
+
+      // Assert
+      await waitFor(() => expect(screen.getByText(/create new yellow/i)).toBeVisible())
+      getAllByRole('option')[0].click()
+      expect(container.querySelector('#select-typeahead-Yellow > span')).toBeInTheDocument()
+    })
   })
 })
