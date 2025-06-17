@@ -74,6 +74,107 @@ describe('VirtualMachines utils', () => {
     deleteVM?.click(item)
   })
 
+  it('should return actions for VM in global hub', () => {
+    const item = {
+      _specRunning: 'true',
+      _uid: 'bare-metal/4d2cd231-0794-4a4b-89a3-90bb8b6ea89b',
+      apigroup: 'kubevirt.io',
+      apiversion: 'v1',
+      cluster: 'bare-metal',
+      cpu: '1',
+      created: '2024-10-02T20:02:14Z',
+      kind: 'VirtualMachine',
+      kind_plural: 'virtualmachines',
+      label:
+        'app=centos9-01; kubevirt.io/dynamic-credentials-support=true; vm.kubevirt.io/template=centos-stream9-server-small; vm.kubevirt.io/template.namespace=openshift; vm.kubevirt.io/template.revision=1; vm.kubevirt.io/template.version=v0.29.2',
+      memory: '2Gi',
+      name: 'centos9-01',
+      namespace: 'openshift-cnv',
+      ready: 'True',
+      status: 'Running',
+      managedHub: 'leaf-hub',
+    }
+    const result = getVirtualMachineRowActions(
+      item,
+      [],
+      () => {},
+      () => {},
+      () => {},
+      false,
+      true,
+      navigate,
+      t,
+      []
+    )
+
+    // Assert the correct number of actions are returned
+    expect(result).toHaveLength(7)
+
+    expect(result[0].isDisabled).toBe(false) // stop
+    expect(result[1].isDisabled).toBe(false) // restart
+    expect(result[2].isDisabled).toBe(false) // pause
+
+    // Check if the correct click handler is set for actions
+    const stopVMAction = result.find((action) => action.id === 'stopVM')
+    const restartVMAction = result.find((action) => action.id === 'restartVM')
+    const pauseVMAction = result.find((action) => action.id === 'pauseVM')
+    const editVM = result.find((action) => action.id === 'edit')
+    const viewVMRelatedRes = result.find((action) => action.id === 'view-related')
+    const deleteVM = result.find((action) => action.id === 'delete')
+
+    stopVMAction?.click(item)
+    restartVMAction?.click(item)
+    pauseVMAction?.click(item)
+    editVM?.click(item)
+    viewVMRelatedRes?.click(item)
+    deleteVM?.click(item)
+  })
+
+  it('should return actions for VM with fine grained rbac disabled', () => {
+    const item = {
+      _specRunning: 'true',
+      _uid: 'bare-metal/4d2cd231-0794-4a4b-89a3-90bb8b6ea89b',
+      apigroup: 'kubevirt.io',
+      apiversion: 'v1',
+      cluster: 'bare-metal',
+      cpu: '1',
+      created: '2024-10-02T20:02:14Z',
+      kind: 'VirtualMachine',
+      kind_plural: 'virtualmachines',
+      label:
+        'app=centos9-01; kubevirt.io/dynamic-credentials-support=true; vm.kubevirt.io/template=centos-stream9-server-small; vm.kubevirt.io/template.namespace=openshift; vm.kubevirt.io/template.revision=1; vm.kubevirt.io/template.version=v0.29.2',
+      memory: '2Gi',
+      name: 'centos9-01',
+      namespace: 'openshift-cnv',
+      ready: 'True',
+      status: 'Running',
+    }
+    const result = getVirtualMachineRowActions(
+      item,
+      [],
+      () => {},
+      () => {},
+      () => {},
+      false,
+      true,
+      navigate,
+      t,
+      []
+    )
+
+    // Assert the correct number of actions are returned
+    expect(result).toHaveLength(7)
+
+    // Check if the correct click handler is set for actions
+    const editVM = result.find((action) => action.id === 'edit')
+    const viewVMRelatedRes = result.find((action) => action.id === 'view-related')
+    const deleteVM = result.find((action) => action.id === 'delete')
+
+    editVM?.click(item)
+    viewVMRelatedRes?.click(item)
+    deleteVM?.click(item)
+  })
+
   it('should return actions for hub cluster VM with enabled actions and status "Running"', () => {
     const item = {
       _hubClusterResource: 'true',
@@ -281,7 +382,7 @@ describe('VirtualMachineSnapshots utils', () => {
   const t = i18next.t.bind(i18next)
   const navigate = jest.fn()
 
-  it('should return actions for VM Snapshots', () => {
+  it('should return actions for VM Snapshots - fine grained RBAC enabled', () => {
     const item = {
       _uid: 'bm-4-vms/8cfbff5d-ac86-41f6-9a35-e5ee55c7f6a8',
       apigroup: 'snapshot.kubevirt.io',
@@ -304,6 +405,53 @@ describe('VirtualMachineSnapshots utils', () => {
       [],
       true,
       true,
+      () => {},
+      () => {},
+      () => {},
+      navigate,
+      t
+    )
+
+    // Assert the correct number of actions are returned
+    expect(result).toHaveLength(4)
+
+    expect(result[0].isDisabled).toBe(false) // restore should be enabled
+
+    // Check if the correct click handler is set for actions
+    const restoreVMAction = result.find((action) => action.id === 'restoreVM')
+    const editVM = result.find((action) => action.id === 'edit')
+    const viewVMRelatedRes = result.find((action) => action.id === 'view-related')
+    const deleteVM = result.find((action) => action.id === 'delete')
+
+    restoreVMAction?.click(item)
+    editVM?.click(item)
+    viewVMRelatedRes?.click(item)
+    deleteVM?.click(item)
+  })
+
+  it('should return actions for VM Snapshots', () => {
+    const item = {
+      _uid: 'bm-4-vms/8cfbff5d-ac86-41f6-9a35-e5ee55c7f6a8',
+      apigroup: 'snapshot.kubevirt.io',
+      apiversion: 'v1beta1',
+      cluster: 'bm-4-vms',
+      created: '2025-05-06T14:26:00Z',
+      indications: 'guestagent; online',
+      kind: 'VirtualMachineSnapshot',
+      kind_plural: 'virtualmachinesnapshots',
+      name: 'centos9-01-snapshot-20250506-102417',
+      namespace: 'openshift-cnv',
+      ready: 'True',
+      phase: 'Succeeded',
+      sourceName: 'centos9-01',
+      _conditionReadyReason: 'Operation complete',
+    }
+    const result = getVMSnapshotActions(
+      item,
+      false,
+      [],
+      true,
+      false,
       () => {},
       () => {},
       () => {},
@@ -351,7 +499,7 @@ describe('VirtualMachineSnapshots utils', () => {
       false,
       [],
       true,
-      true,
+      false,
       () => {},
       () => {},
       () => {},
