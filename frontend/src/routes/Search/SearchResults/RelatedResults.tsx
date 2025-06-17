@@ -49,7 +49,8 @@ export function RenderItemContent(
   const { t } = useTranslation()
   const navigate = useNavigate()
   const allClusters = useAllClusters(true)
-  const { useVirtualMachineActionsEnabled } = useSharedAtoms()
+  const { useVirtualMachineActionsEnabled, isFineGrainedRbacEnabledState } = useSharedAtoms()
+  const isFineGrainedRbacEnabled = useRecoilValue(isFineGrainedRbacEnabledState)
   const vmActionsEnabled = useVirtualMachineActionsEnabled()
   const { useSearchResultLimit } = useSharedAtoms()
   const searchResultLimit = useSearchResultLimit()
@@ -64,6 +65,7 @@ export function RenderItemContent(
         allClusters,
         setDeleteResource,
         setDeleteExternalResource,
+        isFineGrainedRbacEnabled,
         vmActionsEnabled,
         setVMAction,
         acmExtensions,
@@ -77,6 +79,7 @@ export function RenderItemContent(
       allClusters,
       setDeleteResource,
       setDeleteExternalResource,
+      isFineGrainedRbacEnabled,
       vmActionsEnabled,
       setVMAction,
       acmExtensions,

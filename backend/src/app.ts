@@ -19,6 +19,7 @@ import { hub } from './routes/hub'
 import { liveness } from './routes/liveness'
 import { metrics } from './routes/metrics'
 import { observabilityProxy, prometheusProxy } from './routes/metricsProxy'
+import { multiClusterHubComponents } from './routes/multiClusterHubComponents'
 import { login, loginCallback, logout } from './routes/oauth'
 import { operatorCheck } from './routes/operatorCheck'
 import { proxy } from './routes/proxy'
@@ -28,8 +29,7 @@ import { serveHandler } from './routes/serve'
 import { upgradeRiskPredictions } from './routes/upgrade-risks-prediction'
 import { username } from './routes/username'
 import { userpreference } from './routes/userpreference'
-import { virtualMachineProxy, vmResourceUsageProxy } from './routes/virtualMachineProxy'
-import { multiClusterHubComponents } from './routes/multiClusterHubComponents'
+import { virtualMachineGETProxy, virtualMachineProxy, vmResourceUsageProxy } from './routes/virtualMachineProxy'
 
 const isProduction = process.env.NODE_ENV === 'production'
 const isDevelopment = process.env.NODE_ENV === 'development'
@@ -70,10 +70,12 @@ router.all('/metrics', metrics)
 router.get('/hub', hub)
 router.post('/upgrade-risks-prediction', upgradeRiskPredictions)
 router.post('/aggregate/*', aggregate)
-router.put('/virtualmachines/*', virtualMachineProxy)
-router.put('/virtualmachineinstances/*', virtualMachineProxy)
-router.post('/virtualmachinesnapshots', virtualMachineProxy)
-router.post('/virtualmachinerestores', virtualMachineProxy)
+router.get('/virtualmachines/get/*', virtualMachineGETProxy)
+router.all('/virtualmachines/*', virtualMachineProxy)
+router.all('/virtualmachineinstances/*', virtualMachineProxy)
+router.get('/virtualmachinesnapshots/get/*', virtualMachineGETProxy)
+router.all('/virtualmachinesnapshots/*', virtualMachineProxy)
+router.all('/virtualmachinerestores', virtualMachineProxy)
 router.get('/vmResourceUsage/cluster/:cluster/namespace/:namespace', vmResourceUsageProxy)
 router.get('/multiclusterhub/components', multiClusterHubComponents)
 router.get('/*', serveHandler)

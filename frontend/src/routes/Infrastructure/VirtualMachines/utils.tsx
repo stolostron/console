@@ -84,6 +84,7 @@ export function getVirtualMachineRowActions(
   setDeleteResource: Dispatch<SetStateAction<IDeleteModalProps>>,
   setDeleteExternalResource: Dispatch<SetStateAction<IDeleteExternalResourceModalProps>>,
   setVMAction: Dispatch<SetStateAction<IVMActionModalProps>>,
+  isFineGrainedRbacEnabled: boolean,
   vmActionsEnabled: boolean,
   navigate: NavigateFunction,
   t: TFunction<string, undefined>,
@@ -145,20 +146,30 @@ export function getVirtualMachineRowActions(
     id: 'delete',
     title: t('Delete VirtualMachine'),
     click: (item: any) => {
-      return item.managedHub && item.managedHub !== 'global-hub'
-        ? setDeleteExternalResource({
-            open: true,
-            close: () => setDeleteExternalResource(ClosedDeleteExternalResourceModalProps),
-            resource: item,
-            hubCluster: allClusters.find((cluster) => cluster.name === item.managedHub),
-          })
-        : setDeleteResource({
-            open: true,
-            close: () => setDeleteResource(ClosedDeleteModalProps),
-            resource: item,
-            currentQuery: 'kind:VirtualMachine,VirtualMachineInstance',
-            relatedResource: false,
-          })
+      if (isFineGrainedRbacEnabled) {
+        setVMAction({
+          open: true,
+          close: () => setVMAction(ClosedVMActionModalProps),
+          action: 'Delete',
+          method: 'DELETE',
+          item,
+        })
+      } else if (item.managedHub && item.managedHub !== 'global-hub') {
+        setDeleteExternalResource({
+          open: true,
+          close: () => setDeleteExternalResource(ClosedDeleteExternalResourceModalProps),
+          resource: item,
+          hubCluster: allClusters.find((cluster) => cluster.name === item.managedHub),
+        })
+      } else {
+        setDeleteResource({
+          open: true,
+          close: () => setDeleteResource(ClosedDeleteModalProps),
+          resource: item,
+          currentQuery: 'kind:VirtualMachine,VirtualMachineInstance',
+          relatedResource: false,
+        })
+      }
     },
     isDisabled: isVMDeleteDisabled(printableStatus, item),
     tooltip: isVMDeleteDisabled(printableStatus, item)
@@ -275,9 +286,10 @@ export function getVMSnapshotActions(
   isVMRunning: boolean,
   allClusters: Cluster[],
   vmActionsEnabled: boolean,
-  setVMAction: Dispatch<SetStateAction<IVMActionModalProps>>,
+  isFineGrainedRbacEnabled: boolean,
   setDeleteResource: Dispatch<SetStateAction<IDeleteModalProps>>,
   setDeleteExternalResource: Dispatch<SetStateAction<IDeleteExternalResourceModalProps>>,
+  setVMAction: Dispatch<SetStateAction<IVMActionModalProps>>,
   navigate: NavigateFunction,
   t: TFunction<string, undefined>
 ): IAcmRowAction<any>[] {
@@ -346,7 +358,15 @@ export function getVMSnapshotActions(
     id: 'delete',
     title: t('Delete VirtualMachineSnapshot'),
     click: (item: any) => {
-      if (item.managedHub && item.managedHub !== 'global-hub') {
+      if (isFineGrainedRbacEnabled) {
+        setVMAction({
+          open: true,
+          close: () => setVMAction(ClosedVMActionModalProps),
+          action: 'Delete',
+          method: 'DELETE',
+          item,
+        })
+      } else if (item.managedHub && item.managedHub !== 'global-hub') {
         setDeleteExternalResource({
           open: true,
           close: () => setDeleteExternalResource(ClosedDeleteExternalResourceModalProps),

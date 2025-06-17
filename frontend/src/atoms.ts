@@ -132,6 +132,11 @@ export const isGlobalHubState = atom<boolean>({
   default: false,
 })
 
+export const isFineGrainedRbacEnabledState = atom<boolean>({
+  key: 'isFineGrainedRbacEnabled',
+  default: false,
+})
+
 export const localHubNameState = atom<string>({
   key: 'localHubName',
   default: 'local-cluster',
