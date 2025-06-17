@@ -42,6 +42,7 @@ describe('AccessControlManagementFormHelper', () => {
       groups: [],
       roleNames: ['admin-access', 'read-only'],
       namespaces: ['dev', 'test'],
+      wasPreFilled: false,
     }
 
     const usersClusterRoleBindingHookData: RoleBindingHookType = {
@@ -51,6 +52,7 @@ describe('AccessControlManagementFormHelper', () => {
       groups: [],
       roleNames: ['cluster-admin'],
       namespaces: [],
+      wasPreFilled: false,
     }
 
     const groupsRoleBindingHookData: RoleBindingHookType = {
@@ -60,6 +62,7 @@ describe('AccessControlManagementFormHelper', () => {
       groups: ['dev-team', 'ops-team'],
       roleNames: ['developer'],
       namespaces: ['development'],
+      wasPreFilled: false,
     }
 
     const groupClusterRoleBindingHookData: RoleBindingHookType = {
@@ -69,6 +72,7 @@ describe('AccessControlManagementFormHelper', () => {
       groups: ['admin-group'],
       roleNames: ['cluster-admin'],
       namespaces: [],
+      wasPreFilled: false,
     }
 
     const emptyRoleBindingHookData: RoleBindingHookType = {
@@ -78,6 +82,7 @@ describe('AccessControlManagementFormHelper', () => {
       groups: [],
       roleNames: [],
       namespaces: [],
+      wasPreFilled: false,
     }
 
     const singleRoleBindingHookData: RoleBindingHookType = {
@@ -87,6 +92,7 @@ describe('AccessControlManagementFormHelper', () => {
       groups: [],
       roleNames: ['single-role'],
       namespaces: ['single-namespace'],
+      wasPreFilled: false,
     }
 
     it.each([
