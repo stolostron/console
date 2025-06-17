@@ -126,7 +126,7 @@ export function cacheArgoApplications(applicationCache: ApplicationCacheType, re
   }
 
   try {
-    transform(getApplicationsHelper(applicationCache, ['appset']), false, localCluster, clusters)
+    transform(Object.values(applicationCache['appset'].resourceUidMap), false, localCluster, clusters)
   } catch (e) {
     logger.error(`aggregateLocalApplications appset exception ${e}`)
   }
@@ -155,7 +155,7 @@ export function polledArgoApplicationAggregation(
     resourceUidMap = applicationCache[appKey].resourceUidMap = {}
   }
 
-  // initialize data for this pass (pass continues until  shouldPostProcess)
+  // initialize data for this pass (pass continues until shouldPostProcess)
   if (!oldResourceUidSets[appKey]) {
     oldResourceUidSets[appKey] = new Set(Object.keys(resourceUidMap))
     hubClusterName = getHubClusterName()
