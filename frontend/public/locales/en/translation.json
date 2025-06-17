@@ -1815,7 +1815,6 @@
   "machinePool.disableAutoscale": "Disable autoscale",
   "machinePool.editAutoscale": "Edit autoscale",
   "machinePool.enableAutoscale": "Enable autoscale",
-  "machinePool.menu.disabled.tooltip": "The current status of the cluster ({{status}}) does not allow any actions to be taken on the machine pool.",
   "machinePool.modal.scale.disable-autoscale.message": "This will require manually scaling the machine sets in <bold>{{name}}</bold>. There are currently {{number}} active machine set replicas in this machine pool.",
   "machinePool.modal.scale.disable-autoscale.title": "Disable autoscale",
   "machinePool.modal.scale.edit-autoscale.message": "Specify the minimum and maximum replicas for <bold>{{name}}</bold>",

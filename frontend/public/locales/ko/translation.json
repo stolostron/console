@@ -1752,7 +1752,6 @@
   "machinePool.disableAutoscale": "자동 스케일링 비활성화",
   "machinePool.editAutoscale": "자동 스케일링 편집",
   "machinePool.enableAutoscale": "자동 스케일링 활성화",
-  "machinePool.menu.disabled.tooltip": "클러스터의 현재 상태({{status}})에서는 머신 풀에서 작업을 수행할 수 없습니다.",
   "machinePool.modal.scale.disable-autoscale.message": "이렇게 하려면 <bold>{{name}}</bold>에서 머신 세트를 수동으로 스케일링해야 합니다. 현재 이 머신 풀에는 {{number}} 활성 머신 세트 복제본이 있습니다.",
   "machinePool.modal.scale.disable-autoscale.title": "자동 스케일링 비활성화",
   "machinePool.modal.scale.edit-autoscale.message": "<bold>{{name}}</bold>의 최소 및 최대 복제본 지정",

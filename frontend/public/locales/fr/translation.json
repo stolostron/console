@@ -1766,7 +1766,6 @@
   "machinePool.disableAutoscale": "Désactiver la mise à l’échelle automatique",
   "machinePool.editAutoscale": "Modifier la mise à l’échelle automatique",
   "machinePool.enableAutoscale": "Activer la mise à l’échelle automatique",
-  "machinePool.menu.disabled.tooltip": "Le statut actuel du cluster ({{status}}) ne permet aucune action sur le pool de machines.",
   "machinePool.modal.scale.disable-autoscale.message": "Une mise à l’échelle manuelle des ensembles de machines est nécessaire dans <bold>{{name}}</bold>. Ce pool de machines contient actuellement {{number}} réplicas d’ensembles de machines actifs.",
   "machinePool.modal.scale.disable-autoscale.title": "Désactiver la mise à l’échelle automatique",
   "machinePool.modal.scale.edit-autoscale.message": "Spécifier les réplicas minimum et maximum pour <bold>{{name}}</bold>",

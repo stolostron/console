@@ -1752,7 +1752,6 @@
   "machinePool.disableAutoscale": "自動スケーリングの無効化",
   "machinePool.editAutoscale": "自動スケーリングの編集",
   "machinePool.enableAutoscale": "自動スケーリングの有効化",
-  "machinePool.menu.disabled.tooltip": "クラスターの現在のステータス ({{status}}) では、マシンプールでアクションを実行できません。",
   "machinePool.modal.scale.disable-autoscale.message": "これには、<bold>{{name}}</bold> でマシンセットを手動でスケーリングする必要があります。現在、このマシンプールには {{number}} のアクティブなマシンセットレプリカがあります。",
   "machinePool.modal.scale.disable-autoscale.title": "自動スケーリングの無効化",
   "machinePool.modal.scale.edit-autoscale.message": "<bold>{{name}}</bold> の最小および最大レプリカの指定",
