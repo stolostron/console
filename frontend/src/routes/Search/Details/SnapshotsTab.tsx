@@ -3,8 +3,10 @@ import { Alert, PageSection, Stack } from '@patternfly/react-core'
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../lib/acm-i18next'
+import { IResource } from '../../../resources'
 import { fireManagedClusterView } from '../../../resources/managedclusterview'
-import { useSharedAtoms } from '../../../shared-recoil'
+import { getBackendUrl, getRequest } from '../../../resources/utils'
+import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmLoadingPage, AcmTable } from '../../../ui-components'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import {
@@ -32,7 +34,8 @@ import { getResourceParams } from './DetailsPage'
 export default function SnapshotsTab() {
   const { t } = useTranslation()
   const { cluster, kind, apiversion, namespace, name } = getResourceParams()
-  const { useSearchResultLimit, useVirtualMachineActionsEnabled } = useSharedAtoms()
+  const { useSearchResultLimit, useVirtualMachineActionsEnabled, isFineGrainedRbacEnabledState } = useSharedAtoms()
+  const isFineGrainedRbacEnabled = useRecoilValue(isFineGrainedRbacEnabledState)
   const searchResultLimit = useSearchResultLimit()
   const searchDefinitions = useSearchDefinitions()
   const vmActionsEnabled = useVirtualMachineActionsEnabled()
@@ -47,20 +50,33 @@ export default function SnapshotsTab() {
   )
 
   useEffect(() => {
-    fireManagedClusterView(cluster, kind, apiversion, name, namespace)
-      .then((viewResponse) => {
-        setVMLoading(false)
-        if (viewResponse?.message) {
-          console.error('Error fetching parent VM')
-        } else {
-          setVM(viewResponse?.result)
-        }
-      })
-      .catch((err) => {
-        console.error('Error getting VirtualMachine: ', err)
-        setVMLoading(false)
-      })
-  }, [cluster, kind, apiversion, name, namespace])
+    if (isFineGrainedRbacEnabled) {
+      const url = getBackendUrl() + `/virtualmachines/get/${cluster}/${name}/${namespace}` // need the plural kind either virtualmachines || virtualmachinesnapshots
+      getRequest<IResource>(url)
+        .promise.then((response) => {
+          setVMLoading(false)
+          setVM(response)
+        })
+        .catch((err) => {
+          setVMLoading(false)
+          console.error('Error getting VM resource: ', err)
+        })
+    } else {
+      fireManagedClusterView(cluster, kind, apiversion, name, namespace)
+        .then((viewResponse) => {
+          setVMLoading(false)
+          if (viewResponse?.message) {
+            console.error('Error fetching parent VM')
+          } else {
+            setVM(viewResponse?.result)
+          }
+        })
+        .catch((err) => {
+          console.error('Error getting VirtualMachine: ', err)
+          setVMLoading(false)
+        })
+    }
+  }, [cluster, isFineGrainedRbacEnabled, kind, apiversion, name, namespace])
 
   const isVMRunning = useMemo(() => vm?.status?.printableStatus === 'Running', [vm?.status?.printableStatus])
 
@@ -156,9 +172,10 @@ export default function SnapshotsTab() {
                   isVMRunning,
                   allClusters,
                   vmActionsEnabled,
-                  setVMAction,
+                  isFineGrainedRbacEnabled,
                   setDeleteResource,
                   setDeleteExternalResource,
+                  setVMAction,
                   navigate,
                   t
                 )

@@ -74,7 +74,8 @@ function VirtualMachineTable(props: Readonly<{ searchResultItems: ISearchResult[
   const { searchResultItems } = props
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { useVirtualMachineActionsEnabled } = useSharedAtoms()
+  const { useVirtualMachineActionsEnabled, isFineGrainedRbacEnabledState } = useSharedAtoms()
+  const isFineGrainedRbacEnabled = useRecoilValue(isFineGrainedRbacEnabledState)
   const vmActionsEnabled = useVirtualMachineActionsEnabled()
   const { acmExtensions } = useContext(PluginContext)
   const allClusters = useAllClusters(true)
@@ -98,6 +99,7 @@ function VirtualMachineTable(props: Readonly<{ searchResultItems: ISearchResult[
         setDeleteResource,
         setDeleteExternalResource,
         setVMAction,
+        isFineGrainedRbacEnabled,
         vmActionsEnabled,
         navigate,
         t,
@@ -105,7 +107,7 @@ function VirtualMachineTable(props: Readonly<{ searchResultItems: ISearchResult[
         getVirtualMachineRowActionExtensions(item, acmExtensions?.virtualMachineAction || [], setPluginModal)
       )
     },
-    [allClusters, navigate, t, vmActionsEnabled, acmExtensions]
+    [allClusters, navigate, t, isFineGrainedRbacEnabled, vmActionsEnabled, acmExtensions]
   )
 
   const extensionColumns: IAcmTableColumn<ISearchResult>[] = useMemo(

@@ -23,7 +23,9 @@ import { ExclamationCircleIcon } from '@patternfly/react-icons'
 import { Dispatch, FC, FormEvent, SetStateAction, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../../lib/doc-util'
-import { fireManagedClusterView } from '../../../../resources/managedclusterview'
+import { fireManagedClusterView, IResource } from '../../../../resources'
+import { getBackendUrl, getRequest } from '../../../../resources/utils/resource-request'
+import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { printableVMStatus } from '../utils'
 
 // kubevirt modal - https://github.com/kubevirt-ui/kubevirt-plugin/blob/5f2e9729034fcd97ebdb2ad2e8fed214a16d77a9/src/utils/components/SnapshotModal/SnapshotModal.tsx
@@ -198,6 +200,8 @@ export function SnapshotModalBody(
 ) {
   const { item, setSnapshotReqBody, getVMError, setGetVMError } = props
   const { t } = useTranslation()
+  const { isFineGrainedRbacEnabledState } = useSharedAtoms()
+  const isFineGrainedRbacEnabled = useRecoilValue(isFineGrainedRbacEnabledState)
   const [vmLoading, setVMLoading] = useState<any>(true)
   const [vm, setVM] = useState<any>({})
   const [snapshotName, setSnapshotName] = useState<string>(generateSnapshotName(item.name))
@@ -206,24 +210,38 @@ export function SnapshotModalBody(
   const [deadlineUnit, setDeadlineUnit] = useState<deadlineUnits>(deadlineUnits.Seconds)
 
   useEffect(() => {
-    fireManagedClusterView(item.cluster, item.kind, item.apiversion, item.name, item.namespace)
-      .then((viewResponse) => {
-        setVMLoading(false)
-        if (viewResponse?.message) {
+    if (isFineGrainedRbacEnabled) {
+      const url = getBackendUrl() + `/virtualmachines/get/${item.cluster}/${item.name}/${item.namespace}`
+      getRequest<IResource>(url)
+        .promise.then((response) => {
+          setVMLoading(false)
+          setVM(response)
+        })
+        .catch((err) => {
+          console.error('Error getting VirtualMachine: ', err)
           setGetVMError(true)
-        } else {
-          setVM(viewResponse?.result)
-          setGetVMError(false)
-        }
-      })
-      .catch((err) => {
-        console.error('Error getting VirtualMachine: ', err)
-        setGetVMError(true)
-        setVMLoading(false)
-      })
+          setVMLoading(false)
+        })
+    } else {
+      fireManagedClusterView(item.cluster, item.kind, item.apiversion, item.name, item.namespace)
+        .then((viewResponse) => {
+          setVMLoading(false)
+          if (viewResponse?.message) {
+            setGetVMError(true)
+          } else {
+            setVM(viewResponse?.result)
+            setGetVMError(false)
+          }
+        })
+        .catch((err) => {
+          console.error('Error getting VirtualMachine: ', err)
+          setGetVMError(true)
+          setVMLoading(false)
+        })
+    }
 
     return () => setGetVMError(false)
-  }, [item, setGetVMError])
+  }, [isFineGrainedRbacEnabled, item, setGetVMError])
 
   const isVMRunning = item?.status === printableVMStatus.Running
   const { supportedVolumes, unsupportedVolumes } = useMemo(() => {

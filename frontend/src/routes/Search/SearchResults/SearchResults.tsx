@@ -91,7 +91,8 @@ function RenderAccordionItem(
   const { t } = useTranslation()
   const navigate = useNavigate()
   const allClusters = useAllClusters(true)
-  const { useVirtualMachineActionsEnabled } = useSharedAtoms()
+  const { useVirtualMachineActionsEnabled, isFineGrainedRbacEnabledState } = useSharedAtoms()
+  const isFineGrainedRbacEnabled = useRecoilValue(isFineGrainedRbacEnabledState)
   const vmActionsEnabled = useVirtualMachineActionsEnabled()
   const { acmExtensions } = useContext(PluginContext)
   const [isExpanded, setIsExpanded] = useState<boolean>(defaultIsExpanded)
@@ -112,6 +113,7 @@ function RenderAccordionItem(
         allClusters,
         setDeleteResource,
         setDeleteExternalResource,
+        isFineGrainedRbacEnabled,
         vmActionsEnabled,
         setVMAction,
         acmExtensions,
@@ -125,6 +127,7 @@ function RenderAccordionItem(
       allClusters,
       setDeleteResource,
       setDeleteExternalResource,
+      isFineGrainedRbacEnabled,
       vmActionsEnabled,
       setVMAction,
       acmExtensions,

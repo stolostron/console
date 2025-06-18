@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { listResources } from './utils/resource-request'
-import { IResource, IResourceDefinition } from './resource'
 import { Metadata } from './metadata'
+import { IResource, IResourceDefinition } from './resource'
+import { listResources } from './utils/resource-request'
 
 export const MultiClusterHubApiVersion = 'operator.open-cluster-management.io/v1'
 export type MultiClusterHubApiVersionType = 'operator.open-cluster-management.io/v1'
@@ -14,11 +14,16 @@ export const MultiClusterHubDefinition: IResourceDefinition = {
   kind: MultiClusterHubKind,
 }
 
+interface MultiClusterHubComponent {
+  name: string
+  enabled: boolean
+}
+
 export interface MultiClusterHub extends IResource {
   apiVersion: MultiClusterHubApiVersionType
   kind: MultiClusterHubKindType
   metadata: Metadata
-  spec?: object
+  spec?: { overrides?: { components?: MultiClusterHubComponent[] } }
   status: {
     currentVersion: string
   }
