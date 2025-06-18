@@ -1321,6 +1321,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
         kubevirt: {
           baseDomainPassthrough: true,
           storageDriver: {
+            type: 'Manual',
             manual: {
               storageClassMapping: [
                 {
@@ -1827,6 +1828,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
               infraNamespace: 'kubevirt-namespace',
             },
             storageDriver: {
+              type: 'Manual',
               manual: {
                 storageClassMapping: [
                   {
@@ -2239,6 +2241,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
         kubevirt: {
           baseDomainPassthrough: true,
           storageDriver: {
+            type: 'Manual',
             manual: {
               storageClassMapping: [
                 {
@@ -2715,6 +2718,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
         kubevirt: {
           baseDomainPassthrough: true,
           storageDriver: {
+            type: 'Manual',
             manual: {
               storageClassMapping: [
                 {
@@ -3185,6 +3189,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
         kubevirt: {
           baseDomainPassthrough: true,
           storageDriver: {
+            type: 'Manual',
             manual: {
               storageClassMapping: [
                 {
@@ -3679,6 +3684,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
         kubevirt: {
           baseDomainPassthrough: true,
           storageDriver: {
+            type: 'Manual',
             manual: {
               storageClassMapping: [
                 {
