@@ -1178,7 +1178,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
           }
           break
       }
-      let variant = input.variant as SelectVariant
+      let variant = (input.variant ?? 'single') as SelectVariant
       if (!variant) {
         switch (input.type) {
           case 'Select':
