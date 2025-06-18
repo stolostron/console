@@ -25,7 +25,6 @@ import {
   getNextApplicationPageChunk,
   ApplicationPageChunk,
   transform,
-  getApplicationsHelper,
   getApplicationType,
   getApplicationClusters,
   getTransform,
