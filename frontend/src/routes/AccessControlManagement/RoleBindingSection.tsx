@@ -58,7 +58,7 @@ export const RoleBindingSection = ({
           {
             id: `${idPrefix}-namespaces`,
             type: 'Multiselect',
-            label: t('Namespaces')!,
+            label: t('Namespaces'),
             placeholder: t('Select or enter namespace'),
             helperText: namespaceHelperText,
             value: selectedNamespaces,
@@ -85,7 +85,7 @@ export const RoleBindingSection = ({
           {
             id: `${idPrefix}-subject`,
             type: 'CreatableMultiselect',
-            label: selectedSubjectKind === 'Group' ? t('Groups')! : t('Users')!,
+            label: selectedSubjectKind === 'Group' ? t('Groups') : t('Users'),
             placeholder:
               selectedSubjectKind === 'Group' ? t('Select or enter group name') : t('Select or enter user name'),
             value: selectedSubjectNames,
@@ -100,7 +100,7 @@ export const RoleBindingSection = ({
           {
             id: `${idPrefix}-roles`,
             type: 'Multiselect',
-            label: t('Roles')!,
+            label: t('Roles'),
             placeholder: 'Select or enter roles',
             value: selectedRoles,
             onChange: onRoleChange,
