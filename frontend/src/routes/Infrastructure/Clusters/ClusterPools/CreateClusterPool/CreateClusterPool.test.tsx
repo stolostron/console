@@ -296,7 +296,9 @@ describe('CreateClusterPool AWS', () => {
     // Credentials type
     await waitForTestId('credentialsType-input-toggle')
     await typeByTestId('credentialsName', newProviderConnection.metadata.name!)
-    await selectByText('Select a namespace for the credential', newProviderConnection.metadata.namespace!)
+    //await selectByText('Select a namespace for the credential', newProviderConnection.metadata.namespace!)
+    await clickByText('Select a namespace for the credential')
+    await clickByText(newProviderConnection.metadata.namespace!)
     await clickByText('Cancel', 1)
 
     select = screen
@@ -364,7 +366,8 @@ describe('CreateClusterPool AWS', () => {
     // Credentials type
     await waitForTestId('credentialsType-input-toggle')
     await typeByTestId('credentialsName', newProviderConnection.metadata.name!)
-    await selectByText('Select a namespace for the credential', newProviderConnection.metadata.namespace!)
+    await clickByText('Select a namespace for the credential')
+    await clickByText(newProviderConnection.metadata.namespace!)
     await clickByText('Cancel', 1)
 
     screen.queryByPlaceholderText(/connection/i)!.click()
