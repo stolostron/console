@@ -14,6 +14,10 @@ import { wait } from '../../../lib/test-util'
 import { SearchResultRelatedCountDocument } from '../search-sdk/search-sdk'
 import RelatedResults from './RelatedResults'
 
+jest.mock('../../../hooks/use-can-migrate-vm', () => ({
+  useCanMigrateVm: () => true,
+}))
+
 const mockSettings: Settings = {
   SEARCH_RESULT_LIMIT: '1000',
 }
@@ -144,6 +148,7 @@ describe('RelatedResults', () => {
     )
     // Test the loading state while apollo query finishes
     expect(screen.getAllByTestId('loading-acc-item-1')).toBeTruthy()
+    // await waitFor(() => expect(screen.getAllByRole('button')).toHaveLength(3))
     // This wait pauses till apollo query is returning data
     await wait()
     // Test that the component has rendered correctly with data

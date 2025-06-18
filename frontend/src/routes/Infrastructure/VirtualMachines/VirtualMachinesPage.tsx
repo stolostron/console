@@ -17,7 +17,7 @@ import {
 import { ExclamationCircleIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { get } from 'lodash'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom-v5-compat'
+import { useLocation, useNavigate, Outlet } from 'react-router-dom-v5-compat'
 import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { OCP_DOC } from '../../../lib/doc-util'
@@ -69,11 +69,13 @@ import {
   getVirtualMachineRowActionExtensions,
   getVirtualMachineRowActions,
 } from './utils'
+import { useCanMigrateVm } from '../../../hooks/use-can-migrate-vm'
 
 function VirtualMachineTable(props: Readonly<{ searchResultItems: ISearchResult[] | undefined }>) {
   const { searchResultItems } = props
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const canMigrateVm = useCanMigrateVm()
   const { useVirtualMachineActionsEnabled, isFineGrainedRbacEnabledState } = useSharedAtoms()
   const isFineGrainedRbacEnabled = useRecoilValue(isFineGrainedRbacEnabledState)
   const vmActionsEnabled = useVirtualMachineActionsEnabled()
@@ -103,11 +105,12 @@ function VirtualMachineTable(props: Readonly<{ searchResultItems: ISearchResult[
         vmActionsEnabled,
         navigate,
         t,
+        canMigrateVm,
         // get the row action extensions for the virtual machine
         getVirtualMachineRowActionExtensions(item, acmExtensions?.virtualMachineAction || [], setPluginModal)
       )
     },
-    [allClusters, navigate, t, isFineGrainedRbacEnabled, vmActionsEnabled, acmExtensions]
+    [allClusters, navigate, t, canMigrateVm, isFineGrainedRbacEnabled, vmActionsEnabled, acmExtensions]
   )
 
   const extensionColumns: IAcmTableColumn<ISearchResult>[] = useMemo(
@@ -476,6 +479,7 @@ export default function VirtualMachinesPage() {
         </PageSection>
         <PageSection>
           <VirtualMachineTable searchResultItems={vmTableItems} />
+          <Outlet />
         </PageSection>
       </AcmPageContent>
     </AcmPage>

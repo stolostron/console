@@ -21,6 +21,10 @@ import {
 } from './search-sdk/search-sdk'
 import SearchPage from './SearchPage'
 
+jest.mock('../../hooks/use-can-migrate-vm', () => ({
+  useCanMigrateVm: () => true,
+}))
+
 const mockUserPreference: UserPreference = {
   apiVersion: 'console.open-cluster-management.io/v1',
   kind: 'UserPreference',
