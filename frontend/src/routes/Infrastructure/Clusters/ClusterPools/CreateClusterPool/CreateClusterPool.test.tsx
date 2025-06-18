@@ -28,7 +28,6 @@ import { nockCreate, nockIgnoreApiPaths, nockIgnoreRBAC, nockList, nockReplace }
 import {
   clickByTestId,
   clickByText,
-  selectByText,
   typeByPlaceholderText,
   typeByTestId,
   typeByText,
