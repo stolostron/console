@@ -1065,7 +1065,7 @@
   "credentialsForm.cluster.labelHelp": "사용할 vSphere 클러스터의 이름 또는 절대 경로입니다. 예: <cluster> 또는 /<datacenter>/host/<cluster>",
   "credentialsForm.cluster.placeholder": "vSphere 클러스터 이름을 입력합니다",
   "credentialsForm.created.message": "{{name}}이/가 성공적으로 생성되었습니다.",
-  "credentialsForm.defaultDatastore.labelHelp": "상위 폴더나 데이터 저장소 클러스터를 포함한 기본 vSphere 데이터 저장소의 상대 경로 또는 절대 경로입니다. 예:<datastore-folder> /<datastore-cluster> /<datastore> 또는 <datacenter>/datastore/<datastore-folder>/<datastore-cluster>/<datastore>",
+  "credentialsForm.defaultDatastore.labelHelp": "상위 폴더나 데이터 저장소 클러스터를 포함한 기본 vSphere 데이터 저장소의 상대 경로 또는 절대 경로입니다. 예:<datastore-folder>/<datastore-cluster>/<datastore> 또는 <datacenter>/datastore/<datastore-folder>/<datastore-cluster>/<datastore>",
   "credentialsForm.defaultDatastore.placeholder": "vSphere 기본 데이터 저장소 경로를 입력",
   "credentialsForm.os_ca_bundle.label": "내부 CA 인증서",
   "credentialsForm.os_ca_bundle.labelHelp": "OpenStack API에 대한 호출 검증에 사용할 CA 인증서 입력",
