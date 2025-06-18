@@ -1,0 +1,36 @@
+{
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "ecmaVersion": "latest",
+        "sourceType": "module",
+        "project": ["frontend/packages/react-form-wizard/tsconfig.json"]
+    },
+    "extends": [
+        "eslint:recommended",
+        // TODO - Turn this back on when we have setup translation support
+        // "plugin:i18next/recommended",
+        "plugin:jsx-a11y/recommended",
+        "plugin:i18n-json/recommended",
+        "plugin:react/recommended",
+        "plugin:react-hooks/recommended",
+        "plugin:@typescript-eslint/eslint-recommended",
+        "plugin:@typescript-eslint/recommended",
+        "plugin:@typescript-eslint/recommended-requiring-type-checking",
+        "plugin:prettier/recommended"
+    ],
+    "rules": {
+        "react/react-in-jsx-scope": "off",
+        "no-console": "error",
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/no-unsafe-assignment": "off",
+        "@typescript-eslint/no-unsafe-argument": "off",
+        "@typescript-eslint/no-unsafe-member-access": "off",
+        "@typescript-eslint/no-unsafe-return": "off"
+    },
+    "root": true,
+    "settings": {
+        "react": {
+            "version": "detect"
+        }
+    }
+}
