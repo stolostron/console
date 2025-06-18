@@ -102,12 +102,14 @@ export default function PolicySetCard(props: {
             actions: (
               <>
                 <Dropdown
+                  onOpenChange={() => setIsKebabOpen(!isKebabOpen)}
                   onSelect={() => setIsKebabOpen(!isKebabOpen)}
                   toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
                     <MenuToggle
                       ref={toggleRef}
-                      onClick={() => {
+                      onClick={(event) => {
                         setIsKebabOpen(!isKebabOpen)
+                        event.stopPropagation()
                       }}
                       variant="plain"
                       isExpanded={isKebabOpen}
