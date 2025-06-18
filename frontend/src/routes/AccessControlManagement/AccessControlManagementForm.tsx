@@ -199,11 +199,11 @@ const AccessControlManagementForm = ({
     if (isEditing) {
       return t('Edit access control')
     }
-    return t('Add access control')
+    return t('Create permission')
   }
 
   const title = getTitle()
-  const breadcrumbs = [{ text: t('Access Controls'), to: NavigationPath.accessControlManagement }, { text: title }]
+  const breadcrumbs = [{ text: t('Access control'), to: NavigationPath.accessControlManagement }, { text: title }]
 
   const clusters = managedClusters.map((c) => ({
     id: c.name,
@@ -212,13 +212,14 @@ const AccessControlManagementForm = ({
 
   const formData: FormData = {
     title,
-    description: t('Access Control Management using ClusterPermissions'),
+    description: t('accessControlForm.description'),
     breadcrumb: breadcrumbs,
     sections: [
       {
         type: 'Section',
         title: t('Basic information'),
         wizardTitle: t('Basic information'),
+        description: t('accessControlForm.description'),
         inputs: [
           {
             id: 'id',
@@ -266,7 +267,8 @@ const AccessControlManagementForm = ({
         ],
       },
       RoleBindingSection({
-        title: t('Role Bindings'),
+        title: t('Role bindings'),
+        description: t('accessControlForm.roleBindings.description'),
         clusterRoles,
         idPrefix: 'rb',
         isViewing,
@@ -299,7 +301,8 @@ const AccessControlManagementForm = ({
       }),
 
       RoleBindingSection({
-        title: t('Cluster Role Binding'),
+        title: t('Cluster role binding'),
+        description: t('accessControlForm.clusterRoleBinding.description'),
         clusterRoles,
         idPrefix: 'crb',
         isViewing,
@@ -309,6 +312,7 @@ const AccessControlManagementForm = ({
         selectedSubjectNames: roleBindingCRB.subjectNames,
         selectedRoles: roleBindingCRB.roleNames,
         selectedSubjectKind: roleBindingCRB.subjectKind,
+        namespaceHelperText: t('accessControlForm.clusterRoleBinding.namespace.helperText'),
         namespaceOptions: [{ id: 'all', value: 'All Namespaces', text: 'All Namespaces', isDisabled: true }],
         subjectOptions: Array.from(
           new Map(
@@ -332,7 +336,7 @@ const AccessControlManagementForm = ({
       if (!isRBValid && !isCRBValid) {
         toastContext.addAlert({
           title: t('Validation error'),
-          message: t('You must define at least one Role Binding or Cluster Role Binding.'),
+          message: t('You must define at least one role binding or cluster role binding.'),
           type: 'danger',
           autoClose: true,
         })
@@ -359,10 +363,10 @@ const AccessControlManagementForm = ({
           navigate(NavigationPath.accessControlManagement)
         })
       } else {
-        createResource(accessControlData as IResource).promise.then((resource) => {
+        createResource(accessControlData as IResource).promise.then(() => {
           toastContext.addAlert({
-            title: t('Access Control created'),
-            message: t('accessControlForm.created.message', { id: (resource as AccessControl).metadata?.uid }),
+            title: t('Permission created'),
+            message: t('accessControlForm.created.message'),
             type: 'success',
             autoClose: true,
           })
@@ -376,10 +380,12 @@ const AccessControlManagementForm = ({
         })
       }
     },
-    submitText: isEditing ? t('Save') : t('Add'),
-    submittingText: isEditing ? t('Saving') : t('Adding'),
+    submitText: isEditing ? t('Save') : t('Create permission'),
+    submittingText: isEditing ? t('Saving') : t('Creating'),
     reviewTitle: t('Review your selections'),
-    reviewDescription: t('Return to a step to make changes'),
+    reviewDescription: t(
+      'Confirm your selections before creating the permission. To make any changes, go back to the step you want to edit.'
+    ),
     cancelLabel: t('Cancel'),
     nextLabel: t('Next'),
     backLabel: t('Back'),

@@ -148,7 +148,7 @@ const accessControlNavItem: EncodedExtension<HrefNavItem> = {
   properties: {
     perspective: 'acm',
     id: 'acm-accessControlManagement',
-    name: '%plugin__acm~AccessControlManagement%',
+    name: '%plugin__acm~Access control%',
     href: '/multicloud/access-control-management',
     insertAfter: 'mce-credentials',
   },
