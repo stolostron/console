@@ -46,13 +46,13 @@ const ACTIONS = {
   }: { accessControls: AccessControl[] } & Pick<AccessControlManagementTableHelperProps, 't' | 'setModalProps'>) => {
     setModalProps({
       open: true,
-      title: t('Permanently delete Access Controls?'),
+      title: t('Permanently delete permissions?'),
       action: t('Delete'),
       processing: t('Deleting'),
       items: [...accessControls],
       emptyState: undefined, // table action is only enabled when items are selected
       description: t(
-        'You cannot create new clusters from deleted Access Controls. Clusters that you previously created will not be affected.'
+        'You cannot create new clusters from deleted permissions. Clusters that you previously created will not be affected.'
       ),
       columns: [
         {
@@ -208,14 +208,14 @@ const COLUMN_CELLS = {
       actions={[
         {
           id: 'editAccessControl',
-          text: t('Edit Access Control'),
+          text: t('Edit permission'),
           isAriaDisabled: true,
           click: (accessControl) => ACTIONS.EDIT({ accessControl, navigate }),
           rbac: [rbacPatch(accessControl)],
         },
         {
           id: 'deleteAccessControl',
-          text: t('Delete Access Control'),
+          text: t('Delete permission'),
           isAriaDisabled: true,
           click: (accessControl) => ACTIONS.DELETE({ accessControls: [accessControl], setModalProps, t }),
           rbac: [rbacDelete(accessControl)],
