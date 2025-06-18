@@ -46,6 +46,7 @@ import { SearchResultItemsQuery } from '../search-sdk/search-sdk'
 import { useSearchDefinitions } from '../searchDefinitions'
 import RelatedResults from './RelatedResults'
 import { getRowActions, ISearchResult } from './utils'
+import { useCanMigrateVm } from '../../../hooks/use-can-migrate-vm'
 
 const resultsWrapper = css({ paddingTop: '0' })
 const relatedExpandableWrapper = css({
@@ -90,6 +91,7 @@ function RenderAccordionItem(
   } = props
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const canMigrateVm = useCanMigrateVm()
   const allClusters = useAllClusters(true)
   const { useVirtualMachineActionsEnabled, isFineGrainedRbacEnabledState } = useSharedAtoms()
   const isFineGrainedRbacEnabled = useRecoilValue(isFineGrainedRbacEnabledState)
@@ -119,6 +121,7 @@ function RenderAccordionItem(
         acmExtensions,
         setPluginModal,
         navigate,
+        canMigrateVm,
         t
       ),
     [
@@ -133,6 +136,7 @@ function RenderAccordionItem(
       acmExtensions,
       setPluginModal,
       navigate,
+      canMigrateVm,
       t,
     ]
   )

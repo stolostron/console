@@ -1914,6 +1914,8 @@
   "Messages": "Messages",
   "Metrics": "Metrics",
   "Microsoft Azure": "Microsoft Azure",
+  "Migrate across environment": "Migrate across environment",
+  "Migrate VirtualMachines across your environment": "Migrate VirtualMachines across your environment",
   "Min {{min}} Max {{max}}": "Min {{min}} Max {{max}}",
   "Minimum duration": "Minimum duration",
   "Minus": "Minus",

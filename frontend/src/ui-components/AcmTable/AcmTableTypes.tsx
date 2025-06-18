@@ -68,6 +68,8 @@ export interface IAcmRowAction<T> {
   isDisabled?: boolean
   /** Visible text for action */
   title: string | React.ReactNode
+  /** Visible description for action */
+  description?: string | React.ReactNode
   /** Function for onClick() action */
   click: (item: T) => void
 }
@@ -79,7 +81,7 @@ export interface IAcmTableButtonAction {
   id: string
   title: string | React.ReactNode
   click: () => void
-  isDisabled?: boolean | undefined
+  isDisabled?: boolean
   tooltip?: string | React.ReactNode
   variant: ButtonVariant.primary | ButtonVariant.secondary
 }

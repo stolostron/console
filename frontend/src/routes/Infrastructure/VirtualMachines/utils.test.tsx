@@ -48,11 +48,12 @@ describe('VirtualMachines utils', () => {
       true,
       navigate,
       t,
+      true,
       []
     )
 
     // Assert the correct number of actions are returned
-    expect(result).toHaveLength(7)
+    expect(result).toHaveLength(8)
 
     expect(result[0].isDisabled).toBe(false) // stop
     expect(result[1].isDisabled).toBe(false) // restart
@@ -104,11 +105,12 @@ describe('VirtualMachines utils', () => {
       true,
       navigate,
       t,
+      true,
       []
     )
 
     // Assert the correct number of actions are returned
-    expect(result).toHaveLength(7)
+    expect(result).toHaveLength(8)
 
     expect(result[0].isDisabled).toBe(false) // stop
     expect(result[1].isDisabled).toBe(false) // restart
@@ -159,11 +161,12 @@ describe('VirtualMachines utils', () => {
       true,
       navigate,
       t,
+      true,
       []
     )
 
     // Assert the correct number of actions are returned
-    expect(result).toHaveLength(7)
+    expect(result).toHaveLength(8)
 
     expect(result[0].isDisabled).toBe(false) // start
     expect(result[1].isDisabled).toBe(true) // restart
@@ -214,11 +217,12 @@ describe('VirtualMachines utils', () => {
       true,
       navigate,
       t,
+      true,
       []
     )
 
     // Assert the correct number of actions are returned
-    expect(result).toHaveLength(7)
+    expect(result).toHaveLength(8)
 
     expect(result[0].isDisabled).toBe(false) // start
     expect(result[1].isDisabled).toBe(false) // restart
@@ -269,6 +273,7 @@ describe('VirtualMachines utils', () => {
       false,
       navigate,
       t,
+      true,
       []
     )
 
