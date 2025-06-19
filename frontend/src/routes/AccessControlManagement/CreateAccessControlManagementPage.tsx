@@ -24,10 +24,10 @@ const CreateAccessControlManagementPage = () => {
           <AcmPage
             header={
               <AcmPageHeader
-                title={t('Add Access Control Management')}
+                title={t('Create permission')}
                 breadcrumb={[
-                  { text: t('AccessControlManagement'), to: NavigationPath.accessControlManagement },
-                  { text: t('Add Access Control Management') },
+                  { text: t('Access control'), to: NavigationPath.accessControlManagement },
+                  { text: t('Create permission') },
                 ]}
               />
             }

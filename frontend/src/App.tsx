@@ -229,7 +229,7 @@ const routes: (IRoute | IRouteGroup)[] = [
     element: <Credentials />,
   },
   {
-    title: 'Access Control Management',
+    title: 'Access control',
     type: 'route',
     path: NavigationPath.accessControlManagement,
     match: MatchType.SubRoutes,

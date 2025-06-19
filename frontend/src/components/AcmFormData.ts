@@ -111,6 +111,7 @@ export interface SelectOptionInput {
   icon?: ReactNode
   text?: string
   description?: string
+  isDisabled?: boolean
 }
 
 export interface SelectOptionsBase<T> extends InputBase<T> {
@@ -169,7 +170,7 @@ export interface CustomInput {
   id: string
   label?: string
   title?: string
-  value: unknown
+  value?: unknown
   validation?: (value: unknown) => string | undefined
   validate?: boolean
   isRequired?: boolean

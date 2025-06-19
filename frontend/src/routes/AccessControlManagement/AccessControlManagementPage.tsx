@@ -11,7 +11,7 @@ const AccessControlManagementPage = () => {
   const accessControls = useRecoilValue(accessControlState)
 
   return (
-    <AcmPage header={<AcmPageHeader title={t('Access Control Management')} />}>
+    <AcmPage header={<AcmPageHeader title={t('Access control')} description={t('accessControl.description')} />}>
       <AcmPageContent id="access-control-management">
         <PageSection>
           <AccessControlManagementTable accessControls={accessControls} />
