@@ -1,16 +1,23 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useFleetSupport } from '../internal/hooks/useFleetSupport'
-import { shouldUseFleetSupport } from '../internal/utils/shouldUseFleetSupport'
 import { UseFleetK8sAPIPath } from '../types'
+import { getBackendUrl } from './utils/api-resource-list'
+import { BASE_K8S_API_PATH, MANAGED_CLUSTER_API_PATH } from './constants'
+import { useBackendURL } from './useBackendURL'
 
 export const useFleetK8sAPIPath: UseFleetK8sAPIPath = (cluster) => {
-  const fleetSupport = useFleetSupport()
-  if (shouldUseFleetSupport(fleetSupport, cluster)) {
-    const {
-      sdkProvider: { getFleetK8sAPIPath },
-    } = fleetSupport
-    return getFleetK8sAPIPath(cluster)
+  const [backendURL, loaded, error] = useBackendURL(cluster)
+
+  if (!cluster) return [BASE_K8S_API_PATH, true, undefined]
+
+  const fleetK8sApiPath = backendURL ? `${backendURL}/${MANAGED_CLUSTER_API_PATH}/${cluster}` : undefined
+  return [fleetK8sApiPath, loaded, error]
+}
+
+export const getFleetK8sAPIPath = async (cluster?: string) => {
+  if (cluster) {
+    const backendURL = await getBackendUrl()
+    return `${backendURL}/${MANAGED_CLUSTER_API_PATH}/${cluster}`
   } else {
-    return '/api/kubernetes'
+    return BASE_K8S_API_PATH
   }
 }
