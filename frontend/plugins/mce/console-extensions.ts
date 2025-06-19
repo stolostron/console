@@ -132,9 +132,9 @@ const virtualMachinesRoute: EncodedExtension<RoutePage> = {
     path: '/multicloud/infrastructure/virtualmachines',
     component: { $codeRef: 'virtualmachines.default' },
   },
-  flags: {
-    disallowed: ['KUBEVIRT_DYNAMIC'],
-  },
+  // flags: {
+  //   disallowed: ['KUBEVIRT_DYNAMIC'],
+  // },
 }
 
 // Credentials Navigation Item - type: 'console.navigation/href'
