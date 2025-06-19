@@ -564,9 +564,7 @@ describe('Create Subscription Application page', () => {
     userEvent.type(screen.getByLabelText(/branch/i), 'test-branch')
     userEvent.type(screen.getByLabelText(/path/i), 'test-path')
 
-    const ansibleSecretName = screen.getByPlaceholderText(/select an existing secret from the list./i)
-
-    userEvent.click(ansibleSecretName)
+    const ansibleSecretName = screen.getByPlaceholderText('Select an existing secret from the list.')
     userEvent.type(ansibleSecretName, mockAnsibleSecret.metadata.name!)
 
     // select an existing placement rule
@@ -598,7 +596,8 @@ describe('Create Subscription Application page', () => {
       nockAnsibleSecret.metadata.name!
     )
 
-    userEvent.click(screen.getByPlaceholderText(/select a namespace for the credential/i))
+    const namespaceSelector = screen.getByText('Select a namespace for the credential')
+    userEvent.click(namespaceSelector)
     userEvent.click(
       screen.getByRole('option', {
         name: /namespace-0/i,

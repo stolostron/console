@@ -299,19 +299,18 @@ describe('add automation template page', () => {
     const ansibleWorkflowNock = nockAnsibleTower(mockAnsibleCredentialWorkflow, mockTemplateWorkflowList)
     const ansibleInventoryNock = nockAnsibleTowerInventory(mockAnsibleCredentialInventory, mockInventoryList)
     await typeByPlaceholderText('Enter the name for the template', mockClusterCurator.metadata.name!)
-    await clickByPlaceholderText('Select an existing Ansible credential')
+    await clickByText('Select an existing Ansible credential')
     // Should show the modal wizard
     await clickByText('Add credential')
     // Credentials type
     await waitForTestId('credentialsType-input-toggle')
     await clickByText('Cancel', 1)
-
-    await clickByPlaceholderText('Select an existing Ansible credential')
+    await clickByText('Select an existing Ansible credential')
     await clickByText(mockSecret.metadata.name!)
     await waitForNock(ansibleJobNock)
     await waitForNock(ansibleWorkflowNock)
     await waitForNock(ansibleInventoryNock)
-    await clickByPlaceholderText('Select an inventory')
+    await clickByText('Select an inventory')
     await clickByText(mockInventoryList.results[0].name!)
     window.open = jest.fn()
     await clickByText('View selected inventory')
@@ -326,14 +325,14 @@ describe('add automation template page', () => {
     const ansibleWorkflowNock = nockAnsibleTower(mockAnsibleCredentialWorkflow, mockTemplateWorkflowList)
     const ansibleInventoryNock = nockAnsibleTowerInventory(mockAnsibleCredentialInventory, mockInventoryList)
     await typeByPlaceholderText('Enter the name for the template', mockClusterCurator.metadata.name!)
-    await clickByPlaceholderText('Select an existing Ansible credential')
+    await clickByText('Select an existing Ansible credential')
     // Should show the modal wizard
     await clickByText('Add credential')
     // Credentials type
     await waitForTestId('credentialsType-input-toggle')
     await clickByText('Cancel', 1)
 
-    await clickByPlaceholderText('Select an existing Ansible credential')
+    await clickByText('Select an existing Ansible credential')
     await clickByText(mockSecret.metadata.name!)
     await clickByText('Next')
     await waitForNock(ansibleJobNock)
@@ -357,14 +356,14 @@ describe('add automation template page', () => {
     const ansibleWorkflowNock = nockAnsibleTower(mockAnsibleCredentialWorkflow, mockTemplateWorkflowList)
     const ansibleInventoryNock = nockAnsibleTowerInventory(mockAnsibleCredentialInventory, mockInventoryList)
     await typeByPlaceholderText('Enter the name for the template', mockClusterCurator.metadata.name!)
-    await clickByPlaceholderText('Select an existing Ansible credential')
+    await clickByText('Select an existing Ansible credential')
     // Should show the modal wizard
     await clickByText('Add credential')
     // Credentials type
     await waitForTestId('credentialsType-input-toggle')
     await clickByText('Cancel', 1)
 
-    await clickByPlaceholderText('Select an existing Ansible credential')
+    await clickByText('Select an existing Ansible credential')
     await clickByText(mockSecret.metadata.name!)
     await clickByText('Next')
     await waitForNock(ansibleJobNock)
@@ -410,7 +409,7 @@ describe('add automation template page', () => {
     await typeByPlaceholderText('Enter the name for the template', mockClusterCurator.metadata.name!)
 
     // select the Ansible credential
-    await clickByPlaceholderText('Select an existing Ansible credential')
+    await clickByText('Select an existing Ansible credential')
     await clickByText(mockSecret.metadata.name!)
 
     // wait for the async error to be displayed

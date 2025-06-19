@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event'
 import { RecoilRoot } from 'recoil'
 import { MemoryRouter, Routes, Route } from 'react-router-dom-v5-compat'
 import { NavigationPath } from '../../NavigationPath'
-import { waitForNocks, waitForText } from '../../lib/test-util'
+import { clickByText, waitForNocks, waitForText } from '../../lib/test-util'
 import { argoCDsState, managedClusterSetsState, namespacesState, subscriptionOperatorsState } from '../../atoms'
 import { gitOpsOperators, mockArgoCD, mockClusterSets } from '../../routes/Applications/Application.sharedmocks'
 import { nockCreate, nockIgnoreApiPaths, nockIgnoreOperatorCheck } from '../../lib/nock-util'
@@ -138,7 +138,7 @@ describe('ArgoWizard tests', () => {
       'test-gitops'
     )
 
-    userEvent.click(screen.getByPlaceholderText(/select the namespace/i))
+    await clickByText('Select the namespace')
     userEvent.click(
       screen.getByRole('option', {
         name: /openshift-gitops/i,
