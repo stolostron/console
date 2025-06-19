@@ -409,7 +409,19 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
     },
     virtualmachinespage: {
       columns: [
-        { id: 'name', order: 1, isDefault: true, ...AddColumn('name', t('Name')) },
+        {
+          id: 'name',
+          order: 1,
+          isDefault: true,
+          ...AddColumn('name', t('Name')),
+          cell: (item: any) => {
+            return (
+              <Link to={`/multicloud/infrastructure/virtualmachines/${item.cluster}/${item.namespace}/${item.name}`}>
+                {item.name}
+              </Link>
+            )
+          },
+        },
         {
           id: 'status',
           order: 2,
@@ -946,28 +958,12 @@ export function VMLaunchLinks(props: Readonly<{ item: any; t: TFunction }>) {
     <Popover
       bodyContent={
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <AcmButton
-            variant="link"
-            component="a"
-            target="_blank"
-            isInline={true}
-            href={`${clusterURL}/k8s/ns/${item.namespace}/kubevirt.io~v1~VirtualMachine/${item.name}`}
-            icon={<ExternalLinkAltIcon />}
-            iconPosition="right"
-          >
+          <Link to={`/multicloud/infrastructure/virtualmachines/${vmCluster}/${item.namespace}/${item.name}`}>
             {t('Virtual machine details')}
-          </AcmButton>
-          <AcmButton
-            variant="link"
-            component="a"
-            target="_blank"
-            isInline={true}
-            href={`${clusterURL}/k8s/ns/${item.namespace}/kubevirt.io~v1~VirtualMachine/${item.name}/console`}
-            icon={<ExternalLinkAltIcon />}
-            iconPosition="right"
-          >
+          </Link>
+          <Link to={`/multicloud/infrastructure/vmconsole/${vmCluster}/${item.namespace}/${item.name}`}>
             {t('Virtual machine console')}
-          </AcmButton>
+          </Link>
           {isObservabilityInstalled && (
             <AcmButton
               variant="link"
