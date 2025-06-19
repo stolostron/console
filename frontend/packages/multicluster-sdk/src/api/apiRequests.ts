@@ -135,7 +135,7 @@ export async function fleetK8sGet<R extends K8sResourceCommon>(options: OptionsG
   return consoleFetchJSON(requestPath, 'GET') as Promise<R>
 }
 
-export async function fleetUpdateResource<R extends K8sResourceCommon>(options: OptionsUpdate<R>): Promise<R> {
+export async function fleetK8sUpdate<R extends K8sResourceCommon>(options: OptionsUpdate<R>): Promise<R> {
   const { model, name, ns, data } = options
 
   const cluster = options.cluster || data.cluster
