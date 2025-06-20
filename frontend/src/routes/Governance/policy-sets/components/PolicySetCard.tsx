@@ -17,14 +17,8 @@ import {
   ModalVariant,
   Stack,
   StackItem,
-  Dropdown,
-  DropdownItem,
-  Divider,
-  MenuToggle,
-  MenuToggleElement,
-  DropdownList,
 } from '@patternfly/react-core'
-import { CheckCircleIcon, EllipsisVIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
+import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { ReactNode, useCallback, useContext, useState } from 'react'
 import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../lib/acm-i18next'
@@ -34,6 +28,7 @@ import { PolicySet } from '../../../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { AcmDrawerContext, AcmDrawerProps } from '../../../../ui-components'
 import { PolicySetDetailSidebar } from '../components/PolicySetDetailSidebar'
+import { PolicyCardDropdown } from './PolicyCardDropdown'
 
 export default function PolicySetCard(props: {
   policySet: PolicySet
@@ -45,7 +40,6 @@ export default function PolicySetCard(props: {
   const { policySet, selectedCardID, setSelectedCardID, canEditPolicySet, canDeletePolicySet } = props
   const { t } = useTranslation()
   const { setDrawerContext } = useContext(AcmDrawerContext)
-  const [isKebabOpen, setIsKebabOpen] = useState<boolean>(false)
   const [modal, setModal] = useState<ReactNode | undefined>()
   const navigate = useNavigate()
   const cardID = `policyset-${policySet.metadata.namespace}-${policySet.metadata.name}`
@@ -100,59 +94,27 @@ export default function PolicySetCard(props: {
         <CardHeader
           actions={{
             actions: (
-              <>
-                <Dropdown
-                  onOpenChange={() => setIsKebabOpen(!isKebabOpen)}
-                  onSelect={() => setIsKebabOpen(!isKebabOpen)}
-                  toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
-                    <MenuToggle
-                      ref={toggleRef}
-                      onClick={(event) => {
-                        setIsKebabOpen(!isKebabOpen)
-                        event.stopPropagation()
-                      }}
-                      variant="plain"
-                      isExpanded={isKebabOpen}
-                    >
-                      <EllipsisVIcon />
-                    </MenuToggle>
-                  )}
-                  isOpen={isKebabOpen}
-                  isPlain={true}
-                >
-                  <DropdownList>
-                    <DropdownItem
-                      key="view details"
-                      onClick={() => {
-                        const newSelectedCard = cardID === selectedCardID ? '' : cardID
-                        setSelectedCardID(newSelectedCard)
-                        onClick(cardID)
-                      }}
-                    >
-                      {t('View details')}
-                    </DropdownItem>
-                    <DropdownItem
-                      isAriaDisabled={!canEditPolicySet}
-                      tooltipProps={{ content: !canEditPolicySet ? t('rbac.unauthorized') : '' }}
-                      key="edit"
-                      onClick={() => {
+              <PolicyCardDropdown
+                onView={() => {
+                  const newSelectedCard = cardID === selectedCardID ? '' : cardID
+                  setSelectedCardID(newSelectedCard)
+                  onClick(cardID)
+                }}
+                onEdit={
+                  canEditPolicySet
+                    ? () => {
                         navigate(
                           generatePath(NavigationPath.editPolicySet, {
                             namespace: policySet.metadata.namespace,
                             name: policySet.metadata.name,
                           })
                         )
-                      }}
-                    >
-                      {t('Edit')}
-                    </DropdownItem>
-                    <Divider component="li" key="separator" />
-                    <DropdownItem
-                      isAriaDisabled={!canDeletePolicySet}
-                      tooltipProps={{ content: !canDeletePolicySet ? t('rbac.unauthorized') : '' }}
-                      key="delete"
-                      onClick={() => {
-                        setIsKebabOpen(false)
+                      }
+                    : undefined
+                }
+                onDelete={
+                  canDeletePolicySet
+                    ? () => {
                         setModal(
                           <DeletePolicySetModal
                             item={policySet}
@@ -161,13 +123,10 @@ export default function PolicySetCard(props: {
                             setSelectedCardID={setSelectedCardID}
                           />
                         )
-                      }}
-                    >
-                      {t('Delete')}
-                    </DropdownItem>
-                  </DropdownList>
-                </Dropdown>
-              </>
+                      }
+                    : undefined
+                }
+              />
             ),
             hasNoOffset: false,
             className: undefined,
