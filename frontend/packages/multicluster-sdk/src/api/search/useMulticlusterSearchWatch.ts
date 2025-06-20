@@ -16,7 +16,7 @@ export const useMulticlusterSearchWatch: UseMulticlusterSearchWatch = (watchOpti
     loading,
     error,
   } = useSearchResultItemsQuery({
-    skip: !searchClient,
+    skip: searchClient === undefined,
     client: searchClient,
     variables: {
       input: [
