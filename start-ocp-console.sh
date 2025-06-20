@@ -7,6 +7,7 @@ source ./oauth-client-name.sh
 
 CONSOLE_VERSION=${CONSOLE_VERSION:=4.18}
 KUBEVIRT_PORT=${KUBEVIRT_PORT:=""}
+ODF_PORT=${ODF_PORT:=""}
 CONSOLE_IMAGE="quay.io/openshift/origin-console:${CONSOLE_VERSION}"
 
 mkdir -p ocp-console
@@ -51,11 +52,17 @@ echo "Console URL: http://localhost:${CONSOLE_PORT}"
 
 function getBridgePlugins {
     local host=$1
-    local kubevirt=""
+    local plugins=""
     if [ -n "$KUBEVIRT_PORT" ]; then
-        kubevirt=",kubevirt-plugin=http://${host}:${KUBEVIRT_PORT}"
+        plugins="${plugins},kubevirt-plugin=http://${host}:${KUBEVIRT_PORT}"
     fi
-    echo "mce=http://${host}:${MCE_PORT},acm=http://${host}:${ACM_PORT}${kubevirt}"
+
+    if [ -n "$ODF_PORT" ]; then
+        plugins="${plugins},odf-multicluster-console=http://${host}:${ODF_PORT}"
+    fi
+
+
+    echo "mce=http://${host}:${MCE_PORT},acm=http://${host}:${ACM_PORT}${plugins}"
 }
 
 function getBridgePluginProxy {
