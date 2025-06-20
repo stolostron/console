@@ -8,13 +8,9 @@ import { configureAxe } from 'jest-axe'
 import { useState } from 'react'
 import { AcmDropdown } from '../AcmDropdown/AcmDropdown'
 import { AcmEmptyState } from '../AcmEmptyState'
-import {
-  AcmTable,
-  AcmTablePaginationContextProvider,
-  AcmTableProps,
-  ExportableIRow,
-  ITableAdvancedFilter,
-} from './AcmTable'
+import { AcmTable, AcmTablePaginationContextProvider } from './AcmTable'
+import { AcmTableProps, ExportableIRow, ITableAdvancedFilter } from './AcmTableTypes'
+
 import { exampleData } from './AcmTable.stories'
 import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { exportObjectString, returnCSVSafeString } from '../../resources/utils'
