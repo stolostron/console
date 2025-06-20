@@ -1797,7 +1797,6 @@
   "machinePool.disableAutoscale": "禁用自动扩展",
   "machinePool.editAutoscale": "编辑自动扩展",
   "machinePool.enableAutoscale": "启用自动扩展",
-  "machinePool.menu.disabled.tooltip": "集群的当前状态（{{status}}）不允许在机器池中执行任何操作。",
   "machinePool.modal.scale.disable-autoscale.message": "这需要在 <bold>{{name}}</bold> 中手动扩展机器集。这个机器池中目前有 {{number}} 活跃的机器集副本。",
   "machinePool.modal.scale.disable-autoscale.title": "禁用自动扩展",
   "machinePool.modal.scale.edit-autoscale.message": "指定 <bold>{{name}}</bold> 的最小和最大副本",

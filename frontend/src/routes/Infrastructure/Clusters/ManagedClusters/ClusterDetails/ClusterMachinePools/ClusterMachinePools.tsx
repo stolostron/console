@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { getReadyReplicas, MachinePool } from '../../../../../../resources'
-import { ClusterStatus, deleteResource } from '../../../../../../resources/utils'
+import { deleteResource } from '../../../../../../resources/utils'
 import {
   AcmEmptyState,
   AcmPageContent,
@@ -213,8 +213,6 @@ export function MachinePoolsTable() {
             isKebab={true}
             text={t('Actions')}
             actions={actions}
-            tooltip={t('machinePool.menu.disabled.tooltip', { status: t(`status.${cluster.status}`) })}
-            isDisabled={![ClusterStatus.ready, ClusterStatus.degraded].includes(cluster.status)}
           />
         )
       },
