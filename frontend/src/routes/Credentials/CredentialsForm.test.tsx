@@ -7,10 +7,8 @@ import { namespacesState } from '../../atoms'
 import { nockCreate, nockIgnoreApiPaths, nockIgnoreRBAC } from '../../lib/nock-util'
 import {
   clearByTestId,
-  clickByPlaceholderText,
   clickByTestId,
   clickByText,
-  selectByText,
   typeByTestId,
   waitForNock,
   waitForTestId,
