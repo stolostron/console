@@ -6,6 +6,14 @@ export const BASE_FLEET_SEARCH_PATH = '/multicloud/search/resources'
 
 export const MANAGED_CLUSTER_API_PATH = 'managedclusterproxy'
 
+export const ManagedClusterListGroupVersionKind = {
+  group: 'clusterview.open-cluster-management.io',
+  version: 'v1',
+  kind: 'ManagedCluster',
+}
+
+export const LOCAL_CLUSTER_LABEL = 'local-cluster'
+
 export const ManagedClusterModel: K8sModel = {
   abbr: 'MC',
   apiGroup: 'clusterview.open-cluster-management.io',
