@@ -1,0 +1,44 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: {{{appSetName}}}
+  namespace: {{{argoServer}}}
+  {{#if selfLink}}
+  selfLink: {{{selfLink}}}
+  {{/if}}
+spec:
+  generators:
+    - clusterDecisionResource:
+        configMapRef: acm-placement
+        labelSelector:
+          matchLabels:
+        {{#if placement.select}}
+            cluster.open-cluster-management.io/placement: {{{placement.select}}}  
+        {{else}}  
+            cluster.open-cluster-management.io/placement: {{{appSetName}}}-placement
+        {{/if}}                
+        requeueAfterSeconds: {{{requeueTime}}}
+  template:
+    metadata:
+      name: '{{{appSetName}}}-{{curlyName}}'
+    spec:
+      project: "default"
+      source:
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{! ==================Github channel ========================= }}
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{#if_eq repositoryType 'Git'}}
+{{>templateArgoGit}}
+{{/if_eq}}
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{! ==================Helm channel ========================= }}
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{#if_eq repositoryType 'Helm'}}
+{{>templateArgoHelm}}
+{{/if_eq}}
+{{>templateArgoPlacement}}
+
