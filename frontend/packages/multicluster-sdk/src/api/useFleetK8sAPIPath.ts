@@ -1,22 +1,30 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { k8sListItems } from '@openshift-console/dynamic-plugin-sdk'
 import { UseFleetK8sAPIPath } from '../types'
-import { getBackendUrl } from './utils/api-resource-list'
-import { BASE_K8S_API_PATH, MANAGED_CLUSTER_API_PATH } from './constants'
-import { useBackendURL } from './useBackendURL'
+import { getBackendUrl } from './apiRequests'
+import { BASE_K8S_API_PATH, MANAGED_CLUSTER_API_PATH, ManagedClusterModel } from './constants'
+import { useHubClusterName } from './useHubClusterName'
 
 export const useFleetK8sAPIPath: UseFleetK8sAPIPath = (cluster) => {
-  const [backendURL, loaded, error] = useBackendURL(cluster)
+  const [hubClusterName, loaded, error] = useHubClusterName()
 
-  if (!cluster) return [BASE_K8S_API_PATH, true, undefined]
+  if (!loaded) return [undefined, false, error]
 
-  const fleetK8sApiPath = backendURL ? `${backendURL}/${MANAGED_CLUSTER_API_PATH}/${cluster}` : undefined
-  return [fleetK8sApiPath, loaded, error]
+  if (!cluster || cluster === hubClusterName) return [BASE_K8S_API_PATH, true, undefined]
+
+  return [`${getBackendUrl()}/${MANAGED_CLUSTER_API_PATH}/${cluster}`, loaded, error]
 }
 
 export const getFleetK8sAPIPath = async (cluster?: string) => {
-  if (cluster) {
-    const backendURL = await getBackendUrl()
-    return `${backendURL}/${MANAGED_CLUSTER_API_PATH}/${cluster}`
+  const hubClusters = await k8sListItems({
+    model: ManagedClusterModel,
+    queryParams: { labelSelector: `local-cluster=true` },
+  })
+
+  const hubCluster = hubClusters?.[0]
+
+  if (cluster && hubCluster?.metadata?.name !== cluster) {
+    return `${getBackendUrl()}/${MANAGED_CLUSTER_API_PATH}/${cluster}`
   } else {
     return BASE_K8S_API_PATH
   }

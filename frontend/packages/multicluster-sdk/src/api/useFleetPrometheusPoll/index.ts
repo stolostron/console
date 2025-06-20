@@ -4,7 +4,7 @@ import { useURLPoll as useFleetURLPoll } from './useURLPoll'
 import { DEFAULT_PROMETHEUS_SAMPLES, DEFAULT_PROMETHEUS_TIMESPAN } from './constants'
 import { getFleetPrometheusURL } from './utils'
 import { useHubClusterName } from '../useHubClusterName'
-import { useBackendURL } from '../useBackendURL'
+import { getBackendUrl } from '../apiRequests'
 
 type UsePrometheusPoll = (
   props: PrometheusPollProps & { cluster?: string }
@@ -22,12 +22,8 @@ export const useFleetPrometheusPoll: UsePrometheusPoll = ({
   customDataSource,
   cluster,
 }) => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [backendBasePath, loaded] = useBackendURL(cluster)
-
-  const hubCluster = useHubClusterName()
-  const clusterForQuery = hubCluster === cluster ? undefined : cluster
-  const fleetBasePath = clusterForQuery && loaded ? `${backendBasePath}/observability` : undefined
+  const [hubClusterName] = useHubClusterName()
+  const clusterForQuery = hubClusterName === cluster ? undefined : cluster
 
   const prometheusURLProps = {
     endpoint,
@@ -40,7 +36,9 @@ export const useFleetPrometheusPoll: UsePrometheusPoll = ({
   }
 
   const fleetPool = useFleetURLPoll<PrometheusResponse>(
-    clusterForQuery ? getFleetPrometheusURL(prometheusURLProps, fleetBasePath, clusterForQuery) : null,
+    clusterForQuery
+      ? getFleetPrometheusURL(prometheusURLProps, `${getBackendUrl()}/observability`, clusterForQuery)
+      : null,
     delay,
     query,
     timespan
