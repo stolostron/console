@@ -46,7 +46,8 @@
     "@patternfly/react-component-groups": "^6.2.1",
     "@patternfly/react-core": "^6.2.2",
     "@patternfly/react-styles": "^6.2.2",
-    "react-i18next": "^15.5.2",
+    "graphql": "^16.9.0",
+    "react-i18next": "11.16.9",
     "react-router-dom-v5-compat": "^6.24.1",
     "react-transition-group": "^4.4.5",
     "react-virtualized": "^9.22.6"
