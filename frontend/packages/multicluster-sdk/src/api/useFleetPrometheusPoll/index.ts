@@ -25,7 +25,7 @@ export const useFleetPrometheusPoll: UsePrometheusPoll = ({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [backendBasePath, loaded] = useBackendURL(cluster)
 
-  const hubCluster = useHubClusterName()
+  const [hubCluster] = useHubClusterName()
   const clusterForQuery = hubCluster === cluster ? undefined : cluster
   const fleetBasePath = clusterForQuery && loaded ? `${backendBasePath}/observability` : undefined
 
