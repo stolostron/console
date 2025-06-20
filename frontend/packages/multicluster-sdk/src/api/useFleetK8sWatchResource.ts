@@ -5,5 +5,5 @@ import { UseFleetK8sWatchResource } from '../types'
 
 export const useFleetK8sWatchResource: UseFleetK8sWatchResource = (initResource) => {
   const hubClusterName = useHubClusterName()
-  return useInternalFleetK8sWatchResource(hubClusterName, initResource)
+  return useInternalFleetK8sWatchResource(hubClusterName || '', initResource)
 }
