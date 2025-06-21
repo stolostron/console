@@ -624,14 +624,17 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
   }
 
   function renderMultipleTextInput(): ReactNode {
+    const inputId = props.id || `${selectToggleId}-input`
     return (
       <TextInputGroup isPlain>
         <TextInputGroupMain
+          inputId={inputId}
+          name={inputId}
+          id={`${selectToggleId}-group`}
           value={inputValue || selectedItem}
           onClick={onInputClick}
           onChange={onTextInputChange}
           onKeyDown={onInputKeyDown}
-          id="multi-typeahead-select-input"
           autoComplete="off"
           innerRef={textInputRef}
           placeholder={placeholder}
