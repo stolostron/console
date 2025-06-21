@@ -20,6 +20,7 @@ export const pluginMetadata: ConsolePluginBuildMetadata = {
     environments: '../../src/routes/Infrastructure/InfraEnvironments/InfraEnvironmentsPlugin.tsx',
     virtualmachines: '../../src/routes/Infrastructure/VirtualMachines/VirtualMachinesPlugin.tsx',
     credentials: '../../src/routes/Credentials/CredentialsPlugin.tsx',
+    cim: "../../src/cim/index.ts",
   },
   dependencies: {
     '@console/pluginAPI': '>=4.15.0',

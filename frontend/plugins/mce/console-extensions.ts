@@ -1,6 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ContextProvider, Perspective, NavSection, HrefNavItem, RoutePage } from '@openshift-console/dynamic-plugin-sdk'
+import {
+  ContextProvider,
+  Perspective,
+  NavSection,
+  HrefNavItem,
+  RoutePage,
+  ResourceDetailsPage,
+  ResourceNSNavItem,
+  CreateResource,
+} from '@openshift-console/dynamic-plugin-sdk'
 import { SharedContext } from '../../src/lib/SharedContext'
 import { EncodedExtension } from '@openshift/dynamic-plugin-sdk-webpack'
 
@@ -92,27 +101,6 @@ const automationsRoute: EncodedExtension<RoutePage> = {
   },
 }
 
-// Host Inventory Navigation Item - type: 'console.navigation/href'
-const hostInventoryNavItem: EncodedExtension<HrefNavItem> = {
-  type: 'console.navigation/href',
-  properties: {
-    perspective: 'acm',
-    section: 'mce-infrastructure',
-    id: 'mce-host-inventory',
-    name: '%plugin__mce~Host inventory%',
-    href: '/multicloud/infrastructure/environments',
-  },
-}
-
-// Host Inventory Route - type: 'console.page/route'
-const hostInventoryRoute: EncodedExtension<RoutePage> = {
-  type: 'console.page/route',
-  properties: {
-    path: '/multicloud/infrastructure/environments',
-    component: { $codeRef: 'environments.default' },
-  },
-}
-
 // Virtual Machines Navigation Item - type: 'console.navigation/href'
 const virtualMachinesNavItem: EncodedExtension<HrefNavItem> = {
   type: 'console.navigation/href',
@@ -154,6 +142,58 @@ const credentialsRoute: EncodedExtension<RoutePage> = {
   },
 }
 
+const infraEnvDetails: EncodedExtension<ResourceDetailsPage> = {
+  type: 'console.page/resource/details',
+  properties: {
+    model: {
+      group: 'agent-install.openshift.io',
+      version: 'v1beta1',
+      kind: 'InfraEnv',
+    },
+    component: { $codeRef: 'cim.InfraEnvDetails' },
+  },
+}
+
+const infraEnvRoute: EncodedExtension<RoutePage> = {
+  type: 'console.page/route',
+  properties: {
+    path: [
+      'k8s/all-namespaces/agent-install.openshift.io~v1beta1~InfraEnv',
+      'k8s/ns/:ns/agent-install.openshift.io~v1beta1~InfraEnv',
+    ],
+    component: { $codeRef: 'environments.default' },
+    exact: true,
+  },
+}
+
+const infraEnvNavItem: EncodedExtension<ResourceNSNavItem> = {
+  type: 'console.navigation/resource-ns',
+  properties: {
+    id: 'mce-host-inventory',
+    perspective: 'acm',
+    model: {
+      group: 'agent-install.openshift.io',
+      version: 'v1beta1',
+      kind: 'InfraEnv',
+    },
+    section: 'mce-infrastructure',
+    name: '%plugin__mce~Host inventory%',
+    insertAfter: 'mce-automations',
+  },
+}
+
+const infraEnvCreate: EncodedExtension<CreateResource> = {
+  type: 'console.resource/create',
+  properties: {
+    model: {
+      group: 'agent-install.openshift.io',
+      version: 'v1beta1',
+      kind: 'InfraEnv',
+    },
+    component: { $codeRef: 'cim.CreateInfraEnvPage' },
+  },
+}
+
 export const extensions: EncodedExtension[] = [
   contextProvider,
   sharedContext,
@@ -163,10 +203,12 @@ export const extensions: EncodedExtension[] = [
   clustersRoute,
   automationsNavItem,
   automationsRoute,
-  hostInventoryNavItem,
-  hostInventoryRoute,
   virtualMachinesNavItem,
   virtualMachinesRoute,
   credentialsNavItem,
   credentialsRoute,
+  infraEnvDetails,
+  infraEnvRoute,
+  infraEnvNavItem,
+  infraEnvCreate,
 ]
