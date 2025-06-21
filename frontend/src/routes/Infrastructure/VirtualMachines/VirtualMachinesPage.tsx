@@ -69,6 +69,9 @@ import {
   getVirtualMachineRowActionExtensions,
   getVirtualMachineRowActions,
 } from './utils'
+import { Outlet } from 'react-router-dom-v5-compat'
+import { useIsAnyNamespaceAuthorized, rbacCreate } from '../../../lib/rbac-util'
+import { AccessControlDefinition } from '../../../resources/access-control'
 
 function VirtualMachineTable(props: Readonly<{ searchResultItems: ISearchResult[] | undefined }>) {
   const { searchResultItems } = props
@@ -91,6 +94,8 @@ function VirtualMachineTable(props: Readonly<{ searchResultItems: ISearchResult[
   const ocpVersion = getMajorMinorVersion(getCurrentClusterVersion(clusterVersion)) || 'latest'
   const [pluginModal, setPluginModal] = useState<JSX.Element>()
 
+  const canMigrateVm = useIsAnyNamespaceAuthorized(rbacCreate(AccessControlDefinition))
+
   const rowActionResolver = useCallback(
     (item: any) => {
       return getVirtualMachineRowActions(
@@ -103,11 +108,12 @@ function VirtualMachineTable(props: Readonly<{ searchResultItems: ISearchResult[
         vmActionsEnabled,
         navigate,
         t,
+        canMigrateVm,
         // get the row action extensions for the virtual machine
         getVirtualMachineRowActionExtensions(item, acmExtensions?.virtualMachineAction || [], setPluginModal)
       )
     },
-    [allClusters, navigate, t, isFineGrainedRbacEnabled, vmActionsEnabled, acmExtensions]
+    [allClusters, navigate, t, canMigrateVm, isFineGrainedRbacEnabled, vmActionsEnabled, acmExtensions]
   )
 
   const extensionColumns: IAcmTableColumn<ISearchResult>[] = useMemo(
@@ -476,6 +482,7 @@ export default function VirtualMachinesPage() {
         </PageSection>
         <PageSection>
           <VirtualMachineTable searchResultItems={vmTableItems} />
+          <Outlet />
         </PageSection>
       </AcmPageContent>
     </AcmPage>

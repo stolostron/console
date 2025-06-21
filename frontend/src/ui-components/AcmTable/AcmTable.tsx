@@ -160,6 +160,8 @@ export interface IAcmRowAction<T> {
   isDisabled?: boolean
   /** Visible text for action */
   title: string | React.ReactNode
+  /** Visible description for action */
+  description?: string | React.ReactNode
   /** Function for onClick() action */
   click: (item: T) => void
 }
@@ -1326,6 +1328,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
           ) : (
             action.title
           ),
+          description: action.description,
           isAriaDisabled: action.isDisabled ? true : false,
           onClick: action.isDisabled
             ? undefined
