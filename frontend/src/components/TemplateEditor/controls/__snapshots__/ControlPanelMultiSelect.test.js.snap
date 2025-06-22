@@ -69,7 +69,6 @@ exports[`ControlPanelMultiSelect component renders as expected 1`] = `
               <div
                 autocomplete="off"
                 class="pf-v5-c-text-input-group__main"
-                id="multi-typeahead-select-input"
               >
                 <span
                   class="pf-v5-c-text-input-group__text"
