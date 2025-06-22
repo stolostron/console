@@ -74,8 +74,15 @@ export async function virtualMachineGETProxy(req: Http2ServerRequest, res: Http2
       } else if (req.url.startsWith('/virtualmachinesnapshots/get')) {
         path = `${path}/apis/snapshot.kubevirt.io/v1beta1/namespaces/${vmNamespace}/virtualmachinesnapshots/${vmName}`
       }
-      const getResponse = await jsonRequest(path, token)
-        .then((response) => response)
+      const getResponse = await fetchRetry(path, {
+        method: 'GET',
+        headers: {
+          [HTTP2_HEADER_AUTHORIZATION]: `Bearer ${token}`,
+        },
+        agent: getServiceAgent(),
+        compress: true,
+      })
+        .then((response) => response.json())
         .catch((err: Error): undefined => {
           logger.error({ msg: 'Error getting VM resource (fine grained RBAC)', error: err.message })
           return undefined
