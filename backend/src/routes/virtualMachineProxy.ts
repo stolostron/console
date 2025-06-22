@@ -82,7 +82,7 @@ export async function virtualMachineGETProxy(req: Http2ServerRequest, res: Http2
         agent: getServiceAgent(),
         compress: true,
       })
-        .then((response) => response.json())
+        .then((response) => response.json() as unknown)
         .catch((err: Error): undefined => {
           logger.error({ msg: 'Error getting VM resource (fine grained RBAC)', error: err.message })
           return undefined
