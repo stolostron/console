@@ -45,7 +45,7 @@ export const PolicyCardDropdown = ({ onView, onDelete, onEdit }: PolicyActionDro
         </DropdownItem>
         <DropdownItem
           isAriaDisabled={!onEdit}
-          tooltipProps={{ content: !onEdit ? t('rbac.unauthorized') : '' }}
+          tooltipProps={!onEdit ? { content: t('rbac.unauthorized') } : undefined}
           key="edit"
           onClick={(event) => handleClick(event, onEdit)}
         >
@@ -54,7 +54,7 @@ export const PolicyCardDropdown = ({ onView, onDelete, onEdit }: PolicyActionDro
         <Divider component="li" key="separator" />
         <DropdownItem
           isAriaDisabled={!onDelete}
-          tooltipProps={{ content: !onDelete ? t('rbac.unauthorized') : '' }}
+          tooltipProps={!onDelete ? { content: t('rbac.unauthorized') } : undefined}
           key="delete"
           onClick={(event) => handleClick(event, onDelete)}
         >
