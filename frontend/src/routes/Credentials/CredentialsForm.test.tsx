@@ -7,8 +7,10 @@ import { namespacesState } from '../../atoms'
 import { nockCreate, nockIgnoreApiPaths, nockIgnoreRBAC } from '../../lib/nock-util'
 import {
   clearByTestId,
+  clickByPlaceholderText,
   clickByTestId,
   clickByText,
+  selectByText,
   typeByTestId,
   waitForNock,
   waitForTestId,
@@ -49,8 +51,7 @@ describe('add credentials page', () => {
     )
 
     await typeByTestId('credentialsName', providerConnection.metadata.name!)
-    await clickByText('Select a namespace for the credential')
-    await clickByText(providerConnection.metadata.namespace!)
+    await selectByText('Select a namespace for the credential', providerConnection.metadata.namespace!)
     await typeByTestId('baseDomain', providerConnection.stringData?.baseDomain!)
     await clickByText('Next')
 
@@ -150,8 +151,7 @@ describe('add credentials page', () => {
     )
 
     await typeByTestId('credentialsName', providerConnection.metadata.name!)
-    await clickByText('Select a namespace for the credential')
-    await clickByText(providerConnection.metadata.namespace!)
+    await selectByText('Select a namespace for the credential', providerConnection.metadata.namespace!)
     await typeByTestId('baseDomain', providerConnection.stringData?.baseDomain!)
     await clickByText('Next')
 
@@ -191,8 +191,7 @@ describe('add credentials page', () => {
     )
 
     await typeByTestId('credentialsName', providerConnection.metadata.name!)
-    await clickByText('Select a namespace for the credential')
-    await clickByText(providerConnection.metadata.namespace!)
+    await selectByText('Select a namespace for the credential', providerConnection.metadata.namespace!)
     await typeByTestId('baseDomain', providerConnection.stringData?.baseDomain!)
     await clickByText('Next')
 
@@ -240,8 +239,7 @@ describe('add credentials page', () => {
     )
 
     await typeByTestId('credentialsName', providerConnection.metadata.name!)
-    await clickByText('Select a namespace for the credential')
-    await clickByText(providerConnection.metadata.namespace!)
+    await selectByText('Select a namespace for the credential', providerConnection.metadata.namespace!)
     await typeByTestId('baseDomain', providerConnection.stringData?.baseDomain!)
     await clickByText('Next')
 
@@ -253,7 +251,7 @@ describe('add credentials page', () => {
     await typeByTestId('cluster', providerConnection.stringData?.cluster!)
     await typeByTestId('datacenter', providerConnection.stringData?.datacenter!)
     await typeByTestId('defaultDatastore', providerConnection.stringData?.defaultDatastore!)
-    await clickByText('Select the vSphere disk type')
+    await clickByPlaceholderText('Select the vSphere disk type')
     await clickByText(providerConnection.stringData?.vsphereDiskType!)
     await clearByTestId('vsphereFolder')
     await typeByTestId('vsphereFolder', providerConnection.stringData?.vsphereFolder!)
@@ -307,8 +305,7 @@ describe('add credentials page', () => {
     )
 
     await typeByTestId('credentialsName', providerConnection.metadata.name!)
-    await clickByText('Select a namespace for the credential')
-    await clickByText(providerConnection.metadata.namespace!)
+    await selectByText('Select a namespace for the credential', providerConnection.metadata.namespace!)
     await typeByTestId('baseDomain', providerConnection.stringData?.baseDomain!)
     await clickByText('Next')
 
@@ -355,8 +352,7 @@ describe('add credentials page', () => {
     )
 
     await typeByTestId('credentialsName', providerConnection.metadata.name!)
-    await clickByText('Select a namespace for the credential')
-    await clickByText(providerConnection.metadata.namespace!)
+    await selectByText('Select a namespace for the credential', providerConnection.metadata.namespace!)
     await clickByText('Next')
 
     // ans credentials
@@ -379,8 +375,7 @@ describe('add credentials page', () => {
     })
 
     await typeByTestId('credentialsName', providerConnection.metadata.name!)
-    await clickByText('Select a namespace for the credential')
-    await clickByText(providerConnection.metadata.namespace!)
+    await selectByText('Select a namespace for the credential', providerConnection.metadata.namespace!)
     await clickByText('Next')
 
     // Assert the presence of the title and description text
@@ -426,8 +421,7 @@ describe('add credentials page', () => {
     })
 
     await typeByTestId('credentialsName', providerConnection.metadata.name!)
-    await clickByText('Select a namespace for the credential')
-    await clickByText(providerConnection.metadata.namespace!)
+    await selectByText('Select a namespace for the credential', providerConnection.metadata.namespace!)
     await clickByText('Next')
 
     // Assert the presence of the tile and description
@@ -482,8 +476,7 @@ describe('add credentials page', () => {
 
     // Render the form and fill in the fields
     await typeByTestId('credentialsName', providerConnection.metadata.name!)
-    await clickByText('Select a namespace for the credential')
-    await clickByText(providerConnection.metadata.namespace!)
+    await selectByText('Select a namespace for the credential', providerConnection.metadata.namespace!)
     await clickByText('Next')
 
     // (no external infra)
@@ -532,8 +525,7 @@ current-context: 'mock-context'
 
     // Render the form and fill in the fields
     await typeByTestId('credentialsName', providerConnection.metadata.name!)
-    await clickByText('Select a namespace for the credential')
-    await clickByText(providerConnection.metadata.namespace!)
+    await selectByText('Select a namespace for the credential', providerConnection.metadata.namespace!)
     await clickByText('Next')
 
     // Click on the external infrastructure checkbox

@@ -596,8 +596,7 @@ describe('Create Subscription Application page', () => {
       nockAnsibleSecret.metadata.name!
     )
 
-    const namespaceSelector = screen.getByText('Select a namespace for the credential')
-    userEvent.click(namespaceSelector)
+    userEvent.click(screen.getByPlaceholderText(/select a namespace for the credential/i))
     userEvent.click(
       screen.getByRole('option', {
         name: /namespace-0/i,

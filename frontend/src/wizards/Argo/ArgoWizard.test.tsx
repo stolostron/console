@@ -138,7 +138,7 @@ describe('ArgoWizard tests', () => {
       'test-gitops'
     )
 
-    await clickByText('Select the namespace')
+    userEvent.click(screen.getByPlaceholderText(/select the namespace/i))
     userEvent.click(
       screen.getByRole('option', {
         name: /openshift-gitops/i,
