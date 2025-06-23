@@ -18,22 +18,27 @@ DEFAULT_ACM_BASE="quay.io/stolostron/console"
 DEFAULT_MCE_BASE="quay.io/stolostron/console-mce"
 ACM_NAMESPACE="open-cluster-management"
 MCE_NAMESPACE="multicluster-engine"
-PR_NUMBER=""
-COMMIT_HASH=""
 DRY_RUN=false
 WAIT_FOR_ROLLOUT=true
-DEFAULT_VERSION="2.14.0"  # same default version for both ACM and MCE
-ACM_WAIT_TIMEOUT=900  # 15 minutes for ACM
-MCE_WAIT_TIMEOUT=900  #15 minutes for MCE
+WAIT_TIMEOUT=900  # 15 minutes for deployment rollouts
 SKIP_CONFIRMATION=false
 
 # check if oc is available and logged in
-check_oc_command() {
+check_dependencies() {
   if ! command -v oc &> /dev/null; then
     echo -e "${RED}Error: 'oc' command not found. Please install the OpenShift CLI.${NC}"
     exit 1
   fi
   
+  if ! command -v jq &> /dev/null; then
+    echo -e "${RED}Error: 'jq' command not found. Please install jq.${NC}"
+    echo -e "Installation instructions:"
+    echo -e "  - macOS: brew install jq"
+    echo -e "  - Linux (Debian/Ubuntu): sudo apt-get install jq"
+    echo -e "  - Linux (RHEL/Fedora): sudo dnf install jq"
+    exit 1
+  fi
+
   # check if the user is logged in
   if ! oc whoami &> /dev/null; then
     echo -e "${RED}Error: Not logged into OpenShift. Please login first.${NC}"
@@ -50,12 +55,18 @@ confirm_cluster() {
   # cluster information to display to the user
   local current_context
   current_context=$(oc config current-context)
+  
+  # extract the last part if it contains slashes
+  if [[ "$current_context" == *"/"* ]]; then
+    current_context=$(echo "$current_context" | awk -F'/' '{print $NF}')
+  fi
+  
   local current_server
   current_server=$(oc config view --minify -o jsonpath='{.clusters[0].cluster.server}')
   local current_user
   current_user=$(oc whoami)
   
-  # Show all information in a single section
+  # shows all information in a single section
   echo -e "\n${BOLD}You are about to update console images on:${NC}"
   echo -e "  Context: ${YELLOW}$current_context${NC}"
   echo -e "  Server: ${YELLOW}$current_server${NC}" 
@@ -69,34 +80,22 @@ confirm_cluster() {
   fi
 }
 
-# wait for deployment function
+# wait for the deployment function
 wait_for_deployment() {
-  local namespace=$1
-  local label=$2
-  local timeout=$3
-  local new_image=$4
+  local namespace="$1"
+  local label="$2"
+  local timeout="$3"
+  local new_image="$4"
   local interval=10
   local elapsed=0
   
   echo -e "${YELLOW}Waiting for deployment with label $label in namespace $namespace to roll out with image $new_image (timeout: $((timeout/60)) minutes)...${NC}"
 
   while [ $elapsed -lt "$timeout" ]; do
-    # Check if pods exist with this label first
-    if ! oc get pods -n "$namespace" -l "$label" &>/dev/null; then
-      echo "No pods found with label $label yet, waiting..."
-      sleep $interval
-      elapsed=$((elapsed + interval))
-      continue
-    fi
-    
-    # get the images of the pods with the specified label
-    local pod_images
-    pod_images=$(oc get pods -n "$namespace" -l "$label" -o jsonpath='{.items[*].spec.containers[*].image}')
-    if [[ "$pod_images" == *"$new_image"* ]]; then
-      # check readiness
-      local ready_statuses
-      ready_statuses=$(oc get pods -n "$namespace" -l "$label" -o jsonpath='{.items[*].status.containerStatuses[*].ready}')
-      if [[ ! "$ready_statuses" =~ "false" ]]; then
+    # checks if 'ANY' pod with the right label has the new image
+    if oc get pods -n "$namespace" -l "$label" -o jsonpath='{.items[*].spec.containers[*].image}' | grep -q "$new_image"; then
+      # if it is found, check if ALL containers in ALL pods with that label are 'ready'
+      if [[ ! "$(oc get pods -n "$namespace" -l "$label" -o jsonpath='{.items[*].status.containerStatuses[*].ready}')" =~ false ]]; then
         echo -e "${GREEN}✅ Deployment is ready with new image!${NC}"
         return 0
       fi
@@ -130,14 +129,6 @@ while [[ $# -gt 0 ]]; do
       MCE_NAMESPACE="$2"
       shift 2
       ;;
-    --pr)
-      PR_NUMBER="$2"
-      shift 2
-      ;;
-    --commit)
-      COMMIT_HASH="$2"
-      shift 2
-      ;;
     --dry-run)
       DRY_RUN=true
       shift
@@ -154,15 +145,11 @@ while [[ $# -gt 0 ]]; do
       WAIT_FOR_ROLLOUT=false
       shift
       ;;
-    --acm-timeout)
-      ACM_WAIT_TIMEOUT="$2"
+    --timeout)
+      WAIT_TIMEOUT="$2"
       shift 2
       ;;
-    --mce-timeout)
-      MCE_WAIT_TIMEOUT="$2"
-      shift 2
-      ;;
-        --yes|-y)
+    --yes|-y)
       SKIP_CONFIRMATION=true
       shift
       ;;
@@ -174,10 +161,8 @@ while [[ $# -gt 0 ]]; do
       echo "  Updates the ACM and MCE console image tags"
       echo ""
       echo -e "${BOLD}Options:${NC}"
-      echo "  --acm-tag TAG       New tag for ACM console image (e.g. $DEFAULT_VERSION-PR4556-88f21f18d47c...)"
-      echo "  --mce-tag TAG       New tag for MCE console image (e.g. $DEFAULT_VERSION-PR4556-88f21f18d47c...)"
-      echo "  --pr NUMBER         PR number to construct tags (if --acm-tag or --mce-tag not provided)"
-      echo "  --commit HASH       Commit hash to construct tags (if --acm-tag or --mce-tag not provided)"
+      echo "  --acm-tag TAG       Tag for ACM console image (e.g. 2.8.0-SNAPSHOT-2023-03-21-23-05-08)"
+      echo "  --mce-tag TAG       Tag for MCE console image (e.g. 2.8.0-SNAPSHOT-2023-03-21-23-05-08)"
       echo "  --acm-namespace|-an Set ACM namespace (default: $ACM_NAMESPACE)"
       echo "  --mce-namespace|-mn Set MCE namespace (default: $MCE_NAMESPACE)"
       echo "  --acm-base IMAGE    Override base image for ACM (default: registry path from current image)"
@@ -186,15 +171,16 @@ while [[ $# -gt 0 ]]; do
       echo "                      Example: $DEFAULT_MCE_BASE (NOT the same as ACM)"
       echo "  --dry-run           Show what would be changed without making changes"
       echo "  --no-wait           Don't wait for deployments to update"
+      echo "  --timeout SECONDS   Set timeout in seconds for deployment rollouts (default: $WAIT_TIMEOUT)"
       echo "  --yes|-y            Skip confirmation prompts"
       echo "  --help|-h           Show this help message"
       echo ""
       echo -e "${BOLD}Examples:${NC}"
-      echo "  $0 --acm-tag $DEFAULT_VERSION-PR4556-88f21f18d47c... --mce-tag $DEFAULT_VERSION-PR4556-88f21f18d47c..."
-      echo "  $0 --pr 4556 --commit 88f21f18d47c..."
-      echo "  $0 --pr 4556 --commit 88f21f18d47c... --acm-base $DEFAULT_ACM_BASE --mce-base $DEFAULT_MCE_BASE"
+      echo "  $0 --acm-tag 2.8.0-SNAPSHOT-2023-03-21-23-05-08"
+      echo "  $0 --acm-tag 2.8.0-SNAPSHOT-2023-03-21-23-05-08 --mce-tag 2.8.0-SNAPSHOT-2023-03-21-23-05-08"
+      echo "  $0 --acm-base $DEFAULT_ACM_BASE --acm-tag 2.8.0-SNAPSHOT-2023-03-21-23-05-08"
       echo "  # Rollback to a previous digest (example):"
-      echo "  $0 --acm-base $DEFAULT_ACM_BASE --acm-tag '@sha256:<digest>' --mce-base $DEFAULT_MCE_BASE --mce-tag '@sha256:<digest>'"
+      echo "  $0 --acm-base $DEFAULT_ACM_BASE --acm-tag '@sha256:<digest>'"
       exit 0
       ;;
     *)
@@ -204,28 +190,10 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# if the PR number and commit hash are provided but no tags, construct the tags
-if [[ -n "$PR_NUMBER" && -n "$COMMIT_HASH" ]]; then
-  # always use the default version instead of trying to detect from cluster
-  if [[ -z "$ACM_TAG" ]]; then
-    # use default version directly for PR-based tags
-    ACM_VERSION="$DEFAULT_VERSION"
-    ACM_TAG="${ACM_VERSION}-PR${PR_NUMBER}-${COMMIT_HASH}"
-    echo -e "Constructed ACM tag: ${YELLOW}$ACM_TAG${NC}"
-  fi
-  
-  if [[ -z "$MCE_TAG" ]]; then
-    # use default version directly for PR-based tags
-    MCE_VERSION="$DEFAULT_VERSION"
-    MCE_TAG="${MCE_VERSION}-PR${PR_NUMBER}-${COMMIT_HASH}"
-    echo -e "Constructed MCE tag: ${YELLOW}$MCE_TAG${NC}"
-  fi
-fi
-
-#validates input parameters
+# validates input parameters
 if [[ -z "$ACM_TAG" && -z "$MCE_TAG" ]]; then
   echo -e "${RED}Error: At least one tag must be provided${NC}"
-  echo "Use --acm-tag, --mce-tag, or --pr + --commit options"
+  echo "Use --acm-tag and/or --mce-tag options"
   exit 1
 fi
 
@@ -235,14 +203,22 @@ echo -e "${BOLD}Preparing to update console images:${NC}"
 [[ -n "$MCE_TAG" ]] && echo -e "MCE Console tag: ${GREEN}$MCE_TAG${NC}"
 [[ -n "$MCE_TAG" ]] && echo -e "MCE Namespace: ${GREEN}$MCE_NAMESPACE${NC}"
 
+# reminds users to verify image existence
+if [[ -n "$ACM_TAG" ]]; then
+  echo -e "${YELLOW}Note: Please verify that the ACM image tag exists on quay.io before proceeding${NC}"
+fi
+if [[ -n "$MCE_TAG" ]]; then
+  echo -e "${YELLOW}Note: Please verify that the MCE image tag exists on quay.io before proceeding${NC}"
+fi
+
 if [[ "$DRY_RUN" == "true" ]]; then
   echo -e "${YELLOW}DRY RUN MODE: No changes will be applied${NC}"
 else
   # check and confirm the target cluster
-  check_oc_command && confirm_cluster
+  check_dependencies && confirm_cluster
 fi
 
-#update ACM Operator if tag provided
+#updates ACM Operator if tag provided
 if [[ -n "$ACM_TAG" ]]; then
   echo -e "\n${BOLD}Updating Advanced Cluster Management operator...${NC}"
 
@@ -261,16 +237,16 @@ if [[ -n "$ACM_TAG" ]]; then
       echo -e "${RED}Error: Could not find OPERAND_IMAGE_CONSOLE environment variable in ACM operator${NC}"
     else
       #extracts base image without tag
-    if [[ -n "$ACM_BASE_OVERRIDE" ]]; then
-      ACM_BASE_IMAGE="$ACM_BASE_OVERRIDE"
-      echo -e "Using specified ACM base image: ${GREEN}$ACM_BASE_IMAGE${NC}"
-    elif [[ -n "$CURRENT_ACM_ENV" ]]; then
-      ACM_BASE_IMAGE=$(echo "$CURRENT_ACM_ENV" | sed -E 's/(@sha256:|:).*//')
-      echo -e "Using detected ACM base image: ${YELLOW}$ACM_BASE_IMAGE${NC}"
-    else
-      ACM_BASE_IMAGE="$DEFAULT_ACM_BASE"
-      echo -e "Using default ACM base image: ${YELLOW}$ACM_BASE_IMAGE${NC}"
-    fi
+      if [[ -n "$ACM_BASE_OVERRIDE" ]]; then
+        ACM_BASE_IMAGE="$ACM_BASE_OVERRIDE"
+        echo -e "Using specified ACM base image: ${GREEN}$ACM_BASE_IMAGE${NC}"
+      elif [[ -n "$CURRENT_ACM_ENV" ]]; then
+        ACM_BASE_IMAGE=$(echo "$CURRENT_ACM_ENV" | sed -E 's/(@sha256:|:).*//')
+        echo -e "Using detected ACM base image: ${YELLOW}$ACM_BASE_IMAGE${NC}"
+      else
+        ACM_BASE_IMAGE="$DEFAULT_ACM_BASE"
+        echo -e "Using default ACM base image: ${YELLOW}$ACM_BASE_IMAGE${NC}"
+      fi
       # check to detect if the tag is already a full image reference
       if [[ "$ACM_TAG" == @sha256:* ]]; then
         NEW_ACM_IMAGE="${ACM_BASE_IMAGE}${ACM_TAG}"
@@ -307,7 +283,7 @@ if [[ -n "$ACM_TAG" ]]; then
   fi
 fi
 
-# updates MCE Operator if tag provided
+# updates the MCE Operator if tag provided
 if [[ -n "$MCE_TAG" ]]; then
   echo -e "\n${BOLD}Updating MultiClusterEngine operator...${NC}"
 
@@ -377,8 +353,8 @@ echo -e "\n${BOLD}Process completed.${NC}"
 if [[ "$DRY_RUN" != "true" ]]; then
   if [[ "$WAIT_FOR_ROLLOUT" == "true" ]]; then
     echo -e "${BOLD}Waiting for deployments to roll out...${NC}"
-    [[ -n "$ACM_TAG" ]] && wait_for_deployment "$ACM_NAMESPACE" "component=console" "$ACM_WAIT_TIMEOUT" "$NEW_ACM_IMAGE"
-    [[ -n "$MCE_TAG" ]] && wait_for_deployment "$MCE_NAMESPACE" "app=console-mce" "$MCE_WAIT_TIMEOUT" "$NEW_MCE_IMAGE"
+    [[ -n "$ACM_TAG" ]] && wait_for_deployment "$ACM_NAMESPACE" "component=console" "$WAIT_TIMEOUT" "$NEW_ACM_IMAGE"
+    [[ -n "$MCE_TAG" ]] && wait_for_deployment "$MCE_NAMESPACE" "app=console-mce" "$WAIT_TIMEOUT" "$NEW_MCE_IMAGE"
   else
     echo -e "You can monitor the deployment status with:"
     [[ -n "$ACM_TAG" ]] && echo -e "  ${YELLOW}oc get pods -n $ACM_NAMESPACE -l component=console${NC}"
