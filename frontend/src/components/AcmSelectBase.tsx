@@ -631,6 +631,7 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
           onClick={onInputClick}
           onChange={onTextInputChange}
           onKeyDown={onInputKeyDown}
+          id="multi-typeahead-select-input"
           autoComplete="off"
           innerRef={textInputRef}
           placeholder={placeholder}

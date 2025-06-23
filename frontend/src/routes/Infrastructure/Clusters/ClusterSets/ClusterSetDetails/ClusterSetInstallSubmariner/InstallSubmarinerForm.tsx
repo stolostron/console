@@ -51,7 +51,6 @@ import { useClusterSetDetailsContext } from '../ClusterSetDetails'
 import schema from './schema.json'
 import { LostChangesContext } from '../../../../../../components/LostChanges'
 import { PluginContext } from '../../../../../../lib/PluginContext'
-import { SelectVariant } from '../../../../../../components/AcmSelectBase'
 
 const installNamespace = 'submariner-operator'
 export function InstallSubmarinerFormPage() {
@@ -648,7 +647,6 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
           {
             id: 'available-clusters',
             type: 'Multiselect',
-            variant: SelectVariant.typeaheadMulti,
             label: t('submariner.install.form.clusters'),
             placeholder: t('submariner.install.form.clusters.placeholder'),
             value: selectedClusters,
