@@ -1,7 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-  Badge,
+  Dropdown,
+  DropdownItem,
+  DropdownList,
+  MenuToggle,
+  MenuToggleCheckbox,
   Pagination,
   Toolbar,
   ToolbarChip,
@@ -11,8 +15,18 @@ import {
   ToolbarItem,
   Tooltip,
 } from '@patternfly/react-core'
+import { ExportIcon } from '@patternfly/react-icons'
+import { ISortBy } from '@patternfly/react-table'
+import { debounce } from 'debounce'
+import { parse, ParsedQuery, stringify } from 'query-string'
 import { forwardRef, Fragment, Ref, useCallback, useEffect, useImperativeHandle, useMemo, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../lib/acm-i18next'
+import { FilterCounts } from '../../lib/useAggregates'
+import { matchesFilterValue, parseLabel } from '../../resources/utils'
+import { AcmButton } from '../AcmButton'
+import { AcmDropdown, AcmDropdownItems } from '../AcmDropdown'
+import { AcmSearchInput, SearchConstraint } from '../AcmSearchInput'
 import {
   AcmTableProps,
   CommonPaginationPropsType,
@@ -28,30 +42,8 @@ import {
   TableFilterOption,
   TableFilterOptions,
 } from './AcmTableTypes'
-import { AcmSearchInput, SearchConstraint } from '../AcmSearchInput'
-import { AcmDropdown, AcmDropdownItems } from '../AcmDropdown'
-import {
-  Dropdown,
-  DropdownItem,
-  DropdownToggle,
-  DropdownToggleCheckbox,
-  Select,
-  SelectGroup,
-  SelectOption,
-  SelectOptionObject,
-  SelectVariant,
-} from '@patternfly/react-core/deprecated'
-import { ExportIcon, FilterIcon } from '@patternfly/react-icons'
-import { useLocation, useNavigate } from 'react-router-dom-v5-compat'
-import { HighlightSearchText } from '../../components/HighlightSearchText'
-import { parse, ParsedQuery, stringify } from 'query-string'
-import { matchesFilterValue, parseLabel } from '../../resources/utils'
-import { filterLabelMargin, filterOption, filterOptionBadge } from './filterStyles'
-import { setLocalStorage, getLocalStorage } from './localColumnStorage'
-import { debounce } from 'debounce'
-import { ISortBy } from '@patternfly/react-table'
-import { AcmButton } from '../AcmButton'
-import { FilterCounts } from '../../lib/useAggregates'
+import { FilterSelect } from './FilterSelect'
+import { getLocalStorage, setLocalStorage } from './localColumnStorage'
 
 // when a filter has more then this many options, give it its own dropdown
 const SPLIT_FILTER_THRESHOLD = 30
@@ -69,36 +61,6 @@ const createFilterSelectOptionObject = (filterId: string, value: string): Filter
   compareTo: (selectOption: FilterSelectOptionObject) =>
     selectOption.filterId === filterId && selectOption.value === value,
 })
-
-// render filter options with highlights for searched filter text
-// if option is a label like 'key=value', add a toggle button that toggles between = and !=
-function renderFilterSelectOption(
-  filterId: string,
-  option: TableFilterOptions,
-  supportsInequality?: boolean,
-  toggleEquality?: (filterId: string, option: TableFilterOptions) => void,
-  search?: string
-) {
-  const key = `${filterId}-${option.option.value}`
-  const handleInequality = () => {
-    toggleEquality?.(filterId, option)
-  }
-  return (
-    <SelectOption key={key} inputId={key} value={createFilterSelectOptionObject(filterId, option.option.value)}>
-      <div className={filterOption}>
-        <HighlightSearchText
-          text={(option.option.label as string) ?? '-'}
-          supportsInequality={supportsInequality}
-          toggleEquality={handleInequality}
-          searchText={search}
-        />
-        <Badge className={filterOptionBadge} key={key} isRead>
-          {option.count}
-        </Badge>
-      </div>
-    </SelectOption>
-  )
-}
 
 // filter options are retrieved from the url query and in the local storage
 // but they maybe old, so we make sure they're still valid by matching them up
@@ -528,33 +490,40 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
           <Tooltip content={t('Export all table data')}>
             <ToolbarItem key={`export-toolbar-item`}>
               <Dropdown
+                onOpenChange={(isOpen) => {
+                  setIsExportMenuOpen(isOpen)
+                }}
                 onSelect={(event) => {
                   event?.stopPropagation()
                   setIsExportMenuOpen(false)
                 }}
                 className="export-dropdownMenu"
-                toggle={
-                  <DropdownToggle
-                    toggleIndicator={null}
-                    onToggle={(event, value) => {
+                toggle={(toggleRef) => (
+                  <MenuToggle
+                    ref={toggleRef}
+                    variant="plain"
+                    onClick={(event) => {
                       event.stopPropagation()
-                      setIsExportMenuOpen(value)
+                      setIsExportMenuOpen(!isExportMenuOpen)
                     }}
                     aria-label="export-search-result"
                     id="export-search-result"
                   >
                     <ExportIcon />
-                  </DropdownToggle>
-                }
+                  </MenuToggle>
+                )}
                 isOpen={isExportMenuOpen}
                 isPlain
-                dropdownItems={[
+                popperProps={{
+                  position: 'left',
+                }}
+              >
+                <DropdownList>
                   <DropdownItem key="export-csv" onClick={() => exportTable()}>
                     {t('Export all to CSV')}
-                  </DropdownItem>,
-                ]}
-                position={'left'}
-              />
+                  </DropdownItem>
+                </DropdownList>
+              </Dropdown>
             </ToolbarItem>
           </Tooltip>
         )}
@@ -583,26 +552,12 @@ function TableColumnFilters<T>(
     items?: T[]
   }>
 ) {
-  const [isOpen, setIsOpen] = useState([false])
   const { id, filters, secondaryFilterIds, items, filterCounts } = props
   const { filterSelections, addFilterValue, removeFilterValue, removeFilter, negateFilterValue } =
     useTableFilterSelections({
       id,
       filters,
     })
-  const { t } = useTranslation()
-
-  const onFilterSelect = useCallback(
-    (selection: FilterSelectOptionObject) => {
-      const { filterId, value } = selection
-      if (filterSelections[filterId]?.includes(value)) {
-        removeFilterValue(filterId, value)
-      } else {
-        addFilterValue(filterId, value)
-      }
-    },
-    [addFilterValue, filterSelections, removeFilterValue]
-  )
 
   const onToggleEquality = useCallback(
     (filterId: string, option: TableFilterOptions) => {
@@ -637,9 +592,7 @@ function TableColumnFilters<T>(
     const filterGroups = [
       {
         allFilters: [] as ITableFilter<T>[],
-        groupSelections: [] as FilterSelectOptionObject[],
         validFilters: [] as IValidFilters<T>[],
-        allOptions: [] as TableFilterOptions[],
       },
     ]
     for (const filter of filters) {
@@ -691,9 +644,7 @@ function TableColumnFilters<T>(
 
           filterGroups.push({
             allFilters: [] as ITableFilter<T>[],
-            groupSelections: [] as FilterSelectOptionObject[],
             validFilters: [] as IValidFilters<T>[],
-            allOptions: options,
           })
           // to avoid create lots of react components,
           // just create a smaller set with the assumption that user
@@ -709,70 +660,13 @@ function TableColumnFilters<T>(
       group.allFilters.push(filter)
     }
 
-    // if user has made selections and there are multiple filter dropdowns
-    // split the selections up by filter dropdown
-    filterGroups[0].groupSelections = selections
-    if (filterGroups.length > 1) {
-      let allSelections = [...selections]
-      filterGroups.forEach((group, inx) => {
-        if (inx !== 0) {
-          const remainingSelections = [] as FilterSelectOptionObject[]
-          filterGroups[inx].groupSelections = allSelections.filter((selected) => {
-            // there should only be one validFilter in extra filter dropdowns
-            // just for the type filter type (ex: cluster) in this dropdown
-            if (group.validFilters[0].filter.id !== selected.filterId) {
-              remainingSelections.push(selected)
-              return false
-            }
-            return true
-          })
-          allSelections = remainingSelections
-        }
-      })
-      filterGroups[0].groupSelections = allSelections
-    }
-
-    return filterGroups.map(({ allFilters, allOptions, groupSelections, validFilters }) => {
+    return filterGroups.map(({ allFilters, validFilters }) => {
       return {
         groupFilters: allFilters,
-        groupOptions: allOptions,
-        groupSelections,
-        groupSelectionList: validFilters.map((filter) => {
-          return (
-            <SelectGroup key={filter.filter.id} label={filter.filter.label}>
-              {filter.options.map((option) => {
-                return renderFilterSelectOption(
-                  filter.filter.id,
-                  option,
-                  filter.filter.supportsInequality,
-                  onToggleEquality
-                )
-              })}
-            </SelectGroup>
-          )
-        }),
+        validFilters,
       }
     })
-  }, [filterCounts, filters, items, onToggleEquality, secondaryFilterIds, selections])
-
-  // used by filters with lots of options to filter the options
-  const onFilterOptions = useCallback(
-    (_: any, textInput: string, inx: number) => {
-      if (textInput !== '') {
-        const { id, supportsInequality } = filterSelectGroups[inx].groupFilters[0]
-        return filterSelectGroups[inx].groupOptions
-          .filter(({ option }) => {
-            return option?.value.toLowerCase().includes(textInput.toLowerCase())
-          })
-          .map((option) => {
-            return renderFilterSelectOption(id, option, supportsInequality, onToggleEquality, textInput.toLowerCase())
-          })
-      } else {
-        return filterSelectGroups[inx].groupSelectionList
-      }
-    },
-    [filterSelectGroups, onToggleEquality]
-  )
+  }, [filterCounts, filters, items, secondaryFilterIds, selections])
 
   // create toolbar chips
   const createChips = useCallback(
@@ -800,11 +694,11 @@ function TableColumnFilters<T>(
   return (
     <ToolbarItem>
       <div style={{ display: 'flex' }}>
-        {filterSelectGroups.map(({ groupFilters, groupSelections, groupSelectionList }, inx) => {
+        {filterSelectGroups.map(({ groupFilters, validFilters }, inx) => {
           return groupFilters.reduce(
             (acc, current) => (
               <ToolbarFilter
-                key={'acm-table-filter-key'}
+                key={'acm-table-filter-key' + current.id}
                 chips={createChips(current)}
                 deleteChip={(_category, chip) => {
                   chip = chip as ToolbarChip
@@ -816,34 +710,20 @@ function TableColumnFilters<T>(
                 {acc}
               </ToolbarFilter>
             ),
-            <Select
-              key={'acm-table-filter-select-key'}
-              variant={SelectVariant.checkbox}
-              aria-label={'acm-table-filter-select-key'}
-              onToggle={() => {
-                const arr = [...isOpen]
-                arr[inx] = !isOpen[inx]
-                setIsOpen(arr)
+            <FilterSelect
+              label={inx !== 0 ? groupFilters[0].label : undefined}
+              selectedFilters={Object.values(filterSelections).flat()}
+              validFilters={validFilters}
+              onToggleEquality={onToggleEquality}
+              hasFilter={inx !== 0}
+              onSelect={(filterId, value) => {
+                if (filterSelections[filterId]?.includes(value)) {
+                  removeFilterValue(filterId, value)
+                } else {
+                  addFilterValue(filterId, value)
+                }
               }}
-              onSelect={(
-                _event: React.MouseEvent<Element, MouseEvent> | React.ChangeEvent<Element>,
-                selection: SelectOptionObject
-              ) => onFilterSelect(selection as FilterSelectOptionObject)}
-              selections={groupSelections}
-              isOpen={isOpen[inx]}
-              isGrouped
-              placeholderText={
-                <div>
-                  <FilterIcon className={filterLabelMargin} />
-                  {inx === 0 ? t('Filter') : filterSelectGroups[inx].groupFilters[0].label}
-                </div>
-              }
-              noResultsFoundText={t('No results found')}
-              onFilter={(e, textInput) => onFilterOptions(e, textInput, inx)}
-              hasInlineFilter={inx !== 0}
-            >
-              {groupSelectionList}
-            </Select>
+            />
           )
         })}
       </div>
@@ -987,19 +867,20 @@ export function TableSelectionDropdown(props: Readonly<TableSelectionDropdownPro
 
   const toggle = useMemo(() => {
     return (
-      <DropdownToggle
-        splitButtonItems={[
-          <DropdownToggleCheckbox
-            id="select-all"
-            key="select-all"
-            aria-label={t('Select all')}
-            isChecked={selectedCount > 0}
-            onChange={onToggleCheckbox}
-          >
-            {toggleText}
-          </DropdownToggleCheckbox>,
-        ]}
-        onToggle={(_event, isOpen) => setIsOpen(isOpen)}
+      <MenuToggle
+        splitButtonOptions={{
+          items: [
+            <MenuToggleCheckbox
+              id="select-all"
+              key="select-all"
+              aria-label={t('Select all')}
+              isChecked={selectedCount > 0}
+              onChange={onToggleCheckbox}
+            />,
+          ],
+        }}
+        aria-label={toggleText}
+        onClick={() => setIsOpen(!isOpen)}
       />
     )
   }, [t, selectedCount, onToggleCheckbox, toggleText])
@@ -1054,7 +935,11 @@ export function TableSelectionDropdown(props: Readonly<TableSelectionDropdownPro
     [selectNoneDropdownItem, selectPageDropdownItem, selectAllDropdownItem]
   )
 
-  return <Dropdown isOpen={isOpen} toggle={toggle} dropdownItems={dropdownItems} />
+  return (
+    <Dropdown isOpen={isOpen} toggle={() => toggle}>
+      <DropdownList>{dropdownItems}</DropdownList>
+    </Dropdown>
+  )
 }
 
 export const AcmTableToolbar = forwardRef(AcmTableToolbarBase) as <T>(
