@@ -50,7 +50,7 @@ export const DOC_LINKS = {
   ANSIBLE_JOBS: `${DOC_BASE_PATH}/clusters/index#ansible-config-cluster`,
   POLICIES_OVERVIEW: `${DOC_BASE_PATH}/governance/index#hub-policy-framework`,
   GITOPS_CONFIG: `${DOC_BASE_PATH}/gitops/gitops-overview`,
-  DEPRECATIONS_ACM: `${DOC_BASE_PATH}/release_notes/release-notes#deprecations_acm`,
+  DEPRECATIONS_ACM: `${DOC_BASE_PATH}/release_notes/release-notes#deprecations-removals-acm`,
   ENABLE_OBSERVABILITY: `${DOC_BASE_PATH}/observability/observing-environments-intro#enabling-observability-service`,
   ACCESSING_CONSOLE: `${DOC_BASE_PATH}/web_console/web-console#accessing-your-console`,
   ROSA_DISCOVERY_AUTOIMPORT_POLICY_EXAMPLE: `${DOC_BASE_PATH}/multicluster_engine_operator_with_red_hat_advanced_cluster_management/mce-acm-integration#import-discover-rosa`,
