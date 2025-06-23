@@ -1813,7 +1813,6 @@
   "machinePool.disableAutoscale": "Deshabilitar el escalamiento automático",
   "machinePool.editAutoscale": "Editar el escalamiento automático",
   "machinePool.enableAutoscale": "Habilitar el escalamiento automático",
-  "machinePool.menu.disabled.tooltip": "El estado actual del clúster ({{status}}) no permite realizar ninguna acción en el grupo de máquinas.",
   "machinePool.modal.scale.disable-autoscale.message": "Esto requerirá escalar manualmente los conjuntos de máquinas en <bold>{{name}}</bold>. Hay actualmente{{number}} réplicas de conjuntos de máquinas activas en este grupo de máquinas.",
   "machinePool.modal.scale.disable-autoscale.title": "Deshabilitar el escalamiento automático",
   "machinePool.modal.scale.edit-autoscale.message": "Especifique la cantidad mínima y máxima de réplicas para <bold>{{name}}</bold>",
