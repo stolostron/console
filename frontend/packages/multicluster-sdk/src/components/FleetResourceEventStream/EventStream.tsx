@@ -19,7 +19,7 @@ import EventComponent from './EventComponent'
 const ResourceEventStream: FC<{ resource: K8sResourceCommon }> = ({ resource }) => {
   const [active, setActive] = useState(true)
 
-  const hubCluster = useHubClusterName()
+  const [hubCluster] = useHubClusterName()
 
   const { t } = useTranslation('public')
   const [sortedEvents, setSortedEvents] = useState<EventKind[]>([])

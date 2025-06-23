@@ -4,19 +4,17 @@ import { useSearchResultItemsQuery } from './search-sdk'
 import { useMemo } from 'react'
 import { convertStringToQuery } from './searchUtils'
 import { SearchResult, UseMulticlusterSearchWatch } from './types'
-import { useSearchClient } from './search-client'
+import { searchClient } from './search-client'
 
 export const useMulticlusterSearchWatch: UseMulticlusterSearchWatch = (watchOptions: WatchK8sResource) => {
   const { groupVersionKind, limit, namespace, namespaced } = watchOptions
 
-  const searchClient = useSearchClient()
   const { group, version, kind } = groupVersionKind ?? {}
   const {
     data: result,
     loading,
     error,
   } = useSearchResultItemsQuery({
-    skip: !searchClient,
     client: searchClient,
     variables: {
       input: [

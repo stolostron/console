@@ -12,7 +12,6 @@ import {
   Selector,
 } from '@openshift-console/dynamic-plugin-sdk'
 import { selectorToString } from './utils/requirements'
-import { getBackendUrl } from './utils/api-resource-list'
 import { BASE_K8S_API_PATH } from './constants'
 
 export type BaseOptions = {
@@ -70,6 +69,8 @@ export type Options = {
 const commonHeaders = {
   'Content-Type': 'application/json',
 }
+
+export const getBackendUrl = () => '/api/proxy/plugin/acm/console/multicloud'
 
 const getK8sAPIPath = ({ apiGroup = 'core', apiVersion }: K8sModel): string => {
   const isLegacy = apiGroup === 'core' && apiVersion === 'v1'
