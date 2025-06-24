@@ -2,9 +2,11 @@
 import { useTranslation } from '../../lib/acm-i18next'
 import { Stack, StackItem, Title } from '@patternfly/react-core'
 import { AcmLabels } from '../../ui-components'
+import { Section, SelectOptionInput } from '../../components/AcmFormData'
 
 interface RoleBindingSectionProps {
   title: string
+  description?: string
   clusterRoles: any[]
   idPrefix: string
   isViewing: boolean
@@ -14,7 +16,8 @@ interface RoleBindingSectionProps {
   selectedSubjectNames: string[]
   selectedRoles: string[]
   selectedSubjectKind: 'User' | 'Group'
-  namespaceOptions: { id: string; value: string; text: string; isDisabled?: boolean }[]
+  namespaceOptions: SelectOptionInput[]
+  namespaceHelperText?: string
   subjectOptions: { id: string; value: string }[]
   onNamespaceChange: (values: string[]) => void
   onSubjectKindChange: (value: string) => void
@@ -24,6 +27,7 @@ interface RoleBindingSectionProps {
 
 export const RoleBindingSection = ({
   title,
+  description,
   clusterRoles,
   idPrefix,
   isViewing,
@@ -34,26 +38,29 @@ export const RoleBindingSection = ({
   selectedRoles,
   selectedSubjectKind,
   namespaceOptions,
+  namespaceHelperText,
   subjectOptions,
   onNamespaceChange,
   onSubjectKindChange,
   onSubjectNameChange,
   onRoleChange,
-}: RoleBindingSectionProps) => {
+}: RoleBindingSectionProps): Section | null => {
   const { t } = useTranslation()
 
   return isViewing && selectedRoles.length === 0 && selectedSubjectNames.length === 0
     ? null
     : {
-        type: 'Section' as const,
+        type: 'Section',
         title: title,
         wizardTitle: title,
+        description,
         inputs: [
           {
             id: `${idPrefix}-namespaces`,
-            type: 'Multiselect' as const,
+            type: 'Multiselect',
             label: t('Namespaces'),
             placeholder: t('Select or enter namespace'),
+            helperText: namespaceHelperText,
             value: selectedNamespaces,
             onChange: onNamespaceChange,
             options: namespaceOptions,
@@ -62,7 +69,7 @@ export const RoleBindingSection = ({
           },
           {
             id: `${idPrefix}-subject-kind`,
-            type: 'Radio' as const,
+            type: 'Radio',
             label: '',
             value: selectedSubjectKind.toLowerCase(),
             onChange: (value: string) => {
@@ -77,7 +84,7 @@ export const RoleBindingSection = ({
           },
           {
             id: `${idPrefix}-subject`,
-            type: 'CreatableMultiselect' as const,
+            type: 'CreatableMultiselect',
             label: selectedSubjectKind === 'Group' ? t('Groups') : t('Users'),
             placeholder:
               selectedSubjectKind === 'Group' ? t('Select or enter group name') : t('Select or enter user name'),
@@ -92,7 +99,7 @@ export const RoleBindingSection = ({
           },
           {
             id: `${idPrefix}-roles`,
-            type: 'Multiselect' as const,
+            type: 'Multiselect',
             label: t('Roles'),
             placeholder: 'Select or enter roles',
             value: selectedRoles,
@@ -104,7 +111,7 @@ export const RoleBindingSection = ({
           },
           {
             id: 'custom-labels',
-            type: 'Custom' as const,
+            type: 'Custom',
             isHidden: !isViewing,
             component: (
               <Stack hasGutter>

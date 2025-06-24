@@ -40,10 +40,10 @@ const AccessControlManagementTable = (props: {
         exportFilePrefix={EXPORT_FILE_PREFIX}
         emptyState={
           <AcmEmptyState
-            title={t(`You don't have any access control`)}
+            title={t(`You don't have any permission`)}
             message={
               <Trans
-                i18nKey="Click <bold>Add Access Control</bold> to create your resource."
+                i18nKey="Click <bold>Create permission</bold> to create your resource."
                 components={{ bold: <strong /> }}
               />
             }
@@ -55,7 +55,7 @@ const AccessControlManagementTable = (props: {
                   component={Link}
                   {...getBackCancelLocationLinkProps(NavigationPath.addAccessControlManagement)}
                 >
-                  {t('Add Access Control')}
+                  {t('Create permission')}
                 </AcmButton>
                 <ViewDocumentationLink doclink={DOC_LINKS.CREATE_CONNECTION} />
               </div>
@@ -69,7 +69,7 @@ const AccessControlManagementTable = (props: {
         tableActionButtons={[
           {
             id: 'add',
-            title: t('Add Access Control'),
+            title: t('Create permission'),
             click: () => {
               navigateToBackCancelLocation(navigate, NavigationPath.addAccessControlManagement)
             },
@@ -81,7 +81,7 @@ const AccessControlManagementTable = (props: {
         tableActions={[
           {
             id: 'deleteConnection',
-            title: t('Delete Access Controls'),
+            title: t('Delete permissions'),
             click: (accessControls: AccessControl[]) => ACTIONS.DELETE({ accessControls, setModalProps, t }),
             variant: 'bulk-action',
           },
