@@ -1178,8 +1178,13 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
           }
           break
       }
-      let variant = input.variant as SelectVariant
-      if (!variant) {
+      let variant: SelectVariant
+
+      if (input.variant) {
+        // if a variant is explicitly provided, use it
+        variant = input.variant as SelectVariant
+      } else {
+        // otherwise select the appropriate variant based on the input type
         switch (input.type) {
           case 'Select':
           case 'GroupedSelect':
@@ -1190,6 +1195,9 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
           case 'CreatableMultiselect':
             variant = SelectVariant.typeaheadMulti
             break
+          default:
+            // Default fallback
+            variant = SelectVariant.single
         }
       }
       return (

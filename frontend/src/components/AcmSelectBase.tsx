@@ -51,6 +51,7 @@ export enum SelectVariant {
   typeaheadCheckbox = 'typeaheadCheckbox',
   typeaheadMulti = 'typeaheadmulti',
 }
+type SelectionsType = string | SelectOptionObject | (string | SelectOptionObject)[]
 
 export type AcmSelectBaseProps = Pick<
   SelectProps,
@@ -62,7 +63,7 @@ export type AcmSelectBaseProps = Pick<
   id?: string
   label?: string
   value?: string | string[]
-  selections?: string | SelectOptionObject | (string | SelectOptionObject)[]
+  selections?: SelectionsType
   variant?: SelectVariant
   onSelect?: (value: string | string[]) => void
   onClear?: () => void
@@ -153,6 +154,32 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
 
   const [filteredOptions, setFilteredOptions] = useState<SelectOptionProps[]>(initialFilteredOptions)
 
+  const renderMultiPlaceholder = (
+    children: ReactNode,
+    selectedItems: string | any[],
+    placeholder: string[] = []
+  ): string | undefined => {
+    // SelectVariant.typeaheadMulti displays cards
+    if (variant === SelectVariant.typeaheadMulti) {
+      return props?.placeholder
+    } else {
+      // else we need to create a list of selections
+      Children.forEach(children, (child) => {
+        if (isValidElement<ICheckboxChildren>(child)) {
+          if (child.type === SelectGroup) {
+            renderMultiPlaceholder(child.props.children, selectedItems, placeholder)
+          } else if (child.type === SelectOption) {
+            const childElement = child as ReactElement<any>
+            if (selectedItems.includes(childElement.props.value)) {
+              placeholder.push(childElement.props.children || childElement.props.value)
+            }
+          }
+        }
+      })
+      return placeholder.join(',  ')
+    }
+  }
+
   const getMultiTypeaheadChildren = (value: string) =>
     initialFilteredOptions.find((option) => option.value === value)?.children
   const [focusedItemIndex, setFocusedItemIndex] = useState<number | null>(null)
@@ -177,13 +204,16 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
     ...selectProps
   } = props
   const selections = value ?? selectionProps
+  const selectedItem = !Array.isArray(selections) ? (selections as string) : undefined
+  const selectedItems = Array.isArray(selections) ? (selections as string[]) : []
+
   const isMulti = Array.isArray(selections)
   const isSingle = typeof selections === 'string' && selections?.length !== 0
   let badge: React.ReactNode = null
   let placeholder = props.placeholderText
   if (!placeholder) {
     if (isMulti && selections.length > 0) {
-      placeholder = variant !== SelectVariant.typeaheadMulti ? selections.join(', ') : props.placeholder
+      placeholder = renderMultiPlaceholder(children, selectedItems)
       badge = selections.length > 0 && (
         <span style={{ display: 'flex', alignItems: 'center' }}>
           <Badge key={selections.length} isRead>
@@ -197,8 +227,6 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
       placeholder = props.placeholder ?? ''
     }
   }
-  const selectedItem = !Array.isArray(selections) ? (selections as string) : undefined
-  const selectedItems = Array.isArray(selections) ? (selections as string[]) : []
 
   useEffect(() => {
     if (!selections) {
@@ -615,7 +643,6 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
           onClick={onInputClick}
           onChange={onTextInputChange}
           onKeyDown={onInputKeyDown}
-          id="multi-typeahead-select-input"
           autoComplete="off"
           innerRef={textInputRef}
           placeholder={placeholder}
