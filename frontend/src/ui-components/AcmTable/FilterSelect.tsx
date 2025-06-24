@@ -53,6 +53,13 @@ export const FilterSelect = ({
     return map
   }, [validFilters])
 
+  const selectedCount = useMemo(
+    () =>
+      selectedFilters.filter((filter) => validFilters.some((f) => f.options.some((o) => o.option.value === filter)))
+        .length,
+    [selectedFilters, validFilters]
+  )
+
   return (
     <Select
       aria-label="acm-table-filter-select-key"
@@ -60,15 +67,10 @@ export const FilterSelect = ({
         setIsOpen(isOpen)
       }}
       toggle={(toggleRef) => (
-        <MenuToggle
-          ref={toggleRef}
-          onClick={() => {
-            setIsOpen(!isOpen)
-          }}
-          isExpanded={isOpen}
-        >
+        <MenuToggle ref={toggleRef} onClick={() => setIsOpen(!isOpen)} isExpanded={isOpen}>
           <FilterIcon className={filterLabelMargin} />
-          {label ?? t('Filter')}
+          <span className={filterLabelMargin}>{label ?? t('Filter')}</span>
+          {selectedCount > 0 && <Badge isRead>{selectedCount}</Badge>}
         </MenuToggle>
       )}
       isOpen={isOpen}
@@ -118,7 +120,7 @@ const FilterSelectOption = ({
   search,
   selectedFilters,
 }: FilterSelectOptionProps) => (
-  <SelectOption hasCheckbox value={option.option.value} isSelected={selectedFilters?.includes(option.option.value)}>
+  <SelectOption hasCheckbox value={option.option.value} isSelected={selectedFilters.includes(option.option.value)}>
     <div className={filterOption}>
       <HighlightSearchText
         text={(option.option.label as string) ?? '-'}
