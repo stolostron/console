@@ -49,6 +49,8 @@ export function RenderItemContent(
   } = props
   const { t } = useTranslation()
   const canMigrateVm = useCanMigrateVm()
+  const { useMigrateVMMenu } = useSharedAtoms()
+  const vmMenuVisability = useMigrateVMMenu()
   const navigate = useNavigate()
   const allClusters = useAllClusters(true)
   const { useVirtualMachineActionsEnabled, isFineGrainedRbacEnabledState } = useSharedAtoms()
@@ -74,6 +76,7 @@ export function RenderItemContent(
         setPluginModal,
         navigate,
         canMigrateVm,
+        vmMenuVisability,
         t
       ),
     [
@@ -89,6 +92,7 @@ export function RenderItemContent(
       setPluginModal,
       navigate,
       canMigrateVm,
+      vmMenuVisability,
       t,
     ]
   )

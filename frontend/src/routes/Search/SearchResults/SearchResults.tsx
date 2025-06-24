@@ -99,6 +99,8 @@ function RenderAccordionItem(
   const { acmExtensions } = useContext(PluginContext)
   const [isExpanded, setIsExpanded] = useState<boolean>(defaultIsExpanded)
   const searchDefinitions = useSearchDefinitions()
+  const { useMigrateVMMenu } = useSharedAtoms()
+  const vmMenuVisability = useMigrateVMMenu()
 
   const accordionItemKey = `${kind}-${idx}`
   const items = kindSearchResultItems[kind]
@@ -122,6 +124,7 @@ function RenderAccordionItem(
         setPluginModal,
         navigate,
         canMigrateVm,
+        vmMenuVisability,
         t
       ),
     [
@@ -137,6 +140,7 @@ function RenderAccordionItem(
       setPluginModal,
       navigate,
       canMigrateVm,
+      vmMenuVisability,
       t,
     ]
   )

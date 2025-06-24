@@ -49,6 +49,7 @@ describe('VirtualMachines utils', () => {
       navigate,
       t,
       true,
+      true,
       []
     )
 
@@ -106,6 +107,7 @@ describe('VirtualMachines utils', () => {
       navigate,
       t,
       true,
+      true,
       []
     )
 
@@ -161,6 +163,7 @@ describe('VirtualMachines utils', () => {
       true,
       navigate,
       t,
+      true,
       true,
       []
     )
@@ -218,6 +221,7 @@ describe('VirtualMachines utils', () => {
       navigate,
       t,
       true,
+      true,
       []
     )
 
@@ -273,6 +277,7 @@ describe('VirtualMachines utils', () => {
       false,
       navigate,
       t,
+      true,
       true,
       []
     )

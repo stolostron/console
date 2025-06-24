@@ -90,6 +90,7 @@ export function getVirtualMachineRowActions(
   navigate: NavigateFunction,
   t: TFunction<string, undefined>,
   canMigrateVm: boolean,
+  vmMenuVisability: boolean,
   extensionButtons: IAcmRowAction<any>[] = []
 ): IAcmRowAction<any>[] {
   const printableStatus = item?.status
@@ -284,7 +285,7 @@ export function getVirtualMachineRowActions(
         restartVM,
         printableStatus === 'Paused' ? unpauseVM : pauseVM,
         snapshotVM,
-        { ...migrateVM, addSeparator: true },
+        ...(vmMenuVisability ? [{ ...migrateVM, addSeparator: true }] : []),
         { ...editButton, addSeparator: true },
         viewRelatedButton,
         deleteButton,
