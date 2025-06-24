@@ -23,5 +23,5 @@ export const ManagedClusterModel: K8sModel = {
   label: 'ManagedCluster',
   labelPlural: 'ManagedClusters',
   namespaced: false,
-  plural: 'managedClusters',
+  plural: 'managedclusters',
 }
