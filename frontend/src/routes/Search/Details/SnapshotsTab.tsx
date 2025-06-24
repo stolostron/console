@@ -51,7 +51,7 @@ export default function SnapshotsTab() {
 
   useEffect(() => {
     if (isFineGrainedRbacEnabled) {
-      const url = getBackendUrl() + `/virtualmachines/get/${cluster}/${name}/${namespace}` // need the plural kind either virtualmachines || virtualmachinesnapshots
+      const url = getBackendUrl() + `/virtualmachines/get/${cluster}/${name}/${namespace}`
       getRequest<IResource>(url)
         .promise.then((response) => {
           setVMLoading(false)
