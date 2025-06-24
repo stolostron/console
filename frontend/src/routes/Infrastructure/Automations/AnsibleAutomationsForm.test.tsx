@@ -305,7 +305,6 @@ describe('add automation template page', () => {
     // Credentials type
     await waitForTestId('credentialsType-input-toggle')
     await clickByText('Cancel', 1)
-
     await clickByPlaceholderText('Select an existing Ansible credential')
     await clickByText(mockSecret.metadata.name!)
     await waitForNock(ansibleJobNock)
