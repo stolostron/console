@@ -153,17 +153,20 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
 
   const [filteredOptions, setFilteredOptions] = useState<SelectOptionProps[]>(initialFilteredOptions)
 
-  const renderMultiPlaceholder = (children: ReactNode, selectedItems: string | any[]): string | undefined => {
+  const renderMultiPlaceholder = (
+    children: ReactNode,
+    selectedItems: string | any[],
+    placeholder: string[] = []
+  ): string | undefined => {
     // SelectVariant.typeaheadMulti displays cards
     if (variant === SelectVariant.typeaheadMulti) {
       return props?.placeholder
     } else {
       // else we need to create a list of selections
-      const placeholder: string[] = []
       Children.forEach(children, (child) => {
         if (isValidElement<ICheckboxChildren>(child)) {
           if (child.type === SelectGroup) {
-            renderMultiPlaceholder(child.props.children, selectedItems)
+            renderMultiPlaceholder(child.props.children, selectedItems, placeholder)
           } else if (child.type === SelectOption) {
             const childElement = child as ReactElement<any>
             if (selectedItems.includes(childElement.props.value)) {
