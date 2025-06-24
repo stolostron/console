@@ -883,7 +883,7 @@ export function TableSelectionDropdown(props: Readonly<TableSelectionDropdownPro
         onClick={() => setIsOpen(!isOpen)}
       />
     )
-  }, [t, selectedCount, onToggleCheckbox, toggleText])
+  }, [t, selectedCount, onToggleCheckbox, toggleText, isOpen])
 
   const selectNoneDropdownItem = useMemo(() => {
     return (
