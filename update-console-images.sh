@@ -26,22 +26,15 @@ SKIP_CONFIRMATION=false
 # check if oc is available and logged in
 check_dependencies() {
   if ! command -v oc &> /dev/null; then
-    echo -e "${RED}Error: 'oc' command not found. Please install the OpenShift CLI.${NC}"
     exit 1
   fi
   
   if ! command -v jq &> /dev/null; then
-    echo -e "${RED}Error: 'jq' command not found. Please install jq.${NC}"
-    echo -e "Installation instructions:"
-    echo -e "  - macOS: brew install jq"
-    echo -e "  - Linux (Debian/Ubuntu): sudo apt-get install jq"
-    echo -e "  - Linux (RHEL/Fedora): sudo dnf install jq"
     exit 1
   fi
 
   # check if the user is logged in
   if ! oc whoami &> /dev/null; then
-    echo -e "${RED}Error: Not logged into OpenShift. Please login first.${NC}"
     exit 1
   fi
 }
@@ -75,7 +68,6 @@ confirm_cluster() {
   read -p "Do you want to continue? (y/n): " -n 1 -r
   echo
   if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    echo -e "${YELLOW}Operation cancelled by user${NC}"
     exit 0
   fi
 }
@@ -108,6 +100,95 @@ wait_for_deployment() {
   
   echo -e "${RED}❌ Timed out waiting for deployment!${NC}"
   return 1
+}
+
+# function to update an operator's image
+update_console_image() {
+  local component="$1"      # ACM or MCE
+  local namespace="$2"      # Namespace (open-cluster-management or multicluster-engine)
+  local csv_pattern="$3"    # Pattern to grep (advanced-cluster-management or multicluster-engine)
+  local env_var_name="$4"   # OPERAND_IMAGE_CONSOLE or OPERAND_IMAGE_CONSOLE_MCE
+  local tag="$5"           # Tag to use
+  local base_override="$6" # Base image override
+  local default_base="$7"  # Default base image
+  local pod_label="$8"     # Label for pod selection in wait_for_deployment
+  
+  echo -e "\n${BOLD}Updating ${component} operator...${NC}"
+  
+  # finding the CSV
+  local csv
+  csv=$(oc get csv -n "$namespace" | grep "$csv_pattern" | awk '{print $1}')
+  
+  if [[ -z "$csv" ]]; then
+    echo -e "${RED}Error: ${component} CSV not found in namespace $namespace${NC}"
+    return 1
+  fi
+  
+  echo -e "Found ${component} CSV: ${GREEN}$csv${NC}"
+  
+  # getting current image value
+  local current_env
+  current_env=$(oc get csv "$csv" -n "$namespace" -o jsonpath="{.spec.install.spec.deployments[0].spec.template.spec.containers[0].env[?(@.name==\"$env_var_name\")].value}")
+  
+  if [[ -z "$current_env" ]]; then
+    echo -e "${RED}Error: Could not find $env_var_name environment variable in ${component} operator${NC}"
+    return 1
+  fi
+  
+  # determine the base image to use
+  local base_image
+  if [[ -n "$base_override" ]]; then
+    base_image="$base_override"
+    echo -e "Using specified ${component} base image: ${GREEN}$base_image${NC}"
+  elif [[ -n "$current_env" ]]; then
+    base_image=$(echo "$current_env" | sed -E 's/(@sha256:|:).*//')
+    echo -e "Using detected ${component} base image: ${YELLOW}$base_image${NC}"
+  else
+    base_image="$default_base"
+    echo -e "Using default ${component} base image: ${YELLOW}$base_image${NC}"
+  fi
+  
+  # constructs the new image reference
+  local new_image
+  if [[ "$tag" == @sha256:* ]]; then
+    new_image="${base_image}${tag}"
+  elif [[ "$tag" == *":"* && "$tag" == *"/"* ]]; then
+    # this is already a full image reference (contains both : and /)
+    new_image="$tag"
+  else
+    new_image="${base_image}:${tag}"
+  fi
+  
+  echo -e "Current image: ${YELLOW}$current_env${NC}"
+  echo -e "New image: ${GREEN}$new_image${NC}"
+  
+  if [[ "$DRY_RUN" != "true" ]]; then
+    echo -e "Patching ${component} operator..."
+    
+    # find the environment variable index
+    local env_index
+    env_index=$(oc get csv "$csv" -n "$namespace" -o json | jq ".spec.install.spec.deployments[0].spec.template.spec.containers[0].env | map(.name == \"$env_var_name\") | index(true)")
+    
+    if [[ -z "$env_index" || "$env_index" == "null" ]]; then
+      echo -e "${RED}Error: Could not find index of $env_var_name environment variable${NC}"
+      return 1
+    fi
+    
+    # apply the patch using JSON patch
+    if oc patch csv "$csv" -n "$namespace" --type=json -p "[{\"op\":\"replace\",\"path\":\"/spec/install/spec/deployments/0/spec/template/spec/containers/0/env/$env_index/value\",\"value\":\"$new_image\"}]"; then
+      echo -e "${GREEN}✅ SUCCESS: ${component} image updated successfully${NC}"
+      if [[ "$WAIT_FOR_ROLLOUT" == "true" && "$DRY_RUN" != "true" ]]; then
+        wait_for_deployment "$namespace" "$pod_label" "$WAIT_TIMEOUT" "$new_image"
+      fi
+      return 0
+    else
+      echo -e "${RED}❌ FAILED: Could not update ${component} image${NC}"
+      return 1
+    fi
+  else
+    echo -e "${YELLOW}Dry run: ${component} image would be updated${NC}"
+    return 0
+  fi
 }
 
 # parsing command line arguments
@@ -220,144 +301,18 @@ fi
 
 #updates ACM Operator if tag provided
 if [[ -n "$ACM_TAG" ]]; then
-  echo -e "\n${BOLD}Updating Advanced Cluster Management operator...${NC}"
-
-  #finding the ACM CSV
-  ACM_CSV=$(oc get csv -n "$ACM_NAMESPACE" | grep advanced-cluster-management | awk '{print $1}')
-  
-  if [[ -z "$ACM_CSV" ]]; then
-    echo -e "${RED}Error: Advanced Cluster Management CSV not found in namespace $ACM_NAMESPACE${NC}"
-  else
-    echo -e "Found ACM CSV: ${GREEN}$ACM_CSV${NC}"
-    
-    #getting current image value
-    CURRENT_ACM_ENV=$(oc get csv "$ACM_CSV" -n "$ACM_NAMESPACE" -o jsonpath='{.spec.install.spec.deployments[0].spec.template.spec.containers[0].env[?(@.name=="OPERAND_IMAGE_CONSOLE")].value}')
-    
-    if [[ -z "$CURRENT_ACM_ENV" ]]; then
-      echo -e "${RED}Error: Could not find OPERAND_IMAGE_CONSOLE environment variable in ACM operator${NC}"
-    else
-      #extracts base image without tag
-      if [[ -n "$ACM_BASE_OVERRIDE" ]]; then
-        ACM_BASE_IMAGE="$ACM_BASE_OVERRIDE"
-        echo -e "Using specified ACM base image: ${GREEN}$ACM_BASE_IMAGE${NC}"
-      elif [[ -n "$CURRENT_ACM_ENV" ]]; then
-        ACM_BASE_IMAGE=$(echo "$CURRENT_ACM_ENV" | sed -E 's/(@sha256:|:).*//')
-        echo -e "Using detected ACM base image: ${YELLOW}$ACM_BASE_IMAGE${NC}"
-      else
-        ACM_BASE_IMAGE="$DEFAULT_ACM_BASE"
-        echo -e "Using default ACM base image: ${YELLOW}$ACM_BASE_IMAGE${NC}"
-      fi
-      # check to detect if the tag is already a full image reference
-      if [[ "$ACM_TAG" == @sha256:* ]]; then
-        NEW_ACM_IMAGE="${ACM_BASE_IMAGE}${ACM_TAG}"
-      elif [[ "$ACM_TAG" == *":"* && "$ACM_TAG" == *"/"* ]]; then
-      # this is already a full image reference (contains both : and /)
-        NEW_ACM_IMAGE="$ACM_TAG"
-      else
-        NEW_ACM_IMAGE="${ACM_BASE_IMAGE}:${ACM_TAG}"
-      fi
-      
-      echo -e "Current image: ${YELLOW}$CURRENT_ACM_ENV${NC}"
-      echo -e "New image: ${GREEN}$NEW_ACM_IMAGE${NC}"
-      
-      if [[ "$DRY_RUN" != "true" ]]; then
-        echo -e "Patching ACM operator..."
-        
-        #find the environment variable index
-        ACM_ENV_INDEX=$(oc get csv "$ACM_CSV" -n "$ACM_NAMESPACE" -o json | jq '.spec.install.spec.deployments[0].spec.template.spec.containers[0].env | map(.name == "OPERAND_IMAGE_CONSOLE") | index(true)')
-        
-        if [[ -z "$ACM_ENV_INDEX" || "$ACM_ENV_INDEX" == "null" ]]; then
-          echo -e "${RED}Error: Could not find index of OPERAND_IMAGE_CONSOLE environment variable${NC}"
-        else
-          #apply the patch using JSON patch
-          if oc patch csv "$ACM_CSV" -n "$ACM_NAMESPACE" --type=json -p "[{\"op\":\"replace\",\"path\":\"/spec/install/spec/deployments/0/spec/template/spec/containers/0/env/$ACM_ENV_INDEX/value\",\"value\":\"$NEW_ACM_IMAGE\"}]"; then
-            echo -e "${GREEN}✅ SUCCESS: ACM image updated successfully${NC}"
-          else
-            echo -e "${RED}❌ FAILED: Could not update ACM image${NC}"
-          fi
-        fi
-      else
-        echo -e "${YELLOW}Dry run: ACM image would be updated${NC}"
-      fi
-    fi
-  fi
+  update_console_image "ACM" "$ACM_NAMESPACE" "advanced-cluster-management" "OPERAND_IMAGE_CONSOLE" "$ACM_TAG" "$ACM_BASE_OVERRIDE" "$DEFAULT_ACM_BASE" "component=console"
 fi
 
 # updates the MCE Operator if tag provided
 if [[ -n "$MCE_TAG" ]]; then
-  echo -e "\n${BOLD}Updating MultiClusterEngine operator...${NC}"
-
-  #find the MCE CSV
-  MCE_CSV=$(oc get csv -n "$MCE_NAMESPACE" | grep multicluster-engine | awk '{print $1}')
-  
-  if [[ -z "$MCE_CSV" ]]; then
-    echo -e "${RED}Error: MultiClusterEngine CSV not found in namespace $MCE_NAMESPACE${NC}"
-  else
-    echo -e "Found MCE CSV: ${GREEN}$MCE_CSV${NC}"
-    
-    # gets current image value
-    CURRENT_MCE_ENV=$(oc get csv "$MCE_CSV" -n "$MCE_NAMESPACE" -o jsonpath='{.spec.install.spec.deployments[0].spec.template.spec.containers[0].env[?(@.name=="OPERAND_IMAGE_CONSOLE_MCE")].value}')
-    
-    if [[ -z "$CURRENT_MCE_ENV" ]]; then
-      echo -e "${RED}Error: Could not find OPERAND_IMAGE_CONSOLE_MCE environment variable in MCE operator${NC}"
-    else
-      # extracts base image without tag
-      if [[ -n "$MCE_BASE_OVERRIDE" ]]; then
-        MCE_BASE_IMAGE="$MCE_BASE_OVERRIDE"
-        echo -e "Using specified MCE base image: ${GREEN}$MCE_BASE_IMAGE${NC}"
-      elif [[ -n "$CURRENT_MCE_ENV" ]]; then
-        MCE_BASE_IMAGE=$(echo "$CURRENT_MCE_ENV" | sed -E 's/(@sha256:|:).*//')
-        echo -e "Using detected MCE base image: ${YELLOW}$MCE_BASE_IMAGE${NC}"
-      else
-        MCE_BASE_IMAGE="$DEFAULT_MCE_BASE"
-        echo -e "Using default MCE base image: ${YELLOW}$MCE_BASE_IMAGE${NC}"
-      fi
-      # check to detect if the tag is already a full image reference
-      if [[ "$MCE_TAG" == @sha256:* ]]; then
-        NEW_MCE_IMAGE="${MCE_BASE_IMAGE}${MCE_TAG}"
-      elif [[ "$MCE_TAG" == *":"* && "$MCE_TAG" == *"/"* ]]; then
-      # this is already a full image reference (contains both : and /)
-        NEW_MCE_IMAGE="$MCE_TAG"
-      else
-        NEW_MCE_IMAGE="${MCE_BASE_IMAGE}:${MCE_TAG}"
-      fi
-      
-      echo -e "Current image: ${YELLOW}$CURRENT_MCE_ENV${NC}"
-      echo -e "New image: ${GREEN}$NEW_MCE_IMAGE${NC}"
-      
-      if [[ "$DRY_RUN" != "true" ]]; then
-        echo -e "Patching MCE operator..."
-        
-        # finds the environment variable index
-        MCE_ENV_INDEX=$(oc get csv "$MCE_CSV" -n "$MCE_NAMESPACE" -o json | jq '.spec.install.spec.deployments[0].spec.template.spec.containers[0].env | map(.name == "OPERAND_IMAGE_CONSOLE_MCE") | index(true)')
-        
-        if [[ -z "$MCE_ENV_INDEX" || "$MCE_ENV_INDEX" == "null" ]]; then
-          echo -e "${RED}Error: Could not find index of OPERAND_IMAGE_CONSOLE_MCE environment variable${NC}"
-        else
-          # apply the patch using JSON patch
-         if oc patch csv "$MCE_CSV" -n "$MCE_NAMESPACE" --type=json -p "[{\"op\":\"replace\",\"path\":\"/spec/install/spec/deployments/0/spec/template/spec/containers/0/env/$MCE_ENV_INDEX/value\",\"value\":\"$NEW_MCE_IMAGE\"}]"; then
-            echo -e "${GREEN}✅ SUCCESS: MCE image updated successfully${NC}"
-          else
-            echo -e "${RED}❌ FAILED: Could not update MCE image${NC}"
-          fi
-        fi
-      else
-        echo -e "${YELLOW}Dry run: MCE image would be updated${NC}"
-      fi
-    fi
-  fi
+  update_console_image "MCE" "$MCE_NAMESPACE" "multicluster-engine" "OPERAND_IMAGE_CONSOLE_MCE" "$MCE_TAG" "$MCE_BASE_OVERRIDE" "$DEFAULT_MCE_BASE" "app=console-mce"
 fi
 
 echo -e "\n${BOLD}Process completed.${NC}"
 
-if [[ "$DRY_RUN" != "true" ]]; then
-  if [[ "$WAIT_FOR_ROLLOUT" == "true" ]]; then
-    echo -e "${BOLD}Waiting for deployments to roll out...${NC}"
-    [[ -n "$ACM_TAG" ]] && wait_for_deployment "$ACM_NAMESPACE" "component=console" "$WAIT_TIMEOUT" "$NEW_ACM_IMAGE"
-    [[ -n "$MCE_TAG" ]] && wait_for_deployment "$MCE_NAMESPACE" "app=console-mce" "$WAIT_TIMEOUT" "$NEW_MCE_IMAGE"
-  else
-    echo -e "You can monitor the deployment status with:"
-    [[ -n "$ACM_TAG" ]] && echo -e "  ${YELLOW}oc get pods -n $ACM_NAMESPACE -l component=console${NC}"
-    [[ -n "$MCE_TAG" ]] && echo -e "  ${YELLOW}oc get pods -n $MCE_NAMESPACE | grep -E 'console-mce'${NC}"
-  fi
+if [[ "$DRY_RUN" != "true" && "$WAIT_FOR_ROLLOUT" != "true" ]]; then
+  echo -e "You can monitor the deployment status with:"
+  [[ -n "$ACM_TAG" ]] && echo -e "  ${YELLOW}oc get pods -n $ACM_NAMESPACE -l component=console${NC}"
+  [[ -n "$MCE_TAG" ]] && echo -e "  ${YELLOW}oc get pods -n $MCE_NAMESPACE | grep -E 'console-mce'${NC}"
 fi
