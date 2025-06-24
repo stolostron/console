@@ -20,7 +20,7 @@ import {
   policyreportState,
 } from '../../../../../../atoms'
 import { nockAggegateRequest, nockGet, nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../../../lib/nock-util'
-import { clickByText, waitForText } from '../../../../../../lib/test-util'
+import { waitForText } from '../../../../../../lib/test-util'
 import {
   HostedClusterApiVersion,
   HostedClusterKind,
@@ -125,7 +125,7 @@ describe('ClusterOverview with AWS hypershift cluster', () => {
 
   it('should render overview with AWS hypershift cluster', async () => {
     await waitForText(mockAWSHypershiftCluster.name)
-    await clickByText('Reveal credentials')
+    await waitForText('Reveal credentials')
   })
 })
 
@@ -174,7 +174,7 @@ describe('ClusterOverview with BM hypershift cluster', () => {
 
   it('should render overview with BM hypershift cluster', async () => {
     await waitForText(mockBMHypershiftCluster.name)
-    await clickByText('Reveal credentials')
+    await waitForText('Reveal credentials')
   })
 })
 
@@ -223,7 +223,7 @@ describe('ClusterOverview with BM hypershift cluster no namespace', () => {
 
   it('should render overview with BM hypershift cluster no namespace', async () => {
     await waitForText(mockBMHypershiftClusterNoNamespace.name)
-    await clickByText('Reveal credentials')
+    await waitForText('Reveal credentials')
   })
 })
 
@@ -272,7 +272,7 @@ describe('ClusterOverview with AWS hypershift cluster no hypershift', () => {
 
   it('should render overview with AWS hypershift cluster no hypershift', async () => {
     await waitForText(mockAWSHypershiftClusterNoHypershift.name)
-    await clickByText('Reveal credentials')
+    await waitForText('Reveal credentials')
   })
 })
 
@@ -316,7 +316,7 @@ describe('ClusterOverview with AWS hypershift cluster no hostedCluster', () => {
 
   it('should render overview with AWS hypershift cluster no hostedCluster', async () => {
     await waitForText(mockAWSHypershiftCluster.name)
-    await clickByText('Reveal credentials')
+    await waitForText('Reveal credentials')
   })
 })
 
