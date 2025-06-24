@@ -4,8 +4,8 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { GraphQLError } from 'graphql'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { Settings, settingsState } from '../../../atoms'
-import { nockGet, nockIgnoreApiPaths } from '../../../lib/nock-util'
+import { isFineGrainedRbacEnabledState, Settings, settingsState } from '../../../atoms'
+import { nockGet, nockIgnoreApiPaths, nockRequest } from '../../../lib/nock-util'
 import { wait, waitForNocks } from '../../../lib/test-util'
 import { SearchResultItemsDocument } from '../search-sdk/search-sdk'
 import SnapshotsTab from './SnapshotsTab'
@@ -244,6 +244,101 @@ describe('SnapshotsTab', () => {
     )
     // Wait for managed cluster view requests to finish
     await waitForNocks([getVMManagedClusterViewNock])
+    await wait()
+    // Test that the component has rendered correctly with data
+    await waitFor(() => expect(screen.queryByText('centos-stream9-snapshot-20250327135448211')).toBeTruthy())
+    await waitFor(() => expect(screen.queryByText('centos-stream9-snapshot-20250325211107690')).toBeTruthy())
+  })
+
+  it('should render tab with correct snapshot data using fine-grained RBAC', async () => {
+    const mocks = [
+      {
+        request: {
+          query: SearchResultItemsDocument,
+          variables: {
+            input: [
+              {
+                keywords: [],
+                filters: [
+                  {
+                    property: 'kind',
+                    values: ['VirtualMachineSnapshot'],
+                  },
+                  { property: 'sourceName', values: ['centos-stream9'] },
+                ],
+                limit: 1000,
+              },
+            ],
+          },
+        },
+        result: {
+          data: {
+            searchResult: [
+              {
+                items: [
+                  {
+                    _hubClusterResource: 'true',
+                    _uid: 'local-cluster/5e719fee-24a1-44c7-b5bf-03f024d1dff3',
+                    apigroup: 'snapshot.kubevirt.io',
+                    apiversion: 'v1beta1',
+                    cluster: 'local-cluster',
+                    created: '2025-03-27T13:54:50Z',
+                    indications: 'noguestagent; online',
+                    kind: 'VirtualMachineSnapshot',
+                    kind_plural: 'virtualmachinesnapshots',
+                    name: 'centos-stream9-snapshot-20250327135448211',
+                    namespace: 'openshift-cnv',
+                    ready: 'True',
+                    sourceName: 'centos-stream9',
+                    _conditionReadyReason: 'Operation complete',
+                  },
+                  {
+                    _hubClusterResource: 'true',
+                    _uid: 'local-cluster/ebd2b806-ed5c-4651-8375-1ee3c1bd2829',
+                    apigroup: 'snapshot.kubevirt.io',
+                    apiversion: 'v1beta1',
+                    cluster: 'local-cluster',
+                    created: '2025-03-25T21:11:09Z',
+                    kind: 'VirtualMachineSnapshot',
+                    kind_plural: 'virtualmachinesnapshots',
+                    name: 'centos-stream9-snapshot-20250325211107690',
+                    namespace: 'openshift-cnv',
+                    ready: 'True',
+                    sourceName: 'centos-stream9',
+                    _conditionReadyReason: 'Operation complete',
+                  },
+                ],
+                __typename: 'SearchResult',
+              },
+            ],
+          },
+        },
+      },
+    ]
+    const getVMNock = nockRequest('/virtualmachines/get/local-cluster/centos-stream9/openshift-cnv', {
+      apiVersion: 'kubevirt.io/v1',
+      kind: 'VirtualMachine',
+      metadata: {
+        name: 'centos-stream9',
+        namespace: 'openshift-cnv',
+      },
+    })
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(settingsState, mockSettings)
+          snapshot.set(isFineGrainedRbacEnabledState, true)
+        }}
+      >
+        <MemoryRouter>
+          <MockedProvider mocks={mocks}>
+            <SnapshotsTab />
+          </MockedProvider>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    // Wait for vm requests to finish
+    await waitForNocks([getVMNock])
     await wait()
     // Test that the component has rendered correctly with data
     await waitFor(() => expect(screen.queryByText('centos-stream9-snapshot-20250327135448211')).toBeTruthy())
