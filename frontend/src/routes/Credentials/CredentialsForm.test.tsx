@@ -97,8 +97,7 @@ describe('add credentials page', () => {
     await typeByTestId('bucketName', providerConnection.stringData?.bucket!)
     await typeByTestId('aws_access_key_id', 'bcd')
     await typeByTestId('aws_secret_access_key', 'fgh')
-    await clickByText('Select region')
-    await clickByText(providerConnection.stringData?.region!)
+    await selectByText('Select region', providerConnection.stringData?.region!)
 
     // open yaml and use yaml to change aws_access_key_id
     await waitFor(() => screen.getByRole('checkbox', { name: /yaml/i }))
