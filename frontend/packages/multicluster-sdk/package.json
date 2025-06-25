@@ -25,7 +25,7 @@
   "license": "Apache-2.0",
   "homepage": "https://github.com/stolostron/console/tree/main/frontend/packages/multicluster-sdk#readme",
   "scripts": {
-    "build": "tsc --build",
+    "build": "tsc --build tsconfig.build.json",
     "tsc": "tsc --noEmit",
     "lint": "eslint src --ext .js,.jsx,.ts,.tsx --max-warnings=0",
     "lint:fix": "npm run lint -- --fix",

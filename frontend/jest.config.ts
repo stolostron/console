@@ -49,6 +49,7 @@ const config: Config.InitialOptions = {
   collectCoverageFrom: [
     '<rootDir>/src/**/*.{tsx,ts,jsx,js}',
     '<rootDir>/src/*.{tsx,ts,jsx,js}',
+    '<rootDir>/packages/multicluster-sdk/src/**/*.{tsx,ts,jsx,js}',
     '!<rootDir>/src/**/*.stories.tsx',
     '!<rootDir>/src/ui-components/**/index.ts',
     '!<rootDir>/src/**/*.test.{tsx,ts,jsx,js}',
