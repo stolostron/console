@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { ToggleGroup, ToggleGroupItem } from '@patternfly/react-core'
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { WizDetailsHidden, EditMode, WizItemSelector, Section, WizSelect, WizSingleSelect } from '../../src'

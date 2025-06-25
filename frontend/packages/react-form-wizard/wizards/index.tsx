@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import '@patternfly/react-core/dist/styles/base.css'
 import '@patternfly/react-styles/css/components/Wizard/wizard.css'
 import { lazy, StrictMode, Suspense } from 'react'

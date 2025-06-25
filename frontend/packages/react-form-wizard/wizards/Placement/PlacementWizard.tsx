@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { EditMode, Step, WizardCancel, WizardPage, WizardSubmit } from '../../src'
 import { IResource } from '../../src/common/resource'
 import { IClusterSetBinding } from '../common/resources/IClusterSetBinding'

@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { DescriptionListDescription, DescriptionListGroup, DescriptionListTerm, Radio as PfRadio } from '@patternfly/react-core'
 import { Children, createContext, Fragment, isValidElement, ReactElement, ReactNode, useContext } from 'react'
 import { WizHelperText } from '../components/WizHelperText'

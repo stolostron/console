@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { Split, Stack, Switch as PFSwitch, SwitchProps } from '@patternfly/react-core'
 import { CheckIcon } from '@patternfly/react-icons'
 import { Fragment, ReactNode, useCallback } from 'react'

@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { useMemo } from 'react'
 import { IResource } from '../../src/common/resource'
 

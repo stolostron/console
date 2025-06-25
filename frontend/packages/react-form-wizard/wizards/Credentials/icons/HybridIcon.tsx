@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { createIcon } from './createAcmIcon'
 
 export const HybridIcon = createIcon({

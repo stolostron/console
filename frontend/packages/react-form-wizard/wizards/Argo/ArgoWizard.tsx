@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { Button, Flex, FlexItem, Split, Stack, ToggleGroup, ToggleGroupItem } from '@patternfly/react-core'
 import { GitAltIcon } from '@patternfly/react-icons'
 import { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'

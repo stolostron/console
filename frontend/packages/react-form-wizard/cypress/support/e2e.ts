@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 // ***********************************************************
 // This example support/index.js is processed and
 // loaded automatically before your test files.

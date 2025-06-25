@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { Button, Spinner, Tooltip } from '@patternfly/react-core'
 import { useStringContext } from '../contexts/StringContext'
 

@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { Button, FormHelperText, HelperText, HelperTextItem, Split, SplitItem } from '@patternfly/react-core'
 import { InputCommonProps, useInputValidation } from '../inputs/Input'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'

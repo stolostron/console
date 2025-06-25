@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 /* eslint-disable i18next/no-literal-string */
 import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin'
 import CssMinimizerPlugin from 'css-minimizer-webpack-plugin'

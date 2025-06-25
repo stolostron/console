@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 /// <reference types="cypress" />
 import YAML from 'yaml'
 import { PlacementBindingType } from '../../wizards/common/resources/IPlacementBinding'

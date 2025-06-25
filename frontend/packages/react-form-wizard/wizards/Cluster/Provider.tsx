@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { Icon, Stack } from '@patternfly/react-core'
 import { ServerIcon, VirtualMachineIcon } from '@patternfly/react-icons'
 import { useHistory } from 'react-router-dom'

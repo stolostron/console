@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { DescriptionListDescription, DescriptionListGroup, DescriptionListTerm, InputGroup, InputGroupItem } from '@patternfly/react-core'
 import { Select as PfSelect, SelectOption, SelectOptionObject, SelectProps, SelectVariant } from '@patternfly/react-core/deprecated'
 import { Fragment, ReactNode, useCallback, useEffect, useState } from 'react'

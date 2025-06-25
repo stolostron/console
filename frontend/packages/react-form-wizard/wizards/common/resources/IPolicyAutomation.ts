@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { IResource } from '../../../src/common/resource'
 
 export const PolicyAutomationGroup = 'policy.open-cluster-management.io'

@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 export enum RouteE {
     Home = '.',
     AmazonHyperShift = '?route=amazon-hypershift',

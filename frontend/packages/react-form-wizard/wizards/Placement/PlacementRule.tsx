@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { Fragment } from 'react'
 import { EditMode, WizKeyValue, WizArrayInput, WizTextInput } from '../../src'
 import { useEditMode } from '../../src/contexts/EditModeContext'

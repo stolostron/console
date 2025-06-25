@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { InputGroup, InputGroupItem, TextInput as PFTextInput, TextInputProps } from '@patternfly/react-core'
 import { Fragment, useCallback, useState } from 'react'
 import { WizTextDetail } from '..'

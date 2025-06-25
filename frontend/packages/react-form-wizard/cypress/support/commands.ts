@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 // ***********************************************
 // This example commands.js shows you how to
 // create various custom commands and overwrite

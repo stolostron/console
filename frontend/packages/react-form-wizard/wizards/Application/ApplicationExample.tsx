@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { useMemo } from 'react'
 import { useHistory } from 'react-router'
 import { onCancel, onSubmit } from '../common/utils'

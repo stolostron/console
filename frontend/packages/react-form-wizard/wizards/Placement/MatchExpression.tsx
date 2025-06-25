@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { Flex } from '@patternfly/react-core'
 import { Fragment } from 'react'
 import set from 'set-value'
