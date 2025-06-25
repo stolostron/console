@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 /// <reference types="cypress" />
 // ***********************************************************
 // This example plugins/index.js can be used to load plugins

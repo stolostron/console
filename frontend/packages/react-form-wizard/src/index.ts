@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 export * from './common/resource'
 export * from './contexts/DataContext'
 export * from './contexts/EditMode'

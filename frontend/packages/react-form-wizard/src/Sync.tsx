@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import get from 'get-value'
 import { Fragment, useEffect, useState } from 'react'
 import set from 'set-value'

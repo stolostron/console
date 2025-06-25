@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { RouteE } from '../Routes'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

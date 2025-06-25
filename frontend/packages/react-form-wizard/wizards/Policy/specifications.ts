@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import YAML from 'yaml'
 import policylimitclusteradmin from './stable/AC-Access-Control/policy-limitclusteradmin.yaml'
 import policyrole from './stable/AC-Access-Control/policy-role.yaml'

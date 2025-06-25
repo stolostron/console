@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { Fragment } from 'react'
 import { WizKeyValue, Section, WizSelect, Step, WizardCancel, WizardPage, WizardSubmit, WizArrayInput, WizTextInput } from '../../src'
 

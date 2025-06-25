@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { Button, Divider, List, ListItem, TextInput } from '@patternfly/react-core'
 import { PlusCircleIcon, TrashIcon } from '@patternfly/react-icons'
 import { Fragment } from 'react'

@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { defineConfig } from 'cypress'
 
 export default defineConfig({

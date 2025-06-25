@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { Button, Tooltip } from '@patternfly/react-core'
 import { SyncAltIcon } from '@patternfly/react-icons'
 import { useStringContext } from '../contexts/StringContext'

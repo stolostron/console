@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { FormFieldGroupExpandableProps } from '@patternfly/react-core'
 import { FormFieldGroupToggle } from '@patternfly/react-core/dist/js/components/Form/FormFieldGroupToggle'
 import { css } from '@patternfly/react-styles'

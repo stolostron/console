@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { createContext, ReactNode, useCallback, useContext, useLayoutEffect, useState } from 'react'
 
 export enum EditorValidationStatus {

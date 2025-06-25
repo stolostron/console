@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { AnsibleTowerIcon, ServerIcon } from '@patternfly/react-icons'
 import { Section, WizSelect, Step, WizTextArea, Tile, WizTiles, WizardCancel, WizardPage, WizardSubmit, WizTextInput } from '../../src'
 import { isValidKubernetesResourceName } from '../common/validation'

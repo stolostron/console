@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { IPlacement, PlacementType } from '../common/resources/IPlacement'
 import { IPlacementRule, PlacementRuleType } from '../common/resources/IPlacementRule'
 import { IResource } from '../../src/common/resource'

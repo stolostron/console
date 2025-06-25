@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { Form } from '@patternfly/react-core'
 import { Fragment, ReactNode, useLayoutEffect } from 'react'
 import { DisplayMode, useDisplayMode } from './contexts/DisplayModeContext'

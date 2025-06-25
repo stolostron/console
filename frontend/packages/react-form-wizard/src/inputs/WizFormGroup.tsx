@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { PropsWithChildren } from 'react'
 import { LabelHelp } from '../components/LabelHelp'
 import { InputCommonProps, useID } from './Input'

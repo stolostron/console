@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { DescriptionList, Divider, Icon, Split, SplitItem, Stack, Text, Title } from '@patternfly/react-core'
 import { AngleDownIcon, AngleLeftIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
 import { Fragment, ReactNode, useEffect, useState } from 'react'

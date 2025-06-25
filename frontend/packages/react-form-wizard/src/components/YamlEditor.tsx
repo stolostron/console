@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import useResizeObserver from '@react-hook/resize-observer'
 import { useEffect, useRef, useState } from 'react'
 import YAML from 'yaml'

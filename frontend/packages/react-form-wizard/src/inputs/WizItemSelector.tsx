@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import get from 'get-value'
 import { Fragment, ReactNode, useContext } from 'react'
 import { ItemContext } from '../contexts/ItemContext'

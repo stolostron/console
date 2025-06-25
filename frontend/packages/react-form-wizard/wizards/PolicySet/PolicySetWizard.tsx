@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { Alert } from '@patternfly/react-core'
 import get from 'get-value'
 import { Fragment, ReactNode, useMemo } from 'react'

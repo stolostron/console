@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 /// <reference types="cypress" />
 import YAML from 'yaml'
 import { PlacementApiGroup, PlacementKind, PlacementType } from '../../wizards/common/resources/IPlacement'

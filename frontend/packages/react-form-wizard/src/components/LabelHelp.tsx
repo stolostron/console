@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { Button, Popover } from '@patternfly/react-core'
 import { HelpIcon } from '@patternfly/react-icons'
 import { Fragment, ReactNode } from 'react'
