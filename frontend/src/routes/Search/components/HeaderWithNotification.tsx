@@ -2,6 +2,7 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 import { Card, CardBody } from '@patternfly/react-core'
+import { Link } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
@@ -46,11 +47,11 @@ export default function HeaderWithNotification(props: { messages: Message[] }) {
                   headerContent: displayShortText,
                   bodyContent: displayLongText,
                   footerContent: msg.id === 'S20' && (
-                    <a
-                      href={`${NavigationPath.search}?filters={"textsearch":"kind%3ACluster%20addon%3Asearch-collector%3Dfalse%20name%3A!local-cluster"}`}
+                    <Link
+                      to={`${NavigationPath.search}?filters={"textsearch":"kind%3ACluster%20addon%3Asearch-collector%3Dfalse%20label%3A!local-cluster%3Dtrue"}`}
                     >
                       {footerText}
-                    </a>
+                    </Link>
                   ),
                 }}
               />
