@@ -47,7 +47,8 @@ export default function HeaderWithNotification(props: { messages: Message[] }) {
                   headerContent: displayShortText,
                   bodyContent: displayLongText,
                   footerContent: msg.id === 'S20' && (
-                    <Link to={`${NavigationPath.search}?filters={"textsearch":"kind%3ACluster%20addon%3Asearch-collector%3Dfalse%20label%3A!local-cluster%3Dtrue"}`}
+                    <Link
+                      to={`${NavigationPath.search}?filters={"textsearch":"kind%3ACluster%20addon%3Asearch-collector%3Dfalse%20label%3A!local-cluster%3Dtrue"}`}
                     >
                       {footerText}
                     </Link>
