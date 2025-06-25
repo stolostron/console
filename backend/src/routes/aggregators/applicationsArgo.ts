@@ -125,10 +125,12 @@ export function cacheArgoApplications(applicationCache: ApplicationCacheType, re
     logger.error(`cacheRemoteApps exception ${e}`)
   }
 
-  try {
-    transform(getApplicationsHelper(applicationCache, ['appset']), false, localCluster, clusters)
-  } catch (e) {
-    logger.error(`aggregateLocalApplications appset exception ${e}`)
+  if (applicationCache['appset']?.resourceUidMap) {
+    try {
+      transform(getApplicationsHelper(applicationCache, ['appset']), false, localCluster, clusters)
+    } catch (e) {
+      logger.error(`aggregateLocalApplications appset exception ${e}`)
+    }
   }
 
   return argoAppSet
