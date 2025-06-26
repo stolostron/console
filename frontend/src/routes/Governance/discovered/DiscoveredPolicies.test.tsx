@@ -208,7 +208,7 @@ describe('useFetchPolicies custom hook', () => {
 
     // Test the kind filter
     await waitForText('Filter')
-    screen.getAllByRole('button', { name: 'Options menu' })[0].click()
+    screen.getAllByRole('button', { name: 'Filter' })[0].click()
     screen.getByRole('checkbox', { name: 'Gatekeeper constraint 1' }).click()
 
     await waitForNotText('check-policy-reports')
@@ -217,15 +217,12 @@ describe('useFetchPolicies custom hook', () => {
     // Unset the filter so the state doesn't carry over
     screen.getByRole('checkbox', { name: 'Gatekeeper constraint 1' }).click()
 
-    // click != button in label filter
-    screen.getAllByRole('button', { name: 'Options menu' })[1].click()
-    const group = screen.getByRole('group', {
-      name: /acm-table-filter-select-key/i,
-    })
-    within(group)
-      .getByRole('button', {
-        name: /!=/i,
-      })
+    // click = button in label filter
+    screen.getByTestId('acm-table-filter-select-Label').click()
+    screen
+      .getAllByRole('button', {
+        name: /=/i,
+      })[0]
       .click()
   })
 

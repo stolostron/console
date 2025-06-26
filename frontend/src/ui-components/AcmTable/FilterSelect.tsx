@@ -67,7 +67,12 @@ export const FilterSelect = ({
         setIsOpen(isOpen)
       }}
       toggle={(toggleRef) => (
-        <MenuToggle ref={toggleRef} onClick={() => setIsOpen(!isOpen)} isExpanded={isOpen}>
+        <MenuToggle
+          ref={toggleRef}
+          onClick={() => setIsOpen(!isOpen)}
+          isExpanded={isOpen}
+          id={`acm-table-filter-select-${label}`}
+        >
           <FilterIcon className={filterLabelMargin} />
           <span className={filterLabelMargin}>{label ?? t('Filter')}</span>
           {selectedCount > 0 && <Badge isRead>{selectedCount}</Badge>}
@@ -120,7 +125,12 @@ const FilterSelectOption = ({
   search,
   selectedFilters,
 }: FilterSelectOptionProps) => (
-  <SelectOption hasCheckbox value={option.option.value} isSelected={selectedFilters.includes(option.option.value)}>
+  <SelectOption
+    id={`${filterId}-${option.option.value}`}
+    hasCheckbox
+    value={option.option.value}
+    isSelected={selectedFilters.includes(option.option.value)}
+  >
     <div className={filterOption}>
       <HighlightSearchText
         text={(option.option.label as string) ?? '-'}

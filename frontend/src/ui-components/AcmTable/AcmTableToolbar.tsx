@@ -879,9 +879,11 @@ export function TableSelectionDropdown(props: Readonly<TableSelectionDropdownPro
             />,
           ],
         }}
-        aria-label={toggleText}
+        aria-label={t('Select')}
         onClick={() => setIsOpen(!isOpen)}
-      />
+      >
+        {toggleText}
+      </MenuToggle>
     )
   }, [t, selectedCount, onToggleCheckbox, toggleText, isOpen])
 
