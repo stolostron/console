@@ -2,7 +2,7 @@
 import { k8sListItems } from '@openshift-console/dynamic-plugin-sdk'
 import { UseFleetK8sAPIPath } from '../types'
 import { getBackendUrl } from './apiRequests'
-import { BASE_K8S_API_PATH, MANAGED_CLUSTER_API_PATH, ManagedClusterModel } from './constants'
+import { BASE_K8S_API_PATH, LOCAL_CLUSTER_LABEL, MANAGED_CLUSTER_API_PATH, ManagedClusterModel } from './constants'
 import { useHubClusterName } from './useHubClusterName'
 
 export const useFleetK8sAPIPath: UseFleetK8sAPIPath = (cluster) => {
@@ -15,15 +15,19 @@ export const useFleetK8sAPIPath: UseFleetK8sAPIPath = (cluster) => {
   return [`${getBackendUrl()}/${MANAGED_CLUSTER_API_PATH}/${cluster}`, loaded, error]
 }
 
+let cachedHubClusterName: string | undefined = undefined
+
 export const getFleetK8sAPIPath = async (cluster?: string) => {
-  const hubClusters = await k8sListItems({
-    model: ManagedClusterModel,
-    queryParams: { labelSelector: `local-cluster=true` },
-  })
+  if (!cachedHubClusterName) {
+    const hubClusters = await k8sListItems({
+      model: ManagedClusterModel,
+      queryParams: { labelSelector: { matchLabels: { [LOCAL_CLUSTER_LABEL]: true } } },
+    })
 
-  const hubCluster = hubClusters?.[0]
+    cachedHubClusterName = hubClusters?.[0]?.metadata?.name
+  }
 
-  if (cluster && hubCluster?.metadata?.name !== cluster) {
+  if (cluster && cachedHubClusterName !== cluster) {
     return `${getBackendUrl()}/${MANAGED_CLUSTER_API_PATH}/${cluster}`
   } else {
     return BASE_K8S_API_PATH

@@ -13,6 +13,7 @@ import {
 } from '@openshift-console/dynamic-plugin-sdk'
 import { selectorToString } from './utils/requirements'
 import { BASE_K8S_API_PATH } from './constants'
+import { getFleetK8sAPIPath } from './useFleetK8sAPIPath'
 
 export type BaseOptions = {
   name?: string
@@ -120,8 +121,8 @@ export const buildResourceURL = (params: {
 }
 
 export const getResourceURL: GetResourceURL = async (params) => {
-  const backendURL = await getBackendUrl()
-  return buildResourceURL({ ...params, basePath: backendURL })
+  const basePath = await getFleetK8sAPIPath(params?.cluster)
+  return buildResourceURL({ ...params, basePath })
 }
 
 export async function fleetK8sGet<R extends K8sResourceCommon>(options: OptionsGet): Promise<R> {
