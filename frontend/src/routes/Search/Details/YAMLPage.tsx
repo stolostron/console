@@ -10,7 +10,14 @@ import YamlEditor from '../../../components/YamlEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { canUser } from '../../../lib/rbac-util'
 import { fireManagedClusterAction, fireManagedClusterView, IResource } from '../../../resources'
-import { getResource, replaceResource } from '../../../resources/utils/resource-request'
+import {
+  getBackendUrl,
+  getRequest,
+  getResource,
+  putRequest,
+  replaceResource,
+} from '../../../resources/utils/resource-request'
+import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmLoadingPage } from '../../../ui-components'
 import { useSearchDetailsContext } from './DetailsPage'
 
@@ -43,9 +50,21 @@ function loadResource(
   isHubClusterResource: boolean,
   setResourceYaml: Dispatch<SetStateAction<string>>,
   setUpdateError: Dispatch<SetStateAction<string>>,
-  setResourceVersion: Dispatch<SetStateAction<string>>
+  setResourceVersion: Dispatch<SetStateAction<string>>,
+  isFineGrainedRbacEnabled: boolean
 ) {
-  if (isHubClusterResource) {
+  if (isFineGrainedRbacEnabled && (kind === 'VirtualMachine' || kind === 'VirtualMachineSnapshot')) {
+    const url = getBackendUrl() + `/${kind.toLowerCase()}s/get/${cluster}/${name}/${namespace}` // need the plural kind either virtualmachines || virtualmachinesnapshots
+    getRequest<IResource>(url)
+      .promise.then((response) => {
+        setResourceYaml(jsYaml.dump(response, { indent: 2 }))
+        setResourceVersion(response?.metadata?.resourceVersion ?? '')
+      })
+      .catch((err) => {
+        console.error('Error getting VM resource: ', err)
+        setUpdateError(`Error getting new resource YAML: ${err.message}`)
+      })
+  } else if (isHubClusterResource) {
     getResource({
       apiVersion: apiversion,
       kind,
@@ -88,9 +107,21 @@ function updateResource(
   setResourceYaml: Dispatch<SetStateAction<string>>,
   setUpdateError: Dispatch<SetStateAction<string>>,
   setUpdateSuccess: Dispatch<SetStateAction<boolean>>,
-  setResourceVersion: Dispatch<SetStateAction<string>>
+  setResourceVersion: Dispatch<SetStateAction<string>>,
+  isFineGrainedRbacEnabled: boolean
 ) {
-  if (isHubClusterResource) {
+  if (isFineGrainedRbacEnabled && (kind === 'VirtualMachine' || kind === 'VirtualMachineSnapshot')) {
+    const url = getBackendUrl() + `/${kind.toLowerCase()}s/update` // need the plural kind either virtualmachines || virtualmachinesnapshots
+    const parsedYaml = jsYaml.load(resourceYaml) as IResource
+    putRequest(url, { reqBody: parsedYaml, managedCluster: cluster, vmName: name, vmNamespace: namespace })
+      .promise.then(() => {
+        setUpdateSuccess(true)
+      })
+      .catch((err) => {
+        console.error('Error updating resource: ', err)
+        setUpdateError(err.message)
+      })
+  } else if (isHubClusterResource) {
     try {
       const parsedYaml = jsYaml.load(resourceYaml) as IResource
       replaceResource(parsedYaml)
@@ -104,7 +135,8 @@ function updateResource(
             isHubClusterResource,
             setResourceYaml,
             setUpdateError,
-            setResourceVersion
+            setResourceVersion,
+            isFineGrainedRbacEnabled
           )
           setUpdateSuccess(true)
         })
@@ -129,7 +161,8 @@ function updateResource(
             isHubClusterResource,
             setResourceYaml,
             setUpdateError,
-            setResourceVersion
+            setResourceVersion,
+            isFineGrainedRbacEnabled
           )
           setUpdateSuccess(true)
         } else {
@@ -156,7 +189,7 @@ function downloadYaml(name: string, resource: string) {
   saveAs(blob, `${name}.yaml`)
 }
 
-export function EditorHeaderBar(props: { cluster: string; namespace: string }) {
+export function EditorHeaderBar(props: Readonly<{ cluster: string; namespace: string }>) {
   const { cluster, namespace } = props
   const { t } = useTranslation()
 
@@ -173,18 +206,20 @@ export function EditorHeaderBar(props: { cluster: string; namespace: string }) {
   )
 }
 
-export function EditorActionBar(props: {
-  cluster: string
-  kind: string
-  apiversion: string
-  name: string
-  namespace: string
-  isHubClusterResource: boolean
-  resourceYaml: string
-  setResourceYaml: Dispatch<SetStateAction<string>>
-  handleResize: () => void
-  setResourceVersion: Dispatch<SetStateAction<string>>
-}) {
+export function EditorActionBar(
+  props: Readonly<{
+    cluster: string
+    kind: string
+    apiversion: string
+    name: string
+    namespace: string
+    isHubClusterResource: boolean
+    resourceYaml: string
+    setResourceYaml: Dispatch<SetStateAction<string>>
+    handleResize: () => void
+    setResourceVersion: Dispatch<SetStateAction<string>>
+  }>
+) {
   const {
     cluster,
     kind,
@@ -199,6 +234,8 @@ export function EditorActionBar(props: {
   } = props
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const { isFineGrainedRbacEnabledState } = useSharedAtoms()
+  const isFineGrainedRbacEnabled = useRecoilValue(isFineGrainedRbacEnabledState)
   const [updateSuccess, setUpdateSuccess] = useState<boolean>(false)
   const [updateError, setUpdateError] = useState<string>('')
 
@@ -217,7 +254,7 @@ export function EditorActionBar(props: {
       {(updateError !== '' || updateSuccess) && (
         <div id={'editor-alert-container'} style={{ paddingTop: '1rem' }}>
           {updateSuccess && <Alert variant={'success'} isInline={true} title={`${name} has been updated.`} />}
-          {/* TODO - info alert if resourceVersion is updated */}
+          {/* Add info alert if resourceVersion is updated */}
           {updateError !== '' && (
             <Alert
               variant={'danger'}
@@ -254,7 +291,8 @@ export function EditorActionBar(props: {
                   setResourceYaml,
                   setUpdateError,
                   setUpdateSuccess,
-                  setResourceVersion
+                  setResourceVersion,
+                  isFineGrainedRbacEnabled
                 )
               }}
             >
@@ -275,7 +313,8 @@ export function EditorActionBar(props: {
                   isHubClusterResource,
                   setResourceYaml,
                   setUpdateError,
-                  setResourceVersion
+                  setResourceVersion,
+                  isFineGrainedRbacEnabled
                 )
                 setUpdateError('')
                 setUpdateSuccess(false)
@@ -335,7 +374,7 @@ export default function YAMLPage() {
   } = useLocation()
 
   useEffect(() => {
-    if (location.state && location.state?.scrollToLine) {
+    if (location?.state?.scrollToLine) {
       setDefaultScrollToLine(location.state?.scrollToLine)
     }
   }, [location.state])
