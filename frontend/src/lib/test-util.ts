@@ -67,8 +67,24 @@ export async function waitForInputByTitle(title: string, index?: number) {
 export async function clickByText(text: string, index?: number) {
   await waitForInputByText(text, index)
   if (index !== undefined) {
+    // wait for rbac to enable the button associated with this text
+    await waitFor(
+      () =>
+        expect(
+          (screen.getAllByText(text)[index].closest('button') as HTMLInputElement)?.getAttribute('aria-disabled')
+        ).not.toEqual('true'),
+      waitForOptions
+    )
     userEvent.click(screen.getAllByText(text)[index])
   } else {
+    // wait for rbac to enable the button associated with this text
+    await waitFor(
+      () =>
+        expect(
+          (screen.getByText(text).closest('button') as HTMLInputElement)?.getAttribute('aria-disabled')
+        ).not.toEqual('true'),
+      waitForOptions
+    )
     userEvent.click(screen.getByText(text))
   }
 }

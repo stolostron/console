@@ -19,7 +19,7 @@ import { useHypershiftKubeconfig } from '../ClusterDetails/ClusterOverview/Hyper
 import { CopyCommandButton, useImportCommand } from './ImportCommand'
 import { LoginCredential } from './LoginCredentials'
 import { getErrorInfo } from '../../../../../components/ErrorPage'
-import { TFunction } from 'i18next'
+import { TFunction } from 'react-i18next'
 import { useContext } from 'react'
 import { PluginContext } from '../../../../../lib/PluginContext'
 import { useClusterDetailsContext } from '../ClusterDetails/ClusterDetails'

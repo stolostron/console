@@ -20,7 +20,7 @@ import {
   policyreportState,
 } from '../../../../../../atoms'
 import { nockAggegateRequest, nockGet, nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../../../lib/nock-util'
-import { clickByText, waitForText } from '../../../../../../lib/test-util'
+import { clickByText, waitForNocks, waitForText } from '../../../../../../lib/test-util'
 import {
   HostedClusterApiVersion,
   HostedClusterKind,
@@ -41,19 +41,7 @@ import { ClusterOverviewPageContent } from './ClusterOverview'
 import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import userEvent from '@testing-library/user-event'
 import { AcmToastGroup, AcmToastProvider } from '../../../../../../ui-components'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ClusterDetailsContext } from '../ClusterDetails'
-
-const queryClient = new QueryClient()
-
-const mockHistoryPush = jest.fn()
-
-jest.mock('react-router-dom-v5-compat', () => ({
-  ...jest.requireActual('react-router-dom-v5-compat'),
-  useHistory: () => ({
-    push: mockHistoryPush,
-  }),
-}))
 
 const kubeConfigSecret: Secret = {
   apiVersion: SecretApiVersion,
@@ -74,6 +62,16 @@ const kubeAdminPassSecret: Secret = {
   },
   stringData: {},
 }
+const kubeAdminPassSecretClustersNS: Secret = {
+  apiVersion: SecretApiVersion,
+  kind: SecretKind,
+  metadata: {
+    name: 'feng-hypershift-test-kubeadmin-password',
+    namespace: 'clusters',
+  },
+  stringData: {},
+}
+
 const statusAggregate = {
   req: { clusters: ['feng-hypershift-test'] },
   res: {
@@ -90,6 +88,7 @@ describe('ClusterOverview with AWS hypershift cluster', () => {
     const context: Partial<ClusterDetailsContext> = {
       cluster: mockAWSHypershiftCluster,
       hostedCluster: mockAWSHostedCluster,
+      canGetSecret: true,
     }
     render(
       <RecoilRoot
@@ -110,22 +109,22 @@ describe('ClusterOverview with AWS hypershift cluster', () => {
           snapshot.set(nodePoolsState, [])
         }}
       >
-        <QueryClientProvider client={queryClient}>
-          <MemoryRouter>
-            <Routes>
-              <Route element={<Outlet context={context} />}>
-                <Route path="*" element={<ClusterOverviewPageContent />} />
-              </Route>
-            </Routes>
-          </MemoryRouter>
-        </QueryClientProvider>
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<ClusterOverviewPageContent />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
       </RecoilRoot>
     )
   })
 
   it('should render overview with AWS hypershift cluster', async () => {
+    const nocks = [nockGet(kubeConfigSecret), nockGet(kubeAdminPassSecret), nockGet(kubeAdminPassSecretClustersNS)]
     await waitForText(mockAWSHypershiftCluster.name)
     await clickByText('Reveal credentials')
+    await waitForNocks(nocks)
   })
 })
 
@@ -133,12 +132,11 @@ describe('ClusterOverview with BM hypershift cluster', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
     nockAggegateRequest('statuses', statusAggregate.req, statusAggregate.res)
-    nockGet(kubeConfigSecret)
-    nockGet(kubeAdminPassSecret)
     nockIgnoreApiPaths()
     const context: Partial<ClusterDetailsContext> = {
       cluster: mockBMHypershiftCluster,
       hostedCluster: mockAWSHostedCluster,
+      canGetSecret: true,
     }
     render(
       <RecoilRoot
@@ -159,22 +157,22 @@ describe('ClusterOverview with BM hypershift cluster', () => {
           snapshot.set(nodePoolsState, [])
         }}
       >
-        <QueryClientProvider client={queryClient}>
-          <MemoryRouter>
-            <Routes>
-              <Route element={<Outlet context={context} />}>
-                <Route path="*" element={<ClusterOverviewPageContent />} />
-              </Route>
-            </Routes>
-          </MemoryRouter>
-        </QueryClientProvider>
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<ClusterOverviewPageContent />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
       </RecoilRoot>
     )
   })
 
   it('should render overview with BM hypershift cluster', async () => {
+    const nocks = [nockGet(kubeConfigSecret), nockGet(kubeAdminPassSecret), nockGet(kubeAdminPassSecretClustersNS)]
     await waitForText(mockBMHypershiftCluster.name)
     await clickByText('Reveal credentials')
+    await waitForNocks(nocks)
   })
 })
 
@@ -188,6 +186,7 @@ describe('ClusterOverview with BM hypershift cluster no namespace', () => {
     const context: Partial<ClusterDetailsContext> = {
       cluster: mockBMHypershiftClusterNoNamespace,
       hostedCluster: mockAWSHostedCluster,
+      canGetSecret: true,
     }
     render(
       <RecoilRoot
@@ -208,22 +207,20 @@ describe('ClusterOverview with BM hypershift cluster no namespace', () => {
           snapshot.set(nodePoolsState, [])
         }}
       >
-        <QueryClientProvider client={queryClient}>
-          <MemoryRouter>
-            <Routes>
-              <Route element={<Outlet context={context} />}>
-                <Route path="*" element={<ClusterOverviewPageContent />} />
-              </Route>
-            </Routes>
-          </MemoryRouter>
-        </QueryClientProvider>
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<ClusterOverviewPageContent />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
       </RecoilRoot>
     )
   })
 
   it('should render overview with BM hypershift cluster no namespace', async () => {
     await waitForText(mockBMHypershiftClusterNoNamespace.name)
-    await clickByText('Reveal credentials')
+    await waitForText('Reveal credentials')
   })
 })
 
@@ -237,6 +234,7 @@ describe('ClusterOverview with AWS hypershift cluster no hypershift', () => {
     const context: Partial<ClusterDetailsContext> = {
       cluster: mockAWSHypershiftClusterNoHypershift,
       hostedCluster: mockAWSHostedCluster,
+      canGetSecret: true,
     }
     render(
       <RecoilRoot
@@ -257,22 +255,20 @@ describe('ClusterOverview with AWS hypershift cluster no hypershift', () => {
           snapshot.set(nodePoolsState, [])
         }}
       >
-        <QueryClientProvider client={queryClient}>
-          <MemoryRouter>
-            <Routes>
-              <Route element={<Outlet context={context} />}>
-                <Route path="*" element={<ClusterOverviewPageContent />} />
-              </Route>
-            </Routes>
-          </MemoryRouter>
-        </QueryClientProvider>
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<ClusterOverviewPageContent />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
       </RecoilRoot>
     )
   })
 
   it('should render overview with AWS hypershift cluster no hypershift', async () => {
     await waitForText(mockAWSHypershiftClusterNoHypershift.name)
-    await clickByText('Reveal credentials')
+    await waitForText('Reveal credentials')
   })
 })
 
@@ -281,7 +277,7 @@ describe('ClusterOverview with AWS hypershift cluster no hostedCluster', () => {
     nockIgnoreRBAC()
     nockAggegateRequest('statuses', statusAggregate.req, statusAggregate.res)
     nockIgnoreApiPaths()
-    const context: Partial<ClusterDetailsContext> = { cluster: mockAWSHypershiftCluster }
+    const context: Partial<ClusterDetailsContext> = { cluster: mockAWSHypershiftCluster, canGetSecret: true }
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -301,22 +297,22 @@ describe('ClusterOverview with AWS hypershift cluster no hostedCluster', () => {
           snapshot.set(nodePoolsState, [])
         }}
       >
-        <QueryClientProvider client={queryClient}>
-          <MemoryRouter>
-            <Routes>
-              <Route element={<Outlet context={context} />}>
-                <Route path="*" element={<ClusterOverviewPageContent />} />
-              </Route>
-            </Routes>
-          </MemoryRouter>
-        </QueryClientProvider>
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<ClusterOverviewPageContent />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
       </RecoilRoot>
     )
   })
 
   it('should render overview with AWS hypershift cluster no hostedCluster', async () => {
+    const nocks = [nockGet(kubeConfigSecret), nockGet(kubeAdminPassSecret), nockGet(kubeAdminPassSecretClustersNS)]
     await waitForText(mockAWSHypershiftCluster.name)
     await clickByText('Reveal credentials')
+    await waitForNocks(nocks)
   })
 })
 
@@ -345,15 +341,13 @@ describe('ClusterOverview with regional hub cluster information', () => {
           snapshot.set(nodePoolsState, [])
         }}
       >
-        <QueryClientProvider client={queryClient}>
-          <MemoryRouter>
-            <Routes>
-              <Route element={<Outlet context={context} />}>
-                <Route path="*" element={<ClusterOverviewPageContent />} />
-              </Route>
-            </Routes>
-          </MemoryRouter>
-        </QueryClientProvider>
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<ClusterOverviewPageContent />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
       </RecoilRoot>
     )
   })
@@ -391,15 +385,13 @@ describe('ClusterOverview with regional hub cluster information with hostedClust
           snapshot.set(nodePoolsState, [])
         }}
       >
-        <QueryClientProvider client={queryClient}>
-          <MemoryRouter>
-            <Routes>
-              <Route element={<Outlet context={context} />}>
-                <Route path="*" element={<ClusterOverviewPageContent />} />
-              </Route>
-            </Routes>
-          </MemoryRouter>
-        </QueryClientProvider>
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<ClusterOverviewPageContent />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
       </RecoilRoot>
     )
   })
