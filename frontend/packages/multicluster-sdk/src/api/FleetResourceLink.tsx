@@ -32,14 +32,14 @@ export const FleetResourceLink: React.FC<FleetResourceLinkProps> = ({ cluster, .
     const path =
       groupVersionKind?.kind === 'VirtualMachine'
         ? `/multicloud/infrastructure/virtualmachines/${cluster}/${namespace}/${name}`
-        : getURLSearchParam({
+        : `/multicloud/search/resources${getURLSearchParam({
             cluster,
             kind: groupVersionKind?.kind,
             apigroup: groupVersionKind?.group,
             apiversion: groupVersionKind?.version,
             name,
             namespace,
-          })
+          })}`
 
     return (
       <span className={classes}>
