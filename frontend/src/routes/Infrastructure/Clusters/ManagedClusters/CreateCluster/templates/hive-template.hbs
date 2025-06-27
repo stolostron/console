@@ -65,17 +65,17 @@ spec:
 
   {{#case 'vSphere'}}
     vsphere:
-      cluster: {{{clusterPath cluster datacenter true}}}
+      cluster: {{{clusterPath cluster datacenter}}}
       certificatesSecretRef:
         name: {{{name}}}-vsphere-certs
       credentialsSecretRef:
         name: {{{name}}}-vsphere-creds
       vCenter: {{{vCenter}}}
       datacenter: {{{datacenter}}}
-      defaultDatastore: {{{datastorePath defaultDatastore datacenter true}}}
+      defaultDatastore: {{{datastorePath defaultDatastore datacenter}}}
       network: '{{{networkName}}}'  ##networkName
       {{#if_truthy vsphereFolder}}
-      folder: '{{{folderPath vsphereFolder datacenter true}}}'
+      folder: '{{{folderPath vsphereFolder datacenter}}}'
       {{/if_truthy}}
   {{/case}}
 
@@ -258,6 +258,9 @@ spec:
       memoryMB: {{{memoryMB}}} ##workerPools.{{@index}}.memoryMB
       osDisk:
         diskSizeGB: {{{diskSizeGB}}} ##workerPools.{{@index}}.diskSizeGB
+      {{#if_truthy @root.vsphereResourcePool}}
+      resourcePool: '{{{resourcePoolPath @root.vsphereResourcePool @root.datacenter @root.cluster}}}'
+      {{/if_truthy}}
   {{/case}}
 
   {{#case 'RHV'}}
