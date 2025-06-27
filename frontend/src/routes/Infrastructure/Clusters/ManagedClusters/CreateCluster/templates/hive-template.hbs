@@ -258,6 +258,9 @@ spec:
       memoryMB: {{{memoryMB}}} ##workerPools.{{@index}}.memoryMB
       osDisk:
         diskSizeGB: {{{diskSizeGB}}} ##workerPools.{{@index}}.diskSizeGB
+      {{#if_truthy @root.vsphereResourcePool}}
+      resourcePool: '{{{resourcePoolPath @root.vsphereResourcePool @root.datacenter @root.cluster}}}'
+      {{/if_truthy}}
   {{/case}}
 
   {{#case 'RHV'}}
