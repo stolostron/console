@@ -10,7 +10,7 @@ export const useMulticlusterSearchWatch: UseMulticlusterSearchWatch = (
   watchOptions: WatchK8sResource,
   advancedSearch?: { [key: string]: string }
 ) => {
-  const { groupVersionKind, limit, namespace, namespaced, name } = watchOptions
+  const { groupVersionKind, limit, namespace, namespaced, name, isList } = watchOptions
 
   const advancedSearchQueryString = Object.entries(advancedSearch || {})
     ?.map(([key, value]) => `${key}:${value}`)
@@ -78,5 +78,8 @@ export const useMulticlusterSearchWatch: UseMulticlusterSearchWatch = (
       }),
     [kind, result]
   )
-  return [data as SearchResult<any>, !loading, error]
+
+  const nullResponse = useMemo(() => (isList ? [] : undefined), [isList])
+
+  return [(data as SearchResult<any>) ?? nullResponse, !loading, error]
 }

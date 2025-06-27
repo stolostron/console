@@ -41,7 +41,7 @@ export const useFleetK8sWatchResource = <R extends FleetK8sResourceCommon | Flee
   const [model] = useK8sModel(groupVersionKind)
   const [backendAPIPath, backendPathLoaded] = useFleetK8sAPIPath(cluster)
 
-  const noCachedValue = (isList ? [] : {}) as R
+  const noCachedValue = useMemo(() => (isList ? [] : (undefined as unknown)) as R, [isList])
 
   const requestPath = useMemo(
     () =>
@@ -66,7 +66,7 @@ export const useFleetK8sWatchResource = <R extends FleetK8sResourceCommon | Flee
     const fetchData = async () => {
       setError(undefined)
       if (!useFleet || nullResource) {
-        setData((isList ? [] : {}) as R)
+        setData(noCachedValue)
         setLoaded(false)
         return
       }
@@ -128,7 +128,19 @@ export const useFleetK8sWatchResource = <R extends FleetK8sResourceCommon | Flee
       }
     }
     fetchData()
-  }, [cluster, isList, requestPath, name, namespace, nullResource, useFleet, backendPathLoaded, model, backendAPIPath])
+  }, [
+    cluster,
+    isList,
+    requestPath,
+    name,
+    namespace,
+    nullResource,
+    noCachedValue,
+    useFleet,
+    backendPathLoaded,
+    model,
+    backendAPIPath,
+  ])
 
   const [defaultData, defaultLoaded, defaultError] = useK8sWatchResource<R>(useFleet ? null : resource)
 
