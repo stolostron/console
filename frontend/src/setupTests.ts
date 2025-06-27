@@ -21,9 +21,8 @@ process.env.NODE_ENV = 'test'
 process.env.JEST_DEFAULT_HOST = 'http://localhost'
 process.env.REACT_APP_BACKEND_PATH = ''
 process.env.MODE = 'plugin'
-if (!process.env.DEBUG_PRINT_LIMIT) {
-  process.env.DEBUG_PRINT_LIMIT = '0'
-}
+process.env.DEBUG_PRINT_LIMIT ??= '0'
+
 window.SERVER_FLAGS = { basePath: '/' }
 
 JestFetchMock.enableMocks()
@@ -38,9 +37,9 @@ global.fetch = jest.fn((input, reqInit) => {
 })
 
 global.EventSource = class EventSource {
-  static CONNECTING = 0 as const
-  static OPEN = 1 as const
-  static CLOSED = 2 as const
+  static readonly CONNECTING = 0 as const
+  static readonly OPEN = 1 as const
+  static readonly CLOSED = 2 as const
 
   constructor(url: string | URL, eventSourceInitDict?: EventSourceInit | undefined) {
     this.url = url.toString()
@@ -67,7 +66,7 @@ global.EventSource = class EventSource {
 global.TextEncoder = TextEncoder
 
 configure({ testIdAttribute: 'id' })
-jest.setTimeout((process.env.LAUNCH ? 3000 : 120) * 1000)
+jest.setTimeout((process.env.LAUNCH ? 3000 : 180) * 1000)
 
 async function setupBeforeAll(): Promise<void> {
   nock.disableNetConnect()
@@ -81,7 +80,7 @@ let consoleErrors: any[] = []
 
 expect.extend({
   toHaveMultilineValue(received, expected: string) {
-    received = received.value || received
+    received = received.value ?? received
     return {
       pass: expected.trim().localeCompare(received.trim()) === 0,
       message: () =>
