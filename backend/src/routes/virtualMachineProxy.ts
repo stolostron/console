@@ -31,6 +31,7 @@ interface ActionBody {
 const getKubeVirtAPI = (url: string, name: string, namespace: string, action?: string) => {
   let path = ''
   switch (url) {
+    case '/virtualmachines/update':
     case '/virtualmachines/delete':
       path = `${path}/apis/kubevirt.io/v1/namespaces/${namespace}/virtualmachines/${name}`
       break
@@ -46,6 +47,7 @@ const getKubeVirtAPI = (url: string, name: string, namespace: string, action?: s
     case '/virtualmachinesnapshots/create':
       path = `${path}/apis/snapshot.kubevirt.io/v1beta1/namespaces/${namespace}/virtualmachinesnapshots`
       break
+    case '/virtualmachinesnapshots/update':
     case '/virtualmachinesnapshots/delete':
       path = `${path}/apis/snapshot.kubevirt.io/v1beta1/namespaces/${namespace}/virtualmachinesnapshots/${name}`
       break
@@ -114,7 +116,12 @@ export async function virtualMachineProxy(req: Http2ServerRequest, res: Http2Ser
         chucks.push(chuck)
       })
       req.on('end', async () => {
-        const body = JSON.parse(chucks.join()) as ActionBody
+        let body = {} as ActionBody
+        try {
+          body = JSON.parse(chucks.join('')) as ActionBody
+        } catch (err) {
+          logger.error(err)
+        }
         const action = req.url.split('/')[2]
         const path = `${proxyURL}/${body.managedCluster}${getKubeVirtAPI(req.url, body.vmName, body.vmNamespace, action)}`
         const reqBody = JSON.stringify(body.reqBody)
@@ -149,16 +156,25 @@ export async function virtualMachineProxy(req: Http2ServerRequest, res: Http2Ser
           }
         }
 
-        const headers: HeadersInit =
-          req.method !== 'PUT'
-            ? {
-                [HTTP2_HEADER_AUTHORIZATION]: `Bearer ${token}`,
-                [HTTP2_HEADER_ACCEPT]: 'application/json',
-                [HTTP2_HEADER_CONTENT_TYPE]: 'application/json',
-              }
-            : {
-                [HTTP2_HEADER_AUTHORIZATION]: `Bearer ${token}`,
-              }
+        let headers: HeadersInit = {}
+        switch (req.url) {
+          // start, stop, restart, pause, unpause all require */* for accept and content-type headers
+          case '/virtualmachines/start':
+          case '/virtualmachines/stop':
+          case '/virtualmachines/restart':
+          case '/virtualmachineinstances/pause':
+          case '/virtualmachineinstances/unpause':
+            headers = {
+              [HTTP2_HEADER_AUTHORIZATION]: `Bearer ${token}`,
+            }
+            break
+          default:
+            headers = {
+              [HTTP2_HEADER_AUTHORIZATION]: `Bearer ${token}`,
+              [HTTP2_HEADER_ACCEPT]: 'application/json',
+              [HTTP2_HEADER_CONTENT_TYPE]: 'application/json',
+            }
+        }
 
         await fetchRetry(path, {
           method: req.method,
@@ -171,18 +187,19 @@ export async function virtualMachineProxy(req: Http2ServerRequest, res: Http2Ser
             if (results?.status > 300) {
               logger.error({
                 msg: 'Error in VirtualMachine action results (fine grained RBAC)',
-                error: results,
+                status: results.status,
+                statusText: results.statusText,
               })
               res.setHeader('Content-Type', 'application/json')
               res.writeHead(results.status ?? HTTP_STATUS_INTERNAL_SERVER_ERROR)
-              res.end(JSON.stringify(results))
+              res.end(JSON.stringify({ status: results.status, statusText: results.statusText }))
               return 'Error in VirtualMachine action results (fine grained RBAC)'
             }
             let response = undefined
             if (req.method === 'POST') {
               response = (await results.json()) as unknown
             } else {
-              response = { statusCode: results.status }
+              response = { statusCode: results.status, statusText: results.statusText }
             }
             res.setHeader('Content-Type', 'application/json')
             res.end(JSON.stringify(response))
