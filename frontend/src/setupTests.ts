@@ -37,9 +37,9 @@ global.fetch = jest.fn((input, reqInit) => {
 })
 
 global.EventSource = class EventSource {
-  static CONNECTING = 0 as const
-  static OPEN = 1 as const
-  static CLOSED = 2 as const
+  static readonly CONNECTING = 0 as const
+  static readonly OPEN = 1 as const
+  static readonly CLOSED = 2 as const
 
   constructor(url: string | URL, eventSourceInitDict?: EventSourceInit | undefined) {
     this.url = url.toString()
