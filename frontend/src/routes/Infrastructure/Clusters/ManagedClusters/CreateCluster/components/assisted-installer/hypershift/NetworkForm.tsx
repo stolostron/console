@@ -5,7 +5,6 @@ import { FormikProps } from 'formik'
 import isEqual from 'lodash/isEqual'
 
 import { HypershiftAgentContext } from './HypershiftAgentContext'
-import { isBMPlatform } from '../../../../../../InfraEnvironments/utils'
 import { useSharedAtoms, useRecoilValue } from '../../../../../../../../shared-recoil'
 import { getTemplateValue } from '../utils'
 import { defaultHostPrefix, defaultPodCIDR, defaultServiceCIDR } from './constants'
@@ -141,7 +140,7 @@ const NetworkForm: React.FC<NetworkFormProps> = ({ control, handleChange, templa
 
   const initialValues: NetworkFormValues = React.useMemo(
     () =>
-      getDefaultNetworkFormValues(templateYAML, isBMPlatform(infrastructures[0]), isAdvancedNetworking, sshPublicKey),
+      getDefaultNetworkFormValues(templateYAML, ['BareMetal', 'None', 'OpenStack', 'VSphere'].includes(infrastructures[0]?.status?.platform || ''), isAdvancedNetworking, sshPublicKey),
     [templateYAML, infrastructures, isAdvancedNetworking, sshPublicKey]
   )
 
