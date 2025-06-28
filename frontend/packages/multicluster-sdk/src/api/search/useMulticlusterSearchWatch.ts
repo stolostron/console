@@ -7,7 +7,7 @@ import { SearchResult, UseMulticlusterSearchWatch } from './types'
 import { searchClient } from './search-client'
 
 export const useMulticlusterSearchWatch: UseMulticlusterSearchWatch = (watchOptions: WatchK8sResource) => {
-  const { groupVersionKind, limit, namespace, namespaced } = watchOptions
+  const { groupVersionKind, limit, namespace, namespaced, isList } = watchOptions
 
   const { group, version, kind } = groupVersionKind ?? {}
   const {
@@ -70,5 +70,8 @@ export const useMulticlusterSearchWatch: UseMulticlusterSearchWatch = (watchOpti
       }),
     [kind, result]
   )
-  return [data as SearchResult<any>, !loading, error]
+
+  const nullResponse = useMemo(() => (isList ? [] : undefined), [isList])
+
+  return [(data as SearchResult<any>) ?? nullResponse, !loading, error]
 }
