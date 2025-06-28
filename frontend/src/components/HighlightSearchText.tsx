@@ -49,7 +49,7 @@ export function HighlightSearchText(
       <>
         {segments.map((seg, inx) => {
           if (supportsInequality && !!parseLabel(seg.text).oper) {
-            return renderToggleButton(seg.text, toggleEquality)
+            return <ToggleButton key={Number(inx)} label={seg.text} toggleEquality={toggleEquality} />
           }
           return (
             <span key={Number(inx)} className={seg.isBold ? highlightClass : ''}>
@@ -62,12 +62,17 @@ export function HighlightSearchText(
   } else if (isTruncate) {
     return truncate(text) ?? null
   } else if (supportsInequality && text) {
-    return renderToggleButton(text, toggleEquality)
+    return <ToggleButton label={text} toggleEquality={toggleEquality} />
   }
   return text ?? null
 }
 
-const renderToggleButton = (label: string, toggleEquality: MouseEventHandler<HTMLButtonElement> | undefined) => {
+interface ToggleButtonProps {
+  label: string
+  toggleEquality?: MouseEventHandler<HTMLButtonElement>
+}
+
+const ToggleButton = ({ label, toggleEquality }: ToggleButtonProps) => {
   const { prefix, oper, suffix } = parseLabel(label)
   return (
     <div className={buttonDivClass}>

@@ -254,7 +254,7 @@ describe('Policies Page', () => {
     )
     await waitForText('enforce (overridden)')
     await waitForText('Filter')
-    screen.getByRole('button', { name: 'Options menu' }).click()
+    screen.getByText('Filter').click()
     await waitForText('Enforce')
     const enforceDiv = screen.getByText('Enforce').closest('div')
     within(enforceDiv!).getByText('1')
