@@ -25,3 +25,5 @@ export const ManagedClusterModel: K8sModel = {
   namespaced: false,
   plural: 'managedclusters',
 }
+
+export const REQUIRED_PROVIDER_FLAG = '@stolostron/multicluster-sdk/provider@1'
