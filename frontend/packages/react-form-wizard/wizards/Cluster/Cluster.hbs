@@ -1,0 +1,14 @@
+apiVersion: hive.openshift.io/v1
+kind: ClusterDeployment
+metadata:
+  name: '{{name}}'
+  namespace: '{{name}}'
+  labels:
+    cloud: '{{provider}}'
+---
+apiVersion: cluster.open-cluster-management.io/v1
+kind: ManagedCluster
+metadata:
+    name: '{{name}}'
+spec:
+  hubAcceptsClient: true

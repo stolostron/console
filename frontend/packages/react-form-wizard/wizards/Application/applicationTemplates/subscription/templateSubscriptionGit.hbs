@@ -1,0 +1,85 @@
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{! ==================Github channel ========================= }}
+{{! ========================================================== }}
+{{! ========================================================== }}
+
+{{#unless channelNamespace}}
+{{#unless channelNamespaceExists}}
+---
+apiVersion: v1                      
+kind: Namespace
+metadata:
+  name: {{{channelName}}}-ns
+{{/unless}}
+---
+apiVersion: apps.open-cluster-management.io/v1
+kind: Channel
+metadata:
+  annotations:
+    apps.open-cluster-management.io/reconcile-rate: {{{subscription.git.reconcileRate}}}
+  name: {{{channelName}}}
+  namespace: {{{channelName}}}-ns
+  {{#if selfLinks}}
+  selfLink: {{{selfLinks.Channel}}}
+  {{/if}}
+spec:
+  type: Git
+{{#if subscription.git.url}}
+  pathname: '{{{subscription.git.url}}}'
+{{/if}}
+{{#if subscription.git.insecureSkipVerify}}
+  insecureSkipVerify: true
+{{/if}}
+{{#if subscription.git.username}}
+  secretRef:
+    name: {{{channelName}}}-auth
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{{channelName}}}-auth
+  namespace: {{{channelName}}}-ns
+data:
+  user: {{{subscription.git.username}}}
+  accessToken: {{{subscription.git.accessToken}}}
+{{/if}}
+{{/unless}}      
+---
+apiVersion: apps.open-cluster-management.io/v1
+kind: Subscription
+metadata:
+  annotations:
+    apps.open-cluster-management.io/git-branch: {{{subscription.git.branch}}}
+    apps.open-cluster-management.io/git-path: {{{subscription.git.path}}}
+    {{#if subscription.git.commitHash}}
+    apps.open-cluster-management.io/git-desired-commit: {{{subscription.git.commitHash}}}
+    {{/if}}
+    {{#if subscription.git.tag}}
+    apps.open-cluster-management.io/git-tag: {{{subscription.git.tag}}}
+    {{/if}}
+    {{#if subscription.git.reconcileOption}}
+    apps.open-cluster-management.io/reconcile-option: {{{subscription.git.reconcileOption}}}
+    {{/if}}
+    {{#if subscription.git.subReconcileRate}}
+    apps.open-cluster-management.io/reconcile-rate: off
+    {{/if}}
+  labels:
+    app: {{{@root.name}}}
+  name: {{{@root.name}}}-subscription-{{{@root.uniqueGroupID}}}
+  namespace: {{{@root.namespace}}}
+  {{#if selfLinks}}
+  selfLink: {{{selfLinks.Subscription}}}
+  {{/if}}
+spec:
+{{#if subscription.git.ansibleSecretName}} 
+  hooksecretref: 
+    name: {{{subscription.git.ansibleSecretName}}}
+{{/if}}
+{{#if channelNamespace}}
+  channel: {{{channelNamespace}}}/{{{channelName}}}
+{{else}}
+  {{!-- channel: {{{channelName}}}-ns/{{{channelName}}} --}}
+  channel: '{{{subscription.git.url}}}'
+{{/if}}
+{{>templateSubscriptionPlacement}}
