@@ -783,6 +783,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
           ) : (
             action.title
           ),
+          description: action.description,
           isAriaDisabled: action.isDisabled ? true : false,
           onClick: action.isDisabled
             ? undefined

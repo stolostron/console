@@ -25,6 +25,7 @@ import { searchClient } from '../search-sdk/search-client'
 import { useSearchResultRelatedCountQuery, useSearchResultRelatedItemsQuery } from '../search-sdk/search-sdk'
 import { useSearchDefinitions } from '../searchDefinitions'
 import { getRowActions } from './utils'
+import { useCanMigrateVm } from '../../../hooks/use-can-migrate-vm'
 
 export function RenderItemContent(
   props: Readonly<{
@@ -47,6 +48,7 @@ export function RenderItemContent(
     setPluginModal,
   } = props
   const { t } = useTranslation()
+  const canMigrateVm = useCanMigrateVm()
   const navigate = useNavigate()
   const allClusters = useAllClusters(true)
   const { useVirtualMachineActionsEnabled, isFineGrainedRbacEnabledState } = useSharedAtoms()
@@ -71,6 +73,7 @@ export function RenderItemContent(
         acmExtensions,
         setPluginModal,
         navigate,
+        canMigrateVm,
         t
       ),
     [
@@ -85,6 +88,7 @@ export function RenderItemContent(
       acmExtensions,
       setPluginModal,
       navigate,
+      canMigrateVm,
       t,
     ]
   )
