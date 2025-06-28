@@ -203,7 +203,26 @@ export const VMActionModal = (props: IVMActionModalProps) => {
             close()
           }}
         >
-          {action}
+          {(() => {
+            switch (action.toLowerCase()) {
+              case 'start':
+                return t('Start')
+              case 'stop':
+                return t('Stop')
+              case 'restart':
+                return t('Restart')
+              case 'pause':
+                return t('Pause')
+              case 'unpause':
+                return t('Unpause')
+              case 'snapshot':
+                return t('Snapshot')
+              case 'restore':
+                return t('Restore')
+              case 'delete':
+                return t('Delete')
+            }
+          })()}
         </AcmButton>,
         <AcmButton key="cancel" variant={ButtonVariant.secondary} onClick={close}>
           {t('Cancel')}

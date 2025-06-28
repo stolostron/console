@@ -97,9 +97,10 @@ const SnapshotDeadlineFormField: FC<{
             onChange={(event, value) => handleDeadlineUnitChange(value as deadlineUnits, event)}
             value={deadlineUnit}
           >
-            {Object.entries(deadlineUnits).map(([key, value]) => (
-              <FormSelectOption key={key} label={`${key} (${value})`} value={value} />
-            ))}
+            <FormSelectOption key="Hours" label={t('Hours (h)')} value={deadlineUnits.Hours} />
+            <FormSelectOption key="Minutes" label={t('Minutes (m)')} value={deadlineUnits.Minutes} />
+            <FormSelectOption key="Seconds" label={t('Seconds (s)')} value={deadlineUnits.Seconds} />
+            <FormSelectOption key="Milliseconds" label={t('Milliseconds (ms)')} value={deadlineUnits.Miliseconds} />
           </FormSelect>
         </GridItem>
       </Grid>
