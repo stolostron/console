@@ -89,6 +89,8 @@ test('Correctly return row Actions', () => {
     {},
     () => {},
     navigate,
+    true,
+    true,
     t
   )
   res[0].click({ kind: 'Pod' }) // edit resource
@@ -120,6 +122,8 @@ test('Correctly return empty row Actions for restricted resource', () => {
     {},
     () => {},
     navigate,
+    true,
+    true,
     t
   )
   expect(res).toMatchSnapshot()
@@ -148,6 +152,8 @@ test('Correctly return empty row Actions for Application', () => {
     {},
     () => {},
     navigate,
+    true,
+    true,
     t
   )
   res[0].click({
@@ -190,6 +196,8 @@ test('Correctly return row Actions for Application in global search', () => {
     {},
     () => {},
     navigate,
+    true,
+    true,
     t
   )
   res[0].click({
