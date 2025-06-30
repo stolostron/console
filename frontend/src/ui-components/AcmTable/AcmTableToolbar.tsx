@@ -698,7 +698,7 @@ function TableColumnFilters<T>(
           return groupFilters.reduce(
             (acc, current) => (
               <ToolbarFilter
-                key={'acm-table-filter-key' + current.id}
+                key={`acm-table-filter-key-${current.id}`}
                 chips={createChips(current)}
                 deleteChip={(_category, chip) => {
                   chip = chip as ToolbarChip

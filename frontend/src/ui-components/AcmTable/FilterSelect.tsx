@@ -29,18 +29,14 @@ export const FilterSelect = ({
   const [isOpen, setIsOpen] = useState(false)
   const [filterValue, setFilterValue] = useState<string>('')
 
-  const filteredValidFilters = useMemo(
-    () =>
-      validFilters
-        .map((filter) => ({
-          ...filter,
-          options: filter.options.filter(({ option }) =>
-            option.value.toLowerCase().includes(filterValue.toLowerCase())
-          ),
-        }))
-        .filter((filter) => filter.options.length > 0),
-    [filterValue, validFilters]
-  )
+  const filteredValidFilters = useMemo(() => {
+    const onlyValidFilters = validFilters.map((filter) => ({
+      ...filter,
+      options: filter.options.filter(({ option }) => option.value.toLowerCase().includes(filterValue.toLowerCase())),
+    }))
+    // remove empty groups
+    return onlyValidFilters.filter((filter) => filter.options.length > 0)
+  }, [filterValue, validFilters])
 
   const optionToFilterMap = useMemo(() => {
     const map = new Map(

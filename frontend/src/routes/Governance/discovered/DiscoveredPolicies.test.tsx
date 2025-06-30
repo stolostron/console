@@ -2,7 +2,7 @@
 import * as useFetchPolicies from './useFetchPolicies'
 import DiscoveredPolicies from './DiscoveredPolicies'
 import { getSourceFilterOptions } from './details/common'
-import { fireEvent, render, screen, within } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { waitForText, waitForNotText, getCSVExportSpies, getCSVDownloadLink } from '../../../lib/test-util'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { ApolloError } from '@apollo/client'
@@ -501,7 +501,7 @@ describe('useFetchPolicies custom hook', () => {
     // Validate filter
     await waitForText('Filter')
 
-    screen.getByRole('button', { name: 'Options menu' }).click()
+    screen.getByRole('button', { name: 'Filter' }).click()
     screen.getByRole('checkbox', { name: 'ValidatingAdmissionPolicyBinding 1' })
     screen.getByRole('checkbox', {
       name: 'audit 1',
@@ -666,7 +666,7 @@ describe('useFetchPolicies custom hook', () => {
     // Validate filter
     await waitForText('Filter')
 
-    screen.getByRole('button', { name: 'Options menu' }).click()
+    screen.getByRole('button', { name: 'Filter' }).click()
     screen.getByRole('checkbox', { name: 'Kyverno Policy 1' }).click()
     screen.getByRole('checkbox', { name: 'Kyverno ClusterPolicy 1' }).click()
   })

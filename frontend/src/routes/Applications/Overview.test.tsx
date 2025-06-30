@@ -176,12 +176,12 @@ describe('Applications Page', () => {
     // Open filter
     userEvent.click(screen.getByText('Filter'))
 
-    expect(screen.getAllByRole('checkbox')).toBeTruthy()
+    expect(screen.getByRole('checkbox', { name: /subscription/i })).toBeTruthy()
     userEvent.click(screen.getByRole('checkbox', { name: /subscription/i }))
 
     // Close filter
     userEvent.click(screen.getByText('Filter'))
-    expect(screen.queryByRole('checkbox')).toBeNull()
+    expect(screen.queryByRole('checkbox', { name: /subscription/i })).toBeNull()
     expect(screen.queryByText(ApplicationSetKind)).toBeNull()
     expect(screen.queryByText('Discovered')).toBeNull()
     expect(screen.getAllByText(SubscriptionKind)).toBeTruthy()
@@ -192,8 +192,8 @@ describe('Applications Page', () => {
     // argo apps
     // Open filter
     userEvent.click(screen.getByText('Filter'))
-    expect(screen.getAllByRole('checkbox')).toBeTruthy()
-    userEvent.click(screen.getByTestId('type-argo').querySelector('input')!)
+    expect(screen.getByRole('checkbox', { name: /argo cd/i })).toBeTruthy()
+    userEvent.click(screen.getByRole('checkbox', { name: /argo cd/i }))
 
     // Close filter
     userEvent.click(screen.getByText('Filter'))
@@ -208,7 +208,7 @@ describe('Applications Page', () => {
     // appset
     // Open filter
     userEvent.click(screen.getByText('Filter'))
-    expect(screen.getAllByRole('checkbox')).toBeTruthy()
+    expect(screen.getByRole('checkbox', { name: /application set/i })).toBeTruthy()
     userEvent.click(screen.getByRole('checkbox', { name: /application set/i }))
 
     // Close filter
