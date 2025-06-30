@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { getKubeResources, getHubClusterName } from '../events'
-import { ApplicationSet, Cluster, ClusterDeployment, IResource, ManagedClusterInfo } from '../../resources/resource'
+import { IApplicationSet, Cluster, ClusterDeployment, IResource, ManagedClusterInfo } from '../../resources/resource'
 import { ITransformedResource } from '../../lib/pagination'
 import {
   AppColumns,
@@ -141,9 +141,9 @@ function getApplicationClusters(
 
 function getAppSetCluster(resource: IArgoApplication, placementDecisions: IDecision[]) {
   const clusterSet = new Set<string>()
-  const appset = resource as ApplicationSet
+  const appset = resource as IApplicationSet
   const placementName =
-    appset?.spec.generators[0]?.clusterDecisionResource?.labelSelector.matchLabels[
+    appset?.spec.generators[0]?.clusterDecisionResource?.labelSelector?.matchLabels[
       'cluster.open-cluster-management.io/placement'
     ] || ''
   const placementNamespace = resource?.metadata.namespace || ''

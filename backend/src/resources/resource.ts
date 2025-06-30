@@ -62,7 +62,7 @@ export interface Selector {
   matchLabels?: Record<string, string>
 }
 
-export interface ApplicationSet extends IResource {
+export interface IApplicationSet extends IResource {
   spec: {
     generators?: {
       clusterDecisionResource?: {
