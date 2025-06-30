@@ -208,19 +208,3 @@ export interface MatchExpressions {
   operator: 'In' | 'NotIn' | 'Exists' | 'DoesNotExist' | undefined
   values?: string[]
 }
-export interface Selector {
-  matchExpressions?: MatchExpressions[]
-  matchLabels?: Record<string, string>
-}
-
-export interface ApplicationSet extends IResource {
-  spec: {
-    generators?: {
-      clusterDecisionResource?: {
-        configMapRef?: string
-        labelSelector?: Selector
-        requeueAfterSeconds?: number
-      }
-    }[]
-  }
-}
