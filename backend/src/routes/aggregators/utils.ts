@@ -13,6 +13,7 @@ import {
   ManagedCluster,
   ClusterDeployment,
   HostedClusterK8sResource,
+  ApplicationSet,
 } from '../../resources/resource'
 import {
   AppColumns,
@@ -191,10 +192,9 @@ const isArgoPullModel = (resource: IApplicationSet) => {
 
 function getArgoPullModelClusterList(resource: IApplicationSet, placementDecisions: IPlacementDecision[]) {
   const clusterSet = new Set<string>()
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const appset = resource as ApplicationSet
   const placementName =
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    resource?.spec.generators[0].clusterDecisionResource.labelSelector.matchLabels[
+    appset?.spec.generators[0]?.clusterDecisionResource?.labelSelector.matchLabels[
       'cluster.open-cluster-management.io/placement'
     ] || ''
   const placementNamespace = resource?.metadata.namespace || ''

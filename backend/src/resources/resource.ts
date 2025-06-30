@@ -202,3 +202,25 @@ export interface IOCPApplication extends IResource {
     cluster?: string
   }
 }
+
+export interface MatchExpressions {
+  key: string
+  operator: 'In' | 'NotIn' | 'Exists' | 'DoesNotExist' | undefined
+  values?: string[]
+}
+export interface Selector {
+  matchExpressions?: MatchExpressions[]
+  matchLabels?: Record<string, string>
+}
+
+export interface ApplicationSet extends IResource {
+  spec: {
+    generators?: {
+      clusterDecisionResource?: {
+        configMapRef?: string
+        labelSelector?: Selector
+        requeueAfterSeconds?: number
+      }
+    }[]
+  }
+}
