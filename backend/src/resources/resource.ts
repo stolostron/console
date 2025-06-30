@@ -202,9 +202,3 @@ export interface IOCPApplication extends IResource {
     cluster?: string
   }
 }
-
-export interface MatchExpressions {
-  key: string
-  operator: 'In' | 'NotIn' | 'Exists' | 'DoesNotExist' | undefined
-  values?: string[]
-}
