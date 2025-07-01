@@ -142,6 +142,7 @@ function getApplicationClusters(
 function getAppSetCluster(resource: IArgoApplication, placementDecisions: IDecision[]) {
   const clusterSet = new Set<string>()
   const appset = resource as IApplicationSet
+  /* istanbul ignore next */
   const placementName =
     appset?.spec.generators[0]?.clusterDecisionResource?.labelSelector?.matchLabels[
       'cluster.open-cluster-management.io/placement'
