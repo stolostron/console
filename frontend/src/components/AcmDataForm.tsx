@@ -553,17 +553,19 @@ export function AcmDataFormWizard(props: {
 
   const steps = formData.sections.map(createStep).filter((step) => step !== undefined)
 
-  steps.push({
-    id: 'review',
-    name: t('Review'),
-    component: (
-      <Form>
-        {renderErrors(showFormErrors && formHasErrors(t, formData), formHasRequiredErrors(formData))}
-        <AcmDataFormDetails formData={formData} wizardSummary={true} />
-      </Form>
-    ),
-    canJumpTo: !isSubmitting,
-  })
+  if (!formData.hideReview) {
+    steps.push({
+      id: 'review',
+      name: t('Review'),
+      component: (
+        <Form>
+          {renderErrors(showFormErrors && formHasErrors(t, formData), formHasRequiredErrors(formData))}
+          <AcmDataFormDetails formData={formData} wizardSummary={true} />
+        </Form>
+      ),
+      canJumpTo: !isSubmitting,
+    })
+  }
 
   const Footer: WizardFooterType = (activeStep, goToNextStep, goToPrevStep, close) => {
     let section: Section | undefined
@@ -586,6 +588,10 @@ export function AcmDataFormWizard(props: {
       if (section) break
     }
     if (section) {
+      const lastSectionWithoutReview =
+        formData.hideReview && section.title === formData.sections[formData.sections.length - 1]?.title
+
+      const buttonLabel = lastSectionWithoutReview ? submitText : formData.nextLabel
       return (
         <WizardFooterWrapper>
           <ActionList>
@@ -602,6 +608,29 @@ export function AcmDataFormWizard(props: {
                       }
                       return showSectionErrors
                     })
+
+                    const lastSectionWithoutReview =
+                      formData.hideReview && section?.title === formData.sections[formData.sections.length - 1]?.title
+
+                    if (lastSectionWithoutReview) {
+                      setShowFormErrors(true)
+                      if (formHasErrors(t, formData)) return
+
+                      try {
+                        const maybePromise = formData.submit() as void | Promise<void>
+                        if (maybePromise && typeof (maybePromise as any).then === 'function') {
+                          setSubmitText(formData.submittingText)
+                          ;(maybePromise as Promise<void>).catch((err) => {
+                            if (err instanceof Error) setSubmitError(err.message)
+                            setSubmitText(formData.submitText)
+                          })
+                        }
+                      } catch (err) {
+                        if (err instanceof Error) setSubmitError(err.message)
+                      }
+                      return
+                    }
+
                     if (sectionHasErrors(t, section)) return
                     goToNextStep(event)
                   }}
@@ -610,7 +639,7 @@ export function AcmDataFormWizard(props: {
                     isSubmitting
                   }
                 >
-                  {formData.nextLabel}
+                  {buttonLabel}
                 </Button>
               </ActionListItem>
               <ActionListItem>
@@ -1178,13 +1207,8 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
           }
           break
       }
-      let variant: SelectVariant
-
-      if (input.variant) {
-        // if a variant is explicitly provided, use it
-        variant = input.variant as SelectVariant
-      } else {
-        // otherwise select the appropriate variant based on the input type
+      let variant = input.variant as SelectVariant
+      if (!variant) {
         switch (input.type) {
           case 'Select':
           case 'GroupedSelect':
@@ -1195,9 +1219,6 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
           case 'CreatableMultiselect':
             variant = SelectVariant.typeaheadMulti
             break
-          default:
-            // Default fallback
-            variant = SelectVariant.single
         }
       }
       return (
