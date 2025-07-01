@@ -52,6 +52,7 @@ export enum SelectVariant {
   typeaheadMulti = 'typeaheadmulti',
 }
 type SelectionsType = string | SelectOptionObject | (string | SelectOptionObject)[]
+type OptionsType = { id: string; value?: string; text?: string }[]
 
 export type AcmSelectBaseProps = Pick<
   SelectProps,
@@ -64,6 +65,7 @@ export type AcmSelectBaseProps = Pick<
   label?: string
   value?: string | string[]
   selections?: SelectionsType
+  options?: OptionsType
   variant?: SelectVariant
   onSelect?: (value: string | string[]) => void
   onClear?: () => void
@@ -132,7 +134,14 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
       }[] = []
   if (useFilter) {
     const children = Children.toArray(props.children)
-    if (children.length > 0) {
+    if (Array.isArray(props?.options)) {
+      initialFilteredOptions = props?.options?.map(({ id, value, text }) => {
+        return {
+          value: id ?? value,
+          children: text ?? value,
+        }
+      })
+    } else if (children.length > 0) {
       initialFilteredOptions = children.map((child) => {
         const props = (child as React.ReactElement).props
         const { value, children } = props
