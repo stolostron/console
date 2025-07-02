@@ -30,6 +30,8 @@ describe('ManagedClusterProxy tests', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    token = null
+    isHttp2Response = true
   })
 
   it('return if token is null', async () => {
