@@ -12,6 +12,14 @@
       "url": "https://localhost:3000/multicloud/welcome"
     },
     {
+      "name": "Launch Chrome 9000",
+      "request": "launch",
+      "type": "chrome",
+      // "trace": true,
+      "webRoot": "${workspaceFolder}/frontend",
+      "url": "http://localhost:9000/multicloud/home/welcome"
+    },
+    {
       "type": "node",
       "name": "vscode-jest-tests.v2.frontend",
       "request": "launch",
