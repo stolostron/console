@@ -1,41 +1,1279 @@
 {
-  "type": "object",
-  "properties": {
-    "spec": {
-      "type": "object",
-      "required": ["provider"],
-      "properties": {
-        "provider": {
-          "type": "object",
-          "required": ["source", "destination"],
-          "properties": {
-            "source": {
-              "type": "object",
-              "required": ["name", "namespace"],
-              "properties": {
-                "name": {
-                  "type": "string"
-                },
-                "namespace": {
-                  "type": "string"
-                }
-              }
-            },
-            "destination": {
-              "type": "object",
-              "required": ["name", "namespace"],
-              "properties": {
-                "name": {
-                  "type": "string"
-                },
-                "namespace": {
-                  "type": "string"
-                }
-              }
-            }
-          }
+  "group": "forklift.konveyor.io",
+  "names": {
+    "kind": "Plan",
+    "listKind": "PlanList",
+    "plural": "plans",
+    "singular": "plan"
+  },
+  "scope": "Namespaced",
+  "versions": [
+    {
+      "additionalPrinterColumns": [
+        {
+          "jsonPath": ".status.conditions[?(@.type=='Ready')].status",
+          "name": "READY",
+          "type": "string"
+        },
+        {
+          "jsonPath": ".status.conditions[?(@.type=='Executing')].status",
+          "name": "EXECUTING",
+          "type": "string"
+        },
+        {
+          "jsonPath": ".status.conditions[?(@.type=='Succeeded')].status",
+          "name": "SUCCEEDED",
+          "type": "string"
+        },
+        {
+          "jsonPath": ".status.conditions[?(@.type=='Failed')].status",
+          "name": "FAILED",
+          "type": "string"
+        },
+        {
+          "jsonPath": ".metadata.creationTimestamp",
+          "name": "AGE",
+          "type": "date"
         }
+      ],
+      "name": "v1beta1",
+      "schema": {
+        "openAPIV3Schema": {
+          "properties": {
+            "apiVersion": {
+              "description": "APIVersion defines the versioned schema of this representation of an object.\nServers should convert recognized schemas to the latest internal value, and\nmay reject unrecognized values.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",
+              "type": "string"
+            },
+            "kind": {
+              "description": "Kind is a string value representing the REST resource this object represents.\nServers may infer this from the endpoint the client submits requests to.\nCannot be updated.\nIn CamelCase.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
+              "type": "string"
+            },
+            "metadata": {
+              "type": "object"
+            },
+            "spec": {
+              "description": "PlanSpec defines the desired state of Plan.",
+              "properties": {
+                "archived": {
+                  "description": "Whether this plan should be archived.",
+                  "type": "boolean"
+                },
+                "deleteGuestConversionPod": {
+                  "description": "DeleteGuestConversionPod determines if the guest conversion pod should be deleted after successful migration.\nNote:\n  - If this option is enabled and migration succeeds then the pod will get deleted. However the VM could still not boot and the virt-v2v logs, with additional information, will be deleted alongside guest conversion pod.\n  - If migration fails the conversion pod will remain present even if this option is enabled.",
+                  "type": "boolean"
+                },
+                "description": {
+                  "description": "Description",
+                  "type": "string"
+                },
+                "diskBus": {
+                  "description": "Deprecated: this field will be deprecated in 2.8.",
+                  "type": "string"
+                },
+                "installLegacyDrivers": {
+                  "description": "InstallLegacyDrivers determines whether to install legacy windows drivers in the VM.\nThe following Vm's are lack of SHA-2 support and need legacy drivers:\nWindows XP (all)\nWindows Server 2003\nWindows Vista (all)\nWindows Server 2008\nWindows 7 (pre-SP1)\nWindows Server 2008 R2\nBehavior:\n- If set to nil (unset), the system will automatically detect whether the VM requires legacy drivers\n  based on its guest OS type (using IsLegacyWindows).\n- If set to true, legacy drivers will be installed unconditionally by setting the VIRTIO_WIN environment variable.\n- If set to false, legacy drivers will be skipped, and the system will fall back to using the standard (SHA-2 signed) drivers.\n\nWhen enabled, legacy drivers are exposed to the virt-v2v conversion process via the VIRTIO_WIN environment variable,\nwhich points to the legacy ISO at /usr/local/virtio-win.iso.",
+                  "type": "boolean"
+                },
+                "map": {
+                  "description": "Resource mapping.",
+                  "properties": {
+                    "network": {
+                      "description": "Network.",
+                      "properties": {
+                        "apiVersion": {
+                          "description": "API version of the referent.",
+                          "type": "string"
+                        },
+                        "fieldPath": {
+                          "description": "If referring to a piece of an object instead of an entire object, this string\nshould contain a valid JSON/Go field access statement, such as desiredState.manifest.containers[2].\nFor example, if the object reference is to a container within a pod, this would take on a value like:\n\"spec.containers{name}\" (where \"name\" refers to the name of the container that triggered\nthe event) or if no container name is specified \"spec.containers[2]\" (container with\nindex 2 in this pod). This syntax is chosen only to have some well-defined way of\nreferencing a part of an object.",
+                          "type": "string"
+                        },
+                        "kind": {
+                          "description": "Kind of the referent.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
+                          "type": "string"
+                        },
+                        "name": {
+                          "description": "Name of the referent.\nMore info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names",
+                          "type": "string"
+                        },
+                        "namespace": {
+                          "description": "Namespace of the referent.\nMore info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/",
+                          "type": "string"
+                        },
+                        "resourceVersion": {
+                          "description": "Specific resourceVersion to which this reference is made, if any.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency",
+                          "type": "string"
+                        },
+                        "uid": {
+                          "description": "UID of the referent.\nMore info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object",
+                      "x-kubernetes-map-type": "atomic"
+                    },
+                    "storage": {
+                      "description": "Storage.",
+                      "properties": {
+                        "apiVersion": {
+                          "description": "API version of the referent.",
+                          "type": "string"
+                        },
+                        "fieldPath": {
+                          "description": "If referring to a piece of an object instead of an entire object, this string\nshould contain a valid JSON/Go field access statement, such as desiredState.manifest.containers[2].\nFor example, if the object reference is to a container within a pod, this would take on a value like:\n\"spec.containers{name}\" (where \"name\" refers to the name of the container that triggered\nthe event) or if no container name is specified \"spec.containers[2]\" (container with\nindex 2 in this pod). This syntax is chosen only to have some well-defined way of\nreferencing a part of an object.",
+                          "type": "string"
+                        },
+                        "kind": {
+                          "description": "Kind of the referent.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
+                          "type": "string"
+                        },
+                        "name": {
+                          "description": "Name of the referent.\nMore info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names",
+                          "type": "string"
+                        },
+                        "namespace": {
+                          "description": "Namespace of the referent.\nMore info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/",
+                          "type": "string"
+                        },
+                        "resourceVersion": {
+                          "description": "Specific resourceVersion to which this reference is made, if any.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency",
+                          "type": "string"
+                        },
+                        "uid": {
+                          "description": "UID of the referent.\nMore info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object",
+                      "x-kubernetes-map-type": "atomic"
+                    }
+                  },
+                  "required": [
+                    "network",
+                    "storage"
+                  ],
+                  "type": "object"
+                },
+                "migrateSharedDisks": {
+                  "default": true,
+                  "description": "Determines if the plan should migrate shared disks.",
+                  "type": "boolean"
+                },
+                "networkNameTemplate": {
+                  "description": "NetworkNameTemplate is a template for generating network interface names in the target virtual machine.\nIt follows Go template syntax and has access to the following variables:\n  - .NetworkName: If target network is multus, name of the Multus network attachment definition, empty otherwise.\n  - .NetworkNamespace: If target network is multus, namespace where the network attachment definition is located.\n  - .NetworkType: type of the network (\"Multus\" or \"Pod\")\n  - .NetworkIndex: sequential index of the network interface (0-based)\nThe template can be used to customize network interface names based on target network configuration.\nNote:\n  - This template can be overridden at the individual VM level\n  - If not specified on VM level and on Plan leverl, default naming conventions will be used\nExamples:\n  \"net-{{.NetworkIndex}}\"\n  \"{{if eq .NetworkType \"Pod\"}}pod{{else}}multus-{{.NetworkIndex}}{{end}}\"",
+                  "type": "string"
+                },
+                "preserveClusterCpuModel": {
+                  "description": "Preserve the CPU model and flags the VM runs with in its oVirt cluster.",
+                  "type": "boolean"
+                },
+                "preserveStaticIPs": {
+                  "description": "Preserve static IPs of VMs in vSphere",
+                  "type": "boolean"
+                },
+                "provider": {
+                  "description": "Providers.",
+                  "properties": {
+                    "destination": {
+                      "description": "Destination.",
+                      "properties": {
+                        "apiVersion": {
+                          "description": "API version of the referent.",
+                          "type": "string"
+                        },
+                        "fieldPath": {
+                          "description": "If referring to a piece of an object instead of an entire object, this string\nshould contain a valid JSON/Go field access statement, such as desiredState.manifest.containers[2].\nFor example, if the object reference is to a container within a pod, this would take on a value like:\n\"spec.containers{name}\" (where \"name\" refers to the name of the container that triggered\nthe event) or if no container name is specified \"spec.containers[2]\" (container with\nindex 2 in this pod). This syntax is chosen only to have some well-defined way of\nreferencing a part of an object.",
+                          "type": "string"
+                        },
+                        "kind": {
+                          "description": "Kind of the referent.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
+                          "type": "string"
+                        },
+                        "name": {
+                          "description": "Name of the referent.\nMore info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names",
+                          "type": "string"
+                        },
+                        "namespace": {
+                          "description": "Namespace of the referent.\nMore info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/",
+                          "type": "string"
+                        },
+                        "resourceVersion": {
+                          "description": "Specific resourceVersion to which this reference is made, if any.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency",
+                          "type": "string"
+                        },
+                        "uid": {
+                          "description": "UID of the referent.\nMore info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object",
+                      "x-kubernetes-map-type": "atomic"
+                    },
+                    "source": {
+                      "description": "Source.",
+                      "properties": {
+                        "apiVersion": {
+                          "description": "API version of the referent.",
+                          "type": "string"
+                        },
+                        "fieldPath": {
+                          "description": "If referring to a piece of an object instead of an entire object, this string\nshould contain a valid JSON/Go field access statement, such as desiredState.manifest.containers[2].\nFor example, if the object reference is to a container within a pod, this would take on a value like:\n\"spec.containers{name}\" (where \"name\" refers to the name of the container that triggered\nthe event) or if no container name is specified \"spec.containers[2]\" (container with\nindex 2 in this pod). This syntax is chosen only to have some well-defined way of\nreferencing a part of an object.",
+                          "type": "string"
+                        },
+                        "kind": {
+                          "description": "Kind of the referent.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
+                          "type": "string"
+                        },
+                        "name": {
+                          "description": "Name of the referent.\nMore info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names",
+                          "type": "string"
+                        },
+                        "namespace": {
+                          "description": "Namespace of the referent.\nMore info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/",
+                          "type": "string"
+                        },
+                        "resourceVersion": {
+                          "description": "Specific resourceVersion to which this reference is made, if any.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency",
+                          "type": "string"
+                        },
+                        "uid": {
+                          "description": "UID of the referent.\nMore info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object",
+                      "x-kubernetes-map-type": "atomic"
+                    }
+                  },
+                  "required": [
+                    "destination",
+                    "source"
+                  ],
+                  "type": "object"
+                },
+                "pvcNameTemplate": {
+                  "description": "PVCNameTemplate is a template for generating PVC names for VM disks.\nIt follows Go template syntax and has access to the following variables:\n  - .VmName: name of the VM\n  - .PlanName: name of the migration plan\n  - .DiskIndex: initial volume index of the disk\n  - .WinDriveLetter: Windows drive letter (lower case, if applicable, e.g. \"c\", require guest agent)\n  - .RootDiskIndex: index of the root disk\n  - .Shared: true if the volume is shared by multiple VMs, false otherwise\n  - .FileName: name of the file in the source provider (vmWare only, require guest agent)\nNote:\n  This template can be overridden at the individual VM level.\nExamples:\n  \"{{.VmName}}-disk-{{.DiskIndex}}\"\n  \"{{if eq .DiskIndex .RootDiskIndex}}root{{else}}data{{end}}-{{.DiskIndex}}\"\n  \"{{if .Shared}}shared-{{end}}{{.VmName}}-{{.DiskIndex}}\"",
+                  "type": "string"
+                },
+                "pvcNameTemplateUseGenerateName": {
+                  "default": true,
+                  "description": "PVCNameTemplateUseGenerateName indicates if the PVC name template should use generateName instead of name.\nSetting this to false will use the name field of the PVCNameTemplate.\nThis is useful when using a template that generates a name without a suffix.\nFor example, if the template is \"{{.VmName}}-disk-{{.DiskIndex}}\", setting this to false will result in\nthe PVC name being \"{{.VmName}}-disk-{{.DiskIndex}}\", which may not be unique.\nbut will be more predictable.\n**DANGER** When set to false, the generated PVC name may not be unique and may cause conflicts.",
+                  "type": "boolean"
+                },
+                "skipGuestConversion": {
+                  "default": false,
+                  "description": "Determines if the plan should skip the guest conversion.",
+                  "type": "boolean"
+                },
+                "targetNamespace": {
+                  "description": "Target namespace.",
+                  "type": "string"
+                },
+                "transferNetwork": {
+                  "description": "The network attachment definition that should be used for disk transfer.",
+                  "properties": {
+                    "apiVersion": {
+                      "description": "API version of the referent.",
+                      "type": "string"
+                    },
+                    "fieldPath": {
+                      "description": "If referring to a piece of an object instead of an entire object, this string\nshould contain a valid JSON/Go field access statement, such as desiredState.manifest.containers[2].\nFor example, if the object reference is to a container within a pod, this would take on a value like:\n\"spec.containers{name}\" (where \"name\" refers to the name of the container that triggered\nthe event) or if no container name is specified \"spec.containers[2]\" (container with\nindex 2 in this pod). This syntax is chosen only to have some well-defined way of\nreferencing a part of an object.",
+                      "type": "string"
+                    },
+                    "kind": {
+                      "description": "Kind of the referent.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
+                      "type": "string"
+                    },
+                    "name": {
+                      "description": "Name of the referent.\nMore info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names",
+                      "type": "string"
+                    },
+                    "namespace": {
+                      "description": "Namespace of the referent.\nMore info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/",
+                      "type": "string"
+                    },
+                    "resourceVersion": {
+                      "description": "Specific resourceVersion to which this reference is made, if any.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency",
+                      "type": "string"
+                    },
+                    "uid": {
+                      "description": "UID of the referent.\nMore info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object",
+                  "x-kubernetes-map-type": "atomic"
+                },
+                "vms": {
+                  "description": "List of VMs.",
+                  "items": {
+                    "description": "A VM listed on the plan.",
+                    "properties": {
+                      "hooks": {
+                        "description": "Enable hooks.",
+                        "items": {
+                          "description": "Plan hook.",
+                          "properties": {
+                            "hook": {
+                              "description": "Hook reference.",
+                              "properties": {
+                                "apiVersion": {
+                                  "description": "API version of the referent.",
+                                  "type": "string"
+                                },
+                                "fieldPath": {
+                                  "description": "If referring to a piece of an object instead of an entire object, this string\nshould contain a valid JSON/Go field access statement, such as desiredState.manifest.containers[2].\nFor example, if the object reference is to a container within a pod, this would take on a value like:\n\"spec.containers{name}\" (where \"name\" refers to the name of the container that triggered\nthe event) or if no container name is specified \"spec.containers[2]\" (container with\nindex 2 in this pod). This syntax is chosen only to have some well-defined way of\nreferencing a part of an object.",
+                                  "type": "string"
+                                },
+                                "kind": {
+                                  "description": "Kind of the referent.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
+                                  "type": "string"
+                                },
+                                "name": {
+                                  "description": "Name of the referent.\nMore info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names",
+                                  "type": "string"
+                                },
+                                "namespace": {
+                                  "description": "Namespace of the referent.\nMore info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/",
+                                  "type": "string"
+                                },
+                                "resourceVersion": {
+                                  "description": "Specific resourceVersion to which this reference is made, if any.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency",
+                                  "type": "string"
+                                },
+                                "uid": {
+                                  "description": "UID of the referent.\nMore info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids",
+                                  "type": "string"
+                                }
+                              },
+                              "type": "object",
+                              "x-kubernetes-map-type": "atomic"
+                            },
+                            "step": {
+                              "description": "Pipeline step.",
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "hook",
+                            "step"
+                          ],
+                          "type": "object"
+                        },
+                        "type": "array"
+                      },
+                      "id": {
+                        "description": "The object ID.\nvsphere:\n  The managed object ID.",
+                        "type": "string"
+                      },
+                      "instanceType": {
+                        "description": "Selected InstanceType that will override the VM properties.",
+                        "type": "string"
+                      },
+                      "luks": {
+                        "description": "Disk decryption LUKS keys",
+                        "properties": {
+                          "apiVersion": {
+                            "description": "API version of the referent.",
+                            "type": "string"
+                          },
+                          "fieldPath": {
+                            "description": "If referring to a piece of an object instead of an entire object, this string\nshould contain a valid JSON/Go field access statement, such as desiredState.manifest.containers[2].\nFor example, if the object reference is to a container within a pod, this would take on a value like:\n\"spec.containers{name}\" (where \"name\" refers to the name of the container that triggered\nthe event) or if no container name is specified \"spec.containers[2]\" (container with\nindex 2 in this pod). This syntax is chosen only to have some well-defined way of\nreferencing a part of an object.",
+                            "type": "string"
+                          },
+                          "kind": {
+                            "description": "Kind of the referent.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
+                            "type": "string"
+                          },
+                          "name": {
+                            "description": "Name of the referent.\nMore info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names",
+                            "type": "string"
+                          },
+                          "namespace": {
+                            "description": "Namespace of the referent.\nMore info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/",
+                            "type": "string"
+                          },
+                          "resourceVersion": {
+                            "description": "Specific resourceVersion to which this reference is made, if any.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency",
+                            "type": "string"
+                          },
+                          "uid": {
+                            "description": "UID of the referent.\nMore info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids",
+                            "type": "string"
+                          }
+                        },
+                        "type": "object",
+                        "x-kubernetes-map-type": "atomic"
+                      },
+                      "name": {
+                        "description": "An object Name.\nvsphere:\n  A qualified name.",
+                        "type": "string"
+                      },
+                      "namespace": {
+                        "description": "The VM Namespace\nOnly relevant for an openshift source.",
+                        "type": "string"
+                      },
+                      "networkNameTemplate": {
+                        "description": "NetworkNameTemplate is a template for generating network interface names in the target virtual machine.\nIt follows Go template syntax and has access to the following variables:\n  - .NetworkName: If target network is multus, name of the Multus network attachment definition, empty otherwise.\n  - .NetworkNamespace: If target network is multus, namespace where the network attachment definition is located.\n  - .NetworkType: type of the network (\"Multus\" or \"Pod\")\n  - .NetworkIndex: sequential index of the network interface (0-based)\nThe template can be used to customize network interface names based on target network configuration.\nNote:\n  - This template will override at the plan level template\n  - If not specified on VM level and on Plan leverl, default naming conventions will be used\nExamples:\n  \"net-{{.NetworkIndex}}\"\n  \"{{if eq .NetworkType \"Pod\"}}pod{{else}}multus-{{.NetworkIndex}}{{end}}\"",
+                        "type": "string"
+                      },
+                      "pvcNameTemplate": {
+                        "description": "PVCNameTemplate is a template for generating PVC names for VM disks.\nIt follows Go template syntax and has access to the following variables:\n  - .VmName: name of the VM\n  - .PlanName: name of the migration plan\n  - .DiskIndex: initial volume index of the disk\n  - .RootDiskIndex: index of the root disk\n  - .Shared: true if the volume is shared by multiple VMs, false otherwise\nNote:\n  This template overrides the plan level template.\nExamples:\n  \"{{.VmName}}-disk-{{.DiskIndex}}\"\n  \"{{if eq .DiskIndex .RootDiskIndex}}root{{else}}data{{end}}-{{.DiskIndex}}\"\n  \"{{if .Shared}}shared-{{end}}{{.VmName}}-{{.DiskIndex}}\"",
+                        "type": "string"
+                      },
+                      "rootDisk": {
+                        "description": "Choose the primary disk the VM boots from",
+                        "type": "string"
+                      },
+                      "targetName": {
+                        "description": "TargetName specifies a custom name for the VM in the target cluster.\nIf not provided, the original VM name will be used and automatically adjusted to meet k8s DNS1123 requirements.\nIf provided, this exact name will be used instead. The migration will fail if the name is not unique or already in use.",
+                        "type": "string"
+                      },
+                      "type": {
+                        "description": "Type used to qualify the name.",
+                        "type": "string"
+                      },
+                      "volumeNameTemplate": {
+                        "description": "VolumeNameTemplate is a template for generating volume interface names in the target virtual machine.\nIt follows Go template syntax and has access to the following variables:\n  - .PVCName: name of the PVC mounted to the VM using this volume\n  - .VolumeIndex: sequential index of the volume interface (0-based)\nNote:\n  - This template will override at the plan level template\n  - If not specified on VM level and on Plan leverl, default naming conventions will be used\nExamples:\n  \"disk-{{.VolumeIndex}}\"\n  \"pvc-{{.PVCName}}\"",
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "volumeNameTemplate": {
+                  "description": "VolumeNameTemplate is a template for generating volume interface names in the target virtual machine.\nIt follows Go template syntax and has access to the following variables:\n  - .PVCName: name of the PVC mounted to the VM using this volume\n  - .VolumeIndex: sequential index of the volume interface (0-based)\nNote:\n  - This template can be overridden at the individual VM level\n  - If not specified on VM level and on Plan leverl, default naming conventions will be used\nExamples:\n  \"disk-{{.VolumeIndex}}\"\n  \"pvc-{{.PVCName}}\"",
+                  "type": "string"
+                },
+                "warm": {
+                  "description": "Whether this is a warm migration.",
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "map",
+                "provider",
+                "targetNamespace",
+                "vms"
+              ],
+              "type": "object"
+            },
+            "status": {
+              "description": "PlanStatus defines the observed state of Plan.",
+              "properties": {
+                "conditions": {
+                  "description": "List of conditions.",
+                  "items": {
+                    "description": "Condition",
+                    "properties": {
+                      "category": {
+                        "description": "The condition category.",
+                        "type": "string"
+                      },
+                      "durable": {
+                        "description": "The condition is durable - never un-staged.",
+                        "type": "boolean"
+                      },
+                      "items": {
+                        "description": "A list of items referenced in the `Message`.",
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "lastTransitionTime": {
+                        "description": "When the last status transition occurred.",
+                        "format": "date-time",
+                        "type": "string"
+                      },
+                      "message": {
+                        "description": "The human readable description of the condition.",
+                        "type": "string"
+                      },
+                      "reason": {
+                        "description": "The reason for the condition or transition.",
+                        "type": "string"
+                      },
+                      "status": {
+                        "description": "The condition status [true,false].",
+                        "type": "string"
+                      },
+                      "type": {
+                        "description": "The condition type.",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "category",
+                      "lastTransitionTime",
+                      "status",
+                      "type"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "migration": {
+                  "description": "Migration",
+                  "properties": {
+                    "completed": {
+                      "description": "Completed timestamp.",
+                      "format": "date-time",
+                      "type": "string"
+                    },
+                    "history": {
+                      "description": "History",
+                      "items": {
+                        "description": "Snapshot",
+                        "properties": {
+                          "conditions": {
+                            "description": "List of conditions.",
+                            "items": {
+                              "description": "Condition",
+                              "properties": {
+                                "category": {
+                                  "description": "The condition category.",
+                                  "type": "string"
+                                },
+                                "durable": {
+                                  "description": "The condition is durable - never un-staged.",
+                                  "type": "boolean"
+                                },
+                                "items": {
+                                  "description": "A list of items referenced in the `Message`.",
+                                  "items": {
+                                    "type": "string"
+                                  },
+                                  "type": "array"
+                                },
+                                "lastTransitionTime": {
+                                  "description": "When the last status transition occurred.",
+                                  "format": "date-time",
+                                  "type": "string"
+                                },
+                                "message": {
+                                  "description": "The human readable description of the condition.",
+                                  "type": "string"
+                                },
+                                "reason": {
+                                  "description": "The reason for the condition or transition.",
+                                  "type": "string"
+                                },
+                                "status": {
+                                  "description": "The condition status [true,false].",
+                                  "type": "string"
+                                },
+                                "type": {
+                                  "description": "The condition type.",
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "category",
+                                "lastTransitionTime",
+                                "status",
+                                "type"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
+                          "map": {
+                            "description": "Map.",
+                            "properties": {
+                              "network": {
+                                "description": "Snapshot object reference.",
+                                "properties": {
+                                  "generation": {
+                                    "format": "int64",
+                                    "type": "integer"
+                                  },
+                                  "name": {
+                                    "type": "string"
+                                  },
+                                  "namespace": {
+                                    "type": "string"
+                                  },
+                                  "uid": {
+                                    "description": "UID is a type that holds unique ID values, including UUIDs.  Because we\ndon't ONLY use UUIDs, this is an alias to string.  Being a type captures\nintent and helps make sure that UIDs and names do not get conflated.",
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "generation",
+                                  "name",
+                                  "namespace",
+                                  "uid"
+                                ],
+                                "type": "object"
+                              },
+                              "storage": {
+                                "description": "Snapshot object reference.",
+                                "properties": {
+                                  "generation": {
+                                    "format": "int64",
+                                    "type": "integer"
+                                  },
+                                  "name": {
+                                    "type": "string"
+                                  },
+                                  "namespace": {
+                                    "type": "string"
+                                  },
+                                  "uid": {
+                                    "description": "UID is a type that holds unique ID values, including UUIDs.  Because we\ndon't ONLY use UUIDs, this is an alias to string.  Being a type captures\nintent and helps make sure that UIDs and names do not get conflated.",
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "generation",
+                                  "name",
+                                  "namespace",
+                                  "uid"
+                                ],
+                                "type": "object"
+                              }
+                            },
+                            "required": [
+                              "network",
+                              "storage"
+                            ],
+                            "type": "object"
+                          },
+                          "migration": {
+                            "description": "Migration",
+                            "properties": {
+                              "generation": {
+                                "format": "int64",
+                                "type": "integer"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "namespace": {
+                                "type": "string"
+                              },
+                              "uid": {
+                                "description": "UID is a type that holds unique ID values, including UUIDs.  Because we\ndon't ONLY use UUIDs, this is an alias to string.  Being a type captures\nintent and helps make sure that UIDs and names do not get conflated.",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "generation",
+                              "name",
+                              "namespace",
+                              "uid"
+                            ],
+                            "type": "object"
+                          },
+                          "plan": {
+                            "description": "Plan",
+                            "properties": {
+                              "generation": {
+                                "format": "int64",
+                                "type": "integer"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "namespace": {
+                                "type": "string"
+                              },
+                              "uid": {
+                                "description": "UID is a type that holds unique ID values, including UUIDs.  Because we\ndon't ONLY use UUIDs, this is an alias to string.  Being a type captures\nintent and helps make sure that UIDs and names do not get conflated.",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "generation",
+                              "name",
+                              "namespace",
+                              "uid"
+                            ],
+                            "type": "object"
+                          },
+                          "provider": {
+                            "description": "Provider",
+                            "properties": {
+                              "destination": {
+                                "description": "Snapshot object reference.",
+                                "properties": {
+                                  "generation": {
+                                    "format": "int64",
+                                    "type": "integer"
+                                  },
+                                  "name": {
+                                    "type": "string"
+                                  },
+                                  "namespace": {
+                                    "type": "string"
+                                  },
+                                  "uid": {
+                                    "description": "UID is a type that holds unique ID values, including UUIDs.  Because we\ndon't ONLY use UUIDs, this is an alias to string.  Being a type captures\nintent and helps make sure that UIDs and names do not get conflated.",
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "generation",
+                                  "name",
+                                  "namespace",
+                                  "uid"
+                                ],
+                                "type": "object"
+                              },
+                              "source": {
+                                "description": "Snapshot object reference.",
+                                "properties": {
+                                  "generation": {
+                                    "format": "int64",
+                                    "type": "integer"
+                                  },
+                                  "name": {
+                                    "type": "string"
+                                  },
+                                  "namespace": {
+                                    "type": "string"
+                                  },
+                                  "uid": {
+                                    "description": "UID is a type that holds unique ID values, including UUIDs.  Because we\ndon't ONLY use UUIDs, this is an alias to string.  Being a type captures\nintent and helps make sure that UIDs and names do not get conflated.",
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "generation",
+                                  "name",
+                                  "namespace",
+                                  "uid"
+                                ],
+                                "type": "object"
+                              }
+                            },
+                            "required": [
+                              "destination",
+                              "source"
+                            ],
+                            "type": "object"
+                          }
+                        },
+                        "required": [
+                          "map",
+                          "migration",
+                          "plan",
+                          "provider"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "started": {
+                      "description": "Started timestamp.",
+                      "format": "date-time",
+                      "type": "string"
+                    },
+                    "vms": {
+                      "description": "VM status",
+                      "items": {
+                        "description": "VM Status",
+                        "properties": {
+                          "completed": {
+                            "description": "Completed timestamp.",
+                            "format": "date-time",
+                            "type": "string"
+                          },
+                          "conditions": {
+                            "description": "List of conditions.",
+                            "items": {
+                              "description": "Condition",
+                              "properties": {
+                                "category": {
+                                  "description": "The condition category.",
+                                  "type": "string"
+                                },
+                                "durable": {
+                                  "description": "The condition is durable - never un-staged.",
+                                  "type": "boolean"
+                                },
+                                "items": {
+                                  "description": "A list of items referenced in the `Message`.",
+                                  "items": {
+                                    "type": "string"
+                                  },
+                                  "type": "array"
+                                },
+                                "lastTransitionTime": {
+                                  "description": "When the last status transition occurred.",
+                                  "format": "date-time",
+                                  "type": "string"
+                                },
+                                "message": {
+                                  "description": "The human readable description of the condition.",
+                                  "type": "string"
+                                },
+                                "reason": {
+                                  "description": "The reason for the condition or transition.",
+                                  "type": "string"
+                                },
+                                "status": {
+                                  "description": "The condition status [true,false].",
+                                  "type": "string"
+                                },
+                                "type": {
+                                  "description": "The condition type.",
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "category",
+                                "lastTransitionTime",
+                                "status",
+                                "type"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
+                          "error": {
+                            "description": "Errors",
+                            "properties": {
+                              "phase": {
+                                "type": "string"
+                              },
+                              "reasons": {
+                                "items": {
+                                  "type": "string"
+                                },
+                                "type": "array"
+                              }
+                            },
+                            "required": [
+                              "phase",
+                              "reasons"
+                            ],
+                            "type": "object"
+                          },
+                          "firmware": {
+                            "description": "The firmware type detected from the OVF file produced by virt-v2v.",
+                            "type": "string"
+                          },
+                          "hooks": {
+                            "description": "Enable hooks.",
+                            "items": {
+                              "description": "Plan hook.",
+                              "properties": {
+                                "hook": {
+                                  "description": "Hook reference.",
+                                  "properties": {
+                                    "apiVersion": {
+                                      "description": "API version of the referent.",
+                                      "type": "string"
+                                    },
+                                    "fieldPath": {
+                                      "description": "If referring to a piece of an object instead of an entire object, this string\nshould contain a valid JSON/Go field access statement, such as desiredState.manifest.containers[2].\nFor example, if the object reference is to a container within a pod, this would take on a value like:\n\"spec.containers{name}\" (where \"name\" refers to the name of the container that triggered\nthe event) or if no container name is specified \"spec.containers[2]\" (container with\nindex 2 in this pod). This syntax is chosen only to have some well-defined way of\nreferencing a part of an object.",
+                                      "type": "string"
+                                    },
+                                    "kind": {
+                                      "description": "Kind of the referent.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
+                                      "type": "string"
+                                    },
+                                    "name": {
+                                      "description": "Name of the referent.\nMore info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names",
+                                      "type": "string"
+                                    },
+                                    "namespace": {
+                                      "description": "Namespace of the referent.\nMore info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/",
+                                      "type": "string"
+                                    },
+                                    "resourceVersion": {
+                                      "description": "Specific resourceVersion to which this reference is made, if any.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency",
+                                      "type": "string"
+                                    },
+                                    "uid": {
+                                      "description": "UID of the referent.\nMore info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids",
+                                      "type": "string"
+                                    }
+                                  },
+                                  "type": "object",
+                                  "x-kubernetes-map-type": "atomic"
+                                },
+                                "step": {
+                                  "description": "Pipeline step.",
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "hook",
+                                "step"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
+                          "id": {
+                            "description": "The object ID.\nvsphere:\n  The managed object ID.",
+                            "type": "string"
+                          },
+                          "instanceType": {
+                            "description": "Selected InstanceType that will override the VM properties.",
+                            "type": "string"
+                          },
+                          "luks": {
+                            "description": "Disk decryption LUKS keys",
+                            "properties": {
+                              "apiVersion": {
+                                "description": "API version of the referent.",
+                                "type": "string"
+                              },
+                              "fieldPath": {
+                                "description": "If referring to a piece of an object instead of an entire object, this string\nshould contain a valid JSON/Go field access statement, such as desiredState.manifest.containers[2].\nFor example, if the object reference is to a container within a pod, this would take on a value like:\n\"spec.containers{name}\" (where \"name\" refers to the name of the container that triggered\nthe event) or if no container name is specified \"spec.containers[2]\" (container with\nindex 2 in this pod). This syntax is chosen only to have some well-defined way of\nreferencing a part of an object.",
+                                "type": "string"
+                              },
+                              "kind": {
+                                "description": "Kind of the referent.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
+                                "type": "string"
+                              },
+                              "name": {
+                                "description": "Name of the referent.\nMore info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names",
+                                "type": "string"
+                              },
+                              "namespace": {
+                                "description": "Namespace of the referent.\nMore info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/",
+                                "type": "string"
+                              },
+                              "resourceVersion": {
+                                "description": "Specific resourceVersion to which this reference is made, if any.\nMore info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency",
+                                "type": "string"
+                              },
+                              "uid": {
+                                "description": "UID of the referent.\nMore info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids",
+                                "type": "string"
+                              }
+                            },
+                            "type": "object",
+                            "x-kubernetes-map-type": "atomic"
+                          },
+                          "name": {
+                            "description": "An object Name.\nvsphere:\n  A qualified name.",
+                            "type": "string"
+                          },
+                          "namespace": {
+                            "description": "The VM Namespace\nOnly relevant for an openshift source.",
+                            "type": "string"
+                          },
+                          "networkNameTemplate": {
+                            "description": "NetworkNameTemplate is a template for generating network interface names in the target virtual machine.\nIt follows Go template syntax and has access to the following variables:\n  - .NetworkName: If target network is multus, name of the Multus network attachment definition, empty otherwise.\n  - .NetworkNamespace: If target network is multus, namespace where the network attachment definition is located.\n  - .NetworkType: type of the network (\"Multus\" or \"Pod\")\n  - .NetworkIndex: sequential index of the network interface (0-based)\nThe template can be used to customize network interface names based on target network configuration.\nNote:\n  - This template will override at the plan level template\n  - If not specified on VM level and on Plan leverl, default naming conventions will be used\nExamples:\n  \"net-{{.NetworkIndex}}\"\n  \"{{if eq .NetworkType \"Pod\"}}pod{{else}}multus-{{.NetworkIndex}}{{end}}\"",
+                            "type": "string"
+                          },
+                          "newName": {
+                            "description": "The new name of the VM after matching DNS1123 requirements.",
+                            "type": "string"
+                          },
+                          "operatingSystem": {
+                            "description": "The Operating System detected by virt-v2v.",
+                            "type": "string"
+                          },
+                          "phase": {
+                            "description": "Phase",
+                            "type": "string"
+                          },
+                          "pipeline": {
+                            "description": "Migration pipeline.",
+                            "items": {
+                              "description": "Pipeline step.",
+                              "properties": {
+                                "annotations": {
+                                  "additionalProperties": {
+                                    "type": "string"
+                                  },
+                                  "description": "Annotations.",
+                                  "type": "object"
+                                },
+                                "completed": {
+                                  "description": "Completed timestamp.",
+                                  "format": "date-time",
+                                  "type": "string"
+                                },
+                                "description": {
+                                  "description": "Name",
+                                  "type": "string"
+                                },
+                                "error": {
+                                  "description": "Error.",
+                                  "properties": {
+                                    "phase": {
+                                      "type": "string"
+                                    },
+                                    "reasons": {
+                                      "items": {
+                                        "type": "string"
+                                      },
+                                      "type": "array"
+                                    }
+                                  },
+                                  "required": [
+                                    "phase",
+                                    "reasons"
+                                  ],
+                                  "type": "object"
+                                },
+                                "name": {
+                                  "description": "Name.",
+                                  "type": "string"
+                                },
+                                "phase": {
+                                  "description": "Phase",
+                                  "type": "string"
+                                },
+                                "progress": {
+                                  "description": "Progress.",
+                                  "properties": {
+                                    "completed": {
+                                      "description": "Completed units.",
+                                      "format": "int64",
+                                      "type": "integer"
+                                    },
+                                    "total": {
+                                      "description": "Total units.",
+                                      "format": "int64",
+                                      "type": "integer"
+                                    }
+                                  },
+                                  "required": [
+                                    "completed",
+                                    "total"
+                                  ],
+                                  "type": "object"
+                                },
+                                "reason": {
+                                  "description": "Reason",
+                                  "type": "string"
+                                },
+                                "started": {
+                                  "description": "Started timestamp.",
+                                  "format": "date-time",
+                                  "type": "string"
+                                },
+                                "tasks": {
+                                  "description": "Nested tasks.",
+                                  "items": {
+                                    "description": "Migration task.",
+                                    "properties": {
+                                      "annotations": {
+                                        "additionalProperties": {
+                                          "type": "string"
+                                        },
+                                        "description": "Annotations.",
+                                        "type": "object"
+                                      },
+                                      "completed": {
+                                        "description": "Completed timestamp.",
+                                        "format": "date-time",
+                                        "type": "string"
+                                      },
+                                      "description": {
+                                        "description": "Name",
+                                        "type": "string"
+                                      },
+                                      "error": {
+                                        "description": "Error.",
+                                        "properties": {
+                                          "phase": {
+                                            "type": "string"
+                                          },
+                                          "reasons": {
+                                            "items": {
+                                              "type": "string"
+                                            },
+                                            "type": "array"
+                                          }
+                                        },
+                                        "required": [
+                                          "phase",
+                                          "reasons"
+                                        ],
+                                        "type": "object"
+                                      },
+                                      "name": {
+                                        "description": "Name.",
+                                        "type": "string"
+                                      },
+                                      "phase": {
+                                        "description": "Phase",
+                                        "type": "string"
+                                      },
+                                      "progress": {
+                                        "description": "Progress.",
+                                        "properties": {
+                                          "completed": {
+                                            "description": "Completed units.",
+                                            "format": "int64",
+                                            "type": "integer"
+                                          },
+                                          "total": {
+                                            "description": "Total units.",
+                                            "format": "int64",
+                                            "type": "integer"
+                                          }
+                                        },
+                                        "required": [
+                                          "completed",
+                                          "total"
+                                        ],
+                                        "type": "object"
+                                      },
+                                      "reason": {
+                                        "description": "Reason",
+                                        "type": "string"
+                                      },
+                                      "started": {
+                                        "description": "Started timestamp.",
+                                        "format": "date-time",
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "name",
+                                      "progress"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  "type": "array"
+                                }
+                              },
+                              "required": [
+                                "name",
+                                "progress"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
+                          "pvcNameTemplate": {
+                            "description": "PVCNameTemplate is a template for generating PVC names for VM disks.\nIt follows Go template syntax and has access to the following variables:\n  - .VmName: name of the VM\n  - .PlanName: name of the migration plan\n  - .DiskIndex: initial volume index of the disk\n  - .RootDiskIndex: index of the root disk\n  - .Shared: true if the volume is shared by multiple VMs, false otherwise\nNote:\n  This template overrides the plan level template.\nExamples:\n  \"{{.VmName}}-disk-{{.DiskIndex}}\"\n  \"{{if eq .DiskIndex .RootDiskIndex}}root{{else}}data{{end}}-{{.DiskIndex}}\"\n  \"{{if .Shared}}shared-{{end}}{{.VmName}}-{{.DiskIndex}}\"",
+                            "type": "string"
+                          },
+                          "restorePowerState": {
+                            "description": "Source VM power state before migration.",
+                            "type": "string"
+                          },
+                          "rootDisk": {
+                            "description": "Choose the primary disk the VM boots from",
+                            "type": "string"
+                          },
+                          "started": {
+                            "description": "Started timestamp.",
+                            "format": "date-time",
+                            "type": "string"
+                          },
+                          "targetName": {
+                            "description": "TargetName specifies a custom name for the VM in the target cluster.\nIf not provided, the original VM name will be used and automatically adjusted to meet k8s DNS1123 requirements.\nIf provided, this exact name will be used instead. The migration will fail if the name is not unique or already in use.",
+                            "type": "string"
+                          },
+                          "type": {
+                            "description": "Type used to qualify the name.",
+                            "type": "string"
+                          },
+                          "volumeNameTemplate": {
+                            "description": "VolumeNameTemplate is a template for generating volume interface names in the target virtual machine.\nIt follows Go template syntax and has access to the following variables:\n  - .PVCName: name of the PVC mounted to the VM using this volume\n  - .VolumeIndex: sequential index of the volume interface (0-based)\nNote:\n  - This template will override at the plan level template\n  - If not specified on VM level and on Plan leverl, default naming conventions will be used\nExamples:\n  \"disk-{{.VolumeIndex}}\"\n  \"pvc-{{.PVCName}}\"",
+                            "type": "string"
+                          },
+                          "warm": {
+                            "description": "Warm migration status",
+                            "properties": {
+                              "consecutiveFailures": {
+                                "type": "integer"
+                              },
+                              "failures": {
+                                "type": "integer"
+                              },
+                              "nextPrecopyAt": {
+                                "format": "date-time",
+                                "type": "string"
+                              },
+                              "precopies": {
+                                "items": {
+                                  "description": "Precopy durations",
+                                  "properties": {
+                                    "createTaskId": {
+                                      "type": "string"
+                                    },
+                                    "deltas": {
+                                      "items": {
+                                        "properties": {
+                                          "deltaId": {
+                                            "type": "string"
+                                          },
+                                          "disk": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "required": [
+                                          "deltaId",
+                                          "disk"
+                                        ],
+                                        "type": "object"
+                                      },
+                                      "type": "array"
+                                    },
+                                    "end": {
+                                      "format": "date-time",
+                                      "type": "string"
+                                    },
+                                    "removeTaskId": {
+                                      "type": "string"
+                                    },
+                                    "snapshot": {
+                                      "type": "string"
+                                    },
+                                    "start": {
+                                      "format": "date-time",
+                                      "type": "string"
+                                    }
+                                  },
+                                  "type": "object"
+                                },
+                                "type": "array"
+                              },
+                              "successes": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "consecutiveFailures",
+                              "failures",
+                              "successes"
+                            ],
+                            "type": "object"
+                          }
+                        },
+                        "required": [
+                          "phase",
+                          "pipeline"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "type": "object"
+                },
+                "observedGeneration": {
+                  "description": "The most recent generation observed by the controller.",
+                  "format": "int64",
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "served": true,
+      "storage": true,
+      "subresources": {
+        "status": {}
       }
     }
-  }
+  ]
 }

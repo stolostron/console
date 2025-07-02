@@ -1,7 +1,7 @@
 // /* Copyright Contributors to the Open Cluster Management project */
 import { useTranslation } from '../../lib/acm-i18next'
-import { useNavigate } from 'react-router-dom-v5-compat'
-import { useState, useContext } from 'react'
+import { useNavigate, useParams } from 'react-router-dom-v5-compat'
+import { useContext, useEffect, useMemo, useState } from 'react'
 import { AcmDataFormPage } from '../../components/AcmDataForm'
 import { AcmToastContext } from '../../ui-components'
 import { FormData, SelectOptionInput } from '../../components/AcmFormData'
@@ -24,6 +24,10 @@ import CheckIcon from '@patternfly/react-icons/dist/esm/icons/check-icon'
 import { CheckCircleIcon, PencilAltIcon } from '@patternfly/react-icons'
 import { StorageBulletChart } from './StorageBulletChart'
 import ArrowRightIcon from '@patternfly/react-icons/dist/esm/icons/arrow-right-icon'
+import { useAllClusters } from '../../routes/Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
+import { searchClient } from '../../routes/Search/search-sdk/search-client'
+import { useSearchCompleteLazyQuery } from '../../routes/Search/search-sdk/search-sdk'
+import schema from '../../routes/Infrastructure/VirtualMachines/schema.json'
 
 interface ReadinessProps {
   networkOpts: SelectOptionInput[]
@@ -490,9 +494,9 @@ export function VMWizardPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const toastContext = useContext(AcmToastContext)
-  const [srcCluster] = useState('sno-2-b9657')
-  const [srcNs] = useState('Namespace')
-  const [dstCluster, setDstCluster] = useState('sno-2-cb7dv')
+  const [srcCluster, setSrcCluster] = useState('')
+  const [srcNamespace, setSrcNamespace] = useState('')
+  const [dstCluster, setDstCluster] = useState('')
   const [dstNamespace, setDstNamespace] = useState('')
   const [srcNetwork, setSrcNetwork] = useState('network1')
   const [dstNetwork, setDstNetwork] = useState('')
@@ -503,14 +507,60 @@ export function VMWizardPage() {
   const [openDstCluster, setOpenDstCluster] = useState(false)
   const [openDstNamespace, setOpenDstNamespace] = useState(false)
 
-  const clusterOptions: SelectOptionInput[] = [
-    { id: 'c1', value: 'dev', text: 'dev-cluster' },
-    { id: 'c2', value: 'prod', text: 'prod-cluster' },
-  ]
-  const namespaceOptions: Record<string, SelectOptionInput[]> = {
-    'sno-2-cb7dv': [{ id: '1', value: '1', text: '1' }],
-    'sno-2-b9657': [{ id: '1', value: '1', text: '1' }],
-  }
+  // Fetch where the current virtual machine source cluster and source namespace is taken from the url
+  const { id } = useParams()
+  useEffect(() => {
+    if (id) {
+      //console.log('test' + id)
+      const urlString = id.split('+')
+      setSrcCluster(urlString[urlString.length - 2])
+      setSrcNamespace(urlString[urlString.length - 1])
+    }
+  }, [id, srcCluster, srcNamespace])
+
+  // Fetch all clusters for destination cluster
+  const AllClusters = useAllClusters(true)
+
+  // Get all clusters except for the source cluster
+  const destCluster = AllClusters.filter((cluster) => {
+    return cluster.name !== srcCluster
+  })
+  const clusters = destCluster.map((c) => ({
+    id: c.name,
+    value: c.name,
+    text: c.name,
+  }))
+
+  // Create search query to fetch all namespaces on hub cluster
+  const [getSearchResults, { data }] = useSearchCompleteLazyQuery({
+    client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
+  })
+  useEffect(() => {
+    getSearchResults({
+      client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
+      variables: {
+        property: 'namespace',
+        query: {
+          keywords: [],
+          filters: [],
+        },
+        limit: -1,
+      },
+    })
+  }, [getSearchResults, dstNamespace])
+
+  const namespaceItems: string[] = useMemo(
+    () => data?.searchComplete?.filter((e) => e !== null) ?? [],
+    [data?.searchComplete]
+  )
+
+  // map the items as array of namespaces
+  const namespaces = namespaceItems.map((namespace) => ({
+    id: namespace,
+    value: namespace,
+    text: namespace,
+  }))
+
   const networkOptions: SelectOptionInput[] = [
     { id: 'network1', value: 'network1', text: 'network1' },
     { id: 'network2', value: 'network2', text: 'network2' },
@@ -548,7 +598,7 @@ export function VMWizardPage() {
     stateToData: () => ({
       source: {
         cluster: srcCluster,
-        namespace: srcNs,
+        namespace: srcNamespace,
         network: srcNetwork,
         storage: srcStorage,
         compute: srcCompute,
@@ -599,7 +649,7 @@ export function VMWizardPage() {
                       id="simple-form-name-01"
                       name="simple-form-name-01"
                       aria-describedby="simple-form-name-01-helper"
-                      value={'Cluster 1'}
+                      value={srcCluster}
                       isDisabled
                     />
                   </FormGroup>
@@ -610,7 +660,7 @@ export function VMWizardPage() {
                       id="simple-form-name-01"
                       name="simple-form-name-01"
                       aria-describedby="simple-form-name-01-helper"
-                      value={'namespace 1'}
+                      value={srcNamespace}
                       isDisabled
                     />
                   </FormGroup>
@@ -636,6 +686,7 @@ export function VMWizardPage() {
                   </Split>
                   <FormGroup label="Cluster" fieldId="dstCluster" style={{ margin: '1rem 1rem 0rem 1rem' }}>
                     <Select
+                      placeholderText="Select Cluster"
                       id="dstCluster"
                       variant={SelectVariant.single}
                       isOpen={openDstCluster}
@@ -646,7 +697,7 @@ export function VMWizardPage() {
                         setOpenDstCluster(false)
                       }}
                     >
-                      {clusterOptions.map((o) => (
+                      {clusters.map((o) => (
                         <SelectOption key={o.id} value={o.value}>
                           {o.text}
                         </SelectOption>
@@ -655,18 +706,19 @@ export function VMWizardPage() {
                   </FormGroup>
                   <FormGroup label="Project" fieldId="dstNamespace" style={{ margin: '1rem 1rem 0rem 1rem' }}>
                     <Select
+                      placeholderText={dstCluster ? 'Select Project' : 'To select project, fill cluster first'}
                       id="dstNamespace"
                       variant={SelectVariant.single}
                       isOpen={openDstNamespace}
                       selections={dstNamespace}
-                      isDisabled={!dstCluster}
                       onToggle={(_, isOpen) => setOpenDstNamespace(isOpen)}
+                      isDisabled={!dstCluster}
                       onSelect={(_, value) => {
                         setDstNamespace(value as string)
                         setOpenDstNamespace(false)
                       }}
                     >
-                      {(namespaceOptions[dstCluster] || []).map((o) => (
+                      {namespaces.map((o) => (
                         <SelectOption key={o.id} value={o.value}>
                           {o.text}
                         </SelectOption>
@@ -740,7 +792,8 @@ export function VMWizardPage() {
         formData={formData}
         mode="wizard"
         editorTitle={t('Migration YAML')}
-        hideYaml={true}
+        hideYaml={false}
+        schema={schema}
         isModalWizard
       />
     </div>
