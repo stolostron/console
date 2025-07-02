@@ -36,12 +36,12 @@ export const useFleetK8sWatchResource = <R extends FleetK8sResourceCommon | Flee
 ): WatchK8sResult<R> | [undefined, boolean, any] => {
   const { cluster, ...resource } = initResource ?? {}
   const useFleet = cluster && cluster !== hubClusterName
-  const nullResource = resource === null || resource === undefined || resource?.groupVersionKind === undefined
+  const nullResource = !(resource?.groupVersionKind ?? resource)
   const { isList, groupVersionKind, namespace, name } = resource ?? {}
   const [model] = useK8sModel(groupVersionKind)
   const [backendAPIPath, backendPathLoaded] = useFleetK8sAPIPath(cluster)
 
-  const noCachedValue = (isList ? [] : {}) as R
+  const noCachedValue = useMemo(() => (isList ? [] : (undefined as unknown)) as R, [isList])
 
   const requestPath = useMemo(
     () =>
@@ -58,7 +58,7 @@ export const useFleetK8sWatchResource = <R extends FleetK8sResourceCommon | Flee
     [model, namespace, name, cluster, backendPathLoaded, backendAPIPath]
   )
 
-  const [data, setData] = useState<R>(fleetResourceCache[requestPath] ? fleetResourceCache[requestPath] : noCachedValue)
+  const [data, setData] = useState<R>(fleetResourceCache[requestPath] ?? noCachedValue)
   const [loaded, setLoaded] = useState<boolean>(!!fleetResourceCache[requestPath])
   const [error, setError] = useState<any>(undefined)
 
@@ -66,7 +66,7 @@ export const useFleetK8sWatchResource = <R extends FleetK8sResourceCommon | Flee
     const fetchData = async () => {
       setError(undefined)
       if (!useFleet || nullResource) {
-        setData((isList ? [] : {}) as R)
+        setData(noCachedValue)
         setLoaded(false)
         return
       }
@@ -128,17 +128,25 @@ export const useFleetK8sWatchResource = <R extends FleetK8sResourceCommon | Flee
       }
     }
     fetchData()
-  }, [cluster, isList, requestPath, name, namespace, nullResource, useFleet, backendPathLoaded, model, backendAPIPath])
+  }, [
+    cluster,
+    isList,
+    requestPath,
+    name,
+    namespace,
+    nullResource,
+    noCachedValue,
+    useFleet,
+    backendPathLoaded,
+    model,
+    backendAPIPath,
+  ])
 
   const [defaultData, defaultLoaded, defaultError] = useK8sWatchResource<R>(useFleet ? null : resource)
 
   if (nullResource) return [undefined, false, undefined]
 
   return useFleet
-    ? [
-        fleetResourceCache[requestPath] ? fleetResourceCache[requestPath] : data,
-        fleetResourceCache[requestPath] ? !!fleetResourceCache[requestPath] : loaded,
-        error,
-      ]
+    ? [fleetResourceCache[requestPath] ?? data, fleetResourceCache[requestPath] ? true : loaded, error]
     : [defaultData, defaultLoaded, defaultError]
 }
