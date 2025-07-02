@@ -51,3 +51,25 @@ export interface ManagedClusterInfo extends IResource {
     masterEndpoint: string
   }
 }
+
+export interface MatchExpressions {
+  key: string
+  operator: 'In' | 'NotIn' | 'Exists' | 'DoesNotExist' | undefined
+  values?: string[]
+}
+export interface Selector {
+  matchExpressions?: MatchExpressions[]
+  matchLabels?: Record<string, string>
+}
+
+export interface IApplicationSet extends IResource {
+  spec: {
+    generators?: {
+      clusterDecisionResource?: {
+        configMapRef?: string
+        labelSelector?: Selector
+        requeueAfterSeconds?: number
+      }
+    }[]
+  }
+}
