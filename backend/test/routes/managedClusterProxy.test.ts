@@ -13,9 +13,11 @@ jest.mock('../../src/lib/token', () => ({
 }))
 
 jest.mock('http2-proxy', () => ({
-  web: jest.fn((_req, _resOrSocket, _proxyOptions, proxyHandler: (err: Error | null) => void) => proxyHandler(null)),
+  web: jest.fn((_req, _resOrSocket, _proxyOptions, proxyHandler: (err: Error | null) => void) =>
+    process.nextTick(() => proxyHandler(null))
+  ),
   ws: jest.fn((_req, _resOrSocket, _head, _proxyOptions, proxyHandler: (err: Error | null) => void) =>
-    proxyHandler(null)
+    process.nextTick(() => proxyHandler(null))
   ),
 }))
 
