@@ -43,6 +43,10 @@ const acmExtension: AcmExtension = {
   virtualMachineListColumn: vmListPageColumnProps,
 }
 
+jest.mock('../../../hooks/use-can-migrate-vm', () => ({
+  useCanMigrateVm: () => true,
+}))
+
 describe('VirtualMachinesPage Page', () => {
   it('should render page and run namespace search', async () => {
     const metricNock = nockPostRequest('/metrics?virtual-machines', {})
