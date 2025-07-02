@@ -1,5 +1,8 @@
+/* Copyright Contributors to the Open Cluster Management project */
+import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { managedClusterProxy } from '../../src/routes/managedClusterProxy'
 import proxy from 'http2-proxy'
+import { TLSSocket } from 'tls'
 
 let token: string | null = null
 let isHttp2Response: boolean = true
@@ -10,22 +13,23 @@ jest.mock('../../src/lib/token', () => ({
 }))
 
 jest.mock('http2-proxy', () => ({
-  web: jest.fn((_req, _resOrSocket, _proxyOptions, proxyHandler) => proxyHandler(null)),
-  ws: jest.fn((_req, _resOrSocket, _head, _proxyOptions, proxyHandler) => proxyHandler(null)),
+  web: jest.fn((_req, _resOrSocket, _proxyOptions, proxyHandler: (err: Error | null) => void) => proxyHandler(null)),
+  ws: jest.fn((_req, _resOrSocket, _head, _proxyOptions, proxyHandler: (err: Error | null) => void) =>
+    proxyHandler(null)
+  ),
 }))
 
 const proxyWeb = proxy.web as jest.Mock
 const proxyWs = proxy.ws as jest.Mock
 
 describe('ManagedClusterProxy tests', () => {
-  const req = { url: '/managedclusterproxy/testcluster/testapi/', headers: {} } as any
-  const res = {} as any
-  const socket = { destroy: jest.fn() } as any
+  const req = { url: '/managedclusterproxy/testcluster/testapi/', headers: {} } as Http2ServerRequest
+  const res = {} as Http2ServerResponse
+  const socket = {} as TLSSocket
   const head = Buffer.from('')
 
   beforeEach(() => {
     jest.clearAllMocks()
-    req.headers = {}
   })
 
   it('return if token is null', async () => {
