@@ -6,8 +6,15 @@ import { convertStringToQuery } from './searchUtils'
 import { SearchResult, UseMulticlusterSearchWatch } from './types'
 import { searchClient } from './search-client'
 
-export const useMulticlusterSearchWatch: UseMulticlusterSearchWatch = (watchOptions: WatchK8sResource) => {
-  const { groupVersionKind, limit, namespace, namespaced } = watchOptions
+export const useMulticlusterSearchWatch: UseMulticlusterSearchWatch = (
+  watchOptions: WatchK8sResource,
+  advancedSearch?: { [key: string]: string }
+) => {
+  const { groupVersionKind, limit, namespace, namespaced, name } = watchOptions
+
+  const advancedSearchQueryString = Object.entries(advancedSearch || {})
+    ?.map(([key, value]) => `${key}:${value}`)
+    ?.join(' ')
 
   const { group, version, kind } = groupVersionKind ?? {}
   const {
@@ -16,10 +23,11 @@ export const useMulticlusterSearchWatch: UseMulticlusterSearchWatch = (watchOpti
     error,
   } = useSearchResultItemsQuery({
     client: searchClient,
+    skip: kind === undefined,
     variables: {
       input: [
         convertStringToQuery(
-          `${group ? `apigroup:${group}` : ''} apiversion:${version} kind:${kind}${namespaced && namespace ? ` namespace:${namespace}` : ''}`,
+          `${group ? `apigroup:${group}` : ''} apiversion:${version} kind:${kind}${namespaced && namespace ? ` namespace:${namespace}` : ''}${name ? ` name:*${name}*` : ''} ${advancedSearchQueryString}`,
           limit ?? -1
         ),
       ],
