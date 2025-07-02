@@ -37,6 +37,7 @@ import {
   ApplicationSetDefinition,
   ApplicationSetKind,
   IUIResource,
+  SubscriptionKind,
 } from '../../../resources'
 import { useRecoilValueGetter, useSharedAtoms } from '../../../shared-recoil'
 import {
@@ -58,6 +59,7 @@ import { getResourceStatuses } from './ApplicationTopology/model/resourceStatuse
 import { getTopology } from './ApplicationTopology/model/topology'
 import { getApplicationData } from './ApplicationTopology/model/utils'
 import { useLocalHubName } from '../../../hooks/use-local-hub'
+import { DeprecatedTitle } from '../components/DeprecatedTitle'
 
 export const ApplicationContext = createContext<{
   readonly actions: null | ReactNode
@@ -469,6 +471,10 @@ export default function ApplicationDetailsPage() {
     [activeChannel, allChannels, applicationData]
   )
 
+const isSubscriptionApp = !!applicationData?.application?.app?.spec?.componentKinds?.some(
+  (component: ComponentKind) => component.kind === SubscriptionKind
+)
+
   return (
     <AcmPage
       hasDrawer
@@ -478,7 +484,10 @@ export default function ApplicationDetailsPage() {
             { text: t('Applications'), to: NavigationPath.applications },
             { text: name, to: '' },
           ]}
-          title={name}
+          title={isSubscriptionApp ? <DeprecatedTitle title={name} /> : name}
+          description={
+            isSubscriptionApp ? t('Subscriptions will expire soon. Consider migrating to application set.') : undefined
+          }
           navigation={
             <AcmSecondaryNav>
               <AcmSecondaryNavItem isActive={location.pathname === overviewPath}>
@@ -527,6 +536,8 @@ export default function ApplicationDetailsPage() {
     </AcmPage>
   )
 }
+
+type ComponentKind = { kind: string }
 
 export function useApplicationDetailsContext() {
   return useOutletContext<ApplicationDetailsContext>()

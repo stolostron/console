@@ -51,7 +51,7 @@ import { setAvailableConnections } from '../Infrastructure/Clusters/ManagedClust
 import { LoadingPage } from '../../components/LoadingPage'
 import { PluginContext } from '../../lib/PluginContext'
 import { useIsHubSelfManaged, useLocalHubName } from '../../hooks/use-local-hub'
-
+import SubscriptionDeprecatedAlert from './SubscriptionDeprecatedAlert'
 interface CreationStatus {
   status: string
   messages: any[] | null
@@ -138,6 +138,7 @@ export default function CreateSubscriptionApplicationPage() {
     >
       <AcmErrorBoundary>
         <AcmPageContent id="subscription-application-editor">
+          <SubscriptionDeprecatedAlert />
           <PageSection variant="light" type="wizard">
             <Modal
               variant={ModalVariant.large}

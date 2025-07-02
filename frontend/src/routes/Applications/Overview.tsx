@@ -42,6 +42,7 @@ import {
   IUIResource,
   OCPAppResource,
   Subscription,
+  SubscriptionKind,
 } from '../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import {
@@ -111,6 +112,11 @@ function isFluxApplication(label: string) {
   return isFlux
 }
 
+function isSubscriptionApp(app: IApplicationResource): boolean {
+  const maybeAppWithSpec = app as { spec?: { componentKinds?: { kind: string }[] } }
+  return maybeAppWithSpec.spec?.componentKinds?.some((component) => component.kind === 'Subscription') ?? false
+}
+
 // Get app name with link and search highlighting
 export function getApplicationName(application: IApplicationResource, search: string) {
   let clusterQuery = ''
@@ -146,7 +152,23 @@ export function getApplicationName(application: IApplicationResource, search: st
           search: `?apiVersion=${apiVersion}${clusterQuery}`,
         }}
       >
-        <HighlightSearchText text={application.metadata?.name} searchText={search} isTruncate />
+       {isSubscriptionApp(application) ? (
+        <DeprecatedTitle
+          title={
+            <HighlightSearchText
+              text={application.metadata?.name ?? ''}
+              searchText={search}
+              isTruncate
+            />
+          }
+        />
+      ) : (
+        <HighlightSearchText
+          text={application.metadata?.name ?? ''}
+          searchText={search}
+          isTruncate
+        />
+      )}
       </Link>
     </span>
   )

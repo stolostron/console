@@ -4,6 +4,8 @@ import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '..
 import { Link, Outlet, useMatch } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../lib/acm-i18next'
 import { NavigationPath } from '../../NavigationPath'
+import { Alert } from '@patternfly/react-core'
+import SubscriptionDeprecatedAlert from './SubscriptionDeprecatedAlert'
 
 export default function ApplicationsPage() {
   const { t } = useTranslation()
@@ -31,6 +33,7 @@ export default function ApplicationsPage() {
         />
       }
     >
+      <SubscriptionDeprecatedAlert />
       <Outlet />
     </AcmPage>
   )
