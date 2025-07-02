@@ -7,7 +7,7 @@ import { useHubClusterName } from '../useHubClusterName'
 import { getBackendUrl } from '../apiRequests'
 
 type UsePrometheusPoll = (
-  props: PrometheusPollProps & { cluster?: string }
+  props: PrometheusPollProps & { cluster?: string; allClusters?: boolean }
 ) => [PrometheusResponse | null, unknown, boolean]
 
 export const useFleetPrometheusPoll: UsePrometheusPoll = ({
@@ -21,9 +21,10 @@ export const useFleetPrometheusPoll: UsePrometheusPoll = ({
   timespan = DEFAULT_PROMETHEUS_TIMESPAN,
   customDataSource,
   cluster,
+  allClusters,
 }) => {
   const [hubClusterName] = useHubClusterName()
-  const clusterForQuery = hubClusterName === cluster ? undefined : cluster
+  const useFleet = hubClusterName !== cluster || allClusters
 
   const prometheusURLProps = {
     endpoint,
@@ -36,9 +37,7 @@ export const useFleetPrometheusPoll: UsePrometheusPoll = ({
   }
 
   const fleetPool = useFleetURLPoll<PrometheusResponse>(
-    clusterForQuery
-      ? getFleetPrometheusURL(prometheusURLProps, `${getBackendUrl()}/observability`, clusterForQuery)
-      : null,
+    useFleet ? getFleetPrometheusURL(prometheusURLProps, `${getBackendUrl()}/observability`) : null,
     delay,
     query,
     timespan
@@ -49,12 +48,12 @@ export const useFleetPrometheusPoll: UsePrometheusPoll = ({
     endpoint,
     endTime,
     namespace,
-    query: clusterForQuery ? undefined : query,
+    query: useFleet ? undefined : query,
     samples,
     timeout,
     timespan,
     customDataSource,
   })
 
-  return clusterForQuery ? fleetPool : (k8sPool as ReturnType<UsePrometheusPoll>)
+  return useFleet ? fleetPool : (k8sPool as ReturnType<UsePrometheusPoll>)
 }
