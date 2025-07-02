@@ -473,7 +473,7 @@ export default function VirtualMachinesPage() {
             savedSearchQueries={[]}
             searchResultData={data}
             refetchSearch={refetch}
-            inputPlaceholder={currentSearch === '' ? 'Filter VirtualMachines' : ''}
+            inputPlaceholder={currentSearch === '' ? t('Filter VirtualMachines') : ''}
             exportEnabled={false}
           />
         </PageSection>
