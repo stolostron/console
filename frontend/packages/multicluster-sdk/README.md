@@ -151,15 +151,50 @@ Array with `isAllowed` and `loading` values.
 | ---------- | ---------- |
 | `useFleetK8sAPIPath` | `UseFleetK8sAPIPath` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetK8sAPIPath.ts#L8)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetK8sAPIPath.ts#L9)
 
 ### :gear: useFleetK8sWatchResource
+
+A hook for watching Kubernetes resources with support for multi-cluster environments.
+Hook is also supported by OpenShift Dynamic Plugin SDK
+see: https://github.com/openshift/dynamic-plugin-sdk (v1.0.0)
 
 | Function | Type |
 | ---------- | ---------- |
 | `useFleetK8sWatchResource` | `UseFleetK8sWatchResource` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetK8sWatchResource.ts#L6)
+Parameters:
+
+* `initResource`: - The resource to watch. Can be null to disable the watch.
+
+
+Returns:
+
+A tuple containing the watched resource data, a boolean indicating if the data is loaded,
+and any error that occurred. The hook returns live-updating data for remote clusters
+and standard K8s watch behavior for hub cluster resources.
+
+Examples:
+
+```typescript
+// Watch pods on a remote cluster
+const [pods, loaded, error] = useFleetK8sWatchResource({
+  groupVersionKind: { version: 'v1', kind: 'Pod' },
+  isList: true,
+  cluster: 'remote-cluster',
+  namespace: 'default'
+})
+
+// Watch a specific deployment on hub cluster
+const [deployment, loaded, error] = useFleetK8sWatchResource({
+  groupVersionKind: { version: 'apps/v1', kind: 'Deployment' },
+  name: 'my-app',
+  namespace: 'default'
+})
+```
+
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetK8sWatchResource.ts#L39)
 
 ### :gear: useFleetPrometheusPoll
 
