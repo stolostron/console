@@ -52,6 +52,7 @@ export enum SelectVariant {
   typeaheadMulti = 'typeaheadmulti',
 }
 type SelectionsType = string | SelectOptionObject | (string | SelectOptionObject)[]
+type OptionsType = { id: string; value?: string; text?: string }[]
 
 export type AcmSelectBaseProps = Pick<
   SelectProps,
@@ -64,6 +65,7 @@ export type AcmSelectBaseProps = Pick<
   label?: string
   value?: string | string[]
   selections?: SelectionsType
+  options?: OptionsType
   variant?: SelectVariant
   onSelect?: (value: string | string[]) => void
   onClear?: () => void
@@ -130,9 +132,20 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
         children?: any
         disabled: boolean
       }[] = []
+  let selections = props.value ?? props.selections
   if (useFilter) {
     const children = Children.toArray(props.children)
-    if (children.length > 0) {
+    if (Array.isArray(props?.options)) {
+      initialFilteredOptions = props?.options?.map(({ id, value, text }) => {
+        if (text && value && value === selections) {
+          selections = text
+        }
+        return {
+          value: id ?? value,
+          children: text ?? value,
+        }
+      })
+    } else if (children.length > 0) {
       initialFilteredOptions = children.map((child) => {
         const props = (child as React.ReactElement).props
         const { value, children } = props
@@ -191,7 +204,6 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
     isDisabled,
     onSelect,
     onClear,
-    selections: selectionProps,
     toggleId,
     toggleIcon,
     maxHeight,
@@ -203,7 +215,6 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
     footer,
     ...selectProps
   } = props
-  const selections = value ?? selectionProps
   const selectedItem = !Array.isArray(selections) ? (selections as string) : undefined
   const selectedItems = Array.isArray(selections) ? (selections as string[]) : []
 
@@ -212,17 +223,17 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
   let badge: React.ReactNode = null
   let placeholder = props.placeholderText
   if (!placeholder) {
-    if (isMulti && selections.length > 0) {
+    if (isMulti && selectedItems.length > 0) {
       placeholder = renderMultiPlaceholder(children, selectedItems)
-      badge = selections.length > 0 && (
+      badge = selectedItems.length > 0 && (
         <span style={{ display: 'flex', alignItems: 'center' }}>
-          <Badge key={selections.length} isRead>
-            {selections.length}
+          <Badge key={selectedItems.length} isRead>
+            {selectedItems.length}
           </Badge>
         </span>
       )
     } else if (isSingle) {
-      placeholder = selections
+      placeholder = selectedItem
     } else {
       placeholder = props.placeholder ?? ''
     }
@@ -539,7 +550,7 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
       const item = Children.toArray(props.children).find(
         (child) =>
           (child as React.ReactElement).props.value &&
-          (child as React.ReactElement).props.value.toString() === selections.toString()
+          (child as React.ReactElement).props.value.toString() === selections!.toString()
       ) as any
       if (item) {
         if (item?.props.children) {
