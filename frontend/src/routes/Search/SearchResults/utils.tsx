@@ -43,6 +43,7 @@ export function getRowActions(
   setPluginModal: React.Dispatch<React.SetStateAction<JSX.Element | undefined>>,
   navigate: NavigateFunction,
   canMigrateVm: boolean,
+  vmMenuVisability: boolean,
   t: TFunction
 ) {
   const viewApplication = {
@@ -220,6 +221,7 @@ export function getRowActions(
       navigate,
       t,
       canMigrateVm,
+      vmMenuVisability,
       // get the row action extensions for the virtual machine
       getVirtualMachineRowActionExtensions(item, acmExtensions?.virtualMachineAction ?? [], setPluginModal)
     )
