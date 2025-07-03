@@ -2484,6 +2484,7 @@
   "Seconds (s)": "Seconds (s)",
   "Secret access key": "Secret access key",
   "Security groups": "Security groups",
+  "Select": "Select",
   "Select <italic>{{appType}}</italic> to delete {{name}} and all related resources.": "Select <italic>{{appType}}</italic> to delete {{name}} and all related resources.",
   "Select a cluster to view details": "Select a cluster to view details",
   "Select a column": "Select a column",

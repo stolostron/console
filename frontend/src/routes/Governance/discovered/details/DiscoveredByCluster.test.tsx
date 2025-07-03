@@ -318,9 +318,9 @@ describe('DiscoveredByCluster', () => {
 
     // Test some filters
     await waitForText('Filter')
-    screen.getByRole('button', { name: 'Options menu' }).click()
+    screen.getByRole('button', { name: 'Filter' }).click()
 
-    const deploymentAvailableFilter = screen.getByRole('group', { name: 'Deployment available' })
+    const deploymentAvailableFilter = screen.getByRole('heading', { name: 'Deployment available' }).parentElement!
 
     within(deploymentAvailableFilter).getByRole('checkbox', { name: 'yes 1' }).click()
 
@@ -335,7 +335,7 @@ describe('DiscoveredByCluster', () => {
 
     within(deploymentAvailableFilter).getByRole('checkbox', { name: 'no 1' }).click()
 
-    const upgradeAvailableFilter = screen.getByRole('group', { name: 'Upgrade available' })
+    const upgradeAvailableFilter = screen.getByRole('heading', { name: 'Upgrade available' }).parentElement!
 
     within(upgradeAvailableFilter).getByRole('checkbox', { name: 'yes 1' }).click()
 

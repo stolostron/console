@@ -197,7 +197,7 @@ describe('Applications Page', () => {
 
     // Close filter
     userEvent.click(screen.getByText('Filter'))
-    expect(screen.queryByRole('checkbox', { name: /argo cd/i })).toBeNull()
+    expect(screen.queryByRole('checkbox')).toBeNull()
     expect(screen.queryByText(ApplicationKind)).toBeNull()
     expect(screen.queryByText(ApplicationSetKind)).toBeNull()
     expect(screen.getAllByText('Argo CD')).toBeTruthy()
@@ -213,7 +213,7 @@ describe('Applications Page', () => {
 
     // Close filter
     userEvent.click(screen.getByText('Filter'))
-    expect(screen.queryByRole('checkbox', { name: /application set/i })).toBeNull()
+    expect(screen.queryByRole('checkbox')).toBeNull()
     expect(screen.queryByText(ApplicationKind)).toBeNull()
     expect(screen.queryByText('Discovered')).toBeNull()
     expect(screen.getAllByText('Application set')).toBeTruthy()
@@ -233,7 +233,6 @@ describe('Applications Page', () => {
 
     // Close filter
     userEvent.click(screen.getByText('Filter'))
-    expect(screen.queryByRole('checkbox', { name: /openshift/i })).toBeNull()
     expect(screen.queryByText(ApplicationKind)).toBeNull()
     expect(screen.queryByText('Discovered')).toBeNull()
 

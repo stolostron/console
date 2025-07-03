@@ -2,7 +2,7 @@
 import * as useFetchPolicies from './useFetchPolicies'
 import DiscoveredPolicies from './DiscoveredPolicies'
 import { getSourceFilterOptions } from './details/common'
-import { fireEvent, render, screen, within } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { waitForText, waitForNotText, getCSVExportSpies, getCSVDownloadLink } from '../../../lib/test-util'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { ApolloError } from '@apollo/client'
@@ -208,7 +208,7 @@ describe('useFetchPolicies custom hook', () => {
 
     // Test the kind filter
     await waitForText('Filter')
-    screen.getAllByRole('button', { name: 'Options menu' })[0].click()
+    screen.getAllByRole('button', { name: 'Filter' })[0].click()
     screen.getByRole('checkbox', { name: 'Gatekeeper constraint 1' }).click()
 
     await waitForNotText('check-policy-reports')
@@ -217,15 +217,12 @@ describe('useFetchPolicies custom hook', () => {
     // Unset the filter so the state doesn't carry over
     screen.getByRole('checkbox', { name: 'Gatekeeper constraint 1' }).click()
 
-    // click != button in label filter
-    screen.getAllByRole('button', { name: 'Options menu' })[1].click()
-    const group = screen.getByRole('group', {
-      name: /acm-table-filter-select-key/i,
-    })
-    within(group)
-      .getByRole('button', {
-        name: /!=/i,
-      })
+    // click = button in label filter
+    screen.getByTestId('acm-table-filter-select-Label').click()
+    screen
+      .getAllByRole('button', {
+        name: /=/i,
+      })[0]
       .click()
   })
 
@@ -504,7 +501,7 @@ describe('useFetchPolicies custom hook', () => {
     // Validate filter
     await waitForText('Filter')
 
-    screen.getByRole('button', { name: 'Options menu' }).click()
+    screen.getByRole('button', { name: 'Filter' }).click()
     screen.getByRole('checkbox', { name: 'ValidatingAdmissionPolicyBinding 1' })
     screen.getByRole('checkbox', {
       name: 'audit 1',
@@ -669,7 +666,7 @@ describe('useFetchPolicies custom hook', () => {
     // Validate filter
     await waitForText('Filter')
 
-    screen.getByRole('button', { name: 'Options menu' }).click()
+    screen.getByRole('button', { name: 'Filter' }).click()
     screen.getByRole('checkbox', { name: 'Kyverno Policy 1' }).click()
     screen.getByRole('checkbox', { name: 'Kyverno ClusterPolicy 1' }).click()
   })

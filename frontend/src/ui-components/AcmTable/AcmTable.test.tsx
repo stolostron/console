@@ -464,15 +464,15 @@ describe('AcmTable', () => {
     )
 
     userEvent.click(getByLabelText('Select'))
-    userEvent.click(container.querySelectorAll('.pf-v5-c-dropdown__menu-item')[1]) // Select page
+    userEvent.click(container.querySelectorAll('.pf-v5-c-menu__item-main')[1]) // Select page
     expect(getByText('10 selected')).toBeInTheDocument()
 
     userEvent.click(getByLabelText('Select'))
-    userEvent.click(container.querySelectorAll('.pf-v5-c-dropdown__menu-item')[2]) // Select all
+    userEvent.click(container.querySelectorAll('.pf-v5-c-menu__item-main')[2]) // Select all
     expect(getByText('105 selected')).toBeInTheDocument()
 
     userEvent.click(getByLabelText('Select'))
-    userEvent.click(container.querySelectorAll('.pf-v5-c-dropdown__menu-item')[0]) // Select None
+    userEvent.click(container.querySelectorAll('.pf-v5-c-menu__item-main')[0]) // Select None
     expect(queryAllByText('105 selected')).toHaveLength(0)
 
     userEvent.click(getAllByRole('checkbox')[0]) // Select all by checkbox
