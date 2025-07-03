@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import React from 'react'
 import { ResourceIcon, ResourceLink } from '@openshift-console/dynamic-plugin-sdk'
 import { FleetResourceLinkProps } from '../types/fleet'
 import classNames from 'classnames'
