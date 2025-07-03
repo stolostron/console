@@ -24,7 +24,9 @@ export const useFleetPrometheusPoll: UsePrometheusPoll = ({
   allClusters,
 }) => {
   const [hubClusterName] = useHubClusterName()
-  const useFleet = hubClusterName !== cluster || allClusters
+
+  const clusterForQuery = hubClusterName !== cluster ? cluster : undefined
+  const useFleet = !!clusterForQuery || allClusters
 
   const prometheusURLProps = {
     endpoint,
