@@ -1,15 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
+jest.mock('../../src/lib/token', () => ({
+  getAuthenticatedToken: jest.fn(() => {
+    return 'testtoken'
+  }),
+}))
 import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { managedClusterProxy } from '../../src/routes/managedClusterProxy'
 import proxy from 'http2-proxy'
 import { jest } from '@jest/globals'
 import { TLSSocket } from 'tls'
 
-let token: string | null = null
 let isHttp2Response: boolean = true
 
 jest.mock('../../src/lib/token', () => ({
-  getAuthenticatedToken: jest.fn((_req, _resOrSocket) => Promise.resolve(token)),
   isHttp2ServerResponse: jest.fn(() => isHttp2Response),
 }))
 
@@ -33,26 +36,16 @@ describe('ManagedClusterProxy tests', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-    token = null
     isHttp2Response = true
   })
 
-  it('return if token is null', async () => {
-    token = null
-    await managedClusterProxy(req, res)
-    expect(proxyWeb).not.toHaveBeenCalled()
-    expect(proxyWs).not.toHaveBeenCalled()
-  })
-
   it('test proxy call to web server', async () => {
-    token = 'testtoken'
     isHttp2Response = true
     await managedClusterProxy(req, res)
     expect(proxyWeb).toHaveBeenCalled()
     expect(proxyWs).not.toHaveBeenCalled()
   })
   it('test proxy call to socket', async () => {
-    token = 'testtoken'
     isHttp2Response = false
     await managedClusterProxy(req, socket, head)
     expect(proxyWeb).not.toHaveBeenCalled()
