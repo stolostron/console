@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { act, renderHook } from '@testing-library/react-hooks'
 import { useFleetPrometheusPoll } from '.'
 import { consoleFetch, PrometheusEndpoint, usePrometheusPoll } from '@openshift-console/dynamic-plugin-sdk'
