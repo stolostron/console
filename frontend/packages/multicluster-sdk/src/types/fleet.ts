@@ -13,7 +13,7 @@ export type FleetWatchK8sResource = Fleet<WatchK8sResource>
 export type FleetK8sResourceCommon = Fleet<K8sResourceCommon>
 export type FleetAccessReviewResourceAttributes = Fleet<AccessReviewResourceAttributes>
 
-export type UseHubClusterName = () => [hubClusterName: string | undefined, loaded: boolean, error: any]
+export type UseHubClusterName = () => [hubClusterName: string, isHubSelfManaged: boolean | undefined, error: any]
 export type UseFleetK8sAPIPath = (
   cluster?: string
 ) => [k8sAPIPath: string | undefined, loaded: boolean, error: Error | undefined]

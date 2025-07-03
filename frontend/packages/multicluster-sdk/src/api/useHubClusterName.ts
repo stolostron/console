@@ -1,20 +1,30 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useK8sWatchResource } from '@openshift-console/dynamic-plugin-sdk'
 import { UseHubClusterName } from '../types'
-import { LOCAL_CLUSTER_LABEL } from '../internal/constants'
-import { ManagedClusterListGroupVersionKind } from '../internal/models'
-import { useMemo } from 'react'
+import { useEffect, useState } from 'react'
+import { getBackendUrl } from './apiRequests'
+import axios from 'axios'
+
+export const getHubClusterNameUrl = () => '/hub'
 
 export const useHubClusterName: UseHubClusterName = () => {
-  const [clusters, loaded, error] = useK8sWatchResource<K8sResourceCommon[]>({
-    groupVersionKind: ManagedClusterListGroupVersionKind,
-    isList: true,
-  })
+  const url = getBackendUrl() + getHubClusterNameUrl()
+  const [hubClusterName, setHubClusterName] = useState<string>('local-cluster')
+  const [isHubSelfManaged, setIsHubSelfManaged] = useState<boolean | undefined>(undefined)
+  const [error, setError] = useState<any>(undefined)
+  useEffect(() => {
+    const fetchHubClusterName = async () => {
+      try {
+        const { data } = await axios.get(url)
+        setHubClusterName(data.localHubName)
+        setIsHubSelfManaged(data.isHubSelfManaged)
+      } catch (err) {
+        setHubClusterName('local-cluster')
+        setIsHubSelfManaged(undefined)
+        setError(err)
+      }
+    }
+    fetchHubClusterName()
+  }, [url])
 
-  const hubClusterName = useMemo(
-    () => clusters?.find((cluster) => cluster.metadata?.labels?.[LOCAL_CLUSTER_LABEL] === 'true')?.metadata?.name,
-    [clusters]
-  )
-
-  return useMemo(() => [hubClusterName, loaded, error], [hubClusterName, loaded, error])
+  return [hubClusterName, isHubSelfManaged, error]
 }
