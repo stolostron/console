@@ -2,6 +2,7 @@
 import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { managedClusterProxy } from '../../src/routes/managedClusterProxy'
 import proxy from 'http2-proxy'
+import { jest } from '@jest/globals'
 import { TLSSocket } from 'tls'
 
 let token: string | null = null
@@ -26,8 +27,8 @@ const proxyWs = proxy.ws as jest.Mock
 
 describe('ManagedClusterProxy tests', () => {
   const req = { url: '/managedclusterproxy/testcluster/testapi/', headers: {} } as Http2ServerRequest
-  const res = {} as Http2ServerResponse
-  const socket = {} as TLSSocket
+  const res = { destroy: jest.fn() } as unknown as Http2ServerResponse
+  const socket = { destroy: jest.fn() } as unknown as TLSSocket
   const head = Buffer.from('')
 
   beforeEach(() => {
