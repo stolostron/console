@@ -31,7 +31,8 @@
     "lint:fix": "npm run lint -- --fix",
     "prettier": "prettier --check src",
     "prettier:fix": "prettier --write src",
-    "test": "TZ=UTC jest"
+    "test": "TZ=UTC jest",
+    "generate-doc": "node generate-doc.mjs"
   },
   "peerDependencies": {
     "@openshift-console/dynamic-plugin-sdk": ">=1.0.0 || >=4.19.0-prerelease"
@@ -54,6 +55,7 @@
     "jest-raw-loader": "^1.0.1",
     "jest-sonar-reporter": "^2.0.0",
     "prettier": "^3.2.5",
+    "tsdoc-markdown": "^1.2.0",
     "typescript": "^5.6.3"
   },
   "prettier": "@stolostron/prettier-config",
