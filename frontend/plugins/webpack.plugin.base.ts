@@ -100,6 +100,8 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
       isProduction && new CompressionPlugin({ algorithm: 'brotliCompress', filename: '[path][base].br' }),
     ].filter(Boolean) as webpack.WebpackPluginInstance[],
     output: {
+      devtoolModuleFilenameTemplate: (info: { absoluteResourcePath: string }) =>
+        path.resolve(info.absoluteResourcePath).replace(/\\/g, '/'),
       assetModuleFilename: 'assets/[name].[contenthash:8][ext][query]',
       filename: '[name].[contenthash:8].js',
       chunkFilename: '[name].[contenthash:8].js',
