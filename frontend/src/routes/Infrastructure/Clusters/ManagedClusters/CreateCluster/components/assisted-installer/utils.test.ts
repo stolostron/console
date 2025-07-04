@@ -5,7 +5,6 @@ import {
   AgentK8sResource,
   BareMetalHostK8sResource,
   ClusterDeploymentK8sResource,
-  InfraEnvK8sResource,
 } from '@openshift-assisted/ui-lib/cim'
 import {
   getDefault,
@@ -14,7 +13,6 @@ import {
   getDeleteHostAction,
   setProvisionRequirements,
   onHostsNext,
-  onEditProxy,
   useProvisioningConfiguration,
   onEditFinish,
 } from './utils'
@@ -182,25 +180,6 @@ describe('onHostsNext', () => {
       agents: [],
       agentClusterInstall,
     })
-  })
-})
-
-describe('onEditProxy', () => {
-  it('enables proxy', () => {
-    const infraEnv: InfraEnvK8sResource = {
-      metadata: {
-        name: 'foo',
-        namespace: 'bar',
-      },
-    }
-    onEditProxy(
-      {
-        httpProxy: 'foo',
-        httpsProxy: 'bar',
-        noProxy: 'baz',
-      },
-      infraEnv
-    )
   })
 })
 
