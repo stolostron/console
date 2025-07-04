@@ -4,6 +4,8 @@ import { parseCookies } from '../lib/cookies'
 import { fetchRetry } from '../lib/fetch-retry'
 import { unauthorized } from './respond'
 import { LocalStorage } from 'node-localstorage'
+import { TLSSocket } from 'tls'
+
 const { HTTP2_HEADER_AUTHORIZATION } = constants
 
 const LOCAL_STORAGE = './certs'
@@ -31,8 +33,22 @@ export async function isAuthenticated(token: string) {
   })
 }
 
-export async function getAuthenticatedToken(req: Http2ServerRequest, res: Http2ServerResponse): Promise<string> {
+export const isHttp2ServerResponse = (
+  resOrSocket: Http2ServerResponse | TLSSocket
+): resOrSocket is Http2ServerResponse => 'socket' in resOrSocket
+
+export async function getAuthenticatedToken(req: Http2ServerRequest, res: Http2ServerResponse): Promise<string>
+export async function getAuthenticatedToken(req: Http2ServerRequest, socket: TLSSocket): Promise<string>
+export async function getAuthenticatedToken(
+  req: Http2ServerRequest,
+  resOrSocket: Http2ServerResponse | TLSSocket
+): Promise<string>
+export async function getAuthenticatedToken(
+  req: Http2ServerRequest,
+  resOrSocket: Http2ServerResponse | TLSSocket
+): Promise<string> {
   const token = getToken(req)
+
   if (token) {
     const authResponse = await isAuthenticated(token)
     /* istanbul ignore if */
@@ -43,11 +59,18 @@ export async function getAuthenticatedToken(req: Http2ServerRequest, res: Http2S
       }
       return token
     } else {
-      res.writeHead(authResponse.status).end()
+      if (isHttp2ServerResponse(resOrSocket)) {
+        resOrSocket.writeHead(authResponse.status).end()
+      } else {
+        resOrSocket.destroy()
+      }
+
       void authResponse.blob()
     }
+  } else if (isHttp2ServerResponse(resOrSocket)) {
+    unauthorized(req, resOrSocket)
   } else {
-    unauthorized(req, res)
+    resOrSocket.destroy()
   }
   throw new Error('Unauthenticated request')
 }
