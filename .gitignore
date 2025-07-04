@@ -16,3 +16,7 @@ build-harness-extensions
 .vscode/settings.json
 frontend/public/locales/upload
 frontend/public/locales/download
+
+coverage/
+lib/
+.nyc_output/
