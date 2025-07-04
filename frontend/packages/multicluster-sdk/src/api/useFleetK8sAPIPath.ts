@@ -2,7 +2,8 @@
 import { k8sListItems } from '@openshift-console/dynamic-plugin-sdk'
 import { UseFleetK8sAPIPath } from '../types'
 import { getBackendUrl } from './apiRequests'
-import { BASE_K8S_API_PATH, LOCAL_CLUSTER_LABEL, MANAGED_CLUSTER_API_PATH, ManagedClusterModel } from './constants'
+import { BASE_K8S_API_PATH, LOCAL_CLUSTER_LABEL, MANAGED_CLUSTER_API_PATH } from '../internal/constants'
+import { ManagedClusterModel } from '../internal/models'
 import { useHubClusterName } from './useHubClusterName'
 
 export const useFleetK8sAPIPath: UseFleetK8sAPIPath = (cluster) => {
