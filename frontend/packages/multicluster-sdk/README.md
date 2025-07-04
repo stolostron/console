@@ -284,6 +284,10 @@ Parameters:
 * `resourceAttributes.cluster`: the cluster name to find the resource in
 
 
+Returns:
+
+Array with `isAllowed` and `loading` values.
+
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetAccessReview/access-review.ts#L27)
 
 ### :gear: useFleetClusterNames
@@ -809,6 +813,10 @@ Parameters:
 * `namespace`: namespace.
 * `impersonateKey`: parameter to include in the cache key even though it's not used in the function body.
 
+
+Returns:
+
+Memoized result of the access review.
 
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetAccessReview/checkAccess.ts#L20)
 
