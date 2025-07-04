@@ -15,6 +15,8 @@ const useFeatureFlags = (setFeatureFlag: SetFeatureFlag) => {
       setFeatureFlag(featureFlag, response?.find((e) => e.name === componentName)?.enabled || false)
     )
   )
+  // Supports first version of multicluster SDK provider requirements
+  setFeatureFlag('@stolostron/multicluster-sdk/provider@1', true)
 }
 
 export default useFeatureFlags

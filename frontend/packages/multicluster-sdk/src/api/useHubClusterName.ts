@@ -1,7 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useK8sWatchResource } from '@openshift-console/dynamic-plugin-sdk'
 import { UseHubClusterName } from '../types'
-import { LOCAL_CLUSTER_LABEL, ManagedClusterListGroupVersionKind } from './constants'
+import { LOCAL_CLUSTER_LABEL } from '../internal/constants'
+import { ManagedClusterListGroupVersionKind } from '../internal/models'
 import { useMemo } from 'react'
 
 export const useHubClusterName: UseHubClusterName = () => {

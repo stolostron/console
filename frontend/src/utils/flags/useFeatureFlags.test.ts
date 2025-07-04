@@ -26,7 +26,8 @@ describe('useFeatureFlags', () => {
     await useFeatureFlags(setFeatureFlagMock)
 
     // Assert
-    expect(setFeatureFlagMock).toHaveBeenCalledTimes(Object.entries(FEATURE_FLAGS).length)
+    expect(setFeatureFlagMock).toHaveBeenCalledTimes(Object.entries(FEATURE_FLAGS).length + 1)
+    expect(setFeatureFlagMock).toHaveBeenCalledWith('@stolostron/multicluster-sdk/provider@1', true)
     Object.keys(FEATURE_FLAGS).forEach((featureFlag) =>
       expect(setFeatureFlagMock).toHaveBeenCalledWith(featureFlag, false)
     )
@@ -42,7 +43,8 @@ describe('useFeatureFlags', () => {
     await useFeatureFlags(setFeatureFlagMock)
 
     // Assert
-    expect(setFeatureFlagMock).toHaveBeenCalledTimes(Object.entries(FEATURE_FLAGS).length)
+    expect(setFeatureFlagMock).toHaveBeenCalledTimes(Object.entries(FEATURE_FLAGS).length + 1)
+    expect(setFeatureFlagMock).toHaveBeenCalledWith('@stolostron/multicluster-sdk/provider@1', true)
     Object.keys(FEATURE_FLAGS).forEach((featureFlag) =>
       expect(setFeatureFlagMock).toHaveBeenCalledWith(featureFlag, enabled)
     )
