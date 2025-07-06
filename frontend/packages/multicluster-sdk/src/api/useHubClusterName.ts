@@ -2,29 +2,37 @@
 import { UseHubClusterName } from '../types'
 import { useEffect, useState } from 'react'
 import { getBackendUrl } from './apiRequests'
-import axios from 'axios'
+import { consoleFetchJSON } from '@openshift-console/dynamic-plugin-sdk'
 
 export const getHubClusterNameUrl = () => '/hub'
+let cachedhubClusterName: string | undefined = undefined
+
+export const fetchHubClusterName = async () => {
+  const url = getBackendUrl() + getHubClusterNameUrl()
+  if (!cachedhubClusterName) {
+    const data = await consoleFetchJSON(url, 'GET')
+    cachedhubClusterName = data.localHubName
+  }
+  return cachedhubClusterName
+}
 
 export const useHubClusterName: UseHubClusterName = () => {
-  const url = getBackendUrl() + getHubClusterNameUrl()
-  const [hubClusterName, setHubClusterName] = useState<string>('local-cluster')
-  const [isHubSelfManaged, setIsHubSelfManaged] = useState<boolean | undefined>(undefined)
+  const [hubClusterName, setHubClusterName] = useState<string | undefined>(cachedhubClusterName)
+  const [loaded, setLoaded] = useState<boolean>(false)
   const [error, setError] = useState<any>(undefined)
   useEffect(() => {
-    const fetchHubClusterName = async () => {
+    if (error) {
       try {
-        const { data } = await axios.get(url)
-        setHubClusterName(data.localHubName)
-        setIsHubSelfManaged(data.isHubSelfManaged)
+        fetchHubClusterName()
+        setHubClusterName(cachedhubClusterName)
+        setLoaded(true)
       } catch (err) {
         setHubClusterName('local-cluster')
-        setIsHubSelfManaged(undefined)
+        setLoaded(false)
         setError(err)
       }
     }
-    fetchHubClusterName()
-  }, [url])
+  }, [error])
 
-  return [hubClusterName, isHubSelfManaged, error]
+  return [hubClusterName, loaded, error]
 }
