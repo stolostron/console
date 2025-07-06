@@ -19,6 +19,7 @@ export const pluginMetadata: ConsolePluginBuildMetadata = {
     automations: '../../src/routes/Infrastructure/Automations/AutomationsPlugin.tsx',
     environments: '../../src/routes/Infrastructure/InfraEnvironments/InfraEnvironmentsPlugin.tsx',
     virtualmachines: '../../src/routes/Infrastructure/VirtualMachines/VirtualMachinesPlugin.tsx',
+    vmRedirect: '../../src/routes/Infrastructure/VirtualMachines/VMRedirect.tsx',
     credentials: '../../src/routes/Credentials/CredentialsPlugin.tsx',
   },
   dependencies: {
