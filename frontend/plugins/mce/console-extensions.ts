@@ -137,6 +137,18 @@ const virtualMachinesRoute: EncodedExtension<RoutePage> = {
   },
 }
 
+// Virtual Machines Detail Route - type: 'console.page/route'
+const virtualMachinesDetailRoute: EncodedExtension<RoutePage> = {
+  type: 'console.page/route',
+  properties: {
+    path: '/multicloud/infrastructure/virtualmachines/:cluster/:namespace/:name', // with parameters
+    component: { $codeRef: 'vmRedirect.default' }, // points to VMRedirect
+  },
+  flags: {
+    disallowed: ['KUBEVIRT_DYNAMIC_ACM'],
+  },
+}
+
 // Credentials Navigation Item - type: 'console.navigation/href'
 const credentialsNavItem: EncodedExtension<HrefNavItem> = {
   type: 'console.navigation/href',
@@ -169,6 +181,7 @@ export const extensions: EncodedExtension[] = [
   hostInventoryNavItem,
   hostInventoryRoute,
   virtualMachinesNavItem,
+  virtualMachinesDetailRoute,
   virtualMachinesRoute,
   credentialsNavItem,
   credentialsRoute,
