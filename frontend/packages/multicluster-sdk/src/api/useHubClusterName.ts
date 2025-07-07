@@ -8,11 +8,12 @@ export const getHubClusterNameUrl = () => '/hub'
 let cachedhubClusterName: string | undefined = undefined
 
 export const fetchHubClusterName = async () => {
-  const url = getBackendUrl() + getHubClusterNameUrl()
-  if (!cachedhubClusterName) {
-    const data = await consoleFetchJSON(url, 'GET')
-    cachedhubClusterName = data.localHubName
+  if (cachedhubClusterName) {
+    return cachedhubClusterName
   }
+  const url = getBackendUrl() + getHubClusterNameUrl()
+  const data = await consoleFetchJSON(url, 'GET')
+  cachedhubClusterName = data.localHubName
   return cachedhubClusterName
 }
 
@@ -21,17 +22,21 @@ export const useHubClusterName: UseHubClusterName = () => {
   const [loaded, setLoaded] = useState<boolean>(false)
   const [error, setError] = useState<any>(undefined)
   useEffect(() => {
-    if (error) {
+    if (cachedhubClusterName && !error) {
+      setLoaded(true)
+      return undefined
+    }
+    setError(undefined)
+    setLoaded(false)
+    void (async () => {
       try {
-        fetchHubClusterName()
-        setHubClusterName(cachedhubClusterName)
+        const hubName = await fetchHubClusterName()
+        setHubClusterName(hubName)
         setLoaded(true)
       } catch (err) {
-        setHubClusterName('local-cluster')
-        setLoaded(false)
         setError(err)
       }
-    }
+    })()
   }, [error])
 
   return [hubClusterName, loaded, error]
