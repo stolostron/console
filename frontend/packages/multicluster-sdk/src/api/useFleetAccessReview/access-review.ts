@@ -17,7 +17,7 @@ type FleetAccessReviewResourceAttributes = AccessReviewResourceAttributes & {
  * @param resourceAttributes.group the name of the group to check access for
  * @param resourceAttributes.resource the name of the resource to check access for
  * @param resourceAttributes.subresource the name of the subresource to check access for
- * @param resourceAttributes.verb the "action" to preform either 'create' | 'get' | 'list' | 'update' | 'patch' | 'delete' | 'deletecollection' | 'watch' | 'impersonate'
+ * @param resourceAttributes.verb the "action" to perform; one of 'create' | 'get' | 'list' | 'update' | 'patch' | 'delete' | 'deletecollection' | 'watch' | 'impersonate'
  * @param resourceAttributes.name the name
  * @param resourceAttributes.namespace the namespace
  * @param resourceAttributes.cluster the cluster name to find the resource in
