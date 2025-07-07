@@ -1,7 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { K8sVerb, SelfSubjectAccessReviewKind, K8sModel } from '@openshift-console/dynamic-plugin-sdk'
+import { K8sVerb, SelfSubjectAccessReviewKind } from '@openshift-console/dynamic-plugin-sdk'
 import _ from 'lodash'
-import { fleetK8sCreate } from '../apiRequests'
+import { fleetK8sCreate } from '../api/apiRequests'
+import { SelfSubjectAccessReviewModel } from './models'
 
 /**
  * Memoizes the result so it is possible to only make the request once for each access review.
@@ -50,13 +51,3 @@ export const checkAccess = _.memoize(
   },
   (...args) => args.join('~')
 )
-
-export const SelfSubjectAccessReviewModel: K8sModel = {
-  abbr: 'SSAR',
-  kind: 'SelfSubjectAccessReview',
-  label: 'SelfSubjectAccessReview',
-  labelPlural: 'SelfSubjectAccessReviews',
-  plural: 'selfsubjectaccessreviews',
-  apiVersion: 'v1',
-  apiGroup: 'authorization.k8s.io',
-}

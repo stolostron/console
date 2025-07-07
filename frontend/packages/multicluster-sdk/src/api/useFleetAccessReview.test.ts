@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { renderHook } from '@testing-library/react-hooks'
 import { waitFor } from '@testing-library/react'
-import { useFleetAccessReview } from './access-review'
+import { useFleetAccessReview } from './useFleetAccessReview'
 
 describe('useFleetAccessReview', () => {
   const mockFleetK8sCreate = jest.fn(() => Promise.resolve({ status: { allowed: true } }))
-  jest.mock('../apiRequests', () => ({
+  jest.mock('./apiRequests', () => ({
     fleetK8sCreate: mockFleetK8sCreate,
   }))
 

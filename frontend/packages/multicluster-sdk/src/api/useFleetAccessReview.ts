@@ -1,15 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import {
-  AccessReviewResourceAttributes,
-  K8sVerb,
-  SelfSubjectAccessReviewKind,
-} from '@openshift-console/dynamic-plugin-sdk'
+import { K8sVerb, SelfSubjectAccessReviewKind } from '@openshift-console/dynamic-plugin-sdk'
 import { useEffect, useState } from 'react'
-import { checkAccess } from './checkAccess'
-
-type FleetAccessReviewResourceAttributes = AccessReviewResourceAttributes & {
-  cluster?: string
-}
+import { checkAccess } from '../internal/checkAccess'
+import { FleetAccessReviewResourceAttributes } from '../types/fleet'
 
 /**
  * Hook that provides information about user access to a given resource.

@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import {
+  AccessReviewResourceAttributes,
   K8sResourceCommon,
   ResourceLinkProps,
   WatchK8sResource,
@@ -10,6 +11,7 @@ export type Fleet<T> = T & { cluster?: string }
 
 export type FleetWatchK8sResource = Fleet<WatchK8sResource>
 export type FleetK8sResourceCommon = Fleet<K8sResourceCommon>
+export type FleetAccessReviewResourceAttributes = Fleet<AccessReviewResourceAttributes>
 
 export type UseHubClusterName = () => [hubClusterName: string | undefined, loaded: boolean, error: any]
 export type UseFleetK8sAPIPath = (

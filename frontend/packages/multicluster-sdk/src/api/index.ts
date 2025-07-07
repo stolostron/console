@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+export * from './constants'
 export * from './FleetResourceLink'
 export * from './useFleetK8sAPIPath'
 export * from './useFleetK8sWatchResource'
