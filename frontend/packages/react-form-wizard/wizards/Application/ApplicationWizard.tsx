@@ -67,7 +67,7 @@ export function ApplicationWizard(props: ApplicationWizardProps) {
     const urlOptions = useMemo(() => ['url1', 'url2'], [])
     const gitChannels = useMemo(
         () => props.channels.filter((channel) => channel.spec.type === 'Git' || channel.spec.type === 'GitHub'),
-        [props.channels]
+        [props.channels],
     )
     const helmChannels = useMemo(() => props.channels.filter((channel) => channel.spec.type === 'HelmRepo'), [props.channels])
     const subscriptionGitChannels = gitChannels.map((gitChannel: Channel) => {

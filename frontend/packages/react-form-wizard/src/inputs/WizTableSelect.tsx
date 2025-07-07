@@ -77,13 +77,13 @@ export function WizTableSelect<T = any>(props: WizTableSelectProps<T>) {
                 }
             }
         },
-        [pagedItems, props, selectedItems, setValue]
+        [pagedItems, props, selectedItems, setValue],
     )
     const isSelected = useCallback((item: T) => selectedItems.includes(item), [selectedItems])
 
     const selectAll = useCallback(
         () => setValue(props.itemToValue ? props.items.map(props.itemToValue) : props.items),
-        [props.items, props.itemToValue, setValue]
+        [props.items, props.itemToValue, setValue],
     )
     const selectPage = useCallback(() => {
         let newValue = [
@@ -225,13 +225,13 @@ function BulkSelect(props: {
             dropdownItems.push(
                 <DropdownItem key="item-2" onClick={props.selectPage}>
                     {selectPageItems(props.perPage)}
-                </DropdownItem>
+                </DropdownItem>,
             )
         }
         dropdownItems.push(
             <DropdownItem key="item-3" onClick={props.selectAll}>
                 {selectAllItems(props.total)}
-            </DropdownItem>
+            </DropdownItem>,
         )
         return dropdownItems
     }, [props.perPage, props.selectAll, props.selectNone, props.selectPage, props.total, selectPageItems, selectAllItems, selectNoItems])
@@ -265,7 +265,7 @@ function BulkSelect(props: {
                 />
             )
         },
-        [anySelected, deselectAllAriaLabel, isChecked, onCheckbox, onDropDownToggle, props.selectedCount, selectAllAriaLabel, selected]
+        [anySelected, deselectAllAriaLabel, isChecked, onCheckbox, onDropDownToggle, props.selectedCount, selectAllAriaLabel, selected],
     )
 
     return (

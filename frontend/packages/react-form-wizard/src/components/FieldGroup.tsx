@@ -56,7 +56,7 @@ export const InternalFormFieldGroup: React.FunctionComponent<InternalFormFieldGr
         // eslint-disable-next-line no-console
         console.error(
             'FormFieldGroupExpandable:',
-            'toggleAriaLabel or the titleText prop of FormfieldGroupHeader is required to make the toggle button accessible'
+            'toggleAriaLabel or the titleText prop of FormfieldGroupHeader is required to make the toggle button accessible',
         )
     }
     return (

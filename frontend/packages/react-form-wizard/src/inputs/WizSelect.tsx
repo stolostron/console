@@ -156,7 +156,7 @@ function WizSelectBase<T = any>(props: SelectProps<T>) {
     const selections = useMemo(() => {
         if (Array.isArray(keyedValue)) {
             return selectOptions?.filter(
-                (selectOption) => keyedValue.find((keyedValue) => keyedValue === selectOption.keyedValue) !== undefined
+                (selectOption) => keyedValue.find((keyedValue) => keyedValue === selectOption.keyedValue) !== undefined,
             )
         } else {
             return selectOptions?.find((selectOption) => keyedValue === selectOption.keyedValue)
@@ -176,7 +176,7 @@ function WizSelectBase<T = any>(props: SelectProps<T>) {
                     break
             }
         },
-        [isCreatable, props.variant, setValue]
+        [isCreatable, props.variant, setValue],
     )
 
     const onClear = useCallback(() => {
@@ -203,7 +203,7 @@ function WizSelectBase<T = any>(props: SelectProps<T>) {
                     ))
             return []
         },
-        [selectOptions]
+        [selectOptions],
     )
 
     const variant = useMemo(() => {

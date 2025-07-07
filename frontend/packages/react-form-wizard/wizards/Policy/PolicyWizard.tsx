@@ -238,7 +238,7 @@ export function PolicyWizardTemplates(props: { policies: IResource[] }) {
                                 const existingValue: string = get(
                                     policy,
                                     `metadata.annotations.policy\\.open-cluster-management\\.io/${group}`,
-                                    ''
+                                    '',
                                 )
                                 const addValue: string = get(specification, `${group}`, '')
                                 const newValue: string = existingValue
@@ -459,10 +459,10 @@ function ObjectTemplate() {
                         {template?.complianceType === 'musthave'
                             ? 'Must have'
                             : template?.complianceType === 'mustonlyhave'
-                            ? 'Must only have'
-                            : template?.complianceType === 'mustnothave'
-                            ? 'Must not have'
-                            : template?.complianceType}
+                              ? 'Must only have'
+                              : template?.complianceType === 'mustnothave'
+                                ? 'Must not have'
+                                : template?.complianceType}
                     </Text>
                     <WizHidden hidden={(template: any) => template?.objectDefinition?.kind === undefined}>
                         <Title headingLevel="h6">{pascalCaseToSentenceCase(template?.objectDefinition?.kind)}</Title>

@@ -49,7 +49,7 @@ export function CreateApplicationSet() {
             { label: 'server-1', value: 'server-1', description: 'server-1-description' },
             { label: 'server-2', value: 'server-2', description: 'server-2-description' },
         ],
-        []
+        [],
     )
     const ansibleCredentials = useMemo(() => ['credential1', 'credential2'], [])
     const placements = testPlacements
@@ -60,7 +60,7 @@ export function CreateApplicationSet() {
             { metadata: { name: 'git-channel-1', namespace: 'git-channel-1' }, spec: { pathname: 'https://test.com', type: 'Git' } },
             { metadata: { name: 'git-channel-1', namespace: 'git-channel-1' }, spec: { pathname: 'https://test.com', type: 'Git' } },
         ],
-        []
+        [],
     )
     const timeZones = useMemo(() => ['EST'], [])
     return (
@@ -103,7 +103,7 @@ export function EditApplicationSet() {
             { label: 'server-1', value: 'server-1', description: 'server-1-description' },
             { label: 'server-2', value: 'server-2', description: 'server-2-description' },
         ],
-        []
+        [],
     )
 
     const ansibleCredentials = useMemo(() => ['credential1', 'credential2'], [])
@@ -115,7 +115,7 @@ export function EditApplicationSet() {
             { metadata: { name: 'git-channel-1', namespace: 'git-channel-1' }, spec: { pathname: 'https://test.com', type: 'Git' } },
             { metadata: { name: 'git-channel-1', namespace: 'git-channel-1' }, spec: { pathname: 'https://test.com', type: 'Git' } },
         ],
-        []
+        [],
     )
     const timeZones = useMemo(() => ['EST'], [])
     return (

@@ -17,7 +17,7 @@ export function ApplicationExample() {
             { metadata: { name: 'git-channel-1', namespace: 'git-channel-1' }, spec: { pathname: 'https://test.com', type: 'Git' } },
             { metadata: { name: 'git-channel-1', namespace: 'git-channel-1' }, spec: { pathname: 'https://test.com', type: 'Git' } },
         ],
-        []
+        [],
     )
     const timeZones = useMemo(() => ['EST'], [])
     return (

@@ -114,7 +114,7 @@ function WizardInternal(props: {
     const { reviewLabel, stepsAriaLabel, contentAriaLabel } = useStringContext()
     const stepComponents = useMemo(
         () => Children.toArray(props.children).filter((child) => isValidElement(child) && child.type === Step) as ReactElement[],
-        [props.children]
+        [props.children],
     )
 
     const reviewStep = useMemo<WizardStep>(
@@ -129,7 +129,7 @@ function WizardInternal(props: {
                 </Step>
             ),
         }),
-        [props.children, reviewLabel]
+        [props.children, reviewLabel],
     )
 
     const showValidation = useShowValidation()
@@ -154,7 +154,7 @@ function WizardInternal(props: {
                         </Split>
                     ),
                     component: <Fragment key={component.props?.id}>{component}</Fragment>,
-                } as WizardStep)
+                }) as WizardStep,
         )
         steps.push(reviewStep)
         return steps
@@ -220,7 +220,7 @@ function MyFooter(props: {
             }
             void asyncSubmit()
         },
-        [onSubmit, unknownError]
+        [onSubmit, unknownError],
     )
     const data = useItem()
     const onSubmitClick = useCallback(() => {

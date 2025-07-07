@@ -48,7 +48,7 @@ export function usePath(props: { path: string }) {
 
 export function useValue(
     props: Pick<InputCommonProps, 'id' | 'path' | 'label' | 'inputValueToPathValue' | 'pathValueToInputValue' | 'onValueChange'>,
-    defaultValue: any
+    defaultValue: any,
 ): [value: any, setValue: (value: any) => void] {
     const { onValueChange } = props
     const item = useContext(ItemContext)
@@ -64,7 +64,7 @@ export function useValue(
             onValueChange?.(newValue, item)
             update()
         },
-        [item, onValueChange, path, pathValue, props, update]
+        [item, onValueChange, path, pathValue, props, update],
     )
     let value = pathValue
     if (props.pathValueToInputValue) {

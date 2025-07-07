@@ -41,7 +41,7 @@ export function WizNumberInput(props: WizNumberInputProps) {
                 if (Number.isInteger(newValue)) setValue(newValue)
             }
         },
-        [props.zeroIsUndefined, setValue]
+        [props.zeroIsUndefined, setValue],
     )
     const onPlus = useCallback(() => {
         if (typeof value === 'number') setValue(value + 1)
