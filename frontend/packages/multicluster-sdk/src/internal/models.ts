@@ -18,3 +18,12 @@ export const ManagedClusterListGroupVersionKind = {
   version: 'v1',
   kind: 'ManagedCluster',
 }
+export const SelfSubjectAccessReviewModel: K8sModel = {
+  abbr: 'SSAR',
+  kind: 'SelfSubjectAccessReview',
+  label: 'SelfSubjectAccessReview',
+  labelPlural: 'SelfSubjectAccessReviews',
+  plural: 'selfsubjectaccessreviews',
+  apiVersion: 'v1',
+  apiGroup: 'authorization.k8s.io',
+}
