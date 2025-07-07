@@ -35,16 +35,225 @@ Setup depends on your usage scenarios.
 
 ## API Reference
 
-### Components
+<!-- TSDOC_START -->
 
-- `<FleetResourceLink>`: Component for linking to the resource details page in ACM for a resource from a managed cluster, or to the OpenShift console resource page for a resource from the hub cluster
+## :toolbox: Functions
 
-### Hooks
+- [fleetK8sCreate](#gear-fleetk8screate)
+- [fleetK8sDelete](#gear-fleetk8sdelete)
+- [fleetK8sGet](#gear-fleetk8sget)
+- [fleetK8sPatch](#gear-fleetk8spatch)
+- [fleetK8sUpdate](#gear-fleetk8supdate)
+- [FleetResourceLink](#gear-fleetresourcelink)
+- [getFleetK8sAPIPath](#gear-getfleetk8sapipath)
+- [useFleetAccessReview](#gear-usefleetaccessreview)
+- [useFleetClusterNames](#gear-usefleetclusternames)
+- [useFleetK8sAPIPath](#gear-usefleetk8sapipath)
+- [useFleetK8sWatchResource](#gear-usefleetk8swatchresource)
+- [useFleetPrometheusPoll](#gear-usefleetprometheuspoll)
+- [useHubClusterName](#gear-usehubclustername)
+- [useMulticlusterSearchWatch](#gear-usemulticlustersearchwatch)
 
-- `useFleetK8sWatchResource`: Watch Kubernetes resources across clusters
-- `useFleetK8sAPIPath`: Get the API path for a specific cluster
-- `useHubClusterName`: Get the name of the hub cluster
-- `useFleetClusterNames`: Get the list of managed cluster names
+### :gear: fleetK8sCreate
+
+| Function | Type |
+| ---------- | ---------- |
+| `fleetK8sCreate` | `<R extends K8sResourceCommon>(options: OptionsCreate<R>) => Promise<R>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/apiRequests.ts#L187)
+
+### :gear: fleetK8sDelete
+
+| Function | Type |
+| ---------- | ---------- |
+| `fleetK8sDelete` | `<R extends K8sResourceCommon>(options: OptionsDelete<R>) => Promise<R>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/apiRequests.ts#L209)
+
+### :gear: fleetK8sGet
+
+| Function | Type |
+| ---------- | ---------- |
+| `fleetK8sGet` | `<R extends K8sResourceCommon>(options: OptionsGet) => Promise<R>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/apiRequests.ts#L128)
+
+### :gear: fleetK8sPatch
+
+| Function | Type |
+| ---------- | ---------- |
+| `fleetK8sPatch` | `<R extends K8sResourceCommon>(options: OptionsPatch<R>) => Promise<R>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/apiRequests.ts#L160)
+
+### :gear: fleetK8sUpdate
+
+| Function | Type |
+| ---------- | ---------- |
+| `fleetK8sUpdate` | `<R extends K8sResourceCommon>(options: OptionsUpdate<R>) => Promise<R>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/apiRequests.ts#L140)
+
+### :gear: FleetResourceLink
+
+| Function | Type |
+| ---------- | ---------- |
+| `FleetResourceLink` | `React.FC<FleetResourceLinkProps>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/FleetResourceLink.tsx#L9)
+
+### :gear: getFleetK8sAPIPath
+
+| Function | Type |
+| ---------- | ---------- |
+| `getFleetK8sAPIPath` | `(cluster?: string or undefined) => Promise<string>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetK8sAPIPath.ts#L20)
+
+### :gear: useFleetAccessReview
+
+Hook that provides information about user access to a given resource.
+
+| Function | Type |
+| ---------- | ---------- |
+| `useFleetAccessReview` | `({ group, resource, subresource, verb, name, namespace, cluster, }: FleetAccessReviewResourceAttributes) => [boolean, boolean]` |
+
+Parameters:
+
+* `resourceAttributes`: resource attributes for access review
+* `resourceAttributes.group`: the name of the group to check access for
+* `resourceAttributes.resource`: the name of the resource to check access for
+* `resourceAttributes.subresource`: the name of the subresource to check access for
+* `resourceAttributes.verb`: the "action" to perform; one of 'create' | 'get' | 'list' | 'update' | 'patch' | 'delete' | 'deletecollection' | 'watch' | 'impersonate'
+* `resourceAttributes.name`: the name
+* `resourceAttributes.namespace`: the namespace
+* `resourceAttributes.cluster`: the cluster name to find the resource in
+
+
+Returns:
+
+Array with `isAllowed` and `loading` values.
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetAccessReview/access-review.ts#L27)
+
+### :gear: useFleetClusterNames
+
+| Function | Type |
+| ---------- | ---------- |
+| `useFleetClusterNames` | `UseFleetClusterNames` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetClusterNames.ts#L6)
+
+### :gear: useFleetK8sAPIPath
+
+| Function | Type |
+| ---------- | ---------- |
+| `useFleetK8sAPIPath` | `UseFleetK8sAPIPath` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetK8sAPIPath.ts#L8)
+
+### :gear: useFleetK8sWatchResource
+
+| Function | Type |
+| ---------- | ---------- |
+| `useFleetK8sWatchResource` | `UseFleetK8sWatchResource` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetK8sWatchResource.ts#L6)
+
+### :gear: useFleetPrometheusPoll
+
+| Function | Type |
+| ---------- | ---------- |
+| `useFleetPrometheusPoll` | `UsePrometheusPoll` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetPrometheusPoll/index.ts#L13)
+
+### :gear: useHubClusterName
+
+| Function | Type |
+| ---------- | ---------- |
+| `useHubClusterName` | `UseHubClusterName` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useHubClusterName.ts#L7)
+
+### :gear: useMulticlusterSearchWatch
+
+| Function | Type |
+| ---------- | ---------- |
+| `useMulticlusterSearchWatch` | `UseMulticlusterSearchWatch` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/search/useMulticlusterSearchWatch.ts#L9)
+
+
+
+## :cocktail: Types
+
+- [Fleet](#gear-fleet)
+- [FleetK8sResourceCommon](#gear-fleetk8sresourcecommon)
+- [FleetResourceLinkProps](#gear-fleetresourcelinkprops)
+- [UseFleetClusterNames](#gear-usefleetclusternames)
+- [UseFleetK8sAPIPath](#gear-usefleetk8sapipath)
+- [UseFleetK8sWatchResource](#gear-usefleetk8swatchresource)
+- [UseHubClusterName](#gear-usehubclustername)
+
+### :gear: Fleet
+
+| Type | Type |
+| ---------- | ---------- |
+| `Fleet` | `T and { cluster?: string }` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L9)
+
+### :gear: FleetK8sResourceCommon
+
+| Type | Type |
+| ---------- | ---------- |
+| `FleetK8sResourceCommon` | `Fleet<K8sResourceCommon>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L12)
+
+### :gear: FleetResourceLinkProps
+
+| Type | Type |
+| ---------- | ---------- |
+| `FleetResourceLinkProps` | `Fleet<ResourceLinkProps>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L18)
+
+### :gear: UseFleetClusterNames
+
+| Type | Type |
+| ---------- | ---------- |
+| `UseFleetClusterNames` | `() => [string[], boolean, any]` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L22)
+
+### :gear: UseFleetK8sAPIPath
+
+| Type | Type |
+| ---------- | ---------- |
+| `UseFleetK8sAPIPath` | `( cluster?: string ) => [k8sAPIPath: string or undefined, loaded: boolean, error: Error or undefined]` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L15)
+
+### :gear: UseFleetK8sWatchResource
+
+| Type | Type |
+| ---------- | ---------- |
+| `UseFleetK8sWatchResource` | `<R extends FleetK8sResourceCommon or FleetK8sResourceCommon[]>( initResource: FleetWatchK8sResource or null ) => WatchK8sResult<R> or [undefined, boolean, any]` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L19)
+
+### :gear: UseHubClusterName
+
+| Type | Type |
+| ---------- | ---------- |
+| `UseHubClusterName` | `() => [hubClusterName: string or undefined, loaded: boolean, error: any]` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L14)
+
+
+<!-- TSDOC_END -->
 
 ### Utilities
 
