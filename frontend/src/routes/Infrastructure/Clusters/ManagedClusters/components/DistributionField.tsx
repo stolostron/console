@@ -46,6 +46,12 @@ const isUpdateVersionAcceptable = (currentVersion: string, newVersion: string) =
 
   return false
 }
+export const getCPUArchFromReleaseImage = (releaseImage = '') => {
+  const match = /.+:.*-(.*)/gm.exec(releaseImage)
+  if (match && match.length > 1 && match[1]) {
+    return match[1]
+  }
+}
 
 export function DistributionField(props: {
   cluster?: Cluster
@@ -76,7 +82,8 @@ export function DistributionField(props: {
     }
     const updates: any = {}
     clusterImageSets.forEach((cis) => {
-      if (cis.spec?.releaseImage.includes('multi')) {
+      const archType = getCPUArchFromReleaseImage(cis.spec?.releaseImage) ?? 'multi'
+      if (cis.spec?.releaseImage.includes(archType)) {
         const releaseImageVersion = getVersionFromReleaseImage(cis.spec?.releaseImage)
         if (
           releaseImageVersion &&
