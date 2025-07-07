@@ -27,7 +27,7 @@ describe('useFeatureFlags', () => {
 
     // Assert
     expect(setFeatureFlagMock).toHaveBeenCalledTimes(Object.entries(FEATURE_FLAGS).length + 1)
-    expect(setFeatureFlagMock).toHaveBeenCalledWith('@stolostron/multicluster-sdk/provider@1', true)
+    expect(setFeatureFlagMock).toHaveBeenCalledWith('MULTICLUSTER_SDK_PROVIDER_1', true)
     Object.keys(FEATURE_FLAGS).forEach((featureFlag) =>
       expect(setFeatureFlagMock).toHaveBeenCalledWith(featureFlag, false)
     )
@@ -44,7 +44,7 @@ describe('useFeatureFlags', () => {
 
     // Assert
     expect(setFeatureFlagMock).toHaveBeenCalledTimes(Object.entries(FEATURE_FLAGS).length + 1)
-    expect(setFeatureFlagMock).toHaveBeenCalledWith('@stolostron/multicluster-sdk/provider@1', true)
+    expect(setFeatureFlagMock).toHaveBeenCalledWith('MULTICLUSTER_SDK_PROVIDER_1', true)
     Object.keys(FEATURE_FLAGS).forEach((featureFlag) =>
       expect(setFeatureFlagMock).toHaveBeenCalledWith(featureFlag, enabled)
     )
