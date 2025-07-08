@@ -3,18 +3,18 @@ import { getBackendUrl } from '../api/apiRequests'
 import { consoleFetchJSON } from '@openshift-console/dynamic-plugin-sdk'
 
 const getHubClusterNameUrl = '/hub'
-let cachedhubClusterName: string | undefined = undefined
+let cachedHubClusterName: string | undefined = undefined
 
-export const fetchHubClusterName = async () => {
-  if (cachedhubClusterName) {
-    return cachedhubClusterName
+export const fetchHubClusterName = async (): Promise<string | undefined> => {
+  if (cachedHubClusterName) {
+    return cachedHubClusterName
   }
   const url = getBackendUrl() + getHubClusterNameUrl
   const data = await consoleFetchJSON(url, 'GET')
-  cachedhubClusterName = data.localHubName
-  return cachedhubClusterName
+  cachedHubClusterName = data.localHubName
+  return cachedHubClusterName
 }
 
-export const getCachedHubClusterName = () => {
-  return cachedhubClusterName
+export const getCachedHubClusterName = (): string | undefined => {
+  return cachedHubClusterName
 }

@@ -4,13 +4,13 @@ import { UseHubClusterName } from '../types'
 import { useEffect, useMemo, useState } from 'react'
 
 export const useHubClusterName: UseHubClusterName = () => {
-  const cachedhubClusterName = getCachedHubClusterName()
-  const [hubClusterName, setHubClusterName] = useState<string | undefined>(cachedhubClusterName)
-  const [loaded, setLoaded] = useState<boolean>(!cachedhubClusterName ? false : true)
+  const cachedHubClusterName = getCachedHubClusterName()
+  const [hubClusterName, setHubClusterName] = useState<string | undefined>(cachedHubClusterName)
+  const [loaded, setLoaded] = useState<boolean>(!!cachedHubClusterName)
   const [error, setError] = useState<any>(undefined)
 
   useEffect(() => {
-    if (cachedhubClusterName) {
+    if (cachedHubClusterName) {
       return undefined
     }
     void (async () => {
@@ -22,7 +22,8 @@ export const useHubClusterName: UseHubClusterName = () => {
         setError(err)
       }
     })()
-  }, [cachedhubClusterName])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return useMemo(() => [hubClusterName, loaded, error], [hubClusterName, loaded, error])
 }
