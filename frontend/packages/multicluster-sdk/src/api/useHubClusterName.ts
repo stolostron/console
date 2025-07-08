@@ -1,33 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { fetchHubClusterName, getCachedHubClusterName } from '../internal/cachedHubClusterName'
 import { UseHubClusterName } from '../types'
-import { useEffect, useState } from 'react'
-import { getBackendUrl } from './apiRequests'
-import { consoleFetchJSON } from '@openshift-console/dynamic-plugin-sdk'
-
-export const getHubClusterNameUrl = () => '/hub'
-let cachedhubClusterName: string | undefined = undefined
-
-export const fetchHubClusterName = async () => {
-  if (cachedhubClusterName) {
-    return cachedhubClusterName
-  }
-  const url = getBackendUrl() + getHubClusterNameUrl()
-  const data = await consoleFetchJSON(url, 'GET')
-  cachedhubClusterName = data.localHubName
-  return cachedhubClusterName
-}
+import { useEffect, useMemo, useState } from 'react'
 
 export const useHubClusterName: UseHubClusterName = () => {
+  const cachedhubClusterName = getCachedHubClusterName()
   const [hubClusterName, setHubClusterName] = useState<string | undefined>(cachedhubClusterName)
-  const [loaded, setLoaded] = useState<boolean>(false)
+  const [loaded, setLoaded] = useState<boolean>(!cachedhubClusterName ? false : true)
   const [error, setError] = useState<any>(undefined)
+
   useEffect(() => {
-    if (cachedhubClusterName && !error) {
-      setLoaded(true)
+    if (cachedhubClusterName) {
       return undefined
     }
-    setError(undefined)
-    setLoaded(false)
     void (async () => {
       try {
         const hubName = await fetchHubClusterName()
@@ -37,7 +22,7 @@ export const useHubClusterName: UseHubClusterName = () => {
         setError(err)
       }
     })()
-  }, [error])
+  }, [cachedhubClusterName])
 
-  return [hubClusterName, loaded, error]
+  return useMemo(() => [hubClusterName, loaded, error], [hubClusterName, loaded, error])
 }
