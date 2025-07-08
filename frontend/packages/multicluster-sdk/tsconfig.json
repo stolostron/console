@@ -4,5 +4,5 @@
     "outDir": "lib",
     "noEmit": false
   },
-  "include": ["**/*.ts"]
+  "include": ["src"]
 }

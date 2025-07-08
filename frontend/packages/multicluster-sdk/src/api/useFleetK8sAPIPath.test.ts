@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { renderHook } from '@testing-library/react-hooks'
-import { useFleetK8sAPIPath } from '../src/api/useFleetK8sAPIPath'
-import { BASE_K8S_API_PATH, MANAGED_CLUSTER_API_PATH } from '../src/internal/constants'
-import { getBackendUrl } from '../src/api'
+import { useFleetK8sAPIPath } from './useFleetK8sAPIPath'
+import { BASE_K8S_API_PATH, MANAGED_CLUSTER_API_PATH } from '../internal/constants'
+import { getBackendUrl } from '.'
 
-jest.mock('../src/api/useHubClusterName.ts', () => ({
+jest.mock('./useHubClusterName.ts', () => ({
   useHubClusterName: jest.fn(() => {
     return ['local-cluster', true, undefined]
   }),
