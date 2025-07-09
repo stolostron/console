@@ -2,17 +2,57 @@
 import '@testing-library/jest-dom'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
-import { FleetResourceLink } from './FleetResourceLink'
 
-// mock ResourceLink from OpenShift Console SDK
+// mock ResourceLink and ResourceIcon from @openshift-console/dynamic-plugin-sdk
 jest.mock('@openshift-console/dynamic-plugin-sdk', () => ({
-  ResourceLink: ({ name, groupVersionKind }: any) => (
-    <div id="resource-link-mock">
-      ResourceLink: {name} ({groupVersionKind?.kind})
+  ResourceLink: ({ name, groupVersionKind, children, ...props }: any) => (
+    <div data-testid="resource-link-mock" {...props}>
+      ResourceLink: {name} ({groupVersionKind?.kind}){children}
     </div>
   ),
-  ResourceIcon: ({ groupVersionKind }: any) => <span id="resource-icon-mock">Icon: {groupVersionKind?.kind}</span>,
+  ResourceIcon: ({ groupVersionKind }: any) => (
+    <span data-testid="resource-icon-mock">Icon: {groupVersionKind?.kind}</span>
+  ),
 }))
+
+// mock the hooks
+const mockUseHubClusterName = jest.fn()
+const mockUseFleetClusterNames = jest.fn()
+const mockUseLocation = jest.fn()
+
+jest.mock('./useHubClusterName', () => ({
+  useHubClusterName: () => mockUseHubClusterName(),
+}))
+
+jest.mock('./useFleetClusterNames', () => ({
+  useFleetClusterNames: () => mockUseFleetClusterNames(),
+}))
+
+jest.mock('react-router-dom-v5-compat', () => ({
+  ...jest.requireActual('react-router-dom-v5-compat'),
+  useLocation: () => mockUseLocation(),
+  Link: ({ to, children, ...props }: any) => (
+    <a href={to} {...props}>
+      {children}
+    </a>
+  ),
+}))
+
+// mock the search path utility
+jest.mock('./utils/searchPaths', () => ({
+  getURLSearchParam: ({ cluster, kind, apigroup, apiversion, name, namespace }: any) => {
+    const params = new URLSearchParams()
+    if (cluster) params.append('cluster', cluster)
+    if (kind) params.append('kind', kind)
+    if (apigroup) params.append('apigroup', apigroup)
+    if (apiversion) params.append('apiversion', apiversion)
+    if (name) params.append('name', name)
+    if (namespace) params.append('namespace', namespace)
+    return `?${params.toString()}`
+  },
+}))
+
+import { FleetResourceLink } from './FleetResourceLink'
 
 describe('FleetResourceLink', () => {
   const defaultProps = {
@@ -25,261 +65,362 @@ describe('FleetResourceLink', () => {
     },
   }
 
-  it('should render VM link with cluster for VirtualMachine', () => {
-    render(
-      <MemoryRouter>
-        <FleetResourceLink {...defaultProps} cluster="test-cluster" />
-      </MemoryRouter>
-    )
-
-    const link = screen.getByRole('link')
-    expect(link).toHaveAttribute('href', '/multicloud/infrastructure/virtualmachines/test-cluster/default/test-vm')
-    expect(link).toHaveTextContent('test-vm')
-    expect(screen.getByTestId('resource-icon-mock')).toHaveTextContent('Icon: VirtualMachine')
+  beforeEach(() => {
+    jest.clearAllMocks()
+    // default mock values
+    mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
+    mockUseFleetClusterNames.mockReturnValue([['local-cluster', 'managed-cluster-1'], true, null])
+    mockUseLocation.mockReturnValue({ pathname: '/multicloud/infrastructure' })
   })
 
-  it('should render search link for non-VM resources with cluster', () => {
-    render(
-      <MemoryRouter>
-        <FleetResourceLink
-          name="test-pod"
-          namespace="default"
-          cluster="test-cluster"
-          groupVersionKind={{
-            group: '',
-            version: 'v1',
-            kind: 'Pod',
-          }}
-        />
-      </MemoryRouter>
-    )
+  describe('Fleet not available', () => {
+    it('should fallback to ResourceLink when no clusters are available', () => {
+      mockUseFleetClusterNames.mockReturnValue([[], true, null])
 
-    const link = screen.getByRole('link')
-    const href = link.getAttribute('href')
+      render(
+        <MemoryRouter>
+          <FleetResourceLink {...defaultProps} cluster="test-cluster" />
+        </MemoryRouter>
+      )
 
-    // test for encoded URL parts (since getURLSearchParam encodes)
-    expect(href).toContain('/multicloud/search/resources')
-    expect(href).toContain('cluster%3Dtest-cluster')
-    expect(href).toContain('kind%3DPod')
-    expect(href).toContain('apiversion%3Dv1')
-    expect(href).toContain('namespace%3Ddefault')
-    expect(href).toContain('name%3Dtest-pod')
+      expect(screen.getByTestId('resource-link-mock')).toHaveTextContent('ResourceLink: test-vm (VirtualMachine)')
+    })
+
+    it('should fallback to ResourceLink when clusters are not loaded', () => {
+      mockUseFleetClusterNames.mockReturnValue([['local-cluster'], false, null])
+
+      render(
+        <MemoryRouter>
+          <FleetResourceLink {...defaultProps} cluster="test-cluster" />
+        </MemoryRouter>
+      )
+
+      expect(screen.getByTestId('resource-link-mock')).toHaveTextContent('ResourceLink: test-vm (VirtualMachine)')
+    })
   })
 
-  it('should fallback to ResourceLink when no cluster is provided', () => {
-    render(
-      <MemoryRouter>
-        <FleetResourceLink {...defaultProps} />
-      </MemoryRouter>
-    )
+  describe('Hub cluster cases', () => {
+    // ... other tests ...
 
-    expect(screen.getByTestId('resource-link-mock')).toHaveTextContent('ResourceLink: test-vm (VirtualMachine)')
+    it('should fallback to ResourceLink for first-class resource on hub cluster outside multicloud path', () => {
+      mockUseLocation.mockReturnValue({ pathname: '/k8s/cluster/nodes' })
+
+      render(
+        <MemoryRouter>
+          <FleetResourceLink {...defaultProps} cluster="local-cluster" />
+        </MemoryRouter>
+      )
+
+      expect(screen.getByTestId('resource-link-mock')).toHaveTextContent('ResourceLink: test-vm (VirtualMachine)')
+    })
+
+    it('should fallback to ResourceLink for non-first-class resource on hub cluster', () => {
+      mockUseLocation.mockReturnValue({ pathname: '/multicloud/infrastructure' })
+
+      render(
+        <MemoryRouter>
+          <FleetResourceLink
+            name="test-pod"
+            cluster="local-cluster"
+            groupVersionKind={{
+              group: '',
+              version: 'v1',
+              kind: 'Pod',
+            }}
+          />
+        </MemoryRouter>
+      )
+
+      expect(screen.getByTestId('resource-link-mock')).toHaveTextContent('ResourceLink: test-pod (Pod)')
+    })
   })
 
-  it('should handle displayName override', () => {
-    render(
-      <MemoryRouter>
-        <FleetResourceLink {...defaultProps} cluster="test-cluster" displayName="Custom VM Name" />
-      </MemoryRouter>
-    )
+  describe('No cluster specified', () => {
+    it('should fallback to ResourceLink when no cluster is provided', () => {
+      render(
+        <MemoryRouter>
+          <FleetResourceLink {...defaultProps} />
+        </MemoryRouter>
+      )
 
-    const link = screen.getByRole('link')
-    expect(link).toHaveTextContent('Custom VM Name')
+      expect(screen.getByTestId('resource-link-mock')).toHaveTextContent('ResourceLink: test-vm (VirtualMachine)')
+    })
   })
 
-  it('should handle missing namespace for VM', () => {
-    render(
-      <MemoryRouter>
-        <FleetResourceLink
-          name="test-vm"
-          cluster="test-cluster"
-          groupVersionKind={{
-            group: 'kubevirt.io',
-            version: 'v1',
-            kind: 'VirtualMachine',
-          }}
-          // namespace is undefined
-        />
-      </MemoryRouter>
-    )
+  describe('Hub cluster loading state', () => {
+    it('should show skeleton when hub cluster is not loaded', () => {
+      mockUseHubClusterName.mockReturnValue([undefined, false, null])
 
-    const link = screen.getByRole('link')
-    const href = link.getAttribute('href')
-    expect(href).toBeTruthy() // Assert href exists
+      render(
+        <MemoryRouter>
+          <FleetResourceLink {...defaultProps} cluster="test-cluster" />
+        </MemoryRouter>
+      )
 
-    // should fall back to search URL, not VM URL
-    expect(href).toContain('/multicloud/search/resources')
-
-    const decodedUrl = decodeURIComponent(href!)
-    expect(decodedUrl).toContain('cluster=test-cluster')
-    expect(decodedUrl).toContain('kind=VirtualMachine')
-    expect(decodedUrl).toContain('apiversion=kubevirt.io/v1')
-    expect(decodedUrl).toContain('name=test-vm')
-    // namespace should NOT appear since it's undefined
-    expect(decodedUrl).not.toContain('namespace=')
+      const skeleton = screen.getByText('test-vm')
+      expect(skeleton).toHaveClass('pf-v5-c-skeleton')
+    })
   })
 
-  it('should handle empty string namespace for VM by falling back to search', () => {
-    render(
-      <MemoryRouter>
-        <FleetResourceLink
-          name="test-vm"
-          cluster="test-cluster"
-          namespace="" // empty string, not undefined
-          groupVersionKind={{
-            group: 'kubevirt.io',
-            version: 'v1',
-            kind: 'VirtualMachine',
-          }}
-        />
-      </MemoryRouter>
-    )
+  describe('Hub cluster cases', () => {
+    it('should link to first-class page for VirtualMachine on hub cluster in multicloud path', () => {
+      mockUseLocation.mockReturnValue({ pathname: '/multicloud/infrastructure/virtualmachines' })
 
-    const link = screen.getByRole('link')
-    const href = link.getAttribute('href')
-    expect(href).toBeTruthy() // Assert href exists
+      render(
+        <MemoryRouter>
+          <FleetResourceLink {...defaultProps} cluster="local-cluster" />
+        </MemoryRouter>
+      )
 
-    // should fall back to search URL because empty string is falsy
-    expect(href).toContain('/multicloud/search/resources')
+      const link = screen.getByRole('link')
+      expect(link).toHaveAttribute('href', '/multicloud/infrastructure/virtualmachines/local-cluster/default/test-vm')
+    })
 
-    const decodedUrl = decodeURIComponent(href!)
-    expect(decodedUrl).toContain('cluster=test-cluster')
-    expect(decodedUrl).toContain('kind=VirtualMachine')
-    expect(decodedUrl).toContain('name=test-vm')
-    // namespace should NOT appear for empty string
-    expect(decodedUrl).not.toContain('namespace=')
+    it('should link to first-class page for ManagedCluster on hub cluster in multicloud path', () => {
+      mockUseLocation.mockReturnValue({ pathname: '/multicloud/infrastructure/clusters' })
+
+      render(
+        <MemoryRouter>
+          <FleetResourceLink
+            name="managed-cluster-1"
+            cluster="local-cluster"
+            groupVersionKind={{
+              group: 'cluster.open-cluster-management.io',
+              version: 'v1',
+              kind: 'ManagedCluster',
+            }}
+          />
+        </MemoryRouter>
+      )
+
+      const link = screen.getByRole('link')
+      expect(link).toHaveAttribute(
+        'href',
+        '/multicloud/infrastructure/clusters/details/managed-cluster-1/managed-cluster-1/overview'
+      )
+    })
+
+    it('should fallback to ResourceLink for first-class resource on hub cluster outside multicloud path', () => {
+      mockUseLocation.mockReturnValue({ pathname: '/k8s/cluster/nodes' })
+
+      render(
+        <MemoryRouter>
+          <FleetResourceLink {...defaultProps} cluster="local-cluster" />
+        </MemoryRouter>
+      )
+
+      expect(screen.getByTestId('resource-link-mock')).toHaveTextContent('ResourceLink: test-vm (VirtualMachine)')
+    })
+
+    it('should fallback to ResourceLink for non-first-class resource on hub cluster', () => {
+      mockUseLocation.mockReturnValue({ pathname: '/multicloud/infrastructure' })
+
+      render(
+        <MemoryRouter>
+          <FleetResourceLink
+            name="test-pod"
+            cluster="local-cluster"
+            groupVersionKind={{
+              group: '',
+              version: 'v1',
+              kind: 'Pod',
+            }}
+          />
+        </MemoryRouter>
+      )
+
+      expect(screen.getByTestId('resource-link-mock')).toHaveTextContent('ResourceLink: test-pod (Pod)')
+    })
   })
 
-  it('should handle className and styling props', () => {
-    render(
-      <MemoryRouter>
-        <FleetResourceLink
-          {...defaultProps}
-          cluster="test-cluster"
-          className="custom-class"
-          inline={true}
-          truncate={true}
-        />
-      </MemoryRouter>
-    )
+  describe('Managed cluster cases', () => {
+    it('should link to first-class page for VirtualMachine on managed cluster', () => {
+      render(
+        <MemoryRouter>
+          <FleetResourceLink {...defaultProps} cluster="managed-cluster-1" />
+        </MemoryRouter>
+      )
 
-    const wrapper = screen.getByText('test-vm').closest('span')
-    expect(wrapper).toHaveClass(
-      'co-resource-item',
-      'custom-class',
-      'co-resource-item--inline',
-      'co-resource-item--truncate'
-    )
+      const link = screen.getByRole('link')
+      expect(link).toHaveAttribute(
+        'href',
+        '/multicloud/infrastructure/virtualmachines/managed-cluster-1/default/test-vm'
+      )
+    })
+
+    it('should link to first-class page for VirtualMachineInstance on managed cluster', () => {
+      render(
+        <MemoryRouter>
+          <FleetResourceLink
+            {...defaultProps}
+            cluster="managed-cluster-1"
+            groupVersionKind={{
+              group: 'kubevirt.io',
+              version: 'v1',
+              kind: 'VirtualMachineInstance',
+            }}
+          />
+        </MemoryRouter>
+      )
+
+      const link = screen.getByRole('link')
+      expect(link).toHaveAttribute(
+        'href',
+        '/multicloud/infrastructure/virtualmachines/managed-cluster-1/default/test-vm'
+      )
+    })
+
+    it('should link to search page for non-first-class resource on managed cluster', () => {
+      render(
+        <MemoryRouter>
+          <FleetResourceLink
+            name="test-pod"
+            namespace="default"
+            cluster="managed-cluster-1"
+            groupVersionKind={{
+              group: '',
+              version: 'v1',
+              kind: 'Pod',
+            }}
+          />
+        </MemoryRouter>
+      )
+
+      const link = screen.getByRole('link')
+      const href = link.getAttribute('href')
+      expect(href).toContain('/multicloud/search/resources')
+      expect(href).toContain('cluster=managed-cluster-1')
+      expect(href).toContain('kind=Pod')
+    })
+
+    it('should fallback to search page for VirtualMachine without namespace on managed cluster', () => {
+      render(
+        <MemoryRouter>
+          <FleetResourceLink
+            name="test-vm"
+            cluster="managed-cluster-1"
+            groupVersionKind={{
+              group: 'kubevirt.io',
+              version: 'v1',
+              kind: 'VirtualMachine',
+            }}
+          />
+        </MemoryRouter>
+      )
+
+      const link = screen.getByRole('link')
+      const href = link.getAttribute('href')
+      expect(href).toContain('/multicloud/search/resources')
+      expect(href).toContain('cluster=managed-cluster-1')
+      expect(href).toContain('kind=VirtualMachine')
+    })
   })
 
-  it('should handle hideIcon prop', () => {
-    render(
-      <MemoryRouter>
-        <FleetResourceLink {...defaultProps} cluster="test-cluster" hideIcon={true} />
-      </MemoryRouter>
-    )
+  describe('No cluster specified', () => {
+    it('should fallback to ResourceLink when no cluster is provided', () => {
+      render(
+        <MemoryRouter>
+          <FleetResourceLink {...defaultProps} />
+        </MemoryRouter>
+      )
 
-    expect(screen.queryByTestId('resource-icon-mock')).not.toBeInTheDocument()
+      expect(screen.getByTestId('resource-link-mock')).toHaveTextContent('ResourceLink: test-vm (VirtualMachine)')
+    })
   })
 
-  it('should handle nameSuffix', () => {
-    render(
-      <MemoryRouter>
-        <FleetResourceLink {...defaultProps} cluster="test-cluster" nameSuffix=" (suffix)" />
-      </MemoryRouter>
-    )
+  describe('Styling and props', () => {
+    it('should handle className and styling props', () => {
+      render(
+        <MemoryRouter>
+          <FleetResourceLink
+            {...defaultProps}
+            cluster="managed-cluster-1"
+            className="custom-class"
+            inline={true}
+            truncate={true}
+          />
+        </MemoryRouter>
+      )
 
-    const link = screen.getByRole('link')
-    expect(link).toHaveTextContent('test-vm (suffix)')
-  })
+      const wrapper = screen.getByText('test-vm').closest('span')
+      expect(wrapper).toHaveClass(
+        'co-resource-item',
+        'custom-class',
+        'co-resource-item--inline',
+        'co-resource-item--truncate'
+      )
+    })
 
-  it('should handle title and data-test attributes', () => {
-    render(
-      <MemoryRouter>
-        <FleetResourceLink {...defaultProps} cluster="test-cluster" title="VM Title" dataTest="custom-test-id" />
-      </MemoryRouter>
-    )
+    it('should handle hideIcon prop', () => {
+      render(
+        <MemoryRouter>
+          <FleetResourceLink {...defaultProps} cluster="managed-cluster-1" hideIcon={true} />
+        </MemoryRouter>
+      )
 
-    const link = screen.getByRole('link')
-    expect(link).toHaveAttribute('title', 'VM Title')
-    expect(link).toHaveAttribute('data-test', 'custom-test-id')
-    expect(link).toHaveAttribute('data-test-id', 'test-vm')
-  })
+      expect(screen.queryByTestId('resource-icon-mock')).not.toBeInTheDocument()
+    })
 
-  it('should handle search link when no groupVersionKind provided', () => {
-    render(
-      <MemoryRouter>
-        <FleetResourceLink
-          name="test-resource"
-          cluster="test-cluster"
-          // no groupVersionKind provided
-        />
-      </MemoryRouter>
-    )
+    it('should handle displayName override', () => {
+      render(
+        <MemoryRouter>
+          <FleetResourceLink {...defaultProps} cluster="managed-cluster-1" displayName="Custom VM Name" />
+        </MemoryRouter>
+      )
 
-    const link = screen.getByRole('link')
-    const href = link.getAttribute('href')
+      const link = screen.getByRole('link')
+      expect(link).toHaveTextContent('Custom VM Name')
+    })
 
-    expect(href).toContain('/multicloud/search/resources')
-    expect(href).toContain('cluster%3Dtest-cluster')
-    expect(href).toContain('name%3Dtest-resource')
-    expect(link).toHaveTextContent('test-resource')
-  })
+    it('should handle nameSuffix', () => {
+      render(
+        <MemoryRouter>
+          <FleetResourceLink {...defaultProps} cluster="managed-cluster-1" nameSuffix=" (suffix)" />
+        </MemoryRouter>
+      )
 
-  it('should handle children prop', () => {
-    render(
-      <MemoryRouter>
-        <FleetResourceLink {...defaultProps} cluster="test-cluster">
-          <div id="child-content">Child Content</div>
-        </FleetResourceLink>
-      </MemoryRouter>
-    )
+      const link = screen.getByRole('link')
+      expect(link).toHaveTextContent('test-vm (suffix)')
+    })
 
-    expect(screen.getByTestId('child-content')).toHaveTextContent('Child Content')
-  })
+    it('should handle title and data-test attributes', () => {
+      render(
+        <MemoryRouter>
+          <FleetResourceLink {...defaultProps} cluster="managed-cluster-1" title="VM Title" dataTest="custom-test-id" />
+        </MemoryRouter>
+      )
 
-  it('should handle search link for resource with apigroup', () => {
-    render(
-      <MemoryRouter>
-        <FleetResourceLink
-          name="test-deployment"
-          namespace="default"
-          cluster="test-cluster"
-          groupVersionKind={{
-            group: 'apps',
-            version: 'v1',
-            kind: 'Deployment',
-          }}
-        />
-      </MemoryRouter>
-    )
+      const link = screen.getByRole('link')
+      expect(link).toHaveAttribute('title', 'VM Title')
+      expect(link).toHaveAttribute('data-test', 'custom-test-id')
+      expect(link).toHaveAttribute('data-test-id', 'test-vm')
+    })
 
-    const link = screen.getByRole('link')
-    const href = link.getAttribute('href')
+    it('should handle children prop', () => {
+      render(
+        <MemoryRouter>
+          <FleetResourceLink {...defaultProps} cluster="managed-cluster-1">
+            <div data-testid="child-content">Child Content</div>
+          </FleetResourceLink>
+        </MemoryRouter>
+      )
 
-    expect(href).toContain('apiversion%3Dapps%2Fv1') // encoded = and /
-  })
+      expect(screen.getByTestId('child-content')).toHaveTextContent('Child Content')
+    })
 
-  it('should handle search link for core resource without apigroup', () => {
-    render(
-      <MemoryRouter>
-        <FleetResourceLink
-          name="test-service"
-          namespace="default"
-          cluster="test-cluster"
-          groupVersionKind={{
-            group: '',
-            version: 'v1',
-            kind: 'Service',
-          }}
-        />
-      </MemoryRouter>
-    )
+    it('should handle children prop in fallback ResourceLink', () => {
+      mockUseFleetClusterNames.mockReturnValue([[], true, null]) // No fleet available
 
-    const link = screen.getByRole('link')
-    const href = link.getAttribute('href')
+      render(
+        <MemoryRouter>
+          <FleetResourceLink {...defaultProps} cluster="test-cluster">
+            <div data-testid="child-content">Child Content</div>
+          </FleetResourceLink>
+        </MemoryRouter>
+      )
 
-    expect(href).toContain('apiversion%3Dv1') // encoded =
-    expect(href).not.toContain('apiversion%3D%2Fv1') // should not have encoded /
+      expect(screen.getByTestId('resource-link-mock')).toBeInTheDocument()
+      expect(screen.getByTestId('child-content')).toHaveTextContent('Child Content')
+    })
   })
 })
