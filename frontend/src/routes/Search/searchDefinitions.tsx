@@ -633,6 +633,17 @@ export function CreateDetailsLink(props: Readonly<{ item: any }>) {
           {item.name}
         </Link>
       )
+    case 'virtualmachine':
+    case 'virtualmachineinstance':
+      // When the integration is enabled, we should go to the new ACM VM page
+      if (item.cluster && item.namespace) {
+        return (
+          <Link to={`/multicloud/infrastructure/virtualmachines/${item.cluster}/${item.namespace}/${item.name}`}>
+            {item.name}
+          </Link>
+        )
+      }
+      return defaultSearchLink
     default:
       return defaultSearchLink
   }
@@ -730,6 +741,20 @@ export function CreateGlobalSearchDetailsLink(props: { item: any }) {
         path,
         `?${encodeURIComponent('showClusterIssues=true')}`
       )
+    }
+    case 'virtualmachine':
+    case 'virtualmachineinstance': {
+      // when the integration is enabled, we should go to the new ACM VM page
+      if (item.cluster && item.namespace) {
+        const path = `/multicloud/infrastructure/virtualmachines/${item.cluster}/${item.namespace}/${item.name}`
+        return generateLink(
+          item.managedHub === 'global-hub' && !item._hubClusterResource ? 'external' : 'internal',
+          path
+        )
+      }
+      const searchLink = generateLink('internal', NavigationPath.resources, GetUrlSearchParam(item))
+      const externalLink = generateLink('external', NavigationPath.resources, GetUrlSearchParam(item))
+      return item.managedHub !== 'global-hub' ? externalLink : searchLink
     }
     default: {
       const searchLink = generateLink('internal', NavigationPath.resources, GetUrlSearchParam(item))
