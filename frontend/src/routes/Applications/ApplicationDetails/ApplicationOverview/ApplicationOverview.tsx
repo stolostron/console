@@ -1,37 +1,26 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-  AcmActionGroup,
-  AcmButton,
-  AcmDescriptionList,
-  AcmInlineStatusGroup,
-  AcmPageContent,
-  ListItems,
-} from '../../../../ui-components'
-import { useTranslation } from '../../../../lib/acm-i18next'
-import {
   ButtonVariant,
   Card,
   CardBody,
-  PageSection,
-  Spinner,
   Flex,
   FlexItem,
+  PageSection,
+  Spinner,
   Text,
   Tooltip,
 } from '@patternfly/react-core'
 import { OutlinedQuestionCircleIcon, SyncAltIcon } from '@patternfly/react-icons'
-import { Fragment, useEffect, useState } from 'react'
-import {
-  getClusterCount,
-  getClusterCountField,
-  getClusterCountSearchLink,
-  getClusterCountString,
-  getSearchLink,
-} from '../../helpers/resource-helper'
-import { TimeWindowLabels } from '../../components/TimeWindowLabels'
 import _ from 'lodash'
-import { REQUEST_STATUS } from './actions'
+import { Fragment, useEffect, useState } from 'react'
+import { TFunction } from 'react-i18next'
+import { generatePath, Link } from 'react-router-dom-v5-compat'
+import { useLocalHubName } from '../../../../hooks/use-local-hub'
+import { useTranslation } from '../../../../lib/acm-i18next'
+import AcmTimestamp from '../../../../lib/AcmTimestamp'
+import { getAuthorizedNamespaces, rbacCreate } from '../../../../lib/rbac-util'
+import { NavigationPath } from '../../../../NavigationPath'
 import {
   Application,
   ApplicationKind,
@@ -41,22 +30,34 @@ import {
   Subscription,
   SubscriptionDefinition,
 } from '../../../../resources'
+import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import {
+  AcmActionGroup,
+  AcmButton,
+  AcmDescriptionList,
+  AcmInlineStatusGroup,
+  AcmPageContent,
+  ListItems,
+} from '../../../../ui-components'
+import { AmcArgoRefresh } from '../../../../ui-components/AcmInlineStatus/AmcArgoRefresh'
+import LabelWithPopover from '../../components/LabelWithPopover'
 import ResourceLabels from '../../components/ResourceLabels'
+import { ISyncResourceModalProps, SyncResourceModal } from '../../components/SyncResourceModal'
+import { TimeWindowLabels } from '../../components/TimeWindowLabels'
 import '../../css/ApplicationOverview.css'
-import { TFunction } from 'react-i18next'
+import {
+  getClusterCount,
+  getClusterCountField,
+  getClusterCountSearchLink,
+  getClusterCountString,
+  getSearchLink,
+} from '../../helpers/resource-helper'
 import { getApplicationRepos } from '../../Overview'
 import { ApplicationDataType, useApplicationDetailsContext } from '../ApplicationDetails'
-import { NavigationPath } from '../../../../NavigationPath'
-import { ISyncResourceModalProps, SyncResourceModal } from '../../components/SyncResourceModal'
+import { DrawerShapes } from '../ApplicationTopology/components/DrawerShapes'
 import { isSearchAvailable } from '../ApplicationTopology/helpers/search-helper'
 import { getDiagramElements } from '../ApplicationTopology/model/topology'
-import { getAuthorizedNamespaces, rbacCreate } from '../../../../lib/rbac-util'
-import { generatePath, Link } from 'react-router-dom-v5-compat'
-import { DrawerShapes } from '../ApplicationTopology/components/DrawerShapes'
-import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
-import LabelWithPopover from '../../components/LabelWithPopover'
-import AcmTimestamp from '../../../../lib/AcmTimestamp'
-import { useLocalHubName } from '../../../../hooks/use-local-hub'
+import { REQUEST_STATUS } from './actions'
 
 const clusterResourceStatusText = (t: TFunction) => t('Cluster resource status')
 const clusterResourceStatusTooltipSubscription = (t: TFunction) =>
@@ -241,7 +242,13 @@ export function ApplicationOverviewPageContent() {
               <OutlinedQuestionCircleIcon className="help-icon" />
             </Tooltip>
           ),
-          value: <AcmTimestamp timestamp={lastSyncedTimeStamp} />,
+
+          value: (
+            <>
+              <AcmTimestamp timestamp={lastSyncedTimeStamp} />
+              {(isAppSet || isArgoApp) && <AmcArgoRefresh app={applicationData.application.app} />}
+            </>
+          ),
         },
       ]
     } else {
