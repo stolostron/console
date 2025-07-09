@@ -104,7 +104,7 @@ export const RoleBindingSection = ({
             placeholder: 'Select or enter roles',
             value: selectedRoles,
             onChange: onRoleChange,
-            options: clusterRoles.filter((r) => r !== null).map((r) => ({ id: r._uid, value: r.name })),
+            options: clusterRoles.filter((r) => r !== null).map((r) => ({ id: r.name, value: r.name })),
             isRequired: isRequired,
             isHidden: isViewing,
             isDisabled: isRolesDisabled,
