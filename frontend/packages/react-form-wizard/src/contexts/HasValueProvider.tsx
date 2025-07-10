@@ -34,7 +34,7 @@ export function HasValueProvider(props: { children: ReactNode }) {
         () => () => {
             if (parentUpdateHasValue) parentUpdateHasValue()
         },
-        [parentUpdateHasValue],
+        [parentUpdateHasValue]
     )
 
     const parentSetHasValue = useContext(SetHasValueContext)

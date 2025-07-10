@@ -38,7 +38,7 @@ export function HasInputsProvider(props: { children: ReactNode }) {
         () => () => {
             parentUpdateHasInputs()
         },
-        [parentUpdateHasInputs],
+        [parentUpdateHasInputs]
     )
 
     return (

@@ -122,7 +122,7 @@ export function PlacementSection(props: {
         if (!namespace) return {}
         const namespacedPlacements = props.existingPlacements.filter((placement) => placement.metadata?.namespace === namespace)
         const namespacedPlacementRules = props.existingPlacementRules.filter(
-            (placementRule) => placementRule.metadata?.namespace === namespace,
+            (placementRule) => placementRule.metadata?.namespace === namespace
         )
         return { namespacedPlacements, namespacedPlacementRules }
     }, [props.existingPlacements, props.existingPlacementRules, props.bindingSubjectKind, resources])
@@ -139,9 +139,8 @@ export function PlacementSection(props: {
                 .filter((clusterSetBinding) =>
                     props.existingClusterSets?.find(
                         (clusterSet) =>
-                            clusterSet.metadata?.name === clusterSetBinding.spec?.clusterSet &&
-                            clusterSet.metadata?.namespace === namespace,
-                    ),
+                            clusterSet.metadata?.name === clusterSetBinding.spec?.clusterSet && clusterSet.metadata?.namespace === namespace
+                    )
                 )
                 .map((clusterSetBinding) => clusterSetBinding.spec?.clusterSet ?? '') ?? []
         )

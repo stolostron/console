@@ -108,7 +108,7 @@ interface ArgoWizardProps {
                   secretRef?: string | undefined
                   namespace?: string | undefined
               }
-            | undefined,
+            | undefined
     ) => Promise<unknown>
     getGitPaths: (
         channelPath: string,
@@ -118,7 +118,7 @@ interface ArgoWizardProps {
                   secretRef?: string | undefined
                   namespace?: string | undefined
               }
-            | undefined,
+            | undefined
     ) => Promise<unknown>
     resources?: IResource[]
     yamlEditor?: () => ReactNode
@@ -138,7 +138,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
                 ?.filter((channel) => channel?.spec?.type === 'Git' || channel?.spec?.type === 'GitHub')
                 .filter((channel) => !channel?.spec?.secretRef) // filter out private ones
                 .map((channel) => channel?.spec?.pathname),
-        [props.channels],
+        [props.channels]
     )
     const [createdChannels, setCreatedChannels] = useState<string[]>([])
     const gitChannels = useMemo(() => {
@@ -187,8 +187,8 @@ export function ArgoWizard(props: ArgoWizardProps) {
                     () => () =>
                         getGitBranchList(
                             { metadata: { name: '', namespace: '' }, spec: { pathname: channel, type: 'git' } },
-                            props.getGitRevisions,
-                        ),
+                            props.getGitRevisions
+                        )
                 )
 
                 setGitPathsAsyncCallback(
@@ -202,8 +202,8 @@ export function ArgoWizard(props: ArgoWizardProps) {
                                 spec: { pathname: channel, type: 'git' },
                             },
                             applicationSet.spec.template.spec.source.targetRevision,
-                            props.getGitPaths,
-                        ),
+                            props.getGitPaths
+                        )
                 )
             }
         }
@@ -351,8 +351,8 @@ export function ArgoWizard(props: ArgoWizardProps) {
                                                     metadata: { name: channel?.metadata?.name, namespace: channel?.metadata?.namespace },
                                                     spec: { pathname: value as string, type: 'git' },
                                                 },
-                                                props.getGitRevisions,
-                                            ),
+                                                props.getGitRevisions
+                                            )
                                     )
                                 }}
                                 validation={validateWebURL}
@@ -367,8 +367,8 @@ export function ArgoWizard(props: ArgoWizardProps) {
                                             () => () =>
                                                 getGitBranchList(
                                                     { metadata: { name: '', namespace: '' }, spec: { pathname: value, type: 'git' } },
-                                                    props.getGitRevisions,
-                                                ),
+                                                    props.getGitRevisions
+                                                )
                                         )
                                         return [...channels]
                                     })
@@ -385,7 +385,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
                                     isCreatable
                                     onValueChange={(value, item) => {
                                         const channel = props.channels?.find(
-                                            (channel) => channel?.spec?.pathname === item.spec.template.spec.source.repoURL,
+                                            (channel) => channel?.spec?.pathname === item.spec.template.spec.source.repoURL
                                         )
                                         const path = createdChannels.find((channel) => channel === item.spec.template.spec.source.repoURL)
                                         setGitPathsAsyncCallback(
@@ -399,8 +399,8 @@ export function ArgoWizard(props: ArgoWizardProps) {
                                                         spec: { pathname: channel?.spec.pathname || path || '', type: 'git' },
                                                     },
                                                     value as string,
-                                                    props.getGitPaths,
-                                                ),
+                                                    props.getGitPaths
+                                                )
                                         )
                                     }}
                                 />
@@ -433,8 +433,8 @@ export function ArgoWizard(props: ArgoWizardProps) {
                                             () => () =>
                                                 getGitBranchList(
                                                     { metadata: { name: '', namespace: '' }, spec: { pathname: value, type: 'git' } },
-                                                    props.getGitRevisions,
-                                                ),
+                                                    props.getGitRevisions
+                                                )
                                         )
                                         return [...channels]
                                     })
@@ -618,7 +618,7 @@ export function TimeWindow(props: { timeZone: string[] }) {
 
 async function getGitBranchList(
     channel: Channel,
-    getGitBranches: (channelPath: string, secretArgs?: { secretRef?: string; namespace?: string } | undefined) => Promise<unknown>,
+    getGitBranches: (channelPath: string, secretArgs?: { secretRef?: string; namespace?: string } | undefined) => Promise<unknown>
 ) {
     return getGitBranches(channel.spec.pathname, {
         secretRef: channel.spec?.secretRef?.name,
@@ -629,7 +629,7 @@ async function getGitBranchList(
 async function getGitPathList(
     channel: Channel,
     branch: string,
-    getGitPaths: (channelPath: string, branch: string, secretArgs?: { secretRef?: string; namespace?: string }) => Promise<unknown>,
+    getGitPaths: (channelPath: string, branch: string, secretArgs?: { secretRef?: string; namespace?: string }) => Promise<unknown>
 ): Promise<string[]> {
     return getGitPaths(channel?.spec?.pathname, branch, {
         secretRef: channel?.spec?.secretRef?.name,
@@ -787,7 +787,7 @@ function ArgoWizardPlacementSection(props: {
         props.clusterSetBindings
             ?.filter((clusterSetBinding) => clusterSetBinding.metadata?.namespace === applicationSet?.metadata?.namespace)
             .filter((clusterSetBinding) =>
-                props.clusterSets?.find((clusterSet) => clusterSet.metadata?.name === clusterSetBinding.spec?.clusterSet),
+                props.clusterSets?.find((clusterSet) => clusterSet.metadata?.name === clusterSetBinding.spec?.clusterSet)
             )
             .map((clusterSetBinding) => clusterSetBinding.spec?.clusterSet ?? '') ?? []
 

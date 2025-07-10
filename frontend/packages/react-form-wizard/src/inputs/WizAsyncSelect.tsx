@@ -32,7 +32,7 @@ export function WizAsyncSelect(props: WizAsyncSelectProps) {
                 setOpen(false)
             }
         },
-        [setValue],
+        [setValue]
     )
 
     const onClear = useCallback(() => setValue(''), [setValue])
@@ -49,7 +49,7 @@ export function WizAsyncSelect(props: WizAsyncSelectProps) {
                         {option}
                     </SelectOption>
                 )),
-        [options],
+        [options]
     )
 
     const sync = useCallback(() => {

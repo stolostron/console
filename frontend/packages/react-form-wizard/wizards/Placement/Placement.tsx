@@ -33,7 +33,7 @@ export function Placements(props: {
             props.clusterSetBindings
                 ?.filter((clusterSetBinding) => clusterSetBinding.metadata?.namespace === namespace)
                 .filter((clusterSetBinding) =>
-                    props.clusterSets?.find((clusterSet) => clusterSet.metadata?.name === clusterSetBinding.spec?.clusterSet),
+                    props.clusterSets?.find((clusterSet) => clusterSet.metadata?.name === clusterSetBinding.spec?.clusterSet)
                 )
                 .map((clusterSetBinding) => clusterSetBinding.spec?.clusterSet ?? '') ?? []
         )

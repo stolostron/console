@@ -84,7 +84,7 @@ export function WizArrayInput(props: WizArrayInputProps) {
             }
             update()
         },
-        [item, path, setValue, update, values],
+        [item, path, setValue, update, values]
     )
 
     if (!values.length && props.disallowEmpty) {
@@ -99,7 +99,7 @@ export function WizArrayInput(props: WizArrayInputProps) {
                 setValue(value)
             }
         },
-        [setValue, value],
+        [setValue, value]
     )
 
     const moveUp = useCallback(
@@ -109,7 +109,7 @@ export function WizArrayInput(props: WizArrayInputProps) {
             value[index - 1] = temp
             setValue(value)
         },
-        [setValue, value],
+        [setValue, value]
     )
 
     const moveDown = useCallback(
@@ -119,7 +119,7 @@ export function WizArrayInput(props: WizArrayInputProps) {
             value[index + 1] = temp
             setValue(value)
         },
-        [setValue, value],
+        [setValue, value]
     )
 
     const { actionAriaLabel } = useStringContext()

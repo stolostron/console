@@ -14,5 +14,5 @@ root.render(
         <Suspense fallback={<div />}>
             <Demo />
         </Suspense>
-    </StrictMode>,
+    </StrictMode>
 )

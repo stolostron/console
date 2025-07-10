@@ -12,7 +12,7 @@ export function Grid(props: { size?: number; maxColumns?: number; children?: Rea
             if (columns < 1) columns = 1
             setGridTemplateColumns(() => new Array(columns).fill('1fr').join(' '))
         },
-        [props.maxColumns, size],
+        [props.maxColumns, size]
     )
     useResizeObserver(target, (entry) => resize(entry.contentRect.width))
     useLayoutEffect(() => {

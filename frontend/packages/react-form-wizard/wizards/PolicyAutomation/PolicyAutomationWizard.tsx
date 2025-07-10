@@ -37,11 +37,11 @@ export function PolicyAutomationWizard(props: {
 }) {
     const ansibleCredentials = useMemo(
         () => props.credentials.filter((credential) => credential.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans'),
-        [props.credentials],
+        [props.credentials]
     )
     const ansibleCredentialNames = useMemo(
         () => ansibleCredentials.map((credential) => credential.metadata?.name ?? ''),
-        [ansibleCredentials],
+        [ansibleCredentials]
     )
     const [jobNames, setJobNames] = useState<string[]>()
     const [alert, setAlert] = useState<{ title: string; message: string }>()
@@ -76,7 +76,7 @@ export function PolicyAutomationWizard(props: {
     useEffect(() => {
         if (props.editMode === EditMode.Edit) {
             const credential = ansibleCredentials.find(
-                (credential) => credential.metadata?.name === props.resource.spec?.automationDef?.secret,
+                (credential) => credential.metadata?.name === props.resource.spec?.automationDef?.secret
             )
             props
                 .getAnsibleJobsCallback(credential ?? {})

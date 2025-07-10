@@ -34,7 +34,7 @@ export function WizMultiSelect(props: WizMultiSelectProps) {
                 setValue(newValues)
             }
         },
-        [setValue, value],
+        [setValue, value]
     )
 
     const onClear = useCallback(() => {
@@ -68,7 +68,7 @@ export function WizMultiSelect(props: WizMultiSelectProps) {
                         {option}
                     </SelectOption>
                 )),
-        [options],
+        [options]
     )
 
     if (hidden) return <Fragment />

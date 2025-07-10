@@ -27,7 +27,7 @@ export function WizSingleSelect(props: WizSingleSelectProps) {
                 setOpen(false)
             }
         },
-        [setValue],
+        [setValue]
     )
 
     const onClear = useCallback(() => setValue(''), [setValue])
@@ -44,7 +44,7 @@ export function WizSingleSelect(props: WizSingleSelectProps) {
                         {option}
                     </SelectOption>
                 )),
-        [props.options],
+        [props.options]
     )
 
     useEffect(() => {
