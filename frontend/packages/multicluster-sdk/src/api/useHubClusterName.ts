@@ -2,6 +2,7 @@
 import { fetchHubClusterName, getCachedHubClusterName } from '../internal/cachedHubClusterName'
 import { UseHubClusterName } from '../types'
 import { useEffect, useMemo, useState } from 'react'
+import { useIsFleetAvailable } from './useIsFleetAvailable'
 
 /**
  * Hook that provides hub cluster name.
@@ -14,7 +15,15 @@ export const useHubClusterName: UseHubClusterName = () => {
   const [loaded, setLoaded] = useState<boolean>(!!cachedHubClusterName)
   const [error, setError] = useState<any>(undefined)
 
+  const fleetAvailable = useIsFleetAvailable()
+
   useEffect(() => {
+    if (!fleetAvailable) {
+      setHubClusterName(undefined)
+      setLoaded(false)
+      setError('A version of RHACM that is compatible with the multicluster SDK is not available')
+    }
+
     if (!cachedHubClusterName) {
       void (async () => {
         try {
@@ -26,7 +35,7 @@ export const useHubClusterName: UseHubClusterName = () => {
         }
       })()
     }
-  }, [cachedHubClusterName])
+  }, [fleetAvailable, cachedHubClusterName])
 
   return useMemo(() => [hubClusterName, loaded, error], [hubClusterName, loaded, error])
 }
