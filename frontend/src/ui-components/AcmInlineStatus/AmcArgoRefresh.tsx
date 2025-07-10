@@ -2,10 +2,11 @@
 
 import { Button, Icon, Label } from '@patternfly/react-core'
 import { SyncAltIcon } from '@patternfly/react-icons'
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import { useTranslation } from '../../lib/acm-i18next'
 import { IResource } from '../../resources'
 import { replaceResource } from '../../resources/utils'
+import { AcmToastContext } from '../AcmAlert'
 
 const refreshAppk8s = async (app: IResource): Promise<IResource<IResource>> =>
   replaceResource({
@@ -20,11 +21,19 @@ type AmcArgoRefreshProps = {
 }
 export function AmcArgoRefresh({ app }: AmcArgoRefreshProps) {
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const { addAlert } = useContext(AcmToastContext)
+
   const { t } = useTranslation()
   const handleRefresh = () => {
     setIsRefreshing(true)
     refreshAppk8s(app).then(() => {
       setIsRefreshing(false)
+      addAlert({
+        title: t('ArgoCD app refreshed'),
+        message: t('{{name}} was successfully refreshed.', { name: app.metadata?.name }),
+        type: 'success',
+        autoClose: true,
+      })
     })
   }
   return (
