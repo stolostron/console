@@ -3,7 +3,6 @@ import '@testing-library/jest-dom'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 
-// mock ResourceLink and ResourceIcon from @openshift-console/dynamic-plugin-sdk
 jest.mock('@openshift-console/dynamic-plugin-sdk', () => ({
   ResourceLink: ({ name, groupVersionKind, children, ...props }: any) => (
     <div data-testid="resource-link-mock" {...props}>
@@ -15,7 +14,6 @@ jest.mock('@openshift-console/dynamic-plugin-sdk', () => ({
   ),
 }))
 
-// mock the hooks
 const mockUseHubClusterName = jest.fn()
 const mockUseFleetClusterNames = jest.fn()
 const mockUseLocation = jest.fn()
@@ -38,7 +36,6 @@ jest.mock('react-router-dom-v5-compat', () => ({
   ),
 }))
 
-// mock the search path utility
 jest.mock('./utils/searchPaths', () => ({
   getURLSearchParam: ({ cluster, kind, apigroup, apiversion, name, namespace }: any) => {
     const params = new URLSearchParams()
@@ -52,6 +49,7 @@ jest.mock('./utils/searchPaths', () => ({
   },
 }))
 
+// NOW import FleetResourceLink after all mocks are set up
 import { FleetResourceLink } from './FleetResourceLink'
 
 describe('FleetResourceLink', () => {
@@ -67,7 +65,7 @@ describe('FleetResourceLink', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-    // default mock values
+    // Set default mock values that work
     mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
     mockUseFleetClusterNames.mockReturnValue([['local-cluster', 'managed-cluster-1'], true, null])
     mockUseLocation.mockReturnValue({ pathname: '/multicloud/infrastructure' })
@@ -75,7 +73,7 @@ describe('FleetResourceLink', () => {
 
   describe('Fleet not available', () => {
     it('should fallback to ResourceLink when no clusters are available', () => {
-      mockUseFleetClusterNames.mockReturnValue([[], true, null])
+      mockUseFleetClusterNames.mockReturnValue([[], true, null]) // empty array = no fleet
 
       render(
         <MemoryRouter>
@@ -87,7 +85,7 @@ describe('FleetResourceLink', () => {
     })
 
     it('should fallback to ResourceLink when clusters are not loaded', () => {
-      mockUseFleetClusterNames.mockReturnValue([['local-cluster'], false, null])
+      mockUseFleetClusterNames.mockReturnValue([['local-cluster'], false, null]) // clustersLoaded = false
 
       render(
         <MemoryRouter>
@@ -99,57 +97,9 @@ describe('FleetResourceLink', () => {
     })
   })
 
-  describe('Hub cluster cases', () => {
-    // ... other tests ...
-
-    it('should fallback to ResourceLink for first-class resource on hub cluster outside multicloud path', () => {
-      mockUseLocation.mockReturnValue({ pathname: '/k8s/cluster/nodes' })
-
-      render(
-        <MemoryRouter>
-          <FleetResourceLink {...defaultProps} cluster="local-cluster" />
-        </MemoryRouter>
-      )
-
-      expect(screen.getByTestId('resource-link-mock')).toHaveTextContent('ResourceLink: test-vm (VirtualMachine)')
-    })
-
-    it('should fallback to ResourceLink for non-first-class resource on hub cluster', () => {
-      mockUseLocation.mockReturnValue({ pathname: '/multicloud/infrastructure' })
-
-      render(
-        <MemoryRouter>
-          <FleetResourceLink
-            name="test-pod"
-            cluster="local-cluster"
-            groupVersionKind={{
-              group: '',
-              version: 'v1',
-              kind: 'Pod',
-            }}
-          />
-        </MemoryRouter>
-      )
-
-      expect(screen.getByTestId('resource-link-mock')).toHaveTextContent('ResourceLink: test-pod (Pod)')
-    })
-  })
-
-  describe('No cluster specified', () => {
-    it('should fallback to ResourceLink when no cluster is provided', () => {
-      render(
-        <MemoryRouter>
-          <FleetResourceLink {...defaultProps} />
-        </MemoryRouter>
-      )
-
-      expect(screen.getByTestId('resource-link-mock')).toHaveTextContent('ResourceLink: test-vm (VirtualMachine)')
-    })
-  })
-
   describe('Hub cluster loading state', () => {
     it('should show skeleton when hub cluster is not loaded', () => {
-      mockUseHubClusterName.mockReturnValue([undefined, false, null])
+      mockUseHubClusterName.mockReturnValue([undefined, false, null]) // hubLoaded = false
 
       render(
         <MemoryRouter>
@@ -201,7 +151,7 @@ describe('FleetResourceLink', () => {
     })
 
     it('should fallback to ResourceLink for first-class resource on hub cluster outside multicloud path', () => {
-      mockUseLocation.mockReturnValue({ pathname: '/k8s/cluster/nodes' })
+      mockUseLocation.mockReturnValue({ pathname: '/k8s/cluster/nodes' }) // non-multicloud path
 
       render(
         <MemoryRouter>
@@ -223,7 +173,7 @@ describe('FleetResourceLink', () => {
             groupVersionKind={{
               group: '',
               version: 'v1',
-              kind: 'Pod',
+              kind: 'Pod', // non-first-class resource
             }}
           />
         </MemoryRouter>
@@ -320,7 +270,7 @@ describe('FleetResourceLink', () => {
     it('should fallback to ResourceLink when no cluster is provided', () => {
       render(
         <MemoryRouter>
-          <FleetResourceLink {...defaultProps} />
+          <FleetResourceLink {...defaultProps} /> {/* no cluster prop */}
         </MemoryRouter>
       )
 
@@ -409,7 +359,7 @@ describe('FleetResourceLink', () => {
     })
 
     it('should handle children prop in fallback ResourceLink', () => {
-      mockUseFleetClusterNames.mockReturnValue([[], true, null]) // No fleet available
+      mockUseFleetClusterNames.mockReturnValue([[], true, null]) // no fleet available
 
       render(
         <MemoryRouter>
