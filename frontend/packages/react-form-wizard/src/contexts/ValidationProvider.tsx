@@ -55,7 +55,7 @@ export function ValidationProvider(props: { children: ReactNode }) {
         () => () => {
             parentValidate()
         },
-        [parentValidate],
+        [parentValidate]
     )
 
     const parentSetHasValidationError = useContext(SetHasValidationErrorContext)

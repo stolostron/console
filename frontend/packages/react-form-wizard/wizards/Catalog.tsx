@@ -135,7 +135,7 @@ export function Catalog(props: {
             }
             setFilterSelections(newSelections)
         },
-        [filterSelections],
+        [filterSelections]
     )
 
     const featureFilterGroups = useMemo(() => {

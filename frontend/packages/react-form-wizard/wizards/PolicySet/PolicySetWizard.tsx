@@ -53,7 +53,7 @@ export function PolicySetWizard(props: PolicySetWizardProps) {
             for (const policyName of policies) {
                 if (
                     !virtualPolicies.find(
-                        (policy) => policy.metadata?.name === policyName && policy.metadata?.namespace === policySet.metadata?.namespace,
+                        (policy) => policy.metadata?.name === policyName && policy.metadata?.namespace === policySet.metadata?.namespace
                     )
                 ) {
                     virtualPolicies.push({
@@ -177,7 +177,7 @@ function PoliciesSection(props: { policies: IResource[] }) {
         if (policySet) {
             const selectedPolicies: string[] = get(policySet, 'spec.policies') ?? []
             return selectedPolicies.find((policy: string) =>
-                namespacedPolicies.find((p: IResource) => p.metadata?.name === policy && !p.metadata?.uid),
+                namespacedPolicies.find((p: IResource) => p.metadata?.name === policy && !p.metadata?.uid)
             )
         }
         return false

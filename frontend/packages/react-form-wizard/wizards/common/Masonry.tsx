@@ -50,7 +50,7 @@ export function Masonry(props: { size: number; maxColumns?: number; children?: R
                 itemColumns[columnIndex].push(
                     <MasonryItem key={index} index={index} sizes={sizes} setSizes={setSizes}>
                         {child}
-                    </MasonryItem>,
+                    </MasonryItem>
                 )
                 const height = sizes[index]
                 if (height !== undefined) {
