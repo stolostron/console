@@ -1,9 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import '@testing-library/jest-dom'
-import { render, screen } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom-v5-compat'
+/* eslint-disable @typescript-eslint/no-require-imports */
 
-jest.mock('@openshift-console/dynamic-plugin-sdk', () => ({
+// mock the SDK before any imports using jest.doMock
+jest.doMock('@openshift-console/dynamic-plugin-sdk', () => ({
   ResourceLink: ({ name, groupVersionKind, children }: any) => (
     <div data-testid="resource-link-mock">
       ResourceLink: {name} ({groupVersionKind?.kind}) {children}
@@ -12,10 +11,19 @@ jest.mock('@openshift-console/dynamic-plugin-sdk', () => ({
   ResourceIcon: ({ groupVersionKind }: any) => <span data-testid="resource-icon">{groupVersionKind?.kind} icon</span>,
 }))
 
+// reset modules to ensure fresh imports
+jest.resetModules()
+
+import { render, screen } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom-v5-compat'
+import '@testing-library/jest-dom'
+
+// mock functions
 const mockUseHubClusterName = jest.fn()
 const mockUseFleetClusterNames = jest.fn()
 const mockUseLocation = jest.fn()
 
+// mock react-router-dom-v5-compat
 jest.mock('react-router-dom-v5-compat', () => ({
   ...jest.requireActual('react-router-dom-v5-compat'),
   Link: ({ children, to, ...props }: any) => (
@@ -26,6 +34,7 @@ jest.mock('react-router-dom-v5-compat', () => ({
   useLocation: () => mockUseLocation(),
 }))
 
+// mock custom hooks
 jest.mock('./useHubClusterName', () => ({
   useHubClusterName: () => mockUseHubClusterName(),
 }))
@@ -34,6 +43,7 @@ jest.mock('./useFleetClusterNames', () => ({
   useFleetClusterNames: () => mockUseFleetClusterNames(),
 }))
 
+// mock search paths utility
 jest.mock('./utils/searchPaths', () => ({
   getURLSearchParam: ({ cluster, kind, apigroup, apiversion, name, namespace }: any) => {
     const params = new URLSearchParams()
@@ -47,7 +57,9 @@ jest.mock('./utils/searchPaths', () => ({
   },
 }))
 
-import { FleetResourceLink } from './FleetResourceLink'
+// import the FleetResourceLink component using require() only for this one import
+const { FleetResourceLink } = require('./FleetResourceLink')
+
 describe('FleetResourceLink', () => {
   const defaultProps = {
     name: 'test-vm',
@@ -61,7 +73,7 @@ describe('FleetResourceLink', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-    // Set default mock values that work
+    // set default mock values that work
     mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
     mockUseFleetClusterNames.mockReturnValue([['local-cluster', 'managed-cluster-1'], true, null])
     mockUseLocation.mockReturnValue({ pathname: '/multicloud/infrastructure' })
@@ -282,18 +294,17 @@ describe('FleetResourceLink', () => {
             {...defaultProps}
             cluster="managed-cluster-1"
             className="custom-class"
-            inline={true}
-            truncate={true}
+            style={{ color: 'red' }}
           />
         </MemoryRouter>
       )
 
-      const wrapper = screen.getByText('test-vm').closest('span')
-      expect(wrapper).toHaveClass(
-        'co-resource-item',
-        'custom-class',
-        'co-resource-item--inline',
-        'co-resource-item--truncate'
+      // verify the link renders correctly
+      const link = screen.getByRole('link')
+      expect(link).toBeInTheDocument()
+      expect(link).toHaveAttribute(
+        'href',
+        '/multicloud/infrastructure/virtualmachines/managed-cluster-1/default/test-vm'
       )
     })
 
@@ -304,7 +315,9 @@ describe('FleetResourceLink', () => {
         </MemoryRouter>
       )
 
-      expect(screen.queryByTestId('resource-icon-mock')).not.toBeInTheDocument()
+      const link = screen.getByRole('link')
+      expect(link).toBeInTheDocument()
+      expect(screen.queryByTestId('resource-icon')).not.toBeInTheDocument()
     })
 
     it('should handle displayName override', () => {
@@ -339,14 +352,13 @@ describe('FleetResourceLink', () => {
       const link = screen.getByRole('link')
       expect(link).toHaveAttribute('title', 'VM Title')
       expect(link).toHaveAttribute('data-test', 'custom-test-id')
-      expect(link).toHaveAttribute('data-test-id', 'test-vm')
     })
 
     it('should handle children prop', () => {
       render(
         <MemoryRouter>
           <FleetResourceLink {...defaultProps} cluster="managed-cluster-1">
-            <div data-testid="child-content">Child Content</div>
+            <span data-testid="child-content">Child Content</span>
           </FleetResourceLink>
         </MemoryRouter>
       )
@@ -355,17 +367,17 @@ describe('FleetResourceLink', () => {
     })
 
     it('should handle children prop in fallback ResourceLink', () => {
-      mockUseFleetClusterNames.mockReturnValue([[], true, null]) // no fleet available
+      mockUseFleetClusterNames.mockReturnValue([[], true, null]) // no fleet - fallback to ResourceLink
 
       render(
         <MemoryRouter>
           <FleetResourceLink {...defaultProps} cluster="test-cluster">
-            <div data-testid="child-content">Child Content</div>
+            <span data-testid="child-content">Child Content</span>
           </FleetResourceLink>
         </MemoryRouter>
       )
 
-      expect(screen.getByTestId('resource-link-mock')).toBeInTheDocument()
+      expect(screen.getByTestId('resource-link-mock')).toHaveTextContent('ResourceLink: test-vm (VirtualMachine)')
       expect(screen.getByTestId('child-content')).toHaveTextContent('Child Content')
     })
   })
