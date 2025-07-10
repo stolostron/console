@@ -2,6 +2,7 @@
 import { renderHook } from '@testing-library/react-hooks'
 import * as internal from '../internal/cachedHubClusterName'
 import { useHubClusterName } from './useHubClusterName'
+import { useIsFleetAvailable } from './useIsFleetAvailable'
 
 jest.mock('../internal/cachedHubClusterName')
 
@@ -9,7 +10,7 @@ jest.mock('./useIsFleetAvailable', () => ({
   useIsFleetAvailable: jest.fn(),
 }))
 
-const mockUseIsFleetAvailable = require('./useIsFleetAvailable').useIsFleetAvailable
+const mockUseIsFleetAvailable = useIsFleetAvailable as jest.Mock
 
 describe('testing useHubClusterName Hook', () => {
   afterEach(() => {
