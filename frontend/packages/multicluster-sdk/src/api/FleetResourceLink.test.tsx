@@ -9,6 +9,7 @@ jest.doMock('@openshift-console/dynamic-plugin-sdk', () => ({
     </div>
   ),
   ResourceIcon: ({ groupVersionKind }: any) => <span data-testid="resource-icon">{groupVersionKind?.kind} icon</span>,
+  useFlag: jest.fn(),
 }))
 
 // reset modules to ensure fresh imports
@@ -19,6 +20,7 @@ import { MemoryRouter } from 'react-router-dom-v5-compat'
 import '@testing-library/jest-dom'
 
 // mock functions
+const mockUseFlag = jest.fn()
 const mockUseHubClusterName = jest.fn()
 const mockUseFleetClusterNames = jest.fn()
 const mockUseLocation = jest.fn()
@@ -33,6 +35,10 @@ jest.mock('react-router-dom-v5-compat', () => ({
   ),
   useLocation: () => mockUseLocation(),
 }))
+
+// connect the useFlag mock to the dynamic plugin SDK
+const dynamicPluginSDK = require('@openshift-console/dynamic-plugin-sdk')
+dynamicPluginSDK.useFlag = mockUseFlag
 
 // mock custom hooks
 jest.mock('./useHubClusterName', () => ({
@@ -77,6 +83,7 @@ describe('FleetResourceLink', () => {
     mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
     mockUseFleetClusterNames.mockReturnValue([['local-cluster', 'managed-cluster-1'], true, null])
     mockUseLocation.mockReturnValue({ pathname: '/multicloud/infrastructure' })
+    mockUseFlag.mockReturnValue(true) // Default to flag enabled
   })
 
   describe('Fleet not available', () => {
@@ -121,8 +128,9 @@ describe('FleetResourceLink', () => {
   })
 
   describe('Hub cluster cases', () => {
-    it('should link to first-class page for VirtualMachine on hub cluster in multicloud path', () => {
+    it('should link to first-class page for VirtualMachine on hub cluster in multicloud path when flag enabled', () => {
       mockUseLocation.mockReturnValue({ pathname: '/multicloud/infrastructure/virtualmachines' })
+      mockUseFlag.mockReturnValue(true) // KUBEVIRT_DYNAMIC_ACM enabled
 
       render(
         <MemoryRouter>
@@ -132,6 +140,19 @@ describe('FleetResourceLink', () => {
 
       const link = screen.getByRole('link')
       expect(link).toHaveAttribute('href', '/multicloud/infrastructure/virtualmachines/local-cluster/default/test-vm')
+    })
+
+    it('should fallback to ResourceLink for VirtualMachine on hub cluster when flag disabled', () => {
+      mockUseLocation.mockReturnValue({ pathname: '/multicloud/infrastructure/virtualmachines' })
+      mockUseFlag.mockReturnValue(false) // KUBEVIRT_DYNAMIC_ACM disabled
+
+      render(
+        <MemoryRouter>
+          <FleetResourceLink {...defaultProps} cluster="local-cluster" />
+        </MemoryRouter>
+      )
+
+      expect(screen.getByTestId('resource-link-mock')).toHaveTextContent('ResourceLink: test-vm (VirtualMachine)')
     })
 
     it('should link to first-class page for ManagedCluster on hub cluster in multicloud path', () => {
@@ -189,10 +210,39 @@ describe('FleetResourceLink', () => {
 
       expect(screen.getByTestId('resource-link-mock')).toHaveTextContent('ResourceLink: test-pod (Pod)')
     })
+
+    it('should handle no cluster as hub cluster case when flag enabled', () => {
+      mockUseLocation.mockReturnValue({ pathname: '/multicloud/infrastructure/virtualmachines' })
+      mockUseFlag.mockReturnValue(true)
+
+      render(
+        <MemoryRouter>
+          <FleetResourceLink {...defaultProps} /> {/* no cluster prop */}
+        </MemoryRouter>
+      )
+
+      const link = screen.getByRole('link')
+      expect(link).toHaveAttribute('href', '/multicloud/infrastructure/virtualmachines/local-cluster/default/test-vm')
+    })
+
+    it('should fallback to ResourceLink when no cluster and flag disabled', () => {
+      mockUseLocation.mockReturnValue({ pathname: '/multicloud/infrastructure/virtualmachines' })
+      mockUseFlag.mockReturnValue(false)
+
+      render(
+        <MemoryRouter>
+          <FleetResourceLink {...defaultProps} /> {/* no cluster prop */}
+        </MemoryRouter>
+      )
+
+      expect(screen.getByTestId('resource-link-mock')).toHaveTextContent('ResourceLink: test-vm (VirtualMachine)')
+    })
   })
 
   describe('Managed cluster cases', () => {
-    it('should link to first-class page for VirtualMachine on managed cluster', () => {
+    it('should link to first-class page for VirtualMachine on managed cluster when flag enabled', () => {
+      mockUseFlag.mockReturnValue(true) // KUBEVIRT_DYNAMIC_ACM enabled
+
       render(
         <MemoryRouter>
           <FleetResourceLink {...defaultProps} cluster="managed-cluster-1" />
@@ -206,7 +256,25 @@ describe('FleetResourceLink', () => {
       )
     })
 
-    it('should link to first-class page for VirtualMachineInstance on managed cluster', () => {
+    it('should fallback to search for VirtualMachine on managed cluster when flag disabled', () => {
+      mockUseFlag.mockReturnValue(false) // KUBEVIRT_DYNAMIC_ACM disabled
+
+      render(
+        <MemoryRouter>
+          <FleetResourceLink {...defaultProps} cluster="managed-cluster-1" />
+        </MemoryRouter>
+      )
+
+      const link = screen.getByRole('link')
+      const href = link.getAttribute('href')
+      expect(href).toContain('/multicloud/search/resources')
+      expect(href).toContain('cluster=managed-cluster-1')
+      expect(href).toContain('kind=VirtualMachine')
+    })
+
+    it('should link to first-class page for VirtualMachineInstance on managed cluster when flag enabled', () => {
+      mockUseFlag.mockReturnValue(true)
+
       render(
         <MemoryRouter>
           <FleetResourceLink
@@ -274,18 +342,6 @@ describe('FleetResourceLink', () => {
     })
   })
 
-  describe('No cluster specified', () => {
-    it('should fallback to ResourceLink when no cluster is provided', () => {
-      render(
-        <MemoryRouter>
-          <FleetResourceLink {...defaultProps} /> {/* no cluster prop */}
-        </MemoryRouter>
-      )
-
-      expect(screen.getByTestId('resource-link-mock')).toHaveTextContent('ResourceLink: test-vm (VirtualMachine)')
-    })
-  })
-
   describe('Styling and props', () => {
     it('should handle className and styling props', () => {
       render(
@@ -299,7 +355,7 @@ describe('FleetResourceLink', () => {
         </MemoryRouter>
       )
 
-      // verify the link renders correctly
+      // verify the link renders correctly (className may not be passed through)
       const link = screen.getByRole('link')
       expect(link).toBeInTheDocument()
       expect(link).toHaveAttribute(
@@ -317,6 +373,7 @@ describe('FleetResourceLink', () => {
 
       const link = screen.getByRole('link')
       expect(link).toBeInTheDocument()
+      // icon should be hidden
       expect(screen.queryByTestId('resource-icon')).not.toBeInTheDocument()
     })
 
@@ -379,6 +436,148 @@ describe('FleetResourceLink', () => {
 
       expect(screen.getByTestId('resource-link-mock')).toHaveTextContent('ResourceLink: test-vm (VirtualMachine)')
       expect(screen.getByTestId('child-content')).toHaveTextContent('Child Content')
+    })
+  })
+
+  describe('KUBEVIRT_DYNAMIC_ACM flag behavior', () => {
+    it('should link to ACM VM page when flag is enabled and has namespace', () => {
+      mockUseFlag.mockReturnValue(true) // flag is enabled
+
+      render(
+        <MemoryRouter>
+          <FleetResourceLink {...defaultProps} cluster="managed-cluster-1" />
+        </MemoryRouter>
+      )
+
+      const link = screen.getByRole('link')
+      expect(link).toHaveAttribute(
+        'href',
+        '/multicloud/infrastructure/virtualmachines/managed-cluster-1/default/test-vm'
+      )
+    })
+
+    it('should fallback to search when flag is disabled for managed cluster', () => {
+      mockUseFlag.mockReturnValue(false) // flag is disabled
+
+      render(
+        <MemoryRouter>
+          <FleetResourceLink {...defaultProps} cluster="managed-cluster-1" />
+        </MemoryRouter>
+      )
+
+      const link = screen.getByRole('link')
+      const href = link.getAttribute('href')
+      expect(href).toContain('/multicloud/search/resources')
+      expect(href).toContain('cluster=managed-cluster-1')
+      expect(href).toContain('kind=VirtualMachine')
+    })
+
+    it('should fallback to search when flag is enabled but no namespace', () => {
+      mockUseFlag.mockReturnValue(true) // flag is enabled
+
+      render(
+        <MemoryRouter>
+          <FleetResourceLink
+            name="test-vm"
+            cluster="managed-cluster-1"
+            groupVersionKind={{
+              group: 'kubevirt.io',
+              version: 'v1',
+              kind: 'VirtualMachine',
+            }}
+            // No namespace prop
+          />
+        </MemoryRouter>
+      )
+
+      const link = screen.getByRole('link')
+      const href = link.getAttribute('href')
+      expect(href).toContain('/multicloud/search/resources')
+    })
+
+    it('should handle VirtualMachineInstance with flag enabled', () => {
+      mockUseFlag.mockReturnValue(true) // flag is enabled
+
+      render(
+        <MemoryRouter>
+          <FleetResourceLink
+            {...defaultProps}
+            cluster="managed-cluster-1"
+            groupVersionKind={{
+              group: 'kubevirt.io',
+              version: 'v1',
+              kind: 'VirtualMachineInstance',
+            }}
+          />
+        </MemoryRouter>
+      )
+
+      const link = screen.getByRole('link')
+      expect(link).toHaveAttribute(
+        'href',
+        '/multicloud/infrastructure/virtualmachines/managed-cluster-1/default/test-vm'
+      )
+    })
+
+    it('should handle VirtualMachineInstance with flag disabled', () => {
+      mockUseFlag.mockReturnValue(false) // flag is disabled
+
+      render(
+        <MemoryRouter>
+          <FleetResourceLink
+            {...defaultProps}
+            cluster="managed-cluster-1"
+            groupVersionKind={{
+              group: 'kubevirt.io',
+              version: 'v1',
+              kind: 'VirtualMachineInstance',
+            }}
+          />
+        </MemoryRouter>
+      )
+
+      const link = screen.getByRole('link')
+      const href = link.getAttribute('href')
+      expect(href).toContain('/multicloud/search/resources')
+      expect(href).toContain('kind=VirtualMachineInstance')
+    })
+
+    it('should not affect ManagedCluster routing regardless of flag', () => {
+      mockUseFlag.mockReturnValue(false) // flag is disabled
+      mockUseLocation.mockReturnValue({ pathname: '/multicloud/infrastructure/clusters' })
+
+      render(
+        <MemoryRouter>
+          <FleetResourceLink
+            name="managed-cluster-1"
+            cluster="local-cluster"
+            groupVersionKind={{
+              group: 'cluster.open-cluster-management.io',
+              version: 'v1',
+              kind: 'ManagedCluster',
+            }}
+          />
+        </MemoryRouter>
+      )
+
+      const link = screen.getByRole('link')
+      expect(link).toHaveAttribute(
+        'href',
+        '/multicloud/infrastructure/clusters/details/managed-cluster-1/managed-cluster-1/overview'
+      )
+    })
+
+    it('should handle hub cluster VM with flag disabled outside multicloud path', () => {
+      mockUseFlag.mockReturnValue(false) // flag is disabled
+      mockUseLocation.mockReturnValue({ pathname: '/k8s/cluster/pods' }) // non-multicloud path
+
+      render(
+        <MemoryRouter>
+          <FleetResourceLink {...defaultProps} cluster="local-cluster" />
+        </MemoryRouter>
+      )
+
+      expect(screen.getByTestId('resource-link-mock')).toHaveTextContent('ResourceLink: test-vm (VirtualMachine)')
     })
   })
 })

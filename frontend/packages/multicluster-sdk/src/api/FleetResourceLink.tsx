@@ -1,14 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import React from 'react'
-import { ResourceIcon, ResourceLink } from '@openshift-console/dynamic-plugin-sdk'
+import { ResourceIcon, ResourceLink, useFlag } from '@openshift-console/dynamic-plugin-sdk'
 import { FleetResourceLinkProps } from '../types/fleet'
 import classNames from 'classnames'
 import { getURLSearchParam } from './utils/searchPaths'
 import { useHubClusterName } from './useHubClusterName'
 import { useFleetClusterNames } from './useFleetClusterNames'
 import { useLocation, Link } from 'react-router-dom-v5-compat'
-
-// helper function to determine if a resource is a first-class ACM resource
 
 /**
  * Determines if a resource is a first-class ACM resource that should link to dedicated ACM pages.
@@ -40,7 +38,6 @@ const isFirstClassACMResource = (kind: string | undefined): boolean => {
   return firstClassResources.includes(kind)
 }
 
-// helper function to extract the first-class page path for a resource
 /**
  * Generates the URL path for first-class ACM resource detail pages.
  *
@@ -48,23 +45,24 @@ const isFirstClassACMResource = (kind: string | undefined): boolean => {
  * @param cluster - The target cluster name
  * @param namespace - The resource namespace (required for namespaced resources)
  * @param name - The resource name
+ * @param kubevirtEnabled - Whether KUBEVIRT_DYNAMIC_ACM flag is enabled
  * @returns The ACM console path for the resource, or null if not a first-class resource
  *
  * @example
  * ```typescript
- * getFirstClassResourcePath('ManagedCluster', 'prod-cluster', undefined, 'prod-cluster')
+ * getFirstClassResourcePath('ManagedCluster', 'prod-cluster', undefined, 'prod-cluster', true)
  * // returns '/multicloud/infrastructure/clusters/details/prod-cluster/prod-cluster/overview'
  *
- * getFirstClassResourcePath('VirtualMachine', 'dev-cluster', 'default', 'web-server')
+ * getFirstClassResourcePath('VirtualMachine', 'dev-cluster', 'default', 'web-server', true)
  * // returns '/multicloud/infrastructure/virtualmachines/dev-cluster/default/web-server'
  * ```
  */
-
 const getFirstClassResourcePath = (
   kind: string | undefined,
   cluster: string | undefined,
   namespace: string | undefined,
-  name: string | undefined
+  name: string | undefined,
+  kubevirtEnabled: boolean
 ): string | null => {
   if (!kind || !name) return null
 
@@ -73,7 +71,11 @@ const getFirstClassResourcePath = (
       return `/multicloud/infrastructure/clusters/details/${name}/${name}/overview`
     case 'VirtualMachine':
     case 'VirtualMachineInstance':
-      return cluster && namespace ? `/multicloud/infrastructure/virtualmachines/${cluster}/${namespace}/${name}` : null
+      // Only return ACM VM path if kubevirt integration is enabled and we have cluster + namespace
+      if (kubevirtEnabled && cluster && namespace) {
+        return `/multicloud/infrastructure/virtualmachines/${cluster}/${namespace}/${name}`
+      }
+      return null
     default:
       return null
   }
@@ -99,6 +101,7 @@ const getFirstClassResourcePath = (
  * - **Managed Cluster**: First-class resources → ACM pages, others → search page
  * - **Loading State**: Shows skeleton loader when hub cluster name is loading
  * - **First-class Resources**: ManagedCluster, VirtualMachine, VirtualMachineInstance, Application, Policy, PolicyReport
+ * - **KubeVirt Integration**: Uses KUBEVIRT_DYNAMIC_ACM flag to determine VM routing
  *
  * @returns JSX.Element - Rendered resource link with appropriate routing based on fleet context
  *
@@ -111,7 +114,7 @@ const getFirstClassResourcePath = (
  *   name="prod-cluster"
  * />
  *
- * // Link to ACM VM page for VirtualMachine on managed cluster
+ * // Link to ACM VM page for VirtualMachine on managed cluster (when flag enabled)
  * <FleetResourceLink
  *   cluster="managed-cluster"
  *   groupVersionKind={{ kind: 'VirtualMachine', version: 'v1', group: 'kubevirt.io' }}
@@ -120,22 +123,17 @@ const getFirstClassResourcePath = (
  * />
  * ```
  */
-
 export const FleetResourceLink: React.FC<FleetResourceLinkProps> = ({ cluster, ...resourceLinkProps }) => {
   const [hubClusterName, hubLoaded] = useHubClusterName()
   const [clusterNames, clustersLoaded] = useFleetClusterNames()
   const location = useLocation()
+  const kubevirtEnabled = useFlag('KUBEVIRT_DYNAMIC_ACM')
 
-  // checks if fleet is available (has managed clusters)
+  // check if fleet is available (has managed clusters)
   const isFleetAvailable = clustersLoaded && clusterNames.length > 0
 
   if (!isFleetAvailable) {
-    // will fallback to default ResourceLink from OCP
-    return <ResourceLink {...resourceLinkProps} />
-  }
-
-  if (!cluster) {
-    // if no cluster specified, fallback to default ResourceLink from OCP
+    // fallback to default ResourceLink from OCP
     return <ResourceLink {...resourceLinkProps} />
   }
 
@@ -161,8 +159,8 @@ export const FleetResourceLink: React.FC<FleetResourceLinkProps> = ({ cluster, .
     'co-resource-item--truncate': truncate,
   })
 
-  // if the cluster name is given but hub name is not loaded yet, show skeleton
-  if (!hubLoaded) {
+  // if cluster name is given but hub name is not loaded yet, show skeleton
+  if (cluster && !hubLoaded) {
     return (
       <span className={classes}>
         {!hideIcon && <ResourceIcon groupVersionKind={groupVersionKind} />}
@@ -178,7 +176,8 @@ export const FleetResourceLink: React.FC<FleetResourceLinkProps> = ({ cluster, .
     )
   }
 
-  const isHubCluster = cluster === hubClusterName
+  // determine if this is a hub cluster case (no cluster or it matches hub name)
+  const isHubCluster = !cluster || cluster === hubClusterName
   const isFirstClassResource = isFirstClassACMResource(groupVersionKind?.kind)
   const isMulticloudPath = location.pathname.startsWith('/multicloud/')
 
@@ -186,11 +185,17 @@ export const FleetResourceLink: React.FC<FleetResourceLinkProps> = ({ cluster, .
   let shouldFallbackToResourceLink = false
 
   if (isHubCluster) {
-    // Hub cluster case
+    // hub cluster case
     if (isFirstClassResource) {
       if (groupVersionKind?.kind === 'ManagedCluster' || isMulticloudPath) {
         // links always to cluster details for ManagedCluster, or first-class page for other resources when on multicloud path
-        path = getFirstClassResourcePath(groupVersionKind?.kind, cluster, namespace, name)
+        path = getFirstClassResourcePath(
+          groupVersionKind?.kind,
+          cluster || hubClusterName,
+          namespace,
+          name,
+          kubevirtEnabled
+        )
       }
     }
     // if no first-class path or not in multicloud, fallback to OCP ResourceLink
@@ -198,10 +203,10 @@ export const FleetResourceLink: React.FC<FleetResourceLinkProps> = ({ cluster, .
       shouldFallbackToResourceLink = true
     }
   } else {
-    // Managed cluster case
+    // managed cluster case
     if (isFirstClassResource) {
       // links to the first-class page for that resource
-      path = getFirstClassResourcePath(groupVersionKind?.kind, cluster, namespace, name)
+      path = getFirstClassResourcePath(groupVersionKind?.kind, cluster, namespace, name, kubevirtEnabled)
     }
 
     if (!path) {
@@ -246,3 +251,5 @@ export const FleetResourceLink: React.FC<FleetResourceLinkProps> = ({ cluster, .
     </span>
   )
 }
+
+export { isFirstClassACMResource, getFirstClassResourcePath }
