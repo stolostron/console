@@ -16,6 +16,11 @@ import { ActionExtensionProps, ListColumnExtensionProps } from '../../../plugin-
 import { AcmExtension } from '../../../plugin-extensions/types'
 import { SearchResultItemsAndRelatedItemsDocument, SearchSchemaDocument } from '../../Search/search-sdk/search-sdk'
 import VirtualMachinesPage from './VirtualMachinesPage'
+jest.mock('@openshift-console/dynamic-plugin-sdk', () => ({
+  useFlag: jest.fn(),
+}))
+import { useFlag } from '@openshift-console/dynamic-plugin-sdk'
+const mockUseFlag = useFlag as jest.MockedFunction<typeof useFlag>
 
 const vmActionProps: ActionExtensionProps[] = [
   {
@@ -48,6 +53,9 @@ jest.mock('../../../hooks/use-can-migrate-vm', () => ({
 }))
 
 describe('VirtualMachinesPage Page', () => {
+  beforeEach(() => {
+    mockUseFlag.mockReturnValue(true)
+  })
   it('should render page and run namespace search', async () => {
     const metricNock = nockPostRequest('/metrics?virtual-machines', {})
     const mocks = [

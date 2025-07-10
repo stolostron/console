@@ -19,8 +19,13 @@ import {
   SearchResultItemsDocument,
   SearchSchemaDocument,
 } from './search-sdk/search-sdk'
+jest.mock('@openshift-console/dynamic-plugin-sdk', () => ({
+  useFlag: jest.fn(),
+}))
 import SearchPage from './SearchPage'
 
+import { useFlag } from '@openshift-console/dynamic-plugin-sdk'
+const mockUseFlag = useFlag as jest.MockedFunction<typeof useFlag>
 jest.mock('../../hooks/use-can-migrate-vm', () => ({
   useCanMigrateVm: () => true,
 }))
@@ -65,6 +70,9 @@ const mockSuggestedSearchConfigMap: ConfigMap[] = [
 ]
 
 describe('SearchPage', () => {
+  beforeEach(() => {
+    mockUseFlag.mockReturnValue(true)
+  })
   it('should render default search page correctly', async () => {
     const metricNock = nockPostRequest('/metrics?search', {})
     const getUserPreferenceNock = nockRequest('/userpreference', mockUserPreference)

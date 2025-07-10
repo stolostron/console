@@ -1,4 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
+jest.mock('@openshift-console/dynamic-plugin-sdk', () => ({
+  useFlag: jest.fn(),
+}))
 import { MockedProvider } from '@apollo/client/testing'
 import { render, screen, waitFor } from '@testing-library/react'
 import { GraphQLError } from 'graphql'
@@ -9,6 +12,8 @@ import { nockGet, nockIgnoreApiPaths, nockRequest } from '../../../lib/nock-util
 import { wait, waitForNocks } from '../../../lib/test-util'
 import { SearchResultItemsDocument } from '../search-sdk/search-sdk'
 import SnapshotsTab from './SnapshotsTab'
+import { useFlag } from '@openshift-console/dynamic-plugin-sdk'
+const mockUseFlag = useFlag as jest.MockedFunction<typeof useFlag>
 
 const mockSettings: Settings = {
   SEARCH_RESULT_LIMIT: '1000',
@@ -82,6 +87,7 @@ const getMCVResponse = {
 
 describe('SnapshotsTab', () => {
   beforeEach(() => {
+    mockUseFlag.mockReturnValue(true)
     nockIgnoreApiPaths()
     Object.defineProperty(window, 'location', {
       value: {

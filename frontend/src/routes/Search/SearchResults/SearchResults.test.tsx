@@ -19,6 +19,11 @@ import SearchResults from './SearchResults'
 import { defaultPlugin, PluginContext } from '../../../lib/PluginContext'
 import { AcmExtension } from '../../../plugin-extensions/types'
 import { ActionExtensionProps } from '../../../plugin-extensions/properties'
+jest.mock('@openshift-console/dynamic-plugin-sdk', () => ({
+  useFlag: jest.fn(),
+}))
+import { useFlag } from '@openshift-console/dynamic-plugin-sdk'
+const mockUseFlag = useFlag as jest.MockedFunction<typeof useFlag>
 
 jest.mock('../../../hooks/use-can-migrate-vm', () => ({
   useCanMigrateVm: () => true,
@@ -47,6 +52,9 @@ const acmExtension: AcmExtension = {
 }
 
 describe('SearchResults Page', () => {
+  beforeEach(() => {
+    mockUseFlag.mockReturnValue(true)
+  })
   it('should render page in loading state', async () => {
     render(
       <RecoilRoot
