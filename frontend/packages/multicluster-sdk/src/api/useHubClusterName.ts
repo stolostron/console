@@ -3,6 +3,11 @@ import { fetchHubClusterName, getCachedHubClusterName } from '../internal/cached
 import { UseHubClusterName } from '../types'
 import { useEffect, useMemo, useState } from 'react'
 
+/**
+ * Hook that provides hub cluster name.
+ *
+ * @returns Array with `hubclustername`, `loaded` and `error` values.
+ */
 export const useHubClusterName: UseHubClusterName = () => {
   const cachedHubClusterName = getCachedHubClusterName()
   const [hubClusterName, setHubClusterName] = useState<string | undefined>(cachedHubClusterName)
@@ -10,20 +15,18 @@ export const useHubClusterName: UseHubClusterName = () => {
   const [error, setError] = useState<any>(undefined)
 
   useEffect(() => {
-    if (cachedHubClusterName) {
-      return undefined
+    if (!cachedHubClusterName) {
+      void (async () => {
+        try {
+          const hubName = await fetchHubClusterName()
+          setHubClusterName(hubName)
+          setLoaded(true)
+        } catch (err) {
+          setError(err)
+        }
+      })()
     }
-    void (async () => {
-      try {
-        const hubName = await fetchHubClusterName()
-        setHubClusterName(hubName)
-        setLoaded(true)
-      } catch (err) {
-        setError(err)
-      }
-    })()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [cachedHubClusterName])
 
   return useMemo(() => [hubClusterName, loaded, error], [hubClusterName, loaded, error])
 }
