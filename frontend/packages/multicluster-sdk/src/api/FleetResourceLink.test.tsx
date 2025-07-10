@@ -4,19 +4,27 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 
 jest.mock('@openshift-console/dynamic-plugin-sdk', () => ({
-  ResourceLink: ({ name, groupVersionKind, children, ...props }: any) => (
-    <div data-testid="resource-link-mock" {...props}>
-      ResourceLink: {name} ({groupVersionKind?.kind}){children}
+  ResourceLink: ({ name, groupVersionKind, children }: any) => (
+    <div data-testid="resource-link-mock">
+      ResourceLink: {name} ({groupVersionKind?.kind}) {children}
     </div>
   ),
-  ResourceIcon: ({ groupVersionKind }: any) => (
-    <span data-testid="resource-icon-mock">Icon: {groupVersionKind?.kind}</span>
-  ),
+  ResourceIcon: ({ groupVersionKind }: any) => <span data-testid="resource-icon">{groupVersionKind?.kind} icon</span>,
 }))
 
 const mockUseHubClusterName = jest.fn()
 const mockUseFleetClusterNames = jest.fn()
 const mockUseLocation = jest.fn()
+
+jest.mock('react-router-dom-v5-compat', () => ({
+  ...jest.requireActual('react-router-dom-v5-compat'),
+  Link: ({ children, to, ...props }: any) => (
+    <a href={to} data-testid="fleet-link" {...props}>
+      {children}
+    </a>
+  ),
+  useLocation: () => mockUseLocation(),
+}))
 
 jest.mock('./useHubClusterName', () => ({
   useHubClusterName: () => mockUseHubClusterName(),
@@ -24,16 +32,6 @@ jest.mock('./useHubClusterName', () => ({
 
 jest.mock('./useFleetClusterNames', () => ({
   useFleetClusterNames: () => mockUseFleetClusterNames(),
-}))
-
-jest.mock('react-router-dom-v5-compat', () => ({
-  ...jest.requireActual('react-router-dom-v5-compat'),
-  useLocation: () => mockUseLocation(),
-  Link: ({ to, children, ...props }: any) => (
-    <a href={to} {...props}>
-      {children}
-    </a>
-  ),
 }))
 
 jest.mock('./utils/searchPaths', () => ({
@@ -49,9 +47,7 @@ jest.mock('./utils/searchPaths', () => ({
   },
 }))
 
-// NOW import FleetResourceLink after all mocks are set up
 import { FleetResourceLink } from './FleetResourceLink'
-
 describe('FleetResourceLink', () => {
   const defaultProps = {
     name: 'test-vm',

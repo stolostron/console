@@ -3,11 +3,10 @@ import React from 'react'
 import { ResourceIcon, ResourceLink } from '@openshift-console/dynamic-plugin-sdk'
 import { FleetResourceLinkProps } from '../types/fleet'
 import classNames from 'classnames'
-import { Link } from 'react-router-dom-v5-compat'
 import { getURLSearchParam } from './utils/searchPaths'
 import { useHubClusterName } from './useHubClusterName'
 import { useFleetClusterNames } from './useFleetClusterNames'
-import { useLocation } from 'react-router-dom-v5-compat'
+import { useLocation, Link } from 'react-router-dom-v5-compat'
 
 // helper function to determine if a resource is a first-class ACM resource
 
@@ -135,110 +134,115 @@ export const FleetResourceLink: React.FC<FleetResourceLinkProps> = ({ cluster, .
     return <ResourceLink {...resourceLinkProps} />
   }
 
-  if (cluster) {
-    const {
-      className,
-      displayName,
-      inline = false,
-      groupVersionKind,
-      name,
-      nameSuffix,
-      namespace,
-      hideIcon,
-      title,
-      children,
-      dataTest,
-      onClick,
-      truncate,
-    } = resourceLinkProps
-
-    const value = displayName ? displayName : name
-    const classes = classNames('co-resource-item', className || '', {
-      'co-resource-item--inline': inline,
-      'co-resource-item--truncate': truncate,
-    })
-
-    // if the cluster name is given but hub name is not loaded yet, show skeleton
-    if (!hubLoaded) {
-      return (
-        <span className={classes}>
-          {!hideIcon && <ResourceIcon groupVersionKind={groupVersionKind} />}
-          <span
-            className="co-resource-item__resource-name pf-v5-c-skeleton pf-v5-c-skeleton--text-md"
-            style={{ width: '100px' }}
-          >
-            {value}
-            {nameSuffix}
-          </span>
-          {children}
-        </span>
-      )
-    }
-
-    const isHubCluster = !cluster || cluster === hubClusterName
-    const isFirstClassResource = isFirstClassACMResource(groupVersionKind?.kind)
-    const isMulticloudPath = location.pathname.startsWith('/multicloud/')
-
-    let path: string | null = null
-
-    if (isHubCluster) {
-      // if it is Hub cluster case
-      if (isFirstClassResource) {
-        if (groupVersionKind?.kind === 'ManagedCluster' || isMulticloudPath) {
-          // links always to cluster details for ManagedCluster, or first-class page for other resources when on multicloud path
-          path = getFirstClassResourcePath(groupVersionKind?.kind, cluster, namespace, name)
-        }
-      }
-      // if no first-class path or not in multicloud, fallback to OCP ResourceLink
-      if (!path) {
-        return <ResourceLink {...resourceLinkProps} />
-      }
-    } else {
-      // if it is Managed cluster case
-      if (isFirstClassResource) {
-        // links to the first-class page for that resource
-        path = getFirstClassResourcePath(groupVersionKind?.kind, cluster, namespace, name)
-      }
-
-      if (!path) {
-        // links to /multicloud/search/resources
-        path = `/multicloud/search/resources${getURLSearchParam({
-          cluster,
-          kind: groupVersionKind?.kind,
-          apigroup: groupVersionKind?.group,
-          apiversion: groupVersionKind?.version,
-          name,
-          namespace,
-        })}`
-      }
-    }
-
-    return (
-      <span className={classes}>
-        {!hideIcon && <ResourceIcon groupVersionKind={groupVersionKind} />}
-        {path ? (
-          <Link
-            to={path}
-            title={title}
-            className="co-resource-item__resource-name"
-            data-test-id={value}
-            data-test={dataTest ?? value}
-            onClick={onClick}
-          >
-            {value}
-            {nameSuffix}
-          </Link>
-        ) : (
-          <span className="co-resource-item__resource-name" data-test-id={value} data-test={dataTest ?? value}>
-            {value}
-            {nameSuffix}
-          </span>
-        )}
-        {children}
-      </span>
-    )
-  } else {
+  if (!cluster) {
     // if no cluster specified, fallback to default ResourceLink from OCP
     return <ResourceLink {...resourceLinkProps} />
   }
+
+  const {
+    className,
+    displayName,
+    inline = false,
+    groupVersionKind,
+    name,
+    nameSuffix,
+    namespace,
+    hideIcon,
+    title,
+    children,
+    dataTest,
+    onClick,
+    truncate,
+  } = resourceLinkProps
+
+  const value = displayName ? displayName : name
+  const classes = classNames('co-resource-item', className || '', {
+    'co-resource-item--inline': inline,
+    'co-resource-item--truncate': truncate,
+  })
+
+  // if the cluster name is given but hub name is not loaded yet, show skeleton
+  if (!hubLoaded) {
+    return (
+      <span className={classes}>
+        {!hideIcon && <ResourceIcon groupVersionKind={groupVersionKind} />}
+        <span
+          className="co-resource-item__resource-name pf-v5-c-skeleton pf-v5-c-skeleton--text-md"
+          style={{ width: '100px' }}
+        >
+          {value}
+          {nameSuffix}
+        </span>
+        {children}
+      </span>
+    )
+  }
+
+  const isHubCluster = cluster === hubClusterName
+  const isFirstClassResource = isFirstClassACMResource(groupVersionKind?.kind)
+  const isMulticloudPath = location.pathname.startsWith('/multicloud/')
+
+  let path: string | null = null
+  let shouldFallbackToResourceLink = false
+
+  if (isHubCluster) {
+    // Hub cluster case
+    if (isFirstClassResource) {
+      if (groupVersionKind?.kind === 'ManagedCluster' || isMulticloudPath) {
+        // links always to cluster details for ManagedCluster, or first-class page for other resources when on multicloud path
+        path = getFirstClassResourcePath(groupVersionKind?.kind, cluster, namespace, name)
+      }
+    }
+    // if no first-class path or not in multicloud, fallback to OCP ResourceLink
+    if (!path) {
+      shouldFallbackToResourceLink = true
+    }
+  } else {
+    // Managed cluster case
+    if (isFirstClassResource) {
+      // links to the first-class page for that resource
+      path = getFirstClassResourcePath(groupVersionKind?.kind, cluster, namespace, name)
+    }
+
+    if (!path) {
+      // links to /multicloud/search/resources
+      path = `/multicloud/search/resources${getURLSearchParam({
+        cluster,
+        kind: groupVersionKind?.kind,
+        apigroup: groupVersionKind?.group,
+        apiversion: groupVersionKind?.version,
+        name,
+        namespace,
+      })}`
+    }
+  }
+
+  if (shouldFallbackToResourceLink) {
+    return <ResourceLink {...resourceLinkProps} />
+  }
+
+  return (
+    <span className={classes}>
+      {!hideIcon && <ResourceIcon groupVersionKind={groupVersionKind} />}
+      {path ? (
+        <Link
+          to={path}
+          title={title}
+          className="co-resource-item__resource-name"
+          data-test-id={value}
+          data-test={dataTest ?? value}
+          onClick={onClick}
+        >
+          {value}
+          {nameSuffix}
+        </Link>
+      ) : (
+        <span className="co-resource-item__resource-name" data-test-id={value} data-test={dataTest ?? value}>
+          {value}
+          {nameSuffix}
+        </span>
+      )}
+      {children}
+    </span>
+  )
 }
