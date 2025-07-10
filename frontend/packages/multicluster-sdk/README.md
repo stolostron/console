@@ -52,6 +52,7 @@ Setup depends on your usage scenarios.
 - [useFleetK8sWatchResource](#gear-usefleetk8swatchresource)
 - [useFleetPrometheusPoll](#gear-usefleetprometheuspoll)
 - [useHubClusterName](#gear-usehubclustername)
+- [useIsFleetAvailable](#gear-useisfleetavailable)
 - [useMulticlusterSearchWatch](#gear-usemulticlustersearchwatch)
 
 ### :gear: fleetK8sCreate
@@ -170,11 +171,35 @@ Array with `isAllowed` and `loading` values.
 
 ### :gear: useHubClusterName
 
+Hook that provides hub cluster name.
+
 | Function | Type |
 | ---------- | ---------- |
 | `useHubClusterName` | `UseHubClusterName` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useHubClusterName.ts#L7)
+Returns:
+
+Array with `hubclustername`, `loaded` and `error` values.
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useHubClusterName.ts#L11)
+
+### :gear: useIsFleetAvailable
+
+Hook that determines if the fleet support is available.
+
+Checks if the feature flag with the name corresponding to the `REQUIRED_PROVIDER_FLAG` constant is enabled.
+Red Hat Advanced Cluster Management enables this feature flag in versions that provide all of the dependencies
+required by this version of the multicluster SDK.
+
+| Function | Type |
+| ---------- | ---------- |
+| `useIsFleetAvailable` | `UseIsFleetAvailable` |
+
+Returns:
+
+`true` if a version of Red Hat Advanced Cluster Management that is compatible with the multicluster SDK is available; `false` otherwise
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useIsFleetAvailable.ts#L15)
 
 ### :gear: useMulticlusterSearchWatch
 
@@ -250,7 +275,17 @@ Array with `isAllowed` and `loading` values.
 | ---------- | ---------- |
 | `UseHubClusterName` | `() => [hubClusterName: string or undefined, loaded: boolean, error: any]` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L14)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L16)
+
+### :gear: UseIsFleetAvailable
+
+Signature of the `useIsFleetAvailable` hook
+
+| Type | Type |
+| ---------- | ---------- |
+| `UseIsFleetAvailable` | `() => boolean` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L27)
 
 
 <!-- TSDOC_END -->
