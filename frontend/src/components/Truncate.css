@@ -33,3 +33,36 @@
     direction: ltr;
   }
 }
+
+/* Ensure highlighted text maintains underline decoration */
+span[data-highlight='true'] {
+  text-decoration: underline;
+}
+
+/* Ensure highlighted text maintains underline decoration within truncated content */
+.pf-v5-c-truncate span[data-highlight='true'],
+.pf-v5-c-truncate__start span[data-highlight='true'],
+.pf-v5-c-truncate__end span[data-highlight='true'] {
+  text-decoration: underline;
+}
+
+/* Ensure link text maintains underline decoration within truncated content */
+.pf-v5-c-truncate span[data-link='true'],
+.pf-v5-c-truncate__start span[data-link='true'],
+.pf-v5-c-truncate__end span[data-link='true'] {
+  text-decoration: underline;
+}
+
+/* Higher specificity selectors to override PatternFly component styles */
+.pf-v5-c-truncate .pf-v5-c-button span[data-highlight='true'],
+.pf-v5-c-truncate .pf-v5-c-button span[data-link='true'] {
+  text-decoration: underline;
+}
+
+/* Ensure underline is preserved even within button-like elements */
+button span[data-highlight='true'],
+button span[data-link='true'],
+.pf-v5-c-button span[data-highlight='true'],
+.pf-v5-c-button span[data-link='true'] {
+  text-decoration: underline;
+}
