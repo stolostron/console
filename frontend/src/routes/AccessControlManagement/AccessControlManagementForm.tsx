@@ -287,7 +287,7 @@ const AccessControlManagementForm = ({
           new Map(
             [
               ...((roleBindingRB.subjectKind === 'Group' ? groups : users) || []).map((val) => ({
-                id: val.metadata.uid!,
+                id: val.metadata.name!,
                 value: val.metadata.name!,
               })),
               ...roleBindingRB.subjectNames.map((name) => ({ id: name, value: name })),
@@ -318,7 +318,7 @@ const AccessControlManagementForm = ({
           new Map(
             [
               ...((roleBindingCRB.subjectKind === 'Group' ? groups : users) || []).map((val) => ({
-                id: val.metadata.uid!,
+                id: val.metadata.name!,
                 value: val.metadata.name!,
               })),
               ...roleBindingCRB.subjectNames.map((name) => ({ id: name, value: name })),

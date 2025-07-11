@@ -140,6 +140,7 @@ export function RemoveAutomationModal(props: {
       titleIconVariant={'warning'}
       isOpen={props.open}
       variant={ModalVariant.small}
+      style={{ display: 'table !important' }}
       onClose={() => {
         props.close()
       }}

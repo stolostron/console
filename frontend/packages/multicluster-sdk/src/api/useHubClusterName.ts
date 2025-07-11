@@ -1,20 +1,41 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useK8sWatchResource } from '@openshift-console/dynamic-plugin-sdk'
+import { fetchHubClusterName, getCachedHubClusterName } from '../internal/cachedHubClusterName'
 import { UseHubClusterName } from '../types'
-import { LOCAL_CLUSTER_LABEL } from '../internal/constants'
-import { ManagedClusterListGroupVersionKind } from '../internal/models'
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useIsFleetAvailable } from './useIsFleetAvailable'
 
+/**
+ * Hook that provides hub cluster name.
+ *
+ * @returns Array with `hubclustername`, `loaded` and `error` values.
+ */
 export const useHubClusterName: UseHubClusterName = () => {
-  const [clusters, loaded, error] = useK8sWatchResource<K8sResourceCommon[]>({
-    groupVersionKind: ManagedClusterListGroupVersionKind,
-    isList: true,
-  })
+  const cachedHubClusterName = getCachedHubClusterName()
+  const [hubClusterName, setHubClusterName] = useState<string | undefined>(cachedHubClusterName)
+  const [loaded, setLoaded] = useState<boolean>(!!cachedHubClusterName)
+  const [error, setError] = useState<any>(undefined)
 
-  const hubClusterName = useMemo(
-    () => clusters?.find((cluster) => cluster.metadata?.labels?.[LOCAL_CLUSTER_LABEL] === 'true')?.metadata?.name,
-    [clusters]
-  )
+  const fleetAvailable = useIsFleetAvailable()
+
+  useEffect(() => {
+    if (!fleetAvailable) {
+      setHubClusterName(undefined)
+      setLoaded(false)
+      setError('A version of RHACM that is compatible with the multicluster SDK is not available')
+    }
+
+    if (!cachedHubClusterName) {
+      void (async () => {
+        try {
+          const hubName = await fetchHubClusterName()
+          setHubClusterName(hubName)
+          setLoaded(true)
+        } catch (err) {
+          setError(err)
+        }
+      })()
+    }
+  }, [fleetAvailable, cachedHubClusterName])
 
   return useMemo(() => [hubClusterName, loaded, error], [hubClusterName, loaded, error])
 }

@@ -256,11 +256,17 @@ Array with `isAllowed` and `loading` values.
 
 ### :gear: useHubClusterName
 
+Hook that provides hub cluster name.
+
 | Function | Type |
 | ---------- | ---------- |
 | `useHubClusterName` | `UseHubClusterName` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useHubClusterName.ts#L8)
+Returns:
+
+Array with `hubclustername`, `loaded` and `error` values.
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useHubClusterName.ts#L11)
 
 ### :gear: useIsFleetAvailable
 
