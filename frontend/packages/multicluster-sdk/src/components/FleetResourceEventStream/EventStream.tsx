@@ -102,7 +102,7 @@ const ResourceEventStream: FC<{ resource: K8sResourceCommon }> = ({ resource }) 
       ws.current.onclose = (evt: CloseEvent) => {
         setActive(false)
         if (evt?.wasClean === false) {
-          setError(evt.reason || t('public~Connection did not close cleanly.'))
+          setError(true)
         }
       }
 
