@@ -90,7 +90,6 @@ import EventComponent from './EventComponent'
  */
 
 const FleetResourceEventStream: FC<{ resource: FleetK8sResourceCommon }> = ({ resource }) => {
-  // All hooks must be called at the top level
   const [active, setActive] = useState(true)
   const [hubCluster] = useHubClusterName()
   const { t } = useTranslation('public')
