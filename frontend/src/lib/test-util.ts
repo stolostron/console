@@ -10,6 +10,24 @@ const waitForOptions = { timeout: waitTimeout }
 
 // By Text
 
+/**
+ * Returns a text matcher function that can find fragmented text across multiple elements.
+ * This extracts the exact pattern used in tests for components like HighlightSearchText and Truncate.
+ *
+ * @param text - The text to search for
+ * @returns A matcher function for use with screen.getAllByText() or screen.getByText()
+ */
+export function getFragmentedTextMatcher(text: string) {
+  return (_: string, element: Element | null) => {
+    const hasText = (node: Element | null) => {
+      if (!node) return false
+      const textContent = node.textContent || ''
+      return textContent.includes(text)
+    }
+    return hasText(element)
+  }
+}
+
 export async function waitForText(text: string, multipleAllowed?: boolean) {
   if (multipleAllowed) {
     await waitFor(() => expect(screen.queryAllByText(text).length).toBeGreaterThan(0), waitForOptions)

@@ -684,7 +684,7 @@ export function useClusterNameColumn(): IAcmTableColumn<Cluster> {
       <>
         <span style={{ whiteSpace: 'nowrap' }}>
           <Link to={getClusterNavPath(NavigationPath.clusterDetails, cluster)}>
-            <HighlightSearchText text={cluster.displayName} searchText={search} isTruncate />
+            <HighlightSearchText text={cluster.displayName} searchText={search} isLink useFuzzyHighlighting />
           </Link>
         </span>
         {cluster.hive.clusterClaimName && (
@@ -750,7 +750,7 @@ export function useClusterNamespaceColumn(): IAcmTableColumn<Cluster> {
     search: 'namespace',
     cell: (cluster, search) => (
       <span style={{ whiteSpace: 'nowrap' }}>
-        <HighlightSearchText text={cluster.namespace ?? '-'} searchText={search} isTruncate />
+        <HighlightSearchText text={cluster.namespace ?? '-'} searchText={search} useFuzzyHighlighting />
       </span>
     ),
     exportContent: (cluster) => cluster.namespace,
