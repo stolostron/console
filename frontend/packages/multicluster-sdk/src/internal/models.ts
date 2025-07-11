@@ -13,11 +13,18 @@ export const ManagedClusterModel: K8sModel = {
   plural: 'managedclusters',
 }
 
+export const MultiClusterObservabilityKind = {
+  group: 'observability.open-cluster-management.io',
+  version: 'v1beta2',
+  kind: 'MultiClusterObservability',
+}
+
 export const ManagedClusterListGroupVersionKind = {
   group: 'clusterview.open-cluster-management.io',
   version: 'v1',
   kind: 'ManagedCluster',
 }
+
 export const SelfSubjectAccessReviewModel: K8sModel = {
   abbr: 'SSAR',
   kind: 'SelfSubjectAccessReview',

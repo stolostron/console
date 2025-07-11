@@ -25,3 +25,4 @@ export type UseFleetClusterNames = () => [string[], boolean, any]
 
 /** Signature of the `useIsFleetAvailable` hook */
 export type UseIsFleetAvailable = () => boolean
+export type UseIsFleetPrometheusAvailable = () => [isMcoRunning: boolean, loaded: boolean, error: any]
