@@ -177,6 +177,13 @@ import { PluginDataContext } from '../lib/PluginDataContext'
 import { useQuery } from '../lib/useQuery'
 import { AccessControlApiVersion, AccessControlKind } from '../resources/access-control'
 import { MultiClusterHubComponent } from '../resources/multi-cluster-hub-component'
+import {
+  canVMStorageBeMigrated,
+  getClusterNetworkAttachmentDefinitions,
+  getClusterStorageClasses,
+  getProviders,
+  getVMDetails,
+} from '../routes/Infrastructure/VirtualMachines/migrate-utils'
 
 export function LoadData(props: { children?: ReactNode }) {
   const { loadCompleted, setLoadStarted, setLoadCompleted } = useContext(PluginDataContext)
@@ -630,6 +637,16 @@ export function LoadData(props: { children?: ReactNode }) {
 
     if (process.env.MODE !== 'plugin') {
       checkLoggedIn()
+      const providers = getProviders()
+      console.log('forklift providers', providers)
+      const sc = getClusterStorageClasses('201d9f70-bf54-4e12-95a2-f7ca191d3dbd')
+      console.log('forklift sc', sc)
+      const nad = getClusterNetworkAttachmentDefinitions('201d9f70-bf54-4e12-95a2-f7ca191d3dbd')
+      console.log('forklift nad', nad)
+      const vm = getVMDetails('201d9f70-bf54-4e12-95a2-f7ca191d3dbd', 'ad29e70b-4ef9-406a-b817-1d5955036067')
+      console.log('forklift vm', vm)
+
+      canVMStorageBeMigrated('e398db81-157b-4ac3-bd14-9d0274735e99', 'sno-2-b9657')
     }
   }, [])
 
