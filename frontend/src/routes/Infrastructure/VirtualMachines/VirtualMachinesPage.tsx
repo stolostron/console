@@ -4,6 +4,7 @@ import { getCurrentClusterVersion, getMajorMinorVersion } from '@openshift-assis
 import {
   Alert,
   AlertActionCloseButton,
+  // AlertActionLink,
   EmptyState,
   EmptyStateBody,
   EmptyStateHeader,
@@ -26,6 +27,7 @@ import { ConfigMap } from '../../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import {
   AcmActionGroup,
+  // AcmAlert,
   AcmButton,
   AcmEmptyState,
   AcmPage,
@@ -456,6 +458,17 @@ export default function VirtualMachinesPage() {
         />
       }
     >
+      {/* <Fragment>
+        <Alert isExpandable title="Virtual machine in this project are migrating" variant="info" isInline>
+          {' '}
+          <div style={{ marginBottom: '1rem' }}>
+            The migration is in progress. You can check the VM status and details.
+          </div>
+          <AlertActionLink component="a" href="#">
+            Cancel migration and revert changes
+          </AlertActionLink>
+        </Alert>
+      </Fragment> */}
       <SearchInfoModal isOpen={toggleOpen} onClose={() => setToggleOpen(false)} />
       <AcmPageContent id="virtual-machines">
         {isLimitAlertOpen ? (
