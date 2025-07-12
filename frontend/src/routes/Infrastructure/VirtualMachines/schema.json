@@ -1,0 +1,41 @@
+{
+  "type": "object",
+  "properties": {
+    "spec": {
+      "type": "object",
+      "required": ["provider"],
+      "properties": {
+        "provider": {
+          "type": "object",
+          "required": ["source", "destination"],
+          "properties": {
+            "source": {
+              "type": "object",
+              "required": ["name", "namespace"],
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "namespace": {
+                  "type": "string"
+                }
+              }
+            },
+            "destination": {
+              "type": "object",
+              "required": ["name", "namespace"],
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "namespace": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
