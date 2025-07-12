@@ -146,7 +146,7 @@ export function getApplicationName(application: IApplicationResource, search: st
           search: `?apiVersion=${apiVersion}${clusterQuery}`,
         }}
       >
-        <HighlightSearchText text={application.metadata?.name} searchText={search} isTruncate />
+        <HighlightSearchText text={application.metadata?.name} searchText={search} isTruncate useTruncatePopover />
       </Link>
     </span>
   )
@@ -155,7 +155,7 @@ export function getApplicationName(application: IApplicationResource, search: st
 export function getApplicationNamespace(resource: IApplicationResource, search: string) {
   return (
     <span style={{ whiteSpace: 'nowrap' }}>
-      <HighlightSearchText text={getAppNamespace(resource)} searchText={search} isTruncate />
+      <HighlightSearchText text={getAppNamespace(resource)} searchText={search} isTruncate useTruncatePopover />
     </span>
   )
 }

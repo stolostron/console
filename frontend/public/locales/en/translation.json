@@ -1751,6 +1751,7 @@
   "Kubernetes version": "Kubernetes version",
   "Label": "Label",
   "Label expressions": "Label expressions",
+  "Label popover": "Label popover",
   "Label selectors": "Label selectors",
   "Labels": "Labels",
   "labels.description": "Labels help you organize and select resources. Adding labels allows you to query for objects by using the labels. Selecting labels during policy and application creation allows you to distribute your resources to different clusters that share common labels.",

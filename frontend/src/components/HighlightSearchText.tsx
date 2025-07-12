@@ -1,8 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { css } from '@emotion/css'
-import { Button } from '@patternfly/react-core'
+import { Button, Popover } from '@patternfly/react-core'
 import { parseLabel } from '../resources/utils'
-import { MouseEventHandler } from 'react'
+import { MouseEventHandler, ReactNode } from 'react'
+import { useTranslation } from '../lib/acm-i18next'
+import { TFunction } from 'react-i18next'
 
 const MAX_LABEL_WIDTH = 28
 
@@ -29,6 +31,18 @@ const highlightClass = css({
   fontWeight: 600,
 })
 
+const labelWithPopOver = (completeLabel: string, truncatedLabel: string | ReactNode, t: TFunction) => (
+  <Popover
+    triggerAction="hover"
+    position="top-start"
+    aria-label={t('Label popover')}
+    hasAutoWidth
+    bodyContent={<div>{completeLabel}</div>}
+  >
+    <div>{truncatedLabel}</div>
+  </Popover>
+)
+
 // render text with highlights for searched filter text
 // if text is a label like 'key=value', add a toggle button that toggles between = and !=
 // if truncate is set, also make label smaller with ellipses
@@ -39,28 +53,34 @@ export function HighlightSearchText(
     supportsInequality?: boolean
     toggleEquality?: () => void
     isTruncate?: boolean
+    useTruncatePopover?: boolean
   }>
 ) {
-  const { text, searchText, supportsInequality, toggleEquality, isTruncate } = props
+  const { text, searchText, supportsInequality, toggleEquality, isTruncate, useTruncatePopover } = props
   const segments = getSlicedText(text, searchText)
+  const { t } = useTranslation()
+  const isTruncateLabel = isTruncate && text && text.length > MAX_LABEL_WIDTH
   if (segments.length > 1) {
-    const isTruncateLabel = isTruncate && text && text.length > MAX_LABEL_WIDTH
-    return (
-      <>
-        {segments.map((seg, inx) => {
-          if (supportsInequality && !!parseLabel(seg.text).oper) {
-            return <ToggleButton key={Number(inx)} label={seg.text} toggleEquality={toggleEquality} />
-          }
-          return (
-            <span key={Number(inx)} className={seg.isBold ? highlightClass : ''}>
-              {isTruncateLabel && !seg.isBold ? '...' : seg.text}
-            </span>
-          )
-        })}
-      </>
-    )
+    const highlightedTextSegments = segments.map((seg, inx) => {
+      if (supportsInequality && !!parseLabel(seg.text).oper) {
+        return <ToggleButton key={Number(inx)} label={seg.text} toggleEquality={toggleEquality} />
+      }
+      return (
+        <span key={Number(inx)} className={seg.isBold ? highlightClass : ''}>
+          {isTruncateLabel && !seg.isBold ? '...' : seg.text}
+        </span>
+      )
+    })
+    if (isTruncateLabel && useTruncatePopover) {
+      return labelWithPopOver(text, highlightedTextSegments, t)
+    }
+    return <>{highlightedTextSegments}</>
   } else if (isTruncate) {
-    return truncate(text) ?? null
+    const truncatedText = truncate(text)
+    if (truncatedText && isTruncateLabel && useTruncatePopover) {
+      return labelWithPopOver(text, truncatedText, t)
+    }
+    return truncatedText ?? null
   } else if (supportsInequality && text) {
     return <ToggleButton label={text} toggleEquality={toggleEquality} />
   }
