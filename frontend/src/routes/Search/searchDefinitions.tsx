@@ -9,6 +9,7 @@ import queryString from 'query-string'
 import { useMemo } from 'react'
 import { TFunction } from 'react-i18next'
 import { generatePath, Link } from 'react-router-dom-v5-compat'
+import { useFlag } from '@openshift-console/dynamic-plugin-sdk'
 import { useTranslation } from '../../lib/acm-i18next'
 import AcmTimestamp from '../../lib/AcmTimestamp'
 import { NavigationPath } from '../../NavigationPath'
@@ -555,6 +556,7 @@ export const GetUrlSearchParam = (resource: any) => {
 
 export function CreateDetailsLink(props: Readonly<{ item: any }>) {
   const { item } = props
+  const kubevirtEnabled = useFlag('KUBEVIRT_DYNAMIC_ACM') // check if the KUBEVIRT_DYNAMIC_ACM flag is enabled
 
   const defaultSearchLink = (
     <Link
@@ -633,6 +635,17 @@ export function CreateDetailsLink(props: Readonly<{ item: any }>) {
           {item.name}
         </Link>
       )
+    case 'virtualmachine':
+    case 'virtualmachineinstance':
+      // when the KUBEVIRT_DYNAMIC_ACM integration is enabled, go to the new ACM VM page
+      if (kubevirtEnabled && item.cluster && item.namespace) {
+        return (
+          <Link to={`/multicloud/infrastructure/virtualmachines/${item.cluster}/${item.namespace}/${item.name}`}>
+            {item.name}
+          </Link>
+        )
+      }
+      return defaultSearchLink
     default:
       return defaultSearchLink
   }
@@ -640,6 +653,7 @@ export function CreateDetailsLink(props: Readonly<{ item: any }>) {
 
 export function CreateGlobalSearchDetailsLink(props: { item: any }) {
   const { item } = props
+  const kubevirtEnabled = useFlag('KUBEVIRT_DYNAMIC_ACM') // check if the KUBEVIRT_DYNAMIC_ACM flag is enabled
   const clusters = useAllClusters(true)
 
   const managedHub = clusters.find((cluster) => {
@@ -730,6 +744,20 @@ export function CreateGlobalSearchDetailsLink(props: { item: any }) {
         path,
         `?${encodeURIComponent('showClusterIssues=true')}`
       )
+    }
+    case 'virtualmachine':
+    case 'virtualmachineinstance': {
+      // when the KUBEVIRT_DYNAMIC_ACM integration is enabled, go to the new ACM VM page
+      if (kubevirtEnabled && item.cluster && item.namespace) {
+        const path = `/multicloud/infrastructure/virtualmachines/${item.cluster}/${item.namespace}/${item.name}`
+        return generateLink(
+          item.managedHub === 'global-hub' && !item._hubClusterResource ? 'external' : 'internal',
+          path
+        )
+      }
+      const searchLink = generateLink('internal', NavigationPath.resources, GetUrlSearchParam(item))
+      const externalLink = generateLink('external', NavigationPath.resources, GetUrlSearchParam(item))
+      return item.managedHub !== 'global-hub' ? externalLink : searchLink
     }
     default: {
       const searchLink = generateLink('internal', NavigationPath.resources, GetUrlSearchParam(item))
