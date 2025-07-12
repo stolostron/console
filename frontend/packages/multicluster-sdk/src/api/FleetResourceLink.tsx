@@ -181,37 +181,42 @@ export const FleetResourceLink: React.FC<FleetResourceLinkProps> = ({ cluster, .
   const isFirstClassResource = isFirstClassACMResource(groupVersionKind?.kind)
   const isMulticloudPath = location.pathname.startsWith('/multicloud/')
 
-  let path: string | null = null
-  let shouldFallbackToResourceLink = false
-
-  if (isHubCluster) {
-    // hub cluster case
-    if (isFirstClassResource) {
-      if (groupVersionKind?.kind === 'ManagedCluster' || isMulticloudPath) {
-        // links always to cluster details for ManagedCluster, or first-class page for other resources when on multicloud path
-        path = getFirstClassResourcePath(
+  const getResourcePath = (): { path: string | null; shouldFallback: boolean } => {
+    if (isHubCluster) {
+      // hub cluster case
+      if (isFirstClassResource) {
+        if (groupVersionKind?.kind === 'ManagedCluster' || isMulticloudPath) {
+          // links always to cluster details for ManagedCluster, or first-class page for other resources when on multicloud path
+          const firstClassPath = getFirstClassResourcePath(
+            groupVersionKind?.kind,
+            cluster || hubClusterName,
+            namespace,
+            name,
+            kubevirtEnabled
+          )
+          return { path: firstClassPath, shouldFallback: !firstClassPath }
+        }
+      }
+      // if no first-class path or not in multicloud, fallback to OCP ResourceLink
+      return { path: null, shouldFallback: true }
+    } else {
+      // managed cluster case
+      if (isFirstClassResource) {
+        // links to the first-class page for that resource
+        const firstClassPath = getFirstClassResourcePath(
           groupVersionKind?.kind,
-          cluster || hubClusterName,
+          cluster,
           namespace,
           name,
           kubevirtEnabled
         )
+        if (firstClassPath) {
+          return { path: firstClassPath, shouldFallback: false }
+        }
       }
-    }
-    // if no first-class path or not in multicloud, fallback to OCP ResourceLink
-    if (!path) {
-      shouldFallbackToResourceLink = true
-    }
-  } else {
-    // managed cluster case
-    if (isFirstClassResource) {
-      // links to the first-class page for that resource
-      path = getFirstClassResourcePath(groupVersionKind?.kind, cluster, namespace, name, kubevirtEnabled)
-    }
 
-    if (!path) {
       // links to /multicloud/search/resources
-      path = `/multicloud/search/resources${getURLSearchParam({
+      const searchPath = `/multicloud/search/resources${getURLSearchParam({
         cluster,
         kind: groupVersionKind?.kind,
         apigroup: groupVersionKind?.group,
@@ -219,10 +224,13 @@ export const FleetResourceLink: React.FC<FleetResourceLinkProps> = ({ cluster, .
         name,
         namespace,
       })}`
+      return { path: searchPath, shouldFallback: false }
     }
   }
 
-  if (shouldFallbackToResourceLink) {
+  const { path, shouldFallback } = getResourcePath()
+
+  if (shouldFallback) {
     return <ResourceLink {...resourceLinkProps} />
   }
 
