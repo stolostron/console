@@ -850,7 +850,7 @@ export default class TemplateEditor extends React.Component {
   }
 
   // text editor commands
-  handleEditorCommand(command) {
+  async handleEditorCommand(command) {
     const { activeYAMLEditor } = this.state
     const editor = this.editors[activeYAMLEditor]
     switch (command) {
@@ -883,7 +883,7 @@ export default class TemplateEditor extends React.Component {
             const selection = editor.getSelection()
             if (model && selection) {
               const selectedText = model.getValueInRange(selection)
-              navigator.clipboard.writeText(selectedText || editor.getValue() || '')
+              await navigator.clipboard.writeText(selectedText || editor.getValue() || '')
             }
           }
         }
@@ -1247,7 +1247,7 @@ export default class TemplateEditor extends React.Component {
       const portal = document.getElementById(createBtn)
       const label = isEditing ? (i18n ? i18n('button.update') : 'Update') : i18n ? i18n('button.create') : 'Create'
 
-      const onClick = () => {
+      const onClick = async () => {
         this.setState((state) => ({
           ...state,
           notifications: [],
@@ -1255,7 +1255,7 @@ export default class TemplateEditor extends React.Component {
 
         const validations = controlData.map((cd) => cd.validate).filter(Boolean)
         if (validations.length) {
-          Promise.all(validations.map((v) => v())).then((results) => {
+          await Promise.all(validations.map((v) => v())).then((results) => {
             const hasErrors = results.some((result) => !isEmpty(result))
             if (hasErrors) {
               this.setState((state) => ({
@@ -1295,7 +1295,7 @@ export default class TemplateEditor extends React.Component {
       if (portal) {
         return !hasPermissions
           ? ReactDOM.createPortal(
-              <div title={titleText} isDisabled={!hasPermissions}>
+              <div title={titleText} disabled={!hasPermissions}>
                 {button}
               </div>,
               portal

@@ -1257,7 +1257,7 @@ const nockListHiveProvisionJobs = () =>
     ['hive.openshift.io/cluster-deployment-name=test-cluster', 'hive.openshift.io/job-type=provision']
   )
 
-const Component = ({ clusterDeployment = mockClusterDeployment }) => (
+const Component = ({ clusterDeployment = mockClusterDeployment }: { clusterDeployment?: ClusterDeployment }) => (
   <RecoilRoot
     initializeState={(snapshot) => {
       snapshot.set(managedClusterAddonsState, mockManagedClusterAddOns)
