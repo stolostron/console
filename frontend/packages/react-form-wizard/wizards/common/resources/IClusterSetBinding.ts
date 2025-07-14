@@ -7,7 +7,7 @@ export const ClusterSetBindingKind = 'ManagedClusterSetBinding'
 export const ClusterSetBindingType = { apiVersion: ClusterSetBindingApiVersion, kind: ClusterSetBindingKind }
 
 export type IClusterSetBinding = IResource & {
-    spec?: {
-        clusterSet?: string
-    }
+  spec?: {
+    clusterSet?: string
+  }
 }
