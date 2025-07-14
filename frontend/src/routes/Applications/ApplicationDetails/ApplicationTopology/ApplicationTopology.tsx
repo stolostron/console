@@ -119,8 +119,8 @@ export function ApplicationTopologyPageContent() {
     handleClusterDetailsContainerUpdate: setClusterDetailsContainerData,
   }
 
-  const processActionLink = (resource: any, toggleLoading: boolean, hubClusterName: string) => {
-    processResourceActionLink(resource, toggleLoading, t, hubClusterName)
+  const processActionLink = async (resource: any, toggleLoading: boolean, hubClusterName: string) => {
+    await processResourceActionLink(resource, toggleLoading, t, hubClusterName)
   }
 
   const canUpdateStatuses = !!statuses

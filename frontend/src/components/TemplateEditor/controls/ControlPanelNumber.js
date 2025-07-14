@@ -9,6 +9,7 @@ class ControlPanelNumber extends React.Component {
   static propTypes = {
     control: PropTypes.object,
     controlId: PropTypes.string,
+    controlData: PropTypes.object,
     handleChange: PropTypes.func,
     i18n: PropTypes.func,
   }

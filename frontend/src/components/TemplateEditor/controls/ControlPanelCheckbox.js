@@ -9,6 +9,7 @@ import ControlPanelFormGroup from './ControlPanelFormGroup'
 class ControlPanelCheckbox extends React.Component {
   static propTypes = {
     control: PropTypes.object,
+    controlData: PropTypes.object,
     controlId: PropTypes.string,
     handleChange: PropTypes.func,
     i18n: PropTypes.func,

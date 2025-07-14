@@ -134,16 +134,19 @@ export const VMActionModal = (props: IVMActionModalProps) => {
             console.error('Error getting VM resource: ', err)
           })
       } else {
-        fireManagedClusterView(item.cluster, 'VirtualMachine', 'kubevirt.io/v1', name, item.namespace).then(
-          (viewResponse) => {
+        fireManagedClusterView(item.cluster, 'VirtualMachine', 'kubevirt.io/v1', name, item.namespace)
+          .then((viewResponse) => {
             setVMLoading(false)
             if (viewResponse?.message) {
               console.error('Error fetching parent VM')
             } else {
               setVM(viewResponse?.result)
             }
-          }
-        )
+          })
+          .catch((err) => {
+            setVMLoading(false)
+            console.error('Error fetching parent VM: ', err)
+          })
       }
     } else {
       setVMLoading(false)

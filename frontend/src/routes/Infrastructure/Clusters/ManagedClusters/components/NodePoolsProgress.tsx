@@ -139,16 +139,16 @@ const NodePoolsProgress = ({ nodePools, ...rest }: NodePoolsProgressProps) => {
                     style={{ marginRight: '0.5em', fontSize: '0.8em', padding: '0.5em' }}
                     id={nodePool}
                     key={nodePool}
-                    children={nodePool}
                     variant={ButtonVariant.tertiary}
                     onClick={() => setExpanded(true)}
                     iconPosition="right"
-                  />
+                  >
+                    {nodePool}
+                  </AcmButton>
                 ))}
 
                 <AcmButton
                   id="addNodepoolEmptyState"
-                  children={t('Add node pool')}
                   variant={ButtonVariant.link}
                   onClick={toggleAddNodepoolModal}
                   tooltip={addNodePoolStatusMessage}
@@ -157,7 +157,9 @@ const NodePoolsProgress = ({ nodePools, ...rest }: NodePoolsProgressProps) => {
                     !canCreateNodepool ||
                     cluster?.hypershift?.isUpgrading
                   }
-                />
+                >
+                  {t('Add node pool')}
+                </AcmButton>
               </FlexItem>
             )}
           </Flex>

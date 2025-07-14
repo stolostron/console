@@ -179,7 +179,7 @@ export function useFleetK8sWatchResource<R extends FleetK8sResourceCommon | Flee
         setLoaded(true)
       }
     }
-    fetchData()
+    void fetchData()
     // Cleanup function to close the WebSocket if it was created by this effect
     return () => {
       if (socket && socket.readyState === WebSocket.OPEN) {

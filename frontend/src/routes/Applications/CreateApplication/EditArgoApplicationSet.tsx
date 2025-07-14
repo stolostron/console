@@ -106,7 +106,10 @@ export function EditArgoApplicationSet() {
         setLoadingAppSets(false)
       }
     }
-    fetchAppSets()
+    fetchAppSets().catch((error) => {
+      setLoadingAppSets(false)
+      console.error('Error fetching application sets: ', error)
+    })
   }, [])
 
   useEffect(() => {

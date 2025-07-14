@@ -5,6 +5,7 @@ import { List as VirtualList, CellMeasurerCache } from 'react-virtualized'
 import { CSSTransition } from 'react-transition-group'
 import { css } from '@patternfly/react-styles'
 import { EventKind } from './constants'
+import PropTypes from 'prop-types'
 
 // Keep track of seen events so we only animate new ones.
 const seen = new Set()
@@ -15,6 +16,7 @@ const measurementCache = new CellMeasurerCache({
 })
 
 class SysEvent extends React.Component<SysEventProps> {
+  static propTypes: any
   shouldComponentUpdate(nextProps: SysEventProps) {
     if (this.props.event.lastTimestamp !== nextProps.event.lastTimestamp) {
       // Timestamps can be modified because events can be combined.
@@ -56,6 +58,22 @@ class SysEvent extends React.Component<SysEventProps> {
   }
 }
 
+SysEvent.propTypes = {
+  EventComponent: PropTypes.elementType.isRequired,
+  event: PropTypes.shape({
+    lastTimestamp: PropTypes.string,
+    metadata: PropTypes.shape({
+      uid: PropTypes.string,
+    }),
+  }).isRequired,
+  onLoad: PropTypes.func,
+  onEntered: PropTypes.func,
+  style: PropTypes.object,
+  index: PropTypes.number.isRequired,
+  className: PropTypes.string,
+  list: PropTypes.object,
+}
+
 export const EventStreamList: React.FC<EventStreamListProps> = ({ events, className, EventComponent }) => {
   const [list] = React.useState<VirtualList | null>(null)
   const onResize = React.useCallback(() => measurementCache.clearAll(), [])
@@ -73,7 +91,6 @@ export const EventStreamList: React.FC<EventStreamListProps> = ({ events, classN
             event={event}
             list={list}
             EventComponent={EventComponent}
-            onEntered={print}
             key={event.metadata?.uid}
             index={index}
           />

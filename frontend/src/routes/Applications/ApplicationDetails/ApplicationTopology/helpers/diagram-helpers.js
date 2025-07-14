@@ -618,7 +618,7 @@ export const addNodeServiceLocationForCluster = (node, typeObject, details, t) =
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const processResourceActionLink = (resource, toggleLoading, t, hubClusterName) => {
+export const processResourceActionLink = async (resource, toggleLoading, t, hubClusterName) => {
   let targetLink = ''
   const linkPath = R.pathOr('', ['action'])(resource)
   const { name, namespace, editLink, kind, cluster } = resource //routeObject
@@ -645,7 +645,7 @@ export const processResourceActionLink = (resource, toggleLoading, t, hubCluster
       targetLink = `/multicloud/search?filters={"textsearch":"${kindData}${nsData} ${nameData}"}`
       break
     case 'open_argo_editor': {
-      openArgoCDEditor(cluster, namespace, name, toggleLoading, t, hubClusterName) // the editor opens here
+      await openArgoCDEditor(cluster, namespace, name, toggleLoading, t, hubClusterName) // the editor opens here
       break
     }
     case 'open_route_url': {

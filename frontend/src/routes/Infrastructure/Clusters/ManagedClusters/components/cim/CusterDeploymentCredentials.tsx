@@ -12,12 +12,12 @@ type ClusterDeploymentCredentialsProps = {
   adminPasswordSecretRefName: string
 }
 
-const ClusterDeploymentCredentials: React.FC<ClusterDeploymentCredentialsProps> = ({
+const ClusterDeploymentCredentials = ({
   cluster,
   consoleUrl,
   namespace,
   adminPasswordSecretRefName,
-}) => {
+}: ClusterDeploymentCredentialsProps) => {
   const [credentials, setCredentials] = useState({})
 
   useEffect(() => {
@@ -40,7 +40,10 @@ const ClusterDeploymentCredentials: React.FC<ClusterDeploymentCredentialsProps> 
       }
     }
     if (['installed', 'adding-hosts'].includes(cluster.status)) {
-      fetchCredentials()
+      fetchCredentials().catch((err) => {
+        console.error('Failed to fetch adminPasswordSecret secret.', err)
+        setCredentials({})
+      })
     }
   }, [cluster.status, adminPasswordSecretRefName, namespace])
 

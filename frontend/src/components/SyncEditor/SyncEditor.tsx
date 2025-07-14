@@ -681,13 +681,13 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
               textId="code-content"
               aria-label={t('Copy to clipboard')}
               disabled={false}
-              onClick={() => {
+              onClick={async () => {
                 if (editor && editor.getModel()) {
                   const model = editor.getModel()
                   const selection = editor.getSelection()
                   if (model && selection) {
                     const selectedText = model.getValueInRange(selection)
-                    navigator.clipboard.writeText(selectedText || lastUnredactedChange?.yaml || '')
+                    await navigator.clipboard.writeText(selectedText || lastUnredactedChange?.yaml || '')
                     setCopyHint(selectedText.length === 0 ? allCopiedCopy : copiedCopy)
                     setTimeout(() => {
                       setCopyHint(defaultCopy)

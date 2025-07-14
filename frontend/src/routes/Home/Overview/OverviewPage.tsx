@@ -174,7 +174,12 @@ export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Re
 
   useEffect(() => {
     if (isInsightsSectionOpen && managedClusterIds.length > 0) {
-      getUpgradeRiskPredictions(managedClusterIds).then((res) => setUpgradeRiskPredictions(res))
+      getUpgradeRiskPredictions(managedClusterIds)
+        .then((res) => setUpgradeRiskPredictions(res))
+        .catch((error) => {
+          console.error('Error fetching upgrade risk predictions: ', error)
+          setUpgradeRiskPredictions([])
+        })
     }
   }, [isInsightsSectionOpen, managedClusterIds])
 
@@ -263,10 +268,16 @@ export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Re
 
   useEffect(() => {
     if (isCustomizationSectionOpen) {
-      getUserPreference().then((resp) => {
-        setIsUserPreferenceLoading(false)
-        setUserPreference(resp)
-      })
+      getUserPreference()
+        .then((resp) => {
+          setIsUserPreferenceLoading(false)
+          setUserPreference(resp)
+        })
+        .catch((error) => {
+          console.error('Error fetching user preference: ', error)
+          setIsUserPreferenceLoading(false)
+          setUserPreference(undefined)
+        })
     }
   }, [isCustomizationSectionOpen])
 

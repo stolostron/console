@@ -32,6 +32,7 @@ export function createAcmIcon({
   className: baseClassName,
   color,
 }: IconDefinition): React.ComponentClass<SVGIconProps> {
+  /* eslint-disable react/prop-types */
   return class SVGIcon extends React.Component<SVGIconProps> {
     static displayName = name
 

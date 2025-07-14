@@ -130,9 +130,9 @@ export function ProgressStepBar() {
               !prehooks && !posthooks ? DOC_LINKS.ANSIBLE_JOBS : latestJobs.prehook?.status?.ansibleJobResult?.url,
             isDisabled: isPrehookLinkDisabled(prehooks, posthooks, latestJobs, curator),
             linkCallback: !latestJobs.prehook?.status?.ansibleJobResult?.url
-              ? () => {
+              ? async () => {
                   if (curator) {
-                    launchJobLogs(curator)
+                    await launchJobLogs(curator)
                   }
                 }
               : undefined,
@@ -147,12 +147,12 @@ export function ProgressStepBar() {
         ...(provisionStatus.includes(cluster.status) && {
           link: {
             linkName: t('status.link.logs'),
-            linkCallback: () => {
+            linkCallback: async () => {
               if (cluster?.isHypershift) {
                 const url = `k8s/ns/${cluster.hypershift?.hostingNamespace}-${cluster.name}/pods`
                 launchToOCP(url)
               } else {
-                launchLogs(cluster, configMaps)
+                await launchLogs(cluster, configMaps)
               }
             },
           },
@@ -178,9 +178,9 @@ export function ProgressStepBar() {
               linkUrl: latestJobs.posthook?.status?.ansibleJobResult?.url,
               isDisabled: isPosthookLinkDisabled(latestJobs, curator),
               linkCallback: !latestJobs.posthook?.status?.ansibleJobResult?.url
-                ? () => {
+                ? async () => {
                     if (curator) {
-                      launchJobLogs(curator)
+                      await launchJobLogs(curator)
                     }
                   }
                 : undefined,
@@ -213,11 +213,11 @@ export function ProgressStepBar() {
   return null
 }
 
-export function launchJobLogs(curator: ClusterCurator | undefined) {
+export async function launchJobLogs(curator: ClusterCurator | undefined) {
   if (curator?.status?.conditions) {
     const jobName = getFailedCuratorJobName(curator.metadata.name!, curator.status.conditions)
     const jobPodResponse = getMostRecentAnsibleJobPod(curator?.metadata.namespace!, jobName!)
-    jobPodResponse.then((pod) => {
+    await jobPodResponse.then((pod) => {
       launchToOCP(`k8s/ns/${curator.metadata.name}/pods/${pod?.metadata.name}/logs`)
     })
   }

@@ -101,14 +101,18 @@ export function ApplicationOverviewPageContent() {
           namespaces,
         }
       }
-      fetchAuthorizedNamespaces().then(({ authorizedNamespaces, namespaces: fetchedNamespaces }) => {
-        // see if the user has access to all namespaces
-        if (!authorizedNamespaces || authorizedNamespaces?.length < fetchedNamespaces?.length) {
+      fetchAuthorizedNamespaces()
+        .then(({ authorizedNamespaces, namespaces: fetchedNamespaces }) => {
+          // see if the user has access to all namespaces
+          if (!authorizedNamespaces || authorizedNamespaces?.length < fetchedNamespaces?.length) {
+            setHasSyncPermission(false)
+          } else {
+            setHasSyncPermission(true)
+          }
+        })
+        .catch(() => {
           setHasSyncPermission(false)
-        } else {
-          setHasSyncPermission(true)
-        }
-      })
+        })
     }
   }, [namespaces])
 

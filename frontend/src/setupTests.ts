@@ -282,6 +282,9 @@ i18n
       },
     },
   })
+  .catch((error) => {
+    console.error('Error initializing i18n: ', error)
+  })
 
 window.matchMedia =
   window.matchMedia ||

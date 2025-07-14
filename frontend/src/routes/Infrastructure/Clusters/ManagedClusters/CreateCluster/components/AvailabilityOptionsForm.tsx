@@ -26,7 +26,7 @@ type AvailabilityOptionsFormProps = {
   handleChange: (control: FormControl) => void
 }
 
-const AvailabilityOptionsForm: React.FC<AvailabilityOptionsFormProps> = ({ control, handleChange }) => {
+const AvailabilityOptionsForm = ({ control, handleChange }: AvailabilityOptionsFormProps) => {
   const { t } = useTranslation()
 
   const handleRadioChange = (event: FormEvent<HTMLInputElement>) => {

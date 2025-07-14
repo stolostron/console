@@ -185,14 +185,14 @@ export function getAppSetTopology(application, hubClusterName) {
   return { nodes: uniqBy(nodes, 'uid'), links }
 }
 
-export const openArgoCDEditor = (cluster, namespace, name, toggleLoading, t, hubClusterName) => {
+export const openArgoCDEditor = async (cluster, namespace, name, toggleLoading, t, hubClusterName) => {
   if (cluster === hubClusterName) {
     toggleLoading()
-    getArgoRoute(name, namespace, cluster, undefined, hubClusterName)
+    await getArgoRoute(name, namespace, cluster, undefined, hubClusterName)
     toggleLoading()
   } else {
     toggleLoading()
-    getArgoRouteFromSearch(name, namespace, cluster, t, hubClusterName)
+    await getArgoRouteFromSearch(name, namespace, cluster, t, hubClusterName)
     toggleLoading()
   }
 }
@@ -288,60 +288,57 @@ const getArgoRouteFromSearch = async (appName, appNamespace, cluster, t, hubClus
     `kind:route namespace:${appNamespace} cluster:${cluster} label:app.kubernetes.io/part-of=argocd`
   )
 
-  searchClient
-    .query({
-      query: SearchResultItemsAndRelatedItemsDocument,
-      variables: {
-        input: [{ ...query }],
-        limit: 1000,
-      },
-      fetchPolicy: 'network-only',
-    })
-    .then((result) => {
-      if (result.errors) {
-        console.log(`Error: ${result.errors[0].message}`)
-        return
-      } else {
-        const searchResult = get(result, 'data.searchResult', [])
-        if (searchResult.length > 0) {
-          let route = null
-          // filter out grafana and prometheus routes
-          const routes = get(searchResult[0], 'items', []).filter(
-            (routeObj) =>
-              !get(routeObj, 'name', '').toLowerCase().includes('grafana') &&
-              !get(routeObj, 'name', '').toLowerCase().includes('prometheus')
-          )
-          if (routes.length > 0) {
-            // if still more than 1, choose one with “server” in the name if possible
-            const serverRoute = routes.find((routeObj) => get(routeObj, 'name', '').toLowerCase().includes('server'))
-            if (serverRoute) {
-              route = serverRoute
-            } else {
-              route = routes[0]
-            }
-          }
-          if (!route) {
-            const errMsg = t('No Argo route found for namespace {0} on cluster {1}', [appNamespace, cluster])
-            console.log(errMsg)
-            return
-          } else {
-            getArgoRoute(
-              appName,
-              appNamespace,
-              cluster,
-              {
-                cluster,
-                name: route.name,
-                namespace: route.namespace,
-                kind: 'Route',
-                apiVersion: 'route.openshift.io/v1',
-              },
-              hubClusterName
-            )
-          }
+  const result = await searchClient.query({
+    query: SearchResultItemsAndRelatedItemsDocument,
+    variables: {
+      input: [{ ...query }],
+      limit: 1000,
+    },
+    fetchPolicy: 'network-only',
+  })
+  if (result.errors) {
+    console.log(`Error: ${result.errors[0].message}`)
+    return
+  } else {
+    const searchResult = get(result, 'data.searchResult', [])
+    if (searchResult.length > 0) {
+      let route = null
+      // filter out grafana and prometheus routes
+      const routes = get(searchResult[0], 'items', []).filter(
+        (routeObj) =>
+          !get(routeObj, 'name', '').toLowerCase().includes('grafana') &&
+          !get(routeObj, 'name', '').toLowerCase().includes('prometheus')
+      )
+      if (routes.length > 0) {
+        // if still more than 1, choose one with “server” in the name if possible
+        const serverRoute = routes.find((routeObj) => get(routeObj, 'name', '').toLowerCase().includes('server'))
+        if (serverRoute) {
+          route = serverRoute
+        } else {
+          route = routes[0]
         }
       }
-    })
+      if (!route) {
+        const errMsg = t('No Argo route found for namespace {0} on cluster {1}', [appNamespace, cluster])
+        console.log(errMsg)
+        return
+      } else {
+        await getArgoRoute(
+          appName,
+          appNamespace,
+          cluster,
+          {
+            cluster,
+            name: route.name,
+            namespace: route.namespace,
+            kind: 'Route',
+            apiVersion: 'route.openshift.io/v1',
+          },
+          hubClusterName
+        )
+      }
+    }
+  }
 }
 
 const openArgoEditorWindow = (route, appName) => {

@@ -32,7 +32,7 @@ export const useHypershiftKubeconfig = (): [string | undefined, boolean] => {
       }
     }
     if (hypershiftKubeconfig) {
-      fetchKubeconfig()
+      void fetchKubeconfig()
     }
   }, [hypershiftKubeconfig, hostedCluster?.metadata?.namespace])
 

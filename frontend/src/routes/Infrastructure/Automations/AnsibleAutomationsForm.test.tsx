@@ -391,7 +391,7 @@ describe('add automation template page', () => {
 
   it('should not render warning when Ansible operator is installed', async () => {
     render(<AddAnsibleTemplateTest subscriptions={[mockSubscriptionOperator]} />)
-    waitForNotText('The Ansible Automation Platform Operator is required to use automation templates.')
+    await waitForNotText('The Ansible Automation Platform Operator is required to use automation templates.')
   })
 
   it('should show validation error and disable Next when selecting an invalid credential', async () => {

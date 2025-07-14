@@ -429,7 +429,13 @@ export function CreateSubscriptionApplication(
           isLoaded: true,
         })
       }
-      fetchApplication()
+      fetchApplication().catch((error) => {
+        setFetchControl({
+          resources: [],
+          isLoaded: true,
+        })
+        console.error('Error fetching application: ', error)
+      })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])

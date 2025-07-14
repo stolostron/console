@@ -171,9 +171,9 @@ const renderCountDecorator = (element: Node, resourceCount: number): React.React
         </g>
         <g transform={`translate(0, 1)`}>
           <text
-            text-anchor="middle"
-            pointer-events="none"
-            dominant-baseline="middle"
+            textAnchor="middle"
+            pointerEvents="none"
+            dominantBaseline="middle"
             style={{ fontWeight: 'bold' }}
             className={'resourceCountIcon'}
           >

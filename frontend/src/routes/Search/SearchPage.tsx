@@ -424,10 +424,15 @@ export default function SearchPage() {
   ])
 
   useEffect(() => {
-    getUserPreference().then((resp) => {
-      setUserPreference(resp)
-      setIsUserPreferenceLoading(false)
-    })
+    getUserPreference()
+      .then((resp) => {
+        setUserPreference(resp)
+        setIsUserPreferenceLoading(false)
+      })
+      .catch((error) => {
+        console.error('Error fetching user preference: ', error)
+        setIsUserPreferenceLoading(false)
+      })
   }, [])
 
   const suggestedSearches: SavedSearch[] = useMemo(() => {

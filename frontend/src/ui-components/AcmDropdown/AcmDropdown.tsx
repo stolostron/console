@@ -64,7 +64,7 @@ type MenuItemProps = {
   onSelect: MenuProps['onSelect']
 } & MenuProps
 
-const MenuItems = forwardRef<HTMLDivElement, MenuItemProps>((props, ref) => {
+const MenuItems = forwardRef<HTMLDivElement, MenuItemProps>((props: MenuItemProps, ref: React.Ref<HTMLDivElement>) => {
   const { menuItems, onSelect, ...menuProps } = props
 
   return (
@@ -109,6 +109,8 @@ const MenuItems = forwardRef<HTMLDivElement, MenuItemProps>((props, ref) => {
     </Menu>
   )
 })
+
+MenuItems.displayName = 'MenuItems'
 
 /**
  * A base dropdown component that provides customizable menu functionality with support

@@ -793,7 +793,7 @@ export async function fetchRetry<T>(options: {
         if (status.status !== 'Success') {
           if (status.code === 401) {
             // 401 is returned from kubernetes in a Status object if token is not valid
-            tokenExpired()
+            await tokenExpired()
             throw new ResourceError(status.code as number, status.message as string, status.reason)
           } else if (ResourceErrorCodes.includes(status.code as number)) {
             throw new ResourceError(status.code as number, status.message as string, status.reason)
@@ -815,7 +815,7 @@ export async function fetchRetry<T>(options: {
         case 302: // 302 is returned when token is valid but logged out
         case 401: // 401 is returned from the backend if no token cookie is on request
           if (!options.disableRedirectUnauthorizedLogin) {
-            tokenExpired()
+            await tokenExpired()
           }
           throw new ResourceError(ResourceErrorCode.Unauthorized)
         case 404:

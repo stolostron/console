@@ -18,6 +18,7 @@ class ControlPanelComboBox extends React.Component {
   static propTypes = {
     control: PropTypes.object,
     controlId: PropTypes.string,
+    controlData: PropTypes.object,
     handleControlChange: PropTypes.func,
     i18n: PropTypes.func,
   }

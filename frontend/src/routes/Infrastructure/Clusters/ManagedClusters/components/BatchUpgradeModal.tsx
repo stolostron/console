@@ -119,16 +119,21 @@ export function BatchUpgradeModal(props: {
 
   useEffect(() => {
     if (open && managedClusterIds.length > 0) {
-      getUpgradeRiskPredictions(managedClusterIds).then((res) => {
-        const reducedUpgradeRiskPredictions = res.reduce((acc: any[], curr: any) => {
-          if (curr.body && curr.body.predictions) {
-            return [...acc, ...curr.body.predictions]
-          }
-          return acc
-        }, [])
-        setUpgradeRiskPredictions(reducedUpgradeRiskPredictions)
-        setUpgradeRiskPredictionsLoading(false)
-      })
+      getUpgradeRiskPredictions(managedClusterIds)
+        .then((res) => {
+          const reducedUpgradeRiskPredictions = res.reduce((acc: any[], curr: any) => {
+            if (curr.body && curr.body.predictions) {
+              return [...acc, ...curr.body.predictions]
+            }
+            return acc
+          }, [])
+          setUpgradeRiskPredictions(reducedUpgradeRiskPredictions)
+          setUpgradeRiskPredictionsLoading(false)
+        })
+        .catch((err) => {
+          console.error('Error getting upgrade risk predictions: ', err)
+          setUpgradeRiskPredictionsLoading(false)
+        })
     }
   }, [managedClusterIds, open])
 

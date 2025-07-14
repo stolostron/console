@@ -292,11 +292,13 @@ function renderStep(step) {
 }
 
 ControlPanelWizard.propTypes = {
+  backButtonOverride: PropTypes.func,
   controlClasses: PropTypes.string,
   controlData: PropTypes.array,
   creationStatus: PropTypes.string,
   handleCancelCreate: PropTypes.func,
   handleCreateResource: PropTypes.func,
+  i18n: PropTypes.func,
   isEditing: PropTypes.bool,
   renderControlSections: PropTypes.func,
   renderNotifications: PropTypes.func,

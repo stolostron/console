@@ -54,134 +54,150 @@ export function StatusField(props: { cluster: Cluster }) {
   switch (props.cluster?.status) {
     case ClusterStatus.notstarted:
       hasAction = true
-      Action = () => (
-        <AcmButton
-          style={{ padding: 0, fontSize: 'inherit' }}
-          key={props.cluster.name}
-          onClick={() => launchToYaml(props.cluster, configMaps)}
-          variant="link"
-          role="link"
-          icon={<ExternalLinkAltIcon />}
-          iconPosition="right"
-        >
-          {t('view.yaml')}
-        </AcmButton>
-      )
+      Action = function ViewYamlAction() {
+        return (
+          <AcmButton
+            style={{ padding: 0, fontSize: 'inherit' }}
+            key={props.cluster.name}
+            onClick={() => launchToYaml(props.cluster, configMaps)}
+            variant="link"
+            role="link"
+            icon={<ExternalLinkAltIcon />}
+            iconPosition="right"
+          >
+            {t('view.yaml')}
+          </AcmButton>
+        )
+      }
       break
     case ClusterStatus.prehookjob:
     case ClusterStatus.prehookfailed:
       hasAction = true
-      Action = () => (
-        <AcmButton
-          style={{ padding: 0, fontSize: 'inherit' }}
-          key={props.cluster.name}
-          onClick={() => launchToLogs(latestJob.prehook)}
-          variant="link"
-          role="link"
-          icon={<ExternalLinkAltIcon />}
-          iconPosition="right"
-          isDisabled={isPrehookLinkDisabled(prehooks, posthooks, latestJob, curator)}
-        >
-          {t('view.logs')}
-        </AcmButton>
-      )
+      Action = function PrehookLogsAction() {
+        return (
+          <AcmButton
+            style={{ padding: 0, fontSize: 'inherit' }}
+            key={props.cluster.name}
+            onClick={() => launchToLogs(latestJob.prehook)}
+            variant="link"
+            role="link"
+            icon={<ExternalLinkAltIcon />}
+            iconPosition="right"
+            isDisabled={isPrehookLinkDisabled(prehooks, posthooks, latestJob, curator)}
+          >
+            {t('view.logs')}
+          </AcmButton>
+        )
+      }
       break
     case ClusterStatus.posthookjob:
     case ClusterStatus.posthookfailed:
       hasAction = true
-      Action = () => (
-        <AcmButton
-          style={{ padding: 0, fontSize: 'inherit' }}
-          key={props.cluster.name}
-          onClick={() => launchToLogs(latestJob.posthook)}
-          variant="link"
-          role="link"
-          icon={<ExternalLinkAltIcon />}
-          iconPosition="right"
-          isDisabled={isPosthookLinkDisabled(latestJob, curator)}
-        >
-          {t('view.logs')}
-        </AcmButton>
-      )
+      Action = function PosthookLogsAction() {
+        return (
+          <AcmButton
+            style={{ padding: 0, fontSize: 'inherit' }}
+            key={props.cluster.name}
+            onClick={() => launchToLogs(latestJob.posthook)}
+            variant="link"
+            role="link"
+            icon={<ExternalLinkAltIcon />}
+            iconPosition="right"
+            isDisabled={isPosthookLinkDisabled(latestJob, curator)}
+          >
+            {t('view.logs')}
+          </AcmButton>
+        )
+      }
       break
     case ClusterStatus.creating:
     case ClusterStatus.destroying:
     case ClusterStatus.provisionfailed:
       hasAction = true
       if (isHybrid) {
-        Action = () => (
-          <LogsDownloadButton
-            Component={(props) => <Button {...props} icon={<DownloadIcon />} iconPosition="right" isInline />}
-            id="cluster-logs-button"
-            agentClusterInstall={agentClusterInstall}
-            variant={ButtonVariant.link}
-          />
-        )
+        Action = function LogsDownloadAction() {
+          return (
+            <LogsDownloadButton
+              Component={(props) => <Button {...props} icon={<DownloadIcon />} iconPosition="right" isInline />}
+              id="cluster-logs-button"
+              agentClusterInstall={agentClusterInstall}
+              variant={ButtonVariant.link}
+            />
+          )
+        }
       } else if (props.cluster.isHypershift) {
         const url = `k8s/ns/${props.cluster.hypershift?.hostingNamespace}-${props.cluster.name}/pods`
-        Action = () => (
-          <AcmButton
-            style={{ padding: 0, fontSize: 'inherit' }}
-            key={props.cluster.name}
-            onClick={() => launchToOCP(url)}
-            variant="link"
-            role="link"
-            icon={<ExternalLinkAltIcon />}
-            iconPosition="right"
-          >
-            {t('view.logs')}
-          </AcmButton>
-        )
+        Action = function HypershiftLogsAction() {
+          return (
+            <AcmButton
+              style={{ padding: 0, fontSize: 'inherit' }}
+              key={props.cluster.name}
+              onClick={() => launchToOCP(url)}
+              variant="link"
+              role="link"
+              icon={<ExternalLinkAltIcon />}
+              iconPosition="right"
+            >
+              {t('view.logs')}
+            </AcmButton>
+          )
+        }
       } else {
-        Action = () => (
-          <AcmButton
-            style={{ padding: 0, fontSize: 'inherit' }}
-            key={props.cluster.name}
-            onClick={() => launchLogs(props.cluster, configMaps)}
-            variant="link"
-            role="link"
-            icon={<ExternalLinkAltIcon />}
-            iconPosition="right"
-          >
-            {t('view.logs')}
-          </AcmButton>
-        )
+        Action = function LogsAction() {
+          return (
+            <AcmButton
+              style={{ padding: 0, fontSize: 'inherit' }}
+              key={props.cluster.name}
+              onClick={() => launchLogs(props.cluster, configMaps)}
+              variant="link"
+              role="link"
+              icon={<ExternalLinkAltIcon />}
+              iconPosition="right"
+            >
+              {t('view.logs')}
+            </AcmButton>
+          )
+        }
       }
 
       break
     case ClusterStatus.degraded:
       hasAction = true
-      Action = () => (
-        <Link to={getClusterNavPath(NavigationPath.clusterSettings, props.cluster)}>{t('view.addons')}</Link>
-      )
+      Action = function AddonsAction() {
+        return <Link to={getClusterNavPath(NavigationPath.clusterSettings, props.cluster)}>{t('view.addons')}</Link>
+      }
       break
     case ClusterStatus.draft:
       hasAction = true
-      Action = () => (
-        <Link
-          to={generatePath(NavigationPath.editCluster, {
-            namespace: props.cluster?.namespace!,
-            name: props.cluster?.name!,
-          })}
-        >
-          {t('Continue cluster configuration')}
-        </Link>
-      )
+      Action = function ContinueClusterConfigurationAction() {
+        return (
+          <Link
+            to={generatePath(NavigationPath.editCluster, {
+              namespace: props.cluster?.namespace!,
+              name: props.cluster?.name!,
+            })}
+          >
+            {t('Continue cluster configuration')}
+          </Link>
+        )
+      }
       break
     case ClusterStatus.pendingimport:
       header = t('Cluster is pending import')
       if (!location.pathname.endsWith('/overview')) {
         hasAction = true
-        Action = () => (
-          <Link
-            to={generatePath(NavigationPath.clusterOverview, {
-              namespace: props.cluster.namespace!,
-              name: props.cluster.name,
-            })}
-          >
-            {t('Go to Overview')}
-          </Link>
-        )
+        Action = function GoToOverviewAction() {
+          return (
+            <Link
+              to={generatePath(NavigationPath.clusterOverview, {
+                namespace: props.cluster.namespace!,
+                name: props.cluster.name,
+              })}
+            >
+              {t('Go to Overview')}
+            </Link>
+          )
+        }
       }
 
       break

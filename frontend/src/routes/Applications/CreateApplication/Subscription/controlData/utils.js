@@ -98,8 +98,8 @@ export const findOriginalChannelControl = (globalControl, channelName, nameContr
   return null
 }
 
-export const updateChannelControls = (urlControl, globalControl, setLoadingState) => {
-  getGitBranches(_.get(urlControl, 'groupControlData'), setLoadingState)
+export const updateChannelControls = async (urlControl, globalControl, setLoadingState) => {
+  await getGitBranches(_.get(urlControl, 'groupControlData'), setLoadingState)
 
   //update existing placement rule section when user changes the namespace
   const nsControl = globalControl.find(({ id: idCtrl }) => idCtrl === 'namespace')
@@ -316,7 +316,7 @@ const retrieveGitDetails = async (branchName, groupControlData, setLoadingState)
         setLoadingState(branchCtrl, false)
       }
 
-      getGitChannelBranches(gitUrl, { secretRef, namespace }, { user, accessToken }).then((result) => {
+      await getGitChannelBranches(gitUrl, { secretRef, namespace }, { user, accessToken }).then((result) => {
         if (_.get(result, 'errors')) {
           onError()
         } else {
@@ -336,11 +336,11 @@ const retrieveGitDetails = async (branchName, groupControlData, setLoadingState)
 export const updateGitBranchFolders = async (branchControl, globalControls, setLoadingState) => {
   const groupControlData = _.get(branchControl, 'groupControlData', [])
   const branchName = _.get(branchControl, 'active', '')
-  retrieveGitDetails(branchName, groupControlData, setLoadingState)
+  await retrieveGitDetails(branchName, groupControlData, setLoadingState)
 }
 
 export const getGitBranches = async (groupControlData, setLoadingState) => {
-  retrieveGitDetails(null, groupControlData, setLoadingState)
+  await retrieveGitDetails(null, groupControlData, setLoadingState)
 }
 
 export const getExistingPRControlsSection = (initiatingControl, control) => {

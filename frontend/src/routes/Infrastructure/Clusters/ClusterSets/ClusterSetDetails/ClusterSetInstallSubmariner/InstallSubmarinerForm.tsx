@@ -260,6 +260,9 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
           missingClusters.forEach((c) => (map[c.displayName!] = null))
           setProviderSecretMap(map)
         })
+        .catch((error) => {
+          console.error('Error fetching provider secrets: ', error)
+        })
     }
   }, [availableClusters, providerSecretMap, fetchSecrets])
 

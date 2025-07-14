@@ -172,7 +172,7 @@ export function useFleetSearchPoll<T extends K8sResourceCommon | K8sResourceComm
   })
 
   const triggerRefetch: () => void = useCallback(() => {
-    refetch()
+    void refetch()
   }, [refetch])
 
   const data = useMemo(

@@ -70,7 +70,7 @@ export const VALIDATE_GITBRANCH = (t) => {
   }
 }
 
-export const updateGitCredentials = (urlControl, globalControl, setLoadingState) => {
+export const updateGitCredentials = async (urlControl, globalControl, setLoadingState) => {
   const groupControlData = _.get(urlControl, 'groupControlData')
 
   const userCtrlData = _.get(getControlByID(groupControlData, 'githubUser'), 'active', '')
@@ -81,7 +81,7 @@ export const updateGitCredentials = (urlControl, globalControl, setLoadingState)
     (userCtrlData.length > 0 && tokenCtrlData.length > 0) ||
     (userCtrlData.length === 0 && tokenCtrlData.length === 0)
   ) {
-    getGitBranches(_.get(urlControl, 'groupControlData'), setLoadingState)
+    await getGitBranches(_.get(urlControl, 'groupControlData'), setLoadingState)
   }
   return groupControlData
 }

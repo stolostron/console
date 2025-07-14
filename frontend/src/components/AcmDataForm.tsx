@@ -203,8 +203,8 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                           id="copy-button"
                           textId="code-content"
                           aria-label={t('Copy to clipboard')}
-                          onClick={() => {
-                            navigator.clipboard.writeText(YAML.stringify(formData.stateToData()))
+                          onClick={async () => {
+                            await navigator.clipboard.writeText(YAML.stringify(formData.stateToData()))
                             setCopyHint(
                               <span style={{ wordBreak: 'keep-all' }}>{t('Successfully copied to clipboard!')}</span>
                             )
@@ -595,7 +595,7 @@ export function AcmDataFormWizard(props: {
               <ActionListItem>
                 <Button
                   variant="primary"
-                  onClick={(event) => {
+                  onClick={async (event) => {
                     setShowSectionErrors((showSectionErrors) => {
                       if (section) {
                         if (!showSectionErrors[section.title]) {
@@ -605,7 +605,7 @@ export function AcmDataFormWizard(props: {
                       return showSectionErrors
                     })
                     if (sectionHasErrors(t, section)) return
-                    goToNextStep(event)
+                    await goToNextStep(event)
                   }}
                   isDisabled={
                     ((showFormErrors || showSectionErrors[section.title]) && sectionHasErrors(t, section)) ||
@@ -1509,8 +1509,8 @@ function PasteInputButton(props: { setValue: (value: string) => void; setShowSec
   return (
     <Button
       variant="control"
-      onClick={() => {
-        navigator.clipboard.readText().then((value) => {
+      onClick={async () => {
+        await navigator.clipboard.readText().then((value) => {
           setValue(value)
           if (value && setShowSecrets) setShowSecrets(false)
         })

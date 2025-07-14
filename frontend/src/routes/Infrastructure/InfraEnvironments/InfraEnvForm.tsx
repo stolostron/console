@@ -70,7 +70,7 @@ type InfraEnvFormProps = {
   handleChange?: any
 }
 
-const InfraEnvForm: React.FC<InfraEnvFormProps> = ({ control, handleChange }) => {
+const InfraEnvForm = ({ control, handleChange }: InfraEnvFormProps) => {
   const { t } = useTranslation()
 
   const [isCredentialsModalOpen, setCredentialsModalOpen] = useState(false)

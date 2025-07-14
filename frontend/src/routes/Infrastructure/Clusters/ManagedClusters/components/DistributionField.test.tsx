@@ -787,7 +787,7 @@ describe('DistributionField', () => {
   })
 
   it('should show failed when posthook is never reached', async () => {
-    renderDistributionInfoField(mockDistributionInfoPosthookNotRun, false, false, clusterCuratorUpgrade)
+    await renderDistributionInfoField(mockDistributionInfoPosthookNotRun, false, false, clusterCuratorUpgrade)
     await waitForText('Upgrade failing')
     await clickByText('Upgrade failing')
     await waitForText('Upgrade posthook was not run.')

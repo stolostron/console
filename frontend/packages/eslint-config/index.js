@@ -8,6 +8,7 @@ module.exports = {
   extends: [
     'eslint:recommended',
     "plugin:@typescript-eslint/recommended",
+    'plugin:react/recommended',
     'plugin:jest/recommended',
     'plugin:react-hooks/recommended',
     'prettier',
@@ -25,7 +26,7 @@ module.exports = {
     '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/no-extra-semi': 'off',
     '@typescript-eslint/no-floating-promises': [
-      'off',
+      'warn',
       {
         ignoreVoid: true,
       },
@@ -86,7 +87,7 @@ module.exports = {
     'no-constant-condition': 'off',
     'no-empty': 'off',
     'prettier/prettier': 'error',
-    'react/jsx-key': 1,
+    'react/jsx-key': 'error',
     'react/react-in-jsx-scope': 'off',
   },
   overrides: [

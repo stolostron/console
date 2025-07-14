@@ -144,7 +144,7 @@ class DetailsView extends Component {
 
     return (
       <div className="topologyDetails" style={{ overflow: activeTabKey !== 2 ? 'auto' : 'hidden' }}>
-        <div class="detailsHeader">
+        <div className="detailsHeader">
           {filteredNode && (
             <div style={{ margin: '0 0 20px 10px' }}>
               <Button onClick={() => this.setState({ filteredNode: undefined })} variant="link" isInline>
@@ -403,6 +403,7 @@ DetailsView.propTypes = {
     handleClusterDetailsContainerUpdate: PropTypes.func,
   }),
   getLayoutNodes: PropTypes.func,
+  hubClusterName: PropTypes.string,
   t: PropTypes.func,
   nodes: PropTypes.array,
   onClose: PropTypes.func,

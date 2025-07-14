@@ -478,7 +478,9 @@ export const getDeleteHostAction =
       const masterCount = undefined /* Only workers can be removed */
       const workerCount = (agentClusterInstall.spec?.provisionRequirements.workerAgents || 1) - 1
       // TODO(mlibra): include following promise in the returned one to handle errors
-      setProvisionRequirements(agentClusterInstall, workerCount, masterCount)
+      setProvisionRequirements(agentClusterInstall, workerCount, masterCount).catch((error) => {
+        console.error('Error setting provision requirements: ', error)
+      })
     }
 
     return deleteResources(resources as IResource[])
@@ -654,7 +656,10 @@ export const useClusterImages = () => {
         setClusterImages([])
       }
     }
-    fetchImages()
+    fetchImages().catch((error) => {
+      console.error('Error fetching cluster images: ', error)
+      setClusterImages([])
+    })
   }, [])
   return clusterImages
 }

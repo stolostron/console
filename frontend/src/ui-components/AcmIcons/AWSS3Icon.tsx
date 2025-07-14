@@ -14,7 +14,7 @@ export const AWSS3Icon = createAcmIcon({
       <defs>
         <path
           d="M77.586,28.061v2.772c0,3.559-12.344,6.433-27.578,6.433        c-15.25,0-27.594-2.874-27.594-6.433v-2.772c0,3.559,12.344,6.432,27.594,6.432C65.242,34.492,77.586,31.619,77.586,28.061z"
-          enable-background="new    "
+          enableBackground="new    "
           id="SVGID_5_"
         />
       </defs>
@@ -43,7 +43,7 @@ export const AWSS3Icon = createAcmIcon({
       <defs>
         <path
           d="M68.387,71.296v2.773c0,2.387-8.217,4.303-18.379,4.303        s-18.395-1.916-18.395-4.303v-2.773c0,2.389,8.232,4.303,18.395,4.303S68.387,73.685,68.387,71.296z"
-          enable-background="new"
+          enableBackground="new"
           id="SVGID_7_"
         />
       </defs>
@@ -67,20 +67,12 @@ export const AWSS3Icon = createAcmIcon({
         d="M50.008,38.752c14.24,0,25.951-2.515,27.42-5.746l-9.041,38.29c0,2.389-8.217,4.303-18.379,4.303       s-18.395-1.914-18.395-4.303l-9.041-38.29C24.043,36.237,35.77,38.752,50.008,38.752z"
         fill="#E15343"
       />
-      <rect
-        clip-rule="evenodd"
-        fill="#FFFFFF"
-        fill-rule="evenodd"
-        height="11.398"
-        width="11.477"
-        x="43.762"
-        y="42.854"
-      />
-      <ellipse clip-rule="evenodd" cx="40.287" cy="63.9" fill="#FFFFFF" fill-rule="evenodd" rx="5.658" ry="5.62" />
+      <rect clipRule="evenodd" fill="#FFFFFF" fillRule="evenodd" height="11.398" width="11.477" x="43.762" y="42.854" />
+      <ellipse clipRule="evenodd" cx="40.287" cy="63.9" fill="#FFFFFF" fillRule="evenodd" rx="5.658" ry="5.62" />
       <polygon
-        clip-rule="evenodd"
+        clipRule="evenodd"
         fill="#FFFFFF"
-        fill-rule="evenodd"
+        fillRule="evenodd"
         points="64.09,69.257 52.748,69.257 58.42,58.784   "
       />
     </Fragment>

@@ -4,7 +4,7 @@ import { fetchGet, getBackendUrl } from './resources/utils'
 
 export async function tokenExpired() {
   if (process.env.NODE_ENV === 'production') {
-    logout()
+    await logout()
   } else {
     window.location.href = `${getBackendUrl()}/login`
   }

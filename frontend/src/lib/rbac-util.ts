@@ -253,9 +253,13 @@ export function useIsAnyNamespaceAuthorized(resourceAttributes: Promise<Resource
       resourceAttributes,
       namespaces
     )
-    result.promise.then((flipAuthorization) => {
-      if (flipAuthorization) setSomeNamespaceIsAuthorized(!someNamespaceIsAuthorized)
-    })
+    result.promise
+      .then((flipAuthorization) => {
+        if (flipAuthorization) setSomeNamespaceIsAuthorized(!someNamespaceIsAuthorized)
+      })
+      .catch(() => {
+        setSomeNamespaceIsAuthorized(false)
+      })
 
     return () => result.abort?.()
     // exclude someNamespaceIsAuthorized from dependency list to avoid update loop

@@ -43,7 +43,7 @@ export const NodeStatusIcons = () => (
       </g>
     </symbol>
     <symbol viewBox="4 4 16 16" id="nodeStatusIcon_pending">
-      <g id="Applications" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+      <g id="Applications" stroke="none" strokeWidth="1" fill="none" fillRule="evenodd">
         <g id="2.1-App-9" transform="translate(-1151.000000, -1345.000000)">
           <g id="Group-3" transform="translate(72.000000, 579.000000)">
             <g id="Group-20-Copy-2" transform="translate(1079.000000, 766.000000)">

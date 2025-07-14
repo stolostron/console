@@ -24,7 +24,7 @@ export function SyncResourceModal(props: ISyncResourceModalProps | { open: false
     return <></>
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     props.close()
     const { subscriptions } = props
     const existingResources: any[] = []
@@ -39,14 +39,14 @@ export function SyncResourceModal(props: ISyncResourceModalProps | { open: false
       existingResources.push(existingSubscription)
     })
 
-    reconcileResources(props.resources, existingResources).then(() => {
-      toastContext.addAlert({
-        title: t('Subscription updated'),
-        message: t('{{names}} were successfully synced.', { names: subNames.join(', ') }),
-        type: 'success',
-        autoClose: true,
-      })
+    await reconcileResources(props.resources, existingResources)
+    toastContext.addAlert({
+      title: t('Subscription updated'),
+      message: t('{{names}} were successfully synced.', { names: subNames.join(', ') }),
+      type: 'success',
+      autoClose: true,
     })
+    props.close()
   }
 
   const modalTitle = t('Sync application')

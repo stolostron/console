@@ -83,7 +83,10 @@ const AIClusterDetails: React.FC = () => {
         setNamespaceError(true)
       }
     }
-    getAssistedServiceNS()
+    getAssistedServiceNS().catch((error) => {
+      console.error('Error fetching assisted service namespace: ', error)
+      setNamespaceError(true)
+    })
   }, [])
 
   const [clusterAgents, cluster] = useMemo(() => {
@@ -227,9 +230,12 @@ const AIClusterDetails: React.FC = () => {
   )
 }
 
-export default (props: object) => (
-  // @ts-expect-error @openshift-assisted/ui-lib needs React 18 updates
-  <AlertsContextProvider>
-    <AIClusterDetails {...props} />
-  </AlertsContextProvider>
-)
+export default (props: object) =>
+  function AIClusterDetailsWrapper() {
+    return (
+      // @ts-expect-error @openshift-assisted/ui-lib needs React 18 updates
+      <AlertsContextProvider>
+        <AIClusterDetails {...props} />
+      </AlertsContextProvider>
+    )
+  }

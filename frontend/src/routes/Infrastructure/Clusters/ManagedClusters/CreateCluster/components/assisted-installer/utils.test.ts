@@ -126,7 +126,7 @@ jest.mock('../../../../../../../resources/utils', () => {
 })
 
 describe('setProvisionRequirements', () => {
-  it('adds provision requirements if none are set', () => {
+  it('adds provision requirements if none are set', async () => {
     const mockAgentClusterInstall = {
       apiVersion: AgentClusterInstallApiVersion,
       kind: AgentClusterInstallKind,
@@ -134,13 +134,17 @@ describe('setProvisionRequirements', () => {
         provisionRequirements: undefined,
       },
     }
-    setProvisionRequirements(mockAgentClusterInstall as unknown as AgentClusterInstallK8sResource, undefined, undefined)
+    await setProvisionRequirements(
+      mockAgentClusterInstall as unknown as AgentClusterInstallK8sResource,
+      undefined,
+      undefined
+    )
     //expect(patchResource).toHaveBeenCalledWith(mockAgentClusterInstall, [
     //  { op: 'add', path: '/spec/provisionRequirements', value: {} },
     //])
   })
 
-  it('updates provisioning requirements if some are already set', () => {
+  it('updates provisioning requirements if some are already set', async () => {
     const mockAgentClusterInstall = {
       apiVersion: AgentClusterInstallApiVersion,
       kind: AgentClusterInstallKind,
@@ -151,7 +155,7 @@ describe('setProvisionRequirements', () => {
         },
       },
     }
-    setProvisionRequirements(mockAgentClusterInstall as unknown as AgentClusterInstallK8sResource, 4, 3)
+    await setProvisionRequirements(mockAgentClusterInstall as unknown as AgentClusterInstallK8sResource, 4, 3)
     /*
     expect(patchResource).toHaveBeenCalledWith(mockAgentClusterInstall, [
       {
@@ -168,7 +172,7 @@ describe('setProvisionRequirements', () => {
 })
 
 describe('onHostsNext', () => {
-  it('adds provision requirements if none are set', () => {
+  it('adds provision requirements if none are set', async () => {
     const clusterDeployment: ClusterDeploymentK8sResource = {
       metadata: {
         name: 'foo',
@@ -176,7 +180,7 @@ describe('onHostsNext', () => {
       },
     }
     const agentClusterInstall: AgentClusterInstallK8sResource = {}
-    onHostsNext({
+    await onHostsNext({
       values: { selectedHostIds: [], agentLabels: [], locations: [] },
       clusterDeployment,
       agents: [],
@@ -186,14 +190,14 @@ describe('onHostsNext', () => {
 })
 
 describe('onEditProxy', () => {
-  it('enables proxy', () => {
+  it('enables proxy', async () => {
     const infraEnv: InfraEnvK8sResource = {
       metadata: {
         name: 'foo',
         namespace: 'bar',
       },
     }
-    onEditProxy(
+    await onEditProxy(
       {
         httpProxy: 'foo',
         httpsProxy: 'bar',

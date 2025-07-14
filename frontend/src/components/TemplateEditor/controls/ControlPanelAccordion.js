@@ -121,11 +121,7 @@ class ControlPanelAccordion extends React.Component {
                       </button>
                     </Popover>
                   )}
-                  {techPreview && (
-                    <div variant="primary" className="techPreviewTag">
-                      {i18n('creation.app.section.techPreview')}
-                    </div>
-                  )}
+                  {techPreview && <div className="techPreviewTag">{i18n('creation.app.section.techPreview')}</div>}
                   <span className="creation-view-controls-title-main-summary">
                     {summary.map((tag, inx) => {
                       return (

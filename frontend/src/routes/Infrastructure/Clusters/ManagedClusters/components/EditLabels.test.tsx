@@ -46,7 +46,7 @@ describe('EditLabels', () => {
     )
     getByText('Save').click()
     await waitFor(() => expect(nockScope.isDone()).toBeTruthy())
-    waitFor(() => expect('There was bad data sent for accessing resources.').toBeInTheDocument())
+    await waitFor(() => expect('There was bad data sent for accessing resources.').toBeInTheDocument())
   })
 
   test('can add and remove labels without labels on resource', async () => {

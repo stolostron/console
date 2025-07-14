@@ -168,6 +168,6 @@ describe('AcmPageContent', () => {
         </AcmPageContent>
       </AcmPage>
     )
-    waitFor(() => expect(getByText('Alert title')).toBeInTheDocument())
+    await waitFor(() => expect(getByText('Alert title')).toBeInTheDocument())
   })
 })

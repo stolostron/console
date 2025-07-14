@@ -377,9 +377,9 @@ export default function LogsPage() {
 
   const linesLength = useMemo(() => logs.split('\n').length - 1, [logs])
 
-  const toggleFullscreen = () => {
+  const toggleFullscreen = async () => {
     if (resourceLogRef.current && screenfull.isEnabled) {
-      screenfull.toggle(resourceLogRef.current)
+      await screenfull.toggle(resourceLogRef.current)
     }
   }
 

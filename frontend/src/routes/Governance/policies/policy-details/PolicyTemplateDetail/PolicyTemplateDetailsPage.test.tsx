@@ -1110,7 +1110,7 @@ describe('Policy Template Details Page', () => {
     await waitForText('v1')
 
     // Check violation badge
-    waitForText('No violations')
+    await waitForText('No violations')
   })
 
   test('Should render correctly with relatedObject name is - when it is namespace scope', async () => {
@@ -1158,7 +1158,7 @@ describe('Policy Template Details Page', () => {
     await waitForText('networking.k8s.io/v1')
 
     // Check violation badge
-    waitForText('No violations')
+    await waitForText('No violations')
   })
 
   test('Should show an error when displaying unsupported IamPolicy', async () => {
@@ -1231,7 +1231,7 @@ describe('Policy Template Details Page', () => {
     await waitForText('Related resources')
     await waitForText('Resource found as expected')
 
-    waitForText('No violations', true)
+    await waitForText('No violations', true)
 
     // config-policy is in breadcrumb and also the page header - so set multipleAllowed prop to true
     await waitForText('test-cluster', true)
@@ -1600,8 +1600,8 @@ describe('Policy Template Details Page', () => {
     await waitForNotText('ClusterPolicyReport')
 
     // Related table also has this
-    waitForText('API version', true)
-    waitForText('kyverno.io/v1')
+    await waitForText('API version', true)
+    await waitForText('kyverno.io/v1')
     // VAPB link
     expect(screen.getByRole('link', { name: 'require-owner-labels-binding' })).toBeInTheDocument()
 
@@ -1647,7 +1647,7 @@ describe('Policy Template Details Page', () => {
     )
 
     // Check violation badge next to title
-    waitForText('Audit violations')
+    await waitForText('Audit violations')
     const view = screen.getByText('Audit violations')
     within(view).getByText('2')
   })
