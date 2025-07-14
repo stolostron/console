@@ -134,7 +134,7 @@ const AccessControlManagementForm = ({
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
   })
   useEffect(() => {
-    getSearchResults({
+    void getSearchResults({
       client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
       variables: {
         property: 'namespace',
@@ -335,7 +335,7 @@ const AccessControlManagementForm = ({
       }),
     ].filter(Boolean) as Section[],
 
-    submit: () => {
+    submit: async () => {
       if (!isRBValid && !isCRBValid) {
         toastContext.addAlert({
           title: t('Validation error'),
@@ -355,32 +355,30 @@ const AccessControlManagementForm = ({
         const metadata: AccessControl['metadata'] = accessControl.metadata
         patch.push({ op: 'replace', path: `/spec/roleBindings`, value: accessControl.spec.roleBindings })
         patch.push({ op: 'replace', path: `/spec/clusterRoleBinding`, value: accessControl.spec.clusterRoleBinding })
-        patchResource(accessControl, patch).promise.then(() => {
-          toastContext.addAlert({
-            title: t('Acccess Control updated'),
-            message: t('accessControlForm.updated.message', { id: metadata?.uid }),
-            type: 'success',
-            autoClose: true,
-          })
-          submitForm()
-          navigate(NavigationPath.accessControlManagement)
+        await patchResource(accessControl, patch).promise
+        toastContext.addAlert({
+          title: t('Acccess Control updated'),
+          message: t('accessControlForm.updated.message', { id: metadata?.uid }),
+          type: 'success',
+          autoClose: true,
         })
+        submitForm()
+        navigate(NavigationPath.accessControlManagement)
       } else {
-        createResource(accessControlData as IResource).promise.then(() => {
-          toastContext.addAlert({
-            title: t('Permission created'),
-            message: t('accessControlForm.created.message'),
-            type: 'success',
-            autoClose: true,
-          })
-          submitForm()
-
-          if (handleModalToggle) {
-            handleModalToggle()
-          } else {
-            navigate(NavigationPath.accessControlManagement)
-          }
+        await createResource(accessControlData as IResource).promise
+        toastContext.addAlert({
+          title: t('Permission created'),
+          message: t('accessControlForm.created.message'),
+          type: 'success',
+          autoClose: true,
         })
+        submitForm()
+
+        if (handleModalToggle) {
+          handleModalToggle()
+        } else {
+          navigate(NavigationPath.accessControlManagement)
+        }
       }
     },
     submitText: isEditing ? t('Save') : t('Create permission'),

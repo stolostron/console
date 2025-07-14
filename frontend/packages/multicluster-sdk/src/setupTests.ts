@@ -84,7 +84,7 @@ function setupBeforeEach(): void {
 
 beforeEach(setupBeforeEach)
 
-i18n.use(initReactI18next).init({
+void i18n.use(initReactI18next).init({
   keySeparator: false,
   interpolation: {
     escapeValue: false,

@@ -66,7 +66,7 @@ const AcmTimestamp: React.FC<AcmTimestampProps> = ({
   omitSuffix,
   className = '',
   showIcon = false,
-}) => {
+}: AcmTimestampProps) => {
   const {
     ocpApi: { Timestamp },
   } = useContext(PluginContext)

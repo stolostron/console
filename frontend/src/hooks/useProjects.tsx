@@ -38,15 +38,20 @@ export function useProjects() {
   const getNamespaces = useRecoilValueGetter(namespacesState)
 
   useEffect(() => {
-    rbacCreate(SecretDefinition).then((attributes) =>
-      getAuthorizedNamespaces([attributes], getNamespaces())
-        .then((namespaces: string[]) => {
-          namespaces.sort((a, b) => a.localeCompare(b))
-          setProjects(namespaces)
-        })
-        .catch(setError)
-        .finally(() => setLoading(false))
-    )
+    rbacCreate(SecretDefinition)
+      .then((attributes) =>
+        getAuthorizedNamespaces([attributes], getNamespaces())
+          .then((namespaces: string[]) => {
+            namespaces.sort((a, b) => a.localeCompare(b))
+            setProjects(namespaces)
+          })
+          .catch(setError)
+          .finally(() => setLoading(false))
+      )
+      .catch(() => {
+        setError(new Error('Failed to fetch projects'))
+        setLoading(false)
+      })
   }, [getNamespaces])
 
   return { projects, error, loading }

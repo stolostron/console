@@ -110,7 +110,10 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
         setCredentials(stringData as LoginCredential)
       }
     }
-    fetchCredentials()
+    fetchCredentials().catch((err) => {
+      console.error('Error fetching credentials: ', err)
+      setCredentials(undefined)
+    })
   }, [name, namespace])
 
   const { importCommand, loading, error: importErr } = useImportCommand(true)

@@ -22,25 +22,27 @@ export function deleteApplication(app: IResource, childResources?: any[], delete
 
   return {
     promise: new Promise((resolve, reject) => {
-      deleteResourcesResult.promise.then((promisesSettledResult) => {
-        if (promisesSettledResult[0]?.status === 'rejected') {
-          const error = promisesSettledResult[0].reason
-          if (error instanceof ResourceError) {
-            if (error.code === ResourceErrorCode.NotFound) {
-              // DO NOTHING
-            } else {
-              reject(promisesSettledResult[0].reason)
-              return
+      deleteResourcesResult.promise
+        .then((promisesSettledResult) => {
+          if (promisesSettledResult[0]?.status === 'rejected') {
+            const error = promisesSettledResult[0].reason
+            if (error instanceof ResourceError) {
+              if (error.code === ResourceErrorCode.NotFound) {
+                // DO NOTHING
+              } else {
+                reject(promisesSettledResult[0].reason)
+                return
+              }
             }
           }
-        }
-        if (promisesSettledResult[1]?.status === 'rejected') {
-          reject(promisesSettledResult[1].reason)
-          return
-        }
-        resolve(promisesSettledResult)
-        deleted?.(app)
-      })
+          if (promisesSettledResult[1]?.status === 'rejected') {
+            reject(promisesSettledResult[1].reason)
+            return
+          }
+          resolve(promisesSettledResult)
+          deleted?.(app)
+        })
+        .catch(reject)
     }),
     abort: deleteResourcesResult.abort,
   }

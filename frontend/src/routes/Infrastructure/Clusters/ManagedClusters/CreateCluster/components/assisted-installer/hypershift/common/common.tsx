@@ -8,9 +8,12 @@ export function Actions(code: string, id: string) {
   const { t } = useTranslation()
   const [copied, setCopied] = useState(false)
 
-  const onClick = (text: string) => {
-    navigator.clipboard.writeText(text.toString())
+  const onClick = async (text: string) => {
+    await navigator.clipboard.writeText(text.toString())
     setCopied(true)
+    setTimeout(() => {
+      setCopied(false)
+    }, 1500)
   }
 
   return (
