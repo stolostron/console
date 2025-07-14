@@ -8,5 +8,5 @@ export type SearchResult<R extends K8sResourceCommon | K8sResourceCommon[]> = R 
 
 export type UseMulticlusterSearchWatch = <T extends K8sResourceCommon | K8sResourceCommon[]>(
   watchOptions: WatchK8sResource,
-  advancedSearch?: { [key: string]: string }
+  advancedSearch?: { key: string; value: string }[]
 ) => [SearchResult<T> | undefined, boolean, Error | undefined]

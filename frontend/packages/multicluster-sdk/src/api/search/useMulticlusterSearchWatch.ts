@@ -1,20 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { WatchK8sResource } from '@openshift-console/dynamic-plugin-sdk'
 import { useSearchResultItemsQuery } from './search-sdk'
 import { useMemo } from 'react'
 import { convertStringToQuery } from './searchUtils'
 import { SearchResult, UseMulticlusterSearchWatch } from './types'
 import { searchClient } from './search-client'
 
-export const useMulticlusterSearchWatch: UseMulticlusterSearchWatch = (
-  watchOptions: WatchK8sResource,
-  advancedSearch?: { [key: string]: string }
-) => {
+export const useMulticlusterSearchWatch: UseMulticlusterSearchWatch = (watchOptions, advancedSearch) => {
   const { groupVersionKind, limit, namespace, namespaced, name, isList } = watchOptions
 
-  const advancedSearchQueryString = Object.entries(advancedSearch || {})
-    ?.map(([key, value]) => `${key}:${value}`)
-    ?.join(' ')
+  const advancedSearchQueryString = advancedSearch?.map(({ key, value }) => `${key}:${value}`)?.join(' ') ?? ''
 
   const { group, version, kind } = groupVersionKind ?? {}
   const {
