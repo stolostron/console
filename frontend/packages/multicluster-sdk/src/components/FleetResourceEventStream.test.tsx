@@ -3,7 +3,8 @@ import '@testing-library/jest-dom'
 import { render, screen, waitFor } from '@testing-library/react'
 import { act } from 'react-dom/test-utils'
 import { FleetResourceEventStream } from './FleetResourceEventStream'
-import { fleetWatch, useFleetK8sAPIPath, useHubClusterName } from '../api'
+import { useFleetK8sAPIPath, useHubClusterName } from '../api'
+import { fleetWatch } from '../internal/apiRequests'
 
 // mock the external dependencies
 jest.mock('@openshift-console/dynamic-plugin-sdk', () => ({
@@ -24,9 +25,12 @@ jest.mock('react-i18next', () => ({
 }))
 
 jest.mock('../api', () => ({
-  fleetWatch: jest.fn(),
   useFleetK8sAPIPath: jest.fn(),
   useHubClusterName: jest.fn(),
+}))
+
+jest.mock('../internal/apiRequests', () => ({
+  fleetWatch: jest.fn(),
 }))
 
 jest.mock('../internal/FleetResourceEventStream/utils', () => ({

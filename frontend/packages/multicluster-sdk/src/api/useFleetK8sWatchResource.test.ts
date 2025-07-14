@@ -6,7 +6,7 @@ jest.mock('@openshift-console/dynamic-plugin-sdk', () => ({
   consoleFetchJSON: jest.fn(),
 }))
 
-jest.mock('./apiRequests', () => ({
+jest.mock('../internal/apiRequests', () => ({
   fleetWatch: jest.fn(),
   buildResourceURL: jest.fn(),
 }))
@@ -27,7 +27,7 @@ import { waitFor } from '@testing-library/react'
 import { renderHook } from '@testing-library/react-hooks'
 import { useK8sModel, useK8sWatchResource, consoleFetchJSON } from '@openshift-console/dynamic-plugin-sdk'
 import { useFleetK8sAPIPath } from './useFleetK8sAPIPath'
-import { buildResourceURL, fleetWatch } from './apiRequests'
+import { buildResourceURL, fleetWatch } from '../internal/apiRequests'
 import { useIsFleetAvailable } from './useIsFleetAvailable'
 import { useHubClusterName } from './useHubClusterName'
 import { useFleetK8sWatchResource } from './useFleetK8sWatchResource'

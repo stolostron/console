@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { BASE_K8S_API_PATH, MANAGED_CLUSTER_API_PATH } from '../internal/constants'
-import { getBackendUrl } from './apiRequests'
+import { getBackendUrl } from '../internal/apiRequests'
 import { getFleetK8sAPIPath } from './getFleetK8sAPIPath'
 
 jest.mock('../internal/cachedHubConfiguration', () => ({

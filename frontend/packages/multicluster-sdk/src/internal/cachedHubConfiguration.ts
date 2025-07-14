@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { getBackendUrl } from '../api/apiRequests'
+import { getBackendUrl } from './apiRequests'
 import { consoleFetchJSON } from '@openshift-console/dynamic-plugin-sdk'
 
 const FLEET_CONFIGURATION_URL = '/hub'

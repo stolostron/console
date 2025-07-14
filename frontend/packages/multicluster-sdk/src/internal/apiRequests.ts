@@ -11,9 +11,9 @@ import {
   QueryParams,
   Selector,
 } from '@openshift-console/dynamic-plugin-sdk'
-import { selectorToString } from './utils/requirements'
+import { selectorToString } from '../api/utils/requirements'
 import { BASE_K8S_API_PATH } from '../internal/constants'
-import { getFleetK8sAPIPath } from './getFleetK8sAPIPath'
+import { getFleetK8sAPIPath } from '../api/getFleetK8sAPIPath'
 
 export type BaseOptions = {
   name?: string
@@ -67,7 +67,7 @@ export type Options = {
   cluster?: string
 }
 
-const commonHeaders = {
+export const COMMON_HEADERS = {
   'Content-Type': 'application/json',
 }
 
@@ -214,7 +214,7 @@ export async function fleetK8sCreate<R extends K8sResourceCommon>(options: Optio
 
   return consoleFetchJSON(requestPath, 'POST', {
     body: JSON.stringify(requestData),
-    headers: commonHeaders,
+    headers: COMMON_HEADERS,
   }) as Promise<R>
 }
 
@@ -239,7 +239,7 @@ export async function fleetK8sDelete<R extends K8sResourceCommon>(options: Optio
   })
 
   return consoleFetchJSON(requestPath, 'DELETE', {
-    headers: commonHeaders,
+    headers: COMMON_HEADERS,
     body: JSON.stringify(jsonData),
   }) as Promise<R>
 }

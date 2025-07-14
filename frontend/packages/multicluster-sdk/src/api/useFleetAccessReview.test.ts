@@ -5,7 +5,7 @@ import { useFleetAccessReview } from './useFleetAccessReview'
 
 describe('useFleetAccessReview', () => {
   const mockFleetK8sCreate = jest.fn(() => Promise.resolve({ status: { allowed: true } }))
-  jest.mock('./apiRequests', () => ({
+  jest.mock('../internal/apiRequests', () => ({
     fleetK8sCreate: mockFleetK8sCreate,
   }))
 

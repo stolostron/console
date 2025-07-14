@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { fetchHubConfiguration } from '../internal/cachedHubConfiguration'
 import { MANAGED_CLUSTER_API_PATH, BASE_K8S_API_PATH } from '../internal/constants'
-import { getBackendUrl } from './apiRequests'
+import { getBackendUrl } from '../internal/apiRequests'
 
 /**
  * Function that provides the k8s API path for the fleet.

@@ -4,7 +4,7 @@ import { useURLPoll as useFleetURLPoll } from '../internal/useURLPoll'
 import { DEFAULT_PROMETHEUS_SAMPLES, DEFAULT_PROMETHEUS_TIMESPAN } from '../internal/constants'
 import { getFleetPrometheusURL } from '../internal/utils'
 import { useHubClusterName } from './useHubClusterName'
-import { getBackendUrl } from './apiRequests'
+import { getBackendUrl } from './../internal/apiRequests'
 
 type UsePrometheusPoll = (
   props: PrometheusPollProps & { cluster?: string; allClusters?: boolean }

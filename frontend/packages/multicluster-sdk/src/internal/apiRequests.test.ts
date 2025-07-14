@@ -135,30 +135,23 @@ describe('apiRequests', () => {
 
   describe('getResourcePath', () => {
     it('should build path for namespaced resource', () => {
-      const options = { ns: 'default', name: 'test-pod' }
-      const result = getResourcePath(mockModel, options)
+      const result = getResourcePath({ model: mockModel, ns: 'default', name: 'test-pod' })
       expect(result).toBe('/api/v1/namespaces/default/pods/test-pod')
     })
 
     it('should build path for cluster-scoped resource', () => {
       const clusterScopedModel = { ...mockModel, namespaced: false, plural: 'nodes' }
-      const options = { name: 'test-node' }
-      const result = getResourcePath(clusterScopedModel, options)
+      const result = getResourcePath({ model: clusterScopedModel, name: 'test-node' })
       expect(result).toBe('/api/v1/nodes/test-node')
     })
 
     it('should handle special characters in names', () => {
-      const options = { ns: 'default', name: 'test#pod' }
-      const result = getResourcePath(mockModel, options)
+      const result = getResourcePath({ model: mockModel, ns: 'default', name: 'test#pod' })
       expect(result).toBe('/api/v1/namespaces/default/pods/test%23pod')
     })
 
     it('should include query parameters', () => {
-      const options = {
-        ns: 'default',
-        queryParams: { labelSelector: 'app=test' },
-      }
-      const result = getResourcePath(mockModel, options)
+      const result = getResourcePath({ model: mockModel, ns: 'default', queryParams: { labelSelector: 'app=test' } })
       expect(result).toBe('/api/v1/namespaces/default/pods?labelSelector=app%3Dtest')
     })
   })

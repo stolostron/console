@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { UseFleetK8sAPIPath } from '../types'
-import { getBackendUrl } from './apiRequests'
+import { getBackendUrl } from '../internal/apiRequests'
 import { BASE_K8S_API_PATH, MANAGED_CLUSTER_API_PATH } from '../internal/constants'
 import { useHubConfigurationItem } from '../internal/useHubConfigurationItem'
 

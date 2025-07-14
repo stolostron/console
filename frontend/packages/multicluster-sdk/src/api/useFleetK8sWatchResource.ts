@@ -5,7 +5,7 @@ import { consoleFetchJSON, QueryParams, useK8sModel, useK8sWatchResource } from 
 import { useFleetK8sAPIPath } from './useFleetK8sAPIPath'
 import { useIsFleetAvailable } from './useIsFleetAvailable'
 import { useEffect, useMemo, useState } from 'react'
-import { buildResourceURL, fleetWatch } from './apiRequests'
+import { buildResourceURL, fleetWatch } from '../internal/apiRequests'
 import {
   fleetResourceCache,
   fleetSocketCache,
