@@ -1,22 +1,22 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { WatchK8sResource } from '@openshift-console/dynamic-plugin-sdk'
 import { useSearchResultItemsQuery } from './search-sdk'
 import { useMemo } from 'react'
 import { convertStringToQuery } from './searchUtils'
 import { SearchResult, UseMulticlusterSearchWatch } from './types'
 import { searchClient } from './search-client'
 
-export const useMulticlusterSearchWatch: UseMulticlusterSearchWatch = (
-  watchOptions: WatchK8sResource,
-  advancedSearch?: { [key: string]: string }
-) => {
+export const useMulticlusterSearchWatch: UseMulticlusterSearchWatch = (watchOptions, advancedSearchFilters) => {
   const { groupVersionKind, limit, namespace, namespaced, name, isList } = watchOptions
 
-  const advancedSearchQueryString = Object.entries(advancedSearch || {})
-    ?.map(([key, value]) => `${key}:${value}`)
-    ?.join(' ')
-
   const { group, version, kind } = groupVersionKind ?? {}
+
+  const queryInput = convertStringToQuery(
+    `${group ? `apigroup:${group}` : ''} apiversion:${version} kind:${kind}${namespaced && namespace ? ` namespace:${namespace}` : ''}${name ? ` name:${name}` : ''}`,
+    limit ?? -1
+  )
+
+  queryInput.filters.push(...(advancedSearchFilters || []))
+
   const {
     data: result,
     loading,
@@ -25,12 +25,7 @@ export const useMulticlusterSearchWatch: UseMulticlusterSearchWatch = (
     client: searchClient,
     skip: kind === undefined,
     variables: {
-      input: [
-        convertStringToQuery(
-          `${group ? `apigroup:${group}` : ''} apiversion:${version} kind:${kind}${namespaced && namespace ? ` namespace:${namespace}` : ''}${name ? ` name:*${name}*` : ''} ${advancedSearchQueryString}`,
-          limit ?? -1
-        ),
-      ],
+      input: [queryInput],
     },
   })
 
