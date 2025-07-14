@@ -60,6 +60,8 @@ export function useFetchVapb() {
             },
           ],
         },
+      }).catch((error) => {
+        console.error('Error fetching vapb: ', error)
       })
     }
   }, [apiGroup, clusterName, name, template, templateLoading, data, loading, error, getVapb])
@@ -128,6 +130,8 @@ export function useFetchOnlyRelatedResources() {
             },
           ],
         },
+      }).catch((error) => {
+        console.error('Error fetching related items: ', error)
       })
     }
   }, [apiGroup, clusterName, name, template, templateLoading, data, loading, error, kind, getVapb])
@@ -216,6 +220,8 @@ export function useFetchKyvernoRelated() {
             },
           ],
         },
+      }).catch((error) => {
+        console.error('Error fetching related items: ', error)
       })
     }
   }, [apiGroup, clusterName, name, namespace, template, templateLoading, data, loading, error, kind, getKyverno])

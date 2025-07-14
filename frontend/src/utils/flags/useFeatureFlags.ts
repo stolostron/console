@@ -10,11 +10,16 @@ const useFeatureFlags = (setFeatureFlag: SetFeatureFlag) => {
     getBackendUrl() + '/multiclusterhub/components'
   )
 
-  multiClusterHubComponentsRequest.promise.then((response) =>
-    Object.entries(FEATURE_FLAGS).forEach(([featureFlag, componentName]) =>
-      setFeatureFlag(featureFlag, response?.find((e) => e.name === componentName)?.enabled || false)
+  multiClusterHubComponentsRequest.promise
+    .then((response) =>
+      Object.entries(FEATURE_FLAGS).forEach(([featureFlag, componentName]) =>
+        setFeatureFlag(featureFlag, response?.find((e) => e.name === componentName)?.enabled || false)
+      )
     )
-  )
+    .catch((error) => {
+      console.error('Error fetching multicluster hub components: ', error)
+      setFeatureFlag(REQUIRED_PROVIDER_FLAG, false)
+    })
   // Supports first version of multicluster SDK provider requirements
   setFeatureFlag(REQUIRED_PROVIDER_FLAG, true)
 }

@@ -167,6 +167,9 @@ const SharedResourceWarning = ({ resourceType, control }) => {
             }
           }
         })
+        .catch((error) => {
+          console.error('Error fetching shared resource warning: ', error)
+        })
     }
   }, [
     control.editMode,

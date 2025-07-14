@@ -50,7 +50,7 @@ export const DrawerShapes = () => {
         </g>
       </symbol>
       <symbol viewBox="4 4 16 16" id="drawerShapes_pending">
-        <g id="Applications" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Applications" stroke="none" strokeWidth="1" fill="none" fillRule="evenodd">
           <g id="2.1-App-9" transform="translate(-1151.000000, -1345.000000)">
             <g id="Group-3" transform="translate(72.000000, 579.000000)">
               <g id="Group-20-Copy-2" transform="translate(1079.000000, 766.000000)">
@@ -102,13 +102,13 @@ export const DrawerShapes = () => {
         </g>
       </svg>
       <symbol viewBox="0 0 350 120" id="drawerShapes_legend">
-        <g id="Product-Topology-Legend-Template" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Product-Topology-Legend-Template" stroke="none" strokeWidth="1" fill="none" fillRule="evenodd">
           <g id="Basic-Node-B-Copy-9" transform="translate(197.000000, 7.000000)">
             <circle
               id="Oval"
               stroke="#3E8635"
               className="pf-topology__node__background"
-              fill-rule="nonzero"
+              fillRule="nonzero"
               cx="54"
               cy="24"
               r="23.5"
@@ -119,20 +119,20 @@ export const DrawerShapes = () => {
                 d="M7.74998152,15.499963 C12.0301837,15.499963 15.499963,12.0301837 15.499963,7.74998152 C15.499963,3.46977933 12.0301837,0 7.74998152,0 C3.46977933,0 0,3.46977933 0,7.74998152 C0,12.0301837 3.46977933,15.499963 7.74998152,15.499963 Z M6.14640869,11.8535179 L2.89641643,8.60352563 C2.70119595,8.40827463 2.70119595,8.09165551 2.89641643,7.89640451 L3.60353755,7.18931391 C3.79878855,6.99406291 4.11540767,6.99406291 4.31065867,7.18931391 L6.4999845,9.37867027 L11.1893044,4.68935039 C11.3845859,4.49406888 11.701205,4.49406888 11.8964255,4.68935039 L12.6035466,5.39644099 C12.7987671,5.59169199 12.7987671,5.90831111 12.6035466,6.10356211 L6.85356032,11.8535484 C6.6582788,12.0487689 6.3416902,12.0487689 6.14640869,11.8535179 Z"
                 id=""
                 fill="#3E8635"
-                fill-rule="nonzero"
+                fillRule="nonzero"
               ></path>
             </g>
             <path
               d="M54.0263415,34 C54.1434146,34 54.257561,33.9853659 54.3687805,33.9560976 C54.48,33.9268293 54.582439,33.8829268 54.6760976,33.8243902 L62.28,29.662439 C62.3853659,29.6039024 62.4819512,29.5336585 62.5697561,29.4517073 C62.657561,29.3697561 62.7365854,29.2702439 62.8068293,29.1531707 C62.8770732,29.0478049 62.9268293,28.9365854 62.9560976,28.8195122 C62.9853659,28.702439 63,28.5795122 63,28.4507317 L63,20.1443902 C63,20.0039024 62.9765854,19.8692683 62.9297561,19.7404878 C62.8829268,19.6117073 62.8185366,19.4829268 62.7365854,19.3541463 C62.6546341,19.2370732 62.5609756,19.137561 62.4556098,19.0556098 C62.3502439,18.9736585 62.2273171,18.9034146 62.0868293,18.844878 L54.5004878,16.0878049 C54.4185366,16.0643902 54.3365854,16.0439024 54.2546341,16.0263415 C54.1726829,16.0087805 54.0965854,16 54.0263415,16 L53.9736585,16 L53.9736585,16 C53.8917073,16 53.8097561,16.0087805 53.7278049,16.0263415 C53.6458537,16.0439024 53.5697561,16.0643902 53.4995122,16.0878049 L45.9131707,18.862439 C45.7726829,18.9092683 45.6468293,18.9736585 45.5356098,19.0556098 C45.4243902,19.137561 45.3278049,19.2429268 45.2458537,19.3717073 C45.1639024,19.4887805 45.102439,19.6117073 45.0614634,19.7404878 C45.0204878,19.8692683 45,20.0097561 45,20.1619512 L45,28.4507317 C45,28.5795122 45.0146341,28.702439 45.0439024,28.8195122 C45.0731707,28.9365854 45.1229268,29.0478049 45.1931707,29.1531707 C45.2517073,29.2702439 45.324878,29.3697561 45.4126829,29.4517073 C45.5004878,29.5336585 45.6029268,29.6039024 45.72,29.662439 L53.3239024,33.8243902 C53.417561,33.8829268 53.52,33.9268293 53.6312195,33.9560976 C53.742439,33.9853659 53.8565854,34 53.9736585,34 L54.0263415,34 L54.0263415,34 Z M53.9912195,27.4321951 L46.2468293,23.9726829 L46.2468293,22.5326829 L53.9912195,25.7112195 L61.7004878,22.48 L61.7004878,23.9726829 L53.9912195,27.4321951 Z M53.9912195,31.857561 L46.2468293,27.6780488 L46.2468293,26.3785366 L53.9912195,30.0663415 L61.7004878,26.3785366 L61.7004878,27.6780488 L53.9912195,31.857561 Z"
               id=""
               className="pf-topology__node__icon"
-              fill-rule="nonzero"
+              fillRule="nonzero"
             ></path>
             <g id="Node-Title" transform="translate(0.000000, 53.000000)" className="pf-topology__node__label">
               <rect
                 id="Rectangle"
                 stroke="#3E8635"
-                fill-rule="nonzero"
+                fillRule="nonzero"
                 x="0.5"
                 y="0.5"
                 width="106"
@@ -142,40 +142,34 @@ export const DrawerShapes = () => {
               <g id="Group-4" transform="translate(1.000000, 25.000000)">
                 <rect id="Rectangle" x="0" y="0" width="105" height="1" fill="#6A6E73" stroke="none"></rect>
               </g>
-              <text font-family="RedHatText" font-size="14" font-weight="normal">
+              <text fontFamily="RedHatText" fontSize="14" fontWeight="normal">
                 <tspan x="21" y="18">
                   {t('Cluster')}
                 </tspan>
               </text>
-              <text id="Cluster" font-family="RedHatText" font-size="12" font-weight="normal" line-spacing="20">
+              <text id="Cluster" fontFamily="RedHatText" fontSize="12" fontWeight="normal">
                 <tspan x="21" y="38">
                   {t('Node Title')}
                 </tspan>
               </text>
             </g>
           </g>
-          <text
-            id="Resource-deploy-stat-Copy"
-            font-family="RedHatText"
-            font-size="14"
-            font-weight="normal"
-            fill="#6A6E73"
-          >
+          <text id="Resource-deploy-stat-Copy" fontFamily="RedHatText" fontSize="14" fontWeight="normal" fill="#6A6E73">
             <tspan x="0" y="14">
               {t('Resource deploy status')}
             </tspan>
           </text>
-          <text id="Resource-icon-Copy" font-family="RedHatText" font-size="14" font-weight="normal" fill="#6A6E73">
+          <text id="Resource-icon-Copy" fontFamily="RedHatText" fontSize="14" fontWeight="normal" fill="#6A6E73">
             <tspan x="0" y="48">
               {t('Resource icon')}
             </tspan>
           </text>
-          <text id="Resource-name-Copy" font-family="RedHatText" font-size="14" font-weight="normal" fill="#6A6E73">
+          <text id="Resource-name-Copy" fontFamily="RedHatText" fontSize="14" fontWeight="normal" fill="#6A6E73">
             <tspan x="0" y="82">
               {t('Resource type')}
             </tspan>
           </text>
-          <text id="Resource-type-Copy-2" font-family="RedHatText" font-size="14" font-weight="normal" fill="#6A6E73">
+          <text id="Resource-type-Copy-2" fontFamily="RedHatText" fontSize="14" fontWeight="normal" fill="#6A6E73">
             <tspan x="0" y="116">
               {t('Resource name')}
             </tspan>
@@ -187,9 +181,9 @@ export const DrawerShapes = () => {
             y2="10.5"
             id="Path-2-Copy-4"
             stroke="#B8BBBE"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-dasharray="2,2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeDasharray="2,2"
           ></line>
           <circle id="Oval-Copy-4" fill="#B8BBBE" cx="211.5" cy="73" r="2.5"></circle>
           <circle id="Oval-Copy-5" fill="#B8BBBE" cx="211.5" cy="96" r="2.5"></circle>
@@ -199,33 +193,33 @@ export const DrawerShapes = () => {
             d="M94.0472005,43 L152.484375,43 L152.484375,31.7499672 L235.108073,31.7499672"
             id="Path-2-Copy-7"
             stroke="#B8BBBE"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-dasharray="2,2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeDasharray="2,2"
           ></path>
           <path
             d="M103.123047,78.5950521 L152.484375,78.5950521 L152.484375,73 L209.45638,73"
             id="Path-3-Copy-2"
             stroke="#B8BBBE"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-dasharray="2,2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeDasharray="2,2"
           ></path>
           <path
             d="M103.123047,111.595052 L152.484375,111.595052 L152.484375,96 L209.47526,96"
             id="Path-3-Copy-3"
             stroke="#B8BBBE"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-dasharray="2,2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeDasharray="2,2"
           ></path>
         </g>
       </symbol>
       <symbol viewBox="0 0 350 120" id="drawerShapes_legend2">
         <g id="Legend" transform="translate(-340.000000, 0)">
-          <g id="Product-Topology-Legend-Template" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+          <g id="Product-Topology-Legend-Template" stroke="none" strokeWidth="1" fill="none" fillRule="evenodd">
             <g id="Group-3-Copy" transform="translate(363.000000, 8.000000)">
-              <g id="Node-Group-Collapsed-Copy-7" fill-rule="nonzero">
+              <g id="Node-Group-Collapsed-Copy-7" fillRule="nonzero">
                 <g id="Basic-Node">
                   <path
                     d="M40,0 C53.254834,0 64,10.745166 64,24 C64,37.254834 53.254834,48 40,48 C38.6370953,48 37.3007244,47.8863955 35.9998401,47.6681394 C47.3509346,45.7637611 56,35.8919293 56,24 C56,12.1080707 47.3509346,2.23623887 36.0001599,0.331860595 C37.3007244,0.113604496 38.6370953,0 40,0 Z"
@@ -259,7 +253,7 @@ export const DrawerShapes = () => {
                   id="Rectangle"
                   stroke="#D1D1D1"
                   fill="#FFFFFF"
-                  fill-rule="nonzero"
+                  fillRule="nonzero"
                   x="41"
                   y="15"
                   width="31"
@@ -270,16 +264,9 @@ export const DrawerShapes = () => {
                   d="M40,0 C50.0721415,0 58.6951397,6.20451986 62.2554582,15.0000231 L63,15 C67.9705627,15 72,19.0294373 72,24 C72,28.9705627 67.9705627,33 63,33 L62.255052,33.0009805 C58.6944838,41.7959521 50.0717584,48 40,48 C38.6370953,48 37.3007244,47.8863955 35.9998401,47.6681394 L36.1983656,47.6340281 C34.8351381,47.8745462 33.4322197,48 32,48 C30.637347,48 29.3012179,47.8864375 28.0005607,47.6682603 C28.1866512,47.6370335 28.3720156,47.6036653 28.5566276,47.5681817 C27.0810963,47.8515658 25.5578825,48 24,48 C10.745166,48 0,37.254834 0,24 C0,10.745166 10.745166,0 24,0 C25.4364054,0 26.843338,0.126188164 28.2103169,0.368083603 L28.0004434,0.331908158 C29.3012179,0.113562546 30.637347,0 32,0 C33.4364054,0 34.843338,0.126188164 36.2103169,0.368083603 L36.0001599,0.331860595 C37.3007244,0.113604496 38.6370953,0 40,0 Z"
                   id="Combined-Shape"
                   stroke="#3E8635"
-                  fill-rule="nonzero"
+                  fillRule="nonzero"
                 ></path>
-                <text
-                  id="64"
-                  font-family="RedHatText"
-                  font-size="12"
-                  font-weight="normal"
-                  line-spacing="18"
-                  fill="#292E34"
-                >
+                <text id="64" fontFamily="RedHatText" fontSize="12" fontWeight="normal" fill="#292E34">
                   <tspan x="49.078" y="27">
                     64
                   </tspan>
@@ -292,21 +279,21 @@ export const DrawerShapes = () => {
                 d="M7.74998152,15.499963 C12.0301837,15.499963 15.499963,12.0301837 15.499963,7.74998152 C15.499963,3.46977933 12.0301837,0 7.74998152,0 C3.46977933,0 0,3.46977933 0,7.74998152 C0,12.0301837 3.46977933,15.499963 7.74998152,15.499963 Z M6.14640869,11.8535179 L2.89641643,8.60352563 C2.70119595,8.40827463 2.70119595,8.09165551 2.89641643,7.89640451 L3.60353755,7.18931391 C3.79878855,6.99406291 4.11540767,6.99406291 4.31065867,7.18931391 L6.4999845,9.37867027 L11.1893044,4.68935039 C11.3845859,4.49406888 11.701205,4.49406888 11.8964255,4.68935039 L12.6035466,5.39644099 C12.7987671,5.59169199 12.7987671,5.90831111 12.6035466,6.10356211 L6.85356032,11.8535484 C6.6582788,12.0487689 6.3416902,12.0487689 6.14640869,11.8535179 Z"
                 id=""
                 fill="#3E8635"
-                fill-rule="nonzero"
+                fillRule="nonzero"
               ></path>
             </g>
             <g id="Group-2-Copy" className="pf-topology__node__label" transform="translate(344.000000, 60.000000)">
               <rect
                 id="Rectangle"
                 stroke="#3E8635"
-                fill-rule="nonzero"
+                fillRule="nonzero"
                 x="0.5"
                 y="0.5"
                 width="105"
                 height="25"
                 rx="3"
               ></rect>
-              <text id="Deployment" font-family="RedHatText" font-size="14" font-weight="normal">
+              <text id="Deployment" fontFamily="RedHatText" fontSize="14" fontWeight="normal">
                 <tspan x="14.696" y="18">
                   {t('Deployment')}
                 </tspan>
@@ -314,16 +301,16 @@ export const DrawerShapes = () => {
             </g>
             <text
               id="Number-of-resources-Copy"
-              font-family="RedHatText"
-              font-size="14"
-              font-weight="normal"
+              fontFamily="RedHatText"
+              fontSize="14"
+              fontWeight="normal"
               fill="#6A6E73"
             >
               <tspan x="523" y="37">
                 {t('Number of resources grouped')}
               </tspan>
             </text>
-            <text id="Resource-type-Copy" font-family="RedHatText" font-size="14" font-weight="normal" fill="#6A6E73">
+            <text id="Resource-type-Copy" fontFamily="RedHatText" fontSize="14" fontWeight="normal" fill="#6A6E73">
               <tspan x="523" y="78">
                 {t('Resource type')}
               </tspan>
@@ -335,9 +322,9 @@ export const DrawerShapes = () => {
               y2="31.7499672"
               id="Path-2-Copy-5"
               stroke="#B8BBBE"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-dasharray="2,2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeDasharray="2,2"
             ></line>
             <line
               x1="444.5"
@@ -346,9 +333,9 @@ export const DrawerShapes = () => {
               y2="72.7499672"
               id="Path-2-Copy-6"
               stroke="#B8BBBE"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-dasharray="2,2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeDasharray="2,2"
             ></line>
             <circle id="Oval-Copy-8" fill="#B8BBBE" cx="440.5" cy="73.5" r="2.5"></circle>
             <circle id="Oval-Copy-9" fill="#B8BBBE" cx="444.5" cy="31.5" r="2.5"></circle>

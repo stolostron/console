@@ -383,7 +383,7 @@ export default function ApplicationDetailsPage() {
     lastRefreshRef.current = undefined
     const interval = setInterval(
       (function refresh() {
-        ;(async () => {
+        void (async () => {
           const recoilStates = getRecoilStates()
 
           // get application object from recoil states

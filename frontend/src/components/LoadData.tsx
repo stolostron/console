@@ -565,11 +565,13 @@ export function LoadData(props: { children?: ReactNode }) {
 
   // Update global value setters when data has finished
   const isGlobalHub = useRecoilValue(isGlobalHubState)
-  if (globalHubRes && !globalHubLoading && !isGlobalHub) {
-    setIsGlobalHub(globalHubRes[0]?.isGlobalHub)
-    setlocalHubName(globalHubRes[0]?.localHubName)
-    setIsHubSelfManaged(globalHubRes[0]?.isHubSelfManaged)
-  }
+  useEffect(() => {
+    if (globalHubRes && !globalHubLoading && !isGlobalHub) {
+      setIsGlobalHub(globalHubRes[0]?.isGlobalHub)
+      setlocalHubName(globalHubRes[0]?.localHubName)
+      setIsHubSelfManaged(globalHubRes[0]?.isHubSelfManaged)
+    }
+  }, [globalHubRes, globalHubLoading, isGlobalHub, setIsGlobalHub, setlocalHubName, setIsHubSelfManaged])
 
   const {
     data: mchResponse,
@@ -591,14 +593,18 @@ export function LoadData(props: { children?: ReactNode }) {
 
   // Update fine-grained RBAC state from mch response
   const isFineGrainedRbacEnabled = useRecoilValue(isFineGrainedRbacEnabledState)
-  if (mchResponse && !mchLoading && !isFineGrainedRbacEnabled) {
-    setIsFineGrainedRbacEnabled(mchResponse?.find((e) => e?.name === 'fine-grained-rbac-preview')?.enabled ?? false)
-  }
+  useEffect(() => {
+    if (mchResponse && !mchLoading && !isFineGrainedRbacEnabled) {
+      setIsFineGrainedRbacEnabled(mchResponse?.find((e) => e?.name === 'fine-grained-rbac-preview')?.enabled ?? false)
+    }
+  }, [mchResponse, mchLoading, isFineGrainedRbacEnabled, setIsFineGrainedRbacEnabled])
 
   // If all data not loaded (!loaded) & events data is loaded (eventsLoaded) && global hub value is loaded (!globalHubLoading) -> set loaded to true
-  if (!loadCompleted && eventsLoaded && !globalHubLoading) {
-    setLoadCompleted(true)
-  }
+  useEffect(() => {
+    if (!loadCompleted && eventsLoaded && !globalHubLoading) {
+      setLoadCompleted(true)
+    }
+  }, [loadCompleted, eventsLoaded, globalHubLoading, setLoadCompleted])
 
   useEffect(() => {
     function checkLoggedIn() {
@@ -606,7 +612,7 @@ export function LoadData(props: { children?: ReactNode }) {
         credentials: 'include',
         headers: { accept: 'application/json' },
       })
-        .then((res) => {
+        .then(async (res) => {
           switch (res.status) {
             case 200:
               break
@@ -615,13 +621,13 @@ export function LoadData(props: { children?: ReactNode }) {
               if (process.env.NODE_ENV === 'development' && res.status === 504) {
                 window.location.reload()
               } else {
-                tokenExpired()
+                await tokenExpired()
               }
               break
           }
         })
-        .catch(() => {
-          tokenExpired()
+        .catch(async () => {
+          await tokenExpired()
         })
         .finally(() => {
           setTimeout(checkLoggedIn, 30 * 1000)

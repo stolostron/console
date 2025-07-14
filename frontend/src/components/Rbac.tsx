@@ -172,10 +172,14 @@ export function RbacButton(props: RbacButtonProps) {
       rbac.map(async (rbac) => {
         return await createSubjectAccessReview(rbac).promise
       })
-    ).then((results) => {
-      const isDisabled = !results.every((result) => result?.status?.allowed)
-      setIsDisabled(isDisabled)
-    })
+    )
+      .then((results) => {
+        const isDisabled = !results.every((result) => result?.status?.allowed)
+        setIsDisabled(isDisabled)
+      })
+      .catch(() => {
+        setIsDisabled(true)
+      })
   }, [rbac])
 
   return (
