@@ -102,7 +102,7 @@ export async function userpreference<T = unknown>(req: Http2ServerRequest, res: 
                 compress: true,
               })
                 .then((response) => response.json() as unknown)
-                .catch((err: Error) => {
+                .catch((err: Error): undefined => {
                   logger.error({
                     msg: req.method === 'POST' ? 'Error creating UserPreference' : 'Error updating UserPreference',
                     error: err.message,
