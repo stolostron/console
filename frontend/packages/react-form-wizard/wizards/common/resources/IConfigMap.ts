@@ -8,8 +8,8 @@ export const ConfigMapKind = 'ConfigMap'
 export type ConfigMapKindType = 'ConfigMap'
 
 export interface ConfigMap extends IResource {
-    apiVersion: ConfigMapApiVersionType
-    kind: ConfigMapKindType
-    metadata: { name?: string; namespace?: string }
-    data?: Record<string, any>
+  apiVersion: ConfigMapApiVersionType
+  kind: ConfigMapKindType
+  metadata: { name?: string; namespace?: string }
+  data?: Record<string, any>
 }

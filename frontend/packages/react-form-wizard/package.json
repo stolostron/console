@@ -29,6 +29,7 @@
         "upgrade": "ncu --upgrade --doctor --target latest --reject react-router-dom,@types/react-router-dom,@types/node && ncu --upgrade --doctor --target minor && ncu --upgrade --doctor --target patch",
         "coverage": "open coverage/lcov-report/index.html"
     },
+    "prettier": "@stolostron/prettier-config",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/patternfly-labs/react-form-wizard.git"
