@@ -214,6 +214,7 @@ describe('VirtualMachinesPage Page', () => {
     const mockPluginContextValue = {
       ocpApi: {
         useK8sWatchResource: mockUseK8sWatchResource,
+        useFlag: jest.fn(() => false),
       },
       isACMAvailable: true,
       isOverviewAvailable: true,
