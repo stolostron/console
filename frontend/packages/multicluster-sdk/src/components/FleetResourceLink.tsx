@@ -87,7 +87,7 @@ export const FleetResourceLink: React.FC<FleetResourceLinkProps> = ({ cluster, .
     truncate,
   } = resourceLinkProps
 
-  const value = displayName ? displayName : name
+  const value = displayName || name
   const classes = classNames('co-resource-item', className || '', {
     'co-resource-item--inline': inline,
     'co-resource-item--truncate': truncate,

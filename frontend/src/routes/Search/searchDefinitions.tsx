@@ -640,12 +640,6 @@ export function CreateDetailsLink(props: Readonly<{ item: any }>) {
       )
     case 'virtualmachine':
     case 'virtualmachineinstance': {
-      console.log(`🔧 VM Debug:`, {
-        cluster: item.cluster,
-        name: item.name,
-        kubevirtEnabled,
-        _hubClusterResource: item._hubClusterResource,
-      })
       // use getFirstClassResourceRoute helper to determine if this should use ACM VM page
       // only for hub cluster resources (item._hubClusterResource === true)
       const { isFirstClass, path } = getFirstClassResourceRoute(
@@ -655,13 +649,10 @@ export function CreateDetailsLink(props: Readonly<{ item: any }>) {
         item.name,
         kubevirtEnabled
       )
-      console.log(`🔧 Route Result:`, { isFirstClass, path })
 
       if (isFirstClass && path && item._hubClusterResource) {
-        console.log(`🎯 Going to ACM VM page`)
         return <Link to={path}>{item.name}</Link>
       }
-      console.log(`🔍 Going to search results`)
       return defaultSearchLink
     }
     default:
