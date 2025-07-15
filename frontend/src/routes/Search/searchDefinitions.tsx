@@ -6,10 +6,10 @@ import { ButtonProps, Icon, Label, Popover, Text, TextContent, TextVariants } fr
 import { CheckCircleIcon, ExclamationCircleIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
 import queryString from 'query-string'
-import { useMemo } from 'react'
+import { useMemo, useContext } from 'react'
 import { TFunction } from 'react-i18next'
 import { generatePath, Link } from 'react-router-dom-v5-compat'
-import { useFlag } from '@openshift-console/dynamic-plugin-sdk'
+import { PluginContext } from '../../lib/PluginContext'
 import { useTranslation } from '../../lib/acm-i18next'
 import AcmTimestamp from '../../lib/AcmTimestamp'
 import { NavigationPath } from '../../NavigationPath'
@@ -17,6 +17,8 @@ import { ConfigMap } from '../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { AcmButton, AcmLabels } from '../../ui-components'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
+import { getFirstClassResourceRoute } from '../../../packages/multicluster-sdk/src/internal/fleetResourceHelpers'
+
 export interface ResourceDefinitions {
   application: Record<'columns', SearchColumnDefinition[]>
   cluster: Record<'columns', SearchColumnDefinition[]>
@@ -556,7 +558,8 @@ export const GetUrlSearchParam = (resource: any) => {
 
 export function CreateDetailsLink(props: Readonly<{ item: any }>) {
   const { item } = props
-  const kubevirtEnabled = useFlag('KUBEVIRT_DYNAMIC_ACM') // check if the KUBEVIRT_DYNAMIC_ACM flag is enabled
+  const { ocpApi } = useContext(PluginContext)
+  const kubevirtEnabled = ocpApi.useFlag('KUBEVIRT_DYNAMIC_ACM') // check if the KUBEVIRT_DYNAMIC_ACM flag is enabled
 
   const defaultSearchLink = (
     <Link
@@ -636,16 +639,31 @@ export function CreateDetailsLink(props: Readonly<{ item: any }>) {
         </Link>
       )
     case 'virtualmachine':
-    case 'virtualmachineinstance':
-      // when the KUBEVIRT_DYNAMIC_ACM integration is enabled, go to the new ACM VM page
-      if (kubevirtEnabled && item.cluster && item.namespace) {
-        return (
-          <Link to={`/multicloud/infrastructure/virtualmachines/${item.cluster}/${item.namespace}/${item.name}`}>
-            {item.name}
-          </Link>
-        )
+    case 'virtualmachineinstance': {
+      console.log(`🔧 VM Debug:`, {
+        cluster: item.cluster,
+        name: item.name,
+        kubevirtEnabled,
+        _hubClusterResource: item._hubClusterResource,
+      })
+      // use getFirstClassResourceRoute helper to determine if this should use ACM VM page
+      // only for hub cluster resources (item._hubClusterResource === true)
+      const { isFirstClass, path } = getFirstClassResourceRoute(
+        item.kind,
+        item.cluster,
+        item.namespace,
+        item.name,
+        kubevirtEnabled
+      )
+      console.log(`🔧 Route Result:`, { isFirstClass, path })
+
+      if (isFirstClass && path && item._hubClusterResource) {
+        console.log(`🎯 Going to ACM VM page`)
+        return <Link to={path}>{item.name}</Link>
       }
+      console.log(`🔍 Going to search results`)
       return defaultSearchLink
+    }
     default:
       return defaultSearchLink
   }
@@ -653,7 +671,8 @@ export function CreateDetailsLink(props: Readonly<{ item: any }>) {
 
 export function CreateGlobalSearchDetailsLink(props: { item: any }) {
   const { item } = props
-  const kubevirtEnabled = useFlag('KUBEVIRT_DYNAMIC_ACM') // check if the KUBEVIRT_DYNAMIC_ACM flag is enabled
+  const { ocpApi } = useContext(PluginContext)
+  const kubevirtEnabled = ocpApi.useFlag('KUBEVIRT_DYNAMIC_ACM') // check if the KUBEVIRT_DYNAMIC_ACM flag is enabled
   const clusters = useAllClusters(true)
 
   const managedHub = clusters.find((cluster) => {
@@ -686,6 +705,12 @@ export function CreateGlobalSearchDetailsLink(props: { item: any }) {
       default:
         return item.name
     }
+  }
+
+  const generateDefaultSearchLink = () => {
+    const searchLink = generateLink('internal', NavigationPath.resources, GetUrlSearchParam(item))
+    const externalLink = generateLink('external', NavigationPath.resources, GetUrlSearchParam(item))
+    return item.managedHub !== 'global-hub' ? externalLink : searchLink
   }
 
   switch (item.kind.toLowerCase()) {
@@ -747,22 +772,25 @@ export function CreateGlobalSearchDetailsLink(props: { item: any }) {
     }
     case 'virtualmachine':
     case 'virtualmachineinstance': {
-      // when the KUBEVIRT_DYNAMIC_ACM integration is enabled, go to the new ACM VM page
-      if (kubevirtEnabled && item.cluster && item.namespace) {
-        const path = `/multicloud/infrastructure/virtualmachines/${item.cluster}/${item.namespace}/${item.name}`
-        return generateLink(
-          item.managedHub === 'global-hub' && !item._hubClusterResource ? 'external' : 'internal',
-          path
-        )
+      // Use common helper to determine if this should use ACM VM page
+      // Only for internal links (hub resources), not external managed hub resources
+      const { isFirstClass, path } = getFirstClassResourceRoute(
+        item.kind,
+        item.cluster,
+        item.namespace,
+        item.name,
+        kubevirtEnabled
+      )
+
+      const isInternalHubResource = !(item.managedHub === 'global-hub' && !item._hubClusterResource)
+
+      if (isFirstClass && path && isInternalHubResource) {
+        return generateLink('internal', path)
       }
-      const searchLink = generateLink('internal', NavigationPath.resources, GetUrlSearchParam(item))
-      const externalLink = generateLink('external', NavigationPath.resources, GetUrlSearchParam(item))
-      return item.managedHub !== 'global-hub' ? externalLink : searchLink
+      return generateDefaultSearchLink()
     }
     default: {
-      const searchLink = generateLink('internal', NavigationPath.resources, GetUrlSearchParam(item))
-      const externalLink = generateLink('external', NavigationPath.resources, GetUrlSearchParam(item))
-      return item.managedHub !== 'global-hub' ? externalLink : searchLink
+      return generateDefaultSearchLink()
     }
   }
 }
