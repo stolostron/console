@@ -641,17 +641,18 @@ export function CreateDetailsLink(props: Readonly<{ item: any }>) {
     case 'virtualmachine':
     case 'virtualmachineinstance': {
       // use getFirstClassResourceRoute helper to determine if this should use ACM VM page
-      // only for hub cluster resources (item._hubClusterResource === true)
-      const { isFirstClass, path } = getFirstClassResourceRoute(
-        item.kind,
-        item.cluster,
-        item.namespace,
-        item.name,
-        kubevirtEnabled
-      )
-
-      if (isFirstClass && path && item._hubClusterResource) {
-        return <Link to={path}>{item.name}</Link>
+      // only for hub cluster resources
+      if (item._hubClusterResource) {
+        const { isFirstClass, path } = getFirstClassResourceRoute(
+          item.kind,
+          item.cluster,
+          item.namespace,
+          item.name,
+          kubevirtEnabled
+        )
+        if (isFirstClass && path) {
+          return <Link to={path}>{item.name}</Link>
+        }
       }
       return defaultSearchLink
     }
@@ -763,8 +764,8 @@ export function CreateGlobalSearchDetailsLink(props: { item: any }) {
     }
     case 'virtualmachine':
     case 'virtualmachineinstance': {
-      // Use common helper to determine if this should use ACM VM page
-      // Only for internal links (hub resources), not external managed hub resources
+      // use getFirstClassResourceRoute helper to determine if this should use ACM VM page
+      // only for internal links (hub resources), not external managed hub resources
       const { isFirstClass, path } = getFirstClassResourceRoute(
         item.kind,
         item.cluster,
