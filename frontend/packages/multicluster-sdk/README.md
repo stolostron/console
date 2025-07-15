@@ -110,7 +110,16 @@ Setup depends on your usage scenarios.
 
 ### :gear: FleetResourceLink
 
-Intelligent resource link component for ACM fleet environments that provides context-aware routing based on fleet availability, cluster context, resource types, and current page location.
+Enhanced ResourceLink component for ACM fleet environments.
+
+Unlike the standard OpenShift ResourceLink which always links to the OpenShift console,
+FleetResourceLink provides intelligent routing based on cluster context:
+- For managed clusters: Links to ACM search results or specialized ACM pages
+- For hub clusters: Context-aware routing based on current page location
+- For first-class ACM resources: Direct links to rich management interfaces
+
+This prevents users from having to jump between different consoles when managing
+multi-cluster resources.
 
 | Function | Type |
 | ---------- | ---------- |
@@ -130,31 +139,7 @@ Parameters:
 * `props.children`: - additional content to render
 
 
-Returns:
-
-JSX.Element - Rendered resource link with appropriate routing based on fleet context
-
-Examples:
-
-```tsx
-// Link to ACM cluster details for ManagedCluster
-<FleetResourceLink 
-  cluster="prod-cluster"
-  groupVersionKind={{ kind: 'ManagedCluster', version: 'v1', group: 'cluster.open-cluster-management.io' }}
-  name="prod-cluster"
-/>
-
-// Link to ACM VM page for VirtualMachine on managed cluster
-<FleetResourceLink 
-  cluster="managed-cluster"
-  groupVersionKind={{ kind: 'VirtualMachine', version: 'v1', group: 'kubevirt.io' }}
-  name="web-server"
-  namespace="default"
-/>
-```
-
-
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/FleetResourceLink.tsx#L125)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/components/FleetResourceLink.tsx#L44)
 
 ### :gear: fleetWatch
 
@@ -266,7 +251,7 @@ Returns:
 
 Array with `hubclustername`, `loaded` and `error` values.
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useHubClusterName.ts#L11)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useHubClusterName.ts#L12)
 
 ### :gear: useIsFleetAvailable
 
