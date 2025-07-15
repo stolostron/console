@@ -39,7 +39,7 @@ import {
   AcmPageContent,
   ListItems,
 } from '../../../../ui-components'
-import { AmcArgoRefresh } from '../../../../ui-components/AcmInlineStatus/AmcArgoRefresh'
+import { AcmArgoRefresh } from '../../../../ui-components/AcmInlineStatus/AcmArgoRefresh'
 import LabelWithPopover from '../../components/LabelWithPopover'
 import ResourceLabels from '../../components/ResourceLabels'
 import { ISyncResourceModalProps, SyncResourceModal } from '../../components/SyncResourceModal'
@@ -246,7 +246,7 @@ export function ApplicationOverviewPageContent() {
           value: (
             <>
               <AcmTimestamp timestamp={lastSyncedTimeStamp} />
-              {(isAppSet || isArgoApp) && <AmcArgoRefresh app={applicationData.application} />}
+              {(isAppSet || isArgoApp) && <AcmArgoRefresh app={applicationData.application} />}
             </>
           ),
         },

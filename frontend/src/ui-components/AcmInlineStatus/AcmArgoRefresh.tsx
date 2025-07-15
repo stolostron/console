@@ -33,10 +33,10 @@ const refreshAppK8s = async (application: any) =>
     )
   )
 
-type AmcArgoRefreshProps = {
+type AcmArgoRefreshProps = {
   app: Application
 }
-export function AmcArgoRefresh({ app }: AmcArgoRefreshProps) {
+export function AcmArgoRefresh({ app }: AcmArgoRefreshProps) {
   const [isRefreshing, setIsRefreshing] = useState(false)
   const { addAlert } = useContext(AcmToastContext)
 
