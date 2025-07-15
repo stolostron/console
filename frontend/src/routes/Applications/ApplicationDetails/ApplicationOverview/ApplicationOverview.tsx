@@ -246,7 +246,7 @@ export function ApplicationOverviewPageContent() {
           value: (
             <>
               <AcmTimestamp timestamp={lastSyncedTimeStamp} />
-              {(isAppSet || isArgoApp) && <AmcArgoRefresh app={applicationData.application.app} />}
+              {(isAppSet || isArgoApp) && <AmcArgoRefresh app={applicationData.application} />}
             </>
           ),
         },
