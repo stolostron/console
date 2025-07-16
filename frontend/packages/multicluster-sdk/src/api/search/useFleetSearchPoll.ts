@@ -1,16 +1,57 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useSearchResultItemsQuery } from './search-sdk'
 import { useMemo } from 'react'
-import { convertStringToQuery } from './searchUtils'
-import { SearchResult, UseMulticlusterSearchWatch } from './types'
+import { SearchResult, UseFleetSearchPoll } from './types'
 import { searchClient } from './search-client'
 
-export const useMulticlusterSearchWatch: UseMulticlusterSearchWatch = (watchOptions, advancedSearch) => {
+export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSearch) => {
   const { groupVersionKind, limit, namespace, namespaced, name, isList } = watchOptions
 
-  const advancedSearchQueryString = advancedSearch?.map(({ key, value }) => `${key}:${value}`)?.join(' ') ?? ''
-
   const { group, version, kind } = groupVersionKind ?? {}
+
+  const searchInput = useMemo(() => {
+    const filters: Array<{ property: string; values: string[] }> = []
+
+    // Add filters from watchOptions (these take precedence)
+    const watchOptionsProperties = new Set<string>()
+
+    if (group) {
+      filters.push({ property: 'apigroup', values: [group] })
+      watchOptionsProperties.add('apigroup')
+    }
+    if (version) {
+      filters.push({ property: 'apiversion', values: [version] })
+      watchOptionsProperties.add('apiversion')
+    }
+    if (kind) {
+      filters.push({ property: 'kind', values: [kind] })
+      watchOptionsProperties.add('kind')
+    }
+    if (namespaced && namespace) {
+      filters.push({ property: 'namespace', values: [namespace] })
+      watchOptionsProperties.add('namespace')
+    }
+    if (name && name.trim()) {
+      // Use exact match instead of wildcard
+      filters.push({ property: 'name', values: [name] })
+      watchOptionsProperties.add('name')
+    }
+
+    // Add filters from advancedSearch, excluding properties already specified in watchOptions
+    if (advancedSearch) {
+      for (const { property, values } of advancedSearch) {
+        if (property && values !== undefined && !watchOptionsProperties.has(property)) {
+          filters.push({ property, values })
+        }
+      }
+    }
+
+    return {
+      filters,
+      limit: limit ?? -1,
+    }
+  }, [group, version, kind, namespaced, namespace, name, advancedSearch, limit])
+
   const {
     data: result,
     loading,
@@ -19,12 +60,7 @@ export const useMulticlusterSearchWatch: UseMulticlusterSearchWatch = (watchOpti
     client: searchClient,
     skip: kind === undefined,
     variables: {
-      input: [
-        convertStringToQuery(
-          `${group ? `apigroup:${group}` : ''} apiversion:${version} kind:${kind}${namespaced && namespace ? ` namespace:${namespace}` : ''}${name ? ` name:*${name}*` : ''} ${advancedSearchQueryString}`,
-          limit ?? -1
-        ),
-      ],
+      input: [searchInput],
     },
   })
 
