@@ -1,16 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { consoleFetchJSON } from '@openshift-console/dynamic-plugin-sdk'
-import { k8sGet } from '@openshift-console/dynamic-plugin-sdk'
-import { OptionsGet, getResourceURL } from '../internal/apiRequests'
+import { FleetK8sGetOptions, FleetK8sResourceCommon } from '../types'
+import { consoleFetchJSON, k8sGet } from '@openshift-console/dynamic-plugin-sdk'
+import { getClusterFromOptions, getOptionsWithoutCluster, getResourceURLFromOptions } from '../internal/apiRequests'
 
-export async function fleetK8sGet<R extends K8sResourceCommon>(options: OptionsGet): Promise<R> {
-  const { model, name, ns, cluster } = options
+import { isHubRequest } from '../internal/isHubRequest'
 
-  if (cluster === undefined) {
-    return k8sGet<R>(options)
-  }
+export async function fleetK8sGet<R extends FleetK8sResourceCommon>(options: FleetK8sGetOptions): Promise<R> {
+  const cluster = getClusterFromOptions(options)
+  const optionsWithoutCluster = getOptionsWithoutCluster(options)
 
-  const requestPath = await getResourceURL({ model, ns, name, cluster, queryParams: options.queryParams })
-
-  return consoleFetchJSON(requestPath, 'GET') as Promise<R>
+  const result = (await isHubRequest(cluster))
+    ? k8sGet<R>(optionsWithoutCluster)
+    : (consoleFetchJSON(await getResourceURLFromOptions(options), 'GET', options.requestInit) as Promise<R>)
+  return { ...(await result), cluster }
 }

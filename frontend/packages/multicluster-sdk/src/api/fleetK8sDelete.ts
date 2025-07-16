@@ -1,29 +1,19 @@
-import { consoleFetchJSON } from '@openshift-console/dynamic-plugin-sdk'
-import { k8sDelete } from '@openshift-console/dynamic-plugin-sdk'
-import { OptionsDelete, getResourceURL, COMMON_HEADERS } from '../internal/apiRequests'
+import { FleetK8sDeleteOptions, FleetK8sResourceCommon } from '../types'
+/* Copyright Contributors to the Open Cluster Management project */
+import { consoleFetchJSON, k8sDelete } from '@openshift-console/dynamic-plugin-sdk'
+import { getClusterFromOptions, getOptionsWithoutCluster, getResourceURLFromOptions } from '../internal/apiRequests'
 
-export async function fleetK8sDelete<R extends K8sResourceCommon>(options: OptionsDelete<R>): Promise<R> {
-  const { model, name, ns, json, resource } = options
+import { isHubRequest } from '../internal/isHubRequest'
 
-  const cluster = resource?.cluster || options?.cluster
+export async function fleetK8sDelete<R extends FleetK8sResourceCommon>(options: FleetK8sDeleteOptions<R>): Promise<R> {
+  const cluster = getClusterFromOptions(options)
+  const optionsWithoutCluster = getOptionsWithoutCluster(options)
 
-  if (cluster === undefined) {
-    return k8sDelete(options)
-  }
+  const { propagationPolicy } = options.model
+  const jsonData = options.json ?? (propagationPolicy && { kind: 'DeleteOptions', apiVersion: 'v1', propagationPolicy })
 
-  const { propagationPolicy } = model
-  const jsonData = json ?? (propagationPolicy && { kind: 'DeleteOptions', apiVersion: 'v1', propagationPolicy })
-
-  const requestPath = await getResourceURL({
-    model,
-    ns: ns || resource?.metadata?.namespace,
-    name: name || resource?.metadata?.name,
-    cluster,
-    queryParams: options?.queryParams,
-  })
-
-  return consoleFetchJSON(requestPath, 'DELETE', {
-    headers: COMMON_HEADERS,
-    body: JSON.stringify(jsonData),
-  }) as Promise<R>
+  const result = (await isHubRequest(cluster))
+    ? k8sDelete(optionsWithoutCluster)
+    : (consoleFetchJSON.delete(await getResourceURLFromOptions(options), jsonData, options.requestInit) as Promise<R>)
+  return { ...(await result), cluster }
 }

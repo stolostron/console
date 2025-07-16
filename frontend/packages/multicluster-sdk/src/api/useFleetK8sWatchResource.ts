@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useHubClusterName } from './useHubClusterName'
 import { FleetK8sResourceCommon, FleetWatchK8sResource, UseFleetK8sWatchResource } from '../types'
-import { consoleFetchJSON, QueryParams, useK8sModel, useK8sWatchResource } from '@openshift-console/dynamic-plugin-sdk'
+import { consoleFetchJSON, useK8sModel, useK8sWatchResource } from '@openshift-console/dynamic-plugin-sdk'
 import { useFleetK8sAPIPath } from './useFleetK8sAPIPath'
 import { useIsFleetAvailable } from './useIsFleetAvailable'
 import { useEffect, useMemo, useState } from 'react'
@@ -82,9 +82,9 @@ export const useFleetK8sWatchResource: UseFleetK8sWatchResource = <
             name,
             cluster,
             queryParams: {
-              fieldSelector: memoizedResource?.fieldSelector,
+              ...(memoizedResource?.fieldSelector ? { fieldSelector: memoizedResource?.fieldSelector } : {}),
               labelSelector: selectorToString(memoizedResource?.selector || {}),
-            } as Partial<QueryParams>,
+            },
             basePath: backendAPIPath as string,
           })
         : '',

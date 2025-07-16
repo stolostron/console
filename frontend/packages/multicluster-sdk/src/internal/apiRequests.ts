@@ -1,21 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import {
-  consoleFetchJSON,
-  k8sCreate,
-  k8sDelete,
-  k8sGet,
-  K8sModel,
-  k8sPatch,
-  k8sUpdate,
-  Patch,
-  QueryParams,
-  Selector,
-} from '@openshift-console/dynamic-plugin-sdk'
-import { selectorToString } from '../api/utils/requirements'
+import { FleetK8sListOptions, FleetK8sResourceCommon } from '../types'
+import { K8sModel, QueryParams, Selector } from '@openshift-console/dynamic-plugin-sdk'
+
 import { BASE_K8S_API_PATH } from '../internal/constants'
 import { getFleetK8sAPIPath } from '../api/getFleetK8sAPIPath'
+import { selectorToString } from '../api/utils/requirements'
 
-export type BaseOptions = {
+export type FleetK8sAPIOptions = {
+  model: K8sModel
   name?: string
   ns?: string
   path?: string
@@ -23,52 +15,22 @@ export type BaseOptions = {
   queryParams?: QueryParams
 }
 
-export type OptionsCreate<R extends K8sResourceCommon> = BaseOptions & {
-  model: K8sModel
-  data: R
+export type FleetK8sAPIOptionsWithData<R extends FleetK8sResourceCommon> = FleetK8sAPIOptions & { data: R }
+
+export type FleetK8sAPIOptionsWithResource<R extends FleetK8sResourceCommon> = FleetK8sAPIOptions & { resource: R }
+
+const isFleetK8sAPIOptionsWithData = (
+  options: FleetK8sAPIOptions
+): options is FleetK8sAPIOptionsWithData<FleetK8sResourceCommon> => {
+  const data = (options as FleetK8sAPIOptionsWithData<FleetK8sResourceCommon>).data
+  return typeof data === 'object' && !Array.isArray(data)
 }
 
-export type OptionsGet = BaseOptions & {
-  model: K8sModel
-  requestInit?: RequestInit
-}
-
-export type OptionsUpdate<R extends K8sResourceCommon> = BaseOptions & {
-  model: K8sModel
-  data: R
-}
-
-export type OptionsPatch<R> = BaseOptions & {
-  model: K8sModel
-  resource: R
-  data: Patch[]
-}
-
-export type OptionsDelete<R> = BaseOptions & {
-  model: K8sModel
-  resource: R
-  requestInit?: RequestInit
-  json?: Record<string, any>
-}
-
-type GetResourceURL = (params: {
-  model: K8sModel
-  ns?: string
-  name?: string
-  cluster?: string
-  queryParams?: Partial<QueryParams>
-}) => Promise<string>
-
-export type Options = {
-  ns?: string
-  name?: string
-  path?: string
-  queryParams?: Partial<QueryParams>
-  cluster?: string
-}
-
-export const COMMON_HEADERS = {
-  'Content-Type': 'application/json',
+const isFleetK8sAPIOptionsWithResource = (
+  options: FleetK8sAPIOptions
+): options is FleetK8sAPIOptionsWithResource<FleetK8sResourceCommon> => {
+  const resource = (options as FleetK8sAPIOptionsWithResource<FleetK8sResourceCommon>).resource
+  return typeof resource === 'object' && !Array.isArray(resource)
 }
 
 export const getBackendUrl = () => '/api/proxy/plugin/acm/console/multicloud'
@@ -85,18 +47,18 @@ const getK8sAPIPath = ({ apiGroup = 'core', apiVersion }: K8sModel): string => {
   return p
 }
 
-const excludeEmptyQueryParams = (queryParams: Partial<QueryParams>): Record<string, string> =>
+const excludeEmptyQueryParams = (queryParams: QueryParams): Record<string, string> =>
   Object.fromEntries(
     Object.entries(queryParams || {}).filter(([, value]) => value !== undefined && value !== null && value !== '')
   ) as Record<string, string>
 
-export const getResourcePath = (model: K8sModel, options: Options): string => {
-  let url = getK8sAPIPath(model)
+export const getResourcePath = (options: FleetK8sAPIOptions): string => {
+  let url = getK8sAPIPath(options.model)
 
   if (options.ns) {
     url += `/namespaces/${options.ns}`
   }
-  url += `/${model.plural}`
+  url += `/${options.model.plural}`
   if (options.name) {
     // Some resources like Users can have special characters in the name.
     url += `/${encodeURIComponent(options.name)}`
@@ -119,129 +81,66 @@ export const buildResourceURL = (params: {
   ns?: string
   name?: string
   cluster?: string
-  queryParams?: Partial<QueryParams>
+  queryParams?: QueryParams
   basePath: string
 }): string => {
   const { model, ns, name, cluster, queryParams, basePath = BASE_K8S_API_PATH } = params
-  const resourcePath = getResourcePath(model, { ns, name, queryParams, cluster })
+  const resourcePath = getResourcePath({ model, ns, name, queryParams, cluster })
   return `${basePath}${resourcePath}`
 }
 
-export const getResourceURL: GetResourceURL = async (params) => {
-  const basePath = await getFleetK8sAPIPath(params?.cluster)
-  return buildResourceURL({ ...params, basePath })
+export function getClusterFromOptions(options: FleetK8sAPIOptions) {
+  return (
+    options.cluster ??
+    ((isFleetK8sAPIOptionsWithData(options) && options.data.cluster) ||
+      (isFleetK8sAPIOptionsWithResource(options) && options.resource.cluster) ||
+      undefined)
+  )
 }
 
-export async function fleetK8sGet<R extends K8sResourceCommon>(options: OptionsGet): Promise<R> {
-  const { model, name, ns, cluster } = options
-
-  if (cluster === undefined) {
-    return k8sGet<R>(options)
-  }
-
-  const requestPath = await getResourceURL({ model, ns, name, cluster, queryParams: options.queryParams })
-
-  return consoleFetchJSON(requestPath, 'GET') as Promise<R>
+export function getNamespaceFromOptions(options: FleetK8sAPIOptions) {
+  return (
+    options.ns ??
+    ((isFleetK8sAPIOptionsWithData(options) && options.data.metadata?.namespace) ||
+      (isFleetK8sAPIOptionsWithResource(options) && options.resource.metadata?.namespace) ||
+      options.queryParams?.ns ||
+      undefined)
+  )
 }
 
-export async function fleetK8sUpdate<R extends K8sResourceCommon>(options: OptionsUpdate<R>): Promise<R> {
-  const { model, name, ns, data } = options
+export function getNameFromOptions(options: FleetK8sAPIOptions) {
+  return (
+    options.name ??
+    ((isFleetK8sAPIOptionsWithData(options) && options.data.metadata?.name) ||
+      (isFleetK8sAPIOptionsWithResource(options) && options.resource.metadata?.name) ||
+      undefined)
+  )
+}
 
-  const cluster = options.cluster || data.cluster
-
-  if (cluster === undefined) {
-    return k8sUpdate(options)
+export function getOptionsWithoutCluster<O extends FleetK8sAPIOptions>(options: O) {
+  const { cluster: _optionsCluster, ...optionsWithoutCluster } = options
+  if (isFleetK8sAPIOptionsWithData(options)) {
+    const { cluster: _dataCluster, ...dataWithoutCluster } = options.data
+    return { ...optionsWithoutCluster, data: dataWithoutCluster }
+  } else if (isFleetK8sAPIOptionsWithResource(options)) {
+    const { cluster: _resourceCluster, ...resourceWithoutCluster } = options.resource
+    return { ...optionsWithoutCluster, resource: resourceWithoutCluster }
   }
+  return optionsWithoutCluster
+}
 
-  const requestPath = await getResourceURL({
-    model,
-    ns: data?.metadata?.namespace || ns,
-    name: data?.metadata?.name || name,
-    cluster: cluster,
-    queryParams: options.queryParams,
+export async function getResourceURLFromOptions<O extends FleetK8sAPIOptions | FleetK8sListOptions>(
+  options: O,
+  collection: boolean | undefined = false
+) {
+  const basePath = await getFleetK8sAPIPath(getClusterFromOptions(options))
+  return buildResourceURL({
+    basePath,
+    ...options,
+    cluster: getClusterFromOptions(options),
+    ns: getNamespaceFromOptions(options),
+    name: collection ? undefined : getNameFromOptions(options),
   })
-
-  return consoleFetchJSON(requestPath, 'PUT') as Promise<R>
-}
-
-export async function fleetK8sPatch<R extends K8sResourceCommon>(options: OptionsPatch<R>): Promise<R> {
-  const { resource, model, ns, name } = options ?? {}
-
-  const cluster = options.cluster || resource.cluster
-
-  if (cluster === undefined) {
-    return k8sPatch<R>(options)
-  }
-
-  const headers: Record<string, string> = {}
-  if (Array.isArray(options.data)) {
-    headers['Content-Type'] = 'application/json-patch+json'
-  } else {
-    headers['Content-Type'] = 'application/merge-patch+json'
-  }
-
-  const requestPath = await getResourceURL({
-    model,
-    ns: resource?.metadata?.namespace || ns,
-    name: resource?.metadata?.name || name,
-    cluster,
-    queryParams: options.queryParams,
-  })
-
-  return consoleFetchJSON(requestPath, 'PATCH', { body: JSON.stringify(options.data), headers }) as Promise<R>
-}
-
-export async function fleetK8sCreate<R extends K8sResourceCommon>(options: OptionsCreate<R>): Promise<R> {
-  const { data, model, ns } = options
-
-  const cluster = options.cluster || data.cluster
-
-  if (cluster === undefined) {
-    return k8sCreate<R>(options)
-  }
-  const requestPath = await getResourceURL({
-    model,
-    ns: data?.metadata?.namespace || ns,
-    cluster,
-    queryParams: options.queryParams,
-  })
-
-  const requestData = {
-    ...data,
-  }
-
-  delete requestData.cluster
-
-  return consoleFetchJSON(requestPath, 'POST', {
-    body: JSON.stringify(requestData),
-    headers: COMMON_HEADERS,
-  }) as Promise<R>
-}
-
-export async function fleetK8sDelete<R extends K8sResourceCommon>(options: OptionsDelete<R>): Promise<R> {
-  const { model, name, ns, json, resource } = options
-
-  const cluster = resource?.cluster || options?.cluster
-
-  if (cluster === undefined) {
-    return k8sDelete(options)
-  }
-
-  const { propagationPolicy } = model
-  const jsonData = json ?? (propagationPolicy && { kind: 'DeleteOptions', apiVersion: 'v1', propagationPolicy })
-
-  const requestPath = await getResourceURL({
-    model,
-    ns: ns || resource?.metadata?.namespace,
-    name: name || resource?.metadata?.name,
-    cluster,
-    queryParams: options?.queryParams,
-  })
-
-  return consoleFetchJSON(requestPath, 'DELETE', {
-    headers: COMMON_HEADERS,
-    body: JSON.stringify(jsonData),
-  }) as Promise<R>
 }
 
 export const fleetWatch = (
