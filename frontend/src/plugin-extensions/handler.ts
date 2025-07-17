@@ -4,10 +4,11 @@ import {
   isApplicationAction,
   isApplicationListColumn,
   isOverviewTab,
+  isResourceRoute,
   isVirtualMachineAction,
   isVirtualMachineListColumn,
 } from './extensions'
-import { ActionExtensionProps, ListColumnExtensionProps } from './properties'
+import { ActionExtensionProps, ListColumnExtensionProps, ResourceRouteExtensionProps } from './properties'
 import { AcmExtension } from './types'
 
 // Type guards
@@ -46,6 +47,12 @@ export function useAcmExtension() {
     acmExtension.virtualMachineListColumn = virtualMachineListColumn.map(
       (column) => column.properties as ListColumnExtensionProps
     )
+  }
+
+  // Resolving resource routes to acm compatible type
+  const [resourceRoutes, resolvedResourceRoutes] = useResolvedExtensions(isResourceRoute)
+  if (resolvedResourceRoutes) {
+    acmExtension.resourceRoutes = resourceRoutes.map((route) => route.properties as ResourceRouteExtensionProps)
   }
 
   // list of all acm supported extensions
