@@ -268,6 +268,7 @@ export default function SearchResults(
   const searchResultLimit = useSearchResultLimit()
   const isGlobalHub = useRecoilValue(isGlobalHubState)
   const settings = useRecoilValue(settingsState)
+  const [currentQueryState, setCurrentQueryState] = useState<string>(currentQuery)
   const [selectedRelatedKinds, setSelectedRelatedKinds] = useState<string[]>(preSelectedRelatedResources)
   const [deleteResource, setDeleteResource] = useState<IDeleteModalProps>(ClosedDeleteModalProps)
   const [deleteExternalResource, setDeleteExternalResource] = useState<IDeleteExternalResourceModalProps>(
@@ -287,20 +288,20 @@ export default function SearchResults(
     return false
   }, [isGlobalHub, settings.globalSearchFeatureFlag, error?.graphQLErrors])
 
+  useEffect(() => {
+    // If the current query changes -> reset related resource states
+    if (currentQuery !== currentQueryState) {
+      setCurrentQueryState(currentQuery)
+      setSelectedRelatedKinds([])
+      setShowRelatedResources(false)
+    }
+  }, [currentQuery, currentQueryState])
+
   // related section should be open if url contains 1+ showrelated params
   const isRelatedSectionOpen = useMemo(
     () => showRelatedResources || preSelectedRelatedResources.length > 0,
     [showRelatedResources, preSelectedRelatedResources]
   )
-
-  useEffect(() => {
-    // If the current query changes -> set selected related resources
-    if (preSelectedRelatedResources.length === 0) {
-      setSelectedRelatedKinds([])
-    } else {
-      setSelectedRelatedKinds(preSelectedRelatedResources)
-    }
-  }, [preSelectedRelatedResources])
 
   const searchResultItems: ISearchResult[] = useMemo(() => data?.searchResult?.[0]?.items || [], [data?.searchResult])
 
