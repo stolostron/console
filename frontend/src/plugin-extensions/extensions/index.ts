@@ -2,3 +2,4 @@
 export * from './actionExtension'
 export * from './listColumnExtension'
 export * from './OverviewTab'
+export * from './resourceRouteExtension'
