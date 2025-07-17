@@ -40,7 +40,7 @@ jest.mock('react-router-dom-v5-compat', () => ({
   useLocation: () => mockUseLocation(),
 }))
 
-// connect the useFlag mock to the dynamic plugin SDK
+// connect the mocks to the dynamic plugin SDK
 const dynamicPluginSDK = require('@openshift-console/dynamic-plugin-sdk')
 dynamicPluginSDK.useFlag = mockUseFlag
 
@@ -66,11 +66,12 @@ jest.mock('../api/utils/searchPaths', () => ({
 // mock internal helpers
 jest.mock('../internal/fleetResourceHelpers', () => ({
   getFirstClassResourceRoute: jest.fn(),
+  useResourceRouteExtensions: jest.fn(),
 }))
 
 // import the FleetResourceLink component using require() only for this one import
 const { FleetResourceLink } = require('./FleetResourceLink')
-const { getFirstClassResourceRoute } = require('../internal/fleetResourceHelpers')
+const { getFirstClassResourceRoute, useResourceRouteExtensions } = require('../internal/fleetResourceHelpers')
 
 describe('FleetResourceLink', () => {
   const defaultProps = {
@@ -89,6 +90,12 @@ describe('FleetResourceLink', () => {
     mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
     mockUseLocation.mockReturnValue({ pathname: '/multicloud/infrastructure' })
     mockUseFlag.mockReturnValue(true) // Default to flag enabled
+
+    // mock the useResourceRouteExtensions hook
+    useResourceRouteExtensions.mockReturnValue({
+      resourceRoutesResolved: true,
+      getResourceRouteHandler: jest.fn().mockReturnValue(null), // Default to no extension handler
+    })
 
     // mock the combined helper function
     getFirstClassResourceRoute.mockReturnValue({
@@ -178,13 +185,10 @@ describe('FleetResourceLink', () => {
       expect(screen.getByTestId('resource-link-mock')).toHaveTextContent('ResourceLink: test-cluster (ManagedCluster)')
     })
 
-    it('should use first-class path for VM on multicloud path', () => {
+    it('should fallback to ResourceLink for VM on multicloud path when no extension found', () => {
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
       mockUseLocation.mockReturnValue({ pathname: '/multicloud/infrastructure' })
-      getFirstClassResourceRoute.mockReturnValue({
-        isFirstClass: true,
-        path: '/multicloud/infrastructure/virtualmachines/local-cluster/default/test-vm',
-      })
+      // VirtualMachine is now extension-only, so without extension it falls back to ResourceLink
 
       render(
         <MemoryRouter>
@@ -192,10 +196,7 @@ describe('FleetResourceLink', () => {
         </MemoryRouter>
       )
 
-      expect(screen.getByTestId('fleet-link')).toHaveAttribute(
-        'href',
-        '/multicloud/infrastructure/virtualmachines/local-cluster/default/test-vm'
-      )
+      expect(screen.getByTestId('resource-link-mock')).toHaveTextContent('ResourceLink: test-vm (VirtualMachine)')
     })
 
     it('should fallback to ResourceLink when not on multicloud path', () => {
@@ -217,12 +218,9 @@ describe('FleetResourceLink', () => {
   })
 
   describe('Managed cluster behavior', () => {
-    it('should use first-class path for VM on managed cluster', () => {
+    it('should use search path for VM on managed cluster when no extension found', () => {
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
-      getFirstClassResourceRoute.mockReturnValue({
-        isFirstClass: true,
-        path: '/multicloud/infrastructure/virtualmachines/managed-cluster/default/test-vm',
-      })
+      // VirtualMachine is now extension-only, so without extension it falls back to search
 
       render(
         <MemoryRouter>
@@ -232,7 +230,7 @@ describe('FleetResourceLink', () => {
 
       expect(screen.getByTestId('fleet-link')).toHaveAttribute(
         'href',
-        '/multicloud/infrastructure/virtualmachines/managed-cluster/default/test-vm'
+        '/multicloud/search/resources?cluster=managed-cluster&kind=VirtualMachine&apigroup=kubevirt.io&apiversion=v1&name=test-vm&namespace=default'
       )
     })
 
@@ -283,8 +281,8 @@ describe('FleetResourceLink', () => {
     })
   })
 
-  describe('KUBEVIRT_DYNAMIC_ACM flag behavior', () => {
-    it('should pass flag value to helper function', () => {
+  describe('Extension system behavior', () => {
+    it('should not call getFirstClassResourceRoute for VirtualMachine (extension-only)', () => {
       mockUseFlag.mockReturnValue(false)
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
 
@@ -294,13 +292,8 @@ describe('FleetResourceLink', () => {
         </MemoryRouter>
       )
 
-      expect(getFirstClassResourceRoute).toHaveBeenCalledWith(
-        'VirtualMachine',
-        'managed-cluster',
-        'default',
-        'test-vm',
-        false
-      )
+      // VirtualMachine should now be extension-only and not use getFirstClassResourceRoute
+      expect(getFirstClassResourceRoute).not.toHaveBeenCalledWith('VirtualMachine', 'test-vm')
     })
   })
 })
