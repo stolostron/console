@@ -1,13 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import React from 'react'
-import { ResourceIcon, ResourceLink, useFlag } from '@openshift-console/dynamic-plugin-sdk'
+import { ResourceIcon, ResourceLink } from '@openshift-console/dynamic-plugin-sdk'
 import { Skeleton } from '@patternfly/react-core'
 import { FleetResourceLinkProps } from '../types/fleet'
 import classNames from 'classnames'
 import { getURLSearchParam } from '../api/utils/searchPaths'
 import { useHubClusterName } from '../api/useHubClusterName'
 import { useLocation, Link } from 'react-router-dom-v5-compat'
-import { getFirstClassResourceRoute } from '../internal/fleetResourceHelpers'
+import { useResourceRouteExtensions } from '../internal/fleetResourceHelpers'
 
 /**
  * Enhanced ResourceLink component for ACM fleet environments.
@@ -61,7 +61,9 @@ import { getFirstClassResourceRoute } from '../internal/fleetResourceHelpers'
 export const FleetResourceLink: React.FC<FleetResourceLinkProps> = ({ cluster, ...resourceLinkProps }) => {
   const [hubClusterName, hubLoaded] = useHubClusterName()
   const location = useLocation()
-  const kubevirtEnabled = useFlag('KUBEVIRT_DYNAMIC_ACM')
+
+  // hook that handles useResolvedExtensions and lookup logic
+  const { resourceRoutesResolved, getResourceRouteHandler } = useResourceRouteExtensions()
 
   // check if fleet is available (has managed clusters)
   const isFleetAvailable = hubLoaded
@@ -109,30 +111,91 @@ export const FleetResourceLink: React.FC<FleetResourceLinkProps> = ({ cluster, .
   const isMulticloudPath = location.pathname.startsWith('/multicloud/')
 
   const getResourcePath = (): { path: string | null; shouldFallback: boolean } => {
-    const { isFirstClass, path: firstClassPath } = getFirstClassResourceRoute(
-      groupVersionKind?.kind,
-      cluster || hubClusterName,
-      namespace,
-      name,
-      kubevirtEnabled
-    )
+    // handle ManagedCluster as always first-class ACM resource (no extension check needed)
+    if (groupVersionKind?.kind === 'ManagedCluster' && name) {
+      const firstClassPath = `/multicloud/infrastructure/clusters/details/${name}/${name}/overview`
 
-    if (isHubCluster) {
-      // hub cluster case
-      if (isFirstClass && isMulticloudPath) {
-        // if this is a first-class ACM resource and on multicloud path, link to the first-class page
-        return { path: firstClassPath, shouldFallback: !firstClassPath }
-      }
-      // if no first-class path or not in multicloud, fallback to OCP ResourceLink
-      return { path: null, shouldFallback: true }
-    } else {
-      // managed cluster case
-      if (isFirstClass && firstClassPath) {
-        // links to the first-class page for that resource
+      if (isHubCluster) {
+        // for hub cluster, only use first-class path if on multicloud paths
+        if (isMulticloudPath) {
+          return { path: firstClassPath, shouldFallback: false }
+        }
+        // if not on multicloud path, fallback to OCP ResourceLink
+        return { path: null, shouldFallback: true }
+      } else {
+        // for managed cluster, always use first-class path
         return { path: firstClassPath, shouldFallback: false }
       }
+    }
 
-      // links to /multicloud/search/resources
+    // handle VirtualMachine/VirtualMachineInstance as extension-only
+    if (groupVersionKind?.kind === 'VirtualMachine' || groupVersionKind?.kind === 'VirtualMachineInstance') {
+      if (resourceRoutesResolved && name) {
+        const handler = getResourceRouteHandler(groupVersionKind.group, groupVersionKind.kind, groupVersionKind.version)
+
+        if (handler && typeof handler === 'function') {
+          const extensionPath = handler({
+            kind: groupVersionKind.kind,
+            cluster: cluster || hubClusterName,
+            namespace,
+            name,
+          })
+
+          if (extensionPath) {
+            // for hub cluster, only use extension path if on multicloud paths
+            if (isHubCluster && !isMulticloudPath) {
+              return { path: null, shouldFallback: true }
+            }
+            return { path: extensionPath, shouldFallback: false }
+          }
+        }
+      }
+
+      // for VirtualMachine resources, if no extension found, fallback to search or OCP ResourceLink
+      if (isHubCluster) {
+        return { path: null, shouldFallback: true }
+      } else {
+        // for managed cluster VMs without extension, link to search results
+        const searchPath = `/multicloud/search/resources${getURLSearchParam({
+          cluster,
+          kind: groupVersionKind?.kind,
+          apigroup: groupVersionKind?.group,
+          apiversion: groupVersionKind?.version,
+          name,
+          namespace,
+        })}`
+        return { path: searchPath, shouldFallback: false }
+      }
+    }
+
+    // handle all other resources, try extension first, then fallback to generic handling
+    if (resourceRoutesResolved && groupVersionKind?.kind && name) {
+      const handler = getResourceRouteHandler(groupVersionKind.group, groupVersionKind.kind, groupVersionKind.version)
+
+      if (handler && typeof handler === 'function') {
+        const extensionPath = handler({
+          kind: groupVersionKind.kind,
+          cluster: cluster || hubClusterName,
+          namespace,
+          name,
+        })
+
+        if (extensionPath) {
+          // for hub cluster, only use extension path if on multicloud paths
+          if (isHubCluster && !isMulticloudPath) {
+            return { path: null, shouldFallback: true }
+          }
+          return { path: extensionPath, shouldFallback: false }
+        }
+      }
+    }
+
+    // generic fallback for other resources
+    if (isHubCluster) {
+      // for hub cluster, fallback to OCP resource link
+      return { path: null, shouldFallback: true }
+    } else {
+      // for managed cluster, link to search results
       const searchPath = `/multicloud/search/resources${getURLSearchParam({
         cluster,
         kind: groupVersionKind?.kind,
