@@ -12,7 +12,8 @@ jest.mock('@openshift-console/dynamic-plugin-sdk', () => ({
   useResolvedExtensions: jest.fn(),
 }))
 
-const mockUseResolvedExtensions = require('@openshift-console/dynamic-plugin-sdk').useResolvedExtensions
+import { useResolvedExtensions } from '@openshift-console/dynamic-plugin-sdk'
+const mockUseResolvedExtensions = useResolvedExtensions as jest.MockedFunction<typeof useResolvedExtensions>
 
 describe('fleetResourceHelpers', () => {
   describe('getFirstClassResourceRoute', () => {
