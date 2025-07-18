@@ -20,15 +20,16 @@ import EventComponent from '../internal/FleetResourceEventStream/EventComponent'
 
 /**
  * A multicluster-aware ResourceEventStream component that displays real-time Kubernetes events
- * for resources across multiple clusters. Extends the OpenShift console's ResourceEventStream
- * with fleet management capabilities.
+ * for resources on managed clusters. Provides equivalent functionality to the OpenShift console's
+ * ResourceEventStream for resources on managed clusters.
  *
  * For managed cluster resources, this component establishes a websocket connection to stream
  * events from the specified cluster. For hub cluster resources or when no cluster is specified,
  * it falls back to the standard OpenShift console ResourceEventStream component.
  *
+ * @see {@link https://github.com/openshift/console/blob/main/frontend/packages/console-dynamic-plugin-sdk/docs/api.md#resourceeventstream} OpenShift Console Dynamic Plugin SDK ResourceEventStream
+ *
  * @component
- * @since 2.15.0
  *
  * @param {Object} props - Component properties
  * @param {FleetK8sResourceCommon} props.resource - The Kubernetes resource to show events for.
