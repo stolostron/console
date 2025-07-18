@@ -205,7 +205,7 @@ describe('FleetResourceEventStream', () => {
     })
 
     await waitFor(() => {
-      expect(screen.getByText('Error loading events')).toBeInTheDocument()
+      expect(screen.getByTitle('Error loading events')).toBeInTheDocument()
     })
   })
 
@@ -221,7 +221,7 @@ describe('FleetResourceEventStream', () => {
     })
 
     await waitFor(() => {
-      expect(screen.getByText('Error loading events')).toBeInTheDocument()
+      expect(screen.getByTitle('Error loading events')).toBeInTheDocument()
     })
   })
 
@@ -254,7 +254,7 @@ describe('FleetResourceEventStream', () => {
     })
 
     await waitFor(() => {
-      expect(screen.getByText('No events')).toBeInTheDocument()
+      expect(screen.getByTitle('No events')).toBeInTheDocument()
     })
   })
 
