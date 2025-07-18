@@ -34,19 +34,18 @@ import {
   PatchResourceFuncType,
   InfrastructureK8sResource,
 } from '@openshift-assisted/ui-lib/cim'
-import { useState, useEffect, useMemo } from 'react'
-import { Link, generatePath, useNavigate } from 'react-router-dom-v5-compat'
+import React, { useState, useEffect, useMemo } from 'react'
+import { Link, useNavigate } from 'react-router-dom-v5-compat'
 import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
 import { RbacDropdown } from '../../../components/Rbac'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { deleteResources } from '../../../lib/delete-resources'
 import { DOC_LINKS, OCP_DOC, ViewDocumentationLink } from '../../../lib/doc-util'
 import { canUser, rbacDelete } from '../../../lib/rbac-util'
-import { NavigationPath } from '../../../NavigationPath'
 import { getDateTimeCell } from '../helpers/table-row-helpers'
 import { useSharedAtoms, useRecoilValue } from '../../../shared-recoil'
 import { IResource } from '../../../resources/resource'
-import { K8sResourceCommon } from '@openshift-console/dynamic-plugin-sdk'
+import { K8sResourceCommon, useActiveNamespace } from '@openshift-console/dynamic-plugin-sdk'
 import {
   ResourceError,
   createResource,
@@ -166,11 +165,27 @@ const k8sPrimitives: {
   patchResource: (...params) => patchResource(...params).promise,
 }
 
-const InfraEnvironmentsPage: React.FC = () => {
-  const { agentsState, infraEnvironmentsState, infrastructuresState, agentServiceConfigsState, storageClassState } =
-    useSharedAtoms()
+const usePageResources = (): [InfraEnvK8sResource[], AgentK8sResource[]] => {
+  const [activeNs] = useActiveNamespace()
+  const { agentsState, infraEnvironmentsState } = useSharedAtoms()
   const infraEnvs = useRecoilValue(infraEnvironmentsState)
   const agents = useRecoilValue(agentsState)
+
+  return React.useMemo(() => {
+    if (activeNs === '#ALL_NS#') {
+      return [infraEnvs, agents]
+    }
+
+    return [
+      infraEnvs.filter((ie) => ie.metadata?.namespace === activeNs),
+      agents.filter((agent) => agent.metadata?.namespace === activeNs),
+    ]
+  }, [activeNs, agents, infraEnvs])
+}
+
+const InfraEnvironmentsPage: React.FC = () => {
+  const { infrastructuresState, agentServiceConfigsState, storageClassState } = useSharedAtoms()
+  const [infraEnvs, agents] = usePageResources()
   const infrastructures = useRecoilValue(infrastructuresState)
   const agentServiceConfigs = useRecoilValue(agentServiceConfigsState)
   const storageClasses = useRecoilValue(storageClassState)
@@ -274,14 +289,16 @@ type InfraEnvsTableProps = {
   isStorage: boolean
 }
 
+const getCreateLink = (ns: string) =>
+  `/k8s/ns/${ns === '#ALL_NS#' ? 'default' : ns}/agent-install.openshift.io~v1beta1~InfraEnv/~new`
+
+const getDetailsLink = (infraEnv: InfraEnvK8sResource) =>
+  `/k8s/ns/${infraEnv.metadata?.namespace}/agent-install.openshift.io~v1beta1~InfraEnv/${infraEnv.metadata?.name}`
+
 const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agentServiceConfig, isStorage }) => {
+  const [ns] = useActiveNamespace()
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const getDetailsLink = (infraEnv: InfraEnvK8sResource) =>
-    generatePath(NavigationPath.infraEnvironmentDetails, {
-      namespace: infraEnv.metadata?.namespace!,
-      name: infraEnv.metadata?.name!,
-    })
 
   const { clusterVersionState } = useSharedAtoms()
   const clusterVersions = useRecoilValue(clusterVersionState)
@@ -636,7 +653,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
               {
                 id: 'createInfraEnv',
                 title: t('infraEnv.bulkAction.createInfraEnv'),
-                click: () => navigate(NavigationPath.createInfraEnv),
+                click: () => navigate(getCreateLink(ns)),
                 variant: ButtonVariant.primary,
               },
             ]}
@@ -660,7 +677,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
                     <AcmButton
                       variant="primary"
                       onClick={() => {
-                        navigate(NavigationPath.createInfraEnv)
+                        navigate(getCreateLink(ns))
                       }}
                       isDisabled={!isCIMWorking}
                       tooltip={

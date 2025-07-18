@@ -8,7 +8,6 @@ import { RecoilRoot } from 'recoil'
 import { infraEnvironmentsState } from '../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
 import { getCSVDownloadLink, getCSVExportSpies, waitForTestId, waitForText } from '../../../lib/test-util'
-import { NavigationPath } from '../../../NavigationPath'
 import InfraEnvironmentsPage, {
   getFirstAgentServiceConfig,
   getInfraEnvsOfMatchingPullSecret,
@@ -61,9 +60,12 @@ const Component = () => {
         snapshot.set(infraEnvironmentsState, mockInfraEnvironments)
       }}
     >
-      <MemoryRouter initialEntries={[NavigationPath.infraEnvironments]}>
+      <MemoryRouter initialEntries={['/k8s/all-namespaces/agent-install.openshift.io~v1beta1~InfraEnv']}>
         <Routes>
-          <Route path={NavigationPath.infraEnvironments} element={<InfraEnvironmentsPage />} />
+          <Route
+            path={'/k8s/all-namespaces/agent-install.openshift.io~v1beta1~InfraEnv'}
+            element={<InfraEnvironmentsPage />}
+          />
         </Routes>
       </MemoryRouter>
     </RecoilRoot>

@@ -21,6 +21,7 @@ export const pluginMetadata: ConsolePluginBuildMetadata = {
     virtualmachines: '../../src/routes/Infrastructure/VirtualMachines/VirtualMachinesPlugin.tsx',
     vmRedirect: '../../src/routes/Infrastructure/VirtualMachines/VMRedirect.tsx',
     credentials: '../../src/routes/Credentials/CredentialsPlugin.tsx',
+    cim: "../../src/cim/index.ts",
   },
   dependencies: {
     '@console/pluginAPI': '>=4.15.0',
