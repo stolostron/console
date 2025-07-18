@@ -50,8 +50,8 @@ describe('useGovernanceData', () => {
 
   const { result } = renderHook(() => useGovernanceData(policies))
   let risks: IGovernanceData
-  it('should return results', () => {
-    waitFor(() => expect(result.current).not.toBeUndefined())
+  it('should return results', async () => {
+    await waitFor(() => expect(result.current).not.toBeUndefined())
     risks = result.current
   })
   it('should generate risks for clusters', () => {

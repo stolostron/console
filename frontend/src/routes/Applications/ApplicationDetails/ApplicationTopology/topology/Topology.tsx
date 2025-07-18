@@ -80,6 +80,7 @@ interface TopologyViewComponentsProps {
   topologyProps: TopologyProps
 }
 
+/* eslint-disable react/prop-types */
 export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ controller, topologyProps }) => {
   const { t } = useTranslation()
   const {
@@ -241,6 +242,7 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
     </TopologyView>
   )
 }
+/* eslint-enable react/prop-types */
 
 export const Topology = (props: TopologyProps) => {
   const controllerRef = useRef<Controller>()

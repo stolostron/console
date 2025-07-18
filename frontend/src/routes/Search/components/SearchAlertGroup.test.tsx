@@ -24,7 +24,7 @@ describe('SearchAlertGroupProvider', () => {
         </AcmPageContent>
       </AcmPage>
     )
-    waitFor(() => expect(getByText('Alert 1')).toBeInTheDocument())
-    waitFor(() => expect(getByText('Alert 2')).not.toBeInTheDocument())
+    await waitFor(() => expect(getByText('Alert 1')).toBeInTheDocument())
+    await waitFor(() => expect(getByText('Alert 2')).not.toBeInTheDocument())
   })
 })

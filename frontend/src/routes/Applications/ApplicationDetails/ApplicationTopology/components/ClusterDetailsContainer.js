@@ -74,8 +74,8 @@ class ClusterDetailsContainer extends Component {
     this.handleSelectionClear = this.handleSelectionClear.bind(this)
   }
 
-  processActionLink = (resource) => {
-    processResourceActionLink(resource)
+  processActionLink = async (resource) => {
+    await processResourceActionLink(resource)
   }
 
   handleSelection = (selection) => {
@@ -259,9 +259,9 @@ class ClusterDetailsContainer extends Component {
     })
   }
 
-  handleKeyPress = (resource, _event) => {
+  handleKeyPress = async (resource, _event) => {
     if (_event.key === 'Enter') {
-      this.processActionLink(resource)
+      await this.processActionLink(resource)
     }
   }
 

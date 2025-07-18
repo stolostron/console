@@ -122,9 +122,7 @@ const SnapshotDeadlineFormField: FC<{
   )
 }
 
-const SnapshotSupportedVolumeList: React.FC<{
-  supportedVolumes: any[]
-}> = ({ supportedVolumes }) => {
+const SnapshotSupportedVolumeList = ({ supportedVolumes }: { supportedVolumes: { name: string }[] }) => {
   const { t } = useTranslation()
   const [isExpanded, setIsExpanded] = useState<boolean>(false)
   const volumesCount = supportedVolumes.length
@@ -149,9 +147,11 @@ const SnapshotSupportedVolumeList: React.FC<{
   )
 }
 
-const UnsupportedVolumesAlert: React.FC<{
+const UnsupportedVolumesAlert = ({
+  unsupportedVolumes,
+}: {
   unsupportedVolumes: { enabled: boolean; name: string; reason?: string }[]
-}> = ({ unsupportedVolumes }) => {
+}) => {
   const { t } = useTranslation()
   if (unsupportedVolumes.length === 0) {
     return null

@@ -96,9 +96,9 @@ describe('Clusters Page', () => {
     await waitForText(mockManagedCluster0.metadata.name!, true)
   })
 
-  test('should render node column', () => {
-    waitForText('Add-ons')
-    waitForTestId('add-ons')
+  test('should render node column', async () => {
+    await waitForText('Add-ons')
+    await waitForTestId('add-ons')
   })
 
   test('should be able to delete cluster using bulk action', async () => {

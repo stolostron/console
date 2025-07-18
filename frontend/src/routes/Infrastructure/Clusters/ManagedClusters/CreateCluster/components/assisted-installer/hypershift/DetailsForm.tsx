@@ -56,7 +56,7 @@ const fields: any = {
   pullSecret: {},
 }
 
-const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, controlProps }) => {
+const DetailsForm = ({ control, handleChange, controlProps }: DetailsFormProps) => {
   const { setClusterName, setReleaseImage, setSshPublicKey } = useContext(HypershiftAgentContext)
   const { clusterDeploymentsState, clusterImageSetsState, configMapsState } = useSharedAtoms()
   const clusterDeployments = useRecoilValue(clusterDeploymentsState)
