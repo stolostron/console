@@ -89,7 +89,7 @@ import EventComponent from '../internal/FleetResourceEventStream/EventComponent'
  * @see {@link https://github.com/openshift/console/tree/master/frontend/packages/console-dynamic-plugin-sdk} OpenShift Console Dynamic Plugin SDK
  */
 
-const FleetResourceEventStream: FC<{ resource: FleetK8sResourceCommon }> = ({ resource }) => {
+export const FleetResourceEventStream: FC<{ resource: FleetK8sResourceCommon }> = ({ resource }) => {
   const [active, setActive] = useState(true)
   const [hubCluster] = useHubClusterName()
   const { t } = useTranslation('public')
@@ -270,5 +270,3 @@ const FleetResourceEventStream: FC<{ resource: FleetK8sResourceCommon }> = ({ re
     </>
   )
 }
-
-export default FleetResourceEventStream
