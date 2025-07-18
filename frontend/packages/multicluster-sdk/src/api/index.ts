@@ -2,7 +2,7 @@
 export * from './constants'
 export * from './FleetResourceLink'
 export * from './useFleetK8sAPIPath'
-export * from './useFleetK8sWatchResource'
+export { useFleetK8sWatchResource } from './useFleetK8sWatchResource'
 export * from './useFleetClusterNames'
 export * from './search/useFleetSearchPoll'
 export * from './apiRequests'

@@ -151,7 +151,35 @@ Array with `isAllowed` and `loading` values.
 | ---------- | ---------- |
 | `useFleetK8sAPIPath` | `UseFleetK8sAPIPath` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetK8sAPIPath.ts#L8)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetK8sAPIPath.ts#L9)
+
+### :gear: useFleetK8sWatchResource
+
+A hook for watching Kubernetes resources, with support for watching resources on remote clusters through the fleet API.
+
+This hook behaves as a wrapper around the OpenShift Console's `useK8sWatchResource` hook.
+When watching a resource on a remote cluster (i.e., `cluster` is specified in `initResource` and is not the hub cluster),
+this hook will use the fleet API to fetch and watch the resource. It maintains its own cache (`fleetResourceCache`)
+and WebSocket connections (`fleetSocketCache`) for this purpose.
+
+When watching a resource on the hub cluster or if the fleet API is not available, it falls back to using `useK8sWatchResource`.
+
+| Function | Type |
+| ---------- | ---------- |
+| `useFleetK8sWatchResource` | `<R extends FleetK8sResourceCommon or FleetK8sResourceCommon[]>(hubClusterName: string, initResource: FleetWatchK8sResource or null) => WatchK8sResult<R> or [...]` |
+
+Parameters:
+
+* `hubClusterName`: - The name of the hub cluster.
+* `initResource`: - The resource to watch. Can be null to disable the watch.
+
+
+Returns:
+
+A tuple containing the watched resource data, a boolean indicating if the data is loaded, and any error that occurred.
+If the watch is for a remote cluster, it uses a custom implementation. Otherwise, it returns the result of `useK8sWatchResource`.
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/use-fleet-k8s-watch-resource/use-fleet-k8s-watch-resource.ts#L66)
 
 ### :gear: useFleetK8sWatchResource
 
