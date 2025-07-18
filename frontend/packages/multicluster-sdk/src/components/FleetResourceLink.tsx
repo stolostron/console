@@ -110,102 +110,114 @@ export const FleetResourceLink: React.FC<FleetResourceLinkProps> = ({ cluster, .
   const isHubCluster = !cluster || cluster === hubClusterName
   const isMulticloudPath = location.pathname.startsWith('/multicloud/')
 
-  const getResourcePath = (): { path: string | null; shouldFallback: boolean } => {
-    // handle ManagedCluster as always first-class ACM resource (no extension check needed)
-    if (groupVersionKind?.kind === 'ManagedCluster' && name) {
-      const firstClassPath = `/multicloud/infrastructure/clusters/details/${name}/${name}/overview`
+  // helper function for ManagedCluster routing
+  const getManagedClusterPath = (name: string): { path: string | null; shouldFallback: boolean } => {
+    const firstClassPath = `/multicloud/infrastructure/clusters/details/${name}/${name}/overview`
 
-      if (isHubCluster) {
-        // for hub cluster, only use first-class path if on multicloud paths
-        if (isMulticloudPath) {
-          return { path: firstClassPath, shouldFallback: false }
-        }
-        // if not on multicloud path, fallback to OCP ResourceLink
-        return { path: null, shouldFallback: true }
-      } else {
-        // for managed cluster, always use first-class path
+    if (isHubCluster) {
+      if (isMulticloudPath) {
         return { path: firstClassPath, shouldFallback: false }
       }
-    }
-
-    // handle VirtualMachine/VirtualMachineInstance as extension-only
-    if (groupVersionKind?.kind === 'VirtualMachine' || groupVersionKind?.kind === 'VirtualMachineInstance') {
-      if (resourceRoutesResolved && name) {
-        const handler = getResourceRouteHandler(groupVersionKind.group, groupVersionKind.kind, groupVersionKind.version)
-
-        if (handler && typeof handler === 'function') {
-          const extensionPath = handler({
-            kind: groupVersionKind.kind,
-            cluster: cluster || hubClusterName,
-            namespace,
-            name,
-          })
-
-          if (extensionPath) {
-            // for hub cluster, only use extension path if on multicloud paths
-            if (isHubCluster && !isMulticloudPath) {
-              return { path: null, shouldFallback: true }
-            }
-            return { path: extensionPath, shouldFallback: false }
-          }
-        }
-      }
-
-      // for VirtualMachine resources, if no extension found, fallback to search or OCP ResourceLink
-      if (isHubCluster) {
-        return { path: null, shouldFallback: true }
-      } else {
-        // for managed cluster VMs without extension, link to search results
-        const searchPath = `/multicloud/search/resources${getURLSearchParam({
-          cluster,
-          kind: groupVersionKind?.kind,
-          apigroup: groupVersionKind?.group,
-          apiversion: groupVersionKind?.version,
-          name,
-          namespace,
-        })}`
-        return { path: searchPath, shouldFallback: false }
-      }
-    }
-
-    // handle all other resources, try extension first, then fallback to generic handling
-    if (resourceRoutesResolved && groupVersionKind?.kind && name) {
-      const handler = getResourceRouteHandler(groupVersionKind.group, groupVersionKind.kind, groupVersionKind.version)
-
-      if (handler && typeof handler === 'function') {
-        const extensionPath = handler({
-          kind: groupVersionKind.kind,
-          cluster: cluster || hubClusterName,
-          namespace,
-          name,
-        })
-
-        if (extensionPath) {
-          // for hub cluster, only use extension path if on multicloud paths
-          if (isHubCluster && !isMulticloudPath) {
-            return { path: null, shouldFallback: true }
-          }
-          return { path: extensionPath, shouldFallback: false }
-        }
-      }
-    }
-
-    // generic fallback for other resources
-    if (isHubCluster) {
-      // for hub cluster, fallback to OCP resource link
       return { path: null, shouldFallback: true }
-    } else {
-      // for managed cluster, link to search results
-      const searchPath = `/multicloud/search/resources${getURLSearchParam({
-        cluster,
-        kind: groupVersionKind?.kind,
-        apigroup: groupVersionKind?.group,
-        apiversion: groupVersionKind?.version,
-        name,
-        namespace,
-      })}`
-      return { path: searchPath, shouldFallback: false }
     }
+    return { path: firstClassPath, shouldFallback: false }
+  }
+
+  // helper function for extension-based routing
+  const getExtensionPath = (
+    kind: string,
+    group: string | undefined,
+    version: string | undefined,
+    name: string
+  ): string | null => {
+    if (!resourceRoutesResolved) return null
+
+    const handler = getResourceRouteHandler(group, kind, version)
+    if (!handler || typeof handler !== 'function') return null
+
+    return handler({
+      kind,
+      cluster: cluster ?? hubClusterName,
+      namespace,
+      name,
+    })
+  }
+
+  // helper function for hub cluster context awareness
+  const shouldUseExtensionPath = (extensionPath: string | null): boolean => {
+    if (!extensionPath) return false
+    if (!isHubCluster) return true
+    return isMulticloudPath
+  }
+
+  // helper function for managed cluster search path
+  const getManagedClusterSearchPath = (): string => {
+    return `/multicloud/search/resources${getURLSearchParam({
+      cluster,
+      kind: groupVersionKind?.kind,
+      apigroup: groupVersionKind?.group,
+      apiversion: groupVersionKind?.version,
+      name,
+      namespace,
+    })}`
+  }
+
+  // shared helper function for extension-based resource routing
+  const getExtensionBasedResourcePath = (name: string): { path: string | null; shouldFallback: boolean } => {
+    const extensionPath = getExtensionPath(
+      groupVersionKind?.kind ?? '',
+      groupVersionKind?.group,
+      groupVersionKind?.version,
+      name
+    )
+
+    if (shouldUseExtensionPath(extensionPath)) {
+      return { path: extensionPath, shouldFallback: false }
+    }
+
+    if (extensionPath && isHubCluster && !isMulticloudPath) {
+      return { path: null, shouldFallback: true }
+    }
+
+    if (isHubCluster) {
+      return { path: null, shouldFallback: true }
+    }
+
+    return { path: getManagedClusterSearchPath(), shouldFallback: false }
+  }
+
+  // helper function for VirtualMachine routing
+  const getVirtualMachinePath = (name: string): { path: string | null; shouldFallback: boolean } => {
+    return getExtensionBasedResourcePath(name)
+  }
+
+  // helper function for generic resource routing
+  const getGenericResourcePath = (name: string): { path: string | null; shouldFallback: boolean } => {
+    return getExtensionBasedResourcePath(name)
+  }
+
+  const getResourcePath = (): { path: string | null; shouldFallback: boolean } => {
+    if (!name) {
+      return { path: null, shouldFallback: true }
+    }
+
+    // core ACM resources
+    if (groupVersionKind?.kind === 'ManagedCluster') {
+      return getManagedClusterPath(name)
+    }
+
+    // extension-managed resources
+    if (groupVersionKind?.kind === 'VirtualMachine' || groupVersionKind?.kind === 'VirtualMachineInstance') {
+      return getVirtualMachinePath(name)
+    }
+
+    // generic resources
+    if (groupVersionKind?.kind) {
+      return getGenericResourcePath(name)
+    }
+
+    // fallback
+    return { path: null, shouldFallback: true }
   }
 
   const { path, shouldFallback } = getResourcePath()
