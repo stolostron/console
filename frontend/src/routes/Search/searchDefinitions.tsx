@@ -6,9 +6,10 @@ import { ButtonProps, Icon, Label, Popover, Text, TextContent, TextVariants } fr
 import { CheckCircleIcon, ExclamationCircleIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
 import queryString from 'query-string'
-import { useMemo } from 'react'
+import { useMemo, useContext } from 'react'
 import { TFunction } from 'react-i18next'
 import { generatePath, Link } from 'react-router-dom-v5-compat'
+import { PluginContext } from '../../lib/PluginContext'
 import { useTranslation } from '../../lib/acm-i18next'
 import AcmTimestamp from '../../lib/AcmTimestamp'
 import { NavigationPath } from '../../NavigationPath'
@@ -16,6 +17,8 @@ import { ConfigMap } from '../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { AcmButton, AcmLabels } from '../../ui-components'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
+import { findResourceRouteHandler } from '../../../packages/multicluster-sdk/src/internal/fleetResourceHelpers'
+
 export interface ResourceDefinitions {
   application: Record<'columns', SearchColumnDefinition[]>
   cluster: Record<'columns', SearchColumnDefinition[]>
@@ -553,8 +556,53 @@ export const GetUrlSearchParam = (resource: any) => {
   return `?${encodeURIComponent(searchString)}`
 }
 
+// helper function for VirtualMachine resource linking
+function createVMDetailsLink(item: any, acmExtensions: any): JSX.Element {
+  const defaultSearchLink = (
+    <Link
+      to={{
+        pathname: NavigationPath.resources,
+        search: GetUrlSearchParam(item),
+      }}
+      state={{
+        from: NavigationPath.search,
+        fromSearch: window.location.search,
+      }}
+    >
+      {item.name}
+    </Link>
+  )
+
+  // handle VirtualMachine/VirtualMachineInstance as extension-only (no hardcoded fallback)
+  if (acmExtensions?.resourceRoutes?.length) {
+    const handler = findResourceRouteHandler(
+      acmExtensions,
+      item.apigroup,
+      item.kind,
+      item.apiversion?.split('/')[1] // Extract version from apiversion like "kubevirt.io/v1"
+    )
+
+    if (handler) {
+      const extensionPath = handler({
+        kind: item.kind,
+        cluster: item.cluster,
+        namespace: item.namespace,
+        name: item.name,
+      })
+
+      if (extensionPath) {
+        return <Link to={extensionPath}>{item.name}</Link>
+      }
+    }
+  }
+
+  // for VirtualMachine resources, if no extension found, use default search link
+  return defaultSearchLink
+}
+
 export function CreateDetailsLink(props: Readonly<{ item: any }>) {
   const { item } = props
+  const { acmExtensions } = useContext(PluginContext)
 
   const defaultSearchLink = (
     <Link
@@ -633,6 +681,9 @@ export function CreateDetailsLink(props: Readonly<{ item: any }>) {
           {item.name}
         </Link>
       )
+    case 'virtualmachine':
+    case 'virtualmachineinstance':
+      return createVMDetailsLink(item, acmExtensions)
     default:
       return defaultSearchLink
   }
@@ -640,11 +691,12 @@ export function CreateDetailsLink(props: Readonly<{ item: any }>) {
 
 export function CreateGlobalSearchDetailsLink(props: { item: any }) {
   const { item } = props
+  const { acmExtensions } = useContext(PluginContext)
   const clusters = useAllClusters(true)
 
   const managedHub = clusters.find((cluster) => {
     if (item.managedHub === 'global-hub') {
-      // If the resource lives on a managed hub (managed by global hub) use the cluster name
+      // if the resource lives on a managed hub (managed by global hub) use the cluster name
       return cluster.name === item.cluster
     }
     return cluster.name === item.managedHub
@@ -672,6 +724,47 @@ export function CreateGlobalSearchDetailsLink(props: { item: any }) {
       default:
         return item.name
     }
+  }
+
+  const generateDefaultSearchLink = () => {
+    const searchLink = generateLink('internal', NavigationPath.resources, GetUrlSearchParam(item))
+    const externalLink = generateLink('external', NavigationPath.resources, GetUrlSearchParam(item))
+    return item.managedHub !== 'global-hub' ? externalLink : searchLink
+  }
+
+  // helper function for VirtualMachine resource linking in global search
+  function createGlobalVMDetailsLink(
+    item: any,
+    acmExtensions: any,
+    generateDefaultSearchLink: () => JSX.Element
+  ): JSX.Element {
+    const isInternalHubResource = !(item.managedHub === 'global-hub' && !item._hubClusterResource)
+
+    // Handle VirtualMachine/VirtualMachineInstance as extension-only (no hardcoded fallback)
+    if (acmExtensions?.resourceRoutes?.length) {
+      const handler = findResourceRouteHandler(
+        acmExtensions,
+        item.apigroup,
+        item.kind,
+        item.apiversion?.split('/')[1] // Extract version from apiversion like "kubevirt.io/v1"
+      )
+
+      if (handler) {
+        const extensionPath = handler({
+          kind: item.kind,
+          cluster: item.cluster,
+          namespace: item.namespace,
+          name: item.name,
+        })
+
+        if (extensionPath && isInternalHubResource) {
+          return <Link to={{ pathname: extensionPath }}>{item.name}</Link>
+        }
+      }
+    }
+
+    // for VirtualMachine resources, if no extension found, use default search link
+    return generateDefaultSearchLink()
   }
 
   switch (item.kind.toLowerCase()) {
@@ -731,10 +824,12 @@ export function CreateGlobalSearchDetailsLink(props: { item: any }) {
         `?${encodeURIComponent('showClusterIssues=true')}`
       )
     }
+    case 'virtualmachine':
+    case 'virtualmachineinstance': {
+      return createGlobalVMDetailsLink(item, acmExtensions, generateDefaultSearchLink)
+    }
     default: {
-      const searchLink = generateLink('internal', NavigationPath.resources, GetUrlSearchParam(item))
-      const externalLink = generateLink('external', NavigationPath.resources, GetUrlSearchParam(item))
-      return item.managedHub !== 'global-hub' ? externalLink : searchLink
+      return generateDefaultSearchLink()
     }
   }
 }
