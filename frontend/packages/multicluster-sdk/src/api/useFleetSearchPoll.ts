@@ -4,6 +4,58 @@ import { useMemo } from 'react'
 import { SearchResult, UseFleetSearchPoll } from '../internal/search/types'
 import { searchClient } from '../internal/search/search-client'
 
+/**
+ * A React hook that provides fleet-wide search functionality using ACM search API.
+ *
+ * @template T - The type of Kubernetes resource(s) to search for, extending K8sResourceCommon
+ *
+ * @param watchOptions - Configuration options for the resource watch
+ * @param watchOptions.groupVersionKind - The group, version, and kind of the resource to search for
+ * @param watchOptions.limit - Maximum number of results to return (defaults to -1 for no limit)
+ * @param watchOptions.namespace - Namespace to search in (only used if namespaced is true)
+ * @param watchOptions.namespaced - Whether the resource is namespaced
+ * @param watchOptions.name - Specific resource name to search for (exact match)
+ * @param watchOptions.isList - Whether to return results as a list or single item
+ *
+ * @param advancedSearch - Optional array of additional search filters
+ * @param advancedSearch[].property - The property name to filter on
+ * @param advancedSearch[].values - Array of values to match for the property
+ *
+ * @returns A tuple containing:
+ * - `data`: The search results formatted as Kubernetes resources, or undefined if no results
+ * - `loaded`: Boolean indicating if the search has completed (opposite of loading)
+ * - `error`: Any error that occurred during the search, or undefined if successful
+ *
+ * @example
+ * ```typescript
+ * // Search for all Pods in a specific namespace
+ * const [pods, loaded, error] = useFleetSearchPoll({
+ *   groupVersionKind: { group: '', version: 'v1', kind: 'Pod' },
+ *   namespace: 'default',
+ *   namespaced: true,
+ *   isList: true
+ * });
+ *
+ * // Search for a specific Deployment with additional filters
+ * const [deployment, loaded, error] = useFleetSearchPoll({
+ *   groupVersionKind: { group: 'apps', version: 'v1', kind: 'Deployment' },
+ *   name: 'my-deployment',
+ *   namespace: 'default',
+ *   namespaced: true,
+ *   isList: false
+ * }, [
+ *   { property: 'label', values: ['app=my-app'] }
+ * ]);
+ * ```
+ *
+ * @remarks
+ * - The hook automatically handles the transformation of flattened search results back into
+ *   properly structured Kubernetes resources
+ * - Special handling is provided for VirtualMachine and VirtualMachineInstance resources
+ * - Watch options filters take precedence over advanced search filters
+ * - The search is skipped if no `kind` is specified in the groupVersionKind
+ * - Results include cluster information for multi-cluster environments
+ */
 export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSearch) => {
   const { groupVersionKind, limit, namespace, namespaced, name, isList } = watchOptions
 
