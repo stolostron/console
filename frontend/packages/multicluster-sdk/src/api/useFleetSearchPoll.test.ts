@@ -642,6 +642,125 @@ describe('useFleetSearchPoll', () => {
     })
   })
 
+  describe('polling functionality', () => {
+    it('should not include pollInterval when not provided', () => {
+      mockUseSearchResultItemsQuery.mockReturnValue({
+        data: mockSearchResult,
+        loading: false,
+        error: undefined,
+      } as any)
+
+      renderHook(() => useFleetSearchPoll(mockWatchOptions))
+
+      expect(mockUseSearchResultItemsQuery).toHaveBeenCalledWith({
+        client: 'mock-search-client',
+        skip: false,
+        variables: {
+          input: [
+            {
+              filters: [
+                { property: 'apiversion', values: ['v1'] },
+                { property: 'kind', values: ['Pod'] },
+                { property: 'namespace', values: ['default'] },
+              ],
+              limit: -1,
+            },
+          ],
+        },
+      })
+    })
+
+    it('should include pollInterval when provided', () => {
+      mockUseSearchResultItemsQuery.mockReturnValue({
+        data: mockSearchResult,
+        loading: false,
+        error: undefined,
+      } as any)
+
+      renderHook(() => useFleetSearchPoll(mockWatchOptions, undefined, 5000))
+
+      expect(mockUseSearchResultItemsQuery).toHaveBeenCalledWith({
+        client: 'mock-search-client',
+        skip: false,
+        pollInterval: 5000,
+        variables: {
+          input: [
+            {
+              filters: [
+                { property: 'apiversion', values: ['v1'] },
+                { property: 'kind', values: ['Pod'] },
+                { property: 'namespace', values: ['default'] },
+              ],
+              limit: -1,
+            },
+          ],
+        },
+      })
+    })
+
+    it('should include pollInterval with advanced search filters', () => {
+      const advancedFilters = [
+        { property: 'label', values: ['app=test'] },
+        { property: 'status', values: ['Running'] },
+      ]
+
+      mockUseSearchResultItemsQuery.mockReturnValue({
+        data: mockSearchResult,
+        loading: false,
+        error: undefined,
+      } as any)
+
+      renderHook(() => useFleetSearchPoll(mockWatchOptions, advancedFilters, 3000))
+
+      expect(mockUseSearchResultItemsQuery).toHaveBeenCalledWith({
+        client: 'mock-search-client',
+        skip: false,
+        pollInterval: 3000,
+        variables: {
+          input: [
+            {
+              filters: [
+                { property: 'apiversion', values: ['v1'] },
+                { property: 'kind', values: ['Pod'] },
+                { property: 'namespace', values: ['default'] },
+                { property: 'label', values: ['app=test'] },
+                { property: 'status', values: ['Running'] },
+              ],
+              limit: -1,
+            },
+          ],
+        },
+      })
+    })
+
+    it('should not include pollInterval when set to 0', () => {
+      mockUseSearchResultItemsQuery.mockReturnValue({
+        data: mockSearchResult,
+        loading: false,
+        error: undefined,
+      } as any)
+
+      renderHook(() => useFleetSearchPoll(mockWatchOptions, undefined, 0))
+
+      expect(mockUseSearchResultItemsQuery).toHaveBeenCalledWith({
+        client: 'mock-search-client',
+        skip: false,
+        variables: {
+          input: [
+            {
+              filters: [
+                { property: 'apiversion', values: ['v1'] },
+                { property: 'kind', values: ['Pod'] },
+                { property: 'namespace', values: ['default'] },
+              ],
+              limit: -1,
+            },
+          ],
+        },
+      })
+    })
+  })
+
   describe('memoization', () => {
     it('should memoize search input correctly', () => {
       mockUseSearchResultItemsQuery.mockReturnValue({

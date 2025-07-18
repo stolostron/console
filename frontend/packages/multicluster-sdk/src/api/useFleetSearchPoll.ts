@@ -5,7 +5,7 @@ import { SearchResult, UseFleetSearchPoll } from '../internal/search/types'
 import { searchClient } from '../internal/search/search-client'
 
 /**
- * A React hook that provides fleet-wide search functionality using ACM search API.
+ * A React hook that provides fleet-wide search functionality using ACM's Console's search API.
  *
  * @template T - The type of Kubernetes resource(s) to search for, extending K8sResourceCommon
  *
@@ -20,6 +20,8 @@ import { searchClient } from '../internal/search/search-client'
  * @param advancedSearch - Optional array of additional search filters
  * @param advancedSearch[].property - The property name to filter on
  * @param advancedSearch[].values - Array of values to match for the property
+ *
+ * @param pollInterval - Optional polling interval in milliseconds. If provided, the search will be repeated at this interval
  *
  * @returns A tuple containing:
  * - `data`: The search results formatted as Kubernetes resources, or undefined if no results
@@ -36,7 +38,7 @@ import { searchClient } from '../internal/search/search-client'
  *   isList: true
  * });
  *
- * // Search for a specific Deployment with additional filters
+ * // Search for a specific Deployment with additional filters and polling every 5 seconds
  * const [deployment, loaded, error] = useFleetSearchPoll({
  *   groupVersionKind: { group: 'apps', version: 'v1', kind: 'Deployment' },
  *   name: 'my-deployment',
@@ -45,7 +47,7 @@ import { searchClient } from '../internal/search/search-client'
  *   isList: false
  * }, [
  *   { property: 'label', values: ['app=my-app'] }
- * ]);
+ * ], 5000);
  * ```
  *
  * @remarks
@@ -55,8 +57,9 @@ import { searchClient } from '../internal/search/search-client'
  * - Watch options filters take precedence over advanced search filters
  * - The search is skipped if no `kind` is specified in the groupVersionKind
  * - Results include cluster information for multi-cluster environments
+ * - When pollInterval is provided, the search will continuously poll for updates
  */
-export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSearch) => {
+export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSearch, pollInterval) => {
   const { groupVersionKind, limit, namespace, namespaced, name, isList } = watchOptions
 
   const { group, version, kind } = groupVersionKind ?? {}
@@ -111,6 +114,7 @@ export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSea
   } = useSearchResultItemsQuery({
     client: searchClient,
     skip: kind === undefined,
+    ...(pollInterval && { pollInterval }),
     variables: {
       input: [searchInput],
     },
