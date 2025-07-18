@@ -10,5 +10,6 @@ export type AdvancedSearchFilter = { property: string; values: string[] }[]
 
 export type UseFleetSearchPoll = <T extends K8sResourceCommon | K8sResourceCommon[]>(
   watchOptions: WatchK8sResource,
-  advancedSearchFilters?: AdvancedSearchFilter
+  advancedSearchFilters?: AdvancedSearchFilter,
+  pollInterval?: number
 ) => [SearchResult<T> | undefined, boolean, Error | undefined]
