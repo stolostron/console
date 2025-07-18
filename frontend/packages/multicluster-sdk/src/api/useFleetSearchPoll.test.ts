@@ -48,30 +48,37 @@ describe('useFleetSearchPoll', () => {
   })
 
   describe('basic functionality', () => {
-    it('should return undefined data, false loaded, and undefined error when loading', () => {
+    it('should return undefined data, false loaded, undefined error, and refetch function when loading', () => {
       mockUseSearchResultItemsQuery.mockReturnValue({
         data: undefined,
         loading: true,
         error: undefined,
+        refetch: jest.fn(),
       } as any)
 
       const { result } = renderHook(() => useFleetSearchPoll(mockWatchOptions))
 
-      expect(result.current).toEqual([undefined, false, undefined])
+      const [data, loaded, error, refetch] = result.current
+      expect(data).toBeUndefined()
+      expect(loaded).toBe(false)
+      expect(error).toBeUndefined()
+      expect(typeof refetch).toBe('function')
     })
 
-    it('should return processed data, true loaded, and undefined error when successful', () => {
+    it('should return processed data, true loaded, undefined error, and refetch function when successful', () => {
       mockUseSearchResultItemsQuery.mockReturnValue({
         data: mockSearchResult,
         loading: false,
         error: undefined,
+        refetch: jest.fn(),
       } as any)
 
       const { result } = renderHook(() => useFleetSearchPoll(mockWatchOptions))
 
-      const [data, loaded, error] = result.current
+      const [data, loaded, error, refetch] = result.current
       expect(loaded).toBe(true)
       expect(error).toBeUndefined()
+      expect(typeof refetch).toBe('function')
       expect(data).toHaveLength(1)
       expect(Array.isArray(data)).toBe(true)
       expect((data as any[])[0]).toEqual({
@@ -90,17 +97,23 @@ describe('useFleetSearchPoll', () => {
       })
     })
 
-    it('should return undefined data, true loaded, and error when error occurs', () => {
+    it('should return undefined data, true loaded, error, and refetch function when error occurs', () => {
       const mockError = new Error('Search failed')
+      const mockRefetch = jest.fn()
       mockUseSearchResultItemsQuery.mockReturnValue({
         data: undefined,
         loading: false,
         error: mockError,
+        refetch: mockRefetch,
       } as any)
 
       const { result } = renderHook(() => useFleetSearchPoll(mockWatchOptions))
 
-      expect(result.current).toEqual([undefined, true, mockError])
+      const [data, loaded, error, refetch] = result.current
+      expect(data).toBeUndefined()
+      expect(loaded).toBe(true)
+      expect(error).toBe(mockError)
+      expect(typeof refetch).toBe('function')
     })
 
     it('should return empty array for list when isList is true and no data', () => {
@@ -108,6 +121,7 @@ describe('useFleetSearchPoll', () => {
         data: undefined,
         loading: false,
         error: undefined,
+        refetch: jest.fn(),
       } as any)
 
       const { result } = renderHook(() => useFleetSearchPoll({ ...mockWatchOptions, isList: true }))
@@ -120,6 +134,7 @@ describe('useFleetSearchPoll', () => {
         data: undefined,
         loading: false,
         error: undefined,
+        refetch: jest.fn(),
       } as any)
 
       const { result } = renderHook(() => useFleetSearchPoll({ ...mockWatchOptions, isList: false }))
@@ -134,6 +149,7 @@ describe('useFleetSearchPoll', () => {
         data: mockSearchResult,
         loading: false,
         error: undefined,
+        refetch: jest.fn(),
       } as any)
 
       renderHook(() => useFleetSearchPoll(mockWatchOptions))
@@ -141,6 +157,7 @@ describe('useFleetSearchPoll', () => {
       expect(mockUseSearchResultItemsQuery).toHaveBeenCalledWith({
         client: 'mock-search-client',
         skip: false,
+        pollInterval: 30000,
         variables: {
           input: [
             {
@@ -166,6 +183,7 @@ describe('useFleetSearchPoll', () => {
         data: mockSearchResult,
         loading: false,
         error: undefined,
+        refetch: jest.fn(),
       } as any)
 
       renderHook(() => useFleetSearchPoll(watchOptionsWithGroup))
@@ -173,6 +191,7 @@ describe('useFleetSearchPoll', () => {
       expect(mockUseSearchResultItemsQuery).toHaveBeenCalledWith({
         client: 'mock-search-client',
         skip: false,
+        pollInterval: 30000,
         variables: {
           input: [
             {
@@ -199,6 +218,7 @@ describe('useFleetSearchPoll', () => {
         data: mockSearchResult,
         loading: false,
         error: undefined,
+        refetch: jest.fn(),
       } as any)
 
       renderHook(() => useFleetSearchPoll(watchOptionsWithName))
@@ -206,6 +226,7 @@ describe('useFleetSearchPoll', () => {
       expect(mockUseSearchResultItemsQuery).toHaveBeenCalledWith({
         client: 'mock-search-client',
         skip: false,
+        pollInterval: 30000,
         variables: {
           input: [
             {
@@ -232,6 +253,7 @@ describe('useFleetSearchPoll', () => {
         data: mockSearchResult,
         loading: false,
         error: undefined,
+        refetch: jest.fn(),
       } as any)
 
       renderHook(() => useFleetSearchPoll(watchOptionsNonNamespaced))
@@ -239,6 +261,7 @@ describe('useFleetSearchPoll', () => {
       expect(mockUseSearchResultItemsQuery).toHaveBeenCalledWith({
         client: 'mock-search-client',
         skip: false,
+        pollInterval: 30000,
         variables: {
           input: [
             {
@@ -263,6 +286,7 @@ describe('useFleetSearchPoll', () => {
         data: mockSearchResult,
         loading: false,
         error: undefined,
+        refetch: jest.fn(),
       } as any)
 
       renderHook(() => useFleetSearchPoll(watchOptionsWithLimit))
@@ -270,6 +294,7 @@ describe('useFleetSearchPoll', () => {
       expect(mockUseSearchResultItemsQuery).toHaveBeenCalledWith({
         client: 'mock-search-client',
         skip: false,
+        pollInterval: 30000,
         variables: {
           input: [
             {
@@ -297,6 +322,7 @@ describe('useFleetSearchPoll', () => {
         data: mockSearchResult,
         loading: false,
         error: undefined,
+        refetch: jest.fn(),
       } as any)
 
       renderHook(() => useFleetSearchPoll(mockWatchOptions, advancedFilters))
@@ -304,6 +330,7 @@ describe('useFleetSearchPoll', () => {
       expect(mockUseSearchResultItemsQuery).toHaveBeenCalledWith({
         client: 'mock-search-client',
         skip: false,
+        pollInterval: 30000,
         variables: {
           input: [
             {
@@ -331,6 +358,7 @@ describe('useFleetSearchPoll', () => {
         data: mockSearchResult,
         loading: false,
         error: undefined,
+        refetch: jest.fn(),
       } as any)
 
       renderHook(() => useFleetSearchPoll(mockWatchOptions, advancedFilters))
@@ -338,6 +366,7 @@ describe('useFleetSearchPoll', () => {
       expect(mockUseSearchResultItemsQuery).toHaveBeenCalledWith({
         client: 'mock-search-client',
         skip: false,
+        pollInterval: 30000,
         variables: {
           input: [
             {
@@ -365,6 +394,7 @@ describe('useFleetSearchPoll', () => {
         data: mockSearchResult,
         loading: false,
         error: undefined,
+        refetch: jest.fn(),
       } as any)
 
       renderHook(() => useFleetSearchPoll(mockWatchOptions, advancedFilters))
@@ -372,6 +402,7 @@ describe('useFleetSearchPoll', () => {
       expect(mockUseSearchResultItemsQuery).toHaveBeenCalledWith({
         client: 'mock-search-client',
         skip: false,
+        pollInterval: 30000,
         variables: {
           input: [
             {
@@ -402,6 +433,7 @@ describe('useFleetSearchPoll', () => {
         },
         loading: false,
         error: undefined,
+        refetch: jest.fn(),
       } as any)
 
       const { result } = renderHook(() => useFleetSearchPoll(mockWatchOptions))
@@ -429,6 +461,7 @@ describe('useFleetSearchPoll', () => {
         },
         loading: false,
         error: undefined,
+        refetch: jest.fn(),
       } as any)
 
       const { result } = renderHook(() => useFleetSearchPoll(mockWatchOptions))
@@ -458,6 +491,7 @@ describe('useFleetSearchPoll', () => {
         },
         loading: false,
         error: undefined,
+        refetch: jest.fn(),
       } as any)
 
       const watchOptionsVM = {
@@ -506,6 +540,7 @@ describe('useFleetSearchPoll', () => {
         },
         loading: false,
         error: undefined,
+        refetch: jest.fn(),
       } as any)
 
       const watchOptionsVMI = {
@@ -544,6 +579,7 @@ describe('useFleetSearchPoll', () => {
         },
         loading: false,
         error: undefined,
+        refetch: jest.fn(),
       } as any)
 
       const { result } = renderHook(() => useFleetSearchPoll(mockWatchOptions))
@@ -569,6 +605,7 @@ describe('useFleetSearchPoll', () => {
         },
         loading: false,
         error: undefined,
+        refetch: jest.fn(),
       } as any)
 
       const { result } = renderHook(() => useFleetSearchPoll(mockWatchOptions))
@@ -592,6 +629,7 @@ describe('useFleetSearchPoll', () => {
         data: undefined,
         loading: false,
         error: undefined,
+        refetch: jest.fn(),
       } as any)
 
       renderHook(() => useFleetSearchPoll(watchOptionsWithoutKind))
@@ -599,6 +637,7 @@ describe('useFleetSearchPoll', () => {
       expect(mockUseSearchResultItemsQuery).toHaveBeenCalledWith({
         client: 'mock-search-client',
         skip: true,
+        pollInterval: 30000,
         variables: {
           input: [
             {
@@ -620,6 +659,7 @@ describe('useFleetSearchPoll', () => {
         data: undefined,
         loading: false,
         error: undefined,
+        refetch: jest.fn(),
       } as any)
 
       renderHook(() => useFleetSearchPoll(watchOptionsWithEmptyKind))
@@ -627,11 +667,137 @@ describe('useFleetSearchPoll', () => {
       expect(mockUseSearchResultItemsQuery).toHaveBeenCalledWith({
         client: 'mock-search-client',
         skip: false,
+        pollInterval: 30000,
         variables: {
           input: [
             {
               filters: [
                 { property: 'apiversion', values: ['v1'] },
+                { property: 'namespace', values: ['default'] },
+              ],
+              limit: -1,
+            },
+          ],
+        },
+      })
+    })
+  })
+
+  describe('polling functionality', () => {
+    it('should not include pollInterval when not provided', () => {
+      mockUseSearchResultItemsQuery.mockReturnValue({
+        data: mockSearchResult,
+        loading: false,
+        error: undefined,
+        refetch: jest.fn(),
+      } as any)
+
+      renderHook(() => useFleetSearchPoll(mockWatchOptions))
+
+      expect(mockUseSearchResultItemsQuery).toHaveBeenCalledWith({
+        client: 'mock-search-client',
+        skip: false,
+        pollInterval: 30000,
+        variables: {
+          input: [
+            {
+              filters: [
+                { property: 'apiversion', values: ['v1'] },
+                { property: 'kind', values: ['Pod'] },
+                { property: 'namespace', values: ['default'] },
+              ],
+              limit: -1,
+            },
+          ],
+        },
+      })
+    })
+
+    it('should include pollInterval when provided', () => {
+      mockUseSearchResultItemsQuery.mockReturnValue({
+        data: mockSearchResult,
+        loading: false,
+        error: undefined,
+        refetch: jest.fn(),
+      } as any)
+
+      renderHook(() => useFleetSearchPoll(mockWatchOptions, undefined, 5000))
+
+      expect(mockUseSearchResultItemsQuery).toHaveBeenCalledWith({
+        client: 'mock-search-client',
+        skip: false,
+        pollInterval: 5000000,
+        variables: {
+          input: [
+            {
+              filters: [
+                { property: 'apiversion', values: ['v1'] },
+                { property: 'kind', values: ['Pod'] },
+                { property: 'namespace', values: ['default'] },
+              ],
+              limit: -1,
+            },
+          ],
+        },
+      })
+    })
+
+    it('should include pollInterval with advanced search filters', () => {
+      const advancedFilters = [
+        { property: 'label', values: ['app=test'] },
+        { property: 'status', values: ['Running'] },
+      ]
+
+      mockUseSearchResultItemsQuery.mockReturnValue({
+        data: mockSearchResult,
+        loading: false,
+        error: undefined,
+        refetch: jest.fn(),
+      } as any)
+
+      renderHook(() => useFleetSearchPoll(mockWatchOptions, advancedFilters, 3000))
+
+      expect(mockUseSearchResultItemsQuery).toHaveBeenCalledWith({
+        client: 'mock-search-client',
+        skip: false,
+        pollInterval: 3000000,
+        variables: {
+          input: [
+            {
+              filters: [
+                { property: 'apiversion', values: ['v1'] },
+                { property: 'kind', values: ['Pod'] },
+                { property: 'namespace', values: ['default'] },
+                { property: 'label', values: ['app=test'] },
+                { property: 'status', values: ['Running'] },
+              ],
+              limit: -1,
+            },
+          ],
+        },
+      })
+    })
+
+    it('should not include pollInterval when set to 0', () => {
+      mockUseSearchResultItemsQuery.mockReturnValue({
+        data: mockSearchResult,
+        loading: false,
+        error: undefined,
+        refetch: jest.fn(),
+      } as any)
+
+      renderHook(() => useFleetSearchPoll(mockWatchOptions, undefined, 0))
+
+      expect(mockUseSearchResultItemsQuery).toHaveBeenCalledWith({
+        client: 'mock-search-client',
+        skip: false,
+        pollInterval: 30000,
+        variables: {
+          input: [
+            {
+              filters: [
+                { property: 'apiversion', values: ['v1'] },
+                { property: 'kind', values: ['Pod'] },
                 { property: 'namespace', values: ['default'] },
               ],
               limit: -1,
@@ -648,6 +814,7 @@ describe('useFleetSearchPoll', () => {
         data: mockSearchResult,
         loading: false,
         error: undefined,
+        refetch: jest.fn(),
       } as any)
 
       const { rerender } = renderHook(({ watchOptions }) => useFleetSearchPoll(watchOptions), {
@@ -676,6 +843,7 @@ describe('useFleetSearchPoll', () => {
         data: mockSearchResult,
         loading: false,
         error: undefined,
+        refetch: jest.fn(),
       } as any)
 
       const { rerender } = renderHook(({ watchOptions }) => useFleetSearchPoll(watchOptions), {

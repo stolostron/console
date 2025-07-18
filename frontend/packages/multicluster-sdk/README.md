@@ -51,6 +51,7 @@ Setup depends on your usage scenarios.
 - [useFleetK8sAPIPath](#gear-usefleetk8sapipath)
 - [useFleetK8sWatchResource](#gear-usefleetk8swatchresource)
 - [useFleetPrometheusPoll](#gear-usefleetprometheuspoll)
+- [useFleetSearchPoll](#gear-usefleetsearchpoll)
 - [useHubClusterName](#gear-usehubclustername)
 - [useIsFleetAvailable](#gear-useisfleetavailable)
 
@@ -209,11 +210,71 @@ const [deployment, loaded, error] = useFleetK8sWatchResource({
 
 ### :gear: useFleetSearchPoll
 
+A React hook that provides fleet-wide search functionality using the ACM search API.
+
 | Function | Type |
 | ---------- | ---------- |
 | `useFleetSearchPoll` | `UseFleetSearchPoll` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/search/useFleetSearchPoll.ts#L7)
+Parameters:
+
+* `watchOptions`: - Configuration options for the resource watch
+* `watchOptions.groupVersionKind`: - The group, version, and kind of the resource to search for
+* `watchOptions.limit`: - Maximum number of results to return (defaults to -1 for no limit)
+* `watchOptions.namespace`: - Namespace to search in (only used if namespaced is true)
+* `watchOptions.namespaced`: - Whether the resource is namespaced
+* `watchOptions.name`: - Specific resource name to search for (exact match)
+* `watchOptions.isList`: - Whether to return results as a list or single item
+* `advancedSearch`: - Optional array of additional search filters
+* `advancedSearch[].property`: - The property name to filter on
+* `advancedSearch[].values`: - Array of values to match for the property
+* `pollInterval`: - Optional polling interval in seconds. Defaults to 30 seconds (polling enabled).
+- Not specified: polls every 30 seconds
+- 0-30 inclusive: polls every 30 seconds (minimum interval)
+- >30: polls at the given interval in seconds
+- false or negative: disables polling
+
+
+Returns:
+
+A tuple containing:
+- `data`: The search results formatted as Kubernetes resources, or undefined if no results
+- `loaded`: Boolean indicating if the search has completed (opposite of loading)
+- `error`: Any error that occurred during the search, or undefined if successful
+- `refetch`: A callback that enables you to re-execute the query
+
+Examples:
+
+```typescript
+// Search for all Pods in a specific namespace with default 30-second polling
+const [pods, loaded, error] = useFleetSearchPoll({
+  groupVersionKind: { group: '', version: 'v1', kind: 'Pod' },
+  namespace: 'default',
+  namespaced: true,
+  isList: true
+});
+
+// Search for a specific Deployment with polling every 60 seconds
+const [deployment, loaded, error] = useFleetSearchPoll({
+  groupVersionKind: { group: 'apps', version: 'v1', kind: 'Deployment' },
+  name: 'my-deployment',
+  namespace: 'default',
+  namespaced: true,
+  isList: false
+}, [
+  { property: 'label', values: ['app=my-app'] }
+], 60);
+
+// Search without polling (one-time query)
+const [services, loaded, error] = useFleetSearchPoll({
+  groupVersionKind: { group: '', version: 'v1', kind: 'Service' },
+  namespaced: true,
+  isList: true
+}, undefined, false);
+```
+
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearchPoll.ts#L79)
 
 ### :gear: useHubClusterName
 

@@ -1,11 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useSearchResultItemsQuery } from '../internal/search/search-sdk'
-import { useMemo } from 'react'
-import { SearchResult, UseFleetSearchPoll } from '../internal/search/types'
+import { useCallback, useMemo } from 'react'
+import { SearchResult } from '../types/search'
+import { UseFleetSearchPoll } from '../types/fleet'
 import { searchClient } from '../internal/search/search-client'
 
+// Constants for polling interval configuration
+const DEFAULT_POLL_INTERVAL_SECONDS = 30
+
 /**
- * A React hook that provides fleet-wide search functionality using ACM search API.
+ * A React hook that provides fleet-wide search functionality using the ACM search API.
  *
  * @template T - The type of Kubernetes resource(s) to search for, extending K8sResourceCommon
  *
@@ -21,14 +25,21 @@ import { searchClient } from '../internal/search/search-client'
  * @param advancedSearch[].property - The property name to filter on
  * @param advancedSearch[].values - Array of values to match for the property
  *
+ * @param pollInterval - Optional polling interval in seconds. Defaults to 30 seconds (polling enabled).
+ *   - Not specified: polls every 30 seconds
+ *   - 0-30 inclusive: polls every 30 seconds (minimum interval)
+ *   - >30: polls at the given interval in seconds
+ *   - false or negative: disables polling
+ *
  * @returns A tuple containing:
  * - `data`: The search results formatted as Kubernetes resources, or undefined if no results
  * - `loaded`: Boolean indicating if the search has completed (opposite of loading)
  * - `error`: Any error that occurred during the search, or undefined if successful
+ * - `refetch`: A callback that enables you to re-execute the query
  *
  * @example
  * ```typescript
- * // Search for all Pods in a specific namespace
+ * // Search for all Pods in a specific namespace with default 30-second polling
  * const [pods, loaded, error] = useFleetSearchPoll({
  *   groupVersionKind: { group: '', version: 'v1', kind: 'Pod' },
  *   namespace: 'default',
@@ -36,7 +47,7 @@ import { searchClient } from '../internal/search/search-client'
  *   isList: true
  * });
  *
- * // Search for a specific Deployment with additional filters
+ * // Search for a specific Deployment with polling every 60 seconds
  * const [deployment, loaded, error] = useFleetSearchPoll({
  *   groupVersionKind: { group: 'apps', version: 'v1', kind: 'Deployment' },
  *   name: 'my-deployment',
@@ -45,7 +56,14 @@ import { searchClient } from '../internal/search/search-client'
  *   isList: false
  * }, [
  *   { property: 'label', values: ['app=my-app'] }
- * ]);
+ * ], 60);
+ *
+ * // Search without polling (one-time query)
+ * const [services, loaded, error] = useFleetSearchPoll({
+ *   groupVersionKind: { group: '', version: 'v1', kind: 'Service' },
+ *   namespaced: true,
+ *   isList: true
+ * }, undefined, false);
  * ```
  *
  * @remarks
@@ -55,11 +73,29 @@ import { searchClient } from '../internal/search/search-client'
  * - Watch options filters take precedence over advanced search filters
  * - The search is skipped if no `kind` is specified in the groupVersionKind
  * - Results include cluster information for multi-cluster environments
+ * - Polling is enabled by default with a 30-second interval; use false to disable
+ * - Minimum polling interval is 30 seconds for performance reasons
  */
-export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSearch) => {
+export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSearch, pollInterval) => {
   const { groupVersionKind, limit, namespace, namespaced, name, isList } = watchOptions
 
   const { group, version, kind } = groupVersionKind ?? {}
+
+  // Calculate the actual polling interval in milliseconds
+  const actualPollInterval = useMemo(() => {
+    // Disable polling for false or negative values
+    if (pollInterval === false || (typeof pollInterval === 'number' && pollInterval < 0)) {
+      return undefined
+    }
+
+    // Default to 30 seconds if not specified, or use minimum of 30 seconds for specified values
+    const intervalInSeconds =
+      pollInterval === undefined || pollInterval <= DEFAULT_POLL_INTERVAL_SECONDS
+        ? DEFAULT_POLL_INTERVAL_SECONDS
+        : pollInterval
+
+    return intervalInSeconds * 1000
+  }, [pollInterval])
 
   const searchInput = useMemo(() => {
     const filters: Array<{ property: string; values: string[] }> = []
@@ -108,13 +144,19 @@ export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSea
     data: result,
     loading,
     error,
+    refetch,
   } = useSearchResultItemsQuery({
     client: searchClient,
     skip: kind === undefined,
+    pollInterval: actualPollInterval,
     variables: {
       input: [searchInput],
     },
   })
+
+  const triggerRefetch: () => void = useCallback(() => {
+    refetch()
+  }, [refetch])
 
   const data = useMemo(
     () =>
@@ -163,5 +205,5 @@ export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSea
 
   const nullResponse = useMemo(() => (isList ? [] : undefined), [isList])
 
-  return [(data as SearchResult<any>) ?? nullResponse, !loading, error]
+  return [(data as SearchResult<any>) ?? nullResponse, !loading, error, triggerRefetch]
 }
