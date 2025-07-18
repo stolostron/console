@@ -274,5 +274,10 @@ export const fleetWatch = (
     basePath: backendURL,
   })
 
-  return new WebSocket(requestPath)
+  // convert HTTP/HTTPS URLs to WebSocket protocols
+  const wsUrl = requestPath.replace(/^https?:\/\//, (match) => {
+    return match === 'https://' ? 'wss://' : 'ws://'
+  })
+
+  return new WebSocket(wsUrl)
 }
