@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useSearchResultItemsQuery } from './search-sdk'
+import { useSearchResultItemsQuery } from '../internal/search/search-sdk'
 import { useMemo } from 'react'
-import { SearchResult, UseFleetSearchPoll } from './types'
-import { searchClient } from './search-client'
+import { SearchResult, UseFleetSearchPoll } from '../internal/search/types'
+import { searchClient } from '../internal/search/search-client'
 
 export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSearch) => {
   const { groupVersionKind, limit, namespace, namespaced, name, isList } = watchOptions
