@@ -6,5 +6,5 @@ export const ItemContext = createContext<object>({})
 ItemContext.displayName = 'ItemContext'
 
 export function useItem() {
-    return useContext(ItemContext)
+  return useContext(ItemContext)
 }
