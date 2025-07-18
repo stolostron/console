@@ -301,7 +301,7 @@ describe('fleetResourceHelpers', () => {
     })
 
     it('should handle null acmExtensions', () => {
-      const handler = findResourceRouteHandler(null, 'kubevirt.io', 'VirtualMachine', 'v1')
+      const handler = findResourceRouteHandler(null as any, 'kubevirt.io', 'VirtualMachine', 'v1')
       expect(handler).toBeNull()
     })
 
@@ -355,10 +355,13 @@ describe('fleetResourceHelpers', () => {
             model: { group: 'kubevirt.io', kind: 'VirtualMachine', version: 'v1' },
             handler: jest.fn(),
           },
+          pluginID: 'test-plugin',
+          pluginName: 'Test Plugin',
+          uid: 'test-uid-1',
         },
       ]
 
-      mockUseResolvedExtensions.mockReturnValue([mockExtensions, true])
+      mockUseResolvedExtensions.mockReturnValue([mockExtensions, true, []])
 
       const { result } = renderHook(() => useResourceRouteExtensions())
 
@@ -367,7 +370,7 @@ describe('fleetResourceHelpers', () => {
     })
 
     it('should return null handler when extensions not resolved', () => {
-      mockUseResolvedExtensions.mockReturnValue([[], false])
+      mockUseResolvedExtensions.mockReturnValue([[], false, []])
 
       const { result } = renderHook(() => useResourceRouteExtensions())
 
@@ -377,7 +380,7 @@ describe('fleetResourceHelpers', () => {
     })
 
     it('should return null handler when no extensions available', () => {
-      mockUseResolvedExtensions.mockReturnValue([[], true])
+      mockUseResolvedExtensions.mockReturnValue([[], true, []])
 
       const { result } = renderHook(() => useResourceRouteExtensions())
 
@@ -395,6 +398,9 @@ describe('fleetResourceHelpers', () => {
             model: { group: 'kubevirt.io', kind: 'VirtualMachine', version: 'v1' },
             handler: mockHandler,
           },
+          pluginID: 'test-plugin',
+          pluginName: 'Test Plugin',
+          uid: 'test-uid-1',
         },
         {
           type: 'acm.resource/route',
@@ -402,10 +408,13 @@ describe('fleetResourceHelpers', () => {
             model: { group: 'kubevirt.io', kind: 'VirtualMachine' }, // No version
             handler: jest.fn(),
           },
+          pluginID: 'test-plugin',
+          pluginName: 'Test Plugin',
+          uid: 'test-uid-2',
         },
       ]
 
-      mockUseResolvedExtensions.mockReturnValue([mockExtensions, true])
+      mockUseResolvedExtensions.mockReturnValue([mockExtensions, true, []])
 
       const { result } = renderHook(() => useResourceRouteExtensions())
 
@@ -422,10 +431,13 @@ describe('fleetResourceHelpers', () => {
             model: { group: 'kubevirt.io', kind: 'VirtualMachine' }, // No version
             handler: mockHandler,
           },
+          pluginID: 'test-plugin',
+          pluginName: 'Test Plugin',
+          uid: 'test-uid-1',
         },
       ]
 
-      mockUseResolvedExtensions.mockReturnValue([mockExtensions, true])
+      mockUseResolvedExtensions.mockReturnValue([mockExtensions, true, []])
 
       const { result } = renderHook(() => useResourceRouteExtensions())
 
@@ -442,6 +454,9 @@ describe('fleetResourceHelpers', () => {
             model: { group: 'kubevirt.io', kind: 'VirtualMachine', version: 'v1' },
             handler: jest.fn(),
           },
+          pluginID: 'test-plugin',
+          pluginName: 'Test Plugin',
+          uid: 'test-uid-1',
         },
         {
           type: 'acm.resource/route',
@@ -449,10 +464,13 @@ describe('fleetResourceHelpers', () => {
             model: { group: 'kubevirt.io', kind: 'VirtualMachine', version: 'v1' },
             handler: mockHandler,
           },
+          pluginID: 'test-plugin',
+          pluginName: 'Test Plugin',
+          uid: 'test-uid-2',
         },
       ]
 
-      mockUseResolvedExtensions.mockReturnValue([mockExtensions, true])
+      mockUseResolvedExtensions.mockReturnValue([mockExtensions, true, []])
 
       const { result } = renderHook(() => useResourceRouteExtensions())
 
@@ -470,10 +488,13 @@ describe('fleetResourceHelpers', () => {
             model: { group: 'other.io', kind: 'OtherResource', version: 'v1' },
             handler: jest.fn(),
           },
+          pluginID: 'test-plugin',
+          pluginName: 'Test Plugin',
+          uid: 'test-uid-1',
         },
       ]
 
-      mockUseResolvedExtensions.mockReturnValue([mockExtensions, true])
+      mockUseResolvedExtensions.mockReturnValue([mockExtensions, true, []])
 
       const { result } = renderHook(() => useResourceRouteExtensions())
 
@@ -489,10 +510,13 @@ describe('fleetResourceHelpers', () => {
             model: { group: 'kubevirt.io', kind: 'VirtualMachine', version: 'v1' },
             handler: undefined,
           },
+          pluginID: 'test-plugin',
+          pluginName: 'Test Plugin',
+          uid: 'test-uid-1',
         },
       ]
 
-      mockUseResolvedExtensions.mockReturnValue([mockExtensions, true])
+      mockUseResolvedExtensions.mockReturnValue([mockExtensions, true, []])
 
       const { result } = renderHook(() => useResourceRouteExtensions())
 
@@ -509,10 +533,13 @@ describe('fleetResourceHelpers', () => {
             model: { group: '', kind: 'Pod', version: 'v1' },
             handler: mockHandler,
           },
+          pluginID: 'test-plugin',
+          pluginName: 'Test Plugin',
+          uid: 'test-uid-1',
         },
       ]
 
-      mockUseResolvedExtensions.mockReturnValue([mockExtensions, true])
+      mockUseResolvedExtensions.mockReturnValue([mockExtensions, true, []])
 
       const { result } = renderHook(() => useResourceRouteExtensions())
 
@@ -529,10 +556,13 @@ describe('fleetResourceHelpers', () => {
             model: { kind: 'Pod', version: 'v1' },
             handler: mockHandler,
           },
+          pluginID: 'test-plugin',
+          pluginName: 'Test Plugin',
+          uid: 'test-uid-1',
         },
       ]
 
-      mockUseResolvedExtensions.mockReturnValue([mockExtensions, true])
+      mockUseResolvedExtensions.mockReturnValue([mockExtensions, true, []])
 
       const { result } = renderHook(() => useResourceRouteExtensions())
 
