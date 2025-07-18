@@ -69,21 +69,6 @@ const mockFleetWatch = jest.mocked(fleetWatch)
 const mockUseFleetK8sAPIPath = jest.mocked(useFleetK8sAPIPath)
 const mockUseHubClusterName = jest.mocked(useHubClusterName)
 
-jest.mock('@patternfly/react-core', () => ({
-  EmptyState: ({ title, children }: any) => (
-    <div id="empty-state">
-      <h2>{title}</h2>
-      {children}
-    </div>
-  ),
-  PageSection: ({ children }: any) => <div id="page-section">{children}</div>,
-  Spinner: () => <div id="spinner">Loading...</div>,
-}))
-
-jest.mock('@patternfly/react-styles', () => ({
-  css: (...classes: any[]) => classes.join(' '),
-}))
-
 describe('FleetResourceEventStream', () => {
   const mockResource = {
     metadata: {
@@ -101,7 +86,7 @@ describe('FleetResourceEventStream', () => {
     onopen: null as any,
     onclose: null as any,
     onerror: null as any,
-    // Add required WebSocket properties
+    // add required WebSocket properties
     binaryType: 'blob' as BinaryType,
     bufferedAmount: 0,
     extensions: '',
