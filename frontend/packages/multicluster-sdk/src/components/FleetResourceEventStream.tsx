@@ -5,18 +5,18 @@ import { FC, useEffect, useRef, useState } from 'react'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { useTranslation } from 'react-i18next'
 import { ResourceEventStream } from '@openshift-console/dynamic-plugin-sdk'
-import { FleetK8sResourceCommon } from '../../types'
+import { FleetK8sResourceCommon } from '../types'
 
 import * as _ from 'lodash'
-import { fleetWatch, useFleetK8sAPIPath, useHubClusterName } from '../../api'
-import { EventModel, sortEvents } from './utils'
-import { EventKind, MAX_MESSAGES } from './constants'
+import { fleetWatch, useFleetK8sAPIPath, useHubClusterName } from '../api'
+import { EventModel, sortEvents } from '../internal/FleetResourceEventStream/utils'
+import { EventKind, MAX_MESSAGES } from '../internal/FleetResourceEventStream/constants'
 import { EmptyState, PageSection, Spinner } from '@patternfly/react-core'
 
 import { css } from '@patternfly/react-styles'
-import TogglePlay from './TogglePlay'
-import { EventStreamList } from './EventStreamList'
-import EventComponent from './EventComponent'
+import TogglePlay from '../internal/FleetResourceEventStream/TogglePlay'
+import { EventStreamList } from '../internal/FleetResourceEventStream/EventStreamList'
+import EventComponent from '../internal/FleetResourceEventStream/EventComponent'
 
 /**
  * A multicluster-aware ResourceEventStream component that displays real-time Kubernetes events
