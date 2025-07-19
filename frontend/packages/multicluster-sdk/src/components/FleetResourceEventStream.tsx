@@ -103,11 +103,13 @@ export const FleetResourceEventStream: FC<{ resource: FleetK8sResourceCommon }> 
   const fieldSelector = `involvedObject.uid=${resource?.metadata?.uid},involvedObject.name=${resource?.metadata?.name},involvedObject.kind=${resource?.kind}`
   const namespace = resource?.metadata?.namespace
 
-  // Handle websocket setup and teardown when dependent props change
+  // handle websocket setup and teardown when dependent props change
   useEffect(() => {
     if (!resource.cluster || resource.cluster === hubCluster || !loaded) return
 
+    // close existing connection
     ws.current?.close()
+    ws.current = undefined
 
     const watchURLOptions = {
       cluster: resource.cluster,
@@ -119,14 +121,15 @@ export const FleetResourceEventStream: FC<{ resource: FleetK8sResourceCommon }> 
         : {}),
     }
 
-    if (!ws.current) {
-      ws.current = fleetWatch(EventModel, watchURLOptions, backendAPIPath as string)
+    // create new WebSocket connection
+    ws.current = fleetWatch(EventModel, watchURLOptions, backendAPIPath as string)
 
-      if (ws.current === undefined) return
+    if (ws.current === undefined) return
 
-      ws.current.onmessage = (message: any) => {
-        if (!active) return
+    ws.current.onmessage = (message: any) => {
+      if (!active) return
 
+      try {
         const eventdataParsed = JSON.parse(message.data)
 
         if (!eventdataParsed) return
@@ -162,33 +165,36 @@ export const FleetResourceEventStream: FC<{ resource: FleetK8sResourceCommon }> 
               return topEvents
           }
         })
+      } catch (error) {
+        console.error('Error parsing WebSocket message:', error)
       }
+    }
 
-      ws.current.onopen = () => {
-        setActive(true)
-        setError(false)
-        setLoading(false)
-      }
+    ws.current.onopen = () => {
+      setActive(true)
+      setError(false)
+      setLoading(false)
+    }
 
-      ws.current.onclose = (evt: CloseEvent) => {
-        setActive(false)
-        if (evt?.wasClean === false) {
-          setError(evt.reason || t('public~Connection did not close cleanly.'))
-        }
+    ws.current.onclose = (evt: CloseEvent) => {
+      setActive(false)
+      if (evt?.wasClean === false) {
+        setError(evt.reason || t('public~Connection did not close cleanly.'))
       }
+    }
 
-      ws.current.onerror = () => {
-        setActive(false)
-        setError(true)
-      }
+    ws.current.onerror = () => {
+      setActive(false)
+      setError(true)
     }
 
     return () => {
       ws.current?.close()
+      ws.current = undefined
     }
   }, [namespace, fieldSelector, active, t, resource.cluster, hubCluster, loaded, backendAPIPath])
 
-  // return early after all hooks are called
+  // return early after all hooks are called, otherwise the component will render twice
   if (!resource.cluster || resource.cluster === hubCluster) return <ResourceEventStream resource={resource} />
 
   const count = sortedEvents.length
