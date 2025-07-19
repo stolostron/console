@@ -20,7 +20,7 @@ import EventComponent from '../internal/FleetResourceEventStream/EventComponent'
 
 /**
  * A multicluster-aware ResourceEventStream component that displays real-time Kubernetes events
- * for resources on managed clusters. Provides equivalent functionality to the OpenShift console's
+ * for a single resource on a managed cluster. Provides equivalent functionality to the OpenShift console's
  * ResourceEventStream for resources on managed clusters.
  *
  * For managed cluster resources, this component establishes a websocket connection to stream
