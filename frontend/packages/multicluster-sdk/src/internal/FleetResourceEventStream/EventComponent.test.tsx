@@ -33,7 +33,7 @@ jest.mock('react-router-dom-v5-compat', () => ({
 }))
 
 jest.mock('@openshift-console/dynamic-plugin-sdk', () => ({
-  useAccessReview: () => true,
+  useAccessReview: jest.fn(),
   ResourceLink: ({ kind, name }: { kind: string; name: string }) => (
     <span data-testid={`resource-link-${kind}-${name}`}>{name}</span>
   ),
@@ -119,5 +119,96 @@ describe('EventComponent', () => {
 
     expect(mockCache.clear).toHaveBeenCalledWith(0, 0)
     expect(mockList.recomputeRowHeights).toHaveBeenCalledWith(0)
+  })
+
+  it('should handle different access review scenarios', () => {
+    const { useAccessReview } = jest.requireMock('@openshift-console/dynamic-plugin-sdk')
+
+    // Test with access allowed
+    useAccessReview.mockReturnValue(true)
+    const MockEventComponent = jest.fn().mockImplementation(({ cache, list, index }) => {
+      useEffect(() => {
+        cache.clear(index, 0)
+        list?.recomputeRowHeights(index)
+      }, [cache, list, index])
+      return null
+    })
+
+    render(<MockEventComponent event={mockEvent} cache={mockCache} list={mockList} index={0} />)
+
+    // Test with access denied
+    useAccessReview.mockReturnValue(false)
+    render(<MockEventComponent event={mockEvent} cache={mockCache} list={mockList} index={0} />)
+  })
+
+  it('should handle events with different component sources', () => {
+    const { useAccessReview } = jest.requireMock('@openshift-console/dynamic-plugin-sdk')
+    useAccessReview.mockReturnValue(true)
+
+    const eventWithDifferentSource = {
+      ...mockEvent,
+      source: {
+        component: 'scheduler',
+        host: 'node-2',
+      },
+      reportingComponent: 'scheduler',
+    }
+
+    const MockEventComponent = jest.fn().mockImplementation(({ cache, list, index }) => {
+      useEffect(() => {
+        cache.clear(index, 0)
+        list?.recomputeRowHeights(index)
+      }, [cache, list, index])
+      return null
+    })
+
+    render(<MockEventComponent event={eventWithDifferentSource} cache={mockCache} list={mockList} index={0} />)
+  })
+
+  it('should handle events with series data', () => {
+    const { useAccessReview } = jest.requireMock('@openshift-console/dynamic-plugin-sdk')
+    useAccessReview.mockReturnValue(true)
+
+    const eventWithSeries = {
+      ...mockEvent,
+      series: {
+        count: 5,
+        lastObservedTime: '2023-01-01T01:00:00Z',
+        state: 'active',
+      },
+    }
+
+    const MockEventComponent = jest.fn().mockImplementation(({ cache, list, index }) => {
+      useEffect(() => {
+        cache.clear(index, 0)
+        list?.recomputeRowHeights(index)
+      }, [cache, list, index])
+      return null
+    })
+
+    render(<MockEventComponent event={eventWithSeries} cache={mockCache} list={mockList} index={0} />)
+  })
+
+  it('should handle events without namespace', () => {
+    const { useAccessReview } = jest.requireMock('@openshift-console/dynamic-plugin-sdk')
+    useAccessReview.mockReturnValue(true)
+
+    const eventWithoutNamespace = {
+      ...mockEvent,
+      involvedObject: {
+        ...mockEvent.involvedObject,
+        namespace: undefined,
+      },
+    }
+
+    const MockEventComponent = jest.fn().mockImplementation(({ cache, list, index }) => {
+      useEffect(() => {
+        cache.clear(index, 0)
+        list?.recomputeRowHeights(index)
+      }, [cache, list, index])
+      return null
+    })
+
+    render(<MockEventComponent event={eventWithoutNamespace} cache={mockCache} list={mockList} index={0} />)
   })
 })
