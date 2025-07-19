@@ -266,15 +266,29 @@ export const fleetWatch = (
     queryParams.resourceVersion = query.resourceVersion
   }
 
-  const requestPath = buildResourceURL({
-    model,
-    cluster: query.cluster,
-    queryParams,
-    ns: query.ns,
-    basePath: backendURL,
-  })
+  // for managed clusters, use the proxy path
+  let requestPath: string
+  if (query.cluster) {
+    // use the backendURL directly for managed clusters
+    requestPath = buildResourceURL({
+      model,
+      cluster: query.cluster,
+      queryParams,
+      ns: query.ns,
+      basePath: backendURL,
+    })
+  } else {
+    // for hub cluster, use the standard path
+    requestPath = buildResourceURL({
+      model,
+      cluster: query.cluster,
+      queryParams,
+      ns: query.ns,
+      basePath: BASE_K8S_API_PATH,
+    })
+  }
 
-  // convert HTTP/HTTPS URLs to WebSocket protocols
+  // convert http/https urls to websocket protocols
   const wsUrl = requestPath.replace(/^https?:\/\//, (match) => {
     return match === 'https://' ? 'wss://' : 'ws://'
   })
