@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useResolvedExtensions } from '@openshift-console/dynamic-plugin-sdk'
 
-// Type guard for resource route extensions
+// type guard for resource route extensions
 const isResourceRoute = (
   e: any
 ): e is {
@@ -15,8 +15,7 @@ const isResourceRoute = (
 /**
  * Hook that resolves resource route extensions and provides lookup functionality.
  *
- * This hook uses useResolvedExtensions directly and provides the same lookup logic
- * that Kevin implemented in the console search results. It can be used by both
+ * This hook uses useResolvedExtensions directly. It can be used by both
  * FleetResourceLink and search definitions.
  *
  * @returns Object with resolved state and lookup function
@@ -37,7 +36,7 @@ export const useResourceRouteExtensions = () => {
     const extension =
       resourceRoutes.find(
         ({ properties: { model } }) => model.group === group && model.kind === kind && model.version === version
-      ) ||
+      ) ??
       resourceRoutes.find(({ properties: { model } }) => model.group === group && model.kind === kind && !model.version)
 
     // extract the resolved handler function from the extension
@@ -46,7 +45,7 @@ export const useResourceRouteExtensions = () => {
       | ((params: { kind: string; cluster?: string; namespace?: string; name: string }) => string | null)
       | undefined
 
-    return handler || null
+    return handler ?? null
   }
 
   return {
@@ -57,7 +56,6 @@ export const useResourceRouteExtensions = () => {
 
 /**
  * Utility function for search definitions to find resource route handlers.
- * This function implements the exact lookup logic Kevin showed in his console implementation.
  *
  * @param acmExtensions - Extensions from PluginContext
  * @param group - The resource group (e.g., 'kubevirt.io')
@@ -73,15 +71,14 @@ export const findResourceRouteHandler = (
   kind: string,
   version?: string
 ) => {
-  // exact lookup pattern from his console implementation
   const resourceRouteHandler = (
     acmExtensions?.resourceRoutes?.find(
       ({ model }) => model.group === group && model.kind === kind && model.version === version
-    ) ||
+    ) ??
     acmExtensions?.resourceRoutes?.find(({ model }) => model.group === group && model.kind === kind && !model.version)
   )?.handler
 
-  return resourceRouteHandler || null
+  return resourceRouteHandler ?? null
 }
 
 /**
@@ -109,10 +106,10 @@ export const getResourceRouteHandler = (
 
   // exact match first, then version-agnostic fallback
   const matchingRoute =
-    resourceRoutes.find(({ model }) => model.group === group && model.kind === kind && model.version === version) ||
+    resourceRoutes.find(({ model }) => model.group === group && model.kind === kind && model.version === version) ??
     resourceRoutes.find(({ model }) => model.group === group && model.kind === kind && !model.version)
 
-  return matchingRoute?.handler || null
+  return matchingRoute?.handler ?? null
 }
 
 /**
@@ -136,13 +133,12 @@ export const getFirstClassResourceRoute = (
     return { isFirstClass: false, path: null }
   }
 
-  switch (kind) {
-    case 'ManagedCluster':
-      return {
-        isFirstClass: true,
-        path: `/multicloud/infrastructure/clusters/details/${name}/${name}/overview`,
-      }
-    default:
-      return { isFirstClass: false, path: null }
+  if (kind === 'ManagedCluster') {
+    return {
+      isFirstClass: true,
+      path: `/multicloud/infrastructure/clusters/details/${name}/${name}/overview`,
+    }
   }
+
+  return { isFirstClass: false, path: null }
 }

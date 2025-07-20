@@ -556,6 +556,50 @@ export const GetUrlSearchParam = (resource: any) => {
   return `?${encodeURIComponent(searchString)}`
 }
 
+// helper function for VirtualMachine resource linking
+function createVMDetailsLink(item: any, acmExtensions: any): JSX.Element {
+  const defaultSearchLink = (
+    <Link
+      to={{
+        pathname: NavigationPath.resources,
+        search: GetUrlSearchParam(item),
+      }}
+      state={{
+        from: NavigationPath.search,
+        fromSearch: window.location.search,
+      }}
+    >
+      {item.name}
+    </Link>
+  )
+
+  // handle VirtualMachine/VirtualMachineInstance as extension-only (no hardcoded fallback)
+  if (acmExtensions?.resourceRoutes?.length) {
+    const handler = findResourceRouteHandler(
+      acmExtensions,
+      item.apigroup,
+      item.kind,
+      item.apiversion?.split('/')[1] // Extract version from apiversion like "kubevirt.io/v1"
+    )
+
+    if (handler) {
+      const extensionPath = handler({
+        kind: item.kind,
+        cluster: item.cluster,
+        namespace: item.namespace,
+        name: item.name,
+      })
+
+      if (extensionPath) {
+        return <Link to={extensionPath}>{item.name}</Link>
+      }
+    }
+  }
+
+  // for VirtualMachine resources, if no extension found, use default search link
+  return defaultSearchLink
+}
+
 export function CreateDetailsLink(props: Readonly<{ item: any }>) {
   const { item } = props
   const { acmExtensions } = useContext(PluginContext)
@@ -638,33 +682,8 @@ export function CreateDetailsLink(props: Readonly<{ item: any }>) {
         </Link>
       )
     case 'virtualmachine':
-    case 'virtualmachineinstance': {
-      // handle VirtualMachine/VirtualMachineInstance as extension only
-      if (acmExtensions?.resourceRoutes?.length) {
-        const handler = findResourceRouteHandler(
-          acmExtensions,
-          item.apigroup,
-          item.kind,
-          item.apiversion?.split('/')[1] // extract version from apiversion like "kubevirt.io/v1"
-        )
-
-        if (handler) {
-          const extensionPath = handler({
-            kind: item.kind,
-            cluster: item.cluster,
-            namespace: item.namespace,
-            name: item.name,
-          })
-
-          if (extensionPath) {
-            return <Link to={extensionPath}>{item.name}</Link>
-          }
-        }
-      }
-
-      // for VirtualMachine resources, if no extension found, use default search link
-      return defaultSearchLink
-    }
+    case 'virtualmachineinstance':
+      return createVMDetailsLink(item, acmExtensions)
     default:
       return defaultSearchLink
   }
@@ -711,6 +730,41 @@ export function CreateGlobalSearchDetailsLink(props: { item: any }) {
     const searchLink = generateLink('internal', NavigationPath.resources, GetUrlSearchParam(item))
     const externalLink = generateLink('external', NavigationPath.resources, GetUrlSearchParam(item))
     return item.managedHub !== 'global-hub' ? externalLink : searchLink
+  }
+
+  // helper function for VirtualMachine resource linking in global search
+  function createGlobalVMDetailsLink(
+    item: any,
+    acmExtensions: any,
+    generateDefaultSearchLink: () => JSX.Element
+  ): JSX.Element {
+    const isInternalHubResource = !(item.managedHub === 'global-hub' && !item._hubClusterResource)
+
+    // Handle VirtualMachine/VirtualMachineInstance as extension-only (no hardcoded fallback)
+    if (acmExtensions?.resourceRoutes?.length) {
+      const handler = findResourceRouteHandler(
+        acmExtensions,
+        item.apigroup,
+        item.kind,
+        item.apiversion?.split('/')[1] // Extract version from apiversion like "kubevirt.io/v1"
+      )
+
+      if (handler) {
+        const extensionPath = handler({
+          kind: item.kind,
+          cluster: item.cluster,
+          namespace: item.namespace,
+          name: item.name,
+        })
+
+        if (extensionPath && isInternalHubResource) {
+          return <Link to={{ pathname: extensionPath }}>{item.name}</Link>
+        }
+      }
+    }
+
+    // for VirtualMachine resources, if no extension found, use default search link
+    return generateDefaultSearchLink()
   }
 
   switch (item.kind.toLowerCase()) {
@@ -772,33 +826,7 @@ export function CreateGlobalSearchDetailsLink(props: { item: any }) {
     }
     case 'virtualmachine':
     case 'virtualmachineinstance': {
-      const isInternalHubResource = !(item.managedHub === 'global-hub' && !item._hubClusterResource)
-
-      // handle VirtualMachine/VirtualMachineInstance as extension only
-      if (acmExtensions?.resourceRoutes?.length) {
-        const handler = findResourceRouteHandler(
-          acmExtensions,
-          item.apigroup,
-          item.kind,
-          item.apiversion?.split('/')[1] // extract version from apiversion like "kubevirt.io/v1"
-        )
-
-        if (handler) {
-          const extensionPath = handler({
-            kind: item.kind,
-            cluster: item.cluster,
-            namespace: item.namespace,
-            name: item.name,
-          })
-
-          if (extensionPath && isInternalHubResource) {
-            return generateLink('internal', extensionPath)
-          }
-        }
-      }
-
-      // for VirtualMachine resources, if no extension found, use default search link
-      return generateDefaultSearchLink()
+      return createGlobalVMDetailsLink(item, acmExtensions, generateDefaultSearchLink)
     }
     default: {
       return generateDefaultSearchLink()
