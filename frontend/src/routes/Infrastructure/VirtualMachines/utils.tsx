@@ -273,7 +273,12 @@ export function getVirtualMachineRowActions(
     id: 'migrateVM',
     title: t('Migrate across environment'),
     click: (item: any) => {
-      navigate(NavigationPath.migrateVirtualMachine.replace(':id', encodeURIComponent(item._uid)))
+      navigate(
+        NavigationPath.migrateVirtualMachine.replace(
+          ':id',
+          encodeURIComponent(item._uid + '+' + item.cluster + '+' + item.namespace)
+        )
+      )
     },
     description: t('Migrate VirtualMachines across your environment'),
     isDisabled: !canMigrateVm || printableStatus == 'Migrating',

@@ -2,10 +2,10 @@
 import { useState } from 'react'
 
 export function useMigrationFormState() {
-  const [srcCluster] = useState('sno-2-b9657')
-  const [srcNs] = useState('Namespace')
+  const [srcCluster, setSrcCluster] = useState('')
+  const [srcNs, setSrcNamespace] = useState('')
 
-  const [dstCluster, setDstCluster] = useState('sno-2-cb7dv')
+  const [dstCluster, setDstCluster] = useState('')
   const [dstNamespace, setDstNamespace] = useState('')
 
   const [srcNetwork, setSrcNetwork] = useState('network1')
@@ -23,7 +23,9 @@ export function useMigrationFormState() {
 
   return {
     srcCluster,
+    setSrcCluster,
     srcNs,
+    setSrcNamespace,
     dstCluster,
     setDstCluster,
     dstNamespace,
