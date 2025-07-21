@@ -94,9 +94,14 @@ const TABLE_ID = 'applicationTable'
 
 const filterId = 'type'
 
-type IApplicationResource = IResource | OCPAppResource
+type ApplicationStatus = {
+  cluster: string
+  resourceName: string
+}
 
-function isOCPAppResource(resource: IApplicationResource): resource is OCPAppResource {
+type IApplicationResource = IResource<ApplicationStatus> | OCPAppResource<ApplicationStatus>
+
+function isOCPAppResource(resource: IApplicationResource): resource is OCPAppResource<ApplicationStatus> {
   return 'label' in resource
 }
 
@@ -119,7 +124,7 @@ export function getApplicationName(application: IApplicationResource, search: st
     (application.apiVersion === ArgoApplicationApiVersion && application.kind === ArgoApplicationKind) ||
     (application.kind !== ApplicationKind && application.kind !== ApplicationSetKind)
   ) {
-    const cluster = application?.status?.cluster
+    const cluster = application.status?.cluster
     clusterQuery = cluster ? `&cluster=${cluster}` : ''
   }
   if (application.apiVersion !== ApplicationApiVersion && application.apiVersion !== ArgoApplicationApiVersion) {
@@ -388,7 +393,7 @@ export default function ApplicationsOverview() {
   }, [allApplications, deletedApps, generateTransformData, resultCounts])
 
   const keyFn = useCallback(
-    (resource: IResource) =>
+    (resource: IResource<ApplicationStatus>) =>
       resource.metadata!.uid ??
       `${resource.status?.cluster ?? 'local-cluster'}/${resource.metadata!.namespace}/${resource.metadata!.name}`,
     []
@@ -695,7 +700,7 @@ export default function ApplicationsOverview() {
   const canDeleteApplicationSet = useIsAnyNamespaceAuthorized(rbacDelete(ApplicationSetDefinition))
 
   const rowActionResolver = useCallback(
-    (resource: IResource) => {
+    (resource: IResource<ApplicationStatus>) => {
       const actions: IAcmRowAction<any>[] = []
       const { metadata = {} } = resource
       const { name = '', namespace = '' } = metadata
@@ -778,7 +783,7 @@ export default function ApplicationsOverview() {
                   label: !isFlux
                     ? `app=${resource.metadata?.name},app.kubernetes.io/part-of=${resource.metadata?.name}`
                     : `kustomize.toolkit.fluxcd.io/name=${resource.metadata?.name},helm.toolkit.fluxcd.io/name=${resource.metadata?.name}`,
-                  cluster: resource.status.cluster,
+                  cluster: resource.status?.cluster,
                 },
               })
             : getSearchLink({
@@ -804,7 +809,7 @@ export default function ApplicationsOverview() {
             const resourceType = isFlux ? 'flux' : 'ocp'
             navigate({
               pathname: generatePath(NavigationPath.applicationOverview, { name, namespace }),
-              search: `?apiVersion=${resourceType}&cluster=${resource.status.cluster}`,
+              search: `?apiVersion=${resourceType}&cluster=${resource.status?.cluster}`,
             })
           },
         })
@@ -847,8 +852,8 @@ export default function ApplicationsOverview() {
               loading: false,
               selected: appChildResources[0], // children
               shared: appChildResources[1], // shared children
-              appSetPlacement: appSetRelatedResources[0],
-              appSetsSharingPlacement: appSetRelatedResources[1],
+              appSetPlacement: appSetRelatedResources[0] as string,
+              appSetsSharingPlacement: appSetRelatedResources[1] as string[],
               appKind: resource.kind,
               appSetApps: (resource as IUIResource)?.uidata?.appSetApps ?? [],
               deleted: /* istanbul ignore next */ (app: IResource) => {
@@ -1031,12 +1036,12 @@ export default function ApplicationsOverview() {
     <PageSection>
       <DeleteResourceModal {...modalProps} />
       {pluginModal}
-      <AcmTable<IResource>
+      <AcmTable<IResource<ApplicationStatus>>
         id={TABLE_ID}
         key="data-table"
         columns={columns}
         keyFn={keyFn}
-        items={tableItems}
+        items={tableItems as IResource<ApplicationStatus>[]}
         filters={filters}
         setRequestView={setRequestedView}
         resultView={resultView}

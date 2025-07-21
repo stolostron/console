@@ -13,6 +13,28 @@ export const ArgoApplicationDefinition: IResourceDefinition = {
   kind: ArgoApplicationKind,
 }
 
+export interface ArgoSyncPolicy {
+  automated?: {
+    selfHeal?: boolean
+    prune?: boolean
+    allowEmpty?: boolean
+  }
+  syncOptions?: string[]
+}
+
+export interface ArgoSource {
+  path?: string
+  repoURL: string
+  targetRevision?: string
+  chart?: string
+  repositoryType?: string
+}
+
+type ArgoApplicationStatus = {
+  cluster: string
+  resourceName: string
+}
+
 export interface ArgoApplication extends IResource {
   cluster?: string
   apiVersion: ArgoApplicationApiVersionType
@@ -25,16 +47,11 @@ export interface ArgoApplication extends IResource {
       server?: string
     }
     project: string
-    source?: {
-      path?: string
-      repoURL: string
-      targetRevision?: string
-      chart?: string
-    }
-    sources?: any[]
-    syncPolicy: any
+    source?: ArgoSource
+    sources?: ArgoSource[]
+    syncPolicy: ArgoSyncPolicy
   }
-  status?: any
+  status?: ArgoApplicationStatus
   transformed?: {
     clusterCount?: string
   }

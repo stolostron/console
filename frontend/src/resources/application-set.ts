@@ -2,6 +2,7 @@
 import { Metadata } from './metadata'
 import { Selector } from './selector'
 import { IResource, IResourceDefinition } from './resource'
+import { ArgoSyncPolicy, ArgoSource } from './argo-application'
 
 export const ApplicationSetApiVersion = 'argoproj.io/v1alpha1'
 export type ApplicationSetApiVersionType = 'argoproj.io/v1alpha1'
@@ -36,20 +37,9 @@ export interface ApplicationSet extends IResource {
           server: string
         }
         project: string
-        source?: {
-          path?: string
-          repoURL: string
-          targetRevision?: string
-          chart?: string
-        }
-        sources?: {
-          path?: string
-          repoURL: string
-          targetRevision?: string
-          chart?: string
-          repositoryType?: string
-        }[]
-        syncPolicy?: any
+        source?: ArgoSource
+        sources?: ArgoSource[]
+        syncPolicy?: ArgoSyncPolicy
       }
     }
   }

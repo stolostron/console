@@ -60,7 +60,7 @@ export class ResourceError extends Error {
   }
 }
 
-export function isRequestAbortedError(error: any) {
+export function isRequestAbortedError(error: unknown) {
   return error instanceof ResourceError && error.code === ResourceErrorCode.RequestAborted
 }
 
@@ -238,7 +238,7 @@ export async function deleteResources(
 
 export async function updateAppResources(resources: IResource[]): Promise<void> {
   const subscriptionResources = resources.filter((resource) => resource.kind === SubscriptionKind)
-  let subscriptions: any[] = []
+  let subscriptions: string[] = []
   for (const resource of resources) {
     try {
       const existingResource = await getResource(resource).promise
