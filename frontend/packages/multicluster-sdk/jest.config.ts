@@ -8,7 +8,6 @@ const config: Config.InitialOptions = {
   testResultsProcessor: 'jest-sonar-reporter',
   setupFilesAfterEnv: ['<rootDir>/src/setupTests.ts'],
   moduleNameMapper: {
-    '\\.(svg)$': '<rootDir>/__mocks__/svg.mock.js',
     '\\.(css|less|jpg|jpeg|png|gif|eot|otf|webp|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$':
       '<rootDir>/__mocks__/file.mock.js',
     '@console/*': '<rootDir>/__mocks__/dummy.ts',
