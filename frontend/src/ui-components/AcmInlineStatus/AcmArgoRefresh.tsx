@@ -34,7 +34,7 @@ const refreshAppK8s = async (application: any) =>
   )
 
 type AcmArgoRefreshProps = {
-  app: Application
+  readonly app: Application
 }
 export function AcmArgoRefresh({ app }: AcmArgoRefreshProps) {
   const [isRefreshing, setIsRefreshing] = useState(false)
