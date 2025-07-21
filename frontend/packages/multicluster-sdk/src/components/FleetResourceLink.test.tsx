@@ -9,7 +9,6 @@ jest.doMock('@openshift-console/dynamic-plugin-sdk', () => ({
     </div>
   ),
   ResourceIcon: ({ groupVersionKind }: any) => <span data-testid="resource-icon">{groupVersionKind?.kind} icon</span>,
-  useFlag: jest.fn(),
 }))
 
 // mock PatternFly components
@@ -25,7 +24,6 @@ import { MemoryRouter } from 'react-router-dom-v5-compat'
 import '@testing-library/jest-dom'
 
 // mock functions
-const mockUseFlag = jest.fn()
 const mockUseHubClusterName = jest.fn()
 const mockUseLocation = jest.fn()
 
@@ -41,8 +39,7 @@ jest.mock('react-router-dom-v5-compat', () => ({
 }))
 
 // connect the mocks to the dynamic plugin SDK
-const dynamicPluginSDK = require('@openshift-console/dynamic-plugin-sdk')
-dynamicPluginSDK.useFlag = mockUseFlag
+require('@openshift-console/dynamic-plugin-sdk')
 
 // mock custom hooks
 jest.mock('../api/useHubClusterName', () => ({
@@ -89,7 +86,6 @@ describe('FleetResourceLink', () => {
     // set default mock values that work
     mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
     mockUseLocation.mockReturnValue({ pathname: '/multicloud/infrastructure' })
-    mockUseFlag.mockReturnValue(true) // Default to flag enabled
 
     // mock the useResourceRouteExtensions hook
     useResourceRouteExtensions.mockReturnValue({
@@ -743,7 +739,6 @@ describe('FleetResourceLink', () => {
 
   describe('Extension system behavior', () => {
     it('should not call getFirstClassResourceRoute for VirtualMachine (extension-only)', () => {
-      mockUseFlag.mockReturnValue(false)
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
 
       render(

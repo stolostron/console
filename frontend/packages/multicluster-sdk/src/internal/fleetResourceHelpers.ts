@@ -82,8 +82,8 @@ export const findResourceRouteHandler = (
 }
 
 /**
- * standalone function for finding resource route handlers from extensions array.
- * used by search results when they have acmExtensions from PluginContext.
+ * Standalone function for finding resource route handlers from extensions array.
+ * Used by search results when they have acmExtensions from PluginContext.
  *
  * @param resourceRoutes - Array of registered resource route extensions
  * @param group - The resource group (e.g., 'kubevirt.io')

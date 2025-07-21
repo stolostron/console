@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 jest.mock('@openshift-console/dynamic-plugin-sdk', () => ({
-  useFlag: jest.fn(),
+  useResolvedExtensions: jest.fn(),
 }))
 import { MockedProvider } from '@apollo/client/testing'
 import { render, screen, waitFor } from '@testing-library/react'
@@ -12,8 +12,8 @@ import { nockGet, nockIgnoreApiPaths, nockRequest } from '../../../lib/nock-util
 import { wait, waitForNocks } from '../../../lib/test-util'
 import { SearchResultItemsDocument } from '../search-sdk/search-sdk'
 import SnapshotsTab from './SnapshotsTab'
-import { useFlag } from '@openshift-console/dynamic-plugin-sdk'
-const mockUseFlag = useFlag as jest.MockedFunction<typeof useFlag>
+import { useResolvedExtensions } from '@openshift-console/dynamic-plugin-sdk'
+const mockUseResolvedExtensions = useResolvedExtensions as jest.MockedFunction<typeof useResolvedExtensions>
 
 const mockSettings: Settings = {
   SEARCH_RESULT_LIMIT: '1000',
@@ -87,7 +87,7 @@ const getMCVResponse = {
 
 describe('SnapshotsTab', () => {
   beforeEach(() => {
-    mockUseFlag.mockReturnValue(true)
+    mockUseResolvedExtensions.mockReturnValue([[], true, []]) // default to no extensions, resolved
     nockIgnoreApiPaths()
     Object.defineProperty(window, 'location', {
       value: {
@@ -252,8 +252,14 @@ describe('SnapshotsTab', () => {
     await waitForNocks([getVMManagedClusterViewNock])
     await wait()
     // Test that the component has rendered correctly with data
-    await waitFor(() => expect(screen.queryByText('centos-stream9-snapshot-20250327135448211')).toBeTruthy())
-    await waitFor(() => expect(screen.queryByText('centos-stream9-snapshot-20250325211107690')).toBeTruthy())
+    // Check if the component contains the expected snapshot data
+    await waitFor(
+      () => {
+        expect(screen.getByText('centos-stream9-snapshot-20250327135448211')).toBeTruthy()
+        expect(screen.getByText('centos-stream9-snapshot-20250325211107690')).toBeTruthy()
+      },
+      { timeout: 10000 }
+    )
   })
 
   it('should render tab with correct snapshot data using fine-grained RBAC', async () => {
@@ -347,7 +353,13 @@ describe('SnapshotsTab', () => {
     await waitForNocks([getVMNock])
     await wait()
     // Test that the component has rendered correctly with data
-    await waitFor(() => expect(screen.queryByText('centos-stream9-snapshot-20250327135448211')).toBeTruthy())
-    await waitFor(() => expect(screen.queryByText('centos-stream9-snapshot-20250325211107690')).toBeTruthy())
+    // Check if the component contains the expected snapshot data
+    await waitFor(
+      () => {
+        expect(screen.getByText('centos-stream9-snapshot-20250327135448211')).toBeTruthy()
+        expect(screen.getByText('centos-stream9-snapshot-20250325211107690')).toBeTruthy()
+      },
+      { timeout: 10000 }
+    )
   })
 })

@@ -17,7 +17,10 @@ import { ConfigMap } from '../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { AcmButton, AcmLabels } from '../../ui-components'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
-import { findResourceRouteHandler } from '../../../packages/multicluster-sdk/src/internal/fleetResourceHelpers'
+import {
+  findResourceRouteHandler,
+  useResourceRouteExtensions,
+} from '../../../packages/multicluster-sdk/src/internal/fleetResourceHelpers'
 
 export interface ResourceDefinitions {
   application: Record<'columns', SearchColumnDefinition[]>
@@ -557,7 +560,16 @@ export const GetUrlSearchParam = (resource: any) => {
 }
 
 // helper function for VirtualMachine resource linking
-function createVMDetailsLink(item: any, acmExtensions: any): JSX.Element {
+function createVMDetailsLink(
+  item: any,
+  acmExtensions: any,
+  resourceRoutesResolved?: boolean,
+  getDirectResourceRouteHandler?: (
+    group: string | undefined,
+    kind: string,
+    version?: string
+  ) => ((params: { kind: string; cluster?: string; namespace?: string; name: string }) => string | null) | null
+): JSX.Element {
   const defaultSearchLink = (
     <Link
       to={{
@@ -573,13 +585,35 @@ function createVMDetailsLink(item: any, acmExtensions: any): JSX.Element {
     </Link>
   )
 
-  // handle VirtualMachine/VirtualMachineInstance as extension-only (no hardcoded fallback)
+  // direct extension approach (for standalone SDK)
+  if (resourceRoutesResolved && getDirectResourceRouteHandler) {
+    const handler = getDirectResourceRouteHandler(
+      item.apigroup,
+      item.kind,
+      item.apiversion?.split('/')[1] // extract version from apiversion like "kubevirt.io/v1"
+    )
+
+    if (handler) {
+      const extensionPath = handler({
+        kind: item.kind,
+        cluster: item.cluster,
+        namespace: item.namespace,
+        name: item.name,
+      })
+
+      if (extensionPath) {
+        return <Link to={extensionPath}>{item.name}</Link>
+      }
+    }
+  }
+
+  // falls back to PluginContext approach (for ACM console)
   if (acmExtensions?.resourceRoutes?.length) {
     const handler = findResourceRouteHandler(
       acmExtensions,
       item.apigroup,
       item.kind,
-      item.apiversion?.split('/')[1] // Extract version from apiversion like "kubevirt.io/v1"
+      item.apiversion?.split('/')[1] // extract version from apiversion like "kubevirt.io/v1"
     )
 
     if (handler) {
@@ -603,6 +637,9 @@ function createVMDetailsLink(item: any, acmExtensions: any): JSX.Element {
 export function CreateDetailsLink(props: Readonly<{ item: any }>) {
   const { item } = props
   const { acmExtensions } = useContext(PluginContext)
+
+  const { resourceRoutesResolved, getResourceRouteHandler: getDirectResourceRouteHandler } =
+    useResourceRouteExtensions()
 
   const defaultSearchLink = (
     <Link
@@ -683,7 +720,7 @@ export function CreateDetailsLink(props: Readonly<{ item: any }>) {
       )
     case 'virtualmachine':
     case 'virtualmachineinstance':
-      return createVMDetailsLink(item, acmExtensions)
+      return createVMDetailsLink(item, acmExtensions, resourceRoutesResolved, getDirectResourceRouteHandler)
     default:
       return defaultSearchLink
   }
@@ -692,6 +729,9 @@ export function CreateDetailsLink(props: Readonly<{ item: any }>) {
 export function CreateGlobalSearchDetailsLink(props: { item: any }) {
   const { item } = props
   const { acmExtensions } = useContext(PluginContext)
+
+  const { resourceRoutesResolved, getResourceRouteHandler: getDirectResourceRouteHandler } =
+    useResourceRouteExtensions()
   const clusters = useAllClusters(true)
 
   const managedHub = clusters.find((cluster) => {
@@ -736,17 +776,45 @@ export function CreateGlobalSearchDetailsLink(props: { item: any }) {
   function createGlobalVMDetailsLink(
     item: any,
     acmExtensions: any,
-    generateDefaultSearchLink: () => JSX.Element
+    generateDefaultSearchLink: () => JSX.Element,
+    resourceRoutesResolved?: boolean,
+    getDirectResourceRouteHandler?: (
+      group: string | undefined,
+      kind: string,
+      version?: string
+    ) => ((params: { kind: string; cluster?: string; namespace?: string; name: string }) => string | null) | null
   ): JSX.Element {
     const isInternalHubResource = !(item.managedHub === 'global-hub' && !item._hubClusterResource)
 
-    // Handle VirtualMachine/VirtualMachineInstance as extension-only (no hardcoded fallback)
+    // direct extension approach first (for standalone SDK)
+    if (resourceRoutesResolved && getDirectResourceRouteHandler) {
+      const handler = getDirectResourceRouteHandler(
+        item.apigroup,
+        item.kind,
+        item.apiversion?.split('/')[1] // extract version from apiversion like "kubevirt.io/v1"
+      )
+
+      if (handler) {
+        const extensionPath = handler({
+          kind: item.kind,
+          cluster: item.cluster,
+          namespace: item.namespace,
+          name: item.name,
+        })
+
+        if (extensionPath && isInternalHubResource) {
+          return <Link to={{ pathname: extensionPath }}>{item.name}</Link>
+        }
+      }
+    }
+
+    // falls back to PluginContext approach (for ACM console)
     if (acmExtensions?.resourceRoutes?.length) {
       const handler = findResourceRouteHandler(
         acmExtensions,
         item.apigroup,
         item.kind,
-        item.apiversion?.split('/')[1] // Extract version from apiversion like "kubevirt.io/v1"
+        item.apiversion?.split('/')[1] // extract version from apiversion like "kubevirt.io/v1"
       )
 
       if (handler) {
@@ -826,7 +894,13 @@ export function CreateGlobalSearchDetailsLink(props: { item: any }) {
     }
     case 'virtualmachine':
     case 'virtualmachineinstance': {
-      return createGlobalVMDetailsLink(item, acmExtensions, generateDefaultSearchLink)
+      return createGlobalVMDetailsLink(
+        item,
+        acmExtensions,
+        generateDefaultSearchLink,
+        resourceRoutesResolved,
+        getDirectResourceRouteHandler
+      )
     }
     default: {
       return generateDefaultSearchLink()

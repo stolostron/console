@@ -6,7 +6,7 @@ import i18next from 'i18next'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 jest.mock('@openshift-console/dynamic-plugin-sdk', () => ({
-  useFlag: jest.fn(),
+  useResolvedExtensions: jest.fn(),
 }))
 import { clusterManagementAddonsState, configMapsState, managedClusterInfosState } from '../../atoms'
 import { ConfigMapApiVersion, ConfigMapKind } from '../../resources'
@@ -28,13 +28,15 @@ import {
 } from './searchDefinitions'
 const t = i18next.t.bind(i18next)
 
-import { useFlag } from '@openshift-console/dynamic-plugin-sdk'
-const mockUseFlag = useFlag as jest.MockedFunction<typeof useFlag>
+import { useResolvedExtensions } from '@openshift-console/dynamic-plugin-sdk'
+const mockUseResolvedExtensions = useResolvedExtensions as jest.MockedFunction<typeof useResolvedExtensions>
+
+// Setup default mocks for all tests
+beforeEach(() => {
+  mockUseResolvedExtensions.mockReturnValue([[], true, []]) // default to no extensions, resolved
+})
 
 describe('GetAge', () => {
-  beforeEach(() => {
-    mockUseFlag.mockReturnValue(true) // default to flag enabled
-  })
   it('renders timestamp with ISO format', () => {
     const item = {
       name: 'testName',
@@ -72,7 +74,6 @@ describe('GetAge', () => {
 })
 
 test('Correctly returns CreateDetailsLink - Cluster', () => {
-  mockUseFlag.mockReturnValue(true)
   const item = {
     name: 'testClusterName',
     namespace: 'testClusterNamespace',
@@ -89,7 +90,6 @@ test('Correctly returns CreateDetailsLink - Cluster', () => {
 })
 
 test('Correctly returns CreateDetailsLink - ACM-Application', () => {
-  mockUseFlag.mockReturnValue(true) // default to flag enabled
   const item = {
     name: 'testApplicationName',
     namespace: 'testApplicationNamespace',
@@ -109,7 +109,6 @@ test('Correctly returns CreateDetailsLink - ACM-Application', () => {
 })
 
 test('Correctly returns CreateDetailsLink - NON-Application', () => {
-  mockUseFlag.mockReturnValue(true) // default to flag enabled
   const item = {
     name: 'testApplicationName',
     namespace: 'testApplicationNamespace',
@@ -128,7 +127,6 @@ test('Correctly returns CreateDetailsLink - NON-Application', () => {
 })
 
 test('Correctly returns CreateDetailsLink - HUB-Policy', () => {
-  mockUseFlag.mockReturnValue(true) // default to flag enabled
   const item = {
     name: 'testPolicyName',
     namespace: 'testPolicyNamespace',
@@ -147,7 +145,6 @@ test('Correctly returns CreateDetailsLink - HUB-Policy', () => {
 })
 
 test('Correctly returns CreateDetailsLink - Managed-Policy', () => {
-  mockUseFlag.mockReturnValue(true) // default to flag enabled
   const item = {
     name: 'testPolicyName',
     namespace: 'testPolicyNamespace',
@@ -166,7 +163,6 @@ test('Correctly returns CreateDetailsLink - Managed-Policy', () => {
 })
 
 test('Correctly returns CreateDetailsLink - PolicyReport', () => {
-  mockUseFlag.mockReturnValue(true) // default to flag enabled
   const item = {
     name: 'testPolicyReport',
     namespace: 'testPolicyReportNamespace',
@@ -185,7 +181,6 @@ test('Correctly returns CreateDetailsLink - PolicyReport', () => {
 })
 
 test('Correctly returns CreateDetailsLink - Default', () => {
-  mockUseFlag.mockReturnValue(true) // default to flag enabled
   const item = {
     name: 'testPodName',
     namespace: 'testPodNamespace',
@@ -204,7 +199,6 @@ test('Correctly returns CreateDetailsLink - Default', () => {
 })
 
 test('Correctly returns CreateGlobalSearchDetailsLink managed hub default resource', () => {
-  mockUseFlag.mockReturnValue(true) // default to flag enabled
   const item = {
     name: 'testPodName',
     namespace: 'testPodNamespace',
@@ -242,7 +236,6 @@ test('Correctly returns CreateGlobalSearchDetailsLink managed hub default resour
 })
 
 test('Correctly returns CreateGlobalSearchDetailsLink managed cluster default resource', () => {
-  mockUseFlag.mockReturnValue(true) // default to flag enabled
   const item = {
     name: 'testPodName',
     namespace: 'testPodNamespace',
@@ -280,7 +273,6 @@ test('Correctly returns CreateGlobalSearchDetailsLink managed cluster default re
 })
 
 test('Correctly returns CreateGlobalSearchDetailsLink managed hub Cluster resource', () => {
-  mockUseFlag.mockReturnValue(true) // default to flag enabled
   const item = {
     name: 'testClusterName',
     namespace: 'testClusterNamespace',
@@ -298,7 +290,6 @@ test('Correctly returns CreateGlobalSearchDetailsLink managed hub Cluster resour
 })
 
 test('Correctly returns CreateGlobalSearchDetailsLink managed cluster Cluster resource', () => {
-  mockUseFlag.mockReturnValue(true) // default to flag enabled
   const item = {
     name: 'testClusterName',
     namespace: 'testClusterNamespace',
@@ -316,7 +307,6 @@ test('Correctly returns CreateGlobalSearchDetailsLink managed cluster Cluster re
 })
 
 test('Correctly returns CreateGlobalSearchDetailsLink managed hub Application resource', () => {
-  mockUseFlag.mockReturnValue(true) // default to flag enabled
   const item = {
     apigroup: 'app.k8s.io',
     apiversion: 'v1beta1',
@@ -338,7 +328,6 @@ test('Correctly returns CreateGlobalSearchDetailsLink managed hub Application re
 })
 
 test('Correctly returns CreateGlobalSearchDetailsLink managed cluster Application resource', () => {
-  mockUseFlag.mockReturnValue(true) // default to flag enabled
   const item = {
     apigroup: 'app.k8s.io',
     apiversion: 'v1beta1',
@@ -359,7 +348,6 @@ test('Correctly returns CreateGlobalSearchDetailsLink managed cluster Applicatio
 })
 
 test('Correctly returns CreateGlobalSearchDetailsLink managed hub Policy resource', () => {
-  mockUseFlag.mockReturnValue(true) // default to flag enabled
   const item = {
     apigroup: 'policy.open-cluster-management.io',
     apiversion: 'v1',
@@ -381,7 +369,6 @@ test('Correctly returns CreateGlobalSearchDetailsLink managed hub Policy resourc
 })
 
 test('Correctly returns CreateGlobalSearchDetailsLink managed cluster Policy resource', () => {
-  mockUseFlag.mockReturnValue(true) // default to flag enabled
   const item = {
     apigroup: 'policy.open-cluster-management.io',
     apiversion: 'v1',
@@ -404,7 +391,6 @@ test('Correctly returns CreateGlobalSearchDetailsLink managed cluster Policy res
 })
 
 test('Correctly returns CreateGlobalSearchDetailsLink managed hub PolicyReport resource', () => {
-  mockUseFlag.mockReturnValue(true) // default to flag enabled
   const item = {
     apigroup: 'wgpolicyk8s.io',
     apiversion: 'v1alpha2',
@@ -426,7 +412,6 @@ test('Correctly returns CreateGlobalSearchDetailsLink managed hub PolicyReport r
 })
 
 test('Correctly returns CreateGlobalSearchDetailsLink managed cluster PolicyReport resource', () => {
-  mockUseFlag.mockReturnValue(true) // default to flag enabled
   const item = {
     apigroup: 'wgpolicyk8s.io',
     apiversion: 'v1alpha2',
@@ -447,7 +432,6 @@ test('Correctly returns CreateGlobalSearchDetailsLink managed cluster PolicyRepo
 })
 
 test('Correctly returns CreateApplicationTopologyLink', () => {
-  mockUseFlag.mockReturnValue(true) // default to flag enabled
   const item = {
     name: 'testApp',
     namespace: 'testNamespace',
@@ -466,7 +450,6 @@ test('Correctly returns CreateApplicationTopologyLink', () => {
 })
 
 test('Correctly returns CreateApplicationTopologyLink - global search', () => {
-  mockUseFlag.mockReturnValue(true) // default to flag enabled
   const item = {
     name: 'testApp',
     namespace: 'testNamespace',
@@ -487,7 +470,6 @@ test('Correctly returns CreateApplicationTopologyLink - global search', () => {
 })
 
 test('Correctly returns empty CreateApplicationTopologyLink', () => {
-  mockUseFlag.mockReturnValue(true) // default to flag enabled
   const item = {
     name: 'testName',
     namespace: 'testNamespace',
@@ -504,7 +486,6 @@ test('Correctly returns empty CreateApplicationTopologyLink', () => {
 })
 
 test('Correctly returns CreateExternalLink from consoleURL', () => {
-  mockUseFlag.mockReturnValue(true) // default to flag enabled
   const item = {
     name: 'testName',
     namespace: 'testNamespace',
@@ -515,7 +496,6 @@ test('Correctly returns CreateExternalLink from consoleURL', () => {
 })
 
 test('Correctly returns CreateExternalLink from clusterip', () => {
-  mockUseFlag.mockReturnValue(true) // default to flag enabled
   const item = {
     name: 'testName',
     namespace: 'testNamespace',
@@ -526,7 +506,6 @@ test('Correctly returns CreateExternalLink from clusterip', () => {
 })
 
 test('Correctly returns empty CreateExternalLink', () => {
-  mockUseFlag.mockReturnValue(true) // default to flag enabled
   const item = {
     name: 'testName',
     namespace: 'testNamespace',
@@ -536,7 +515,6 @@ test('Correctly returns empty CreateExternalLink', () => {
 })
 
 test('Correctly returns label components', () => {
-  mockUseFlag.mockReturnValue(true) // default to flag enabled
   const item = {
     name: 'testName',
     namespace: 'testNamespace',
@@ -547,7 +525,6 @@ test('Correctly returns label components', () => {
 })
 
 test('Correctly returns policyreport policies', () => {
-  mockUseFlag.mockReturnValue(true) // default to flag enabled
   const item = {
     name: 'testName',
     namespace: 'testNamespace',
@@ -560,7 +537,6 @@ test('Correctly returns policyreport policies', () => {
 })
 
 test('Correctly returns category components', () => {
-  mockUseFlag.mockReturnValue(true) // default to flag enabled
   const item = {
     name: 'testName',
     namespace: 'testNamespace',
@@ -571,7 +547,6 @@ test('Correctly returns category components', () => {
 })
 
 test('Correctly returns empty labels', () => {
-  mockUseFlag.mockReturnValue(true) // default to flag enabled
   const item = {
     name: 'testName',
     namespace: 'testNamespace',
@@ -581,7 +556,6 @@ test('Correctly returns empty labels', () => {
 })
 
 test('Correctly returns all resource definitions', () => {
-  mockUseFlag.mockReturnValue(true) // default to flag enabled
   const testItem = {
     name: 'testName',
     namespace: 'testNamespace',
@@ -605,7 +579,6 @@ test('Correctly returns all resource definitions', () => {
 })
 
 test('Correctly returns Cluster resource definitions in global search', () => {
-  mockUseFlag.mockReturnValue(true) // default to flag enabled
   const testItem = {
     name: 'test-cluster',
     namespace: 'test-cluster',
@@ -626,7 +599,6 @@ test('Correctly returns Cluster resource definitions in global search', () => {
 })
 
 test('Correctly returns resource with managedHub column', () => {
-  mockUseFlag.mockReturnValue(true) // default to flag enabled
   const testItem = {
     cluster: 'testCluster',
     managedHub: 'testManagedHub',
@@ -646,7 +618,6 @@ test('Correctly returns resource with managedHub column', () => {
 })
 
 test('Correctly returns url search params with all params & apigroup', () => {
-  mockUseFlag.mockReturnValue(true) // default to flag enabled
   const item = {
     cluster: 'testCluster',
     kind: 'Pod',
@@ -659,7 +630,6 @@ test('Correctly returns url search params with all params & apigroup', () => {
 })
 
 test('Correctly returns url search params with all params without apigroup', () => {
-  mockUseFlag.mockReturnValue(true) // default to flag enabled
   const item = {
     cluster: 'testCluster',
     kind: 'Pod',
@@ -672,7 +642,6 @@ test('Correctly returns url search params with all params without apigroup', () 
 })
 
 test('Correctly returns url search params with 0 params', () => {
-  mockUseFlag.mockReturnValue(true) // default to flag enabled
   const item = {
     cluster: 'testCluster',
   }
@@ -681,7 +650,6 @@ test('Correctly returns url search params with 0 params', () => {
 })
 
 test('Correctly returns CreateExternalVMLink', () => {
-  mockUseFlag.mockReturnValue(true) // default to flag enabled
   const item = {
     cluster: 'testCluster',
     name: 'testVM',
@@ -716,7 +684,6 @@ test('Correctly returns CreateExternalVMLink', () => {
 })
 
 test('Correctly returns empty CreateExternalVMLink', () => {
-  mockUseFlag.mockReturnValue(true) // default to flag enabled
   const item = {
     cluster: 'testCluster',
     name: 'testVM',
@@ -733,7 +700,6 @@ test('Correctly returns empty CreateExternalVMLink', () => {
 })
 
 test('Correctly returns VMLaunchLinks', () => {
-  mockUseFlag.mockReturnValue(true) // default to flag enabled
   const item = {
     cluster: 'testCluster',
     name: 'testVM',
@@ -783,7 +749,6 @@ test('Correctly returns VMLaunchLinks', () => {
 })
 
 test('Correctly returns VirtualMachineSnapshot indications', () => {
-  mockUseFlag.mockReturnValue(true) // default to flag enabled
   const item = {
     name: 'test-snapshot',
     namespace: 'testNamespace',
@@ -800,7 +765,6 @@ test('Correctly returns VirtualMachineSnapshot indications', () => {
 })
 
 test('Correctly returns empty VirtualMachineSnapshot indications', () => {
-  mockUseFlag.mockReturnValue(true) // default to flag enabled
   const item = {
     name: 'test-snapshot',
     namespace: 'testNamespace',

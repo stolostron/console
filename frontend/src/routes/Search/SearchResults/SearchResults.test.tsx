@@ -20,10 +20,10 @@ import { defaultPlugin, PluginContext } from '../../../lib/PluginContext'
 import { AcmExtension } from '../../../plugin-extensions/types'
 import { ActionExtensionProps } from '../../../plugin-extensions/properties'
 jest.mock('@openshift-console/dynamic-plugin-sdk', () => ({
-  useFlag: jest.fn(),
+  useResolvedExtensions: jest.fn(),
 }))
-import { useFlag } from '@openshift-console/dynamic-plugin-sdk'
-const mockUseFlag = useFlag as jest.MockedFunction<typeof useFlag>
+import { useResolvedExtensions } from '@openshift-console/dynamic-plugin-sdk'
+const mockUseResolvedExtensions = useResolvedExtensions as jest.MockedFunction<typeof useResolvedExtensions>
 
 jest.mock('../../../hooks/use-can-migrate-vm', () => ({
   useCanMigrateVm: () => true,
@@ -53,7 +53,7 @@ const acmExtension: AcmExtension = {
 
 describe('SearchResults Page', () => {
   beforeEach(() => {
-    mockUseFlag.mockReturnValue(true)
+    mockUseResolvedExtensions.mockReturnValue([[], true, []]) // default to no extensions, resolved
   })
   it('should render page in loading state', async () => {
     render(
