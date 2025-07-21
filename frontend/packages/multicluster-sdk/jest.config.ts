@@ -6,6 +6,11 @@ const config: Config.InitialOptions = {
   preset: 'ts-jest/presets/js-with-ts',
   testEnvironment: 'jsdom',
   testResultsProcessor: 'jest-sonar-reporter',
+  setupFilesAfterEnv: ['<rootDir>/src/setupTests.ts'],
+  moduleNameMapper: {
+    '\\.(css)$': '<rootDir>/__mocks__/file.mock.js',
+    '@console/*': '<rootDir>/__mocks__/dummy.ts',
+  },
   watchAll: false,
   slowTestThreshold: 30,
   watchPathIgnorePatterns: ['<rootDir>/../node_modules', '<rootDir>/../.eslintcache', '<rootDir>/../coverage'],
