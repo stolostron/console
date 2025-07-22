@@ -72,6 +72,8 @@ export function DistributionField(props: {
     name: props.cluster?.name,
     namespace: props.cluster?.namespace,
   })
+  const image = props.cluster?.distribution?.ocp?.desired?.image
+  const archType = getCPUArchFromReleaseImage(image) ?? 'multi'
 
   const openshiftText = 'OpenShift'
   const microshiftText = 'MicroShift'
@@ -82,7 +84,6 @@ export function DistributionField(props: {
     }
     const updates: any = {}
     clusterImageSets.forEach((cis) => {
-      const archType = getCPUArchFromReleaseImage(cis.spec?.releaseImage) ?? 'multi'
       if (cis.spec?.releaseImage.includes(archType)) {
         const releaseImageVersion = getVersionFromReleaseImage(cis.spec?.releaseImage)
         if (
@@ -96,6 +97,7 @@ export function DistributionField(props: {
 
     return updates
   }, [
+    archType,
     clusterImageSets,
     props.cluster?.distribution?.ocp?.version,
     props.cluster?.isHostedCluster,
