@@ -2,24 +2,15 @@
 import { waitFor } from '@testing-library/react'
 import { useIsFleetPrometheusInstalled } from './useIsFleetPrometheusInstalled'
 import { renderHook } from '@testing-library/react-hooks'
+import { REQUIRED_PROVIDER_FLAG } from './constants'
+
+const useFlagResult: boolean | undefined = true
 
 jest.mock('@openshift-console/dynamic-plugin-sdk', () => ({
-  useK8sWatchResource: (options: any) => {
-    if (options.groupVersionKind.kind === 'MultiClusterObservability') {
-      return [
-        [
-          {
-            status: {
-              conditions: [{ type: 'Ready', status: 'True' }],
-            },
-          },
-        ],
-        true,
-        null,
-      ]
-    }
-    return [[], false, null]
-  },
+  useFlag: (flag: string) => (flag === REQUIRED_PROVIDER_FLAG ? useFlagResult : undefined),
+  consoleFetchJSON: jest.fn(
+    () => Promise.resolve({ items: [{ metadata: { name: 'observability-controller' } }] }) as any
+  ),
 }))
 
 describe('useIsFleetPrometheusInstalled', () => {
