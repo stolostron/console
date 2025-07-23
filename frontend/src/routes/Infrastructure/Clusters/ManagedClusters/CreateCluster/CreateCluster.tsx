@@ -507,7 +507,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
         title: t('cim.infra.missing.warning.title'),
         text: t('cim.infra.missing.warning.text'),
         linkText: t('cim.infra.manage.link'),
-        linkTo: NavigationPath.infraEnvironments,
+        linkTo: '/k8s/all-namespaces/agent-install.openshift.io~v1beta1~InfraEnv',
       })
     } else {
       setWarning(undefined)

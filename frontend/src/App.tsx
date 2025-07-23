@@ -49,7 +49,6 @@ const Search = lazy(() => import('./routes/Search/Search'))
 // INFRASTRUCTURE
 const Clusters = lazy(() => import('./routes/Infrastructure/Clusters/Clusters'))
 const Automations = lazy(() => import('./routes/Infrastructure/Automations/Automations'))
-const InfraEnvironments = lazy(() => import('./routes/Infrastructure/InfraEnvironments/InfraEnvironments'))
 const VirtualMachines = lazy(() => import('./routes/Infrastructure/VirtualMachines/VirtualMachines'))
 
 // GOVERNANCE
@@ -190,13 +189,6 @@ const routes: (IRoute | IRouteGroup)[] = [
         path: NavigationPath.ansibleAutomations,
         match: MatchType.SubRoutes,
         element: <Automations />,
-      },
-      {
-        title: 'Host inventory',
-        type: 'route',
-        path: NavigationPath.infraEnvironments,
-        match: MatchType.SubRoutes,
-        element: <InfraEnvironments />,
       },
       {
         title: 'Virtual machines',

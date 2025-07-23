@@ -5,7 +5,6 @@ import { getAgentsForSelection } from '@openshift-assisted/ui-lib/cim'
 
 import { useRecoilValue, useSharedAtoms } from '../shared-recoil'
 import { Trans, useTranslation } from '../lib/acm-i18next'
-import { NavigationPath } from '../NavigationPath'
 
 const useNoAvailableHostsAlert = (
   controlPlaneType: 'hosted' | 'standalone'
@@ -25,12 +24,12 @@ const useNoAvailableHostsAlert = (
           controlPlaneType === 'standalone' ? (
             <Trans
               i18nKey={'createCluster.card.noInfraEnvsOrHosts.alert'}
-              components={{ a: <a href={NavigationPath.infraEnvironments}>{}</a> }}
+              components={{ a: <a href={`/k8s/all-namespaces/agent-install.openshift.io~v1beta1~InfraEnv`}>{}</a> }}
             />
           ) : (
             <Trans
               i18nKey={'createCluster.card.noInfraEnvs.alert'}
-              components={{ a: <a href={NavigationPath.infraEnvironments}>{}</a> }}
+              components={{ a: <a href={`/k8s/all-namespaces/agent-install.openshift.io~v1beta1~InfraEnv`}>{}</a> }}
             />
           ),
       }
@@ -41,7 +40,7 @@ const useNoAvailableHostsAlert = (
           <Trans
             values={{ controlPlaneTypeTxt: controlPlaneTypeTxt }}
             i18nKey="createCluster.card.noHosts.alert"
-            components={{ a: <a href={NavigationPath.infraEnvironments}>{}</a> }}
+            components={{ a: <a href={`/k8s/all-namespaces/agent-install.openshift.io~v1beta1~InfraEnv`}>{}</a> }}
           />
         ),
       }
