@@ -51,9 +51,9 @@ Setup depends on your usage scenarios.
 - [useFleetK8sAPIPath](#gear-usefleetk8sapipath)
 - [useFleetK8sWatchResource](#gear-usefleetk8swatchresource)
 - [useFleetPrometheusPoll](#gear-usefleetprometheuspoll)
+- [useFleetSearchPoll](#gear-usefleetsearchpoll)
 - [useHubClusterName](#gear-usehubclustername)
 - [useIsFleetAvailable](#gear-useisfleetavailable)
-- [useMulticlusterSearchWatch](#gear-usemulticlustersearchwatch)
 
 ### :gear: fleetK8sCreate
 
@@ -169,6 +169,62 @@ Array with `isAllowed` and `loading` values.
 
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetPrometheusPoll/index.ts#L13)
 
+### :gear: useFleetSearchPoll
+
+A React hook that provides fleet-wide search functionality using ACM's Console's search API.
+
+| Function | Type |
+| ---------- | ---------- |
+| `useFleetSearchPoll` | `UseFleetSearchPoll` |
+
+Parameters:
+
+* `watchOptions`: - Configuration options for the resource watch
+* `watchOptions.groupVersionKind`: - The group, version, and kind of the resource to search for
+* `watchOptions.limit`: - Maximum number of results to return (defaults to -1 for no limit)
+* `watchOptions.namespace`: - Namespace to search in (only used if namespaced is true)
+* `watchOptions.namespaced`: - Whether the resource is namespaced
+* `watchOptions.name`: - Specific resource name to search for (exact match)
+* `watchOptions.isList`: - Whether to return results as a list or single item
+* `advancedSearch`: - Optional array of additional search filters
+* `advancedSearch[].property`: - The property name to filter on
+* `advancedSearch[].values`: - Array of values to match for the property
+* `pollInterval`: - Optional polling interval in milliseconds. If provided, the search will be repeated at this interval
+
+
+Returns:
+
+A tuple containing:
+- `data`: The search results formatted as Kubernetes resources, or undefined if no results
+- `loaded`: Boolean indicating if the search has completed (opposite of loading)
+- `error`: Any error that occurred during the search, or undefined if successful
+
+Examples:
+
+```typescript
+// Search for all Pods in a specific namespace
+const [pods, loaded, error] = useFleetSearchPoll({
+  groupVersionKind: { group: '', version: 'v1', kind: 'Pod' },
+  namespace: 'default',
+  namespaced: true,
+  isList: true
+});
+
+// Search for a specific Deployment with additional filters and polling every 5 seconds
+const [deployment, loaded, error] = useFleetSearchPoll({
+  groupVersionKind: { group: 'apps', version: 'v1', kind: 'Deployment' },
+  name: 'my-deployment',
+  namespace: 'default',
+  namespaced: true,
+  isList: false
+}, [
+  { property: 'label', values: ['app=my-app'] }
+], 5000);
+```
+
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearchPoll.ts#L62)
+
 ### :gear: useHubClusterName
 
 Hook that provides hub cluster name.
@@ -200,16 +256,6 @@ Returns:
 `true` if a version of Red Hat Advanced Cluster Management that is compatible with the multicluster SDK is available; `false` otherwise
 
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useIsFleetAvailable.ts#L15)
-
-### :gear: useMulticlusterSearchWatch
-
-| Function | Type |
-| ---------- | ---------- |
-| `useMulticlusterSearchWatch` | `UseMulticlusterSearchWatch` |
-
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/search/useMulticlusterSearchWatch.ts#L9)
-
-
 
 ## :cocktail: Types
 

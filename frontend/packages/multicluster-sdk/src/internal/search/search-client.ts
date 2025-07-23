@@ -2,7 +2,7 @@
 
 import { ApolloClient, ApolloLink, from, HttpLink, InMemoryCache } from '@apollo/client'
 import { getCookie } from './searchUtils'
-import { getBackendUrl } from '../apiRequests'
+import { getBackendUrl } from '../../api/apiRequests'
 
 const csrfHeaderLink = new ApolloLink((operation, forward) => {
   const csrfToken = getCookie('csrf-token')
