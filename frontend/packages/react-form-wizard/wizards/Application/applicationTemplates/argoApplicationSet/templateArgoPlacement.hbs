@@ -1,0 +1,30 @@
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{! ==================placement ========================= }}
+{{! ========================================================== }}
+{{! ========================================================== }}
+
+{{#unless placement.useExisting}} 
+---
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: Placement
+metadata:
+  name: {{{appSetName}}}-placement
+  namespace: {{{argoServer}}}
+  {{#if selfLinks}}
+  selfLink: {{{selfLinks.Placement}}}
+  {{/if}} 
+spec:
+  predicates:
+  - requiredClusterSelector:
+      labelSelector:
+        matchLabels:
+          {{#if placement.local}}
+          name: local-cluster
+          {{/if}}
+          {{#each clusterSelector.clusterLabelsList}}
+          {{#if validValue}}
+          {{{labelName}}}: {{{labelValue}}}
+          {{/if}}
+          {{/each}} 
+{{/unless}}

@@ -347,7 +347,7 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
     setInternalSearchWithDebounce(search)
     return () => {
       if ('clear' in setInternalSearchWithDebounce) {
-        setInternalSearchWithDebounce.clear()
+        ;(setInternalSearchWithDebounce as any).clear()
       }
     }
   }, [search, setInternalSearchWithDebounce])
@@ -794,7 +794,7 @@ function TableActionsDropdown<T>(
             text: action.title,
             separator: !!(index > 0 && actions[index - 1].variant === 'action-separator'),
             ...(action.variant === 'action-group'
-              ? { flyoutMenu: convertAcmTableActionsToAcmDropdownItems(action.actions) }
+              ? { flyoutMenu: convertAcmTableActionsToAcmDropdownItems(action.actions)! }
               : {
                   tooltip: action.tooltip,
                   isAriaDisabled:
@@ -803,7 +803,7 @@ function TableActionsDropdown<T>(
                 }),
           }
         })
-        .filter((action) => action !== null)
+        .filter((action) => action !== null) as AcmDropdownItems[]
     }
 
     return convertAcmTableActionsToAcmDropdownItems(actions)

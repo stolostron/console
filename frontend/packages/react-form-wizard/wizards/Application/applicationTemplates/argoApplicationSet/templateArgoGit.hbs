@@ -1,0 +1,49 @@
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{! ==================Github channel ========================= }}
+{{! ========================================================== }}
+{{! ========================================================== }}
+        repoURL: {{{git.url}}}
+        targetRevision: {{{git.revision}}}
+        path: {{{git.path}}}
+      destination:
+        server: '{{curlyServer}}'
+        namespace: {{{remoteNamespace}}}
+
+{{! ========================================================== }}
+{{! ========================================================== }}
+{{! ==================Sync policies ========================= }}
+{{! ========================================================== }}
+{{! ========================================================== }}      
+      syncPolicy:
+        automated:
+        {{#if syncPolicy.prune}}
+          prune: true
+        {{/if}}
+        {{#if syncPolicy.allowEmpty}}
+          allowEmpty: true
+        {{/if}}
+        {{#if syncPolicy.selfHeal}}
+          selfHeal: true
+        {{/if}}
+        syncOptions:
+          {{#if syncPolicy.validate}}
+            - Validate=false
+          {{/if}}
+          {{#if syncPolicy.pruneLast}}
+            - PruneLast=true
+          {{/if}}
+          {{#if syncPolicy.replace}}
+            - Replace=true
+          {{/if}}
+          {{#if syncPolicy.createNamespace}}
+            - CreateNamespace=true
+          {{/if}}
+          {{#if syncPolicy.applyOutOfSyncOnly}}
+            - ApplyOutOfSyncOnly=true
+          {{/if}}
+          {{#if syncPolicy.prunePropagationPolicy}}
+            {{#if syncPolicy.propagationPolicy}}
+            - PrunePropagationPolicy={{{syncPolicy.propagationPolicy}}}
+            {{/if}}
+          {{/if}}
