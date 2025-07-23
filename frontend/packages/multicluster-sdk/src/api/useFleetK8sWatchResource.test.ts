@@ -31,7 +31,7 @@ import { buildResourceURL, fleetWatch } from './apiRequests'
 import { useIsFleetAvailable } from './useIsFleetAvailable'
 import { useHubClusterName } from './useHubClusterName'
 import { useFleetK8sWatchResource } from './useFleetK8sWatchResource'
-import { clearFleetK8sWatchResourceCache } from '../internal/use-fleet-k8s-watch-resource/use-fleet-k8s-watch-resource'
+import { clearFleetK8sWatchResourceCache } from '../internal/fleetK8sWatchResource'
 
 const mockUseK8sModel = useK8sModel as jest.MockedFunction<typeof useK8sModel>
 const mockUseK8sWatchResource = useK8sWatchResource as jest.MockedFunction<typeof useK8sWatchResource>
