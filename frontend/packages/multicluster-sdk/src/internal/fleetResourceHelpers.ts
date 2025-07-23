@@ -55,64 +55,6 @@ export const useResourceRouteExtensions = () => {
 }
 
 /**
- * Utility function for search definitions to find resource route handlers.
- *
- * @param acmExtensions - Extensions from PluginContext
- * @param group - The resource group (e.g., 'kubevirt.io')
- * @param kind - The resource kind (e.g., 'VirtualMachine')
- * @param version - The resource version (e.g., 'v1')
- * @returns The handler function if found, null otherwise
- */
-export const findResourceRouteHandler = (
-  acmExtensions:
-    | { resourceRoutes?: Array<{ model: { group?: string; kind: string; version?: string }; handler: any }> }
-    | undefined,
-  group: string | undefined,
-  kind: string,
-  version?: string
-) => {
-  const resourceRouteHandler = (
-    acmExtensions?.resourceRoutes?.find(
-      ({ model }) => model.group === group && model.kind === kind && model.version === version
-    ) ??
-    acmExtensions?.resourceRoutes?.find(({ model }) => model.group === group && model.kind === kind && !model.version)
-  )?.handler
-
-  return resourceRouteHandler ?? null
-}
-
-/**
- * Standalone function for finding resource route handlers from extensions array.
- * Used by search results when they have acmExtensions from PluginContext.
- *
- * @param resourceRoutes - Array of registered resource route extensions
- * @param group - The resource group (e.g., 'kubevirt.io')
- * @param kind - The resource kind (e.g., 'VirtualMachine')
- * @param version - The resource version (e.g., 'v1')
- * @returns The handler function if a match is found, null otherwise
- */
-export const getResourceRouteHandler = (
-  resourceRoutes: Array<{
-    model: { group?: string; kind: string; version?: string }
-    handler: (params: { kind: string; cluster?: string; namespace?: string; name: string }) => string | null
-  }>,
-  group: string | undefined,
-  kind: string,
-  version?: string
-): ((params: { kind: string; cluster?: string; namespace?: string; name: string }) => string | null) | null => {
-  if (!resourceRoutes?.length) {
-    return null
-  }
-
-  // exact match first, then version-agnostic fallback
-  const matchingRoute =
-    resourceRoutes.find(({ model }) => model.group === group && model.kind === kind && model.version === version) ??
-    resourceRoutes.find(({ model }) => model.group === group && model.kind === kind && !model.version)
-
-  return matchingRoute?.handler ?? null
-}
-
-/**
  * Determines if a resource is a core ACM resource and generates its path.
  *
  * Core ACM resources are fundamental management resources that always have specialized

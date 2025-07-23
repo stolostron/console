@@ -21,5 +21,5 @@ export type ResourceRouteHandler = (params: {
   name: string
 }) => string | null
 
-// type guard
+// type guard for resource route extensions
 export const isResourceRoute = (e: Extension): e is ResourceRoute => e.type === 'acm.resource/route'

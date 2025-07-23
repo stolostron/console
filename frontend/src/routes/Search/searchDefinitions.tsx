@@ -17,10 +17,7 @@ import { ConfigMap } from '../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { AcmButton, AcmLabels } from '../../ui-components'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
-import {
-  findResourceRouteHandler,
-  useResourceRouteExtensions,
-} from '../../../packages/multicluster-sdk/src/internal/fleetResourceHelpers'
+import { useResourceRouteExtensions } from '@stolostron/multicluster-sdk'
 
 export interface ResourceDefinitions {
   application: Record<'columns', SearchColumnDefinition[]>
@@ -609,15 +606,19 @@ function createVMDetailsLink(
 
   // falls back to PluginContext approach (for ACM console)
   if (acmExtensions?.resourceRoutes?.length) {
-    const handler = findResourceRouteHandler(
-      acmExtensions,
-      item.apigroup,
-      item.kind,
-      item.apiversion?.split('/')[1] // extract version from apiversion like "kubevirt.io/v1"
-    )
+    const resourceRouteHandler = (
+      acmExtensions.resourceRoutes.find(
+        ({ model }: { model: { group?: string; kind: string; version?: string } }) =>
+          model.group === item.apigroup && model.kind === item.kind && model.version === item.apiversion?.split('/')[1]
+      ) ??
+      acmExtensions.resourceRoutes.find(
+        ({ model }: { model: { group?: string; kind: string; version?: string } }) =>
+          model.group === item.apigroup && model.kind === item.kind && !model.version
+      )
+    )?.handler
 
-    if (handler) {
-      const extensionPath = handler({
+    if (resourceRouteHandler) {
+      const extensionPath = resourceRouteHandler({
         kind: item.kind,
         cluster: item.cluster,
         namespace: item.namespace,
@@ -728,10 +729,6 @@ export function CreateDetailsLink(props: Readonly<{ item: any }>) {
 
 export function CreateGlobalSearchDetailsLink(props: { item: any }) {
   const { item } = props
-  const { acmExtensions } = useContext(PluginContext)
-
-  const { resourceRoutesResolved, getResourceRouteHandler: getDirectResourceRouteHandler } =
-    useResourceRouteExtensions()
   const clusters = useAllClusters(true)
 
   const managedHub = clusters.find((cluster) => {
@@ -766,74 +763,22 @@ export function CreateGlobalSearchDetailsLink(props: { item: any }) {
     }
   }
 
+  const getLinkType = (isHubClusterResource?: boolean) => {
+    if (item.managedHub === 'global-hub' && !isHubClusterResource) {
+      return 'external'
+    }
+    return 'internal'
+  }
+
   const generateDefaultSearchLink = () => {
-    const searchLink = generateLink('internal', NavigationPath.resources, GetUrlSearchParam(item))
-    const externalLink = generateLink('external', NavigationPath.resources, GetUrlSearchParam(item))
-    return item.managedHub !== 'global-hub' ? externalLink : searchLink
+    return generateLink(
+      item.managedHub !== 'global-hub' ? 'external' : 'internal',
+      NavigationPath.resources,
+      GetUrlSearchParam(item)
+    )
   }
 
   // helper function for VirtualMachine resource linking in global search
-  function createGlobalVMDetailsLink(
-    item: any,
-    acmExtensions: any,
-    generateDefaultSearchLink: () => JSX.Element,
-    resourceRoutesResolved?: boolean,
-    getDirectResourceRouteHandler?: (
-      group: string | undefined,
-      kind: string,
-      version?: string
-    ) => ((params: { kind: string; cluster?: string; namespace?: string; name: string }) => string | null) | null
-  ): JSX.Element {
-    const isInternalHubResource = !(item.managedHub === 'global-hub' && !item._hubClusterResource)
-
-    // direct extension approach first (for standalone SDK)
-    if (resourceRoutesResolved && getDirectResourceRouteHandler) {
-      const handler = getDirectResourceRouteHandler(
-        item.apigroup,
-        item.kind,
-        item.apiversion?.split('/')[1] // extract version from apiversion like "kubevirt.io/v1"
-      )
-
-      if (handler) {
-        const extensionPath = handler({
-          kind: item.kind,
-          cluster: item.cluster,
-          namespace: item.namespace,
-          name: item.name,
-        })
-
-        if (extensionPath && isInternalHubResource) {
-          return <Link to={{ pathname: extensionPath }}>{item.name}</Link>
-        }
-      }
-    }
-
-    // falls back to PluginContext approach (for ACM console)
-    if (acmExtensions?.resourceRoutes?.length) {
-      const handler = findResourceRouteHandler(
-        acmExtensions,
-        item.apigroup,
-        item.kind,
-        item.apiversion?.split('/')[1] // extract version from apiversion like "kubevirt.io/v1"
-      )
-
-      if (handler) {
-        const extensionPath = handler({
-          kind: item.kind,
-          cluster: item.cluster,
-          namespace: item.namespace,
-          name: item.name,
-        })
-
-        if (extensionPath && isInternalHubResource) {
-          return <Link to={{ pathname: extensionPath }}>{item.name}</Link>
-        }
-      }
-    }
-
-    // for VirtualMachine resources, if no extension found, use default search link
-    return generateDefaultSearchLink()
-  }
 
   switch (item.kind.toLowerCase()) {
     case 'cluster':
@@ -859,16 +804,9 @@ export function CreateGlobalSearchDetailsLink(props: { item: any }) {
           applicationset: applicationSet ?? undefined,
         })
         const path = generatePath(NavigationPath.applicationOverview, { namespace, name })
-        if (item.managedHub === 'global-hub' && !item._hubClusterResource) {
-          return generateLink('external', path, `?${params}`)
-        }
-        return generateLink('internal', path, `?${params}`)
+        return generateLink(getLinkType(item._hubClusterResource), path, `?${params}`)
       }
-      return generateLink(
-        item.managedHub === 'global-hub' && !item._hubClusterResource ? 'external' : 'internal',
-        NavigationPath.resources,
-        GetUrlSearchParam(item)
-      )
+      return generateLink(getLinkType(item._hubClusterResource), NavigationPath.resources, GetUrlSearchParam(item))
     }
     case 'policy': {
       if (
@@ -876,32 +814,19 @@ export function CreateGlobalSearchDetailsLink(props: { item: any }) {
         !item.label?.includes('policy.open-cluster-management.io/root-policy')
       ) {
         const path = generatePath(NavigationPath.policyDetails, { name: item.name, namespace: item.namespace })
-        return item._hubClusterResource ? generateLink('internal', path) : generateLink('external', path)
+        return generateLink(getLinkType(item._hubClusterResource), path)
       }
-      return generateLink(
-        item.managedHub !== 'global-hub' && !item._hubClusterResource ? 'external' : 'internal',
-        NavigationPath.resources,
-        GetUrlSearchParam(item)
-      )
+      return generateLink(getLinkType(item._hubClusterResource), NavigationPath.resources, GetUrlSearchParam(item))
     }
     case 'policyreport': {
       const path = generatePath(NavigationPath.clusterOverview, { name: item.namespace, namespace: item.namespace })
       return generateLink(
-        item.managedHub === 'global-hub' && !item._hubClusterResource ? 'external' : 'internal',
+        getLinkType(item._hubClusterResource),
         path,
         `?${encodeURIComponent('showClusterIssues=true')}`
       )
     }
-    case 'virtualmachine':
-    case 'virtualmachineinstance': {
-      return createGlobalVMDetailsLink(
-        item,
-        acmExtensions,
-        generateDefaultSearchLink,
-        resourceRoutesResolved,
-        getDirectResourceRouteHandler
-      )
-    }
+
     default: {
       return generateDefaultSearchLink()
     }
