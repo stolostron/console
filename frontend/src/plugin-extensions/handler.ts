@@ -4,11 +4,11 @@ import {
   isApplicationAction,
   isApplicationListColumn,
   isOverviewTab,
-  isResourceRoute,
   isVirtualMachineAction,
   isVirtualMachineListColumn,
 } from './extensions'
-import { ActionExtensionProps, ListColumnExtensionProps, ResourceRouteExtensionProps } from './properties'
+import { isResourceRoute, ResourceRouteExtensionProps } from '@stolostron/multicluster-sdk'
+import { ActionExtensionProps, ListColumnExtensionProps } from './properties'
 import { AcmExtension } from './types'
 
 // Type guards

@@ -2,4 +2,3 @@
 export * from './actionExtensionProps'
 export * from './listColumnExtensionProps'
 export * from './overviewTabProps'
-export * from './resourceRouteExtensionProps'
