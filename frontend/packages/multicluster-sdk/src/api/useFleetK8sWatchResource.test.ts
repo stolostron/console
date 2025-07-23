@@ -6,26 +6,32 @@ jest.mock('@openshift-console/dynamic-plugin-sdk', () => ({
   consoleFetchJSON: jest.fn(),
 }))
 
-jest.mock('../../api/apiRequests', () => ({
+jest.mock('./apiRequests', () => ({
   fleetWatch: jest.fn(),
   buildResourceURL: jest.fn(),
 }))
 
-jest.mock('../../api/useFleetK8sAPIPath', () => ({
+jest.mock('./useFleetK8sAPIPath', () => ({
   useFleetK8sAPIPath: jest.fn(),
 }))
 
-jest.mock('../../api/useIsFleetAvailable', () => ({
+jest.mock('./useIsFleetAvailable', () => ({
   useIsFleetAvailable: jest.fn(),
+}))
+
+jest.mock('./useHubClusterName', () => ({
+  useHubClusterName: jest.fn(),
 }))
 
 import { waitFor } from '@testing-library/react'
 import { renderHook } from '@testing-library/react-hooks'
 import { useK8sModel, useK8sWatchResource, consoleFetchJSON } from '@openshift-console/dynamic-plugin-sdk'
-import { useFleetK8sWatchResource, clearFleetK8sWatchResourceCache } from '.'
-import { useFleetK8sAPIPath } from '../../api/useFleetK8sAPIPath'
-import { fleetWatch, buildResourceURL } from '../../api/apiRequests'
-import { useIsFleetAvailable } from '../../api/useIsFleetAvailable'
+import { useFleetK8sAPIPath } from './useFleetK8sAPIPath'
+import { buildResourceURL, fleetWatch } from './apiRequests'
+import { useIsFleetAvailable } from './useIsFleetAvailable'
+import { useHubClusterName } from './useHubClusterName'
+import { useFleetK8sWatchResource } from './useFleetK8sWatchResource'
+import { clearFleetK8sWatchResourceCache } from '../internal/use-fleet-k8s-watch-resource/use-fleet-k8s-watch-resource'
 
 const mockUseK8sModel = useK8sModel as jest.MockedFunction<typeof useK8sModel>
 const mockUseK8sWatchResource = useK8sWatchResource as jest.MockedFunction<typeof useK8sWatchResource>
@@ -34,6 +40,7 @@ const mockConsoleFetchJSON = consoleFetchJSON as jest.MockedFunction<typeof cons
 const mockFleetWatch = fleetWatch as jest.MockedFunction<typeof fleetWatch>
 const mockBuildResourceURL = buildResourceURL as jest.MockedFunction<typeof buildResourceURL>
 const mockUseIsFleetAvailable = useIsFleetAvailable as jest.MockedFunction<typeof useIsFleetAvailable>
+const mockedUseHubClusterName = useHubClusterName as jest.MockedFunction<typeof useHubClusterName>
 
 // Mock WebSocket
 let mockWebSocket: any
@@ -56,6 +63,7 @@ describe('useFleetK8sWatchResource', () => {
     mockUseIsFleetAvailable.mockReturnValue(true) // Default: Fleet is available
     mockUseK8sModel.mockReturnValue([mockModel, true])
     mockUseFleetK8sAPIPath.mockReturnValue([mockFleetAPIUrl, true, undefined])
+    mockedUseHubClusterName.mockReturnValue([hubClusterName, true, undefined])
     mockWebSocket = {
       onmessage: jest.fn(),
       onclose: jest.fn(),
@@ -77,7 +85,7 @@ describe('useFleetK8sWatchResource', () => {
       const mockData = [{ metadata: { name: 'pod1' } }]
       mockUseK8sWatchResource.mockReturnValue([mockData, true, undefined])
 
-      const { result } = renderHook(() => useFleetK8sWatchResource(hubClusterName, initResource))
+      const { result } = renderHook(() => useFleetK8sWatchResource(initResource))
 
       // Should call useK8sWatchResource with the correct resource
       expect(mockUseK8sWatchResource).toHaveBeenCalledWith({
@@ -97,7 +105,7 @@ describe('useFleetK8sWatchResource', () => {
       const mockData = [{ metadata: { name: 'pod1' } }]
       mockUseK8sWatchResource.mockReturnValue([mockData, true, undefined])
 
-      const { result } = renderHook(() => useFleetK8sWatchResource(hubClusterName, initResource))
+      const { result } = renderHook(() => useFleetK8sWatchResource(initResource))
 
       expect(mockUseK8sWatchResource).toHaveBeenCalledWith({
         groupVersionKind: { version: 'v1', kind: 'Pod' },
@@ -127,7 +135,7 @@ describe('useFleetK8sWatchResource', () => {
 
       mockConsoleFetchJSON.mockReturnValueOnce(Promise.resolve(mockFetchData))
 
-      const { result } = renderHook(() => useFleetK8sWatchResource(hubClusterName, initResource))
+      const { result } = renderHook(() => useFleetK8sWatchResource(initResource))
 
       // Initially should be empty and not loaded
       expect(result.current[0]).toEqual([])
@@ -173,7 +181,7 @@ describe('useFleetK8sWatchResource', () => {
 
       // Reset and set new mock value for this test
       mockConsoleFetchJSON.mockReturnValueOnce(Promise.resolve(mockFetchData))
-      const { result } = renderHook(() => useFleetK8sWatchResource(hubClusterName, singleResourceInit))
+      const { result } = renderHook(() => useFleetK8sWatchResource(singleResourceInit))
 
       await waitFor(() => {
         expect(result.current[1]).toBe(true)
@@ -210,7 +218,7 @@ describe('useFleetK8sWatchResource', () => {
 
       // Reset and set new mock value for this test
       mockConsoleFetchJSON.mockReturnValueOnce(Promise.resolve(mockFetchData))
-      const { result } = renderHook(() => useFleetK8sWatchResource(hubClusterName, singleResourceInit))
+      const { result } = renderHook(() => useFleetK8sWatchResource(singleResourceInit))
 
       await waitFor(() => {
         expect(result.current[1]).toBe(true)
@@ -229,7 +237,7 @@ describe('useFleetK8sWatchResource', () => {
     it('should not fetch if backend path is not loaded', () => {
       mockUseFleetK8sAPIPath.mockReturnValue([mockFleetAPIUrl, false, undefined])
 
-      const { result } = renderHook(() => useFleetK8sWatchResource(hubClusterName, initResource))
+      const { result } = renderHook(() => useFleetK8sWatchResource(initResource))
 
       expect(mockConsoleFetchJSON).not.toHaveBeenCalled()
       expect(result.current[1]).toBe(false)
@@ -249,13 +257,14 @@ describe('useFleetK8sWatchResource', () => {
       mockUseIsFleetAvailable.mockReturnValue(true)
       mockFleetWatch.mockReturnValue(mockWebSocket as any)
       mockBuildResourceURL.mockReturnValue('/default/url')
+      mockedUseHubClusterName.mockReturnValue([hubClusterName, true, undefined])
       const mockFetchData1 = {
         items: [{ metadata: { name: 'pod1', uid: 'uid1' } }],
       }
       mockConsoleFetchJSON.mockReturnValueOnce(Promise.resolve(mockFetchData1))
       const mockData = [{ metadata: { name: 'pod1' } }]
       mockUseK8sWatchResource.mockReturnValue([mockData, true, undefined])
-      const { result } = renderHook(() => useFleetK8sWatchResource(hubClusterName, initResource))
+      const { result } = renderHook(() => useFleetK8sWatchResource(initResource))
 
       await waitFor(() => {
         expect(result.current[1]).toBe(true)
@@ -305,7 +314,7 @@ describe('useFleetK8sWatchResource', () => {
     })
 
     it('should not call consoleFetch if initResource is null', () => {
-      const { result } = renderHook(() => useFleetK8sWatchResource(hubClusterName, null))
+      const { result } = renderHook(() => useFleetK8sWatchResource(null))
 
       expect(result.current[0]).toBeUndefined()
       expect(result.current[1]).toBe(false)
