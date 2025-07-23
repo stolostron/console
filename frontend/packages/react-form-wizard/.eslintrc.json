@@ -3,7 +3,7 @@
     "parserOptions": {
         "ecmaVersion": "latest",
         "sourceType": "module",
-        "project": ["frontend/packages/react-form-wizard/tsconfig.json"]
+        "project": ["./tsconfig.eslint.json"]
     },
     "extends": [
         "eslint:recommended",
