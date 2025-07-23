@@ -97,19 +97,18 @@ export const handleWebsocketEvent = <R>(
 
   const storedData = fleetResourceCache[requestPath] as K8sResourceCommon[]
 
-  const objectExist = storedData.some((i) => i.metadata?.uid === object?.metadata?.uid)
+  const objectExists = storedData.some((i) => i.metadata?.uid === object?.metadata?.uid)
 
-  if (objectExist && eventType === 'MODIFIED') {
+  if (objectExists && eventType === 'MODIFIED') {
     const updatedData = storedData.map((i) => (i.metadata?.uid === object?.metadata?.uid ? { cluster, ...object } : i))
     fleetResourceCache[requestPath] = updatedData
     setData(updatedData as R)
     return
   }
 
-  if (!objectExist) {
+  if (!objectExists) {
     const updatedData = [...storedData, { cluster, ...(object as K8sResourceCommon) }] as R
     fleetResourceCache[requestPath] = updatedData
     setData(updatedData)
-    return
   }
 }
