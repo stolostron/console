@@ -4,8 +4,8 @@
 
 .PHONY: install
 install:
-	CYPRESS_CACHE_FOLDER=/tmp/.cache/Cypress npm ci --omit=optional
-	CYPRESS_CACHE_FOLDER=/tmp/.cache/Cypress npm run postinstall
+	npm ci --omit=optional
+	npm run postinstall
 
 .PHONY: build
 build:
