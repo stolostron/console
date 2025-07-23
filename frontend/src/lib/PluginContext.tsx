@@ -16,7 +16,6 @@ export type Plugin = {
   ocpApi: {
     Timestamp?: FC<TimestampProps>
     useK8sWatchResource: UseK8sWatchResource
-    useFlag: (flag: string) => boolean
   }
 }
 
@@ -31,7 +30,6 @@ export const defaultPlugin: Plugin = {
   acmExtensions: {},
   ocpApi: {
     useK8sWatchResource: () => [[] as any, true, undefined],
-    useFlag: () => false, // default implementation returns false for standalone development
   },
 }
 

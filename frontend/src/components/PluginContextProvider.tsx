@@ -2,7 +2,6 @@
 import {
   isHrefNavItem,
   Timestamp,
-  useFlag,
   useK8sWatchResource,
   useResolvedExtensions,
 } from '@openshift-console/dynamic-plugin-sdk'
@@ -55,7 +54,7 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
         isSubmarinerAvailable,
         dataContext: pluginDataContext.properties.context,
         acmExtensions,
-        ocpApi: { Timestamp, useK8sWatchResource, useFlag },
+        ocpApi: { Timestamp, useK8sWatchResource },
       }}
     >
       <AcmFeedbackModal />
