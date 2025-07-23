@@ -232,11 +232,58 @@ Examples:
 
 ### :gear: useFleetK8sWatchResource
 
+A hook for watching Kubernetes resources with support for multi-cluster environments.
+It is equivalent to the [`useK8sWatchResource`](https://github.com/openshift/console/blob/main/frontend/packages/console-dynamic-plugin-sdk/docs/api.md#usek8swatchresource)
+hook from the [OpenShift Console Dynamic Plugin SDK](https://www.npmjs.com/package/@openshift-console/dynamic-plugin-sdk)
+but allows you to retrieve data from any cluster managed by Red Hat Advanced Cluster Management.
+
+It automatically detects the hub cluster and handles resource watching on both hub
+and remote clusters using WebSocket connections for real-time updates.
+
 | Function | Type |
 | ---------- | ---------- |
 | `useFleetK8sWatchResource` | `UseFleetK8sWatchResource` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetK8sWatchResource.ts#L6)
+Parameters:
+
+* `initResource`: - The resource to watch. Can be null to disable the watch.
+* `initResource.cluster`: - The managed cluster on which the resource resides; null for the hub cluster
+
+
+Returns:
+
+A tuple containing the watched resource data, a boolean indicating if the data is loaded,
+and any error that occurred. The hook returns live-updating data.
+
+Examples:
+
+```typescript
+// Watch pods on a remote cluster
+const [pods, loaded, error] = useFleetK8sWatchResource({
+  groupVersionKind: { version: 'v1', kind: 'Pod' },
+  isList: true,
+  cluster: 'remote-cluster',
+  namespace: 'default'
+})
+
+// Watch a specific deployment on hub cluster
+const [deployment, loaded, error] = useFleetK8sWatchResource({
+  groupVersionKind: { group: 'apps', version: 'v1', kind: 'Deployment' },
+  name: 'my-app',
+  namespace: 'default'
+})
+```
+
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetK8sWatchResource.ts#L48)
+
+### :gear: useFleetSearchPoll
+
+| Function | Type |
+| ---------- | ---------- |
+| `useFleetSearchPoll` | `UseFleetSearchPoll` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/search/useFleetSearchPoll.ts#L7)
 
 ### :gear: useFleetSearchPoll
 
@@ -394,7 +441,7 @@ Returns:
 | ---------- | ---------- |
 | `OptionsGet` | `BaseOptions and { model: K8sModel requestInit?: RequestInit }` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/apiRequests.ts#L31)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/apiRequests.ts#L36)
 
 ### :gear: OptionsPatch
 
