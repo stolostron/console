@@ -15,17 +15,17 @@ import {
 
 /**
  * A hook for watching Kubernetes resources with support for multi-cluster environments.
- * Hook is also supported by OpenShift Dynamic Plugin SDK
- * see: https://github.com/openshift/dynamic-plugin-sdk (v1.0.0)
+ * It is equivalent to the [`useK8sWatchResource`](https://github.com/openshift/console/blob/main/frontend/packages/console-dynamic-plugin-sdk/docs/api.md#usek8swatchresource)
+ * hook from the [OpenShift Console Dynamic Plugin SDK](https://www.npmjs.com/package/@openshift-console/dynamic-plugin-sdk)
+ * but allows you to retrieve data from any cluster managed by Red Hat Advanced Cluster Management.
  *
- * This hook provides an interface for watching Kubernetes resources across multiple clusters.
  * It automatically detects the hub cluster and handles resource watching on both hub
  * and remote clusters using WebSocket connections for real-time updates.
  *
  * @param initResource - The resource to watch. Can be null to disable the watch.
+ * @param initResource.cluster - The managed cluster on which the resource resides; null for the hub cluster
  * @returns A tuple containing the watched resource data, a boolean indicating if the data is loaded,
- *          and any error that occurred. The hook returns live-updating data for remote clusters
- *          and standard K8s watch behavior for hub cluster resources.
+ *          and any error that occurred. The hook returns live-updating data.
  *
  * @example
  * ```typescript
@@ -39,7 +39,7 @@ import {
  *
  * // Watch a specific deployment on hub cluster
  * const [deployment, loaded, error] = useFleetK8sWatchResource({
- *   groupVersionKind: { version: 'apps/v1', kind: 'Deployment' },
+ *   groupVersionKind: { group: 'apps', version: 'v1', kind: 'Deployment' },
  *   name: 'my-app',
  *   namespace: 'default'
  * })
