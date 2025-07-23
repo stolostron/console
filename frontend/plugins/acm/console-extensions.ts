@@ -38,6 +38,7 @@ const welcomeRoute: EncodedExtension<RoutePage> = {
   properties: {
     path: '/multicloud/home/welcome',
     component: { $codeRef: 'welcome.default' },
+    perspective: 'acm',
   },
 }
 
@@ -59,6 +60,7 @@ const overviewRoute: EncodedExtension<RoutePage> = {
   properties: {
     path: '/multicloud/home/overview',
     component: { $codeRef: 'overview.default' },
+    perspective: 'acm',
   },
 }
 
@@ -80,6 +82,7 @@ const searchRoute: EncodedExtension<RoutePage> = {
   properties: {
     path: '/multicloud/search',
     component: { $codeRef: 'search.default' },
+    perspective: 'acm',
   },
 }
 
@@ -89,6 +92,7 @@ const altSearchRoute: EncodedExtension<RoutePage> = {
   properties: {
     path: '/multicloud/home/search',
     component: { $codeRef: 'search.default' },
+    perspective: 'acm',
   },
 }
 
@@ -110,6 +114,7 @@ const applicationsRoute: EncodedExtension<RoutePage> = {
   properties: {
     path: '/multicloud/applications',
     component: { $codeRef: 'applications.default' },
+    perspective: 'acm',
   },
 }
 
@@ -131,6 +136,7 @@ const governanceRoute: EncodedExtension<RoutePage> = {
   properties: {
     path: '/multicloud/governance',
     component: { $codeRef: 'governance.default' },
+    perspective: 'acm',
   },
 }
 
@@ -163,6 +169,7 @@ const accessConrolRoute: EncodedExtension<RoutePage> = {
   properties: {
     path: '/multicloud/access-control-management',
     component: { $codeRef: 'accessControlManagement.default' },
+    perspective: 'acm',
   },
   flags: {
     required: ['ACM_ACCESS_CONTROL_MANAGEMENT'],
