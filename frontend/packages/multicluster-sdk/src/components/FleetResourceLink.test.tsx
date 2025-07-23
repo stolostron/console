@@ -9,6 +9,12 @@ jest.doMock('@openshift-console/dynamic-plugin-sdk', () => ({
     </div>
   ),
   ResourceIcon: ({ groupVersionKind }: any) => <span data-testid="resource-icon">{groupVersionKind?.kind} icon</span>,
+  useK8sWatchResource: jest.fn(),
+}))
+
+jest.doMock('../internal/fleetResourceHelpers', () => ({
+  useResourceRouteExtensions: jest.fn(),
+  getFirstClassResourceRoute: jest.fn(),
 }))
 
 // mock PatternFly components
@@ -46,6 +52,10 @@ jest.mock('../api/useHubClusterName', () => ({
   useHubClusterName: () => mockUseHubClusterName(),
 }))
 
+jest.mock('../api/useIsFleetAvailable', () => ({
+  useIsFleetAvailable: jest.fn(),
+}))
+
 // mock search paths utility
 jest.mock('../api/utils/searchPaths', () => ({
   getURLSearchParam: ({ cluster, kind, apigroup, apiversion, name, namespace }: any) => {
@@ -69,6 +79,8 @@ jest.mock('../internal/fleetResourceHelpers', () => ({
 // import the FleetResourceLink component using require() only for this one import
 const { FleetResourceLink } = require('./FleetResourceLink')
 const { getFirstClassResourceRoute, useResourceRouteExtensions } = require('../internal/fleetResourceHelpers')
+const { useK8sWatchResource } = require('@openshift-console/dynamic-plugin-sdk')
+const { useIsFleetAvailable } = require('../api/useIsFleetAvailable')
 
 describe('FleetResourceLink', () => {
   const defaultProps = {
@@ -87,6 +99,16 @@ describe('FleetResourceLink', () => {
     mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
     mockUseLocation.mockReturnValue({ pathname: '/multicloud/infrastructure' })
 
+    // mock useK8sWatchResource for useFleetClusterNames
+    useK8sWatchResource.mockReturnValue([
+      [{ metadata: { name: 'cluster1' } }, { metadata: { name: 'cluster2' } }], // clusters
+      true, // loaded
+      null, // error
+    ])
+
+    // mock useIsFleetAvailable to return true by default
+    useIsFleetAvailable.mockReturnValue(true)
+
     // mock the useResourceRouteExtensions hook
     useResourceRouteExtensions.mockReturnValue({
       resourceRoutesResolved: true,
@@ -101,8 +123,8 @@ describe('FleetResourceLink', () => {
   })
 
   describe('Fleet not available', () => {
-    it('should fallback to ResourceLink when hub is not loaded', () => {
-      mockUseHubClusterName.mockReturnValue(['local-cluster', false, null]) // hubLoaded = false
+    it('should fallback to ResourceLink when fleet is not available', () => {
+      useIsFleetAvailable.mockReturnValue(false) // fleet not available
 
       render(
         <MemoryRouter>
@@ -113,8 +135,8 @@ describe('FleetResourceLink', () => {
       expect(screen.getByTestId('resource-link-mock')).toHaveTextContent('ResourceLink: test-vm (VirtualMachine)')
     })
 
-    it('should show skeleton when cluster is given but hub is not loaded', () => {
-      mockUseHubClusterName.mockReturnValue(['local-cluster', false, null]) // hubLoaded = false
+    it('should fallback to ResourceLink when fleet is not available (alternative test)', () => {
+      useIsFleetAvailable.mockReturnValue(false) // fleet not available
 
       render(
         <MemoryRouter>
@@ -122,16 +144,14 @@ describe('FleetResourceLink', () => {
         </MemoryRouter>
       )
 
-      // when hub is not loaded, fleet is not available so it falls back to ResourceLink
+      // when fleet is not available, it falls back to ResourceLink
       expect(screen.getByTestId('resource-link-mock')).toHaveTextContent('ResourceLink: test-vm (VirtualMachine)')
     })
   })
 
-  describe('Skeleton rendering (unreachable code)', () => {
-    // Note: The skeleton rendering code in FleetResourceLink is currently unreachable
-    // because when !hubLoaded, the function returns ResourceLink before reaching the skeleton logic
-    it('should fallback to ResourceLink when hub not loaded (skeleton code unreachable)', () => {
-      mockUseHubClusterName.mockReturnValue(['local-cluster', false, null])
+  describe('Fleet not available scenarios', () => {
+    it('should fallback to ResourceLink when fleet not available and hideIcon is false', () => {
+      useIsFleetAvailable.mockReturnValue(false) // fleet not available
 
       render(
         <MemoryRouter>
@@ -139,12 +159,12 @@ describe('FleetResourceLink', () => {
         </MemoryRouter>
       )
 
-      // currently falls back to ResourceLink because isFleetAvailable = hubLoaded = false
+      // falls back to ResourceLink because isFleetAvailable = false
       expect(screen.getByTestId('resource-link-mock')).toBeInTheDocument()
     })
 
-    it('should fallback to ResourceLink when hub not loaded and hideIcon is true', () => {
-      mockUseHubClusterName.mockReturnValue(['local-cluster', false, null])
+    it('should fallback to ResourceLink when fleet not available and hideIcon is true', () => {
+      useIsFleetAvailable.mockReturnValue(false) // fleet not available
 
       render(
         <MemoryRouter>
@@ -152,12 +172,12 @@ describe('FleetResourceLink', () => {
         </MemoryRouter>
       )
 
-      // currently falls back to ResourceLink
+      // falls back to ResourceLink
       expect(screen.getByTestId('resource-link-mock')).toBeInTheDocument()
     })
 
-    it('should fallback to ResourceLink when hub not loaded with children', () => {
-      mockUseHubClusterName.mockReturnValue(['local-cluster', false, null])
+    it('should fallback to ResourceLink when fleet not available with children', () => {
+      useIsFleetAvailable.mockReturnValue(false) // fleet not available
 
       render(
         <MemoryRouter>
@@ -167,7 +187,7 @@ describe('FleetResourceLink', () => {
         </MemoryRouter>
       )
 
-      // currently falls back to ResourceLink and includes children
+      // falls back to ResourceLink and includes children
       expect(screen.getByTestId('resource-link-mock')).toBeInTheDocument()
       expect(screen.getByTestId('test-children')).toBeInTheDocument()
     })
@@ -749,6 +769,168 @@ describe('FleetResourceLink', () => {
 
       // VirtualMachine should now be extension-only and not use getFirstClassResourceRoute
       expect(getFirstClassResourceRoute).not.toHaveBeenCalledWith('VirtualMachine', 'test-vm')
+    })
+
+    it('should call getResourceRouteHandler with correct parameters', () => {
+      const mockGetResourceRouteHandler = jest.fn().mockReturnValue(null)
+      mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
+
+      useResourceRouteExtensions.mockReturnValue({
+        resourceRoutesResolved: true,
+        getResourceRouteHandler: mockGetResourceRouteHandler,
+      })
+
+      render(
+        <MemoryRouter>
+          <FleetResourceLink {...defaultProps} cluster="managed-cluster" />
+        </MemoryRouter>
+      )
+
+      expect(mockGetResourceRouteHandler).toHaveBeenCalledWith(
+        'kubevirt.io', // group
+        'VirtualMachine', // kind
+        'v1' // version
+      )
+    })
+
+    it('should handle when getResourceRouteHandler returns null', () => {
+      const mockGetResourceRouteHandler = jest.fn().mockReturnValue(null)
+      mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
+
+      useResourceRouteExtensions.mockReturnValue({
+        resourceRoutesResolved: true,
+        getResourceRouteHandler: mockGetResourceRouteHandler,
+      })
+
+      render(
+        <MemoryRouter>
+          <FleetResourceLink {...defaultProps} cluster="managed-cluster" />
+        </MemoryRouter>
+      )
+
+      // Should fallback to search path when handler returns null
+      expect(screen.getByTestId('fleet-link')).toHaveAttribute(
+        'href',
+        '/multicloud/search/resources?cluster=managed-cluster&kind=VirtualMachine&apigroup=kubevirt.io&apiversion=v1&name=test-vm&namespace=default'
+      )
+    })
+
+    it('should handle when getResourceRouteHandler returns non-function', () => {
+      const mockGetResourceRouteHandler = jest.fn().mockReturnValue('not-a-function')
+      mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
+
+      useResourceRouteExtensions.mockReturnValue({
+        resourceRoutesResolved: true,
+        getResourceRouteHandler: mockGetResourceRouteHandler,
+      })
+
+      render(
+        <MemoryRouter>
+          <FleetResourceLink {...defaultProps} cluster="managed-cluster" />
+        </MemoryRouter>
+      )
+
+      // Should fallback to search path when handler is not a function
+      expect(screen.getByTestId('fleet-link')).toHaveAttribute(
+        'href',
+        '/multicloud/search/resources?cluster=managed-cluster&kind=VirtualMachine&apigroup=kubevirt.io&apiversion=v1&name=test-vm&namespace=default'
+      )
+    })
+  })
+
+  describe('Loading state', () => {
+    it('should render loading state when cluster is provided but hub is not loaded', () => {
+      mockUseHubClusterName.mockReturnValue(['local-cluster', false, null]) // hubLoaded = false
+
+      render(
+        <MemoryRouter>
+          <FleetResourceLink {...defaultProps} cluster="managed-cluster" />
+        </MemoryRouter>
+      )
+
+      // Should render as span (not link) when hub is not loaded
+      expect(screen.getByText('test-vm')).toBeInTheDocument()
+      expect(screen.queryByTestId('fleet-link')).not.toBeInTheDocument()
+      expect(screen.getByTestId('resource-icon')).toBeInTheDocument()
+    })
+
+    it('should render loading state without icon when hideIcon is true', () => {
+      mockUseHubClusterName.mockReturnValue(['local-cluster', false, null]) // hubLoaded = false
+
+      render(
+        <MemoryRouter>
+          <FleetResourceLink {...defaultProps} cluster="managed-cluster" hideIcon={true} />
+        </MemoryRouter>
+      )
+
+      // Should render as span without icon when hub is not loaded and hideIcon is true
+      expect(screen.getByText('test-vm')).toBeInTheDocument()
+      expect(screen.queryByTestId('fleet-link')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('resource-icon')).not.toBeInTheDocument()
+    })
+
+    it('should render loading state with children', () => {
+      mockUseHubClusterName.mockReturnValue(['local-cluster', false, null]) // hubLoaded = false
+
+      render(
+        <MemoryRouter>
+          <FleetResourceLink {...defaultProps} cluster="managed-cluster">
+            <span data-testid="loading-children">Loading Children</span>
+          </FleetResourceLink>
+        </MemoryRouter>
+      )
+
+      // Should render children even in loading state
+      expect(screen.getByText('test-vm')).toBeInTheDocument()
+      expect(screen.getByTestId('loading-children')).toBeInTheDocument()
+    })
+  })
+
+  describe('Extension handler parameter validation', () => {
+    it('should pass hub cluster name when cluster is not provided', () => {
+      const mockHandler = jest.fn().mockReturnValue('/custom/path')
+      mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
+
+      useResourceRouteExtensions.mockReturnValue({
+        resourceRoutesResolved: true,
+        getResourceRouteHandler: jest.fn().mockReturnValue(mockHandler),
+      })
+
+      render(
+        <MemoryRouter>
+          <FleetResourceLink {...defaultProps} /> {/* no cluster prop */}
+        </MemoryRouter>
+      )
+
+      expect(mockHandler).toHaveBeenCalledWith({
+        kind: 'VirtualMachine',
+        cluster: 'local-cluster', // should use hub cluster name
+        namespace: 'default',
+        name: 'test-vm',
+      })
+    })
+
+    it('should pass provided cluster name when cluster is specified', () => {
+      const mockHandler = jest.fn().mockReturnValue('/custom/path')
+      mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
+
+      useResourceRouteExtensions.mockReturnValue({
+        resourceRoutesResolved: true,
+        getResourceRouteHandler: jest.fn().mockReturnValue(mockHandler),
+      })
+
+      render(
+        <MemoryRouter>
+          <FleetResourceLink {...defaultProps} cluster="custom-cluster" />
+        </MemoryRouter>
+      )
+
+      expect(mockHandler).toHaveBeenCalledWith({
+        kind: 'VirtualMachine',
+        cluster: 'custom-cluster', // should use provided cluster name
+        namespace: 'default',
+        name: 'test-vm',
+      })
     })
   })
 })
