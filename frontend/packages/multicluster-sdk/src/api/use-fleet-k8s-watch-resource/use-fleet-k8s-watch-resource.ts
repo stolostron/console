@@ -128,7 +128,9 @@ export const useFleetK8sWatchResource = <R extends FleetK8sResourceCommon | Flee
         setLoaded(true)
       }
     }
-    fetchData()
+    fetchData().catch((err) => {
+      console.error('Error fetching data: ', err)
+    })
   }, [
     cluster,
     isList,

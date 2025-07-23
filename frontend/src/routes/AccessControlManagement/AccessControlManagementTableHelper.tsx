@@ -146,7 +146,7 @@ const COLUMN_CELLS = {
         isCompact={uniqueUsersGroups.length > LABELS_LENGTH}
       />
     ) : (
-      <span style={{ whiteSpace: 'nowrap' }}>'-'</span>
+      <span style={{ whiteSpace: 'nowrap' }}>&#39;-&#39;</span>
     )
   },
   ROLES: (accessControl: AccessControl, t: TFunction) => {
@@ -166,7 +166,7 @@ const COLUMN_CELLS = {
         isCompact={uniqueRoles.length > LABELS_LENGTH}
       />
     ) : (
-      <span style={{ whiteSpace: 'nowrap' }}>'-'</span>
+      <span style={{ whiteSpace: 'nowrap' }}>&#39;-&#39;</span>
     )
   },
   NAMESPACES: (accessControl: AccessControl, t: TFunction) => {
@@ -185,7 +185,7 @@ const COLUMN_CELLS = {
         isCompact={uniqueNamespaces.length > LABELS_LENGTH}
       />
     ) : (
-      <span style={{ whiteSpace: 'nowrap' }}>'-'</span>
+      <span style={{ whiteSpace: 'nowrap' }}>&#39;-&#39;</span>
     )
   },
   STATUS: (accessControl: AccessControl) => <AccessControlStatus condition={accessControl.status?.conditions?.[0]} />,

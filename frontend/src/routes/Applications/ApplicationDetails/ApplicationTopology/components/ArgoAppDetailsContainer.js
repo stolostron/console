@@ -24,6 +24,7 @@ class ArgoAppDetailsContainer extends Component {
       handleErrorMsg: PropTypes.func,
     }),
     argoAppList: PropTypes.array,
+    hubClusterName: PropTypes.string,
     t: PropTypes.func,
   }
   constructor(props) {
@@ -54,9 +55,9 @@ class ArgoAppDetailsContainer extends Component {
     this.toggleLinkLoading = this.toggleLinkLoading.bind(this)
   }
 
-  processActionLink = (resource) => {
+  processActionLink = async (resource) => {
     const { t } = this.props
-    processResourceActionLink(resource, this.toggleLinkLoading, t)
+    await processResourceActionLink(resource, this.toggleLinkLoading, t)
   }
 
   toggleLinkLoading = () => {
@@ -303,9 +304,9 @@ class ArgoAppDetailsContainer extends Component {
     })
   }
 
-  handleKeyPress = (resource, _event) => {
+  handleKeyPress = async (resource, _event) => {
     if (_event.key === 'Enter') {
-      this.processActionLink(resource)
+      await this.processActionLink(resource)
     }
   }
 

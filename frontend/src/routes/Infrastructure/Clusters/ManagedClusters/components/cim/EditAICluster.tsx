@@ -147,7 +147,10 @@ const EditAICluster: React.FC = () => {
         }
       }
     }
-    patch()
+    patch().catch((err) => {
+      console.error('Error patching ACI holdInstallation.', err)
+      setPatchingHoldInstallation(false)
+    })
   }, [
     // just once but when the ACI is loaded
     !!agentClusterInstall,

@@ -15,7 +15,7 @@ type LegendData = {
   link?: string
 }
 
-const LegendLabel = ({ ...props }) => {
+const LegendLabel = (props: { datum: LegendData }) => {
   const link = props.datum?.link
   const chartLabel = <ChartLabel {...props} />
   return link ? <Link to={link}>{chartLabel}</Link> : chartLabel

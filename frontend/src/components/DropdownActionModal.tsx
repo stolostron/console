@@ -97,16 +97,11 @@ export function DropdownActionModal<T = unknown>(props: IDropdownActionModalProp
                       const error: ItemError<T>[] = []
 
                       if (props.actionFn) {
-                        props
-                          .actionFn(props.resource, selection as string)
-                          .promise.catch((err) => {
-                            console.log(err)
-                            setError(err)
-                            error.push(err)
-                          })
-                          .then(() => {
-                            if (error.length === 0) props.close()
-                          })
+                        await props.actionFn(props.resource, selection as string).promise.catch((err) => {
+                          setError(err)
+                          error.push(err)
+                        })
+                        if (error.length === 0) props.close()
                       }
                     }}
                     label={props.action}

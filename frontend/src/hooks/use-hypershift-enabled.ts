@@ -29,7 +29,9 @@ export const useIsHypershiftEnabled = () => {
         // nothing to do
       }
     }
-    getHypershiftStatus()
+    getHypershiftStatus().catch(() => {
+      setIsHypershiftEnabled(false)
+    })
   }, [hypershiftAddon?.status?.conditions, multiClusterEngine?.spec?.overrides?.components])
   return isHypershiftEnabled
 }

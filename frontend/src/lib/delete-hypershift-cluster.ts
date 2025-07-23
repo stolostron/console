@@ -56,18 +56,20 @@ export const deleteHypershiftCluster = (cluster: Cluster) => {
 
   return {
     promise: new Promise((resolve, reject) => {
-      promises.then((promisesSettledResult) => {
-        const rejectedPromises = promisesSettledResult.filter((p) => p.status === 'rejected')
-        if (rejectedPromises.length) {
-          const errPromise = rejectedPromises.find(
-            (p: any) => p.reason instanceof ResourceError && p.reason.code !== ResourceErrorCode.NotFound
-          )
-          if (errPromise) {
-            reject((errPromise as any).reason)
+      promises
+        .then((promisesSettledResult) => {
+          const rejectedPromises = promisesSettledResult.filter((p) => p.status === 'rejected')
+          if (rejectedPromises.length) {
+            const errPromise = rejectedPromises.find(
+              (p: any) => p.reason instanceof ResourceError && p.reason.code !== ResourceErrorCode.NotFound
+            )
+            if (errPromise) {
+              reject((errPromise as any).reason)
+            }
           }
-        }
-        resolve(promisesSettledResult)
-      })
+          resolve(promisesSettledResult)
+        })
+        .catch(reject)
     }),
     abort,
   }

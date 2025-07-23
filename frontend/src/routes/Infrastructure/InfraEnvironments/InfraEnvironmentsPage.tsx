@@ -129,26 +129,30 @@ const deleteInfraEnv = (
 
   return {
     promise: new Promise((resolve, reject) => {
-      deleteResourcesResult.promise.then((promisesSettledResult) => {
-        if (promisesSettledResult[0]?.status === 'rejected') {
-          const error = promisesSettledResult[0].reason
-          if (error) {
-            reject(promisesSettledResult[0].reason)
+      deleteResourcesResult.promise
+        .then((promisesSettledResult) => {
+          if (promisesSettledResult[0]?.status === 'rejected') {
+            const error = promisesSettledResult[0].reason
+            if (error) {
+              reject(promisesSettledResult[0].reason)
+              return
+            }
+          }
+          if (promisesSettledResult[1]?.status === 'rejected') {
+            if ((promisesSettledResult[1].reason as ResourceError).code !== 404) {
+              reject(promisesSettledResult[1].reason)
+              return
+            }
+          }
+          if (promisesSettledResult[2]?.status === 'rejected') {
+            reject(promisesSettledResult[2].reason)
             return
           }
-        }
-        if (promisesSettledResult[1]?.status === 'rejected') {
-          if ((promisesSettledResult[1].reason as ResourceError).code !== 404) {
-            reject(promisesSettledResult[1].reason)
-            return
-          }
-        }
-        if (promisesSettledResult[2]?.status === 'rejected') {
-          reject(promisesSettledResult[2].reason)
-          return
-        }
-        resolve(promisesSettledResult)
-      })
+          resolve(promisesSettledResult)
+        })
+        .catch((err) => {
+          reject(err)
+        })
     }),
     abort: deleteResourcesResult.abort,
   }
@@ -274,7 +278,7 @@ type InfraEnvsTableProps = {
   isStorage: boolean
 }
 
-const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agentServiceConfig, isStorage }) => {
+const InfraEnvsTable = ({ infraEnvs, agents, agentServiceConfig, isStorage }: InfraEnvsTableProps) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const getDetailsLink = (infraEnv: InfraEnvK8sResource) =>
