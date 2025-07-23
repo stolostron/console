@@ -136,7 +136,6 @@ const virtualMachinesRoute: EncodedExtension<RoutePage> = {
     disallowed: ['KUBEVIRT_DYNAMIC_ACM'],
   },
 }
-
 // Credentials Navigation Item - type: 'console.navigation/href'
 const credentialsNavItem: EncodedExtension<HrefNavItem> = {
   type: 'console.navigation/href',
