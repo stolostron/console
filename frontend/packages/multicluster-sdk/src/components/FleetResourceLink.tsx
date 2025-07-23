@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import React from 'react'
 import { ResourceIcon, ResourceLink } from '@openshift-console/dynamic-plugin-sdk'
-import { Skeleton } from '@patternfly/react-core'
 import { FleetResourceLinkProps } from '../types/fleet'
 import classNames from 'classnames'
 import { getURLSearchParam } from '../api/utils/searchPaths'
 import { useHubClusterName } from '../api/useHubClusterName'
+import { useIsFleetAvailable } from '../api/useIsFleetAvailable'
 import { useLocation, Link } from 'react-router-dom-v5-compat'
 import { useResourceRouteExtensions } from '../internal/fleetResourceHelpers'
 
@@ -65,8 +65,8 @@ export const FleetResourceLink: React.FC<FleetResourceLinkProps> = ({ cluster, .
   // hook that handles useResolvedExtensions and lookup logic
   const { resourceRoutesResolved, getResourceRouteHandler } = useResourceRouteExtensions()
 
-  // check if fleet is available (has managed clusters)
-  const isFleetAvailable = hubLoaded
+  // check if fleet is available
+  const isFleetAvailable = useIsFleetAvailable()
 
   if (!isFleetAvailable) {
     // fallback to default ResourceLink from OCP
@@ -95,35 +95,39 @@ export const FleetResourceLink: React.FC<FleetResourceLinkProps> = ({ cluster, .
     'co-resource-item--truncate': truncate,
   })
 
-  // if cluster name is given but hub name is not loaded yet, show skeleton
+  // if cluster name is given but hub name is not loaded yet, show name
   if (cluster && !hubLoaded) {
     return (
       <span className={classes}>
         {!hideIcon && <ResourceIcon groupVersionKind={groupVersionKind} />}
-        <Skeleton width="100px" />
+        <span className="co-resource-item__resource-name">
+          {value}
+          {nameSuffix}
+        </span>
         {children}
       </span>
     )
   }
 
-  // determine if this is a hub cluster case (no cluster or it matches hub name)
+  // determine if this is a hub cluster case (if no cluster or it matches hub name)
   const isHubCluster = !cluster || cluster === hubClusterName
   const isMulticloudPath = location.pathname.startsWith('/multicloud/')
 
   // helper function for ManagedCluster routing
-  const getManagedClusterPath = (name: string): { path: string | null; shouldFallback: boolean } => {
+  const getManagedClusterPath = (name: string): string | 'fallback' => {
     const firstClassPath = `/multicloud/infrastructure/clusters/details/${name}/${name}/overview`
 
     if (isHubCluster) {
       if (isMulticloudPath) {
-        return { path: firstClassPath, shouldFallback: false }
+        return firstClassPath
       }
-      return { path: null, shouldFallback: true }
+      // On hub cluster but not on multicloud path - fallback to default ResourceLink
+      return 'fallback'
     }
-    return { path: firstClassPath, shouldFallback: false }
+    return firstClassPath
   }
 
-  // helper function for extension-based routing
+  // function for extension-based routing
   const getExtensionPath = (
     kind: string,
     group: string | undefined,
@@ -143,14 +147,14 @@ export const FleetResourceLink: React.FC<FleetResourceLinkProps> = ({ cluster, .
     })
   }
 
-  // helper function for hub cluster context awareness
+  // function for hub cluster context awareness
   const shouldUseExtensionPath = (extensionPath: string | null): boolean => {
     if (!extensionPath) return false
     if (!isHubCluster) return true
     return isMulticloudPath
   }
 
-  // helper function for managed cluster search path
+  // function for managed cluster search path
   const getManagedClusterSearchPath = (): string => {
     return `/multicloud/search/resources${getURLSearchParam({
       cluster,
@@ -163,7 +167,7 @@ export const FleetResourceLink: React.FC<FleetResourceLinkProps> = ({ cluster, .
   }
 
   // shared helper function for extension-based resource routing
-  const getExtensionBasedResourcePath = (name: string): { path: string | null; shouldFallback: boolean } => {
+  const getExtensionBasedResourcePath = (name: string): string | 'fallback' => {
     const extensionPath = getExtensionPath(
       groupVersionKind?.kind ?? '',
       groupVersionKind?.group,
@@ -172,33 +176,23 @@ export const FleetResourceLink: React.FC<FleetResourceLinkProps> = ({ cluster, .
     )
 
     if (shouldUseExtensionPath(extensionPath)) {
-      return { path: extensionPath, shouldFallback: false }
-    }
-
-    if (extensionPath && isHubCluster && !isMulticloudPath) {
-      return { path: null, shouldFallback: true }
+      return extensionPath!
     }
 
     if (isHubCluster) {
-      return { path: null, shouldFallback: true }
+      // On hub cluster but no extension path available or not on multicloud path
+      // Fall back to default ResourceLink from OCP
+      return 'fallback'
     }
 
-    return { path: getManagedClusterSearchPath(), shouldFallback: false }
+    // For managed clusters, always provide a search path
+    return getManagedClusterSearchPath()
   }
 
-  // helper function for VirtualMachine routing
-  const getVirtualMachinePath = (name: string): { path: string | null; shouldFallback: boolean } => {
-    return getExtensionBasedResourcePath(name)
-  }
-
-  // helper function for generic resource routing
-  const getGenericResourcePath = (name: string): { path: string | null; shouldFallback: boolean } => {
-    return getExtensionBasedResourcePath(name)
-  }
-
-  const getResourcePath = (): { path: string | null; shouldFallback: boolean } => {
+  const getResourcePath = (): string | 'fallback' => {
     if (!name) {
-      return { path: null, shouldFallback: true }
+      // No resource name provided - fallback to default ResourceLink
+      return 'fallback'
     }
 
     // core ACM resources
@@ -206,32 +200,27 @@ export const FleetResourceLink: React.FC<FleetResourceLinkProps> = ({ cluster, .
       return getManagedClusterPath(name)
     }
 
-    // extension-managed resources
-    if (groupVersionKind?.kind === 'VirtualMachine' || groupVersionKind?.kind === 'VirtualMachineInstance') {
-      return getVirtualMachinePath(name)
-    }
-
-    // generic resources
+    // all other resources use extension-based routing
     if (groupVersionKind?.kind) {
-      return getGenericResourcePath(name)
+      return getExtensionBasedResourcePath(name)
     }
 
-    // fallback
-    return { path: null, shouldFallback: true }
+    // No resource kind provided - fallback to default ResourceLink
+    return 'fallback'
   }
 
-  const { path, shouldFallback } = getResourcePath()
+  const pathResult = getResourcePath()
 
-  if (shouldFallback) {
+  if (pathResult === 'fallback') {
     return <ResourceLink {...resourceLinkProps} />
   }
 
   return (
     <span className={classes}>
       {!hideIcon && <ResourceIcon groupVersionKind={groupVersionKind} />}
-      {path ? (
+      {pathResult ? (
         <Link
-          to={path}
+          to={pathResult}
           title={title}
           className="co-resource-item__resource-name"
           data-test-id={value}
