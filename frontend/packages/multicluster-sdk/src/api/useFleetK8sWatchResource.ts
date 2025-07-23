@@ -8,10 +8,9 @@ import { UseFleetK8sWatchResource } from '../types'
  * Hook is also supported by OpenShift Dynamic Plugin SDK
  * see: https://github.com/openshift/dynamic-plugin-sdk (v1.0.0)
  *
- * @deprecated Use useFleetK8sWatchResource from ../internal/use-fleet-k8s-watch-resource/use-fleet-k8s-watch-resource instead.z
  * This hook provides an interface for watching Kubernetes resources across multiple clusters.
  * It automatically detects the hub cluster and handles resource watching on both hub
- * and remote clusters using cached WebSocket connections for real-time updates.
+ * and remote clusters using WebSocket connections for real-time updates.
  *
  * @param initResource - The resource to watch. Can be null to disable the watch.
  * @returns A tuple containing the watched resource data, a boolean indicating if the data is loaded,
