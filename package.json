@@ -15,6 +15,7 @@
     "start:frontend:hot": "cd frontend && npm run start:hot",
     "start:frontend:launch": "cd frontend && npm run launch",
     "plugins": "concurrently npm:start:backend npm:serve:plugins npm:ocp-console npm:watch:multicluster-sdk -n backend,frontend,console,watch -c green,blue,magenta,bgCyan",
+    "plugins-ocp": "concurrently npm:start:backend npm:serve:plugins npm:ocp-console -n backend,frontend,consoleh -c green,blue,magenta",
     "plugins-dev": "concurrently npm:start:backend npm:serve:plugins -n backend,frontend -c green,blue",
     "ocp-console": "./start-ocp-console.sh",
     "serve:plugins": "cd frontend && npm run serve:plugins",
