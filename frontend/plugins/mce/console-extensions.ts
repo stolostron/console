@@ -68,6 +68,7 @@ const clustersRoute: EncodedExtension<RoutePage> = {
   properties: {
     path: '/multicloud/infrastructure/clusters',
     component: { $codeRef: 'clusters.default' },
+    perspective: 'acm',
   },
 }
 
@@ -89,6 +90,7 @@ const automationsRoute: EncodedExtension<RoutePage> = {
   properties: {
     path: '/multicloud/infrastructure/automations',
     component: { $codeRef: 'automations.default' },
+    perspective: 'acm',
   },
 }
 
@@ -110,6 +112,7 @@ const hostInventoryRoute: EncodedExtension<RoutePage> = {
   properties: {
     path: '/multicloud/infrastructure/environments',
     component: { $codeRef: 'environments.default' },
+    perspective: 'acm',
   },
 }
 
@@ -131,6 +134,7 @@ const virtualMachinesRoute: EncodedExtension<RoutePage> = {
   properties: {
     path: '/multicloud/infrastructure/virtualmachines',
     component: { $codeRef: 'virtualmachines.default' },
+    perspective: 'acm',
   },
   flags: {
     disallowed: ['KUBEVIRT_DYNAMIC_ACM'],
@@ -143,6 +147,7 @@ const virtualMachinesDetailRoute: EncodedExtension<RoutePage> = {
   properties: {
     path: '/multicloud/infrastructure/virtualmachines/:cluster/:namespace/:name', // with parameters
     component: { $codeRef: 'vmRedirect.default' }, // points to VMRedirect
+    perspective: 'acm',
   },
   flags: {
     disallowed: ['KUBEVIRT_DYNAMIC_ACM'],
@@ -166,6 +171,7 @@ const credentialsRoute: EncodedExtension<RoutePage> = {
   properties: {
     path: '/multicloud/credentials',
     component: { $codeRef: 'credentials.default' },
+    perspective: 'acm',
   },
 }
 
