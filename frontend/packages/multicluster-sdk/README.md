@@ -24,6 +24,7 @@ The multicluster SDK provides components and hooks that enable your dynamic plug
 ## Basic Setup
 
 Setup depends on your usage scenarios.
+
 - For pages that deal with a single cluster at a time, you can replace hooks, functions, and components from the dynamic plugin SDK with their drop-in replacements from the multicluster SDK. When a compatible version of RHACM is installed on the cluster and a cluster name is given in the arguments or properties of an SDK API, an implementation that works with data from the specified managed cluster will be used. Otherwise, we fall back to the single cluster implementation from the dynamic plugin SDK and work with data on the local cluster.
 - For other APIs that work with multiple clusters at a time (such as functions that leverage RHACM's search capabilities) and do not have an equivalent in the dyanamic plugin SDK, you can call the `useIsFleetAvailable` hook to check if support is available. Because it is not permitted to call hooks conditionally, if you are using these multicluster SDK hooks, then you must call them with arguments that render the hook in a disabled state when fleet support is unavailable. Otherwise you will get empty results or errors. See the [API Reference](#api-reference) for details.
 - If you have entire [routes](https://github.com/openshift/console/blob/main/frontend/packages/console-dynamic-plugin-sdk/docs/console-extensions.md#consolepageroute) or [navigation items](https://github.com/openshift/console/blob/main/frontend/packages/console-dynamic-plugin-sdk/docs/console-extensions.md#consolenavigationhref) or any other type of dynamic plugin extension that should only be enabled when multicluster support is available, you can make them conditional on a flag. RHACM enables flags indicating that it provides the prerequisites of the multicluster SDK. This is a versioned flag and within any version of the multicluster SDK, its name is available as the `REQUIRED_PROVIDER_FLAG` constant.
@@ -31,7 +32,6 @@ Setup depends on your usage scenarios.
 ## Working with Resources
 
 // Example code will be added after API stabilization
-
 
 ## API Reference
 
@@ -211,11 +211,50 @@ Hook that returns the fleet configuration. Checks periodically for changes in th
 
 ### :gear: useFleetK8sWatchResource
 
+A hook for watching Kubernetes resources with support for multi-cluster environments.
+It is equivalent to the [`useK8sWatchResource`](https://github.com/openshift/console/blob/main/frontend/packages/console-dynamic-plugin-sdk/docs/api.md#usek8swatchresource)
+hook from the [OpenShift Console Dynamic Plugin SDK](https://www.npmjs.com/package/@openshift-console/dynamic-plugin-sdk)
+but allows you to retrieve data from any cluster managed by Red Hat Advanced Cluster Management.
+
+It automatically detects the hub cluster and handles resource watching on both hub
+and remote clusters using WebSocket connections for real-time updates.
+
 | Function | Type |
 | ---------- | ---------- |
 | `useFleetK8sWatchResource` | `UseFleetK8sWatchResource` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetK8sWatchResource.ts#L6)
+Parameters:
+
+* `initResource`: - The resource to watch. Can be null to disable the watch.
+* `initResource.cluster`: - The managed cluster on which the resource resides; null for the hub cluster
+
+
+Returns:
+
+A tuple containing the watched resource data, a boolean indicating if the data is loaded,
+and any error that occurred. The hook returns live-updating data.
+
+Examples:
+
+```typescript
+// Watch pods on a remote cluster
+const [pods, loaded, error] = useFleetK8sWatchResource({
+  groupVersionKind: { version: 'v1', kind: 'Pod' },
+  isList: true,
+  cluster: 'remote-cluster',
+  namespace: 'default'
+})
+
+// Watch a specific deployment on hub cluster
+const [deployment, loaded, error] = useFleetK8sWatchResource({
+  groupVersionKind: { group: 'apps', version: 'v1', kind: 'Deployment' },
+  name: 'my-app',
+  namespace: 'default'
+})
+```
+
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetK8sWatchResource.ts#L48)
 
 ### :gear: useFleetPrometheusPoll
 
