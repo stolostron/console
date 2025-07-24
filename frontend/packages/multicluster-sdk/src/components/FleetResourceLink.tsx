@@ -69,7 +69,7 @@ export const FleetResourceLink: React.FC<FleetResourceLinkProps> = ({ cluster, .
   const isFleetAvailable = useIsFleetAvailable()
 
   if (!isFleetAvailable) {
-    // fallback to default ResourceLink from OCP
+    // fallback to default ResourceLink
     return <ResourceLink {...resourceLinkProps} />
   }
 
@@ -114,17 +114,17 @@ export const FleetResourceLink: React.FC<FleetResourceLinkProps> = ({ cluster, .
   const isMulticloudPath = location.pathname.startsWith('/multicloud/')
 
   // helper function for ManagedCluster routing
-  const getManagedClusterPath = (name: string): string | 'fallback' => {
+  const getManagedClusterPath = (name: string): { path: string; shouldFallback: boolean } => {
     const firstClassPath = `/multicloud/infrastructure/clusters/details/${name}/${name}/overview`
 
     if (isHubCluster) {
       if (isMulticloudPath) {
-        return firstClassPath
+        return { path: firstClassPath, shouldFallback: false }
       }
-      // On hub cluster but not on multicloud path - fallback to default ResourceLink
-      return 'fallback'
+      // on hub cluster but not on multicloud path - fallback to default ResourceLink
+      return { path: '', shouldFallback: true }
     }
-    return firstClassPath
+    return { path: firstClassPath, shouldFallback: false }
   }
 
   // function for extension-based routing
@@ -167,7 +167,7 @@ export const FleetResourceLink: React.FC<FleetResourceLinkProps> = ({ cluster, .
   }
 
   // shared helper function for extension-based resource routing
-  const getExtensionBasedResourcePath = (name: string): string | 'fallback' => {
+  const getExtensionBasedResourcePath = (name: string): { path: string; shouldFallback: boolean } => {
     const extensionPath = getExtensionPath(
       groupVersionKind?.kind ?? '',
       groupVersionKind?.group,
@@ -176,23 +176,23 @@ export const FleetResourceLink: React.FC<FleetResourceLinkProps> = ({ cluster, .
     )
 
     if (shouldUseExtensionPath(extensionPath)) {
-      return extensionPath!
+      return { path: extensionPath!, shouldFallback: false }
     }
 
     if (isHubCluster) {
       // On hub cluster but no extension path available or not on multicloud path
       // Fall back to default ResourceLink from OCP
-      return 'fallback'
+      return { path: '', shouldFallback: true }
     }
 
     // For managed clusters, always provide a search path
-    return getManagedClusterSearchPath()
+    return { path: getManagedClusterSearchPath(), shouldFallback: false }
   }
 
-  const getResourcePath = (): string | 'fallback' => {
+  const getResourcePath = (): { path: string; shouldFallback: boolean } => {
     if (!name) {
       // No resource name provided - fallback to default ResourceLink
-      return 'fallback'
+      return { path: '', shouldFallback: true }
     }
 
     // core ACM resources
@@ -206,21 +206,21 @@ export const FleetResourceLink: React.FC<FleetResourceLinkProps> = ({ cluster, .
     }
 
     // No resource kind provided - fallback to default ResourceLink
-    return 'fallback'
+    return { path: '', shouldFallback: true }
   }
 
   const pathResult = getResourcePath()
 
-  if (pathResult === 'fallback') {
+  if (pathResult.shouldFallback) {
     return <ResourceLink {...resourceLinkProps} />
   }
 
   return (
     <span className={classes}>
       {!hideIcon && <ResourceIcon groupVersionKind={groupVersionKind} />}
-      {pathResult ? (
+      {pathResult.path ? (
         <Link
-          to={pathResult}
+          to={pathResult.path}
           title={title}
           className="co-resource-item__resource-name"
           data-test-id={value}
