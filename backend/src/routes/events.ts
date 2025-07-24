@@ -61,6 +61,11 @@ export function getIsHubSelfManaged() {
   return isHubSelfManaged
 }
 
+let isMultiClusterObservabilityInstalled: boolean | undefined = undefined
+export function getIsObservabilityInstalled() {
+  return isMultiClusterObservabilityInstalled
+}
+
 // because rbac checks are expensive,
 // run them only on the resources requested by the UI
 export async function getAuthorizedResources(
@@ -627,6 +632,11 @@ export function cacheResource(resource: IResource) {
     if (resource?.metadata?.labels['local-cluster'] === 'true') {
       hubClusterName = resource?.metadata?.name
       isHubSelfManaged = true
+    }
+  }
+  if (resource.kind === 'ManagedClusterAddOn') {
+    if (resource?.metadata?.name === 'observability-controller') {
+      isMultiClusterObservabilityInstalled = true
     }
   }
 }
