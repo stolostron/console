@@ -7,15 +7,15 @@ jest.mock('../../resources/utils/resource-request', () => ({
 }))
 
 import { render, waitFor, screen } from '@testing-library/react'
-import { AcmArgoRefresh } from './AcmArgoRefresh'
+import { AcmArgoSync } from './AcmArgoSync'
 import { AcmToastGroup, AcmToastProvider } from '../AcmAlert'
 
-describe('AcmArgoRefresh', () => {
+describe('AcmArgoSync', () => {
   test('should refresh the argo application set', async () => {
     const { getByRole } = render(
       <AcmToastProvider>
         <AcmToastGroup />
-        <AcmArgoRefresh
+        <AcmArgoSync
           app={
             {
               appSetApps: [
@@ -28,10 +28,10 @@ describe('AcmArgoRefresh', () => {
         />
       </AcmToastProvider>
     )
-    const button = getByRole('button', { name: /refresh/i })
+    const button = getByRole('button', { name: /sync/i })
     expect(button).toBeInTheDocument()
     button.click()
 
-    await waitFor(() => expect(screen.getByText('ArgoCD app refreshed')).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByText('ArgoCD app synced')).toBeInTheDocument())
   })
 })
