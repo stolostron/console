@@ -64,6 +64,10 @@ const Credentials = lazy(() => import('./routes/Credentials/Credentials'))
 // ACCESS CONTROL
 const AccessControlManagement = lazy(() => import('./routes/AccessControlManagement/AccessControlManagement'))
 
+// IDENTITIES & ROLES
+const IdentitiesManagement = lazy(() => import('./routes/Identities/IdentitiesManagement'))
+const RolesManagement = lazy(() => import('./routes/Roles/RolesManagement'))
+
 interface IRoute {
   type: 'route'
   path: NavigationPath
@@ -234,6 +238,20 @@ const routes: (IRoute | IRouteGroup)[] = [
     path: NavigationPath.accessControlManagement,
     match: MatchType.SubRoutes,
     element: <AccessControlManagement />,
+  },
+  {
+    title: 'Identities',
+    type: 'route',
+    path: NavigationPath.identities,
+    match: MatchType.SubRoutes,
+    element: <IdentitiesManagement />,
+  },
+  {
+    title: 'Roles',
+    type: 'route',
+    path: NavigationPath.roles,
+    match: MatchType.SubRoutes,
+    element: <RolesManagement />,
   },
 ]
 
