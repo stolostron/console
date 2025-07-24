@@ -181,6 +181,37 @@ export enum NavigationPath {
   editAccessControlManagement = '/multicloud/access-control-management/edit/:id',
   viewAccessControlManagement = '/multicloud/access-control-management/details/:id',
 
+  // RBAC Identities and Roles Management
+  identities = '/multicloud/identities',
+
+  // RBAC Users
+  identitiesUsers = '/multicloud/identities/users',
+  identitiesUsersDetails = '/multicloud/identities/users/:id',
+  identitiesUsersYaml = '/multicloud/identities/users/:id/yaml',
+  identitiesUsersRoleAssignments = '/multicloud/identities/users/:id/role-assignments',
+  identitiesUsersGroups = '/multicloud/identities/users/:id/groups',
+
+  // RBAC Groups
+  identitiesGroups = '/multicloud/identities/groups',
+  identitiesGroupsDetails = '/multicloud/identities/groups/:id',
+  identitiesGroupsYaml = '/multicloud/identities/groups/:id/yaml',
+  identitiesGroupsRoleAssignments = '/multicloud/identities/groups/:id/role-assignments',
+  identitiesGroupsUsers = '/multicloud/identities/groups/:id/users',
+
+  // RBAC Service Accounts
+  identitiesServiceAccounts = '/multicloud/identities/service-accounts',
+  identitiesServiceAccountsDetails = '/multicloud/identities/service-accounts/:id',
+  identitiesServiceAccountsYaml = '/multicloud/identities/service-accounts/:id/yaml',
+  identitiesServiceAccountsRoleAssignments = '/multicloud/identities/service-accounts/:id/role-assignments',
+  identitiesServiceAccountsGroups = '/multicloud/identities/service-accounts/:id/groups',
+
+  // RBAC Roles
+  roles = '/multicloud/roles',
+  rolesDetails = '/multicloud/roles/:id',
+  rolesPermissions = '/multicloud/roles/:id/permissions',
+  rolesRoleAssignments = '/multicloud/roles/:id/role-assignments',
+  rolesYaml = '/multicloud/roles/:id/yaml',
+
   emptyPath = '',
 }
 
