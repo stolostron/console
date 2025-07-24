@@ -74,9 +74,9 @@ const Inner: FC<EventComponentProps> = ({ event, cache, list, index }) => {
                   sourceComponent: component,
                 })}
               {component === 'kubelet' && canGetNodes && (
-                <Trans ns="public" values={{ sourceComponent: component }}>
-                  Generated from <strong>{component}</strong> on{' '}
-                  <Link to={resourcePathFromModel(NodeModel, source.host)}>{source.host}</Link>
+                <Trans ns="public">
+                  Generated from {{ sourceComponent: component }} on{' '}
+                  <Link to={resourcePathFromModel(NodeModel, source.host)}>{{ sourceHost: source.host }}</Link>
                 </Trans>
               )}
               {component === 'kubelet' &&
@@ -88,18 +88,16 @@ const Inner: FC<EventComponentProps> = ({ event, cache, list, index }) => {
             </small>
             <div className="co-sysevent__count-and-actions">
               {count > 1 && firstTime && (
-                <Trans ns="public" values={{ eventCount: count }}>
+                <Trans ns="public">
                   <small className="co-sysevent__count pf-v6-u-text-color-subtle">
-                    <strong>{count}</strong> times in the last{' '}
+                    {{ eventCount: count }} times in the last{' '}
                     <Timestamp timestamp={firstTime} simple={true} omitSuffix={true} />
                   </small>
                 </Trans>
               )}
               {count > 1 && !firstTime && (
-                <Trans ns="public" values={{ eventCount: count }}>
-                  <small className="co-sysevent__count pf-v6-u-text-color-subtle">
-                    <strong>{count}</strong> times
-                  </small>
+                <Trans ns="public">
+                  <small className="co-sysevent__count pf-v6-u-text-color-subtle">{{ eventCount: count }} times</small>
                 </Trans>
               )}
             </div>

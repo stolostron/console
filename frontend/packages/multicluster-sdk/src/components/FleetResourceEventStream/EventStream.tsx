@@ -23,7 +23,7 @@ const ResourceEventStream: FC<{ resource: K8sResourceCommon }> = ({ resource }) 
 
   const { t } = useTranslation('public')
   const [sortedEvents, setSortedEvents] = useState<EventKind[]>([])
-  const [error, setError] = useState<string | boolean>(false)
+  const [error, setError] = useState(false)
   const [loading, setLoading] = useState(true)
   const ws = useRef<WebSocket>()
 
