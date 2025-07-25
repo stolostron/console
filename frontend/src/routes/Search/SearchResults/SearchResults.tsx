@@ -20,6 +20,7 @@ import { ExclamationCircleIcon, InfoCircleIcon, OutlinedQuestionCircleIcon } fro
 import _ from 'lodash'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom-v5-compat'
+import { useCanMigrateVm } from '../../../hooks/use-can-migrate-vm'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { PluginContext } from '../../../lib/PluginContext'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
@@ -46,7 +47,6 @@ import { SearchResultItemsQuery } from '../search-sdk/search-sdk'
 import { useSearchDefinitions } from '../searchDefinitions'
 import RelatedResults from './RelatedResults'
 import { getRowActions, ISearchResult } from './utils'
-import { useCanMigrateVm } from '../../../hooks/use-can-migrate-vm'
 
 const resultsWrapper = css({ paddingTop: '0' })
 const relatedExpandableWrapper = css({
@@ -268,6 +268,7 @@ export default function SearchResults(
   const searchResultLimit = useSearchResultLimit()
   const isGlobalHub = useRecoilValue(isGlobalHubState)
   const settings = useRecoilValue(settingsState)
+  const [currentQueryState, setCurrentQueryState] = useState<string>(currentQuery)
   const [selectedRelatedKinds, setSelectedRelatedKinds] = useState<string[]>(preSelectedRelatedResources)
   const [deleteResource, setDeleteResource] = useState<IDeleteModalProps>(ClosedDeleteModalProps)
   const [deleteExternalResource, setDeleteExternalResource] = useState<IDeleteExternalResourceModalProps>(
@@ -288,15 +289,19 @@ export default function SearchResults(
   }, [isGlobalHub, settings.globalSearchFeatureFlag, error?.graphQLErrors])
 
   useEffect(() => {
-    // If the current search query changes -> hide related resources
-    if (preSelectedRelatedResources.length === 0) {
-      setShowRelatedResources(false)
+    // If the current query changes -> reset related resource states
+    if (currentQuery !== currentQueryState) {
+      setCurrentQueryState(currentQuery)
       setSelectedRelatedKinds([])
-    } else {
-      setShowRelatedResources(true)
-      setSelectedRelatedKinds(preSelectedRelatedResources)
+      setShowRelatedResources(false)
     }
-  }, [preSelectedRelatedResources])
+  }, [currentQuery, currentQueryState])
+
+  // related section should be open if url contains 1+ showrelated params
+  const isRelatedSectionOpen = useMemo(
+    () => showRelatedResources || preSelectedRelatedResources.length > 0,
+    [showRelatedResources, preSelectedRelatedResources]
+  )
 
   const searchResultItems: ISearchResult[] = useMemo(() => data?.searchResult?.[0]?.items || [], [data?.searchResult])
 
@@ -390,7 +395,7 @@ export default function SearchResults(
             <div className={relatedExpandableWrapper}>
               <ExpandableSection
                 onToggle={() => setShowRelatedResources(!showRelatedResources)}
-                isExpanded={showRelatedResources}
+                isExpanded={isRelatedSectionOpen}
                 toggleText={!showRelatedResources ? t('Show related resources') : t('Hide related resources')}
               />
               <Tooltip
@@ -401,7 +406,7 @@ export default function SearchResults(
                 <OutlinedQuestionCircleIcon color={'var(--pf-v5-global--Color--200)'} />
               </Tooltip>
             </div>
-            {showRelatedResources && (
+            {isRelatedSectionOpen && (
               <RelatedResults
                 currentQuery={currentQuery}
                 selectedRelatedKinds={selectedRelatedKinds}

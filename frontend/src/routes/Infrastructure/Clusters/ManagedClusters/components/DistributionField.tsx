@@ -46,6 +46,12 @@ const isUpdateVersionAcceptable = (currentVersion: string, newVersion: string) =
 
   return false
 }
+export const getCPUArchFromReleaseImage = (releaseImage = '') => {
+  const match = /.+:.*-(.*)/gm.exec(releaseImage)
+  if (match && match.length > 1 && match[1]) {
+    return match[1]
+  }
+}
 
 export function DistributionField(props: {
   cluster?: Cluster
@@ -66,6 +72,8 @@ export function DistributionField(props: {
     name: props.cluster?.name,
     namespace: props.cluster?.namespace,
   })
+  const image = props.cluster?.distribution?.ocp?.desired?.image
+  const archType = getCPUArchFromReleaseImage(image) ?? 'multi'
 
   const openshiftText = 'OpenShift'
   const microshiftText = 'MicroShift'
@@ -76,7 +84,7 @@ export function DistributionField(props: {
     }
     const updates: any = {}
     clusterImageSets.forEach((cis) => {
-      if (cis.spec?.releaseImage.includes('multi')) {
+      if (cis.spec?.releaseImage.includes(archType)) {
         const releaseImageVersion = getVersionFromReleaseImage(cis.spec?.releaseImage)
         if (
           releaseImageVersion &&
@@ -89,6 +97,7 @@ export function DistributionField(props: {
 
     return updates
   }, [
+    archType,
     clusterImageSets,
     props.cluster?.distribution?.ocp?.version,
     props.cluster?.isHostedCluster,

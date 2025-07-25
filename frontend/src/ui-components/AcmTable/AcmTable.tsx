@@ -708,7 +708,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       } else {
         setSort({
           index: newSort?.index ? newSort.index : 0,
-          direction: newSort && newSort.direction,
+          direction: newSort && newSort.direction ? newSort.direction : undefined,
         })
       }
       if (internalSearch) {

@@ -118,7 +118,7 @@ export class ServerSideEvents {
       client.eventQueue.push(
         this.eventFilter(client.token, event)
           .then((shouldSendEvent) => (shouldSendEvent ? event : undefined))
-          .catch(() => undefined) as Promise<ServerSideEvent<unknown>>
+          .catch((): undefined => undefined)
       )
     } else {
       client.eventQueue.push(Promise.resolve(event))
