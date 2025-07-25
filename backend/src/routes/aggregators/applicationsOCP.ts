@@ -94,7 +94,7 @@ export function addSystemQueryInputs(applicationCache: ApplicationCacheType, que
 export function cacheOCPApplications(
   applicationCache: ApplicationCacheType,
   searchedOcpApps: IResource[],
-  argAppSet: Set<string>,
+  ocpArgoAppFilter: Set<string>,
   isSystemMode?: boolean
 ) {
   const ocpApps = searchedOcpApps as unknown as IOCPAppResource[]
@@ -133,7 +133,8 @@ export function cacheOCPApplications(
       if (itemLabel) {
         const key = `${itemLabel}-${ocpApp.namespace}-${ocpApp.cluster}`
         const argoKey = `${argoInstanceLabelValue}-${ocpApp.namespace}-${ocpApp.cluster}`
-        if (!argAppSet.has(argoKey)) {
+        // filter out ocp apps that are argo apps
+        if (!ocpArgoAppFilter.has(argoKey)) {
           openShiftAppResourceMaps[key] = ocpApp
         }
       }
