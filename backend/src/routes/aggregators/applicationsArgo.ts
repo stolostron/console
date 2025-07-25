@@ -45,7 +45,8 @@ interface IArgoAppLocalResource extends IResource {
   }
 }
 
-interface IArgoAppRemoteResource {
+export interface IArgoAppRemoteResource {
+  _uid: string
   _hostingResource: string
   name: string
   namespace: string
@@ -63,13 +64,42 @@ interface IArgoAppRemoteResource {
   syncStatus: string
 }
 
-// a map from an appset name to the apps that it created
-export function getAppSetAppsMap() {
-  return appSetAppsMap || {}
-}
-let appSetAppsMap: Record<string, IArgoApplication[]> = {}
-let tempAppSetAppsMap: Record<string, IArgoApplication[]> = {}
+let hubClusterName: string
+let clusters: Cluster[]
+let localCluster: Cluster
+let placementDecisions: IResource[]
 
+// APPSETS ARE ALL ON HUB as KUBERNETES RESOURCES
+// for PUSH APPSETS, APPS ARE ON HUB (kube) but pushed to anywhere (hub/cluster)
+// for PULL APPSETS, APPS ARE ONLY REMOTE (SEARCH api), but can be pulled into local
+
+// MAINTAINING A MAP OF PUSHED APPSETS AND THEIR APPS (from kube)
+// we create this map by looping through all local argo apps, getting its owner reference appset name,
+// and adding it to the map with the appset name as the key and the app as a value array
+let pushedAppSetMap: Record<string, IArgoApplication[]> = {}
+let tempPushedAppSetMap: Record<string, IArgoApplication[]> = {}
+export function getPushedAppSetMap() {
+  return pushedAppSetMap || {}
+}
+
+// MAINTAINING A MAP OF PULLED APPSETS AND THEIR APPS (from search)
+// we create this map by looping through all searched argo apps
+// there is no owner reference, but a search record has a _hostingResource
+//  which constains the same information as the owner reference
+//   as 'ApplicationSet/openshift-gitops/fernando-2'
+let pulledAppSetMap: Record<string, IArgoAppRemoteResource[]> = {}
+let tempPulledAppSetMap: Record<string, IArgoAppRemoteResource[]> = {}
+export function getPulledAppSetMap() {
+  return Object.keys(pulledAppSetMap).length === 0 ? tempPulledAppSetMap : pulledAppSetMap || {}
+}
+
+// filter out ocp apps that are argo apps
+// each entry is a string of the form:
+// <argo app name>-<argo app namespace>-<argo app cluster>
+const ocpArgoAppFilter: Set<string> = new Set()
+
+// in case there are lots of argo apps, instead of searching all at once,
+// we search in chunks of 1000 apps at a time
 let argoPageChunk: ApplicationPageChunk
 const argoPageChunks: ApplicationPageChunk[] = []
 
@@ -105,41 +135,42 @@ export function addArgoQueryInputs(applicationCache: ApplicationCacheType, query
 }
 
 export function cacheArgoApplications(applicationCache: ApplicationCacheType, remoteArgoApps: IResource[]) {
-  const argoAppSet = localArgoAppSet
   const hubClusterName = getHubClusterName()
   const clusters: Cluster[] = getClusters()
   const localCluster = clusters.find((cls) => cls.name === hubClusterName)
 
+  // should be rarely used, argo apps are usually created by appsets
   if (applicationCache['localArgoApps']?.resourceUidMap) {
     try {
-      transform(Object.values(applicationCache['localArgoApps'].resourceUidMap), false, localCluster, clusters)
+      const localArgoAppsMap = applicationCache['localArgoApps'].resourceUidMap
+      transform(Object.values(localArgoAppsMap), false, localCluster, clusters, localArgoAppsMap)
     } catch (e) {
       logger.error(`getLocalArgoApps exception ${e}`)
     }
   }
   try {
     // cache remote argo apps
-    cacheRemoteApps(applicationCache, getRemoteArgoApps(argoAppSet, remoteArgoApps), argoPageChunk, 'remoteArgoApps')
+    cacheRemoteApps(
+      applicationCache,
+      getRemoteArgoApps(ocpArgoAppFilter, remoteArgoApps),
+      argoPageChunk,
+      'remoteArgoApps'
+    )
   } catch (e) {
     logger.error(`cacheRemoteApps exception ${e}`)
   }
 
   if (applicationCache['appset']?.resourceUidMap) {
     try {
-      transform(Object.values(applicationCache['appset'].resourceUidMap), false, localCluster, clusters)
+      const appsetMap = applicationCache['appset'].resourceUidMap
+      transform(Object.values(appsetMap), false, localCluster, clusters, appsetMap)
     } catch (e) {
       logger.error(`aggregateLocalApplications appset exception ${e}`)
     }
   }
 
-  return argoAppSet
+  return ocpArgoAppFilter
 }
-
-let hubClusterName: string
-let clusters: Cluster[]
-let localCluster: Cluster
-let placementDecisions: IResource[]
-const localArgoAppSet: Set<string> = new Set()
 
 export function polledArgoApplicationAggregation(
   options: IWatchOptions,
@@ -167,7 +198,7 @@ export function polledArgoApplicationAggregation(
 
   // filter out apps that belong to an appset
   if (kind === ApplicationKind) {
-    items = filterArgoApps(items, clusters, localArgoAppSet, tempAppSetAppsMap)
+    items = filterArgoApps(items, clusters, ocpArgoAppFilter, tempPushedAppSetMap)
   }
 
   // add uidata transforms
@@ -195,8 +226,8 @@ export function polledArgoApplicationAggregation(
     // the real one will be used while a new temp map is being created
     // this fixes the problem where the argo app moves to a new appset of the same name in a new cluster
     if (kind === ApplicationKind) {
-      appSetAppsMap = tempAppSetAppsMap
-      tempAppSetAppsMap = {}
+      pushedAppSetMap = tempPushedAppSetMap
+      tempPushedAppSetMap = {}
     }
   }
 }
@@ -204,8 +235,8 @@ export function polledArgoApplicationAggregation(
 function filterArgoApps(
   items: IResource[],
   clusters: Cluster[],
-  localArgoAppSet: Set<string>,
-  appSetAppsMap: Record<string, IResource[]>
+  ocpAppSetFilter: Set<string>,
+  pushedAppSetMap: Record<string, IResource[]>
 ) {
   return items.filter((app) => {
     const argoApp = app as IArgoAppLocalResource
@@ -213,7 +244,7 @@ function filterArgoApps(
     const definedNamespace = resources?.[0].namespace
 
     // cache Argo app signature for filtering OCP apps later
-    localArgoAppSet.add(
+    ocpAppSetFilter.add(
       `${argoApp.metadata.name}-${
         definedNamespace ?? argoApp.spec.destination.namespace
       }-${getArgoDestinationCluster(argoApp.spec.destination, clusters, getHubClusterName())}`
@@ -224,9 +255,9 @@ function filterArgoApps(
       return true
     }
     const appSetName = get(argoApp, ['metadata', 'ownerReferences', '0', 'name']) as string
-    let apps = appSetAppsMap[appSetName]
+    let apps = pushedAppSetMap[appSetName]
     if (!apps) {
-      apps = appSetAppsMap[appSetName] = []
+      apps = pushedAppSetMap[appSetName] = []
     }
     const inx = apps.findIndex((itm) => itm.metadata.uid === app.metadata.uid)
     if (inx !== -1) {
@@ -238,13 +269,36 @@ function filterArgoApps(
   })
 }
 
-function getRemoteArgoApps(argoAppSet: Set<string>, remoteArgoApps: IResource[]) {
+function getRemoteArgoApps(ocpAppSetFilter: Set<string>, remoteArgoApps: IResource[]) {
   const argoApps = remoteArgoApps as unknown as IArgoAppRemoteResource[]
   const apps: IResource[] = []
+
+  // since searched argo apps can be spread out into multiple searches
+  // we build up a temp map, and when the next search is done, we copy it to the real map
+  // this can happen because the search is done in chunks of 1000 apps at a time
+  if (argoPageChunks.length === 0) {
+    pulledAppSetMap = tempPulledAppSetMap
+    tempPulledAppSetMap = {}
+  }
+
   argoApps.forEach((argoApp: IArgoAppRemoteResource) => {
     // cache Argo app signature for filtering OCP apps later
-    argoAppSet.add(`${argoApp.name}-${argoApp.destinationNamespace}-${argoApp.cluster}`)
-    if (!argoApp._hostingResource) {
+    ocpAppSetFilter.add(`${argoApp.name}-${argoApp.destinationNamespace}-${argoApp.cluster}`)
+    if (argoApp._hostingResource) {
+      const [kind, , appSetName] = argoApp._hostingResource.split('/')
+      if (kind === 'ApplicationSet') {
+        let apps = tempPulledAppSetMap[appSetName]
+        if (!apps) {
+          apps = tempPulledAppSetMap[appSetName] = []
+        }
+        const inx = apps.findIndex((itm) => itm._uid === argoApp._uid)
+        if (inx !== -1) {
+          apps[inx] = argoApp
+        } else {
+          apps.push(argoApp)
+        }
+      }
+    } else {
       // Skip apps created by Argo pull model
       apps.push({
         apiVersion: ArgoApplicationApiVersion,
