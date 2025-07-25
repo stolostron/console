@@ -39,13 +39,19 @@ Setup depends on your usage scenarios.
 
 ## :toolbox: Functions
 
+- [buildResourceURL](#gear-buildresourceurl)
 - [fleetK8sCreate](#gear-fleetk8screate)
 - [fleetK8sDelete](#gear-fleetk8sdelete)
 - [fleetK8sGet](#gear-fleetk8sget)
 - [fleetK8sPatch](#gear-fleetk8spatch)
 - [fleetK8sUpdate](#gear-fleetk8supdate)
+- [FleetResourceEventStream](#gear-fleetresourceeventstream)
 - [FleetResourceLink](#gear-fleetresourcelink)
+- [fleetWatch](#gear-fleetwatch)
+- [getBackendUrl](#gear-getbackendurl)
 - [getFleetK8sAPIPath](#gear-getfleetk8sapipath)
+- [getResourcePath](#gear-getresourcepath)
+- [getResourceURL](#gear-getresourceurl)
 - [useFleetAccessReview](#gear-usefleetaccessreview)
 - [useFleetClusterNames](#gear-usefleetclusternames)
 - [useFleetK8sAPIPath](#gear-usefleetk8sapipath)
@@ -95,6 +101,61 @@ Setup depends on your usage scenarios.
 
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/apiRequests.ts#L140)
 
+### :gear: FleetResourceEventStream
+
+A multicluster-aware ResourceEventStream component that displays real-time Kubernetes events
+for resources on managed clusters. Provides equivalent functionality to the OpenShift console's
+ResourceEventStream for resources on managed clusters.
+
+For managed cluster resources, this component establishes a websocket connection to stream
+events from the specified cluster. For hub cluster resources or when no cluster is specified,
+it falls back to the standard OpenShift console ResourceEventStream component.
+
+| Function | Type |
+| ---------- | ---------- |
+| `FleetResourceEventStream` | `FC<{ resource: FleetK8sResourceCommon; }>` |
+
+Parameters:
+
+* `props`: - Component properties
+* `props.resource`: - The Kubernetes resource to show events for.
+Must include standard K8s metadata (name, namespace, uid, kind) and an optional cluster property.
+
+
+Returns:
+
+A rendered event stream component showing real-time Kubernetes events
+
+Examples:
+
+// Display events for a resource on a managed cluster
+<FleetResourceEventStream
+  resource={{
+    metadata: { name: 'my-pod', namespace: 'default', uid: '123' },
+    kind: 'Pod',
+    cluster: 'managed-cluster-1'
+  }}
+/>
+// Display events for a hub cluster resource (falls back to OpenShift console component)
+<FleetResourceEventStream
+  resource={{
+    metadata: { name: 'my-deployment', namespace: 'openshift-gitops', uid: '456' },
+    kind: 'Deployment'
+    // No cluster property - uses hub cluster
+  }}
+/>
+// Display events for a cluster-scoped resource on a managed cluster
+<FleetResourceEventStream
+  resource={{
+    metadata: { name: 'my-node', uid: '789' },
+    kind: 'Node',
+    cluster: 'edge-cluster-2'
+  }}
+/>
+
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/components/FleetResourceEventStream.tsx#L93)
+
 ### :gear: FleetResourceLink
 
 | Function | Type |
@@ -102,6 +163,22 @@ Setup depends on your usage scenarios.
 | `FleetResourceLink` | `React.FC<FleetResourceLinkProps>` |
 
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/FleetResourceLink.tsx#L9)
+
+### :gear: fleetWatch
+
+| Function | Type |
+| ---------- | ---------- |
+| `fleetWatch` | `(model: K8sModel, query: { labelSelector?: Selector or undefined; resourceVersion?: string or undefined; ns?: string or undefined; fieldSelector?: string or undefined; cluster?: string or undefined; } or undefined, backendURL: string) => WebSocket` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/apiRequests.ts#L235)
+
+### :gear: getBackendUrl
+
+| Function | Type |
+| ---------- | ---------- |
+| `getBackendUrl` | `() => string` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/apiRequests.ts#L74)
 
 ### :gear: getFleetK8sAPIPath
 
@@ -325,6 +402,7 @@ Returns:
 
 ## :cocktail: Types
 
+- [BaseOptions](#gear-baseoptions)
 - [Fleet](#gear-fleet)
 - [FleetAccessReviewResourceAttributes](#gear-fleetaccessreviewresourceattributes)
 - [FleetK8sResourceCommon](#gear-fleetk8sresourcecommon)
