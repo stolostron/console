@@ -54,7 +54,7 @@ export function WizTableSelect<T = any>(props: WizTableSelectProps<T>) {
 
   let values = value as unknown[]
   if (!Array.isArray(values)) values = []
-  let selectedItems: T[] = values
+  let selectedItems: T[] = values as T[]
   if (props.valueMatchesItem)
     selectedItems = values
       .map((value) =>
@@ -109,7 +109,7 @@ export function WizTableSelect<T = any>(props: WizTableSelectProps<T>) {
         <List isPlain={props.summaryList !== true}>
           {values.map((value, index) => (
             <ListItem key={index} style={{ paddingBottom: 4 }}>
-              {value}
+              {String(value)}
             </ListItem>
           ))}
         </List>
@@ -130,7 +130,7 @@ export function WizTableSelect<T = any>(props: WizTableSelectProps<T>) {
           <List style={{ marginTop: -4 }} isPlain={props.summaryList !== true}>
             {values.map((value, index) => (
               <ListItem key={index} style={{ paddingBottom: 4 }}>
-                {value}
+                {String(value)}
               </ListItem>
             ))}
           </List>
