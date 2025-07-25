@@ -19,8 +19,13 @@ import {
   SearchResultItemsDocument,
   SearchSchemaDocument,
 } from './search-sdk/search-sdk'
+jest.mock('@openshift-console/dynamic-plugin-sdk', () => ({
+  useResolvedExtensions: jest.fn(),
+}))
 import SearchPage from './SearchPage'
 
+import { useResolvedExtensions } from '@openshift-console/dynamic-plugin-sdk'
+const mockUseResolvedExtensions = useResolvedExtensions as jest.MockedFunction<typeof useResolvedExtensions>
 jest.mock('../../hooks/use-can-migrate-vm', () => ({
   useCanMigrateVm: () => true,
 }))
@@ -65,6 +70,9 @@ const mockSuggestedSearchConfigMap: ConfigMap[] = [
 ]
 
 describe('SearchPage', () => {
+  beforeEach(() => {
+    mockUseResolvedExtensions.mockReturnValue([[], true, []]) // default to no extensions, resolved
+  })
   it('should render default search page correctly', async () => {
     const metricNock = nockPostRequest('/metrics?search', {})
     const getUserPreferenceNock = nockRequest('/userpreference', mockUserPreference)
@@ -449,8 +457,8 @@ describe('SearchPage', () => {
     // Wait for username resource requests to finish
     await waitForNocks([metricNock, getUserPreferenceNock])
 
-    // Test the loading state while apollo query finishes - testing that saved searches card label is not present
-    expect(screen.getAllByText('Saved searches')[1]).toBeFalsy()
+    // Test the loading state while apollo query finishes - testing that saved searches card label is present
+    await waitFor(() => expect(screen.getByText('Saved searches')).toBeTruthy(), { timeout: 5000 })
     // This wait pauses till apollo query is returning data
     await wait()
     // Test that the component has rendered correctly with data
