@@ -1,123 +1,113 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { render } from '@testing-library/react'
-import { useEffect } from 'react'
+import React from 'react'
+import { render, screen } from '@testing-library/react'
+import EventComponent from './EventComponent'
 
-// mock all dependencies
+// mock i18n
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, options?: any) => {
-      if (options) {
-        return key.replace(/\{\{\s*(\w+)\s*\}\}/g, (match, key) => {
-          return options[key] || match
-        })
+      if (options?.sourceComponent) {
+        return `Generated from ${options.sourceComponent}`
+      }
+      if (options?.sourceHost) {
+        return `on ${options.sourceHost}`
       }
       return key
     },
   }),
   Trans: ({ children, values }: { children: React.ReactNode; values?: any }) => {
-    if (typeof children === 'string' && values) {
-      return (
-        <span>
-          {children.replace(/\{\{\s*(\w+)\s*\}\}/g, (match, key) => {
-            return values[key] || match
-          })}
-        </span>
-      )
+    if (values?.sourceComponent) {
+      return <span>Generated from {values.sourceComponent}</span>
     }
-    return <>{children}</>
+    if (values?.eventCount) {
+      return <span>{values.eventCount} times</span>
+    }
+    return <span>{children}</span>
   },
 }))
 
+// mock router
 jest.mock('react-router-dom-v5-compat', () => ({
-  Link: ({ children }: { children: React.ReactNode }) => <a href="/test-link">{children}</a>,
+  Link: ({ children, to }: { children: React.ReactNode; to: string }) => <a href={to}>{children}</a>,
 }))
 
+// mock dynamic plugin SDK
 jest.mock('@openshift-console/dynamic-plugin-sdk', () => ({
-  useAccessReview: () => true,
-  ResourceLink: ({ kind, name }: { kind: string; name: string }) => (
-    <span data-testid={`resource-link-${kind}-${name}`}>{name}</span>
+  ResourceLink: ({ name, kind }: { name: string; kind: string }) => (
+    <span>
+      {name} ({kind})
+    </span>
   ),
-  Timestamp: ({ timestamp }: { timestamp: string }) => <span data-testid="timestamp">{timestamp}</span>,
+  Timestamp: ({ timestamp }: { timestamp: string }) => <span>{timestamp}</span>,
+  useAccessReview: () => [false, true], // return false
+  K8sVerb: {},
+}))
+
+// mock utils
+jest.mock('./utils', () => ({
+  getFirstTime: () => null,
+  getLastTime: () => '2024-01-01T00:00:00Z',
+  NodeModel: { apiGroup: 'v1', plural: 'nodes' },
+  referenceFor: () => 'Pod',
+  resourcePathFromModel: () => '/nodes/test-node',
+  typeFilter: () => false,
 }))
 
 describe('EventComponent', () => {
-  const mockCache = {
-    clear: jest.fn(),
-    clearAll: jest.fn(),
-    columnWidth: jest.fn(),
-    defaultHeight: 0,
-    defaultWidth: 0,
-    getHeight: jest.fn(),
-    getWidth: jest.fn(),
-    hasFixedHeight: jest.fn(),
-    hasFixedWidth: jest.fn(),
-    setHeight: jest.fn(),
-    setWidth: jest.fn(),
-    has: jest.fn(),
-    rowHeight: jest.fn(),
-    set: jest.fn(),
-  } as any
+  it('renders without crashing and shows message', () => {
+    const event = {
+      message: 'Test event message',
+      type: 'Normal',
+      lastTimestamp: '2024-01-01T00:00:00Z',
+      involvedObject: {
+        kind: 'Pod',
+        name: 'test-pod',
+        namespace: 'default',
+        apiVersion: 'v1',
+        uid: 'uid',
+      },
+      count: 1,
+      reason: 'Created',
+      source: { component: 'test-component' },
+      reportingComponent: '',
+      reportingInstance: '',
+      metadata: { uid: 'event-uid', name: 'event', namespace: 'default' },
+      cluster: 'test-cluster',
+    }
 
-  const mockList = {
-    recomputeRowHeights: jest.fn(),
-    forceUpdateGrid: jest.fn(),
-    getOffsetForRow: jest.fn(),
-    invalidateCellSizeAfterRender: jest.fn(),
-    measureAllRows: jest.fn(),
-    scrollToPosition: jest.fn(),
-    scrollToRow: jest.fn(),
-    scrollToColumn: jest.fn(),
-    getScrollPosition: jest.fn(),
-    getScrollLeft: jest.fn(),
-    getScrollTop: jest.fn(),
-    getVisibleCellRange: jest.fn(),
-    getVisibleRowRange: jest.fn(),
-    getVisibleColumnRange: jest.fn(),
-  } as any
+    // mock cache and list objects with required methods
+    const mockCache = {
+      clear: jest.fn(),
+      clearAll: jest.fn(),
+      columnWidth: jest.fn(),
+      defaultHeight: 50,
+      defaultWidth: 100,
+      getHeight: jest.fn(),
+      getWidth: jest.fn(),
+      hasFixedHeight: jest.fn(),
+      hasFixedWidth: jest.fn(),
+      setHeight: jest.fn(),
+      setWidth: jest.fn(),
+    } as any
 
-  const mockEvent = {
-    apiVersion: 'v1',
-    kind: 'Event',
-    metadata: {
-      uid: 'event-1',
-      name: 'test-event',
-      namespace: 'default',
-    },
-    involvedObject: {
-      kind: 'Pod',
-      name: 'test-pod',
-      namespace: 'default',
-      uid: 'pod-1',
-    },
-    reason: 'Started',
-    message: 'Test event message',
-    source: {
-      component: 'kubelet',
-      host: 'node-1',
-    },
-    reportingComponent: 'kubelet',
-    firstTimestamp: '2023-01-01T00:00:00Z',
-    lastTimestamp: '2023-01-01T00:00:00Z',
-    count: 1,
-  }
+    const mockList = {
+      recomputeRowHeights: jest.fn(),
+      forceUpdateGrid: jest.fn(),
+      getOffsetForRow: jest.fn(),
+      invalidateCellSizeAfterRender: jest.fn(),
+      measureAllRows: jest.fn(),
+      scrollToPosition: jest.fn(),
+      scrollToRow: jest.fn(),
+      scrollToColumn: jest.fn(),
+      getScrollPosition: jest.fn(),
+      getScrollLeft: jest.fn(),
+      getScrollTop: jest.fn(),
+    } as any
 
-  beforeEach(() => {
-    jest.clearAllMocks()
-  })
+    render(<EventComponent event={event as any} cache={mockCache} list={mockList} index={0} />)
 
-  it('should call cache.clear and list.recomputeRowHeights on mount', () => {
-    // Mock the component to avoid rendering issues
-    const MockEventComponent = jest.fn().mockImplementation(({ cache, list, index }) => {
-      useEffect(() => {
-        cache.clear(index, 0)
-        list?.recomputeRowHeights(index)
-      }, [cache, list, index])
-      return null
-    })
-
-    render(<MockEventComponent event={mockEvent} cache={mockCache} list={mockList} index={0} />)
-
-    expect(mockCache.clear).toHaveBeenCalledWith(0, 0)
-    expect(mockList.recomputeRowHeights).toHaveBeenCalledWith(0)
+    expect(screen.getByText('Test event message')).toBeInTheDocument()
+    expect(screen.getByText('test-pod (Pod)')).toBeInTheDocument()
   })
 })
