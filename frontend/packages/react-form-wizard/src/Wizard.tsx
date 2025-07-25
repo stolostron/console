@@ -178,7 +178,7 @@ function WizardInternal(props: {
             </Split>
           ),
           component: <Fragment key={component.props?.id}>{component}</Fragment>,
-        }) as WizardStep
+        } as WizardStep)
     )
     steps.push(reviewStep)
     return steps

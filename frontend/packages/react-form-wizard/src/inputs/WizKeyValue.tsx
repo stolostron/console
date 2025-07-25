@@ -19,52 +19,40 @@ export function WizKeyValue(props: KeyValueProps) {
   const onKeyChange = (index: number, newKey: string) => {
     pairs[index].key = newKey
     setValue(
-      pairs.reduce(
-        (result, pair) => {
-          result[pair.key] = pair.value
-          return result
-        },
-        {} as Record<string, string>
-      )
+      pairs.reduce((result, pair) => {
+        result[pair.key] = pair.value
+        return result
+      }, {} as Record<string, string>)
     )
   }
 
   const onValueChange = (index: number, newValue: string) => {
     pairs[index].value = newValue
     setValue(
-      pairs.reduce(
-        (result, pair) => {
-          result[pair.key] = pair.value
-          return result
-        },
-        {} as Record<string, string>
-      )
+      pairs.reduce((result, pair) => {
+        result[pair.key] = pair.value
+        return result
+      }, {} as Record<string, string>)
     )
   }
 
   const onNewKey = () => {
     pairs.push({ key: '', value: '' })
     setValue(
-      pairs.reduce(
-        (result, pair) => {
-          result[pair.key] = pair.value
-          return result
-        },
-        {} as Record<string, string>
-      )
+      pairs.reduce((result, pair) => {
+        result[pair.key] = pair.value
+        return result
+      }, {} as Record<string, string>)
     )
   }
 
   const onDeleteKey = (index: number) => {
     pairs.splice(index, 1)
     setValue(
-      pairs.reduce(
-        (result, pair) => {
-          result[pair.key] = pair.value
-          return result
-        },
-        {} as Record<string, string>
-      )
+      pairs.reduce((result, pair) => {
+        result[pair.key] = pair.value
+        return result
+      }, {} as Record<string, string>)
     )
   }
 

@@ -476,10 +476,10 @@ function ObjectTemplate() {
             {template?.complianceType === 'musthave'
               ? 'Must have'
               : template?.complianceType === 'mustonlyhave'
-                ? 'Must only have'
-                : template?.complianceType === 'mustnothave'
-                  ? 'Must not have'
-                  : template?.complianceType}
+              ? 'Must only have'
+              : template?.complianceType === 'mustnothave'
+              ? 'Must not have'
+              : template?.complianceType}
           </Text>
           <WizHidden hidden={(template: any) => template?.objectDefinition?.kind === undefined}>
             <Title headingLevel="h6">{pascalCaseToSentenceCase(template?.objectDefinition?.kind)}</Title>
