@@ -18,5 +18,5 @@ export interface ConfigMap extends IResource {
   apiVersion: ConfigMapApiVersionType
   kind: ConfigMapKindType
   metadata: Metadata
-  data?: Record<string, any>
+  data?: Record<string, string>
 }

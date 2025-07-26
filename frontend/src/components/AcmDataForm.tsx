@@ -100,7 +100,7 @@ export interface AcmDataFormProps {
   editorTitle?: string
   secrets?: (string | string[])[]
   immutables?: (string | string[])[]
-  schema?: any
+  schema?: unknown
   mode?: 'form' | 'wizard' | 'details'
   isHorizontal?: boolean
   edit?: () => void
