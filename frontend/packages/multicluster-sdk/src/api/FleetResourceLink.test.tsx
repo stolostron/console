@@ -33,7 +33,7 @@ describe('FleetResourceLink', () => {
     )
 
     const link = screen.getByRole('link')
-    expect(link).toHaveAttribute('href', '/multicloud/infrastructure/virtualmachines/test-cluster/default/test-vm')
+    expect(link).toHaveAttribute('href', '/k8s/cluster/test-cluster/ns/default/kubevirt.io~v1~VirtualMachine/test-vm')
     expect(link).toHaveTextContent('test-vm')
     expect(screen.getByTestId('resource-icon-mock')).toHaveTextContent('Icon: VirtualMachine')
   })
