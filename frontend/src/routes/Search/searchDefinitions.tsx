@@ -17,7 +17,10 @@ import { ConfigMap } from '../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { AcmButton, AcmLabels } from '../../ui-components'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
-import { useResourceRouteExtensions } from '@stolostron/multicluster-sdk'
+import {
+  useResourceRouteExtensions,
+  findResourceRouteHandler as findResourceRouteHandlerFromSDK,
+} from '@stolostron/multicluster-sdk'
 
 export interface ResourceDefinitions {
   application: Record<'columns', SearchColumnDefinition[]>
@@ -557,11 +560,11 @@ export const GetUrlSearchParam = (resource: any) => {
 }
 
 // helper function for VirtualMachine resource linking
-function createVMDetailsLink(
+function createExtensionBasedLink(
   item: any,
   acmExtensions: any,
   resourceRoutesResolved?: boolean,
-  getDirectResourceRouteHandler?: (
+  findResourceRouteHandler?: (
     group: string | undefined,
     kind: string,
     version?: string
@@ -583,8 +586,8 @@ function createVMDetailsLink(
   )
 
   // direct extension approach (for standalone SDK)
-  if (resourceRoutesResolved && getDirectResourceRouteHandler) {
-    const handler = getDirectResourceRouteHandler(
+  if (resourceRoutesResolved && findResourceRouteHandler) {
+    const handler = findResourceRouteHandler(
       item.apigroup,
       item.kind,
       item.apiversion?.split('/')[1] // extract version from apiversion like "kubevirt.io/v1"
@@ -606,16 +609,12 @@ function createVMDetailsLink(
 
   // falls back to PluginContext approach (for ACM console)
   if (acmExtensions?.resourceRoutes?.length) {
-    const resourceRouteHandler = (
-      acmExtensions.resourceRoutes.find(
-        ({ model }: { model: { group?: string; kind: string; version?: string } }) =>
-          model.group === item.apigroup && model.kind === item.kind && model.version === item.apiversion?.split('/')[1]
-      ) ??
-      acmExtensions.resourceRoutes.find(
-        ({ model }: { model: { group?: string; kind: string; version?: string } }) =>
-          model.group === item.apigroup && model.kind === item.kind && !model.version
-      )
-    )?.handler
+    const resourceRouteHandler = findResourceRouteHandlerFromSDK(
+      acmExtensions,
+      item.apigroup,
+      item.kind,
+      item.apiversion?.split('/')[1]
+    )
 
     if (resourceRouteHandler) {
       const extensionPath = resourceRouteHandler({
@@ -631,7 +630,7 @@ function createVMDetailsLink(
     }
   }
 
-  // for VirtualMachine resources, if no extension found, use default search link
+  // if no extension found, use default search link
   return defaultSearchLink
 }
 
@@ -639,8 +638,7 @@ export function CreateDetailsLink(props: Readonly<{ item: any }>) {
   const { item } = props
   const { acmExtensions } = useContext(PluginContext)
 
-  const { resourceRoutesResolved, getResourceRouteHandler: getDirectResourceRouteHandler } =
-    useResourceRouteExtensions()
+  const { resourceRoutesResolved, findResourceRouteHandler } = useResourceRouteExtensions()
 
   const defaultSearchLink = (
     <Link
@@ -719,11 +717,9 @@ export function CreateDetailsLink(props: Readonly<{ item: any }>) {
           {item.name}
         </Link>
       )
-    case 'virtualmachine':
-    case 'virtualmachineinstance':
-      return createVMDetailsLink(item, acmExtensions, resourceRoutesResolved, getDirectResourceRouteHandler)
     default:
-      return defaultSearchLink
+      // use extension-based routing for all other resources
+      return createExtensionBasedLink(item, acmExtensions, resourceRoutesResolved, findResourceRouteHandler)
   }
 }
 

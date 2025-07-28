@@ -12,9 +12,8 @@ jest.doMock('@openshift-console/dynamic-plugin-sdk', () => ({
   useK8sWatchResource: jest.fn(),
 }))
 
-jest.doMock('../internal/fleetResourceHelpers', () => ({
+jest.doMock('../internal/useResourceRouteExtensions', () => ({
   useResourceRouteExtensions: jest.fn(),
-  getFirstClassResourceRoute: jest.fn(),
 }))
 
 // mock PatternFly components
@@ -71,14 +70,13 @@ jest.mock('../api/utils/searchPaths', () => ({
 }))
 
 // mock internal helpers
-jest.mock('../internal/fleetResourceHelpers', () => ({
-  getFirstClassResourceRoute: jest.fn(),
+jest.mock('../internal/useResourceRouteExtensions', () => ({
   useResourceRouteExtensions: jest.fn(),
 }))
 
 // import the FleetResourceLink component using require() only for this one import
 const { FleetResourceLink } = require('./FleetResourceLink')
-const { getFirstClassResourceRoute, useResourceRouteExtensions } = require('../internal/fleetResourceHelpers')
+const { useResourceRouteExtensions } = require('../internal/useResourceRouteExtensions')
 const { useK8sWatchResource } = require('@openshift-console/dynamic-plugin-sdk')
 const { useIsFleetAvailable } = require('../api/useIsFleetAvailable')
 
@@ -112,13 +110,7 @@ describe('FleetResourceLink', () => {
     // mock the useResourceRouteExtensions hook
     useResourceRouteExtensions.mockReturnValue({
       resourceRoutesResolved: true,
-      getResourceRouteHandler: jest.fn().mockReturnValue(null), // Default to no extension handler
-    })
-
-    // mock the combined helper function
-    getFirstClassResourceRoute.mockReturnValue({
-      isFirstClass: true,
-      path: '/multicloud/infrastructure/virtualmachines/test-cluster/default/test-vm',
+      findResourceRouteHandler: jest.fn(),
     })
   })
 
@@ -201,7 +193,7 @@ describe('FleetResourceLink', () => {
 
       useResourceRouteExtensions.mockReturnValue({
         resourceRoutesResolved: true,
-        getResourceRouteHandler: jest.fn().mockReturnValue(mockHandler),
+        findResourceRouteHandler: jest.fn().mockReturnValue(mockHandler),
       })
 
       render(
@@ -225,7 +217,7 @@ describe('FleetResourceLink', () => {
 
       useResourceRouteExtensions.mockReturnValue({
         resourceRoutesResolved: true,
-        getResourceRouteHandler: jest.fn().mockReturnValue(mockHandler),
+        findResourceRouteHandler: jest.fn().mockReturnValue(mockHandler),
       })
 
       render(
@@ -250,7 +242,7 @@ describe('FleetResourceLink', () => {
 
       useResourceRouteExtensions.mockReturnValue({
         resourceRoutesResolved: true,
-        getResourceRouteHandler: jest.fn().mockReturnValue(mockHandler),
+        findResourceRouteHandler: jest.fn().mockReturnValue(mockHandler),
       })
 
       render(
@@ -267,7 +259,7 @@ describe('FleetResourceLink', () => {
 
       useResourceRouteExtensions.mockReturnValue({
         resourceRoutesResolved: false,
-        getResourceRouteHandler: jest.fn().mockReturnValue(null),
+        findResourceRouteHandler: jest.fn().mockReturnValue(null),
       })
 
       render(
@@ -289,7 +281,7 @@ describe('FleetResourceLink', () => {
 
       useResourceRouteExtensions.mockReturnValue({
         resourceRoutesResolved: true,
-        getResourceRouteHandler: jest.fn().mockReturnValue(mockHandler),
+        findResourceRouteHandler: jest.fn().mockReturnValue(mockHandler),
       })
 
       render(
@@ -587,10 +579,6 @@ describe('FleetResourceLink', () => {
     it('should use first-class path for ManagedCluster on hub with multicloud path', () => {
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
       mockUseLocation.mockReturnValue({ pathname: '/multicloud/infrastructure' })
-      getFirstClassResourceRoute.mockReturnValue({
-        isFirstClass: true,
-        path: '/multicloud/infrastructure/clusters/details/test-cluster/test-cluster/overview',
-      })
 
       render(
         <MemoryRouter>
@@ -615,10 +603,6 @@ describe('FleetResourceLink', () => {
     it('should fallback to ResourceLink for ManagedCluster on non-multicloud path', () => {
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
       mockUseLocation.mockReturnValue({ pathname: '/k8s/cluster' })
-      getFirstClassResourceRoute.mockReturnValue({
-        isFirstClass: true,
-        path: '/multicloud/infrastructure/clusters/details/test-cluster/test-cluster/overview',
-      })
 
       render(
         <MemoryRouter>
@@ -654,10 +638,6 @@ describe('FleetResourceLink', () => {
     it('should fallback to ResourceLink when not on multicloud path', () => {
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
       mockUseLocation.mockReturnValue({ pathname: '/k8s/cluster' })
-      getFirstClassResourceRoute.mockReturnValue({
-        isFirstClass: true,
-        path: '/multicloud/infrastructure/virtualmachines/local-cluster/default/test-vm',
-      })
 
       render(
         <MemoryRouter>
@@ -688,10 +668,6 @@ describe('FleetResourceLink', () => {
 
     it('should use search path for non-first-class resources', () => {
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
-      getFirstClassResourceRoute.mockReturnValue({
-        isFirstClass: false,
-        path: null,
-      })
 
       render(
         <MemoryRouter>
@@ -713,12 +689,8 @@ describe('FleetResourceLink', () => {
       )
     })
 
-    it('should use search path when first-class path is null', () => {
+    it('should use search path when extension path is null', () => {
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
-      getFirstClassResourceRoute.mockReturnValue({
-        isFirstClass: true,
-        path: null,
-      })
 
       render(
         <MemoryRouter>
@@ -758,7 +730,7 @@ describe('FleetResourceLink', () => {
   })
 
   describe('Extension system behavior', () => {
-    it('should not call getFirstClassResourceRoute for VirtualMachine (extension-only)', () => {
+    it('should use extension system for VirtualMachine routing', () => {
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
 
       render(
@@ -767,17 +739,17 @@ describe('FleetResourceLink', () => {
         </MemoryRouter>
       )
 
-      // VirtualMachine should now be extension-only and not use getFirstClassResourceRoute
-      expect(getFirstClassResourceRoute).not.toHaveBeenCalledWith('VirtualMachine', 'test-vm')
+      // VirtualMachine should use the extension system, not hardcoded paths
+      expect(useResourceRouteExtensions).toHaveBeenCalled()
     })
 
-    it('should call getResourceRouteHandler with correct parameters', () => {
-      const mockGetResourceRouteHandler = jest.fn().mockReturnValue(null)
+    it('should call findResourceRouteHandler with correct parameters', () => {
+      const mockFindResourceRouteHandler = jest.fn().mockReturnValue(null)
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
 
       useResourceRouteExtensions.mockReturnValue({
         resourceRoutesResolved: true,
-        getResourceRouteHandler: mockGetResourceRouteHandler,
+        findResourceRouteHandler: mockFindResourceRouteHandler,
       })
 
       render(
@@ -786,20 +758,20 @@ describe('FleetResourceLink', () => {
         </MemoryRouter>
       )
 
-      expect(mockGetResourceRouteHandler).toHaveBeenCalledWith(
+      expect(mockFindResourceRouteHandler).toHaveBeenCalledWith(
         'kubevirt.io', // group
         'VirtualMachine', // kind
         'v1' // version
       )
     })
 
-    it('should handle when getResourceRouteHandler returns null', () => {
-      const mockGetResourceRouteHandler = jest.fn().mockReturnValue(null)
+    it('should handle when findResourceRouteHandler returns null', () => {
+      const mockFindResourceRouteHandler = jest.fn().mockReturnValue(null)
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
 
       useResourceRouteExtensions.mockReturnValue({
         resourceRoutesResolved: true,
-        getResourceRouteHandler: mockGetResourceRouteHandler,
+        findResourceRouteHandler: mockFindResourceRouteHandler,
       })
 
       render(
@@ -815,13 +787,13 @@ describe('FleetResourceLink', () => {
       )
     })
 
-    it('should handle when getResourceRouteHandler returns non-function', () => {
-      const mockGetResourceRouteHandler = jest.fn().mockReturnValue('not-a-function')
+    it('should handle when findResourceRouteHandler returns non-function', () => {
+      const mockFindResourceRouteHandler = jest.fn().mockReturnValue('not-a-function')
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
 
       useResourceRouteExtensions.mockReturnValue({
         resourceRoutesResolved: true,
-        getResourceRouteHandler: mockGetResourceRouteHandler,
+        findResourceRouteHandler: mockFindResourceRouteHandler,
       })
 
       render(
@@ -893,7 +865,7 @@ describe('FleetResourceLink', () => {
 
       useResourceRouteExtensions.mockReturnValue({
         resourceRoutesResolved: true,
-        getResourceRouteHandler: jest.fn().mockReturnValue(mockHandler),
+        findResourceRouteHandler: jest.fn().mockReturnValue(mockHandler),
       })
 
       render(
@@ -916,7 +888,7 @@ describe('FleetResourceLink', () => {
 
       useResourceRouteExtensions.mockReturnValue({
         resourceRoutesResolved: true,
-        getResourceRouteHandler: jest.fn().mockReturnValue(mockHandler),
+        findResourceRouteHandler: jest.fn().mockReturnValue(mockHandler),
       })
 
       render(
