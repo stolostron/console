@@ -76,7 +76,7 @@ export function SecurityGroupPolicySummarySidebar(props: {
             case 'compliant':
               return (
                 <div>
-                  <Icon status="danger">
+                  <Icon status="success">
                     <CheckCircleIcon />
                   </Icon>
                 </div>
