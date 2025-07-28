@@ -10,9 +10,9 @@ const div = document.createElement('div')
 document.body.appendChild(div)
 const root = createRoot(div)
 root.render(
-    <StrictMode>
-        <Suspense fallback={<div />}>
-            <Demo />
-        </Suspense>
-    </StrictMode>
+  <StrictMode>
+    <Suspense fallback={<div />}>
+      <Demo />
+    </Suspense>
+  </StrictMode>
 )

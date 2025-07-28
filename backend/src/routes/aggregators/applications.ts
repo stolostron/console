@@ -13,10 +13,10 @@ import {
 import { getSearchResults, ISearchResult, pingSearchAPI } from '../../lib/search'
 import {
   addArgoQueryInputs,
-  getAppSetAppsMap,
   cacheArgoApplications,
   getAppSetRelatedResources,
   polledArgoApplicationAggregation,
+  getPushedAppSetMap,
 } from './applicationsArgo'
 import { getGiganticApps } from '../../lib/gigantic'
 import { createDictionary, inflateApps } from '../../lib/compression'
@@ -214,7 +214,7 @@ export function filterApplications(filters: FilterSelections, items: ICompressed
 // w/o downloading all the appsets, apps, etc
 export function addUIData(items: ITransformedResource[]) {
   const argoAppSets = inflateApps(getApplicationsHelper(applicationCache, ['appset']))
-  const appSetAppsMap = getAppSetAppsMap()
+  const pushedAppSetMap = getPushedAppSetMap()
   items = items.map((item) => {
     return {
       ...item,
@@ -226,7 +226,7 @@ export function addUIData(items: ITransformedResource[]) {
             : ['', []],
         appSetApps:
           item.kind === ApplicationSetKind
-            ? appSetAppsMap[item.metadata.name]?.map((app) => app.metadata.name) || []
+            ? pushedAppSetMap[item.metadata.name]?.map((app) => app.metadata.name) || []
             : [],
       },
     }
@@ -303,16 +303,20 @@ export async function aggregateRemoteApplications(pass: number) {
     return
   }
   // //////////// SAVE RESULTS ///////////////////
-  const argoAppSet = cacheArgoApplications(
+  const ocpArgoAppFilter = cacheArgoApplications(
     applicationCache,
     (results.data?.searchResult?.[0]?.items ?? []) as IResource[]
   )
-  cacheOCPApplications(applicationCache, (results.data?.searchResult?.[1]?.items || []) as IResource[], argoAppSet)
+  cacheOCPApplications(
+    applicationCache,
+    (results.data?.searchResult?.[1]?.items || []) as IResource[],
+    ocpArgoAppFilter
+  )
   if (querySystemApps) {
     cacheOCPApplications(
       applicationCache,
       (results.data?.searchResult?.[2]?.items ?? []) as IResource[],
-      argoAppSet,
+      ocpArgoAppFilter,
       true
     )
   }
