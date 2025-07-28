@@ -26,7 +26,7 @@ import { logger } from '../../lib/logger'
 import { getMultiClusterHub } from '../../lib/multi-cluster-hub'
 import { getMultiClusterEngine } from '../../lib/multi-cluster-engine'
 import { ServerSideEvents } from '../../lib/server-side-events'
-import { getAppSetAppsMap } from './applicationsArgo'
+import { getPulledAppSetMap, getPushedAppSetMap, IArgoAppRemoteResource } from './applicationsArgo'
 import { deflateResource, inflateApp } from '../../lib/compression'
 
 //////////////////////////////////////////////////////////////////
@@ -37,7 +37,8 @@ export function transform(
   items: ITransformedResource[] | ICompressedResource[],
   isRemote?: boolean,
   localCluster?: Cluster,
-  clusters?: Cluster[]
+  clusters?: Cluster[],
+  itemMap?: Record<string, ICompressedResource>
 ): ApplicationCache {
   const subscriptions = getKubeResources('Subscription', 'apps.open-cluster-management.io/v1')
   const placementDecisions = getKubeResources('PlacementDecision', 'cluster.open-cluster-management.io/v1beta1')
@@ -52,6 +53,9 @@ export function transform(
         (isRemote || (type === 'subscription' && _clusters.filter((n) => n !== localClusterName)).length > 0) &&
         _clusters,
       compressed: deflateResource(app, getAppDict()),
+    }
+    if (itemMap) {
+      itemMap[app.metadata.uid] = items[inx]
     }
   }) as unknown as ICompressedResource[]
   return { resources: items as unknown as ICompressedResource[] }
@@ -161,9 +165,10 @@ export function getApplicationClusters(
     case 'appset':
       if ('spec' in resource) {
         if (isArgoPullModel(resource as IApplicationSet)) {
-          return getArgoPullModelClusterList(resource as IApplicationSet, placementDecisions)
+          const apps = getPulledAppSetMap()[resource.metadata?.name] || []
+          return getArgoPullModelClusterList(apps)
         } else {
-          const apps = getAppSetAppsMap()[resource.metadata?.name] || []
+          const apps = getPushedAppSetMap()[resource.metadata?.name] || []
           return getArgoPushModelClusterList(apps, localCluster, clusters)
         }
       }
@@ -189,25 +194,10 @@ const isArgoPullModel = (resource: IApplicationSet) => {
   return false
 }
 
-function getArgoPullModelClusterList(resource: IApplicationSet, placementDecisions: IPlacementDecision[]) {
+function getArgoPullModelClusterList(apps: IArgoAppRemoteResource[]) {
   const clusterSet = new Set<string>()
-  const placementName =
-    resource?.spec.generators[0]?.clusterDecisionResource?.labelSelector?.matchLabels[
-      'cluster.open-cluster-management.io/placement'
-    ] || ''
-  const placementNamespace = resource?.metadata.namespace || ''
-  const placementDecision = placementDecisions.find(
-    (pd) =>
-      pd.metadata.labels?.['cluster.open-cluster-management.io/placement'] === placementName &&
-      pd.metadata.namespace === placementNamespace
-  )
-  /* istanbul ignore next */
-  const clusterDecisions = placementDecision?.status?.decisions || []
-
-  clusterDecisions.forEach((cd: { clusterName: string }) => {
-    if (cd.clusterName !== getHubClusterName()) {
-      clusterSet.add(cd.clusterName)
-    }
+  apps.forEach((app) => {
+    clusterSet.add(app.cluster)
   })
   return Array.from(clusterSet)
 }
