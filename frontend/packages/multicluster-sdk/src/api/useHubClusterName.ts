@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { fetchHubClusterName, getCachedHubClusterName } from '../internal/cachedHubClusterName'
+import { fetchFleetConfiguration, getCachedHubClusterName } from '../internal/cachedFleetConfiguration'
 import { UseHubClusterName } from '../types'
 import { useEffect, useMemo, useState } from 'react'
 import { useIsFleetAvailable } from './useIsFleetAvailable'
@@ -29,8 +29,8 @@ export const useHubClusterName: UseHubClusterName = () => {
     if (!currentCachedName) {
       void (async () => {
         try {
-          const hubName = await fetchHubClusterName()
-          setHubClusterName(hubName)
+          const configuration = await fetchFleetConfiguration()
+          setHubClusterName(configuration?.localHubName)
           setLoaded(true)
         } catch (err) {
           setError(err)

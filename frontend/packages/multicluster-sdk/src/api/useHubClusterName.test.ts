@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { renderHook } from '@testing-library/react-hooks'
-import * as internal from '../internal/cachedHubClusterName'
+import * as internal from '../internal/cachedFleetConfiguration'
 import { useHubClusterName } from './useHubClusterName'
 import { useIsFleetAvailable } from './useIsFleetAvailable'
 
