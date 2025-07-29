@@ -269,69 +269,78 @@ exports[`DetailsForm it renders 1`] = `
       />
     </div>
     <div
-      class="pf-l-stack"
+      class="pf-c-form__group"
       id="form-control__form-input-openshiftVersion-field"
     >
       <div
-        class="pf-l-stack__item"
+        class="pf-c-form__group-label"
       >
-        <div
-          class="pf-c-form__group"
+        <label
+          class="pf-c-form__label"
+          for="form-input-openshiftVersion-field"
         >
-          <div
-            class="pf-c-form__group-label"
+          <span
+            class="pf-c-form__label-text"
           >
-            <label
-              class="pf-c-form__label"
-              for="form-input-openshiftVersion-field"
-            >
-              <span
-                class="pf-c-form__label-text"
-              >
-                ai:OpenShift version
-              </span>
-              <span
-                aria-hidden="true"
-                class="pf-c-form__label-required"
-              >
-                 
-                *
-              </span>
-            </label>
+            ai:OpenShift version
+          </span>
+          <span
+            aria-hidden="true"
+            class="pf-c-form__label-required"
+          >
              
-          </div>
-          <div
-            class="pf-c-form__group-control"
-          >
-            <select
-              aria-describedby="form-input-openshiftVersion-field-helper"
-              aria-invalid="false"
-              class="pf-c-form-control"
-              data-ouia-component-id="OUIA-Generated-FormSelect-default-1"
-              data-ouia-component-type="PF4/FormSelect"
-              data-ouia-safe="true"
-              id="form-input-openshiftVersion-field"
-              name="openshiftVersion"
-              required=""
-            >
-              <option
-                class=""
-                value="ocp-release48"
-              >
-                OpenShift 4.8.15-x86_64
-              </option>
-            </select>
-            <div
-              aria-live="polite"
-              class="pf-c-form__helper-text"
-              id="form-input-openshiftVersion-field-helper"
-            />
-          </div>
-        </div>
+            *
+          </span>
+        </label>
+         
       </div>
       <div
-        class="pf-l-stack__item"
-      />
+        class="pf-c-form__group-control"
+      >
+        <div
+          class="pf-c-dropdown pf-u-w-100"
+          data-ouia-component-id="OUIA-Generated-Dropdown-1"
+          data-ouia-component-type="PF4/Dropdown"
+          data-ouia-safe="true"
+          id="form-input-openshiftVersion-field-dropdown"
+          name="openshiftVersion"
+          value="ocp-release48"
+        >
+          <button
+            aria-expanded="false"
+            aria-haspopup="true"
+            class="pf-c-dropdown__toggle pf-u-w-100"
+            data-ouia-component-id="OUIA-Generated-DropdownToggle-1"
+            data-ouia-component-type="PF4/DropdownToggle"
+            data-ouia-safe="true"
+            id="form-input-openshiftVersion-field"
+            type="button"
+          >
+            <span
+              class="pf-c-dropdown__toggle-text"
+            >
+              OpenShift 4.8.15-x86_64
+            </span>
+            <span
+              class="pf-c-dropdown__toggle-icon"
+            >
+              <svg
+                aria-hidden="true"
+                fill="currentColor"
+                height="1em"
+                role="img"
+                style="vertical-align: -0.125em;"
+                viewBox="0 0 320 512"
+                width="1em"
+              >
+                <path
+                  d="M31.3 192h257.3c17.8 0 26.7 21.5 14.1 34.1L174.1 354.8c-7.8 7.8-20.5 7.8-28.3 0L17.2 226.1C4.6 213.5 13.5 192 31.3 192z"
+                />
+              </svg>
+            </span>
+          </button>
+        </div>
+      </div>
     </div>
     <div
       class="pf-l-stack"
