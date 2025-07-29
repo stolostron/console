@@ -26,6 +26,7 @@
   "homepage": "https://github.com/stolostron/console/tree/main/frontend/packages/multicluster-sdk#readme",
   "scripts": {
     "build": "tsc --build tsconfig.build.json",
+    "publish:manual": "./publish.sh",
     "watch": "watch 'npm run build' src",
     "tsc": "tsc --noEmit",
     "lint": "eslint src --ext .js,.jsx,.ts,.tsx --max-warnings=0",
