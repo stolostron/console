@@ -22,9 +22,11 @@ export const useHubClusterName: UseHubClusterName = () => {
       setHubClusterName(undefined)
       setLoaded(false)
       setError('A version of RHACM that is compatible with the multicluster SDK is not available')
+      return
     }
 
-    if (!cachedHubClusterName) {
+    const currentCachedName = getCachedHubClusterName()
+    if (!currentCachedName) {
       void (async () => {
         try {
           const hubName = await fetchHubClusterName()
@@ -35,7 +37,7 @@ export const useHubClusterName: UseHubClusterName = () => {
         }
       })()
     }
-  }, [fleetAvailable, cachedHubClusterName])
+  }, [fleetAvailable])
 
   return useMemo(() => [hubClusterName, loaded, error], [hubClusterName, loaded, error])
 }
