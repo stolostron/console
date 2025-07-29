@@ -167,7 +167,7 @@ export const SelectListOptions = ({
         <SelectOption
           id={isSimpleOption ? option : option.id || `option-${index}`}
           key={isSimpleOption ? option : option.id || `option-${index}`}
-          value={!isSimpleOption ? option.value : option}
+          value={!isSimpleOption ? index : option}
           description={!isSimpleOption ? option.description : undefined}
           isDisabled={displayText === NoResults || (!isSimpleOption && option.disabled)}
           onClick={isCreateOption ? () => onCreate?.(!isSimpleOption ? option.value : option) : undefined}

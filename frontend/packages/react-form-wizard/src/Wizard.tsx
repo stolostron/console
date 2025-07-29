@@ -192,6 +192,9 @@ function WizardInternal({ children, onSubmit, onCancel, submitButtonText, submit
             </DescriptionList>
           </Step>
         </WizardStep>
+        <WizardStep name="hidden-steps" id="hidden-steps-step" isHidden>
+          <RenderHiddenSteps stepComponents={stepComponents} />
+        </WizardStep>
       </PFWizard>
     </Fragment>
   )
@@ -343,6 +346,15 @@ function MyFooter(props: WizardFooterProps) {
         </div>
       </WizardFooterWrapper>
     </div>
+  )
+}
+
+function RenderHiddenSteps(props: { stepComponents: ReactElement[] }) {
+  const { activeStep } = useWizardContext()
+  return (
+    <DisplayModeContext.Provider value={DisplayMode.StepsHidden}>
+      {props.stepComponents.filter((component) => component.props.id !== activeStep.id)}
+    </DisplayModeContext.Provider>
   )
 }
 

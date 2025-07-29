@@ -126,17 +126,13 @@ function WizSelectBase<T = any>(props: SelectProps<T>) {
 
   const onSelect = useCallback(
     (selectOptionObject: string) => {
-      switch (props.variant) {
-        case 'single':
-          const selectedOption = filteredOptions.find((option) => option.value === selectOptionObject)
-          if (selectedOption) {
-            setValue(selectedOption.value)
-          } else {
-            setValue(selectOptionObject)
-          }
-          setOpen(false)
-          break
+      if (Number.isInteger(Number(selectOptionObject))) {
+        const selectOption = selectOptions?.[Number(selectOptionObject)]
+        setValue(selectOption?.value ?? '')
+      } else {
+        setValue(selectOptionObject)
       }
+      setOpen(false)
     },
     [isCreatable, props.variant, setValue]
   )
@@ -185,6 +181,7 @@ function WizSelectBase<T = any>(props: SelectProps<T>) {
                 options={filteredOptions}
                 isCreatable={isCreatable}
                 onCreate={props.onCreate}
+                footer={props.footer}
               />
             </PfSelect>
           </InputGroupItem>
