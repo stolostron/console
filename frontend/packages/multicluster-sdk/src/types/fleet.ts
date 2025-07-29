@@ -27,22 +27,12 @@ export type UseFleetClusterNames = () => [string[], boolean, any]
 export type UseIsFleetAvailable = () => boolean
 
 /**
- * Fleet configuration.
- *  @property {boolean} isGlobalHub Whether the hub cluster is the global hub.
- *  @property {string} localHubName The name of the local hub cluster.
- *  @property {boolean} isHubSelfManaged Whether the hub cluster is self-managed.
- *  @property {boolean} isObservabilityInstalled Whether the observability controller is installed.
- */
-export type FleetConfiguration = {
-  isGlobalHub: boolean
-  localHubName: string
-  isHubSelfManaged: boolean
-  isObservabilityInstalled: boolean
-}
-
-/**
- * Signature of the `UseFleetConfiguration` hook.
+ * Signature of the `UseIsFleet ObservabilityInstalled` hook.
  *
- * @returns A tuple containing the fleet configuration, a boolean indicating if the configuration is loaded, and an error if any.
+ * @returns A tuple containing a boolean indicating if the observability controller is installed, a boolean indicating if loading, and an error if any.
  */
-export type UseFleetConfiguration = () => [fleetConfiguration: FleetConfiguration | null, loaded: boolean, error: any]
+export type UseIsFleetObservabilityInstalled = () => [
+  isObservabilityInstalled: boolean | null,
+  loaded: boolean,
+  error: any,
+]
