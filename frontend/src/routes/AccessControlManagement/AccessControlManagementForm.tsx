@@ -20,6 +20,7 @@ import { AccessControlStatus } from './AccessControlStatus'
 import { useRoleBinding } from './RoleBindingHook'
 import { RoleBindingSection } from './RoleBindingSection'
 import schema from './schema.json'
+import { useLocalHubName } from '../../hooks/use-local-hub'
 
 const AccessControlManagementForm = ({
   isEditing,
@@ -46,6 +47,8 @@ const AccessControlManagementForm = ({
 
   const CLUSTER_ROLES_LABEL = 'rbac.open-cluster-management.io/filter=vm-clusterroles'
 
+  const localHubName = useLocalHubName()
+
   const { data: clusterRolesQuery } = useSearchResultItemsQuery({
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
     variables: {
@@ -54,7 +57,7 @@ const AccessControlManagementForm = ({
           keywords: [],
           filters: [
             { property: 'kind', values: ['ClusterRole'] },
-            { property: 'cluster', values: ['local-cluster'] },
+            { property: 'cluster', values: [localHubName] },
             { property: 'label', values: [CLUSTER_ROLES_LABEL] },
           ],
           limit: -1,
