@@ -19,7 +19,6 @@
     "ocp-console": "./start-ocp-console.sh",
     "serve:plugins": "cd frontend && npm run serve:plugins",
     "watch:multicluster-sdk": "cd frontend && npm run watch -w @stolostron/multicluster-sdk",
-    "publish:multicluster-sdk": "cd frontend/packages/multicluster-sdk && npm run publish:manual",
     "check": "concurrently --kill-others-on-fail npm:copyright:check \"npm:check:*(!fix)\" -c green,blue,magenta",
     "check:backend": "cd backend && npm run check",
     "check:frontend": "cd frontend && npm run check",

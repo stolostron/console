@@ -1,0 +1,111 @@
+name: Publish multicluster-sdk
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_increment:
+        description: "Version increment type"
+        required: true
+        default: "minor"
+        type: choice
+        options:
+          - major
+          - minor
+          - patch
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+
+    defaults:
+      run:
+        working-directory: frontend/packages/multicluster-sdk
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          registry-url: "https://registry.npmjs.org/"
+          cache: "npm"
+          cache-dependency-path: frontend/packages/multicluster-sdk/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm run test
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Get current version
+        id: current_version
+        run: |
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          echo "current=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "Current version: $CURRENT_VERSION"
+
+      - name: Update package version
+        id: version_update
+        run: |
+          NEW_VERSION=$(npm version ${{ inputs.version_increment }} --no-git-tag-version)
+          echo "new=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "Updated to version: $NEW_VERSION"
+
+      - name: Build package
+        run: npm run build
+
+      - name: Test publish (dry run)
+        run: npm publish --dry-run
+
+      - name: Commit version update
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add package.json
+          git commit -m "Release multicluster-sdk ${{ steps.version_update.outputs.new }} [skip ci]"
+
+      - name: Create and push tag
+        run: |
+          TAG_NAME="multicluster-sdk-${{ steps.version_update.outputs.new }}"
+          git tag "$TAG_NAME"
+          git push origin HEAD
+          git push origin "$TAG_NAME"
+          echo "Created and pushed tag: $TAG_NAME"
+
+      - name: Publish to npm
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: multicluster-sdk-${{ steps.version_update.outputs.new }}
+          release_name: multicluster-sdk ${{ steps.version_update.outputs.new }}
+          body: |
+            ## multicluster-sdk ${{ steps.version_update.outputs.new }}
+
+            **Version increment:** ${{ inputs.version_increment }}
+            **Previous version:** ${{ steps.current_version.outputs.current }}
+            **New version:** ${{ steps.version_update.outputs.new }}
+
+            Published to npm: https://www.npmjs.com/package/@stolostron/multicluster-sdk
+
+            ### Changes
+            - Automated release via GitHub Actions
+
+          draft: false
+          prerelease: false
