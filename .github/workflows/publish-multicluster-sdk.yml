@@ -52,14 +52,12 @@ jobs:
         id: current_version
         run: |
           CURRENT_VERSION=$(node -p "require('./package.json').version")
-          echo "current=$CURRENT_VERSION" >> $GITHUB_OUTPUT
           echo "Current version: $CURRENT_VERSION"
 
       - name: Update package version
         id: version_update
         run: |
           NEW_VERSION=$(npm version ${{ inputs.version_increment }} --no-git-tag-version)
-          echo "new=$NEW_VERSION" >> $GITHUB_OUTPUT
           echo "Updated to version: $NEW_VERSION"
 
       - name: Build package
