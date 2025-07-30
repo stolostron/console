@@ -51,6 +51,10 @@ jobs:
         run: |
           TAG="multicluster-sdk-$(npm version ${{ inputs.version_increment }}  --no-workspaces-update | tail -1 )"
           echo "TAG=$(echo $TAG)" >> $GITHUB_ENV
+      
+      - name: Update package reference in frontend
+        run: npm update @stolstron/multicluster-sdk
+        working-directory: frontend
 
       - name: Build package
         run: npm run build
