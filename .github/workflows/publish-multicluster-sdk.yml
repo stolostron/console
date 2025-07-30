@@ -57,7 +57,7 @@ jobs:
       - name: Update package version
         id: version_update
         run: |
-          TAG="multicluster-sdk-$(npm version ${{ inputs.version_increment }} --no-git-tag-version)"
+          TAG="multicluster-sdk-$(npm version ${{ inputs.version_increment }}  --no-workspaces-update | tail -1 )"
           echo "TAG=$(echo $TAG)" >> $GITHUB_ENV
           echo "Updated to version: $TAG"
 
