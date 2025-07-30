@@ -572,16 +572,16 @@ describe('Create Subscription Application page', () => {
     // select an existing placement rule
     userEvent.click(
       screen.getByRole('radio', {
-        name: /Select an existing placement configuration/i,
+        name: /select an existing placement configuration/i,
       })
     )
 
     // pick existing PlacementRule
-    screen.getByPlaceholderText(/Select an existing placement configuration/i).click()
+    screen.getByPlaceholderText(/select an existing placement configuration/i).click()
     await clickByText(mockPlacementRule.metadata.name!)
 
     // pick existing Placement
-    screen.getByPlaceholderText(/Select an existing placement configuration/i).click()
+    screen.getByPlaceholderText(/select an existing placement configuration/i).click()
     await clickByText(mockPlacement.metadata.name!)
 
     // open and close the credential modal
@@ -700,7 +700,7 @@ describe('Create Subscription Application page', () => {
 
     await waitForText('Select an existing placement configuration')
     await new Promise((resolve) => setTimeout(resolve, 500))
-    screen.getByPlaceholderText(/Select an existing placement configuration/i).click()
+    screen.getByPlaceholderText(/select an existing placement configuration/i).click()
     await clickByText(mockPlacement.metadata.name!)
     const patchNocks: Scope[] = [
       nockPatch(mockSubscriptionPlacement, [
