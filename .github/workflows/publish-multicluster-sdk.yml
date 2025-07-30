@@ -28,7 +28,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GH_TOKEN }}
           fetch-depth: 0
 
       - name: Setup Node.js
@@ -57,9 +57,13 @@ jobs:
       - name: Update package version
         id: version_update
         run: |
-          TAG="multicluster-sdk-$(npm version ${{ inputs.version_increment }}  --no-workspaces-update | tail -1 )"
-          echo "TAG=$(echo $TAG)" >> $GITHUB_ENV
-          echo "Updated to version: $TAG"
+          NEW_VERSION=$(npm version ${{ inputs.version_increment }} --no-git-tag-version)
+          # Strip the 'v' prefix from the version
+          VERSION_CLEAN=${NEW_VERSION#v}
+          TAG="multicluster-sdk-$VERSION_CLEAN"
+          echo "TAG=$TAG" >> $GITHUB_ENV
+          echo "VERSION=$VERSION_CLEAN" >> $GITHUB_ENV
+          echo "Updated to version: $VERSION_CLEAN (tag: $TAG)"
 
       - name: Build package
         run: npm run build
@@ -73,6 +77,7 @@ jobs:
           default_author: github_actions
           message: Release ${{ env.TAG }} [skip ci]
           tag: ${{ env.TAG }}
+          github_token: ${{ secrets.GH_TOKEN }}
 
       - name: Publish to npm
         run: npm publish
