@@ -58,6 +58,7 @@ jobs:
         id: version_update
         run: |
           NEW_VERSION=$(npm version ${{ inputs.version_increment }} --no-git-tag-version)
+          echo "TAG=$(echo $TAG)" >> $GITHUB_ENV
           echo "Updated to version: $NEW_VERSION"
 
       - name: Build package
@@ -66,44 +67,14 @@ jobs:
       - name: Test publish (dry run)
         run: npm publish --dry-run
 
-      - name: Commit version update
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add package.json
-          git commit -m "Release multicluster-sdk ${{ steps.version_update.outputs.new }} [skip ci]"
-
-      - name: Create and push tag
-        run: |
-          TAG_NAME="multicluster-sdk-${{ steps.version_update.outputs.new }}"
-          git tag "$TAG_NAME"
-          git push origin HEAD
-          git push origin "$TAG_NAME"
-          echo "Created and pushed tag: $TAG_NAME"
+      - name: Add and commit version update
+        uses: EndBug/add-and-commit@v9
+        with:
+          default_author: github_actions
+          message: Release ${{ env.TAG }} [skip ci]
+          tag: ${{ env.TAG }}
 
       - name: Publish to npm
         run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Create GitHub Release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: multicluster-sdk-${{ steps.version_update.outputs.new }}
-          release_name: multicluster-sdk ${{ steps.version_update.outputs.new }}
-          body: |
-            ## multicluster-sdk ${{ steps.version_update.outputs.new }}
-
-            **Version increment:** ${{ inputs.version_increment }}
-            **Previous version:** ${{ steps.current_version.outputs.current }}
-            **New version:** ${{ steps.version_update.outputs.new }}
-
-            Published to npm: https://www.npmjs.com/package/@stolostron/multicluster-sdk
-
-            ### Changes
-            - Automated release via GitHub Actions
-
-          draft: true
-          prerelease: false
