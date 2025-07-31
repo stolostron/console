@@ -24,7 +24,7 @@ export interface OCPAppResource extends IResource {
   name: string
   namespace: string
   label: string
-  status?: any
+  status?: unknown
   transformed?: {
     clusterCount?: string
   }

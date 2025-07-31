@@ -53,7 +53,7 @@ const ResourceEventStream: FC<{ resource: K8sResourceCommon }> = ({ resource }) 
 
       if (ws.current === undefined) return
 
-      ws.current.onmessage = (message: any) => {
+      ws.current.onmessage = (message: MessageEvent) => {
         if (!active) return
 
         const eventdataParsed = JSON.parse(message.data)
