@@ -48,7 +48,7 @@ import {
   useHasValidationError,
   ValidationProvider,
 } from './contexts/ValidationProvider'
-import { Step, StepProps } from './Step'
+import { Step } from './Step'
 
 export interface WizardProps {
   wizardStrings?: WizardStrings
@@ -121,13 +121,20 @@ export function Wizard(props: WizardProps & { showHeader?: boolean; showYaml?: b
   )
 }
 
+type StepComponent = {
+  id: string
+  name: ReactNode
+  component: ReactNode
+}
+
 type WizardFooterProps = {
   onSubmit: WizardSubmit
   submitButtonText?: string
   submittingButtonText?: string
+  steps: ReactElement[]
 }
 
-type WizardInternalProps = WizardFooterProps & {
+type WizardInternalProps = Omit<WizardFooterProps, 'steps'> & {
   title: string
   children: ReactNode
   onCancel: WizardCancel
@@ -136,65 +143,72 @@ type WizardInternalProps = WizardFooterProps & {
 
 function WizardInternal({ children, onSubmit, onCancel, submitButtonText, submittingButtonText }: WizardInternalProps) {
   const { reviewLabel, stepsAriaLabel, contentAriaLabel } = useStringContext()
+  const stepComponents = useMemo(
+    () => Children.toArray(children).filter((child) => isValidElement(child) && child.type === Step) as ReactElement[],
+    [children]
+  )
+
+  const reviewStep: StepComponent = useMemo(
+    () => ({
+      id: 'review-step',
+      name: reviewLabel,
+      component: (
+        <Step label={reviewLabel} id="review-step-step">
+          <DescriptionList isHorizontal isCompact style={{ paddingLeft: 16, paddingBottom: 16, paddingRight: 16 }}>
+            <DisplayModeContext.Provider value={DisplayMode.Details}>{children}</DisplayModeContext.Provider>
+          </DescriptionList>
+        </Step>
+      ),
+    }),
+    [children, reviewLabel]
+  )
 
   const showValidation = useShowValidation()
   const stepHasValidationError = useStepHasValidationError()
   const stepShowValidation = useStepShowValidation()
 
-  const stepComponents = useMemo(
-    () =>
-      Children.toArray(children).filter((child) => isValidElement(child) && child.type === Step) as ReactElement<
-        StepProps,
-        typeof Step
-      >[],
-    [children]
-  )
+  const steps = useMemo(() => {
+    const steps: StepComponent[] = stepComponents.map((component) => ({
+      id: component.props?.id,
+      name: (
+        <Split hasGutter>
+          <SplitItem isFilled>{component.props?.label}</SplitItem>
+          {(showValidation || stepShowValidation[component.props?.id]) &&
+            stepHasValidationError[component.props?.id] && (
+              <SplitItem>
+                <Icon status="danger">
+                  <ExclamationCircleIcon />
+                </Icon>
+              </SplitItem>
+            )}
+        </Split>
+      ),
+      component: <Fragment key={component.props?.id}>{component}</Fragment>,
+    }))
+    steps.push(reviewStep)
+    return steps
+  }, [reviewStep, showValidation, stepComponents, stepHasValidationError, stepShowValidation])
 
   return (
     <Fragment>
       <PFWizard
         navAriaLabel={`${stepsAriaLabel}`}
         aria-label={`${contentAriaLabel}`}
-        onClose={onCancel}
         footer={
           <MyFooter
             onSubmit={onSubmit}
+            steps={stepComponents}
             submitButtonText={submitButtonText}
             submittingButtonText={submittingButtonText}
           />
         }
+        onClose={onCancel}
       >
-        {stepComponents.map((component) => (
-          <WizardStep
-            key={component.props.id}
-            id={`${component.props.id}-step`}
-            name={
-              <Split hasGutter>
-                <SplitItem isFilled>{component.props.label}</SplitItem>
-                {(showValidation || stepShowValidation[component.props.id]) &&
-                  stepHasValidationError[component.props.id] && (
-                    <SplitItem>
-                      <Icon status="danger">
-                        <ExclamationCircleIcon />
-                      </Icon>
-                    </SplitItem>
-                  )}
-              </Split>
-            }
-          >
-            {component.props.children}
+        {steps.map(({ id, name, component }) => (
+          <WizardStep key={id} id={`${id}-step`} name={name}>
+            {component}
           </WizardStep>
         ))}
-        <WizardStep name={reviewLabel} id="review-step-step">
-          <Step label={reviewLabel} id="review-step">
-            <DescriptionList isHorizontal isCompact style={{ paddingLeft: 16, paddingBottom: 16, paddingRight: 16 }}>
-              <DisplayModeContext.Provider value={DisplayMode.Details}>{children}</DisplayModeContext.Provider>
-            </DescriptionList>
-          </Step>
-        </WizardStep>
-        <WizardStep name="hidden-steps" id="hidden-steps-step" isHidden>
-          <RenderHiddenSteps stepComponents={stepComponents} />
-        </WizardStep>
       </PFWizard>
     </Fragment>
   )
@@ -251,16 +265,15 @@ function MyFooter(props: WizardFooterProps) {
 
   const setStepShowValidation = useSetStepShowValidation()
 
-  const onNextClick = useCallback(async () => {
+  const onNextClick = useCallback(() => {
     const stepID = activeStep.id?.toString() ?? ''
     setStepShowValidation(stepID, true)
     if (!activeStepHasValidationError) {
-      await onNext()
+      onNext()
     }
   }, [activeStep.id, activeStepHasValidationError, onNext, setStepShowValidation])
 
   const isLastStep = activeStep.id === 'review-step-step'
-
   useEffect(() => {
     if (isLastStep) {
       // We are on the review step - show validation for all steps
@@ -270,7 +283,7 @@ function MyFooter(props: WizardFooterProps) {
       // assume user went back and fixed something
       setSubmitError('')
     }
-  }, [isLastStep, setShowValidation, activeStep.name])
+  }, [activeStep, setShowValidation])
 
   const {
     fixValidationErrorsMsg,
@@ -310,7 +323,7 @@ function MyFooter(props: WizardFooterProps) {
             {!submitButtonText && (submitting ? submittingText : submitText)}
             {submitting ? submittingButtonText : submitButtonText}
           </Button>
-          <Button variant="secondary" onClick={() => void onBack()}>
+          <Button variant="secondary" onClick={onBack}>
             {backButtonText}
           </Button>
           <div className="pf-v5-c-wizard__footer-cancel">
@@ -319,6 +332,7 @@ function MyFooter(props: WizardFooterProps) {
             </Button>
           </div>
         </WizardFooterWrapper>
+        <RenderHiddenSteps stepComponents={props.steps} />
       </div>
     )
   }
@@ -331,12 +345,12 @@ function MyFooter(props: WizardFooterProps) {
       <WizardFooterWrapper>
         <Button
           variant="primary"
-          onClick={() => void onNextClick()}
+          onClick={onNextClick}
           isDisabled={(activeStepHasValidationError && activeStepShowValidation) || submitting}
         >
           {nextButtonText}
         </Button>
-        <Button variant="secondary" onClick={() => void onBack()} isDisabled={activeStep.index === 1}>
+        <Button variant="secondary" onClick={onBack} isDisabled={activeStep.index === 1}>
           {backButtonText}
         </Button>
         <div className="pf-v5-c-wizard__footer-cancel">
@@ -345,6 +359,7 @@ function MyFooter(props: WizardFooterProps) {
           </Button>
         </div>
       </WizardFooterWrapper>
+      <RenderHiddenSteps stepComponents={props.steps} />
     </div>
   )
 }
@@ -353,7 +368,11 @@ function RenderHiddenSteps(props: { stepComponents: ReactElement[] }) {
   const { activeStep } = useWizardContext()
   return (
     <DisplayModeContext.Provider value={DisplayMode.StepsHidden}>
-      {props.stepComponents.filter((component) => component.props.id !== activeStep.id)}
+      <div style={{ display: 'none' }}>
+        {props.stepComponents.filter(
+          (component) => component.props.id !== activeStep.id.toString().replace('-step', '')
+        )}
+      </div>
     </DisplayModeContext.Provider>
   )
 }
