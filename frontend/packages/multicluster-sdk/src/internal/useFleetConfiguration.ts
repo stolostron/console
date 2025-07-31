@@ -1,9 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
-import { consoleFetchJSON } from '@openshift-console/dynamic-plugin-sdk'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { FLEET_CONFIGURATION_URL, HUB_API_FAILED_ERROR, NO_FLEET_AVAILABLE_ERROR } from './constants'
 import { getBackendUrl, useIsFleetAvailable } from '../api'
-import { FLEET_CONFIGURATION_URL, NO_FLEET_AVAILABLE_ERROR } from './constants'
+import { consoleFetchJSON } from '@openshift-console/dynamic-plugin-sdk'
+
+let initializationPromise: Promise<FleetConfiguration> | null = null
+export let cachedFleetConfiguration: FleetConfiguration | null = null
+let isInitialized: boolean = false
 
 export type FleetConfiguration = {
   isGlobalHub: boolean
@@ -14,40 +17,92 @@ export type FleetConfiguration = {
 
 export type UseFleetConfiguration = () => [fleetConfiguration: FleetConfiguration | null, loaded: boolean, error: any]
 
-let cachedFleetConfiguration: FleetConfiguration | undefined = undefined
+/**
+ * Initializes the Fleet SDK with global configurations.
+ * This function is designed to be called only once during the application lifecycle.
+ */
+const initializeFleetConfiguration = async (): Promise<FleetConfiguration> => {
+  if (cachedFleetConfiguration && isInitialized) {
+    return cachedFleetConfiguration
+  }
 
+  if (initializationPromise) {
+    return initializationPromise
+  }
+
+  initializationPromise = (async () => {
+    try {
+      const result = await consoleFetchJSON(`${getBackendUrl()}${FLEET_CONFIGURATION_URL}`, 'GET')
+      if (!result) {
+        throw new Error(HUB_API_FAILED_ERROR)
+      }
+      cachedFleetConfiguration = result as FleetConfiguration
+      isInitialized = true
+      return cachedFleetConfiguration
+    } catch (error) {
+      initializationPromise = null
+      isInitialized = false
+      throw error
+    }
+  })()
+
+  return initializationPromise
+}
+
+/**
+ * Hook that initializes the Fleet SDK once and provides fleet configuration.
+ * Subsequent calls to this hook will not trigger re-initialization.
+ *
+ * @returns Array with `fleetConfiguration`, `loaded` and `error` values.
+ */
 export const useFleetConfiguration: UseFleetConfiguration = () => {
-  const [fleetConfiguration, setFleetConfiguration] = useState<FleetConfiguration | null>(null)
-  const [loading, setLoading] = useState<boolean>(true)
+  const hasInitialized = useRef(false)
   const [error, setError] = useState<Error | null>(null)
+  const [loaded, setLoaded] = useState<boolean>(false)
+  const [fleetConfiguration, setFleetConfiguration] = useState<FleetConfiguration | null>(null)
+
   const fleetAvailable = useIsFleetAvailable()
 
   useEffect(() => {
     if (!fleetAvailable) {
       setFleetConfiguration(null)
-      setLoading(false)
+      setLoaded(false)
       setError(new Error(NO_FLEET_AVAILABLE_ERROR))
       return
     }
 
-    consoleFetchJSON(`${getBackendUrl()}${FLEET_CONFIGURATION_URL}`, 'GET')
+    if (hasInitialized.current) {
+      return
+    }
+
+    hasInitialized.current = true
+
+    initializeFleetConfiguration()
       .then((data) => {
         setFleetConfiguration(data)
-        cachedFleetConfiguration = data
-        setLoading(false)
+        setLoaded(true)
       })
       .catch((err) => {
         setError(err)
-        setLoading(false)
+        setLoaded(true)
+        hasInitialized.current = false // Allow retry on error
       })
-  }, [fleetAvailable])
-  return useMemo(() => [fleetConfiguration, loading, error], [fleetConfiguration, loading, error])
+  }, [])
+
+  return useMemo(() => [fleetConfiguration, loaded, error], [fleetConfiguration, loaded, error])
 }
 
-export const getCachedHubClusterName = (): string | undefined => {
-  return cachedFleetConfiguration?.localHubName
-}
+/**
+ * Direct function to get initialization status without using the hook.
+ * Useful for non-React contexts.
+ */
+export const isFleetConfigurationInitialized = (): boolean => isInitialized
 
-export const getCachedIsObservabilityInstalled = (): boolean | undefined => {
-  return cachedFleetConfiguration?.isObservabilityInstalled
+/**
+ * Reset initialization state - primarily for testing purposes.
+ */
+export const resetFleetConfigurationInitialization = (): void => {
+  isInitialized = false
+  initializationPromise = null
+  cachedFleetConfiguration = null
 }

@@ -6,7 +6,7 @@ import {
   DEFAULT_PROMETHEUS_TIMESPAN,
   PROMETHEUS_BASE_PATH,
   PROMETHEUS_TENANCY_BASE_PATH,
-} from '../api/useFleetPrometheusPollx/constants'
+} from './constants'
 
 export type PrometheusURLProps = {
   endpoint: PrometheusEndpoint

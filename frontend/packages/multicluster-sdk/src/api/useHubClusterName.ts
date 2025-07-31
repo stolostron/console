@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { UseHubClusterName } from '../types'
 import { useEffect, useMemo, useState } from 'react'
-import { useFleetConfiguration } from '../internal/useFleetConfiguration'
+import { cachedFleetConfiguration, useFleetConfiguration } from '../internal/useFleetConfiguration'
 
 /**
  * Hook that provides hub cluster name.
@@ -18,4 +18,11 @@ export const useHubClusterName: UseHubClusterName = () => {
   }, [fleetConfiguration])
 
   return useMemo(() => [hubClusterName, loaded, error], [hubClusterName, loaded, error])
+}
+
+/**
+ * Get cached hub cluster name without triggering a re-fetch.
+ */
+export const getHubClusterName = (): string | undefined => {
+  return cachedFleetConfiguration?.localHubName
 }

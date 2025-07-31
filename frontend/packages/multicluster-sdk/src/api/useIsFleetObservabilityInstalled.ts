@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { UseIsFleetObservabilityInstalled } from '../types'
 import { useEffect, useMemo, useState } from 'react'
-import { useFleetConfiguration } from '../internal/useFleetConfiguration'
+import { cachedFleetConfiguration, useFleetConfiguration } from '../internal/useFleetConfiguration'
 
 /**
  * Hook that provides true if observability is installed on the hub cluster.
@@ -18,4 +18,11 @@ export const useIsFleetObservabilityInstalled: UseIsFleetObservabilityInstalled 
   }, [fleetConfiguration])
 
   return useMemo(() => [isObservabilityInstalled, loaded, error], [isObservabilityInstalled, loaded, error])
+}
+
+/**
+ * Get cached observability installation status without triggering a re-fetch.
+ */
+export const getIsObservabilityInstalled = (): boolean | undefined => {
+  return cachedFleetConfiguration?.isObservabilityInstalled
 }

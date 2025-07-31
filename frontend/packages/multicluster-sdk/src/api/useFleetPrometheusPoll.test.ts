@@ -20,7 +20,7 @@ jest.mock('@openshift-console/dynamic-plugin-sdk', () => ({
   },
 }))
 
-jest.mock('../useHubClusterName', () => ({
+jest.mock('./useHubClusterName', () => ({
   useHubClusterName: jest.fn(() => ['hub-cluster']),
 }))
 
