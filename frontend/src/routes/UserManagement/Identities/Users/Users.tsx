@@ -19,13 +19,9 @@ const Users = () => {
 
   const { data: rbacUsers } = useQuery(listUsers)
 
-  const users = useMemo(() => {
-    if (!rbacUsers) return []
+  const users = useMemo(() => rbacUsers?.sort((a, b) => compareStrings(a.metadata.name ?? '', b.metadata.name ?? '')) ?? [], [rbacUsers])
 
-    return rbacUsers.sort((a, b) => compareStrings(a.metadata.name || '', b.metadata.name || ''))
-  }, [rbacUsers])
-
-  const keyFn = useCallback((user: RbacUser) => user.metadata.name || '', [])
+  const keyFn = useCallback((user: RbacUser) => user.metadata.name ?? '', [])
 
   const columns = useMemo<IAcmTableColumn<RbacUser>[]>(
     () => [
@@ -36,12 +32,12 @@ const Users = () => {
         transforms: [cellWidth(40)],
         cell: (user, search) => (
           <span style={{ whiteSpace: 'nowrap' }}>
-            <Link to={generatePath(NavigationPath.identitiesUsersDetails, { id: user.metadata.name || '' })}>
-              <HighlightSearchText text={user.metadata.name || ''} searchText={search} isTruncate />
+            <Link to={generatePath(NavigationPath.identitiesUsersDetails, { id: user.metadata.uid ?? '' })}>
+              <HighlightSearchText text={user.metadata.name ?? ''} searchText={search} isTruncate />
             </Link>
           </span>
         ),
-        exportContent: (user) => user.metadata.name || '',
+        exportContent: (user) => user.metadata.name ?? '',
       },
       {
         header: t('Status'),
@@ -62,9 +58,7 @@ const Users = () => {
         },
         transforms: [cellWidth(40)],
         sort: 'metadata.creationTimestamp',
-        exportContent: (user) => {
-          return user.metadata.creationTimestamp ? getISOStringTimestamp(user.metadata.creationTimestamp) : ''
-        },
+        exportContent: (user) => user.metadata.creationTimestamp ? getISOStringTimestamp(user.metadata.creationTimestamp) : '',
       },
     ],
     [t]
@@ -75,9 +69,27 @@ const Users = () => {
       const actions: IAcmRowAction<RbacUser>[] = [
         {
           id: 'details',
-          title: t('Details'),
+          title: (
+            <>
+              {t('Impersonate user')} <strong>{user.metadata.name}</strong>
+            </>
+          ),
           click: () => {
-            navigate(generatePath(NavigationPath.identitiesUsersDetails, { id: user.metadata.name || '' }))
+            navigate(generatePath(NavigationPath.identitiesUsersDetails, { id: user.metadata.uid ?? '' }))
+          },
+        },
+        {
+          id: 'edit',
+          title: t('Edit user'),
+          click: () => {
+            navigate(generatePath(NavigationPath.identitiesUsersDetails, { id: user.metadata.uid ?? '' }))
+          },
+        },
+        {
+          id: 'delete',
+          title: t('Delete user'),
+          click: () => {
+            navigate(generatePath(NavigationPath.identitiesUsersDetails, { id: user.metadata.uid ?? '' }))
           },
         },
       ]
