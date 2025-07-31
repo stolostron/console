@@ -2,12 +2,16 @@
 import { Metadata } from './metadata'
 import { IResourceDefinition } from './resource'
 import { listResources } from './utils/resource-request'
+import { PolicyRule, LocalObjectReference } from './kubernetes-client'
 
 export const UserApiVersion = 'user.openshift.io/v1'
 export type UserApiVersionType = 'user.openshift.io/v1'
 
 export const RbacApiVersion = 'rbac.authorization.k8s.io/v1'
 export type RbacApiVersionType = 'rbac.authorization.k8s.io/v1'
+
+export const ServiceAccountApiVersion = 'v1'
+export type ServiceAccountApiVersionType = 'v1'
 
 export const UserKind = 'User'
 export type UserKindType = 'User'
@@ -20,6 +24,15 @@ export type ClusterRoleKindType = 'ClusterRole'
 
 export const ClusterRoleBindingKind = 'ClusterRoleBinding'
 export type ClusterRoleBindingKindType = 'ClusterRoleBinding'
+
+export const RoleKind = 'Role'
+export type RoleKindType = 'Role'
+
+export const RoleBindingKind = 'RoleBinding'
+export type RoleBindingKindType = 'RoleBinding'
+
+export const ServiceAccountKind = 'ServiceAccount'
+export type ServiceAccountKindType = 'ServiceAccount'
 
 export const UserDefinition: IResourceDefinition = {
   apiVersion: UserApiVersion,
@@ -41,6 +54,21 @@ export const ClusterRoleBindingDefinition: IResourceDefinition = {
   kind: ClusterRoleBindingKind,
 }
 
+export const RoleDefinition: IResourceDefinition = {
+  apiVersion: RbacApiVersion,
+  kind: RoleKind,
+}
+
+export const RoleBindingDefinition: IResourceDefinition = {
+  apiVersion: RbacApiVersion,
+  kind: RoleBindingKind,
+}
+
+export const ServiceAccountDefinition: IResourceDefinition = {
+  apiVersion: ServiceAccountApiVersion,
+  kind: ServiceAccountKind,
+}
+
 export interface User {
   apiVersion: UserApiVersionType
   kind: UserKindType
@@ -60,12 +88,7 @@ export interface ClusterRole {
   apiVersion: RbacApiVersionType
   kind: ClusterRoleKindType
   metadata: Metadata
-  rules: {
-    verbs: string[]
-    apiGroups: string[]
-    resources: string[]
-    resourceNames: string[]
-  }[]
+  rules: PolicyRule[]
 }
 
 export interface ClusterRoleBinding {
@@ -84,6 +107,42 @@ export interface ClusterRoleBinding {
   }
 }
 
+export interface Role {
+  apiVersion: RbacApiVersionType
+  kind: RoleKindType
+  metadata: Metadata
+  rules: PolicyRule[]
+}
+
+export interface RoleBinding {
+  apiVersion: RbacApiVersionType
+  kind: RoleBindingKindType
+  metadata: Metadata
+  subjects?: {
+    kind: 'User' | 'Group'
+    apiGroup: 'rbac.authorization.k8s.io'
+    name: string
+    namespace?: string
+  }[]
+  roleRef: {
+    apiGroup: 'rbac.authorization.k8s.io'
+    kind: RoleKindType
+    name: string
+  }
+}
+
+export interface ServiceAccount {
+  apiVersion: ServiceAccountApiVersionType
+  kind: ServiceAccountKindType
+  metadata: Metadata
+  secrets: string[]
+  imagePullSecrets: LocalObjectReference[]
+}
+
+export function listClusterRoles() {
+  return listResources<ClusterRole>(ClusterRoleDefinition)
+}
+
 export function listClusterRoleBindings() {
   return listResources<ClusterRoleBinding>(ClusterRoleBindingDefinition)
 }
@@ -94,4 +153,16 @@ export function listUsers() {
 
 export function listGroups() {
   return listResources<Group>(GroupDefinition)
+}
+
+export function listServiceAccounts() {
+  return listResources<ServiceAccount>(ServiceAccountDefinition)
+}
+
+export function listRoles() {
+  return listResources<Role>(RoleDefinition)
+}
+
+export function listRoleBindings() {
+  return listResources<RoleBinding>(RoleBindingDefinition)
 }
