@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { FC, useEffect, useRef, useState } from 'react'
+import { FC, useCallback, useEffect, useRef, useState } from 'react'
 
 // References translations directly from OpenShift console - not from plugins
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
@@ -32,6 +32,70 @@ const ResourceEventStream: FC<{ resource: K8sResourceCommon }> = ({ resource }) 
   const fieldSelector = `involvedObject.uid=${resource?.metadata?.uid},involvedObject.name=${resource?.metadata?.name},involvedObject.kind=${resource?.kind}`
   const namespace = resource?.metadata?.namespace
 
+  const handleMessage = useCallback(
+    (message: any) => {
+      if (!active) return
+
+      const eventdataParsed = JSON.parse(message.data)
+
+      if (!eventdataParsed) return
+
+      const eventType = eventdataParsed.type
+      const object = eventdataParsed.object as EventKind
+
+      setSortedEvents((currentSortedEvents) => {
+        const topEvents = currentSortedEvents.slice(0, MAX_MESSAGES)
+
+        const uid = object?.metadata?.uid || ''
+
+        const eventAlreadyExists = topEvents.find((e) => e?.metadata?.uid === uid)
+        switch (eventType) {
+          case 'ADDED':
+          case 'MODIFIED':
+            if (
+              eventAlreadyExists &&
+              eventAlreadyExists?.count !== undefined &&
+              object?.count !== undefined &&
+              eventAlreadyExists.count > object.count
+            ) {
+              // We already have a more recent version of this message stored, so skip this one
+              return topEvents
+            }
+
+            return sortEvents([...topEvents, object])
+          case 'DELETED':
+            return topEvents.filter((e) => e?.metadata?.uid !== uid)
+          default:
+            // eslint-disable-next-line no-console
+            console.error(`UNHANDLED EVENT: ${eventType}`)
+            return topEvents
+        }
+      })
+    },
+    [active]
+  )
+
+  const handleOpen = useCallback(() => {
+    setActive(true)
+    setError(false)
+    setLoading(false)
+  }, [])
+
+  const handleClose = useCallback(
+    (evt: CloseEvent) => {
+      setActive(false)
+      if (evt?.wasClean === false) {
+        setError(evt.reason || t('public~Connection did not close cleanly.'))
+      }
+    },
+    [t]
+  )
+
+  const handleError = useCallback(() => {
+    setActive(false)
+    setError(true)
+  }, [])
+
   // Handle websocket setup and teardown when dependent props change
   useEffect(() => {
     if (!resource.cluster || resource.cluster === hubCluster || !loaded) return
@@ -48,74 +112,32 @@ const ResourceEventStream: FC<{ resource: K8sResourceCommon }> = ({ resource }) 
         : {}),
     }
 
-    if (!ws.current) {
-      ws.current = fleetWatch(EventModel, watchURLOptions, backendAPIPath as string)
+    if (ws.current) return
 
-      if (ws.current === undefined) return
+    ws.current = fleetWatch(EventModel, watchURLOptions, backendAPIPath as string)
 
-      ws.current.onmessage = (message: any) => {
-        if (!active) return
+    if (ws.current === undefined) return
 
-        const eventdataParsed = JSON.parse(message.data)
-
-        if (!eventdataParsed) return
-
-        const eventType = eventdataParsed.type
-        const object = eventdataParsed.object as EventKind
-
-        setSortedEvents((currentSortedEvents) => {
-          const topEvents = currentSortedEvents.slice(0, MAX_MESSAGES)
-
-          const uid = object?.metadata?.uid || ''
-
-          const eventAlreadyExists = topEvents.find((e) => e?.metadata?.uid === uid)
-          switch (eventType) {
-            case 'ADDED':
-            case 'MODIFIED':
-              if (
-                eventAlreadyExists &&
-                eventAlreadyExists?.count !== undefined &&
-                object?.count !== undefined &&
-                eventAlreadyExists.count > object.count
-              ) {
-                // We already have a more recent version of this message stored, so skip this one
-                return topEvents
-              }
-
-              return sortEvents([...topEvents, object])
-            case 'DELETED':
-              return topEvents.filter((e) => e?.metadata?.uid !== uid)
-            default:
-              // eslint-disable-next-line no-console
-              console.error(`UNHANDLED EVENT: ${eventType}`)
-              return topEvents
-          }
-        })
-      }
-
-      ws.current.onopen = () => {
-        setActive(true)
-        setError(false)
-        setLoading(false)
-      }
-
-      ws.current.onclose = (evt: CloseEvent) => {
-        setActive(false)
-        if (evt?.wasClean === false) {
-          setError(evt.reason || t('public~Connection did not close cleanly.'))
-        }
-      }
-
-      ws.current.onerror = () => {
-        setActive(false)
-        setError(true)
-      }
-    }
+    ws.current.onmessage = handleMessage
+    ws.current.onopen = handleOpen
+    ws.current.onclose = handleClose
+    ws.current.onerror = handleError
 
     return () => {
       ws.current?.close()
     }
-  }, [namespace, fieldSelector, active, t, resource.cluster, hubCluster, loaded, backendAPIPath])
+  }, [
+    namespace,
+    fieldSelector,
+    resource.cluster,
+    hubCluster,
+    loaded,
+    backendAPIPath,
+    handleMessage,
+    handleOpen,
+    handleClose,
+    handleError,
+  ])
 
   const count = sortedEvents.length
   const noEvents = count === 0
