@@ -185,7 +185,7 @@ export async function fleetK8sPatch<R extends K8sResourceCommon>(options: Option
 }
 
 export async function fleetK8sCreate<R extends K8sResourceCommon>(options: OptionsCreate<R>): Promise<R> {
-  const { data, model, ns, name } = options
+  const { data, model, ns } = options
 
   const cluster = options.cluster || data.cluster
 
@@ -195,13 +195,18 @@ export async function fleetK8sCreate<R extends K8sResourceCommon>(options: Optio
   const requestPath = await getResourceURL({
     model,
     ns: data?.metadata?.namespace || ns,
-    name: data.metadata?.name || name,
     cluster,
     queryParams: options.queryParams,
   })
 
+  const requestData = {
+    ...data,
+  }
+
+  delete requestData.cluster
+
   return consoleFetchJSON(requestPath, 'POST', {
-    body: JSON.stringify(data),
+    body: JSON.stringify(requestData),
     headers: commonHeaders,
   }) as Promise<R>
 }
