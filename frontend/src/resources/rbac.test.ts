@@ -89,7 +89,11 @@ const mockServiceAccount: ServiceAccount = {
     namespace: testNamespace,
     uid: 'sa-123',
   },
-  secrets: ['test-token'],
+  secrets: [
+    {
+      name: 'test-token',
+    },
+  ],
   imagePullSecrets: [],
 }
 

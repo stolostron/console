@@ -2,7 +2,8 @@
 import { Metadata } from './metadata'
 import { IResourceDefinition } from './resource'
 import { listResources } from './utils/resource-request'
-import { PolicyRule, LocalObjectReference } from './kubernetes-client'
+import { PolicyRule, LocalObjectReference, Subject, RoleRef } from './kubernetes-client'
+import { ObjectReference } from '@openshift-console/dynamic-plugin-sdk'
 
 export const UserApiVersion = 'user.openshift.io/v1'
 export type UserApiVersionType = 'user.openshift.io/v1'
@@ -95,16 +96,8 @@ export interface ClusterRoleBinding {
   apiVersion: RbacApiVersionType
   kind: ClusterRoleBindingKindType
   metadata: Metadata
-  subjects?: {
-    kind: 'User' | 'Group'
-    apiGroup: 'rbac.authorization.k8s.io'
-    name: string
-  }[]
-  roleRef: {
-    apiGroup: 'rbac.authorization.k8s.io'
-    kind: ClusterRoleKindType
-    name: string
-  }
+  subjects?: Subject[]
+  roleRef: RoleRef
 }
 
 export interface Role {
@@ -118,25 +111,17 @@ export interface RoleBinding {
   apiVersion: RbacApiVersionType
   kind: RoleBindingKindType
   metadata: Metadata
-  subjects?: {
-    kind: 'User' | 'Group'
-    apiGroup: 'rbac.authorization.k8s.io'
-    name: string
-    namespace?: string
-  }[]
-  roleRef: {
-    apiGroup: 'rbac.authorization.k8s.io'
-    kind: RoleKindType
-    name: string
-  }
+  subjects?: Subject[]
+  roleRef: RoleRef
 }
 
 export interface ServiceAccount {
   apiVersion: ServiceAccountApiVersionType
   kind: ServiceAccountKindType
   metadata: Metadata
-  secrets: string[]
+  secrets: ObjectReference[]
   imagePullSecrets: LocalObjectReference[]
+  automountServiceAccountToken?: boolean
 }
 
 export function listClusterRoles() {
