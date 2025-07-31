@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { act, renderHook } from '@testing-library/react-hooks'
-import { useFleetPrometheusPoll } from '.'
+import { useFleetPrometheusPoll } from './useFleetPrometheusPoll'
 import { consoleFetch, PrometheusEndpoint, usePrometheusPoll } from '@openshift-console/dynamic-plugin-sdk'
 
 const mockOpenshiftPrometheusHook = usePrometheusPoll as jest.MockedFunction<typeof usePrometheusPoll>

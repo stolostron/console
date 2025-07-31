@@ -35,7 +35,7 @@ export type UseFleetSearchPoll = <T extends K8sResourceCommon | K8sResourceCommo
 /**
  * Signature of the `UseIsFleet ObservabilityInstalled` hook.
  *
- * @returns A tuple containing a boolean indicating if the observability controller is installed, a boolean indicating if loading, and an error if any.
+ * @returns A tuple containing a boolean indicating if the observability controller is installed, a boolean indicating if loaded, and an error if any.
  */
 export type UseIsFleetObservabilityInstalled = () => [
   isObservabilityInstalled: boolean | null,

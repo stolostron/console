@@ -1,45 +1,21 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { fetchFleetConfiguration, getCachedIsObservabilityInstalled } from '../internal/cachedFleetConfiguration'
 import { UseIsFleetObservabilityInstalled } from '../types'
 import { useEffect, useMemo, useState } from 'react'
-import { useIsFleetAvailable } from './useIsFleetAvailable'
+import { useFleetConfiguration } from '../internal/useFleetConfiguration'
 
 /**
- * Hook that provides hub cluster name.
+ * Hook that provides true if observability is installed on the hub cluster.
  *
  * @returns Array with `isObservabilityInstalled`, `loaded` and `error` values.
  */
 export const useIsFleetObservabilityInstalled: UseIsFleetObservabilityInstalled = () => {
-  const cachedIsObservabilityInstalled = getCachedIsObservabilityInstalled()
-  const [isObservabilityInstalled, setIsObservabilityInstalled] = useState<boolean | null>(
-    cachedIsObservabilityInstalled ?? null
-  )
-  const [loaded, setLoaded] = useState<boolean>(!!cachedIsObservabilityInstalled)
-  const [error, setError] = useState<any>(undefined)
+  const [isObservabilityInstalled, setIsObservabilityInstalled] = useState<boolean | null>(null)
 
-  const fleetAvailable = useIsFleetAvailable()
+  const [fleetConfiguration, loaded, error] = useFleetConfiguration()
 
   useEffect(() => {
-    if (!fleetAvailable) {
-      setIsObservabilityInstalled(null)
-      setLoaded(false)
-      setError('A version of RHACM that is compatible with the multicluster SDK is not available')
-      return
-    }
-
-    const currentCachedIsObservabilityInstalled = getCachedIsObservabilityInstalled()
-    if (!currentCachedIsObservabilityInstalled) {
-      void (async () => {
-        try {
-          const configuration = await fetchFleetConfiguration()
-          setIsObservabilityInstalled(configuration?.isObservabilityInstalled ?? null)
-          setLoaded(true)
-        } catch (err) {
-          setError(err)
-        }
-      })()
-    }
-  }, [fleetAvailable])
+    setIsObservabilityInstalled(fleetConfiguration?.isObservabilityInstalled ?? null)
+  }, [fleetConfiguration])
 
   return useMemo(() => [isObservabilityInstalled, loaded, error], [isObservabilityInstalled, loaded, error])
 }
