@@ -15,12 +15,6 @@ jest.mock('@openshift-console/dynamic-plugin-sdk', () => ({
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, options?: any) => {
-      if (key === 'public~Showing {{count}} event' && options?.count) {
-        return `Showing ${options.count} event`
-      }
-      if (key === 'public~Showing most recent {{count}} event' && options?.count) {
-        return `Showing most recent ${options.count} event`
-      }
       if (options) {
         return key.replace(/{{(\w+)}}/g, (match, placeholder) => options[placeholder] || match)
       }

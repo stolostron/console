@@ -223,7 +223,7 @@ export const FleetResourceEventStream: FC<{ resource: FleetK8sResourceCommon }> 
     statusBtnTxt = (
       <span className="co-sysevent-stream__connection-error">
         {_.isString(error)
-          ? t('public~Error connecting to event stream: { error }', {
+          ? t('public~Error connecting to event stream: {{error}}', {
               error,
             })
           : t('public~Error connecting to event stream')}
