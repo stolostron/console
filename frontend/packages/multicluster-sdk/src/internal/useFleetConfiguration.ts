@@ -87,7 +87,7 @@ export const useFleetConfiguration: UseFleetConfiguration = () => {
         setLoaded(true)
         hasInitialized.current = false // Allow retry on error
       })
-  }, [])
+  }, [fleetAvailable])
 
   return useMemo(() => [fleetConfiguration, loaded, error], [fleetConfiguration, loaded, error])
 }
