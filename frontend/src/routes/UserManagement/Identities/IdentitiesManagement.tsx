@@ -6,6 +6,7 @@ import { Users } from './Users/Users'
 import { Groups } from './Groups/Groups'
 import { ServiceAccounts } from './ServiceAccounts/ServiceAccounts'
 import { UserDetail } from './Users/UserDetail'
+import { UserDetails } from './Users/UserDetails'
 import { UserYaml } from './Users/UserYaml'
 import { UserRoleAssignments } from './Users/UserRoleAssignments'
 import { UserGroups } from './Users/UserGroups'
@@ -23,14 +24,28 @@ const identitiesChildPath = createRoutePathFunction(NavigationPath.identities)
 export default function IdentitiesManagement() {
   return (
     <Routes>
-      {/* User detail routes */}
-      <Route path={identitiesChildPath(NavigationPath.identitiesUsersYaml)} element={<UserYaml />} />
+      {/* User detail routes with nested tabs */}
+      <Route path={identitiesChildPath(NavigationPath.identitiesUsersDetails)} element={<UserDetail />}>
+        <Route index element={<UserDetails />} />
+      </Route>
+      <Route path={identitiesChildPath(NavigationPath.identitiesUsersYaml)} element={<UserDetail />}>
+        <Route index element={<UserYaml />} />
+      </Route>
       <Route
         path={identitiesChildPath(NavigationPath.identitiesUsersRoleAssignments)}
-        element={<UserRoleAssignments />}
-      />
-      <Route path={identitiesChildPath(NavigationPath.identitiesUsersGroups)} element={<UserGroups />} />
-      <Route path={identitiesChildPath(NavigationPath.identitiesUsersDetails)} element={<UserDetail />} />
+        element={<UserDetail />}
+      >
+        <Route index element={<UserRoleAssignments />} />
+      </Route>
+      <Route
+        path={identitiesChildPath(NavigationPath.identitiesUsersRoleAssignmentsCreate)}
+        element={<UserDetail />}
+      >
+        <Route index element={<UserRoleAssignments />} />
+      </Route>
+      <Route path={identitiesChildPath(NavigationPath.identitiesUsersGroups)} element={<UserDetail />}>
+        <Route index element={<UserGroups />} />
+      </Route>
 
       {/* Group detail routes */}
       <Route path={identitiesChildPath(NavigationPath.identitiesGroupsYaml)} element={<GroupYaml />} />
@@ -50,14 +65,8 @@ export default function IdentitiesManagement() {
         path={identitiesChildPath(NavigationPath.identitiesServiceAccountsRoleAssignments)}
         element={<ServiceAccountRoleAssignments />}
       />
-      <Route
-        path={identitiesChildPath(NavigationPath.identitiesServiceAccountsGroups)}
-        element={<ServiceAccountGroups />}
-      />
-      <Route
-        path={identitiesChildPath(NavigationPath.identitiesServiceAccountsDetails)}
-        element={<ServiceAccountDetail />}
-      />
+      <Route path={identitiesChildPath(NavigationPath.identitiesServiceAccountsGroups)} element={<ServiceAccountGroups />} />
+      <Route path={identitiesChildPath(NavigationPath.identitiesServiceAccountsDetails)} element={<ServiceAccountDetail />} />
 
       {/* Main page with tabs with Users, Groups, and Service Accounts */}
       <Route element={<IdentitiesPage />}>
