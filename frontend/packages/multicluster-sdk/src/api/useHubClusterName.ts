@@ -1,7 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { fetchHubClusterName, getCachedHubClusterName } from '../internal/cachedHubClusterName'
 import { UseHubClusterName } from '../types'
 import { useEffect, useMemo, useState } from 'react'
-import { cachedFleetConfiguration, useFleetConfiguration } from '../internal/useFleetConfiguration'
+import { useIsFleetAvailable } from './useIsFleetAvailable'
 
 /**
  * Hook that provides hub cluster name.
@@ -9,20 +10,34 @@ import { cachedFleetConfiguration, useFleetConfiguration } from '../internal/use
  * @returns Array with `hubclustername`, `loaded` and `error` values.
  */
 export const useHubClusterName: UseHubClusterName = () => {
-  const [hubClusterName, setHubClusterName] = useState<string | undefined>()
+  const cachedHubClusterName = getCachedHubClusterName()
+  const [hubClusterName, setHubClusterName] = useState<string | undefined>(cachedHubClusterName)
+  const [loaded, setLoaded] = useState<boolean>(!!cachedHubClusterName)
+  const [error, setError] = useState<any>(undefined)
 
-  const [fleetConfiguration, loaded, error] = useFleetConfiguration()
+  const fleetAvailable = useIsFleetAvailable()
 
   useEffect(() => {
-    setHubClusterName(fleetConfiguration?.localHubName)
-  }, [fleetConfiguration])
+    if (!fleetAvailable) {
+      setHubClusterName(undefined)
+      setLoaded(false)
+      setError('A version of RHACM that is compatible with the multicluster SDK is not available')
+      return
+    }
+
+    const currentCachedName = getCachedHubClusterName()
+    if (!currentCachedName) {
+      void (async () => {
+        try {
+          const hubName = await fetchHubClusterName()
+          setHubClusterName(hubName)
+          setLoaded(true)
+        } catch (err) {
+          setError(err)
+        }
+      })()
+    }
+  }, [fleetAvailable])
 
   return useMemo(() => [hubClusterName, loaded, error], [hubClusterName, loaded, error])
-}
-
-/**
- * Get cached hub cluster name without triggering a re-fetch.
- */
-export const getHubClusterName = (): string | undefined => {
-  return cachedFleetConfiguration?.localHubName
 }

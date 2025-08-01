@@ -1,28 +1,49 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { UseIsFleetObservabilityInstalled } from '../types'
 import { useEffect, useMemo, useState } from 'react'
-import { cachedFleetConfiguration, useFleetConfiguration } from '../internal/useFleetConfiguration'
+import { useIsFleetAvailable } from './useIsFleetAvailable'
+import { NO_FLEET_AVAILABLE_ERROR } from '../internal/constants'
+import {
+  fetchFleetObservabilityInstalled,
+  getCachedFleetObservabilityInstalled,
+} from '../internal/cachedFleetObservabilityInstalled'
 
 /**
- * Hook that provides true if observability is installed on the hub cluster.
+ * Hook that provides is observability installed.
  *
  * @returns Array with `isObservabilityInstalled`, `loaded` and `error` values.
  */
 export const useIsFleetObservabilityInstalled: UseIsFleetObservabilityInstalled = () => {
-  const [isObservabilityInstalled, setIsObservabilityInstalled] = useState<boolean | null>(null)
+  const cachedFleetObservabilityInstalled = getCachedFleetObservabilityInstalled()
+  const [fleetObservabilityInstalled, setFleetObservabilityInstalled] = useState<boolean | null>(
+    typeof cachedFleetObservabilityInstalled === 'boolean' ? cachedFleetObservabilityInstalled : null
+  )
+  const [loaded, setLoaded] = useState<boolean>(typeof cachedFleetObservabilityInstalled === 'boolean')
+  const [error, setError] = useState<any>(undefined)
 
-  const [fleetConfiguration, loaded, error] = useFleetConfiguration()
+  const fleetAvailable = useIsFleetAvailable()
 
   useEffect(() => {
-    setIsObservabilityInstalled(fleetConfiguration?.isObservabilityInstalled ?? null)
-  }, [fleetConfiguration])
+    if (!fleetAvailable) {
+      setFleetObservabilityInstalled(null)
+      setLoaded(false)
+      setError(NO_FLEET_AVAILABLE_ERROR)
+      return
+    }
 
-  return useMemo(() => [isObservabilityInstalled, loaded, error], [isObservabilityInstalled, loaded, error])
-}
+    const currentCachedFleetObservabilityInstalled = getCachedFleetObservabilityInstalled()
+    if (!currentCachedFleetObservabilityInstalled) {
+      void (async () => {
+        try {
+          const fleetObservabilityInstalled = await fetchFleetObservabilityInstalled()
+          setFleetObservabilityInstalled(fleetObservabilityInstalled ?? null)
+          setLoaded(true)
+        } catch (err) {
+          setError(err)
+        }
+      })()
+    }
+  }, [fleetAvailable])
 
-/**
- * Get cached observability installation status without triggering a re-fetch.
- */
-export const getIsObservabilityInstalled = (): boolean | undefined => {
-  return cachedFleetConfiguration?.isObservabilityInstalled
+  return useMemo(() => [fleetObservabilityInstalled, loaded, error], [fleetObservabilityInstalled, loaded, error])
 }
