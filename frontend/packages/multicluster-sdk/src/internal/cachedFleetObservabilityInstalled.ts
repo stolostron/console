@@ -6,7 +6,7 @@ import { FLEET_CONFIGURATION_URL } from './constants'
 let cachedFleetObservabilityInstalled: boolean | undefined = undefined
 let fetchPromise: Promise<boolean | undefined> | undefined = undefined
 
-export const fetchFleetObservabilityInstalled = async (): Promise<boolean | undefined> => {
+export const getCachedFleetObservabilityInstalled = async (): Promise<boolean | undefined> => {
   if (cachedFleetObservabilityInstalled) {
     return cachedFleetObservabilityInstalled
   }
@@ -23,8 +23,4 @@ export const fetchFleetObservabilityInstalled = async (): Promise<boolean | unde
   })()
 
   return fetchPromise
-}
-
-export const getCachedFleetObservabilityInstalled = (): boolean | undefined => {
-  return cachedFleetObservabilityInstalled
 }
