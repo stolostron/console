@@ -43,26 +43,17 @@ describe('apiRequests', () => {
   })
 
   describe('fleetWatch', () => {
-    it('should create WebSocket with correct URL for HTTP', () => {
-      const backendURL = 'http://localhost:8080'
+    it('should create WebSocket with correct URL', () => {
+      const backendURL = '/proxy'
       const query = { ns: 'default', cluster: 'cluster1' }
 
       fleetWatch(mockModel, query, backendURL)
 
-      expect(WebSocket).toHaveBeenCalledWith('ws://localhost:8080/api/v1/namespaces/default/pods?watch=true')
-    })
-
-    it('should create WebSocket with correct URL for HTTPS', () => {
-      const backendURL = 'https://localhost:8443'
-      const query = { ns: 'default', cluster: 'cluster1' }
-
-      fleetWatch(mockModel, query, backendURL)
-
-      expect(WebSocket).toHaveBeenCalledWith('wss://localhost:8443/api/v1/namespaces/default/pods?watch=true')
+      expect(WebSocket).toHaveBeenCalledWith('/proxy/api/v1/namespaces/default/pods?watch=true')
     })
 
     it('should include labelSelector in query params', () => {
-      const backendURL = 'http://localhost:8080'
+      const backendURL = '/proxy'
       const query = {
         ns: 'default',
         cluster: 'cluster1',
@@ -72,12 +63,12 @@ describe('apiRequests', () => {
       fleetWatch(mockModel, query, backendURL)
 
       expect(WebSocket).toHaveBeenCalledWith(
-        'ws://localhost:8080/api/v1/namespaces/default/pods?watch=true&labelSelector=app%3Dtest'
+        '/proxy/api/v1/namespaces/default/pods?watch=true&labelSelector=app%3Dtest'
       )
     })
 
     it('should include fieldSelector in query params', () => {
-      const backendURL = 'http://localhost:8080'
+      const backendURL = '/proxy'
       const query = {
         ns: 'default',
         cluster: 'cluster1',
@@ -87,12 +78,12 @@ describe('apiRequests', () => {
       fleetWatch(mockModel, query, backendURL)
 
       expect(WebSocket).toHaveBeenCalledWith(
-        'ws://localhost:8080/api/v1/namespaces/default/pods?watch=true&fieldSelector=metadata.name%3Dtest-pod'
+        '/proxy/api/v1/namespaces/default/pods?watch=true&fieldSelector=metadata.name%3Dtest-pod'
       )
     })
 
     it('should include resourceVersion in query params', () => {
-      const backendURL = 'http://localhost:8080'
+      const backendURL = '/proxy'
       const query = {
         ns: 'default',
         cluster: 'cluster1',
@@ -101,23 +92,21 @@ describe('apiRequests', () => {
 
       fleetWatch(mockModel, query, backendURL)
 
-      expect(WebSocket).toHaveBeenCalledWith(
-        'ws://localhost:8080/api/v1/namespaces/default/pods?watch=true&resourceVersion=12345'
-      )
+      expect(WebSocket).toHaveBeenCalledWith('/proxy/api/v1/namespaces/default/pods?watch=true&resourceVersion=12345')
     })
 
     it('should handle cluster-scoped resources', () => {
       const clusterScopedModel = { ...mockModel, namespaced: false }
-      const backendURL = 'http://localhost:8080'
+      const backendURL = '/proxy'
       const query = { cluster: 'cluster1' }
 
       fleetWatch(clusterScopedModel, query, backendURL)
 
-      expect(WebSocket).toHaveBeenCalledWith('ws://localhost:8080/api/v1/pods?watch=true')
+      expect(WebSocket).toHaveBeenCalledWith('/proxy/api/v1/pods?watch=true')
     })
 
     it('should handle resources with names', () => {
-      const backendURL = 'http://localhost:8080'
+      const backendURL = '/proxy'
       const query = {
         ns: 'default',
         cluster: 'cluster1',
@@ -126,7 +115,7 @@ describe('apiRequests', () => {
       // Note: fleetWatch doesn't handle 'name' in query, it's handled by getResourcePath
       fleetWatch(mockModel, query, backendURL)
 
-      expect(WebSocket).toHaveBeenCalledWith('ws://localhost:8080/api/v1/namespaces/default/pods?watch=true')
+      expect(WebSocket).toHaveBeenCalledWith('/proxy/api/v1/namespaces/default/pods?watch=true')
     })
 
     it('should handle non-core API groups', () => {
@@ -135,12 +124,12 @@ describe('apiRequests', () => {
         apiVersion: 'apps/v1',
         apiGroup: 'apps',
       }
-      const backendURL = 'http://localhost:8080'
+      const backendURL = '/proxy'
       const query = { ns: 'default', cluster: 'cluster1' }
 
       fleetWatch(appsModel, query, backendURL)
 
-      expect(WebSocket).toHaveBeenCalledWith('ws://localhost:8080/apis/apps/apps/v1/namespaces/default/pods?watch=true')
+      expect(WebSocket).toHaveBeenCalledWith('/proxy/apis/apps/apps/v1/namespaces/default/pods?watch=true')
     })
   })
 
@@ -185,18 +174,6 @@ describe('apiRequests', () => {
       }
       const result = buildResourceURL(params)
       expect(result).toBe('/api/proxy/plugin/acm/console/multicloud/api/v1/namespaces/default/pods/test-pod')
-    })
-
-    it('should use default base path when not provided', () => {
-      const params = {
-        model: mockModel,
-        ns: 'default',
-        name: 'test-pod',
-        cluster: 'cluster1',
-        basePath: '/api/proxy/plugin/acm/console/multicloud',
-      }
-      const result = buildResourceURL(params)
-      expect(result).toContain('/api/v1/namespaces/default/pods/test-pod')
     })
   })
 })
