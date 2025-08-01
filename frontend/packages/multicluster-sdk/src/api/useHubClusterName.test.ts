@@ -27,7 +27,7 @@ describe('testing useHubClusterName Hook', () => {
 
   it('should fetch hub cluster name if not cached', async () => {
     void (internal.getCachedHubClusterName as jest.Mock).mockReturnValue(undefined)
-    const fetchMock = jest.spyOn(internal, 'fetchHubClusterName').mockResolvedValue('local-cluster')
+    const fetchMock = jest.spyOn(internal, 'getCachedHubClusterName').mockResolvedValue('local-cluster')
     mockUseIsFleetAvailable.mockReturnValue(true)
     const { result, waitForNextUpdate } = renderHook(() => useHubClusterName())
     expect(result.current).toEqual([undefined, false, undefined])
