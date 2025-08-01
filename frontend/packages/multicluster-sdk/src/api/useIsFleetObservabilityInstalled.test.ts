@@ -17,27 +17,33 @@ describe('testing useFleetObservabilityInstalled Hook', () => {
     jest.clearAllMocks()
   })
 
-  it('should return cached hub cluster name if cache available', () => {
-    void (internal.getCachedFleetObservabilityInstalled as jest.Mock).mockReturnValue(true)
+  it('should return cached observability status if cache available', async () => {
+    void (internal.getCachedFleetObservabilityInstalled as jest.Mock).mockResolvedValue(true)
     mockUseIsFleetAvailable.mockReturnValue(true)
-    const { result } = renderHook(() => useIsFleetObservabilityInstalled())
+    const { result, waitForNextUpdate } = renderHook(() => useIsFleetObservabilityInstalled())
 
+    // Initial state should be loading
+    expect(result.current).toEqual([null, false, undefined])
+
+    // Wait for the async operation to complete
+    await waitForNextUpdate()
+
+    // After loading, should have the cached value
     expect(result.current).toEqual([true, true, undefined])
   })
 
-  it('should fetch hub cluster name if not cached', async () => {
-    void (internal.getCachedFleetObservabilityInstalled as jest.Mock).mockReturnValue(undefined)
-    const fetchMock = jest.spyOn(internal, 'fetchFleetObservabilityInstalled').mockResolvedValue(true)
+  it('should fetch observability status if not cached', async () => {
+    void (internal.getCachedFleetObservabilityInstalled as jest.Mock).mockResolvedValue(true)
     mockUseIsFleetAvailable.mockReturnValue(true)
     const { result, waitForNextUpdate } = renderHook(() => useIsFleetObservabilityInstalled())
     expect(result.current).toEqual([null, false, undefined])
     await waitForNextUpdate()
-    expect(fetchMock).toHaveBeenCalled()
+    expect(internal.getCachedFleetObservabilityInstalled).toHaveBeenCalled()
     expect(result.current).toEqual([true, true, undefined])
   })
 
   it('should return error if fleet is not available', async () => {
-    void (internal.getCachedFleetObservabilityInstalled as jest.Mock).mockReturnValue(false)
+    void (internal.getCachedFleetObservabilityInstalled as jest.Mock).mockResolvedValue(false)
     mockUseIsFleetAvailable.mockReturnValue(false)
     const { result } = renderHook(() => useIsFleetObservabilityInstalled())
     expect(result.current).toEqual([
