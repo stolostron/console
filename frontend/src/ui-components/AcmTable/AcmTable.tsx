@@ -76,6 +76,7 @@ import {
   ITableItem,
 } from './AcmTableTypes'
 import { AcmManageColumn } from './AcmManageColumn'
+import { HighlightSearchText } from '../../components/HighlightSearchText'
 
 const tableDivClass = css({
   display: 'table',
@@ -882,7 +883,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     return selectedSortedCols[cellIndex].isActionCol ?? false
   }
 
-  function renderCellContent(cell: ReactNode | IRowCell<any> | string): ReactNode {
+  function renderCellContent(cell: ReactNode | IRowCell<any> | string, cellIndex: number): ReactNode {
     if (cell) {
       if (typeof cell === 'object') {
         if ('title' in cell && cell.title !== undefined) {
@@ -890,7 +891,12 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         }
         return cell as ReactNode
       } else if (typeof cell === 'string' || typeof cell === 'number') {
-        return cell as ReactNode
+        // Apply HighlightSearchText to all data columns (provides both truncation and highlighting)
+        const column = selectedSortedCols[cellIndex]
+        if (column && !column.isActionCol) {
+          return <HighlightSearchText text={cell.toString()} searchText={internalSearch} />
+        }
+        return cell
       }
     }
     return null
@@ -1060,7 +1066,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                               {...rowProps}
                               isActionCell={isActionKebab}
                             >
-                              {renderCellContent(cell)}
+                              {renderCellContent(cell, cellIndex)}
                             </Td>
                           )
                         })}
@@ -1085,7 +1091,9 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                           {hasSelectionColumn && <Td />}
                           <Td key={addedSubRows[rowIndex]?.props?.key} colSpan={selectedSortedCols.length}>
                             <ExpandableRowContent>
-                              {addedSubRows[rowIndex]?.cells?.map((cell) => renderCellContent(cell))}
+                              {addedSubRows[rowIndex]?.cells?.map((cell, cellIndex) =>
+                                renderCellContent(cell, cellIndex)
+                              )}
                             </ExpandableRowContent>
                           </Td>
                         </Tr>
