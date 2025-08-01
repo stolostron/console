@@ -14,7 +14,7 @@ describe('package index', () => {
       'fleetK8sGet',
       'fleetK8sPatch',
       'fleetK8sUpdate',
-      'fleetWatch',
+      'fleetWatch', // TODO do not export
       'getBackendUrl', // TODO do not export
       'getFleetK8sAPIPath',
       'getResourcePath', //TODO do not export
