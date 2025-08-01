@@ -8,7 +8,7 @@ import { getServiceAccountToken } from '../lib/serviceAccountToken'
 import { getAuthenticatedToken } from '../lib/token'
 import { IResource } from '../resources/resource'
 import { ResourceList } from '../resources/resource-list'
-import { getHubClusterName, getIsHubSelfManaged } from './events'
+import { getHubClusterName, getIsHubSelfManaged, getIsObservabilityInstalled } from './events'
 
 export async function hub(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
   const token = await getAuthenticatedToken(req, res)
@@ -26,6 +26,7 @@ export async function hub(req: Http2ServerRequest, res: Http2ServerResponse): Pr
             isGlobalHub: mcgh !== undefined,
             localHubName: getHubClusterName(),
             isHubSelfManaged: getIsHubSelfManaged(),
+            isObservabilityInstalled: getIsObservabilityInstalled(),
           }
         })
         .catch((err: Error): undefined => {

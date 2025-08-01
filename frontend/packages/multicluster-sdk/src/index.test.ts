@@ -27,6 +27,7 @@ describe('package index', () => {
       'useFleetSearchPoll',
       'useHubClusterName',
       'useIsFleetAvailable',
+      'useIsFleetObservabilityInstalled',
     ])
   })
 })
