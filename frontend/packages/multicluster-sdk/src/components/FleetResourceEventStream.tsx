@@ -95,7 +95,7 @@ export const FleetResourceEventStream: FC<{ resource: FleetK8sResourceCommon }> 
   const [hubCluster] = useHubClusterName()
   const { t } = useTranslation('public')
   const [sortedEvents, setSortedEvents] = useState<EventKind[]>([])
-  const [error, setError] = useState(false)
+  const [error, setError] = useState<boolean | string>(false)
   const [loading, setLoading] = useState(true)
   const ws = useRef<WebSocket>()
   const [backendAPIPath, loaded] = useFleetK8sAPIPath(resource?.cluster)
@@ -107,10 +107,6 @@ export const FleetResourceEventStream: FC<{ resource: FleetK8sResourceCommon }> 
   useEffect(() => {
     if (!resource.cluster || resource.cluster === hubCluster || !loaded) return
 
-    // close existing connection
-    ws.current?.close()
-    ws.current = undefined
-
     const watchURLOptions = {
       cluster: resource.cluster,
       ...(namespace ? { ns: namespace } : {}),
@@ -121,76 +117,74 @@ export const FleetResourceEventStream: FC<{ resource: FleetK8sResourceCommon }> 
         : {}),
     }
 
-    // create new WebSocket connection
-    ws.current = fleetWatch(EventModel, watchURLOptions, backendAPIPath as string)
+    if (!ws.current) {
+      // create new WebSocket connection
+      ws.current = fleetWatch(EventModel, watchURLOptions, backendAPIPath as string)
 
-    if (ws.current === undefined) return
+      if (ws.current === undefined) return
 
-    ws.current.onmessage = (message: any) => {
-      if (!active) return
+      ws.current.onmessage = (message: any) => {
+        if (!active) return
 
-      try {
-        const eventdataParsed = JSON.parse(message.data)
+        try {
+          const eventdataParsed = JSON.parse(message.data)
 
-        if (!eventdataParsed) return
+          if (!eventdataParsed) return
 
-        const eventType = eventdataParsed.type
-        const object = eventdataParsed.object as EventKind
+          const eventType = eventdataParsed.type
+          const object = eventdataParsed.object as EventKind
 
-        setSortedEvents((currentSortedEvents) => {
-          const topEvents = currentSortedEvents.slice(0, MAX_MESSAGES)
+          setSortedEvents((currentSortedEvents) => {
+            const topEvents = currentSortedEvents.slice(0, MAX_MESSAGES)
 
-          const uid = object?.metadata?.uid || ''
+            const uid = object?.metadata?.uid || ''
 
-          const eventAlreadyExists = topEvents.find((e) => e?.metadata?.uid === uid)
-          switch (eventType) {
-            case 'ADDED':
-            case 'MODIFIED':
-              if (
-                eventAlreadyExists &&
-                eventAlreadyExists?.count !== undefined &&
-                object?.count !== undefined &&
-                eventAlreadyExists.count > object.count
-              ) {
-                // We already have a more recent version of this message stored, so skip this one
+            const eventAlreadyExists = topEvents.find((e) => e?.metadata?.uid === uid)
+            switch (eventType) {
+              case 'ADDED':
+              case 'MODIFIED':
+                if (
+                  eventAlreadyExists &&
+                  eventAlreadyExists?.count !== undefined &&
+                  object?.count !== undefined &&
+                  eventAlreadyExists.count > object.count
+                ) {
+                  // We already have a more recent version of this message stored, so skip this one
+                  return topEvents
+                }
+
+                return sortEvents([...topEvents, object])
+              case 'DELETED':
+                return topEvents.filter((e) => e?.metadata?.uid !== uid)
+              default:
+                // eslint-disable-next-line no-console
+                console.error(`UNHANDLED EVENT: ${eventType}`)
                 return topEvents
-              }
-
-              return sortEvents([...topEvents, object])
-            case 'DELETED':
-              return topEvents.filter((e) => e?.metadata?.uid !== uid)
-            default:
-              // eslint-disable-next-line no-console
-              console.error(`UNHANDLED EVENT: ${eventType}`)
-              return topEvents
-          }
-        })
-      } catch (error) {
-        console.error('Error parsing WebSocket message:', error)
+            }
+          })
+        } catch (error) {
+          console.error('Error parsing WebSocket message:', error)
+        }
       }
-    }
 
-    ws.current.onopen = () => {
-      setActive(true)
-      setError(false)
-      setLoading(false)
-    }
-
-    ws.current.onclose = (evt: CloseEvent) => {
-      setActive(false)
-      if (evt?.wasClean === false) {
-        setError(evt.reason || t('public~Connection did not close cleanly.'))
+      ws.current.onopen = () => {
+        setActive(true)
+        setError(false)
+        setLoading(false)
       }
-    }
 
-    ws.current.onerror = () => {
-      setActive(false)
-      setError(true)
-    }
+      ws.current.onclose = (evt: CloseEvent) => {
+        ws.current = undefined
+        setActive(false)
+        if (evt?.wasClean === false) {
+          setError(evt.reason || t('public~Connection did not close cleanly.'))
+        }
+      }
 
-    return () => {
-      ws.current?.close()
-      ws.current = undefined
+      ws.current.onerror = () => {
+        setActive(false)
+        setError(true)
+      }
     }
   }, [namespace, fieldSelector, active, t, resource.cluster, hubCluster, loaded, backendAPIPath])
 
