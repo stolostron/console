@@ -56,12 +56,12 @@ export function getHubClusterName() {
   return hubClusterName
 }
 
-let isHubSelfManaged: boolean | undefined = undefined
+let isHubSelfManaged: boolean = false
 export function getIsHubSelfManaged() {
   return isHubSelfManaged
 }
 
-let isObservabilityInstalled: boolean | undefined = undefined
+let isObservabilityInstalled: boolean = false
 export function getIsObservabilityInstalled() {
   return isObservabilityInstalled
 }
