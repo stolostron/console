@@ -1,6 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { GroupVersionKind, K8sModel } from '@openshift-console/dynamic-plugin-sdk'
-import { getGroupVersionKindForModel } from '@openshift-console/dynamic-plugin-sdk'
+import {
+  GroupVersionKind,
+  K8sModel,
+  K8sResourceCommon,
+  getGroupVersionKindForModel,
+} from '@openshift-console/dynamic-plugin-sdk'
 import * as _ from 'lodash'
 import { EventKind } from './constants'
 
