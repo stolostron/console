@@ -5,19 +5,16 @@ import {
   DescriptionListTerm,
   InputGroup,
   InputGroupItem,
-} from '@patternfly/react-core'
-import {
+  MenuToggleElement,
   Select as PfSelect,
-  SelectProps,
-  SelectOption,
-  SelectOptionObject,
-  SelectVariant,
-} from '@patternfly/react-core/deprecated'
-import { Fragment, ReactNode, useCallback, useEffect, useState } from 'react'
+} from '@patternfly/react-core'
+import { ReactNode, useCallback, useState } from 'react'
 import { DisplayMode } from '../contexts/DisplayModeContext'
 import { InputCommonProps, getSelectPlaceholder, useInput } from './Input'
-import './Select.css'
+import { InputSelect, NoResults, SelectListOptions } from './InputSelect'
 import { WizFormGroup } from './WizFormGroup'
+
+import './Select.css'
 
 export type WizSingleSelectProps = InputCommonProps<string> & {
   label: string
@@ -29,51 +26,34 @@ export type WizSingleSelectProps = InputCommonProps<string> & {
 
 export function WizSingleSelect(props: WizSingleSelectProps) {
   const { displayMode: mode, value, setValue, validated, hidden, id, disabled } = useInput(props)
+  const { label, readonly, isCreatable, options, footer } = props
   const placeholder = getSelectPlaceholder(props)
   const [open, setOpen] = useState(false)
+  const [filteredOptions, setFilteredOptions] = useState<string[]>([])
 
-  const onSelect = useCallback<Required<SelectProps>['onSelect']>(
-    (_, selectedString: string | SelectOptionObject) => {
-      if (typeof selectedString === 'string') {
-        setValue(selectedString)
-        setOpen(false)
-      }
+  const onSelect = useCallback(
+    (selectedString: string) => {
+      setValue(selectedString)
+      setOpen(false)
     },
     [setValue]
   )
 
-  const onClear = useCallback(() => setValue(''), [setValue])
-
-  const onFilter = useCallback<Required<SelectProps>['onFilter']>(
-    (_, filterValue: string) =>
-      props.options
-        .filter((option) => {
-          if (typeof option !== 'string') return false
-          return option.includes(filterValue)
-        })
-        .map((option) => (
-          <SelectOption key={option} value={option}>
-            {option}
-          </SelectOption>
-        )),
-    [props.options]
-  )
-
-  useEffect(() => {
-    if (!props.isCreatable) {
-      if (value && !props.options.includes(value)) {
-        setValue('')
-      }
+  const handleSetOptions = useCallback((o: string[]) => {
+    if (o.length > 0) {
+      setFilteredOptions(o)
+    } else {
+      setFilteredOptions([NoResults])
     }
-  }, [props.isCreatable, props.options, setValue, value])
+  }, [])
 
-  if (hidden) return <Fragment />
+  if (hidden) return null
 
   if (mode === DisplayMode.Details) {
-    if (!value) return <Fragment />
+    if (!value) return null
     return (
       <DescriptionListGroup>
-        <DescriptionListTerm>{props.label}</DescriptionListTerm>
+        <DescriptionListTerm>{label}</DescriptionListTerm>
         <DescriptionListDescription id={id}>{value}</DescriptionListDescription>
       </DescriptionListGroup>
     )
@@ -85,25 +65,28 @@ export function WizSingleSelect(props: WizSingleSelectProps) {
         <InputGroup>
           <InputGroupItem isFill>
             <PfSelect
-              isDisabled={disabled || props.readonly}
-              variant={SelectVariant.single}
               isOpen={open}
-              onToggle={(_event, val) => setOpen(val)}
-              selections={value}
-              onSelect={onSelect}
-              onClear={props.required ? undefined : onClear}
-              validated={validated}
-              onFilter={onFilter}
-              hasInlineFilter
-              footer={props.footer}
-              placeholderText={placeholder}
-              isCreatable={props.isCreatable}
+              onOpenChange={(isOpen) => {
+                !isOpen && setOpen(false)
+              }}
+              toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+                <InputSelect
+                  disabled={disabled || readonly}
+                  validated={validated}
+                  placeholder={placeholder}
+                  options={options}
+                  setOptions={handleSetOptions}
+                  toggleRef={toggleRef}
+                  value={value}
+                  onSelect={onSelect}
+                  open={open}
+                  setOpen={setOpen}
+                />
+              )}
+              selected={value}
+              onSelect={(_event, value) => onSelect(value?.toString() ?? '')}
             >
-              {props.options.map((option) => (
-                <SelectOption id={option} key={option} value={option}>
-                  {option}
-                </SelectOption>
-              ))}
+              <SelectListOptions value={value} options={filteredOptions} isCreatable={isCreatable} footer={footer} />
             </PfSelect>
           </InputGroupItem>
         </InputGroup>

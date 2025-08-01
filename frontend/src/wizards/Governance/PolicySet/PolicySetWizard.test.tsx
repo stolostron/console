@@ -37,7 +37,7 @@ describe('PolicySetWizard wizard', () => {
 
     const nameTextbox = screen.getByRole('textbox', { name: /name/i })
     userEvent.type(nameTextbox, 'test-policy')
-    screen.getByText(/select the namespace/i).click()
+    screen.getByPlaceholderText(/select the namespace/i).click()
     screen.getByRole('option', { name: /argo-server-1/i }).click()
 
     screen.getByRole('button', { name: /placement/i }).click()

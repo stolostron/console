@@ -126,7 +126,7 @@ describe('ArgoWizard tests', () => {
   test('CreateArgoResources', async () => {
     nockIgnoreApiPaths()
     render(<TestArgoWizard />)
-    userEvent.click(screen.getByText(/select the argo server/i))
+    userEvent.click(screen.getByPlaceholderText(/select the argo server/i))
     userEvent.click(screen.getByRole('button', { name: /add argo server/i }))
 
     //fill the form
