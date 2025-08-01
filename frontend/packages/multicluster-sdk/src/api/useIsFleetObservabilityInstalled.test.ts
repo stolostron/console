@@ -1,53 +1,59 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { renderHook } from '@testing-library/react-hooks'
-import * as internal from '../internal/cachedFleetObservabilityInstalled'
+import * as internal from '../internal/cachedHubConfiguration'
 import { useIsFleetObservabilityInstalled } from './useIsFleetObservabilityInstalled'
 import { useIsFleetAvailable } from './useIsFleetAvailable'
 
-jest.mock('../internal/cachedFleetObservabilityInstalled')
+jest.mock('../internal/cachedHubConfiguration')
 
 jest.mock('./useIsFleetAvailable', () => ({
   useIsFleetAvailable: jest.fn(),
 }))
 
 const mockUseIsFleetAvailable = useIsFleetAvailable as jest.Mock
+const observabilityInstalled: internal.HubConfiguration = {
+  localHubName: 'hub',
+  isHubSelfManaged: true,
+  isGlobalHub: false,
+  isObservabilityInstalled: true,
+}
+const noObservability: internal.HubConfiguration = {
+  localHubName: 'hub',
+  isHubSelfManaged: true,
+  isGlobalHub: false,
+  isObservabilityInstalled: false,
+}
 
-describe('testing useFleetObservabilityInstalled Hook', () => {
+describe('useFleetObservabilityInstalled', () => {
   afterEach(() => {
     jest.clearAllMocks()
   })
 
   it('should return cached observability status if cache available', async () => {
-    void (internal.getCachedFleetObservabilityInstalled as jest.Mock).mockResolvedValue(true)
+    void (internal.getCachedHubConfiguration as jest.Mock).mockReturnValue(observabilityInstalled)
     mockUseIsFleetAvailable.mockReturnValue(true)
-    const { result, waitForNextUpdate } = renderHook(() => useIsFleetObservabilityInstalled())
+    const { result } = renderHook(() => useIsFleetObservabilityInstalled())
 
-    // Initial state should be loading
-    expect(result.current).toEqual([null, false, undefined])
-
-    // Wait for the async operation to complete
-    await waitForNextUpdate()
-
-    // After loading, should have the cached value
     expect(result.current).toEqual([true, true, undefined])
   })
 
   it('should fetch observability status if not cached', async () => {
-    void (internal.getCachedFleetObservabilityInstalled as jest.Mock).mockResolvedValue(true)
+    void (internal.getCachedHubConfiguration as jest.Mock).mockReturnValue(undefined)
+    const fetchMock = jest.spyOn(internal, 'fetchHubConfiguration').mockResolvedValue(observabilityInstalled)
     mockUseIsFleetAvailable.mockReturnValue(true)
     const { result, waitForNextUpdate } = renderHook(() => useIsFleetObservabilityInstalled())
-    expect(result.current).toEqual([null, false, undefined])
+    expect(result.current).toEqual([undefined, false, undefined])
     await waitForNextUpdate()
-    expect(internal.getCachedFleetObservabilityInstalled).toHaveBeenCalled()
+    expect(fetchMock).toHaveBeenCalled()
     expect(result.current).toEqual([true, true, undefined])
   })
 
   it('should return error if fleet is not available', async () => {
-    void (internal.getCachedFleetObservabilityInstalled as jest.Mock).mockResolvedValue(false)
+    void (internal.getCachedHubConfiguration as jest.Mock).mockReturnValue(noObservability)
     mockUseIsFleetAvailable.mockReturnValue(false)
     const { result } = renderHook(() => useIsFleetObservabilityInstalled())
     expect(result.current).toEqual([
-      null,
+      undefined,
       false,
       'A version of RHACM that is compatible with the multicluster SDK is not available',
     ])

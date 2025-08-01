@@ -14,9 +14,5 @@ export const MANAGED_CLUSTER_API_PATH = 'managedclusterproxy'
 
 export const LOCAL_CLUSTER_LABEL = 'local-cluster'
 
-export const FLEET_CONFIGURATION_URL = '/hub'
-
 export const NO_FLEET_AVAILABLE_ERROR =
   'A version of RHACM that is compatible with the multicluster SDK is not available'
-
-export const HUB_API_FAILED_ERROR = 'Hub api failed'
