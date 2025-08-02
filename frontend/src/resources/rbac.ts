@@ -42,11 +42,12 @@ export const ClusterRoleBindingDefinition: IResourceDefinition = {
 }
 
 export interface User {
+  fullName: any
   apiVersion: UserApiVersionType
   kind: UserKindType
   metadata: Metadata
-  identities: string[]
-  groups: string[]
+  identities?: string[]
+  groups?: string[]
 }
 
 export interface Group {
@@ -86,6 +87,10 @@ export interface ClusterRoleBinding {
 
 export function listClusterRoleBindings() {
   return listResources<ClusterRoleBinding>(ClusterRoleBindingDefinition)
+}
+
+export function listClusterRoles() {
+  return listResources<ClusterRole>(ClusterRoleDefinition)
 }
 
 export function listUsers() {

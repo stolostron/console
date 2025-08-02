@@ -189,6 +189,7 @@ export enum NavigationPath {
   identitiesUsersDetails = '/multicloud/identities/users/:id',
   identitiesUsersYaml = '/multicloud/identities/users/:id/yaml',
   identitiesUsersRoleAssignments = '/multicloud/identities/users/:id/role-assignments',
+  identitiesUsersRoleAssignmentsCreate = '/multicloud/identities/users/:id/role-assignments/create',
   identitiesUsersGroups = '/multicloud/identities/users/:id/groups',
 
   // RBAC Groups

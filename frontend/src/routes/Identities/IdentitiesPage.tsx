@@ -19,6 +19,7 @@ export default function IdentitiesPage() {
         <AcmPageHeader
           title={t('Identities')}
           description={t('Manage user identities, groups, and service accounts')}
+          breadcrumb={[{ text: t('User Management') }, { text: t('Identities') }]}
           navigation={
             <AcmSecondaryNav>
               <AcmSecondaryNavItem isActive={isUsersActive}>

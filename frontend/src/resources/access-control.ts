@@ -15,6 +15,12 @@ export const AccessControlDefinition: IResourceDefinition = {
 export interface RoleBinding {
   name?: string
   namespace: string
+  metadata?: {
+    name?: string
+    uid?: string
+    creationTimestamp?: string
+    namespace?: string
+  }
   roleRef: RoleRef
   subject?: Subject
   subjects?: Subject[]
@@ -22,6 +28,12 @@ export interface RoleBinding {
 
 export interface ClusterRoleBinding {
   name?: string
+  metadata?: {
+    name?: string
+    uid?: string
+    creationTimestamp?: string
+    namespace?: string
+  }
   roleRef: RoleRef
   subject?: Subject
   subjects?: Subject[]

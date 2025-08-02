@@ -24,10 +24,11 @@ describe('IdentitiesPage', () => {
   test('should render identities page with tabs', () => {
     render(<Component />)
 
-    expect(screen.getByText('Identities')).toBeInTheDocument()
+    expect(screen.getAllByText('Identities')).toHaveLength(2)
     expect(screen.getByText('Users')).toBeInTheDocument()
     expect(screen.getByText('Groups')).toBeInTheDocument()
     expect(screen.getByText('Service Accounts')).toBeInTheDocument()
+    expect(screen.getByText('User Management')).toBeInTheDocument()
   })
 
   test('should highlight correct tab based on route', () => {
