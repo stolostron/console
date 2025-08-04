@@ -20,6 +20,9 @@ export type UserKindType = 'User'
 export const GroupKind = 'Group'
 export type GroupKindType = 'Group'
 
+export const ServiceAccountKind = 'ServiceAccount'
+export type ServiceAccountKindType = 'ServiceAccount'
+
 export const ClusterRoleKind = 'ClusterRole'
 export type ClusterRoleKindType = 'ClusterRole'
 
