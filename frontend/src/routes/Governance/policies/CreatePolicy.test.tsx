@@ -68,8 +68,7 @@ describe('Create Policy Page', () => {
     // step 1 -- name, description, and namespace
     userEvent.type(screen.getByRole('textbox', { name: 'Name' }), 'policy1')
     userEvent.type(screen.getByRole('textbox', { name: 'Description' }), 'Test policy description')
-    screen.getByText('Select namespace').click()
-    userEvent.type(screen.getByRole('searchbox'), 'test')
+    userEvent.type(screen.getByPlaceholderText('Select namespace'), 'test')
     screen.getByRole('option', { name: 'test' }).click()
     screen.getByRole('button', { name: 'Next' }).click()
 
@@ -89,18 +88,18 @@ describe('Create Policy Page', () => {
     await waitForText('How do you want to select clusters?')
     // check existing placements
     screen.getByRole('button', { name: 'Existing placement' }).click()
-    screen.getByRole('button', { name: /options menu/i }).click()
+    screen.getByRole('button', { name: /menu toggle/i }).click()
     // Verify that the existing placement can be selected
     screen.getByRole('option', { name: /policy-set-with-1-placement/i }).click()
-    expect(screen.getByRole('button', { name: /options menu/i }).textContent).toEqual('policy-set-with-1-placement')
+    expect(screen.getByPlaceholderText('Select the placement')).toHaveValue('policy-set-with-1-placement')
 
     // new placement
     screen.getByRole('button', { name: 'New placement' }).click()
     screen.getByRole('button', { name: /action/i }).click()
-    screen.getByText(/select the label/i).click()
+    screen.getByPlaceholderText(/select the label/i).click()
     screen.getByRole('option', { name: /cloud/i }).click()
-    screen.getByText(/select the values/i).click()
-    screen.getByRole('checkbox', { name: /amazon/i }).click()
+    screen.getByPlaceholderText(/select the values/i).click()
+    screen.getByRole('option', { name: /amazon/i }).click()
     screen.getByRole('button', { name: 'Next' }).click()
 
     // step 4 -- Policy annotations
