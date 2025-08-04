@@ -195,7 +195,7 @@ const rolesNavItem: EncodedExtension<HrefNavItem> = {
     section: 'acm-user-management',
     id: 'acm-roles',
     name: '%plugin__acm~Roles%',
-    href: '/multicloud/roles',
+    href: '/multicloud/user-management/roles',
   },
 }
 
@@ -203,7 +203,7 @@ const rolesNavItem: EncodedExtension<HrefNavItem> = {
 const rolesRoute: EncodedExtension<RoutePage> = {
   type: 'console.page/route',
   properties: {
-    path: '/multicloud/roles',
+    path: '/multicloud/user-management/roles',
     component: { $codeRef: 'roles.default' },
     perspective: 'acm',
   },
@@ -217,7 +217,7 @@ const identitiesNavItem: EncodedExtension<HrefNavItem> = {
     section: 'acm-user-management',
     id: 'acm-identities',
     name: '%plugin__acm~Identities%',
-    href: '/multicloud/identities',
+    href: '/multicloud/user-management/identities',
   },
 }
 
@@ -225,7 +225,7 @@ const identitiesNavItem: EncodedExtension<HrefNavItem> = {
 const identitiesRoute: EncodedExtension<RoutePage> = {
   type: 'console.page/route',
   properties: {
-    path: '/multicloud/identities',
+    path: '/multicloud/user-management/identities',
     component: { $codeRef: 'identities.default' },
     perspective: 'acm',
   },

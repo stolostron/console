@@ -65,8 +65,8 @@ const Credentials = lazy(() => import('./routes/Credentials/Credentials'))
 const AccessControlManagement = lazy(() => import('./routes/AccessControlManagement/AccessControlManagement'))
 
 // IDENTITIES & ROLES
-const IdentitiesManagement = lazy(() => import('./routes/Identities/IdentitiesManagement'))
-const RolesManagement = lazy(() => import('./routes/Roles/RolesManagement'))
+const IdentitiesManagement = lazy(() => import('./routes/UserManagement/Identities/IdentitiesManagement'))
+const RolesManagement = lazy(() => import('./routes/UserManagement/Roles/RolesManagement'))
 
 interface IRoute {
   type: 'route'

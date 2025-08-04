@@ -182,35 +182,35 @@ export enum NavigationPath {
   viewAccessControlManagement = '/multicloud/access-control-management/details/:id',
 
   // RBAC Identities and Roles Management
-  identities = '/multicloud/identities',
+  identities = '/multicloud/user-management/identities',
 
   // RBAC Users
-  identitiesUsers = '/multicloud/identities/users',
-  identitiesUsersDetails = '/multicloud/identities/users/:id',
-  identitiesUsersYaml = '/multicloud/identities/users/:id/yaml',
-  identitiesUsersRoleAssignments = '/multicloud/identities/users/:id/role-assignments',
-  identitiesUsersGroups = '/multicloud/identities/users/:id/groups',
+  identitiesUsers = '/multicloud/user-management/identities/users',
+  identitiesUsersDetails = '/multicloud/user-management/identities/users/:id',
+  identitiesUsersYaml = '/multicloud/user-management/identities/users/:id/yaml',
+  identitiesUsersRoleAssignments = '/multicloud/user-management/identities/users/:id/role-assignments',
+  identitiesUsersGroups = '/multicloud/user-management/identities/users/:id/groups',
 
   // RBAC Groups
-  identitiesGroups = '/multicloud/identities/groups',
-  identitiesGroupsDetails = '/multicloud/identities/groups/:id',
-  identitiesGroupsYaml = '/multicloud/identities/groups/:id/yaml',
-  identitiesGroupsRoleAssignments = '/multicloud/identities/groups/:id/role-assignments',
-  identitiesGroupsUsers = '/multicloud/identities/groups/:id/users',
+  identitiesGroups = '/multicloud/user-management/identities/groups',
+  identitiesGroupsDetails = '/multicloud/user-management/identities/groups/:id',
+  identitiesGroupsYaml = '/multicloud/user-management/identities/groups/:id/yaml',
+  identitiesGroupsRoleAssignments = '/multicloud/user-management/identities/groups/:id/role-assignments',
+  identitiesGroupsUsers = '/multicloud/user-management/identities/groups/:id/users',
 
   // RBAC Service Accounts
-  identitiesServiceAccounts = '/multicloud/identities/service-accounts',
-  identitiesServiceAccountsDetails = '/multicloud/identities/service-accounts/:id',
-  identitiesServiceAccountsYaml = '/multicloud/identities/service-accounts/:id/yaml',
-  identitiesServiceAccountsRoleAssignments = '/multicloud/identities/service-accounts/:id/role-assignments',
-  identitiesServiceAccountsGroups = '/multicloud/identities/service-accounts/:id/groups',
+  identitiesServiceAccounts = '/multicloud/user-management/identities/service-accounts',
+  identitiesServiceAccountsDetails = '/multicloud/user-management/identities/service-accounts/:id',
+  identitiesServiceAccountsYaml = '/multicloud/user-management/identities/service-accounts/:id/yaml',
+  identitiesServiceAccountsRoleAssignments = '/multicloud/user-management/identities/service-accounts/:id/role-assignments',
+  identitiesServiceAccountsGroups = '/multicloud/user-management/identities/service-accounts/:id/groups',
 
   // RBAC Roles
-  roles = '/multicloud/roles',
-  rolesDetails = '/multicloud/roles/:id',
-  rolesPermissions = '/multicloud/roles/:id/permissions',
-  rolesRoleAssignments = '/multicloud/roles/:id/role-assignments',
-  rolesYaml = '/multicloud/roles/:id/yaml',
+  roles = '/multicloud/user-management/roles',
+  rolesDetails = '/multicloud/user-management/roles/:id',
+  rolesPermissions = '/multicloud/user-management/roles/:id/permissions',
+  rolesRoleAssignments = '/multicloud/user-management/roles/:id/role-assignments',
+  rolesYaml = '/multicloud/user-management/roles/:id/yaml',
 
   emptyPath = '',
 }
