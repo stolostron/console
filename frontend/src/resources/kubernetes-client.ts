@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 export interface PolicyRule {
   verbs: string[]
   apiGroups: string[]
