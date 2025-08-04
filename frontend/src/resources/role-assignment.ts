@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Metadata } from './metadata'
 import { IResource, IResourceDefinition } from './resource'
-import { UserKindType, GroupKindType, ServiceAccountKindType } from './rbac'
+import { Subject } from './kubernetes-client'
 
 export const RoleAssignmentApiVersion = 'rbac.open-cluster-management.io/v1alpha1'
 export type RoleAssignmentApiVersionType = 'rbac.open-cluster-management.io/v1alpha1'
@@ -20,9 +20,7 @@ export interface Cluster {
   namespaces?: string[]
 }
 
-export interface Subject {
-  kind: UserKindType | GroupKindType | ServiceAccountKindType
-  name: string
+export interface RASubject extends Subject {
   clusters: Cluster[]
 }
 
@@ -32,6 +30,6 @@ export interface RoleAssignment extends IResource {
   metadata: Metadata
   spec: {
     role: string
-    subjects: Subject[]
+    subjects: RASubject[]
   }
 }

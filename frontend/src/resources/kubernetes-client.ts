@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { GroupKindType, ServiceAccountKindType, UserKindType } from './rbac'
 export interface PolicyRule {
   verbs: string[]
   apiGroups: string[]
@@ -12,7 +13,7 @@ export interface LocalObjectReference {
 }
 
 export interface Subject {
-  kind: string
+  kind: UserKindType | GroupKindType | ServiceAccountKindType
   apiGroup?: string
   name: string
   namespace?: string

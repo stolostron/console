@@ -35,9 +35,6 @@ export type RoleKindType = 'Role'
 export const RoleBindingKind = 'RoleBinding'
 export type RoleBindingKindType = 'RoleBinding'
 
-export const ServiceAccountKind = 'ServiceAccount'
-export type ServiceAccountKindType = 'ServiceAccount'
-
 export const UserDefinition: IResourceDefinition = {
   apiVersion: UserApiVersion,
   kind: UserKind,

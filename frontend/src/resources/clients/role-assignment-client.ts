@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { RoleAssignment, Subject, Cluster } from '../role-assignment'
+import { RoleAssignment, RASubject, Cluster } from '../role-assignment'
 import { UserKindType, GroupKindType, ServiceAccountKindType } from '../rbac'
 import mockRoleAssignments from './mock-data/role-assignments.json'
 
@@ -16,7 +16,7 @@ function filterClusters(clusters: Cluster[], clusterNames?: string[]): Cluster[]
   return clusters.filter((cluster) => clusterNames.includes(cluster.name))
 }
 
-function filterSubjects(subjects: Subject[], query: RoleAssignmentQuery): Subject[] {
+function filterSubjects(subjects: RASubject[], query: RoleAssignmentQuery): RASubject[] {
   return subjects
     .filter((subject) => {
       // Filter by subject name/s included in query

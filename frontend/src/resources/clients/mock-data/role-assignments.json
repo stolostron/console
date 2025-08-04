@@ -46,6 +46,7 @@
         {
           "kind": "ServiceAccount",
           "name": "kubevirt-admin-sa",
+          "namespace": "kubevirt-system",
           "clusters": [
             {
               "name": "management-cluster",
@@ -96,6 +97,7 @@
         {
           "kind": "ServiceAccount",
           "name": "kubevirt-operator",
+          "namespace": "kubevirt-system",
           "clusters": [
             {
               "name": "production-cluster",
@@ -178,6 +180,7 @@
         {
           "kind": "ServiceAccount",
           "name": "prometheus-kubevirt",
+          "namespace": "monitoring",
           "clusters": [
             {
               "name": "production-cluster",
@@ -230,6 +233,7 @@
         {
           "kind": "ServiceAccount",
           "name": "grafana-dashboard",
+          "namespace": "grafana",
           "clusters": [
             {
               "name": "monitoring-cluster",
