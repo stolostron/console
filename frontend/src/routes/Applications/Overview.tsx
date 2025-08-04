@@ -910,6 +910,8 @@ export default function ApplicationsOverview() {
   const appCreationButton = useMemo(
     () => (
       <AcmDropdown
+        isDisabled={!canCreateApplication && !canCreateApplicationSet}
+        tooltip={!canCreateApplication && !canCreateApplicationSet ? t('rbac.unauthorized') : ''}
         id={'application-create'}
         onSelect={(id) => {
           if (id === 'create-argo') {
