@@ -38,8 +38,8 @@ export function WizMultiSelect(props: WizMultiSelectProps) {
   }, [])
 
   const onSelect = useCallback(
-    (selectedString: string) => {
-      if (selectedString === '') {
+    (selectedString: string | undefined) => {
+      if (!selectedString) {
         setValue([])
         return
       }

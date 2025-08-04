@@ -118,17 +118,17 @@ function WizSelectBase<T = any>(props: SelectProps<T>) {
       if (filtered.length > 0) {
         setFilteredOptions([...filtered, { id: 'input', label: '', value: o[0], keyedValue: '' }])
       } else {
-        setFilteredOptions([{ id: 'no-results', label: NoResults, value: o[0], keyedValue: '' }])
+        setFilteredOptions([{ id: o[0], label: NoResults, value: o[0], keyedValue: '' }])
       }
     },
     [selectOptions]
   )
 
   const onSelect = useCallback(
-    (selectOptionObject: string) => {
-      if (Number.isInteger(Number(selectOptionObject))) {
-        const selectOption = selectOptions?.[Number(selectOptionObject)]
-        setValue(selectOption?.value ?? '')
+    (selectOptionObject: string | undefined) => {
+      const idOption = selectOptions?.find((o) => o.id === selectOptionObject)
+      if (idOption) {
+        setValue(idOption.value)
       } else {
         setValue(selectOptionObject)
       }

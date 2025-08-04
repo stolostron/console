@@ -36,7 +36,7 @@ export function WizAsyncSelect(props: WizAsyncSelectProps) {
   const [loading, setLoading] = useState(false)
 
   const onSelect = useCallback(
-    (selectedString: string) => {
+    (selectedString: string | undefined) => {
       setValue(selectedString)
       setOpen(false)
     },

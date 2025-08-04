@@ -423,21 +423,17 @@ describe('Create Argo Application Set', () => {
     await clickByText(channelGit.spec.pathname)
     await waitForNocks(appBranchNocks)
 
-    // await clickByText('Enter or select a tracking revision') // Hack to handle broken PatternFly dropdown not initially populating
-    // await clickByText('Enter or select a tracking revision')
+    await clickByPlaceholderText('Enter or select a tracking revision')
     const pathNocks = [
       nockArgoGitBranches(channelGit.spec.pathname, { branchList: [{ name: 'branch-01' }] }),
       nockArgoGitPathSha(channelGit.spec.pathname, 'branch-01', { commit: { sha: '01' } }),
       nockArgoGitPathTree(channelGit.spec.pathname, { tree: [{ path: 'application-test', type: 'tree' }] }),
     ]
 
-    await clickByPlaceholderText('Enter or select a tracking revision')
     await clickByText('branch-01')
     await waitForNocks(pathNocks)
 
-    await clickByText('Enter or select a repository path')
-    // await clickByText('Enter or select a repository path') // Hack to handle broken PatternFly dropdown not initially populating
-    // await clickByText('Enter or select a repository path')
+    await clickByPlaceholderText('Enter or select a repository path')
     await clickByText('application-test')
 
     await typeByPlaceholderText('Enter the destination namespace', 'gitops-ns')

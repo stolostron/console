@@ -32,7 +32,7 @@ export function WizSingleSelect(props: WizSingleSelectProps) {
   const [filteredOptions, setFilteredOptions] = useState<string[]>([])
 
   const onSelect = useCallback(
-    (selectedString: string) => {
+    (selectedString: string | undefined) => {
       setValue(selectedString)
       setOpen(false)
     },

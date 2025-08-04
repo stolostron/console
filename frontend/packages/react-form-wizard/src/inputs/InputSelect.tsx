@@ -26,7 +26,7 @@ type InputSelectProps = {
   setOptions: (options: string[]) => void
   placeholder: string
   value: string
-  onSelect: (value: string) => void
+  onSelect: (value: string | undefined) => void
   toggleRef: React.Ref<MenuToggleElement>
   open: boolean
   setOpen: (open: boolean) => void
@@ -55,7 +55,7 @@ export const InputSelect = ({
   )
 
   const onClear = useCallback(() => {
-    onSelect('')
+    onSelect(undefined)
     setInputValue('')
     textInputRef?.current?.focus()
   }, [onSelect])
@@ -167,7 +167,7 @@ export const SelectListOptions = ({
         <SelectOption
           id={isSimpleOption ? option : option.id || `option-${index}`}
           key={isSimpleOption ? option : option.id || `option-${index}`}
-          value={!isSimpleOption ? index : option}
+          value={!isSimpleOption ? option.id : option}
           description={!isSimpleOption ? option.description : undefined}
           isDisabled={displayText === NoResults || (!isSimpleOption && option.disabled)}
           onClick={isCreateOption ? () => onCreate?.(!isSimpleOption ? option.value : option) : undefined}
