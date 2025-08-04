@@ -709,6 +709,7 @@ describe('ImportCluster', () => {
 
     await typeByTestId('clusterName', 'foobar')
 
+    await waitForText('Cluster set')
     await clickByPlaceholderText('Select a cluster set')
     await clickByText(mockManagedClusterSet.metadata.name!)
     await clickByTestId('label-input-button')
@@ -750,6 +751,7 @@ describe('ImportCluster', () => {
 
     await typeByTestId('clusterName', 'foobar')
 
+    await waitForText('Cluster set')
     await clickByPlaceholderText('Select a cluster set')
     await clickByText(mockManagedClusterSet.metadata.name!)
     await clickByTestId('label-input-button')
@@ -799,6 +801,7 @@ describe('ImportCluster', () => {
 
     await typeByTestId('clusterName', 'foobar')
 
+    await waitForText('Cluster set')
     await clickByPlaceholderText('Select a cluster set')
     await clickByText(mockManagedClusterSet.metadata.name!)
     await clickByTestId('label-input-button')
