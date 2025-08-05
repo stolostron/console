@@ -7,17 +7,27 @@ import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { listUsers, User as RbacUser } from '../../../resources/rbac'
 import { useQuery } from '../../../lib/useQuery'
-import { AcmEmptyState, AcmTable, compareStrings, IAcmRowAction, IAcmTableColumn, AcmLoadingPage } from '../../../ui-components'
+import {
+  AcmEmptyState,
+  AcmTable,
+  compareStrings,
+  IAcmRowAction,
+  IAcmTableColumn,
+  AcmLoadingPage,
+} from '../../../ui-components'
 import AcmTimestamp from '../../../lib/AcmTimestamp'
 import { getISOStringTimestamp } from '../../../resources/utils'
 
-const Users = () => {
+const UsersTable = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
 
   const { data: rbacUsers, loading } = useQuery(listUsers)
 
-  const users = useMemo(() => rbacUsers?.sort((a, b) => compareStrings(a.metadata.name ?? '', b.metadata.name ?? '')) ?? [], [rbacUsers])
+  const users = useMemo(
+    () => rbacUsers?.sort((a, b) => compareStrings(a.metadata.name ?? '', b.metadata.name ?? '')) ?? [],
+    [rbacUsers]
+  )
 
   const keyFn = useCallback((user: RbacUser) => user.metadata.name ?? '', [])
 
@@ -27,7 +37,6 @@ const Users = () => {
         header: t('Name'),
         sort: 'metadata.name',
         search: 'metadata.name',
-        // transforms: [cellWidth(40)],
         cell: (user, search) => (
           <span style={{ whiteSpace: 'nowrap' }}>
             <Link to={generatePath(NavigationPath.identitiesUsersDetails, { id: user.metadata.uid ?? '' })}>
@@ -40,7 +49,6 @@ const Users = () => {
       {
         header: t('Status'),
         cell: () => <span>{t('Active')}</span>,
-        // transforms: [cellWidth(20)],
         exportContent: () => 'Active',
       },
       {
@@ -54,9 +62,9 @@ const Users = () => {
             '-'
           )
         },
-        // transforms: [cellWidth(40)],
         sort: 'metadata.creationTimestamp',
-        exportContent: (user) => user.metadata.creationTimestamp ? getISOStringTimestamp(user.metadata.creationTimestamp) : '',
+        exportContent: (user) =>
+          user.metadata.creationTimestamp ? getISOStringTimestamp(user.metadata.creationTimestamp) : '',
       },
     ],
     [t]
@@ -107,7 +115,7 @@ const Users = () => {
           columns={columns}
           keyFn={keyFn}
           items={users}
-          emptyState={<AcmEmptyState key="usersEmptyState" title={t("You don't have any users")} />}
+          emptyState={<AcmEmptyState key="usersEmptyState" title={t('No users')} />}
           rowActionResolver={rowActionResolver}
         />
       )}
@@ -115,4 +123,4 @@ const Users = () => {
   )
 }
 
-export { Users }
+export { UsersTable }

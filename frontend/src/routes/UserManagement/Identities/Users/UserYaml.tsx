@@ -37,28 +37,26 @@ const UserYaml = () => {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  // Show loading spinner while data is being fetched
-  if (loading) {
-    return (
-      <PageSection>
-        <AcmLoadingPage />
-      </PageSection>
-    )
+  switch (true) {
+    case loading:
+      return (
+        <PageSection>
+          <AcmLoadingPage />
+        </PageSection>
+      )
+    case !user:
+      return (
+        <PageSection>
+          <div>{t('User not found')}</div>
+        </PageSection>
+      )
+    default:
+      return (
+        <PageSection>
+          <YamlEditor resourceYAML={dump(user, { indent: 2 })} readOnly={true} height={editorHeight} />
+        </PageSection>
+      )
   }
-
-  if (!user) {
-    return (
-      <PageSection>
-        <div>{t('User not found')}</div>
-      </PageSection>
-    )
-  }
-
-  return (
-    <PageSection>
-      <YamlEditor resourceYAML={dump(user, { indent: 2 })} readOnly={true} height={editorHeight} />
-    </PageSection>
-  )
 }
 
 export { UserYaml }

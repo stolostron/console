@@ -5,7 +5,7 @@ import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { nockIgnoreRBAC, nockIgnoreApiPaths, nockList } from '../../../lib/nock-util'
 import { UserDefinition } from '../../../resources/rbac'
-import { Users } from './Users'
+import { UsersTable } from './Users'
 
 const mockUsers = [
   {
@@ -34,7 +34,7 @@ function Component() {
   return (
     <RecoilRoot>
       <MemoryRouter>
-        <Users />
+        <UsersTable />
       </MemoryRouter>
     </RecoilRoot>
   )

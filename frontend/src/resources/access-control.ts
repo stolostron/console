@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { Metadata } from './metadata'
 import { IResource, IResourceDefinition } from './resource'
 
 export const AccessControlApiVersion = 'rbac.open-cluster-management.io/v1alpha1'
@@ -15,12 +16,7 @@ export const AccessControlDefinition: IResourceDefinition = {
 export interface RoleBinding {
   name?: string
   namespace: string
-  metadata?: {
-    name?: string
-    uid?: string
-    creationTimestamp?: string
-    namespace?: string
-  }
+  metadata?: Metadata
   roleRef: RoleRef
   subject?: Subject
   subjects?: Subject[]
@@ -28,12 +24,7 @@ export interface RoleBinding {
 
 export interface ClusterRoleBinding {
   name?: string
-  metadata?: {
-    name?: string
-    uid?: string
-    creationTimestamp?: string
-    namespace?: string
-  }
+  metadata?: Metadata
   roleRef: RoleRef
   subject?: Subject
   subjects?: Subject[]

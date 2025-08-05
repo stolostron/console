@@ -619,6 +619,7 @@
   "Burstable CPU": "Burstable CPU",
   "button.backToClusters": "Back to clusters",
   "button.backToClusterSets": "Back to cluster sets",
+  "button.backToUsers": "Back to users",
   "button.backToInfraEnvs": "Back to infrastructure environments",
   "button.cancel": "Cancel",
   "button.create": "Create",

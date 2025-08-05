@@ -2,13 +2,13 @@
 import { Navigate, Route, Routes } from 'react-router-dom-v5-compat'
 import { NavigationPath, createRoutePathFunction } from '../../../NavigationPath'
 import IdentitiesPage from './IdentitiesPage'
-import { Users } from './Users/Users'
+import { UsersTable } from './Users/Users'
 import { Groups } from './Groups/Groups'
 import { ServiceAccounts } from './ServiceAccounts/ServiceAccounts'
-import { UserDetail } from './Users/UserDetail'
+import { UserPage } from './Users/UserPage'
 import { UserDetails } from './Users/UserDetails'
 import { UserYaml } from './Users/UserYaml'
-import { UserRoleAssignments } from './Users/UserRoleAssignments'
+import { RoleAssignments } from './RoleAssigments/RoleAssigments'
 import { UserGroups } from './Users/UserGroups'
 import { GroupDetail } from './Groups/GroupDetail'
 import { GroupYaml } from './Groups/GroupYaml'
@@ -25,25 +25,19 @@ export default function IdentitiesManagement() {
   return (
     <Routes>
       {/* User detail routes with nested tabs */}
-      <Route path={identitiesChildPath(NavigationPath.identitiesUsersDetails)} element={<UserDetail />}>
+      <Route path={identitiesChildPath(NavigationPath.identitiesUsersDetails)} element={<UserPage />}>
         <Route index element={<UserDetails />} />
       </Route>
-      <Route path={identitiesChildPath(NavigationPath.identitiesUsersYaml)} element={<UserDetail />}>
+      <Route path={identitiesChildPath(NavigationPath.identitiesUsersYaml)} element={<UserPage />}>
         <Route index element={<UserYaml />} />
       </Route>
-      <Route
-        path={identitiesChildPath(NavigationPath.identitiesUsersRoleAssignments)}
-        element={<UserDetail />}
-      >
-        <Route index element={<UserRoleAssignments />} />
+      <Route path={identitiesChildPath(NavigationPath.identitiesUsersRoleAssignments)} element={<UserPage />}>
+        <Route index element={<RoleAssignments />} />
       </Route>
-      <Route
-        path={identitiesChildPath(NavigationPath.identitiesUsersRoleAssignmentsCreate)}
-        element={<UserDetail />}
-      >
-        <Route index element={<UserRoleAssignments />} />
+      <Route path={identitiesChildPath(NavigationPath.identitiesUsersRoleAssignmentsCreate)} element={<UserPage />}>
+        <Route index element={<RoleAssignments />} />
       </Route>
-      <Route path={identitiesChildPath(NavigationPath.identitiesUsersGroups)} element={<UserDetail />}>
+      <Route path={identitiesChildPath(NavigationPath.identitiesUsersGroups)} element={<UserPage />}>
         <Route index element={<UserGroups />} />
       </Route>
 
@@ -65,12 +59,18 @@ export default function IdentitiesManagement() {
         path={identitiesChildPath(NavigationPath.identitiesServiceAccountsRoleAssignments)}
         element={<ServiceAccountRoleAssignments />}
       />
-      <Route path={identitiesChildPath(NavigationPath.identitiesServiceAccountsGroups)} element={<ServiceAccountGroups />} />
-      <Route path={identitiesChildPath(NavigationPath.identitiesServiceAccountsDetails)} element={<ServiceAccountDetail />} />
+      <Route
+        path={identitiesChildPath(NavigationPath.identitiesServiceAccountsGroups)}
+        element={<ServiceAccountGroups />}
+      />
+      <Route
+        path={identitiesChildPath(NavigationPath.identitiesServiceAccountsDetails)}
+        element={<ServiceAccountDetail />}
+      />
 
       {/* Main page with tabs with Users, Groups, and Service Accounts */}
       <Route element={<IdentitiesPage />}>
-        <Route path={identitiesChildPath(NavigationPath.identitiesUsers)} element={<Users />} />
+        <Route path={identitiesChildPath(NavigationPath.identitiesUsers)} element={<UsersTable />} />
         <Route path={identitiesChildPath(NavigationPath.identitiesGroups)} element={<Groups />} />
         <Route path={identitiesChildPath(NavigationPath.identitiesServiceAccounts)} element={<ServiceAccounts />} />
       </Route>

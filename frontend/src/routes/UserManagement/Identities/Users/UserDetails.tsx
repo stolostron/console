@@ -6,23 +6,14 @@ import {
   DescriptionListGroup,
   DescriptionListDescription,
 } from '@patternfly/react-core'
-import { useParams } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { useQuery } from '../../../../lib/useQuery'
-import { listUsers } from '../../../../resources/rbac'
-import { useMemo } from 'react'
 import AcmTimestamp from '../../../../lib/AcmTimestamp'
 import { AcmLoadingPage } from '../../../../ui-components'
+import { useUserDetailsContext } from './UserPage'
 
 const UserDetails = () => {
   const { t } = useTranslation()
-  const { id = undefined } = useParams()
-  const { data: users, loading } = useQuery(listUsers)
-
-  const user = useMemo(() => {
-    if (!users || !id) return undefined
-    return users.find((u) => u.metadata.uid === id || u.metadata.name === id)
-  }, [users, id])
+  const { user, loading } = useUserDetailsContext()
 
   if (loading) {
     return (
