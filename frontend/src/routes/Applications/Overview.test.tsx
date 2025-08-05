@@ -284,3 +284,42 @@ describe('Applications Page', () => {
     expect(getCSVDownloadLink(createElementSpy)?.value.download).toMatch(/^applicationsoverview-[\d]+\.csv$/)
   })
 })
+describe('Create application dropdown', () => {
+  test('Create application button should be disabled when unauthorized', async () => {
+    ;(useIsAnyNamespaceAuthorized as jest.Mock).mockImplementation(() => false)
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+    nockPostRequest('/metrics?application', {})
+    nockAggegateRequest('applications', applicationAggregate.req, applicationAggregate.res)
+    nockAggegateRequest('statuses', statusAggregate.req, statusAggregate.res)
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(subscriptionsState, mockSubscriptions)
+          snapshot.set(placementDecisionsState, mockPlacementsDecisions)
+          snapshot.set(managedClustersState, mockClusters)
+        }}
+      >
+        <AcmToastProvider>
+          <AcmToastGroup />
+          <MemoryRouter>
+            <PluginContext.Provider
+              value={{
+                ...defaultPlugin,
+                acmExtensions: acmExtension,
+              }}
+            >
+              <Routes>
+                <Route path="*" element={<Overview />} />
+              </Routes>
+            </PluginContext.Provider>
+          </MemoryRouter>
+        </AcmToastProvider>
+      </RecoilRoot>
+    )
+
+    await waitForText('feng-remote-argo8')
+    const createButton = screen.getByRole('button', { name: /create application/i })
+    expect(createButton).toBeDisabled()
+  })
+})
