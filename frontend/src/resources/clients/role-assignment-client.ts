@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { RoleAssignment, RASubject, Cluster } from '../role-assignment'
+import { RoleAssignment, RoleAssignmentSubject, Cluster } from '../role-assignment'
 import { UserKindType, GroupKindType, ServiceAccountKindType } from '../rbac'
 import mockRoleAssignments from './mock-data/role-assignments.json'
 
@@ -10,13 +10,15 @@ export interface RoleAssignmentQuery {
   roleNames?: string[]
 }
 
+// TODO: Remove once real role assignment data is available
 function filterClusters(clusters: Cluster[], clusterNames?: string[]): Cluster[] {
   if (!clusterNames?.length) return clusters
   // Filter clusters by name/s included in query
   return clusters.filter((cluster) => clusterNames.includes(cluster.name))
 }
 
-function filterSubjects(subjects: RASubject[], query: RoleAssignmentQuery): RASubject[] {
+// TODO: Remove once real role assignment data is available
+function filterSubjects(subjects: RoleAssignmentSubject[], query: RoleAssignmentQuery): RoleAssignmentSubject[] {
   return subjects
     .filter((subject) => {
       // Filter by subject name/s included in query
@@ -36,6 +38,7 @@ function filterSubjects(subjects: RASubject[], query: RoleAssignmentQuery): RASu
     .filter((subject) => subject.clusters.length > 0)
 }
 
+// TODO: Remove once real role assignment data is available
 function filterMockRoleAssignments(query: RoleAssignmentQuery): RoleAssignment[] {
   const roleAssignments = mockRoleAssignments as RoleAssignment[]
 

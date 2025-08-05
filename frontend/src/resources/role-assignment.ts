@@ -20,7 +20,7 @@ export interface Cluster {
   namespaces?: string[]
 }
 
-export interface RASubject extends Subject {
+export interface RoleAssignmentSubject extends Subject {
   clusters: Cluster[]
 }
 
@@ -30,6 +30,6 @@ export interface RoleAssignment extends IResource {
   metadata: Metadata
   spec: {
     role: string
-    subjects: RASubject[]
+    subjects: RoleAssignmentSubject[]
   }
 }
