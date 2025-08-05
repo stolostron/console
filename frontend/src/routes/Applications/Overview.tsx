@@ -692,6 +692,7 @@ export default function ApplicationsOverview() {
   const navigate = useNavigate()
   const canCreateApplication = useIsAnyNamespaceAuthorized(rbacCreate(ApplicationDefinition))
   const canDeleteApplication = useIsAnyNamespaceAuthorized(rbacDelete(ApplicationDefinition))
+  const canCreateApplicationSet = useIsAnyNamespaceAuthorized(rbacCreate(ApplicationSetDefinition))
   const canDeleteApplicationSet = useIsAnyNamespaceAuthorized(rbacDelete(ApplicationSetDefinition))
 
   const rowActionResolver = useCallback(
@@ -909,8 +910,8 @@ export default function ApplicationsOverview() {
   const appCreationButton = useMemo(
     () => (
       <AcmDropdown
-        isDisabled={!canCreateApplication}
-        tooltip={!canCreateApplication ? t('rbac.unauthorized') : ''}
+        isDisabled={!canCreateApplication && !canCreateApplicationSet}
+        tooltip={!canCreateApplication && !canCreateApplicationSet ? t('rbac.unauthorized') : ''}
         id={'application-create'}
         onSelect={(id) => {
           if (id === 'create-argo') {
@@ -931,14 +932,20 @@ export default function ApplicationsOverview() {
           {
             id: 'create-argo-pull-model',
             text: t('Argo CD ApplicationSet - Pull model'),
+            isDisabled: !canCreateApplicationSet,
+            tooltip: !canCreateApplicationSet ? t('rbac.unauthorized') : '',
           },
           {
             id: 'create-argo',
             text: t('Argo CD ApplicationSet - Push model'),
+            isDisabled: !canCreateApplicationSet,
+            tooltip: !canCreateApplicationSet ? t('rbac.unauthorized') : '',
           },
           {
             id: 'create-subscription',
             text: <DeprecatedTitle title={t('Subscription')} />,
+            isDisabled: !canCreateApplication,
+            tooltip: !canCreateApplication ? t('rbac.unauthorized') : '',
           },
         ]}
         isKebab={false}
@@ -946,7 +953,7 @@ export default function ApplicationsOverview() {
         isPrimary={true}
       />
     ),
-    [canCreateApplication, navigate, t]
+    [canCreateApplication, canCreateApplicationSet, navigate, t]
   )
 
   const compareAppTypesLink = useMemo(
