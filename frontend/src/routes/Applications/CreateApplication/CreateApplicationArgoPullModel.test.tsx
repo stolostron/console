@@ -423,15 +423,15 @@ describe('Create Argo Application Set', () => {
     await clickByText(channelGit.spec.pathname)
     await waitForNocks(appBranchNocks)
 
-    await clickByPlaceholderText('Enter or select a tracking revision')
     const pathNocks = [
       nockArgoGitBranches(channelGit.spec.pathname, { branchList: [{ name: 'branch-01' }] }),
       nockArgoGitPathSha(channelGit.spec.pathname, 'branch-01', { commit: { sha: '01' } }),
       nockArgoGitPathTree(channelGit.spec.pathname, { tree: [{ path: 'application-test', type: 'tree' }] }),
     ]
 
-    await clickByText('branch-01')
+    await clickByPlaceholderText('Enter or select a tracking revision')
     await waitForNocks(pathNocks)
+    await clickByText('branch-01')
 
     await clickByPlaceholderText('Enter or select a repository path')
     await clickByText('application-test')

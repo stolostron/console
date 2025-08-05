@@ -42,13 +42,13 @@ describe('PolicySetWizard wizard', () => {
 
     screen.getByRole('button', { name: /placement/i }).click()
     screen.getByRole('button', { name: /new placement/i }).click()
-    await waitFor(() => screen.getByText(/select the cluster sets/i))
+    await waitFor(() => screen.getByPlaceholderText(/select the cluster sets/i))
     const placementName = container.querySelector('#name-form-group #name')?.getAttribute('value')
     expect(placementName).toEqual('test-policy-placement')
 
-    screen.getByText(/select the cluster sets/i).click()
+    screen.getByPlaceholderText(/select the cluster sets/i).click()
     expect(screen.getByRole('button', { name: /Add cluster set/i })).not.toBeNull()
 
-    expect(screen.getByRole('checkbox', { name: /cluster-set-01/i })).not.toBeNull()
+    expect(screen.getByRole('option', { name: /cluster-set-01/i })).not.toBeNull()
   })
 })

@@ -199,7 +199,7 @@ describe('Create Policy Page', () => {
     await waitForText('How do you want to select clusters?')
     screen.getByText(/placementrule resource is deprecated and will not receive updates or fixes./i)
     screen.getByRole('button', { name: 'Existing placement' }).click()
-    screen.getByText(/select the placement rule/i)
+    screen.getByPlaceholderText(/select the placement rule/i)
     screen.getByText(/placementrule resource is deprecated and will not receive updates or fixes./i)
   })
 
