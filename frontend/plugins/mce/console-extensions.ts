@@ -154,6 +154,19 @@ const virtualMachinesDetailRoute: EncodedExtension<RoutePage> = {
   },
 }
 
+// Virtual Machines Role Assignments Route - type: 'console.page/route'
+const virtualMachineRoleAssignmentsRoute: EncodedExtension<RoutePage> = {
+  type: 'console.page/route',
+  properties: {
+    path: '/multicloud/infrastructure/virtualmachines/role-assignments',
+    component: { $codeRef: 'virtualmachines.default' },
+    perspective: 'acm',
+  },
+  flags: {
+    disallowed: ['KUBEVIRT_DYNAMIC_ACM'],
+  },
+}
+
 // Credentials Navigation Item - type: 'console.navigation/href'
 const credentialsNavItem: EncodedExtension<HrefNavItem> = {
   type: 'console.navigation/href',
@@ -189,6 +202,7 @@ export const extensions: EncodedExtension[] = [
   virtualMachinesNavItem,
   virtualMachinesDetailRoute,
   virtualMachinesRoute,
+  virtualMachineRoleAssignmentsRoute,
   credentialsNavItem,
   credentialsRoute,
 ]
