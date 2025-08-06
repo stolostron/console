@@ -8,7 +8,8 @@ import { ServiceAccounts } from './ServiceAccounts/ServiceAccounts'
 import { UserPage } from './Users/UserPage'
 import { UserDetails } from './Users/UserDetails'
 import { UserYaml } from './Users/UserYaml'
-import { RoleAssignments } from './RoleAssigments/RoleAssigments'
+// import { RoleAssignments } from './../Roles/RoleAssignments'
+import { UserRoleAssignments } from './Users/UserRoleAssignments'
 import { UserGroups } from './Users/UserGroups'
 import { GroupDetail } from './Groups/GroupDetail'
 import { GroupYaml } from './Groups/GroupYaml'
@@ -32,10 +33,10 @@ export default function IdentitiesManagement() {
         <Route index element={<UserYaml />} />
       </Route>
       <Route path={identitiesChildPath(NavigationPath.identitiesUsersRoleAssignments)} element={<UserPage />}>
-        <Route index element={<RoleAssignments />} />
+        <Route index element={<UserRoleAssignments />} />
       </Route>
       <Route path={identitiesChildPath(NavigationPath.identitiesUsersRoleAssignmentsCreate)} element={<UserPage />}>
-        <Route index element={<RoleAssignments />} />
+        <Route index element={<UserRoleAssignments />} />
       </Route>
       <Route path={identitiesChildPath(NavigationPath.identitiesUsersGroups)} element={<UserPage />}>
         <Route index element={<UserGroups />} />

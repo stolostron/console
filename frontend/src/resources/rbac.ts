@@ -71,7 +71,7 @@ export const ServiceAccountDefinition: IResourceDefinition = {
 }
 
 export interface User {
-  fullName: any
+  fullName?: string
   apiVersion: UserApiVersionType
   kind: UserKindType
   metadata: Metadata
@@ -131,10 +131,6 @@ export function listClusterRoles() {
 
 export function listClusterRoleBindings() {
   return listResources<ClusterRoleBinding>(ClusterRoleBindingDefinition)
-}
-
-export function listClusterRoles() {
-  return listResources<ClusterRole>(ClusterRoleDefinition)
 }
 
 export function listUsers() {

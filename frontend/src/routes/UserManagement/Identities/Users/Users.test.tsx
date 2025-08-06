@@ -3,8 +3,8 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { nockIgnoreRBAC, nockIgnoreApiPaths, nockList } from '../../../lib/nock-util'
-import { UserDefinition } from '../../../resources/rbac'
+import { nockIgnoreRBAC, nockIgnoreApiPaths, nockList } from '../../../../lib/nock-util'
+import { UserDefinition } from '../../../../resources/rbac'
 import { UsersTable } from './Users'
 
 const mockUsers = [

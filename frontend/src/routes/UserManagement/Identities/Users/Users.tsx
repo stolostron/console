@@ -2,11 +2,11 @@
 import { PageSection } from '@patternfly/react-core'
 import { useMemo, useCallback } from 'react'
 import { generatePath, Link, useNavigate } from 'react-router-dom-v5-compat'
-import { HighlightSearchText } from '../../../components/HighlightSearchText'
-import { useTranslation } from '../../../lib/acm-i18next'
-import { NavigationPath } from '../../../NavigationPath'
-import { listUsers, User as RbacUser } from '../../../resources/rbac'
-import { useQuery } from '../../../lib/useQuery'
+import { HighlightSearchText } from '../../../../components/HighlightSearchText'
+import { useTranslation } from '../../../../lib/acm-i18next'
+import { NavigationPath } from '../../../../NavigationPath'
+import { listUsers, User as RbacUser } from '../../../../resources/rbac'
+import { useQuery } from '../../../../lib/useQuery'
 import {
   AcmEmptyState,
   AcmTable,
@@ -14,9 +14,9 @@ import {
   IAcmRowAction,
   IAcmTableColumn,
   AcmLoadingPage,
-} from '../../../ui-components'
-import AcmTimestamp from '../../../lib/AcmTimestamp'
-import { getISOStringTimestamp } from '../../../resources/utils'
+} from '../../../../ui-components'
+import AcmTimestamp from '../../../../lib/AcmTimestamp'
+import { getISOStringTimestamp } from '../../../../resources/utils'
 
 const UsersTable = () => {
   const { t } = useTranslation()
