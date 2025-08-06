@@ -69,6 +69,14 @@ spec:
 {{else}}
   sshPublicKey: ''
 {{/if}}
+  platformType: '{{convert ai.platform}}'
+  {{#switch ai.platform}}
+  {{#case 'external'}}
+  external:
+    platformName: 'External platform'
+    cloudControllerManager: External
+  {{/case}}
+  {{/switch}}
 
 ---
 apiVersion: v1
