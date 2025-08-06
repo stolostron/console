@@ -5,7 +5,7 @@ import { Roles } from './Roles'
 import { RoleDetail } from './RoleDetail'
 import { RoleYaml } from './RoleYaml'
 import { RolePermissions } from './RolePermissions'
-import { RoleAssignments } from './RoleAssignments'
+import { RoleAssignments } from '../RoleAssignments/RoleAssignments'
 
 const rolesChildPath = createRoutePathFunction(NavigationPath.roles)
 
