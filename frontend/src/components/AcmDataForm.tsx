@@ -1287,7 +1287,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
     }
     case 'Radio':
       return (
-        <FormGroup label={input.label} isRequired={input.isRequired} fieldId={input.id} isInline>
+        <FormGroup label={input.label} isRequired={input.isRequired} fieldId={input.id} isInline={input.isInline}>
           {(() => {
             switch (input.variant) {
               case 'toggleGroup':
