@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { Subject } from './kubernetes-client'
 import { Metadata } from './metadata'
 import { IResource, IResourceDefinition } from './resource'
-import { Subject } from './kubernetes-client'
 
 export const RoleAssignmentApiVersion = 'rbac.open-cluster-management.io/v1alpha1'
 export type RoleAssignmentApiVersionType = 'rbac.open-cluster-management.io/v1alpha1'
@@ -32,4 +32,14 @@ export interface RoleAssignment extends IResource {
     role: string
     subjects: RoleAssignmentSubject[]
   }
+}
+
+export const emptyRoleAssignment: RoleAssignment = {
+  apiVersion: RoleAssignmentApiVersion,
+  kind: RoleAssignmentKind,
+  metadata: {},
+  spec: {
+    role: '',
+    subjects: [],
+  },
 }
