@@ -133,6 +133,7 @@ export enum NavigationPath {
 
   // Infrastructure - Virtual Machines
   virtualMachines = '/multicloud/infrastructure/virtualmachines',
+  virtualMachineRoleAssignments = '/multicloud/infrastructure/virtualmachines/role-assignments',
   migrateVirtualMachine = '/multicloud/infrastructure/virtualmachines/:id/migrate',
 
   // Applications
