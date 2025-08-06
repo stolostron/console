@@ -63,6 +63,8 @@ import {
   WizardStepProps,
   WizardHeader,
   Radio,
+  ToggleGroup,
+  ToggleGroupItem,
 } from '@patternfly/react-core'
 import { AcmSelectBase, AcmSelectBaseProps, SelectOptionObject, SelectVariant } from './AcmSelectBase'
 import {
@@ -1283,23 +1285,46 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
         </Alert>
       )
     }
-    case 'Radio': {
+    case 'Radio':
       return (
         <FormGroup label={input.label} isRequired={input.isRequired} fieldId={input.id} isInline>
-          {input.options.map((option) => (
-            <Radio
-              key={option.id}
-              id={option.id}
-              name={input.id}
-              label={option.text}
-              value={option.value}
-              isChecked={input.value === option.value}
-              onChange={() => input.onChange(option.value)}
-            />
-          ))}
+          {(() => {
+            switch (input.variant) {
+              case 'toggleGroup':
+                return (
+                  <ToggleGroup>
+                    {input.options.map((option) => (
+                      <ToggleGroupItem
+                        buttonId={option.id}
+                        id={option.id}
+                        isSelected={input.value === option.value}
+                        key={option.id}
+                        name={input.id}
+                        text={option.text}
+                        label={option.text}
+                        value={option.value}
+                        onChange={() => input.onChange(option.value)}
+                      />
+                    ))}
+                  </ToggleGroup>
+                )
+
+              default:
+                return input.options.map((option) => (
+                  <Radio
+                    key={option.id}
+                    id={option.id}
+                    name={input.id}
+                    label={option.text}
+                    value={option.value}
+                    isChecked={input.value === option.value}
+                    onChange={() => input.onChange(option.value)}
+                  />
+                ))
+            }
+          })()}
         </FormGroup>
       )
-    }
     case 'Custom':
       return input.component
   }
