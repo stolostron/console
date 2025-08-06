@@ -11,20 +11,19 @@ type RoleAssignmentModalProps = {
   close: () => void
   save: (roleAssignment: RoleAssignment) => void
   isOpen: boolean
-  isEdit?: boolean
+  isEditing?: boolean
   isDisabled?: boolean
   isSaving?: boolean
 }
 
-const RoleAssignmentModal = ({ close, save, isOpen, isEdit, isDisabled, isSaving }: RoleAssignmentModalProps) => {
+const RoleAssignmentModal = ({ close, save, isOpen, isEditing, isDisabled, isSaving }: RoleAssignmentModalProps) => {
   const { t } = useTranslation()
   const [roleAssignment] = useState<RoleAssignment>(emptyRoleAssignment)
 
   return (
     <AcmModal
-      title={isEdit ? t('Edit role assignment') : t('Create role assignment')}
       isOpen={isOpen}
-      variant={ModalVariant.small}
+      width="90%"
       style={{ display: 'table !important' }}
       onClose={close}
       actions={[
@@ -42,7 +41,7 @@ const RoleAssignmentModal = ({ close, save, isOpen, isEdit, isDisabled, isSaving
         </Button>,
       ]}
     >
-      <RoleAssignmentForm />
+      <RoleAssignmentForm isEditing={isEditing} />
     </AcmModal>
   )
 }
