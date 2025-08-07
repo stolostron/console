@@ -118,11 +118,12 @@
         },
         "spec": {
           "type": "object",
-          "required": ["role", "subjects"],
+          "required": ["roles", "subjects"],
           "properties": {
-            "role": {
-              "type": "string",
-              "description": "Role to be assigned"
+            "roles": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Roles to be assigned"
             },
             "subjects": {
               "type": "array",
@@ -176,7 +177,7 @@
                 },
                 "additionalProperties": false
               },
-              "description": "List of subjects to assign the role to"
+              "description": "List of subjects to assign the roles to"
             }
           },
           "additionalProperties": false
