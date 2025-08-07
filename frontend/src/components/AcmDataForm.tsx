@@ -110,6 +110,7 @@ export interface AcmDataFormProps {
   globalWizardAlert?: ReactNode
   hideYaml?: boolean
   isModalWizard?: boolean
+  isDisabled?: boolean
 }
 
 export function generalValidationMessage(t: TFunction) {
@@ -359,6 +360,7 @@ export function AcmDataForm(
             setShowFormErrors={setShowFormErrors}
             globalWizardAlert={globalWizardAlert}
             isModalWizard={isModalWizard}
+            isDisabled={props.isDisabled}
           />
         ) : (
           <AcmDataFormDefault
@@ -366,6 +368,7 @@ export function AcmDataForm(
             isHorizontal={isHorizontal}
             showFormErrors={showFormErrors}
             setShowFormErrors={setShowFormErrors}
+            isDisabled={props.isDisabled}
           />
         )}
       </>
@@ -378,6 +381,7 @@ export function AcmDataFormDefault(props: {
   isHorizontal?: boolean
   showFormErrors: boolean
   setShowFormErrors: (showFormErrors: boolean) => void
+  isDisabled?: boolean
 }): JSX.Element {
   const { t } = useTranslation()
   const { formData, isHorizontal, showFormErrors, setShowFormErrors } = props
@@ -454,14 +458,14 @@ export function AcmDataFormDefault(props: {
                       }
                     }}
                     variant="primary"
-                    isDisabled={(showFormErrors && formHasErrors(t, formData)) || isSubmitting}
+                    isDisabled={(showFormErrors && formHasErrors(t, formData)) || isSubmitting || props.isDisabled}
                     isLoading={isSubmitting}
                   >
                     {submitText}
                   </Button>
                 </ActionListItem>
                 <ActionListItem>
-                  <Button variant="secondary" onClick={cancel} isDisabled={isSubmitting}>
+                  <Button variant="secondary" onClick={cancel} isDisabled={isSubmitting || props.isDisabled}>
                     {formData.cancelLabel}
                   </Button>
                 </ActionListItem>
@@ -490,6 +494,7 @@ export function AcmDataFormWizard(props: {
   isModalWizard?: boolean
   renderErrors: (showErrors: boolean, hasRequiredErrors: boolean) => ReactNode
   setShowFormErrors: (showFormErrors: boolean) => void
+  isDisabled?: boolean
 }): JSX.Element {
   const { t } = useTranslation()
   const { formData, isHorizontal, globalWizardAlert, showFormErrors, setShowFormErrors, renderErrors, isModalWizard } =
@@ -611,7 +616,8 @@ export function AcmDataFormWizard(props: {
                   }}
                   isDisabled={
                     ((showFormErrors || showSectionErrors[section.title]) && sectionHasErrors(t, section)) ||
-                    isSubmitting
+                    isSubmitting ||
+                    props.isDisabled
                   }
                 >
                   {formData.nextLabel}
@@ -621,7 +627,9 @@ export function AcmDataFormWizard(props: {
                 <Button
                   variant="secondary"
                   onClick={activeStep?.id === firstSection?.title && formData.back ? formData.back : goToPrevStep}
-                  isDisabled={formData.back ? false : activeStep?.id === firstSection?.title || isSubmitting}
+                  isDisabled={
+                    formData.back ? false : activeStep?.id === firstSection?.title || isSubmitting || props.isDisabled
+                  }
                 >
                   {formData.backLabel}
                 </Button>
@@ -664,21 +672,21 @@ export function AcmDataFormWizard(props: {
                     }
                   }}
                   variant="primary"
-                  isDisabled={(showFormErrors && formHasErrors(t, formData)) || isSubmitting}
+                  isDisabled={(showFormErrors && formHasErrors(t, formData)) || isSubmitting || props.isDisabled}
                   isLoading={isSubmitting}
                 >
                   {submitText}
                 </Button>
               </ActionListItem>
               <ActionListItem>
-                <Button variant="secondary" onClick={goToPrevStep} isDisabled={isSubmitting}>
+                <Button variant="secondary" onClick={goToPrevStep} isDisabled={isSubmitting || props.isDisabled}>
                   {formData.backLabel}
                 </Button>
               </ActionListItem>
             </ActionListGroup>
             <ActionListGroup>
               <ActionListItem>
-                <Button variant="link" onClick={cancel} isDisabled={isSubmitting}>
+                <Button variant="link" onClick={cancel} isDisabled={isSubmitting || props.isDisabled}>
                   {formData.cancelLabel}
                 </Button>
               </ActionListItem>
@@ -1271,7 +1279,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
             input.onChange(input.value - step)
           }}
           // validated={validated} TODO
-          isDisabled={isReadOnly}
+          isDisabled={isReadOnly || input.isDisabled}
         />
       )
     }
@@ -1584,7 +1592,7 @@ function OrderedItemsInput(props: {
                     aria-labelledby="simple-item1"
                     aria-describedby="Press space or enter to begin dragging, and use the arrow keys to navigate up or down. Press enter to confirm the drag, or any other key to cancel the drag operation."
                     aria-pressed="false"
-                    isDisabled={isReadOnly}
+                    isDisabled={isReadOnly || input.isDisabled}
                   />
                 </DataListControl>
                 <DataListItemCells
