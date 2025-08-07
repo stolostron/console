@@ -17,10 +17,7 @@ import { ConfigMap } from '../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { AcmButton, AcmLabels } from '../../ui-components'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
-import {
-  useResourceRouteExtensions,
-  findResourceRouteHandler as findResourceRouteHandlerFromSDK,
-} from '@stolostron/multicluster-sdk'
+import { getExtensionResourcePath } from '@stolostron/multicluster-sdk/src/utils/resourceRouteUtils'
 
 export interface ResourceDefinitions {
   application: Record<'columns', SearchColumnDefinition[]>
@@ -559,17 +556,8 @@ export const GetUrlSearchParam = (resource: any) => {
   return `?${encodeURIComponent(searchString)}`
 }
 
-// helper function for VirtualMachine resource linking
-function createExtensionBasedLink(
-  item: any,
-  acmExtensions: any,
-  resourceRoutesResolved?: boolean,
-  findResourceRouteHandler?: (
-    group: string | undefined,
-    kind: string,
-    version?: string
-  ) => ((params: { kind: string; cluster?: string; namespace?: string; name: string }) => string | null) | null
-): JSX.Element {
+// generic extension-based link creation for any resource type
+function createExtensionBasedLink(item: any, acmExtensions: any): JSX.Element {
   const defaultSearchLink = (
     <Link
       to={{
@@ -585,48 +573,32 @@ function createExtensionBasedLink(
     </Link>
   )
 
-  // direct extension approach (for standalone SDK)
-  if (resourceRoutesResolved && findResourceRouteHandler) {
-    const handler = findResourceRouteHandler(
-      item.apigroup,
-      item.kind,
-      item.apiversion?.split('/')[1] // extract version from apiversion like "kubevirt.io/v1"
-    )
-
-    if (handler) {
-      const extensionPath = handler({
-        kind: item.kind,
-        cluster: item.cluster,
-        namespace: item.namespace,
-        name: item.name,
-      })
-
-      if (extensionPath) {
-        return <Link to={extensionPath}>{item.name}</Link>
-      }
-    }
+  // extract version from apiversion like "kubevirt.io/v1"
+  const version = item.apiversion?.split('/')[1]
+  const params = {
+    cluster: item.cluster,
+    namespace: item.namespace,
+    name: item.name,
+    resource: item,
+    model: {
+      group: item.apigroup,
+      version: version,
+      kind: item.kind,
+    },
   }
 
-  // falls back to PluginContext approach (for ACM console)
+  // ACM extensions via PluginContext
   if (acmExtensions?.resourceRoutes?.length) {
-    const resourceRouteHandler = findResourceRouteHandlerFromSDK(
-      acmExtensions,
+    const extensionPath = getExtensionResourcePath(
+      acmExtensions.resourceRoutes,
       item.apigroup,
       item.kind,
-      item.apiversion?.split('/')[1]
+      version,
+      params
     )
 
-    if (resourceRouteHandler) {
-      const extensionPath = resourceRouteHandler({
-        kind: item.kind,
-        cluster: item.cluster,
-        namespace: item.namespace,
-        name: item.name,
-      })
-
-      if (extensionPath) {
-        return <Link to={extensionPath}>{item.name}</Link>
-      }
+    if (extensionPath) {
+      return <Link to={extensionPath}>{item.name}</Link>
     }
   }
 
@@ -637,8 +609,6 @@ function createExtensionBasedLink(
 export function CreateDetailsLink(props: Readonly<{ item: any }>) {
   const { item } = props
   const { acmExtensions } = useContext(PluginContext)
-
-  const { resourceRoutesResolved, findResourceRouteHandler } = useResourceRouteExtensions()
 
   const defaultSearchLink = (
     <Link
@@ -719,7 +689,7 @@ export function CreateDetailsLink(props: Readonly<{ item: any }>) {
       )
     default:
       // use extension-based routing for all other resources
-      return createExtensionBasedLink(item, acmExtensions, resourceRoutesResolved, findResourceRouteHandler)
+      return createExtensionBasedLink(item, acmExtensions)
   }
 }
 

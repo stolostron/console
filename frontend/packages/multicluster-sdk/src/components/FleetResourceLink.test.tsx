@@ -10,10 +10,7 @@ jest.doMock('@openshift-console/dynamic-plugin-sdk', () => ({
   ),
   ResourceIcon: ({ groupVersionKind }: any) => <span data-testid="resource-icon">{groupVersionKind?.kind} icon</span>,
   useK8sWatchResource: jest.fn(),
-}))
-
-jest.doMock('../internal/useResourceRouteExtensions', () => ({
-  useResourceRouteExtensions: jest.fn(),
+  useResolvedExtensions: jest.fn(),
 }))
 
 // mock PatternFly components
@@ -69,15 +66,9 @@ jest.mock('../api/utils/searchPaths', () => ({
   },
 }))
 
-// mock internal helpers
-jest.mock('../internal/useResourceRouteExtensions', () => ({
-  useResourceRouteExtensions: jest.fn(),
-}))
-
 // import the FleetResourceLink component using require() only for this one import
 const { FleetResourceLink } = require('./FleetResourceLink')
-const { useResourceRouteExtensions } = require('../internal/useResourceRouteExtensions')
-const { useK8sWatchResource } = require('@openshift-console/dynamic-plugin-sdk')
+const { useK8sWatchResource, useResolvedExtensions } = require('@openshift-console/dynamic-plugin-sdk')
 const { useIsFleetAvailable } = require('../api/useIsFleetAvailable')
 
 describe('FleetResourceLink', () => {
@@ -107,11 +98,8 @@ describe('FleetResourceLink', () => {
     // mock useIsFleetAvailable to return true by default
     useIsFleetAvailable.mockReturnValue(true)
 
-    // mock the useResourceRouteExtensions hook
-    useResourceRouteExtensions.mockReturnValue({
-      resourceRoutesResolved: true,
-      findResourceRouteHandler: jest.fn(),
-    })
+    // mock the useResolvedExtensions hook
+    useResolvedExtensions.mockReturnValue([[], true, []])
   })
 
   describe('Fleet not available', () => {
@@ -188,13 +176,22 @@ describe('FleetResourceLink', () => {
   describe('Extension-based routing', () => {
     it('should use extension handler when available and on multicloud path', () => {
       const mockHandler = jest.fn().mockReturnValue('/custom/extension/path/test-vm')
+      const mockExtensions = [
+        {
+          type: 'acm.resource/route',
+          pluginID: 'test-plugin',
+          pluginName: 'Test Plugin',
+          uid: 'test-uid',
+          properties: {
+            model: { group: 'kubevirt.io', kind: 'VirtualMachine', version: 'v1' },
+            handler: mockHandler,
+          },
+        },
+      ]
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
       mockUseLocation.mockReturnValue({ pathname: '/multicloud/infrastructure' })
 
-      useResourceRouteExtensions.mockReturnValue({
-        resourceRoutesResolved: true,
-        findResourceRouteHandler: jest.fn().mockReturnValue(mockHandler),
-      })
+      useResolvedExtensions.mockReturnValue([mockExtensions, true, []])
 
       render(
         <MemoryRouter>
@@ -203,22 +200,39 @@ describe('FleetResourceLink', () => {
       )
 
       expect(mockHandler).toHaveBeenCalledWith({
-        kind: 'VirtualMachine',
         cluster: 'local-cluster',
         namespace: 'default',
         name: 'test-vm',
+        resource: {
+          cluster: 'local-cluster',
+          group: 'kubevirt.io',
+          kind: 'VirtualMachine',
+          version: 'v1',
+          namespace: 'default',
+          name: 'test-vm',
+        },
+        model: { group: 'kubevirt.io', version: 'v1', kind: 'VirtualMachine' },
       })
       expect(screen.getByTestId('fleet-link')).toHaveAttribute('href', '/custom/extension/path/test-vm')
     })
 
     it('should use extension handler for managed cluster', () => {
       const mockHandler = jest.fn().mockReturnValue('/custom/extension/path/test-vm')
+      const mockExtensions = [
+        {
+          type: 'acm.resource/route',
+          pluginID: 'test-plugin',
+          pluginName: 'Test Plugin',
+          uid: 'test-uid',
+          properties: {
+            model: { group: 'kubevirt.io', kind: 'VirtualMachine', version: 'v1' },
+            handler: mockHandler,
+          },
+        },
+      ]
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
 
-      useResourceRouteExtensions.mockReturnValue({
-        resourceRoutesResolved: true,
-        findResourceRouteHandler: jest.fn().mockReturnValue(mockHandler),
-      })
+      useResolvedExtensions.mockReturnValue([mockExtensions, true, []])
 
       render(
         <MemoryRouter>
@@ -227,23 +241,40 @@ describe('FleetResourceLink', () => {
       )
 
       expect(mockHandler).toHaveBeenCalledWith({
-        kind: 'VirtualMachine',
         cluster: 'managed-cluster',
         namespace: 'default',
         name: 'test-vm',
+        resource: {
+          cluster: 'managed-cluster',
+          group: 'kubevirt.io',
+          kind: 'VirtualMachine',
+          version: 'v1',
+          namespace: 'default',
+          name: 'test-vm',
+        },
+        model: { group: 'kubevirt.io', version: 'v1', kind: 'VirtualMachine' },
       })
       expect(screen.getByTestId('fleet-link')).toHaveAttribute('href', '/custom/extension/path/test-vm')
     })
 
-    it('should fallback to ResourceLink when extension handler available but on non-multicloud path for hub cluster', () => {
+    it('should use extension handler when available regardless of path', () => {
       const mockHandler = jest.fn().mockReturnValue('/custom/extension/path/test-vm')
+      const mockExtensions = [
+        {
+          type: 'acm.resource/route',
+          pluginID: 'test-plugin',
+          pluginName: 'Test Plugin',
+          uid: 'test-uid',
+          properties: {
+            model: { group: 'kubevirt.io', kind: 'VirtualMachine', version: 'v1' },
+            handler: mockHandler,
+          },
+        },
+      ]
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
       mockUseLocation.mockReturnValue({ pathname: '/k8s/cluster' })
 
-      useResourceRouteExtensions.mockReturnValue({
-        resourceRoutesResolved: true,
-        findResourceRouteHandler: jest.fn().mockReturnValue(mockHandler),
-      })
+      useResolvedExtensions.mockReturnValue([mockExtensions, true, []])
 
       render(
         <MemoryRouter>
@@ -251,16 +282,27 @@ describe('FleetResourceLink', () => {
         </MemoryRouter>
       )
 
-      expect(screen.getByTestId('resource-link-mock')).toHaveTextContent('ResourceLink: test-vm (VirtualMachine)')
+      expect(mockHandler).toHaveBeenCalledWith({
+        cluster: 'local-cluster',
+        namespace: 'default',
+        name: 'test-vm',
+        resource: {
+          cluster: 'local-cluster',
+          group: 'kubevirt.io',
+          kind: 'VirtualMachine',
+          version: 'v1',
+          namespace: 'default',
+          name: 'test-vm',
+        },
+        model: { group: 'kubevirt.io', version: 'v1', kind: 'VirtualMachine' },
+      })
+      expect(screen.getByTestId('fleet-link')).toHaveAttribute('href', '/custom/extension/path/test-vm')
     })
 
     it('should handle extensions that are not yet resolved', () => {
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
 
-      useResourceRouteExtensions.mockReturnValue({
-        resourceRoutesResolved: false,
-        findResourceRouteHandler: jest.fn().mockReturnValue(null),
-      })
+      useResolvedExtensions.mockReturnValue([[], false, []])
 
       render(
         <MemoryRouter>
@@ -277,12 +319,21 @@ describe('FleetResourceLink', () => {
 
     it('should handle VirtualMachineInstance with extension', () => {
       const mockHandler = jest.fn().mockReturnValue('/custom/vmi/path/test-vmi')
+      const mockExtensions = [
+        {
+          type: 'acm.resource/route',
+          pluginID: 'test-plugin',
+          pluginName: 'Test Plugin',
+          uid: 'test-uid',
+          properties: {
+            model: { group: 'kubevirt.io', kind: 'VirtualMachineInstance', version: 'v1' },
+            handler: mockHandler,
+          },
+        },
+      ]
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
 
-      useResourceRouteExtensions.mockReturnValue({
-        resourceRoutesResolved: true,
-        findResourceRouteHandler: jest.fn().mockReturnValue(mockHandler),
-      })
+      useResolvedExtensions.mockReturnValue([mockExtensions, true, []])
 
       render(
         <MemoryRouter>
@@ -300,10 +351,18 @@ describe('FleetResourceLink', () => {
       )
 
       expect(mockHandler).toHaveBeenCalledWith({
-        kind: 'VirtualMachineInstance',
         cluster: 'managed-cluster',
         namespace: 'default',
         name: 'test-vmi',
+        resource: {
+          cluster: 'managed-cluster',
+          group: 'kubevirt.io',
+          kind: 'VirtualMachineInstance',
+          version: 'v1',
+          namespace: 'default',
+          name: 'test-vmi',
+        },
+        model: { group: 'kubevirt.io', version: 'v1', kind: 'VirtualMachineInstance' },
       })
       expect(screen.getByTestId('fleet-link')).toHaveAttribute('href', '/custom/vmi/path/test-vmi')
     })
@@ -600,7 +659,7 @@ describe('FleetResourceLink', () => {
       )
     })
 
-    it('should fallback to ResourceLink for ManagedCluster on non-multicloud path', () => {
+    it('should use first-class path for ManagedCluster regardless of path', () => {
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
       mockUseLocation.mockReturnValue({ pathname: '/k8s/cluster' })
 
@@ -618,7 +677,10 @@ describe('FleetResourceLink', () => {
         </MemoryRouter>
       )
 
-      expect(screen.getByTestId('resource-link-mock')).toHaveTextContent('ResourceLink: test-cluster (ManagedCluster)')
+      expect(screen.getByTestId('fleet-link')).toHaveAttribute(
+        'href',
+        '/multicloud/infrastructure/clusters/details/test-cluster/test-cluster/overview'
+      )
     })
 
     it('should fallback to ResourceLink for VM on multicloud path when no extension found', () => {
@@ -740,17 +802,26 @@ describe('FleetResourceLink', () => {
       )
 
       // VirtualMachine should use the extension system, not hardcoded paths
-      expect(useResourceRouteExtensions).toHaveBeenCalled()
+      expect(useResolvedExtensions).toHaveBeenCalled()
     })
 
-    it('should call findResourceRouteHandler with correct parameters', () => {
-      const mockFindResourceRouteHandler = jest.fn().mockReturnValue(null)
+    it('should call extension handler with correct parameters', () => {
+      const mockHandler = jest.fn().mockReturnValue(null)
+      const mockExtensions = [
+        {
+          type: 'acm.resource/route',
+          pluginID: 'test-plugin',
+          pluginName: 'Test Plugin',
+          uid: 'test-uid',
+          properties: {
+            model: { group: 'kubevirt.io', kind: 'VirtualMachine', version: 'v1' },
+            handler: mockHandler,
+          },
+        },
+      ]
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
 
-      useResourceRouteExtensions.mockReturnValue({
-        resourceRoutesResolved: true,
-        findResourceRouteHandler: mockFindResourceRouteHandler,
-      })
+      useResolvedExtensions.mockReturnValue([mockExtensions, true, []])
 
       render(
         <MemoryRouter>
@@ -758,21 +829,39 @@ describe('FleetResourceLink', () => {
         </MemoryRouter>
       )
 
-      expect(mockFindResourceRouteHandler).toHaveBeenCalledWith(
-        'kubevirt.io', // group
-        'VirtualMachine', // kind
-        'v1' // version
-      )
+      expect(mockHandler).toHaveBeenCalledWith({
+        cluster: 'managed-cluster',
+        namespace: 'default',
+        name: 'test-vm',
+        resource: {
+          cluster: 'managed-cluster',
+          group: 'kubevirt.io',
+          kind: 'VirtualMachine',
+          version: 'v1',
+          namespace: 'default',
+          name: 'test-vm',
+        },
+        model: { group: 'kubevirt.io', version: 'v1', kind: 'VirtualMachine' },
+      })
     })
 
-    it('should handle when findResourceRouteHandler returns null', () => {
-      const mockFindResourceRouteHandler = jest.fn().mockReturnValue(null)
+    it('should handle when extension handler returns null', () => {
+      const mockHandler = jest.fn().mockReturnValue(null)
+      const mockExtensions = [
+        {
+          type: 'acm.resource/route',
+          pluginID: 'test-plugin',
+          pluginName: 'Test Plugin',
+          uid: 'test-uid',
+          properties: {
+            model: { group: 'kubevirt.io', kind: 'VirtualMachine', version: 'v1' },
+            handler: mockHandler,
+          },
+        },
+      ]
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
 
-      useResourceRouteExtensions.mockReturnValue({
-        resourceRoutesResolved: true,
-        findResourceRouteHandler: mockFindResourceRouteHandler,
-      })
+      useResolvedExtensions.mockReturnValue([mockExtensions, true, []])
 
       render(
         <MemoryRouter>
@@ -787,14 +876,23 @@ describe('FleetResourceLink', () => {
       )
     })
 
-    it('should handle when findResourceRouteHandler returns non-function', () => {
-      const mockFindResourceRouteHandler = jest.fn().mockReturnValue('not-a-function')
+    it('should handle when extension handler returns empty string', () => {
+      const mockHandler = jest.fn().mockReturnValue('')
+      const mockExtensions = [
+        {
+          type: 'acm.resource/route',
+          pluginID: 'test-plugin',
+          pluginName: 'Test Plugin',
+          uid: 'test-uid',
+          properties: {
+            model: { group: 'kubevirt.io', kind: 'VirtualMachine', version: 'v1' },
+            handler: mockHandler,
+          },
+        },
+      ]
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
 
-      useResourceRouteExtensions.mockReturnValue({
-        resourceRoutesResolved: true,
-        findResourceRouteHandler: mockFindResourceRouteHandler,
-      })
+      useResolvedExtensions.mockReturnValue([mockExtensions, true, []])
 
       render(
         <MemoryRouter>
@@ -802,7 +900,7 @@ describe('FleetResourceLink', () => {
         </MemoryRouter>
       )
 
-      // Should fallback to search path when handler is not a function
+      // Should fallback to search path when handler returns empty string
       expect(screen.getByTestId('fleet-link')).toHaveAttribute(
         'href',
         '/multicloud/search/resources?cluster=managed-cluster&kind=VirtualMachine&apigroup=kubevirt.io&apiversion=v1&name=test-vm&namespace=default'
@@ -861,12 +959,21 @@ describe('FleetResourceLink', () => {
   describe('Extension handler parameter validation', () => {
     it('should pass hub cluster name when cluster is not provided', () => {
       const mockHandler = jest.fn().mockReturnValue('/custom/path')
+      const mockExtensions = [
+        {
+          type: 'acm.resource/route',
+          pluginID: 'test-plugin',
+          pluginName: 'Test Plugin',
+          uid: 'test-uid',
+          properties: {
+            model: { group: 'kubevirt.io', kind: 'VirtualMachine', version: 'v1' },
+            handler: mockHandler,
+          },
+        },
+      ]
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
 
-      useResourceRouteExtensions.mockReturnValue({
-        resourceRoutesResolved: true,
-        findResourceRouteHandler: jest.fn().mockReturnValue(mockHandler),
-      })
+      useResolvedExtensions.mockReturnValue([mockExtensions, true, []])
 
       render(
         <MemoryRouter>
@@ -875,21 +982,38 @@ describe('FleetResourceLink', () => {
       )
 
       expect(mockHandler).toHaveBeenCalledWith({
-        kind: 'VirtualMachine',
         cluster: 'local-cluster', // should use hub cluster name
         namespace: 'default',
         name: 'test-vm',
+        resource: {
+          cluster: 'local-cluster',
+          group: 'kubevirt.io',
+          kind: 'VirtualMachine',
+          version: 'v1',
+          namespace: 'default',
+          name: 'test-vm',
+        },
+        model: { group: 'kubevirt.io', version: 'v1', kind: 'VirtualMachine' },
       })
     })
 
     it('should pass provided cluster name when cluster is specified', () => {
       const mockHandler = jest.fn().mockReturnValue('/custom/path')
+      const mockExtensions = [
+        {
+          type: 'acm.resource/route',
+          pluginID: 'test-plugin',
+          pluginName: 'Test Plugin',
+          uid: 'test-uid',
+          properties: {
+            model: { group: 'kubevirt.io', kind: 'VirtualMachine', version: 'v1' },
+            handler: mockHandler,
+          },
+        },
+      ]
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
 
-      useResourceRouteExtensions.mockReturnValue({
-        resourceRoutesResolved: true,
-        findResourceRouteHandler: jest.fn().mockReturnValue(mockHandler),
-      })
+      useResolvedExtensions.mockReturnValue([mockExtensions, true, []])
 
       render(
         <MemoryRouter>
@@ -898,10 +1022,18 @@ describe('FleetResourceLink', () => {
       )
 
       expect(mockHandler).toHaveBeenCalledWith({
-        kind: 'VirtualMachine',
         cluster: 'custom-cluster', // should use provided cluster name
         namespace: 'default',
         name: 'test-vm',
+        resource: {
+          cluster: 'custom-cluster',
+          group: 'kubevirt.io',
+          kind: 'VirtualMachine',
+          version: 'v1',
+          namespace: 'default',
+          name: 'test-vm',
+        },
+        model: { group: 'kubevirt.io', version: 'v1', kind: 'VirtualMachine' },
       })
     })
   })

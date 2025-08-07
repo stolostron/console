@@ -5,9 +5,6 @@ import { render } from '@testing-library/react'
 import i18next from 'i18next'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-jest.mock('@openshift-console/dynamic-plugin-sdk', () => ({
-  useResolvedExtensions: jest.fn(),
-}))
 import { clusterManagementAddonsState, configMapsState, managedClusterInfosState } from '../../atoms'
 import { ConfigMapApiVersion, ConfigMapKind } from '../../resources'
 import { ManagedClusterInfoApiVersion, ManagedClusterInfoKind } from '../../resources/managed-cluster-info'
@@ -27,14 +24,6 @@ import {
   VMSnapshotIndications,
 } from './searchDefinitions'
 const t = i18next.t.bind(i18next)
-
-import { useResolvedExtensions } from '@openshift-console/dynamic-plugin-sdk'
-const mockUseResolvedExtensions = useResolvedExtensions as jest.MockedFunction<typeof useResolvedExtensions>
-
-// Setup default mocks for all tests
-beforeEach(() => {
-  mockUseResolvedExtensions.mockReturnValue([[], true, []]) // default to no extensions, resolved
-})
 
 describe('GetAge', () => {
   it('renders timestamp with ISO format', () => {
