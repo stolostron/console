@@ -1,124 +1,28 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { WizSelect } from '@patternfly-labs/react-form-wizard'
-import { TFunction } from 'react-i18next'
-import { Channel, getGitBranchList } from '../ArgoWizard'
-import { Dispatch, SetStateAction } from 'react'
+import { useTranslation } from '../../../lib/acm-i18next'
 import { validateWebURL } from '../../../lib/validation'
 
 export interface GitURLPathProps {
-  path: string
-  channels: Channel[] | undefined
-  getGitRevisions: (
-    channelPath: string,
-    secretArgs?:
-      | {
-          secretRef?: string
-          namespace?: string
-        }
-      | undefined
-  ) => Promise<unknown>
-  gitChannels: string[]
-  setCreatedChannels: Dispatch<SetStateAction<string[]>>
-  setGitRevisionsAsyncCallback: Dispatch<SetStateAction<(() => Promise<string[]>) | undefined>>
-  t: TFunction
+  name: string
+  channels: string[]
 }
 
-export function GitURLPath(props: GitURLPathProps) {
-  const { t, channels, getGitRevisions, gitChannels, path, setCreatedChannels, setGitRevisionsAsyncCallback } = props
+export function RepoURL({ name, channels }: GitURLPathProps) {
+  const { t } = useTranslation()
   return (
     <WizSelect
-      path={path}
+      path="repoURL"
       label={t('URL')}
-      labelHelp={t('The URL path for the Git repository.')}
-      placeholder={t('Enter or select a Git URL')}
-      options={gitChannels}
-      onValueChange={(value) => {
-        const channel = channels?.find((channel) => channel.spec.pathname === value)
-        setGitRevisionsAsyncCallback(
-          () => () =>
-            getGitBranchList(
-              {
-                metadata: {
-                  name: channel?.metadata?.name,
-                  namespace: channel?.metadata?.namespace,
-                },
-                spec: { pathname: value as string, type: 'git' },
-              },
-              getGitRevisions
-            )
-        )
-      }}
+      labelHelp={
+        name === 'git' ? t('The URL path for the Git repository.') : t('The URL path for the Helm repository.')
+      }
+      placeholder={name === 'git' ? t('Enter or select a Git URL') : t('Enter or select a Helm URL')}
+      options={channels}
       validation={validateWebURL}
       required
       isCreatable
-      onCreate={(value: string) =>
-        setCreatedChannels((channels) => {
-          if (!channels.includes(value)) {
-            channels.push(value)
-          }
-          setGitRevisionsAsyncCallback(
-            () => () =>
-              getGitBranchList(
-                {
-                  metadata: { name: '', namespace: '' },
-                  spec: { pathname: value, type: 'git' },
-                },
-                getGitRevisions
-              )
-          )
-          return [...channels]
-        })
-      }
-    />
-  )
-}
-
-export function HelmURLPath(props: {
-  getGitRevisions: (
-    channelPath: string,
-    secretArgs?:
-      | {
-          secretRef?: string
-          namespace?: string
-        }
-      | undefined
-  ) => Promise<unknown>
-  helmChannels: string[]
-  path: string
-  setCreatedChannels: Dispatch<SetStateAction<string[]>>
-  setGitRevisionsAsyncCallback: Dispatch<SetStateAction<(() => Promise<string[]>) | undefined>>
-  t: TFunction
-}) {
-  const { getGitRevisions, helmChannels, path, setCreatedChannels, setGitRevisionsAsyncCallback, t } = props
-  return (
-    <WizSelect
-      path={path}
-      label={t('URL')}
-      labelHelp={t('The URL path for the Helm repository.')}
-      placeholder={t('Enter or select a Helm URL')}
-      options={helmChannels}
-      required
-      isCreatable
-      validation={validateWebURL}
-      onCreate={(value: string) =>
-        setCreatedChannels((channels) => {
-          if (!channels.includes(value)) {
-            channels.push(value)
-          }
-          setGitRevisionsAsyncCallback(
-            () => () =>
-              getGitBranchList(
-                {
-                  metadata: { name: '', namespace: '' },
-                  spec: { pathname: value, type: 'git' },
-                },
-                getGitRevisions
-              )
-          )
-          return [...channels]
-        })
-      }
     />
   )
 }
