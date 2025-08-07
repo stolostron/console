@@ -153,7 +153,7 @@ function WizardInternal({ children, onSubmit, onCancel, submitButtonText, submit
       id: 'review-step',
       name: reviewLabel,
       component: (
-        <Step label={reviewLabel} id="review-step-step">
+        <Step label={reviewLabel} id="review">
           <DescriptionList isHorizontal isCompact style={{ paddingLeft: 16, paddingBottom: 16, paddingRight: 16 }}>
             <DisplayModeContext.Provider value={DisplayMode.Details}>{children}</DisplayModeContext.Provider>
           </DescriptionList>
