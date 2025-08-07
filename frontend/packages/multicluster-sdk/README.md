@@ -116,7 +116,7 @@ Enhanced ResourceLink component for ACM fleet environments.
 Unlike the standard OpenShift ResourceLink which always links to the OpenShift console,
 FleetResourceLink provides intelligent routing based on cluster context:
 - First-class ACM resources (ManagedCluster) get direct links in all cases
-- For hub clusters: Extension-based routing first, then fallback to OpenShift console  
+- For hub clusters: Extension-based routing first, then fallback to OpenShift console
 - For managed clusters: Extension-based routing first, then fallback to ACM search results
 
 This prevents users from having to jump between different consoles when managing
