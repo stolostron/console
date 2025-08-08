@@ -1,2 +1,2 @@
 /* Copyright Contributors to the Open Cluster Management project */
-export * from './resource'
+export type { ResourceRoute, ResourceRouteHandler, ResourceRouteProps } from './resource'
