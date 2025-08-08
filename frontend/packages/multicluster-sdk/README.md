@@ -562,7 +562,7 @@ const [deployment, loaded, error] = useFleetK8sWatchResource({
 ```
 
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetK8sWatchResource.ts#L55)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetK8sWatchResource.ts#L51)
 
 ### :gear: useFleetPrometheusPoll
 
