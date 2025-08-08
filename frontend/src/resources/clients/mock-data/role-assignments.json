@@ -3,57 +3,81 @@
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
     "kind": "RoleAssignment",
     "metadata": {
-      "name": "kubevirt-admin-assignment"
+      "name": "alice-admin-assignment"
     },
     "spec": {
-      "role": "kubevirt.io:admin",
+      "roles": ["kubevirt.io:admin"],
       "subjects": [
         {
           "kind": "User",
-          "name": "alice.trask",
-          "clusters": [
-            {
-              "name": "production-cluster",
-              "clusterWide": true
-            },
-            {
-              "name": "staging-cluster",
-              "clusterWide": false,
-              "namespaces": ["kubevirt-staging", "vm-workloads"]
-            }
-          ]
+          "name": "alice.trask"
+        }
+      ],
+      "clusters": [
+        {
+          "name": "production-cluster",
+          "namespaces": ["*"]
         },
         {
+          "name": "staging-cluster",
+          "namespaces": ["kubevirt-staging", "vm-workloads"]
+        }
+      ]
+    }
+  },
+  {
+    "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
+    "kind": "RoleAssignment",
+    "metadata": {
+      "name": "kubevirt-admins-multi-cluster"
+    },
+    "spec": {
+      "roles": ["kubevirt.io:admin", "live-migration-admin"],
+      "subjects": [
+        {
           "kind": "Group",
-          "name": "kubevirt-admins",
-          "clusters": [
-            {
-              "name": "production-cluster",
-              "clusterWide": false,
-              "namespaces": ["kubevirt-production"]
-            },
-            {
-              "name": "development-cluster",
-              "clusterWide": true
-            },
-            {
-              "name": "testing-cluster",
-              "clusterWide": false,
-              "namespaces": ["kubevirt-test", "vm-test", "storage-test"]
-            }
-          ]
+          "name": "kubevirt-admins"
         },
+        {
+          "kind": "User",
+          "name": "admin.user"
+        }
+      ],
+      "clusters": [
+        {
+          "name": "production-cluster",
+          "namespaces": ["kubevirt-production"]
+        },
+        {
+          "name": "development-cluster",
+          "namespaces": ["*"]
+        },
+        {
+          "name": "testing-cluster",
+          "namespaces": ["kubevirt-test", "vm-test", "storage-test"]
+        }
+      ]
+    }
+  },
+  {
+    "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
+    "kind": "RoleAssignment",
+    "metadata": {
+      "name": "admin-sa-management"
+    },
+    "spec": {
+      "roles": ["kubevirt.io:admin"],
+      "subjects": [
         {
           "kind": "ServiceAccount",
           "name": "kubevirt-admin-sa",
-          "namespace": "kubevirt-system",
-          "clusters": [
-            {
-              "name": "management-cluster",
-              "clusterWide": false,
-              "namespaces": ["kubevirt-system"]
-            }
-          ]
+          "namespace": "kubevirt-system"
+        }
+      ],
+      "clusters": [
+        {
+          "name": "management-cluster",
+          "namespaces": ["kubevirt-system"]
         }
       ]
     }
@@ -62,74 +86,85 @@
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
     "kind": "RoleAssignment",
     "metadata": {
-      "name": "kubevirt-edit-assignment"
+      "name": "bob-edit-assignment"
     },
     "spec": {
-      "role": "kubevirt.io:edit",
+      "roles": ["kubevirt.io:edit"],
       "subjects": [
         {
           "kind": "User",
-          "name": "bob.levy",
-          "clusters": [
-            {
-              "name": "development-cluster",
-              "clusterWide": false,
-              "namespaces": ["kubevirt-dev"]
-            },
-            {
-              "name": "staging-cluster",
-              "clusterWide": false,
-              "namespaces": ["kubevirt-staging", "vm-staging"]
-            }
-          ]
+          "name": "bob.levy"
+        }
+      ],
+      "clusters": [
+        {
+          "name": "development-cluster",
+          "namespaces": ["kubevirt-dev"]
         },
         {
+          "name": "staging-cluster",
+          "namespaces": ["kubevirt-staging", "vm-staging"]
+        }
+      ]
+    }
+  },
+  {
+    "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
+    "kind": "RoleAssignment",
+    "metadata": {
+      "name": "developers-development-edit"
+    },
+    "spec": {
+      "roles": ["kubevirt.io:edit", "network-admin", "storage-admin"],
+      "subjects": [
+        {
           "kind": "Group",
-          "name": "developers",
-          "clusters": [
-            {
-              "name": "development-cluster",
-              "clusterWide": false,
-              "namespaces": ["kubevirt-dev", "vm-dev", "storage-dev", "networking-dev"]
-            }
-          ]
+          "name": "developers"
         },
+        {
+          "kind": "User",
+          "name": "intern.dev"
+        },
+        {
+          "kind": "User",
+          "name": "junior.dev"
+        }
+      ],
+      "clusters": [
+        {
+          "name": "development-cluster",
+          "namespaces": ["kubevirt-dev", "vm-dev", "storage-dev", "networking-dev"]
+        }
+      ]
+    }
+  },
+  {
+    "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
+    "kind": "RoleAssignment",
+    "metadata": {
+      "name": "operator-multi-cluster-edit"
+    },
+    "spec": {
+      "roles": ["kubevirt.io:edit"],
+      "subjects": [
         {
           "kind": "ServiceAccount",
           "name": "kubevirt-operator",
-          "namespace": "kubevirt-system",
-          "clusters": [
-            {
-              "name": "production-cluster",
-              "clusterWide": false,
-              "namespaces": ["kubevirt-production"]
-            },
-            {
-              "name": "staging-cluster",
-              "clusterWide": false,
-              "namespaces": ["kubevirt-staging"]
-            },
-            {
-              "name": "development-cluster",
-              "clusterWide": false,
-              "namespaces": ["kubevirt-system"]
-            }
-          ]
+          "namespace": "kubevirt-system"
+        }
+      ],
+      "clusters": [
+        {
+          "name": "production-cluster",
+          "namespaces": ["kubevirt-production"]
         },
         {
-          "kind": "User",
-          "name": "charlie.cranston",
-          "clusters": [
-            {
-              "name": "edge-cluster-1",
-              "clusterWide": true
-            },
-            {
-              "name": "edge-cluster-2",
-              "clusterWide": false,
-              "namespaces": ["edge-workloads"]
-            }
-          ]
+          "name": "staging-cluster",
+          "namespaces": ["kubevirt-staging"]
+        },
+        {
+          "name": "development-cluster",
+          "namespaces": ["kubevirt-system"]
         }
       ]
     }
@@ -138,109 +173,278 @@
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
     "kind": "RoleAssignment",
     "metadata": {
-      "name": "kubevirt-view-assignment"
+      "name": "charlie-edge-edit"
     },
     "spec": {
-      "role": "kubevirt.io:view",
+      "roles": ["kubevirt.io:edit"],
+      "subjects": [
+        {
+          "kind": "User",
+          "name": "charlie.cranston"
+        }
+      ],
+      "clusters": [
+        {
+          "name": "edge-cluster-1",
+          "namespaces": ["*"]
+        },
+        {
+          "name": "edge-cluster-2",
+          "namespaces": ["edge-workloads"]
+        }
+      ]
+    }
+  },
+  {
+    "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
+    "kind": "RoleAssignment",
+    "metadata": {
+      "name": "sre-team-view-all"
+    },
+    "spec": {
+      "roles": ["kubevirt.io:view"],
       "subjects": [
         {
           "kind": "Group",
-          "name": "sre-team",
-          "clusters": [
-            {
-              "name": "production-cluster",
-              "clusterWide": true
-            },
-            {
-              "name": "staging-cluster",
-              "clusterWide": true
-            },
-            {
-              "name": "development-cluster",
-              "clusterWide": true
-            }
-          ]
+          "name": "sre-team"
+        }
+      ],
+      "clusters": [
+        {
+          "name": "production-cluster",
+          "namespaces": ["*"]
         },
         {
-          "kind": "User",
-          "name": "sarah.jones",
-          "clusters": [
-            {
-              "name": "production-cluster",
-              "clusterWide": false,
-              "namespaces": ["kubevirt-production", "monitoring", "logging"]
-            },
-            {
-              "name": "staging-cluster",
-              "clusterWide": false,
-              "namespaces": ["kubevirt-staging"]
-            }
-          ]
+          "name": "staging-cluster",
+          "namespaces": ["*"]
         },
+        {
+          "name": "development-cluster",
+          "namespaces": ["*"]
+        }
+      ]
+    }
+  },
+  {
+    "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
+    "kind": "RoleAssignment",
+    "metadata": {
+      "name": "sarah-multi-cluster-view"
+    },
+    "spec": {
+      "roles": ["kubevirt.io:view"],
+      "subjects": [
+        {
+          "kind": "User",
+          "name": "sarah.jones"
+        }
+      ],
+      "clusters": [
+        {
+          "name": "production-cluster",
+          "namespaces": ["kubevirt-production", "monitoring", "logging"]
+        },
+        {
+          "name": "staging-cluster",
+          "namespaces": ["kubevirt-staging"]
+        }
+      ]
+    }
+  },
+  {
+    "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
+    "kind": "RoleAssignment",
+    "metadata": {
+      "name": "prometheus-monitoring-view"
+    },
+    "spec": {
+      "roles": ["kubevirt.io:view"],
+      "subjects": [
         {
           "kind": "ServiceAccount",
           "name": "prometheus-kubevirt",
-          "namespace": "monitoring",
-          "clusters": [
-            {
-              "name": "production-cluster",
-              "clusterWide": false,
-              "namespaces": ["kubevirt-production", "monitoring"]
-            },
-            {
-              "name": "staging-cluster",
-              "clusterWide": false,
-              "namespaces": ["kubevirt-staging", "monitoring"]
-            },
-            {
-              "name": "development-cluster",
-              "clusterWide": false,
-              "namespaces": ["kubevirt-dev", "monitoring"]
-            },
-            {
-              "name": "edge-cluster-1",
-              "clusterWide": false,
-              "namespaces": ["monitoring"]
-            }
-          ]
-        },
-        {
-          "kind": "User",
-          "name": "david.brown",
-          "clusters": [
-            {
-              "name": "analytics-cluster",
-              "clusterWide": false,
-              "namespaces": ["kubevirt-analytics", "data-processing", "reporting", "dashboards", "metrics"]
-            }
-          ]
-        },
-        {
-          "kind": "Group",
-          "name": "security-auditors",
-          "clusters": [
-            {
-              "name": "production-cluster",
-              "clusterWide": false,
-              "namespaces": ["kubevirt-production"]
-            },
-            {
-              "name": "security-cluster",
-              "clusterWide": true
-            }
-          ]
+          "namespace": "monitoring"
         },
         {
           "kind": "ServiceAccount",
           "name": "grafana-dashboard",
-          "namespace": "grafana",
-          "clusters": [
-            {
-              "name": "monitoring-cluster",
-              "clusterWide": false,
-              "namespaces": ["grafana", "dashboards"]
-            }
-          ]
+          "namespace": "grafana"
+        }
+      ],
+      "clusters": [
+        {
+          "name": "production-cluster",
+          "namespaces": ["kubevirt-production", "monitoring"]
+        },
+        {
+          "name": "staging-cluster",
+          "namespaces": ["kubevirt-staging", "monitoring"]
+        },
+        {
+          "name": "development-cluster",
+          "namespaces": ["kubevirt-dev", "monitoring"]
+        },
+        {
+          "name": "edge-cluster-1",
+          "namespaces": ["monitoring"]
+        },
+        {
+          "name": "monitoring-cluster",
+          "namespaces": ["grafana", "dashboards"]
+        }
+      ]
+    }
+  },
+  {
+    "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
+    "kind": "RoleAssignment",
+    "metadata": {
+      "name": "david-analytics-view"
+    },
+    "spec": {
+      "roles": ["kubevirt.io:view"],
+      "subjects": [
+        {
+          "kind": "User",
+          "name": "david.brown"
+        }
+      ],
+      "clusters": [
+        {
+          "name": "analytics-cluster",
+          "namespaces": ["kubevirt-analytics", "data-processing", "reporting", "dashboards", "metrics"]
+        }
+      ]
+    }
+  },
+  {
+    "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
+    "kind": "RoleAssignment",
+    "metadata": {
+      "name": "security-auditors-view"
+    },
+    "spec": {
+      "roles": ["kubevirt.io:view"],
+      "subjects": [
+        {
+          "kind": "Group",
+          "name": "security-auditors"
+        }
+      ],
+      "clusters": [
+        {
+          "name": "production-cluster",
+          "namespaces": ["kubevirt-production"]
+        },
+        {
+          "name": "security-cluster",
+          "namespaces": ["*"]
+        }
+      ]
+    }
+  },
+  {
+    "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
+    "kind": "RoleAssignment",
+    "metadata": {
+      "name": "network-admin-special"
+    },
+    "spec": {
+      "roles": ["network-admin", "kubevirt.io:admin"],
+      "subjects": [
+        {
+          "kind": "User",
+          "name": "network.admin"
+        }
+      ],
+      "clusters": [
+        {
+          "name": "production-cluster",
+          "namespaces": ["networking", "ingress"]
+        },
+        {
+          "name": "edge-cluster-1",
+          "namespaces": ["networking"]
+        }
+      ]
+    }
+  },
+  {
+    "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
+    "kind": "RoleAssignment",
+    "metadata": {
+      "name": "storage-team-assignment"
+    },
+    "spec": {
+      "roles": ["storage-admin", "kubevirt.io:edit"],
+      "subjects": [
+        {
+          "kind": "Group",
+          "name": "storage-team"
+        },
+        {
+          "kind": "ServiceAccount",
+          "name": "csi-driver",
+          "namespace": "storage-system"
+        }
+      ],
+      "clusters": [
+        {
+          "name": "production-cluster",
+          "namespaces": ["storage-system", "csi"]
+        },
+        {
+          "name": "staging-cluster",
+          "namespaces": ["storage-system"]
+        },
+        {
+          "name": "development-cluster",
+          "namespaces": ["storage-dev"]
+        }
+      ]
+    }
+  },
+  {
+    "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
+    "kind": "RoleAssignment",
+    "metadata": {
+      "name": "shared-name-user-assignment"
+    },
+    "spec": {
+      "roles": ["kubevirt.io:edit"],
+      "subjects": [
+        {
+          "kind": "User",
+          "name": "same.name"
+        }
+      ],
+      "clusters": [
+        {
+          "name": "production-cluster",
+          "namespaces": ["shared-workloads"]
+        }
+      ]
+    }
+  },
+  {
+    "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
+    "kind": "RoleAssignment",
+    "metadata": {
+      "name": "shared-name-sa-assignment"
+    },
+    "spec": {
+      "roles": ["kubevirt.io:view"],
+      "subjects": [
+        {
+          "kind": "ServiceAccount",
+          "name": "same.name",
+          "namespace": "automation"
+        }
+      ],
+      "clusters": [
+        {
+          "name": "staging-cluster",
+          "namespaces": ["automation", "shared-workloads"]
         }
       ]
     }
