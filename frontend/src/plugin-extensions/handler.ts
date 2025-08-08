@@ -7,7 +7,7 @@ import {
   isVirtualMachineAction,
   isVirtualMachineListColumn,
 } from './extensions'
-import { isResourceRoute } from '@stolostron/multicluster-sdk'
+import { isResourceRoute } from '@stolostron/multicluster-sdk/src/extensions/resource'
 import { ActionExtensionProps, ListColumnExtensionProps } from './properties'
 import { AcmExtension } from './types'
 
