@@ -41,20 +41,18 @@ export function DownloadConfigurationDropdown({
     dropdownItems.push({
       id: 'install-config.yaml',
       text: 'install-config',
-      isAriaDisabled: !canGetSecret,
-      tooltip: !canGetSecret ? t('rbac.unauthorized') : undefined,
     })
   }
   if (cluster?.kubeconfig) {
     dropdownItems.push({
       id: 'kubeconfig',
       text: 'kubeconfig',
-      isAriaDisabled: !canGetSecret,
-      tooltip: !canGetSecret ? t('rbac.unauthorized') : undefined,
     })
   }
   return (
     <AcmDropdown
+      isDisabled={!canGetSecret}
+      tooltip={!canGetSecret ? t('rbac.unauthorized') : ''}
       isPlain={true}
       dropdownItems={dropdownItems}
       onSelect={(id: string) => downloadConfig(id)}
