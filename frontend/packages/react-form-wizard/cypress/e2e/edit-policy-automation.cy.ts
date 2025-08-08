@@ -14,7 +14,7 @@ describe('edit policy automation', () => {
     it('jobs', () => {
         cy.get('#job').within(() => {
             cy.get('.pf-v5-c-input-group > div').within(() => {
-                cy.contains('job1').click()
+                cy.get('[value="job1"]').click()
             })
             cy.get('#job2').click()
         })
