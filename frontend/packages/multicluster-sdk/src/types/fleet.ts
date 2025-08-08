@@ -6,6 +6,7 @@ import {
   WatchK8sResource,
   WatchK8sResult,
 } from '@openshift-console/dynamic-plugin-sdk'
+import { AdvancedSearchFilter, SearchResult } from './search'
 
 export type Fleet<T> = T & { cluster?: string }
 
@@ -25,3 +26,9 @@ export type UseFleetClusterNames = () => [string[], boolean, any]
 
 /** Signature of the `useIsFleetAvailable` hook */
 export type UseIsFleetAvailable = () => boolean
+
+export type UseFleetSearchPoll = <T extends K8sResourceCommon | K8sResourceCommon[]>(
+  watchOptions: WatchK8sResource,
+  advancedSearchFilters?: AdvancedSearchFilter,
+  pollInterval?: number | false
+) => [SearchResult<T> | undefined, boolean, Error | undefined, () => void]

@@ -181,6 +181,37 @@ export enum NavigationPath {
   editAccessControlManagement = '/multicloud/access-control-management/edit/:id',
   viewAccessControlManagement = '/multicloud/access-control-management/details/:id',
 
+  // RBAC Identities and Roles Management
+  identities = '/multicloud/user-management/identities',
+
+  // RBAC Users
+  identitiesUsers = '/multicloud/user-management/identities/users',
+  identitiesUsersDetails = '/multicloud/user-management/identities/users/:id',
+  identitiesUsersYaml = '/multicloud/user-management/identities/users/:id/yaml',
+  identitiesUsersRoleAssignments = '/multicloud/user-management/identities/users/:id/role-assignments',
+  identitiesUsersGroups = '/multicloud/user-management/identities/users/:id/groups',
+
+  // RBAC Groups
+  identitiesGroups = '/multicloud/user-management/identities/groups',
+  identitiesGroupsDetails = '/multicloud/user-management/identities/groups/:id',
+  identitiesGroupsYaml = '/multicloud/user-management/identities/groups/:id/yaml',
+  identitiesGroupsRoleAssignments = '/multicloud/user-management/identities/groups/:id/role-assignments',
+  identitiesGroupsUsers = '/multicloud/user-management/identities/groups/:id/users',
+
+  // RBAC Service Accounts
+  identitiesServiceAccounts = '/multicloud/user-management/identities/service-accounts',
+  identitiesServiceAccountsDetails = '/multicloud/user-management/identities/service-accounts/:id',
+  identitiesServiceAccountsYaml = '/multicloud/user-management/identities/service-accounts/:id/yaml',
+  identitiesServiceAccountsRoleAssignments = '/multicloud/user-management/identities/service-accounts/:id/role-assignments',
+  identitiesServiceAccountsGroups = '/multicloud/user-management/identities/service-accounts/:id/groups',
+
+  // RBAC Roles
+  roles = '/multicloud/user-management/roles',
+  rolesDetails = '/multicloud/user-management/roles/:id',
+  rolesPermissions = '/multicloud/user-management/roles/:id/permissions',
+  rolesRoleAssignments = '/multicloud/user-management/roles/:id/role-assignments',
+  rolesYaml = '/multicloud/user-management/roles/:id/yaml',
+
   emptyPath = '',
 }
 

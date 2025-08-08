@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 export * from './constants'
 export * from './useFleetClusterNames'
-export * from './search/useFleetSearchPoll'
+export * from './useFleetSearchPoll'
 export * from './apiRequests'
 export * from './useHubClusterName'
 export * from './useIsFleetAvailable'

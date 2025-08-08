@@ -45,6 +45,7 @@ Setup depends on your usage scenarios.
 - [fleetK8sGet](#gear-fleetk8sget)
 - [fleetK8sPatch](#gear-fleetk8spatch)
 - [fleetK8sUpdate](#gear-fleetk8supdate)
+- [FleetResourceEventStream](#gear-fleetresourceeventstream)
 - [FleetResourceLink](#gear-fleetresourcelink)
 - [fleetWatch](#gear-fleetwatch)
 - [getBackendUrl](#gear-getbackendurl)
@@ -83,7 +84,7 @@ Setup depends on your usage scenarios.
 | ---------- | ---------- |
 | `fleetK8sDelete` | `<R extends K8sResourceCommon>(options: OptionsDelete<R>) => Promise<R>` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/apiRequests.ts#L209)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/apiRequests.ts#L214)
 
 ### :gear: fleetK8sGet
 
@@ -108,6 +109,61 @@ Setup depends on your usage scenarios.
 | `fleetK8sUpdate` | `<R extends K8sResourceCommon>(options: OptionsUpdate<R>) => Promise<R>` |
 
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/apiRequests.ts#L140)
+
+### :gear: FleetResourceEventStream
+
+A multicluster-aware ResourceEventStream component that displays real-time Kubernetes events
+for resources on managed clusters. Provides equivalent functionality to the OpenShift console's
+ResourceEventStream for resources on managed clusters.
+
+For managed cluster resources, this component establishes a websocket connection to stream
+events from the specified cluster. For hub cluster resources or when no cluster is specified,
+it falls back to the standard OpenShift console ResourceEventStream component.
+
+| Function | Type |
+| ---------- | ---------- |
+| `FleetResourceEventStream` | `FC<{ resource: FleetK8sResourceCommon; }>` |
+
+Parameters:
+
+* `props`: - Component properties
+* `props.resource`: - The Kubernetes resource to show events for.
+Must include standard K8s metadata (name, namespace, uid, kind) and an optional cluster property.
+
+
+Returns:
+
+A rendered event stream component showing real-time Kubernetes events
+
+Examples:
+
+// Display events for a resource on a managed cluster
+<FleetResourceEventStream
+  resource={{
+    metadata: { name: 'my-pod', namespace: 'default', uid: '123' },
+    kind: 'Pod',
+    cluster: 'managed-cluster-1'
+  }}
+/>
+// Display events for a hub cluster resource (falls back to OpenShift console component)
+<FleetResourceEventStream
+  resource={{
+    metadata: { name: 'my-deployment', namespace: 'openshift-gitops', uid: '456' },
+    kind: 'Deployment'
+    // No cluster property - uses hub cluster
+  }}
+/>
+// Display events for a cluster-scoped resource on a managed cluster
+<FleetResourceEventStream
+  resource={{
+    metadata: { name: 'my-node', uid: '789' },
+    kind: 'Node',
+    cluster: 'edge-cluster-2'
+  }}
+/>
+
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/components/FleetResourceEventStream.tsx#L93)
 
 ### :gear: FleetResourceLink
 
@@ -315,11 +371,71 @@ const [deployment, loaded, error] = useFleetK8sWatchResource({
 
 ### :gear: useFleetSearchPoll
 
+A React hook that provides fleet-wide search functionality using the ACM search API.
+
 | Function | Type |
 | ---------- | ---------- |
 | `useFleetSearchPoll` | `UseFleetSearchPoll` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/search/useFleetSearchPoll.ts#L7)
+Parameters:
+
+* `watchOptions`: - Configuration options for the resource watch
+* `watchOptions.groupVersionKind`: - The group, version, and kind of the resource to search for
+* `watchOptions.limit`: - Maximum number of results to return (defaults to -1 for no limit)
+* `watchOptions.namespace`: - Namespace to search in (only used if namespaced is true)
+* `watchOptions.namespaced`: - Whether the resource is namespaced
+* `watchOptions.name`: - Specific resource name to search for (exact match)
+* `watchOptions.isList`: - Whether to return results as a list or single item
+* `advancedSearch`: - Optional array of additional search filters
+* `advancedSearch[].property`: - The property name to filter on
+* `advancedSearch[].values`: - Array of values to match for the property
+* `pollInterval`: - Optional polling interval in seconds. Defaults to 30 seconds (polling enabled).
+- Not specified: polls every 30 seconds
+- 0-30 inclusive: polls every 30 seconds (minimum interval)
+- >30: polls at the given interval in seconds
+- false or negative: disables polling
+
+
+Returns:
+
+A tuple containing:
+- `data`: The search results formatted as Kubernetes resources, or undefined if no results
+- `loaded`: Boolean indicating if the search has completed (opposite of loading)
+- `error`: Any error that occurred during the search, or undefined if successful
+- `refetch`: A callback that enables you to re-execute the query
+
+Examples:
+
+```typescript
+// Search for all Pods in a specific namespace with default 30-second polling
+const [pods, loaded, error] = useFleetSearchPoll({
+  groupVersionKind: { group: '', version: 'v1', kind: 'Pod' },
+  namespace: 'default',
+  namespaced: true,
+  isList: true
+});
+
+// Search for a specific Deployment with polling every 60 seconds
+const [deployment, loaded, error] = useFleetSearchPoll({
+  groupVersionKind: { group: 'apps', version: 'v1', kind: 'Deployment' },
+  name: 'my-deployment',
+  namespace: 'default',
+  namespaced: true,
+  isList: false
+}, [
+  { property: 'label', values: ['app=my-app'] }
+], 60);
+
+// Search without polling (one-time query)
+const [services, loaded, error] = useFleetSearchPoll({
+  groupVersionKind: { group: '', version: 'v1', kind: 'Service' },
+  namespaced: true,
+  isList: true
+}, undefined, false);
+```
+
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearchPoll.ts#L79)
 
 ### :gear: useHubClusterName
 
@@ -370,34 +486,27 @@ Returns:
 
 ## :cocktail: Types
 
-- [BaseOptions](#gear-baseoptions)
+- [AdvancedSearchFilter](#gear-advancedsearchfilter)
 - [Fleet](#gear-fleet)
 - [FleetAccessReviewResourceAttributes](#gear-fleetaccessreviewresourceattributes)
 - [FleetK8sResourceCommon](#gear-fleetk8sresourcecommon)
 - [FleetResourceLinkProps](#gear-fleetresourcelinkprops)
 - [FleetWatchK8sResource](#gear-fleetwatchk8sresource)
-- [Options](#gear-options)
-- [OptionsCreate](#gear-optionscreate)
-- [OptionsDelete](#gear-optionsdelete)
-- [OptionsGet](#gear-optionsget)
-- [OptionsPatch](#gear-optionspatch)
-- [OptionsUpdate](#gear-optionsupdate)
-- [ResourceRoute](#gear-resourceroute)
-- [ResourceRouteHandler](#gear-resourceroutehandler)
-- [ResourceRouteProps](#gear-resourcerouteprops)
+- [SearchResult](#gear-searchresult)
 - [UseFleetClusterNames](#gear-usefleetclusternames)
 - [UseFleetK8sAPIPath](#gear-usefleetk8sapipath)
 - [UseFleetK8sWatchResource](#gear-usefleetk8swatchresource)
+- [UseFleetSearchPoll](#gear-usefleetsearchpoll)
 - [UseHubClusterName](#gear-usehubclustername)
 - [UseIsFleetAvailable](#gear-useisfleetavailable)
 
-### :gear: BaseOptions
+### :gear: AdvancedSearchFilter
 
 | Type | Type |
 | ---------- | ---------- |
-| `BaseOptions` | `{ name?: string ns?: string path?: string cluster?: string queryParams?: QueryParams }` |
+| `AdvancedSearchFilter` | `{ property: string; values: string[] }[]` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/apiRequests.ts#L18)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/search.ts#L8)
 
 ### :gear: Fleet
 
@@ -405,7 +514,7 @@ Returns:
 | ---------- | ---------- |
 | `Fleet` | `T and { cluster?: string }` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L10)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L11)
 
 ### :gear: FleetAccessReviewResourceAttributes
 
@@ -413,7 +522,7 @@ Returns:
 | ---------- | ---------- |
 | `FleetAccessReviewResourceAttributes` | `Fleet<AccessReviewResourceAttributes>` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L14)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L15)
 
 ### :gear: FleetK8sResourceCommon
 
@@ -421,7 +530,7 @@ Returns:
 | ---------- | ---------- |
 | `FleetK8sResourceCommon` | `Fleet<K8sResourceCommon>` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L13)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L14)
 
 ### :gear: FleetResourceLinkProps
 
@@ -429,7 +538,7 @@ Returns:
 | ---------- | ---------- |
 | `FleetResourceLinkProps` | `Fleet<ResourceLinkProps>` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L20)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L21)
 
 ### :gear: FleetWatchK8sResource
 
@@ -437,81 +546,15 @@ Returns:
 | ---------- | ---------- |
 | `FleetWatchK8sResource` | `Fleet<WatchK8sResource>` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L12)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L13)
 
-### :gear: Options
-
-| Type | Type |
-| ---------- | ---------- |
-| `Options` | `{ ns?: string name?: string path?: string queryParams?: QueryParams cluster?: string }` |
-
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/apiRequests.ts#L62)
-
-### :gear: OptionsCreate
+### :gear: SearchResult
 
 | Type | Type |
 | ---------- | ---------- |
-| `OptionsCreate` | `BaseOptions and { model: K8sModel data: R }` |
+| `SearchResult` | `R extends (infer T)[] ? Fleet<T>[] : Fleet<R>` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/apiRequests.ts#L26)
-
-### :gear: OptionsDelete
-
-| Type | Type |
-| ---------- | ---------- |
-| `OptionsDelete` | `BaseOptions and { model: K8sModel resource: R requestInit?: RequestInit json?: Record<string, any> }` |
-
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/apiRequests.ts#L47)
-
-### :gear: OptionsGet
-
-| Type | Type |
-| ---------- | ---------- |
-| `OptionsGet` | `BaseOptions and { model: K8sModel requestInit?: RequestInit }` |
-
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/apiRequests.ts#L31)
-
-### :gear: OptionsPatch
-
-| Type | Type |
-| ---------- | ---------- |
-| `OptionsPatch` | `BaseOptions and { model: K8sModel resource: R data: Patch[] }` |
-
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/apiRequests.ts#L41)
-
-### :gear: OptionsUpdate
-
-| Type | Type |
-| ---------- | ---------- |
-| `OptionsUpdate` | `BaseOptions and { model: K8sModel data: R }` |
-
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/apiRequests.ts#L36)
-
-### :gear: ResourceRoute
-
-This extension allows plugins to customize the route used for resources of the given kind. Search results and resource links will direct to the route returned by the implementing function.
-
-| Type | Type |
-| ---------- | ---------- |
-| `ResourceRoute` | `ExtensionDeclaration<typeof RESOURCE_ROUTE_TYPE, ResourceRouteProps>` |
-
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/extensions/resource.ts#L29)
-
-### :gear: ResourceRouteHandler
-
-| Type | Type |
-| ---------- | ---------- |
-| `ResourceRouteHandler` | `(props: { /** The cluster where the resource is located. */ cluster: string /** The namespace where the resource is located (if the resource is namespace-scoped). */ namespace?: string /** The name of the resource. */ name: string /** The resource, augmented with cluster property. */ resource: FleetK8sResourceCommon /** The model for the resource. */ model: ExtensionK8sModel }) => string` |
-
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/extensions/resource.ts#L8)
-
-### :gear: ResourceRouteProps
-
-| Type | Type |
-| ---------- | ---------- |
-| `ResourceRouteProps` | `{ /** The model for which this resource route should be used. */ model: ExtensionK8sGroupKindModel /** The handler function that returns the route path for the resource. */ handler: CodeRef<ResourceRouteHandler> }` |
-
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/extensions/resource.ts#L21)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/search.ts#L4)
 
 ### :gear: UseFleetClusterNames
 
@@ -519,7 +562,7 @@ This extension allows plugins to customize the route used for resources of the g
 | ---------- | ---------- |
 | `UseFleetClusterNames` | `() => [string[], boolean, any]` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L24)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L25)
 
 ### :gear: UseFleetK8sAPIPath
 
@@ -527,7 +570,7 @@ This extension allows plugins to customize the route used for resources of the g
 | ---------- | ---------- |
 | `UseFleetK8sAPIPath` | `( cluster?: string ) => [k8sAPIPath: string or undefined, loaded: boolean, error: Error or undefined]` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L17)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L18)
 
 ### :gear: UseFleetK8sWatchResource
 
@@ -535,7 +578,15 @@ This extension allows plugins to customize the route used for resources of the g
 | ---------- | ---------- |
 | `UseFleetK8sWatchResource` | `<R extends FleetK8sResourceCommon or FleetK8sResourceCommon[]>( initResource: FleetWatchK8sResource or null ) => WatchK8sResult<R> or [undefined, boolean, any]` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L21)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L22)
+
+### :gear: UseFleetSearchPoll
+
+| Type | Type |
+| ---------- | ---------- |
+| `UseFleetSearchPoll` | `<T extends K8sResourceCommon or K8sResourceCommon[]>( watchOptions: WatchK8sResource, advancedSearchFilters?: AdvancedSearchFilter, pollInterval?: number or false ) => [SearchResult<T> or undefined, boolean, Error or undefined, () => void]` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L30)
 
 ### :gear: UseHubClusterName
 
@@ -543,7 +594,7 @@ This extension allows plugins to customize the route used for resources of the g
 | ---------- | ---------- |
 | `UseHubClusterName` | `() => [hubClusterName: string or undefined, loaded: boolean, error: any]` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L16)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L17)
 
 ### :gear: UseIsFleetAvailable
 
@@ -553,7 +604,7 @@ Signature of the `useIsFleetAvailable` hook
 | ---------- | ---------- |
 | `UseIsFleetAvailable` | `() => boolean` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L27)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L28)
 
 
 <!-- TSDOC_END -->

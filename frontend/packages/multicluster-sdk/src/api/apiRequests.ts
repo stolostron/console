@@ -56,14 +56,14 @@ type GetResourceURL = (params: {
   ns?: string
   name?: string
   cluster?: string
-  queryParams?: QueryParams
+  queryParams?: Partial<QueryParams>
 }) => Promise<string>
 
 export type Options = {
   ns?: string
   name?: string
   path?: string
-  queryParams?: QueryParams
+  queryParams?: Partial<QueryParams>
   cluster?: string
 }
 
@@ -85,6 +85,11 @@ const getK8sAPIPath = ({ apiGroup = 'core', apiVersion }: K8sModel): string => {
   return p
 }
 
+const excludeEmptyQueryParams = (queryParams: Partial<QueryParams>): Record<string, string> =>
+  Object.fromEntries(
+    Object.entries(queryParams || {}).filter(([, value]) => value !== undefined && value !== null && value !== '')
+  ) as Record<string, string>
+
 export const getResourcePath = (model: K8sModel, options: Options): string => {
   let url = getK8sAPIPath(model)
 
@@ -99,8 +104,10 @@ export const getResourcePath = (model: K8sModel, options: Options): string => {
   if (options.path) {
     url += `/${options.path}`
   }
-  if (Object.keys(options?.queryParams || {}).length > 0) {
-    const queryString = new URLSearchParams(options.queryParams).toString()
+
+  const queryParams = excludeEmptyQueryParams(options.queryParams || {})
+  if (Object.keys(queryParams).length > 0) {
+    const queryString = new URLSearchParams(queryParams).toString()
     url += `?${queryString}`
   }
 
@@ -112,7 +119,7 @@ export const buildResourceURL = (params: {
   ns?: string
   name?: string
   cluster?: string
-  queryParams?: QueryParams
+  queryParams?: Partial<QueryParams>
   basePath: string
 }): string => {
   const { model, ns, name, cluster, queryParams, basePath = BASE_K8S_API_PATH } = params
@@ -185,7 +192,7 @@ export async function fleetK8sPatch<R extends K8sResourceCommon>(options: Option
 }
 
 export async function fleetK8sCreate<R extends K8sResourceCommon>(options: OptionsCreate<R>): Promise<R> {
-  const { data, model, ns, name } = options
+  const { data, model, ns } = options
 
   const cluster = options.cluster || data.cluster
 
@@ -195,13 +202,18 @@ export async function fleetK8sCreate<R extends K8sResourceCommon>(options: Optio
   const requestPath = await getResourceURL({
     model,
     ns: data?.metadata?.namespace || ns,
-    name: data.metadata?.name || name,
     cluster,
     queryParams: options.queryParams,
   })
 
+  const requestData = {
+    ...data,
+  }
+
+  delete requestData.cluster
+
   return consoleFetchJSON(requestPath, 'POST', {
-    body: JSON.stringify(data),
+    body: JSON.stringify(requestData),
     headers: commonHeaders,
   }) as Promise<R>
 }

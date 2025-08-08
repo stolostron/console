@@ -176,6 +176,61 @@ const accessConrolRoute: EncodedExtension<RoutePage> = {
   },
 }
 
+// User Management navigation section
+const userManagementSection: EncodedExtension<NavSection> = {
+  type: 'console.navigation/section',
+  properties: {
+    perspective: 'acm',
+    id: 'acm-user-management',
+    name: '%plugin__acm~User Management%',
+    insertAfter: 'acm-accessControlManagement',
+  },
+}
+
+// Roles navigation item
+const rolesNavItem: EncodedExtension<HrefNavItem> = {
+  type: 'console.navigation/href',
+  properties: {
+    perspective: 'acm',
+    section: 'acm-user-management',
+    id: 'acm-roles',
+    name: '%plugin__acm~Roles%',
+    href: '/multicloud/user-management/roles',
+  },
+}
+
+// Roles page route definition
+const rolesRoute: EncodedExtension<RoutePage> = {
+  type: 'console.page/route',
+  properties: {
+    path: '/multicloud/user-management/roles',
+    component: { $codeRef: 'roles.default' },
+    perspective: 'acm',
+  },
+}
+
+// Identities navigation item
+const identitiesNavItem: EncodedExtension<HrefNavItem> = {
+  type: 'console.navigation/href',
+  properties: {
+    perspective: 'acm',
+    section: 'acm-user-management',
+    id: 'acm-identities',
+    name: '%plugin__acm~Identities%',
+    href: '/multicloud/user-management/identities',
+  },
+}
+
+// Identities page route definition
+const identitiesRoute: EncodedExtension<RoutePage> = {
+  type: 'console.page/route',
+  properties: {
+    path: '/multicloud/user-management/identities',
+    component: { $codeRef: 'identities.default' },
+    perspective: 'acm',
+  },
+}
+
 export const extensions: EncodedExtension[] = [
   homeSection,
   welcomeNavItem,
@@ -192,4 +247,9 @@ export const extensions: EncodedExtension[] = [
   hookProvider,
   accessControlNavItem,
   accessConrolRoute,
+  userManagementSection,
+  rolesNavItem,
+  rolesRoute,
+  identitiesNavItem,
+  identitiesRoute,
 ]
