@@ -6,12 +6,8 @@ import { useFleetK8sAPIPath } from './useFleetK8sAPIPath'
 import { useIsFleetAvailable } from './useIsFleetAvailable'
 import { useEffect, useMemo, useState } from 'react'
 import { buildResourceURL, fleetWatch } from '../internal/apiRequests'
-import {
-  fleetResourceCache,
-  fleetSocketCache,
-  getCacheKey,
-  handleWebsocketEvent,
-} from '../internal/fleetK8sWatchResource'
+import { getCacheKey, handleWebsocketEvent } from '../internal/fleetK8sWatchResource'
+import { useFleetK8sWatchResourceStore } from '../internal/fleetK8sWatchResourceStore'
 import { selectorToString } from './utils/requirements'
 import { useDeepCompareMemoize } from '../internal/hooks/useDeepCompareMemoize'
 
@@ -101,25 +97,60 @@ export const useFleetK8sWatchResource: UseFleetK8sWatchResource = <
     ]
   )
 
-  const [data, setData] = useState<R>(fleetResourceCache[requestPath] ?? noCachedValue)
-  const [loaded, setLoaded] = useState<boolean>(!!fleetResourceCache[requestPath])
-  const [error, setError] = useState<any>(undefined)
+  // Subscribe to store changes for this specific resource path
+  const cachedEntry = useFleetK8sWatchResourceStore((state) => state.resourceCache[requestPath])
+
+  // Get store instance for imperative operations
+  const store = useFleetK8sWatchResourceStore.getState()
+
+  const [data, setData] = useState<R>(cachedEntry?.data ?? noCachedValue)
+  const [loaded, setLoaded] = useState<boolean>(cachedEntry?.loaded ?? false)
+  const [error, setError] = useState<any>(cachedEntry?.error)
+
+  // Update local state when store changes
+  useEffect(() => {
+    if (cachedEntry) {
+      setData(cachedEntry.data ?? noCachedValue)
+      setLoaded(cachedEntry.loaded)
+      setError(cachedEntry.error)
+    } else {
+      setData(noCachedValue)
+      setLoaded(false)
+      setError(undefined)
+    }
+  }, [cachedEntry, noCachedValue])
 
   useEffect(() => {
     let socket: WebSocket | undefined
     const fetchData = async () => {
-      setError(undefined)
       if (!useFleet || nullResource) {
-        setData(noCachedValue)
-        setLoaded(false)
+        store.setResource(requestPath, noCachedValue, false)
         return
       }
 
-      if (!backendPathLoaded || fleetResourceCache[requestPath]) {
+      if (!backendPathLoaded) {
+        return
+      }
+
+      // Check if we already have this resource cached and it's not expired
+      const existingEntry = store.getResource(requestPath)
+      if (existingEntry && !store.isResourceExpired(requestPath)) {
+        return
+      }
+
+      const socketKey = getCacheKey({ model, cluster, namespace, name })
+      const existingSocket = store.getSocket(socketKey)
+
+      // If we have a valid socket, increment reference count and use it
+      if (existingSocket && existingSocket.socket.readyState === WebSocket.OPEN) {
+        store.addSocketRef(socketKey)
+        socket = existingSocket.socket
         return
       }
 
       try {
+        store.setResource(requestPath, noCachedValue, false) // Set loading state
+
         const data = (await consoleFetchJSON(requestPath, 'GET')) as R
 
         const processedData = (
@@ -128,7 +159,8 @@ export const useFleetK8sWatchResource: UseFleetK8sWatchResource = <
             : { cluster, ...(data as K8sResourceCommon) }
         ) as R
 
-        fleetResourceCache[requestPath] = processedData
+        // Store the data in Zustand store
+        store.setResource(requestPath, processedData, true)
 
         const watchQuery: any = {
           ns: namespace,
@@ -146,43 +178,42 @@ export const useFleetK8sWatchResource: UseFleetK8sWatchResource = <
           watchQuery.resourceVersion = (data as { metadata: { resourceVersion?: string } })?.metadata?.resourceVersion
         }
 
-        const socketKey = getCacheKey({ model, cluster, namespace, name })
-        const cachedSocket = fleetSocketCache[socketKey]
+        // Only create a new WebSocket if we don't have a valid one
+        socket = fleetWatch(model, watchQuery, backendAPIPath as string)
+        store.setSocket(socketKey, socket)
 
-        if (!cachedSocket || cachedSocket.readyState !== WebSocket.OPEN) {
-          socket = fleetWatch(model, watchQuery, backendAPIPath as string)
-
-          fleetSocketCache[socketKey] = socket
-
-          socket.onmessage = (event) => {
-            try {
-              handleWebsocketEvent(event, requestPath, setData, isList, fleetResourceCache, cluster)
-            } catch (e) {
-              console.error('Failed to parse WebSocket message', e)
-            }
+        socket.onmessage = (event) => {
+          try {
+            // Handle WebSocket event - this will update the store and notify all subscribers
+            handleWebsocketEvent(event, requestPath, isList, cluster)
+          } catch (e) {
+            console.error('Failed to parse WebSocket message', e)
           }
-
-          socket.onclose = () => {
-            delete fleetSocketCache[socketKey]
-          }
-        } else {
-          socket = cachedSocket
         }
 
-        setData(processedData)
+        socket.onclose = () => {
+          store.removeSocket(socketKey)
+        }
+
+        socket.onerror = (err) => {
+          console.error('WebSocket error:', err)
+          store.setResource(requestPath, processedData, true, err)
+        }
       } catch (err) {
-        setError(err)
-      } finally {
-        setLoaded(true)
+        store.setResource(requestPath, noCachedValue, true, err)
       }
     }
+
     fetchData()
-    // Cleanup function to close the WebSocket if it was created by this effect
+
+    // Cleanup function - decrement reference count for socket
     return () => {
-      if (socket && socket.readyState === WebSocket.OPEN) {
-        socket.close()
+      if (useFleet && !nullResource && backendPathLoaded && model) {
+        const socketKey = getCacheKey({ model, cluster, namespace, name })
+        store.removeSocketRef(socketKey)
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     cluster,
     isList,
@@ -203,11 +234,7 @@ export const useFleetK8sWatchResource: UseFleetK8sWatchResource = <
   if (!nullResource && useFallback) {
     return fallbackResult
   } else if (!nullResource && useFleet) {
-    return [
-      fleetResourceCache[requestPath] ?? data ?? noCachedValue,
-      fleetResourceCache[requestPath] ? true : loaded,
-      error,
-    ]
+    return [data, loaded, error]
   } else {
     return [undefined, false, undefined]
   }
