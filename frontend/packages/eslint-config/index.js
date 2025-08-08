@@ -51,6 +51,7 @@ module.exports = {
           {
             message: 'Please use hooks from ./src/shared-recoil for ACM/MCE dynamic plugins common RecoilRoot',
             name: 'recoil',
+            excludedFiles: ['**/hooks/resource-management/**'],
           },
           {
             message:
