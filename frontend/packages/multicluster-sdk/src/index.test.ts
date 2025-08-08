@@ -19,9 +19,11 @@ describe('package index', () => {
       'getFleetK8sAPIPath',
       'getResourcePath', //TODO do not export
       'getResourceURL', // TODO do not export
+      'setupAutoCleanup',
       'useFleetAccessReview',
       'useFleetClusterNames',
       'useFleetK8sAPIPath',
+      'useFleetK8sCache',
       'useFleetK8sWatchResource',
       'useFleetPrometheusPoll',
       'useFleetSearchPoll',
