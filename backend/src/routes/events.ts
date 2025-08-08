@@ -56,9 +56,14 @@ export function getHubClusterName() {
   return hubClusterName
 }
 
-let isHubSelfManaged: boolean | undefined = undefined
+let isHubSelfManaged: boolean = false
 export function getIsHubSelfManaged() {
   return isHubSelfManaged
+}
+
+let isObservabilityInstalled: boolean = false
+export function getIsObservabilityInstalled() {
+  return isObservabilityInstalled
 }
 
 // because rbac checks are expensive,
@@ -627,6 +632,11 @@ export function cacheResource(resource: IResource) {
     if (resource?.metadata?.labels['local-cluster'] === 'true') {
       hubClusterName = resource?.metadata?.name
       isHubSelfManaged = true
+    }
+  }
+  if (resource.kind === 'ManagedClusterAddOn') {
+    if (resource?.metadata?.name === 'observability-controller') {
+      isObservabilityInstalled = true
     }
   }
 }
