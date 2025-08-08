@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
 import { getCurrentClusterVersion, getMajorMinorVersion } from '@openshift-assisted/ui-lib/cim'
 import {
   Alert,
@@ -17,9 +16,11 @@ import {
 import { ExclamationCircleIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { get } from 'lodash'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { useLocation, useNavigate, Outlet } from 'react-router-dom-v5-compat'
+import { useLocation, useNavigate, Outlet, Link } from 'react-router-dom-v5-compat'
 import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
 import { useTranslation } from '../../../lib/acm-i18next'
+import { NavigationPath } from '../../../NavigationPath'
+import { RoleAssignments } from '../../UserManagement/Roles/RoleAssignments'
 import { OCP_DOC } from '../../../lib/doc-util'
 import { PluginContext } from '../../../lib/PluginContext'
 import { ConfigMap } from '../../../resources'
@@ -31,6 +32,8 @@ import {
   AcmPage,
   AcmPageContent,
   AcmPageHeader,
+  AcmSecondaryNav,
+  AcmSecondaryNavItem,
   AcmTable,
   AcmTablePaginationContextProvider,
   IAcmTableColumn,
@@ -192,9 +195,13 @@ function VirtualMachineTable(
 
 export default function VirtualMachinesPage() {
   const { search } = useLocation()
+  const location = useLocation()
   const { presetSearchQuery = '' } = transformBrowserUrlToSearchString(search)
   const { t } = useTranslation()
   const navigate = useNavigate()
+
+  const isVirtualMachinesActive = location.pathname === NavigationPath.virtualMachines
+  const isRoleAssignmentsActive = location.pathname.startsWith(NavigationPath.virtualMachineRoleAssignments)
   const { dataContext, isSearchAvailable } = useContext(PluginContext)
   const { loadStarted } = useContext(dataContext)
   const {
@@ -433,6 +440,17 @@ export default function VirtualMachinesPage() {
       header={
         <AcmPageHeader
           title={t('Virtual machines')}
+          description={t('Manage virtual machines and their role assignments')}
+          navigation={
+            <AcmSecondaryNav>
+              <AcmSecondaryNavItem isActive={isVirtualMachinesActive}>
+                <Link to={NavigationPath.virtualMachines}>{t('Virtual machines')}</Link>
+              </AcmSecondaryNavItem>
+              <AcmSecondaryNavItem isActive={isRoleAssignmentsActive}>
+                <Link to={NavigationPath.virtualMachineRoleAssignments}>{t('Role assignments')}</Link>
+              </AcmSecondaryNavItem>
+            </AcmSecondaryNav>
+          }
           actions={
             isObservabilityInstalled && vmMetricLink ? (
               <AcmActionGroup>
@@ -458,43 +476,49 @@ export default function VirtualMachinesPage() {
     >
       <SearchInfoModal isOpen={toggleOpen} onClose={() => setToggleOpen(false)} />
       <AcmPageContent id="virtual-machines">
-        {isLimitAlertOpen ? (
-          <PageSection style={{ paddingBottom: '0' }}>
-            <Alert
-              variant={'warning'}
-              isInline={true}
-              title={t(
-                'VirtualMachine result limit has been reached. Your table items have been truncated. Update or remove the "VM_RESULT_LIMIT" environment variable to view more VirtualMachines.'
-              )}
-              actionClose={<AlertActionCloseButton onClose={() => setIsLimitAlertOpen(false)} />}
-            />
-          </PageSection>
-        ) : null}
-        <PageSection>
-          <Searchbar
-            queryString={currentSearch}
-            saveSearchTooltip={undefined}
-            setSaveSearch={undefined}
-            suggestions={suggestions}
-            currentQueryCallback={(newQuery) => {
-              setCurrentSearch(newQuery)
-              if (newQuery === '') {
-                updateBrowserUrl(navigate, newQuery)
-              }
-            }}
-            toggleInfoModal={() => setToggleOpen(!toggleOpen)}
-            updateBrowserUrl={updateBrowserUrl}
-            savedSearchQueries={[]}
-            searchResultData={data}
-            refetchSearch={refetch}
-            inputPlaceholder={currentSearch === '' ? t('Filter VirtualMachines') : ''}
-            exportEnabled={false}
-          />
-        </PageSection>
-        <PageSection>
-          <VirtualMachineTable searchResultItems={vmTableItems} vmMenuVisability={vmMenuVisability} />
-          <Outlet />
-        </PageSection>
+        {isRoleAssignmentsActive ? (
+          <RoleAssignments />
+        ) : (
+          <>
+            {isLimitAlertOpen ? (
+              <PageSection style={{ paddingBottom: '0' }}>
+                <Alert
+                  variant={'warning'}
+                  isInline={true}
+                  title={t(
+                    'VirtualMachine result limit has been reached. Your table items have been truncated. Update or remove the "VM_RESULT_LIMIT" environment variable to view more VirtualMachines.'
+                  )}
+                  actionClose={<AlertActionCloseButton onClose={() => setIsLimitAlertOpen(false)} />}
+                />
+              </PageSection>
+            ) : null}
+            <PageSection>
+              <Searchbar
+                queryString={currentSearch}
+                saveSearchTooltip={undefined}
+                setSaveSearch={undefined}
+                suggestions={suggestions}
+                currentQueryCallback={(newQuery) => {
+                  setCurrentSearch(newQuery)
+                  if (newQuery === '') {
+                    updateBrowserUrl(navigate, newQuery)
+                  }
+                }}
+                toggleInfoModal={() => setToggleOpen(!toggleOpen)}
+                updateBrowserUrl={updateBrowserUrl}
+                savedSearchQueries={[]}
+                searchResultData={data}
+                refetchSearch={refetch}
+                inputPlaceholder={currentSearch === '' ? t('Filter VirtualMachines') : ''}
+                exportEnabled={false}
+              />
+            </PageSection>
+            <PageSection>
+              <VirtualMachineTable searchResultItems={vmTableItems} vmMenuVisability={vmMenuVisability} />
+              <Outlet />
+            </PageSection>
+          </>
+        )}
       </AcmPageContent>
     </AcmPage>
   )
