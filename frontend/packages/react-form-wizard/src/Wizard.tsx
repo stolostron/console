@@ -259,9 +259,11 @@ function MyFooter(props: WizardFooterProps) {
   const { editorValidationStatus } = useEditorValidationStatus()
 
   const stepHasValidationError = useStepHasValidationError()
-  const activeStepHasValidationError = activeStep.id ? stepHasValidationError[activeStep.id] : false
+  const activeStepId = activeStep.id.toString()
+  const id = activeStepId.substring(0, activeStepId.length - '-step'.length)
+  const activeStepHasValidationError = stepHasValidationError[id]
   const stepShowValidation = useStepShowValidation()
-  const activeStepShowValidation = activeStep.id ? stepShowValidation[activeStep.id] : false
+  const activeStepShowValidation = stepShowValidation[activeStepId]
 
   const setStepShowValidation = useSetStepShowValidation()
 
