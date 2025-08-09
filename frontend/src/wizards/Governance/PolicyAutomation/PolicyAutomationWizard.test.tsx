@@ -37,11 +37,11 @@ describe('PolicyAutomationWizard tests', () => {
   test('create policy automation', async () => {
     const { container } = render(<Component {...props} />)
 
-    await waitFor(() => expect(screen.getByText(/select the ansible credential/i)).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByPlaceholderText(/select the ansible credential/i)).toBeInTheDocument())
 
     userEvent.click(
       screen.getByRole('button', {
-        name: /options menu/i,
+        name: /menu toggle/i,
       })
     )
 
@@ -51,8 +51,8 @@ describe('PolicyAutomationWizard tests', () => {
       })
     )
 
-    await waitFor(() => expect(screen.getByText(/select the ansible job/i)).toBeInTheDocument())
-    userEvent.click(screen.getByText(/select the ansible job/i))
+    await waitFor(() => expect(screen.getByPlaceholderText(/select the ansible job/i)).toBeInTheDocument())
+    userEvent.click(screen.getByPlaceholderText(/select the ansible job/i))
     userEvent.click(
       screen.getByRole('option', {
         name: /job/i,
@@ -89,7 +89,7 @@ describe('PolicyAutomationWizard tests', () => {
       })
     )
 
-    userEvent.click(screen.getByText(/once/i))
+    userEvent.click(screen.getByPlaceholderText(/select the schedule/i))
 
     userEvent.click(
       screen.getByRole('option', {
@@ -113,11 +113,11 @@ describe('PolicyAutomationWizard tests', () => {
 
   test('select prompt routes to correct template id', async () => {
     render(<Component {...props} />)
-    await waitFor(() => expect(screen.getByText(/select the ansible credential/i)).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByPlaceholderText(/select the ansible credential/i)).toBeInTheDocument())
 
     userEvent.click(
       screen.getByRole('button', {
-        name: /options menu/i,
+        name: /menu toggle/i,
       })
     )
 
@@ -127,8 +127,8 @@ describe('PolicyAutomationWizard tests', () => {
       })
     )
 
-    await waitFor(() => expect(screen.getByText(/select the ansible job/i)).toBeInTheDocument())
-    userEvent.click(screen.getByText(/select the ansible job/i))
+    await waitFor(() => expect(screen.getByPlaceholderText(/select the ansible job/i)).toBeInTheDocument())
+    userEvent.click(screen.getByPlaceholderText(/select the ansible job/i))
     userEvent.click(
       screen.getByRole('option', {
         name: /job/i,

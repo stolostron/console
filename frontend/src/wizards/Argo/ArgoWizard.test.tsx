@@ -126,7 +126,7 @@ describe('ArgoWizard tests', () => {
   test('CreateArgoResources', async () => {
     nockIgnoreApiPaths()
     render(<TestArgoWizard />)
-    userEvent.click(screen.getByText(/select the argo server/i))
+    userEvent.click(screen.getByPlaceholderText(/select the argo server/i))
     userEvent.click(screen.getByRole('button', { name: /add argo server/i }))
 
     //fill the form
@@ -168,13 +168,13 @@ describe('ArgoWizard tests', () => {
       }),
       'testapp'
     )
-    userEvent.click(screen.getByText(/select the argo server/i))
+    userEvent.click(screen.getByPlaceholderText(/select the argo server/i))
     userEvent.click(
       screen.getByRole('option', {
         name: /http:\/\/argoserver\.com/i,
       })
     )
-    userEvent.click(screen.getByText(/180/i))
+    userEvent.click(screen.getByPlaceholderText(/select the requeue time/i))
     userEvent.click(
       screen.getByRole('option', {
         name: /120/i,
@@ -190,11 +190,10 @@ describe('ArgoWizard tests', () => {
     //                      template page
     //=====================================================================
     userEvent.click(screen.getByText(/use a git repository/i))
-    userEvent.click(screen.getByText(/enter or select a git url/i))
-    userEvent.type(screen.getByRole('searchbox'), 'https://github.com/fxiang1/app-samples')
+    userEvent.type(screen.getByPlaceholderText(/enter or select a git url/i), 'https://github.com/fxiang1/app-samples')
     userEvent.click(
       screen.getByRole('option', {
-        name: /create "https:\/\/github\.com\/fxiang1\/app-samples"/i,
+        name: /create new option https:\/\/github\.com\/fxiang1\/app-samples/i,
       })
     )
     const dropdown = container.querySelector(
@@ -272,7 +271,7 @@ describe('ArgoWizard tests', () => {
         name: /action/i,
       })
     )
-    userEvent.click(screen.getByText(/select the label/i))
+    userEvent.click(screen.getByPlaceholderText(/select the label/i))
     userEvent.click(
       screen.getByRole('option', {
         name: /cloud/i,
@@ -318,7 +317,7 @@ describe('ArgoWizard tests', () => {
       }),
       'testapp'
     )
-    userEvent.click(screen.getByText(/select the argo server/i))
+    userEvent.click(screen.getByPlaceholderText(/select the argo server/i))
     userEvent.click(
       screen.getByRole('option', {
         name: /http:\/\/argoserver\.com/i,
@@ -334,11 +333,10 @@ describe('ArgoWizard tests', () => {
     //                      template page
     //=====================================================================
     userEvent.click(screen.getByText(/use a helm repository/i))
-    userEvent.click(screen.getByText(/enter or select a helm url/i))
-    userEvent.type(screen.getByRole('searchbox'), 'https://github.com/fxiang1/app-samples')
+    userEvent.type(screen.getByPlaceholderText(/enter or select a helm url/i), 'https://github.com/fxiang1/app-samples')
     userEvent.click(
       screen.getByRole('option', {
-        name: /create "https:\/\/github\.com\/fxiang1\/app-samples"/i,
+        name: /create new option https:\/\/github\.com\/fxiang1\/app-samples/i,
       })
     )
     userEvent.type(
@@ -366,7 +364,7 @@ describe('ArgoWizard tests', () => {
     userEvent.click(screen.getByText(/existing placement/i))
     userEvent.click(
       screen.getByRole('button', {
-        name: /options menu/i,
+        name: /menu toggle/i,
       })
     )
     userEvent.click(
