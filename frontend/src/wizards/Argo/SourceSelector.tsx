@@ -49,7 +49,7 @@ export interface SourceSelectorProps {
 
 export function SourceSelector(props: SourceSelectorProps) {
   const { gitChannels, helmChannels, channels } = props
-  const data = useItem()
+  const data = useItem<ApplicationSet>()
   const { t } = useTranslation()
   return (
     <Fragment>
@@ -74,9 +74,9 @@ export function SourceSelector(props: SourceSelectorProps) {
         <Tile id="helm" value="Helm" label={t('Helm')} icon={<HelmIcon />} description={t('Use a Helm repository')} />
       </WizTiles>
       {/* Git repo */}
-      <ItemContext.Provider value={data.spec.template.spec.source}>
+      <ItemContext.Provider value={data.spec?.template?.spec?.source}>
         <WizHidden hidden={(data) => data.path === undefined}>
-          <RepoURL channels={gitChannels} />
+          <RepoURL name="git" channels={gitChannels} />
           <WizHidden hidden={(data) => data.repoURL === ''}>
             <GitRevisionSelect channels={channels ?? []} />
             <GitPathSelect channels={channels ?? []} />
@@ -84,7 +84,7 @@ export function SourceSelector(props: SourceSelectorProps) {
         </WizHidden>
         {/* Helm repo */}
         <WizHidden hidden={(data) => data.chart === undefined}>
-          <RepoURL channels={helmChannels} />
+          <RepoURL name="helm" channels={helmChannels} />
           <WizTextInput
             path="chart"
             label={t('Chart name')}
