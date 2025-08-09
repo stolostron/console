@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import { useItem, WizAsyncSelect } from '@patternfly-labs/react-form-wizard'
 import { useCallback } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
