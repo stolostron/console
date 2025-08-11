@@ -30,9 +30,8 @@ import { printableVMStatus } from '../utils'
 
 // kubevirt modal - https://github.com/kubevirt-ui/kubevirt-plugin/blob/5f2e9729034fcd97ebdb2ad2e8fed214a16d77a9/src/utils/components/SnapshotModal/SnapshotModal.tsx
 // https://kubevirt.io/user-guide/operations/snapshot_restore_api/#snapshot-a-virtualmachine
-export enum deadlineUnits {
+enum deadlineUnits {
   Hours = 'h',
-  Miliseconds = 'ms',
   Minutes = 'm',
   Seconds = 's',
 }
@@ -100,7 +99,6 @@ const SnapshotDeadlineFormField: FC<{
             <FormSelectOption key="Hours" label={t('Hours (h)')} value={deadlineUnits.Hours} />
             <FormSelectOption key="Minutes" label={t('Minutes (m)')} value={deadlineUnits.Minutes} />
             <FormSelectOption key="Seconds" label={t('Seconds (s)')} value={deadlineUnits.Seconds} />
-            <FormSelectOption key="Milliseconds" label={t('Milliseconds (ms)')} value={deadlineUnits.Miliseconds} />
           </FormSelect>
         </GridItem>
       </Grid>
