@@ -163,7 +163,7 @@ const virtualMachineRoleAssignmentsRoute: EncodedExtension<RoutePage> = {
     perspective: 'acm',
   },
   flags: {
-    disallowed: ['KUBEVIRT_DYNAMIC_ACM'],
+    required: ['ACM_ACCESS_CONTROL_MANAGEMENT'],
   },
 }
 
