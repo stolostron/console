@@ -294,7 +294,9 @@ function RenderSearchBar(props: Readonly<SearchbarProps>) {
         refetchSearch={refetchSearch}
         exportEnabled={true}
         inputPlaceholder={
-          currentSearch === '' ? t('Search by keywords or filters (ex: kind:cluster label:app=my-app)') : ''
+          currentSearch === ''
+            ? t('Search by keywords or filters, for example label:environment=production my-cluster')
+            : ''
         }
       />
       {HandleErrors(searchSchemaError, searchCompleteError, hasFederatedError)}
