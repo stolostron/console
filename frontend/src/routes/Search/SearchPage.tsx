@@ -295,7 +295,7 @@ function RenderSearchBar(props: Readonly<SearchbarProps>) {
         exportEnabled={true}
         inputPlaceholder={
           currentSearch === ''
-            ? t('Search by keywords or filters, for example label:environment=production my-cluster')
+            ? t('Search by keywords or filters, for example "label:environment=production my-cluster"')
             : ''
         }
       />
