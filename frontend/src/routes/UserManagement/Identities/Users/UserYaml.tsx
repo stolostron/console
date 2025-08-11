@@ -14,12 +14,13 @@ const UserYaml = () => {
   const { t } = useTranslation()
   const { id = undefined } = useParams()
   const { data: users, loading } = useQuery(listUsers)
-  const editorHeight = useYamlEditorHeight()
 
-  const user = useMemo(() => {
-    if (!users || !id) return undefined
-    return users.find((u) => u.metadata.uid === id || u.metadata.name === id)
-  }, [users, id])
+  const user = useMemo(
+    () => (id ? users?.find((u) => u.metadata.uid === id || u.metadata.name === id) : undefined),
+    [users, id]
+  )
+  const baseHeight = useYamlEditorHeight()
+  const customHeight = Math.min(baseHeight, 450)
 
   switch (true) {
     case loading:
@@ -37,7 +38,7 @@ const UserYaml = () => {
     default:
       return (
         <PageSection>
-          <YamlEditor resourceYAML={dump(user, { indent: 2 })} readOnly={true} height={editorHeight} />
+          <YamlEditor resourceYAML={dump(user, { indent: 2 })} readOnly={true} height={customHeight} />
         </PageSection>
       )
   }

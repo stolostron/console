@@ -165,7 +165,7 @@ describe('UserPage', () => {
 
     render(<Component />)
 
-    expect(screen.getByRole('heading', { level: 1, name: 'Unknown user' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: 'test-user' })).toBeInTheDocument()
     expect(screen.getAllByText('test-user').length).toBeGreaterThan(0)
   })
 

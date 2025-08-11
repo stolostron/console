@@ -10,13 +10,9 @@ export function useYamlEditorHeight() {
 
   useEffect(() => {
     function handleResize() {
-      let editorHeight = window.innerHeight - 260
+      const editorHeight = window.innerHeight - 260
       const globalHeader = document.getElementsByClassName('co-global-notification')
-      if (globalHeader.length > 0) {
-        editorHeight = editorHeight - globalHeader.length * 33
-      }
-
-      setEditorHeight(editorHeight)
+      setEditorHeight(globalHeader.length ? editorHeight - globalHeader.length * 33 : editorHeight)
     }
 
     handleResize()

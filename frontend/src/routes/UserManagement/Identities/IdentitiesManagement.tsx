@@ -2,7 +2,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom-v5-compat'
 import { NavigationPath, createRoutePathFunction } from '../../../NavigationPath'
 import IdentitiesPage from './IdentitiesPage'
-import { UsersTable } from './Users/Users'
+import { UsersTable } from './Users/UsersTable'
 import { Groups } from './Groups/Groups'
 import { ServiceAccounts } from './ServiceAccounts/ServiceAccounts'
 import { UserPage } from './Users/UserPage'

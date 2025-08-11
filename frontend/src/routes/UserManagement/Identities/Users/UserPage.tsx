@@ -83,13 +83,13 @@ const UserPage = () => {
           hasDrawer
           header={
             <AcmPageHeader
-              title={user.fullName ?? t('Unknown user')}
+              title={user.fullName ?? user.metadata.name}
               description={user.metadata.name}
               breadcrumb={[
                 { text: t('User Management'), to: NavigationPath.roles },
-                { text: t('Identites'), to: NavigationPath.identities },
+                { text: t('Identities'), to: NavigationPath.identities },
                 { text: t('Users'), to: NavigationPath.identitiesUsers },
-                { text: id ?? t('User not found') },
+                { text: user.fullName ?? user.metadata.name ?? t('Unknown User') },
               ]}
               navigation={
                 <AcmSecondaryNav>

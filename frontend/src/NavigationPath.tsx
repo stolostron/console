@@ -191,11 +191,6 @@ export enum NavigationPath {
   identitiesUsersRoleAssignments = '/multicloud/user-management/identities/users/:id/role-assignments',
   identitiesUsersRoleAssignmentsCreate = '/multicloud/user-management/identities/users/:id/role-assignments/create',
   identitiesUsersGroups = '/multicloud/user-management/identities/users/:id/groups',
-  // identitiesUsers = '/multicloud/user-management/identities/users',
-  // identitiesUsersDetails = '/multicloud/user-management/identities/users/:id',
-  // identitiesUsersYaml = '/multicloud/user-management/identities/users/:id/yaml',
-  // identitiesUsersRoleAssignments = '/multicloud/user-management/identities/users/:id/role-assignments',
-  // identitiesUsersGroups = '/multicloud/user-management/identities/users/:id/groups',
 
   // RBAC Groups
   identitiesGroups = '/multicloud/user-management/identities/groups',

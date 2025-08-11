@@ -5,7 +5,7 @@ import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { nockIgnoreRBAC, nockIgnoreApiPaths, nockList } from '../../../../lib/nock-util'
 import { UserDefinition } from '../../../../resources/rbac'
-import { UsersTable } from './Users'
+import { UsersTable } from './UsersTable'
 
 const mockUsers = [
   {
@@ -51,13 +51,10 @@ describe('Users Page', () => {
 
     render(<Component />)
 
-    await waitFor(
-      () => {
-        expect(screen.getByText('test-user')).toBeInTheDocument()
-        expect(screen.getByText('system-user')).toBeInTheDocument()
-      },
-      { timeout: 3000 }
-    )
+    await waitFor(() => {
+      expect(screen.getByText('test-user')).toBeInTheDocument()
+      expect(screen.getByText('system-user')).toBeInTheDocument()
+    })
   })
 
   test('should render component without errors', () => {

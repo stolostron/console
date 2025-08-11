@@ -28,12 +28,9 @@ describe('IdentitiesPage', () => {
   test('should render identities page with tabs', async () => {
     render(<Component />)
 
-    await waitFor(
-      () => {
-        expect(screen.getAllByText('Identities')).toHaveLength(2)
-      },
-      { timeout: 3000 }
-    )
+    await waitFor(() => {
+      expect(screen.getAllByText('Identities')).toHaveLength(2)
+    })
 
     expect(screen.getAllByText('Identities')).toHaveLength(2)
     expect(screen.getByText('User Management')).toBeInTheDocument()
@@ -62,12 +59,9 @@ describe('IdentitiesPage', () => {
       </RecoilRoot>
     )
 
-    await waitFor(
-      () => {
-        expect(screen.getAllByText('Identities')).toHaveLength(2)
-      },
-      { timeout: 3000 }
-    )
+    await waitFor(() => {
+      expect(screen.getAllByText('Identities')).toHaveLength(2)
+    })
 
     const groupsTab = screen.queryByText('Groups')
     const unauthorizedMessage = screen.queryByText('Unauthorized')

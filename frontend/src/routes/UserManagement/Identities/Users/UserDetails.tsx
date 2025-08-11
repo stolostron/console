@@ -32,9 +32,7 @@ const UserDetails = () => {
       return (
         <PageSection>
           <PageSection variant={'light'}>
-            <Text style={{ fontSize: '1.25rem', fontFamily: 'RedHatDisplay' }} component={'h2'}>
-              {t('General information')}
-            </Text>
+            <Text style={{ fontFamily: 'RedHatDisplay', marginBottom: '2rem' }}>{t('General information')}</Text>
             <Stack hasGutter>
               <DescriptionList isHorizontal={false}>
                 <DescriptionListGroup>
@@ -56,6 +54,11 @@ const UserDetails = () => {
                       '-'
                     )}
                   </DescriptionListDescription>
+                </DescriptionListGroup>
+
+                <DescriptionListGroup>
+                  <DescriptionListTerm>{t('Identity Provider')}</DescriptionListTerm>
+                  <DescriptionListDescription>{user.identities ?? '-'}</DescriptionListDescription>
                 </DescriptionListGroup>
               </DescriptionList>
             </Stack>
