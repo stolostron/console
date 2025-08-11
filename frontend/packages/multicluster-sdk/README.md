@@ -344,7 +344,7 @@ Returns:
 
 Array with `hubclustername`, `loaded` and `error` values.
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useHubClusterName.ts#L12)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useHubClusterName.ts#L10)
 
 ### :gear: useIsFleetAvailable
 
@@ -363,6 +363,20 @@ Returns:
 `true` if a version of Red Hat Advanced Cluster Management that is compatible with the multicluster SDK is available; `false` otherwise
 
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useIsFleetAvailable.ts#L15)
+
+### :gear: useIsFleetObservabilityInstalled
+
+Hook that provides is observability installed.
+
+| Function | Type |
+| ---------- | ---------- |
+| `useIsFleetObservabilityInstalled` | `UseIsFleetObservabilityInstalled` |
+
+Returns:
+
+Array with `isObservabilityInstalled`, `loaded` and `error` values.
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useIsFleetObservabilityInstalled.ts#L10)
 
 
 ## :wrench: Constants
@@ -394,6 +408,14 @@ Returns:
 - [UseFleetSearchPoll](#gear-usefleetsearchpoll)
 - [UseHubClusterName](#gear-usehubclustername)
 - [UseIsFleetAvailable](#gear-useisfleetavailable)
+
+### :gear: AdvancedSearchFilter
+
+| Type | Type |
+| ---------- | ---------- |
+| `AdvancedSearchFilter` | `{ property: string; values: string[] }[]` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/search.ts#L8)
 
 ### :gear: AdvancedSearchFilter
 
@@ -500,6 +522,20 @@ Signature of the `useIsFleetAvailable` hook
 | `UseIsFleetAvailable` | `() => boolean` |
 
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L28)
+
+### :gear: UseIsFleetObservabilityInstalled
+
+Signature of the `UseIsFleet ObservabilityInstalled` hook.
+
+| Type | Type |
+| ---------- | ---------- |
+| `UseIsFleetObservabilityInstalled` | `() => [ isObservabilityInstalled: boolean or undefined, loaded: boolean, error: any, ]` |
+
+Returns:
+
+A tuple containing a boolean indicating if the observability controller is installed, a boolean indicating if loaded, and an error if any.
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L40)
 
 
 <!-- TSDOC_END -->
