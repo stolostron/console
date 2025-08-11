@@ -75,7 +75,7 @@ export default function OverviewClusterLabelSelector(props: {
 
   return (
     <PageSection variant={'light'}>
-      <div>
+      <div style={{ display: 'flex', flexDirection: 'row' }}>
         <AcmSelectBase
           id="cluster-label-key"
           key="cluster-label-key"
