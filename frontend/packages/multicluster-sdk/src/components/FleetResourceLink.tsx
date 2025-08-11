@@ -90,7 +90,7 @@ export const FleetResourceLink: React.FC<FleetResourceLinkProps> = ({ cluster, .
     'co-resource-item--truncate': truncate,
   })
 
-  // if cluster name is given but hub name is not loaded yet, show text (not skeleton)
+  // if cluster name is given but hub name is not loaded yet, show text
   if (cluster && !hubLoaded) {
     return (
       <span className={classes}>
@@ -118,7 +118,7 @@ export const FleetResourceLink: React.FC<FleetResourceLinkProps> = ({ cluster, .
     }
 
     if (isHubCluster) {
-      // hub cluster case: try extension-based routing for hub cluster resources
+      // hub cluster case, extension-based routing for hub cluster resources
       if (resourceRoutesResolved && resourceRoutes?.length) {
         const extensionPath = getExtensionResourcePath(
           resourceRoutes,
@@ -146,7 +146,7 @@ export const FleetResourceLink: React.FC<FleetResourceLinkProps> = ({ cluster, .
       // for hub cluster resources without extension handlers, return null to fallback to ResourceLink
       return null
     } else {
-      // managed cluster case: try extensions first, then fallback to search
+      // managed cluster case, extensions first, then fallback to search
       if (resourceRoutesResolved && resourceRoutes?.length) {
         const extensionPath = getExtensionResourcePath(
           resourceRoutes,
