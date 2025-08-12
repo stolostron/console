@@ -196,7 +196,7 @@ export function AcmSearchInput(props: Readonly<AcmSearchInputProps>) {
               {pendingConstraints?.map((constraint, index) => {
                 return (
                   <Flex alignItems={{ default: 'alignItemsFlexStart' }} key={`${constraint.columnId}-${index}`}>
-                    <FlexItem style={{ width: '26%' }}>
+                    <FlexItem style={{ width: '30%' }}>
                       <AcmSelect
                         label={t('Column')}
                         id="search-column"
