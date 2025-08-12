@@ -1855,6 +1855,7 @@
   "Manage node pool": "Manage node pool",
   "Manage policies": "Manage policies",
   "Manage roles and permissions": "Manage roles and permissions",
+  "Manage virtual machines and their role assignments": "Manage virtual machines and their role assignments",
   "manageClusterSet.form.modal.title": "Confirm changes",
   "manageClusterSet.form.review.description": "Adding or removing resources from a cluster set will affect access control permissions in this set for all assigned cluster set users. The clusters can be added to or removed from the cluster set at any time.",
   "manageClusterSet.form.section.table": "Select resources to toggle their assignments to the cluster set",

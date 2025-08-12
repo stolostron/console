@@ -46,4 +46,13 @@ describe('VirtualMachines routes', () => {
     )
     expect(await screen.findByText('migrate-page')).toBeInTheDocument()
   })
+
+  it('renders the role assignments page when the URL matches', async () => {
+    render(
+      <MemoryRouter initialEntries={[vmPathFn(NavigationPath.virtualMachineRoleAssignments)]}>
+        <VirtualMachines />
+      </MemoryRouter>
+    )
+    expect(await screen.findByText('vm-page')).toBeInTheDocument()
+  })
 })

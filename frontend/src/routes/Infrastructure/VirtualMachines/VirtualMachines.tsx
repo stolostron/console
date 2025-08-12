@@ -15,6 +15,10 @@ export default function VirtualMachines() {
           element={<MigrateVirtualMachinePage />}
         />
       </Route>
+      <Route
+        path={virtualMachineChildPath(NavigationPath.virtualMachineRoleAssignments)}
+        element={<VirtualMachinesPage />}
+      />
       <Route path="*" element={<Navigate to={NavigationPath.virtualMachines} replace />} />
     </Routes>
   )
