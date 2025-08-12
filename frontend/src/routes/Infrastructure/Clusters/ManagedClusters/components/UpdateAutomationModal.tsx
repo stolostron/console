@@ -219,8 +219,7 @@ export function UpdateAutomationModal(props: {
     <AcmModal
       title={t('Update automation template')}
       isOpen={props.open}
-      variant={ModalVariant.small}
-      style={{ display: 'table !important' }}
+      variant={ModalVariant.medium}
       onClose={() => {
         setSelectedCuratorTemplate(undefined)
         props.close()
