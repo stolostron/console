@@ -3,7 +3,7 @@ import { UseFleetK8sAPIPath } from '../types'
 import { getBackendUrl } from './apiRequests'
 import { BASE_K8S_API_PATH, MANAGED_CLUSTER_API_PATH } from '../internal/constants'
 import { useHubConfigurationItem } from '../internal/useHubConfigurationItem'
-import { getCachedHubConfiguration } from '../internal/cachedHubConfiguration'
+import { fetchHubConfiguration } from '../internal/cachedHubConfiguration'
 
 /**
  * Hook that provides the k8s API path for the fleet.
@@ -29,7 +29,8 @@ export const useFleetK8sAPIPath: UseFleetK8sAPIPath = (cluster) => {
  */
 
 export const getFleetK8sAPIPath = async (cluster?: string) => {
-  const cachedHubClusterName = getCachedHubConfiguration()?.['localHubName']
+  const cacheHubConfiguration = await fetchHubConfiguration()
+  const cachedHubClusterName = cacheHubConfiguration?.['localHubName']
   if (cluster && cachedHubClusterName !== cluster) {
     return `${getBackendUrl()}/${MANAGED_CLUSTER_API_PATH}/${cluster}`
   } else {
