@@ -55,13 +55,13 @@ describe('Edit Policy Automation', () => {
     await new Promise((resolve) => setTimeout(resolve, 1000))
 
     expect(screen.getByRole('heading', { name: 'Edit policy automation' })).toBeInTheDocument()
-    expect(screen.getByText('ansible-test-secret')).toBeInTheDocument()
-    expect(screen.getByText('test-job-pre-install')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText(/select the ansible credential/i)).toHaveValue('ansible-test-secret')
+    expect(screen.getByPlaceholderText(/select the ansible job/i)).toHaveValue('test-job-pre-install')
 
     // modify ansible job and schedule
-    screen.getByText('test-job-pre-install').click()
+    screen.getByPlaceholderText(/select the ansible job/i).click()
     screen.getByRole('option', { name: 'test-job-post-install' }).click()
-    screen.getByText('Once').click()
+    screen.getByPlaceholderText(/select the schedule/i).click()
     screen.getByRole('option', { name: 'Disabled' }).click()
     screen.getByRole('button', { name: 'Next' }).click()
 

@@ -1,23 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import {
-  Chip,
-  ChipGroup,
   DescriptionListDescription,
   DescriptionListGroup,
   DescriptionListTerm,
-} from '@patternfly/react-core'
-import {
+  MenuToggleElement,
   Select as PfSelect,
-  SelectOption,
-  SelectOptionObject,
-  SelectProps,
-  SelectVariant,
-} from '@patternfly/react-core/deprecated'
-import { Fragment, ReactNode, useCallback, useMemo, useState } from 'react'
+} from '@patternfly/react-core'
+import { ReactNode, useCallback, useState } from 'react'
 import { DisplayMode } from '../contexts/DisplayModeContext'
 import { InputCommonProps, getSelectPlaceholder, useInput } from './Input'
-import './Select.css'
+import { InputSelect, NoResults, SelectListOptions } from './InputSelect'
 import { WizFormGroup } from './WizFormGroup'
+
+import './Select.css'
 
 export type WizMultiSelectProps = InputCommonProps<string[]> & {
   placeholder?: string
@@ -29,75 +24,54 @@ export type WizMultiSelectProps = InputCommonProps<string[]> & {
 
 export function WizMultiSelect(props: WizMultiSelectProps) {
   const { displayMode: mode, value, setValue, validated, hidden, id, disabled } = useInput(props)
+  const { isCreatable, options, footer } = props
   const placeholder = getSelectPlaceholder(props)
   const [open, setOpen] = useState(false)
+  const [filteredOptions, setFilteredOptions] = useState<string[]>([])
 
-  const onSelect = useCallback<Required<SelectProps>['onSelect']>(
-    (_, selectedString: string | SelectOptionObject) => {
-      if (typeof selectedString === 'string') {
-        let newValues: any[]
-        if (Array.isArray(value)) newValues = [...value]
-        else newValues = []
-        if (newValues.includes(selectedString)) {
-          newValues = newValues.filter((value) => value !== selectedString)
-        } else {
-          newValues.push(selectedString)
-        }
-        setValue(newValues)
+  const handleSetOptions = useCallback((o: string[]) => {
+    if (o.length > 0) {
+      setFilteredOptions(o)
+    } else {
+      setFilteredOptions([NoResults])
+    }
+  }, [])
+
+  const onSelect = useCallback(
+    (selectedString: string | undefined) => {
+      if (!selectedString) {
+        setValue([])
+        return
       }
+
+      let newValues: any[]
+      if (Array.isArray(value)) newValues = [...value]
+      else newValues = []
+      if (newValues.includes(selectedString)) {
+        newValues = newValues.filter((value) => value !== selectedString)
+      } else {
+        newValues.push(selectedString)
+      }
+      setValue(newValues)
     },
     [setValue, value]
   )
 
-  const onClear = useCallback(() => {
-    setValue([])
-  }, [setValue])
-
-  const selections = useMemo(() => value as string[], [value])
-
-  const options = useMemo(() => {
-    const map: Record<string, true> = {}
-    for (const option of props.options) {
-      map[option] = true
-    }
-    if (Array.isArray(selections)) {
-      for (const option of selections) {
-        map[option] = true
-      }
-    }
-    return Object.keys(map).sort()
-  }, [props.options, selections])
-
-  const onFilter = useCallback<Required<SelectProps>['onFilter']>(
-    (_, filterValue: string) =>
-      options
-        .filter((option) => {
-          if (typeof option !== 'string') return false
-          return option.includes(filterValue)
-        })
-        .map((option) => (
-          <SelectOption key={option} value={option}>
-            {option}
-          </SelectOption>
-        )),
-    [options]
-  )
-
-  if (hidden) return <Fragment />
+  if (hidden) return null
 
   if (mode === DisplayMode.Details) {
-    if (!value) return <Fragment />
+    if (!value) return null
     return (
       <DescriptionListGroup>
         <DescriptionListTerm>{props.label}</DescriptionListTerm>
         <DescriptionListDescription id={id}>
-          {selections.length > 5 ? (
-            `${selections.length} selected`
+          {value.length > 5 ? (
+            `${value.length} selected`
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', rowGap: 8 }}>
-              {selections.map((selection, index) => {
-                return <div key={index}>{selection}</div>
-              })}
+              {(value as string[]).map((selection, index) => (
+                <div key={index}>{selection}</div>
+              ))}
             </div>
           )}
         </DescriptionListDescription>
@@ -109,41 +83,34 @@ export function WizMultiSelect(props: WizMultiSelectProps) {
     <div id={id}>
       <WizFormGroup {...props}>
         <PfSelect
-          isDisabled={disabled}
-          variant={SelectVariant.checkbox}
+          onOpenChange={(isOpen) => {
+            !isOpen && setOpen(false)
+          }}
           isOpen={open}
-          onToggle={(_event, val) => setOpen(val)}
-          selections={selections}
-          onSelect={onSelect}
-          onClear={onClear}
-          isCreatable={props.isCreatable}
-          validated={validated}
-          onFilter={onFilter}
-          hasInlineFilter
-          footer={props.footer}
-          placeholderText={
-            Array.isArray(selections) ? (
-              selections.length === 0 ? (
-                placeholder
-              ) : (
-                <ChipGroup style={{ marginTop: -8, marginBottom: -8 }} numChips={9999}>
-                  {selections.map((selection) => (
-                    <Chip isReadOnly key={selection}>
-                      {selection}
-                    </Chip>
-                  ))}
-                </ChipGroup>
-              )
-            ) : (
-              placeholder
-            )
-          }
+          toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+            <InputSelect
+              disabled={disabled}
+              validated={validated}
+              placeholder={placeholder}
+              options={options}
+              setOptions={handleSetOptions}
+              toggleRef={toggleRef}
+              value={value}
+              onSelect={onSelect}
+              open={open}
+              setOpen={setOpen}
+            />
+          )}
+          selected={value}
+          onSelect={(_event, value) => onSelect(value?.toString() ?? '')}
         >
-          {options.map((option) => (
-            <SelectOption id={option} key={option} value={option}>
-              {option}
-            </SelectOption>
-          ))}
+          <SelectListOptions
+            value={value}
+            options={filteredOptions}
+            isCreatable={isCreatable}
+            footer={footer}
+            isMultiSelect
+          />
         </PfSelect>
       </WizFormGroup>
     </div>
