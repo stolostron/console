@@ -607,7 +607,7 @@ export const getControlDataAZR = (t, handleModalToggle, includeAutomation = true
           tooltip: t('tooltip.creation.ocp.azr.root.storage'),
           id: 'masterRootStorage',
           type: 'combobox',
-          active: '128',
+          active: '1024',
           available: ['128', '256', '512', '1024', '2048'],
           validation: getNumericValidator(t),
           cacheUserValueKey: 'create.cluster.master.root.storage',
