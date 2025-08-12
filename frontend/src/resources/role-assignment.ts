@@ -29,3 +29,13 @@ export interface RoleAssignment extends IResource {
     clusters: Cluster[]
   }
 }
+
+export const emptyRoleAssignment: RoleAssignment = {
+  apiVersion: RoleAssignmentApiVersion,
+  kind: RoleAssignmentKind,
+  metadata: {},
+  spec: {
+    role: '',
+    subjects: [],
+  },
+}
