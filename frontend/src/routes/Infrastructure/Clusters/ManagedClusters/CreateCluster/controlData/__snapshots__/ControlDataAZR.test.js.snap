@@ -272,7 +272,7 @@ exports[`Cluster creation control data for AZR generates correctly 1`] = `
         },
       },
       {
-        "active": "128",
+        "active": "1024",
         "available": [
           "128",
           "256",
@@ -1732,7 +1732,7 @@ exports[`Cluster creation control data for AZR generates correctly for MCE 1`] =
         },
       },
       {
-        "active": "128",
+        "active": "1024",
         "available": [
           "128",
           "256",
@@ -3217,7 +3217,7 @@ exports[`Cluster creation control data for AZR generates correctly for cluster p
         },
       },
       {
-        "active": "128",
+        "active": "1024",
         "available": [
           "128",
           "256",
@@ -4588,7 +4588,7 @@ exports[`Cluster creation control data for AZR generates correctly with SNO enab
         },
       },
       {
-        "active": "128",
+        "active": "1024",
         "available": [
           "128",
           "256",
