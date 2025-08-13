@@ -13,7 +13,7 @@ import {
 } from '@openshift-console/dynamic-plugin-sdk'
 import { selectorToString } from './utils/requirements'
 import { BASE_K8S_API_PATH } from '../internal/constants'
-import { getFleetK8sAPIPath } from './useFleetK8sAPIPath'
+import { getFleetK8sAPIPath } from './getFleetK8sAPIPath'
 
 export type BaseOptions = {
   name?: string
