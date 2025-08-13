@@ -179,7 +179,7 @@ export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSea
         // Reverse the flattening of specific resources by the search-collector
         // See https://github.com/stolostron/search-collector/blob/main/pkg/transforms/genericResourceConfig.go
         switch (kind) {
-          case 'ClusterServiceVersion.operators.coreos.com':
+          case 'ClusterServiceVersion':
             resource.spec = {
               version: item.version,
               displayName: item.display,
@@ -199,7 +199,7 @@ export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSea
             }
             break
 
-          case 'VirtualMachine.kubevirt.io':
+          case 'VirtualMachine':
             resource.spec = {
               running: item._specRunning,
               runStrategy: item._specRunStrategy,
@@ -212,14 +212,6 @@ export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSea
                 },
               },
             }
-            resource.spec.template = {
-              metadata: {
-                annotations: {},
-              },
-            }
-            resource.spec.template.metadata.annotations['vm.kubevirt.io/flavor'] = item.flavor
-            resource.spec.template.metadata.annotations['vm.kubevirt.io/os'] = item.osName
-            resource.spec.template.metadata.annotations['vm.kubevirt.io/workload'] = item.workload
             resource.status = {
               conditions: [
                 { type: 'Ready', status: item.ready },
