@@ -2488,6 +2488,7 @@
   "Search by {{currentQuery}}{{inputValue}}": "Search by {{currentQuery}}{{inputValue}}",
   "Search by {{inputValue}}": "Search by {{inputValue}}",
   "Search by {{inputValue}} with applied filters": "Search by {{inputValue}} with applied filters",
+  "Search by keywords or filters, for example \"label:environment=production my-cluster\"": "Search by keywords or filters, for example \"label:environment=production my-cluster\"",
   "Search channel": "Search channel",
   "Search filters": "Search filters",
   "Search guide": "Search guide",
