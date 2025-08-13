@@ -3,9 +3,8 @@
 import { FleetK8sCreateUpdateOptions, FleetK8sResourceCommon } from '../types'
 import { getClusterFromOptions, getOptionsWithoutCluster, getResourceURLFromOptions } from '../internal/apiRequests'
 
-import { consoleFetchJSON } from '@openshift-console/dynamic-plugin-sdk'
+import { consoleFetchJSON, k8sUpdate } from '@openshift-console/dynamic-plugin-sdk'
 import { isHubRequest } from '../internal/isHubRequest'
-import { k8sUpdate } from '@openshift-console/dynamic-plugin-sdk'
 
 /**
  * A fleet version of [`k8sPatch`](https://github.com/openshift/console/blob/main/frontend/packages/console-dynamic-plugin-sdk/docs/api.md#k8slist) from
