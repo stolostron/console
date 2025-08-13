@@ -99,6 +99,7 @@ export const InputSelect = ({
           placeholder={placeholder}
           isExpanded={open}
           autoComplete="off"
+          aria-label={placeholder}
           role="combobox"
           aria-controls="select-typeahead-listbox"
         >
