@@ -179,15 +179,63 @@ export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSea
         // Reverse the flattening of specific resources by the search-collector
         // See https://github.com/stolostron/search-collector/blob/main/pkg/transforms/genericResourceConfig.go
         switch (kind) {
-          case 'VirtualMachine':
+          case 'ClusterServiceVersion.operators.coreos.com':
+            resource.spec = {
+              version: item.version,
+              displayName: item.display,
+            }
+            resource.status = {
+              phase: item.phase,
+            }
+            break
+          case 'PersistentVolumeClaim':
+            resource.spec = {
+              resources: {
+                requests: {
+                  storage: item.requestedStorage,
+                },
+              },
+              volumeMode: item.volumeMode,
+            }
+            break
+
+          case 'VirtualMachine.kubevirt.io':
             resource.spec = {
               running: item._specRunning,
               runStrategy: item._specRunStrategy,
-              template: { spec: { domain: { cpu: { cores: item.cpu }, memory: { guest: item.memory } } } },
+              template: {
+                spec: {
+                  domain: {
+                    cpu: { cores: item.cpu },
+                    memory: { guest: item.memory },
+                  },
+                },
+              },
             }
-            resource.status = { conditions: [{ type: 'Ready', status: item.ready }], printableStatus: item.status }
+            resource.spec.template = {
+              metadata: {
+                annotations: {},
+              },
+            }
+            resource.spec.template.metadata.annotations['vm.kubevirt.io/flavor'] = item.flavor
+            resource.spec.template.metadata.annotations['vm.kubevirt.io/os'] = item.osName
+            resource.spec.template.metadata.annotations['vm.kubevirt.io/workload'] = item.workload
+            resource.status = {
+              conditions: [
+                { type: 'Ready', status: item.ready },
+                { type: 'AgentConnected', status: item.agentConnected },
+              ],
+              printableStatus: item.status,
+            }
             break
+
           case 'VirtualMachineInstance':
+            resource.spec = {
+              domain: {
+                cpu: { cores: item.cpu },
+                memory: { guest: item.memory },
+              },
+            }
             resource.status = {
               conditions: [
                 { type: 'LiveMigratable', status: item.liveMigratable },
@@ -196,7 +244,21 @@ export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSea
               interfaces: [{ ipAddress: item.ipaddress, name: 'default' }],
               nodeName: item.node,
               phase: item.phase,
+              guestOSInfo: { version: item.osVersion },
             }
+            resource.metadata.labels = {}
+            resource.metadata.labels['kubevirt.io/size'] = item.vmSize
+            break
+
+          case 'VirtualMachineInstanceMigration':
+            resource.spec = {
+              vmiName: item.vmiName,
+            }
+            resource.status = {
+              phase: item.phase,
+              migrationState: { endTimestamp: item.endTime },
+            }
+            break
         }
         return resource
       }),
