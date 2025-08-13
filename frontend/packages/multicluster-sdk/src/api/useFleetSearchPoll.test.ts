@@ -483,6 +483,7 @@ describe('useFleetSearchPoll', () => {
         memory: '4Gi',
         ready: 'True',
         status: 'Running',
+        agentConnected: 'True',
       }
 
       mockUseSearchResultItemsQuery.mockReturnValue({
@@ -518,7 +519,10 @@ describe('useFleetSearchPoll', () => {
         },
       })
       expect(dataArray[0].status).toEqual({
-        conditions: [{ type: 'Ready', status: 'True' }],
+        conditions: [
+          { type: 'Ready', status: 'True' },
+          { type: 'AgentConnected', status: 'True' },
+        ],
         printableStatus: 'Running',
       })
     })
@@ -532,6 +536,7 @@ describe('useFleetSearchPoll', () => {
         ipaddress: '10.0.0.1',
         node: 'worker-node-1',
         phase: 'Running',
+        osVersion: 'rhel',
       }
 
       mockUseSearchResultItemsQuery.mockReturnValue({
@@ -562,6 +567,7 @@ describe('useFleetSearchPoll', () => {
         interfaces: [{ ipAddress: '10.0.0.1', name: 'default' }],
         nodeName: 'worker-node-1',
         phase: 'Running',
+        guestOSInfo: { version: 'rhel' },
       })
     })
 
