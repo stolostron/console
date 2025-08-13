@@ -1,7 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { fetchHubConfiguration } from '../internal/cachedHubConfiguration'
-import { MANAGED_CLUSTER_API_PATH, BASE_K8S_API_PATH } from '../internal/constants'
+import { BASE_K8S_API_PATH, MANAGED_CLUSTER_API_PATH } from '../internal/constants'
+
 import { getBackendUrl } from '../internal/apiRequests'
+import { isHubRequest } from '../internal/isHubRequest'
 
 /**
  * Function that provides the k8s API path for the fleet.
@@ -11,11 +12,9 @@ import { getBackendUrl } from '../internal/apiRequests'
  */
 
 export const getFleetK8sAPIPath = async (cluster?: string) => {
-  const cacheHubConfiguration = await fetchHubConfiguration()
-  const cachedHubClusterName = cacheHubConfiguration?.localHubName
-  if (cluster && cachedHubClusterName !== cluster) {
-    return `${getBackendUrl()}/${MANAGED_CLUSTER_API_PATH}/${cluster}`
-  } else {
+  if (await isHubRequest(cluster)) {
     return BASE_K8S_API_PATH
+  } else {
+    return `${getBackendUrl()}/${MANAGED_CLUSTER_API_PATH}/${cluster}`
   }
 }
