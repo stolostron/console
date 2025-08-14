@@ -46,5 +46,3 @@ export const IdentityStatus = ({ identity }: IdentityStatusProps) => {
     )
   }
 }
-
-export default IdentityStatus
