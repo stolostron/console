@@ -180,6 +180,7 @@ export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSea
         // See https://github.com/stolostron/search-collector/blob/main/pkg/transforms/genericResourceConfig.go
         switch (kind) {
           case 'ClusterServiceVersion':
+          case 'ClusterServiceVersion.operators.coreos.com':
             resource.spec = {
               version: item.version,
               displayName: item.display,
@@ -200,9 +201,9 @@ export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSea
             break
 
           case 'VirtualMachine':
+          case 'VirtualMachine.kubevirt.io':
             resource.spec = {
-              running: item._specRunning,
-              runStrategy: item._specRunStrategy,
+              runStrategy: item.runStrategy,
               template: {
                 spec: {
                   domain: {
@@ -210,8 +211,14 @@ export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSea
                     memory: { guest: item.memory },
                   },
                 },
+                metadata: {
+                  annotations: {},
+                },
               },
             }
+            resource.spec.template.metadata.annotations['vm.kubevirt.io/flavor'] = item.flavor
+            resource.spec.template.metadata.annotations['vm.kubevirt.io/os'] = item.osName
+            resource.spec.template.metadata.annotations['vm.kubevirt.io/workload'] = item.workload
             resource.status = {
               conditions: [
                 { type: 'Ready', status: item.ready },
@@ -222,6 +229,7 @@ export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSea
             break
 
           case 'VirtualMachineInstance':
+          case 'VirtualMachineInstance.kubevirt.io':
             resource.spec = {
               domain: {
                 cpu: { cores: item.cpu },
@@ -243,6 +251,7 @@ export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSea
             break
 
           case 'VirtualMachineInstanceMigration':
+          case 'VirtualMachineInstanceMigration.kubevirt.io':
             resource.spec = {
               vmiName: item.vmiName,
             }
