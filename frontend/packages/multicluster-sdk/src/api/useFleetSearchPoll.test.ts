@@ -477,13 +477,15 @@ describe('useFleetSearchPoll', () => {
       const vmItem = {
         ...mockSearchResultItem,
         kind: 'VirtualMachine',
-        _specRunning: true,
-        _specRunStrategy: 'Always',
         cpu: 2,
         memory: '4Gi',
         ready: 'True',
         status: 'Running',
         agentConnected: 'True',
+        flavor: 'test',
+        osName: 'rhel',
+        workload: 'app',
+        runStrategy: 'Always',
       }
 
       mockUseSearchResultItemsQuery.mockReturnValue({
@@ -507,13 +509,19 @@ describe('useFleetSearchPoll', () => {
       expect(Array.isArray(data)).toBe(true)
       const dataArray = data as any[]
       expect(dataArray[0].spec).toEqual({
-        running: true,
         runStrategy: 'Always',
         template: {
           spec: {
             domain: {
               cpu: { cores: 2 },
               memory: { guest: '4Gi' },
+            },
+          },
+          metadata: {
+            annotations: {
+              'vm.kubevirt.io/flavor': 'test',
+              'vm.kubevirt.io/os': 'rhel',
+              'vm.kubevirt.io/workload': 'app',
             },
           },
         },
