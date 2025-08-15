@@ -205,7 +205,7 @@ function WizardInternal({ children, onSubmit, onCancel, submitButtonText, submit
         onClose={onCancel}
       >
         {steps.map(({ id, name, component }) => (
-          <WizardStep key={id} id={`${id}-step`} name={name}>
+          <WizardStep key={id} id={id} name={name}>
             {component}
           </WizardStep>
         ))}
@@ -260,8 +260,7 @@ function MyFooter(props: WizardFooterProps) {
 
   const stepHasValidationError = useStepHasValidationError()
   const activeStepId = activeStep.id.toString()
-  const id = activeStepId.substring(0, activeStepId.length - '-step'.length)
-  const activeStepHasValidationError = stepHasValidationError[id]
+  const activeStepHasValidationError = stepHasValidationError[activeStepId]
   const stepShowValidation = useStepShowValidation()
   const activeStepShowValidation = stepShowValidation[activeStepId]
 
@@ -275,7 +274,7 @@ function MyFooter(props: WizardFooterProps) {
     }
   }, [activeStep.id, activeStepHasValidationError, onNext, setStepShowValidation])
 
-  const isLastStep = activeStep.id === 'review-step-step'
+  const isLastStep = activeStep.id === 'review-step'
   useEffect(() => {
     if (isLastStep) {
       // We are on the review step - show validation for all steps
@@ -371,9 +370,7 @@ function RenderHiddenSteps(props: { stepComponents: ReactElement[] }) {
   return (
     <DisplayModeContext.Provider value={DisplayMode.StepsHidden}>
       <div style={{ display: 'none' }}>
-        {props.stepComponents.filter(
-          (component) => component.props.id !== activeStep.id.toString().replace('-step', '')
-        )}
+        {props.stepComponents.filter((component) => component.props.id !== activeStep.id.toString())}
       </div>
     </DisplayModeContext.Provider>
   )
