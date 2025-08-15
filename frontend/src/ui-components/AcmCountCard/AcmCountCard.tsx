@@ -66,6 +66,7 @@ export type AcmCountCardProps = CardProps & {
   onKeyPress?: (e: React.KeyboardEvent) => void
   error?: boolean
   errorMessage?: string
+  alert?: React.ReactNode
 }
 
 type SkeletonCard = CardProps & {
@@ -102,15 +103,41 @@ const styles = {
   footer: css({
     linkStyle: 'none',
   }),
+  alertBody: css({
+    padding: '0',
+    margin: 'var(--pf-v5-global--spacer--sm)',
+    '& .pf-v5-c-hint': {
+      margin: '0',
+      borderRadius: 'var(--pf-v5-global--BorderRadius--md)',
+      padding: 'var(--pf-v5-global--spacer--sm)',
+    },
+    '& .pf-v5-c-hint__body': {
+      fontSize: 'var(--pf-v5-global--FontSize--sm)',
+      padding: '0 0 var(--pf-v5-global--spacer--xs) 0',
+      color: 'var(--pf-v5-global--Color--dark-100)',
+      fontWeight: 'var(--pf-v5-global--FontWeight--normal)',
+    },
+    '& .pf-v5-c-hint__footer': {
+      padding: '0',
+    },
+    '& .pf-v5-c-button.pf-m-link': {
+      fontSize: 'var(--pf-v5-global--FontSize--sm)',
+      padding: '0',
+      fontWeight: 'var(--pf-v5-global--FontWeight--normal)',
+      textDecoration: 'underline',
+    },
+  }),
 }
 
 const getStyles = (props: AcmCountCardProps) => ({
   card: css({
-    height: props.cardFooter ? 'auto' : '250px',
+    height: props.cardFooter ? 'auto' : '23em',
+    minHeight: '23em',
   }),
   body: css({
     position: props.cardHeader ? 'absolute' : 'relative',
-    bottom: '0',
+    bottom: props.cardHeader ? '0' : 'auto',
+    width: props.cardHeader ? '100%' : 'auto',
   }),
   ...styles,
 })
@@ -198,7 +225,9 @@ export const AcmCountCard = (props: AcmCountCardProps) => {
               <AcmIcon icon={AcmIconVariant.template} />
             </Icon>
           )}
-          <CardTitle>{cardHeader.title}</CardTitle>
+          <CardTitle onClick={(e) => props.alert && e.stopPropagation()}>
+            {cardHeader.title} {props.alert}
+          </CardTitle>
           <p className={classes.headerDescription}>{cardHeader.description}</p>
         </CardHeader>
       )}

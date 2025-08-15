@@ -5,7 +5,12 @@ import { MockedProvider } from '@apollo/client/testing'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { RecoilRoot } from 'recoil'
-import { nockIgnoreApiPaths, nockPatchRequest, nockPostRequest } from '../../../../lib/nock-util'
+import {
+  nockIgnoreApiPaths,
+  nockIgnoreOperatorCheck,
+  nockPatchRequest,
+  nockPostRequest,
+} from '../../../../lib/nock-util'
 import { wait, waitForNocks } from '../../../../lib/test-util'
 import { UserPreference } from '../../../../resources/userpreference'
 import { SaveAndEditSearchModal } from './SaveAndEditSearchModal'
@@ -47,7 +52,10 @@ const mockUserPreferencePatch: UserPreference = {
 }
 
 describe('SaveAndEditSearchModal', () => {
-  beforeEach(() => nockIgnoreApiPaths())
+  beforeEach(() => {
+    nockIgnoreApiPaths()
+    nockIgnoreOperatorCheck()
+  })
   it('should create UserPreference with a successful response', async () => {
     Date.now = jest.fn(() => 1609885947015)
     const createUserPreferenceNock = nockPostRequest('/userpreference', [
