@@ -1,4 +1,4 @@
-FROM registry.redhat.io/ubi9/nodejs-20-minimal:1-47 AS builder
+FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:ab22c3543283c4f41a94c525c1482c9bc4b3a3fac75b897308a0be1097b0ea4f AS builder
 
 USER root
 ENV NPM_CONFIG_NODEDIR=/usr
@@ -16,7 +16,7 @@ RUN cd frontend && npm run build:plugin:mce
 # Remove build-time dependencies before packaging
 RUN cd backend && npm ci --omit=optional --only=production --unsafe-perm
 
-FROM brew.registry.redhat.io/rh-osbs/rhacm2-nodejs-parent:v2.10.0_20-13
+FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:ab22c3543283c4f41a94c525c1482c9bc4b3a3fac75b897308a0be1097b0ea4f
 
 WORKDIR /app
 ENV NODE_ENV production
@@ -33,4 +33,5 @@ LABEL com.redhat.component="multicluster-engine-console-mce-container" \
       io.openshift.tags="data,images" \
       io.k8s.display-name="multicluster-engine-console-mce" \
       maintainer="['acm-component-maintainers@redhat.com']" \
-      description="multicluster-engine-console-mce"
+      description="multicluster-engine-console-mce" \
+      io.k8s.description="multicluster-engine-console-mce"
