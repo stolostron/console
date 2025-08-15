@@ -9,9 +9,7 @@ import { User as RbacUser } from '../../../../resources/rbac'
 import AcmTimestamp from '../../../../lib/AcmTimestamp'
 import { IAcmTableColumn, IAcmRowAction } from '../../../../ui-components/AcmTable/AcmTableTypes'
 import { getISOStringTimestamp } from '../../../../resources/utils'
-
-import { Label } from '@patternfly/react-core'
-import { CheckCircleIcon } from '@patternfly/react-icons'
+import { IdentityStatus, isIdentityActive } from '../../../../ui-components/IdentityStatus/IdentityStatus'
 
 const EXPORT_FILE_PREFIX = 'users-table'
 
@@ -54,11 +52,7 @@ const COLUMN_CELLS = {
   ),
   IDENTITY_PROVIDER: (user: RbacUser) =>
     user.identities ? <span style={{ whiteSpace: 'nowrap' }}>{user.identities}</span> : '-',
-  STATUS: () => (
-    <Label variant="outline">
-      <CheckCircleIcon style={{ color: 'var(--pf-v5-global--success-color--100)' }} /> Active
-    </Label>
-  ),
+  STATUS: (user: RbacUser) => <IdentityStatus identity={user} />,
   CREATED: (user: RbacUser) => {
     return user.metadata.creationTimestamp ? (
       <span style={{ whiteSpace: 'nowrap' }}>
@@ -86,8 +80,7 @@ export const usersTableColumns = ({ t }: Pick<UsersTableHelperProps, 't'>): IAcm
   },
   {
     header: t('Status'),
-    cell: () => COLUMN_CELLS.STATUS(),
-    exportContent: () => 'Active',
+    cell: (user) => COLUMN_CELLS.STATUS(user),
   },
   {
     header: t('Created'),
@@ -125,8 +118,8 @@ export const useFilters = () => {
         tableFilterFn: (selection: string[], user: RbacUser) => {
           if (selection.length === 0) return true
           return selection.some((selected: string) => {
-            if (selected === 'active') return !!user.metadata.creationTimestamp
-            if (selected === 'inactive') return !user.metadata.creationTimestamp
+            if (selected === 'active') return isIdentityActive(user)
+            if (selected === 'inactive') return !isIdentityActive(user)
             return false
           })
         },
