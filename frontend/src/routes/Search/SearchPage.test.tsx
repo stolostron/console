@@ -9,7 +9,7 @@ import { GraphQLError } from 'graphql'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { configMapsState, isGlobalHubState, Settings, settingsState } from '../../atoms'
-import { nockPostRequest, nockRequest } from '../../lib/nock-util'
+import { nockIgnoreOperatorCheck, nockPostRequest, nockRequest } from '../../lib/nock-util'
 import { wait, waitForNocks } from '../../lib/test-util'
 import { ConfigMap } from '../../resources'
 import { UserPreference } from '../../resources/userpreference'
@@ -20,6 +20,15 @@ import {
   SearchSchemaDocument,
 } from './search-sdk/search-sdk'
 import SearchPage from './SearchPage'
+
+// Mock the KubevirtProviderAlert component
+jest.mock('../../components/KubevirtProviderAlert', () => ({
+  KubevirtProviderAlert: ({ variant, component }: { variant: string; component: string }) => (
+    <div data-testid="kubevirt-provider-alert" data-variant={variant} data-component={component}>
+      KubevirtProviderAlert
+    </div>
+  ),
+}))
 
 const mockUserPreference: UserPreference = {
   apiVersion: 'console.open-cluster-management.io/v1',
@@ -62,6 +71,7 @@ const mockSuggestedSearchConfigMap: ConfigMap[] = [
 
 describe('SearchPage', () => {
   it('should render default search page correctly', async () => {
+    nockIgnoreOperatorCheck()
     const metricNock = nockPostRequest('/metrics?search', {})
     const getUserPreferenceNock = nockRequest('/userpreference', mockUserPreference)
     const mocks = [
@@ -123,6 +133,7 @@ describe('SearchPage', () => {
   })
 
   it('should render page with errors', async () => {
+    nockIgnoreOperatorCheck()
     const metricNock = nockPostRequest('/metrics?search', {})
     const getUserPreferenceNock = nockRequest('/userpreference', mockUserPreference)
     const mocks = [
@@ -183,6 +194,7 @@ describe('SearchPage', () => {
   })
 
   it('should render page with global search federated error', async () => {
+    nockIgnoreOperatorCheck()
     const mockSettings: Settings = {
       globalSearchFeatureFlag: 'enabled',
     }
@@ -243,6 +255,7 @@ describe('SearchPage', () => {
   })
 
   it('should render search page correctly and add a search', async () => {
+    nockIgnoreOperatorCheck()
     const metricNock = nockPostRequest('/metrics?search', {})
     const getUserPreferenceNock = nockRequest('/userpreference', mockUserPreference)
     const mocks = [
@@ -339,6 +352,7 @@ describe('SearchPage', () => {
     await waitFor(() => expect(screen.queryByText('Search is disabled on some clusters.')).toBeTruthy())
   })
   it('should render SearchPage with predefined query', async () => {
+    nockIgnoreOperatorCheck()
     const metricNock = nockPostRequest('/metrics?search', {})
     const getUserPreferenceNock = nockRequest('/userpreference', mockUserPreference)
     const mocks = [
@@ -451,5 +465,51 @@ describe('SearchPage', () => {
     await wait()
     // Test that the component has rendered correctly with data
     await waitFor(() => expect(screen.queryByText('Show related resources')).toBeTruthy())
+  })
+
+  it('should render KubevirtProviderAlert when searching for VirtualMachine kinds', async () => {
+    nockIgnoreOperatorCheck()
+    const metricNock = nockPostRequest('/metrics?search', {})
+    const getUserPreferenceNock = nockRequest('/userpreference', mockUserPreference)
+    const mocks = [
+      {
+        request: {
+          query: SearchSchemaDocument,
+          variables: {
+            query: { filters: [{ property: 'kind', values: ['VirtualMachine'] }], keywords: [], limit: 10000 },
+          },
+        },
+        result: { data: { searchSchema: { allProperties: ['cluster', 'kind', 'label', 'name', 'namespace'] } } },
+      },
+      { request: { query: GetMessagesDocument }, result: { data: { messages: [] } } },
+      {
+        request: {
+          query: SearchResultItemsDocument,
+          variables: {
+            input: [{ keywords: [], filters: [{ property: 'kind', values: ['VirtualMachine'] }], limit: 1000 }],
+          },
+        },
+        result: { data: { searchResult: [{ items: [], __typename: 'SearchResult' }] } },
+      },
+    ]
+
+    render(
+      <RecoilRoot initializeState={(snapshot) => snapshot.set(configMapsState, mockSuggestedSearchConfigMap)}>
+        <MemoryRouter
+          initialEntries={[
+            { pathname: '/multicloud/search', search: '?filters={"textsearch":"kind%3AVirtualMachine"}' },
+          ]}
+        >
+          <MockedProvider mocks={mocks}>
+            <SearchPage />
+          </MockedProvider>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    await waitForNocks([metricNock, getUserPreferenceNock])
+    await wait()
+
+    await waitFor(() => expect(screen.getByText('KubevirtProviderAlert')).toBeTruthy())
   })
 })

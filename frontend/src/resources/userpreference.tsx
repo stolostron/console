@@ -28,6 +28,7 @@ export interface SavedSearch {
   id: string
   name: string
   searchText: string
+  alert?: React.ReactNode
 }
 
 export function getUserPreference() {

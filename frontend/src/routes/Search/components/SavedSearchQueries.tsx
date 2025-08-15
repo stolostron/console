@@ -218,6 +218,7 @@ export default function SavedSearchQueries(props: {
           {suggestedSearches.map((query, index) => {
             return (
               <AcmCountCard
+                alert={query.alert}
                 key={index}
                 cardHeader={{
                   hasIcon: true,

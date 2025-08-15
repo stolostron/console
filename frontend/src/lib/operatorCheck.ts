@@ -14,6 +14,7 @@ export enum SupportedOperator {
   ansible = 'ansible-automation-platform-operator',
   gitOps = 'openshift-gitops-operator',
   acm = 'advanced-cluster-management',
+  kubevirt = 'kubevirt-hyperconverged',
 }
 
 type OperatorCheckRequest = {

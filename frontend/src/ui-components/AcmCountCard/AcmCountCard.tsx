@@ -66,6 +66,7 @@ export type AcmCountCardProps = CardProps & {
   onKeyPress?: (e: React.KeyboardEvent) => void
   error?: boolean
   errorMessage?: string
+  alert?: React.ReactNode
 }
 
 type SkeletonCard = CardProps & {
@@ -109,13 +110,12 @@ const getStyles = (props: AcmCountCardProps) => ({
     height: props.cardFooter ? 'auto' : '250px',
   }),
   body: css({
-    position: props.cardHeader ? 'absolute' : 'relative',
     bottom: '0',
   }),
   ...styles,
 })
 
-export function CardDropdown(props: CardDropdownProps) {
+export function CardDropdown(props: Readonly<CardDropdownProps>) {
   const [isOpen, setOpen] = useState<boolean>(false)
 
   return (
@@ -185,11 +185,7 @@ export const AcmCountCard = (props: AcmCountCardProps) => {
           {...(cardHeader.actions &&
             cardHeader.actions.length > 0 && {
               actions: {
-                actions: (
-                  <>
-                    <CardDropdown dropdownItems={cardHeader.actions} />
-                  </>
-                ),
+                actions: <CardDropdown dropdownItems={cardHeader.actions} />,
               },
             })}
         >
@@ -198,7 +194,9 @@ export const AcmCountCard = (props: AcmCountCardProps) => {
               <AcmIcon icon={AcmIconVariant.template} />
             </Icon>
           )}
-          <CardTitle>{cardHeader.title}</CardTitle>
+          <CardTitle onClick={(e) => props.alert && e.stopPropagation()}>
+            {cardHeader.title} {props.alert}
+          </CardTitle>
           <p className={classes.headerDescription}>{cardHeader.description}</p>
         </CardHeader>
       )}

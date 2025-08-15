@@ -97,6 +97,16 @@ import {
 import { clusterName, mockMachinePoolAuto, mockMachinePoolManual } from './ClusterDetails.sharedmocks'
 import Clusters from '../../Clusters'
 
+// Mock the useVirtualMachineDetection hook
+jest.mock('../../../../../hooks/useVirtualMachineDetection', () => ({
+  useVirtualMachineDetection: jest.fn(() => ({
+    hasVirtualMachines: false,
+    isLoading: false,
+    error: undefined,
+    virtualMachines: [],
+  })),
+}))
+
 const mockManagedClusterInfo: ManagedClusterInfo = {
   apiVersion: ManagedClusterInfoApiVersion,
   kind: ManagedClusterInfoKind,
