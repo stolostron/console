@@ -5,23 +5,16 @@ import userEvent from '@testing-library/user-event'
 import { RecoilRoot } from 'recoil'
 import { MemoryRouter, Routes, Route } from 'react-router-dom-v5-compat'
 import { NavigationPath } from '../../NavigationPath'
-import { waitForNocks, waitForText } from '../../lib/test-util'
+import { clickByRole, clickByText, typeByRole, waitForText } from '../../lib/test-util'
 import { argoCDsState, managedClusterSetsState, namespacesState, subscriptionOperatorsState } from '../../atoms'
 import { gitOpsOperators, mockArgoCD, mockClusterSets } from '../../routes/Applications/Application.sharedmocks'
-import { nockCreate, nockIgnoreApiPaths, nockIgnoreOperatorCheck } from '../../lib/nock-util'
+import { nockIgnoreApiPaths, nockIgnoreOperatorCheck } from '../../lib/nock-util'
 import {
-  GitOpsCluster,
   GitOpsClusterApiVersion,
   GitOpsClusterKind,
-  ManagedClusterSetBinding,
-  ManagedClusterSetBindingApiVersion,
-  ManagedClusterSetBindingKind,
   Namespace,
   NamespaceApiVersion,
   NamespaceKind,
-  Placement,
-  PlacementApiVersionBeta,
-  PlacementKind,
 } from '../../resources'
 
 const mockCreateclustersetcallback = jest.fn()
@@ -34,49 +27,6 @@ const mockGetgitchannelpaths = jest.fn().mockImplementation(() => {
 const mockGetwizardsynceditor = jest.fn()
 const mockOncancel = jest.fn()
 const mockOnsubmit = jest.fn()
-
-const gitOpsCluster: GitOpsCluster = {
-  apiVersion: GitOpsClusterApiVersion,
-  kind: GitOpsClusterKind,
-  metadata: {
-    name: 'test-gitops',
-    namespace: 'openshift-gitops',
-  },
-  spec: {
-    argoServer: {
-      argoNamespace: 'openshift-gitops',
-    },
-    placementRef: {
-      kind: PlacementKind,
-      apiVersion: PlacementApiVersionBeta,
-      name: 'test-gitops-placement',
-    },
-  },
-}
-
-const managedClusterSetBinding: ManagedClusterSetBinding = {
-  apiVersion: ManagedClusterSetBindingApiVersion,
-  kind: ManagedClusterSetBindingKind,
-  metadata: {
-    name: 'default',
-    namespace: 'openshift-gitops',
-  },
-  spec: {
-    clusterSet: 'default',
-  },
-}
-
-const placement: Placement = {
-  apiVersion: 'cluster.open-cluster-management.io/v1beta1',
-  kind: 'Placement',
-  metadata: {
-    name: 'test-gitops-placement',
-    namespace: 'openshift-gitops',
-  },
-  spec: {
-    clusterSets: ['default'],
-  },
-}
 
 const mockNamespaces: Namespace[] = ['openshift-gitops'].map((name) => ({
   apiVersion: NamespaceApiVersion,
@@ -123,41 +73,12 @@ describe('ArgoWizard tests', () => {
     await waitForText('Install the operator')
   })
 
-  test('CreateArgoResources', async () => {
-    nockIgnoreApiPaths()
-    render(<TestArgoWizard />)
-    userEvent.click(screen.getByPlaceholderText(/select the argo server/i))
-    userEvent.click(screen.getByRole('button', { name: /add argo server/i }))
-
-    //fill the form
-
-    userEvent.type(
-      screen.getByRole('textbox', {
-        name: /name/i,
-      }),
-      'test-gitops'
-    )
-
-    userEvent.click(screen.getByPlaceholderText(/select the namespace/i))
-    userEvent.click(
-      screen.getByRole('option', {
-        name: /openshift-gitops/i,
-      })
-    )
-
-    userEvent.click(
-      screen.getByRole('button', {
-        name: /add/i,
-      })
-    )
-  })
-
   //=====================================================================
   //                      GIT
   //=====================================================================
   test('create git', async () => {
     nockIgnoreApiPaths()
-    const { container } = render(<TestArgoWizard />)
+    render(<TestArgoWizard />)
 
     //=====================================================================
     //                      general page
@@ -168,137 +89,84 @@ describe('ArgoWizard tests', () => {
       }),
       'testapp'
     )
-    userEvent.click(screen.getByPlaceholderText(/select the argo server/i))
-    userEvent.click(
-      screen.getByRole('option', {
-        name: /http:\/\/argoserver\.com/i,
-      })
-    )
-    userEvent.click(screen.getByPlaceholderText(/select the requeue time/i))
-    userEvent.click(
-      screen.getByRole('option', {
-        name: /120/i,
-      })
-    )
-    userEvent.click(
-      screen.getByRole('button', {
-        name: /next/i,
-      })
-    )
+    await clickByRole('combobox', { name: 'Select the Argo server' })
+    await clickByRole('option', { name: /http:\/\/argoserver\.com/i })
+    await clickByRole('combobox', { name: 'Select the requeue time' })
+    await clickByRole('option', { name: /120/i })
+    await clickByText('Next')
 
     //=====================================================================
     //                      template page
     //=====================================================================
-    userEvent.click(screen.getByText(/use a git repository/i))
-    userEvent.type(screen.getByPlaceholderText(/enter or select a git url/i), 'https://github.com/fxiang1/app-samples')
+    await clickByText('Git')
+    await typeByRole('https://github.com/fxiang1/app-samples', 'combobox', { name: /Enter or select a Git URL/i })
     userEvent.click(
       screen.getByRole('option', {
         name: /create new option https:\/\/github\.com\/fxiang1\/app-samples/i,
       })
     )
-    const dropdown = container.querySelector(
-      '#spec-template-spec-source-targetrevision-form-group > div:nth-child(2) > div > div > div'
-    )
-    if (dropdown) {
-      userEvent.click(dropdown)
-    }
+    await clickByRole('combobox', { name: /enter or select a tracking revision/i })
+    await clickByRole('option', {
+      name: /create new option main/i,
+    })
+    await clickByRole('combobox', { name: /enter or select a repository path/i })
+    await clickByRole('option', {
+      name: /create new option ansible/i,
+    })
 
-    const initialNocks = [
-      nockCreate(gitOpsCluster, undefined, 201, { dryRun: 'All' }),
-      nockCreate(gitOpsCluster, gitOpsCluster, 400),
-      nockCreate(managedClusterSetBinding, undefined, 201, { dryRun: 'All' }),
-      nockCreate(placement, undefined, 201, { dryRun: 'All' }),
-    ]
+    await typeByRole('default', 'textbox')
 
-    await waitForNocks(initialNocks)
+    await clickByText('Next')
 
-    userEvent.type(screen.getByRole('textbox'), 'default')
-    userEvent.click(
-      screen.getByRole('button', {
-        name: /next/i,
-      })
-    )
     //=====================================================================
     //                      sync page
     //=====================================================================
-    userEvent.click(
-      screen.getByRole('checkbox', {
-        name: /delete resources that are no longer defined in the source repository at the end of a sync operation/i,
-      })
-    )
-    userEvent.click(
-      screen.getByRole('checkbox', {
-        name: /only synchronize out-of-sync resources/i,
-      })
-    )
-    userEvent.click(
-      screen.getByRole('checkbox', {
-        name: /allow applications to have empty resources/i,
-      })
-    )
-    userEvent.click(
-      screen.getByRole('checkbox', {
-        name: /replace resources instead of applying changes from the source repository/i,
-      })
-    )
-    userEvent.click(
-      screen.getByRole('checkbox', {
-        name: /prune propagation policy/i,
-      })
-    )
-    userEvent.click(
-      screen.getByRole('checkbox', {
-        name: /automatically create namespace if it does not exist/i,
-      })
-    )
-    userEvent.click(
-      screen.getByRole('checkbox', {
-        name: /disable kubectl validation/i,
-      })
-    )
-    userEvent.click(
-      screen.getByRole('button', {
-        name: /next/i,
-      })
-    )
+    await clickByRole('checkbox', {
+      name: /delete resources that are no longer defined in the source repository at the end of a sync operation/i,
+    })
+    await clickByRole('checkbox', {
+      name: /only synchronize out-of-sync resources/i,
+    })
+    await clickByRole('checkbox', {
+      name: /allow applications to have empty resources/i,
+    })
+    await clickByRole('checkbox', {
+      name: /replace resources instead of applying changes from the source repository/i,
+    })
+    await clickByRole('checkbox', {
+      name: /prune propagation policy/i,
+    })
+    await clickByRole('checkbox', {
+      name: /automatically create namespace if it does not exist/i,
+    })
+    await clickByRole('checkbox', {
+      name: /disable kubectl validation/i,
+    })
+    await clickByText('Next')
 
     //=====================================================================
     //                      placement page
     //=====================================================================
-    userEvent.click(screen.getByText(/new placement/i))
-    userEvent.click(
-      screen.getByRole('button', {
-        name: /action/i,
-      })
-    )
-    userEvent.click(screen.getByPlaceholderText(/select the label/i))
-    userEvent.click(
-      screen.getByRole('option', {
-        name: /cloud/i,
-      })
-    )
-    userEvent.click(screen.getByText(/equals any of/i))
-    userEvent.click(
-      screen.getByRole('option', {
-        name: /does not equal any of/i,
-      })
-    )
-    userEvent.click(screen.getByText(/select the values/i))
-    userEvent.click(screen.getByText(/amazon/i))
-    userEvent.click(
-      screen.getByRole('button', {
-        name: /next/i,
-      })
-    )
+    await clickByText('New placement')
+    await clickByRole('button', { name: 'Action' })
+    await clickByRole('combobox', { name: 'Select the label' })
+    await clickByRole('option', { name: /cloud/i })
+
+    await clickByRole('combobox', {
+      name: /select the operator/i,
+    })
+    await clickByRole('option', { name: /does not equal any of/i })
+
+    await clickByRole('combobox', {
+      name: /select the values/i,
+    })
+    await clickByRole('option', { name: /amazon/i })
+    await clickByText('Next')
 
     //=====================================================================
     //                      review page
     //=====================================================================
-    userEvent.click(
-      screen.getByRole('button', {
-        name: /submit/i,
-      })
-    )
+    await clickByRole('button', { name: 'Submit' })
     expect(mockOnsubmit).toHaveBeenCalledWith(submittedGit)
   })
 
@@ -535,8 +403,10 @@ const submittedGit = [
           project: 'default',
           sources: [
             {
+              path: 'ansible',
               repoURL: 'https://github.com/fxiang1/app-samples',
               repositoryType: 'git',
+              targetRevision: 'main',
             },
           ],
           syncPolicy: {

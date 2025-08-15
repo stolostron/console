@@ -66,7 +66,7 @@ export function WizMultiSelect(props: WizMultiSelectProps) {
         <DescriptionListTerm>{props.label}</DescriptionListTerm>
         <DescriptionListDescription id={id}>
           {value.length > 5 ? (
-            `${value.length} selected`
+            `${value.length as string} selected`
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', rowGap: 8 }}>
               {(value as string[]).map((selection, index) => (

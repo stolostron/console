@@ -134,7 +134,7 @@ function WizSelectBase<T = any>(props: SelectProps<T>) {
       }
       setOpen(false)
     },
-    [isCreatable, props.variant, setValue]
+    [setValue, selectOptions]
   )
 
   if (hidden) return null

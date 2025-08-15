@@ -23,14 +23,7 @@ import {
   nockIgnoreOperatorCheck,
   nockList,
 } from '../../../lib/nock-util'
-import {
-  clickByPlaceholderText,
-  clickByText,
-  typeByPlaceholderText,
-  typeByTestId,
-  waitForNocks,
-  waitForText,
-} from '../../../lib/test-util'
+import { clickByRole, clickByText, typeByRole, typeByTestId, waitForNocks, waitForText } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import {
   ApplicationSet,
@@ -411,39 +404,39 @@ describe('Create Argo Application Set', () => {
 
     // General
     await typeByTestId('name', argoAppSetGit!.metadata!.name!)
-    await clickByPlaceholderText('Select the Argo server')
+    await clickByRole('combobox', { name: 'Select the Argo server' })
     await clickByText(gitOpsCluster!.spec!.argoServer!.argoNamespace)
     await clickByText('Next')
 
     // Template
     await clickByText('Git')
-    await clickByPlaceholderText('Enter or select a Git URL')
+    await clickByRole('combobox', { name: 'Enter or select a Git URL' })
 
     const appBranchNocks = [nockArgoGitBranches(channelGit.spec.pathname, { branchList: [{ name: 'branch-01' }] })]
     await clickByText(channelGit.spec.pathname)
     await waitForNocks(appBranchNocks)
 
+    await clickByRole('combobox', { name: 'Enter or select a tracking revision' })
     const pathNocks = [
       nockArgoGitBranches(channelGit.spec.pathname, { branchList: [{ name: 'branch-01' }] }),
       nockArgoGitPathSha(channelGit.spec.pathname, 'branch-01', { commit: { sha: '01' } }),
       nockArgoGitPathTree(channelGit.spec.pathname, { tree: [{ path: 'application-test', type: 'tree' }] }),
     ]
 
-    await clickByPlaceholderText('Enter or select a tracking revision')
+    await clickByRole('option', { name: /create new option branch-01/i })
     await waitForNocks(pathNocks)
-    await clickByText('branch-01')
 
-    await clickByPlaceholderText('Enter or select a repository path')
-    await clickByText('application-test')
+    await clickByRole('combobox', { name: 'Enter or select a repository path' })
+    await clickByRole('option', { name: /create new option application-test/i })
 
-    await typeByPlaceholderText('Enter the destination namespace', 'gitops-ns')
+    await typeByRole('gitops-ns', 'textbox')
     await clickByText('Next')
 
     // Sync policy
     await clickByText('Next')
 
     // Placement
-    await clickByText('Select the cluster sets')
+    await clickByRole('combobox', { name: /select the cluster sets/i })
     await clickByText(clusterSetBinding.spec.clusterSet)
     await clickByText('Next')
 
@@ -467,7 +460,7 @@ describe('Create Argo Application Set', () => {
     await typeByTestId('name', argoAppSetHelm!.metadata!.name!)
 
     // select argoServer
-    await clickByText('Select the Argo server')
+    await clickByRole('combobox', { name: 'Select the Argo server' })
     await clickByText(gitOpsCluster!.spec!.argoServer!.argoNamespace)
 
     // next - Source
@@ -479,22 +472,22 @@ describe('Create Argo Application Set', () => {
     await clickByText('Helm')
 
     // channel
-    await clickByText('Enter or select a Helm URL')
+    await clickByRole('combobox', { name: 'Enter or select a Helm URL' })
     await clickByText(channelHelm.spec.pathname)
     // // nock.recorder.rec()
 
-    await typeByPlaceholderText('Enter the name of the Helm chart', chartName)
-    await typeByPlaceholderText('Enter the version or versions', 'v1')
+    await typeByRole(chartName, 'textbox', undefined, 0)
+    await typeByRole('v1', 'textbox', undefined, 1)
 
     // remote namespace
-    await typeByPlaceholderText('Enter the destination namespace', 'gitops-ns')
+    await typeByRole('gitops-ns', 'textbox', undefined, 2)
     await clickByText('Next')
 
     // sync policy
     await clickByText('Next')
 
     // placement
-    await clickByText('Select the cluster sets')
+    await clickByRole('combobox', { name: 'Select the cluster sets' })
     await clickByText(clusterSetBinding.spec.clusterSet)
 
     // submit
