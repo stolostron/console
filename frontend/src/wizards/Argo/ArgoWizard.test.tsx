@@ -10,18 +10,11 @@ import { argoCDsState, managedClusterSetsState, namespacesState, subscriptionOpe
 import { gitOpsOperators, mockArgoCD, mockClusterSets } from '../../routes/Applications/Application.sharedmocks'
 import { nockIgnoreApiPaths, nockIgnoreOperatorCheck } from '../../lib/nock-util'
 import {
-  GitOpsCluster,
   GitOpsClusterApiVersion,
   GitOpsClusterKind,
-  ManagedClusterSetBinding,
-  ManagedClusterSetBindingApiVersion,
-  ManagedClusterSetBindingKind,
   Namespace,
   NamespaceApiVersion,
   NamespaceKind,
-  Placement,
-  PlacementApiVersionBeta,
-  PlacementKind,
 } from '../../resources'
 
 const mockCreateclustersetcallback = jest.fn()
@@ -34,49 +27,6 @@ const mockGetgitchannelpaths = jest.fn().mockImplementation(() => {
 const mockGetwizardsynceditor = jest.fn()
 const mockOncancel = jest.fn()
 const mockOnsubmit = jest.fn()
-
-const gitOpsCluster: GitOpsCluster = {
-  apiVersion: GitOpsClusterApiVersion,
-  kind: GitOpsClusterKind,
-  metadata: {
-    name: 'test-gitops',
-    namespace: 'openshift-gitops',
-  },
-  spec: {
-    argoServer: {
-      argoNamespace: 'openshift-gitops',
-    },
-    placementRef: {
-      kind: PlacementKind,
-      apiVersion: PlacementApiVersionBeta,
-      name: 'test-gitops-placement',
-    },
-  },
-}
-
-const managedClusterSetBinding: ManagedClusterSetBinding = {
-  apiVersion: ManagedClusterSetBindingApiVersion,
-  kind: ManagedClusterSetBindingKind,
-  metadata: {
-    name: 'default',
-    namespace: 'openshift-gitops',
-  },
-  spec: {
-    clusterSet: 'default',
-  },
-}
-
-const placement: Placement = {
-  apiVersion: 'cluster.open-cluster-management.io/v1beta1',
-  kind: 'Placement',
-  metadata: {
-    name: 'test-gitops-placement',
-    namespace: 'openshift-gitops',
-  },
-  spec: {
-    clusterSets: ['default'],
-  },
-}
 
 const mockNamespaces: Namespace[] = ['openshift-gitops'].map((name) => ({
   apiVersion: NamespaceApiVersion,
