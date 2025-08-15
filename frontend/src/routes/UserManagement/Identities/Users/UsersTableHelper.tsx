@@ -48,7 +48,7 @@ const COLUMN_CELLS = {
   NAME: (user: RbacUser, search: string) => (
     <span style={{ whiteSpace: 'nowrap' }}>
       <Link to={generatePath(NavigationPath.identitiesUsersDetails, { id: user.metadata.uid ?? '' })}>
-        <HighlightSearchText text={user.metadata.name ?? ''} searchText={search} isTruncate />
+        <HighlightSearchText text={user.metadata.name ?? ''} searchText={search} />
       </Link>
     </span>
   ),
