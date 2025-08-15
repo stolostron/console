@@ -266,11 +266,11 @@ function MyFooter(props: WizardFooterProps) {
 
   const setStepShowValidation = useSetStepShowValidation()
 
-  const onNextClick = useCallback(() => {
+  const onNextClick = useCallback(async () => {
     const stepID = activeStep.id?.toString() ?? ''
     setStepShowValidation(stepID, true)
     if (!activeStepHasValidationError) {
-      onNext()
+      await onNext()
     }
   }, [activeStep.id, activeStepHasValidationError, onNext, setStepShowValidation])
 
@@ -284,7 +284,7 @@ function MyFooter(props: WizardFooterProps) {
       // assume user went back and fixed something
       setSubmitError('')
     }
-  }, [activeStep, setShowValidation])
+  }, [activeStep, setShowValidation, isLastStep])
 
   const {
     fixValidationErrorsMsg,
@@ -324,7 +324,14 @@ function MyFooter(props: WizardFooterProps) {
             {!submitButtonText && (submitting ? submittingText : submitText)}
             {submitting ? submittingButtonText : submitButtonText}
           </Button>
-          <Button variant="secondary" onClick={onBack}>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              void (async () => {
+                await onBack()
+              })()
+            }}
+          >
             {backButtonText}
           </Button>
           <div className="pf-v5-c-wizard__footer-cancel">
@@ -346,12 +353,24 @@ function MyFooter(props: WizardFooterProps) {
       <WizardFooterWrapper>
         <Button
           variant="primary"
-          onClick={onNextClick}
+          onClick={() => {
+            void (async () => {
+              await onNextClick()
+            })()
+          }}
           isDisabled={(activeStepHasValidationError && activeStepShowValidation) || submitting}
         >
           {nextButtonText}
         </Button>
-        <Button variant="secondary" onClick={onBack} isDisabled={activeStep.index === 1}>
+        <Button
+          variant="secondary"
+          onClick={() => {
+            void (async () => {
+              await onBack()
+            })()
+          }}
+          isDisabled={activeStep.index === 1}
+        >
           {backButtonText}
         </Button>
         <div className="pf-v5-c-wizard__footer-cancel">

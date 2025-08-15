@@ -51,7 +51,7 @@ export const InputSelect = ({
   useEffect(
     () =>
       setOptions([...options.filter((option) => option.toLowerCase().includes(inputValue.toLowerCase())), inputValue]),
-    [inputValue, options]
+    [inputValue, options, setOptions]
   )
 
   const onClear = useCallback(() => {
@@ -72,7 +72,7 @@ export const InputSelect = ({
           break
       }
     },
-    [onSelect, open, setOpen]
+    [onSelect, open, setOpen, value]
   )
 
   const onTextInputChange = useCallback((_event: FormEvent<HTMLInputElement>, value: string) => {
@@ -155,7 +155,7 @@ export const SelectListOptions = ({
 
       let displayText: string
       if (isCreateOption) {
-        displayText = `${CreateOption} ${isSimpleOption ? option : option.value}`
+        displayText = `${CreateOption} ${isSimpleOption ? option : (option.value as string)}`
       } else if (isSingleItem) {
         displayText = NoResults
       } else if (isSimpleOption) {
