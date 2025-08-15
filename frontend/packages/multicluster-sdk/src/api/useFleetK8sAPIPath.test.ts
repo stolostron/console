@@ -2,7 +2,7 @@
 import { renderHook } from '@testing-library/react-hooks'
 import { useFleetK8sAPIPath } from './useFleetK8sAPIPath'
 import { BASE_K8S_API_PATH, MANAGED_CLUSTER_API_PATH } from '../internal/constants'
-import { getBackendUrl } from '.'
+import { getBackendUrl } from '../internal/apiRequests'
 
 jest.mock('../internal/useHubConfigurationItem', () => ({
   useHubConfigurationItem: jest.fn(() => ['local-cluster', true, undefined]),

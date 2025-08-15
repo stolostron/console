@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { BASE_K8S_API_PATH, MANAGED_CLUSTER_API_PATH } from '../internal/constants'
-import { getBackendUrl } from './apiRequests'
+import { getBackendUrl } from '../internal/apiRequests'
 import { getFleetK8sAPIPath } from './getFleetK8sAPIPath'
 
 jest.mock('../internal/cachedHubConfiguration', () => ({
@@ -19,7 +19,7 @@ describe(`getFleetK8sAPIPath`, function () {
 
     const result = await getFleetK8sAPIPath()
     expect(result).toEqual(BASE_K8S_API_PATH)
-    expect(mockFetchHubConfiguration).toHaveBeenCalledTimes(1)
+    expect(mockFetchHubConfiguration).toHaveBeenCalledTimes(0)
   })
 
   it(`returns BASE_K8S_API_PATH when cluster is undefined`, async function () {
@@ -27,7 +27,7 @@ describe(`getFleetK8sAPIPath`, function () {
 
     const result = await getFleetK8sAPIPath(undefined)
     expect(result).toEqual(BASE_K8S_API_PATH)
-    expect(mockFetchHubConfiguration).toHaveBeenCalledTimes(1)
+    expect(mockFetchHubConfiguration).toHaveBeenCalledTimes(0)
   })
 
   it(`returns BASE_K8S_API_PATH when cluster is empty string`, async function () {
@@ -35,7 +35,7 @@ describe(`getFleetK8sAPIPath`, function () {
 
     const result = await getFleetK8sAPIPath('')
     expect(result).toEqual(BASE_K8S_API_PATH)
-    expect(mockFetchHubConfiguration).toHaveBeenCalledTimes(1)
+    expect(mockFetchHubConfiguration).toHaveBeenCalledTimes(0)
   })
 
   it(`returns BASE_K8S_API_PATH when cluster matches hub cluster`, async function () {
@@ -67,6 +67,6 @@ describe(`getFleetK8sAPIPath`, function () {
 
     const result = await getFleetK8sAPIPath()
     expect(result).toEqual(BASE_K8S_API_PATH)
-    expect(mockFetchHubConfiguration).toHaveBeenCalledTimes(1)
+    expect(mockFetchHubConfiguration).toHaveBeenCalledTimes(0)
   })
 })
