@@ -1,6 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { UserKindType, GroupKindType } from '../rbac'
-import { MulticlusterRoleAssignment, RoleAssignment } from '../role-assignment'
+import {
+  MulticlusterRoleAssignment,
+  RoleAssignment,
+  MulticlusterRoleAssignmentNamespace,
+  MulticlusterRoleAssignmentApiVersion,
+  MulticlusterRoleAssignmentKind,
+} from '../role-assignment'
 import { createResource, patchResource, deleteResource } from '../utils'
 import { IRequestResult } from '../utils/resource-request'
 
@@ -77,7 +83,7 @@ function isClusterSetOrRoleMatch(assignment: RoleAssignment, query: Multicluster
 
 // Filters MulticlusterRoleAssignments by query parameters, returns only relevant nested RoleAssignments that match
 // filter criteria. Lastly, tracking properties are added to each RoleAssignment to help with CRUD operations (finding
-// the right MulticlusterRoleAssignment to update, and updating it correctly)
+// the right MulticlusterRoleAssignment to update, and updating it correctly).
 export function filterAndTrackRoleAssignments(
   multiClusterAssignments: MulticlusterRoleAssignment[],
   query: MulticlusterRoleAssignmentQuery
@@ -202,9 +208,36 @@ function deleteRoleAssignment(
 }
 
 function createMulticlusterRoleAssignment(
-  multiclusterAssignment: MulticlusterRoleAssignment
-): IRequestResult<MulticlusterRoleAssignment> {
-  return createResource<MulticlusterRoleAssignment>(multiclusterAssignment)
+  userName: string,
+  userKind: UserKindType | GroupKindType,
+  newRoleAssignment: RoleAssignment
+): Promise<MulticlusterRoleAssignment> {
+  const sanitizedUserName = userName
+    // replace invalid characters with one hyphen
+    .replace(/[^a-z0-9-]+/gi, '-')
+    // remove leading/trailing hyphens
+    .replace(/^-+|-+$/g, '')
+    .toLowerCase()
+  // This is also assuming that there is 1 MulticlusterRoleAssignment per user, or at least that this name will not exist
+  const name = `${sanitizedUserName}-role-assignment`
+
+  const multiclusterAssignment: MulticlusterRoleAssignment = {
+    apiVersion: MulticlusterRoleAssignmentApiVersion,
+    kind: MulticlusterRoleAssignmentKind,
+    metadata: {
+      name,
+      namespace: MulticlusterRoleAssignmentNamespace,
+    },
+    spec: {
+      subject: {
+        kind: userKind,
+        name: userName,
+      },
+      roleAssignments: [newRoleAssignment],
+    },
+  }
+
+  return createResource<MulticlusterRoleAssignment>(multiclusterAssignment).promise
 }
 
 function patchMulticlusterRoleAssignment(
@@ -225,31 +258,52 @@ function deleteMulticlusterRoleAssignment(multiclusterAssignment: MulticlusterRo
   return deleteResource(multiclusterAssignment)
 }
 
-// Adds a RoleAssignment to a MulticlusterRoleAssignment and updates Kubernetes
+// Finds and returns the first MulticlusterRoleAssignment (if it exists) for a specified user/group. This is needed for
+// scenarious where a RoleAssignment is created. This assumes one MulticlusterRoleAssignment per user/group.
+// TODO: improve this logic to handle if a user/group has multiple MulticlusterRoleAssignment
+function findMulticlusterRoleAssignmentForSubject(
+  multiClusterAssignments: MulticlusterRoleAssignment[],
+  userName: string,
+  userKind: UserKindType | GroupKindType
+): MulticlusterRoleAssignment | undefined {
+  return multiClusterAssignments.find(
+    (multi) => multi.spec.subject.name === userName && multi.spec.subject.kind === userKind
+  )
+}
+
+// Adds a RoleAssignment to a MulticlusterRoleAssignment and updates Kubernetes. If a MulticlusterRoleAssignment does
+// not exist, one will be created for the specified user/group.
 export async function addRoleAssignmentK8s(
   multiClusterAssignments: MulticlusterRoleAssignment[],
-  multiClusterAssignmentUid: string,
+  userName: string,
+  userKind: UserKindType | GroupKindType,
   newRoleAssignment: RoleAssignment
 ): Promise<RoleAssignmentUpdateResult> {
-  const localResult = addRoleAssignment(multiClusterAssignments, multiClusterAssignmentUid, newRoleAssignment)
-  if (!localResult.success) {
-    return localResult
-  }
-
   try {
-    const multiClusterAssignment = multiClusterAssignments.find(
-      (multi) => multi.metadata.uid === multiClusterAssignmentUid
-    )
+    const multiClusterAssignment = findMulticlusterRoleAssignmentForSubject(multiClusterAssignments, userName, userKind)
 
     if (multiClusterAssignment) {
+      // Add to an existing MulticlusterRoleAssignment
+      const localResult = addRoleAssignment(
+        multiClusterAssignments,
+        multiClusterAssignment.metadata.uid || 'unknown',
+        newRoleAssignment
+      )
+      if (!localResult.success) {
+        return localResult
+      }
+
       await patchMulticlusterRoleAssignment(multiClusterAssignment, multiClusterAssignment.spec.roleAssignments).promise
+    } else {
+      // Create new MulticlusterRoleAssignment if one does not exist already for the specific user/group
+      await createMulticlusterRoleAssignment(userName, userKind, newRoleAssignment)
     }
 
     return { success: true }
   } catch (error: any) {
     return {
       success: false,
-      error: `Failed to update k8s MulticlusterRoleAssignment: ${error.message || error}`,
+      error: `Failed to update or create k8s MulticlusterRoleAssignment: ${error.message || error}`,
     }
   }
 }
@@ -282,7 +336,8 @@ export async function updateRoleAssignmentK8s(
   }
 }
 
-// Deletes a RoleAssignment from a MulticlusterRoleAssignment and updates Kubernetes
+// Deletes a RoleAssignment from a MulticlusterRoleAssignment and updates Kubernetes. Also deletes the
+// MulticlusterRoleAssignment if there are no remaining RoleAssignments.
 export async function deleteRoleAssignmentK8s(
   multiClusterAssignments: MulticlusterRoleAssignment[],
   deletedRoleAssignment: TrackedRoleAssignment
@@ -312,7 +367,7 @@ export async function deleteRoleAssignmentK8s(
   } catch (error: any) {
     return {
       success: false,
-      error: `Failed to update k8s MulticlusterRoleAssignment: ${error.message || error}`,
+      error: `Failed to delete or update k8s MulticlusterRoleAssignment: ${error.message || error}`,
     }
   }
 }
