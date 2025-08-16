@@ -1,6 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { UserKindType, GroupKindType } from '../rbac'
 import { MulticlusterRoleAssignment, RoleAssignment } from '../role-assignment'
+import { createResource, patchResource, deleteResource } from '../utils'
+import { IRequestResult } from '../utils/resource-request'
 
 export interface MulticlusterRoleAssignmentQuery {
   subjectNames?: string[]
@@ -104,7 +106,7 @@ export function filterAndTrackRoleAssignments(
 }
 
 // Adds a new RoleAssignment to an existing MulticlusterRoleAssignment
-export function addRoleAssignment(
+function addRoleAssignment(
   multiClusterAssignments: MulticlusterRoleAssignment[],
   multiClusterAssignmentUid: string,
   newRoleAssignment: RoleAssignment
@@ -122,7 +124,7 @@ export function addRoleAssignment(
 }
 
 // Updates a RoleAssignment in an existing MulticlusterRoleAssignment
-export function updateRoleAssignment(
+function updateRoleAssignment(
   multiClusterAssignments: MulticlusterRoleAssignment[],
   updatedRoleAssignment: TrackedRoleAssignment
 ): RoleAssignmentUpdateResult {
@@ -166,7 +168,7 @@ export function updateRoleAssignment(
 }
 
 // Deletes a RoleAssignment from an existing MulticlusterRoleAssignment
-export function deleteRoleAssignment(
+function deleteRoleAssignment(
   multiClusterAssignments: MulticlusterRoleAssignment[],
   deletedRoleAssignment: TrackedRoleAssignment
 ): RoleAssignmentUpdateResult {
@@ -197,4 +199,120 @@ export function deleteRoleAssignment(
   // Remove the role assignment
   multiClusterAssignment.spec.roleAssignments.splice(deletedRoleAssignment.roleAssignmentIndex, 1)
   return { success: true }
+}
+
+function createMulticlusterRoleAssignment(
+  multiclusterAssignment: MulticlusterRoleAssignment
+): IRequestResult<MulticlusterRoleAssignment> {
+  return createResource<MulticlusterRoleAssignment>(multiclusterAssignment)
+}
+
+function patchMulticlusterRoleAssignment(
+  originalMulticlusterAssignment: MulticlusterRoleAssignment,
+  updatedRoleAssignments: RoleAssignment[]
+): IRequestResult<MulticlusterRoleAssignment> {
+  const patch = [
+    {
+      op: 'replace',
+      path: '/spec/roleAssignments',
+      value: updatedRoleAssignments,
+    },
+  ]
+  return patchResource<MulticlusterRoleAssignment>(originalMulticlusterAssignment, patch)
+}
+
+function deleteMulticlusterRoleAssignment(multiclusterAssignment: MulticlusterRoleAssignment): IRequestResult<unknown> {
+  return deleteResource(multiclusterAssignment)
+}
+
+// Adds a RoleAssignment to a MulticlusterRoleAssignment and updates Kubernetes
+export async function addRoleAssignmentK8s(
+  multiClusterAssignments: MulticlusterRoleAssignment[],
+  multiClusterAssignmentUid: string,
+  newRoleAssignment: RoleAssignment
+): Promise<RoleAssignmentUpdateResult> {
+  const localResult = addRoleAssignment(multiClusterAssignments, multiClusterAssignmentUid, newRoleAssignment)
+  if (!localResult.success) {
+    return localResult
+  }
+
+  try {
+    const multiClusterAssignment = multiClusterAssignments.find(
+      (multi) => multi.metadata.uid === multiClusterAssignmentUid
+    )
+
+    if (multiClusterAssignment) {
+      await patchMulticlusterRoleAssignment(multiClusterAssignment, multiClusterAssignment.spec.roleAssignments).promise
+    }
+
+    return { success: true }
+  } catch (error: any) {
+    return {
+      success: false,
+      error: `Failed to update k8s MulticlusterRoleAssignment: ${error.message || error}`,
+    }
+  }
+}
+
+// Updates a RoleAssignment in a MulticlusterRoleAssignment and updates Kubernetes
+export async function updateRoleAssignmentK8s(
+  multiClusterAssignments: MulticlusterRoleAssignment[],
+  updatedRoleAssignment: TrackedRoleAssignment
+): Promise<RoleAssignmentUpdateResult> {
+  const localResult = updateRoleAssignment(multiClusterAssignments, updatedRoleAssignment)
+  if (!localResult.success) {
+    return localResult
+  }
+
+  try {
+    const multiClusterAssignment = multiClusterAssignments.find(
+      (multi) => multi.metadata.uid === updatedRoleAssignment.multiclusterRoleAssignmentUid
+    )
+
+    if (multiClusterAssignment) {
+      await patchMulticlusterRoleAssignment(multiClusterAssignment, multiClusterAssignment.spec.roleAssignments).promise
+    }
+
+    return { success: true }
+  } catch (error: any) {
+    return {
+      success: false,
+      error: `Failed to update k8s MulticlusterRoleAssignment: ${error.message || error}`,
+    }
+  }
+}
+
+// Deletes a RoleAssignment from a MulticlusterRoleAssignment and updates Kubernetes
+export async function deleteRoleAssignmentK8s(
+  multiClusterAssignments: MulticlusterRoleAssignment[],
+  deletedRoleAssignment: TrackedRoleAssignment
+): Promise<RoleAssignmentUpdateResult> {
+  const localResult = deleteRoleAssignment(multiClusterAssignments, deletedRoleAssignment)
+  if (!localResult.success) {
+    return localResult
+  }
+
+  try {
+    const multiClusterAssignment = multiClusterAssignments.find(
+      (multi) => multi.metadata.uid === deletedRoleAssignment.multiclusterRoleAssignmentUid
+    )
+
+    if (multiClusterAssignment) {
+      if (multiClusterAssignment.spec.roleAssignments.length === 0) {
+        // Delete the entire MulticlusterRoleAssignment if no role assignments remain
+        await deleteMulticlusterRoleAssignment(multiClusterAssignment).promise
+      } else {
+        // Update the MulticlusterRoleAssignment with remaining role assignments
+        await patchMulticlusterRoleAssignment(multiClusterAssignment, multiClusterAssignment.spec.roleAssignments)
+          .promise
+      }
+    }
+
+    return { success: true }
+  } catch (error: any) {
+    return {
+      success: false,
+      error: `Failed to update k8s MulticlusterRoleAssignment: ${error.message || error}`,
+    }
+  }
 }
