@@ -65,21 +65,21 @@ describe('Create Policy Automation Wizard', () => {
     await waitForText('Create policy automation', true)
 
     // select ansible credential
-    screen.getByRole('button', { name: /options menu/i }).click()
+    screen.getByPlaceholderText('Select the Ansible credential').click()
     await clickByText(mockSecret.metadata.name!)
     await new Promise((resolve) => setTimeout(resolve, 2000))
 
     // select ansible job
-    screen.getByText('Select the ansible job').click()
+    screen.getByPlaceholderText('Select the ansible job').click()
     screen.getByRole('option', { name: 'test-job-pre-install' }).click()
-    screen.getByText('Once').click()
+    screen.getByPlaceholderText(/select the schedule/i).click()
     screen.getByRole('option', { name: 'Disabled' }).click()
     screen
       .getByRole('checkbox', {
         name: /manual run: set this automation to run once\. after the automation runs, it is set to disabled\./i,
       })
       .click()
-    screen.getByText('Disabled').click()
+    screen.getByPlaceholderText(/select the schedule/i).click()
     screen.getByRole('option', { name: 'Once' }).click()
     screen.getByRole('button', { name: 'Next' }).click()
 
