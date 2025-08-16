@@ -3,29 +3,31 @@ import { Subject } from './kubernetes-client'
 import { Metadata } from './metadata'
 import { IResource, IResourceDefinition } from './resource'
 
-export const RoleAssignmentApiVersion = 'rbac.open-cluster-management.io/v1alpha1'
-export type RoleAssignmentApiVersionType = 'rbac.open-cluster-management.io/v1alpha1'
+export const MulticlusterRoleAssignmentApiVersion = 'rbac.open-cluster-management.io/v1alpha1'
+export type MulticlusterRoleAssignmentApiVersionType = 'rbac.open-cluster-management.io/v1alpha1'
 
-export const RoleAssignmentKind = 'RoleAssignment'
-export type RoleAssignmentKindType = 'RoleAssignment'
+export const MulticlusterRoleAssignmentKind = 'MulticlusterRoleAssignment'
+export type MulticlusterRoleAssignmentKindType = 'MulticlusterRoleAssignment'
 
-export const RoleAssignmentDefinition: IResourceDefinition = {
-  apiVersion: RoleAssignmentApiVersion,
-  kind: RoleAssignmentKind,
+export const MulticlusterRoleAssignmentNamespace = 'open-cluster-management-global-set'
+
+export const MulticlusterRoleAssignmentDefinition: IResourceDefinition = {
+  apiVersion: MulticlusterRoleAssignmentApiVersion,
+  kind: MulticlusterRoleAssignmentKind,
 }
 
-interface Cluster {
-  name: string
-  namespaces: string[]
+export interface RoleAssignment {
+  clusterRole: string
+  targetNamespaces: string[]
+  clusterSets: string[]
 }
 
-export interface RoleAssignment extends IResource {
-  apiVersion: RoleAssignmentApiVersionType
-  kind: RoleAssignmentKindType
+export interface MulticlusterRoleAssignment extends IResource {
+  apiVersion: MulticlusterRoleAssignmentApiVersionType
+  kind: MulticlusterRoleAssignmentKindType
   metadata: Metadata
   spec: {
-    roles: string[]
-    subjects: Subject[]
-    clusters: Cluster[]
+    subject: Subject
+    roleAssignments: RoleAssignment[]
   }
 }

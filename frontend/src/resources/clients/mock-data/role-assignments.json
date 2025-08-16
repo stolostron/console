@@ -1,450 +1,395 @@
 [
   {
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
-    "kind": "RoleAssignment",
+    "kind": "MulticlusterRoleAssignment",
     "metadata": {
-      "name": "alice-admin-assignment"
+      "name": "alice-trask-role-assignment",
+      "namespace": "open-cluster-management-global-set"
     },
     "spec": {
-      "roles": ["kubevirt.io:admin"],
-      "subjects": [
+      "subject": {
+        "kind": "User",
+        "name": "alice.trask"
+      },
+      "roleAssignments": [
         {
-          "kind": "User",
-          "name": "alice.trask"
-        }
-      ],
-      "clusters": [
-        {
-          "name": "production-cluster",
-          "namespaces": ["*"]
+          "clusterRole": "kubevirt.io:admin",
+          "targetNamespaces": ["kubevirt-production", "vm-workloads"],
+          "clusterSets": ["production-cluster"]
         },
         {
-          "name": "staging-cluster",
-          "namespaces": ["kubevirt-staging", "vm-workloads"]
+          "clusterRole": "kubevirt.io:admin",
+          "targetNamespaces": ["kubevirt-staging", "vm-workloads"],
+          "clusterSets": ["staging-cluster"]
         }
       ]
     }
   },
   {
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
-    "kind": "RoleAssignment",
+    "kind": "MulticlusterRoleAssignment",
     "metadata": {
-      "name": "kubevirt-admins-multi-cluster"
+      "name": "kubevirt-admins-role-assignment",
+      "namespace": "open-cluster-management-global-set"
     },
     "spec": {
-      "roles": ["kubevirt.io:admin", "live-migration-admin"],
-      "subjects": [
+      "subject": {
+        "kind": "Group",
+        "name": "kubevirt-admins"
+      },
+      "roleAssignments": [
         {
-          "kind": "Group",
-          "name": "kubevirt-admins"
+          "clusterRole": "kubevirt.io:admin",
+          "targetNamespaces": ["kubevirt-production"],
+          "clusterSets": ["production-cluster", "staging-cluster"]
         },
         {
-          "kind": "User",
-          "name": "admin.user"
-        }
-      ],
-      "clusters": [
-        {
-          "name": "production-cluster",
-          "namespaces": ["kubevirt-production"]
+          "clusterRole": "live-migration-admin",
+          "targetNamespaces": ["kubevirt-dev", "vm-dev"],
+          "clusterSets": ["development-cluster", "testing-cluster"]
         },
         {
-          "name": "development-cluster",
-          "namespaces": ["*"]
-        },
-        {
-          "name": "testing-cluster",
-          "namespaces": ["kubevirt-test", "vm-test", "storage-test"]
+          "clusterRole": "kubevirt.io:admin",
+          "targetNamespaces": ["kubevirt-test", "vm-test", "storage-test"],
+          "clusterSets": ["testing-cluster"]
         }
       ]
     }
   },
   {
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
-    "kind": "RoleAssignment",
+    "kind": "MulticlusterRoleAssignment",
     "metadata": {
-      "name": "admin-sa-management"
+      "name": "admin-user-role-assignment",
+      "namespace": "open-cluster-management-global-set"
     },
     "spec": {
-      "roles": ["kubevirt.io:admin"],
-      "subjects": [
+      "subject": {
+        "kind": "User",
+        "name": "admin.user"
+      },
+      "roleAssignments": [
         {
-          "kind": "ServiceAccount",
-          "name": "kubevirt-admin-sa",
-          "namespace": "kubevirt-system"
-        }
-      ],
-      "clusters": [
+          "clusterRole": "kubevirt.io:admin",
+          "targetNamespaces": ["kubevirt-production"],
+          "clusterSets": ["production-cluster"]
+        },
         {
-          "name": "management-cluster",
-          "namespaces": ["kubevirt-system"]
+          "clusterRole": "live-migration-admin",
+          "targetNamespaces": ["kubevirt-dev", "vm-dev"],
+          "clusterSets": ["development-cluster"]
         }
       ]
     }
   },
   {
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
-    "kind": "RoleAssignment",
+    "kind": "MulticlusterRoleAssignment",
     "metadata": {
-      "name": "bob-edit-assignment"
+      "name": "bob-levy-role-assignment",
+      "namespace": "open-cluster-management-global-set"
     },
     "spec": {
-      "roles": ["kubevirt.io:edit"],
-      "subjects": [
+      "subject": {
+        "kind": "User",
+        "name": "bob.levy"
+      },
+      "roleAssignments": [
         {
-          "kind": "User",
-          "name": "bob.levy"
-        }
-      ],
-      "clusters": [
-        {
-          "name": "development-cluster",
-          "namespaces": ["kubevirt-dev"]
+          "clusterRole": "kubevirt.io:edit",
+          "targetNamespaces": ["kubevirt-dev"],
+          "clusterSets": ["development-cluster"]
         },
         {
-          "name": "staging-cluster",
-          "namespaces": ["kubevirt-staging", "vm-staging"]
+          "clusterRole": "kubevirt.io:edit",
+          "targetNamespaces": ["kubevirt-staging", "vm-staging"],
+          "clusterSets": ["staging-cluster"]
         }
       ]
     }
   },
   {
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
-    "kind": "RoleAssignment",
+    "kind": "MulticlusterRoleAssignment",
     "metadata": {
-      "name": "developers-development-edit"
+      "name": "developers-role-assignment",
+      "namespace": "open-cluster-management-global-set"
     },
     "spec": {
-      "roles": ["kubevirt.io:edit", "network-admin", "storage-admin"],
-      "subjects": [
+      "subject": {
+        "kind": "Group",
+        "name": "developers"
+      },
+      "roleAssignments": [
         {
-          "kind": "Group",
-          "name": "developers"
+          "clusterRole": "kubevirt.io:edit",
+          "targetNamespaces": ["kubevirt-dev", "vm-dev", "storage-dev", "networking-dev"],
+          "clusterSets": ["development-cluster"]
         },
         {
-          "kind": "User",
-          "name": "intern.dev"
+          "clusterRole": "network-admin",
+          "targetNamespaces": ["kubevirt-dev", "vm-dev", "storage-dev", "networking-dev"],
+          "clusterSets": ["development-cluster"]
         },
         {
-          "kind": "User",
-          "name": "junior.dev"
-        }
-      ],
-      "clusters": [
-        {
-          "name": "development-cluster",
-          "namespaces": ["kubevirt-dev", "vm-dev", "storage-dev", "networking-dev"]
+          "clusterRole": "storage-admin",
+          "targetNamespaces": ["kubevirt-dev", "vm-dev", "storage-dev", "networking-dev"],
+          "clusterSets": ["development-cluster"]
         }
       ]
     }
   },
   {
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
-    "kind": "RoleAssignment",
+    "kind": "MulticlusterRoleAssignment",
     "metadata": {
-      "name": "operator-multi-cluster-edit"
+      "name": "intern-dev-role-assignment",
+      "namespace": "open-cluster-management-global-set"
     },
     "spec": {
-      "roles": ["kubevirt.io:edit"],
-      "subjects": [
+      "subject": {
+        "kind": "User",
+        "name": "intern.dev"
+      },
+      "roleAssignments": [
         {
-          "kind": "ServiceAccount",
-          "name": "kubevirt-operator",
-          "namespace": "kubevirt-system"
-        }
-      ],
-      "clusters": [
-        {
-          "name": "production-cluster",
-          "namespaces": ["kubevirt-production"]
-        },
-        {
-          "name": "staging-cluster",
-          "namespaces": ["kubevirt-staging"]
-        },
-        {
-          "name": "development-cluster",
-          "namespaces": ["kubevirt-system"]
+          "clusterRole": "kubevirt.io:edit",
+          "targetNamespaces": ["kubevirt-dev", "vm-dev", "storage-dev", "networking-dev"],
+          "clusterSets": ["development-cluster"]
         }
       ]
     }
   },
   {
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
-    "kind": "RoleAssignment",
+    "kind": "MulticlusterRoleAssignment",
     "metadata": {
-      "name": "charlie-edge-edit"
+      "name": "junior-dev-role-assignment",
+      "namespace": "open-cluster-management-global-set"
     },
     "spec": {
-      "roles": ["kubevirt.io:edit"],
-      "subjects": [
+      "subject": {
+        "kind": "User",
+        "name": "junior.dev"
+      },
+      "roleAssignments": [
         {
-          "kind": "User",
-          "name": "charlie.cranston"
-        }
-      ],
-      "clusters": [
-        {
-          "name": "edge-cluster-1",
-          "namespaces": ["*"]
-        },
-        {
-          "name": "edge-cluster-2",
-          "namespaces": ["edge-workloads"]
+          "clusterRole": "kubevirt.io:edit",
+          "targetNamespaces": ["kubevirt-dev", "vm-dev", "storage-dev", "networking-dev"],
+          "clusterSets": ["development-cluster"]
         }
       ]
     }
   },
   {
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
-    "kind": "RoleAssignment",
+    "kind": "MulticlusterRoleAssignment",
     "metadata": {
-      "name": "sre-team-view-all"
+      "name": "charlie-cranston-role-assignment",
+      "namespace": "open-cluster-management-global-set"
     },
     "spec": {
-      "roles": ["kubevirt.io:view"],
-      "subjects": [
+      "subject": {
+        "kind": "User",
+        "name": "charlie.cranston"
+      },
+      "roleAssignments": [
         {
-          "kind": "Group",
-          "name": "sre-team"
-        }
-      ],
-      "clusters": [
-        {
-          "name": "production-cluster",
-          "namespaces": ["*"]
+          "clusterRole": "kubevirt.io:edit",
+          "targetNamespaces": ["edge-workloads", "kubevirt-edge"],
+          "clusterSets": ["edge-cluster-1"]
         },
         {
-          "name": "staging-cluster",
-          "namespaces": ["*"]
-        },
-        {
-          "name": "development-cluster",
-          "namespaces": ["*"]
+          "clusterRole": "kubevirt.io:edit",
+          "targetNamespaces": ["edge-workloads"],
+          "clusterSets": ["edge-cluster-2"]
         }
       ]
     }
   },
   {
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
-    "kind": "RoleAssignment",
+    "kind": "MulticlusterRoleAssignment",
     "metadata": {
-      "name": "sarah-multi-cluster-view"
+      "name": "sre-team-role-assignment",
+      "namespace": "open-cluster-management-global-set"
     },
     "spec": {
-      "roles": ["kubevirt.io:view"],
-      "subjects": [
+      "subject": {
+        "kind": "Group",
+        "name": "sre-team"
+      },
+      "roleAssignments": [
         {
-          "kind": "User",
-          "name": "sarah.jones"
-        }
-      ],
-      "clusters": [
-        {
-          "name": "production-cluster",
-          "namespaces": ["kubevirt-production", "monitoring", "logging"]
+          "clusterRole": "kubevirt.io:view",
+          "targetNamespaces": ["kubevirt-production", "monitoring"],
+          "clusterSets": ["production-cluster"]
         },
         {
-          "name": "staging-cluster",
-          "namespaces": ["kubevirt-staging"]
+          "clusterRole": "kubevirt.io:view",
+          "targetNamespaces": ["kubevirt-staging", "monitoring"],
+          "clusterSets": ["staging-cluster"]
+        },
+        {
+          "clusterRole": "kubevirt.io:view",
+          "targetNamespaces": ["kubevirt-dev", "monitoring"],
+          "clusterSets": ["development-cluster"]
         }
       ]
     }
   },
   {
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
-    "kind": "RoleAssignment",
+    "kind": "MulticlusterRoleAssignment",
     "metadata": {
-      "name": "prometheus-monitoring-view"
+      "name": "sarah-jones-role-assignment",
+      "namespace": "open-cluster-management-global-set"
     },
     "spec": {
-      "roles": ["kubevirt.io:view"],
-      "subjects": [
+      "subject": {
+        "kind": "User",
+        "name": "sarah.jones"
+      },
+      "roleAssignments": [
         {
-          "kind": "ServiceAccount",
-          "name": "prometheus-kubevirt",
-          "namespace": "monitoring"
+          "clusterRole": "kubevirt.io:view",
+          "targetNamespaces": ["kubevirt-production", "monitoring", "logging"],
+          "clusterSets": ["production-cluster"]
         },
         {
-          "kind": "ServiceAccount",
-          "name": "grafana-dashboard",
-          "namespace": "grafana"
-        }
-      ],
-      "clusters": [
-        {
-          "name": "production-cluster",
-          "namespaces": ["kubevirt-production", "monitoring"]
-        },
-        {
-          "name": "staging-cluster",
-          "namespaces": ["kubevirt-staging", "monitoring"]
-        },
-        {
-          "name": "development-cluster",
-          "namespaces": ["kubevirt-dev", "monitoring"]
-        },
-        {
-          "name": "edge-cluster-1",
-          "namespaces": ["monitoring"]
-        },
-        {
-          "name": "monitoring-cluster",
-          "namespaces": ["grafana", "dashboards"]
+          "clusterRole": "kubevirt.io:view",
+          "targetNamespaces": ["kubevirt-staging"],
+          "clusterSets": ["staging-cluster"]
         }
       ]
     }
   },
   {
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
-    "kind": "RoleAssignment",
+    "kind": "MulticlusterRoleAssignment",
     "metadata": {
-      "name": "david-analytics-view"
+      "name": "david-brown-role-assignment",
+      "namespace": "open-cluster-management-global-set"
     },
     "spec": {
-      "roles": ["kubevirt.io:view"],
-      "subjects": [
+      "subject": {
+        "kind": "User",
+        "name": "david.brown"
+      },
+      "roleAssignments": [
         {
-          "kind": "User",
-          "name": "david.brown"
-        }
-      ],
-      "clusters": [
-        {
-          "name": "analytics-cluster",
-          "namespaces": ["kubevirt-analytics", "data-processing", "reporting", "dashboards", "metrics"]
+          "clusterRole": "kubevirt.io:view",
+          "targetNamespaces": ["kubevirt-analytics", "data-processing", "reporting", "dashboards", "metrics"],
+          "clusterSets": ["analytics-cluster"]
         }
       ]
     }
   },
   {
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
-    "kind": "RoleAssignment",
+    "kind": "MulticlusterRoleAssignment",
     "metadata": {
-      "name": "security-auditors-view"
+      "name": "security-auditors-role-assignment",
+      "namespace": "open-cluster-management-global-set"
     },
     "spec": {
-      "roles": ["kubevirt.io:view"],
-      "subjects": [
+      "subject": {
+        "kind": "Group",
+        "name": "security-auditors"
+      },
+      "roleAssignments": [
         {
-          "kind": "Group",
-          "name": "security-auditors"
-        }
-      ],
-      "clusters": [
-        {
-          "name": "production-cluster",
-          "namespaces": ["kubevirt-production"]
+          "clusterRole": "kubevirt.io:view",
+          "targetNamespaces": ["kubevirt-production"],
+          "clusterSets": ["production-cluster"]
         },
         {
-          "name": "security-cluster",
-          "namespaces": ["*"]
+          "clusterRole": "kubevirt.io:view",
+          "targetNamespaces": ["security", "audit-logs"],
+          "clusterSets": ["security-cluster"]
         }
       ]
     }
   },
   {
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
-    "kind": "RoleAssignment",
+    "kind": "MulticlusterRoleAssignment",
     "metadata": {
-      "name": "network-admin-special"
+      "name": "network-admin-role-assignment",
+      "namespace": "open-cluster-management-global-set"
     },
     "spec": {
-      "roles": ["network-admin", "kubevirt.io:admin"],
-      "subjects": [
+      "subject": {
+        "kind": "User",
+        "name": "network.admin"
+      },
+      "roleAssignments": [
         {
-          "kind": "User",
-          "name": "network.admin"
-        }
-      ],
-      "clusters": [
-        {
-          "name": "production-cluster",
-          "namespaces": ["networking", "ingress"]
+          "clusterRole": "network-admin",
+          "targetNamespaces": ["networking", "ingress"],
+          "clusterSets": ["production-cluster", "staging-cluster"]
         },
         {
-          "name": "edge-cluster-1",
-          "namespaces": ["networking"]
+          "clusterRole": "kubevirt.io:admin",
+          "targetNamespaces": ["networking", "ingress"],
+          "clusterSets": ["production-cluster"]
+        },
+        {
+          "clusterRole": "network-admin",
+          "targetNamespaces": ["networking"],
+          "clusterSets": ["edge-cluster-1", "edge-cluster-2"]
         }
       ]
     }
   },
   {
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
-    "kind": "RoleAssignment",
+    "kind": "MulticlusterRoleAssignment",
     "metadata": {
-      "name": "storage-team-assignment"
+      "name": "storage-team-role-assignment",
+      "namespace": "open-cluster-management-global-set"
     },
     "spec": {
-      "roles": ["storage-admin", "kubevirt.io:edit"],
-      "subjects": [
+      "subject": {
+        "kind": "Group",
+        "name": "storage-team"
+      },
+      "roleAssignments": [
         {
-          "kind": "Group",
-          "name": "storage-team"
+          "clusterRole": "storage-admin",
+          "targetNamespaces": ["storage-system", "csi"],
+          "clusterSets": ["production-cluster", "staging-cluster"]
         },
         {
-          "kind": "ServiceAccount",
-          "name": "csi-driver",
-          "namespace": "storage-system"
-        }
-      ],
-      "clusters": [
-        {
-          "name": "production-cluster",
-          "namespaces": ["storage-system", "csi"]
+          "clusterRole": "kubevirt.io:edit",
+          "targetNamespaces": ["storage-system", "csi"],
+          "clusterSets": ["production-cluster", "staging-cluster"]
         },
         {
-          "name": "staging-cluster",
-          "namespaces": ["storage-system"]
-        },
-        {
-          "name": "development-cluster",
-          "namespaces": ["storage-dev"]
+          "clusterRole": "storage-admin",
+          "targetNamespaces": ["storage-dev"],
+          "clusterSets": ["development-cluster", "testing-cluster"]
         }
       ]
     }
   },
   {
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
-    "kind": "RoleAssignment",
+    "kind": "MulticlusterRoleAssignment",
     "metadata": {
-      "name": "shared-name-user-assignment"
+      "name": "test-user-role-assignment",
+      "namespace": "open-cluster-management-global-set"
     },
     "spec": {
-      "roles": ["kubevirt.io:edit"],
-      "subjects": [
+      "subject": {
+        "kind": "User",
+        "name": "test.user"
+      },
+      "roleAssignments": [
         {
-          "kind": "User",
-          "name": "same.name"
-        }
-      ],
-      "clusters": [
-        {
-          "name": "production-cluster",
-          "namespaces": ["shared-workloads"]
-        }
-      ]
-    }
-  },
-  {
-    "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
-    "kind": "RoleAssignment",
-    "metadata": {
-      "name": "shared-name-sa-assignment"
-    },
-    "spec": {
-      "roles": ["kubevirt.io:view"],
-      "subjects": [
-        {
-          "kind": "ServiceAccount",
-          "name": "same.name",
-          "namespace": "automation"
-        }
-      ],
-      "clusters": [
-        {
-          "name": "staging-cluster",
-          "namespaces": ["automation", "shared-workloads"]
+          "clusterRole": "kubevirt.io:edit",
+          "targetNamespaces": ["shared-workloads"],
+          "clusterSets": ["production-cluster"]
         }
       ]
     }
