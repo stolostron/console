@@ -158,7 +158,7 @@ function updateRoleAssignment(
     }
   }
 
-  // Extract RoleAssignment fields from TrackedRoleAssignment
+  // Extract the RoleAssignment data (without tracking properties)
   const {
     multiclusterRoleAssignmentUid,
     subjectName,
@@ -303,7 +303,7 @@ export async function addRoleAssignmentK8s(
   } catch (error: any) {
     return {
       success: false,
-      error: `Failed to update or create k8s MulticlusterRoleAssignment: ${error.message || error}`,
+      error: `Failed to add RoleAssignment: ${error.message || error}`,
     }
   }
 }
@@ -331,7 +331,7 @@ export async function updateRoleAssignmentK8s(
   } catch (error: any) {
     return {
       success: false,
-      error: `Failed to update k8s MulticlusterRoleAssignment: ${error.message || error}`,
+      error: `Failed to update RoleAssignment: ${error.message || error}`,
     }
   }
 }
@@ -367,7 +367,43 @@ export async function deleteRoleAssignmentK8s(
   } catch (error: any) {
     return {
       success: false,
-      error: `Failed to delete or update k8s MulticlusterRoleAssignment: ${error.message || error}`,
+      error: `Failed to delete RoleAssignment: ${error.message || error}`,
+    }
+  }
+}
+
+// Moves a RoleAssignment from one user/group to another. This is needed if a user/group is changed from the Roles page.
+export async function moveRoleAssignmentBetweenSubjectsK8s(
+  multiClusterAssignments: MulticlusterRoleAssignment[],
+  originalRoleAssignment: TrackedRoleAssignment,
+  newUserName: string,
+  newUserKind: UserKindType | GroupKindType
+): Promise<RoleAssignmentUpdateResult> {
+  try {
+    // Delete the role assignment from the original subject
+    const deleteResult = await deleteRoleAssignmentK8s(multiClusterAssignments, originalRoleAssignment)
+    if (!deleteResult.success) {
+      return deleteResult
+    }
+
+    // Extract the RoleAssignment data (without tracking properties)
+    const {
+      multiclusterRoleAssignmentUid,
+      subjectName,
+      subjectKind,
+      roleAssignmentIndex,
+      dataHash,
+      ...roleAssignmentData
+    } = originalRoleAssignment
+
+    // Add the role assignment to the new user
+    const addResult = await addRoleAssignmentK8s(multiClusterAssignments, newUserName, newUserKind, roleAssignmentData)
+
+    return addResult
+  } catch (error: any) {
+    return {
+      success: false,
+      error: `Failed to move RoleAssignment between subjects: ${error.message || error}`,
     }
   }
 }
