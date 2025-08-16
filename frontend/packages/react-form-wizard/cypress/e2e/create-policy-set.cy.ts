@@ -14,7 +14,7 @@ describe('create policy set', () => {
     })
 
     it('details', () => {
-        cy.get('#name').type('my-policy-set')
+        cy.get('#name').type('my-policy-set', { delay: 200 })
         cy.get('#namespace').click().get('#my-namespace-1').click()
         cy.contains('Next').click()
     })
@@ -60,6 +60,7 @@ describe('create policy set', () => {
             },
         ]
 
+        console.log(expected.map((doc) => YAML.stringify(doc)).join('---\n'))
         cy.get('#yaml-editor').should('have.text', expected.map((doc) => YAML.stringify(doc)).join('---\n'))
         cy.contains('Submit').should('be.enabled')
     })

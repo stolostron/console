@@ -22,7 +22,14 @@ import {
   nockIgnoreOperatorCheck,
   nockList,
 } from '../../../lib/nock-util'
-import { clickByText, typeByPlaceholderText, typeByTestId, waitForNocks, waitForText } from '../../../lib/test-util'
+import {
+  clickByPlaceholderText,
+  clickByText,
+  typeByPlaceholderText,
+  typeByTestId,
+  waitForNocks,
+  waitForText,
+} from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import {
   ApplicationSet,
@@ -340,19 +347,19 @@ describe('Create Argo Application Set', () => {
 
     // General
     await typeByTestId('name', argoAppSetGit!.metadata!.name!)
-    await clickByText('Select the Argo server')
+    await clickByPlaceholderText('Select the Argo server')
     await clickByText(gitOpsCluster!.spec!.argoServer!.argoNamespace)
     await clickByText('Next')
 
     // Template
     await clickByText('Git')
-    await clickByText('Enter or select a Git URL')
+    await clickByPlaceholderText('Enter or select a Git URL')
 
     const appBranchNocks = [nockArgoGitBranches(channelGit.spec.pathname, { branchList: [{ name: 'branch-01' }] })]
     await clickByText(channelGit.spec.pathname)
     await waitForNocks(appBranchNocks)
 
-    await clickByText('Enter or select a tracking revision')
+    await clickByPlaceholderText('Enter or select a tracking revision')
     // await clickByText('Enter or select a tracking revision') // Hack to handle broken PatternFly dropdown not initially populating
     // await clickByText('Enter or select a tracking revision')
     const pathNocks = [
@@ -363,7 +370,7 @@ describe('Create Argo Application Set', () => {
     await clickByText('branch-01')
     await waitForNocks(pathNocks)
 
-    await clickByText('Enter or select a repository path')
+    await clickByPlaceholderText('Enter or select a repository path')
     // await clickByText('Enter or select a repository path') // Hack to handle broken PatternFly dropdown not initially populating
     // await clickByText('Enter or select a repository path')
     await clickByText('application-test')
