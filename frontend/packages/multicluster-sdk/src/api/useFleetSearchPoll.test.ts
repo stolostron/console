@@ -477,6 +477,7 @@ describe('useFleetSearchPoll', () => {
       const vmItem = {
         ...mockSearchResultItem,
         kind: 'VirtualMachine',
+        apigroup: 'kubevirt.io',
         cpu: 2,
         memory: '4Gi',
         ready: 'True',
@@ -538,6 +539,7 @@ describe('useFleetSearchPoll', () => {
       const csvItem = {
         ...mockSearchResultItem,
         kind: 'ClusterServiceVersion',
+        apigroup: 'operators.coreos.com',
         version: '1.0.0',
         display: 'Test',
         phase: 'Running',
@@ -612,6 +614,7 @@ describe('useFleetSearchPoll', () => {
       const vmiItem = {
         ...mockSearchResultItem,
         kind: 'VirtualMachineInstance',
+        apigroup: 'kubevirt.io',
         liveMigratable: 'True',
         ready: 'True',
         ipaddress: '10.0.0.1',
@@ -656,6 +659,7 @@ describe('useFleetSearchPoll', () => {
       const vmimItem = {
         ...mockSearchResultItem,
         kind: 'VirtualMachineInstanceMigration',
+        apigroup: 'kubevirt.io',
         vmiName: 'test-vmi',
         phase: 'Running',
         endTime: '2025-08-12T08:00:00Z',

@@ -4,6 +4,7 @@ import { useCallback, useMemo } from 'react'
 import { SearchResult } from '../types/search'
 import { UseFleetSearchPoll } from '../types/fleet'
 import { searchClient } from '../internal/search/search-client'
+import { set } from 'lodash'
 
 // Constants for polling interval configuration
 const DEFAULT_POLL_INTERVAL_SECONDS = 30
@@ -76,6 +77,18 @@ const DEFAULT_POLL_INTERVAL_SECONDS = 30
  * - Polling is enabled by default with a 30-second interval; use false to disable
  * - Minimum polling interval is 30 seconds for performance reasons
  */
+const setIfDefined = (obj: any, path: string, value: any): void => {
+  if (value !== undefined) {
+    set(obj, path, value)
+  }
+}
+const getResourceKey = (kind: string, apigroup?: string): string => {
+  if (apigroup) {
+    return `${kind}.${apigroup}`
+  }
+  return kind
+}
+
 export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSearch, pollInterval) => {
   const { groupVersionKind, limit, namespace, namespaced, name, isList } = watchOptions
 
@@ -176,94 +189,64 @@ export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSea
             labels: label,
           },
         }
+        const resourceKey = getResourceKey(item.kind, item.apigroup)
         // Reverse the flattening of specific resources by the search-collector
         // See https://github.com/stolostron/search-collector/blob/main/pkg/transforms/genericResourceConfig.go
-        switch (kind) {
-          case 'ClusterServiceVersion':
+        switch (resourceKey) {
           case 'ClusterServiceVersion.operators.coreos.com':
-            resource.spec = {
-              version: item.version,
-              displayName: item.display,
-            }
-            resource.status = {
-              phase: item.phase,
-            }
-            break
-          case 'PersistentVolumeClaim':
-            resource.spec = {
-              resources: {
-                requests: {
-                  storage: item.requestedStorage,
-                },
-              },
-              volumeMode: item.volumeMode,
-            }
+            setIfDefined(resource, 'spec.version', item.version)
+            setIfDefined(resource, 'spec.displayName', item.display)
+            setIfDefined(resource, 'status.phase', item.phase)
             break
 
-          case 'VirtualMachine':
+          case 'PersistentVolumeClaim':
+            setIfDefined(resource, 'spec.resources.requests.storage', item.requestedStorage)
+            setIfDefined(resource, 'spec.volumeMode', item.volumeMode)
+            break
+
           case 'VirtualMachine.kubevirt.io':
-            resource.spec = {
-              runStrategy: item.runStrategy,
-              template: {
-                spec: {
-                  domain: {
-                    cpu: { cores: item.cpu },
-                    memory: { guest: item.memory },
-                  },
-                },
-                metadata: {
-                  annotations: {},
-                },
-              },
-            }
-            resource.spec.template.metadata.annotations['vm.kubevirt.io/flavor'] = item.flavor
-            resource.spec.template.metadata.annotations['vm.kubevirt.io/os'] = item.osName
-            resource.spec.template.metadata.annotations['vm.kubevirt.io/workload'] = item.workload
+            setIfDefined(resource, 'spec.runStrategy', item.runStrategy)
+            setIfDefined(resource, 'spec.template.spec.domain.cpu.cores', item.cpu)
+            setIfDefined(resource, 'spec.template.spec.domain.memory.guest', item.memory)
+            setIfDefined(resource, 'spec.template.metadata.annotations["vm.kubevirt.io/flavor"]', item.flavor)
+            setIfDefined(resource, 'spec.template.metadata.annotations["vm.kubevirt.io/os"]', item.osName)
+            setIfDefined(resource, 'spec.template.metadata.annotations["vm.kubevirt.io/workload"]', item.workload)
             resource.status = {
               conditions: [
                 { type: 'Ready', status: item.ready },
                 { type: 'AgentConnected', status: item.agentConnected },
               ],
-              printableStatus: item.status,
             }
+            setIfDefined(resource, 'status.printableStatus', item.status)
             break
 
-          case 'VirtualMachineInstance':
           case 'VirtualMachineInstance.kubevirt.io':
-            resource.spec = {
-              domain: {
-                cpu: { cores: item.cpu },
-                memory: { guest: item.memory },
-              },
-            }
+            setIfDefined(resource, 'spec.domain.cpu.cores', item.cpu)
+            setIfDefined(resource, 'spec.domain.memory.guest', item.memory)
             resource.status = {
               conditions: [
                 { type: 'LiveMigratable', status: item.liveMigratable },
                 { type: 'Ready', status: item.ready },
               ],
-              interfaces: [{ ipAddress: item.ipaddress, name: 'default' }],
-              nodeName: item.node,
-              phase: item.phase,
-              guestOSInfo: { version: item.osVersion },
             }
-            resource.metadata.labels = {}
-            resource.metadata.labels['kubevirt.io/size'] = item.vmSize
+            if (item.ipaddress !== undefined) {
+              setIfDefined(resource, 'status.interfaces', [{ ipAddress: item.ipaddress, name: 'default' }])
+            }
+            setIfDefined(resource, 'status.nodeName', item.node)
+            setIfDefined(resource, 'status.phase', item.phase)
+            setIfDefined(resource, 'status.guestOSInfo.version', item.osVersion)
+            setIfDefined(resource, 'metadata.labels["kubevirt.io/size"]', item.vmSize)
             break
 
-          case 'VirtualMachineInstanceMigration':
           case 'VirtualMachineInstanceMigration.kubevirt.io':
-            resource.spec = {
-              vmiName: item.vmiName,
-            }
-            resource.status = {
-              phase: item.phase,
-              migrationState: { endTimestamp: item.endTime },
-            }
+            setIfDefined(resource, 'spec.vmiName', item.vmiName)
+            setIfDefined(resource, 'status.migrationState.endTimestamp', item.endTime)
+            setIfDefined(resource, 'status.phase', item.phase)
             break
         }
         return resource
       }),
-    [kind, result]
+    [result]
   )
 
   const nullResponse = useMemo(() => (isList ? [] : undefined), [isList])
