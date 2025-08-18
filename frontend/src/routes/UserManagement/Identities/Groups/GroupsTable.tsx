@@ -29,7 +29,7 @@ const GroupsTable = () => {
   const columns = groupsTableColumns({ t })
   // TODO: Uncomment when actions are implemented
   // const rowActions = useRowActions({ t, navigate })
-  console.log(groups, 'groups')
+
   return (
     <PageSection>
       {loading ? (
