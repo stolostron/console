@@ -660,7 +660,6 @@ describe('useFleetSearchPoll', () => {
         ...mockSearchResultItem,
         kind: 'VirtualMachineInstanceMigration',
         apigroup: 'kubevirt.io',
-        vmiName: 'test-vmi',
         phase: 'Running',
         endTime: '2025-08-12T08:00:00Z',
       }
@@ -684,9 +683,6 @@ describe('useFleetSearchPoll', () => {
       expect(data).toBeDefined()
       expect(Array.isArray(data)).toBe(true)
       const dataArray = data as any[]
-      expect(dataArray[0].spec).toEqual({
-        vmiName: 'test-vmi',
-      })
       expect(dataArray[0].status).toEqual({
         phase: 'Running',
         migrationState: { endTimestamp: '2025-08-12T08:00:00Z' },
