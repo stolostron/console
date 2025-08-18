@@ -9,6 +9,18 @@ import { set } from 'lodash'
 // Constants for polling interval configuration
 const DEFAULT_POLL_INTERVAL_SECONDS = 30
 
+const setIfDefined = (obj: any, path: string, value: any, valueToSet?: any): void => {
+  if (value !== undefined) {
+    set(obj, path, valueToSet ?? value)
+  }
+}
+const getResourceKey = (kind: string, apigroup?: string): string => {
+  if (apigroup) {
+    return `${kind}.${apigroup}`
+  }
+  return kind
+}
+
 /**
  * A React hook that provides fleet-wide search functionality using the ACM search API.
  *
@@ -77,18 +89,6 @@ const DEFAULT_POLL_INTERVAL_SECONDS = 30
  * - Polling is enabled by default with a 30-second interval; use false to disable
  * - Minimum polling interval is 30 seconds for performance reasons
  */
-const setIfDefined = (obj: any, path: string, value: any): void => {
-  if (value !== undefined) {
-    set(obj, path, value)
-  }
-}
-const getResourceKey = (kind: string, apigroup?: string): string => {
-  if (apigroup) {
-    return `${kind}.${apigroup}`
-  }
-  return kind
-}
-
 export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSearch, pollInterval) => {
   const { groupVersionKind, limit, namespace, namespaced, name, isList } = watchOptions
 
@@ -204,42 +204,52 @@ export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSea
             setIfDefined(resource, 'spec.volumeMode', item.volumeMode)
             break
 
-          case 'VirtualMachine.kubevirt.io':
+          case 'VirtualMachine.kubevirt.io': {
             setIfDefined(resource, 'spec.runStrategy', item.runStrategy)
             setIfDefined(resource, 'spec.template.spec.domain.cpu.cores', item.cpu)
             setIfDefined(resource, 'spec.template.spec.domain.memory.guest', item.memory)
             setIfDefined(resource, 'spec.template.metadata.annotations["vm.kubevirt.io/flavor"]', item.flavor)
             setIfDefined(resource, 'spec.template.metadata.annotations["vm.kubevirt.io/os"]', item.osName)
             setIfDefined(resource, 'spec.template.metadata.annotations["vm.kubevirt.io/workload"]', item.workload)
-            resource.status = {
-              conditions: [
-                { type: 'Ready', status: item.ready },
-                { type: 'AgentConnected', status: item.agentConnected },
-              ],
+            const conditions: any = []
+            setIfDefined(conditions, `[${conditions.length}]`, item.ready, { type: 'Ready', status: item.ready })
+            setIfDefined(conditions, `[${conditions.length}]`, item.agentConnected, {
+              type: 'AgentConnected',
+              status: item.agentConnected,
+            })
+            if (conditions.length) {
+              setIfDefined(resource, 'status.conditions', conditions)
             }
             setIfDefined(resource, 'status.printableStatus', item.status)
             break
+          }
 
-          case 'VirtualMachineInstance.kubevirt.io':
+          case 'VirtualMachineInstance.kubevirt.io': {
             setIfDefined(resource, 'spec.domain.cpu.cores', item.cpu)
             setIfDefined(resource, 'spec.domain.memory.guest', item.memory)
-            resource.status = {
-              conditions: [
-                { type: 'LiveMigratable', status: item.liveMigratable },
-                { type: 'Ready', status: item.ready },
-              ],
+            const conditions: any = []
+            setIfDefined(conditions, `[${conditions.length}]`, item.liveMigratable, {
+              type: 'LiveMigratable',
+              status: item.liveMigratable,
+            })
+            setIfDefined(conditions, `[${conditions.length}]`, item.ready, {
+              type: 'Ready',
+              status: item.ready,
+            })
+            if (conditions.length) {
+              setIfDefined(resource, 'status.conditions', conditions)
             }
-            if (item.ipaddress !== undefined) {
-              setIfDefined(resource, 'status.interfaces', [{ ipAddress: item.ipaddress, name: 'default' }])
-            }
+            setIfDefined(resource, 'status.interfaces[0]', item.ipaddress, {
+              ipAddress: item.ipaddress,
+              name: 'default',
+            })
             setIfDefined(resource, 'status.nodeName', item.node)
             setIfDefined(resource, 'status.phase', item.phase)
             setIfDefined(resource, 'status.guestOSInfo.version', item.osVersion)
-            setIfDefined(resource, 'metadata.labels["kubevirt.io/size"]', item.vmSize)
             break
+          }
 
           case 'VirtualMachineInstanceMigration.kubevirt.io':
-            setIfDefined(resource, 'spec.vmiName', item.vmiName)
             setIfDefined(resource, 'status.migrationState.endTimestamp', item.endTime)
             setIfDefined(resource, 'status.phase', item.phase)
             break
