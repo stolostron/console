@@ -27,7 +27,6 @@ import '@testing-library/jest-dom'
 
 // mock functions
 const mockUseHubClusterName = jest.fn()
-const mockUseLocation = jest.fn()
 
 // mock react-router-dom-v5-compat
 jest.mock('react-router-dom-v5-compat', () => ({
@@ -37,7 +36,6 @@ jest.mock('react-router-dom-v5-compat', () => ({
       {children}
     </a>
   ),
-  useLocation: () => mockUseLocation(),
 }))
 
 // connect the mocks to the dynamic plugin SDK
@@ -86,7 +84,6 @@ describe('FleetResourceLink', () => {
     jest.clearAllMocks()
     // set default mock values that work
     mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
-    mockUseLocation.mockReturnValue({ pathname: '/multicloud/infrastructure' })
 
     // mock useK8sWatchResource for useFleetClusterNames
     useK8sWatchResource.mockReturnValue([
@@ -174,7 +171,7 @@ describe('FleetResourceLink', () => {
   })
 
   describe('Extension-based routing', () => {
-    it('should use extension handler when available and on multicloud path', () => {
+    it('should use extension handler when available', () => {
       const mockHandler = jest.fn().mockReturnValue('/custom/extension/path/test-vm')
       const mockExtensions = [
         {
@@ -189,7 +186,6 @@ describe('FleetResourceLink', () => {
         },
       ]
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
-      mockUseLocation.mockReturnValue({ pathname: '/multicloud/infrastructure' })
 
       useResolvedExtensions.mockReturnValue([mockExtensions, true, []])
 
@@ -257,7 +253,7 @@ describe('FleetResourceLink', () => {
       expect(screen.getByTestId('fleet-link')).toHaveAttribute('href', '/custom/extension/path/test-vm')
     })
 
-    it('should use extension handler when available regardless of path', () => {
+    it('should use extension handler when available for any resource', () => {
       const mockHandler = jest.fn().mockReturnValue('/custom/extension/path/test-vm')
       const mockExtensions = [
         {
@@ -272,7 +268,6 @@ describe('FleetResourceLink', () => {
         },
       ]
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
-      mockUseLocation.mockReturnValue({ pathname: '/k8s/cluster' })
 
       useResolvedExtensions.mockReturnValue([mockExtensions, true, []])
 
@@ -536,7 +531,6 @@ describe('FleetResourceLink', () => {
 
     it('should render span without link when path is null', () => {
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
-      mockUseLocation.mockReturnValue({ pathname: '/k8s/cluster' })
 
       render(
         <MemoryRouter>
@@ -550,7 +544,6 @@ describe('FleetResourceLink', () => {
 
     it('should handle hub cluster name matching cluster parameter', () => {
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
-      mockUseLocation.mockReturnValue({ pathname: '/multicloud/infrastructure' })
 
       render(
         <MemoryRouter>
@@ -635,9 +628,8 @@ describe('FleetResourceLink', () => {
   })
 
   describe('Hub cluster behavior', () => {
-    it('should use first-class path for ManagedCluster on hub with multicloud path', () => {
+    it('should use first-class path for ManagedCluster on hub', () => {
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
-      mockUseLocation.mockReturnValue({ pathname: '/multicloud/infrastructure' })
 
       render(
         <MemoryRouter>
@@ -659,9 +651,8 @@ describe('FleetResourceLink', () => {
       )
     })
 
-    it('should use first-class path for ManagedCluster regardless of path', () => {
+    it('should use first-class path for ManagedCluster in any context', () => {
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
-      mockUseLocation.mockReturnValue({ pathname: '/k8s/cluster' })
 
       render(
         <MemoryRouter>
@@ -683,23 +674,10 @@ describe('FleetResourceLink', () => {
       )
     })
 
-    it('should fallback to ResourceLink for VM on multicloud path when no extension found', () => {
+    it('should fallback to ResourceLink for VM when no extension found', () => {
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
-      mockUseLocation.mockReturnValue({ pathname: '/multicloud/infrastructure' })
+
       // VirtualMachine is now extension-only, so without extension it falls back to ResourceLink
-
-      render(
-        <MemoryRouter>
-          <FleetResourceLink {...defaultProps} />
-        </MemoryRouter>
-      )
-
-      expect(screen.getByTestId('resource-link-mock')).toHaveTextContent('ResourceLink: test-vm (VirtualMachine)')
-    })
-
-    it('should fallback to ResourceLink when not on multicloud path', () => {
-      mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
-      mockUseLocation.mockReturnValue({ pathname: '/k8s/cluster' })
 
       render(
         <MemoryRouter>
