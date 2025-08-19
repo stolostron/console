@@ -82,8 +82,8 @@ function isClusterSetOrRoleMatch(assignment: RoleAssignment, query: Multicluster
 }
 
 // Filters MulticlusterRoleAssignments by query parameters, returns only relevant nested RoleAssignments that match
-// filter criteria. Lastly, tracking properties are added to each RoleAssignment to help with CRUD operations (finding
-// the right MulticlusterRoleAssignment to update, and updating it correctly).
+// filter criteria. Tracking properties are added to each RoleAssignment to help with CRUD operations (finding the right
+// MulticlusterRoleAssignment to update, and updating it correctly).
 export function filterAndTrackRoleAssignments(
   multiClusterAssignments: MulticlusterRoleAssignment[],
   query: MulticlusterRoleAssignmentQuery
@@ -227,6 +227,9 @@ function createMulticlusterRoleAssignment(
     metadata: {
       name,
       namespace: MulticlusterRoleAssignmentNamespace,
+      labels: {
+        'multicluster-role-assignment-ui-managed': 'true',
+      },
     },
     spec: {
       subject: {
