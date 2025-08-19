@@ -12,8 +12,9 @@ import { ReactNode, useCallback, useEffect, useState } from 'react'
 import { SpinnerButton } from '../components/SpinnerButton'
 import { SyncButton } from '../components/SyncButton'
 import { DisplayMode } from '../contexts/DisplayModeContext'
+import { useStringContext } from '../contexts/StringContext'
 import { InputCommonProps, getSelectPlaceholder, useInput } from './Input'
-import { InputSelect, NoResults, SelectListOptions } from './InputSelect'
+import { InputSelect, SelectListOptions } from './InputSelect'
 import { WizFormGroup } from './WizFormGroup'
 
 import './Select.css'
@@ -29,6 +30,7 @@ type WizAsyncSelectProps = InputCommonProps<string> & {
 export function WizAsyncSelect(props: WizAsyncSelectProps) {
   const { asyncCallback, isCreatable, footer } = props
   const { displayMode, value, setValue, validated, hidden, id, disabled } = useInput(props)
+  const { noResults } = useStringContext()
   const placeholder = getSelectPlaceholder(props)
   const [open, setOpen] = useState(false)
   const [options, setOptions] = useState<string[]>([])
@@ -47,7 +49,7 @@ export function WizAsyncSelect(props: WizAsyncSelectProps) {
     if (o.length > 0) {
       setFilteredOptions(o)
     } else {
-      setFilteredOptions([NoResults])
+      setFilteredOptions([noResults])
     }
   }, [])
 

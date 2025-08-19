@@ -1,23 +1,21 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import {
-  MenuToggleElement,
+  Button,
+  Chip,
+  ChipGroup,
+  MenuFooter,
   MenuToggle,
+  MenuToggleElement,
+  SelectList,
+  SelectOption,
   TextInputGroup,
   TextInputGroupMain,
   TextInputGroupUtilities,
-  Button,
-  SelectList,
-  SelectOption,
-  MenuFooter,
-  ChipGroup,
-  Chip,
 } from '@patternfly/react-core'
 import { TimesIcon } from '@patternfly/react-icons'
-import { useState, useRef, useCallback, useEffect, FormEvent, ReactNode } from 'react'
+import { FormEvent, ReactNode, useCallback, useEffect, useRef, useState } from 'react'
+import { useStringContext } from '../contexts/StringContext'
 import { OptionType } from './WizSelect'
-
-export const NoResults = 'No results found'
-export const CreateOption = 'Create new option'
 
 type InputSelectProps = {
   disabled?: boolean
@@ -148,6 +146,7 @@ export const SelectListOptions = ({
       const shouldSkipLastItem = isLastItem && !isSingleItem
       const isCreateOption = isSingleItem && isCreatable && value !== option
       const isSimpleOption = typeof option === 'string'
+      const { noResults, createOption } = useStringContext()
 
       if (shouldSkipLastItem) {
         return null
@@ -155,23 +154,27 @@ export const SelectListOptions = ({
 
       let displayText: string
       if (isCreateOption) {
-        displayText = `${CreateOption} ${isSimpleOption ? option : (option.value as string)}`
+        displayText = `${createOption} ${isSimpleOption ? `"${option}"` : `"${option.value}"`}`
       } else if (isSingleItem) {
-        displayText = NoResults
+        displayText = noResults
       } else if (isSimpleOption) {
         displayText = option
       } else {
         displayText = option.label
       }
 
+      const isDisabled = displayText === noResults || (!isSimpleOption && option.disabled)
+      const optionValue = !isSimpleOption ? option.id : option
+
       return (
         <SelectOption
           id={isSimpleOption ? option : option.id || `option-${index}`}
           key={isSimpleOption ? option : option.id || `option-${index}`}
-          value={!isSimpleOption ? option.id : option}
+          value={optionValue}
           description={!isSimpleOption ? option.description : undefined}
-          isDisabled={displayText === NoResults || (!isSimpleOption && option.disabled)}
+          isDisabled={isDisabled}
           onClick={isCreateOption ? () => onCreate?.(!isSimpleOption ? option.value : option) : undefined}
+          isSelected={!isDisabled && optionValue === value.toString()}
         >
           {displayText}
         </SelectOption>

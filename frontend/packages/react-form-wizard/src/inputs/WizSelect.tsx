@@ -11,8 +11,9 @@ import {
 import get from 'get-value'
 import { ReactNode, useCallback, useMemo, useState } from 'react'
 import { DisplayMode } from '../contexts/DisplayModeContext'
+import { useStringContext } from '../contexts/StringContext'
 import { InputCommonProps, getSelectPlaceholder, useInput } from './Input'
-import { InputSelect, NoResults, SelectListOptions } from './InputSelect'
+import { InputSelect, SelectListOptions } from './InputSelect'
 import { WizFormGroup } from './WizFormGroup'
 
 import './Select.css'
@@ -59,6 +60,7 @@ type SelectProps<T> = WizSelectSingleProps<T>
 
 function WizSelectBase<T = any>(props: SelectProps<T>) {
   const { displayMode: mode, value, setValue, validated, hidden, id, disabled } = useInput(props)
+  const { noResults } = useStringContext()
   const placeholder = getSelectPlaceholder(props)
   const keyPath = props.keyPath ?? props.path
   const isCreatable = props.isCreatable
@@ -118,7 +120,7 @@ function WizSelectBase<T = any>(props: SelectProps<T>) {
       if (filtered.length > 0) {
         setFilteredOptions([...filtered, { id: 'input', label: '', value: o[0], keyedValue: '' }])
       } else {
-        setFilteredOptions([{ id: o[0], label: NoResults, value: o[0], keyedValue: '' }])
+        setFilteredOptions([{ id: o[0], label: noResults, value: o[0], keyedValue: '' }])
       }
     },
     [selectOptions]

@@ -35,6 +35,8 @@ export interface WizardStrings {
   selected: (count: number) => string
   selectPageItems: (count: number) => string
   selectAllItems: (count: number) => string
+  noResults: string
+  createOption: string
 }
 
 export const defaultStrings: WizardStrings = {
@@ -71,6 +73,8 @@ export const defaultStrings: WizardStrings = {
   selected: (count) => `${count} selected`,
   selectPageItems: (count) => `Select page (${count} items)`,
   selectAllItems: (count) => `Select all (${count} items)`,
+  noResults: 'No results found',
+  createOption: 'Create new option',
 }
 
 export const StringContext = createContext<WizardStrings>(defaultStrings)

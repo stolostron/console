@@ -10,8 +10,9 @@ import {
 } from '@patternfly/react-core'
 import { ReactNode, useCallback, useState } from 'react'
 import { DisplayMode } from '../contexts/DisplayModeContext'
+import { useStringContext } from '../contexts/StringContext'
 import { InputCommonProps, getSelectPlaceholder, useInput } from './Input'
-import { InputSelect, NoResults, SelectListOptions } from './InputSelect'
+import { InputSelect, SelectListOptions } from './InputSelect'
 import { WizFormGroup } from './WizFormGroup'
 
 import './Select.css'
@@ -26,6 +27,7 @@ export type WizSingleSelectProps = InputCommonProps<string> & {
 
 export function WizSingleSelect(props: WizSingleSelectProps) {
   const { displayMode: mode, value, setValue, validated, hidden, id, disabled } = useInput(props)
+  const { noResults } = useStringContext()
   const { label, readonly, isCreatable, options, footer } = props
   const placeholder = getSelectPlaceholder(props)
   const [open, setOpen] = useState(false)
@@ -43,7 +45,7 @@ export function WizSingleSelect(props: WizSingleSelectProps) {
     if (o.length > 0) {
       setFilteredOptions(o)
     } else {
-      setFilteredOptions([NoResults])
+      setFilteredOptions([noResults])
     }
   }, [])
 
