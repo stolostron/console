@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../../lib/nock-util'
-import { GroupDetail } from './GroupDetail'
+import { GroupDetail } from './GroupPage'
 
 function Component({ groupId = 'test-group' }: { groupId?: string }) {
   return (
