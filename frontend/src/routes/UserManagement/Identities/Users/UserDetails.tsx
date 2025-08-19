@@ -7,7 +7,6 @@ import {
   DescriptionListDescription,
 } from '@patternfly/react-core'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import AcmTimestamp from '../../../../lib/AcmTimestamp'
 import { AcmLoadingPage } from '../../../../ui-components'
 import { useUserDetailsContext } from './UserPage'
 
@@ -44,8 +43,8 @@ const UserDetails = () => {
                   <DescriptionListTerm>{t('Username')}</DescriptionListTerm>
                   <DescriptionListDescription>{user.metadata.name ?? '-'}</DescriptionListDescription>
                 </DescriptionListGroup>
-
-                <DescriptionListGroup>
+                {/* TODO: uncomment this line once 'last login' is implemented */}
+                {/* <DescriptionListGroup>
                   <DescriptionListTerm>{t('Last login')}</DescriptionListTerm>
                   <DescriptionListDescription>
                     {user.metadata.creationTimestamp ? (
@@ -54,7 +53,7 @@ const UserDetails = () => {
                       '-'
                     )}
                   </DescriptionListDescription>
-                </DescriptionListGroup>
+                </DescriptionListGroup> */}
 
                 <DescriptionListGroup>
                   <DescriptionListTerm>{t('Identity Provider')}</DescriptionListTerm>
