@@ -10,6 +10,7 @@ import { Link } from 'react-router-dom-v5-compat'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
 import { AcmButton, AcmEmptyState, AcmLoadingPage, AcmTable, compareStrings } from '../../../../ui-components'
 import { useFilters, usersTableColumns } from './UsersTableHelper'
+import { RoleAssignmentPreselectedEntity } from '../../RoleAssignments/model/role-assignment-preselected'
 
 const UsersTable = () => {
   const { t } = useTranslation()
