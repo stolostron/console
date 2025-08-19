@@ -100,9 +100,44 @@ export const FleetResourceEventStream: FC<{ resource: FleetK8sResourceCommon }> 
   const [loading, setLoading] = useState(true)
   const ws = useRef<WebSocket>()
   const [backendAPIPath, loaded] = useFleetK8sAPIPath(resource?.cluster)
+  const pingIntervalRef = useRef<number>()
+  const pongTimeoutRef = useRef<number>()
 
   const fieldSelector = `involvedObject.uid=${resource?.metadata?.uid},involvedObject.name=${resource?.metadata?.name},involvedObject.kind=${resource?.kind}`
   const namespace = resource?.metadata?.namespace
+
+  const startPingInterval = () => {
+    if (pingIntervalRef.current) {
+      clearInterval(pingIntervalRef.current)
+    }
+    
+    pingIntervalRef.current = setInterval(() => {
+      if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+        ws.current.send(JSON.stringify({ type: 'ping' }))
+        
+        if (pongTimeoutRef.current) {
+          clearTimeout(pongTimeoutRef.current)
+        }
+        
+        pongTimeoutRef.current = setTimeout(() => {
+          if (ws.current) {
+            ws.current.close()
+          }
+        }, 10000)
+      }
+    }, 20000)
+  }
+
+  const stopPingInterval = () => {
+    if (pingIntervalRef.current) {
+      clearInterval(pingIntervalRef.current)
+      pingIntervalRef.current = undefined
+    }
+    if (pongTimeoutRef.current) {
+      clearTimeout(pongTimeoutRef.current)
+      pongTimeoutRef.current = undefined
+    }
+  }
 
   // handle websocket setup and teardown when dependent props change
   useEffect(() => {
@@ -131,6 +166,14 @@ export const FleetResourceEventStream: FC<{ resource: FleetK8sResourceCommon }> 
           const eventdataParsed = JSON.parse(message.data)
 
           if (!eventdataParsed) return
+
+          if (eventdataParsed.type === 'pong') {
+            if (pongTimeoutRef.current) {
+              clearTimeout(pongTimeoutRef.current)
+              pongTimeoutRef.current = undefined
+            }
+            return
+          }
 
           const eventType = eventdataParsed.type
           const object = eventdataParsed.object as EventKind
@@ -172,9 +215,11 @@ export const FleetResourceEventStream: FC<{ resource: FleetK8sResourceCommon }> 
         setActive(true)
         setError(false)
         setLoading(false)
+        startPingInterval()
       }
 
       ws.current.onclose = (evt: CloseEvent) => {
+        stopPingInterval()
         ws.current = undefined
         setActive(false)
         if (evt?.wasClean === false) {
@@ -183,11 +228,22 @@ export const FleetResourceEventStream: FC<{ resource: FleetK8sResourceCommon }> 
       }
 
       ws.current.onerror = () => {
+        stopPingInterval()
         setActive(false)
         setError(true)
       }
     }
   }, [namespace, fieldSelector, active, t, resource.cluster, hubCluster, loaded, backendAPIPath])
+
+  // cleanup on unmount
+  useEffect(() => {
+    return () => {
+      stopPingInterval()
+      if (ws.current) {
+        ws.current.close()
+      }
+    }
+  }, [])
 
   // return early after all hooks are called, otherwise the component will render twice
   if (!resource.cluster || resource.cluster === hubCluster) return <ResourceEventStream resource={resource} />
