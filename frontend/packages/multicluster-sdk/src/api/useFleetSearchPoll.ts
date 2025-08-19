@@ -252,6 +252,7 @@ export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSea
           case 'VirtualMachineInstanceMigration.kubevirt.io':
             setIfDefined(resource, 'status.migrationState.endTimestamp', item.endTime)
             setIfDefined(resource, 'status.phase', item.phase)
+            setIfDefined(resource, 'spec.vmiName', item.vmiName)
             break
         }
         return resource

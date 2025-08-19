@@ -662,6 +662,7 @@ describe('useFleetSearchPoll', () => {
         apigroup: 'kubevirt.io',
         phase: 'Running',
         endTime: '2025-08-12T08:00:00Z',
+        vmiName: 'testMigrate',
       }
 
       mockUseSearchResultItemsQuery.mockReturnValue({
@@ -686,6 +687,9 @@ describe('useFleetSearchPoll', () => {
       expect(dataArray[0].status).toEqual({
         phase: 'Running',
         migrationState: { endTimestamp: '2025-08-12T08:00:00Z' },
+      })
+      expect(dataArray[0].spec).toEqual({
+        vmiName: 'testMigrate',
       })
     })
 
