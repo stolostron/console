@@ -59,7 +59,7 @@ export function WizSelect<T>(props: Omit<WizSelectSingleProps<T>, 'variant'>) {
 type SelectProps<T> = WizSelectSingleProps<T>
 
 function WizSelectBase<T = any>(props: SelectProps<T>) {
-  const { displayMode: mode, value, setValue, validated, hidden, id, disabled } = useInput(props)
+  const { displayMode: mode, value, setValue, validated, hidden, id, disabled, required } = useInput(props)
   const { noResults } = useStringContext()
   const placeholder = getSelectPlaceholder(props)
   const keyPath = props.keyPath ?? props.path
@@ -163,6 +163,7 @@ function WizSelectBase<T = any>(props: SelectProps<T>) {
               isOpen={open}
               toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
                 <InputSelect
+                  required={required}
                   disabled={disabled}
                   validated={validated}
                   placeholder={placeholder}

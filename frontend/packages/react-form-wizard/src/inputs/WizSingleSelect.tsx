@@ -26,7 +26,7 @@ export type WizSingleSelectProps = InputCommonProps<string> & {
 }
 
 export function WizSingleSelect(props: WizSingleSelectProps) {
-  const { displayMode: mode, value, setValue, validated, hidden, id, disabled } = useInput(props)
+  const { displayMode: mode, value, setValue, validated, hidden, id, disabled, required } = useInput(props)
   const { noResults } = useStringContext()
   const { label, readonly, isCreatable, options, footer } = props
   const placeholder = getSelectPlaceholder(props)
@@ -76,6 +76,7 @@ export function WizSingleSelect(props: WizSingleSelectProps) {
                   disabled={disabled || readonly}
                   validated={validated}
                   placeholder={placeholder}
+                  required={required}
                   options={options}
                   setOptions={handleSetOptions}
                   toggleRef={toggleRef}

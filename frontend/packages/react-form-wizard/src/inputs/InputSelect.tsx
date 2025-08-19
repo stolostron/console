@@ -28,9 +28,11 @@ type InputSelectProps = {
   toggleRef: React.Ref<MenuToggleElement>
   open: boolean
   setOpen: (open: boolean) => void
+  required?: boolean
 }
 
 export const InputSelect = ({
+  required,
   disabled,
   validated,
   options,
@@ -112,7 +114,7 @@ export const InputSelect = ({
           )}
         </TextInputGroupMain>
 
-        <TextInputGroupUtilities {...(!inputValue && !value ? { style: { display: 'none' } } : {})}>
+        <TextInputGroupUtilities {...((!inputValue && !value) || required ? { style: { display: 'none' } } : {})}>
           <Button variant="plain" onClick={onClear}>
             <TimesIcon aria-hidden />
           </Button>
@@ -174,7 +176,7 @@ export const SelectListOptions = ({
           description={!isSimpleOption ? option.description : undefined}
           isDisabled={isDisabled}
           onClick={isCreateOption ? () => onCreate?.(!isSimpleOption ? option.value : option) : undefined}
-          isSelected={!isDisabled && optionValue === value.toString()}
+          isSelected={!isDisabled && !isCreateOption && optionValue === value.toString()}
         >
           {displayText}
         </SelectOption>
