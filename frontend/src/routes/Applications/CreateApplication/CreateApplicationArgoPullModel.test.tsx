@@ -423,11 +423,11 @@ describe('Create Argo Application Set', () => {
       nockArgoGitPathTree(channelGit.spec.pathname, { tree: [{ path: 'application-test', type: 'tree' }] }),
     ]
 
-    await clickByRole('option', { name: /create new option branch-01/i })
+    await clickByRole('option', { name: /create new option "branch-01"/i })
     await waitForNocks(pathNocks)
 
     await clickByRole('combobox', { name: 'Enter or select a repository path' })
-    await clickByRole('option', { name: /create new option application-test/i })
+    await clickByRole('option', { name: /create new option "application-test"/i })
 
     await typeByRole('gitops-ns', 'textbox')
     await clickByText('Next')

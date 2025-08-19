@@ -102,16 +102,16 @@ describe('ArgoWizard tests', () => {
     await typeByRole('https://github.com/fxiang1/app-samples', 'combobox', { name: /Enter or select a Git URL/i })
     userEvent.click(
       screen.getByRole('option', {
-        name: /create new option https:\/\/github\.com\/fxiang1\/app-samples/i,
+        name: /create new option "https:\/\/github\.com\/fxiang1\/app-samples"/i,
       })
     )
     await clickByRole('combobox', { name: /enter or select a tracking revision/i })
     await clickByRole('option', {
-      name: /create new option main/i,
+      name: /create new option "main"/i,
     })
     await clickByRole('combobox', { name: /enter or select a repository path/i })
     await clickByRole('option', {
-      name: /create new option ansible/i,
+      name: /create new option "ansible"/i,
     })
 
     await typeByRole('default', 'textbox')
@@ -204,7 +204,7 @@ describe('ArgoWizard tests', () => {
     userEvent.type(screen.getByPlaceholderText(/enter or select a helm url/i), 'https://github.com/fxiang1/app-samples')
     userEvent.click(
       screen.getByRole('option', {
-        name: /create new option https:\/\/github\.com\/fxiang1\/app-samples/i,
+        name: /create new option "https:\/\/github\.com\/fxiang1\/app-samples"/i,
       })
     )
     userEvent.type(
