@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { FC, useEffect, useRef, useState } from 'react'
+import { FC, useCallback, useEffect, useRef, useState } from 'react'
 
 // References translations directly from OpenShift console - not from plugins
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
@@ -73,7 +73,7 @@ import EventComponent from '../internal/FleetResourceEventStream/EventComponent'
  * - When `resource.cluster` is undefined or equals hub cluster: Falls back to OpenShift console ResourceEventStream
  * - Automatically handles connection lifecycle (open, close, error, reconnect)
  * - Supports both namespaced and cluster-scoped resources
- * - Displays up to 50 most recent events with real-time streaming
+ * - Displays up to 500 most recent events with real-time streaming
  * - Provides play/pause controls for event streaming
  *
  * **Event Filtering:**
@@ -84,7 +84,7 @@ import EventComponent from '../internal/FleetResourceEventStream/EventComponent'
  * - Shows loading spinner during initial connection
  * - Displays error states for connection failures
  * - Shows empty state when no events exist
- * - Automatically attempts reconnection on websocket errors
+ * - Handles 410 Gone errors by restarting watch from current state
  *
  * @see {@link FleetK8sResourceCommon} for resource type definition
  * @see {@link https://github.com/openshift/console/tree/master/frontend/packages/console-dynamic-plugin-sdk} OpenShift Console Dynamic Plugin SDK
@@ -103,8 +103,7 @@ export const FleetResourceEventStream: FC<{ resource: FleetK8sResourceCommon }> 
   const fieldSelector = `involvedObject.uid=${resource?.metadata?.uid},involvedObject.name=${resource?.metadata?.name},involvedObject.kind=${resource?.kind}`
   const namespace = resource?.metadata?.namespace
 
-  // handle websocket setup and teardown when dependent props change
-  useEffect(() => {
+  const createWebSocketConnection = useCallback(() => {
     if (!resource.cluster || resource.cluster === hubCluster || !loaded) return
 
     const watchURLOptions = {
@@ -132,7 +131,22 @@ export const FleetResourceEventStream: FC<{ resource: FleetK8sResourceCommon }> 
           if (!eventdataParsed) return
 
           const eventType = eventdataParsed.type
-          const object = eventdataParsed.object as EventKind
+          const object = eventdataParsed.object
+
+          // 410 gone error handling
+          if (eventType === 'ERROR') {
+            if (object?.code === 410 || object?.status === 'Gone') {
+              setSortedEvents([]) // clears the local cache
+              setError(false)
+              // restarts connection without resourceVersion to get current state
+              setTimeout(() => createWebSocketConnection(), 100)
+              return
+            }
+
+            // handles other error types
+            setError(object?.message || 'Watch stream error')
+            return
+          }
 
           setSortedEvents((currentSortedEvents) => {
             const topEvents = currentSortedEvents.slice(0, MAX_MESSAGES)
@@ -176,7 +190,8 @@ export const FleetResourceEventStream: FC<{ resource: FleetK8sResourceCommon }> 
       ws.current.onclose = (evt: CloseEvent) => {
         ws.current = undefined
         setActive(false)
-        if (evt?.wasClean === false) {
+        // show error for unexpected closures, not during normal restart
+        if (evt?.wasClean === false && evt.code !== 1000 && evt.code !== 1001) {
           setError(evt.reason || t('public~Connection did not close cleanly.'))
         }
       }
@@ -188,12 +203,32 @@ export const FleetResourceEventStream: FC<{ resource: FleetK8sResourceCommon }> 
     }
   }, [namespace, fieldSelector, active, t, resource.cluster, hubCluster, loaded, backendAPIPath])
 
+  // handle websocket setup and teardown when dependent props change
+  useEffect(() => {
+    if (!resource.cluster || resource.cluster === hubCluster || !loaded) return
+
+    if (!ws.current) {
+      createWebSocketConnection()
+    }
+  }, [
+    namespace,
+    fieldSelector,
+    active,
+    t,
+    resource.cluster,
+    hubCluster,
+    loaded,
+    backendAPIPath,
+    createWebSocketConnection,
+  ])
+
   // return early after all hooks are called, otherwise the component will render twice
   if (!resource.cluster || resource.cluster === hubCluster) return <ResourceEventStream resource={resource} />
 
   const count = sortedEvents.length
   const noEvents = count === 0
   const noMatches = count > 0 && count === 0
+
   let sysEventStatus, statusBtnTxt
 
   if (noEvents || (noMatches && resource)) {
@@ -225,7 +260,7 @@ export const FleetResourceEventStream: FC<{ resource: FleetK8sResourceCommon }> 
     )
     sysEventStatus = (
       <EmptyState title={t('public~Error loading events')} id="empty-state">
-        {t('public~An error occurred during event retrieval. Attempting to reconnect...')}
+        {t('public~An error occurred during event retrieval.')}
       </EmptyState>
     )
   } else if (loading) {
