@@ -15,6 +15,13 @@ type RoleAssignmentHookType = {
   roles: SelectOption[]
 }
 
+type RoleAssignmentHookReturnType = {
+  roleAssignment: RoleAssignmentHookType
+  isLoading: boolean
+  isUsersLoading: boolean
+  isGroupsLoading: boolean
+  isRolesLoading: boolean
+}
 const getResourceWithNamespaceName = (serviceAccount: ServiceAccount | Role) => {
   const namespace = serviceAccount.metadata.namespace
   const name = serviceAccount.metadata.name
@@ -22,7 +29,11 @@ const getResourceWithNamespaceName = (serviceAccount: ServiceAccount | Role) => 
   return `${namespace ?? ''}${separator}${name ?? ''}`
 }
 
-const useRoleAssignment = () => {
+/**
+ * custom hook for retrieving whatever the data is needed for RoleAssignment creation/edit
+ * @returns RoleAssignmentHookReturnType
+ */
+const useRoleAssignment = (): RoleAssignmentHookReturnType => {
   const [roleAssignment, setRoleAssignment] = useState<RoleAssignmentHookType>({
     users: [],
     groups: [],
@@ -59,26 +70,11 @@ const useRoleAssignment = () => {
 
   useEffect(() => setIsLoading(isUsersLoading || isRolesLoading), [isUsersLoading, isRolesLoading])
 
-  useEffect(
-    () => setRoleAssignment({ ...roleAssignment, users }),
-    // roleAssignment would produce a loop
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [users]
-  )
+  useEffect(() => setRoleAssignment({ ...roleAssignment, users }), [roleAssignment, users])
 
-  useEffect(
-    () => setRoleAssignment({ ...roleAssignment, groups }),
-    // roleAssignment would produce a loop
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [groups]
-  )
+  useEffect(() => setRoleAssignment({ ...roleAssignment, groups }), [roleAssignment, groups])
 
-  useEffect(
-    () => setRoleAssignment({ ...roleAssignment, roles }),
-    // roleAssignment would produce a loop
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [roles]
-  )
+  useEffect(() => setRoleAssignment({ ...roleAssignment, roles }), [roleAssignment, roles])
 
   return { roleAssignment, isLoading, isUsersLoading, isGroupsLoading, isRolesLoading }
 }
