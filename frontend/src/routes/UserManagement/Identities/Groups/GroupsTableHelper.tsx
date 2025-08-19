@@ -78,10 +78,11 @@ export const groupsTableColumns = ({ t }: Pick<GroupsTableHelperProps, 't'>): IA
     sort: 'users.length',
     cell: (group) => COLUMN_CELLS.IDENTITY_PROVIDER(group),
   },
-  {
-    header: t('Status'),
-    cell: (group) => COLUMN_CELLS.STATUS(group),
-  },
+  // TODO: uncomment this line once 'status' is implemented
+  // {
+  //   header: t('Status'),
+  //   cell: (group) => COLUMN_CELLS.STATUS(group),
+  // },
   {
     header: t('Created'),
     cell: (group) => COLUMN_CELLS.CREATED(group),
