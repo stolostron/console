@@ -117,10 +117,16 @@ export const useFilters = () => {
         label: 'Status',
         tableFilterFn: (selection: string[], user: RbacUser) => {
           if (selection.length === 0) return true
+
           return selection.some((selected: string) => {
-            if (selected === 'active') return isIdentityActive(user)
-            if (selected === 'inactive') return !isIdentityActive(user)
-            return false
+            switch (selected) {
+              case 'active':
+                return isIdentityActive(user)
+              case 'inactive':
+                return !isIdentityActive(user)
+              default:
+                return false
+            }
           })
         },
         options: [

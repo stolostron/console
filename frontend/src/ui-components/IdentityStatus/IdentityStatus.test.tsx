@@ -40,20 +40,12 @@ const mockServiceAccount: ServiceAccount = {
 }
 
 describe('IdentityStatus Component', () => {
-  test('should render Active status for User', () => {
-    render(<IdentityStatus identity={mockUser} />)
-
-    expect(screen.getByText('Active')).toBeInTheDocument()
-  })
-
-  test('should render Active status for Group', () => {
-    render(<IdentityStatus identity={mockGroup} />)
-
-    expect(screen.getByText('Active')).toBeInTheDocument()
-  })
-
-  test('should render Active status for ServiceAccount', () => {
-    render(<IdentityStatus identity={mockServiceAccount} />)
+  test.each([
+    { name: 'User', identity: mockUser },
+    { name: 'Group', identity: mockGroup },
+    { name: 'ServiceAccount', identity: mockServiceAccount },
+  ])('should render Active status for $name', ({ identity }) => {
+    render(<IdentityStatus identity={identity} />)
 
     expect(screen.getByText('Active')).toBeInTheDocument()
   })
@@ -61,16 +53,12 @@ describe('IdentityStatus Component', () => {
 
 //TODO: implement logic once 'active' field is added
 describe('isIdentityActive function', () => {
-  test('should return true for User', () => {
-    expect(isIdentityActive(mockUser)).toBe(true)
-  })
-
-  test('should return true for Group', () => {
-    expect(isIdentityActive(mockGroup)).toBe(true)
-  })
-
-  test('should return true for ServiceAccount', () => {
-    expect(isIdentityActive(mockServiceAccount)).toBe(true)
+  test.each([
+    { identity: mockUser, name: 'User', expected: true },
+    { identity: mockGroup, name: 'Group', expected: true },
+    { identity: mockServiceAccount, name: 'ServiceAccount', expected: true },
+  ])('should return $expected for $name', ({ identity, expected }) => {
+    expect(isIdentityActive(identity)).toBe(expected)
   })
 
   test('should return false for unknown kind', () => {
