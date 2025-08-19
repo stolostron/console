@@ -11,6 +11,7 @@ import { listUsers, User as RbacUser } from '../../../../resources/rbac'
 import { AcmButton, AcmEmptyState, AcmLoadingPage, AcmTable, compareStrings } from '../../../../ui-components'
 import { RoleAssignmentModal } from '../../RoleAssignments/RoleAssignmentModal'
 import { useFilters, usersTableColumns } from './UsersTableHelper'
+import { RoleAssignmentPreselectedEntity } from '../../RoleAssignments/model/role-assignment-preselected'
 
 const UsersTable = () => {
   const { t } = useTranslation()
@@ -81,6 +82,20 @@ const UsersTable = () => {
         close={() => setIsModalOpen(false)}
         onSave={() => setIsModalOpen(false)}
         isOpen={isModalOpen}
+        preselected={{
+          // groups: [
+          //   {
+          //     id: 'a1a50feb-f41d-4529-8fb4-fd0bec6b3ac7',
+          //     name: 'e2e-cluster-group',
+          //   },
+          // ],
+          roles: [
+            {
+              name: 'default-broker/submariner-k8s-broker-cluster',
+              id: 'd8a7a57f-bd6d-4271-8ff1-98a5b04d5c75',
+            },
+          ],
+        }}
       />
     </>
   )

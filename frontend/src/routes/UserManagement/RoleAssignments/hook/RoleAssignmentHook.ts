@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useEffect, useMemo, useState } from 'react'
 import { useQuery } from '../../../../lib/useQuery'
-import { listGroups, listRoles, listServiceAccounts, listUsers, Role, ServiceAccount } from '../../../../resources'
+import { listGroups, listRoles, listUsers, Role, ServiceAccount } from '../../../../resources'
 import { compareStrings } from '../../../../ui-components'
 
 type SelectOption = {
@@ -12,7 +12,6 @@ type SelectOption = {
 type RoleAssignmentHookType = {
   users: SelectOption[]
   groups: SelectOption[]
-  serviceAccounts: SelectOption[]
   roles: SelectOption[]
 }
 
@@ -27,7 +26,6 @@ const useRoleAssignment = () => {
   const [roleAssignment, setRoleAssignment] = useState<RoleAssignmentHookType>({
     users: [],
     groups: [],
-    serviceAccounts: [],
     roles: [],
   })
   const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -48,15 +46,6 @@ const useRoleAssignment = () => {
         ?.sort((a, b) => compareStrings(a.metadata.name ?? '', b.metadata.name ?? ''))
         .map((e) => ({ id: e.metadata.uid, value: e.metadata.name })) ?? [],
     [groupList]
-  )
-
-  const { data: serviceAccountList, loading: isServiceAccountsLoading } = useQuery(listServiceAccounts)
-  const serviceAccounts: SelectOption[] = useMemo(
-    () =>
-      serviceAccountList
-        ?.sort((a, b) => compareStrings(getResourceWithNamespaceName(a), getResourceWithNamespaceName(b)))
-        .map((e) => ({ id: e.metadata.uid, value: getResourceWithNamespaceName(e) })) ?? [],
-    [serviceAccountList]
   )
 
   const { data: roleList, loading: isRolesLoading } = useQuery(listRoles)
@@ -85,20 +74,13 @@ const useRoleAssignment = () => {
   )
 
   useEffect(
-    () => setRoleAssignment({ ...roleAssignment, serviceAccounts }),
-    // roleAssignment would produce a loop
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [serviceAccounts]
-  )
-
-  useEffect(
     () => setRoleAssignment({ ...roleAssignment, roles }),
     // roleAssignment would produce a loop
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [roles]
   )
 
-  return { roleAssignment, isLoading, isUsersLoading, isGroupsLoading, isServiceAccountsLoading, isRolesLoading }
+  return { roleAssignment, isLoading, isUsersLoading, isGroupsLoading, isRolesLoading }
 }
 
 export { useRoleAssignment }

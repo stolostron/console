@@ -3,6 +3,7 @@ import { css } from '@emotion/css'
 import { Button } from '@patternfly/react-core'
 import { parseLabel } from '../resources/utils'
 import { MouseEventHandler } from 'react'
+import { truncate } from '../lib/text-utils'
 
 const MAX_LABEL_WIDTH = 28
 
@@ -60,7 +61,7 @@ export function HighlightSearchText(
       </>
     )
   } else if (isTruncate) {
-    return truncate(text) ?? null
+    return truncate(MAX_LABEL_WIDTH, text) ?? null
   } else if (supportsInequality && text) {
     return <ToggleButton label={text} toggleEquality={toggleEquality} />
   }
@@ -88,12 +89,6 @@ const ToggleButton = ({ label, toggleEquality }: ToggleButtonProps) => {
 interface SlicedText {
   text: string
   isBold: boolean
-}
-
-export const truncate = (label?: string) => {
-  return label && label?.length > MAX_LABEL_WIDTH
-    ? label.slice(0, MAX_LABEL_WIDTH / 3) + '..' + label.slice((-MAX_LABEL_WIDTH * 2) / 3)
-    : label
 }
 
 const getSlicedText = (itemId: string = '', filterText: string = ''): SlicedText[] => {

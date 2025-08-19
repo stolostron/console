@@ -1,12 +1,13 @@
-import { useContext, useState } from 'react'
+import { useCallback, useContext, useEffect, useState } from 'react'
 import { AcmDataFormPage, AcmDataFormProps } from '../../../components/AcmDataForm'
 import { FormData, Section } from '../../../components/AcmFormData'
 import { useTranslation } from '../../../lib/acm-i18next'
+import { truncate } from '../../../lib/text-utils'
 import { emptyRoleAssignment, RoleAssignment, RoleAssignmentKind } from '../../../resources/role-assignment'
 import { AcmToastContext } from '../../../ui-components'
-import { RoleAssignmentIds } from './model/role-assignment-ids'
 import { useRoleAssignmentFormData } from './hook/RoleAssignmentFormDataHook'
 import { useRoleAssignment } from './hook/RoleAssignmentHook'
+import { RoleAssignmentPreselected, RoleAssignmentPreselectedEntity } from './model/role-assignment-preselected'
 import schema from './schema.json'
 
 type RoleAssignmentFormProps = {
@@ -15,7 +16,7 @@ type RoleAssignmentFormProps = {
   isViewing?: boolean
   isEditing?: boolean
   hideYaml?: boolean
-  preselected?: RoleAssignmentIds
+  preselected?: RoleAssignmentPreselected
 }
 const RoleAssignmentForm = ({
   onCancel,
@@ -35,7 +36,6 @@ const RoleAssignmentForm = ({
     isLoading: isRoleAssignmentLoading,
     isUsersLoading,
     isGroupsLoading,
-    isServiceAccountsLoading,
     isRolesLoading,
   } = useRoleAssignment()
 
@@ -48,26 +48,23 @@ const RoleAssignmentForm = ({
     onChangeSubjectKind,
     onChangeUsers,
     onChangeGroups,
-    onChangeServiceAccounts,
     onChangeScopeKind,
     onChangeRoles,
   } = useRoleAssignmentFormData(preselected)
 
+  // TODO: to implement once YAML is needed
   const stateToData = (): RoleAssignment => {
     return emptyRoleAssignment
   }
 
-  // TODO: to implement
+  // TODO: to implement once YAML is needed
   const stateToSyncs = (): { path: string; setState: (value: any) => void }[] => {
     const pathPrefix = RoleAssignmentKind
 
     const syncs: { path: string; setState: (value: any) => void }[] = [
       {
         path: `${pathPrefix}[0].spec.roles`,
-        setState: (values: any) => {
-          console.log('KIKE stateToSyncs.roles', values)
-          onChangeRoles(values)
-        },
+        setState: (values: any) => onChangeRoles(values),
       },
     ]
     return syncs
@@ -75,7 +72,39 @@ const RoleAssignmentForm = ({
 
   const [isValid] = useState<boolean>(true)
 
-  const title = isEditing ? t('Edit role assignment') : t('Create role assignment')
+  const [title, setTitle] = useState<string>('')
+
+  const treatRoleAssignmentEntityTitle = useCallback(
+    (entities: RoleAssignmentPreselectedEntity[], entityPlural: string, entitySingular: string) => {
+      const entityNames = truncate(20, entities.map((e) => e.name).join(', '))
+      const pluralSingular = entities.length > 1 ? entityPlural : entitySingular
+      return `${t('for')} ${entityNames} ${pluralSingular}`
+    },
+    [t]
+  )
+
+  useEffect(() => {
+    const firstPart = isEditing ? t('Edit role assignment') : t('Create role assignment')
+    let secondPart = ''
+
+    switch (true) {
+      case preselected?.users && preselected?.users.length > 0:
+        secondPart = ` ${treatRoleAssignmentEntityTitle(preselected.users, t('users'), t('user'))}`
+        break
+      case preselected?.groups && preselected?.groups.length > 0:
+        secondPart = ` ${treatRoleAssignmentEntityTitle(preselected.groups, t('groups'), t('group'))}`
+        break
+      case preselected?.roles && preselected?.roles.length > 0:
+        secondPart = ` ${treatRoleAssignmentEntityTitle(preselected.roles, t('roles'), t('role'))}`
+        break
+      default:
+        secondPart = ''
+    }
+    setTitle(`${firstPart}${secondPart}`)
+  }, [isEditing, preselected, t, treatRoleAssignmentEntityTitle])
+
+  const isSubjectFieldHiden = isViewing || preselected?.users?.length || preselected?.groups?.length
+
   const formData: FormData = {
     title,
     sections: [
@@ -93,10 +122,9 @@ const RoleAssignmentForm = ({
             options: [
               { id: `user`, value: 'user', text: t('User') },
               { id: `group`, value: 'group', text: t('Group') },
-              { id: `serviceAccount`, value: 'serviceAccount', text: t('Service Account') },
             ],
             isRequired: true,
-            isHidden: isViewing,
+            isHidden: isSubjectFieldHiden,
           },
           {
             id: `users`,
@@ -106,7 +134,8 @@ const RoleAssignmentForm = ({
             onChange: onChangeUsers,
             options: roleAssignment.users,
             isRequired: roleAssignmentFormData.subject.kind === 'user',
-            isHidden: roleAssignmentFormData.subject.kind !== 'user',
+            isHidden:
+              roleAssignmentFormData.subject.kind !== 'user' || preselected?.users?.length || isSubjectFieldHiden,
             isCreatable: true,
             isLoading: isUsersLoading,
             isScrollable: true,
@@ -119,22 +148,10 @@ const RoleAssignmentForm = ({
             onChange: onChangeGroups,
             options: roleAssignment.groups,
             isRequired: roleAssignmentFormData.subject.kind === 'group',
-            isHidden: roleAssignmentFormData.subject.kind !== 'group',
+            isHidden:
+              roleAssignmentFormData.subject.kind !== 'group' || preselected?.groups?.length || isSubjectFieldHiden,
             isCreatable: true,
             isLoading: isGroupsLoading,
-            isScrollable: true,
-          },
-          {
-            id: `serviceAcctouns`,
-            type: 'CreatableMultiselect',
-            placeholder: t('Select or enter service accounts'),
-            value: roleAssignmentFormData.subject.serviceAccounts,
-            onChange: onChangeServiceAccounts,
-            options: roleAssignment.serviceAccounts,
-            isRequired: roleAssignmentFormData.subject.kind === 'serviceAccount',
-            isHidden: roleAssignmentFormData.subject.kind !== 'serviceAccount',
-            isCreatable: true,
-            isLoading: isServiceAccountsLoading,
             isScrollable: true,
           },
         ],
@@ -173,6 +190,7 @@ const RoleAssignmentForm = ({
             isCreatable: true,
             isLoading: isRolesLoading,
             isScrollable: true,
+            isHidden: preselected?.roles?.length,
           },
         ],
       },

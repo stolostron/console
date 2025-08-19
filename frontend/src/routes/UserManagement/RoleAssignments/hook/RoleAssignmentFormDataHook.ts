@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { get } from 'lodash'
 import { useCallback, useEffect, useState } from 'react'
-import { RoleAssignmentIds } from '../model/role-assignment-ids'
+import { RoleAssignmentPreselected } from '../model/role-assignment-preselected'
 import { RoleAssignmentHookType, SelectOption, useRoleAssignment } from './RoleAssignmentHook'
 
 type RoleAssignmentFormDataType = {
@@ -17,7 +17,7 @@ type RoleAssignmentFormDataType = {
   roles: string[]
 }
 
-const useRoleAssignmentFormData = (preselected?: RoleAssignmentIds) => {
+const useRoleAssignmentFormData = (preselected?: RoleAssignmentPreselected) => {
   const { roleAssignment } = useRoleAssignment()
 
   const [roleAssignmentFormData, setRoleAssignmentFormData] = useState<RoleAssignmentFormDataType>({
@@ -97,13 +97,12 @@ const useRoleAssignmentFormData = (preselected?: RoleAssignmentIds) => {
   const treatPreselected = useCallback(
     (
       preselectedFieldName: string,
-      roleAssignmentFieldName: string,
       roleAssignment: RoleAssignmentHookType,
       onChangeCallback: (value: any) => void,
-      preselected?: RoleAssignmentIds
+      preselected?: RoleAssignmentPreselected
     ) => {
       if (get(preselected, preselectedFieldName)?.length) {
-        const values: string[] = get(roleAssignment, roleAssignmentFieldName)
+        const values: string[] = get(roleAssignment, preselectedFieldName)
           .filter((e: SelectOption) => e.value && e.id && get(preselected, preselectedFieldName)?.includes(e.id))
           .map((e: SelectOption) => e.value)
         onChangeCallback(values)
@@ -113,23 +112,17 @@ const useRoleAssignmentFormData = (preselected?: RoleAssignmentIds) => {
   )
 
   useEffect(
-    () => treatPreselected('userIds', 'users', roleAssignment, onChangeUsers, preselected),
+    () => treatPreselected('users', roleAssignment, onChangeUsers, preselected),
     [roleAssignment.users, preselected, onChangeUsers, treatPreselected, roleAssignment]
   )
 
   useEffect(
-    () => treatPreselected('groupIds', 'groups', roleAssignment, onChangeGroups, preselected),
+    () => treatPreselected('groups', roleAssignment, onChangeGroups, preselected),
     [roleAssignment.groups, preselected, onChangeGroups, treatPreselected, roleAssignment]
   )
 
   useEffect(
-    () =>
-      treatPreselected('serviceAccountIds', 'serviceAccounts', roleAssignment, onChangeServiceAccounts, preselected),
-    [roleAssignment.serviceAccounts, preselected, onChangeServiceAccounts, treatPreselected, roleAssignment]
-  )
-
-  useEffect(
-    () => treatPreselected('roleIds', 'roles', roleAssignment, onChangeRoles, preselected),
+    () => treatPreselected('roles', roleAssignment, onChangeRoles, preselected),
     [roleAssignment.roles, preselected, onChangeRoles, treatPreselected, roleAssignment]
   )
 
