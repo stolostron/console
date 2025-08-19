@@ -88,13 +88,11 @@ const useRoleAssignmentFormData = (preselected?: RoleAssignmentPreselected) => {
     })
 
   const onChangeRoles = useCallback(
-    (roles: string[]) => {
-      console.log('KIKE onChangeRoles', roles)
+    (roles: string[]) =>
       setRoleAssignmentFormData({
         ...roleAssignmentFormData,
         roles,
-      })
-    },
+      }),
     [roleAssignmentFormData]
   )
 
