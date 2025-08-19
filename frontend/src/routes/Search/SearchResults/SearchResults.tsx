@@ -260,6 +260,7 @@ export default function SearchResults(
   const searchResultLimit = useSearchResultLimit()
   const isGlobalHub = useRecoilValue(isGlobalHubState)
   const settings = useRecoilValue(settingsState)
+  const [currentQueryState, setCurrentQueryState] = useState<string>(currentQuery)
   const [selectedRelatedKinds, setSelectedRelatedKinds] = useState<string[]>(preSelectedRelatedResources)
   const [deleteResource, setDeleteResource] = useState<IDeleteModalProps>(ClosedDeleteModalProps)
   const [deleteExternalResource, setDeleteExternalResource] = useState<IDeleteExternalResourceModalProps>(
@@ -280,15 +281,19 @@ export default function SearchResults(
   }, [isGlobalHub, settings.globalSearchFeatureFlag, error?.graphQLErrors])
 
   useEffect(() => {
-    // If the current search query changes -> hide related resources
-    if (preSelectedRelatedResources.length === 0) {
-      setShowRelatedResources(false)
+    // If the current query changes -> reset related resource states
+    if (currentQuery !== currentQueryState) {
+      setCurrentQueryState(currentQuery)
       setSelectedRelatedKinds([])
-    } else {
-      setShowRelatedResources(true)
-      setSelectedRelatedKinds(preSelectedRelatedResources)
+      setShowRelatedResources(false)
     }
-  }, [preSelectedRelatedResources])
+  }, [currentQuery, currentQueryState])
+
+  // related section should be open if url contains 1+ showrelated params
+  const isRelatedSectionOpen = useMemo(
+    () => showRelatedResources || preSelectedRelatedResources.length > 0,
+    [showRelatedResources, preSelectedRelatedResources]
+  )
 
   const searchResultItems: ISearchResult[] = useMemo(() => data?.searchResult?.[0]?.items || [], [data?.searchResult])
 
@@ -381,9 +386,9 @@ export default function SearchResults(
           <PageSection isFilled={false} variant={'light'}>
             <div className={relatedExpandableWrapper}>
               <ExpandableSection
-                onToggle={() => setShowRelatedResources(!showRelatedResources)}
-                isExpanded={showRelatedResources}
-                toggleText={!showRelatedResources ? t('Show related resources') : t('Hide related resources')}
+                onToggle={() => setShowRelatedResources(!isRelatedSectionOpen)}
+                isExpanded={isRelatedSectionOpen}
+                toggleText={!isRelatedSectionOpen ? t('Show related resources') : t('Hide related resources')}
               />
               <Tooltip
                 content={t(
@@ -393,7 +398,7 @@ export default function SearchResults(
                 <OutlinedQuestionCircleIcon color={'var(--pf-v5-global--Color--200)'} />
               </Tooltip>
             </div>
-            {showRelatedResources && (
+            {isRelatedSectionOpen && (
               <RelatedResults
                 currentQuery={currentQuery}
                 selectedRelatedKinds={selectedRelatedKinds}
