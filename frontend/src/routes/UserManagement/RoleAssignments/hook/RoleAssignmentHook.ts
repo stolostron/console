@@ -70,11 +70,17 @@ const useRoleAssignment = (): RoleAssignmentHookReturnType => {
 
   useEffect(() => setIsLoading(isUsersLoading || isRolesLoading), [isUsersLoading, isRolesLoading])
 
-  useEffect(() => setRoleAssignment({ ...roleAssignment, users }), [roleAssignment, users])
+  // to avoid loop onroleAssignment
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => setRoleAssignment({ ...roleAssignment, users }), [users])
 
-  useEffect(() => setRoleAssignment({ ...roleAssignment, groups }), [roleAssignment, groups])
+  // to avoid loop onroleAssignment
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => setRoleAssignment({ ...roleAssignment, groups }), [groups])
 
-  useEffect(() => setRoleAssignment({ ...roleAssignment, roles }), [roleAssignment, roles])
+  // to avoid loop onroleAssignment
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => setRoleAssignment({ ...roleAssignment, roles }), [roles])
 
   return { roleAssignment, isLoading, isUsersLoading, isGroupsLoading, isRolesLoading }
 }
