@@ -17,6 +17,11 @@ type RoleAssignmentFormDataType = {
   roles: string[]
 }
 
+/**
+ * custom hook for handling everything related with the form data itself
+ * @param preselected: RoleAssignmentPreselected
+ * @returns either the form data and different onChange functions
+ */
 const useRoleAssignmentFormData = (preselected?: RoleAssignmentPreselected) => {
   const { roleAssignment } = useRoleAssignment()
 
@@ -94,7 +99,7 @@ const useRoleAssignmentFormData = (preselected?: RoleAssignmentPreselected) => {
   )
 
   // preselected treatments
-  const treatPreselected = useCallback(
+  const setValuesBasedOnPreselected = useCallback(
     (
       preselectedFieldName: string,
       roleAssignment: RoleAssignmentHookType,
@@ -112,18 +117,18 @@ const useRoleAssignmentFormData = (preselected?: RoleAssignmentPreselected) => {
   )
 
   useEffect(
-    () => treatPreselected('users', roleAssignment, onChangeUsers, preselected),
-    [roleAssignment.users, preselected, onChangeUsers, treatPreselected, roleAssignment]
+    () => setValuesBasedOnPreselected('users', roleAssignment, onChangeUsers, preselected),
+    [roleAssignment.users, preselected, onChangeUsers, setValuesBasedOnPreselected, roleAssignment]
   )
 
   useEffect(
-    () => treatPreselected('groups', roleAssignment, onChangeGroups, preselected),
-    [roleAssignment.groups, preselected, onChangeGroups, treatPreselected, roleAssignment]
+    () => setValuesBasedOnPreselected('groups', roleAssignment, onChangeGroups, preselected),
+    [roleAssignment.groups, preselected, onChangeGroups, setValuesBasedOnPreselected, roleAssignment]
   )
 
   useEffect(
-    () => treatPreselected('roles', roleAssignment, onChangeRoles, preselected),
-    [roleAssignment.roles, preselected, onChangeRoles, treatPreselected, roleAssignment]
+    () => setValuesBasedOnPreselected('roles', roleAssignment, onChangeRoles, preselected),
+    [roleAssignment.roles, preselected, onChangeRoles, setValuesBasedOnPreselected, roleAssignment]
   )
 
   return {
