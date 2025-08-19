@@ -2,8 +2,7 @@
 import { useMemo } from 'react'
 import { useParams, useLocation, Link, Outlet, useNavigate } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { useQuery } from '../../../../lib/useQuery'
-import { listGroups, User, Group } from '../../../../resources/rbac'
+import { User, Group } from '../../../../resources/rbac'
 import {
   AcmPage,
   AcmPageHeader,
@@ -36,6 +35,17 @@ const UserPage = () => {
 
   // Use mock data instead of live API for development
   const mockUsers: User[] = [
+    {
+      apiVersion: 'user.openshift.io/v1',
+      kind: 'User',
+      metadata: {
+        name: 'test-user',
+        uid: 'test-user-uid',
+        creationTimestamp: '2025-01-24T17:48:45Z',
+      },
+      fullName: 'Test User',
+      identities: ['htpasswd:test-user'],
+    },
     {
       apiVersion: 'user.openshift.io/v1',
       kind: 'User',
