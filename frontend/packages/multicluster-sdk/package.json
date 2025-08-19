@@ -1,6 +1,6 @@
 {
   "name": "@stolostron/multicluster-sdk",
-  "version": "0.5.1",
+  "version": "0.6.1",
   "description": "Provides extensions and APIs that dynamic plugins can use to leverage multicluster capabilities provided by Red Hat Advanced Cluster Management.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -51,7 +51,7 @@
     "jest": "^29.7.0",
     "jest-axe": "^6.0.0",
     "jest-diff": "^29.3.1",
-    "jest-environment-jsdom": "^29.6.1",
+    "jest-environment-jsdom": "^29.7.0",
     "jest-fetch-mock": "^3.0.3",
     "jest-raw-loader": "^1.0.1",
     "jest-sonar-reporter": "^2.0.0",

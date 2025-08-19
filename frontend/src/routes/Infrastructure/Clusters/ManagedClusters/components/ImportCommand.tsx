@@ -15,9 +15,12 @@ import {
   Tab,
   Tabs,
   TabTitleText,
+  Text,
+  TextContent,
+  TextVariants,
   Tooltip,
 } from '@patternfly/react-core'
-import { CopyIcon } from '@patternfly/react-icons'
+import { CopyIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Fragment, useEffect, useState } from 'react'
 import { useClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 import { TFunction } from 'react-i18next'
@@ -90,9 +93,27 @@ export function ImportCommand(props: ImportCommandProps) {
             <Card>
               <CardTitle>{t('import.command.generated')}</CardTitle>
               <CardBody>
-                <strong style={{ marginBottom: '12px', fontSize: '14px', display: 'block' }}>
-                  {t('import.command.copy.description')}
-                </strong>
+                <span>
+                  <TextContent>
+                    <Text
+                      component={TextVariants.a}
+                      isVisitedLink
+                      href="https://access.redhat.com/support/policy/updates/advanced-cluster-management"
+                      target="_blank"
+                      style={{
+                        cursor: 'pointer',
+                        display: 'inline-block',
+                        padding: '0px',
+                        fontSize: '14px',
+                        color: '#0066cc',
+                      }}
+                    >
+                      <strong style={{ marginBottom: '12px', fontSize: '14px', display: 'block' }}>
+                        {t('import.command.copy.description')} <ExternalLinkAltIcon />
+                      </strong>
+                    </Text>
+                  </TextContent>
+                </span>
                 <Tooltip isVisible={copied} content={t('copied')} trigger="click">
                   <AcmButton
                     id="import-command"

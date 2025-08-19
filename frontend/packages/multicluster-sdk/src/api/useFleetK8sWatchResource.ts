@@ -5,13 +5,15 @@ import { consoleFetchJSON, useK8sModel, useK8sWatchResource } from '@openshift-c
 import { useFleetK8sAPIPath } from './useFleetK8sAPIPath'
 import { useIsFleetAvailable } from './useIsFleetAvailable'
 import { useEffect, useMemo, useState } from 'react'
-import { buildResourceURL, fleetWatch } from './apiRequests'
+import { buildResourceURL, fleetWatch } from '../internal/apiRequests'
 import {
   fleetResourceCache,
   fleetSocketCache,
   getCacheKey,
   handleWebsocketEvent,
 } from '../internal/fleetK8sWatchResource'
+import { selectorToString } from './utils/requirements'
+import { useDeepCompareMemoize } from '../internal/hooks/useDeepCompareMemoize'
 
 /**
  * A hook for watching Kubernetes resources with support for multi-cluster environments.
@@ -52,11 +54,14 @@ export const useFleetK8sWatchResource: UseFleetK8sWatchResource = <
 ) => {
   const [hubClusterName, hubClusterNameLoaded] = useHubClusterName()
 
-  const clusterSpecified = initResource?.cluster !== undefined
+  const memoizedResource = useDeepCompareMemoize(initResource, true)
+
+  const clusterSpecified = memoizedResource?.cluster !== undefined
   const shouldWaitForHubClusterName = clusterSpecified && !hubClusterNameLoaded
 
-  const { cluster, ...resource } = initResource ?? {}
-  const nullResource = !initResource || !resource?.groupVersionKind
+  const { cluster, ...resource } = memoizedResource ?? {}
+  const nullResource = !memoizedResource || !resource?.groupVersionKind
+  const selector = memoizedResource?.selector
 
   const { isList, groupVersionKind, namespace, name } = resource ?? {}
   const [model] = useK8sModel(groupVersionKind)
@@ -76,11 +81,24 @@ export const useFleetK8sWatchResource: UseFleetK8sWatchResource = <
             ns: namespace,
             name,
             cluster,
+            queryParams: {
+              ...(memoizedResource?.fieldSelector ? { fieldSelector: memoizedResource?.fieldSelector } : {}),
+              labelSelector: selectorToString(memoizedResource?.selector || {}),
+            },
             basePath: backendAPIPath as string,
           })
         : '',
 
-    [model, namespace, name, cluster, backendPathLoaded, backendAPIPath]
+    [
+      model,
+      namespace,
+      name,
+      cluster,
+      backendPathLoaded,
+      backendAPIPath,
+      memoizedResource?.selector,
+      memoizedResource?.fieldSelector,
+    ]
   )
 
   const [data, setData] = useState<R>(fleetResourceCache[requestPath] ?? noCachedValue)
@@ -119,6 +137,9 @@ export const useFleetK8sWatchResource: UseFleetK8sWatchResource = <
 
         if (name) {
           watchQuery.fieldSelector = `metadata.name=${name}`
+        }
+        if (selector) {
+          watchQuery.labelSelector = selector
         }
 
         if (isList) {
@@ -174,6 +195,7 @@ export const useFleetK8sWatchResource: UseFleetK8sWatchResource = <
     backendPathLoaded,
     model,
     backendAPIPath,
+    selector,
   ])
 
   const fallbackResult = useK8sWatchResource<R>(useFallback ? resource : null)

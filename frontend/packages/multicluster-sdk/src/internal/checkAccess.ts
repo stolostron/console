@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { K8sVerb, SelfSubjectAccessReviewKind } from '@openshift-console/dynamic-plugin-sdk'
 import _ from 'lodash'
-import { fleetK8sCreate } from '../api/apiRequests'
+import { fleetK8sCreate } from '../api/fleetK8sCreate'
 import { SelfSubjectAccessReviewModel } from './models'
 
 /**

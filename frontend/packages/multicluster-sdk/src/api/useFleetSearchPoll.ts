@@ -4,9 +4,22 @@ import { useCallback, useMemo } from 'react'
 import { SearchResult } from '../types/search'
 import { UseFleetSearchPoll } from '../types/fleet'
 import { searchClient } from '../internal/search/search-client'
+import { set } from 'lodash'
 
 // Constants for polling interval configuration
 const DEFAULT_POLL_INTERVAL_SECONDS = 30
+
+const setIfDefined = (obj: any, path: string, value: any, valueToSet?: any): void => {
+  if (value !== undefined) {
+    set(obj, path, valueToSet ?? value)
+  }
+}
+const getResourceKey = (kind: string, apigroup?: string): string => {
+  if (apigroup) {
+    return `${kind}.${apigroup}`
+  }
+  return kind
+}
 
 /**
  * A React hook that provides fleet-wide search functionality using the ACM search API.
@@ -176,31 +189,74 @@ export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSea
             labels: label,
           },
         }
+        const resourceKey = getResourceKey(item.kind, item.apigroup)
         // Reverse the flattening of specific resources by the search-collector
         // See https://github.com/stolostron/search-collector/blob/main/pkg/transforms/genericResourceConfig.go
-        switch (kind) {
-          case 'VirtualMachine':
-            resource.spec = {
-              running: item._specRunning,
-              runStrategy: item._specRunStrategy,
-              template: { spec: { domain: { cpu: { cores: item.cpu }, memory: { guest: item.memory } } } },
-            }
-            resource.status = { conditions: [{ type: 'Ready', status: item.ready }], printableStatus: item.status }
+        switch (resourceKey) {
+          case 'ClusterServiceVersion.operators.coreos.com':
+            setIfDefined(resource, 'spec.version', item.version)
+            setIfDefined(resource, 'spec.displayName', item.display)
+            setIfDefined(resource, 'status.phase', item.phase)
             break
-          case 'VirtualMachineInstance':
-            resource.status = {
-              conditions: [
-                { type: 'LiveMigratable', status: item.liveMigratable },
-                { type: 'Ready', status: item.ready },
-              ],
-              interfaces: [{ ipAddress: item.ipaddress, name: 'default' }],
-              nodeName: item.node,
-              phase: item.phase,
+
+          case 'PersistentVolumeClaim':
+            setIfDefined(resource, 'spec.resources.requests.storage', item.requestedStorage)
+            setIfDefined(resource, 'spec.volumeMode', item.volumeMode)
+            break
+
+          case 'VirtualMachine.kubevirt.io': {
+            setIfDefined(resource, 'spec.runStrategy', item.runStrategy)
+            setIfDefined(resource, 'spec.template.spec.domain.cpu.cores', item.cpu)
+            setIfDefined(resource, 'spec.template.spec.domain.memory.guest', item.memory)
+            setIfDefined(resource, 'spec.template.metadata.annotations["vm.kubevirt.io/flavor"]', item.flavor)
+            setIfDefined(resource, 'spec.template.metadata.annotations["vm.kubevirt.io/os"]', item.osName)
+            setIfDefined(resource, 'spec.template.metadata.annotations["vm.kubevirt.io/workload"]', item.workload)
+            const conditions: any = []
+            setIfDefined(conditions, `[${conditions.length}]`, item.ready, { type: 'Ready', status: item.ready })
+            setIfDefined(conditions, `[${conditions.length}]`, item.agentConnected, {
+              type: 'AgentConnected',
+              status: item.agentConnected,
+            })
+            if (conditions.length) {
+              setIfDefined(resource, 'status.conditions', conditions)
             }
+            setIfDefined(resource, 'status.printableStatus', item.status)
+            break
+          }
+
+          case 'VirtualMachineInstance.kubevirt.io': {
+            setIfDefined(resource, 'spec.domain.cpu.cores', item.cpu)
+            setIfDefined(resource, 'spec.domain.memory.guest', item.memory)
+            const conditions: any = []
+            setIfDefined(conditions, `[${conditions.length}]`, item.liveMigratable, {
+              type: 'LiveMigratable',
+              status: item.liveMigratable,
+            })
+            setIfDefined(conditions, `[${conditions.length}]`, item.ready, {
+              type: 'Ready',
+              status: item.ready,
+            })
+            if (conditions.length) {
+              setIfDefined(resource, 'status.conditions', conditions)
+            }
+            setIfDefined(resource, 'status.interfaces[0]', item.ipaddress, {
+              ipAddress: item.ipaddress,
+              name: 'default',
+            })
+            setIfDefined(resource, 'status.nodeName', item.node)
+            setIfDefined(resource, 'status.phase', item.phase)
+            setIfDefined(resource, 'status.guestOSInfo.version', item.osVersion)
+            break
+          }
+
+          case 'VirtualMachineInstanceMigration.kubevirt.io':
+            setIfDefined(resource, 'status.migrationState.endTimestamp', item.endTime)
+            setIfDefined(resource, 'status.phase', item.phase)
+            break
         }
         return resource
       }),
-    [kind, result]
+    [result]
   )
 
   const nullResponse = useMemo(() => (isList ? [] : undefined), [isList])

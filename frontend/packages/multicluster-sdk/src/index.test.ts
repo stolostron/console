@@ -8,17 +8,14 @@ describe('package index', () => {
       'FleetResourceEventStream',
       'FleetResourceLink',
       'REQUIRED_PROVIDER_FLAG',
-      'buildResourceURL', // TODO do not export
       'fleetK8sCreate',
       'fleetK8sDelete',
       'fleetK8sGet',
+      'fleetK8sList',
+      'fleetK8sListItems',
       'fleetK8sPatch',
       'fleetK8sUpdate',
-      'fleetWatch', // TODO do not export
-      'getBackendUrl', // TODO do not export
       'getFleetK8sAPIPath',
-      'getResourcePath', //TODO do not export
-      'getResourceURL', // TODO do not export
       'useFleetAccessReview',
       'useFleetClusterNames',
       'useFleetK8sAPIPath',
@@ -27,6 +24,7 @@ describe('package index', () => {
       'useFleetSearchPoll',
       'useHubClusterName',
       'useIsFleetAvailable',
+      'useIsFleetObservabilityInstalled',
     ])
   })
 })
