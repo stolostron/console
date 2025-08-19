@@ -2,31 +2,31 @@
 import { PageSection } from '@patternfly/react-core'
 import { useMemo, useCallback } from 'react'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
-import { listUsers, User as RbacUser } from '../../../../resources/rbac'
+import { listGroups, Group as RbacGroup } from '../../../../resources/rbac'
 import { useQuery } from '../../../../lib/useQuery'
 import { AcmEmptyState, AcmTable, compareStrings, AcmLoadingPage, AcmButton } from '../../../../ui-components'
-import { usersTableColumns, useFilters } from './UsersTableHelper'
+import { groupsTableColumns, useFilters } from './GroupsTableHelper'
 import { Link } from 'react-router-dom-v5-compat'
 import { ViewDocumentationLink, DOC_LINKS } from '../../../../lib/doc-util'
 import { rbacCreate, useIsAnyNamespaceAuthorized } from '../../../../lib/rbac-util'
 import { AccessControlDefinition } from '../../../../resources/access-control'
 
-const UsersTable = () => {
+const GroupsTable = () => {
   const { t } = useTranslation()
 
-  const { data: rbacUsers, loading } = useQuery(listUsers)
+  const { data: rbacGroups, loading } = useQuery(listGroups)
 
-  const users = useMemo(
-    () => rbacUsers?.sort((a, b) => compareStrings(a.metadata.name ?? '', b.metadata.name ?? '')) ?? [],
-    [rbacUsers]
+  const groups = useMemo(
+    () => rbacGroups?.sort((a, b) => compareStrings(a.metadata.name ?? '', b.metadata.name ?? '')) ?? [],
+    [rbacGroups]
   )
 
-  const keyFn = useCallback((user: RbacUser) => user.metadata.name ?? '', [])
+  const keyFn = useCallback((group: RbacGroup) => group.metadata.name ?? '', [])
 
   const canAddAccessControl = useIsAnyNamespaceAuthorized(rbacCreate(AccessControlDefinition))
 
   const filters = useFilters()
-  const columns = usersTableColumns({ t })
+  const columns = groupsTableColumns({ t })
   // TODO: Uncomment when actions are implemented
   // const rowActions = useRowActions({ t, navigate })
 
@@ -35,12 +35,12 @@ const UsersTable = () => {
       {loading ? (
         <AcmLoadingPage />
       ) : (
-        <AcmTable<RbacUser>
-          key="users-table"
+        <AcmTable<RbacGroup>
+          key="groups-table"
           filters={filters}
           columns={columns}
           keyFn={keyFn}
-          items={users}
+          items={groups}
           emptyState={
             <AcmEmptyState
               title={t(`In order to view Users, add Identity provider`)}
@@ -72,4 +72,4 @@ const UsersTable = () => {
   )
 }
 
-export { UsersTable }
+export { GroupsTable }

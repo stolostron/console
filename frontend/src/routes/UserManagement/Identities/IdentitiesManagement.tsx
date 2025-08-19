@@ -3,7 +3,7 @@ import { Navigate, Route, Routes } from 'react-router-dom-v5-compat'
 import { NavigationPath, createRoutePathFunction } from '../../../NavigationPath'
 import IdentitiesPage from './IdentitiesPage'
 import { UsersTable } from './Users/UsersTable'
-import { Groups } from './Groups/Groups'
+import { GroupsTable } from './Groups/GroupsTable'
 import { ServiceAccounts } from './ServiceAccounts/ServiceAccounts'
 import { UserPage } from './Users/UserPage'
 import { UserDetails } from './Users/UserDetails'
@@ -72,7 +72,7 @@ export default function IdentitiesManagement() {
       {/* Main page with tabs with Users, Groups, and Service Accounts */}
       <Route element={<IdentitiesPage />}>
         <Route path={identitiesChildPath(NavigationPath.identitiesUsers)} element={<UsersTable />} />
-        <Route path={identitiesChildPath(NavigationPath.identitiesGroups)} element={<Groups />} />
+        <Route path={identitiesChildPath(NavigationPath.identitiesGroups)} element={<GroupsTable />} />
         <Route path={identitiesChildPath(NavigationPath.identitiesServiceAccounts)} element={<ServiceAccounts />} />
       </Route>
 
