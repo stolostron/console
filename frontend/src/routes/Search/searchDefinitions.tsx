@@ -6,10 +6,10 @@ import { ButtonProps, Icon, Label, Popover, Text, TextContent, TextVariants } fr
 import { CheckCircleIcon, ExclamationCircleIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
 import queryString from 'query-string'
-import { useMemo, useContext } from 'react'
+import { useMemo } from 'react'
 import { TFunction } from 'react-i18next'
 import { generatePath, Link } from 'react-router-dom-v5-compat'
-import { PluginContext } from '../../lib/PluginContext'
+
 import { useTranslation } from '../../lib/acm-i18next'
 import AcmTimestamp from '../../lib/AcmTimestamp'
 import { NavigationPath } from '../../NavigationPath'
@@ -17,7 +17,6 @@ import { ConfigMap } from '../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { AcmButton, AcmLabels } from '../../ui-components'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
-import { getExtensionResourcePath } from '@stolostron/multicluster-sdk/src/utils/resourceRouteUtils'
 
 export interface ResourceDefinitions {
   application: Record<'columns', SearchColumnDefinition[]>
@@ -556,59 +555,8 @@ export const GetUrlSearchParam = (resource: any) => {
   return `?${encodeURIComponent(searchString)}`
 }
 
-// generic extension-based link creation for any resource type
-function createExtensionBasedLink(item: any, acmExtensions: any): JSX.Element {
-  const defaultSearchLink = (
-    <Link
-      to={{
-        pathname: NavigationPath.resources,
-        search: GetUrlSearchParam(item),
-      }}
-      state={{
-        from: NavigationPath.search,
-        fromSearch: window.location.search,
-      }}
-    >
-      {item.name}
-    </Link>
-  )
-
-  // extract version from apiversion like "kubevirt.io/v1"
-  const version = item.apiversion?.split('/')[1]
-  const params = {
-    cluster: item.cluster,
-    namespace: item.namespace,
-    name: item.name,
-    resource: item,
-    model: {
-      group: item.apigroup,
-      version: version,
-      kind: item.kind,
-    },
-  }
-
-  // ACM extensions via PluginContext
-  if (acmExtensions?.resourceRoutes?.length) {
-    const extensionPath = getExtensionResourcePath(
-      acmExtensions.resourceRoutes,
-      item.apigroup,
-      item.kind,
-      version,
-      params
-    )
-
-    if (extensionPath) {
-      return <Link to={extensionPath}>{item.name}</Link>
-    }
-  }
-
-  // if no extension found, use default search link
-  return defaultSearchLink
-}
-
 export function CreateDetailsLink(props: Readonly<{ item: any }>) {
   const { item } = props
-  const { acmExtensions } = useContext(PluginContext)
 
   const defaultSearchLink = (
     <Link
@@ -688,8 +636,7 @@ export function CreateDetailsLink(props: Readonly<{ item: any }>) {
         </Link>
       )
     default:
-      // use extension-based routing for all other resources
-      return createExtensionBasedLink(item, acmExtensions)
+      return defaultSearchLink
   }
 }
 
