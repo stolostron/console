@@ -1,24 +1,30 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { renderHook } from '@testing-library/react-hooks'
-import * as internal from '../internal/cachedHubClusterName'
+import * as internal from '../internal/cachedHubConfiguration'
 import { useHubClusterName } from './useHubClusterName'
 import { useIsFleetAvailable } from './useIsFleetAvailable'
 
-jest.mock('../internal/cachedHubClusterName')
+jest.mock('../internal/cachedHubConfiguration')
 
 jest.mock('./useIsFleetAvailable', () => ({
   useIsFleetAvailable: jest.fn(),
 }))
 
 const mockUseIsFleetAvailable = useIsFleetAvailable as jest.Mock
+const hubConfiguration: internal.HubConfiguration = {
+  localHubName: 'local-cluster',
+  isHubSelfManaged: true,
+  isGlobalHub: false,
+  isObservabilityInstalled: false,
+}
 
-describe('testing useHubClusterName Hook', () => {
+describe('useHubClusterName', () => {
   afterEach(() => {
     jest.clearAllMocks()
   })
 
   it('should return cached hub cluster name if cache available', () => {
-    void (internal.getCachedHubClusterName as jest.Mock).mockReturnValue('local-cluster')
+    void (internal.getCachedHubConfiguration as jest.Mock).mockReturnValue(hubConfiguration)
     mockUseIsFleetAvailable.mockReturnValue(true)
     const { result } = renderHook(() => useHubClusterName())
 
@@ -26,8 +32,8 @@ describe('testing useHubClusterName Hook', () => {
   })
 
   it('should fetch hub cluster name if not cached', async () => {
-    void (internal.getCachedHubClusterName as jest.Mock).mockReturnValue(undefined)
-    const fetchMock = jest.spyOn(internal, 'fetchHubClusterName').mockResolvedValue('local-cluster')
+    void (internal.getCachedHubConfiguration as jest.Mock).mockReturnValue(undefined)
+    const fetchMock = jest.spyOn(internal, 'fetchHubConfiguration').mockResolvedValue(hubConfiguration)
     mockUseIsFleetAvailable.mockReturnValue(true)
     const { result, waitForNextUpdate } = renderHook(() => useHubClusterName())
     expect(result.current).toEqual([undefined, false, undefined])
@@ -37,7 +43,7 @@ describe('testing useHubClusterName Hook', () => {
   })
 
   it('should return error if fleet is not available', async () => {
-    void (internal.getCachedHubClusterName as jest.Mock).mockReturnValue('local-cluster')
+    void (internal.getCachedHubConfiguration as jest.Mock).mockReturnValue(hubConfiguration)
     mockUseIsFleetAvailable.mockReturnValue(false)
     const { result } = renderHook(() => useHubClusterName())
     expect(result.current).toEqual([

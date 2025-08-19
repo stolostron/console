@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { RoleAssignment, RoleAssignmentSubject, Cluster } from '../role-assignment'
+import { RoleAssignment } from '../role-assignment'
 import { UserKindType, GroupKindType, ServiceAccountKindType } from '../rbac'
 import mockRoleAssignments from './mock-data/role-assignments.json'
 
@@ -7,59 +7,49 @@ export interface RoleAssignmentQuery {
   clusters?: string[]
   subjectNames?: string[]
   subjectTypes?: (UserKindType | GroupKindType | ServiceAccountKindType)[]
-  roleNames?: string[]
+  roles?: string[]
 }
 
-// TODO: Remove once real role assignment data is available
-function filterClusters(clusters: Cluster[], clusterNames?: string[]): Cluster[] {
-  if (!clusterNames?.length) return clusters
-  // Filter clusters by name/s included in query
-  return clusters.filter((cluster) => clusterNames.includes(cluster.name))
+function filterByClusters(roleAssignments: RoleAssignment[], clusters: string[]): RoleAssignment[] {
+  return roleAssignments.filter((ra) => ra.spec.clusters.some((cluster) => clusters.includes(cluster.name)))
 }
 
-// TODO: Remove once real role assignment data is available
-function filterSubjects(subjects: RoleAssignmentSubject[], query: RoleAssignmentQuery): RoleAssignmentSubject[] {
-  return subjects
-    .filter((subject) => {
-      // Filter by subject name/s included in query
-      if (query.subjectNames?.length && !query.subjectNames.includes(subject.name)) {
-        return false
-      }
-      // Filter by subject type/s included in query
-      if (query.subjectTypes?.length && !query.subjectTypes.includes(subject.kind)) {
-        return false
-      }
-      return true
-    })
-    .map((subject) => ({
-      ...subject,
-      clusters: filterClusters(subject.clusters, query.clusters),
-    }))
-    .filter((subject) => subject.clusters.length > 0)
+function filterBySubjectNames(roleAssignments: RoleAssignment[], subjectNames: string[]): RoleAssignment[] {
+  return roleAssignments.filter((ra) => ra.spec.subjects.some((subject) => subjectNames.includes(subject.name)))
 }
 
-// TODO: Remove once real role assignment data is available
-function filterMockRoleAssignments(query: RoleAssignmentQuery): RoleAssignment[] {
-  const roleAssignments = mockRoleAssignments as RoleAssignment[]
+function filterBySubjectTypes(
+  roleAssignments: RoleAssignment[],
+  subjectTypes: (UserKindType | GroupKindType | ServiceAccountKindType)[]
+): RoleAssignment[] {
+  return roleAssignments.filter((ra) => ra.spec.subjects.some((subject) => subjectTypes.includes(subject.kind)))
+}
 
-  return roleAssignments
-    .filter((roleAssignment) => {
-      // Filter by role name/s included in query
-      return !query.roleNames?.length || query.roleNames.includes(roleAssignment.spec.role)
-    })
-    .map((roleAssignment) => ({
-      ...roleAssignment,
-      spec: {
-        ...roleAssignment.spec,
-        subjects: filterSubjects(roleAssignment.spec.subjects, query),
-      },
-    }))
-    .filter((roleAssignment) => roleAssignment.spec.subjects.length > 0)
+function filterByRoles(roleAssignments: RoleAssignment[], roles: string[]): RoleAssignment[] {
+  return roleAssignments.filter((ra) => ra.spec.roles.some((role) => roles.includes(role)))
 }
 
 export function getRoleAssignments(query: RoleAssignmentQuery): RoleAssignment[] {
-  // TODO: Replace with backend API call when ready
-  return filterMockRoleAssignments(query)
+  let results: RoleAssignment[] = mockRoleAssignments as RoleAssignment[]
+
+  // Apply each filter only if the corresponding query parameter is provided
+  if (query.roles?.length) {
+    results = filterByRoles(results, query.roles)
+  }
+
+  if (query.subjectNames?.length) {
+    results = filterBySubjectNames(results, query.subjectNames)
+  }
+
+  if (query.subjectTypes?.length) {
+    results = filterBySubjectTypes(results, query.subjectTypes)
+  }
+
+  if (query.clusters?.length) {
+    results = filterByClusters(results, query.clusters)
+  }
+
+  return results
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

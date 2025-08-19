@@ -477,12 +477,16 @@ describe('useFleetSearchPoll', () => {
       const vmItem = {
         ...mockSearchResultItem,
         kind: 'VirtualMachine',
-        _specRunning: true,
-        _specRunStrategy: 'Always',
+        apigroup: 'kubevirt.io',
         cpu: 2,
         memory: '4Gi',
         ready: 'True',
         status: 'Running',
+        agentConnected: 'True',
+        flavor: 'test',
+        osName: 'rhel',
+        workload: 'app',
+        runStrategy: 'Always',
       }
 
       mockUseSearchResultItemsQuery.mockReturnValue({
@@ -506,7 +510,6 @@ describe('useFleetSearchPoll', () => {
       expect(Array.isArray(data)).toBe(true)
       const dataArray = data as any[]
       expect(dataArray[0].spec).toEqual({
-        running: true,
         runStrategy: 'Always',
         template: {
           spec: {
@@ -515,11 +518,95 @@ describe('useFleetSearchPoll', () => {
               memory: { guest: '4Gi' },
             },
           },
+          metadata: {
+            annotations: {
+              'vm.kubevirt.io/flavor': 'test',
+              'vm.kubevirt.io/os': 'rhel',
+              'vm.kubevirt.io/workload': 'app',
+            },
+          },
         },
       })
       expect(dataArray[0].status).toEqual({
-        conditions: [{ type: 'Ready', status: 'True' }],
+        conditions: [
+          { type: 'Ready', status: 'True' },
+          { type: 'AgentConnected', status: 'True' },
+        ],
         printableStatus: 'Running',
+      })
+    })
+    it('should handle ClusterServiceVersion resource transformation', () => {
+      const csvItem = {
+        ...mockSearchResultItem,
+        kind: 'ClusterServiceVersion',
+        apigroup: 'operators.coreos.com',
+        version: '1.0.0',
+        display: 'Test',
+        phase: 'Running',
+      }
+
+      mockUseSearchResultItemsQuery.mockReturnValue({
+        data: {
+          searchResult: [{ items: [csvItem] }],
+        },
+        loading: false,
+        error: undefined,
+        refetch: jest.fn(),
+      } as any)
+
+      const watchOptionsCSV = {
+        ...mockWatchOptions,
+        groupVersionKind: { group: 'operators.coreos.com', version: 'v1', kind: 'ClusterServiceVersion' },
+      }
+      const { result } = renderHook(() => useFleetSearchPoll(watchOptionsCSV))
+
+      const [data] = result.current
+      expect(data).toBeDefined()
+      expect(Array.isArray(data)).toBe(true)
+      const dataArray = data as any[]
+      expect(dataArray[0].spec).toEqual({
+        version: '1.0.0',
+        displayName: 'Test',
+      })
+      expect(dataArray[0].status).toEqual({
+        phase: 'Running',
+      })
+    })
+
+    it('should handle PersistentVolumeClaim resource transformation', () => {
+      const pvcItem = {
+        ...mockSearchResultItem,
+        kind: 'PersistentVolumeClaim',
+        requestedStorage: '1Gi',
+        volumeMode: 'Filesystem',
+      }
+
+      mockUseSearchResultItemsQuery.mockReturnValue({
+        data: {
+          searchResult: [{ items: [pvcItem] }],
+        },
+        loading: false,
+        error: undefined,
+        refetch: jest.fn(),
+      } as any)
+
+      const watchOptionsPVC = {
+        ...mockWatchOptions,
+        groupVersionKind: { group: '', version: 'v1', kind: 'PersistentVolumeClaim' },
+      }
+      const { result } = renderHook(() => useFleetSearchPoll(watchOptionsPVC))
+
+      const [data] = result.current
+      expect(data).toBeDefined()
+      expect(Array.isArray(data)).toBe(true)
+      const dataArray = data as any[]
+      expect(dataArray[0].spec).toEqual({
+        resources: {
+          requests: {
+            storage: '1Gi',
+          },
+        },
+        volumeMode: 'Filesystem',
       })
     })
 
@@ -527,11 +614,13 @@ describe('useFleetSearchPoll', () => {
       const vmiItem = {
         ...mockSearchResultItem,
         kind: 'VirtualMachineInstance',
+        apigroup: 'kubevirt.io',
         liveMigratable: 'True',
         ready: 'True',
         ipaddress: '10.0.0.1',
         node: 'worker-node-1',
         phase: 'Running',
+        osVersion: 'rhel',
       }
 
       mockUseSearchResultItemsQuery.mockReturnValue({
@@ -562,6 +651,45 @@ describe('useFleetSearchPoll', () => {
         interfaces: [{ ipAddress: '10.0.0.1', name: 'default' }],
         nodeName: 'worker-node-1',
         phase: 'Running',
+        guestOSInfo: { version: 'rhel' },
+      })
+    })
+
+    it('should handle VirtualMachineInstanceMigration resource transformation', () => {
+      const vmimItem = {
+        ...mockSearchResultItem,
+        kind: 'VirtualMachineInstanceMigration',
+        apigroup: 'kubevirt.io',
+        phase: 'Running',
+        endTime: '2025-08-12T08:00:00Z',
+        vmiName: 'testMigrate',
+      }
+
+      mockUseSearchResultItemsQuery.mockReturnValue({
+        data: {
+          searchResult: [{ items: [vmimItem] }],
+        },
+        loading: false,
+        error: undefined,
+        refetch: jest.fn(),
+      } as any)
+
+      const watchOptionsVMIM = {
+        ...mockWatchOptions,
+        groupVersionKind: { group: 'kubevirt.io', version: 'v1', kind: 'VirtualMachineInstanceMigration' },
+      }
+      const { result } = renderHook(() => useFleetSearchPoll(watchOptionsVMIM))
+
+      const [data] = result.current
+      expect(data).toBeDefined()
+      expect(Array.isArray(data)).toBe(true)
+      const dataArray = data as any[]
+      expect(dataArray[0].status).toEqual({
+        phase: 'Running',
+        migrationState: { endTimestamp: '2025-08-12T08:00:00Z' },
+      })
+      expect(dataArray[0].spec).toEqual({
+        vmiName: 'testMigrate',
       })
     })
 

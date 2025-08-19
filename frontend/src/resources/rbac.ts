@@ -71,11 +71,12 @@ export const ServiceAccountDefinition: IResourceDefinition = {
 }
 
 export interface User {
+  fullName?: string
   apiVersion: UserApiVersionType
   kind: UserKindType
   metadata: Metadata
-  identities: string[]
-  groups: string[]
+  identities?: string[]
+  groups?: string[]
 }
 
 export interface Group {

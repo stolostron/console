@@ -123,6 +123,13 @@ export default function DetailsPage() {
     resource?.metadata.name,
   ])
 
+  // Clear resource state when navigating to a different resource
+  useEffect(() => {
+    setResource(undefined)
+    setResourceError('')
+    setResourceVersion('')
+  }, [cluster, kind, name, namespace, apiversion])
+
   useEffect(() => {
     setContainers(resource?.spec?.containers?.map((container: any) => container.name) ?? [])
   }, [resource])

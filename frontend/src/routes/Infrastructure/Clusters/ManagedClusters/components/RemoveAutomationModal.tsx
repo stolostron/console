@@ -139,8 +139,7 @@ export function RemoveAutomationModal(props: {
       title={t('Remove automation template')}
       titleIconVariant={'warning'}
       isOpen={props.open}
-      variant={ModalVariant.small}
-      style={{ display: 'table !important' }}
+      variant={ModalVariant.medium}
       onClose={() => {
         props.close()
       }}
