@@ -275,4 +275,209 @@ describe('FleetResourceEventStream', () => {
       )
     })
   })
+
+  it('should handle kubernetes 410 gone error silently', async () => {
+    render(<FleetResourceEventStream resource={mockResource} />)
+
+    await waitFor(() => {
+      expect(mockWebSocket.onmessage).toBeDefined()
+    })
+
+    const mockError410Event = {
+      data: JSON.stringify({
+        type: 'ERROR',
+        object: { code: 410, message: 'watch expired' },
+      }),
+    } as MessageEvent
+
+    act(() => {
+      mockWebSocket.onopen?.({} as Event)
+    })
+
+    act(() => {
+      mockWebSocket.onmessage?.(mockError410Event)
+    })
+
+    // should not show error state for 410 gone
+    await waitFor(() => {
+      expect(screen.queryByTitle('Error loading events')).not.toBeInTheDocument()
+    })
+
+    // should clear events
+    expect(screen.queryByText(/Events: /)).not.toBeInTheDocument()
+  })
+
+  it('should show error for infrastructure timeout (1006) until proper solution', async () => {
+    render(<FleetResourceEventStream resource={mockResource} />)
+
+    await waitFor(() => {
+      expect(mockWebSocket.onclose).toBeDefined()
+    })
+
+    act(() => {
+      mockWebSocket.onopen?.({} as Event)
+    })
+
+    act(() => {
+      mockWebSocket.onclose?.({ code: 1006, wasClean: false, reason: '' } as CloseEvent)
+    })
+
+    // should show error state for infrastructure timeouts (until Zhao's heartbeat solution)
+    await waitFor(() => {
+      expect(screen.queryByTitle('Error loading events')).toBeInTheDocument()
+    })
+  })
+
+  it('should handle genuine websocket errors properly', async () => {
+    render(<FleetResourceEventStream resource={mockResource} />)
+
+    await waitFor(() => {
+      expect(mockWebSocket.onclose).toBeDefined()
+    })
+
+    act(() => {
+      mockWebSocket.onopen?.({} as Event)
+    })
+
+    // test non-1006 error code
+    act(() => {
+      mockWebSocket.onclose?.({ code: 1002, wasClean: false, reason: 'Protocol error' } as CloseEvent)
+    })
+
+    await waitFor(() => {
+      expect(screen.getByTitle('Error loading events')).toBeInTheDocument()
+    })
+  })
+
+  it('should handle api errors other than 410 properly', async () => {
+    render(<FleetResourceEventStream resource={mockResource} />)
+
+    await waitFor(() => {
+      expect(mockWebSocket.onmessage).toBeDefined()
+    })
+
+    const mockApiError = {
+      data: JSON.stringify({
+        type: 'ERROR',
+        object: { code: 403, message: 'Forbidden' },
+      }),
+    } as MessageEvent
+
+    act(() => {
+      mockWebSocket.onopen?.({} as Event)
+    })
+
+    act(() => {
+      mockWebSocket.onmessage?.(mockApiError)
+    })
+
+    await waitFor(() => {
+      expect(screen.getByTitle('Error loading events')).toBeInTheDocument()
+    })
+  })
+
+  it('should restart connection when infrastructure timeout occurs', async () => {
+    jest.useFakeTimers()
+    render(<FleetResourceEventStream resource={mockResource} />)
+
+    await waitFor(() => {
+      expect(mockWebSocket.onclose).toBeDefined()
+    })
+
+    act(() => {
+      mockWebSocket.onopen?.({} as Event)
+    })
+
+    // clear the initial call
+    mockFleetWatch.mockClear()
+
+    act(() => {
+      mockWebSocket.onclose?.({ code: 1006, wasClean: false, reason: '' } as CloseEvent)
+    })
+
+    // fast-forward past the 1000ms delay
+    act(() => {
+      jest.advanceTimersByTime(1100)
+    })
+
+    // should create a new connection after the delay
+    await waitFor(() => {
+      expect(mockFleetWatch).toHaveBeenCalledTimes(1)
+    })
+
+    jest.useRealTimers()
+  })
+
+  it('should handle normal websocket closure (1000) without error', async () => {
+    render(<FleetResourceEventStream resource={mockResource} />)
+
+    await waitFor(() => {
+      expect(mockWebSocket.onclose).toBeDefined()
+    })
+
+    act(() => {
+      mockWebSocket.onopen?.({} as Event)
+    })
+
+    // normal closure should not show error
+    act(() => {
+      mockWebSocket.onclose?.({ code: 1000, wasClean: true, reason: 'Normal closure' } as CloseEvent)
+    })
+
+    await waitFor(() => {
+      expect(screen.queryByTitle('Error loading events')).not.toBeInTheDocument()
+    })
+  })
+
+  it('should handle going away websocket closure (1001) without error', async () => {
+    render(<FleetResourceEventStream resource={mockResource} />)
+
+    await waitFor(() => {
+      expect(mockWebSocket.onclose).toBeDefined()
+    })
+
+    act(() => {
+      mockWebSocket.onopen?.({} as Event)
+    })
+
+    // going away closure should not show error
+    act(() => {
+      mockWebSocket.onclose?.({ code: 1001, wasClean: false, reason: 'Going away' } as CloseEvent)
+    })
+
+    await waitFor(() => {
+      expect(screen.queryByTitle('Error loading events')).not.toBeInTheDocument()
+    })
+  })
+
+  it('should handle 410 Gone with status field', async () => {
+    render(<FleetResourceEventStream resource={mockResource} />)
+
+    await waitFor(() => {
+      expect(mockWebSocket.onmessage).toBeDefined()
+    })
+
+    const mockError410StatusEvent = {
+      data: JSON.stringify({
+        type: 'ERROR',
+        object: { status: 'Gone', message: 'resource version too old' },
+      }),
+    } as MessageEvent
+
+    act(() => {
+      mockWebSocket.onopen?.({} as Event)
+    })
+
+    act(() => {
+      mockWebSocket.onmessage?.(mockError410StatusEvent)
+    })
+
+    // should not show error state for 410 gone (status field variant)
+    await waitFor(() => {
+      expect(screen.queryByTitle('Error loading events')).not.toBeInTheDocument()
+    })
+
+    // should clear events
+    expect(screen.queryByText(/Events: /)).not.toBeInTheDocument()
+  })
 })
