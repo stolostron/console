@@ -907,6 +907,88 @@ describe('useFleetSearchPoll', () => {
       expect(dataArray[0].status.state).toBe('Succeeded')
     })
 
+    it('should handle VirtualMachineSnapshot resource transformation', () => {
+      const virtualMachineSnapshotItem = {
+        ...mockSearchResultItem,
+        kind: 'VirtualMachineSnapshot',
+        apigroup: 'snapshot.kubevirt.io',
+        ready: 'True',
+        phase: 'Succeeded',
+        indications: ['testIndication'],
+        sourceKind: 'VirtualMachine',
+        sourceName: 'test-vm',
+        readyToUse: true,
+      }
+      mockUseSearchResultItemsQuery.mockReturnValue({
+        data: {
+          searchResult: [{ items: [virtualMachineSnapshotItem] }],
+        },
+        loading: false,
+        error: undefined,
+        refetch: jest.fn(),
+      } as any)
+      const watchOptionsVirtualMachineSnapshot = {
+        ...mockWatchOptions,
+        groupVersionKind: { group: 'snapshot.kubevirt.io', version: 'v1alpha1', kind: 'VirtualMachineSnapshot' },
+      }
+      const { result } = renderHook(() => useFleetSearchPoll(watchOptionsVirtualMachineSnapshot))
+      const [data] = result.current
+      expect(data).toBeDefined()
+      expect(Array.isArray(data)).toBe(true)
+      const dataArray = data as any[]
+      expect(dataArray[0].status.conditions).toEqual([
+        {
+          type: 'Ready',
+          status: 'True',
+        },
+      ])
+      expect(dataArray[0].status.phase).toBe('Succeeded')
+      expect(dataArray[0].status.indications).toEqual(['testIndication'])
+      expect(dataArray[0].spec.source.kind).toBe('VirtualMachine')
+      expect(dataArray[0].spec.source.name).toBe('test-vm')
+      expect(dataArray[0].status.readyToUse).toBe(true)
+    })
+    
+    it('should handle VirtualMachineRestore resource transformation', () => {
+      const virtualMachineRestoreItem = {
+        ...mockSearchResultItem,
+        kind: 'VirtualMachineRestore',
+        apigroup: 'snapshot.kubevirt.io',
+        ready: 'True',
+        restoreTime: '2025-08-12T08:00:00Z',
+        complete: true,
+        targetKind: 'VirtualMachine',
+        targetName: 'test-vm',
+      }
+      mockUseSearchResultItemsQuery.mockReturnValue({
+        data: {
+          searchResult: [{ items: [virtualMachineRestoreItem] }],
+        },
+        loading: false,
+        error: undefined,
+        refetch: jest.fn(),
+      } as any)
+      const watchOptionsVirtualMachineRestore = {
+        ...mockWatchOptions,
+        groupVersionKind: { group: 'snapshot.kubevirt.io', version: 'v1alpha1', kind: 'VirtualMachineRestore' },
+      }
+      const { result } = renderHook(() => useFleetSearchPoll(watchOptionsVirtualMachineRestore))
+      const [data] = result.current
+      expect(data).toBeDefined()
+      expect(Array.isArray(data)).toBe(true)
+      const dataArray = data as any[]
+      expect(dataArray[0].status.conditions).toEqual([
+        {
+          type: 'Ready',
+          status: 'True',
+        },
+      ])
+      expect(dataArray[0].status.restoreTime).toBe('2025-08-12T08:00:00Z')
+      expect(dataArray[0].status.complete).toBe(true)
+      expect(dataArray[0].spec.target.kind).toBe('VirtualMachine')
+      expect(dataArray[0].spec.target.name).toBe('test-vm')
+    })
+
     it('should handle apiVersion with group correctly', () => {
       const itemWithGroup = {
         ...mockSearchResultItem,
