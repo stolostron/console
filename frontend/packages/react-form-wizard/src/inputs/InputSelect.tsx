@@ -140,48 +140,50 @@ export const SelectListOptions = ({
   onCreate,
   footer,
   isMultiSelect,
-}: SelectListOptionsProps) => (
-  <SelectList isAriaMultiselectable={isMultiSelect}>
-    {options.map((option, index) => {
-      const isLastItem = index === options.length - 1
-      const isSingleItem = options.length === 1
-      const shouldSkipLastItem = isLastItem && !isSingleItem
-      const isCreateOption = isSingleItem && isCreatable && value !== option
-      const isSimpleOption = typeof option === 'string'
-      const { noResults, createOption } = useStringContext()
+}: SelectListOptionsProps) => {
+  const { noResults, createOption } = useStringContext()
+  return (
+    <SelectList isAriaMultiselectable={isMultiSelect}>
+      {options.map((option, index) => {
+        const isLastItem = index === options.length - 1
+        const isSingleItem = options.length === 1
+        const shouldSkipLastItem = isLastItem && !isSingleItem
+        const isCreateOption = isSingleItem && isCreatable && value !== option
+        const isSimpleOption = typeof option === 'string'
 
-      if (shouldSkipLastItem) {
-        return null
-      }
+        if (shouldSkipLastItem) {
+          return null
+        }
 
-      let displayText: string
-      if (isCreateOption) {
-        displayText = `${createOption} ${isSimpleOption ? `"${option}"` : `"${option.value}"`}`
-      } else if (isSingleItem) {
-        displayText = noResults
-      } else if (isSimpleOption) {
-        displayText = option
-      } else {
-        displayText = option.label
-      }
+        let displayText: string
+        if (isCreateOption) {
+          displayText = `${createOption} "${String(isSimpleOption ? option : option.value)}"`
+        } else if (isSingleItem) {
+          displayText = noResults
+        } else if (isSimpleOption) {
+          displayText = option
+        } else {
+          displayText = option.label
+        }
 
-      const isDisabled = displayText === noResults || (!isSimpleOption && option.disabled)
-      const optionValue = !isSimpleOption ? option.id : option
+        const isDisabled = displayText === noResults || (!isSimpleOption && option.disabled)
+        const optionValue = !isSimpleOption ? option.id : option
 
-      return (
-        <SelectOption
-          id={isSimpleOption ? option : option.id || `option-${index}`}
-          key={isSimpleOption ? option : option.id || `option-${index}`}
-          value={optionValue}
-          description={!isSimpleOption ? option.description : undefined}
-          isDisabled={isDisabled}
-          onClick={isCreateOption ? () => onCreate?.(!isSimpleOption ? option.value : option) : undefined}
-          isSelected={!isDisabled && !isCreateOption && optionValue === value.toString()}
-        >
-          {displayText}
-        </SelectOption>
-      )
-    })}
-    {footer && <MenuFooter>{footer}</MenuFooter>}
-  </SelectList>
-)
+        return (
+          <SelectOption
+            id={isSimpleOption ? option : option.id || `option-${index}`}
+            key={isSimpleOption ? option : option.id || `option-${index}`}
+            value={optionValue}
+            description={!isSimpleOption ? option.description : undefined}
+            isDisabled={isDisabled}
+            onClick={isCreateOption ? () => onCreate?.(!isSimpleOption ? option.value : option) : undefined}
+            isSelected={!isDisabled && !isCreateOption && optionValue === value.toString()}
+          >
+            {displayText}
+          </SelectOption>
+        )
+      })}
+      {footer && <MenuFooter>{footer}</MenuFooter>}
+    </SelectList>
+  )
+}
