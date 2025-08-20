@@ -693,6 +693,220 @@ describe('useFleetSearchPoll', () => {
       })
     })
 
+    it('should handle ClusterOperator resource transformation', () => {
+      const clusterOperatorItem = {
+        ...mockSearchResultItem,
+        kind: 'ClusterOperator',
+        apigroup: 'config.openshift.io',
+        version: '1.0.0',
+        available: 'True',
+        progressing: 'False',
+        degraded: 'False',
+      }
+
+      mockUseSearchResultItemsQuery.mockReturnValue({
+        data: {
+          searchResult: [{ items: [clusterOperatorItem] }],
+        },
+        loading: false,
+        error: undefined,
+        refetch: jest.fn(),
+      } as any)
+
+      const watchOptionsClusterOperator = {
+        ...mockWatchOptions,
+        groupVersionKind: { group: 'config.openshift.io', version: 'v1', kind: 'ClusterOperator' },
+      }
+
+      const { result } = renderHook(() => useFleetSearchPoll(watchOptionsClusterOperator))
+
+      const [data] = result.current
+      expect(data).toBeDefined()
+      expect(Array.isArray(data)).toBe(true)
+      const dataArray = data as any[]
+      expect(dataArray[0].status.versions).toEqual([{ name: 'operator', version: '1.0.0' }])
+      expect(dataArray[0].status.conditions).toEqual([
+        { type: 'Available', status: 'True' },
+        { type: 'Progressing', status: 'False' },
+        { type: 'Degraded', status: 'False' },
+      ])
+    })
+
+    it('should handle DataVolume resource transformation', () => {
+      const dataVolumeItem = {
+        ...mockSearchResultItem,
+        kind: 'DataVolume',
+        apigroup: 'cdi.kubevirt.io',
+        size: '10Gi',
+        storageClassName: 'ssd',
+      }
+
+      mockUseSearchResultItemsQuery.mockReturnValue({
+        data: {
+          searchResult: [{ items: [dataVolumeItem] }],
+        },
+        loading: false,
+        error: undefined,
+        refetch: jest.fn(),
+      } as any)
+
+      const watchOptionsDataVolume = {
+        ...mockWatchOptions,
+        groupVersionKind: { group: 'cdi.kubevirt.io', version: 'v1beta1', kind: 'DataVolume' },
+      }
+
+      const { result } = renderHook(() => useFleetSearchPoll(watchOptionsDataVolume))
+
+      const [data] = result.current
+      expect(data).toBeDefined()
+      expect(Array.isArray(data)).toBe(true)
+      const dataArray = data as any[]
+      expect(dataArray[0].spec.storage.resources.requests.storage).toBe('10Gi')
+      expect(dataArray[0].spec.storage.storageClassName).toBe('ssd')
+    })
+
+    it('should handle Namespace resource transformation', () => {
+      const namespaceItem = {
+        ...mockSearchResultItem,
+        kind: 'Namespace',
+        apigroup: '',
+        status: 'Active',
+      }
+
+      mockUseSearchResultItemsQuery.mockReturnValue({
+        data: {
+          searchResult: [{ items: [namespaceItem] }],
+        },
+        loading: false,
+        error: undefined,
+        refetch: jest.fn(),
+      } as any)
+
+      const watchOptionsNamespace = {
+        ...mockWatchOptions,
+        groupVersionKind: { group: '', version: 'v1', kind: 'Namespace' },
+      }
+
+      const { result } = renderHook(() => useFleetSearchPoll(watchOptionsNamespace))
+
+      const [data] = result.current
+      expect(data).toBeDefined()
+      expect(Array.isArray(data)).toBe(true)
+      const dataArray = data as any[]
+      expect(dataArray[0].status.phase).toBe('Active')
+    })
+
+    it('should handle Node resource transformation', () => {
+      const nodeItem = {
+        ...mockSearchResultItem,
+        kind: 'Node',
+        apigroup: '',
+        ipAddress: '127.0.0.1',
+        memoryAllocatable: '5Gi',
+        memoryCapacity: '10Gi',
+      }
+
+      mockUseSearchResultItemsQuery.mockReturnValue({
+        data: {
+          searchResult: [{ items: [nodeItem] }],
+        },
+        loading: false,
+        error: undefined,
+        refetch: jest.fn(),
+      } as any)
+
+      const watchOptionsNode = {
+        ...mockWatchOptions,
+        groupVersionKind: { group: '', version: 'v1', kind: 'Node' },
+      }
+
+      const { result } = renderHook(() => useFleetSearchPoll(watchOptionsNode))
+
+      const [data] = result.current
+      expect(data).toBeDefined()
+      expect(Array.isArray(data)).toBe(true)
+      const dataArray = data as any[]
+      expect(dataArray[0].status.addresses).toEqual([{ type: 'InternalIP', address: '127.0.0.1' }])
+      expect(dataArray[0].status.allocatable.memory).toBe('5Gi')
+      expect(dataArray[0].status.capacity.memory).toBe('10Gi')
+    })
+
+    it('should handle StorageClass resource transformation', () => {
+      const storageClassItem = {
+        ...mockSearchResultItem,
+        kind: 'StorageClass',
+        apigroup: 'storage.k8s.io',
+        allowVolumeExpansion: true,
+        provisioner: 'test',
+        reclaimPolicy: 'test',
+        volumeBindingMode: 'test',
+      }
+
+      mockUseSearchResultItemsQuery.mockReturnValue({
+        data: {
+          searchResult: [{ items: [storageClassItem] }],
+        },
+        loading: false,
+        error: undefined,
+        refetch: jest.fn(),
+      } as any)
+
+      const watchOptionsStorageClass = {
+        ...mockWatchOptions,
+        groupVersionKind: { group: 'storage.k8s.io', version: 'v1', kind: 'StorageClass' },
+      }
+
+      const { result } = renderHook(() => useFleetSearchPoll(watchOptionsStorageClass))
+
+      const [data] = result.current
+      expect(data).toBeDefined()
+      expect(Array.isArray(data)).toBe(true)
+      const dataArray = data as any[]
+      expect(dataArray[0].allowVolumeExpansion).toBe(true)
+      expect(dataArray[0].provisioner).toBe('test')
+      expect(dataArray[0].reclaimPolicy).toBe('test')
+      expect(dataArray[0].volumeBindingMode).toBe('test')
+    })
+
+    it('should handle Subscription resource transformation', () => {
+      const subscriptionItem = {
+        ...mockSearchResultItem,
+        kind: 'Subscription',
+        apigroup: 'operators.coreos.com',
+        source: 'testSource',
+        package: 'testPackage',
+        channel: 'testChannel',
+        installplan: 'testInstall',
+        phase: 'Succeeded',
+      }
+
+      mockUseSearchResultItemsQuery.mockReturnValue({
+        data: {
+          searchResult: [{ items: [subscriptionItem] }],
+        },
+        loading: false,
+        error: undefined,
+        refetch: jest.fn(),
+      } as any)
+
+      const watchOptionsSubscription = {
+        ...mockWatchOptions,
+        groupVersionKind: { group: 'operators.coreos.com', version: 'v1alpha1', kind: 'Subscription' },
+      }
+
+      const { result } = renderHook(() => useFleetSearchPoll(watchOptionsSubscription))
+
+      const [data] = result.current
+      expect(data).toBeDefined()
+      expect(Array.isArray(data)).toBe(true)
+      const dataArray = data as any[]
+      expect(dataArray[0].spec.source).toBe('testSource')
+      expect(dataArray[0].spec.name).toBe('testPackage')
+      expect(dataArray[0].spec.channel).toBe('testChannel')
+      expect(dataArray[0].status.installedCSV).toBe('testInstall')
+      expect(dataArray[0].status.state).toBe('Succeeded')
+    })
+
     it('should handle apiVersion with group correctly', () => {
       const itemWithGroup = {
         ...mockSearchResultItem,
