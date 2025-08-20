@@ -198,7 +198,7 @@ export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSea
             setIfDefined(resource, 'spec.displayName', item.display)
             setIfDefined(resource, 'status.phase', item.phase)
             break
-          case 'ClusterOperator.config.openshift.io':
+          case 'ClusterOperator.config.openshift.io': {
             setIfDefined(resource, 'status.versions[0]', item.version, { name: 'operator', version: item.version })
             const conditions: any = []
             setIfDefined(conditions, `[${conditions.length}]`, item.available, {
@@ -217,6 +217,7 @@ export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSea
               setIfDefined(resource, 'status.conditions', conditions)
             }
             break
+          }
 
           case 'DataVolume.cdi.kubevirt.io':
             setIfDefined(resource, 'spec.storage.resources.requests.storage', item.size)
