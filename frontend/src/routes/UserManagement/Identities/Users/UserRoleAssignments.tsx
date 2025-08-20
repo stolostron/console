@@ -8,20 +8,20 @@ import { compareStrings } from '../../../../ui-components'
 import { RoleAssignments } from '../../RoleAssignment/RoleAssignments'
 import { User } from '../../../../resources'
 
+// TODO: to remove once API ready
+// Mock users data to match the role assignments
+const mockUsers = [
+  { metadata: { name: 'alice.trask', uid: 'mock-user-alice-trask' } },
+  { metadata: { name: 'bob.levy', uid: 'mock-user-bob-levy' } },
+  { metadata: { name: 'charlie.cranston', uid: 'mock-user-charlie-cranston' } },
+  { metadata: { name: 'sarah.jones', uid: 'mock-user-sarah-jones' } },
+  { metadata: { name: 'david.brown', uid: 'mock-user-david-brown' } },
+]
+
 const UserRoleAssignments = () => {
   const { t } = useTranslation()
   const { id = undefined } = useParams()
   const [user, setUser] = useState<User>()
-
-  // TODO: to remove once API ready
-  // Mock users data to match the role assignments
-  const mockUsers = [
-    { metadata: { name: 'alice.trask', uid: 'mock-user-alice-trask' } },
-    { metadata: { name: 'bob.levy', uid: 'mock-user-bob-levy' } },
-    { metadata: { name: 'charlie.cranston', uid: 'mock-user-charlie-cranston' } },
-    { metadata: { name: 'sarah.jones', uid: 'mock-user-sarah-jones' } },
-    { metadata: { name: 'david.brown', uid: 'mock-user-david-brown' } },
-  ]
 
   // Use mock data only
   const users = mockUsers
