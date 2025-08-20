@@ -200,15 +200,22 @@ export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSea
             break
           case 'ClusterOperator.config.openshift.io':
             setIfDefined(resource, 'status.versions[0]', item.version, { name: 'operator', version: item.version })
-            setIfDefined(resource, 'status.conditions[0]', item.available, {
+            const conditions: any = []
+            setIfDefined(conditions, `[${conditions.length}]`, item.available, {
               type: 'Available',
               status: item.available,
             })
-            setIfDefined(resource, 'status.conditions[1]', item.progressing, {
+            setIfDefined(conditions, `[${conditions.length}]`, item.progressing, {
               type: 'Progressing',
               status: item.progressing,
             })
-            setIfDefined(resource, 'status.conditions[2]', item.degraded, { type: 'Degraded', status: item.degraded })
+            setIfDefined(conditions, `[${conditions.length}]`, item.degraded, {
+              type: 'Degraded',
+              status: item.degraded,
+            })
+            if (conditions.length) {
+              setIfDefined(resource, 'status.conditions', conditions)
+            }
             break
 
           case 'DataVolume.cdi.kubevirt.io':
@@ -299,17 +306,14 @@ export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSea
             setIfDefined(resource, 'spec.vmiName', item.vmiName)
             break
           case 'VirtualMachineSnapshot.snapshot.kubevirt.io': {
-            const conditions: any = []
-            setIfDefined(conditions, `[${conditions.length}]`, item.ready, {
+            setIfDefined(resource, 'status.conditions[0]', item.ready, {
               type: 'Ready',
               status: item.ready,
             })
-            if (conditions.length) {
-              setIfDefined(resource, 'status.conditions', conditions)
-            }
             setIfDefined(resource, 'status.phase', item.phase)
-            if (item.indications && Array.isArray(item.indications)) {
-              setIfDefined(resource, 'status.indications', item.indications)
+            if (item.indications && typeof item.indications === 'string') {
+              const indicationsArray = item.indications.split(';')
+              setIfDefined(resource, 'status.indications', indicationsArray)
             }
             setIfDefined(resource, 'spec.source.kind', item.sourceKind)
             setIfDefined(resource, 'spec.source.name', item.sourceName)
@@ -317,14 +321,10 @@ export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSea
             break
           }
           case 'VirtualMachineRestore.snapshot.kubevirt.io': {
-            const conditions: any = []
-            setIfDefined(conditions, `[${conditions.length}]`, item.ready, {
+            setIfDefined(resource, 'status.conditions[0]', item.ready, {
               type: 'Ready',
               status: item.ready,
             })
-            if (conditions.length) {
-              setIfDefined(resource, 'status.conditions', conditions)
-            }
             setIfDefined(resource, 'status.restoreTime', item.restoreTime)
             setIfDefined(resource, 'status.complete', item.complete)
             setIfDefined(resource, 'spec.target.kind', item.targetKind)

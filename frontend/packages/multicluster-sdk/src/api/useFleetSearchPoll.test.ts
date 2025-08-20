@@ -914,7 +914,7 @@ describe('useFleetSearchPoll', () => {
         apigroup: 'snapshot.kubevirt.io',
         ready: 'True',
         phase: 'Succeeded',
-        indications: ['testIndication'],
+        indications: 'test;indication',
         sourceKind: 'VirtualMachine',
         sourceName: 'test-vm',
         readyToUse: true,
@@ -943,12 +943,12 @@ describe('useFleetSearchPoll', () => {
         },
       ])
       expect(dataArray[0].status.phase).toBe('Succeeded')
-      expect(dataArray[0].status.indications).toEqual(['testIndication'])
+      expect(dataArray[0].status.indications).toEqual(['test', 'indication'])
       expect(dataArray[0].spec.source.kind).toBe('VirtualMachine')
       expect(dataArray[0].spec.source.name).toBe('test-vm')
       expect(dataArray[0].status.readyToUse).toBe(true)
     })
-    
+
     it('should handle VirtualMachineRestore resource transformation', () => {
       const virtualMachineRestoreItem = {
         ...mockSearchResultItem,
