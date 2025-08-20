@@ -277,7 +277,7 @@ Returns:
 A promise that resolves to the response of the resource updated.
 In case of failure promise gets rejected with HTTP error response.
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/fleetK8sUpdate.ts#L30)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/fleetK8sUpdate.ts#L29)
 
 ### :gear: FleetResourceEventStream
 
@@ -389,11 +389,63 @@ Array with `isAllowed` and `loading` values.
 
 ### :gear: useFleetClusterNames
 
+Hook that returns names of managed clusters with optional filtering by cluster proxy addon and availability status.
+
+This hook watches ManagedCluster resources and by default filters them to only include clusters
+that have both the label `feature.open-cluster-management.io/addon-cluster-proxy: available` AND
+the condition `ManagedClusterConditionAvailable` with status `True`.
+
 | Function | Type |
 | ---------- | ---------- |
 | `useFleetClusterNames` | `UseFleetClusterNames` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetClusterNames.ts#L6)
+Parameters:
+
+* `returnAllClusters`: - Optional boolean to return all cluster names regardless of labels and conditions.
+Defaults to false. When false (default), only returns clusters with the
+'feature.open-cluster-management.io/addon-cluster-proxy: available' label AND
+'ManagedClusterConditionAvailable' status: 'True'.
+When true, returns all cluster names regardless of labels and conditions.
+
+
+Returns:
+
+A tuple containing:
+- clusterNames: Array of cluster names (filtered by default, or all clusters if specified)
+- loaded: Boolean indicating if the resource watch has loaded
+- error: Any error that occurred during the watch operation
+
+Examples:
+
+```tsx
+// Get only clusters with cluster proxy addon available AND ManagedClusterConditionAvailable: 'True' (default behavior)
+const [availableClusterNames, loaded, error] = useFleetClusterNames()
+
+// Get all cluster names regardless of labels and conditions
+const [allClusterNames, loaded, error] = useFleetClusterNames(true)
+
+// Explicitly filter by cluster proxy addon and availability (same as default)
+const [filteredClusterNames, loaded, error] = useFleetClusterNames(false)
+
+if (!loaded) {
+  return <Loading />
+}
+
+if (error) {
+  return <ErrorState error={error} />
+}
+
+return (
+  <div>
+    {availableClusterNames.map(name => (
+      <div key={name}>{name}</div>
+    ))}
+  </div>
+)
+```
+
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetClusterNames.ts#L57)
 
 ### :gear: useFleetK8sAPIPath
 
@@ -535,7 +587,7 @@ const [services, loaded, error] = useFleetSearchPoll({
 ```
 
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearchPoll.ts#L79)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearchPoll.ts#L92)
 
 ### :gear: useHubClusterName
 
@@ -720,7 +772,7 @@ Array with `isObservabilityInstalled`, `loaded` and `error` values.
 
 | Type | Type |
 | ---------- | ---------- |
-| `UseFleetClusterNames` | `() => [string[], boolean, any]` |
+| `UseFleetClusterNames` | `(returnAllClusters?: boolean) => [string[], boolean, any]` |
 
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L28)
 
