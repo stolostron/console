@@ -20,7 +20,6 @@ import { useLocation, useNavigate, Outlet, Link } from 'react-router-dom-v5-comp
 import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
-import { RoleAssignments } from '../../UserManagement/Roles/RoleAssignments'
 import { OCP_DOC } from '../../../lib/doc-util'
 import { PluginContext } from '../../../lib/PluginContext'
 import { ConfigMap } from '../../../resources'
@@ -73,6 +72,7 @@ import {
   getVirtualMachineRowActions,
 } from './utils'
 import { useCanMigrateVm } from '../../../hooks/use-can-migrate-vm'
+import { RoleAssignments } from '../../UserManagement/RoleAssignment/RoleAssignments'
 
 function VirtualMachineTable(
   props: Readonly<{ searchResultItems: ISearchResult[] | undefined; vmMenuVisability: boolean }>
@@ -477,7 +477,8 @@ export default function VirtualMachinesPage() {
       <SearchInfoModal isOpen={toggleOpen} onClose={() => setToggleOpen(false)} />
       <AcmPageContent id="virtual-machines">
         {isRoleAssignmentsActive ? (
-          <RoleAssignments />
+          // TODO: implement that part
+          <RoleAssignments roleAssignments={[]} isLoading={false} hiddenColumns={['cluster']} />
         ) : (
           <>
             {isLimitAlertOpen ? (

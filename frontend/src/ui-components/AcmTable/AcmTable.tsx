@@ -272,7 +272,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     const sortedColumns: IAcmTableColumn<T>[] = []
 
     if (!showColumnManagement) {
-      return columns
+      return columns.filter((e) => !e.isHidden)
     }
 
     // sort column by column management order
@@ -283,9 +283,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       }
     })
 
-    const sortedSelected = sortedColumns.filter((column) => {
-      return selectedColIds.includes(column.id as string)
-    })
+    const sortedSelected = sortedColumns.filter((column) => selectedColIds.includes(column.id as string))
 
     // Btn column is always the last
     const btn = columns.find((col) => col.isActionCol)
@@ -293,7 +291,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       sortedSelected.push(btn)
     }
 
-    return sortedSelected
+    return sortedSelected.filter((e) => !e.isHidden)
   }, [columns, selectedColIds, colOrderIds, showColumnManagement])
 
   useEffect(() => {
@@ -998,7 +996,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                               },
                             }
                           : undefined
-                        return (
+                        return column.isHidden ? null : (
                           <Th
                             key={column.id}
                             dataLabel={column.header}

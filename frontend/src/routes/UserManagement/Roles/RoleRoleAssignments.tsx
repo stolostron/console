@@ -1,16 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom-v5-compat'
-import { useTranslation } from '../../../../lib/acm-i18next'
-import roleAssignmentsMockDataJson from '../../../../resources/clients/mock-data/role-assignments.json'
-import { RoleAssignment } from '../../../../resources/role-assignment'
-import { compareStrings } from '../../../../ui-components'
-import { RoleAssignments } from '../../RoleAssignment/RoleAssignments'
-import { User } from '../../../../resources'
+import { useTranslation } from '../../../lib/acm-i18next'
+import { User } from '../../../resources'
+import roleAssignmentsMockDataJson from '../../../resources/clients/mock-data/role-assignments.json'
+import { RoleAssignment } from '../../../resources/role-assignment'
+import { compareStrings } from '../../../ui-components'
+import { RoleAssignments } from '../RoleAssignment/RoleAssignments'
 
-const UserRoleAssignments = () => {
+// TODO: do it for Roles
+const RoleRoleAssignments = () => {
   const { t } = useTranslation()
   const { id = undefined } = useParams()
+  const [isLoading, setIsLoading] = useState<boolean>()
   const [user, setUser] = useState<User>()
 
   // TODO: to remove once API ready
@@ -26,9 +28,7 @@ const UserRoleAssignments = () => {
   // Use mock data only
   const users = mockUsers
 
-  // TODO: proper loading mechanism once API ready
-  const [isLoading, setIsLoading] = useState<boolean>()
-  useEffect(() => setIsLoading(users === undefined), [users])
+  useEffect(() => setIsLoading(users !== undefined), [users])
   useEffect(() => setUser(users?.find((user) => user.metadata.uid === id) as User), [id, users])
 
   // Use role assignments mock data
@@ -57,4 +57,4 @@ const UserRoleAssignments = () => {
   )
 }
 
-export { UserRoleAssignments }
+export { RoleRoleAssignments }
