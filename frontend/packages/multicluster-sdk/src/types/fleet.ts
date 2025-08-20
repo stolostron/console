@@ -25,7 +25,7 @@ export type FleetResourceLinkProps = Fleet<ResourceLinkProps>
 export type UseFleetK8sWatchResource = <R extends FleetK8sResourceCommon | FleetK8sResourceCommon[]>(
   initResource: FleetWatchK8sResource | null
 ) => WatchK8sResult<R> | [undefined, boolean, any]
-export type UseFleetClusterNames = () => [string[], boolean, any]
+export type UseFleetClusterNames = (returnAllClusters?: boolean) => [string[], boolean, any]
 
 /** Signature of the `useIsFleetAvailable` hook */
 export type UseIsFleetAvailable = () => boolean
