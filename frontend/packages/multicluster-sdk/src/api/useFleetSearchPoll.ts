@@ -198,10 +198,62 @@ export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSea
             setIfDefined(resource, 'spec.displayName', item.display)
             setIfDefined(resource, 'status.phase', item.phase)
             break
+          case 'ClusterOperator.config.openshift.io': {
+            setIfDefined(resource, 'status.versions[0]', item.version, { name: 'operator', version: item.version })
+            const conditions: any = []
+            setIfDefined(conditions, `[${conditions.length}]`, item.available, {
+              type: 'Available',
+              status: item.available,
+            })
+            setIfDefined(conditions, `[${conditions.length}]`, item.progressing, {
+              type: 'Progressing',
+              status: item.progressing,
+            })
+            setIfDefined(conditions, `[${conditions.length}]`, item.degraded, {
+              type: 'Degraded',
+              status: item.degraded,
+            })
+            if (conditions.length) {
+              setIfDefined(resource, 'status.conditions', conditions)
+            }
+            break
+          }
+
+          case 'DataVolume.cdi.kubevirt.io':
+            setIfDefined(resource, 'spec.storage.resources.requests.storage', item.size)
+            setIfDefined(resource, 'spec.storage.storageClassName', item.storageClassName)
+            break
+
+          case 'Namespace':
+            setIfDefined(resource, 'status.phase', item.status)
+            break
+          case 'Node':
+            setIfDefined(resource, 'status.addresses[0]', item.ipAddress, {
+              type: 'InternalIP',
+              address: item.ipAddress,
+            })
+            setIfDefined(resource, 'status.allocatable.memory', item.memoryAllocatable)
+            setIfDefined(resource, 'status.capacity.memory', item.memoryCapacity)
+            break
 
           case 'PersistentVolumeClaim':
             setIfDefined(resource, 'spec.resources.requests.storage', item.requestedStorage)
             setIfDefined(resource, 'spec.volumeMode', item.volumeMode)
+            break
+
+          case 'StorageClass.storage.k8s.io':
+            setIfDefined(resource, 'allowVolumeExpansion', item.allowVolumeExpansion)
+            setIfDefined(resource, 'provisioner', item.provisioner)
+            setIfDefined(resource, 'reclaimPolicy', item.reclaimPolicy)
+            setIfDefined(resource, 'volumeBindingMode', item.volumeBindingMode)
+            break
+
+          case 'Subscription.operators.coreos.com':
+            setIfDefined(resource, 'spec.source', item.source)
+            setIfDefined(resource, 'spec.name', item.package)
+            setIfDefined(resource, 'spec.channel', item.channel)
+            setIfDefined(resource, 'status.installedCSV', item.installplan)
+            setIfDefined(resource, 'status.state', item.phase)
             break
 
           case 'VirtualMachine.kubevirt.io': {
@@ -254,6 +306,32 @@ export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSea
             setIfDefined(resource, 'status.phase', item.phase)
             setIfDefined(resource, 'spec.vmiName', item.vmiName)
             break
+          case 'VirtualMachineSnapshot.snapshot.kubevirt.io': {
+            setIfDefined(resource, 'status.conditions[0]', item.ready, {
+              type: 'Ready',
+              status: item.ready,
+            })
+            setIfDefined(resource, 'status.phase', item.phase)
+            if (item.indications && typeof item.indications === 'string') {
+              const indicationsArray = item.indications.split(';')
+              setIfDefined(resource, 'status.indications', indicationsArray)
+            }
+            setIfDefined(resource, 'spec.source.kind', item.sourceKind)
+            setIfDefined(resource, 'spec.source.name', item.sourceName)
+            setIfDefined(resource, 'status.readyToUse', item.readyToUse)
+            break
+          }
+          case 'VirtualMachineRestore.snapshot.kubevirt.io': {
+            setIfDefined(resource, 'status.conditions[0]', item.ready, {
+              type: 'Ready',
+              status: item.ready,
+            })
+            setIfDefined(resource, 'status.restoreTime', item.restoreTime)
+            setIfDefined(resource, 'status.complete', item.complete)
+            setIfDefined(resource, 'spec.target.kind', item.targetKind)
+            setIfDefined(resource, 'spec.target.name', item.targetName)
+            break
+          }
         }
         return resource
       }),
