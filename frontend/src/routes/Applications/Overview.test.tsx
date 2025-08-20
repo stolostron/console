@@ -13,7 +13,7 @@ import {
   nockSearch,
 } from '../../lib/nock-util'
 import { defaultPlugin, PluginContext } from '../../lib/PluginContext'
-import { getCSVDownloadLink, getCSVExportSpies, waitForText } from '../../lib/test-util'
+import { getCSVDownloadLink, getCSVExportSpies, waitForText, getFragmentedTextMatcher } from '../../lib/test-util'
 import {
   ApplicationKind,
   ApplicationSetKind,
@@ -144,7 +144,7 @@ describe('Applications Page', () => {
     expect(screen.getByText(mockApplication0.metadata.namespace!)).toBeTruthy()
     expect(screen.getAllByText('Local')).toBeTruthy()
     expect(screen.getAllByText('Git')).toBeTruthy()
-    expect(screen.getByText('Feb 20, 2024, 3:30 PM')).toBeInTheDocument()
+    expect(screen.getAllByText(getFragmentedTextMatcher('Feb 20, 2024, 3:30 PM'))[0]).toBeInTheDocument()
 
     // appset
     expect(screen.getByText(mockApplicationSet0.metadata.name!)).toBeTruthy()

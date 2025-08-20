@@ -46,7 +46,7 @@ const COLUMN_CELLS = {
   NAME: (group: RbacGroup, search: string) => (
     <span style={{ whiteSpace: 'nowrap' }}>
       <Link to={generatePath(NavigationPath.identitiesGroupsDetails, { id: group.metadata.uid ?? '' })}>
-        <HighlightSearchText text={group.metadata.name ?? ''} searchText={search} isTruncate />
+        <HighlightSearchText text={group.metadata.name ?? ''} searchText={search} />
       </Link>
     </span>
   ),
