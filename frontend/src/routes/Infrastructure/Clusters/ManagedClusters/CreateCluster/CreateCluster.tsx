@@ -133,6 +133,17 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
   const localHubName = useLocalHubName()
   const { projects } = useProjects()
 
+  const { configMapsState } = useSharedAtoms()
+  const configMaps = useRecoilValue(configMapsState)
+  const hypershiftSupportedVersions = useMemo(
+    () =>
+      JSON.parse(
+        configMaps.find((cm) => cm.metadata?.name === 'supported-versions' && cm.metadata?.namespace === 'hypershift')
+          ?.data?.['supported-versions'] ?? '{}'
+      ).versions,
+    [configMaps]
+  )
+
   // setup translation
   const { t } = useTranslation()
   const generateBreadCrumb = (hcType: string, path: any) => {
@@ -601,7 +612,14 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
       break
     case Provider.kubevirt:
       template = Handlebars.compile(kubevirtTemplate)
-      controlData = getControlDataKubeVirt(t, handleModalToggle, <Warning />, isACMAvailable, localCluster)
+      controlData = getControlDataKubeVirt(
+        t,
+        handleModalToggle,
+        <Warning />,
+        isACMAvailable,
+        localCluster,
+        hypershiftSupportedVersions.slice(0, 3)
+      )
       breadcrumbs.push(controlPlaneBreadCrumbKubeVirt)
       break
   }
