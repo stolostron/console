@@ -2,7 +2,7 @@
 
 import React from 'react'
 
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 
@@ -67,6 +67,37 @@ jest.mock('@patternfly/react-core/deprecated', () => ({
   ),
 }))
 
+// Mock BulkActionModal for delete confirmation testing
+// We need to create a mock that properly renders when the component's state changes
+// Create a global spy that we can access in tests
+const globalModalSpy = jest.fn()
+
+// Mock BulkActionModal with spy integration
+jest.mock('../../../../components/BulkActionModal', () => ({
+  BulkActionModal: (props: any) => {
+    const { open, actionFn } = props
+
+    // Always call the spy to capture props
+    globalModalSpy(props)
+
+    // Store the actionFn globally for testing
+    if (open && actionFn) {
+      ;(global as any).testActionFn = actionFn
+    }
+
+    // Return null to avoid DOM integration issues
+    return null
+  },
+}))
+
+// Mock toast context for alert notifications
+const mockAddAlert = jest.fn()
+
+// Create a provider component that uses our mock
+const TestWrapper = ({ children }: { children: React.ReactNode }) => {
+  return <div>{children}</div> // Simplified wrapper since we mock AcmToastContext globally
+}
+
 // Component mock
 // action buttons - Create
 // table headers - Roles, Cluster, Namespace, Status, Created
@@ -129,7 +160,9 @@ const Component = () => (
       initialEntries={['/multicloud/user-management/identities/users/mock-user-alice-trask/role-assignments']}
     >
       <PluginContext.Provider value={defaultPlugin}>
-        <UserRoleAssignments />
+        <TestWrapper>
+          <UserRoleAssignments />
+        </TestWrapper>
       </PluginContext.Provider>
     </MemoryRouter>
   </RecoilRoot>
@@ -156,15 +189,6 @@ describe('UserRoleAssignments', () => {
     // Wait for component to load and check button
     await waitForText('Create role assignment')
     expect(screen.getByText('Create role assignment')).toBeInTheDocument()
-  })
-
-  it('should render bulk actions for role assignments', async () => {
-    render(<Component />)
-
-    // Wait for component to load and check bulk actions
-    await waitForText('Delete role assignments')
-    expect(screen.getByText('Delete role assignments')).toBeInTheDocument()
-    expect(screen.getByText('Edit role assignments')).toBeInTheDocument()
   })
 
   it('should render specific mock data content', async () => {
@@ -194,7 +218,7 @@ describe('UserRoleAssignments', () => {
   })
 })
 
-describe('UserRoleAssignments expected features', () => {
+describe('UserRoleAssignments expected columns', () => {
   it('should render expected table headers', async () => {
     render(<Component />)
     await waitForText('Create role assignment')
@@ -213,5 +237,75 @@ describe('UserRoleAssignments expected features', () => {
     expectedBulkActions.forEach((action) => {
       expect(screen.getByText(action)).toBeInTheDocument()
     })
+  })
+})
+
+describe('UserRoleAssignments delete confirmation interaction', () => {
+  beforeEach(() => {
+    // Reset mocks before each test
+    mockAddAlert.mockClear()
+    globalModalSpy.mockClear()
+    delete (global as any).testActionFn
+  })
+
+  it('should configure and trigger delete confirmation modal when bulk delete button is clicked', async () => {
+    render(<Component />)
+    await waitForText('Create role assignment')
+
+    // Verify delete button exists
+    expect(screen.getByText('Delete role assignments')).toBeInTheDocument()
+
+    // Click delete button
+    const deleteButton = screen.getByText('Delete role assignments')
+    fireEvent.click(deleteButton)
+
+    // Verify the modal was called with correct configuration
+    const openCall = globalModalSpy.mock.calls.find((call) => call[0]?.open === true)
+
+    const modalProps = openCall[0]
+    expect(modalProps.title).toBe('Delete role assignments?')
+    expect(modalProps.description).toBe(
+      'Are you sure that you want to delete the role assignments? This action cannot be undone.'
+    )
+    expect(modalProps.confirmText).toBe('delete')
+    expect(modalProps.isDanger).toBe(true)
+    expect(modalProps.icon).toBe('warning')
+    expect(modalProps.items).toHaveLength(7)
+  })
+
+  it('should execute delete action when actionFn is called', async () => {
+    const mockConsoleLog = jest.spyOn(console, 'log').mockImplementation(() => {})
+
+    render(<Component />)
+    await waitForText('Create role assignment')
+
+    // Click delete button to trigger modal
+    const deleteButton = screen.getByText('Delete role assignments')
+    fireEvent.click(deleteButton)
+
+    // Wait for modal to be configured and actionFn to be stored
+    await waitFor(() => {
+      expect((global as any).testActionFn).toBeTruthy()
+    })
+
+    // Execute the action function with a mock role assignment
+    const mockRoleAssignment = { metadata: { name: 'test-assignment' } }
+    const actionFn = (global as any).testActionFn
+
+    // Verify the actionFn exists and can be called
+    expect(typeof actionFn).toBe('function')
+
+    // Execute the function
+    const result = actionFn(mockRoleAssignment)
+
+    // Verify it returns the expected structure (promise and abort function)
+    expect(result).toHaveProperty('promise')
+    expect(result).toHaveProperty('abort')
+    expect(typeof result.abort).toBe('function')
+
+    // Verify console.log was called (simulating the delete action)
+    expect(mockConsoleLog).toHaveBeenCalledWith('Bulk deleting role assignment:', 'test-assignment')
+
+    mockConsoleLog.mockRestore()
   })
 })
