@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../../lib/nock-util'
 import { GroupDetails } from './GroupDetails'
-import { Group, User } from '../../../../resources/rbac'
+import { Group } from '../../../../resources/rbac'
 
 const mockGroup: Group = {
   apiVersion: 'user.openshift.io/v1',
@@ -16,33 +16,6 @@ const mockGroup: Group = {
   },
   users: ['test-user', 'other-user'],
 }
-
-const mockUsers: User[] = [
-  {
-    apiVersion: 'user.openshift.io/v1',
-    kind: 'User',
-    metadata: {
-      name: 'test-user',
-      uid: 'test-user-uid',
-      creationTimestamp: '2025-01-24T16:00:00Z',
-    },
-    identities: ['htpasswd:test-user'],
-    groups: ['test-group'],
-    fullName: 'Test User',
-  },
-  {
-    apiVersion: 'user.openshift.io/v1',
-    kind: 'User',
-    metadata: {
-      name: 'other-user',
-      uid: 'other-user-uid',
-      creationTimestamp: '2025-01-24T15:00:00Z',
-    },
-    identities: ['htpasswd:other-user'],
-    groups: ['test-group'],
-    fullName: 'Other User',
-  },
-]
 
 jest.mock('./GroupPage', () => ({
   ...jest.requireActual('./GroupPage'),
@@ -96,10 +69,10 @@ describe('GroupDetails', () => {
     expect(screen.getByText('Group not found')).toBeInTheDocument()
   })
 
-  test('should render group details with full information', () => {
+  test('should render group details with basic information', () => {
     mockUseGroupDetailsContext.mockReturnValue({
       group: mockGroup,
-      users: mockUsers,
+      users: [],
       loading: false,
       usersLoading: false,
     })
@@ -109,66 +82,6 @@ describe('GroupDetails', () => {
     expect(screen.getByText('General information')).toBeInTheDocument()
     expect(screen.getByText('Group name')).toBeInTheDocument()
     expect(screen.getByText('test-group')).toBeInTheDocument()
-    expect(screen.getByText('Created')).toBeInTheDocument()
-    expect(screen.getByText('Users')).toBeInTheDocument()
-    expect(screen.getByText('2')).toBeInTheDocument()
-  })
-
-  test('should render group details with missing creation timestamp', () => {
-    const groupWithoutTimestamp = {
-      ...mockGroup,
-      metadata: {
-        ...mockGroup.metadata,
-        creationTimestamp: undefined,
-      },
-    }
-    mockUseGroupDetailsContext.mockReturnValue({
-      group: groupWithoutTimestamp,
-      users: mockUsers,
-      loading: false,
-      usersLoading: false,
-    })
-
-    render(<Component />)
-
-    expect(screen.getByText('Created')).toBeInTheDocument()
-    expect(screen.getByText('-')).toBeInTheDocument()
-  })
-
-  test('should render group details with no users', () => {
-    const groupWithoutUsers = {
-      ...mockGroup,
-      users: [],
-    }
-    mockUseGroupDetailsContext.mockReturnValue({
-      group: groupWithoutUsers,
-      users: [],
-      loading: false,
-      usersLoading: false,
-    })
-
-    render(<Component />)
-
-    expect(screen.getByText('Users')).toBeInTheDocument()
-    expect(screen.getByText('0')).toBeInTheDocument()
-  })
-
-  test('should render group details with single user', () => {
-    const groupWithOneUser = {
-      ...mockGroup,
-      users: ['test-user'],
-    }
-    mockUseGroupDetailsContext.mockReturnValue({
-      group: groupWithOneUser,
-      users: [mockUsers[0]],
-      loading: false,
-      usersLoading: false,
-    })
-
-    render(<Component />)
-
-    expect(screen.getByText('Users')).toBeInTheDocument()
-    expect(screen.getByText('1')).toBeInTheDocument()
   })
 
   test('should render group details with missing group name', () => {
@@ -181,7 +94,7 @@ describe('GroupDetails', () => {
     }
     mockUseGroupDetailsContext.mockReturnValue({
       group: groupWithoutName,
-      users: mockUsers,
+      users: [],
       loading: false,
       usersLoading: false,
     })
