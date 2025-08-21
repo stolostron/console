@@ -157,6 +157,9 @@ const userManagementSection: EncodedExtension<NavSection> = {
     name: '%plugin__acm~User Management%',
     insertAfter: 'mce-credentials',
   },
+  flags: {
+    required: ['ACM_ACCESS_CONTROL_MANAGEMENT'],
+  },
 }
 
 // Roles navigation item
@@ -169,6 +172,9 @@ const rolesNavItem: EncodedExtension<HrefNavItem> = {
     name: '%plugin__acm~Roles%',
     href: '/multicloud/user-management/roles',
   },
+  flags: {
+    required: ['ACM_ACCESS_CONTROL_MANAGEMENT'],
+  },
 }
 
 // Roles page route definition
@@ -178,6 +184,9 @@ const rolesRoute: EncodedExtension<RoutePage> = {
     path: '/multicloud/user-management/roles',
     component: { $codeRef: 'roles.default' },
     perspective: 'acm',
+  },
+  flags: {
+    required: ['ACM_ACCESS_CONTROL_MANAGEMENT'],
   },
 }
 
@@ -191,6 +200,9 @@ const identitiesNavItem: EncodedExtension<HrefNavItem> = {
     name: '%plugin__acm~Identities%',
     href: '/multicloud/user-management/identities',
   },
+  flags: {
+    required: ['ACM_ACCESS_CONTROL_MANAGEMENT'],
+  },
 }
 
 // Identities page route definition
@@ -200,6 +212,9 @@ const identitiesRoute: EncodedExtension<RoutePage> = {
     path: '/multicloud/user-management/identities',
     component: { $codeRef: 'identities.default' },
     perspective: 'acm',
+  },
+  flags: {
+    required: ['ACM_ACCESS_CONTROL_MANAGEMENT'],
   },
 }
 
