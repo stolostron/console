@@ -213,5 +213,13 @@ export function CreateArgoResources(props: ICreateArgoResourcesModalProps) {
     stateToSyncs,
   }
 
-  return <AcmDataFormPage formData={formData} mode={'form'} editorTitle={t('GitOpsCluster YAML')} schema={schema} />
+  return (
+    <AcmDataFormPage
+      formData={formData}
+      mode={'form'}
+      editorTitle={t('GitOpsCluster YAML')}
+      schema={schema}
+      isModalWizard
+    />
+  )
 }
