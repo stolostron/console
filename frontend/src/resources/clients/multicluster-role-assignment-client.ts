@@ -213,13 +213,13 @@ function createMulticlusterRoleAssignment(
   newRoleAssignment: RoleAssignment
 ): Promise<MulticlusterRoleAssignment> {
   const sanitizedUserName = userName
-    // replace invalid characters with one hyphen
+    // replaces invalid characters with one hyphen
     .replace(/[^a-z0-9-]+/gi, '-')
-    // remove leading/trailing hyphens
+    // removes leading/trailing hyphens
     .replace(/^-+|-+$/g, '')
     .toLowerCase()
-  // This is also assuming that there is 1 MulticlusterRoleAssignment per user, or at least that this name will not exist
-  const name = `${sanitizedUserName}-role-assignment-ui`
+  // TODO: improve name creation logic in cases where a MulticlusterRoleAssignment already exists with the name
+  const name = `${sanitizedUserName}-role-assignment-console`
 
   const multiclusterAssignment: MulticlusterRoleAssignment = {
     apiVersion: MulticlusterRoleAssignmentApiVersion,
@@ -228,7 +228,7 @@ function createMulticlusterRoleAssignment(
       name,
       namespace: MulticlusterRoleAssignmentNamespace,
       labels: {
-        'ui-managed': 'true',
+        'console-created': 'true',
       },
     },
     spec: {

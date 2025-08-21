@@ -162,10 +162,10 @@ describe('MulticlusterRoleAssignmentClient', function () {
         apiVersion: MulticlusterRoleAssignmentApiVersion,
         kind: MulticlusterRoleAssignmentKind,
         metadata: {
-          name: 'new-user-role-assignment-ui',
+          name: 'new-user-role-assignment-console',
           namespace: MulticlusterRoleAssignmentNamespace,
           labels: {
-            'ui-managed': 'true',
+            'console-created': 'true',
           },
         },
         spec: {
@@ -196,9 +196,12 @@ describe('MulticlusterRoleAssignmentClient', function () {
           apiVersion: MulticlusterRoleAssignmentApiVersion,
           kind: MulticlusterRoleAssignmentKind,
           metadata: {
-            name: 'kubevirt-admins-role-assignment',
+            name: 'kubevirt-admins-role-assignment-console',
             namespace: MulticlusterRoleAssignmentNamespace,
             uid: '7b8c9f2a-5e1d-4a6b-8c3f-9d2e7a5b8c1f',
+            labels: {
+              'console-created': 'true',
+            },
           },
           spec: {
             subject: {
@@ -278,7 +281,7 @@ describe('MulticlusterRoleAssignmentClient', function () {
       expect(createResourceMock).toHaveBeenCalledWith(
         expect.objectContaining({
           metadata: expect.objectContaining({
-            name: 'wierd-username-role-assignment-ui',
+            name: 'wierd-username-role-assignment-console',
           }),
         })
       )
@@ -310,9 +313,12 @@ describe('MulticlusterRoleAssignmentClient', function () {
           apiVersion: MulticlusterRoleAssignmentApiVersion,
           kind: MulticlusterRoleAssignmentKind,
           metadata: {
-            name: 'alice-trask-role-assignment',
+            name: 'alice-trask-role-assignment-console',
             namespace: MulticlusterRoleAssignmentNamespace,
             uid: '314843d9-ad5e-4d9c-9203-ae9553701e44',
+            labels: {
+              'console-created': 'true',
+            },
           },
           spec: {
             subject: {
@@ -406,9 +412,12 @@ describe('MulticlusterRoleAssignmentClient', function () {
           apiVersion: MulticlusterRoleAssignmentApiVersion,
           kind: MulticlusterRoleAssignmentKind,
           metadata: {
-            name: 'admin-user-role-assignment',
+            name: 'admin-user-role-assignment-console',
             namespace: MulticlusterRoleAssignmentNamespace,
             uid: '2f4a6c8e-3b7d-4e9a-6c2f-8e4a7b9d2c5f',
+            labels: {
+              'console-created': 'true',
+            },
           },
           spec: {
             subject: {
@@ -511,9 +520,12 @@ describe('MulticlusterRoleAssignmentClient', function () {
           apiVersion: MulticlusterRoleAssignmentApiVersion,
           kind: MulticlusterRoleAssignmentKind,
           metadata: {
-            name: 'developers-role-assignment',
+            name: 'developers-role-assignment-console',
             namespace: MulticlusterRoleAssignmentNamespace,
             uid: '5d3e8b2c-7a1f-4e5d-3b8c-2f5e7a1d4b8c',
+            labels: {
+              'console-created': 'true',
+            },
           },
           spec: {
             subject: {
@@ -547,10 +559,10 @@ describe('MulticlusterRoleAssignmentClient', function () {
         apiVersion: MulticlusterRoleAssignmentApiVersion,
         kind: MulticlusterRoleAssignmentKind,
         metadata: {
-          name: 'bob-newuser-role-assignment-ui',
+          name: 'bob-newuser-role-assignment-console',
           namespace: MulticlusterRoleAssignmentNamespace,
           labels: {
-            'ui-managed': 'true',
+            'console-created': 'true',
           },
         },
         spec: {
@@ -586,9 +598,12 @@ describe('MulticlusterRoleAssignmentClient', function () {
           apiVersion: MulticlusterRoleAssignmentApiVersion,
           kind: MulticlusterRoleAssignmentKind,
           metadata: {
-            name: 'developers-role-assignment',
+            name: 'developers-role-assignment-console',
             namespace: MulticlusterRoleAssignmentNamespace,
             uid: '5d3e8b2c-7a1f-4e5d-3b8c-2f5e7a1d4b8c',
+            labels: {
+              'console-created': 'true',
+            },
           },
           spec: {
             subject: {
@@ -624,9 +639,12 @@ describe('MulticlusterRoleAssignmentClient', function () {
           apiVersion: MulticlusterRoleAssignmentApiVersion,
           kind: MulticlusterRoleAssignmentKind,
           metadata: {
-            name: 'alice-trask-role-assignment',
+            name: 'alice-trask-role-assignment-console',
             namespace: MulticlusterRoleAssignmentNamespace,
             uid: '314843d9-ad5e-4d9c-9203-ae9553701e44',
+            labels: {
+              'console-created': 'true',
+            },
           },
           spec: {
             subject: {

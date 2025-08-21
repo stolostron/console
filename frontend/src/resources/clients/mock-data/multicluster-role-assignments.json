@@ -3,9 +3,12 @@
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
     "kind": "MulticlusterRoleAssignment",
     "metadata": {
-      "name": "alice-trask-role-assignment",
+      "name": "alice-trask-role-assignment-console",
       "namespace": "open-cluster-management-global-set",
-      "uid": "314843d9-ad5e-4d9c-9203-ae9553701e44"
+      "uid": "314843d9-ad5e-4d9c-9203-ae9553701e44",
+      "labels": {
+        "console-created": "true"
+      }
     },
     "spec": {
       "subject": {
@@ -30,9 +33,12 @@
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
     "kind": "MulticlusterRoleAssignment",
     "metadata": {
-      "name": "kubevirt-admins-role-assignment",
+      "name": "kubevirt-admins-role-assignment-console",
       "namespace": "open-cluster-management-global-set",
-      "uid": "7b8c9f2a-5e1d-4a6b-8c3f-9d2e7a5b8c1f"
+      "uid": "7b8c9f2a-5e1d-4a6b-8c3f-9d2e7a5b8c1f",
+      "labels": {
+        "console-created": "true"
+      }
     },
     "spec": {
       "subject": {
@@ -62,9 +68,12 @@
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
     "kind": "MulticlusterRoleAssignment",
     "metadata": {
-      "name": "admin-user-role-assignment",
+      "name": "admin-user-role-assignment-console",
       "namespace": "open-cluster-management-global-set",
-      "uid": "2f4a6c8e-3b7d-4e9a-6c2f-8e4a7b9d2c5f"
+      "uid": "2f4a6c8e-3b7d-4e9a-6c2f-8e4a7b9d2c5f",
+      "labels": {
+        "console-created": "true"
+      }
     },
     "spec": {
       "subject": {
@@ -89,9 +98,12 @@
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
     "kind": "MulticlusterRoleAssignment",
     "metadata": {
-      "name": "bob-levy-role-assignment",
+      "name": "bob-levy-role-assignment-console",
       "namespace": "open-cluster-management-global-set",
-      "uid": "9e1c5a7f-2d4b-4f8e-1c9a-5f7e2b4d8c1e"
+      "uid": "9e1c5a7f-2d4b-4f8e-1c9a-5f7e2b4d8c1e",
+      "labels": {
+        "console-created": "true"
+      }
     },
     "spec": {
       "subject": {
@@ -116,9 +128,12 @@
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
     "kind": "MulticlusterRoleAssignment",
     "metadata": {
-      "name": "developers-role-assignment",
+      "name": "developers-role-assignment-console",
       "namespace": "open-cluster-management-global-set",
-      "uid": "5d3e8b2c-7a1f-4e5d-3b8c-2f5e7a1d4b8c"
+      "uid": "5d3e8b2c-7a1f-4e5d-3b8c-2f5e7a1d4b8c",
+      "labels": {
+        "console-created": "true"
+      }
     },
     "spec": {
       "subject": {
@@ -148,9 +163,12 @@
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
     "kind": "MulticlusterRoleAssignment",
     "metadata": {
-      "name": "intern-dev-role-assignment",
+      "name": "intern-dev-role-assignment-console",
       "namespace": "open-cluster-management-global-set",
-      "uid": "8c4f2e9a-6b5d-4c8f-2e9a-6d5b8c4f2e9a"
+      "uid": "8c4f2e9a-6b5d-4c8f-2e9a-6d5b8c4f2e9a",
+      "labels": {
+        "console-created": "true"
+      }
     },
     "spec": {
       "subject": {
@@ -170,9 +188,12 @@
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
     "kind": "MulticlusterRoleAssignment",
     "metadata": {
-      "name": "junior-dev-role-assignment",
+      "name": "junior-dev-role-assignment-console",
       "namespace": "open-cluster-management-global-set",
-      "uid": "1a9f7e3b-4c6d-4a1f-7e3b-4d6c1a9f7e3b"
+      "uid": "1a9f7e3b-4c6d-4a1f-7e3b-4d6c1a9f7e3b",
+      "labels": {
+        "console-created": "true"
+      }
     },
     "spec": {
       "subject": {
@@ -192,9 +213,12 @@
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
     "kind": "MulticlusterRoleAssignment",
     "metadata": {
-      "name": "charlie-cranston-role-assignment",
+      "name": "charlie-cranston-role-assignment-console",
       "namespace": "open-cluster-management-global-set",
-      "uid": "6e8d2c5a-9f1b-4e6d-2c5a-9b1f6e8d2c5a"
+      "uid": "6e8d2c5a-9f1b-4e6d-2c5a-9b1f6e8d2c5a",
+      "labels": {
+        "console-created": "true"
+      }
     },
     "spec": {
       "subject": {
@@ -219,9 +243,12 @@
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
     "kind": "MulticlusterRoleAssignment",
     "metadata": {
-      "name": "sre-team-role-assignment",
+      "name": "sre-team-role-assignment-console",
       "namespace": "open-cluster-management-global-set",
-      "uid": "3f5c8e1d-7a2b-4f3c-8e1d-7b2a3f5c8e1d"
+      "uid": "3f5c8e1d-7a2b-4f3c-8e1d-7b2a3f5c8e1d",
+      "labels": {
+        "console-created": "true"
+      }
     },
     "spec": {
       "subject": {
@@ -251,9 +278,12 @@
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
     "kind": "MulticlusterRoleAssignment",
     "metadata": {
-      "name": "sarah-jones-role-assignment",
+      "name": "sarah-jones-role-assignment-console",
       "namespace": "open-cluster-management-global-set",
-      "uid": "4b7e9c2f-5d8a-4b7e-9c2f-5a8d4b7e9c2f"
+      "uid": "4b7e9c2f-5d8a-4b7e-9c2f-5a8d4b7e9c2f",
+      "labels": {
+        "console-created": "true"
+      }
     },
     "spec": {
       "subject": {
@@ -278,9 +308,12 @@
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
     "kind": "MulticlusterRoleAssignment",
     "metadata": {
-      "name": "david-brown-role-assignment",
+      "name": "david-brown-role-assignment-console",
       "namespace": "open-cluster-management-global-set",
-      "uid": "8d1f4a7c-3e6b-4d8f-1a7c-3b6e8d1f4a7c"
+      "uid": "8d1f4a7c-3e6b-4d8f-1a7c-3b6e8d1f4a7c",
+      "labels": {
+        "console-created": "true"
+      }
     },
     "spec": {
       "subject": {
@@ -300,9 +333,12 @@
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
     "kind": "MulticlusterRoleAssignment",
     "metadata": {
-      "name": "security-auditors-role-assignment",
+      "name": "security-auditors-role-assignment-console",
       "namespace": "open-cluster-management-global-set",
-      "uid": "2c9e6b4f-8a1d-4c2e-6b4f-8d1a2c9e6b4f"
+      "uid": "2c9e6b4f-8a1d-4c2e-6b4f-8d1a2c9e6b4f",
+      "labels": {
+        "console-created": "true"
+      }
     },
     "spec": {
       "subject": {
@@ -327,9 +363,12 @@
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
     "kind": "MulticlusterRoleAssignment",
     "metadata": {
-      "name": "network-admin-role-assignment",
+      "name": "network-admin-role-assignment-console",
       "namespace": "open-cluster-management-global-set",
-      "uid": "7f3a9d5c-2e8b-4f7a-9d5c-2b8e7f3a9d5c"
+      "uid": "7f3a9d5c-2e8b-4f7a-9d5c-2b8e7f3a9d5c",
+      "labels": {
+        "console-created": "true"
+      }
     },
     "spec": {
       "subject": {
@@ -359,9 +398,12 @@
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
     "kind": "MulticlusterRoleAssignment",
     "metadata": {
-      "name": "storage-team-role-assignment",
+      "name": "storage-team-role-assignment-console",
       "namespace": "open-cluster-management-global-set",
-      "uid": "5e2b8c4a-9f6d-4e5b-8c4a-9d6f5e2b8c4a"
+      "uid": "5e2b8c4a-9f6d-4e5b-8c4a-9d6f5e2b8c4a",
+      "labels": {
+        "console-created": "true"
+      }
     },
     "spec": {
       "subject": {
@@ -391,9 +433,12 @@
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
     "kind": "MulticlusterRoleAssignment",
     "metadata": {
-      "name": "test-user-role-assignment",
+      "name": "test-user-role-assignment-console",
       "namespace": "open-cluster-management-global-set",
-      "uid": "9a4c7f1e-6b3d-4a9c-7f1e-6d3b9a4c7f1e"
+      "uid": "9a4c7f1e-6b3d-4a9c-7f1e-6d3b9a4c7f1e",
+      "labels": {
+        "console-created": "true"
+      }
     },
     "spec": {
       "subject": {
