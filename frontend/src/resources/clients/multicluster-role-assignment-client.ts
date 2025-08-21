@@ -33,8 +33,8 @@ export interface RoleAssignmentUpdateResult {
 export function createRoleAssignmentHash(roleAssignment: RoleAssignment): string {
   const data = JSON.stringify({
     clusterRole: roleAssignment.clusterRole,
-    targetNamespaces: roleAssignment.targetNamespaces.slice().sort(),
-    clusterSets: roleAssignment.clusterSets.slice().sort(),
+    targetNamespaces: roleAssignment.targetNamespaces.slice().sort((a, b) => a.localeCompare(b)),
+    clusterSets: roleAssignment.clusterSets.slice().sort((a, b) => a.localeCompare(b)),
   })
 
   // djb2a hash algorithm
@@ -215,8 +215,10 @@ function createMulticlusterRoleAssignment(
   const sanitizedUserName = userName
     // replaces invalid characters with one hyphen
     .replace(/[^a-z0-9-]+/gi, '-')
-    // removes leading/trailing hyphens
-    .replace(/^-+|-+$/g, '')
+    // removes leading hyphens
+    .replace(/^-+/g, '')
+    // removes trailing hyphens
+    .replace(/-+$/g, '')
     .toLowerCase()
   // TODO: improve name creation logic in cases where a MulticlusterRoleAssignment already exists with the name
   const name = `${sanitizedUserName}-role-assignment-console`
