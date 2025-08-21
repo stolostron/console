@@ -36,77 +36,83 @@ export function useServerSideEvents({ registry, options = {} }: UseServerSideEve
   /**
    * Processes watch events for simple array-based resources
    */
-  const processArrayResource = useCallback((setter: any, cache: Record<string, IResource>, watchEvents: WatchEvent[]) => {
-    setter(() => {
-      for (const watchEvent of watchEvents) {
-        const key = `${watchEvent.object.metadata.namespace}/${watchEvent.object.metadata.name}`
+  const processArrayResource = useCallback(
+    (setter: any, cache: Record<string, IResource>, watchEvents: WatchEvent[]) => {
+      setter(() => {
+        for (const watchEvent of watchEvents) {
+          const key = `${watchEvent.object.metadata.namespace}/${watchEvent.object.metadata.name}`
 
-        switch (watchEvent.type) {
-          case 'ADDED':
-          case 'MODIFIED':
-            cache[key] = watchEvent.object
-            break
-          case 'DELETED':
-            delete cache[key]
-            break
+          switch (watchEvent.type) {
+            case 'ADDED':
+            case 'MODIFIED':
+              cache[key] = watchEvent.object
+              break
+            case 'DELETED':
+              delete cache[key]
+              break
+          }
         }
-      }
-      return Object.values(cache)
-    })
-  }, [])
+        return Object.values(cache)
+      })
+    },
+    []
+  )
 
   /**
    * Processes watch events for mapped resources (keyed by namespace, etc.)
    */
-  const processMappedResource = useCallback((
-    mapper: {
-      setter: any
-      mcaches: Record<string, Record<string, Record<string, IResource[]>>>
-      keyBy: string[]
-    },
-    watchEvents: WatchEvent[]
-  ) => {
-    const { setter, mcaches, keyBy } = mapper
+  const processMappedResource = useCallback(
+    (
+      mapper: {
+        setter: any
+        mcaches: Record<string, Record<string, Record<string, IResource[]>>>
+        keyBy: string[]
+      },
+      watchEvents: WatchEvent[]
+    ) => {
+      const { setter, mcaches, keyBy } = mapper
 
-    setter(() => {
-      const map = mcaches[Object.keys(mcaches)[0]]?.[Object.keys(mcaches[Object.keys(mcaches)[0]])[0]]
+      setter(() => {
+        const map = mcaches[Object.keys(mcaches)[0]]?.[Object.keys(mcaches[Object.keys(mcaches)[0]])[0]]
 
-      for (const watchEvent of watchEvents) {
-        // Build the key from the specified key fields
-        const key = keyBy
-          .map((partKey) => get(watchEvent.object, partKey))
-          .filter(Boolean)
-          .join('/')
+        for (const watchEvent of watchEvents) {
+          // Build the key from the specified key fields
+          const key = keyBy
+            .map((partKey) => get(watchEvent.object, partKey))
+            .filter(Boolean)
+            .join('/')
 
-        if (!map[key]) map[key] = []
-        const arr = map[key]
+          if (!map[key]) map[key] = []
+          const arr = map[key]
 
-        const index = arr.findIndex(
-          (resource) =>
-            resource.metadata?.name === watchEvent.object.metadata.name &&
-            resource.metadata?.namespace === watchEvent.object.metadata.namespace
-        )
+          const index = arr.findIndex(
+            (resource) =>
+              resource.metadata?.name === watchEvent.object.metadata.name &&
+              resource.metadata?.namespace === watchEvent.object.metadata.namespace
+          )
 
-        switch (watchEvent.type) {
-          case 'ADDED':
-          case 'MODIFIED':
-            if (index !== -1) {
-              arr[index] = watchEvent.object
-            } else {
-              arr.push(watchEvent.object)
-            }
-            break
-          case 'DELETED':
-            if (index !== -1) {
-              arr.splice(index, 1)
-            }
-            break
+          switch (watchEvent.type) {
+            case 'ADDED':
+            case 'MODIFIED':
+              if (index !== -1) {
+                arr[index] = watchEvent.object
+              } else {
+                arr.push(watchEvent.object)
+              }
+              break
+            case 'DELETED':
+              if (index !== -1) {
+                arr.splice(index, 1)
+              }
+              break
+          }
         }
-      }
 
-      return { ...map }
-    })
-  }, [])
+        return { ...map }
+      })
+    },
+    []
+  )
 
   /**
    * Processes a batch of watch events and updates the corresponding resource states
@@ -166,51 +172,54 @@ export function useServerSideEvents({ registry, options = {} }: UseServerSideEve
   /**
    * Processes incoming Server-Side Event messages
    */
-  const processMessage = useCallback((event: MessageEvent) => {
-    if (!event.data) return
+  const processMessage = useCallback(
+    (event: MessageEvent) => {
+      if (!event.data) return
 
-    try {
-      const data = JSON.parse(event.data) as ServerSideEventData
+      try {
+        const data = JSON.parse(event.data) as ServerSideEventData
 
-      switch (data.type) {
-        case 'ADDED':
-        case 'MODIFIED':
-        case 'DELETED':
-          if (data.object) {
-            eventQueueRef.current.push(data as WatchEvent)
-          }
-          break
-
-        case 'START':
-          eventQueueRef.current.length = 0
-          break
-
-        case 'EOP': // End of Packet
-          setLoadStarted(() => {
-            processEventQueue()
-            return true
-          })
-          break
-
-        case 'LOADED':
-          setEventsLoaded((prevLoaded) => {
-            if (!prevLoaded) {
-              processEventQueue()
+        switch (data.type) {
+          case 'ADDED':
+          case 'MODIFIED':
+          case 'DELETED':
+            if (data.object) {
+              eventQueueRef.current.push(data as WatchEvent)
             }
-            return true
-          })
-          break
+            break
 
-        case 'SETTINGS':
-          if (data.settings) {
-            setSettings(data.settings)
-          }
-          break
+          case 'START':
+            eventQueueRef.current.length = 0
+            break
+
+          case 'EOP': // End of Packet
+            setLoadStarted(() => {
+              processEventQueue()
+              return true
+            })
+            break
+
+          case 'LOADED':
+            setEventsLoaded((prevLoaded) => {
+              if (!prevLoaded) {
+                processEventQueue()
+              }
+              return true
+            })
+            break
+
+          case 'SETTINGS':
+            if (data.settings) {
+              setSettings(data.settings)
+            }
+            break
+        }
+      } catch (err) {
+        console.error('Failed to process SSE message:', err)
       }
-    } catch (err) {
-      console.error('Failed to process SSE message:', err)
-    }
-  }, [setLoadStarted, setEventsLoaded, setSettings, processEventQueue])
+    },
+    [setLoadStarted, setEventsLoaded, setSettings, processEventQueue]
+  )
 
   /**
    * Starts the Server-Side Events connection
