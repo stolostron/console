@@ -9,7 +9,7 @@ import { User as RbacUser } from '../../../../resources/rbac'
 import AcmTimestamp from '../../../../lib/AcmTimestamp'
 import { IAcmTableColumn, IAcmRowAction } from '../../../../ui-components/AcmTable/AcmTableTypes'
 import { getISOStringTimestamp } from '../../../../resources/utils'
-import { IdentityStatus, isIdentityActive } from '../../../../ui-components/IdentityStatus/IdentityStatus'
+import { isIdentityActive } from '../../../../ui-components/IdentityStatus/IdentityStatus'
 
 const EXPORT_FILE_PREFIX = 'users-table'
 
@@ -52,7 +52,8 @@ const COLUMN_CELLS = {
   ),
   IDENTITY_PROVIDER: (user: RbacUser) =>
     user.identities ? <span style={{ whiteSpace: 'nowrap' }}>{user.identities}</span> : '-',
-  STATUS: (user: RbacUser) => <IdentityStatus identity={user} />,
+  // TODO: uncomment this line once 'status' is implemented
+  // STATUS: (user: RbacUser) => <IdentityStatus identity={user} />,
   CREATED: (user: RbacUser) => {
     return user.metadata.creationTimestamp ? (
       <span style={{ whiteSpace: 'nowrap' }}>
@@ -78,10 +79,11 @@ export const usersTableColumns = ({ t }: Pick<UsersTableHelperProps, 't'>): IAcm
     sort: 'identities',
     cell: (user) => COLUMN_CELLS.IDENTITY_PROVIDER(user),
   },
-  {
-    header: t('Status'),
-    cell: (user) => COLUMN_CELLS.STATUS(user),
-  },
+  // TODO: uncomment this line once 'status' is implemented
+  // {
+  //   header: t('Status'),
+  //   cell: (user) => COLUMN_CELLS.STATUS(user),
+  // },
   {
     header: t('Created'),
     cell: (user) => COLUMN_CELLS.CREATED(user),

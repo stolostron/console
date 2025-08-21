@@ -9,7 +9,7 @@ import { Group as RbacGroup } from '../../../../resources/rbac'
 import AcmTimestamp from '../../../../lib/AcmTimestamp'
 import { IAcmTableColumn, IAcmRowAction } from '../../../../ui-components/AcmTable/AcmTableTypes'
 import { getISOStringTimestamp } from '../../../../resources/utils'
-import { IdentityStatus, isIdentityActive } from '../../../../ui-components/IdentityStatus/IdentityStatus'
+import { isIdentityActive } from '../../../../ui-components/IdentityStatus/IdentityStatus'
 
 const EXPORT_FILE_PREFIX = 'users-table'
 
@@ -52,7 +52,8 @@ const COLUMN_CELLS = {
   ),
   IDENTITY_PROVIDER: (group: RbacGroup) =>
     group.users ? <span style={{ whiteSpace: 'nowrap' }}>{group.users.length}</span> : '-',
-  STATUS: (group: RbacGroup) => <IdentityStatus identity={group} />,
+  // TODO: uncomment this line once 'status' is implemented
+  // STATUS: (group: RbacGroup) => <IdentityStatus identity={group} />,
   CREATED: (group: RbacGroup) => {
     return group.metadata.creationTimestamp ? (
       <span style={{ whiteSpace: 'nowrap' }}>
@@ -78,10 +79,11 @@ export const groupsTableColumns = ({ t }: Pick<GroupsTableHelperProps, 't'>): IA
     sort: 'users.length',
     cell: (group) => COLUMN_CELLS.IDENTITY_PROVIDER(group),
   },
-  {
-    header: t('Status'),
-    cell: (group) => COLUMN_CELLS.STATUS(group),
-  },
+  // TODO: uncomment this line once 'status' is implemented
+  // {
+  //   header: t('Status'),
+  //   cell: (group) => COLUMN_CELLS.STATUS(group),
+  // },
   {
     header: t('Created'),
     cell: (group) => COLUMN_CELLS.CREATED(group),
