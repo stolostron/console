@@ -55,7 +55,7 @@ describe('MulticlusterRoleAssignmentClient', function () {
       const query: MulticlusterRoleAssignmentQuery = {}
       const result = filterAndTrackRoleAssignments(mockMulticlusterRoleAssignments, query)
 
-      expect(result).toHaveLength(31)
+      expect(result).toHaveLength(33)
       result.forEach((roleAssignment) => {
         expect(roleAssignment).toHaveProperty('multiclusterRoleAssignmentUid')
         expect(roleAssignment).toHaveProperty('subjectName')
@@ -72,7 +72,7 @@ describe('MulticlusterRoleAssignmentClient', function () {
       }
       const result = filterAndTrackRoleAssignments(mockMulticlusterRoleAssignments, query)
 
-      expect(result).toHaveLength(2)
+      expect(result).toHaveLength(5)
       result.forEach((roleAssignment) => {
         expect(roleAssignment.subjectName).toBe('alice.trask')
       })
@@ -108,7 +108,7 @@ describe('MulticlusterRoleAssignmentClient', function () {
       }
       const result = filterAndTrackRoleAssignments(mockMulticlusterRoleAssignments, query)
 
-      expect(result).toHaveLength(11)
+      expect(result).toHaveLength(13)
       result.forEach((roleAssignment) => {
         expect(roleAssignment.clusterSets).toContain('production-cluster')
       })
@@ -345,8 +345,93 @@ describe('MulticlusterRoleAssignmentClient', function () {
               },
               {
                 clusterRole: 'kubevirt.io:admin',
-                targetNamespaces: ['kubevirt-staging', 'vm-workloads'],
-                clusterSets: ['staging-cluster'],
+                targetNamespaces: [
+                  'kubevirt-staging',
+                  'vm-workloads',
+                  'vm-testing',
+                  'vm-preview',
+                  'vm-validation',
+                  'vm-integration',
+                  'vm-qa',
+                  'vm-perf',
+                ],
+                clusterSets: [
+                  'staging-cluster',
+                  'staging-east',
+                  'staging-west',
+                  'staging-testing',
+                  'staging-preview',
+                  'staging-integration',
+                ],
+              },
+              {
+                clusterRole: 'cluster-admin',
+                targetNamespaces: [
+                  'openshift-console',
+                  'openshift-console-operator',
+                  'openshift-console-user-settings',
+                  'openshift-web-console',
+                  'console-system',
+                  'console-monitoring',
+                  'console-storage',
+                  'console-networking',
+                  'console-security',
+                ],
+                clusterSets: [
+                  'production-cluster',
+                  'production-east',
+                  'production-west',
+                  'production-central',
+                  'staging-cluster',
+                  'staging-east',
+                  'development-cluster',
+                  'testing-cluster',
+                ],
+              },
+              {
+                clusterRole: 'kubevirt.io:edit',
+                targetNamespaces: [
+                  'kubevirt-dev',
+                  'vm-dev',
+                  'vm-experimental',
+                  'vm-research',
+                  'vm-sandbox',
+                  'vm-prototype',
+                  'vm-beta',
+                ],
+                clusterSets: [
+                  'development-cluster',
+                  'dev-east',
+                  'dev-west',
+                  'experimental-cluster',
+                  'research-cluster',
+                  'sandbox-cluster',
+                ],
+              },
+              {
+                clusterRole: 'storage-admin',
+                targetNamespaces: [
+                  'openshift-storage',
+                  'ceph-storage',
+                  'local-storage',
+                  'nfs-storage',
+                  'csi-storage',
+                  'backup-storage',
+                  'archive-storage',
+                  'disaster-recovery',
+                  'storage-monitoring',
+                  'storage-analytics',
+                ],
+                clusterSets: [
+                  'production-cluster',
+                  'production-east',
+                  'production-west',
+                  'staging-cluster',
+                  'development-cluster',
+                  'storage-primary',
+                  'storage-backup',
+                  'storage-archive',
+                ],
               },
             ],
           },
@@ -449,15 +534,15 @@ describe('MulticlusterRoleAssignmentClient', function () {
     })
 
     it('should delete entire MulticlusterRoleAssignment when no role assignments remain', async () => {
-      const singleAssignmentMock = mockMulticlusterRoleAssignments[10]
+      const singleAssignmentMock = mockMulticlusterRoleAssignments[13]
       const existingAssignment = singleAssignmentMock.spec.roleAssignments[0]
 
       const trackedAssignment: TrackedRoleAssignment = {
         clusterRole: existingAssignment.clusterRole,
         targetNamespaces: existingAssignment.targetNamespaces,
         clusterSets: existingAssignment.clusterSets,
-        multiclusterRoleAssignmentUid: '8d1f4a7c-3e6b-4d8f-1a7c-3b6e8d1f4a7c',
-        subjectName: 'david.brown',
+        multiclusterRoleAssignmentUid: '9a4c7f1e-6b3d-4a9c-7f1e-6d3b9a4c7f1e',
+        subjectName: 'test.user',
         subjectKind: UserKind,
         roleAssignmentIndex: 0,
         dataHash: createRoleAssignmentHash(existingAssignment),
@@ -666,13 +751,117 @@ describe('MulticlusterRoleAssignmentClient', function () {
             value: [
               {
                 clusterRole: 'kubevirt.io:admin',
-                targetNamespaces: ['kubevirt-production', 'vm-workloads'],
-                clusterSets: ['production-cluster'],
+                targetNamespaces: [
+                  'kubevirt-production',
+                  'vm-workloads',
+                  'vm-storage',
+                  'vm-networking',
+                  'vm-compute',
+                  'vm-backup',
+                  'vm-monitoring',
+                  'vm-logging',
+                  'vm-security',
+                  'vm-analytics',
+                ],
+                clusterSets: [
+                  'production-cluster',
+                  'production-east',
+                  'production-west',
+                  'production-central',
+                  'production-backup',
+                  'production-dr',
+                  'production-monitoring',
+                ],
               },
               {
                 clusterRole: 'kubevirt.io:admin',
-                targetNamespaces: ['kubevirt-staging', 'vm-workloads'],
-                clusterSets: ['staging-cluster'],
+                targetNamespaces: [
+                  'kubevirt-staging',
+                  'vm-workloads',
+                  'vm-testing',
+                  'vm-preview',
+                  'vm-validation',
+                  'vm-integration',
+                  'vm-qa',
+                  'vm-perf',
+                ],
+                clusterSets: [
+                  'staging-cluster',
+                  'staging-east',
+                  'staging-west',
+                  'staging-testing',
+                  'staging-preview',
+                  'staging-integration',
+                ],
+              },
+              {
+                clusterRole: 'cluster-admin',
+                targetNamespaces: [
+                  'openshift-console',
+                  'openshift-console-operator',
+                  'openshift-console-user-settings',
+                  'openshift-web-console',
+                  'console-system',
+                  'console-monitoring',
+                  'console-storage',
+                  'console-networking',
+                  'console-security',
+                ],
+                clusterSets: [
+                  'production-cluster',
+                  'production-east',
+                  'production-west',
+                  'production-central',
+                  'staging-cluster',
+                  'staging-east',
+                  'development-cluster',
+                  'testing-cluster',
+                ],
+              },
+              {
+                clusterRole: 'kubevirt.io:edit',
+                targetNamespaces: [
+                  'kubevirt-dev',
+                  'vm-dev',
+                  'vm-experimental',
+                  'vm-research',
+                  'vm-sandbox',
+                  'vm-prototype',
+                  'vm-beta',
+                ],
+                clusterSets: [
+                  'development-cluster',
+                  'dev-east',
+                  'dev-west',
+                  'experimental-cluster',
+                  'research-cluster',
+                  'sandbox-cluster',
+                ],
+              },
+              {
+                clusterRole: 'storage-admin',
+                targetNamespaces: [
+                  'openshift-storage',
+                  'ceph-storage',
+                  'local-storage',
+                  'nfs-storage',
+                  'csi-storage',
+                  'backup-storage',
+                  'archive-storage',
+                  'disaster-recovery',
+                  'storage-monitoring',
+                  'storage-analytics',
+                ],
+                clusterSets: [
+                  'production-cluster',
+                  'production-east',
+                  'production-west',
+                  'staging-cluster',
+                  'development-cluster',
+                  'storage-primary',
+                  'storage-backup',
+                  'storage-archive',
+                ],
               },
               {
                 clusterRole: 'network-admin',

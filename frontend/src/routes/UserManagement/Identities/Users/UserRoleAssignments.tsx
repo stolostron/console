@@ -2,8 +2,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import roleAssignmentsMockDataJson from '../../../../resources/clients/mock-data/role-assignments.json'
-import { RoleAssignment } from '../../../../resources/role-assignment'
+import multiclusterRoleAssignmentsMockDataJson from '../../../../resources/clients/mock-data/multicluster-role-assignments.json'
+import { MulticlusterRoleAssignment } from '../../../../resources/multicluster-role-assignment'
 import { compareStrings } from '../../../../ui-components'
 import { RoleAssignments } from '../../RoleAssignment/RoleAssignments'
 import { User } from '../../../../resources'
@@ -31,29 +31,33 @@ const UserRoleAssignments = () => {
   useEffect(() => setIsLoading(users === undefined), [users])
   useEffect(() => setUser(users?.find((user) => user.metadata.uid === id) as User), [id, users])
 
-  // Use role assignments mock data
-  const roleAssignments = roleAssignmentsMockDataJson as RoleAssignment[]
+  // Use multicluster role assignments mock data
+  const multiclusterRoleAssignments = multiclusterRoleAssignmentsMockDataJson as MulticlusterRoleAssignment[]
 
-  // Filter role assignments for the current user
-  const userRoleAssignments = useMemo(
+  // Filter multicluster role assignments for the current user
+  const userMulticlusterRoleAssignments = useMemo(
     () =>
-      !user || !roleAssignments
+      !user || !multiclusterRoleAssignments
         ? []
-        : roleAssignments
-            .filter((roleAssignment) =>
-              roleAssignment.spec.subjects.some(
-                (subject) => subject.kind === 'User' && subject.name === user.metadata.name
-              )
+        : multiclusterRoleAssignments
+            .filter(
+              (multiclusterRoleAssignment) =>
+                multiclusterRoleAssignment.spec.subject.kind === 'User' &&
+                multiclusterRoleAssignment.spec.subject.name === user.metadata.name
             )
             .sort((a, b) => compareStrings(a.metadata?.name ?? '', b.metadata?.name ?? '')),
-    [user, roleAssignments]
+    [user, multiclusterRoleAssignments]
   )
 
   return !user ? (
     // TODO: to improve this empty state
     <div>{t('User not found')}</div>
   ) : (
-    <RoleAssignments roleAssignments={userRoleAssignments} isLoading={isLoading} hiddenColumns={['subject']} />
+    <RoleAssignments
+      multiclusterRoleAssignments={userMulticlusterRoleAssignments}
+      isLoading={isLoading}
+      hiddenColumns={['subject']}
+    />
   )
 }
 

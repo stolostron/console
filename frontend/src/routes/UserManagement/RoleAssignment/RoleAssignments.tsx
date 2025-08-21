@@ -4,10 +4,13 @@ import { fitContent, nowrap } from '@patternfly/react-table'
 import { useCallback, useContext, useMemo, useState } from 'react'
 import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
 import { useTranslation } from '../../../lib/acm-i18next'
-import AcmTimestamp from '../../../lib/AcmTimestamp'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../lib/doc-util'
-import { RoleAssignment } from '../../../resources/role-assignment'
-import { getISOStringTimestamp } from '../../../resources/utils'
+import { MulticlusterRoleAssignment } from '../../../resources/multicluster-role-assignment'
+import {
+  filterAndTrackRoleAssignments,
+  TrackedRoleAssignment,
+  MulticlusterRoleAssignmentQuery,
+} from '../../../resources/clients/multicluster-role-assignment-client'
 import {
   AcmButton,
   AcmEmptyState,
@@ -20,25 +23,41 @@ import {
 import { IAcmTableAction, IAcmTableButtonAction, ITableFilter } from '../../../ui-components/AcmTable/AcmTableTypes'
 import { RoleAssignmentActionDropdown } from './RoleAssignmentActionDropdown'
 type RoleAssignmentsProps = {
-  roleAssignments: RoleAssignment[]
+  multiclusterRoleAssignments: MulticlusterRoleAssignment[]
   isLoading?: boolean
   hiddenColumns?: ('subject' | 'role' | 'cluster')[]
+  query?: MulticlusterRoleAssignmentQuery
 }
 
-const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssignmentsProps) => {
+const RoleAssignments = ({
+  multiclusterRoleAssignments,
+  isLoading,
+  hiddenColumns,
+  query = {},
+}: RoleAssignmentsProps) => {
   const { t } = useTranslation()
   const toastContext = useContext(AcmToastContext)
 
+  // Flatten MulticlusterRoleAssignments to TrackedRoleAssignments for the table
+  const roleAssignments = useMemo(
+    () => filterAndTrackRoleAssignments(multiclusterRoleAssignments, query),
+    [multiclusterRoleAssignments, query]
+  )
+
   // Key function for the table that generates a unique key for each role assignment
-  const keyFn = useCallback((roleAssignment: RoleAssignment) => roleAssignment.metadata?.uid ?? '', [])
+  const keyFn = useCallback(
+    (roleAssignment: TrackedRoleAssignment) =>
+      roleAssignment.multiclusterRoleAssignmentUid + '-' + roleAssignment.roleAssignmentIndex,
+    []
+  )
 
   // Modal state for delete confirmation
-  const [modalProps, setModalProps] = useState<BulkActionModalProps<RoleAssignment> | { open: false }>({
+  const [modalProps, setModalProps] = useState<BulkActionModalProps<TrackedRoleAssignment> | { open: false }>({
     open: false,
   })
 
   // Table actions for bulk operations
-  const tableActions = useMemo<IAcmTableAction<RoleAssignment>[]>(
+  const tableActions = useMemo<IAcmTableAction<TrackedRoleAssignment>[]>(
     () => [
       {
         id: 'deleteRoleAssignments',
@@ -54,22 +73,27 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
             description: t('Are you sure that you want to delete the role assignments? This action cannot be undone.'),
             columns: [
               {
-                header: t('Name'),
-                cell: (roleAssignment: RoleAssignment) => roleAssignment.metadata?.name ?? '',
-                sort: (a: RoleAssignment, b: RoleAssignment) =>
-                  compareStrings(a.metadata?.name ?? '', b.metadata?.name ?? ''),
+                header: t('Subject'),
+                cell: (roleAssignment: TrackedRoleAssignment) =>
+                  `${roleAssignment.subjectKind}: ${roleAssignment.subjectName}`,
+                sort: (a: TrackedRoleAssignment, b: TrackedRoleAssignment) =>
+                  compareStrings(a.subjectName, b.subjectName),
               },
               {
                 header: t('Role'),
-                cell: (roleAssignment: RoleAssignment) => roleAssignment.spec.roles.join(', '),
-                sort: (a: RoleAssignment, b: RoleAssignment) =>
-                  compareStrings(a.spec.roles.join(', '), b.spec.roles.join(', ')),
+                cell: (roleAssignment: TrackedRoleAssignment) => roleAssignment.clusterRole,
+                sort: (a: TrackedRoleAssignment, b: TrackedRoleAssignment) =>
+                  compareStrings(a.clusterRole, b.clusterRole),
               },
             ],
-            keyFn: (roleAssignment: RoleAssignment) => roleAssignment.metadata?.uid ?? '',
-            actionFn: (roleAssignment: RoleAssignment) => {
-              // TODO: Implement actual bulk delete API call from role-assignment-client.ts file
-              console.log('Bulk deleting role assignment:', roleAssignment.metadata?.name)
+            keyFn: (roleAssignment: TrackedRoleAssignment) =>
+              roleAssignment.multiclusterRoleAssignmentUid + '-' + roleAssignment.roleAssignmentIndex,
+            actionFn: (roleAssignment: TrackedRoleAssignment) => {
+              // TODO: Implement actual bulk delete API call from multicluster-role-assignment-client.ts file
+              console.log(
+                'Bulk deleting role assignment:',
+                `${roleAssignment.subjectName}-${roleAssignment.clusterRole}`
+              )
               toastContext.addAlert({
                 title: t('Role assignment deleted'),
                 type: 'success',
@@ -89,29 +113,29 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
     [t, setModalProps, toastContext]
   )
 
-  // Filters for RoleAssignment
-  const filters = useMemo<ITableFilter<RoleAssignment>[]>(() => {
+  // Filters for TrackedRoleAssignment
+  const filters = useMemo<ITableFilter<TrackedRoleAssignment>[]>(() => {
     // Get all unique values for filter options
     const allRoles = new Set<string>()
-    const allClusters = new Set<string>()
+    const allClusterSets = new Set<string>()
     const allNamespaces = new Set<string>()
     const allStatuses = new Set<string>()
 
     // Extract all unique values from role assignments
     roleAssignments.forEach((ra) => {
-      // Add roles
-      ra.spec.roles.forEach((role) => allRoles.add(role))
+      // Add single role
+      allRoles.add(ra.clusterRole)
 
       // TODO: change to correspondent status once is available on the schema
       // Add status (mock as Active for all)
       allStatuses.add('Active')
 
-      // Add clusters and namespaces directly from role assignment spec
-      ra.spec.clusters.forEach((cluster) => {
-        allClusters.add(cluster.name)
-        cluster.namespaces.forEach((namespace) => {
-          allNamespaces.add(namespace)
-        })
+      // Add cluster sets and target namespaces
+      ra.clusterSets.forEach((clusterSet) => {
+        allClusterSets.add(clusterSet)
+      })
+      ra.targetNamespaces.forEach((namespace) => {
+        allNamespaces.add(namespace)
       })
     })
 
@@ -119,9 +143,9 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
     const roleOptions = Array.from(allRoles)
       .sort((a, b) => a.localeCompare(b))
       .map((role) => ({ label: role, value: role }))
-    const clusterOptions = Array.from(allClusters)
+    const clusterSetOptions = Array.from(allClusterSets)
       .sort((a, b) => a.localeCompare(b))
-      .map((cluster) => ({ label: cluster, value: cluster }))
+      .map((clusterSet) => ({ label: clusterSet, value: clusterSet }))
     const namespaceOptions = Array.from(allNamespaces)
       .sort((a, b) => a.localeCompare(b))
       .map((namespace) => ({ label: namespace, value: namespace }))
@@ -135,16 +159,15 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
         label: t('Role'),
         options: roleOptions,
         tableFilterFn: (selectedValues, roleAssignment) => {
-          return selectedValues.some((role) => roleAssignment.spec.roles.includes(role))
+          return selectedValues.includes(roleAssignment.clusterRole)
         },
       },
       {
-        id: 'cluster',
-        label: t('Cluster'),
-        options: clusterOptions,
+        id: 'clusterSet',
+        label: t('Cluster Set'),
+        options: clusterSetOptions,
         tableFilterFn: (selectedValues, roleAssignment) => {
-          const roleAssignmentClusters = roleAssignment.spec.clusters.map((cluster) => cluster.name)
-          return selectedValues.some((selectedCluster) => roleAssignmentClusters.includes(selectedCluster))
+          return selectedValues.some((selectedClusterSet) => roleAssignment.clusterSets.includes(selectedClusterSet))
         },
       },
       {
@@ -152,8 +175,7 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
         label: t('Namespace'),
         options: namespaceOptions,
         tableFilterFn: (selectedValues, roleAssignment) => {
-          const roleAssignmentNamespaces = roleAssignment.spec.clusters.flatMap((cluster) => cluster.namespaces)
-          return selectedValues.some((selectedNamespace) => roleAssignmentNamespaces.includes(selectedNamespace))
+          return selectedValues.some((selectedNamespace) => roleAssignment.targetNamespaces.includes(selectedNamespace))
         },
       },
       {
@@ -182,58 +204,51 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
   )
 
   // Table columns
-  const columns: IAcmTableColumn<RoleAssignment>[] = [
+  const columns: IAcmTableColumn<TrackedRoleAssignment>[] = [
     {
-      header: t('Roles'),
-      sort: (a, b) => compareStrings(a.spec.roles.join(', '), b.spec.roles.join(', ')),
-      cell: (roleAssignment) => roleAssignment.spec.roles.join(', '),
-      exportContent: (roleAssignment) => roleAssignment.spec.roles.join(', '),
+      header: t('Role'),
+      sort: (a, b) => compareStrings(a.clusterRole, b.clusterRole),
+      cell: (roleAssignment) => roleAssignment.clusterRole,
+      exportContent: (roleAssignment) => roleAssignment.clusterRole,
       isHidden: hiddenColumns?.includes('role'),
     },
-    // TODO: the column for users and the isHidden based on context
     {
-      header: t('Users/Groups'),
-      sort: (a, b) => compareStrings(a.spec.roles.join(', '), b.spec.roles.join(', ')),
-      cell: (roleAssignment) => roleAssignment.spec.subjects.join(', '),
-      exportContent: (roleAssignment) => roleAssignment.spec.roles.join(', '),
+      header: t('Subject'),
+      sort: (a, b) => compareStrings(a.subjectName, b.subjectName),
+      cell: (roleAssignment) => `${roleAssignment.subjectKind}: ${roleAssignment.subjectName}`,
+      exportContent: (roleAssignment) => `${roleAssignment.subjectKind}: ${roleAssignment.subjectName}`,
       isHidden: hiddenColumns?.includes('subject'),
     },
     {
-      header: t('Cluster'),
+      header: t('Cluster Sets'),
       cell: (roleAssignment) => {
-        const clusterNames = roleAssignment.spec.clusters.map((cluster) => cluster.name)
         return (
           <LabelGroup
-            collapsedText={t('show.more', { count: clusterNames.length - 3 })}
+            collapsedText={t('show.more', { count: roleAssignment.clusterSets.length - 3 })}
             expandedText={t('Show less')}
             numLabels={3}
           >
-            {clusterNames.map((cluster) => (
-              <Label key={cluster} style={{ fontSize: '14px' }}>
-                {cluster}
+            {roleAssignment.clusterSets.map((clusterSet) => (
+              <Label key={clusterSet} style={{ fontSize: '14px' }}>
+                {clusterSet}
               </Label>
             ))}
           </LabelGroup>
         )
       },
-      exportContent: (roleAssignment) => {
-        const clusterNames = roleAssignment.spec.clusters.map((cluster) => cluster.name)
-        return clusterNames.join(', ')
-      },
+      exportContent: (roleAssignment) => roleAssignment.clusterSets.join(', '),
       isHidden: hiddenColumns?.includes('cluster'),
     },
     {
-      header: t('Namespace'),
+      header: t('Namespaces'),
       cell: (roleAssignment) => {
-        const namespaces = roleAssignment.spec.clusters.flatMap((cluster) => cluster.namespaces)
-        const uniqueNamespaces = Array.from(new Set(namespaces))
         return (
           <LabelGroup
-            collapsedText={t('show.more', { count: uniqueNamespaces.length - 5 })}
+            collapsedText={t('show.more', { count: roleAssignment.targetNamespaces.length - 5 })}
             expandedText={t('Show less')}
             numLabels={5}
           >
-            {uniqueNamespaces.map((namespace) => (
+            {roleAssignment.targetNamespaces.map((namespace) => (
               <Label key={namespace} style={{ fontSize: '14px' }}>
                 {namespace}
               </Label>
@@ -241,11 +256,7 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
           </LabelGroup>
         )
       },
-      exportContent: (roleAssignment) => {
-        const namespaces = roleAssignment.spec.clusters.flatMap((cluster) => cluster.namespaces)
-        const uniqueNamespaces = Array.from(new Set(namespaces))
-        return uniqueNamespaces.join(', ')
-      },
+      exportContent: (roleAssignment) => roleAssignment.targetNamespaces.join(', '),
     },
     {
       header: t('Status'),
@@ -256,18 +267,16 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
       header: t('Created'),
       sort: 'metadata.creationTimestamp',
       cellTransforms: [nowrap],
-      cell: (roleAssignment) => {
-        return <AcmTimestamp timestamp={roleAssignment.metadata?.creationTimestamp ?? ''} />
+      cell: () => {
+        // TrackedRoleAssignment doesn't have metadata.creationTimestamp
+        // We could show the parent MulticlusterRoleAssignment creation time instead
+        return <span>-</span>
       },
-      exportContent: (roleAssignment) => {
-        if (roleAssignment.metadata?.creationTimestamp) {
-          return getISOStringTimestamp(roleAssignment.metadata.creationTimestamp)
-        }
-      },
+      exportContent: () => '',
     },
     {
       header: '',
-      cell: (roleAssignment: RoleAssignment) => {
+      cell: (roleAssignment: TrackedRoleAssignment) => {
         return (
           <RoleAssignmentActionDropdown
             roleAssignment={roleAssignment}
@@ -286,7 +295,7 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
       {isLoading ? (
         <AcmLoadingPage />
       ) : (
-        <AcmTable<RoleAssignment>
+        <AcmTable<TrackedRoleAssignment>
           key="role-assignments-table"
           columns={columns}
           keyFn={keyFn}
@@ -315,7 +324,7 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
           }
         />
       )}
-      <BulkActionModal<RoleAssignment> {...modalProps} />
+      <BulkActionModal<TrackedRoleAssignment> {...modalProps} />
     </PageSection>
   )
 }

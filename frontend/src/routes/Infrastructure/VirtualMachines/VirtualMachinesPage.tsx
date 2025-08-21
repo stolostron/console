@@ -478,7 +478,7 @@ export default function VirtualMachinesPage() {
       <AcmPageContent id="virtual-machines">
         {isRoleAssignmentsActive ? (
           // TODO: implement that part
-          <RoleAssignments roleAssignments={[]} isLoading={false} hiddenColumns={['cluster']} />
+          <RoleAssignments multiclusterRoleAssignments={[]} isLoading={false} hiddenColumns={['cluster']} />
         ) : (
           <>
             {isLimitAlertOpen ? (

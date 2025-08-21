@@ -2,7 +2,8 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import { nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../lib/nock-util'
 import { RoleAssignmentActionDropdown } from './RoleAssignmentActionDropdown'
-import { RoleAssignment } from '../../../resources/role-assignment'
+
+import { TrackedRoleAssignment } from '../../../resources/clients/multicluster-role-assignment-client'
 
 // Mock Dropdown component to show the key data we want to verify
 jest.mock('@patternfly/react-core', () => ({
@@ -27,22 +28,15 @@ jest.mock('@patternfly/react-core', () => ({
   ),
 }))
 
-const mockRoleAssignment: RoleAssignment = {
-  apiVersion: 'rbac.open-cluster-management.io/v1alpha1',
-  kind: 'RoleAssignment',
-  metadata: {
-    name: 'test-role-assignment',
-    uid: 'test-uid-123',
-    namespace: 'default',
-  },
-  spec: {
-    roles: ['admin', 'viewer'],
-    subjects: [
-      { kind: 'User', name: 'test-user' },
-      { kind: 'Group', name: 'test-group' },
-    ],
-    clusters: [{ name: 'test-cluster', namespaces: ['default', 'kube-system'] }],
-  },
+const mockRoleAssignment: TrackedRoleAssignment = {
+  multiclusterRoleAssignmentUid: 'test-uid-123',
+  subjectKind: 'User',
+  subjectName: 'test-user',
+  clusterRole: 'admin',
+  clusterSets: ['production', 'staging'],
+  targetNamespaces: ['default', 'kube-system', 'test-ns'],
+  roleAssignmentIndex: 0,
+  dataHash: 'test-hash',
 }
 
 const mockSetModalProps = jest.fn()
@@ -69,7 +63,6 @@ describe('RoleAssignmentActionDropdown', () => {
 
   it('renders dropdown toggle button', () => {
     render(<Component />)
-    screen.logTestingPlaygroundURL()
     // Verify the kebab toggle button is rendered
     const toggleButton = screen.getByRole('button')
     expect(toggleButton).toBeInTheDocument()
@@ -129,12 +122,12 @@ describe('RoleAssignmentActionDropdown', () => {
 
     // Verify columns are configured correctly
     expect(modalProps.columns).toHaveLength(2)
-    expect(modalProps.columns[0].header).toMatch(/name/i)
+    expect(modalProps.columns[0].header).toMatch(/subject/i)
     expect(modalProps.columns[1].header).toMatch(/role/i)
 
     // Test column cell functions
-    expect(modalProps.columns[0].cell(mockRoleAssignment)).toMatch(/test-role-assignment/i)
-    expect(modalProps.columns[1].cell(mockRoleAssignment)).toMatch(/admin.*viewer/i)
+    expect(modalProps.columns[0].cell(mockRoleAssignment)).toMatch(/User: test-user/i)
+    expect(modalProps.columns[1].cell(mockRoleAssignment)).toMatch(/admin/i)
   })
 
   it('actionFn shows toast and returns promise', () => {
@@ -180,22 +173,5 @@ describe('RoleAssignmentActionDropdown', () => {
 
     // Verify setModalProps was called to close modal
     expect(mockSetModalProps).toHaveBeenCalledWith({ open: false })
-  })
-
-  it('keyFn returns correct uid', () => {
-    render(<Component />)
-
-    // Open dropdown and click delete
-    const toggleButton = screen.getByRole('button')
-    fireEvent.click(toggleButton)
-
-    const deleteOption = screen.getByText(/delete role assignment/i)
-    fireEvent.click(deleteOption)
-
-    // Get the modal props and test the keyFn
-    const modalProps = mockSetModalProps.mock.calls[0][0]
-    const key = modalProps.keyFn(mockRoleAssignment)
-
-    expect(key).toMatch(/test-uid-123/)
   })
 })

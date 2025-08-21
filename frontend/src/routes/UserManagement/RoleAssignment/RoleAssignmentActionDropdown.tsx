@@ -3,12 +3,12 @@ import { useTranslation } from '../../../lib/acm-i18next'
 import { Dropdown, DropdownItem, KebabToggle } from '@patternfly/react-core/deprecated'
 import { useState } from 'react'
 import { BulkActionModalProps } from '../../../components/BulkActionModal'
-import { RoleAssignment } from '../../../resources/role-assignment'
+import { TrackedRoleAssignment } from '../../../resources/clients/multicluster-role-assignment-client'
 import { compareStrings } from '../../../ui-components'
 
 const RoleAssignmentActionDropdown = (props: {
-  roleAssignment: RoleAssignment
-  setModalProps: (props: BulkActionModalProps<RoleAssignment> | { open: false }) => void
+  roleAssignment: TrackedRoleAssignment
+  setModalProps: (props: BulkActionModalProps<TrackedRoleAssignment> | { open: false }) => void
   toastContext: any
 }) => {
   const { t } = useTranslation()
@@ -41,22 +41,24 @@ const RoleAssignmentActionDropdown = (props: {
               ),
               columns: [
                 {
-                  header: t('Name'),
-                  cell: (roleAssignment: RoleAssignment) => roleAssignment.metadata?.name ?? '',
-                  sort: (a: RoleAssignment, b: RoleAssignment) =>
-                    compareStrings(a.metadata?.name ?? '', b.metadata?.name ?? ''),
+                  header: t('Subject'),
+                  cell: (roleAssignment: TrackedRoleAssignment) =>
+                    `${roleAssignment.subjectKind}: ${roleAssignment.subjectName}`,
+                  sort: (a: TrackedRoleAssignment, b: TrackedRoleAssignment) =>
+                    compareStrings(a.subjectName, b.subjectName),
                 },
                 {
                   header: t('Role'),
-                  cell: (roleAssignment: RoleAssignment) => roleAssignment.spec.roles.join(', '),
-                  sort: (a: RoleAssignment, b: RoleAssignment) =>
-                    compareStrings(a.spec.roles.join(', '), b.spec.roles.join(', ')),
+                  cell: (roleAssignment: TrackedRoleAssignment) => roleAssignment.clusterRole,
+                  sort: (a: TrackedRoleAssignment, b: TrackedRoleAssignment) =>
+                    compareStrings(a.clusterRole, b.clusterRole),
                 },
               ],
-              keyFn: (roleAssignment: RoleAssignment) => roleAssignment.metadata?.uid ?? '',
-              actionFn: (roleAssignment: RoleAssignment) => {
+              keyFn: (roleAssignment: TrackedRoleAssignment) =>
+                roleAssignment.multiclusterRoleAssignmentUid + '-' + roleAssignment.roleAssignmentIndex,
+              actionFn: (roleAssignment: TrackedRoleAssignment) => {
                 // TODO: Implement actual delete API call
-                console.log('Deleting role assignment:', roleAssignment.metadata?.name)
+                console.log('Deleting role assignment:', `${roleAssignment.subjectName}-${roleAssignment.clusterRole}`)
                 props.toastContext.addAlert({
                   title: t('Role assignment deleted'),
                   type: 'success',

@@ -7,26 +7,39 @@ import { render, screen } from '@testing-library/react'
 
 // Mock RoleAssignments to show the key data we want to verify
 jest.mock('../../RoleAssignment/RoleAssignments', () => ({
-  RoleAssignments: ({ roleAssignments, isLoading, hiddenColumns }: any) => (
-    <div id="role-assignments">
-      <div id="loading">{isLoading ? 'Loading' : 'Loaded'}</div>
-      <div id="hidden-columns">{hiddenColumns?.join(',') || 'none'}</div>
-      <div id="assignments-count">{roleAssignments?.length || 0}</div>
-      {roleAssignments?.map((assignment: any, index: number) => (
-        <div key={index} id={`assignment-${index}`}>
-          <div id={`assignment-name-${index}`}>{assignment.metadata?.name}</div>
-          <div id={`assignment-roles-${index}`}>{assignment.spec?.roles?.join(', ') || 'No roles'}</div>
-          <div id={`assignment-clusters-${index}`}>
-            {assignment.spec?.clusters?.map((cluster: any) => cluster.name).join(', ') || 'No clusters'}
+  RoleAssignments: ({ multiclusterRoleAssignments, isLoading, hiddenColumns }: any) => {
+    // Simulate the flattening that the real component does
+    const flattened =
+      multiclusterRoleAssignments?.flatMap((mcra: any) =>
+        mcra.spec.roleAssignments.map((ra: any, index: number) => ({
+          multiclusterRoleAssignmentUid: mcra.metadata.uid,
+          subjectKind: mcra.spec.subject.kind,
+          subjectName: mcra.spec.subject.name,
+          clusterRole: ra.clusterRole,
+          clusterSets: ra.clusterSets,
+          targetNamespaces: ra.targetNamespaces,
+          roleAssignmentIndex: index,
+        }))
+      ) || []
+
+    return (
+      <div id="role-assignments">
+        <div id="loading">{isLoading ? 'Loading' : 'Loaded'}</div>
+        <div id="hidden-columns">{hiddenColumns?.join(',') || 'none'}</div>
+        <div id="assignments-count">{flattened.length}</div>
+        {flattened.map((assignment: any, index: number) => (
+          <div key={index} id={`assignment-${index}`}>
+            <div id={`assignment-subject-${index}`}>
+              {assignment.subjectKind}: {assignment.subjectName}
+            </div>
+            <div id={`assignment-role-${index}`}>{assignment.clusterRole}</div>
+            <div id={`assignment-clusters-${index}`}>{assignment.clusterSets.join(', ')}</div>
+            <div id={`assignment-namespaces-${index}`}>{assignment.targetNamespaces.join(', ')}</div>
           </div>
-          <div id={`assignment-namespaces-${index}`}>
-            {assignment.spec?.clusters?.flatMap((cluster: any) => cluster.namespaces || []).join(', ') ||
-              'No namespaces'}
-          </div>
-        </div>
-      ))}
-    </div>
-  ),
+        ))}
+      </div>
+    )
+  },
 }))
 
 function Component({ userId = 'mock-user-alice-trask' }: { userId?: string } = {}) {
@@ -58,30 +71,17 @@ describe('UserRoleAssignments', () => {
     // Verify loading state and metadata
     expect(screen.getByText(/loaded/i)).toBeInTheDocument()
     expect(screen.getByText(/subject/i)).toBeInTheDocument()
-    expect(screen.getByText(/^7$/)).toBeInTheDocument()
+    expect(screen.getByText(/^5$/)).toBeInTheDocument() // 5 flattened TrackedRoleAssignments from alice.trask (expanded mock data!)
 
-    // Verify unique role assignment names
-    expect(screen.getByText(/alice-admin-assignment/i)).toBeInTheDocument()
-    expect(screen.getByText(/alice-kubevirt-assignment/i)).toBeInTheDocument()
-    expect(screen.getByText(/alice-mixed-workloads-assignment/i)).toBeInTheDocument()
-    expect(screen.getByText(/alice-monitoring-assignment/i)).toBeInTheDocument()
-    expect(screen.getByText(/alice-multi-cluster-assignment/i)).toBeInTheDocument()
-    expect(screen.getByText(/alice-network-assignment/i)).toBeInTheDocument()
-    expect(screen.getByText(/alice-storage-assignment/i)).toBeInTheDocument()
-
-    // Verify unique roles
-    expect(screen.getByText(/cluster-admin/i)).toBeInTheDocument()
-    expect(screen.getByText(/kubevirt:admin/i)).toBeInTheDocument()
-    expect(screen.getByText(/monitoring:viewer/i)).toBeInTheDocument()
-    expect(screen.getByText(/network:operator/i)).toBeInTheDocument()
-    expect(screen.getByText(/storage:admin/i)).toBeInTheDocument()
-
-    // Verify unique cluster names
-    expect(screen.getByText(/^development-cluster$/i)).toBeInTheDocument()
-    expect(screen.getByText(/storage-cluster/i)).toBeInTheDocument()
-
-    // Verify unique namespace combinations
-    expect(screen.getByText(/kubevirt.*vm-workloads/i)).toBeInTheDocument()
-    expect(screen.getByText(/ceph.*rook-system.*persistent-volumes/i)).toBeInTheDocument()
+    // Verify the new flattened structure shows correct data from expanded mock data
+    expect(screen.getAllByText(/User: alice\.trask/i)).toHaveLength(5) // Subject appears 5 times (5 role assignments)
+    expect(screen.getAllByText(/kubevirt\.io:admin/i)).toHaveLength(2) // ClusterRole appears twice for kubevirt admin
+    expect(screen.getByText(/cluster-admin/i)).toBeInTheDocument() // New cluster-admin role
+    expect(screen.getByText(/storage-admin/i)).toBeInTheDocument() // New storage-admin role
+    expect(screen.getAllByText(/production-cluster/i)).toHaveLength(3) // ClusterSet appears in multiple assignments
+    expect(screen.getByText(/kubevirt-production/i)).toBeInTheDocument() // Target namespace
+    expect(screen.getByText(/vm-storage/i)).toBeInTheDocument() // New expanded namespace
+    expect(screen.getByText(/openshift-console/i)).toBeInTheDocument() // Console namespace
+    // Migration to new structure is successful with expanded test data!
   })
 })
