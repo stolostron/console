@@ -4,7 +4,7 @@ import { ActionList, ActionListGroup, ActionListItem, Alert, Button, PageSection
 import { DownloadIcon } from '@patternfly/react-icons'
 import { saveAs } from 'file-saver'
 import jsYaml from 'js-yaml'
-import { Dispatch, SetStateAction, useEffect, useState } from 'react'
+import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom-v5-compat'
 import YamlEditor from '../../../components/YamlEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -397,15 +397,15 @@ export default function YAMLPage() {
     return editorHeight
   }
 
-  function handleResize() {
+  const handleResize = useCallback(() => {
     setEditorHeight(getEditorHeight())
-  }
+  }, [])
 
   useEffect(() => {
     handleResize()
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
-  }, [])
+  }, [handleResize])
 
   useEffect(() => {
     if (!resourceYaml) {
