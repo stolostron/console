@@ -212,14 +212,16 @@ function createMulticlusterRoleAssignment(
   userKind: UserKindType | GroupKindType,
   newRoleAssignment: RoleAssignment
 ): Promise<MulticlusterRoleAssignment> {
-  const sanitizedUserName = userName
+  let sanitizedUserName = userName
     // replaces invalid characters with one hyphen
     .replace(/[^a-z0-9-]+/gi, '-')
     // removes leading hyphens
     .replace(/^-+/g, '')
-    // removes trailing hyphens
-    .replace(/-+$/g, '')
     .toLowerCase()
+  // removes trailing hyphens
+  while (sanitizedUserName.endsWith('-')) {
+    sanitizedUserName = sanitizedUserName.slice(0, -1)
+  }
   // TODO: improve name creation logic in cases where a MulticlusterRoleAssignment already exists with the name
   const name = `${sanitizedUserName}-role-assignment-console`
 

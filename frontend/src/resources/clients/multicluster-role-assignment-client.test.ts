@@ -276,7 +276,12 @@ describe('MulticlusterRoleAssignmentClient', function () {
     })
 
     it('should sanitize username for resource name creation', async () => {
-      await addRoleAssignmentK8s(mockMulticlusterRoleAssignments, 'Wierd!!!$$$%%%Username', UserKind, newRoleAssignment)
+      await addRoleAssignmentK8s(
+        mockMulticlusterRoleAssignments,
+        '---Wierd!!!$$$%%%Username---',
+        UserKind,
+        newRoleAssignment
+      )
 
       expect(createResourceMock).toHaveBeenCalledWith(
         expect.objectContaining({
