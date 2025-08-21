@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { NavSection, HrefNavItem, RoutePage, FeatureFlagHookProvider } from '@openshift-console/dynamic-plugin-sdk'
+import { FeatureFlagHookProvider, HrefNavItem, NavSection, RoutePage } from '@openshift-console/dynamic-plugin-sdk'
 import { EncodedExtension } from '@openshift/dynamic-plugin-sdk-webpack'
 
 /**
@@ -148,34 +148,6 @@ const hookProvider: EncodedExtension<FeatureFlagHookProvider> = {
   },
 }
 
-// Access Control Management navigation link
-const accessControlNavItem: EncodedExtension<HrefNavItem> = {
-  type: 'console.navigation/href',
-  properties: {
-    perspective: 'acm',
-    id: 'acm-accessControlManagement',
-    name: '%plugin__acm~Access control%',
-    href: '/multicloud/access-control-management',
-    insertAfter: 'mce-credentials',
-  },
-  flags: {
-    required: ['ACM_ACCESS_CONTROL_MANAGEMENT'],
-  },
-}
-
-// Access Control Management route definition
-const accessConrolRoute: EncodedExtension<RoutePage> = {
-  type: 'console.page/route',
-  properties: {
-    path: '/multicloud/access-control-management',
-    component: { $codeRef: 'accessControlManagement.default' },
-    perspective: 'acm',
-  },
-  flags: {
-    required: ['ACM_ACCESS_CONTROL_MANAGEMENT'],
-  },
-}
-
 // User Management navigation section
 const userManagementSection: EncodedExtension<NavSection> = {
   type: 'console.navigation/section',
@@ -183,7 +155,7 @@ const userManagementSection: EncodedExtension<NavSection> = {
     perspective: 'acm',
     id: 'acm-user-management',
     name: '%plugin__acm~User Management%',
-    insertAfter: 'acm-accessControlManagement',
+    insertAfter: 'mce-credentials',
   },
 }
 
@@ -245,8 +217,6 @@ export const extensions: EncodedExtension[] = [
   governanceNavItem,
   governanceRoute,
   hookProvider,
-  accessControlNavItem,
-  accessConrolRoute,
   userManagementSection,
   rolesNavItem,
   rolesRoute,
