@@ -7,7 +7,6 @@ import {
   DescriptionListDescription,
 } from '@patternfly/react-core'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import AcmTimestamp from '../../../../lib/AcmTimestamp'
 import { AcmLoadingPage } from '../../../../ui-components'
 import { useGroupDetailsContext } from './GroupPage'
 
@@ -38,24 +37,6 @@ const GroupDetails = () => {
                 <DescriptionListGroup>
                   <DescriptionListTerm>{t('Group name')}</DescriptionListTerm>
                   <DescriptionListDescription>{group.metadata.name ?? '-'}</DescriptionListDescription>
-                </DescriptionListGroup>
-
-                <DescriptionListGroup>
-                  <DescriptionListTerm>{t('Created')}</DescriptionListTerm>
-                  <DescriptionListDescription>
-                    {group.metadata.creationTimestamp ? (
-                      <AcmTimestamp timestamp={group.metadata.creationTimestamp} />
-                    ) : (
-                      '-'
-                    )}
-                  </DescriptionListDescription>
-                </DescriptionListGroup>
-
-                <DescriptionListGroup>
-                  <DescriptionListTerm>{t('Users')}</DescriptionListTerm>
-                  <DescriptionListDescription>
-                    {group.users && group.users.length > 0 ? group.users.length : '0'}
-                  </DescriptionListDescription>
                 </DescriptionListGroup>
               </DescriptionList>
             </Stack>
