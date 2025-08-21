@@ -363,7 +363,7 @@ export default function YAMLPage() {
   const [userCanEdit, setUserCanEdit] = useState<boolean>(false)
   const [resourceYaml, setResourceYaml] = useState<string>('')
   const [defaultScrollToLine, setDefaultScrollToLine] = useState<number | undefined>()
-  const [editorHeight, setEditorHeight] = useState(window.innerHeight - 370)
+  const [editorHeight, setEditorHeight] = useState(getEditorHeight())
   const location: {
     pathname: string
     state: {
@@ -385,17 +385,20 @@ export default function YAMLPage() {
     }
   }, [resource])
 
-  function handleResize() {
-    let editorHeight = window.innerHeight - 260
-    const editorHeaderHeight = document.getElementById('yaml-editor-header-wrapper')?.offsetHeight ?? 53
-    const editorActionBarHeight = document.getElementById('yaml-editor-action-wrapper')?.offsetHeight ?? 53
-    editorHeight = editorHeight - editorHeaderHeight - editorActionBarHeight
+  function getEditorHeight() {
+    const pageContentHeight = document.getElementsByClassName('pf-v5-c-page__main')[0]?.clientHeight
+    const pageSectionHeader = document.getElementsByClassName('pf-v5-c-page__main-group')[0]?.clientHeight ?? 0
+    let editorHeight = pageContentHeight - pageSectionHeader - 53 - 54 - 48 // 53px editor header height, 54px editor actions height, 48px content padding
     const globalHeader = document.getElementsByClassName('co-global-notification')
     /* istanbul ignore if */
     if (globalHeader.length > 0) {
       editorHeight = editorHeight - globalHeader.length * 33
     }
-    setEditorHeight(editorHeight)
+    return editorHeight
+  }
+
+  function handleResize() {
+    setEditorHeight(getEditorHeight())
   }
 
   useEffect(() => {
