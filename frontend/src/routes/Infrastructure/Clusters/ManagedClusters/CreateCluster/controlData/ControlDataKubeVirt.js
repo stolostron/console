@@ -51,11 +51,11 @@ const operatorAlert = (localCluster, t) => {
 }
 
 const filterOCPImages = (loadOCPImages, hypershiftSupportedVersions) => {
-  const orgResult = loadOCPImages()
+  const originalResult = loadOCPImages()
   return {
-    ...orgResult,
+    ...originalResult,
     query: async () => {
-      const images = await orgResult.query()
+      const images = await originalResult.query()
       return images.filter((image) =>
         hypershiftSupportedVersions.some((supportedVersion) => image.spec.releaseImage.includes(supportedVersion))
       )
