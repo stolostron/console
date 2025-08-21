@@ -3,8 +3,8 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../../lib/nock-util'
-import { GroupUsers } from './GroupUsers'
-import { User, Group } from '../../../../resources/rbac'
+import { GroupDetails } from './GroupDetails'
+import { Group, User } from '../../../../resources/rbac'
 
 const mockGroup: Group = {
   apiVersion: 'user.openshift.io/v1',
@@ -57,13 +57,13 @@ function Component() {
   return (
     <RecoilRoot>
       <MemoryRouter>
-        <GroupUsers />
+        <GroupDetails />
       </MemoryRouter>
     </RecoilRoot>
   )
 }
 
-describe('GroupUsers', () => {
+describe('GroupDetails', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
@@ -96,66 +96,99 @@ describe('GroupUsers', () => {
     expect(screen.getByText('Group not found')).toBeInTheDocument()
   })
 
-  test('should render empty state when group has no users', () => {
+  test('should render group details with full information', () => {
+    mockUseGroupDetailsContext.mockReturnValue({
+      group: mockGroup,
+      users: mockUsers,
+      loading: false,
+      usersLoading: false,
+    })
+
+    render(<Component />)
+
+    expect(screen.getByText('General information')).toBeInTheDocument()
+    expect(screen.getByText('Group name')).toBeInTheDocument()
+    expect(screen.getByText('test-group')).toBeInTheDocument()
+    expect(screen.getByText('Created')).toBeInTheDocument()
+    expect(screen.getByText('Users')).toBeInTheDocument()
+    expect(screen.getByText('2')).toBeInTheDocument()
+  })
+
+  test('should render group details with missing creation timestamp', () => {
+    const groupWithoutTimestamp = {
+      ...mockGroup,
+      metadata: {
+        ...mockGroup.metadata,
+        creationTimestamp: undefined,
+      },
+    }
+    mockUseGroupDetailsContext.mockReturnValue({
+      group: groupWithoutTimestamp,
+      users: mockUsers,
+      loading: false,
+      usersLoading: false,
+    })
+
+    render(<Component />)
+
+    expect(screen.getByText('Created')).toBeInTheDocument()
+    expect(screen.getByText('-')).toBeInTheDocument()
+  })
+
+  test('should render group details with no users', () => {
     const groupWithoutUsers = {
       ...mockGroup,
       users: [],
     }
     mockUseGroupDetailsContext.mockReturnValue({
       group: groupWithoutUsers,
-      users: mockUsers,
+      users: [],
       loading: false,
       usersLoading: false,
     })
 
     render(<Component />)
 
-    expect(screen.getByText('No users found')).toBeInTheDocument()
-    expect(screen.getByText('No users have been added to this group yet.')).toBeInTheDocument()
+    expect(screen.getByText('Users')).toBeInTheDocument()
+    expect(screen.getByText('0')).toBeInTheDocument()
   })
 
-  test('should render users table with group users', () => {
+  test('should render group details with single user', () => {
+    const groupWithOneUser = {
+      ...mockGroup,
+      users: ['test-user'],
+    }
     mockUseGroupDetailsContext.mockReturnValue({
-      group: mockGroup,
-      users: mockUsers,
+      group: groupWithOneUser,
+      users: [mockUsers[0]],
       loading: false,
       usersLoading: false,
     })
 
     render(<Component />)
 
-    expect(screen.getByText('test-user')).toBeInTheDocument()
-    expect(screen.getByText('other-user')).toBeInTheDocument()
+    expect(screen.getByText('Users')).toBeInTheDocument()
+    expect(screen.getByText('1')).toBeInTheDocument()
   })
 
-  test('should not show users that are not members of the group', () => {
-    const usersWithNonMember: User[] = [
-      ...mockUsers,
-      {
-        apiVersion: 'user.openshift.io/v1',
-        kind: 'User',
-        metadata: {
-          name: 'non-member',
-          uid: 'non-member-uid',
-          creationTimestamp: '2025-01-24T14:00:00Z',
-        },
-        identities: ['htpasswd:non-member'],
-        groups: ['other-group'],
-        fullName: 'Non Member',
+  test('should render group details with missing group name', () => {
+    const groupWithoutName = {
+      ...mockGroup,
+      metadata: {
+        ...mockGroup.metadata,
+        name: undefined,
       },
-    ]
-
+    }
     mockUseGroupDetailsContext.mockReturnValue({
-      group: mockGroup,
-      users: usersWithNonMember,
+      group: groupWithoutName,
+      users: mockUsers,
       loading: false,
       usersLoading: false,
     })
 
     render(<Component />)
 
-    expect(screen.getByText('test-user')).toBeInTheDocument()
-    expect(screen.getByText('other-user')).toBeInTheDocument()
-    expect(screen.queryByText('non-member')).not.toBeInTheDocument()
+    expect(screen.getByText('Group name')).toBeInTheDocument()
+    expect(screen.getByText('-')).toBeInTheDocument()
   })
 })

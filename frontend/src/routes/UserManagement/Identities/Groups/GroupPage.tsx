@@ -22,7 +22,7 @@ export type GroupDetailsContext = {
   readonly group?: Group
   readonly users?: User[]
   readonly loading: boolean
-  readonly groupsLoading: boolean
+  readonly usersLoading: boolean
 }
 
 const GroupPage = () => {
@@ -31,7 +31,7 @@ const GroupPage = () => {
   const location = useLocation()
   const navigate = useNavigate()
   const { data: users, loading } = useQuery(listUsers)
-  const { data: groups, loading: groupsLoading } = useQuery(listGroups)
+  const { data: groups, loading: usersLoading } = useQuery(listGroups)
 
   const group = useMemo(() => {
     if (!groups || !id) return undefined
@@ -43,9 +43,9 @@ const GroupPage = () => {
       group,
       users,
       loading,
-      groupsLoading,
+      usersLoading,
     }),
-    [group, users, loading, groupsLoading]
+    [group, users, loading, usersLoading]
   )
 
   const isDetailsActive = location.pathname === generatePath(NavigationPath.identitiesGroupsDetails, { id: id ?? '' })

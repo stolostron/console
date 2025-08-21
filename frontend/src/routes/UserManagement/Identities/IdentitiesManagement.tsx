@@ -50,10 +50,7 @@ export default function IdentitiesManagement() {
       <Route path={identitiesChildPath(NavigationPath.identitiesGroupsYaml)} element={<GroupDetail />}>
         <Route index element={<GroupYaml />} />
       </Route>
-      <Route
-        path={identitiesChildPath(NavigationPath.identitiesGroupsRoleAssignments)}
-        element={<GroupDetail />}
-      >
+      <Route path={identitiesChildPath(NavigationPath.identitiesGroupsRoleAssignments)} element={<GroupDetail />}>
         <Route index element={<GroupRoleAssignments />} />
       </Route>
       <Route path={identitiesChildPath(NavigationPath.identitiesGroupsUsers)} element={<GroupDetail />}>
