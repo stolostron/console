@@ -8,18 +8,18 @@ import { render, screen } from '@testing-library/react'
 // Mock RoleAssignments to show the key data we want to verify
 jest.mock('../../RoleAssignment/RoleAssignments', () => ({
   RoleAssignments: ({ roleAssignments, isLoading, hiddenColumns }: any) => (
-    <div data-testid="role-assignments">
-      <div data-testid="loading">{isLoading ? 'Loading' : 'Loaded'}</div>
-      <div data-testid="hidden-columns">{hiddenColumns?.join(',') || 'none'}</div>
-      <div data-testid="assignments-count">{roleAssignments?.length || 0}</div>
+    <div id="role-assignments">
+      <div id="loading">{isLoading ? 'Loading' : 'Loaded'}</div>
+      <div id="hidden-columns">{hiddenColumns?.join(',') || 'none'}</div>
+      <div id="assignments-count">{roleAssignments?.length || 0}</div>
       {roleAssignments?.map((assignment: any, index: number) => (
-        <div key={index} data-testid={`assignment-${index}`}>
-          <div data-testid={`assignment-name-${index}`}>{assignment.metadata?.name}</div>
-          <div data-testid={`assignment-roles-${index}`}>{assignment.spec?.roles?.join(', ') || 'No roles'}</div>
-          <div data-testid={`assignment-clusters-${index}`}>
+        <div key={index} id={`assignment-${index}`}>
+          <div id={`assignment-name-${index}`}>{assignment.metadata?.name}</div>
+          <div id={`assignment-roles-${index}`}>{assignment.spec?.roles?.join(', ') || 'No roles'}</div>
+          <div id={`assignment-clusters-${index}`}>
             {assignment.spec?.clusters?.map((cluster: any) => cluster.name).join(', ') || 'No clusters'}
           </div>
-          <div data-testid={`assignment-namespaces-${index}`}>
+          <div id={`assignment-namespaces-${index}`}>
             {assignment.spec?.clusters?.flatMap((cluster: any) => cluster.namespaces || []).join(', ') ||
               'No namespaces'}
           </div>
@@ -53,26 +53,35 @@ describe('UserRoleAssignments', () => {
   })
 
   it('renders UserRoleAssignments component with user found', () => {
-    const { container } = render(<Component userId="mock-user-alice-trask" />)
+    render(<Component userId="mock-user-alice-trask" />)
 
-    // Verify the component renders successfully with real data
-    expect(container.firstChild).toBeTruthy()
+    // Verify loading state and metadata
+    expect(screen.getByText(/loaded/i)).toBeInTheDocument()
+    expect(screen.getByText(/subject/i)).toBeInTheDocument()
+    expect(screen.getByText(/^7$/)).toBeInTheDocument()
 
-    // Verify the HTML contains the expected role assignments data
-    expect(container.innerHTML).toContain('data-testid="role-assignments"')
-    expect(container.innerHTML).toContain('data-testid="assignments-count">7</div>')
-    expect(container.innerHTML).toContain('data-testid="hidden-columns">subject</div>')
+    // Verify unique role assignment names
+    expect(screen.getByText(/alice-admin-assignment/i)).toBeInTheDocument()
+    expect(screen.getByText(/alice-kubevirt-assignment/i)).toBeInTheDocument()
+    expect(screen.getByText(/alice-mixed-workloads-assignment/i)).toBeInTheDocument()
+    expect(screen.getByText(/alice-monitoring-assignment/i)).toBeInTheDocument()
+    expect(screen.getByText(/alice-multi-cluster-assignment/i)).toBeInTheDocument()
+    expect(screen.getByText(/alice-network-assignment/i)).toBeInTheDocument()
+    expect(screen.getByText(/alice-storage-assignment/i)).toBeInTheDocument()
 
-    // Verify real role assignment data is present
-    expect(container.innerHTML).toContain('alice-admin-assignment')
-    expect(container.innerHTML).toContain('cluster-admin')
-    expect(container.innerHTML).toContain('production-cluster')
-    expect(container.innerHTML).toContain('alice-kubevirt-assignment')
-    expect(container.innerHTML).toContain('kubevirt:admin')
-    expect(container.innerHTML).toContain('development-cluster')
+    // Verify unique roles
+    expect(screen.getByText(/cluster-admin/i)).toBeInTheDocument()
+    expect(screen.getByText(/kubevirt:admin/i)).toBeInTheDocument()
+    expect(screen.getByText(/monitoring:viewer/i)).toBeInTheDocument()
+    expect(screen.getByText(/network:operator/i)).toBeInTheDocument()
+    expect(screen.getByText(/storage:admin/i)).toBeInTheDocument()
 
-    // Verify namespaces are rendered
-    expect(container.innerHTML).toContain('default, kube-system')
-    expect(container.innerHTML).toContain('kubevirt, vm-workloads')
+    // Verify unique cluster names
+    expect(screen.getByText(/^development-cluster$/i)).toBeInTheDocument()
+    expect(screen.getByText(/storage-cluster/i)).toBeInTheDocument()
+
+    // Verify unique namespace combinations
+    expect(screen.getByText(/kubevirt.*vm-workloads/i)).toBeInTheDocument()
+    expect(screen.getByText(/ceph.*rook-system.*persistent-volumes/i)).toBeInTheDocument()
   })
 })

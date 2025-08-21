@@ -117,16 +117,16 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
 
     // Convert sets to sorted arrays for options
     const roleOptions = Array.from(allRoles)
-      .sort()
+      .sort((a, b) => a.localeCompare(b))
       .map((role) => ({ label: role, value: role }))
     const clusterOptions = Array.from(allClusters)
-      .sort()
+      .sort((a, b) => a.localeCompare(b))
       .map((cluster) => ({ label: cluster, value: cluster }))
     const namespaceOptions = Array.from(allNamespaces)
-      .sort()
+      .sort((a, b) => a.localeCompare(b))
       .map((namespace) => ({ label: namespace, value: namespace }))
     const statusOptions = Array.from(allStatuses)
-      .sort()
+      .sort((a, b) => a.localeCompare(b))
       .map((status) => ({ label: status, value: status }))
 
     return [
