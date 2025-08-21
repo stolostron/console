@@ -140,7 +140,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
       JSON.parse(
         configMaps.find((cm) => cm.metadata?.name === 'supported-versions' && cm.metadata?.namespace === 'hypershift')
           ?.data?.['supported-versions'] ?? '{}'
-      ).versions,
+      ).versions ?? [],
     [configMaps]
   )
 

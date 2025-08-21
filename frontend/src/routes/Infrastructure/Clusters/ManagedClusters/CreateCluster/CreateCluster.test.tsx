@@ -7,6 +7,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import {
   clusterCuratorsState,
+  configMapsState,
   managedClusterInfosState,
   managedClusterSetsState,
   managedClustersState,
@@ -2338,6 +2339,19 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     return (
       <RecoilRoot
         initializeState={(snapshot) => {
+          snapshot.set(configMapsState, [
+            {
+              kind: 'ConfigMap',
+              apiVersion: 'v1',
+              metadata: {
+                name: 'supported-versions',
+                namespace: 'hypershift',
+              },
+              data: {
+                'supported-versions': '{"versions":["4.15","4.14","4.13"]}',
+              },
+            },
+          ])
           snapshot.set(namespacesState, [
             {
               apiVersion: NamespaceApiVersion,
