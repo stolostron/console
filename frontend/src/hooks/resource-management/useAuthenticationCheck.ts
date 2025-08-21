@@ -60,4 +60,4 @@ export function useAuthenticationCheck(options: UseAuthenticationCheckOptions = 
     // No cleanup needed since setTimeout handles scheduling
     // and the component unmounting will stop future checks
   }, [enabled, checkInterval])
-} 
+}
