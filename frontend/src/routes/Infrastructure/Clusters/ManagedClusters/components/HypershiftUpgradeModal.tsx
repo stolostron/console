@@ -68,7 +68,7 @@ export function HypershiftUpgradeModal(props: {
   const hypershiftSupportedVersionsConfigMap = configMaps.find(
     (cm) => cm.metadata?.name === 'supported-versions' && cm.metadata?.namespace === 'hypershift'
   )
-  const supportedVersions = JSON.parse(_.get(hypershiftSupportedVersionsConfigMap, 'data.supported-versions', '[]'))
+  const supportedVersions = JSON.parse(_.get(hypershiftSupportedVersionsConfigMap, 'data.supported-versions', '{}'))
 
   let latestSupportedVersion =
     supportedVersions.versions && supportedVersions.versions.length > 0
