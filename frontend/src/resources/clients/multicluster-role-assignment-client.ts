@@ -6,13 +6,13 @@ import {
   MulticlusterRoleAssignmentNamespace,
   MulticlusterRoleAssignmentApiVersion,
   MulticlusterRoleAssignmentKind,
-} from '../role-assignment'
+} from '../multicluster-role-assignment'
 import { createResource, patchResource, deleteResource } from '../utils'
 import { IRequestResult } from '../utils/resource-request'
 
 export interface MulticlusterRoleAssignmentQuery {
   subjectNames?: string[]
-  subjectTypes?: (UserKindType | GroupKindType)[]
+  subjectKinds?: (UserKindType | GroupKindType)[]
   roles?: string[]
   clusterSets?: string[]
 }
@@ -30,7 +30,7 @@ export interface RoleAssignmentUpdateResult {
   error?: string
 }
 
-function createRoleAssignmentHash(roleAssignment: RoleAssignment): string {
+export function createRoleAssignmentHash(roleAssignment: RoleAssignment): string {
   const data = JSON.stringify({
     clusterRole: roleAssignment.clusterRole,
     targetNamespaces: roleAssignment.targetNamespaces.slice().sort(),
@@ -56,10 +56,10 @@ function isSubjectMatch(
     return false
   }
 
-  // Filter by subject types
+  // Filter by subject kinds
   if (
-    query.subjectTypes?.length &&
-    !query.subjectTypes.includes(multiClusterAssignment.spec.subject.kind as UserKindType | GroupKindType)
+    query.subjectKinds?.length &&
+    !query.subjectKinds.includes(multiClusterAssignment.spec.subject.kind as UserKindType | GroupKindType)
   ) {
     return false
   }
@@ -219,7 +219,7 @@ function createMulticlusterRoleAssignment(
     .replace(/^-+|-+$/g, '')
     .toLowerCase()
   // This is also assuming that there is 1 MulticlusterRoleAssignment per user, or at least that this name will not exist
-  const name = `${sanitizedUserName}-role-assignment`
+  const name = `${sanitizedUserName}-role-assignment-ui`
 
   const multiclusterAssignment: MulticlusterRoleAssignment = {
     apiVersion: MulticlusterRoleAssignmentApiVersion,
@@ -228,7 +228,7 @@ function createMulticlusterRoleAssignment(
       name,
       namespace: MulticlusterRoleAssignmentNamespace,
       labels: {
-        'multicluster-role-assignment-ui-managed': 'true',
+        'ui-managed': 'true',
       },
     },
     spec: {
@@ -243,6 +243,8 @@ function createMulticlusterRoleAssignment(
   return createResource<MulticlusterRoleAssignment>(multiclusterAssignment).promise
 }
 
+// TODO: consider doing a fresh GET and checking k8s resourceVersion before JSON patching to prevent concurrent clients
+// update issues, since JSON patch is overwriting the whole /spec/roleAssignments array
 function patchMulticlusterRoleAssignment(
   originalMulticlusterAssignment: MulticlusterRoleAssignment,
   updatedRoleAssignments: RoleAssignment[]
@@ -376,6 +378,8 @@ export async function deleteRoleAssignmentK8s(
 }
 
 // Moves a RoleAssignment from one user/group to another. This is needed if a user/group is changed from the Roles page.
+// If you change the user/group from the Roles role assignments page, we need to delete the role assignment for the old
+// user/group and create a new role assignment for the new user/group.
 export async function moveRoleAssignmentBetweenSubjectsK8s(
   multiClusterAssignments: MulticlusterRoleAssignment[],
   originalRoleAssignment: TrackedRoleAssignment,
