@@ -29,6 +29,21 @@ jest.mock('../../../ui-components', () => ({
   AcmButton: ({ children, onClick }: any) => <button onClick={onClick}>{children}</button>,
 }))
 
+jest.mock('../../../components/AcmDataForm', () => ({
+  __esModule: true,
+  AcmDataFormPage: () => (
+    <div>
+      <h1>Proceed with migration of VM test-vm</h1>
+      <button type="button" onClick={() => mockNavigate(NavigationPath.virtualMachines)}>
+        Cancel
+      </button>
+      <button type="button" onClick={() => console.log('trigger migration')}>
+        Migrate test-vm
+      </button>
+    </div>
+  ),
+}))
+
 describe('MigrateVirtualMachinePage', () => {
   const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {})
 

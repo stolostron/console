@@ -5,6 +5,7 @@ import { AlertProps } from '@patternfly/react-core'
 import { ReactNode } from 'react'
 
 export interface FormData {
+  hideReview?: boolean
   title: string
   titleTooltip?: ReactNode
   description?: string
