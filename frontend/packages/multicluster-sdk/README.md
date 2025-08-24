@@ -87,7 +87,7 @@ Returns:
 A promise that resolves to the response of the resource created.
 In case of failure, the promise gets rejected with HTTP error response.
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/apiRequests.ts#L187)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/fleetK8sCreate.ts#L24)
 
 ### :gear: fleetK8sDelete
 
@@ -127,7 +127,7 @@ Examples:
 ```
 
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/apiRequests.ts#L214)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/fleetK8sDelete.ts#L31)
 
 ### :gear: fleetK8sGet
 
@@ -210,7 +210,7 @@ Returns:
 
 A promise that resolves to the response
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/apiRequests.ts#L128)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/fleetK8sList.ts#L54)
 
 ### :gear: fleetK8sPatch
 
@@ -244,7 +244,7 @@ Returns:
 A promise that resolves to the response of the resource patched.
 In case of failure promise gets rejected with HTTP error response.
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/apiRequests.ts#L160)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/fleetK8sPatch.ts#L29)
 
 ### :gear: fleetK8sUpdate
 
@@ -278,7 +278,7 @@ Returns:
 A promise that resolves to the response of the resource updated.
 In case of failure promise gets rejected with HTTP error response.
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/apiRequests.ts#L140)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/fleetK8sUpdate.ts#L29)
 
 ### :gear: FleetResourceEventStream
 
@@ -394,22 +394,6 @@ Examples:
 
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/components/FleetResourceLink.tsx#L62)
 
-### :gear: fleetWatch
-
-| Function | Type |
-| ---------- | ---------- |
-| `fleetWatch` | `(model: K8sModel, query: { labelSelector?: Selector or undefined; resourceVersion?: string or undefined; ns?: string or undefined; fieldSelector?: string or undefined; cluster?: string or undefined; } or undefined, backendURL: string) => WebSocket` |
-
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/apiRequests.ts#L247)
-
-### :gear: getBackendUrl
-
-| Function | Type |
-| ---------- | ---------- |
-| `getBackendUrl` | `() => string` |
-
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/apiRequests.ts#L74)
-
 ### :gear: getFleetK8sAPIPath
 
 Function that provides the k8s API path for the fleet.
@@ -418,7 +402,24 @@ Function that provides the k8s API path for the fleet.
 | ---------- | ---------- |
 | `getFleetK8sAPIPath` | `(cluster?: string or undefined) => Promise<string>` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetK8sAPIPath.ts#L21)
+Parameters:
+
+* `cluster`: - The cluster name.
+
+
+Returns:
+
+The k8s API path for the fleet.
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/getFleetK8sAPIPath.ts#L14)
+
+### :gear: isResourceRoute
+
+| Function | Type |
+| ---------- | ---------- |
+| `isResourceRoute` | `(e: Extension) => e is ResourceRoute` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/extensions/resource.ts#L32)
 
 ### :gear: useFleetAccessReview
 
@@ -594,7 +595,7 @@ const [services, loaded, error] = useFleetSearchPoll({
 ```
 
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearchPoll.ts#L79)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearchPoll.ts#L92)
 
 ### :gear: useHubClusterName
 
@@ -660,7 +661,6 @@ Array with `isObservabilityInstalled`, `loaded` and `error` values.
 ## :cocktail: Types
 
 - [AdvancedSearchFilter](#gear-advancedsearchfilter)
-- [BaseOptions](#gear-baseoptions)
 - [Fleet](#gear-fleet)
 - [FleetAccessReviewResourceAttributes](#gear-fleetaccessreviewresourceattributes)
 - [FleetK8sCreateUpdateOptions](#gear-fleetk8screateupdateoptions)
@@ -671,12 +671,6 @@ Array with `isObservabilityInstalled`, `loaded` and `error` values.
 - [FleetK8sResourceCommon](#gear-fleetk8sresourcecommon)
 - [FleetResourceLinkProps](#gear-fleetresourcelinkprops)
 - [FleetWatchK8sResource](#gear-fleetwatchk8sresource)
-- [Options](#gear-options)
-- [OptionsCreate](#gear-optionscreate)
-- [OptionsDelete](#gear-optionsdelete)
-- [OptionsGet](#gear-optionsget)
-- [OptionsPatch](#gear-optionspatch)
-- [OptionsUpdate](#gear-optionsupdate)
 - [ResourceRoute](#gear-resourceroute)
 - [ResourceRouteHandler](#gear-resourceroutehandler)
 - [ResourceRouteProps](#gear-resourcerouteprops)
@@ -696,14 +690,6 @@ Array with `isObservabilityInstalled`, `loaded` and `error` values.
 | `AdvancedSearchFilter` | `{ property: string; values: string[] }[]` |
 
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/search.ts#L9)
-
-### :gear: BaseOptions
-
-| Type | Type |
-| ---------- | ---------- |
-| `BaseOptions` | `{ name?: string ns?: string path?: string cluster?: string queryParams?: QueryParams }` |
-
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/apiRequests.ts#L18)
 
 ### :gear: Fleet
 
@@ -783,7 +769,33 @@ Array with `isObservabilityInstalled`, `loaded` and `error` values.
 | ---------- | ---------- |
 | `FleetWatchK8sResource` | `Fleet<WatchK8sResource>` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L13)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L16)
+
+### :gear: ResourceRoute
+
+This extension allows plugins to customize the route used for resources of the given kind. Search results and resource links will direct to the route returned by the implementing function.
+
+| Type | Type |
+| ---------- | ---------- |
+| `ResourceRoute` | `ExtensionDeclaration<typeof RESOURCE_ROUTE_TYPE, ResourceRouteProps>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/extensions/resource.ts#L29)
+
+### :gear: ResourceRouteHandler
+
+| Type | Type |
+| ---------- | ---------- |
+| `ResourceRouteHandler` | `(props: { /** The cluster where the resource is located. */ cluster: string /** The namespace where the resource is located (if the resource is namespace-scoped). */ namespace?: string /** The name of the resource. */ name: string /** The resource, augmented with cluster property. */ resource: FleetK8sResourceCommon /** The model for the resource. */ model: ExtensionK8sModel }) => string` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/extensions/resource.ts#L8)
+
+### :gear: ResourceRouteProps
+
+| Type | Type |
+| ---------- | ---------- |
+| `ResourceRouteProps` | `{ /** The model for which this resource route should be used. */ model: ExtensionK8sGroupKindModel /** The handler function that returns the route path for the resource. */ handler: CodeRef<ResourceRouteHandler> }` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/extensions/resource.ts#L21)
 
 ### :gear: SearchResult
 
