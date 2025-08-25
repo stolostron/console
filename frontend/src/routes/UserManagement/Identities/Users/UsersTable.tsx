@@ -11,7 +11,6 @@ import { listUsers, User as RbacUser } from '../../../../resources/rbac'
 import { AcmButton, AcmEmptyState, AcmLoadingPage, AcmTable, compareStrings } from '../../../../ui-components'
 import { RoleAssignmentModal } from '../../RoleAssignments/RoleAssignmentModal'
 import { useFilters, usersTableColumns } from './UsersTableHelper'
-import { RoleAssignmentPreselectedEntity } from '../../RoleAssignments/model/role-assignment-preselected'
 
 const UsersTable = () => {
   const { t } = useTranslation()

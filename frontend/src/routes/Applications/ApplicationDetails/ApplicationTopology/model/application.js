@@ -143,7 +143,9 @@ export const getApplication = async (
       isAppSetPullModel,
       relatedPlacement,
     }
-    const uidata = await fetchAggregate(SupportedAggregate.uidata, backendUrl, app)
+    const appForFetch = { ...app }
+    delete appForFetch.cluster
+    const uidata = await fetchAggregate(SupportedAggregate.uidata, backendUrl, appForFetch)
     model.clusterList = uidata?.clusterList
 
     // a short sweet ride for argo

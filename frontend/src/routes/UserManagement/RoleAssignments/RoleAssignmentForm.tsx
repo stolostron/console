@@ -3,7 +3,11 @@ import { AcmDataFormPage, AcmDataFormProps } from '../../../components/AcmDataFo
 import { FormData, Section } from '../../../components/AcmFormData'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { truncate } from '../../../lib/text-utils'
-import { emptyRoleAssignment, RoleAssignment, RoleAssignmentKind } from '../../../resources/role-assignment'
+import {
+  emptyMulticlusterRoleAssignment,
+  MulticlusterRoleAssignment,
+  MulticlusterRoleAssignmentKind,
+} from '../../../resources/multicluster-role-assignment'
 import { AcmToastContext } from '../../../ui-components'
 import { useRoleAssignmentFormData } from './hook/RoleAssignmentFormDataHook'
 import { useRoleAssignment } from './hook/RoleAssignmentHook'
@@ -53,13 +57,13 @@ const RoleAssignmentForm = ({
   } = useRoleAssignmentFormData(preselected)
 
   // TODO: to implement once YAML is needed
-  const stateToData = (): RoleAssignment => {
-    return emptyRoleAssignment
+  const stateToData = (): MulticlusterRoleAssignment => {
+    return emptyMulticlusterRoleAssignment
   }
 
   // TODO: to implement once YAML is needed
   const stateToSyncs = (): { path: string; setState: (value: any) => void }[] => {
-    const pathPrefix = RoleAssignmentKind
+    const pathPrefix = MulticlusterRoleAssignmentKind
 
     const syncs: { path: string; setState: (value: any) => void }[] = [
       {
