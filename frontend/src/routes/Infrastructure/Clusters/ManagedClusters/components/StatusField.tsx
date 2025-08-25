@@ -14,6 +14,7 @@ import { useSharedAtoms, useRecoilValue } from '../../../../../shared-recoil'
 import { launchToOCP } from '../../../../../lib/ocp-utils'
 import { isPosthookLinkDisabled, isPrehookLinkDisabled, jobPodsStillAvailable, launchJobLogs } from './ProgressStepBar'
 import { LogsDownloadButton } from '@openshift-assisted/ui-lib/cim'
+import { DOC_LINKS } from '../../../../../lib/doc-util'
 
 export function StatusField(props: { cluster: Cluster }) {
   const { t } = useTranslation()
@@ -184,6 +185,32 @@ export function StatusField(props: { cluster: Cluster }) {
         )
       }
 
+      break
+    case ClusterStatus.unknown:
+    case ClusterStatus.unreachable:
+      hasAction = true
+      Action = () => (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <Link
+            to="#"
+            onClick={(e) => {
+              e.preventDefault()
+              window.open(DOC_LINKS.TROUBLESHOOTING_CLUSTER_IMPORT_FAILURE, '_blank')
+            }}
+          >
+            {t('How do I troubleshoot a cluster import failure?')}
+          </Link>
+          <Link
+            to="#"
+            onClick={(e) => {
+              e.preventDefault()
+              window.open(DOC_LINKS.MANAGED_NETWORK_CONFIG, '_blank')
+            }}
+          >
+            {t('How do I configure the managed network?')}
+          </Link>
+        </div>
+      )
       break
   }
 

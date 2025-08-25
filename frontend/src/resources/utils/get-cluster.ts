@@ -69,6 +69,7 @@ export enum ClusterStatus {
   'draft' = 'draft',
   'running' = 'running',
   'upgradefailed' = 'upgradefailed',
+  'unreachable' = 'unreachable',
 }
 
 export const getClusterStatusLabel = (status: ClusterStatus | undefined, t: TFunction) => {
@@ -125,6 +126,8 @@ export const getClusterStatusLabel = (status: ClusterStatus | undefined, t: TFun
       return t('status.running')
     case ClusterStatus.stopping:
       return t('status.stopping')
+    case ClusterStatus.unreachable:
+      return t('status.unreachable')
     default:
       return t('status.unknown')
   }
@@ -162,8 +165,10 @@ export const getClusterStatusType = (clusterStatus: ClusterStatus): StatusType =
       return StatusType.detached
     case ClusterStatus.hibernating:
       return StatusType.sleep
+    case ClusterStatus.unreachable:
     case ClusterStatus.unknown:
       return StatusType.unknown
+      return StatusType.warning
     case ClusterStatus.draft:
       return StatusType.draft
     case ClusterStatus.pending:
