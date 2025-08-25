@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 export const getURLSearchParam = (resource: any) => {
   let searchString = `cluster=${resource.cluster}`
+
   if (resource.kind) {
     searchString = `${searchString}&kind=${resource.kind}`
   }
