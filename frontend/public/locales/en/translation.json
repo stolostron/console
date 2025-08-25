@@ -622,6 +622,7 @@
   "button.backToClusters": "Back to clusters",
   "button.backToClusterSets": "Back to cluster sets",
   "button.backToInfraEnvs": "Back to infrastructure environments",
+  "button.backToRoles": "Back to roles",
   "button.backToUsers": "Back to users",
   "button.cancel": "Cancel",
   "button.create": "Create",

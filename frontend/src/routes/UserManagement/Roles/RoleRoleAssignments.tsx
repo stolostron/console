@@ -1,12 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { PageSection } from '@patternfly/react-core'
 import { useEffect, useMemo, useState } from 'react'
-import { useParams } from 'react-router-dom-v5-compat'
+import { useParams, useNavigate } from 'react-router-dom-v5-compat'
+import { ErrorPage } from '../../../components/ErrorPage'
 import { useTranslation } from '../../../lib/acm-i18next'
+import { NavigationPath } from '../../../NavigationPath'
 import { User } from '../../../resources'
 import multiclusterRoleAssignmentsMockDataJson from '../../../resources/clients/mock-data/multicluster-role-assignments.json'
+import { ResourceError, ResourceErrorCode } from '../../../resources/utils'
 import { MulticlusterRoleAssignment } from '../../../resources/multicluster-role-assignment'
-import { compareStrings, AcmLoadingPage } from '../../../ui-components'
+import { compareStrings, AcmLoadingPage, AcmButton } from '../../../ui-components'
 import { RoleAssignments } from '../RoleAssignment/RoleAssignments'
 
 // TODO: to remove once API ready
@@ -22,6 +25,7 @@ const mockUsers = [
 // TODO: do it for Roles
 const RoleRoleAssignments = () => {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const { id = undefined } = useParams()
   const [isLoading, setIsLoading] = useState<boolean>()
   const [user, setUser] = useState<User>()
@@ -59,9 +63,14 @@ const RoleRoleAssignments = () => {
       )
     case !user:
       return (
-        <PageSection>
-          <div>{t('User not found')}</div>
-        </PageSection>
+        <ErrorPage
+          error={new ResourceError(ResourceErrorCode.NotFound)}
+          actions={
+            <AcmButton role="link" onClick={() => navigate(NavigationPath.identitiesUsers)}>
+              {t('button.backToRoles')}
+            </AcmButton>
+          }
+        />
       )
     default:
       return (

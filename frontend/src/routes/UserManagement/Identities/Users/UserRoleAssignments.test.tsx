@@ -62,7 +62,7 @@ describe('UserRoleAssignments', () => {
 
   it('renders UserRoleAssignments component with no user found', () => {
     render(<Component userId="non-existent-user" />)
-    expect(screen.getByText('User not found')).toBeInTheDocument()
+    expect(screen.getByText('Back to users')).toBeInTheDocument()
   })
 
   it('renders UserRoleAssignments component with user found', () => {
