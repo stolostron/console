@@ -66,7 +66,7 @@ describe('GroupDetails', () => {
 
     render(<Component />)
 
-    expect(screen.getByText('Group not found')).toBeInTheDocument()
+    expect(screen.getByText('Not found')).toBeInTheDocument()
   })
 
   test('should render group details with basic information', () => {
