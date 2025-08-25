@@ -410,9 +410,9 @@ describe('Create Argo Application Set', () => {
 
     // Template
     await clickByText('Git')
+    const appBranchNocks = [nockArgoGitBranches(channelGit.spec.pathname, { branchList: [{ name: 'branch-01' }] })]
     await clickByText('Enter or select a Git URL')
 
-    const appBranchNocks = [nockArgoGitBranches(channelGit.spec.pathname, { branchList: [{ name: 'branch-01' }] })]
     await clickByText(channelGit.spec.pathname)
     await waitForNocks(appBranchNocks)
 
@@ -420,7 +420,6 @@ describe('Create Argo Application Set', () => {
     // await clickByText('Enter or select a tracking revision') // Hack to handle broken PatternFly dropdown not initially populating
     // await clickByText('Enter or select a tracking revision')
     const pathNocks = [
-      nockArgoGitBranches(channelGit.spec.pathname, { branchList: [{ name: 'branch-01' }] }),
       nockArgoGitPathSha(channelGit.spec.pathname, 'branch-01', { commit: { sha: '01' } }),
       nockArgoGitPathTree(channelGit.spec.pathname, { tree: [{ path: 'application-test', type: 'tree' }] }),
     ]
