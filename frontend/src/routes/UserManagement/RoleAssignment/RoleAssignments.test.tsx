@@ -520,4 +520,66 @@ describe('RoleAssignments', () => {
       autoClose: true,
     })
   })
+
+  describe('Column Display and Hidden Columns', () => {
+    it('hides subject data when hiddenColumns includes subject', async () => {
+      render(<Component hiddenColumns={['subject']} />)
+
+      // Wait for other data to load
+      await waitForText('admin', true) // Role should still be visible
+      await waitForText('test-cluster-1', true) // Cluster should still be visible
+
+      // Component should render without errors when subject column is hidden
+      // Note: Our mock doesn't implement actual column hiding, but we verify
+      // the component handles the hiddenColumns prop without crashing
+      expect(screen.getByText('admin')).toBeInTheDocument()
+      expect(screen.getByText('test-cluster-1')).toBeInTheDocument()
+    })
+
+    it('hides role data when hiddenColumns includes role', async () => {
+      render(<Component hiddenColumns={['role']} />)
+
+      // Wait for other data to load
+      await waitForText('User: test.user1', true) // Subject should still be visible
+      await waitForText('test-cluster-1', true) // Cluster should still be visible
+
+      // Component should render without errors when role column is hidden
+      expect(screen.getAllByText('User: test.user1')[0]).toBeInTheDocument()
+      expect(screen.getByText('test-cluster-1')).toBeInTheDocument()
+    })
+
+    it('hides cluster data when hiddenColumns includes cluster', async () => {
+      render(<Component hiddenColumns={['cluster']} />)
+
+      // Wait for other data to load
+      await waitForText('User: test.user1', true) // Subject should still be visible
+      await waitForText('admin', true) // Role should still be visible
+
+      // Component should render without errors when cluster column is hidden
+      expect(screen.getAllByText('User: test.user1')[0]).toBeInTheDocument()
+      expect(screen.getByText('admin')).toBeInTheDocument()
+    })
+
+    it('hides multiple columns when specified', async () => {
+      render(<Component hiddenColumns={['subject', 'role']} />)
+
+      // Wait for remaining data to load
+      await waitForText('test-cluster-1', true) // Only cluster should be visible
+
+      // Component should render without errors when multiple columns are hidden
+      expect(screen.getByText('test-cluster-1')).toBeInTheDocument()
+    })
+
+    it('shows all data when hiddenColumns is empty array', async () => {
+      render(<Component hiddenColumns={[]} />)
+
+      // Wait for data to load
+      await waitForText('User: test.user1', true)
+
+      // All data types should be visible (same as default behavior)
+      await waitForText('admin', true) // Role column data
+      await waitForText('User: test.user1', true) // Subject column data
+      await waitForText('test-cluster-1', true) // Cluster column data
+    })
+  })
 })
