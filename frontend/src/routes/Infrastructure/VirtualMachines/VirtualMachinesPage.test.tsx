@@ -17,11 +17,6 @@ import { ActionExtensionProps, ListColumnExtensionProps } from '../../../plugin-
 import { AcmExtension } from '../../../plugin-extensions/types'
 import { SearchResultItemsAndRelatedItemsDocument, SearchSchemaDocument } from '../../Search/search-sdk/search-sdk'
 import VirtualMachinesPage from './VirtualMachinesPage'
-jest.mock('@openshift-console/dynamic-plugin-sdk', () => ({
-  useResolvedExtensions: jest.fn(),
-}))
-import { useResolvedExtensions } from '@openshift-console/dynamic-plugin-sdk'
-const mockUseResolvedExtensions = useResolvedExtensions as jest.MockedFunction<typeof useResolvedExtensions>
 
 const vmActionProps: ActionExtensionProps[] = [
   {
@@ -59,9 +54,6 @@ jest.mock('../../UserManagement/Roles/RoleAssignments', () => ({
 }))
 
 describe('VirtualMachinesPage Page', () => {
-  beforeEach(() => {
-    mockUseResolvedExtensions.mockReturnValue([[], true, []]) // default to no extensions, resolved
-  })
   it('should render page and run namespace search', async () => {
     const metricNock = nockPostRequest('/metrics?virtual-machines', {})
     const mocks = [

@@ -19,11 +19,6 @@ import SearchResults from './SearchResults'
 import { defaultPlugin, PluginContext } from '../../../lib/PluginContext'
 import { AcmExtension } from '../../../plugin-extensions/types'
 import { ActionExtensionProps } from '../../../plugin-extensions/properties'
-jest.mock('@openshift-console/dynamic-plugin-sdk', () => ({
-  useResolvedExtensions: jest.fn(),
-}))
-import { useResolvedExtensions } from '@openshift-console/dynamic-plugin-sdk'
-const mockUseResolvedExtensions = useResolvedExtensions as jest.MockedFunction<typeof useResolvedExtensions>
 
 jest.mock('../../../hooks/use-can-migrate-vm', () => ({
   useCanMigrateVm: () => true,
@@ -52,9 +47,6 @@ const acmExtension: AcmExtension = {
 }
 
 describe('SearchResults Page', () => {
-  beforeEach(() => {
-    mockUseResolvedExtensions.mockReturnValue([[], true, []]) // default to no extensions, resolved
-  })
   it('should render page in loading state', async () => {
     render(
       <RecoilRoot

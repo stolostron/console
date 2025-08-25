@@ -7,7 +7,6 @@ import {
   isVirtualMachineAction,
   isVirtualMachineListColumn,
 } from './extensions'
-import { isResourceRoute } from '@stolostron/multicluster-sdk/src/extensions/resource'
 import { ActionExtensionProps, ListColumnExtensionProps } from './properties'
 import { AcmExtension } from './types'
 
@@ -47,12 +46,6 @@ export function useAcmExtension() {
     acmExtension.virtualMachineListColumn = virtualMachineListColumn.map(
       (column) => column.properties as ListColumnExtensionProps
     )
-  }
-
-  // Resolving resource routes to acm compatible type
-  const [resourceRoutes, resolvedResourceRoutes] = useResolvedExtensions(isResourceRoute)
-  if (resolvedResourceRoutes) {
-    acmExtension.resourceRoutes = resourceRoutes
   }
 
   // list of all acm supported extensions

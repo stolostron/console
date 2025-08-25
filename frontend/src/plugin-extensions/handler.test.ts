@@ -9,7 +9,6 @@ import {
 } from './extensions'
 import { useAcmExtension } from './handler'
 import { renderHook } from '@testing-library/react-hooks'
-import { useResolvedExtensions } from '@openshift-console/dynamic-plugin-sdk'
 
 let mockExtensions: (
   | ApplicationAction
@@ -19,15 +18,11 @@ let mockExtensions: (
   | OverviewTab
 )[] = []
 
-jest.mock('@openshift-console/dynamic-plugin-sdk', () => ({
-  useResolvedExtensions: jest.fn(),
+jest.mock('@console/dynamic-plugin-sdk/src/api/useResolvedExtensions', () => ({
+  useResolvedExtensions: (typeGuard: any) => [mockExtensions.filter(typeGuard), true],
 }))
 
 describe('useCatalogExtensions', () => {
-  beforeEach(() => {
-    jest.clearAllMocks()
-  })
-
   it('should return item-type extensions', () => {
     mockExtensions = [
       {
@@ -80,31 +75,13 @@ describe('useCatalogExtensions', () => {
         },
       },
     ]
-
-    // mock the useResolvedExtensions calls to return appropriate extensions
-    const mockUseResolvedExtensions = useResolvedExtensions as jest.MockedFunction<typeof useResolvedExtensions>
-    mockUseResolvedExtensions
-      .mockReturnValueOnce([mockExtensions.filter((ext) => ext.type === 'acm.application/action') as any, true, []])
-      .mockReturnValueOnce([
-        mockExtensions.filter((ext) => ext.type === 'acm.application/list/column') as any,
-        true,
-        [],
-      ])
-      .mockReturnValueOnce([mockExtensions.filter((ext) => ext.type === 'acm.overview/tab') as any, true, []])
-      .mockReturnValueOnce([mockExtensions.filter((ext) => ext.type === 'acm.virtualmachine/action') as any, true, []])
-      .mockReturnValueOnce([
-        mockExtensions.filter((ext) => ext.type === 'acm.virtualmachine/list/column') as any,
-        true,
-        [],
-      ])
-      .mockReturnValueOnce([[], true, []]) // for resource routes
-
     const { result } = renderHook(() => useAcmExtension())
-
-    expect(result.current.virtualMachineAction).toBeDefined()
-    expect(result.current.applicationAction).toBeDefined()
-    expect(result.current.virtualMachineListColumn).toBeDefined()
-    expect(result.current.applicationListColumn).toBeDefined()
-    expect(result.current.overviewTab).toBeDefined()
+    expect([
+      result.current.virtualMachineAction,
+      result.current.applicationAction,
+      result.current.virtualMachineListColumn,
+      result.current.applicationListColumn,
+      [result.current.overviewTab?.[0].properties],
+    ]).toEqual(mockExtensions.map((mockExtension) => [mockExtension.properties]))
   })
 })
