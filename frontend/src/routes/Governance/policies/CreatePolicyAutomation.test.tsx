@@ -61,7 +61,7 @@ describe('Create Policy Automation Wizard', () => {
     // template information
     nockAnsibleTower(mockAnsibleCredential, mockTemplateList)
     nockAnsibleTower(mockAnsibleCredentialWorkflow, mockTemplateWorkflowList)
-    waitForNotText('The Ansible Automation Platform Operator is required to use automation templates.')
+    await waitForNotText('The Ansible Automation Platform Operator is required to use automation templates.')
     await waitForText('Create policy automation', true)
 
     // select ansible credential

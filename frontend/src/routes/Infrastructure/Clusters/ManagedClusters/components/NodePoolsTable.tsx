@@ -312,7 +312,6 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
     () => (
       <AcmButton
         id="addNodepoolEmptyState"
-        children={t('Add node pool')}
         variant={ButtonVariant.secondary}
         onClick={toggleAddNodepoolModal}
         tooltip={addNodePoolStatusMessage}
@@ -321,7 +320,9 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
           !canCreateNodepool ||
           cluster?.hypershift?.isUpgrading
         }
-      />
+      >
+        {t('Add node pool')}
+      </AcmButton>
     ),
     [
       toggleAddNodepoolModal,

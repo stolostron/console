@@ -27,8 +27,10 @@ import {
 
 // Helper function to create wrapper with MockedProvider
 const createWrapper = (mocks: any[] = []) => {
-  return ({ children }: { children: React.ReactNode }) =>
+  const Wrapper = ({ children }: { children: React.ReactNode }) =>
     React.createElement(MockedProvider, { mocks, addTypename: false }, children)
+  Wrapper.displayName = 'MockedProviderWrapper'
+  return Wrapper
 }
 
 describe('search-sdk', () => {

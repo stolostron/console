@@ -464,8 +464,8 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
                 const clusterNamespace =
                   get(map, 'ClusterDeployment.metadata.namespace') || get(map, 'HostedCluster.metadata.name')
                 const isAssistedFlow = map.InfraEnv
-                createResource(resourceJSON, true, t('Saving cluster draft...'), t('Cluster draft saved')).then(
-                  (status) => {
+                createResource(resourceJSON, true, t('Saving cluster draft...'), t('Cluster draft saved'))
+                  .then((status) => {
                     if (status === 'ERROR') {
                       resolve(status)
                     } else {
@@ -484,8 +484,10 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
                         })
                       }, 250)
                     }
-                  }
-                )
+                  })
+                  .catch((error) => {
+                    console.error('Error creating cluster: ', error)
+                  })
                 return
               }
             }

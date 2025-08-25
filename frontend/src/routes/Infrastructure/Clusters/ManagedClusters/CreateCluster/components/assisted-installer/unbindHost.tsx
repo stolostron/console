@@ -32,7 +32,7 @@ export const getUnbindHostAction =
         const masterCount = undefined /* Only workers can be removed */
         const workerCount = (agentClusterInstall.spec?.provisionRequirements.workerAgents || 1) - 1
         // TODO(mlibra): include following promise in the returned one to handle errors
-        setProvisionRequirements(agentClusterInstall, workerCount, masterCount)
+        void setProvisionRequirements(agentClusterInstall, workerCount, masterCount)
       }
 
       return patchResource(agent as IResource, [
