@@ -618,7 +618,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
         <Warning />,
         isACMAvailable,
         localCluster,
-        hypershiftSupportedVersions.slice(0, 3)
+        hypershiftSupportedVersions
       )
       breadcrumbs.push(controlPlaneBreadCrumbKubeVirt)
       break
