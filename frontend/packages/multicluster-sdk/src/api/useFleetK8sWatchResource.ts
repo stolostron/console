@@ -176,7 +176,7 @@ export const useFleetK8sWatchResource: UseFleetK8sWatchResource = <
         setLoaded(true)
       }
     }
-    fetchData()
+    void fetchData()
     // Cleanup function to close the WebSocket if it was created by this effect
     return () => {
       if (socket && socket.readyState === WebSocket.OPEN) {

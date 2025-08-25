@@ -19,7 +19,7 @@ export function useCanJoinClusterSets() {
         return setCanJoinClusterSets([])
       }
       const adminAccessCheck = checkAdminAccess()
-      adminAccessCheck.then((adminAccess) => {
+      void adminAccessCheck.then(async (adminAccess) => {
         if (adminAccess.status!.allowed) {
           return setCanJoinClusterSets(
             managedClusterSets.filter((managedClusterSet) => !isGlobalClusterSet(managedClusterSet))
@@ -30,20 +30,19 @@ export function useCanJoinClusterSets() {
               return canUser('create', mcs, undefined, mcs.metadata.name, 'join').promise
             })
           )
-          requests.then((results) => {
-            const authorizedClusterSetNames: string[] = []
-            results.forEach((res) => {
-              if (res.status !== 'rejected' && res.value.status?.allowed) {
-                authorizedClusterSetNames.push(res.value.spec.resourceAttributes.name!)
-              }
-            })
-            const authorizedClusterSets = managedClusterSets.filter((mcs) =>
-              authorizedClusterSetNames.includes(mcs.metadata.name!)
-            )
-            return setCanJoinClusterSets(
-              authorizedClusterSets.filter((managedClusterSet) => !isGlobalClusterSet(managedClusterSet))
-            )
+          const results = await requests
+          const authorizedClusterSetNames: string[] = []
+          results.forEach((res) => {
+            if (res.status !== 'rejected' && res.value.status?.allowed) {
+              authorizedClusterSetNames.push(res.value.spec.resourceAttributes.name!)
+            }
           })
+          const authorizedClusterSets = managedClusterSets.filter((mcs) =>
+            authorizedClusterSetNames.includes(mcs.metadata.name!)
+          )
+          return setCanJoinClusterSets(
+            authorizedClusterSets.filter((managedClusterSet) => !isGlobalClusterSet(managedClusterSet))
+          )
         }
       })
     } else {

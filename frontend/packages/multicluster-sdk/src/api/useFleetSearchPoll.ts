@@ -168,7 +168,7 @@ export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSea
   })
 
   const triggerRefetch: () => void = useCallback(() => {
-    refetch()
+    void refetch()
   }, [refetch])
 
   const data = useMemo(

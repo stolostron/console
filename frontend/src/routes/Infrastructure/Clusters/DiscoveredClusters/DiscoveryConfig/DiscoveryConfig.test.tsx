@@ -85,7 +85,7 @@ describe('Discovery Config page', () => {
       discoveryConfigCreateSelfSubjectAccessResponse
     )
     render(<TestAddDiscoveryConfigPage />)
-    waitForNocks([discoveryConfigCreateNock])
+    await waitForNocks([discoveryConfigCreateNock])
     screen
       .getByRole('combobox', {
         name: 'Credential',

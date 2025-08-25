@@ -56,6 +56,7 @@ type ErrorInfo = {
   componentStack: string
 }
 
+/* eslint-disable react/prop-types */
 export class AcmErrorBoundary extends Component<
   { children: React.ReactNode | React.ReactNode[]; actions?: React.ReactNode },
   ErrorBoundaryState

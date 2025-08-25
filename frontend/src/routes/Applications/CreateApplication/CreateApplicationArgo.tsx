@@ -114,7 +114,10 @@ export function CreateApplicationArgo() {
         setLoadingAppSets(false)
       }
     }
-    fetchAppSets()
+    fetchAppSets().catch((error) => {
+      setLoadingAppSets(false)
+      console.error('Error fetching application sets: ', error)
+    })
   }, [])
 
   return loadingAppSets ? (

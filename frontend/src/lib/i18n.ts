@@ -34,5 +34,8 @@ i18n
     supportedLngs: supportedLanguages, // only languages from this array will attempt to be loaded
     simplifyPluralSuffix: true,
   })
+  .catch((err) => {
+    console.error(err)
+  })
 
 export default i18n
