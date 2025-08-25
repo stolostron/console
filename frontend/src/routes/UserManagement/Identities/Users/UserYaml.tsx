@@ -1,24 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { PageSection } from '@patternfly/react-core'
-import { useParams } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { useQuery } from '../../../../lib/useQuery'
-import { listUsers } from '../../../../resources/rbac'
-import { useMemo } from 'react'
 import { dump } from 'js-yaml'
 import YamlEditor from '../../../../components/YamlEditor'
 import { AcmLoadingPage } from '../../../../ui-components'
 import { useYamlEditorHeight } from '../../../../hooks/useYamlEditorHeight'
+import { useUserDetailsContext } from './UserPage'
 
 const UserYaml = () => {
   const { t } = useTranslation()
-  const { id = undefined } = useParams()
-  const { data: users, loading } = useQuery(listUsers)
+  const { user, loading } = useUserDetailsContext()
 
-  const user = useMemo(
-    () => (id ? users?.find((u) => u.metadata.uid === id || u.metadata.name === id) : undefined),
-    [users, id]
-  )
   const baseHeight = useYamlEditorHeight()
   const customHeight = Math.min(baseHeight, 450)
 
