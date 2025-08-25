@@ -147,9 +147,10 @@ export const SelectListOptions = ({
       {options.map((option, index) => {
         const isLastItem = index === options.length - 1
         const isSingleItem = options.length === 1
-        const shouldSkipLastItem = isLastItem && !isSingleItem
-        const isCreateOption = isSingleItem && isCreatable && value !== option
         const isSimpleOption = typeof option === 'string'
+        const valueString = String(isSimpleOption ? option : option.value)
+        const isCreateOption = isSingleItem && isCreatable && value !== valueString
+        const shouldSkipLastItem = isLastItem && (!isSingleItem || (isCreatable && value === valueString))
 
         if (shouldSkipLastItem) {
           return null
@@ -157,7 +158,7 @@ export const SelectListOptions = ({
 
         let displayText: string
         if (isCreateOption) {
-          displayText = `${createOption} "${String(isSimpleOption ? option : option.value)}"`
+          displayText = `${createOption} "${valueString}"`
         } else if (isSingleItem) {
           displayText = noResults
         } else if (isSimpleOption) {
