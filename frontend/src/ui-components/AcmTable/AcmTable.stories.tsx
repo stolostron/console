@@ -128,6 +128,15 @@ export function TableExpandable(args: Record<string, unknown>) {
                             <Text component={TextVariants.h3}>Favorite Colors</Text>
                           </TextContent>
                           <AcmTable<IExampleSubData>
+                            resultView={{
+                              loading: false,
+                              page: 1,
+                              refresh: () => {},
+                              items: [],
+                              emptyResult: false,
+                              isPreProcessed: false,
+                              processedItemCount: 0,
+                            }}
                             noBorders
                             emptyState={
                               <AcmEmptyState
@@ -240,13 +249,15 @@ export function TableEmpty(args: Record<string, unknown>) {
 
 function TableEmptyStory(args: Record<string, unknown>) {
   const [items, setItems] = useState<IExampleData[]>()
+  const props = commonProperties(args, setItems, items)
   return (
     <AcmTable<IExampleData>
       emptyState={<TableEmptyState {...args} />}
       items={[]}
       columns={columns}
       keyFn={(item: IExampleData) => item.uid.toString()}
-      {...commonProperties(args, setItems, items)}
+      {...props}
+      resultView={{ ...props.resultView, page: 0, emptyResult: true }}
     />
   )
 }
@@ -265,13 +276,15 @@ export function TableLoading(args: Record<string, unknown>) {
 
 function TableLoadingStory(args: Record<string, unknown>) {
   const [items, setItems] = useState<IExampleData[]>()
+  const props = commonProperties(args, setItems, items)
   return (
     <AcmTable<IExampleData>
       emptyState={<TableEmptyState {...args} />}
       items={undefined}
       columns={columns}
       keyFn={(item: IExampleData) => item.uid.toString()}
-      {...commonProperties(args, setItems, items)}
+      {...props}
+      resultView={{ ...props.resultView, page: 0, loading: true }}
     />
   )
 }
@@ -282,6 +295,15 @@ function commonProperties(
   items: IExampleData[] | undefined
 ) {
   return {
+    resultView: {
+      loading: false,
+      page: 1,
+      refresh: () => {},
+      items: [],
+      emptyResult: false,
+      isPreProcessed: false,
+      processedItemCount: 0,
+    },
     plural: args.plural as string,
     searchPlaceholder: args.searchPlaceholder as string,
     noBorders: args.noBorders as boolean,
@@ -524,6 +546,13 @@ export const exampleSubData: IExampleSubData[] = [
     firstName: 'Kurt',
     lastName: 'Daley',
     color: 'pink',
+  },
+  {
+    uid: 50,
+    suid: '2',
+    firstName: 'Erik',
+    lastName: 'Erikson',
+    color: 'white',
   },
 ]
 
