@@ -2,12 +2,12 @@
 import { PageSection } from '@patternfly/react-core'
 import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom-v5-compat'
-import { useTranslation } from '../../../../lib/acm-i18next'
-import multiclusterRoleAssignmentsMockDataJson from '../../../../resources/clients/mock-data/multicluster-role-assignments.json'
-import { MulticlusterRoleAssignment } from '../../../../resources/multicluster-role-assignment'
-import { compareStrings, AcmLoadingPage } from '../../../../ui-components'
-import { RoleAssignments } from '../../RoleAssignment/RoleAssignments'
-import { User } from '../../../../resources'
+import { useTranslation } from '../../../lib/acm-i18next'
+import { User } from '../../../resources'
+import multiclusterRoleAssignmentsMockDataJson from '../../../resources/clients/mock-data/multicluster-role-assignments.json'
+import { MulticlusterRoleAssignment } from '../../../resources/multicluster-role-assignment'
+import { compareStrings, AcmLoadingPage } from '../../../ui-components'
+import { RoleAssignments } from '../RoleAssignment/RoleAssignments'
 
 // TODO: to remove once API ready
 // Mock users data to match the role assignments
@@ -19,16 +19,16 @@ const mockUsers = [
   { metadata: { name: 'david.brown', uid: 'mock-user-david-brown' } },
 ]
 
-const UserRoleAssignments = () => {
+// TODO: do it for Roles
+const RoleRoleAssignments = () => {
   const { t } = useTranslation()
   const { id = undefined } = useParams()
+  const [isLoading, setIsLoading] = useState<boolean>()
   const [user, setUser] = useState<User>()
 
   // Use mock data only
   const users = mockUsers
 
-  // TODO: proper loading mechanism once API ready
-  const [isLoading, setIsLoading] = useState<boolean>()
   useEffect(() => setIsLoading(users === undefined), [users])
   useEffect(() => setUser(users?.find((user) => user.metadata.uid === id) as User), [id, users])
 
@@ -74,4 +74,4 @@ const UserRoleAssignments = () => {
   }
 }
 
-export { UserRoleAssignments }
+export { RoleRoleAssignments }

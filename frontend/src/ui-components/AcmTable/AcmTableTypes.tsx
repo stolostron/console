@@ -50,6 +50,9 @@ export interface IAcmTableColumn<T> {
 
   // Used to supply export information for Sub Rows. If true, the table will include column item within the CSV export
   isSubRowExport?: boolean
+
+  // whether the column is hidden or not
+  isHidden?: boolean
 }
 
 /* istanbul ignore next */
