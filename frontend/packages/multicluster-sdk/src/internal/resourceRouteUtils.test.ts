@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { ResolvedExtension } from '@openshift-console/dynamic-plugin-sdk'
-import { findResourceRouteHandler } from '../utils/resourceRouteUtils'
+import { findResourceRouteHandler } from './resourceRouteUtils'
 import { ResourceRoute } from '../extensions/resource'
 
 describe('findResourceRouteHandler', () => {

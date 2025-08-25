@@ -1,6 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { ResolvedExtension } from '@openshift-console/dynamic-plugin-sdk'
 import { ResourceRoute, ResourceRouteHandler } from '../extensions/resource'
+import { Extension } from '@openshift-console/dynamic-plugin-sdk/lib/types'
+
+export const RESOURCE_ROUTE_TYPE = 'acm.resource/route'
+
+export const isResourceRoute = (e: Extension): e is ResourceRoute => {
+  return e.type === RESOURCE_ROUTE_TYPE
+}
 
 /**
  * Find matching ResourceRoute extension

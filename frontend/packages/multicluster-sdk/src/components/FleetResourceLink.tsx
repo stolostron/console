@@ -7,8 +7,7 @@ import { getURLSearchParam } from '../api/utils/searchPaths'
 import { useHubClusterName } from '../api/useHubClusterName'
 import { useIsFleetAvailable } from '../api/useIsFleetAvailable'
 import { Link } from 'react-router-dom-v5-compat'
-import { isResourceRoute } from '../extensions/resource'
-import { getExtensionResourcePath } from '../utils/resourceRouteUtils'
+import { getExtensionResourcePath, isResourceRoute } from '../internal/resourceRouteUtils'
 
 /**
  * Enhanced ResourceLink component for ACM fleet environments.

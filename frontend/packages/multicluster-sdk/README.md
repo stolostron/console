@@ -49,7 +49,6 @@ Setup depends on your usage scenarios.
 - [FleetResourceEventStream](#gear-fleetresourceeventstream)
 - [FleetResourceLink](#gear-fleetresourcelink)
 - [getFleetK8sAPIPath](#gear-getfleetk8sapipath)
-- [isResourceRoute](#gear-isresourceroute)
 - [useFleetAccessReview](#gear-usefleetaccessreview)
 - [useFleetClusterNames](#gear-usefleetclusternames)
 - [useFleetK8sAPIPath](#gear-usefleetk8sapipath)
@@ -413,14 +412,6 @@ The k8s API path for the fleet.
 
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/getFleetK8sAPIPath.ts#L14)
 
-### :gear: isResourceRoute
-
-| Function | Type |
-| ---------- | ---------- |
-| `isResourceRoute` | `(e: Extension) => e is ResourceRoute` |
-
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/extensions/resource.ts#L32)
-
 ### :gear: useFleetAccessReview
 
 Hook that provides information about user access to a given resource.
@@ -779,7 +770,7 @@ This extension allows plugins to customize the route used for resources of the g
 | ---------- | ---------- |
 | `ResourceRoute` | `ExtensionDeclaration<typeof RESOURCE_ROUTE_TYPE, ResourceRouteProps>` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/extensions/resource.ts#L29)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/extensions/resource.ts#L28)
 
 ### :gear: ResourceRouteHandler
 
@@ -787,7 +778,7 @@ This extension allows plugins to customize the route used for resources of the g
 | ---------- | ---------- |
 | `ResourceRouteHandler` | `(props: { /** The cluster where the resource is located. */ cluster: string /** The namespace where the resource is located (if the resource is namespace-scoped). */ namespace?: string /** The name of the resource. */ name: string /** The resource, augmented with cluster property. */ resource: FleetK8sResourceCommon /** The model for the resource. */ model: ExtensionK8sModel }) => string` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/extensions/resource.ts#L8)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/extensions/resource.ts#L7)
 
 ### :gear: ResourceRouteProps
 
@@ -795,7 +786,7 @@ This extension allows plugins to customize the route used for resources of the g
 | ---------- | ---------- |
 | `ResourceRouteProps` | `{ /** The model for which this resource route should be used. */ model: ExtensionK8sGroupKindModel /** The handler function that returns the route path for the resource. */ handler: CodeRef<ResourceRouteHandler> }` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/extensions/resource.ts#L21)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/extensions/resource.ts#L20)
 
 ### :gear: SearchResult
 

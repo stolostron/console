@@ -1,9 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { CodeRef, Extension, ExtensionDeclaration } from '@openshift-console/dynamic-plugin-sdk/lib/types'
+import { CodeRef, ExtensionDeclaration } from '@openshift-console/dynamic-plugin-sdk/lib/types'
 import { ExtensionK8sGroupKindModel, ExtensionK8sModel } from '@openshift-console/dynamic-plugin-sdk'
 import { FleetK8sResourceCommon } from '../types/fleet'
-
-const RESOURCE_ROUTE_TYPE = 'acm.resource/route'
+import { RESOURCE_ROUTE_TYPE } from '../internal/resourceRouteUtils'
 
 export type ResourceRouteHandler = (props: {
   /** The cluster where the resource is located. */
@@ -27,8 +26,3 @@ export type ResourceRouteProps = {
 
 /** This extension allows plugins to customize the route used for resources of the given kind. Search results and resource links will direct to the route returned by the implementing function. */
 export type ResourceRoute = ExtensionDeclaration<typeof RESOURCE_ROUTE_TYPE, ResourceRouteProps>
-
-// Type guards
-export const isResourceRoute = (e: Extension): e is ResourceRoute => {
-  return e.type === RESOURCE_ROUTE_TYPE
-}
