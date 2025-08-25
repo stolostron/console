@@ -22,6 +22,7 @@ type Dictionary = {
   map: Record<string, string>
   add: (key: string) => string
   get: (inx: number) => string
+  has: (key: string) => string
 }
 
 export function createDictionary(): Dictionary {
@@ -37,11 +38,15 @@ export function createDictionary(): Dictionary {
   const get = (inx: number) => {
     return arr[inx]
   }
+  const has = (key: string) => {
+    return map[key]
+  }
   return {
     arr,
     map,
     add,
     get,
+    has,
   }
 }
 
@@ -65,6 +70,43 @@ type UncompressedResourceType = Record<string, any> | Record<string, any[]> | st
 type CompressedResourceType = Record<number, any> | Record<number, any[]> | string | number
 
 const NUMBER_MARKER = '#!%'
+const JSON_MARKER = '#!&'
+
+export class FifoSet<T> {
+  private readonly values: T[] = []
+  private readonly membership: Set<T> = new Set()
+  private readonly capacity?: number
+
+  constructor(capacity?: number) {
+    this.capacity = capacity
+  }
+
+  has(value: T): boolean {
+    return this.membership.has(value)
+  }
+
+  add(value: T): void {
+    if (!this.membership.has(value)) {
+      this.values.push(value)
+      this.membership.add(value)
+
+      if (this.capacity !== undefined && this.values.length > this.capacity) {
+        const evicted = this.values.shift()
+        if (evicted !== undefined) this.membership.delete(evicted)
+      }
+    }
+  }
+
+  delete(value: T): void {
+    if (this.membership.has(value)) {
+      this.membership.delete(value)
+      const index = this.values.indexOf(value)
+      if (index >= 0) this.values.splice(index, 1)
+    }
+  }
+}
+
+const bigStrings: FifoSet<string> = new FifoSet(200)
 
 export function deflateResource(resource: IResource, dictionary: Dictionary): Buffer {
   const res = compressResource(resource as UncompressedResourceType, dictionary)
@@ -105,8 +147,33 @@ function compressResource(resource: UncompressedResourceType, dictionary: Dictio
       }
       return res
     } else if (typeof resource === 'string') {
-      if (resource.length < 32 && !resource.endsWith('==')) {
+      if (
+        (resource.length > 128 && resource.startsWith('{') && !resource.startsWith('{{')) ||
+        resource.startsWith('[')
+      ) {
+        // if the resource is a large json string, compress the inner json
+        try {
+          const innerJson = JSON.parse(resource) as UncompressedResourceType
+          return `${JSON_MARKER}${JSON.stringify(compressResource(innerJson, dictionary))}`
+        } catch (error) {
+          // drop thru
+        }
+      }
+      if (resource.length < 32 && !resource.endsWith('=')) {
         // index short strings that aren't a base64
+        return dictionary.add(resource)
+      }
+      // if already in dictionary, return the index
+      const exists = dictionary.has(resource)
+      if (exists) {
+        return exists
+      }
+      // if the string is not in the dictionary, add it to the bigStrings set
+      if (!bigStrings.has(resource)) {
+        bigStrings.add(resource)
+      } else {
+        // if we've seen this string, add to the dictionary
+        bigStrings.delete(resource)
         return dictionary.add(resource)
       }
     } else if (typeof resource === 'number' && Number.isInteger(resource)) {
@@ -178,8 +245,14 @@ function decompressResource(resource: CompressedResourceType, dictionary: Dictio
       return res
     } else if (Number.isInteger(Number(resource))) {
       return dictionary.get(Number(resource))
-    } else if (typeof resource === 'string' && resource.startsWith(NUMBER_MARKER)) {
-      return Number(resource.substring(NUMBER_MARKER.length))
+    } else if (typeof resource === 'string') {
+      if (resource.startsWith(NUMBER_MARKER)) {
+        return Number(resource.substring(NUMBER_MARKER.length))
+      }
+      if (resource.startsWith(JSON_MARKER)) {
+        const innerJson = JSON.parse(resource.substring(JSON_MARKER.length)) as CompressedResourceType
+        return JSON.stringify(decompressResource(innerJson, dictionary))
+      }
     }
   }
   return resource
