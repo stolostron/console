@@ -1,15 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { PageSection } from '@patternfly/react-core'
-import { useMemo, useCallback } from 'react'
-import { Trans, useTranslation } from '../../../../lib/acm-i18next'
-import { listGroups, Group as RbacGroup } from '../../../../resources/rbac'
-import { useQuery } from '../../../../lib/useQuery'
-import { AcmEmptyState, AcmTable, compareStrings, AcmLoadingPage, AcmButton } from '../../../../ui-components'
-import { groupsTableColumns, useFilters } from './GroupsTableHelper'
+import { useCallback, useMemo } from 'react'
 import { Link } from 'react-router-dom-v5-compat'
-import { ViewDocumentationLink, DOC_LINKS } from '../../../../lib/doc-util'
-import { rbacCreate, useIsAnyNamespaceAuthorized } from '../../../../lib/rbac-util'
-import { AccessControlDefinition } from '../../../../resources/access-control'
+import { Trans, useTranslation } from '../../../../lib/acm-i18next'
+import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
+import { useQuery } from '../../../../lib/useQuery'
+import { listGroups, Group as RbacGroup } from '../../../../resources/rbac'
+import { AcmButton, AcmEmptyState, AcmLoadingPage, AcmTable, compareStrings } from '../../../../ui-components'
+import { groupsTableColumns, useFilters } from './GroupsTableHelper'
 
 const GroupsTable = () => {
   const { t } = useTranslation()
@@ -23,7 +21,8 @@ const GroupsTable = () => {
 
   const keyFn = useCallback((group: RbacGroup) => group.metadata.name ?? '', [])
 
-  const canAddAccessControl = useIsAnyNamespaceAuthorized(rbacCreate(AccessControlDefinition))
+  // TODO: rbacCreate for IDP
+  const canAddAccessControl = true
 
   const filters = useFilters()
   const columns = groupsTableColumns({ t })
