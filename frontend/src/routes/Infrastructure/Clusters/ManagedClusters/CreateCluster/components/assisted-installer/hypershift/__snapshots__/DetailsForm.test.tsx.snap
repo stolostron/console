@@ -306,8 +306,28 @@ exports[`DetailsForm it renders 1`] = `
               id="form-input-baseDnsDomain-field-helper"
             >
               <span
+                aria-hidden="true"
+                class="pf-v5-c-helper-text__item-icon"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="pf-v5-svg"
+                  fill="currentColor"
+                  height="1em"
+                  role="img"
+                  viewBox="0 0 512 512"
+                  width="1em"
+                >
+                  <path
+                    d="M504 256c0 136.997-111.043 248-248 248S8 392.997 8 256C8 119.083 119.043 8 256 8s248 111.083 248 248zm-248 50c-25.405 0-46 20.595-46 46s20.595 46 46 46 46-20.595 46-46-20.595-46-46-46zm-43.673-165.346l7.418 136c.347 6.364 5.609 11.346 11.982 11.346h48.546c6.373 0 11.635-4.982 11.982-11.346l7.418-136c.375-6.874-5.098-12.654-11.982-12.654h-63.383c-6.884 0-12.356 5.78-11.981 12.654z"
+                  />
+                </svg>
+              </span>
+              <span
                 class="pf-v5-c-helper-text__item-text"
-              />
+              >
+                Required
+              </span>
             </div>
           </div>
         </div>
@@ -342,31 +362,22 @@ exports[`DetailsForm it renders 1`] = `
       <div
         class="pf-v5-c-form__group-control"
       >
-        <span
-          class="pf-v5-c-form-control"
+        <button
+          aria-expanded="false"
+          class="pf-v5-c-menu-toggle pf-m-full-width pf-v5-u-w-100"
+          id="form-input-openshiftVersion-field"
+          type="button"
         >
-          <select
-            aria-describedby="form-input-openshiftVersion-field-helper"
-            aria-invalid="false"
-            data-ouia-component-id="OUIA-Generated-FormSelect-default-1"
-            data-ouia-component-type="PF5/FormSelect"
-            data-ouia-safe="true"
-            id="form-input-openshiftVersion-field"
-            name="openshiftVersion"
-            required=""
-          >
-            <option
-              class=""
-              value="ocp-release48"
-            >
-              OpenShift 4.8.15-x86_64
-            </option>
-          </select>
           <span
-            class="pf-v5-c-form-control__utilities"
+            class="pf-v5-c-menu-toggle__text"
+          >
+            OpenShift 4.8.15-x86_64
+          </span>
+          <span
+            class="pf-v5-c-menu-toggle__controls"
           >
             <span
-              class="pf-v5-c-form-control__toggle-icon"
+              class="pf-v5-c-menu-toggle__toggle-icon"
             >
               <svg
                 aria-hidden="true"
@@ -383,7 +394,7 @@ exports[`DetailsForm it renders 1`] = `
               </svg>
             </span>
           </span>
-        </span>
+        </button>
       </div>
     </div>
     <div
