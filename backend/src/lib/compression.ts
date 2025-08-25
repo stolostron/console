@@ -147,8 +147,11 @@ function compressResource(resource: UncompressedResourceType, dictionary: Dictio
       }
       return res
     } else if (typeof resource === 'string') {
-      if ((resource.startsWith('{') && !resource.startsWith('{{')) || resource.startsWith('[')) {
-        // if the resource is a json object, cmpress the inner json
+      if (
+        (resource.length > 128 && resource.startsWith('{') && !resource.startsWith('{{')) ||
+        resource.startsWith('[')
+      ) {
+        // if the resource is a large json string, compress the inner json
         try {
           const innerJson = JSON.parse(resource) as UncompressedResourceType
           return `${JSON_MARKER}${JSON.stringify(compressResource(innerJson, dictionary))}`
