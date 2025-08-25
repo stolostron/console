@@ -1,16 +1,19 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { PageSection } from '@patternfly/react-core'
+import { useState } from 'react'
 import { useParams } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../lib/acm-i18next'
+import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
 import { useQuery } from '../../../../lib/useQuery'
 import { listUsers } from '../../../../resources/rbac'
-import { AcmEmptyState, AcmLoadingPage, AcmButton } from '../../../../ui-components'
-import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
+import { AcmButton, AcmEmptyState, AcmLoadingPage } from '../../../../ui-components'
+import { RoleAssignmentModal } from '../../RoleAssignments/RoleAssignmentModal'
 
 const UserRoleAssignments = () => {
   const { t } = useTranslation()
   const { id = undefined } = useParams()
   const { data: users, loading: usersLoading } = useQuery(listUsers)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   const user = users?.find((user) => user.metadata.name === id || user.metadata.uid === id)
 
@@ -20,32 +23,39 @@ const UserRoleAssignments = () => {
   const isUserLoading = usersLoading && !user
 
   return (
-    <PageSection>
-      {isInitialLoading ? (
-        <AcmLoadingPage />
-      ) : isUserLoading ? (
-        <AcmLoadingPage />
-      ) : !user ? (
-        <div>{t('User not found')}</div>
-      ) : (
-        <AcmEmptyState
-          key="roleAssignmentsEmptyState"
-          title={t('No role assignments')}
-          message={t(
-            'No role assignments have been created for this user yet. Create a role assignment to grant specific permissions.'
-          )}
-          action={
-            <div>
-              <AcmButton variant="primary" onClick={() => {}}>
-                {t('Create role assignment')}
-              </AcmButton>
-              {/* TODO: add correct documentation link */}
-              <ViewDocumentationLink doclink={DOC_LINKS.CLUSTERS} />
-            </div>
-          }
-        />
-      )}
-    </PageSection>
+    <>
+      <PageSection>
+        {isInitialLoading ? (
+          <AcmLoadingPage />
+        ) : isUserLoading ? (
+          <AcmLoadingPage />
+        ) : !user ? (
+          <div>{t('User not found')}</div>
+        ) : (
+          <AcmEmptyState
+            key="roleAssignmentsEmptyState"
+            title={t('No role assignments')}
+            message={t(
+              'No role assignments have been created for this user yet. Create a role assignment to grant specific permissions.'
+            )}
+            action={
+              <div>
+                <AcmButton variant="primary" onClick={() => setIsModalOpen(true)}>
+                  {t('Create role assignment')}
+                </AcmButton>
+                {/* TODO: add correct documentation link */}
+                <ViewDocumentationLink doclink={DOC_LINKS.CLUSTERS} />
+              </div>
+            }
+          />
+        )}
+      </PageSection>
+      <RoleAssignmentModal
+        close={() => setIsModalOpen(false)}
+        onSave={() => setIsModalOpen(false)}
+        isOpen={isModalOpen}
+      />
+    </>
   )
 }
 
