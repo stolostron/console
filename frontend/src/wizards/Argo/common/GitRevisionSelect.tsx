@@ -36,6 +36,7 @@ export const GitRevisionSelect = ({ channels }: GitRevisionSelectProps) => {
       labelHelp={t('Refer to a single commit')}
       placeholder={t('Enter or select a tracking revision')}
       asyncCallback={gitRevisionsAsyncCallback}
+      isCreatable
     />
   )
 }
