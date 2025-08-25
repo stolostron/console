@@ -1,17 +1,28 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { PageSection } from '@patternfly/react-core'
+import { Page, PageSection } from '@patternfly/react-core'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { User } from '../../../../resources/rbac'
 import { useMemo } from 'react'
-import { AcmTable, compareStrings, IAcmTableColumn, AcmEmptyState, AcmLoadingPage } from '../../../../ui-components'
+import {
+  AcmTable,
+  compareStrings,
+  IAcmTableColumn,
+  AcmEmptyState,
+  AcmLoadingPage,
+  AcmButton,
+} from '../../../../ui-components'
 import { cellWidth } from '@patternfly/react-table'
 import AcmTimestamp from '../../../../lib/AcmTimestamp'
-import { getISOStringTimestamp } from '../../../../resources/utils'
+import { getISOStringTimestamp, ResourceError, ResourceErrorCode } from '../../../../resources/utils'
 import { useGroupDetailsContext } from './GroupPage'
+import { ErrorPage } from '../../../../components/ErrorPage'
+import { NavigationPath } from '../../../../NavigationPath'
+import { useNavigate } from 'react-router-dom-v5-compat'
 
 const GroupUsers = () => {
   const { t } = useTranslation()
   const { group, users, loading: groupLoading, usersLoading } = useGroupDetailsContext()
+  const navigate = useNavigate()
 
   const groupUsers = useMemo(() => {
     if (!group || !users) return []
@@ -67,9 +78,20 @@ const GroupUsers = () => {
       )
     case !group:
       return (
-        <PageSection>
-          <div>{t('Group not found')}</div>
-        </PageSection>
+        <Page>
+          <ErrorPage
+            error={new ResourceError(ResourceErrorCode.NotFound)}
+            actions={
+              <AcmButton
+                role="link"
+                onClick={() => navigate(NavigationPath.identitiesGroups)}
+                style={{ marginRight: '10px' }}
+              >
+                {t('button.backToGroups')}
+              </AcmButton>
+            }
+          />
+        </Page>
       )
     default:
       return (

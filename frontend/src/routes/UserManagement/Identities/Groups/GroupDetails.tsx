@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { PageSection, Stack, Text } from '@patternfly/react-core'
+import { Page, PageSection, Stack, Text } from '@patternfly/react-core'
 import {
   DescriptionList,
   DescriptionListTerm,
@@ -7,12 +7,17 @@ import {
   DescriptionListDescription,
 } from '@patternfly/react-core'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { AcmLoadingPage } from '../../../../ui-components'
+import { AcmButton, AcmLoadingPage } from '../../../../ui-components'
 import { useGroupDetailsContext } from './GroupPage'
+import { ErrorPage } from '../../../../components/ErrorPage'
+import { NavigationPath } from '../../../../NavigationPath'
+import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
+import { useNavigate } from 'react-router-dom-v5-compat'
 
 const GroupDetails = () => {
   const { t } = useTranslation()
   const { group, loading } = useGroupDetailsContext()
+  const navigate = useNavigate()
 
   switch (true) {
     case loading:
@@ -23,9 +28,20 @@ const GroupDetails = () => {
       )
     case !group:
       return (
-        <PageSection>
-          <div>{t('Group not found')}</div>
-        </PageSection>
+        <Page>
+          <ErrorPage
+            error={new ResourceError(ResourceErrorCode.NotFound)}
+            actions={
+              <AcmButton
+                role="link"
+                onClick={() => navigate(NavigationPath.identitiesGroups)}
+                style={{ marginRight: '10px' }}
+              >
+                {t('button.backToGroups')}
+              </AcmButton>
+            }
+          />
+        </Page>
       )
     default:
       return (

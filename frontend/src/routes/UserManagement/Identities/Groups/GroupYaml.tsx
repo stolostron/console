@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { PageSection } from '@patternfly/react-core'
+import { Page, PageSection } from '@patternfly/react-core'
 import { useParams } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { useQuery } from '../../../../lib/useQuery'
@@ -7,13 +7,18 @@ import { listGroups } from '../../../../resources/rbac'
 import { useMemo } from 'react'
 import { dump } from 'js-yaml'
 import YamlEditor from '../../../../components/YamlEditor'
-import { AcmLoadingPage } from '../../../../ui-components'
+import { AcmButton, AcmLoadingPage } from '../../../../ui-components'
 import { useYamlEditorHeight } from '../../../../hooks/useYamlEditorHeight'
+import { ErrorPage } from '../../../../components/ErrorPage'
+import { NavigationPath } from '../../../../NavigationPath'
+import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
+import { useNavigate } from 'react-router-dom-v5-compat'
 
 const GroupYaml = () => {
   const { t } = useTranslation()
   const { id = undefined } = useParams()
   const { data: groups, loading } = useQuery(listGroups)
+  const navigate = useNavigate()
 
   const group = useMemo(
     () => (id ? groups?.find((u) => u.metadata.uid === id || u.metadata.name === id) : undefined),
@@ -31,9 +36,20 @@ const GroupYaml = () => {
       )
     case !group:
       return (
-        <PageSection>
-          <div>{t('Group not found')}</div>
-        </PageSection>
+        <Page>
+          <ErrorPage
+            error={new ResourceError(ResourceErrorCode.NotFound)}
+            actions={
+              <AcmButton
+                role="link"
+                onClick={() => navigate(NavigationPath.identitiesGroups)}
+                style={{ marginRight: '10px' }}
+              >
+                {t('button.backToGroups')}
+              </AcmButton>
+            }
+          />
+        </Page>
       )
     default:
       return (
