@@ -12,6 +12,7 @@ import {
   getSourceText,
   parseStringMap,
 } from '../common/util'
+import { LabelMap } from '../../../resources/utils'
 export interface ISourceType {
   type: string //ex: 'Policy' | 'Git' | 'Multiple'
   parentNs: string
@@ -71,7 +72,7 @@ export function useFetchPolicies(policyName?: string, policyKind?: string, apiGr
   const [relatedResources, setRelatedResources] = useState<any[]>()
   const [labelData, setLabelData] = useState<{
     labelOptions: { label: string; value: string }[]
-    labelMap: Record<string, { pairs: Record<string, string>; labels: string[] }>
+    labelMap: LabelMap
   }>()
   const { channelsState, helmReleaseState, subscriptionsState } = useSharedAtoms()
   const helmReleases = useRecoilValue(helmReleaseState)

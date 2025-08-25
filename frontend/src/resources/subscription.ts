@@ -2,6 +2,23 @@
 import { Metadata } from './metadata'
 import { IResource, IResourceDefinition } from './resource'
 
+export interface PackageOverride {
+  packageName?: string
+  packageAlias?: string
+  packageOverrides?: unknown[]
+}
+
+export interface SubscriptionClusterStatus {
+  packages?: Record<
+    string,
+    {
+      phase?: string
+      [key: string]: unknown
+    }
+  >
+  [key: string]: unknown
+}
+
 export const SubscriptionApiVersion = 'apps.open-cluster-management.io/v1'
 export type SubscriptionApiVersionType = 'apps.open-cluster-management.io/v1'
 
@@ -26,7 +43,7 @@ export interface Subscription extends IResource {
         name: string
       }
     }
-    packageOverrides?: any[]
+    packageOverrides?: PackageOverride[]
     packageFilter?: {
       version: string
     }
@@ -36,12 +53,12 @@ export interface Subscription extends IResource {
       daysofweek: string[]
       location: string
       hours: string[]
-      missingData?: any
+      missingData?: unknown
     }
   }
   status?: {
     message?: string
     phase?: string
-    statuses?: any
+    statuses?: Record<string, SubscriptionClusterStatus>
   }
 }

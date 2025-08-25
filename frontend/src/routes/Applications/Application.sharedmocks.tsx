@@ -371,7 +371,10 @@ const mockArgoApplication0: ArgoApplication = {
     },
     syncPolicy: {},
   },
-  status: {},
+  status: {
+    cluster: 'local-cluster',
+    resourceName: 'applicationset-0-local-cluster',
+  },
 }
 export const mockArgoApplication1: ArgoApplication & IUIResource = {
   apiVersion: ArgoApplicationApiVersion,
@@ -393,7 +396,10 @@ export const mockArgoApplication1: ArgoApplication & IUIResource = {
     },
     syncPolicy: {},
   },
-  status: {},
+  status: {
+    cluster: 'local-cluster',
+    resourceName: 'argoapplication-1',
+  },
   uidata: {
     clusterList: ['None'],
     appSetRelatedResources: ['', []],
@@ -422,6 +428,7 @@ export const mockArgoApplication2: ArgoApplication = {
   },
   status: {
     cluster: 'feng-managed',
+    resourceName: 'feng-remote-argo8',
   },
 }
 
@@ -437,6 +444,7 @@ export const mockOCPApplication0: OCPAppResource = {
   namespace: 'authentication-operator-ns',
   status: {
     cluster: 'test-cluster',
+    resourceName: 'authentication-operator',
   },
 }
 

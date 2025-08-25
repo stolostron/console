@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import Ajv from 'ajv'
+import Ajv, { Schema } from 'ajv'
 import stringSimilarity from 'string-similarity'
 import { isEmpty, get, set, keyBy, cloneDeep } from 'lodash'
 import { getPathArray } from './synchronize'
@@ -21,14 +21,14 @@ export interface ErrorMessageType {
 }
 
 //////// compile ajv schemas for validation
-export const compileAjvSchemas = (schema: any[]) => {
+export const compileAjvSchemas = (schema: Schema) => {
   try {
     const ajv = new Ajv({ allErrors: true, verbose: true })
     addAjvKeywords(ajv)
     if (!Array.isArray(schema)) {
       return [{ validator: ajv.compile(schema) }]
     } else {
-      const schemas: any = []
+      const schemas: Schema[] = []
       schema.forEach(({ type, required, schema }) => {
         schemas.push({
           type,

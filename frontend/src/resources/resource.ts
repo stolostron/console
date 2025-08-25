@@ -10,7 +10,7 @@ export interface IResourceDefinition {
   kind: string
 }
 
-export interface IResource<StatusType = any> extends IResourceDefinition {
+export interface IResource<StatusType = unknown> extends IResourceDefinition {
   status?: StatusType
   apiVersion: string
   kind: string
@@ -18,7 +18,7 @@ export interface IResource<StatusType = any> extends IResourceDefinition {
 }
 export interface IUIData {
   clusterList: string[]
-  appSetRelatedResources: any
+  appSetRelatedResources: (string | string[])[]
   appSetApps: string[]
 }
 
