@@ -661,6 +661,9 @@ export async function getGitPathList(
   ) => Promise<unknown>,
   url?: string
 ): Promise<string[]> {
+  if (!branch) {
+    return Promise.resolve([])
+  }
   return getGitPaths(channel?.spec?.pathname || (url as string), branch, {
     secretRef: channel?.spec?.secretRef?.name,
     namespace: channel.metadata?.namespace,
