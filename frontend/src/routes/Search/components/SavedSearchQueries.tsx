@@ -124,7 +124,7 @@ export default function SavedSearchQueries(props: {
     [searchDefinitions, toast, t]
   )
 
-  if (loading) {
+  if (isUserPreferenceLoading || loading) {
     return (
       <PageSection>
         <AcmExpandableWrapper id={'loading-wrapper'} withCount={false} expandable={false}>
