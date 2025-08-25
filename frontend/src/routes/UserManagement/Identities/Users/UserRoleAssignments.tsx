@@ -1,10 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { PageSection } from '@patternfly/react-core'
 import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import multiclusterRoleAssignmentsMockDataJson from '../../../../resources/clients/mock-data/multicluster-role-assignments.json'
 import { MulticlusterRoleAssignment } from '../../../../resources/multicluster-role-assignment'
-import { compareStrings } from '../../../../ui-components'
+import { compareStrings, AcmLoadingPage } from '../../../../ui-components'
 import { RoleAssignments } from '../../RoleAssignment/RoleAssignments'
 import { User } from '../../../../resources'
 
@@ -49,16 +50,28 @@ const UserRoleAssignments = () => {
     [user, multiclusterRoleAssignments]
   )
 
-  return !user ? (
-    // TODO: to improve this empty state
-    <div>{t('User not found')}</div>
-  ) : (
-    <RoleAssignments
-      multiclusterRoleAssignments={userMulticlusterRoleAssignments}
-      isLoading={isLoading}
-      hiddenColumns={['subject']}
-    />
-  )
+  switch (true) {
+    case isLoading:
+      return (
+        <PageSection>
+          <AcmLoadingPage />
+        </PageSection>
+      )
+    case !user:
+      return (
+        <PageSection>
+          <div>{t('User not found')}</div>
+        </PageSection>
+      )
+    default:
+      return (
+        <RoleAssignments
+          multiclusterRoleAssignments={userMulticlusterRoleAssignments}
+          isLoading={isLoading}
+          hiddenColumns={['subject']}
+        />
+      )
+  }
 }
 
 export { UserRoleAssignments }

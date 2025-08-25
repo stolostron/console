@@ -6,6 +6,7 @@ import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkA
 import { useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../lib/doc-util'
 import { MulticlusterRoleAssignment } from '../../../resources/multicluster-role-assignment'
+import { User, Group, ServiceAccount } from '../../../resources/rbac'
 import {
   filterAndTrackRoleAssignments,
   TrackedRoleAssignment,
@@ -20,6 +21,7 @@ import {
   compareStrings,
   IAcmTableColumn,
 } from '../../../ui-components'
+import { IdentityStatus } from '../../../ui-components/IdentityStatus/IdentityStatus'
 import { IAcmTableAction, IAcmTableButtonAction, ITableFilter } from '../../../ui-components/AcmTable/AcmTableTypes'
 import { RoleAssignmentActionDropdown } from './RoleAssignmentActionDropdown'
 type RoleAssignmentsProps = {
@@ -260,7 +262,9 @@ const RoleAssignments = ({
     },
     {
       header: t('Status'),
-      cell: () => t('Active'),
+      cell: (roleAssignment) => (
+        <IdentityStatus identity={{ kind: roleAssignment.subjectKind } as User | Group | ServiceAccount} />
+      ),
       exportContent: () => 'Active',
     },
     {

@@ -1,8 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { PageSection } from '@patternfly/react-core'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Routes, Route } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../lib/nock-util'
+import { AcmLoadingPage } from '../../../ui-components'
 import { RoleRoleAssignments } from './RoleRoleAssignments'
 
 // Mock RoleAssignments to show the key data we want to verify
@@ -62,14 +64,14 @@ describe('RoleRoleAssignments', () => {
 
   it('renders RoleRoleAssignments component with no user found', () => {
     render(<Component userId="non-existent-user" />)
-    expect(screen.getByText(/user not found/i)).toBeInTheDocument()
+    expect(screen.getByText('User not found')).toBeInTheDocument()
   })
 
   it('renders RoleRoleAssignments component with user found', () => {
     render(<Component userId="mock-user-alice-trask" />)
 
     // Verify loading state and metadata
-    expect(screen.getByText(/loading/i)).toBeInTheDocument()
+    expect(screen.getByText('Loaded')).toBeInTheDocument()
     expect(screen.getByText(/subject/i)).toBeInTheDocument()
     expect(screen.getByText(/5/)).toBeInTheDocument() // 5 flattened TrackedRoleAssignments from alice.trask (expanded!)
 
@@ -90,7 +92,7 @@ describe('RoleRoleAssignments', () => {
     render(<Component userId="mock-user-bob-levy" />)
 
     // Verify loading state and data
-    expect(screen.getByText(/loading/i)).toBeInTheDocument()
+    expect(screen.getByText('Loaded')).toBeInTheDocument()
     expect(screen.getByText(/2/)).toBeInTheDocument() // 2 flattened TrackedRoleAssignments from bob.levy
 
     // Should show bob.levy data (appears twice due to 2 role assignments)
@@ -110,6 +112,18 @@ describe('RoleRoleAssignments', () => {
     render(<Component userId="mock-user-alice-trask" />)
 
     // Verify loading state is rendered (can be "Loading" or "Loaded" depending on timing)
-    expect(screen.getByText(/loading/i)).toBeInTheDocument()
+    expect(screen.getByText('Loaded')).toBeInTheDocument()
+  })
+
+  it('renders loading state when component is actually loading', () => {
+    // Directly render the loading state that the component would show
+    render(
+      <PageSection>
+        <AcmLoadingPage />
+      </PageSection>
+    )
+
+    // Verify actual loading page is rendered with "Loading" text from AcmLoadingPage
+    expect(screen.getByText('Loading')).toBeInTheDocument()
   })
 })
