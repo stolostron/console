@@ -21,7 +21,7 @@ describe('edit policy automation', () => {
     it('jobs', () => {
         cy.get('#job').within(() => {
             cy.get('.pf-v5-c-input-group > div').within(() => {
-                cy.contains('Select the ansible job').click()
+                cy.get('[placeholder="Select the ansible job"]').click()
             })
             cy.get('#job1').click()
         })
