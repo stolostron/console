@@ -31,11 +31,11 @@ module.exports = {
       },
     ],
     "@typescript-eslint/no-misused-promises": [
-        "error",
-        {
-          "checksVoidReturn": false
-        }
-      ],
+      "error",
+      {
+        "checksVoidReturn": false
+      }
+    ],
     '@typescript-eslint/no-non-null-asserted-optional-chain': 'off',
     '@typescript-eslint/no-non-null-assertion': 'off',
     '@typescript-eslint/no-restricted-imports': [
@@ -92,6 +92,12 @@ module.exports = {
   overrides: [
     {
       files: ['**/*.test.ts?'],
+      rules: {
+        '@typescript-eslint/no-restricted-imports': 'off',
+      },
+    },
+    {
+      files: ['**/hooks/resource-management/**'],
       rules: {
         '@typescript-eslint/no-restricted-imports': 'off',
       },
