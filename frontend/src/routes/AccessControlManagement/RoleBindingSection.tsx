@@ -70,6 +70,7 @@ export const RoleBindingSection = ({
           {
             id: `${idPrefix}-subject-kind`,
             type: 'Radio',
+            isInline: true,
             label: '',
             value: selectedSubjectKind.toLowerCase(),
             onChange: (value: string) => {

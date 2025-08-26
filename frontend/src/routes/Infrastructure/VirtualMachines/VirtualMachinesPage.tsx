@@ -16,13 +16,13 @@ import {
 import { ExclamationCircleIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { get } from 'lodash'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { useLocation, useNavigate, Outlet, Link } from 'react-router-dom-v5-compat'
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom-v5-compat'
 import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
+import { useCanMigrateVm } from '../../../hooks/use-can-migrate-vm'
 import { useTranslation } from '../../../lib/acm-i18next'
-import { NavigationPath } from '../../../NavigationPath'
-import { RoleAssignments } from '../../UserManagement/Roles/RoleAssignments'
 import { OCP_DOC } from '../../../lib/doc-util'
 import { PluginContext } from '../../../lib/PluginContext'
+import { NavigationPath } from '../../../NavigationPath'
 import { ConfigMap } from '../../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import {
@@ -65,6 +65,7 @@ import {
 import { useSearchDefinitions } from '../../Search/searchDefinitions'
 import { ISearchResult } from '../../Search/SearchResults/utils'
 import { transformBrowserUrlToSearchString, updateBrowserUrl } from '../../Search/urlQuery'
+import { RoleAssignments } from '../../UserManagement/RoleAssignments/RoleAssignments'
 import { useAllClusters } from '../Clusters/ManagedClusters/components/useAllClusters'
 import { ClosedVMActionModalProps, IVMActionModalProps, VMActionModal } from './modals/VMActionModal'
 import {
@@ -72,7 +73,6 @@ import {
   getVirtualMachineRowActionExtensions,
   getVirtualMachineRowActions,
 } from './utils'
-import { useCanMigrateVm } from '../../../hooks/use-can-migrate-vm'
 
 function VirtualMachineTable(
   props: Readonly<{ searchResultItems: ISearchResult[] | undefined; vmMenuVisability: boolean }>
