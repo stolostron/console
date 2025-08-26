@@ -5,7 +5,7 @@ import { Roles } from './Roles'
 import { RoleDetail } from './RoleDetail'
 import { RoleYaml } from './RoleYaml'
 import { RolePermissions } from './RolePermissions'
-import { RoleAssignments } from './RoleAssignments'
+import { RoleRoleAssignments } from './RoleRoleAssignments'
 
 const rolesChildPath = createRoutePathFunction(NavigationPath.roles)
 
@@ -15,7 +15,7 @@ export default function RolesManagement() {
       {/* Role detail routes */}
       <Route path={rolesChildPath(NavigationPath.rolesYaml)} element={<RoleYaml />} />
       <Route path={rolesChildPath(NavigationPath.rolesPermissions)} element={<RolePermissions />} />
-      <Route path={rolesChildPath(NavigationPath.rolesRoleAssignments)} element={<RoleAssignments />} />
+      <Route path={rolesChildPath(NavigationPath.rolesRoleAssignments)} element={<RoleRoleAssignments />} />
       <Route path={rolesChildPath(NavigationPath.rolesDetails)} element={<RoleDetail />} />
 
       {/* Main roles page */}

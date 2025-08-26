@@ -3,32 +3,8 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { nockIgnoreRBAC, nockIgnoreApiPaths, nockList } from '../../../../lib/nock-util'
-import { UserDefinition } from '../../../../resources/rbac'
+import { nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../../lib/nock-util'
 import { UsersTable } from './UsersTable'
-
-const mockUsers = [
-  {
-    apiVersion: 'user.openshift.io/v1',
-    kind: 'User',
-    metadata: {
-      name: 'test-user',
-      creationTimestamp: '2025-01-24T17:48:45Z',
-    },
-    identities: ['htpasswd:test-user'],
-    groups: ['developers'],
-  },
-  {
-    apiVersion: 'user.openshift.io/v1',
-    kind: 'User',
-    metadata: {
-      name: 'system-user',
-      creationTimestamp: '2025-01-24T16:00:00Z',
-    },
-    identities: [],
-    groups: [],
-  },
-]
 
 function Component() {
   return (
@@ -46,14 +22,14 @@ describe('Users Page', () => {
     nockIgnoreApiPaths()
   })
 
-  test('should render users table with all users', async () => {
-    nockList(UserDefinition, mockUsers)
-
+  test('should render users table with mock users', async () => {
+    // No nockList needed since UsersTable uses hardcoded mock data
     render(<Component />)
 
     await waitFor(() => {
-      expect(screen.getByText('test-user')).toBeInTheDocument()
-      expect(screen.getByText('system-user')).toBeInTheDocument()
+      // Check for actual mock users that are rendered by UsersTable
+      expect(screen.getByText('alice.trask')).toBeInTheDocument()
+      expect(screen.getByText('bob.levy')).toBeInTheDocument()
     })
   })
 

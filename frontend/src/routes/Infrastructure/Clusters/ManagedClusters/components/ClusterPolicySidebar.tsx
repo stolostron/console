@@ -101,8 +101,8 @@ function DetailsView(props: {
   const { configMapsState } = useSharedAtoms()
   const configmaps = useRecoilValue(configMapsState)
   const contentMap = configmaps.find((cm) => cm.metadata.name === 'insight-content-data')
-  let policyContentData = contentMap?.data && contentMap?.data[selectedReport?.policy ?? '']
-  policyContentData = policyContentData && JSON.parse(policyContentData)
+  const policyContentData = contentMap?.data && contentMap?.data[selectedReport?.policy ?? '']
+  const policyContentDataParsed = policyContentData && JSON.parse(policyContentData)
   const { t } = useTranslation()
   const [tabState, setTabState] = useState<string | number>(0)
 
@@ -242,12 +242,12 @@ function DetailsView(props: {
       <Tabs activeKey={tabState} onSelect={(_e, tabIndex) => setTabState(tabIndex)} isFilled={true}>
         <Tab eventKey={0} title={<TabTitleText>{t('How to remediate')}</TabTitleText>}>
           <TextContent>
-            <Markdown template={policyContentData?.resolution ?? ''} definitions={getExtraData()} />
+            <Markdown template={policyContentDataParsed?.resolution ?? ''} definitions={getExtraData()} />
           </TextContent>
         </Tab>
         <Tab eventKey={1} title={<TabTitleText>{t('Reason')}</TabTitleText>}>
           <TextContent>
-            <Markdown template={policyContentData?.reason ?? ''} definitions={getExtraData()} />
+            <Markdown template={policyContentDataParsed?.reason ?? ''} definitions={getExtraData()} />
           </TextContent>
         </Tab>
       </Tabs>

@@ -272,7 +272,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     const sortedColumns: IAcmTableColumn<T>[] = []
 
     if (!showColumnManagement) {
-      return columns
+      return columns.filter((e) => !e.isHidden)
     }
 
     // sort column by column management order
@@ -283,9 +283,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       }
     })
 
-    const sortedSelected = sortedColumns.filter((column) => {
-      return selectedColIds.includes(column.id as string)
-    })
+    const sortedSelected = sortedColumns.filter((column) => selectedColIds.includes(column.id as string))
 
     // Btn column is always the last
     const btn = columns.find((col) => col.isActionCol)
@@ -293,7 +291,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       sortedSelected.push(btn)
     }
 
-    return sortedSelected
+    return sortedSelected.filter((e) => !e.isHidden)
   }, [columns, selectedColIds, colOrderIds, showColumnManagement])
 
   useEffect(() => {
@@ -622,11 +620,11 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   const { rows, primaryRows, addedSubRows, addedSubRowCount } = useMemo<{
     rows: IRow[]
     primaryRows: IRow[]
-    addedSubRows: IRow[]
+    addedSubRows: IRow[][]
     addedSubRowCount: number
   }>(() => {
     const newRows: IRow[] = []
-    const newSubRows: IRow[] = []
+    const newSubRows: IRow[][] = []
     const itemToCells = (item: T, key: string) =>
       selectedSortedCols.map((column) => {
         return typeof column.cell === 'string'
@@ -648,7 +646,10 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       if (subRows) {
         subRows.forEach((subRow) => {
           newRows.push({ ...subRow, parent: i + addedSubRowCount })
-          newSubRows[i] = { ...subRow, parent: i + addedSubRowCount }
+          if (!newSubRows[i]) {
+            newSubRows[i] = []
+          }
+          newSubRows[i].push({ ...subRow, parent: i + addedSubRowCount })
         })
         addedSubRowCount += subRows.length
       }
@@ -998,7 +999,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                               },
                             }
                           : undefined
-                        return (
+                        return column.isHidden ? null : (
                           <Th
                             key={column.id}
                             dataLabel={column.header}
@@ -1012,87 +1013,86 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                       })}
                   </Tr>
                 </Thead>
-                {primaryRows.map((row, rowIndex) => {
-                  return (
-                    <Tbody key={`${row.props.key}-tablebody`} isExpanded={row.isOpen}>
-                      <Tr key={`${row.props.key}-tablerow`} ouiaId={row?.props?.key}>
-                        {onCollapse && (
-                          <Td
-                            expand={{
-                              isExpanded: row.isOpen || false,
-                              rowIndex,
-                              onToggle: onCollapse,
-                              expandId: 'expandable-toggle',
-                            }}
-                          />
-                        )}
-                        {hasSelectionColumn && (
-                          <Td
-                            key={`${row.props.key}-select`}
-                            select={{
-                              rowIndex,
-                              onSelect: onSelectCallback(),
-                              isSelected: selected[row.props.key],
-                              isDisabled: row.disableSelection,
-                            }}
-                          />
-                        )}
-                        {row?.cells?.map((cell, cellIndex) => {
-                          // setup row props, including celltransforms
-                          const transforms: ITransform[] | undefined = selectedSortedCols[cellIndex]?.cellTransforms
-                          const iTransformCellProps = transforms
-                            ? mergeProps(
-                                ...transforms.map((transform: ITransform) =>
-                                  transform(row, {
-                                    rowIndex,
-                                  })
-                                )
+                {primaryRows.map((row, rowIndex) => (
+                  <Tbody key={`${row.props.key}-tablebody`} isExpanded={row.isOpen}>
+                    <Tr key={`${row.props.key}-tablerow`} ouiaId={row?.props?.key}>
+                      {onCollapse && addedSubRows[rowIndex] && (
+                        <Td
+                          expand={{
+                            isExpanded: row.isOpen || false,
+                            rowIndex,
+                            onToggle: onCollapse,
+                            expandId: 'expandable-toggle',
+                          }}
+                        />
+                      )}
+                      {hasSelectionColumn && (
+                        <Td
+                          key={`${row.props.key}-select`}
+                          select={{
+                            rowIndex,
+                            onSelect: onSelectCallback(),
+                            isSelected: selected[row.props.key],
+                            isDisabled: row.disableSelection,
+                          }}
+                        />
+                      )}
+                      {row?.cells?.map((cell, cellIndex) => {
+                        // setup row props, including celltransforms
+                        const transforms: ITransform[] | undefined = selectedSortedCols[cellIndex]?.cellTransforms
+                        const iTransformCellProps = transforms
+                          ? mergeProps(
+                              ...transforms.map((transform: ITransform) =>
+                                transform(row, {
+                                  rowIndex,
+                                })
                               )
-                            : []
-                          const isActionKebab = isActionMenu(cellIndex)
-                          const rowProps = {
-                            dataLabel: isActionKebab ? undefined : selectedSortedCols[cellIndex].header,
-                            ...iTransformCellProps,
-                          }
-                          return (
-                            <Td
-                              key={`cell-${row.props.key}-${selectedSortedCols[cellIndex]?.header}`}
-                              {...rowProps}
-                              isActionCell={isActionKebab}
-                            >
-                              {renderCellContent(cell)}
-                            </Td>
-                          )
-                        })}
-                        {(!!actionResolver || actions.length > 0) && (
-                          <Td isActionCell>
-                            {((!!actionResolver && actionResolver?.(row, { rowIndex }).length > 0) ||
-                              actions.length > 0) && (
-                              <ActionsColumn
-                                items={actionResolver ? actionResolver(row, { rowIndex }) : actions}
-                                actionsToggle={actionsToggle}
-                                extraData={{ rowIndex }}
-                                rowData={row}
-                              />
-                            )}
+                            )
+                          : []
+                        const isActionKebab = isActionMenu(cellIndex)
+                        const rowProps = {
+                          dataLabel: isActionKebab ? undefined : selectedSortedCols[cellIndex].header,
+                          ...iTransformCellProps,
+                        }
+                        return (
+                          <Td
+                            key={`cell-${row.props.key}-${selectedSortedCols[cellIndex]?.header}`}
+                            {...rowProps}
+                            isActionCell={isActionKebab}
+                          >
+                            {renderCellContent(cell)}
                           </Td>
-                        )}
-                      </Tr>
-                      {addedSubRowCount > 0 && (
-                        <Tr isExpanded={row.isOpen} key={`${addedSubRows[rowIndex]?.props?.key}-subrow`}>
+                        )
+                      })}
+                      {(!!actionResolver || actions.length > 0) && (
+                        <Td isActionCell>
+                          {((!!actionResolver && actionResolver?.(row, { rowIndex }).length > 0) ||
+                            actions.length > 0) && (
+                            <ActionsColumn
+                              items={actionResolver ? actionResolver(row, { rowIndex }) : actions}
+                              actionsToggle={actionsToggle}
+                              extraData={{ rowIndex }}
+                              rowData={row}
+                            />
+                          )}
+                        </Td>
+                      )}
+                    </Tr>
+                    {addedSubRows[rowIndex] &&
+                      addedSubRows[rowIndex].map((subRow) => (
+                        <Tr isExpanded={row.isOpen} key={`${subRow?.props?.key}-subrow`}>
                           {/* include spacing for expandable and selection columns in subrow */}
                           {onCollapse && <Td />}
                           {hasSelectionColumn && <Td />}
-                          <Td key={addedSubRows[rowIndex]?.props?.key} colSpan={selectedSortedCols.length}>
+                          <Td key={subRow?.props?.key} colSpan={selectedSortedCols.length}>
                             <ExpandableRowContent>
-                              {addedSubRows[rowIndex]?.cells?.map((cell) => renderCellContent(cell))}
+                              {subRow.cells?.map((cell) => renderCellContent(cell))}
                             </ExpandableRowContent>
                           </Td>
                         </Tr>
-                      )}
-                    </Tbody>
-                  )
-                })}
+                      ))}
+                  </Tbody>
+                ))}
               </Table>
             </div>
           </div>

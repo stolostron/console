@@ -51,12 +51,12 @@ function SectionInternal(props: SectionProps) {
         <HasValueContext.Consumer>
           {(hasValue) =>
             hasValue ? (
-              <Fragment>
+              <>
                 <Title headingLevel="h2">{props.label}</Title>
-                <DescriptionList id={id} isHorizontal isCompact style={{ padding: 16 }}>
+                <DescriptionList isHorizontal isCompact style={{ padding: 16 }}>
                   {props.children}
                 </DescriptionList>
-              </Fragment>
+              </>
             ) : (
               <div style={{ display: 'none' }}>{props.children}</div>
             )

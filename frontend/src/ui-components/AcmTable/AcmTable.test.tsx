@@ -940,6 +940,24 @@ describe('AcmTable', () => {
     expect(container.querySelectorAll('.pf-v5-c-chip-group__list-item')).toHaveLength(0)
   })
 
+  test('render table with multiple sub rows', async () => {
+    const { getAllByText } = render(
+      <Table
+        addSubRows={() => {
+          return [
+            {
+              cells: [{ title: 'Sub row 1' }],
+            },
+            {
+              cells: [{ title: 'Sub row 2' }],
+            },
+          ]
+        }}
+      />
+    )
+    expect(getAllByText('Sub row 2').length).toBeGreaterThan(0)
+  })
+
   test('renders with filtering and successfully deletes selected filters', async () => {
     const { container, getAllByText, getByText, getByTestId, getAllByLabelText, getByLabelText } = render(
       <Table
