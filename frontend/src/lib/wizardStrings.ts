@@ -42,6 +42,8 @@ export const useWizardStrings = (
       selected: (count: number) => t('{{count}} selected', { count }),
       selectPageItems: (count: number) => t('Select page ({{count}} items)', { count }),
       selectAllItems: (count: number) => t('Select all ({{count}} items)', { count }),
+      noResults: t('No results found'),
+      createOption: t('Create new option'),
     }),
     [wizardSpecificStrings, t]
   )

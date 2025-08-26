@@ -42,8 +42,7 @@ describe('Create Policy Page', () => {
 
     // step 1 -- name and namespace
     userEvent.type(screen.getByRole('textbox', { name: /name/i }), mockPolicySets[1].metadata.name)
-    screen.getByText('Select the namespace').click()
-    userEvent.type(screen.getByRole('searchbox'), 'test')
+    userEvent.type(screen.getByPlaceholderText('Select the namespace'), 'test')
     screen.getByRole('option', { name: 'test' }).click()
     screen.getByRole('button', { name: 'Next' }).click()
 
@@ -56,10 +55,10 @@ describe('Create Policy Page', () => {
     await waitForText('How do you want to select clusters?')
     screen.getByRole('button', { name: 'New placement' }).click()
     screen.getByRole('button', { name: /action/i }).click()
-    screen.getByText(/select the label/i).click()
+    screen.getByPlaceholderText(/select the label/i).click()
     screen.getByRole('option', { name: /cloud/i }).click()
-    screen.getByText(/select the values/i).click()
-    screen.getByRole('checkbox', { name: /amazon/i }).click()
+    screen.getByPlaceholderText(/select the values/i).click()
+    screen.getByRole('option', { name: /amazon/i }).click()
     screen.getByRole('button', { name: 'Next' }).click()
 
     // step 4 -- Review

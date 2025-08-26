@@ -16,7 +16,7 @@ import { global_Color_light_100 as globalColorLight100 } from '@patternfly/react
  * @param resourceYaml - JSON object of current resource
  * @param fieldPath  - path to field ex: /metadata/labels, /spec/tolerations
  */
-export const findResourceFieldLineNumber = (resourceYaml: any, fieldPath: string) => {
+export const findResourceFieldLineNumber = (resourceYaml: object, fieldPath: string) => {
   const fieldIndentation = (fieldPath.split('/').length - 2) * 2
   const field = fieldPath.split('/')[fieldPath.split('/').length - 1]
   const indentationStr = ''.padStart(fieldIndentation, ' ')

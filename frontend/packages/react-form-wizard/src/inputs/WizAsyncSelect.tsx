@@ -5,21 +5,19 @@ import {
   DescriptionListTerm,
   InputGroup,
   InputGroupItem,
-} from '@patternfly/react-core'
-import {
+  MenuToggleElement,
   Select as PfSelect,
-  SelectOption,
-  SelectOptionObject,
-  SelectProps,
-  SelectVariant,
-} from '@patternfly/react-core/deprecated'
-import { Fragment, ReactNode, useCallback, useEffect, useState } from 'react'
+} from '@patternfly/react-core'
+import { ReactNode, useCallback, useEffect, useState } from 'react'
 import { SpinnerButton } from '../components/SpinnerButton'
 import { SyncButton } from '../components/SyncButton'
 import { DisplayMode } from '../contexts/DisplayModeContext'
+import { useStringContext } from '../contexts/StringContext'
 import { InputCommonProps, getSelectPlaceholder, useInput } from './Input'
-import './Select.css'
+import { InputSelect, SelectListOptions } from './InputSelect'
 import { WizFormGroup } from './WizFormGroup'
+
+import './Select.css'
 
 type WizAsyncSelectProps = InputCommonProps<string> & {
   label: string
@@ -30,39 +28,30 @@ type WizAsyncSelectProps = InputCommonProps<string> & {
 }
 
 export function WizAsyncSelect(props: WizAsyncSelectProps) {
-  const { asyncCallback } = props
+  const { asyncCallback, isCreatable, footer } = props
   const { displayMode, value, setValue, validated, hidden, id, disabled } = useInput(props)
+  const { noResults } = useStringContext()
   const placeholder = getSelectPlaceholder(props)
   const [open, setOpen] = useState(false)
   const [options, setOptions] = useState<string[]>([])
+  const [filteredOptions, setFilteredOptions] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
 
-  const onSelect = useCallback<Required<SelectProps>['onSelect']>(
-    (_, selectedString: string | SelectOptionObject) => {
-      if (typeof selectedString === 'string') {
-        setValue(selectedString)
-        setOpen(false)
-      }
+  const onSelect = useCallback(
+    (selectedString: string | undefined) => {
+      setValue(selectedString)
+      setOpen(false)
     },
     [setValue]
   )
 
-  const onClear = useCallback(() => setValue(''), [setValue])
-
-  const onFilter = useCallback<Required<SelectProps>['onFilter']>(
-    (_, filterValue: string) =>
-      options
-        .filter((option) => {
-          if (typeof option !== 'string') return false
-          return option.includes(filterValue)
-        })
-        .map((option) => (
-          <SelectOption key={option} value={option}>
-            {option}
-          </SelectOption>
-        )),
-    [options]
-  )
+  const handleSetOptions = useCallback((o: string[]) => {
+    if (o.length > 0) {
+      setFilteredOptions(o)
+    } else {
+      setFilteredOptions([noResults])
+    }
+  }, [])
 
   const sync = useCallback(() => {
     if (displayMode !== DisplayMode.Step) return
@@ -74,7 +63,10 @@ export function WizAsyncSelect(props: WizAsyncSelectProps) {
             .then((options) => {
               if (Array.isArray(options) && options.every((option) => typeof option === 'string')) {
                 setOptions(options)
+                setFilteredOptions(options)
               } else {
+                // eslint-disable-next-line no-console
+                console.warn('AsyncSelect: options is not an array of strings')
                 setOptions([])
               }
             })
@@ -89,10 +81,10 @@ export function WizAsyncSelect(props: WizAsyncSelectProps) {
 
   useEffect(() => sync(), [sync])
 
-  if (hidden) return <Fragment />
+  if (hidden) return null
 
   if (displayMode === DisplayMode.Details) {
-    if (!value) return <Fragment />
+    if (!value) return null
     return (
       <DescriptionListGroup>
         <DescriptionListTerm>{props.label}</DescriptionListTerm>
@@ -106,26 +98,29 @@ export function WizAsyncSelect(props: WizAsyncSelectProps) {
       <InputGroup>
         <InputGroupItem isFill>
           <PfSelect
-            isDisabled={disabled || (loading && !props.isCreatable)}
-            variant={SelectVariant.single}
+            onOpenChange={(isOpen) => {
+              !isOpen && setOpen(false)
+            }}
             isOpen={open}
-            onToggle={(_event, val) => setOpen(val)}
-            selections={value}
-            onSelect={onSelect}
-            onClear={props.required ? undefined : onClear}
-            validated={validated}
-            onFilter={onFilter}
-            hasInlineFilter={true}
-            footer={props.footer}
-            placeholderText={placeholder}
-            isCreatable={props.isCreatable}
+            toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+              <InputSelect
+                disabled={disabled || (loading && !isCreatable)}
+                validated={validated}
+                placeholder={placeholder}
+                options={options}
+                setOptions={handleSetOptions}
+                toggleRef={toggleRef}
+                value={value}
+                onSelect={onSelect}
+                open={open}
+                setOpen={setOpen}
+              />
+            )}
+            selected={value}
+            onSelect={(_event, value) => onSelect(value?.toString() ?? '')}
+            shouldFocusFirstItemOnOpen={false}
           >
-            {options.map((option) => (
-              <SelectOption key={option} value={option}>
-                {option}
-              </SelectOption>
-            ))}
-            {/* {props.children} */}
+            <SelectListOptions options={filteredOptions} value={value} isCreatable={isCreatable} footer={footer} />
           </PfSelect>
         </InputGroupItem>
         {props.asyncCallback && loading && <SpinnerButton />}
