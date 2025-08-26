@@ -185,7 +185,7 @@ const RoleAssignments = ({
         label: t('Status'),
         options: statusOptions,
         tableFilterFn: (selectedValues) => {
-          const roleAssignmentStatus = 'Active' // Mock status as Active for all
+          const roleAssignmentStatus = 'Active' // TODO: for now mock status as Active for all
           return selectedValues.includes(roleAssignmentStatus)
         },
       },
@@ -265,7 +265,7 @@ const RoleAssignments = ({
       cell: (roleAssignment) => (
         <IdentityStatus identity={{ kind: roleAssignment.subjectKind } as User | Group | ServiceAccount} />
       ),
-      exportContent: () => 'Active',
+      exportContent: () => 'Active', // TODO: for now mock status as Active for all, replace it by real status as soon as it is ready
     },
     {
       header: t('Created'),
