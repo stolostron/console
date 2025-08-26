@@ -18,5 +18,5 @@ frontend/public/locales/upload
 frontend/public/locales/download
 
 coverage/
-lib/
+frontend/packages/react-form-wizard/lib/
 .nyc_output/
