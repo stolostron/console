@@ -51,7 +51,7 @@ const toRequirements = (selector: Selector = {}): MatchExpression[] => {
   const { matchExpressions } = selector
 
   Object.keys(matchLabels || {})
-    .sort()
+    .sort((a, b) => a.localeCompare(b))
     .forEach((k: string) => {
       requirements.push(createEquals(k, matchLabels[k]))
     })
