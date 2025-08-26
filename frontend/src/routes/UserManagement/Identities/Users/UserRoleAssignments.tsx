@@ -32,9 +32,15 @@ const UserRoleAssignments = () => {
   const users = mockUsers
 
   // TODO: proper loading mechanism once API ready
-  const [isLoading, setIsLoading] = useState<boolean>()
-  useEffect(() => setIsLoading(users === undefined), [users])
-  useEffect(() => setUser(users?.find((user) => user.metadata.uid === id) as User), [id, users])
+  const [isLoading, setIsLoading] = useState<boolean>(true)
+  const [isNotFound, setIsNotFound] = useState<boolean>()
+  useEffect(() => setIsLoading([users, user].includes(undefined)), [users, user])
+  useEffect(() => {
+    const user = users?.find((user) => user.metadata.uid === id) as User
+    setUser(user)
+    setIsNotFound(user === undefined)
+    setIsLoading(false)
+  }, [id, users])
 
   // Use multicluster role assignments mock data
   const multiclusterRoleAssignments = multiclusterRoleAssignmentsMockDataJson as MulticlusterRoleAssignment[]
@@ -61,7 +67,7 @@ const UserRoleAssignments = () => {
           <AcmLoadingPage />
         </PageSection>
       )
-    case !user:
+    case isNotFound:
       return (
         <ErrorPage
           error={new ResourceError(ResourceErrorCode.NotFound)}
