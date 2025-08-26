@@ -21,6 +21,23 @@ const getResourceKey = (kind: string, apigroup?: string): string => {
   return kind
 }
 
+const parseConditionString = (conditionString: string): Array<{ type: string; status: string }> => {
+  if (!conditionString || typeof conditionString !== 'string') {
+    return []
+  }
+  return conditionString
+    .split(';')
+    .filter((condition) => condition.includes('='))
+    .map((condition) => {
+      const [type, status] = condition.split('=')
+      return {
+        type: type?.trim(),
+        status: status?.trim(),
+      }
+    })
+    .filter((condition) => condition.type && condition.status)
+}
+
 /**
  * A React hook that provides fleet-wide search functionality using the ACM search API.
  *
@@ -231,14 +248,59 @@ export function useFleetSearchPoll<T extends K8sResourceCommon | K8sResourceComm
           case 'Namespace':
             setIfDefined(resource, 'status.phase', item.status)
             break
-          case 'Node':
+          case 'Node': {
             setIfDefined(resource, 'status.addresses[0]', item.ipAddress, {
               type: 'InternalIP',
               address: item.ipAddress,
             })
             setIfDefined(resource, 'status.allocatable.memory', item.memoryAllocatable)
             setIfDefined(resource, 'status.capacity.memory', item.memoryCapacity)
+            const conditions: any = []
+            if (item.condition) {
+              const parsedConditions = parseConditionString(item.condition)
+              conditions.push(...parsedConditions)
+            }
+            if (conditions.length) {
+              setIfDefined(resource, 'status.conditions', conditions)
+            }
             break
+          }
+
+          case 'Pod': {
+            const conditions: any = []
+            if (item.condition) {
+              const parsedConditions = parseConditionString(item.condition)
+              conditions.push(...parsedConditions)
+            }
+            if (conditions.length) {
+              setIfDefined(resource, 'status.conditions', conditions)
+            }
+            break
+          }
+
+          case 'Search.search.open-cluster-management.io': {
+            const conditions: any = []
+            if (item.condition) {
+              const parsedConditions = parseConditionString(item.condition)
+              conditions.push(...parsedConditions)
+            }
+            if (conditions.length) {
+              setIfDefined(resource, 'status.conditions', conditions)
+            }
+            break
+          }
+
+          case 'MultiClusterHub.operator.open-cluster-management.io': {
+            const conditions: any = []
+            if (item.condition) {
+              const parsedConditions = parseConditionString(item.condition)
+              conditions.push(...parsedConditions)
+            }
+            if (conditions.length) {
+              setIfDefined(resource, 'status.conditions', conditions)
+            }
+            break
+          }
 
           case 'PersistentVolumeClaim':
             setIfDefined(resource, 'spec.resources.requests.storage', item.requestedStorage)
@@ -267,12 +329,34 @@ export function useFleetSearchPoll<T extends K8sResourceCommon | K8sResourceComm
             setIfDefined(resource, 'spec.template.metadata.annotations["vm.kubevirt.io/flavor"]', item.flavor)
             setIfDefined(resource, 'spec.template.metadata.annotations["vm.kubevirt.io/os"]', item.osName)
             setIfDefined(resource, 'spec.template.metadata.annotations["vm.kubevirt.io/workload"]', item.workload)
+            if (item.dataVolumeNames && Array.isArray(item.dataVolumeNames)) {
+              const volumes = item.dataVolumeNames.map((name: string) => ({
+                dataVolume: { name },
+              }))
+              setIfDefined(resource, 'spec.template.spec.domain.volumes', volumes)
+            }
+
+            if (item.pvcClaimNames && Array.isArray(item.pvcClaimNames)) {
+              const pvcVolumes = item.pvcClaimNames.map((claimName: string) => ({
+                persistentVolumeClaim: { claimName },
+              }))
+              if (resource.spec?.template?.spec?.domain?.volumes) {
+                resource.spec.template.spec.domain.volumes.push(...pvcVolumes)
+              } else {
+                setIfDefined(resource, 'spec.template.spec.domain.volumes', pvcVolumes)
+              }
+            }
             const conditions: any = []
-            setIfDefined(conditions, `[${conditions.length}]`, item.ready, { type: 'Ready', status: item.ready })
-            setIfDefined(conditions, `[${conditions.length}]`, item.agentConnected, {
-              type: 'AgentConnected',
-              status: item.agentConnected,
-            })
+            if (item.condition) {
+              const parsedConditions = parseConditionString(item.condition)
+              conditions.push(...parsedConditions)
+            } else {
+              setIfDefined(conditions, `[${conditions.length}]`, item.ready, { type: 'Ready', status: item.ready })
+              setIfDefined(conditions, `[${conditions.length}]`, item.agentConnected, {
+                type: 'AgentConnected',
+                status: item.agentConnected,
+              })
+            }
             if (conditions.length) {
               setIfDefined(resource, 'status.conditions', conditions)
             }
