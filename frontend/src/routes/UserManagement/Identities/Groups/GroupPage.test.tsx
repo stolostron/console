@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Routes, Route } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../../lib/nock-util'
-import { GroupDetail } from './GroupPage'
+import { GroupPage } from './GroupPage'
 import { User, Group } from '../../../../resources/rbac'
 
 jest.mock('../../../../lib/acm-i18next', () => ({
@@ -51,7 +51,7 @@ function Component({ groupId = 'test-group' }: { groupId?: string }) {
     <RecoilRoot>
       <MemoryRouter initialEntries={[`/groups/${groupId}`]}>
         <Routes>
-          <Route path="/groups/:id" element={<GroupDetail />} />
+          <Route path="/groups/:id" element={<GroupPage />} />
         </Routes>
       </MemoryRouter>
     </RecoilRoot>

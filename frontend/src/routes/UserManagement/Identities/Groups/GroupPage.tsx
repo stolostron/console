@@ -86,7 +86,7 @@ const GroupPage = () => {
               title={group.metadata.name ?? t('Unknown Group')}
               description={group.metadata.name}
               breadcrumb={[
-                { text: t('User Management'), to: NavigationPath.roles },
+                { text: t('User Management'), to: NavigationPath.identitiesGroups },
                 { text: t('Identities'), to: NavigationPath.identities },
                 { text: t('Groups'), to: NavigationPath.identitiesGroups },
                 { text: group.metadata.name ?? t('Unknown Group') },
@@ -120,7 +120,7 @@ const GroupPage = () => {
   }
 }
 
-export { GroupPage as GroupDetail }
+export { GroupPage }
 
 export function useGroupDetailsContext() {
   return useOutletContext<GroupDetailsContext>()
