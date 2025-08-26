@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { getBackendUrl } from '../internal/apiRequests'
-import { BASE_K8S_API_PATH, MANAGED_CLUSTER_API_PATH } from '../internal/constants'
+import { BACKEND_URL, BASE_K8S_API_PATH, MANAGED_CLUSTER_API_PATH } from '../internal/constants'
 import { useHubConfigurationItem } from '../internal/useHubConfigurationItem'
 
 /**
@@ -18,5 +17,5 @@ export function useFleetK8sAPIPath(
 
   if (!cluster || cluster === hubClusterName) return [BASE_K8S_API_PATH, true, undefined]
 
-  return [`${getBackendUrl()}/${MANAGED_CLUSTER_API_PATH}/${cluster}`, loaded, error]
+  return [`${BACKEND_URL}/${MANAGED_CLUSTER_API_PATH}/${cluster}`, loaded, error]
 }

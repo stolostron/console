@@ -5,7 +5,7 @@ import { FC, useEffect, useRef, useState } from 'react'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { useTranslation } from 'react-i18next'
 import { ResourceEventStream } from '@openshift-console/dynamic-plugin-sdk'
-import { FleetK8sResourceCommon, FleetResourceEventStreamProps } from '../types'
+import { FleetResourceEventStreamProps } from '../types'
 
 import * as _ from 'lodash'
 import { useFleetK8sAPIPath, useHubClusterName } from '../api'

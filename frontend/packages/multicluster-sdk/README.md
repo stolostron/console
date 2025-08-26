@@ -410,7 +410,7 @@ Returns:
 
 The k8s API path for the fleet.
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/getFleetK8sAPIPath.ts#L14)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/getFleetK8sAPIPath.ts#L13)
 
 ### :gear: useFleetAccessReview
 
@@ -515,7 +515,7 @@ Returns:
 
 Array with `k8sAPIPath`, `loaded` and `error` values.
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetK8sAPIPath.ts#L12)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetK8sAPIPath.ts#L11)
 
 ### :gear: useFleetK8sWatchResource
 
@@ -568,9 +568,9 @@ const [deployment, loaded, error] = useFleetK8sWatchResource({
 
 | Function | Type |
 | ---------- | ---------- |
-| `useFleetPrometheusPoll` | `(props: PrometheusPollProps and { cluster?: string or undefined; } and { allClusters?: boolean or undefined; }) => [PrometheusResponse or null, unknown, boolean]` |
+| `useFleetPrometheusPoll` | `(props: PrometheusPollProps and { cluster?: string or undefined; } and { allClusters?: boolean or undefined; }) => [response: PrometheusResponse or undefined, loaded: boolean, error: unknown]` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetPrometheusPoll.ts#L10)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetPrometheusPoll.ts#L9)
 
 ### :gear: useFleetSearchPoll
 
@@ -678,7 +678,7 @@ Hook that provides is observability installed.
 
 | Function | Type |
 | ---------- | ---------- |
-| `useIsFleetObservabilityInstalled` | `() => [isObservabilityInstalled: boolean or undefined, loaded: boolean, error: any]` |
+| `useIsFleetObservabilityInstalled` | `() => [isObservabilityInstalled: boolean or undefined, loaded: boolean, error: unknown]` |
 
 Returns:
 
@@ -690,6 +690,7 @@ Array with `isObservabilityInstalled`, `loaded` and `error` values.
 ## :wrench: Constants
 
 - [REQUIRED_PROVIDER_FLAG](#gear-required_provider_flag)
+- [RESOURCE_ROUTE_TYPE](#gear-resource_route_type)
 
 ### :gear: REQUIRED_PROVIDER_FLAG
 
@@ -698,6 +699,14 @@ Array with `isObservabilityInstalled`, `loaded` and `error` values.
 | `REQUIRED_PROVIDER_FLAG` | `"MULTICLUSTER_SDK_PROVIDER_1"` |
 
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/constants.ts#L2)
+
+### :gear: RESOURCE_ROUTE_TYPE
+
+| Constant | Type |
+| ---------- | ---------- |
+| `RESOURCE_ROUTE_TYPE` | `"acm.resource/route"` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/constants.ts#L3)
 
 
 
