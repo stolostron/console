@@ -3,7 +3,7 @@ import { MatchExpression, MatchLabels, Selector } from '@openshift-console/dynam
 
 const toArray = (value: any) => (Array.isArray(value) ? value : [value])
 
-export const requirementToString = (requirement: MatchExpression): string => {
+const requirementToString = (requirement: MatchExpression): string => {
   if (requirement.operator === 'Equals') {
     return `${requirement.key}=${requirement.values?.[0]}`
   }
@@ -39,13 +39,13 @@ export const requirementToString = (requirement: MatchExpression): string => {
   return ''
 }
 
-export const createEquals = (key: string, value: string): MatchExpression => ({
+const createEquals = (key: string, value: string): MatchExpression => ({
   key,
   operator: 'Equals',
   values: [value],
 })
 
-export const toRequirements = (selector: Selector = {}): MatchExpression[] => {
+const toRequirements = (selector: Selector = {}): MatchExpression[] => {
   const requirements: MatchExpression[] = []
   const matchLabels: MatchLabels = selector.matchLabels || {}
   const { matchExpressions } = selector

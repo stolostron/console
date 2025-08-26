@@ -12,7 +12,7 @@ import {
   getCacheKey,
   handleWebsocketEvent,
 } from '../internal/fleetK8sWatchResource'
-import { selectorToString } from './utils/requirements'
+import { selectorToString } from '../internal/requirements'
 import { useDeepCompareMemoize } from '../internal/hooks/useDeepCompareMemoize'
 
 /**
