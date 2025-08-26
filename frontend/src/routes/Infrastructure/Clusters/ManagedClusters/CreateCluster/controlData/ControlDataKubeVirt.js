@@ -57,7 +57,7 @@ const filterOCPImages = (loadOCPImages, hypershiftSupportedVersions) => {
     query: async () => {
       const images = await originalResult.query()
       return images.filter((image) =>
-        hypershiftSupportedVersions.some((supportedVersion) => image.spec.releaseImage.includes(supportedVersion))
+        hypershiftSupportedVersions.some((supportedVersion) => image.spec.releaseImage.startWith(supportedVersion))
       )
     },
   }
