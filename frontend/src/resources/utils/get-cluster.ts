@@ -168,7 +168,6 @@ export const getClusterStatusType = (clusterStatus: ClusterStatus): StatusType =
     case ClusterStatus.unreachable:
     case ClusterStatus.unknown:
       return StatusType.unknown
-      return StatusType.warning
     case ClusterStatus.draft:
       return StatusType.draft
     case ClusterStatus.pending:

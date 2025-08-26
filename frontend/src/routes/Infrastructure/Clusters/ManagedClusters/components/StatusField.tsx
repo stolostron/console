@@ -190,30 +190,18 @@ export function StatusField(props: { cluster: Cluster }) {
     case ClusterStatus.unreachable:
       hasAction = true
       Action = () => (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <Link
-            to="#"
-            onClick={(e) => {
-              e.preventDefault()
-              window.open(DOC_LINKS.TROUBLESHOOTING_CLUSTER_IMPORT_FAILURE, '_blank')
-            }}
-          >
-            {t('How do I troubleshoot a cluster import failure?')}
-          </Link>
-          <Link
-            to="#"
-            onClick={(e) => {
-              e.preventDefault()
-              window.open(DOC_LINKS.MANAGED_NETWORK_CONFIG, '_blank')
-            }}
-          >
-            {t('How do I configure the managed network?')}
-          </Link>
-        </div>
+        <>
+          {addDocsActions([
+            {
+              title: t('How do I troubleshoot a cluster import failure?'),
+              link: DOC_LINKS.TROUBLESHOOTING_CLUSTER_IMPORT_FAILURE,
+            },
+            { title: t('How do I configure the managed network?'), link: DOC_LINKS.MANAGED_NETWORK_CONFIG },
+          ])}
+        </>
       )
       break
   }
-
   /*
         t('status.creating.message')
         t('status.degraded.message')
@@ -242,6 +230,7 @@ export function StatusField(props: { cluster: Cluster }) {
         t('status.running.message')
         t('status.stopping.message')
         t('status.unknown.message')
+        t('status.unreachable.message')
         t('status.upgradefailed.message')
     */
 
@@ -263,4 +252,23 @@ export function StatusField(props: { cluster: Cluster }) {
       }}
     />
   )
+
+  function addDocsActions(docs: { title: string; link: string }[]) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        {docs.map((doc) => (
+          <Link
+            to="#"
+            key={doc.title}
+            onClick={(e) => {
+              e.preventDefault()
+              window.open(doc.link, '_blank')
+            }}
+          >
+            {doc.title}
+          </Link>
+        ))}
+      </div>
+    )
+  }
 }
