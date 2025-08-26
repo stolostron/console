@@ -2,15 +2,15 @@
 import { PageSection } from '@patternfly/react-core'
 import { useEffect, useMemo, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom-v5-compat'
-import { ErrorPage } from '../../../../components/ErrorPage'
-import { useTranslation } from '../../../../lib/acm-i18next'
-import { NavigationPath } from '../../../../NavigationPath'
-import multiclusterRoleAssignmentsMockDataJson from '../../../../resources/clients/mock-data/multicluster-role-assignments.json'
-import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
-import { MulticlusterRoleAssignment } from '../../../../resources/multicluster-role-assignment'
-import { compareStrings, AcmLoadingPage, AcmButton } from '../../../../ui-components'
-import { RoleAssignments } from '../../RoleAssignment/RoleAssignments'
-import { User } from '../../../../resources'
+import { ErrorPage } from '../../../components/ErrorPage'
+import { useTranslation } from '../../../lib/acm-i18next'
+import { NavigationPath } from '../../../NavigationPath'
+import { User } from '../../../resources'
+import multiclusterRoleAssignmentsMockDataJson from '../../../resources/clients/mock-data/multicluster-role-assignments.json'
+import { ResourceError, ResourceErrorCode } from '../../../resources/utils'
+import { MulticlusterRoleAssignment } from '../../../resources/multicluster-role-assignment'
+import { compareStrings, AcmLoadingPage, AcmButton } from '../../../ui-components'
+import { RoleAssignments } from '../RoleAssignment/RoleAssignments'
 
 // TODO: to remove once API ready
 // Mock users data to match the role assignments
@@ -22,25 +22,19 @@ const mockUsers = [
   { metadata: { name: 'david.brown', uid: 'mock-user-david-brown' } },
 ]
 
-const UserRoleAssignments = () => {
+// TODO: do it for Roles
+const RoleRoleAssignments = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { id = undefined } = useParams()
+  const [isLoading, setIsLoading] = useState<boolean>()
   const [user, setUser] = useState<User>()
 
   // Use mock data only
   const users = mockUsers
 
-  // TODO: proper loading mechanism once API ready
-  const [isLoading, setIsLoading] = useState<boolean>(true)
-  const [isNotFound, setIsNotFound] = useState<boolean>()
-  useEffect(() => setIsLoading([users, user].includes(undefined)), [users, user])
-  useEffect(() => {
-    const user = users?.find((user) => user.metadata.uid === id) as User
-    setUser(user)
-    setIsNotFound(user === undefined)
-    setIsLoading(false)
-  }, [id, users])
+  useEffect(() => setIsLoading(users === undefined), [users])
+  useEffect(() => setUser(users?.find((user) => user.metadata.uid === id) as User), [id, users])
 
   // Use multicluster role assignments mock data
   const multiclusterRoleAssignments = multiclusterRoleAssignmentsMockDataJson as MulticlusterRoleAssignment[]
@@ -67,13 +61,13 @@ const UserRoleAssignments = () => {
           <AcmLoadingPage />
         </PageSection>
       )
-    case isNotFound:
+    case !user:
       return (
         <ErrorPage
           error={new ResourceError(ResourceErrorCode.NotFound)}
           actions={
             <AcmButton role="link" onClick={() => navigate(NavigationPath.identitiesUsers)}>
-              {t('button.backToUsers')}
+              {t('button.backToRoles')}
             </AcmButton>
           }
         />
@@ -89,4 +83,4 @@ const UserRoleAssignments = () => {
   }
 }
 
-export { UserRoleAssignments }
+export { RoleRoleAssignments }

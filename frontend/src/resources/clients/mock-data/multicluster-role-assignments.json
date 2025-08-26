@@ -18,13 +18,117 @@
       "roleAssignments": [
         {
           "clusterRole": "kubevirt.io:admin",
-          "targetNamespaces": ["kubevirt-production", "vm-workloads"],
-          "clusterSets": ["production-cluster"]
+          "targetNamespaces": [
+            "kubevirt-production",
+            "vm-workloads",
+            "vm-storage",
+            "vm-networking",
+            "vm-compute",
+            "vm-backup",
+            "vm-monitoring",
+            "vm-logging",
+            "vm-security",
+            "vm-analytics"
+          ],
+          "clusterSets": [
+            "production-cluster",
+            "production-east",
+            "production-west",
+            "production-central",
+            "production-backup",
+            "production-dr",
+            "production-monitoring"
+          ]
         },
         {
           "clusterRole": "kubevirt.io:admin",
-          "targetNamespaces": ["kubevirt-staging", "vm-workloads"],
-          "clusterSets": ["staging-cluster"]
+          "targetNamespaces": [
+            "kubevirt-staging",
+            "vm-workloads",
+            "vm-testing",
+            "vm-preview",
+            "vm-validation",
+            "vm-integration",
+            "vm-qa",
+            "vm-perf"
+          ],
+          "clusterSets": [
+            "staging-cluster",
+            "staging-east",
+            "staging-west",
+            "staging-testing",
+            "staging-preview",
+            "staging-integration"
+          ]
+        },
+        {
+          "clusterRole": "cluster-admin",
+          "targetNamespaces": [
+            "openshift-console",
+            "openshift-console-operator",
+            "openshift-console-user-settings",
+            "openshift-web-console",
+            "console-system",
+            "console-monitoring",
+            "console-storage",
+            "console-networking",
+            "console-security"
+          ],
+          "clusterSets": [
+            "production-cluster",
+            "production-east",
+            "production-west",
+            "production-central",
+            "staging-cluster",
+            "staging-east",
+            "development-cluster",
+            "testing-cluster"
+          ]
+        },
+        {
+          "clusterRole": "kubevirt.io:edit",
+          "targetNamespaces": [
+            "kubevirt-dev",
+            "vm-dev",
+            "vm-experimental",
+            "vm-research",
+            "vm-sandbox",
+            "vm-prototype",
+            "vm-beta"
+          ],
+          "clusterSets": [
+            "development-cluster",
+            "dev-east",
+            "dev-west",
+            "experimental-cluster",
+            "research-cluster",
+            "sandbox-cluster"
+          ]
+        },
+        {
+          "clusterRole": "storage-admin",
+          "targetNamespaces": [
+            "openshift-storage",
+            "ceph-storage",
+            "local-storage",
+            "nfs-storage",
+            "csi-storage",
+            "backup-storage",
+            "archive-storage",
+            "disaster-recovery",
+            "storage-monitoring",
+            "storage-analytics"
+          ],
+          "clusterSets": [
+            "production-cluster",
+            "production-east",
+            "production-west",
+            "staging-cluster",
+            "development-cluster",
+            "storage-primary",
+            "storage-backup",
+            "storage-archive"
+          ]
         }
       ]
     }
@@ -300,31 +404,6 @@
           "clusterRole": "kubevirt.io:view",
           "targetNamespaces": ["kubevirt-staging"],
           "clusterSets": ["staging-cluster"]
-        }
-      ]
-    }
-  },
-  {
-    "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
-    "kind": "MulticlusterRoleAssignment",
-    "metadata": {
-      "name": "david-brown-role-assignment-console",
-      "namespace": "open-cluster-management-global-set",
-      "uid": "8d1f4a7c-3e6b-4d8f-1a7c-3b6e8d1f4a7c",
-      "labels": {
-        "console-created": "true"
-      }
-    },
-    "spec": {
-      "subject": {
-        "kind": "User",
-        "name": "david.brown"
-      },
-      "roleAssignments": [
-        {
-          "clusterRole": "kubevirt.io:view",
-          "targetNamespaces": ["kubevirt-analytics", "data-processing", "reporting", "dashboards", "metrics"],
-          "clusterSets": ["analytics-cluster"]
         }
       ]
     }
