@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { useFleetK8sWatchResource } from '@stolostron/multicluster-sdk/lib/api/useFleetK8sWatchResource'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'
@@ -14,9 +15,16 @@ jest.mock('../../../components/YamlEditor', () => {
   }
 })
 
+jest.mock('@stolostron/multicluster-sdk/lib/api/useFleetK8sWatchResource', () => ({
+  useFleetK8sWatchResource: jest.fn(),
+}))
+
 beforeEach(async () => {
   nockIgnoreRBAC()
   nockIgnoreApiPaths()
+
+  // Reset mocks
+  ;(useFleetK8sWatchResource as jest.Mock).mockReturnValue([null, false, null])
 })
 
 describe('YAMLPage', () => {
@@ -63,6 +71,8 @@ describe('YAMLPage', () => {
             setResourceYaml={() => {}}
             handleResize={() => {}}
             setResourceVersion={() => {}}
+            stale={false}
+            setStale={() => {}}
           />
         </MemoryRouter>
       </RecoilRoot>
@@ -157,6 +167,7 @@ describe('YAMLPage', () => {
       },
       resourceLoading: false,
       resourceError: '',
+      isHubClusterResource: true,
       name: 'test-pod',
       namespace: 'test-namespace',
       cluster: 'local-cluster',
@@ -201,6 +212,7 @@ describe('YAMLPage', () => {
       },
       resourceLoading: false,
       resourceError: '',
+      isHubClusterResource: true,
       name: 'test-pod',
       namespace: 'test-namespace',
       cluster: 'local-cluster',
@@ -226,5 +238,96 @@ describe('YAMLPage', () => {
     const downloadBtn = screen.getByText('Download')
     await waitFor(() => expect(downloadBtn).toBeTruthy())
     userEvent.click(downloadBtn)
+  })
+
+  it('Detects stale resource when watch returns updated resource', async () => {
+    // Mock watch hook to return updated resource
+    ;(useFleetK8sWatchResource as jest.Mock).mockReturnValue([
+      { metadata: { resourceVersion: '12346' } }, // Updated resource version
+      true, // watchLoaded
+      null, // watchError
+    ])
+
+    const context: Partial<SearchDetailsContext> = {
+      resource: {
+        kind: 'Pod',
+        apiVersion: 'v1',
+        metadata: {
+          name: 'test-pod',
+          namespace: 'test-namespace',
+          resourceVersion: '12345', // Original resource version
+        },
+      },
+      resourceLoading: false,
+      resourceError: '',
+      isHubClusterResource: true,
+      name: 'test-pod',
+      namespace: 'test-namespace',
+      cluster: 'local-cluster',
+      kind: 'Pod',
+      apiversion: 'v1',
+      setResourceVersion: () => {},
+    }
+
+    render(
+      <RecoilRoot>
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<YAMLPage />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    // Test that stale alert appears when resource versions differ
+    await waitFor(() => expect(screen.queryByText('This object has been updated.')).toBeTruthy())
+    await waitFor(() => expect(screen.queryByText('Click reload to see the new version.')).toBeTruthy())
+  })
+
+  it('Does not show stale alert when watch has error', async () => {
+    // Mock watch hook to return error
+    ;(useFleetK8sWatchResource as jest.Mock).mockReturnValue([
+      null,
+      true, // watchLoaded
+      'Watch error occurred', // watchError
+    ])
+
+    const context: Partial<SearchDetailsContext> = {
+      resource: {
+        kind: 'Pod',
+        apiVersion: 'v1',
+        metadata: {
+          name: 'test-pod',
+          namespace: 'test-namespace',
+          resourceVersion: '12345',
+        },
+      },
+      resourceLoading: false,
+      resourceError: '',
+      isHubClusterResource: true,
+      name: 'test-pod',
+      namespace: 'test-namespace',
+      cluster: 'local-cluster',
+      kind: 'Pod',
+      apiversion: 'v1',
+      setResourceVersion: () => {},
+    }
+
+    render(
+      <RecoilRoot>
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<YAMLPage />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    // Test that stale alert does not appear when there's a watch error
+    expect(screen.queryByText('This object has been updated.')).toBeFalsy()
   })
 })
