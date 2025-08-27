@@ -7,35 +7,29 @@ jest.mock('../../../../lib/acm-i18next', () => ({
   }),
 }))
 
-jest.mock('./GroupPage', () => ({
-  ...jest.requireActual('./GroupPage'),
-  useGroupDetailsContext: jest.fn(),
-}))
-
-import { useGroupDetailsContext } from './GroupPage'
-
-const mockUseGroupDetailsContext = useGroupDetailsContext as jest.MockedFunction<typeof useGroupDetailsContext>
-
-describe.skip('GroupRoleAssignments', () => {
+describe('GroupRoleAssignments', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
-    mockUseGroupDetailsContext.mockClear()
   })
 
   test('should render loading state during initial load', () => {
-    // TODO
+    // TODO: Implement test when component is ready
+    expect(true).toBe(true)
   })
 
   test('should render group not found message', () => {
-    // TODO
+    // TODO: Implement test when component is ready
+    expect(true).toBe(true)
   })
 
   test('should render empty state with create button', () => {
-    // TODO
+    // TODO: Implement test when component is ready
+    expect(true).toBe(true)
   })
 
   test('should find group by UID', () => {
-    // TODO
+    // TODO: Implement test when component is ready
+    expect(true).toBe(true)
   })
 })

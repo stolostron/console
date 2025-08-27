@@ -1,52 +1,87 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { PageSection } from '@patternfly/react-core'
-import { useParams } from 'react-router-dom-v5-compat'
+import { useEffect, useMemo, useState } from 'react'
+import { useParams, useNavigate } from 'react-router-dom-v5-compat'
+import { ErrorPage } from '../../../../components/ErrorPage'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { useQuery } from '../../../../lib/useQuery'
-import { listGroups } from '../../../../resources/rbac'
-import { AcmEmptyState, AcmLoadingPage, AcmButton } from '../../../../ui-components'
-import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
+import { NavigationPath } from '../../../../NavigationPath'
+import multiclusterRoleAssignmentsMockDataJson from '../../../../resources/clients/mock-data/multicluster-role-assignments.json'
+import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
+import { MulticlusterRoleAssignment } from '../../../../resources/multicluster-role-assignment'
+import { compareStrings, AcmLoadingPage, AcmButton } from '../../../../ui-components'
+import { RoleAssignments } from '../../RoleAssignment/RoleAssignments'
+import { Group } from '../../../../resources'
+
+const mockGroups = [
+  { metadata: { name: 'kubevirt-admins', uid: 'mock-group-kubevirt-admins' } },
+  { metadata: { name: 'developers', uid: 'mock-group-developers' } },
+  { metadata: { name: 'sre-team', uid: 'mock-group-sre-team' } },
+  { metadata: { name: 'security-auditors', uid: 'mock-group-security-auditors' } },
+  { metadata: { name: 'storage-team', uid: 'mock-group-storage-team' } },
+]
 
 const GroupRoleAssignments = () => {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const { id = undefined } = useParams()
-  const { data: groups, loading: groupsLoading } = useQuery(listGroups)
+  const [group, setGroup] = useState<Group>()
 
-  const group = groups?.find((group) => group.metadata.name === id || group.metadata.uid === id)
+  const groups = mockGroups
+  console.log(groups, 'groups')
+  // TODO: proper loading mechanism once API ready
+  const [isLoading, setIsLoading] = useState<boolean>(true)
+  const [isNotFound, setIsNotFound] = useState<boolean>()
+  useEffect(() => setIsLoading([groups, group].includes(undefined)), [groups, group])
+  useEffect(() => {
+    const group = groups?.find((group) => group.metadata.name === id || group.metadata.uid === id) as Group
+    setGroup(group)
+    setIsNotFound(group === undefined)
+    setIsLoading(false)
+  }, [id, groups])
 
-  // Show loading spinner only when users are loading, otherwise show partial data
-  const isInitialLoading = groupsLoading
+  const multiclusterRoleAssignments = multiclusterRoleAssignmentsMockDataJson as MulticlusterRoleAssignment[]
 
-  const isGroupLoading = groupsLoading && !group
+  const groupMulticlusterRoleAssignments = useMemo(
+    () =>
+      !group || !multiclusterRoleAssignments
+        ? []
+        : multiclusterRoleAssignments
+            .filter(
+              (multiclusterRoleAssignment) =>
+                multiclusterRoleAssignment.spec.subject.kind === 'Group' &&
+                multiclusterRoleAssignment.spec.subject.name === group.metadata.name
+            )
+            .sort((a, b) => compareStrings(a.metadata?.name ?? '', b.metadata?.name ?? '')),
+    [group, multiclusterRoleAssignments]
+  )
 
-  return (
-    <PageSection>
-      {isInitialLoading ? (
-        <AcmLoadingPage />
-      ) : isGroupLoading ? (
-        <AcmLoadingPage />
-      ) : !group ? (
-        <div>{t('Group not found')}</div>
-      ) : (
-        <AcmEmptyState
-          key="roleAssignmentsEmptyState"
-          title={t('No role assignments')}
-          message={t(
-            'No role assignments have been created for this group yet. Create a role assignment to grant specific permissions.'
-          )}
-          action={
-            <div>
-              <AcmButton variant="primary" onClick={() => {}}>
-                {t('Create role assignment')}
-              </AcmButton>
-              {/* TODO: add correct documentation link */}
-              <ViewDocumentationLink doclink={DOC_LINKS.CLUSTERS} />
-            </div>
+  switch (true) {
+    case isLoading:
+      return (
+        <PageSection>
+          <AcmLoadingPage />
+        </PageSection>
+      )
+    case isNotFound:
+      return (
+        <ErrorPage
+          error={new ResourceError(ResourceErrorCode.NotFound)}
+          actions={
+            <AcmButton role="link" onClick={() => navigate(NavigationPath.identitiesGroups)}>
+              {t('button.backToGroups')}
+            </AcmButton>
           }
         />
-      )}
-    </PageSection>
-  )
+      )
+    default:
+      return (
+        <RoleAssignments
+          multiclusterRoleAssignments={groupMulticlusterRoleAssignments}
+          isLoading={isLoading}
+          hiddenColumns={['subject']}
+        />
+      )
+  }
 }
 
 export { GroupRoleAssignments }

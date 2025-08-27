@@ -107,13 +107,55 @@ const UserPage = () => {
   const users = mockUsers
   const loading = false as boolean
   // Mock groups data - some users belong to groups, others don't
+  // const mockGroups: Group[] = [
+  //   {
+  //     apiVersion: 'user.openshift.io/v1',
+  //     kind: 'Group',
+  //     metadata: {
+  //       name: 'platform-admins',
+  //       uid: 'mock-group-platform-admins',
+  //       creationTimestamp: '2024-01-10T09:00:00Z',
+  //     },
+  //     users: ['alice.trask', 'sarah.jones'],
+  //   },
+  //   {
+  //     apiVersion: 'user.openshift.io/v1',
+  //     kind: 'Group',
+  //     metadata: {
+  //       name: 'developers',
+  //       uid: 'mock-group-developers',
+  //       creationTimestamp: '2024-01-11T10:30:00Z',
+  //     },
+  //     users: ['bob.levy', 'charlie.cranston'],
+  //   },
+  //   {
+  //     apiVersion: 'user.openshift.io/v1',
+  //     kind: 'Group',
+  //     metadata: {
+  //       name: 'security-team',
+  //       uid: 'mock-group-security-team',
+  //       creationTimestamp: '2024-01-12T14:15:00Z',
+  //     },
+  //     users: ['alice.trask'],
+  //   },
+  //   {
+  //     apiVersion: 'user.openshift.io/v1',
+  //     kind: 'Group',
+  //     metadata: {
+  //       name: 'qa-engineers',
+  //       uid: 'mock-group-qa-engineers',
+  //       creationTimestamp: '2024-01-13T11:45:00Z',
+  //     },
+  //     users: ['charlie.cranston'],
+  //   },
+  // ]
   const mockGroups: Group[] = [
     {
       apiVersion: 'user.openshift.io/v1',
       kind: 'Group',
       metadata: {
-        name: 'platform-admins',
-        uid: 'mock-group-platform-admins',
+        name: 'kubevirt-admins',
+        uid: 'mock-group-kubevirt-admins',
         creationTimestamp: '2024-01-10T09:00:00Z',
       },
       users: ['alice.trask', 'sarah.jones'],
@@ -132,8 +174,8 @@ const UserPage = () => {
       apiVersion: 'user.openshift.io/v1',
       kind: 'Group',
       metadata: {
-        name: 'security-team',
-        uid: 'mock-group-security-team',
+        name: 'sre-team',
+        uid: 'mock-group-sre-team',
         creationTimestamp: '2024-01-12T14:15:00Z',
       },
       users: ['alice.trask'],
@@ -142,14 +184,23 @@ const UserPage = () => {
       apiVersion: 'user.openshift.io/v1',
       kind: 'Group',
       metadata: {
-        name: 'qa-engineers',
-        uid: 'mock-group-qa-engineers',
+        name: 'security-auditors',
+        uid: 'mock-group-security-auditors',
         creationTimestamp: '2024-01-13T11:45:00Z',
       },
       users: ['charlie.cranston'],
     },
+    {
+      apiVersion: 'user.openshift.io/v1',
+      kind: 'Group',
+      metadata: {
+        name: 'storage-team',
+        uid: 'mock-group-storage-team',
+        creationTimestamp: '2024-01-14T12:00:00Z',
+      },
+      users: ['sarah.jones'],
+    },
   ]
-
   // const { data: groups, loading: groupsLoading } = useQuery(listGroups)
   const groups = mockGroups
   const groupsLoading = false as boolean
