@@ -3,10 +3,12 @@ import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { Subject } from '../kubernetes-client'
 import { MulticlusterRoleAssignment, RoleAssignment } from '../multicluster-role-assignment'
 import { GroupKindType, UserKindType } from '../rbac'
-import { createResource, deleteResource } from '../utils'
-import { IRequestResult } from '../utils/resource-request'
+import { createResource, deleteResource, patchResource } from '../utils'
+import { IRequestResult, ResourceError, ResourceErrorCode } from '../utils/resource-request'
 
-interface RoleAssignmentUI extends RoleAssignment, Pick<Subject, 'name' | 'kind'> {}
+export interface RoleAssignmentUI extends RoleAssignment, Pick<Subject, 'name' | 'kind'> {
+  relatedMulticlusterRoleAssignment: MulticlusterRoleAssignment
+}
 
 interface MulticlusterRoleAssignmentQuery {
   subjectNames?: string[]
@@ -22,6 +24,7 @@ const roleAssignmentToRoleAssignmentUI = (
   ...roleAssignment,
   name: multiClusterRoleAssignment.spec.subject.name,
   kind: multiClusterRoleAssignment.spec.subject.kind,
+  relatedMulticlusterRoleAssignment: multiClusterRoleAssignment,
 })
 
 const isSubjectMatch = (
@@ -63,7 +66,6 @@ export const useFindRoleAssignments = (query: MulticlusterRoleAssignmentQuery): 
   // TODO: replace by new aggregated API
   const { multiclusterRoleAssignmentState } = useSharedAtoms()
   const multiclusterRoleAssignments = useRecoilValue(multiclusterRoleAssignmentState)
-
   return multiclusterRoleAssignments.reduce(
     (multiClusterRoleAssignmentAcc: RoleAssignmentUI[], multiClusterRoleAssignmentCurr: MulticlusterRoleAssignment) =>
       !isSubjectMatch(multiClusterRoleAssignmentCurr, query)
@@ -91,10 +93,44 @@ export const create = (
   multiclusterRoleAssignment: MulticlusterRoleAssignment
 ): IRequestResult<MulticlusterRoleAssignment> => createResource<MulticlusterRoleAssignment>(multiclusterRoleAssignment)
 
+const areRoleAssignmentsEquals = (a: RoleAssignment, b: RoleAssignment) => {
+  const isClusterRoleEqual = a.clusterRole === b.clusterRole
+  const isClusterSetEqual = JSON.stringify(a.clusterSets) === JSON.stringify(b.clusterSets)
+  const isTargetNamespacesEqual = JSON.stringify(a.targetNamespaces) === JSON.stringify(b.targetNamespaces)
+
+  return isClusterRoleEqual && isClusterSetEqual && isTargetNamespacesEqual
+}
+
 /**
- * it removes a MulticlusterRoleAssignment from the CR
- * @param multiclusterRoleAssignment the element to delete
- * @returns unknown
+ * it removes a RoleAssignment element from the MulticlusterRoleAssignment. If it is the latest one, the whole MulticlusterRoleAssignment is instead removed
+ * @param roleAssignment
+ * @returns the request result
  */
-export const remove = (multiclusterAssignment: MulticlusterRoleAssignment): IRequestResult<unknown> =>
-  deleteResource(multiclusterAssignment)
+export const deleteRoleAssignment = (roleAssignment: RoleAssignmentUI): IRequestResult<unknown> => {
+  const multiClusterRoleAssignment = roleAssignment.relatedMulticlusterRoleAssignment
+
+  const indexToRemove = multiClusterRoleAssignment.spec.roleAssignments.findIndex((e) =>
+    areRoleAssignmentsEquals(e, roleAssignment)
+  )
+
+  if (indexToRemove > -1) {
+    const newRoleAssignmentList = multiClusterRoleAssignment.spec.roleAssignments.filter(
+      (_e, index) => index !== indexToRemove
+    )
+    if (newRoleAssignmentList.length === 0) {
+      return deleteResource(multiClusterRoleAssignment)
+    } else {
+      return patchResource(multiClusterRoleAssignment, {
+        spec: {
+          ...multiClusterRoleAssignment.spec,
+          roleAssignments: newRoleAssignmentList,
+        },
+      })
+    }
+  } else {
+    throw new ResourceError(
+      ResourceErrorCode.BadRequest,
+      'The role assignment does not exist for this particular MulticlusterRoleAssignment'
+    )
+  }
+}
