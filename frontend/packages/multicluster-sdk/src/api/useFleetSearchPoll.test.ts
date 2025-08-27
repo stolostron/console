@@ -482,11 +482,11 @@ describe('useFleetSearchPoll', () => {
         memory: '4Gi',
         ready: 'True',
         status: 'Running',
-        agentConnected: 'True',
         flavor: 'test',
         osName: 'rhel',
         workload: 'app',
         runStrategy: 'Always',
+        condition: 'Ready=True; AgentConnected=True',
       }
 
       mockUseSearchResultItemsQuery.mockReturnValue({
@@ -804,6 +804,7 @@ describe('useFleetSearchPoll', () => {
         ipAddress: '127.0.0.1',
         memoryAllocatable: '5Gi',
         memoryCapacity: '10Gi',
+        condition: 'Ready=True; TestCondition=False',
       }
 
       mockUseSearchResultItemsQuery.mockReturnValue({
@@ -829,6 +830,10 @@ describe('useFleetSearchPoll', () => {
       expect(dataArray[0].status.addresses).toEqual([{ type: 'InternalIP', address: '127.0.0.1' }])
       expect(dataArray[0].status.allocatable.memory).toBe('5Gi')
       expect(dataArray[0].status.capacity.memory).toBe('10Gi')
+      expect(dataArray[0].status.conditions).toEqual([
+        { type: 'Ready', status: 'True' },
+        { type: 'TestCondition', status: 'False' },
+      ])
     })
 
     it('should handle StorageClass resource transformation', () => {
