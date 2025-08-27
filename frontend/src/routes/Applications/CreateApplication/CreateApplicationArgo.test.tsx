@@ -22,7 +22,15 @@ import {
   nockIgnoreOperatorCheck,
   nockList,
 } from '../../../lib/nock-util'
-import { clickByText, typeByPlaceholderText, typeByTestId, waitForNocks, waitForText } from '../../../lib/test-util'
+import {
+  clickByRole,
+  clickByText,
+  typeByPlaceholderText,
+  typeByRole,
+  typeByTestId,
+  waitForNocks,
+  waitForText,
+} from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import {
   ApplicationSet,
@@ -340,42 +348,37 @@ describe('Create Argo Application Set', () => {
 
     // General
     await typeByTestId('name', argoAppSetGit!.metadata!.name!)
-    await clickByText('Select the Argo server')
+    await clickByRole('combobox', { name: 'Select the Argo server' })
     await clickByText(gitOpsCluster!.spec!.argoServer!.argoNamespace)
     await clickByText('Next')
 
     // Template
     await clickByText('Git')
-    await clickByText('Enter or select a Git URL')
+    await clickByRole('combobox', { name: /Enter or select a Git URL/i })
 
     const appBranchNocks = [nockArgoGitBranches(channelGit.spec.pathname, { branchList: [{ name: 'branch-01' }] })]
     await clickByText(channelGit.spec.pathname)
     await waitForNocks(appBranchNocks)
 
-    await clickByText('Enter or select a tracking revision')
-    // await clickByText('Enter or select a tracking revision') // Hack to handle broken PatternFly dropdown not initially populating
-    // await clickByText('Enter or select a tracking revision')
+    await clickByRole('combobox', { name: /enter or select a tracking revision/i })
     const pathNocks = [
       nockArgoGitBranches(channelGit.spec.pathname, { branchList: [{ name: 'branch-01' }] }),
       nockArgoGitPathSha(channelGit.spec.pathname, 'branch-01', { commit: { sha: '01' } }),
       nockArgoGitPathTree(channelGit.spec.pathname, { tree: [{ path: 'application-test', type: 'tree' }] }),
     ]
-    await clickByText('branch-01')
+    await clickByRole('option', { name: /create new option "branch-01"/i })
     await waitForNocks(pathNocks)
 
-    await clickByText('Enter or select a repository path')
-    // await clickByText('Enter or select a repository path') // Hack to handle broken PatternFly dropdown not initially populating
-    // await clickByText('Enter or select a repository path')
-    await clickByText('application-test')
-
-    await typeByPlaceholderText('Enter the destination namespace', 'gitops-ns')
+    await clickByRole('combobox', { name: /enter or select a repository path/i })
+    await clickByRole('option', { name: /create new option "application-test"/i })
+    await typeByRole('gitops-ns', 'textbox')
     await clickByText('Next')
 
     // Sync policy
     await clickByText('Next')
 
     // Placement
-    await clickByText('Select the cluster sets')
+    await clickByRole('combobox', { name: /select the cluster sets/i })
     await clickByText(clusterSetBinding.spec.clusterSet)
     await clickByText('Next')
 
@@ -399,7 +402,7 @@ describe('Create Argo Application Set', () => {
     await typeByTestId('name', argoAppSetHelm!.metadata!.name!)
 
     // select argoServer
-    await clickByText('Select the Argo server')
+    await clickByRole('combobox', { name: 'Select the Argo server' })
     await clickByText(gitOpsCluster!.spec!.argoServer!.argoNamespace)
 
     // next - Source
@@ -411,7 +414,7 @@ describe('Create Argo Application Set', () => {
     await clickByText('Helm')
 
     // channel
-    await clickByText('Enter or select a Helm URL')
+    await clickByRole('combobox', { name: /Enter or select a Helm URL/i })
     await clickByText(channelHelm.spec.pathname)
     // // nock.recorder.rec()
 
@@ -426,7 +429,7 @@ describe('Create Argo Application Set', () => {
     await clickByText('Next')
 
     // placement
-    await clickByText('Select the cluster sets')
+    await clickByRole('combobox', { name: /select the cluster sets/i })
     await clickByText(clusterSetBinding.spec.clusterSet)
 
     // submit

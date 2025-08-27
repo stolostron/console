@@ -91,7 +91,7 @@ export const getArgoClusterList = (
           getArgoDestinationCluster(
             resource.spec.destination,
             managedClusters,
-            resource.status.cluster,
+            resource.status?.cluster,
             localCluster?.name
           )
         )

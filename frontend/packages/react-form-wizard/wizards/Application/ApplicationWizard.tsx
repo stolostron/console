@@ -644,7 +644,7 @@ function DetailsSection(props: { namespaces: string[] }) {
         placeholder="Select the namespace"
         helperText="The namespace on the hub cluster where the application resources will be created."
         options={activeNamespaces}
-        isCreatable={true}
+        isCreatable
         onCreate={(namespaceName: string) => setNewNamespaces([...newNamespaces, namespaceName])}
         required
       />

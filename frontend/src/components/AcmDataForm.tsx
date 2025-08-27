@@ -38,12 +38,14 @@ import {
   FormSection,
   Gallery,
   InputGroup,
+  InputGroupItem,
   NumberInput,
   Page,
   PageSection,
   Popover,
-  SelectOption,
+  Radio,
   SelectGroup,
+  SelectOption,
   Split,
   SplitItem,
   Stack,
@@ -55,16 +57,13 @@ import {
   TextInput,
   Tile,
   Title,
-  InputGroupItem,
-  WizardStep,
   Wizard,
-  WizardFooterWrapper,
   WizardFooterType,
-  WizardStepProps,
+  WizardFooterWrapper,
   WizardHeader,
-  Radio,
+  WizardStep,
+  WizardStepProps,
 } from '@patternfly/react-core'
-import { AcmSelectBase, AcmSelectBaseProps, SelectOptionObject, SelectVariant } from './AcmSelectBase'
 import {
   EditIcon,
   ExclamationCircleIcon,
@@ -77,11 +76,13 @@ import {
   TrashIcon,
 } from '@patternfly/react-icons'
 import useResizeObserver from '@react-hook/resize-observer'
+import { Schema } from 'ajv'
 import { Fragment, ReactElement, ReactNode, useCallback, useContext, useRef, useState } from 'react'
 import { TFunction } from 'react-i18next'
 import YAML from 'yaml'
 import { useTranslation } from '../lib/acm-i18next'
 import { AcmPageHeader } from '../ui-components'
+import { AcmHelperText } from '../ui-components/AcmHelperText/AcmHelperText'
 import {
   FormData,
   FormDataOrderedInput,
@@ -91,16 +92,16 @@ import {
   SectionGroup,
   SelectOptionInput,
 } from './AcmFormData'
-import { SyncEditor, ValidationStatus } from './SyncEditor/SyncEditor'
+import { AcmSelectBase, AcmSelectBaseProps, SelectOptionObject, SelectVariant } from './AcmSelectBase'
 import { LostChangesContext, LostChangesPrompt } from './LostChanges'
-import { AcmHelperText } from '../ui-components/AcmHelperText/AcmHelperText'
+import { SyncEditor, ValidationStatus } from './SyncEditor/SyncEditor'
 
 export interface AcmDataFormProps {
   formData: FormData
   editorTitle?: string
   secrets?: (string | string[])[]
   immutables?: (string | string[])[]
-  schema?: any
+  schema?: Schema
   mode?: 'form' | 'wizard' | 'details'
   isHorizontal?: boolean
   edit?: () => void

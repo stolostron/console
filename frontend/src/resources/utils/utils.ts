@@ -85,16 +85,28 @@ export function matchesFilterValue(supportsInequality: boolean, label: string, f
   }
 }
 
-export const filterLabelFn = (selectedValues: any, item: any, labelMap: any) => {
+interface FilterableItem {
+  id?: string
+  uid?: string
+}
+
+export interface LabelMap {
+  [key: string]: {
+    pairs?: Record<string, string>
+    labels?: string[]
+  }
+}
+
+export const filterLabelFn = (selectedValues: string[], item: FilterableItem, labelMap: LabelMap) => {
   // if no filters, let all items thru
   if (!selectedValues.length) return true
   // if all fillters have != thru all items that don't have that label
-  const allInequity = selectedValues.every((val: any) => {
+  const allInequity = selectedValues.every((val: string) => {
     return val.includes('!=')
   })
-  const labels = labelMap?.[item.id]?.labels || labelMap?.[item.uid]?.labels || []
+  const labels = labelMap?.[item.id as string]?.labels || labelMap?.[item.uid as string]?.labels || []
   if (allInequity) {
-    return selectedValues.every((val: any) => {
+    return selectedValues.every((val: string) => {
       const p = parseLabel(val)
       return !labels.includes(`${p.prefix}=${p.suffix}`)
     })
@@ -102,7 +114,7 @@ export const filterLabelFn = (selectedValues: any, item: any, labelMap: any) => 
     // else if an item has a match, but doen't have a !=, let it thru
     let hasEquity = false
     let hasInequity = false
-    selectedValues.forEach((val: any) => {
+    selectedValues.forEach((val: string) => {
       const p = parseLabel(val)
       if (p.oper === '=' && labels.includes(val)) hasEquity = true
       if (p.oper === '!=' && labels.includes(`${p.prefix}=${p.suffix}`)) hasInequity = true

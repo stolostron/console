@@ -12,7 +12,7 @@ export interface Metadata {
   selfLink?: string
   finalizers?: string[]
   ownerReferences?: OwnerReference[]
-  managedFields?: any[]
+  managedFields?: unknown[]
 }
 
 export interface OwnerReference {

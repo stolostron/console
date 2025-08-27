@@ -171,12 +171,6 @@ export enum NavigationPath {
   editCredentials = '/multicloud/credentials/edit/:namespace/:name',
   viewCredentials = '/multicloud/credentials/details/:namespace/:name',
 
-  // RBAC
-  accessControlManagement = '/multicloud/access-control-management',
-  addAccessControlManagement = '/multicloud/access-control-management/create',
-  editAccessControlManagement = '/multicloud/access-control-management/edit/:id',
-  viewAccessControlManagement = '/multicloud/access-control-management/details/:id',
-
   // RBAC Identities and Roles Management
   identities = '/multicloud/user-management/identities',
 

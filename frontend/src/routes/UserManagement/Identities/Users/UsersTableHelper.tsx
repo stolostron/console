@@ -46,7 +46,7 @@ const COLUMN_CELLS = {
   NAME: (user: RbacUser, search: string) => (
     <span style={{ whiteSpace: 'nowrap' }}>
       <Link to={generatePath(NavigationPath.identitiesUsersDetails, { id: user.metadata.uid ?? '' })}>
-        <HighlightSearchText text={user.metadata.name ?? ''} searchText={search} isTruncate />
+        <HighlightSearchText text={user.metadata.name ?? ''} searchText={search} useFuzzyHighlighting />
       </Link>
     </span>
   ),
@@ -91,20 +91,39 @@ export const usersTableColumns = ({ t }: Pick<UsersTableHelperProps, 't'>): IAcm
   },
 ]
 
+const identityProviderFilter = (selection: string[], user: RbacUser): boolean => {
+  if (selection.length === 0) return true
+
+  const hasMatchingIdentity = user.identities?.some((identity: string) => {
+    const provider = identity.split(':')[0]
+    return selection.includes(provider)
+  })
+
+  return hasMatchingIdentity ?? false
+}
+
+const statusFilter = (selection: string[], user: RbacUser): boolean => {
+  if (selection.length === 0) return true
+
+  return selection.some((selected: string) => {
+    switch (selected) {
+      case 'active':
+        return isIdentityActive(user)
+      case 'inactive':
+        return !isIdentityActive(user)
+      default:
+        return false
+    }
+  })
+}
+
 export const useFilters = () => {
   return useMemo(
     () => [
       {
         id: 'identity-provider',
         label: 'Identity Provider',
-        tableFilterFn: (selection: string[], user: RbacUser) => {
-          if (selection.length === 0) return true
-          return (
-            user.identities?.some((identity: string) =>
-              selection.some((selected: string) => identity.split(':')[0] === selected)
-            ) ?? false
-          )
-        },
+        tableFilterFn: identityProviderFilter,
         options: [
           { label: 'htpasswd', value: 'htpasswd' },
           { label: 'ldap', value: 'ldap' },
@@ -115,14 +134,7 @@ export const useFilters = () => {
       {
         id: 'status',
         label: 'Status',
-        tableFilterFn: (selection: string[], user: RbacUser) => {
-          if (selection.length === 0) return true
-          return selection.some((selected: string) => {
-            if (selected === 'active') return isIdentityActive(user)
-            if (selected === 'inactive') return !isIdentityActive(user)
-            return false
-          })
-        },
+        tableFilterFn: statusFilter,
         options: [
           { label: 'Active', value: 'active' },
           { label: 'Inactive', value: 'inactive' },

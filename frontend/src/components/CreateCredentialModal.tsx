@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Button, MenuFooter } from '@patternfly/react-core'
+import { Button } from '@patternfly/react-core'
 
 import { useTranslation } from '../lib/acm-i18next'
 export interface ICreateCredentialModalProps {
@@ -12,10 +12,8 @@ export function CreateCredentialModal(props: ICreateCredentialModalProps) {
   const { handleModalToggle, buttonText = t('Add credential') } = props
 
   return (
-    <MenuFooter>
-      <Button onClick={handleModalToggle} variant="link" isInline>
-        {buttonText}
-      </Button>
-    </MenuFooter>
+    <Button onClick={handleModalToggle} variant="link" isInline>
+      {buttonText}
+    </Button>
   )
 }
