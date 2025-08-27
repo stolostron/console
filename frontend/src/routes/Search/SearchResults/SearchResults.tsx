@@ -93,13 +93,12 @@ function RenderAccordionItem(
   const navigate = useNavigate()
   const canMigrateVm = useCanMigrateVm()
   const allClusters = useAllClusters(true)
-  const { useVirtualMachineActionsEnabled, isFineGrainedRbacEnabledState } = useSharedAtoms()
+  const { useVirtualMachineActionsEnabled, isFineGrainedRbacEnabledState, useMigrateVMMenu } = useSharedAtoms()
   const isFineGrainedRbacEnabled = useRecoilValue(isFineGrainedRbacEnabledState)
   const vmActionsEnabled = useVirtualMachineActionsEnabled()
   const { acmExtensions } = useContext(PluginContext)
   const [isExpanded, setIsExpanded] = useState<boolean>(defaultIsExpanded)
   const searchDefinitions = useSearchDefinitions()
-  const { useMigrateVMMenu } = useSharedAtoms()
   const vmMenuVisability = useMigrateVMMenu()
 
   const accordionItemKey = `${kind}-${idx}`

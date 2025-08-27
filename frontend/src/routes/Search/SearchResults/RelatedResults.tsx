@@ -12,6 +12,7 @@ import {
 import _ from 'lodash'
 import { Fragment, useCallback, useContext, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom-v5-compat'
+import { useCanMigrateVm } from '../../../hooks/use-can-migrate-vm'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { PluginContext } from '../../../lib/PluginContext'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
@@ -25,7 +26,6 @@ import { searchClient } from '../search-sdk/search-client'
 import { useSearchResultRelatedCountQuery, useSearchResultRelatedItemsQuery } from '../search-sdk/search-sdk'
 import { useSearchDefinitions } from '../searchDefinitions'
 import { getRowActions } from './utils'
-import { useCanMigrateVm } from '../../../hooks/use-can-migrate-vm'
 
 export function RenderItemContent(
   props: Readonly<{
@@ -48,14 +48,14 @@ export function RenderItemContent(
     setPluginModal,
   } = props
   const { t } = useTranslation()
-  const canMigrateVm = useCanMigrateVm()
-  const { useMigrateVMMenu } = useSharedAtoms()
-  const vmMenuVisability = useMigrateVMMenu()
+
   const navigate = useNavigate()
+  const canMigrateVm = useCanMigrateVm()
   const allClusters = useAllClusters(true)
-  const { useVirtualMachineActionsEnabled, isFineGrainedRbacEnabledState } = useSharedAtoms()
+  const { useVirtualMachineActionsEnabled, isFineGrainedRbacEnabledState, useMigrateVMMenu } = useSharedAtoms()
   const isFineGrainedRbacEnabled = useRecoilValue(isFineGrainedRbacEnabledState)
   const vmActionsEnabled = useVirtualMachineActionsEnabled()
+  const vmMenuVisability = useMigrateVMMenu()
   const { useSearchResultLimit } = useSharedAtoms()
   const searchResultLimit = useSearchResultLimit()
   const { acmExtensions } = useContext(PluginContext)

@@ -273,11 +273,16 @@ export function getVirtualMachineRowActions(
     id: 'migrateVM',
     title: t('Migrate across environment'),
     click: (item: any) => {
-      navigate(NavigationPath.migrateVirtualMachine.replace(':id', encodeURIComponent(item._uid)))
+      // Redirect to VM details page instead of the removed migration page
+      const searchParams = `?cluster=${encodeURIComponent(item.cluster)}&namespace=${encodeURIComponent(
+        item.namespace
+      )}&name=${encodeURIComponent(item.name)}&kind=VirtualMachine&apigroup=kubevirt.io&apiversion=v1`
+      navigate(`/multicloud/search/resources${searchParams}`)
     },
     description: t('Migrate VirtualMachines across your environment'),
     isDisabled: !canMigrateVm || printableStatus == 'Migrating',
   }
+
   // OCP console vm actions - https://github.com/kubevirt-ui/kubevirt-plugin/blob/519d55ee9489ad7dc1caf81b4306676a95aee96a/src/views/virtualmachines/actions/hooks/useVirtualMachineActionsProvider.ts#L36
   return vmActionsEnabled
     ? [
