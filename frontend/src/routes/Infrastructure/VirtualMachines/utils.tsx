@@ -89,7 +89,7 @@ export function getVirtualMachineRowActions(
   vmActionsEnabled: boolean,
   navigate: NavigateFunction,
   t: TFunction<string, undefined>,
-  canMigrateVm: boolean,
+  _canMigrateVm: boolean,
   vmMenuVisability: boolean,
   extensionButtons: IAcmRowAction<any>[] = []
 ): IAcmRowAction<any>[] {
@@ -272,11 +272,12 @@ export function getVirtualMachineRowActions(
   const migrateVM = {
     id: 'migrateVM',
     title: t('Migrate across environment'),
-    click: (item: any) => {
-      navigate(NavigationPath.migrateVirtualMachine.replace(':id', encodeURIComponent(item._uid)))
+    click: (_item: any) => {
+      // Migration functionality removed - VM page no longer exists
+      console.warn('VM migration feature not available - VM page removed')
     },
     description: t('Migrate VirtualMachines across your environment'),
-    isDisabled: !canMigrateVm || printableStatus == 'Migrating',
+    isDisabled: true, // Always disabled since VM page is removed
   }
   // OCP console vm actions - https://github.com/kubevirt-ui/kubevirt-plugin/blob/519d55ee9489ad7dc1caf81b4306676a95aee96a/src/views/virtualmachines/actions/hooks/useVirtualMachineActionsProvider.ts#L36
   return vmActionsEnabled
