@@ -541,8 +541,8 @@ describe('getArgoClusterList', () => {
         },
         syncPolicy: {
           automated: {
-            prune: 'true',
-            selfHeal: 'true',
+            prune: true,
+            selfHeal: true,
           },
           syncOptions: ['CreateNamespace=true'],
         },
@@ -990,8 +990,10 @@ describe('getArgoClusterList', () => {
   })
 
   it('should return Argo cluster list remote', () => {
-    resources[0].status = {}
-    resources[0].status.cluster = 'cluster1'
+    resources[0].status = {
+      cluster: 'cluster1',
+      resourceName: 'resource1',
+    }
     expect(getArgoClusterList(resources, localCluster, [localCluster]).length).toEqual(1)
   })
 })

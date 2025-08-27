@@ -19,6 +19,7 @@ import { ChangeHandler } from 'react-monaco-editor'
 import * as monaco from 'monaco-editor'
 import { editor as editorTypes } from 'monaco-editor'
 import { loader, Monaco } from '@monaco-editor/react'
+import { Schema } from 'ajv'
 
 // loader can be null in tests
 loader?.config({ monaco })
@@ -34,7 +35,7 @@ export interface SyncEditorProps extends HTMLProps<HTMLPreElement> {
   editorTitle?: string
   code?: string
   resources: unknown
-  schema?: any
+  schema?: Schema
   secrets?: (string | string[])[]
   filters?: (string | string[])[]
   immutables?: (string | string[])[]

@@ -49,7 +49,7 @@ jest.mock('../../../hooks/use-can-migrate-vm', () => ({
 }))
 
 // Mock RoleAssignments component
-jest.mock('../../UserManagement/Roles/RoleAssignments', () => ({
+jest.mock('../../UserManagement/RoleAssignment/RoleAssignments', () => ({
   RoleAssignments: () => true,
 }))
 

@@ -61,9 +61,6 @@ const Applications = lazy(() => import('./routes/Applications/Applications'))
 // CREDENTIALS
 const Credentials = lazy(() => import('./routes/Credentials/Credentials'))
 
-// ACCESS CONTROL
-const AccessControlManagement = lazy(() => import('./routes/AccessControlManagement/AccessControlManagement'))
-
 // IDENTITIES & ROLES
 const IdentitiesManagement = lazy(() => import('./routes/UserManagement/Identities/IdentitiesManagement'))
 const RolesManagement = lazy(() => import('./routes/UserManagement/Roles/RolesManagement'))
@@ -231,13 +228,6 @@ const routes: (IRoute | IRouteGroup)[] = [
     path: NavigationPath.credentials,
     match: MatchType.SubRoutes,
     element: <Credentials />,
-  },
-  {
-    title: 'Access control',
-    type: 'route',
-    path: NavigationPath.accessControlManagement,
-    match: MatchType.SubRoutes,
-    element: <AccessControlManagement />,
   },
   {
     title: 'User Management',

@@ -58,8 +58,8 @@ import {
   SubscriptionOperator,
   SubscriptionReport,
 } from './resources'
-import { AccessControl } from './resources/access-control'
 import { MulticlusterRoleAssignment } from './resources/multicluster-role-assignment'
+
 let atomArrayKey = 0
 function AtomArray<T>() {
   return atom<T[]>({ key: (++atomArrayKey).toString(), default: [] })
@@ -124,7 +124,6 @@ export const subscriptionReportsState = AtomArray<SubscriptionReport>()
 export const hostedClustersState = AtomArray<HostedClusterK8sResource>()
 export const nodePoolsState = AtomArray<NodePoolK8sResource>()
 export const agentMachinesState = AtomArray<AgentMachineK8sResource>()
-export const accessControlState = AtomArray<AccessControl>()
 export const multiclusterRoleAssignmentState = AtomArray<MulticlusterRoleAssignment>()
 
 export const settingsState = atom<Settings>({ key: 'settings', default: {} })

@@ -119,7 +119,7 @@ export default function DiscoveredPolicies() {
         header: t('table.labels'),
         cell: (item: DiscoveredPolicyTableItem) => labelsCell(item, labelMap),
         exportContent: (item: DiscoveredPolicyTableItem) => {
-          return exportObjectString(labelMap ? labelMap[item.id]?.pairs : {})
+          return exportObjectString(labelMap?.[item.id]?.pairs || {})
         },
       },
       {
@@ -257,7 +257,7 @@ export default function DiscoveredPolicies() {
         label: t('Label'),
         options: labelOptions || [],
         supportsInequality: true, // table will allow user to convert filtered values to a=b or a!=b
-        tableFilterFn: (selectedValues, item) => filterLabelFn(selectedValues, item, labelMap),
+        tableFilterFn: (selectedValues, item) => filterLabelFn(selectedValues, item, labelMap || {}),
       },
       {
         id: 'source',

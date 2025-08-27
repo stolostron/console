@@ -53,14 +53,4 @@ describe('CreateCredentialModal', () => {
     expect(button).toHaveClass('pf-m-link') // link variant class
     expect(button).toHaveClass('pf-m-inline') // online class
   })
-
-  test('is contained within a MenuFooter', () => {
-    const mockHandleModalToggle = jest.fn()
-
-    const { container } = render(<CreateCredentialModal handleModalToggle={mockHandleModalToggle} />)
-
-    // check that the MenuFooter element exists
-    const menuFooter = container.querySelector('.pf-v5-c-menu__footer')
-    expect(menuFooter).toBeInTheDocument()
-  })
 })

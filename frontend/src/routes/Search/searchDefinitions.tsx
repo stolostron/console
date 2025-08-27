@@ -933,7 +933,7 @@ export function VMLaunchLinks(props: Readonly<{ item: any; t: TFunction }>) {
       )
       if (vmDashboard.length > 0) {
         const parsedDashboardData = JSON.parse(
-          vmDashboard[0].data?.['acm-openshift-virtualization-single-vm-view.json']
+          vmDashboard[0].data?.['acm-openshift-virtualization-single-vm-view.json'] as string
         )
         const dashboardId = parsedDashboardData?.uid
         return `${grafanaLink}/d/${dashboardId}/executive-dashboards-single-virtual-machine-view?orgId=1&var-name=${item.name}&var-namespace=${item.namespace}&var-cluster=${item.cluster}`

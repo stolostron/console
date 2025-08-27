@@ -69,7 +69,7 @@ export default function SavedSearchesCard(
         apiVersion: 'search.open-cluster-management.io/v1alpha1',
         kind: 'Search',
       })
-        .promise.then((response) => {
+        .promise.then((response: any) => {
           const operatorConditions: V1CustomResourceDefinitionCondition[] = response[0]?.status?.conditions ?? []
           const searchApiCondition = operatorConditions.find((c: V1CustomResourceDefinitionCondition) => {
             return c.type.toLowerCase() === 'ready--search-api' && c.status === 'False'

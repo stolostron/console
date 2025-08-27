@@ -278,8 +278,8 @@ export default function ApplicationDetailsPage() {
             loading: false,
             selected: appChildResources[0], // children
             shared: appChildResources[1], // shared children
-            appSetPlacement: appSetRelatedResources[0],
-            appSetsSharingPlacement: appSetRelatedResources[1],
+            appSetPlacement: appSetRelatedResources[0] as string,
+            appSetsSharingPlacement: appSetRelatedResources[1] as string[],
             appKind: selectedApp.kind,
             appSetApps: (selectedApp as IUIResource)?.uidata?.appSetApps ?? [],
             close: () => {

@@ -336,11 +336,62 @@ Examples:
 
 ### :gear: FleetResourceLink
 
+Enhanced ResourceLink component for ACM fleet environments.
+
+Unlike the standard OpenShift ResourceLink which always links to the OpenShift console,
+FleetResourceLink provides intelligent routing based on cluster context:
+- First-class ACM resources (ManagedCluster) get direct links in all cases
+- For hub clusters: Extension-based routing first, then fallback to OpenShift console
+- For managed clusters: Extension-based routing first, then fallback to ACM search results
+
+This prevents users from having to jump between different consoles when managing
+multi-cluster resources.
+
 | Function | Type |
 | ---------- | ---------- |
 | `FleetResourceLink` | `React.FC<FleetResourceLinkProps>` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/FleetResourceLink.tsx#L9)
+Parameters:
+
+* `props`: - FleetResourceLinkProps extending ResourceLinkProps with cluster information
+* `props.cluster`: - the target cluster name for the resource
+* `props.groupVersionKind`: - K8s GroupVersionKind for the resource
+* `props.name`: - the resource name
+* `props.namespace`: - the resource namespace (required for namespaced resources)
+* `props.displayName`: - optional display name override
+* `props.className`: - additional CSS classes
+* `props.inline`: - whether to display inline
+* `props.hideIcon`: - whether to hide the resource icon
+* `props.children`: - additional content to render
+
+
+Examples:
+
+```typescript
+// Hub cluster VirtualMachine - routes to ACM VM page via extension system
+<FleetResourceLink
+  name="my-vm"
+  namespace="default"
+  groupVersionKind={{ group: 'kubevirt.io', version: 'v1', kind: 'VirtualMachine' }}
+/>
+
+// Managed cluster VirtualMachine - routes to ACM search results
+<FleetResourceLink
+  name="remote-vm"
+  namespace="default"
+  cluster="prod-cluster"
+  groupVersionKind={{ group: 'kubevirt.io', version: 'v1', kind: 'VirtualMachine' }}
+/>
+
+// ManagedCluster resource (lives on hub) - cluster prop omitted
+<FleetResourceLink
+  name="prod-cluster"
+  groupVersionKind={{ group: 'cluster.open-cluster-management.io', version: 'v1', kind: 'ManagedCluster' }}
+/>
+```
+
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/components/FleetResourceLink.tsx#L62)
 
 ### :gear: getFleetK8sAPIPath
 
@@ -663,6 +714,9 @@ Array with `isObservabilityInstalled`, `loaded` and `error` values.
 - [FleetK8sResourceCommon](#gear-fleetk8sresourcecommon)
 - [FleetResourceLinkProps](#gear-fleetresourcelinkprops)
 - [FleetWatchK8sResource](#gear-fleetwatchk8sresource)
+- [ResourceRoute](#gear-resourceroute)
+- [ResourceRouteHandler](#gear-resourceroutehandler)
+- [ResourceRouteProps](#gear-resourcerouteprops)
 - [SearchResult](#gear-searchresult)
 - [UseFleetClusterNames](#gear-usefleetclusternames)
 - [UseFleetK8sAPIPath](#gear-usefleetk8sapipath)
@@ -678,7 +732,7 @@ Array with `isObservabilityInstalled`, `loaded` and `error` values.
 | ---------- | ---------- |
 | `AdvancedSearchFilter` | `{ property: string; values: string[] }[]` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/search.ts#L8)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/search.ts#L9)
 
 ### :gear: Fleet
 
@@ -760,13 +814,39 @@ Array with `isObservabilityInstalled`, `loaded` and `error` values.
 
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L16)
 
+### :gear: ResourceRoute
+
+This extension allows plugins to customize the route used for resources of the given kind. Search results and resource links will direct to the route returned by the implementing function.
+
+| Type | Type |
+| ---------- | ---------- |
+| `ResourceRoute` | `ExtensionDeclaration<typeof RESOURCE_ROUTE_TYPE, ResourceRouteProps>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/extensions/resource.ts#L28)
+
+### :gear: ResourceRouteHandler
+
+| Type | Type |
+| ---------- | ---------- |
+| `ResourceRouteHandler` | `(props: { /** The cluster where the resource is located. */ cluster: string /** The namespace where the resource is located (if the resource is namespace-scoped). */ namespace?: string /** The name of the resource. */ name: string /** The resource, augmented with cluster property. */ resource: FleetK8sResourceCommon /** The model for the resource. */ model: ExtensionK8sModel }) => string` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/extensions/resource.ts#L7)
+
+### :gear: ResourceRouteProps
+
+| Type | Type |
+| ---------- | ---------- |
+| `ResourceRouteProps` | `{ /** The model for which this resource route should be used. */ model: ExtensionK8sGroupKindModel /** The handler function that returns the route path for the resource. */ handler: CodeRef<ResourceRouteHandler> }` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/extensions/resource.ts#L20)
+
 ### :gear: SearchResult
 
 | Type | Type |
 | ---------- | ---------- |
 | `SearchResult` | `R extends (infer T)[] ? Fleet<T>[] : Fleet<R>` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/search.ts#L4)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/search.ts#L5)
 
 ### :gear: UseFleetClusterNames
 

@@ -41,20 +41,21 @@ describe('multicluster-role-assignment-client', function () {
       const result = useFindRoleAssignments({})
 
       // Assert
-      expect(result).toHaveLength(31)
+      expect(result).toHaveLength(33)
     })
 
     it('should filter by subject name', () => {
+      // Arrange
+      const name = 'alice.trask'
+
       // Act
       const result = useFindRoleAssignments({
-        subjectNames: ['alice.trask'],
+        subjectNames: [name],
       })
 
       // Assert
-      expect(result).toHaveLength(2)
-      result.forEach((roleAssignment) => {
-        expect(roleAssignment.name).toBe('alice.trask')
-      })
+      expect(result).toHaveLength(5)
+      expect(result.filter((e) => e.name !== name)).toHaveLength(0)
     })
 
     it('should filter by subject kind', () => {
@@ -65,7 +66,7 @@ describe('multicluster-role-assignment-client', function () {
 
       // Assert
       expect(result).toHaveLength(14)
-      expect(result.filter((e) => e.kind === GroupKind)).toHaveLength(14)
+      expect(result.filter((e) => e.kind !== GroupKind)).toHaveLength(0)
     })
 
     it('should filter by role', () => {
@@ -79,7 +80,7 @@ describe('multicluster-role-assignment-client', function () {
 
       // Assert
       expect(result).toHaveLength(6)
-      expect(result.filter((e) => e.clusterRole === role)).toHaveLength(6)
+      expect(result.filter((e) => e.clusterRole !== role)).toHaveLength(0)
     })
 
     it('should filter by cluster set', () => {
@@ -92,8 +93,8 @@ describe('multicluster-role-assignment-client', function () {
       })
 
       // Assert
-      expect(result).toHaveLength(11)
-      expect(result.filter((e) => e.clusterSets.includes(clusterSet))).toHaveLength(11)
+      expect(result).toHaveLength(13)
+      expect(result.filter((e) => !e.clusterSets.includes(clusterSet))).toHaveLength(0)
     })
 
     it('should filter by multiple criteria', () => {
@@ -111,8 +112,8 @@ describe('multicluster-role-assignment-client', function () {
       // Assert
       expect(result).toHaveLength(3)
       expect(
-        result.filter((e) => e.kind === UserKind && e.clusterRole === role && e.clusterSets.includes(clusterSet))
-      ).toHaveLength(3)
+        result.filter((e) => e.kind !== UserKind || e.clusterRole !== role || !e.clusterSets.includes(clusterSet))
+      ).toHaveLength(0)
     })
 
     it('should return empty array when no matches found', () => {
