@@ -14,10 +14,6 @@ import { wait } from '../../../lib/test-util'
 import { SearchResultRelatedCountDocument } from '../search-sdk/search-sdk'
 import RelatedResults from './RelatedResults'
 
-jest.mock('../../../hooks/use-can-migrate-vm', () => ({
-  useCanMigrateVm: () => true,
-}))
-
 const mockSettings: Settings = {
   SEARCH_RESULT_LIMIT: '1000',
 }

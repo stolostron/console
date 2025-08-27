@@ -89,8 +89,6 @@ export function getVirtualMachineRowActions(
   vmActionsEnabled: boolean,
   navigate: NavigateFunction,
   t: TFunction<string, undefined>,
-  _canMigrateVm: boolean,
-  vmMenuVisability: boolean,
   extensionButtons: IAcmRowAction<any>[] = []
 ): IAcmRowAction<any>[] {
   const printableStatus = item?.status
@@ -269,16 +267,7 @@ export function getVirtualMachineRowActions(
       })
     },
   }
-  const migrateVM = {
-    id: 'migrateVM',
-    title: t('Migrate across environment'),
-    click: (_item: any) => {
-      // Migration functionality removed - VM page no longer exists
-      console.warn('VM migration feature not available - VM page removed')
-    },
-    description: t('Migrate VirtualMachines across your environment'),
-    isDisabled: true, // Always disabled since VM page is removed
-  }
+
   // OCP console vm actions - https://github.com/kubevirt-ui/kubevirt-plugin/blob/519d55ee9489ad7dc1caf81b4306676a95aee96a/src/views/virtualmachines/actions/hooks/useVirtualMachineActionsProvider.ts#L36
   return vmActionsEnabled
     ? [
@@ -286,7 +275,6 @@ export function getVirtualMachineRowActions(
         restartVM,
         printableStatus === 'Paused' ? unpauseVM : pauseVM,
         snapshotVM,
-        ...(vmMenuVisability ? [{ ...migrateVM, addSeparator: true }] : []),
         { ...editButton, addSeparator: true },
         viewRelatedButton,
         deleteButton,
