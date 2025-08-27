@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { groupsTableColumns } from './GroupsTableHelper'
-import { Group as RbacGroup } from '../../../../resources/rbac'
+import { Group } from '../../../../resources/rbac'
 
 jest.mock('../../../../lib/acm-i18next', () => ({
   useTranslation: jest.fn().mockReturnValue({
@@ -8,7 +8,7 @@ jest.mock('../../../../lib/acm-i18next', () => ({
   }),
 }))
 
-const mockGroup: RbacGroup = {
+const mockGroup: Group = {
   apiVersion: 'user.openshift.io/v1',
   kind: 'Group',
   metadata: {

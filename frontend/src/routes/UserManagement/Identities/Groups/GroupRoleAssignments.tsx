@@ -11,14 +11,7 @@ import { MulticlusterRoleAssignment } from '../../../../resources/multicluster-r
 import { compareStrings, AcmLoadingPage, AcmButton } from '../../../../ui-components'
 import { RoleAssignments } from '../../RoleAssignment/RoleAssignments'
 import { Group } from '../../../../resources'
-
-const mockGroups = [
-  { metadata: { name: 'kubevirt-admins', uid: 'mock-group-kubevirt-admins' } },
-  { metadata: { name: 'developers', uid: 'mock-group-developers' } },
-  { metadata: { name: 'sre-team', uid: 'mock-group-sre-team' } },
-  { metadata: { name: 'security-auditors', uid: 'mock-group-security-auditors' } },
-  { metadata: { name: 'storage-team', uid: 'mock-group-storage-team' } },
-]
+import { mockGroups } from '../../../../resources/clients/mock-data/users-and-groups'
 
 const GroupRoleAssignments = () => {
   const { t } = useTranslation()

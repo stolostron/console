@@ -3,6 +3,7 @@ import { useMemo } from 'react'
 import { useParams, useLocation, Link, Outlet, useNavigate } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { User, Group } from '../../../../resources/rbac'
+import { mockUsers, mockGroups } from '../../../../resources/clients/mock-data/users-and-groups'
 import {
   AcmPage,
   AcmPageHeader,
@@ -33,175 +34,13 @@ const UserPage = () => {
   // TODO: Replace the mockdata when backend is implemented
   // const { data: users, loading } = useQuery(listUsers)
 
-  // Use mock data instead of live API for development
-  const mockUsers: User[] = [
-    {
-      apiVersion: 'user.openshift.io/v1',
-      kind: 'User',
-      metadata: {
-        name: 'test-user',
-        uid: 'test-user-uid',
-        creationTimestamp: '2025-01-24T17:48:45Z',
-      },
-      fullName: 'Test User',
-      identities: ['htpasswd:test-user'],
-    },
-    {
-      apiVersion: 'user.openshift.io/v1',
-      kind: 'User',
-      metadata: {
-        name: 'alice.trask',
-        uid: 'mock-user-alice-trask',
-        creationTimestamp: '2024-01-15T10:30:00Z',
-      },
-      fullName: 'Alice Trask',
-      identities: ['ldap:alice.trask', 'htpasswd_provider:alice.trask'],
-    },
-    {
-      apiVersion: 'user.openshift.io/v1',
-      kind: 'User',
-      metadata: {
-        name: 'bob.levy',
-        uid: 'mock-user-bob-levy',
-        creationTimestamp: '2024-01-16T14:20:00Z',
-      },
-      fullName: 'Bob Levy',
-      identities: ['oauth:github:bob.levy'],
-    },
-    {
-      apiVersion: 'user.openshift.io/v1',
-      kind: 'User',
-      metadata: {
-        name: 'charlie.cranston',
-        uid: 'mock-user-charlie-cranston',
-        creationTimestamp: '2024-01-17T09:45:00Z',
-      },
-      fullName: 'Charlie Cranston',
-      identities: ['oauth:google:charlie.cranston@company.com'],
-    },
-    {
-      apiVersion: 'user.openshift.io/v1',
-      kind: 'User',
-      metadata: {
-        name: 'sarah.jones',
-        uid: 'mock-user-sarah-jones',
-        creationTimestamp: '2024-01-18T16:15:00Z',
-      },
-      fullName: 'Sarah Jones',
-      identities: ['ldap:sarah.jones', 'oauth:saml:sarah.jones@enterprise.corp'],
-    },
-    {
-      apiVersion: 'user.openshift.io/v1',
-      kind: 'User',
-      metadata: {
-        name: 'david.brown',
-        uid: 'mock-user-david-brown',
-        creationTimestamp: '2024-01-19T11:30:00Z',
-      },
-      fullName: 'David Brown',
-      identities: ['htpasswd_provider:david.brown'],
-    },
-  ]
-
-  // const { data: users, loading } = useQuery(listUsers)
+  // Use mock data from centralized file
   const users = mockUsers
   const loading = false as boolean
   // Mock groups data - some users belong to groups, others don't
-  // const mockGroups: Group[] = [
-  //   {
-  //     apiVersion: 'user.openshift.io/v1',
-  //     kind: 'Group',
-  //     metadata: {
-  //       name: 'platform-admins',
-  //       uid: 'mock-group-platform-admins',
-  //       creationTimestamp: '2024-01-10T09:00:00Z',
-  //     },
-  //     users: ['alice.trask', 'sarah.jones'],
-  //   },
-  //   {
-  //     apiVersion: 'user.openshift.io/v1',
-  //     kind: 'Group',
-  //     metadata: {
-  //       name: 'developers',
-  //       uid: 'mock-group-developers',
-  //       creationTimestamp: '2024-01-11T10:30:00Z',
-  //     },
-  //     users: ['bob.levy', 'charlie.cranston'],
-  //   },
-  //   {
-  //     apiVersion: 'user.openshift.io/v1',
-  //     kind: 'Group',
-  //     metadata: {
-  //       name: 'security-team',
-  //       uid: 'mock-group-security-team',
-  //       creationTimestamp: '2024-01-12T14:15:00Z',
-  //     },
-  //     users: ['alice.trask'],
-  //   },
-  //   {
-  //     apiVersion: 'user.openshift.io/v1',
-  //     kind: 'Group',
-  //     metadata: {
-  //       name: 'qa-engineers',
-  //       uid: 'mock-group-qa-engineers',
-  //       creationTimestamp: '2024-01-13T11:45:00Z',
-  //     },
-  //     users: ['charlie.cranston'],
-  //   },
-  // ]
-  const mockGroups: Group[] = [
-    {
-      apiVersion: 'user.openshift.io/v1',
-      kind: 'Group',
-      metadata: {
-        name: 'kubevirt-admins',
-        uid: 'mock-group-kubevirt-admins',
-        creationTimestamp: '2024-01-10T09:00:00Z',
-      },
-      users: ['alice.trask', 'sarah.jones'],
-    },
-    {
-      apiVersion: 'user.openshift.io/v1',
-      kind: 'Group',
-      metadata: {
-        name: 'developers',
-        uid: 'mock-group-developers',
-        creationTimestamp: '2024-01-11T10:30:00Z',
-      },
-      users: ['bob.levy', 'charlie.cranston'],
-    },
-    {
-      apiVersion: 'user.openshift.io/v1',
-      kind: 'Group',
-      metadata: {
-        name: 'sre-team',
-        uid: 'mock-group-sre-team',
-        creationTimestamp: '2024-01-12T14:15:00Z',
-      },
-      users: ['alice.trask'],
-    },
-    {
-      apiVersion: 'user.openshift.io/v1',
-      kind: 'Group',
-      metadata: {
-        name: 'security-auditors',
-        uid: 'mock-group-security-auditors',
-        creationTimestamp: '2024-01-13T11:45:00Z',
-      },
-      users: ['charlie.cranston'],
-    },
-    {
-      apiVersion: 'user.openshift.io/v1',
-      kind: 'Group',
-      metadata: {
-        name: 'storage-team',
-        uid: 'mock-group-storage-team',
-        creationTimestamp: '2024-01-14T12:00:00Z',
-      },
-      users: ['sarah.jones'],
-    },
-  ]
   // const { data: groups, loading: groupsLoading } = useQuery(listGroups)
+
+  // Use mock data from centralized file
   const groups = mockGroups
   const groupsLoading = false as boolean
 
