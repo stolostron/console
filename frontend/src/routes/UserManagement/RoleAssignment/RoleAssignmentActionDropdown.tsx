@@ -1,23 +1,32 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useTranslation } from '../../../lib/acm-i18next'
+import { useCallback } from 'react'
 import { BulkActionModalProps } from '../../../components/BulkActionModal'
 import { RbacDropdown } from '../../../components/Rbac'
-import { TrackedRoleAssignment } from '../../../resources/clients/multicluster-role-assignment-client'
+import { useTranslation } from '../../../lib/acm-i18next'
+import { deleteRoleAssignment, RoleAssignmentUI } from '../../../resources/clients/multicluster-role-assignment-client'
 import { compareStrings } from '../../../ui-components'
 
-const RoleAssignmentActionDropdown = (props: {
-  roleAssignment: TrackedRoleAssignment
-  setModalProps: (props: BulkActionModalProps<TrackedRoleAssignment> | { open: false }) => void
-  toastContext: any
+const RoleAssignmentActionDropdown = ({
+  roleAssignment,
+  setModalProps,
+}: {
+  roleAssignment: RoleAssignmentUI
+  setModalProps: (props: BulkActionModalProps<RoleAssignmentUI> | { open: false }) => void
 }) => {
   const { t } = useTranslation()
+
+  const keyFn = useCallback(
+    (roleAssignment: RoleAssignmentUI) =>
+      `${roleAssignment.clusterRole}${roleAssignment.clusterSets.join('')}${roleAssignment.targetNamespaces?.join('')}`,
+    []
+  )
 
   const actions = [
     {
       id: 'delete-role-assignment',
       text: t('Delete role assignment'),
-      click: (roleAssignment: TrackedRoleAssignment) => {
-        props.setModalProps({
+      click: (roleAssignment: RoleAssignmentUI) => {
+        setModalProps({
           open: true,
           title: t('Delete role assignment?'),
           action: t('Delete'),
@@ -28,31 +37,18 @@ const RoleAssignmentActionDropdown = (props: {
           columns: [
             {
               header: t('Subject'),
-              cell: (roleAssignment: TrackedRoleAssignment) =>
-                `${roleAssignment.subjectKind}: ${roleAssignment.subjectName}`,
-              sort: (a: TrackedRoleAssignment, b: TrackedRoleAssignment) =>
-                compareStrings(a.subjectName, b.subjectName),
+              cell: (roleAssignment: RoleAssignmentUI) => `${roleAssignment.kind}: ${roleAssignment.name}`,
+              sort: (a: RoleAssignmentUI, b: RoleAssignmentUI) => compareStrings(a.name, b.name),
             },
             {
               header: t('Role'),
-              cell: (roleAssignment: TrackedRoleAssignment) => roleAssignment.clusterRole,
-              sort: (a: TrackedRoleAssignment, b: TrackedRoleAssignment) =>
-                compareStrings(a.clusterRole, b.clusterRole),
+              cell: (roleAssignment: RoleAssignmentUI) => roleAssignment.clusterRole,
+              sort: (a: RoleAssignmentUI, b: RoleAssignmentUI) => compareStrings(a.clusterRole, b.clusterRole),
             },
           ],
-          keyFn: (roleAssignment: TrackedRoleAssignment) =>
-            roleAssignment.multiclusterRoleAssignmentUid + '-' + roleAssignment.roleAssignmentIndex,
-          actionFn: (roleAssignment: TrackedRoleAssignment) => {
-            // TODO: Implement actual delete API call
-            console.log('Deleting role assignment:', `${roleAssignment.subjectName}-${roleAssignment.clusterRole}`)
-            props.toastContext.addAlert({
-              title: t('Role assignment deleted'),
-              type: 'success',
-              autoClose: true,
-            })
-            return { promise: Promise.resolve(), abort: () => {} }
-          },
-          close: () => props.setModalProps({ open: false }),
+          keyFn,
+          actionFn: deleteRoleAssignment,
+          close: () => setModalProps({ open: false }),
           isDanger: true,
           icon: 'warning',
           confirmText: 'delete',
@@ -62,9 +58,9 @@ const RoleAssignmentActionDropdown = (props: {
   ]
 
   return (
-    <RbacDropdown<TrackedRoleAssignment>
-      id={`${props.roleAssignment.multiclusterRoleAssignmentUid}-${props.roleAssignment.roleAssignmentIndex}-actions`}
-      item={props.roleAssignment}
+    <RbacDropdown<RoleAssignmentUI>
+      id={`${keyFn(roleAssignment)}-actions`}
+      item={roleAssignment}
       isKebab={true}
       text={t('Actions')}
       actions={actions}

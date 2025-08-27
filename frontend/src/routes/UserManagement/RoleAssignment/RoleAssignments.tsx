@@ -1,21 +1,19 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { ButtonVariant, Label, LabelGroup, PageSection } from '@patternfly/react-core'
 import { fitContent, nowrap } from '@patternfly/react-table'
-import { useCallback, useContext, useMemo, useState } from 'react'
-import { v5 as uuidv5 } from 'uuid'
+import { useCallback, useMemo, useState } from 'react'
 import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../lib/doc-util'
-import { RoleAssignmentUI } from '../../../resources/clients/multicluster-role-assignment-client'
+import { deleteRoleAssignment, RoleAssignmentUI } from '../../../resources/clients/multicluster-role-assignment-client'
 import { Group, ServiceAccount, User } from '../../../resources/rbac'
 import {
   AcmButton,
   AcmEmptyState,
   AcmLoadingPage,
   AcmTable,
-  AcmToastContext,
   compareStrings,
-  IAcmTableColumn,
+  IAcmTableColumn
 } from '../../../ui-components'
 import { IAcmTableAction, IAcmTableButtonAction, ITableFilter } from '../../../ui-components/AcmTable/AcmTableTypes'
 import { IdentityStatus } from '../../../ui-components/IdentityStatus/IdentityStatus'
@@ -29,11 +27,10 @@ type RoleAssignmentsProps = {
 
 const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssignmentsProps) => {
   const { t } = useTranslation()
-  const toastContext = useContext(AcmToastContext)
   // Key function for the table that generates a unique key for each role assignment
   const keyFn = useCallback(
     (roleAssignment: RoleAssignmentUI) =>
-      uuidv5(JSON.stringify(roleAssignment), `${roleAssignment.kind}/${roleAssignment.name}`),
+      `${roleAssignment.clusterRole}${roleAssignment.clusterSets.join('')}${roleAssignment.targetNamespaces?.join('')}`,
     []
   )
 
@@ -70,16 +67,7 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
               },
             ],
             keyFn,
-            actionFn: (roleAssignment: RoleAssignmentUI) => {
-              // TODO: Implement actual bulk delete API call from multicluster-role-assignment-client.ts file
-              console.log('Bulk deleting role assignment:', `${roleAssignment.name}-${roleAssignment.clusterRole}`)
-              toastContext.addAlert({
-                title: t('Role assignment deleted'),
-                type: 'success',
-                autoClose: true,
-              })
-              return { promise: Promise.resolve(), abort: () => {} }
-            },
+            actionFn: deleteRoleAssignment,
             close: () => setModalProps({ open: false }),
             isDanger: true,
             icon: 'warning',
@@ -89,7 +77,7 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
         variant: 'bulk-action',
       },
     ],
-    [t, keyFn, toastContext]
+    [t, keyFn]
   )
 
   // Filters for RoleAssignmentUI
@@ -279,15 +267,9 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
     },
     {
       header: '',
-      cell: (roleAssignment: RoleAssignmentUI) => {
-        return (
-          <RoleAssignmentActionDropdown
-            roleAssignment={roleAssignment}
-            setModalProps={setModalProps}
-            toastContext={toastContext}
-          />
-        )
-      },
+      cell: (roleAssignment: RoleAssignmentUI) => (
+        <RoleAssignmentActionDropdown roleAssignment={roleAssignment} setModalProps={setModalProps} />
+      ),
       cellTransforms: [fitContent],
       isActionCol: true,
     },

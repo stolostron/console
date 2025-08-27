@@ -17,7 +17,8 @@ interface MulticlusterRoleAssignmentQuery {
   clusterSets?: string[]
 }
 
-const roleAssignmentToRoleAssignmentUI = (
+// TODO: remove export as soon as the mock data is removed and the CR is ready ACM-23633
+export const roleAssignmentToRoleAssignmentUI = (
   multiClusterRoleAssignment: MulticlusterRoleAssignment,
   roleAssignment: RoleAssignment
 ): RoleAssignmentUI => ({

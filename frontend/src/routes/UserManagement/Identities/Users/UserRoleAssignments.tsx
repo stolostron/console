@@ -1,16 +1,20 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { PageSection } from '@patternfly/react-core'
 import { useEffect, useMemo, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom-v5-compat'
+import { useNavigate, useParams } from 'react-router-dom-v5-compat'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
-import multiclusterRoleAssignmentsMockDataJson from '../../../../resources/clients/mock-data/multicluster-role-assignments.json'
-import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
-import { MulticlusterRoleAssignment } from '../../../../resources/multicluster-role-assignment'
-import { compareStrings, AcmLoadingPage, AcmButton } from '../../../../ui-components'
-import { RoleAssignments } from '../../RoleAssignment/RoleAssignments'
 import { User } from '../../../../resources'
+import multiclusterRoleAssignmentsMockDataJson from '../../../../resources/clients/mock-data/multicluster-role-assignments.json'
+import {
+  roleAssignmentToRoleAssignmentUI,
+  RoleAssignmentUI,
+} from '../../../../resources/clients/multicluster-role-assignment-client'
+import { MulticlusterRoleAssignment } from '../../../../resources/multicluster-role-assignment'
+import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
+import { AcmButton, AcmLoadingPage, compareStrings } from '../../../../ui-components'
+import { RoleAssignments } from '../../RoleAssignment/RoleAssignments'
 
 // TODO: to remove once API ready
 // Mock users data to match the role assignments
@@ -45,8 +49,8 @@ const UserRoleAssignments = () => {
   // Use multicluster role assignments mock data
   const multiclusterRoleAssignments = multiclusterRoleAssignmentsMockDataJson as MulticlusterRoleAssignment[]
 
-  // Filter multicluster role assignments for the current user
-  const userMulticlusterRoleAssignments = useMemo(
+  // TODO: call useFindRoleAssignments instead ACM-23633
+  const roleAssignments: RoleAssignmentUI[] = useMemo(
     () =>
       !user || !multiclusterRoleAssignments
         ? []
@@ -56,8 +60,17 @@ const UserRoleAssignments = () => {
                 multiclusterRoleAssignment.spec.subject.kind === 'User' &&
                 multiclusterRoleAssignment.spec.subject.name === user.metadata.name
             )
-            .sort((a, b) => compareStrings(a.metadata?.name ?? '', b.metadata?.name ?? '')),
-    [user, multiclusterRoleAssignments]
+            .reduce(
+              (roleAssignmentsAcc: RoleAssignmentUI[], multiclusterRoleAssignmentCurr) => [
+                ...roleAssignmentsAcc,
+                ...multiclusterRoleAssignmentCurr.spec.roleAssignments.map((roleAssignment) =>
+                  roleAssignmentToRoleAssignmentUI(multiclusterRoleAssignmentCurr, roleAssignment)
+                ),
+              ],
+              []
+            )
+            .sort((a, b) => compareStrings(a.name ?? '', b.name ?? '')),
+    [multiclusterRoleAssignments, user]
   )
 
   switch (true) {
@@ -79,13 +92,7 @@ const UserRoleAssignments = () => {
         />
       )
     default:
-      return (
-        <RoleAssignments
-          multiclusterRoleAssignments={userMulticlusterRoleAssignments}
-          isLoading={isLoading}
-          hiddenColumns={['subject']}
-        />
-      )
+      return <RoleAssignments roleAssignments={roleAssignments} isLoading={isLoading} hiddenColumns={['subject']} />
   }
 }
 

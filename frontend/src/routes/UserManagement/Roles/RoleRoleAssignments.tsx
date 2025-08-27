@@ -11,6 +11,10 @@ import { ResourceError, ResourceErrorCode } from '../../../resources/utils'
 import { MulticlusterRoleAssignment } from '../../../resources/multicluster-role-assignment'
 import { compareStrings, AcmLoadingPage, AcmButton } from '../../../ui-components'
 import { RoleAssignments } from '../RoleAssignment/RoleAssignments'
+import {
+  roleAssignmentToRoleAssignmentUI,
+  RoleAssignmentUI,
+} from '../../../resources/clients/multicluster-role-assignment-client'
 
 // TODO: to remove once API ready
 // Mock users data to match the role assignments
@@ -40,7 +44,8 @@ const RoleRoleAssignments = () => {
   const multiclusterRoleAssignments = multiclusterRoleAssignmentsMockDataJson as MulticlusterRoleAssignment[]
 
   // Filter multicluster role assignments for the current user
-  const userMulticlusterRoleAssignments = useMemo(
+  // TODO: call useFindRoleAssignments instead ACM-23633
+  const roleAssignments: RoleAssignmentUI[] = useMemo(
     () =>
       !user || !multiclusterRoleAssignments
         ? []
@@ -50,8 +55,17 @@ const RoleRoleAssignments = () => {
                 multiclusterRoleAssignment.spec.subject.kind === 'User' &&
                 multiclusterRoleAssignment.spec.subject.name === user.metadata.name
             )
-            .sort((a, b) => compareStrings(a.metadata?.name ?? '', b.metadata?.name ?? '')),
-    [user, multiclusterRoleAssignments]
+            .reduce(
+              (roleAssignmentsAcc: RoleAssignmentUI[], multiclusterRoleAssignmentCurr) => [
+                ...roleAssignmentsAcc,
+                ...multiclusterRoleAssignmentCurr.spec.roleAssignments.map((roleAssignment) =>
+                  roleAssignmentToRoleAssignmentUI(multiclusterRoleAssignmentCurr, roleAssignment)
+                ),
+              ],
+              []
+            )
+            .sort((a, b) => compareStrings(a.name ?? '', b.name ?? '')),
+    [multiclusterRoleAssignments, user]
   )
 
   switch (true) {
@@ -73,13 +87,7 @@ const RoleRoleAssignments = () => {
         />
       )
     default:
-      return (
-        <RoleAssignments
-          multiclusterRoleAssignments={userMulticlusterRoleAssignments}
-          isLoading={isLoading}
-          hiddenColumns={['subject']}
-        />
-      )
+      return <RoleAssignments roleAssignments={roleAssignments} isLoading={isLoading} hiddenColumns={['subject']} />
   }
 }
 
