@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useFlag } from '@openshift-console/dynamic-plugin-sdk'
-import { UseIsFleetAvailable } from '../types'
 import { REQUIRED_PROVIDER_FLAG } from './constants'
 
 /**
@@ -12,6 +11,6 @@ import { REQUIRED_PROVIDER_FLAG } from './constants'
  *
  * @returns `true` if a version of Red Hat Advanced Cluster Management that is compatible with the multicluster SDK is available; `false` otherwise
  */
-export const useIsFleetAvailable: UseIsFleetAvailable = () => {
+export function useIsFleetAvailable(): boolean {
   return !!useFlag(REQUIRED_PROVIDER_FLAG)
 }
