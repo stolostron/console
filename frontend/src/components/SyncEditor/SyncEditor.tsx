@@ -190,8 +190,8 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
               event.stopPropagation()
               event.preventDefault()
               const lines = pasteText.split(/\r?\n/)
-              const spaces = model?.getLineContent(selection.selectionStartLineNumber - 1)?.search(/\S/) ?? 0 + 2
-              const leadSpaces = spaces - (selection?.selectionStartColumn ?? 0) + 1
+              const spaces = (model?.getLineContent(selection.selectionStartLineNumber - 1)?.search(/\S/) ?? 0) + 2
+              const leadSpaces = spaces - selection.selectionStartColumn + 1
               const lead = ' '.repeat(leadSpaces < 0 ? spaces : leadSpaces)
               const spacer = ' '.repeat(spaces)
               const joint = `\r\n${spacer}`
@@ -264,7 +264,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     if (editor) {
       const handle = editor.onMouseDown(onMouseDown)
       return () => {
-        handle.dispose()
+        handle?.dispose()
       }
     }
   }, [filteredRows, showFiltered, editor, onMouseDown])
@@ -285,7 +285,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         },
       })
       return () => {
-        handle.dispose()
+        handle?.dispose()
       }
     }
   }, [squigglyTooltips, monaco])
@@ -335,7 +335,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         }
       )
       return () => {
-        handle.dispose()
+        handle?.dispose()
       }
     }
   }, [prohibited, editor])
