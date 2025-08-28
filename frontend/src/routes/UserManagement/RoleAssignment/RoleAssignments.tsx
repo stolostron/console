@@ -13,7 +13,7 @@ import {
   AcmLoadingPage,
   AcmTable,
   compareStrings,
-  IAcmTableColumn
+  IAcmTableColumn,
 } from '../../../ui-components'
 import { IAcmTableAction, IAcmTableButtonAction, ITableFilter } from '../../../ui-components/AcmTable/AcmTableTypes'
 import { IdentityStatus } from '../../../ui-components/IdentityStatus/IdentityStatus'
