@@ -5,7 +5,7 @@ import { TFunction } from 'react-i18next'
 import { generatePath, Link, NavigateFunction } from 'react-router-dom-v5-compat'
 import { HighlightSearchText } from '../../../../components/HighlightSearchText'
 import { NavigationPath } from '../../../../NavigationPath'
-import { Group as RbacGroup } from '../../../../resources/rbac'
+import { Group } from '../../../../resources/rbac'
 import AcmTimestamp from '../../../../lib/AcmTimestamp'
 import { IAcmTableColumn, IAcmRowAction } from '../../../../ui-components/AcmTable/AcmTableTypes'
 import { getISOStringTimestamp } from '../../../../resources/utils'
@@ -19,21 +19,21 @@ type GroupsTableHelperProps = {
 }
 
 const ACTIONS = {
-  DETAILS: ({ group, navigate }: { group: RbacGroup } & Pick<GroupsTableHelperProps, 'navigate'>) => {
-    navigate(
-      generatePath(NavigationPath.identitiesUsersDetails, {
-        id: group.metadata.uid ?? '',
-      })
-    )
-  },
-  EDIT: ({ group, navigate }: { group: RbacGroup } & Pick<GroupsTableHelperProps, 'navigate'>) => {
+  DETAILS: ({ group, navigate }: { group: Group } & Pick<GroupsTableHelperProps, 'navigate'>) => {
     navigate(
       generatePath(NavigationPath.identitiesGroupsDetails, {
         id: group.metadata.uid ?? '',
       })
     )
   },
-  DELETE: ({ group, navigate }: { group: RbacGroup } & Pick<GroupsTableHelperProps, 'navigate'>) => {
+  EDIT: ({ group, navigate }: { group: Group } & Pick<GroupsTableHelperProps, 'navigate'>) => {
+    navigate(
+      generatePath(NavigationPath.identitiesGroupsDetails, {
+        id: group.metadata.uid ?? '',
+      })
+    )
+  },
+  DELETE: ({ group, navigate }: { group: Group } & Pick<GroupsTableHelperProps, 'navigate'>) => {
     navigate(
       generatePath(NavigationPath.identitiesGroupsDetails, {
         id: group.metadata.uid ?? '',
@@ -43,17 +43,17 @@ const ACTIONS = {
 }
 
 const COLUMN_CELLS = {
-  NAME: (group: RbacGroup, search: string) => (
+  NAME: (group: Group, search: string) => (
     <span style={{ whiteSpace: 'nowrap' }}>
       <Link to={generatePath(NavigationPath.identitiesGroupsDetails, { id: group.metadata.uid ?? '' })}>
         <HighlightSearchText text={group.metadata.name ?? ''} searchText={search} />
       </Link>
     </span>
   ),
-  IDENTITY_PROVIDER: (group: RbacGroup) =>
+  IDENTITY_PROVIDER: (group: Group) =>
     group.users ? <span style={{ whiteSpace: 'nowrap' }}>{group.users.length}</span> : '-',
-  STATUS: (group: RbacGroup) => <IdentityStatus identity={group} />,
-  CREATED: (group: RbacGroup) => {
+  STATUS: (group: Group) => <IdentityStatus identity={group} />,
+  CREATED: (group: Group) => {
     return group.metadata.creationTimestamp ? (
       <span style={{ whiteSpace: 'nowrap' }}>
         <AcmTimestamp timestamp={group.metadata.creationTimestamp} />
@@ -64,7 +64,7 @@ const COLUMN_CELLS = {
   },
 }
 
-export const groupsTableColumns = ({ t }: Pick<GroupsTableHelperProps, 't'>): IAcmTableColumn<RbacGroup>[] => [
+export const groupsTableColumns = ({ t }: Pick<GroupsTableHelperProps, 't'>): IAcmTableColumn<Group>[] => [
   {
     header: t('Name'),
     sort: 'metadata.name',
@@ -97,7 +97,7 @@ export const useFilters = () => {
       {
         id: 'status',
         label: 'Status',
-        tableFilterFn: (selection: string[], user: RbacGroup) => {
+        tableFilterFn: (selection: string[], user: Group) => {
           if (selection.length === 0) return true
           return selection.some((selected: string) => {
             if (selected === 'active') return isIdentityActive(user)
@@ -117,7 +117,7 @@ export const useFilters = () => {
 
 export const useRowActions = ({ t, navigate }: GroupsTableHelperProps) => {
   return useMemo(
-    (): IAcmRowAction<RbacGroup>[] => [
+    (): IAcmRowAction<Group>[] => [
       {
         id: 'details',
         title: (
