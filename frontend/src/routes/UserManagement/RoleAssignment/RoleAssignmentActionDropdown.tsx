@@ -3,15 +3,18 @@ import { useCallback } from 'react'
 import { BulkActionModalProps } from '../../../components/BulkActionModal'
 import { RbacDropdown } from '../../../components/Rbac'
 import { useTranslation } from '../../../lib/acm-i18next'
-import { deleteRoleAssignment, RoleAssignmentUI } from '../../../resources/clients/multicluster-role-assignment-client'
+import { RoleAssignmentUI } from '../../../resources/clients/multicluster-role-assignment-client'
+import { IRequestResult } from '../../../resources/utils'
 import { compareStrings } from '../../../ui-components'
 
 const RoleAssignmentActionDropdown = ({
   roleAssignment,
   setModalProps,
+  deleteAction,
 }: {
   roleAssignment: RoleAssignmentUI
   setModalProps: (props: BulkActionModalProps<RoleAssignmentUI> | { open: false }) => void
+  deleteAction: (roleAssignment: RoleAssignmentUI) => IRequestResult<unknown>
 }) => {
   const { t } = useTranslation()
 
@@ -47,7 +50,7 @@ const RoleAssignmentActionDropdown = ({
             },
           ],
           keyFn,
-          actionFn: deleteRoleAssignment,
+          actionFn: deleteAction,
           close: () => setModalProps({ open: false }),
           isDanger: true,
           icon: 'warning',

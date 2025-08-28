@@ -268,7 +268,11 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
     {
       header: '',
       cell: (roleAssignment: RoleAssignmentUI) => (
-        <RoleAssignmentActionDropdown roleAssignment={roleAssignment} setModalProps={setModalProps} />
+        <RoleAssignmentActionDropdown
+          roleAssignment={roleAssignment}
+          setModalProps={setModalProps}
+          deleteAction={deleteRoleAssignment}
+        />
       ),
       cellTransforms: [fitContent],
       isActionCol: true,

@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { render, screen, fireEvent } from '@testing-library/react'
-import { nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../lib/nock-util'
+import { fireEvent, render, screen } from '@testing-library/react'
+import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
+import { deleteRoleAssignment, RoleAssignmentUI } from '../../../resources/clients/multicluster-role-assignment-client'
+import { MulticlusterRoleAssignment } from '../../../resources/multicluster-role-assignment'
 import { RoleAssignmentActionDropdown } from './RoleAssignmentActionDropdown'
-
-import { TrackedRoleAssignment } from '../../../resources/clients/multicluster-role-assignment-client'
 
 // Mock Dropdown component to show the key data we want to verify
 jest.mock('@patternfly/react-core', () => ({
@@ -28,28 +28,24 @@ jest.mock('@patternfly/react-core', () => ({
   ),
 }))
 
-const mockRoleAssignment: TrackedRoleAssignment = {
-  multiclusterRoleAssignmentUid: 'test-uid-123',
-  subjectKind: 'User',
-  subjectName: 'test-user',
+const mockRoleAssignment: RoleAssignmentUI = {
+  relatedMulticlusterRoleAssignment: {} as MulticlusterRoleAssignment,
   clusterRole: 'admin',
   clusterSets: ['production', 'staging'],
   targetNamespaces: ['default', 'kube-system', 'test-ns'],
-  roleAssignmentIndex: 0,
-  dataHash: 'test-hash',
+  name: 'test-user',
+  kind: 'User',
 }
 
 const mockSetModalProps = jest.fn()
-const mockToastContext = {
-  addAlert: jest.fn(),
-}
+const mockDeleteAction = jest.fn()
 
 function Component() {
   return (
     <RoleAssignmentActionDropdown
       roleAssignment={mockRoleAssignment}
       setModalProps={mockSetModalProps}
-      toastContext={mockToastContext}
+      deleteAction={mockDeleteAction}
     />
   )
 }
@@ -130,7 +126,7 @@ describe('RoleAssignmentActionDropdown', () => {
     expect(modalProps.columns[1].cell(mockRoleAssignment)).toMatch(/admin/i)
   })
 
-  it('actionFn shows toast and returns promise', () => {
+  it('calls the action on delete', () => {
     render(<Component />)
 
     // Open dropdown and click delete
@@ -142,19 +138,8 @@ describe('RoleAssignmentActionDropdown', () => {
 
     // Get the modal props and test the actionFn
     const modalProps = mockSetModalProps.mock.calls[0][0]
-    const result = modalProps.actionFn(mockRoleAssignment)
-
-    // Verify toast was shown
-    expect(mockToastContext.addAlert).toHaveBeenCalledWith({
-      title: 'Role assignment deleted',
-      type: 'success',
-      autoClose: true,
-    })
-
-    // Verify promise is returned
-    expect(result).toHaveProperty('promise')
-    expect(result).toHaveProperty('abort')
-    expect(typeof result.abort).toBe('function')
+    modalProps.actionFn(mockRoleAssignment)
+    expect(mockDeleteAction).toHaveBeenCalledTimes(1)
   })
 
   it('close function calls setModalProps with open false', () => {
