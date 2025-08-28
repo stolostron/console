@@ -104,7 +104,14 @@ export const create = (
  * @returns true or false depending on whether they are the same or not
  */
 const areRoleAssignmentsEquals = (a: RoleAssignment, b: RoleAssignment) =>
-  JSON.stringify(a, Object.keys(a).sort()) === JSON.stringify(b, Object.keys(b).sort())
+  JSON.stringify(
+    a,
+    Object.keys(a).sort((a, b) => a.localeCompare(b))
+  ) ===
+  JSON.stringify(
+    b,
+    Object.keys(b).sort((a, b) => a.localeCompare(b))
+  )
 
 /**
  * it removes a RoleAssignment element from the MulticlusterRoleAssignment. If it is the latest one, the whole MulticlusterRoleAssignment is instead removed

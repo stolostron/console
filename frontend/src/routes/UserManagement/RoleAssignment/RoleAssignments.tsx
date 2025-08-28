@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { ButtonVariant, Label, LabelGroup, PageSection } from '@patternfly/react-core'
+import { ButtonVariant, PageSection } from '@patternfly/react-core'
 import { fitContent, nowrap } from '@patternfly/react-table'
 import { useCallback, useMemo, useState } from 'react'
 import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
@@ -21,6 +21,7 @@ import {
 import { IAcmTableAction, IAcmTableButtonAction, ITableFilter } from '../../../ui-components/AcmTable/AcmTableTypes'
 import { IdentityStatus } from '../../../ui-components/IdentityStatus/IdentityStatus'
 import { RoleAssignmentActionDropdown } from './RoleAssignmentActionDropdown'
+import { RoleAssignmentsLabel } from './RoleAssignmentsLabel'
 
 type RoleAssignmentsProps = {
   roleAssignments: FlattenedRoleAssignment[]
@@ -188,55 +189,19 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
     },
     {
       header: t('Cluster Sets'),
-      cell: (roleAssignment) => (
-        <LabelGroup
-          collapsedText={t('show.more', { count: roleAssignment.clusterSets.length - 3 })}
-          expandedText={t('Show less')}
-          numLabels={3}
-        >
-          {roleAssignment.clusterSets.map((clusterSet) => (
-            <Label key={clusterSet} style={{ fontSize: '14px' }}>
-              {clusterSet}
-            </Label>
-          ))}
-        </LabelGroup>
-      ),
+      cell: (roleAssignment) => <RoleAssignmentsLabel elements={roleAssignment.clusterSets} numLabel={3} />,
       exportContent: (roleAssignment) => roleAssignment.clusterSets.join(', '),
       isHidden: hiddenColumns?.includes('clusterSets'),
     },
     {
       header: t('Clusters'),
-      cell: (roleAssignment) => (
-        <LabelGroup
-          collapsedText={t('show.more', { count: roleAssignment.clusters?.length ?? 0 - 3 })}
-          expandedText={t('Show less')}
-          numLabels={3}
-        >
-          {roleAssignment.clusters?.map((cluster) => (
-            <Label key={cluster} style={{ fontSize: '14px' }}>
-              {cluster}
-            </Label>
-          ))}
-        </LabelGroup>
-      ),
+      cell: (roleAssignment) => <RoleAssignmentsLabel elements={roleAssignment.clusters} numLabel={3} />,
       exportContent: (roleAssignment) => roleAssignment.clusters?.join(', ') ?? '',
       isHidden: hiddenColumns?.includes('clusters'),
     },
     {
       header: t('Namespaces'),
-      cell: (roleAssignment) => (
-        <LabelGroup
-          collapsedText={t('show.more', { count: roleAssignment.targetNamespaces?.length ?? 0 - 5 })}
-          expandedText={t('Show less')}
-          numLabels={5}
-        >
-          {roleAssignment.targetNamespaces?.map((namespace) => (
-            <Label key={namespace} style={{ fontSize: '14px' }}>
-              {namespace}
-            </Label>
-          ))}
-        </LabelGroup>
-      ),
+      cell: (roleAssignment) => <RoleAssignmentsLabel elements={roleAssignment.targetNamespaces} numLabel={5} />,
       exportContent: (roleAssignment) => roleAssignment.targetNamespaces?.join(', ') ?? '',
     },
     {
