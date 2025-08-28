@@ -1,25 +1,26 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { HTMLProps, ReactNode, useRef, useEffect, useState, useCallback, useMemo } from 'react'
-import useResizeObserver from '@react-hook/resize-observer'
+import { loader, Monaco } from '@monaco-editor/react'
 import { CodeEditor, CodeEditorControl, Language } from '@patternfly/react-code-editor'
-import { RedoIcon, UndoIcon, SearchIcon, EyeIcon, EyeSlashIcon, CloseIcon } from '@patternfly/react-icons'
 import { ClipboardCopyButton } from '@patternfly/react-core'
-import { debounce, noop, isEqual, cloneDeep } from 'lodash'
-import { processForm, processUser, ProcessedType } from './process'
-import { compileAjvSchemas } from './validation'
-import { getFormChanges, getUserChanges } from './changes'
-import { decorate, getResourceEditorDecorations } from './decorate'
-import { setFormValues, updateReferences } from './synchronize'
+import { CloseIcon, EyeIcon, EyeSlashIcon, RedoIcon, SearchIcon, UndoIcon } from '@patternfly/react-icons'
 import { global_BackgroundColor_200 as globalBackground200 } from '@patternfly/react-tokens/dist/js/global_BackgroundColor_200'
 import { global_BackgroundColor_dark_100 as darkEditorBackground } from '@patternfly/react-tokens/dist/js/global_BackgroundColor_dark_100'
 import { global_Color_light_100 as globalColorLight100 } from '@patternfly/react-tokens/dist/js/global_Color_light_100'
-import './SyncEditor.css'
-import { useTranslation } from '../../lib/acm-i18next'
-import { ChangeHandler } from 'react-monaco-editor'
+import useResizeObserver from '@react-hook/resize-observer'
+import { Schema } from 'ajv'
+import { cloneDeep, debounce, isEqual, noop } from 'lodash'
 import * as monaco from 'monaco-editor'
 import { editor as editorTypes } from 'monaco-editor'
-import { loader, Monaco } from '@monaco-editor/react'
-import { Schema } from 'ajv'
+import { HTMLProps, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { ChangeHandler } from 'react-monaco-editor'
+import { useTranslation } from '../../lib/acm-i18next'
+import { getFormChanges, getUserChanges } from './changes'
+import { decorate, getResourceEditorDecorations } from './decorate'
+import { ProcessedType, processForm, processUser } from './process'
+import { setFormValues, updateReferences } from './synchronize'
+import { compileAjvSchemas } from './validation'
+
+import './SyncEditor.css'
 
 // loader can be null in tests
 loader?.config({ monaco })
@@ -180,76 +181,81 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     layoutEditor(editor)
   }
 
+  // Handle paste events for certificates and YAML formatting
+  const handlePasteEvent = useCallback(
+    (event: ClipboardEvent) => {
+      if (!editor) return
+
+      const selection = editor.getSelection()
+      const pasteText = event.clipboardData?.getData('text/plain').trim()
+
+      if (selection && pasteText) {
+        const model = editor.getModel()
+        const lines = pasteText?.split(/\r?\n/)
+        if (selection.selectionStartLineNumber - 1 > 0 && pasteText?.startsWith('-----BEGIN')) {
+          event.stopPropagation()
+          event.preventDefault()
+          const lines = pasteText.split(/\r?\n/)
+          const spaces = model?.getLineContent(selection.selectionStartLineNumber - 1)?.search(/\S/) ?? 0 + 2
+          const leadSpaces = spaces - (selection?.selectionStartColumn ?? 0) + 1
+          const lead = ' '.repeat(leadSpaces < 0 ? spaces : leadSpaces)
+          const spacer = ' '.repeat(spaces)
+          const joint = `\r\n${spacer}`
+          const text = `${lead}${lines.map((line: string) => line.trim()).join(joint)}\r\n`
+          editor.executeEdits('my-source', [{ range: selection, text: text, forceMoveMarkers: true }])
+        }
+
+        // when user is pasting in a complete yaml, do we need to make sure the resource has a namespace
+        if (
+          autoCreateNs && // make sure resource has namespace
+          selection?.startColumn === 1 &&
+          selection?.endLineNumber === model?.getLineCount()
+        ) {
+          let nameInx
+          let hasMetadata = false
+          let hasNamespace = false
+          for (let i = 0; i < lines.length; i++) {
+            if (lines[i].startsWith('metadata:')) {
+              hasMetadata = true
+            }
+            if (hasMetadata) {
+              if (lines[i].includes(' name:')) {
+                nameInx = i
+              }
+              if (lines[i].includes(' namespace:')) {
+                hasNamespace = true
+              }
+            }
+            if (hasNamespace || lines[i].startsWith('spec:')) {
+              break
+            }
+          }
+          if (nameInx && !hasNamespace) {
+            // add missing namespace
+            event.stopPropagation()
+            event.preventDefault()
+            lines.splice(nameInx + 1, 0, '  namespace: ""')
+            const text = lines.join('\r\n')
+            editor.executeEdits('my-source', [{ range: selection, text: text, forceMoveMarkers: true }])
+          }
+        }
+      }
+    },
+    [editor, autoCreateNs]
+  )
+
   useEffect(() => {
     if (editor && monaco) {
       // if user is pasting a certificate, fix the indent
       const domNode = editor.getDomNode()
-      domNode?.addEventListener(
-        'paste',
-        (event: ClipboardEvent) => {
-          const selection = editor.getSelection()
-          const pasteText = event.clipboardData?.getData('text/plain').trim()
+      domNode?.addEventListener('paste', handlePasteEvent, true)
 
-          if (selection && pasteText) {
-            const model = editor.getModel()
-            const lines = pasteText?.split(/\r?\n/)
-            if (selection.selectionStartLineNumber - 1 > 0 && pasteText?.startsWith('-----BEGIN')) {
-              event.stopPropagation()
-              event.preventDefault()
-              const lines = pasteText.split(/\r?\n/)
-              const spaces = model?.getLineContent(selection.selectionStartLineNumber - 1)?.search(/\S/) ?? 0 + 2
-              const leadSpaces = spaces - (selection?.selectionStartColumn ?? 0) + 1
-              const lead = ' '.repeat(leadSpaces < 0 ? spaces : leadSpaces)
-              const spacer = ' '.repeat(spaces)
-              const joint = `\r\n${spacer}`
-              const text = `${lead}${lines.map((line: string) => line.trim()).join(joint)}\r\n`
-              editor.executeEdits('my-source', [{ range: selection, text: text, forceMoveMarkers: true }])
-            }
-
-            // when user is pasting in a complete yaml, do we need to make sure the resource has a namespace
-            if (
-              autoCreateNs && // make sure resource has namespace
-              selection?.startColumn === 1 &&
-              selection?.endLineNumber === model?.getLineCount()
-            ) {
-              let nameInx
-              let hasMetadata = false
-              let hasNamespace = false
-              for (let i = 0; i < lines.length; i++) {
-                if (lines[i].startsWith('metadata:')) {
-                  hasMetadata = true
-                }
-                if (hasMetadata) {
-                  if (lines[i].includes(' name:')) {
-                    nameInx = i
-                  }
-                  if (lines[i].includes(' namespace:')) {
-                    hasNamespace = true
-                  }
-                }
-                if (hasNamespace || lines[i].startsWith('spec:')) {
-                  break
-                }
-              }
-              if (nameInx && !hasNamespace) {
-                // add missing namespace
-                event.stopPropagation()
-                event.preventDefault()
-                lines.splice(nameInx + 1, 0, '  namespace: ""')
-                const text = lines.join('\r\n')
-                editor.executeEdits('my-source', [{ range: selection, text: text, forceMoveMarkers: true }])
-              }
-            }
-          }
-        },
-        true
-      )
       // clear our the getEditorValue method
       return () => {
         window.getEditorValue = undefined
       }
     }
-  }, [autoCreateNs, editor, monaco])
+  }, [editor, monaco, handlePasteEvent])
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const onMouseDown = useCallback(
@@ -275,6 +281,116 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
       }
     }
   }, [filteredRows, showFiltered, editor, onMouseDown])
+
+  // Handle form changes
+  const handleFormChange = useCallback(() => {
+    // Early return if editor has focus or errors
+    if (editorHasFocus || editorHasErrors) {
+      return
+    }
+
+    const model = editor?.getModel()
+    if (!editor || !monaco || !model) {
+      return
+    }
+
+    // parse/validate/secrets
+    const {
+      yaml,
+      protectedRanges,
+      filteredRows,
+      errors,
+      comparison: formComparison,
+      change,
+      unredactedChange,
+      xreferences,
+    } = processForm(
+      monaco,
+      code,
+      resources,
+      changeStack,
+      showSecrets ? undefined : secrets,
+      showFiltered,
+      filters,
+      immutables,
+      readonly === true,
+      userEdits,
+      validationRef.current,
+      model?.getValue() ?? '',
+      editableUidSiblings
+    )
+
+    setProhibited(protectedRanges)
+    setFilteredRows(filteredRows)
+    setLastUnredactedChange(unredactedChange)
+    setXReferences(xreferences)
+
+    const allErrors = [...errors.validation, ...errors.syntax]
+    const { yamlChanges, remainingEdits } = getFormChanges(
+      allErrors,
+      change,
+      userEdits,
+      formComparison,
+      lastChange,
+      lastFormComparison
+    )
+
+    // update yaml in editor
+    //model.resources = cloneDeep(change.resources)
+    const saveDecorations = getResourceEditorDecorations(editor, false)
+    const viewState = editor.saveViewState()
+    model.setValue(yaml)
+    if (viewState) {
+      editor.restoreViewState(viewState)
+    }
+    editor.deltaDecorations([], saveDecorations)
+    setHasRedo(false)
+    setHasUndo(false)
+
+    // report to form
+    onStatusChange?.(allErrors.length === 0 ? ValidationStatus.success : ValidationStatus.failure)
+
+    // user edits that haven't been incorporated into form
+    setLastUserEdits(remainingEdits)
+
+    // decorate errors, changes
+    const squigglyTooltips = decorate(
+      false,
+      editorHasFocus,
+      editor,
+      monaco,
+      [...allErrors, ...customValidationErrors],
+      yamlChanges,
+      change,
+      remainingEdits,
+      protectedRanges,
+      filteredRows
+    )
+    setSquigglyTooltips(squigglyTooltips)
+    setLastFormComparison(formComparison)
+    setLastChange(change)
+    setUserEdits(remainingEdits)
+  }, [
+    editorHasFocus,
+    editorHasErrors,
+    editor,
+    monaco,
+    code,
+    resources,
+    changeStack,
+    showSecrets,
+    secrets,
+    showFiltered,
+    filters,
+    immutables,
+    readonly,
+    userEdits,
+    editableUidSiblings,
+    lastChange,
+    lastFormComparison,
+    onStatusChange,
+    customValidationErrors,
+  ])
 
   // show tooltips over errors
   useEffect(() => {
@@ -362,126 +478,29 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
   }, [editor, setClickedOnFilteredLine, setEditorHasFocus])
 
   // react to changes from form
-  useEffect(
-    () => {
-      let changeTimeoutId: NodeJS.Timeout
-
-      // if editor loses focus, update form immediately
-      // otherwise if form already had focus, no need to call formChange
-
-      const model = editor?.getModel()
-
-      // if editor didn't have focus before and now it does, ignore form change
-      if (!editorHadFocus.current && editorHasFocus) {
-        // ignore
-      } else if (editor && monaco && model) {
-        // debounce changes from form
-        const formChange = () => {
-          if (editorHasFocus || editorHasErrors) {
-            return
-          }
-          // parse/validate/secrets
-          const {
-            yaml,
-            protectedRanges,
-            filteredRows,
-            errors,
-            comparison: formComparison,
-            change,
-            unredactedChange,
-            xreferences,
-          } = processForm(
-            monaco,
-            code,
-            resources,
-            changeStack,
-            showSecrets ? undefined : secrets,
-            showFiltered,
-            filters,
-            immutables,
-            readonly === true,
-            userEdits,
-            validationRef.current,
-            model?.getValue() ?? '',
-            editableUidSiblings
-          )
-          setProhibited(protectedRanges)
-          setFilteredRows(filteredRows)
-          setLastUnredactedChange(unredactedChange)
-          setXReferences(xreferences)
-
-          const allErrors = [...errors.validation, ...errors.syntax]
-          const { yamlChanges, remainingEdits } = getFormChanges(
-            allErrors,
-            change,
-            userEdits,
-            formComparison,
-            lastChange,
-            lastFormComparison
-          )
-
-          // update yaml in editor
-          //model.resources = cloneDeep(change.resources)
-          const saveDecorations = getResourceEditorDecorations(editor, false)
-          const viewState = editor.saveViewState()
-          model.setValue(yaml)
-          if (viewState) {
-            editor.restoreViewState(viewState)
-          }
-          editor.deltaDecorations([], saveDecorations)
-          setHasRedo(false)
-          setHasUndo(false)
-
-          // report to form
-          onStatusChange?.(allErrors.length === 0 ? ValidationStatus.success : ValidationStatus.failure)
-
-          // user edits that haven't been incorporated into form
-          setLastUserEdits(remainingEdits)
-
-          // decorate errors, changes
-          const squigglyTooltips = decorate(
-            false,
-            editorHasFocus,
-            editor,
-            monaco,
-            [...allErrors, ...customValidationErrors],
-            yamlChanges,
-            change,
-            remainingEdits,
-            protectedRanges,
-            filteredRows
-          )
-          setSquigglyTooltips(squigglyTooltips)
-          setLastFormComparison(formComparison)
-          setLastChange(change)
-          setUserEdits(remainingEdits)
-        }
-        // if form changed, and editor doesn't have focus (user isn't typing) process form change immediately
-        // if form changed, and editor has focus (user is typing) process form with debounce of 1 s to allow user to type
-        changeTimeoutId = setTimeout(formChange, !clickedOnFilteredLine && editorHasFocus ? 1000 : 100)
-      }
+  useEffect(() => {
+    // Early return if editor just gained focus - ignore form change
+    if (!editorHadFocus.current && editorHasFocus) {
       editorHadFocus.current = editorHasFocus
+      return
+    }
 
-      return () => {
-        clearTimeout(changeTimeoutId)
-      }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      JSON.stringify(resources),
-      code,
-      showSecrets,
-      showFiltered,
-      editorHasFocus,
-      clickedOnFilteredLine,
-      changeStack,
-      editor,
-      monaco,
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      JSON.stringify(immutables),
-    ]
-  )
+    // Early return if required dependencies aren't available
+    if (!editor || !monaco) {
+      editorHadFocus.current = editorHasFocus
+      return
+    }
+
+    // Determine timeout delay based on editor state
+    const timeoutDelay = !clickedOnFilteredLine && editorHasFocus ? 1000 : 100
+    const changeTimeoutId = setTimeout(handleFormChange, timeoutDelay)
+
+    editorHadFocus.current = editorHasFocus
+
+    return () => {
+      clearTimeout(changeTimeoutId)
+    }
+  }, [editorHasFocus, clickedOnFilteredLine, editor, monaco, handleFormChange])
 
   // report resource changes to form
   const reportResourceChanges = useCallback(
