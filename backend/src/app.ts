@@ -31,6 +31,7 @@ import { username } from './routes/username'
 import { userpreference } from './routes/userpreference'
 import { virtualMachineGETProxy, virtualMachineProxy, vmResourceUsageProxy } from './routes/virtualMachineProxy'
 import { managedClusterProxy } from './routes/managedClusterProxy'
+import { hypershiftStatus } from './routes/hypershift-status'
 
 const isProduction = process.env.NODE_ENV === 'production'
 const isDevelopment = process.env.NODE_ENV === 'development'
@@ -69,6 +70,7 @@ router.get('/username', username)
 router.all('/userpreference', userpreference)
 router.all('/metrics', metrics)
 router.get('/hub', hub)
+router.get('/hypershift-status', hypershiftStatus)
 router.post('/upgrade-risks-prediction', upgradeRiskPredictions)
 router.post('/aggregate/*', aggregate)
 router.get('/virtualmachines/get/*', virtualMachineGETProxy)
