@@ -52,8 +52,7 @@ const COLUMN_CELLS = {
   ),
   IDENTITY_PROVIDER: (user: RbacUser) =>
     user.identities ? <span style={{ whiteSpace: 'nowrap' }}>{user.identities}</span> : '-',
-  // TODO: uncomment this line once 'status' is implemented
-  // STATUS: (user: RbacUser) => <IdentityStatus identity={user} />,
+  // TODO: add status column once 'status' is implemented
   CREATED: (user: RbacUser) => {
     return user.metadata.creationTimestamp ? (
       <span style={{ whiteSpace: 'nowrap' }}>
@@ -79,11 +78,7 @@ export const usersTableColumns = ({ t }: Pick<UsersTableHelperProps, 't'>): IAcm
     sort: 'identities',
     cell: (user) => COLUMN_CELLS.IDENTITY_PROVIDER(user),
   },
-  // TODO: uncomment this line once 'status' is implemented
-  // {
-  //   header: t('Status'),
-  //   cell: (user) => COLUMN_CELLS.STATUS(user),
-  // },
+  // TODO: add status column once 'status' is implemented
   {
     header: t('Created'),
     cell: (user) => COLUMN_CELLS.CREATED(user),

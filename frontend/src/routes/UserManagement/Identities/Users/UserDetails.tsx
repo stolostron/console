@@ -43,18 +43,7 @@ const UserDetails = () => {
                   <DescriptionListTerm>{t('Username')}</DescriptionListTerm>
                   <DescriptionListDescription>{user.metadata.name ?? '-'}</DescriptionListDescription>
                 </DescriptionListGroup>
-                {/* TODO: uncomment this line once 'last login' is implemented */}
-                {/* <DescriptionListGroup>
-                  <DescriptionListTerm>{t('Last login')}</DescriptionListTerm>
-                  <DescriptionListDescription>
-                    {user.metadata.creationTimestamp ? (
-                      <AcmTimestamp timestamp={user.metadata.creationTimestamp} />
-                    ) : (
-                      '-'
-                    )}
-                  </DescriptionListDescription>
-                </DescriptionListGroup> */}
-
+                {/* TODO: add 'last login' column once 'last login' is implemented */}
                 <DescriptionListGroup>
                   <DescriptionListTerm>{t('Identity Provider')}</DescriptionListTerm>
                   <DescriptionListDescription>{user.identities ?? '-'}</DescriptionListDescription>
