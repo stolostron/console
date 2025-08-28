@@ -103,7 +103,8 @@ export const create = (
  * @param b RoleAssignment2
  * @returns true or false depending on whether they are the same or not
  */
-const areRoleAssignmentsEquals = (a: RoleAssignment, b: RoleAssignment) => JSON.stringify(a) === JSON.stringify(b)
+const areRoleAssignmentsEquals = (a: RoleAssignment, b: RoleAssignment) =>
+  JSON.stringify(a, Object.keys(a).sort()) === JSON.stringify(b, Object.keys(b).sort())
 
 /**
  * it removes a RoleAssignment element from the MulticlusterRoleAssignment. If it is the latest one, the whole MulticlusterRoleAssignment is instead removed
@@ -112,9 +113,10 @@ const areRoleAssignmentsEquals = (a: RoleAssignment, b: RoleAssignment) => JSON.
  */
 export const deleteRoleAssignment = (roleAssignment: FlattenedRoleAssignment): IRequestResult<unknown> => {
   const multiClusterRoleAssignment = roleAssignment.relatedMulticlusterRoleAssignment
+  const { relatedMulticlusterRoleAssignment, name, kind, ...nonFlattenedRoleAssignment } = roleAssignment
 
   const indexToRemove = multiClusterRoleAssignment.spec.roleAssignments.findIndex((e) =>
-    areRoleAssignmentsEquals(e, roleAssignment)
+    areRoleAssignmentsEquals(e, nonFlattenedRoleAssignment)
   )
 
   if (indexToRemove > -1) {

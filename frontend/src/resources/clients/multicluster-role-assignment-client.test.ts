@@ -171,30 +171,11 @@ describe('multicluster-role-assignment-client', function () {
         multiclusterRoleAssignmentsMockData[0] as MulticlusterRoleAssignment
       const roleAssignmentToRemove: FlattenedRoleAssignment = {
         relatedMulticlusterRoleAssignment: multiClusterRoleAssignment,
-        clusterRole: 'kubevirt.io:admin',
-        clusterSets: [
-          'production-cluster',
-          'production-east',
-          'production-west',
-          'production-central',
-          'production-backup',
-          'production-dr',
-          'production-monitoring',
-        ],
-        kind: 'User',
-        name: 'alice.trask',
-        targetNamespaces: [
-          'kubevirt-production',
-          'vm-workloads',
-          'vm-storage',
-          'vm-networking',
-          'vm-compute',
-          'vm-backup',
-          'vm-monitoring',
-          'vm-logging',
-          'vm-security',
-          'vm-analytics',
-        ],
+        clusterRole: multiClusterRoleAssignment.spec.roleAssignments[0].clusterRole,
+        clusterSets: multiClusterRoleAssignment.spec.roleAssignments[0].clusterSets,
+        kind: multiClusterRoleAssignment.spec.subject.kind,
+        name: multiClusterRoleAssignment.spec.subject.name,
+        targetNamespaces: multiClusterRoleAssignment.spec.roleAssignments[0].targetNamespaces,
       }
 
       // Act
