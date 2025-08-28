@@ -18,8 +18,10 @@ export const MulticlusterRoleAssignmentDefinition: IResourceDefinition = {
 
 export interface RoleAssignment {
   clusterRole: string
-  targetNamespaces: string[]
+  targetNamespaces?: string[]
   clusterSets: string[]
+  // this is information should come from the aggregated API
+  clusters?: string[]
 }
 
 export interface MulticlusterRoleAssignment extends IResource {

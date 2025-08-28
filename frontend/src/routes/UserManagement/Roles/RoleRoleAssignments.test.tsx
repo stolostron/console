@@ -6,55 +6,38 @@ import { RecoilRoot } from 'recoil'
 import { nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../lib/nock-util'
 import { AcmLoadingPage } from '../../../ui-components'
 import { RoleRoleAssignments } from './RoleRoleAssignments'
+import { FlattenedRoleAssignment } from '../../../resources/clients/multicluster-role-assignment-client'
 
 // Mock RoleAssignments to show the key data we want to verify
 jest.mock('../RoleAssignment/RoleAssignments', () => ({
-  RoleAssignments: ({ multiclusterRoleAssignments, isLoading, hiddenColumns }: any) => {
-    // Simulate the flattening that the real component does
-    const flattened =
-      multiclusterRoleAssignments?.flatMap((mcra: any) =>
-        mcra.spec.roleAssignments.map((ra: any, index: number) => ({
-          multiclusterRoleAssignmentUid: mcra.metadata.uid,
-          subjectKind: mcra.spec.subject.kind,
-          subjectName: mcra.spec.subject.name,
-          clusterRole: ra.clusterRole,
-          clusterSets: ra.clusterSets,
-          targetNamespaces: ra.targetNamespaces,
-          roleAssignmentIndex: index,
-        }))
-      ) || []
-
-    return (
-      <div id="role-assignments">
-        <div id="loading">{isLoading ? 'Loading' : 'Loaded'}</div>
-        <div id="hidden-columns">{hiddenColumns?.join(',') || 'none'}</div>
-        <div id="assignments-count">{flattened.length}</div>
-        {flattened.map((assignment: any, index: number) => (
-          <div key={index} id={`assignment-${index}`}>
-            <div id={`assignment-subject-${index}`}>
-              {assignment.subjectKind}: {assignment.subjectName}
-            </div>
-            <div id={`assignment-role-${index}`}>{assignment.clusterRole}</div>
-            <div id={`assignment-clusters-${index}`}>{assignment.clusterSets.join(', ')}</div>
-            <div id={`assignment-namespaces-${index}`}>{assignment.targetNamespaces.join(', ')}</div>
+  RoleAssignments: ({ roleAssignments, isLoading, hiddenColumns }: any) => (
+    <div id="role-assignments">
+      <div id="loading">{isLoading ? 'Loading' : 'Loaded'}</div>
+      <div id="hidden-columns">{hiddenColumns?.join(',') || 'none'}</div>
+      <div id="assignments-count">{roleAssignments.length}</div>
+      {roleAssignments.map((roleAssignment: FlattenedRoleAssignment, index: number) => (
+        <div key={index} id={`assignment-${index}`}>
+          <div id={`assignment-subject-${index}`}>
+            {roleAssignment.kind}: {roleAssignment.name}
           </div>
-        ))}
-      </div>
-    )
-  },
+          <div id={`assignment-role-${index}`}>{roleAssignment.clusterRole}</div>
+          <div id={`assignment-clusters-${index}`}>{roleAssignment.clusterSets.join(', ')}</div>
+          <div id={`assignment-namespaces-${index}`}>{roleAssignment.targetNamespaces?.join(', ') ?? ''}</div>
+        </div>
+      ))}
+    </div>
+  ),
 }))
 
-function Component({ userId = 'mock-user-alice-trask' }: { userId?: string } = {}) {
-  return (
-    <RecoilRoot>
-      <MemoryRouter initialEntries={[`/roles/${userId}/role-assignments`]}>
-        <Routes>
-          <Route path="/roles/:id/role-assignments" element={<RoleRoleAssignments />} />
-        </Routes>
-      </MemoryRouter>
-    </RecoilRoot>
-  )
-}
+const Component = ({ userId = 'mock-user-alice-trask' }: { userId?: string } = {}) => (
+  <RecoilRoot>
+    <MemoryRouter initialEntries={[`/roles/${userId}/role-assignments`]}>
+      <Routes>
+        <Route path="/roles/:id/role-assignments" element={<RoleRoleAssignments />} />
+      </Routes>
+    </MemoryRouter>
+  </RecoilRoot>
+)
 
 describe('RoleRoleAssignments', () => {
   beforeEach(() => {
