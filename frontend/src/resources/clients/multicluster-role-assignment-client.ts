@@ -6,7 +6,7 @@ import { GroupKindType, UserKindType } from '../rbac'
 import { createResource, deleteResource, patchResource } from '../utils'
 import { IRequestResult, ResourceError, ResourceErrorCode } from '../utils/resource-request'
 
-export interface RoleAssignmentUI extends RoleAssignment, Pick<Subject, 'name' | 'kind'> {
+export interface FlattenedRoleAssignment extends RoleAssignment, Pick<Subject, 'name' | 'kind'> {
   relatedMulticlusterRoleAssignment: MulticlusterRoleAssignment
 }
 
@@ -18,10 +18,10 @@ interface MulticlusterRoleAssignmentQuery {
 }
 
 // TODO: remove export as soon as the mock data is removed and the CR is ready ACM-23633
-export const roleAssignmentToRoleAssignmentUI = (
+export const roleAssignmentToFlattenedRoleAssignment = (
   multiClusterRoleAssignment: MulticlusterRoleAssignment,
   roleAssignment: RoleAssignment
-): RoleAssignmentUI => ({
+): FlattenedRoleAssignment => ({
   ...roleAssignment,
   name: multiClusterRoleAssignment.spec.subject.name,
   kind: multiClusterRoleAssignment.spec.subject.kind,
@@ -63,12 +63,15 @@ const isClusterSetOrRoleMatch = (roleAssignment: RoleAssignment, query: Multiclu
  * @param query the query to filter multiclusterRoleAssignments
  * @returns role assignments with kind and name
  */
-export const useFindRoleAssignments = (query: MulticlusterRoleAssignmentQuery): RoleAssignmentUI[] => {
+export const useFindRoleAssignments = (query: MulticlusterRoleAssignmentQuery): FlattenedRoleAssignment[] => {
   // TODO: replace by new aggregated API
   const { multiclusterRoleAssignmentState } = useSharedAtoms()
   const multiclusterRoleAssignments = useRecoilValue(multiclusterRoleAssignmentState)
   return multiclusterRoleAssignments.reduce(
-    (multiClusterRoleAssignmentAcc: RoleAssignmentUI[], multiClusterRoleAssignmentCurr: MulticlusterRoleAssignment) =>
+    (
+      multiClusterRoleAssignmentAcc: FlattenedRoleAssignment[],
+      multiClusterRoleAssignmentCurr: MulticlusterRoleAssignment
+    ) =>
       !isSubjectMatch(multiClusterRoleAssignmentCurr, query)
         ? multiClusterRoleAssignmentAcc
         : [
@@ -79,7 +82,7 @@ export const useFindRoleAssignments = (query: MulticlusterRoleAssignmentQuery): 
                   !isClusterSetOrRoleMatch(assignmentCurr, query) ? assignmentAcc : [...assignmentAcc, assignmentCurr],
                 []
               )
-              .map((e) => roleAssignmentToRoleAssignmentUI(multiClusterRoleAssignmentCurr, e)),
+              .map((e) => roleAssignmentToFlattenedRoleAssignment(multiClusterRoleAssignmentCurr, e)),
           ],
     []
   )
@@ -107,7 +110,7 @@ const areRoleAssignmentsEquals = (a: RoleAssignment, b: RoleAssignment) => {
  * @param roleAssignment
  * @returns the request result
  */
-export const deleteRoleAssignment = (roleAssignment: RoleAssignmentUI): IRequestResult<unknown> => {
+export const deleteRoleAssignment = (roleAssignment: FlattenedRoleAssignment): IRequestResult<unknown> => {
   const multiClusterRoleAssignment = roleAssignment.relatedMulticlusterRoleAssignment
 
   const indexToRemove = multiClusterRoleAssignment.spec.roleAssignments.findIndex((e) =>

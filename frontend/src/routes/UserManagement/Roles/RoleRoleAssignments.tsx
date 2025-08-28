@@ -12,8 +12,8 @@ import { MulticlusterRoleAssignment } from '../../../resources/multicluster-role
 import { compareStrings, AcmLoadingPage, AcmButton } from '../../../ui-components'
 import { RoleAssignments } from '../RoleAssignment/RoleAssignments'
 import {
-  roleAssignmentToRoleAssignmentUI,
-  RoleAssignmentUI,
+  roleAssignmentToFlattenedRoleAssignment,
+  FlattenedRoleAssignment,
 } from '../../../resources/clients/multicluster-role-assignment-client'
 
 // TODO: to remove once API ready
@@ -45,7 +45,7 @@ const RoleRoleAssignments = () => {
 
   // Filter multicluster role assignments for the current user
   // TODO: call useFindRoleAssignments instead ACM-23633
-  const roleAssignments: RoleAssignmentUI[] = useMemo(
+  const roleAssignments: FlattenedRoleAssignment[] = useMemo(
     () =>
       !user || !multiclusterRoleAssignments
         ? []
@@ -56,10 +56,10 @@ const RoleRoleAssignments = () => {
                 multiclusterRoleAssignment.spec.subject.name === user.metadata.name
             )
             .reduce(
-              (roleAssignmentsAcc: RoleAssignmentUI[], multiclusterRoleAssignmentCurr) => [
+              (roleAssignmentsAcc: FlattenedRoleAssignment[], multiclusterRoleAssignmentCurr) => [
                 ...roleAssignmentsAcc,
                 ...multiclusterRoleAssignmentCurr.spec.roleAssignments.map((roleAssignment) =>
-                  roleAssignmentToRoleAssignmentUI(multiclusterRoleAssignmentCurr, roleAssignment)
+                  roleAssignmentToFlattenedRoleAssignment(multiclusterRoleAssignmentCurr, roleAssignment)
                 ),
               ],
               []

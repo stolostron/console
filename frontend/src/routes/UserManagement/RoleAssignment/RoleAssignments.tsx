@@ -5,7 +5,10 @@ import { useCallback, useMemo, useState } from 'react'
 import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../lib/doc-util'
-import { deleteRoleAssignment, RoleAssignmentUI } from '../../../resources/clients/multicluster-role-assignment-client'
+import {
+  deleteRoleAssignment,
+  FlattenedRoleAssignment,
+} from '../../../resources/clients/multicluster-role-assignment-client'
 import { Group, ServiceAccount, User } from '../../../resources/rbac'
 import {
   AcmButton,
@@ -20,7 +23,7 @@ import { IdentityStatus } from '../../../ui-components/IdentityStatus/IdentitySt
 import { RoleAssignmentActionDropdown } from './RoleAssignmentActionDropdown'
 
 type RoleAssignmentsProps = {
-  roleAssignments: RoleAssignmentUI[]
+  roleAssignments: FlattenedRoleAssignment[]
   isLoading?: boolean
   hiddenColumns?: ('subject' | 'role' | 'clusters' | 'clusterSets')[]
 }
@@ -29,18 +32,18 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
   const { t } = useTranslation()
   // Key function for the table that generates a unique key for each role assignment
   const keyFn = useCallback(
-    (roleAssignment: RoleAssignmentUI) =>
+    (roleAssignment: FlattenedRoleAssignment) =>
       `${roleAssignment.clusterRole}${roleAssignment.clusterSets.join('')}${roleAssignment.targetNamespaces?.join('')}`,
     []
   )
 
   // Modal state for delete confirmation
-  const [modalProps, setModalProps] = useState<BulkActionModalProps<RoleAssignmentUI> | { open: false }>({
+  const [modalProps, setModalProps] = useState<BulkActionModalProps<FlattenedRoleAssignment> | { open: false }>({
     open: false,
   })
 
   // Table actions for bulk operations
-  const tableActions = useMemo<IAcmTableAction<RoleAssignmentUI>[]>(
+  const tableActions = useMemo<IAcmTableAction<FlattenedRoleAssignment>[]>(
     () => [
       {
         id: 'deleteRoleAssignments',
@@ -57,13 +60,14 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
             columns: [
               {
                 header: t('Subject'),
-                cell: (roleAssignment: RoleAssignmentUI) => `${roleAssignment.kind}: ${roleAssignment.name}`,
-                sort: (a: RoleAssignmentUI, b: RoleAssignmentUI) => compareStrings(a.name, b.name),
+                cell: (roleAssignment: FlattenedRoleAssignment) => `${roleAssignment.kind}: ${roleAssignment.name}`,
+                sort: (a: FlattenedRoleAssignment, b: FlattenedRoleAssignment) => compareStrings(a.name, b.name),
               },
               {
                 header: t('Role'),
-                cell: (roleAssignment: RoleAssignmentUI) => roleAssignment.clusterRole,
-                sort: (a: RoleAssignmentUI, b: RoleAssignmentUI) => compareStrings(a.clusterRole, b.clusterRole),
+                cell: (roleAssignment: FlattenedRoleAssignment) => roleAssignment.clusterRole,
+                sort: (a: FlattenedRoleAssignment, b: FlattenedRoleAssignment) =>
+                  compareStrings(a.clusterRole, b.clusterRole),
               },
             ],
             keyFn,
@@ -80,8 +84,8 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
     [t, keyFn]
   )
 
-  // Filters for RoleAssignmentUI
-  const filters = useMemo<ITableFilter<RoleAssignmentUI>[]>(() => {
+  // Filters for FlattenedRoleAssignment
+  const filters = useMemo<ITableFilter<FlattenedRoleAssignment>[]>(() => {
     // Get all unique values for filter options
     const allRoles = new Set<string>()
     const allClusterSets = new Set<string>()
@@ -173,7 +177,7 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
   )
 
   // Table columns
-  const columns: IAcmTableColumn<RoleAssignmentUI>[] = [
+  const columns: IAcmTableColumn<FlattenedRoleAssignment>[] = [
     {
       header: t('Role'),
       sort: (a, b) => compareStrings(a.clusterRole, b.clusterRole),
@@ -259,7 +263,7 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
       sort: 'metadata.creationTimestamp',
       cellTransforms: [nowrap],
       cell: () => {
-        // RoleAssignmentUI doesn't have metadata.creationTimestamp
+        // FlattenedRoleAssignment doesn't have metadata.creationTimestamp
         // We could show the parent MulticlusterRoleAssignment creation time instead
         return <span>-</span>
       },
@@ -267,7 +271,7 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
     },
     {
       header: '',
-      cell: (roleAssignment: RoleAssignmentUI) => (
+      cell: (roleAssignment: FlattenedRoleAssignment) => (
         <RoleAssignmentActionDropdown
           roleAssignment={roleAssignment}
           setModalProps={setModalProps}
@@ -284,7 +288,7 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
       {isLoading ? (
         <AcmLoadingPage />
       ) : (
-        <AcmTable<RoleAssignmentUI>
+        <AcmTable<FlattenedRoleAssignment>
           key="role-assignments-table"
           columns={columns}
           keyFn={keyFn}
@@ -313,7 +317,7 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
           }
         />
       )}
-      <BulkActionModal<RoleAssignmentUI> {...modalProps} />
+      <BulkActionModal<FlattenedRoleAssignment> {...modalProps} />
     </PageSection>
   )
 }

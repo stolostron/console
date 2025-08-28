@@ -9,7 +9,7 @@ import multiclusterRoleAssignmentsMockData from './mock-data/multicluster-role-a
 import {
   create,
   deleteRoleAssignment,
-  RoleAssignmentUI,
+  FlattenedRoleAssignment,
   useFindRoleAssignments,
 } from './multicluster-role-assignment-client'
 
@@ -169,7 +169,7 @@ describe('multicluster-role-assignment-client', function () {
       // Arrange
       const multiClusterRoleAssignment: MulticlusterRoleAssignment =
         multiclusterRoleAssignmentsMockData[0] as MulticlusterRoleAssignment
-      const roleAssignmentToRemove: RoleAssignmentUI = {
+      const roleAssignmentToRemove: FlattenedRoleAssignment = {
         relatedMulticlusterRoleAssignment: multiClusterRoleAssignment,
         clusterRole: 'kubevirt.io:admin',
         clusterSets: [
@@ -218,7 +218,7 @@ describe('multicluster-role-assignment-client', function () {
       // Arrange
       const multiClusterRoleAssignment: MulticlusterRoleAssignment =
         multiclusterRoleAssignmentsMockData[5] as MulticlusterRoleAssignment
-      const roleAssignmentToRemove: RoleAssignmentUI = {
+      const roleAssignmentToRemove: FlattenedRoleAssignment = {
         relatedMulticlusterRoleAssignment: multiClusterRoleAssignment,
         clusterRole: 'kubevirt.io:edit',
         clusterSets: ['development-cluster'],
@@ -313,7 +313,7 @@ describe('multicluster-role-assignment-client', function () {
         // Arrange
         const multiClusterRoleAssignment: MulticlusterRoleAssignment =
           multiclusterRoleAssignmentsMockData[0] as MulticlusterRoleAssignment
-        const roleAssignmentToRemove: RoleAssignmentUI = {
+        const roleAssignmentToRemove: FlattenedRoleAssignment = {
           relatedMulticlusterRoleAssignment: multiClusterRoleAssignment,
           kind: 'User',
           name: 'alice.trask',

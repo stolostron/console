@@ -8,8 +8,8 @@ import { NavigationPath } from '../../../../NavigationPath'
 import { User } from '../../../../resources'
 import multiclusterRoleAssignmentsMockDataJson from '../../../../resources/clients/mock-data/multicluster-role-assignments.json'
 import {
-  roleAssignmentToRoleAssignmentUI,
-  RoleAssignmentUI,
+  roleAssignmentToFlattenedRoleAssignment,
+  FlattenedRoleAssignment,
 } from '../../../../resources/clients/multicluster-role-assignment-client'
 import { MulticlusterRoleAssignment } from '../../../../resources/multicluster-role-assignment'
 import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
@@ -50,7 +50,7 @@ const UserRoleAssignments = () => {
   const multiclusterRoleAssignments = multiclusterRoleAssignmentsMockDataJson as MulticlusterRoleAssignment[]
 
   // TODO: call useFindRoleAssignments instead ACM-23633
-  const roleAssignments: RoleAssignmentUI[] = useMemo(
+  const roleAssignments: FlattenedRoleAssignment[] = useMemo(
     () =>
       !user || !multiclusterRoleAssignments
         ? []
@@ -61,10 +61,10 @@ const UserRoleAssignments = () => {
                 multiclusterRoleAssignment.spec.subject.name === user.metadata.name
             )
             .reduce(
-              (roleAssignmentsAcc: RoleAssignmentUI[], multiclusterRoleAssignmentCurr) => [
+              (roleAssignmentsAcc: FlattenedRoleAssignment[], multiclusterRoleAssignmentCurr) => [
                 ...roleAssignmentsAcc,
                 ...multiclusterRoleAssignmentCurr.spec.roleAssignments.map((roleAssignment) =>
-                  roleAssignmentToRoleAssignmentUI(multiclusterRoleAssignmentCurr, roleAssignment)
+                  roleAssignmentToFlattenedRoleAssignment(multiclusterRoleAssignmentCurr, roleAssignment)
                 ),
               ],
               []

@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import { BulkActionModalProps } from '../../../components/BulkActionModal'
 import { RbacDropdown } from '../../../components/Rbac'
 import { useTranslation } from '../../../lib/acm-i18next'
-import { RoleAssignmentUI } from '../../../resources/clients/multicluster-role-assignment-client'
+import { FlattenedRoleAssignment } from '../../../resources/clients/multicluster-role-assignment-client'
 import { IRequestResult } from '../../../resources/utils'
 import { compareStrings } from '../../../ui-components'
 
@@ -12,14 +12,14 @@ const RoleAssignmentActionDropdown = ({
   setModalProps,
   deleteAction,
 }: {
-  roleAssignment: RoleAssignmentUI
-  setModalProps: (props: BulkActionModalProps<RoleAssignmentUI> | { open: false }) => void
-  deleteAction: (roleAssignment: RoleAssignmentUI) => IRequestResult<unknown>
+  roleAssignment: FlattenedRoleAssignment
+  setModalProps: (props: BulkActionModalProps<FlattenedRoleAssignment> | { open: false }) => void
+  deleteAction: (roleAssignment: FlattenedRoleAssignment) => IRequestResult<unknown>
 }) => {
   const { t } = useTranslation()
 
   const keyFn = useCallback(
-    (roleAssignment: RoleAssignmentUI) =>
+    (roleAssignment: FlattenedRoleAssignment) =>
       `${roleAssignment.clusterRole}${roleAssignment.clusterSets.join('')}${roleAssignment.targetNamespaces?.join('')}`,
     []
   )
@@ -28,7 +28,7 @@ const RoleAssignmentActionDropdown = ({
     {
       id: 'delete-role-assignment',
       text: t('Delete role assignment'),
-      click: (roleAssignment: RoleAssignmentUI) => {
+      click: (roleAssignment: FlattenedRoleAssignment) => {
         setModalProps({
           open: true,
           title: t('Delete role assignment?'),
@@ -40,13 +40,14 @@ const RoleAssignmentActionDropdown = ({
           columns: [
             {
               header: t('Subject'),
-              cell: (roleAssignment: RoleAssignmentUI) => `${roleAssignment.kind}: ${roleAssignment.name}`,
-              sort: (a: RoleAssignmentUI, b: RoleAssignmentUI) => compareStrings(a.name, b.name),
+              cell: (roleAssignment: FlattenedRoleAssignment) => `${roleAssignment.kind}: ${roleAssignment.name}`,
+              sort: (a: FlattenedRoleAssignment, b: FlattenedRoleAssignment) => compareStrings(a.name, b.name),
             },
             {
               header: t('Role'),
-              cell: (roleAssignment: RoleAssignmentUI) => roleAssignment.clusterRole,
-              sort: (a: RoleAssignmentUI, b: RoleAssignmentUI) => compareStrings(a.clusterRole, b.clusterRole),
+              cell: (roleAssignment: FlattenedRoleAssignment) => roleAssignment.clusterRole,
+              sort: (a: FlattenedRoleAssignment, b: FlattenedRoleAssignment) =>
+                compareStrings(a.clusterRole, b.clusterRole),
             },
           ],
           keyFn,
@@ -61,7 +62,7 @@ const RoleAssignmentActionDropdown = ({
   ]
 
   return (
-    <RbacDropdown<RoleAssignmentUI>
+    <RbacDropdown<FlattenedRoleAssignment>
       id={`${keyFn(roleAssignment)}-actions`}
       item={roleAssignment}
       isKebab={true}

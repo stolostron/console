@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { fireEvent, render, screen } from '@testing-library/react'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
-import { RoleAssignmentUI } from '../../../resources/clients/multicluster-role-assignment-client'
+import { FlattenedRoleAssignment } from '../../../resources/clients/multicluster-role-assignment-client'
 import { MulticlusterRoleAssignment } from '../../../resources/multicluster-role-assignment'
 import { RoleAssignmentActionDropdown } from './RoleAssignmentActionDropdown'
 
@@ -28,7 +28,7 @@ jest.mock('@patternfly/react-core', () => ({
   ),
 }))
 
-const mockRoleAssignment: RoleAssignmentUI = {
+const mockRoleAssignment: FlattenedRoleAssignment = {
   relatedMulticlusterRoleAssignment: {} as MulticlusterRoleAssignment,
   clusterRole: 'admin',
   clusterSets: ['production', 'staging'],

@@ -5,7 +5,10 @@ import { RecoilRoot } from 'recoil'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
 import { defaultPlugin, PluginContext } from '../../../lib/PluginContext'
 import { clickByText, waitForText } from '../../../lib/test-util'
-import { deleteRoleAssignment, RoleAssignmentUI } from '../../../resources/clients/multicluster-role-assignment-client'
+import {
+  deleteRoleAssignment,
+  FlattenedRoleAssignment,
+} from '../../../resources/clients/multicluster-role-assignment-client'
 import { MulticlusterRoleAssignment } from '../../../resources/multicluster-role-assignment'
 import { AcmToastContext } from '../../../ui-components'
 import { RoleAssignments } from './RoleAssignments'
@@ -75,7 +78,7 @@ const mockMulticlusterRoleAssignments: MulticlusterRoleAssignment[] = [
   },
 ]
 
-const mockRoleAssignments: RoleAssignmentUI[] = [
+const mockRoleAssignments: FlattenedRoleAssignment[] = [
   {
     clusterRole: 'admin',
     targetNamespaces: ['default', 'kube-system'],
@@ -320,7 +323,7 @@ const Component = ({
   isLoading = false,
   hiddenColumns = undefined,
 }: {
-  roleAssignments?: RoleAssignmentUI[]
+  roleAssignments?: FlattenedRoleAssignment[]
   isLoading?: boolean
   hiddenColumns?: ('subject' | 'role' | 'clusters' | 'clusterSets')[]
 } = {}) => (
