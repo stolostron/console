@@ -86,7 +86,5 @@ describe('ScaleClusterAlert', () => {
     cluster.status = ClusterStatus.unreachable
     rerender(Component({ ...props }))
     await waitForText('Unreachable')
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    screen.logTestingPlaygroundURL()
   })
 })
