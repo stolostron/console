@@ -312,7 +312,6 @@ describe('RoleAssignments', () => {
 
   it('renders with role assignments data', async () => {
     render(<Component />)
-    screen.logTestingPlaygroundURL()
     await waitForText('test-cluster-1', true) // Allow multiple matches
     await waitForText('User: test.user1', true) // Allow multiple matches
     await waitForText('admin', true) // Allow multiple matches
