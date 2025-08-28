@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { BASE_K8S_API_PATH, MANAGED_CLUSTER_API_PATH } from '../internal/constants'
-import { getBackendUrl } from '../internal/apiRequests'
+import { BACKEND_URL, BASE_K8S_API_PATH, MANAGED_CLUSTER_API_PATH } from '../internal/constants'
 import { getFleetK8sAPIPath } from './getFleetK8sAPIPath'
 
 jest.mock('../internal/cachedHubConfiguration', () => ({
@@ -50,7 +49,7 @@ describe(`getFleetK8sAPIPath`, function () {
     mockFetchHubConfiguration.mockResolvedValue({ localHubName: 'local-cluster' })
 
     const result = await getFleetK8sAPIPath('remote-cluster')
-    expect(result).toEqual(`${getBackendUrl()}/${MANAGED_CLUSTER_API_PATH}/remote-cluster`)
+    expect(result).toEqual(`${BACKEND_URL}/${MANAGED_CLUSTER_API_PATH}/remote-cluster`)
     expect(mockFetchHubConfiguration).toHaveBeenCalledTimes(1)
   })
 
@@ -58,7 +57,7 @@ describe(`getFleetK8sAPIPath`, function () {
     mockFetchHubConfiguration.mockResolvedValue(undefined)
 
     const result = await getFleetK8sAPIPath('any-cluster')
-    expect(result).toEqual(`${getBackendUrl()}/${MANAGED_CLUSTER_API_PATH}/any-cluster`)
+    expect(result).toEqual(`${BACKEND_URL}/${MANAGED_CLUSTER_API_PATH}/any-cluster`)
     expect(mockFetchHubConfiguration).toHaveBeenCalledTimes(1)
   })
 

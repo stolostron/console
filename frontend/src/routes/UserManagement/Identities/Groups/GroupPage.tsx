@@ -18,51 +18,48 @@ import { Page, PageSection } from '@patternfly/react-core'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
 
-export type UserDetailsContext = {
-  readonly user?: User
-  readonly groups?: Group[]
+export type GroupDetailsContext = {
+  readonly group?: Group
+  readonly users?: User[]
   readonly loading: boolean
-  readonly groupsLoading: boolean
+  readonly usersLoading: boolean
 }
 
-const UserPage = () => {
+const GroupPage = () => {
   const { t } = useTranslation()
   const { id = undefined } = useParams()
   const location = useLocation()
   const navigate = useNavigate()
-
   // TODO: Replace the mockdata when backend is implemented
-  // const { data: users, loading } = useQuery(listUsers)
 
   // Use mock data from centralized file
   const users = mockUsers
   const loading = false as boolean
-  // Mock groups data - some users belong to groups, others don't
-  // const { data: groups, loading: groupsLoading } = useQuery(listGroups)
+
+  // TODO: Replace the mockdata when backend is implemented
 
   // Use mock data from centralized file
   const groups = mockGroups
   const groupsLoading = false as boolean
+  const group = useMemo(() => {
+    if (!groups || !id) return undefined
+    return groups.find((u) => u.metadata.uid === id || u.metadata.name === id)
+  }, [groups, id])
 
-  const user = useMemo(() => {
-    if (!users || !id) return undefined
-    return users.find((u) => u.metadata.uid === id || u.metadata.name === id)
-  }, [users, id])
-
-  const userDetailsContext = useMemo<UserDetailsContext>(
+  const groupDetailsContext = useMemo<GroupDetailsContext>(
     () => ({
-      user,
-      groups,
+      group,
+      users,
       loading,
-      groupsLoading,
+      usersLoading: groupsLoading,
     }),
-    [user, groups, loading, groupsLoading]
+    [group, users, loading, groupsLoading]
   )
 
-  const isDetailsActive = location.pathname === generatePath(NavigationPath.identitiesUsersDetails, { id: id ?? '' })
+  const isDetailsActive = location.pathname === generatePath(NavigationPath.identitiesGroupsDetails, { id: id ?? '' })
   const isYamlActive = location.pathname.includes('/yaml')
   const isRoleAssignmentsActive = location.pathname.includes('/role-assignments')
-  const isGroupsActive = location.pathname.includes('/groups')
+  const isUsersActive = location.pathname.includes('/users')
 
   switch (true) {
     case loading:
@@ -71,7 +68,7 @@ const UserPage = () => {
           <AcmLoadingPage />
         </PageSection>
       )
-    case !user:
+    case !group:
       return (
         <Page>
           <ErrorPage
@@ -79,10 +76,10 @@ const UserPage = () => {
             actions={
               <AcmButton
                 role="link"
-                onClick={() => navigate(NavigationPath.identitiesUsers)}
+                onClick={() => navigate(NavigationPath.identitiesGroups)}
                 style={{ marginRight: '10px' }}
               >
-                {t('button.backToUsers')}
+                {t('button.backToGroups')}
               </AcmButton>
             }
           />
@@ -94,45 +91,45 @@ const UserPage = () => {
           hasDrawer
           header={
             <AcmPageHeader
-              title={user.fullName ?? user.metadata.name}
-              description={user.metadata.name}
+              title={group.metadata.name ?? t('Unknown Group')}
+              description={group.metadata.name}
               breadcrumb={[
-                { text: t('User Management'), to: NavigationPath.roles },
+                { text: t('User Management'), to: NavigationPath.identitiesGroups },
                 { text: t('Identities'), to: NavigationPath.identities },
-                { text: t('Users'), to: NavigationPath.identitiesUsers },
-                { text: user.fullName ?? user.metadata.name ?? t('Unknown User') },
+                { text: t('Groups'), to: NavigationPath.identitiesGroups },
+                { text: group.metadata.name ?? t('Unknown Group') },
               ]}
               navigation={
                 <AcmSecondaryNav>
                   <AcmSecondaryNavItem isActive={isDetailsActive}>
-                    <Link to={generatePath(NavigationPath.identitiesUsersDetails, { id: id ?? '' })}>
+                    <Link to={generatePath(NavigationPath.identitiesGroupsDetails, { id: id ?? '' })}>
                       {t('Details')}
                     </Link>
                   </AcmSecondaryNavItem>
                   <AcmSecondaryNavItem isActive={isYamlActive}>
-                    <Link to={generatePath(NavigationPath.identitiesUsersYaml, { id: id ?? '' })}>{t('YAML')}</Link>
+                    <Link to={generatePath(NavigationPath.identitiesGroupsYaml, { id: id ?? '' })}>{t('YAML')}</Link>
                   </AcmSecondaryNavItem>
                   <AcmSecondaryNavItem isActive={isRoleAssignmentsActive}>
-                    <Link to={generatePath(NavigationPath.identitiesUsersRoleAssignments, { id: id ?? '' })}>
+                    <Link to={generatePath(NavigationPath.identitiesGroupsRoleAssignments, { id: id ?? '' })}>
                       {t('Role assignments')}
                     </Link>
                   </AcmSecondaryNavItem>
-                  <AcmSecondaryNavItem isActive={isGroupsActive}>
-                    <Link to={generatePath(NavigationPath.identitiesUsersGroups, { id: id ?? '' })}>{t('Groups')}</Link>
+                  <AcmSecondaryNavItem isActive={isUsersActive}>
+                    <Link to={generatePath(NavigationPath.identitiesGroupsUsers, { id: id ?? '' })}>{t('Users')}</Link>
                   </AcmSecondaryNavItem>
                 </AcmSecondaryNav>
               }
             />
           }
         >
-          <Outlet context={userDetailsContext} />
+          <Outlet context={groupDetailsContext} />
         </AcmPage>
       )
   }
 }
 
-export { UserPage }
+export { GroupPage }
 
-export function useUserDetailsContext() {
-  return useOutletContext<UserDetailsContext>()
+export function useGroupDetailsContext() {
+  return useOutletContext<GroupDetailsContext>()
 }

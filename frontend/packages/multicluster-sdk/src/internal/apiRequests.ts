@@ -4,7 +4,7 @@ import { K8sModel, QueryParams, Selector } from '@openshift-console/dynamic-plug
 
 import { BASE_K8S_API_PATH } from '../internal/constants'
 import { getFleetK8sAPIPath } from '../api/getFleetK8sAPIPath'
-import { selectorToString } from '../api/utils/requirements'
+import { selectorToString } from './requirements'
 
 export type FleetK8sAPIOptions = {
   model: K8sModel

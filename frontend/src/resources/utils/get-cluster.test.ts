@@ -1,21 +1,123 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ClusterDeployment, ClusterDeploymentApiVersion, ClusterDeploymentKind } from '../cluster-deployment'
-import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind } from '../managed-cluster'
-import { ManagedClusterInfo, ManagedClusterInfoApiVersion, ManagedClusterInfoKind } from '../managed-cluster-info'
+import { AgentClusterInstallK8sResource, HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { ClusterCurator, ClusterCuratorApiVersion, ClusterCuratorKind } from '../cluster-curator'
+import { ClusterDeployment, ClusterDeploymentApiVersion, ClusterDeploymentKind } from '../cluster-deployment'
 import {
   ClusterStatus,
   getClusterStatus,
   getDistributionInfo,
-  getHCUpgradeStatus,
   getHCUpgradePercent,
+  getHCUpgradeStatus,
   getIsHostedCluster,
+  getProvider,
 } from './get-cluster'
 import { HostedClusterApiVersion, HostedClusterKind } from '../'
-import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
+import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind } from '../managed-cluster'
+import { ManagedClusterInfo, ManagedClusterInfoApiVersion, ManagedClusterInfoKind } from '../managed-cluster-info'
+
+import { AgentClusterInstallKind } from '../agent-cluster-install'
+import { Provider } from '../../ui-components'
 import { cloneDeep } from 'lodash'
+
 export const clusterName = 'test-cluster'
+
+// Helper functions for creating test resources
+const createManagedClusterWithPlatformClaim = (claimValue: string): ManagedCluster =>
+  ({
+    apiVersion: 'cluster.open-cluster-management.io/v1',
+    kind: 'ManagedCluster',
+    metadata: { name: 'test-cluster' },
+    spec: { hubAcceptsClient: true },
+    status: {
+      clusterClaims: [{ name: 'platform.open-cluster-management.io', value: claimValue }],
+    } as any,
+  }) as ManagedCluster
+
+const createManagedClusterWithProductClaim = (productValue: string, platformValue = 'AWS'): ManagedCluster =>
+  ({
+    apiVersion: 'cluster.open-cluster-management.io/v1',
+    kind: 'ManagedCluster',
+    metadata: { name: 'test-cluster' },
+    spec: { hubAcceptsClient: true },
+    status: {
+      clusterClaims: [
+        { name: 'product.open-cluster-management.io', value: productValue },
+        { name: 'platform.open-cluster-management.io', value: platformValue },
+      ],
+    } as any,
+  }) as ManagedCluster
+
+const createManagedClusterWithMultipleClaims = (claims: Array<{ name: string; value: string }>): ManagedCluster =>
+  ({
+    apiVersion: 'cluster.open-cluster-management.io/v1',
+    kind: 'ManagedCluster',
+    metadata: { name: 'test-cluster' },
+    spec: { hubAcceptsClient: true },
+    status: {
+      clusterClaims: claims,
+    } as any,
+  }) as ManagedCluster
+
+const createManagedClusterInfoWithCloudLabel = (cloudValue: string): ManagedClusterInfo =>
+  ({
+    apiVersion: 'internal.open-cluster-management.io/v1beta1',
+    kind: 'ManagedClusterInfo',
+    metadata: {
+      name: 'test-cluster',
+      namespace: 'test-cluster',
+      labels: {
+        cloud: cloudValue,
+      },
+    },
+    spec: {},
+  }) as ManagedClusterInfo
+
+const createBasicManagedCluster = (): ManagedCluster =>
+  ({
+    apiVersion: 'cluster.open-cluster-management.io/v1',
+    kind: 'ManagedCluster',
+    metadata: { name: 'test-cluster' },
+    spec: { hubAcceptsClient: true },
+  }) as ManagedCluster
+
+const createBasicManagedClusterInfo = (): ManagedClusterInfo =>
+  ({
+    apiVersion: 'internal.open-cluster-management.io/v1beta1',
+    kind: 'ManagedClusterInfo',
+    metadata: { name: 'test-cluster', namespace: 'test-cluster' },
+    spec: {},
+  }) as ManagedClusterInfo
+
+const createClusterDeploymentWithInstallRef = (): ClusterDeployment =>
+  ({
+    apiVersion: 'hive.openshift.io/v1',
+    kind: 'ClusterDeployment',
+    metadata: { name: 'test-cluster', namespace: 'test-cluster' },
+    spec: {
+      clusterName: 'test-cluster',
+      clusterInstallRef: {
+        group: 'extensions.hive.openshift.io',
+        version: 'v1beta1',
+        kind: AgentClusterInstallKind,
+        name: 'test-cluster',
+      },
+    },
+  }) as ClusterDeployment
+
+const createAgentClusterInstallWithPlatformType = (platformType: string): AgentClusterInstallK8sResource =>
+  ({
+    apiVersion: 'extensions.hive.openshift.io/v1beta1',
+    kind: AgentClusterInstallKind,
+    metadata: { name: 'test-cluster', namespace: 'test-cluster' },
+    spec: {
+      clusterDeploymentRef: { name: 'test-cluster' },
+      imageSetRef: { name: 'test-image-set' },
+      platformType,
+      networking: { clusterNetwork: [], serviceNetwork: [] },
+    },
+  }) as unknown as AgentClusterInstallK8sResource
+
 const mockClusterCurator: ClusterCurator = {
   apiVersion: ClusterCuratorApiVersion,
   kind: ClusterCuratorKind,
@@ -1480,5 +1582,232 @@ describe('getHCUpgradePercent', () => {
     }
 
     expect(getHCUpgradePercent(hc)).toEqual('(84% complete)')
+  })
+})
+
+describe('getProvider', () => {
+  describe('recognizes all known provider values', () => {
+    it('should return Provider.aws for AWS platform claim', () => {
+      const managedCluster = createManagedClusterWithPlatformClaim('AWS')
+      const result = getProvider({ managedCluster })
+      expect(result).toBe(Provider.aws)
+    })
+
+    it('should return Provider.gcp for Google cloud label', () => {
+      const managedClusterInfo = createManagedClusterInfoWithCloudLabel('google')
+      const result = getProvider({ managedClusterInfo })
+      expect(result).toBe(Provider.gcp)
+    })
+
+    it('should return Provider.azure for Azure platform claim', () => {
+      const managedCluster = createManagedClusterWithPlatformClaim('AZURE')
+      const result = getProvider({ managedCluster })
+      expect(result).toBe(Provider.azure)
+    })
+
+    it('should return Provider.vmware for VMware cloud label', () => {
+      const managedClusterInfo = createManagedClusterInfoWithCloudLabel('vmware')
+      const result = getProvider({ managedClusterInfo })
+      expect(result).toBe(Provider.vmware)
+    })
+
+    it('should return Provider.openstack for OpenStack platform claim', () => {
+      const managedCluster = createManagedClusterWithPlatformClaim('OPENSTACK')
+      const result = getProvider({ managedCluster })
+      expect(result).toBe(Provider.openstack)
+    })
+
+    it('should return Provider.baremetal for BareMetal platform claim', () => {
+      const managedCluster = createManagedClusterWithPlatformClaim('BAREMETAL')
+      const result = getProvider({ managedCluster })
+      expect(result).toBe(Provider.baremetal)
+    })
+
+    it('should return Provider.ibm for IBM cloud label', () => {
+      const managedClusterInfo = createManagedClusterInfoWithCloudLabel('ibm')
+      const result = getProvider({ managedCluster: undefined, managedClusterInfo })
+      expect(result).toBe(Provider.ibm)
+    })
+
+    it('should return Provider.other for OTHER platform claim', () => {
+      const managedCluster = createManagedClusterWithPlatformClaim('OTHER')
+      const result = getProvider({ managedCluster })
+      expect(result).toBe(Provider.other)
+    })
+
+    it('should return Provider.other for unknown platform claim', () => {
+      const managedCluster = createManagedClusterWithPlatformClaim('UNKNOWN_PLATFORM')
+      const result = getProvider({ managedCluster })
+      expect(result).toBe(Provider.other)
+    })
+
+    it('should return Provider.microshift for MicroShift product claim', () => {
+      const managedCluster = createManagedClusterWithProductClaim('MicroShift', 'AWS')
+      const result = getProvider({ managedCluster })
+      expect(result).toBe(Provider.microshift)
+    })
+
+    it('should return Provider.aws for Amazon platform claim', () => {
+      const managedCluster = createManagedClusterWithPlatformClaim('AMAZON')
+      const result = getProvider({ managedCluster })
+      expect(result).toBe(Provider.aws)
+    })
+
+    it('should return Provider.aws for EKS cloud label', () => {
+      const managedClusterInfo = createManagedClusterInfoWithCloudLabel('eks')
+      const result = getProvider({ managedClusterInfo })
+      expect(result).toBe(Provider.aws)
+    })
+
+    it('should return Provider.gcp for GKE platform claim', () => {
+      const managedCluster = createManagedClusterWithPlatformClaim('GKE')
+      const result = getProvider({ managedCluster })
+      expect(result).toBe(Provider.gcp)
+    })
+
+    it('should return Provider.gcp for GCP cloud label', () => {
+      const managedClusterInfo = createManagedClusterInfoWithCloudLabel('gcp')
+      const result = getProvider({ managedClusterInfo })
+      expect(result).toBe(Provider.gcp)
+    })
+
+    it('should return Provider.gcp for GCE platform claim', () => {
+      const managedCluster = createManagedClusterWithPlatformClaim('GCE')
+      const result = getProvider({ managedCluster })
+      expect(result).toBe(Provider.gcp)
+    })
+
+    it('should return Provider.azure for AKS cloud label', () => {
+      const managedClusterInfo = createManagedClusterInfoWithCloudLabel('aks')
+      const result = getProvider({ managedClusterInfo })
+      expect(result).toBe(Provider.azure)
+    })
+
+    it('should return Provider.ibm for IKS platform claim', () => {
+      const managedCluster = createManagedClusterWithPlatformClaim('IKS')
+      const result = getProvider({ managedCluster })
+      expect(result).toBe(Provider.ibm)
+    })
+
+    it('should return Provider.ibmpower for IBMPOWERPLATFORM cloud label', () => {
+      const managedClusterInfo = createManagedClusterInfoWithCloudLabel('ibmpowerplatform')
+      const result = getProvider({ managedClusterInfo })
+      expect(result).toBe(Provider.ibmpower)
+    })
+
+    it('should return Provider.ibmz for IBMZPLATFORM platform claim', () => {
+      const managedCluster = createManagedClusterWithPlatformClaim('IBMZPLATFORM')
+      const result = getProvider({ managedCluster })
+      expect(result).toBe(Provider.ibmz)
+    })
+
+    it('should return Provider.vmware for VSPHERE cloud label', () => {
+      const managedClusterInfo = createManagedClusterInfoWithCloudLabel('vsphere')
+      const result = getProvider({ managedClusterInfo })
+      expect(result).toBe(Provider.vmware)
+    })
+
+    it('should return Provider.alibaba for ALIBABA platform claim', () => {
+      const managedCluster = createManagedClusterWithPlatformClaim('ALIBABA')
+      const result = getProvider({ managedCluster })
+      expect(result).toBe(Provider.alibaba)
+    })
+
+    it('should return Provider.alibaba for ALICLOUD cloud label', () => {
+      const managedClusterInfo = createManagedClusterInfoWithCloudLabel('alicloud')
+      const result = getProvider({ managedClusterInfo })
+      expect(result).toBe(Provider.alibaba)
+    })
+
+    it('should return Provider.alibaba for ALIBABACLOUD platform claim', () => {
+      const managedCluster = createManagedClusterWithPlatformClaim('ALIBABACLOUD')
+      const result = getProvider({ managedCluster })
+      expect(result).toBe(Provider.alibaba)
+    })
+
+    it('should return Provider.kubevirt for KUBEVIRT cloud label', () => {
+      const managedClusterInfo = createManagedClusterInfoWithCloudLabel('kubevirt')
+      const result = getProvider({ managedClusterInfo })
+      expect(result).toBe(Provider.kubevirt)
+    })
+
+    it('should return Provider.nutanix for AgentClusterInstall with Nutanix platformType', () => {
+      const clusterDeployment = createClusterDeploymentWithInstallRef()
+      const agentClusterInstall = createAgentClusterInstallWithPlatformType('Nutanix')
+
+      const result = getProvider({
+        clusterDeployment,
+        agentClusterInstall,
+      })
+      expect(result).toBe(Provider.nutanix)
+    })
+
+    it('should return Provider.hostinventory for AgentClusterInstall with non-Nutanix platformType', () => {
+      const clusterDeployment = createClusterDeploymentWithInstallRef()
+      const agentClusterInstall = createAgentClusterInstallWithPlatformType('BareMetal')
+
+      const result = getProvider({
+        clusterDeployment,
+        agentClusterInstall,
+      })
+      expect(result).toBe(Provider.hostinventory)
+    })
+
+    it('should return Provider.nutanix for platformClusterClaim with NUTANIX value', () => {
+      const managedCluster = createManagedClusterWithMultipleClaims([
+        { name: 'platform.open-cluster-management.io', value: 'NUTANIX' },
+        { name: 'other.claim', value: 'some-value' },
+      ])
+
+      const result = getProvider({ managedCluster })
+      expect(result).toBe(Provider.nutanix)
+    })
+
+    it('should return Provider.nutanix for cloudLabel with nutanix value (case insensitive)', () => {
+      const managedClusterInfo = createManagedClusterInfoWithCloudLabel('nutanix')
+      const result = getProvider({ managedClusterInfo })
+      expect(result).toBe(Provider.nutanix)
+    })
+
+    it('should return Provider.nutanix for cloudLabel with uppercase NUTANIX value', () => {
+      const managedClusterInfo = createManagedClusterInfoWithCloudLabel('NUTANIX')
+      const result = getProvider({ managedClusterInfo })
+      expect(result).toBe(Provider.nutanix)
+    })
+  })
+
+  describe('handles edge cases', () => {
+    it('should return undefined when no provider information is available', () => {
+      const result = getProvider({})
+      expect(result).toBeUndefined()
+    })
+
+    it('should return undefined when only empty objects are provided', () => {
+      const managedCluster = createBasicManagedCluster()
+      const managedClusterInfo = createBasicManagedClusterInfo()
+
+      const result = getProvider({
+        managedCluster,
+        managedClusterInfo,
+      })
+      expect(result).toBeUndefined()
+    })
+
+    it('should prioritize cloud label over platform claim', () => {
+      const managedCluster = createManagedClusterWithPlatformClaim('NUTANIX')
+      const managedClusterInfo = createManagedClusterInfoWithCloudLabel('aws')
+
+      const result = getProvider({
+        managedCluster,
+        managedClusterInfo,
+      })
+      expect(result).toBe(Provider.aws)
+    })
+
+    it('should return undefined for AUTO-DETECT platform claim', () => {
+      const managedCluster = createManagedClusterWithPlatformClaim('AUTO-DETECT')
+      const result = getProvider({ managedCluster })
+      expect(result).toBeUndefined()
+    })
   })
 })

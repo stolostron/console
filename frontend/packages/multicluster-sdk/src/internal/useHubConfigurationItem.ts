@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { NO_FLEET_AVAILABLE_ERROR } from './constants'
 import { fetchHubConfiguration, getCachedHubConfiguration, HubConfiguration } from './cachedHubConfiguration'
-import { useIsFleetAvailable } from '../api'
+import { useIsFleetAvailable } from '../api/useIsFleetAvailable'
 
 export const useHubConfigurationItem = <K extends keyof HubConfiguration>(
   key: K

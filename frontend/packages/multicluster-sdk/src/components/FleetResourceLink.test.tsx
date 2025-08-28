@@ -51,7 +51,7 @@ jest.mock('../api/useIsFleetAvailable', () => ({
 }))
 
 // mock search paths utility
-jest.mock('../api/utils/searchPaths', () => ({
+jest.mock('../internal/search/searchPaths', () => ({
   getURLSearchParam: ({ cluster, kind, apigroup, apiversion, name, namespace }: any) => {
     const params = new URLSearchParams()
     if (cluster) params.append('cluster', cluster)

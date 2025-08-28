@@ -11,7 +11,8 @@ import { UserYaml } from './Users/UserYaml'
 // import { RoleAssignments } from './../Roles/RoleAssignments'
 import { UserRoleAssignments } from './Users/UserRoleAssignments'
 import { UserGroups } from './Users/UserGroups'
-import { GroupDetail } from './Groups/GroupDetail'
+import { GroupPage } from './Groups/GroupPage'
+import { GroupDetails } from './Groups/GroupDetails'
 import { GroupYaml } from './Groups/GroupYaml'
 import { GroupRoleAssignments } from './Groups/GroupRoleAssignments'
 import { GroupUsers } from './Groups/GroupUsers'
@@ -43,13 +44,18 @@ export default function IdentitiesManagement() {
       </Route>
 
       {/* Group detail routes */}
-      <Route path={identitiesChildPath(NavigationPath.identitiesGroupsYaml)} element={<GroupYaml />} />
-      <Route
-        path={identitiesChildPath(NavigationPath.identitiesGroupsRoleAssignments)}
-        element={<GroupRoleAssignments />}
-      />
-      <Route path={identitiesChildPath(NavigationPath.identitiesGroupsUsers)} element={<GroupUsers />} />
-      <Route path={identitiesChildPath(NavigationPath.identitiesGroupsDetails)} element={<GroupDetail />} />
+      <Route path={identitiesChildPath(NavigationPath.identitiesGroupsDetails)} element={<GroupPage />}>
+        <Route index element={<GroupDetails />} />
+      </Route>
+      <Route path={identitiesChildPath(NavigationPath.identitiesGroupsYaml)} element={<GroupPage />}>
+        <Route index element={<GroupYaml />} />
+      </Route>
+      <Route path={identitiesChildPath(NavigationPath.identitiesGroupsRoleAssignments)} element={<GroupPage />}>
+        <Route index element={<GroupRoleAssignments />} />
+      </Route>
+      <Route path={identitiesChildPath(NavigationPath.identitiesGroupsUsers)} element={<GroupPage />}>
+        <Route index element={<GroupUsers />} />
+      </Route>
 
       {/* Service Account detail routes */}
       <Route

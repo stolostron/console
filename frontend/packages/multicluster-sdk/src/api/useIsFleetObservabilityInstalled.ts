@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { UseIsFleetObservabilityInstalled } from '../types'
 import { useHubConfigurationItem } from '../internal/useHubConfigurationItem'
 
 /**
@@ -7,5 +6,10 @@ import { useHubConfigurationItem } from '../internal/useHubConfigurationItem'
  *
  * @returns Array with `isObservabilityInstalled`, `loaded` and `error` values.
  */
-export const useIsFleetObservabilityInstalled: UseIsFleetObservabilityInstalled = () =>
-  useHubConfigurationItem('isObservabilityInstalled')
+export function useIsFleetObservabilityInstalled(): [
+  isObservabilityInstalled: boolean | undefined,
+  loaded: boolean,
+  error: unknown,
+] {
+  return useHubConfigurationItem('isObservabilityInstalled')
+}

@@ -1,16 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { PrometheusPollProps, PrometheusResponse, usePrometheusPoll } from '@openshift-console/dynamic-plugin-sdk'
 import { useURLPoll as useFleetURLPoll } from '../internal/useURLPoll'
-import { DEFAULT_PROMETHEUS_SAMPLES, DEFAULT_PROMETHEUS_TIMESPAN } from '../internal/constants'
+import { BACKEND_URL, DEFAULT_PROMETHEUS_SAMPLES, DEFAULT_PROMETHEUS_TIMESPAN } from '../internal/constants'
 import { getFleetPrometheusURL } from '../internal/utils'
 import { useHubClusterName } from './useHubClusterName'
-import { getBackendUrl } from './../internal/apiRequests'
+import { Fleet } from '../types'
 
-type UsePrometheusPoll = (
-  props: PrometheusPollProps & { cluster?: string; allClusters?: boolean }
-) => [PrometheusResponse | null, unknown, boolean]
-
-export const useFleetPrometheusPoll: UsePrometheusPoll = ({
+export const useFleetPrometheusPoll: (
+  props: Fleet<PrometheusPollProps> & { allClusters?: boolean }
+) => [response: PrometheusResponse | undefined, loaded: boolean, error: unknown] = ({
   delay,
   endpoint,
   endTime,
@@ -39,7 +37,7 @@ export const useFleetPrometheusPoll: UsePrometheusPoll = ({
   }
 
   const fleetPool = useFleetURLPoll<PrometheusResponse>(
-    useFleet ? getFleetPrometheusURL(prometheusURLProps, `${getBackendUrl()}/observability`) : null,
+    useFleet ? getFleetPrometheusURL(prometheusURLProps, `${BACKEND_URL}/observability`) : null,
     delay,
     query,
     timespan
@@ -57,5 +55,5 @@ export const useFleetPrometheusPoll: UsePrometheusPoll = ({
     customDataSource,
   })
 
-  return useFleet ? fleetPool : (k8sPool as ReturnType<UsePrometheusPoll>)
+  return useFleet ? fleetPool : k8sPool
 }

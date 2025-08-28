@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { UseHubClusterName } from '../types'
 import { useHubConfigurationItem } from '../internal/useHubConfigurationItem'
 
 /**
@@ -7,4 +6,6 @@ import { useHubConfigurationItem } from '../internal/useHubConfigurationItem'
  *
  * @returns Array with `hubclustername`, `loaded` and `error` values.
  */
-export const useHubClusterName: UseHubClusterName = () => useHubConfigurationItem('localHubName')
+export function useHubClusterName(): [hubClusterName: string | undefined, loaded: boolean, error: any] {
+  return useHubConfigurationItem('localHubName')
+}

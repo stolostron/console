@@ -2,7 +2,7 @@
 
 import { ApolloClient, ApolloLink, from, HttpLink, InMemoryCache } from '@apollo/client'
 import { getCookie } from './searchUtils'
-import { getBackendUrl } from '../../internal/apiRequests'
+import { BACKEND_URL } from '../constants'
 
 const csrfHeaderLink = new ApolloLink((operation, forward) => {
   const csrfToken = getCookie('csrf-token')
@@ -19,7 +19,7 @@ const csrfHeaderLink = new ApolloLink((operation, forward) => {
 })
 
 const httpLink = new HttpLink({
-  uri: () => `${getBackendUrl()}/proxy/search`,
+  uri: () => `${BACKEND_URL}/proxy/search`,
 })
 
 export const searchClient = new ApolloClient({

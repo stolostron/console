@@ -89,8 +89,6 @@ export function getVirtualMachineRowActions(
   vmActionsEnabled: boolean,
   navigate: NavigateFunction,
   t: TFunction<string, undefined>,
-  canMigrateVm: boolean,
-  vmMenuVisability: boolean,
   extensionButtons: IAcmRowAction<any>[] = []
 ): IAcmRowAction<any>[] {
   const printableStatus = item?.status
@@ -269,15 +267,7 @@ export function getVirtualMachineRowActions(
       })
     },
   }
-  const migrateVM = {
-    id: 'migrateVM',
-    title: t('Migrate across environment'),
-    click: (item: any) => {
-      navigate(NavigationPath.migrateVirtualMachine.replace(':id', encodeURIComponent(item._uid)))
-    },
-    description: t('Migrate VirtualMachines across your environment'),
-    isDisabled: !canMigrateVm || printableStatus == 'Migrating',
-  }
+
   // OCP console vm actions - https://github.com/kubevirt-ui/kubevirt-plugin/blob/519d55ee9489ad7dc1caf81b4306676a95aee96a/src/views/virtualmachines/actions/hooks/useVirtualMachineActionsProvider.ts#L36
   return vmActionsEnabled
     ? [
@@ -285,7 +275,6 @@ export function getVirtualMachineRowActions(
         restartVM,
         printableStatus === 'Paused' ? unpauseVM : pauseVM,
         snapshotVM,
-        ...(vmMenuVisability ? [{ ...migrateVM, addSeparator: true }] : []),
         { ...editButton, addSeparator: true },
         viewRelatedButton,
         deleteButton,

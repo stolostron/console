@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { K8sResourceCommon, useK8sWatchResource } from '@openshift-console/dynamic-plugin-sdk'
 import { V1CustomResourceDefinitionCondition } from '@kubernetes/client-node'
-import { UseFleetClusterNames } from '../types/fleet'
 import { ManagedClusterListGroupVersionKind } from '../internal/models'
 
 // Helper function to check for condition - similar to checkForCondition from status-conditions.ts
@@ -54,7 +53,7 @@ const checkForCondition = (condition: string, conditions: V1CustomResourceDefini
  * )
  * ```
  */
-export const useFleetClusterNames: UseFleetClusterNames = (returnAllClusters = false) => {
+export function useFleetClusterNames(returnAllClusters: boolean = false): [string[], boolean, any] {
   const [clusters, loaded, error] = useK8sWatchResource<K8sResourceCommon[]>({
     groupVersionKind: ManagedClusterListGroupVersionKind,
     isList: true,

@@ -20,7 +20,7 @@ import { ExclamationCircleIcon, InfoCircleIcon, OutlinedQuestionCircleIcon } fro
 import _ from 'lodash'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom-v5-compat'
-import { useCanMigrateVm } from '../../../hooks/use-can-migrate-vm'
+
 import { useTranslation } from '../../../lib/acm-i18next'
 import { PluginContext } from '../../../lib/PluginContext'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
@@ -91,7 +91,7 @@ function RenderAccordionItem(
   } = props
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const canMigrateVm = useCanMigrateVm()
+
   const allClusters = useAllClusters(true)
   const { useVirtualMachineActionsEnabled, isFineGrainedRbacEnabledState } = useSharedAtoms()
   const isFineGrainedRbacEnabled = useRecoilValue(isFineGrainedRbacEnabledState)
@@ -99,8 +99,6 @@ function RenderAccordionItem(
   const { acmExtensions } = useContext(PluginContext)
   const [isExpanded, setIsExpanded] = useState<boolean>(defaultIsExpanded)
   const searchDefinitions = useSearchDefinitions()
-  const { useMigrateVMMenu } = useSharedAtoms()
-  const vmMenuVisability = useMigrateVMMenu()
 
   const accordionItemKey = `${kind}-${idx}`
   const items = kindSearchResultItems[kind]
@@ -123,8 +121,6 @@ function RenderAccordionItem(
         acmExtensions,
         setPluginModal,
         navigate,
-        canMigrateVm,
-        vmMenuVisability,
         t
       ),
     [
@@ -139,8 +135,6 @@ function RenderAccordionItem(
       acmExtensions,
       setPluginModal,
       navigate,
-      canMigrateVm,
-      vmMenuVisability,
       t,
     ]
   )

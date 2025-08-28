@@ -8,6 +8,7 @@ describe('package index', () => {
       'FleetResourceEventStream',
       'FleetResourceLink',
       'REQUIRED_PROVIDER_FLAG',
+      'RESOURCE_ROUTE_TYPE',
       'fleetK8sCreate',
       'fleetK8sDelete',
       'fleetK8sGet',

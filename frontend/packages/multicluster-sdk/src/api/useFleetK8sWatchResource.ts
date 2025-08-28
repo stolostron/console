@@ -1,7 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useHubClusterName } from './useHubClusterName'
-import { FleetK8sResourceCommon, FleetWatchK8sResource, UseFleetK8sWatchResource } from '../types'
-import { consoleFetchJSON, useK8sModel, useK8sWatchResource } from '@openshift-console/dynamic-plugin-sdk'
+import { FleetK8sResourceCommon, FleetWatchK8sResource } from '../types'
+import {
+  consoleFetchJSON,
+  useK8sModel,
+  useK8sWatchResource,
+  WatchK8sResult,
+} from '@openshift-console/dynamic-plugin-sdk'
 import { useFleetK8sAPIPath } from './useFleetK8sAPIPath'
 import { useIsFleetAvailable } from './useIsFleetAvailable'
 import { useEffect, useMemo, useState } from 'react'
@@ -12,7 +17,7 @@ import {
   getCacheKey,
   handleWebsocketEvent,
 } from '../internal/fleetK8sWatchResource'
-import { selectorToString } from './utils/requirements'
+import { selectorToString } from '../internal/requirements'
 import { useDeepCompareMemoize } from '../internal/hooks/useDeepCompareMemoize'
 
 /**
@@ -47,11 +52,9 @@ import { useDeepCompareMemoize } from '../internal/hooks/useDeepCompareMemoize'
  * })
  * ```
  */
-export const useFleetK8sWatchResource: UseFleetK8sWatchResource = <
-  R extends FleetK8sResourceCommon | FleetK8sResourceCommon[],
->(
+export function useFleetK8sWatchResource<R extends FleetK8sResourceCommon | FleetK8sResourceCommon[]>(
   initResource: FleetWatchK8sResource | null
-) => {
+): WatchK8sResult<R> | [undefined, boolean, any] {
   const [hubClusterName, hubClusterNameLoaded] = useHubClusterName()
 
   const memoizedResource = useDeepCompareMemoize(initResource, true)

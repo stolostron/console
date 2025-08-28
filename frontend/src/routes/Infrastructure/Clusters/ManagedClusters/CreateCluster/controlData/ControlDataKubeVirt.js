@@ -50,12 +50,28 @@ const operatorAlert = (localCluster, t) => {
   )
 }
 
+const filterOCPImages = (loadOCPImages, hypershiftSupportedVersions) => {
+  const originalResult = loadOCPImages()
+  return {
+    ...originalResult,
+    query: async () => {
+      const images = await originalResult.query()
+      return images.filter((image) => {
+        return hypershiftSupportedVersions.some((supportedVersion) =>
+          image.spec.releaseImage.includes(`:${supportedVersion}`)
+        )
+      })
+    },
+  }
+}
+
 export const getControlDataKubeVirt = (
   t,
   handleModalToggle,
   warning,
   includeKlusterletAddonConfig = true,
-  localCluster
+  localCluster,
+  hypershiftSupportedVersions
 ) => {
   const controlData = [
     //////////////////////////////////  AI form  //////////////////////////////////
@@ -140,7 +156,7 @@ export const getControlDataKubeVirt = (
       type: 'combobox',
       simplified: getSimplifiedImageName,
       placeholder: t('creation.ocp.cloud.select.ocp.image'),
-      fetchAvailable: LOAD_OCP_IMAGES('kubevirt', t),
+      fetchAvailable: filterOCPImages(() => LOAD_OCP_IMAGES('kubevirt', t), hypershiftSupportedVersions),
       validation: {
         notification: t('creation.ocp.cluster.must.select.ocp.image'),
         required: true,

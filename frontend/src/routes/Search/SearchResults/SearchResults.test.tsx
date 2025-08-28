@@ -20,10 +20,6 @@ import { defaultPlugin, PluginContext } from '../../../lib/PluginContext'
 import { AcmExtension } from '../../../plugin-extensions/types'
 import { ActionExtensionProps } from '../../../plugin-extensions/properties'
 
-jest.mock('../../../hooks/use-can-migrate-vm', () => ({
-  useCanMigrateVm: () => true,
-}))
-
 const mockSettings: Settings = {
   SEARCH_RESULT_LIMIT: '1000',
 }
