@@ -129,27 +129,21 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
         id: 'role',
         label: t('Role'),
         options: roleOptions,
-        tableFilterFn: (selectedValues, roleAssignment) => {
-          return selectedValues.includes(roleAssignment.clusterRole)
-        },
+        tableFilterFn: (selectedValues, roleAssignment) => selectedValues.includes(roleAssignment.clusterRole),
       },
       {
         id: 'clusterSet',
         label: t('Cluster Set'),
         options: clusterSetOptions,
-        tableFilterFn: (selectedValues, roleAssignment) => {
-          return selectedValues.some((selectedClusterSet) => roleAssignment.clusterSets.includes(selectedClusterSet))
-        },
+        tableFilterFn: (selectedValues, roleAssignment) =>
+          selectedValues.some((selectedClusterSet) => roleAssignment.clusterSets.includes(selectedClusterSet)),
       },
       {
         id: 'namespace',
         label: t('Namespace'),
         options: namespaceOptions,
-        tableFilterFn: (selectedValues, roleAssignment) => {
-          return selectedValues.some((selectedNamespace) =>
-            roleAssignment.targetNamespaces?.includes(selectedNamespace)
-          )
-        },
+        tableFilterFn: (selectedValues, roleAssignment) =>
+          selectedValues.some((selectedNamespace) => roleAssignment.targetNamespaces?.includes(selectedNamespace)),
       },
       {
         id: 'status',
@@ -194,61 +188,55 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
     },
     {
       header: t('Cluster Sets'),
-      cell: (roleAssignment) => {
-        return (
-          <LabelGroup
-            collapsedText={t('show.more', { count: roleAssignment.clusterSets.length - 3 })}
-            expandedText={t('Show less')}
-            numLabels={3}
-          >
-            {roleAssignment.clusterSets.map((clusterSet) => (
-              <Label key={clusterSet} style={{ fontSize: '14px' }}>
-                {clusterSet}
-              </Label>
-            ))}
-          </LabelGroup>
-        )
-      },
+      cell: (roleAssignment) => (
+        <LabelGroup
+          collapsedText={t('show.more', { count: roleAssignment.clusterSets.length - 3 })}
+          expandedText={t('Show less')}
+          numLabels={3}
+        >
+          {roleAssignment.clusterSets.map((clusterSet) => (
+            <Label key={clusterSet} style={{ fontSize: '14px' }}>
+              {clusterSet}
+            </Label>
+          ))}
+        </LabelGroup>
+      ),
       exportContent: (roleAssignment) => roleAssignment.clusterSets.join(', '),
       isHidden: hiddenColumns?.includes('clusterSets'),
     },
     {
       header: t('Clusters'),
-      cell: (roleAssignment) => {
-        return (
-          <LabelGroup
-            collapsedText={t('show.more', { count: roleAssignment.clusters?.length ?? 0 - 3 })}
-            expandedText={t('Show less')}
-            numLabels={3}
-          >
-            {roleAssignment.clusters?.map((cluster) => (
-              <Label key={cluster} style={{ fontSize: '14px' }}>
-                {cluster}
-              </Label>
-            ))}
-          </LabelGroup>
-        )
-      },
+      cell: (roleAssignment) => (
+        <LabelGroup
+          collapsedText={t('show.more', { count: roleAssignment.clusters?.length ?? 0 - 3 })}
+          expandedText={t('Show less')}
+          numLabels={3}
+        >
+          {roleAssignment.clusters?.map((cluster) => (
+            <Label key={cluster} style={{ fontSize: '14px' }}>
+              {cluster}
+            </Label>
+          ))}
+        </LabelGroup>
+      ),
       exportContent: (roleAssignment) => roleAssignment.clusters?.join(', ') ?? '',
       isHidden: hiddenColumns?.includes('clusters'),
     },
     {
       header: t('Namespaces'),
-      cell: (roleAssignment) => {
-        return (
-          <LabelGroup
-            collapsedText={t('show.more', { count: roleAssignment.targetNamespaces?.length ?? 0 - 5 })}
-            expandedText={t('Show less')}
-            numLabels={5}
-          >
-            {roleAssignment.targetNamespaces?.map((namespace) => (
-              <Label key={namespace} style={{ fontSize: '14px' }}>
-                {namespace}
-              </Label>
-            ))}
-          </LabelGroup>
-        )
-      },
+      cell: (roleAssignment) => (
+        <LabelGroup
+          collapsedText={t('show.more', { count: roleAssignment.targetNamespaces?.length ?? 0 - 5 })}
+          expandedText={t('Show less')}
+          numLabels={5}
+        >
+          {roleAssignment.targetNamespaces?.map((namespace) => (
+            <Label key={namespace} style={{ fontSize: '14px' }}>
+              {namespace}
+            </Label>
+          ))}
+        </LabelGroup>
+      ),
       exportContent: (roleAssignment) => roleAssignment.targetNamespaces?.join(', ') ?? '',
     },
     {
