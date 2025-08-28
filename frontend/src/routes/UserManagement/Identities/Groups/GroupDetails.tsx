@@ -1,31 +1,23 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Page, PageSection } from '@patternfly/react-core'
-import { useParams } from 'react-router-dom-v5-compat'
+import { Page, PageSection, Stack, Text } from '@patternfly/react-core'
+import {
+  DescriptionList,
+  DescriptionListTerm,
+  DescriptionListGroup,
+  DescriptionListDescription,
+} from '@patternfly/react-core'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { useQuery } from '../../../../lib/useQuery'
-import { listGroups } from '../../../../resources/rbac'
-import { useMemo } from 'react'
-import { dump } from 'js-yaml'
-import YamlEditor from '../../../../components/YamlEditor'
 import { AcmButton, AcmLoadingPage } from '../../../../ui-components'
-import { useYamlEditorHeight } from '../../../../hooks/useYamlEditorHeight'
+import { useGroupDetailsContext } from './GroupPage'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { NavigationPath } from '../../../../NavigationPath'
 import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
 import { useNavigate } from 'react-router-dom-v5-compat'
 
-const GroupYaml = () => {
+const GroupDetails = () => {
   const { t } = useTranslation()
-  const { id = undefined } = useParams()
-  const { data: groups, loading } = useQuery(listGroups)
+  const { group, loading } = useGroupDetailsContext()
   const navigate = useNavigate()
-
-  const group = useMemo(
-    () => (id ? groups?.find((u) => u.metadata.uid === id || u.metadata.name === id) : undefined),
-    [groups, id]
-  )
-  const baseHeight = useYamlEditorHeight()
-  const customHeight = Math.min(baseHeight, 450)
 
   switch (true) {
     case loading:
@@ -54,10 +46,20 @@ const GroupYaml = () => {
     default:
       return (
         <PageSection>
-          <YamlEditor resourceYAML={dump(group, { indent: 2 })} readOnly={true} height={customHeight} />
+          <PageSection variant={'light'}>
+            <Text style={{ fontFamily: 'RedHatDisplay', marginBottom: '2rem' }}>{t('General information')}</Text>
+            <Stack hasGutter>
+              <DescriptionList isHorizontal={false}>
+                <DescriptionListGroup>
+                  <DescriptionListTerm>{t('Group name')}</DescriptionListTerm>
+                  <DescriptionListDescription>{group.metadata.name ?? '-'}</DescriptionListDescription>
+                </DescriptionListGroup>
+              </DescriptionList>
+            </Stack>
+          </PageSection>
         </PageSection>
       )
   }
 }
 
-export { GroupYaml }
+export { GroupDetails }
