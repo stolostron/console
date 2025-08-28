@@ -1,8 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { renderHook } from '@testing-library/react-hooks'
 import { useFleetK8sAPIPath } from './useFleetK8sAPIPath'
-import { BASE_K8S_API_PATH, MANAGED_CLUSTER_API_PATH } from '../internal/constants'
-import { getBackendUrl } from '../internal/apiRequests'
+import { BACKEND_URL, BASE_K8S_API_PATH, MANAGED_CLUSTER_API_PATH } from '../internal/constants'
 
 jest.mock('../internal/useHubConfigurationItem', () => ({
   useHubConfigurationItem: jest.fn(() => ['local-cluster', true, undefined]),
@@ -17,6 +16,6 @@ describe(`useFleetK8sAPIPath`, function () {
     let { result } = renderHook(() => useFleetK8sAPIPath('local-cluster'))
     expect(result.current[0]).toEqual(BASE_K8S_API_PATH)
     ;({ result } = renderHook(() => useFleetK8sAPIPath('cluster1')))
-    expect(result.current[0]).toEqual(`${getBackendUrl()}/${MANAGED_CLUSTER_API_PATH}/cluster1`)
+    expect(result.current[0]).toEqual(`${BACKEND_URL}/${MANAGED_CLUSTER_API_PATH}/cluster1`)
   })
 })

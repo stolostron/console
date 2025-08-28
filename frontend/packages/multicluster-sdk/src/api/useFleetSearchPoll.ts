@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useSearchResultItemsQuery } from '../internal/search/search-sdk'
 import { useCallback, useMemo } from 'react'
-import { SearchResult } from '../types/search'
-import { UseFleetSearchPoll } from '../types/fleet'
+import { AdvancedSearchFilter, SearchResult } from '../types/search'
 import { searchClient } from '../internal/search/search-client'
 import { set } from 'lodash'
+import { WatchK8sResource } from '@openshift-console/dynamic-plugin-sdk'
 
 // Constants for polling interval configuration
 const DEFAULT_POLL_INTERVAL_SECONDS = 30
@@ -89,7 +89,11 @@ const getResourceKey = (kind: string, apigroup?: string): string => {
  * - Polling is enabled by default with a 30-second interval; use false to disable
  * - Minimum polling interval is 30 seconds for performance reasons
  */
-export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSearch, pollInterval) => {
+export function useFleetSearchPoll<T extends K8sResourceCommon | K8sResourceCommon[]>(
+  watchOptions: WatchK8sResource,
+  advancedSearchFilters?: AdvancedSearchFilter,
+  pollInterval?: number | false
+): [SearchResult<T> | undefined, boolean, Error | undefined, () => void] {
   const { groupVersionKind, limit, namespace, namespaced, name, isList } = watchOptions
 
   const { group, version, kind } = groupVersionKind ?? {}
@@ -139,8 +143,8 @@ export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSea
     }
 
     // Add filters from advancedSearch, excluding properties already specified in watchOptions
-    if (advancedSearch) {
-      for (const { property, values } of advancedSearch) {
+    if (advancedSearchFilters) {
+      for (const { property, values } of advancedSearchFilters) {
         if (property && values !== undefined && !watchOptionsProperties.has(property)) {
           filters.push({ property, values })
         }
@@ -151,7 +155,7 @@ export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSea
       filters,
       limit: limit ?? -1,
     }
-  }, [group, version, kind, namespaced, namespace, name, advancedSearch, limit])
+  }, [group, version, kind, namespaced, namespace, name, advancedSearchFilters, limit])
 
   const {
     data: result,
