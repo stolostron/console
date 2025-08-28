@@ -169,7 +169,6 @@ export function ArgoWizard(props: ArgoWizardProps) {
         .map((channel) => channel?.spec?.pathname),
     [props.channels]
   )
-  const [createdChannels, setCreatedChannels] = useState<string[]>([])
   const gitChannels = useMemo(() => {
     const gitArgoAppSetRepoURLs: string[] = []
     props.applicationSets?.forEach((appset) => {
@@ -188,8 +187,8 @@ export function ArgoWizard(props: ArgoWizardProps) {
       }
     })
 
-    return [...(sourceGitChannels ?? []), ...createdChannels, ...(gitArgoAppSetRepoURLs ?? [])].filter(onlyUnique)
-  }, [createdChannels, props.applicationSets, sourceGitChannels])
+    return [...(sourceGitChannels ?? []), ...(gitArgoAppSetRepoURLs ?? [])].filter(onlyUnique)
+  }, [props.applicationSets, sourceGitChannels])
 
   const sourceHelmChannels = useMemo(() => {
     if (props.channels)
@@ -219,12 +218,10 @@ export function ArgoWizard(props: ArgoWizardProps) {
       }
     })
 
-    return [...sourceHelmChannels, ...createdChannels, ...(helmArgoAppSetRepoURLs ?? [])].filter(onlyUnique)
-  }, [createdChannels, props.applicationSets, sourceHelmChannels])
+    return [...sourceHelmChannels, ...(helmArgoAppSetRepoURLs ?? [])].filter(onlyUnique)
+  }, [props.applicationSets, sourceHelmChannels])
 
   const [filteredClusterSets, setFilteredClusterSets] = useState<IResource[]>([])
-  const [gitRevisionsAsyncCallback, setGitRevisionsAsyncCallback] = useState<() => Promise<string[]>>()
-  const [gitPathsAsyncCallback, setGitPathsAsyncCallback] = useState<() => Promise<string[]>>()
   const editMode = useEditMode()
 
   const { gitOpsOperatorSubscriptionsValue } = useSharedSelectors()
@@ -236,9 +233,6 @@ export function ArgoWizard(props: ArgoWizardProps) {
   const handleModalToggle = () => {
     setIsModalOpen(!isModalOpen)
   }
-
-  const targetRevision = get(applicationSet, 'spec.template.spec.source.targetRevision')
-  const repoURL = get(applicationSet, 'spec.template.spec.source.repoURL')
 
   useEffect(() => {
     if (!props.argoServers?.length) return
@@ -263,46 +257,6 @@ export function ArgoWizard(props: ArgoWizardProps) {
 
     setFilteredClusterSets(clusterSets)
   }, [applicationSetNamespace, props.argoServers, props.clusterSets, props.placements])
-
-  useEffect(() => {
-    if (source && !sources) {
-      const channel = gitChannels.find((channel: any) => channel === repoURL)
-      if (channel) {
-        setGitRevisionsAsyncCallback(
-          () => () =>
-            getGitBranchList(
-              { metadata: { name: '', namespace: '' }, spec: { pathname: channel, type: 'git' } },
-              props.getGitRevisions
-            )
-        )
-        setGitPathsAsyncCallback(
-          () => () =>
-            getGitPathList(
-              {
-                metadata: {
-                  name: '',
-                  namespace: '',
-                },
-                spec: { pathname: channel, type: 'git' },
-              },
-              targetRevision,
-              props.getGitPaths,
-              source.repoURL
-            )
-        )
-      }
-    }
-  }, [
-    gitChannels,
-    props.channels,
-    props.getGitPaths,
-    props.getGitRevisions,
-    repoURL,
-    resources,
-    source,
-    sources,
-    targetRevision,
-  ])
 
   const translatedWizardStrings = useWizardStrings({
     stepsAriaLabel: t('Argo application steps'),
@@ -567,34 +521,12 @@ export function ArgoWizard(props: ArgoWizardProps) {
           <WizItemSelector selectKey="kind" selectValue="ApplicationSet">
             <Section label={t('Repository')}>
               {source && !sources ? (
-                <SourceSelector
-                  createdChannels={createdChannels}
-                  setCreatedChannels={setCreatedChannels}
-                  t={t}
-                  getGitPaths={props.getGitPaths}
-                  gitChannels={gitChannels}
-                  channels={props.channels}
-                  helmChannels={helmChannels}
-                  gitPathsAsyncCallback={gitPathsAsyncCallback}
-                  gitRevisionsAsyncCallback={gitRevisionsAsyncCallback}
-                  setGitRevisionsAsyncCallback={setGitRevisionsAsyncCallback}
-                  setGitPathsAsyncCallback={setGitPathsAsyncCallback}
-                  getGitRevisions={props.getGitRevisions}
-                />
+                <SourceSelector gitChannels={gitChannels} channels={props.channels} helmChannels={helmChannels} />
               ) : (
                 <MultipleSourcesSelector
                   channels={props.channels}
-                  createdChannels={createdChannels}
-                  getGitPaths={props.getGitPaths}
-                  getGitRevisions={props.getGitRevisions}
                   gitChannels={gitChannels}
-                  gitRevisionsAsyncCallback={gitRevisionsAsyncCallback}
-                  gitPathsAsyncCallback={gitPathsAsyncCallback}
                   helmChannels={helmChannels}
-                  setCreatedChannels={setCreatedChannels}
-                  setGitPathsAsyncCallback={setGitPathsAsyncCallback}
-                  setGitRevisionsAsyncCallback={setGitRevisionsAsyncCallback}
-                  t={t}
                 />
               )}
             </Section>
@@ -729,6 +661,9 @@ export async function getGitPathList(
   ) => Promise<unknown>,
   url?: string
 ): Promise<string[]> {
+  if (!branch) {
+    return Promise.resolve([])
+  }
   return getGitPaths(channel?.spec?.pathname || (url as string), branch, {
     secretRef: channel?.spec?.secretRef?.name,
     namespace: channel.metadata?.namespace,

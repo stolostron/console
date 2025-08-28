@@ -362,7 +362,6 @@ describe('Create Argo Application Set', () => {
 
     await clickByRole('combobox', { name: /enter or select a tracking revision/i })
     const pathNocks = [
-      nockArgoGitBranches(channelGit.spec.pathname, { branchList: [{ name: 'branch-01' }] }),
       nockArgoGitPathSha(channelGit.spec.pathname, 'branch-01', { commit: { sha: '01' } }),
       nockArgoGitPathTree(channelGit.spec.pathname, { tree: [{ path: 'application-test', type: 'tree' }] }),
     ]
