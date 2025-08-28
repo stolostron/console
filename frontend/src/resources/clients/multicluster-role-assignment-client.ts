@@ -97,13 +97,13 @@ export const create = (
   multiclusterRoleAssignment: MulticlusterRoleAssignment
 ): IRequestResult<MulticlusterRoleAssignment> => createResource<MulticlusterRoleAssignment>(multiclusterRoleAssignment)
 
-const areRoleAssignmentsEquals = (a: RoleAssignment, b: RoleAssignment) => {
-  const isClusterRoleEqual = a.clusterRole === b.clusterRole
-  const isClusterSetEqual = JSON.stringify(a.clusterSets) === JSON.stringify(b.clusterSets)
-  const isTargetNamespacesEqual = JSON.stringify(a.targetNamespaces) === JSON.stringify(b.targetNamespaces)
-
-  return isClusterRoleEqual && isClusterSetEqual && isTargetNamespacesEqual
-}
+/**
+ * it checks whether two RoleAssignments are the same or not
+ * @param a RoleAssignment1
+ * @param b RoleAssignment2
+ * @returns true or false depending on whether they are the same or not
+ */
+const areRoleAssignmentsEquals = (a: RoleAssignment, b: RoleAssignment) => JSON.stringify(a) === JSON.stringify(b)
 
 /**
  * it removes a RoleAssignment element from the MulticlusterRoleAssignment. If it is the latest one, the whole MulticlusterRoleAssignment is instead removed
