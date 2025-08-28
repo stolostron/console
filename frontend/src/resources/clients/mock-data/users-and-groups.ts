@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { User, Group, UserApiVersion, UserKind, GroupKind } from '../../rbac'
 
 export const mockUsers: User[] = [
