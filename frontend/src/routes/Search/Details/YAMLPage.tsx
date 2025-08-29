@@ -2,6 +2,8 @@
 import { css } from '@emotion/css'
 import { ActionList, ActionListGroup, ActionListItem, Alert, Button, PageSection } from '@patternfly/react-core'
 import { DownloadIcon } from '@patternfly/react-icons'
+import { useFleetK8sWatchResource } from '@stolostron/multicluster-sdk/lib/api/useFleetK8sWatchResource'
+import { FleetK8sResourceCommon } from '@stolostron/multicluster-sdk/lib/types/fleet'
 import { saveAs } from 'file-saver'
 import jsYaml from 'js-yaml'
 import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react'
@@ -10,6 +12,7 @@ import YamlEditor from '../../../components/YamlEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { canUser } from '../../../lib/rbac-util'
 import { fireManagedClusterAction, fireManagedClusterView, IResource } from '../../../resources'
+import { getGroupFromApiVersion } from '../../../resources/utils'
 import {
   getBackendUrl,
   getRequest,
@@ -51,6 +54,7 @@ function loadResource(
   setResourceYaml: Dispatch<SetStateAction<string>>,
   setUpdateError: Dispatch<SetStateAction<string>>,
   setResourceVersion: Dispatch<SetStateAction<string>>,
+  setStale: Dispatch<SetStateAction<boolean>>,
   isFineGrainedRbacEnabled: boolean
 ) {
   if (isFineGrainedRbacEnabled && (kind === 'VirtualMachine' || kind === 'VirtualMachineSnapshot')) {
@@ -59,6 +63,7 @@ function loadResource(
       .promise.then((response) => {
         setResourceYaml(jsYaml.dump(response, { indent: 2 }))
         setResourceVersion(response?.metadata?.resourceVersion ?? '')
+        setStale(false)
       })
       .catch((err) => {
         console.error('Error getting VM resource: ', err)
@@ -73,6 +78,7 @@ function loadResource(
       .promise.then((response: any) => {
         setResourceYaml(jsYaml.dump(response, { indent: 2 }))
         setResourceVersion(response?.metadata?.resourceVersion ?? '')
+        setStale(false)
       })
       .catch((err) => {
         console.error('Error getting resource: ', err)
@@ -86,6 +92,7 @@ function loadResource(
         } else {
           setResourceYaml(jsYaml.dump(viewResponse?.result, { indent: 2 }))
           setResourceVersion(viewResponse?.result?.metadata?.resourceVersion ?? '')
+          setStale(false)
         }
       })
       .catch((err) => {
@@ -108,6 +115,7 @@ function updateResource(
   setUpdateError: Dispatch<SetStateAction<string>>,
   setUpdateSuccess: Dispatch<SetStateAction<boolean>>,
   setResourceVersion: Dispatch<SetStateAction<string>>,
+  setStale: Dispatch<SetStateAction<boolean>>,
   isFineGrainedRbacEnabled: boolean
 ) {
   if (isFineGrainedRbacEnabled && (kind === 'VirtualMachine' || kind === 'VirtualMachineSnapshot')) {
@@ -136,6 +144,7 @@ function updateResource(
             setResourceYaml,
             setUpdateError,
             setResourceVersion,
+            setStale,
             isFineGrainedRbacEnabled
           )
           setUpdateSuccess(true)
@@ -162,6 +171,7 @@ function updateResource(
             setResourceYaml,
             setUpdateError,
             setResourceVersion,
+            setStale,
             isFineGrainedRbacEnabled
           )
           setUpdateSuccess(true)
@@ -218,6 +228,8 @@ export function EditorActionBar(
     setResourceYaml: Dispatch<SetStateAction<string>>
     handleResize: () => void
     setResourceVersion: Dispatch<SetStateAction<string>>
+    stale: boolean
+    setStale: Dispatch<SetStateAction<boolean>>
   }>
 ) {
   const {
@@ -231,6 +243,8 @@ export function EditorActionBar(
     setResourceYaml,
     handleResize,
     setResourceVersion,
+    stale,
+    setStale,
   } = props
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -242,29 +256,33 @@ export function EditorActionBar(
   useEffect(() => {
     // If there is an alert message to show -> resize the editor height to fit Alert component.
     handleResize()
-  }, [handleResize, updateSuccess, updateError])
+  }, [handleResize, updateSuccess, updateError, stale])
 
   return (
     <div
       id={'yaml-editor-action-wrapper'}
       style={{
+        paddingTop: '1rem',
         borderTop: 'var(--pf-v5-global--BorderWidth--sm) solid var(--pf-v5-global--BorderColor--100)',
       }}
     >
-      {(updateError !== '' || updateSuccess) && (
-        <div id={'editor-alert-container'} style={{ paddingTop: '1rem' }}>
-          {updateSuccess && <Alert variant={'success'} isInline={true} title={`${name} has been updated.`} />}
-          {/* Add info alert if resourceVersion is updated */}
-          {updateError !== '' && (
-            <Alert
-              variant={'danger'}
-              isInline={true}
-              title={t('Error occurred while updating resource: {{name}}', { name })}
-            >
-              {updateError}
-            </Alert>
-          )}
-        </div>
+      {updateSuccess && (
+        <Alert id="editor-action-alert" variant={'success'} isInline={true} title={`${name} has been updated.`} />
+      )}
+      {updateError !== '' && (
+        <Alert
+          id="editor-action-alert"
+          variant={'danger'}
+          isInline={true}
+          title={t('Error occurred while updating resource: {{name}}', { name })}
+        >
+          {updateError}
+        </Alert>
+      )}
+      {stale && (
+        <Alert id="editor-action-alert" isInline variant="info" title={t('This object has been updated.')}>
+          {t('Click reload to see the new version.')}
+        </Alert>
       )}
       <ActionList
         style={{
@@ -292,6 +310,7 @@ export function EditorActionBar(
                   setUpdateError,
                   setUpdateSuccess,
                   setResourceVersion,
+                  setStale,
                   isFineGrainedRbacEnabled
                 )
               }}
@@ -314,6 +333,7 @@ export function EditorActionBar(
                   setResourceYaml,
                   setUpdateError,
                   setResourceVersion,
+                  setStale,
                   isFineGrainedRbacEnabled
                 )
                 setUpdateError('')
@@ -360,6 +380,7 @@ export default function YAMLPage() {
     setResourceVersion,
   } = useSearchDetailsContext()
   const { t } = useTranslation()
+  const [stale, setStale] = useState(false)
   const [userCanEdit, setUserCanEdit] = useState<boolean>(false)
   const [resourceYaml, setResourceYaml] = useState<string>('')
   const [defaultScrollToLine, setDefaultScrollToLine] = useState<number | undefined>()
@@ -373,6 +394,27 @@ export default function YAMLPage() {
     }
   } = useLocation()
 
+  // Watch a specific deployment on hub cluster
+  const { apiGroup, version } = getGroupFromApiVersion(apiversion)
+  const [resourceUpdate, watchLoaded, watchError] = useFleetK8sWatchResource({
+    groupVersionKind: { group: apiGroup, version: version, kind },
+    name,
+    namespace,
+    cluster,
+  })
+
+  useEffect(() => {
+    const resourceWatchUpdate = resourceUpdate as FleetK8sResourceCommon
+    if (
+      !watchError &&
+      watchLoaded &&
+      resourceWatchUpdate?.metadata?.resourceVersion !== resource.metadata.resourceVersion
+    ) {
+      // if resourceVersion has updated set stale to true
+      setStale(true)
+    }
+  }, [resourceUpdate, resource?.metadata?.resourceVersion, watchLoaded, watchError])
+
   useEffect(() => {
     if (location?.state?.scrollToLine) {
       setDefaultScrollToLine(location.state?.scrollToLine)
@@ -382,13 +424,16 @@ export default function YAMLPage() {
   useEffect(() => {
     if (resource) {
       setResourceYaml(jsYaml.dump(resource, { indent: 2 }))
+      setEditorHeight(getEditorHeight())
     }
   }, [resource])
 
   function getEditorHeight() {
     const pageContentHeight = document.getElementsByClassName('pf-v5-c-page__main')[0]?.clientHeight
     const pageSectionHeader = document.getElementsByClassName('pf-v5-c-page__main-group')[0]?.clientHeight ?? 0
-    let editorHeight = pageContentHeight - pageSectionHeader - 53 - 54 - 48 // 53px editor header height, 54px editor actions height, 48px content padding
+    const headerSectionHeight = document.getElementById('yaml-editor-header-wrapper')?.clientHeight ?? 0
+    const actionsSectionHeight = document.getElementById('yaml-editor-action-wrapper')?.clientHeight ?? 0
+    let editorHeight = pageContentHeight - pageSectionHeader - actionsSectionHeight - headerSectionHeight - 48 // 53px editor header height, 48px content padding
     const globalHeader = document.getElementsByClassName('co-global-notification')
     /* istanbul ignore if */
     if (globalHeader.length > 0) {
@@ -476,6 +521,8 @@ export default function YAMLPage() {
         setResourceYaml={setResourceYaml}
         handleResize={handleResize}
         setResourceVersion={setResourceVersion}
+        stale={stale}
+        setStale={setStale}
       />
     </PageSection>
   )
