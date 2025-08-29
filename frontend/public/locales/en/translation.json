@@ -1757,7 +1757,6 @@
   "labels.edit.title": "Edit labels",
   "labels.lower": "{{resourceName}} labels",
   "LabelSelector": "LabelSelector",
-  "Last login": "Last login",
   "Last reconciled": "Last reconciled",
   "Last report": "Last report",
   "Last schedule": "Last schedule",
