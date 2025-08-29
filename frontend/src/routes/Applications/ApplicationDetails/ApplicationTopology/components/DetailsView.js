@@ -12,7 +12,7 @@
 'use strict'
 
 import _ from 'lodash'
-import R from 'ramda'
+import * as R from 'ramda'
 import { Component, Fragment } from 'react'
 import PropTypes from 'prop-types'
 import classNames from 'classnames'

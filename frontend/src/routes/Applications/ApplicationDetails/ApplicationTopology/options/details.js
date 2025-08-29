@@ -11,7 +11,7 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-import R from 'ramda'
+import * as R from 'ramda'
 import _ from 'lodash'
 import {
   setResourceDeployStatus,

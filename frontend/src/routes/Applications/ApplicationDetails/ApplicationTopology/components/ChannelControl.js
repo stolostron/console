@@ -12,7 +12,7 @@
 'use strict'
 
 import { Component } from 'react'
-import R from 'ramda'
+import * as R from 'ramda'
 import PropTypes from 'prop-types'
 import { AcmDropdown } from '../../../../../ui-components'
 import { Pagination, Tooltip } from '@patternfly/react-core'
