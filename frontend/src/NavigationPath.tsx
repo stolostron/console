@@ -198,10 +198,10 @@ export enum NavigationPath {
 
   // RBAC Roles
   roles = '/multicloud/user-management/roles',
-  rolesDetails = '/multicloud/user-management/roles/:id',
-  rolesPermissions = '/multicloud/user-management/roles/:id/permissions',
-  rolesRoleAssignments = '/multicloud/user-management/roles/:id/role-assignments',
-  rolesYaml = '/multicloud/user-management/roles/:id/yaml',
+  roleDetails = '/multicloud/user-management/roles/:id',
+  rolePermissions = '/multicloud/user-management/roles/:id/permissions',
+  roleRoleAssignments = '/multicloud/user-management/roles/:id/role-assignments',
+  roleYaml = '/multicloud/user-management/roles/:id/yaml',
 
   emptyPath = '',
 }
