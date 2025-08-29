@@ -5,7 +5,6 @@ import { IRow, ISortBy, ITransform, TableGridBreakpoint } from '@patternfly/reac
 import { ReactNode } from 'react'
 import { IRequestListView, IResultListView, IResultStatuses } from '../../lib/useAggregates'
 import { SearchOperator } from '../AcmSearchInput'
-import { SelectOptionObject } from '@patternfly/react-core/deprecated'
 
 type SortFn<T> = (a: T, b: T) => number
 type CellFn<T> = (item: T, search: string) => ReactNode
@@ -146,7 +145,9 @@ export type AdvancedFilterSelection = {
   value: string
 }
 
-export type FilterSelectOptionObject = SelectOptionObject & {
+export type FilterSelectOptionObject = {
+  toString(): string
+  compareTo?(selectOption: any): boolean
   filterId: string
   value: string
 }
