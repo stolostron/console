@@ -7,9 +7,7 @@ import * as monacoEditor from 'monaco-editor/esm/vs/editor/editor.api'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import MonacoEditor, { monaco } from 'react-monaco-editor'
 import './YAMLEditor.css'
-import { global_BackgroundColor_200 as globalBackground200 } from '@patternfly/react-tokens/dist/js/global_BackgroundColor_200'
-import { global_BackgroundColor_dark_100 as darkEditorBackground } from '@patternfly/react-tokens/dist/js/global_BackgroundColor_dark_100'
-import { global_Color_light_100 as globalColorLight100 } from '@patternfly/react-tokens/dist/js/global_Color_light_100'
+import { defineThemes, getTheme } from './theme'
 
 /**
  *
@@ -92,33 +90,28 @@ export default function YAMLEditor(props: {
 
   /* istanbul ignore next */
   function onEditorDidMount(editor: monacoEditor.editor.IStandaloneCodeEditor, monaco: typeof monacoEditor) {
-    // make sure this instance of monaco editor has a console theme
-    monaco?.editor?.defineTheme('console', {
-      base: 'vs-dark',
-      inherit: true,
-      rules: [
-        // avoid pf tokens for `rules` since tokens are opaque strings that might not be hex values
-        { token: 'number', foreground: 'ace12e' },
-        { token: 'type', foreground: '73bcf7' },
-        { token: 'string', foreground: 'f0ab00' },
-        { token: 'keyword', foreground: 'cbc0ff' },
-      ],
-      colors: {
-        'editor.background': darkEditorBackground.value,
-        'editorGutter.background': '#292e34', // no pf token defined
-        'editorLineNumber.activeForeground': globalColorLight100.value,
-        'editorLineNumber.foreground': globalBackground200.value,
-      },
-    })
+    // make sure this instance of monaco editor has the ocp console themes
+    defineThemes(monaco?.editor)
+
+    // if we don't reset the themes to vs
+    // and console-light or console-dark were set, monaco wouldn't
+    // update the 'monoco-colors' style with the right colors
     monaco?.editor?.setTheme('vs')
     ;(window as any).monaco?.editor?.setTheme('vs')
-    // set theme to console
-    // --if we didn't reset the themes above to vs
-    // --and console was set, monaco wouldn't
-    // --update the 'monoco-colors' style
-    // -- with the right colors
-    monaco?.editor?.setTheme('console')
-    ;(window as any).monaco?.editor?.setTheme('console')
+    monaco?.editor?.setTheme(getTheme())
+    ;(window as any).monaco?.editor?.setTheme(getTheme())
+
+    // observe documentElement class changes (theme toggles)
+    if (typeof MutationObserver !== 'undefined') {
+      const classObserver = new MutationObserver(() => {
+        monaco?.editor?.setTheme(getTheme())
+        ;(window as any).monaco?.editor?.setTheme(getTheme())
+      })
+      classObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class'],
+      })
+    }
 
     editor.changeViewZones(
       (changeAccessor: {
@@ -160,13 +153,16 @@ export default function YAMLEditor(props: {
         value={resourceYAML}
         options={{
           readOnly,
-          theme: 'console',
+          theme: getTheme(),
           wordWrap: 'wordWrapColumn',
           wordWrapColumn: 132,
           scrollBeyondLastLine: true,
           smoothScrolling: true,
           glyphMargin: true,
           tabSize: 2,
+          minimap: {
+            enabled: false,
+          },
           scrollbar: {
             verticalScrollbarSize: 17,
             horizontalScrollbarSize: 17,

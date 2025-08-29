@@ -5,9 +5,7 @@ import React from 'react'
 import debounce from 'lodash/debounce'
 import PropTypes from 'prop-types'
 import { DecorationType } from '../utils/source-utils'
-import { global_BackgroundColor_200 as globalBackground200 } from '@patternfly/react-tokens/dist/js/global_BackgroundColor_200'
-import { global_BackgroundColor_dark_100 as darkEditorBackground } from '@patternfly/react-tokens/dist/js/global_BackgroundColor_dark_100'
-import { global_Color_light_100 as globalColorLight100 } from '@patternfly/react-tokens/dist/js/global_Color_light_100'
+import { getTheme, defineThemes } from '../../theme'
 
 class YamlEditor extends React.Component {
   static propTypes = {
@@ -26,6 +24,7 @@ class YamlEditor extends React.Component {
     super(props)
 
     const { id, editor, onYamlChange } = this.props
+    this.classObserver = null
     this.state = {
       editor:
         editor &&
@@ -33,7 +32,7 @@ class YamlEditor extends React.Component {
           language: 'yaml',
           height: '100%',
           width: '100%',
-          theme: 'console',
+          theme: getTheme(),
           options: {
             wordWrap: 'wordWrapColumn',
             wordWrapColumn: 132,
@@ -42,6 +41,9 @@ class YamlEditor extends React.Component {
             smoothScrolling: true,
             glyphMargin: true,
             tabSize: 2,
+            minimap: {
+              enabled: false,
+            },
             scrollbar: {
               verticalScrollbarSize: 17,
               horizontalScrollbarSize: 17,
@@ -67,34 +69,29 @@ class YamlEditor extends React.Component {
 
   editorDidMount(id, editor, monaco) {
     const { addEditor } = this.props
-    // make sure this instance of monaco editor has a console theme
-    monaco?.editor?.defineTheme('console', {
-      base: 'vs-dark',
-      inherit: true,
-      rules: [
-        // avoid pf tokens for `rules` since tokens are opaque strings that might not be hex values
-        { token: 'number', foreground: 'ace12e' },
-        { token: 'type', foreground: '73bcf7' },
-        { token: 'string', foreground: 'f0ab00' },
-        { token: 'keyword', foreground: 'cbc0ff' },
-      ],
-      colors: {
-        'editor.background': darkEditorBackground.value,
-        'editorGutter.background': '#292e34', // no pf token defined
-        'editorLineNumber.activeForeground': globalColorLight100.value,
-        'editorLineNumber.foreground': globalBackground200.value,
-      },
-    })
-    // reset the themes to vs
+    // make sure this instance of monaco editor has the ocp console themes
+    defineThemes(monaco?.editor)
+
+    // if we don't reset the themes to vs
+    // and console-light or console-dark were set, monaco wouldn't
+    // update the 'monoco-colors' style with the right colors
     monaco?.editor?.setTheme('vs')
     window.monaco?.editor?.setTheme('vs')
-    // set theme to console
-    // --if we didn't reset the themes above to vs
-    // --and console was set, monaco wouldn't
-    // --update the 'monoco-colors' style
-    // -- with the right colors
-    monaco?.editor?.setTheme('console')
-    window.monaco?.editor?.setTheme('console')
+    monaco?.editor?.setTheme(getTheme())
+    window.monaco?.editor?.setTheme(getTheme())
+
+    // observe documentElement class changes (theme toggles)
+    if (typeof MutationObserver !== 'undefined') {
+      this.classObserver = new MutationObserver(() => {
+        monaco?.editor?.setTheme(getTheme())
+        window.monaco?.editor?.setTheme(getTheme())
+      })
+      this.classObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class'],
+      })
+    }
+
     editor.layout()
     editor.focus()
     editor.monaco = monaco
@@ -178,6 +175,13 @@ class YamlEditor extends React.Component {
     })
   }
 
+  componentWillUnmount() {
+    if (this.classObserver) {
+      this.classObserver.disconnect()
+      this.classObserver = null
+    }
+  }
+
   shouldComponentUpdate(nextProps) {
     // if editor has focus, ignore form changes, since editor is doing all the changes
     return (
@@ -212,14 +216,14 @@ class YamlEditor extends React.Component {
         {editor &&
           React.cloneElement(editor, {
             value: yaml,
-            theme: 'console',
+            theme: getTheme(),
             options: {
               ...this.state.editor.props.options,
               wordWrapColumn: showCondensed ? 512 : 256,
-              minimap: {
-                enabled: !showCondensed,
-              },
               readOnly,
+              minimap: {
+                enabled: false,
+              },
             },
           })}
       </div>
