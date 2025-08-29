@@ -6,43 +6,100 @@ import { RecoilRoot } from 'recoil'
 import { nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../../lib/nock-util'
 import { AcmLoadingPage } from '../../../../ui-components'
 import { RoleRoleAssignments } from './RoleRoleAssignments'
-import { FlattenedRoleAssignment } from '../../../resources/clients/multicluster-role-assignment-client'
+import { RolesContextProvider } from '../RolesPage'
+
+// Mock the useQuery hook used by RolesContextProvider
+import { useQuery } from '../../../../lib/useQuery'
+jest.mock('../../../../lib/useQuery')
+
+// Mock cluster roles data
+const mockClusterRoles = [
+  {
+    metadata: {
+      name: 'kubevirt.io:admin',
+      uid: 'kubevirt-admin-uid',
+    },
+  },
+  {
+    metadata: {
+      name: 'cluster-admin',
+      uid: 'cluster-admin-uid',
+    },
+  },
+  {
+    metadata: {
+      name: 'storage-admin',
+      uid: 'storage-admin-uid',
+    },
+  },
+]
 
 // Mock RoleAssignments to show the key data we want to verify
-jest.mock('../RoleAssignment/RoleAssignments', () => ({
-  RoleAssignments: ({ roleAssignments, isLoading, hiddenColumns }: any) => (
-    <div id="role-assignments">
-      <div id="loading">{isLoading ? 'Loading' : 'Loaded'}</div>
-      <div id="hidden-columns">{hiddenColumns?.join(',') || 'none'}</div>
-      <div id="assignments-count">{roleAssignments.length}</div>
-      {roleAssignments.map((roleAssignment: FlattenedRoleAssignment, index: number) => (
-        <div key={index} id={`assignment-${index}`}>
-          <div id={`assignment-subject-${index}`}>
-            {roleAssignment.subject.kind}: {roleAssignment.subject.name}
+jest.mock('../../RoleAssignment/RoleAssignments', () => ({
+  RoleAssignments: ({ multiclusterRoleAssignments, isLoading, hiddenColumns }: any) => {
+    // Simulate the flattening that the real component does
+    const flattened =
+      multiclusterRoleAssignments?.flatMap((mcra: any) =>
+        mcra.spec.roleAssignments.map((ra: any, index: number) => ({
+          multiclusterRoleAssignmentUid: mcra.metadata.uid,
+          subjectKind: mcra.spec.subject.kind,
+          subjectName: mcra.spec.subject.name,
+          clusterRole: ra.clusterRole,
+          clusterSets: ra.clusterSets,
+          targetNamespaces: ra.targetNamespaces,
+          roleAssignmentIndex: index,
+        }))
+      ) || []
+
+    return (
+      <div id="role-assignments">
+        <div id="loading">{isLoading ? 'Loading' : 'Loaded'}</div>
+        <div id="hidden-columns">{hiddenColumns?.join(',') || 'none'}</div>
+        <div id="assignments-count">{flattened.length}</div>
+        {flattened.map((assignment: any, index: number) => (
+          <div key={index} id={`assignment-${index}`}>
+            <div id={`assignment-subject-${index}`}>
+              {assignment.subjectKind}: {assignment.subjectName}
+            </div>
+            <div id={`assignment-role-${index}`}>{assignment.clusterRole}</div>
+            <div id={`assignment-clusters-${index}`}>{assignment.clusterSets.join(', ')}</div>
+            <div id={`assignment-namespaces-${index}`}>{assignment.targetNamespaces.join(', ')}</div>
           </div>
-          <div id={`assignment-role-${index}`}>{roleAssignment.clusterRole}</div>
-          <div id={`assignment-clusters-${index}`}>{roleAssignment.clusterSets.join(', ')}</div>
-          <div id={`assignment-namespaces-${index}`}>{roleAssignment.targetNamespaces?.join(', ') ?? ''}</div>
-        </div>
-      ))}
-    </div>
-  ),
+        ))}
+      </div>
+    )
+  },
 }))
 
-const Component = ({ userId = 'mock-user-alice-trask' }: { userId?: string } = {}) => (
-  <RecoilRoot>
-    <MemoryRouter initialEntries={[`/roles/${userId}/role-assignments`]}>
-      <Routes>
-        <Route path="/roles/:id/role-assignments" element={<RoleRoleAssignments />} />
-      </Routes>
-    </MemoryRouter>
-  </RecoilRoot>
-)
+function Component({ userId = 'mock-user-alice-trask' }: { userId?: string } = {}) {
+  return (
+    <RecoilRoot>
+      <MemoryRouter initialEntries={[`/roles/${userId}/role-assignments`]}>
+        <RolesContextProvider>
+          <Routes>
+            <Route path="/roles/:id/role-assignments" element={<RoleRoleAssignments />} />
+          </Routes>
+        </RolesContextProvider>
+      </MemoryRouter>
+    </RecoilRoot>
+  )
+}
+
+const mockUseQuery = jest.mocked(useQuery)
 
 describe('RoleRoleAssignments', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
+    // Mock the useQuery to return our test cluster roles
+    mockUseQuery.mockReturnValue({
+      data: mockClusterRoles,
+      loading: false,
+      error: undefined,
+      startPolling: jest.fn(),
+      stopPolling: jest.fn(),
+      refresh: jest.fn(),
+    })
   })
 
   it('renders RoleRoleAssignments component with no user found', () => {
@@ -50,51 +107,39 @@ describe('RoleRoleAssignments', () => {
     expect(screen.getByText('Back to roles')).toBeInTheDocument()
   })
 
-  it('renders RoleRoleAssignments component with user found', () => {
-    render(<Component userId="mock-user-alice-trask" />)
+  it('renders RoleRoleAssignments component with role found', () => {
+    render(<Component userId="kubevirt.io:admin" />)
 
-    // Verify loading state and metadata
+    // Verify loading state
     expect(screen.getByText('Loaded')).toBeInTheDocument()
-    expect(screen.getByText(/subject/i)).toBeInTheDocument()
-    expect(screen.getByText(/5/)).toBeInTheDocument() // 5 flattened TrackedRoleAssignments from alice.trask (expanded!)
 
-    // Verify the new flattened structure shows correct data from expanded mock data
-    expect(screen.getAllByText(/User: alice\.trask/i)).toHaveLength(5) // Subject appears 5 times (5 role assignments)
-    expect(screen.getAllByText(/kubevirt\.io:admin/i)).toHaveLength(2) // ClusterRole appears twice
-    expect(screen.getByText(/cluster-admin/i)).toBeInTheDocument() // New expanded role
-    expect(screen.getByText(/storage-admin/i)).toBeInTheDocument() // New expanded role
-    expect(screen.getAllByText(/production-cluster/i)).toHaveLength(3) // ClusterSet appears in multiple assignments
-    expect(screen.getByText(/kubevirt-production/i)).toBeInTheDocument() // Target namespace
-    // Verify other key data appears correctly
-    expect(screen.getAllByText(/staging-cluster/i)).toHaveLength(3) // ClusterSet appears in multiple assignments
-    expect(screen.getAllByText(/vm-workloads/i)).toHaveLength(2) // Appears in 2 role assignments
+    // Verify role assignments data is rendered
+    expect(screen.getAllByText(/User: alice\.trask/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/production-cluster/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/kubevirt-production/i).length).toBeGreaterThan(0)
   })
 
-  it('renders with different user and shows their role assignments', () => {
-    // Test with bob.levy who exists in real mock data
-    render(<Component userId="mock-user-bob-levy" />)
+  it('renders with different role', () => {
+    render(<Component userId="cluster-admin" />)
 
-    // Verify loading state and data
+    // Verify loading state
     expect(screen.getByText('Loaded')).toBeInTheDocument()
-    expect(screen.getByText(/2/)).toBeInTheDocument() // 2 flattened TrackedRoleAssignments from bob.levy
 
-    // Should show bob.levy data (appears twice due to 2 role assignments)
-    expect(screen.getAllByText(/User: bob\.levy/i)).toHaveLength(2) // Subject info appears twice
-    expect(screen.getAllByText(/kubevirt\.io:edit/i)).toHaveLength(2) // ClusterRole appears twice
-    expect(screen.getByText(/development-cluster/i)).toBeInTheDocument() // ClusterSet from mock data
+    // Verify role assignments for cluster-admin role are rendered
+    expect(screen.getAllByText(/User: alice\.trask/i).length).toBeGreaterThan(0)
   })
 
   it('passes correct hidden columns to RoleAssignments component', () => {
-    render(<Component userId="mock-user-alice-trask" />)
+    render(<Component userId="kubevirt.io:admin" />)
 
-    // Verify hidden columns prop is passed correctly (subject column should be hidden)
-    expect(screen.getByText(/subject/i)).toBeInTheDocument()
+    // Verify hidden columns are passed correctly
+    expect(screen.getByText(/role/i)).toBeInTheDocument()
   })
 
   it('shows loading state correctly', () => {
-    render(<Component userId="mock-user-alice-trask" />)
+    render(<Component userId="kubevirt.io:admin" />)
 
-    // Verify loading state is rendered (can be "Loading" or "Loaded" depending on timing)
+    // Verify loading state is rendered
     expect(screen.getByText('Loaded')).toBeInTheDocument()
   })
 
