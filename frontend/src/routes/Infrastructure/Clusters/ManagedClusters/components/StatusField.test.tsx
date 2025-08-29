@@ -9,7 +9,7 @@ import { waitForText } from '../../../../../lib/test-util'
 import { Cluster, ClusterStatus } from '../../../../../resources/utils'
 import { StatusField } from './StatusField'
 
-const mockCluster1: Cluster = {
+const cluster: Cluster = {
   name: 'clusterName',
   displayName: 'clusterName',
   namespace: 'clusterName',
@@ -63,7 +63,7 @@ const mockCluster1: Cluster = {
 
 describe('ScaleClusterAlert', () => {
   it('does not render without MachinePools', async () => {
-    render(
+    const Component = (props: { cluster: Cluster }) => (
       <RecoilRoot
         initializeState={(snapshot) => {
           snapshot.set(configMapsState, [])
@@ -71,14 +71,20 @@ describe('ScaleClusterAlert', () => {
         }}
       >
         <MemoryRouter>
-          <StatusField cluster={mockCluster1} />
+          <StatusField {...props} />
         </MemoryRouter>
       </RecoilRoot>
     )
 
+    const props = { cluster }
+    const { rerender } = render(Component(props))
+    cluster.status = ClusterStatus.creating
     await waitForText('Creating')
     userEvent.click(screen.getByText('Creating'))
     await waitForText('View logs')
     userEvent.click(screen.getByText('View logs'))
+    cluster.status = ClusterStatus.unreachable
+    rerender(Component({ ...props }))
+    await waitForText('Unreachable')
   })
 })
