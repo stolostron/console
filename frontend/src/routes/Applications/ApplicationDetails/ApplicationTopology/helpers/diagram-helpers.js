@@ -11,7 +11,7 @@
 'use strict'
 
 import _ from 'lodash'
-import R from 'ramda'
+import * as R from 'ramda'
 import { openArgoCDEditor, openRouteURL } from '../model/topologyAppSet'
 import { getURLSearchData } from './diagram-helpers-argo'
 import { getEditLink } from './resource-helper'

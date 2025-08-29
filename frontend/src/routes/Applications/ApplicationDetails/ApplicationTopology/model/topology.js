@@ -3,7 +3,7 @@ import { getClusterName, isDeployableResource } from '../helpers/diagram-helpers
 import { addDiagramDetails } from './computeRelated'
 import { computeNodeStatus } from './computeStatuses'
 import _ from 'lodash'
-import R from 'ramda'
+import * as R from 'ramda'
 import { getArgoTopology } from './topologyArgo'
 import { getSubscriptionTopology } from './topologySubscription'
 import { getAppSetTopology } from './topologyAppSet'

@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import _ from 'lodash'
-import R from 'ramda'
+import * as R from 'ramda'
 import { getPulseStatusForAnsibleNode, showAnsibleJobDetails } from '../helpers/ansible-task'
 import {
   addDetails,
@@ -53,7 +53,7 @@ const resErrorStates = [
 const resWarningStates = [pendingStatus, 'creating', 'terminating']
 const apiVersionPath = 'specs.raw.apiVersion'
 
-const metadataName = 'metadata.name'
+export const metadataName = 'metadata.name'
 const argoAppHealthyStatus = 'Healthy'
 const argoAppDegradedStatus = 'Degraded'
 const argoAppMissingStatus = 'Missing'

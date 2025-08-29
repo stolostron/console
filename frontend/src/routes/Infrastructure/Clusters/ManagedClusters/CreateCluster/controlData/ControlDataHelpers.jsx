@@ -13,11 +13,15 @@ import {
   getValue,
   VALIDATE_BASE_DNS_NAME_REQUIRED,
   VALID_DNS_LABEL,
-} from '../../../../../../components/TemplateEditor'
-import { TemplateLinkOutControl, TemplateSummaryControl } from '../../../../../../components/TemplateSummaryModal'
-import { getControlByID } from '../../../../../../lib/temptifly-utils'
-import { NavigationPath } from '../../../../../../NavigationPath'
-import { listClusterImageSets, listStorageClasses, unpackProviderConnection } from '../../../../../../resources'
+} from '../../../../../../components/TemplateEditor/index.js'
+import { TemplateLinkOutControl, TemplateSummaryControl } from '../../../../../../components/TemplateSummaryModal.tsx'
+import { getControlByID } from '../../../../../../lib/temptifly-utils.ts'
+import { NavigationPath } from '../../../../../../NavigationPath.tsx'
+import {
+  listClusterImageSets,
+  listStorageClasses,
+  unpackProviderConnection,
+} from '../../../../../../resources/index.ts'
 
 const createAutomationTemplate = (t) => ({
   prompt: t('creation.ocp.cloud.add.template'),
