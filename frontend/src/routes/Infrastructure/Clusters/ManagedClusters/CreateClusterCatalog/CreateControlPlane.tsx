@@ -19,7 +19,7 @@ export function CreateControlPlane() {
   const [isDiagramExpanded, setIsDiagramExpanded] = useState(true)
   const [isMouseOverControlPlaneLink, setIsMouseOverControlPlaneLink] = useState(false)
 
-  const isHypershiftEnabled = useIsHypershiftEnabled()
+  const [isHypershiftEnabled, loaded] = useIsHypershiftEnabled()
   const noAvailableHostsAlert = useNoAvailableHostsAlert('hosted')
 
   const onDiagramToggle = (isExpanded: boolean) => {
@@ -60,16 +60,22 @@ export function CreateControlPlane() {
           isHypershiftEnabled && !noAvailableHostsAlert
             ? nextStep(getTypedCreateClusterPath(HostInventoryInfrastructureType.CIMHypershift))
             : undefined,
-        alertTitle: !isHypershiftEnabled
-          ? t('Hosted control plane operator must be enabled in order to continue')
-          : noAvailableHostsAlert?.title,
-        alertContent: !isHypershiftEnabled ? (
-          <a href={DOC_LINKS.HOSTED_ENABLE_FEATURE_AWS} target="_blank" rel="noopener noreferrer">
-            {t('View documentation')} <ExternalLinkAltIcon />
-          </a>
-        ) : (
-          noAvailableHostsAlert?.content
-        ),
+        alertTitle: (() => {
+          if (!loaded) return undefined
+          if (!isHypershiftEnabled) return t('Hosted control plane operator must be enabled in order to continue')
+          return noAvailableHostsAlert?.title
+        })(),
+        alertContent: (() => {
+          if (!loaded) return undefined
+          if (!isHypershiftEnabled) {
+            return (
+              <a href={DOC_LINKS.HOSTED_ENABLE_FEATURE_AWS} target="_blank" rel="noopener noreferrer">
+                {t('View documentation')} <ExternalLinkAltIcon />
+              </a>
+            )
+          }
+          return noAvailableHostsAlert?.content
+        })(),
         alertVariant: 'info',
       },
       {
@@ -105,7 +111,7 @@ export function CreateControlPlane() {
       },
     ]
     return newCards
-  }, [nextStep, t, isHypershiftEnabled, noAvailableHostsAlert])
+  }, [nextStep, t, isHypershiftEnabled, loaded, noAvailableHostsAlert])
 
   return (
     <GetControlPlane
