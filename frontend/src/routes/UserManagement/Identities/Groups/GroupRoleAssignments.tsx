@@ -24,7 +24,6 @@ const GroupRoleAssignments = () => {
   const [group, setGroup] = useState<Group>()
 
   const groups = mockGroups
-  console.log(groups, 'groups')
   // TODO: proper loading mechanism once API ready
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [isNotFound, setIsNotFound] = useState<boolean>()
