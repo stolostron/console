@@ -293,17 +293,17 @@ export function useFleetSearchPoll<T extends K8sResourceCommon | K8sResourceComm
               const volumes = item.dataVolumeNames.map((name: string) => ({
                 dataVolume: { name },
               }))
-              setIfDefined(resource, 'spec.template.spec.domain.volumes', volumes)
+              setIfDefined(resource, 'spec.template.spec.volumes', volumes)
             }
 
             if (item.pvcClaimNames && Array.isArray(item.pvcClaimNames)) {
               const pvcVolumes = item.pvcClaimNames.map((claimName: string) => ({
                 persistentVolumeClaim: { claimName },
               }))
-              if (resource.spec?.template?.spec?.domain?.volumes) {
-                resource.spec.template.spec.domain.volumes.push(...pvcVolumes)
+              if (resource.spec?.template?.spec?.volumes) {
+                resource.spec.template.spec.volumes.push(...pvcVolumes)
               } else {
-                setIfDefined(resource, 'spec.template.spec.domain.volumes', pvcVolumes)
+                setIfDefined(resource, 'spec.template.spec.volumes', pvcVolumes)
               }
             }
             if (!resource.status?.conditions) {

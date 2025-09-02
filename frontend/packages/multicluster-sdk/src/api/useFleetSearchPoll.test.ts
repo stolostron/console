@@ -518,13 +518,13 @@ describe('useFleetSearchPoll', () => {
             domain: {
               cpu: { cores: 2 },
               memory: { guest: '4Gi' },
-              volumes: [
-                { dataVolume: { name: 'test-volume1' } },
-                { dataVolume: { name: 'test-volume2' } },
-                { persistentVolumeClaim: { claimName: 'test-claim1' } },
-                { persistentVolumeClaim: { claimName: 'test-claim2' } },
-              ],
             },
+            volumes: [
+              { dataVolume: { name: 'test-volume1' } },
+              { dataVolume: { name: 'test-volume2' } },
+              { persistentVolumeClaim: { claimName: 'test-claim1' } },
+              { persistentVolumeClaim: { claimName: 'test-claim2' } },
+            ],
           },
           metadata: {
             annotations: {
