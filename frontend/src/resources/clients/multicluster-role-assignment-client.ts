@@ -97,7 +97,12 @@ export const useFindRoleAssignments = (query: MulticlusterRoleAssignmentQuery): 
 
 export const mapRoleAssignmentBeforeSaving = (roleAssignment: RoleAssignment): RoleAssignment => {
   const { name, ...roleAssignmentWithoutName } = roleAssignment
-  const newName = sha256(JSON.stringify(roleAssignmentWithoutName, Object.keys(roleAssignmentWithoutName).sort()))
+  const newName = sha256(
+    JSON.stringify(
+      roleAssignmentWithoutName,
+      Object.keys(roleAssignmentWithoutName).sort((a, b) => a.localeCompare(b))
+    )
+  )
   return { name: newName, ...roleAssignmentWithoutName }
 }
 
