@@ -289,21 +289,27 @@ export function useFleetSearchPoll<T extends K8sResourceCommon | K8sResourceComm
             setIfDefined(resource, 'spec.template.metadata.annotations["vm.kubevirt.io/flavor"]', item.flavor)
             setIfDefined(resource, 'spec.template.metadata.annotations["vm.kubevirt.io/os"]', item.osName)
             setIfDefined(resource, 'spec.template.metadata.annotations["vm.kubevirt.io/workload"]', item.workload)
-            if (item.dataVolumeNames && Array.isArray(item.dataVolumeNames)) {
-              const volumes = item.dataVolumeNames.map((name: string) => ({
-                dataVolume: { name },
-              }))
-              setIfDefined(resource, 'spec.template.spec.volumes', volumes)
+            if (item.dataVolumeNames && typeof item.dataVolumeNames === 'string') {
+              const dataVolumeNamesList = item.dataVolumeNames.split(';').filter((name: string) => name.trim() !== '')
+              if (dataVolumeNamesList.length > 0) {
+                const volumes = dataVolumeNamesList.map((name: string) => ({
+                  dataVolume: { name: name.trim() },
+                }))
+                setIfDefined(resource, 'spec.template.spec.volumes', volumes)
+              }
             }
 
-            if (item.pvcClaimNames && Array.isArray(item.pvcClaimNames)) {
-              const pvcVolumes = item.pvcClaimNames.map((claimName: string) => ({
-                persistentVolumeClaim: { claimName },
-              }))
-              if (resource.spec?.template?.spec?.volumes) {
-                resource.spec.template.spec.volumes.push(...pvcVolumes)
-              } else {
-                setIfDefined(resource, 'spec.template.spec.volumes', pvcVolumes)
+            if (item.pvcClaimNames && typeof item.pvcClaimNames === 'string') {
+              const pvcClaimNamesList = item.pvcClaimNames.split(';').filter((name: string) => name.trim() !== '')
+              if (pvcClaimNamesList.length > 0) {
+                const pvcVolumes = pvcClaimNamesList.map((claimName: string) => ({
+                  persistentVolumeClaim: { claimName: claimName.trim() },
+                }))
+                if (resource.spec?.template?.spec?.volumes) {
+                  resource.spec.template.spec.volumes.push(...pvcVolumes)
+                } else {
+                  setIfDefined(resource, 'spec.template.spec.volumes', pvcVolumes)
+                }
               }
             }
             if (!resource.status?.conditions) {

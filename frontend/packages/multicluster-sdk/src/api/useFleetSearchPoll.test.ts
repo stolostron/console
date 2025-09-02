@@ -487,8 +487,8 @@ describe('useFleetSearchPoll', () => {
         workload: 'app',
         runStrategy: 'Always',
         condition: 'Ready=True; AgentConnected=True',
-        dataVolumeNames: ['test-volume1', 'test-volume2'],
-        pvcClaimNames: ['test-claim1', 'test-claim2'],
+        dataVolumeNames: 'test-volume1; test-volume2',
+        pvcClaimNames: 'test-claim1; test-claim2',
       }
 
       mockUseSearchResultItemsQuery.mockReturnValue({
