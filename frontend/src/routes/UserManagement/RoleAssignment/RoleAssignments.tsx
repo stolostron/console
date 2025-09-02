@@ -32,11 +32,7 @@ type RoleAssignmentsProps = {
 const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssignmentsProps) => {
   const { t } = useTranslation()
   // Key function for the table that generates a unique key for each role assignment
-  const keyFn = useCallback(
-    (roleAssignment: FlattenedRoleAssignment) =>
-      `${roleAssignment.clusterRole}${roleAssignment.clusterSets.join('')}${roleAssignment.targetNamespaces?.join('')}`,
-    []
-  )
+  const keyFn = useCallback((roleAssignment: FlattenedRoleAssignment) => roleAssignment.name, [])
 
   // Modal state for delete confirmation
   const [modalProps, setModalProps] = useState<BulkActionModalProps<FlattenedRoleAssignment> | { open: false }>({

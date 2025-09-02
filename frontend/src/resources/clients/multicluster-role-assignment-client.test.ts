@@ -10,6 +10,7 @@ import {
   create,
   deleteRoleAssignment,
   FlattenedRoleAssignment,
+  mapRoleAssignmentBeforeSaving,
   useFindRoleAssignments,
 } from './multicluster-role-assignment-client'
 
@@ -153,7 +154,11 @@ describe('multicluster-role-assignment-client', function () {
   describe('create', () => {
     it('createResource is called with proper parameter', () => {
       // Arrange
-      const multiclusterRoleAssignment: MulticlusterRoleAssignment = {} as MulticlusterRoleAssignment
+      const multiclusterRoleAssignment: MulticlusterRoleAssignment = {
+        spec: {
+          roleAssignments: [],
+        },
+      } as any as MulticlusterRoleAssignment
 
       // Act
       create(multiclusterRoleAssignment)
@@ -171,6 +176,7 @@ describe('multicluster-role-assignment-client', function () {
         multiclusterRoleAssignmentsMockData[0] as MulticlusterRoleAssignment
       const roleAssignmentToRemove: FlattenedRoleAssignment = {
         relatedMulticlusterRoleAssignment: multiClusterRoleAssignment,
+        name: multiClusterRoleAssignment.spec.roleAssignments[0].name,
         clusterRole: multiClusterRoleAssignment.spec.roleAssignments[0].clusterRole,
         clusterSets: multiClusterRoleAssignment.spec.roleAssignments[0].clusterSets,
         subject: {
@@ -201,15 +207,17 @@ describe('multicluster-role-assignment-client', function () {
       // Arrange
       const multiClusterRoleAssignment: MulticlusterRoleAssignment =
         multiclusterRoleAssignmentsMockData[5] as MulticlusterRoleAssignment
+
       const roleAssignmentToRemove: FlattenedRoleAssignment = {
         relatedMulticlusterRoleAssignment: multiClusterRoleAssignment,
-        clusterRole: 'kubevirt.io:edit',
-        clusterSets: ['development-cluster'],
+        name: multiClusterRoleAssignment.spec.roleAssignments[0].name,
+        clusterRole: multiClusterRoleAssignment.spec.roleAssignments[0].clusterRole,
+        clusterSets: multiClusterRoleAssignment.spec.roleAssignments[0].clusterSets,
         subject: {
-          kind: 'User',
-          name: 'intern.dev',
+          kind: multiClusterRoleAssignment.spec.subject.kind,
+          name: multiClusterRoleAssignment.spec.subject.name,
         },
-        targetNamespaces: ['kubevirt-dev', 'vm-dev', 'storage-dev', 'networking-dev'],
+        targetNamespaces: multiClusterRoleAssignment.spec.roleAssignments[0].targetNamespaces,
       }
 
       // Act
@@ -225,6 +233,7 @@ describe('multicluster-role-assignment-client', function () {
       [
         'no matching clusterRole',
         {
+          name: 'A1',
           clusterRole: 'x',
           clusterSets: [
             'production-cluster',
@@ -252,6 +261,7 @@ describe('multicluster-role-assignment-client', function () {
       [
         'no matching clusterSets',
         {
+          name: 'A1',
           clusterRole: 'kubevirt.io:admin',
           clusterSets: ['x'],
           targetNamespaces: [
@@ -271,6 +281,7 @@ describe('multicluster-role-assignment-client', function () {
       [
         'no matching targetNamespaces',
         {
+          name: 'A1',
           clusterRole: 'kubevirt.io:admin',
           clusterSets: [
             'production-cluster',
@@ -287,6 +298,7 @@ describe('multicluster-role-assignment-client', function () {
       [
         'no matching field',
         {
+          name: 'A1',
           clusterRole: 'x',
           clusterSets: ['y'],
           targetNamespaces: ['z'],

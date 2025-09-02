@@ -27,11 +27,13 @@ const mockMulticlusterRoleAssignments: MulticlusterRoleAssignment[] = [
       subject: { kind: 'User', name: 'test.user1' },
       roleAssignments: [
         {
+          name: 'A1',
           clusterRole: 'admin',
           targetNamespaces: ['default', 'kube-system'],
           clusterSets: ['test-cluster-1'],
         },
         {
+          name: 'A2',
           clusterRole: 'cluster-admin',
           targetNamespaces: ['monitoring'],
           clusterSets: ['test-cluster-2'],
@@ -51,6 +53,7 @@ const mockMulticlusterRoleAssignments: MulticlusterRoleAssignment[] = [
       subject: { kind: 'User', name: 'test.user2' },
       roleAssignments: [
         {
+          name: 'B1',
           clusterRole: 'developer',
           targetNamespaces: ['app-namespace'],
           clusterSets: ['dev-cluster'],
@@ -69,6 +72,7 @@ const mockMulticlusterRoleAssignments: MulticlusterRoleAssignment[] = [
       subject: { kind: 'User', name: 'test.user3' },
       roleAssignments: [
         {
+          name: 'C1',
           clusterRole: 'viewer',
           targetNamespaces: ['staging-ns-1', 'staging-ns-2'],
           clusterSets: ['staging-cluster'],
@@ -80,6 +84,7 @@ const mockMulticlusterRoleAssignments: MulticlusterRoleAssignment[] = [
 
 const mockRoleAssignments: FlattenedRoleAssignment[] = [
   {
+    name: 'A1',
     clusterRole: 'admin',
     targetNamespaces: ['default', 'kube-system'],
     clusterSets: ['test-cluster-1'],
@@ -90,6 +95,7 @@ const mockRoleAssignments: FlattenedRoleAssignment[] = [
     },
   },
   {
+    name: 'A2',
     clusterRole: 'cluster-admin',
     targetNamespaces: ['monitoring'],
     clusterSets: ['test-cluster-2'],
@@ -100,6 +106,7 @@ const mockRoleAssignments: FlattenedRoleAssignment[] = [
     },
   },
   {
+    name: 'B1',
     clusterRole: 'developer',
     targetNamespaces: ['app-namespace'],
     clusterSets: ['dev-cluster'],
@@ -110,6 +117,7 @@ const mockRoleAssignments: FlattenedRoleAssignment[] = [
     },
   },
   {
+    name: 'C1',
     clusterRole: 'viewer',
     targetNamespaces: ['staging-ns-1', 'staging-ns-2'],
     clusterSets: ['staging-cluster'],
@@ -250,10 +258,10 @@ jest.mock('../../../ui-components', () => {
           </button>
 
           {/* Table data - simplified */}
-          {filteredItems?.map((item: any) => (
-            <div key={item.multiclusterRoleAssignmentUid + '-' + item.roleAssignmentIndex}>
+          {filteredItems?.map((item: FlattenedRoleAssignment) => (
+            <div key={item.name}>
               <div>
-                {item.kind}: {item.name}
+                {item.subject.kind}: {item.subject.name}
               </div>
               <div>{item.clusterRole}</div>
               <div>{item.clusterSets?.join(', ') || 'No clusters'}</div>

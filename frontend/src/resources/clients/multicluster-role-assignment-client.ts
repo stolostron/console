@@ -1,8 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { sha256 } from 'js-sha256'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { Subject } from '../kubernetes-client'
-import { MulticlusterRoleAssignment, RoleAssignment } from '../multicluster-role-assignment'
-import { GroupKindType, UserKindType } from '../rbac'
+import {
+  MulticlusterRoleAssignment,
+  MulticlusterRoleAssignmentApiVersion,
+  MulticlusterRoleAssignmentKind,
+  RoleAssignment,
+} from '../multicluster-role-assignment'
 import { createResource, deleteResource, patchResource } from '../utils'
 import { IRequestResult, ResourceError, ResourceErrorCode } from '../utils/resource-request'
 
@@ -13,7 +18,7 @@ export interface FlattenedRoleAssignment extends RoleAssignment {
 
 interface MulticlusterRoleAssignmentQuery {
   subjectNames?: string[]
-  subjectKinds?: (UserKindType | GroupKindType)[]
+  subjectKinds?: FlattenedRoleAssignment['subject']['kind'][]
   roles?: string[]
   clusterSets?: string[]
 }
@@ -40,8 +45,7 @@ const isSubjectMatch = (
     case query.subjectNames?.length && !query.subjectNames.includes(multiClusterRoleAssignment.spec.subject.name):
       return false
     // Filter by subject kinds
-    case query.subjectKinds?.length &&
-      !query.subjectKinds.includes(multiClusterRoleAssignment.spec.subject.kind as UserKindType | GroupKindType):
+    case query.subjectKinds?.length && !query.subjectKinds.includes(multiClusterRoleAssignment.spec.subject.kind):
       return false
     default:
       return true
@@ -91,6 +95,12 @@ export const useFindRoleAssignments = (query: MulticlusterRoleAssignmentQuery): 
   )
 }
 
+export const mapRoleAssignmentBeforeSaving = (roleAssignment: RoleAssignment): RoleAssignment => {
+  const { name, ...roleAssignmentWithoutName } = roleAssignment
+  const newName = sha256(JSON.stringify(roleAssignmentWithoutName, Object.keys(roleAssignmentWithoutName).sort()))
+  return { name: newName, ...roleAssignmentWithoutName }
+}
+
 /**
  * it creates a new MulticlusterRoleAssignment on the CR
  * @param multiclusterRoleAssignment the element to be created
@@ -98,7 +108,16 @@ export const useFindRoleAssignments = (query: MulticlusterRoleAssignmentQuery): 
  */
 export const create = (
   multiclusterRoleAssignment: MulticlusterRoleAssignment
-): IRequestResult<MulticlusterRoleAssignment> => createResource<MulticlusterRoleAssignment>(multiclusterRoleAssignment)
+): IRequestResult<MulticlusterRoleAssignment> => {
+  const treatedMulticlusterRoleAssignment = {
+    ...multiclusterRoleAssignment,
+    spec: {
+      ...multiclusterRoleAssignment.spec,
+      roleAssignments: multiclusterRoleAssignment.spec.roleAssignments.map(mapRoleAssignmentBeforeSaving),
+    },
+  }
+  return createResource<MulticlusterRoleAssignment>(treatedMulticlusterRoleAssignment)
+}
 
 /**
  * it checks whether two RoleAssignments are the same or not
@@ -108,7 +127,48 @@ export const create = (
  */
 const areRoleAssignmentsEquals = (a: RoleAssignment, b: RoleAssignment) => a.name === b.name
 
-export const addRoleAssignment = (roleAssignment: RoleAssignment) => {}
+// TODO: rename it by removing `use`, see ACM-23676
+/**
+ * adds a new roleAssignment either to an existing MulticlusterRoleAssignment or it creates a new one adding the new roleAssignment
+ * @param roleAssignment
+ * @param subject
+ * @returns the patched or new MulticlusterRoleAssignment
+ */
+export const useAddRoleAssignment = (
+  roleAssignment: RoleAssignment,
+  subject: FlattenedRoleAssignment['subject']
+): IRequestResult<MulticlusterRoleAssignment> => {
+  const existingMulticlusterRoleAssignmets = useFindRoleAssignments({
+    subjectKinds: [subject.kind],
+    subjectNames: [subject.name],
+  })
+
+  if (existingMulticlusterRoleAssignmets.length > 0) {
+    // it takes latest element on the list considering in the future CR will handle multiple kind/subject MulticlusterRoleAssignment in case resource exceeding the limit
+    const flattenedMultiClusterRoleAssignmet =
+      existingMulticlusterRoleAssignmets[existingMulticlusterRoleAssignmets.length - 1]
+    return patchResource(flattenedMultiClusterRoleAssignmet.relatedMulticlusterRoleAssignment, {
+      spec: {
+        ...flattenedMultiClusterRoleAssignmet.relatedMulticlusterRoleAssignment.spec,
+        roleAssignments: [
+          ...flattenedMultiClusterRoleAssignmet.relatedMulticlusterRoleAssignment.spec.roleAssignments,
+          mapRoleAssignmentBeforeSaving(roleAssignment),
+        ],
+      },
+    })
+  } else {
+    const newMultiClusterRoleAssignment: MulticlusterRoleAssignment = {
+      apiVersion: MulticlusterRoleAssignmentApiVersion,
+      kind: MulticlusterRoleAssignmentKind,
+      spec: {
+        subject,
+        roleAssignments: [roleAssignment],
+      },
+      metadata: {},
+    }
+    return create(newMultiClusterRoleAssignment)
+  }
+}
 
 /**
  * it removes a RoleAssignment element from the MulticlusterRoleAssignment. If it is the latest one, the whole MulticlusterRoleAssignment is instead removed

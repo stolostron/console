@@ -18,11 +18,7 @@ const RoleAssignmentActionDropdown = ({
 }) => {
   const { t } = useTranslation()
 
-  const keyFn = useCallback(
-    (roleAssignment: FlattenedRoleAssignment) =>
-      `${roleAssignment.clusterRole}${roleAssignment.clusterSets.join('')}${roleAssignment.targetNamespaces?.join('')}`,
-    []
-  )
+  const keyFn = useCallback((roleAssignment: FlattenedRoleAssignment) => roleAssignment.name, [])
 
   const actions = [
     {

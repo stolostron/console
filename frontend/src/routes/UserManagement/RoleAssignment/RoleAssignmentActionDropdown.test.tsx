@@ -29,6 +29,7 @@ jest.mock('@patternfly/react-core', () => ({
 }))
 
 const mockRoleAssignment: FlattenedRoleAssignment = {
+  name: 'A1',
   relatedMulticlusterRoleAssignment: {} as MulticlusterRoleAssignment,
   clusterRole: 'admin',
   clusterSets: ['production', 'staging'],
