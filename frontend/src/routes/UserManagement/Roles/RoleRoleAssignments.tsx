@@ -1,15 +1,19 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { PageSection } from '@patternfly/react-core'
 import { useEffect, useMemo, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom-v5-compat'
+import { useNavigate, useParams } from 'react-router-dom-v5-compat'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { User } from '../../../resources'
 import multiclusterRoleAssignmentsMockDataJson from '../../../resources/clients/mock-data/multicluster-role-assignments.json'
-import { ResourceError, ResourceErrorCode } from '../../../resources/utils'
+import {
+  FlattenedRoleAssignment,
+  roleAssignmentToFlattenedRoleAssignment,
+} from '../../../resources/clients/multicluster-role-assignment-client'
 import { MulticlusterRoleAssignment } from '../../../resources/multicluster-role-assignment'
-import { compareStrings, AcmLoadingPage, AcmButton } from '../../../ui-components'
+import { ResourceError, ResourceErrorCode } from '../../../resources/utils'
+import { AcmButton, AcmLoadingPage, compareStrings } from '../../../ui-components'
 import { RoleAssignments } from '../RoleAssignment/RoleAssignments'
 
 // TODO: to remove once API ready
@@ -40,7 +44,8 @@ const RoleRoleAssignments = () => {
   const multiclusterRoleAssignments = multiclusterRoleAssignmentsMockDataJson as MulticlusterRoleAssignment[]
 
   // Filter multicluster role assignments for the current user
-  const userMulticlusterRoleAssignments = useMemo(
+  // TODO: call useFindRoleAssignments instead ACM-23633
+  const roleAssignments: FlattenedRoleAssignment[] = useMemo(
     () =>
       !user || !multiclusterRoleAssignments
         ? []
@@ -50,8 +55,17 @@ const RoleRoleAssignments = () => {
                 multiclusterRoleAssignment.spec.subject.kind === 'User' &&
                 multiclusterRoleAssignment.spec.subject.name === user.metadata.name
             )
-            .sort((a, b) => compareStrings(a.metadata?.name ?? '', b.metadata?.name ?? '')),
-    [user, multiclusterRoleAssignments]
+            .reduce(
+              (roleAssignmentsAcc: FlattenedRoleAssignment[], multiclusterRoleAssignmentCurr) => [
+                ...roleAssignmentsAcc,
+                ...multiclusterRoleAssignmentCurr.spec.roleAssignments.map((roleAssignment) =>
+                  roleAssignmentToFlattenedRoleAssignment(multiclusterRoleAssignmentCurr, roleAssignment)
+                ),
+              ],
+              []
+            )
+            .sort((a, b) => compareStrings(a.subject.name ?? '', b.subject.name ?? '')),
+    [multiclusterRoleAssignments, user]
   )
 
   switch (true) {
@@ -73,13 +87,7 @@ const RoleRoleAssignments = () => {
         />
       )
     default:
-      return (
-        <RoleAssignments
-          multiclusterRoleAssignments={userMulticlusterRoleAssignments}
-          isLoading={isLoading}
-          hiddenColumns={['subject']}
-        />
-      )
+      return <RoleAssignments roleAssignments={roleAssignments} isLoading={isLoading} hiddenColumns={['subject']} />
   }
 }
 

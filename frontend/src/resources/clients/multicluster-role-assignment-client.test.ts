@@ -1,909 +1,336 @@
+/* eslint-disable jest/no-conditional-expect */
 /* Copyright Contributors to the Open Cluster Management project */
-import { UserKind, GroupKind } from '../rbac'
-import {
-  MulticlusterRoleAssignment,
-  RoleAssignment,
-  MulticlusterRoleAssignmentNamespace,
-  MulticlusterRoleAssignmentApiVersion,
-  MulticlusterRoleAssignmentKind,
-} from '../multicluster-role-assignment'
-import { createResource, patchResource, deleteResource } from '../utils'
-import {
-  MulticlusterRoleAssignmentQuery,
-  TrackedRoleAssignment,
-  filterAndTrackRoleAssignments,
-  addRoleAssignmentK8s,
-  updateRoleAssignmentK8s,
-  deleteRoleAssignmentK8s,
-  moveRoleAssignmentBetweenSubjectsK8s,
-  createRoleAssignmentHash,
-} from './multicluster-role-assignment-client'
+import { renderHook } from '@testing-library/react-hooks'
+import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
+import { MulticlusterRoleAssignment, RoleAssignment } from '../multicluster-role-assignment'
+import { GroupKind, UserKind } from '../rbac'
+import { createResource, deleteResource, patchResource } from '../utils'
 import multiclusterRoleAssignmentsMockData from './mock-data/multicluster-role-assignments.json'
-
-const mockAbort = jest.fn()
-const mockPromise = Promise.resolve({})
+import {
+  create,
+  deleteRoleAssignment,
+  FlattenedRoleAssignment,
+  useFindRoleAssignments,
+} from './multicluster-role-assignment-client'
 
 jest.mock('../utils', () => ({
   createResource: jest.fn(),
-  patchResource: jest.fn(),
   deleteResource: jest.fn(),
+  patchResource: jest.fn(),
+}))
+
+jest.mock('../../shared-recoil', () => ({
+  useRecoilValue: jest.fn(),
+  useSharedAtoms: jest.fn(),
 }))
 
 const createResourceMock = createResource as jest.MockedFunction<typeof createResource>
-const patchResourceMock = patchResource as jest.MockedFunction<typeof patchResource>
 const deleteResourceMock = deleteResource as jest.MockedFunction<typeof deleteResource>
+const patchResourceMock = patchResource as jest.MockedFunction<typeof patchResource>
+const useSharedAtomsMock = useSharedAtoms as jest.Mock
+const useRecoilValueMock = useRecoilValue as jest.Mock
 
-describe('MulticlusterRoleAssignmentClient', function () {
-  let mockMulticlusterRoleAssignments: MulticlusterRoleAssignment[]
-  let existingAssignment: RoleAssignment
-  let baseTrackedAssignment: TrackedRoleAssignment
+describe('multicluster-role-assignment-client', function () {
+  const mockMulticlusterRoleAssignments: MulticlusterRoleAssignment[] = JSON.parse(
+    JSON.stringify(multiclusterRoleAssignmentsMockData)
+  ) as MulticlusterRoleAssignment[]
 
-  beforeEach(() => {
-    // JSON.stringify helps reset mock json data in between tests because it does a deep copy
-    mockMulticlusterRoleAssignments = JSON.parse(
-      JSON.stringify(multiclusterRoleAssignmentsMockData)
-    ) as MulticlusterRoleAssignment[]
+  beforeAll(() => {
     jest.clearAllMocks()
-    // Needed to prevent promise leaking issues between tests
-    createResourceMock.mockReturnValue({ promise: mockPromise, abort: mockAbort })
-    patchResourceMock.mockReturnValue({ promise: mockPromise, abort: mockAbort })
-    deleteResourceMock.mockReturnValue({ promise: mockPromise, abort: mockAbort })
   })
 
-  describe('filterAndTrackRoleAssignments', () => {
-    it('should return all role assignments when no query filters are provided', () => {
-      const query: MulticlusterRoleAssignmentQuery = {}
-      const result = filterAndTrackRoleAssignments(mockMulticlusterRoleAssignments, query)
+  describe('useFindRoleAssignments', () => {
+    beforeAll(() => {
+      useSharedAtomsMock.mockReturnValue({ multiclusterRoleAssignmentState: {} })
+      useRecoilValueMock.mockReturnValue(mockMulticlusterRoleAssignments)
+    })
 
-      expect(result).toHaveLength(33)
-      result.forEach((roleAssignment) => {
-        expect(roleAssignment).toHaveProperty('multiclusterRoleAssignmentUid')
-        expect(roleAssignment).toHaveProperty('subjectName')
-        expect(roleAssignment).toHaveProperty('subjectKind')
-        expect(roleAssignment).toHaveProperty('roleAssignmentIndex')
-        expect(roleAssignment).toHaveProperty('dataHash')
-        expect(roleAssignment.dataHash).toMatch(/^[0-9a-f]{8}$/)
-      })
+    it('should return all role assignments when no query filters are provided', () => {
+      // Act
+      const { result } = renderHook(() => useFindRoleAssignments({}))
+
+      // Assert
+      expect(result.current).toHaveLength(33)
     })
 
     it('should filter by subject name', () => {
-      const query: MulticlusterRoleAssignmentQuery = {
-        subjectNames: ['alice.trask'],
-      }
-      const result = filterAndTrackRoleAssignments(mockMulticlusterRoleAssignments, query)
+      // Arrange
+      const name = 'alice.trask'
 
-      expect(result).toHaveLength(5)
-      result.forEach((roleAssignment) => {
-        expect(roleAssignment.subjectName).toBe('alice.trask')
-      })
+      // Act
+      const { result } = renderHook(() =>
+        useFindRoleAssignments({
+          subjectNames: [name],
+        })
+      )
+
+      // Assert
+      expect(result.current).toHaveLength(5)
+      expect(result.current.filter((e) => e.subject.name !== name)).toHaveLength(0)
     })
 
     it('should filter by subject kind', () => {
-      const query: MulticlusterRoleAssignmentQuery = {
-        subjectKinds: [GroupKind],
-      }
-      const result = filterAndTrackRoleAssignments(mockMulticlusterRoleAssignments, query)
+      // Act
+      const { result } = renderHook(() =>
+        useFindRoleAssignments({
+          subjectKinds: [GroupKind],
+        })
+      )
 
-      expect(result).toHaveLength(14)
-      result.forEach((roleAssignment) => {
-        expect(roleAssignment.subjectKind).toBe(GroupKind)
-      })
+      // Assert
+      expect(result.current).toHaveLength(14)
+      expect(result.current.filter((e) => e.subject.kind !== GroupKind)).toHaveLength(0)
     })
 
     it('should filter by role', () => {
-      const query: MulticlusterRoleAssignmentQuery = {
-        roles: ['kubevirt.io:admin'],
-      }
-      const result = filterAndTrackRoleAssignments(mockMulticlusterRoleAssignments, query)
+      // Arrange
+      const role = 'kubevirt.io:admin'
 
-      expect(result).toHaveLength(6)
-      result.forEach((roleAssignment) => {
-        expect(roleAssignment.clusterRole).toBe('kubevirt.io:admin')
-      })
+      // Act
+      const { result } = renderHook(() =>
+        useFindRoleAssignments({
+          roles: [role],
+        })
+      )
+
+      // Assert
+      expect(result.current).toHaveLength(6)
+      expect(result.current.filter((e) => e.clusterRole !== role)).toHaveLength(0)
     })
 
     it('should filter by cluster set', () => {
-      const query: MulticlusterRoleAssignmentQuery = {
-        clusterSets: ['production-cluster'],
-      }
-      const result = filterAndTrackRoleAssignments(mockMulticlusterRoleAssignments, query)
+      // Arrange
+      const clusterSet = 'production-cluster'
 
-      expect(result).toHaveLength(13)
-      result.forEach((roleAssignment) => {
-        expect(roleAssignment.clusterSets).toContain('production-cluster')
-      })
+      // Act
+      const { result } = renderHook(() =>
+        useFindRoleAssignments({
+          clusterSets: [clusterSet],
+        })
+      )
+
+      // Assert
+      expect(result.current).toHaveLength(13)
+      expect(result.current.filter((e) => !e.clusterSets.includes(clusterSet))).toHaveLength(0)
     })
 
     it('should filter by multiple criteria', () => {
-      const query: MulticlusterRoleAssignmentQuery = {
-        subjectKinds: [UserKind],
-        roles: ['kubevirt.io:admin'],
-        clusterSets: ['production-cluster'],
-      }
-      const result = filterAndTrackRoleAssignments(mockMulticlusterRoleAssignments, query)
+      // Arrange
+      const role = 'kubevirt.io:admin'
+      const clusterSet = 'production-cluster'
 
-      expect(result).toHaveLength(3)
-      result.forEach((roleAssignment) => {
-        expect(roleAssignment.subjectKind).toBe(UserKind)
-        expect(roleAssignment.clusterRole).toBe('kubevirt.io:admin')
-        expect(roleAssignment.clusterSets).toContain('production-cluster')
-      })
+      // Act
+      const { result } = renderHook(() =>
+        useFindRoleAssignments({
+          subjectKinds: [UserKind],
+          roles: [role],
+          clusterSets: [clusterSet],
+        })
+      )
+
+      // Assert
+      expect(result.current).toHaveLength(3)
+      expect(
+        result.current.filter(
+          (e) => e.subject.kind !== UserKind || e.clusterRole !== role || !e.clusterSets.includes(clusterSet)
+        )
+      ).toHaveLength(0)
     })
 
     it('should return empty array when no matches found', () => {
-      const query: MulticlusterRoleAssignmentQuery = {
-        subjectNames: ['nonexistent.user'],
-      }
-      const result = filterAndTrackRoleAssignments(mockMulticlusterRoleAssignments, query)
-
-      expect(result).toEqual([])
-    })
-  })
-
-  describe('addRoleAssignmentK8s', () => {
-    const newRoleAssignment: RoleAssignment = {
-      clusterRole: 'test-role',
-      targetNamespaces: ['test-namespace'],
-      clusterSets: ['test-cluster-set'],
-    }
-
-    it('should create new MulticlusterRoleAssignment when none exists for user', async () => {
-      const result = await addRoleAssignmentK8s(
-        mockMulticlusterRoleAssignments,
-        'new.user',
-        UserKind,
-        newRoleAssignment
-      )
-
-      expect(result.success).toBe(true)
-      expect(createResourceMock).toHaveBeenCalledTimes(1)
-
-      expect(createResourceMock).toHaveBeenCalledWith({
-        apiVersion: MulticlusterRoleAssignmentApiVersion,
-        kind: MulticlusterRoleAssignmentKind,
-        metadata: {
-          name: 'new-user-role-assignment-console',
-          namespace: MulticlusterRoleAssignmentNamespace,
-          labels: {
-            'console-created': 'true',
-          },
-        },
-        spec: {
-          subject: {
-            kind: UserKind,
-            name: 'new.user',
-          },
-          roleAssignments: [newRoleAssignment],
-        },
-      })
-    })
-
-    it('should add to existing MulticlusterRoleAssignment when group exists', async () => {
-      const existingGroup = 'kubevirt-admins'
-
-      const result = await addRoleAssignmentK8s(
-        mockMulticlusterRoleAssignments,
-        existingGroup,
-        GroupKind,
-        newRoleAssignment
-      )
-
-      expect(result.success).toBe(true)
-      expect(patchResourceMock).toHaveBeenCalledTimes(1)
-
-      expect(patchResourceMock).toHaveBeenCalledWith(
-        {
-          apiVersion: MulticlusterRoleAssignmentApiVersion,
-          kind: MulticlusterRoleAssignmentKind,
-          metadata: {
-            name: 'kubevirt-admins-role-assignment-console',
-            namespace: MulticlusterRoleAssignmentNamespace,
-            uid: '7b8c9f2a-5e1d-4a6b-8c3f-9d2e7a5b8c1f',
-            labels: {
-              'console-created': 'true',
-            },
-          },
-          spec: {
-            subject: {
-              kind: GroupKind,
-              name: existingGroup,
-            },
-            roleAssignments: expect.any(Array),
-          },
-        },
-        [
-          {
-            op: 'replace',
-            path: '/spec/roleAssignments',
-            value: [
-              {
-                clusterRole: 'kubevirt.io:admin',
-                targetNamespaces: ['kubevirt-production'],
-                clusterSets: ['production-cluster', 'staging-cluster'],
-              },
-              {
-                clusterRole: 'live-migration-admin',
-                targetNamespaces: ['kubevirt-dev', 'vm-dev'],
-                clusterSets: ['development-cluster', 'testing-cluster'],
-              },
-              {
-                clusterRole: 'kubevirt.io:admin',
-                targetNamespaces: ['kubevirt-test', 'vm-test', 'storage-test'],
-                clusterSets: ['testing-cluster'],
-              },
-              {
-                clusterRole: 'test-role',
-                targetNamespaces: ['test-namespace'],
-                clusterSets: ['test-cluster-set'],
-              },
-            ],
-          },
-        ]
-      )
-    })
-
-    it('should handle errors when creating resource fails', async () => {
-      const mockErrorPromise = Promise.reject(new Error('API Error'))
-      createResourceMock.mockReturnValue({ promise: mockErrorPromise, abort: mockAbort })
-
-      const result = await addRoleAssignmentK8s(
-        mockMulticlusterRoleAssignments,
-        'new.user',
-        UserKind,
-        newRoleAssignment
-      )
-
-      expect(result.success).toBe(false)
-      expect(createResourceMock).toHaveBeenCalledTimes(1)
-      expect(result.error).toContain('Failed to add RoleAssignment')
-    })
-
-    it('should handle errors when patching existing resource fails', async () => {
-      const existingUser = 'alice.trask'
-      const mockErrorPromise = Promise.reject(new Error('API Error'))
-      patchResourceMock.mockReturnValue({ promise: mockErrorPromise, abort: mockAbort })
-
-      const result = await addRoleAssignmentK8s(
-        mockMulticlusterRoleAssignments,
-        existingUser,
-        UserKind,
-        newRoleAssignment
-      )
-
-      expect(result.success).toBe(false)
-      expect(patchResourceMock).toHaveBeenCalledTimes(1)
-      expect(result.error).toContain('Failed to add RoleAssignment')
-    })
-
-    it('should sanitize username for resource name creation', async () => {
-      await addRoleAssignmentK8s(
-        mockMulticlusterRoleAssignments,
-        '---Wierd!!!$$$%%%Username---',
-        UserKind,
-        newRoleAssignment
-      )
-
-      expect(createResourceMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          metadata: expect.objectContaining({
-            name: 'wierd-username-role-assignment-console',
-          }),
+      // Act
+      const { result } = renderHook(() =>
+        useFindRoleAssignments({
+          subjectNames: ['nonexistent.user'],
         })
       )
+
+      // Assert
+      expect(result.current).toHaveLength(0)
     })
   })
 
-  describe('updateRoleAssignmentK8s', () => {
-    beforeEach(() => {
-      existingAssignment = mockMulticlusterRoleAssignments[0].spec.roleAssignments[0]
-      baseTrackedAssignment = {
-        clusterRole: 'updated-role',
-        targetNamespaces: ['updated-namespace'],
-        clusterSets: ['updated-clusterset'],
-        multiclusterRoleAssignmentUid: '314843d9-ad5e-4d9c-9203-ae9553701e44',
-        subjectName: 'alice.trask',
-        subjectKind: UserKind,
-        roleAssignmentIndex: 0,
-        dataHash: createRoleAssignmentHash(existingAssignment),
-      }
-    })
-    it('should successfully update an existing role assignment', async () => {
-      const result = await updateRoleAssignmentK8s(mockMulticlusterRoleAssignments, baseTrackedAssignment)
-
-      expect(result.success).toBe(true)
-      expect(patchResourceMock).toHaveBeenCalledTimes(1)
-
-      expect(patchResourceMock).toHaveBeenCalledWith(
-        {
-          apiVersion: MulticlusterRoleAssignmentApiVersion,
-          kind: MulticlusterRoleAssignmentKind,
-          metadata: {
-            name: 'alice-trask-role-assignment-console',
-            namespace: MulticlusterRoleAssignmentNamespace,
-            uid: '314843d9-ad5e-4d9c-9203-ae9553701e44',
-            labels: {
-              'console-created': 'true',
-            },
-          },
-          spec: {
-            subject: {
-              kind: UserKind,
-              name: 'alice.trask',
-            },
-            roleAssignments: expect.any(Array),
-          },
-        },
-        [
-          {
-            op: 'replace',
-            path: '/spec/roleAssignments',
-            value: [
-              {
-                clusterRole: 'updated-role',
-                targetNamespaces: ['updated-namespace'],
-                clusterSets: ['updated-clusterset'],
-              },
-              {
-                clusterRole: 'kubevirt.io:admin',
-                targetNamespaces: [
-                  'kubevirt-staging',
-                  'vm-workloads',
-                  'vm-testing',
-                  'vm-preview',
-                  'vm-validation',
-                  'vm-integration',
-                  'vm-qa',
-                  'vm-perf',
-                ],
-                clusterSets: [
-                  'staging-cluster',
-                  'staging-east',
-                  'staging-west',
-                  'staging-testing',
-                  'staging-preview',
-                  'staging-integration',
-                ],
-              },
-              {
-                clusterRole: 'cluster-admin',
-                targetNamespaces: [
-                  'openshift-console',
-                  'openshift-console-operator',
-                  'openshift-console-user-settings',
-                  'openshift-web-console',
-                  'console-system',
-                  'console-monitoring',
-                  'console-storage',
-                  'console-networking',
-                  'console-security',
-                ],
-                clusterSets: [
-                  'production-cluster',
-                  'production-east',
-                  'production-west',
-                  'production-central',
-                  'staging-cluster',
-                  'staging-east',
-                  'development-cluster',
-                  'testing-cluster',
-                ],
-              },
-              {
-                clusterRole: 'kubevirt.io:edit',
-                targetNamespaces: [
-                  'kubevirt-dev',
-                  'vm-dev',
-                  'vm-experimental',
-                  'vm-research',
-                  'vm-sandbox',
-                  'vm-prototype',
-                  'vm-beta',
-                ],
-                clusterSets: [
-                  'development-cluster',
-                  'dev-east',
-                  'dev-west',
-                  'experimental-cluster',
-                  'research-cluster',
-                  'sandbox-cluster',
-                ],
-              },
-              {
-                clusterRole: 'storage-admin',
-                targetNamespaces: [
-                  'openshift-storage',
-                  'ceph-storage',
-                  'local-storage',
-                  'nfs-storage',
-                  'csi-storage',
-                  'backup-storage',
-                  'archive-storage',
-                  'disaster-recovery',
-                  'storage-monitoring',
-                  'storage-analytics',
-                ],
-                clusterSets: [
-                  'production-cluster',
-                  'production-east',
-                  'production-west',
-                  'staging-cluster',
-                  'development-cluster',
-                  'storage-primary',
-                  'storage-backup',
-                  'storage-archive',
-                ],
-              },
-            ],
-          },
-        ]
-      )
-    })
-
-    it('should fail when MulticlusterRoleAssignment is not found', async () => {
-      const trackedAssignment = {
-        ...baseTrackedAssignment,
-        multiclusterRoleAssignmentUid: 'nonexistent-uid',
-      }
-
-      const result = await updateRoleAssignmentK8s(mockMulticlusterRoleAssignments, trackedAssignment)
-
-      expect(result.success).toBe(false)
-      expect(result.error).toBe('MulticlusterRoleAssignment not found')
-    })
-
-    it('should fail when role assignment index is invalid', async () => {
-      const trackedAssignment = {
-        ...baseTrackedAssignment,
-        roleAssignmentIndex: 999,
-      }
-
-      const result = await updateRoleAssignmentK8s(mockMulticlusterRoleAssignments, trackedAssignment)
-
-      expect(result.success).toBe(false)
-      expect(result.error).toBe('Invalid RoleAssignment index')
-    })
-
-    it('should fail when data hash does not match', async () => {
-      const trackedAssignment = {
-        ...baseTrackedAssignment,
-        dataHash: 'wronghash',
-      }
-
-      const result = await updateRoleAssignmentK8s(mockMulticlusterRoleAssignments, trackedAssignment)
-
-      expect(result.success).toBe(false)
-      expect(result.error).toBe('Unexpected RoleAssignment data')
-    })
-  })
-
-  describe('deleteRoleAssignmentK8s', () => {
-    beforeEach(() => {
-      existingAssignment = mockMulticlusterRoleAssignments[2].spec.roleAssignments[1]
-      baseTrackedAssignment = {
-        clusterRole: existingAssignment.clusterRole,
-        targetNamespaces: existingAssignment.targetNamespaces,
-        clusterSets: existingAssignment.clusterSets,
-        multiclusterRoleAssignmentUid: '2f4a6c8e-3b7d-4e9a-6c2f-8e4a7b9d2c5f',
-        subjectName: 'admin.user',
-        subjectKind: UserKind,
-        roleAssignmentIndex: 1,
-        dataHash: createRoleAssignmentHash(existingAssignment),
-      }
-    })
-
-    it('should successfully delete role assignment', async () => {
-      const result = await deleteRoleAssignmentK8s(mockMulticlusterRoleAssignments, baseTrackedAssignment)
-
-      expect(result.success).toBe(true)
-      expect(patchResourceMock).toHaveBeenCalledTimes(1)
-
-      expect(patchResourceMock).toHaveBeenCalledWith(
-        {
-          apiVersion: MulticlusterRoleAssignmentApiVersion,
-          kind: MulticlusterRoleAssignmentKind,
-          metadata: {
-            name: 'admin-user-role-assignment-console',
-            namespace: MulticlusterRoleAssignmentNamespace,
-            uid: '2f4a6c8e-3b7d-4e9a-6c2f-8e4a7b9d2c5f',
-            labels: {
-              'console-created': 'true',
-            },
-          },
-          spec: {
-            subject: {
-              kind: UserKind,
-              name: 'admin.user',
-            },
-            roleAssignments: expect.any(Array),
-          },
-        },
-        [
-          {
-            op: 'replace',
-            path: '/spec/roleAssignments',
-            value: [
-              {
-                clusterRole: 'kubevirt.io:admin',
-                targetNamespaces: ['kubevirt-production'],
-                clusterSets: ['production-cluster'],
-              },
-            ],
-          },
-        ]
-      )
-    })
-
-    it('should delete entire MulticlusterRoleAssignment when no role assignments remain', async () => {
-      const singleAssignmentMock = mockMulticlusterRoleAssignments[13]
-      const existingAssignment = singleAssignmentMock.spec.roleAssignments[0]
-
-      const trackedAssignment: TrackedRoleAssignment = {
-        clusterRole: existingAssignment.clusterRole,
-        targetNamespaces: existingAssignment.targetNamespaces,
-        clusterSets: existingAssignment.clusterSets,
-        multiclusterRoleAssignmentUid: '9a4c7f1e-6b3d-4a9c-7f1e-6d3b9a4c7f1e',
-        subjectName: 'test.user',
-        subjectKind: UserKind,
-        roleAssignmentIndex: 0,
-        dataHash: createRoleAssignmentHash(existingAssignment),
-      }
-
-      const result = await deleteRoleAssignmentK8s([singleAssignmentMock], trackedAssignment)
-
-      expect(result.success).toBe(true)
-      expect(deleteResourceMock).toHaveBeenCalledTimes(1)
-    })
-
-    it('should fail when MulticlusterRoleAssignment is not found', async () => {
-      const trackedAssignment = {
-        ...baseTrackedAssignment,
-        multiclusterRoleAssignmentUid: 'nonexistent-uid',
-      }
-
-      const result = await deleteRoleAssignmentK8s(mockMulticlusterRoleAssignments, trackedAssignment)
-
-      expect(result.success).toBe(false)
-      expect(result.error).toBe('MulticlusterRoleAssignment not found')
-    })
-
-    it('should handle API errors during delete', async () => {
-      const mockErrorPromise = Promise.reject(new Error('API Error'))
-      patchResourceMock.mockReturnValue({ promise: mockErrorPromise, abort: mockAbort })
-
-      const result = await deleteRoleAssignmentK8s(mockMulticlusterRoleAssignments, baseTrackedAssignment)
-
-      expect(patchResourceMock).toHaveBeenCalledTimes(1)
-      expect(result.success).toBe(false)
-      expect(result.error).toContain('Failed to delete RoleAssignment')
-    })
-  })
-
-  describe('moveRoleAssignmentBetweenSubjectsK8s', () => {
-    beforeEach(() => {
-      existingAssignment = mockMulticlusterRoleAssignments[4].spec.roleAssignments[1]
-      baseTrackedAssignment = {
-        clusterRole: existingAssignment.clusterRole,
-        targetNamespaces: existingAssignment.targetNamespaces,
-        clusterSets: existingAssignment.clusterSets,
-        multiclusterRoleAssignmentUid: '5d3e8b2c-7a1f-4e5d-3b8c-2f5e7a1d4b8c',
-        subjectName: 'developers',
-        subjectKind: GroupKind,
-        roleAssignmentIndex: 1,
-        dataHash: createRoleAssignmentHash(existingAssignment),
-      }
-    })
-
-    it('should move role assignment from existing MulticlusterRoleAssignment to a newly created one', async () => {
-      const result = await moveRoleAssignmentBetweenSubjectsK8s(
-        mockMulticlusterRoleAssignments,
-        baseTrackedAssignment,
-        'bob.newuser',
-        UserKind
-      )
-
-      expect(result.success).toBe(true)
-      expect(patchResourceMock).toHaveBeenCalledTimes(1)
-      expect(createResourceMock).toHaveBeenCalledTimes(1)
-
-      expect(patchResourceMock).toHaveBeenCalledWith(
-        {
-          apiVersion: MulticlusterRoleAssignmentApiVersion,
-          kind: MulticlusterRoleAssignmentKind,
-          metadata: {
-            name: 'developers-role-assignment-console',
-            namespace: MulticlusterRoleAssignmentNamespace,
-            uid: '5d3e8b2c-7a1f-4e5d-3b8c-2f5e7a1d4b8c',
-            labels: {
-              'console-created': 'true',
-            },
-          },
-          spec: {
-            subject: {
-              kind: GroupKind,
-              name: 'developers',
-            },
-            roleAssignments: expect.any(Array),
-          },
-        },
-        [
-          {
-            op: 'replace',
-            path: '/spec/roleAssignments',
-            value: [
-              {
-                clusterRole: 'kubevirt.io:edit',
-                targetNamespaces: ['kubevirt-dev', 'vm-dev', 'storage-dev', 'networking-dev'],
-                clusterSets: ['development-cluster'],
-              },
-              {
-                clusterRole: 'storage-admin',
-                targetNamespaces: ['kubevirt-dev', 'vm-dev', 'storage-dev', 'networking-dev'],
-                clusterSets: ['development-cluster'],
-              },
-            ],
-          },
-        ]
-      )
-
-      expect(createResourceMock).toHaveBeenCalledWith({
-        apiVersion: MulticlusterRoleAssignmentApiVersion,
-        kind: MulticlusterRoleAssignmentKind,
-        metadata: {
-          name: 'bob-newuser-role-assignment-console',
-          namespace: MulticlusterRoleAssignmentNamespace,
-          labels: {
-            'console-created': 'true',
-          },
-        },
+  describe('create', () => {
+    it('createResource is called with proper parameter', () => {
+      // Arrange
+      const multiclusterRoleAssignment: MulticlusterRoleAssignment = {
         spec: {
-          subject: {
-            kind: UserKind,
-            name: 'bob.newuser',
-          },
-          roleAssignments: [
-            {
-              clusterRole: 'network-admin',
-              targetNamespaces: ['kubevirt-dev', 'vm-dev', 'storage-dev', 'networking-dev'],
-              clusterSets: ['development-cluster'],
-            },
-          ],
+          roleAssignments: [],
+        },
+      } as any as MulticlusterRoleAssignment
+
+      // Act
+      create(multiclusterRoleAssignment)
+
+      // Assert
+      expect(createResourceMock).toHaveBeenCalledTimes(1)
+      expect(createResourceMock).toHaveBeenCalledWith(multiclusterRoleAssignment)
+    })
+  })
+
+  describe('deleteRoleAssignment', () => {
+    it('deletes existing role assignment for a MulticlusterRoleAssignment with multiple elements', () => {
+      // Arrange
+      const multiClusterRoleAssignment: MulticlusterRoleAssignment =
+        multiclusterRoleAssignmentsMockData[0] as MulticlusterRoleAssignment
+      const roleAssignmentToRemove: FlattenedRoleAssignment = {
+        relatedMulticlusterRoleAssignment: multiClusterRoleAssignment,
+        name: multiClusterRoleAssignment.spec.roleAssignments[0].name,
+        clusterRole: multiClusterRoleAssignment.spec.roleAssignments[0].clusterRole,
+        clusterSets: multiClusterRoleAssignment.spec.roleAssignments[0].clusterSets,
+        subject: {
+          kind: multiClusterRoleAssignment.spec.subject.kind,
+          name: multiClusterRoleAssignment.spec.subject.name,
+        },
+        targetNamespaces: multiClusterRoleAssignment.spec.roleAssignments[0].targetNamespaces,
+      }
+
+      // Act
+      deleteRoleAssignment(roleAssignmentToRemove)
+
+      // Assert
+      expect(deleteResourceMock).toHaveBeenCalledTimes(0)
+      expect(patchResourceMock).toHaveBeenCalledTimes(1)
+      expect(patchResourceMock).toHaveBeenCalledWith(roleAssignmentToRemove.relatedMulticlusterRoleAssignment, {
+        spec: {
+          ...multiClusterRoleAssignment.spec,
+          roleAssignments: [...multiClusterRoleAssignment.spec.roleAssignments].slice(
+            1,
+            multiClusterRoleAssignment.spec.roleAssignments.length
+          ),
         },
       })
     })
 
-    it('should move role assignment from existing MulticlusterRoleAssignment to another existing one', async () => {
-      const result = await moveRoleAssignmentBetweenSubjectsK8s(
-        mockMulticlusterRoleAssignments,
-        baseTrackedAssignment,
-        'alice.trask',
-        UserKind
-      )
+    it('deletes existing role assignment for a MulticlusterRoleAssignment with single element', () => {
+      // Arrange
+      const multiClusterRoleAssignment: MulticlusterRoleAssignment =
+        multiclusterRoleAssignmentsMockData[5] as MulticlusterRoleAssignment
 
-      expect(result.success).toBe(true)
-      expect(patchResourceMock).toHaveBeenCalledTimes(2)
-
-      expect(patchResourceMock).toHaveBeenNthCalledWith(
-        1,
-        {
-          apiVersion: MulticlusterRoleAssignmentApiVersion,
-          kind: MulticlusterRoleAssignmentKind,
-          metadata: {
-            name: 'developers-role-assignment-console',
-            namespace: MulticlusterRoleAssignmentNamespace,
-            uid: '5d3e8b2c-7a1f-4e5d-3b8c-2f5e7a1d4b8c',
-            labels: {
-              'console-created': 'true',
-            },
-          },
-          spec: {
-            subject: {
-              kind: GroupKind,
-              name: 'developers',
-            },
-            roleAssignments: expect.any(Array),
-          },
+      const roleAssignmentToRemove: FlattenedRoleAssignment = {
+        relatedMulticlusterRoleAssignment: multiClusterRoleAssignment,
+        name: multiClusterRoleAssignment.spec.roleAssignments[0].name,
+        clusterRole: multiClusterRoleAssignment.spec.roleAssignments[0].clusterRole,
+        clusterSets: multiClusterRoleAssignment.spec.roleAssignments[0].clusterSets,
+        subject: {
+          kind: multiClusterRoleAssignment.spec.subject.kind,
+          name: multiClusterRoleAssignment.spec.subject.name,
         },
-        [
-          {
-            op: 'replace',
-            path: '/spec/roleAssignments',
-            value: [
-              {
-                clusterRole: 'kubevirt.io:edit',
-                targetNamespaces: ['kubevirt-dev', 'vm-dev', 'storage-dev', 'networking-dev'],
-                clusterSets: ['development-cluster'],
-              },
-              {
-                clusterRole: 'storage-admin',
-                targetNamespaces: ['kubevirt-dev', 'vm-dev', 'storage-dev', 'networking-dev'],
-                clusterSets: ['development-cluster'],
-              },
-            ],
-          },
-        ]
-      )
-
-      expect(patchResourceMock).toHaveBeenNthCalledWith(
-        2,
-        {
-          apiVersion: MulticlusterRoleAssignmentApiVersion,
-          kind: MulticlusterRoleAssignmentKind,
-          metadata: {
-            name: 'alice-trask-role-assignment-console',
-            namespace: MulticlusterRoleAssignmentNamespace,
-            uid: '314843d9-ad5e-4d9c-9203-ae9553701e44',
-            labels: {
-              'console-created': 'true',
-            },
-          },
-          spec: {
-            subject: {
-              kind: UserKind,
-              name: 'alice.trask',
-            },
-            roleAssignments: expect.any(Array),
-          },
-        },
-        [
-          {
-            op: 'replace',
-            path: '/spec/roleAssignments',
-            value: [
-              {
-                clusterRole: 'kubevirt.io:admin',
-                targetNamespaces: [
-                  'kubevirt-production',
-                  'vm-workloads',
-                  'vm-storage',
-                  'vm-networking',
-                  'vm-compute',
-                  'vm-backup',
-                  'vm-monitoring',
-                  'vm-logging',
-                  'vm-security',
-                  'vm-analytics',
-                ],
-                clusterSets: [
-                  'production-cluster',
-                  'production-east',
-                  'production-west',
-                  'production-central',
-                  'production-backup',
-                  'production-dr',
-                  'production-monitoring',
-                ],
-              },
-              {
-                clusterRole: 'kubevirt.io:admin',
-                targetNamespaces: [
-                  'kubevirt-staging',
-                  'vm-workloads',
-                  'vm-testing',
-                  'vm-preview',
-                  'vm-validation',
-                  'vm-integration',
-                  'vm-qa',
-                  'vm-perf',
-                ],
-                clusterSets: [
-                  'staging-cluster',
-                  'staging-east',
-                  'staging-west',
-                  'staging-testing',
-                  'staging-preview',
-                  'staging-integration',
-                ],
-              },
-              {
-                clusterRole: 'cluster-admin',
-                targetNamespaces: [
-                  'openshift-console',
-                  'openshift-console-operator',
-                  'openshift-console-user-settings',
-                  'openshift-web-console',
-                  'console-system',
-                  'console-monitoring',
-                  'console-storage',
-                  'console-networking',
-                  'console-security',
-                ],
-                clusterSets: [
-                  'production-cluster',
-                  'production-east',
-                  'production-west',
-                  'production-central',
-                  'staging-cluster',
-                  'staging-east',
-                  'development-cluster',
-                  'testing-cluster',
-                ],
-              },
-              {
-                clusterRole: 'kubevirt.io:edit',
-                targetNamespaces: [
-                  'kubevirt-dev',
-                  'vm-dev',
-                  'vm-experimental',
-                  'vm-research',
-                  'vm-sandbox',
-                  'vm-prototype',
-                  'vm-beta',
-                ],
-                clusterSets: [
-                  'development-cluster',
-                  'dev-east',
-                  'dev-west',
-                  'experimental-cluster',
-                  'research-cluster',
-                  'sandbox-cluster',
-                ],
-              },
-              {
-                clusterRole: 'storage-admin',
-                targetNamespaces: [
-                  'openshift-storage',
-                  'ceph-storage',
-                  'local-storage',
-                  'nfs-storage',
-                  'csi-storage',
-                  'backup-storage',
-                  'archive-storage',
-                  'disaster-recovery',
-                  'storage-monitoring',
-                  'storage-analytics',
-                ],
-                clusterSets: [
-                  'production-cluster',
-                  'production-east',
-                  'production-west',
-                  'staging-cluster',
-                  'development-cluster',
-                  'storage-primary',
-                  'storage-backup',
-                  'storage-archive',
-                ],
-              },
-              {
-                clusterRole: 'network-admin',
-                targetNamespaces: ['kubevirt-dev', 'vm-dev', 'storage-dev', 'networking-dev'],
-                clusterSets: ['development-cluster'],
-              },
-            ],
-          },
-        ]
-      )
-    })
-
-    it('should fail when MulticlusterRoleAssignment is not found', async () => {
-      const trackedAssignment = {
-        ...baseTrackedAssignment,
-        multiclusterRoleAssignmentUid: 'nonexistent-uid',
+        targetNamespaces: multiClusterRoleAssignment.spec.roleAssignments[0].targetNamespaces,
       }
 
-      const result = await moveRoleAssignmentBetweenSubjectsK8s(
-        mockMulticlusterRoleAssignments,
-        trackedAssignment,
-        'bob.newuser',
-        UserKind
-      )
+      // Act
+      deleteRoleAssignment(roleAssignmentToRemove)
 
-      expect(result.success).toBe(false)
-      expect(result.error).toBe('MulticlusterRoleAssignment not found')
+      // Assert
+      expect(patchResourceMock).toHaveBeenCalledTimes(0)
+      expect(deleteResourceMock).toHaveBeenCalledTimes(1)
+      expect(deleteResourceMock).toHaveBeenCalledWith(roleAssignmentToRemove.relatedMulticlusterRoleAssignment)
     })
 
-    it('should handle errors during move operation', async () => {
-      const mockErrorPromise = Promise.reject(new Error('API Error'))
-      createResourceMock.mockReturnValueOnce({ promise: mockErrorPromise, abort: mockAbort })
+    it.each([
+      [
+        'no matching clusterRole',
+        {
+          name: 'A1',
+          clusterRole: 'x',
+          clusterSets: [
+            'production-cluster',
+            'production-east',
+            'production-west',
+            'production-central',
+            'production-backup',
+            'production-dr',
+            'production-monitoring',
+          ],
+          targetNamespaces: [
+            'kubevirt-production',
+            'vm-workloads',
+            'vm-storage',
+            'vm-networking',
+            'vm-compute',
+            'vm-backup',
+            'vm-monitoring',
+            'vm-logging',
+            'vm-security',
+            'vm-analytics',
+          ],
+        },
+      ],
+      [
+        'no matching clusterSets',
+        {
+          name: 'A1',
+          clusterRole: 'kubevirt.io:admin',
+          clusterSets: ['x'],
+          targetNamespaces: [
+            'kubevirt-production',
+            'vm-workloads',
+            'vm-storage',
+            'vm-networking',
+            'vm-compute',
+            'vm-backup',
+            'vm-monitoring',
+            'vm-logging',
+            'vm-security',
+            'vm-analytics',
+          ],
+        },
+      ],
+      [
+        'no matching targetNamespaces',
+        {
+          name: 'A1',
+          clusterRole: 'kubevirt.io:admin',
+          clusterSets: [
+            'production-cluster',
+            'production-east',
+            'production-west',
+            'production-central',
+            'production-backup',
+            'production-dr',
+            'production-monitoring',
+          ],
+          targetNamespaces: ['x'],
+        },
+      ],
+      [
+        'no matching field',
+        {
+          name: 'A1',
+          clusterRole: 'x',
+          clusterSets: ['y'],
+          targetNamespaces: ['z'],
+        },
+      ],
+    ])(
+      'deletes not existing role assignment for a MulticlusterRoleAssignment when %s',
+      (_titleSuffix: string, roleAssignment: RoleAssignment) => {
+        // Arrange
+        const multiClusterRoleAssignment: MulticlusterRoleAssignment =
+          multiclusterRoleAssignmentsMockData[0] as MulticlusterRoleAssignment
+        const roleAssignmentToRemove: FlattenedRoleAssignment = {
+          relatedMulticlusterRoleAssignment: multiClusterRoleAssignment,
+          subject: {
+            kind: 'User',
+            name: 'alice.trask',
+          },
+          ...roleAssignment,
+        }
 
-      const result = await moveRoleAssignmentBetweenSubjectsK8s(
-        mockMulticlusterRoleAssignments,
-        baseTrackedAssignment,
-        'bob.newuser',
-        UserKind
-      )
-
-      expect(result.success).toBe(false)
-      expect(result.error).toContain('Failed to add RoleAssignment')
-    })
+        // Act
+        try {
+          deleteRoleAssignment(roleAssignmentToRemove)
+          expect(true).toBe(false)
+        } catch (e) {
+          // Assert
+          expect((e as Error).message).toBe(
+            'The role assignment does not exist for this particular MulticlusterRoleAssignment'
+          )
+          expect(deleteResourceMock).toHaveBeenCalledTimes(0)
+          expect(patchResourceMock).toHaveBeenCalledTimes(0)
+        }
+      }
+    )
   })
 })

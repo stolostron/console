@@ -1,17 +1,21 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { PageSection } from '@patternfly/react-core'
 import { useEffect, useMemo, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom-v5-compat'
+import { useNavigate, useParams } from 'react-router-dom-v5-compat'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
-import multiclusterRoleAssignmentsMockDataJson from '../../../../resources/clients/mock-data/multicluster-role-assignments.json'
-import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
-import { MulticlusterRoleAssignment } from '../../../../resources/multicluster-role-assignment'
-import { compareStrings, AcmLoadingPage, AcmButton } from '../../../../ui-components'
-import { RoleAssignments } from '../../RoleAssignment/RoleAssignments'
 import { Group } from '../../../../resources'
+import multiclusterRoleAssignmentsMockDataJson from '../../../../resources/clients/mock-data/multicluster-role-assignments.json'
 import { mockGroups } from '../../../../resources/clients/mock-data/users-and-groups'
+import {
+  FlattenedRoleAssignment,
+  roleAssignmentToFlattenedRoleAssignment,
+} from '../../../../resources/clients/multicluster-role-assignment-client'
+import { MulticlusterRoleAssignment } from '../../../../resources/multicluster-role-assignment'
+import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
+import { AcmButton, AcmLoadingPage, compareStrings } from '../../../../ui-components'
+import { RoleAssignments } from '../../RoleAssignment/RoleAssignments'
 
 const GroupRoleAssignments = () => {
   const { t } = useTranslation()
@@ -20,7 +24,6 @@ const GroupRoleAssignments = () => {
   const [group, setGroup] = useState<Group>()
 
   const groups = mockGroups
-  console.log(groups, 'groups')
   // TODO: proper loading mechanism once API ready
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [isNotFound, setIsNotFound] = useState<boolean>()
@@ -34,7 +37,8 @@ const GroupRoleAssignments = () => {
 
   const multiclusterRoleAssignments = multiclusterRoleAssignmentsMockDataJson as MulticlusterRoleAssignment[]
 
-  const groupMulticlusterRoleAssignments = useMemo(
+  // TODO: call useFindRoleAssignments instead ACM-23633
+  const roleAssignments: FlattenedRoleAssignment[] = useMemo(
     () =>
       !group || !multiclusterRoleAssignments
         ? []
@@ -44,8 +48,17 @@ const GroupRoleAssignments = () => {
                 multiclusterRoleAssignment.spec.subject.kind === 'Group' &&
                 multiclusterRoleAssignment.spec.subject.name === group.metadata.name
             )
-            .sort((a, b) => compareStrings(a.metadata?.name ?? '', b.metadata?.name ?? '')),
-    [group, multiclusterRoleAssignments]
+            .reduce(
+              (roleAssignmentsAcc: FlattenedRoleAssignment[], multiclusterRoleAssignmentCurr) => [
+                ...roleAssignmentsAcc,
+                ...multiclusterRoleAssignmentCurr.spec.roleAssignments.map((roleAssignment) =>
+                  roleAssignmentToFlattenedRoleAssignment(multiclusterRoleAssignmentCurr, roleAssignment)
+                ),
+              ],
+              []
+            )
+            .sort((a, b) => compareStrings(a.subject.name ?? '', b.subject.name ?? '')),
+    [multiclusterRoleAssignments, group]
   )
 
   switch (true) {
@@ -67,13 +80,7 @@ const GroupRoleAssignments = () => {
         />
       )
     default:
-      return (
-        <RoleAssignments
-          multiclusterRoleAssignments={groupMulticlusterRoleAssignments}
-          isLoading={isLoading}
-          hiddenColumns={['subject']}
-        />
-      )
+      return <RoleAssignments roleAssignments={roleAssignments} isLoading={isLoading} hiddenColumns={['subject']} />
   }
 }
 
