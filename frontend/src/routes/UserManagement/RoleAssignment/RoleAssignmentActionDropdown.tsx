@@ -40,8 +40,10 @@ const RoleAssignmentActionDropdown = ({
           columns: [
             {
               header: t('Subject'),
-              cell: (roleAssignment: FlattenedRoleAssignment) => `${roleAssignment.kind}: ${roleAssignment.name}`,
-              sort: (a: FlattenedRoleAssignment, b: FlattenedRoleAssignment) => compareStrings(a.name, b.name),
+              cell: (roleAssignment: FlattenedRoleAssignment) =>
+                `${roleAssignment.subject.kind}: ${roleAssignment.subject.name}`,
+              sort: (a: FlattenedRoleAssignment, b: FlattenedRoleAssignment) =>
+                compareStrings(a.subject.name, b.subject.name),
             },
             {
               header: t('Role'),

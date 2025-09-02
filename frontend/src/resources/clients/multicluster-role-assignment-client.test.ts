@@ -66,7 +66,7 @@ describe('multicluster-role-assignment-client', function () {
 
       // Assert
       expect(result.current).toHaveLength(5)
-      expect(result.current.filter((e) => e.name !== name)).toHaveLength(0)
+      expect(result.current.filter((e) => e.subject.name !== name)).toHaveLength(0)
     })
 
     it('should filter by subject kind', () => {
@@ -79,7 +79,7 @@ describe('multicluster-role-assignment-client', function () {
 
       // Assert
       expect(result.current).toHaveLength(14)
-      expect(result.current.filter((e) => e.kind !== GroupKind)).toHaveLength(0)
+      expect(result.current.filter((e) => e.subject.kind !== GroupKind)).toHaveLength(0)
     })
 
     it('should filter by role', () => {
@@ -132,7 +132,7 @@ describe('multicluster-role-assignment-client', function () {
       expect(result.current).toHaveLength(3)
       expect(
         result.current.filter(
-          (e) => e.kind !== UserKind || e.clusterRole !== role || !e.clusterSets.includes(clusterSet)
+          (e) => e.subject.kind !== UserKind || e.clusterRole !== role || !e.clusterSets.includes(clusterSet)
         )
       ).toHaveLength(0)
     })
@@ -173,8 +173,10 @@ describe('multicluster-role-assignment-client', function () {
         relatedMulticlusterRoleAssignment: multiClusterRoleAssignment,
         clusterRole: multiClusterRoleAssignment.spec.roleAssignments[0].clusterRole,
         clusterSets: multiClusterRoleAssignment.spec.roleAssignments[0].clusterSets,
-        kind: multiClusterRoleAssignment.spec.subject.kind,
-        name: multiClusterRoleAssignment.spec.subject.name,
+        subject: {
+          kind: multiClusterRoleAssignment.spec.subject.kind,
+          name: multiClusterRoleAssignment.spec.subject.name,
+        },
         targetNamespaces: multiClusterRoleAssignment.spec.roleAssignments[0].targetNamespaces,
       }
 
@@ -203,8 +205,10 @@ describe('multicluster-role-assignment-client', function () {
         relatedMulticlusterRoleAssignment: multiClusterRoleAssignment,
         clusterRole: 'kubevirt.io:edit',
         clusterSets: ['development-cluster'],
-        kind: 'User',
-        name: 'intern.dev',
+        subject: {
+          kind: 'User',
+          name: 'intern.dev',
+        },
         targetNamespaces: ['kubevirt-dev', 'vm-dev', 'storage-dev', 'networking-dev'],
       }
 
@@ -296,8 +300,10 @@ describe('multicluster-role-assignment-client', function () {
           multiclusterRoleAssignmentsMockData[0] as MulticlusterRoleAssignment
         const roleAssignmentToRemove: FlattenedRoleAssignment = {
           relatedMulticlusterRoleAssignment: multiClusterRoleAssignment,
-          kind: 'User',
-          name: 'alice.trask',
+          subject: {
+            kind: 'User',
+            name: 'alice.trask',
+          },
           ...roleAssignment,
         }
 

@@ -84,32 +84,40 @@ const mockRoleAssignments: FlattenedRoleAssignment[] = [
     targetNamespaces: ['default', 'kube-system'],
     clusterSets: ['test-cluster-1'],
     relatedMulticlusterRoleAssignment: mockMulticlusterRoleAssignments[0],
-    name: mockMulticlusterRoleAssignments[0].spec.subject.name,
-    kind: mockMulticlusterRoleAssignments[0].spec.subject.kind,
+    subject: {
+      name: mockMulticlusterRoleAssignments[0].spec.subject.name,
+      kind: mockMulticlusterRoleAssignments[0].spec.subject.kind,
+    },
   },
   {
     clusterRole: 'cluster-admin',
     targetNamespaces: ['monitoring'],
     clusterSets: ['test-cluster-2'],
     relatedMulticlusterRoleAssignment: mockMulticlusterRoleAssignments[0],
-    name: mockMulticlusterRoleAssignments[0].spec.subject.name,
-    kind: mockMulticlusterRoleAssignments[0].spec.subject.kind,
+    subject: {
+      name: mockMulticlusterRoleAssignments[0].spec.subject.name,
+      kind: mockMulticlusterRoleAssignments[0].spec.subject.kind,
+    },
   },
   {
     clusterRole: 'developer',
     targetNamespaces: ['app-namespace'],
     clusterSets: ['dev-cluster'],
     relatedMulticlusterRoleAssignment: mockMulticlusterRoleAssignments[1],
-    name: mockMulticlusterRoleAssignments[1].spec.subject.name,
-    kind: mockMulticlusterRoleAssignments[1].spec.subject.kind,
+    subject: {
+      name: mockMulticlusterRoleAssignments[1].spec.subject.name,
+      kind: mockMulticlusterRoleAssignments[1].spec.subject.kind,
+    },
   },
   {
     clusterRole: 'viewer',
     targetNamespaces: ['staging-ns-1', 'staging-ns-2'],
     clusterSets: ['staging-cluster'],
     relatedMulticlusterRoleAssignment: mockMulticlusterRoleAssignments[2],
-    name: mockMulticlusterRoleAssignments[2].spec.subject.name,
-    kind: mockMulticlusterRoleAssignments[2].spec.subject.kind,
+    subject: {
+      name: mockMulticlusterRoleAssignments[2].spec.subject.name,
+      kind: mockMulticlusterRoleAssignments[2].spec.subject.kind,
+    },
   },
 ]
 

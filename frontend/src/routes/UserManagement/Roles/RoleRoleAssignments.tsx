@@ -1,20 +1,20 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { PageSection } from '@patternfly/react-core'
 import { useEffect, useMemo, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom-v5-compat'
+import { useNavigate, useParams } from 'react-router-dom-v5-compat'
 import { ErrorPage } from '../../../components/ErrorPage'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { User } from '../../../resources'
 import multiclusterRoleAssignmentsMockDataJson from '../../../resources/clients/mock-data/multicluster-role-assignments.json'
-import { ResourceError, ResourceErrorCode } from '../../../resources/utils'
-import { MulticlusterRoleAssignment } from '../../../resources/multicluster-role-assignment'
-import { compareStrings, AcmLoadingPage, AcmButton } from '../../../ui-components'
-import { RoleAssignments } from '../RoleAssignment/RoleAssignments'
 import {
-  roleAssignmentToFlattenedRoleAssignment,
   FlattenedRoleAssignment,
+  roleAssignmentToFlattenedRoleAssignment,
 } from '../../../resources/clients/multicluster-role-assignment-client'
+import { MulticlusterRoleAssignment } from '../../../resources/multicluster-role-assignment'
+import { ResourceError, ResourceErrorCode } from '../../../resources/utils'
+import { AcmButton, AcmLoadingPage, compareStrings } from '../../../ui-components'
+import { RoleAssignments } from '../RoleAssignment/RoleAssignments'
 
 // TODO: to remove once API ready
 // Mock users data to match the role assignments
@@ -64,7 +64,7 @@ const RoleRoleAssignments = () => {
               ],
               []
             )
-            .sort((a, b) => compareStrings(a.name ?? '', b.name ?? '')),
+            .sort((a, b) => compareStrings(a.subject.name ?? '', b.subject.name ?? '')),
     [multiclusterRoleAssignments, user]
   )
 

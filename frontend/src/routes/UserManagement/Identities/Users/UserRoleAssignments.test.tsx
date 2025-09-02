@@ -16,7 +16,7 @@ jest.mock('../../RoleAssignment/RoleAssignments', () => ({
       {roleAssignments.map((roleAssignment: FlattenedRoleAssignment, index: number) => (
         <div key={index} id={`assignment-${index}`}>
           <div id={`assignment-subject-${index}`}>
-            {roleAssignment.kind}: {roleAssignment.name}
+            {roleAssignment.subject.kind}: {roleAssignment.subject.name}
           </div>
           <div id={`assignment-role-${index}`}>{roleAssignment.clusterRole}</div>
           <div id={`assignment-clusters-${index}`}>{roleAssignment.clusterSets.join(', ')}</div>

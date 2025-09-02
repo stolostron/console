@@ -6,8 +6,9 @@ import { GroupKindType, UserKindType } from '../rbac'
 import { createResource, deleteResource, patchResource } from '../utils'
 import { IRequestResult, ResourceError, ResourceErrorCode } from '../utils/resource-request'
 
-export interface FlattenedRoleAssignment extends RoleAssignment, Pick<Subject, 'name' | 'kind'> {
+export interface FlattenedRoleAssignment extends RoleAssignment {
   relatedMulticlusterRoleAssignment: MulticlusterRoleAssignment
+  subject: Pick<Subject, 'name' | 'kind'>
 }
 
 interface MulticlusterRoleAssignmentQuery {
@@ -23,8 +24,10 @@ export const roleAssignmentToFlattenedRoleAssignment = (
   roleAssignment: RoleAssignment
 ): FlattenedRoleAssignment => ({
   ...roleAssignment,
-  name: multiClusterRoleAssignment.spec.subject.name,
-  kind: multiClusterRoleAssignment.spec.subject.kind,
+  subject: {
+    name: multiClusterRoleAssignment.spec.subject.name,
+    kind: multiClusterRoleAssignment.spec.subject.kind,
+  },
   relatedMulticlusterRoleAssignment: multiClusterRoleAssignment,
 })
 
@@ -103,15 +106,9 @@ export const create = (
  * @param b RoleAssignment2
  * @returns true or false depending on whether they are the same or not
  */
-const areRoleAssignmentsEquals = (a: RoleAssignment, b: RoleAssignment) =>
-  JSON.stringify(
-    a,
-    Object.keys(a).sort((a, b) => a.localeCompare(b))
-  ) ===
-  JSON.stringify(
-    b,
-    Object.keys(b).sort((a, b) => a.localeCompare(b))
-  )
+const areRoleAssignmentsEquals = (a: RoleAssignment, b: RoleAssignment) => a.name === b.name
+
+export const addRoleAssignment = (roleAssignment: RoleAssignment) => {}
 
 /**
  * it removes a RoleAssignment element from the MulticlusterRoleAssignment. If it is the latest one, the whole MulticlusterRoleAssignment is instead removed
@@ -120,10 +117,8 @@ const areRoleAssignmentsEquals = (a: RoleAssignment, b: RoleAssignment) =>
  */
 export const deleteRoleAssignment = (roleAssignment: FlattenedRoleAssignment): IRequestResult<unknown> => {
   const multiClusterRoleAssignment = roleAssignment.relatedMulticlusterRoleAssignment
-  const { relatedMulticlusterRoleAssignment, name, kind, ...nonFlattenedRoleAssignment } = roleAssignment
-
   const indexToRemove = multiClusterRoleAssignment.spec.roleAssignments.findIndex((e) =>
-    areRoleAssignmentsEquals(e, nonFlattenedRoleAssignment)
+    areRoleAssignmentsEquals(e, roleAssignment)
   )
 
   if (indexToRemove > -1) {

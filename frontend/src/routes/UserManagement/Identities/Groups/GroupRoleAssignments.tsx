@@ -57,7 +57,7 @@ const GroupRoleAssignments = () => {
               ],
               []
             )
-            .sort((a, b) => compareStrings(a.name ?? '', b.name ?? '')),
+            .sort((a, b) => compareStrings(a.subject.name ?? '', b.subject.name ?? '')),
     [multiclusterRoleAssignments, group]
   )
 

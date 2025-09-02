@@ -61,8 +61,10 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
             columns: [
               {
                 header: t('Subject'),
-                cell: (roleAssignment: FlattenedRoleAssignment) => `${roleAssignment.kind}: ${roleAssignment.name}`,
-                sort: (a: FlattenedRoleAssignment, b: FlattenedRoleAssignment) => compareStrings(a.name, b.name),
+                cell: (roleAssignment: FlattenedRoleAssignment) =>
+                  `${roleAssignment.subject.kind}: ${roleAssignment.subject.name}`,
+                sort: (a: FlattenedRoleAssignment, b: FlattenedRoleAssignment) =>
+                  compareStrings(a.subject.name, b.subject.name),
               },
               {
                 header: t('Role'),
@@ -182,9 +184,9 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
     },
     {
       header: t('Subject'),
-      sort: (a, b) => compareStrings(a.name, b.name),
-      cell: (roleAssignment) => `${roleAssignment.kind}: ${roleAssignment.name}`,
-      exportContent: (roleAssignment) => `${roleAssignment.kind}: ${roleAssignment.name}`,
+      sort: (a, b) => compareStrings(a.subject.name, b.subject.name),
+      cell: (roleAssignment) => `${roleAssignment.subject.kind}: ${roleAssignment.subject.name}`,
+      exportContent: (roleAssignment) => `${roleAssignment.subject.kind}: ${roleAssignment.subject.name}`,
       isHidden: hiddenColumns?.includes('subject'),
     },
     {
@@ -207,7 +209,7 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
     {
       header: t('Status'),
       cell: (roleAssignment) => (
-        <IdentityStatus identity={{ kind: roleAssignment.kind } as User | Group | ServiceAccount} />
+        <IdentityStatus identity={{ kind: roleAssignment.subject.kind } as User | Group | ServiceAccount} />
       ),
       exportContent: () => 'Active', // TODO: for now mock status as Active for all, replace it by real status as soon as it is ready
     },
@@ -215,11 +217,9 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
       header: t('Created'),
       sort: 'metadata.creationTimestamp',
       cellTransforms: [nowrap],
-      cell: () => {
-        // FlattenedRoleAssignment doesn't have metadata.creationTimestamp
-        // We could show the parent MulticlusterRoleAssignment creation time instead
-        return <span>-</span>
-      },
+      // FlattenedRoleAssignment doesn't have metadata.creationTimestamp
+      // We could show the parent MulticlusterRoleAssignment creation time instead
+      cell: () => <span>-</span>,
       exportContent: () => '',
     },
     {

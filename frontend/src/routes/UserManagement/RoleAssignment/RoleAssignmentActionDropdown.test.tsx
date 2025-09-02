@@ -33,8 +33,7 @@ const mockRoleAssignment: FlattenedRoleAssignment = {
   clusterRole: 'admin',
   clusterSets: ['production', 'staging'],
   targetNamespaces: ['default', 'kube-system', 'test-ns'],
-  name: 'test-user',
-  kind: 'User',
+  subject: { name: 'test-user', kind: 'User' },
 }
 
 const mockSetModalProps = jest.fn()
