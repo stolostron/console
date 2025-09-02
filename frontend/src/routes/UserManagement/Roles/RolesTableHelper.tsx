@@ -156,6 +156,5 @@ export const useFilters = (roles: Role[] = []) =>
       },
     ]
   }, [roles])
-}
 
 export { EXPORT_FILE_PREFIX }

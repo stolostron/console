@@ -1,49 +1,72 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { PageSection } from '@patternfly/react-core'
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom-v5-compat'
+import { useNavigate, useParams } from 'react-router-dom-v5-compat'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
-import { useCurrentRole } from '../RolesPage'
+import { User } from '../../../../resources'
 import multiclusterRoleAssignmentsMockDataJson from '../../../../resources/clients/mock-data/multicluster-role-assignments.json'
-import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
+import {
+  FlattenedRoleAssignment,
+  roleAssignmentToFlattenedRoleAssignment,
+} from '../../../../resources/clients/multicluster-role-assignment-client'
 import { MulticlusterRoleAssignment } from '../../../../resources/multicluster-role-assignment'
-import { compareStrings, AcmLoadingPage, AcmButton } from '../../../../ui-components'
-import { RoleAssignments } from '../../../../routes/UserManagement/RoleAssignment/RoleAssignments'
+import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
+import { AcmButton, AcmLoadingPage, compareStrings } from '../../../../ui-components'
+import { RoleAssignments } from '../../RoleAssignment/RoleAssignments'
 
+// TODO: to remove once API ready
+// Mock users data to match the role assignments
+const mockUsers = [
+  { metadata: { name: 'alice.trask', uid: 'mock-user-alice-trask' } },
+  { metadata: { name: 'bob.levy', uid: 'mock-user-bob-levy' } },
+  { metadata: { name: 'charlie.cranston', uid: 'mock-user-charlie-cranston' } },
+  { metadata: { name: 'sarah.jones', uid: 'mock-user-sarah-jones' } },
+  { metadata: { name: 'david.brown', uid: 'mock-user-david-brown' } },
+]
+
+// TODO: do it for Roles
 const RoleRoleAssignments = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const role = useCurrentRole()
+  const { id = undefined } = useParams()
+  const [isLoading, setIsLoading] = useState<boolean>()
+  const [user, setUser] = useState<User>()
+
+  // Use mock data only
+  const users = mockUsers
+
+  useEffect(() => setIsLoading(users === undefined), [users])
+  useEffect(() => setUser(users?.find((user) => user.metadata.uid === id) as User), [id, users])
 
   // Use multicluster role assignments mock data
   const multiclusterRoleAssignments = multiclusterRoleAssignmentsMockDataJson as MulticlusterRoleAssignment[]
 
-  // Filter multicluster role assignments for the current role
-  const roleMulticlusterRoleAssignments = useMemo(
+  // Filter multicluster role assignments for the current user
+  // TODO: call useFindRoleAssignments instead ACM-23633
+  const roleAssignments: FlattenedRoleAssignment[] = useMemo(
     () =>
-      !role || !multiclusterRoleAssignments
+      !user || !multiclusterRoleAssignments
         ? []
         : multiclusterRoleAssignments
-            .filter((multiclusterRoleAssignment) =>
-              multiclusterRoleAssignment.spec.roleAssignments.some(
-                (roleAssignment) => roleAssignment.clusterRole === role.metadata.name
-              )
+            .filter(
+              (multiclusterRoleAssignment) =>
+                multiclusterRoleAssignment.spec.subject.kind === 'User' &&
+                multiclusterRoleAssignment.spec.subject.name === user.metadata.name
             )
-            .sort((a, b) => compareStrings(a.metadata?.name ?? '', b.metadata?.name ?? '')),
-    [role, multiclusterRoleAssignments]
+            .reduce(
+              (roleAssignmentsAcc: FlattenedRoleAssignment[], multiclusterRoleAssignmentCurr) => [
+                ...roleAssignmentsAcc,
+                ...multiclusterRoleAssignmentCurr.spec.roleAssignments.map((roleAssignment) =>
+                  roleAssignmentToFlattenedRoleAssignment(multiclusterRoleAssignmentCurr, roleAssignment)
+                ),
+              ],
+              []
+            )
+            .sort((a, b) => compareStrings(a.subject.name ?? '', b.subject.name ?? '')),
+    [multiclusterRoleAssignments, user]
   )
-
-  // TODO: proper loading mechanism once API ready
-  const [isLoading, setIsLoading] = useState<boolean>(true)
-  const [isNotFound, setIsNotFound] = useState<boolean>()
-
-  useEffect(() => setIsLoading(role === undefined), [role])
-  useEffect(() => {
-    setIsNotFound(role === undefined)
-    setIsLoading(false)
-  }, [role])
 
   switch (true) {
     case isLoading:
@@ -52,25 +75,19 @@ const RoleRoleAssignments = () => {
           <AcmLoadingPage />
         </PageSection>
       )
-    case isNotFound:
+    case !user:
       return (
         <ErrorPage
           error={new ResourceError(ResourceErrorCode.NotFound)}
           actions={
-            <AcmButton role="link" onClick={() => navigate(NavigationPath.roles)}>
+            <AcmButton role="link" onClick={() => navigate(NavigationPath.identitiesUsers)}>
               {t('button.backToRoles')}
             </AcmButton>
           }
         />
       )
     default:
-      return (
-        <RoleAssignments
-          multiclusterRoleAssignments={roleMulticlusterRoleAssignments}
-          isLoading={isLoading}
-          hiddenColumns={['role']}
-        />
-      )
+      return <RoleAssignments roleAssignments={roleAssignments} isLoading={isLoading} hiddenColumns={['subject']} />
   }
 }
 
