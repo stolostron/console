@@ -38,7 +38,7 @@ const mockUsers: User[] = [
       uid: 'other-user-uid',
       creationTimestamp: '2025-01-24T15:00:00Z',
     },
-    identities: ['htpasswd:other-user'],
+    identities: ['ldap:other-user'],
     groups: ['test-group'],
     fullName: 'Other User',
   },
@@ -128,6 +128,57 @@ describe('GroupUsers', () => {
     expect(screen.getByText('other-user')).toBeInTheDocument()
   })
 
+  test('should render table with correct column headers', () => {
+    mockUseGroupDetailsContext.mockReturnValue({
+      group: mockGroup,
+      users: mockUsers,
+      loading: false,
+      usersLoading: false,
+    })
+
+    render(<Component />)
+
+    expect(screen.getByText('Name')).toBeInTheDocument()
+    expect(screen.getByText('Identity provider')).toBeInTheDocument()
+    expect(screen.getByText('Created')).toBeInTheDocument()
+  })
+
+  test('should display identity provider information for users', () => {
+    mockUseGroupDetailsContext.mockReturnValue({
+      group: mockGroup,
+      users: mockUsers,
+      loading: false,
+      usersLoading: false,
+    })
+
+    render(<Component />)
+
+    expect(screen.getByText('htpasswd:test-user')).toBeInTheDocument()
+    expect(screen.getByText('ldap:other-user')).toBeInTheDocument()
+  })
+
+  test('should render user names as clickable links', () => {
+    mockUseGroupDetailsContext.mockReturnValue({
+      group: mockGroup,
+      users: mockUsers,
+      loading: false,
+      usersLoading: false,
+    })
+
+    render(<Component />)
+
+    // Check that user names are rendered as links
+    const testUserLink = screen.getByRole('link', { name: 'test-user' })
+    const otherUserLink = screen.getByRole('link', { name: 'other-user' })
+
+    expect(testUserLink).toBeInTheDocument()
+    expect(otherUserLink).toBeInTheDocument()
+
+    // Check that links have correct href attributes
+    expect(testUserLink).toHaveAttribute('href', '/multicloud/user-management/identities/users/test-user-uid')
+    expect(otherUserLink).toHaveAttribute('href', '/multicloud/user-management/identities/users/other-user-uid')
+  })
+
   test('should not show users that are not members of the group', () => {
     const usersWithNonMember: User[] = [
       ...mockUsers,
@@ -139,7 +190,7 @@ describe('GroupUsers', () => {
           uid: 'non-member-uid',
           creationTimestamp: '2025-01-24T14:00:00Z',
         },
-        identities: ['htpasswd:non-member'],
+        identities: ['oauth:non-member'],
         groups: ['other-group'],
         fullName: 'Non Member',
       },
