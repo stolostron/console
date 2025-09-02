@@ -11,11 +11,11 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-import { VALID_REPOPATH, getURLValidator, getSourcePath } from '../../../../../components/TemplateEditor'
+import { VALID_REPOPATH, getURLValidator, getSourcePath } from '../../../../components/TemplateEditor'
 import placementData from './ControlDataPlacement'
 import getControlDataPrePostTasks from './ControlDataPrePostTasks'
 import { getGitBranches, updateChannelControls, updateGitBranchFolders, channelSimplified } from './utils'
-import { getControlByID } from '../../../../../lib/temptifly-utils'
+import { getControlByID } from '../../../../lib/temptifly-utils'
 import _ from 'lodash'
 
 export const validateBranch = (branch) => {

@@ -56,7 +56,8 @@ import {
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { DeleteResourceModal, IDeleteResourceModalProps } from './components/DeleteResourceModal'
 import ResourceLabels from './components/ResourceLabels'
-import { argoAppSetQueryString, subscriptionAppQueryString } from './CreateApplication/actions'
+import { argoAppSetQueryString } from './CreateArgoApplication/actions'
+import { subscriptionAppQueryString } from './CreateSubscriptionApplication/actions'
 import {
   getResourceTimestamp,
   getAnnotation,

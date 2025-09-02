@@ -15,10 +15,10 @@ import {
   ButtonVariant,
   SelectOption,
 } from '@patternfly/react-core'
-import { AcmSelectBase, SelectVariant } from '../../../../../../components/AcmSelectBase'
+import { AcmSelectBase, SelectVariant } from '../../../../../components/AcmSelectBase'
 import { Fragment, Component } from 'react'
 import { PlusCircleIcon, TimesCircleIcon } from '@patternfly/react-icons'
-import { Tooltip, getSourcePath, removeVs } from '../../../../../../components/TemplateEditor'
+import { Tooltip, getSourcePath, removeVs } from '../../../../../components/TemplateEditor'
 import _ from 'lodash'
 import './style.css'
 

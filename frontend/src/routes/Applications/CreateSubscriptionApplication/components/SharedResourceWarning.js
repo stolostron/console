@@ -6,9 +6,9 @@ import { ExclamationTriangleIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
 import PropTypes from 'prop-types'
 import { Fragment, useEffect, useState } from 'react'
-import { useTranslation } from '../../../../../lib/acm-i18next'
-import { searchClient } from '../../../../Search/search-sdk/search-client'
-import { SearchResultItemsAndRelatedItemsDocument } from '../../../../Search/search-sdk/search-sdk'
+import { useTranslation } from '../../../../lib/acm-i18next'
+import { searchClient } from '../../../Search/search-sdk/search-client'
+import { SearchResultItemsAndRelatedItemsDocument } from '../../../Search/search-sdk/search-sdk'
 import './style.css'
 
 export const RESOURCE_TYPES = {

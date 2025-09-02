@@ -2,7 +2,7 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes, generatePath } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { NavigationPath } from '../../NavigationPath'
+import { NavigationPath } from '../../../NavigationPath'
 import {
   Application,
   ApplicationApiVersion,
@@ -35,7 +35,7 @@ import {
   Subscription,
   SubscriptionApiVersion,
   SubscriptionKind,
-} from '../../resources'
+} from '../../../resources'
 import CreateSubscriptionApplicationPage from './SubscriptionApplication'
 import {
   applicationsState,
@@ -45,7 +45,7 @@ import {
   namespacesState,
   placementsState,
   secretsState,
-} from '../../atoms'
+} from '../../../atoms'
 import {
   clickBySelector,
   clickByTestId,
@@ -54,7 +54,7 @@ import {
   waitForNock,
   waitForNocks,
   waitForText,
-} from '../../lib/test-util'
+} from '../../../lib/test-util'
 import {
   nockAggegateRequest,
   nockCreate,
@@ -63,11 +63,11 @@ import {
   nockIgnoreRBAC,
   nockList,
   nockPatch,
-} from '../../lib/nock-util'
+} from '../../../lib/nock-util'
 import userEvent from '@testing-library/user-event'
 import { Scope } from 'nock/types'
-import { mockGlobalClusterSet } from '../../lib/test-metadata'
-import { uidata } from './Application.sharedmocks'
+import { mockGlobalClusterSet } from '../../../lib/test-metadata'
+import { uidata } from '../Application.sharedmocks'
 
 ///////////////////////////////// Mock Data /////////////////////////////////////////////////////
 

@@ -12,7 +12,7 @@
 'use strict'
 
 import { getSharedSubscriptionWarning } from './utils'
-import { CreateCredentialModal } from '../../../../../components/CreateCredentialModal'
+import { CreateCredentialModal } from '../../../../components/CreateCredentialModal'
 
 const getControlDataPrePostTasks = (handleModalToggle, t) => {
   return [

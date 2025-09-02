@@ -30,7 +30,7 @@ import {
   addIngressNodeInfo,
 } from '../helpers/diagram-helpers'
 import { kubeNaming } from './utilities'
-import { getLabels, getMatchLabels } from '../../../CreateApplication/Subscription/controlData/ControlDataPlacement'
+import { getLabels, getMatchLabels } from '../../../CreateSubscriptionApplication/controlData/ControlDataPlacement'
 import { PlacementKind } from '../../../../../resources'
 
 const resName = 'resource.name'
