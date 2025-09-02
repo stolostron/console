@@ -10,7 +10,7 @@ import {
   create,
   deleteRoleAssignment,
   FlattenedRoleAssignment,
-  useFindRoleAssignments
+  useFindRoleAssignments,
 } from './multicluster-role-assignment-client'
 
 jest.mock('../utils', () => ({
