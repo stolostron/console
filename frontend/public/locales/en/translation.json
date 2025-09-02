@@ -813,7 +813,7 @@
   "Conflict": "Conflict",
   "Connect your cloud provider": "Connect your cloud provider",
   "Connection reset": "Connection reset",
-  "Considered the better choice for security. Managed clusters pull application resources from Git repositories directly.": "Considered the better choice for security. Managed clusters pull application resources from Git repositories directly.",
+  "Considered the better choice for security. Managed clusters pull application resources directly from Git repositories.": "Considered the better choice for security. Managed clusters pull application resources directly from Git repositories.",
   "Console URL": "Console URL",
   "containers": "containers",
   "Continue cluster configuration": "Continue cluster configuration",
