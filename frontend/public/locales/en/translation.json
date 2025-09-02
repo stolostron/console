@@ -2750,7 +2750,7 @@
   "status.unknown.alert.title": "The cluster is not reachable",
   "status.unknown.message": "The cluster is not reachable. The management control plane has not heard from the cluster in the specified <bold>leaseDurationSeconds</bold> interval configured in the <bold>ManagedCluster</bold> resource.",
   "status.unreachable": "Unreachable",
-  "status.unreachable.message": "The cluster is not reachable. The management control plane has not heard from the cluster in the specified <bold>leaseDurationSeconds</bold> interval configured in the <bold>ManagedCluster</bold> resource.",
+  "status.unreachable.message": "The cluster is not reachable. The management control plane has been unable to access the managed cluster's API server for an extended period of time.",
   "status.upgradefailed.alert.title": "The cluster failed to upgrade",
   "status.upgradefailed.message": "The cluster upgrade is in a failure state.",
   "Stay": "Stay",
