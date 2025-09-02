@@ -87,43 +87,37 @@ export const rolesTableColumns = ({ t }: Pick<RolesTableHelperProps, 't'>): IAcm
   ]
 }
 
-export const useFilters = (roles: Role[] = []) => {
-  return useMemo(() => {
-    // Get all unique role names and titles for filter options
-    const allRoleNames = new Set<string>()
-    const allRoleTitles = new Set<string>()
-    const allApiGroups = new Set<string>()
-
-    // Extract all unique values from roles
-    roles.forEach((role) => {
-      // Add role name
-      allRoleNames.add(role.name)
-
-      // Add role title if it exists and is different from name
-      if (role.roleTitle && role.roleTitle !== role.name) {
-        allRoleTitles.add(role.roleTitle)
+export const useFilters = (roles: Role[] = []) =>
+  useMemo(() => {
+    const flattenedRoles = roles.reduce(
+      (acc, role) => {
+        const roleTitle = role.roleTitle && role.roleTitle !== role.name ? role.roleTitle : ''
+        const apiGroups = role.permissions
+          ?.split(', ')
+          .map((e) => e.trim())
+          .filter((e) => e)
+        return {
+          allRoleNames: new Set([...acc.allRoleNames, role.name]),
+          allRoleTitles: new Set([...acc.allRoleTitles, roleTitle]),
+          allApiGroups: new Set([...acc.allApiGroups, ...apiGroups]),
+        }
+      },
+      {
+        allRoleNames: new Set<string>(),
+        allRoleTitles: new Set<string>(),
+        allApiGroups: new Set<string>(),
       }
-
-      // Add API groups from permissions
-      if (role.permissions) {
-        const apiGroups = role.permissions.split(', ')
-        apiGroups.forEach((group) => {
-          if (group.trim()) {
-            allApiGroups.add(group.trim())
-          }
-        })
-      }
-    })
+    )
 
     // Combine names and titles, removing duplicates
-    const allUniqueNames = new Set([...allRoleNames, ...allRoleTitles])
+    const allUniqueNames = new Set([...flattenedRoles.allRoleNames, ...flattenedRoles.allRoleTitles])
 
     // Convert to sorted arrays for options
     const nameOptions = Array.from(allUniqueNames)
       .sort((a, b) => a.localeCompare(b))
       .map((name) => ({ label: name, value: name }))
 
-    const permissionsOptions = Array.from(allApiGroups)
+    const permissionsOptions = Array.from(flattenedRoles.allApiGroups)
       .sort((a, b) => a.localeCompare(b))
       .map((apiGroup) => ({ label: apiGroup, value: apiGroup }))
 

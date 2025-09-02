@@ -26,10 +26,7 @@ export const useCurrentRole = () => {
   const { id } = useParams()
   const { clusterRoles } = useRolesContext()
 
-  return useMemo(() => {
-    if (!clusterRoles || !id) return undefined
-    return clusterRoles.find((r) => r.metadata.uid === id || r.metadata.name === id)
-  }, [clusterRoles, id])
+  return useMemo(() => (!clusterRoles || !id) ? undefined : clusterRoles.find((r) => r.metadata.uid === id || r.metadata.name === id), [clusterRoles, id])
 }
 
 export const RolesContextProvider = ({ children }: { children: ReactNode }) => {

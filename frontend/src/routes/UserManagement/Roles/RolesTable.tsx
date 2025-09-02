@@ -11,21 +11,23 @@ const RolesTable = () => {
   const { t } = useTranslation()
   const { clusterRoles, loading } = useRolesContext()
 
-  const roles = useMemo(() => {
-    if (!clusterRoles) return []
-
-    return clusterRoles
-      .map(
-        (clusterRole: ClusterRole): Role => ({
-          name: clusterRole.metadata.name || '',
-          permissions: clusterRole.rules
-            ? [...new Set(clusterRole.rules.flatMap((rule) => rule.apiGroups || []))].join(', ')
-            : '',
-          uid: clusterRole.metadata.uid || clusterRole.metadata.name || '',
-        })
-      )
-      .sort((a, b) => compareStrings(a.name, b.name))
-  }, [clusterRoles])
+  const roles = useMemo(
+    () =>
+      !clusterRoles
+        ? []
+        : clusterRoles
+            .map(
+              (clusterRole: ClusterRole): Role => ({
+                name: clusterRole.metadata.name || '',
+                permissions: clusterRole.rules
+                  ? [...new Set(clusterRole.rules.flatMap((rule) => rule.apiGroups || []))].join(', ')
+                  : '',
+                uid: clusterRole.metadata.uid || clusterRole.metadata.name || '',
+              })
+            )
+            .sort((a, b) => compareStrings(a.name, b.name)),
+    [clusterRoles]
+  )
 
   const keyFn = useCallback((role: Role) => role.uid, [])
 
