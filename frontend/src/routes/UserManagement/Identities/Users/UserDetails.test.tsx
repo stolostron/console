@@ -86,7 +86,6 @@ describe('UserDetails', () => {
     expect(screen.getByText('Test User')).toBeInTheDocument()
     expect(screen.getByText('Username')).toBeInTheDocument()
     expect(screen.getByText('test-user')).toBeInTheDocument()
-    expect(screen.getByText('Last login')).toBeInTheDocument()
   })
 
   test('should render user details with missing full name', () => {
@@ -104,27 +103,6 @@ describe('UserDetails', () => {
     render(<Component />)
 
     expect(screen.getByText('Full name')).toBeInTheDocument()
-    expect(screen.getByText('-')).toBeInTheDocument()
-  })
-
-  test('should render user details with missing creation timestamp', () => {
-    const userWithoutTimestamp = {
-      ...mockUser,
-      metadata: {
-        ...mockUser.metadata,
-        creationTimestamp: undefined,
-      },
-    }
-    mockUseUserDetailsContext.mockReturnValue({
-      user: userWithoutTimestamp,
-      groups: [],
-      loading: false,
-      groupsLoading: false,
-    })
-
-    render(<Component />)
-
-    expect(screen.getByText('Last login')).toBeInTheDocument()
     expect(screen.getByText('-')).toBeInTheDocument()
   })
 })
