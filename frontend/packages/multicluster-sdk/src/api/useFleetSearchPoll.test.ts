@@ -587,6 +587,9 @@ describe('useFleetSearchPoll', () => {
         kind: 'PersistentVolumeClaim',
         requestedStorage: '1Gi',
         volumeMode: 'Filesystem',
+        storageClassName: 'gp3-csi',
+        capacity: '1Gi',
+        status: 'Bound',
       }
 
       mockUseSearchResultItemsQuery.mockReturnValue({
@@ -615,6 +618,11 @@ describe('useFleetSearchPoll', () => {
           },
         },
         volumeMode: 'Filesystem',
+        storageClassName: 'gp3-csi',
+      })
+      expect(dataArray[0].status).toEqual({
+        phase: 'Bound',
+        capacity: { storage: '1Gi' },
       })
     })
 

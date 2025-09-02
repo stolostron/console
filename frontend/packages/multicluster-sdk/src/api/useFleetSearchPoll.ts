@@ -264,7 +264,10 @@ export function useFleetSearchPoll<T extends K8sResourceCommon | K8sResourceComm
 
           case 'PersistentVolumeClaim':
             setIfDefined(resource, 'spec.resources.requests.storage', item.requestedStorage)
+            setIfDefined(resource, 'spec.storageClassName', item.storageClassName)
             setIfDefined(resource, 'spec.volumeMode', item.volumeMode)
+            setIfDefined(resource, 'status.phase', item.status)
+            setIfDefined(resource, 'status.capacity.storage', item.capacity)
             break
 
           case 'StorageClass.storage.k8s.io':
