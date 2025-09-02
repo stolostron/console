@@ -15,7 +15,7 @@ export type ResourceRouteHandler = (props: {
   resource: FleetK8sResourceCommon
   /** The model for the resource. */
   model: ExtensionK8sModel
-}) => string
+}) => string | undefined
 
 export type ResourceRouteProps = {
   /** The model for which this resource route should be used. */
