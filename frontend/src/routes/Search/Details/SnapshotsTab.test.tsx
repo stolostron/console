@@ -9,6 +9,15 @@ import { nockGet, nockIgnoreApiPaths } from '../../../lib/nock-util'
 import { wait, waitForNocks } from '../../../lib/test-util'
 import { SearchResultItemsDocument } from '../search-sdk/search-sdk'
 import SnapshotsTab from './SnapshotsTab'
+import { v4 as uuidv4 } from 'uuid'
+
+// Mock UUID v4 to return predictable values during testing
+jest.mock('uuid', () => ({
+  v4: jest.fn(),
+}))
+
+const mockUuidV4 = jest.mocked(uuidv4)
+const MOCKED_UUID = 'MOCKED_UUID'
 
 const mockSettings: Settings = {
   SEARCH_RESULT_LIMIT: '1000',
@@ -18,10 +27,10 @@ const getMCVRequest = {
   apiVersion: 'view.open-cluster-management.io/v1beta1',
   kind: 'ManagedClusterView',
   metadata: {
-    name: '9bce2a87c0003e05b2a6467c990176d75c1d65d8',
+    name: MOCKED_UUID,
     namespace: 'local-cluster',
     labels: {
-      viewName: '9bce2a87c0003e05b2a6467c990176d75c1d65d8',
+      viewName: MOCKED_UUID,
     },
   },
   spec: {
@@ -37,10 +46,10 @@ const getMCVResponse = {
   apiVersion: 'view.open-cluster-management.io/v1beta1',
   kind: 'ManagedClusterView',
   metadata: {
-    name: '9bce2a87c0003e05b2a6467c990176d75c1d65d8',
+    name: MOCKED_UUID,
     namespace: 'local-cluster',
     labels: {
-      viewName: '9bce2a87c0003e05b2a6467c990176d75c1d65d8',
+      viewName: MOCKED_UUID,
     },
   },
   spec: {
@@ -82,6 +91,10 @@ const getMCVResponse = {
 
 describe('SnapshotsTab', () => {
   beforeEach(() => {
+    // Reset the mock before each test
+    mockUuidV4.mockReset()
+    mockUuidV4.mockReturnValue(MOCKED_UUID)
+
     nockIgnoreApiPaths()
     Object.defineProperty(window, 'location', {
       value: {
