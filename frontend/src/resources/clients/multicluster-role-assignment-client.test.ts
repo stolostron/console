@@ -39,6 +39,174 @@ describe('multicluster-role-assignment-client', function () {
     jest.clearAllMocks()
   })
 
+  describe('RoleAssignment to FlattenedRoleAssignment mapping', () => {
+    beforeAll(() => {
+      useSharedAtomsMock.mockReturnValue({ multiclusterRoleAssignmentState: {} })
+      useRecoilValueMock.mockReturnValue(mockMulticlusterRoleAssignments)
+    })
+
+    it('relatedMulticlusterRoleAssignment properly mapped', () => {
+      // Arrange
+      const kind = 'User'
+      const name = 'admin.user'
+
+      // Act
+      const { result } = renderHook(() =>
+        useFindRoleAssignments({
+          subjectKinds: [kind],
+          subjectNames: [name],
+        })
+      )
+
+      // Assert
+      expect(result.current).toHaveLength(2)
+      expect(result.current[0].relatedMulticlusterRoleAssignment).toStrictEqual({
+        apiVersion: 'rbac.open-cluster-management.io/v1alpha1',
+        kind: 'MulticlusterRoleAssignment',
+        metadata: {
+          name: 'admin-user-role-assignment-console',
+          namespace: 'open-cluster-management-global-set',
+          uid: '2f4a6c8e-3b7d-4e9a-6c2f-8e4a7b9d2c5f',
+          labels: { 'console-created': 'true' },
+        },
+        spec: {
+          subject: { kind: 'User', name: 'admin.user' },
+          roleAssignments: [
+            {
+              name: '0ce91c74417862a94a58a0fc11062bfa7f7c17149702af184d1841537cd569fa',
+              clusterRole: 'kubevirt.io:admin',
+              targetNamespaces: ['kubevirt-production'],
+              clusterSets: ['production-cluster'],
+            },
+            {
+              name: '2f8bbe8b5ef6a39581db893b803f05ec598364736792ec447722aab14d17ae11',
+              clusterRole: 'live-migration-admin',
+              targetNamespaces: ['kubevirt-dev', 'vm-dev'],
+              clusterSets: ['development-cluster'],
+            },
+          ],
+        },
+        roleAssignmentsStatuses: [
+          { name: '0ce91c74417862a94a58a0fc11062bfa7f7c17149702af184d1841537cd569fa', status: 'Active' },
+          { name: '2f8bbe8b5ef6a39581db893b803f05ec598364736792ec447722aab14d17ae11', status: 'Active' },
+        ],
+      })
+      expect(result.current[1].relatedMulticlusterRoleAssignment).toStrictEqual({
+        apiVersion: 'rbac.open-cluster-management.io/v1alpha1',
+        kind: 'MulticlusterRoleAssignment',
+        metadata: {
+          name: 'admin-user-role-assignment-console',
+          namespace: 'open-cluster-management-global-set',
+          uid: '2f4a6c8e-3b7d-4e9a-6c2f-8e4a7b9d2c5f',
+          labels: { 'console-created': 'true' },
+        },
+        spec: {
+          subject: { kind: 'User', name: 'admin.user' },
+          roleAssignments: [
+            {
+              name: '0ce91c74417862a94a58a0fc11062bfa7f7c17149702af184d1841537cd569fa',
+              clusterRole: 'kubevirt.io:admin',
+              targetNamespaces: ['kubevirt-production'],
+              clusterSets: ['production-cluster'],
+            },
+            {
+              name: '2f8bbe8b5ef6a39581db893b803f05ec598364736792ec447722aab14d17ae11',
+              clusterRole: 'live-migration-admin',
+              targetNamespaces: ['kubevirt-dev', 'vm-dev'],
+              clusterSets: ['development-cluster'],
+            },
+          ],
+        },
+        roleAssignmentsStatuses: [
+          { name: '0ce91c74417862a94a58a0fc11062bfa7f7c17149702af184d1841537cd569fa', status: 'Active' },
+          { name: '2f8bbe8b5ef6a39581db893b803f05ec598364736792ec447722aab14d17ae11', status: 'Active' },
+        ],
+      })
+    })
+
+    it('subject properly mapped', () => {
+      // Arrange
+      const kind = 'Group'
+      const name = 'security-auditors'
+
+      // Act
+      const { result } = renderHook(() =>
+        useFindRoleAssignments({
+          subjectKinds: [kind],
+          subjectNames: [name],
+        })
+      )
+
+      // Assert
+      expect(result.current).toHaveLength(2)
+      expect(result.current[0].subject.kind).toBe(kind)
+      expect(result.current[0].subject.name).toBe(name)
+    })
+
+    it('RoleAssignment fields properly mapped', () => {
+      // Arrange
+      const kind = 'Group'
+      const name = 'security-auditors'
+
+      // Act
+      const { result } = renderHook(() =>
+        useFindRoleAssignments({
+          subjectKinds: [kind],
+          subjectNames: [name],
+        })
+      )
+
+      // Assert
+      expect(result.current).toHaveLength(2)
+
+      expect(result.current[0].name).toBe('26f10cdfc6e71e8dea1a3ca9511402958f7764a11137f27e7640e97a79d9c4b3')
+      expect(result.current[0].clusterRole).toBe('kubevirt.io:view')
+      expect(result.current[0].targetNamespaces).toStrictEqual(['kubevirt-production'])
+      expect(result.current[0].clusterSets).toStrictEqual(['production-cluster'])
+
+      expect(result.current[1].name).toBe('c89564b44096eb7ade487f6e419c0c37a2c32c0b48cce6d081a6118926d33fa9')
+      expect(result.current[1].clusterRole).toBe('kubevirt.io:view')
+      expect(result.current[1].targetNamespaces).toStrictEqual(['security', 'audit-logs'])
+      expect(result.current[1].clusterSets).toStrictEqual(['security-cluster'])
+    })
+
+    it('status properly mapped', () => {
+      // Arrange
+      const kind = 'Group'
+      const name = 'security-auditors'
+
+      // Act
+      const { result } = renderHook(() =>
+        useFindRoleAssignments({
+          subjectKinds: [kind],
+          subjectNames: [name],
+        })
+      )
+
+      // Assert
+      expect(result.current).toHaveLength(2)
+      expect(
+        (
+          result.current.find((e) => e.name === '26f10cdfc6e71e8dea1a3ca9511402958f7764a11137f27e7640e97a79d9c4b3') ??
+          {}
+        ).status
+      ).toStrictEqual({
+        name: '26f10cdfc6e71e8dea1a3ca9511402958f7764a11137f27e7640e97a79d9c4b3',
+        status: 'Active',
+      })
+      expect(
+        (
+          result.current.find((e) => e.name === 'c89564b44096eb7ade487f6e419c0c37a2c32c0b48cce6d081a6118926d33fa9') ??
+          {}
+        ).status
+      ).toStrictEqual({
+        name: 'c89564b44096eb7ade487f6e419c0c37a2c32c0b48cce6d081a6118926d33fa9',
+        status: 'Error',
+        reason: "permissions don't applied",
+      })
+    })
+  })
+
   describe('useFindRoleAssignments', () => {
     beforeAll(() => {
       useSharedAtomsMock.mockReturnValue({ multiclusterRoleAssignmentState: {} })

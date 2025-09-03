@@ -131,7 +131,18 @@
           ]
         }
       ]
-    }
+    },
+    "roleAssignmentsStatuses": [
+      {
+        "name": "15cd6d23a9e25f7b93ec146e98762da005d8ac4065105c48ced51cdee209be24",
+        "status": "Error",
+        "reason": "permissions don't applied"
+      },
+      { "name": "38441be39ccb822115d03bf0e0466eb14d7292c9854e3fc7ea80ede1559cdf83", "status": "Active" },
+      { "name": "89075d2757649172783d5a56afa187de340ad11aad0c2f7ebfb0c8ffb634a76c", "status": "Active" },
+      { "name": "a5f63d56c40bb7bcb3dc731c647239a90aa3cdb11d09c0de45c7e7f4ce4d0e71", "status": "Active" },
+      { "name": "d5429da41807b4f3cfc4f4d7764f684d7d2946a362f8650e641d42a88355a160", "status": "Active" }
+    ]
   },
   {
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
@@ -164,7 +175,12 @@
           "clusterSets": ["testing-cluster"]
         }
       ]
-    }
+    },
+    "roleAssignmentsStatuses": [
+      { "name": "1c62b44f8228851f0d19d83c2fe20342cd040066e9703cd7ffe3a8155bb778be", "status": "Active" },
+      { "name": "76a8596a50ec0535d471d1a433e4b2862c5d18e28d8ce9d0d92481b399a6a753", "status": "Active" },
+      { "name": "8490b172be44b55e700fcc5b65208958bce71ad36caff418cfd9aa4a211dea32", "status": "Active" }
+    ]
   },
   {
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
@@ -191,7 +207,11 @@
           "clusterSets": ["development-cluster"]
         }
       ]
-    }
+    },
+    "roleAssignmentsStatuses": [
+      { "name": "0ce91c74417862a94a58a0fc11062bfa7f7c17149702af184d1841537cd569fa", "status": "Active" },
+      { "name": "2f8bbe8b5ef6a39581db893b803f05ec598364736792ec447722aab14d17ae11", "status": "Active" }
+    ]
   },
   {
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
@@ -218,7 +238,11 @@
           "clusterSets": ["staging-cluster"]
         }
       ]
-    }
+    },
+    "roleAssignmentsStatuses": [
+      { "name": "5cadada1737ce91a85e3e3cbf6e0197e34c12716444947c03a86b004661e2ab1", "status": "Active" },
+      { "name": "5500787468230612838782551b244e84ffd75b9eac9f4e7d5536f1a97bd544a0", "status": "Active" }
+    ]
   },
   {
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
@@ -251,7 +275,12 @@
           "clusterSets": ["development-cluster"]
         }
       ]
-    }
+    },
+    "roleAssignmentsStatuses": [
+      { "name": "7fb501b5dce60c4e3a519cfa1e8f946eb5b6a1b6ad714fd85537b3eb5072885d", "status": "Active" },
+      { "name": "635dda6c190a3a6778ba556279544fb8acefbd55d3fc42d722de95da9f102572", "status": "Active" },
+      { "name": "d638bbf184da965a1fd95872d4f26142f08e49301dae3655bb1848babd4d03ed", "status": "Active" }
+    ]
   },
   {
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
@@ -272,7 +301,10 @@
           "clusterSets": ["development-cluster"]
         }
       ]
-    }
+    },
+    "roleAssignmentsStatuses": [
+      { "name": "7fb501b5dce60c4e3a519cfa1e8f946eb5b6a1b6ad714fd85537b3eb5072885d", "status": "Active" }
+    ]
   },
   {
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
@@ -293,7 +325,10 @@
           "clusterSets": ["development-cluster"]
         }
       ]
-    }
+    },
+    "roleAssignmentsStatuses": [
+      { "name": "7fb501b5dce60c4e3a519cfa1e8f946eb5b6a1b6ad714fd85537b3eb5072885d", "status": "Active" }
+    ]
   },
   {
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
@@ -320,7 +355,11 @@
           "clusterSets": ["edge-cluster-2"]
         }
       ]
-    }
+    },
+    "roleAssignmentsStatuses": [
+      { "name": "f8258078b0ae5a80a282ad438c8785ec5aaa5accc86eecb5a20cddba361aac97", "status": "Active" },
+      { "name": "07a0764a267d9313f25dfe6c014bb6374eb22c7f376b82f203262fd01df1bf38", "status": "Active" }
+    ]
   },
   {
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
@@ -353,7 +392,12 @@
           "clusterSets": ["development-cluster"]
         }
       ]
-    }
+    },
+    "roleAssignmentsStatuses": [
+      { "name": "7ce72391fbd7f3d6d045b252285254b516e987e83e27308470f5e9c98e454721", "status": "Active" },
+      { "name": "140faa438b1a5b8ac32a9771ea0d08ce67fa916ae4afbfbd3ba41ff9967a13b1", "status": "Active" },
+      { "name": "bcb41c8233207b7210b038e24e83ee8747fc2e21886bd5f4e2bbaf2a314ec68c", "status": "Active" }
+    ]
   },
   {
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
@@ -380,7 +424,11 @@
           "clusterSets": ["staging-cluster"]
         }
       ]
-    }
+    },
+    "roleAssignmentsStatuses": [
+      { "name": "c8bd68c98116d021665fe62ed457827f161e00c006538e7a03fce37a3acb8d50", "status": "Active" },
+      { "name": "621909d423958298478c5e86ab5b1d8504a02de427e975ebce52fa1704d00aaf", "status": "Active" }
+    ]
   },
   {
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
@@ -407,7 +455,15 @@
           "clusterSets": ["security-cluster"]
         }
       ]
-    }
+    },
+    "roleAssignmentsStatuses": [
+      {
+        "name": "c89564b44096eb7ade487f6e419c0c37a2c32c0b48cce6d081a6118926d33fa9",
+        "status": "Error",
+        "reason": "permissions don't applied"
+      },
+      { "name": "26f10cdfc6e71e8dea1a3ca9511402958f7764a11137f27e7640e97a79d9c4b3", "status": "Active" }
+    ]
   },
   {
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
@@ -440,7 +496,24 @@
           "clusterSets": ["edge-cluster-1", "edge-cluster-2"]
         }
       ]
-    }
+    },
+    "roleAssignmentsStatuses": [
+      {
+        "name": "f33330ad0dfcea02787e76bf764c3bf620cf38d041defadc28bf8e06d4344282",
+        "status": "Error",
+        "reason": "permissions don't applied"
+      },
+      {
+        "name": "26f10cdfc6e71e8dea1a3ca9511402958f7764a11137f27e7640e97a79d9c4b3",
+        "status": "Error",
+        "reason": "permissions don't applied"
+      },
+      {
+        "name": "c89564b44096eb7ade487f6e419c0c37a2c32c0b48cce6d081a6118926d33fa9",
+        "status": "Error",
+        "reason": "invalid cluster set"
+      }
+    ]
   },
   {
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
@@ -473,7 +546,24 @@
           "clusterSets": ["development-cluster", "testing-cluster"]
         }
       ]
-    }
+    },
+    "roleAssignmentsStatuses": [
+      {
+        "name": "ae1fbb1f6168da6eeeb16d40a55f1387d03d4d2ef389a4d1b898e925f533cd86",
+        "status": "Error",
+        "reason": "permissions don't applied"
+      },
+      {
+        "name": "92b695eaf558c074105aea85793963ab5ec6b81bfd0305bf404bda6830fed98a",
+        "status": "Error",
+        "reason": "permissions don't applied"
+      },
+      {
+        "name": "3b8dd2b7e890941e12b53dec164485452e9135a8348fccbbe52ed56534ef44de",
+        "status": "Error",
+        "reason": "invalid cluster set"
+      }
+    ]
   },
   {
     "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
@@ -494,6 +584,12 @@
           "clusterSets": ["production-cluster"]
         }
       ]
-    }
+    },
+    "roleAssignmentsStatuses": [
+      {
+        "name": "466a100c909658b7d940a045684626e9e04136cdb5d057ba782c369e44007985",
+        "status": "Active"
+      }
+    ]
   }
 ]
