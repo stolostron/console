@@ -12,8 +12,8 @@
 'use strict'
 
 import _ from 'lodash'
-import { getGitChannelBranches, getGitChannelPaths } from '../../../../../resources'
-import { getControlByID } from '../../../../../lib/temptifly-utils'
+import { getGitChannelBranches, getGitChannelPaths } from '../../../../resources'
+import { getControlByID } from '../../../../lib/temptifly-utils'
 import SharedResourceWarning, { RESOURCE_TYPES } from '../components/SharedResourceWarning'
 
 const existingRuleCheckbox = 'existingrule-checkbox'

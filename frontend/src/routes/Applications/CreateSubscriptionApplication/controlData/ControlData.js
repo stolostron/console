@@ -16,11 +16,11 @@ import objectstoreChannelData from './ControlDataObjectStore'
 import otherChannelData from './ControlDataOther'
 import { updateControlsForNS, getSharedSubscriptionWarning } from './utils'
 import { discoverGroupsFromSource, shiftTemplateObject } from '../transformers/transform-resources-to-controls'
-import { VALID_DNS_LABEL } from '../../../../../components/TemplateEditor'
+import { VALID_DNS_LABEL } from '../../../../components/TemplateEditor'
 import { GitAltIcon, UnknownIcon } from '@patternfly/react-icons'
-import HelmIcom from '../../logos/HelmIcon.svg'
-import ObjectStore from '../../logos/ObjectStore.svg'
-import { loadExistingNamespaces } from '../../../../../lib/temptifly-utils'
+import HelmIcom from '../logos/HelmIcon.svg'
+import ObjectStore from '../logos/ObjectStore.svg'
+import { loadExistingNamespaces } from '../../../../lib/temptifly-utils'
 
 export const updateNameControls = (nameControl, globalControl) => {
   const channelsControl = globalControl.find(({ id }) => id === 'channels')

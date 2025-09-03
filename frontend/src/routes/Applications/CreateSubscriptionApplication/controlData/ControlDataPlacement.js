@@ -13,13 +13,13 @@
 
 // seems to be an issue with this rule and redux
 
-import TimeWindow, { reverse as reverseTimeWindow, summarize as summarizeTimeWindow } from '../common/TimeWindow'
-import PlacementRuleDeprecationAlert from '../../../../../components/PlacementRuleDeprecationAlert'
-import ClusterSelector, { summarize as summarizeClusterSelector } from '../common/ClusterSelector'
+import TimeWindow, { reverse as reverseTimeWindow, summarize as summarizeTimeWindow } from '../components/TimeWindow'
+import PlacementRuleDeprecationAlert from '../../../../components/PlacementRuleDeprecationAlert'
+import ClusterSelector, { summarize as summarizeClusterSelector } from '../components/ClusterSelector'
 import { getSharedPlacementRuleWarning, getSharedSubscriptionWarning } from './utils'
-import { getSourcePath } from '../../../../../components/TemplateEditor'
-import { listPlacementRules, listPlacements, PlacementRuleKind } from '../../../../../resources'
-import { getControlByID } from '../../../../../lib/temptifly-utils'
+import { getSourcePath } from '../../../../components/TemplateEditor'
+import { listPlacementRules, listPlacements, PlacementRuleKind } from '../../../../resources'
+import { getControlByID } from '../../../../lib/temptifly-utils'
 import _ from 'lodash'
 
 const clusterSelectorCheckbox = 'clusterSelector'

@@ -11,7 +11,7 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-import { getURLValidator } from '../../../../../components/TemplateEditor'
+import { getURLValidator } from '../../../../components/TemplateEditor'
 import { updateChannelControls, channelSimplified } from './utils'
 import placementData from './ControlDataPlacement'
 

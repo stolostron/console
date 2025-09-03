@@ -12,10 +12,10 @@
 'use strict'
 
 import YAML from 'yaml'
-import { initializeControls, getSourcePath, getResourceID } from '../../../../../components/TemplateEditor'
+import { initializeControls, getSourcePath, getResourceID } from '../../../../components/TemplateEditor'
 import { filterDeep } from './transform-data-to-resources'
 import _ from 'lodash'
-import { PlacementRuleKind } from '../../../../../resources'
+import { PlacementRuleKind } from '../../../../resources'
 
 //only called when editing an existing application
 //examines resources to create the correct resource types that are being deployed

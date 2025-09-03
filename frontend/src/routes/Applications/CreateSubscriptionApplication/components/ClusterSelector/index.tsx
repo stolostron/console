@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Fragment, useCallback, useState } from 'react'
-import { AcmMultiSelect, AcmSelect } from '../../../../../../ui-components'
-import { SelectVariant } from '../../../../../../components/AcmSelectBase'
+import { AcmMultiSelect, AcmSelect } from '../../../../../ui-components'
+import { SelectVariant } from '../../../../../components/AcmSelectBase'
 import {
   Radio,
   FormGroup,
@@ -22,13 +22,13 @@ import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import _ from 'lodash'
 import './style.css'
 import { TFunction } from 'react-i18next'
-import Tooltip from '../../../../../../components/TemplateEditor/components/Tooltip'
-import { ManagedClusterSet, ManagedClusterSetBindingKind } from '../../../../../../resources'
-import { getTemplateValue } from '../../../../../Infrastructure/Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
-import { useRecoilValue, useSharedAtoms } from '../../../../../../shared-recoil'
+import Tooltip from '../../../../../components/TemplateEditor/components/Tooltip'
+import { ManagedClusterSet, ManagedClusterSetBindingKind } from '../../../../../resources'
+import { getTemplateValue } from '../../../../Infrastructure/Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
+import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
 import YAML from 'yaml'
-import { useTranslation } from '../../../../../../lib/acm-i18next'
-import { useLabelValuesMap } from '../../../../../../wizards/common/useLabelValuesMap'
+import { useTranslation } from '../../../../../lib/acm-i18next'
+import { useLabelValuesMap } from '../../../../../wizards/common/useLabelValuesMap'
 
 const activeModeStr = 'active.mode'
 
