@@ -27,7 +27,7 @@ const RBACResourceYaml = <T,>({ resource, loading, resourceType }: RBACResourceY
     case !resource:
       return (
         <PageSection>
-          <div>{t(`${resourceType} not found`)}</div>
+          <div>{resourceType === 'User' ? t('User not found') : t('Group not found')}</div>
         </PageSection>
       )
     default:
