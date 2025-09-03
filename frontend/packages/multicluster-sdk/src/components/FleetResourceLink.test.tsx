@@ -602,7 +602,23 @@ describe('FleetResourceLink', () => {
     })
 
     it('should handle resources without namespace', () => {
+      const mockHandler = jest
+        .fn()
+        .mockReturnValue('/multicloud/infrastructure/clusters/details/test-vm/test-vm/overview')
+      const mockExtensions = [
+        {
+          type: 'acm.resource/route',
+          pluginID: 'acm-plugin',
+          pluginName: 'ACM Plugin',
+          uid: 'acm-uid',
+          properties: {
+            model: { group: 'cluster.open-cluster-management.io', kind: 'ManagedCluster', version: 'v1' },
+            handler: mockHandler,
+          },
+        },
+      ]
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
+      useResolvedExtensions.mockReturnValue([mockExtensions, true, []])
 
       render(
         <MemoryRouter>
@@ -629,7 +645,23 @@ describe('FleetResourceLink', () => {
 
   describe('Hub cluster behavior', () => {
     it('should use first-class path for ManagedCluster on hub', () => {
+      const mockHandler = jest
+        .fn()
+        .mockReturnValue('/multicloud/infrastructure/clusters/details/test-cluster/test-cluster/overview')
+      const mockExtensions = [
+        {
+          type: 'acm.resource/route',
+          pluginID: 'acm-plugin',
+          pluginName: 'ACM Plugin',
+          uid: 'acm-uid',
+          properties: {
+            model: { group: 'cluster.open-cluster-management.io', kind: 'ManagedCluster', version: 'v1' },
+            handler: mockHandler,
+          },
+        },
+      ]
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
+      useResolvedExtensions.mockReturnValue([mockExtensions, true, []])
 
       render(
         <MemoryRouter>
@@ -652,7 +684,23 @@ describe('FleetResourceLink', () => {
     })
 
     it('should use first-class path for ManagedCluster in any context', () => {
+      const mockHandler = jest
+        .fn()
+        .mockReturnValue('/multicloud/infrastructure/clusters/details/test-cluster/test-cluster/overview')
+      const mockExtensions = [
+        {
+          type: 'acm.resource/route',
+          pluginID: 'acm-plugin',
+          pluginName: 'ACM Plugin',
+          uid: 'acm-uid',
+          properties: {
+            model: { group: 'cluster.open-cluster-management.io', kind: 'ManagedCluster', version: 'v1' },
+            handler: mockHandler,
+          },
+        },
+      ]
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
+      useResolvedExtensions.mockReturnValue([mockExtensions, true, []])
 
       render(
         <MemoryRouter>
@@ -745,7 +793,23 @@ describe('FleetResourceLink', () => {
     })
 
     it('should use first-class path for ManagedCluster on managed cluster context', () => {
+      const mockHandler = jest
+        .fn()
+        .mockReturnValue('/multicloud/infrastructure/clusters/details/remote-cluster/remote-cluster/overview')
+      const mockExtensions = [
+        {
+          type: 'acm.resource/route',
+          pluginID: 'acm-plugin',
+          pluginName: 'ACM Plugin',
+          uid: 'acm-uid',
+          properties: {
+            model: { group: 'cluster.open-cluster-management.io', kind: 'ManagedCluster', version: 'v1' },
+            handler: mockHandler,
+          },
+        },
+      ]
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
+      useResolvedExtensions.mockReturnValue([mockExtensions, true, []])
 
       render(
         <MemoryRouter>
