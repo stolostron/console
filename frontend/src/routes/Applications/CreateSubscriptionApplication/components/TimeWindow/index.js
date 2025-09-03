@@ -57,15 +57,17 @@ export class TimeWindow extends Component {
         {tz.label}
       </SelectOption>
     ))
-
-    this.daysMap = new Map([
-      ['mon', 'Monday'],
-      ['tue', 'Tuesday'],
-      ['wed', 'Wednesday'],
-      ['thu', 'Thursday'],
-      ['fri', 'Friday'],
-      ['sat', 'Saturday'],
-      ['sun', 'Sunday'],
+  }
+  getDaysMap() {
+    const { i18n } = this.props
+    return new Map([
+      ['mon', i18n('day.monday')],
+      ['tue', i18n('day.tuesday')],
+      ['wed', i18n('day.wednesday')],
+      ['thu', i18n('day.thursday')],
+      ['fri', i18n('day.friday')],
+      ['sat', i18n('day.saturday')],
+      ['sun', i18n('day.sunday')],
     ])
   }
 
@@ -195,7 +197,7 @@ export class TimeWindow extends Component {
                         }}
                       >
                         <div className="first-col" style={{ gridColumnStart: '1' }}>
-                          {Array.from(this.daysMap, ([key, value]) => {
+                          {Array.from(this.getDaysMap(), ([key, value]) => {
                             return (
                               <Checkbox
                                 isChecked={days.includes(`"${value}"`)}
