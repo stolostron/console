@@ -3,13 +3,13 @@ import { PageSection } from '@patternfly/react-core'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Routes, Route } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../lib/nock-util'
-import { AcmLoadingPage } from '../../../ui-components'
+import { nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../../lib/nock-util'
+import { AcmLoadingPage } from '../../../../ui-components'
 import { RoleRoleAssignments } from './RoleRoleAssignments'
-import { FlattenedRoleAssignment } from '../../../resources/clients/multicluster-role-assignment-client'
+import { FlattenedRoleAssignment } from '../../../../resources/clients/multicluster-role-assignment-client'
 
 // Mock RoleAssignments to show the key data we want to verify
-jest.mock('../RoleAssignment/RoleAssignments', () => ({
+jest.mock('../../RoleAssignment/RoleAssignments', () => ({
   RoleAssignments: ({ roleAssignments, isLoading, hiddenColumns }: any) => (
     <div id="role-assignments">
       <div id="loading">{isLoading ? 'Loading' : 'Loaded'}</div>
