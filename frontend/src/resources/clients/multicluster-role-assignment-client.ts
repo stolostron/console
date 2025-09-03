@@ -173,6 +173,7 @@ export const useAddRoleAssignment = (
         roleAssignments: [roleAssignment],
       },
       metadata: {},
+      status: {},
     }
     return create(newMultiClusterRoleAssignment)
   }
