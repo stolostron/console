@@ -46,19 +46,27 @@ export function SummaryClustersCard(props: {
       name: title,
       width: 150,
       height: 150,
-      padding: {
-        bottom: 15,
-        left: 24,
-        top: 15,
-      },
       constrainToVisibleArea: true,
     }
     const component = isPieChart ? (
-      <ChartPie {...commonProps} />
+      <ChartPie
+        {...commonProps}
+        padding={{
+          bottom: 15,
+          left: 24,
+          top: 15,
+        }}
+      />
     ) : (
       <ChartDonut
         {...commonProps}
         subTitle={chartLabel?.subTitle ?? ''}
+        subTitlePosition={(chartLabel?.subTitle ?? '').length > 14 ? 'bottom' : undefined}
+        padding={{
+          bottom: (chartLabel?.subTitle ?? '').length > 14 ? 25 : 15,
+          left: 24,
+          top: 15,
+        }}
         title={chartLabel?.title}
         titleComponent={
           <ChartLabel

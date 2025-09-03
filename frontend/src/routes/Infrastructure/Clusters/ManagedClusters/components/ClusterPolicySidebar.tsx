@@ -79,13 +79,14 @@ function renderDonutChart(data: PolicyReportResults[], t: TFunction) {
       }
       labels={({ datum }) => `${datum.x}: ${datum.y}`}
       padding={{
-        bottom: 20,
+        bottom: t('Total issues').length > 14 ? 30 : 20,
         left: 20,
         right: 145,
         top: 20,
       }}
       title={`${data.length}`}
       subTitle={t('Total issues')}
+      subTitlePosition={t('Total issues').length > 14 ? 'bottom' : undefined}
       width={400}
       height={200}
       colorScale={colorThemes.criticalImportantModerateLow}
