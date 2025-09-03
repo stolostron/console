@@ -2,8 +2,8 @@
 import { useMemo } from 'react'
 import { useParams, useLocation, Link, Outlet, useNavigate } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { useQuery } from '../../../../lib/useQuery'
-import { listUsers, listGroups, User, Group } from '../../../../resources/rbac'
+import { User, Group } from '../../../../resources/rbac'
+import { mockUsers, mockGroups } from '../../../../resources/clients/mock-data/users-and-groups'
 import {
   AcmPage,
   AcmPageHeader,
@@ -30,8 +30,19 @@ const UserPage = () => {
   const { id = undefined } = useParams()
   const location = useLocation()
   const navigate = useNavigate()
-  const { data: users, loading } = useQuery(listUsers)
-  const { data: groups, loading: groupsLoading } = useQuery(listGroups)
+
+  // TODO: Replace the mockdata when backend is implemented
+  // const { data: users, loading } = useQuery(listUsers)
+
+  // Use mock data from centralized file
+  const users = mockUsers
+  const loading = false as boolean
+  // Mock groups data - some users belong to groups, others don't
+  // const { data: groups, loading: groupsLoading } = useQuery(listGroups)
+
+  // Use mock data from centralized file
+  const groups = mockGroups
+  const groupsLoading = false as boolean
 
   const user = useMemo(() => {
     if (!users || !id) return undefined

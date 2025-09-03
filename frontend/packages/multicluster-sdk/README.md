@@ -291,7 +291,7 @@ it falls back to the standard OpenShift console ResourceEventStream component.
 
 | Function | Type |
 | ---------- | ---------- |
-| `FleetResourceEventStream` | `FC<{ resource: FleetK8sResourceCommon; }>` |
+| `FleetResourceEventStream` | `FC<FleetResourceEventStreamProps>` |
 
 Parameters:
 
@@ -391,7 +391,7 @@ Examples:
 ```
 
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/components/FleetResourceLink.tsx#L62)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/components/FleetResourceLink.tsx#L61)
 
 ### :gear: getFleetK8sAPIPath
 
@@ -410,7 +410,7 @@ Returns:
 
 The k8s API path for the fleet.
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/getFleetK8sAPIPath.ts#L14)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/getFleetK8sAPIPath.ts#L13)
 
 ### :gear: useFleetAccessReview
 
@@ -448,7 +448,7 @@ the condition `ManagedClusterConditionAvailable` with status `True`.
 
 | Function | Type |
 | ---------- | ---------- |
-| `useFleetClusterNames` | `UseFleetClusterNames` |
+| `useFleetClusterNames` | `(returnAllClusters?: boolean) => [string[], boolean, any]` |
 
 Parameters:
 
@@ -496,7 +496,7 @@ return (
 ```
 
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetClusterNames.ts#L57)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetClusterNames.ts#L56)
 
 ### :gear: useFleetK8sAPIPath
 
@@ -504,7 +504,7 @@ Hook that provides the k8s API path for the fleet.
 
 | Function | Type |
 | ---------- | ---------- |
-| `useFleetK8sAPIPath` | `UseFleetK8sAPIPath` |
+| `useFleetK8sAPIPath` | `(cluster?: string or undefined) => [k8sAPIPath: string or undefined, loaded: boolean, error: Error or undefined]` |
 
 Parameters:
 
@@ -515,7 +515,7 @@ Returns:
 
 Array with `k8sAPIPath`, `loaded` and `error` values.
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetK8sAPIPath.ts#L13)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetK8sAPIPath.ts#L11)
 
 ### :gear: useFleetK8sWatchResource
 
@@ -529,7 +529,7 @@ and remote clusters using WebSocket connections for real-time updates.
 
 | Function | Type |
 | ---------- | ---------- |
-| `useFleetK8sWatchResource` | `UseFleetK8sWatchResource` |
+| `useFleetK8sWatchResource` | `<R extends FleetK8sResourceCommon or FleetK8sResourceCommon[]>(initResource: FleetWatchK8sResource or null) => WatchK8sResult<R> or [undefined, boolean, any]` |
 
 Parameters:
 
@@ -562,15 +562,15 @@ const [deployment, loaded, error] = useFleetK8sWatchResource({
 ```
 
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetK8sWatchResource.ts#L50)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetK8sWatchResource.ts#L55)
 
 ### :gear: useFleetPrometheusPoll
 
 | Function | Type |
 | ---------- | ---------- |
-| `useFleetPrometheusPoll` | `UsePrometheusPoll` |
+| `useFleetPrometheusPoll` | `(props: PrometheusPollProps and { cluster?: string or undefined; } and { allClusters?: boolean or undefined; }) => [response: PrometheusResponse or undefined, loaded: boolean, error: unknown]` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetPrometheusPoll.ts#L13)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetPrometheusPoll.ts#L9)
 
 ### :gear: useFleetSearchPoll
 
@@ -578,7 +578,7 @@ A React hook that provides fleet-wide search functionality using the ACM search 
 
 | Function | Type |
 | ---------- | ---------- |
-| `useFleetSearchPoll` | `UseFleetSearchPoll` |
+| `useFleetSearchPoll` | `<T extends K8sResourceCommon or K8sResourceCommon[]>(watchOptions: WatchK8sResource, advancedSearchFilters?: AdvancedSearchFilter or undefined, pollInterval?: number or ... 1 more ... or undefined) => [...]` |
 
 Parameters:
 
@@ -638,7 +638,7 @@ const [services, loaded, error] = useFleetSearchPoll({
 ```
 
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearchPoll.ts#L92)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearchPoll.ts#L110)
 
 ### :gear: useHubClusterName
 
@@ -646,13 +646,13 @@ Hook that provides hub cluster name.
 
 | Function | Type |
 | ---------- | ---------- |
-| `useHubClusterName` | `UseHubClusterName` |
+| `useHubClusterName` | `() => [hubClusterName: string or undefined, loaded: boolean, error: any]` |
 
 Returns:
 
 Array with `hubclustername`, `loaded` and `error` values.
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useHubClusterName.ts#L10)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useHubClusterName.ts#L9)
 
 ### :gear: useIsFleetAvailable
 
@@ -664,13 +664,13 @@ required by this version of the multicluster SDK.
 
 | Function | Type |
 | ---------- | ---------- |
-| `useIsFleetAvailable` | `UseIsFleetAvailable` |
+| `useIsFleetAvailable` | `() => boolean` |
 
 Returns:
 
 `true` if a version of Red Hat Advanced Cluster Management that is compatible with the multicluster SDK is available; `false` otherwise
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useIsFleetAvailable.ts#L15)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useIsFleetAvailable.ts#L14)
 
 ### :gear: useIsFleetObservabilityInstalled
 
@@ -678,18 +678,19 @@ Hook that provides is observability installed.
 
 | Function | Type |
 | ---------- | ---------- |
-| `useIsFleetObservabilityInstalled` | `UseIsFleetObservabilityInstalled` |
+| `useIsFleetObservabilityInstalled` | `() => [isObservabilityInstalled: boolean or undefined, loaded: boolean, error: unknown]` |
 
 Returns:
 
 Array with `isObservabilityInstalled`, `loaded` and `error` values.
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useIsFleetObservabilityInstalled.ts#L10)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useIsFleetObservabilityInstalled.ts#L9)
 
 
 ## :wrench: Constants
 
 - [REQUIRED_PROVIDER_FLAG](#gear-required_provider_flag)
+- [RESOURCE_ROUTE_TYPE](#gear-resource_route_type)
 
 ### :gear: REQUIRED_PROVIDER_FLAG
 
@@ -698,6 +699,14 @@ Array with `isObservabilityInstalled`, `loaded` and `error` values.
 | `REQUIRED_PROVIDER_FLAG` | `"MULTICLUSTER_SDK_PROVIDER_1"` |
 
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/constants.ts#L2)
+
+### :gear: RESOURCE_ROUTE_TYPE
+
+| Constant | Type |
+| ---------- | ---------- |
+| `RESOURCE_ROUTE_TYPE` | `"acm.resource/route"` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/constants.ts#L3)
 
 
 
@@ -712,19 +721,13 @@ Array with `isObservabilityInstalled`, `loaded` and `error` values.
 - [FleetK8sListOptions](#gear-fleetk8slistoptions)
 - [FleetK8sPatchOptions](#gear-fleetk8spatchoptions)
 - [FleetK8sResourceCommon](#gear-fleetk8sresourcecommon)
+- [FleetResourceEventStreamProps](#gear-fleetresourceeventstreamprops)
 - [FleetResourceLinkProps](#gear-fleetresourcelinkprops)
 - [FleetWatchK8sResource](#gear-fleetwatchk8sresource)
 - [ResourceRoute](#gear-resourceroute)
 - [ResourceRouteHandler](#gear-resourceroutehandler)
 - [ResourceRouteProps](#gear-resourcerouteprops)
 - [SearchResult](#gear-searchresult)
-- [UseFleetClusterNames](#gear-usefleetclusternames)
-- [UseFleetK8sAPIPath](#gear-usefleetk8sapipath)
-- [UseFleetK8sWatchResource](#gear-usefleetk8swatchresource)
-- [UseFleetSearchPoll](#gear-usefleetsearchpoll)
-- [UseHubClusterName](#gear-usehubclustername)
-- [UseIsFleetAvailable](#gear-useisfleetavailable)
-- [UseIsFleetObservabilityInstalled](#gear-useisfleetobservabilityinstalled)
 
 ### :gear: AdvancedSearchFilter
 
@@ -740,7 +743,7 @@ Array with `isObservabilityInstalled`, `loaded` and `error` values.
 | ---------- | ---------- |
 | `Fleet` | `T and { cluster?: string }` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L14)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L12)
 
 ### :gear: FleetAccessReviewResourceAttributes
 
@@ -748,7 +751,7 @@ Array with `isObservabilityInstalled`, `loaded` and `error` values.
 | ---------- | ---------- |
 | `FleetAccessReviewResourceAttributes` | `Fleet<AccessReviewResourceAttributes>` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L18)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L16)
 
 ### :gear: FleetK8sCreateUpdateOptions
 
@@ -756,7 +759,7 @@ Array with `isObservabilityInstalled`, `loaded` and `error` values.
 | ---------- | ---------- |
 | `FleetK8sCreateUpdateOptions` | `{ model: K8sModel name?: string ns?: string path?: string cluster?: string queryParams?: QueryParams data: R }` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L49)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L21)
 
 ### :gear: FleetK8sDeleteOptions
 
@@ -764,7 +767,7 @@ Array with `isObservabilityInstalled`, `loaded` and `error` values.
 | ---------- | ---------- |
 | `FleetK8sDeleteOptions` | `{ model: K8sModel name?: string ns?: string path?: string cluster?: string queryParams?: QueryParams resource: R requestInit?: RequestInit json?: Record<string, any> }` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L80)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L52)
 
 ### :gear: FleetK8sGetOptions
 
@@ -772,7 +775,7 @@ Array with `isObservabilityInstalled`, `loaded` and `error` values.
 | ---------- | ---------- |
 | `FleetK8sGetOptions` | `{ model: K8sModel name?: string ns?: string path?: string cluster?: string queryParams?: QueryParams requestInit?: RequestInit }` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L59)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L31)
 
 ### :gear: FleetK8sListOptions
 
@@ -780,7 +783,7 @@ Array with `isObservabilityInstalled`, `loaded` and `error` values.
 | ---------- | ---------- |
 | `FleetK8sListOptions` | `{ model: K8sModel queryParams: { [key: string]: any } requestInit?: RequestInit }` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L92)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L64)
 
 ### :gear: FleetK8sPatchOptions
 
@@ -788,7 +791,7 @@ Array with `isObservabilityInstalled`, `loaded` and `error` values.
 | ---------- | ---------- |
 | `FleetK8sPatchOptions` | `{ model: K8sModel name?: string ns?: string path?: string cluster?: string queryParams?: QueryParams resource: R data: Patch[] }` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L69)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L41)
 
 ### :gear: FleetK8sResourceCommon
 
@@ -796,7 +799,15 @@ Array with `isObservabilityInstalled`, `loaded` and `error` values.
 | ---------- | ---------- |
 | `FleetK8sResourceCommon` | `Fleet<K8sResourceCommon>` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L17)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L15)
+
+### :gear: FleetResourceEventStreamProps
+
+| Type | Type |
+| ---------- | ---------- |
+| `FleetResourceEventStreamProps` | `{ resource: FleetK8sResourceCommon }` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L19)
 
 ### :gear: FleetResourceLinkProps
 
@@ -804,7 +815,7 @@ Array with `isObservabilityInstalled`, `loaded` and `error` values.
 | ---------- | ---------- |
 | `FleetResourceLinkProps` | `Fleet<ResourceLinkProps>` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L24)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L18)
 
 ### :gear: FleetWatchK8sResource
 
@@ -812,7 +823,7 @@ Array with `isObservabilityInstalled`, `loaded` and `error` values.
 | ---------- | ---------- |
 | `FleetWatchK8sResource` | `Fleet<WatchK8sResource>` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L16)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L14)
 
 ### :gear: ResourceRoute
 
@@ -847,70 +858,6 @@ This extension allows plugins to customize the route used for resources of the g
 | `SearchResult` | `R extends (infer T)[] ? Fleet<T>[] : Fleet<R>` |
 
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/search.ts#L5)
-
-### :gear: UseFleetClusterNames
-
-| Type | Type |
-| ---------- | ---------- |
-| `UseFleetClusterNames` | `(returnAllClusters?: boolean) => [string[], boolean, any]` |
-
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L28)
-
-### :gear: UseFleetK8sAPIPath
-
-| Type | Type |
-| ---------- | ---------- |
-| `UseFleetK8sAPIPath` | `( cluster?: string ) => [k8sAPIPath: string or undefined, loaded: boolean, error: Error or undefined]` |
-
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L21)
-
-### :gear: UseFleetK8sWatchResource
-
-| Type | Type |
-| ---------- | ---------- |
-| `UseFleetK8sWatchResource` | `<R extends FleetK8sResourceCommon or FleetK8sResourceCommon[]>( initResource: FleetWatchK8sResource or null ) => WatchK8sResult<R> or [undefined, boolean, any]` |
-
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L25)
-
-### :gear: UseFleetSearchPoll
-
-| Type | Type |
-| ---------- | ---------- |
-| `UseFleetSearchPoll` | `<T extends K8sResourceCommon or K8sResourceCommon[]>( watchOptions: WatchK8sResource, advancedSearchFilters?: AdvancedSearchFilter, pollInterval?: number or false ) => [SearchResult<T> or undefined, boolean, Error or undefined, () => void]` |
-
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L33)
-
-### :gear: UseHubClusterName
-
-| Type | Type |
-| ---------- | ---------- |
-| `UseHubClusterName` | `() => [hubClusterName: string or undefined, loaded: boolean, error: any]` |
-
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L20)
-
-### :gear: UseIsFleetAvailable
-
-Signature of the `useIsFleetAvailable` hook
-
-| Type | Type |
-| ---------- | ---------- |
-| `UseIsFleetAvailable` | `() => boolean` |
-
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L31)
-
-### :gear: UseIsFleetObservabilityInstalled
-
-Signature of the `UseIsFleet ObservabilityInstalled` hook.
-
-| Type | Type |
-| ---------- | ---------- |
-| `UseIsFleetObservabilityInstalled` | `() => [ isObservabilityInstalled: boolean or undefined, loaded: boolean, error: any, ]` |
-
-Returns:
-
-A tuple containing a boolean indicating if the observability controller is installed, a boolean indicating if loaded, and an error if any.
-
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L43)
 
 
 <!-- TSDOC_END -->

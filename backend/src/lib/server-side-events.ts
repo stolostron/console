@@ -348,6 +348,7 @@ export class ServerSideEvents {
         case 'Search':
         case 'Secret':
         case 'ClusterPermission':
+        case 'MulticlusterRoleAssignment':
           other.push(event)
           break
         default:

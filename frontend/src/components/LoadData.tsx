@@ -112,7 +112,6 @@ import {
 import { getBackendUrl, getRequest } from '../resources/utils'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import {
-  accessControlState,
   agentClusterInstallsState,
   agentMachinesState,
   agentServiceConfigsState,
@@ -151,6 +150,7 @@ import {
   managedClustersState,
   multiclusterApplicationSetReportState,
   multiClusterEnginesState,
+  multiclusterRoleAssignmentState,
   namespacesState,
   nmStateConfigsState,
   nodePoolsState,
@@ -175,8 +175,11 @@ import {
 } from '../atoms'
 import { PluginDataContext } from '../lib/PluginDataContext'
 import { useQuery } from '../lib/useQuery'
-import { AccessControlApiVersion, AccessControlKind } from '../resources/access-control'
 import { MultiClusterHubComponent } from '../resources/multi-cluster-hub-component'
+import {
+  MulticlusterRoleAssignmentApiVersion,
+  MulticlusterRoleAssignmentKind,
+} from '../resources/multicluster-role-assignment'
 
 export function LoadData(props: { children?: ReactNode }) {
   const { loadCompleted, setLoadStarted, setLoadCompleted } = useContext(PluginDataContext)
@@ -239,7 +242,7 @@ export function LoadData(props: { children?: ReactNode }) {
   const setIsGlobalHub = useSetRecoilState(isGlobalHubState)
   const setlocalHubName = useSetRecoilState(localHubNameState)
   const setIsHubSelfManaged = useSetRecoilState(isHubSelfManagedState)
-  const setAccessControls = useSetRecoilState(accessControlState)
+  const setMulticlusterRoleAssignments = useSetRecoilState(multiclusterRoleAssignmentState)
 
   const { setters, mappers, caches } = useMemo(() => {
     const setters: Record<string, Record<string, SetterOrUpdater<any[]>>> = {}
@@ -336,7 +339,7 @@ export function LoadData(props: { children?: ReactNode }) {
     addSetter(HostedClusterApiVersion, HostedClusterKind, setHostedClustersState)
     addSetter(NodePoolApiVersion, NodePoolKind, setNodePoolsState)
     addSetter(AgentMachineApiVersion, AgentMachineKind, setAgentMachinesState)
-    addSetter(AccessControlApiVersion, AccessControlKind, setAccessControls)
+    addSetter(MulticlusterRoleAssignmentApiVersion, MulticlusterRoleAssignmentKind, setMulticlusterRoleAssignments)
 
     return { setters, mappers, caches }
   }, [
@@ -392,7 +395,7 @@ export function LoadData(props: { children?: ReactNode }) {
     setHostedClustersState,
     setNodePoolsState,
     setAgentMachinesState,
-    setAccessControls,
+    setMulticlusterRoleAssignments,
   ])
 
   useEffect(() => {
