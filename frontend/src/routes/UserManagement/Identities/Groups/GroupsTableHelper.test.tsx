@@ -24,7 +24,7 @@ describe('GroupsTableHelper', () => {
     const columns = groupsTableColumns({ t: (key: string) => key })
 
     test('should return correct number of columns', () => {
-      expect(columns).toHaveLength(4)
+      expect(columns).toHaveLength(3)
     })
 
     test('should have Name column with correct properties', () => {
@@ -39,11 +39,6 @@ describe('GroupsTableHelper', () => {
       const usersColumn = columns.find((col) => col.header === 'Users')
       expect(usersColumn).toBeDefined()
       expect(usersColumn?.sort).toBe('users.length')
-    })
-
-    test('should have Status column with correct properties', () => {
-      const statusColumn = columns.find((col) => col.header === 'Status')
-      expect(statusColumn).toBeDefined()
     })
 
     test('should have Created column with correct properties', () => {
