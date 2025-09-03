@@ -2,7 +2,8 @@
 import { render } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { clickByTestId, isCardEnabled } from '../../../../../lib/test-util'
+import { clickByTestId, isCardEnabled, waitForNocks } from '../../../../../lib/test-util'
+import { nockHypershiftStatus } from '../../../../../lib/nock-hypershift-status'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { CreateControlPlane } from './CreateControlPlane'
 import {
@@ -51,14 +52,22 @@ describe('CreateControlPlane', () => {
   }
 
   test('Hosted control plane card should be disabled when hypershift is disabled', async () => {
+    const hypershiftStatusNock = nockHypershiftStatus(false)
+
     const { getByTestId } = render(<Component enableHypershift={false} />)
+    await waitForNocks([hypershiftStatusNock])
+
     const card = getByTestId('hosted')
     expect(isCardEnabled(card)).toBe(false)
     expect(card).toHaveTextContent('Hosted control plane operator must be enabled')
   })
 
   test('Hosted control plane card should be disabled when there are no infrastructure environments', async () => {
-    const { getByTestId } = render(<Component />)
+    const hypershiftStatusNock = nockHypershiftStatus(true)
+
+    const { getByTestId } = render(<Component enableHypershift={true} />)
+    await waitForNocks([hypershiftStatusNock])
+
     const card = getByTestId('hosted')
     expect(isCardEnabled(card)).toBe(false)
     expect(card).toHaveTextContent('No infrastructure environments found')
@@ -68,25 +77,44 @@ describe('CreateControlPlane', () => {
   })
 
   test('Hosted control plane card should be disabled when there are no hosts', async () => {
-    const { getByTestId } = render(<Component infraEnvsMock={[mockInfraEnv1]} />)
+    const hypershiftStatusNock = nockHypershiftStatus(true)
+
+    const { getByTestId } = render(<Component enableHypershift={true} infraEnvsMock={[mockInfraEnv1]} />)
+    await waitForNocks([hypershiftStatusNock])
+
     const card = getByTestId('hosted')
     expect(isCardEnabled(card)).toBe(true)
   })
 
   test('Hosted control plane card should be enabled when hypershift is enabled and there are available hosts', async () => {
-    const { getByTestId } = render(<Component infraEnvsMock={[mockInfraEnv1]} agentsMock={mockAgents} />)
+    const hypershiftStatusNock = nockHypershiftStatus(true)
+
+    const { getByTestId } = render(
+      <Component enableHypershift={true} infraEnvsMock={[mockInfraEnv1]} agentsMock={mockAgents} />
+    )
+    await waitForNocks([hypershiftStatusNock])
+
     const card = getByTestId('hosted')
     expect(isCardEnabled(card)).toBe(true)
     await clickByTestId('hosted')
   })
 
   test('can click standalone', async () => {
-    render(<Component infraEnvsMock={[mockInfraEnv1]} agentsMock={mockAgents} />)
+    const hypershiftStatusNock = nockHypershiftStatus(true)
+
+    render(<Component enableHypershift={true} infraEnvsMock={[mockInfraEnv1]} agentsMock={mockAgents} />)
+    await waitForNocks([hypershiftStatusNock])
+
     await clickByTestId('standalone')
   })
 
   test('can click compare diagram', async () => {
-    const { getByText } = render(<Component infraEnvsMock={[mockInfraEnv1]} agentsMock={mockAgents} />)
+    const hypershiftStatusNock = nockHypershiftStatus(true)
+
+    const { getByText } = render(
+      <Component enableHypershift={true} infraEnvsMock={[mockInfraEnv1]} agentsMock={mockAgents} />
+    )
+    await waitForNocks([hypershiftStatusNock])
 
     userEvent.click(getByText('Learn more about control plane types'))
     expect(getByText('Compare control plane types')).toBeTruthy()

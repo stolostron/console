@@ -1,65 +1,46 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { ButtonVariant, Label, LabelGroup, PageSection } from '@patternfly/react-core'
+import { ButtonVariant, PageSection } from '@patternfly/react-core'
 import { fitContent, nowrap } from '@patternfly/react-table'
-import { useCallback, useContext, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../lib/doc-util'
-import { MulticlusterRoleAssignment } from '../../../resources/multicluster-role-assignment'
-import { User, Group, ServiceAccount } from '../../../resources/rbac'
 import {
-  filterAndTrackRoleAssignments,
-  TrackedRoleAssignment,
-  MulticlusterRoleAssignmentQuery,
+  deleteRoleAssignment,
+  FlattenedRoleAssignment,
 } from '../../../resources/clients/multicluster-role-assignment-client'
+import { Group, ServiceAccount, User } from '../../../resources/rbac'
 import {
   AcmButton,
   AcmEmptyState,
   AcmLoadingPage,
   AcmTable,
-  AcmToastContext,
   compareStrings,
   IAcmTableColumn,
 } from '../../../ui-components'
-import { IdentityStatus } from '../../../ui-components/IdentityStatus/IdentityStatus'
 import { IAcmTableAction, IAcmTableButtonAction, ITableFilter } from '../../../ui-components/AcmTable/AcmTableTypes'
+import { IdentityStatus } from '../../../ui-components/IdentityStatus/IdentityStatus'
 import { RoleAssignmentActionDropdown } from './RoleAssignmentActionDropdown'
+import { RoleAssignmentsLabel } from './RoleAssignmentsLabel'
+
 type RoleAssignmentsProps = {
-  multiclusterRoleAssignments: MulticlusterRoleAssignment[]
+  roleAssignments: FlattenedRoleAssignment[]
   isLoading?: boolean
-  hiddenColumns?: ('subject' | 'role' | 'cluster')[]
-  query?: MulticlusterRoleAssignmentQuery
+  hiddenColumns?: ('subject' | 'role' | 'clusters' | 'clusterSets')[]
 }
 
-const RoleAssignments = ({
-  multiclusterRoleAssignments,
-  isLoading,
-  hiddenColumns,
-  query = {},
-}: RoleAssignmentsProps) => {
+const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssignmentsProps) => {
   const { t } = useTranslation()
-  const toastContext = useContext(AcmToastContext)
-
-  // Flatten MulticlusterRoleAssignments to TrackedRoleAssignments for the table
-  const roleAssignments = useMemo(
-    () => filterAndTrackRoleAssignments(multiclusterRoleAssignments, query),
-    [multiclusterRoleAssignments, query]
-  )
-
   // Key function for the table that generates a unique key for each role assignment
-  const keyFn = useCallback(
-    (roleAssignment: TrackedRoleAssignment) =>
-      roleAssignment.multiclusterRoleAssignmentUid + '-' + roleAssignment.roleAssignmentIndex,
-    []
-  )
+  const keyFn = useCallback((roleAssignment: FlattenedRoleAssignment) => roleAssignment.name, [])
 
   // Modal state for delete confirmation
-  const [modalProps, setModalProps] = useState<BulkActionModalProps<TrackedRoleAssignment> | { open: false }>({
+  const [modalProps, setModalProps] = useState<BulkActionModalProps<FlattenedRoleAssignment> | { open: false }>({
     open: false,
   })
 
   // Table actions for bulk operations
-  const tableActions = useMemo<IAcmTableAction<TrackedRoleAssignment>[]>(
+  const tableActions = useMemo<IAcmTableAction<FlattenedRoleAssignment>[]>(
     () => [
       {
         id: 'deleteRoleAssignments',
@@ -76,33 +57,20 @@ const RoleAssignments = ({
             columns: [
               {
                 header: t('Subject'),
-                cell: (roleAssignment: TrackedRoleAssignment) =>
-                  `${roleAssignment.subjectKind}: ${roleAssignment.subjectName}`,
-                sort: (a: TrackedRoleAssignment, b: TrackedRoleAssignment) =>
-                  compareStrings(a.subjectName, b.subjectName),
+                cell: (roleAssignment: FlattenedRoleAssignment) =>
+                  `${roleAssignment.subject.kind}: ${roleAssignment.subject.name}`,
+                sort: (a: FlattenedRoleAssignment, b: FlattenedRoleAssignment) =>
+                  compareStrings(a.subject.name, b.subject.name),
               },
               {
                 header: t('Role'),
-                cell: (roleAssignment: TrackedRoleAssignment) => roleAssignment.clusterRole,
-                sort: (a: TrackedRoleAssignment, b: TrackedRoleAssignment) =>
+                cell: (roleAssignment: FlattenedRoleAssignment) => roleAssignment.clusterRole,
+                sort: (a: FlattenedRoleAssignment, b: FlattenedRoleAssignment) =>
                   compareStrings(a.clusterRole, b.clusterRole),
               },
             ],
-            keyFn: (roleAssignment: TrackedRoleAssignment) =>
-              roleAssignment.multiclusterRoleAssignmentUid + '-' + roleAssignment.roleAssignmentIndex,
-            actionFn: (roleAssignment: TrackedRoleAssignment) => {
-              // TODO: Implement actual bulk delete API call from multicluster-role-assignment-client.ts file
-              console.log(
-                'Bulk deleting role assignment:',
-                `${roleAssignment.subjectName}-${roleAssignment.clusterRole}`
-              )
-              toastContext.addAlert({
-                title: t('Role assignment deleted'),
-                type: 'success',
-                autoClose: true,
-              })
-              return { promise: Promise.resolve(), abort: () => {} }
-            },
+            keyFn,
+            actionFn: deleteRoleAssignment,
             close: () => setModalProps({ open: false }),
             isDanger: true,
             icon: 'warning',
@@ -112,11 +80,11 @@ const RoleAssignments = ({
         variant: 'bulk-action',
       },
     ],
-    [t, setModalProps, toastContext]
+    [t, keyFn]
   )
 
-  // Filters for TrackedRoleAssignment
-  const filters = useMemo<ITableFilter<TrackedRoleAssignment>[]>(() => {
+  // Filters for FlattenedRoleAssignment
+  const filters = useMemo<ITableFilter<FlattenedRoleAssignment>[]>(() => {
     // Get all unique values for filter options
     const allRoles = new Set<string>()
     const allClusterSets = new Set<string>()
@@ -136,7 +104,7 @@ const RoleAssignments = ({
       ra.clusterSets.forEach((clusterSet) => {
         allClusterSets.add(clusterSet)
       })
-      ra.targetNamespaces.forEach((namespace) => {
+      ra.targetNamespaces?.forEach((namespace) => {
         allNamespaces.add(namespace)
       })
     })
@@ -160,25 +128,21 @@ const RoleAssignments = ({
         id: 'role',
         label: t('Role'),
         options: roleOptions,
-        tableFilterFn: (selectedValues, roleAssignment) => {
-          return selectedValues.includes(roleAssignment.clusterRole)
-        },
+        tableFilterFn: (selectedValues, roleAssignment) => selectedValues.includes(roleAssignment.clusterRole),
       },
       {
         id: 'clusterSet',
         label: t('Cluster Set'),
         options: clusterSetOptions,
-        tableFilterFn: (selectedValues, roleAssignment) => {
-          return selectedValues.some((selectedClusterSet) => roleAssignment.clusterSets.includes(selectedClusterSet))
-        },
+        tableFilterFn: (selectedValues, roleAssignment) =>
+          selectedValues.some((selectedClusterSet) => roleAssignment.clusterSets.includes(selectedClusterSet)),
       },
       {
         id: 'namespace',
         label: t('Namespace'),
         options: namespaceOptions,
-        tableFilterFn: (selectedValues, roleAssignment) => {
-          return selectedValues.some((selectedNamespace) => roleAssignment.targetNamespaces.includes(selectedNamespace))
-        },
+        tableFilterFn: (selectedValues, roleAssignment) =>
+          selectedValues.some((selectedNamespace) => roleAssignment.targetNamespaces?.includes(selectedNamespace)),
       },
       {
         id: 'status',
@@ -206,7 +170,7 @@ const RoleAssignments = ({
   )
 
   // Table columns
-  const columns: IAcmTableColumn<TrackedRoleAssignment>[] = [
+  const columns: IAcmTableColumn<FlattenedRoleAssignment>[] = [
     {
       header: t('Role'),
       sort: (a, b) => compareStrings(a.clusterRole, b.clusterRole),
@@ -216,54 +180,32 @@ const RoleAssignments = ({
     },
     {
       header: t('Subject'),
-      sort: (a, b) => compareStrings(a.subjectName, b.subjectName),
-      cell: (roleAssignment) => `${roleAssignment.subjectKind}: ${roleAssignment.subjectName}`,
-      exportContent: (roleAssignment) => `${roleAssignment.subjectKind}: ${roleAssignment.subjectName}`,
+      sort: (a, b) => compareStrings(a.subject.name, b.subject.name),
+      cell: (roleAssignment) => `${roleAssignment.subject.kind}: ${roleAssignment.subject.name}`,
+      exportContent: (roleAssignment) => `${roleAssignment.subject.kind}: ${roleAssignment.subject.name}`,
       isHidden: hiddenColumns?.includes('subject'),
     },
     {
       header: t('Cluster Sets'),
-      cell: (roleAssignment) => {
-        return (
-          <LabelGroup
-            collapsedText={t('show.more', { count: roleAssignment.clusterSets.length - 3 })}
-            expandedText={t('Show less')}
-            numLabels={3}
-          >
-            {roleAssignment.clusterSets.map((clusterSet) => (
-              <Label key={clusterSet} style={{ fontSize: '14px' }}>
-                {clusterSet}
-              </Label>
-            ))}
-          </LabelGroup>
-        )
-      },
+      cell: (roleAssignment) => <RoleAssignmentsLabel elements={roleAssignment.clusterSets} numLabel={3} />,
       exportContent: (roleAssignment) => roleAssignment.clusterSets.join(', '),
-      isHidden: hiddenColumns?.includes('cluster'),
+      isHidden: hiddenColumns?.includes('clusterSets'),
+    },
+    {
+      header: t('Clusters'),
+      cell: (roleAssignment) => <RoleAssignmentsLabel elements={roleAssignment.clusters} numLabel={3} />,
+      exportContent: (roleAssignment) => roleAssignment.clusters?.join(', ') ?? '',
+      isHidden: hiddenColumns?.includes('clusters'),
     },
     {
       header: t('Namespaces'),
-      cell: (roleAssignment) => {
-        return (
-          <LabelGroup
-            collapsedText={t('show.more', { count: roleAssignment.targetNamespaces.length - 5 })}
-            expandedText={t('Show less')}
-            numLabels={5}
-          >
-            {roleAssignment.targetNamespaces.map((namespace) => (
-              <Label key={namespace} style={{ fontSize: '14px' }}>
-                {namespace}
-              </Label>
-            ))}
-          </LabelGroup>
-        )
-      },
-      exportContent: (roleAssignment) => roleAssignment.targetNamespaces.join(', '),
+      cell: (roleAssignment) => <RoleAssignmentsLabel elements={roleAssignment.targetNamespaces} numLabel={5} />,
+      exportContent: (roleAssignment) => roleAssignment.targetNamespaces?.join(', ') ?? '',
     },
     {
       header: t('Status'),
       cell: (roleAssignment) => (
-        <IdentityStatus identity={{ kind: roleAssignment.subjectKind } as User | Group | ServiceAccount} />
+        <IdentityStatus identity={{ kind: roleAssignment.subject.kind } as User | Group | ServiceAccount} />
       ),
       exportContent: () => 'Active', // TODO: for now mock status as Active for all, replace it by real status as soon as it is ready
     },
@@ -271,24 +213,20 @@ const RoleAssignments = ({
       header: t('Created'),
       sort: 'metadata.creationTimestamp',
       cellTransforms: [nowrap],
-      cell: () => {
-        // TrackedRoleAssignment doesn't have metadata.creationTimestamp
-        // We could show the parent MulticlusterRoleAssignment creation time instead
-        return <span>-</span>
-      },
+      // FlattenedRoleAssignment doesn't have metadata.creationTimestamp
+      // We could show the parent MulticlusterRoleAssignment creation time instead
+      cell: () => <span>-</span>,
       exportContent: () => '',
     },
     {
       header: '',
-      cell: (roleAssignment: TrackedRoleAssignment) => {
-        return (
-          <RoleAssignmentActionDropdown
-            roleAssignment={roleAssignment}
-            setModalProps={setModalProps}
-            toastContext={toastContext}
-          />
-        )
-      },
+      cell: (roleAssignment: FlattenedRoleAssignment) => (
+        <RoleAssignmentActionDropdown
+          roleAssignment={roleAssignment}
+          setModalProps={setModalProps}
+          deleteAction={deleteRoleAssignment}
+        />
+      ),
       cellTransforms: [fitContent],
       isActionCol: true,
     },
@@ -299,7 +237,7 @@ const RoleAssignments = ({
       {isLoading ? (
         <AcmLoadingPage />
       ) : (
-        <AcmTable<TrackedRoleAssignment>
+        <AcmTable<FlattenedRoleAssignment>
           key="role-assignments-table"
           columns={columns}
           keyFn={keyFn}
@@ -328,7 +266,7 @@ const RoleAssignments = ({
           }
         />
       )}
-      <BulkActionModal<TrackedRoleAssignment> {...modalProps} />
+      <BulkActionModal<FlattenedRoleAssignment> {...modalProps} />
     </PageSection>
   )
 }

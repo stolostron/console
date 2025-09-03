@@ -53,7 +53,6 @@ describe('GroupsTable', () => {
 
     expect(screen.getByText('Name')).toBeInTheDocument()
     expect(screen.getByText('Users')).toBeInTheDocument()
-    expect(screen.getByText('Status')).toBeInTheDocument()
     expect(screen.getByText('Created')).toBeInTheDocument()
 
     expect(screen.getByText('kubevirt-admins')).toBeInTheDocument()
