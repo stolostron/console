@@ -39,5 +39,7 @@ export interface MulticlusterRoleAssignment extends IResource {
     subject: Subject
     roleAssignments: RoleAssignment[]
   }
-  roleAssignmentsStatuses?: RoleAssignmentStatus[]
+  status: {
+    roleAssignments?: RoleAssignmentStatus[]
+  }
 }

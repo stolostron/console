@@ -40,16 +40,18 @@ const mockMulticlusterRoleAssignments: MulticlusterRoleAssignment[] = [
         },
       ],
     },
-    roleAssignmentsStatuses: [
-      {
-        name: 'A1',
-        status: 'Active',
-      },
-      {
-        name: 'A2',
-        status: 'Error',
-      },
-    ],
+    status: {
+      roleAssignments: [
+        {
+          name: 'A1',
+          status: 'Active',
+        },
+        {
+          name: 'A2',
+          status: 'Error',
+        },
+      ],
+    },
   },
   {
     apiVersion: 'rbac.open-cluster-management.io/v1alpha1',
@@ -70,12 +72,14 @@ const mockMulticlusterRoleAssignments: MulticlusterRoleAssignment[] = [
         },
       ],
     },
-    roleAssignmentsStatuses: [
-      {
-        name: 'B1',
-        status: 'Active',
-      },
-    ],
+    status: {
+      roleAssignments: [
+        {
+          name: 'B1',
+          status: 'Active',
+        },
+      ],
+    },
   },
   {
     apiVersion: 'rbac.open-cluster-management.io/v1alpha1',
@@ -95,6 +99,7 @@ const mockMulticlusterRoleAssignments: MulticlusterRoleAssignment[] = [
         },
       ],
     },
+    status: {},
   },
 ]
 
@@ -109,7 +114,7 @@ const mockRoleAssignments: FlattenedRoleAssignment[] = [
       name: mockMulticlusterRoleAssignments[0].spec.subject.name,
       kind: mockMulticlusterRoleAssignments[0].spec.subject.kind,
     },
-    status: mockMulticlusterRoleAssignments[0].roleAssignmentsStatuses?.[0],
+    status: mockMulticlusterRoleAssignments[0].status.roleAssignments?.[0],
   },
   {
     name: 'A2',
@@ -121,7 +126,7 @@ const mockRoleAssignments: FlattenedRoleAssignment[] = [
       name: mockMulticlusterRoleAssignments[0].spec.subject.name,
       kind: mockMulticlusterRoleAssignments[0].spec.subject.kind,
     },
-    status: mockMulticlusterRoleAssignments[0].roleAssignmentsStatuses?.[1],
+    status: mockMulticlusterRoleAssignments[0].status.roleAssignments?.[1],
   },
   {
     name: 'B1',
@@ -133,7 +138,7 @@ const mockRoleAssignments: FlattenedRoleAssignment[] = [
       name: mockMulticlusterRoleAssignments[1].spec.subject.name,
       kind: mockMulticlusterRoleAssignments[1].spec.subject.kind,
     },
-    status: mockMulticlusterRoleAssignments[1].roleAssignmentsStatuses?.[0],
+    status: mockMulticlusterRoleAssignments[1].status.roleAssignments?.[0],
   },
   {
     name: 'C1',

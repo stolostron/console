@@ -86,10 +86,12 @@ describe('multicluster-role-assignment-client', function () {
             },
           ],
         },
-        roleAssignmentsStatuses: [
-          { name: '0ce91c74417862a94a58a0fc11062bfa7f7c17149702af184d1841537cd569fa', status: 'Active' },
-          { name: '2f8bbe8b5ef6a39581db893b803f05ec598364736792ec447722aab14d17ae11', status: 'Active' },
-        ],
+        status: {
+          roleAssignments: [
+            { name: '0ce91c74417862a94a58a0fc11062bfa7f7c17149702af184d1841537cd569fa', status: 'Active' },
+            { name: '2f8bbe8b5ef6a39581db893b803f05ec598364736792ec447722aab14d17ae11', status: 'Active' },
+          ],
+        },
       })
       expect(result.current[1].relatedMulticlusterRoleAssignment).toStrictEqual({
         apiVersion: 'rbac.open-cluster-management.io/v1alpha1',
@@ -117,10 +119,12 @@ describe('multicluster-role-assignment-client', function () {
             },
           ],
         },
-        roleAssignmentsStatuses: [
-          { name: '0ce91c74417862a94a58a0fc11062bfa7f7c17149702af184d1841537cd569fa', status: 'Active' },
-          { name: '2f8bbe8b5ef6a39581db893b803f05ec598364736792ec447722aab14d17ae11', status: 'Active' },
-        ],
+        status: {
+          roleAssignments: [
+            { name: '0ce91c74417862a94a58a0fc11062bfa7f7c17149702af184d1841537cd569fa', status: 'Active' },
+            { name: '2f8bbe8b5ef6a39581db893b803f05ec598364736792ec447722aab14d17ae11', status: 'Active' },
+          ],
+        },
       })
     })
 
