@@ -2,10 +2,19 @@
 import { global_BackgroundColor_200 as globalBackground200 } from '@patternfly/react-tokens/dist/js/global_BackgroundColor_200'
 import { global_BackgroundColor_dark_100 as darkEditorBackground } from '@patternfly/react-tokens/dist/js/global_BackgroundColor_dark_100'
 import { global_Color_light_100 as globalColorLight100 } from '@patternfly/react-tokens/dist/js/global_Color_light_100'
+export const THEME_LOCAL_STORAGE_KEY = 'bridge/theme'
+const THEME_SYSTEM_DEFAULT = 'systemDefault'
+export const darkThemeMq = window.matchMedia('(prefers-color-scheme: dark)')
 
 import type { editor as monacoEditor } from 'monaco-editor/esm/vs/editor/editor.api'
 
 export const getTheme = () => {
+  // if user wants default and if OS wants dark, give them dark
+  const theme = localStorage.getItem(THEME_LOCAL_STORAGE_KEY)
+  if (theme === THEME_SYSTEM_DEFAULT && darkThemeMq.matches) {
+    return 'console-dark'
+  }
+  // else only give them what user wants
   return !document.documentElement.classList.contains('pf-v5-theme-dark') ? 'console-light' : 'console-dark'
 }
 /**
