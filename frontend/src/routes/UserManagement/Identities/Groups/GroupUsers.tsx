@@ -43,9 +43,7 @@ const GroupUsers = () => {
         const userName = user.metadata.name ?? ''
         const userId = user.metadata.uid ?? ''
         return userName ? (
-          <Link to={generatePath(NavigationPath.identitiesUsersDetails, { id: userId })}>
-            {userName}
-          </Link>
+          <Link to={generatePath(NavigationPath.identitiesUsersDetails, { id: userId })}>{userName}</Link>
         ) : (
           ''
         )

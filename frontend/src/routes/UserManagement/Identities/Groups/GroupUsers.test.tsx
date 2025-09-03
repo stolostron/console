@@ -1,10 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../../lib/nock-util'
 import { GroupUsers } from './GroupUsers'
 import { User, Group } from '../../../../resources/rbac'
+import { useGroupDetailsContext } from './GroupPage'
+import { useNavigate } from 'react-router-dom-v5-compat'
 
 const mockGroup: Group = {
   apiVersion: 'user.openshift.io/v1',
@@ -49,9 +51,13 @@ jest.mock('./GroupPage', () => ({
   useGroupDetailsContext: jest.fn(),
 }))
 
-import { useGroupDetailsContext } from './GroupPage'
+jest.mock('react-router-dom-v5-compat', () => ({
+  ...jest.requireActual('react-router-dom-v5-compat'),
+  useNavigate: jest.fn(),
+}))
 
 const mockUseGroupDetailsContext = useGroupDetailsContext as jest.MockedFunction<typeof useGroupDetailsContext>
+const mockNavigate = useNavigate as jest.MockedFunction<typeof useNavigate>
 
 function Component() {
   return (
@@ -68,6 +74,8 @@ describe('GroupUsers', () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
     mockUseGroupDetailsContext.mockClear()
+    mockNavigate.mockClear()
+    mockNavigate.mockReturnValue(jest.fn())
   })
 
   test('should render loading state', () => {
@@ -83,7 +91,7 @@ describe('GroupUsers', () => {
     expect(screen.getByText('Loading')).toBeInTheDocument()
   })
 
-  test('should render group not found message', () => {
+  test('should render group not found message with back button', () => {
     mockUseGroupDetailsContext.mockReturnValue({
       group: undefined,
       users: undefined,
@@ -93,7 +101,27 @@ describe('GroupUsers', () => {
 
     render(<Component />)
 
-    expect(screen.getByText('Not found')).toBeInTheDocument()
+    const backButton = screen.getByRole('button', { name: /Back to groups/i })
+    expect(backButton).toBeInTheDocument()
+  })
+
+  test('should navigate to groups page when back button is clicked', () => {
+    const mockNavigateFn = jest.fn()
+    mockNavigate.mockReturnValue(mockNavigateFn)
+
+    mockUseGroupDetailsContext.mockReturnValue({
+      group: undefined,
+      users: undefined,
+      loading: false,
+      usersLoading: false,
+    })
+
+    render(<Component />)
+
+    const backButton = screen.getByRole('button', { name: /Back to groups/i })
+    fireEvent.click(backButton)
+
+    expect(mockNavigateFn).toHaveBeenCalledWith('/multicloud/user-management/identities/groups')
   })
 
   test('should render empty state when group has no users', () => {
