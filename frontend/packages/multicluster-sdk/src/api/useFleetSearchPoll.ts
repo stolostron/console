@@ -21,6 +21,24 @@ const getResourceKey = (kind: string, apigroup?: string): string => {
   return kind
 }
 
+const parseConditionString = (conditionString: string): Array<{ type: string; status: string }> | undefined => {
+  if (!conditionString || typeof conditionString !== 'string') {
+    return undefined
+  }
+  const conditions = conditionString
+    .split(';')
+    .filter((condition) => condition.includes('='))
+    .map((condition) => {
+      const [type, status] = condition.split('=')
+      return {
+        type: type?.trim(),
+        status: status?.trim(),
+      }
+    })
+    .filter((condition) => condition.type && condition.status)
+  return conditions.length > 0 ? conditions : undefined
+}
+
 /**
  * A React hook that provides fleet-wide search functionality using the ACM search API.
  *
@@ -193,6 +211,7 @@ export function useFleetSearchPoll<T extends K8sResourceCommon | K8sResourceComm
             labels: label,
           },
         }
+        setIfDefined(resource, 'status.conditions', parseConditionString(item.condition))
         const resourceKey = getResourceKey(item.kind, item.apigroup)
         // Reverse the flattening of specific resources by the search-collector
         // See https://github.com/stolostron/search-collector/blob/main/pkg/transforms/genericResourceConfig.go
@@ -204,21 +223,23 @@ export function useFleetSearchPoll<T extends K8sResourceCommon | K8sResourceComm
             break
           case 'ClusterOperator.config.openshift.io': {
             setIfDefined(resource, 'status.versions[0]', item.version, { name: 'operator', version: item.version })
-            const conditions: any = []
-            setIfDefined(conditions, `[${conditions.length}]`, item.available, {
-              type: 'Available',
-              status: item.available,
-            })
-            setIfDefined(conditions, `[${conditions.length}]`, item.progressing, {
-              type: 'Progressing',
-              status: item.progressing,
-            })
-            setIfDefined(conditions, `[${conditions.length}]`, item.degraded, {
-              type: 'Degraded',
-              status: item.degraded,
-            })
-            if (conditions.length) {
-              setIfDefined(resource, 'status.conditions', conditions)
+            if (!resource.status?.conditions) {
+              const conditions: any = []
+              setIfDefined(conditions, `[${conditions.length}]`, item.available, {
+                type: 'Available',
+                status: item.available,
+              })
+              setIfDefined(conditions, `[${conditions.length}]`, item.progressing, {
+                type: 'Progressing',
+                status: item.progressing,
+              })
+              setIfDefined(conditions, `[${conditions.length}]`, item.degraded, {
+                type: 'Degraded',
+                status: item.degraded,
+              })
+              if (conditions.length) {
+                setIfDefined(resource, 'status.conditions', conditions)
+              }
             }
             break
           }
@@ -231,7 +252,7 @@ export function useFleetSearchPoll<T extends K8sResourceCommon | K8sResourceComm
           case 'Namespace':
             setIfDefined(resource, 'status.phase', item.status)
             break
-          case 'Node':
+          case 'Node': {
             setIfDefined(resource, 'status.addresses[0]', item.ipAddress, {
               type: 'InternalIP',
               address: item.ipAddress,
@@ -239,10 +260,14 @@ export function useFleetSearchPoll<T extends K8sResourceCommon | K8sResourceComm
             setIfDefined(resource, 'status.allocatable.memory', item.memoryAllocatable)
             setIfDefined(resource, 'status.capacity.memory', item.memoryCapacity)
             break
+          }
 
           case 'PersistentVolumeClaim':
             setIfDefined(resource, 'spec.resources.requests.storage', item.requestedStorage)
+            setIfDefined(resource, 'spec.storageClassName', item.storageClassName)
             setIfDefined(resource, 'spec.volumeMode', item.volumeMode)
+            setIfDefined(resource, 'status.phase', item.status)
+            setIfDefined(resource, 'status.capacity.storage', item.capacity)
             break
 
           case 'StorageClass.storage.k8s.io':
@@ -267,14 +292,39 @@ export function useFleetSearchPoll<T extends K8sResourceCommon | K8sResourceComm
             setIfDefined(resource, 'spec.template.metadata.annotations["vm.kubevirt.io/flavor"]', item.flavor)
             setIfDefined(resource, 'spec.template.metadata.annotations["vm.kubevirt.io/os"]', item.osName)
             setIfDefined(resource, 'spec.template.metadata.annotations["vm.kubevirt.io/workload"]', item.workload)
-            const conditions: any = []
-            setIfDefined(conditions, `[${conditions.length}]`, item.ready, { type: 'Ready', status: item.ready })
-            setIfDefined(conditions, `[${conditions.length}]`, item.agentConnected, {
-              type: 'AgentConnected',
-              status: item.agentConnected,
-            })
-            if (conditions.length) {
-              setIfDefined(resource, 'status.conditions', conditions)
+            if (item.dataVolumeNames && typeof item.dataVolumeNames === 'string') {
+              const dataVolumeNamesList = item.dataVolumeNames.split(';').filter((name: string) => name.trim() !== '')
+              if (dataVolumeNamesList.length > 0) {
+                const volumes = dataVolumeNamesList.map((name: string) => ({
+                  dataVolume: { name: name.trim() },
+                }))
+                setIfDefined(resource, 'spec.template.spec.volumes', volumes)
+              }
+            }
+
+            if (item.pvcClaimNames && typeof item.pvcClaimNames === 'string') {
+              const pvcClaimNamesList = item.pvcClaimNames.split(';').filter((name: string) => name.trim() !== '')
+              if (pvcClaimNamesList.length > 0) {
+                const pvcVolumes = pvcClaimNamesList.map((claimName: string) => ({
+                  persistentVolumeClaim: { claimName: claimName.trim() },
+                }))
+                if (resource.spec?.template?.spec?.volumes) {
+                  resource.spec.template.spec.volumes.push(...pvcVolumes)
+                } else {
+                  setIfDefined(resource, 'spec.template.spec.volumes', pvcVolumes)
+                }
+              }
+            }
+            if (!resource.status?.conditions) {
+              const conditions: any = []
+              setIfDefined(conditions, `[${conditions.length}]`, item.ready, { type: 'Ready', status: item.ready })
+              setIfDefined(conditions, `[${conditions.length}]`, item.agentConnected, {
+                type: 'AgentConnected',
+                status: item.agentConnected,
+              })
+              if (conditions.length) {
+                setIfDefined(resource, 'status.conditions', conditions)
+              }
             }
             setIfDefined(resource, 'status.printableStatus', item.status)
             break
@@ -283,17 +333,19 @@ export function useFleetSearchPoll<T extends K8sResourceCommon | K8sResourceComm
           case 'VirtualMachineInstance.kubevirt.io': {
             setIfDefined(resource, 'spec.domain.cpu.cores', item.cpu)
             setIfDefined(resource, 'spec.domain.memory.guest', item.memory)
-            const conditions: any = []
-            setIfDefined(conditions, `[${conditions.length}]`, item.liveMigratable, {
-              type: 'LiveMigratable',
-              status: item.liveMigratable,
-            })
-            setIfDefined(conditions, `[${conditions.length}]`, item.ready, {
-              type: 'Ready',
-              status: item.ready,
-            })
-            if (conditions.length) {
-              setIfDefined(resource, 'status.conditions', conditions)
+            if (!resource.status?.conditions) {
+              const conditions: any = []
+              setIfDefined(conditions, `[${conditions.length}]`, item.liveMigratable, {
+                type: 'LiveMigratable',
+                status: item.liveMigratable,
+              })
+              setIfDefined(conditions, `[${conditions.length}]`, item.ready, {
+                type: 'Ready',
+                status: item.ready,
+              })
+              if (conditions.length) {
+                setIfDefined(resource, 'status.conditions', conditions)
+              }
             }
             setIfDefined(resource, 'status.interfaces[0]', item.ipaddress, {
               ipAddress: item.ipaddress,
@@ -311,10 +363,12 @@ export function useFleetSearchPoll<T extends K8sResourceCommon | K8sResourceComm
             setIfDefined(resource, 'spec.vmiName', item.vmiName)
             break
           case 'VirtualMachineSnapshot.snapshot.kubevirt.io': {
-            setIfDefined(resource, 'status.conditions[0]', item.ready, {
-              type: 'Ready',
-              status: item.ready,
-            })
+            if (!resource.status?.conditions) {
+              setIfDefined(resource, 'status.conditions[0]', item.ready, {
+                type: 'Ready',
+                status: item.ready,
+              })
+            }
             setIfDefined(resource, 'status.phase', item.phase)
             if (item.indications && typeof item.indications === 'string') {
               const indicationsArray = item.indications.split(';')
@@ -326,10 +380,12 @@ export function useFleetSearchPoll<T extends K8sResourceCommon | K8sResourceComm
             break
           }
           case 'VirtualMachineRestore.snapshot.kubevirt.io': {
-            setIfDefined(resource, 'status.conditions[0]', item.ready, {
-              type: 'Ready',
-              status: item.ready,
-            })
+            if (!resource.status?.conditions) {
+              setIfDefined(resource, 'status.conditions[0]', item.ready, {
+                type: 'Ready',
+                status: item.ready,
+              })
+            }
             setIfDefined(resource, 'status.restoreTime', item.restoreTime)
             setIfDefined(resource, 'status.complete', item.complete)
             setIfDefined(resource, 'spec.target.kind', item.targetKind)

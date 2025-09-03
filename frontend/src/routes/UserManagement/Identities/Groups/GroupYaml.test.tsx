@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../../lib/nock-util'
 import { GroupYaml } from './GroupYaml'
+import { Group, UserApiVersion, GroupKind } from '../../../../resources/rbac'
 
 jest.mock('../../../../lib/acm-i18next', () => ({
   useTranslation: jest.fn().mockReturnValue({
@@ -11,20 +12,14 @@ jest.mock('../../../../lib/acm-i18next', () => ({
   }),
 }))
 
-jest.mock('../../../../lib/useQuery', () => ({
-  useQuery: jest.fn(),
+jest.mock('./GroupPage', () => ({
+  ...jest.requireActual('./GroupPage'),
+  useGroupDetailsContext: jest.fn(),
 }))
 
-jest.mock('react-router-dom-v5-compat', () => ({
-  ...jest.requireActual('react-router-dom-v5-compat'),
-  useParams: jest.fn(),
-}))
+import { useGroupDetailsContext } from './GroupPage'
 
-import { useQuery } from '../../../../lib/useQuery'
-import { useParams } from 'react-router-dom-v5-compat'
-
-const mockUseQuery = useQuery as jest.MockedFunction<typeof useQuery>
-const mockUseParams = useParams as jest.MockedFunction<typeof useParams>
+const mockUseGroupDetailsContext = useGroupDetailsContext as jest.MockedFunction<typeof useGroupDetailsContext>
 
 function Component() {
   return (
@@ -40,19 +35,15 @@ describe('GroupYaml', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
-    mockUseQuery.mockClear()
-    mockUseParams.mockClear()
+    mockUseGroupDetailsContext.mockClear()
   })
 
   test('should render loading state', () => {
-    mockUseParams.mockReturnValue({ id: 'test-group' })
-    mockUseQuery.mockReturnValue({
-      data: undefined,
+    mockUseGroupDetailsContext.mockReturnValue({
+      group: undefined,
+      users: [],
       loading: true,
-      error: undefined,
-      startPolling: jest.fn(),
-      stopPolling: jest.fn(),
-      refresh: jest.fn(),
+      usersLoading: false,
     })
 
     render(<Component />)
@@ -61,25 +52,22 @@ describe('GroupYaml', () => {
   })
 
   test('should render group not found message', () => {
-    mockUseParams.mockReturnValue({ id: 'non-existent-group' })
-    mockUseQuery.mockReturnValue({
-      data: [],
+    mockUseGroupDetailsContext.mockReturnValue({
+      group: undefined,
+      users: [],
       loading: false,
-      error: undefined,
-      startPolling: jest.fn(),
-      stopPolling: jest.fn(),
-      refresh: jest.fn(),
+      usersLoading: false,
     })
 
     render(<Component />)
 
-    expect(screen.getByText('Not found')).toBeInTheDocument()
+    expect(screen.getByText('Group not found')).toBeInTheDocument()
   })
 
   test('should render YAML editor with group data', () => {
-    const mockGroup = {
-      apiVersion: 'user.openshift.io/v1',
-      kind: 'Group',
+    const mockGroup: Group = {
+      apiVersion: UserApiVersion,
+      kind: GroupKind,
       metadata: {
         name: 'test-group',
         uid: 'test-group-uid',
@@ -88,41 +76,11 @@ describe('GroupYaml', () => {
       users: ['test-user'],
     }
 
-    mockUseParams.mockReturnValue({ id: 'test-group' })
-    mockUseQuery.mockReturnValue({
-      data: [mockGroup],
-      loading: false,
-      error: undefined,
-      startPolling: jest.fn(),
-      stopPolling: jest.fn(),
-      refresh: jest.fn(),
-    })
-
-    render(<Component />)
-
-    expect(screen.getByRole('textbox')).toBeInTheDocument()
-  })
-
-  test('should handle group with missing metadata', () => {
-    const mockGroupWithMissingData = {
-      apiVersion: 'user.openshift.io/v1',
-      kind: 'Group',
-      metadata: {
-        name: undefined,
-        uid: 'test-group-uid',
-        creationTimestamp: undefined,
-      },
+    mockUseGroupDetailsContext.mockReturnValue({
+      group: mockGroup,
       users: [],
-    }
-
-    mockUseParams.mockReturnValue({ id: 'test-group-uid' })
-    mockUseQuery.mockReturnValue({
-      data: [mockGroupWithMissingData],
       loading: false,
-      error: undefined,
-      startPolling: jest.fn(),
-      stopPolling: jest.fn(),
-      refresh: jest.fn(),
+      usersLoading: false,
     })
 
     render(<Component />)

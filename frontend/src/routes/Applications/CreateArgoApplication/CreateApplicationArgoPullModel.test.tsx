@@ -410,15 +410,14 @@ describe('Create Argo Application Set', () => {
 
     // Template
     await clickByText('Git')
-    await clickByRole('combobox', { name: 'Enter or select a Git URL' })
+    await clickByRole('combobox', { name: /Enter or select a Git URL/i })
 
     const appBranchNocks = [nockArgoGitBranches(channelGit.spec.pathname, { branchList: [{ name: 'branch-01' }] })]
     await clickByText(channelGit.spec.pathname)
     await waitForNocks(appBranchNocks)
 
-    await clickByRole('combobox', { name: 'Enter or select a tracking revision' })
+    await clickByRole('combobox', { name: /enter or select a tracking revision/i })
     const pathNocks = [
-      nockArgoGitBranches(channelGit.spec.pathname, { branchList: [{ name: 'branch-01' }] }),
       nockArgoGitPathSha(channelGit.spec.pathname, 'branch-01', { commit: { sha: '01' } }),
       nockArgoGitPathTree(channelGit.spec.pathname, { tree: [{ path: 'application-test', type: 'tree' }] }),
     ]

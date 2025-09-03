@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+
 import { ArgoWizard, ArgoWizardProps } from './ArgoWizard'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -9,6 +10,7 @@ import { clickByRole, clickByText, typeByRole, waitForText } from '../../lib/tes
 import { argoCDsState, managedClusterSetsState, namespacesState, subscriptionOperatorsState } from '../../atoms'
 import { gitOpsOperators, mockArgoCD, mockClusterSets } from '../../routes/Applications/Application.sharedmocks'
 import { nockIgnoreApiPaths, nockIgnoreOperatorCheck } from '../../lib/nock-util'
+import nock from 'nock'
 import {
   GitOpsClusterApiVersion,
   GitOpsClusterKind,
@@ -18,7 +20,7 @@ import {
 } from '../../resources'
 
 const mockCreateclustersetcallback = jest.fn()
-const mockGetgitchannelbranches = jest.fn().mockImplementation(() => {
+const mockGetgitchannelbranches = jest.fn().mockImplementation(async () => {
   return ['main']
 })
 const mockGetgitchannelpaths = jest.fn().mockImplementation(() => {
@@ -78,6 +80,13 @@ describe('ArgoWizard tests', () => {
   //=====================================================================
   test('create git', async () => {
     nockIgnoreApiPaths()
+    const url = 'https://github.com/fxiang1/app-samples'
+
+    // Add nocks for Git API calls - removed unused nockArgoGitBranches
+
+    // Also add a nock for specific branch calls
+    nock('https://api.github.com').get('/repos/fxiang1/app-samples/branches/main').reply(200, { name: 'main' })
+
     render(<TestArgoWizard />)
 
     //=====================================================================
@@ -99,17 +108,20 @@ describe('ArgoWizard tests', () => {
     //                      template page
     //=====================================================================
     await clickByText('Git')
-    await typeByRole('https://github.com/fxiang1/app-samples', 'combobox', { name: /Enter or select a Git URL/i })
+    await typeByRole(url, 'combobox', { name: /Enter or select a Git URL/i })
+
     userEvent.click(
       screen.getByRole('option', {
         name: /create new option "https:\/\/github\.com\/fxiang1\/app-samples"/i,
       })
     )
-    await clickByRole('combobox', { name: /enter or select a tracking revision/i })
+
+    // Type and select the revision
+    await typeByRole('main', 'combobox', { name: /enter or select a tracking revision/i })
     await clickByRole('option', {
       name: /create new option "main"/i,
     })
-    await clickByRole('combobox', { name: /enter or select a repository path/i })
+    await typeByRole('ansible', 'combobox', { name: /enter or select a repository path/i })
     await clickByRole('option', {
       name: /create new option "ansible"/i,
     })
