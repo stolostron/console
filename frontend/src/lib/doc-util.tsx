@@ -49,6 +49,7 @@ export const DOC_LINKS = {
   MANAGE_APPLICATIONS: `${DOC_BASE_PATH}/applications/index#managing-applications`,
   ANSIBLE_JOBS: `${DOC_BASE_PATH}/clusters/index#ansible-config-cluster`,
   TROUBLESHOOTING_CLUSTER_IMPORT_FAILURE: `${DOC_BASE_PATH}/clusters/cluster_mce_overview#troubleshooting-a-managed-cluster-import-failure-mce`,
+  TROUBLESHOOTING_CERTIFICATE_AUTHORITY_ERROR: `${DOC_BASE_PATH}/clusters/cluster_mce_overview#ca-update-error-hive-ai`,
   MANAGED_NETWORK_CONFIG: `${DOC_BASE_PATH}/networking/networking#managed-network-config`,
   POLICIES_OVERVIEW: `${DOC_BASE_PATH}/governance/index#hub-policy-framework`,
   GITOPS_CONFIG: `${DOC_BASE_PATH}/gitops/gitops-overview`,

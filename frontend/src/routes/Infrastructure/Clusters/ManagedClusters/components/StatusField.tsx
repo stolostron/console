@@ -193,6 +193,10 @@ export function StatusField(props: { cluster: Cluster }) {
         <>
           {addDocsActions([
             {
+              title: t('How do I troubleshoot a certificate authority failure?'),
+              link: DOC_LINKS.TROUBLESHOOTING_CERTIFICATE_AUTHORITY_ERROR,
+            },
+            {
               title: t('How do I troubleshoot a cluster import failure?'),
               link: DOC_LINKS.TROUBLESHOOTING_CLUSTER_IMPORT_FAILURE,
             },
