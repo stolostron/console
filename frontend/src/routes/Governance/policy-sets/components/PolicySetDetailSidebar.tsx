@@ -84,9 +84,11 @@ function renderDonutChart(
         labels={({ datum }) => `${datum.x}: ${datum.y}`}
         padding={{
           right: 300,
+          bottom: t('Violation', { count: clusterNonCompliantCount }).length > 14 ? 10 : 0,
         }}
         title={clusterNonCompliantCount.toString()}
         subTitle={t('Violation', { count: clusterNonCompliantCount })}
+        subTitlePosition={t('Violation', { count: clusterNonCompliantCount }).length > 14 ? 'bottom' : undefined}
         width={450}
         colorScale={colorThemes.criticalLowSuccess}
       />
