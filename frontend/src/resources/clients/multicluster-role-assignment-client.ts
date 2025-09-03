@@ -36,7 +36,7 @@ export const roleAssignmentToFlattenedRoleAssignment = (
     kind: multiClusterRoleAssignment.spec.subject.kind,
   },
   relatedMulticlusterRoleAssignment: multiClusterRoleAssignment,
-  status: multiClusterRoleAssignment.roleAssignmentsStatuses.find((e) => e.name === roleAssignment.name),
+  status: multiClusterRoleAssignment.roleAssignmentsStatuses?.find((e) => e.name === roleAssignment.name),
 })
 
 const isSubjectMatch = (

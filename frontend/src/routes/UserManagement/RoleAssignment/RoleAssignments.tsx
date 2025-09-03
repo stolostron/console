@@ -9,7 +9,6 @@ import {
   deleteRoleAssignment,
   FlattenedRoleAssignment,
 } from '../../../resources/clients/multicluster-role-assignment-client'
-import { Group, ServiceAccount, User } from '../../../resources/rbac'
 import {
   AcmButton,
   AcmEmptyState,
@@ -19,9 +18,9 @@ import {
   IAcmTableColumn,
 } from '../../../ui-components'
 import { IAcmTableAction, IAcmTableButtonAction, ITableFilter } from '../../../ui-components/AcmTable/AcmTableTypes'
-import { IdentityStatus } from '../../../ui-components/IdentityStatus/IdentityStatus'
 import { RoleAssignmentActionDropdown } from './RoleAssignmentActionDropdown'
-import { RoleAssignmentsLabel } from './RoleAssignmentsLabel'
+import { RoleAssignmentLabel } from './RoleAssignmentLabel'
+import { RoleAssignmentStatusComponent } from './RoleAssignmentStatusComponent'
 
 type RoleAssignmentsProps = {
   roleAssignments: FlattenedRoleAssignment[]
@@ -187,27 +186,25 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
     },
     {
       header: t('Cluster Sets'),
-      cell: (roleAssignment) => <RoleAssignmentsLabel elements={roleAssignment.clusterSets} numLabel={3} />,
+      cell: (roleAssignment) => <RoleAssignmentLabel elements={roleAssignment.clusterSets} numLabel={3} />,
       exportContent: (roleAssignment) => roleAssignment.clusterSets.join(', '),
       isHidden: hiddenColumns?.includes('clusterSets'),
     },
     {
       header: t('Clusters'),
-      cell: (roleAssignment) => <RoleAssignmentsLabel elements={roleAssignment.clusters} numLabel={3} />,
+      cell: (roleAssignment) => <RoleAssignmentLabel elements={roleAssignment.clusters} numLabel={3} />,
       exportContent: (roleAssignment) => roleAssignment.clusters?.join(', ') ?? '',
       isHidden: hiddenColumns?.includes('clusters'),
     },
     {
       header: t('Namespaces'),
-      cell: (roleAssignment) => <RoleAssignmentsLabel elements={roleAssignment.targetNamespaces} numLabel={5} />,
+      cell: (roleAssignment) => <RoleAssignmentLabel elements={roleAssignment.targetNamespaces} numLabel={5} />,
       exportContent: (roleAssignment) => roleAssignment.targetNamespaces?.join(', ') ?? '',
     },
     {
       header: t('Status'),
-      cell: (roleAssignment) => (
-        <IdentityStatus identity={{ kind: roleAssignment.subject.kind } as User | Group | ServiceAccount} />
-      ),
-      exportContent: () => 'Active', // TODO: for now mock status as Active for all, replace it by real status as soon as it is ready
+      cell: (roleAssignment) => <RoleAssignmentStatusComponent status={roleAssignment.status} />,
+      exportContent: (roleAssignment) => roleAssignment.status?.status ?? '',
     },
     {
       header: t('Created'),
