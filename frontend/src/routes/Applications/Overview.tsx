@@ -938,12 +938,18 @@ export default function ApplicationsOverview() {
           {
             id: 'create-argo-pull-model',
             text: t('Argo CD ApplicationSet - Pull model'),
+            description: t(
+              'Considered the better choice for security. Managed clusters pull application resources directly from Git repositories.'
+            ),
             isDisabled: !canCreateApplicationSet,
             tooltip: !canCreateApplicationSet ? t('rbac.unauthorized') : '',
           },
           {
             id: 'create-argo',
             text: t('Argo CD ApplicationSet - Push model'),
+            description: t(
+              'Hub cluster pushes application resources to managed clusters requiring credentials for each cluster.'
+            ),
             isDisabled: !canCreateApplicationSet,
             tooltip: !canCreateApplicationSet ? t('rbac.unauthorized') : '',
           },
