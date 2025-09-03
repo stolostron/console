@@ -1634,6 +1634,7 @@
   "How do I get S3 Bucket OIDC secret credentials?": "How do I get S3 Bucket OIDC secret credentials?",
   "How do I get the Red Hat OpenShift Container Platform pull secret?": "How do I get the Red Hat OpenShift Container Platform pull secret?",
   "How do I get VMware credentials?": "How do I get VMware credentials?",
+  "How do I troubleshoot a certificate authority failure?": "How do I troubleshoot a certificate authority failure?",
   "How do I troubleshoot a cluster import failure?": "How do I troubleshoot a cluster import failure?",
   "How do you want to select clusters?": "How do you want to select clusters?",
   "How to read topology": "How to read topology",
