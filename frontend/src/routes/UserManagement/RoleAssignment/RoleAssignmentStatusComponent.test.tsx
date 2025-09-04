@@ -66,13 +66,17 @@ describe('RoleAssignmentStatusComponent', () => {
   describe('tooltips', () => {
     it('Error', () => {
       // Arrange
-      render(<RoleAssignmentStatusComponent status={{ name: 'x', status: 'Error', reason: 'whatever the reason' }} />)
+      render(
+        <RoleAssignmentStatusComponent
+          status={{ name: 'x', status: 'Error', reason: 'WHATEVER_THE_REASON', message: 'whatever the reason' }}
+        />
+      )
 
       // Act
       userEvent.hover(screen.getByText('Error'))
 
       // Assert
-      expect(screen.getByText('whatever the reason')).toBeInTheDocument()
+      expect(screen.getByText('WHATEVER_THE_REASON: whatever the reason')).toBeInTheDocument()
     })
 
     it('Pending', () => {
