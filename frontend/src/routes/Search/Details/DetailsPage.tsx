@@ -424,6 +424,7 @@ export default function DetailsPage() {
               <Dropdown
                 isOpen={resourceActionsOpen}
                 onSelect={() => setResourceActionsOpen(false)}
+                popperProps={{ position: 'right' }}
                 toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
                   <MenuToggle
                     ref={toggleRef}
