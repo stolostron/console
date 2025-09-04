@@ -92,7 +92,14 @@ const UserRoleAssignments = () => {
         />
       )
     default:
-      return <RoleAssignments roleAssignments={roleAssignments} isLoading={isLoading} hiddenColumns={['subject']} />
+      return (
+        <RoleAssignments
+          roleAssignments={roleAssignments}
+          isLoading={isLoading}
+          hiddenColumns={['subject']}
+          preselected={{ users: [{ id: user?.metadata.uid ?? '', name: user?.metadata.name ?? '' }] }}
+        />
+      )
   }
 }
 

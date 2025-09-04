@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { PageSection } from '@patternfly/react-core'
 import { useCallback, useMemo } from 'react'
-import { Trans, useTranslation } from '../../../../lib/acm-i18next'
-import { User as RbacUser } from '../../../../resources/rbac'
 import { Link } from 'react-router-dom-v5-compat'
+import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
+import { User as RbacUser } from '../../../../resources/rbac'
 import { AcmButton, AcmEmptyState, AcmLoadingPage, AcmTable, compareStrings } from '../../../../ui-components'
 import { useFilters, usersTableColumns } from './UsersTableHelper'
 
@@ -87,73 +87,46 @@ const UsersTable = () => {
   const columns = usersTableColumns({ t })
   // TODO: Uncomment when actions are implemented
   // const rowActions = useRowActions({ t, navigate })
-  // TODO: to remove
-  const [isModalOpen, setIsModalOpen] = useState(false)
 
   return (
-    <>
-      <PageSection>
-        {loading ? (
-          <AcmLoadingPage />
-        ) : (
-          <AcmTable<RbacUser>
-            key="users-table"
-            filters={filters}
-            columns={columns}
-            keyFn={keyFn}
-            items={users}
-            emptyState={
-              <AcmEmptyState
-                title={t(`In order to view Users, add Identity provider`)}
-                message={
-                  <Trans
-                    i18nKey="Once Identity provider is added, Users will appear in the list after they log in."
-                    components={{ bold: <strong /> }}
-                  />
-                }
-                action={
-                  <div>
-                    <AcmButton
-                      isDisabled={!canAddAccessControl}
-                      tooltip={!canAddAccessControl ? t('rbac.unauthorized') : ''}
-                      component={Link}
-                    >
-                      {t('Add Identity provider')}
-                    </AcmButton>
-                    <ViewDocumentationLink doclink={DOC_LINKS.CREATE_CONNECTION} />
-                  </div>
-                }
-              />
-            }
-            // TODO: Uncomment when actions are implemented
-            // rowActions={rowActions}
-          />
-        )}
-      </PageSection>
-      {/* // TODO: to remove */}
-      <AcmButton variant="primary" onClick={() => setIsModalOpen(true)}>
-        {t('Create role assignment')}
-      </AcmButton>
-      <RoleAssignmentModal
-        close={() => setIsModalOpen(false)}
-        onSave={() => setIsModalOpen(false)}
-        isOpen={isModalOpen}
-        preselected={{
-          // groups: [
-          //   {
-          //     id: 'a1a50feb-f41d-4529-8fb4-fd0bec6b3ac7',
-          //     name: 'e2e-cluster-group',
-          //   },
-          // ],
-          roles: [
-            {
-              name: 'default-broker/submariner-k8s-broker-cluster',
-              id: 'd8a7a57f-bd6d-4271-8ff1-98a5b04d5c75',
-            },
-          ],
-        }}
-      />
-    </>
+    <PageSection>
+      {loading ? (
+        <AcmLoadingPage />
+      ) : (
+        <AcmTable<RbacUser>
+          key="users-table"
+          filters={filters}
+          columns={columns}
+          keyFn={keyFn}
+          items={users}
+          emptyState={
+            <AcmEmptyState
+              title={t(`In order to view Users, add Identity provider`)}
+              message={
+                <Trans
+                  i18nKey="Once Identity provider is added, Users will appear in the list after they log in."
+                  components={{ bold: <strong /> }}
+                />
+              }
+              action={
+                <div>
+                  <AcmButton
+                    isDisabled={!canAddAccessControl}
+                    tooltip={!canAddAccessControl ? t('rbac.unauthorized') : ''}
+                    component={Link}
+                  >
+                    {t('Add Identity provider')}
+                  </AcmButton>
+                  <ViewDocumentationLink doclink={DOC_LINKS.CREATE_CONNECTION} />
+                </div>
+              }
+            />
+          }
+          // TODO: Uncomment when actions are implemented
+          // rowActions={rowActions}
+        />
+      )}
+    </PageSection>
   )
 }
 

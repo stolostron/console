@@ -2,13 +2,13 @@ import { useCallback, useContext, useEffect, useState } from 'react'
 import { AcmDataFormPage, AcmDataFormProps } from '../../../components/AcmDataForm'
 import { FormData, Section } from '../../../components/AcmFormData'
 import { useTranslation } from '../../../lib/acm-i18next'
-import { truncate } from '../../../lib/text-utils'
 import {
   emptyMulticlusterRoleAssignment,
   MulticlusterRoleAssignment,
   MulticlusterRoleAssignmentKind,
 } from '../../../resources/multicluster-role-assignment'
 import { AcmToastContext } from '../../../ui-components'
+import { truncateMiddle } from '../../Applications/ApplicationDetails/ApplicationTopology/topology/components/future/truncate-middle'
 import { useRoleAssignmentFormData } from './hook/RoleAssignmentFormDataHook'
 import { useRoleAssignment } from './hook/RoleAssignmentHook'
 import { RoleAssignmentPreselected, RoleAssignmentPreselectedEntity } from './model/role-assignment-preselected'
@@ -80,7 +80,7 @@ const RoleAssignmentForm = ({
 
   const treatRoleAssignmentEntityTitle = useCallback(
     (entities: RoleAssignmentPreselectedEntity[], entityPlural: string, entitySingular: string) => {
-      const entityNames = truncate(20, entities.map((e) => e.name).join(', '))
+      const entityNames = truncateMiddle(entities.map((e) => e.name).join(', '), { length: 20 })
       const pluralSingular = entities.length > 1 ? entityPlural : entitySingular
       return `${t('for')} ${entityNames} ${pluralSingular}`
     },
