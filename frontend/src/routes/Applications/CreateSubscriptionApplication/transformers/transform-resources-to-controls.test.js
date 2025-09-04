@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import * as transformResourcesToControlsAPI from './transform-resources-to-controls'
-import { cleanResults } from '../../../../../lib/test-shots'
+import { cleanResults } from '../../../../lib/test-shots'
 
 describe('transform-resources-to-controls tests', () => {
   beforeEach(() => {

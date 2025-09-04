@@ -7,7 +7,7 @@ import {
   AcmPageHeader,
   AcmToastContext,
   Provider,
-} from '../../ui-components'
+} from '../../../ui-components'
 import Handlebars from 'handlebars'
 import _ from 'lodash'
 import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
@@ -16,12 +16,12 @@ import { Dispatch, SetStateAction, useCallback, useContext, useEffect, useState 
 // include monaco editor
 import MonacoEditor from 'react-monaco-editor'
 import { useLocation, useNavigate, Location, generatePath } from 'react-router-dom-v5-compat'
-import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
-import TemplateEditor from '../../components/TemplateEditor'
-import { getErrorInfo } from '../../components/ErrorPage'
-import { useTranslation } from '../../lib/acm-i18next'
-import { useSearchParams } from '../../lib/search'
-import { NavigationPath } from '../../NavigationPath'
+import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import TemplateEditor from '../../../components/TemplateEditor'
+import { getErrorInfo } from '../../../components/ErrorPage'
+import { useTranslation } from '../../../lib/acm-i18next'
+import { useSearchParams } from '../../../lib/search'
+import { NavigationPath } from '../../../NavigationPath'
 import {
   ApplicationKind,
   Channel,
@@ -32,25 +32,25 @@ import {
   Secret,
   SubscriptionKind,
   unpackProviderConnection,
-} from '../../resources'
-import { reconcileResources, updateAppResources } from '../../resources/utils'
+} from '../../../resources'
+import { reconcileResources, updateAppResources } from '../../../resources/utils'
 import './style.css'
-import { getApplicationResources } from '../Applications/CreateApplication/Subscription/transformers/transform-data-to-resources'
-import { getApplication } from './ApplicationDetails/ApplicationTopology/model/application'
+import { getApplicationResources } from './transformers/transform-data-to-resources'
+import { getApplication } from '../ApplicationDetails/ApplicationTopology/model/application'
 // Template Data
-import { controlData as getControlData } from './CreateApplication/Subscription/controlData/ControlData'
-import createTemplate from './CreateApplication/Subscription/templates/template.hbs'
-import gitTemplate from './CreateApplication/Subscription/templates/templateGit.hbs'
-import helmTemplate from './CreateApplication/Subscription/templates/templateHelm.hbs'
-import ObjTemplate from './CreateApplication/Subscription/templates/templateObjectStore.hbs'
-import otherTemplate from './CreateApplication/Subscription/templates/templateOther.hbs'
-import placementTemplate from './CreateApplication/Subscription/templates/templatePlacement.hbs'
-import { CredentialsForm } from '../Credentials/CredentialsForm'
-import { useProjects } from '../../hooks/useProjects'
-import { setAvailableConnections } from '../Infrastructure/Clusters/ManagedClusters/CreateCluster/controlData/ControlDataHelpers'
-import { LoadingPage } from '../../components/LoadingPage'
-import { PluginContext } from '../../lib/PluginContext'
-import { useIsHubSelfManaged, useLocalHubName } from '../../hooks/use-local-hub'
+import { controlData as getControlData } from './controlData/ControlData'
+import createTemplate from './templates/template.hbs'
+import gitTemplate from './templates/templateGit.hbs'
+import helmTemplate from './templates/templateHelm.hbs'
+import ObjTemplate from './templates/templateObjectStore.hbs'
+import otherTemplate from './templates/templateOther.hbs'
+import placementTemplate from './templates/templatePlacement.hbs'
+import { CredentialsForm } from '../../Credentials/CredentialsForm'
+import { useProjects } from '../../../hooks/useProjects'
+import { setAvailableConnections } from '../../Infrastructure/Clusters/ManagedClusters/CreateCluster/controlData/ControlDataHelpers'
+import { LoadingPage } from '../../../components/LoadingPage'
+import { PluginContext } from '../../../lib/PluginContext'
+import { useIsHubSelfManaged, useLocalHubName } from '../../../hooks/use-local-hub'
 
 interface CreationStatus {
   status: string

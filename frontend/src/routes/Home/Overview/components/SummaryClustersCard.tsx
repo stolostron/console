@@ -17,7 +17,7 @@ type LegendData = {
 
 const LegendLabel = ({ ...props }) => {
   const link = props.datum?.link
-  const chartLabel = <ChartLabel {...props} />
+  const chartLabel = <ChartLabel {...props} style={{ fill: 'var(--pf-v5-global--Color--100)' }} />
   return link ? <Link to={link}>{chartLabel}</Link> : chartLabel
 }
 
