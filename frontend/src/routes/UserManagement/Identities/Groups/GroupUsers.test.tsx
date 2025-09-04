@@ -6,6 +6,7 @@ import { nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../../lib/nock-util'
 import { GroupUsers } from './GroupUsers'
 import { User, Group } from '../../../../resources/rbac'
 import { useGroupDetailsContext } from './GroupPage'
+import { getISOStringTimestamp } from '../../../../resources/utils/utils'
 
 jest.mock('../../../../lib/acm-i18next', () => ({
   useTranslation: () => ({ t: (s: string) => s }),
@@ -120,7 +121,7 @@ describe('GroupUsers', () => {
       users: undefined,
       loading: true,
       usersLoading: false,
-    } as any)
+    })
 
     render(<Component />)
     expect(screen.getByText('Loading')).toBeInTheDocument()
@@ -132,7 +133,7 @@ describe('GroupUsers', () => {
       users: undefined,
       loading: false,
       usersLoading: false,
-    } as any)
+    })
 
     render(<Component />)
     expect(screen.getByText('Not found')).toBeInTheDocument()
@@ -144,7 +145,7 @@ describe('GroupUsers', () => {
       users: mockUsers,
       loading: false,
       usersLoading: false,
-    } as any)
+    })
 
     render(<Component />)
     expect(screen.getByText('No users found')).toBeInTheDocument()
@@ -157,7 +158,7 @@ describe('GroupUsers', () => {
       users: mockUsers,
       loading: false,
       usersLoading: false,
-    } as any)
+    })
 
     render(<Component />)
     expect(screen.getByText('test-user')).toBeInTheDocument()
@@ -186,7 +187,7 @@ describe('GroupUsers', () => {
       users: usersWithNonMember,
       loading: false,
       usersLoading: false,
-    } as any)
+    })
 
     render(<Component />)
     expect(screen.getByText('test-user')).toBeInTheDocument()
@@ -194,19 +195,38 @@ describe('GroupUsers', () => {
     expect(screen.queryByText('non-member')).not.toBeInTheDocument()
   })
 
-  test('covers Users count column cell() and exportContent()', () => {
+  test('covers exportContent for Name / Identity provider / Created columns', () => {
     mockUseGroupDetailsContext.mockReturnValue({
       group: mockGroup,
       users: mockUsers,
       loading: false,
       usersLoading: false,
-    } as any)
+    })
 
     render(<Component />)
+
     expect(lastAcmTableProps).toBeTruthy()
-    const { columns, items } = lastAcmTableProps as { columns: any[]; items: User[] }
-    expect(Array.isArray(columns)).toBe(true)
-    expect(Array.isArray(items)).toBe(true)
-    expect(items.length).toBeGreaterThan(0)
+    const { columns } = lastAcmTableProps as { columns: any[]; items: User[] }
+
+    const headerToText = (h: any) => (typeof h === 'function' ? h() : h)
+    const byHeader = (label: string) => columns.find((c) => headerToText(c.header) === label)!
+
+    const nameCol = byHeader('Name')
+    const idpCol = byHeader('Identity provider')
+    const createdCol = byHeader('Created')
+
+    const u = mockUsers[0]
+
+    expect(nameCol.exportContent(u)).toBe('test-user')
+
+    expect(idpCol.exportContent(u)).toEqual(['htpasswd:test-user'])
+
+    expect(createdCol.exportContent(u)).toBe(getISOStringTimestamp(u.metadata.creationTimestamp!))
+
+    const noIdp: User = { ...u, identities: undefined }
+    const noCreated: User = { ...u, metadata: { ...u.metadata, creationTimestamp: undefined } }
+
+    expect(idpCol.exportContent(noIdp)).toBe('-')
+    expect(createdCol.exportContent(noCreated)).toBe('')
   })
 })
