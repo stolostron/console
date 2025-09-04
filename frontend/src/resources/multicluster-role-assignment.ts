@@ -29,6 +29,7 @@ export interface RoleAssignmentStatus {
   name: string
   status: 'Active' | 'Error' | 'Pending'
   reason?: string
+  message?: string
 }
 
 export interface MulticlusterRoleAssignment extends IResource {

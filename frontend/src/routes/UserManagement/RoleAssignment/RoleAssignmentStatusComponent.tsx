@@ -22,7 +22,7 @@ const RoleAssignmentStatusComponent = ({ status }: RoleAssignmentStatusComponent
       )
     case 'Error':
       return (
-        <Tooltip content={status.reason}>
+        <Tooltip content={`${status.reason}: ${status.message}`}>
           <Label variant="outline">
             <span style={{ paddingRight: '8px' }}>
               <ExclamationCircleIcon color="var(--pf-v5-global--danger-color--100)" />
