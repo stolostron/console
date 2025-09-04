@@ -9,13 +9,13 @@ RUN npm run build:plugin:mce
 FROM registry.ci.openshift.org/stolostron/builder:nodejs20-linux as backend
 WORKDIR /app/backend
 COPY ./backend .
-RUN npm ci --no-optional
+RUN npm ci --no-optional --ignore-scripts
 RUN npm run build
 
 FROM registry.ci.openshift.org/stolostron/builder:nodejs20-linux as production
 WORKDIR /app/backend
 COPY ./backend/package-lock.json ./backend/package.json ./
-RUN npm ci --no-optional --only=production
+RUN npm ci --no-optional --only=production --ignore-scripts
 
 FROM registry.ci.openshift.org/stolostron/common-nodejs-parent:nodejs-20
 WORKDIR /app
