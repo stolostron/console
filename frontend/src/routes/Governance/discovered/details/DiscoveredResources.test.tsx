@@ -8,8 +8,23 @@ import { RecoilRoot } from 'recoil'
 import { channelsState, helmReleaseState, subscriptionsState } from '../../../../atoms'
 import { nockGet, nockIgnoreApiPaths } from '../../../../lib/nock-util'
 import { DiscoveredResources } from './DiscoveredResources'
+import { v4 as uuidv4 } from 'uuid'
+
+// Mock UUID v4 to return predictable values during testing
+jest.mock('uuid', () => ({
+  v4: jest.fn(),
+}))
+
+const mockUuidV4 = jest.mocked(uuidv4)
+const MOCKED_UUID_1 = 'MOCKED_UUID_1'
+const MOCKED_UUID_2 = 'MOCKED_UUID_2'
 
 describe('DiscoveredResources', () => {
+  beforeEach(() => {
+    // Reset the mock before each test
+    mockUuidV4.mockReset()
+    mockUuidV4.mockReturnValueOnce(MOCKED_UUID_1).mockReturnValueOnce(MOCKED_UUID_2)
+  })
   test('Should render empty DiscoveredResources for ConfigurationPolicy', async () => {
     const context: DiscoveredDetailsContext = {
       isFetching: false,
@@ -140,10 +155,10 @@ describe('DiscoveredResources', () => {
       apiVersion: 'view.open-cluster-management.io/v1beta1',
       kind: 'ManagedClusterView',
       metadata: {
-        name: '9d431ce9ba1b1a1da748b56240a954881a039cc5',
+        name: MOCKED_UUID_1,
         namespace: 'local-cluster',
         labels: {
-          viewName: '9d431ce9ba1b1a1da748b56240a954881a039cc5',
+          viewName: MOCKED_UUID_1,
         },
       },
       spec: {
@@ -409,10 +424,10 @@ describe('DiscoveredResources', () => {
       apiVersion: 'view.open-cluster-management.io/v1beta1',
       kind: 'ManagedClusterView',
       metadata: {
-        name: '5cdfe9d60dab106ac09f3dc417b87a91917dd6ad',
+        name: MOCKED_UUID_1,
         namespace: 'local-cluster',
         labels: {
-          viewName: '5cdfe9d60dab106ac09f3dc417b87a91917dd6ad',
+          viewName: MOCKED_UUID_1,
         },
       },
       spec: {
@@ -581,10 +596,10 @@ describe('DiscoveredResources', () => {
       apiVersion: 'view.open-cluster-management.io/v1beta1',
       kind: 'ManagedClusterView',
       metadata: {
-        name: 'a46a6317a0a91b656d83e99987e46d6c9535d6ce',
+        name: MOCKED_UUID_1,
         namespace: 'local-cluster',
         labels: {
-          viewName: 'a46a6317a0a91b656d83e99987e46d6c9535d6ce',
+          viewName: MOCKED_UUID_1,
         },
       },
       spec: {
@@ -649,10 +664,10 @@ describe('DiscoveredResources', () => {
       apiVersion: 'view.open-cluster-management.io/v1beta1',
       kind: 'ManagedClusterView',
       metadata: {
-        name: 'fe996a0b1c5d0958fc1dcfb13ef748018c4b6432',
+        name: MOCKED_UUID_2,
         namespace: 'local-cluster',
         labels: {
-          viewName: 'fe996a0b1c5d0958fc1dcfb13ef748018c4b6432',
+          viewName: MOCKED_UUID_2,
         },
       },
       spec: {

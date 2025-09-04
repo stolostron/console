@@ -14,6 +14,17 @@ import {
   useSearchResultItemsLazyQuery,
   useSearchResultRelatedItemsLazyQuery,
 } from '../../../../Search/search-sdk/search-sdk'
+import { v4 as uuidv4 } from 'uuid'
+
+// Mock UUID v4 to return predictable values during testing
+jest.mock('uuid', () => ({
+  v4: jest.fn(),
+}))
+
+const mockUuidV4 = jest.mocked(uuidv4)
+const MOCKED_UUID_1 = 'MOCKED_UUID_1'
+const MOCKED_UUID_2 = 'MOCKED_UUID_2'
+const MOCKED_UUID_3 = 'MOCKED_UUID_3'
 
 jest.mock('../../../../../components/YamlEditor', () => {
   return function YamlEditor() {
@@ -27,10 +38,10 @@ const getResourceRequest = {
   apiVersion: 'view.open-cluster-management.io/v1beta1',
   kind: 'ManagedClusterView',
   metadata: {
-    name: '32fc4589b2b4925338be73f42098e9a9972c7cb9',
+    name: MOCKED_UUID_1,
     namespace: 'test-cluster',
     labels: {
-      viewName: '32fc4589b2b4925338be73f42098e9a9972c7cb9',
+      viewName: MOCKED_UUID_1,
     },
   },
   spec: {
@@ -45,10 +56,10 @@ const getResourceResponse = {
   apiVersion: 'view.open-cluster-management.io/v1beta1',
   kind: 'ManagedClusterView',
   metadata: {
-    name: '32fc4589b2b4925338be73f42098e9a9972c7cb9',
+    name: MOCKED_UUID_1,
     namespace: 'test-cluster',
     labels: {
-      viewName: '32fc4589b2b4925338be73f42098e9a9972c7cb9',
+      viewName: MOCKED_UUID_1,
     },
   },
   spec: {
@@ -125,9 +136,9 @@ const getOppolResourceRequest = {
   apiVersion: 'view.open-cluster-management.io/v1beta1',
   kind: 'ManagedClusterView',
   metadata: {
-    name: '49652c0ab8ad9bcdcf2eeb21707b98245bd81c03',
+    name: MOCKED_UUID_1,
     namespace: 'local-cluster',
-    labels: { viewName: '49652c0ab8ad9bcdcf2eeb21707b98245bd81c03' },
+    labels: { viewName: MOCKED_UUID_1 },
   },
   spec: {
     scope: {
@@ -320,9 +331,9 @@ const getVapbResourceRequest = {
   apiVersion: 'view.open-cluster-management.io/v1beta1',
   kind: 'ManagedClusterView',
   metadata: {
-    name: '9b3c685c8462128e263c6c950f89adb378c2ffcd',
+    name: MOCKED_UUID_1,
     namespace: 'test-cluster',
-    labels: { viewName: '9b3c685c8462128e263c6c950f89adb378c2ffcd' },
+    labels: { viewName: MOCKED_UUID_1 },
   },
   spec: {
     scope: {
@@ -364,6 +375,10 @@ getVapbResourceResponse.status = {
 
 describe('Policy Template Details Page', () => {
   beforeEach(() => {
+    // Reset the mock before each test
+    mockUuidV4.mockReset()
+    mockUuidV4.mockReturnValueOnce(MOCKED_UUID_1).mockReturnValueOnce(MOCKED_UUID_2).mockReturnValueOnce(MOCKED_UUID_3)
+
     nockIgnoreApiPaths()
     ;(useSearchResultItemsLazyQuery as jest.Mock).mockReturnValue([
       jest.fn(),
@@ -626,14 +641,10 @@ describe('Policy Template Details Page', () => {
 
     const getResourceRequestCopy = JSON.parse(JSON.stringify(getResourceRequest))
     getResourceRequestCopy.metadata.namespace = hostingClusterName
-    getResourceRequestCopy.metadata.name = '6b5d34f1f43b9ca1ea4d4e889bda37e4ae8d0435'
-    getResourceRequestCopy.metadata.labels.viewName = '6b5d34f1f43b9ca1ea4d4e889bda37e4ae8d0435'
 
     const getResourceResponseCopy = JSON.parse(JSON.stringify(getResourceResponse))
     getResourceResponseCopy.metadata.namespace = hostingClusterName
     getResourceResponseCopy.status.result.metadata.namespace = installNamespace
-    getResourceResponseCopy.metadata.name = '6b5d34f1f43b9ca1ea4d4e889bda37e4ae8d0435'
-    getResourceResponseCopy.metadata.labels.viewName = '6b5d34f1f43b9ca1ea4d4e889bda37e4ae8d0435'
     getResourceResponseCopy.status.result.metadata.labels = {
       'cluster-name': clusterName,
       'cluster-namespace': installNamespace,
@@ -692,9 +703,9 @@ describe('Policy Template Details Page', () => {
       apiVersion: 'view.open-cluster-management.io/v1beta1',
       kind: 'ManagedClusterView',
       metadata: {
-        name: '2c4748c7114452970305fa911ee6192a2f20271f',
+        name: MOCKED_UUID_1,
         namespace: 'test-cluster',
-        labels: { viewName: '2c4748c7114452970305fa911ee6192a2f20271f' },
+        labels: { viewName: MOCKED_UUID_1 },
       },
       spec: {
         scope: {
@@ -1340,10 +1351,10 @@ describe('Policy Template Details Page', () => {
       apiVersion: 'view.open-cluster-management.io/v1beta1',
       kind: 'ManagedClusterView',
       metadata: {
-        name: 'ff0861ca95ffc8c791c974681ad9bf84341f9419',
+        name: MOCKED_UUID_1,
         namespace: 'test-cluster',
         labels: {
-          viewName: 'ff0861ca95ffc8c791c974681ad9bf84341f9419',
+          viewName: MOCKED_UUID_1,
         },
       },
       spec: {
@@ -1443,10 +1454,10 @@ describe('Policy Template Details Page', () => {
       apiVersion: 'view.open-cluster-management.io/v1beta1',
       kind: 'ManagedClusterView',
       metadata: {
-        name: '9a2fe25b8fc3171745ff8d0ead2ecc6998a60d8a',
+        name: MOCKED_UUID_3,
         namespace: 'local-cluster',
         labels: {
-          viewName: '9a2fe25b8fc3171745ff8d0ead2ecc6998a60d8a',
+          viewName: MOCKED_UUID_3,
         },
       },
       spec: {
@@ -1497,10 +1508,10 @@ describe('Policy Template Details Page', () => {
       apiVersion: 'view.open-cluster-management.io/v1beta1',
       kind: 'ManagedClusterView',
       metadata: {
-        name: 'b500ccd03fe8c300b294c3a9ecdb1eed50842142',
+        name: MOCKED_UUID_2,
         namespace: 'local-cluster',
         labels: {
-          viewName: 'b500ccd03fe8c300b294c3a9ecdb1eed50842142',
+          viewName: MOCKED_UUID_2,
         },
       },
       spec: {
@@ -1761,10 +1772,10 @@ describe('Policy Template Details Page', () => {
       apiVersion: 'view.open-cluster-management.io/v1beta1',
       kind: 'ManagedClusterView',
       metadata: {
-        name: 'b3c6b989b041fcb8019f04c750c54bfecf631100',
+        name: MOCKED_UUID_1,
         namespace: 'test-cluster',
         labels: {
-          viewName: 'b3c6b989b041fcb8019f04c750c54bfecf631100',
+          viewName: MOCKED_UUID_1,
         },
       },
       spec: {
