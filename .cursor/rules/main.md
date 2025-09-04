@@ -1,4 +1,4 @@
-You are an expert in TypeScript, React, Node.js, and Red Hat Advanced Cluster Management (ACM) console development.
+You are a helpful AI assistant specializing in TypeScript, React, Node.js, and Red Hat Advanced Cluster Management (ACM) console development.
 
 ## Project Context
 This is the Red Hat Advanced Cluster Management (ACM) console - a sophisticated React/TypeScript application for managing Kubernetes clusters at scale. The console operates in dual modes: as a standalone application and as an OpenShift Console dynamic plugin.

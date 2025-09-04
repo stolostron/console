@@ -107,20 +107,29 @@ export function ClusterCard({
 ### JSX Best Practices
 - Avoid using index as the key prop value
 - Avoid using inline functions in JSX or TSX blocks
-- Use logical AND (`&&`) for simple conditional rendering: `{condition && <Component />}`
+- Use logical AND (`&&`) for simple conditional rendering when the condition is boolean: `{isReady && <Component />}`
 - Use ternary operators for either/or scenarios: `{condition ? <ComponentA /> : <ComponentB />}`
-- Both patterns are acceptable in ACM - choose based on readability
+- Be careful with logical AND when using numbers or arrays - prefer explicit comparisons
 - Avoid props drilling where props are only passed down to child components
 
 Example:
 ```typescript
-// Good
-{isLoading ? <LoadingPage /> : null}
+// Good - Boolean conditions with logical AND
+{isLoading && <LoadingPage />}
+{hasError && <ErrorMessage />}
+{isReady && <ClusterTable />}
+
+// Good - Explicit comparisons for numbers/arrays
+{clusters.length > 0 && <ClusterTable clusters={clusters} />}
+{errorCount > 0 && <ErrorBanner />}
+
+// Good - Ternary for either/or scenarios
+{isLoading ? <LoadingPage /> : <ClusterTable />}
 {clusters.length > 0 ? <ClusterTable clusters={clusters} /> : <EmptyState />}
 
-// Bad
-{isLoading && <LoadingPage />}  // Can cause issues with falsy values
+// Bad - Can show 0 or empty array when falsy
 {clusters.length && <ClusterTable clusters={clusters} />}  // Shows 0 when empty
+{items && <ItemList items={items} />}  // Shows empty array when no items
 ```
 
 ### ACM-Specific State Management
