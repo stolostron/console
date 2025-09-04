@@ -21,22 +21,36 @@ import { IAcmTableAction, IAcmTableButtonAction, ITableFilter } from '../../../u
 import { RoleAssignmentActionDropdown } from './RoleAssignmentActionDropdown'
 import { RoleAssignmentLabel } from './RoleAssignmentLabel'
 import { RoleAssignmentStatusComponent } from './RoleAssignmentStatusComponent'
+import { RoleAssignmentModal } from '../RoleAssignments/RoleAssignmentModal'
+import { RoleAssignmentPreselected } from './../RoleAssignments/model/role-assignment-preselected'
 
 type RoleAssignmentsProps = {
   roleAssignments: FlattenedRoleAssignment[]
   isLoading?: boolean
   hiddenColumns?: ('subject' | 'role' | 'clusters' | 'clusterSets')[]
+  isCreateButtonHidden?: boolean
+  preselected: RoleAssignmentPreselected
 }
 
-const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssignmentsProps) => {
+const RoleAssignments = ({
+  roleAssignments,
+  isLoading,
+  hiddenColumns,
+  isCreateButtonHidden,
+  preselected,
+}: RoleAssignmentsProps) => {
   const { t } = useTranslation()
   // Key function for the table that generates a unique key for each role assignment
   const keyFn = useCallback((roleAssignment: FlattenedRoleAssignment) => roleAssignment.name, [])
 
   // Modal state for delete confirmation
-  const [modalProps, setModalProps] = useState<BulkActionModalProps<FlattenedRoleAssignment> | { open: false }>({
+  const [deleteModalProps, setDeleteModalProps] = useState<
+    BulkActionModalProps<FlattenedRoleAssignment> | { open: false }
+  >({
     open: false,
   })
+
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
 
   // Table actions for bulk operations
   const tableActions = useMemo<IAcmTableAction<FlattenedRoleAssignment>[]>(
@@ -45,7 +59,7 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
         id: 'deleteRoleAssignments',
         title: t('Delete role assignments'),
         click: (roleAssignments) => {
-          setModalProps({
+          setDeleteModalProps({
             open: true,
             title: t('Delete role assignments?'),
             action: t('Delete'),
@@ -70,7 +84,7 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
             ],
             keyFn,
             actionFn: deleteRoleAssignment,
-            close: () => setModalProps({ open: false }),
+            close: () => setDeleteModalProps({ open: false }),
             isDanger: true,
             icon: 'warning',
             confirmText: 'delete',
@@ -159,7 +173,7 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
       {
         id: 'create-role-assignment',
         title: t('Create role assignment'),
-        click: () => {},
+        click: () => setIsCreateModalOpen(true),
         variant: ButtonVariant.primary,
       },
     ],
@@ -218,7 +232,7 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
       cell: (roleAssignment: FlattenedRoleAssignment) => (
         <RoleAssignmentActionDropdown
           roleAssignment={roleAssignment}
-          setModalProps={setModalProps}
+          setModalProps={setDeleteModalProps}
           deleteAction={deleteRoleAssignment}
         />
       ),
@@ -232,36 +246,47 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
       {isLoading ? (
         <AcmLoadingPage />
       ) : (
-        <AcmTable<FlattenedRoleAssignment>
-          key="role-assignments-table"
-          columns={columns}
-          keyFn={keyFn}
-          items={roleAssignments}
-          searchPlaceholder={t('Search for role assignments...')}
-          filters={filters}
-          tableActionButtons={tableActionButtons}
-          tableActions={tableActions}
-          emptyState={
-            <AcmEmptyState
-              key="roleAssignmentsEmptyState"
-              title={t('No role assignment created yet')}
-              message={t(
-                'No role assignments have been created for this entity yet. Create a role assignment to grant specific permissions.'
-              )}
-              action={
-                <div>
-                  <AcmButton variant="primary" onClick={() => {}}>
-                    {t('Create role assignment')}
-                  </AcmButton>
-                  {/* TODO: add correct documentation link */}
-                  <ViewDocumentationLink doclink={DOC_LINKS.CLUSTERS} />
-                </div>
-              }
-            />
-          }
-        />
+        <>
+          <AcmTable<FlattenedRoleAssignment>
+            key="role-assignments-table"
+            columns={columns}
+            keyFn={keyFn}
+            items={roleAssignments}
+            searchPlaceholder={t('Search for role assignments...')}
+            filters={filters}
+            tableActionButtons={tableActionButtons}
+            tableActions={tableActions}
+            emptyState={
+              <AcmEmptyState
+                key="roleAssignmentsEmptyState"
+                title={t('No role assignment created yet')}
+                message={t(
+                  'No role assignments have been created for this entity yet. Create a role assignment to grant specific permissions.'
+                )}
+                action={
+                  <div>
+                    {isCreateButtonHidden ? (
+                      <AcmButton variant="primary" onClick={() => setIsCreateModalOpen(true)}>
+                        {t('Create role assignment')}
+                      </AcmButton>
+                    ) : null}
+                    {/* TODO: add correct documentation link */}
+                    <ViewDocumentationLink doclink={DOC_LINKS.CLUSTERS} />
+                  </div>
+                }
+              />
+            }
+          />
+          <RoleAssignmentModal
+            close={() => setIsCreateModalOpen(false)}
+            // TODO: onSave
+            onSave={() => setIsCreateModalOpen(false)}
+            isOpen={isCreateModalOpen}
+            preselected={preselected}
+          />
+        </>
       )}
-      <BulkActionModal<FlattenedRoleAssignment> {...modalProps} />
+      <BulkActionModal<FlattenedRoleAssignment> {...deleteModalProps} />
     </PageSection>
   )
 }

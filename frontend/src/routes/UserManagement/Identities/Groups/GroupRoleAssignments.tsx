@@ -80,7 +80,14 @@ const GroupRoleAssignments = () => {
         />
       )
     default:
-      return <RoleAssignments roleAssignments={roleAssignments} isLoading={isLoading} hiddenColumns={['subject']} />
+      return (
+        <RoleAssignments
+          roleAssignments={roleAssignments}
+          isLoading={isLoading}
+          hiddenColumns={['subject']}
+          preselected={{ groups: [{ id: group?.metadata.uid ?? '', name: group?.metadata.name ?? '' }] }}
+        />
+      )
   }
 }
 
