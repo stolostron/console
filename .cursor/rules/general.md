@@ -10,7 +10,6 @@
 - Handle loading and error states properly and provide user-friendly error messages
 
 ### Naming Conventions
-- Use CamelCase for file names unless they are React files (jsx or tsx)
 - Match the file name with the default exported component or function name exactly
 - Use camelCase for function and variable names
 - Use descriptive names for variable names - avoid abbreviations
