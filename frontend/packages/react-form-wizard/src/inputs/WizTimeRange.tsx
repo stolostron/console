@@ -15,10 +15,10 @@ import set from 'set-value'
 import { useData } from '../contexts/DataContext'
 import { ItemContext } from '../contexts/ItemContext'
 import { DisplayMode, useDisplayMode } from '../contexts/DisplayModeContext'
-import { InputCommonProps, useID } from './Input'
+import { InputCommonProps, convertId } from './Input'
 
 export function WizTimeRange(props: InputCommonProps<string>) {
-  const id = useID(props)
+  const id = convertId(props)
   const path = props.path ?? id
 
   const { update } = useData()
