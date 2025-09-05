@@ -16,28 +16,25 @@ export function _waitFor<T>(
   const stack = StackTrace.getSync()
   const promise = waitFor(callback, options)
   if (window.pendingWaits) {
-    let stackIndex = 1
-    while (stackIndex < stack.length + 1 && stack[stackIndex + 1].getSource().indexOf('test-util.ts') >= 0) {
+    // get the waitFor function
+    const waitFor = stack.shift()
+    // find the first non-test.utils file
+    let stackIndex = 0
+    while (stackIndex < stack.length + 1 && stack[stackIndex].getFileName() === waitFor?.getFileName()) {
       stackIndex++
     }
+
     const entry = {
       promise,
       start: new Date().getTime(),
-      elapsed: 0,
-      waitfor: stack[stackIndex].getFunctionName(),
-      source: stack[stackIndex + 1].getSource(),
-      stack: stack
-        .slice(0, stackIndex + 1)
-        .reverse()
-        .map((frame) => ` > ${frame.getSource().trim()}`)
-        .join('\n'),
+      end: 0,
+      frame: stack[0],
+      parentFrame: stack[stackIndex],
+      parentFrameWaitfor: stack[stackIndex - 1].getFunctionName(),
       done: false,
     }
-    // mark as done when the promise settles
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     promise.finally(() => {
-      entry.elapsed = new Date().getTime() - entry.start
-      entry.start = -1
+      entry.end = new Date().getTime()
       entry.done = true
     })
     window.pendingWaits.push(entry)

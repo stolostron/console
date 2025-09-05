@@ -212,17 +212,22 @@ expect.extend({
     const msgs: string[] = []
     const pass: boolean = window.pendingWaits.filter(({ done }) => !done).length === 0
     if (!pass) {
-      msgs.push('\n\n\n!!!!!!!!!!!!!!!! TIMED OUT WAITFOR !!!!!!!!!!!!!!!!!!!!!!!!\n\n\n')
-      window.pendingWaits.forEach(({ waitfor, source, start, elapsed, stack, done }) => {
-        const elapse = done ? elapsed : new Date().getTime() - start
-        const m = source.match(/\(([^)]*)\)/)
-        const inside = m ? m[1] : source
-        const srcParts = inside.split(/\//)
-        const src = srcParts.pop()?.trim()
-        msgs.push(`${done ? '' : '>>>'} ${done ? src : inside} '${waitfor}' ${elapse}`)
-        if (!done) {
-          msgs.push(stack)
+      msgs.push('\n\n\n!!!!!!!!!!!!!!!! WAITFOR NOT DONE !!!!!!!!!!!!!!!!!!!!!!!!\n\n\n')
+      let lastParentFrame: any = undefined
+      const getFileName = (frame: any, done: boolean) => {
+        const m = frame.getSource().match(/\(([^)]*)\)/)
+        const inside = m ? m[1] : frame.getSource()
+        const between = inside.match(/([^/]+):[^:]*$/)?.[1] ?? ''
+        return done ? between : inside
+      }
+      window.pendingWaits.forEach(({ start, end, frame, parentFrame, parentFrameWaitfor, done }) => {
+        if (!lastParentFrame || lastParentFrame.getLineNumber() !== parentFrame.getLineNumber()) {
+          lastParentFrame = parentFrame
+          msgs.push(getFileName(parentFrame, done))
         }
+        const elapse = done ? end - start : new Date().getTime() - start
+        const fn = getFileName(frame, done)
+        msgs.push(`${done ? '  ' : '  >>>'} ${parentFrameWaitfor} ${fn}  ${elapse}ms`)
       })
       msgs.push('\n\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
     }
@@ -266,8 +271,6 @@ async function setupAfterEach(): Promise<void> {
   expect([]).hasNoMissingNocks()
   expect([]).hasNoPendingNocks()
   expect([]).hasNoPendingWaits()
-  // expect(consoleErrors).toEqual([])
-  // expect(consoleWarnings).toEqual([])
 }
 
 async function setupAfterEachNock(): Promise<void> {
