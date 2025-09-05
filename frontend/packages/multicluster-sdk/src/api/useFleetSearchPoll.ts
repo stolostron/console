@@ -209,6 +209,7 @@ export function useFleetSearchPoll<T extends K8sResourceCommon | K8sResourceComm
             name: item.name,
             namespace: item.namespace,
             labels: label,
+            uid: item._uid,
           },
         }
         setIfDefined(resource, 'status.conditions', parseConditionString(item.condition))
