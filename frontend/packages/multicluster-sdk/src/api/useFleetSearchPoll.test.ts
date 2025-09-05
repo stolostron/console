@@ -1061,6 +1061,90 @@ describe('useFleetSearchPoll', () => {
       const dataArray = data as any[]
       expect(dataArray[0].apiVersion).toBe('v1')
     })
+
+    it('should process _uid field in "<cluster>/<uid>" format correctly', () => {
+      const itemWithClusterUid = {
+        ...mockSearchResultItem,
+        _uid: 'test-cluster/abc-123-def-456',
+      }
+
+      mockUseSearchResultItemsQuery.mockReturnValue({
+        data: {
+          searchResult: [{ items: [itemWithClusterUid] }],
+        },
+        loading: false,
+        error: undefined,
+        refetch: jest.fn(),
+      } as any)
+
+      const { result } = renderHook(() => useFleetSearchPoll<K8sResourceCommon[]>(mockWatchOptions))
+
+      const [data] = result.current
+      expect(data?.[0].metadata?.uid).toBe('abc-123-def-456')
+    })
+
+    it('should process _uid field in "<uid>" format correctly', () => {
+      const itemWithDirectUid = {
+        ...mockSearchResultItem,
+        _uid: 'xyz-789-ghi-012',
+      }
+
+      mockUseSearchResultItemsQuery.mockReturnValue({
+        data: {
+          searchResult: [{ items: [itemWithDirectUid] }],
+        },
+        loading: false,
+        error: undefined,
+        refetch: jest.fn(),
+      } as any)
+
+      const { result } = renderHook(() => useFleetSearchPoll<K8sResourceCommon[]>(mockWatchOptions))
+
+      const [data] = result.current
+      expect(data?.[0].metadata?.uid).toBe('xyz-789-ghi-012')
+    })
+
+    it('should handle undefined _uid field correctly', () => {
+      const itemWithoutUid = {
+        ...mockSearchResultItem,
+        _uid: undefined,
+      }
+
+      mockUseSearchResultItemsQuery.mockReturnValue({
+        data: {
+          searchResult: [{ items: [itemWithoutUid] }],
+        },
+        loading: false,
+        error: undefined,
+        refetch: jest.fn(),
+      } as any)
+
+      const { result } = renderHook(() => useFleetSearchPoll<K8sResourceCommon[]>(mockWatchOptions))
+
+      const [data] = result.current
+      expect(data?.[0].metadata?.uid).toBeUndefined()
+    })
+
+    it('should handle empty string _uid field correctly', () => {
+      const itemWithEmptyUid = {
+        ...mockSearchResultItem,
+        _uid: '',
+      }
+
+      mockUseSearchResultItemsQuery.mockReturnValue({
+        data: {
+          searchResult: [{ items: [itemWithEmptyUid] }],
+        },
+        loading: false,
+        error: undefined,
+        refetch: jest.fn(),
+      } as any)
+
+      const { result } = renderHook(() => useFleetSearchPoll<K8sResourceCommon[]>(mockWatchOptions))
+
+      const [data] = result.current
+      expect(data?.[0].metadata?.uid).toBeUndefined()
+    })
   })
 
   describe('skip behavior', () => {
