@@ -20,7 +20,7 @@ export interface RoleAssignment {
   name: string
   clusterRole: string
   targetNamespaces?: string[]
-  clusterSets: string[]
+  clusterSets?: string[]
   // this is information should come from the aggregated API
   clusters?: string[]
 }

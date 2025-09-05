@@ -2,17 +2,18 @@
 import { get } from 'lodash'
 import { useCallback, useEffect, useState } from 'react'
 import { RoleAssignmentPreselected } from '../model/role-assignment-preselected'
-import { useRoleAssignment } from './RoleAssignmentHook'
+import { useRoleAssignmentData } from './RoleAssignmentDataHook'
+import { GroupKind, GroupKindType, ServiceAccountKindType, UserKind, UserKindType } from '../../../../resources'
 
 type RoleAssignmentFormDataType = {
   subject: {
-    kind: 'user' | 'group' | 'serviceAccount'
-    users: string[]
-    groups: string[]
-    serviceAccounts: string[]
+    kind: UserKindType | GroupKindType | ServiceAccountKindType
+    user?: string
+    group?: string
   }
   scope: {
     kind: 'all' | 'specific'
+    values?: string[]
   }
   roles: string[]
 }
@@ -23,56 +24,47 @@ type RoleAssignmentFormDataType = {
  * @returns either the form data and different onChange functions
  */
 const useRoleAssignmentFormData = (preselected?: RoleAssignmentPreselected) => {
-  const { roleAssignment } = useRoleAssignment()
+  const { roleAssignmentData } = useRoleAssignmentData()
 
   const [roleAssignmentFormData, setRoleAssignmentFormData] = useState<RoleAssignmentFormDataType>({
-    subject: { kind: 'user', users: [], groups: [], serviceAccounts: [] },
+    subject: { kind: UserKind },
     scope: {
       kind: 'all',
     },
     roles: [],
   })
 
-  const onChangeSubjectKind = (subjectKind: string) =>
-    setRoleAssignmentFormData({
-      ...roleAssignmentFormData,
-      subject: {
-        ...roleAssignmentFormData.subject,
-        kind: subjectKind as RoleAssignmentFormDataType['subject']['kind'],
-      },
-    })
-
-  const onChangeUsers = useCallback(
-    (users: string[]) =>
+  const onChangeSubjectKind = useCallback(
+    (subjectKind: string) =>
       setRoleAssignmentFormData({
         ...roleAssignmentFormData,
         subject: {
           ...roleAssignmentFormData.subject,
-          users,
+          kind: subjectKind as RoleAssignmentFormDataType['subject']['kind'],
         },
       }),
     [roleAssignmentFormData]
   )
 
-  const onChangeGroups = useCallback(
-    (groups: string[]) =>
+  const onChangeUserValue = useCallback(
+    (user?: string) =>
       setRoleAssignmentFormData({
         ...roleAssignmentFormData,
         subject: {
           ...roleAssignmentFormData.subject,
-          groups,
+          user,
         },
       }),
     [roleAssignmentFormData]
   )
 
-  const onChangeServiceAccounts = useCallback(
-    (serviceAccounts: string[]) =>
+  const onChangeGroupValue = useCallback(
+    (group?: string) =>
       setRoleAssignmentFormData({
         ...roleAssignmentFormData,
         subject: {
           ...roleAssignmentFormData.subject,
-          serviceAccounts,
+          group,
         },
       }),
     [roleAssignmentFormData]
@@ -87,6 +79,15 @@ const useRoleAssignmentFormData = (preselected?: RoleAssignmentPreselected) => {
       },
     })
 
+  const onChangeScopeValues = (values: string[]) =>
+    setRoleAssignmentFormData({
+      ...roleAssignmentFormData,
+      scope: {
+        ...roleAssignmentFormData.scope,
+        values,
+      },
+    })
+
   const onChangeRoles = useCallback(
     (roles: string[]) =>
       setRoleAssignmentFormData({
@@ -96,41 +97,46 @@ const useRoleAssignmentFormData = (preselected?: RoleAssignmentPreselected) => {
     [roleAssignmentFormData]
   )
 
-  // preselected treatments
-  const setValuesBasedOnPreselected = useCallback(
-    (preselectedFieldName: string, onChangeCallback: (value: any) => void, preselected?: RoleAssignmentPreselected) => {
-      if (get(preselected, preselectedFieldName)?.length) {
-        const values: string[] = get(preselected, preselectedFieldName)
-        onChangeCallback(values)
+  // preselected
+  useEffect(() => {
+    const subject = get(preselected, 'subject')
+    if (subject) {
+      onChangeSubjectKind(subject.kind)
+      switch (subject.kind) {
+        case UserKind:
+          onChangeUserValue(subject.value)
+          break
+        case GroupKind:
+          onChangeGroupValue(subject.value)
+          break
       }
-    },
-    []
-  )
+    }
+  }, [
+    roleAssignmentData.groups,
+    roleAssignmentData.users,
+    preselected,
+    onChangeUserValue,
+    onChangeSubjectKind,
+    onChangeGroupValue,
+  ])
 
-  useEffect(
-    () => setValuesBasedOnPreselected('users', onChangeUsers, preselected),
-    [roleAssignment.users, preselected, onChangeUsers, setValuesBasedOnPreselected]
-  )
-
-  useEffect(
-    () => setValuesBasedOnPreselected('groups', onChangeGroups, preselected),
-    [roleAssignment.groups, preselected, onChangeGroups, setValuesBasedOnPreselected]
-  )
-
-  useEffect(
-    () => setValuesBasedOnPreselected('roles', onChangeRoles, preselected),
-    [roleAssignment.roles, preselected, onChangeRoles, setValuesBasedOnPreselected]
-  )
+  useEffect(() => {
+    const roles = get(preselected, 'roles')
+    if (roles?.length) {
+      onChangeRoles(roles)
+    }
+  }, [roleAssignmentData.roles, preselected, onChangeRoles])
 
   return {
     roleAssignmentFormData,
     onChangeSubjectKind,
-    onChangeUsers,
-    onChangeGroups,
-    onChangeServiceAccounts,
+    onChangeUserValue,
+    onChangeGroupValue,
     onChangeScopeKind,
+    onChangeScopeValues,
     onChangeRoles,
   }
 }
 
 export { useRoleAssignmentFormData }
+export type { RoleAssignmentFormDataType }

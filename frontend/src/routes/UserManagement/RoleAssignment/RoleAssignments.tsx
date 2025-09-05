@@ -21,8 +21,9 @@ import { IAcmTableAction, IAcmTableButtonAction, ITableFilter } from '../../../u
 import { RoleAssignmentActionDropdown } from './RoleAssignmentActionDropdown'
 import { RoleAssignmentLabel } from './RoleAssignmentLabel'
 import { RoleAssignmentStatusComponent } from './RoleAssignmentStatusComponent'
-import { RoleAssignmentModal } from '../RoleAssignments/RoleAssignmentModal'
-import { RoleAssignmentPreselected } from './../RoleAssignments/model/role-assignment-preselected'
+import { RoleAssignmentModal } from './../RoleAssignments/RoleAssignmentModal'
+// import { RoleAssignmentsLabel } from './RoleAssignmentsLabel'
+import { RoleAssignmentPreselected } from '../RoleAssignments/model/role-assignment-preselected'
 
 type RoleAssignmentsProps = {
   roleAssignments: FlattenedRoleAssignment[]
@@ -114,7 +115,7 @@ const RoleAssignments = ({
       }
 
       // Add cluster sets and target namespaces
-      roleAssignment.clusterSets.forEach((clusterSet) => {
+      roleAssignment.clusterSets?.forEach((clusterSet) => {
         allClusterSets.add(clusterSet)
       })
       roleAssignment.targetNamespaces?.forEach((namespace) => {
@@ -148,7 +149,7 @@ const RoleAssignments = ({
         label: t('Cluster Set'),
         options: clusterSetOptions,
         tableFilterFn: (selectedValues, roleAssignment) =>
-          selectedValues.some((selectedClusterSet) => roleAssignment.clusterSets.includes(selectedClusterSet)),
+          selectedValues.some((selectedClusterSet) => roleAssignment.clusterSets?.includes(selectedClusterSet)),
       },
       {
         id: 'namespace',
@@ -199,7 +200,7 @@ const RoleAssignments = ({
     {
       header: t('Cluster Sets'),
       cell: (roleAssignment) => <RoleAssignmentLabel elements={roleAssignment.clusterSets} numLabel={3} />,
-      exportContent: (roleAssignment) => roleAssignment.clusterSets.join(', '),
+      exportContent: (roleAssignment) => roleAssignment.clusterSets?.join(', '),
       isHidden: hiddenColumns?.includes('clusterSets'),
     },
     {
