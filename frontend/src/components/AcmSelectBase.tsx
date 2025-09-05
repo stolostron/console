@@ -195,7 +195,8 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
   }
 
   const getMultiTypeaheadChildren = (value: string) =>
-    initialFilteredOptions.find((option) => option.value === value)?.children
+    initialFilteredOptions.find((option) => option.value === value)?.children ?? value
+
   const [focusedItemIndex, setFocusedItemIndex] = useState<number | null>(null)
   const [activeItemId, setActiveItemId] = useState<string | null>(null)
   const menuRef = useRef<HTMLDivElement>()

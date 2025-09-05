@@ -1,8 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useEffect, useMemo, useState } from 'react'
 import { useQuery } from '../../../../lib/useQuery'
-import { listGroups, listRoles, listUsers, Role, ServiceAccount } from '../../../../resources'
+import { listGroups, listUsers } from '../../../../resources'
 import { compareStrings } from '../../../../ui-components'
+import { searchClient } from '../../../Search/search-sdk/search-client'
+import { useSearchResultItemsQuery } from '../../../Search/search-sdk/search-sdk'
 
 type SelectOption = {
   id?: string
@@ -22,13 +24,6 @@ type RoleAssignmentHookReturnType = {
   isGroupsLoading: boolean
   isRolesLoading: boolean
 }
-const getResourceWithNamespaceName = (serviceAccount: ServiceAccount | Role) => {
-  const namespace = serviceAccount.metadata.namespace
-  const name = serviceAccount.metadata.name
-  const separator = namespace !== undefined && name !== undefined ? '/' : ''
-  return `${namespace ?? ''}${separator}${name ?? ''}`
-}
-
 /**
  * custom hook for retrieving whatever the data is needed for RoleAssignment creation/edit
  * @returns RoleAssignmentHookReturnType
@@ -46,7 +41,7 @@ const useRoleAssignment = (): RoleAssignmentHookReturnType => {
     () =>
       userList
         ?.sort((a, b) => compareStrings(a.metadata.name ?? '', b.metadata.name ?? ''))
-        .map((e) => ({ id: e.metadata.uid, value: e.metadata.name })) ?? [],
+        .map((e) => ({ id: e.metadata.name, value: e.metadata.name })) ?? [],
     [userList]
   )
 
@@ -55,17 +50,34 @@ const useRoleAssignment = (): RoleAssignmentHookReturnType => {
     () =>
       groupList
         ?.sort((a, b) => compareStrings(a.metadata.name ?? '', b.metadata.name ?? ''))
-        .map((e) => ({ id: e.metadata.uid, value: e.metadata.name })) ?? [],
+        .map((e) => ({ id: e.metadata.name, value: e.metadata.name })) ?? [],
     [groupList]
   )
 
-  const { data: roleList, loading: isRolesLoading } = useQuery(listRoles)
+  const { data: clusterRolesQuery, loading: isRolesLoading } = useSearchResultItemsQuery({
+    client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
+    variables: {
+      input: [
+        {
+          keywords: [],
+          filters: [
+            { property: 'kind', values: ['ClusterRole'] },
+            { property: 'cluster', values: ['local-cluster'] },
+            { property: 'label', values: ['rbac.open-cluster-management.io/filter=vm-clusterroles'] },
+          ],
+          limit: -1,
+        },
+      ],
+    },
+  })
+
   const roles: SelectOption[] = useMemo(
     () =>
-      roleList
-        ?.sort((a, b) => compareStrings(getResourceWithNamespaceName(a), getResourceWithNamespaceName(b)))
-        .map((e) => ({ id: e.metadata.uid, value: getResourceWithNamespaceName(e) })) ?? [],
-    [roleList]
+      clusterRolesQuery?.searchResult
+        ?.flatMap((roles) => roles?.items as unknown as { name: string; _uid: string })
+        .map((e) => ({ id: e.name, value: e.name }))
+        .sort((a, b) => a.value.localeCompare(b.value)) ?? [],
+    [clusterRolesQuery?.searchResult]
   )
 
   useEffect(() => setIsLoading(isUsersLoading || isRolesLoading), [isUsersLoading, isRolesLoading])

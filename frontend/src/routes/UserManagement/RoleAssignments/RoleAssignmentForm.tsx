@@ -140,7 +140,6 @@ const RoleAssignmentForm = ({
             isRequired: roleAssignmentFormData.subject.kind === 'user',
             isHidden:
               roleAssignmentFormData.subject.kind !== 'user' || preselected?.users?.length || isSubjectFieldHiden,
-            isCreatable: true,
             isLoading: isUsersLoading,
             isScrollable: true,
           },
@@ -154,7 +153,6 @@ const RoleAssignmentForm = ({
             isRequired: roleAssignmentFormData.subject.kind === 'group',
             isHidden:
               roleAssignmentFormData.subject.kind !== 'group' || preselected?.groups?.length || isSubjectFieldHiden,
-            isCreatable: true,
             isLoading: isGroupsLoading,
             isScrollable: true,
           },
@@ -191,7 +189,6 @@ const RoleAssignmentForm = ({
             value: roleAssignmentFormData.roles,
             onChange: onChangeRoles,
             options: roleAssignment.roles,
-            isCreatable: true,
             isLoading: isRolesLoading,
             isScrollable: true,
             isHidden: preselected?.roles?.length,
