@@ -14,6 +14,7 @@ import { useRoleAssignmentData } from './hook/RoleAssignmentDataHook'
 import { RoleAssignmentFormDataType, useRoleAssignmentFormData } from './hook/RoleAssignmentFormDataHook'
 import { RoleAssignmentPreselected } from './model/role-assignment-preselected'
 import schema from './schema.json'
+import { LoadingState } from '@openshift-assisted/ui-lib/common'
 
 type RoleAssignmentFormProps = {
   onCancel: () => void
@@ -39,6 +40,7 @@ const RoleAssignmentForm = ({
     isUsersLoading,
     isGroupsLoading,
     isRolesLoading,
+    isClusterSetLoading,
   } = useRoleAssignmentData()
 
   const {
@@ -199,12 +201,14 @@ const RoleAssignmentForm = ({
             isInline: false,
             value: roleAssignmentFormData.scope.values,
             onChange: onChangeScopeValues,
-            options: [{ id: '1', value: '1' }],
-            component: (
+            component: isClusterSetLoading ? (
+              <LoadingState />
+            ) : (
               <ClustersDualListSelector
                 onChoseOptions={(values: { id: string; value: string }[]) =>
                   onChangeScopeValues(values.map((e) => e.value))
                 }
+                clusterSets={roleAssignmentData.clusterSets}
               />
             ),
             isRequired: preselected?.cluterSets === undefined || preselected?.cluterSets?.length === 0,

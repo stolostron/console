@@ -13,6 +13,7 @@ import { AcmModal, AcmToastContext } from '../../../ui-components'
 import { RoleAssignmentFormDataType } from './hook/RoleAssignmentFormDataHook'
 import { RoleAssignmentPreselected } from './model/role-assignment-preselected'
 import { RoleAssignmentForm } from './RoleAssignmentForm'
+import { ModalVariant } from '@patternfly/react-core'
 
 type RoleAssignmentModalProps = {
   close: () => void
@@ -86,7 +87,7 @@ const RoleAssignmentModal = ({ close, isOpen, isEditing, preselected }: RoleAssi
   }
 
   return (
-    <AcmModal isOpen={isOpen} width="90%" style={{ display: 'table !important' }} onClose={close}>
+    <AcmModal isOpen={isOpen} onClose={close} variant={ModalVariant.large} height="90%">
       <RoleAssignmentForm
         isEditing={isEditing}
         onCancel={close}

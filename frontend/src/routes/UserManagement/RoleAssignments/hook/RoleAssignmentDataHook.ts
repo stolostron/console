@@ -2,7 +2,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useQuery } from '../../../../lib/useQuery'
 import { listGroups, listUsers } from '../../../../resources'
+import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { compareStrings } from '../../../../ui-components'
+import { useClusters } from '../../../Infrastructure/Clusters/ClusterSets/components/useClusters'
 import { searchClient } from '../../../Search/search-sdk/search-client'
 import { useSearchResultItemsQuery } from '../../../Search/search-sdk/search-sdk'
 
@@ -11,11 +13,22 @@ type SelectOption = {
   value?: string
 }
 
+type Cluster = {
+  name: string
+  namespaces?: string[]
+}
+
+type ClusterSet = {
+  name: string
+  clusters?: Cluster[]
+}
+
 type RoleAssignmentHookType = {
   users: SelectOption[]
   groups: SelectOption[]
   serviceAccounts: SelectOption[]
   roles: SelectOption[]
+  clusterSets: ClusterSet[]
 }
 
 type RoleAssignmentHookReturnType = {
@@ -24,6 +37,7 @@ type RoleAssignmentHookReturnType = {
   isUsersLoading: boolean
   isGroupsLoading: boolean
   isRolesLoading: boolean
+  isClusterSetLoading: boolean
 }
 /**
  * custom hook for retrieving whatever the data is needed for RoleAssignment creation/edit
@@ -35,6 +49,7 @@ const useRoleAssignmentData = (): RoleAssignmentHookReturnType => {
     groups: [],
     serviceAccounts: [],
     roles: [],
+    clusterSets: [],
   })
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
@@ -82,7 +97,34 @@ const useRoleAssignmentData = (): RoleAssignmentHookReturnType => {
     [clusterRolesQuery?.searchResult]
   )
 
-  useEffect(() => setIsLoading(isUsersLoading || isRolesLoading), [isUsersLoading, isRolesLoading])
+  const [isClusterSetLoading, setIsClusterSetLoading] = useState(true)
+  const { managedClusterSetsState } = useSharedAtoms()
+  const managedClusterSets = useRecoilValue(managedClusterSetsState)
+  const clusters = useClusters({ managedClusterSets })
+
+  useEffect(() => {
+    const clustersGroupedBySet = Object.groupBy(
+      clusters.filter((e) => e.clusterSet),
+      ({ clusterSet }) => clusterSet!
+    )
+
+    const clusterSets: ClusterSet[] = Object.keys(clustersGroupedBySet).map((key) => ({
+      name: key,
+      clusters: clustersGroupedBySet[key]?.map((cluster) => ({
+        name: cluster.name,
+        namespaces: cluster.namespace ? [cluster.namespace] : [],
+      })),
+    }))
+    setRoleAssignmentData({ ...roleAssignmentData, clusterSets })
+    setIsClusterSetLoading(false)
+    // to avoid loop onroleAssignment
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clusters])
+
+  useEffect(
+    () => setIsLoading(isUsersLoading || isGroupsLoading || isRolesLoading || isClusterSetLoading),
+    [isUsersLoading, isRolesLoading, isClusterSetLoading, isGroupsLoading]
+  )
 
   // to avoid loop onroleAssignment
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -96,7 +138,7 @@ const useRoleAssignmentData = (): RoleAssignmentHookReturnType => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => setRoleAssignmentData({ ...roleAssignmentData, roles }), [roles])
 
-  return { roleAssignmentData, isLoading, isUsersLoading, isGroupsLoading, isRolesLoading }
+  return { roleAssignmentData, isLoading, isUsersLoading, isGroupsLoading, isRolesLoading, isClusterSetLoading }
 }
 
 export { useRoleAssignmentData }
