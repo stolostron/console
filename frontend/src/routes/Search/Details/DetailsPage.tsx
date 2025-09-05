@@ -1,8 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 
-import { Divider } from '@patternfly/react-core'
-import { Dropdown, DropdownItem, DropdownToggle } from '@patternfly/react-core/deprecated'
+import { Divider, Dropdown, DropdownItem, MenuToggle, MenuToggleElement, Tooltip } from '@patternfly/react-core'
 import { Dispatch, Fragment, SetStateAction, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { Link, Outlet, useLocation, useNavigate, useOutletContext } from 'react-router-dom-v5-compat'
 import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
@@ -332,7 +331,7 @@ export default function DetailsPage() {
         if (isResourceTypeOf(resource, actionExtension?.model as IResourceDefinition[])) {
           const ModalComp = actionExtension.component
           const close = () => setPluginModal(<></>)
-          actions.push(
+          const dropdownItem = (
             <DropdownItem
               id={actionExtension.id}
               key={actionExtension.id}
@@ -341,12 +340,23 @@ export default function DetailsPage() {
                 setPluginModal(<ModalComp isOpen={true} close={close} resource={resource} cluster={cluster} />)
               }
               isDisabled={actionExtension?.isDisabled?.(resource) || false}
-              tooltip={actionExtension.tooltip}
-              tooltipProps={actionExtension.tooltipProps}
               isAriaDisabled={actionExtension.isAriaDisabled}
             >
               {actionExtension.title}
             </DropdownItem>
+          )
+          actions.push(
+            actionExtension.tooltip ? (
+              <Tooltip
+                key={actionExtension.id}
+                content={actionExtension.tooltip}
+                {...(actionExtension.tooltipProps || {})}
+              >
+                <div>{dropdownItem}</div>
+              </Tooltip>
+            ) : (
+              dropdownItem
+            )
           )
         }
       })
@@ -413,15 +423,20 @@ export default function DetailsPage() {
             actions={
               <Dropdown
                 isOpen={resourceActionsOpen}
-                position={'right'}
-                toggle={
-                  <DropdownToggle onToggle={() => setResourceActionsOpen(!resourceActionsOpen)}>
-                    {t('Actions')}
-                  </DropdownToggle>
-                }
-                dropdownItems={getResourceActions}
                 onSelect={() => setResourceActionsOpen(false)}
-              />
+                popperProps={{ position: 'right' }}
+                toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+                  <MenuToggle
+                    ref={toggleRef}
+                    onClick={() => setResourceActionsOpen(!resourceActionsOpen)}
+                    isExpanded={resourceActionsOpen}
+                  >
+                    {t('Actions')}
+                  </MenuToggle>
+                )}
+              >
+                {getResourceActions}
+              </Dropdown>
             }
           />
         }

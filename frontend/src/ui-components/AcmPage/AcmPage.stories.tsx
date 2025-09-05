@@ -1,7 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Bullseye, Card, CardBody, PageSection, Switch } from '@patternfly/react-core'
-import { Dropdown, DropdownItem, DropdownToggle } from '@patternfly/react-core/deprecated'
+import {
+  Bullseye,
+  Card,
+  CardBody,
+  PageSection,
+  Switch,
+  Dropdown,
+  DropdownItem,
+  MenuToggle,
+  MenuToggleElement,
+} from '@patternfly/react-core'
 import '@patternfly/react-core/dist/styles/base.css'
 import { Meta } from '@storybook/react'
 import { Fragment, useState } from 'react'
@@ -82,19 +91,24 @@ export const Page = (args: {
             args.showActions && (
               <Dropdown
                 isOpen={isActionDowndownOpen}
-                toggle={
-                  <DropdownToggle onToggle={() => setActionDowndownOpen(!isActionDowndownOpen)}>Actions</DropdownToggle>
-                }
-                dropdownItems={[
-                  <DropdownItem component="button" key="1">
-                    Action 1
-                  </DropdownItem>,
-                  <DropdownItem component="button" key="2">
-                    Action 2
-                  </DropdownItem>,
-                ]}
                 onSelect={() => setActionDowndownOpen(!isActionDowndownOpen)}
-              />
+                toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+                  <MenuToggle
+                    ref={toggleRef}
+                    onClick={() => setActionDowndownOpen(!isActionDowndownOpen)}
+                    isExpanded={isActionDowndownOpen}
+                  >
+                    Actions
+                  </MenuToggle>
+                )}
+              >
+                <DropdownItem component="button" key="1">
+                  Action 1
+                </DropdownItem>
+                <DropdownItem component="button" key="2">
+                  Action 2
+                </DropdownItem>
+              </Dropdown>
             )
           }
           navigation={
