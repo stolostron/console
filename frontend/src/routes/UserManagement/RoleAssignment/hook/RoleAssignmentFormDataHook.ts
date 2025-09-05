@@ -2,7 +2,7 @@
 import { get } from 'lodash'
 import { useCallback, useEffect, useState } from 'react'
 import { RoleAssignmentPreselected } from '../model/role-assignment-preselected'
-import { RoleAssignmentHookType, SelectOption, useRoleAssignment } from './RoleAssignmentHook'
+import { useRoleAssignment } from './RoleAssignmentHook'
 
 type RoleAssignmentFormDataType = {
   subject: {
@@ -98,16 +98,9 @@ const useRoleAssignmentFormData = (preselected?: RoleAssignmentPreselected) => {
 
   // preselected treatments
   const setValuesBasedOnPreselected = useCallback(
-    (
-      preselectedFieldName: string,
-      roleAssignment: RoleAssignmentHookType,
-      onChangeCallback: (value: any) => void,
-      preselected?: RoleAssignmentPreselected
-    ) => {
+    (preselectedFieldName: string, onChangeCallback: (value: any) => void, preselected?: RoleAssignmentPreselected) => {
       if (get(preselected, preselectedFieldName)?.length) {
-        const values: string[] = get(roleAssignment, preselectedFieldName)
-          .filter((e: SelectOption) => e.value && e.id && get(preselected, preselectedFieldName)?.includes(e.id))
-          .map((e: SelectOption) => e.value)
+        const values: string[] = get(preselected, preselectedFieldName)
         onChangeCallback(values)
       }
     },
@@ -115,18 +108,18 @@ const useRoleAssignmentFormData = (preselected?: RoleAssignmentPreselected) => {
   )
 
   useEffect(
-    () => setValuesBasedOnPreselected('users', roleAssignment, onChangeUsers, preselected),
-    [roleAssignment.users, preselected, onChangeUsers, setValuesBasedOnPreselected, roleAssignment]
+    () => setValuesBasedOnPreselected('users', onChangeUsers, preselected),
+    [roleAssignment.users, preselected, onChangeUsers, setValuesBasedOnPreselected]
   )
 
   useEffect(
-    () => setValuesBasedOnPreselected('groups', roleAssignment, onChangeGroups, preselected),
-    [roleAssignment.groups, preselected, onChangeGroups, setValuesBasedOnPreselected, roleAssignment]
+    () => setValuesBasedOnPreselected('groups', onChangeGroups, preselected),
+    [roleAssignment.groups, preselected, onChangeGroups, setValuesBasedOnPreselected]
   )
 
   useEffect(
-    () => setValuesBasedOnPreselected('roles', roleAssignment, onChangeRoles, preselected),
-    [roleAssignment.roles, preselected, onChangeRoles, setValuesBasedOnPreselected, roleAssignment]
+    () => setValuesBasedOnPreselected('roles', onChangeRoles, preselected),
+    [roleAssignment.roles, preselected, onChangeRoles, setValuesBasedOnPreselected]
   )
 
   return {

@@ -1,10 +1,8 @@
-type RoleAssignmentPreselectedEntity = { name: string; id: string }
-
 type RoleAssignmentPreselected = {
-  users?: RoleAssignmentPreselectedEntity[]
-  groups?: RoleAssignmentPreselectedEntity[]
-  roles?: RoleAssignmentPreselectedEntity[]
-  cluterSets?: RoleAssignmentPreselectedEntity[]
+  users?: string[]
+  groups?: string[]
+  roles?: string[]
+  cluterSets?: string[]
 }
 
-export type { RoleAssignmentPreselected, RoleAssignmentPreselectedEntity }
+export type { RoleAssignmentPreselected }
