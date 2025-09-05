@@ -3,217 +3,43 @@ import React, { useCallback, useEffect } from 'react'
 
 type ClustersDualListSelectorProps = {
   onChoseOptions: (values: { id: string; value: string }[]) => void
+  clusterSets: ClusterSet[]
 }
 
-const ClustersDualListSelector = ({ onChoseOptions }: ClustersDualListSelectorProps) => {
-  const [availableOptions, setAvailableOptions] = React.useState<DualListSelectorTreeItemData[]>([
-    {
-      id: 'cluster set 1',
-      text: 'cluster set 1',
+type Cluster = {
+  name: string
+  namespaces?: string[]
+}
+
+type ClusterSet = {
+  name: string
+  clusters?: Cluster[]
+}
+
+const ClustersDualListSelector = ({ onChoseOptions, clusterSets }: ClustersDualListSelectorProps) => {
+  const [availableOptions, setAvailableOptions] = React.useState<DualListSelectorTreeItemData[]>(
+    clusterSets.map((clusterSet) => ({
+      id: clusterSet.name,
+      text: clusterSet.name,
       isChecked: false,
-      checkProps: { 'aria-label': 'cluster set 1' },
+      checkProps: { 'aria-label': clusterSet.name },
       hasBadge: true,
       badgeProps: { isRead: true },
-      children: [
-        {
-          id: 'cluster 1',
-          text: 'cluster 1',
+      children: clusterSet.clusters?.map((cluster) => ({
+        id: cluster.name,
+        text: cluster.name,
+        isChecked: false,
+        hasBadge: true,
+        checkProps: { 'aria-label': cluster.name },
+        children: cluster.namespaces?.map((namespace) => ({
+          id: namespace,
+          text: namespace,
           isChecked: false,
-          hasBadge: true,
-          checkProps: { 'aria-label': 'cluster 1' },
-          children: [
-            {
-              id: 'Namespace1',
-              text: 'Namespace1',
-              isChecked: false,
-              checkProps: { 'aria-label': 'Namespace1' },
-            },
-            {
-              id: 'Namespace2',
-              text: 'Namespace2',
-              isChecked: false,
-              checkProps: { 'aria-label': 'Namespace2' },
-            },
-            {
-              id: 'Namespace3',
-              text: 'Namespace3',
-              isChecked: false,
-              checkProps: { 'aria-label': 'Namespace3' },
-            },
-            {
-              id: 'Namespace4',
-              text: 'Namespace4',
-              isChecked: false,
-              checkProps: { 'aria-label': 'Namespace4' },
-            },
-            {
-              id: 'Namespace5',
-              text: 'Namespace5',
-              isChecked: false,
-              checkProps: { 'aria-label': 'Namespace5' },
-            },
-            {
-              id: 'Namespace6',
-              text: 'Namespace6',
-              isChecked: false,
-              checkProps: { 'aria-label': 'Namespace6' },
-            },
-            {
-              id: 'Namespace7',
-              text: 'Namespace7',
-              isChecked: false,
-              checkProps: { 'aria-label': 'Namespace7' },
-            },
-            {
-              id: 'Namespace8',
-              text: 'Namespace8',
-              isChecked: false,
-              checkProps: { 'aria-label': 'Namespace8' },
-            },
-          ],
-        },
-        {
-          id: 'cluster 2',
-          text: 'cluster 2',
-          hasBadge: true,
-          isChecked: false,
-          checkProps: { 'aria-label': 'cluster 2' },
-          children: [
-            {
-              id: 'NamespaceB6',
-              text: 'NamespaceB6',
-              isChecked: false,
-              checkProps: { 'aria-label': 'NamespaceB6' },
-            },
-            {
-              id: 'NamespaceB7',
-              text: 'NamespaceB7',
-              isChecked: false,
-              checkProps: { 'aria-label': 'NamespaceB7' },
-            },
-            {
-              id: 'NamespaceB8',
-              text: 'NamespaceB8',
-              isChecked: false,
-              checkProps: { 'aria-label': 'NamespaceB8' },
-            },
-            {
-              id: 'NamespaceB9',
-              text: 'NamespaceB9',
-              isChecked: false,
-              checkProps: { 'aria-label': 'NamespaceB9' },
-            },
-            {
-              id: 'NamespaceB10',
-              text: 'NamespaceB10',
-              isChecked: false,
-              checkProps: { 'aria-label': 'NamespaceB10' },
-            },
-          ],
-        },
-      ],
-    },
-    {
-      id: 'cluster set 2',
-      text: 'cluster set 2',
-      isChecked: false,
-      checkProps: { 'aria-label': 'cluster set 2' },
-      hasBadge: true,
-      badgeProps: { isRead: true },
-      children: [
-        {
-          id: 'cluster 1',
-          text: 'cluster 1',
-          hasBadge: true,
-          isChecked: false,
-          checkProps: { 'aria-label': 'cluster 1' },
-          children: [
-            {
-              id: 'Namespace1',
-              text: 'Namespace1',
-              isChecked: false,
-              checkProps: { 'aria-label': 'Namespace1' },
-            },
-            {
-              id: 'Namespace2',
-              text: 'Namespace2',
-              isChecked: false,
-              checkProps: { 'aria-label': 'Namespace2' },
-            },
-            {
-              id: 'Namespace3',
-              text: 'Namespace3',
-              isChecked: false,
-              checkProps: { 'aria-label': 'Namespace3' },
-            },
-            {
-              id: 'Namespace4',
-              text: 'Namespace4',
-              isChecked: false,
-              checkProps: { 'aria-label': 'Namespace4' },
-            },
-            {
-              id: 'Namespace5',
-              text: 'Namespace5',
-              isChecked: false,
-              checkProps: { 'aria-label': 'Namespace5' },
-            },
-            {
-              id: 'Namespace6',
-              text: 'Namespace6',
-              isChecked: false,
-              checkProps: { 'aria-label': 'Namespace6' },
-            },
-            {
-              id: 'Namespace7',
-              text: 'Namespace7',
-              isChecked: false,
-              checkProps: { 'aria-label': 'Namespace7' },
-            },
-            {
-              id: 'Namespace8',
-              text: 'Namespace8',
-              isChecked: false,
-              checkProps: { 'aria-label': 'Namespace8' },
-            },
-          ],
-        },
-        {
-          id: 'cluster 3',
-          text: 'cluster 3',
-          hasBadge: true,
-          isChecked: false,
-          checkProps: { 'aria-label': 'cluster 2' },
-          children: [
-            {
-              id: 'NamespaceC3',
-              text: 'NamespaceC3',
-              isChecked: false,
-              checkProps: { 'aria-label': 'NamespaceC3' },
-            },
-            {
-              id: 'NamespaceC4',
-              text: 'NamespaceC4',
-              isChecked: false,
-              checkProps: { 'aria-label': 'NamespaceC4' },
-            },
-            {
-              id: 'NamespaceC5',
-              text: 'NamespaceC5',
-              isChecked: false,
-              checkProps: { 'aria-label': 'NamespaceC5' },
-            },
-            {
-              id: 'NamespaceC8',
-              text: 'NamespaceC8',
-              isChecked: false,
-              checkProps: { 'aria-label': 'NamespaceC8' },
-            },
-          ],
-        },
-      ],
-    },
-  ])
+          checkProps: { 'aria-label': namespace },
+        })),
+      })),
+    }))
+  )
 
   const [chosenOptions, setChosenOptions] = React.useState<DualListSelectorTreeItemData[]>([])
 
