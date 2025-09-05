@@ -1,22 +1,23 @@
-import { useCallback, useContext, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { AcmDataFormPage, AcmDataFormProps } from '../../../components/AcmDataForm'
 import { FormData, Section } from '../../../components/AcmFormData'
 import { useTranslation } from '../../../lib/acm-i18next'
+import { GroupKind, UserKind } from '../../../resources'
 import {
   emptyMulticlusterRoleAssignment,
   MulticlusterRoleAssignment,
   MulticlusterRoleAssignmentKind,
 } from '../../../resources/multicluster-role-assignment'
-import { AcmToastContext } from '../../../ui-components'
 import { truncateMiddle } from '../../Applications/ApplicationDetails/ApplicationTopology/topology/components/future/truncate-middle'
-import { useRoleAssignmentFormData } from './hook/RoleAssignmentFormDataHook'
-import { useRoleAssignment } from './hook/RoleAssignmentHook'
+import { ClustersDualListSelector } from './ClustersDualListSelector'
+import { useRoleAssignmentData } from './hook/RoleAssignmentDataHook'
+import { RoleAssignmentFormDataType, useRoleAssignmentFormData } from './hook/RoleAssignmentFormDataHook'
 import { RoleAssignmentPreselected } from './model/role-assignment-preselected'
 import schema from './schema.json'
 
 type RoleAssignmentFormProps = {
   onCancel: () => void
-  onSave?: () => void
+  onSubmit: (data: RoleAssignmentFormDataType) => void
   isViewing?: boolean
   isEditing?: boolean
   hideYaml?: boolean
@@ -24,35 +25,29 @@ type RoleAssignmentFormProps = {
 }
 const RoleAssignmentForm = ({
   onCancel,
-  onSave,
+  onSubmit,
   isEditing,
   isViewing,
   hideYaml,
   preselected,
 }: RoleAssignmentFormProps) => {
   const { t } = useTranslation()
-  // const navigate = useNavigate()
-  // const { back, cancel } = useBackCancelNavigation()
-  const toastContext = useContext(AcmToastContext)
 
   const {
-    roleAssignment,
-    isLoading: isRoleAssignmentLoading,
+    roleAssignmentData,
+    isLoading: isRoleAssignmentDataLoading,
     isUsersLoading,
     isGroupsLoading,
     isRolesLoading,
-  } = useRoleAssignment()
-
-  // const { submitForm, cancelForm } = useContext(LostChangesContext)
-
-  // const guardedHandleModalToggle = useCallback(() => cancelForm(handleModalToggle), [cancelForm, handleModalToggle])
+  } = useRoleAssignmentData()
 
   const {
     roleAssignmentFormData,
     onChangeSubjectKind,
-    onChangeUsers,
-    onChangeGroups,
+    onChangeUserValue,
+    onChangeGroupValue,
     onChangeScopeKind,
+    onChangeScopeValues,
     onChangeRoles,
   } = useRoleAssignmentFormData(preselected)
 
@@ -74,8 +69,6 @@ const RoleAssignmentForm = ({
     return syncs
   }
 
-  const [isValid] = useState<boolean>(true)
-
   const [title, setTitle] = useState<string>('')
 
   const treatRoleAssignmentEntityTitle = useCallback(
@@ -92,11 +85,8 @@ const RoleAssignmentForm = ({
     let secondPart = ''
 
     switch (true) {
-      case preselected?.users && preselected?.users.length > 0:
-        secondPart = ` ${treatRoleAssignmentEntityTitle(preselected.users, t('users'), t('user'))}`
-        break
-      case preselected?.groups && preselected?.groups.length > 0:
-        secondPart = ` ${treatRoleAssignmentEntityTitle(preselected.groups, t('groups'), t('group'))}`
+      case preselected?.subject && preselected.subject.value !== undefined && preselected.subject.kind !== undefined:
+        secondPart = ` ${t('for')} ${preselected.subject.value} ${preselected.subject.kind === UserKind ? t('user') : t('group')}`
         break
       case preselected?.roles && preselected?.roles.length > 0:
         secondPart = ` ${treatRoleAssignmentEntityTitle(preselected.roles, t('roles'), t('role'))}`
@@ -107,7 +97,7 @@ const RoleAssignmentForm = ({
     setTitle(`${firstPart}${secondPart}`)
   }, [isEditing, preselected, t, treatRoleAssignmentEntityTitle])
 
-  const isSubjectFieldHiden = isViewing || preselected?.users?.length || preselected?.groups?.length
+  const isSubjectFieldHidden = isViewing || preselected?.subject?.value !== undefined
 
   const formData: FormData = {
     title,
@@ -128,33 +118,60 @@ const RoleAssignmentForm = ({
               { id: `group`, value: 'group', text: t('Group') },
             ],
             isRequired: true,
-            isHidden: isSubjectFieldHiden,
+            isHidden: isSubjectFieldHidden,
           },
           {
             id: `users`,
             type: 'CreatableMultiselect',
             placeholder: t('Select or enter user names'),
-            value: roleAssignmentFormData.subject.users,
-            onChange: onChangeUsers,
-            options: roleAssignment.users,
-            isRequired: roleAssignmentFormData.subject.kind === 'user',
+            value: roleAssignmentFormData.subject.user,
+            onChange: onChangeUserValue,
+            options: roleAssignmentData.users,
+            isRequired: roleAssignmentFormData.subject.kind === UserKind,
             isHidden:
-              roleAssignmentFormData.subject.kind !== 'user' || preselected?.users?.length || isSubjectFieldHiden,
+              roleAssignmentFormData.subject.kind !== UserKind ||
+              preselected?.subject?.kind !== UserKind ||
+              isSubjectFieldHidden,
             isLoading: isUsersLoading,
             isScrollable: true,
+            validation: (user?: string) => (user !== undefined ? undefined : t('a user should be selected')),
           },
           {
             id: `groups`,
             type: 'CreatableMultiselect',
             placeholder: t('Select or enter groups'),
-            value: roleAssignmentFormData.subject.groups,
-            onChange: onChangeGroups,
-            options: roleAssignment.groups,
-            isRequired: roleAssignmentFormData.subject.kind === 'group',
+            value: roleAssignmentFormData.subject.group,
+            onChange: onChangeGroupValue,
+            options: roleAssignmentData.groups,
+            isRequired: roleAssignmentFormData.subject.kind === GroupKind,
             isHidden:
-              roleAssignmentFormData.subject.kind !== 'group' || preselected?.groups?.length || isSubjectFieldHiden,
+              roleAssignmentFormData.subject.kind !== GroupKind ||
+              preselected?.subject?.kind !== GroupKind ||
+              isSubjectFieldHidden,
             isLoading: isGroupsLoading,
             isScrollable: true,
+            validation: (group?: string) => (group !== undefined ? undefined : t('a group should be selected')),
+          },
+        ],
+      },
+      {
+        type: 'Section',
+        wizardTitle: t('Roles'),
+        inputs: [
+          {
+            id: `roles`,
+            type: 'CreatableMultiselect',
+            title: t('Select roles'),
+            placeholder: t('Select or enter roles'),
+            value: roleAssignmentFormData.roles,
+            onChange: onChangeRoles,
+            options: roleAssignmentData.roles,
+            isLoading: isRolesLoading,
+            isScrollable: true,
+            isRequired: preselected?.roles === undefined || preselected?.roles?.length === 0,
+            isHidden: preselected?.roles?.length,
+            validation: (roles: string[]) =>
+              roles?.length > 0 ? undefined : t('at least one role should be selected'),
           },
         ],
       },
@@ -173,43 +190,33 @@ const RoleAssignmentForm = ({
               { id: `all`, value: 'all', text: t('Propagate to all (everything in this Cluster)') },
               { id: `specific`, value: 'specific', text: t('Select specific') },
             ],
-            isRequired: true,
+            isRequired: preselected?.cluterSets === undefined || preselected?.cluterSets?.length === 0,
+            isHidden: preselected?.cluterSets?.length,
           },
-        ],
-      },
-      {
-        type: 'Section',
-        wizardTitle: t('Roles'),
-        inputs: [
           {
-            id: `roles`,
-            type: 'CreatableMultiselect',
-            title: t('Select roles'),
-            placeholder: t('Select or enter roles'),
-            value: roleAssignmentFormData.roles,
-            onChange: onChangeRoles,
-            options: roleAssignment.roles,
-            isLoading: isRolesLoading,
-            isScrollable: true,
-            isHidden: preselected?.roles?.length,
+            id: `clusters`,
+            type: 'Custom',
+            isInline: false,
+            value: roleAssignmentFormData.scope.values,
+            onChange: onChangeScopeValues,
+            options: [{ id: '1', value: '1' }],
+            component: (
+              <ClustersDualListSelector
+                onChoseOptions={(values: { id: string; value: string }[]) =>
+                  onChangeScopeValues(values.map((e) => e.value))
+                }
+              />
+            ),
+            isRequired: preselected?.cluterSets === undefined || preselected?.cluterSets?.length === 0,
+            isHidden: preselected?.cluterSets?.length || roleAssignmentFormData.scope.kind === 'all',
+            validation: (clusters: string[]) =>
+              clusters?.length > 0 ? undefined : t('at least one cluster should be selected'),
           },
         ],
       },
     ].filter(Boolean) as Section[],
 
-    // TODO: implement submit
-    submit: () => {
-      if (!isValid) {
-        toastContext.addAlert({
-          title: t('Validation error'),
-          message: t('You must define...'),
-          type: 'danger',
-          autoClose: true,
-        })
-        return
-      }
-      onSave?.()
-    },
+    submit: () => onSubmit(roleAssignmentFormData),
     submitText: isEditing ? t('Save') : t('Create'),
     submittingText: isEditing ? t('Saving') : t('Creating'),
     reviewTitle: t('Review your selections'),
@@ -238,31 +245,20 @@ const RoleAssignmentForm = ({
   const inmutables = ['apiVersion', 'kind']
 
   return roleAssignmentFormData ? (
-    <>
-      <AcmDataFormPage
-        formData={formData}
-        editorTitle={t('Access Control YAML')}
-        schema={schema}
-        mode={getFormMode()}
-        hideYaml={hideYaml}
-        secrets={[]}
-        immutables={
-          isEditing
-            ? [...inmutables, '*.metadata.name', '*.metadata.namespace', '*.data.id', '*.data.creationTimestamp']
-            : inmutables
-        }
-        isDisabled={isRoleAssignmentLoading}
-        // edit={() =>
-        //   navigate(
-        //     generatePath(NavigationPath.editAccessControlManagement, {
-        //       id: accessControl?.metadata?.uid!,
-        //     })
-        //   )
-        // }
-        // isModalWizard={!!handleModalToggle}
-      />
-      <p>roleAssignmentFormDatax {JSON.stringify(roleAssignmentFormData, null, '\t')}</p>
-    </>
+    <AcmDataFormPage
+      formData={formData}
+      editorTitle={t('Access Control YAML')}
+      schema={schema}
+      mode={getFormMode()}
+      hideYaml={hideYaml}
+      secrets={[]}
+      immutables={
+        isEditing
+          ? [...inmutables, '*.metadata.name', '*.metadata.namespace', '*.data.id', '*.data.creationTimestamp']
+          : inmutables
+      }
+      isDisabled={isRoleAssignmentDataLoading}
+    />
   ) : null
 }
 

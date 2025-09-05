@@ -115,7 +115,7 @@ const RoleAssignments = ({
       allStatuses.add('Active')
 
       // Add cluster sets and target namespaces
-      ra.clusterSets.forEach((clusterSet) => {
+      ra.clusterSets?.forEach((clusterSet) => {
         allClusterSets.add(clusterSet)
       })
       ra.targetNamespaces?.forEach((namespace) => {
@@ -149,7 +149,7 @@ const RoleAssignments = ({
         label: t('Cluster Set'),
         options: clusterSetOptions,
         tableFilterFn: (selectedValues, roleAssignment) =>
-          selectedValues.some((selectedClusterSet) => roleAssignment.clusterSets.includes(selectedClusterSet)),
+          selectedValues.some((selectedClusterSet) => roleAssignment.clusterSets?.includes(selectedClusterSet)),
       },
       {
         id: 'namespace',
@@ -202,7 +202,7 @@ const RoleAssignments = ({
     {
       header: t('Cluster Sets'),
       cell: (roleAssignment) => <RoleAssignmentsLabel elements={roleAssignment.clusterSets} numLabel={3} />,
-      exportContent: (roleAssignment) => roleAssignment.clusterSets.join(', '),
+      exportContent: (roleAssignment) => roleAssignment.clusterSets?.join(', '),
       isHidden: hiddenColumns?.includes('clusterSets'),
     },
     {
@@ -284,8 +284,6 @@ const RoleAssignments = ({
           />
           <RoleAssignmentModal
             close={() => setIsCreateModalOpen(false)}
-            // TODO: onSave
-            onSave={() => setIsCreateModalOpen(false)}
             isOpen={isCreateModalOpen}
             preselected={preselected}
           />

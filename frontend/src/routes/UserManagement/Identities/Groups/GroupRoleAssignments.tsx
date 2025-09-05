@@ -5,7 +5,7 @@ import { useNavigate, useParams } from 'react-router-dom-v5-compat'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
-import { Group } from '../../../../resources'
+import { Group, GroupKind } from '../../../../resources'
 import multiclusterRoleAssignmentsMockDataJson from '../../../../resources/clients/mock-data/multicluster-role-assignments.json'
 import { mockGroups } from '../../../../resources/clients/mock-data/users-and-groups'
 import {
@@ -85,7 +85,7 @@ const GroupRoleAssignments = () => {
           roleAssignments={roleAssignments}
           isLoading={isLoading}
           hiddenColumns={['subject']}
-          preselected={{ groups: [group?.metadata.name ?? ''] }}
+          preselected={{ subject: { kind: GroupKind, value: group?.metadata.name } }}
         />
       )
   }

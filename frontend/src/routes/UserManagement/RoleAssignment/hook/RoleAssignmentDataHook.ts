@@ -14,11 +14,12 @@ type SelectOption = {
 type RoleAssignmentHookType = {
   users: SelectOption[]
   groups: SelectOption[]
+  serviceAccounts: SelectOption[]
   roles: SelectOption[]
 }
 
 type RoleAssignmentHookReturnType = {
-  roleAssignment: RoleAssignmentHookType
+  roleAssignmentData: RoleAssignmentHookType
   isLoading: boolean
   isUsersLoading: boolean
   isGroupsLoading: boolean
@@ -28,10 +29,11 @@ type RoleAssignmentHookReturnType = {
  * custom hook for retrieving whatever the data is needed for RoleAssignment creation/edit
  * @returns RoleAssignmentHookReturnType
  */
-const useRoleAssignment = (): RoleAssignmentHookReturnType => {
-  const [roleAssignment, setRoleAssignment] = useState<RoleAssignmentHookType>({
+const useRoleAssignmentData = (): RoleAssignmentHookReturnType => {
+  const [roleAssignmentData, setRoleAssignmentData] = useState<RoleAssignmentHookType>({
     users: [],
     groups: [],
+    serviceAccounts: [],
     roles: [],
   })
   const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -84,19 +86,19 @@ const useRoleAssignment = (): RoleAssignmentHookReturnType => {
 
   // to avoid loop onroleAssignment
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => setRoleAssignment({ ...roleAssignment, users }), [users])
+  useEffect(() => setRoleAssignmentData({ ...roleAssignmentData, users }), [users])
 
   // to avoid loop onroleAssignment
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => setRoleAssignment({ ...roleAssignment, groups }), [groups])
+  useEffect(() => setRoleAssignmentData({ ...roleAssignmentData, groups }), [groups])
 
   // to avoid loop onroleAssignment
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => setRoleAssignment({ ...roleAssignment, roles }), [roles])
+  useEffect(() => setRoleAssignmentData({ ...roleAssignmentData, roles }), [roles])
 
-  return { roleAssignment, isLoading, isUsersLoading, isGroupsLoading, isRolesLoading }
+  return { roleAssignmentData, isLoading, isUsersLoading, isGroupsLoading, isRolesLoading }
 }
 
-export { useRoleAssignment }
+export { useRoleAssignmentData }
 
 export type { RoleAssignmentHookType, SelectOption }

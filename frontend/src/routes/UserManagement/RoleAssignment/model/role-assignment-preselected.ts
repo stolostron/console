@@ -1,6 +1,7 @@
+import { GroupKindType, ServiceAccountKindType, UserKindType } from '../../../../resources'
+
 type RoleAssignmentPreselected = {
-  users?: string[]
-  groups?: string[]
+  subject?: { kind: UserKindType | GroupKindType | ServiceAccountKindType; value?: string }
   roles?: string[]
   cluterSets?: string[]
 }
