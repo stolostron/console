@@ -208,6 +208,31 @@ expect.extend({
       pass,
     }
   },
+  hasNoPendingWaits() {
+    const msgs: string[] = []
+    const pass: boolean = window.pendingWaits.filter(({ done }) => !done).length === 0
+    if (!pass) {
+      msgs.push('\n\n\n!!!!!!!!!!!!!!!! TIMED OUT WAITFOR !!!!!!!!!!!!!!!!!!!!!!!!\n\n\n')
+      window.pendingWaits.forEach(({ waitfor, source, start, elapsed, stack, done }) => {
+        const elapse = done ? elapsed : new Date().getTime() - start
+        const m = source.match(/\(([^)]*)\)/)
+        const inside = m ? m[1] : source
+        const srcParts = inside.split(/\//)
+        const src = srcParts.pop()?.trim()
+        msgs.push(`${done ? '' : '>>>'} ${done ? src : inside} '${waitfor}' ${elapse}`)
+        if (!done) {
+          msgs.push(stack)
+        }
+      })
+      msgs.push('\n\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+    }
+
+    const message: () => string = () => msgs.join('\n')
+    return {
+      message,
+      pass,
+    }
+  },
 })
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -234,11 +259,13 @@ function setupBeforeEach(): void {
   consoleWarnings = []
   nock.emitter.on('no match', logNoMatch)
   window.pendingNocks = []
+  window.pendingWaits = []
 }
 
 async function setupAfterEach(): Promise<void> {
-  expect(missingNocks).hasNoMissingNocks()
-  expect(missingNocks).hasNoPendingNocks()
+  expect([]).hasNoMissingNocks()
+  expect([]).hasNoPendingNocks()
+  expect([]).hasNoPendingWaits()
   // expect(consoleErrors).toEqual([])
   // expect(consoleWarnings).toEqual([])
 }
