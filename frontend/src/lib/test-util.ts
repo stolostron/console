@@ -1,24 +1,28 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { act, ByRoleMatcher, ByRoleOptions, screen, waitFor, within } from '@testing-library/react'
+import {
+  act,
+  ByRoleMatcher,
+  ByRoleOptions,
+  screen,
+  waitFor,
+  waitForOptions as WaitForOptions,
+  within,
+} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Scope } from 'nock/types'
 import StackTrace from 'stacktrace-js'
 
 export const waitTimeout = 5 * 1000
 
-const waitForOptions = { timeout: waitTimeout }
-
-export function _waitFor<T>(
-  callback: () => Promise<T> | T,
-  options: { timeout?: number } = waitForOptions
-): Promise<T> {
+const waitForOptions: WaitForOptions = { timeout: waitTimeout }
+export function _waitFor<T>(callback: () => Promise<T> | T, options?: WaitForOptions): Promise<T> {
   const stack = StackTrace.getSync()
   const promise = waitFor(callback, options)
   if (window.pendingWaits) {
     // get the waitFor function
     const waitFor = stack.shift()
-    // find the first non-test.utils file
+    // find the first non test-utils file
     let stackIndex = 0
     while (stackIndex < stack.length + 1 && stack[stackIndex].getFileName() === waitFor?.getFileName()) {
       stackIndex++
@@ -397,7 +401,7 @@ export function nocksAreDone(nocks: Scope[]) {
 }
 
 export async function waitForNocks(nocks: Scope[]) {
-  const timeout = waitForOptions.timeout * nocks.length * 3
+  const timeout = waitForOptions.timeout ?? 5000 * nocks.length * 3
   const timeoutMsg = (error: Error) => {
     error.message = `!!!!!!!!!!! Test timed out in waitForNocks()--waited ${timeout / 1000} seconds !!!!!!!!!!!!!`
     error.stack = ''

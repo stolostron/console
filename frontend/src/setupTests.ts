@@ -212,7 +212,7 @@ expect.extend({
     const msgs: string[] = []
     const pass: boolean = window.pendingWaits.filter(({ done }) => !done).length === 0
     if (!pass) {
-      msgs.push('\n\n\n!!!!!!!!!!!!!!!! WAITFOR NOT DONE !!!!!!!!!!!!!!!!!!!!!!!!\n\n\n')
+      msgs.push('\n\n\n!!!!!!!!!!!!!!!! WAITFOR NOT DONE !!!!!!!!!!!!!!!!!!!!!!!!\n\n')
       let lastParentFrame: any = undefined
       const getFileName = (frame: any, done: boolean) => {
         const m = frame.getSource().match(/\(([^)]*)\)/)
@@ -227,7 +227,12 @@ expect.extend({
         }
         const elapse = done ? end - start : new Date().getTime() - start
         const fn = getFileName(frame, done)
-        msgs.push(`${done ? '  ' : '  >>>'} ${parentFrameWaitfor} ${fn}  ${elapse}ms`)
+        if (done) {
+          msgs.push(`  ${fn} ${parentFrameWaitfor}  ${elapse}ms`)
+        } else {
+          msgs.push(`\n${'>>>'}  ${getFileName(parentFrame, done)} ${parentFrameWaitfor}`)
+          msgs.push(`${'  >>>'}  ${fn} ${parentFrameWaitfor}  ${elapse}ms`)
+        }
       })
       msgs.push('\n\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
     }
