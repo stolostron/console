@@ -97,7 +97,7 @@ const UserRoleAssignments = () => {
           roleAssignments={roleAssignments}
           isLoading={isLoading}
           hiddenColumns={['subject']}
-          preselected={{ users: [{ id: user?.metadata.uid ?? '', name: user?.metadata.name ?? '' }] }}
+          preselected={{ users: [user?.metadata.name ?? ''] }}
         />
       )
   }

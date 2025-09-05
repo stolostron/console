@@ -11,7 +11,7 @@ import { AcmToastContext } from '../../../ui-components'
 import { truncateMiddle } from '../../Applications/ApplicationDetails/ApplicationTopology/topology/components/future/truncate-middle'
 import { useRoleAssignmentFormData } from './hook/RoleAssignmentFormDataHook'
 import { useRoleAssignment } from './hook/RoleAssignmentHook'
-import { RoleAssignmentPreselected, RoleAssignmentPreselectedEntity } from './model/role-assignment-preselected'
+import { RoleAssignmentPreselected } from './model/role-assignment-preselected'
 import schema from './schema.json'
 
 type RoleAssignmentFormProps = {
@@ -79,8 +79,8 @@ const RoleAssignmentForm = ({
   const [title, setTitle] = useState<string>('')
 
   const treatRoleAssignmentEntityTitle = useCallback(
-    (entities: RoleAssignmentPreselectedEntity[], entityPlural: string, entitySingular: string) => {
-      const entityNames = truncateMiddle(entities.map((e) => e.name).join(', '), { length: 20 })
+    (entities: string[], entityPlural: string, entitySingular: string) => {
+      const entityNames = truncateMiddle(entities.join(', '), { length: 20 })
       const pluralSingular = entities.length > 1 ? entityPlural : entitySingular
       return `${t('for')} ${entityNames} ${pluralSingular}`
     },
@@ -238,28 +238,31 @@ const RoleAssignmentForm = ({
   const inmutables = ['apiVersion', 'kind']
 
   return roleAssignmentFormData ? (
-    <AcmDataFormPage
-      formData={formData}
-      editorTitle={t('Access Control YAML')}
-      schema={schema}
-      mode={getFormMode()}
-      hideYaml={hideYaml}
-      secrets={[]}
-      immutables={
-        isEditing
-          ? [...inmutables, '*.metadata.name', '*.metadata.namespace', '*.data.id', '*.data.creationTimestamp']
-          : inmutables
-      }
-      isDisabled={isRoleAssignmentLoading}
-      // edit={() =>
-      //   navigate(
-      //     generatePath(NavigationPath.editAccessControlManagement, {
-      //       id: accessControl?.metadata?.uid!,
-      //     })
-      //   )
-      // }
-      // isModalWizard={!!handleModalToggle}
-    />
+    <>
+      <AcmDataFormPage
+        formData={formData}
+        editorTitle={t('Access Control YAML')}
+        schema={schema}
+        mode={getFormMode()}
+        hideYaml={hideYaml}
+        secrets={[]}
+        immutables={
+          isEditing
+            ? [...inmutables, '*.metadata.name', '*.metadata.namespace', '*.data.id', '*.data.creationTimestamp']
+            : inmutables
+        }
+        isDisabled={isRoleAssignmentLoading}
+        // edit={() =>
+        //   navigate(
+        //     generatePath(NavigationPath.editAccessControlManagement, {
+        //       id: accessControl?.metadata?.uid!,
+        //     })
+        //   )
+        // }
+        // isModalWizard={!!handleModalToggle}
+      />
+      <p>roleAssignmentFormDatax {JSON.stringify(roleAssignmentFormData, null, '\t')}</p>
+    </>
   ) : null
 }
 
