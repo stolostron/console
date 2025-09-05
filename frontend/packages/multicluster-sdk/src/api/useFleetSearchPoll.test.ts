@@ -2,7 +2,7 @@
 import { renderHook } from '@testing-library/react-hooks'
 import { useFleetSearchPoll } from './useFleetSearchPoll'
 import { useSearchResultItemsQuery } from '../internal/search/search-sdk'
-import { WatchK8sResource } from '@openshift-console/dynamic-plugin-sdk'
+import { K8sResourceCommon, WatchK8sResource } from '@openshift-console/dynamic-plugin-sdk'
 
 // Mock the search-sdk hook
 jest.mock('../internal/search/search-sdk', () => ({
@@ -73,15 +73,14 @@ describe('useFleetSearchPoll', () => {
         refetch: jest.fn(),
       } as any)
 
-      const { result } = renderHook(() => useFleetSearchPoll(mockWatchOptions))
+      const { result } = renderHook(() => useFleetSearchPoll<K8sResourceCommon[]>(mockWatchOptions))
 
       const [data, loaded, error, refetch] = result.current
       expect(loaded).toBe(true)
       expect(error).toBeUndefined()
       expect(typeof refetch).toBe('function')
       expect(data).toHaveLength(1)
-      expect(Array.isArray(data)).toBe(true)
-      expect((data as any[])[0]).toEqual({
+      expect(data?.[0]).toEqual({
         cluster: 'test-cluster',
         apiVersion: 'v1',
         kind: 'Pod',
@@ -436,13 +435,10 @@ describe('useFleetSearchPoll', () => {
         refetch: jest.fn(),
       } as any)
 
-      const { result } = renderHook(() => useFleetSearchPoll(mockWatchOptions))
+      const { result } = renderHook(() => useFleetSearchPoll<K8sResourceCommon[]>(mockWatchOptions))
 
       const [data] = result.current
-      expect(data).toBeDefined()
-      expect(Array.isArray(data)).toBe(true)
-      const dataArray = data as any[]
-      expect(dataArray[0].metadata.labels).toEqual({
+      expect(data?.[0].metadata?.labels).toEqual({
         app: 'test',
         version: '1.0',
         environment: 'prod',
@@ -464,13 +460,10 @@ describe('useFleetSearchPoll', () => {
         refetch: jest.fn(),
       } as any)
 
-      const { result } = renderHook(() => useFleetSearchPoll(mockWatchOptions))
+      const { result } = renderHook(() => useFleetSearchPoll<K8sResourceCommon[]>(mockWatchOptions))
 
       const [data] = result.current
-      expect(data).toBeDefined()
-      expect(Array.isArray(data)).toBe(true)
-      const dataArray = data as any[]
-      expect(dataArray[0].metadata.labels).toEqual({})
+      expect(data?.[0].metadata?.labels).toEqual({})
     })
 
     it('should handle VirtualMachine resource transformation', () => {
@@ -505,13 +498,10 @@ describe('useFleetSearchPoll', () => {
         groupVersionKind: { group: 'kubevirt.io', version: 'v1', kind: 'VirtualMachine' },
       }
 
-      const { result } = renderHook(() => useFleetSearchPoll(watchOptionsVM))
+      const { result } = renderHook(() => useFleetSearchPoll<any[]>(watchOptionsVM))
 
       const [data] = result.current
-      expect(data).toBeDefined()
-      expect(Array.isArray(data)).toBe(true)
-      const dataArray = data as any[]
-      expect(dataArray[0].spec).toEqual({
+      expect(data?.[0].spec).toEqual({
         runStrategy: 'Always',
         template: {
           spec: {
@@ -535,7 +525,7 @@ describe('useFleetSearchPoll', () => {
           },
         },
       })
-      expect(dataArray[0].status).toEqual({
+      expect(data?.[0].status).toEqual({
         conditions: [
           { type: 'Ready', status: 'True' },
           { type: 'AgentConnected', status: 'True' },
@@ -566,17 +556,14 @@ describe('useFleetSearchPoll', () => {
         ...mockWatchOptions,
         groupVersionKind: { group: 'operators.coreos.com', version: 'v1', kind: 'ClusterServiceVersion' },
       }
-      const { result } = renderHook(() => useFleetSearchPoll(watchOptionsCSV))
+      const { result } = renderHook(() => useFleetSearchPoll<any[]>(watchOptionsCSV))
 
       const [data] = result.current
-      expect(data).toBeDefined()
-      expect(Array.isArray(data)).toBe(true)
-      const dataArray = data as any[]
-      expect(dataArray[0].spec).toEqual({
+      expect(data?.[0].spec).toEqual({
         version: '1.0.0',
         displayName: 'Test',
       })
-      expect(dataArray[0].status).toEqual({
+      expect(data?.[0].status).toEqual({
         phase: 'Running',
       })
     })
@@ -605,13 +592,10 @@ describe('useFleetSearchPoll', () => {
         ...mockWatchOptions,
         groupVersionKind: { group: '', version: 'v1', kind: 'PersistentVolumeClaim' },
       }
-      const { result } = renderHook(() => useFleetSearchPoll(watchOptionsPVC))
+      const { result } = renderHook(() => useFleetSearchPoll<any[]>(watchOptionsPVC))
 
       const [data] = result.current
-      expect(data).toBeDefined()
-      expect(Array.isArray(data)).toBe(true)
-      const dataArray = data as any[]
-      expect(dataArray[0].spec).toEqual({
+      expect(data?.[0].spec).toEqual({
         resources: {
           requests: {
             storage: '1Gi',
@@ -620,7 +604,7 @@ describe('useFleetSearchPoll', () => {
         volumeMode: 'Filesystem',
         storageClassName: 'gp3-csi',
       })
-      expect(dataArray[0].status).toEqual({
+      expect(data?.[0].status).toEqual({
         phase: 'Bound',
         capacity: { storage: '1Gi' },
       })
@@ -653,13 +637,10 @@ describe('useFleetSearchPoll', () => {
         groupVersionKind: { group: 'kubevirt.io', version: 'v1', kind: 'VirtualMachineInstance' },
       }
 
-      const { result } = renderHook(() => useFleetSearchPoll(watchOptionsVMI))
+      const { result } = renderHook(() => useFleetSearchPoll<any[]>(watchOptionsVMI))
 
       const [data] = result.current
-      expect(data).toBeDefined()
-      expect(Array.isArray(data)).toBe(true)
-      const dataArray = data as any[]
-      expect(dataArray[0].status).toEqual({
+      expect(data?.[0].status).toEqual({
         conditions: [
           { type: 'LiveMigratable', status: 'True' },
           { type: 'Ready', status: 'True' },
@@ -694,17 +675,14 @@ describe('useFleetSearchPoll', () => {
         ...mockWatchOptions,
         groupVersionKind: { group: 'kubevirt.io', version: 'v1', kind: 'VirtualMachineInstanceMigration' },
       }
-      const { result } = renderHook(() => useFleetSearchPoll(watchOptionsVMIM))
+      const { result } = renderHook(() => useFleetSearchPoll<any[]>(watchOptionsVMIM))
 
       const [data] = result.current
-      expect(data).toBeDefined()
-      expect(Array.isArray(data)).toBe(true)
-      const dataArray = data as any[]
-      expect(dataArray[0].status).toEqual({
+      expect(data?.[0].status).toEqual({
         phase: 'Running',
         migrationState: { endTimestamp: '2025-08-12T08:00:00Z' },
       })
-      expect(dataArray[0].spec).toEqual({
+      expect(data?.[0].spec).toEqual({
         vmiName: 'testMigrate',
       })
     })
@@ -734,14 +712,11 @@ describe('useFleetSearchPoll', () => {
         groupVersionKind: { group: 'config.openshift.io', version: 'v1', kind: 'ClusterOperator' },
       }
 
-      const { result } = renderHook(() => useFleetSearchPoll(watchOptionsClusterOperator))
+      const { result } = renderHook(() => useFleetSearchPoll<any[]>(watchOptionsClusterOperator))
 
       const [data] = result.current
-      expect(data).toBeDefined()
-      expect(Array.isArray(data)).toBe(true)
-      const dataArray = data as any[]
-      expect(dataArray[0].status.versions).toEqual([{ name: 'operator', version: '1.0.0' }])
-      expect(dataArray[0].status.conditions).toEqual([
+      expect(data?.[0].status?.versions).toEqual([{ name: 'operator', version: '1.0.0' }])
+      expect(data?.[0].status?.conditions).toEqual([
         { type: 'Available', status: 'True' },
         { type: 'Progressing', status: 'False' },
         { type: 'Degraded', status: 'False' },
@@ -771,14 +746,11 @@ describe('useFleetSearchPoll', () => {
         groupVersionKind: { group: 'cdi.kubevirt.io', version: 'v1beta1', kind: 'DataVolume' },
       }
 
-      const { result } = renderHook(() => useFleetSearchPoll(watchOptionsDataVolume))
+      const { result } = renderHook(() => useFleetSearchPoll<any[]>(watchOptionsDataVolume))
 
       const [data] = result.current
-      expect(data).toBeDefined()
-      expect(Array.isArray(data)).toBe(true)
-      const dataArray = data as any[]
-      expect(dataArray[0].spec.storage.resources.requests.storage).toBe('10Gi')
-      expect(dataArray[0].spec.storage.storageClassName).toBe('ssd')
+      expect(data?.[0].spec?.storage?.resources?.requests?.storage).toBe('10Gi')
+      expect(data?.[0].spec?.storage?.storageClassName).toBe('ssd')
     })
 
     it('should handle Namespace resource transformation', () => {
@@ -803,13 +775,10 @@ describe('useFleetSearchPoll', () => {
         groupVersionKind: { group: '', version: 'v1', kind: 'Namespace' },
       }
 
-      const { result } = renderHook(() => useFleetSearchPoll(watchOptionsNamespace))
+      const { result } = renderHook(() => useFleetSearchPoll<any[]>(watchOptionsNamespace))
 
       const [data] = result.current
-      expect(data).toBeDefined()
-      expect(Array.isArray(data)).toBe(true)
-      const dataArray = data as any[]
-      expect(dataArray[0].status.phase).toBe('Active')
+      expect(data?.[0].status?.phase).toBe('Active')
     })
 
     it('should handle Node resource transformation', () => {
@@ -837,16 +806,13 @@ describe('useFleetSearchPoll', () => {
         groupVersionKind: { group: '', version: 'v1', kind: 'Node' },
       }
 
-      const { result } = renderHook(() => useFleetSearchPoll(watchOptionsNode))
+      const { result } = renderHook(() => useFleetSearchPoll<any[]>(watchOptionsNode))
 
       const [data] = result.current
-      expect(data).toBeDefined()
-      expect(Array.isArray(data)).toBe(true)
-      const dataArray = data as any[]
-      expect(dataArray[0].status.addresses).toEqual([{ type: 'InternalIP', address: '127.0.0.1' }])
-      expect(dataArray[0].status.allocatable.memory).toBe('5Gi')
-      expect(dataArray[0].status.capacity.memory).toBe('10Gi')
-      expect(dataArray[0].status.conditions).toEqual([
+      expect(data?.[0].status?.addresses).toEqual([{ type: 'InternalIP', address: '127.0.0.1' }])
+      expect(data?.[0].status?.allocatable?.memory).toBe('5Gi')
+      expect(data?.[0].status?.capacity?.memory).toBe('10Gi')
+      expect(data?.[0].status?.conditions).toEqual([
         { type: 'Ready', status: 'True' },
         { type: 'TestCondition', status: 'False' },
       ])
@@ -877,16 +843,13 @@ describe('useFleetSearchPoll', () => {
         groupVersionKind: { group: 'storage.k8s.io', version: 'v1', kind: 'StorageClass' },
       }
 
-      const { result } = renderHook(() => useFleetSearchPoll(watchOptionsStorageClass))
+      const { result } = renderHook(() => useFleetSearchPoll<any[]>(watchOptionsStorageClass))
 
       const [data] = result.current
-      expect(data).toBeDefined()
-      expect(Array.isArray(data)).toBe(true)
-      const dataArray = data as any[]
-      expect(dataArray[0].allowVolumeExpansion).toBe(true)
-      expect(dataArray[0].provisioner).toBe('test')
-      expect(dataArray[0].reclaimPolicy).toBe('test')
-      expect(dataArray[0].volumeBindingMode).toBe('test')
+      expect(data?.[0].allowVolumeExpansion).toBe(true)
+      expect(data?.[0].provisioner).toBe('test')
+      expect(data?.[0].reclaimPolicy).toBe('test')
+      expect(data?.[0].volumeBindingMode).toBe('test')
     })
 
     it('should handle Subscription resource transformation', () => {
@@ -915,17 +878,14 @@ describe('useFleetSearchPoll', () => {
         groupVersionKind: { group: 'operators.coreos.com', version: 'v1alpha1', kind: 'Subscription' },
       }
 
-      const { result } = renderHook(() => useFleetSearchPoll(watchOptionsSubscription))
+      const { result } = renderHook(() => useFleetSearchPoll<any[]>(watchOptionsSubscription))
 
       const [data] = result.current
-      expect(data).toBeDefined()
-      expect(Array.isArray(data)).toBe(true)
-      const dataArray = data as any[]
-      expect(dataArray[0].spec.source).toBe('testSource')
-      expect(dataArray[0].spec.name).toBe('testPackage')
-      expect(dataArray[0].spec.channel).toBe('testChannel')
-      expect(dataArray[0].status.installedCSV).toBe('testInstall')
-      expect(dataArray[0].status.state).toBe('Succeeded')
+      expect(data?.[0].spec?.source).toBe('testSource')
+      expect(data?.[0].spec?.name).toBe('testPackage')
+      expect(data?.[0].spec?.channel).toBe('testChannel')
+      expect(data?.[0].status?.installedCSV).toBe('testInstall')
+      expect(data?.[0].status?.state).toBe('Succeeded')
     })
 
     it('should handle VirtualMachineSnapshot resource transformation', () => {
@@ -952,22 +912,19 @@ describe('useFleetSearchPoll', () => {
         ...mockWatchOptions,
         groupVersionKind: { group: 'snapshot.kubevirt.io', version: 'v1alpha1', kind: 'VirtualMachineSnapshot' },
       }
-      const { result } = renderHook(() => useFleetSearchPoll(watchOptionsVirtualMachineSnapshot))
+      const { result } = renderHook(() => useFleetSearchPoll<any[]>(watchOptionsVirtualMachineSnapshot))
       const [data] = result.current
-      expect(data).toBeDefined()
-      expect(Array.isArray(data)).toBe(true)
-      const dataArray = data as any[]
-      expect(dataArray[0].status.conditions).toEqual([
+      expect(data?.[0].status?.conditions).toEqual([
         {
           type: 'Ready',
           status: 'True',
         },
       ])
-      expect(dataArray[0].status.phase).toBe('Succeeded')
-      expect(dataArray[0].status.indications).toEqual(['test', 'indication'])
-      expect(dataArray[0].spec.source.kind).toBe('VirtualMachine')
-      expect(dataArray[0].spec.source.name).toBe('test-vm')
-      expect(dataArray[0].status.readyToUse).toBe(true)
+      expect(data?.[0].status?.phase).toBe('Succeeded')
+      expect(data?.[0].status?.indications).toEqual(['test', 'indication'])
+      expect(data?.[0].spec?.source?.kind).toBe('VirtualMachine')
+      expect(data?.[0].spec?.source?.name).toBe('test-vm')
+      expect(data?.[0].status?.readyToUse).toBe(true)
     })
 
     it('should handle VirtualMachineRestore resource transformation', () => {
@@ -993,21 +950,18 @@ describe('useFleetSearchPoll', () => {
         ...mockWatchOptions,
         groupVersionKind: { group: 'snapshot.kubevirt.io', version: 'v1alpha1', kind: 'VirtualMachineRestore' },
       }
-      const { result } = renderHook(() => useFleetSearchPoll(watchOptionsVirtualMachineRestore))
+      const { result } = renderHook(() => useFleetSearchPoll<any[]>(watchOptionsVirtualMachineRestore))
       const [data] = result.current
-      expect(data).toBeDefined()
-      expect(Array.isArray(data)).toBe(true)
-      const dataArray = data as any[]
-      expect(dataArray[0].status.conditions).toEqual([
+      expect(data?.[0].status?.conditions).toEqual([
         {
           type: 'Ready',
           status: 'True',
         },
       ])
-      expect(dataArray[0].status.restoreTime).toBe('2025-08-12T08:00:00Z')
-      expect(dataArray[0].status.complete).toBe(true)
-      expect(dataArray[0].spec.target.kind).toBe('VirtualMachine')
-      expect(dataArray[0].spec.target.name).toBe('test-vm')
+      expect(data?.[0].status?.restoreTime).toBe('2025-08-12T08:00:00Z')
+      expect(data?.[0].status?.complete).toBe(true)
+      expect(data?.[0].spec?.target?.kind).toBe('VirtualMachine')
+      expect(data?.[0].spec?.target?.name).toBe('test-vm')
     })
 
     it('should handle apiVersion with group correctly', () => {
@@ -1027,13 +981,10 @@ describe('useFleetSearchPoll', () => {
         refetch: jest.fn(),
       } as any)
 
-      const { result } = renderHook(() => useFleetSearchPoll(mockWatchOptions))
+      const { result } = renderHook(() => useFleetSearchPoll<K8sResourceCommon[]>(mockWatchOptions))
 
       const [data] = result.current
-      expect(data).toBeDefined()
-      expect(Array.isArray(data)).toBe(true)
-      const dataArray = data as any[]
-      expect(dataArray[0].apiVersion).toBe('apps/v1')
+      expect(data?.[0].apiVersion).toBe('apps/v1')
     })
 
     it('should handle apiVersion without group correctly', () => {
@@ -1346,7 +1297,7 @@ describe('useFleetSearchPoll', () => {
         refetch: jest.fn(),
       } as any)
 
-      const { rerender } = renderHook(({ watchOptions }) => useFleetSearchPoll(watchOptions), {
+      const { rerender } = renderHook(({ watchOptions }) => useFleetSearchPoll<K8sResourceCommon[]>(watchOptions), {
         initialProps: { watchOptions: mockWatchOptions },
       })
 
@@ -1375,7 +1326,7 @@ describe('useFleetSearchPoll', () => {
         refetch: jest.fn(),
       } as any)
 
-      const { rerender } = renderHook(({ watchOptions }) => useFleetSearchPoll(watchOptions), {
+      const { rerender } = renderHook(({ watchOptions }) => useFleetSearchPoll<K8sResourceCommon[]>(watchOptions), {
         initialProps: { watchOptions: mockWatchOptions },
       })
 
