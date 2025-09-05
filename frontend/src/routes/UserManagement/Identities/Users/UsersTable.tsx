@@ -5,6 +5,7 @@ import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { User as RbacUser } from '../../../../resources/rbac'
 // import { listUsers } from '../../../../resources/rbac'
 // import { useQuery } from '../../../../lib/useQuery'
+import { mockUsers } from '../../../../resources/clients/mock-data/users-and-groups'
 import { Link } from 'react-router-dom-v5-compat'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
 import { AcmButton, AcmEmptyState, AcmLoadingPage, AcmTable, compareStrings } from '../../../../ui-components'
@@ -20,63 +21,6 @@ const UsersTable = () => {
 
   // Mock users data to match the role assignments
   const users = useMemo(() => {
-    const mockUsers: RbacUser[] = [
-      {
-        apiVersion: 'user.openshift.io/v1',
-        kind: 'User',
-        metadata: {
-          name: 'alice.trask',
-          uid: 'mock-user-alice-trask',
-          creationTimestamp: '2024-01-15T10:30:00Z',
-        },
-        fullName: 'Alice Trask',
-        identities: ['ldap:alice.trask', 'htpasswd_provider:alice.trask'],
-      },
-      {
-        apiVersion: 'user.openshift.io/v1',
-        kind: 'User',
-        metadata: {
-          name: 'bob.levy',
-          uid: 'mock-user-bob-levy',
-          creationTimestamp: '2024-01-16T14:20:00Z',
-        },
-        fullName: 'Bob Levy',
-        identities: ['oauth:github:bob.levy'],
-      },
-      {
-        apiVersion: 'user.openshift.io/v1',
-        kind: 'User',
-        metadata: {
-          name: 'charlie.cranston',
-          uid: 'mock-user-charlie-cranston',
-          creationTimestamp: '2024-01-17T12:00:00Z',
-        },
-        fullName: 'Charlie Cranston',
-        identities: ['oauth:google:charlie.cranston@company.com'],
-      },
-      {
-        apiVersion: 'user.openshift.io/v1',
-        kind: 'User',
-        metadata: {
-          name: 'sarah.jones',
-          uid: 'mock-user-sarah-jones',
-          creationTimestamp: '2024-01-18T14:20:00Z',
-        },
-        fullName: 'Sarah Jones',
-        identities: ['ldap:sarah.jones', 'oauth:saml:sarah.jones@enterprise.corp'],
-      },
-      {
-        apiVersion: 'user.openshift.io/v1',
-        kind: 'User',
-        metadata: {
-          name: 'david.brown',
-          uid: 'mock-user-david-brown',
-          creationTimestamp: '2024-01-19T16:30:00Z',
-        },
-        fullName: 'David Brown',
-        identities: ['htpasswd_provider:david.brown'],
-      },
-    ]
     return mockUsers.sort((a, b) => compareStrings(a.metadata.name ?? '', b.metadata.name ?? ''))
   }, [])
 
