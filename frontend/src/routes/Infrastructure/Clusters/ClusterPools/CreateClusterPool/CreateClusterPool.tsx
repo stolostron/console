@@ -39,6 +39,7 @@ import getControlDataGCP from './controlData/ControlDataGCP'
 import getControlDataAZR from './controlData/ControlDataAZR'
 import { ClusterPoolInfrastructureType } from '../ClusterPoolInfrastructureType'
 import { fixupControlsForClusterPool } from './controlData/ControlDataHelper'
+import { localeCompare } from '../../../../../utils/localeCompare'
 interface CreationStatus {
   status: string
   messages: any[] | null
@@ -240,7 +241,7 @@ function CreateClusterPoolWizard(props: { infrastructureType: ClusterPoolInfrast
         }
         break
       case 'namespace':
-        control.available = namespaces.map((namespace) => namespace.metadata.name).sort() as string[]
+        control.available = namespaces.map((namespace) => namespace.metadata.name).sort(localeCompare) as string[]
         break
       case 'singleNodeFeatureFlag':
         if (settings.singleNodeOpenshift === 'enabled') {
