@@ -5,6 +5,7 @@ import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
 import { AcmFeedbackModal } from './AcmFeedbackModal'
 import { DOC_VERSION } from '../lib/doc-util'
+import { getFragmentedTextMatcher } from '../lib/test-util'
 
 window.open = jest.fn()
 
@@ -31,7 +32,20 @@ describe('AcmFeedbackModal', () => {
       `https://console.redhat.com/self-managed-feedback-form?source=acm&version=${DOC_VERSION}`,
       '_blank'
     )
-    userEvent.click(getByText(/support case/i))
+
+    // Re-open the modal since it closes after the first click
+    userEvent.click(screen.getByRole('button', { name: /Feedback/i }))
+
+    // Find all elements containing "Support Case" and click the one that's part of the clickable card
+    const supportCaseElements = screen.getAllByText(getFragmentedTextMatcher('Support Case'))
+    // The second card is the support case card (first is share feedback)
+    const correctElement = supportCaseElements.find((el) => {
+      const cardElement = el.closest('div[style*="cursor: pointer"]')
+      return cardElement && !cardElement.textContent?.toLowerCase().includes('share feedback')
+    })
+    if (correctElement) {
+      userEvent.click(correctElement)
+    }
     expect(window.open).toHaveBeenCalledWith(
       'https://access.redhat.com/support/cases/#/case/new/open-case?caseCreate=true',
       '_blank'
