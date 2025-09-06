@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen } from '@testing-library/react'
-import { RoleAssignmentsLabel } from './RoleAssignmentsLabel'
+import { RoleAssignmentLabel } from './RoleAssignmentLabel'
 
 describe('RoleAssignmentsHelper', () => {
   it.each([[undefined], [[]]])('%s elements', (elements: undefined | string[]) => {
     // Act
-    const { container } = render(<RoleAssignmentsLabel numLabel={0} elements={elements} />)
+    const { container } = render(<RoleAssignmentLabel numLabel={0} elements={elements} />)
 
     // Assert
     expect(container).toBeEmptyDOMElement()
@@ -16,7 +16,7 @@ describe('RoleAssignmentsHelper', () => {
     ['equal to', 3],
   ])('numLabel %s elements length', (_title: string, numLabel: number) => {
     // Act
-    render(<RoleAssignmentsLabel numLabel={numLabel} elements={['a', 'b', 'c']} />)
+    render(<RoleAssignmentLabel numLabel={numLabel} elements={['a', 'b', 'c']} />)
 
     // Assert
     expect(screen.getByText(/a/i)).toBeInTheDocument()
@@ -27,7 +27,7 @@ describe('RoleAssignmentsHelper', () => {
 
   it('numLabel lower than elements length by 1', () => {
     // Act
-    render(<RoleAssignmentsLabel numLabel={2} elements={['a', 'b', 'c']} />)
+    render(<RoleAssignmentLabel numLabel={2} elements={['a', 'b', 'c']} />)
 
     // Assert
     expect(screen.getByText(/a/i)).toBeInTheDocument()
@@ -38,7 +38,7 @@ describe('RoleAssignmentsHelper', () => {
 
   it('numLabel lower than elements length by 2', () => {
     // Act
-    render(<RoleAssignmentsLabel numLabel={1} elements={['a', 'b', 'c']} />)
+    render(<RoleAssignmentLabel numLabel={1} elements={['a', 'b', 'c']} />)
 
     // Assert
     expect(screen.getByText(/a/i)).toBeInTheDocument()

@@ -25,6 +25,13 @@ export interface RoleAssignment {
   clusters?: string[]
 }
 
+export interface RoleAssignmentStatus {
+  name: string
+  status: 'Active' | 'Error' | 'Pending'
+  reason?: string
+  message?: string
+}
+
 export interface MulticlusterRoleAssignment extends IResource {
   apiVersion: MulticlusterRoleAssignmentApiVersionType
   kind: MulticlusterRoleAssignmentKindType
@@ -32,5 +39,8 @@ export interface MulticlusterRoleAssignment extends IResource {
   spec: {
     subject: Subject
     roleAssignments: RoleAssignment[]
+  }
+  status: {
+    roleAssignments?: RoleAssignmentStatus[]
   }
 }
