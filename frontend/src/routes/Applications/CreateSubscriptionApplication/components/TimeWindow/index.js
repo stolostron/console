@@ -57,15 +57,17 @@ export class TimeWindow extends Component {
         {tz.label}
       </SelectOption>
     ))
-
-    this.daysMap = new Map([
-      ['mon', 'Monday'],
-      ['tue', 'Tuesday'],
-      ['wed', 'Wednesday'],
-      ['thu', 'Thursday'],
-      ['fri', 'Friday'],
-      ['sat', 'Saturday'],
-      ['sun', 'Sunday'],
+  }
+  getDaysMap() {
+    const { i18n } = this.props
+    return new Map([
+      ['Monday', i18n('day.monday')],
+      ['Tuesday', i18n('day.tuesday')],
+      ['Wednesday', i18n('day.wednesday')],
+      ['Thursday', i18n('day.thursday')],
+      ['Friday', i18n('day.friday')],
+      ['Saturday', i18n('day.saturday')],
+      ['Sunday', i18n('day.sunday')],
     ])
   }
 
@@ -195,15 +197,15 @@ export class TimeWindow extends Component {
                         }}
                       >
                         <div className="first-col" style={{ gridColumnStart: '1' }}>
-                          {Array.from(this.daysMap, ([key, value]) => {
+                          {Array.from(this.getDaysMap(), ([key, value]) => {
                             return (
                               <Checkbox
-                                isChecked={days.includes(`"${value}"`)}
+                                isChecked={days.includes(`"${key}"`)}
                                 label={value}
                                 name={`days-selector-${key}`}
                                 id={`${key}-${controlId}`}
                                 key={`${key}-${controlId}`}
-                                value={`"${value}"`}
+                                value={`"${key}"`}
                                 isDisabled={!modeSelected}
                                 onChange={this.handleChange.bind(this)}
                               />
