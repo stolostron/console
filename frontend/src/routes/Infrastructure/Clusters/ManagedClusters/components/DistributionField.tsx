@@ -18,7 +18,7 @@ import { rbacCreate, rbacPatch } from '../../../../../lib/rbac-util'
 import { BatchUpgradeModal } from './BatchUpgradeModal'
 import { useAgentClusterInstall } from '../CreateCluster/components/assisted-installer/utils'
 import { HypershiftUpgradeModal } from './HypershiftUpgradeModal'
-import { getVersionFromReleaseImage, HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
+import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { useSharedAtoms, useRecoilValue } from '../../../../../shared-recoil'
 import { Link } from 'react-router-dom-v5-compat'
 import { getSearchLink } from '../../../../Applications/helpers/resource-helper'
@@ -45,6 +45,13 @@ const isUpdateVersionAcceptable = (currentVersion: string, newVersion: string) =
   }
 
   return false
+}
+
+export const getVersionFromReleaseImage = (releaseImage = '') => {
+  const match = /.+:(\d+\.\d+(?:\.\d+)?)/gm.exec(releaseImage)
+  if (match && match.length > 1 && match[1]) {
+    return match[1]
+  }
 }
 
 export function DistributionField(props: {
