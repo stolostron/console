@@ -19,7 +19,6 @@ export declare global {
     originalFetch: any
     capturedFetches: any[]
     pendingNocks: any[]
-    pendingWaits: any[]
     SERVER_FLAGS: any
   }
 }

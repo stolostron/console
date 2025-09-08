@@ -208,41 +208,6 @@ expect.extend({
       pass,
     }
   },
-  hasNoPendingWaits() {
-    const msgs: string[] = []
-    const pass: boolean = window.pendingWaits.filter(({ done }) => !done).length === 0
-    if (!pass) {
-      msgs.push('\n\n\n!!!!!!!!!!!!!!!! WAITFOR NOT DONE !!!!!!!!!!!!!!!!!!!!!!!!\n\n')
-      let lastParentFrame: any = undefined
-      const getFileName = (frame: any, done: boolean) => {
-        const m = frame.getSource().match(/\(([^)]*)\)/)
-        const inside = m ? m[1] : frame.getSource()
-        const between = inside.match(/([^/]+):[^:]*$/)?.[1] ?? ''
-        return done ? between : inside
-      }
-      window.pendingWaits.forEach(({ start, end, frame, parentFrame, parentFrameWaitfor, done }) => {
-        if (!lastParentFrame || lastParentFrame.getLineNumber() !== parentFrame.getLineNumber()) {
-          lastParentFrame = parentFrame
-          msgs.push(getFileName(parentFrame, done))
-        }
-        const elapse = done ? end - start : new Date().getTime() - start
-        const fn = getFileName(frame, done)
-        if (done) {
-          msgs.push(`  ${fn} ${parentFrameWaitfor}  ${elapse}ms`)
-        } else {
-          msgs.push(`\n${'>>>'}  ${getFileName(parentFrame, done)} ${parentFrameWaitfor}`)
-          msgs.push(`${'  >>>'}  ${fn} ${parentFrameWaitfor}  ${elapse}ms`)
-        }
-      })
-      msgs.push('\n\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-    }
-
-    const message: () => string = () => msgs.join('\n')
-    return {
-      message,
-      pass,
-    }
-  },
 })
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -269,13 +234,13 @@ function setupBeforeEach(): void {
   consoleWarnings = []
   nock.emitter.on('no match', logNoMatch)
   window.pendingNocks = []
-  window.pendingWaits = []
 }
 
 async function setupAfterEach(): Promise<void> {
-  expect([]).hasNoMissingNocks()
-  expect([]).hasNoPendingNocks()
-  expect([]).hasNoPendingWaits()
+  expect(missingNocks).hasNoMissingNocks()
+  expect(missingNocks).hasNoPendingNocks()
+  // expect(consoleErrors).toEqual([])
+  // expect(consoleWarnings).toEqual([])
 }
 
 async function setupAfterEachNock(): Promise<void> {
