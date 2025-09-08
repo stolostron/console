@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { groupsTableColumns } from './GroupsTableHelper'
-import { Group as RbacGroup } from '../../../../resources/rbac'
+import { Group } from '../../../../resources/rbac'
 
 jest.mock('../../../../lib/acm-i18next', () => ({
   useTranslation: jest.fn().mockReturnValue({
@@ -8,7 +8,7 @@ jest.mock('../../../../lib/acm-i18next', () => ({
   }),
 }))
 
-const mockGroup: RbacGroup = {
+const mockGroup: Group = {
   apiVersion: 'user.openshift.io/v1',
   kind: 'Group',
   metadata: {
@@ -24,7 +24,7 @@ describe('GroupsTableHelper', () => {
     const columns = groupsTableColumns({ t: (key: string) => key })
 
     test('should return correct number of columns', () => {
-      expect(columns).toHaveLength(4)
+      expect(columns).toHaveLength(3)
     })
 
     test('should have Name column with correct properties', () => {
@@ -39,11 +39,6 @@ describe('GroupsTableHelper', () => {
       const usersColumn = columns.find((col) => col.header === 'Users')
       expect(usersColumn).toBeDefined()
       expect(usersColumn?.sort).toBe('users.length')
-    })
-
-    test('should have Status column with correct properties', () => {
-      const statusColumn = columns.find((col) => col.header === 'Status')
-      expect(statusColumn).toBeDefined()
     })
 
     test('should have Created column with correct properties', () => {

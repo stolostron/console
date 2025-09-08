@@ -1,16 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { PageSection } from '@patternfly/react-core'
-import { useMemo, useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { User as RbacUser } from '../../../../resources/rbac'
 // import { listUsers } from '../../../../resources/rbac'
 // import { useQuery } from '../../../../lib/useQuery'
-import { AcmEmptyState, AcmTable, compareStrings, AcmLoadingPage, AcmButton } from '../../../../ui-components'
-import { usersTableColumns, useFilters } from './UsersTableHelper'
 import { Link } from 'react-router-dom-v5-compat'
-import { ViewDocumentationLink, DOC_LINKS } from '../../../../lib/doc-util'
-import { rbacCreate, useIsAnyNamespaceAuthorized } from '../../../../lib/rbac-util'
-import { AccessControlDefinition } from '../../../../resources/access-control'
+import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
+import { AcmButton, AcmEmptyState, AcmLoadingPage, AcmTable, compareStrings } from '../../../../ui-components'
+import { useFilters, usersTableColumns } from './UsersTableHelper'
 
 const UsersTable = () => {
   const { t } = useTranslation()
@@ -84,7 +82,8 @@ const UsersTable = () => {
 
   const keyFn = useCallback((user: RbacUser) => user.metadata.name ?? '', [])
 
-  const canAddAccessControl = useIsAnyNamespaceAuthorized(rbacCreate(AccessControlDefinition))
+  // TODO: rbacCreate for IDP
+  const canAddAccessControl = true
 
   const filters = useFilters()
   const columns = usersTableColumns({ t })

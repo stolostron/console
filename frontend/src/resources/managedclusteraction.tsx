@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import crypto from 'crypto'
 import _ from 'lodash'
 import { createResource, deleteResource, getResource } from './utils/resource-request'
 import { getGroupFromApiVersion } from './utils/utils'
+import { v4 as uuidv4 } from 'uuid'
 
 export const ManagedClusterActionApiVersion = 'action.open-cluster-management.io/v1beta1'
 export type ManagedClusterActionApiVersionType = 'action.open-cluster-management.io/v1beta1'
@@ -87,11 +87,7 @@ export const fireManagedClusterAction = (
   resourceNamespace: string,
   resourceBody?: any
 ) => {
-  const actionName = crypto
-    .createHash('sha1')
-    .update(`${actionType}-${resourceName}-${resourceKind}`)
-    .digest('hex')
-    .substr(0, 63)
+  const actionName = uuidv4()
   const { apiGroup, version } = getGroupFromApiVersion(resourceApiVersion)
   return createResource<ManagedClusterAction>({
     apiVersion: ManagedClusterActionApiVersion,

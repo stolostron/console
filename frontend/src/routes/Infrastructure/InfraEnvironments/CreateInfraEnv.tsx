@@ -14,7 +14,7 @@ import InfraEnvForm, { Portals } from './InfraEnvForm'
 // include monaco editor
 import 'monaco-editor/esm/vs/editor/editor.all.js'
 import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
-import '../../Applications/CreateApplication/Subscription/style.css'
+import '../../Applications/CreateSubscriptionApplication/style.css'
 import { createProject, IResource } from '../../../resources'
 import { createResource } from '../../../resources/utils'
 import { deleteResources } from '../../../lib/delete-resources'

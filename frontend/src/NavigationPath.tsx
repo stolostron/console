@@ -131,11 +131,6 @@ export enum NavigationPath {
   editAnsibleAutomation = '/multicloud/infrastructure/automations/edit/:namespace/:name',
   viewAnsibleAutomation = '/multicloud/infrastructure/automations/details/:namespace/:name',
 
-  // Infrastructure - Virtual Machines
-  virtualMachines = '/multicloud/infrastructure/virtualmachines',
-  virtualMachineRoleAssignments = '/multicloud/infrastructure/virtualmachines/role-assignments',
-  migrateVirtualMachine = '/multicloud/infrastructure/virtualmachines/:id/migrate',
-
   // Applications
   applications = '/multicloud/applications',
   advancedConfiguration = '/multicloud/applications/advanced',
@@ -176,12 +171,6 @@ export enum NavigationPath {
   editCredentials = '/multicloud/credentials/edit/:namespace/:name',
   viewCredentials = '/multicloud/credentials/details/:namespace/:name',
 
-  // RBAC
-  accessControlManagement = '/multicloud/access-control-management',
-  addAccessControlManagement = '/multicloud/access-control-management/create',
-  editAccessControlManagement = '/multicloud/access-control-management/edit/:id',
-  viewAccessControlManagement = '/multicloud/access-control-management/details/:id',
-
   // RBAC Identities and Roles Management
   identities = '/multicloud/user-management/identities',
 
@@ -209,10 +198,10 @@ export enum NavigationPath {
 
   // RBAC Roles
   roles = '/multicloud/user-management/roles',
-  rolesDetails = '/multicloud/user-management/roles/:id',
-  rolesPermissions = '/multicloud/user-management/roles/:id/permissions',
-  rolesRoleAssignments = '/multicloud/user-management/roles/:id/role-assignments',
-  rolesYaml = '/multicloud/user-management/roles/:id/yaml',
+  roleDetails = '/multicloud/user-management/roles/:id',
+  rolePermissions = '/multicloud/user-management/roles/:id/permissions',
+  roleRoleAssignments = '/multicloud/user-management/roles/:id/role-assignments',
+  roleYaml = '/multicloud/user-management/roles/:id/yaml',
 
   emptyPath = '',
 }

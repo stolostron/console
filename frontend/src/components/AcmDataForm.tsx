@@ -244,7 +244,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                 />
               </PageSection>
             ) : (
-              <PageSection variant="light" isFilled>
+              <PageSection variant="light">
                 <AcmDataForm
                   {...props}
                   mode={mode}
@@ -267,6 +267,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
         drawerContent()
       ) : (
         <Page
+          style={{ height: '100%' }}
           additionalGroupedContent={
             <Fragment>
               <AcmPageHeader

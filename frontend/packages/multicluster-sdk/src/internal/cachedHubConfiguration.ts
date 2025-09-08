@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { getBackendUrl } from './apiRequests'
 import { consoleFetchJSON } from '@openshift-console/dynamic-plugin-sdk'
+import { BACKEND_URL } from './constants'
 
 const FLEET_CONFIGURATION_URL = '/hub'
 
@@ -23,7 +23,7 @@ export const fetchHubConfiguration = async (): Promise<HubConfiguration | undefi
     return fetchPromise
   }
 
-  fetchPromise = (consoleFetchJSON(getBackendUrl() + FLEET_CONFIGURATION_URL, 'GET') as Promise<HubConfiguration>).then(
+  fetchPromise = (consoleFetchJSON(BACKEND_URL + FLEET_CONFIGURATION_URL, 'GET') as Promise<HubConfiguration>).then(
     (hc) => {
       cachedHubConfiguration = hc
       return hc

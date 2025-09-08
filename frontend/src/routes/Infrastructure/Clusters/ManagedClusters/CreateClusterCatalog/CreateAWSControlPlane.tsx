@@ -23,7 +23,7 @@ export function CreateAWSControlPlane() {
   const { nextStep, back, cancel } = useBackCancelNavigation()
   const [isDiagramExpanded, setIsDiagramExpanded] = useState(true)
   const [isMouseOverControlPlaneLink, setIsMouseOverControlPlaneLink] = useState(false)
-  const isHypershiftEnabled = useIsHypershiftEnabled()
+  const [isHypershiftEnabled, loaded] = useIsHypershiftEnabled()
 
   const onDiagramToggle = (isExpanded: boolean) => {
     if (!isMouseOverControlPlaneLink) {
@@ -59,15 +59,19 @@ export function CreateAWSControlPlane() {
           },
         ],
         onClick: isHypershiftEnabled ? nextStep(NavigationPath.createAWSCLI) : undefined,
-        alertTitle: isHypershiftEnabled
-          ? undefined
-          : t('Hosted control plane operator must be enabled in order to continue'),
+        alertTitle: (() => {
+          if (!loaded || isHypershiftEnabled) return undefined
+          return t('Hosted control plane operator must be enabled in order to continue')
+        })(),
         alertVariant: 'info',
-        alertContent: (
-          <a href={DOC_LINKS.HOSTED_ENABLE_FEATURE_AWS} target="_blank" rel="noopener noreferrer">
-            {t('View documentation')} <ExternalLinkAltIcon />
-          </a>
-        ),
+        alertContent: (() => {
+          if (!loaded || isHypershiftEnabled) return undefined
+          return (
+            <a href={DOC_LINKS.HOSTED_ENABLE_FEATURE_AWS} target="_blank" rel="noopener noreferrer">
+              {t('View documentation')} <ExternalLinkAltIcon />
+            </a>
+          )
+        })(),
         badgeList: [
           {
             badge: t('CLI-based'),
@@ -108,7 +112,7 @@ export function CreateAWSControlPlane() {
       },
     ]
     return newCards
-  }, [nextStep, t, isHypershiftEnabled])
+  }, [nextStep, t, isHypershiftEnabled, loaded])
 
   const keyFn = useCallback((card: ICatalogCard) => card.id, [])
 
