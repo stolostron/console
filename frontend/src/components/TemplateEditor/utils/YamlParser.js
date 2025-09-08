@@ -1412,6 +1412,10 @@ class YamlParser {
     string = '' + string
     subString = '' + subString
 
+    if (!subString) {
+      return 0
+    }
+
     if (start != undefined) string = string.substr(start)
     if (length != undefined) string = string.substr(0, length)
 
