@@ -13,8 +13,7 @@ import {
   ToolbarContent,
   ToolbarItem,
 } from '@patternfly/react-core'
-import { sortable, TableVariant } from '@patternfly/react-table'
-import { Table, TableBody, TableHeader } from '@patternfly/react-table/deprecated'
+import { Table, Thead, Tr, Th, Tbody, Td, sortable, TableVariant } from '@patternfly/react-table'
 import { get, orderBy } from 'lodash'
 import { pulseValueArr } from '../helpers/diagram-helpers'
 
@@ -253,16 +252,39 @@ class DetailsTable extends Component {
           </ToolbarContent>
         </Toolbar>
         <Fragment>
-          <Table
-            aria-label="Resource Table"
-            sortBy={sortBy}
-            onSort={this.handleSort}
-            variant={TableVariant.compact}
-            cells={columns}
-            rows={rows}
-          >
-            <TableHeader />
-            <TableBody />
+          <Table aria-label="Resource Table" variant={TableVariant.compact}>
+            <Thead>
+              <Tr>
+                {columns.map((column, columnIndex) => (
+                  <Th
+                    key={columnIndex}
+                    sort={
+                      column.transforms?.includes(sortable)
+                        ? {
+                            sortBy: sortBy,
+                            onSort: this.handleSort,
+                            columnIndex: columnIndex,
+                          }
+                        : undefined
+                    }
+                    style={column.columnTransforms?.[0]()?.style}
+                  >
+                    {column.title}
+                  </Th>
+                ))}
+              </Tr>
+            </Thead>
+            <Tbody>
+              {rows.map((row, rowIndex) => (
+                <Tr key={rowIndex}>
+                  {row.cells.map((cell, cellIndex) => (
+                    <Td key={cellIndex} dataLabel={columns[cellIndex]?.title}>
+                      {cell}
+                    </Td>
+                  ))}
+                </Tr>
+              ))}
+            </Tbody>
           </Table>
           <Split>
             <SplitItem style={{ width: '100%' }}>

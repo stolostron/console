@@ -58,6 +58,8 @@ import {
   SubscriptionOperator,
   SubscriptionReport,
 } from './resources'
+import { MulticlusterRoleAssignment } from './resources/multicluster-role-assignment'
+
 let atomArrayKey = 0
 function AtomArray<T>() {
   return atom<T[]>({ key: (++atomArrayKey).toString(), default: [] })
@@ -122,6 +124,7 @@ export const subscriptionReportsState = AtomArray<SubscriptionReport>()
 export const hostedClustersState = AtomArray<HostedClusterK8sResource>()
 export const nodePoolsState = AtomArray<NodePoolK8sResource>()
 export const agentMachinesState = AtomArray<AgentMachineK8sResource>()
+export const multiclusterRoleAssignmentState = AtomArray<MulticlusterRoleAssignment>()
 
 export const settingsState = atom<Settings>({ key: 'settings', default: {} })
 
@@ -161,8 +164,6 @@ export interface Settings {
   APP_OCP_SEARCH_RESULT_LIMIT?: string
 
   VM_RESULT_LIMIT?: string
-
-  VM_MIGRATION?: 'enabled' | 'disabled'
 }
 
 export interface WatchEvent {
@@ -242,9 +243,4 @@ export function useVirtualMachineActionsEnabled() {
 export function useVitualMachineSearchResultLimit() {
   const settings = useRecoilValue(settingsState)
   return useMemo(() => parseInt(settings.VM_RESULT_LIMIT ?? '-1'), [settings])
-}
-
-export function useMigrateVMMenu() {
-  const settings = useRecoilValue(settingsState)
-  return useMemo(() => Boolean(settings?.VM_MIGRATION === 'enabled'), [settings])
 }

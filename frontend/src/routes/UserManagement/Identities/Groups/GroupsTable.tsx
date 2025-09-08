@@ -4,22 +4,22 @@ import { useCallback, useMemo } from 'react'
 import { Link } from 'react-router-dom-v5-compat'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
-import { useQuery } from '../../../../lib/useQuery'
-import { listGroups, Group as RbacGroup } from '../../../../resources/rbac'
+import { Group } from '../../../../resources/rbac'
+import { mockGroups } from '../../../../resources/clients/mock-data/users-and-groups'
 import { AcmButton, AcmEmptyState, AcmLoadingPage, AcmTable, compareStrings } from '../../../../ui-components'
 import { groupsTableColumns, useFilters } from './GroupsTableHelper'
 
 const GroupsTable = () => {
   const { t } = useTranslation()
 
-  const { data: rbacGroups, loading } = useQuery(listGroups)
+  // TODO: Replace the mockdata when backend is implemented
+  const groups = useMemo(() => {
+    return mockGroups.sort((a, b) => compareStrings(a.metadata.name ?? '', b.metadata.name ?? ''))
+  }, [])
 
-  const groups = useMemo(
-    () => rbacGroups?.sort((a, b) => compareStrings(a.metadata.name ?? '', b.metadata.name ?? '')) ?? [],
-    [rbacGroups]
-  )
+  const loading = false as boolean
 
-  const keyFn = useCallback((group: RbacGroup) => group.metadata.name ?? '', [])
+  const keyFn = useCallback((group: Group) => group.metadata.name ?? '', [])
 
   // TODO: rbacCreate for IDP
   const canAddAccessControl = true
@@ -27,14 +27,13 @@ const GroupsTable = () => {
   const filters = useFilters()
   const columns = groupsTableColumns({ t })
   // TODO: Uncomment when actions are implemented
-  // const rowActions = useRowActions({ t, navigate })
 
   return (
     <PageSection>
       {loading ? (
         <AcmLoadingPage />
       ) : (
-        <AcmTable<RbacGroup>
+        <AcmTable<Group>
           key="groups-table"
           filters={filters}
           columns={columns}
@@ -42,10 +41,10 @@ const GroupsTable = () => {
           items={groups}
           emptyState={
             <AcmEmptyState
-              title={t(`In order to view Users, add Identity provider`)}
+              title={t(`In order to view Groups, add Identity provider`)}
               message={
                 <Trans
-                  i18nKey="Once Identity provider is added, Users will appear in the list after they log in."
+                  i18nKey="Once Identity provider is added, Groups will appear in the list after they log in."
                   components={{ bold: <strong /> }}
                 />
               }

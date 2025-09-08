@@ -56,7 +56,8 @@ import {
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { DeleteResourceModal, IDeleteResourceModalProps } from './components/DeleteResourceModal'
 import ResourceLabels from './components/ResourceLabels'
-import { argoAppSetQueryString, subscriptionAppQueryString } from './CreateApplication/actions'
+import { argoAppSetQueryString } from './CreateArgoApplication/actions'
+import { subscriptionAppQueryString } from './CreateSubscriptionApplication/actions'
 import {
   getResourceTimestamp,
   getAnnotation,
@@ -937,12 +938,18 @@ export default function ApplicationsOverview() {
           {
             id: 'create-argo-pull-model',
             text: t('Argo CD ApplicationSet - Pull model'),
+            description: t(
+              'Considered the better choice for security. Managed clusters pull application resources directly from Git repositories.'
+            ),
             isDisabled: !canCreateApplicationSet,
             tooltip: !canCreateApplicationSet ? t('rbac.unauthorized') : '',
           },
           {
             id: 'create-argo',
             text: t('Argo CD ApplicationSet - Push model'),
+            description: t(
+              'Hub cluster pushes application resources to managed clusters requiring credentials for each cluster.'
+            ),
             isDisabled: !canCreateApplicationSet,
             tooltip: !canCreateApplicationSet ? t('rbac.unauthorized') : '',
           },

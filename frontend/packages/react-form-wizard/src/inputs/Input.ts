@@ -37,13 +37,9 @@ export type InputCommonProps<ValueT = any> = {
   onValueChange?: (value: unknown, item?: any) => void
 }
 
-export function useID(props: { id?: string; path: string }) {
+export function convertId(props: { id?: string; path: string }) {
   if (props.id) return props.id
   return props.path?.toLowerCase().split('.').join('-') ?? ''
-}
-
-export function usePath(props: { path: string }) {
-  return props.path
 }
 
 export function useValue(
@@ -53,10 +49,9 @@ export function useValue(
   >,
   defaultValue: any
 ): [value: any, setValue: (value: any) => void] {
-  const { onValueChange } = props
+  const { onValueChange, path } = props
   const item = useContext(ItemContext)
   const { update } = useData()
-  const path = usePath(props)
   const pathValue = get(item, path) ?? defaultValue
   const setValue = useCallback(
     (newValue: any) => {
@@ -138,8 +133,7 @@ export function useInput(props: InputCommonProps) {
     validate()
   }
 
-  const path = usePath(props)
-  const id = useID(props)
+  const id = convertId(props)
 
   const hasValue = useHasValue()
   const setHasValue = useSetHasValue()
@@ -158,7 +152,6 @@ export function useInput(props: InputCommonProps) {
   return {
     ...props,
     id,
-    path,
     displayMode,
     value,
     setValue,

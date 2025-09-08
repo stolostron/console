@@ -4,7 +4,8 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { managedClusterAddonsState, multiClusterEnginesState } from '../../../../../atoms'
 import { nockIgnoreApiPaths } from '../../../../../lib/nock-util'
-import { clickByTestId, isCardEnabled } from '../../../../../lib/test-util'
+import { nockHypershiftStatus } from '../../../../../lib/nock-hypershift-status'
+import { clickByTestId, isCardEnabled, waitForNocks } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { CreateKubeVirtControlPlane } from './CreateKubeVirtControlPlane'
 import {
@@ -37,12 +38,20 @@ describe('CreateKubeVirtControlPlane', () => {
   }
 
   test('Hosted should be enabled when hypershift is enabled', async () => {
+    const hypershiftStatusNock = nockHypershiftStatus(true)
+
     const { getByTestId } = render(<Component />)
+    await waitForNocks([hypershiftStatusNock])
+
     expect(isCardEnabled(getByTestId('hosted'))).toBe(true)
   })
 
   test('Hosted should be disabled when hypershift is disabled', async () => {
+    const hypershiftStatusNock = nockHypershiftStatus(false)
+
     const { getByTestId } = render(<Component enableHypershift={false} />)
+    await waitForNocks([hypershiftStatusNock])
+
     expect(isCardEnabled(getByTestId('hosted'))).toBe(false)
     await clickByTestId('hosted')
   })

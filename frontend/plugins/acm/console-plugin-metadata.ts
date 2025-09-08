@@ -21,6 +21,7 @@ export const pluginMetadata: ConsolePluginBuildMetadata = {
     roles: '../../src/routes/UserManagement/Roles/RolesManagementPlugin.tsx',
     identities: '../../src/routes/UserManagement/Identities/IdentitiesManagementPlugin.tsx',
     featureFlags: '../../src/utils/flags/useFeatureFlags.ts',
+    acmResourceRoutes: '../../src/plugin-extensions/acmResourceRoutes.ts',
   },
   dependencies: {
     '@console/pluginAPI': '>=4.15.0',

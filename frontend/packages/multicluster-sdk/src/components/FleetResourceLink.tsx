@@ -111,11 +111,6 @@ export const FleetResourceLink: React.FC<FleetResourceLinkProps> = ({ cluster, .
       return null
     }
 
-    // first-class ACM resources get special handling in all cases
-    if (groupVersionKind.kind === 'ManagedCluster') {
-      return `/multicloud/infrastructure/clusters/details/${name}/${name}/overview`
-    }
-
     if (isHubCluster) {
       // hub cluster case, extension-based routing for hub cluster resources
       if (resourceRoutesResolved && resourceRoutes?.length) {

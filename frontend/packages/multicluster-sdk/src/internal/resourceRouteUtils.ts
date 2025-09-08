@@ -74,7 +74,7 @@ export const getExtensionResourcePath = (
   const handler = findResourceRouteHandler(extensions, group, kind, version)
 
   if (handler && typeof handler === 'function' && params) {
-    return handler({
+    const result = handler({
       cluster: params.cluster,
       namespace: params.namespace,
       name: params.name,
@@ -85,6 +85,7 @@ export const getExtensionResourcePath = (
         kind: params.model.kind,
       },
     })
+    return result ?? null
   }
 
   return null

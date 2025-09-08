@@ -5,9 +5,17 @@ import { logger } from './logger'
 import { getServiceAccountToken } from './serviceAccountToken'
 
 // Type returned by /apis/authentication.k8s.io/v1/tokenreviews
+export interface MultiClusterEngineComponent {
+  name: string
+  enabled: boolean
+}
+
 interface MultiClusterEngine {
   spec: {
     targetNamespace: string
+    overrides?: {
+      components?: MultiClusterEngineComponent[]
+    }
   }
 }
 
@@ -32,4 +40,23 @@ export async function getMultiClusterEngine(noCache?: boolean): Promise<MultiClu
       })
   }
   return MultiClusterEngine
+}
+
+export async function getMultiClusterEngineComponents(
+  noCache?: boolean,
+  throwErrors?: boolean
+): Promise<MultiClusterEngineComponent[] | undefined> {
+  if (throwErrors) {
+    // Don't use the cached version if we want to throw errors
+    const serviceAccountToken = getServiceAccountToken()
+    const response = await jsonRequest<MultiClusterEngineList>(
+      process.env.CLUSTER_API_URL + '/apis/multicluster.openshift.io/v1/multiclusterengines',
+      serviceAccountToken
+    )
+    const multiClusterEngine = response.items && response.items[0] ? response.items[0] : undefined
+    return multiClusterEngine?.spec?.overrides?.components
+  }
+
+  const multiClusterEngine = await getMultiClusterEngine(noCache)
+  return multiClusterEngine?.spec?.overrides?.components
 }
