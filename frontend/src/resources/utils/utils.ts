@@ -7,14 +7,12 @@ export function getLatest<T>(items: T[], key: string) {
   if (items.length === 0) {
     return undefined
   }
-  if (items.length === 1) {
-    return items[0]
-  }
+  const [firstItem, ...rest] = items
 
-  return items.reduce((a, b) => {
+  return rest.reduce((a, b) => {
     const [timeA, timeB] = [a, b].map((x: T) => new Date(get(x as unknown as object, key, '')))
     return timeA > timeB ? a : b
-  })
+  }, firstItem)
 }
 
 /* istanbul ignore next */
@@ -64,7 +62,7 @@ export const getISOStringTimestamp = (timestamp: string) => {
 
 export function parseLabel(label?: string | null) {
   let prefix, oper, suffix
-  if (label && label.includes('=')) {
+  if (label?.includes('=')) {
     ;[prefix, suffix] = label.split('=')
     if (prefix.endsWith('!')) {
       prefix = prefix.slice(0, -1)
