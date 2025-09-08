@@ -86,6 +86,7 @@ interface MockEditor {
   onDidChangeModelContent: (cb: any) => void
   deltaDecorations: () => void
   getModel: () => MockModel
+  getValue: () => string
   executeEdits: (id: string, edits: [{ range: Range; text: string }]) => void
 }
 
@@ -205,6 +206,9 @@ const MonacoEditor = (props: {
         editorMockRef.current.newDecorations = JSON.stringify(newDecorations)
       },
       getModel: () => model,
+      getValue: () => {
+        return editorMockRef.current.editorContent
+      },
       executeEdits: (id, edits) => {
         const { text } = edits[0]
         const ta = editorMockRef.current.textArea
