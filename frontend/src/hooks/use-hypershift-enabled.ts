@@ -1,35 +1,39 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { useState, useEffect } from 'react'
-import { useRecoilValue, useSharedAtoms } from '../shared-recoil'
+import { fetchGet, getBackendUrl } from '../resources/utils'
 import { useLocalHubName } from '../hooks/use-local-hub'
 
+interface HypershiftStatusResponse {
+  isHypershiftEnabled: boolean
+}
+
 export const useIsHypershiftEnabled = () => {
+  const [loaded, setLoaded] = useState(false)
   const [isHypershiftEnabled, setIsHypershiftEnabled] = useState<boolean>(false)
   const localHubName = useLocalHubName()
-  const { managedClusterAddonsState, multiClusterEnginesState } = useSharedAtoms()
-  const managedClusterAddOns = useRecoilValue(managedClusterAddonsState)
-  const [multiClusterEngine] = useRecoilValue(multiClusterEnginesState)
-  const hypershiftAddon = (managedClusterAddOns?.[localHubName] || []).find(
-    (mca) => mca.metadata.name === 'hypershift-addon'
-  )
+
   useEffect(() => {
     const getHypershiftStatus = async () => {
       try {
-        const components = multiClusterEngine?.spec?.overrides?.components
-        const hypershift = components?.find((component) => component.name === 'hypershift')
-        const hypershiftLocalHosting = components?.find((component) => component.name === 'hypershift-local-hosting')
-        setIsHypershiftEnabled(
-          !!hypershift?.enabled &&
-            !!hypershiftLocalHosting?.enabled &&
-            hypershiftAddon?.status?.conditions?.find((c) => c.reason === 'ManagedClusterAddOnLeaseUpdated')?.status ===
-              'True'
-        )
-      } catch {
-        // nothing to do
+        const url = `${getBackendUrl()}/hypershift-status?hubName=${encodeURIComponent(localHubName)}`
+        const abortController = new AbortController()
+
+        const response = await fetchGet<{ body: HypershiftStatusResponse }>(url, abortController.signal)
+        setIsHypershiftEnabled(response.data.body.isHypershiftEnabled)
+        setLoaded(true)
+      } catch (error) {
+        // If the request fails, default to false but log the error for debugging
+        console.warn('Failed to fetch hypershift status:', error)
+        setIsHypershiftEnabled(false)
+        setLoaded(true)
       }
     }
-    getHypershiftStatus()
-  }, [hypershiftAddon?.status?.conditions, multiClusterEngine?.spec?.overrides?.components])
-  return isHypershiftEnabled
+
+    if (localHubName) {
+      getHypershiftStatus()
+    }
+  }, [localHubName])
+
+  return [isHypershiftEnabled, loaded]
 }

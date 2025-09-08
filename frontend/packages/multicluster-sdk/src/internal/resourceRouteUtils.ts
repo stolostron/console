@@ -2,8 +2,7 @@
 import { ResolvedExtension } from '@openshift-console/dynamic-plugin-sdk'
 import { ResourceRoute, ResourceRouteHandler } from '../extensions/resource'
 import { Extension } from '@openshift-console/dynamic-plugin-sdk/lib/types'
-
-export const RESOURCE_ROUTE_TYPE = 'acm.resource/route'
+import { RESOURCE_ROUTE_TYPE } from '../api/constants'
 
 export const isResourceRoute = (e: Extension): e is ResourceRoute => {
   return e.type === RESOURCE_ROUTE_TYPE
@@ -75,7 +74,7 @@ export const getExtensionResourcePath = (
   const handler = findResourceRouteHandler(extensions, group, kind, version)
 
   if (handler && typeof handler === 'function' && params) {
-    return handler({
+    const result = handler({
       cluster: params.cluster,
       namespace: params.namespace,
       name: params.name,
@@ -86,6 +85,7 @@ export const getExtensionResourcePath = (
         kind: params.model.kind,
       },
     })
+    return result ?? null
   }
 
   return null

@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useSearchResultItemsQuery } from '../internal/search/search-sdk'
 import { useCallback, useMemo } from 'react'
-import { SearchResult } from '../types/search'
-import { UseFleetSearchPoll } from '../types/fleet'
+import { AdvancedSearchFilter, SearchResult } from '../types/search'
 import { searchClient } from '../internal/search/search-client'
 import { set } from 'lodash'
+import { WatchK8sResource } from '@openshift-console/dynamic-plugin-sdk'
 
 // Constants for polling interval configuration
 const DEFAULT_POLL_INTERVAL_SECONDS = 30
@@ -19,6 +19,24 @@ const getResourceKey = (kind: string, apigroup?: string): string => {
     return `${kind}.${apigroup}`
   }
   return kind
+}
+
+const parseConditionString = (conditionString: string): Array<{ type: string; status: string }> | undefined => {
+  if (!conditionString || typeof conditionString !== 'string') {
+    return undefined
+  }
+  const conditions = conditionString
+    .split(';')
+    .filter((condition) => condition.includes('='))
+    .map((condition) => {
+      const [type, status] = condition.split('=')
+      return {
+        type: type?.trim(),
+        status: status?.trim(),
+      }
+    })
+    .filter((condition) => condition.type && condition.status)
+  return conditions.length > 0 ? conditions : undefined
 }
 
 /**
@@ -89,7 +107,11 @@ const getResourceKey = (kind: string, apigroup?: string): string => {
  * - Polling is enabled by default with a 30-second interval; use false to disable
  * - Minimum polling interval is 30 seconds for performance reasons
  */
-export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSearch, pollInterval) => {
+export function useFleetSearchPoll<T extends K8sResourceCommon | K8sResourceCommon[]>(
+  watchOptions: WatchK8sResource,
+  advancedSearchFilters?: AdvancedSearchFilter,
+  pollInterval?: number | false
+): [SearchResult<T> | undefined, boolean, Error | undefined, () => void] {
   const { groupVersionKind, limit, namespace, namespaced, name, isList } = watchOptions
 
   const { group, version, kind } = groupVersionKind ?? {}
@@ -139,8 +161,8 @@ export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSea
     }
 
     // Add filters from advancedSearch, excluding properties already specified in watchOptions
-    if (advancedSearch) {
-      for (const { property, values } of advancedSearch) {
+    if (advancedSearchFilters) {
+      for (const { property, values } of advancedSearchFilters) {
         if (property && values !== undefined && !watchOptionsProperties.has(property)) {
           filters.push({ property, values })
         }
@@ -151,7 +173,7 @@ export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSea
       filters,
       limit: limit ?? -1,
     }
-  }, [group, version, kind, namespaced, namespace, name, advancedSearch, limit])
+  }, [group, version, kind, namespaced, namespace, name, advancedSearchFilters, limit])
 
   const {
     data: result,
@@ -189,6 +211,10 @@ export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSea
             labels: label,
           },
         }
+        // _uid field holds '<cluster>/<uid>' but may be removed in the future
+        const uid = item._uid?.split('/').pop() || undefined
+        setIfDefined(resource, 'metadata.uid', uid)
+        setIfDefined(resource, 'status.conditions', parseConditionString(item.condition))
         const resourceKey = getResourceKey(item.kind, item.apigroup)
         // Reverse the flattening of specific resources by the search-collector
         // See https://github.com/stolostron/search-collector/blob/main/pkg/transforms/genericResourceConfig.go
@@ -200,21 +226,23 @@ export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSea
             break
           case 'ClusterOperator.config.openshift.io': {
             setIfDefined(resource, 'status.versions[0]', item.version, { name: 'operator', version: item.version })
-            const conditions: any = []
-            setIfDefined(conditions, `[${conditions.length}]`, item.available, {
-              type: 'Available',
-              status: item.available,
-            })
-            setIfDefined(conditions, `[${conditions.length}]`, item.progressing, {
-              type: 'Progressing',
-              status: item.progressing,
-            })
-            setIfDefined(conditions, `[${conditions.length}]`, item.degraded, {
-              type: 'Degraded',
-              status: item.degraded,
-            })
-            if (conditions.length) {
-              setIfDefined(resource, 'status.conditions', conditions)
+            if (!resource.status?.conditions) {
+              const conditions: any = []
+              setIfDefined(conditions, `[${conditions.length}]`, item.available, {
+                type: 'Available',
+                status: item.available,
+              })
+              setIfDefined(conditions, `[${conditions.length}]`, item.progressing, {
+                type: 'Progressing',
+                status: item.progressing,
+              })
+              setIfDefined(conditions, `[${conditions.length}]`, item.degraded, {
+                type: 'Degraded',
+                status: item.degraded,
+              })
+              if (conditions.length) {
+                setIfDefined(resource, 'status.conditions', conditions)
+              }
             }
             break
           }
@@ -227,7 +255,7 @@ export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSea
           case 'Namespace':
             setIfDefined(resource, 'status.phase', item.status)
             break
-          case 'Node':
+          case 'Node': {
             setIfDefined(resource, 'status.addresses[0]', item.ipAddress, {
               type: 'InternalIP',
               address: item.ipAddress,
@@ -235,10 +263,14 @@ export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSea
             setIfDefined(resource, 'status.allocatable.memory', item.memoryAllocatable)
             setIfDefined(resource, 'status.capacity.memory', item.memoryCapacity)
             break
+          }
 
           case 'PersistentVolumeClaim':
             setIfDefined(resource, 'spec.resources.requests.storage', item.requestedStorage)
+            setIfDefined(resource, 'spec.storageClassName', item.storageClassName)
             setIfDefined(resource, 'spec.volumeMode', item.volumeMode)
+            setIfDefined(resource, 'status.phase', item.status)
+            setIfDefined(resource, 'status.capacity.storage', item.capacity)
             break
 
           case 'StorageClass.storage.k8s.io':
@@ -263,14 +295,39 @@ export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSea
             setIfDefined(resource, 'spec.template.metadata.annotations["vm.kubevirt.io/flavor"]', item.flavor)
             setIfDefined(resource, 'spec.template.metadata.annotations["vm.kubevirt.io/os"]', item.osName)
             setIfDefined(resource, 'spec.template.metadata.annotations["vm.kubevirt.io/workload"]', item.workload)
-            const conditions: any = []
-            setIfDefined(conditions, `[${conditions.length}]`, item.ready, { type: 'Ready', status: item.ready })
-            setIfDefined(conditions, `[${conditions.length}]`, item.agentConnected, {
-              type: 'AgentConnected',
-              status: item.agentConnected,
-            })
-            if (conditions.length) {
-              setIfDefined(resource, 'status.conditions', conditions)
+            if (item.dataVolumeNames && typeof item.dataVolumeNames === 'string') {
+              const dataVolumeNamesList = item.dataVolumeNames.split(';').filter((name: string) => name.trim() !== '')
+              if (dataVolumeNamesList.length > 0) {
+                const volumes = dataVolumeNamesList.map((name: string) => ({
+                  dataVolume: { name: name.trim() },
+                }))
+                setIfDefined(resource, 'spec.template.spec.volumes', volumes)
+              }
+            }
+
+            if (item.pvcClaimNames && typeof item.pvcClaimNames === 'string') {
+              const pvcClaimNamesList = item.pvcClaimNames.split(';').filter((name: string) => name.trim() !== '')
+              if (pvcClaimNamesList.length > 0) {
+                const pvcVolumes = pvcClaimNamesList.map((claimName: string) => ({
+                  persistentVolumeClaim: { claimName: claimName.trim() },
+                }))
+                if (resource.spec?.template?.spec?.volumes) {
+                  resource.spec.template.spec.volumes.push(...pvcVolumes)
+                } else {
+                  setIfDefined(resource, 'spec.template.spec.volumes', pvcVolumes)
+                }
+              }
+            }
+            if (!resource.status?.conditions) {
+              const conditions: any = []
+              setIfDefined(conditions, `[${conditions.length}]`, item.ready, { type: 'Ready', status: item.ready })
+              setIfDefined(conditions, `[${conditions.length}]`, item.agentConnected, {
+                type: 'AgentConnected',
+                status: item.agentConnected,
+              })
+              if (conditions.length) {
+                setIfDefined(resource, 'status.conditions', conditions)
+              }
             }
             setIfDefined(resource, 'status.printableStatus', item.status)
             break
@@ -279,17 +336,19 @@ export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSea
           case 'VirtualMachineInstance.kubevirt.io': {
             setIfDefined(resource, 'spec.domain.cpu.cores', item.cpu)
             setIfDefined(resource, 'spec.domain.memory.guest', item.memory)
-            const conditions: any = []
-            setIfDefined(conditions, `[${conditions.length}]`, item.liveMigratable, {
-              type: 'LiveMigratable',
-              status: item.liveMigratable,
-            })
-            setIfDefined(conditions, `[${conditions.length}]`, item.ready, {
-              type: 'Ready',
-              status: item.ready,
-            })
-            if (conditions.length) {
-              setIfDefined(resource, 'status.conditions', conditions)
+            if (!resource.status?.conditions) {
+              const conditions: any = []
+              setIfDefined(conditions, `[${conditions.length}]`, item.liveMigratable, {
+                type: 'LiveMigratable',
+                status: item.liveMigratable,
+              })
+              setIfDefined(conditions, `[${conditions.length}]`, item.ready, {
+                type: 'Ready',
+                status: item.ready,
+              })
+              if (conditions.length) {
+                setIfDefined(resource, 'status.conditions', conditions)
+              }
             }
             setIfDefined(resource, 'status.interfaces[0]', item.ipaddress, {
               ipAddress: item.ipaddress,
@@ -307,10 +366,12 @@ export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSea
             setIfDefined(resource, 'spec.vmiName', item.vmiName)
             break
           case 'VirtualMachineSnapshot.snapshot.kubevirt.io': {
-            setIfDefined(resource, 'status.conditions[0]', item.ready, {
-              type: 'Ready',
-              status: item.ready,
-            })
+            if (!resource.status?.conditions) {
+              setIfDefined(resource, 'status.conditions[0]', item.ready, {
+                type: 'Ready',
+                status: item.ready,
+              })
+            }
             setIfDefined(resource, 'status.phase', item.phase)
             if (item.indications && typeof item.indications === 'string') {
               const indicationsArray = item.indications.split(';')
@@ -322,10 +383,12 @@ export const useFleetSearchPoll: UseFleetSearchPoll = (watchOptions, advancedSea
             break
           }
           case 'VirtualMachineRestore.snapshot.kubevirt.io': {
-            setIfDefined(resource, 'status.conditions[0]', item.ready, {
-              type: 'Ready',
-              status: item.ready,
-            })
+            if (!resource.status?.conditions) {
+              setIfDefined(resource, 'status.conditions[0]', item.ready, {
+                type: 'Ready',
+                status: item.ready,
+              })
+            }
             setIfDefined(resource, 'status.restoreTime', item.restoreTime)
             setIfDefined(resource, 'status.complete', item.complete)
             setIfDefined(resource, 'spec.target.kind', item.targetKind)

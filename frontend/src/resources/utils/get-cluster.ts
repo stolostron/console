@@ -773,6 +773,9 @@ export function getProvider({
     case 'KUBEVIRT':
       provider = Provider.kubevirt
       break
+    case 'NUTANIX':
+      provider = Provider.nutanix
+      break
     case 'OTHER':
     default:
       provider = Provider.other

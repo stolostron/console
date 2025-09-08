@@ -2,12 +2,16 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../lib/nock-util'
-import { waitForText, clickByText } from '../../../lib/test-util'
-import { RoleAssignments } from './RoleAssignments'
+import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
 import { defaultPlugin, PluginContext } from '../../../lib/PluginContext'
-import { AcmToastContext } from '../../../ui-components'
+import { clickByText, waitForText } from '../../../lib/test-util'
+import {
+  deleteRoleAssignment,
+  FlattenedRoleAssignment,
+} from '../../../resources/clients/multicluster-role-assignment-client'
 import { MulticlusterRoleAssignment } from '../../../resources/multicluster-role-assignment'
+import { AcmToastContext } from '../../../ui-components'
+import { RoleAssignments } from './RoleAssignments'
 
 // Mock multicluster role assignments data
 const mockMulticlusterRoleAssignments: MulticlusterRoleAssignment[] = [
@@ -23,14 +27,28 @@ const mockMulticlusterRoleAssignments: MulticlusterRoleAssignment[] = [
       subject: { kind: 'User', name: 'test.user1' },
       roleAssignments: [
         {
+          name: 'A1',
           clusterRole: 'admin',
           targetNamespaces: ['default', 'kube-system'],
           clusterSets: ['test-cluster-1'],
         },
         {
+          name: 'A2',
           clusterRole: 'cluster-admin',
           targetNamespaces: ['monitoring'],
           clusterSets: ['test-cluster-2'],
+        },
+      ],
+    },
+    status: {
+      roleAssignments: [
+        {
+          name: 'A1',
+          status: 'Active',
+        },
+        {
+          name: 'A2',
+          status: 'Error',
         },
       ],
     },
@@ -47,9 +65,18 @@ const mockMulticlusterRoleAssignments: MulticlusterRoleAssignment[] = [
       subject: { kind: 'User', name: 'test.user2' },
       roleAssignments: [
         {
+          name: 'B1',
           clusterRole: 'developer',
           targetNamespaces: ['app-namespace'],
           clusterSets: ['dev-cluster'],
+        },
+      ],
+    },
+    status: {
+      roleAssignments: [
+        {
+          name: 'B1',
+          status: 'Active',
         },
       ],
     },
@@ -65,11 +92,63 @@ const mockMulticlusterRoleAssignments: MulticlusterRoleAssignment[] = [
       subject: { kind: 'User', name: 'test.user3' },
       roleAssignments: [
         {
+          name: 'C1',
           clusterRole: 'viewer',
           targetNamespaces: ['staging-ns-1', 'staging-ns-2'],
           clusterSets: ['staging-cluster'],
         },
       ],
+    },
+    status: {},
+  },
+]
+
+const mockRoleAssignments: FlattenedRoleAssignment[] = [
+  {
+    name: 'A1',
+    clusterRole: 'admin',
+    targetNamespaces: ['default', 'kube-system'],
+    clusterSets: ['test-cluster-1'],
+    relatedMulticlusterRoleAssignment: mockMulticlusterRoleAssignments[0],
+    subject: {
+      name: mockMulticlusterRoleAssignments[0].spec.subject.name,
+      kind: mockMulticlusterRoleAssignments[0].spec.subject.kind,
+    },
+    status: mockMulticlusterRoleAssignments[0].status.roleAssignments?.[0],
+  },
+  {
+    name: 'A2',
+    clusterRole: 'cluster-admin',
+    targetNamespaces: ['monitoring'],
+    clusterSets: ['test-cluster-2'],
+    relatedMulticlusterRoleAssignment: mockMulticlusterRoleAssignments[0],
+    subject: {
+      name: mockMulticlusterRoleAssignments[0].spec.subject.name,
+      kind: mockMulticlusterRoleAssignments[0].spec.subject.kind,
+    },
+    status: mockMulticlusterRoleAssignments[0].status.roleAssignments?.[1],
+  },
+  {
+    name: 'B1',
+    clusterRole: 'developer',
+    targetNamespaces: ['app-namespace'],
+    clusterSets: ['dev-cluster'],
+    relatedMulticlusterRoleAssignment: mockMulticlusterRoleAssignments[1],
+    subject: {
+      name: mockMulticlusterRoleAssignments[1].spec.subject.name,
+      kind: mockMulticlusterRoleAssignments[1].spec.subject.kind,
+    },
+    status: mockMulticlusterRoleAssignments[1].status.roleAssignments?.[0],
+  },
+  {
+    name: 'C1',
+    clusterRole: 'viewer',
+    targetNamespaces: ['staging-ns-1', 'staging-ns-2'],
+    clusterSets: ['staging-cluster'],
+    relatedMulticlusterRoleAssignment: mockMulticlusterRoleAssignments[2],
+    subject: {
+      name: mockMulticlusterRoleAssignments[2].spec.subject.name,
+      kind: mockMulticlusterRoleAssignments[2].spec.subject.kind,
     },
   },
 ]
@@ -203,14 +282,15 @@ jest.mock('../../../ui-components', () => {
           </button>
 
           {/* Table data - simplified */}
-          {filteredItems?.map((item: any) => (
-            <div key={item.multiclusterRoleAssignmentUid + '-' + item.roleAssignmentIndex}>
+          {filteredItems?.map((item: FlattenedRoleAssignment) => (
+            <div key={item.name}>
               <div>
-                {item.subjectKind}: {item.subjectName}
+                {item.subject.kind}: {item.subject.name}
               </div>
               <div>{item.clusterRole}</div>
               <div>{item.clusterSets?.join(', ') || 'No clusters'}</div>
               <div>{item.targetNamespaces?.join(', ') || 'No namespaces'}</div>
+              <div>{`Status: ${item.status?.status ?? 'Unknown'}`}</div>
               <button onClick={() => mockToastContext.addAlert({ title: 'Action', type: 'info' })}>Row Actions</button>
             </div>
           ))}
@@ -269,29 +349,30 @@ jest.mock('./RoleAssignmentActionDropdown', () => ({
       >
         Delete role assignment
       </button>
-      <button>Edit role assignment</button>
     </div>
   ),
 }))
 
+jest.mock('../../../resources/clients/multicluster-role-assignment-client', () => ({
+  ...jest.requireActual('../../../resources/clients/multicluster-role-assignment-client'),
+  deleteRoleAssignment: jest.fn(),
+}))
+const mockDeleteRoleAssignment = deleteRoleAssignment as jest.Mock
+
 const Component = ({
-  multiclusterRoleAssignments = mockMulticlusterRoleAssignments,
+  roleAssignments = mockRoleAssignments,
   isLoading = false,
   hiddenColumns = undefined,
 }: {
-  multiclusterRoleAssignments?: MulticlusterRoleAssignment[]
+  roleAssignments?: FlattenedRoleAssignment[]
   isLoading?: boolean
-  hiddenColumns?: ('subject' | 'role' | 'cluster')[]
+  hiddenColumns?: ('subject' | 'role' | 'clusters' | 'clusterSets')[]
 } = {}) => (
   <RecoilRoot>
     <MemoryRouter>
       <PluginContext.Provider value={defaultPlugin}>
         <AcmToastContext.Provider value={mockToastContext}>
-          <RoleAssignments
-            multiclusterRoleAssignments={multiclusterRoleAssignments}
-            isLoading={isLoading}
-            hiddenColumns={hiddenColumns}
-          />
+          <RoleAssignments roleAssignments={roleAssignments} isLoading={isLoading} hiddenColumns={hiddenColumns} />
         </AcmToastContext.Provider>
       </PluginContext.Provider>
     </MemoryRouter>
@@ -306,48 +387,53 @@ describe('RoleAssignments', () => {
   })
 
   it('renders loading state', async () => {
+    // Act
     render(<Component isLoading={true} />)
-    await waitForText('Loading role assignments')
+
+    // Assert
+    expect(screen.getByText('Loading role assignments')).toBeInTheDocument()
   })
 
   it('renders with role assignments data', async () => {
+    // Act
     render(<Component />)
-    screen.logTestingPlaygroundURL()
-    await waitForText('test-cluster-1', true) // Allow multiple matches
-    await waitForText('User: test.user1', true) // Allow multiple matches
-    await waitForText('admin', true) // Allow multiple matches
 
-    // Test accessibility-focused button assertions for key functionality
-    expect(screen.getAllByRole('button', { name: /create role assignment/i })[0]).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /delete role assignments/i })).toBeInTheDocument()
+    // Assert
+    expect(screen.getByText(/cluster-admin/i)).toBeInTheDocument()
+    expect(screen.getAllByText('User: test.user1')).toHaveLength(2)
+    expect(screen.getByText('test-cluster-1')).toBeInTheDocument()
+    expect(screen.getByText(/default, kube-system/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /create role assignment/i })).toBeInTheDocument()
+    expect(screen.getAllByText('Status: Active')).toHaveLength(2)
+    expect(screen.getAllByText('Status: Error')).toHaveLength(1)
+    expect(screen.getAllByText('Status: Unknown')).toHaveLength(1)
   })
 
   it('renders empty state', async () => {
-    render(<Component multiclusterRoleAssignments={[]} />)
-    await waitForText('No role assignment created yet')
-    await waitForText('Create role assignment', true) // Allow multiple matches
+    render(<Component roleAssignments={[]} />)
 
-    // Test accessibility-focused button assertion - use getAllByRole for multiple buttons
-    expect(screen.getAllByRole('button', { name: /create role assignment/i })[0]).toBeInTheDocument()
+    expect(screen.getByText('No role assignment created yet')).toBeInTheDocument()
   })
 
   it('can create role assignment', async () => {
+    // Act
     render(<Component />)
-    await waitForText('test-cluster-1')
 
-    // Test accessibility-focused button assertion before clicking - use getAllByRole for multiple buttons
-    expect(screen.getAllByRole('button', { name: /create role assignment/i })[0]).toBeInTheDocument()
+    // Assert
+    expect(screen.getByText('test-cluster-1')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /create role assignment/i })).toBeInTheDocument()
     await clickByText('Create role assignment')
   })
 
   it('can create role assignment from empty state', async () => {
-    render(<Component multiclusterRoleAssignments={[]} />)
+    render(<Component roleAssignments={[]} />)
     await waitForText('No role assignment created yet')
     // Use screen.getAllByText for multiple matches
     expect(screen.getAllByText('Create role assignment')[0]).toBeInTheDocument()
 
-    // Test accessibility-focused button assertion - use getAllByRole for multiple buttons
-    expect(screen.getAllByRole('button', { name: /create role assignment/i })[0]).toBeInTheDocument()
+    // Assert
+    expect(screen.getByText('No role assignment created yet')).toBeInTheDocument()
+    expect(screen.getAllByText('Create role assignment')[0]).toBeInTheDocument()
   })
 
   it('can delete role assignments using bulk actions', async () => {
@@ -363,6 +449,7 @@ describe('RoleAssignments', () => {
     // Test delete confirmation button
     expect(screen.getByRole('button', { name: /^delete$/i })).toBeInTheDocument()
     await clickByText('Delete')
+    expect(mockDeleteRoleAssignment).toHaveBeenCalledTimes(1)
   })
 
   it('bulk delete modal shows correct confirmation text', async () => {
@@ -371,6 +458,7 @@ describe('RoleAssignments', () => {
     await clickByText('Delete role assignments')
     await waitForText('Delete role assignments?')
     await waitForText('Are you sure that you want to delete the role assignments? This action cannot be undone.')
+    expect(mockDeleteRoleAssignment).toHaveBeenCalledTimes(0)
   })
 
   it('can cancel bulk delete modal', async () => {
@@ -386,6 +474,7 @@ describe('RoleAssignments', () => {
     expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument()
     // Click cancel to trigger close function (Line 80)
     await clickByText('Cancel')
+    expect(mockDeleteRoleAssignment).toHaveBeenCalledTimes(0)
   })
 
   it('can filter by role', async () => {
@@ -490,37 +579,6 @@ describe('RoleAssignments', () => {
     expect(screen.getAllByText(/User: test\.user1/i)).toHaveLength(2)
   })
 
-  it('shows success toast after bulk delete', async () => {
-    const mockAddAlert = jest.fn()
-    const testToastContext = {
-      ...mockToastContext,
-      addAlert: mockAddAlert,
-    }
-
-    render(
-      <RecoilRoot>
-        <MemoryRouter>
-          <PluginContext.Provider value={defaultPlugin}>
-            <AcmToastContext.Provider value={testToastContext}>
-              <RoleAssignments multiclusterRoleAssignments={mockMulticlusterRoleAssignments} />
-            </AcmToastContext.Provider>
-          </PluginContext.Provider>
-        </MemoryRouter>
-      </RecoilRoot>
-    )
-
-    await waitForText('test-cluster-1')
-    await clickByText('Delete role assignments')
-    await waitForText('Confirm by typing "delete" below:')
-    await clickByText('Delete')
-
-    expect(mockAddAlert).toHaveBeenCalledWith({
-      title: 'Role assignment deleted',
-      type: 'success',
-      autoClose: true,
-    })
-  })
-
   describe('Column Display and Hidden Columns', () => {
     it('hides subject data when hiddenColumns includes subject', async () => {
       render(<Component hiddenColumns={['subject']} />)
@@ -549,7 +607,7 @@ describe('RoleAssignments', () => {
     })
 
     it('hides cluster data when hiddenColumns includes cluster', async () => {
-      render(<Component hiddenColumns={['cluster']} />)
+      render(<Component hiddenColumns={['clusters']} />)
 
       // Wait for other data to load
       await waitForText('User: test.user1', true) // Subject should still be visible

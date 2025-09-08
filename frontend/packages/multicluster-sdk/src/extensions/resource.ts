@@ -2,7 +2,7 @@
 import { CodeRef, ExtensionDeclaration } from '@openshift-console/dynamic-plugin-sdk/lib/types'
 import { ExtensionK8sGroupKindModel, ExtensionK8sModel } from '@openshift-console/dynamic-plugin-sdk'
 import { FleetK8sResourceCommon } from '../types/fleet'
-import { RESOURCE_ROUTE_TYPE } from '../internal/resourceRouteUtils'
+import { RESOURCE_ROUTE_TYPE } from '../api/constants'
 
 export type ResourceRouteHandler = (props: {
   /** The cluster where the resource is located. */
@@ -15,7 +15,7 @@ export type ResourceRouteHandler = (props: {
   resource: FleetK8sResourceCommon
   /** The model for the resource. */
   model: ExtensionK8sModel
-}) => string
+}) => string | undefined
 
 export type ResourceRouteProps = {
   /** The model for which this resource route should be used. */

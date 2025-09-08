@@ -1,13 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Tile, WizAsyncSelect, WizHidden, WizTextInput, WizTiles } from '@patternfly-labs/react-form-wizard'
-import { Dispatch, Fragment, SetStateAction } from 'react'
-import { ApplicationSet } from '../../resources'
+import { ItemContext, Tile, useItem, WizHidden, WizTextInput, WizTiles } from '@patternfly-labs/react-form-wizard'
 import { GitAltIcon } from '@patternfly/react-icons'
+import { Fragment } from 'react'
+import { useTranslation } from '../../lib/acm-i18next'
+import { ApplicationSet } from '../../resources'
+import { Channel } from './ArgoWizard'
+import { RepoURL } from './common'
+import { GitPathSelect } from './common/GitPathSelect'
+import { GitRevisionSelect } from './common/GitRevisionSelect'
 import HelmIcon from './logos/HelmIcon.svg'
-import { Channel, getGitPathList } from './ArgoWizard'
-import { TFunction } from 'react-i18next'
-import { GitURLPath, HelmURLPath } from './common'
 
 export function repositoryTypeToSource(value: unknown) {
   if (value === 'Git') {
@@ -40,52 +42,15 @@ export function sourceToRepositoryType(source: unknown) {
 }
 
 export interface SourceSelectorProps {
-  t: TFunction
   gitChannels: string[]
   channels: Channel[] | undefined
   helmChannels: string[]
-  getGitPaths: (
-    channelPath: string,
-    branch: string,
-    secretArgs?:
-      | {
-          secretRef?: string
-          namespace?: string
-        }
-      | undefined
-  ) => Promise<unknown>
-  gitPathsAsyncCallback: (() => Promise<string[]>) | undefined
-  setGitPathsAsyncCallback: Dispatch<SetStateAction<(() => Promise<string[]>) | undefined>>
-  gitRevisionsAsyncCallback: (() => Promise<string[]>) | undefined
-  setGitRevisionsAsyncCallback: Dispatch<SetStateAction<(() => Promise<string[]>) | undefined>>
-  getGitRevisions: (
-    channelPath: string,
-    secretArgs?:
-      | {
-          secretRef?: string
-          namespace?: string
-        }
-      | undefined
-  ) => Promise<unknown>
-  createdChannels: string[]
-  setCreatedChannels: Dispatch<SetStateAction<string[]>>
 }
 
 export function SourceSelector(props: SourceSelectorProps) {
-  const {
-    t,
-    gitChannels,
-    helmChannels,
-    channels,
-    getGitPaths,
-    gitPathsAsyncCallback,
-    gitRevisionsAsyncCallback,
-    setGitRevisionsAsyncCallback,
-    setGitPathsAsyncCallback,
-    getGitRevisions,
-    createdChannels,
-    setCreatedChannels,
-  } = props
+  const { gitChannels, helmChannels, channels } = props
+  const data = useItem<ApplicationSet>()
+  const { t } = useTranslation()
   return (
     <Fragment>
       <WizTiles
@@ -109,87 +74,35 @@ export function SourceSelector(props: SourceSelectorProps) {
         <Tile id="helm" value="Helm" label={t('Helm')} icon={<HelmIcon />} description={t('Use a Helm repository')} />
       </WizTiles>
       {/* Git repo */}
-      <WizHidden hidden={(data) => data.spec.template.spec.source.path === undefined}>
-        <GitURLPath
-          t={t}
-          channels={channels}
-          getGitRevisions={getGitRevisions}
-          gitChannels={gitChannels}
-          path={'spec.template.spec.source.repoURL'}
-          setCreatedChannels={setCreatedChannels}
-          setGitRevisionsAsyncCallback={setGitRevisionsAsyncCallback}
-        />
-
-        <WizHidden hidden={(data) => data.spec.template.spec.source.repoURL === ''}>
-          <WizAsyncSelect
-            path="spec.template.spec.source.targetRevision"
-            label={t('Revision')}
-            labelHelp={t('Refer to a single commit')}
-            placeholder={t('Enter or select a tracking revision')}
-            asyncCallback={gitRevisionsAsyncCallback}
-            isCreatable
-            onValueChange={(value, item) => {
-              const channel = channels?.find(
-                (channel) => channel?.spec?.pathname === item.spec.template.spec.source.repoURL
-              )
-              const path = createdChannels.find((channel) => channel === item.spec.template.spec.source.repoURL)
-              setGitPathsAsyncCallback(
-                () => () =>
-                  getGitPathList(
-                    {
-                      metadata: {
-                        name: channel?.metadata?.name ?? '',
-                        namespace: channel?.metadata?.namespace ?? '',
-                      },
-                      spec: {
-                        pathname: channel?.spec.pathname ?? path ?? '',
-                        type: 'git',
-                      },
-                    },
-                    value as string,
-                    getGitPaths,
-                    item.spec.template.spec.source.repoURL
-                  )
-              )
-            }}
+      <ItemContext.Provider value={data.spec?.template?.spec?.source}>
+        <WizHidden hidden={(data) => data.path === undefined}>
+          <RepoURL name="git" channels={gitChannels} />
+          <WizHidden hidden={(data) => data.repoURL === ''}>
+            <GitRevisionSelect channels={channels ?? []} />
+            <GitPathSelect channels={channels ?? []} />
+          </WizHidden>
+        </WizHidden>
+        {/* Helm repo */}
+        <WizHidden hidden={(data) => data.chart === undefined}>
+          <RepoURL name="helm" channels={helmChannels} />
+          <WizTextInput
+            path="chart"
+            label={t('Chart name')}
+            placeholder={t('Enter the name of the Helm chart')}
+            labelHelp={t('The specific name for the target Helm chart.')}
+            required
           />
-          <WizAsyncSelect
-            path="spec.template.spec.source.path"
-            label={t('Path')}
-            labelHelp={t('The location of the resources on the Git repository.')}
-            placeholder={t('Enter or select a repository path')}
-            isCreatable
-            asyncCallback={gitPathsAsyncCallback}
+          <WizTextInput
+            path="targetRevision"
+            label={t('Package version')}
+            placeholder={t('Enter the version or versions')}
+            labelHelp={t(
+              'The version or versions for the deployable. You can use a range of versions in the form >1.0, or <3.0.'
+            )}
+            required
           />
         </WizHidden>
-      </WizHidden>
-      {/* Helm repo */}
-      <WizHidden hidden={(data) => data.spec.template.spec.source.chart === undefined}>
-        <HelmURLPath
-          getGitRevisions={getGitRevisions}
-          helmChannels={helmChannels}
-          path={'spec.template.spec.source.repoURL'}
-          setCreatedChannels={setCreatedChannels}
-          setGitRevisionsAsyncCallback={setGitRevisionsAsyncCallback}
-          t={t}
-        />
-        <WizTextInput
-          path="spec.template.spec.source.chart"
-          label={t('Chart name')}
-          placeholder={t('Enter the name of the Helm chart')}
-          labelHelp={t('The specific name for the target Helm chart.')}
-          required
-        />
-        <WizTextInput
-          path="spec.template.spec.source.targetRevision"
-          label={t('Package version')}
-          placeholder={t('Enter the version or versions')}
-          labelHelp={t(
-            'The version or versions for the deployable. You can use a range of versions in the form >1.0, or <3.0.'
-          )}
-          required
-        />
-      </WizHidden>
+      </ItemContext.Provider>
     </Fragment>
   )
 }

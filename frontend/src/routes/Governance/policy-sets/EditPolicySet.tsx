@@ -21,6 +21,7 @@ import { SyncEditor, ValidationStatus } from '../../../components/SyncEditor/Syn
 import { reconcileResources } from '../../../resources/utils'
 import schema from './schema.json'
 import { useTranslation } from '../../../lib/acm-i18next'
+import { localeCompare } from '../../../utils/localeCompare'
 
 export function WizardSyncEditor() {
   const resources = useItem() // Wizard framework sets this context
@@ -75,7 +76,7 @@ export function EditPolicySet() {
   const clusterSets = useRecoilValue(managedClusterSetsState)
   const clusterSetBindings = useRecoilValue(managedClusterSetBindingsState)
   const namespaceNames = useMemo(
-    () => namespaces.map((namespace) => namespace.metadata.name ?? '').sort(),
+    () => namespaces.map((namespace) => namespace.metadata.name ?? '').sort(localeCompare),
     [namespaces]
   )
   const [existingResources, setExistingResources] = useState<IResource[]>()

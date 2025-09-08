@@ -3,7 +3,7 @@ import React from 'react'
 import { ResourceIcon, ResourceLink, useResolvedExtensions } from '@openshift-console/dynamic-plugin-sdk'
 import { FleetResourceLinkProps } from '../types/fleet'
 import classNames from 'classnames'
-import { getURLSearchParam } from '../api/utils/searchPaths'
+import { getURLSearchParam } from '../internal/search/searchPaths'
 import { useHubClusterName } from '../api/useHubClusterName'
 import { useIsFleetAvailable } from '../api/useIsFleetAvailable'
 import { Link } from 'react-router-dom-v5-compat'
@@ -109,11 +109,6 @@ export const FleetResourceLink: React.FC<FleetResourceLinkProps> = ({ cluster, .
   const getResourcePath = (): string | null => {
     if (!name || !groupVersionKind?.kind) {
       return null
-    }
-
-    // first-class ACM resources get special handling in all cases
-    if (groupVersionKind.kind === 'ManagedCluster') {
-      return `/multicloud/infrastructure/clusters/details/${name}/${name}/overview`
     }
 
     if (isHubCluster) {
