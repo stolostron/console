@@ -16,7 +16,7 @@ export function liveness(req: Http2ServerRequest, res: Http2ServerResponse): voi
   }
 }
 
-export let isLive = true
+let isLive = true
 
 export function setDead(): void {
   if (isLive) {
