@@ -3,6 +3,7 @@
 // Copyright Contributors to the Open Cluster Management project
 import { MockedProvider } from '@apollo/client/testing'
 import { UseK8sWatchResource } from '@openshift-console/dynamic-plugin-sdk'
+import { UseFleetK8sWatchResource } from '@stolostron/multicluster-sdk/lib/api/useFleetK8sWatchResource'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { GraphQLError } from 'graphql'
@@ -209,9 +210,13 @@ describe('VirtualMachinesPage Page', () => {
 
   it('should render page with search unavailable empty state', async () => {
     const mockUseK8sWatchResource: UseK8sWatchResource = jest.fn()
+    const mockUseFleetK8sWatchResource: UseFleetK8sWatchResource = jest.fn()
     const mockPluginContextValue = {
       ocpApi: {
         useK8sWatchResource: mockUseK8sWatchResource,
+      },
+      multiclusterApi: {
+        useFleetK8sWatchResource: mockUseFleetK8sWatchResource,
       },
       isACMAvailable: true,
       isOverviewAvailable: true,

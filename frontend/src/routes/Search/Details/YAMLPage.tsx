@@ -2,14 +2,14 @@
 import { css } from '@emotion/css'
 import { ActionList, ActionListGroup, ActionListItem, Alert, Button, PageSection } from '@patternfly/react-core'
 import { DownloadIcon } from '@patternfly/react-icons'
-import { useFleetK8sWatchResource } from '@stolostron/multicluster-sdk/lib/api/useFleetK8sWatchResource'
 import { FleetK8sResourceCommon } from '@stolostron/multicluster-sdk/lib/types/fleet'
 import { saveAs } from 'file-saver'
 import jsYaml from 'js-yaml'
-import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react'
+import { Dispatch, SetStateAction, useCallback, useContext, useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom-v5-compat'
 import YamlEditor from '../../../components/YamlEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
+import { PluginContext } from '../../../lib/PluginContext'
 import { canUser } from '../../../lib/rbac-util'
 import { fireManagedClusterAction, fireManagedClusterView, IResource } from '../../../resources'
 import { getGroupFromApiVersion } from '../../../resources/utils'
@@ -262,32 +262,39 @@ export function EditorActionBar(
     <div
       id={'yaml-editor-action-wrapper'}
       style={{
-        paddingTop: '1rem',
         borderTop: 'var(--pf-v5-global--BorderWidth--sm) solid var(--pf-v5-global--BorderColor--100)',
       }}
     >
-      {updateSuccess && (
-        <Alert id="editor-action-alert" variant={'success'} isInline={true} title={`${name} has been updated.`} />
-      )}
-      {updateError !== '' && (
-        <Alert
-          id="editor-action-alert"
-          variant={'danger'}
-          isInline={true}
-          title={t('Error occurred while updating resource: {{name}}', { name })}
+      {updateSuccess || updateError || stale ? (
+        <div
+          style={{
+            paddingTop: '1rem',
+          }}
         >
-          {updateError}
-        </Alert>
-      )}
-      {stale && (
-        <Alert id="editor-action-alert" isInline variant="info" title={t('This object has been updated.')}>
-          {t('Click reload to see the new version.')}
-        </Alert>
-      )}
+          {updateSuccess && (
+            <Alert id="editor-action-alert" variant={'success'} isInline={true} title={`${name} has been updated.`} />
+          )}
+          {updateError !== '' && (
+            <Alert
+              id="editor-action-alert"
+              variant={'danger'}
+              isInline={true}
+              title={t('Error occurred while updating resource: {{name}}', { name })}
+            >
+              {updateError}
+            </Alert>
+          )}
+          {stale && (
+            <Alert id="editor-action-alert" isInline variant="info" title={t('This object has been updated.')}>
+              {t('Click reload to see the new version.')}
+            </Alert>
+          )}
+        </div>
+      ) : undefined}
       <ActionList
         style={{
           justifyContent: 'space-between',
-          paddingTop: '20px',
+          paddingTop: '1rem',
         }}
       >
         <ActionListGroup>
@@ -379,6 +386,9 @@ export default function YAMLPage() {
     apiversion,
     setResourceVersion,
   } = useSearchDetailsContext()
+  const {
+    multiclusterApi: { useFleetK8sWatchResource },
+  } = useContext(PluginContext)
   const { t } = useTranslation()
   const [stale, setStale] = useState(false)
   const [userCanEdit, setUserCanEdit] = useState<boolean>(false)
@@ -405,15 +415,18 @@ export default function YAMLPage() {
 
   useEffect(() => {
     const resourceWatchUpdate = resourceUpdate as FleetK8sResourceCommon
-    if (
+    if (watchError) {
+      console.error(`Error starting watch for resource ${name}`)
+    } else if (
       !watchError &&
       watchLoaded &&
-      resourceWatchUpdate?.metadata?.resourceVersion !== resource.metadata.resourceVersion
+      resourceWatchUpdate?.metadata?.resourceVersion &&
+      resourceWatchUpdate?.metadata?.resourceVersion !== resource?.metadata?.resourceVersion
     ) {
       // if resourceVersion has updated set stale to true
       setStale(true)
     }
-  }, [resourceUpdate, resource?.metadata?.resourceVersion, watchLoaded, watchError])
+  }, [name, resourceUpdate, resource?.metadata?.resourceVersion, watchLoaded, watchError])
 
   useEffect(() => {
     if (location?.state?.scrollToLine) {
@@ -433,7 +446,7 @@ export default function YAMLPage() {
     const pageSectionHeader = document.getElementsByClassName('pf-v5-c-page__main-group')[0]?.clientHeight ?? 0
     const headerSectionHeight = document.getElementById('yaml-editor-header-wrapper')?.clientHeight ?? 0
     const actionsSectionHeight = document.getElementById('yaml-editor-action-wrapper')?.clientHeight ?? 0
-    let editorHeight = pageContentHeight - pageSectionHeader - actionsSectionHeight - headerSectionHeight - 48 // 53px editor header height, 48px content padding
+    let editorHeight = pageContentHeight - pageSectionHeader - actionsSectionHeight - headerSectionHeight - 48 // 48px content padding
     const globalHeader = document.getElementsByClassName('co-global-notification')
     /* istanbul ignore if */
     if (globalHeader.length > 0) {

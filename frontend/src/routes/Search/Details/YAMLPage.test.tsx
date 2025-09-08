@@ -1,10 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { UseK8sWatchResource } from '@openshift-console/dynamic-plugin-sdk'
 import { useFleetK8sWatchResource } from '@stolostron/multicluster-sdk/lib/api/useFleetK8sWatchResource'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
+import { PluginContext } from '../../../lib/PluginContext'
+import { PluginDataContext } from '../../../lib/PluginDataContext'
 import { SearchDetailsContext } from './DetailsPage'
 import YAMLPage, { EditorActionBar, EditorHeaderBar } from './YAMLPage'
 
@@ -241,12 +244,27 @@ describe('YAMLPage', () => {
   })
 
   it('Detects stale resource when watch returns updated resource', async () => {
-    // Mock watch hook to return updated resource
-    ;(useFleetK8sWatchResource as jest.Mock).mockReturnValue([
-      { metadata: { resourceVersion: '12346' } }, // Updated resource version
-      true, // watchLoaded
-      null, // watchError
-    ])
+    const mockUseK8sWatchResource: UseK8sWatchResource = jest.fn()
+    const mockPluginContextValue = {
+      multiclusterApi: {
+        useFleetK8sWatchResource: (useFleetK8sWatchResource as jest.Mock).mockReturnValue([
+          { metadata: { resourceVersion: '12346' } }, // Updated resource version
+          true, // watchLoaded
+          null, // watchError
+        ]),
+      },
+      ocpApi: {
+        useK8sWatchResource: mockUseK8sWatchResource,
+      },
+      isACMAvailable: true,
+      isOverviewAvailable: true,
+      isSubmarinerAvailable: true,
+      isApplicationsAvailable: true,
+      isGovernanceAvailable: true,
+      isSearchAvailable: false,
+      dataContext: PluginDataContext,
+      acmExtensions: {},
+    }
 
     const context: Partial<SearchDetailsContext> = {
       resource: {
@@ -270,15 +288,17 @@ describe('YAMLPage', () => {
     }
 
     render(
-      <RecoilRoot>
-        <MemoryRouter>
-          <Routes>
-            <Route element={<Outlet context={context} />}>
-              <Route path="*" element={<YAMLPage />} />
-            </Route>
-          </Routes>
-        </MemoryRouter>
-      </RecoilRoot>
+      <PluginContext.Provider value={mockPluginContextValue}>
+        <RecoilRoot>
+          <MemoryRouter>
+            <Routes>
+              <Route element={<Outlet context={context} />}>
+                <Route path="*" element={<YAMLPage />} />
+              </Route>
+            </Routes>
+          </MemoryRouter>
+        </RecoilRoot>
+      </PluginContext.Provider>
     )
 
     // Test that stale alert appears when resource versions differ

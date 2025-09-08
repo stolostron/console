@@ -5,15 +5,16 @@ import {
   useK8sWatchResource,
   useResolvedExtensions,
 } from '@openshift-console/dynamic-plugin-sdk'
-import { AcmTablePaginationContextProvider, AcmToastGroup, AcmToastProvider } from '../ui-components'
+import { useFleetK8sWatchResource } from '@stolostron/multicluster-sdk/lib/api/useFleetK8sWatchResource'
 import { ReactNode, useMemo } from 'react'
 import { PluginContext } from '../lib/PluginContext'
 import { useAcmExtension } from '../plugin-extensions/handler'
+import { AcmTablePaginationContextProvider, AcmToastGroup, AcmToastProvider } from '../ui-components'
 import { LoadingPage } from './LoadingPage'
 
-import { isSharedContext, SharedContext } from '../lib/SharedContext'
-import { PluginData } from '../lib/PluginDataContext'
 import { Extension } from '@openshift-console/dynamic-plugin-sdk/lib/types'
+import { PluginData } from '../lib/PluginDataContext'
+import { isSharedContext, SharedContext } from '../lib/SharedContext'
 import { AcmFeedbackModal } from './AcmFeedbackModal'
 
 const isPluginDataContext = (e: Extension): e is SharedContext<PluginData> =>
@@ -55,6 +56,7 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
         dataContext: pluginDataContext.properties.context,
         acmExtensions,
         ocpApi: { Timestamp, useK8sWatchResource },
+        multiclusterApi: { useFleetK8sWatchResource },
       }}
     >
       <AcmFeedbackModal />
