@@ -69,6 +69,7 @@ export enum ClusterStatus {
   'draft' = 'draft',
   'running' = 'running',
   'upgradefailed' = 'upgradefailed',
+  'unreachable' = 'unreachable',
 }
 
 export const getClusterStatusLabel = (status: ClusterStatus | undefined, t: TFunction) => {
@@ -125,6 +126,8 @@ export const getClusterStatusLabel = (status: ClusterStatus | undefined, t: TFun
       return t('status.running')
     case ClusterStatus.stopping:
       return t('status.stopping')
+    case ClusterStatus.unreachable:
+      return t('status.unreachable')
     default:
       return t('status.unknown')
   }
@@ -162,6 +165,8 @@ export const getClusterStatusType = (clusterStatus: ClusterStatus): StatusType =
       return StatusType.detached
     case ClusterStatus.hibernating:
       return StatusType.sleep
+    case ClusterStatus.unreachable:
+      return StatusType.warning
     case ClusterStatus.unknown:
       return StatusType.unknown
     case ClusterStatus.draft:
@@ -1302,6 +1307,7 @@ export function getClusterStatus(
     const provisionFailed = checkForCondition('ProvisionFailed', cdConditions)
     const provisionLaunchError = checkForCondition('InstallLaunchError', cdConditions)
     const deprovisionLaunchError = checkForCondition('DeprovisionLaunchError', cdConditions)
+    const unreachableError = checkForCondition('Unreachable', cdConditions)
 
     // deprovision failure
     if (deprovisionLaunchError) {
@@ -1314,6 +1320,11 @@ export function getClusterStatus(
       // provision failure
     } else if (provisionLaunchError) {
       cdStatus = ClusterStatus.provisionfailed
+
+      // certificate failure
+    } else if (unreachableError) {
+      cdStatus = ClusterStatus.unreachable
+      statusMessage = getConditionMessage('Unreachable', cdConditions)
 
       // provision success
     } else if (clusterDeployment.spec?.installed) {
