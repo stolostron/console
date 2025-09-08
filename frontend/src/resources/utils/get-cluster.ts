@@ -1323,9 +1323,8 @@ export function getClusterStatus(
 
       // certificate failure
     } else if (unreachableError) {
-      const unreachableErrorCondition = cdConditions.find((c) => c.type === 'Unreachable')
       cdStatus = ClusterStatus.unreachable
-      statusMessage = unreachableErrorCondition?.message
+      statusMessage = getConditionMessage('Unreachable', cdConditions)
 
       // provision success
     } else if (clusterDeployment.spec?.installed) {

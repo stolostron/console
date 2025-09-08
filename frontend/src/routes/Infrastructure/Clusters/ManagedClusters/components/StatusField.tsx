@@ -261,16 +261,9 @@ export function StatusField(props: { cluster: Cluster }) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
         {docs.map((doc) => (
-          <Link
-            to="#"
-            key={doc.title}
-            onClick={(e) => {
-              e.preventDefault()
-              window.open(doc.link, '_blank')
-            }}
-          >
+          <a key={doc.title} href={doc.link} target="_blank" rel="noreferrer">
             {doc.title}
-          </Link>
+          </a>
         ))}
       </div>
     )

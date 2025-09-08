@@ -862,6 +862,60 @@ const mockClusterDeploymentUnknown: ClusterDeployment = {
   },
 }
 
+const mockClusterDeploymentUnreachable: ClusterDeployment = {
+  apiVersion: ClusterDeploymentApiVersion,
+  kind: ClusterDeploymentKind,
+  metadata: {
+    labels: {
+      cloud: 'AWS',
+      'hive.openshift.io/cluster-platform': 'aws',
+      'hive.openshift.io/cluster-region': 'us-east-1',
+      region: 'us-east-1',
+      vendor: 'OpenShift',
+    },
+    name: clusterName,
+    namespace: clusterName,
+  },
+  spec: {
+    baseDomain: 'dev02.test-chesterfield.com',
+    clusterName: clusterName,
+    installed: true,
+    platform: {
+      aws: {
+        credentialsSecretRef: {
+          name: 'test-cluster-aws-creds',
+        },
+        region: 'us-east-1',
+      },
+    },
+    provisioning: {
+      imageSetRef: {
+        name: 'img4.5.15-x86-64',
+      },
+      installConfigSecretRef: {
+        name: 'test-cluster-install-config',
+      },
+      sshPrivateKeySecretRef: {
+        name: 'test-cluster-ssh-private-key',
+      },
+    },
+    pullSecretRef: {
+      name: 'test-cluster-pull-secret',
+    },
+  },
+  status: {
+    cliImage:
+      'quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:8b8e08e498c61ccec5c446d6ab50c96792799c992c78cfce7bbb8481f04a64cb',
+    conditions: [{ type: 'Unreachable', status: 'True', reason: 'Unreachable', message: 'Cluster is unreachable' }],
+    powerState: 'Unreachable',
+    installerImage:
+      'quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:a3ed2bf438dfa5a114aa94cb923103432cd457cac51d1c4814ae0ef7e6e9853b',
+    provisionRef: {
+      name: 'test-cluster-31-26h5q',
+    },
+  },
+}
+
 const mockClusterCuratorPrehookFailed: ClusterCurator = {
   apiVersion: ClusterCuratorApiVersion,
   kind: ClusterCuratorKind,
@@ -1185,6 +1239,19 @@ describe('getClusterStatus', () => {
     )
     expect(status.status).toBe(ClusterStatus.unknown)
     expect(status.statusMessage).toBeUndefined()
+  })
+  it('should return unreachable for a cluster that that cannot be reached by hub', () => {
+    const status = getClusterStatus(
+      mockClusterDeploymentUnreachable,
+      undefined /* managedClusterInfo */,
+      undefined /* certificateSigningRequests */,
+      undefined /* managedCluster */,
+      undefined /* clusterCurator */,
+      undefined /* agentClusterInstall */,
+      undefined /* hostedCluster */
+    )
+    expect(status.status).toBe(ClusterStatus.unreachable)
+    expect(status.statusMessage).toBe('Cluster is unreachable')
   })
   it('should return unknown for a hosted cluster with corresponding managed cluster', () => {
     const status = getClusterStatus(
