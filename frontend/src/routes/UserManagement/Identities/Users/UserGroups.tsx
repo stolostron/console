@@ -22,7 +22,7 @@ import { useFilters } from '../Groups/GroupsTableHelper'
 
 const UserGroups = () => {
   const { t } = useTranslation()
-  const { user, groups, loading: groupLoading, groupsLoading } = useUserDetailsContext()
+  const { user, groups, loading: userLoading, groupsLoading } = useUserDetailsContext()
   const navigate = useNavigate()
   const filters = useFilters()
 
@@ -50,14 +50,14 @@ const UserGroups = () => {
           ''
         )
       },
-      exportContent: (user) => user.metadata.name ?? '',
+      exportContent: (group) => group.metadata.name ?? '',
     },
     {
       header: t('Created'),
-      cell: (user) => {
-        return user.metadata.creationTimestamp ? (
+      cell: (group) => {
+        return group.metadata.creationTimestamp ? (
           <span style={{ whiteSpace: 'nowrap' }}>
-            <AcmTimestamp timestamp={user.metadata.creationTimestamp} />
+            <AcmTimestamp timestamp={group.metadata.creationTimestamp} />
           </span>
         ) : (
           '-'
@@ -65,8 +65,8 @@ const UserGroups = () => {
       },
       transforms: [cellWidth(40)],
       sort: 'metadata.creationTimestamp',
-      exportContent: (user) => {
-        return user.metadata.creationTimestamp ? getISOStringTimestamp(user.metadata.creationTimestamp) : ''
+      exportContent: (group) => {
+        return group.metadata.creationTimestamp ? getISOStringTimestamp(group.metadata.creationTimestamp) : ''
       },
     },
   ]
@@ -74,7 +74,7 @@ const UserGroups = () => {
   const keyFn = (group: Group) => group.metadata.uid ?? ''
 
   switch (true) {
-    case groupLoading || groupsLoading:
+    case userLoading || groupsLoading:
       return (
         <PageSection>
           <AcmLoadingPage />
@@ -109,8 +109,8 @@ const UserGroups = () => {
             emptyState={
               <AcmEmptyState
                 key="groupUsersEmptyState"
-                title={t('No users found')}
-                message={t('No users have been added to this group yet.')}
+                title={t('No groups found')}
+                message={t('This user is not a member of any groups yet.')}
               />
             }
           />
