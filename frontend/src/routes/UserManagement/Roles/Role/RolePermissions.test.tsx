@@ -127,21 +127,21 @@ describe('RolePermissions', () => {
     nockIgnoreRBAC()
   })
 
-  it('renders role permissions page with role name in header', () => {
+  it('renders role permissions page with header and table columns', () => {
     mockUseCurrentRole.mockReturnValue(mockRoleWithPermissions)
     render(<Component roleId="test-role-with-permissions" />)
 
-    expect(screen.getByText('test-role-with-permissions')).toBeInTheDocument()
+    expect(screen.getByText('Permissions')).toBeInTheDocument()
     expect(screen.getByText('Actions')).toBeInTheDocument()
     expect(screen.getByText('API groups')).toBeInTheDocument()
     expect(screen.getByText('Resources')).toBeInTheDocument()
   })
 
-  it('renders default header when no role is found', () => {
+  it('renders header and empty state when no role is found', () => {
     mockUseCurrentRole.mockReturnValue(undefined)
     render(<Component roleId="non-existent-role" />)
 
-    expect(screen.getByText('Role Permissions')).toBeInTheDocument()
+    expect(screen.getByText('Permissions')).toBeInTheDocument()
     expect(screen.getByText('No permissions found')).toBeInTheDocument()
   })
 
@@ -181,11 +181,11 @@ describe('RolePermissions', () => {
     expect(screen.getByText('virtualmachineinstances')).toBeInTheDocument()
   })
 
-  it('displays empty state when role has no permissions', () => {
+  it('displays header and empty state when role has no permissions', () => {
     mockUseCurrentRole.mockReturnValue(mockRoleWithoutPermissions)
     render(<Component roleId="test-role-no-permissions" />)
 
-    expect(screen.getByText('test-role-no-permissions')).toBeInTheDocument()
+    expect(screen.getByText('Permissions')).toBeInTheDocument()
     expect(screen.getByText('No permissions found')).toBeInTheDocument()
   })
 

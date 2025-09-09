@@ -1,0 +1,11 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
+.wide-search-input .pf-v5-c-search-input {
+  min-width: 500px !important;
+  max-width: none !important;
+}
+
+.wide-search-input .pf-v5-c-toolbar__item[class*='search-filter'] {
+  min-width: 500px !important;
+  flex-grow: 2 !important;
+}
