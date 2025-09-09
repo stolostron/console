@@ -23,7 +23,6 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
         buffer: require.resolve('buffer'),
         stream: require.resolve('stream-browserify'),
         util: require.resolve('node-util'),
-        crypto: require.resolve('crypto-browserify'),
         process: require.resolve('process/browser'),
         vm: require.resolve('vm-browserify'),
       },

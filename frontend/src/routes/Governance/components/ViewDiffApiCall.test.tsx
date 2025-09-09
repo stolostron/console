@@ -5,15 +5,24 @@ import { ViewDiffApiCall } from './ViewDiffApiCall'
 import { nockGet, nockIgnoreApiPaths } from '../../../lib/nock-util'
 import { ResultsTableData } from '../policies/policy-details/PolicyDetailsResults'
 import userEvent from '@testing-library/user-event'
+import { v4 as uuidv4 } from 'uuid'
+
+// Mock UUID v4 to return predictable values during testing
+jest.mock('uuid', () => ({
+  v4: jest.fn(),
+}))
+
+const mockUuidV4 = jest.mocked(uuidv4)
+const MOCKED_UUID = 'MOCKED_UUID'
 
 const getResourceRequest = {
   apiVersion: 'view.open-cluster-management.io/v1beta1',
   kind: 'ManagedClusterView',
   metadata: {
-    name: '232423625a3c9b73ebda9c52cb40cfac908f1ca1',
+    name: MOCKED_UUID,
     namespace: 'test-cluster',
     labels: {
-      viewName: '232423625a3c9b73ebda9c52cb40cfac908f1ca1',
+      viewName: MOCKED_UUID,
     },
   },
   spec: {
@@ -28,10 +37,10 @@ const getResourceResponse = {
   apiVersion: 'view.open-cluster-management.io/v1beta1',
   kind: 'ManagedClusterView',
   metadata: {
-    name: '232423625a3c9b73ebda9c52cb40cfac908f1ca1',
+    name: MOCKED_UUID,
     namespace: 'test-cluster',
     labels: {
-      viewName: '232423625a3c9b73ebda9c52cb40cfac908f1ca1',
+      viewName: MOCKED_UUID,
     },
   },
   spec: {
@@ -171,7 +180,12 @@ const item: ResultsTableData = {
 }
 
 describe('ViewDiffApCall components test', () => {
-  beforeEach(() => nockIgnoreApiPaths())
+  beforeEach(() => {
+    // Reset the mock before each test
+    mockUuidV4.mockReset()
+    mockUuidV4.mockReturnValue(MOCKED_UUID)
+    nockIgnoreApiPaths()
+  })
   test('Should render ViewDiffApCall correctly', async () => {
     const getResourceNock = nockGet(getResourceRequest, getResourceResponse)
     render(<ViewDiffApiCall item={item} />)

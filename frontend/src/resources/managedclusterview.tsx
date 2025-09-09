@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import crypto from 'crypto'
 import _ from 'lodash'
 import { ResourceError, createResource, deleteResource, getResource } from './utils/resource-request'
 import { getGroupFromApiVersion } from './utils/utils'
@@ -89,14 +88,7 @@ export async function fireManagedClusterView(
   }
 
   const skipCheckExisting = process.env.NODE_ENV !== 'test'
-  const viewName =
-    process.env.NODE_ENV === 'test'
-      ? crypto
-          .createHash('sha1')
-          .update(`${clusterName}-${resourceName}-${resourceKind}`)
-          .digest('hex')
-          .substring(0, 63)
-      : uuidv4()
+  const viewName = uuidv4()
 
   let getResult: any
 
