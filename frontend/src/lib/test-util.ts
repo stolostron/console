@@ -29,6 +29,11 @@ export function getFragmentedTextMatcher(text: string) {
 }
 
 export async function waitForText(text: string, multipleAllowed?: boolean) {
+  console.log(
+    '🔍 ~ waitForText ~ console-2.15-A/frontend/src/lib/test-util.ts:31 ~ waitForText:',
+    text,
+    multipleAllowed
+  )
   if (multipleAllowed) {
     await waitFor(() => expect(screen.queryAllByText(text).length).toBeGreaterThan(0), waitForOptions)
   } else {
@@ -83,6 +88,7 @@ export async function waitForInputByTitle(title: string, index?: number) {
 }
 
 export async function clickByText(text: string, index?: number) {
+  console.log('🔍 ~ clickByText ~ console-2.15-A/frontend/src/lib/test-util.ts:91 ~ clickByText:', text, index)
   await waitForInputByText(text, index)
   if (index !== undefined) {
     // wait for rbac to enable the button associated with this text
@@ -180,6 +186,7 @@ export async function waitForInputByRole(role: ByRoleMatcher, options?: ByRoleOp
 }
 
 export async function clickByRole(role: ByRoleMatcher, options?: ByRoleOptions, index?: number) {
+  console.log('🔍 ~ clickByRole ~ console-2.15-A/frontend/src/lib/test-util.ts:187 ~ export:', role, options, index)
   await waitForInputByRole(role, options, index)
   if (index !== undefined) {
     userEvent.click(screen.getAllByRole(role, options)[index])
@@ -189,6 +196,13 @@ export async function clickByRole(role: ByRoleMatcher, options?: ByRoleOptions, 
 }
 
 export async function typeByRole(type: string, role: ByRoleMatcher, options?: ByRoleOptions, index?: number) {
+  console.log(
+    '🔍 ~ typeByRole ~ console-2.15-A/frontend/src/lib/test-util.ts:199 ~ export:',
+    type,
+    role,
+    options,
+    index
+  )
   await waitForInputByRole(role, options, index)
   if (index !== undefined) {
     userEvent.type(screen.getAllByRole(role, options)[index], type)
