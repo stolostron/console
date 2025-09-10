@@ -1,10 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import React from 'react'
-import { render, screen } from '@testing-library/react'
+import { UseK8sWatchResource } from '@openshift-console/dynamic-plugin-sdk'
+import { UseFleetK8sWatchResource } from '@stolostron/multicluster-sdk/lib/api/useFleetK8sWatchResource'
 import '@testing-library/jest-dom/extend-expect'
+import { render, screen } from '@testing-library/react'
+import React from 'react'
 import AcmTimestamp from './AcmTimestamp'
 import { PluginContext } from './PluginContext'
-import { UseK8sWatchResource } from '@openshift-console/dynamic-plugin-sdk'
 import { PluginDataContext } from './PluginDataContext'
 
 interface TimestampProps {
@@ -22,11 +23,15 @@ const MockTimestamp: React.FC<TimestampProps> = ({ timestamp, simple, omitSuffix
 )
 
 const mockUseK8sWatchResource: UseK8sWatchResource = jest.fn()
+const mockUseFleetK8sWatchResource: UseFleetK8sWatchResource = jest.fn()
 
 const mockPluginContextValue = {
   ocpApi: {
     Timestamp: MockTimestamp,
     useK8sWatchResource: mockUseK8sWatchResource,
+  },
+  multiclusterApi: {
+    useFleetK8sWatchResource: mockUseFleetK8sWatchResource,
   },
   isACMAvailable: true,
   isOverviewAvailable: true,
