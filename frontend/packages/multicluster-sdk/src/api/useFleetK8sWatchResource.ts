@@ -16,6 +16,10 @@ import { getCacheKey, useFleetK8sWatchResourceStore } from '../internal/fleetK8s
 import { selectorToString } from '../internal/requirements'
 import { useDeepCompareMemoize } from '../internal/hooks/useDeepCompareMemoize'
 
+export declare type UseFleetK8sWatchResource = <R extends FleetK8sResourceCommon | FleetK8sResourceCommon[]>(
+  initResource: FleetWatchK8sResource | null
+) => WatchK8sResult<R> | [undefined, boolean, any]
+
 /**
  * A hook for watching Kubernetes resources with support for multi-cluster environments.
  * It is equivalent to the [`useK8sWatchResource`](https://github.com/openshift/console/blob/main/frontend/packages/console-dynamic-plugin-sdk/docs/api.md#usek8swatchresource)
