@@ -235,7 +235,7 @@ class DetailsTable extends Component {
                 style={{ minWidth: '350px', display: 'flex' }}
                 placeholder={t('search.label')}
                 value={searchValue}
-                onChange={(value) => {
+                onChange={(_evt, value) => {
                   this.setState({
                     searchValue: value || '',
                     page: 1,
