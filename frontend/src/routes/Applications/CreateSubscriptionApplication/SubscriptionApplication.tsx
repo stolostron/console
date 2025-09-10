@@ -51,6 +51,7 @@ import { setAvailableConnections } from '../../Infrastructure/Clusters/ManagedCl
 import { LoadingPage } from '../../../components/LoadingPage'
 import { PluginContext } from '../../../lib/PluginContext'
 import { useIsHubSelfManaged, useLocalHubName } from '../../../hooks/use-local-hub'
+import { localeCompare } from '../../../utils/localeCompare'
 
 interface CreationStatus {
   status: string
@@ -450,7 +451,7 @@ export function CreateSubscriptionApplication(
         }),
         keyFn
       )
-      control.available = _.map(Object.values(control.availableData), keyFn).sort()
+      control.available = _.map<any, string>(Object.values(control.availableData), keyFn).sort(localeCompare)
     }
     switch (control.id) {
       case 'connection':

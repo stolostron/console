@@ -14,6 +14,7 @@ import { useSharedAtoms, useRecoilValue } from '../../../../../shared-recoil'
 import { launchToOCP } from '../../../../../lib/ocp-utils'
 import { isPosthookLinkDisabled, isPrehookLinkDisabled, jobPodsStillAvailable, launchJobLogs } from './ProgressStepBar'
 import { LogsDownloadButton } from '@openshift-assisted/ui-lib/cim'
+import { DOC_LINKS } from '../../../../../lib/doc-util'
 
 export function StatusField(props: { cluster: Cluster }) {
   const { t } = useTranslation()
@@ -185,8 +186,26 @@ export function StatusField(props: { cluster: Cluster }) {
       }
 
       break
+    case ClusterStatus.unknown:
+    case ClusterStatus.unreachable:
+      hasAction = true
+      Action = () => (
+        <>
+          {addDocsActions([
+            {
+              title: t('How do I troubleshoot a certificate authority failure?'),
+              link: DOC_LINKS.TROUBLESHOOTING_CERTIFICATE_AUTHORITY_ERROR,
+            },
+            {
+              title: t('How do I troubleshoot a cluster import failure?'),
+              link: DOC_LINKS.TROUBLESHOOTING_CLUSTER_IMPORT_FAILURE,
+            },
+            { title: t('How do I configure the managed network?'), link: DOC_LINKS.MANAGED_NETWORK_CONFIG },
+          ])}
+        </>
+      )
+      break
   }
-
   /*
         t('status.creating.message')
         t('status.degraded.message')
@@ -215,6 +234,7 @@ export function StatusField(props: { cluster: Cluster }) {
         t('status.running.message')
         t('status.stopping.message')
         t('status.unknown.message')
+        t('status.unreachable.message')
         t('status.upgradefailed.message')
     */
 
@@ -236,4 +256,16 @@ export function StatusField(props: { cluster: Cluster }) {
       }}
     />
   )
+
+  function addDocsActions(docs: { title: string; link: string }[]) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        {docs.map((doc) => (
+          <a key={doc.title} href={doc.link} target="_blank" rel="noreferrer">
+            {doc.title}
+          </a>
+        ))}
+      </div>
+    )
+  }
 }

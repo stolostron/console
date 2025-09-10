@@ -40,6 +40,18 @@ const mockMulticlusterRoleAssignments: MulticlusterRoleAssignment[] = [
         },
       ],
     },
+    status: {
+      roleAssignments: [
+        {
+          name: 'A1',
+          status: 'Active',
+        },
+        {
+          name: 'A2',
+          status: 'Error',
+        },
+      ],
+    },
   },
   {
     apiVersion: 'rbac.open-cluster-management.io/v1alpha1',
@@ -57,6 +69,14 @@ const mockMulticlusterRoleAssignments: MulticlusterRoleAssignment[] = [
           clusterRole: 'developer',
           targetNamespaces: ['app-namespace'],
           clusterSets: ['dev-cluster'],
+        },
+      ],
+    },
+    status: {
+      roleAssignments: [
+        {
+          name: 'B1',
+          status: 'Active',
         },
       ],
     },
@@ -79,6 +99,7 @@ const mockMulticlusterRoleAssignments: MulticlusterRoleAssignment[] = [
         },
       ],
     },
+    status: {},
   },
 ]
 
@@ -93,6 +114,7 @@ const mockRoleAssignments: FlattenedRoleAssignment[] = [
       name: mockMulticlusterRoleAssignments[0].spec.subject.name,
       kind: mockMulticlusterRoleAssignments[0].spec.subject.kind,
     },
+    status: mockMulticlusterRoleAssignments[0].status.roleAssignments?.[0],
   },
   {
     name: 'A2',
@@ -104,6 +126,7 @@ const mockRoleAssignments: FlattenedRoleAssignment[] = [
       name: mockMulticlusterRoleAssignments[0].spec.subject.name,
       kind: mockMulticlusterRoleAssignments[0].spec.subject.kind,
     },
+    status: mockMulticlusterRoleAssignments[0].status.roleAssignments?.[1],
   },
   {
     name: 'B1',
@@ -115,6 +138,7 @@ const mockRoleAssignments: FlattenedRoleAssignment[] = [
       name: mockMulticlusterRoleAssignments[1].spec.subject.name,
       kind: mockMulticlusterRoleAssignments[1].spec.subject.kind,
     },
+    status: mockMulticlusterRoleAssignments[1].status.roleAssignments?.[0],
   },
   {
     name: 'C1',
@@ -266,6 +290,7 @@ jest.mock('../../../ui-components', () => {
               <div>{item.clusterRole}</div>
               <div>{item.clusterSets?.join(', ') || 'No clusters'}</div>
               <div>{item.targetNamespaces?.join(', ') || 'No namespaces'}</div>
+              <div>{`Status: ${item.status?.status ?? 'Unknown'}`}</div>
               <button onClick={() => mockToastContext.addAlert({ title: 'Action', type: 'info' })}>Row Actions</button>
             </div>
           ))}
@@ -379,6 +404,9 @@ describe('RoleAssignments', () => {
     expect(screen.getByText('test-cluster-1')).toBeInTheDocument()
     expect(screen.getByText(/default, kube-system/i)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /create role assignment/i })).toBeInTheDocument()
+    expect(screen.getAllByText('Status: Active')).toHaveLength(2)
+    expect(screen.getAllByText('Status: Error')).toHaveLength(1)
+    expect(screen.getAllByText('Status: Unknown')).toHaveLength(1)
   })
 
   it('renders empty state', async () => {

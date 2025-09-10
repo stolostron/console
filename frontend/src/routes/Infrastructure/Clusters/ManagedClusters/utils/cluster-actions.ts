@@ -110,7 +110,9 @@ export function clusterSupportsAction(
         !!cluster.provider &&
         [Provider.hostinventory, Provider.nutanix].includes(cluster.provider) &&
         !cluster.isHypershift &&
-        [ClusterStatus.pendingimport, ClusterStatus.ready, ClusterStatus.unknown].includes(cluster.status)
+        [ClusterStatus.pendingimport, ClusterStatus.ready, ClusterStatus.unknown, ClusterStatus.unreachable].includes(
+          cluster.status
+        )
       )
     case ClusterAction.DestroyHosted:
       return cluster.isHypershift && cluster.status !== ClusterStatus.destroying

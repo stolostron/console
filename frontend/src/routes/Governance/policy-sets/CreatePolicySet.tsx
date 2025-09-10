@@ -12,6 +12,7 @@ import { IResource, PolicySetKind } from '../../../resources'
 import { reconcileResources } from '../../../resources/utils'
 import schema from './schema.json'
 import { LostChangesContext } from '../../../components/LostChanges'
+import { localeCompare } from '../../../utils/localeCompare'
 
 export function WizardSyncEditor() {
   const resources = useItem() // Wizard framework sets this context
@@ -60,7 +61,7 @@ export function CreatePolicySet() {
   const clusterSets = useRecoilValue(managedClusterSetsState)
   const clusterSetBindings = useRecoilValue(managedClusterSetBindingsState)
   const namespaceNames = useMemo(
-    () => namespaces.map((namespace) => namespace.metadata.name ?? '').sort(),
+    () => namespaces.map((namespace) => namespace.metadata.name ?? '').sort(localeCompare),
     [namespaces]
   )
   const { cancelForm, submitForm } = useContext(LostChangesContext)

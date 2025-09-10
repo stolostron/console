@@ -2,11 +2,11 @@
 import { Label, LabelGroup } from '@patternfly/react-core'
 import { useTranslation } from '../../../lib/acm-i18next'
 
-type RoleAssignmentsLabelProps = {
+type RoleAssignmentLabelProps = {
   elements?: string[]
   numLabel: number
 }
-const RoleAssignmentsLabel = ({ elements, numLabel }: RoleAssignmentsLabelProps) => {
+const RoleAssignmentLabel = ({ elements, numLabel }: RoleAssignmentLabelProps) => {
   const { t } = useTranslation()
 
   return elements !== undefined && elements.length > 0 ? (
@@ -24,4 +24,4 @@ const RoleAssignmentsLabel = ({ elements, numLabel }: RoleAssignmentsLabelProps)
   ) : null
 }
 
-export { RoleAssignmentsLabel }
+export { RoleAssignmentLabel }

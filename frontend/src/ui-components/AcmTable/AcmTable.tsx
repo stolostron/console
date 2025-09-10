@@ -11,9 +11,9 @@ import {
   ToolbarContent,
   ToolbarGroup,
   ToolbarItem,
+  Tooltip,
   TooltipPosition,
 } from '@patternfly/react-core'
-import { DropdownItem } from '@patternfly/react-core/deprecated'
 import { EllipsisVIcon } from '@patternfly/react-icons'
 import { css as cssPF } from '@patternfly/react-styles'
 import {
@@ -769,18 +769,16 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
             isSeparator: true,
           })
         }
-
         actions.push({
           title: action.tooltip ? (
-            <DropdownItem
-              isAriaDisabled={action.isDisabled}
-              tooltip={action.tooltip}
-              tooltipProps={action.tooltipProps}
-              component={'span'} // default component is <a> which causes link styling
-              style={{ padding: 0, cursor: action.isDisabled ? 'not-allowed' : 'pointer' }}
-            >
-              {action.title}
-            </DropdownItem>
+            <Tooltip content={action.tooltip} {...(action.tooltipProps || {})}>
+              <span
+                style={{ padding: 0, cursor: action.isDisabled ? 'not-allowed' : 'pointer' }}
+                aria-disabled={action.isDisabled}
+              >
+                {action.title}
+              </span>
+            </Tooltip>
           ) : (
             action.title
           ),

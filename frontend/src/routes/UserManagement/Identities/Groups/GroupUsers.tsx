@@ -17,7 +17,7 @@ import { getISOStringTimestamp, ResourceError, ResourceErrorCode } from '../../.
 import { useGroupDetailsContext } from './GroupPage'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { NavigationPath } from '../../../../NavigationPath'
-import { useNavigate } from 'react-router-dom-v5-compat'
+import { useNavigate, Link, generatePath } from 'react-router-dom-v5-compat'
 
 const GroupUsers = () => {
   const { t } = useTranslation()
@@ -39,21 +39,29 @@ const GroupUsers = () => {
       sort: 'metadata.name',
       search: 'metadata.name',
       transforms: [cellWidth(40)],
-      cell: (group) => group.metadata.name ?? '',
-      exportContent: (group) => group.metadata.name ?? '',
+      cell: (user) => {
+        const userName = user.metadata.name ?? ''
+        const userId = user.metadata.uid ?? ''
+        return userName ? (
+          <Link to={generatePath(NavigationPath.identitiesUsersDetails, { id: userId })}>{userName}</Link>
+        ) : (
+          ''
+        )
+      },
+      exportContent: (user) => user.metadata.name ?? '',
     },
     {
-      header: t('Users count'),
-      cell: (user) => user.groups?.length ?? 0,
+      header: t('Identity provider'),
+      cell: (user) => user.identities ?? '-',
       transforms: [cellWidth(20)],
-      exportContent: (user) => (user.groups?.length ?? 0).toString(),
+      exportContent: (user) => user.identities ?? '-',
     },
     {
       header: t('Created'),
-      cell: (group) => {
-        return group.metadata.creationTimestamp ? (
+      cell: (user) => {
+        return user.metadata.creationTimestamp ? (
           <span style={{ whiteSpace: 'nowrap' }}>
-            <AcmTimestamp timestamp={group.metadata.creationTimestamp} />
+            <AcmTimestamp timestamp={user.metadata.creationTimestamp} />
           </span>
         ) : (
           '-'
@@ -61,8 +69,8 @@ const GroupUsers = () => {
       },
       transforms: [cellWidth(40)],
       sort: 'metadata.creationTimestamp',
-      exportContent: (group) => {
-        return group.metadata.creationTimestamp ? getISOStringTimestamp(group.metadata.creationTimestamp) : ''
+      exportContent: (user) => {
+        return user.metadata.creationTimestamp ? getISOStringTimestamp(user.metadata.creationTimestamp) : ''
       },
     },
   ]

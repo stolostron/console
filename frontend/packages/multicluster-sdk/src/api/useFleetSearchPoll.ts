@@ -211,6 +211,9 @@ export function useFleetSearchPoll<T extends K8sResourceCommon | K8sResourceComm
             labels: label,
           },
         }
+        // _uid field holds '<cluster>/<uid>' but may be removed in the future
+        const uid = item._uid?.split('/').pop() || undefined
+        setIfDefined(resource, 'metadata.uid', uid)
         setIfDefined(resource, 'status.conditions', parseConditionString(item.condition))
         const resourceKey = getResourceKey(item.kind, item.apigroup)
         // Reverse the flattening of specific resources by the search-collector

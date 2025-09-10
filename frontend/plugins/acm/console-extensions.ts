@@ -218,6 +218,53 @@ const identitiesRoute: EncodedExtension<RoutePage> = {
   },
 }
 
+// ACM resource route extensions - for fleetresourcelink integration
+
+// Managed cluster resource route
+const managedClusterResourceRoute: EncodedExtension = {
+  type: 'acm.resource/route',
+  properties: {
+    model: { group: 'cluster.open-cluster-management.io', kind: 'ManagedCluster', version: 'v1' },
+    handler: { $codeRef: 'acmResourceRoutes.acmResourceRouteHandler' },
+  },
+}
+
+// Application K8s resource route
+const applicationK8sResourceRoute: EncodedExtension = {
+  type: 'acm.resource/route',
+  properties: {
+    model: { group: 'app.k8s.io', kind: 'Application', version: 'v1beta1' },
+    handler: { $codeRef: 'acmResourceRoutes.acmResourceRouteHandler' },
+  },
+}
+
+// Application Argo resource route
+const applicationArgoResourceRoute: EncodedExtension = {
+  type: 'acm.resource/route',
+  properties: {
+    model: { group: 'argoproj.io', kind: 'Application', version: 'v1alpha1' },
+    handler: { $codeRef: 'acmResourceRoutes.acmResourceRouteHandler' },
+  },
+}
+
+// Policy resource route
+const policyResourceRoute: EncodedExtension = {
+  type: 'acm.resource/route',
+  properties: {
+    model: { group: 'policy.open-cluster-management.io', kind: 'Policy', version: 'v1' },
+    handler: { $codeRef: 'acmResourceRoutes.acmResourceRouteHandler' },
+  },
+}
+
+// Policy Report resource route
+const policyReportResourceRoute: EncodedExtension = {
+  type: 'acm.resource/route',
+  properties: {
+    model: { group: 'wgpolicyk8s.io', kind: 'PolicyReport', version: 'v1alpha2' },
+    handler: { $codeRef: 'acmResourceRoutes.acmResourceRouteHandler' },
+  },
+}
+
 export const extensions: EncodedExtension[] = [
   homeSection,
   welcomeNavItem,
@@ -237,4 +284,9 @@ export const extensions: EncodedExtension[] = [
   rolesRoute,
   identitiesNavItem,
   identitiesRoute,
+  managedClusterResourceRoute,
+  applicationK8sResourceRoute,
+  applicationArgoResourceRoute,
+  policyResourceRoute,
+  policyReportResourceRoute,
 ]

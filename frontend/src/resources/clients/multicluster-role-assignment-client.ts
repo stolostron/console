@@ -7,6 +7,7 @@ import {
   MulticlusterRoleAssignmentApiVersion,
   MulticlusterRoleAssignmentKind,
   RoleAssignment,
+  RoleAssignmentStatus,
 } from '../multicluster-role-assignment'
 import { createResource, deleteResource, patchResource } from '../utils'
 import { IRequestResult, ResourceError, ResourceErrorCode } from '../utils/resource-request'
@@ -14,6 +15,7 @@ import { IRequestResult, ResourceError, ResourceErrorCode } from '../utils/resou
 export interface FlattenedRoleAssignment extends RoleAssignment {
   relatedMulticlusterRoleAssignment: MulticlusterRoleAssignment
   subject: Pick<Subject, 'name' | 'kind'>
+  status?: RoleAssignmentStatus
 }
 
 interface MulticlusterRoleAssignmentQuery {
@@ -34,6 +36,7 @@ export const roleAssignmentToFlattenedRoleAssignment = (
     kind: multiClusterRoleAssignment.spec.subject.kind,
   },
   relatedMulticlusterRoleAssignment: multiClusterRoleAssignment,
+  status: multiClusterRoleAssignment.status.roleAssignments?.find((e) => e.name === roleAssignment.name),
 })
 
 const isSubjectMatch = (
@@ -185,6 +188,7 @@ export const addRoleAssignment = (
         roleAssignments: [mappedRoleAssignment],
       },
       metadata: {},
+      status: {},
     }
     return create(newMultiClusterRoleAssignment)
   }

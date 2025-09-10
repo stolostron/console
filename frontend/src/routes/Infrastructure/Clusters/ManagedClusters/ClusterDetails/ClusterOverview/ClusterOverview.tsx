@@ -457,6 +457,7 @@ export function ClusterOverviewPageContent() {
             ClusterStatus.resuming,
             ClusterStatus.hibernating,
             ClusterStatus.unknown,
+            ClusterStatus.unreachable,
           ].includes(cluster.status) && <StatusSummaryCount />}
         {cluster && (
           <BatchChannelSelectModal
