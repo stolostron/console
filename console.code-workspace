@@ -5,6 +5,10 @@
         },
         {
             "path": "backend"
+        },
+        {
+            "name": "cursor-config",
+            "path": ".cursor"
         }
     ],
     "settings": {
