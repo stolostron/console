@@ -24,7 +24,7 @@ export function AcmExpandableCheckbox(props: {
       <Button
         aria-label={t('Expand')}
         variant={ButtonVariant.plain}
-        id={`${props.id}-toggle` || ''}
+        id={`${props.id}-toggle`}
         style={{
           border: '0px',
           visibility: props.expandable ? 'visible' : 'hidden',
@@ -39,8 +39,8 @@ export function AcmExpandableCheckbox(props: {
       <span style={{ paddingRight: '10px' }}>
         <Checkbox
           isChecked={props.checked}
-          id={`${props.id}-checkbox` || ''}
-          name={`${props.id}-checkbox` || ''}
+          id={`${props.id}-checkbox`}
+          name={`${props.id}-checkbox`}
           onChange={() => props.onCheck(props.checked)}
           isDisabled={props.isDisabled}
         />

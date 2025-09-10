@@ -1407,19 +1407,28 @@ class YamlParser {
   }
 
   subStrCount(string, subString, start, length) {
-    var c = 0
+    let c = 0
 
     string = '' + string
     subString = '' + subString
 
+    if (!subString) {
+      return 0
+    }
+
     if (start != undefined) string = string.substr(start)
     if (length != undefined) string = string.substr(0, length)
 
-    var len = string.length
-    var sublen = subString.length
-    for (var i = 0; i < len; i++) {
-      if (subString == string.substr(i, sublen)) c++
-      i += sublen - 1
+    const len = string.length
+    const sublen = subString.length
+    let i = 0
+    while (i < len) {
+      if (subString === string.substr(i, sublen)) {
+        c++
+        i += sublen
+      } else {
+        i++
+      }
     }
 
     return c
