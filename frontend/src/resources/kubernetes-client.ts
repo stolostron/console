@@ -1,12 +1,21 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { GroupKindType, ServiceAccountKindType, UserKindType } from './rbac'
-export interface PolicyRule {
+
+export interface Rule {
   verbs: string[]
   apiGroups: string[]
   resources: string[]
   resourceNames?: string[]
   nonResourceURLs?: string[]
 }
+
+export const mapRule = (rule: Rule): Rule => ({
+  verbs: rule.verbs ?? [],
+  apiGroups: rule.apiGroups ?? [],
+  resources: rule.resources ?? [],
+  resourceNames: rule.resourceNames ?? [],
+  nonResourceURLs: rule.nonResourceURLs ?? [],
+})
 
 export interface LocalObjectReference {
   name: string
