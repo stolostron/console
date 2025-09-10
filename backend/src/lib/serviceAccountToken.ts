@@ -26,7 +26,7 @@ function readServiceAccountFile(name: string, defaultValue: string, exitOnError?
   return serviceAccountValue
 }
 
-export let serviceAccountToken: string
+let serviceAccountToken: string
 export function getServiceAccountToken(): string {
   if (serviceAccountToken === undefined) {
     serviceAccountToken = readServiceAccountFile('token', process.env.TOKEN, true)
