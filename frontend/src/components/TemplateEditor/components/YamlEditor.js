@@ -5,7 +5,7 @@ import React from 'react'
 import debounce from 'lodash/debounce'
 import PropTypes from 'prop-types'
 import { DecorationType } from '../utils/source-utils'
-import { getTheme, defineThemes } from '../../theme'
+import { getTheme, defineThemes, mountTheme, dismountTheme } from '../../theme'
 
 class YamlEditor extends React.Component {
   static propTypes = {
@@ -51,10 +51,15 @@ class YamlEditor extends React.Component {
           },
           editorDidMount: this.editorDidMount.bind(this, id),
           editorWillMount: this.editorWillMount.bind(this),
+          editorWillUnmount: this.editorWillUnmount.bind(this),
           onChange: onYamlChange,
         }),
       editorHasFocus: false,
     }
+  }
+  editorWillUnmount() {
+    // hide TemplateEditor version of monaco-colors
+    dismountTheme('te')
   }
 
   editorWillMount() {
@@ -76,9 +81,9 @@ class YamlEditor extends React.Component {
     // and console-light or console-dark were set, monaco wouldn't
     // update the 'monoco-colors' style with the right colors
     monaco?.editor?.setTheme('vs')
-    window.monaco?.editor?.setTheme('vs')
     monaco?.editor?.setTheme(getTheme())
-    window.monaco?.editor?.setTheme(getTheme())
+    // use TemplateEditor version of monaco-colors
+    mountTheme('te')
 
     // observe documentElement class changes (theme toggles)
     if (typeof MutationObserver !== 'undefined') {

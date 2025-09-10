@@ -17,7 +17,7 @@ import * as monaco from 'monaco-editor'
 import { editor as editorTypes } from 'monaco-editor'
 import { loader, Monaco } from '@monaco-editor/react'
 import { Schema } from 'ajv'
-import { defineThemes, getTheme } from '../theme'
+import { defineThemes, getTheme, mountTheme, dismountTheme } from '../theme'
 
 // loader can be null in tests
 loader?.config({ monaco })
@@ -128,6 +128,11 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
   if (schema && !validationRef.current) {
     validationRef.current = compileAjvSchemas(schema)
   }
+  // ensure cleanup when component unmounts
+  useEffect(() => {
+    // hide SyncEditor version of monaco-colors
+    return () => dismountTheme('se')
+  }, [])
 
   function onEditorDidMount(editor: editorTypes.IStandaloneCodeEditor, monaco: Monaco) {
     // make sure this instance of monaco editor has the ocp console themes
@@ -137,9 +142,10 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     // and console-light or console-dark were set, monaco wouldn't
     // update the 'monoco-colors' style with the right colors
     monaco?.editor?.setTheme('vs')
-    ;(window as any).monaco?.editor?.setTheme('vs')
     monaco?.editor?.setTheme(getTheme())
-    ;(window as any).monaco?.editor?.setTheme(getTheme())
+
+    // show SyncEditor version of monaco-colors
+    mountTheme('se')
 
     // observe documentElement class changes (theme toggles)
     if (typeof MutationObserver !== 'undefined') {
