@@ -128,7 +128,7 @@ export function AcmDonutChart(props: {
           legendComponent={buildLegendWithLinks(legendData, props.colorScale)}
           labels={({ datum }) => `${datum.x}: ${((datum.y / total) * 100).toFixed(2)}%`}
           padding={{
-            bottom: 20,
+            bottom: (props.donutLabel?.subTitle ?? primary.key).length > 14 ? 30 : 20,
             left: 20,
             right: 145,
             top: 20,
@@ -148,6 +148,7 @@ export function AcmDonutChart(props: {
             />
           }
           subTitle={props.donutLabel?.subTitle ?? primary.key}
+          subTitlePosition={(props.donutLabel?.subTitle ?? primary.key).length > 14 ? 'bottom' : undefined}
           width={/* istanbul ignore next */ viewWidth < 376 ? viewWidth : 376}
           height={/* istanbul ignore next */ viewWidth < 376 ? 150 : 200}
           // Devs can supply an array of colors the donut chart will use ex: ['#E62325', '#EC7A08', '#F4C145', '#2B9AF3', '#72767B']
