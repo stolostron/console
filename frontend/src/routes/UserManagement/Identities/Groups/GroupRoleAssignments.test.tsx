@@ -58,7 +58,6 @@ describe('GroupRoleAssignments', () => {
     expect(screen.getByText(/subject/i)).toBeInTheDocument()
 
     // Verify the group has role assignments
-    screen.logTestingPlaygroundURL()
     expect(screen.getAllByText(/Group: developers/i)).toHaveLength(3) // Subject appears 3 times (3 role assignments)
     expect(screen.getByText(/kubevirt\.io:edit/i)).toBeInTheDocument() // ClusterRole
     expect(screen.getByText(/network-admin/i)).toBeInTheDocument() // ClusterRole

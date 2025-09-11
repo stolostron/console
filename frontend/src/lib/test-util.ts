@@ -190,9 +190,11 @@ export async function clickByRole(role: ByRoleMatcher, options?: ByRoleOptions, 
 
 export async function typeByRole(type: string, role: ByRoleMatcher, options?: ByRoleOptions, index?: number) {
   await waitForInputByRole(role, options, index)
-  const input = index !== undefined ? screen.getAllByRole(role, options)[index] : screen.getByRole(role, options)
-  userEvent.click(input)
-  userEvent.paste(input, type)
+  if (index !== undefined) {
+    userEvent.type(screen.getAllByRole(role, options)[index], type)
+  } else {
+    userEvent.type(screen.getByRole(role, options), type)
+  }
 }
 
 // By TestId
@@ -241,9 +243,11 @@ export async function clickByTestId(text: string, index?: number) {
 
 export async function typeByTestId(id: string, type: string, index?: number) {
   await waitForInputByTestId(id, index)
-  const input = index !== undefined ? screen.getAllByTestId(id)[index] : screen.getByTestId(id)
-  userEvent.click(input)
-  userEvent.paste(input, type)
+  if (index !== undefined) {
+    userEvent.type(screen.getAllByTestId(id)[index], type)
+  } else {
+    userEvent.type(screen.getByTestId(id), type)
+  }
 }
 
 export async function pasteByTestId(id: string, type: string, index?: number) {
@@ -310,9 +314,11 @@ export async function clickByLabel(text: string, index?: number) {
 
 export async function typeByLabel(text: string, type: string, index?: number) {
   await waitForInputByLabelText(text, index)
-  const input = index !== undefined ? screen.getAllByLabelText(text)[index] : screen.getByLabelText(text)
-  userEvent.click(input)
-  userEvent.paste(input, type)
+  if (index !== undefined) {
+    userEvent.type(screen.getAllByLabelText(text)[index], type)
+  } else {
+    userEvent.type(screen.getByLabelText(text), type)
+  }
 }
 
 // By Selector
