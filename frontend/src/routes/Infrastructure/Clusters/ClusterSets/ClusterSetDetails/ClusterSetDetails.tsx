@@ -50,7 +50,7 @@ export default function ClusterSetDetails() {
   const clusterSet = managedClusterSets.find((mcs) => mcs.metadata.name === match.params.id)
   const prevClusterSet = usePrevious(clusterSet)
 
-  const clusters = useClusters({ managedClusterSet: clusterSet })
+  const clusters = useClusters({ managedClusterSets: [clusterSet] })
   const clusterPools = useRecoilValue(clusterPoolsState)
   const clusterSetClusterPools = clusterPools.filter(
     (cp) => cp.metadata.labels?.[managedClusterSetLabel] === clusterSet?.metadata.name

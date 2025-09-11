@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Subject } from './kubernetes-client'
 import { Metadata } from './metadata'
+import { UserKind } from './rbac'
 import { IResource, IResourceDefinition } from './resource'
 
 export const MulticlusterRoleAssignmentApiVersion = 'rbac.open-cluster-management.io/v1alpha1'
@@ -20,7 +21,7 @@ export interface RoleAssignment {
   name: string
   clusterRole: string
   targetNamespaces?: string[]
-  clusterSets: string[]
+  clusterSets?: string[]
   // this is information should come from the aggregated API
   clusters?: string[]
 }
@@ -43,4 +44,17 @@ export interface MulticlusterRoleAssignment extends IResource {
   status: {
     roleAssignments?: RoleAssignmentStatus[]
   }
+}
+
+export const emptyMulticlusterRoleAssignment: MulticlusterRoleAssignment = {
+  apiVersion: MulticlusterRoleAssignmentApiVersion,
+  kind: MulticlusterRoleAssignmentKind,
+  metadata: {},
+  spec: {
+    subject: {
+      kind: UserKind,
+      name: '',
+    },
+    roleAssignments: [],
+  },
 }
