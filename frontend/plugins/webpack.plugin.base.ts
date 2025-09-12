@@ -28,6 +28,11 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
       },
       alias: {
         handlebars: 'handlebars/dist/handlebars.js',
+        // Force all @patternfly/react-core imports to use the main frontend version
+        // This prevents duplicate versions from linked workspace packages like multicluster-sdk
+        '@patternfly/react-core': path.resolve(__dirname, '../node_modules/@patternfly/react-core'),
+        '@patternfly/react-styles': path.resolve(__dirname, '../node_modules/@patternfly/react-styles'),
+        '@patternfly/react-icons': path.resolve(__dirname, '../node_modules/@patternfly/react-icons'),
       },
     },
     module: {

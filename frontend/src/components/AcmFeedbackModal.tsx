@@ -33,7 +33,6 @@ export const AcmFeedbackModal = () => {
           transform: 'rotate(-90deg) translateY(-100%)',
           bottom: '2em',
           zIndex: 20000,
-          color: 'var(--pf-global--palette--white)',
         }}
         icon={<OutlinedCommentsIcon />}
         iconPosition="left"
