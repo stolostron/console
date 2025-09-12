@@ -2,6 +2,7 @@
 import { Grid, GridItem, gridSpans, Stack } from '@patternfly/react-core'
 import useResizeObserver from '@react-hook/resize-observer'
 import { Children, Dispatch, ReactNode, SetStateAction, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { AcmLoadingPage } from '../ui-components'
 
 export function AcmMasonry(props: { minSize: number; maxColumns?: number; children?: ReactNode }) {
   const target = useRef(null)
@@ -12,6 +13,7 @@ export function AcmMasonry(props: { minSize: number; maxColumns?: number; childr
   const [span, setSpan] = useState<gridSpans>(12)
 
   const [sizes, setSizes] = useState<Record<number, number>>({})
+  const [isReady, setIsReady] = useState(false)
   useLayoutEffect(() => {
     switch (columns) {
       case 1:
@@ -40,6 +42,20 @@ export function AcmMasonry(props: { minSize: number; maxColumns?: number; childr
 
   const realColumns = 12 / span
 
+  const childrenCount = Children.count(props.children)
+
+  useLayoutEffect(() => {
+    if (childrenCount === 0) {
+      setIsReady(true)
+      return
+    }
+
+    const measuredCount = Object.keys(sizes).length
+    const allMeasured = measuredCount === childrenCount && measuredCount > 0
+
+    setIsReady(allMeasured)
+  }, [sizes, childrenCount])
+
   const itemColumns = useMemo(() => {
     const itemColumns: ReactNode[][] = new Array(realColumns).fill(0).map(() => [])
     const columnHeights: number[] = new Array(realColumns).fill(0)
@@ -63,7 +79,8 @@ export function AcmMasonry(props: { minSize: number; maxColumns?: number; childr
 
   return (
     <div ref={target}>
-      <Grid hasGutter style={{ maxWidth: realColumns * props.minSize }}>
+      {!isReady && <AcmLoadingPage />}
+      <Grid hasGutter style={{ maxWidth: realColumns * props.minSize, visibility: isReady ? 'visible' : 'hidden' }}>
         {itemColumns.map((column, index) => (
           <GridItem span={span} key={index}>
             <Stack hasGutter>{column}</Stack>
