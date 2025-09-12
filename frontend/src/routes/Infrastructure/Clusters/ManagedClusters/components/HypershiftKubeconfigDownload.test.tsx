@@ -1,11 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { HostedClusterK8sResource, SecretK8sResource } from '@openshift-assisted/ui-lib/cim'
-import { nockIgnoreApiPaths } from '../../../../../lib/nock-util'
+import { nockGet, nockIgnoreApiPaths } from '../../../../../lib/nock-util'
 import { getResource } from '../../../../../resources/utils'
 import HypershiftKubconfigDownload from './HypershiftKubeconfigDownload'
+import { waitForNocks } from '../../../../../lib/test-util'
 
 const fetchSecret = (name: string, namespace: string) => {
   return getResource({ kind: 'Secret', apiVersion: 'v1', metadata: { name, namespace } }).promise
@@ -250,9 +251,20 @@ describe('HypershiftKubconfigDownload', () => {
       },
     }
 
+    const mockSecret = {
+      apiVersion: 'v1',
+      kind: 'secrets',
+      metadata: {
+        namespace: 'feng-test',
+        name: 'feng-test-admin-kubeconfig',
+      },
+    }
+    const nocks = [nockGet(mockSecret)]
     const { queryAllByText, getByText } = await renderHypershiftKubconfigDownload(mockHostedCluster, fetchSecret)
     expect(queryAllByText('Download kubeconfig').length).toBe(1)
     userEvent.click(getByText('Download kubeconfig'))
+    await new Promise((resolve) => setTimeout(resolve, 100))
+    await waitForNocks(nocks)
   })
 
   it('should render download kubeconfig - no hostedcluster', async () => {
