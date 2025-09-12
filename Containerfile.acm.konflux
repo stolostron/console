@@ -34,4 +34,5 @@ LABEL com.redhat.component="console-container" \
       io.k8s.display-name="console" \
       maintainer="['acm-component-maintainers@redhat.com']" \
       description="console" \
-      io.k8s.description="console"
+      io.k8s.description="console" \
+      cpe="cpe:/a:redhat:acm:2.14::el9"
