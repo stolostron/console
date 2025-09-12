@@ -102,7 +102,7 @@ interface MockMonaco {
 const MonacoEditor = (props: {
   value: string
   onChange(value: string, e: any): unknown
-  editorDidMount: (editor: MockEditor, monaco: MockMonaco) => void
+  onMount: (editor: MockEditor, monaco: MockMonaco) => void
   wrapperClassName: any
 }) => {
   const editorMockRef = React.useRef<any | null>(null)
@@ -225,7 +225,7 @@ const MonacoEditor = (props: {
       Range: Range,
       Selection: Selection,
     }
-    props.editorDidMount(editorMockRef.current.mockEditor, editorMockRef.current.mockMonaco)
+    props.onMount(editorMockRef.current.mockEditor, editorMockRef.current.mockMonaco)
   }
   return (
     <textarea

@@ -202,7 +202,7 @@ describe('add automation template page', () => {
     nockIgnoreOperatorCheck(true)
   })
 
-  it.skip('should create a curator template', async () => {
+  it('should create a curator template', async () => {
     render(<AddAnsibleTemplateTest />)
 
     // template information

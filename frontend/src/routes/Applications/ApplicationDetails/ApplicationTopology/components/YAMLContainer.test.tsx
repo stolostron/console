@@ -8,7 +8,7 @@ const t = (string: any) => {
   return string
 }
 
-describe.skip('YAML Container test', () => {
+describe('YAML Container test', () => {
   const renderYAMLContainer = async (node: any, t: TFunction) => {
     const containerRef = {} as unknown as HTMLDivElement
     const retResource = render(
