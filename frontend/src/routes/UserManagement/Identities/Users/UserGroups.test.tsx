@@ -142,8 +142,8 @@ describe('UserGroups', () => {
     const userWithoutGroups = createUser({ groups: [] })
     setCtx({ user: userWithoutGroups, groups: mockGroups, loading: false, groupsLoading: false })
     renderWithCtx()
-    expect(screen.getByText('No users found')).toBeInTheDocument()
-    expect(screen.getByText('No users have been added to this group yet.')).toBeInTheDocument()
+    expect(screen.getByText('No groups found')).toBeInTheDocument()
+    expect(screen.getByText('This user is not a member of any groups yet.')).toBeInTheDocument()
   })
 
   it('renders groups table with only the user groups', () => {
@@ -177,7 +177,7 @@ describe('UserGroups', () => {
     const userWithUndefinedGroups = createUser({ groups: undefined })
     setCtx({ user: userWithUndefinedGroups, groups: mockGroups, loading: false, groupsLoading: false })
     renderWithCtx()
-    expect(screen.getByText('No users found')).toBeInTheDocument()
+    expect(screen.getByText('No groups found')).toBeInTheDocument()
   })
 
   it('handles user with null/undefined metadata properties', () => {
