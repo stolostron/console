@@ -2,6 +2,7 @@
 
 import {
   Button,
+  MenuFooter,
   MenuToggle,
   MenuToggleElement,
   Select,
@@ -707,7 +708,7 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
       innerRef={menuRef as React.MutableRefObject<any>}
     >
       {renderSelectList()}
-      {footer}
+      {footer && <MenuFooter>{footer}</MenuFooter>}
     </Select>
   )
 }
