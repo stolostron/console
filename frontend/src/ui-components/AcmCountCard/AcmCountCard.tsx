@@ -136,9 +136,9 @@ export function CardDropdown(props: CardDropdownProps) {
         <Menu>
           <MenuContent>
             <MenuList>
-              {props.dropdownItems.map((item, index) => (
-                <MenuItem 
-                  key={item.text} 
+              {props.dropdownItems.map((item) => (
+                <MenuItem
+                  key={item.text}
                   onClick={(event) => {
                     item.handleAction()
                     setOpen(false)
