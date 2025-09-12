@@ -16,7 +16,6 @@ import {
   nockIgnoreApiPaths,
   nockIgnoreOperatorCheck,
 } from '../../lib/nock-util'
-import nock from 'nock'
 import {
   GitOpsClusterApiVersion,
   GitOpsClusterKind,
@@ -87,11 +86,6 @@ describe('ArgoWizard tests', () => {
   test('create git', async () => {
     nockIgnoreApiPaths()
     const url = 'https://github.com/fxiang1/app-samples'
-
-    // Add nocks for Git API calls - removed unused nockArgoGitBranches
-
-    // Also add a nock for specific branch calls
-    // nock('https://api.github.com').get('/repos/fxiang1/app-samples/branches/main').reply(200, { name: 'main' })
 
     render(<TestArgoWizard />)
 

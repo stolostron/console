@@ -11,6 +11,7 @@ import { AnsibleTowerJobTemplate, AnsibleTowerJobTemplateList } from '../ansible
 import { getResourceApiPath, getResourceName, getResourceNameApiPath, IResource, ResourceList } from '../resource'
 import { Status, StatusKind } from '../status'
 import { AnsibleTowerInventory, AnsibleTowerInventoryList } from '../ansible-inventory'
+import StackTrace from 'stacktrace-js'
 
 // must match ansiblePaths in backend/src/routes/ansibletower.ts
 const ansiblePaths = ['/api/v2/job_templates/', '/api/v2/workflow_job_templates/']
@@ -762,7 +763,11 @@ export async function fetchRetry<T>(options: {
             throw new ResourceError(ResourceErrorCode.NetworkError)
           }
         }
+        const stack = StackTrace.getSync()
         console.log(err)
+        console.log(
+          stack.map((s) => `${s.getFunctionName()} ${s.getFileName()}:${s.getLineNumber()} ${s.getLineNumber() - 1}`)
+        )
         throw new ResourceError(ResourceErrorCode.Unknown, `Unknown error code: ${(err as any)?.code}`)
       }
     }
