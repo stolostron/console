@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render, screen } from '@testing-library/react'
+import { render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { HostedClusterK8sResource, SecretK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { nockGet, nockIgnoreApiPaths } from '../../../../../lib/nock-util'
