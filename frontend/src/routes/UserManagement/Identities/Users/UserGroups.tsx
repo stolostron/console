@@ -1,17 +1,30 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { PageSection } from '@patternfly/react-core'
+import { Page, PageSection } from '@patternfly/react-core'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { Group } from '../../../../resources/rbac'
 import { useMemo } from 'react'
-import { AcmTable, compareStrings, IAcmTableColumn, AcmEmptyState, AcmLoadingPage } from '../../../../ui-components'
+import {
+  AcmTable,
+  compareStrings,
+  IAcmTableColumn,
+  AcmEmptyState,
+  AcmLoadingPage,
+  AcmButton,
+} from '../../../../ui-components'
 import { cellWidth } from '@patternfly/react-table'
 import AcmTimestamp from '../../../../lib/AcmTimestamp'
-import { getISOStringTimestamp } from '../../../../resources/utils'
+import { getISOStringTimestamp, ResourceError, ResourceErrorCode } from '../../../../resources/utils'
 import { useUserDetailsContext } from './UserPage'
+import { ErrorPage } from '../../../../components/ErrorPage'
+import { NavigationPath } from '../../../../NavigationPath'
+import { useNavigate, Link, generatePath } from 'react-router-dom-v5-compat'
+import { useFilters } from '../Groups/GroupsTableHelper'
 
 const UserGroups = () => {
   const { t } = useTranslation()
   const { user, groups, loading: userLoading, groupsLoading } = useUserDetailsContext()
+  const navigate = useNavigate()
+  const filters = useFilters()
 
   const userGroups = useMemo(() => {
     if (!user || !groups) return []
@@ -28,14 +41,16 @@ const UserGroups = () => {
       sort: 'metadata.name',
       search: 'metadata.name',
       transforms: [cellWidth(40)],
-      cell: (group) => group.metadata.name ?? '',
+      cell: (group) => {
+        const groupName = group.metadata.name ?? ''
+        const groupId = group.metadata.uid ?? ''
+        return groupName ? (
+          <Link to={generatePath(NavigationPath.identitiesGroupsDetails, { id: groupId })}>{groupName}</Link>
+        ) : (
+          ''
+        )
+      },
       exportContent: (group) => group.metadata.name ?? '',
-    },
-    {
-      header: t('Users count'),
-      cell: (group) => group.users?.length ?? 0,
-      transforms: [cellWidth(20)],
-      exportContent: (group) => (group.users?.length ?? 0).toString(),
     },
     {
       header: t('Created'),
@@ -67,23 +82,35 @@ const UserGroups = () => {
       )
     case !user:
       return (
-        <PageSection>
-          <div>{t('User not found')}</div>
-        </PageSection>
+        <Page>
+          <ErrorPage
+            error={new ResourceError(ResourceErrorCode.NotFound)}
+            actions={
+              <AcmButton
+                role="link"
+                onClick={() => navigate(NavigationPath.identitiesGroups)}
+                style={{ marginRight: '10px' }}
+              >
+                {t('button.backToGroups')}
+              </AcmButton>
+            }
+          />
+        </Page>
       )
     default:
       return (
         <PageSection>
           <AcmTable<Group>
-            key="user-groups-table"
+            key="group-users-table"
             columns={columns}
+            filters={filters}
             keyFn={keyFn}
             items={userGroups}
             emptyState={
               <AcmEmptyState
-                key="userGroupsEmptyState"
+                key="groupUsersEmptyState"
                 title={t('No groups found')}
-                message={t('This user is not a member of any groups.')}
+                message={t('This user is not a member of any groups yet.')}
               />
             }
           />
