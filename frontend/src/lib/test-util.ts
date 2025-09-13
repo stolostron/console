@@ -190,11 +190,8 @@ export async function clickByRole(role: ByRoleMatcher, options?: ByRoleOptions, 
 
 export async function typeByRole(type: string, role: ByRoleMatcher, options?: ByRoleOptions, index?: number) {
   await waitForInputByRole(role, options, index)
-  if (index !== undefined) {
-    userEvent.type(screen.getAllByRole(role, options)[index], type)
-  } else {
-    userEvent.type(screen.getByRole(role, options), type)
-  }
+  const input = index !== undefined ? screen.getAllByRole(role, options)[index] : screen.getByRole(role, options)
+  typeUsingPaste(input, type)
 }
 
 // By TestId
@@ -243,11 +240,8 @@ export async function clickByTestId(text: string, index?: number) {
 
 export async function typeByTestId(id: string, type: string, index?: number) {
   await waitForInputByTestId(id, index)
-  if (index !== undefined) {
-    userEvent.type(screen.getAllByTestId(id)[index], type)
-  } else {
-    userEvent.type(screen.getByTestId(id), type)
-  }
+  const input = index !== undefined ? screen.getAllByTestId(id)[index] : screen.getByTestId(id)
+  typeUsingPaste(input, type)
 }
 
 export async function pasteByTestId(id: string, type: string, index?: number) {
@@ -314,10 +308,16 @@ export async function clickByLabel(text: string, index?: number) {
 
 export async function typeByLabel(text: string, type: string, index?: number) {
   await waitForInputByLabelText(text, index)
-  if (index !== undefined) {
-    userEvent.type(screen.getAllByLabelText(text)[index], type)
+  const input = index !== undefined ? screen.getAllByLabelText(text)[index] : screen.getByLabelText(text)
+  typeUsingPaste(input, type)
+}
+
+export async function typeUsingPaste(input: HTMLElement, type: string) {
+  if (type.endsWith('{enter}')) {
+    userEvent.type(input, type)
   } else {
-    userEvent.type(screen.getByLabelText(text), type)
+    userEvent.click(input)
+    userEvent.paste(input, type)
   }
 }
 
@@ -363,13 +363,15 @@ export function nocksAreDone(nocks: Scope[]) {
 }
 
 export async function waitForNocks(nocks: Scope[]) {
-  const timeout = waitForOptions.timeout * nocks.length * 3
   const timeoutMsg = (error: Error) => {
-    error.message = `!!!!!!!!!!! Test timed out in waitForNocks()--waited ${timeout / 1000} seconds !!!!!!!!!!!!!`
+    error.message = `!!!!!!!!!!! Test timed out in waitForNocks()--waited ${waitForOptions.timeout / 1000} seconds !!!!!!!!!!!!!`
     error.stack = ''
     return error
   }
-  await waitFor(() => expect(nocksAreDone(nocks)).toBeTruthy(), { timeout, onTimeout: timeoutMsg })
+  await waitFor(() => expect(nocksAreDone(nocks)).toBeTruthy(), {
+    timeout: waitForOptions.timeout,
+    onTimeout: timeoutMsg,
+  })
 }
 
 export async function waitForNock(nock: Scope) {

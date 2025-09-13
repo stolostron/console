@@ -6,11 +6,16 @@ import userEvent from '@testing-library/user-event'
 import { RecoilRoot } from 'recoil'
 import { MemoryRouter, Routes, Route } from 'react-router-dom-v5-compat'
 import { NavigationPath } from '../../NavigationPath'
-import { clickByRole, clickByText, typeByRole, waitForText } from '../../lib/test-util'
+import { clickByRole, clickByText, typeByRole, waitForNocks, waitForText } from '../../lib/test-util'
 import { argoCDsState, managedClusterSetsState, namespacesState, subscriptionOperatorsState } from '../../atoms'
 import { gitOpsOperators, mockArgoCD, mockClusterSets } from '../../routes/Applications/Application.sharedmocks'
-import { nockIgnoreApiPaths, nockIgnoreOperatorCheck } from '../../lib/nock-util'
-import nock from 'nock'
+import {
+  nockArgoGitBranches,
+  nockArgoGitPathSha,
+  nockArgoGitPathTree,
+  nockIgnoreApiPaths,
+  nockIgnoreOperatorCheck,
+} from '../../lib/nock-util'
 import {
   GitOpsClusterApiVersion,
   GitOpsClusterKind,
@@ -82,11 +87,6 @@ describe('ArgoWizard tests', () => {
     nockIgnoreApiPaths()
     const url = 'https://github.com/fxiang1/app-samples'
 
-    // Add nocks for Git API calls - removed unused nockArgoGitBranches
-
-    // Also add a nock for specific branch calls
-    nock('https://api.github.com').get('/repos/fxiang1/app-samples/branches/main').reply(200, { name: 'main' })
-
     render(<TestArgoWizard />)
 
     //=====================================================================
@@ -110,17 +110,23 @@ describe('ArgoWizard tests', () => {
     await clickByText('Git')
     await typeByRole(url, 'combobox', { name: /Enter or select a Git URL/i })
 
+    const appBranchNocks = [nockArgoGitBranches(url, { branchList: [{ name: 'main' }] })]
     userEvent.click(
       screen.getByRole('option', {
         name: /create new option "https:\/\/github\.com\/fxiang1\/app-samples"/i,
       })
     )
 
-    // Type and select the revision
-    await typeByRole('main', 'combobox', { name: /enter or select a tracking revision/i })
-    await clickByRole('option', {
-      name: /create new option "main"/i,
-    })
+    await waitForNocks(appBranchNocks)
+    await clickByRole('combobox', { name: /enter or select a tracking revision/i })
+    const pathNocks = [
+      nockArgoGitPathSha(url, 'main', { commit: { sha: '01' } }),
+      nockArgoGitPathTree(url, { tree: [{ path: 'application-test', type: 'tree' }] }),
+    ]
+
+    await clickByRole('option', { name: /create new option "main"/i })
+    await waitForNocks(pathNocks)
+
     await typeByRole('ansible', 'combobox', { name: /enter or select a repository path/i })
     await clickByRole('option', {
       name: /create new option "ansible"/i,
