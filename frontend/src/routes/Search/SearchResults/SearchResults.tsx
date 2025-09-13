@@ -31,6 +31,7 @@ import {
   IVMActionModalProps,
   VMActionModal,
 } from '../../Infrastructure/VirtualMachines/modals/VMActionModal'
+import { KubevirtProviderAlert } from '../../../components/KubevirtProviderAlert'
 import {
   ClosedDeleteExternalResourceModalProps,
   DeleteExternalResourceModal,
@@ -66,6 +67,13 @@ const accordionItemGroup = css({
   fontSize: 'var(--pf-v5-global--FontSize--sm)',
   color: 'var(--pf-v5-global--Color--200)',
 })
+
+// Helper function to check if search query contains VirtualMachine kinds
+const hasVirtualMachineKinds = (query: string): boolean => {
+  const lowerQuery = query.toLowerCase()
+  // Check for VirtualMachine or VirtualMachineInstance in kind filters
+  return lowerQuery.includes('kind:virtualmachine') || lowerQuery.includes('kind:virtualmachineinstance')
+}
 
 function RenderAccordionItem(
   props: Readonly<{
@@ -385,6 +393,8 @@ export default function SearchResults(
       />
       <PageSection className={resultsWrapper}>
         <Stack hasGutter>
+          {/* Show KubevirtProviderAlert when searching for VirtualMachine kinds */}
+          {hasVirtualMachineKinds(currentQuery) && <KubevirtProviderAlert variant="search" component="hint" />}
           <PageSection isFilled={false} variant={'light'}>
             <div className={relatedExpandableWrapper}>
               <ExpandableSection

@@ -9,7 +9,7 @@ import { GraphQLError } from 'graphql'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { configMapsState, isGlobalHubState, Settings, settingsState } from '../../atoms'
-import { nockPostRequest, nockRequest } from '../../lib/nock-util'
+import { nockIgnoreOperatorCheck, nockPostRequest, nockRequest } from '../../lib/nock-util'
 import { wait, waitForNocks } from '../../lib/test-util'
 import { ConfigMap } from '../../resources'
 import { UserPreference } from '../../resources/userpreference'
@@ -62,6 +62,7 @@ const mockSuggestedSearchConfigMap: ConfigMap[] = [
 
 describe('SearchPage', () => {
   it('should render default search page correctly', async () => {
+    nockIgnoreOperatorCheck()
     const metricNock = nockPostRequest('/metrics?search', {})
     const getUserPreferenceNock = nockRequest('/userpreference', mockUserPreference)
     const mocks = [
@@ -123,6 +124,7 @@ describe('SearchPage', () => {
   })
 
   it('should render page with errors', async () => {
+    nockIgnoreOperatorCheck()
     const metricNock = nockPostRequest('/metrics?search', {})
     const getUserPreferenceNock = nockRequest('/userpreference', mockUserPreference)
     const mocks = [
@@ -183,6 +185,7 @@ describe('SearchPage', () => {
   })
 
   it('should render page with global search federated error', async () => {
+    nockIgnoreOperatorCheck()
     const mockSettings: Settings = {
       globalSearchFeatureFlag: 'enabled',
     }
@@ -243,6 +246,7 @@ describe('SearchPage', () => {
   })
 
   it('should render search page correctly and add a search', async () => {
+    nockIgnoreOperatorCheck()
     const metricNock = nockPostRequest('/metrics?search', {})
     const getUserPreferenceNock = nockRequest('/userpreference', mockUserPreference)
     const mocks = [
@@ -339,6 +343,7 @@ describe('SearchPage', () => {
     await waitFor(() => expect(screen.queryByText('Search is disabled on some clusters.')).toBeTruthy())
   })
   it('should render SearchPage with predefined query', async () => {
+    nockIgnoreOperatorCheck()
     const metricNock = nockPostRequest('/metrics?search', {})
     const getUserPreferenceNock = nockRequest('/userpreference', mockUserPreference)
     const mocks = [

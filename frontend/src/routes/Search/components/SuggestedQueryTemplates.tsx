@@ -5,10 +5,24 @@
 
 import { useMemo } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
+import { SupportedOperator, useOperatorCheck } from '../../../lib/operatorCheck'
+import { useSharedSelectors } from '../../../shared-recoil'
+import { KubevirtProviderAlert } from '../../../components/KubevirtProviderAlert'
 
 // Suggested query templates are used as back up if the console-search-config ConfigMap is not found
 export const useSuggestedQueryTemplates = () => {
+  const { kubevirtOperatorSubscriptionsValue } = useSharedSelectors()
   const { t } = useTranslation()
+  const kubevirtOperator = useOperatorCheck(SupportedOperator.kubevirt, kubevirtOperatorSubscriptionsValue)
+
+  // TEMPORARY: Force alert to show for visual inspection
+  const FORCE_SHOW_ALERT = true
+
+  const alertComponent =
+    FORCE_SHOW_ALERT || !kubevirtOperator.installed ? (
+      <KubevirtProviderAlert variant="search" component="hint" useLabelAlert />
+    ) : undefined
+
   return useMemo(
     () => ({
       templates: [
@@ -36,9 +50,11 @@ export const useSuggestedQueryTemplates = () => {
           name: t('Virtual Machines'),
           description: t('Show virtual machine resources'),
           searchText: 'kind:VirtualMachine',
+          alert: alertComponent,
         },
       ],
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [t]
   )
 }

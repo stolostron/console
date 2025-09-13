@@ -10,6 +10,7 @@ import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { Settings, settingsState } from '../../../atoms'
 import { wait } from '../../../lib/test-util'
+import { nockIgnoreOperatorCheck } from '../../../lib/nock-util'
 import {
   SearchResultItemsDocument,
   SearchResultRelatedCountDocument,
@@ -762,6 +763,7 @@ describe('SearchResults Page', () => {
   })
 
   it('should render the page with the correct data and display actions from the plugin extension', async () => {
+    nockIgnoreOperatorCheck()
     const mocks = [
       {
         request: {
@@ -864,5 +866,307 @@ describe('SearchResults Page', () => {
       userEvent.click(screen.getAllByRole('button', { name: 'Actions' })[0])
     })
     await waitFor(() => expect(screen.getByText('Failover')).toBeInTheDocument())
+  })
+
+  it('should render KubevirtProviderAlert when searching for VirtualMachine kinds', async () => {
+    nockIgnoreOperatorCheck()
+    const mocks = [
+      {
+        request: {
+          query: SearchResultItemsDocument,
+          variables: {
+            input: [
+              {
+                keywords: [],
+                filters: [
+                  {
+                    property: 'kind',
+                    values: ['VirtualMachine'],
+                  },
+                ],
+                limit: 1000,
+              },
+            ],
+          },
+        },
+        result: {
+          data: {
+            searchResult: [
+              {
+                items: [
+                  {
+                    _uid: 'testCluster/42634581-0cc1-4aa9-bec6-69f59049e2d3',
+                    apigroup: 'kubevirt.io',
+                    apiversion: 'v1',
+                    cluster: 'testCluster',
+                    created: '2024-09-09T20:00:42Z',
+                    kind: 'VirtualMachine',
+                    kind_plural: 'virtualmachines',
+                    name: 'testvm1',
+                    namespace: 'openshift-cnv',
+                    ready: 'True',
+                    status: 'Running',
+                  },
+                ],
+                __typename: 'SearchResult',
+              },
+            ],
+          },
+        },
+      },
+    ]
+
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(settingsState, mockSettings)
+        }}
+      >
+        <MemoryRouter>
+          <MockedProvider mocks={mocks}>
+            <SearchResults
+              currentQuery={'kind:VirtualMachine'}
+              preSelectedRelatedResources={[]}
+              error={undefined}
+              loading={false}
+              data={{
+                searchResult: [
+                  {
+                    items: [
+                      {
+                        _uid: 'testCluster/42634581-0cc1-4aa9-bec6-69f59049e2d3',
+                        apigroup: 'kubevirt.io',
+                        apiversion: 'v1',
+                        cluster: 'testCluster',
+                        created: '2024-09-09T20:00:42Z',
+                        kind: 'VirtualMachine',
+                        kind_plural: 'virtualmachines',
+                        name: 'testvm1',
+                        namespace: 'openshift-cnv',
+                        ready: 'True',
+                        status: 'Running',
+                      },
+                    ],
+                  },
+                ],
+              }}
+            />
+          </MockedProvider>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    await wait()
+
+    // Test that KubevirtProviderAlert is rendered for VirtualMachine searches
+    await waitFor(() => expect(screen.queryByText('VirtualMachine')).toBeTruthy())
+    await waitFor(() =>
+      expect(
+        screen.getByText(
+          /Install the OpenShift Virtualization operator on this cluster to monitor, manage, and provision VMs across your entire fleet from this console/
+        )
+      ).toBeInTheDocument()
+    )
+  })
+
+  it('should render KubevirtProviderAlert when searching for VirtualMachineInstance kinds', async () => {
+    nockIgnoreOperatorCheck()
+    const mocks = [
+      {
+        request: {
+          query: SearchResultItemsDocument,
+          variables: {
+            input: [
+              {
+                keywords: [],
+                filters: [
+                  {
+                    property: 'kind',
+                    values: ['VirtualMachineInstance'],
+                  },
+                ],
+                limit: 1000,
+              },
+            ],
+          },
+        },
+        result: {
+          data: {
+            searchResult: [
+              {
+                items: [
+                  {
+                    _uid: 'testCluster/vmi-test',
+                    apigroup: 'kubevirt.io',
+                    apiversion: 'v1',
+                    cluster: 'testCluster',
+                    created: '2024-09-09T20:00:42Z',
+                    kind: 'VirtualMachineInstance',
+                    kind_plural: 'virtualmachineinstances',
+                    name: 'testvmi1',
+                    namespace: 'openshift-cnv',
+                    status: 'Running',
+                  },
+                ],
+                __typename: 'SearchResult',
+              },
+            ],
+          },
+        },
+      },
+    ]
+
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(settingsState, mockSettings)
+        }}
+      >
+        <MemoryRouter>
+          <MockedProvider mocks={mocks}>
+            <SearchResults
+              currentQuery={'kind:VirtualMachineInstance'}
+              preSelectedRelatedResources={[]}
+              error={undefined}
+              loading={false}
+              data={{
+                searchResult: [
+                  {
+                    items: [
+                      {
+                        _uid: 'testCluster/vmi-test',
+                        apigroup: 'kubevirt.io',
+                        apiversion: 'v1',
+                        cluster: 'testCluster',
+                        created: '2024-09-09T20:00:42Z',
+                        kind: 'VirtualMachineInstance',
+                        kind_plural: 'virtualmachineinstances',
+                        name: 'testvmi1',
+                        namespace: 'openshift-cnv',
+                        status: 'Running',
+                      },
+                    ],
+                  },
+                ],
+              }}
+            />
+          </MockedProvider>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    await wait()
+
+    // Test that KubevirtProviderAlert is rendered for VirtualMachineInstance searches
+    await waitFor(() => expect(screen.queryByText('VirtualMachineInstance')).toBeTruthy())
+    await waitFor(() =>
+      expect(
+        screen.getByText(
+          /Install the OpenShift Virtualization operator on this cluster to monitor, manage, and provision VMs across your entire fleet from this console/
+        )
+      ).toBeInTheDocument()
+    )
+  })
+
+  it('should not render KubevirtProviderAlert when searching for non-VM kinds', async () => {
+    const mocks = [
+      {
+        request: {
+          query: SearchResultItemsDocument,
+          variables: {
+            input: [
+              {
+                keywords: [],
+                filters: [
+                  {
+                    property: 'kind',
+                    values: ['Pod'],
+                  },
+                ],
+                limit: 1000,
+              },
+            ],
+          },
+        },
+        result: {
+          data: {
+            searchResult: [
+              {
+                items: [
+                  {
+                    apiversion: 'v1',
+                    cluster: 'testCluster',
+                    container: 'installer',
+                    created: '2021-01-04T14:53:52Z',
+                    hostIP: '10.0.128.203',
+                    kind: 'Pod',
+                    name: 'testPod',
+                    namespace: 'testNamespace',
+                    podIP: '10.129.0.40',
+                    restarts: 0,
+                    startedAt: '2021-01-04T14:53:52Z',
+                    status: 'Completed',
+                    _uid: 'testing-search-results-pod',
+                  },
+                ],
+                __typename: 'SearchResult',
+              },
+            ],
+          },
+        },
+      },
+    ]
+
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(settingsState, mockSettings)
+        }}
+      >
+        <MemoryRouter>
+          <MockedProvider mocks={mocks}>
+            <SearchResults
+              currentQuery={'kind:Pod'}
+              preSelectedRelatedResources={[]}
+              error={undefined}
+              loading={false}
+              data={{
+                searchResult: [
+                  {
+                    items: [
+                      {
+                        apiversion: 'v1',
+                        cluster: 'testCluster',
+                        container: 'installer',
+                        created: '2021-01-04T14:53:52Z',
+                        hostIP: '10.0.128.203',
+                        kind: 'Pod',
+                        name: 'testPod',
+                        namespace: 'testNamespace',
+                        podIP: '10.129.0.40',
+                        restarts: 0,
+                        startedAt: '2021-01-04T14:53:52Z',
+                        status: 'Completed',
+                        _uid: 'testing-search-results-pod',
+                      },
+                    ],
+                  },
+                ],
+              }}
+            />
+          </MockedProvider>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    await wait()
+
+    // Test that KubevirtProviderAlert is NOT rendered for non-VM searches
+    await waitFor(() => expect(screen.queryByText('Pod')).toBeTruthy())
+    expect(
+      screen.queryByText(
+        /Install the OpenShift Virtualization operator on this cluster to monitor, manage, and provision VMs across your entire fleet from this console/
+      )
+    ).not.toBeInTheDocument()
   })
 })
