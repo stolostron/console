@@ -8,17 +8,18 @@ import {
   CardHeader,
   CardProps,
   CardTitle,
-  Dropdown,
-  DropdownItem,
-  DropdownList,
   EmptyState,
   EmptyStateBody,
   EmptyStateIcon,
   MenuToggle,
-  MenuToggleElement,
   Skeleton,
   EmptyStateHeader,
   Icon,
+  Menu,
+  MenuContent,
+  MenuList,
+  MenuItem,
+  Popper,
 } from '@patternfly/react-core'
 import { EllipsisVIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
 import { ReactNode, useState } from 'react'
@@ -91,9 +92,6 @@ const styles = {
   actions: css({
     width: '1rem',
     padding: '0',
-    '&& ul': {
-      right: '-1rem',
-    },
   }),
   countTitle: css({
     fontSize: 'var(--pf-v5-global--FontSize--sm)',
@@ -118,36 +116,43 @@ const getStyles = (props: AcmCountCardProps) => ({
 export function CardDropdown(props: CardDropdownProps) {
   const [isOpen, setOpen] = useState<boolean>(false)
 
+  const handleToggleClick = (e: React.MouseEvent) => {
+    setOpen(!isOpen)
+    e.stopPropagation()
+  }
+
   return (
-    <Dropdown
-      className="dropdownMenu"
-      onSelect={() => setOpen(!isOpen)}
-      onOpenChange={(isOpen: boolean) => setOpen(isOpen)}
-      shouldFocusToggleOnSelect
-      toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
-        <MenuToggle
-          ref={toggleRef}
-          aria-label="Actions"
-          variant="plain"
-          onClick={(e) => {
-            setOpen(!isOpen)
-            e.stopPropagation()
-          }}
-          isExpanded={isOpen}
-        >
+    <Popper
+      trigger={
+        <MenuToggle aria-label="Actions" variant="plain" onClick={handleToggleClick} isExpanded={isOpen}>
           <EllipsisVIcon />
         </MenuToggle>
-      )}
-      isOpen={isOpen}
-    >
-      <DropdownList onClick={(e) => e.stopPropagation()}>
-        {props.dropdownItems.map((item) => (
-          <DropdownItem className={css({ width: '10rem' })} key={item.text} onClick={item.handleAction}>
-            {item.text}
-          </DropdownItem>
-        ))}
-      </DropdownList>
-    </Dropdown>
+      }
+      isVisible={isOpen}
+      enableFlip={true} // smart positioning
+      placement="bottom-end" // better placement control
+      onDocumentClick={() => setOpen(false)} // outside click handling
+      popper={
+        <Menu>
+          <MenuContent>
+            <MenuList>
+              {props.dropdownItems.map((item) => (
+                <MenuItem
+                  key={item.text}
+                  onClick={(event) => {
+                    item.handleAction()
+                    setOpen(false)
+                    event?.stopPropagation()
+                  }}
+                >
+                  {item.text}
+                </MenuItem>
+              ))}
+            </MenuList>
+          </MenuContent>
+        </Menu>
+      }
+    />
   )
 }
 
