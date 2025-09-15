@@ -150,7 +150,7 @@ describe('Policy wizard', () => {
     expect(container.querySelector('#objectdefinition-spec-remediationaction-form-group')).toBeNull()
   })
 
-  test.skip('single namespace mode of OperatorPolicy', async () => {
+  test('single namespace mode of OperatorPolicy', async () => {
     const { container } = render(<TestPolicyWizardOperatorPolicy />)
     screen.getByRole('button', { name: /policy templates/i }).click()
 
@@ -191,7 +191,7 @@ describe('Policy wizard', () => {
     })
   })
 
-  test.skip('all namespace mode of OperatorPolicy', async () => {
+  test('all namespace mode of OperatorPolicy', async () => {
     const { container } = render(<TestPolicyWizardOperatorPolicy />)
     screen.getByRole('button', { name: /policy templates/i }).click()
 

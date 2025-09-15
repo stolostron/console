@@ -130,7 +130,7 @@ describe('TemplateEditor component', () => {
     props.editorReadOnly = false
   })
 
-  it.skip('yaml editing/toolbar', async () => {
+  it('yaml editing/toolbar', async () => {
     window.ResizeObserver = ResizeObserver
     document.execCommand = () => {}
 
@@ -139,7 +139,7 @@ describe('TemplateEditor component', () => {
     // open editor
     let yamlBtn = await waitFor(() =>
       screen.getByRole('checkbox', {
-        name: /edit\.yaml\.on/i,
+        name: /edit\.yaml\.off/i,
       })
     )
     yamlBtn.click()
@@ -205,7 +205,13 @@ describe('TemplateEditor component', () => {
     )
 
     // copy
+    // Mock navigator.clipboard if not present
+    if (!navigator.clipboard) {
+      navigator.clipboard = {}
+    }
+    navigator.clipboard.writeText = jest.fn()
     userEvent.click(screen.getByRole('button', { name: /copy to clipboard/i }))
+    expect(navigator.clipboard.writeText).toHaveBeenCalledWith(editor.value)
 
     // secrets
     userEvent.click(

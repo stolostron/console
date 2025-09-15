@@ -24,7 +24,7 @@ type Decorators =
       }
     }[]
 
-describe.skip('SyncEditor component', () => {
+describe('SyncEditor component', () => {
   afterAll(() => {
     jest.resetAllMocks()
   })
@@ -195,17 +195,16 @@ describe.skip('SyncEditor component', () => {
     i = input.value.indexOf(text)
     input.setSelectionRange(i, i + text.length)
     userEvent.type(input, 'newthing')
-    await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
+    await new Promise((resolve) => setTimeout(resolve, 2500)) // wait for debounce
 
     // make sure first user edit is still there
     // make sure form change is still there
     // make sure last user edit is still good
     // make sure decorators show what's protected
-    expect(get(onEditorChange.mock.calls, '1.0.resources.0.spec.disabled')).toBeFalsy()
-    expect(get(onEditorChange.mock.calls, '1.0.resources.0.metadata.annotations.test')).toBe('me')
-    expect(get(onEditorChange.mock.calls, '1.0.resources.1.spec.clusterSelector.matchExpressions.0.values.0')).toBe(
-      'newthing'
-    )
+    const lastChange = onEditorChange.mock.calls[onEditorChange.mock.calls.length - 1]
+    expect(get(lastChange, '0.resources.0.spec.disabled')).toBeFalsy()
+    expect(get(lastChange, '0.resources.0.metadata.annotations.test')).toBe('me')
+    expect(get(lastChange, '0.resources.1.spec.clusterSelector.matchExpressions.0.values.0')).toBe('newthing')
     const decorators = JSON.parse(input.dataset['decorators'] || '')
     expect(decorators).toEqual(protectedDecorators)
   })
