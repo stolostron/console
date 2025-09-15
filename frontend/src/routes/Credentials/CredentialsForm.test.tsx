@@ -76,7 +76,7 @@ describe('add credentials page', () => {
   })
 
   // Skipping AWS S3 credentials
-  it.skip('should create aws (Amazon Web Services) s3 credentials', async () => {
+  it('should create aws (Amazon Web Services) s3 credentials', async () => {
     render(<Component credentialsType={Provider.awss3} />)
     const providerConnection = createProviderConnection(
       'awss3',

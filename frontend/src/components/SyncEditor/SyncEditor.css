@@ -20,8 +20,9 @@
 .sync-editor__container .pf-v5-c-code-editor__header {
   font-size: 14px;
   font-weight: 600;
-  color: #ededed;
-  background-color: #25282c;
+  color: var(--pf-v5-c-label--Color);
+  background-color: var(--pf-v5-c-page__main-section--BackgroundColor);
+  border-bottom: 1px solid var(--pf-v5-global--BorderColor--100);
 }
 
 .sync-editor__container .pf-v5-c-code-editor__controls {
@@ -34,22 +35,22 @@
 }
 
 .sync-editor__container .pf-v5-c-code-editor__controls .pf-v5-c-button.pf-m-control {
-  background-color: #25282c;
+  background-color: var(--pf-v5-c-page__main-section--BackgroundColor);
 }
 
 .sync-editor__container .sy-toolbar-buttons .pf-v5-c-button.pf-m-plain,
 .pf-v5-c-code-editor__controls .pf-v5-c-button.pf-m-control:not([disabled]) {
-  color: #ededed;
+  color: var(--pf-v5-c-label--Color);
 }
-
+/* 
 .sync-editor__container .pf-v5-c-button::after {
   border: none;
   border-left: 1px solid #55585c;
-}
+} */
 
 .sync-editor__container .pf-v5-c-button:hover {
-  color: #ededed;
-  background-color: #25282c;
+  color: var(--pf-v5-c-label--Color);
+  background-color: var(--pf-v5-c-page__main-section--BackgroundColor);
 }
 
 .sync-editor__container .pf-v5-c-code-editor__main {
@@ -67,7 +68,6 @@
 }
 
 .filterDecoration {
-  /* color: #b0b0b0 !important; */
   cursor: pointer;
   user-select: auto;
 }
