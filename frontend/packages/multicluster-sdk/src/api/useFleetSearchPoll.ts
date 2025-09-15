@@ -291,7 +291,7 @@ export function useFleetSearchPoll<T extends K8sResourceCommon | K8sResourceComm
           case 'VirtualMachine.kubevirt.io': {
             setIfDefined(resource, 'spec.runStrategy', item.runStrategy)
             setIfDefined(resource, 'spec.template.spec.architecture', item.architecture)
-            setIfDefined(resource, 'spec.template.spec.domain.cpu.cores', item.cpu)
+            setIfDefined(resource, 'spec.template.spec.domain.cpu.cores', item.cpu, Number(item.cpu))
             setIfDefined(resource, 'spec.template.spec.domain.memory.guest', item.memory)
             setIfDefined(resource, 'spec.template.metadata.annotations["vm.kubevirt.io/flavor"]', item.flavor)
             setIfDefined(resource, 'spec.template.metadata.annotations["vm.kubevirt.io/os"]', item.osName)
@@ -335,9 +335,9 @@ export function useFleetSearchPoll<T extends K8sResourceCommon | K8sResourceComm
           }
 
           case 'VirtualMachineInstance.kubevirt.io': {
-            setIfDefined(resource, 'spec.domain.cpu.cores', item.cpu)
-            setIfDefined(resource, 'spec.domain.cpu.sockets', item.cpuSockets)
-            setIfDefined(resource, 'spec.domain.cpu.threads', item.cpuThreads)
+            setIfDefined(resource, 'spec.domain.cpu.cores', item.cpu, Number(item.cpu))
+            setIfDefined(resource, 'spec.domain.cpu.sockets', item.cpuSockets, Number(item.cpuSockets))
+            setIfDefined(resource, 'spec.domain.cpu.threads', item.cpuThreads, Number(item.cpuThreads))
             setIfDefined(resource, 'spec.domain.memory.guest', item.memory)
             if (!resource.status?.conditions) {
               const conditions: any = []
