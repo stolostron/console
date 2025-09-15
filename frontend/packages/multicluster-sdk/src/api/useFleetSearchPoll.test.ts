@@ -479,6 +479,7 @@ describe('useFleetSearchPoll', () => {
         osName: 'rhel',
         workload: 'app',
         runStrategy: 'Always',
+        architecture: 'amd64',
         condition: 'Ready=True; AgentConnected=True',
         dataVolumeNames: 'test-volume1; test-volume2',
         pvcClaimNames: 'test-claim1; test-claim2',
@@ -505,6 +506,7 @@ describe('useFleetSearchPoll', () => {
         runStrategy: 'Always',
         template: {
           spec: {
+            architecture: 'amd64',
             domain: {
               cpu: { cores: 2 },
               memory: { guest: '4Gi' },
@@ -615,6 +617,10 @@ describe('useFleetSearchPoll', () => {
         ...mockSearchResultItem,
         kind: 'VirtualMachineInstance',
         apigroup: 'kubevirt.io',
+        cpu: 4,
+        cpuSockets: 2,
+        cpuThreads: 2,
+        memory: '8Gi',
         liveMigratable: 'True',
         ready: 'True',
         ipaddress: '10.0.0.1',
@@ -640,6 +646,16 @@ describe('useFleetSearchPoll', () => {
       const { result } = renderHook(() => useFleetSearchPoll<any[]>(watchOptionsVMI))
 
       const [data] = result.current
+      expect(data?.[0].spec).toEqual({
+        domain: {
+          cpu: {
+            cores: 4,
+            sockets: 2,
+            threads: 2,
+          },
+          memory: { guest: '8Gi' },
+        },
+      })
       expect(data?.[0].status).toEqual({
         conditions: [
           { type: 'LiveMigratable', status: 'True' },
