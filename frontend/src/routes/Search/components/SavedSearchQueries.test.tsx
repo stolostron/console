@@ -364,8 +364,8 @@ describe('SavedSearchQueries Page', () => {
 
     // click export
     const suggestedActionItemBtns = screen.getAllByRole('menuitem')
-    expect(suggestedActionItemBtns[5]).toBeTruthy()
-    userEvent.click(suggestedActionItemBtns[5])
+    expect(suggestedActionItemBtns[1]).toBeTruthy()
+    userEvent.click(suggestedActionItemBtns[1])
 
     await waitForNocks([suggestedSearch])
   })
