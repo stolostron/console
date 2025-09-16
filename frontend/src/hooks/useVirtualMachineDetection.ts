@@ -16,7 +16,7 @@ interface UseVirtualMachineDetectionResult {
   isLoading: boolean
   /** Any error that occurred during the search */
   error?: Error
-  /** The raw virtual machines data (for debugging) */
+  /** Virtual machines data */
   virtualMachines?: any[]
 }
 

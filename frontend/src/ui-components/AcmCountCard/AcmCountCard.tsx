@@ -199,7 +199,7 @@ export const AcmCountCard = (props: AcmCountCardProps) => {
               <AcmIcon icon={AcmIconVariant.template} />
             </Icon>
           )}
-          <CardTitle onClick={(e) => props.alert && e.stopPropagation()}>
+          <CardTitle>
             {cardHeader.title} {props.alert}
           </CardTitle>
           <p className={classes.headerDescription}>{cardHeader.description}</p>

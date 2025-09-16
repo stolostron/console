@@ -7,12 +7,14 @@ import { OperatorAlert } from './OperatorAlert'
 import { SupportedOperator, useOperatorCheck } from '../lib/operatorCheck'
 import { useAllClusters } from '../routes/Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { useLocalHubName } from '../hooks/use-local-hub'
+import { useClusterVersion } from '../hooks/use-cluster-version'
 import { handleSemverOperatorComparison } from '../lib/search-utils'
 import { SearchOperator } from '../ui-components/AcmSearchInput'
-import { Button, Label, Popover } from '@patternfly/react-core'
+import { Button, Label, Popover, Tooltip } from '@patternfly/react-core'
 import { ExternalLinkAltIcon, InfoCircleIcon } from '@patternfly/react-icons'
 import { Link } from 'react-router-dom-v5-compat'
 import { AcmActionGroup } from '../ui-components/AcmActionGroup/AcmActionGroup'
+import { AcmButton } from '../ui-components'
 import { useMultiClusterHubConsoleUrl } from '../lib/ocp-utils'
 import { DOC_LINKS } from '../lib/doc-util'
 
@@ -31,7 +33,6 @@ export interface KubevirtProviderAlertProps {
 function isVersionLessThan420(version?: string): boolean {
   if (!version) return true // If no version, assume it's older
 
-  // Use existing repository helper function for semver comparison
   return handleSemverOperatorComparison(version, '4.20.0', SearchOperator.LessThan)
 }
 
@@ -51,7 +52,7 @@ function useClustersWithVirtualMachines() {
       isList: true,
     },
     undefined, // No cluster filter - search all clusters
-    30 // Poll every 30 seconds
+    120 // Poll every 120 seconds
   )
 
   const clustersWithVMsCount = useMemo(() => {
@@ -83,7 +84,7 @@ export function KubevirtProviderAlert(
     component: 'hint' | 'alert'
     className?: string
     description?: string
-    variant?: 'search' | 'clusterDetails'
+    variant: 'search' | 'clusterDetails'
     useLabelAlert?: boolean
   }>
 ) {
@@ -94,13 +95,20 @@ export function KubevirtProviderAlert(
   // Check if hub cluster is less than OCP v4.20
   const localHubName = useLocalHubName()
   const allClusters = useAllClusters(true)
+  const { version: clusterVersionFromAPI, isLoading: isClusterVersionLoading } = useClusterVersion()
   const isHubVersionLessThan420 = useMemo(() => {
+    // First try to use the direct ClusterVersion API result
+    if (clusterVersionFromAPI && !isClusterVersionLoading) {
+      return isVersionLessThan420(clusterVersionFromAPI)
+    }
+
+    // Fallback to the existing method if API call is still loading or failed
     const hubCluster = allClusters.find((cluster) => cluster.name === localHubName)
     if (!hubCluster) return true // If hub cluster not found, assume older version
 
     const version = hubCluster.distribution?.displayVersion || hubCluster.distribution?.ocp?.version
     return isVersionLessThan420(version)
-  }, [allClusters, localHubName])
+  }, [allClusters, localHubName, clusterVersionFromAPI, isClusterVersionLoading])
 
   const { component, className, variant } = props
   const multiClusterHubConsoleUrl = useMultiClusterHubConsoleUrl()
@@ -146,11 +154,6 @@ export function KubevirtProviderAlert(
     title = isHubVersionLessThan420 ? upgradeHubTitle : centrallyManageVmsTitle
   }
 
-  // Default message when no variant is set
-  if (showInstallPrompt && !variant) {
-    message = props.description || t('Install CNV to get more features.')
-  }
-
   // Create action links based on hub version and variant
   const getActionLinks = () => {
     if (!variant) return undefined
@@ -161,12 +164,16 @@ export function KubevirtProviderAlert(
           {t('Upgrade hub cluster')}
         </Button>
       </Link>
-    ) : (
-      <Link aria-disabled={!multiClusterHubConsoleUrl} to={multiClusterHubConsoleUrl ?? ''} target="_blank">
+    ) : multiClusterHubConsoleUrl ? (
+      <Link to={multiClusterHubConsoleUrl} target="_blank">
         <Button variant="link" isInline>
           {t('Edit MultiClusterHub')}
         </Button>
       </Link>
+    ) : (
+      <Tooltip content={t('rbac.unauthorized')}>
+        <span className="link-disabled">{t('Edit MultiClusterHub')}</span>
+      </Tooltip>
     )
 
     return (
@@ -195,7 +202,7 @@ export function KubevirtProviderAlert(
           <Button
             variant="primary"
             onClick={() => window.open('/settings/cluster/', '_blank')}
-            style={{ marginRight: '8px' }}
+            style={{ marginRight: '0.5em' }}
           >
             {t('Upgrade hub cluster')}
           </Button>
@@ -203,21 +210,22 @@ export function KubevirtProviderAlert(
       }
 
       return (
-        <Button
+        <AcmButton
           variant="primary"
           isDisabled={!multiClusterHubConsoleUrl}
           onClick={() => window.open(multiClusterHubConsoleUrl ?? '', '_blank')}
-          style={{ marginRight: '8px' }}
+          style={{ marginRight: '0.5em' }}
+          tooltip={!multiClusterHubConsoleUrl ? t('rbac.unauthorized') : undefined}
         >
           {t('Edit MultiClusterHub')}
-        </Button>
+        </AcmButton>
       )
     }
 
     const popoverActionLinks = (
-      <div style={{ marginTop: '16px' }}>
+      <div style={{ marginTop: '1em' }}>
         {getPopoverPrimaryButton()}
-        <Link to={DOC_LINKS.VIRTUALIZATION_DOC_BASE_PATH} target={'_blank'}>
+        <Link to={DOC_LINKS.VIRTUALIZATION_DOC_BASE_PATH} target={'_blank'} style={{ marginLeft: '1em' }}>
           <Button variant="link" icon={<ExternalLinkAltIcon />} iconPosition="right" isInline>
             {t('View documentation')}
           </Button>
@@ -226,24 +234,32 @@ export function KubevirtProviderAlert(
     )
 
     return (
-      <Popover
-        aria-label="Operator recommendation"
-        headerContent={title}
-        triggerAction="hover"
-        alertSeverityVariant="info"
-        headerIcon={<InfoCircleIcon />}
-        bodyContent={
-          <div>
-            <p>{message}</p>
-            {popoverActionLinks}
-          </div>
-        }
-        minWidth="30em"
+      <div
+        onClick={(e) => e.stopPropagation()}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => e.stopPropagation()}
+        aria-label="Alert"
       >
-        <Label color="blue" icon={<InfoCircleIcon />} isCompact>
-          {t('Operator recommended')}
-        </Label>
-      </Popover>
+        <Popover
+          aria-label="Operator recommendation"
+          headerContent={title}
+          triggerAction="click"
+          alertSeverityVariant="info"
+          headerIcon={<InfoCircleIcon />}
+          bodyContent={
+            <div>
+              <p>{message}</p>
+              {popoverActionLinks}
+            </div>
+          }
+          minWidth="30em"
+        >
+          <Label color="blue" icon={<InfoCircleIcon />} isCompact>
+            {t('Operator recommended')}
+          </Label>
+        </Popover>
+      </div>
     )
   }
 
@@ -253,7 +269,7 @@ export function KubevirtProviderAlert(
   // Default alert rendering
   return (
     <>
-      {!kubevirtOperator.pending && !isVMCountLoading && showInstallPrompt && (
+      {!kubevirtOperator.pending && !isVMCountLoading && showInstallPrompt && message && (
         <OperatorAlert {...{ component, message, operatorName, className, title, actionLinks }} isUpgrade={false} />
       )}
     </>

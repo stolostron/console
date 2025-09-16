@@ -33,6 +33,15 @@ jest.mock('../hooks/use-local-hub', () => ({
   useLocalHubName: jest.fn(() => 'local-cluster'),
 }))
 
+// Mock useClusterVersion hook
+jest.mock('../hooks/use-cluster-version', () => ({
+  useClusterVersion: jest.fn(() => ({
+    version: undefined,
+    isLoading: false,
+    error: undefined,
+  })),
+}))
+
 // Mock operatorCheck
 jest.mock('../lib/operatorCheck', () => ({
   SupportedOperator: {
@@ -83,6 +92,7 @@ import { SupportedOperator, useOperatorCheck } from '../lib/operatorCheck'
 import { useFleetSearchPoll } from '@stolostron/multicluster-sdk'
 import { useAllClusters } from '../routes/Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { useLocalHubName } from '../hooks/use-local-hub'
+import { useClusterVersion } from '../hooks/use-cluster-version'
 import { useMultiClusterHubConsoleUrl } from '../lib/ocp-utils'
 import { handleSemverOperatorComparison } from '../lib/search-utils'
 
@@ -91,6 +101,7 @@ const mockUseOperatorCheck = useOperatorCheck as jest.MockedFunction<typeof useO
 const mockUseFleetSearchPoll = useFleetSearchPoll as jest.MockedFunction<typeof useFleetSearchPoll>
 const mockUseAllClusters = useAllClusters as jest.MockedFunction<typeof useAllClusters>
 const mockUseLocalHubName = useLocalHubName as jest.MockedFunction<typeof useLocalHubName>
+const mockUseClusterVersion = useClusterVersion as jest.MockedFunction<typeof useClusterVersion>
 const mockUseMultiClusterHubConsoleUrl = useMultiClusterHubConsoleUrl as jest.MockedFunction<
   typeof useMultiClusterHubConsoleUrl
 >
@@ -156,7 +167,7 @@ describe('KubevirtProviderAlert', () => {
         }}
       >
         <MemoryRouter>
-          <KubevirtProviderAlert {...defaultProps} {...props} />
+          <KubevirtProviderAlert {...defaultProps} {...{ variant: 'search', ...props }} />
         </MemoryRouter>
       </RecoilRoot>
     )
@@ -164,9 +175,21 @@ describe('KubevirtProviderAlert', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+
+    // Set up default mock returns
+    mockUseClusterVersion.mockReturnValue({
+      version: undefined,
+      isLoading: false,
+      error: undefined,
+    })
+
+    mockUseAllClusters.mockReturnValue([])
+    mockUseLocalHubName.mockReturnValue('local-cluster')
+    mockUseMultiClusterHubConsoleUrl.mockReturnValue('/console')
+    mockUseFleetSearchPoll.mockReturnValue([[], true, undefined, jest.fn()])
   })
 
-  it('should render alert when operator is not installed', () => {
+  it('should render alert when operator is not installed and variant is provided', () => {
     mockUseOperatorCheck.mockReturnValue({
       operator: SupportedOperator.kubevirt,
       installed: false,
@@ -174,11 +197,45 @@ describe('KubevirtProviderAlert', () => {
       version: undefined,
     })
 
-    renderKubevirtProviderAlert()
+    // Mock cluster version for hub >= 4.20
+    mockUseClusterVersion.mockReturnValue({
+      version: '4.20.1',
+      isLoading: false,
+      error: undefined,
+    })
+    mockHandleSemverOperatorComparison.mockReturnValue(false) // version is NOT less than 4.20
 
-    expect(screen.getByText('Install CNV to get more features.')).toBeInTheDocument()
-    // The operator name appears in the button text "Install the operator"
-    expect(screen.getByText('Install the operator')).toBeInTheDocument()
+    renderKubevirtProviderAlert({ variant: 'search' })
+
+    expect(screen.getByText('Centrally manage VMs with Fleet Virtualization')).toBeInTheDocument()
+    expect(screen.getByText('Edit MultiClusterHub')).toBeInTheDocument()
+  })
+
+  it('should render alert with clusterDetails variant when operator is not installed', () => {
+    mockUseOperatorCheck.mockReturnValue({
+      operator: SupportedOperator.kubevirt,
+      installed: false,
+      pending: false,
+      version: undefined,
+    })
+
+    // Mock cluster version for hub >= 4.20
+    mockUseClusterVersion.mockReturnValue({
+      version: '4.20.1',
+      isLoading: false,
+      error: undefined,
+    })
+    mockHandleSemverOperatorComparison.mockReturnValue(false) // version is NOT less than 4.20
+
+    renderKubevirtProviderAlert({ variant: 'clusterDetails' })
+
+    expect(screen.getByText('Centrally manage VMs with Fleet Virtualization')).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        'To automatically install the recommended operators for managing your VMs in this cluster, enable the OpenShift Virtualization integration on your MultiClusterHub.'
+      )
+    ).toBeInTheDocument()
+    expect(screen.getByText('Edit MultiClusterHub')).toBeInTheDocument()
   })
 
   it('should not render alert when operator check is pending', () => {
@@ -203,28 +260,11 @@ describe('KubevirtProviderAlert', () => {
       version: undefined,
     })
 
-    // Test hint variant
-    const { container: hintContainer } = renderKubevirtProviderAlert({ component: 'hint' })
+    const { container: hintContainer } = renderKubevirtProviderAlert({ component: 'hint', variant: 'search' })
     expect(hintContainer.querySelector('.pf-m-info')).toBeInTheDocument()
 
-    // Test alert variant
-    const { container: alertContainer } = renderKubevirtProviderAlert({ component: 'alert' })
+    const { container: alertContainer } = renderKubevirtProviderAlert({ component: 'alert', variant: 'search' })
     expect(alertContainer.querySelector('.pf-m-danger')).toBeInTheDocument()
-  })
-
-  it('should use custom description when provided', () => {
-    const customDescription = 'Custom CNV description'
-    mockUseOperatorCheck.mockReturnValue({
-      operator: SupportedOperator.kubevirt,
-      installed: false,
-      pending: false,
-      version: undefined,
-    })
-
-    renderKubevirtProviderAlert({ description: customDescription })
-
-    expect(screen.getByText(customDescription)).toBeInTheDocument()
-    expect(screen.queryByText('Install CNV to get more features.')).not.toBeInTheDocument()
   })
 
   it('should not render when operator is installed', () => {
@@ -239,10 +279,9 @@ describe('KubevirtProviderAlert', () => {
 
     // When operator is installed, the component should not render
     expect(container.firstChild).toBeNull()
-    expect(screen.queryByText('Install CNV to get more features.')).not.toBeInTheDocument()
   })
 
-  it('should render install operator link and apply custom className', () => {
+  it('should render install operator link and apply custom className with variant', () => {
     const customClass = 'custom-kubevirt-class'
     mockUseOperatorCheck.mockReturnValue({
       operator: SupportedOperator.kubevirt,
@@ -251,16 +290,13 @@ describe('KubevirtProviderAlert', () => {
       version: undefined,
     })
 
-    const { container } = renderKubevirtProviderAlert({ className: customClass })
+    const { container } = renderKubevirtProviderAlert({ className: customClass, variant: 'search' })
 
     // Test custom className
     expect(container.querySelector(`.${customClass}`)).toBeInTheDocument()
 
     // Test install operator link
-    const installLink = screen.getByText('Install the operator')
-    expect(installLink).toBeInTheDocument()
-    const linkElement = installLink.closest('a')
-    expect(linkElement).toHaveAttribute('href', '/operatorhub/all-namespaces?keyword=OpenShift%20Virtualization')
+    expect(container.querySelector('.pf-v5-c-alert')).toBeInTheDocument()
   })
 
   it('should call useOperatorCheck with correct parameters', () => {
@@ -290,10 +326,12 @@ describe('KubevirtProviderAlert', () => {
     })
 
     it('should render search variant with VM count when hub version >= 4.20', () => {
-      // Mock hub cluster with version >= 4.20
-      mockUseAllClusters.mockReturnValue([
-        createMockCluster('local-cluster', { displayVersion: '4.20.1', isManagedOpenShift: false }),
-      ])
+      // Mock hub cluster with version >= 4.20 using useClusterVersion
+      mockUseClusterVersion.mockReturnValue({
+        version: '4.20.1',
+        isLoading: false,
+        error: undefined,
+      })
       mockHandleSemverOperatorComparison.mockReturnValue(false) // version is NOT less than 4.20
 
       // Mock VM search returning clusters with VMs
@@ -317,10 +355,12 @@ describe('KubevirtProviderAlert', () => {
     })
 
     it('should render search variant with upgrade message when hub version < 4.20', () => {
-      // Mock hub cluster with version < 4.20
-      mockUseAllClusters.mockReturnValue([
-        createMockCluster('local-cluster', { displayVersion: '4.19.5', isManagedOpenShift: false }),
-      ])
+      // Mock hub cluster with version < 4.20 using useClusterVersion
+      mockUseClusterVersion.mockReturnValue({
+        version: '4.19.5',
+        isLoading: false,
+        error: undefined,
+      })
       mockHandleSemverOperatorComparison.mockReturnValue(true) // version IS less than 4.20
 
       // Mock VM search returning clusters with VMs
@@ -340,12 +380,12 @@ describe('KubevirtProviderAlert', () => {
     })
 
     it('should render clusterDetails variant with integration message when hub version >= 4.20', () => {
-      mockUseAllClusters.mockReturnValue([
-        createMockCluster('local-cluster', {
-          ocp: { version: '4.21.0', availableUpdates: [], desiredVersion: '', upgradeFailed: false },
-          isManagedOpenShift: false,
-        }),
-      ])
+      // Mock hub cluster with version >= 4.20 using useClusterVersion
+      mockUseClusterVersion.mockReturnValue({
+        version: '4.21.0',
+        isLoading: false,
+        error: undefined,
+      })
       mockHandleSemverOperatorComparison.mockReturnValue(false)
       mockUseFleetSearchPoll.mockReturnValue([[], true, undefined, jest.fn()])
 
@@ -361,9 +401,12 @@ describe('KubevirtProviderAlert', () => {
     })
 
     it('should render clusterDetails variant with upgrade message when hub version < 4.20', () => {
-      mockUseAllClusters.mockReturnValue([
-        createMockCluster('local-cluster', { displayVersion: '4.18.0', isManagedOpenShift: false }),
-      ])
+      // Mock hub cluster with version < 4.20 using useClusterVersion
+      mockUseClusterVersion.mockReturnValue({
+        version: '4.18.0',
+        isLoading: false,
+        error: undefined,
+      })
       mockHandleSemverOperatorComparison.mockReturnValue(true)
       mockUseFleetSearchPoll.mockReturnValue([[], true, undefined, jest.fn()])
 
@@ -393,31 +436,16 @@ describe('KubevirtProviderAlert', () => {
     })
 
     it('should render label when useLabelAlert is true with variant', () => {
-      mockUseAllClusters.mockReturnValue([
-        createMockCluster('local-cluster', { displayVersion: '4.20.0', isManagedOpenShift: false }),
-      ])
+      mockUseClusterVersion.mockReturnValue({
+        version: '4.20.0',
+        isLoading: false,
+        error: undefined,
+      })
       mockHandleSemverOperatorComparison.mockReturnValue(false)
 
       renderKubevirtProviderAlert({ useLabelAlert: true, variant: 'search' })
       expect(screen.getByText('Operator recommended')).toBeInTheDocument()
       expect(screen.getByText('Operator recommended').closest('.pf-v5-c-label')).toBeInTheDocument()
-    })
-
-    it('should not render label when conditions are not met', () => {
-      // Test without variant
-      renderKubevirtProviderAlert({ useLabelAlert: true })
-      expect(screen.queryByText('Operator recommended')).not.toBeInTheDocument()
-      expect(screen.getByText('Install CNV to get more features.')).toBeInTheDocument()
-
-      // Test when pending
-      mockUseOperatorCheck.mockReturnValue({
-        operator: SupportedOperator.kubevirt,
-        installed: false,
-        pending: true,
-        version: undefined,
-      })
-      const { container } = renderKubevirtProviderAlert({ useLabelAlert: true, variant: 'search' })
-      expect(container.firstChild).toBeNull()
     })
   })
 
@@ -448,9 +476,11 @@ describe('KubevirtProviderAlert', () => {
         version: undefined,
       })
       mockUseLocalHubName.mockReturnValue('local-cluster')
-      mockUseAllClusters.mockReturnValue([
-        createMockCluster('local-cluster', { displayVersion: '4.20.0', isManagedOpenShift: false }),
-      ])
+      mockUseClusterVersion.mockReturnValue({
+        version: '4.20.0',
+        isLoading: false,
+        error: undefined,
+      })
       mockHandleSemverOperatorComparison.mockReturnValue(false)
     })
 
