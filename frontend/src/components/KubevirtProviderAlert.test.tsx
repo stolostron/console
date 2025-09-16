@@ -33,6 +33,15 @@ jest.mock('../hooks/use-local-hub', () => ({
   useLocalHubName: jest.fn(() => 'local-cluster'),
 }))
 
+// Mock useClusterVersion hook
+jest.mock('../hooks/use-cluster-version', () => ({
+  useClusterVersion: jest.fn(() => ({
+    version: undefined,
+    isLoading: false,
+    error: undefined,
+  })),
+}))
+
 // Mock operatorCheck
 jest.mock('../lib/operatorCheck', () => ({
   SupportedOperator: {
@@ -83,6 +92,7 @@ import { SupportedOperator, useOperatorCheck } from '../lib/operatorCheck'
 import { useFleetSearchPoll } from '@stolostron/multicluster-sdk'
 import { useAllClusters } from '../routes/Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { useLocalHubName } from '../hooks/use-local-hub'
+import { useClusterVersion } from '../hooks/use-cluster-version'
 import { useMultiClusterHubConsoleUrl } from '../lib/ocp-utils'
 import { handleSemverOperatorComparison } from '../lib/search-utils'
 
@@ -91,6 +101,7 @@ const mockUseOperatorCheck = useOperatorCheck as jest.MockedFunction<typeof useO
 const mockUseFleetSearchPoll = useFleetSearchPoll as jest.MockedFunction<typeof useFleetSearchPoll>
 const mockUseAllClusters = useAllClusters as jest.MockedFunction<typeof useAllClusters>
 const mockUseLocalHubName = useLocalHubName as jest.MockedFunction<typeof useLocalHubName>
+const mockUseClusterVersion = useClusterVersion as jest.MockedFunction<typeof useClusterVersion>
 const mockUseMultiClusterHubConsoleUrl = useMultiClusterHubConsoleUrl as jest.MockedFunction<
   typeof useMultiClusterHubConsoleUrl
 >
@@ -164,6 +175,18 @@ describe('KubevirtProviderAlert', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+
+    // Set up default mock returns
+    mockUseClusterVersion.mockReturnValue({
+      version: undefined,
+      isLoading: false,
+      error: undefined,
+    })
+
+    mockUseAllClusters.mockReturnValue([])
+    mockUseLocalHubName.mockReturnValue('local-cluster')
+    mockUseMultiClusterHubConsoleUrl.mockReturnValue('/console')
+    mockUseFleetSearchPoll.mockReturnValue([[], true, undefined, jest.fn()])
   })
 
   it('should render alert when operator is not installed', () => {
@@ -290,10 +313,12 @@ describe('KubevirtProviderAlert', () => {
     })
 
     it('should render search variant with VM count when hub version >= 4.20', () => {
-      // Mock hub cluster with version >= 4.20
-      mockUseAllClusters.mockReturnValue([
-        createMockCluster('local-cluster', { displayVersion: '4.20.1', isManagedOpenShift: false }),
-      ])
+      // Mock hub cluster with version >= 4.20 using useClusterVersion
+      mockUseClusterVersion.mockReturnValue({
+        version: '4.20.1',
+        isLoading: false,
+        error: undefined,
+      })
       mockHandleSemverOperatorComparison.mockReturnValue(false) // version is NOT less than 4.20
 
       // Mock VM search returning clusters with VMs
@@ -317,10 +342,12 @@ describe('KubevirtProviderAlert', () => {
     })
 
     it('should render search variant with upgrade message when hub version < 4.20', () => {
-      // Mock hub cluster with version < 4.20
-      mockUseAllClusters.mockReturnValue([
-        createMockCluster('local-cluster', { displayVersion: '4.19.5', isManagedOpenShift: false }),
-      ])
+      // Mock hub cluster with version < 4.20 using useClusterVersion
+      mockUseClusterVersion.mockReturnValue({
+        version: '4.19.5',
+        isLoading: false,
+        error: undefined,
+      })
       mockHandleSemverOperatorComparison.mockReturnValue(true) // version IS less than 4.20
 
       // Mock VM search returning clusters with VMs
@@ -340,12 +367,12 @@ describe('KubevirtProviderAlert', () => {
     })
 
     it('should render clusterDetails variant with integration message when hub version >= 4.20', () => {
-      mockUseAllClusters.mockReturnValue([
-        createMockCluster('local-cluster', {
-          ocp: { version: '4.21.0', availableUpdates: [], desiredVersion: '', upgradeFailed: false },
-          isManagedOpenShift: false,
-        }),
-      ])
+      // Mock hub cluster with version >= 4.20 using useClusterVersion
+      mockUseClusterVersion.mockReturnValue({
+        version: '4.21.0',
+        isLoading: false,
+        error: undefined,
+      })
       mockHandleSemverOperatorComparison.mockReturnValue(false)
       mockUseFleetSearchPoll.mockReturnValue([[], true, undefined, jest.fn()])
 
@@ -361,9 +388,12 @@ describe('KubevirtProviderAlert', () => {
     })
 
     it('should render clusterDetails variant with upgrade message when hub version < 4.20', () => {
-      mockUseAllClusters.mockReturnValue([
-        createMockCluster('local-cluster', { displayVersion: '4.18.0', isManagedOpenShift: false }),
-      ])
+      // Mock hub cluster with version < 4.20 using useClusterVersion
+      mockUseClusterVersion.mockReturnValue({
+        version: '4.18.0',
+        isLoading: false,
+        error: undefined,
+      })
       mockHandleSemverOperatorComparison.mockReturnValue(true)
       mockUseFleetSearchPoll.mockReturnValue([[], true, undefined, jest.fn()])
 
@@ -393,9 +423,11 @@ describe('KubevirtProviderAlert', () => {
     })
 
     it('should render label when useLabelAlert is true with variant', () => {
-      mockUseAllClusters.mockReturnValue([
-        createMockCluster('local-cluster', { displayVersion: '4.20.0', isManagedOpenShift: false }),
-      ])
+      mockUseClusterVersion.mockReturnValue({
+        version: '4.20.0',
+        isLoading: false,
+        error: undefined,
+      })
       mockHandleSemverOperatorComparison.mockReturnValue(false)
 
       renderKubevirtProviderAlert({ useLabelAlert: true, variant: 'search' })
@@ -448,9 +480,11 @@ describe('KubevirtProviderAlert', () => {
         version: undefined,
       })
       mockUseLocalHubName.mockReturnValue('local-cluster')
-      mockUseAllClusters.mockReturnValue([
-        createMockCluster('local-cluster', { displayVersion: '4.20.0', isManagedOpenShift: false }),
-      ])
+      mockUseClusterVersion.mockReturnValue({
+        version: '4.20.0',
+        isLoading: false,
+        error: undefined,
+      })
       mockHandleSemverOperatorComparison.mockReturnValue(false)
     })
 

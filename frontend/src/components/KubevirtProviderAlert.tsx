@@ -7,6 +7,7 @@ import { OperatorAlert } from './OperatorAlert'
 import { SupportedOperator, useOperatorCheck } from '../lib/operatorCheck'
 import { useAllClusters } from '../routes/Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { useLocalHubName } from '../hooks/use-local-hub'
+import { useClusterVersion } from '../hooks/use-cluster-version'
 import { handleSemverOperatorComparison } from '../lib/search-utils'
 import { SearchOperator } from '../ui-components/AcmSearchInput'
 import { Button, Label, Popover } from '@patternfly/react-core'
@@ -31,7 +32,6 @@ export interface KubevirtProviderAlertProps {
 function isVersionLessThan420(version?: string): boolean {
   if (!version) return true // If no version, assume it's older
 
-  // Use existing repository helper function for semver comparison
   return handleSemverOperatorComparison(version, '4.20.0', SearchOperator.LessThan)
 }
 
@@ -51,7 +51,7 @@ function useClustersWithVirtualMachines() {
       isList: true,
     },
     undefined, // No cluster filter - search all clusters
-    30 // Poll every 30 seconds
+    120 // Poll every 120 seconds
   )
 
   const clustersWithVMsCount = useMemo(() => {
@@ -94,13 +94,20 @@ export function KubevirtProviderAlert(
   // Check if hub cluster is less than OCP v4.20
   const localHubName = useLocalHubName()
   const allClusters = useAllClusters(true)
+  const { version: clusterVersionFromAPI, isLoading: isClusterVersionLoading } = useClusterVersion()
   const isHubVersionLessThan420 = useMemo(() => {
+    // First try to use the direct ClusterVersion API result
+    if (clusterVersionFromAPI && !isClusterVersionLoading) {
+      return isVersionLessThan420(clusterVersionFromAPI)
+    }
+
+    // Fallback to the existing method if API call is still loading or failed
     const hubCluster = allClusters.find((cluster) => cluster.name === localHubName)
     if (!hubCluster) return true // If hub cluster not found, assume older version
 
     const version = hubCluster.distribution?.displayVersion || hubCluster.distribution?.ocp?.version
     return isVersionLessThan420(version)
-  }, [allClusters, localHubName])
+  }, [allClusters, localHubName, clusterVersionFromAPI, isClusterVersionLoading])
 
   const { component, className, variant } = props
   const multiClusterHubConsoleUrl = useMultiClusterHubConsoleUrl()
