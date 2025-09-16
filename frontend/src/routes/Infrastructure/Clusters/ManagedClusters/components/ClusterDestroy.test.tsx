@@ -4,7 +4,7 @@ import { Cluster, ClusterStatus } from '../../../../../resources/utils'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { nockIgnoreRBAC } from '../../../../../lib/nock-util'
+import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../../lib/nock-util'
 import { ClusterDestroy } from './ClusterDestroy'
 import { Provider } from '../../../../../ui-components'
 
@@ -147,6 +147,7 @@ describe('ClusterDestroy', () => {
   })
   test('renders success state', async () => {
     nockIgnoreRBAC()
+    nockIgnoreApiPaths()
     render(
       <RecoilRoot>
         <MemoryRouter>

@@ -3,6 +3,7 @@
 'use strict'
 
 import i18n from 'i18next'
+import { v4 as uuidv4 } from 'uuid'
 import {
   addIngressNodeInfo,
   addNodeInfoPerCluster,
@@ -22,7 +23,15 @@ import {
   processResourceActionLink,
   removeReleaseGeneratedSuffix,
 } from './diagram-helpers'
-import { nockIgnoreApiPaths } from '../../../../../lib/nock-util'
+import { nockIgnoreApiPaths, nockList, nockOff } from '../../../../../lib/nock-util'
+
+// Mock UUID v4 to return predictable values during testing
+jest.mock('uuid', () => ({
+  v4: jest.fn(),
+}))
+
+const mockUuidV4 = jest.mocked(uuidv4)
+const MOCKED_UUID = 'test-action-uuid-12345'
 
 const t = i18n.t.bind(i18n)
 
@@ -1341,6 +1350,14 @@ describe('processResourceActionLink open argo editor', () => {
   }
   const result = ''
   it('processResourceActionLink open argo editor', () => {
+    const listRoutes = {
+      apiVersion: 'route.openshift.io/v1',
+      kind: 'routes',
+      metadata: {
+        namespace: 'argo_test',
+      },
+    }
+    nockList(listRoutes) // get all 'routes' in 'argo_test' namespace
     expect(processResourceActionLink(genericLink, () => {}, t, 'local-cluster')).toEqual(result)
   })
 })
@@ -1348,6 +1365,8 @@ describe('processResourceActionLink open argo editor', () => {
 describe('processResourceActionLink open route url', () => {
   beforeEach(() => {
     nockIgnoreApiPaths()
+    mockUuidV4.mockReset()
+    mockUuidV4.mockReturnValue(MOCKED_UUID)
   })
   const genericLink = {
     action: 'open_route_url',
@@ -1357,6 +1376,7 @@ describe('processResourceActionLink open route url', () => {
   }
   const result = ''
   it('processResourceActionLink open route url', () => {
+    nockOff(`/apis/view.open-cluster-management.io/v1beta1/managedclusterviews/${MOCKED_UUID}`, 'listViewname1')
     expect(processResourceActionLink(genericLink, () => {}, t, 'local-cluster')).toEqual(result)
   })
 })

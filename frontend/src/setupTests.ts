@@ -174,14 +174,6 @@ expect.extend({
           msgs.push(`'${nock}' ${source.trim()}`)
         })
       }
-      if (completedNocks.length) {
-        msgs.push('\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-        msgs.push('!!!!!!!!!!!!!!!! COMPLETED NOCK(S) !!!!!!!!!!!!!!!!!!!!!!!!')
-        msgs.push('!!! THESE nocks were used to satisfy requests:')
-        completedNocks.forEach(({ nock, source }) => {
-          msgs.push(`'${nock}' ${source.trim()}`)
-        })
-      }
     }
 
     const message: () => string = () => msgs.join('\n')
@@ -237,10 +229,9 @@ function setupBeforeEach(): void {
 }
 
 async function setupAfterEach(): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve, 100))
   expect(missingNocks).hasNoMissingNocks()
   expect(missingNocks).hasNoPendingNocks()
-  // expect(consoleErrors).toEqual([])
-  // expect(consoleWarnings).toEqual([])
 }
 
 async function setupAfterEachNock(): Promise<void> {
