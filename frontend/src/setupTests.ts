@@ -120,14 +120,13 @@ expect.extend({
 
       const mismatchedNocks: any[] = []
       const pendingNocks: any[] = []
-      const completedNocks: any[] = []
       window.pendingNocks.forEach((nock) => {
-        if (nock.scope.isDone()) {
-          completedNocks.push(nock)
-        } else if (get(nock.scope, 'bodyDiff')) {
-          mismatchedNocks.push(nock)
-        } else {
-          pendingNocks.push(nock)
+        if (!nock.scope.isDone()) {
+          if (get(nock.scope, 'bodyDiff')) {
+            mismatchedNocks.push(nock)
+          } else {
+            pendingNocks.push(nock)
+          }
         }
       })
       const { dataMocks, funcMocks } = window.getNockShot(nocks, true)
