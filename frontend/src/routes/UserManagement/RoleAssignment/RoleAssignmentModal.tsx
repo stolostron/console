@@ -49,7 +49,12 @@ const RoleAssignmentModal = ({ close, isOpen, isEditing, preselected }: RoleAssi
     }[] = data.roles.map((role) => ({
       roleAssignment: {
         clusterRole: role,
-        clusterSets: data.scope.kind === 'specific' ? data.scope.values! : undefined,
+        clusterSelection: {
+          type: 'clusterNames' as const,
+          clusterNames: data.scope.kind === 'specific' ? data.scope.clusterNames || [] : [],
+        },
+        targetNamespaces:
+          data.scope.kind === 'specific' && data.scope.namespaces?.length ? data.scope.namespaces : undefined,
       },
       subject: {
         name: (data.subject.kind === UserKind ? data.subject.user : data.subject.group) ?? '',

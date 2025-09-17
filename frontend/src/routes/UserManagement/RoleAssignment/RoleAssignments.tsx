@@ -27,7 +27,7 @@ import { RoleAssignmentStatusComponent } from './RoleAssignmentStatusComponent'
 type RoleAssignmentsProps = {
   roleAssignments: FlattenedRoleAssignment[]
   isLoading?: boolean
-  hiddenColumns?: ('subject' | 'role' | 'clusters' | 'clusterSets')[]
+  hiddenColumns?: ('subject' | 'role' | 'clusters')[]
   isCreateButtonHidden?: boolean
   preselected: RoleAssignmentPreselected
 }
@@ -100,7 +100,7 @@ const RoleAssignments = ({
   const filters = useMemo<ITableFilter<FlattenedRoleAssignment>[]>(() => {
     // Get all unique values for filter options
     const allRoles = new Set<string>()
-    const allClusterSets = new Set<string>()
+    const allClusters = new Set<string>()
     const allNamespaces = new Set<string>()
     const allStatuses = new Set<string>()
 
@@ -113,9 +113,10 @@ const RoleAssignments = ({
         allStatuses.add(roleAssignment.status.status)
       }
 
-      // Add cluster sets and target namespaces
-      roleAssignment.clusterSets?.forEach((clusterSet) => {
-        allClusterSets.add(clusterSet)
+      // Add cluster names and target namespaces
+      const clusterNames = roleAssignment.clusterSelection?.clusterNames || []
+      clusterNames.forEach((clusterName) => {
+        allClusters.add(clusterName)
       })
       roleAssignment.targetNamespaces?.forEach((namespace) => {
         allNamespaces.add(namespace)
@@ -126,9 +127,9 @@ const RoleAssignments = ({
     const roleOptions = Array.from(allRoles)
       .sort((a, b) => a.localeCompare(b))
       .map((role) => ({ label: role, value: role }))
-    const clusterSetOptions = Array.from(allClusterSets)
+    const clusterOptions = Array.from(allClusters)
       .sort((a, b) => a.localeCompare(b))
-      .map((clusterSet) => ({ label: clusterSet, value: clusterSet }))
+      .map((cluster) => ({ label: cluster, value: cluster }))
     const namespaceOptions = Array.from(allNamespaces)
       .sort((a, b) => a.localeCompare(b))
       .map((namespace) => ({ label: namespace, value: namespace }))
@@ -144,11 +145,13 @@ const RoleAssignments = ({
         tableFilterFn: (selectedValues, roleAssignment) => selectedValues.includes(roleAssignment.clusterRole),
       },
       {
-        id: 'clusterSet',
-        label: t('Cluster Set'),
-        options: clusterSetOptions,
-        tableFilterFn: (selectedValues, roleAssignment) =>
-          selectedValues.some((selectedClusterSet) => roleAssignment.clusterSets?.includes(selectedClusterSet)),
+        id: 'clusters',
+        label: t('Clusters'),
+        options: clusterOptions,
+        tableFilterFn: (selectedValues, roleAssignment) => {
+          const clusterNames = roleAssignment.clusterSelection?.clusterNames || []
+          return selectedValues.some((selectedClusterName) => clusterNames.includes(selectedClusterName))
+        },
       },
       {
         id: 'namespace',
@@ -197,15 +200,15 @@ const RoleAssignments = ({
       isHidden: hiddenColumns?.includes('subject'),
     },
     {
-      header: t('Cluster Sets'),
-      cell: (roleAssignment) => <RoleAssignmentLabel elements={roleAssignment.clusterSets} numLabel={3} />,
-      exportContent: (roleAssignment) => roleAssignment.clusterSets.join(', '),
-      isHidden: hiddenColumns?.includes('clusterSets'),
-    },
-    {
       header: t('Clusters'),
-      cell: (roleAssignment) => <RoleAssignmentLabel elements={roleAssignment.clusters} numLabel={3} />,
-      exportContent: (roleAssignment) => roleAssignment.clusters?.join(', ') ?? '',
+      cell: (roleAssignment) => {
+        const clusterNames = roleAssignment.clusterSelection?.clusterNames || []
+        return <RoleAssignmentLabel elements={clusterNames} numLabel={3} />
+      },
+      exportContent: (roleAssignment) => {
+        const clusterNames = roleAssignment.clusterSelection?.clusterNames || []
+        return clusterNames.join(', ')
+      },
       isHidden: hiddenColumns?.includes('clusters'),
     },
     {

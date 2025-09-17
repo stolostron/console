@@ -13,7 +13,8 @@ type RoleAssignmentFormDataType = {
   }
   scope: {
     kind: 'all' | 'specific'
-    values?: string[]
+    clusterNames?: string[]
+    namespaces?: string[]
   }
   roles: string[]
 }
@@ -30,6 +31,7 @@ const useRoleAssignmentFormData = (preselected?: RoleAssignmentPreselected) => {
     subject: { kind: UserKind },
     scope: {
       kind: 'all',
+      clusterNames: [],
     },
     roles: [],
   })
@@ -79,12 +81,22 @@ const useRoleAssignmentFormData = (preselected?: RoleAssignmentPreselected) => {
       },
     })
 
-  const onChangeScopeValues = (values: string[]) =>
+  const onChangeScopeValues = (values: string[]) => {
     setRoleAssignmentFormData({
       ...roleAssignmentFormData,
       scope: {
         ...roleAssignmentFormData.scope,
-        values,
+        clusterNames: values,
+      },
+    })
+  }
+
+  const onChangeScopeNamespaces = (namespaces: string[]) =>
+    setRoleAssignmentFormData({
+      ...roleAssignmentFormData,
+      scope: {
+        ...roleAssignmentFormData.scope,
+        namespaces,
       },
     })
 
@@ -134,6 +146,7 @@ const useRoleAssignmentFormData = (preselected?: RoleAssignmentPreselected) => {
     onChangeGroupValue,
     onChangeScopeKind,
     onChangeScopeValues,
+    onChangeScopeNamespaces,
     onChangeRoles,
   }
 }

@@ -13,6 +13,42 @@ import { MulticlusterRoleAssignment } from '../../../resources/multicluster-role
 import { AcmToastContext } from '../../../ui-components'
 import { RoleAssignments } from './RoleAssignments'
 
+// Mock Apollo Client
+jest.mock('@apollo/client', () => ({
+  ...jest.requireActual('@apollo/client'),
+  useQuery: jest.fn(() => ({
+    data: undefined,
+    loading: false,
+    error: undefined,
+  })),
+  useLazyQuery: jest.fn(() => [
+    jest.fn(),
+    {
+      data: undefined,
+      loading: false,
+      error: undefined,
+    },
+  ]),
+}))
+
+// Mock the RoleAssignmentDataHook to avoid Apollo Client issues
+jest.mock('./hook/RoleAssignmentDataHook', () => ({
+  useRoleAssignmentData: jest.fn(() => ({
+    roleAssignmentData: {
+      users: [],
+      groups: [],
+      serviceAccounts: [],
+      roles: [],
+      clusters: [],
+    },
+    isLoading: false,
+    isUsersLoading: false,
+    isGroupsLoading: false,
+    isRolesLoading: false,
+    isClusterSetLoading: false,
+  })),
+}))
+
 // Mock multicluster role assignments data
 const mockMulticlusterRoleAssignments: MulticlusterRoleAssignment[] = [
   {
@@ -30,13 +66,19 @@ const mockMulticlusterRoleAssignments: MulticlusterRoleAssignment[] = [
           name: 'A1',
           clusterRole: 'admin',
           targetNamespaces: ['default', 'kube-system'],
-          clusterSets: ['test-cluster-1'],
+          clusterSelection: {
+            type: 'clusterNames',
+            clusterNames: ['test-cluster-1'],
+          },
         },
         {
           name: 'A2',
           clusterRole: 'cluster-admin',
           targetNamespaces: ['monitoring'],
-          clusterSets: ['test-cluster-2'],
+          clusterSelection: {
+            type: 'clusterNames',
+            clusterNames: ['test-cluster-2'],
+          },
         },
       ],
     },
@@ -68,7 +110,10 @@ const mockMulticlusterRoleAssignments: MulticlusterRoleAssignment[] = [
           name: 'B1',
           clusterRole: 'developer',
           targetNamespaces: ['app-namespace'],
-          clusterSets: ['dev-cluster'],
+          clusterSelection: {
+            type: 'clusterNames',
+            clusterNames: ['dev-cluster'],
+          },
         },
       ],
     },
@@ -95,7 +140,10 @@ const mockMulticlusterRoleAssignments: MulticlusterRoleAssignment[] = [
           name: 'C1',
           clusterRole: 'viewer',
           targetNamespaces: ['staging-ns-1', 'staging-ns-2'],
-          clusterSets: ['staging-cluster'],
+          clusterSelection: {
+            type: 'clusterNames',
+            clusterNames: ['staging-cluster'],
+          },
         },
       ],
     },
@@ -108,43 +156,55 @@ const mockRoleAssignments: FlattenedRoleAssignment[] = [
     name: 'A1',
     clusterRole: 'admin',
     targetNamespaces: ['default', 'kube-system'],
-    clusterSets: ['test-cluster-1'],
+    clusterSelection: {
+      type: 'clusterNames',
+      clusterNames: ['test-cluster-1'],
+    },
     relatedMulticlusterRoleAssignment: mockMulticlusterRoleAssignments[0],
     subject: {
       name: mockMulticlusterRoleAssignments[0].spec.subject.name,
       kind: mockMulticlusterRoleAssignments[0].spec.subject.kind,
     },
-    status: mockMulticlusterRoleAssignments[0].status.roleAssignments?.[0],
+    status: mockMulticlusterRoleAssignments[0].status?.roleAssignments?.[0],
   },
   {
     name: 'A2',
     clusterRole: 'cluster-admin',
     targetNamespaces: ['monitoring'],
-    clusterSets: ['test-cluster-2'],
+    clusterSelection: {
+      type: 'clusterNames',
+      clusterNames: ['test-cluster-2'],
+    },
     relatedMulticlusterRoleAssignment: mockMulticlusterRoleAssignments[0],
     subject: {
       name: mockMulticlusterRoleAssignments[0].spec.subject.name,
       kind: mockMulticlusterRoleAssignments[0].spec.subject.kind,
     },
-    status: mockMulticlusterRoleAssignments[0].status.roleAssignments?.[1],
+    status: mockMulticlusterRoleAssignments[0].status?.roleAssignments?.[1],
   },
   {
     name: 'B1',
     clusterRole: 'developer',
     targetNamespaces: ['app-namespace'],
-    clusterSets: ['dev-cluster'],
+    clusterSelection: {
+      type: 'clusterNames',
+      clusterNames: ['dev-cluster'],
+    },
     relatedMulticlusterRoleAssignment: mockMulticlusterRoleAssignments[1],
     subject: {
       name: mockMulticlusterRoleAssignments[1].spec.subject.name,
       kind: mockMulticlusterRoleAssignments[1].spec.subject.kind,
     },
-    status: mockMulticlusterRoleAssignments[1].status.roleAssignments?.[0],
+    status: mockMulticlusterRoleAssignments[1].status?.roleAssignments?.[0],
   },
   {
     name: 'C1',
     clusterRole: 'viewer',
     targetNamespaces: ['staging-ns-1', 'staging-ns-2'],
-    clusterSets: ['staging-cluster'],
+    clusterSelection: {
+      type: 'clusterNames',
+      clusterNames: ['staging-cluster'],
+    },
     relatedMulticlusterRoleAssignment: mockMulticlusterRoleAssignments[2],
     subject: {
       name: mockMulticlusterRoleAssignments[2].spec.subject.name,
@@ -196,8 +256,9 @@ jest.mock('../../../ui-components', () => {
             switch (filterId) {
               case 'role':
                 return item.clusterRole === value
-              case 'clusterSet':
-                return item.clusterSets?.includes(value)
+              case 'clusters':
+                const clusterNames = item.clusterSelection?.clusterNames || []
+                return clusterNames.includes(value)
               case 'namespace':
                 return item.targetNamespaces?.includes(value)
               case 'status':
@@ -255,7 +316,7 @@ jest.mock('../../../ui-components', () => {
                   <button onClick={() => handleFilter(filter.id, 'developer')}>Filter developer</button>
                 </>
               )}
-              {filter.id === 'clusterSet' && (
+              {filter.id === 'clusters' && (
                 <>
                   <button onClick={() => handleFilter(filter.id, 'test-cluster-1')}>Filter test-cluster-1</button>
                   <button onClick={() => handleFilter(filter.id, 'dev-cluster')}>Filter dev-cluster</button>
@@ -288,7 +349,7 @@ jest.mock('../../../ui-components', () => {
                 {item.subject.kind}: {item.subject.name}
               </div>
               <div>{item.clusterRole}</div>
-              <div>{item.clusterSets?.join(', ') || 'No clusters'}</div>
+              <div>{(item.clusterSelection?.clusterNames || []).join(', ') || 'No clusters'}</div>
               <div>{item.targetNamespaces?.join(', ') || 'No namespaces'}</div>
               <div>{`Status: ${item.status?.status ?? 'Unknown'}`}</div>
               <button onClick={() => mockToastContext.addAlert({ title: 'Action', type: 'info' })}>Row Actions</button>
@@ -366,13 +427,22 @@ const Component = ({
 }: {
   roleAssignments?: FlattenedRoleAssignment[]
   isLoading?: boolean
-  hiddenColumns?: ('subject' | 'role' | 'clusters' | 'clusterSets')[]
+  hiddenColumns?: ('subject' | 'role' | 'clusters')[]
 } = {}) => (
   <RecoilRoot>
     <MemoryRouter>
       <PluginContext.Provider value={defaultPlugin}>
         <AcmToastContext.Provider value={mockToastContext}>
-          <RoleAssignments roleAssignments={roleAssignments} isLoading={isLoading} hiddenColumns={hiddenColumns} />
+          <RoleAssignments
+            roleAssignments={roleAssignments}
+            isLoading={isLoading}
+            hiddenColumns={hiddenColumns}
+            preselected={{
+              subject: undefined,
+              roles: undefined,
+              cluterSets: undefined,
+            }}
+          />
         </AcmToastContext.Provider>
       </PluginContext.Provider>
     </MemoryRouter>
@@ -510,8 +580,8 @@ describe('RoleAssignments', () => {
     await waitForText('User: test.user1', true) // Allow multiple matches
     await waitForText('User: test.user3', true) // Allow multiple matches
 
-    // Filter by 'test-cluster-1' cluster set
-    await clickByText('Cluster Set')
+    // Filter by 'test-cluster-1' cluster
+    await clickByText('Clusters')
     await clickByText('Filter test-cluster-1')
 
     // Should still show only the flattened row with 'test-cluster-1' (test.user1's admin role)
@@ -519,7 +589,7 @@ describe('RoleAssignments', () => {
     await waitForText('test-cluster-1', true) // Allow multiple matches
     await waitForText('admin', true) // Verify this is the admin role row
 
-    // Should filter out rows with different cluster sets
+    // Should filter out rows with different clusters
     expect(screen.queryAllByText(/User: test\.user2/i)).toHaveLength(0) // dev-cluster filtered out
     expect(screen.queryAllByText(/User: test\.user3/i)).toHaveLength(0) // staging-cluster filtered out
     expect(screen.queryByText('test-cluster-2')).not.toBeInTheDocument() // test.user1's second cluster filtered out
