@@ -5,7 +5,7 @@ import { useNavigate, useParams } from 'react-router-dom-v5-compat'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
-import { User } from '../../../../resources'
+import { User, UserKind } from '../../../../resources'
 import multiclusterRoleAssignmentsMockDataJson from '../../../../resources/clients/mock-data/multicluster-role-assignments.json'
 import {
   roleAssignmentToFlattenedRoleAssignment,
@@ -92,7 +92,14 @@ const UserRoleAssignments = () => {
         />
       )
     default:
-      return <RoleAssignments roleAssignments={roleAssignments} isLoading={isLoading} hiddenColumns={['subject']} />
+      return (
+        <RoleAssignments
+          roleAssignments={roleAssignments}
+          isLoading={isLoading}
+          hiddenColumns={['subject']}
+          preselected={{ subject: { kind: UserKind, value: user?.metadata.name } }}
+        />
+      )
   }
 }
 

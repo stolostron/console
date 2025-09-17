@@ -1,12 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { PageSection } from '@patternfly/react-core'
 import { useCallback, useMemo } from 'react'
-import { Trans, useTranslation } from '../../../../lib/acm-i18next'
-import { User as RbacUser } from '../../../../resources/rbac'
-// import { listUsers } from '../../../../resources/rbac'
-// import { useQuery } from '../../../../lib/useQuery'
 import { Link } from 'react-router-dom-v5-compat'
+import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
+import { User as RbacUser } from '../../../../resources/rbac'
 import { AcmButton, AcmEmptyState, AcmLoadingPage, AcmTable, compareStrings } from '../../../../ui-components'
 import { useFilters, usersTableColumns } from './UsersTableHelper'
 

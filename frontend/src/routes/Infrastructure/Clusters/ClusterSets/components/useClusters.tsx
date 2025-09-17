@@ -26,10 +26,10 @@ import keyBy from 'lodash/keyBy'
 
 // returns the clusters assigned to a ManagedClusterSet
 export function useClusters({
-  managedClusterSet,
+  managedClusterSets,
   clusterPool,
 }: {
-  managedClusterSet?: ManagedClusterSet
+  managedClusterSets?: (ManagedClusterSet | undefined)[]
   clusterPool?: ClusterPool
 }) {
   const {
@@ -73,7 +73,7 @@ export function useClusters({
     hostedClusters,
     nodePools,
     discoveredClusters,
-    managedClusterSet,
+    managedClusterSets,
     clusterPool,
   })
 }
@@ -85,7 +85,7 @@ export function getMappedClusterSetClusters(
 }
 
 export function getMappedClusterPoolClusters(
-  params: Required<Omit<Parameters<typeof getMappedClusterPoolClusterSetClusters>[0], 'managedClusterSet'>>
+  params: Required<Omit<Parameters<typeof getMappedClusterPoolClusterSetClusters>[0], 'managedClusterSets'>>
 ) {
   return getMappedClusterPoolClusterSetClusters(params)
 }
@@ -104,7 +104,7 @@ function getMappedClusterPoolClusterSetClusters({
   hostedClusters,
   nodePools,
   discoveredClusters,
-  managedClusterSet,
+  managedClusterSets,
   clusterPool,
 }: {
   managedClusters: ManagedCluster[]
@@ -119,34 +119,38 @@ function getMappedClusterPoolClusterSetClusters({
   hostedClusters: HostedClusterK8sResource[]
   nodePools: NodePoolK8sResource[]
   discoveredClusters: DiscoveredCluster[]
-  managedClusterSet?: ManagedClusterSet
+  managedClusterSets?: (ManagedClusterSet | undefined)[]
   clusterPool?: ClusterPool
 }) {
   let groupManagedClusters: ManagedCluster[] = []
   let groupClusterDeployments: ClusterDeployment[] = []
 
-  if (managedClusterSet) {
-    groupManagedClusters = isGlobalClusterSet(managedClusterSet)
-      ? managedClusters
-      : managedClusters.filter(
-          (mc) => mc.metadata.labels?.[managedClusterSetLabel] === managedClusterSet?.metadata.name
+  if (managedClusterSets !== undefined && managedClusterSets.length > 0) {
+    managedClusterSets
+      .filter((e) => e)
+      .forEach((managedClusterSet) => {
+        groupManagedClusters = isGlobalClusterSet(managedClusterSet)
+          ? managedClusters
+          : managedClusters.filter(
+              (mc) => mc.metadata.labels?.[managedClusterSetLabel] === managedClusterSet?.metadata.name
+            )
+
+        const groupManagedClustersMap = keyBy(groupManagedClusters, 'metadata.name')
+        groupClusterDeployments = clusterDeployments.filter(
+          (cd) =>
+            cd.metadata.labels?.[managedClusterSetLabel] === managedClusterSet?.metadata.name ||
+            groupManagedClustersMap[cd.metadata.namespace!]
         )
 
-    const groupManagedClustersMap = keyBy(groupManagedClusters, 'metadata.name')
-    groupClusterDeployments = clusterDeployments.filter(
-      (cd) =>
-        cd.metadata.labels?.[managedClusterSetLabel] === managedClusterSet?.metadata.name ||
-        groupManagedClustersMap[cd.metadata.namespace!]
-    )
-
-    // prevent the unclaimed clusters from showing up in cluster set clusters
-    groupClusterDeployments = groupClusterDeployments.filter((cd) => {
-      if (cd.spec?.clusterPoolRef?.poolName !== undefined) {
-        return cd.spec?.clusterPoolRef?.claimName !== undefined
-      } else {
-        return true
-      }
-    })
+        // prevent the unclaimed clusters from showing up in cluster set clusters
+        groupClusterDeployments = groupClusterDeployments.filter((cd) => {
+          if (cd.spec?.clusterPoolRef?.poolName !== undefined) {
+            return cd.spec?.clusterPoolRef?.claimName !== undefined
+          } else {
+            return true
+          }
+        })
+      })
   }
 
   if (clusterPool) {
