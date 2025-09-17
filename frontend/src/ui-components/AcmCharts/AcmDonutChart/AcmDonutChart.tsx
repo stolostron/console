@@ -6,6 +6,7 @@ import { Badge, Card, CardTitle, Skeleton } from '@patternfly/react-core'
 
 import { Link } from 'react-router-dom-v5-compat'
 import { useViewport } from '../AcmChartGroup'
+import { getTextWidth } from '../../utils'
 
 type StyleProps = {
   danger?: boolean
@@ -111,6 +112,12 @@ export function AcmDonutChart(props: {
   const { viewWidth } = useViewport()
   const classes = getStyles({ ...props, danger: props.data.some((d) => d.isDanger), viewWidth } as StyleProps)
 
+  const chartWidth = viewWidth < 376 ? viewWidth : 376
+  const availableWidth = 0.8 * chartWidth
+  const subtitleText = props.donutLabel?.subTitle ?? primary.key
+  const subtitleWidth = getTextWidth(subtitleText)
+  const shouldPlaceSubtitleAtBottom = subtitleWidth > availableWidth
+
   if (props.loading) return loadingDonutChart(props.title, classes)
   return (
     <Card className={classes.card} id={`${props.title.toLowerCase().replace(/\s+/g, '-')}-chart`}>
@@ -128,7 +135,7 @@ export function AcmDonutChart(props: {
           legendComponent={buildLegendWithLinks(legendData, props.colorScale)}
           labels={({ datum }) => `${datum.x}: ${((datum.y / total) * 100).toFixed(2)}%`}
           padding={{
-            bottom: (props.donutLabel?.subTitle ?? primary.key).length > 14 ? 30 : 20,
+            bottom: shouldPlaceSubtitleAtBottom ? 30 : 20,
             left: 20,
             right: 145,
             top: 20,
@@ -148,7 +155,7 @@ export function AcmDonutChart(props: {
             />
           }
           subTitle={props.donutLabel?.subTitle ?? primary.key}
-          subTitlePosition={(props.donutLabel?.subTitle ?? primary.key).length > 14 ? 'bottom' : undefined}
+          subTitlePosition={shouldPlaceSubtitleAtBottom ? 'bottom' : undefined}
           width={/* istanbul ignore next */ viewWidth < 376 ? viewWidth : 376}
           height={/* istanbul ignore next */ viewWidth < 376 ? 150 : 200}
           // Devs can supply an array of colors the donut chart will use ex: ['#E62325', '#EC7A08', '#F4C145', '#2B9AF3', '#72767B']
