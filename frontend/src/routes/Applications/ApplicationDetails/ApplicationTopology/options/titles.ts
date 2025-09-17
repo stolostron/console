@@ -6,19 +6,20 @@
  * Note to U.S. Government Users Restricted Rights:
  * Use, duplication or disclosure restricted by GSA ADP Schedule
  * Contract with IBM Corp.
- ****************************************************************************** */
-// Copyright (c) 2020 Red Hat, Inc.
-// Copyright Contributors to the Open Cluster Management project
+ ******************************************************************************/
 'use strict'
 
 import _ from 'lodash'
+import { TFunction } from './types'
 
-export const getNodeTitle = (node) => {
+// Get a node title if preset in node specs
+export const getNodeTitle = (node: any): string => {
   return _.get(node, 'specs.title', '')
 }
 
-export const getSectionTitles = (clusters, types, environs, t) => {
-  const set = new Set()
+// Resolve section titles based on present types
+export const getSectionTitles = (clusters: any, types: string[], environs: string, t: TFunction): string => {
+  const set = new Set<string>()
   types.forEach((type) => {
     switch (type) {
       case 'cluster':
@@ -59,7 +60,8 @@ export const getSectionTitles = (clusters, types, environs, t) => {
   return Array.from(set).sort().join(', ')
 }
 
-export const getLegendTitle = (type) => {
+// Convert a type to a legend title
+export const getLegendTitle = (type?: string): string => {
   if (type === undefined) {
     return ''
   }
@@ -67,5 +69,4 @@ export const getLegendTitle = (type) => {
     .replace('stream', ' Stream')
     .replace('channel', ' Channel')
     .replace('controller', 'Controller')
-  //}
 }

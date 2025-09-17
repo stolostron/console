@@ -6,15 +6,15 @@
  * Note to U.S. Government Users Restricted Rights:
  * Use, duplication or disclosure restricted by GSA ADP Schedule
  * Contract with IBM Corp.
- ****************************************************************************** */
-// Copyright (c) 2020 Red Hat, Inc.
-// Copyright Contributors to the Open Cluster Management project
+ ******************************************************************************/
 'use strict'
+
 import _ from 'lodash'
-
 import { getWrappedNodeLabel } from './utilities'
+import { TopologyNode } from './types'
 
-export const getNodeDescription = (node) => {
+// Compute a node description and adjust layout scale for hubs
+export const getNodeDescription = (node: TopologyNode): string => {
   const { layout = {} } = node
 
   let description = getWrappedNodeLabel((node && node.name) || '', 12, 2)
@@ -24,9 +24,9 @@ export const getNodeDescription = (node) => {
 
   // hubs are drawn bigger
   if (layout.isMajorHub) {
-    layout.scale = 1.6
+    layout.scale = 1.6 as any
   } else if (layout.isMinorHub) {
-    layout.scale = 1.4
+    layout.scale = 1.4 as any
   }
 
   return description

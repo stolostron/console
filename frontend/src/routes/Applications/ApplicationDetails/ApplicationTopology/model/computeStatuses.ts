@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import _ from 'lodash'
-import R from 'ramda'
 import { getPulseStatusForAnsibleNode, showAnsibleJobDetails } from '../helpers/ansible-task'
 import {
   addDetails,
@@ -53,7 +52,7 @@ const resErrorStates = [
 const resWarningStates = [pendingStatus, 'creating', 'terminating']
 const apiVersionPath = 'specs.raw.apiVersion'
 
-const metadataName = 'metadata.name'
+export const metadataName = 'metadata.name'
 const argoAppHealthyStatus = 'Healthy'
 const argoAppDegradedStatus = 'Degraded'
 const argoAppMissingStatus = 'Missing'
@@ -160,7 +159,7 @@ export const getPulseStatusForSubscription = (node, hubClusterName) => {
   _.flatten(Object.values(resourceMap)).forEach((subscriptionItem) => {
     const clsName = _.get(subscriptionItem, 'cluster', '')
     if (subscriptionItem.status) {
-      if (R.includes('Failed', subscriptionItem.status)) {
+      if (_.includes(subscriptionItem.status, 'Failed')) {
         pulse = redPulse
       }
       if (subscriptionItem.status === 'Subscribed' || subscriptionItem.status === 'Propagated') {
@@ -398,7 +397,7 @@ const getPulseStatusForGenericNode = (node, t, hubClusterName) => {
   const namespace = _.get(node, 'namespace', '')
   const resourceMap = _.get(node, `specs.${node.type}Model`)
   const resourceCount = _.get(node, 'specs.resourceCount')
-  const clusterNames = R.split(',', getClusterName(node.id, node, true, hubClusterName))
+  const clusterNames = _.split(getClusterName(node.id, node, true, hubClusterName), ',')
   const onlineClusters = getOnlineClusters(node, hubClusterName)
 
   // if no resourceMap from search query, show '?'
@@ -420,7 +419,7 @@ const getPulseStatusForGenericNode = (node, t, hubClusterName) => {
   let highestPulse = 3
   let pendingPulseCount = 0
   clusterNames.forEach((clusterName) => {
-    clusterName = R.trim(clusterName)
+    clusterName = _.trim(clusterName)
     //get target cluster namespaces
     const resourceNSString = !isResourceNamespaceScoped(node) ? 'name' : 'namespace'
     const resourcesForCluster = _.filter(
@@ -502,12 +501,12 @@ const getStateNames = (t) => {
 
 //count pod state
 export const getPodState = (podItem, clusterName, types) => {
-  const podStatus = R.toLower(R.pathOr('unknown', ['status'])(podItem))
+  const podStatus = _.toLower(_.get(podItem, 'status', 'unknown'))
 
   let result = 0
-  if (!clusterName || R.equals(clusterName, R.pathOr('unknown', ['cluster'])(podItem))) {
+  if (!clusterName || clusterName === _.get(podItem, 'cluster', 'unknown')) {
     types.forEach((type) => {
-      if (R.includes(type, podStatus)) {
+      if (_.includes(podStatus, type)) {
         result = 1
       }
     })
@@ -638,8 +637,7 @@ export const setArgoApplicationDeployStatus = (node, details, t) => {
     type: 'spacer',
   })
   // related Argo apps search and pagination
-  const sortByNameCaseInsensitive = R.sortBy(R.compose(R.toLower, R.prop('name')))
-  const sortedRelatedArgoApps = sortByNameCaseInsensitive(relatedArgoApps)
+  const sortedRelatedArgoApps = _.sortBy(relatedArgoApps, (app) => _.toLower(_.get(app, 'name', '')))
   details.push({
     type: 'relatedargoappdetails',
     relatedargoappsdata: {
@@ -781,7 +779,7 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t, hub
   const activeFilterCodes = getActiveFilterCodes(resourceStatuses)
   const isDesign = _.get(node, specIsDesign, false)
   //check if this is a subscription created from the app deployable
-  if (R.pathOr('', ['type'])(node) !== 'subscription' || isDeployableResource(node) || !isDesign) {
+  if (_.get(node, 'type', '') !== 'subscription' || isDeployableResource(node) || !isDesign) {
     return details //ignore subscriptions defined from deployables or any other types
   }
   const timeWindow = _.get(node, 'specs.raw.spec.timewindow.windowtype')
@@ -806,7 +804,7 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t, hub
     if (timeWindowDays) {
       details.push({
         labelValue: t('Time Window days'),
-        value: R.toString(timeWindowDays),
+        value: _.toString(timeWindowDays),
       })
     }
 
@@ -869,7 +867,7 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t, hub
         })
       } else {
         const isLocalFailedSubscription =
-          subscription._hubClusterResource && R.includes('Fail', R.pathOr('Fail', ['status'])(subscription))
+          subscription._hubClusterResource && _.includes(_.get(subscription, 'status', 'Fail'), 'Fail')
         if (isLocalFailedSubscription) {
           localSubscriptionFailed = true
         }
@@ -877,9 +875,9 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t, hub
           isLocalPlacementSubs ||
           (_.get(subscription, 'localPlacement', '') === 'true' && subsCluster === hubClusterName)
         if (isLinkedLocalPlacementSubs || !subscription._hubClusterResource || isLocalFailedSubscription) {
-          const subscriptionPulse = R.includes('Fail', R.pathOr('', ['status'])(subscription))
+          const subscriptionPulse = _.includes(_.get(subscription, 'status', ''), 'Fail')
             ? failureStatus
-            : R.pathOr(null, ['status'])(subscription) === null
+            : _.get(subscription, 'status', null) === null
               ? warningStatus
               : checkmarkStatus
 
@@ -894,7 +892,7 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t, hub
                 ['Subscribed']
               )
 
-          const subscriptionStatus = R.pathOr(emptyStatusErrorMsg, ['status'])(subscription)
+          const subscriptionStatus = _.get(subscription, 'status', emptyStatusErrorMsg)
 
           details.push({
             labelValue: subscription.cluster,
@@ -1012,7 +1010,7 @@ export const setSubscriptionDeployStatus = (node, details, activeFilters, t, hub
 ///////////////////////////////////////////////////////////
 
 export const setPlacementRuleDeployStatus = (node, details, t) => {
-  if (R.pathOr('', ['type'])(node) !== 'placements' || node.isPlacement) {
+  if (_.get(node, 'type', '') !== 'placements' || node.isPlacement) {
     return details
   }
 
@@ -1154,7 +1152,7 @@ export const setPodDeployStatus = (node, details, activeFilters, t, hubClusterNa
   const podObjects = _.flatten(Object.values(podModel))
   const podDataPerCluster = {} //pod details list for each cluster name
 
-  const clusterNames = R.split(',', getClusterName(node.id, node, true, hubClusterName))
+  const clusterNames = _.split(getClusterName(node.id, node, true, hubClusterName), ',')
   clusterNames.forEach((clusterName) => {
     podDataPerCluster[clusterName] = []
   })
@@ -1256,7 +1254,7 @@ export const setPodDeployStatus = (node, details, activeFilters, t, hubClusterNa
   }
 
   clusterNames.forEach((clusterName) => {
-    clusterName = R.trim(clusterName)
+    clusterName = _.trim(clusterName)
 
     const clusterDetails = podDataPerCluster[clusterName]
 
@@ -1295,16 +1293,19 @@ export const setResourceDeployStatus = (node, details, activeFilters, t, hubClus
     nodeMustHavePods(node) ||
     node.type === 'package' ||
     (!isDeployable &&
-      R.includes(node.type, [
-        'application',
-        'applicationset',
-        'placements',
-        'placement',
-        'cluster',
-        'subscription',
-        'ocpapplication',
-        'fluxapplication',
-      ]) &&
+      _.includes(
+        [
+          'application',
+          'applicationset',
+          'placements',
+          'placement',
+          'cluster',
+          'subscription',
+          'ocpapplication',
+          'fluxapplication',
+        ],
+        node.type
+      ) &&
       isDesign)
   ) {
     //resource with pods info is processed separately
@@ -1322,7 +1323,7 @@ export const setResourceDeployStatus = (node, details, activeFilters, t, hubClus
     ? [hubClusterName]
     : cluster
       ? [cluster]
-      : R.split(',', getClusterName(nodeId, node, true, hubClusterName))
+      : _.split(getClusterName(nodeId, node, true, hubClusterName), ',')
   const resourceMap = _.get(node, `specs.${node.type}Model`, {})
   const onlineClusters = getOnlineClusters(node, hubClusterName)
 
@@ -1369,7 +1370,7 @@ export const setResourceDeployStatus = (node, details, activeFilters, t, hubClus
     details.push({
       type: 'spacer',
     })
-    clusterName = R.trim(clusterName)
+    clusterName = _.trim(clusterName)
     if (!_.includes(onlineClusters, clusterName)) {
       // offline cluster or argo destination server we could  not map to a cluster name, so skip
       return showMissingClusterDetails(clusterName, node, details, t)

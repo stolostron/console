@@ -6,10 +6,7 @@
  * Note to U.S. Government Users Restricted Rights:
  * Use, duplication or disclosure restricted by GSA ADP Schedule
  * Contract with IBM Corp.
- ****************************************************************************** */
-// Copyright (c) 2020 Red Hat, Inc.
-// Copyright Contributors to the Open Cluster Management project
-
+ ******************************************************************************/
 'use strict'
 
 import _ from 'lodash'
@@ -25,13 +22,21 @@ const TypeFilters = {
       hostIPs: 'hostIPs',
     },
     searchTypes: new Set(['podStatuses', 'labels']),
-    ignored: new Set(),
+    ignored: new Set<string>(),
   },
-}
+} as const
 
-export const getAllFilters = (isLoaded, nodes, options, activeFilters, knownTypes, userIsFiltering, t) => {
-  const availableFilters = {}
-  let otherTypeFilters = []
+export const getAllFilters = (
+  isLoaded: boolean | undefined,
+  nodes: any[] | undefined,
+  options: any,
+  activeFilters: Record<string, any>,
+  knownTypes: string[] | undefined,
+  userIsFiltering: boolean | undefined,
+  t: (s: string) => string
+) => {
+  const availableFilters: Record<string, any> = {}
+  let otherTypeFilters: string[] = []
   const typeToShapeMap = defaultShapes
 
   // if nothing loaded we can't calculate what types are available
@@ -47,7 +52,7 @@ export const getAllFilters = (isLoaded, nodes, options, activeFilters, knownType
   nodes = nodes || []
   const map = nodes
     .map(({ type }) => type)
-    .reduce((acc, curr) => {
+    .reduce((acc: Record<string, number>, curr: string) => {
       if (typeof acc[curr] === 'undefined') {
         acc[curr] = 1
       } else {
@@ -66,10 +71,10 @@ export const getAllFilters = (isLoaded, nodes, options, activeFilters, knownType
   // determine what should go in main type filter bar and what should go in 'other' button
   const optionsTemp = options || {}
   let { availableTypes } = optionsTemp
-  const unknownTypes = []
+  const unknownTypes: string[] = []
   if (availableTypes) {
     // other is any type not in available types
-    const set = new Set(availableTypes)
+    const set = new Set(availableTypes as string[])
     otherTypeFilters = Object.keys(map).filter((a) => {
       return !set.has(a)
     })
@@ -79,7 +84,7 @@ export const getAllFilters = (isLoaded, nodes, options, activeFilters, knownType
     availableTypes = sorted
       .filter((a) => {
         // anything w/o a shape is other automaically
-        if (!typeToShapeMap[a]) {
+        if (!(typeToShapeMap as any)[a]) {
           otherTypeFilters.push(a)
           unknownTypes.push(a)
           return false
@@ -117,7 +122,7 @@ export const getAllFilters = (isLoaded, nodes, options, activeFilters, knownType
   // if an other type it's active status is covered by 'other' type
   if (otherTypeFilters.length > 0) {
     const set = new Set(availableTypes)
-    activeFilters.type = activeFilters.type.filter((a) => set.has(a))
+    activeFilters.type = activeFilters.type.filter((a: string) => set.has(a))
   }
 
   // if using the filter view, get avaiable filters for that view
@@ -131,16 +136,21 @@ export const getAllFilters = (isLoaded, nodes, options, activeFilters, knownType
   }
 }
 
-export const getAvailableFilters = (nodes, options, activeFilters, t) => {
-  const availableFilters = {}
+export const getAvailableFilters = (
+  nodes: any[],
+  options: any,
+  activeFilters: Record<string, any>,
+  t: (s: string) => string
+) => {
+  const availableFilters: Record<string, any> = {}
   addAssortedAvailableFilters(availableFilters, activeFilters, nodes, t)
   return availableFilters
 }
 
 //search filters also show related nodes, like searching on name
-export const getSearchFilter = (filters = {}) => {
-  const ret = { filters: {}, search: undefined }
-  const searchTypes = _.get(TypeFilters, 'application.searchTypes', new Set())
+export const getSearchFilter = (filters: Record<string, any> = {}) => {
+  const ret: { filters: Record<string, any>; search?: Record<string, any> } = { filters: {}, search: undefined }
+  const searchTypes = _.get(TypeFilters, 'application.searchTypes', new Set()) as Set<string>
   Object.entries(filters).forEach(([type, value]) => {
     if (searchTypes.has(type)) {
       if (value && value.size > 0) {
@@ -157,20 +167,30 @@ export const getSearchFilter = (filters = {}) => {
 }
 
 /////////////////////////////// AVAILABLE FILTERS //////////////////////////////////////////
-const addAssortedAvailableFilters = (availableFilters, activeFilters, nodes, t) => {
+const addAssortedAvailableFilters = (
+  availableFilters: Record<string, any>,
+  activeFilters: Record<string, any>,
+  nodes: any[],
+  t: (s: string) => string
+) => {
   if (nodes && nodes.length > 0) {
     addAvailableRelationshipFilters(availableFilters, activeFilters, nodes, t)
   }
 }
 
-export const addAvailableRelationshipFilters = (availableFilters, activeFilters, nodes, t) => {
+export const addAvailableRelationshipFilters = (
+  availableFilters: Record<string, any>,
+  activeFilters: Record<string, any>,
+  nodes: any[],
+  t: (s: string) => string
+) => {
   // what k8 types are being shown
   const activeTypes = new Set(activeFilters.type || [])
-  const ignoreNodeTypes = TypeFilters['application'].ignored || new Set()
-  const filterTypes = TypeFilters['application'].filterTypes
+  const ignoreNodeTypes = (TypeFilters as any)['application'].ignored || new Set()
+  const filterTypes = (TypeFilters as any)['application'].filterTypes
   Object.keys(filterTypes).forEach((type) => {
-    let name = null
-    let availableSet = new Set()
+    let name: string | null = null
+    let availableSet: any = new Set()
     switch (type) {
       case 'resourceTypes':
         name = t('Resource Types')
@@ -219,7 +239,7 @@ export const addAvailableRelationshipFilters = (availableFilters, activeFilters,
           switch (filterType) {
             case 'hostIPs':
               if (podStatus && Object.keys(podStatus).length > 0) {
-                _.flatten(Object.values(podStatus)).forEach((pod) => {
+                _.flatten(Object.values(podStatus)).forEach((pod: any) => {
                   filter.availableSet.add(pod.hostIP)
                 })
               }
@@ -254,7 +274,7 @@ export const addAvailableRelationshipFilters = (availableFilters, activeFilters,
 
 ////////////////////////   FILTER NODES     ///////////////////////////////////
 
-export const processResourceStatus = (resourceStatuses, resourceStatus) => {
+export const processResourceStatus = (resourceStatuses: Set<string>, resourceStatus: string) => {
   const orangeOrYellow = resourceStatus === 'orange' || resourceStatus === 'yellow'
 
   return (
@@ -265,14 +285,14 @@ export const processResourceStatus = (resourceStatuses, resourceStatus) => {
   )
 }
 
-export const notDesignNode = (nodeType) => {
+export const notDesignNode = (nodeType: string) => {
   return nodeType !== 'application' && nodeType !== 'subscription' && nodeType !== 'placements'
 }
 
-export const isDesignOrCluster = (isDesign, nodeType) => {
+export const isDesignOrCluster = (isDesign: boolean, nodeType: string) => {
   return isDesign === true || nodeType === 'cluster'
 }
 
-export const nodeParentExists = (nodeParent, includedNodes) => {
+export const nodeParentExists = (nodeParent: any, includedNodes: Set<string>) => {
   return nodeParent !== undefined && nodeParent.parentType !== 'cluster' && !includedNodes.has(nodeParent.parentId)
 }

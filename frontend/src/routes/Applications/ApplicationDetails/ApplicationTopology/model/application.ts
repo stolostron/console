@@ -11,22 +11,28 @@ import {
 } from '../../../../../resources'
 import { getResource } from '../../../../../resources/utils'
 import { fetchAggregate, SupportedAggregate } from '../../../../../lib/useAggregates'
+import type { ApplicationModel, ManagedCluster, RecoilStates } from './types'
 
+/**
+ * Resolve an application model for ACM, Argo, ApplicationSet, OCP, or Flux app kinds.
+ * The function inspects the requested apiVersion and returns a normalized ApplicationModel
+ * used by Application Topology views.
+ */
 export const getApplication = async (
-  namespace,
-  name,
-  backendUrl,
-  selectedChannel,
-  recoilStates,
-  cluster,
-  apiversion,
-  clusters
-) => {
-  let app
-  let model
-  let placement
-  let placementName
-  let relatedPlacement
+  namespace: string,
+  name: string,
+  backendUrl: string,
+  selectedChannel: string | undefined,
+  recoilStates: RecoilStates,
+  cluster: string | undefined,
+  apiversion: string | undefined,
+  clusters: ManagedCluster[]
+): Promise<ApplicationModel | undefined> => {
+  let app: Record<string, any> | undefined
+  let model: ApplicationModel | undefined
+  let placement: Record<string, unknown> | undefined
+  let placementName: string | undefined
+  let relatedPlacement: Record<string, unknown> | undefined
 
   // get application
   const apiVersion = apiversion || 'application.app.k8s.io' // defaults to ACM app
@@ -37,8 +43,8 @@ export const getApplication = async (
   let isAppSetPullModel = false
 
   if (apiVersion === 'application.app.k8s.io') {
-    app = applications.find((app) => {
-      return app?.metadata?.name === name && app?.metadata?.namespace === namespace
+    app = applications.find((a: any) => {
+      return a?.metadata?.name === name && a?.metadata?.namespace === namespace
     })
   }
 
@@ -59,18 +65,21 @@ export const getApplication = async (
         'spec.generators[0].clusterDecisionResource.labelSelector.matchLabels["cluster.open-cluster-management.io/placement"]',
         ''
       )
-      placement = recoilStates.placementDecisions.find((placementDecision) => {
+      placement = recoilStates.placementDecisions.find((placementDecision: any) => {
         const labels = get(placementDecision, 'metadata.labels', {})
         return labels['cluster.open-cluster-management.io/placement'] === placementName
       })
 
-      const decisionOwnerReference = get(placement, 'metadata.ownerReferences', undefined)
+      const decisionOwnerReference = get(placement, 'metadata.ownerReferences', undefined) as
+        | Array<{ kind?: string; name?: string }>
+        | undefined
 
-      if (decisionOwnerReference) {
+      if (decisionOwnerReference && decisionOwnerReference[0]) {
+        const owner0 = decisionOwnerReference[0]
         relatedPlacement = recoilStates.placements.find(
-          (resource) =>
-            resource.kind === decisionOwnerReference[0].kind &&
-            resource.metadata.name === decisionOwnerReference[0].name &&
+          (resource: any) =>
+            resource.kind === owner0.kind &&
+            resource.metadata.name === owner0.name &&
             resource.metadata.namespace === namespace
         )
       }
@@ -86,7 +95,9 @@ export const getApplication = async (
     if (cluster) {
       // get argo app definition from managed cluster
       app = await getRemoteArgoApp(cluster, 'application', ArgoApplicationApiVersion, name, namespace)
-      set(app, 'status.cluster', cluster)
+      if (app) {
+        set(app as object, 'status.cluster', cluster)
+      }
     } else {
       // argo app is not part of recoil
       app = await getResource({
@@ -114,7 +125,7 @@ export const getApplication = async (
     }
   }
 
-  // generate ocp app boiler plate
+  // generate flux app boiler plate
   if (!app && isFluxApp) {
     const clusterInfo = findCluster(clusters, cluster, false)
     app = {
@@ -134,7 +145,7 @@ export const getApplication = async (
       name,
       namespace,
       app,
-      metadata: app.metadata,
+      metadata: (app as any).metadata,
       placement,
       isArgoApp: get(app, 'apiVersion', '').indexOf('argoproj.io') > -1 && !isAppSet,
       isAppSet: isAppSet,
@@ -143,12 +154,16 @@ export const getApplication = async (
       isAppSetPullModel,
       relatedPlacement,
     }
-    const appForFetch = { ...app }
-    delete appForFetch.cluster
-    const uidata = await fetchAggregate(SupportedAggregate.uidata, backendUrl, appForFetch)
-    model.clusterList = uidata?.clusterList
+    const appForFetch: Record<string, any> = { ...app }
+    delete (appForFetch as any).cluster
+    const uidata: any = await fetchAggregate(
+      SupportedAggregate.uidata,
+      backendUrl,
+      appForFetch as unknown as import('../../../../../resources').IResource
+    )
+    ;(model as any).clusterList = uidata?.clusterList
 
-    // a short sweet ride for argo
+    // a short sweet ride for argo, ocp, flux
     if (model.isArgoApp || model.isOCPApp || model.isFluxApp) {
       return model
     }
@@ -159,8 +174,8 @@ export const getApplication = async (
       }
       // because these values require all argo apps to calculate
       // we get the data from the backend
-      model.appSetApps = uidata.appSetApps
-      model.appSetClusters = uidata.clusterList.reduce((list, clusterName) => {
+      ;(model as any).appSetApps = uidata.appSetApps
+      ;(model as any).appSetClusters = uidata.clusterList.reduce((list: any[], clusterName: string) => {
         const _cluster = clusters.find((c) => c.name === clusterName)
         if (_cluster) {
           list.push({
@@ -176,24 +191,33 @@ export const getApplication = async (
       return model
     }
 
-    return await getSubscriptionApplication(model, app, selectedChannel, recoilStates, cluster, apiversion)
+    return await getSubscriptionApplication(model as any, app, selectedChannel, recoilStates as any)
   }
   return model
 }
 
-export const getAppSetApplicationPullModel = (model, app, recoilStates, clusters) => {
+/**
+ * For pull-model ApplicationSets, build a synthetic view of argo apps and clusters
+ * from the MultiClusterApplicationSetReport objects in state.
+ */
+export const getAppSetApplicationPullModel = (
+  model: ApplicationModel,
+  app: Record<string, any>,
+  recoilStates: RecoilStates,
+  clusters: ManagedCluster[]
+): ApplicationModel => {
   const { multiclusterApplicationSetReports } = recoilStates
   const multiclusterApplicationSetReport = multiclusterApplicationSetReports.find(
-    (report) => report.metadata.name === app.metadata.name && report.metadata.namespace === app.metadata.namespace
+    (report: any) => report.metadata.name === app.metadata.name && report.metadata.namespace === app.metadata.namespace
   )
-  const argoApps = get(multiclusterApplicationSetReport, 'statuses.clusterConditions', [])
+  const argoApps = get(multiclusterApplicationSetReport, 'statuses.clusterConditions', []) as any[]
   const resources = get(multiclusterApplicationSetReport, 'statuses.resources', [])
-  const appSetApps = []
-  const appSetClusters = []
+  const appSetApps: any[] = []
+  const appSetClusters: any[] = []
 
-  argoApps.forEach((argoApp) => {
+  argoApps.forEach((argoApp: any) => {
     const appStr = get(argoApp, 'app')
-    const appData = appStr ? appStr.split('/') : []
+    const appData = appStr ? (appStr as string).split('/') : []
     const conditions = get(argoApp, 'conditions', [])
     appSetApps.push({
       apiVersion: ArgoApplicationApiVersion,
@@ -222,7 +246,7 @@ export const getAppSetApplicationPullModel = (model, app, recoilStates, clusters
     const cluster = findCluster(clusters, argoApp.cluster, false)
     if (cluster) {
       const url = cluster.kubeApiServer
-      let status
+      let status: string | undefined
       if (cluster.status === 'ready') {
         status = 'ok'
       } else if (cluster.status === 'unknown') {
@@ -239,14 +263,20 @@ export const getAppSetApplicationPullModel = (model, app, recoilStates, clusters
       })
     }
   })
-
-  model.appSetApps = appSetApps
-  model.appSetClusters = appSetClusters
+  ;(model as any).appSetApps = appSetApps
+  ;(model as any).appSetClusters = appSetClusters
 
   return model
 }
 
-export const findCluster = (managedClusters, searchValue, findByURL) => {
+/**
+ * Find a managed cluster by name or by kubeApiServer URL.
+ */
+export const findCluster = (
+  managedClusters: ManagedCluster[],
+  searchValue: string | undefined,
+  findByURL: boolean | undefined
+): ManagedCluster | undefined => {
   for (let i = 0; i < managedClusters.length; i++) {
     if (!findByURL) {
       if (managedClusters[i].name === searchValue) {
@@ -263,12 +293,22 @@ export const findCluster = (managedClusters, searchValue, findByURL) => {
   return undefined
 }
 
-const getRemoteArgoApp = async (cluster, kind, apiVersion, name, namespace) => {
-  let response
+/**
+ * Retrieve an Argo Application definition from a managed cluster via MCV.
+ */
+const getRemoteArgoApp = async (
+  cluster: string,
+  kind: string,
+  apiVersion: string,
+  name: string,
+  namespace: string
+): Promise<any> => {
+  let response: any
 
   try {
     response = await fireManagedClusterView(cluster, kind, apiVersion, name, namespace)
   } catch (err) {
+    // eslint-disable-next-line no-console
     console.error('Error getting remote Argo app', err)
   }
 
@@ -276,3 +316,5 @@ const getRemoteArgoApp = async (cluster, kind, apiVersion, name, namespace) => {
     return response.result
   }
 }
+
+export default getApplication

@@ -1,12 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
+'use strict'
+
+// Utility helpers for the topology view (string formatting, label wrapping, grouping, tooltips)
+
 import R from 'ramda'
 import _ from 'lodash'
-
 import { Fragment } from 'react'
 import ReactDOMServer from 'react-dom/server'
+import { NodeGroupsMap, TopologyNode, TooltipItem } from './types'
 
-// Convert types to OpenShift/Kube entities
-export function kubeNaming(type) {
+// Convert types to OpenShift/Kube display entities
+export function kubeNaming(type?: string): string {
   if (type === undefined) {
     return ''
   }
@@ -25,8 +29,8 @@ export function kubeNaming(type) {
   )
 }
 
-// Make nice carriage return for long titles
-export function titleBeautify(maxStringLength, resourceName) {
+// Make a human-readable title with potential line breaks
+export function titleBeautify(maxStringLength: number, resourceName: string): string {
   const regex = /[A-Z][a-z']+(?: [A-Z][a-z]+)*/g
   const wordsList = resourceName.match(regex)
   if (wordsList && Math.max(0, maxStringLength) / resourceName.length > 0) {
@@ -42,8 +46,8 @@ export function titleBeautify(maxStringLength, resourceName) {
   }
 }
 
-export const getWrappedNodeLabel = (label, width, rows = 3) => {
-  // if too long, add elipse and split the rest
+// Wrap a label across lines to fit within width and number of rows
+export const getWrappedNodeLabel = (label: string, width: number, rows = 3): string => {
   const ip = /\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.exec(label)
   if (ip) {
     label = label.substr(0, ip.index) + '\n' + ip[0]
@@ -61,18 +65,19 @@ export const getWrappedNodeLabel = (label, width, rows = 3) => {
   return label
 }
 
-const splitLabel = (label, width, rows) => {
+const splitLabel = (label: string, width: number, rows: number): string => {
   let line = ''
-  const lines = []
-  let parts = label.split(/([^A-Za-z0-9])+/)
+  const lines: string[] = []
+  let parts: string[] = label.split(/([^A-Za-z0-9])+/)
   if (parts.length === 1 && label.length > width) {
     //split if length > width and no split separator in label
-    parts = R.splitAt(width, label)
+    const split = R.splitAt(width, label) as unknown as string[]
+    parts = split
   }
   let remaining = label.length
   do {
     // add label part
-    line += parts.shift()
+    line += parts.shift() as string
 
     // add splitter, check if next item is a splitter, 1 char
     if (parts.length && parts[0].length === 1) {
@@ -102,19 +107,20 @@ const splitLabel = (label, width, rows) => {
 
   // pull last line in if too short
   if (lines.length > 1) {
-    let lastLine = lines.pop()
+    let lastLine = lines.pop() as string
     if (lastLine.length <= 2) {
-      lastLine = lines.pop() + lastLine
+      lastLine = (lines.pop() as string) + lastLine
     }
     lines.push(lastLine)
   }
   return lines.join('\n')
 }
 
-export const getHashCode = (str) => {
-  let hash = 0,
-    i,
-    chr
+// Simple string hash for consistent coloring or ids
+export const getHashCode = (str: string): number => {
+  let hash = 0
+  let i: number
+  let chr: number
   for (i = 0; i < str.length; i++) {
     chr = str.charCodeAt(i)
     hash = (hash << 5) - hash + chr
@@ -123,27 +129,18 @@ export const getHashCode = (str) => {
   return hash
 }
 
-export const getType = (type) => {
+// Capitalize and humanize a resource type
+export const getType = (type: string): string => {
   return _.capitalize(_.startCase(type))
 }
 
-const getNodeLabel = (node) => {
-  let label = getType(node.type)
-
-  if (label === 'Cluster') {
-    const nbOfClusters = _.get(node, 'specs.clusterNames', []).length
-    if (nbOfClusters > 1) {
-      label = `${nbOfClusters} Clusters`
-    }
-  }
-
-  return label
-}
-
-export function getTypeNodeGroups(nodes) {
-  // separate into types
-  const groupMap = {}
-  const allNodeMap = {}
+// Derive node groups by type and augment node layout labels
+export function getTypeNodeGroups(nodes: TopologyNode[]): {
+  nodeGroups: NodeGroupsMap
+  allNodeMap: Record<string, TopologyNode>
+} {
+  const groupMap: NodeGroupsMap = {}
+  const allNodeMap: Record<string, TopologyNode> = {}
   nodes.forEach((node) => {
     allNodeMap[node.uid] = node
     const type = node.type
@@ -165,9 +162,9 @@ export function getTypeNodeGroups(nodes) {
     delete node.layout.target
     delete node.layout.nodeIcons
     delete node.layout.selfLink
-    if (node.selfLink) {
-      node.layout.selfLink = {
-        link: node.selfLink,
+    if ((node as any).selfLink) {
+      ;(node.layout as any).selfLink = {
+        link: (node as any).selfLink,
         nodeLayout: node.layout,
       }
     }
@@ -178,8 +175,27 @@ export function getTypeNodeGroups(nodes) {
   return { nodeGroups: groupMap, allNodeMap }
 }
 
-//as scale decreases from max to min, return a counter zoomed value from min to max
-export const counterZoom = (scale, scaleMin, scaleMax, valueMin, valueMax) => {
+const getNodeLabel = (node: TopologyNode): string => {
+  let label = getType(node.type)
+
+  if (label === 'Cluster') {
+    const nbOfClusters = _.get(node, 'specs.clusterNames', []).length
+    if (nbOfClusters > 1) {
+      label = `${nbOfClusters} Clusters`
+    }
+  }
+
+  return label
+}
+
+// As scale decreases from max to min, return a counter zoomed value from min to max
+export const counterZoom = (
+  scale: number,
+  scaleMin: number,
+  scaleMax: number,
+  valueMin: number,
+  valueMax: number
+): number => {
   if (scale >= scaleMax) {
     return valueMin
   } else if (scale <= scaleMin) {
@@ -188,19 +204,20 @@ export const counterZoom = (scale, scaleMin, scaleMax, valueMin, valueMax) => {
   return valueMin + (1 - (scale - scaleMin) / (scaleMax - scaleMin)) * (valueMax - valueMin)
 }
 
-export const getTooltip = (tooltips) => {
+// Render a list of tooltip rows to static HTML for SVG annotations
+export const getTooltip = (tooltips: TooltipItem[]): string => {
   return ReactDOMServer.renderToStaticMarkup(
     <Fragment>
       {tooltips.map(({ name, value, href, target = '_blank', rel = 'noopener noreferrer' }) => {
         return (
-          <div key={Math.random()}>
+          <div key={String(name) + String(value)}>
             {name && name.length > 0 ? <span className="label">{name}: </span> : <span>&nbsp;</span>}
             {href ? (
               <a className="link" href={href} target={target} rel={rel}>
-                {value}
+                {String(value)}
               </a>
             ) : (
-              <span className="value">{value}</span>
+              <span className="value">{String(value)}</span>
             )}
           </div>
         )

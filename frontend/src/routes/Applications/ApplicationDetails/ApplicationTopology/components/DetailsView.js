@@ -12,7 +12,6 @@
 'use strict'
 
 import _ from 'lodash'
-import R from 'ramda'
 import { Component, Fragment } from 'react'
 import PropTypes from 'prop-types'
 import classNames from 'classnames'
@@ -309,7 +308,7 @@ class DetailsView extends Component {
     const loadingArgoLink = isLoading && value.id === linkID
     const handleClick = this.handleClick.bind(this, value)
     const handleKeyPress = this.handleKeyPress.bind(this, value)
-    const showLaunchOutIcon = !R.pathOr(false, ['data', 'specs', 'isDesign'])(value) //if not show yaml
+    const showLaunchOutIcon = !_.get(value, ['data', 'specs', 'isDesign'], false) //if not show yaml
     const isExternal =
       _.get(value, 'data.action', '') !== 'show_search' && _.get(value, 'data.action', '') !== 'show_resource_yaml'
 

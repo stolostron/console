@@ -6,17 +6,17 @@
  * Note to U.S. Government Users Restricted Rights:
  * Use, duplication or disclosure restricted by GSA ADP Schedule
  * Contract with IBM Corp.
- ****************************************************************************** */
-// Copyright Contributors to the Open Cluster Management project
+ ******************************************************************************/
 'use strict'
 
 import { defaultShapes } from './constants'
 import { computeNodeStatus } from '../model/computeStatuses'
 import { getNodeDescription } from './descriptions'
 import { getNodeTitle, getSectionTitles } from './titles'
-import { getNodeDetails } from './details.js'
-import { getAllFilters, getAvailableFilters, getSearchFilter } from './filtering.js'
+import { getNodeDetails } from './details'
+import { getAllFilters, getAvailableFilters, getSearchFilter } from './filtering'
 
+// Provide a typed options object used by the topology renderer
 export const getOptions = () => {
   return {
     typeToShapeMap: defaultShapes,

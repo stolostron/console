@@ -1,8 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 'use strict'
 
+// Centralized constants and shape/icon definitions for the topology view.
+
+import { DefaultShapesMap, IconDefinition } from './types'
+
 // icon for containing the cluster count
-export const ClusterCountIcon = {
+export const ClusterCountIcon: IconDefinition = {
   icon: 'clusterCount',
   classType: 'clusterCount',
   width: 22,
@@ -11,8 +15,8 @@ export const ClusterCountIcon = {
   dy: 0,
 }
 
-//if controller contains a pod
-export const PodIcon = {
+// if controller contains a pod
+export const PodIcon: IconDefinition = {
   icon: 'circle',
   classType: 'pod',
   width: 24,
@@ -21,7 +25,7 @@ export const PodIcon = {
   dy: 0,
 }
 
-export const defaultShapes = Object.freeze({
+export const defaultShapes: DefaultShapesMap = Object.freeze({
   application: {
     shape: 'application',
     className: 'design',
@@ -157,7 +161,7 @@ export const defaultShapes = Object.freeze({
     shape: 'subscriptionblocked',
     className: 'design',
   },
-})
+}) as unknown as DefaultShapesMap
 
 export const DIAGRAM_SVG_ID = 'topologySvgId'
 export const NODE_RADIUS = 28
@@ -172,7 +176,6 @@ export const FilterResults = Object.freeze({
   related: 'related', //related to match
   matched: 'matched', // a previous match--used when out of search mode
 })
-
 export const StatusIcon = Object.freeze({
   success: {
     icon: 'success',

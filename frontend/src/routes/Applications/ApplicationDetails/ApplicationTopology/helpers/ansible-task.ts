@@ -1,40 +1,38 @@
 /* Copyright Contributors to the Open Cluster Management project */
-/** *****************************************************************************
- * Licensed Materials - Property of IBM
- * (c) Copyright IBM Corporation 2019. All Rights Reserved.
- *
- * US Government Users Restricted Rights - Use, duplication or disclosure
- * restricted by GSA ADP Schedule Contract with IBM Corp.
- *******************************************************************************/
-// Copyright (c) 2020 Red Hat, Inc.
-// Copyright Contributors to the Open Cluster Management project
-'use strict'
 
 import _ from 'lodash'
 import { addDetails } from '../helpers/diagram-helpers'
+import { AnsibleCondition, Pulse, AnsibleJobStatus, DetailsList, NodeLike, Translator } from './types'
 
-const ansibleTaskErrorStates = ['Failed']
-const ansibleTaskSuccessStates = ['Successful', 'Running']
+const ansibleTaskErrorStates: string[] = ['Failed']
+const ansibleTaskSuccessStates: string[] = ['Successful', 'Running']
 
-const ansibleJobErrorStates = ['failed', 'error']
-const ansibleJobSuccessStates = ['successful', 'running', 'new']
-const ansibleJobWarningStates = ['canceled']
+const ansibleJobErrorStates: string[] = ['failed', 'error']
+const ansibleJobSuccessStates: string[] = ['successful', 'running', 'new']
+const ansibleJobWarningStates: string[] = ['canceled']
 
 const ansibleStatusStr = 'specs.raw.status.conditions'
 const ansibleJobStatusStr = 'specs.raw.status.ansibleJobResult'
 
 const ansibleTaskResultStr = 'ansibleResult'
 
-export const getInfoForAnsibleTask = (ansibleConditions) => {
+/**
+ * Derive task pulse color and message from Ansible Task conditions.
+ * - Error states map to red, success to green, unknown to yellow, missing to orange.
+ */
+export const getInfoForAnsibleTask = (
+  ansibleConditions: AnsibleCondition[]
+): { pulse: Pulse | 'orange'; message: string | null } => {
   const ansibleTaskConditionIndex = _.findIndex(ansibleConditions, (condition) => {
     return _.get(condition, ansibleTaskResultStr, '') !== ''
   })
 
-  const taskStatus = ansibleTaskConditionIndex === -1 ? null : ansibleConditions[ansibleTaskConditionIndex]
+  const taskStatus: AnsibleCondition | null =
+    ansibleTaskConditionIndex === -1 ? null : ansibleConditions[ansibleTaskConditionIndex]
   let reasonStatus = ''
-  let taskStatusPulse = 'orange'
+  let taskStatusPulse: Pulse | 'orange' = 'orange'
   if (taskStatus) {
-    reasonStatus = _.get(taskStatus, 'reason', '')
+    reasonStatus = _.get(taskStatus, 'reason', '') as string
     taskStatusPulse =
       _.indexOf(ansibleTaskErrorStates, reasonStatus) >= 0
         ? 'red'
@@ -45,15 +43,21 @@ export const getInfoForAnsibleTask = (ansibleConditions) => {
 
   return {
     pulse: taskStatusPulse,
-    message: taskStatus === null ? null : `${reasonStatus}: ${_.get(taskStatus, 'message', null)}`,
+    message: taskStatus === null ? null : `${reasonStatus}: ${_.get(taskStatus, 'message', null) as string | null}`,
   }
 }
 
-export const getInfoForAnsibleJob = (jobStatus) => {
+/**
+ * Derive job pulse color, message and URL from Ansible Job status.
+ * - Error states map to red, success to green, warnings to yellow, unknown to orange.
+ */
+export const getInfoForAnsibleJob = (
+  jobStatus?: AnsibleJobStatus | null
+): { pulse: Pulse | 'orange'; message: string | null; url: string | null } => {
   let reasonStatus = ''
-  let jobStatusPulse = 'orange' //job is executed by the ansible task
+  let jobStatusPulse: Pulse | 'orange' = 'orange' // job is executed by the ansible task
   if (jobStatus) {
-    reasonStatus = _.get(jobStatus, 'status', '')
+    reasonStatus = _.get(jobStatus, 'status', '') as string
     jobStatusPulse =
       _.indexOf(ansibleJobErrorStates, reasonStatus) >= 0
         ? 'red'
@@ -67,18 +71,22 @@ export const getInfoForAnsibleJob = (jobStatus) => {
   return {
     pulse: jobStatusPulse,
     message: jobStatus === null ? null : reasonStatus,
-    url: jobStatus === null ? null : _.get(jobStatus, 'url', null),
+    url: jobStatus === null ? null : (_.get(jobStatus, 'url', null) as string | null),
   }
 }
 
-export const getPulseStatusForAnsibleNode = (node) => {
-  const ansibleConditions = _.get(node, ansibleStatusStr, [])
+/**
+ * Compute a consolidated pulse color for an Ansible node by combining task and job pulses.
+ * Red overrides Yellow, which overrides Orange. Green only if neither is Red/Yellow/Orange.
+ */
+export const getPulseStatusForAnsibleNode = (node: NodeLike): Pulse | 'orange' => {
+  const ansibleConditions = _.get(node, ansibleStatusStr, []) as AnsibleCondition[]
   if (ansibleConditions.length === 0) {
     return 'orange'
   }
 
   const taskStatusPulse = getInfoForAnsibleTask(ansibleConditions).pulse
-  const jobStatusPulse = getInfoForAnsibleJob(_.get(node, ansibleJobStatusStr)).pulse
+  const jobStatusPulse = getInfoForAnsibleJob(_.get(node, ansibleJobStatusStr) as AnsibleJobStatus).pulse
   if (taskStatusPulse === 'red' || jobStatusPulse === 'red') {
     return 'red'
   }
@@ -93,12 +101,15 @@ export const getPulseStatusForAnsibleNode = (node) => {
   return 'green'
 }
 
-export const getStatusFromPulse = (pulse) => {
+/**
+ * Map pulse color to UI status icon identifier.
+ */
+export const getStatusFromPulse = (pulse?: Pulse): 'failure' | 'warning' | 'pending' | 'checkmark' => {
   if (!pulse) {
     return 'pending'
   }
 
-  let statusStr
+  let statusStr: 'failure' | 'warning' | 'pending' | 'checkmark'
   switch (pulse) {
     case 'red':
       statusStr = 'failure'
@@ -116,11 +127,16 @@ export const getStatusFromPulse = (pulse) => {
 
   return statusStr
 }
-export const showAnsibleJobDetails = (node, details, t) => {
-  const ansibleConditions = _.get(node, ansibleStatusStr, [])
+
+/**
+ * Populate details panel entries for an Ansible Job associated with a node.
+ * Adds template name, secret (when present), job URL, and status lines for task and job.
+ */
+export const showAnsibleJobDetails = (node: NodeLike, details: DetailsList, t: Translator): DetailsList => {
+  const ansibleConditions = _.get(node, ansibleStatusStr, []) as AnsibleCondition[]
 
   const taskStatus = getInfoForAnsibleTask(ansibleConditions)
-  const jobStatus = getInfoForAnsibleJob(_.get(node, ansibleJobStatusStr))
+  const jobStatus = getInfoForAnsibleJob(_.get(node, ansibleJobStatusStr) as AnsibleJobStatus)
 
   addDetails(details, [
     {
@@ -137,7 +153,7 @@ export const showAnsibleJobDetails = (node, details, t) => {
     type: 'spacer',
   })
 
-  let jobUrl = _.get(jobStatus, 'url')
+  let jobUrl = _.get(jobStatus, 'url') as string | null
   if (jobUrl) {
     if (!_.startsWith(jobUrl, 'http')) {
       jobUrl = `https://${jobUrl}`
@@ -168,7 +184,7 @@ export const showAnsibleJobDetails = (node, details, t) => {
   details.push({
     labelValue: t('description.ansible.task.status'),
     value: taskStatus.message ? taskStatus.message : t('description.ansible.job.status.empty.err'),
-    status: getStatusFromPulse(taskStatus.pulse),
+    status: getStatusFromPulse(taskStatus.pulse as Pulse),
   })
   details.push({
     type: 'spacer',
@@ -177,7 +193,7 @@ export const showAnsibleJobDetails = (node, details, t) => {
   details.push({
     labelValue: t('description.ansible.job.status'),
     value: _.get(jobStatus, 'message', '') === '' ? t('description.ansible.job.status.empty') : jobStatus.message,
-    status: getStatusFromPulse(jobStatus.pulse),
+    status: getStatusFromPulse(jobStatus.pulse as Pulse),
   })
   if (_.get(node, 'specs.raw.status.k8sJob.message')) {
     details.push({

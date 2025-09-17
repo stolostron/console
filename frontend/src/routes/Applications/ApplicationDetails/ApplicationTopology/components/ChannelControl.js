@@ -12,7 +12,6 @@
 'use strict'
 
 import { Component } from 'react'
-import R from 'ramda'
 import PropTypes from 'prop-types'
 import { AcmDropdown } from '../../../../../ui-components'
 import { Pagination, Tooltip } from '@patternfly/react-core'
@@ -58,7 +57,7 @@ class ChannelControl extends Component {
   }
 
   selectChannelByNumber(channelNb) {
-    const allChannels = R.pathOr([], ['channelControl', 'allChannels'])(this.props)
+    const allChannels = _.get(this.props, ['channelControl', 'allChannels'], [])
 
     const changeToChannel = allChannels.length >= channelNb ? allChannels[channelNb - 1] : null
     this.changeSubscriptionChannels(changeToChannel)

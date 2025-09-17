@@ -6,9 +6,7 @@
  * Note to U.S. Government Users Restricted Rights:
  * Use, duplication or disclosure restricted by GSA ADP Schedule
  * Contract with IBM Corp.
- ****************************************************************************** */
-// Copyright (c) 2020 Red Hat, Inc.
-// Copyright Contributors to the Open Cluster Management project
+ ******************************************************************************/
 'use strict'
 
 import R from 'ramda'
@@ -36,8 +34,13 @@ import { PlacementKind } from '../../../../../resources'
 const resName = 'resource.name'
 const unknonwnApiVersion = 'unknown'
 
-export const getNodeDetails = (node, activeFilters, t, hubClusterName) => {
-  const details = []
+export const getNodeDetails = (
+  node: any,
+  activeFilters: Record<string, any>,
+  t: (s: string, a?: any[]) => string,
+  hubClusterName: string
+) => {
+  const details: any[] = []
   if (node) {
     const { type, labels = [] } = node
 
@@ -85,7 +88,7 @@ export const getNodeDetails = (node, activeFilters, t, hubClusterName) => {
         type: 'label',
         labelValue: t('Labels'),
       })
-      labels.forEach(({ name: lname, value: lvalue }) => {
+      labels.forEach(({ name: lname, value: lvalue }: any) => {
         const labelDetails = [{ value: `${lname} = ${lvalue}`, indent: true }]
         addDetails(details, labelDetails)
       })
@@ -94,7 +97,13 @@ export const getNodeDetails = (node, activeFilters, t, hubClusterName) => {
   return details
 }
 
-function addK8Details(node, details, activeFilters, t, hubClusterName) {
+function addK8Details(
+  node: any,
+  details: any[],
+  activeFilters: Record<string, any>,
+  t: (s: string, a?: any[]) => string,
+  hubClusterName: string
+) {
   const { clusterName, type, layout = {}, specs } = node
   const { isDesign } = specs
   let labels
@@ -105,9 +114,9 @@ function addK8Details(node, details, activeFilters, t, hubClusterName) {
   let namespace = ''
   if (node && R.pathOr('', ['specs', 'pulse'])(node) !== 'orange') {
     const kindModel = _.get(node, `specs.${type}Model`, {})
-    let computedNSList = []
-    _.flatten(Object.values(kindModel)).forEach((item) => {
-      computedNSList = R.union(computedNSList, [item.namespace])
+    let computedNSList: string[] = []
+    _.flatten(Object.values(kindModel)).forEach((item: any) => {
+      computedNSList = R.union(computedNSList, [item.namespace]) as string[]
     })
 
     computedNSList.forEach((item) => {
@@ -138,10 +147,10 @@ function addK8Details(node, details, activeFilters, t, hubClusterName) {
   }
 
   // the main stuff
-  const mainDetails = [
+  const mainDetails: any[] = [
     {
       labelValue: t('Type'),
-      value: kubeNaming(ltype, t) || kubeNaming(type, t),
+      value: kubeNaming(ltype, t as any) || kubeNaming(type, t as any),
     },
     {
       labelValue: t('API Version'),
