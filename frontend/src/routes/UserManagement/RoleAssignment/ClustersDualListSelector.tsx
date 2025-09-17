@@ -1,24 +1,19 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { DualListSelector, DualListSelectorTreeItemData } from '@patternfly/react-core'
 import React, { useCallback, useEffect } from 'react'
+import { ClusterSet } from './hook/RoleAssignmentDataHook'
 
 type ClustersDualListSelectorProps = {
   onChoseOptions: (values: { id: string; value: string }[]) => void
   clusterSets: ClusterSet[]
 }
 
-type Cluster = {
-  name: string
-  namespaces?: string[]
-}
-
-type ClusterSet = {
-  name: string
-  clusters?: Cluster[]
-}
-
 const ClustersDualListSelector = ({ onChoseOptions, clusterSets }: ClustersDualListSelectorProps) => {
-  const [availableOptions, setAvailableOptions] = React.useState<DualListSelectorTreeItemData[]>(
-    clusterSets.map((clusterSet) => ({
+  const [availableOptions, setAvailableOptions] = React.useState<DualListSelectorTreeItemData[]>([])
+
+  // Update availableOptions when clusterSets change
+  React.useEffect(() => {
+    const newAvailableOptions = clusterSets.map((clusterSet) => ({
       id: clusterSet.name,
       text: clusterSet.name,
       isChecked: false,
@@ -31,34 +26,95 @@ const ClustersDualListSelector = ({ onChoseOptions, clusterSets }: ClustersDualL
         isChecked: false,
         hasBadge: true,
         checkProps: { 'aria-label': cluster.name },
-        children: cluster.namespaces?.map((namespace) => ({
-          id: namespace,
-          text: namespace,
-          isChecked: false,
-          checkProps: { 'aria-label': namespace },
-        })),
       })),
     }))
-  )
+    setAvailableOptions(newAvailableOptions)
+  }, [clusterSets])
 
   const [chosenOptions, setChosenOptions] = React.useState<DualListSelectorTreeItemData[]>([])
 
+  const extractSelectedClusters = useCallback((options: DualListSelectorTreeItemData[]) => {
+    const selectedClusters: { id: string; value: string }[] = []
+
+    options.forEach((option) => {
+      if (!option.children || option.children.length === 0) {
+        if (option.isChecked) {
+          selectedClusters.push({ id: option.id, value: option.text })
+        }
+      } else if (option.children) {
+        if (option.isChecked) {
+          option.children.forEach((child) => {
+            selectedClusters.push({ id: child.id, value: child.text })
+          })
+        } else {
+          option.children.forEach((child) => {
+            if (child.isChecked) {
+              selectedClusters.push({ id: child.id, value: child.text })
+            }
+          })
+        }
+      }
+    })
+
+    return selectedClusters
+  }, [])
+
   const onListChange = useCallback(
     (
-      event: React.MouseEvent<HTMLElement>,
+      _event: React.MouseEvent<HTMLElement>,
       newAvailableOptions: DualListSelectorTreeItemData[],
       newChosenOptions: DualListSelectorTreeItemData[]
     ) => {
       setAvailableOptions(newAvailableOptions.sort())
       setChosenOptions(newChosenOptions.sort())
-      onChoseOptions(chosenOptions.filter((e) => e.isChecked).map((e) => ({ id: e.id, value: e.text })))
+      const selectedClusters = extractSelectedClusters(newChosenOptions)
+      onChoseOptions(selectedClusters)
     },
-    [chosenOptions, onChoseOptions]
+    [onChoseOptions, extractSelectedClusters]
   )
 
-  useEffect(
-    () => onChoseOptions(chosenOptions.filter((e) => e.isChecked).map((e) => ({ id: e.id, value: e.text }))),
-    [chosenOptions, onChoseOptions]
+  useEffect(() => {
+    const selectedClusters = extractSelectedClusters(chosenOptions)
+    onChoseOptions(selectedClusters)
+  }, [chosenOptions, onChoseOptions, extractSelectedClusters])
+
+  const handleOptionCheck = useCallback(
+    (
+      _event: React.MouseEvent<Element> | React.ChangeEvent<HTMLInputElement> | React.KeyboardEvent<Element>,
+      checked: boolean,
+      checkedId: string
+    ) => {
+      const updatedChosenOptions = chosenOptions.map((option) => {
+        if (option.id === checkedId) {
+          if (option.children && option.children.length > 0) {
+            const updatedChildren = option.children.map((child) => ({
+              ...child,
+              isChecked: checked,
+            }))
+            return { ...option, isChecked: checked, children: updatedChildren }
+          }
+          return { ...option, isChecked: checked }
+        }
+
+        if (option.children) {
+          const updatedChildren = option.children.map((child) =>
+            child.id === checkedId ? { ...child, isChecked: checked } : child
+          )
+
+          const allChildrenChecked = updatedChildren.every((child) => child.isChecked)
+
+          return {
+            ...option,
+            isChecked: allChildrenChecked,
+            children: updatedChildren,
+          }
+        }
+
+        return option
+      })
+      setChosenOptions(updatedChosenOptions)
+    },
+    [chosenOptions]
   )
 
   return (
@@ -68,9 +124,7 @@ const ClustersDualListSelector = ({ onChoseOptions, clusterSets }: ClustersDualL
       availableOptions={availableOptions}
       chosenOptions={chosenOptions}
       onListChange={onListChange as any}
-      onOptionCheck={() =>
-        onChoseOptions(chosenOptions.filter((e) => e.isChecked).map((e) => ({ id: e.id, value: e.text })))
-      }
+      onOptionCheck={handleOptionCheck}
       id="clusters-dual-list-selector-tree"
     />
   )

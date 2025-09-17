@@ -20,9 +20,10 @@ export interface RoleAssignment {
   name: string
   clusterRole: string
   targetNamespaces?: string[]
-  clusterSets?: string[]
-  // this is information should come from the aggregated API
-  clusters?: string[]
+  clusterSelection: {
+    type: 'clusterNames'
+    clusterNames: string[]
+  }
 }
 
 export interface RoleAssignmentStatus {
@@ -30,6 +31,15 @@ export interface RoleAssignmentStatus {
   status: 'Active' | 'Error' | 'Pending'
   reason?: string
   message?: string
+}
+
+export interface Condition {
+  lastTransitionTime: string
+  message: string
+  observedGeneration: number
+  reason: string
+  status: 'True' | 'False' | 'Unknown'
+  type: string
 }
 
 export interface MulticlusterRoleAssignment extends IResource {
@@ -40,7 +50,8 @@ export interface MulticlusterRoleAssignment extends IResource {
     subject: Subject
     roleAssignments: RoleAssignment[]
   }
-  status: {
+  status?: {
+    conditions?: Condition[]
     roleAssignments?: RoleAssignmentStatus[]
   }
 }

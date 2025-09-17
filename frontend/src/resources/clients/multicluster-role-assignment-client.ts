@@ -6,6 +6,7 @@ import {
   MulticlusterRoleAssignment,
   MulticlusterRoleAssignmentApiVersion,
   MulticlusterRoleAssignmentKind,
+  MulticlusterRoleAssignmentNamespace,
   RoleAssignment,
   RoleAssignmentStatus,
 } from '../multicluster-role-assignment'
@@ -22,7 +23,7 @@ interface MulticlusterRoleAssignmentQuery {
   subjectNames?: string[]
   subjectKinds?: FlattenedRoleAssignment['subject']['kind'][]
   roles?: string[]
-  clusterSets?: string[]
+  clusterNames?: string[]
 }
 
 // TODO: remove export as soon as the mock data is removed and the CR is ready ACM-23633
@@ -36,7 +37,7 @@ export const roleAssignmentToFlattenedRoleAssignment = (
     kind: multiClusterRoleAssignment.spec.subject.kind,
   },
   relatedMulticlusterRoleAssignment: multiClusterRoleAssignment,
-  status: multiClusterRoleAssignment.status.roleAssignments?.find((e) => e.name === roleAssignment.name),
+  status: multiClusterRoleAssignment?.status?.roleAssignments?.find((e) => e.name === roleAssignment.name),
 })
 
 const isSubjectMatch = (
@@ -55,10 +56,11 @@ const isSubjectMatch = (
   }
 }
 
-const isClusterSetOrRoleMatch = (roleAssignment: RoleAssignment, query: MulticlusterRoleAssignmentQuery): boolean => {
+const isClusterOrRoleMatch = (roleAssignment: RoleAssignment, query: MulticlusterRoleAssignmentQuery): boolean => {
   switch (true) {
-    // Filter by cluster sets
-    case query.clusterSets?.length && !roleAssignment.clusterSets?.some((set) => query.clusterSets!.includes(set)):
+    // Filter by cluster names
+    case query.clusterNames?.length &&
+      !roleAssignment.clusterSelection.clusterNames.some((clusterName) => query.clusterNames!.includes(clusterName)):
       return false
     // Filter by roles
     case query.roles?.length && !query.roles.includes(roleAssignment.clusterRole):
@@ -89,7 +91,7 @@ export const useFindRoleAssignments = (query: MulticlusterRoleAssignmentQuery): 
             ...multiClusterRoleAssignmentCurr.spec.roleAssignments
               .reduce(
                 (assignmentAcc: RoleAssignment[], assignmentCurr: RoleAssignment) =>
-                  !isClusterSetOrRoleMatch(assignmentCurr, query) ? assignmentAcc : [...assignmentAcc, assignmentCurr],
+                  !isClusterOrRoleMatch(assignmentCurr, query) ? assignmentAcc : [...assignmentAcc, assignmentCurr],
                 []
               )
               .map((e) => roleAssignmentToFlattenedRoleAssignment(multiClusterRoleAssignmentCurr, e)),
@@ -114,7 +116,7 @@ export const findRoleAssignments = (
             ...multiClusterRoleAssignmentCurr.spec.roleAssignments
               .reduce(
                 (assignmentAcc: RoleAssignment[], assignmentCurr: RoleAssignment) =>
-                  !isClusterSetOrRoleMatch(assignmentCurr, query) ? assignmentAcc : [...assignmentAcc, assignmentCurr],
+                  !isClusterOrRoleMatch(assignmentCurr, query) ? assignmentAcc : [...assignmentAcc, assignmentCurr],
                 []
               )
               .map((e) => roleAssignmentToFlattenedRoleAssignment(multiClusterRoleAssignmentCurr, e)),
@@ -183,11 +185,14 @@ export const addRoleAssignment = (
     const newMultiClusterRoleAssignment: MulticlusterRoleAssignment = {
       apiVersion: MulticlusterRoleAssignmentApiVersion,
       kind: MulticlusterRoleAssignmentKind,
+      metadata: {
+        name: `role-assignment-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        namespace: MulticlusterRoleAssignmentNamespace,
+      },
       spec: {
         subject,
         roleAssignments: [mappedRoleAssignment],
       },
-      metadata: {},
       status: {},
     }
     return create(newMultiClusterRoleAssignment)
