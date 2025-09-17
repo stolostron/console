@@ -2,7 +2,7 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-import { getAppSetResourceStatuses } from './resourceStatusesAppSet.js'
+import { getAppSetResourceStatuses } from './resourceStatusesAppSet'
 import { waitFor } from '@testing-library/react'
 import { nockSearch } from '../../../../../lib/nock-util'
 

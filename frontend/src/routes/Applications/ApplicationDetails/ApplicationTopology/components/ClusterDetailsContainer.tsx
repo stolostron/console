@@ -1,9 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-// Copyright (c) 2020 Red Hat, Inc.
-// Copyright Contributors to the Open Cluster Management project
-'use strict'
 
-import PropTypes from 'prop-types'
+import React, { Component, KeyboardEvent, SyntheticEvent } from 'react'
 import {
   Pagination,
   Accordion,
@@ -13,24 +10,38 @@ import {
   SelectOption,
 } from '@patternfly/react-core'
 import { AcmSelectBase, SelectVariant } from '../../../../../components/AcmSelectBase'
-import { Component } from 'react'
 import { processResourceActionLink, getPercentage, inflateKubeValue } from '../helpers/diagram-helpers'
 import AcmTimestamp from '../../../../../lib/AcmTimestamp'
+import {
+  ClusterDetailsContainerProps,
+  ClusterDetailsContainerState,
+  ClusterData,
+  ClusterStatusIcon,
+  ResourceAction,
+  TranslationFunction,
+} from '../model/types'
 
-class ClusterDetailsContainer extends Component {
-  static propTypes = {
-    clusterDetailsContainerControl: PropTypes.shape({
-      clusterDetailsContainerData: PropTypes.object,
-      handleClusterDetailsContainerUpdate: PropTypes.func,
-    }),
-    clusterID: PropTypes.string,
-    clusterList: PropTypes.array,
-    t: PropTypes.func,
-  }
-  constructor(props) {
-    super()
+/**
+ * ClusterDetailsContainer component displays detailed information about clusters
+ * in a paginated, searchable accordion format. It allows users to:
+ * - Search and filter clusters using a typeahead select
+ * - View cluster details including status, resources (CPU/Memory), and console links
+ * - Navigate through clusters using pagination
+ * - Expand/collapse individual cluster details
+ */
+class ClusterDetailsContainer extends Component<ClusterDetailsContainerProps, ClusterDetailsContainerState> {
+  /**
+   * Constructor initializes the component state based on props and existing container data.
+   * If the current cluster ID matches the props cluster ID, it restores the previous state.
+   * Otherwise, it resets the state for a new cluster selection.
+   */
+  constructor(props: ClusterDetailsContainerProps) {
+    super(props)
+
     const currentClusterID = props.clusterDetailsContainerControl.clusterDetailsContainerData.clusterID
+
     if (currentClusterID === props.clusterID) {
+      // Restore previous state for the same cluster
       this.state = {
         clusterList: props.clusterList,
         t: props.t,
@@ -43,12 +54,21 @@ class ClusterDetailsContainer extends Component {
         selectedClusterList: props.clusterDetailsContainerControl.clusterDetailsContainerData.selectedClusterList,
       }
     } else {
-      // reset saved setting when a different cluster node is selected
+      // Reset state for a different cluster node selection
       const {
         clusterDetailsContainerControl: { handleClusterDetailsContainerUpdate },
       } = props
 
-      handleClusterDetailsContainerUpdate(1, 0, false, new Set(), props.clusterID)
+      handleClusterDetailsContainerUpdate({
+        page: 1,
+        startIdx: 0,
+        clusterSearchToggle: false,
+        expandSectionToggleMap: new Set(),
+        clusterID: props.clusterID,
+        selected: undefined,
+        selectedClusterList: [],
+      })
+
       this.state = {
         clusterList: props.clusterList,
         t: props.t,
@@ -63,6 +83,7 @@ class ClusterDetailsContainer extends Component {
       }
     }
 
+    // Bind event handlers to maintain proper 'this' context
     this.handleFirstClick = this.handleFirstClick.bind(this)
     this.handleLastClick = this.handleLastClick.bind(this)
     this.handleNextClick = this.handleNextClick.bind(this)
@@ -74,35 +95,56 @@ class ClusterDetailsContainer extends Component {
     this.handleSelectionClear = this.handleSelectionClear.bind(this)
   }
 
-  processActionLink = (resource) => {
-    processResourceActionLink(resource)
+  /**
+   * Processes action links for cluster resources (e.g., opening cluster console)
+   */
+  processActionLink = (resource: ResourceAction): void => {
+    const { t } = this.state
+    // Note: Using empty function for toggleLoading and empty string for hubClusterName
+    // as these are not available in this context
+    processResourceActionLink(resource, () => {}, t, '')
   }
 
-  handleSelection = (selection) => {
+  /**
+   * Handles cluster selection from the typeahead dropdown.
+   * Updates both local state and parent container state.
+   */
+  handleSelection = (selection: string | string[]): void => {
+    const selectedValue = Array.isArray(selection) ? selection[0] : selection
     const {
       clusterDetailsContainerControl: { handleClusterDetailsContainerUpdate },
       clusterList,
     } = this.props
     const { clusterID } = this.state
-    let selectedCluster, newClusterList
-    if (selection) {
-      selectedCluster = clusterList.find((cls) => (cls.name ? cls.name === selection : cls.metadata.name === selection))
-      newClusterList = [selectedCluster]
+
+    let selectedCluster: ClusterData | undefined
+    let newClusterList: ClusterData[]
+
+    if (selectedValue) {
+      // Find the selected cluster by name
+      selectedCluster = clusterList.find((cls) =>
+        cls.name ? cls.name === selectedValue : cls.metadata?.name === selectedValue
+      )
+      newClusterList = selectedCluster ? [selectedCluster] : []
     } else {
+      // No selection - show all clusters
       newClusterList = clusterList
     }
 
+    // Update parent container state
     handleClusterDetailsContainerUpdate({
       page: 1,
       startIdx: 0,
       clusterSearchToggle: false,
       expandSectionToggleMap: new Set(),
-      clusterID,
-      selected: selection,
+      clusterID: clusterID || '',
+      selected: selectedValue,
       selectedClusterList: newClusterList,
     })
+
+    // Update local component state
     this.setState({
-      selected: selection,
+      selected: selectedValue,
       clusterList: newClusterList,
       startIdx: 0,
       page: 1,
@@ -112,7 +154,10 @@ class ClusterDetailsContainer extends Component {
     })
   }
 
-  handleSelectionClear = () => {
+  /**
+   * Clears the current cluster selection and shows all clusters
+   */
+  handleSelectionClear = (): void => {
     const {
       clusterDetailsContainerControl: { handleClusterDetailsContainerUpdate },
     } = this.props
@@ -123,10 +168,11 @@ class ClusterDetailsContainer extends Component {
       startIdx: 0,
       clusterSearchToggle: false,
       expandSectionToggleMap: new Set(),
-      clusterID,
+      clusterID: clusterID || '',
       selected: undefined,
       selectedClusterList: [],
     })
+
     this.setState({
       selected: undefined,
       startIdx: 0,
@@ -136,7 +182,10 @@ class ClusterDetailsContainer extends Component {
     })
   }
 
-  handleFirstClick = () => {
+  /**
+   * Navigates to the first page of clusters
+   */
+  handleFirstClick = (): void => {
     const {
       clusterDetailsContainerControl: { handleClusterDetailsContainerUpdate },
     } = this.props
@@ -147,10 +196,11 @@ class ClusterDetailsContainer extends Component {
       startIdx: 0,
       clusterSearchToggle: false,
       expandSectionToggleMap: new Set(),
-      clusterID,
+      clusterID: clusterID || '',
       selected: undefined,
       selectedClusterList: [],
     })
+
     this.setState({
       startIdx: 0,
       page: 1,
@@ -158,20 +208,26 @@ class ClusterDetailsContainer extends Component {
     })
   }
 
-  handleLastClick = () => {
+  /**
+   * Navigates to the last page of clusters
+   */
+  handleLastClick = (): void => {
     const {
       clusterDetailsContainerControl: { handleClusterDetailsContainerUpdate },
     } = this.props
     const { clusterList, perPage, clusterID } = this.state
 
+    // Calculate the last page and starting index
     let divResult = Math.floor(clusterList.length / perPage)
     let lastPage = divResult
     const modResult = clusterList.length % perPage
+
     if (modResult === 0) {
       divResult = divResult - 1
     } else {
       lastPage = lastPage + 1
     }
+
     const newStartIdx = perPage * divResult
 
     handleClusterDetailsContainerUpdate({
@@ -179,10 +235,11 @@ class ClusterDetailsContainer extends Component {
       startIdx: newStartIdx,
       clusterSearchToggle: false,
       expandSectionToggleMap: new Set(),
-      clusterID,
+      clusterID: clusterID || '',
       selected: undefined,
       selectedClusterList: [],
     })
+
     this.setState({
       startIdx: newStartIdx,
       page: lastPage,
@@ -190,7 +247,10 @@ class ClusterDetailsContainer extends Component {
     })
   }
 
-  handleNextClick = (_event, currentPage) => {
+  /**
+   * Navigates to the next page of clusters
+   */
+  handleNextClick = (_event: SyntheticEvent<HTMLButtonElement>, currentPage: number): void => {
     const {
       clusterDetailsContainerControl: { handleClusterDetailsContainerUpdate },
     } = this.props
@@ -202,10 +262,11 @@ class ClusterDetailsContainer extends Component {
       startIdx: newStartIdx,
       clusterSearchToggle: false,
       expandSectionToggleMap: new Set(),
-      clusterID,
+      clusterID: clusterID || '',
       selected: undefined,
       selectedClusterList: [],
     })
+
     this.setState({
       startIdx: newStartIdx,
       page: currentPage,
@@ -213,7 +274,10 @@ class ClusterDetailsContainer extends Component {
     })
   }
 
-  handlePreviousClick = (_event, currentPage) => {
+  /**
+   * Navigates to the previous page of clusters
+   */
+  handlePreviousClick = (_event: SyntheticEvent<HTMLButtonElement>, currentPage: number): void => {
     const {
       clusterDetailsContainerControl: { handleClusterDetailsContainerUpdate },
     } = this.props
@@ -225,10 +289,11 @@ class ClusterDetailsContainer extends Component {
       startIdx: newStartIdx,
       clusterSearchToggle: false,
       expandSectionToggleMap: new Set(),
-      clusterID,
+      clusterID: clusterID || '',
       selected: undefined,
       selectedClusterList: [],
     })
+
     this.setState({
       startIdx: newStartIdx,
       page: currentPage,
@@ -236,7 +301,10 @@ class ClusterDetailsContainer extends Component {
     })
   }
 
-  handlePageInput = (_event, newPage) => {
+  /**
+   * Handles direct page input navigation
+   */
+  handlePageInput = (_event: KeyboardEvent<HTMLInputElement>, newPage: number): void => {
     const {
       clusterDetailsContainerControl: { handleClusterDetailsContainerUpdate },
     } = this.props
@@ -248,10 +316,11 @@ class ClusterDetailsContainer extends Component {
       startIdx: newStartIdx,
       clusterSearchToggle: false,
       expandSectionToggleMap: new Set(),
-      clusterID,
+      clusterID: clusterID || '',
       selected: undefined,
       selectedClusterList: [],
     })
+
     this.setState({
       startIdx: newStartIdx,
       page: newPage,
@@ -259,13 +328,19 @@ class ClusterDetailsContainer extends Component {
     })
   }
 
-  handleKeyPress = (resource, _event) => {
-    if (_event.key === 'Enter') {
+  /**
+   * Handles keyboard events for cluster console links
+   */
+  handleKeyPress = (resource: ResourceAction, event: KeyboardEvent): void => {
+    if (event.key === 'Enter') {
       this.processActionLink(resource)
     }
   }
 
-  handleSelectToggle = () => {
+  /**
+   * Toggles the cluster search dropdown visibility
+   */
+  handleSelectToggle = (): void => {
     const {
       clusterDetailsContainerControl: { handleClusterDetailsContainerUpdate },
     } = this.props
@@ -275,102 +350,140 @@ class ClusterDetailsContainer extends Component {
     handleClusterDetailsContainerUpdate({
       page,
       startIdx,
-      newClusterSearchToggle,
+      clusterSearchToggle: newClusterSearchToggle,
       expandSectionToggleMap,
-      clusterID,
+      clusterID: clusterID || '',
       selected: undefined,
       selectedClusterList: [],
     })
+
     this.setState({
       clusterSearchToggle: newClusterSearchToggle,
     })
   }
 
-  handleExpandSectionToggle = (itemNum) => {
+  /**
+   * Toggles the expansion state of individual cluster detail sections
+   */
+  handleExpandSectionToggle = (itemNum: number): void => {
     const {
       clusterDetailsContainerControl: { handleClusterDetailsContainerUpdate },
     } = this.props
     const { page, startIdx, clusterSearchToggle, expandSectionToggleMap, clusterID, selected, selectedClusterList } =
       this.state
 
-    if (!expandSectionToggleMap.has(itemNum)) {
-      expandSectionToggleMap.add(itemNum)
+    // Create a new Set to avoid mutating the existing one
+    const newExpandSectionToggleMap = new Set(expandSectionToggleMap)
+
+    if (!newExpandSectionToggleMap.has(itemNum)) {
+      newExpandSectionToggleMap.add(itemNum)
     } else {
-      expandSectionToggleMap.delete(itemNum)
+      newExpandSectionToggleMap.delete(itemNum)
     }
 
     handleClusterDetailsContainerUpdate({
       page,
       startIdx,
       clusterSearchToggle,
-      expandSectionToggleMap,
-      clusterID,
+      expandSectionToggleMap: newExpandSectionToggleMap,
+      clusterID: clusterID || '',
       selected,
       selectedClusterList,
     })
+
     this.setState({
-      expandSectionToggleMap: expandSectionToggleMap,
+      expandSectionToggleMap: newExpandSectionToggleMap,
     })
   }
 
-  renderConsoleURLLink = (consoleURL, resource, t) => {
-    return (
-      consoleURL && (
-        <div className="sectionContent borderLeft">
-          <span
-            className="link sectionLabel"
-            id="linkForNodeAction"
-            tabIndex="0"
-            role="button"
-            onClick={this.processActionLink.bind(this, resource)}
-            onKeyDown={this.handleKeyPress.bind(this, resource)}
-          >
-            {t('Open cluster console')}
-            <svg width="12px" height="12px" style={{ marginLeft: '8px', stroke: '#0066CC' }}>
-              <use href="#drawerShapes_carbonLaunch" className="label-icon" />
-            </svg>
-          </span>
-        </div>
-      )
-    )
+  /**
+   * Renders a clickable console URL link for cluster access
+   */
+  renderConsoleURLLink = (
+    consoleURL: string | undefined,
+    resource: ResourceAction,
+    t: TranslationFunction
+  ): JSX.Element | null => {
+    return consoleURL ? (
+      <div className="sectionContent borderLeft">
+        <span
+          className="link sectionLabel"
+          id="linkForNodeAction"
+          tabIndex={0}
+          role="button"
+          onClick={() => this.processActionLink(resource)}
+          onKeyDown={(event) => this.handleKeyPress(resource, event)}
+        >
+          {t('Open cluster console')}
+          <svg width="12px" height="12px" style={{ marginLeft: '8px', stroke: '#0066CC' }}>
+            <use href="#drawerShapes_carbonLaunch" className="label-icon" />
+          </svg>
+        </span>
+      </div>
+    ) : null
   }
 
-  renderCPUData = (cc, ac, divClass, labelClass, t, valueClass) => {
-    let showData = false
-    if (ac && ac !== '') {
-      showData = true
-    }
+  /**
+   * Renders CPU usage data as a percentage if available
+   */
+  renderCPUData = (
+    cc: string | undefined,
+    ac: string | undefined,
+    divClass: string,
+    labelClass: string,
+    t: TranslationFunction,
+    valueClass: string
+  ): JSX.Element | null => {
+    const showData = ac && ac !== ''
 
-    return (
-      showData && (
-        <div className={divClass}>
-          <span className={labelClass}>{t('CPU')}: </span>
-          <span className={valueClass}>{getPercentage(inflateKubeValue(ac), inflateKubeValue(cc))}%</span>
-        </div>
-      )
-    )
+    return showData ? (
+      <div className={divClass}>
+        <span className={labelClass}>{t('CPU')}: </span>
+        <span className={valueClass}>
+          {getPercentage(
+            inflateKubeValue(typeof ac === 'string' ? ac : String(ac || 0)),
+            inflateKubeValue(typeof cc === 'string' ? cc : String(cc || 0))
+          )}
+          %
+        </span>
+      </div>
+    ) : null
   }
 
-  renderMemoryData = (cm, am, divClass, labelClass, t, valueClass) => {
-    let showData = false
-    if (am && am !== '') {
-      showData = true
-    }
+  /**
+   * Renders Memory usage data as a percentage if available
+   */
+  renderMemoryData = (
+    cm: string | undefined,
+    am: string | undefined,
+    divClass: string,
+    labelClass: string,
+    t: TranslationFunction,
+    valueClass: string
+  ): JSX.Element | null => {
+    const showData = am && am !== ''
 
-    return (
-      showData && (
-        <div className={divClass}>
-          <span className={labelClass}>{t('Memory')}: </span>
-          <span className={valueClass}>{getPercentage(inflateKubeValue(am), inflateKubeValue(cm))}%</span>
-        </div>
-      )
-    )
+    return showData ? (
+      <div className={divClass}>
+        <span className={labelClass}>{t('Memory')}: </span>
+        <span className={valueClass}>
+          {getPercentage(
+            inflateKubeValue(typeof am === 'string' ? am : String(am || 0)),
+            inflateKubeValue(typeof cm === 'string' ? cm : String(cm || 0))
+          )}
+          %
+        </span>
+      </div>
+    ) : null
   }
 
-  // This calculation is not accurate as search is not returning all the needed
-  // data from the managedcluster resource YAML
-  calculateClusterStatus = (clusterData) => {
-    let status
+  /**
+   * Calculates cluster status based on cluster acceptance, join, and availability conditions.
+   * Note: This calculation may not be fully accurate as search doesn't return all needed
+   * data from the managedcluster resource YAML.
+   */
+  calculateClusterStatus = (clusterData: ClusterData): string => {
+    let status: string
     const clusterAccepted = clusterData.HubAcceptedManagedCluster
     const clusterJoined = clusterData.ManagedClusterJoined
     const clusterAvailable = clusterData.ManagedClusterConditionAvailable
@@ -386,28 +499,37 @@ class ClusterDetailsContainer extends Component {
     return status
   }
 
-  mapClusterStatusToIcon = (status) => {
-    let icon = 'checkmark'
+  /**
+   * Maps cluster status strings to appropriate icon names for visual representation
+   */
+  mapClusterStatusToIcon = (status: string): ClusterStatusIcon => {
+    let icon: ClusterStatusIcon = 'checkmark'
 
-    if (status.toLowerCase() === 'pendingimport' || status.toLowerCase() === 'detaching') {
+    const statusLower = status.toLowerCase()
+    if (statusLower === 'pendingimport' || statusLower === 'detaching') {
       icon = 'pending'
-    } else if (status.toLowerCase() === 'notaccepted') {
+    } else if (statusLower === 'notaccepted') {
       icon = 'warning'
-    } else if (status.toLowerCase() === 'offline' || status.toLowerCase() === 'unknown') {
+    } else if (statusLower === 'offline' || statusLower === 'unknown') {
       icon = 'failure'
     }
 
     return icon
   }
 
-  renderClusterStatusIcon = (icon) => {
-    const fillMap = new Map([
+  /**
+   * Renders an SVG status icon with appropriate color based on the icon type
+   */
+  renderClusterStatusIcon = (icon: ClusterStatusIcon): JSX.Element => {
+    const fillMap = new Map<ClusterStatusIcon, string>([
       ['checkmark', '#3E8635'],
       ['failure', '#C9190B'],
       ['warning', '#F0AB00'],
       ['pending', '#878D96'],
     ])
+
     const iconFill = fillMap.get(icon)
+
     return (
       <svg width="12px" height="12px" fill={iconFill}>
         <use href={`#drawerShapes_${icon}`} className="label-icon" />
@@ -415,36 +537,53 @@ class ClusterDetailsContainer extends Component {
     )
   }
 
-  render() {
+  /**
+   * Main render method that displays the cluster details interface including:
+   * - Cluster search/filter dropdown
+   * - Pagination controls (if more than 5 clusters)
+   * - Accordion with expandable cluster details
+   */
+  render(): JSX.Element {
     const { selected, clusterList, page, perPage, startIdx, t, expandSectionToggleMap, selectedClusterList } =
       this.state
+
+    // UI constants
     const titleId = 'cluster-select-id-1'
     const findClusterMsg = 'Find cluster'
-    const clusterItems = []
+    const clusterItems: JSX.Element[] = []
     const divClass = 'sectionContent borderLeft'
     const labelClass = 'label sectionLabel'
     const valueClass = 'value'
     const solidLineStyle = '1px solid #D2D2D2'
+
+    // Determine which cluster list to display (filtered or all)
     const displayClusterList = selected ? selectedClusterList : clusterList
 
+    // Generate cluster detail items for the current page
     for (let i = startIdx; i < displayClusterList.length && i < page * perPage; i++) {
-      const { metadata = {}, capacity = {}, allocatable = {}, consoleURL } = displayClusterList[i]
+      const cluster = displayClusterList[i]
+      const { metadata = {}, capacity = {}, allocatable = {}, consoleURL } = cluster
 
-      const status = displayClusterList[i].status || this.calculateClusterStatus(displayClusterList[i]) || 'unknown'
+      // Extract cluster information with fallbacks
+      const status = cluster.status || this.calculateClusterStatus(cluster) || 'unknown'
       const statusIcon = this.mapClusterStatusToIcon(status)
-      const clusterName = displayClusterList[i].name || metadata.name
-      const clusterNamespace =
-        displayClusterList[i].namespace || displayClusterList[i]._clusterNamespace || metadata.namespace
-      const creationTimestamp = displayClusterList[i].creationTimestamp || metadata.creationTimestamp
-      const cc = displayClusterList[i].cpu ? displayClusterList[i].cpu.toString() : capacity.cpu
-      const cm = displayClusterList[i].memory ? displayClusterList[i].memory.toString() : capacity.memory
+      const clusterName = cluster.name || (metadata as any)?.name || ''
+      const clusterNamespace = cluster.namespace || cluster._clusterNamespace || (metadata as any)?.namespace || ''
+      const creationTimestamp = cluster.creationTimestamp || (metadata as any)?.creationTimestamp
+      const cc = cluster.cpu ? cluster.cpu.toString() : capacity.cpu
+      const cm = cluster.memory ? cluster.memory.toString() : capacity.memory
       const am = allocatable.memory || ''
       const ac = allocatable.cpu || ''
-      const resource = {
+
+      // Resource action for console URL
+      const resource: ResourceAction = {
         action: 'open_link',
         targetLink: consoleURL,
       }
+
       const namespaceLabel = `${t('Namespace')}: ${clusterNamespace}`
+
+      // Styling for cluster item borders
       const parentDivStyle =
         i === startIdx
           ? {
@@ -452,8 +591,11 @@ class ClusterDetailsContainer extends Component {
               borderBottom: solidLineStyle,
             }
           : { borderBottom: solidLineStyle }
+
       const toggleItemNum = i % perPage
-      const namespaceStyle = {
+
+      // Namespace label styling
+      const namespaceStyle: React.CSSProperties = {
         color: '#5A6872',
         fontFamily: 'RedHatText',
         fontSize: '12px',
@@ -461,7 +603,10 @@ class ClusterDetailsContainer extends Component {
         textAlign: 'left',
         display: 'block',
       }
-      const outerNamespaceStyle = expandSectionToggleMap.has(toggleItemNum) ? { display: 'none' } : namespaceStyle
+
+      const outerNamespaceStyle: React.CSSProperties = expandSectionToggleMap.has(toggleItemNum)
+        ? { display: 'none' }
+        : namespaceStyle
 
       clusterItems.push(
         <div className="clusterDetailItem" style={parentDivStyle} key={clusterName}>
@@ -518,6 +663,7 @@ class ClusterDetailsContainer extends Component {
 
     return (
       <div className="clusterDetails">
+        {/* Cluster search/filter dropdown */}
         <AcmSelectBase
           variant={SelectVariant.typeahead}
           onSelect={this.handleSelection}
@@ -528,10 +674,13 @@ class ClusterDetailsContainer extends Component {
           onClear={this.handleSelectionClear}
         >
           {this.props.clusterList.map((cluster) => (
-            <SelectOption key={cluster.name || cluster.metadata.name} value={cluster.name || cluster.metadata.name} />
+            <SelectOption key={cluster.name || cluster.metadata?.name} value={cluster.name || cluster.metadata?.name} />
           ))}
         </AcmSelectBase>
+
         <div className="spacer" />
+
+        {/* Top pagination - only show if more than 5 clusters */}
         {this.props.clusterList.length > 5 && (
           <Pagination
             itemCount={displayClusterList.length}
@@ -545,8 +694,13 @@ class ClusterDetailsContainer extends Component {
             onPageInput={this.handlePageInput}
           />
         )}
+
         <div className="spacer" />
+
+        {/* Cluster details accordion */}
         <Accordion>{clusterItems}</Accordion>
+
+        {/* Bottom pagination - only show if more than 5 clusters */}
         {this.props.clusterList.length > 5 && (
           <Pagination
             itemCount={displayClusterList.length}

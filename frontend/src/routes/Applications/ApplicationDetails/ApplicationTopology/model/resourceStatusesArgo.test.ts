@@ -2,7 +2,7 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-import { getArgoResourceStatuses } from './resourceStatusesArgo.js'
+import { getArgoResourceStatuses } from './resourceStatusesArgo'
 import { waitFor } from '@testing-library/react'
 import { nockSearch } from '../../../../../lib/nock-util'
 

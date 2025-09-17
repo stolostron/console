@@ -3,8 +3,7 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-import { Component } from 'react'
-import PropTypes from 'prop-types'
+import React, { Component } from 'react'
 import {
   Pagination,
   Accordion,
@@ -15,26 +14,38 @@ import {
 } from '@patternfly/react-core'
 import { AcmSelectBase, SelectVariant } from '../../../../../components/AcmSelectBase'
 import { processResourceActionLink, createEditLink } from '../helpers/diagram-helpers'
+import type {
+  ArgoApp,
+  ArgoAppDetailsContainerProps,
+  ArgoAppDetailsContainerState,
+  ArgoStatusIcon,
+  ArgoResourceAction,
+  NodeLike,
+  TranslationFunction,
+} from '../model/types'
 
-class ArgoAppDetailsContainer extends Component {
-  static propTypes = {
-    argoAppDetailsContainerControl: PropTypes.shape({
-      argoAppDetailsContainerData: PropTypes.object,
-      handleArgoAppDetailsContainerUpdate: PropTypes.func,
-      handleErrorMsg: PropTypes.func,
-    }),
-    argoAppList: PropTypes.array,
-    t: PropTypes.func,
-  }
-  constructor(props) {
-    super()
+/**
+ * ArgoAppDetailsContainer component provides a detailed view of Argo applications
+ * with search, pagination, and expandable accordion sections for each application.
+ *
+ * Features:
+ * - Search/filter applications by name
+ * - Paginated view for large application lists
+ * - Expandable sections showing application details
+ * - Links to Argo editor and YAML view
+ * - Health status indicators with appropriate icons
+ */
+class ArgoAppDetailsContainer extends Component<ArgoAppDetailsContainerProps, ArgoAppDetailsContainerState> {
+  constructor(props: ArgoAppDetailsContainerProps) {
+    super(props)
 
+    // Initialize component state from props
     this.state = {
       argoAppList: props.argoAppList,
       t: props.t,
       selected: props.argoAppDetailsContainerControl.argoAppDetailsContainerData.selected,
       page: props.argoAppDetailsContainerControl.argoAppDetailsContainerData.page,
-      perPage: 5,
+      perPage: 5, // Fixed page size for consistent UI
       startIdx: props.argoAppDetailsContainerControl.argoAppDetailsContainerData.startIdx,
       argoAppSearchToggle: props.argoAppDetailsContainerControl.argoAppDetailsContainerData.argoAppSearchToggle,
       expandSectionToggleMap: props.argoAppDetailsContainerControl.argoAppDetailsContainerData.expandSectionToggleMap,
@@ -42,6 +53,7 @@ class ArgoAppDetailsContainer extends Component {
       isLoading: false,
     }
 
+    // Bind event handlers to maintain proper 'this' context
     this.handleSelection = this.handleSelection.bind(this)
     this.handleSelectToggle = this.handleSelectToggle.bind(this)
     this.handleSelectionClear = this.handleSelectionClear.bind(this)
@@ -54,31 +66,43 @@ class ArgoAppDetailsContainer extends Component {
     this.toggleLinkLoading = this.toggleLinkLoading.bind(this)
   }
 
-  processActionLink = (resource) => {
-    const { t } = this.props
-    processResourceActionLink(resource, this.toggleLinkLoading, t)
+  /**
+   * Processes action links for resources (Argo editor, YAML view)
+   * @param resource - The resource to process the action for
+   */
+  processActionLink = (resource: ArgoResourceAction): void => {
+    const { t, hubClusterName } = this.props
+    processResourceActionLink(resource, this.toggleLinkLoading, t, hubClusterName || '')
   }
 
-  toggleLinkLoading = () => {
+  /**
+   * Toggles the loading state for action links
+   */
+  toggleLinkLoading = (): void => {
     this.setState((prevState) => ({
       isLoading: !prevState.isLoading,
     }))
   }
 
-  handleExpandSectionToggle = (itemNum) => {
+  /**
+   * Handles expanding/collapsing accordion sections for individual applications
+   * @param itemNum - The index of the item to toggle
+   */
+  handleExpandSectionToggle = (itemNum: number): void => {
     const {
       argoAppDetailsContainerControl: { handleArgoAppDetailsContainerUpdate },
     } = this.props
     const { page, startIdx, argoAppSearchToggle, expandSectionToggleMap, selected, selectedArgoAppList, isLoading } =
       this.state
 
+    // Toggle the expansion state for this item
     if (!expandSectionToggleMap.has(itemNum)) {
       expandSectionToggleMap.add(itemNum)
     } else {
       expandSectionToggleMap.delete(itemNum)
     }
 
-    // save details state to DiagramView
+    // Persist state changes to parent component (DiagramView)
     handleArgoAppDetailsContainerUpdate({
       page,
       startIdx,
@@ -88,37 +112,48 @@ class ArgoAppDetailsContainer extends Component {
       selectedArgoAppList,
       isLoading,
     })
+
     this.setState({
       expandSectionToggleMap: expandSectionToggleMap,
     })
   }
 
-  handleSelection = (selection) => {
+  /**
+   * Handles application selection from the dropdown
+   * @param selection - The name of the selected application, or null to show all
+   */
+  handleSelection = (selection: string | null): void => {
     const {
       argoAppDetailsContainerControl: { handleArgoAppDetailsContainerUpdate },
       argoAppList,
     } = this.props
     const { isLoading } = this.state
-    let selectedApp, newArgoAppList
+
+    let selectedApp: ArgoApp | undefined
+    let newArgoAppList: ArgoApp[]
+
     if (selection) {
+      // Filter to show only the selected application
       selectedApp = argoAppList.find((app) => app.name === selection)
-      newArgoAppList = [selectedApp]
+      newArgoAppList = selectedApp ? [selectedApp] : []
     } else {
+      // Show all applications
       newArgoAppList = argoAppList
     }
 
-    // save details state to DiagramViewer
+    // Reset pagination and expansion state when selection changes
     handleArgoAppDetailsContainerUpdate({
       page: 1,
       startIdx: 0,
       argoAppSearchToggle: false,
       expandSectionToggleMap: new Set(),
-      selected: selection,
+      selected: selection || undefined,
       selectedArgoAppList: newArgoAppList,
       isLoading,
     })
+
     this.setState({
-      selected: selection,
+      selected: selection || undefined,
       argoAppList: newArgoAppList,
       startIdx: 0,
       page: 1,
@@ -128,14 +163,17 @@ class ArgoAppDetailsContainer extends Component {
     })
   }
 
-  handleSelectToggle = () => {
+  /**
+   * Toggles the search dropdown open/closed state
+   */
+  handleSelectToggle = (): void => {
     const {
       argoAppDetailsContainerControl: { handleArgoAppDetailsContainerUpdate },
     } = this.props
     const { page, startIdx, argoAppSearchToggle, expandSectionToggleMap, isLoading } = this.state
     const newArgoAppSearchToggle = !argoAppSearchToggle
 
-    // save details state to DiagramViewer
+    // Clear selection when toggling search
     handleArgoAppDetailsContainerUpdate({
       page,
       startIdx,
@@ -145,18 +183,22 @@ class ArgoAppDetailsContainer extends Component {
       selectedArgoAppList: [],
       isLoading,
     })
+
     this.setState({
       argoAppSearchToggle: newArgoAppSearchToggle,
     })
   }
 
-  handleSelectionClear = () => {
+  /**
+   * Clears the current application selection and shows all applications
+   */
+  handleSelectionClear = (): void => {
     const {
       argoAppDetailsContainerControl: { handleArgoAppDetailsContainerUpdate },
     } = this.props
     const { isLoading } = this.state
 
-    // save details state to DiagramViewer
+    // Reset to initial state showing all applications
     handleArgoAppDetailsContainerUpdate({
       page: 1,
       startIdx: 0,
@@ -166,6 +208,7 @@ class ArgoAppDetailsContainer extends Component {
       selectedArgoAppList: [],
       isLoading,
     })
+
     this.setState({
       selected: undefined,
       startIdx: 0,
@@ -175,13 +218,15 @@ class ArgoAppDetailsContainer extends Component {
     })
   }
 
-  handleFirstClick = () => {
+  /**
+   * Navigates to the first page of applications
+   */
+  handleFirstClick = (): void => {
     const {
       argoAppDetailsContainerControl: { handleArgoAppDetailsContainerUpdate },
     } = this.props
     const { isLoading } = this.state
 
-    // save details state to DiagramViewer
     handleArgoAppDetailsContainerUpdate({
       page: 1,
       startIdx: 0,
@@ -191,6 +236,7 @@ class ArgoAppDetailsContainer extends Component {
       selectedArgoAppList: [],
       isLoading,
     })
+
     this.setState({
       startIdx: 0,
       page: 1,
@@ -198,23 +244,28 @@ class ArgoAppDetailsContainer extends Component {
     })
   }
 
-  handleLastClick = () => {
+  /**
+   * Navigates to the last page of applications
+   */
+  handleLastClick = (): void => {
     const {
       argoAppDetailsContainerControl: { handleArgoAppDetailsContainerUpdate },
     } = this.props
     const { argoAppList, perPage, isLoading } = this.state
 
+    // Calculate the last page and its starting index
     let divResult = Math.floor(argoAppList.length / perPage)
     let lastPage = divResult
     const modResult = argoAppList.length % perPage
+
     if (modResult === 0) {
       divResult = divResult - 1
     } else {
       lastPage = lastPage + 1
     }
+
     const newStartIdx = perPage * divResult
 
-    // save details state to DiagramViewer
     handleArgoAppDetailsContainerUpdate({
       page: lastPage,
       startIdx: newStartIdx,
@@ -224,6 +275,7 @@ class ArgoAppDetailsContainer extends Component {
       selectedArgoAppList: [],
       isLoading,
     })
+
     this.setState({
       startIdx: newStartIdx,
       page: lastPage,
@@ -231,14 +283,18 @@ class ArgoAppDetailsContainer extends Component {
     })
   }
 
-  handleNextClick = (_event, currentPage) => {
+  /**
+   * Navigates to the next page of applications
+   * @param _event - The click event (unused)
+   * @param currentPage - The current page number
+   */
+  handleNextClick = (_event: React.MouseEvent, currentPage: number): void => {
     const {
       argoAppDetailsContainerControl: { handleArgoAppDetailsContainerUpdate },
     } = this.props
     const { perPage, startIdx, isLoading } = this.state
     const newStartIdx = startIdx + perPage
 
-    // save details state to DiagramViewer
     handleArgoAppDetailsContainerUpdate({
       page: currentPage,
       startIdx: newStartIdx,
@@ -248,6 +304,7 @@ class ArgoAppDetailsContainer extends Component {
       selectedArgoAppList: [],
       isLoading,
     })
+
     this.setState({
       startIdx: newStartIdx,
       page: currentPage,
@@ -255,14 +312,18 @@ class ArgoAppDetailsContainer extends Component {
     })
   }
 
-  handlePreviousClick = (_event, currentPage) => {
+  /**
+   * Navigates to the previous page of applications
+   * @param _event - The click event (unused)
+   * @param currentPage - The current page number
+   */
+  handlePreviousClick = (_event: React.MouseEvent, currentPage: number): void => {
     const {
       argoAppDetailsContainerControl: { handleArgoAppDetailsContainerUpdate },
     } = this.props
     const { perPage, startIdx, isLoading } = this.state
     const newStartIdx = startIdx - perPage
 
-    // save details state to DiagramViewer
     handleArgoAppDetailsContainerUpdate({
       page: currentPage,
       startIdx: newStartIdx,
@@ -272,6 +333,7 @@ class ArgoAppDetailsContainer extends Component {
       selectedArgoAppList: [],
       isLoading,
     })
+
     this.setState({
       startIdx: newStartIdx,
       page: currentPage,
@@ -279,14 +341,18 @@ class ArgoAppDetailsContainer extends Component {
     })
   }
 
-  handlePageInput = (_event, newPage) => {
+  /**
+   * Handles direct page input navigation
+   * @param _event - The input event (unused)
+   * @param newPage - The target page number
+   */
+  handlePageInput = (_event: React.FormEvent, newPage: number): void => {
     const {
       argoAppDetailsContainerControl: { handleArgoAppDetailsContainerUpdate },
     } = this.props
     const { perPage, isLoading } = this.state
     const newStartIdx = (newPage - 1) * perPage
 
-    // save details state to DiagramViewer
     handleArgoAppDetailsContainerUpdate({
       page: newPage,
       startIdx: newStartIdx,
@@ -296,6 +362,7 @@ class ArgoAppDetailsContainer extends Component {
       selectedArgoAppList: [],
       isLoading,
     })
+
     this.setState({
       startIdx: newStartIdx,
       page: newPage,
@@ -303,21 +370,33 @@ class ArgoAppDetailsContainer extends Component {
     })
   }
 
-  handleKeyPress = (resource, _event) => {
+  /**
+   * Handles keyboard navigation for action links
+   * @param resource - The resource to process
+   * @param _event - The keyboard event
+   */
+  handleKeyPress = (resource: ArgoResourceAction, _event: React.KeyboardEvent): void => {
     if (_event.key === 'Enter') {
       this.processActionLink(resource)
     }
   }
 
-  renderURLLink = (resource, isExternal, t) => {
+  /**
+   * Renders a clickable link for resource actions (Argo editor or YAML view)
+   * @param resource - The resource action configuration
+   * @param isExternal - Whether this opens in an external window
+   * @param t - Translation function
+   * @returns JSX element for the action link
+   */
+  renderURLLink = (resource: ArgoResourceAction, isExternal: boolean, t: TranslationFunction): JSX.Element => {
     return (
       <span
         className="link sectionLabel"
         id="linkForNodeAction"
-        tabIndex="0"
+        tabIndex={0}
         role="button"
-        onClick={this.processActionLink.bind(this, resource)}
-        onKeyDown={this.handleKeyPress.bind(this, resource)}
+        onClick={() => this.processActionLink(resource)}
+        onKeyDown={(event) => this.handleKeyPress(resource, event)}
       >
         {resource.action === 'open_argo_editor' ? t('Launch Argo editor') : t('View resource YAML')}
         {isExternal ? (
@@ -333,7 +412,12 @@ class ArgoAppDetailsContainer extends Component {
     )
   }
 
-  mapArgoStatusToStatusIcon = (status) => {
+  /**
+   * Maps Argo application health status to appropriate status icon
+   * @param status - The health status from Argo
+   * @returns The corresponding icon identifier
+   */
+  mapArgoStatusToStatusIcon = (status: string): ArgoStatusIcon => {
     if (status === 'Healthy') {
       return 'checkmark'
     }
@@ -346,13 +430,20 @@ class ArgoAppDetailsContainer extends Component {
     return 'warning'
   }
 
-  renderArgoAppStatusIcon = (icon) => {
-    const fillMap = new Map([
-      ['checkmark', '#3E8635'],
-      ['failure', '#C9190B'],
-      ['warning', '#F0AB00'],
-      ['pending', '#878D96'],
+  /**
+   * Renders the appropriate status icon for an Argo application
+   * @param icon - The icon type to render
+   * @returns JSX element for the status icon
+   */
+  renderArgoAppStatusIcon = (icon: ArgoStatusIcon): JSX.Element => {
+    // Color mapping for different status types
+    const fillMap = new Map<ArgoStatusIcon, string>([
+      ['checkmark', '#3E8635'], // Green for healthy
+      ['failure', '#C9190B'], // Red for failed/degraded
+      ['warning', '#F0AB00'], // Yellow/orange for warnings
+      ['pending', '#878D96'], // Gray for pending/unknown
     ])
+
     const iconFill = fillMap.get(icon)
     return (
       <svg width="12px" height="12px" fill={iconFill}>
@@ -361,7 +452,14 @@ class ArgoAppDetailsContainer extends Component {
     )
   }
 
-  renderErrorMessage = (name, status, t) => {
+  /**
+   * Renders error/warning messages for applications with problematic health status
+   * @param name - Application name
+   * @param status - Health status
+   * @param t - Translation function
+   * @returns JSX element for error message or null if no warning needed
+   */
+  renderErrorMessage = (name: string, status: string, t: TranslationFunction): JSX.Element | null => {
     let showWarning = false
     if (status === 'Unknown' || status === 'Degraded' || status === 'Missing') {
       showWarning = true
@@ -387,41 +485,57 @@ class ArgoAppDetailsContainer extends Component {
     )
   }
 
-  render() {
+  render(): JSX.Element {
     const { selected, argoAppList, page, perPage, startIdx, t, expandSectionToggleMap, selectedArgoAppList } =
       this.state
+
+    // UI constants
     const titleId = 'app-select-id-1'
     const findAppMsg = 'Find application'
-    const appItems = []
+    const appItems: JSX.Element[] = []
     const divClass = 'sectionContent borderLeft'
     const labelClass = 'label sectionLabel'
     const valueClass = 'value'
     const solidLineStyle = '1px solid #D2D2D2'
+
+    // Determine which list to display (filtered or full)
     const displayArgoAppList = selected ? selectedArgoAppList : argoAppList
-    const argoEditorLinkStyle = {
+
+    const argoEditorLinkStyle: React.CSSProperties = {
       display: 'block',
     }
+
+    // Build the list of application items for the current page
     for (let i = startIdx; i < displayArgoAppList.length && i < page * perPage; i++) {
       const { name, cluster, namespace, destinationName, destinationNamespace, healthStatus } = displayArgoAppList[i]
       const statusIcon = this.mapArgoStatusToStatusIcon(healthStatus)
-      const parentDivStyle =
+
+      // Style for application item borders
+      const parentDivStyle: React.CSSProperties =
         i === startIdx
           ? {
               borderTop: solidLineStyle,
               borderBottom: solidLineStyle,
             }
           : { borderBottom: solidLineStyle }
+
       const toggleItemNum = i % perPage
-      const argoEditorResource = {
+
+      // Resource action for opening Argo editor
+      const argoEditorResource: ArgoResourceAction = {
         action: 'open_argo_editor',
         cluster: cluster,
         namespace: namespace,
         name: name,
       }
+
+      // Hide editor link when section is expanded
       const outerArgoEditorLinkStyle = expandSectionToggleMap.has(toggleItemNum)
         ? { display: 'none' }
         : argoEditorLinkStyle
-      const searchResultToNode = {
+
+      // Create a node-like object for edit link generation
+      const searchResultToNode: NodeLike = {
         name,
         namespace,
         cluster,
@@ -432,12 +546,16 @@ class ArgoAppDetailsContainer extends Component {
           },
         },
       }
-      const editLink = createEditLink(searchResultToNode, this.props.hubClusterName)
-      const appResourceYaml = {
+
+      const editLink = createEditLink(searchResultToNode, this.props.hubClusterName || '')
+
+      // Resource action for viewing YAML
+      const appResourceYaml: ArgoResourceAction = {
         action: 'show_resource_yaml',
         editLink,
       }
-      // render list of argo app
+
+      // Create the accordion item for this application
       appItems.push(
         <div className="appDetailItem" style={parentDivStyle} key={`${name}${i}`}>
           <AccordionItem>
@@ -451,8 +569,11 @@ class ArgoAppDetailsContainer extends Component {
               {name}
             </AccordionToggle>
             <AccordionContent isHidden={!expandSectionToggleMap.has(toggleItemNum)}>
+              {/* Argo editor link */}
               <span style={argoEditorLinkStyle}>{this.renderURLLink(argoEditorResource, true, t)}</span>
               <div className="spacer" />
+
+              {/* Details section header */}
               <span
                 className={labelClass}
                 style={{
@@ -463,6 +584,8 @@ class ArgoAppDetailsContainer extends Component {
                 {t('Details')}
               </span>
               <div className="spacer" />
+
+              {/* Application details */}
               <div className={divClass}>{this.renderURLLink(appResourceYaml, false, t)}</div>
               <div className={divClass}>
                 <span className={labelClass}>{t('Created on')}: </span>
@@ -481,9 +604,13 @@ class ArgoAppDetailsContainer extends Component {
                 <span className={valueClass}>{healthStatus}</span>
               </div>
               <div className="spacer" />
+
+              {/* Error message for problematic status */}
               {this.renderErrorMessage(name, healthStatus, t)}
             </AccordionContent>
           </AccordionItem>
+
+          {/* External Argo editor link (shown when not expanded) */}
           <span style={outerArgoEditorLinkStyle}>{this.renderURLLink(argoEditorResource, true, t)}</span>
         </div>
       )
@@ -491,6 +618,7 @@ class ArgoAppDetailsContainer extends Component {
 
     return (
       <div className="appDetails">
+        {/* Application search/filter dropdown */}
         <AcmSelectBase
           variant={SelectVariant.typeahead}
           typeAheadAriaLabel={findAppMsg}
@@ -505,7 +633,10 @@ class ArgoAppDetailsContainer extends Component {
             <SelectOption key={app.name} value={app.name} />
           ))}
         </AcmSelectBase>
+
         <div className="spacer" />
+
+        {/* Top pagination (only shown for large lists) */}
         {this.props.argoAppList.length > 5 && (
           <Pagination
             itemCount={displayArgoAppList.length}
@@ -519,14 +650,19 @@ class ArgoAppDetailsContainer extends Component {
             onPageInput={this.handlePageInput}
           />
         )}
+
         <div className="spacer" />
+
+        {/* Application list accordion */}
         <Accordion>{appItems}</Accordion>
+
+        {/* Bottom pagination (only shown for large lists) */}
         {this.props.argoAppList.length > 5 && (
           <Pagination
             itemCount={displayArgoAppList.length}
             perPage={perPage}
             page={page}
-            widgetId="argoappdetails-pagination-options-menu-top"
+            widgetId="argoappdetails-pagination-options-menu-bottom"
             onFirstClick={this.handleFirstClick}
             onLastClick={this.handleLastClick}
             onNextClick={this.handleNextClick}
