@@ -293,3 +293,197 @@ export interface ApplicationData {
   cluster?: string
   source?: Record<string, unknown>
 }
+
+// Status types for compute statuses functionality
+export type StatusType = 'checkmark' | 'warning' | 'pending' | 'failure'
+export type StatusCode = 0 | 1 | 2 | 3
+
+// Argo application health status types
+export type ArgoHealthStatus = 'Healthy' | 'Degraded' | 'Missing' | 'Progressing' | 'Unknown' | 'Suspended'
+
+// Pulse colors for node status visualization
+export type PulseColor = 'red' | 'green' | 'yellow' | 'orange' | 'blocked' | 'spinner'
+
+// Pulse type that matches the existing pulseValueArr - includes blocked and spinner
+export type Pulse = 'red' | 'yellow' | 'orange' | 'green' | 'blocked' | 'spinner'
+
+// Resource state types
+export type ResourceState =
+  | 'running'
+  | 'bound'
+  | 'pending'
+  | 'creating'
+  | 'terminating'
+  | 'failed'
+  | 'error'
+  | 'offline'
+  | 'invalid'
+  | 'killed'
+  | 'propagationfailed'
+  | 'imagepullbackoff'
+  | 'crashloopbackoff'
+  | 'lost'
+
+// Cluster status types
+export type ClusterStatus = 'ok' | 'ready' | 'offline' | 'unknown' | 'pendingimport' | 'notaccepted' | ''
+
+// Subscription status types
+export type SubscriptionStatus = 'Subscribed' | 'Propagated' | 'Failed'
+
+// Node types in the topology
+export type NodeType =
+  | 'application'
+  | 'applicationset'
+  | 'subscription'
+  | 'cluster'
+  | 'placements'
+  | 'placement'
+  | 'pod'
+  | 'ansiblejob'
+  | 'package'
+  | 'namespace'
+  | 'ocpapplication'
+  | 'fluxapplication'
+
+// Active filter configuration for status filtering
+export interface ActiveFilters {
+  resourceStatuses?: Set<StatusType>
+}
+
+// Cluster information interface
+export interface ClusterInfo {
+  name: string
+  namespace?: string
+  status?: ClusterStatus
+  metadata?: {
+    name: string
+    [key: string]: unknown
+  }
+  _clusterNamespace?: string
+  HubAcceptedManagedCluster?: boolean
+  ManagedClusterJoined?: boolean
+  ManagedClusterConditionAvailable?: string
+  [key: string]: unknown
+}
+
+// Resource item with status information
+export interface ResourceItemWithStatus extends ResourceItem {
+  cluster?: string
+  status?: string
+  desired?: number
+  available?: number
+  current?: number
+  resStatus?: string
+  pulse?: PulseColor
+  namespace?: string
+  name?: string
+  _hubClusterResource?: boolean
+  localPlacement?: string
+  [key: string]: unknown
+}
+
+// Subscription item interface
+export interface SubscriptionItem extends ResourceItemWithStatus {
+  status?: SubscriptionStatus | string
+}
+
+// Pod information interface
+export interface PodInfo extends ResourceItemWithStatus {
+  restarts?: number
+  hostIP?: string
+  podIP?: string
+  startedAt?: string
+}
+
+// Argo application interface
+export interface ArgoApplication {
+  status?: {
+    health?: {
+      status?: ArgoHealthStatus
+    }
+    sync?: {
+      status?: string
+    }
+    conditions?: Array<{
+      type: string
+      message: string
+      [key: string]: unknown
+    }>
+  }
+  metadata?: {
+    name?: string
+    namespace?: string
+  }
+  [key: string]: unknown
+}
+
+// Node specification interface
+export interface NodeSpecs {
+  pulse?: PulseColor
+  shapeType?: string
+  isDesign?: boolean
+  isBlocked?: boolean
+  raw?: {
+    apiVersion?: string
+    spec?: Record<string, unknown>
+    status?: Record<string, unknown>
+    hookType?: string
+    [key: string]: unknown
+  }
+  channels?: unknown[]
+  clusters?: ClusterInfo[]
+  appClusters?: string[]
+  clustersNames?: string[]
+  targetNamespaces?: Record<string, unknown>
+  searchClusters?: ClusterInfo[]
+  subscriptionModel?: ResourceMap
+  podModel?: ResourceMap
+  resourceCount?: number
+  relatedApps?: ArgoApplication[]
+  appSetApps?: ArgoApplication[]
+  [key: string]: unknown
+}
+
+// Enhanced topology node with computed status information
+export interface TopologyNodeWithStatus extends TopologyNode {
+  specs: NodeSpecs
+  cluster?: string
+  isPlacement?: boolean
+  isArgoCDPullModelTargetLocalCluster?: boolean
+  isPlacementFound?: boolean
+  report?: SubscriptionReport
+  [key: string]: unknown
+}
+
+// State names for internationalization
+export interface StateNames {
+  notDeployedStr: string
+  notDeployedNSStr: string
+  deployedStr: string
+  deployedNSStr: string
+  resNotDeployedStates: string[]
+  resSuccessStates: string[]
+}
+
+// Detail item for status display
+export interface DetailItem extends Record<string, unknown> {
+  type?: 'label' | 'spacer' | 'link' | 'clusterdetailcombobox' | 'relatedargoappdetails'
+  labelValue?: string
+  value?: unknown
+  status?: StatusType
+  indent?: boolean
+  data?: ResourceAction
+  comboboxdata?: {
+    clusterList: ClusterInfo[]
+    clusterID: string
+  }
+  relatedargoappsdata?: {
+    argoAppList: ArgoApplication[]
+  }
+}
+
+// Window status array for subscription time windows
+export type WindowStatusArray = string[]
+
+// Function type for translation
+export type TranslationFunction = (key: string, params?: string[]) => string
