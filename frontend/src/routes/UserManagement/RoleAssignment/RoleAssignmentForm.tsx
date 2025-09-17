@@ -56,6 +56,14 @@ const RoleAssignmentForm = ({
     onChangeRoles,
   } = useRoleAssignmentFormData(preselected)
 
+  // Memoize the onChoseOptions callback to prevent infinite loops
+  const onChoseOptions = useCallback(
+    (values: { id: string; value: string }[]) => {
+      onChangeScopeValues(values.map((e) => e.value))
+    },
+    [onChangeScopeValues]
+  )
+
   // TODO: to implement once YAML is needed
   const stateToData = (): MulticlusterRoleAssignment => {
     return emptyMulticlusterRoleAssignment
@@ -207,12 +215,7 @@ const RoleAssignmentForm = ({
             component: isClusterSetLoading ? (
               <LoadingState />
             ) : (
-              <ClustersDualListSelector
-                onChoseOptions={(values: { id: string; value: string }[]) =>
-                  onChangeScopeValues(values.map((e) => e.value))
-                }
-                clusterSets={roleAssignmentData.clusterSets}
-              />
+              <ClustersDualListSelector onChoseOptions={onChoseOptions} clusterSets={roleAssignmentData.clusterSets} />
             ),
             isRequired: preselected?.cluterSets === undefined || preselected?.cluterSets?.length === 0,
             isHidden: roleAssignmentFormData.scope.kind === 'all',

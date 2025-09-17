@@ -4,20 +4,18 @@ import { useCallback, useMemo } from 'react'
 import { Link } from 'react-router-dom-v5-compat'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
-import { Group } from '../../../../resources/rbac'
-import { mockGroups } from '../../../../resources/clients/mock-data/users-and-groups'
+import { Group, listGroups } from '../../../../resources/rbac'
+import { useQuery } from '../../../../lib/useQuery'
 import { AcmButton, AcmEmptyState, AcmLoadingPage, AcmTable, compareStrings } from '../../../../ui-components'
 import { groupsTableColumns, useFilters } from './GroupsTableHelper'
 
 const GroupsTable = () => {
   const { t } = useTranslation()
 
-  // TODO: Replace the mockdata when backend is implemented
+  const { data: groupsData, loading } = useQuery(listGroups)
   const groups = useMemo(() => {
-    return mockGroups.sort((a, b) => compareStrings(a.metadata.name ?? '', b.metadata.name ?? ''))
-  }, [])
-
-  const loading = false as boolean
+    return groupsData?.sort((a, b) => compareStrings(a.metadata.name ?? '', b.metadata.name ?? '')) ?? []
+  }, [groupsData])
 
   const keyFn = useCallback((group: Group) => group.metadata.name ?? '', [])
 
