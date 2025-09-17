@@ -5,7 +5,7 @@ import { openArgoCDEditor, openRouteURL } from '../model/topologyAppSet'
 import { getURLSearchData } from './diagram-helpers-argo'
 import { getEditLink } from './resource-helper'
 import { isSearchAvailable } from './search-helper'
-import type { DetailsList, NodeLike, ResourceAction, Translator, Pulse } from './types'
+import type { DetailsList, NodeLike, ResourceAction, Translator, Pulse } from '../model/types'
 
 const showResourceYaml = 'show_resource_yaml'
 const apiVersionPath = 'specs.raw.apiVersion'

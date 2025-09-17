@@ -23,8 +23,8 @@ import {
   TableColumnHeader,
   DetailsTableProps,
   DetailsTableState,
+  Pulse,
 } from '../model/types'
-import { Pulse } from '../helpers/types'
 
 /**
  * Page size configuration for table pagination
