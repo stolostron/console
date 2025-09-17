@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+// Converted to TypeScript: verifies exported icon identifiers from constants.
 import { ClusterCountIcon, PodIcon } from './constants'
 
 describe('use constants', () => {

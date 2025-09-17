@@ -1,15 +1,17 @@
 // Copyright (c) 2020 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 
+// Converted to TypeScript: annotates objects as any and types the translator.
 import { inflateKubeValue } from '../helpers/diagram-helpers'
 import { getNodeDetails } from './details'
+import { TFunction } from './types'
 
-const t = (string) => {
-  return string
+const t: TFunction = (key) => {
+  return key
 }
 
 describe('getNodeDetails no clusters or violation', () => {
-  const clusterNode = {
+  const clusterNode: any = {
     id: 'member--clusters--c1',
     uid: 'member--clusters--c1',
     name: 'c2',
@@ -73,7 +75,7 @@ describe('getNodeDetails no clusters or violation', () => {
 })
 
 describe('getNodeDetails application node', () => {
-  const applicationNode = {
+  const applicationNode: any = {
     cluster: null,
     clusterName: null,
     id: 'application--nginx-app-3',
@@ -173,7 +175,7 @@ describe('getNodeDetails application node', () => {
 })
 
 describe('getNodeDetails cluster node 1', () => {
-  const clusterNode = {
+  const clusterNode: any = {
     id: 'member--clusters--feng',
     uid: 'member--clusters--feng',
     name: 'feng',
@@ -291,7 +293,7 @@ describe('getNodeDetails cluster node 1', () => {
 })
 
 describe('getNodeDetails clusters node', () => {
-  const clusterNode = {
+  const clusterNode: any = {
     id: 'member--clusters--braveman',
     uid: 'member--clusters--braveman',
     name: 'braveman',
@@ -457,7 +459,7 @@ describe('getNodeDetails clusters node', () => {
 })
 
 describe('getNodeDetails subscription', () => {
-  const subscription = {
+  const subscription: any = {
     id: 'member--subscription--sahar-test-ns--sahar-test-1234-subscription-1',
     uid: 'member--subscription--sahar-test-ns--sahar-test-1234-subscription-1',
     name: 'sahar-test-1234-subscription-1',
@@ -626,7 +628,7 @@ describe('getNodeDetails subscription', () => {
 })
 
 describe('getNodeDetails helm node', () => {
-  const helmreleaseNode = {
+  const helmreleaseNode: any = {
     id: 'helmrelease1',
     uid: 'helmrelease1',
     name: 'mortgage-helmrelease',
@@ -718,7 +720,7 @@ describe('getNodeDetails helm node', () => {
 })
 
 describe('getNodeDetails helm node', () => {
-  const packageNode = {
+  const packageNode: any = {
     id: 'helmrelease1',
     uid: 'helmrelease1',
     name: 'mortgage-helmrelease',
@@ -771,7 +773,7 @@ describe('getNodeDetails helm node', () => {
 })
 
 describe('getNodeDetails placement rules node with error', () => {
-  const rulesNode = {
+  const rulesNode: any = {
     id: 'rule1',
     uid: 'rule1',
     name: 'mortgage-rule',
@@ -874,7 +876,7 @@ describe('getNodeDetails placement rules node with error', () => {
 })
 
 describe('getNodeDetails placement rules node with success', () => {
-  const rulesNode = {
+  const rulesNode: any = {
     id: 'rule1',
     uid: 'rule1',
     name: 'mortgage-rule',

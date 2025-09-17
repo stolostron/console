@@ -2,6 +2,7 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
+// Converted to TypeScript: ensures legend title capitalization and replacements.
 import { getLegendTitle } from './titles'
 
 describe('getLegendTitle', () => {

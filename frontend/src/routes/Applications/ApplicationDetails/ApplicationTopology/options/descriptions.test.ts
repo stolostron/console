@@ -1,10 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+// Converted to TypeScript: validates node description resolution logic.
 import { getNodeDescription } from './descriptions'
 
 describe('getNodeDescription', () => {
   it('get the app node description', () => {
-    const appnode = {
+    const appnode: any = {
       name: 'myapp',
       layout: {
         compactLabel: 'Application',
@@ -21,7 +22,7 @@ describe('getNodeDescription', () => {
   })
 
   it('get the cluster node description', () => {
-    const clusternode = {
+    const clusternode: any = {
       name: 'myapp--cluster',
       layout: {
         compactLabel: 'Cluster',

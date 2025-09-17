@@ -1,6 +1,7 @@
 // Copyright (c) 2020 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 
+// Converted to TypeScript: adds types for translator and test data.
 import {
   getAllFilters,
   getAvailableFilters,
@@ -10,12 +11,13 @@ import {
   isDesignOrCluster,
   nodeParentExists,
 } from './filtering'
+import { TFunction } from './types'
 
-const t = (string) => {
-  return string
+const t: TFunction = (key) => {
+  return key
 }
 
-const nodes = [
+const nodes: any[] = [
   {
     id: 'application--nginx-app-3',
     uid: 'application--nginx-app-3',
@@ -163,7 +165,7 @@ const nodes = [
   },
 ]
 
-const podNodes = [
+const podNodes: any[] = [
   {
     cluster: null,
     clusterName: null,
@@ -206,7 +208,7 @@ const podNodes = [
     uid: 'member--clusters--possiblereptile, braveman, relievedox, sharingpenguin',
   },
 ]
-const options = {
+const options: any = {
   filtering: 'application',
   layout: 'application',
   showLineLabels: true,
@@ -214,12 +216,12 @@ const options = {
   scrollOnScroll: true,
 }
 
-const activeFilters = {
+const activeFilters: any = {
   type: ['application', 'placements', 'subscription', 'pod', 'cluster'],
 }
 
 describe('getAllFilters', () => {
-  const mockData = {
+  const mockData: any = {
     userIsFiltering: null,
   }
 
@@ -348,13 +350,13 @@ describe('isDesignOrCluster', () => {
 })
 
 describe('nodeParentExists', () => {
-  const nodeParent = {
+  const nodeParent: any = {
     parentId: 'test',
   }
   const includedNodes = new Set(['test'])
 
   it('nodeParent undefined', () => {
-    expect(nodeParentExists(undefined, new Set())).toEqual(false)
+    expect(nodeParentExists(undefined as any, new Set())).toEqual(false)
   })
 
   it('nodeParent exists', () => {
