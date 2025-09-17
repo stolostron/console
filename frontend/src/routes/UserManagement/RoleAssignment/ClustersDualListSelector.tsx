@@ -75,16 +75,17 @@ const ClustersDualListSelector = ({ onChoseOptions, clusterSets }: ClustersDualL
 
   useEffect(() => {
     const selectedClusters = extractSelectedClusters(chosenOptions)
-    
+
     // Check if the selected clusters have actually changed
-    const hasChanged = 
+    const hasChanged =
       selectedClusters.length !== previousSelectedClusters.current.length ||
-      selectedClusters.some((cluster, index) => 
-        !previousSelectedClusters.current[index] || 
-        cluster.id !== previousSelectedClusters.current[index].id ||
-        cluster.value !== previousSelectedClusters.current[index].value
+      selectedClusters.some(
+        (cluster, index) =>
+          !previousSelectedClusters.current[index] ||
+          cluster.id !== previousSelectedClusters.current[index].id ||
+          cluster.value !== previousSelectedClusters.current[index].value
       )
-    
+
     if (hasChanged) {
       previousSelectedClusters.current = selectedClusters
       onChoseOptions(selectedClusters)

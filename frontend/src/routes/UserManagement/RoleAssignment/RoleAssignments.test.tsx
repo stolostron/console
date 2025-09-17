@@ -256,9 +256,10 @@ jest.mock('../../../ui-components', () => {
             switch (filterId) {
               case 'role':
                 return item.clusterRole === value
-              case 'clusters':
+              case 'clusters': {
                 const clusterNames = item.clusterSelection?.clusterNames || []
                 return clusterNames.includes(value)
+              }
               case 'namespace':
                 return item.targetNamespaces?.includes(value)
               case 'status':
