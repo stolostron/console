@@ -3,7 +3,6 @@
 
 // Utility helpers for the topology view (string formatting, label wrapping, grouping, tooltips)
 
-import R from 'ramda'
 import _ from 'lodash'
 import { Fragment } from 'react'
 import ReactDOMServer from 'react-dom/server'
@@ -71,7 +70,7 @@ const splitLabel = (label: string, width: number, rows: number): string => {
   let parts: string[] = label.split(/([^A-Za-z0-9])+/)
   if (parts.length === 1 && label.length > width) {
     //split if length > width and no split separator in label
-    const split = R.splitAt(width, label) as unknown as string[]
+    const split = [label.slice(0, width), label.slice(width)]
     parts = split
   }
   let remaining = label.length

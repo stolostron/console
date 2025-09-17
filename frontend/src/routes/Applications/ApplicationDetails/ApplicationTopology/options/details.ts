@@ -9,7 +9,6 @@
  ******************************************************************************/
 'use strict'
 
-import R from 'ramda'
 import _ from 'lodash'
 import {
   setResourceDeployStatus,
@@ -89,7 +88,7 @@ export const getNodeDetails = (
         labelValue: t('Labels'),
       })
       labels.forEach(({ name: lname, value: lvalue }: any) => {
-        const labelDetails = [{ value: `${lname} = ${lvalue}`, indent: true }]
+        const labelDetails = [{ labelValue: '', value: `${lname} = ${lvalue}`, indent: true }]
         addDetails(details, labelDetails)
       })
     }
@@ -112,11 +111,11 @@ function addK8Details(
   // not all resources have a namespace
 
   let namespace = ''
-  if (node && R.pathOr('', ['specs', 'pulse'])(node) !== 'orange') {
+  if (node && _.get(node, 'specs.pulse', '') !== 'orange') {
     const kindModel = _.get(node, `specs.${type}Model`, {})
     let computedNSList: string[] = []
     _.flatten(Object.values(kindModel)).forEach((item: any) => {
-      computedNSList = R.union(computedNSList, [item.namespace]) as string[]
+      computedNSList = _.union(computedNSList, [item.namespace]) as string[]
     })
 
     computedNSList.forEach((item) => {
@@ -150,7 +149,7 @@ function addK8Details(
   const mainDetails: any[] = [
     {
       labelValue: t('Type'),
-      value: kubeNaming(ltype, t as any) || kubeNaming(type, t as any),
+      value: kubeNaming(ltype) || kubeNaming(type),
     },
     {
       labelValue: t('API Version'),
@@ -202,7 +201,7 @@ function addK8Details(
     getNodePropery(node, ['specs', 'raw', 'spec', 'selector', 'matchLabels'], t('Pod Selector'))
   )
 
-  if (!R.pathOr(['specs', 'raw', 'spec', 'selector', 'matchLabels'])) {
+  if (!_.get(node, 'specs.raw.spec.selector.matchLabels')) {
     addPropertyToList(mainDetails, getNodePropery(node, ['specs', 'raw', 'spec', 'selector'], t('Pod Selector')))
   }
 
@@ -292,7 +291,7 @@ function addK8Details(
   )
 
   if (type === 'placements' || type === 'placement') {
-    const specNbOfClustersTarget = R.pathOr([], ['specs', 'raw', 'status', 'decisions'])(node)
+    const specNbOfClustersTarget = _.get(node, 'specs.raw.status.decisions', [])
 
     // placement
     const clusterSets = _.get(node, 'placement.spec.clusterSets', undefined)

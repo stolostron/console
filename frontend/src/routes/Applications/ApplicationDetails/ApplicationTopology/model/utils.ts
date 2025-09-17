@@ -1,11 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
-// Copyright (c) 2021 Red Hat, Inc.
-// Copyright Contributors to the Open Cluster Management project
 /* eslint no-param-reassign: "error" */
+
 import _ from 'lodash'
 import { nodeMustHavePods } from '../helpers/diagram-helpers-utils'
+import type { ApplicationData, ManagedCluster, Topology, TopologyLink, TopologyNode } from './types'
 
-export const getClusterName = (nodeId, hubClusterName) => {
+// Extract cluster name encoded in a node id; fall back to hub cluster if not encoded
+export const getClusterName = (nodeId: string | undefined, hubClusterName?: string): string => {
   if (nodeId === undefined) {
     return ''
   }
@@ -15,22 +16,31 @@ export const getClusterName = (nodeId, hubClusterName) => {
     const endPos = nodeId.indexOf('--', startPos)
     return nodeId.slice(startPos, endPos > 0 ? endPos : nodeId.length)
   }
-  return hubClusterName
+  return hubClusterName ?? ''
 }
 
-export const createChildNode = (parentObject, clustersNames, type, links, nodes, replicaCount = 1) => {
-  const parentType = _.get(parentObject, 'type', '')
+// Create a typed child node under a parent topology node and link them
+export const createChildNode = (
+  parentObject: TopologyNode,
+  clustersNames: string[],
+  type: string,
+  links: TopologyLink[],
+  nodes: TopologyNode[],
+  replicaCount: number = 1
+): TopologyNode => {
+  const parentType = _.get(parentObject, 'type', '') as string
   const { name, namespace, id, specs = {} } = parentObject
   const parentId = id
   const memberId = `${parentId}--${type}--${name}`
-  let resources
-  if (specs.resources) {
-    resources = specs.resources.map((res) => {
+  let resources: unknown
+  if ((specs as Record<string, unknown>).resources) {
+    resources = (specs as { resources: Array<Record<string, unknown>> }).resources.map((res) => {
       return { ...res, kind: type }
     })
   }
-  const resourceCount = specs.resourceCount === 0 ? replicaCount : specs.resourceCount * replicaCount
-  const node = {
+  const parentResourceCount = (specs as Record<string, unknown>).resourceCount as number | undefined
+  const resourceCount = parentResourceCount === 0 ? replicaCount : (parentResourceCount ?? 1) * replicaCount
+  const node: TopologyNode = {
     name,
     namespace,
     type,
@@ -46,7 +56,7 @@ export const createChildNode = (parentObject, clustersNames, type, links, nodes,
         parentId,
         parentName: name,
         parentType,
-        resources: specs.resources,
+        resources: (specs as Record<string, unknown>).resources,
         parentSpecs: _.get(specs, 'parent.parentSpecs'),
       },
     },
@@ -60,15 +70,24 @@ export const createChildNode = (parentObject, clustersNames, type, links, nodes,
   return node
 }
 
-// add cluster node to RHCAM application
-export const addClusters = (parentId, subscription, source, clusterNames, managedClusters, links, nodes, topology) => {
+// Add a synthetic "clusters" node under a parent and link them
+export const addClusters = (
+  parentId: string,
+  subscription: Record<string, unknown> | undefined,
+  source: string,
+  clusterNames: string[],
+  managedClusters: ManagedCluster[],
+  links: TopologyLink[],
+  nodes: TopologyNode[],
+  topology?: Topology
+): string => {
   // create element if not already created
   const sortedClusterNames = _.sortBy(clusterNames)
   let clusterId = 'member--clusters'
   // do not use this for the id for argo app, we only know about one app here
   if (subscription) {
     const cns = sortedClusterNames.join('--')
-    const sub = _.get(subscription, 'metadata.name')
+    const sub = _.get(subscription, 'metadata.name') as string | undefined
     clusterId = `member--clusters--${cns}--${sub}`
   } else {
     clusterId = 'member--clusters--'
@@ -78,10 +97,6 @@ export const addClusters = (parentId, subscription, source, clusterNames, manage
         id: 'member--clusters',
       })
     : undefined
-  //    const filteredClusters = managedClusterNames.filter((cluster) => {
-  //        const cname = _.get(cluster, metadataName)
-  //        return cname && clusterNames.includes(cname)
-  //    })
   nodes.push({
     name: clusterNames.length === 1 ? clusterNames[0] : '',
     namespace: '',
@@ -92,13 +107,11 @@ export const addClusters = (parentId, subscription, source, clusterNames, manage
       title: source,
       subscription,
       resourceCount: clusterNames.length,
-      //            cluster: subscription && filteredClusters.length === 1 ? filteredClusters[0] : undefined,
-      //            clusters: filteredClusters,
       clustersNames: clusterNames,
       clusters: _.cloneDeep(managedClusters),
       sortedClusterNames,
-      appClusters: topoClusterNode ? topoClusterNode.specs.appClusters : undefined,
-      targetNamespaces: topoClusterNode ? topoClusterNode.specs.targetNamespaces : undefined,
+      appClusters: topoClusterNode ? (topoClusterNode as TopologyNode).specs.appClusters : undefined,
+      targetNamespaces: topoClusterNode ? (topoClusterNode as TopologyNode).specs.targetNamespaces : undefined,
     },
   })
   links.push({
@@ -110,46 +123,51 @@ export const addClusters = (parentId, subscription, source, clusterNames, manage
   return clusterId
 }
 
-export const getApplicationData = (nodes, hubClusterName) => {
+// Collects info needed to query Search for related kinds from the visible nodes
+export const getApplicationData = (nodes: TopologyNode[] | undefined, hubClusterName: string): ApplicationData => {
   let subscriptionName = ''
   let nbOfSubscriptions = 0
   let resourceMustHavePods = false
-  const nodeTypes = []
-  const result = {}
+  const nodeTypes: string[] = []
+  const result: ApplicationData = {
+    subscription: null,
+    relatedKinds: [],
+  }
   let isArgoApp = false
   const appNode = nodes?.find((r) => r.type === 'application')
   if (appNode) {
     isArgoApp = _.get(appNode, ['specs', 'raw', 'apiVersion'], '').indexOf('argo') !== -1
     result.isArgoApp = isArgoApp
-    //get argo app destination namespaces 'show_search':
+    // get argo app destination namespaces 'show_search'
     if (isArgoApp) {
       const applicationSetRef = _.get(appNode, ['specs', 'raw', 'metadata', 'ownerReferences'], []).find(
-        (owner) => owner.apiVersion.startsWith('argoproj.io/') && owner.kind === 'ApplicationSet'
+        (owner: Record<string, string>) =>
+          owner.apiVersion.startsWith('argoproj.io/') && owner.kind === 'ApplicationSet'
       )
       if (applicationSetRef) {
         result.applicationSet = applicationSetRef.name
       }
       let cluster = hubClusterName
-      const clusterNames = _.get(appNode, ['specs', 'clusterNames'], [])
+      const clusterNames = _.get(appNode, ['specs', 'clusterNames'], []) as string[]
       if (clusterNames.length > 0) {
         cluster = clusterNames[0]
       }
       result.cluster = cluster
-      result.source = _.get(appNode, ['specs', 'raw', 'spec', 'source'], {})
+      result.source = _.get(appNode, ['specs', 'raw', 'spec', 'source'], {}) as Record<string, unknown>
     }
   }
   nodes?.forEach((node) => {
-    const type = _.get(node, 'type', '')
+    const type = _.get(node, 'type', '') as string
     const nodeType = type === 'project' ? 'namespace' : type
     if (!(isArgoApp && _.includes(['cluster'], nodeType))) {
-      nodeTypes.push(nodeType) //ask for this related object type
+      nodeTypes.push(nodeType) // ask for this related object type
     }
-    if (nodeMustHavePods(node)) {
-      //request pods when asking for related resources, this resource can have pods
+    if (nodeMustHavePods(node as unknown as Record<string, unknown>)) {
+      // request pods when asking for related resources, this resource can have pods
       resourceMustHavePods = true
     }
     if (nodeType === 'subscription') {
-      subscriptionName = _.get(node, 'name', '')
+      subscriptionName = _.get(node, 'name', '') as string
       nbOfSubscriptions = nbOfSubscriptions + 1
     }
   })
@@ -158,19 +176,24 @@ export const getApplicationData = (nodes, hubClusterName) => {
     nodeTypes.push('pod')
   }
 
-  //if only one subscription, ask for resources only related to that subscription
+  // if only one subscription, ask for resources only related to that subscription
   result.subscription = nbOfSubscriptions === 1 ? subscriptionName : null
-  //ask only for these type of resources since only those are displayed
+  // ask only for these type of resources since only those are displayed
   result.relatedKinds = _.uniq(nodeTypes)
 
   return result
 }
 
-export const getAppSetArgoCluster = (search, clusters) => {
-  return clusters.find((cluster) => cluster.name === search || cluster.url === search)
+// Find an ApplicationSet cluster by name or url
+export const getAppSetArgoCluster = (search: string, clusters: ManagedCluster[]): ManagedCluster | undefined => {
+  return clusters.find((cluster) => cluster.name === search || (cluster as unknown as { url?: string }).url === search)
 }
 
-export const processMultiples = (resources, numOfDeployedClusters = 0) => {
+// Group large lists of resources by kind for presentation; multiply counts by deployed clusters
+export const processMultiples = (
+  resources: Array<Record<string, unknown>>,
+  numOfDeployedClusters: number = 0
+): Array<Record<string, unknown>> => {
   // Need to multiply the number of success clusters
   const rCount = numOfDeployedClusters > 0 ? resources.length * numOfDeployedClusters : resources.length
   if (rCount > 5) {

@@ -3,7 +3,6 @@ import { getClusterName, isDeployableResource } from '../helpers/diagram-helpers
 import { addDiagramDetails } from './computeRelated'
 import { computeNodeStatus } from './computeStatuses'
 import _ from 'lodash'
-import R from 'ramda'
 import { getArgoTopology } from './topologyArgo'
 import { getSubscriptionTopology } from './topologySubscription'
 import { getAppSetTopology } from './topologyAppSet'
@@ -89,7 +88,7 @@ export const getDiagramElements = (appData, topology, resourceStatuses, canUpdat
 export const processNodeData = (node, topoResourceMap, isClusterGrouped, hasHelmReleases, topology) => {
   const { name, type } = node
   const isDesign = _.get(node, 'specs.isDesign', false)
-  if (!isDeployableResource(node) && R.includes(type, ['cluster', 'application', 'placements']) && isDesign) {
+  if (!isDeployableResource(node) && _.includes(['cluster', 'application', 'placements'], type) && isDesign) {
     return //ignore these types
   }
 
@@ -121,7 +120,7 @@ export const processNodeData = (node, topoResourceMap, isClusterGrouped, hasHelm
     }
   }
   //keep clusters info to create route host and to match nodes to grouped clusters
-  node['clusters'] = R.find(R.propEq('id', `member--clusters--${clusterName}`))(topology.nodes)
+  node['clusters'] = _.find(topology.nodes, { id: `member--clusters--${clusterName}` })
 }
 
 export const evaluateSingleAnd = (operand1, operand2) => {
