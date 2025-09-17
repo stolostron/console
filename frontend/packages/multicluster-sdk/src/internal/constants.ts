@@ -16,3 +16,5 @@ export const MANAGED_CLUSTER_API_PATH = 'managedclusterproxy'
 
 export const NO_FLEET_AVAILABLE_ERROR =
   'A version of RHACM that is compatible with the multicluster SDK is not available'
+
+export const MULTICLUSTER_OBSERVABILITY_NOT_INSTALLED = 'Multicluster observability is not installed on this cluster'
