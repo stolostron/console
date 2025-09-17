@@ -5,14 +5,13 @@ import { useNavigate, useParams } from 'react-router-dom-v5-compat'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
-import { Group, GroupKind } from '../../../../resources'
-import multiclusterRoleAssignmentsMockDataJson from '../../../../resources/clients/mock-data/multicluster-role-assignments.json'
-import { mockGroups } from '../../../../resources/clients/mock-data/users-and-groups'
+import { Group, GroupKind, listGroups } from '../../../../resources'
 import {
   FlattenedRoleAssignment,
   roleAssignmentToFlattenedRoleAssignment,
 } from '../../../../resources/clients/multicluster-role-assignment-client'
-import { MulticlusterRoleAssignment } from '../../../../resources/multicluster-role-assignment'
+import { useQuery } from '../../../../lib/useQuery'
+import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
 import { AcmButton, AcmLoadingPage, compareStrings } from '../../../../ui-components'
 import { RoleAssignments } from '../../RoleAssignment/RoleAssignments'
@@ -23,19 +22,28 @@ const GroupRoleAssignments = () => {
   const { id = undefined } = useParams()
   const [group, setGroup] = useState<Group>()
 
-  const groups = mockGroups
+  const { data: groups, loading: isGroupsLoading } = useQuery(listGroups)
+
+  const { multiclusterRoleAssignmentState } = useSharedAtoms()
+  const multiclusterRoleAssignments = useRecoilValue(multiclusterRoleAssignmentState)
+
+  const isRoleAssignmentsLoading = multiclusterRoleAssignments === undefined
+
   // TODO: proper loading mechanism once API ready
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [isNotFound, setIsNotFound] = useState<boolean>()
-  useEffect(() => setIsLoading([groups, group].includes(undefined)), [groups, group])
+
   useEffect(() => {
     const group = groups?.find((group) => group.metadata.name === id || group.metadata.uid === id) as Group
     setGroup(group)
     setIsNotFound(group === undefined)
-    setIsLoading(false)
   }, [id, groups])
 
-  const multiclusterRoleAssignments = multiclusterRoleAssignmentsMockDataJson as MulticlusterRoleAssignment[]
+  useEffect(() => {
+    setIsLoading(
+      [groups, group, multiclusterRoleAssignments].includes(undefined) || isGroupsLoading || isRoleAssignmentsLoading
+    )
+  }, [groups, group, multiclusterRoleAssignments, isGroupsLoading, isRoleAssignmentsLoading])
 
   // TODO: call useFindRoleAssignments instead ACM-23633
   const roleAssignments: FlattenedRoleAssignment[] = useMemo(

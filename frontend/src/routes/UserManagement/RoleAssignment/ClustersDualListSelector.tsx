@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { DualListSelector, DualListSelectorTreeItemData } from '@patternfly/react-core'
-import React, { useCallback, useEffect } from 'react'
+import React, { useCallback, useEffect, useRef } from 'react'
 import { ClusterSet } from './hook/RoleAssignmentDataHook'
 
 type ClustersDualListSelectorProps = {
@@ -32,6 +32,7 @@ const ClustersDualListSelector = ({ onChoseOptions, clusterSets }: ClustersDualL
   }, [clusterSets])
 
   const [chosenOptions, setChosenOptions] = React.useState<DualListSelectorTreeItemData[]>([])
+  const previousSelectedClusters = useRef<{ id: string; value: string }[]>([])
 
   const extractSelectedClusters = useCallback((options: DualListSelectorTreeItemData[]) => {
     const selectedClusters: { id: string; value: string }[] = []
@@ -67,15 +68,27 @@ const ClustersDualListSelector = ({ onChoseOptions, clusterSets }: ClustersDualL
     ) => {
       setAvailableOptions(newAvailableOptions.sort())
       setChosenOptions(newChosenOptions.sort())
-      const selectedClusters = extractSelectedClusters(newChosenOptions)
-      onChoseOptions(selectedClusters)
+      // Don't call onChoseOptions here - let useEffect handle it
     },
-    [onChoseOptions, extractSelectedClusters]
+    []
   )
 
   useEffect(() => {
     const selectedClusters = extractSelectedClusters(chosenOptions)
-    onChoseOptions(selectedClusters)
+    
+    // Check if the selected clusters have actually changed
+    const hasChanged = 
+      selectedClusters.length !== previousSelectedClusters.current.length ||
+      selectedClusters.some((cluster, index) => 
+        !previousSelectedClusters.current[index] || 
+        cluster.id !== previousSelectedClusters.current[index].id ||
+        cluster.value !== previousSelectedClusters.current[index].value
+      )
+    
+    if (hasChanged) {
+      previousSelectedClusters.current = selectedClusters
+      onChoseOptions(selectedClusters)
+    }
   }, [chosenOptions, onChoseOptions, extractSelectedClusters])
 
   const handleOptionCheck = useCallback(
