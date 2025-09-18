@@ -168,6 +168,7 @@ const RoleAssignmentForm = ({
           },
         ],
       },
+      // TODO: allow users to choose multiple roles
       {
         title: 'roles-section',
         type: 'Section',
@@ -175,18 +176,17 @@ const RoleAssignmentForm = ({
         inputs: [
           {
             id: `roles`,
-            type: 'CreatableMultiselect',
-            title: t('Select roles'),
-            placeholder: t('Select or enter roles'),
-            value: roleAssignmentFormData.roles,
-            onChange: onChangeRoles,
+            type: 'Select',
+            title: t('Select role'),
+            placeholder: t('Select a role'),
+            value: roleAssignmentFormData.roles?.[0] || '',
+            onChange: (role: string) => onChangeRoles(role ? [role] : []),
             options: roleAssignmentData.roles,
             isLoading: isRolesLoading,
             isScrollable: true,
             isRequired: preselected?.roles === undefined || preselected?.roles?.length === 0,
             isHidden: preselected?.roles?.length,
-            validation: (roles: string[]) =>
-              roles?.length > 0 ? undefined : t('at least one role should be selected'),
+            validation: (role: string) => (role ? undefined : t('a role should be selected')),
           },
         ],
       },
