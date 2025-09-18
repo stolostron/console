@@ -570,7 +570,7 @@ const [deployment, loaded, error] = useFleetK8sWatchResource({
 | ---------- | ---------- |
 | `useFleetPrometheusPoll` | `(props: PrometheusPollProps and { cluster?: string or undefined; } and { allClusters?: boolean or undefined; }) => [response: PrometheusResponse or undefined, loaded: boolean, error: unknown]` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetPrometheusPoll.ts#L9)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetPrometheusPoll.ts#L15)
 
 ### :gear: useFleetSearchPoll
 
