@@ -1,11 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import {
-  AcmPage,
-  AcmPageHeader,
-  AcmSecondaryNav,
-  AcmSecondaryNavItem,
-  AcmEmptyState,
-} from '../../../ui-components'
+import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem, AcmEmptyState } from '../../../ui-components'
 import { Link, Outlet, useLocation } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
@@ -23,7 +17,6 @@ export default function IdentitiesPage() {
 
   const isUsersActive = location.pathname.startsWith(NavigationPath.identitiesUsers)
   const isGroupsActive = location.pathname.startsWith(NavigationPath.identitiesGroups)
-  const isServiceAccountsActive = location.pathname.startsWith(NavigationPath.identitiesServiceAccounts)
 
   switch (true) {
     case !canReadUsers && !canReadGroups:
@@ -65,9 +58,6 @@ export default function IdentitiesPage() {
                   </AcmSecondaryNavItem>
                   <AcmSecondaryNavItem isActive={isGroupsActive}>
                     <Link to={NavigationPath.identitiesGroups}>{t('Groups')}</Link>
-                  </AcmSecondaryNavItem>
-                  <AcmSecondaryNavItem isActive={isServiceAccountsActive}>
-                    <Link to={NavigationPath.identitiesServiceAccounts}>{t('Service Accounts')}</Link>
                   </AcmSecondaryNavItem>
                 </AcmSecondaryNav>
               }
