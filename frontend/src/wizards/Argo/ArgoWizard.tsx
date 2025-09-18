@@ -303,7 +303,11 @@ export function ArgoWizard(props: ArgoWizardProps) {
                 },
                 spec: {
                   project: 'default',
-                  sources: [],
+                  sources: [
+                    {
+                      repositoryType: 'git',
+                    },
+                  ],
                   destination: { namespace: '', server: '{{server}}' },
                   syncPolicy: {
                     automated: {
@@ -368,7 +372,11 @@ export function ArgoWizard(props: ArgoWizardProps) {
                 },
                 spec: {
                   project: 'default',
-                  sources: [],
+                  sources: [
+                    {
+                      repositoryType: 'git',
+                    },
+                  ],
                   destination: { namespace: '', server: '{{server}}' },
                   syncPolicy: {
                     automated: {

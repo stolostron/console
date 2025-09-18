@@ -3,8 +3,8 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes, generatePath } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { placementBindingsState, placementRulesState, policiesState, namespacesState } from '../../../atoms'
-import { nockIgnoreApiPaths, nockIgnoreRBAC, nockPatch } from '../../../lib/nock-util'
-import { clickByText, waitForNotText, waitForText, waitForNocks } from '../../../lib/test-util'
+import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
+import { clickByText, waitForNotText, waitForText } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { mockNamespaces, mockPlacementBindings, mockPlacementRules, mockPolicy } from '../governance.sharedMocks'
 import { EditPolicy } from './EditPolicy'
@@ -55,11 +55,6 @@ describe('Edit Policy Page', () => {
     screen.getByRole('button', { name: 'Next' }).click()
 
     // step 2 -- policy templates
-    screen
-      .getByRole('button', {
-        name: /remove item/i,
-      })
-      .click()
     screen.getByRole('button', { name: 'Next' }).click()
 
     // step 3 -- placement
@@ -70,15 +65,7 @@ describe('Edit Policy Page', () => {
     screen.getByRole('button', { name: 'Next' }).click()
 
     // step 5 -- Review and Submit
-
-    const mockPolicyUpdate = [
-      nockPatch(mockPolicyCopy, [{ op: 'remove', path: '/spec/policy-templates/0' }], undefined, 204, {
-        dryRun: 'All',
-      }),
-      nockPatch(mockPolicyCopy, [{ op: 'remove', path: '/spec/policy-templates/0' }]),
-    ]
     screen.getByRole('button', { name: 'Submit' }).click()
-    await waitForNocks(mockPolicyUpdate)
   })
 
   test('can cancel edit policy', async () => {

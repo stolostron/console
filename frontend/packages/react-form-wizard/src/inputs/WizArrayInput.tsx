@@ -384,13 +384,15 @@ export function ArrayInputItem(props: {
                               </Button>
                             </Fragment>
                           )}
-                          <Button
-                            variant="plain"
-                            aria-label={removeItemAriaLabel}
-                            onClick={() => removeItem(props.value)}
-                          >
-                            <TrashIcon />
-                          </Button>
+                          {props.count > 1 && (
+                            <Button
+                              variant="plain"
+                              aria-label={removeItemAriaLabel}
+                              onClick={() => removeItem(props.value)}
+                            >
+                              <TrashIcon />
+                            </Button>
+                          )}
                         </Fragment>
                       }
                     />
@@ -421,14 +423,16 @@ export function ArrayInputItem(props: {
                           </Button>
                         </Fragment>
                       )}
-                      <Button
-                        variant="plain"
-                        aria-label={removeItemAriaLabel}
-                        onClick={() => removeItem(props.value)}
-                        style={{ marginTop: -6 }}
-                      >
-                        <TrashIcon />
-                      </Button>
+                      {props.count > 1 && (
+                        <Button
+                          variant="plain"
+                          aria-label={removeItemAriaLabel}
+                          onClick={() => removeItem(props.value)}
+                          style={{ marginTop: -6 }}
+                        >
+                          <TrashIcon />
+                        </Button>
+                      )}
                     </SplitItem>
                   </Split>
                   {props.children}
