@@ -163,10 +163,11 @@ describe('RoleRoleAssignments', () => {
       refresh: jest.fn(),
     })
 
-    // Mock useSharedAtoms to return the state atom
+    // Mock useSharedAtoms to return the complete atoms module
     mockUseSharedAtoms.mockReturnValue({
       multiclusterRoleAssignmentState: {} as any, // This will be overridden in individual tests
-    })
+      // Add other required properties as needed - we only need the ones actually used
+    } as any)
 
     // Reset mocks before each test
     ;(useRecoilValue as jest.Mock).mockClear()

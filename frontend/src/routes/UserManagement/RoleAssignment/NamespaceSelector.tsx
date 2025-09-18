@@ -3,7 +3,7 @@ import { useCallback, useMemo, useEffect } from 'react'
 import { AcmMultiSelect } from '../../../ui-components'
 import { SelectOption } from '@patternfly/react-core'
 import { SelectVariant } from '../../../components/AcmSelectBase'
-import { Cluster } from './hook/RoleAssignmentDataHook'
+import { Cluster } from '../RoleAssignments/hook/RoleAssignmentDataHook'
 
 type NamespaceSelectorProps = {
   selectedClusters: string[]
