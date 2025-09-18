@@ -28,7 +28,7 @@ type RoleAssignmentsProps = {
   roleAssignments: FlattenedRoleAssignment[]
   isLoading?: boolean
   hiddenColumns?: ('subject' | 'role' | 'clusters')[]
-  isCreateButtonHidden?: boolean
+  // isCreateButtonHidden?: boolean
   preselected: RoleAssignmentPreselected
 }
 
@@ -36,7 +36,7 @@ const RoleAssignments = ({
   roleAssignments,
   isLoading,
   hiddenColumns,
-  isCreateButtonHidden,
+  // isCreateButtonHidden,
   preselected,
 }: RoleAssignmentsProps) => {
   const { t } = useTranslation()
@@ -268,11 +268,12 @@ const RoleAssignments = ({
                 )}
                 action={
                   <div>
-                    {isCreateButtonHidden ? (
-                      <AcmButton variant="primary" onClick={() => setIsCreateModalOpen(true)}>
-                        {t('Create role assignment')}
-                      </AcmButton>
-                    ) : null}
+                    {/* TODO: add RBAC for RA creation */}
+                    {/* {isCreateButtonHidden ? ( */}
+                    <AcmButton variant="primary" onClick={() => setIsCreateModalOpen(true)}>
+                      {t('Create role assignment')}
+                    </AcmButton>
+                    {/* ) : null} */}
                     {/* TODO: add correct documentation link */}
                     <ViewDocumentationLink doclink={DOC_LINKS.CLUSTERS} />
                   </div>
