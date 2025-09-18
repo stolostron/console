@@ -2,6 +2,7 @@
 import { Subject } from './kubernetes-client'
 import { Metadata } from './metadata'
 import { IResource, IResourceDefinition } from './resource'
+import { UserKind } from './rbac'
 
 export const MulticlusterRoleAssignmentApiVersion = 'rbac.open-cluster-management.io/v1alpha1'
 export type MulticlusterRoleAssignmentApiVersionType = 'rbac.open-cluster-management.io/v1alpha1'
@@ -54,4 +55,17 @@ export interface MulticlusterRoleAssignment extends IResource {
     conditions?: Condition[]
     roleAssignments?: RoleAssignmentStatus[]
   }
+}
+
+export const emptyMulticlusterRoleAssignment: MulticlusterRoleAssignment = {
+  apiVersion: MulticlusterRoleAssignmentApiVersion,
+  kind: MulticlusterRoleAssignmentKind,
+  metadata: {},
+  spec: {
+    subject: {
+      kind: UserKind,
+      name: '',
+    },
+    roleAssignments: [],
+  },
 }

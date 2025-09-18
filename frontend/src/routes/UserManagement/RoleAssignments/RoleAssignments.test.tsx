@@ -1,10 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { nockIgnoreRBAC } from '../../../../lib/nock-util'
-import { RoleYaml } from './RoleYaml'
+import { nockIgnoreRBAC } from '../../../lib/nock-util'
+import { RoleYaml } from '../Roles/Role/RoleYaml'
 
 function Component({ roleId = 'test-role' }: { roleId?: string }) {
   return (

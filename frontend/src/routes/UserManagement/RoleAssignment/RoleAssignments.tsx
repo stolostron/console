@@ -18,12 +18,11 @@ import {
   IAcmTableColumn,
 } from '../../../ui-components'
 import { IAcmTableAction, IAcmTableButtonAction, ITableFilter } from '../../../ui-components/AcmTable/AcmTableTypes'
+import { RoleAssignmentPreselected } from '../RoleAssignments/model/role-assignment-preselected'
 import { RoleAssignmentActionDropdown } from './RoleAssignmentActionDropdown'
 import { RoleAssignmentLabel } from './RoleAssignmentLabel'
+import { RoleAssignmentModal } from '../RoleAssignments/RoleAssignmentModal'
 import { RoleAssignmentStatusComponent } from './RoleAssignmentStatusComponent'
-import { RoleAssignmentModal } from './../RoleAssignments/RoleAssignmentModal'
-// import { RoleAssignmentsLabel } from './RoleAssignmentsLabel'
-import { RoleAssignmentPreselected } from '../RoleAssignments/model/role-assignment-preselected'
 
 type RoleAssignmentsProps = {
   roleAssignments: FlattenedRoleAssignment[]
@@ -283,8 +282,6 @@ const RoleAssignments = ({
           />
           <RoleAssignmentModal
             close={() => setIsCreateModalOpen(false)}
-            // TODO: onSave
-            onSave={() => setIsCreateModalOpen(false)}
             isOpen={isCreateModalOpen}
             preselected={preselected}
           />

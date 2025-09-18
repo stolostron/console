@@ -10,8 +10,8 @@ import {
   MulticlusterRoleAssignmentKind,
 } from '../../../resources/multicluster-role-assignment'
 import { truncateMiddle } from '../../Applications/ApplicationDetails/ApplicationTopology/topology/components/future/truncate-middle'
-import { ClustersDualListSelector } from './ClustersDualListSelector'
-import { NamespaceSelector } from './NamespaceSelector'
+import { ClustersDualListSelector } from '../RoleAssignment/ClustersDualListSelector'
+import { NamespaceSelector } from '../RoleAssignment/NamespaceSelector'
 import { useRoleAssignmentData } from './hook/RoleAssignmentDataHook'
 import { RoleAssignmentFormDataType, useRoleAssignmentFormData } from './hook/RoleAssignmentFormDataHook'
 import { RoleAssignmentPreselected } from './model/role-assignment-preselected'
