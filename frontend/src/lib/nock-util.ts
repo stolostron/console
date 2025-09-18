@@ -75,20 +75,18 @@ export function nockGet<Resource extends IResource>(
   return finalNockScope
 }
 
-export function nockGetTextPlain(response: string, statusCode = 200, polling = true, customUri = '') {
-  const nockScope = nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true }).get(customUri)
+export function nockOff(request = '', response: string | IResource, statusCode = 200, polling = true) {
+  const nockScope = nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true }).get(request)
   const finalNockScope = nockScope.reply(statusCode, response, {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, OPTIONS',
     'Access-Control-Allow-Credentials': 'true',
-    'Content-Type': 'text/plain',
   })
   if (polling) {
     nockScope.optionally().times(20).reply(statusCode, response, {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, OPTIONS',
       'Access-Control-Allow-Credentials': 'true',
-      'Content-Type': 'text/plain',
     })
   }
   return finalNockScope

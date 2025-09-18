@@ -87,6 +87,19 @@ export async function fireManagedClusterView(
     }
   }
 
+  // Make sure to mock uuidv4 in tests that use ManagedClusterView
+  // jest.mock('uuid', () => ({
+  //   v4: jest.fn(),
+  // }))
+
+  // const mockUuidV4 = jest.mocked(uuidv4)
+  // const MOCKED_UUID = 'test-action-uuid-12345'
+
+  // const mockUuidV4 = jest.mocked(uuidv4)
+  // const MOCKED_UUID = 'MOCKED_UUID'
+  // mockUuidV4.mockReset()
+  // mockUuidV4.mockReturnValue(MOCKED_UUID)
+
   const skipCheckExisting = process.env.NODE_ENV !== 'test'
   const viewName = uuidv4()
 

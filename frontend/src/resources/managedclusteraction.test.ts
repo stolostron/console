@@ -109,6 +109,13 @@ describe('fireManagedClusterAction', () => {
       // Mock the create operation
       const createNock = nockCreate(expectedManagedClusterAction, expectedManagedClusterAction)
 
+      // Mock delete operation that may happen during error cleanup
+      const deleteNock = nockDelete({
+        apiVersion: ManagedClusterActionApiVersion,
+        kind: ManagedClusterActionKind,
+        metadata: { name: MOCKED_UUID, namespace: clusterName },
+      })
+
       // Mock the poll operation
       const pollNock = nockGet(
         {
@@ -136,7 +143,7 @@ describe('fireManagedClusterAction', () => {
         message: 'Action completed successfully',
         result: { success: true },
       })
-      await waitForNocks([createNock, pollNock])
+      await waitForNocks([createNock, pollNock, deleteNock])
     })
 
     it('should create and poll ManagedClusterAction for Delete action without resourceBody', async () => {
@@ -260,13 +267,6 @@ describe('fireManagedClusterAction', () => {
     it('should handle action creation failure', async () => {
       const createNock = nockCreate(expectedManagedClusterAction, expectedManagedClusterAction, 500)
 
-      // Mock delete operation that may happen during error cleanup
-      const deleteNock = nockDelete({
-        apiVersion: ManagedClusterActionApiVersion,
-        kind: ManagedClusterActionKind,
-        metadata: { name: MOCKED_UUID, namespace: clusterName },
-      })
-
       const result = await fireManagedClusterAction(
         'Update',
         clusterName,
@@ -280,7 +280,7 @@ describe('fireManagedClusterAction', () => {
       // The function catches and returns the error
       expect(result).toBeDefined()
       expect(result).toHaveProperty('message')
-      await waitForNocks([createNock, deleteNock])
+      await waitForNocks([createNock])
     })
 
     it('should handle action failure during execution', async () => {

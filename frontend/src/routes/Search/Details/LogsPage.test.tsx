@@ -7,7 +7,7 @@ import React, { useRef, useState } from 'react'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { managedClustersState } from '../../../atoms'
-import { nockGetTextPlain, nockIgnoreRBAC } from '../../../lib/nock-util'
+import { nockOff, nockIgnoreRBAC } from '../../../lib/nock-util'
 import { waitForNocks } from '../../../lib/test-util'
 import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind } from '../../../resources'
 import { SearchDetailsContext } from './DetailsPage'
@@ -371,11 +371,10 @@ describe('LogsPage', () => {
   })
 
   it('should correctly render resource error if pod is no longer found', async () => {
-    const managedClusterLogs = nockGetTextPlain(
+    const managedClusterLogs = nockOff(
+      '/apis/proxy.open-cluster-management.io/v1beta1/namespaces/testCluster/clusterstatuses/testCluster/log/testNamespace/testName/testContainer?tailLines=1000',
       'testLogs',
-      200,
-      true,
-      '/apis/proxy.open-cluster-management.io/v1beta1/namespaces/testCluster/clusterstatuses/testCluster/log/testNamespace/testName/testContainer?tailLines=1000'
+      200
     )
     const context: Partial<SearchDetailsContext> = {
       ...testClusterSearchDetailsContext,
@@ -399,11 +398,10 @@ describe('LogsPage', () => {
   })
 
   it('should correctly render log request error', async () => {
-    const managedClusterLogs = nockGetTextPlain(
+    const managedClusterLogs = nockOff(
+      '/apis/proxy.open-cluster-management.io/v1beta1/namespaces/testCluster/clusterstatuses/testCluster/log/testNamespace/testName/testContainer?tailLines=1000',
       'testLogs',
-      500,
-      true,
-      '/apis/proxy.open-cluster-management.io/v1beta1/namespaces/testCluster/clusterstatuses/testCluster/log/testNamespace/testName/testContainer?tailLines=1000'
+      500
     )
 
     render(
@@ -427,11 +425,10 @@ describe('LogsPage', () => {
   })
 
   it('should correctly render log request error for Non-OCP clusters', async () => {
-    const managedClusterLogs = nockGetTextPlain(
+    const managedClusterLogs = nockOff(
+      '/apis/proxy.open-cluster-management.io/v1beta1/namespaces/testCluster/clusterstatuses/testCluster/log/testNamespace/testName/testContainer?tailLines=1000',
       'testLogs',
-      400,
-      true,
-      '/apis/proxy.open-cluster-management.io/v1beta1/namespaces/testCluster/clusterstatuses/testCluster/log/testNamespace/testName/testContainer?tailLines=1000'
+      400
     )
 
     render(
@@ -451,11 +448,10 @@ describe('LogsPage', () => {
   })
 
   it('should render logs page with local-cluster logs successfully', async () => {
-    const localClusterLogs = nockGetTextPlain(
+    const localClusterLogs = nockOff(
+      '/api/v1/namespaces/testNamespace/pods/testName/log?container=testContainer&tailLines=1000',
       'testLogs',
-      200,
-      true,
-      '/api/v1/namespaces/testNamespace/pods/testName/log?container=testContainer&tailLines=1000'
+      200
     )
 
     render(
@@ -479,11 +475,10 @@ describe('LogsPage', () => {
   })
 
   it('should render logs page with local-cluster logs error', async () => {
-    const localClusterLogs = nockGetTextPlain(
+    const localClusterLogs = nockOff(
+      '/api/v1/namespaces/testNamespace/pods/testName/log?container=testContainer&tailLines=1000',
       'testLogs',
-      500,
-      true,
-      '/api/v1/namespaces/testNamespace/pods/testName/log?container=testContainer&tailLines=1000'
+      500
     )
 
     render(
@@ -506,11 +501,10 @@ describe('LogsPage', () => {
   })
 
   it('should render logs page with managed cluster logs successfully', async () => {
-    const managedClusterLogs = nockGetTextPlain(
+    const managedClusterLogs = nockOff(
+      '/apis/proxy.open-cluster-management.io/v1beta1/namespaces/testCluster/clusterstatuses/testCluster/log/testNamespace/testName/testContainer?tailLines=1000',
       'testLogs',
-      200,
-      true,
-      '/apis/proxy.open-cluster-management.io/v1beta1/namespaces/testCluster/clusterstatuses/testCluster/log/testNamespace/testName/testContainer?tailLines=1000'
+      200
     )
 
     render(
