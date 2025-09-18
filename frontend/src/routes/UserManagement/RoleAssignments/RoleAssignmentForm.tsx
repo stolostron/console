@@ -116,7 +116,6 @@ const RoleAssignmentForm = ({
     title,
     sections: [
       {
-        title: 'subject-section',
         type: 'Section',
         wizardTitle: t('Subject'),
         inputs: [
@@ -170,7 +169,6 @@ const RoleAssignmentForm = ({
       },
       // TODO: allow users to choose multiple roles
       {
-        title: 'roles-section',
         type: 'Section',
         wizardTitle: t('Roles'),
         inputs: [
@@ -191,7 +189,6 @@ const RoleAssignmentForm = ({
         ],
       },
       {
-        title: 'scope-section',
         type: 'Section',
         wizardTitle: t('Scope'),
         inputs: [

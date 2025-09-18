@@ -92,13 +92,7 @@ const RoleAssignmentModal = ({ close, isOpen, isEditing, preselected }: RoleAssi
   }
 
   return (
-    <AcmModal
-      isOpen={isOpen}
-      onClose={close}
-      variant={ModalVariant.large}
-      height="90%"
-      title={isEditing ? t('Edit role assignment') : t('Create role assignment')}
-    >
+    <AcmModal isOpen={isOpen} onClose={close} variant={ModalVariant.large} height="90%">
       <RoleAssignmentForm
         isEditing={isEditing}
         onCancel={close}
