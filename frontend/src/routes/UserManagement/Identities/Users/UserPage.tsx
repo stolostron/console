@@ -14,7 +14,7 @@ import {
 } from '../../../../ui-components'
 import { NavigationPath } from '../../../../NavigationPath'
 import { generatePath, useOutletContext } from 'react-router-dom-v5-compat'
-import { Page, PageSection } from '@patternfly/react-core'
+import { Page } from '@patternfly/react-core'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
 
@@ -55,71 +55,62 @@ const UserPage = () => {
   const isRoleAssignmentsActive = location.pathname.includes('/role-assignments')
   const isGroupsActive = location.pathname.includes('/groups')
 
-  switch (true) {
-    case loading:
-      return (
-        <PageSection>
-          <AcmLoadingPage />
-        </PageSection>
-      )
-    case !user:
-      return (
-        <Page>
-          <ErrorPage
-            error={new ResourceError(ResourceErrorCode.NotFound)}
-            actions={
-              <AcmButton
-                role="link"
-                onClick={() => navigate(NavigationPath.identitiesUsers)}
-                style={{ marginRight: '10px' }}
-              >
-                {t('button.backToUsers')}
-              </AcmButton>
-            }
-          />
-        </Page>
-      )
-    default:
-      return (
-        <AcmPage
-          hasDrawer
-          header={
-            <AcmPageHeader
-              title={user.fullName ?? user.metadata.name}
-              description={user.metadata.name}
-              breadcrumb={[
-                { text: t('User Management'), to: NavigationPath.roles },
-                { text: t('Identities'), to: NavigationPath.identities },
-                { text: t('Users'), to: NavigationPath.identitiesUsers },
-                { text: user.fullName ?? user.metadata.name ?? t('Unknown User') },
-              ]}
-              navigation={
-                <AcmSecondaryNav>
-                  <AcmSecondaryNavItem isActive={isDetailsActive}>
-                    <Link to={generatePath(NavigationPath.identitiesUsersDetails, { id: id ?? '' })}>
-                      {t('Details')}
-                    </Link>
-                  </AcmSecondaryNavItem>
-                  <AcmSecondaryNavItem isActive={isYamlActive}>
-                    <Link to={generatePath(NavigationPath.identitiesUsersYaml, { id: id ?? '' })}>{t('YAML')}</Link>
-                  </AcmSecondaryNavItem>
-                  <AcmSecondaryNavItem isActive={isRoleAssignmentsActive}>
-                    <Link to={generatePath(NavigationPath.identitiesUsersRoleAssignments, { id: id ?? '' })}>
-                      {t('Role assignments')}
-                    </Link>
-                  </AcmSecondaryNavItem>
-                  <AcmSecondaryNavItem isActive={isGroupsActive}>
-                    <Link to={generatePath(NavigationPath.identitiesUsersGroups, { id: id ?? '' })}>{t('Groups')}</Link>
-                  </AcmSecondaryNavItem>
-                </AcmSecondaryNav>
-              }
-            />
+  if (!loading && !user) {
+    return (
+      <Page>
+        <ErrorPage
+          error={new ResourceError(ResourceErrorCode.NotFound)}
+          actions={
+            <AcmButton
+              role="link"
+              onClick={() => navigate(NavigationPath.identitiesUsers)}
+              style={{ marginRight: '10px' }}
+            >
+              {t('button.backToUsers')}
+            </AcmButton>
           }
-        >
-          <Outlet context={userDetailsContext} />
-        </AcmPage>
-      )
+        />
+      </Page>
+    )
   }
+
+  return (
+    <AcmPage
+      hasDrawer
+      header={
+        <AcmPageHeader
+          title={loading ? '' : user?.fullName ?? user?.metadata.name ?? t('Unknown User')}
+          description={loading ? '' : user?.metadata.name}
+          breadcrumb={[
+            { text: t('User Management'), to: NavigationPath.roles },
+            { text: t('Identities'), to: NavigationPath.identities },
+            { text: t('Users'), to: NavigationPath.identitiesUsers },
+            { text: loading ? '' : user?.fullName ?? user?.metadata.name ?? t('Unknown User') },
+          ]}
+          navigation={
+            <AcmSecondaryNav>
+              <AcmSecondaryNavItem isActive={isDetailsActive}>
+                <Link to={generatePath(NavigationPath.identitiesUsersDetails, { id: id ?? '' })}>{t('Details')}</Link>
+              </AcmSecondaryNavItem>
+              <AcmSecondaryNavItem isActive={isYamlActive}>
+                <Link to={generatePath(NavigationPath.identitiesUsersYaml, { id: id ?? '' })}>{t('YAML')}</Link>
+              </AcmSecondaryNavItem>
+              <AcmSecondaryNavItem isActive={isRoleAssignmentsActive}>
+                <Link to={generatePath(NavigationPath.identitiesUsersRoleAssignments, { id: id ?? '' })}>
+                  {t('Role assignments')}
+                </Link>
+              </AcmSecondaryNavItem>
+              <AcmSecondaryNavItem isActive={isGroupsActive}>
+                <Link to={generatePath(NavigationPath.identitiesUsersGroups, { id: id ?? '' })}>{t('Groups')}</Link>
+              </AcmSecondaryNavItem>
+            </AcmSecondaryNav>
+          }
+        />
+      }
+    >
+      {loading ? <AcmLoadingPage /> : <Outlet context={userDetailsContext} />}
+    </AcmPage>
+  )
 }
 
 export { UserPage }
