@@ -116,6 +116,7 @@ const RoleAssignmentForm = ({
     title,
     sections: [
       {
+        title: 'subject-section',
         type: 'Section',
         wizardTitle: t('Subject'),
         inputs: [
@@ -168,6 +169,7 @@ const RoleAssignmentForm = ({
         ],
       },
       {
+        title: 'roles-section',
         type: 'Section',
         wizardTitle: t('Roles'),
         inputs: [
@@ -189,6 +191,7 @@ const RoleAssignmentForm = ({
         ],
       },
       {
+        title: 'scope-section',
         type: 'Section',
         wizardTitle: t('Scope'),
         inputs: [
@@ -232,7 +235,7 @@ const RoleAssignmentForm = ({
               return (
                 <NamespaceSelector
                   selectedClusters={roleAssignmentFormData.scope.clusterNames || []}
-                  clusters={roleAssignmentData.clusterSets.flatMap((cs) => cs.clusters || [])}
+                  clusters={roleAssignmentData.clusterSets?.flatMap((cs) => cs.clusters || []) || []}
                   onChangeNamespaces={onChangeScopeNamespaces}
                   selectedNamespaces={roleAssignmentFormData.scope.namespaces}
                 />

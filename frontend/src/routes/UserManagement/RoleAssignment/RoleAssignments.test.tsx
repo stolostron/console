@@ -32,7 +32,7 @@ jest.mock('@apollo/client', () => ({
 }))
 
 // Mock the RoleAssignmentDataHook to avoid Apollo Client issues
-jest.mock('./hook/RoleAssignmentDataHook', () => ({
+jest.mock('../RoleAssignments/hook/RoleAssignmentDataHook', () => ({
   useRoleAssignmentData: jest.fn(() => ({
     roleAssignmentData: {
       users: [],

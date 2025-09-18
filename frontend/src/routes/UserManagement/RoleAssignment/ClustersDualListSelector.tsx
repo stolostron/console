@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { DualListSelector, DualListSelectorTreeItemData } from '@patternfly/react-core'
 import React, { useCallback, useEffect, useRef } from 'react'
-import { ClusterSet } from './hook/RoleAssignmentDataHook'
+import { ClusterSet } from '../RoleAssignments/hook/RoleAssignmentDataHook'
 
 type ClustersDualListSelectorProps = {
   onChoseOptions: (values: { id: string; value: string }[]) => void
