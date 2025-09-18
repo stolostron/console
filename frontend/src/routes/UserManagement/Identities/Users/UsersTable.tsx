@@ -6,7 +6,7 @@ import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
 import { User as RbacUser, listUsers } from '../../../../resources/rbac'
 import { useQuery } from '../../../../lib/useQuery'
-import { AcmButton, AcmEmptyState, AcmLoadingPage, AcmTable, compareStrings } from '../../../../ui-components'
+import { AcmButton, AcmEmptyState, AcmTable, compareStrings } from '../../../../ui-components'
 import { useFilters, usersTableColumns } from './UsersTableHelper'
 
 const UsersTable = () => {
@@ -30,42 +30,47 @@ const UsersTable = () => {
 
   return (
     <PageSection>
-      {loading ? (
-        <AcmLoadingPage />
-      ) : (
-        <AcmTable<RbacUser>
-          key="users-table"
-          filters={filters}
-          columns={columns}
-          keyFn={keyFn}
-          items={users}
-          emptyState={
-            <AcmEmptyState
-              title={t(`In order to view Users, add Identity provider`)}
-              message={
-                <Trans
-                  i18nKey="Once Identity provider is added, Users will appear in the list after they log in."
-                  components={{ bold: <strong /> }}
-                />
-              }
-              action={
-                <div>
-                  <AcmButton
-                    isDisabled={!canAddAccessControl}
-                    tooltip={!canAddAccessControl ? t('rbac.unauthorized') : ''}
-                    component={Link}
-                  >
-                    {t('Add Identity provider')}
-                  </AcmButton>
-                  <ViewDocumentationLink doclink={DOC_LINKS.CREATE_CONNECTION} />
-                </div>
-              }
-            />
-          }
-          // TODO: Uncomment when actions are implemented
-          // rowActions={rowActions}
-        />
-      )}
+      <AcmTable<RbacUser>
+        key="users-table"
+        filters={filters}
+        columns={columns}
+        keyFn={keyFn}
+        items={loading ? undefined : users}
+        resultView={{
+          page: 1,
+          loading,
+          refresh: () => {},
+          items: [],
+          emptyResult: false,
+          processedItemCount: 0,
+          isPreProcessed: true,
+        }}
+        emptyState={
+          <AcmEmptyState
+            title={t(`In order to view Users, add Identity provider`)}
+            message={
+              <Trans
+                i18nKey="Once Identity provider is added, Users will appear in the list after they log in."
+                components={{ bold: <strong /> }}
+              />
+            }
+            action={
+              <div>
+                <AcmButton
+                  isDisabled={!canAddAccessControl}
+                  tooltip={!canAddAccessControl ? t('rbac.unauthorized') : ''}
+                  component={Link}
+                >
+                  {t('Add Identity provider')}
+                </AcmButton>
+                <ViewDocumentationLink doclink={DOC_LINKS.CREATE_CONNECTION} />
+              </div>
+            }
+          />
+        }
+        // TODO: Uncomment when actions are implemented
+        // rowActions={rowActions}
+      />
     </PageSection>
   )
 }
