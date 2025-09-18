@@ -29,3 +29,15 @@ export const onCopy = (event: React.ClipboardEvent<HTMLDivElement>, text: string
     clipboard.removeChild(el)
   }
 }
+
+// Utility function to measure text width dynamically
+export const getTextWidth = (text: string, fontSize: number = 14, fontFamily: string = 'RedHatText') => {
+  const canvas = document.createElement('canvas')
+  const ctx = canvas.getContext('2d')
+  if (ctx) {
+    ctx.font = `${fontSize}px ${fontFamily}`
+    const width = ctx.measureText(text).width
+    return width
+  }
+  return 150
+}

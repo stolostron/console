@@ -34,6 +34,7 @@ import {
   tableTitle,
   titleText,
 } from '../../../../Governance/common/policySidebarStyles'
+import { getTextWidth } from '../../../../../ui-components/utils'
 
 function renderDonutChart(data: PolicyReportResults[], t: TFunction) {
   const clusterRiskScores = data.map((issue) => issue.properties.total_risk)
@@ -61,6 +62,12 @@ function renderDonutChart(data: PolicyReportResults[], t: TFunction) {
     name: `${d.value} ${d.key}`,
   }))
 
+  const chartWidth = 400
+  const availableWidth = 0.8 * chartWidth
+  const subtitleText = t('Total issues')
+  const subtitleWidth = getTextWidth(subtitleText)
+  const shouldPlaceSubtitleAtBottom = subtitleWidth > availableWidth
+
   return (
     <ChartDonut
       ariaTitle={t('Cluster violations')}
@@ -79,13 +86,14 @@ function renderDonutChart(data: PolicyReportResults[], t: TFunction) {
       }
       labels={({ datum }) => `${datum.x}: ${datum.y}`}
       padding={{
-        bottom: 20,
+        bottom: shouldPlaceSubtitleAtBottom ? 30 : 20,
         left: 20,
         right: 145,
         top: 20,
       }}
       title={`${data.length}`}
       subTitle={t('Total issues')}
+      subTitlePosition={shouldPlaceSubtitleAtBottom ? 'bottom' : undefined}
       width={400}
       height={200}
       colorScale={colorThemes.criticalImportantModerateLow}

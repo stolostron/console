@@ -4,6 +4,7 @@ import { ChartDonut, ChartLabel, ChartLegend, ChartPie } from '@patternfly/react
 import { Card, CardTitle } from '@patternfly/react-core'
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom-v5-compat'
+import { getTextWidth } from '../../../../ui-components/utils'
 
 type Data = {
   key: string
@@ -38,6 +39,12 @@ export function SummaryClustersCard(props: {
     link: d.link,
   }))
 
+  const chartWidth = 150
+  const availableWidth = 0.8 * chartWidth
+  const subtitleText = chartLabel?.subTitle ?? ''
+  const subtitleWidth = getTextWidth(subtitleText)
+  const shouldPlaceSubtitleAtBottom = subtitleWidth > availableWidth
+
   const chart = useMemo(() => {
     const commonProps = {
       ariaTitle: title,
@@ -46,19 +53,27 @@ export function SummaryClustersCard(props: {
       name: title,
       width: 150,
       height: 150,
-      padding: {
-        bottom: 15,
-        left: 24,
-        top: 15,
-      },
       constrainToVisibleArea: true,
     }
     const component = isPieChart ? (
-      <ChartPie {...commonProps} />
+      <ChartPie
+        {...commonProps}
+        padding={{
+          bottom: 15,
+          left: 24,
+          top: 15,
+        }}
+      />
     ) : (
       <ChartDonut
         {...commonProps}
         subTitle={chartLabel?.subTitle ?? ''}
+        subTitlePosition={shouldPlaceSubtitleAtBottom ? 'bottom' : undefined}
+        padding={{
+          bottom: shouldPlaceSubtitleAtBottom ? 25 : 15,
+          left: 24,
+          top: 15,
+        }}
         title={chartLabel?.title}
         titleComponent={
           <ChartLabel
@@ -77,7 +92,7 @@ export function SummaryClustersCard(props: {
     )
 
     return component
-  }, [chartData, chartLabel?.subTitle, chartLabel?.title, colorScale, isPieChart, title])
+  }, [chartData, chartLabel?.subTitle, chartLabel?.title, colorScale, isPieChart, title, shouldPlaceSubtitleAtBottom])
 
   const FONT_SIZE = 12
   const FONT_FAMILY = 'RedHatText'
@@ -88,23 +103,15 @@ export function SummaryClustersCard(props: {
   const SYMBOL_SPACER = 8
   const ROW_HEIGHT = 18.5
 
-  const getLabelWidth = (legendData: string) => {
-    const canvas = document.createElement('canvas')
-    const ctx = canvas.getContext('2d')
-    if (ctx) {
-      ctx.font = `${FONT_SIZE}px ${FONT_FAMILY}`
-      const width = ctx.measureText(legendData).width
-      return width
-    } else return 150
-  }
-
   const legendWidth = useMemo(() => {
     const totalLabels = legendData.length
     const columns = Math.ceil(totalLabels / ITEMS_PER_COLUMN)
     let cumulativeLongestLabelWidth = 0
     for (let i = 0; i < columns; i++) {
       const longest = Math.max(
-        ...legendData.slice(i * ITEMS_PER_COLUMN, (i + 1) * ITEMS_PER_COLUMN).map((item) => getLabelWidth(item.name))
+        ...legendData
+          .slice(i * ITEMS_PER_COLUMN, (i + 1) * ITEMS_PER_COLUMN)
+          .map((item) => getTextWidth(item.name, FONT_SIZE, FONT_FAMILY))
       )
       cumulativeLongestLabelWidth += longest
     }
