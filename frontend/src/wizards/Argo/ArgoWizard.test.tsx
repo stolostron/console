@@ -107,6 +107,7 @@ describe('ArgoWizard tests', () => {
     //=====================================================================
     //                      template page
     //=====================================================================
+    await clickByText('Git')
     await typeByRole(url, 'combobox', { name: /Enter or select a Git URL/i })
 
     const appBranchNocks = [nockArgoGitBranches(url, { branchList: [{ name: 'main' }] })]

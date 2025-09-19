@@ -19,6 +19,7 @@ import { RepoURL } from './common'
 import { GitPathSelect } from './common/GitPathSelect'
 import { GitRevisionSelect } from './common/GitRevisionSelect'
 import HelmIcon from './logos/HelmIcon.svg'
+import { isEmpty } from 'lodash'
 
 export interface MultipleSourcesSelectorProps {
   channels: Channel[] | undefined
@@ -35,6 +36,13 @@ export function MultipleSourcesSelector(props: MultipleSourcesSelectorProps) {
       path="spec.template.spec.sources"
       placeholder="Add another repository"
       disallowEmpty={editMode === EditMode.Create}
+      required
+      validation={(value) => {
+        // standard required validation is not compatible with disallowEmpty
+        return !value || (Array.isArray(value) && (value.length === 0 || (value.length === 1 && isEmpty(value[0]))))
+          ? t('Required')
+          : undefined
+      }}
       collapsedContent={
         <Fragment>
           <WizHidden hidden={(data) => !data.repositoryType}>
