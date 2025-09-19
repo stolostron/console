@@ -45,6 +45,11 @@ spec:
     {{else}}
     controlPlaneAgents: 3
     {{/if}}
+    {{#switch ai.controlPlaneCount}}
+    {{#case 2}}
+    arbiterAgents: 1
+    {{/case}}
+    {{/switch}}
   imageSetRef:
     name: '{{{ai.openshiftVersion}}}'
   networking:
