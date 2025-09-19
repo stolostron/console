@@ -59,7 +59,7 @@ export type WizArrayInputProps = Omit<InputCommonProps, 'path'> & {
 }
 
 export function WizArrayInput(props: WizArrayInputProps) {
-  const { displayMode: mode, value, setValue, hidden, id, required} = useInput(props as InputCommonProps)
+  const { displayMode: mode, value, setValue, hidden, id, required } = useInput(props as InputCommonProps)
   const [open, setOpen] = useState(false)
   const onToggle = useCallback(() => setOpen((open: boolean) => !open), [])
 
@@ -386,7 +386,7 @@ export function ArrayInputItem(props: {
                               </Button>
                             </Fragment>
                           )}
-                          {(!required || (count > 1)) && (
+                          {(!required || count > 1) && (
                             <Button
                               variant="plain"
                               aria-label={removeItemAriaLabel}
@@ -425,7 +425,7 @@ export function ArrayInputItem(props: {
                           </Button>
                         </Fragment>
                       )}
-                      {(!required || (count > 1)) && (
+                      {(!required || count > 1) && (
                         <Button
                           variant="plain"
                           aria-label={removeItemAriaLabel}

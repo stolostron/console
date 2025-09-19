@@ -66,7 +66,7 @@ export function MultipleSourcesSelector(props: MultipleSourcesSelectorProps) {
       <WizHidden hidden={(data) => data.repositoryType}>
         <Title headingLevel="h6">{t('Repository type')}</Title>
       </WizHidden>
-      <WizTiles path="repositoryType">
+      <WizTiles path="repositoryType" required>
         <Tile id="git" value="git" label="Git" icon={<GitAltIcon />} description={t('Use a Git repository')} />
         <Tile id="helm" value="helm" label="Helm" icon={<HelmIcon />} description={t('Use a Helm repository')} />
       </WizTiles>
