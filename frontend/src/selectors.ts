@@ -114,3 +114,8 @@ export const acmOperatorSubscriptionsValue = selector({
   key: 'acmOperatorSubscriptions',
   get: ({ get }) => findInstalledSubscription('advanced-cluster-management', get),
 })
+
+export const kubevirtOperatorSubscriptionsValue = selector({
+  key: 'kubevirtOperatorSubscriptions',
+  get: ({ get }) => findInstalledSubscription('kubevirt-hyperconverged', get),
+})

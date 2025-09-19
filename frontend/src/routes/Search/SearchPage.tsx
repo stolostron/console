@@ -48,6 +48,7 @@ import {
 } from './search-sdk/search-sdk'
 import SearchResults from './SearchResults/SearchResults'
 import { transformBrowserUrlToSearchString, updateBrowserUrl } from './urlQuery'
+import { KubevirtProviderAlert } from '../../components/KubevirtProviderAlert'
 
 const actionGroup = css({
   backgroundColor: 'var(--pf-v5-global--BackgroundColor--100)',
@@ -474,6 +475,12 @@ export default function SearchPage() {
       setQueryMessages(msgQuery.data?.messages)
     }
   }, [msgQuery.data])
+  // Helper function to check if search query contains VirtualMachine kinds
+  const hasVirtualMachineKinds = (query: string): boolean => {
+    const lowerQuery = query.toLowerCase()
+    // Check for VirtualMachine or VirtualMachineInstance in kind filters
+    return lowerQuery.includes('kind:virtualmachine') || lowerQuery.includes('kind:virtualmachineinstance')
+  }
 
   return (
     <AcmPage
@@ -503,6 +510,11 @@ export default function SearchPage() {
           searchResultData={data}
           refetchSearch={refetch}
         />
+        {hasVirtualMachineKinds(presetSearchQuery) && (
+          <div style={{ marginBottom: '1em' }}>
+            <KubevirtProviderAlert variant="search" component="hint" />
+          </div>
+        )}
         {!queryErrors &&
           (presetSearchQuery !== '' && (query.keywords.length > 0 || query.filters.length > 0) ? (
             <SearchResults

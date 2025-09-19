@@ -7,14 +7,14 @@ WORKDIR /app
 COPY . .
 
 # Running installs concurrently fails on aarch64
-RUN npm ci --omit=optional --unsafe-perm --ignore-scripts --maxsockets=5 --network-concurrency=3
-RUN cd backend && npm ci --omit=optional  --unsafe-perm --ignore-scripts --maxsockets=5 --network-concurrency=3
-RUN cd frontend && npm ci --legacy-peer-deps --unsafe-perm --ignore-scripts --maxsockets=5 --network-concurrency=3
+RUN npm ci --omit=optional --unsafe-perm --ignore-scripts && npm cache clean --force
+RUN cd backend && npm ci --omit=optional  --unsafe-perm --ignore-scripts && npm cache clean --force
+RUN cd frontend && npm ci --legacy-peer-deps --unsafe-perm --ignore-scripts && npm cache clean --force
 RUN npm run build:backend
 RUN cd frontend && npm run build:plugin:mce
 
 # Remove build-time dependencies before packaging
-RUN cd backend && npm ci --omit=optional --only=production --unsafe-perm --ignore-scripts --maxsockets=5 --network-concurrency=3
+RUN cd backend && npm ci --omit=optional --only=production --unsafe-perm --ignore-scripts
 
 FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:8d786ab1cda0930d8a040b35a125a2e04fe6446b73af397b20291478141fe244
 
