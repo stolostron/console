@@ -1,8 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../../lib/nock-util'
+import { Group } from '../../../../resources/rbac'
 import { GroupsTable } from './GroupsTable'
 
 jest.mock('../../../../lib/acm-i18next', () => ({
@@ -10,6 +11,10 @@ jest.mock('../../../../lib/acm-i18next', () => ({
     t: (key: string) => key,
   }),
   Trans: ({ children }: { children: React.ReactNode }) => children,
+}))
+
+jest.mock('../../../../lib/useQuery', () => ({
+  useQuery: jest.fn(),
 }))
 
 jest.mock('../../../../lib/rbac-util', () => ({
@@ -23,6 +28,43 @@ jest.mock('../../../../ui-components/IdentityStatus/IdentityStatus', () => ({
   ),
   isIdentityActive: jest.fn(() => true),
 }))
+
+import { useQuery } from '../../../../lib/useQuery'
+
+const mockUseQuery = useQuery as jest.MockedFunction<typeof useQuery>
+
+const mockGroups: Group[] = [
+  {
+    apiVersion: 'user.openshift.io/v1',
+    kind: 'Group',
+    metadata: {
+      name: 'kubevirt-admins',
+      uid: 'kubevirt-admins',
+      creationTimestamp: '2023-01-01T00:00:00Z',
+    },
+    users: ['admin1'],
+  },
+  {
+    apiVersion: 'user.openshift.io/v1',
+    kind: 'Group',
+    metadata: {
+      name: 'developers',
+      uid: 'developers',
+      creationTimestamp: '2023-01-02T00:00:00Z',
+    },
+    users: ['dev1', 'dev2'],
+  },
+  {
+    apiVersion: 'user.openshift.io/v1',
+    kind: 'Group',
+    metadata: {
+      name: 'sre-team',
+      uid: 'sre-team',
+      creationTimestamp: '2023-01-03T00:00:00Z',
+    },
+    users: ['sre1'],
+  },
+]
 
 function Component() {
   return (
@@ -38,53 +80,75 @@ describe('GroupsTable', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
+
+    // Mock useQuery to return our mock data
+    mockUseQuery.mockReturnValue({
+      data: mockGroups,
+      loading: false,
+      error: undefined,
+      startPolling: jest.fn(),
+      stopPolling: jest.fn(),
+      refresh: jest.fn(),
+    })
   })
 
-  test('should render groups table with mock data', () => {
+  test('should render groups table with mock data', async () => {
     render(<Component />)
 
-    expect(screen.getByText('kubevirt-admins')).toBeInTheDocument()
-    expect(screen.getByText('developers')).toBeInTheDocument()
-    expect(screen.getByText('sre-team')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText('kubevirt-admins')).toBeInTheDocument()
+      expect(screen.getByText('developers')).toBeInTheDocument()
+      expect(screen.getByText('sre-team')).toBeInTheDocument()
+    })
   })
 
-  test('should render groups table with data', () => {
+  test('should render groups table with data', async () => {
     render(<Component />)
 
-    expect(screen.getByText('Name')).toBeInTheDocument()
-    expect(screen.getByText('Users')).toBeInTheDocument()
-    expect(screen.getByText('Created')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText('Name')).toBeInTheDocument()
+      expect(screen.getByText('Users')).toBeInTheDocument()
+      expect(screen.getByText('Created')).toBeInTheDocument()
 
-    expect(screen.getByText('kubevirt-admins')).toBeInTheDocument()
-    expect(screen.getByText('developers')).toBeInTheDocument()
-    expect(screen.getByText('sre-team')).toBeInTheDocument()
+      expect(screen.getByText('kubevirt-admins')).toBeInTheDocument()
+      expect(screen.getByText('developers')).toBeInTheDocument()
+      expect(screen.getByText('sre-team')).toBeInTheDocument()
 
-    expect(screen.getAllByText('1').length).toBeGreaterThan(0)
-    expect(screen.getAllByText('2').length).toBeGreaterThan(0)
+      expect(screen.getAllByText('1').length).toBeGreaterThan(0)
+      expect(screen.getAllByText('2').length).toBeGreaterThan(0)
+    })
   })
 
-  test('should render empty state when no groups', () => {
+  test('should render empty state when no groups', async () => {
     render(<Component />)
 
-    expect(screen.getByText('kubevirt-admins')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText('kubevirt-admins')).toBeInTheDocument()
+    })
   })
 
-  test('should render error state', () => {
+  test('should render error state', async () => {
     render(<Component />)
 
-    expect(screen.getByText('kubevirt-admins')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText('kubevirt-admins')).toBeInTheDocument()
+    })
   })
 
-  test('should show correct user counts for each group', () => {
+  test('should show correct user counts for each group', async () => {
     render(<Component />)
 
-    expect(screen.getAllByText('1').length).toBeGreaterThan(0)
-    expect(screen.getAllByText('2').length).toBeGreaterThan(0)
+    await waitFor(() => {
+      expect(screen.getAllByText('1').length).toBeGreaterThan(0)
+      expect(screen.getAllByText('2').length).toBeGreaterThan(0)
+    })
   })
 
-  test('should render identity provider button when authorized', () => {
+  test('should render identity provider button when authorized', async () => {
     render(<Component />)
 
-    expect(screen.getByText('kubevirt-admins')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText('kubevirt-admins')).toBeInTheDocument()
+    })
   })
 })

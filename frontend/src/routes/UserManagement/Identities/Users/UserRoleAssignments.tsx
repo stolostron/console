@@ -5,26 +5,17 @@ import { useNavigate, useParams } from 'react-router-dom-v5-compat'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
-import { User } from '../../../../resources'
-import multiclusterRoleAssignmentsMockDataJson from '../../../../resources/clients/mock-data/multicluster-role-assignments.json'
+import { User, UserKind } from '../../../../resources'
+import { listUsers } from '../../../../resources/rbac'
 import {
   roleAssignmentToFlattenedRoleAssignment,
   FlattenedRoleAssignment,
 } from '../../../../resources/clients/multicluster-role-assignment-client'
-import { MulticlusterRoleAssignment } from '../../../../resources/multicluster-role-assignment'
+import { useQuery } from '../../../../lib/useQuery'
+import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
 import { AcmButton, AcmLoadingPage, compareStrings } from '../../../../ui-components'
 import { RoleAssignments } from '../../RoleAssignment/RoleAssignments'
-
-// TODO: to remove once API ready
-// Mock users data to match the role assignments
-const mockUsers = [
-  { metadata: { name: 'alice.trask', uid: 'mock-user-alice-trask' } },
-  { metadata: { name: 'bob.levy', uid: 'mock-user-bob-levy' } },
-  { metadata: { name: 'charlie.cranston', uid: 'mock-user-charlie-cranston' } },
-  { metadata: { name: 'sarah.jones', uid: 'mock-user-sarah-jones' } },
-  { metadata: { name: 'david.brown', uid: 'mock-user-david-brown' } },
-]
 
 const UserRoleAssignments = () => {
   const { t } = useTranslation()
@@ -32,22 +23,26 @@ const UserRoleAssignments = () => {
   const { id = undefined } = useParams()
   const [user, setUser] = useState<User>()
 
-  // Use mock data only
-  const users = mockUsers
+  const { data: users, loading: isUsersLoading } = useQuery(listUsers)
 
+  const { multiclusterRoleAssignmentState } = useSharedAtoms()
+  const multiclusterRoleAssignments = useRecoilValue(multiclusterRoleAssignmentState)
+  const isRoleAssignmentsLoading = multiclusterRoleAssignments === undefined
   // TODO: proper loading mechanism once API ready
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [isNotFound, setIsNotFound] = useState<boolean>()
-  useEffect(() => setIsLoading([users, user].includes(undefined)), [users, user])
+
   useEffect(() => {
     const user = users?.find((user) => user.metadata.uid === id) as User
     setUser(user)
     setIsNotFound(user === undefined)
-    setIsLoading(false)
   }, [id, users])
 
-  // Use multicluster role assignments mock data
-  const multiclusterRoleAssignments = multiclusterRoleAssignmentsMockDataJson as MulticlusterRoleAssignment[]
+  useEffect(() => {
+    setIsLoading(
+      [users, user, multiclusterRoleAssignments].includes(undefined) || isUsersLoading || isRoleAssignmentsLoading
+    )
+  }, [users, user, multiclusterRoleAssignments, isUsersLoading, isRoleAssignmentsLoading])
 
   // TODO: call useFindRoleAssignments instead ACM-23633
   const roleAssignments: FlattenedRoleAssignment[] = useMemo(
@@ -92,7 +87,14 @@ const UserRoleAssignments = () => {
         />
       )
     default:
-      return <RoleAssignments roleAssignments={roleAssignments} isLoading={isLoading} hiddenColumns={['subject']} />
+      return (
+        <RoleAssignments
+          roleAssignments={roleAssignments}
+          isLoading={isLoading}
+          hiddenColumns={['subject']}
+          preselected={{ subject: { kind: UserKind, value: user?.metadata.name } }}
+        />
+      )
   }
 }
 

@@ -32,7 +32,7 @@ const mockRoleAssignment: FlattenedRoleAssignment = {
   name: 'A1',
   relatedMulticlusterRoleAssignment: {} as MulticlusterRoleAssignment,
   clusterRole: 'admin',
-  clusterSets: ['production', 'staging'],
+  clusterSelection: { type: 'clusterNames', clusterNames: ['production', 'staging'] },
   targetNamespaces: ['default', 'kube-system', 'test-ns'],
   subject: { name: 'test-user', kind: 'User' },
 }

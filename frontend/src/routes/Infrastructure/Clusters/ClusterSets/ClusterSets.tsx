@@ -166,7 +166,7 @@ export function ClusterSetsTable(props: { managedClusterSets?: ManagedClusterSet
         hostedClusters,
         nodePools,
         discoveredClusters,
-        managedClusterSet,
+        managedClusterSets: [managedClusterSet],
       })
       managedClusterSetClusters[managedClusterSet.metadata.name] = clusters
     }

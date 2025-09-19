@@ -18,25 +18,39 @@ import {
   IAcmTableColumn,
 } from '../../../ui-components'
 import { IAcmTableAction, IAcmTableButtonAction, ITableFilter } from '../../../ui-components/AcmTable/AcmTableTypes'
+import { RoleAssignmentPreselected } from '../RoleAssignments/model/role-assignment-preselected'
 import { RoleAssignmentActionDropdown } from './RoleAssignmentActionDropdown'
 import { RoleAssignmentLabel } from './RoleAssignmentLabel'
+import { RoleAssignmentModal } from '../RoleAssignments/RoleAssignmentModal'
 import { RoleAssignmentStatusComponent } from './RoleAssignmentStatusComponent'
 
 type RoleAssignmentsProps = {
   roleAssignments: FlattenedRoleAssignment[]
   isLoading?: boolean
-  hiddenColumns?: ('subject' | 'role' | 'clusters' | 'clusterSets')[]
+  hiddenColumns?: ('subject' | 'role' | 'clusters')[]
+  // isCreateButtonHidden?: boolean
+  preselected: RoleAssignmentPreselected
 }
 
-const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssignmentsProps) => {
+const RoleAssignments = ({
+  roleAssignments,
+  isLoading,
+  hiddenColumns,
+  // isCreateButtonHidden,
+  preselected,
+}: RoleAssignmentsProps) => {
   const { t } = useTranslation()
   // Key function for the table that generates a unique key for each role assignment
   const keyFn = useCallback((roleAssignment: FlattenedRoleAssignment) => roleAssignment.name, [])
 
   // Modal state for delete confirmation
-  const [modalProps, setModalProps] = useState<BulkActionModalProps<FlattenedRoleAssignment> | { open: false }>({
+  const [deleteModalProps, setDeleteModalProps] = useState<
+    BulkActionModalProps<FlattenedRoleAssignment> | { open: false }
+  >({
     open: false,
   })
+
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
 
   // Table actions for bulk operations
   const tableActions = useMemo<IAcmTableAction<FlattenedRoleAssignment>[]>(
@@ -45,7 +59,7 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
         id: 'deleteRoleAssignments',
         title: t('Delete role assignments'),
         click: (roleAssignments) => {
-          setModalProps({
+          setDeleteModalProps({
             open: true,
             title: t('Delete role assignments?'),
             action: t('Delete'),
@@ -70,7 +84,7 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
             ],
             keyFn,
             actionFn: deleteRoleAssignment,
-            close: () => setModalProps({ open: false }),
+            close: () => setDeleteModalProps({ open: false }),
             isDanger: true,
             icon: 'warning',
             confirmText: 'delete',
@@ -86,7 +100,7 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
   const filters = useMemo<ITableFilter<FlattenedRoleAssignment>[]>(() => {
     // Get all unique values for filter options
     const allRoles = new Set<string>()
-    const allClusterSets = new Set<string>()
+    const allClusters = new Set<string>()
     const allNamespaces = new Set<string>()
     const allStatuses = new Set<string>()
 
@@ -99,9 +113,10 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
         allStatuses.add(roleAssignment.status.status)
       }
 
-      // Add cluster sets and target namespaces
-      roleAssignment.clusterSets.forEach((clusterSet) => {
-        allClusterSets.add(clusterSet)
+      // Add cluster names and target namespaces
+      const clusterNames = roleAssignment.clusterSelection?.clusterNames || []
+      clusterNames.forEach((clusterName) => {
+        allClusters.add(clusterName)
       })
       roleAssignment.targetNamespaces?.forEach((namespace) => {
         allNamespaces.add(namespace)
@@ -112,9 +127,9 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
     const roleOptions = Array.from(allRoles)
       .sort((a, b) => a.localeCompare(b))
       .map((role) => ({ label: role, value: role }))
-    const clusterSetOptions = Array.from(allClusterSets)
+    const clusterOptions = Array.from(allClusters)
       .sort((a, b) => a.localeCompare(b))
-      .map((clusterSet) => ({ label: clusterSet, value: clusterSet }))
+      .map((cluster) => ({ label: cluster, value: cluster }))
     const namespaceOptions = Array.from(allNamespaces)
       .sort((a, b) => a.localeCompare(b))
       .map((namespace) => ({ label: namespace, value: namespace }))
@@ -130,11 +145,13 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
         tableFilterFn: (selectedValues, roleAssignment) => selectedValues.includes(roleAssignment.clusterRole),
       },
       {
-        id: 'clusterSet',
-        label: t('Cluster Set'),
-        options: clusterSetOptions,
-        tableFilterFn: (selectedValues, roleAssignment) =>
-          selectedValues.some((selectedClusterSet) => roleAssignment.clusterSets.includes(selectedClusterSet)),
+        id: 'clusters',
+        label: t('Clusters'),
+        options: clusterOptions,
+        tableFilterFn: (selectedValues, roleAssignment) => {
+          const clusterNames = roleAssignment.clusterSelection?.clusterNames || []
+          return selectedValues.some((selectedClusterName) => clusterNames.includes(selectedClusterName))
+        },
       },
       {
         id: 'namespace',
@@ -159,7 +176,7 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
       {
         id: 'create-role-assignment',
         title: t('Create role assignment'),
-        click: () => {},
+        click: () => setIsCreateModalOpen(true),
         variant: ButtonVariant.primary,
       },
     ],
@@ -183,15 +200,15 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
       isHidden: hiddenColumns?.includes('subject'),
     },
     {
-      header: t('Cluster Sets'),
-      cell: (roleAssignment) => <RoleAssignmentLabel elements={roleAssignment.clusterSets} numLabel={3} />,
-      exportContent: (roleAssignment) => roleAssignment.clusterSets.join(', '),
-      isHidden: hiddenColumns?.includes('clusterSets'),
-    },
-    {
       header: t('Clusters'),
-      cell: (roleAssignment) => <RoleAssignmentLabel elements={roleAssignment.clusters} numLabel={3} />,
-      exportContent: (roleAssignment) => roleAssignment.clusters?.join(', ') ?? '',
+      cell: (roleAssignment) => {
+        const clusterNames = roleAssignment.clusterSelection?.clusterNames || []
+        return <RoleAssignmentLabel elements={clusterNames} numLabel={3} />
+      },
+      exportContent: (roleAssignment) => {
+        const clusterNames = roleAssignment.clusterSelection?.clusterNames || []
+        return clusterNames.join(', ')
+      },
       isHidden: hiddenColumns?.includes('clusters'),
     },
     {
@@ -218,7 +235,7 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
       cell: (roleAssignment: FlattenedRoleAssignment) => (
         <RoleAssignmentActionDropdown
           roleAssignment={roleAssignment}
-          setModalProps={setModalProps}
+          setModalProps={setDeleteModalProps}
           deleteAction={deleteRoleAssignment}
         />
       ),
@@ -232,36 +249,46 @@ const RoleAssignments = ({ roleAssignments, isLoading, hiddenColumns }: RoleAssi
       {isLoading ? (
         <AcmLoadingPage />
       ) : (
-        <AcmTable<FlattenedRoleAssignment>
-          key="role-assignments-table"
-          columns={columns}
-          keyFn={keyFn}
-          items={roleAssignments}
-          searchPlaceholder={t('Search for role assignments...')}
-          filters={filters}
-          tableActionButtons={tableActionButtons}
-          tableActions={tableActions}
-          emptyState={
-            <AcmEmptyState
-              key="roleAssignmentsEmptyState"
-              title={t('No role assignment created yet')}
-              message={t(
-                'No role assignments have been created for this entity yet. Create a role assignment to grant specific permissions.'
-              )}
-              action={
-                <div>
-                  <AcmButton variant="primary" onClick={() => {}}>
-                    {t('Create role assignment')}
-                  </AcmButton>
-                  {/* TODO: add correct documentation link */}
-                  <ViewDocumentationLink doclink={DOC_LINKS.CLUSTERS} />
-                </div>
-              }
-            />
-          }
-        />
+        <>
+          <AcmTable<FlattenedRoleAssignment>
+            key="role-assignments-table"
+            columns={columns}
+            keyFn={keyFn}
+            items={roleAssignments}
+            searchPlaceholder={t('Search for role assignments...')}
+            filters={filters}
+            tableActionButtons={tableActionButtons}
+            tableActions={tableActions}
+            emptyState={
+              <AcmEmptyState
+                key="roleAssignmentsEmptyState"
+                title={t('No role assignment created yet')}
+                message={t(
+                  'No role assignments have been created for this entity yet. Create a role assignment to grant specific permissions.'
+                )}
+                action={
+                  <div>
+                    {/* TODO: add RBAC for RA creation */}
+                    {/* {isCreateButtonHidden ? ( */}
+                    <AcmButton variant="primary" onClick={() => setIsCreateModalOpen(true)}>
+                      {t('Create role assignment')}
+                    </AcmButton>
+                    {/* ) : null} */}
+                    {/* TODO: add correct documentation link */}
+                    <ViewDocumentationLink doclink={DOC_LINKS.CLUSTERS} />
+                  </div>
+                }
+              />
+            }
+          />
+          <RoleAssignmentModal
+            close={() => setIsCreateModalOpen(false)}
+            isOpen={isCreateModalOpen}
+            preselected={preselected}
+          />
+        </>
       )}
-      <BulkActionModal<FlattenedRoleAssignment> {...modalProps} />
+      <BulkActionModal<FlattenedRoleAssignment> {...deleteModalProps} />
     </PageSection>
   )
 }
