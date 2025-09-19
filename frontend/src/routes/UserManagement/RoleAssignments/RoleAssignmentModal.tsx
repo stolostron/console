@@ -32,7 +32,6 @@ const RoleAssignmentModal = ({ close, isOpen, isEditing, preselected }: RoleAssi
     const subjectNames = data.subject.kind === UserKind ? [data.subject.user] : [data.subject.group]
     const existingRoleAssignments = findRoleAssignments(
       {
-        roles: data.roles,
         subjectKinds: [data.subject.kind],
         subjectNames: subjectNames.filter((e) => e !== undefined),
       },
@@ -51,10 +50,9 @@ const RoleAssignmentModal = ({ close, isOpen, isEditing, preselected }: RoleAssi
         clusterRole: role,
         clusterSelection: {
           type: 'clusterNames',
-          clusterNames: data.scope.kind === 'specific' ? data.scope.clusterNames || [] : [],
+          clusterNames: data.scope.clusterNames || [],
         },
-        targetNamespaces:
-          data.scope.kind === 'specific' && data.scope.namespaces?.length ? data.scope.namespaces : undefined,
+        targetNamespaces: data.scope.namespaces,
       },
       subject: {
         name: (data.subject.kind === UserKind ? data.subject.user : data.subject.group) ?? '',

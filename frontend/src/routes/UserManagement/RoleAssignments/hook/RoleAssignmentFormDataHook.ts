@@ -3,6 +3,7 @@ import { get } from 'lodash'
 import { useCallback, useEffect, useState } from 'react'
 import { RoleAssignmentPreselected } from '../model/role-assignment-preselected'
 import { GroupKind, GroupKindType, ServiceAccountKindType, UserKind, UserKindType } from '../../../../resources'
+import { RoleAssignmentHookType } from './RoleAssignmentDataHook'
 
 type RoleAssignmentFormDataType = {
   subject: {
@@ -21,9 +22,13 @@ type RoleAssignmentFormDataType = {
 /**
  * custom hook for handling everything related with the form data itself
  * @param preselected: RoleAssignmentPreselected
+ * @param roleAssignmentData: RoleAssignmentHookType for accessing all cluster names
  * @returns either the form data and different onChange functions
  */
-const useRoleAssignmentFormData = (preselected?: RoleAssignmentPreselected) => {
+const useRoleAssignmentFormData = (
+  preselected?: RoleAssignmentPreselected,
+  roleAssignmentData?: RoleAssignmentHookType
+) => {
   const [roleAssignmentFormData, setRoleAssignmentFormData] = useState<RoleAssignmentFormDataType>({
     subject: { kind: UserKind },
     scope: {
@@ -70,15 +75,19 @@ const useRoleAssignmentFormData = (preselected?: RoleAssignmentPreselected) => {
   )
 
   const onChangeScopeKind = useCallback(
-    (scope: string) =>
+    (scope: string) => {
+      const scopeKind = scope as RoleAssignmentFormDataType['scope']['kind']
+
       setRoleAssignmentFormData((prevData) => ({
         ...prevData,
         scope: {
-          ...prevData.scope,
-          kind: scope as RoleAssignmentFormDataType['scope']['kind'],
+          kind: scopeKind,
+          clusterNames: scopeKind === 'all' ? roleAssignmentData?.allClusterNames || [] : [],
+          namespaces: scopeKind === 'all' ? undefined : [],
         },
-      })),
-    []
+      }))
+    },
+    [roleAssignmentData?.allClusterNames]
   )
 
   const onChangeScopeValues = useCallback((values: string[]) => {
@@ -134,6 +143,19 @@ const useRoleAssignmentFormData = (preselected?: RoleAssignmentPreselected) => {
       onChangeRoles(roles)
     }
   }, [preselected, onChangeRoles])
+
+  useEffect(() => {
+    if (roleAssignmentFormData.scope.kind === 'all' && roleAssignmentData?.allClusterNames?.length) {
+      setRoleAssignmentFormData((prevData) => ({
+        ...prevData,
+        scope: {
+          ...prevData.scope,
+          clusterNames: roleAssignmentData.allClusterNames,
+          namespaces: undefined,
+        },
+      }))
+    }
+  }, [roleAssignmentData?.allClusterNames, roleAssignmentFormData.scope.kind])
 
   return {
     roleAssignmentFormData,
