@@ -13,15 +13,43 @@ import {
   createVirtualMachineInstance,
 } from './topologySubscription'
 import { addClusters, getClusterName, processMultiples } from './utils'
+import {
+  ApplicationModel,
+  AppSetCluster,
+  TopologyNode,
+  TopologyLink,
+  AppSetTopologyResult,
+  RouteObject,
+  ManagedClusterViewData,
+  ProcessedDeployableResource,
+  TranslationFunction,
+  SearchQuery,
+} from './types'
 
-export function getAppSetTopology(application, hubClusterName) {
-  const links = []
-  const nodes = []
+/**
+ * Generates topology data for ApplicationSet applications
+ * Creates nodes and links representing the application structure including:
+ * - ApplicationSet node
+ * - Placement node (if applicable)
+ * - Cluster nodes
+ * - Deployed resource nodes
+ *
+ * @param application - The ApplicationSet application model
+ * @param hubClusterName - Name of the hub cluster
+ * @returns Topology structure with nodes and links
+ */
+export function getAppSetTopology(application: ApplicationModel, hubClusterName: string): AppSetTopologyResult {
+  const links: TopologyLink[] = []
+  const nodes: TopologyNode[] = []
   const { name, namespace, appSetClusters, appSetApps, relatedPlacement } = application
-  const clusterNames = appSetClusters.map((cluster) => {
-    return cluster.name
-  })
 
+  // Extract cluster names from the ApplicationSet clusters
+  const clusterNames =
+    appSetClusters?.map((cluster: AppSetCluster) => {
+      return cluster.name
+    }) || []
+
+  // Create the main ApplicationSet node
   const appId = `application--${name}`
   nodes.push({
     name,
@@ -42,30 +70,45 @@ export function getAppSetTopology(application, hubClusterName) {
     },
   })
 
+  // Extract placement name from ApplicationSet generators configuration
   const appSetPlacementName = get(
     application.app,
     'spec.generators[0].clusterDecisionResource.labelSelector.matchLabels["cluster.open-cluster-management.io/placement"]'
   )
-  delete application.app.spec.apps
 
-  // create placement node
+  // Clean up the application spec by removing apps array
+  if (application.app && typeof application.app === 'object' && 'spec' in application.app) {
+    const spec = application.app.spec as any
+    if (spec && typeof spec === 'object' && 'apps' in spec) {
+      delete spec.apps
+    }
+  }
+
+  // Create placement node if placement exists
   let isPlacementFound = false
   let isArgoCDPullModelTargetLocalCluster = false
   const placement = get(application, 'placement', '')
   const placementId = `member--placements--${namespace}--${name}`
+
   if (placement) {
     isPlacementFound = true
-    const {
-      metadata: { name, namespace },
-    } = placement
+    const placementName = (placement as any)?.metadata?.name || ''
+    const placementNamespace = (placement as any)?.metadata?.namespace || ''
     const clusterDecisions = get(placement, 'status.decisions', [])
 
-    if (clusterDecisions.find((cluster) => cluster.clusterName === hubClusterName) && application.isAppSetPullModel) {
+    // Check if this is an ArgoCD pull model targeting the local cluster
+    if (
+      Array.isArray(clusterDecisions) &&
+      clusterDecisions.find((cluster: any) => cluster.clusterName === hubClusterName) &&
+      application.isAppSetPullModel
+    ) {
       isArgoCDPullModelTargetLocalCluster = true
     }
+
+    // Add placement node to topology
     nodes.push({
-      name,
-      namespace,
+      name: placementName,
+      namespace: placementNamespace,
       type: 'placement',
       id: placementId,
       uid: placementId,
@@ -75,6 +118,8 @@ export function getAppSetTopology(application, hubClusterName) {
       },
       placement: relatedPlacement,
     })
+
+    // Link ApplicationSet to Placement
     links.push({
       from: { uid: appId },
       to: { uid: placementId },
@@ -82,38 +127,61 @@ export function getAppSetTopology(application, hubClusterName) {
       specs: { isDesign: true },
     })
   } else {
+    // Handle case where placement name exists but placement object doesn't
     if (!appSetPlacementName && appSetPlacementName !== '') {
       isPlacementFound = true
     }
   }
 
+  // Set placement-related flags on the ApplicationSet node
   set(nodes[0], 'isPlacementFound', isPlacementFound)
   set(nodes[0], 'isArgoCDPullModelTargetLocalCluster', isArgoCDPullModelTargetLocalCluster)
 
+  // Determine the parent node for clusters (placement if exists, otherwise ApplicationSet)
   const clusterParentId = placement ? placementId : appId
+
+  // Extract source path from ApplicationSet template or generators
   const source =
     get(application, 'app.spec.template.spec.source.path', '') !== '{{path}}'
       ? get(application, 'app.spec.template.spec.source.path', '')
-      : Object.values(get(application, 'app.spec.generators')[0])[0].directories[0].path
+      : (Object.values(get(application, 'app.spec.generators', [{}])[0] || {})[0] as any)?.directories?.[0]?.path || ''
 
-  const clusterId = addClusters(clusterParentId, null, source, clusterNames, appSetClusters, links, nodes)
-  const resources = []
+  // Add cluster nodes to topology
+  const clusterId = addClusters(
+    clusterParentId,
+    undefined,
+    source,
+    clusterNames,
+    (appSetClusters || []) as any,
+    links,
+    nodes
+  )
+  const resources: any[] = []
 
-  if (appSetApps.length > 0) {
-    appSetApps.forEach((app) => {
+  // Collect resources from all ApplicationSet applications
+  if (appSetApps && appSetApps.length > 0) {
+    appSetApps.forEach((app: any) => {
       const appResources = get(app, 'status.resources', [])
-      let appClusterName = app.spec.destination.name
+      let appClusterName = app.spec?.destination?.name
+
+      // If cluster name not found, try to find it by server URL
       if (!appClusterName) {
-        const appCluster = application.appSetClusters.find((cls) => cls.url === app.spec.destination.server)
+        const appCluster = application.appSetClusters?.find(
+          (cls: AppSetCluster) => cls.url === app.spec?.destination?.server
+        )
         appClusterName = appCluster ? appCluster.name : undefined
       }
-      appResources.forEach((resource) => {
+
+      // Add cluster information to each resource
+      appResources.forEach((resource: any) => {
         resources.push({ ...resource, cluster: appClusterName })
       })
     })
   }
 
-  processMultiples(resources).forEach((deployable) => {
+  // Process and create nodes for deployed resources
+  processMultiples(resources).forEach((deployable: Record<string, unknown>) => {
+    const typedDeployable = deployable as unknown as ProcessedDeployableResource
     const {
       name: deployableName,
       namespace: deployableNamespace,
@@ -122,23 +190,26 @@ export function getAppSetTopology(application, hubClusterName) {
       group,
       resourceCount,
       resources: deployableResources,
-    } = deployable
+    } = typedDeployable
     const type = kind.toLowerCase()
 
+    // Generate unique member ID for the deployable resource
     const memberId = `member--member--deployable--member--clusters--${getClusterName(
       clusterId,
       hubClusterName
     )}--${type}--${deployableNamespace}--${deployableName}`
 
-    const raw = {
+    // Create raw resource object with metadata
+    const raw: any = {
       metadata: {
         name: deployableName,
         namespace: deployableNamespace,
       },
-      ...deployable,
+      ...typedDeployable,
     }
 
-    let apiVersion = null
+    // Construct API version from group and version
+    let apiVersion: string | null = null
     if (version) {
       apiVersion = group ? `${group}/${version}` : version
     }
@@ -146,7 +217,8 @@ export function getAppSetTopology(application, hubClusterName) {
       raw.apiVersion = apiVersion
     }
 
-    const deployableObj = {
+    // Create deployable resource node
+    const deployableObj: TopologyNode = {
       name: deployableName,
       namespace: deployableNamespace,
       type,
@@ -160,10 +232,11 @@ export function getAppSetTopology(application, hubClusterName) {
           clusterId,
         },
         resources: deployableResources,
-        resourceCount: resourceCount || 0 + clusterNames.length,
+        resourceCount: (resourceCount || 0) + clusterNames.length,
       },
     }
 
+    // Add deployable node and link to cluster
     nodes.push(deployableObj)
     links.push({
       from: { uid: clusterId },
@@ -171,35 +244,79 @@ export function getAppSetTopology(application, hubClusterName) {
       type: '',
     })
 
+    // Create child nodes for specific resource types
     const template = { metadata: {} }
-    // create replica subobject, if this object defines a replicas
+
+    // Create replica child nodes (for Deployments, ReplicaSets, etc.)
     createReplicaChild(deployableObj, clusterNames, template, links, nodes)
 
+    // Create controller revision child nodes (for DaemonSets, StatefulSets)
     createControllerRevisionChild(deployableObj, clusterNames, links, nodes)
 
+    // Create data volume child nodes (for KubeVirt)
     createDataVolumeChild(deployableObj, clusterNames, links, nodes)
 
+    // Create virtual machine instance child nodes (for KubeVirt)
     createVirtualMachineInstance(deployableObj, clusterNames, links, nodes)
   })
 
+  // Return unique nodes and all links
   return { nodes: uniqBy(nodes, 'uid'), links }
 }
 
-export const openArgoCDEditor = (cluster, namespace, name, toggleLoading, t, hubClusterName) => {
+/**
+ * Opens the Argo CD editor for a specific application
+ * Handles both local hub cluster and remote managed cluster scenarios
+ *
+ * @param cluster - Target cluster name
+ * @param namespace - Application namespace
+ * @param name - Application name
+ * @param toggleLoading - Function to toggle loading state
+ * @param t - Translation function
+ * @param hubClusterName - Hub cluster name
+ */
+export const openArgoCDEditor = (
+  cluster: string,
+  namespace: string,
+  name: string,
+  toggleLoading: () => void,
+  t: TranslationFunction,
+  hubClusterName: string
+): void => {
   if (cluster === hubClusterName) {
+    // Handle local hub cluster
     toggleLoading()
     getArgoRoute(name, namespace, cluster, undefined, hubClusterName)
     toggleLoading()
   } else {
+    // Handle remote managed cluster
     toggleLoading()
     getArgoRouteFromSearch(name, namespace, cluster, t, hubClusterName)
     toggleLoading()
   }
 }
 
-const getArgoRoute = async (appName, appNamespace, cluster, managedclusterviewdata, hubClusterName) => {
-  let routes, argoRoute
-  // this only works for OCP clusters, needs more work to support other vendors
+/**
+ * Retrieves Argo CD route information and opens the editor
+ * Supports both direct API calls for hub cluster and ManagedClusterView for remote clusters
+ *
+ * @param appName - Application name
+ * @param appNamespace - Application namespace
+ * @param cluster - Target cluster name
+ * @param managedclusterviewdata - Optional ManagedClusterView data for remote clusters
+ * @param hubClusterName - Hub cluster name
+ */
+const getArgoRoute = async (
+  appName: string,
+  appNamespace: string,
+  cluster: string,
+  managedclusterviewdata: ManagedClusterViewData | undefined,
+  hubClusterName: string
+): Promise<void> => {
+  let routes: any[]
+  let argoRoute: RouteObject | undefined
+
+  // Handle hub cluster - direct API call
   if (cluster === hubClusterName) {
     try {
       routes = await listNamespacedResources({
@@ -209,43 +326,74 @@ const getArgoRoute = async (appName, appNamespace, cluster, managedclusterviewda
       }).promise
     } catch (err) {
       console.error('Error listing resource:', err)
+      return
     }
 
     if (routes && routes.length > 0) {
+      // Filter routes to find Argo CD server routes
       const routeObjs = routes.filter(
-        (route) =>
+        (route: any) =>
           get(route, 'metadata.labels["app.kubernetes.io/part-of"]', '') === 'argocd' &&
           get(route, 'metadata.labels["app.kubernetes.io/name"]', '').endsWith('-server') &&
           !get(route, 'metadata.name', '').toLowerCase().includes('grafana') &&
           !get(route, 'metadata.name', '').toLowerCase().includes('prometheus')
       )
+
       argoRoute = routeObjs[0]
+
+      // Prefer routes with 'server' in the name if multiple routes exist
       if (routeObjs.length > 1) {
-        const serverRoute = routeObjs.find((route) => get(route, 'metadata.name', '').toLowerCase().includes('server'))
+        const serverRoute = routeObjs.find((route: any) =>
+          get(route, 'metadata.name', '').toLowerCase().includes('server')
+        )
         if (serverRoute) {
           argoRoute = serverRoute
         }
       }
 
-      openArgoEditorWindow(argoRoute, appName)
+      if (argoRoute) {
+        openArgoEditorWindow(argoRoute, appName)
+      }
     }
   } else {
-    // get from remote cluster
-    const { cluster, kind, apiVersion, name, namespace } = managedclusterviewdata
-    fireManagedClusterView(cluster, kind, apiVersion, name, namespace)
-      .then((viewResponse) => {
+    // Handle remote cluster using ManagedClusterView
+    if (!managedclusterviewdata) return
+
+    const { cluster: clusterName, kind, apiVersion, name, namespace } = managedclusterviewdata
+    fireManagedClusterView(clusterName, kind, apiVersion, name, namespace)
+      .then((viewResponse: any) => {
         if (viewResponse.message) {
+          // Handle error case - could add error handling here
         } else {
           openArgoEditorWindow(viewResponse.result, appName)
         }
       })
-      .catch((err) => {
+      .catch((err: any) => {
         console.error('Error getting resource: ', err)
       })
   }
 }
 
-export const openRouteURL = (routeObject, toggleLoading, hubClusterName) => {
+/**
+ * Opens a route URL in a new browser window
+ * Handles both hub cluster direct access and remote cluster ManagedClusterView access
+ *
+ * @param routeObject - Route object containing metadata and cluster information
+ * @param toggleLoading - Function to toggle loading state
+ * @param hubClusterName - Hub cluster name
+ */
+export const openRouteURL = (
+  routeObject: {
+    name?: string
+    namespace?: string
+    cluster?: string
+    kind?: string
+    apigroup?: string
+    apiversion?: string
+  },
+  toggleLoading: () => void,
+  hubClusterName: string
+): void => {
   const name = get(routeObject, 'name', '')
   const namespace = get(routeObject, 'namespace', '')
   const cluster = get(routeObject, 'cluster', '')
@@ -255,41 +403,61 @@ export const openRouteURL = (routeObject, toggleLoading, hubClusterName) => {
   const apiVersion = `${apigroup}/${apiversion}`
 
   toggleLoading()
+
   if (cluster === hubClusterName) {
+    // Handle hub cluster - direct API access
     const route = getResource({ apiVersion, kind, metadata: { namespace, name } }).promise
     route
-      .then((result) => {
+      .then((result: RouteObject) => {
         toggleLoading()
         openRouteURLWindow(result)
       })
-      .catch((err) => {
+      .catch((err: any) => {
         toggleLoading()
         console.error('Error getting resource: ', err)
       })
   } else {
+    // Handle remote cluster using ManagedClusterView
     fireManagedClusterView(cluster, kind, apiVersion, name, namespace)
-      .then((viewResponse) => {
+      .then((viewResponse: any) => {
         toggleLoading()
         if (viewResponse.message) {
-          // should handle error in the future
+          // Handle error case - could add error handling here
         } else {
           openRouteURLWindow(viewResponse.result)
         }
       })
-      .catch((err) => {
+      .catch((err: any) => {
         toggleLoading()
         console.error('Error getting resource: ', err)
       })
   }
 }
 
-const getArgoRouteFromSearch = async (appName, appNamespace, cluster, t, hubClusterName) => {
-  const query = convertStringToQuery(
+/**
+ * Searches for Argo CD routes using the search API
+ * Used when accessing Argo CD on remote managed clusters
+ *
+ * @param appName - Application name
+ * @param appNamespace - Application namespace
+ * @param cluster - Target cluster name
+ * @param t - Translation function
+ * @param hubClusterName - Hub cluster name
+ */
+const getArgoRouteFromSearch = async (
+  appName: string,
+  appNamespace: string,
+  cluster: string,
+  t: TranslationFunction,
+  hubClusterName: string
+): Promise<void> => {
+  // Build search query for Argo CD routes
+  const query: SearchQuery = convertStringToQuery(
     `kind:route namespace:${appNamespace} cluster:${cluster} label:app.kubernetes.io/part-of=argocd`
   )
 
-  searchClient
-    .query({
+  try {
+    const result = await searchClient.query({
       query: SearchResultItemsAndRelatedItemsDocument,
       variables: {
         input: [{ ...query }],
@@ -297,61 +465,80 @@ const getArgoRouteFromSearch = async (appName, appNamespace, cluster, t, hubClus
       },
       fetchPolicy: 'network-only',
     })
-    .then((result) => {
-      if (result.errors) {
-        console.log(`Error: ${result.errors[0].message}`)
-        return
-      } else {
-        const searchResult = get(result, 'data.searchResult', [])
-        if (searchResult.length > 0) {
-          let route = null
-          // filter out grafana and prometheus routes
-          const routes = get(searchResult[0], 'items', []).filter(
-            (routeObj) =>
-              !get(routeObj, 'name', '').toLowerCase().includes('grafana') &&
-              !get(routeObj, 'name', '').toLowerCase().includes('prometheus')
-          )
-          if (routes.length > 0) {
-            // if still more than 1, choose one with “server” in the name if possible
-            const serverRoute = routes.find((routeObj) => get(routeObj, 'name', '').toLowerCase().includes('server'))
-            if (serverRoute) {
-              route = serverRoute
-            } else {
-              route = routes[0]
-            }
-          }
-          if (!route) {
-            const errMsg = t('No Argo route found for namespace {0} on cluster {1}', [appNamespace, cluster])
-            console.log(errMsg)
-            return
-          } else {
-            getArgoRoute(
-              appName,
-              appNamespace,
-              cluster,
-              {
-                cluster,
-                name: route.name,
-                namespace: route.namespace,
-                kind: 'Route',
-                apiVersion: 'route.openshift.io/v1',
-              },
-              hubClusterName
-            )
-          }
+
+    if (result.errors) {
+      console.log(`Error: ${result.errors[0].message}`)
+      return
+    }
+
+    const searchResult = get(result, 'data.searchResult', [])
+    if (searchResult.length > 0) {
+      let route: any = null
+
+      // Filter out Grafana and Prometheus routes
+      const routes = get(searchResult[0], 'items', []).filter(
+        (routeObj: any) =>
+          !get(routeObj, 'name', '').toLowerCase().includes('grafana') &&
+          !get(routeObj, 'name', '').toLowerCase().includes('prometheus')
+      )
+
+      if (routes.length > 0) {
+        // Prefer routes with 'server' in the name
+        const serverRoute = routes.find((routeObj: any) => get(routeObj, 'name', '').toLowerCase().includes('server'))
+        if (serverRoute) {
+          route = serverRoute
+        } else {
+          route = routes[0]
         }
       }
-    })
+
+      if (!route) {
+        const errMsg = t('No Argo route found for namespace {0} on cluster {1}', [appNamespace, cluster])
+        console.log(errMsg)
+        return
+      }
+
+      // Use the found route to get the actual route resource
+      await getArgoRoute(
+        appName,
+        appNamespace,
+        cluster,
+        {
+          cluster,
+          name: route.name,
+          namespace: route.namespace,
+          kind: 'Route',
+          apiVersion: 'route.openshift.io/v1',
+        },
+        hubClusterName
+      )
+    }
+  } catch (error) {
+    console.error('Error searching for Argo route:', error)
+  }
 }
 
-const openArgoEditorWindow = (route, appName) => {
+/**
+ * Opens the Argo CD editor in a new browser window
+ * Constructs the URL from the route specification
+ *
+ * @param route - Route object containing host and TLS information
+ * @param appName - Application name to navigate to
+ */
+const openArgoEditorWindow = (route: RouteObject, appName: string): void => {
   const hostName = get(route, 'spec.host', 'unknown')
   const transport = get(route, 'spec.tls') ? 'https' : 'http'
   const argoURL = `${transport}://${hostName}/applications`
   window.open(`${argoURL}/${appName}`, '_blank')
 }
 
-const openRouteURLWindow = (route) => {
+/**
+ * Opens a route URL in a new browser window
+ * Constructs the URL from the route specification
+ *
+ * @param route - Route object containing host and TLS information
+ */
+const openRouteURLWindow = (route: RouteObject): void => {
   const hostName = get(route, 'spec.host', 'unknown')
   const transport = get(route, 'spec.tls') ? 'https' : 'http'
   const routeURL = `${transport}://${hostName}`

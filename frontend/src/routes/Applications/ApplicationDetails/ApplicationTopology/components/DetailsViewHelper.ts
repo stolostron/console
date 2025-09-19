@@ -1,13 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-/** *****************************************************************************
- * Licensed Materials - Property of IBM
- * (c) Copyright IBM Corporation 2018, 2019. All Rights Reserved.
- *
- * Note to U.S. Government Users Restricted Rights:
- * Use, duplication or disclosure restricted by GSA ADP Schedule
- * Contract with IBM Corp.
- ******************************************************************************/
-'use strict'
 
 import _ from 'lodash'
 import {
@@ -26,7 +17,6 @@ import {
   addNodeOCPRouteLocationForCluster,
   addIngressNodeInfo,
 } from '../helpers/diagram-helpers'
-import { kubeNaming } from './utilities'
 import { getLabels, getMatchLabels } from '../../../CreateSubscriptionApplication/controlData/ControlDataPlacement'
 import { PlacementKind } from '../../../../../resources'
 
@@ -352,4 +342,24 @@ function addK8Details(
   setPodDeployStatus(node, details, activeFilters, t, hubClusterName)
 
   return details
+}
+
+// Convert types to OpenShift/Kube display entities
+export function kubeNaming(type?: string): string {
+  if (type === undefined) {
+    return ''
+  }
+  return (
+    type.charAt(0).toUpperCase() +
+    type
+      .slice(1)
+      .replace('stream', 'Stream')
+      .replace('channel', 'Channel')
+      .replace('source', 'Source')
+      .replace('reSource', 'Resource')
+      .replace('definition', 'Definition')
+      .replace('config', 'Config')
+      .replace('account', 'Account')
+      .replace('controller', 'Controller')
+  )
 }

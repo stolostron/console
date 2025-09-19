@@ -4,16 +4,44 @@ import _ from 'lodash'
 import { searchClient } from '../../../../Search/search-sdk/search-client'
 import { SearchResultItemsAndRelatedItemsDocument } from '../../../../Search/search-sdk/search-sdk'
 import { getArgoSecret, getQueryStringForResource } from './resourceStatusesArgo'
+import {
+  AppSetApplicationModel,
+  AppSetApplicationData,
+  AppSetResourceStatusResult,
+  AppSetApplication,
+  AppSetClusterInfo,
+  SearchQuery,
+} from './types'
 
-export async function getAppSetResourceStatuses(application, appData) {
+/**
+ * Retrieves resource statuses for ApplicationSet applications.
+ *
+ * This function processes ApplicationSet applications to gather resource status information
+ * by querying the search API for related Kubernetes resources across multiple clusters.
+ * It handles both namespaced and cluster-scoped resources, and retrieves Argo secrets
+ * for authentication purposes.
+ *
+ * @param application - The ApplicationSet application model containing metadata and app/cluster lists
+ * @param appData - Application data structure that will be populated with search results and target namespaces
+ * @returns Promise resolving to an object containing the resource statuses from the search query
+ */
+export async function getAppSetResourceStatuses(
+  application: AppSetApplicationModel,
+  appData: AppSetApplicationData
+): Promise<AppSetResourceStatusResult> {
   const { name, namespace, appSetApps, appSetClusters } = application
-  const appSetClustersList = []
-  appSetClusters.forEach((cls) => {
+
+  // Extract cluster names from the ApplicationSet cluster list
+  const appSetClustersList: string[] = []
+  appSetClusters.forEach((cls: AppSetClusterInfo) => {
     appSetClustersList.push(cls.name)
   })
+
+  // Get resource statuses by querying the search API
   const resourceStatuses = await getResourceStatuses(name, namespace, appSetApps, appData, appSetClustersList)
 
-  const secret = await getArgoSecret(appData, resourceStatuses)
+  // Retrieve Argo secrets for authentication, if available
+  const secret = await getArgoSecret(appData, resourceStatuses as Record<string, unknown>)
   if (secret) {
     const secretItems = _.get(secret, 'data.searchResult', [{ items: [] }])[0]
     _.set(appData, 'argoSecrets', _.get(secretItems, 'items', []))
@@ -22,29 +50,61 @@ export async function getAppSetResourceStatuses(application, appData) {
   return { resourceStatuses }
 }
 
-async function getResourceStatuses(name, namespace, appSetApps, appData, appSetClusters) {
-  const targetNS = []
+/**
+ * Internal function to build and execute search queries for ApplicationSet resources.
+ *
+ * This function analyzes the ApplicationSet applications to determine target namespaces
+ * and resource types, then constructs appropriate search queries for both namespaced
+ * and cluster-scoped resources. It handles the complexity of querying across multiple
+ * clusters and resource types.
+ *
+ * @param name - ApplicationSet name (currently unused but kept for consistency)
+ * @param namespace - ApplicationSet namespace (currently unused but kept for consistency)
+ * @param appSetApps - Array of Argo applications managed by this ApplicationSet
+ * @param appData - Application data structure to populate with target namespaces and search results
+ * @param appSetClusters - List of cluster names where the ApplicationSet is deployed
+ * @returns Promise resolving to the search query result containing resource statuses
+ */
+async function getResourceStatuses(
+  _name: string,
+  _namespace: string,
+  appSetApps: AppSetApplication[],
+  appData: AppSetApplicationData,
+  appSetClusters: string[]
+): Promise<unknown> {
+  // Collect target namespaces from Argo application destinations
+  const targetNS: string[] = []
 
-  appSetApps.forEach((argoApp) => {
-    //get destination and clusters information
+  appSetApps.forEach((argoApp: AppSetApplication) => {
+    // Get destination namespace information from each Argo application
     const argoNS = argoApp.spec.destination.namespace
     if (argoNS) {
       targetNS.push(argoNS)
     }
   })
 
+  // Extract resource information from the first application's status (if available)
+  // All applications in an ApplicationSet typically deploy the same resources
   const resources = appSetApps.length > 0 ? _.get(appSetApps[0], 'status.resources', []) : []
-  const definedNamespace = []
-  const kindsNotNamespaceScoped = []
-  const kindsNotNamespaceScopedNames = []
-  resources.forEach((resource) => {
+
+  // Separate resources into namespaced and cluster-scoped categories
+  const definedNamespace: string[] = []
+  const kindsNotNamespaceScoped: string[] = []
+  const kindsNotNamespaceScopedNames: string[] = []
+
+  resources.forEach((resource: any) => {
     const rscNS = _.get(resource, 'namespace')
     const rscKind = _.get(resource, 'kind')
+
     if (rscNS) {
+      // Resource has a namespace - add to namespaced resources
       definedNamespace.push(rscNS)
     }
+
     if (!rscNS) {
+      // Resource is cluster-scoped - handle special cases and add to cluster-scoped list
       if (rscKind.toLowerCase() === 'project') {
+        // OpenShift Project resources are represented as Namespace resources in search
         kindsNotNamespaceScoped.push('namespace')
       } else {
         kindsNotNamespaceScoped.push(resource.kind.toLowerCase())
@@ -53,27 +113,38 @@ async function getResourceStatuses(name, namespace, appSetApps, appData, appSetC
     }
   })
 
+  // Set target namespaces in appData - use defined namespaces if available, otherwise use destination namespaces
   appData.targetNamespaces = definedNamespace.length > 0 ? _.uniq(definedNamespace) : _.uniq(targetNS)
 
-  let query //= getQueryStringForResource('Application', name, namespace)
-  let queryNotNamespaceScoped = [] //= getQueryStringForResource('cluster', other kinds)
+  // Build search queries for namespaced and cluster-scoped resources
+  let query: SearchQuery
+  let queryNotNamespaceScoped: SearchQuery[] = []
+
+  // Filter out cluster-scoped resource kinds from the related kinds list
   const argoKinds = appData.relatedKinds
     ? appData.relatedKinds.filter(function (el) {
         return !kindsNotNamespaceScoped.includes(el)
       })
     : null
 
+  // Build main query for namespaced resources
   query = getQueryStringForResource(argoKinds, null, appData.targetNamespaces.toString(), appSetClusters.toString())
+
+  // Build separate queries for each cluster-scoped resource
   if (kindsNotNamespaceScoped.length > 0) {
-    kindsNotNamespaceScoped.forEach((item, i) => {
+    kindsNotNamespaceScoped.forEach((item: string, i: number) => {
       queryNotNamespaceScoped.push(getQueryStringForResource(item, kindsNotNamespaceScopedNames[i]))
     })
   }
-  //get the cluster for each target namespace and all pods related to this objects only
-  //always ask for related pods, replicaset and replocationcontroller because they are tagged by the app instance
-  //we'll get them if any are linked to the objects returned above
+
+  // Always include these related resource types for comprehensive topology information
+  // - cluster: for cluster information
+  // - pod: for workload status
+  // - replicaset: for deployment status
+  // - replicationcontroller: for legacy deployment status
   query.relatedKinds.push('cluster', 'pod', 'replicaset', 'replicationcontroller')
 
+  // Execute the search query with both namespaced and cluster-scoped resource queries
   return searchClient.query({
     query: SearchResultItemsAndRelatedItemsDocument,
     variables: {

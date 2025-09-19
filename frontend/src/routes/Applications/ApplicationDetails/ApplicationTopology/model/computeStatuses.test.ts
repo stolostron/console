@@ -48,7 +48,7 @@ import {
   subscriptionInputRed,
   subscriptionInputRed1,
   subscriptionInputYellow,
-} from './computeStatuses.data'
+} from './computeStatuses.testdata'
 
 import { ansibleError, ansibleError2, ansibleErrorAllClusters, ansibleSuccess } from './TestingData'
 

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import _ from 'lodash'
+import _, { cloneDeep } from 'lodash'
 import { getPulseStatusForAnsibleNode, showAnsibleJobDetails } from '../helpers/ansible-task'
 import {
   addDetails,
@@ -38,7 +38,14 @@ import type {
   DetailItem,
   WindowStatusArray,
   TranslationFunction,
+  ApplicationModel,
+  ExtendedTopology,
+  GetResourceStatussResult,
+  ResourceStatusResult,
 } from './types'
+import { getArgoResourceStatuses } from './resourceStatusesArgo'
+import { getAppSetResourceStatuses } from './resourceStatusesAppSet'
+import { getSubscriptionResourceStatuses } from './resourceStatusesSubscription'
 
 // Constants for node specification paths
 const specPulse = 'specs.pulse'
@@ -75,7 +82,7 @@ const resWarningStates = [pendingStatus, 'creating', 'terminating'] as const
 
 // API and metadata path constants
 const apiVersionPath = 'specs.raw.apiVersion'
-const metadataName = 'metadata.name'
+export const metadataName = 'metadata.name'
 
 // Argo application health status constants
 const argoAppHealthyStatus: ArgoHealthStatus = 'Healthy'
@@ -1833,4 +1840,55 @@ export const setResourceDeployStatus = (
   })
 
   return details
+}
+
+/**
+ * Retrieves resource statuses for different types of applications based on their configuration.
+ * This function acts as a dispatcher that routes to the appropriate resource status retrieval
+ * function based on the application type (Argo, ApplicationSet, OCP, Flux, or Subscription).
+ *
+ * @param application - The application model containing metadata and type information
+ * @param appData - Application data object that will be augmented with status information
+ * @param topology - Topology data structure containing nodes and links (optional for some app types)
+ * @returns Promise resolving to an object containing resource statuses, related resources, and updated app data
+ */
+export async function getResourceStatuses(
+  application: ApplicationModel,
+  appData: Record<string, unknown>,
+  topology: ExtendedTopology
+): Promise<GetResourceStatussResult> {
+  // Create a deep copy of appData to avoid mutating the original object
+  const appDataWithStatuses = cloneDeep(appData)
+
+  let results: ResourceStatusResult
+
+  // Route to the appropriate resource status function based on application type
+  if (application.isArgoApp) {
+    // Handle Argo CD applications - requires topology data for resource discovery
+    results = await getArgoResourceStatuses(application, appDataWithStatuses, topology)
+  } else if (application.isAppSet) {
+    // Handle ApplicationSet resources - uses pull model for multi-cluster deployments
+    results = await getAppSetResourceStatuses(application, appDataWithStatuses)
+  } else if (application.isOCPApp || application.isFluxApp) {
+    // Handle OpenShift and Flux applications - reuse existing search data from topology
+    results = {
+      // Reuse the search data we fetched before to avoid redundant API calls
+      resourceStatuses: topology.rawSearchData,
+      relatedResources: {},
+    }
+  } else {
+    // Handle subscription-based applications (ACM/MCE subscription model)
+    results = await getSubscriptionResourceStatuses(application, appDataWithStatuses)
+  }
+
+  // Extract results and ensure relatedResources is always defined
+  const { resourceStatuses, relatedResources = {} } = results
+
+  // Return deep-cloned resource statuses to prevent external mutations,
+  // along with related resources and the augmented app data
+  return {
+    resourceStatuses: cloneDeep(resourceStatuses),
+    relatedResources,
+    appDataWithStatuses,
+  }
 }

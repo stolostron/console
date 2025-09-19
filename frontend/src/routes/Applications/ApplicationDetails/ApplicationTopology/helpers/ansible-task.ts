@@ -2,7 +2,7 @@
 
 import _ from 'lodash'
 import { addDetails } from '../helpers/diagram-helpers'
-import { AnsibleCondition, Pulse, AnsibleJobStatus, DetailsList, NodeLike, Translator } from './types'
+import { AnsibleCondition, Pulse, AnsibleJobStatus, DetailsList, NodeLike, Translator } from '../model/types'
 
 const ansibleTaskErrorStates: string[] = ['Failed']
 const ansibleTaskSuccessStates: string[] = ['Successful', 'Running']

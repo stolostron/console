@@ -58,6 +58,7 @@ import { getResourceStatuses } from './ApplicationTopology/model/resourceStatuse
 import { getTopology } from './ApplicationTopology/model/topology'
 import { getApplicationData } from './ApplicationTopology/model/utils'
 import { useLocalHubName } from '../../../hooks/use-local-hub'
+import { RecoilStates } from './ApplicationTopology/model/types'
 
 export const ApplicationContext = createContext<{
   readonly actions: null | ReactNode
@@ -392,7 +393,7 @@ export default function ApplicationDetailsPage() {
             name,
             backendUrl,
             activeChannel,
-            recoilStates,
+            recoilStates as unknown as RecoilStates,
             cluster,
             apiVersion,
             clusters

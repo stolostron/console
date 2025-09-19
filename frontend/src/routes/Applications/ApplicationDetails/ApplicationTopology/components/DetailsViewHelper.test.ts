@@ -3,7 +3,7 @@
 
 // Converted to TypeScript: annotates objects as any and types the translator.
 import { inflateKubeValue } from '../helpers/diagram-helpers'
-import { getNodeDetails } from './details'
+import { getNodeDetails } from './DetailsViewHelper'
 import { TFunction } from './types'
 
 const t: TFunction = (key) => {

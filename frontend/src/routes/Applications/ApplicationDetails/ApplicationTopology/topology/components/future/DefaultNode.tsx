@@ -257,15 +257,7 @@ const DefaultNode: React.FunctionComponent<DefaultNodeProps> = ({
   }, [scale, scaleNode])
 
   // counter zoom label
-  const counterZoom = (scale: number, scaleMin: number, scaleMax: number, valueMin: number, valueMax: number) => {
-    if (scale >= scaleMax) {
-      return valueMin
-    } else if (scale <= scaleMin) {
-      return valueMax
-    }
-    return valueMin + (1 - (scale - scaleMin) / (scaleMax - scaleMin)) * (valueMax - valueMin)
-  }
-  const labelScale = scaleLabel ? counterZoom(scale, 0.35, 0.85, 1, 1.5) : 1
+  const labelScale = scaleLabel ? counterZoomHelper(scale, 0.35, 0.85, 1, 1.5) : 1
   const labelPositionScale = scaleLabel ? Math.min(1, 1 / labelScale) : 1
   const { translateX, translateY } = React.useMemo(() => {
     if (!scaleNode) {
@@ -330,6 +322,21 @@ const DefaultNode: React.FunctionComponent<DefaultNodeProps> = ({
       {attachments}
     </g>
   )
+}
+// As scale decreases from max to min, return a counter zoomed value from min to max
+export const counterZoomHelper = (
+  scale: number,
+  scaleMin: number,
+  scaleMax: number,
+  valueMin: number,
+  valueMax: number
+): number => {
+  if (scale >= scaleMax) {
+    return valueMin
+  } else if (scale <= scaleMin) {
+    return valueMax
+  }
+  return valueMin + (1 - (scale - scaleMin) / (scaleMax - scaleMin)) * (valueMax - valueMin)
 }
 
 export default observer(DefaultNode)

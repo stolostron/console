@@ -234,6 +234,30 @@ export interface SubscriptionApplicationModel {
   [key: string]: unknown
 }
 
+// Maps and entries used by subscription model helpers
+export interface SubscriptionHookMapEntry {
+  deployableName: string
+  subscription: SubscriptionKind
+}
+
+export type SubscriptionHooksMap = Record<string, SubscriptionHookMapEntry[]>
+
+export interface SubscriptionDecisionMapEntry {
+  ruleName: string
+  subscription: SubscriptionKind
+}
+
+export type SubscriptionDecisionsMap = Record<string, SubscriptionDecisionMapEntry[]>
+
+export interface SubscriptionChannelMapEntry {
+  chnName: string
+  subscription: SubscriptionKind
+}
+
+export type SubscriptionChannelsMap = Record<string, SubscriptionChannelMapEntry[]>
+
+export type SubscriptionPlacementsMap = Record<string, SubscriptionDecisionMapEntry[]>
+
 // Extend RecoilStates with optional resources used by subscription model helpers
 export interface RecoilStates {
   applications: Array<Record<string, unknown>>
@@ -1572,3 +1596,656 @@ export type MockTranslationFunction = (key: string) => string
 
 // Mock drawer content setter function type for testing
 export type MockSetDrawerContent = jest.Mock
+
+// Types for resourceStatuses functionality
+
+// Result structure returned by resource status functions
+export interface ResourceStatusResult {
+  /** Resource statuses data from search or processing */
+  resourceStatuses: unknown
+  /** Related resources mapping (optional, used by subscription resources) */
+  relatedResources?: RelatedResourcesMap
+}
+
+// Parameters for getResourceStatuses function
+export interface GetResourceStatussParams {
+  /** Application model containing metadata and configuration */
+  application: ApplicationModel
+  /** Application data with search queries and related information */
+  appData: Record<string, unknown>
+  /** Topology data structure (optional, used by Argo and subscription apps) */
+  topology?: ExtendedTopology
+}
+
+// Return type for getResourceStatuses function
+export interface GetResourceStatussResult {
+  /** Processed resource statuses data */
+  resourceStatuses: unknown
+  /** Related resources mapping */
+  relatedResources: RelatedResourcesMap
+  /** Application data with computed statuses */
+  appDataWithStatuses: Record<string, unknown>
+}
+
+// Types for resourceStatusesAppSet functionality
+
+// Argo application specification for ApplicationSet apps
+export interface ArgoAppSpec {
+  /** Destination configuration for the Argo application */
+  destination: {
+    /** Target namespace for deployment */
+    namespace?: string
+    /** Target cluster for deployment */
+    cluster?: string
+    /** Server URL for the target cluster */
+    server?: string
+  }
+  /** Source configuration for the Argo application */
+  source?: {
+    /** Git repository URL */
+    repoURL?: string
+    /** Path within the repository */
+    path?: string
+    /** Target revision (branch, tag, or commit) */
+    targetRevision?: string
+    /** Helm chart configuration */
+    chart?: string
+  }
+  /** Project name for the Argo application */
+  project?: string
+}
+
+// Argo application status for ApplicationSet apps
+export interface ArgoAppStatus {
+  /** Resources deployed by this Argo application */
+  resources?: ArgoAppResource[]
+  /** Health status of the application */
+  health?: {
+    /** Health status value */
+    status?: ArgoHealthStatus
+    /** Health status message */
+    message?: string
+  }
+  /** Sync status of the application */
+  sync?: {
+    /** Sync status value */
+    status?: string
+    /** Sync revision */
+    revision?: string
+  }
+}
+
+// Individual resource deployed by an Argo application
+export interface ArgoAppResource extends Record<string, unknown> {
+  /** Resource name */
+  name: string
+  /** Resource namespace (optional for cluster-scoped resources) */
+  namespace?: string
+  /** Kubernetes resource kind */
+  kind: string
+  /** API version */
+  version?: string
+  /** API group */
+  group?: string
+  /** Resource status */
+  status?: string
+  /** Health status */
+  health?: {
+    status?: string
+    message?: string
+  }
+}
+
+// ApplicationSet application structure
+export interface AppSetApplication {
+  /** Application metadata */
+  metadata?: {
+    /** Application name */
+    name?: string
+    /** Application namespace */
+    namespace?: string
+    /** Application labels */
+    labels?: Record<string, string>
+    /** Application annotations */
+    annotations?: Record<string, string>
+  }
+  /** Application specification */
+  spec: ArgoAppSpec
+  /** Application status */
+  status?: ArgoAppStatus
+}
+
+// ApplicationSet cluster information
+export interface AppSetClusterInfo {
+  /** Cluster name */
+  name: string
+  /** Cluster namespace (for managed clusters) */
+  namespace?: string
+  /** Cluster server URL */
+  server?: string
+  /** Cluster status */
+  status?: string
+  /** Cluster creation timestamp */
+  created?: string
+  /** Cluster creation timestamp (alternative field name) */
+  creationTimestamp?: string
+}
+
+// Application model for ApplicationSet applications
+export interface AppSetApplicationModel {
+  /** Application name */
+  name: string
+  /** Application namespace */
+  namespace: string
+  /** ApplicationSet applications */
+  appSetApps: AppSetApplication[]
+  /** ApplicationSet clusters */
+  appSetClusters: AppSetClusterInfo[]
+}
+
+// Application data structure used for search queries
+export interface AppSetApplicationData {
+  /** Related Kubernetes resource kinds to search for */
+  relatedKinds?: string[]
+  /** Target namespaces for resource deployment */
+  targetNamespaces?: string[]
+  /** Argo secrets for authentication */
+  argoSecrets?: ResourceItem[]
+  /** ApplicationSet name (for ApplicationSet applications) */
+  applicationSet?: string
+  /** Cluster name */
+  cluster?: string
+}
+
+// Search query result for ApplicationSet resource statuses
+export interface AppSetResourceStatusResult {
+  /** Resource statuses from search query */
+  resourceStatuses: unknown
+}
+
+// Types for resourceStatusesArgo functionality
+
+// Argo source information for application queries
+export interface ArgoSource {
+  /** Search result data containing Argo applications */
+  data: {
+    searchResult: Array<{
+      /** Array of search result items */
+      items?: ResourceItem[]
+    }>
+  }
+}
+
+// Application data structure used by Argo resource status functions
+export interface ArgoApplicationData {
+  /** ApplicationSet name (if this is an ApplicationSet application) */
+  applicationSet?: string
+  /** Cluster name where the application is deployed */
+  cluster?: string
+  /** Source configuration for the Argo application */
+  source?: {
+    /** Git repository URL */
+    repoURL?: string
+    /** Path within the repository */
+    path?: string
+    /** Helm chart name */
+    chart?: string
+    /** Target revision (branch, tag, or commit) */
+    targetRevision?: string
+  }
+  /** Related Kubernetes resource kinds */
+  relatedKinds?: string[]
+  /** Target namespaces for deployment */
+  targetNamespaces?: string[]
+  /** Cluster information array */
+  clusterInfo?: string[]
+  /** Argo secrets for cluster authentication */
+  argoSecrets?: ResourceItem[]
+}
+
+// Argo application resource structure from status.resources
+export interface ArgoApplicationResource extends Record<string, unknown> {
+  /** Resource name */
+  name: string
+  /** Resource namespace (optional for cluster-scoped resources) */
+  namespace?: string
+  /** Kubernetes resource kind */
+  kind: string
+  /** API version */
+  version?: string
+  /** API group */
+  group?: string
+}
+
+// Argo application structure with metadata and status
+export interface ArgoApplicationItem extends ResourceItem {
+  /** Application name */
+  name?: string
+  /** Application namespace */
+  namespace?: string
+  /** Application cluster */
+  cluster?: string
+  /** Destination namespace for deployment */
+  destinationNamespace?: string
+  /** Destination server URL */
+  destinationServer?: string
+  /** Destination cluster name */
+  destinationName?: string
+  /** Destination cluster (computed field) */
+  destinationCluster?: string
+  /** ApplicationSet name (if part of an ApplicationSet) */
+  applicationSet?: string
+  /** Application status */
+  status?: {
+    /** Resources deployed by this application */
+    resources?: ArgoApplicationResource[]
+  }
+}
+
+// Search query variables structure for GraphQL queries
+export interface SearchQueryVariables {
+  /** Array of search input queries */
+  input: SearchQuery[]
+  /** Maximum number of results to return */
+  limit: number
+}
+
+// Search query options for Apollo Client
+export interface SearchQueryOptions {
+  /** GraphQL query document */
+  query: unknown
+  /** Query variables */
+  variables: SearchQueryVariables
+  /** Fetch policy for caching */
+  fetchPolicy: 'network-only' | 'cache-first' | 'cache-only' | 'no-cache' | 'standby'
+}
+
+// Result structure returned by Argo resource status functions
+export interface ArgoResourceStatusResult {
+  /** Resource statuses data from search query */
+  resourceStatuses: unknown
+}
+
+// Types for resourceStatusesSubscription functionality
+
+/**
+ * Application data structure used to build search queries for subscription resources
+ */
+export interface SubscriptionApplicationData {
+  /** Selected subscription name for filtering resources */
+  subscription?: string
+  /** Array of related Kubernetes resource kinds to include in search */
+  relatedKinds?: string[]
+}
+
+// Types for topologyArgo functionality
+
+/**
+ * Argo application destination configuration
+ */
+export interface ArgoDestination {
+  /** Target cluster name or server URL */
+  name?: string
+  /** Target cluster server URL */
+  server?: string
+  /** Target namespace for deployment */
+  namespace?: string
+}
+
+/**
+ * Argo application data structure passed to topology functions
+ */
+export interface ArgoApplicationTopologyData {
+  /** Application name */
+  name: string
+  /** Application namespace */
+  namespace: string
+  /** Raw Argo application object */
+  app: {
+    /** Application metadata */
+    metadata?: {
+      name?: string
+      namespace?: string
+      [key: string]: unknown
+    }
+    /** Application specification */
+    spec?: {
+      /** Destination configuration */
+      destination?: ArgoDestination
+      /** Source configuration */
+      source?: {
+        /** Repository path */
+        path?: string
+        [key: string]: unknown
+      }
+      [key: string]: unknown
+    }
+    /** Application status */
+    status?: {
+      /** Resources deployed by this application */
+      resources?: ArgoApplicationResource[]
+      [key: string]: unknown
+    }
+    [key: string]: unknown
+  }
+  /** Active channel information */
+  activeChannel?: string
+  /** Available channels */
+  channels?: unknown[]
+}
+
+/**
+ * Argo topology data structure containing topology and cluster information
+ */
+export interface ArgoTopologyData {
+  /** Optional topology data from backend */
+  topology?: Topology
+  /** Cluster name where the Argo application is defined */
+  cluster?: string
+}
+
+/**
+ * Result structure returned by getArgoTopology function
+ */
+export interface ArgoTopologyResult {
+  /** Array of topology nodes */
+  nodes: TopologyNode[]
+  /** Array of topology links */
+  links: TopologyLink[]
+}
+
+/**
+ * Cluster information with destination details for Argo applications
+ */
+export interface ArgoClusterInfo extends ManagedCluster {
+  /** Remote cluster destination URL (for apps defined on remote clusters) */
+  remoteClusterDestination?: string
+  /** Destination configuration */
+  destination?: ArgoDestination
+}
+
+// Types for topologyAppSet functionality
+
+/**
+ * Route object structure from OpenShift Route resources
+ */
+export interface RouteObject {
+  /** Route metadata */
+  metadata?: {
+    name?: string
+    namespace?: string
+    labels?: Record<string, string>
+    [key: string]: unknown
+  }
+  /** Route specification */
+  spec?: {
+    /** Route hostname */
+    host?: string
+    /** TLS configuration */
+    tls?: Record<string, unknown>
+    [key: string]: unknown
+  }
+  [key: string]: unknown
+}
+
+/**
+ * Parameters for opening Argo CD editor
+ */
+export interface OpenArgoCDEditorParams {
+  /** Target cluster name */
+  cluster: string
+  /** Application namespace */
+  namespace: string
+  /** Application name */
+  name: string
+  /** Loading toggle function */
+  toggleLoading: () => void
+  /** Translation function */
+  t: TranslationFunction
+  /** Hub cluster name */
+  hubClusterName: string
+}
+
+/**
+ * Parameters for opening route URLs
+ */
+export interface OpenRouteURLParams {
+  /** Route object with metadata */
+  routeObject: {
+    name?: string
+    namespace?: string
+    cluster?: string
+    kind?: string
+    apigroup?: string
+    apiversion?: string
+  }
+  /** Loading toggle function */
+  toggleLoading: () => void
+  /** Hub cluster name */
+  hubClusterName: string
+}
+
+/**
+ * Managed cluster view data structure for remote cluster operations
+ */
+export interface ManagedClusterViewData {
+  /** Target cluster name */
+  cluster: string
+  /** Resource kind */
+  kind: string
+  /** API version */
+  apiVersion: string
+  /** Resource name */
+  name: string
+  /** Resource namespace */
+  namespace: string
+}
+
+/**
+ * Application resource from Argo Application status.resources
+ */
+export interface AppSetApplicationResource {
+  /** Resource name */
+  name: string
+  /** Resource namespace */
+  namespace?: string
+  /** Resource kind */
+  kind: string
+  /** API version */
+  version?: string
+  /** API group */
+  group?: string
+  /** Target cluster name */
+  cluster?: string
+}
+
+/**
+ * Processed deployable resource with multiple instances
+ */
+export interface ProcessedDeployableResource {
+  /** Resource name */
+  name: string
+  /** Resource namespace */
+  namespace: string
+  /** Resource kind */
+  kind: string
+  /** API version */
+  version?: string
+  /** API group */
+  group?: string
+  /** Number of resource instances */
+  resourceCount?: number
+  /** Array of individual resource instances */
+  resources?: AppSetApplicationResource[]
+}
+
+/**
+ * Application Set topology generation result
+ */
+export interface AppSetTopologyResult {
+  /** Array of topology nodes */
+  nodes: TopologyNode[]
+  /** Array of topology links */
+  links: TopologyLink[]
+}
+
+/**
+ * Function parameters for getSubscriptionResourceStatuses
+ */
+export interface GetSubscriptionResourceStatusesParams {
+  /** Application model containing name, namespace, and reports */
+  application: ApplicationModel & {
+    /** Array of resource reports from subscription deployments */
+    reports?: ResourceReport[]
+  }
+  /** Optional application data for filtering and query customization */
+  appData?: SubscriptionApplicationData
+}
+
+/**
+ * Result structure returned by getSubscriptionResourceStatuses function
+ */
+export interface SubscriptionResourceStatusResult {
+  /** Resource statuses data from search query */
+  resourceStatuses: unknown
+  /** Map of related resources keyed by resource identifier */
+  relatedResources: RelatedResourcesMap
+}
+
+/**
+ * Parameters for getQueryStringForResource function
+ */
+export interface QueryStringResourceParams {
+  /** Resource type name (e.g., 'Subscription', 'Application') */
+  resourcename: string
+  /** Resource name to filter by */
+  name: string
+  /** Resource namespace to filter by */
+  namespace: string
+}
+
+// Types for topologyOCPFluxApp functionality
+
+/**
+ * OCP/Flux application model containing metadata and cluster information
+ */
+export interface OCPFluxApplicationModel extends ApplicationModel {
+  /** Flag indicating if this is an OCP application */
+  isOCPApp: boolean
+  /** Flag indicating if this is a Flux application */
+  isFluxApp: boolean
+  /** Application metadata and configuration */
+  app: {
+    /** Cluster information where the application is deployed */
+    cluster?: {
+      /** Cluster name */
+      name: string
+      /** Cluster namespace */
+      namespace?: string
+      /** Cluster status */
+      status?: string
+    }
+    [key: string]: unknown
+  }
+}
+
+/**
+ * Search result structure from GraphQL search queries
+ */
+export interface OCPFluxSearchResult {
+  /** GraphQL query response data */
+  data?: {
+    /** Array of search results */
+    searchResult?: Array<{
+      /** Array of resource items matching the search */
+      items?: ResourceItem[]
+      /** Array of related resource groups */
+      related?: Array<{
+        /** Resource kind */
+        kind: string
+        /** Array of related resource items */
+        items?: ResourceItem[]
+      }>
+    }>
+  }
+}
+
+/**
+ * Processed resource from search results with aggregated information
+ */
+export interface ProcessedOCPFluxResource {
+  /** Resource name */
+  name: string
+  /** Resource namespace */
+  namespace: string
+  /** Kubernetes resource kind */
+  kind: string
+  /** API version */
+  apiversion?: string
+  /** API group */
+  apigroup?: string
+  /** Array of individual resource instances */
+  resources?: ResourceItem[]
+  /** Total count of resource instances across clusters */
+  resourceCount?: number
+}
+
+/**
+ * Cluster summary information for OCP/Flux applications
+ */
+export interface OCPFluxClusterSummary {
+  /** Whether the application is deployed locally on the hub cluster */
+  isLocal: boolean
+  /** Number of remote clusters where the application is deployed */
+  remoteCount: number
+}
+
+/**
+ * Extended topology result with raw search data for OCP/Flux applications
+ */
+export interface OCPFluxTopologyResult extends ExtendedTopology {
+  /** Raw search data from GraphQL queries */
+  rawSearchData?: OCPFluxSearchResult
+}
+
+/**
+ * Parameters for getOCPFluxAppTopology function
+ */
+export interface GetOCPFluxAppTopologyParams {
+  /** OCP/Flux application model */
+  application: OCPFluxApplicationModel
+  /** Hub cluster name for local deployment detection */
+  hubClusterName: string
+}
+
+/**
+ * Parameters for getResourcesWithAppLabel function
+ */
+export interface GetResourcesWithAppLabelParams {
+  /** Application name */
+  name: string
+  /** Application namespace */
+  namespace: string
+  /** Application configuration object */
+  app: {
+    /** Cluster information */
+    cluster?: {
+      /** Cluster name */
+      name: string
+    }
+  }
+  /** Flag indicating if this is an OCP application */
+  isOCPApp: boolean
+}
+
+/**
+ * Parameters for getQueryStringForLabel function
+ */
+export interface GetQueryStringForLabelParams {
+  /** Label selector string for filtering resources */
+  label: string
+  /** Target namespace */
+  namespace: string
+  /** Target cluster name */
+  cluster: string
+}

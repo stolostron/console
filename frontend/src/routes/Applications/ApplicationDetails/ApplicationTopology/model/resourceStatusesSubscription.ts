@@ -6,46 +6,81 @@ import { searchClient } from '../../../../Search/search-sdk/search-client'
 import { SearchResultItemsAndRelatedItemsDocument } from '../../../../Search/search-sdk/search-sdk'
 import { convertStringToQuery } from '../helpers/search-helper'
 import {
+  ApplicationModel,
   ResourceReport,
   RelatedResourcesMap,
   RelatedResourcesSearchQuery,
   RelatedResourcesSearchResponse,
+  SubscriptionApplicationData,
+  SubscriptionResourceStatusResult,
+  QueryStringResourceParams,
+  SearchQuery,
 } from './types'
 
-export async function getSubscriptionResourceStatuses(application, appData) {
-  // need to constantly get search data since it will change even if subscription data doesn't
-  // with SubscriptionReport need to find out what service/replicaset goes with what route/deployment
+/**
+ * Retrieves resource statuses and related resources for subscription-based applications.
+ *
+ * This function is the main entry point for getting resource status information for applications
+ * that use the subscription model. It combines search data for resource statuses with related
+ * resource information from subscription reports.
+ *
+ * @param application - The application model containing metadata and subscription reports
+ * @param appData - Optional application data for filtering and customizing search queries
+ * @returns Promise resolving to resource statuses and related resources mapping
+ */
+export async function getSubscriptionResourceStatuses(
+  application: ApplicationModel & { reports?: ResourceReport[] },
+  appData?: SubscriptionApplicationData
+): Promise<SubscriptionResourceStatusResult> {
+  // Need to constantly get search data since it will change even if subscription data doesn't.
+  // With SubscriptionReport we need to find out what service/replicaset goes with what route/deployment
   let relatedResources: RelatedResourcesMap = {}
   if (application.reports) {
     relatedResources = (await getRelatedResources(application.reports)) || {}
   }
 
-  // get resource statuses
+  // Get resource statuses from search API
   const resourceStatuses = await getResourceStatuses(application, appData)
 
   return { resourceStatuses, relatedResources }
 }
 
-async function getResourceStatuses(application, appData) {
-  let query
+/**
+ * Retrieves resource statuses from the search API for a subscription application.
+ *
+ * This function builds search queries based on the application and optional filtering criteria.
+ * It can query for all resources related to an application, or filter by specific subscription
+ * and resource kinds.
+ *
+ * @param application - The application model containing name and namespace
+ * @param appData - Optional data for filtering by subscription and resource kinds
+ * @returns Promise resolving to search query results containing resource statuses
+ */
+async function getResourceStatuses(
+  application: ApplicationModel,
+  appData?: SubscriptionApplicationData
+): Promise<unknown> {
+  let query: SearchQuery
   const { name, namespace } = application
-  if (appData) {
-    //query asking for a subset of related kinds and possibly for one subscription only
-    if (appData.subscription) {
-      //get related resources only for the selected subscription
-      query = getQueryStringForResource('Subscription', appData.subscription, namespace)
-      //ask only for these type of resources
-      query.relatedKinds = appData.relatedKinds
-    } else {
-      //get related resources only for the selected application
-      query = getQueryStringForResource('Application', name, namespace)
 
-      //get related resources for the application, but only this subset
-      query.relatedKinds = appData.relatedKinds
+  if (appData) {
+    // Query asking for a subset of related kinds and possibly for one subscription only
+    if (appData.subscription) {
+      // Get related resources only for the selected subscription
+      query = getQueryStringForResource('Subscription', appData.subscription, namespace)
+      // Ask only for these types of resources
+      query.relatedKinds = appData.relatedKinds || []
+    } else {
+      // Get related resources only for the selected application
+      query = getQueryStringForResource('Application', name, namespace)
+      // Get related resources for the application, but only this subset
+      query.relatedKinds = appData.relatedKinds || []
     }
   } else {
+    // Get all related resources for the application
     query = getQueryStringForResource('Application', name, namespace)
   }
+
   return searchClient.query({
     query: SearchResultItemsAndRelatedItemsDocument,
     variables: {
@@ -147,10 +182,14 @@ async function getRelatedResources(reports: ResourceReport[]): Promise<RelatedRe
 /**
  * Creates a search promise to find a resource and its related resources for subscription model.
  *
- * @param cluster - Target cluster name
- * @param kind - Kubernetes resource kind
- * @param name - Resource name
- * @param namespace - Resource namespace
+ * This function constructs a search query to find a specific Kubernetes resource and its
+ * related resources within a given cluster. It's optimized for subscription-based applications
+ * where we need to discover relationships between deployed resources.
+ *
+ * @param cluster - Target cluster name where the resource is deployed
+ * @param kind - Kubernetes resource kind (e.g., 'Deployment', 'Service')
+ * @param name - Resource name to search for
+ * @param namespace - Resource namespace to search within
  * @param relatedKinds - Array of related resource kinds to include in search results
  * @returns Promise that resolves to search response containing the resource and related items
  */
@@ -170,6 +209,7 @@ const getSearchPromise = (
     ],
   }
 
+  // Add cluster filter if specified
   if (cluster) {
     query.filters.push({ property: 'cluster', values: [cluster] })
   }
@@ -184,10 +224,23 @@ const getSearchPromise = (
   })
 }
 
-const getQueryStringForResource = (resourcename, name, namespace) => {
+/**
+ * Builds a search query string for finding resources of a specific type.
+ *
+ * This function constructs a search query string that can be used to find Kubernetes
+ * resources by kind, name, and namespace. It handles special cases for Subscription
+ * and Application resources and formats the query for the search API.
+ *
+ * @param resourcename - The type of resource to search for ('Subscription', 'Application', etc.)
+ * @param name - The name of the resource to filter by
+ * @param namespace - The namespace of the resource to filter by
+ * @returns A SearchQuery object that can be used with the search API
+ */
+const getQueryStringForResource = (resourcename: string, name: string, namespace: string): SearchQuery => {
   let resource = ''
   const nameForQuery = name ? `name:${name}` : ''
   const namespaceForQuery = namespace ? ` namespace:${namespace}` : ''
+
   if (resourcename) {
     switch (resourcename) {
       case 'Subscription':
@@ -200,5 +253,6 @@ const getQueryStringForResource = (resourcename, name, namespace) => {
         resource = `kind:${resourcename} `
     }
   }
+
   return convertStringToQuery(`${resource} ${nameForQuery} ${namespaceForQuery}`)
 }

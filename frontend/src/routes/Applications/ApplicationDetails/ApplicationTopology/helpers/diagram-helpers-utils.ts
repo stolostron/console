@@ -9,7 +9,7 @@ import {
   failureCode,
   metadataName,
 } from '../model/computeStatuses'
-import type { DetailsList, NodeLike, ResourceItem, ResourceMap, AddResourceToModelFn, Translator } from './types'
+import type { DetailsList, NodeLike, ResourceItem, ResourceMap, AddResourceToModelFn, Translator } from '../model/types'
 
 /**
  * Check if the node represents a resource created via a Deployable.
