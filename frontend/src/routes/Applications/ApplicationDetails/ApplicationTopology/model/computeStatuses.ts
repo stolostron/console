@@ -29,6 +29,7 @@ import type {
   StatusCode,
   ArgoHealthStatus,
   ClusterInfo,
+  ClusterStatus,
   ResourceItemWithStatus,
   SubscriptionItem,
   PodInfo,
@@ -141,7 +142,7 @@ export const computeNodeStatus = (
       break
 
     case 'application':
-      apiVersion = _.get(node, apiVersionPath)
+      apiVersion = _.get(node, apiVersionPath, '') as string
       if (apiVersion && apiVersion.indexOf('argoproj.io') > -1 && !isDeployable) {
         // This is an Argo CD application
         pulse = getPulseStatusForArgoApp(node)
@@ -289,7 +290,7 @@ export const getPulseStatusForSubscription = (node: TopologyNodeWithStatus, hubC
  * @returns The shape type string for rendering
  */
 export const getShapeTypeForSubscription = (node: TopologyNodeWithStatus): string => {
-  const blocked = _.includes(_.get(node, 'specs.raw.status.message', ''), 'Blocked')
+  const blocked = _.includes(_.get(node, 'specs.raw.status.message', '') as string, 'Blocked')
   if (blocked) {
     return 'subscriptionblocked'
   } else {
@@ -315,7 +316,7 @@ export const getPulseStatusForArgoApp = (node: TopologyNodeWithStatus, isAppSet?
 
   if (!isAppSet) {
     // For single applications, add this node's status to the evaluation
-    const appStatus = _.get(node, 'specs.raw.status.health.status', argoAppUnknownStatus)
+    const appStatus = _.get(node, 'specs.raw.status.health.status', argoAppUnknownStatus) as ArgoHealthStatus
     relatedApps.push({
       status: { health: { status: appStatus } },
     })
@@ -351,7 +352,7 @@ export const getPulseStatusForArgoApp = (node: TopologyNodeWithStatus, isAppSet?
       degradedCount++
     }
 
-    if (relatedAppConditions.length > 0) {
+    if (Array.isArray(relatedAppConditions) && relatedAppConditions.length > 0) {
       appWithConditions++
     }
   })
@@ -390,7 +391,7 @@ export const getPulseStatusForArgoApp = (node: TopologyNodeWithStatus, isAppSet?
  */
 export const getPulseStatusForCluster = (node: TopologyNodeWithStatus, hubClusterName: string): PulseColor => {
   // Gather cluster information from various sources
-  let clusters: ClusterInfo[] = _.get(node, 'specs.clusters', []) as ClusterInfo[]
+  const clusters: ClusterInfo[] = _.get(node, 'specs.clusters', []) as ClusterInfo[]
   const appClusters = _.get(node, 'specs.appClusters', []) as string[]
   const clustersNames = _.get(node, 'specs.clustersNames') as string[] | undefined
   const targetNamespaces = _.get(node, 'specs.targetNamespaces', {}) as Record<string, unknown>
@@ -419,7 +420,10 @@ export const getPulseStatusForCluster = (node: TopologyNodeWithStatus, hubCluste
     if (clusterName === 'in-cluster') {
       clusterName = hubClusterName
     }
-    if (!clustersNames || (Array.isArray(clustersNames) && clustersNames.includes(clusterName))) {
+    if (
+      !clustersNames ||
+      (Array.isArray(clustersNames) && clusterName !== undefined && clustersNames.includes(clusterName))
+    ) {
       const status = (cluster.status || calculateArgoClusterStatus(cluster) || '').toLowerCase()
       if (status === 'ok' || status === 'ready' || _.get(cluster, 'ManagedClusterConditionAvailable', '') === 'True') {
         okCount++
@@ -738,7 +742,7 @@ export const setApplicationDeployStatus = (
     return details
   }
 
-  const apiVersion = _.get(node, apiVersionPath)
+  const apiVersion = _.get(node, apiVersionPath, '') as string
   if (node.type === 'applicationset') {
     setAppSetDeployStatus(node, details, t, hubClusterName)
   } else if (apiVersion && apiVersion.indexOf('argoproj.io') > -1) {
@@ -838,7 +842,7 @@ export const setArgoApplicationDeployStatus = (
   })
 
   // Sort and display related Argo apps
-  const sortedRelatedArgoApps = _.sortBy(relatedArgoApps, (app) => _.toLower(_.get(app, 'name', '')))
+  const sortedRelatedArgoApps = _.sortBy(relatedArgoApps, (app) => _.toLower(_.get(app, 'name', '') as string))
   details.push({
     type: 'relatedargoappdetails',
     relatedargoappsdata: {
@@ -921,9 +925,9 @@ export const setAppSetDeployStatus = (
 
   // Display status for each ApplicationSet app
   appSetApps.forEach((argoApp: ArgoApplication) => {
-    const appHealth = _.get(argoApp, 'status.health.status', '')
+    const appHealth = _.get(argoApp, 'status.health.status', '') as ArgoHealthStatus
     const appSync = _.get(argoApp, 'status.sync.status', '')
-    const appName = _.get(argoApp, metadataName)
+    const appName = _.get(argoApp, metadataName, '') as string
     const appNamespace = _.get(argoApp, 'metadata.namespace')
     const appStatusConditions = _.get(argoApp, 'status.conditions', []) as Array<{ type: string; message: string }>
 
@@ -1036,13 +1040,13 @@ export const setSubscriptionDeployStatus = (
   const timeWindow = _.get(node, 'specs.raw.spec.timewindow.windowtype')
   const timezone = _.get(node, 'specs.raw.spec.timewindow.location', 'NA')
   const timeWindowDays = _.get(node, 'specs.raw.spec.timewindow.daysofweek')
-  const timeWindowHours = _.get(node, 'specs.raw.spec.timewindow.hours', [])
+  const timeWindowHours = _.get(node, 'specs.raw.spec.timewindow.hours', []) as any[]
   const isCurrentlyBlocked = _.get(node, 'specs.isBlocked')
 
   let windowStatusArray: WindowStatusArray = []
 
   if (timeWindow) {
-    windowStatusArray = _.split(_.get(node, 'specs.raw.status.message', ''), ',')
+    windowStatusArray = _.split(_.get(node, 'specs.raw.status.message', '') as string, ',')
 
     details.push({
       type: 'label',
@@ -1171,9 +1175,9 @@ export const setSubscriptionDeployStatus = (
 
           // Check for failed packages in subscription status
           const statuses = _.get(node, 'specs.raw.status.statuses', {})
-          const clusterStatus = _.get(statuses, subscription.cluster, {})
+          const clusterStatus = _.get(statuses, subscription.cluster, {}) as Record<string, unknown>
           const packageItems = _.get(clusterStatus, 'packages', {})
-          const { reason } = _.get(node, 'specs.raw.status', {})
+          const { reason } = _.get(node, 'specs.raw.status', {}) as Record<string, unknown>
           const failedPackage = Object.values(packageItems).find((item: any) => _.get(item, 'phase', '') === 'Failed')
           const failedSubscriptionStatus = _.get(subscription, 'status', '').includes('Failed')
 

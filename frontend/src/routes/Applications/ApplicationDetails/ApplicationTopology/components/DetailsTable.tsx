@@ -107,7 +107,7 @@ class DetailsTable extends Component<DetailsTableProps, DetailsTableState> {
             const modelKey = resource.namespace
               ? `${resource.name}-${cluster}-${resource.namespace}`
               : `${resource.name}-${cluster}`
-            const status = statusMap[modelKey]
+            const status = statusMap[modelKey as keyof typeof statusMap]
 
             // Create resource item with status information
             available.push({

@@ -465,23 +465,25 @@ class ArgoAppDetailsContainer extends Component<ArgoAppDetailsContainerProps, Ar
       showWarning = true
     }
 
+    if (!showWarning) {
+      return null
+    }
+
     return (
-      showWarning && (
-        <div className="sectionContent borderLeft">
-          <span className="label sectionLabel">
-            <svg width="13px" height="13px" fill="#F0AB00" style={{ marginRight: '8px' }}>
-              <use href="#drawerShapes_warning" className="label-icon" />
-            </svg>
-            <span>{t('Health status')}: </span>
-          </span>
-          <span className="value">
-            {t(
-              'The health status for application {{0}} is {{1}}. Use the Launch Argo editor action above to view the application details.',
-              [name, status]
-            )}
-          </span>
-        </div>
-      )
+      <div className="sectionContent borderLeft">
+        <span className="label sectionLabel">
+          <svg width="13px" height="13px" fill="#F0AB00" style={{ marginRight: '8px' }}>
+            <use href="#drawerShapes_warning" className="label-icon" />
+          </svg>
+          <span>{t('Health status')}: </span>
+        </span>
+        <span className="value">
+          {t(
+            'The health status for application {{0}} is {{1}}. Use the Launch Argo editor action above to view the application details.',
+            [name, status]
+          )}
+        </span>
+      </div>
     )
   }
 

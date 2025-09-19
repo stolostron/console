@@ -108,13 +108,13 @@ export const getDiagramElements = (
 
     // Handle application nodes to extract channel information
     if (evaluateSingleAnd(type === 'application', id.startsWith('application'))) {
-      channelsList = _.get(node, 'specs.channels', [])
+      channelsList = _.get(node, 'specs.channels', []) as string[]
 
       // Filter out the special "all channels" entry and set default active channel
       const channelListNoAllChannels = channelsList.filter((chn) => chn !== '__ALL__/__ALL__//__ALL__/__ALL__')
       const defaultActiveChannel = channelListNoAllChannels.length > 0 ? channelListNoAllChannels[0] : null
 
-      activeChannelInfo = _.get(node, 'specs.activeChannel')
+      activeChannelInfo = _.get(node, 'specs.activeChannel') as string | null
       if (!activeChannelInfo) {
         // Set default active channel if none specified
         activeChannelInfo = defaultActiveChannel
@@ -122,7 +122,7 @@ export const getDiagramElements = (
       }
 
       // Validate that active channel exists in the channel list
-      if (evaluateSingleAnd(activeChannelInfo, channelsList.indexOf(activeChannelInfo) === -1)) {
+      if (evaluateSingleAnd(activeChannelInfo, channelsList.indexOf(activeChannelInfo as string) === -1)) {
         _.set(node, 'specs.activeChannel', defaultActiveChannel)
         activeChannelInfo = defaultActiveChannel
       }
@@ -135,11 +135,11 @@ export const getDiagramElements = (
   // Apply resource status information if available
   if (resourceStatuses) {
     // Merge search results into topology nodes
-    addDiagramDetails(resourceStatuses, allResourcesMap, isClusterGrouped, hasHelmReleases, topology)
+    addDiagramDetails(resourceStatuses, allResourcesMap, isClusterGrouped.value, hasHelmReleases.value, topology)
 
     // Compute status icons for each node based on resource health
     nodes.forEach((node) => {
-      computeNodeStatus(node, canUpdateStatuses, t, topology.hubClusterName)
+      computeNodeStatus(node, canUpdateStatuses, t, topology.hubClusterName as string)
     })
   }
 
@@ -177,11 +177,11 @@ export const processNodeData = (
   }
 
   // Extract channel information for key generation
-  const channel = _.get(node, 'specs.raw.spec.channel', '')
+  const channel = _.get(node, 'specs.raw.spec.channel', '') as string
   const keyName = !isDeployableResource(node) && channel.length > 0 ? `${channel}-${name}` : name
 
   // Resolve cluster name for this node
-  const clusterName = getClusterName(node.id, node, undefined, topology.hubClusterName)
+  const clusterName = getClusterName(node.id, node, undefined, topology?.hubClusterName as string)
 
   if (type === 'subscription') {
     // Subscriptions use name-only keys (no cluster grouping)
@@ -224,7 +224,7 @@ export const processNodeData = (
  * @param operand2 - Second operand to evaluate
  * @returns Boolean result of logical AND operation
  */
-export const evaluateSingleAnd = (operand1: unknown, operand2: unknown): boolean => {
+export const evaluateSingleAnd = (operand1: any, operand2: any): boolean => {
   return operand1 && operand2
 }
 

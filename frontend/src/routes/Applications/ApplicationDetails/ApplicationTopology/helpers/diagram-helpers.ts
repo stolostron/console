@@ -134,7 +134,7 @@ export const createEditLink = (
 /**
  * Convert Kubernetes CPU/Memory string values into numeric units (bytes or SI).
  */
-export const inflateKubeValue = (value?: string | number | null): number | string => {
+export const inflateKubeValue = (value?: string | number | null): number => {
   if (value) {
     const valueStr = String(value)
     const match = valueStr.match(/\D/g)
@@ -150,7 +150,7 @@ export const inflateKubeValue = (value?: string | number | null): number | strin
     }
     return parseFloat(valueStr)
   }
-  return ''
+  return 0
 }
 
 function factorize(prefixes: string[], unit: string, type: 'binary' | 'si'): number {
@@ -723,7 +723,7 @@ export const processResourceActionLink = (
 ): string => {
   let targetLink = ''
   const linkPath = _.get(resource as any, ['action'], '') as string
-  const { name, namespace, editLink, kind, cluster } = resource
+  const { name = '', namespace = '', editLink, kind, cluster = '' } = resource
   const nsData = namespace
     ? kind === 'ocpapplication' || kind === 'fluxapplication'
       ? `namespace:${namespace}`

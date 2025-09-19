@@ -119,7 +119,7 @@ export const addDiagramDetails = (
 
       // Determine cluster names for the node based on its type
       const nodeClusters: string[] =
-        node.type === 'subscription' ? clusterNamesList : _.get(node, SPEC_CLUSTERSNAMES, [])
+        node.type === 'subscription' ? clusterNamesList : (_.get(node, SPEC_CLUSTERSNAMES, []) as string[])
 
       // Set search clusters on the node
       _.set(
@@ -181,6 +181,7 @@ export const addDiagramDetails = (
       }
 
       // Process resource name by removing pod template hash if present
+      // eslint-disable-next-line prefer-const
       let { nameNoHash, deployableName }: NameProcessingResult = getNameWithoutPodHash(relatedKindList[i])
 
       // Handle virtual machine resources with special naming conventions
@@ -317,7 +318,7 @@ export const mapSingleApplication = (application: SearchResultItem, hubClusterNa
     // This code moves all these items under the related section
     const kind = _.get(item, 'kind', '')
     const cluster = _.get(item, 'cluster', '')
-    const label = _.get(item, 'label', '')
+    const label = _.get(item, 'label', '') as string
 
     // Preserve legitimate app objects for Argo app of apps pattern
     if (kind === 'application' && label.indexOf('app.kubernetes.io/instance=') === -1) {
@@ -342,7 +343,9 @@ export const mapSingleApplication = (application: SearchResultItem, hubClusterNa
       result.related?.push(kindSection as RelatedKindGroup)
     } else {
       // Add item to existing kind section
-      kindSection[0].items.push(item)
+      if (Array.isArray(kindSection)) {
+        kindSection[0]?.items?.push(item as RelatedResourceItem)
+      }
     }
   })
 
@@ -368,7 +371,7 @@ export const syncControllerRevisionPodStatusMap = (
       // Extract parent resource information
       const parentName = _.get(controllerRevision, 'specs.parent.parentName', '')
       const parentType = _.get(controllerRevision, 'specs.parent.parentType', '')
-      const parentId = _.get(controllerRevision, 'specs.parent.parentId', '')
+      const parentId = _.get(controllerRevision, 'specs.parent.parentId', '') as string
 
       // Determine cluster name for parent resource lookup
       const clusterName = getClusterName(parentId, undefined, undefined, hubClusterName)?.toString() || hubClusterName
@@ -380,7 +383,7 @@ export const syncControllerRevisionPodStatusMap = (
       if (parentResource) {
         // Copy parent model to controller revision
         const parentModel = {
-          ..._.get(parentResource, `specs.${parentResource.type}Model`, ''),
+          ...(_.get(parentResource, `specs.${parentResource.type}Model`, {}) as Record<string, unknown>),
         }
 
         if (parentModel) {
@@ -415,7 +418,7 @@ export const syncReplicaSetCountToPodNode = (resourceMap: Record<string, Resourc
       // Extract parent resource information
       const parentName = _.get(pod, 'specs.parent.parentName', '')
       const parentType = _.get(pod, 'specs.parent.parentType', '')
-      const clusterName = _.get(pod, SPEC_CLUSTERSNAMES, '').toString()
+      const clusterName = _.get(pod, SPEC_CLUSTERSNAMES, '')
 
       // Find parent resource (typically a ReplicaSet)
       const parentResource =
@@ -434,7 +437,7 @@ export const syncReplicaSetCountToPodNode = (resourceMap: Record<string, Resourc
 
             // Set replica count and total resource count on the pod
             _.set(pod, 'specs.replicaCount', desiredCount)
-            _.set(pod, 'specs.resourceCount', desiredCount * _.get(pod, SPEC_CLUSTERSNAMES, []).length)
+            _.set(pod, 'specs.resourceCount', desiredCount * (_.get(pod, SPEC_CLUSTERSNAMES, []) as string[]).length)
           }
         }
       }

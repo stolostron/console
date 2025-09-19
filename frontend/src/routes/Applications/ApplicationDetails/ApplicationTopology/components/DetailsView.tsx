@@ -6,7 +6,6 @@ import classNames from 'classnames'
 import { Button, Spinner, Tabs, Tab, TabTitleText } from '@patternfly/react-core'
 import jsYaml from 'js-yaml'
 import { createResourceSearchLink, createResourceURL, getFilteredNode } from '../helpers/diagram-helpers'
-import { getLegendTitle } from '../options/titles'
 import ClusterDetailsContainer from './ClusterDetailsContainer'
 import ArgoAppDetailsContainer from './ArgoAppDetailsContainer'
 import DetailsTable from './DetailsTable'
@@ -181,7 +180,7 @@ class DetailsView extends Component<DetailsViewProps, DetailsViewState> {
 
     // Determine if we should show table view (multiple resources) or single resource view
     const isTableView =
-      _.get(currentNode, 'specs.resourceCount', 0) > 1 &&
+      (_.get(currentNode, 'specs.resourceCount', 0) as number) > 1 &&
       currentNode.type !== 'cluster' &&
       currentNode.type !== 'application'
 
@@ -191,10 +190,10 @@ class DetailsView extends Component<DetailsViewProps, DetailsViewState> {
     // Determine the display name for the resource
     let name = isTableView || currentNode.type === 'cluster' ? '' : currentNode.name
     if (!name) {
-      name = _.get(currentNode, 'specs.raw.metadata.name')
+      name = _.get(currentNode, 'specs.raw.metadata.name', '') as string
     }
 
-    const legend = getLegendTitle(resourceType, t)
+    const legend = getLegendTitle(resourceType)
     const searchLink = createResourceSearchLink(currentNode, t)
 
     return (
@@ -534,6 +533,17 @@ class DetailsView extends Component<DetailsViewProps, DetailsViewState> {
       </div>
     )
   }
+}
+
+export const getLegendTitle = (type: string) => {
+  if (type === undefined) {
+    return ''
+  }
+  return (type.charAt(0).toUpperCase() + type.slice(1))
+    .replace('stream', ' Stream')
+    .replace('channel', ' Channel')
+    .replace('controller', 'Controller')
+  //}
 }
 
 export default DetailsView

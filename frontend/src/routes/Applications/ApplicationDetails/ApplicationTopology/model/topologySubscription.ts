@@ -14,7 +14,6 @@ import type {
   RuleDecisionMap,
   ServiceMap,
   ParentObject,
-  PlacementDecisionKind,
   AnsibleJob,
 } from './types'
 
@@ -41,9 +40,7 @@ export const getSubscriptionTopology = (
 ): Topology => {
   const links: TopologyLink[] = []
   const nodes: TopologyNode[] = []
-  let name: string
-  let namespace: string
-  ;({ name, namespace } = application)
+  const { name, namespace } = application
 
   // Create the root application node
   const allAppClusters = application.allClusters ? application.allClusters : []
@@ -81,7 +78,10 @@ export const getSubscriptionTopology = (
       const ruleDecisionMap: RuleDecisionMap = {}
       if (subscription.decisions) {
         subscription.decisions.forEach((rule) => {
-          const ruleDecisions = get(rule, 'status.decisions')
+          const ruleDecisions = get(rule, 'status.decisions') as Array<{
+            clusterName: string
+            clusterNamespace: string
+          }>
           if (ruleDecisions) {
             ruleDecisions.forEach(
               ({ clusterName, clusterNamespace }: { clusterName: string; clusterNamespace: string }) => {
@@ -110,14 +110,14 @@ export const getSubscriptionTopology = (
       const ruleClusterNames = Object.keys(ruleDecisionMap)
 
       // Extract source information from subscription annotations
-      const ann = get(subscription, 'metadata.annotations', {})
+      const ann = get(subscription, 'metadata.annotations', {}) as Record<string, string>
       let source =
         ann['apps.open-cluster-management.io/git-path'] ||
         ann['apps.open-cluster-management.io/github-path'] ||
         ann['apps.open-cluster-management.io/bucket-path'] ||
-        get(subscription, 'spec.packageOverrides[0].packageName') ||
+        (get(subscription, 'spec.packageOverrides[0].packageName', '') as string) ||
         ''
-      source = source.split('/').pop() || ''
+      source = source.split('/').pop() as string
 
       // Filter clusters based on placement decisions
       const filteredClusters = managedClusters.filter((cluster) => {
@@ -125,10 +125,15 @@ export const getSubscriptionTopology = (
       })
 
       // Determine clusters where subscription was deployed
-      let clustersNames = get(subscription, 'report.results', []).map((result: { source: string }) => {
-        return result.source
-      })
-      clustersNames = ruleClusterNames || clustersNames
+      let clustersNames: string[] = []
+      if (ruleClusterNames && ruleClusterNames.length > 0) {
+        clustersNames = ruleClusterNames
+      } else {
+        const reportResults = get(subscription, 'report.results', []) as Array<{ source?: string }>
+        clustersNames = reportResults
+          .map((result) => (result && typeof result.source === 'string' ? result.source : undefined))
+          .filter((name): name is string => !!name)
+      }
 
       const isRulePlaced = ruleClusterNames.length > 0
       const subscriptionId = addSubscription(appId, clustersNames, subscription, source, isRulePlaced, links, nodes)
@@ -426,17 +431,17 @@ const processServiceOwner = (
 
       switch (kind) {
         case 'Route':
-          service = get(template, 'template.spec.to.name')
+          service = get(template, 'template.spec.to.name') as string | undefined
           if (service) {
             servicesMap[service] = node.id
           }
           break
         case 'Ingress':
-          rules = get(template, 'template.spec.rules', [])
+          rules = get(template, 'template.spec.rules', []) as unknown[]
           rules.forEach((rule) => {
             const rulePaths = get(rule, 'http.paths', [])
-            rulePaths.forEach((path) => {
-              service = get(path, 'backend.serviceName')
+            rulePaths.forEach((path: unknown) => {
+              service = get(path, 'backend.serviceName') as string | undefined
               if (service) {
                 servicesMap[service] = node.id
               }
@@ -444,7 +449,7 @@ const processServiceOwner = (
           })
           break
         case 'StatefulSet':
-          service = get(template, 'template.spec.serviceName')
+          service = get(template, 'template.spec.serviceName') as string | undefined
           if (service) {
             servicesMap[service] = node.id
           }

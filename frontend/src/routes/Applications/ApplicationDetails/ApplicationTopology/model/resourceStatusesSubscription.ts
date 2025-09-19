@@ -13,7 +13,6 @@ import {
   RelatedResourcesSearchResponse,
   SubscriptionApplicationData,
   SubscriptionResourceStatusResult,
-  QueryStringResourceParams,
   SearchQuery,
 } from './types'
 

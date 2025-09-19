@@ -43,7 +43,7 @@ export const getSubscriptionApplication = async (
     const filteredSubscriptions = subscriptionNames.filter((subscriptionName) => {
       return !isLocalSubscription(subscriptionName, subscriptionNames)
     })
-    let subscriptions = cloneDeep(
+    const subscriptions = cloneDeep(
       getResources(filteredSubscriptions, (recoilStates.subscriptions || []) as SubscriptionKind[])
     )
     subscriptions.sort((a, b) => {

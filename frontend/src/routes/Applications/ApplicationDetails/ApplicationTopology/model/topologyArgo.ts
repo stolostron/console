@@ -42,11 +42,9 @@ export function getArgoTopology(
   const { topology, cluster } = argoData
   const links: TopologyLink[] = []
   const nodes: TopologyNode[] = []
-  let name: string
-  let namespace: string
 
-    // Extract application name and namespace
-  ;({ name, namespace } = application)
+  // Extract application name and namespace
+  const { name, namespace } = application
 
   const clusters: ArgoClusterInfo[] = []
   let clusterNames: string[] = []

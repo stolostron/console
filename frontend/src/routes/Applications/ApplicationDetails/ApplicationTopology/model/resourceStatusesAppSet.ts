@@ -117,8 +117,7 @@ async function getResourceStatuses(
   appData.targetNamespaces = definedNamespace.length > 0 ? _.uniq(definedNamespace) : _.uniq(targetNS)
 
   // Build search queries for namespaced and cluster-scoped resources
-  let query: SearchQuery
-  let queryNotNamespaceScoped: SearchQuery[] = []
+  const queryNotNamespaceScoped: SearchQuery[] = []
 
   // Filter out cluster-scoped resource kinds from the related kinds list
   const argoKinds = appData.relatedKinds
@@ -128,7 +127,12 @@ async function getResourceStatuses(
     : null
 
   // Build main query for namespaced resources
-  query = getQueryStringForResource(argoKinds, null, appData.targetNamespaces.toString(), appSetClusters.toString())
+  const query = getQueryStringForResource(
+    argoKinds,
+    null,
+    appData.targetNamespaces.toString(),
+    appSetClusters.toString()
+  )
 
   // Build separate queries for each cluster-scoped resource
   if (kindsNotNamespaceScoped.length > 0) {
