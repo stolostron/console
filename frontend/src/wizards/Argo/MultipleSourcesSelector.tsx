@@ -19,6 +19,7 @@ import { RepoURL } from './common'
 import { GitPathSelect } from './common/GitPathSelect'
 import { GitRevisionSelect } from './common/GitRevisionSelect'
 import HelmIcon from './logos/HelmIcon.svg'
+import { isEmpty } from 'lodash'
 
 export interface MultipleSourcesSelectorProps {
   channels: Channel[] | undefined
@@ -35,6 +36,13 @@ export function MultipleSourcesSelector(props: MultipleSourcesSelectorProps) {
       path="spec.template.spec.sources"
       placeholder="Add another repository"
       disallowEmpty={editMode === EditMode.Create}
+      required
+      validation={(value) => {
+        // standard required validation is not compatible with disallowEmpty
+        return !value || (Array.isArray(value) && (value.length === 0 || (value.length === 1 && isEmpty(value[0]))))
+          ? t('Required')
+          : undefined
+      }}
       collapsedContent={
         <Fragment>
           <WizHidden hidden={(data) => !data.repositoryType}>
@@ -58,7 +66,7 @@ export function MultipleSourcesSelector(props: MultipleSourcesSelectorProps) {
       <WizHidden hidden={(data) => data.repositoryType}>
         <Title headingLevel="h6">{t('Repository type')}</Title>
       </WizHidden>
-      <WizTiles path="repositoryType">
+      <WizTiles path="repositoryType" required>
         <Tile id="git" value="git" label="Git" icon={<GitAltIcon />} description={t('Use a Git repository')} />
         <Tile id="helm" value="helm" label="Helm" icon={<HelmIcon />} description={t('Use a Helm repository')} />
       </WizTiles>

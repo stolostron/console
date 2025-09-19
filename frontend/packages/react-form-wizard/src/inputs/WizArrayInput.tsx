@@ -59,7 +59,7 @@ export type WizArrayInputProps = Omit<InputCommonProps, 'path'> & {
 }
 
 export function WizArrayInput(props: WizArrayInputProps) {
-  const { displayMode: mode, value, setValue, hidden, id } = useInput(props as InputCommonProps)
+  const { displayMode: mode, value, setValue, hidden, id, required } = useInput(props as InputCommonProps)
   const [open, setOpen] = useState(false)
   const onToggle = useCallback(() => setOpen((open: boolean) => !open), [])
 
@@ -218,6 +218,7 @@ export function WizArrayInput(props: WizArrayInputProps) {
               expandedContent={props.expandedContent}
               collapsedPlaceholder={props.collapsedPlaceholder}
               sortable={props.sortable}
+              required={required}
               moveUp={moveUp}
               moveDown={moveDown}
               removeItem={removeItem}
@@ -286,11 +287,12 @@ export function ArrayInputItem(props: {
   expandedContent?: ReactNode
   collapsedPlaceholder?: ReactNode
   sortable?: boolean
+  required?: boolean
   moveUp: (index: number) => void
   moveDown: (index: number) => void
   removeItem: (value: object) => void
 }) {
-  const { id, value, index, defaultExpanded, moveUp, moveDown, removeItem } = props
+  const { id, value, index, defaultExpanded, moveUp, moveDown, removeItem, count, required } = props
   const [expanded, setExpanded] = useState(defaultExpanded !== undefined ? defaultExpanded : true)
 
   const collapsedContent = useMemo(() => {
@@ -377,20 +379,22 @@ export function ArrayInputItem(props: {
                               <Button
                                 variant="plain"
                                 aria-label={sortableMoveItemDownAriaLabel}
-                                isDisabled={index === props.count - 1}
+                                isDisabled={index === count - 1}
                                 onClick={() => moveDown(index)}
                               >
                                 <ArrowDownIcon />
                               </Button>
                             </Fragment>
                           )}
-                          <Button
-                            variant="plain"
-                            aria-label={removeItemAriaLabel}
-                            onClick={() => removeItem(props.value)}
-                          >
-                            <TrashIcon />
-                          </Button>
+                          {(!required || count > 1) && (
+                            <Button
+                              variant="plain"
+                              aria-label={removeItemAriaLabel}
+                              onClick={() => removeItem(props.value)}
+                            >
+                              <TrashIcon />
+                            </Button>
+                          )}
                         </Fragment>
                       }
                     />
@@ -414,21 +418,23 @@ export function ArrayInputItem(props: {
                           <Button
                             variant="plain"
                             aria-label={sortableMoveItemDownAriaLabel}
-                            isDisabled={index === props.count - 1}
+                            isDisabled={index === count - 1}
                             onClick={() => moveDown(index)}
                           >
                             <ArrowDownIcon />
                           </Button>
                         </Fragment>
                       )}
-                      <Button
-                        variant="plain"
-                        aria-label={removeItemAriaLabel}
-                        onClick={() => removeItem(props.value)}
-                        style={{ marginTop: -6 }}
-                      >
-                        <TrashIcon />
-                      </Button>
+                      {(!required || count > 1) && (
+                        <Button
+                          variant="plain"
+                          aria-label={removeItemAriaLabel}
+                          onClick={() => removeItem(props.value)}
+                          style={{ marginTop: -6 }}
+                        >
+                          <TrashIcon />
+                        </Button>
+                      )}
                     </SplitItem>
                   </Split>
                   {props.children}
