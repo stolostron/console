@@ -21,8 +21,8 @@ import {
   getVMNameWithoutPodHash,
 } from './diagram-helpers-utils'
 
-import { getOnlineClusters, getPulseStatusForSubscription } from '../model/computeStatuses'
-import { syncControllerRevisionPodStatusMap } from '../model/computeRelated'
+import { getOnlineClusters, getPulseStatusForSubscription } from '../../statuses/computeStatuses'
+import { syncControllerRevisionPodStatusMap } from '../topologyDetails'
 import type {
   Topology,
   TopologyNode,
@@ -39,7 +39,7 @@ import type {
   TestResourceItem,
   TestSearchClusters,
   TestPlacementNode,
-} from '../model/types'
+} from '../../types'
 
 /**
  * Test suite for mustRefreshTopologyMap function

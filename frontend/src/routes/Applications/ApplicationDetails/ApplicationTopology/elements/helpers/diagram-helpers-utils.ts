@@ -8,8 +8,8 @@ import {
   pendingCode,
   failureCode,
   metadataName,
-} from '../model/computeStatuses'
-import type { DetailsList, NodeLike, ResourceItem, ResourceMap, AddResourceToModelFn, Translator } from '../model/types'
+} from '../../statuses/computeStatuses'
+import type { DetailsList, NodeLike, ResourceItem, ResourceMap, AddResourceToModelFn, Translator } from '../../types'
 
 /**
  * Check if the node represents a resource created via a Deployable.

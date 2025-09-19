@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { getClusterName, isDeployableResource } from '../helpers/diagram-helpers-utils'
-import { addDiagramDetails } from './computeRelated'
-import { computeNodeStatus } from './computeStatuses'
+import { getClusterName, isDeployableResource } from './helpers/diagram-helpers-utils'
+import { addDiagramDetails } from './topologyDetails'
+import { computeNodeStatus } from '../statuses/computeStatuses'
 import _ from 'lodash'
 import { getArgoTopology } from './topologyArgo'
 import { getSubscriptionTopology } from './topologySubscription'
@@ -21,7 +21,7 @@ import type {
   HelmReleasesState,
   ResourceStatuses,
   Translator,
-} from './types'
+} from '../types'
 
 /**
  * Main function to get topology data for different application types.

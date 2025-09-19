@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import _ from 'lodash'
-import { addDetails } from '../helpers/diagram-helpers'
-import { AnsibleCondition, Pulse, AnsibleJobStatus, DetailsList, NodeLike, Translator } from '../model/types'
+import { addDetails } from './diagram-helpers'
+import { AnsibleCondition, Pulse, AnsibleJobStatus, DetailsList, NodeLike, Translator } from '../../types'
 
 const ansibleTaskErrorStates: string[] = ['Failed']
 const ansibleTaskSuccessStates: string[] = ['Successful', 'Running']

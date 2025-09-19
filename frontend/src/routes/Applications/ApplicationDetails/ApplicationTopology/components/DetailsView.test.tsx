@@ -12,7 +12,7 @@ import type {
   ArgoAppDetailsContainerControl,
   ClusterDetailsContainerControl,
   DetailItemExtended,
-} from '../model/types'
+} from '../types'
 
 // Mock child components
 jest.mock('./ClusterDetailsContainer', () => {

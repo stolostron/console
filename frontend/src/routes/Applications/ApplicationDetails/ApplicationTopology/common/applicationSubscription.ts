@@ -18,7 +18,7 @@ import type {
   SubscriptionHooksMap,
   SubscriptionPlacementsMap,
   RecoilStates,
-} from './types'
+} from '../types'
 
 const EVERYTHING_CHANNEL = '__ALL__/__ALL__//__ALL__/__ALL__'
 export const ALL_SUBSCRIPTIONS = '__ALL__/SUBSCRIPTIONS__'

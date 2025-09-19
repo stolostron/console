@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import _ from 'lodash'
-import { openArgoCDEditor, openRouteURL } from '../model/topologyAppSet'
+import { openArgoCDEditor, openRouteURL } from '../topologyAppSet'
 import { isSearchAvailable } from './search-helper'
 import queryString from 'query-string'
 import type {
@@ -12,7 +12,7 @@ import type {
   Pulse,
   URLSearchData,
   EditLinkParams,
-} from '../model/types'
+} from '../../types'
 
 const showResourceYaml = 'show_resource_yaml'
 const apiVersionPath = 'specs.raw.apiVersion'

@@ -5,7 +5,7 @@ import React, { Component, Fragment, KeyboardEvent, MouseEvent } from 'react'
 import classNames from 'classnames'
 import { Button, Spinner, Tabs, Tab, TabTitleText } from '@patternfly/react-core'
 import jsYaml from 'js-yaml'
-import { createResourceSearchLink, createResourceURL, getFilteredNode } from '../helpers/diagram-helpers'
+import { createResourceSearchLink, createResourceURL, getFilteredNode } from '../elements/helpers/diagram-helpers'
 import ClusterDetailsContainer from './ClusterDetailsContainer'
 import ArgoAppDetailsContainer from './ArgoAppDetailsContainer'
 import DetailsTable from './DetailsTable'
@@ -21,7 +21,8 @@ import {
   TranslationFunction,
   StatusType,
   ResourceAction,
-} from '../model/types'
+} from '../types'
+import { getNodeDetails, typeToShapeMap } from './DetailsViewHelper'
 
 /**
  * Decorator component that renders an icon for the details view header
@@ -167,8 +168,7 @@ class DetailsView extends Component<DetailsViewProps, DetailsViewState> {
    */
   render(): JSX.Element {
     const { filteredNode, activeTabKey } = this.state
-    const { getLayoutNodes, options, selectedNodeId, nodes, t } = this.props
-    const { typeToShapeMap } = options
+    const { getLayoutNodes, selectedNodeId, nodes, t } = this.props
 
     // Get the current node from layout or nodes array
     const currentNode =
@@ -282,9 +282,8 @@ class DetailsView extends Component<DetailsViewProps, DetailsViewState> {
    * Switches between Details, Logs, and YAML views
    */
   renderTabContents(node: TopologyNodeWithStatus): JSX.Element | JSX.Element[] {
-    const { options, activeFilters, t, hubClusterName } = this.props
+    const { activeFilters, t, hubClusterName } = this.props
     const selectedNodeId = node.id
-    const { getNodeDetails } = options
 
     // Get detailed information for the node
     const details = getNodeDetails(node, activeFilters, t, hubClusterName)

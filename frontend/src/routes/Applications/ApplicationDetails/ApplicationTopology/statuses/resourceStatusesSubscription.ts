@@ -4,7 +4,7 @@ import { get, set } from 'lodash'
 import { fireManagedClusterView } from '../../../../../resources/managedclusterview'
 import { searchClient } from '../../../../Search/search-sdk/search-client'
 import { SearchResultItemsAndRelatedItemsDocument } from '../../../../Search/search-sdk/search-sdk'
-import { convertStringToQuery } from '../helpers/search-helper'
+import { convertStringToQuery } from '../elements/helpers/search-helper'
 import {
   ApplicationModel,
   ResourceReport,
@@ -14,7 +14,7 @@ import {
   SubscriptionApplicationData,
   SubscriptionResourceStatusResult,
   SearchQuery,
-} from './types'
+} from '../types'
 
 /**
  * Retrieves resource statuses and related resources for subscription-based applications.

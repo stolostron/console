@@ -3,9 +3,9 @@
 import { filter, get, includes, uniqBy } from 'lodash'
 import { searchClient } from '../../../../Search/search-sdk/search-client'
 import { SearchResultItemsAndRelatedItemsDocument } from '../../../../Search/search-sdk/search-sdk'
-import { convertStringToQuery } from '../helpers/search-helper'
+import { convertStringToQuery } from './helpers/search-helper'
 import { createReplicaChild } from './topologySubscription'
-import { addClusters, getClusterName, processMultiples } from './utils'
+import { addClusters, getClusterName, processMultiples } from './topologyUtils'
 import type {
   OCPFluxApplicationModel,
   OCPFluxSearchResult,
@@ -17,7 +17,7 @@ import type {
   SearchQuery,
   ClusterInfo,
   OCPFluxClusterSummary,
-} from './types'
+} from '../types'
 
 /**
  * List of Kubernetes resource kinds that are excluded from topology visualization

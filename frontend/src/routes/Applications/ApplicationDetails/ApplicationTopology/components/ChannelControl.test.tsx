@@ -9,7 +9,7 @@ import type {
   DisplayChannel,
   SubChannelItem,
   TranslationFunction,
-} from '../model/types'
+} from '../types'
 
 /**
  * Mock translation function that returns the input string as-is

@@ -2,7 +2,7 @@
 // Copyright Contributors to the Open Cluster Management project
 
 // Converted to TypeScript: annotates objects as any and types the translator.
-import { inflateKubeValue } from '../helpers/diagram-helpers'
+import { inflateKubeValue } from '../elements/helpers/diagram-helpers'
 import { getNodeDetails } from './DetailsViewHelper'
 import { TFunction } from './types'
 

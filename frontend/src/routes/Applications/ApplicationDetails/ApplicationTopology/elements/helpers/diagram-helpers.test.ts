@@ -22,7 +22,7 @@ import {
   processResourceActionLink,
   removeReleaseGeneratedSuffix,
 } from './diagram-helpers'
-import { nockIgnoreApiPaths } from '../../../../../lib/nock-util'
+import { nockIgnoreApiPaths } from '../../../../../../lib/nock-util'
 import type {
   TestNode,
   TestPropertyData,
@@ -35,7 +35,7 @@ import type {
   TestRouteLink,
   TestEditLinkNode,
   Translator,
-} from '../model/types'
+} from '../../types'
 
 // Translation function bound to i18n instance
 const t: Translator = i18n.t.bind(i18n)

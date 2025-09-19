@@ -10,7 +10,7 @@ import type {
   ClusterDetailsContainerControl,
   ClusterDetailsContainerData,
   TranslationFunction,
-} from '../model/types'
+} from '../types'
 
 // Mock the diagram helpers module
 jest.mock('../helpers/diagram-helpers', () => ({

@@ -8,10 +8,11 @@ import {
   ArgoApplicationKind,
   ApplicationSetApiVersion,
   ApplicationSetKind,
+  Application,
 } from '../../../../../resources'
 import { getResource } from '../../../../../resources/utils'
 import { fetchAggregate, SupportedAggregate } from '../../../../../lib/useAggregates'
-import type { ApplicationModel, ManagedCluster, RecoilStates } from './types'
+import type { ApplicationModel, ManagedCluster, RecoilStates } from '../types'
 
 /**
  * Resolve an application model for ACM, Argo, ApplicationSet, OCP, or Flux app kinds.
@@ -28,7 +29,7 @@ export const getApplication = async (
   apiversion: string | undefined,
   clusters: ManagedCluster[]
 ): Promise<ApplicationModel | undefined> => {
-  let app: Record<string, any> | undefined
+  let app: Application | undefined
   let model: ApplicationModel | undefined
   let placement: Record<string, unknown> | undefined
   let placementName: string | undefined
@@ -43,7 +44,7 @@ export const getApplication = async (
   let isAppSetPullModel = false
 
   if (apiVersion === 'application.app.k8s.io') {
-    app = applications.find((a: any) => {
+    app = applications.find((a: Application) => {
       return a?.metadata?.name === name && a?.metadata?.namespace === namespace
     })
   }
@@ -51,14 +52,14 @@ export const getApplication = async (
   // get argo app set
   if (!app && isAppSet) {
     // appset is not part of recoil
-    app = await getResource({
+    app = (await getResource({
       apiVersion: ApplicationSetApiVersion,
       kind: ApplicationSetKind,
       metadata: {
         name,
         namespace,
       },
-    }).promise
+    }).promise) as Application
     if (app) {
       placementName = get(
         app,
@@ -100,14 +101,14 @@ export const getApplication = async (
       }
     } else {
       // argo app is not part of recoil
-      app = await getResource({
+      app = (await getResource({
         apiVersion: ArgoApplicationApiVersion,
         kind: ArgoApplicationKind,
         metadata: {
           name,
           namespace,
         },
-      }).promise
+      }).promise) as Application
     }
   }
 
@@ -122,7 +123,7 @@ export const getApplication = async (
         namespace,
       },
       cluster: clusterInfo,
-    }
+    } as unknown as Application
   }
 
   // generate flux app boiler plate
@@ -136,7 +137,7 @@ export const getApplication = async (
         namespace,
       },
       cluster: clusterInfo,
-    }
+    } as unknown as Application
   }
 
   // collect app resources

@@ -12,7 +12,7 @@ import {
   SubChannelItem,
   ChannelItem,
   SelectedSubscriptionData,
-} from '../model/types'
+} from '../types'
 
 /**
  * ChannelControl component manages subscription channel selection and pagination

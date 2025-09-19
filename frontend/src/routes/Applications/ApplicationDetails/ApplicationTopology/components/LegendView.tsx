@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Component, ReactElement } from 'react'
-import { LegendViewProps, LegendStatusType } from '../model/types'
+import { LegendViewProps, LegendStatusType } from '../types'
 
 /**
  * LegendView component displays a visual legend for the application topology view.

@@ -3,12 +3,11 @@
 import { AcmDrawerContext } from '../../../../ui-components'
 import cloneDeep from 'lodash/cloneDeep'
 import { useContext, useEffect, useState } from 'react'
-import { Topology } from './topology/Topology'
+import { Topology } from './TopologyComponent/Topology'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { useApplicationDetailsContext } from '../ApplicationDetails'
-import { processResourceActionLink } from './helpers/diagram-helpers'
-import { getDiagramElements } from './model/topology'
-import { getOptions } from './options'
+import { processResourceActionLink } from './elements/helpers/diagram-helpers'
+import { getDiagramElements } from './elements/topology'
 import { DrawerShapes } from './components/DrawerShapes'
 import './ApplicationTopology.css'
 import './components/Drawer.css'
@@ -52,7 +51,6 @@ export function ApplicationTopologyPageContent() {
     hubClusterName = topology.hubClusterName
   }
   const { setDrawerContext } = useContext(AcmDrawerContext)
-  const [options] = useState<any>(getOptions())
   const [elements, setElements] = useState<{
     nodes: any[]
     links: any[]
@@ -141,7 +139,6 @@ export function ApplicationTopologyPageContent() {
         argoAppDetailsContainerControl={argoAppDetailsContainerControl}
         clusterDetailsContainerControl={clusterDetailsContainerControl}
         channelControl={channelControl}
-        options={options}
         setDrawerContent={setDrawerContent}
         hubClusterName={hubClusterName}
       />

@@ -3,7 +3,7 @@
 import React from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import DetailsTable from './DetailsTable'
-import type { DetailsTableProps, DetailsTableNode, TranslationFunction } from '../model/types'
+import type { DetailsTableProps, DetailsTableNode, TranslationFunction } from '../types'
 
 // Mock localStorage
 const mockLocalStorage = {

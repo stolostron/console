@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { get, includes, concat, uniqBy, filter, keyBy, cloneDeep } from 'lodash'
-import { createChildNode, addClusters, processMultiples } from './utils'
+import { createChildNode, addClusters, processMultiples } from './topologyUtils'
 import type {
   ManagedCluster,
   SubscriptionApplicationModelExtended,
@@ -15,7 +15,7 @@ import type {
   ServiceMap,
   ParentObject,
   AnsibleJob,
-} from './types'
+} from '../types'
 
 // Resource types that typically have pods as children
 const typesWithPods = ['replicaset', 'replicationcontroller', 'statefulset', 'daemonset']

@@ -2,8 +2,8 @@
 /* eslint no-param-reassign: "error" */
 
 import _ from 'lodash'
-import { nodeMustHavePods } from '../helpers/diagram-helpers-utils'
-import type { ApplicationData, ManagedCluster, Topology, TopologyLink, TopologyNode } from './types'
+import { nodeMustHavePods } from './helpers/diagram-helpers-utils'
+import type { ApplicationData, ManagedCluster, Topology, TopologyLink, TopologyNode } from '../types'
 
 // Extract cluster name encoded in a node id; fall back to hub cluster if not encoded
 export const getClusterName = (nodeId: string | undefined, hubClusterName?: string): string => {

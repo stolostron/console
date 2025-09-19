@@ -11,7 +11,7 @@ import {
   AppSetApplication,
   AppSetClusterInfo,
   SearchQuery,
-} from './types'
+} from '../types'
 
 /**
  * Retrieves resource statuses for ApplicationSet applications.

@@ -3,7 +3,7 @@
 import React from 'react'
 import { render, screen } from '@testing-library/react'
 import LegendView from './LegendView'
-import type { LegendViewProps, TranslationFunction } from '../model/types'
+import type { LegendViewProps, TranslationFunction } from '../types'
 
 /**
  * Mock translation function that returns the input string as-is

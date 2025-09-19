@@ -14,7 +14,7 @@ import {
 } from '@patternfly/react-core'
 import { Table, Thead, Tr, Th, Tbody, Td, sortable, TableVariant } from '@patternfly/react-table'
 import { get, orderBy } from 'lodash'
-import { pulseValueArr } from '../helpers/diagram-helpers'
+import { pulseValueArr } from '../elements/helpers/diagram-helpers'
 import {
   PageSizes,
   TableData,
@@ -24,7 +24,7 @@ import {
   DetailsTableProps,
   DetailsTableState,
   Pulse,
-} from '../model/types'
+} from '../types'
 
 /**
  * Page size configuration for table pagination
@@ -168,7 +168,7 @@ class DetailsTable extends Component<DetailsTableProps, DetailsTableState> {
      * Apply sorting if sort configuration is provided
      * Uses lodash orderBy for consistent sorting behavior
      */
-    const { sortIndex, direction } = sortBy
+    const { sortIndex, direction = 'asc' } = sortBy
     if (sortIndex !== undefined) {
       rows = orderBy(rows, [tableData[sortIndex].id], [direction])
     }

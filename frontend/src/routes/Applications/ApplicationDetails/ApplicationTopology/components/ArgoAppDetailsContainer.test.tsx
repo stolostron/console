@@ -4,7 +4,7 @@
 'use strict'
 
 import React from 'react'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import ArgoAppDetailsContainer from './ArgoAppDetailsContainer'
 import type {
@@ -13,8 +13,8 @@ import type {
   ArgoAppDetailsContainerControl,
   ArgoAppDetailsContainerData,
   TranslationFunction,
-} from '../model/types'
-import * as diagramHelpers from '../helpers/diagram-helpers'
+} from '../types'
+import * as diagramHelpers from '../elements/helpers/diagram-helpers'
 
 // Mock the diagram helpers module
 jest.mock('../helpers/diagram-helpers', () => ({

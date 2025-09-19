@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { get, uniq, uniqBy } from 'lodash'
-import { getClusterName, addClusters, processMultiples } from './utils'
+import { getClusterName, addClusters, processMultiples } from './topologyUtils'
 import {
   createReplicaChild,
   createControllerRevisionChild,
@@ -18,7 +18,7 @@ import type {
   TopologyNode,
   TopologyLink,
   ArgoApplicationResource,
-} from './types'
+} from '../types'
 
 /**
  * Generates topology data for Argo CD applications

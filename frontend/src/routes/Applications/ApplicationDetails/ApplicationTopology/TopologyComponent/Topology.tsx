@@ -88,7 +88,6 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
     clusterDetailsContainerControl,
     channelControl,
     setDrawerContent,
-    options,
     elements,
     hubClusterName,
   } = topologyProps
@@ -128,7 +127,6 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
       true, // no padding for drawerpanelbody
       selectedNodeId ? (
         <DetailsView
-          options={options}
           getLayoutNodes={getLayoutNodes}
           selectedNodeId={selectedNodeId}
           processActionLink={processActionLink}

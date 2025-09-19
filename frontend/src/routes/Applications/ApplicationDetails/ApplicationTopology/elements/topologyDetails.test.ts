@@ -1,6 +1,6 @@
 // Copyright Contributors to the Open Cluster Management project
 
-import { addDiagramDetails, mapSingleApplication, syncReplicaSetCountToPodNode } from './computeRelated'
+import { addDiagramDetails, mapSingleApplication, syncReplicaSetCountToPodNode } from './topologyDetails'
 
 describe('addDiagramDetails', () => {
   const mockData = {

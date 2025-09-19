@@ -10,7 +10,7 @@ import {
   SelectOption,
 } from '@patternfly/react-core'
 import { AcmSelectBase, SelectVariant } from '../../../../../components/AcmSelectBase'
-import { processResourceActionLink, getPercentage, inflateKubeValue } from '../helpers/diagram-helpers'
+import { processResourceActionLink, getPercentage, inflateKubeValue } from '../elements/helpers/diagram-helpers'
 import AcmTimestamp from '../../../../../lib/AcmTimestamp'
 import {
   ClusterDetailsContainerProps,
@@ -19,7 +19,7 @@ import {
   ClusterStatusIcon,
   ResourceAction,
   TranslationFunction,
-} from '../model/types'
+} from '../types'
 
 /**
  * ClusterDetailsContainer component displays detailed information about clusters

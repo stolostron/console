@@ -5,14 +5,14 @@ import { getResource, listNamespacedResources } from '../../../../../resources/u
 import { fireManagedClusterView } from '../../../../../resources'
 import { searchClient } from '../../../../Search/search-sdk/search-client'
 import { SearchResultItemsAndRelatedItemsDocument } from '../../../../Search/search-sdk/search-sdk'
-import { convertStringToQuery } from '../helpers/search-helper'
+import { convertStringToQuery } from './helpers/search-helper'
 import {
   createReplicaChild,
   createControllerRevisionChild,
   createDataVolumeChild,
   createVirtualMachineInstance,
 } from './topologySubscription'
-import { addClusters, getClusterName, processMultiples } from './utils'
+import { addClusters, getClusterName, processMultiples } from './topologyUtils'
 import {
   ApplicationModel,
   AppSetCluster,
@@ -24,7 +24,7 @@ import {
   ProcessedDeployableResource,
   TranslationFunction,
   SearchQuery,
-} from './types'
+} from '../types'
 
 /**
  * Generates topology data for ApplicationSet applications

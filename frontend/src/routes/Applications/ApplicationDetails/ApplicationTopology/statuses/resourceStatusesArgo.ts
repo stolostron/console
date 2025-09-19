@@ -3,7 +3,7 @@
 import _ from 'lodash'
 import { searchClient } from '../../../../Search/search-sdk/search-client'
 import { SearchResultItemsAndRelatedItemsDocument } from '../../../../Search/search-sdk/search-sdk'
-import { convertStringToQuery } from '../helpers/search-helper'
+import { convertStringToQuery } from '../elements/helpers/search-helper'
 import type {
   ApplicationModel,
   ArgoApplicationData,
@@ -13,7 +13,7 @@ import type {
   ResourceItem,
   SearchQuery,
   Topology,
-} from './types'
+} from '../types'
 
 /**
  * Main function to retrieve Argo application resource statuses and related information.

@@ -1,3 +1,5 @@
+import { Application, IResource } from '../../../../resources'
+
 /* Copyright Contributors to the Open Cluster Management project */
 export interface AnsibleCondition {
   ansibleResult?: string
@@ -88,14 +90,6 @@ export interface ManagedCluster {
   [key: string]: unknown
 }
 
-// Minimal shape for global recoil-backed resource state consumed by model helpers
-export interface RecoilStates {
-  applications: Array<Record<string, unknown>>
-  placementDecisions: Array<Record<string, unknown>>
-  placements: Array<Record<string, unknown>>
-  multiclusterApplicationSetReports: Array<Record<string, unknown>>
-}
-
 // Cluster summary used for ApplicationSet views
 export interface AppSetCluster {
   name: string
@@ -111,7 +105,7 @@ export interface AppSetCluster {
 export interface ApplicationModel {
   name: string
   namespace: string
-  app: Record<string, unknown>
+  app: Application
   metadata?: Record<string, unknown>
   placement?: Record<string, unknown>
   isArgoApp: boolean
@@ -223,13 +217,13 @@ export interface SubscriptionKind {
 }
 
 // Model used by subscription application view
-export interface SubscriptionApplicationModel {
+export interface SubscriptionApplicationModel extends ApplicationModel {
   channels: string[]
   subscriptions: SubscriptionKind[]
   allSubscriptions: SubscriptionKind[]
   allChannels: ChannelKind[]
   allClusters: string[]
-  reports: Array<Record<string, unknown>>
+  reports: Array<SubscriptionReport>
   activeChannel?: string
   [key: string]: unknown
 }
@@ -259,8 +253,10 @@ export type SubscriptionChannelsMap = Record<string, SubscriptionChannelMapEntry
 export type SubscriptionPlacementsMap = Record<string, SubscriptionDecisionMapEntry[]>
 
 // Extend RecoilStates with optional resources used by subscription model helpers
+
+// Minimal shape for global recoil-backed resource state consumed by model helpers
 export interface RecoilStates {
-  applications: Array<Record<string, unknown>>
+  applications: Array<Application>
   placementDecisions: Array<Record<string, unknown>>
   placements: Array<Record<string, unknown>>
   multiclusterApplicationSetReports: Array<Record<string, unknown>>

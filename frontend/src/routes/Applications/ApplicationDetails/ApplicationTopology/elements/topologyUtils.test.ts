@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { getClusterName, addClusters, getApplicationData, processMultiples } from './utils'
+import { getClusterName, addClusters, getApplicationData, processMultiples } from './topologyUtils'
 
 describe('getClusterName', () => {
   it('get the cluster name from the id', () => {
