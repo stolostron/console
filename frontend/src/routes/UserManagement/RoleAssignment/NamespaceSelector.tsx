@@ -23,28 +23,31 @@ const NamespaceSelector = ({
       return []
     }
 
-    const namespaces = new Set<string>()
+    const clusterNamespaceGroupings: string[][] = []
 
     clusters.forEach((cluster) => {
       const isMatch = selectedClusters.some((selectedCluster) => {
         const selectedStr = selectedCluster?.toString().trim()
         const clusterStr = cluster.name?.toString().trim()
-        const match = selectedStr === clusterStr
-        return match
+        return selectedStr === clusterStr
       })
 
-      if (isMatch) {
-        if (cluster.namespaces) {
-          cluster.namespaces?.forEach((namespace: string) => {
-            namespaces.add(namespace)
-          })
-        }
+      if (isMatch && cluster.namespaces) {
+        clusterNamespaceGroupings.push([...cluster.namespaces])
       }
     })
 
-    const finalNamespaces = Array.from(namespaces)
+    if (clusterNamespaceGroupings.length === 0) {
+      return []
+    }
 
-    const options = finalNamespaces.sort((a, b) => a.localeCompare(b)).map((ns) => ({ id: ns, value: ns }))
+    let commonNamespaces: string[] = clusterNamespaceGroupings[0] || []
+
+    for (let i = 1; i < clusterNamespaceGroupings.length; i++) {
+      commonNamespaces = commonNamespaces.filter((namespace) => clusterNamespaceGroupings[i].includes(namespace))
+    }
+
+    const options = commonNamespaces.sort().map((ns) => ({ id: ns, value: ns }))
 
     return options
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -91,6 +91,20 @@ const useRoleAssignmentData = (): RoleAssignmentHookReturnType => {
     },
   })
 
+  // This query returns all namespaces in all clusters
+  const { data: allNamespacesQuery, loading: isAllNamespacesLoading } = useSearchResultItemsQuery({
+    client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
+    variables: {
+      input: [
+        {
+          keywords: [],
+          filters: [{ property: 'kind', values: ['Namespace'] }],
+          limit: -1,
+        },
+      ],
+    },
+  })
+
   const roles: SelectOption[] = useMemo(
     () =>
       clusterRolesQuery?.searchResult
@@ -101,8 +115,6 @@ const useRoleAssignmentData = (): RoleAssignmentHookReturnType => {
   )
 
   const [isClusterSetLoading, setIsClusterSetLoading] = useState(true)
-  const { namespacesState } = useSharedAtoms()
-  const namespaces = useRecoilValue(namespacesState)
 
   const { managedClusterSetsState } = useSharedAtoms()
   const managedClusterSets = useRecoilValue(managedClusterSetsState)
@@ -138,15 +150,31 @@ const useRoleAssignmentData = (): RoleAssignmentHookReturnType => {
     return manualClusters
   }, [managedClusterSets, allManagedClusters])
 
-  useEffect(() => {
-    const sharedNamespaces = namespaces
-      .filter((ns) => {
-        const name = ns.metadata.name
-        return name && !name.startsWith('kube-') && !name.startsWith('openshift-') && name !== 'default'
-      })
-      .map((ns) => ns.metadata.name!)
-      .sort((a, b) => a.localeCompare(b))
+  const clusterNamespaceMap = useMemo(() => {
+    const items = allNamespacesQuery?.searchResult?.[0]?.items || []
+    const map: Record<string, string[]> = {}
 
+    items.forEach((ns: any) => {
+      const clusterName = ns.cluster
+      const namespaceName = ns.name
+
+      if (
+        namespaceName &&
+        !namespaceName.startsWith('kube') &&
+        !namespaceName.startsWith('openshift') &&
+        !namespaceName.startsWith('open-cluster-management')
+      ) {
+        if (!map[clusterName]) {
+          map[clusterName] = []
+        }
+        map[clusterName].push(namespaceName)
+      }
+    })
+
+    return map
+  }, [allNamespacesQuery])
+
+  useEffect(() => {
     const clustersWithClusterSet = clusters.filter((e) => e.clusterSet)
 
     const clustersGroupedBySet = clustersWithClusterSet.reduce(
@@ -165,7 +193,7 @@ const useRoleAssignmentData = (): RoleAssignmentHookReturnType => {
       name: key,
       clusters: clustersGroupedBySet[key]?.map((cluster) => ({
         name: cluster.name,
-        namespaces: [...(cluster.namespace ? [cluster.namespace] : []), ...sharedNamespaces],
+        namespaces: clusterNamespaceMap[cluster.name] || [],
       })),
     }))
 
@@ -183,11 +211,14 @@ const useRoleAssignmentData = (): RoleAssignmentHookReturnType => {
       allClusterNames,
     }))
     setIsClusterSetLoading(false)
-  }, [clusters, namespaces, users, groups, roles, allManagedClusters])
+  }, [clusters, users, groups, roles, allManagedClusters, clusterNamespaceMap])
 
   useEffect(
-    () => setIsLoading(isUsersLoading || isGroupsLoading || isRolesLoading || isClusterSetLoading),
-    [isUsersLoading, isRolesLoading, isClusterSetLoading, isGroupsLoading]
+    () =>
+      setIsLoading(
+        isUsersLoading || isGroupsLoading || isRolesLoading || isClusterSetLoading || isAllNamespacesLoading
+      ),
+    [isUsersLoading, isRolesLoading, isClusterSetLoading, isGroupsLoading, isAllNamespacesLoading]
   )
 
   return { roleAssignmentData, isLoading, isUsersLoading, isGroupsLoading, isRolesLoading, isClusterSetLoading }
