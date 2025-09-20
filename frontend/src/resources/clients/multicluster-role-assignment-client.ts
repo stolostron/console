@@ -125,13 +125,24 @@ export const findRoleAssignments = (
   )
 
 export const mapRoleAssignmentBeforeSaving = (roleAssignment: Omit<RoleAssignment, 'name'>): RoleAssignment => {
-  const newName = sha256(
+  const hash = sha256(
     JSON.stringify(
       roleAssignment,
       Object.keys(roleAssignment).sort((a, b) => a.localeCompare(b))
     )
   )
+  const shortHash = hash.substring(0, 16)
+  const newName = `${roleAssignment.clusterRole}-${shortHash}`
   return { name: newName, ...roleAssignment }
+}
+
+export const validateRoleAssignmentName = (
+  newRoleAssignment: Omit<RoleAssignment, 'name'>,
+  existingRoleAssignments: RoleAssignment[]
+): boolean => {
+  const newName = mapRoleAssignmentBeforeSaving(newRoleAssignment).name
+  const existingNames = existingRoleAssignments.map((ea) => ea.name)
+  return !existingNames.includes(newName)
 }
 
 /**
@@ -172,6 +183,16 @@ export const addRoleAssignment = (
   subject: FlattenedRoleAssignment['subject'],
   existingMulticlusterRoleAssignment?: MulticlusterRoleAssignment
 ): IRequestResult<MulticlusterRoleAssignment> => {
+  const existingRoleAssignments = existingMulticlusterRoleAssignment?.spec.roleAssignments || []
+  const isUnique = validateRoleAssignmentName(roleAssignment, existingRoleAssignments)
+
+  if (!isUnique) {
+    return {
+      promise: Promise.reject(new ResourceError(ResourceErrorCode.BadRequest, 'Duplicate role assignment detected.')),
+      abort: () => {},
+    }
+  }
+
   const mappedRoleAssignment = mapRoleAssignmentBeforeSaving(roleAssignment)
 
   if (existingMulticlusterRoleAssignment) {
@@ -186,8 +207,9 @@ export const addRoleAssignment = (
       apiVersion: MulticlusterRoleAssignmentApiVersion,
       kind: MulticlusterRoleAssignmentKind,
       metadata: {
-        name: `role-assignment-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        name: `role-assignment-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
         namespace: MulticlusterRoleAssignmentNamespace,
+        labels: { 'open-cluster-management.io/managed-by': 'console' },
       },
       spec: {
         subject,
