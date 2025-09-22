@@ -124,7 +124,7 @@ export function ApplicationTopologyPageContent() {
   const canUpdateStatuses = !!statuses
   useEffect(() => {
     if (application && appData && topology) {
-      setElements(cloneDeep(getDiagramElements(appData, cloneDeep(topology), statuses, canUpdateStatuses, t)))
+      setElements(cloneDeep(getDiagramElements(cloneDeep(topology), statuses, canUpdateStatuses, t)))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshTime])

@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import React from 'react'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import ChannelControl from './ChannelControl'
 import type {
   ChannelControlProps,
@@ -185,13 +185,10 @@ describe('ChannelControl Component', () => {
   })
 
   describe('Helper Methods', () => {
-    let component: ChannelControl
     let props: ChannelControlProps
 
     beforeEach(() => {
       props = createMockProps()
-      const wrapper = render(<ChannelControl {...props} />)
-      component = wrapper.container.querySelector('.channel-controls-container') as any
     })
 
     it('should correctly parse channels into subchannel map', () => {

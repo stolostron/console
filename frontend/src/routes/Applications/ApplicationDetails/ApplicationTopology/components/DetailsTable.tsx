@@ -24,6 +24,8 @@ import {
   DetailsTableProps,
   DetailsTableState,
   Pulse,
+  DetailsTableNodeSpecs,
+  DetailsTableNodeSpecsStatusMap,
 } from '../types'
 
 /**
@@ -81,14 +83,14 @@ class DetailsTable extends Component<DetailsTableProps, DetailsTableState> {
 
     // Extract node properties with defaults for missing values
     const { name, namespace, type, specs = {} } = node
-    const { resources = [{ name, namespace }], clustersNames = [] } = specs
+    const { resources = [{ name, namespace }], clustersNames = [] } = specs as DetailsTableNodeSpecs
 
     // Parse replica count, defaulting to 1 if invalid or missing
     let { replicaCount = 1 } = specs
     replicaCount = isNaN(Number(replicaCount)) ? 1 : Number(replicaCount)
 
     // Get status information from the appropriate model (e.g., subscriptionModel, podModel)
-    const statusMap = specs[`${node.type}Model`] || {}
+    const statusMap = (specs[`${node.type}Model`] || {}) as DetailsTableNodeSpecsStatusMap
 
     /**
      * Build available resources array by combining resources with clusters and replicas

@@ -37,7 +37,7 @@ export const getTopology = async (
   application: ApplicationModel | null,
   managedClusters: ManagedCluster[],
   localHubName: string,
-  relatedResources: unknown,
+  relatedResources: Record<string, any>,
   argoData: ArgoData
 ): Promise<Topology | ExtendedTopology | undefined> => {
   let topology: Topology | ExtendedTopology | undefined
@@ -45,16 +45,29 @@ export const getTopology = async (
   if (application) {
     if (application.isArgoApp) {
       // Generate topology for Argo CD applications
-      topology = getArgoTopology(application, argoData, managedClusters, localHubName)
+      topology = getArgoTopology(
+        application as unknown as Parameters<typeof getArgoTopology>[0],
+        argoData,
+        managedClusters,
+        localHubName
+      )
     } else if (application.isAppSet) {
       // Generate topology for ApplicationSets
       topology = getAppSetTopology(application, localHubName)
     } else if (application.isOCPApp || application.isFluxApp) {
       // Generate topology for OpenShift or Flux applications (async operation)
-      topology = await getOCPFluxAppTopology(application, localHubName)
+      topology = await getOCPFluxAppTopology(
+        application as unknown as Parameters<typeof getOCPFluxAppTopology>[0],
+        localHubName
+      )
     } else {
       // Generate topology for subscription-based applications
-      topology = getSubscriptionTopology(application, managedClusters, relatedResources, localHubName)
+      topology = getSubscriptionTopology(
+        application as unknown as Parameters<typeof getSubscriptionTopology>[0],
+        managedClusters,
+        relatedResources,
+        localHubName
+      )
     }
   }
 
@@ -77,7 +90,6 @@ export const getTopology = async (
  * @returns Diagram elements ready for rendering
  */
 export const getDiagramElements = (
-  appData: unknown,
   topology: Topology,
   resourceStatuses: ResourceStatuses | null,
   canUpdateStatuses: boolean,
@@ -138,7 +150,7 @@ export const getDiagramElements = (
   // Apply resource status information if available
   if (resourceStatuses) {
     // Merge search results into topology nodes
-    addDiagramDetails(resourceStatuses, allResourcesMap, isClusterGrouped.value, hasHelmReleases.value, topology)
+    addDiagramDetails(resourceStatuses, allResourcesMap, isClusterGrouped.value, hasHelmReleases, topology)
 
     // Compute status icons for each node based on resource health
     nodes.forEach((node) => {
@@ -179,8 +191,9 @@ export const processNodeData = (
     return // ignore these types
   }
 
-  // Extract channel information for key generation
-  const channel = (node.specs?.raw?.spec?.channel ?? '') as string
+  // Extract channel information for key generation, handling missing or malformed raw/spec
+  const raw = node.specs?.raw as any
+  const channel = raw && raw.spec && typeof raw.spec.channel === 'string' ? raw.spec.channel : ''
   const keyName = !isDeployableResource(node) && channel.length > 0 ? `${channel}-${name}` : name
 
   // Resolve cluster name for this node
@@ -191,8 +204,9 @@ export const processNodeData = (
     topoResourceMap[name] = node
 
     // Check for Helm chart annotations to detect Helm releases
-    const topoAnnotation = node.specs?.raw?.metadata?.annotations?.['apps.open-cluster-management.io/topo']
-    if (topoAnnotation !== undefined && topoAnnotation.indexOf('helmchart/') > -1) {
+    const annotations = node.specs?.raw && (node.specs.raw as any).metadata?.annotations
+    const topoAnnotation = annotations?.['apps.open-cluster-management.io/topo']
+    if (typeof topoAnnotation === 'string' && topoAnnotation.indexOf('helmchart/') > -1) {
       hasHelmReleases.value = true
     }
   } else {

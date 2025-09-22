@@ -11,6 +11,8 @@ import type {
   Pulse,
   URLSearchData,
   EditLinkParams,
+  DetailItem,
+  StatusType,
 } from '../../types'
 import { getNestedProperty } from '../../utils'
 
@@ -49,7 +51,7 @@ export const getNodePropery = (
   key: string,
   defaultValue?: string,
   status?: string
-): { labelValue: string; value: string; status?: string } | undefined => {
+): DetailItem | undefined => {
   const dataObj = getNestedProperty(node, propPath)
 
   let data = dataObj as unknown as string | undefined
@@ -70,7 +72,7 @@ export const getNodePropery = (
     return {
       labelValue: key,
       value: data,
-      status: status && !dataObj ? status : undefined,
+      status: status && !dataObj ? (status as StatusType) : undefined,
     }
   }
 

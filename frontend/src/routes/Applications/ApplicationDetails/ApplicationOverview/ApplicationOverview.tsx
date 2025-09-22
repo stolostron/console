@@ -30,7 +30,6 @@ import {
   getSearchLink,
 } from '../../helpers/resource-helper'
 import { TimeWindowLabels } from '../../components/TimeWindowLabels'
-import _ from 'lodash'
 import { REQUEST_STATUS } from './actions'
 import {
   Application,
@@ -57,6 +56,8 @@ import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import LabelWithPopover from '../../components/LabelWithPopover'
 import AcmTimestamp from '../../../../lib/AcmTimestamp'
 import { useLocalHubName } from '../../../../hooks/use-local-hub'
+import { getNestedProperty } from '../ApplicationTopology/utils'
+import { cloneDeep } from 'lodash'
 
 const clusterResourceStatusText = (t: TFunction) => t('Cluster resource status')
 const clusterResourceStatusTooltipSubscription = (t: TFunction) =>
@@ -165,11 +166,11 @@ export function ApplicationOverviewPageContent() {
     } else if (!isSubscription) {
       let lastSyncedTimeStamp = ''
       if (isArgoApp) {
-        lastSyncedTimeStamp = _.get(applicationData, 'application.app.status.reconciledAt', '')
+        lastSyncedTimeStamp = applicationData?.application?.app?.status?.reconciledAt ?? ''
       } else if (isAppSet) {
         applicationData.application.appSetApps.forEach((appSet: ApplicationSet) => {
           if (!lastSyncedTimeStamp) {
-            lastSyncedTimeStamp = _.get(appSet, 'status.reconciledAt', '')
+            lastSyncedTimeStamp = (appSet as any)?.status?.reconciledAt ?? ''
           }
         })
       }
@@ -246,13 +247,13 @@ export function ApplicationOverviewPageContent() {
       ]
     } else {
       /////////////////////////// subscription items //////////////////////////////////////////////
-      const allSubscriptions = _.get(applicationData.application, 'allSubscriptions', [])
+      const allSubscriptions = applicationData.application?.allSubscriptions ?? []
       subsList = allSubscriptions
 
       let lastSynced = ''
       allSubscriptions.forEach((subs: Subscription) => {
         if (!lastSynced) {
-          lastSynced = _.get(subs, `metadata.annotations["apps.open-cluster-management.io/manual-refresh-time"]`, '')
+          lastSynced = subs?.metadata?.annotations?.['apps.open-cluster-management.io/manual-refresh-time'] ?? ''
         }
       })
       leftItems = [
@@ -400,18 +401,15 @@ function createStatusIcons(applicationData: ApplicationDataType, t: TFunction) {
   const nodeStatuses: INodeStatuses = { green: 0, yellow: 0, red: 0, orange: 0 }
   const canUpdateStatuses = !!statuses
   if (application && appData && topology) {
-    elements = _.cloneDeep(getDiagramElements(appData, _.cloneDeep(topology), statuses, canUpdateStatuses, t))
+    elements = cloneDeep(getDiagramElements(cloneDeep(topology), statuses, canUpdateStatuses, t))
 
     elements.nodes.forEach((node) => {
       //get pulse for all objects generated from a deployable
-      const pulse: 'green' = _.get(node, 'specs.pulse')
+      const pulse: 'green' = node?.specs?.pulse
 
       if (pulse) {
         // Get cluster resource statuses
-        if (
-          _.get(node, 'id', '').indexOf('--deployed') !== -1 ||
-          _.get(node, 'id', '').indexOf('--deployable') !== -1
-        ) {
+        if ((node?.id ?? '').indexOf('--deployed') !== -1 || (node?.id ?? '').indexOf('--deployable') !== -1) {
           nodeStatuses[pulse]++
         }
       }
@@ -652,8 +650,8 @@ function getSearchLinkForArgoApplications(resource: IResource, isArgoApp: boolea
     sourcePath = 'spec.template.spec.source'
   }
 
-  const source = _.get(resource, sourcePath)
-  const sources = _.get(resource, sourcesPath)
+  const source = getNestedProperty(resource, sourcePath)
+  const sources = getNestedProperty(resource, sourcesPath)
 
   sources?.forEach((source: { repoURL: string; chart: string; path: string }) => {
     const { repoURL, chart, path } = source
@@ -671,7 +669,7 @@ function getSearchLinkForArgoApplications(resource: IResource, isArgoApp: boolea
   })
 
   if (!sources && source) {
-    const sourceObj = _.get(resource, sourcePath)
+    const sourceObj = getNestedProperty(resource, sourcePath)
     path = sourceObj.path
     repoURL = sourceObj.repoURL
     chart = sourceObj.chart

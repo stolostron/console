@@ -67,8 +67,8 @@ export const getApplication = async (
         ''
       )
       placement = recoilStates.placementDecisions.find((placementDecision: any) => {
-        const labels = safeGet(placementDecision, 'metadata.labels', {})
-        return labels['cluster.open-cluster-management.io/placement'] === placementName
+        const labels = safeGet(placementDecision, 'metadata.labels', {}) as Record<string, string>
+        return labels?.['cluster.open-cluster-management.io/placement'] === placementName
       })
 
       const decisionOwnerReference = safeGet(placement, 'metadata.ownerReferences', undefined) as
@@ -147,6 +147,8 @@ export const getApplication = async (
       namespace,
       app,
       metadata: (app as any).metadata,
+      channels: (app as any).channels ?? [],
+      activeChannel: (app as any).activeChannel ?? undefined,
       placement,
       isArgoApp: safeGet(app, 'apiVersion', '').indexOf('argoproj.io') > -1 && !isAppSet,
       isAppSet: isAppSet,

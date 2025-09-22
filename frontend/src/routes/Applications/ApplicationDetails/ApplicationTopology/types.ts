@@ -1,4 +1,5 @@
-import { Application, IResource } from '../../../../resources'
+import { SetStateAction } from 'react'
+import { Application } from '../../../../resources'
 
 /* Copyright Contributors to the Open Cluster Management project */
 export interface AnsibleCondition {
@@ -103,6 +104,8 @@ export interface AppSetCluster {
 
 // Core application model returned by getApplication
 export interface ApplicationModel {
+  channels: SetStateAction<string[]>
+  activeChannel: SetStateAction<string | undefined>
   name: string
   namespace: string
   app: Application
@@ -224,7 +227,6 @@ export interface SubscriptionApplicationModel extends ApplicationModel {
   allChannels: ChannelKind[]
   allClusters: string[]
   reports: Array<SubscriptionReport>
-  activeChannel?: string
   [key: string]: unknown
 }
 
@@ -718,13 +720,6 @@ export interface ParentObject {
   parentName: string
   parentType: string
   parentSpecs: Record<string, unknown>
-}
-
-// Subscription application model with extended properties
-export interface SubscriptionApplicationModelExtended extends SubscriptionApplicationModel {
-  name: string
-  namespace: string
-  app: Record<string, unknown>
 }
 
 // Test-specific types for diagram-helpers-utils.test.ts
@@ -1433,6 +1428,10 @@ export interface DetailsTableNodeSpecs {
   replicaCount?: number
   [key: string]: unknown // Allow for dynamic model properties like subscriptionModel, podModel, etc.
 }
+export type DetailsTableNodeSpecsStatusMap = Record<
+  string,
+  Array<{ pulse: PulseColor; name: string; namespace: string }>
+>
 
 // Node structure expected by DetailsTable component
 export interface DetailsTableNode {
@@ -1616,11 +1615,11 @@ export interface GetResourceStatussParams {
 // Return type for getResourceStatuses function
 export interface GetResourceStatussResult {
   /** Processed resource statuses data */
-  resourceStatuses: unknown
+  resourceStatuses: any
   /** Related resources mapping */
   relatedResources: RelatedResourcesMap
   /** Application data with computed statuses */
-  appDataWithStatuses: Record<string, unknown>
+  appDataWithStatuses: Record<string, any>
 }
 
 // Types for resourceStatusesAppSet functionality
@@ -2103,7 +2102,7 @@ export interface GetSubscriptionResourceStatusesParams {
  */
 export interface SubscriptionResourceStatusResult {
   /** Resource statuses data from search query */
-  resourceStatuses: unknown
+  resourceStatuses: any
   /** Map of related resources keyed by resource identifier */
   relatedResources: RelatedResourcesMap
 }
@@ -2131,18 +2130,7 @@ export interface OCPFluxApplicationModel extends ApplicationModel {
   /** Flag indicating if this is a Flux application */
   isFluxApp: boolean
   /** Application metadata and configuration */
-  app: {
-    /** Cluster information where the application is deployed */
-    cluster?: {
-      /** Cluster name */
-      name: string
-      /** Cluster namespace */
-      namespace?: string
-      /** Cluster status */
-      status?: string
-    }
-    [key: string]: unknown
-  }
+  app: Application
 }
 
 /**

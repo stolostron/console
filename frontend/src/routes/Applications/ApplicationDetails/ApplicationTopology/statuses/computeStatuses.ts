@@ -41,6 +41,10 @@ import type {
   ExtendedTopology,
   GetResourceStatussResult,
   ResourceStatusResult,
+  ApplicationData,
+  ResourceItem,
+  AppSetApplicationModel,
+  SubscriptionApplicationData,
 } from '../types'
 import { getArgoResourceStatuses } from './resourceStatusesArgo'
 import { getAppSetResourceStatuses } from './resourceStatusesAppSet'
@@ -273,7 +277,9 @@ export const getPulseStatusForSubscription = (node: TopologyNodeWithStatus, hubC
   const statuses = safeGet(node, 'specs.raw.status.statuses', {}) as Record<string, any>
   Object.values(statuses).forEach((cluster) => {
     const packageItems = safeGet(cluster, 'packages', {})
-    const failedPackage = Object.values(packageItems).find((item: any) => safeGet(item, 'phase', '') === 'Failed')
+    const failedPackage = Object.values(packageItems).find(
+      (item: any) => safeGet<string>(item, 'phase', '') === 'Failed'
+    )
     if (failedPackage && pulse === greenPulse) {
       pulse = yellowPulse
     }
@@ -502,7 +508,7 @@ export const getOnlineClusters = (node: TopologyNodeWithStatus, hubClusterName: 
       if (
         matchingCluster &&
         (['ok', 'pendingimport', 'OK'].includes(safeGet(matchingCluster, 'status', '') || '') ||
-          (safeGet(matchingCluster, 'ManagedClusterConditionAvailable', '') || '') === 'True')
+          (safeGet<string>(matchingCluster, 'ManagedClusterConditionAvailable', '') || '') === 'True')
       ) {
         onlineClusters.push(cluster)
       }
@@ -1117,7 +1123,7 @@ export const setSubscriptionDeployStatus = (
     resourceMap = filteredResourceMap
   }
 
-  const subscriptionReportResults = safeGet(node, 'report.results', [])
+  const subscriptionReportResults = safeGet(node, 'report.results', []) as Array<{ result?: string; source?: string }>
   const onlineClusters = getOnlineClusters(node, hubClusterName)
 
   // Process each subscription across clusters
@@ -1180,11 +1186,15 @@ export const setSubscriptionDeployStatus = (
 
           // Check for failed packages in subscription status
           const statuses = safeGet(node, 'specs.raw.status.statuses', {})
-          const clusterStatus = safeGet(statuses, subscription.cluster, {}) as Record<string, unknown>
-          const packageItems = safeGet(clusterStatus, 'packages', {}) as Record<string, unknown>
+          const clusterKey = subscription.cluster ?? ''
+          const clusterStatus = safeGet(statuses, clusterKey, {}) as Record<string, unknown>
+          const packageItems = safeGet(clusterStatus, 'packages', {}) as Record<string, any>
           const { reason } = safeGet(node, 'specs.raw.status', {}) as Record<string, unknown>
-          const failedPackage = Object.values(packageItems).find((item: any) => safeGet(item, 'phase', '') === 'Failed')
-          const failedSubscriptionStatus = (safeGet<string>(subscription, 'status', '') || '').includes('Failed')
+          const failedPackage = Object.values(packageItems).find(
+            (item: any) => String(safeGet(item, 'phase', '')) === 'Failed'
+          )
+          const subscriptionStatusValue = safeGet<string>(subscription, 'status', '')
+          const failedSubscriptionStatus = (subscriptionStatusValue || '').includes('Fail')
 
           if (failedSubscriptionStatus) {
             details.push({
@@ -1203,7 +1213,9 @@ export const setSubscriptionDeployStatus = (
           }
 
           // Check subscription report results
-          const clusterResult = subscriptionReportResults.find((res: any) => res.source === subsCluster)
+          const clusterResult = subscriptionReportResults.find(
+            (res: { source?: string; result?: string }) => res.source === subsCluster
+          )
           if (clusterResult && clusterResult.result === 'failed') {
             details.push({
               labelValue: t('Error'),
@@ -1295,7 +1307,7 @@ export const setPlacementRuleDeployStatus = (
   details: DetailItem[],
   t: TranslationFunction
 ): DetailItem[] => {
-  if (safeGet(node, 'type', '') !== 'placements' || node.isPlacement) {
+  if (safeGet<string>(node, 'type', '') !== 'placements' || node.isPlacement) {
     return details
   }
 
@@ -1689,7 +1701,7 @@ export const setResourceDeployStatus = (
   }
 
   const nodeId = safeGet(node, 'id', '')
-  const nodeType = safeGet(node, 'type', '')
+  const nodeType = safeGet<string>(node, 'type', '')
   const name = safeGet(node, 'name', '')
   const namespace = safeGet(node, 'namespace', '')
   const cluster = safeGet(node, 'cluster', '')
@@ -1766,12 +1778,12 @@ export const setResourceDeployStatus = (
     const resourceNSString = !safeGet(node, 'namespace') ? 'name' : 'namespace'
 
     // Get cluster target namespaces
-    const targetNSList = getTargetNsForNode(node, resourcesForCluster, clusterName, '*')
+    const targetNSList = getTargetNsForNode(node, resourcesForCluster as ResourceItem[], clusterName, '*')
 
     targetNSList.forEach((targetNS) => {
       let res = resourcesForCluster.find((obj: any) => safeGet(obj, resourceNSString, '') === targetNS)
 
-      if (safeGet(node, 'type', '') !== 'ansiblejob' || !isHookNode) {
+      if (node.type !== 'ansiblejob' || !isHookNode) {
         // Process regular resources (not ansible hooks)
         const deployedKey = res
           ? node.type === 'namespace'
@@ -1785,7 +1797,7 @@ export const setResourceDeployStatus = (
           ? checkmarkStatus
           : resNotDeployedStates.includes(deployedKeyLower)
             ? pendingStatus
-            : resErrorStates.includes(deployedKeyLower)
+            : resErrorStates.includes(deployedKeyLower as (typeof resErrorStates)[number])
               ? failureStatus
               : warningStatus
 
@@ -1804,7 +1816,7 @@ export const setResourceDeployStatus = (
         if (addItemToDetails) {
           details.push({
             labelValue: targetNS,
-            value: `${deployedKey}${res && res.desired !== undefined ? '  ' + res.resStatus : ''}`,
+            value: `${deployedKey}${res && typeof res === 'object' && 'desired' in res ? '  ' + (res as any).resStatus : ''}`,
             status: statusStr,
           })
         } else {
@@ -1820,7 +1832,7 @@ export const setResourceDeployStatus = (
         addNodeServiceLocation(node, clusterName, targetNS, details, t)
 
         // Add apiversion if not present
-        if (!res.apiversion) {
+        if (typeof res === 'object' && res !== null && !('apiversion' in res)) {
           Object.assign(res, { apiversion: safeGet(node, apiVersionPath) })
         }
 
@@ -1830,7 +1842,7 @@ export const setResourceDeployStatus = (
             label: t('View resource YAML'),
             data: {
               action: showResourceYaml,
-              cluster: res.cluster,
+              cluster: res && typeof res === 'object' && 'cluster' in res ? (res as any).cluster : undefined,
               editLink: createEditLink(res, hubClusterName),
             },
           },
@@ -1859,7 +1871,7 @@ export const setResourceDeployStatus = (
  */
 export async function getResourceStatuses(
   application: ApplicationModel,
-  appData: Record<string, unknown>,
+  appData: ApplicationData,
   topology: ExtendedTopology
 ): Promise<GetResourceStatussResult> {
   // Create a deep copy of appData to avoid mutating the original object
@@ -1873,7 +1885,7 @@ export async function getResourceStatuses(
     results = await getArgoResourceStatuses(application, appDataWithStatuses, topology)
   } else if (application.isAppSet) {
     // Handle ApplicationSet resources - uses pull model for multi-cluster deployments
-    results = await getAppSetResourceStatuses(application, appDataWithStatuses)
+    results = await getAppSetResourceStatuses(application as unknown as AppSetApplicationModel, appDataWithStatuses)
   } else if (application.isOCPApp || application.isFluxApp) {
     // Handle OpenShift and Flux applications - reuse existing search data from topology
     results = {
@@ -1883,7 +1895,7 @@ export async function getResourceStatuses(
     }
   } else {
     // Handle subscription-based applications (ACM/MCE subscription model)
-    results = await getSubscriptionResourceStatuses(application, appDataWithStatuses)
+    results = await getSubscriptionResourceStatuses(application, appDataWithStatuses as SubscriptionApplicationData)
   }
 
   // Extract results and ensure relatedResources is always defined

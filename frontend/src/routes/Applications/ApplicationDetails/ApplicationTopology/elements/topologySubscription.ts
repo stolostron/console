@@ -3,7 +3,6 @@
 import { createChildNode, addClusters, processMultiples } from './topologyUtils'
 import type {
   ManagedCluster,
-  SubscriptionApplicationModelExtended,
   SubscriptionKind,
   SubscriptionReport,
   SubscriptionReportResource,
@@ -14,6 +13,7 @@ import type {
   ServiceMap,
   ParentObject,
   AnsibleJob,
+  SubscriptionApplicationModel,
 } from '../types'
 
 // Resource types that typically have pods as children
@@ -32,7 +32,7 @@ const typesWithPods = ['replicaset', 'replicationcontroller', 'statefulset', 'da
  * @returns Topology object containing nodes and links for visualization
  */
 export const getSubscriptionTopology = (
-  application: SubscriptionApplicationModelExtended,
+  application: SubscriptionApplicationModel,
   managedClusters: ManagedCluster[],
   relatedResources: Record<string, unknown>,
   hubClusterName: string
@@ -351,7 +351,7 @@ const processReport = (
   clusterId: string,
   links: TopologyLink[],
   nodes: TopologyNode[],
-  relatedResources: Record<string, unknown>
+  relatedResources: Record<string, any>
 ): void => {
   // Clone report to avoid mutations
   report = structuredClone(report)
@@ -362,7 +362,7 @@ const processReport = (
   if (relatedResources) {
     resources.forEach((resource) => {
       const { name, namespace } = resource
-      resource.template = relatedResources[`${name}-${namespace}`] as Record<string, unknown>
+      resource.template = relatedResources[`${name}-${namespace}`] as Record<string, any>
     })
   }
 
