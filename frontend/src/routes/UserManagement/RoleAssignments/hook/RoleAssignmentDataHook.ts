@@ -143,7 +143,7 @@ const useRoleAssignmentData = (): RoleAssignmentHookReturnType => {
         return name && !name.startsWith('kube-') && !name.startsWith('openshift-') && name !== 'default'
       })
       .map((ns) => ns.metadata.name!)
-      .sort()
+      .sort((a, b) => a.localeCompare(b))
 
     const clustersWithClusterSet = clusters.filter((e) => e.clusterSet)
 

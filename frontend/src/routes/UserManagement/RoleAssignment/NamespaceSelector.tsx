@@ -25,7 +25,6 @@ const NamespaceSelector = ({
 
     const namespaces = new Set<string>()
 
-    // Find namespaces for selected clusters
     clusters.forEach((cluster) => {
       const isMatch = selectedClusters.some((selectedCluster) => {
         const selectedStr = selectedCluster?.toString().trim()
@@ -45,7 +44,7 @@ const NamespaceSelector = ({
 
     const finalNamespaces = Array.from(namespaces)
 
-    const options = finalNamespaces.sort().map((ns) => ({ id: ns, value: ns }))
+    const options = finalNamespaces.sort((a, b) => a.localeCompare(b)).map((ns) => ({ id: ns, value: ns }))
 
     return options
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -58,7 +57,6 @@ const NamespaceSelector = ({
     [onChangeNamespaces]
   )
 
-  // Clear namespaces when no clusters are selected
   useEffect(() => {
     if (selectedClusters.length === 0 && selectedNamespaces.length > 0) {
       onChangeNamespaces([])

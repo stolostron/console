@@ -11,7 +11,6 @@ type ClustersDualListSelectorProps = {
 const ClustersDualListSelector = ({ onChoseOptions, clusterSets }: ClustersDualListSelectorProps) => {
   const [availableOptions, setAvailableOptions] = React.useState<DualListSelectorTreeItemData[]>([])
 
-  // Update availableOptions when clusterSets change
   React.useEffect(() => {
     const newAvailableOptions = (clusterSets || []).map((clusterSet) => ({
       id: clusterSet.name,
@@ -66,9 +65,8 @@ const ClustersDualListSelector = ({ onChoseOptions, clusterSets }: ClustersDualL
       newAvailableOptions: DualListSelectorTreeItemData[],
       newChosenOptions: DualListSelectorTreeItemData[]
     ) => {
-      setAvailableOptions(newAvailableOptions.sort())
-      setChosenOptions(newChosenOptions.sort())
-      // Don't call onChoseOptions here - let useEffect handle it
+      setAvailableOptions(newAvailableOptions.sort((a, b) => a.text.localeCompare(b.text)))
+      setChosenOptions(newChosenOptions.sort((a, b) => a.text.localeCompare(b.text)))
     },
     []
   )
@@ -76,7 +74,6 @@ const ClustersDualListSelector = ({ onChoseOptions, clusterSets }: ClustersDualL
   useEffect(() => {
     const selectedClusters = extractSelectedClusters(chosenOptions)
 
-    // Check if the selected clusters have actually changed
     const hasChanged =
       selectedClusters.length !== previousSelectedClusters.current.length ||
       selectedClusters.some(
