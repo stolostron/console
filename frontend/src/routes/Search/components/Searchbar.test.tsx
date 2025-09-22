@@ -7,10 +7,11 @@ import userEvent from '@testing-library/user-event'
 import { useMemo, useState } from 'react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
+import { DropdownSuggestionsProps } from '../search-helper'
 import { getSearchDefinitions } from '../searchDefinitions'
 import { generateSearchResultExport } from '../SearchResults/utils'
 import { updateBrowserUrl } from '../urlQuery'
-import { convertStringToTags, DropdownSuggestionsProps, getNoFilterText, handleCSVExport, Searchbar } from './Searchbar'
+import { convertStringToTags, getNoFilterText, handleCSVExport, Searchbar } from './Searchbar'
 
 jest.mock('../SearchResults/utils')
 const toastContextMock: any = {

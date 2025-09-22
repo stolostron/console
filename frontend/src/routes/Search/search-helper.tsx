@@ -6,11 +6,17 @@ import { TFunction } from 'react-i18next'
 import { Link } from 'react-router-dom-v5-compat'
 import { NavigationPath } from '../../NavigationPath'
 import { SearchAlertProps } from './components/SearchAlertGroup'
-import { DropdownSuggestionsProps } from './components/Searchbar'
 
 export const federatedErrorText = 'error sending federated request'
 export const operators = ['<=', '>=', '!=', '!', '=', '<', '>']
 const dateValues = ['hour', 'day', 'week', 'month', 'year']
+
+export type DropdownSuggestionsProps = {
+  id: string | number
+  name: string
+  kind?: 'filter' | 'value' | 'label'
+  disabled?: boolean
+}
 
 export function formatSearchbarSuggestions(
   data: string[],

@@ -27,7 +27,7 @@ import { useTranslation } from '../../../lib/acm-i18next'
 import { SavedSearch } from '../../../resources/userpreference'
 import { useSharedAtoms } from '../../../shared-recoil'
 import { AcmButton, AcmChip, AcmChipGroup, AcmToastContext, IAlertContext } from '../../../ui-components'
-import { operators } from '../search-helper'
+import { DropdownSuggestionsProps, operators } from '../search-helper'
 import { SearchResultItemsQuery } from '../search-sdk/search-sdk'
 import { ResourceDefinitions, useSearchDefinitions } from '../searchDefinitions'
 import { generateSearchResultExport } from '../SearchResults/utils'
@@ -36,13 +36,6 @@ import { transformBrowserUrlToSearchString } from '../urlQuery'
 type SearchbarTag = {
   id: string
   name: string
-}
-
-export type DropdownSuggestionsProps = {
-  id: string | number
-  name: string
-  kind?: 'filter' | 'value' | 'label'
-  disabled?: boolean
 }
 
 type SearchbarProps = {
