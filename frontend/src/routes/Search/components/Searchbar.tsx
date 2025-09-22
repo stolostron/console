@@ -592,6 +592,7 @@ export function Searchbar(props: Readonly<SearchbarProps>) {
                 )}
                 isOpen={isExportMenuOpen}
                 isPlain
+                popperProps={{ position: 'right' }} // changes dropdown placement to not go off screen
               >
                 <DropdownItem
                   style={{ width: '10rem' }}
