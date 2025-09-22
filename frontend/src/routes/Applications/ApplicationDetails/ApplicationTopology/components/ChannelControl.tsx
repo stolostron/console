@@ -4,7 +4,6 @@ import React, { Component } from 'react'
 import { AcmDropdown } from '../../../../../ui-components'
 import { Pagination, Tooltip } from '@patternfly/react-core'
 import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
-import _ from 'lodash'
 import {
   ChannelControlProps,
   ChannelControlState,
@@ -13,6 +12,7 @@ import {
   ChannelItem,
   SelectedSubscriptionData,
 } from '../types'
+import { deepEqual } from '../utils'
 
 /**
  * ChannelControl component manages subscription channel selection and pagination
@@ -50,7 +50,7 @@ class ChannelControl extends Component<ChannelControlProps, ChannelControlState>
    * @returns true if component should update, false otherwise
    */
   shouldComponentUpdate(nextProps: ChannelControlProps): boolean {
-    return _.isEqual(this.props.channelControl, nextProps.channelControl)
+    return !deepEqual(this.props.channelControl, nextProps.channelControl)
   }
 
   /**
@@ -74,7 +74,7 @@ class ChannelControl extends Component<ChannelControlProps, ChannelControlState>
    * @param channelNb - 1-based channel number to select
    */
   selectChannelByNumber(channelNb: number): void {
-    const allChannels = _.get(this.props, ['channelControl', 'allChannels'], [])
+    const allChannels = this.props.channelControl?.allChannels ?? []
 
     const changeToChannel = allChannels.length >= channelNb ? allChannels[channelNb - 1] : null
     if (changeToChannel) {
@@ -236,7 +236,7 @@ class ChannelControl extends Component<ChannelControlProps, ChannelControlState>
     if (channelsLength !== -1) {
       const num = channelsLength > 1 ? (channelAllIndex !== -1 ? channelsLength - 1 : channelsLength) : 1
       subscriptionShowInfo =
-        currentChannel.chn === '__ALL__/__ALL__//__ALL__/__ALL__'
+        (currentChannel as DisplayChannel).chn === '__ALL__/__ALL__//__ALL__/__ALL__'
           ? this.props.t('({{0}} of {{0}})', [num])
           : this.props.t('(1 of {{0}})', [num])
     }
@@ -263,7 +263,7 @@ class ChannelControl extends Component<ChannelControlProps, ChannelControlState>
 
     let selectedPageForCurrentSubs = -1
     selectedSubscription?.subchannels.forEach((item) => {
-      if (_.get(item, 'chnl', '') === activeChannel) {
+      if ((item.chnl ?? '') === activeChannel) {
         selectedPageForCurrentSubs = selectedSubscription.subchannels.indexOf(item)
       }
     })
@@ -278,7 +278,8 @@ class ChannelControl extends Component<ChannelControlProps, ChannelControlState>
    * @param pageLimit - Maximum number of pages available
    */
   handlePagination = (e: React.SyntheticEvent, action: string, pageLimit?: number): void => {
-    const { channelControl = {} } = this.props
+    const { channelControl } = this.props
+    if (!channelControl) return
     const { selectedSubscription, selectedPageForCurrentSubs } = this.getSelectedSubscriptionPage(channelControl)
 
     if (!selectedSubscription) {
@@ -342,8 +343,9 @@ class ChannelControl extends Component<ChannelControlProps, ChannelControlState>
    * @returns JSX element containing subscription dropdown and pagination controls
    */
   render(): React.ReactNode {
-    const { channelControl = {}, t } = this.props
+    const { channelControl, t } = this.props
     const { currentChannel } = this.state
+    if (!channelControl) return null
     const { allChannels } = channelControl
 
     if (allChannels) {
@@ -401,7 +403,7 @@ class ChannelControl extends Component<ChannelControlProps, ChannelControlState>
                   onSelect={(e) => this.handleSubscriptionChange(e, displayChannels)}
                   text={(currentChannel as DisplayChannel).text}
                   dropdownItems={displayChannels}
-                  position="left"
+                  dropdownPosition="left"
                   isPlain={false}
                   isPrimary={false}
                 />
@@ -452,7 +454,8 @@ class ChannelControl extends Component<ChannelControlProps, ChannelControlState>
    * @param fetchChannel - Channel identifier to set as active
    */
   changeSubscriptionChannels(fetchChannel: string): void {
-    const { channelControl = {} } = this.props
+    const { channelControl } = this.props
+    if (!channelControl) return
     const { setActiveChannel } = channelControl
 
     if (setActiveChannel) {

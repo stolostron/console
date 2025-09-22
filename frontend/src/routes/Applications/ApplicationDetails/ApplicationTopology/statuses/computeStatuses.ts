@@ -1,58 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
-// Lodash replaced with native TypeScript implementations
-
-// Utility function to safely get nested properties (replaces lodash get)
-function safeGet<T = any>(obj: any, path: string | string[], defaultValue?: T): T {
-  if (!obj || typeof obj !== 'object') return defaultValue as T
-
-  const keys = Array.isArray(path) ? path : path.split('.')
-  let result = obj
-
-  for (const key of keys) {
-    if (result == null || typeof result !== 'object') {
-      return defaultValue as T
-    }
-    result = result[key]
-  }
-
-  return result === undefined ? (defaultValue as T) : result
-}
-
-// Utility function to safely set nested properties (replaces lodash set)
-function safeSet(obj: any, path: string | string[], value: any): void {
-  if (!obj || typeof obj !== 'object') return
-
-  const keys = Array.isArray(path) ? path : path.split('.')
-  let current = obj
-
-  for (let i = 0; i < keys.length - 1; i++) {
-    const key = keys[i]
-    if (!(key in current) || typeof current[key] !== 'object' || current[key] === null) {
-      current[key] = {}
-    }
-    current = current[key]
-  }
-
-  current[keys[keys.length - 1]] = value
-}
-
-// Deep clone utility (replaces lodash cloneDeep)
-function deepClone<T>(obj: T): T {
-  if (obj === null || typeof obj !== 'object') return obj
-  if (obj instanceof Date) return new Date(obj.getTime()) as unknown as T
-  if (obj instanceof Array) return obj.map((item) => deepClone(item)) as unknown as T
-  if (typeof obj === 'object') {
-    const cloned = {} as T
-    for (const key in obj) {
-      if (Object.prototype.hasOwnProperty.call(obj, key)) {
-        cloned[key] = deepClone(obj[key])
-      }
-    }
-    return cloned
-  }
-  return obj
-}
 import { getPulseStatusForAnsibleNode, showAnsibleJobDetails } from '../elements/helpers/ansible-task'
 import {
   addDetails,
@@ -99,6 +45,7 @@ import type {
 import { getArgoResourceStatuses } from './resourceStatusesArgo'
 import { getAppSetResourceStatuses } from './resourceStatusesAppSet'
 import { getSubscriptionResourceStatuses } from './resourceStatusesSubscription'
+import { deepClone, safeGet, safeSet } from '../utils'
 
 // Constants for node specification paths
 const specPulse = 'specs.pulse'

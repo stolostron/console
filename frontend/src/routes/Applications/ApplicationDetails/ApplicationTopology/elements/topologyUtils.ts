@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* eslint no-param-reassign: "error" */
 
-import _ from 'lodash'
 import { nodeMustHavePods } from './helpers/diagram-helpers-utils'
 import type { ApplicationData, ManagedCluster, Topology, TopologyLink, TopologyNode } from '../types'
 
@@ -28,7 +27,7 @@ export const createChildNode = (
   nodes: TopologyNode[],
   replicaCount: number = 1
 ): TopologyNode => {
-  const parentType = _.get(parentObject, 'type', '') as string
+  const parentType = (parentObject.type ?? '') as string
   const { name, namespace, id, specs = {} } = parentObject
   const parentId = id
   const memberId = `${parentId}--${type}--${name}`
@@ -57,7 +56,7 @@ export const createChildNode = (
         parentName: name,
         parentType,
         resources: (specs as Record<string, unknown>).resources,
-        parentSpecs: _.get(specs, 'parent.parentSpecs'),
+        parentSpecs: (specs as any)?.parent?.parentSpecs,
       },
     },
   }
@@ -82,21 +81,17 @@ export const addClusters = (
   topology?: Topology
 ): string => {
   // create element if not already created
-  const sortedClusterNames = _.sortBy(clusterNames)
+  const sortedClusterNames = [...clusterNames].sort()
   let clusterId = 'member--clusters'
   // do not use this for the id for argo app, we only know about one app here
   if (subscription) {
     const cns = sortedClusterNames.join('--')
-    const sub = _.get(subscription, 'metadata.name') as string | undefined
+    const sub = (subscription as any)?.metadata?.name as string | undefined
     clusterId = `member--clusters--${cns}--${sub}`
   } else {
     clusterId = 'member--clusters--'
   }
-  const topoClusterNode = topology
-    ? _.find(topology.nodes, {
-        id: 'member--clusters',
-      })
-    : undefined
+  const topoClusterNode = topology ? topology.nodes.find((node) => node.id === 'member--clusters') : undefined
   nodes.push({
     name: clusterNames.length === 1 ? clusterNames[0] : '',
     namespace: '',
@@ -108,7 +103,7 @@ export const addClusters = (
       subscription,
       resourceCount: clusterNames.length,
       clustersNames: clusterNames,
-      clusters: _.cloneDeep(managedClusters),
+      clusters: structuredClone(managedClusters),
       sortedClusterNames,
       appClusters: topoClusterNode ? (topoClusterNode as TopologyNode).specs.appClusters : undefined,
       targetNamespaces: topoClusterNode ? (topoClusterNode as TopologyNode).specs.targetNamespaces : undefined,
@@ -136,11 +131,11 @@ export const getApplicationData = (nodes: TopologyNode[] | undefined, hubCluster
   let isArgoApp = false
   const appNode = nodes?.find((r) => r.type === 'application')
   if (appNode) {
-    isArgoApp = _.get(appNode, ['specs', 'raw', 'apiVersion'], '').indexOf('argo') !== -1
+    isArgoApp = (appNode.specs?.raw as any)?.apiVersion?.indexOf('argo') !== -1 || false
     result.isArgoApp = isArgoApp
     // get argo app destination namespaces 'show_search'
     if (isArgoApp) {
-      const applicationSetRef = _.get(appNode, ['specs', 'raw', 'metadata', 'ownerReferences'], []).find(
+      const applicationSetRef = ((appNode.specs?.raw as any)?.metadata?.ownerReferences ?? []).find(
         (owner: Record<string, string>) =>
           owner.apiVersion.startsWith('argoproj.io/') && owner.kind === 'ApplicationSet'
       )
@@ -148,18 +143,18 @@ export const getApplicationData = (nodes: TopologyNode[] | undefined, hubCluster
         result.applicationSet = applicationSetRef.name
       }
       let cluster = hubClusterName
-      const clusterNames = _.get(appNode, ['specs', 'clusterNames'], []) as string[]
+      const clusterNames = (appNode.specs?.clusterNames ?? []) as string[]
       if (clusterNames.length > 0) {
         cluster = clusterNames[0]
       }
       result.cluster = cluster
-      result.source = _.get(appNode, ['specs', 'raw', 'spec', 'source'], {}) as Record<string, unknown>
+      result.source = ((appNode.specs?.raw as any)?.spec?.source ?? {}) as Record<string, unknown>
     }
   }
   nodes?.forEach((node) => {
-    const type = _.get(node, 'type', '') as string
+    const type = (node.type ?? '') as string
     const nodeType = type === 'project' ? 'namespace' : type
-    if (!(isArgoApp && _.includes(['cluster'], nodeType))) {
+    if (!(isArgoApp && ['cluster'].includes(nodeType))) {
       nodeTypes.push(nodeType) // ask for this related object type
     }
     if (nodeMustHavePods(node as unknown as Record<string, unknown>)) {
@@ -167,7 +162,7 @@ export const getApplicationData = (nodes: TopologyNode[] | undefined, hubCluster
       resourceMustHavePods = true
     }
     if (nodeType === 'subscription') {
-      subscriptionName = _.get(node, 'name', '') as string
+      subscriptionName = (node.name ?? '') as string
       nbOfSubscriptions = nbOfSubscriptions + 1
     }
   })
@@ -179,7 +174,7 @@ export const getApplicationData = (nodes: TopologyNode[] | undefined, hubCluster
   // if only one subscription, ask for resources only related to that subscription
   result.subscription = nbOfSubscriptions === 1 ? subscriptionName : null
   // ask only for these type of resources since only those are displayed
-  result.relatedKinds = _.uniq(nodeTypes)
+  result.relatedKinds = [...new Set(nodeTypes)]
 
   return result
 }
@@ -197,17 +192,26 @@ export const processMultiples = (
   // Need to multiply the number of success clusters
   const rCount = numOfDeployedClusters > 0 ? resources.length * numOfDeployedClusters : resources.length
   if (rCount > 5) {
-    const groupByKind = _.groupBy(resources, 'kind')
-    return Object.entries(groupByKind).map(([kind, _resources]) => {
-      if (_resources.length === 1) {
-        return _resources[0]
+    const groupByKind: Record<string, Array<Record<string, unknown>>> = {}
+    resources.forEach((resource) => {
+      const kind = resource.kind as string
+      if (!groupByKind[kind]) {
+        groupByKind[kind] = []
+      }
+      groupByKind[kind].push(resource)
+    })
+    return Object.entries(groupByKind).map(([kind, resourcesGroup]) => {
+      const typedResourcesGroup = resourcesGroup as Array<Record<string, unknown>>
+      if (typedResourcesGroup.length === 1) {
+        return typedResourcesGroup[0]
       } else {
         return {
           kind,
           name: '',
           namespace: '',
-          resources: _resources,
-          resourceCount: numOfDeployedClusters > 0 ? _resources.length * numOfDeployedClusters : _resources.length,
+          resources: typedResourcesGroup,
+          resourceCount:
+            numOfDeployedClusters > 0 ? typedResourcesGroup.length * numOfDeployedClusters : typedResourcesGroup.length,
         }
       }
     })

@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import _ from 'lodash'
 import {
   addResourceToModel,
   checkNotOrObjects,
@@ -35,11 +34,6 @@ import type {
 ///////////////////////////////////////////////////////////////////////////
 
 /**
- * Constant for accessing cluster names specification path in node specs
- */
-const SPEC_CLUSTERSNAMES = 'specs.clustersNames'
-
-/**
  * Main function to add diagram details by processing resource statuses and updating the resource map.
  * This function creates a comprehensive map of all related resource kinds for the application,
  * not limited to just pod types.
@@ -71,18 +65,16 @@ export const addDiagramDetails = (
     const searchResultArr: RelatedKindGroup[] = []
 
     resourceStatuses.data.searchResult.forEach((result: SearchResultItem) => {
-      const mappedResult = mapSingleApplication(_.cloneDeep(result), topology.hubClusterName || '')
-      searchResultArr.push(..._.get(mappedResult, 'related', []))
+      const mappedResult = mapSingleApplication(structuredClone(result), topology.hubClusterName || '')
+      searchResultArr.push(...(mappedResult.related || []))
     })
     // Remove duplicates using Set
     related = Array.from(new Set(searchResultArr))
   } else {
     // Handle single search result
-    related = _.get(
-      mapSingleApplication(_.cloneDeep(resourceStatuses.data.searchResult[0]), topology.hubClusterName || ''),
-      'related',
-      []
-    )
+    related =
+      mapSingleApplication(structuredClone(resourceStatuses.data.searchResult[0]), topology.hubClusterName || '')
+        .related || []
   }
 
   // Store cluster objects and cluster names as returned by search
@@ -91,24 +83,23 @@ export const addDiagramDetails = (
 
   // Find cluster-related resources and extract cluster information
   const clustersObjects = getResourcesClustersForApp(
-    _.find(related, (item) => eqIgnoreCase('cluster')(_.get(item, 'kind', ''))) || {},
+    related.find((item) => eqIgnoreCase('cluster')(item.kind || '')) || {},
     topology.nodes,
     topology.hubClusterName || ''
   ) as ClusterInfo[]
 
-  const clusterNamesList: string[] = _.sortBy(_.map(clustersObjects, 'name'))
+  const clusterNamesList: string[] = clustersObjects.map((cluster) => cluster.name).sort()
 
   // Update topology nodes with cluster information
   if (topology.nodes) {
     // Find the main application node
     const appNode =
-      _.find(
-        topology.nodes,
-        (node) => _.get(node, 'id', '').startsWith('application--') && _.get(node, 'type', '') === 'application'
+      topology.nodes.find(
+        (node) => (node.id || '').startsWith('application--') && (node.type || '') === 'application'
       ) || {}
 
     // Check if application has multiple subscriptions
-    const hasMultipleSubs: boolean = _.get(appNode, 'specs.allSubscriptions', []).length > 1
+    const hasMultipleSubs: boolean = ((appNode as any).specs?.allSubscriptions || []).length > 1
 
     // Process each topology node to update cluster information
     topology.nodes.forEach((node) => {
@@ -119,24 +110,22 @@ export const addDiagramDetails = (
 
       // Determine cluster names for the node based on its type
       const nodeClusters: string[] =
-        node.type === 'subscription' ? clusterNamesList : (_.get(node, SPEC_CLUSTERSNAMES, []) as string[])
+        node.type === 'subscription' ? clusterNamesList : (((node as any).specs?.clustersNames || []) as string[])
 
       // Set search clusters on the node
-      _.set(
-        node,
-        'specs.searchClusters',
+      if (!(node as any).specs) (node as any).specs = {}
+      ;(node as any).specs.searchClusters =
         hasMultipleSubs && node.type !== 'application'
-          ? _.filter(clustersObjects, (cls) => _.includes(nodeClusters, _.get(cls, 'name', '')))
+          ? clustersObjects.filter((cls) => nodeClusters.includes(cls.name || ''))
           : clustersObjects // Get all search clusters when single cluster node or main app node
-      )
     })
 
     // Set cluster status on the application node
     // We have all cluster information available at this point
-    const appNodeSearchClusters: ClusterInfo[] = _.get(appNode, 'specs.searchClusters', [])
+    const appNodeSearchClusters: ClusterInfo[] = (appNode as any).specs?.searchClusters || []
 
     // Determine if the application is deployed locally (on hub cluster)
-    const isLocal: boolean = _.find(appNodeSearchClusters, (cls) => _.get(cls, 'name', '') === topology.hubClusterName)
+    const isLocal: boolean = appNodeSearchClusters.find((cls) => (cls.name || '') === topology.hubClusterName)
       ? true
       : false
 
@@ -145,32 +134,29 @@ export const addDiagramDetails = (
       isLocal,
       remoteCount: isLocal ? appNodeSearchClusters.length - 1 : appNodeSearchClusters.length,
     }
-    _.set(appNode, 'specs.allClusters', clusterSummary)
+    if (!(appNode as any).specs) (appNode as any).specs = {}
+    ;(appNode as any).specs.allClusters = clusterSummary
   }
 
   // Find pod resources in the related kinds array
-  let podIndex = _.findIndex(related, ['kind', 'pod'])
+  let podIndex = related.findIndex((item) => item.kind === 'pod')
   // Also check uppercase due to search API inconsistency
   if (podIndex === -1) {
-    podIndex = _.findIndex(related, ['kind', 'Pod'])
+    podIndex = related.findIndex((item) => item.kind === 'Pod')
   }
 
   // Reorder the related kinds list to process pods last
   // This ensures pods are added to the map after all resources that produce pods have been processed
   // We want to add pods using their pod hash for proper grouping
   let orderedList: RelatedKindGroup[] =
-    podIndex === -1
-      ? related
-      : _.concat(_.slice(related, 0, podIndex), _.slice(related, podIndex + 1), related[podIndex])
+    podIndex === -1 ? related : [...related.slice(0, podIndex), ...related.slice(podIndex + 1), related[podIndex]]
 
   // Remove deployable and cluster kinds as they are handled separately
-  orderedList = _.pullAllBy(orderedList, [{ kind: 'deployable' }, { kind: 'cluster' }], 'kind')
-  // Handle uppercase variants due to API inconsistencies
-  orderedList = _.pullAllBy(orderedList, [{ kind: 'Deployable' }, { kind: 'Cluster' }], 'kind')
+  orderedList = orderedList.filter((item) => !['deployable', 'cluster', 'Deployable', 'Cluster'].includes(item.kind))
 
   // Process each kind group and its resources
   orderedList.forEach((kindArray: RelatedKindGroup) => {
-    const relatedKindList: RelatedResourceItem[] = _.get(kindArray, 'items', [])
+    const relatedKindList: RelatedResourceItem[] = kindArray.items || []
 
     for (let i = 0; i < relatedKindList.length; i++) {
       const { kind, cluster } = relatedKindList[i]
@@ -209,26 +195,23 @@ export const addDiagramDetails = (
       const nameWithoutChartRelease: string = getNameWithoutChartRelease(
         relatedKindList[i],
         nameNoHashIngressPod,
-        hasHelmReleases.value
+        hasHelmReleases
       )
 
       // Compute the final resource name for mapping
-      let resourceName: string = computeResourceName(
-        relatedKindList[i],
-        deployableName,
-        nameWithoutChartRelease,
-        isClusterGrouped
-      )
+      let resourceName: string = computeResourceName(relatedKindList[i], deployableName, nameWithoutChartRelease, {
+        value: isClusterGrouped,
+      })
 
       // Handle special case for local hub subscriptions
       if (
         kind.toLowerCase() === 'subscription' &&
         cluster === topology.hubClusterName &&
-        _.get(relatedKindList[i], 'localPlacement', '') === 'true' &&
-        _.endsWith(resourceName, '-local')
+        (relatedKindList[i].localPlacement || '') === 'true' &&
+        resourceName.endsWith('-local')
       ) {
         // Match local hub subscription after removing -local suffix
-        resourceName = _.trimEnd(resourceName, '-local')
+        resourceName = resourceName.replace(/-local$/, '')
       }
 
       // Find the corresponding resource in the resource map
@@ -286,12 +269,12 @@ export const addDiagramDetails = (
  * @returns Mapped application with organized related resources
  */
 export const mapSingleApplication = (application: SearchResultItem, hubClusterName: string): SearchResultItem => {
-  const items = (application ? _.get(application, 'items', []) : []) || []
+  const items = (application ? application.items || [] : []) || []
 
   // Initialize result with default structure or clone from first item
   const result: SearchResultItem =
     items.length > 0
-      ? _.cloneDeep(items[0])
+      ? structuredClone(items[0])
       : {
           name: '',
           namespace: '',
@@ -316,9 +299,9 @@ export const mapSingleApplication = (application: SearchResultItem, hubClusterNa
     // For Argo apps, the related kinds query is built from the items section
     // Query format: namespace:targetNamespace label:appLabel kind:<comma separated resource kinds>
     // This code moves all these items under the related section
-    const kind = _.get(item, 'kind', '')
-    const cluster = _.get(item, 'cluster', '')
-    const label = _.get(item, 'label', '') as string
+    const kind = item.kind || ''
+    const cluster = item.cluster || ''
+    const label = (item.label || '') as string
 
     // Preserve legitimate app objects for Argo app of apps pattern
     if (kind === 'application' && label.indexOf('app.kubernetes.io/instance=') === -1) {
@@ -333,7 +316,7 @@ export const mapSingleApplication = (application: SearchResultItem, hubClusterNa
     }
 
     // Find existing kind section in the related array or create new one
-    const queryKind = _.filter(result.related || [], (filtertype) => _.get(filtertype, 'kind', '') === kind)
+    const queryKind = (result.related || []).filter((filtertype) => (filtertype.kind || '') === kind)
 
     // Add item to existing kind section or create new kind section
     const kindSection = queryKind && queryKind.length > 0 ? queryKind : { kind, items: [item] }
@@ -369,9 +352,9 @@ export const syncControllerRevisionPodStatusMap = (
       const controllerRevision = resourceMap[resourceName]
 
       // Extract parent resource information
-      const parentName = _.get(controllerRevision, 'specs.parent.parentName', '')
-      const parentType = _.get(controllerRevision, 'specs.parent.parentType', '')
-      const parentId = _.get(controllerRevision, 'specs.parent.parentId', '') as string
+      const parentName = controllerRevision.specs?.parent?.parentName || ''
+      const parentType = controllerRevision.specs?.parent?.parentType || ''
+      const parentId = (controllerRevision.specs?.parent?.parentId || '') as string
 
       // Determine cluster name for parent resource lookup
       const clusterName = getClusterName(parentId, undefined, undefined, hubClusterName)?.toString() || hubClusterName
@@ -383,20 +366,21 @@ export const syncControllerRevisionPodStatusMap = (
       if (parentResource) {
         // Copy parent model to controller revision
         const parentModel = {
-          ...(_.get(parentResource, `specs.${parentResource.type}Model`, {}) as Record<string, unknown>),
+          ...(((parentResource as any).specs?.[`${parentResource.type}Model`] || {}) as Record<string, unknown>),
         }
 
         if (parentModel) {
           // Preserve the controller revision's name while using parent's model structure
-          const currentModel = _.get(controllerRevision, 'specs.controllerrevisionModel')
+          const currentModel = (controllerRevision as any).specs?.controllerrevisionModel
           if (currentModel) {
             const parentModelKey = Object.keys(parentModel)[0]
             const currentModelKey = Object.keys(currentModel)[0]
             if (parentModelKey && currentModelKey) {
-              parentModel[parentModelKey][0].name = currentModel[currentModelKey][0].name
+              ;(parentModel as any)[parentModelKey][0].name = (currentModel as any)[currentModelKey][0].name
             }
           }
-          _.set(controllerRevision, 'specs.controllerrevisionModel', parentModel)
+          if (!(controllerRevision as any).specs) (controllerRevision as any).specs = {}
+          ;(controllerRevision as any).specs.controllerrevisionModel = parentModel
         }
       }
     }
@@ -416,9 +400,9 @@ export const syncReplicaSetCountToPodNode = (resourceMap: Record<string, Resourc
       const pod = resourceMap[resourceName]
 
       // Extract parent resource information
-      const parentName = _.get(pod, 'specs.parent.parentName', '')
-      const parentType = _.get(pod, 'specs.parent.parentType', '')
-      const clusterName = _.get(pod, SPEC_CLUSTERSNAMES, '')
+      const parentName = (pod as any).specs?.parent?.parentName || ''
+      const parentType = (pod as any).specs?.parent?.parentType || ''
+      const clusterName = (pod as any).specs?.clustersNames || ''
 
       // Find parent resource (typically a ReplicaSet)
       const parentResource =
@@ -426,7 +410,7 @@ export const syncReplicaSetCountToPodNode = (resourceMap: Record<string, Resourc
 
       if (parentResource) {
         // Extract replica set model information
-        const parentModel = _.get(parentResource, `specs.${parentResource.type}Model`, {})
+        const parentModel = (parentResource as any).specs?.[`${parentResource.type}Model`] || {}
 
         if (parentModel && Object.keys(parentModel).length > 0) {
           const replicaSetValueArr = Object.values(parentModel)[0] as any[]
@@ -436,8 +420,10 @@ export const syncReplicaSetCountToPodNode = (resourceMap: Record<string, Resourc
             const desiredCount = replicaSet.desired || 1
 
             // Set replica count and total resource count on the pod
-            _.set(pod, 'specs.replicaCount', desiredCount)
-            _.set(pod, 'specs.resourceCount', desiredCount * (_.get(pod, SPEC_CLUSTERSNAMES, []) as string[]).length)
+            if (!(pod as any).specs) (pod as any).specs = {}
+            ;(pod as any).specs.replicaCount = desiredCount
+            ;(pod as any).specs.resourceCount =
+              desiredCount * (((pod as any).specs.clustersNames || []) as string[]).length
           }
         }
       }

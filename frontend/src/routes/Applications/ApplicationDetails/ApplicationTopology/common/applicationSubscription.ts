@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { cloneDeep, get, isEmpty } from 'lodash'
 import { PlacementKind, PlacementRuleKind } from '../../../../../resources'
 import { listResources } from '../../../../../resources/utils/resource-request'
 import type { IResource } from '../../../../../resources/resource'
@@ -22,7 +21,6 @@ import type {
 
 const EVERYTHING_CHANNEL = '__ALL__/__ALL__//__ALL__/__ALL__'
 export const ALL_SUBSCRIPTIONS = '__ALL__/SUBSCRIPTIONS__'
-const NAMESPACE = 'metadata.namespace'
 
 /**
  * Build a Subscription-focused application model:
@@ -43,12 +41,12 @@ export const getSubscriptionApplication = async (
     const filteredSubscriptions = subscriptionNames.filter((subscriptionName) => {
       return !isLocalSubscription(subscriptionName, subscriptionNames)
     })
-    const subscriptions = cloneDeep(
+    const subscriptions = structuredClone(
       getResources(filteredSubscriptions, (recoilStates.subscriptions || []) as SubscriptionKind[])
     )
     subscriptions.sort((a, b) => {
-      const aName = String(get(a, 'metadata.name', ''))
-      const bName = String(get(b, 'metadata.name', ''))
+      const aName = String(a?.metadata?.name ?? '')
+      const bName = String(b?.metadata?.name ?? '')
       return aName.localeCompare(bName)
     })
 
@@ -76,8 +74,8 @@ export const getSubscriptionApplication = async (
     selectedSubscriptions.forEach((subscription) => {
       const report = (recoilStates.subscriptionReports as SubscriptionReport[] | undefined)?.find((report) => {
         return (
-          get(report, 'metadata.namespace') === get(subscription, 'metadata.namespace') &&
-          get(report, 'metadata.name') === get(subscription, 'metadata.name')
+          (report?.metadata as any)?.namespace === (subscription?.metadata as any)?.namespace &&
+          (report?.metadata as any)?.name === (subscription?.metadata as any)?.name
         )
       })
       if (report) {
@@ -109,7 +107,7 @@ export const getSubscriptionApplication = async (
 const getResources = (names: string[], resources: SubscriptionKind[]): SubscriptionKind[] => {
   const set = new Set(names)
   return resources.filter((resource) => {
-    return set.has(`${get(resource, 'metadata.namespace')}/${get(resource, 'metadata.name')}`)
+    return set.has(`${resource?.metadata?.namespace}/${resource?.metadata?.name}`)
   })
 }
 
@@ -124,7 +122,7 @@ const getAllChannels = (
 ): SubscriptionKind[] => {
   let selectedSubscriptions: SubscriptionKind[] | [] | null = subscriptions.length > 0 ? [subscriptions[0]] : []
   subscriptions.forEach((subscription) => {
-    if (get(subscription, 'spec.channel')) {
+    if (subscription?.spec?.channel) {
       const subscriptionChannel = getChannelName(subscription)
       channels.push(subscriptionChannel)
       if (selectedChannel === subscriptionChannel) {
@@ -160,7 +158,7 @@ const getChannelName = (subscription: SubscriptionKind): string => {
     isChucked?: boolean
   }
   const { name: nm, namespace: ns } = metadata as { name: string; namespace: string }
-  const chn = get(subscription, 'spec.channel')
+  const chn = subscription?.spec?.channel
   return `${ns}/${nm}//${chn}${getSubChannelName(paths, isChucked)}`
 }
 
@@ -216,7 +214,7 @@ const buildSubscriptionMaps = (
     modelSubscriptions.push(subscription)
 
     // get post hooks
-    const lastPosthookJob = get(subscription, 'status.ansiblejobs.lastposthookjob') as string | undefined
+    const lastPosthookJob = (subscription?.status as any)?.ansiblejobs?.lastposthookjob as string | undefined
     const postHooks = lastPosthookJob ? [lastPosthookJob] : []
     postHooks.forEach((value) => {
       const [deployableNamespace, deployableName] = value.split('/')
@@ -234,7 +232,7 @@ const buildSubscriptionMaps = (
     }
 
     // get pre hooks
-    const lastPrehookJob = get(subscription, 'status.ansiblejobs.lastprehookjob') as string | undefined
+    const lastPrehookJob = (subscription?.status as any)?.ansiblejobs?.lastprehookjob as string | undefined
     const preHooks = lastPrehookJob ? [lastPrehookJob] : []
     preHooks.forEach((value) => {
       const [deployableNamespace, deployableName] = value.split('/')
@@ -252,7 +250,7 @@ const buildSubscriptionMaps = (
     }
 
     // ditto for channels
-    const [chnNamespace, chnName] = (get(subscription, 'spec.channel', '') as string).split('/')
+    const [chnNamespace, chnName] = (subscription?.spec?.channel ?? '').split('/')
     if (chnNamespace && chnName) {
       arr = channelsMap[chnNamespace]
       if (!arr) {
@@ -263,9 +261,9 @@ const buildSubscriptionMaps = (
       subscription.channels = []
     }
 
-    const ruleNamespace = get(subscription, NAMESPACE) as string
+    const ruleNamespace = subscription?.metadata?.namespace as string
 
-    ;(get(subscription, 'spec.placement.placementRef.name', '') as string).split(',').forEach((ruleName) => {
+    ;(subscription?.spec?.placement?.placementRef?.name ?? '').split(',').forEach((ruleName) => {
       // ditto for placementDecisions
       if (ruleName) {
         arr = decisionsMap[ruleNamespace]
@@ -307,7 +305,7 @@ const getAppPlacements = (
   Object.entries(placementsMap).forEach(([namespace, values]) => {
     // stuff placements or placement rules into subscriptions that use them
     values.forEach(({ ruleName, subscription }) => {
-      const placementRef = get(subscription, 'spec.placement.placementRef') as { kind?: string } | undefined
+      const placementRef = subscription?.spec?.placement?.placementRef as { kind?: string } | undefined
       if (placementRef) {
         const { kind } = placementRef
         if (kind === PlacementRuleKind) {
@@ -342,7 +340,7 @@ const getAppDecisions = (
     // stuff rules into subscriptions that use them
     placementDecisions
       ?.filter((placementDecision) => {
-        return get(placementDecision, 'metadata.namespace') === namespace
+        return placementDecision?.metadata?.namespace === namespace
       })
       .forEach((placementDecision) => {
         const name =
@@ -351,10 +349,10 @@ const getAppDecisions = (
         values.forEach(({ ruleName, subscription }) => {
           if (name === ruleName) {
             ;(subscription.decisions || (subscription.decisions = [])).push(placementDecision)
-            const clusters = (get(placementDecision, 'status.decisions', []) as Array<{ clusterName?: string }>) || []
+            const clusters = (placementDecision?.status?.decisions ?? []) as Array<{ clusterName?: string }>
             clusters.forEach((cluster) => {
               // get cluster name
-              const clusterName = get(cluster, 'clusterName') as string | undefined
+              const clusterName = cluster?.clusterName as string | undefined
               if (clusterName && allClusters.indexOf(clusterName) === -1) {
                 allClusters.push(clusterName)
               }
@@ -377,7 +375,7 @@ const getAllAppChannels = (
   // get all channels information
   const channelsMap: Record<string, string> = {}
   allSubscriptions.forEach((subscription) => {
-    const chnlData = (get(subscription, 'spec.channel', '') as string).split('/')
+    const chnlData = (subscription?.spec?.channel ?? '').split('/')
     if (chnlData.length === 2) {
       // eslint-disable-next-line prefer-destructuring
       channelsMap[chnlData[0]] = chnlData[1]
@@ -386,7 +384,7 @@ const getAllAppChannels = (
   Object.entries(channelsMap).forEach(([channelNS, channelName]) => {
     channels
       .filter((channel) => {
-        return get(channel, 'metadata.namespace') === channelNS && get(channel, 'metadata.name') === channelName
+        return channel?.metadata?.namespace === channelNS && channel?.metadata?.name === channelName
       })
       .forEach((channel) => {
         appAllChannels.push(channel)
@@ -398,7 +396,7 @@ const getAllAppChannels = (
  * Query AnsibleJob resources and attach matching pre/post hooks to subscriptions.
  */
 const getAppHooks = async (hooks: SubscriptionHooksMap, isPreHooks: boolean): Promise<void[] | undefined> => {
-  if (!isEmpty(hooks)) {
+  if (Object.keys(hooks).length > 0) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const requests = Object.entries(hooks).map(async ([_namespace, values]) => {
       let response: any
@@ -414,10 +412,10 @@ const getAppHooks = async (hooks: SubscriptionHooksMap, isPreHooks: boolean): Pr
 
       if (response) {
         response.forEach((deployable: any) => {
-          const hookName = get(deployable, 'metadata.name') as string | undefined
-          const hookNamespace = get(deployable, 'metadata.namespace') as string | undefined
+          const hookName = deployable?.metadata?.name as string | undefined
+          const hookNamespace = deployable?.metadata?.namespace as string | undefined
           values.forEach(({ deployableName, subscription }) => {
-            const subNS = get(subscription, 'metadata.namespace') as string | undefined
+            const subNS = subscription?.metadata?.namespace as string | undefined
             if (hookName === deployableName && hookNamespace === subNS) {
               if (isPreHooks) {
                 if (!subscription.prehooks) {
@@ -503,7 +501,7 @@ function getAppChannels(channelsMap: SubscriptionChannelsMap, allChannels: Chann
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   return Object.entries(channelsMap).forEach(([_namespace, values]) => {
     allChannels.forEach((channel) => {
-      const name = get(channel, 'metadata.name') as string | undefined
+      const name = channel?.metadata?.name as string | undefined
       values.forEach(({ chnName, subscription }) => {
         if (name === chnName) {
           ;(subscription.channels || (subscription.channels = [])).push(channel)

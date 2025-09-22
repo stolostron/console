@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import _ from 'lodash'
 import {
   setResourceDeployStatus,
   setPodDeployStatus,
@@ -57,7 +56,7 @@ export const getNodeDetails = (
         addDetails(details, [
           {
             labelValue: resName,
-            value: _.get(node, 'specs.raw.metadata.name', ''),
+            value: node?.specs?.raw?.metadata?.name ?? '',
           },
           {
             labelValue: t('resource.message'),
@@ -101,19 +100,21 @@ function addK8Details(
   // not all resources have a namespace
 
   let namespace = ''
-  if (node && _.get(node, 'specs.pulse', '') !== 'orange') {
-    const kindModel = _.get(node, `specs.${type}Model`, {})
+  if (node && (node?.specs?.pulse ?? '') !== 'orange') {
+    const kindModel = node?.specs?.[`${type}Model`] ?? {}
     let computedNSList: string[] = []
-    _.flatten(Object.values(kindModel)).forEach((item: any) => {
-      computedNSList = _.union(computedNSList, [item.namespace]) as string[]
-    })
+    Object.values(kindModel)
+      .flat()
+      .forEach((item: any) => {
+        computedNSList = [...new Set([...computedNSList, item.namespace])]
+      })
 
     computedNSList.forEach((item) => {
       namespace = namespace.length === 0 ? item : `${namespace},${item}`
     })
   }
 
-  const nodeAnnotations = _.get(node, 'specs.raw.metadata.annotations', {})
+  const nodeAnnotations = node?.specs?.raw?.metadata?.annotations ?? {}
   const gitBranchAnnotation = nodeAnnotations['apps.open-cluster-management.io/git-branch']
     ? 'apps.open-cluster-management.io/git-branch'
     : 'apps.open-cluster-management.io/github-branch'
@@ -124,8 +125,8 @@ function addK8Details(
   const gitCommitAnnotation = 'apps.open-cluster-management.io/git-desired-commit'
   const reconcileRateAnnotation = 'apps.open-cluster-management.io/reconcile-rate'
 
-  const searchData = _.get(node, `specs.${type}Model`, {})
-  let apiVersion = _.get(node, 'specs.raw.apiVersion', '')
+  const searchData = node?.specs?.[`${type}Model`] ?? {}
+  let apiVersion = node?.specs?.raw?.apiVersion ?? ''
   if (apiVersion === unknonwnApiVersion) {
     if (Object.keys(searchData).length > 0) {
       const firstSearchData = searchData[Object.keys(searchData)[0]][0]
@@ -163,7 +164,7 @@ function addK8Details(
 
   //
   if (!isDesign && isDesign !== undefined) {
-    const resourceModel = _.get(specs, `${type}Model`)
+    const resourceModel = specs?.[`${type}Model`]
     if (resourceModel) {
       // get first item in the object as all should have the same labels
       const resourceLabels =
@@ -191,7 +192,7 @@ function addK8Details(
     getNodePropery(node, ['specs', 'raw', 'spec', 'selector', 'matchLabels'], t('Pod Selector'))
   )
 
-  if (!_.get(node, 'specs.raw.spec.selector.matchLabels')) {
+  if (!node?.specs?.raw?.spec?.selector?.matchLabels) {
     addPropertyToList(mainDetails, getNodePropery(node, ['specs', 'raw', 'spec', 'selector'], t('Pod Selector')))
   }
 
@@ -281,13 +282,13 @@ function addK8Details(
   )
 
   if (type === 'placements' || type === 'placement') {
-    const specNbOfClustersTarget = _.get(node, 'specs.raw.status.decisions', [])
+    const specNbOfClustersTarget = node?.specs?.raw?.status?.decisions ?? []
 
     // placement
-    const clusterSets = _.get(node, 'placement.spec.clusterSets', undefined)
+    const clusterSets = node?.placement?.spec?.clusterSets
     const clusterSelector =
-      _.get(node, 'placement.spec.predicates[0].requiredClusterSelector.labelSelector', undefined) ||
-      _.get(node, 'placement.spec.clusterSelector', undefined)
+      node?.placement?.spec?.predicates?.[0]?.requiredClusterSelector?.labelSelector ||
+      node?.placement?.spec?.clusterSelector
 
     mainDetails.push(
       {
@@ -297,10 +298,7 @@ function addK8Details(
       { labelValue: t('ClusterSet'), value: clusterSets ? clusterSets.join() : t('Not defined') },
       {
         labelValue: t('LabelSelector'),
-        value:
-          _.get(node, 'placement.kind') === PlacementKind
-            ? getLabels(clusterSelector)
-            : getMatchLabels(clusterSelector),
+        value: node?.placement?.kind === PlacementKind ? getLabels(clusterSelector) : getMatchLabels(clusterSelector),
       }
     )
   }

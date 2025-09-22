@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import _ from 'lodash'
 import { searchClient } from '../../../../Search/search-sdk/search-client'
 import { SearchResultItemsAndRelatedItemsDocument } from '../../../../Search/search-sdk/search-sdk'
 import { getArgoSecret, getQueryStringForResource } from './resourceStatusesArgo'
@@ -43,8 +42,8 @@ export async function getAppSetResourceStatuses(
   // Retrieve Argo secrets for authentication, if available
   const secret = await getArgoSecret(appData, resourceStatuses as Record<string, unknown>)
   if (secret) {
-    const secretItems = _.get(secret, 'data.searchResult', [{ items: [] }])[0]
-    _.set(appData, 'argoSecrets', _.get(secretItems, 'items', []))
+    const secretItems = (secret as any)?.data?.searchResult?.[0] ?? { items: [] }
+    appData.argoSecrets = secretItems?.items ?? []
   }
 
   return { resourceStatuses }
@@ -85,7 +84,7 @@ async function getResourceStatuses(
 
   // Extract resource information from the first application's status (if available)
   // All applications in an ApplicationSet typically deploy the same resources
-  const resources = appSetApps.length > 0 ? _.get(appSetApps[0], 'status.resources', []) : []
+  const resources = appSetApps.length > 0 ? appSetApps[0]?.status?.resources ?? [] : []
 
   // Separate resources into namespaced and cluster-scoped categories
   const definedNamespace: string[] = []
@@ -93,8 +92,8 @@ async function getResourceStatuses(
   const kindsNotNamespaceScopedNames: string[] = []
 
   resources.forEach((resource: any) => {
-    const rscNS = _.get(resource, 'namespace')
-    const rscKind = _.get(resource, 'kind')
+    const rscNS = resource?.namespace
+    const rscKind = resource?.kind
 
     if (rscNS) {
       // Resource has a namespace - add to namespaced resources
@@ -114,7 +113,7 @@ async function getResourceStatuses(
   })
 
   // Set target namespaces in appData - use defined namespaces if available, otherwise use destination namespaces
-  appData.targetNamespaces = definedNamespace.length > 0 ? _.uniq(definedNamespace) : _.uniq(targetNS)
+  appData.targetNamespaces = definedNamespace.length > 0 ? [...new Set(definedNamespace)] : [...new Set(targetNS)]
 
   // Build search queries for namespaced and cluster-scoped resources
   const queryNotNamespaceScoped: SearchQuery[] = []
@@ -137,7 +136,7 @@ async function getResourceStatuses(
   // Build separate queries for each cluster-scoped resource
   if (kindsNotNamespaceScoped.length > 0) {
     kindsNotNamespaceScoped.forEach((item: string, i: number) => {
-      queryNotNamespaceScoped.push(getQueryStringForResource(item, kindsNotNamespaceScopedNames[i]))
+      queryNotNamespaceScoped.push(getQueryStringForResource([item], kindsNotNamespaceScopedNames[i], '', ''))
     })
   }
 

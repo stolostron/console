@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import _ from 'lodash'
 import { searchClient } from '../../../../Search/search-sdk/search-client'
 import { SearchResultItemsAndRelatedItemsDocument } from '../../../../Search/search-sdk/search-sdk'
 import { convertStringToQuery } from '../elements/helpers/search-helper'
@@ -34,13 +33,19 @@ export async function getArgoResourceStatuses(
   const argoSource = await getArgoSource(application, appData)
 
   // Retrieve resource statuses for all related applications and their deployed resources
-  const resourceStatuses = await getResourceStatuses(application.app, appData, topology, argoSource)
+  const resourceStatuses = await getResourceStatuses(
+    application.app as unknown as Record<string, unknown>,
+    appData,
+    topology,
+    argoSource
+  )
 
   // Fetch Argo secrets used for cluster authentication and store them in appData
   const secret = await getArgoSecret(appData, resourceStatuses as Record<string, unknown>)
-  if (secret) {
-    const secretItems = _.get(secret, 'data.searchResult', [{ items: [] }])[0]
-    _.set(appData, 'argoSecrets', _.get(secretItems, 'items', []))
+  if (secret && typeof secret === 'object' && 'data' in secret) {
+    const secretData = secret as { data?: { searchResult?: Array<{ items?: unknown[] }> } }
+    const secretItems = secretData.data?.searchResult?.[0] ?? { items: [] }
+    appData.argoSecrets = (secretItems.items ?? []) as ResourceItem[]
   }
 
   return { resourceStatuses }
@@ -73,7 +78,8 @@ async function getArgoSource(application: ApplicationModel, appData: ArgoApplica
   } else {
     // For regular Argo applications, search by source repository configuration
     let targetRevisionFound = false
-    const searchProperties = _.pick(appData.source, ['repoURL', 'path', 'chart', 'targetRevision'])
+    const { repoURL, path, chart, targetRevision } = appData.source ?? {}
+    const searchProperties = { repoURL, path, chart, targetRevision }
 
     for (const [property, value] of Object.entries(searchProperties)) {
       // Add Argo app source filters based on repository configuration
@@ -122,14 +128,14 @@ async function getResourceStatuses(
   topology: Topology,
   argoSource: ArgoSource | null
 ): Promise<unknown> {
-  const name = _.get(app, 'metadata.name') as string
-  const namespace = _.get(app, 'metadata.namespace') as string
+  const name = (app as { metadata?: { name?: string } }).metadata?.name as string
+  const namespace = (app as { metadata?: { namespace?: string } }).metadata?.namespace as string
   const kindsNotNamespaceScoped: string[] = []
   const kindsNotNamespaceScopedNames: string[] = []
 
   if (argoSource) {
     const { searchResult } = argoSource.data
-    const searchResultItems = searchResult && searchResult.length && _.get(searchResult[0], 'items', [])
+    const searchResultItems = searchResult && searchResult.length && searchResult[0]?.items
     const allApps: ArgoApplicationItem[] = searchResultItems
       ? (searchResultItems.filter(
           (searchApp: ResourceItem) => searchApp.kind === 'Application'
@@ -149,9 +155,9 @@ async function getResourceStatuses(
       }
 
       // Resolve cluster name from server URL or destination name
-      const argoServerDest = findMatchingCluster(argoApp, _.get(appData, 'argoSecrets'))
+      const argoServerDest = findMatchingCluster(argoApp, appData.argoSecrets)
       const argoServerNameDest = argoServerDest || argoApp.destinationName
-      _.set(argoApp, 'destinationCluster', argoServerNameDest || argoApp.destinationServer)
+      argoApp.destinationCluster = argoServerNameDest || argoApp.destinationServer
 
       const targetClusterName = argoServerNameDest ? argoServerNameDest : argoServerDest ? argoServerDest : null
       if (targetClusterName) {
@@ -160,20 +166,21 @@ async function getResourceStatuses(
         if (!targetNSForClusters[targetClusterName]) {
           targetNSForClusters[targetClusterName] = []
         }
-        if (argoNS && !_.includes(targetNSForClusters[targetClusterName], argoNS)) {
+        if (argoNS && !targetNSForClusters[targetClusterName].includes(argoNS)) {
           targetNSForClusters[targetClusterName].push(argoNS)
         }
       }
     })
 
     // Process application resources to identify namespaced vs cluster-scoped resources
-    const resources = _.get(app, 'status.resources', []) as Record<string, unknown>[]
+    const resources = ((app as { status?: { resources?: Record<string, unknown>[] } }).status?.resources ??
+      []) as Record<string, unknown>[]
     const resourceNS: string[] = []
 
     resources.forEach((rsc) => {
-      const rscNS = _.get(rsc, 'namespace') as string | undefined
-      const rscKind = _.get(rsc, 'kind') as string
-      const rscName = _.get(rsc, 'name') as string
+      const rscNS = rsc.namespace as string | undefined
+      const rscKind = rsc.kind as string
+      const rscName = rsc.name as string
 
       if (rscNS) {
         resourceNS.push(rscNS)
@@ -194,23 +201,23 @@ async function getResourceStatuses(
     })
 
     // Store computed target information in appData
-    appData.targetNamespaces = resourceNS.length > 0 ? _.uniq(resourceNS) : _.uniq(targetNS)
-    appData.clusterInfo = _.uniq(targetClusters)
+    appData.targetNamespaces = resourceNS.length > 0 ? [...new Set(resourceNS)] : [...new Set(targetNS)]
+    appData.clusterInfo = [...new Set(targetClusters)]
 
     // Store all Argo apps and destination clusters info on the first topology node
     const topoResources = topology.nodes
     const firstNode = topoResources[0]
-    const topoClusterNode = _.find(topoResources, {
-      id: 'member--clusters--',
-    })
+    const topoClusterNode = topoResources.find((node) => node.id === 'member--clusters--')
 
     // Set related applications and desired deployment state
     if (firstNode) {
-      _.set(firstNode, 'specs.relatedApps', allApps)
-      _.set(firstNode, 'specs.clusterNames', appData.clusterInfo)
+      if (!firstNode.specs) firstNode.specs = {}
+      firstNode.specs.relatedApps = allApps
+      firstNode.specs.clusterNames = appData.clusterInfo
     }
     if (topoClusterNode) {
-      _.set(topoClusterNode, 'specs.appClusters', appData.clusterInfo)
+      if (!topoClusterNode.specs) topoClusterNode.specs = {}
+      topoClusterNode.specs.appClusters = appData.clusterInfo
     }
 
     // Ensure clusters array always contains objects with proper structure
@@ -221,8 +228,9 @@ async function getResourceStatuses(
       })
     })
     if (topoClusterNode) {
-      _.set(topoClusterNode, 'specs.clusters', initialClusterData)
-      _.set(topoClusterNode, 'specs.targetNamespaces', targetNSForClusters)
+      if (!topoClusterNode.specs) topoClusterNode.specs = {}
+      topoClusterNode.specs.clusters = initialClusterData
+      topoClusterNode.specs.targetNamespaces = targetNSForClusters
     }
   }
 
@@ -278,12 +286,12 @@ export const findMatchingCluster = (
   argoApp: ArgoApplicationItem,
   argoMappingInfo?: ResourceItem[]
 ): string | undefined => {
-  const serverApi = _.get(argoApp, 'destinationServer') as string | undefined
+  const serverApi = argoApp.destinationServer as string | undefined
 
   // Handle in-cluster deployments (same cluster as Argo CD)
   if (
     (serverApi && serverApi === 'https://kubernetes.default.svc') ||
-    _.get(argoApp, 'destinationName', '') === 'in-cluster'
+    (argoApp.destinationName ?? '') === 'in-cluster'
   ) {
     return argoApp.cluster as string // Target is the same as the Argo app cluster
   }
@@ -297,14 +305,16 @@ export const findMatchingCluster = (
       const serverLabel = `cluster-server=${serverHostName}`
 
       // Find the secret that contains mapping information for this server
-      const mapServerInfo = _.find(_.map(argoMappingInfo, 'label'), (obj: unknown) => {
-        return typeof obj === 'string' && obj.indexOf(serverLabel) !== -1
-      })
+      const mapServerInfo = argoMappingInfo
+        .map((item) => item.label)
+        .find((obj: unknown) => {
+          return typeof obj === 'string' && obj.indexOf(serverLabel) !== -1
+        })
 
       if (mapServerInfo && typeof mapServerInfo === 'string') {
         // Extract the cluster name from the label
         const labelsList = mapServerInfo.split(';')
-        const clusterNameLabel = _.find(labelsList, (obj) => _.includes(obj, nameLabel))
+        const clusterNameLabel = labelsList.find((obj) => obj.includes(nameLabel))
 
         if (clusterNameLabel) {
           return clusterNameLabel.split('=')[1]
@@ -333,16 +343,16 @@ export const getArgoSecret = (
   appData: ArgoApplicationData,
   resourceStatuses: { data?: { searchResult?: Array<{ items?: ResourceItem[] }> } } = {}
 ): Promise<unknown> | Promise<void> => {
-  const searchResult = _.get(resourceStatuses, 'data.searchResult', [])
+  const searchResult = resourceStatuses.data?.searchResult ?? []
 
   if (searchResult.length > 0 && searchResult[0].items) {
     // For non-ApplicationSet cases, ensure we don't include apps with ApplicationSet
-    const allApps = _.get(searchResult[0], 'items', []).filter(
+    const allApps = (searchResult[0]?.items ?? []).filter(
       (app: ResourceItem) => app.applicationSet === appData.applicationSet
     )
 
     // Find Argo server mapping secrets in the namespaces where Argo applications are deployed
-    const argoAppNS = _.uniq(_.map(allApps, 'namespace').filter(Boolean))
+    const argoAppNS = [...new Set(allApps.map((app) => app.namespace).filter(Boolean))]
 
     if (argoAppNS.length > 0) {
       const query = convertStringToQuery(

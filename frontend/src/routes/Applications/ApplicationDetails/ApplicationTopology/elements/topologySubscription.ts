@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { get, includes, concat, uniqBy, filter, keyBy, cloneDeep } from 'lodash'
 import { createChildNode, addClusters, processMultiples } from './topologyUtils'
 import type {
   ManagedCluster,
@@ -78,7 +77,7 @@ export const getSubscriptionTopology = (
       const ruleDecisionMap: RuleDecisionMap = {}
       if (subscription.decisions) {
         subscription.decisions.forEach((rule) => {
-          const ruleDecisions = get(rule, 'status.decisions') as Array<{
+          const ruleDecisions = rule?.status?.decisions as Array<{
             clusterName: string
             clusterNamespace: string
           }>
@@ -94,9 +93,9 @@ export const getSubscriptionTopology = (
 
       // Handle local cluster placement
       if (
-        get(subscription, 'spec.placement.local', '') === true &&
+        subscription?.spec?.placement?.local === true &&
         subscription.decisions &&
-        includes(managedClusterNames, hubClusterName) === false
+        !managedClusterNames.includes(hubClusterName)
       ) {
         const localCluster = {
           metadata: {
@@ -104,18 +103,18 @@ export const getSubscriptionTopology = (
             namespace: hubClusterName,
           },
         }
-        managedClusterNames = concat(managedClusterNames, localCluster)
+        managedClusterNames = [...managedClusterNames, localCluster.metadata.name]
         ruleDecisionMap[hubClusterName] = hubClusterName
       }
       const ruleClusterNames = Object.keys(ruleDecisionMap)
 
       // Extract source information from subscription annotations
-      const ann = get(subscription, 'metadata.annotations', {}) as Record<string, string>
+      const ann = (subscription?.metadata?.annotations || {}) as Record<string, string>
       let source =
         ann['apps.open-cluster-management.io/git-path'] ||
         ann['apps.open-cluster-management.io/github-path'] ||
         ann['apps.open-cluster-management.io/bucket-path'] ||
-        (get(subscription, 'spec.packageOverrides[0].packageName', '') as string) ||
+        subscription?.spec?.packageOverrides?.[0]?.packageName ||
         ''
       source = source.split('/').pop() as string
 
@@ -129,7 +128,7 @@ export const getSubscriptionTopology = (
       if (ruleClusterNames && ruleClusterNames.length > 0) {
         clustersNames = ruleClusterNames
       } else {
-        const reportResults = get(subscription, 'report.results', []) as Array<{ source?: string }>
+        const reportResults = (subscription?.report?.results || []) as Array<{ source?: string }>
         clustersNames = reportResults
           .map((result) => (result && typeof result.source === 'string' ? result.source : undefined))
           .filter((name): name is string => !!name)
@@ -161,7 +160,10 @@ export const getSubscriptionTopology = (
     })
   }
 
-  return { nodes: uniqBy(nodes, 'uid'), links }
+  return {
+    nodes: nodes.filter((node, index, self) => index === self.findIndex((n) => n.uid === node.uid)),
+    links,
+  }
 }
 
 /**
@@ -189,8 +191,8 @@ const addSubscription = (
     metadata: { namespace, name },
   } = subscription
   const subscriptionId = `member--subscription--${namespace}--${name}`
-  const rule = get(subscription, 'rules[0]')
-  const isBlocked = get(subscription, 'status.message') === 'Blocked'
+  const rule = subscription?.rules?.[0]
+  const isBlocked = subscription?.status?.message === 'Blocked'
 
   nodes.push({
     name,
@@ -235,7 +237,7 @@ const addSubscriptionRules = (
   nodes: TopologyNode[]
 ): void => {
   let placement: unknown
-  const placementType = get(subscription, 'spec.placement.placementRef.kind')
+  const placementType = subscription?.spec?.placement?.placementRef?.kind
   const isPlacement = placementType === 'Placement' ? true : false
 
   // Use decisions if available, otherwise fall back to placement rules
@@ -247,20 +249,21 @@ const addSubscriptionRules = (
       metadata: { name, namespace },
     } = rule
     const ruleId = `member--rules--${namespace}--${name}--${idx}`
-    const decisionOwnerReference = get(rule, 'metadata.ownerReferences.0')
+    const ownerReferences = rule?.metadata?.ownerReferences as Array<{ kind?: string; name?: string }> | undefined
+    const decisionOwnerReference = ownerReferences?.[0]
 
     // Find associated placement if this is a placement decision
     if (decisionOwnerReference && subscription.placements) {
       placement = subscription.placements.find(
         (placement) =>
           placement.kind === decisionOwnerReference?.kind &&
-          placement.metadata.name === decisionOwnerReference.name &&
+          placement.metadata.name === decisionOwnerReference?.name &&
           placement.metadata.namespace === namespace
       )
     }
 
     nodes.push({
-      name,
+      name: name as string,
       namespace,
       type: 'placements',
       id: ruleId,
@@ -351,7 +354,7 @@ const processReport = (
   relatedResources: Record<string, unknown>
 ): void => {
   // Clone report to avoid mutations
-  report = cloneDeep(report)
+  report = structuredClone(report)
   const resources = report.resources || []
   const results = report.results || []
 
@@ -359,30 +362,30 @@ const processReport = (
   if (relatedResources) {
     resources.forEach((resource) => {
       const { name, namespace } = resource
-      resource.template = relatedResources[`${name}-${namespace}`]
+      resource.template = relatedResources[`${name}-${namespace}`] as Record<string, unknown>
     })
   }
 
   // Identify service owners (Route, Ingress, StatefulSet) for proper service linking
-  const serviceOwners = filter(resources, (obj) => {
-    const kind = get(obj, 'kind', '')
-    return includes(['Route', 'Ingress', 'StatefulSet'], kind)
+  const serviceOwners = resources.filter((obj) => {
+    const kind = obj?.kind || ''
+    return ['Route', 'Ingress', 'StatefulSet'].includes(kind)
   })
 
   // Process service owners first to build service mapping
   const serviceMap = processServiceOwner(clusterId, clustersNames, serviceOwners, links, nodes, relatedResources)
 
   // Process services and link them to their owners
-  const services = filter(resources, (obj) => {
-    const kind = get(obj, 'kind', '')
-    return includes(['Service'], kind)
+  const services = resources.filter((obj) => {
+    const kind = obj?.kind || ''
+    return ['Service'].includes(kind)
   })
   processServices(clusterId, clustersNames, services, links, nodes, serviceMap)
 
   // Process all other resource types
-  const others = filter(resources, (obj) => {
-    const kind = get(obj, 'kind', '')
-    return !includes(['Route', 'Ingress', 'StatefulSet', 'Service'], kind)
+  const others = resources.filter((obj) => {
+    const kind = obj?.kind || ''
+    return !['Route', 'Ingress', 'StatefulSet', 'Service'].includes(kind)
   })
 
   // Calculate number of clusters where resources were successfully deployed
@@ -394,9 +397,11 @@ const processReport = (
   })
 
   // Process remaining resources with multiplicity handling
-  processMultiples(others, numOfClustersDeployed).forEach((resource: SubscriptionReportResource) => {
-    addSubscriptionDeployedResource(clusterId, clustersNames, resource, links, nodes)
-  })
+  processMultiples(others as Record<string, unknown>[], numOfClustersDeployed).forEach(
+    (resource: Record<string, unknown>) => {
+      addSubscriptionDeployedResource(clusterId, clustersNames, resource as SubscriptionReportResource, links, nodes)
+    }
+  )
 }
 
 /**
@@ -431,17 +436,17 @@ const processServiceOwner = (
 
       switch (kind) {
         case 'Route':
-          service = get(template, 'template.spec.to.name') as string | undefined
+          service = (template as any)?.template?.spec?.to?.name
           if (service) {
             servicesMap[service] = node.id
           }
           break
         case 'Ingress':
-          rules = get(template, 'template.spec.rules', []) as unknown[]
+          rules = (template as any)?.template?.spec?.rules || []
           rules.forEach((rule) => {
-            const rulePaths = get(rule, 'http.paths', [])
+            const rulePaths = (rule as any)?.http?.paths || []
             rulePaths.forEach((path: unknown) => {
-              service = get(path, 'backend.serviceName') as string | undefined
+              service = (path as any)?.backend?.serviceName
               if (service) {
                 servicesMap[service] = node.id
               }
@@ -449,7 +454,7 @@ const processServiceOwner = (
           })
           break
         case 'StatefulSet':
-          service = get(template, 'template.spec.serviceName') as string | undefined
+          service = (template as any)?.template?.spec?.serviceName
           if (service) {
             servicesMap[service] = node.id
           }
@@ -587,13 +592,13 @@ export const createReplicaChild = (
   links: TopologyLink[],
   nodes: TopologyNode[]
 ): TopologyNode | undefined => {
-  const parentType = get(parentObject, 'type', '')
+  const parentType = parentObject?.type || ''
 
   if (parentType === 'deploymentconfig' || parentType === 'deployment') {
     const type = parentType === 'deploymentconfig' ? 'replicationcontroller' : 'replicaset'
 
     if (template && (template as any).related) {
-      const relatedMap = keyBy((template as any).related, 'kind')
+      const relatedMap = Object.fromEntries(((template as any).related || []).map((item: any) => [item.kind, item]))
 
       // Check for replica resources in related objects
       if (
@@ -603,14 +608,13 @@ export const createReplicaChild = (
         relatedMap['ReplicationController']
       ) {
         const pNode = createChildNode(parentObject, clustersNames, type, links, nodes)
-        const replicaCount = get(
-          relatedMap['replicaset'] ||
+        const replicaCount =
+          (
+            relatedMap['replicaset'] ||
             relatedMap['ReplicaSet'] ||
             relatedMap['replicationcontroller'] ||
-            relatedMap['ReplicationController'],
-          'items.0.desired',
-          0
-        )
+            relatedMap['ReplicationController']
+          )?.items?.[0]?.desired || 0
         return createChildNode(pNode, clustersNames, 'pod', links, nodes, replicaCount)
       } else if (relatedMap['pod'] || relatedMap['Pod']) {
         // Direct pod relationship without replica controller
@@ -642,7 +646,7 @@ const createIngressRouteChild = (
   links: TopologyLink[],
   nodes: TopologyNode[]
 ): TopologyNode | undefined => {
-  const parentType = get(parentObject, 'type', '')
+  const parentType = parentObject?.type || ''
   if (parentType === 'ingress') {
     const type = 'route'
     return createChildNode(parentObject, clustersNames, type, links, nodes)
@@ -665,7 +669,7 @@ export const createControllerRevisionChild = (
   links: TopologyLink[],
   nodes: TopologyNode[]
 ): TopologyNode | undefined => {
-  const parentType = get(parentObject, 'type', '')
+  const parentType = parentObject?.type || ''
   if (parentType === 'daemonset' || parentType === 'statefulset' || parentType === 'virtualmachine') {
     const pNode = createChildNode(parentObject, clustersNames, 'controllerrevision', links, nodes)
 
@@ -693,7 +697,7 @@ export const createDataVolumeChild = (
   links: TopologyLink[],
   nodes: TopologyNode[]
 ): TopologyNode => {
-  const parentType = get(parentObject, 'type', '')
+  const parentType = parentObject?.type || ''
   if (parentType === 'virtualmachine') {
     const pNode = createChildNode(parentObject, clustersNames, 'datavolume', links, nodes)
     return createChildNode(pNode, clustersNames, 'persistentvolumeclaim', links, nodes)
@@ -716,7 +720,7 @@ export const createVirtualMachineInstance = (
   links: TopologyLink[],
   nodes: TopologyNode[]
 ): TopologyNode => {
-  const parentType = get(parentObject, 'type', '')
+  const parentType = parentObject?.type || ''
   if (parentType === 'virtualmachine') {
     const pNode = createChildNode(parentObject, clustersNames, 'virtualmachineinstance', links, nodes)
     return createChildNode(pNode, clustersNames, 'pod', links, nodes)
@@ -739,7 +743,7 @@ const createPodChild = (
   links: TopologyLink[],
   nodes: TopologyNode[]
 ): TopologyNode | undefined => {
-  const parentType = get(parentObject, 'type', '')
+  const parentType = parentObject?.type || ''
   if (parentType === 'replicaset' || parentType === 'replicationcontroller') {
     return createChildNode(parentObject, clustersNames, 'pod', links, nodes)
   }

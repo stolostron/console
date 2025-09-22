@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { get, uniq, uniqBy } from 'lodash'
 import { getClusterName, addClusters, processMultiples } from './topologyUtils'
 import {
   createReplicaChild,
@@ -50,7 +49,7 @@ export function getArgoTopology(
   let clusterNames: string[] = []
 
   // Get the destination configuration from the Argo application spec
-  const destination = get(application, 'app.spec.destination', {}) as ArgoDestination
+  const destination = (application.app?.spec?.destination ?? {}) as ArgoDestination
 
   if (cluster) {
     // Argo app defined on remote cluster
@@ -82,7 +81,7 @@ export function getArgoTopology(
   }
 
   // Remove duplicate cluster names
-  clusterNames = uniq(clusterNames)
+  clusterNames = Array.from(new Set(clusterNames))
 
   // Extract related applications from topology data if available
   const relatedApps = topology ? topology.nodes[0]?.specs?.relatedApps : undefined
@@ -116,20 +115,23 @@ export function getArgoTopology(
   delete (application.app.spec as Record<string, unknown>)?.apps
 
   // Create cluster node and get its ID for linking deployed resources
-  const source = get(application, 'app.spec.source.path', '') as string
+  const source = (application.app?.spec?.source?.path ?? '') as string
   const clusterId = addClusters(
     appId,
     undefined, // No subscription for Argo apps
     source,
     clusterNames,
-    uniqBy(clusters, 'metadata.name'),
+    clusters.filter(
+      (cluster, index, self) =>
+        index === self.findIndex((c) => (c.metadata as any).name === (cluster.metadata as any).name)
+    ),
     links,
     nodes,
     topology
   )
 
   // Get deployed resources from the Argo application status
-  const resources = get(application, 'app.status.resources', []) as ArgoApplicationResource[]
+  const resources = (application.app?.status?.resources ?? []) as ArgoApplicationResource[]
 
   // Process and create nodes for each deployed resource
   processMultiples(resources).forEach((deployable) => {
@@ -221,7 +223,10 @@ export function getArgoTopology(
   })
 
   // Return the complete topology with unique nodes and all links
-  return { nodes: uniqBy(nodes, 'uid'), links }
+  return {
+    nodes: nodes.filter((node, index, self) => index === self.findIndex((n) => n.uid === node.uid)),
+    links,
+  }
 }
 
 /**
@@ -246,7 +251,7 @@ export function getArgoDestinationCluster(
 ): string {
   // cluster is the name of the managed cluster where the Argo app is defined
   let clusterName: string
-  const serverApi = get(destination, 'server') as string | undefined
+  const serverApi = destination.server as string | undefined
 
   if (serverApi) {
     // Destination specified by server URL
@@ -260,7 +265,7 @@ export function getArgoDestinationCluster(
     }
   } else {
     // Target destination was set using the name property
-    clusterName = get(destination, 'name', 'unknown') as string
+    clusterName = (destination.name ?? 'unknown') as string
 
     // Handle special cases for cluster name resolution
     if (cluster && (clusterName === 'in-cluster' || clusterName === hubClusterName)) {

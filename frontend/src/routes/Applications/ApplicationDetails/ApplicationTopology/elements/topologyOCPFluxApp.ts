@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { filter, get, includes, uniqBy } from 'lodash'
 import { searchClient } from '../../../../Search/search-sdk/search-client'
 import { SearchResultItemsAndRelatedItemsDocument } from '../../../../Search/search-sdk/search-sdk'
 import { convertStringToQuery } from './helpers/search-helper'
@@ -174,9 +173,9 @@ export function generateTopology(
   const clusterId: string = addClusters(appId, undefined, '', clusterNames, clusters, links, nodes, undefined)
 
   // Filter out excluded resource types (Pods, ReplicaSets, etc.)
-  const filteredResources: ResourceItem[] = filter(resources, (obj: ResourceItem) => {
-    const kind: string = get(obj, 'kind', '') as string
-    return !includes(excludedKindList, kind)
+  const filteredResources: ResourceItem[] = resources.filter((obj: ResourceItem) => {
+    const kind: string = (obj.kind ?? '') as string
+    return !excludedKindList.includes(kind)
   })
 
   // Process resources with multiplicity handling and add to topology
@@ -188,7 +187,7 @@ export function generateTopology(
 
   // Return complete topology with unique nodes and all links
   return {
-    nodes: uniqBy(nodes, 'uid'), // Remove duplicate nodes based on unique ID
+    nodes: nodes.filter((node, index, array) => array.findIndex((n) => n.uid === node.uid) === index), // Remove duplicate nodes based on unique ID
     links,
     rawSearchData: searchResults, // Include raw data for debugging/details
   }
@@ -300,10 +299,10 @@ const addOCPFluxResource = (
  */
 export function processSearchResults(searchResults: OCPFluxSearchResult): ResourceItem[] {
   // Extract direct search result items with null safety
-  const items: ResourceItem[] = get(searchResults, 'data.searchResult[0].items', []) ?? []
+  const items: ResourceItem[] = searchResults?.data?.searchResult?.[0]?.items ?? []
 
   // Extract related resource items with null safety
-  const related: Array<{ items?: ResourceItem[] }> = get(searchResults, 'data.searchResult[0].related', []) ?? []
+  const related: Array<{ items?: ResourceItem[] }> = searchResults?.data?.searchResult?.[0]?.related ?? []
 
   // Start with direct items
   let allItems: ResourceItem[] = items.slice()

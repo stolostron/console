@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { get, set } from 'lodash'
 import { fireManagedClusterView } from '../../../../../resources/managedclusterview'
 import { searchClient } from '../../../../Search/search-sdk/search-client'
 import { SearchResultItemsAndRelatedItemsDocument } from '../../../../Search/search-sdk/search-sdk'
@@ -154,22 +153,29 @@ async function getRelatedResources(reports: ResourceReport[]): Promise<RelatedRe
     relatedResources = {}
     const response = await Promise.allSettled(promises)
 
-    response.forEach(({ status, value }) => {
-      if (status !== 'rejected' && value) {
+    response.forEach((result) => {
+      if (result.status === 'fulfilled' && result.value) {
+        const value = result.value
         // Handle search API response (contains related resources)
         if (value.data) {
-          const item = get(value, 'data.searchResult[0].items[0]', {})
+          const item = value.data?.searchResult?.[0]?.items?.[0] ?? {}
           const { name, namespace } = item
           if (name && namespace && relatedResources) {
-            set(relatedResources, [`${name}-${namespace}`, 'related'], get(value, 'data.searchResult[0].related'))
+            relatedResources[`${name}-${namespace}`] = {
+              ...relatedResources[`${name}-${namespace}`],
+              related: value.data?.searchResult?.[0]?.related,
+            }
           }
         }
         // Handle ManagedClusterView API response (contains resource template)
         else if (value.result) {
-          const item = get(value, 'result.metadata', {})
+          const item = value.result?.metadata ?? {}
           const { name, namespace } = item
           if (name && namespace && relatedResources) {
-            set(relatedResources, [`${name}-${namespace}`, 'template'], value.result)
+            relatedResources[`${name}-${namespace}`] = {
+              ...relatedResources[`${name}-${namespace}`],
+              template: value.result,
+            }
           }
         }
       }

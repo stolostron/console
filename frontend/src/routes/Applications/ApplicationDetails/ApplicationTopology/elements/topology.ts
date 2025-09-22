@@ -2,7 +2,6 @@
 import { getClusterName, isDeployableResource } from './helpers/diagram-helpers-utils'
 import { addDiagramDetails } from './topologyDetails'
 import { computeNodeStatus } from '../statuses/computeStatuses'
-import _ from 'lodash'
 import { getArgoTopology } from './topologyArgo'
 import { getSubscriptionTopology } from './topologySubscription'
 import { getAppSetTopology } from './topologyAppSet'
@@ -61,7 +60,7 @@ export const getTopology = async (
 
   // Set the hub cluster name on the topology if it exists
   if (topology) {
-    _.set(topology, 'hubClusterName', localHubName)
+    topology.hubClusterName = localHubName
   }
   return topology
 }
@@ -108,22 +107,26 @@ export const getDiagramElements = (
 
     // Handle application nodes to extract channel information
     if (evaluateSingleAnd(type === 'application', id.startsWith('application'))) {
-      channelsList = _.get(node, 'specs.channels', []) as string[]
+      channelsList = (node.specs?.channels ?? []) as string[]
 
       // Filter out the special "all channels" entry and set default active channel
       const channelListNoAllChannels = channelsList.filter((chn) => chn !== '__ALL__/__ALL__//__ALL__/__ALL__')
       const defaultActiveChannel = channelListNoAllChannels.length > 0 ? channelListNoAllChannels[0] : null
 
-      activeChannelInfo = _.get(node, 'specs.activeChannel') as string | null
+      activeChannelInfo = (node.specs?.activeChannel ?? null) as string | null
       if (!activeChannelInfo) {
         // Set default active channel if none specified
         activeChannelInfo = defaultActiveChannel
-        _.set(node, 'specs.activeChannel', defaultActiveChannel)
+        if (node.specs) {
+          node.specs.activeChannel = defaultActiveChannel
+        }
       }
 
       // Validate that active channel exists in the channel list
       if (evaluateSingleAnd(activeChannelInfo, channelsList.indexOf(activeChannelInfo as string) === -1)) {
-        _.set(node, 'specs.activeChannel', defaultActiveChannel)
+        if (node.specs) {
+          node.specs.activeChannel = defaultActiveChannel
+        }
         activeChannelInfo = defaultActiveChannel
       }
     }
@@ -169,15 +172,15 @@ export const processNodeData = (
   topology: Topology
 ): void => {
   const { name, type } = node
-  const isDesign = _.get(node, 'specs.isDesign', false)
+  const isDesign = node.specs?.isDesign ?? false
 
   // Skip certain node types when in design mode
-  if (!isDeployableResource(node) && _.includes(['cluster', 'application', 'placements'], type) && isDesign) {
+  if (!isDeployableResource(node) && ['cluster', 'application', 'placements'].includes(type) && isDesign) {
     return // ignore these types
   }
 
   // Extract channel information for key generation
-  const channel = _.get(node, 'specs.raw.spec.channel', '') as string
+  const channel = (node.specs?.raw?.spec?.channel ?? '') as string
   const keyName = !isDeployableResource(node) && channel.length > 0 ? `${channel}-${name}` : name
 
   // Resolve cluster name for this node
@@ -188,16 +191,13 @@ export const processNodeData = (
     topoResourceMap[name] = node
 
     // Check for Helm chart annotations to detect Helm releases
-    const topoAnnotation =
-      _.get(node, 'specs.raw.metadata.annotations') !== undefined
-        ? _.get(node, 'specs.raw.metadata.annotations')['apps.open-cluster-management.io/topo']
-        : undefined
+    const topoAnnotation = node.specs?.raw?.metadata?.annotations?.['apps.open-cluster-management.io/topo']
     if (topoAnnotation !== undefined && topoAnnotation.indexOf('helmchart/') > -1) {
       hasHelmReleases.value = true
     }
   } else {
     // Other resource types use cluster-specific keys
-    const resources = _.get(node, 'specs.resources')
+    const resources = node.specs?.resources
     if (resources) {
       // Nodes representing multiple resources use type-cluster key
       topoResourceMap[`${type}-${clusterName}`] = node
@@ -213,7 +213,7 @@ export const processNodeData = (
   }
 
   // Store cluster information for route generation and node matching
-  node['clusters'] = _.find(topology.nodes, { id: `member--clusters--${clusterName}` })
+  node['clusters'] = topology.nodes.find((n) => n.id === `member--clusters--${clusterName}`)
 }
 
 /**
@@ -248,7 +248,7 @@ export const getTopologyElements = (resourceItem: Topology): { links: TopologyLi
   }))
 
   // Handle self-referencing links by converting them to node properties
-  const nodeMap = _.keyBy(nodes, 'uid')
+  const nodeMap = Object.fromEntries(nodes.map((node) => [node.uid, node]))
   modifiedLinks = modifiedLinks.filter((l) => {
     if (l.source !== l.target) {
       return true

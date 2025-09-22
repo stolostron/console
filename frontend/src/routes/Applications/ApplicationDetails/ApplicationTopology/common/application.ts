@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { get, set } from 'lodash'
 import { getSubscriptionApplication } from './applicationSubscription'
 import {
   fireManagedClusterView,
@@ -13,6 +12,7 @@ import {
 import { getResource } from '../../../../../resources/utils'
 import { fetchAggregate, SupportedAggregate } from '../../../../../lib/useAggregates'
 import type { ApplicationModel, ManagedCluster, RecoilStates } from '../types'
+import { safeGet, safeSet } from '../utils'
 
 /**
  * Resolve an application model for ACM, Argo, ApplicationSet, OCP, or Flux app kinds.
@@ -61,17 +61,17 @@ export const getApplication = async (
       },
     }).promise) as Application
     if (app) {
-      placementName = get(
+      placementName = safeGet(
         app,
         'spec.generators[0].clusterDecisionResource.labelSelector.matchLabels["cluster.open-cluster-management.io/placement"]',
         ''
       )
       placement = recoilStates.placementDecisions.find((placementDecision: any) => {
-        const labels = get(placementDecision, 'metadata.labels', {})
+        const labels = safeGet(placementDecision, 'metadata.labels', {})
         return labels['cluster.open-cluster-management.io/placement'] === placementName
       })
 
-      const decisionOwnerReference = get(placement, 'metadata.ownerReferences', undefined) as
+      const decisionOwnerReference = safeGet(placement, 'metadata.ownerReferences', undefined) as
         | Array<{ kind?: string; name?: string }>
         | undefined
 
@@ -85,7 +85,7 @@ export const getApplication = async (
         )
       }
 
-      if (get(app, 'spec.template.metadata.annotations["apps.open-cluster-management.io/ocm-managed-cluster"]')) {
+      if (safeGet(app, 'spec.template.metadata.annotations["apps.open-cluster-management.io/ocm-managed-cluster"]')) {
         isAppSetPullModel = true
       }
     }
@@ -97,7 +97,7 @@ export const getApplication = async (
       // get argo app definition from managed cluster
       app = await getRemoteArgoApp(cluster, 'application', ArgoApplicationApiVersion, name, namespace)
       if (app) {
-        set(app as object, 'status.cluster', cluster)
+        safeSet(app as object, 'status.cluster', cluster)
       }
     } else {
       // argo app is not part of recoil
@@ -148,7 +148,7 @@ export const getApplication = async (
       app,
       metadata: (app as any).metadata,
       placement,
-      isArgoApp: get(app, 'apiVersion', '').indexOf('argoproj.io') > -1 && !isAppSet,
+      isArgoApp: safeGet(app, 'apiVersion', '').indexOf('argoproj.io') > -1 && !isAppSet,
       isAppSet: isAppSet,
       isOCPApp,
       isFluxApp,
@@ -211,15 +211,15 @@ export const getAppSetApplicationPullModel = (
   const multiclusterApplicationSetReport = multiclusterApplicationSetReports.find(
     (report: any) => report.metadata.name === app.metadata.name && report.metadata.namespace === app.metadata.namespace
   )
-  const argoApps = get(multiclusterApplicationSetReport, 'statuses.clusterConditions', []) as any[]
-  const resources = get(multiclusterApplicationSetReport, 'statuses.resources', [])
+  const argoApps = safeGet(multiclusterApplicationSetReport, 'statuses.clusterConditions', []) as any[]
+  const resources = safeGet(multiclusterApplicationSetReport, 'statuses.resources', [])
   const appSetApps: any[] = []
   const appSetClusters: any[] = []
 
   argoApps.forEach((argoApp: any) => {
-    const appStr = get(argoApp, 'app')
+    const appStr = safeGet(argoApp, 'app')
     const appData = appStr ? (appStr as string).split('/') : []
-    const conditions = get(argoApp, 'conditions', [])
+    const conditions = safeGet(argoApp, 'conditions', [])
     appSetApps.push({
       apiVersion: ArgoApplicationApiVersion,
       kind: ArgoApplicationKind,

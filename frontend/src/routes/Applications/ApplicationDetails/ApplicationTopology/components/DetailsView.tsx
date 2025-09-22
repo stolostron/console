@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import _ from 'lodash'
 import React, { Component, Fragment, KeyboardEvent, MouseEvent } from 'react'
 import classNames from 'classnames'
 import { Button, Spinner, Tabs, Tab, TabTitleText } from '@patternfly/react-core'
@@ -180,7 +179,7 @@ class DetailsView extends Component<DetailsViewProps, DetailsViewState> {
 
     // Determine if we should show table view (multiple resources) or single resource view
     const isTableView =
-      (_.get(currentNode, 'specs.resourceCount', 0) as number) > 1 &&
+      ((currentNode as any)?.specs?.resourceCount ?? 0) > 1 &&
       currentNode.type !== 'cluster' &&
       currentNode.type !== 'application'
 
@@ -190,7 +189,7 @@ class DetailsView extends Component<DetailsViewProps, DetailsViewState> {
     // Determine the display name for the resource
     let name = isTableView || currentNode.type === 'cluster' ? '' : currentNode.name
     if (!name) {
-      name = _.get(currentNode, 'specs.raw.metadata.name', '') as string
+      name = (currentNode as any)?.specs?.raw?.metadata?.name ?? ''
     }
 
     const legend = getLegendTitle(resourceType)
@@ -426,9 +425,9 @@ class DetailsView extends Component<DetailsViewProps, DetailsViewState> {
     const handleKeyPress = (e: KeyboardEvent) => this.handleKeyPress(value, e)
 
     // Determine if we should show launch icon (not for design/YAML views)
-    const showLaunchOutIcon = !_.get(value, ['data', 'specs', 'isDesign'], false)
+    const showLaunchOutIcon = !(value?.data?.specs?.isDesign ?? false)
     const isExternal =
-      _.get(value, 'data.action', '') !== 'show_search' && _.get(value, 'data.action', '') !== 'show_resource_yaml'
+      (value?.data?.action ?? '') !== 'show_search' && (value?.data?.action ?? '') !== 'show_resource_yaml'
 
     const label = value.labelValue || value.label
 

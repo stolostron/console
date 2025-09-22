@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { get, set, uniqBy } from 'lodash'
+// Lodash imports removed - using native TypeScript equivalents
 import { getResource, listNamespacedResources } from '../../../../../resources/utils'
 import { fireManagedClusterView } from '../../../../../resources'
 import { searchClient } from '../../../../Search/search-sdk/search-client'
@@ -71,10 +71,8 @@ export function getAppSetTopology(application: ApplicationModel, hubClusterName:
   })
 
   // Extract placement name from ApplicationSet generators configuration
-  const appSetPlacementName = get(
-    application.app,
-    'spec.generators[0].clusterDecisionResource.labelSelector.matchLabels["cluster.open-cluster-management.io/placement"]'
-  )
+  const appSetPlacementName = (application.app as any)?.spec?.generators?.[0]?.clusterDecisionResource?.labelSelector
+    ?.matchLabels?.['cluster.open-cluster-management.io/placement']
 
   // Clean up the application spec by removing apps array
   if (application.app && typeof application.app === 'object' && 'spec' in application.app) {
@@ -87,14 +85,14 @@ export function getAppSetTopology(application: ApplicationModel, hubClusterName:
   // Create placement node if placement exists
   let isPlacementFound = false
   let isArgoCDPullModelTargetLocalCluster = false
-  const placement = get(application, 'placement', '')
+  const placement = application.placement ?? ''
   const placementId = `member--placements--${namespace}--${name}`
 
   if (placement) {
     isPlacementFound = true
     const placementName = (placement as any)?.metadata?.name || ''
     const placementNamespace = (placement as any)?.metadata?.namespace || ''
-    const clusterDecisions = get(placement, 'status.decisions', [])
+    const clusterDecisions = (placement as any)?.status?.decisions ?? []
 
     // Check if this is an ArgoCD pull model targeting the local cluster
     if (
@@ -134,17 +132,18 @@ export function getAppSetTopology(application: ApplicationModel, hubClusterName:
   }
 
   // Set placement-related flags on the ApplicationSet node
-  set(nodes[0], 'isPlacementFound', isPlacementFound)
-  set(nodes[0], 'isArgoCDPullModelTargetLocalCluster', isArgoCDPullModelTargetLocalCluster)
+  ;(nodes[0] as any).isPlacementFound = isPlacementFound
+  ;(nodes[0] as any).isArgoCDPullModelTargetLocalCluster = isArgoCDPullModelTargetLocalCluster
 
   // Determine the parent node for clusters (placement if exists, otherwise ApplicationSet)
   const clusterParentId = placement ? placementId : appId
 
   // Extract source path from ApplicationSet template or generators
+  const templateSourcePath = (application.app as any)?.spec?.template?.spec?.source?.path ?? ''
   const source =
-    get(application, 'app.spec.template.spec.source.path', '') !== '{{path}}'
-      ? get(application, 'app.spec.template.spec.source.path', '')
-      : (Object.values(get(application, 'app.spec.generators', [{}])[0] || {})[0] as any)?.directories?.[0]?.path || ''
+    templateSourcePath !== '{{path}}'
+      ? templateSourcePath
+      : (Object.values((application.app as any)?.spec?.generators?.[0] ?? {})[0] as any)?.directories?.[0]?.path ?? ''
 
   // Add cluster nodes to topology
   const clusterId = addClusters(
@@ -161,7 +160,7 @@ export function getAppSetTopology(application: ApplicationModel, hubClusterName:
   // Collect resources from all ApplicationSet applications
   if (appSetApps && appSetApps.length > 0) {
     appSetApps.forEach((app: any) => {
-      const appResources = get(app, 'status.resources', [])
+      const appResources = app.status?.resources ?? []
       let appClusterName = app.spec?.destination?.name
 
       // If cluster name not found, try to find it by server URL
@@ -261,7 +260,8 @@ export function getAppSetTopology(application: ApplicationModel, hubClusterName:
   })
 
   // Return unique nodes and all links
-  return { nodes: uniqBy(nodes, 'uid'), links }
+  const uniqueNodes = nodes.filter((node, index, self) => index === self.findIndex((n) => n.uid === node.uid))
+  return { nodes: uniqueNodes, links }
 }
 
 /**
@@ -333,10 +333,10 @@ const getArgoRoute = async (
       // Filter routes to find Argo CD server routes
       const routeObjs = routes.filter(
         (route: any) =>
-          get(route, 'metadata.labels["app.kubernetes.io/part-of"]', '') === 'argocd' &&
-          get(route, 'metadata.labels["app.kubernetes.io/name"]', '').endsWith('-server') &&
-          !get(route, 'metadata.name', '').toLowerCase().includes('grafana') &&
-          !get(route, 'metadata.name', '').toLowerCase().includes('prometheus')
+          (route.metadata?.labels?.['app.kubernetes.io/part-of'] ?? '') === 'argocd' &&
+          (route.metadata?.labels?.['app.kubernetes.io/name'] ?? '').endsWith('-server') &&
+          !(route.metadata?.name ?? '').toLowerCase().includes('grafana') &&
+          !(route.metadata?.name ?? '').toLowerCase().includes('prometheus')
       )
 
       argoRoute = routeObjs[0]
@@ -344,7 +344,7 @@ const getArgoRoute = async (
       // Prefer routes with 'server' in the name if multiple routes exist
       if (routeObjs.length > 1) {
         const serverRoute = routeObjs.find((route: any) =>
-          get(route, 'metadata.name', '').toLowerCase().includes('server')
+          (route.metadata?.name ?? '').toLowerCase().includes('server')
         )
         if (serverRoute) {
           argoRoute = serverRoute
@@ -394,12 +394,12 @@ export const openRouteURL = (
   toggleLoading: () => void,
   hubClusterName: string
 ): void => {
-  const name = get(routeObject, 'name', '')
-  const namespace = get(routeObject, 'namespace', '')
-  const cluster = get(routeObject, 'cluster', '')
-  const kind = get(routeObject, 'kind', '')
-  const apigroup = get(routeObject, 'apigroup', '')
-  const apiversion = get(routeObject, 'apiversion', '')
+  const name = routeObject.name ?? ''
+  const namespace = routeObject.namespace ?? ''
+  const cluster = routeObject.cluster ?? ''
+  const kind = routeObject.kind ?? ''
+  const apigroup = routeObject.apigroup ?? ''
+  const apiversion = routeObject.apiversion ?? ''
   const apiVersion = `${apigroup}/${apiversion}`
 
   toggleLoading()
@@ -471,20 +471,20 @@ const getArgoRouteFromSearch = async (
       return
     }
 
-    const searchResult = get(result, 'data.searchResult', [])
+    const searchResult = result.data?.searchResult ?? []
     if (searchResult.length > 0) {
       let route: any = null
 
       // Filter out Grafana and Prometheus routes
-      const routes = get(searchResult[0], 'items', []).filter(
+      const routes = (searchResult[0]?.items ?? []).filter(
         (routeObj: any) =>
-          !get(routeObj, 'name', '').toLowerCase().includes('grafana') &&
-          !get(routeObj, 'name', '').toLowerCase().includes('prometheus')
+          !(routeObj.name ?? '').toLowerCase().includes('grafana') &&
+          !(routeObj.name ?? '').toLowerCase().includes('prometheus')
       )
 
       if (routes.length > 0) {
         // Prefer routes with 'server' in the name
-        const serverRoute = routes.find((routeObj: any) => get(routeObj, 'name', '').toLowerCase().includes('server'))
+        const serverRoute = routes.find((routeObj: any) => (routeObj.name ?? '').toLowerCase().includes('server'))
         if (serverRoute) {
           route = serverRoute
         } else {
@@ -526,8 +526,8 @@ const getArgoRouteFromSearch = async (
  * @param appName - Application name to navigate to
  */
 const openArgoEditorWindow = (route: RouteObject, appName: string): void => {
-  const hostName = get(route, 'spec.host', 'unknown')
-  const transport = get(route, 'spec.tls') ? 'https' : 'http'
+  const hostName = route.spec?.host ?? 'unknown'
+  const transport = route.spec?.tls ? 'https' : 'http'
   const argoURL = `${transport}://${hostName}/applications`
   window.open(`${argoURL}/${appName}`, '_blank')
 }
@@ -539,8 +539,8 @@ const openArgoEditorWindow = (route: RouteObject, appName: string): void => {
  * @param route - Route object containing host and TLS information
  */
 const openRouteURLWindow = (route: RouteObject): void => {
-  const hostName = get(route, 'spec.host', 'unknown')
-  const transport = get(route, 'spec.tls') ? 'https' : 'http'
+  const hostName = route.spec?.host ?? 'unknown'
+  const transport = route.spec?.tls ? 'https' : 'http'
   const routeURL = `${transport}://${hostName}`
   window.open(`${routeURL}`, '_blank')
 }
