@@ -162,6 +162,7 @@ export interface NumberInput extends InputBase<number> {
 export interface RadioInput extends SelectOptionsBase<string> {
   type: 'Radio'
   isInline?: boolean
+  variant?: 'toggleGroup'
 }
 
 export interface CustomInput {

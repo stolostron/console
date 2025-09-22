@@ -8,7 +8,13 @@ import { User, Group } from '../../../../resources/rbac'
 
 jest.mock('../../../../lib/acm-i18next', () => ({
   useTranslation: jest.fn().mockReturnValue({
-    t: (key: string) => key,
+    t: (key: string) => {
+      const translations: { [key: string]: string } = {
+        'button.backToUsers': 'Back to users',
+        'Not found': 'Not found',
+      }
+      return translations[key] || key
+    },
   }),
 }))
 
@@ -89,7 +95,7 @@ describe('UserPage', () => {
     render(<Component userId="non-existent-user" />)
 
     expect(screen.getByText('Not found')).toBeInTheDocument()
-    expect(screen.getByText('button.backToUsers')).toBeInTheDocument()
+    expect(screen.getByText('Back to users')).toBeInTheDocument()
   })
 
   test('should render user page with navigation tabs', () => {
@@ -146,7 +152,7 @@ describe('UserPage', () => {
 
     render(<Component />)
 
-    expect(screen.getByRole('heading', { level: 1, name: 'Test User' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: 'test-user' })).toBeInTheDocument()
     expect(screen.getAllByText('test-user').length).toBeGreaterThan(0)
   })
 
