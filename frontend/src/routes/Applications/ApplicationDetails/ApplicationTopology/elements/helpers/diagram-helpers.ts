@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import _ from 'lodash'
 import { openArgoCDEditor, openRouteURL } from '../topologyAppSet'
 import { isSearchAvailable } from './search-helper'
 import queryString from 'query-string'
@@ -13,6 +12,7 @@ import type {
   URLSearchData,
   EditLinkParams,
 } from '../../types'
+import { getNestedProperty } from '../../utils'
 
 const showResourceYaml = 'show_resource_yaml'
 const apiVersionPath = 'specs.raw.apiVersion'
@@ -45,16 +45,16 @@ export const addDetails = (
  */
 export const getNodePropery = (
   node: NodeLike,
-  propPath: _.Many<string | number>,
+  propPath: string | number | (string | number)[],
   key: string,
   defaultValue?: string,
   status?: string
 ): { labelValue: string; value: string; status?: string } | undefined => {
-  const dataObj = _.get(node, propPath, undefined)
+  const dataObj = getNestedProperty(node, propPath)
 
   let data = dataObj as unknown as string | undefined
   if (data) {
-    data = _.toString(data).replace(/:/g, '=')
+    data = String(data).replace(/:/g, '=')
     data = data.replace(/{/g, '')
     data = data.replace(/}/g, '')
     data = data.replace(/"/g, '')
@@ -99,14 +99,16 @@ export const createEditLink = (
   overrideApiVersion?: string
 ): string => {
   let kind: string | undefined =
-    overrideKind || (_.get(node, 'specs.raw.kind') as string | undefined) || (_.get(node, 'kind') as string | undefined)
-  const apigroup = _.get(node, 'apigroup') as string | undefined
-  const apiversion = _.get(node, 'apiversion') as string | undefined
-  let cluster: string | undefined = overrideCluster || (_.get(node, 'cluster') as string | undefined)
+    overrideKind ||
+    (getNestedProperty(node, 'specs.raw.kind') as string | undefined) ||
+    (getNestedProperty(node, 'kind') as string | undefined)
+  const apigroup = getNestedProperty(node, 'apigroup') as string | undefined
+  const apiversion = getNestedProperty(node, 'apiversion') as string | undefined
+  let cluster: string | undefined = overrideCluster || (getNestedProperty(node, 'cluster') as string | undefined)
   if (!cluster) {
     cluster = getURLSearchData().cluster
   }
-  let apiVersion = _.get(node, apiVersionPath) as string | undefined
+  let apiVersion = getNestedProperty(node, apiVersionPath) as string | undefined
   if (!apiVersion) {
     apiVersion = apigroup && apiversion ? apigroup + '/' + apiversion : apiversion
   }
@@ -121,8 +123,8 @@ export const createEditLink = (
 
   return getEditLink(
     {
-      name: _.get(node, 'name') as string | undefined,
-      namespace: _.get(node, 'namespace') as string | undefined,
+      name: getNestedProperty(node, 'name') as string | undefined,
+      namespace: getNestedProperty(node, 'namespace') as string | undefined,
       kind: kind,
       apiVersion,
       cluster: cluster ? cluster : undefined,
@@ -182,15 +184,15 @@ export const createResourceSearchLink = (node: NodeLike, t: Translator): { type:
     value: null as any,
   }
 
-  const nodeType = _.get(node, 'type', '') as string
+  const nodeType = getNestedProperty(node, 'type', '') as string
   if (nodeType === 'cluster') {
     if (isSearchAvailable()) {
-      let clusterNames = (_.get(node, 'specs.clustersNames') as string[]) || []
+      let clusterNames = (getNestedProperty(node, 'specs.clustersNames') as string[]) || []
       if (clusterNames.length === 0) {
-        clusterNames = ((_.get(node, 'specs.appClusters') as string[]) || []) as string[]
+        clusterNames = ((getNestedProperty(node, 'specs.appClusters') as string[]) || []) as string[]
       }
       if (clusterNames.length === 0) {
-        const nodeClusters = _.get(node, 'specs.clusters') as Array<{ name: string }>
+        const nodeClusters = getNestedProperty(node, 'specs.clusters') as Array<{ name: string }>
         nodeClusters?.forEach((cls) => {
           clusterNames.push(cls.name)
         })
@@ -210,14 +212,16 @@ export const createResourceSearchLink = (node: NodeLike, t: Translator): { type:
         },
       }
     }
-  } else if (node && _.get(node, ['specs', 'pulse'], '') !== 'orange') {
-    const kindModel = _.get(node, `specs.${nodeType}Model`, {}) as Record<string, any[]>
+  } else if (node && getNestedProperty(node, ['specs', 'pulse'], '') !== 'orange') {
+    const kindModel = getNestedProperty(node, `specs.${nodeType}Model`, {}) as Record<string, any[]>
     let computedNameList: string[] = []
     let computedNSList: string[] = []
-    _.flatten(Object.values(kindModel)).forEach((item: any) => {
-      computedNameList = _.union(computedNameList, [item.name])
-      computedNSList = _.union(computedNSList, [item.namespace])
-    })
+    Object.values(kindModel)
+      .flat()
+      .forEach((item: any) => {
+        computedNameList = [...new Set([...computedNameList, item.name])]
+        computedNSList = [...new Set([...computedNSList, item.namespace])]
+      })
     let computedName = ''
     computedNameList.forEach((item) => {
       computedName = computedName.length === 0 ? item : `${computedName},${item}`
@@ -238,7 +242,7 @@ export const createResourceSearchLink = (node: NodeLike, t: Translator): { type:
           kindVal = 'PlacementDecision'
           break
         default:
-          kindVal = _.get(node, 'type', '') as string
+          kindVal = getNestedProperty(node, 'type', '') as string
       }
       result = {
         type: 'link',
@@ -251,7 +255,7 @@ export const createResourceSearchLink = (node: NodeLike, t: Translator): { type:
             namespace:
               computedNS && computedNS.length > 0
                 ? computedNS
-                : (_.get(node, ['specs', 'raw', 'metadata', 'namespace'], '') as string),
+                : (getNestedProperty(node, ['specs', 'raw', 'metadata', 'namespace'], '') as string),
             kind: kindVal,
           },
           indent: true,
@@ -276,11 +280,11 @@ export const parseApplicationNodeName = (id: string): string => {
  * Build a link to the resource YAML or logs for the given node.
  */
 export const createResourceURL = (node: NodeLike, _t: Translator, isLogURL = false): string => {
-  const cluster = _.get(node, 'cluster', '') as string
-  const type = _.get(node, 'type', '') as string
-  const apiVersion = _.get(node, 'specs.raw.apiVersion', '') as string
-  const namespace = _.get(node, 'namespace', '') as string
-  const name = _.get(node, 'name', '') as string
+  const cluster = getNestedProperty(node, 'cluster', '') as string
+  const type = getNestedProperty(node, 'type', '') as string
+  const apiVersion = getNestedProperty(node, 'specs.raw.apiVersion', '') as string
+  const namespace = getNestedProperty(node, 'namespace', '') as string
+  const name = getNestedProperty(node, 'name', '') as string
 
   if (!isLogURL) {
     return (
@@ -309,30 +313,30 @@ export const getNameWithoutChartRelease = (
   name: string,
   hasHelmReleases: { value: boolean }
 ): string => {
-  const kind = String(_.get(relatedKind, 'kind', '')).toLowerCase()
+  const kind = String(getNestedProperty(relatedKind, 'kind', '')).toLowerCase()
   if (kind === 'subscription' || !hasHelmReleases.value) {
     return name
   }
 
   const savedName = name
-  const labelAttr = _.get(relatedKind, 'label', '') as string
-  const labels = _.split(labelAttr, ';')
+  const labelAttr = getNestedProperty(relatedKind, 'label', '') as string
+  const labels = labelAttr.split(';')
   const labelMap: Record<string, string> = {}
   let foundReleaseLabel = false
   labels.forEach((label) => {
-    const splitLabelContent = _.split(label, '=')
+    const splitLabelContent = label.split('=')
 
     if (splitLabelContent.length === 2) {
-      const splitLabelTrimmed = _.trim(splitLabelContent[0])
+      const splitLabelTrimmed = splitLabelContent[0].trim()
       labelMap[splitLabelTrimmed] = splitLabelContent[1]
       if (splitLabelTrimmed === 'release') {
         foundReleaseLabel = true
-        const releaseName = _.trim(splitLabelContent[1])
+        const releaseName = splitLabelContent[1].trim()
         if (name === releaseName) {
           return name
         }
-        name = _.replace(name, `${releaseName}-`, '')
-        name = _.replace(name, releaseName, '')
+        name = name.replace(`${releaseName}-`, '')
+        name = name.replace(releaseName, '')
 
         if (name.length === 0) {
           name = removeReleaseGeneratedSuffix(savedName)
@@ -342,7 +346,7 @@ export const getNameWithoutChartRelease = (
   })
 
   if (!foundReleaseLabel && kind === 'helmrelease') {
-    const resourceName = _.get(relatedKind, 'name', '') as string
+    const resourceName = getNestedProperty(relatedKind, 'name', '') as string
     let resourceNameNoHash = resourceName.replace(/-[0-9a-fA-F]{8,10}-[0-9a-zA-Z]{4,5}$/, '')
     if (resourceName === resourceNameNoHash) {
       const idx = resourceNameNoHash.lastIndexOf('-')
@@ -351,7 +355,7 @@ export const getNameWithoutChartRelease = (
       }
     }
 
-    const values = _.split(name, '-')
+    const values = name.split('-')
     if (values.length > 2) {
       name = `${resourceNameNoHash}-${values[values.length - 1]}`
     }
@@ -376,7 +380,11 @@ export const computeResourceName = (
   name: string,
   isClusterGrouped: { value: boolean }
 ): string => {
-  if (relatedKind.kind.toLowerCase() === 'pod' && !_.get(relatedKind, '_hostingDeployable') && !_deployableName) {
+  if (
+    relatedKind.kind.toLowerCase() === 'pod' &&
+    !getNestedProperty(relatedKind, '_hostingDeployable') &&
+    !_deployableName
+  ) {
     name = getNameWithoutPodHash(relatedKind as any).nameNoHash
   }
 
@@ -405,8 +413,8 @@ export const getNameWithoutPodHash = (relatedKind: {
   let deployableName: string | null = null
   let podTemplateHashLabelFound = false
 
-  if (_.get(relatedKind, 'kind', '').toLowerCase() === 'helmrelease') {
-    nameNoHash = _.get(relatedKind, '_hostingDeployable', nameNoHash) as string
+  if (getNestedProperty(relatedKind, 'kind', '').toLowerCase() === 'helmrelease') {
+    nameNoHash = getNestedProperty(relatedKind, '_hostingDeployable', nameNoHash) as string
   }
 
   const labelsList = relatedKind.label ? relatedKind.label.split(';') : []
@@ -451,18 +459,20 @@ export const addResourceToModel = (
   relatedKind: any,
   nameWithoutChartRelease: string
 ): void => {
-  const resourceType = _.get(resourceMapObject, 'type', '') as string
+  const resourceType = getNestedProperty(resourceMapObject, 'type', '') as string
   const kindModel =
     resourceType === 'project'
-      ? (_.get(resourceMapObject, `specs.projectModel`, {}) as Record<string, any[]>)
-      : (_.get(resourceMapObject, `specs.${kind.toLowerCase()}Model`, {}) as Record<string, any[]>)
+      ? (getNestedProperty(resourceMapObject, `specs.projectModel`, {}) as Record<string, any[]>)
+      : (getNestedProperty(resourceMapObject, `specs.${kind.toLowerCase()}Model`, {}) as Record<string, any[]>)
   const modelKey = (relatedKind as any).namespace
     ? `${nameWithoutChartRelease}-${(relatedKind as any).cluster}-${(relatedKind as any).namespace}`
     : `${nameWithoutChartRelease}-${(relatedKind as any).cluster}`
   const kindList = kindModel[modelKey] || []
   kindList.push(relatedKind)
   kindModel[modelKey] = kindList
-  _.set(resourceMapObject, `specs.${resourceType === 'project' ? 'project' : kind.toLowerCase()}Model`, kindModel)
+  const modelPath = resourceType === 'project' ? 'project' : kind.toLowerCase()
+  if (!resourceMapObject.specs) resourceMapObject.specs = {}
+  resourceMapObject.specs[`${modelPath}Model`] = kindModel
 }
 
 /** Reduce complexity: return true if either object is falsy. */
@@ -484,23 +494,23 @@ export const addNodeOCPRouteLocationForCluster = (
   details: DetailsList,
   t: Translator
 ): DetailsList => {
-  const rules = _.get(node, ['specs', 'raw', 'spec', 'rules'], []) as any[]
+  const rules = getNestedProperty(node, ['specs', 'raw', 'spec', 'rules'], []) as any[]
   if (rules.length > 1) {
     return details
   }
 
-  const clustersList = (_.get(node, 'specs.searchClusters', []) as any[]) || []
-  let hostName = _.get(node, ['specs', 'raw', 'spec', 'host']) as string | undefined
-  if (typeObject && _.get(node, 'name', '') !== _.get(typeObject, 'name', '')) {
+  const clustersList = (getNestedProperty(node, 'specs.searchClusters', []) as any[]) || []
+  let hostName = getNestedProperty(node, ['specs', 'raw', 'spec', 'host']) as string | undefined
+  if (typeObject && getNestedProperty(node, 'name', '') !== getNestedProperty(typeObject, 'name', '')) {
     addPropertyToList(details as any, getNodePropery(typeObject, ['name'], 'spec.route.cluster.name'))
   }
 
   if (!hostName && rules.length === 1) {
-    hostName = _.get(rules[0], 'host')
+    hostName = getNestedProperty(rules[0], 'host')
   }
 
   if (clustersList.length === 0 && !hostName) {
-    const ingress = _.get(node, ['specs', 'raw', 'spec', 'ingress'], []) as any[]
+    const ingress = getNestedProperty(node, ['specs', 'raw', 'spec', 'ingress'], []) as any[]
     if (ingress.length > 0) {
       hostName = ingress[0].host
     }
@@ -510,7 +520,7 @@ export const addNodeOCPRouteLocationForCluster = (
     return details
   }
 
-  const linkId = typeObject ? _.get(typeObject, 'id', '0') : _.get(node, 'uid', '0')
+  const linkId = typeObject ? getNestedProperty(typeObject, 'id', '0') : getNestedProperty(node, 'uid', '0')
 
   if (!typeObject && clustersList.length === 1) {
     if (!hostName) {
@@ -532,7 +542,7 @@ export const addNodeOCPRouteLocationForCluster = (
       type: 'link',
       value: {
         labelValue: t('Launch Route URL'),
-        id: `${_.get(typeObject, '_uid', '0')}`,
+        id: `${getNestedProperty(typeObject, '_uid', '0')}`,
         data: {
           action: 'open_route_url',
           routeObject: typeObject,
@@ -542,7 +552,7 @@ export const addNodeOCPRouteLocationForCluster = (
     })
     return details
   }
-  const transport = _.get(node, ['specs', 'template', 'template', 'spec', 'tls']) ? 'https' : 'http'
+  const transport = getNestedProperty(node, ['specs', 'template', 'template', 'spec', 'tls']) ? 'https' : 'http'
   const hostLink = `${transport}://${hostName}/`
 
   if (hostName) {
@@ -580,7 +590,7 @@ export const addOCPRouteLocation = (
   t: Translator
 ): DetailsList => {
   if (
-    _.toLower(_.get(node, ['specs', 'template', 'template', 'kind'], '') as string) === 'route' ||
+    (getNestedProperty(node, ['specs', 'template', 'template', 'kind'], '') as string).toLowerCase() === 'route' ||
     (node as any).type === 'route'
   ) {
     return addNodeInfoPerCluster(node, clusterName, targetNS, details, addNodeOCPRouteLocationForCluster, t)
@@ -593,7 +603,7 @@ export const addOCPRouteLocation = (
  * Add Ingress node location information such as host and backend services.
  */
 export const addIngressNodeInfo = (node: NodeLike, details: DetailsList, t: Translator): DetailsList => {
-  if (_.get(node, ['specs', 'raw', 'kind'], '') === 'Ingress') {
+  if (getNestedProperty(node, ['specs', 'raw', 'kind'], '') === 'Ingress') {
     details.push({
       type: 'label',
       labelValue: t('Location'),
@@ -608,22 +618,22 @@ export const addIngressNodeInfo = (node: NodeLike, details: DetailsList, t: Tran
       getNodePropery(node, ['specs', 'raw', 'spec', 'backend', 'servicePort'], t('raw.spec.ingress.service.port'))
     )
 
-    const rules = _.get(node, ['specs', 'raw', 'spec', 'rules'], []) as any[]
+    const rules = getNestedProperty(node, ['specs', 'raw', 'spec', 'rules'], []) as any[]
     rules.forEach((ruleInfo) => {
-      const hostName = _.get(ruleInfo, ['host'], 'NA')
+      const hostName = getNestedProperty(ruleInfo, ['host'], 'NA')
       details.push({
         labelValue: t('Host'),
         value: hostName,
       })
-      const paths = _.get(ruleInfo, ['http', 'paths'], []) as any[]
+      const paths = getNestedProperty(ruleInfo, ['http', 'paths'], []) as any[]
       paths.forEach((pathInfo) => {
         details.push({
           labelValue: t('Service Name'),
-          value: _.get(pathInfo, ['backend', 'serviceName'], 'NA'),
+          value: getNestedProperty(pathInfo, ['backend', 'serviceName'], 'NA'),
         })
         details.push({
           labelValue: t('Service Port'),
-          value: _.get(pathInfo, ['backend', 'servicePort'], 'NA'),
+          value: getNestedProperty(pathInfo, ['backend', 'servicePort'], 'NA'),
         })
       })
       details.push({
@@ -668,16 +678,16 @@ export const addNodeInfoPerCluster = (
   ) => DetailsList,
   t: Translator
 ): DetailsList => {
-  const resourceName = _.get(node, 'name', '') as string
-  const resourceNamespace = _.get(node, 'namespace') as string | undefined
-  const resourceMap = _.get(node, `specs.${(node as any).type}Model`, {}) as Record<string, any[]>
+  const resourceName = getNestedProperty(node, 'name', '') as string
+  const resourceNamespace = getNestedProperty(node, 'namespace') as string | undefined
+  const resourceMap = getNestedProperty(node, `specs.${(node as any).type}Model`, {}) as Record<string, any[]>
 
   const locationDetails: DetailsList = []
   const modelKey = resourceNamespace
     ? `${resourceName}-${clusterName}-${resourceNamespace}`
     : `${resourceName}-${clusterName}`
   const resourcesForCluster = (resourceMap[modelKey] || []) as any[]
-  const typeObject = _.find(resourcesForCluster, (obj) => _.get(obj, 'namespace', '') === targetNS)
+  const typeObject = resourcesForCluster.find((obj) => getNestedProperty(obj, 'namespace', '') === targetNS)
   if (typeObject) {
     getDetailsFunction(node, typeObject, locationDetails, t, clusterName)
   }
@@ -699,8 +709,8 @@ export const addNodeServiceLocationForCluster = (
   t: Translator
 ): DetailsList => {
   if (node && typeObject && typeObject.clusterIP && typeObject.port) {
-    let port = _.split(typeObject.port as string, ':')[0]
-    port = _.split(port, '/')[0]
+    let port = (typeObject.port as string).split(':')[0]
+    port = port.split('/')[0]
 
     const location = `${typeObject.clusterIP}:${port}`
     details.push({
@@ -722,7 +732,7 @@ export const processResourceActionLink = (
   hubClusterName: string
 ): string => {
   let targetLink = ''
-  const linkPath = _.get(resource as any, ['action'], '') as string
+  const linkPath = getNestedProperty(resource as any, ['action'], '') as string
   const { name = '', namespace = '', editLink, kind, cluster = '' } = resource
   const nsData = namespace
     ? kind === 'ocpapplication' || kind === 'fluxapplication'
@@ -751,12 +761,12 @@ export const processResourceActionLink = (
       break
     }
     case 'open_route_url': {
-      const routeObject = _.get(resource as any, ['routeObject'], '')
+      const routeObject = getNestedProperty(resource as any, ['routeObject'], '')
       openRouteURL(routeObject, toggleLoading, hubClusterName)
       break
     }
     default:
-      targetLink = _.get(resource as any, ['targetLink'], '') as string
+      targetLink = getNestedProperty(resource as any, ['targetLink'], '') as string
   }
   if (targetLink !== '') {
     window.open(targetLink, '_blank')
@@ -788,7 +798,7 @@ export const getFilteredNode = (node: any, item: { name: string; namespace: stri
     resources: undefined,
   }
   const kindModelKey = `${node.type}Model`
-  const kindModel = _.get(node, ['specs', kindModelKey]) as Record<string, any[]> | undefined
+  const kindModel = getNestedProperty(node, ['specs', kindModelKey]) as Record<string, any[]> | undefined
   if (kindModel) {
     const filtered: Record<string, any[]> = {}
     Object.entries(kindModel).forEach(([k, v]) => {

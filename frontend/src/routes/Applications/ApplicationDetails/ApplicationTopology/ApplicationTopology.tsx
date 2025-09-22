@@ -3,7 +3,7 @@
 import { AcmDrawerContext } from '../../../../ui-components'
 import cloneDeep from 'lodash/cloneDeep'
 import { useContext, useEffect, useState } from 'react'
-import { Topology } from './TopologyComponent/Topology'
+import { Topology } from '../../../../components/ResourceTopology/ResourceTopology'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { useApplicationDetailsContext } from '../ApplicationDetails'
 import { processResourceActionLink } from './elements/helpers/diagram-helpers'

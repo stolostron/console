@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import _ from 'lodash'
 import { addDetails } from './diagram-helpers'
 import { AnsibleCondition, Pulse, AnsibleJobStatus, DetailsList, NodeLike, Translator } from '../../types'
+import { safeGet } from '../../utils'
 
 const ansibleTaskErrorStates: string[] = ['Failed']
 const ansibleTaskSuccessStates: string[] = ['Successful', 'Running']
@@ -23,8 +23,8 @@ const ansibleTaskResultStr = 'ansibleResult'
 export const getInfoForAnsibleTask = (
   ansibleConditions: AnsibleCondition[]
 ): { pulse: Pulse | 'orange'; message: string | null } => {
-  const ansibleTaskConditionIndex = _.findIndex(ansibleConditions, (condition) => {
-    return _.get(condition, ansibleTaskResultStr, '') !== ''
+  const ansibleTaskConditionIndex = ansibleConditions.findIndex((condition) => {
+    return safeGet(condition, ansibleTaskResultStr, '') !== ''
   })
 
   const taskStatus: AnsibleCondition | null =
@@ -32,18 +32,17 @@ export const getInfoForAnsibleTask = (
   let reasonStatus = ''
   let taskStatusPulse: Pulse | 'orange' = 'orange'
   if (taskStatus) {
-    reasonStatus = _.get(taskStatus, 'reason', '') as string
-    taskStatusPulse =
-      _.indexOf(ansibleTaskErrorStates, reasonStatus) >= 0
-        ? 'red'
-        : _.indexOf(ansibleTaskSuccessStates, reasonStatus) >= 0
-          ? 'green'
-          : 'yellow'
+    reasonStatus = safeGet(taskStatus, 'reason', '') as string
+    taskStatusPulse = ansibleTaskErrorStates.includes(reasonStatus)
+      ? 'red'
+      : ansibleTaskSuccessStates.includes(reasonStatus)
+        ? 'green'
+        : 'yellow'
   }
 
   return {
     pulse: taskStatusPulse,
-    message: taskStatus === null ? null : `${reasonStatus}: ${_.get(taskStatus, 'message', null) as string | null}`,
+    message: taskStatus === null ? null : `${reasonStatus}: ${safeGet(taskStatus, 'message', null) as string | null}`,
   }
 }
 
@@ -57,21 +56,20 @@ export const getInfoForAnsibleJob = (
   let reasonStatus = ''
   let jobStatusPulse: Pulse | 'orange' = 'orange' // job is executed by the ansible task
   if (jobStatus) {
-    reasonStatus = _.get(jobStatus, 'status', '') as string
-    jobStatusPulse =
-      _.indexOf(ansibleJobErrorStates, reasonStatus) >= 0
-        ? 'red'
-        : _.indexOf(ansibleJobSuccessStates, reasonStatus) >= 0
-          ? 'green'
-          : _.indexOf(ansibleJobWarningStates, reasonStatus) >= 0
-            ? 'yellow'
-            : 'orange'
+    reasonStatus = safeGet(jobStatus, 'status', '') as string
+    jobStatusPulse = ansibleJobErrorStates.includes(reasonStatus)
+      ? 'red'
+      : ansibleJobSuccessStates.includes(reasonStatus)
+        ? 'green'
+        : ansibleJobWarningStates.includes(reasonStatus)
+          ? 'yellow'
+          : 'orange'
   }
 
   return {
     pulse: jobStatusPulse,
     message: jobStatus === null ? null : reasonStatus,
-    url: jobStatus === null ? null : (_.get(jobStatus, 'url', null) as string | null),
+    url: jobStatus === null ? null : (safeGet(jobStatus, 'url', null) as string | null),
   }
 }
 
@@ -80,13 +78,13 @@ export const getInfoForAnsibleJob = (
  * Red overrides Yellow, which overrides Orange. Green only if neither is Red/Yellow/Orange.
  */
 export const getPulseStatusForAnsibleNode = (node: NodeLike): Pulse | 'orange' => {
-  const ansibleConditions = _.get(node, ansibleStatusStr, []) as AnsibleCondition[]
+  const ansibleConditions = safeGet(node, ansibleStatusStr, []) as AnsibleCondition[]
   if (ansibleConditions.length === 0) {
     return 'orange'
   }
 
   const taskStatusPulse = getInfoForAnsibleTask(ansibleConditions).pulse
-  const jobStatusPulse = getInfoForAnsibleJob(_.get(node, ansibleJobStatusStr) as AnsibleJobStatus).pulse
+  const jobStatusPulse = getInfoForAnsibleJob(safeGet(node, ansibleJobStatusStr) as AnsibleJobStatus).pulse
   if (taskStatusPulse === 'red' || jobStatusPulse === 'red') {
     return 'red'
   }
@@ -133,19 +131,19 @@ export const getStatusFromPulse = (pulse?: Pulse): 'failure' | 'warning' | 'pend
  * Adds template name, secret (when present), job URL, and status lines for task and job.
  */
 export const showAnsibleJobDetails = (node: NodeLike, details: DetailsList, t: Translator): DetailsList => {
-  const ansibleConditions = _.get(node, ansibleStatusStr, []) as AnsibleCondition[]
+  const ansibleConditions = safeGet(node, ansibleStatusStr, []) as AnsibleCondition[]
 
   const taskStatus = getInfoForAnsibleTask(ansibleConditions)
-  const jobStatus = getInfoForAnsibleJob(_.get(node, ansibleJobStatusStr) as AnsibleJobStatus)
+  const jobStatus = getInfoForAnsibleJob(safeGet(node, ansibleJobStatusStr) as AnsibleJobStatus)
 
   addDetails(details, [
     {
       labelValue: t('Ansible Tower Job template name'),
-      value: _.get(node, 'specs.raw.status.k8sJob.env.templateName'),
+      value: safeGet(node, 'specs.raw.status.k8sJob.env.templateName'),
     },
     {
       labelValue: t('Ansible Tower secret'),
-      value: _.get(node, 'specs.raw.status.k8sJob.env.secretNamespacedName'),
+      value: safeGet(node, 'specs.raw.status.k8sJob.env.secretNamespacedName'),
     },
   ])
 
@@ -153,9 +151,9 @@ export const showAnsibleJobDetails = (node: NodeLike, details: DetailsList, t: T
     type: 'spacer',
   })
 
-  let jobUrl = _.get(jobStatus, 'url') as string | null
+  let jobUrl = safeGet(jobStatus, 'url') as string | null
   if (jobUrl) {
-    if (!_.startsWith(jobUrl, 'http')) {
+    if (!jobUrl.startsWith('http')) {
       jobUrl = `https://${jobUrl}`
     }
 
@@ -192,10 +190,10 @@ export const showAnsibleJobDetails = (node: NodeLike, details: DetailsList, t: T
 
   details.push({
     labelValue: t('description.ansible.job.status'),
-    value: _.get(jobStatus, 'message', '') === '' ? t('description.ansible.job.status.empty') : jobStatus.message,
+    value: safeGet(jobStatus, 'message', '') === '' ? t('description.ansible.job.status.empty') : jobStatus.message,
     status: getStatusFromPulse(jobStatus.pulse as Pulse),
   })
-  if (_.get(node, 'specs.raw.status.k8sJob.message')) {
+  if (safeGet(node, 'specs.raw.status.k8sJob.message')) {
     details.push({
       labelValue: t('prop.details.section'),
       value: t('description.ansible.job.status.debug'),
