@@ -147,10 +147,11 @@ export const getSearchCompleteString = (searchQuery: string) => {
       (op) => queryTags[queryTags.length - 1].substring(queryTags[queryTags.length - 1].length - op.length) === op
     )
   ) {
-    const operator = operators.filter(
-      (op) => queryTags[queryTags.length - 1].substring(queryTags[queryTags.length - 1].length - op.length) === op
-    )
-    return queryTags[queryTags.length - 1].replace(':', '').replace(operator[0], '')
+    const operator =
+      operators.find(
+        (op) => queryTags[queryTags.length - 1].substring(queryTags[queryTags.length - 1].length - op.length) === op
+      ) ?? ''
+    return queryTags[queryTags.length - 1].replace(':', '').replace(operator, '')
   }
   return ''
 }

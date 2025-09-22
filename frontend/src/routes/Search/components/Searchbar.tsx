@@ -87,7 +87,7 @@ export const handleCSVExport = (
     savedSearchQueries.find((savedQuery: SavedSearch) => savedQuery.searchText === currentQuery)?.name ?? undefined
   generateSearchResultExport(
     existingSavedSearch
-      ? `${existingSavedSearch.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`
+      ? `${existingSavedSearch.toLowerCase().replaceAll(/\s+/g, '-')}-${Date.now()}`
       : `search-result-${Date.now()}`,
     searchResultData,
     searchDefinitions,
@@ -162,7 +162,7 @@ export function Searchbar(props: Readonly<SearchbarProps>) {
 
   const disableSaveSearch = useMemo(() => {
     return (
-      savedSearchQueries.find((savedQuery: SavedSearch) => savedQuery.searchText === currentQuery) !== undefined ||
+      savedSearchQueries.some((savedQuery: SavedSearch) => savedQuery.searchText === currentQuery) ||
       savedSearchQueries.length >= savedSearchLimit
     )
   }, [currentQuery, savedSearchLimit, savedSearchQueries])
