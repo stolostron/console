@@ -62,7 +62,7 @@ export interface TopologyProps {
     clusterDetailsContainerData: ClusterDetailsContainerData
     handleClusterDetailsContainerUpdate: React.Dispatch<React.SetStateAction<ClusterDetailsContainerData>>
   }
-  options: any
+  options?: any
   setDrawerContent: (
     title: string,
     isInline: boolean,
@@ -74,7 +74,7 @@ export interface TopologyProps {
   ) => void
   canUpdateStatuses?: boolean
   disableRenderConstraint?: boolean
-  processActionLink?: (resource: any, toggleLoading: boolean, hubClusterName: string) => void
+  processActionLink?: (resource: any, toggleLoading: () => void, hubClusterName: string) => void
   hubClusterName: string
 }
 

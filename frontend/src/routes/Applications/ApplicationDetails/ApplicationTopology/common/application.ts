@@ -25,9 +25,9 @@ export const getApplication = async (
   backendUrl: string,
   selectedChannel: string | undefined,
   recoilStates: RecoilStates,
-  cluster: string | undefined,
-  apiversion: string | undefined,
-  clusters: ManagedCluster[]
+  cluster?: string,
+  apiversion?: string,
+  clusters?: ManagedCluster[]
 ): Promise<ApplicationModel | undefined> => {
   let app: Application | undefined
   let model: ApplicationModel | undefined

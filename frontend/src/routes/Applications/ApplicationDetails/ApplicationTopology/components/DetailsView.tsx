@@ -3,7 +3,6 @@
 import React, { Component, Fragment, KeyboardEvent, MouseEvent } from 'react'
 import classNames from 'classnames'
 import { Button, Spinner, Tabs, Tab, TabTitleText } from '@patternfly/react-core'
-import jsYaml from 'js-yaml'
 import { createResourceSearchLink, createResourceURL, getFilteredNode } from '../elements/helpers/diagram-helpers'
 import ClusterDetailsContainer from './ClusterDetailsContainer'
 import ArgoAppDetailsContainer from './ArgoAppDetailsContainer'
@@ -184,7 +183,8 @@ class DetailsView extends Component<DetailsViewProps, DetailsViewState> {
       currentNode.type !== 'application'
 
     // Get shape and styling information for the resource type
-    const { shape = 'other', className = 'default' } = typeToShapeMap[resourceType] || {}
+    const { shape = 'other', className = 'default' } =
+      typeToShapeMap[String(resourceType) as keyof typeof typeToShapeMap] || {}
 
     // Determine the display name for the resource
     let name = isTableView || currentNode.type === 'cluster' ? '' : currentNode.name
@@ -322,8 +322,6 @@ class DetailsView extends Component<DetailsViewProps, DetailsViewState> {
         return this.renderSpacer()
       case 'link':
         return this.renderLink(detail, t)
-      case 'snippet':
-        return this.renderSnippet(detail, t)
       case 'clusterdetailcombobox':
         return this.renderClusterDetailComboBox(detail, t)
       case 'relatedargoappdetails':
@@ -388,24 +386,6 @@ class DetailsView extends Component<DetailsViewProps, DetailsViewState> {
         <span className={valueClass}>{value}</span>
       </div>
     )
-  }
-
-  /**
-   * Renders YAML snippet content with syntax highlighting
-   * Converts objects to YAML format and displays line by line
-   */
-  renderSnippet = ({ value }: DetailItemExtended): JSX.Element | null => {
-    if (value) {
-      const yaml = jsYaml.safeDump(value).split('\n')
-      return (
-        <div className="sectionContent snippet">
-          {yaml.map((line) => {
-            return <code key={Math.random()}>{line}</code>
-          })}
-        </div>
-      )
-    }
-    return null
   }
 
   /**

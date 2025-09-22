@@ -1842,11 +1842,13 @@ export const setResourceDeployStatus = (
             label: t('View resource YAML'),
             data: {
               action: showResourceYaml,
-              cluster: res && typeof res === 'object' && 'cluster' in res ? (res as any).cluster : undefined,
-              editLink: createEditLink(res, hubClusterName),
+              cluster:
+                res && typeof res === 'object' && res !== null && 'cluster' in res
+                  ? (res as Record<string, unknown>).cluster
+                  : undefined,
+              editLink: createEditLink(res as Record<string, unknown>, hubClusterName),
             },
           },
-          indent: true,
         })
       }
     })
