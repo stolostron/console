@@ -13,7 +13,7 @@ const ClustersDualListSelector = ({ onChoseOptions, clusterSets }: ClustersDualL
 
   // Update availableOptions when clusterSets change
   React.useEffect(() => {
-    const newAvailableOptions = clusterSets.map((clusterSet) => ({
+    const newAvailableOptions = (clusterSets || []).map((clusterSet) => ({
       id: clusterSet.name,
       text: clusterSet.name,
       isChecked: false,

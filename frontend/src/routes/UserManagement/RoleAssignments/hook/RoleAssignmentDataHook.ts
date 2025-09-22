@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useQuery } from '../../../../lib/useQuery'
 import { listGroups, listUsers } from '../../../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
-import { compareStrings } from '../../../../ui-components'
+import { compareStrings } from '../../../../ui-components/AcmTable/AcmTable'
 import { searchClient } from '../../../Search/search-sdk/search-client'
 import { useSearchResultItemsQuery } from '../../../Search/search-sdk/search-sdk'
 
@@ -147,7 +147,17 @@ const useRoleAssignmentData = (): RoleAssignmentHookReturnType => {
 
     const clustersWithClusterSet = clusters.filter((e) => e.clusterSet)
 
-    const clustersGroupedBySet = Object.groupBy(clustersWithClusterSet, ({ clusterSet }) => clusterSet!)
+    const clustersGroupedBySet = clustersWithClusterSet.reduce(
+      (acc, cluster) => {
+        const key = cluster.clusterSet!
+        if (!acc[key]) {
+          acc[key] = []
+        }
+        acc[key].push(cluster)
+        return acc
+      },
+      {} as Record<string, Cluster[]>
+    )
 
     const clusterSets: ClusterSet[] = Object.keys(clustersGroupedBySet).map((key) => ({
       name: key,
