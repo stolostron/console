@@ -138,11 +138,11 @@ export const convertStringToQuery = (searchText: string, queryResultLimit: numbe
 export const getSearchCompleteString = (searchQuery: string) => {
   const queryTags = searchQuery.split(' ')
   if (queryTags.at(-1)?.endsWith(':')) {
-    return queryTags.at(-1)?.replace(':', '')
+    return queryTags.at(-1)?.replace(':', '') ?? ''
   } else if (operators.some((op) => queryTags.at(-1)?.substring(queryTags.at(-1)?.length ?? 0 - op.length) === op)) {
     const operator =
       operators.find((op) => queryTags.at(-1)?.substring(queryTags.at(-1)?.length ?? 0 - op.length) === op) ?? ''
-    return queryTags.at(-1)?.replace(':', '').replace(operator, '')
+    return queryTags.at(-1)?.replace(':', '').replace(operator, '') ?? ''
   }
   return ''
 }
