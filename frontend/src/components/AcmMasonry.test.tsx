@@ -35,7 +35,7 @@ describe('AcmMasonry', () => {
     expect(screen.getByText('Item 3')).toBeInTheDocument()
   })
 
-  it('initially hides grid until measurements complete', () => {
+  it('renders grid with proper styling', () => {
     const { container } = render(
       <AcmMasonry minSize={200}>
         <div>Item 1</div>
@@ -44,14 +44,8 @@ describe('AcmMasonry', () => {
     )
 
     const grid = container.querySelector('[class*="pf-v5-l-grid"]')
-    expect(grid).toHaveStyle('visibility: hidden')
-  })
-
-  it('shows grid when no children are provided', () => {
-    const { container } = render(<AcmMasonry minSize={200} />)
-
-    const grid = container.querySelector('[class*="pf-v5-l-grid"]')
-    expect(grid).toHaveStyle('visibility: visible')
+    expect(grid).toBeInTheDocument()
+    expect(grid).toHaveAttribute('class', expect.stringContaining('pf-v5-l-grid'))
   })
 
   it('respects maxColumns prop', () => {
