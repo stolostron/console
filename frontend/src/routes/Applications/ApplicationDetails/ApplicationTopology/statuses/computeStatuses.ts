@@ -857,7 +857,7 @@ export const setArgoApplicationDeployStatus = (
   details.push({
     type: 'relatedargoappdetails',
     relatedargoappsdata: {
-      argoAppList: sortedRelatedArgoApps,
+      argoAppList: sortedRelatedArgoApps as ArgoApplication[],
     },
   })
 }

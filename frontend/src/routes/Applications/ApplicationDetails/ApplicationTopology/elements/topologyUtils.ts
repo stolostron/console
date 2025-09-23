@@ -3,6 +3,7 @@
 
 import { nodeMustHavePods } from './helpers/diagram-helpers-utils'
 import type { ApplicationData, ManagedCluster, Topology, TopologyLink, TopologyNode } from '../types'
+import { deepClone } from '../utils'
 
 // Extract cluster name encoded in a node id; fall back to hub cluster if not encoded
 export const getClusterName = (nodeId: string | undefined, hubClusterName?: string): string => {
@@ -103,7 +104,7 @@ export const addClusters = (
       subscription,
       resourceCount: clusterNames.length,
       clustersNames: clusterNames,
-      clusters: structuredClone(managedClusters),
+      clusters: deepClone(managedClusters),
       sortedClusterNames,
       appClusters: topoClusterNode ? (topoClusterNode as TopologyNode).specs.appClusters : undefined,
       targetNamespaces: topoClusterNode ? (topoClusterNode as TopologyNode).specs.targetNamespaces : undefined,

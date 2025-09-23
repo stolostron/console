@@ -40,7 +40,7 @@ class ChannelControl extends Component<ChannelControlProps, ChannelControlState>
   componentDidMount(): void {
     const { activeChannel, allChannels } = this.props.channelControl
     if (allChannels.length > 1) {
-      this.fetchCurrentChannel(activeChannel, allChannels)
+      this.fetchCurrentChannel(activeChannel ?? '', allChannels)
     }
   }
 

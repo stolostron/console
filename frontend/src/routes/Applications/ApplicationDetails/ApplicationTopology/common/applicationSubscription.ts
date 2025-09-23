@@ -16,6 +16,7 @@ import type {
   SubscriptionPlacementsMap,
   RecoilStates,
 } from '../types'
+import { deepClone } from '../utils'
 
 const EVERYTHING_CHANNEL = '__ALL__/__ALL__//__ALL__/__ALL__'
 export const ALL_SUBSCRIPTIONS = '__ALL__/SUBSCRIPTIONS__'
@@ -39,7 +40,7 @@ export const getSubscriptionApplication = async (
     const filteredSubscriptions = subscriptionNames.filter((subscriptionName) => {
       return !isLocalSubscription(subscriptionName, subscriptionNames)
     })
-    const subscriptions = structuredClone(
+    const subscriptions = deepClone(
       getResources(filteredSubscriptions, (recoilStates.subscriptions || []) as Subscription[])
     )
     subscriptions.sort((a, b) => {

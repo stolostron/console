@@ -28,6 +28,7 @@ import type {
   AppClusterSummary,
   ClusterInfo,
 } from '../types'
+import { deepClone } from '../utils'
 
 ///////////////////////////////////////////////////////////////////////////
 ////////////////////// CREATE MAP OF RELATED TYPES ///////////////////////
@@ -65,7 +66,7 @@ export const addDiagramDetails = (
     const searchResultArr: RelatedKindGroup[] = []
 
     resourceStatuses.data.searchResult.forEach((result: SearchResultItem) => {
-      const mappedResult = mapSingleApplication(structuredClone(result), topology.hubClusterName || '')
+      const mappedResult = mapSingleApplication(deepClone(result), topology.hubClusterName || '')
       searchResultArr.push(...(mappedResult.related || []))
     })
     // Remove duplicates using Set
@@ -73,8 +74,8 @@ export const addDiagramDetails = (
   } else {
     // Handle single search result
     related =
-      mapSingleApplication(structuredClone(resourceStatuses.data.searchResult[0]), topology.hubClusterName || '')
-        .related || []
+      mapSingleApplication(deepClone(resourceStatuses.data.searchResult[0]), topology.hubClusterName || '').related ||
+      []
   }
 
   // Store cluster objects and cluster names as returned by search
@@ -274,7 +275,7 @@ export const mapSingleApplication = (application: SearchResultItem, hubClusterNa
   // Initialize result with default structure or clone from first item
   const result: SearchResultItem =
     items.length > 0
-      ? structuredClone(items[0])
+      ? deepClone(items[0])
       : {
           name: '',
           namespace: '',

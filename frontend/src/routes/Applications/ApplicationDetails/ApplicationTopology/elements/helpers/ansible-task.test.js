@@ -7,9 +7,10 @@ import {
   getStatusFromPulse,
   showAnsibleJobDetails,
 } from './ansible-task'
-import { Translator } from './types'
 
-const t: Translator = (key) => key
+const t = (string) => {
+  return string
+}
 
 describe('getInfoForAnsibleTask', () => {
   const condition1 = [
@@ -57,6 +58,7 @@ describe('getInfoForAnsibleTask', () => {
     expect(getInfoForAnsibleTask(condition3)).toEqual(result3)
   })
 })
+
 describe('getInfoForAnsibleJob', () => {
   const status1 = {
     status: 'error',
@@ -200,11 +202,11 @@ describe('getPulseStatusForAnsibleNode', () => {
     },
   }
   it('returns ansible node pulse status info', () => {
-    expect(getPulseStatusForAnsibleNode(node1 as any)).toEqual('orange')
-    expect(getPulseStatusForAnsibleNode(node2 as any)).toEqual('green')
-    expect(getPulseStatusForAnsibleNode(node3 as any)).toEqual('red')
-    expect(getPulseStatusForAnsibleNode(node4 as any)).toEqual('yellow')
-    expect(getPulseStatusForAnsibleNode(node5 as any)).toEqual('orange')
+    expect(getPulseStatusForAnsibleNode(node1)).toEqual('orange')
+    expect(getPulseStatusForAnsibleNode(node2)).toEqual('green')
+    expect(getPulseStatusForAnsibleNode(node3)).toEqual('red')
+    expect(getPulseStatusForAnsibleNode(node4)).toEqual('yellow')
+    expect(getPulseStatusForAnsibleNode(node5)).toEqual('orange')
   })
 })
 
@@ -291,6 +293,6 @@ describe('showAnsibleJobDetails', () => {
   ]
 
   it('shows the ansible node details', () => {
-    expect(showAnsibleJobDetails(node as any, [], t)).toEqual(result)
+    expect(showAnsibleJobDetails(node, [], t)).toEqual(result)
   })
 })

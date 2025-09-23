@@ -1,7 +1,8 @@
-import { SetStateAction } from 'react'
+import { Dispatch, SetStateAction } from 'react'
 import {
   AnsibleJob,
   Application,
+  ApplicationSet,
   Channel,
   MulticlusterApplicationSetReport,
   Placement,
@@ -119,7 +120,7 @@ export interface ApplicationModel {
   activeChannel: SetStateAction<string | undefined>
   name: string
   namespace: string
-  app: Application
+  app: Application | ApplicationSet
   metadata?: Record<string, unknown>
   placement?: PlacementDecision
   isArgoApp: boolean
@@ -129,7 +130,7 @@ export interface ApplicationModel {
   isAppSetPullModel: boolean
   relatedPlacement?: Placement
   clusterList?: string[]
-  appSetApps?: Application[]
+  appSetApps?: ArgoApplication[]
   appSetClusters?: AppSetCluster[]
 }
 
@@ -744,8 +745,8 @@ export interface ArgoApp {
 // Control interface for ArgoAppDetailsContainer
 export interface ArgoAppDetailsContainerControl {
   argoAppDetailsContainerData: ArgoAppDetailsContainerData
-  handleArgoAppDetailsContainerUpdate: (data: Partial<ArgoAppDetailsContainerData>) => void
-  handleErrorMsg?: (error: string) => void
+  handleArgoAppDetailsContainerUpdate: React.Dispatch<React.SetStateAction<ArgoAppDetailsContainerData>>
+  handleErrorMsg: () => void
 }
 
 // Props for ArgoAppDetailsContainer component
@@ -881,19 +882,7 @@ export interface ClusterData {
 // Control interface for ClusterDetailsContainer
 export interface ClusterDetailsContainerControl {
   clusterDetailsContainerData: ClusterDetailsContainerData
-  handleClusterDetailsContainerUpdate: (
-    data:
-      | Partial<ClusterDetailsContainerData>
-      | {
-          page: number
-          startIdx: number
-          clusterSearchToggle: boolean
-          expandSectionToggleMap: Set<number>
-          clusterID: string
-          selected?: string
-          selectedClusterList: ClusterData[]
-        }
-  ) => void
+  handleClusterDetailsContainerUpdate: Dispatch<SetStateAction<ClusterDetailsContainerData>>
 }
 
 // Props for ClusterDetailsContainer component

@@ -102,7 +102,6 @@ class ArgoAppDetailsContainer extends Component<ArgoAppDetailsContainerProps, Ar
       expandSectionToggleMap.delete(itemNum)
     }
 
-    // Persist state changes to parent component (DiagramView)
     handleArgoAppDetailsContainerUpdate({
       page,
       startIdx,
@@ -122,7 +121,7 @@ class ArgoAppDetailsContainer extends Component<ArgoAppDetailsContainerProps, Ar
    * Handles application selection from the dropdown
    * @param selection - The name of the selected application, or null to show all
    */
-  handleSelection = (selection: string | null): void => {
+  handleSelection = (selection: string | string[] | null): void => {
     const {
       argoAppDetailsContainerControl: { handleArgoAppDetailsContainerUpdate },
       argoAppList,
@@ -153,7 +152,7 @@ class ArgoAppDetailsContainer extends Component<ArgoAppDetailsContainerProps, Ar
     })
 
     this.setState({
-      selected: selection || undefined,
+      selected: selection?.[0] || undefined,
       argoAppList: newArgoAppList,
       startIdx: 0,
       page: 1,
@@ -288,7 +287,7 @@ class ArgoAppDetailsContainer extends Component<ArgoAppDetailsContainerProps, Ar
    * @param _event - The click event (unused)
    * @param currentPage - The current page number
    */
-  handleNextClick = (_event: React.MouseEvent, currentPage: number): void => {
+  handleNextClick = (_event: React.SyntheticEvent<HTMLButtonElement>, currentPage: number): void => {
     const {
       argoAppDetailsContainerControl: { handleArgoAppDetailsContainerUpdate },
     } = this.props
@@ -317,7 +316,7 @@ class ArgoAppDetailsContainer extends Component<ArgoAppDetailsContainerProps, Ar
    * @param _event - The click event (unused)
    * @param currentPage - The current page number
    */
-  handlePreviousClick = (_event: React.MouseEvent, currentPage: number): void => {
+  handlePreviousClick = (_event: React.SyntheticEvent<HTMLButtonElement>, currentPage: number): void => {
     const {
       argoAppDetailsContainerControl: { handleArgoAppDetailsContainerUpdate },
     } = this.props
@@ -623,11 +622,10 @@ class ArgoAppDetailsContainer extends Component<ArgoAppDetailsContainerProps, Ar
         {/* Application search/filter dropdown */}
         <AcmSelectBase
           variant={SelectVariant.typeahead}
-          typeAheadAriaLabel={findAppMsg}
-          onSelect={this.handleSelection}
-          selections={selected}
           aria-label={findAppMsg}
           aria-labelledby={titleId}
+          onSelect={this.handleSelection}
+          selections={selected}
           placeholderText={findAppMsg}
           onClear={this.handleSelectionClear}
         >

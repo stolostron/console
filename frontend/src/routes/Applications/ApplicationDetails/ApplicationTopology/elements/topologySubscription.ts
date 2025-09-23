@@ -15,6 +15,7 @@ import type {
   SubscriptionApplicationModel,
   AnsibleJobModel,
 } from '../types'
+import { deepClone } from '../utils'
 // Resource types that typically have pods as children
 const typesWithPods = ['replicaset', 'replicationcontroller', 'statefulset', 'daemonset']
 
@@ -353,7 +354,7 @@ const processReport = (
   relatedResources: Record<string, any>
 ): void => {
   // Clone report to avoid mutations
-  report = structuredClone(report)
+  report = deepClone(report)
   const resources = report.resources || []
   const results = report.results || []
 

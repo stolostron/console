@@ -53,7 +53,7 @@ class DetailsView extends Component<DetailsViewProps, DetailsViewState> {
     this.state = {
       isLoading: false,
       linkID: '',
-      activeTabKey: this.props.activeTabKey,
+      activeTabKey: this.props.activeTabKey || 0,
       filteredNode: undefined,
     }
   }
@@ -95,7 +95,9 @@ class DetailsView extends Component<DetailsViewProps, DetailsViewState> {
   processActionLink(value: LinkValue): void {
     const { processActionLink, hubClusterName } = this.props
     const { data } = value
-    processActionLink(data, this.toggleLinkLoading, undefined, hubClusterName)
+    if (processActionLink) {
+      processActionLink(data, this.toggleLinkLoading, hubClusterName ?? '')
+    }
   }
 
   /**

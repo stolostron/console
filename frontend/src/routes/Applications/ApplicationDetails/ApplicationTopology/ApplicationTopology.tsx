@@ -12,6 +12,7 @@ import { DrawerShapes } from './components/DrawerShapes'
 import './ApplicationTopology.css'
 import './components/Drawer.css'
 import './components/Toolbar.css'
+import { ArgoApp, ClusterDetailsContainerControl } from './types'
 
 export type ArgoAppDetailsContainerData = {
   page: number
@@ -19,7 +20,7 @@ export type ArgoAppDetailsContainerData = {
   argoAppSearchToggle: boolean
   expandSectionToggleMap: Set<number>
   selected?: any
-  selectedArgoAppList: []
+  selectedArgoAppList: ArgoApp[]
   isLoading: boolean
 }
 
@@ -65,7 +66,6 @@ export function ApplicationTopologyPageContent() {
     selectedArgoAppList: [],
     isLoading: false,
   })
-
   const [clusterDetailsContainerData, setClusterDetailsContainerData] = useState<ClusterDetailsContainerData>({
     page: 1,
     startIdx: 0,
@@ -112,7 +112,7 @@ export function ApplicationTopologyPageContent() {
     handleErrorMsg,
   }
 
-  const clusterDetailsContainerControl = {
+  const clusterDetailsContainerControl: ClusterDetailsContainerControl = {
     clusterDetailsContainerData,
     handleClusterDetailsContainerUpdate: setClusterDetailsContainerData,
   }
