@@ -53,10 +53,6 @@ const RoleDetail = () => {
                   <DescriptionListDescription>{role.metadata.name ?? '-'}</DescriptionListDescription>
                 </DescriptionListGroup>
                 <DescriptionListGroup>
-                  <DescriptionListTerm>{t('API version')}</DescriptionListTerm>
-                  <DescriptionListDescription>{role.apiVersion ?? '-'}</DescriptionListDescription>
-                </DescriptionListGroup>
-                <DescriptionListGroup>
                   <DescriptionListTerm>{t('Created At')}</DescriptionListTerm>
                   <DescriptionListDescription>
                     {role.metadata.creationTimestamp ? (

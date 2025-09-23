@@ -17,6 +17,12 @@ const mockRole: ClusterRole = {
   rules: [],
 }
 
+jest.mock('../../../../lib/acm-i18next', () => ({
+  useTranslation: jest.fn().mockReturnValue({
+    t: (key: string) => key,
+  }),
+}))
+
 jest.mock('../RolesPage', () => ({
   ...jest.requireActual('../RolesPage'),
   useRolesContext: jest.fn(),
@@ -46,7 +52,7 @@ describe('RoleDetail', () => {
     mockUseCurrentRole.mockClear()
   })
 
-  test('should render loading state', () => {
+  it('should render loading state', () => {
     mockUseRolesContext.mockReturnValue({ loading: true, clusterRoles: [] })
     mockUseCurrentRole.mockReturnValue(undefined)
 
@@ -55,7 +61,7 @@ describe('RoleDetail', () => {
     expect(screen.getByText('Loading')).toBeInTheDocument()
   })
 
-  test('should render role not found message', () => {
+  it('should render role not found message', () => {
     mockUseRolesContext.mockReturnValue({ loading: false, clusterRoles: [] })
     mockUseCurrentRole.mockReturnValue(undefined)
 
@@ -64,20 +70,18 @@ describe('RoleDetail', () => {
     expect(screen.getByText('Not found')).toBeInTheDocument()
   })
 
-  test('should render role details with basic information', () => {
+  it('should render role details with basic information', () => {
     mockUseRolesContext.mockReturnValue({ loading: false, clusterRoles: [mockRole] })
     mockUseCurrentRole.mockReturnValue(mockRole)
 
     render(<Component />)
 
     expect(screen.getByText('General information')).toBeInTheDocument()
-    expect(screen.getByText('Role name')).toBeInTheDocument()
+    expect(screen.getByText('Name')).toBeInTheDocument()
     expect(screen.getByText('test-role')).toBeInTheDocument()
-    expect(screen.getByText('Kind')).toBeInTheDocument()
-    expect(screen.getByText('ClusterRole')).toBeInTheDocument()
   })
 
-  test('should render role details with missing role name', () => {
+  it('should render role details with missing role name', () => {
     const roleWithoutName = {
       ...mockRole,
       metadata: {
@@ -90,7 +94,61 @@ describe('RoleDetail', () => {
 
     render(<Component />)
 
-    expect(screen.getByText('Role name')).toBeInTheDocument()
+    expect(screen.getByText('Name')).toBeInTheDocument()
     expect(screen.getByText('-')).toBeInTheDocument()
+  })
+
+  it('should render role details with full information', () => {
+    mockUseRolesContext.mockReturnValue({ loading: false, clusterRoles: [mockRole] })
+    mockUseCurrentRole.mockReturnValue(mockRole)
+
+    render(<Component />)
+
+    expect(screen.getByText('General information')).toBeInTheDocument()
+    expect(screen.getByText('Name')).toBeInTheDocument()
+    expect(screen.getByText('test-role')).toBeInTheDocument()
+    expect(screen.getByText('Created At')).toBeInTheDocument()
+  })
+
+  it('should render role details with missing creation timestamp', () => {
+    const roleWithoutTimestamp = {
+      ...mockRole,
+      metadata: {
+        ...mockRole.metadata,
+        creationTimestamp: undefined,
+      },
+    }
+    mockUseRolesContext.mockReturnValue({ loading: false, clusterRoles: [roleWithoutTimestamp] })
+    mockUseCurrentRole.mockReturnValue(roleWithoutTimestamp)
+
+    render(<Component />)
+
+    expect(screen.getByText('Created At')).toBeInTheDocument()
+    expect(screen.getAllByText('-')).toHaveLength(1)
+  })
+
+  it('should render back to roles button when role is not found', () => {
+    mockUseRolesContext.mockReturnValue({ loading: false, clusterRoles: [] })
+    mockUseCurrentRole.mockReturnValue(undefined)
+
+    render(<Component />)
+
+    expect(screen.getByText('button.backToRoles')).toBeInTheDocument()
+  })
+
+  it('should handle role with minimal metadata', () => {
+    const minimalRole = {
+      ...mockRole,
+      metadata: {
+        uid: 'minimal-uid',
+      },
+    }
+    mockUseRolesContext.mockReturnValue({ loading: false, clusterRoles: [minimalRole] })
+    mockUseCurrentRole.mockReturnValue(minimalRole)
+
+    render(<Component />)
+
+    expect(screen.getByText('General information')).toBeInTheDocument()
+    expect(screen.getAllByText('-')).toHaveLength(2) // Name and Created At should show '-'
   })
 })
