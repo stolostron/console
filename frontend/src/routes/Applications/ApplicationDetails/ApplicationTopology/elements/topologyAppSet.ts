@@ -22,9 +22,9 @@ import {
   RouteObject,
   ManagedClusterViewData,
   ProcessedDeployableResource,
-  TranslationFunction,
   SearchQuery,
 } from '../types'
+import { TFunction } from 'react-i18next'
 
 /**
  * Generates topology data for ApplicationSet applications
@@ -280,7 +280,7 @@ export const openArgoCDEditor = (
   namespace: string,
   name: string,
   toggleLoading: () => void,
-  t: TranslationFunction,
+  t: TFunction,
   hubClusterName: string
 ): void => {
   if (cluster === hubClusterName) {
@@ -448,7 +448,7 @@ const getArgoRouteFromSearch = async (
   appName: string,
   appNamespace: string,
   cluster: string,
-  t: TranslationFunction,
+  t: TFunction,
   hubClusterName: string
 ): Promise<void> => {
   // Build search query for Argo CD routes

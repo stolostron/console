@@ -18,16 +18,12 @@ import {
 } from '../elements/helpers/diagram-helpers'
 import { getLabels, getMatchLabels } from '../../../CreateSubscriptionApplication/controlData/ControlDataPlacement'
 import { PlacementKind } from '../../../../../resources'
+import { TFunction } from 'react-i18next'
 
 const resName = 'resource.name'
 const unknonwnApiVersion = 'unknown'
 
-export const getNodeDetails = (
-  node: any,
-  activeFilters: Record<string, any>,
-  t: (s: string, a?: any[]) => string,
-  hubClusterName: string
-) => {
+export const getNodeDetails = (node: any, activeFilters: Record<string, any>, t: TFunction, hubClusterName: string) => {
   const details: any[] = []
   if (node) {
     const { type, labels = [] } = node
@@ -89,7 +85,7 @@ function addK8Details(
   node: any,
   details: any[],
   activeFilters: Record<string, any>,
-  t: (s: string, a?: any[]) => string,
+  t: TFunction,
   hubClusterName: string
 ) {
   const { clusterName, type, layout = {}, specs } = node

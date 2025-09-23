@@ -12,10 +12,9 @@ import type {
   RuleDecisionMap,
   ServiceMap,
   ParentObject,
-  AnsibleJob,
   SubscriptionApplicationModel,
+  AnsibleJobModel,
 } from '../types'
-
 // Resource types that typically have pods as children
 const typesWithPods = ['replicaset', 'replicationcontroller', 'statefulset', 'daemonset']
 
@@ -264,7 +263,7 @@ const addSubscriptionRules = (
 
     nodes.push({
       name: name as string,
-      namespace,
+      namespace: namespace as string,
       type: 'placements',
       id: ruleId,
       uid: ruleId,
@@ -302,7 +301,7 @@ const addSubscriptionHooks = (
   const hookList = isPreHook ? subscription.prehooks : subscription.posthooks
   if (!hookList) return
 
-  hookList.forEach((hook: AnsibleJob) => {
+  hookList.forEach((hook: AnsibleJobModel) => {
     const {
       metadata: { name, namespace },
       kind,
@@ -314,8 +313,8 @@ const addSubscriptionHooks = (
     hook.hookType = isPreHook ? 'pre-hook' : 'post-hook'
 
     nodes.push({
-      name,
-      namespace,
+      name: name as string,
+      namespace: namespace as string,
       type,
       id: memberId,
       uid: memberId,

@@ -121,7 +121,6 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
           return n.getData()
         })
     }
-
     setDrawerContent(
       selectedNodeId ? t('Details') : '',
       false, // inline

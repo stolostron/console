@@ -21,8 +21,8 @@ import type {
   ArgoStatusIcon,
   ArgoResourceAction,
   NodeLike,
-  TranslationFunction,
 } from '../types'
+import { TFunction } from 'react-i18next'
 
 /**
  * ArgoAppDetailsContainer component provides a detailed view of Argo applications
@@ -388,7 +388,7 @@ class ArgoAppDetailsContainer extends Component<ArgoAppDetailsContainerProps, Ar
    * @param t - Translation function
    * @returns JSX element for the action link
    */
-  renderURLLink = (resource: ArgoResourceAction, isExternal: boolean, t: TranslationFunction): JSX.Element => {
+  renderURLLink = (resource: ArgoResourceAction, isExternal: boolean, t: TFunction): JSX.Element => {
     return (
       <span
         className="link sectionLabel"
@@ -459,7 +459,7 @@ class ArgoAppDetailsContainer extends Component<ArgoAppDetailsContainerProps, Ar
    * @param t - Translation function
    * @returns JSX element for error message or null if no warning needed
    */
-  renderErrorMessage = (name: string, status: string, t: TranslationFunction): JSX.Element | null => {
+  renderErrorMessage = (name: string, status: string, t: TFunction): JSX.Element | null => {
     let showWarning = false
     if (status === 'Unknown' || status === 'Degraded' || status === 'Missing') {
       showWarning = true

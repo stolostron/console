@@ -36,7 +36,6 @@ import type {
   StateNames,
   DetailItem,
   WindowStatusArray,
-  TranslationFunction,
   ApplicationModel,
   ExtendedTopology,
   GetResourceStatussResult,
@@ -50,6 +49,7 @@ import { getArgoResourceStatuses } from './resourceStatusesArgo'
 import { getAppSetResourceStatuses } from './resourceStatusesAppSet'
 import { getSubscriptionResourceStatuses } from './resourceStatusesSubscription'
 import { deepClone, safeGet, safeSet } from '../utils'
+import { TFunction } from 'react-i18next'
 
 // Constants for node specification paths
 const specPulse = 'specs.pulse'
@@ -120,7 +120,7 @@ const blockedPulse: PulseColor = 'blocked'
 export const computeNodeStatus = (
   node: TopologyNodeWithStatus,
   isSearchingStatusComplete: boolean,
-  t: TranslationFunction,
+  t: TFunction,
   hubClusterName: string
 ): PulseColor => {
   let pulse: PulseColor = greenPulse
@@ -534,7 +534,7 @@ export const getOnlineClusters = (node: TopologyNodeWithStatus, hubClusterName: 
  */
 const getPulseStatusForGenericNode = (
   node: TopologyNodeWithStatus,
-  t: TranslationFunction,
+  t: TFunction,
   hubClusterName: string
 ): PulseColor => {
   const { deployedStr, resNotDeployedStates } = getStateNames(t)
@@ -648,7 +648,7 @@ const getPulseStatusForGenericNode = (
  * @param t - Translation function
  * @returns Object containing localized state names and arrays
  */
-const getStateNames = (t: TranslationFunction): StateNames => {
+const getStateNames = (t: TFunction): StateNames => {
   const notDeployedStr = t('Not Deployed')
   const notDeployedNSStr = t('Not Created')
   const deployedStr = t('Deployed')
@@ -743,7 +743,7 @@ export const getPulseForData = (available: number, desired: number, podsUnavaila
 export const setApplicationDeployStatus = (
   node: TopologyNodeWithStatus,
   details: DetailItem[],
-  t: TranslationFunction,
+  t: TFunction,
   hubClusterName: string
 ): DetailItem[] => {
   const isDesign = safeGet<boolean>(node, specIsDesign, false)
@@ -818,7 +818,7 @@ export const setApplicationDeployStatus = (
 export const setArgoApplicationDeployStatus = (
   node: TopologyNodeWithStatus,
   details: DetailItem[],
-  t: TranslationFunction
+  t: TFunction
 ): void => {
   const relatedArgoApps = safeGet<ArgoApplication[]>(node, 'specs.relatedApps', [])
   if (relatedArgoApps.length === 0) {
@@ -873,7 +873,7 @@ export const setArgoApplicationDeployStatus = (
 export const setAppSetDeployStatus = (
   node: TopologyNodeWithStatus,
   details: DetailItem[],
-  t: TranslationFunction,
+  t: TFunction,
   hubClusterName: string
 ): void => {
   const isPlacementFound = safeGet(node, 'isPlacementFound')
@@ -1035,7 +1035,7 @@ export const setSubscriptionDeployStatus = (
   node: TopologyNodeWithStatus,
   details: DetailItem[],
   activeFilters: ActiveFilters,
-  t: TranslationFunction,
+  t: TFunction,
   hubClusterName: string
 ): DetailItem[] => {
   const { resourceStatuses = new Set() } = activeFilters
@@ -1305,7 +1305,7 @@ export const setSubscriptionDeployStatus = (
 export const setPlacementRuleDeployStatus = (
   node: TopologyNodeWithStatus,
   details: DetailItem[],
-  t: TranslationFunction
+  t: TFunction
 ): DetailItem[] => {
   if (safeGet<string>(node, 'type', '') !== 'placements' || node.isPlacement) {
     return details
@@ -1332,11 +1332,7 @@ export const setPlacementRuleDeployStatus = (
  * @param details - Array to add detail items to
  * @param t - Translation function
  */
-export const setPlacementDeployStatus = (
-  node: TopologyNodeWithStatus,
-  details: DetailItem[],
-  t: TranslationFunction
-): void => {
+export const setPlacementDeployStatus = (node: TopologyNodeWithStatus, details: DetailItem[], t: TFunction): void => {
   if (node.type !== 'placements' || !node.isPlacement) {
     return
   }
@@ -1380,7 +1376,7 @@ export const setPlacementDeployStatus = (
 export const setClusterStatus = (
   node: TopologyNodeWithStatus,
   details: DetailItem[],
-  t: TranslationFunction,
+  t: TFunction,
   hubClusterName: string
 ): DetailItem[] => {
   const { id } = node
@@ -1473,7 +1469,7 @@ const setClusterWindowStatus = (
   windowStatusArray: WindowStatusArray,
   subscription: SubscriptionItem,
   details: DetailItem[],
-  t: TranslationFunction
+  t: TFunction
 ): void => {
   windowStatusArray.forEach((wstatus: string) => {
     if (wstatus.trimStart().startsWith(`${subscription.cluster}:`)) {
@@ -1504,7 +1500,7 @@ export const setPodDeployStatus = (
   node: TopologyNodeWithStatus,
   details: DetailItem[],
   activeFilters: ActiveFilters,
-  t: TranslationFunction,
+  t: TFunction,
   hubClusterName: string
 ): DetailItem[] => {
   const { notDeployedStr } = getStateNames(t)
@@ -1670,7 +1666,7 @@ export const setResourceDeployStatus = (
   node: TopologyNodeWithStatus,
   details: DetailItem[],
   activeFilters: ActiveFilters,
-  t: TranslationFunction,
+  t: TFunction,
   hubClusterName: string
 ): DetailItem[] => {
   const { notDeployedStr, notDeployedNSStr, deployedStr, deployedNSStr, resNotDeployedStates, resSuccessStates } =

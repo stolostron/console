@@ -18,8 +18,8 @@ import {
   ClusterData,
   ClusterStatusIcon,
   ResourceAction,
-  TranslationFunction,
 } from '../types'
+import { TFunction } from 'react-i18next'
 
 /**
  * ClusterDetailsContainer component displays detailed information about clusters
@@ -402,7 +402,7 @@ class ClusterDetailsContainer extends Component<ClusterDetailsContainerProps, Cl
   renderConsoleURLLink = (
     consoleURL: string | undefined,
     resource: ResourceAction,
-    t: TranslationFunction
+    t: TFunction
   ): JSX.Element | null => {
     return consoleURL ? (
       <div className="sectionContent borderLeft">
@@ -431,7 +431,7 @@ class ClusterDetailsContainer extends Component<ClusterDetailsContainerProps, Cl
     ac: string | undefined,
     divClass: string,
     labelClass: string,
-    t: TranslationFunction,
+    t: TFunction,
     valueClass: string
   ): JSX.Element | null => {
     const showData = ac && ac !== ''
@@ -458,7 +458,7 @@ class ClusterDetailsContainer extends Component<ClusterDetailsContainerProps, Cl
     am: string | undefined,
     divClass: string,
     labelClass: string,
-    t: TranslationFunction,
+    t: TFunction,
     valueClass: string
   ): JSX.Element | null => {
     const showData = am && am !== ''

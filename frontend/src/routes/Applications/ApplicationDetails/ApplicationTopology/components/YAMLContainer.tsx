@@ -11,7 +11,7 @@ const typesWithoutDefaultName = ['replicaset', 'pod', 'replicationcontroller', '
 
 export interface IYAMLContainerProps {
   node: any
-  containerRef: HTMLDivElement
+  containerRef?: HTMLDivElement
   t: TFunction
   hubClusterName: string
 }

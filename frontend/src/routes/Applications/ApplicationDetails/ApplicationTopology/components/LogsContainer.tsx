@@ -10,7 +10,7 @@ import './LogsContainer.css'
 import { useLocalHubName } from '../../../../../hooks/use-local-hub'
 
 export interface ILogsContainerProps {
-  node: any[]
+  node: any
   t: TFunction
   renderResourceURLLink: (data: any, t: TFunction, isPod: boolean) => ReactNode
 }

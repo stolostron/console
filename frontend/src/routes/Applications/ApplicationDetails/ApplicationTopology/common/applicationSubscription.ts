@@ -1,14 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { PlacementKind, PlacementRuleKind } from '../../../../../resources'
+import { Placement, PlacementKind, PlacementRule, PlacementRuleKind, Subscription } from '../../../../../resources'
 import { listResources } from '../../../../../resources/utils/resource-request'
 import type { IResource } from '../../../../../resources/resource'
 import { getSubscriptionAnnotations, isLocalSubscription } from '../../../helpers/subscriptions'
 import type {
   ChannelKind,
   PlacementDecisionKind,
-  PlacementResource,
-  PlacementRuleResource,
   SubscriptionApplicationModel,
   SubscriptionKind,
   SubscriptionReport,
@@ -42,7 +40,7 @@ export const getSubscriptionApplication = async (
       return !isLocalSubscription(subscriptionName, subscriptionNames)
     })
     const subscriptions = structuredClone(
-      getResources(filteredSubscriptions, (recoilStates.subscriptions || []) as SubscriptionKind[])
+      getResources(filteredSubscriptions, (recoilStates.subscriptions || []) as Subscription[])
     )
     subscriptions.sort((a, b) => {
       const aName = String(a?.metadata?.name ?? '')
@@ -53,7 +51,7 @@ export const getSubscriptionApplication = async (
     // what subscriptions does user want to see
     model.channels = []
     model.subscriptions = []
-    model.allSubscriptions = subscriptions
+    model.allSubscriptions = subscriptions as unknown as SubscriptionKind[]
     model.allChannels = []
     model.allClusters = []
     model.reports = []
@@ -62,9 +60,12 @@ export const getSubscriptionApplication = async (
     let selectedSubscriptions = getAllChannels(subscriptions, model.channels, selectedChannel)
 
     // pick subscription based on channel requested by ui or 1st by default
-    model.activeChannel = selectedChannel ? selectedChannel : getChannelName(selectedSubscriptions[0])
+    model.activeChannel = selectedChannel
+      ? selectedChannel
+      : getChannelName(selectedSubscriptions[0] as unknown as Subscription)
     // get all requested subscriptions
-    selectedSubscriptions = selectedChannel === ALL_SUBSCRIPTIONS ? subscriptions : selectedSubscriptions
+    selectedSubscriptions =
+      selectedChannel === ALL_SUBSCRIPTIONS ? (subscriptions as unknown as SubscriptionKind[]) : selectedSubscriptions
 
     // get reports, hooks and rules
     const { channelsMap, decisionsMap, placementsMap, preHooksMap, postHooksMap } = buildSubscriptionMaps(
@@ -86,15 +87,19 @@ export const getSubscriptionApplication = async (
 
     await getAppHooks(preHooksMap, true)
     await getAppHooks(postHooksMap, false)
-    getAppDecisions(decisionsMap, model.allClusters, recoilStates.placementDecisions as PlacementDecisionKind[])
+    getAppDecisions(
+      decisionsMap,
+      model.allClusters,
+      recoilStates.placementDecisions as unknown as PlacementDecisionKind[]
+    )
     getAppPlacements(
       placementsMap,
-      (recoilStates.placements as PlacementResource[]) || [],
-      (recoilStates.placementRules as PlacementRuleResource[]) || []
+      (recoilStates.placements as Placement[]) || [],
+      (recoilStates.placementRules as PlacementRule[]) || []
     )
 
     // get all channels
-    getAllAppChannels(model.allChannels, subscriptions, (recoilStates.channels as ChannelKind[]) || [])
+    getAllAppChannels(model.allChannels, subscriptions, (recoilStates.channels as unknown as ChannelKind[]) || [])
 
     getAppChannels(channelsMap, model.allChannels)
   }
@@ -104,7 +109,7 @@ export const getSubscriptionApplication = async (
 /**
  * Filter `resources` to those whose `namespace/name` pair is present in `names`.
  */
-const getResources = (names: string[], resources: SubscriptionKind[]): SubscriptionKind[] => {
+const getResources = (names: string[], resources: Subscription[]): Subscription[] => {
   const set = new Set(names)
   return resources.filter((resource) => {
     return set.has(`${resource?.metadata?.namespace}/${resource?.metadata?.name}`)
@@ -116,17 +121,18 @@ const getResources = (names: string[], resources: SubscriptionKind[]): Subscript
  * Adds an ALL pseudo-channel when multiple channels exist.
  */
 const getAllChannels = (
-  subscriptions: SubscriptionKind[],
+  subscriptions: Subscription[],
   channels: string[],
   selectedChannel: string | undefined
 ): SubscriptionKind[] => {
-  let selectedSubscriptions: SubscriptionKind[] | [] | null = subscriptions.length > 0 ? [subscriptions[0]] : []
+  let selectedSubscriptions: SubscriptionKind[] | [] | null =
+    subscriptions.length > 0 ? [subscriptions[0] as unknown as SubscriptionKind] : []
   subscriptions.forEach((subscription) => {
     if (subscription?.spec?.channel) {
       const subscriptionChannel = getChannelName(subscription)
       channels.push(subscriptionChannel)
       if (selectedChannel === subscriptionChannel) {
-        selectedSubscriptions = [subscription]
+        selectedSubscriptions = [subscription as unknown as SubscriptionKind]
       }
     }
   })
@@ -135,12 +141,12 @@ const getAllChannels = (
     channels.unshift(EVERYTHING_CHANNEL)
     // set default selectedSubscription when topology first render
     if (!selectedSubscriptions) {
-      selectedSubscriptions = subscriptions.length > 0 ? [subscriptions[0]] : null
+      selectedSubscriptions = subscriptions.length > 0 ? [subscriptions[0] as unknown as SubscriptionKind] : null
     }
   }
   // renders all subscriptions when selected all subscriptions
   if (selectedChannel === EVERYTHING_CHANNEL) {
-    selectedSubscriptions = subscriptions
+    selectedSubscriptions = subscriptions as unknown as SubscriptionKind[]
   }
   return (selectedSubscriptions || []) as SubscriptionKind[]
 }
@@ -148,12 +154,12 @@ const getAllChannels = (
 /**
  * Build a stable channel display key for a subscription including optional sub-channel suffix.
  */
-const getChannelName = (subscription: SubscriptionKind): string => {
+const getChannelName = (subscription: Subscription): string => {
   const {
     metadata = {} as any,
     deployablePaths: paths,
     isChucked,
-  } = subscription as SubscriptionKind & {
+  } = subscription as Subscription & {
     deployablePaths?: string[]
     isChucked?: boolean
   }
@@ -214,7 +220,8 @@ const buildSubscriptionMaps = (
     modelSubscriptions.push(subscription)
 
     // get post hooks
-    const lastPosthookJob = (subscription?.status as any)?.ansiblejobs?.lastposthookjob as string | undefined
+    const lastPosthookJob = (subscription?.status as unknown as { ansiblejobs?: { lastposthookjob?: string } })
+      ?.ansiblejobs?.lastposthookjob as string | undefined
     const postHooks = lastPosthookJob ? [lastPosthookJob] : []
     postHooks.forEach((value) => {
       const [deployableNamespace, deployableName] = value.split('/')
@@ -299,8 +306,8 @@ const buildSubscriptionMaps = (
  */
 const getAppPlacements = (
   placementsMap: SubscriptionPlacementsMap,
-  placements: PlacementResource[],
-  placementRules: PlacementRuleResource[]
+  placements: Placement[],
+  placementRules: PlacementRule[]
 ): void => {
   Object.entries(placementsMap).forEach(([namespace, values]) => {
     // stuff placements or placement rules into subscriptions that use them
@@ -369,7 +376,7 @@ const getAppDecisions = (
  */
 const getAllAppChannels = (
   appAllChannels: ChannelKind[],
-  allSubscriptions: SubscriptionKind[],
+  allSubscriptions: Subscription[],
   channels: ChannelKind[]
 ): void => {
   // get all channels information

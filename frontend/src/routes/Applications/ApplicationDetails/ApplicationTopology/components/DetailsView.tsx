@@ -16,11 +16,11 @@ import {
   DetailItemExtended,
   LinkValue,
   TopologyNodeWithStatus,
-  TranslationFunction,
   StatusType,
   ResourceAction,
 } from '../types'
 import { getNodeDetails, typeToShapeMap } from './DetailsViewHelper'
+import { TFunction } from 'react-i18next'
 
 /**
  * Decorator component that renders an icon for the details view header
@@ -102,7 +102,7 @@ class DetailsView extends Component<DetailsViewProps, DetailsViewState> {
    * Handles tab click events to switch between different views
    * Updates the active tab in component state
    */
-  handleTabClick = (event: MouseEvent, tabIndex: number): void => {
+  handleTabClick = (_event: MouseEvent, tabIndex: number): void => {
     this.setState({
       activeTabKey: tabIndex,
     })
@@ -124,11 +124,7 @@ class DetailsView extends Component<DetailsViewProps, DetailsViewState> {
    * Renders a resource URL link that opens in Search details
    * Supports both log and YAML viewing modes
    */
-  renderResourceURLLink = (
-    resource: { data: ResourceAction },
-    t: TranslationFunction,
-    isLogURL = false
-  ): JSX.Element => {
+  renderResourceURLLink = (resource: { data: ResourceAction }, t: TFunction, isLogURL = false): JSX.Element => {
     return (
       <div>
         <div className="spacer" />
@@ -174,7 +170,7 @@ class DetailsView extends Component<DetailsViewProps, DetailsViewState> {
     const currentUpdatedNode = filteredNode || nodes.find((n) => n.uid === selectedNodeId)
 
     const { layout = {} } = currentNode as any
-    const resourceType = layout.type || currentNode.type || currentUpdatedNode?.type
+    const resourceType = (layout?.type as string) || currentNode.type || currentUpdatedNode?.type || ''
 
     // Determine if we should show table view (multiple resources) or single resource view
     const isTableView =
@@ -202,7 +198,7 @@ class DetailsView extends Component<DetailsViewProps, DetailsViewState> {
           {filteredNode && (
             <div style={{ margin: '0 0 20px 10px' }}>
               <Button onClick={() => this.setState({ filteredNode: undefined })} variant="link" isInline>
-                {t('< Back to all {{resourceType}} resources', { resourceType })}
+                {t('< Back to all {{resourceType}} resources', [resourceType])}
               </Button>
             </div>
           )}
@@ -219,7 +215,7 @@ class DetailsView extends Component<DetailsViewProps, DetailsViewState> {
                   <div className="sectionContent">
                     <span className="titleNameText">{name}</span>
                   </div>
-                  <div className="openSearchLink">{this.renderLink(searchLink, t)}</div>
+                  <div className="openSearchLink">{this.renderLink(searchLink)}</div>
                 </Fragment>
               )}
             </div>
@@ -259,7 +255,14 @@ class DetailsView extends Component<DetailsViewProps, DetailsViewState> {
     const { activeTabKey } = this.state
 
     return (
-      <Tabs activeKey={activeTabKey} onSelect={this.handleTabClick} mountOnEnter={true} unmountOnExit={true}>
+      <Tabs
+        activeKey={activeTabKey}
+        onSelect={(_event, eventKey) =>
+          this.handleTabClick(_event, typeof eventKey === 'number' ? eventKey : Number(eventKey))
+        }
+        mountOnEnter={true}
+        unmountOnExit={true}
+      >
         <Tab eventKey={0} title={<TabTitleText>{t('Details')}</TabTitleText>} isHidden={false} />
         <Tab eventKey={1} title={<TabTitleText>{t('Logs')}</TabTitleText>} isHidden={isLogTabHidden} />
         <Tab eventKey={2} title={<TabTitleText>{t('YAML')}</TabTitleText>} isHidden={isYAMLTabHidden} />
@@ -273,7 +276,21 @@ class DetailsView extends Component<DetailsViewProps, DetailsViewState> {
    */
   renderTableContents(node: TopologyNodeWithStatus): JSX.Element {
     const { t } = this.props
-    return <DetailsTable id="details-view-table" node={node} handleOpen={this.handleOpen} t={t} />
+    // Adapt node and item types to match DetailsTable's expected props
+    // DetailsTable expects node: DetailsTableNode and handleOpen: (node: DetailsTableNode, item: DetailsTableResourceItem) => void
+    // We'll cast node to DetailsTableNode for compatibility
+    return (
+      <DetailsTable
+        id="details-view-table"
+        node={node as any} // Type cast to satisfy DetailsTable's prop type
+        handleOpen={(tableNode, item) => {
+          // tableNode is DetailsTableNode, but our handleOpen expects TopologyNodeWithStatus
+          // We'll cast back to TopologyNodeWithStatus for compatibility
+          this.handleOpen(tableNode as TopologyNodeWithStatus, item)
+        }}
+        t={t}
+      />
+    )
   }
 
   /**
@@ -285,7 +302,7 @@ class DetailsView extends Component<DetailsViewProps, DetailsViewState> {
     const selectedNodeId = node.id
 
     // Get detailed information for the node
-    const details = getNodeDetails(node, activeFilters, t, hubClusterName)
+    const details = getNodeDetails(node, activeFilters, t, hubClusterName as string)
     const name = node.type === 'cluster' ? '' : node.name
     const yamlURL = createResourceURL(node, t)
     const { namespace, type } = node
@@ -295,7 +312,7 @@ class DetailsView extends Component<DetailsViewProps, DetailsViewState> {
     switch (activeTabKey) {
       case 0: // Details tab
       default:
-        return details.map((detail) => this.renderDetail(detail, t))
+        return details.map((detail) => this.renderDetail(detail, t)) as unknown as JSX.Element[]
 
       case 1: // Logs tab
         return <LogsContainer node={node} t={t} renderResourceURLLink={this.renderResourceURLLink} />
@@ -308,7 +325,7 @@ class DetailsView extends Component<DetailsViewProps, DetailsViewState> {
             t
           )
         }
-        return <YAMLContainer key={selectedNodeId} node={node} t={t} hubClusterName={hubClusterName} />
+        return <YAMLContainer key={selectedNodeId} node={node} t={t} hubClusterName={hubClusterName as string} />
     }
   }
 
@@ -316,12 +333,12 @@ class DetailsView extends Component<DetailsViewProps, DetailsViewState> {
    * Renders individual detail items based on their type
    * Supports various detail types: labels, links, snippets, etc.
    */
-  renderDetail = (detail: DetailItemExtended, t: TranslationFunction): JSX.Element | null => {
+  renderDetail = (detail: DetailItemExtended, t: TFunction): JSX.Element | null => {
     switch (detail.type) {
       case 'spacer':
         return this.renderSpacer()
       case 'link':
-        return this.renderLink(detail, t)
+        return this.renderLink(detail)
       case 'clusterdetailcombobox':
         return this.renderClusterDetailComboBox(detail, t)
       case 'relatedargoappdetails':
@@ -335,7 +352,7 @@ class DetailsView extends Component<DetailsViewProps, DetailsViewState> {
    * Renders label details with optional status icons and values
    * Supports different styling based on label type and status
    */
-  renderLabel = ({ labelValue, value, indent, status }: DetailItemExtended, t: TranslationFunction): JSX.Element => {
+  renderLabel = ({ labelValue, value, indent, status }: DetailItemExtended, t: TFunction): JSX.Element => {
     // Map status types to fill colors for status icons
     const fillMap = new Map<StatusType, string>([
       ['checkmark', '#3E8635'],
@@ -392,7 +409,7 @@ class DetailsView extends Component<DetailsViewProps, DetailsViewState> {
    * Renders clickable links with loading states and external link indicators
    * Supports both internal navigation and external resource links
    */
-  renderLink = (linkDetail: DetailItemExtended | any, t: TranslationFunction): JSX.Element => {
+  renderLink = (linkDetail: DetailItemExtended | any): JSX.Element => {
     const { value } = linkDetail
 
     if (!value) {
@@ -468,7 +485,7 @@ class DetailsView extends Component<DetailsViewProps, DetailsViewState> {
    * Renders cluster details combo box for cluster selection
    * Integrates with ClusterDetailsContainer for cluster management
    */
-  renderClusterDetailComboBox = ({ comboboxdata }: DetailItemExtended, t: TranslationFunction): JSX.Element => {
+  renderClusterDetailComboBox = ({ comboboxdata }: DetailItemExtended, t: TFunction): JSX.Element => {
     const { clusterDetailsContainerControl } = this.props
 
     if (!comboboxdata) {
@@ -479,8 +496,6 @@ class DetailsView extends Component<DetailsViewProps, DetailsViewState> {
       <div className="sectionContent" key={Math.random()}>
         <ClusterDetailsContainer
           clusterList={comboboxdata.clusterList}
-          sortedClusterNames={comboboxdata.sortedClusterNames}
-          searchClusters={comboboxdata.searchClusters}
           clusterID={comboboxdata.clusterID}
           t={t}
           clusterDetailsContainerControl={clusterDetailsContainerControl}
@@ -493,7 +508,7 @@ class DetailsView extends Component<DetailsViewProps, DetailsViewState> {
    * Renders related Argo application details
    * Integrates with ArgoAppDetailsContainer for Argo app management
    */
-  renderRelatedArgoAppDetails = ({ relatedargoappsdata }: DetailItemExtended, t: TranslationFunction): JSX.Element => {
+  renderRelatedArgoAppDetails = ({ relatedargoappsdata }: DetailItemExtended, t: TFunction): JSX.Element => {
     const { argoAppDetailsContainerControl, hubClusterName } = this.props
 
     if (!relatedargoappsdata) {
