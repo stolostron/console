@@ -137,15 +137,17 @@ export const convertStringToQuery = (searchText: string, queryResultLimit: numbe
 
 export const getSearchCompleteString = (searchQuery: string) => {
   const queryTags = searchQuery.split(' ')
-  if (queryTags.at(-1)?.endsWith(':')) {
-    return queryTags.at(-1)?.replace(':', '') ?? ''
-  } else if (
-    operators.some((op) => queryTags.at(-1)?.substring(queryTags[queryTags.length - 1].length - op.length) === op)
-  ) {
-    const operator =
-      operators.find((op) => queryTags.at(-1)?.substring(queryTags[queryTags.length - 1].length - op.length) === op) ??
-      ''
-    return queryTags.at(-1)?.replace(':', '').replace(operator, '') ?? ''
+  const lastQueryTag = queryTags.at(-1)
+  if (lastQueryTag) {
+    if (lastQueryTag.endsWith(':')) {
+      return lastQueryTag.replace(':', '')
+    } else if (
+      operators.some((op) => lastQueryTag.substring(queryTags[queryTags.length - 1].length - op.length) === op)
+    ) {
+      const operator =
+        operators.find((op) => lastQueryTag.substring(queryTags[queryTags.length - 1].length - op.length) === op) ?? ''
+      return lastQueryTag.replace(':', '').replace(operator, '')
+    }
   }
   return ''
 }
