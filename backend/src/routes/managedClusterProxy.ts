@@ -26,7 +26,7 @@ export async function managedClusterProxy(
 
   try {
     const mce = await getMultiClusterEngine()
-    const proxyService = `cluster-proxy-addon-user.${mce?.spec?.targetNamespace || 'multicluster-engine'}.svc.cluster.local`
+    const proxyService = `cluster-proxy-addon-user.${mce?.spec?.targetNamespace || 'multicluster-engine'}.svc.cluster.local.`
     const proxyHost = process.env.CLUSTER_PROXY_ADDON_USER_HOST || proxyService
     const proxyPort = process.env.CLUSTER_PROXY_ADDON_USER_HOST ? 443 : 9092
 

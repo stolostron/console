@@ -27,7 +27,7 @@ export function prometheusProxy(req: Http2ServerRequest, res: Http2ServerRespons
   const token = getToken(req)
   if (!token) unauthorized(req, res)
 
-  const prometheusProxyService = 'https://prometheus-k8s.openshift-monitoring.svc.cluster.local:9091'
+  const prometheusProxyService = 'https://prometheus-k8s.openshift-monitoring.svc.cluster.local.:9091'
   const promURL = process.env.PROMETHEUS_ROUTE || prometheusProxyService
 
   metricsProxy(req, res, token, promURL)
@@ -37,7 +37,7 @@ export function observabilityProxy(req: Http2ServerRequest, res: Http2ServerResp
   const token = getToken(req)
   if (!token) unauthorized(req, res)
 
-  const obsProxyService = 'https://rbac-query-proxy.open-cluster-management-observability.svc.cluster.local:8443'
+  const obsProxyService = 'https://rbac-query-proxy.open-cluster-management-observability.svc.cluster.local.:8443'
   const obsURL = process.env.OBSERVABILITY_ROUTE || obsProxyService
 
   metricsProxy(req, res, token, obsURL)
