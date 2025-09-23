@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
+import { constants, Http2ServerRequest, Http2ServerResponse } from 'node:http2'
 import { logger } from '../lib/logger'
 import { respondInternalServerError } from '../lib/respond'
 import { getAuthenticatedToken, isHttp2ServerResponse } from '../lib/token'
