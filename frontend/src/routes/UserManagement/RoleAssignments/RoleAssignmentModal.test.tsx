@@ -16,7 +16,7 @@ jest.mock('../../../resources/clients/multicluster-role-assignment-client', () =
 jest.mock('./RoleAssignmentForm', () => ({
   RoleAssignmentForm: ({ onSubmit, onCancel }: any) => {
     const mockFormData = {
-      subject: { kind: UserKind, user: 'test-user' },
+      subject: { kind: UserKind, user: ['test-user'] },
       scope: {
         kind: 'specific' as const,
         clusterNames: ['test-cluster'],

@@ -29,7 +29,7 @@ const RoleAssignmentModal = ({ close, isOpen, isEditing, preselected }: RoleAssi
   const { t } = useTranslation()
 
   const save = async (data: RoleAssignmentFormDataType) => {
-    const subjectNames = data.subject.kind === UserKind ? [data.subject.user] : [data.subject.group]
+    const subjectNames = data.subject.kind === UserKind ? data.subject.user || [] : data.subject.group || []
     const existingRoleAssignments = findRoleAssignments(
       {
         subjectKinds: [data.subject.kind],
@@ -45,20 +45,27 @@ const RoleAssignmentModal = ({ close, isOpen, isEditing, preselected }: RoleAssi
     const roleAssignmentsToSave: {
       roleAssignment: Omit<RoleAssignment, 'name'>
       subject: FlattenedRoleAssignment['subject']
-    }[] = data.roles.map((role) => ({
-      roleAssignment: {
-        clusterRole: role,
-        clusterSelection: {
-          type: 'clusterNames',
-          clusterNames: data.scope.clusterNames || [],
-        },
-        targetNamespaces: data.scope.namespaces,
-      },
-      subject: {
-        name: (data.subject.kind === UserKind ? data.subject.user : data.subject.group) ?? '',
-        kind: data.subject.kind,
-      },
-    }))
+    }[] = []
+
+    data.roles.forEach((role) => {
+      subjectNames.forEach((subjectName) => {
+        roleAssignmentsToSave.push({
+          roleAssignment: {
+            clusterRole: role,
+            clusterSelection: {
+              type: 'clusterNames',
+              clusterNames: data.scope.kind === 'specific' ? data.scope.clusterNames || [] : [],
+            },
+            targetNamespaces:
+              data.scope.kind === 'specific' && data.scope.namespaces?.length ? data.scope.namespaces : undefined,
+          },
+          subject: {
+            name: subjectName,
+            kind: data.subject.kind,
+          },
+        })
+      })
+    })
 
     await Promise.all(
       roleAssignmentsToSave.map((roleAssignment) =>

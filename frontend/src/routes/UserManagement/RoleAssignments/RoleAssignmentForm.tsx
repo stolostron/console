@@ -56,7 +56,6 @@ const RoleAssignmentForm = ({
     onChangeRoles,
   } = useRoleAssignmentFormData(preselected, roleAssignmentData)
 
-  // Memoize the onChoseOptions callback to prevent infinite loops
   const onChoseOptions = useCallback(
     (values: { id: string; value: string }[]) => {
       onChangeScopeValues(values.map((e) => e.value))
@@ -127,8 +126,8 @@ const RoleAssignmentForm = ({
             value: roleAssignmentFormData.subject.kind,
             onChange: onChangeSubjectKind,
             options: [
-              { id: `user`, value: 'user', text: t('User') },
-              { id: `group`, value: 'group', text: t('Group') },
+              { id: `user`, value: UserKind, text: t('User') },
+              { id: `group`, value: GroupKind, text: t('Group') },
             ],
             isRequired: true,
             isHidden: isSubjectFieldHidden,
@@ -137,33 +136,33 @@ const RoleAssignmentForm = ({
             id: `users`,
             type: 'CreatableMultiselect',
             placeholder: t('Select or enter user names'),
-            value: roleAssignmentFormData.subject.user,
+            value: roleAssignmentFormData.subject.user || [],
             onChange: onChangeUserValue,
             options: roleAssignmentData.users,
             isRequired: roleAssignmentFormData.subject.kind === UserKind,
             isHidden:
-              roleAssignmentFormData.subject.kind !== UserKind ||
-              preselected?.subject?.kind !== UserKind ||
-              isSubjectFieldHidden,
+              (preselected?.subject?.kind
+                ? preselected.subject.kind !== UserKind
+                : roleAssignmentFormData.subject.kind !== UserKind) || isSubjectFieldHidden,
             isLoading: isUsersLoading,
             isScrollable: true,
-            validation: (user?: string) => (user !== undefined ? undefined : t('a user should be selected')),
+            validation: (user?: string[]) => (user && user.length > 0 ? undefined : t('a user should be selected')),
           },
           {
             id: `groups`,
             type: 'CreatableMultiselect',
             placeholder: t('Select or enter groups'),
-            value: roleAssignmentFormData.subject.group,
+            value: roleAssignmentFormData.subject.group || [],
             onChange: onChangeGroupValue,
             options: roleAssignmentData.groups,
             isRequired: roleAssignmentFormData.subject.kind === GroupKind,
             isHidden:
-              roleAssignmentFormData.subject.kind !== GroupKind ||
-              preselected?.subject?.kind !== GroupKind ||
-              isSubjectFieldHidden,
+              (preselected?.subject?.kind
+                ? preselected.subject.kind !== GroupKind
+                : roleAssignmentFormData.subject.kind !== GroupKind) || isSubjectFieldHidden,
             isLoading: isGroupsLoading,
             isScrollable: true,
-            validation: (group?: string) => (group !== undefined ? undefined : t('a group should be selected')),
+            validation: (group?: string[]) => (group && group.length > 0 ? undefined : t('a group should be selected')),
           },
         ],
       },
