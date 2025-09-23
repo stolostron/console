@@ -13,7 +13,7 @@ function Component({
 }: {
   resource: any
   loading: boolean
-  resourceType: 'User' | 'Group'
+  resourceType: 'User' | 'Group' | 'Role'
 }) {
   return (
     <RecoilRoot>
