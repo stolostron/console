@@ -179,6 +179,115 @@ describe('useRoleAssignmentFormData', () => {
     })
   })
 
+  describe('Global Role Logic', () => {
+    const mockRoleAssignmentData = {
+      users: [],
+      groups: [],
+      serviceAccounts: [],
+      roles: [],
+      clusterSets: [],
+      allClusterNames: ['cluster-1', 'cluster-2', 'cluster-3'],
+    }
+
+    it('should populate all clusters when scope kind changes to "all"', () => {
+      const { result } = renderHook(() => useRoleAssignmentFormData(undefined, mockRoleAssignmentData))
+
+      act(() => {
+        result.current.onChangeScopeKind('specific')
+      })
+
+      expect(result.current.roleAssignmentFormData.scope.kind).toBe('specific')
+      expect(result.current.roleAssignmentFormData.scope.clusterNames).toEqual([])
+
+      act(() => {
+        result.current.onChangeScopeKind('all')
+      })
+
+      expect(result.current.roleAssignmentFormData.scope.kind).toBe('all')
+      expect(result.current.roleAssignmentFormData.scope.clusterNames).toEqual(['cluster-1', 'cluster-2', 'cluster-3'])
+    })
+
+    it('should handle scope transitions between "all" and "specific"', () => {
+      const { result } = renderHook(() => useRoleAssignmentFormData(undefined, mockRoleAssignmentData))
+
+      act(() => {
+        result.current.onChangeScopeKind('specific')
+        result.current.onChangeScopeValues(['cluster-1'])
+        result.current.onChangeScopeNamespaces(['ns-1', 'ns-2'])
+      })
+
+      expect(result.current.roleAssignmentFormData.scope.kind).toBe('specific')
+      expect(result.current.roleAssignmentFormData.scope.clusterNames).toEqual(['cluster-1'])
+      expect(result.current.roleAssignmentFormData.scope.namespaces).toEqual(['ns-1', 'ns-2'])
+
+      act(() => {
+        result.current.onChangeScopeKind('all')
+      })
+
+      expect(result.current.roleAssignmentFormData.scope.kind).toBe('all')
+      expect(result.current.roleAssignmentFormData.scope.clusterNames).toEqual(['cluster-1', 'cluster-2', 'cluster-3'])
+      expect(result.current.roleAssignmentFormData.scope.namespaces).toBeUndefined()
+
+      act(() => {
+        result.current.onChangeScopeKind('specific')
+      })
+
+      expect(result.current.roleAssignmentFormData.scope.kind).toBe('specific')
+      expect(result.current.roleAssignmentFormData.scope.clusterNames).toEqual([])
+      expect(result.current.roleAssignmentFormData.scope.namespaces).toEqual([])
+    })
+
+    it('should update form data when allClusterNames changes', () => {
+      const initialData = {
+        users: [],
+        groups: [],
+        serviceAccounts: [],
+        roles: [],
+        clusterSets: [],
+        allClusterNames: ['cluster-1'],
+      }
+
+      const { result, rerender } = renderHook(
+        ({ roleAssignmentData }) => useRoleAssignmentFormData(undefined, roleAssignmentData),
+        { initialProps: { roleAssignmentData: initialData } }
+      )
+
+      act(() => {
+        result.current.onChangeScopeKind('all')
+      })
+
+      expect(result.current.roleAssignmentFormData.scope.clusterNames).toEqual(['cluster-1'])
+
+      const updatedData = {
+        ...initialData,
+        allClusterNames: ['cluster-1', 'cluster-2', 'cluster-3'],
+      }
+
+      rerender({ roleAssignmentData: updatedData })
+
+      expect(result.current.roleAssignmentFormData.scope.clusterNames).toEqual(['cluster-1', 'cluster-2', 'cluster-3'])
+    })
+
+    it('should handle empty allClusterNames array', () => {
+      const emptyData = {
+        users: [],
+        groups: [],
+        serviceAccounts: [],
+        roles: [],
+        clusterSets: [],
+        allClusterNames: [],
+      }
+
+      const { result } = renderHook(() => useRoleAssignmentFormData(undefined, emptyData))
+
+      act(() => {
+        result.current.onChangeScopeKind('all')
+      })
+
+      expect(result.current.roleAssignmentFormData.scope.clusterNames).toEqual([])
+    })
+  })
+
   describe('Roles Management', () => {
     it('should change roles', () => {
       const { result } = renderHook(() => useRoleAssignmentFormData())

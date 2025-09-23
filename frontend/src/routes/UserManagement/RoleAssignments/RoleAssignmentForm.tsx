@@ -54,7 +54,7 @@ const RoleAssignmentForm = ({
     onChangeScopeValues,
     onChangeScopeNamespaces,
     onChangeRoles,
-  } = useRoleAssignmentFormData(preselected)
+  } = useRoleAssignmentFormData(preselected, roleAssignmentData)
 
   // Memoize the onChoseOptions callback to prevent infinite loops
   const onChoseOptions = useCallback(
@@ -200,7 +200,7 @@ const RoleAssignmentForm = ({
             value: roleAssignmentFormData.scope.kind,
             onChange: onChangeScopeKind,
             options: [
-              { id: `all`, value: 'all', text: t('Propagate to all (everything in this Cluster)') },
+              { id: `all`, value: 'all', text: t('Global role (all clusters and namespaces)') },
               { id: `specific`, value: 'specific', text: t('Select specific') },
             ],
             isRequired: preselected?.cluterSets === undefined || preselected?.cluterSets?.length === 0,
