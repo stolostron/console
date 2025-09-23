@@ -37,10 +37,7 @@ export function formatSearchbarSuggestions(
   if (suggestionKind === 'value') {
     // Get a list of duplicate values to remove from suggestions dropdown
     const searchTokens = searchQuery.split(' ')
-    const searchCompleteFilter = searchTokens[searchTokens.length - 1].substring(
-      0,
-      searchTokens[searchTokens.length - 1].indexOf(':')
-    )
+    const searchCompleteFilter = searchTokens.at(-1)?.substring(0, searchTokens.at(-1)?.indexOf(':'))
     labelTag.name = t('{{0}} values', [searchCompleteFilter])
     const query = convertStringToQuery(searchQuery, limit)
     query.filters.forEach((filter) => {
@@ -98,7 +95,7 @@ export function formatSearchbarSuggestions(
 
   suggestions = data
     .filter((suggestion) => {
-      return valuesToRemoveFromSuggestions.indexOf(suggestion) === -1
+      return !valuesToRemoveFromSuggestions.includes(suggestion)
     })
     .map((field) => {
       return {
@@ -121,9 +118,9 @@ export function formatSearchbarSuggestions(
 
 export const convertStringToQuery = (searchText: string, queryResultLimit: number) => {
   const searchTokens = searchText.split(' ')
-  const keywords = searchTokens.filter((token) => token !== '' && token.indexOf(':') < 0)
+  const keywords = searchTokens.filter((token) => token !== '' && !token.includes(':'))
   const filters = searchTokens
-    .filter((token) => token.indexOf(':') >= 0)
+    .filter((token) => token.includes(':'))
     .map((f) => {
       const splitIdx = f.indexOf(':')
       const property = f.substring(0, splitIdx)
@@ -140,18 +137,12 @@ export const convertStringToQuery = (searchText: string, queryResultLimit: numbe
 
 export const getSearchCompleteString = (searchQuery: string) => {
   const queryTags = searchQuery.split(' ')
-  if (queryTags[queryTags.length - 1].endsWith(':')) {
-    return queryTags[queryTags.length - 1].replace(':', '')
-  } else if (
-    operators.some(
-      (op) => queryTags[queryTags.length - 1].substring(queryTags[queryTags.length - 1].length - op.length) === op
-    )
-  ) {
+  if (queryTags.at(-1)?.endsWith(':')) {
+    return queryTags.at(-1)?.replace(':', '')
+  } else if (operators.some((op) => queryTags.at(-1)?.substring(queryTags.at(-1)?.length ?? 0 - op.length) === op)) {
     const operator =
-      operators.find(
-        (op) => queryTags[queryTags.length - 1].substring(queryTags[queryTags.length - 1].length - op.length) === op
-      ) ?? ''
-    return queryTags[queryTags.length - 1].replace(':', '').replace(operator, '')
+      operators.find((op) => queryTags.at(-1)?.substring(queryTags.at(-1)?.length ?? 0 - op.length) === op) ?? ''
+    return queryTags.at(-1)?.replace(':', '').replace(operator, '')
   }
   return ''
 }
@@ -167,7 +158,7 @@ export function setFederatedErrorAlert(
 ) {
   const federatedWarningKey = 'federated-error'
   if (!loading && error && error?.graphQLErrors.find((error: any) => error?.includes(federatedErrorText))) {
-    if (!alerts.find((alert) => alert.key === federatedWarningKey)) {
+    if (!alerts.some((alert) => alert.key === federatedWarningKey)) {
       addSearchAlert({
         key: federatedWarningKey,
         variant: 'warning',
@@ -188,7 +179,7 @@ export function setFederatedErrorAlert(
     !loading &&
     !error?.graphQLErrors.find((error: any) => error?.includes(federatedErrorText)) &&
     data &&
-    alerts.find((alert) => alert.key === federatedWarningKey)
+    alerts.some((alert) => alert.key === federatedWarningKey)
   ) {
     removeSearchAlert(federatedWarningKey)
   }
