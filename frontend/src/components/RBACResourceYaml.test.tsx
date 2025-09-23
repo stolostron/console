@@ -82,4 +82,27 @@ describe('ResourceYaml', () => {
 
     expect(screen.getByRole('textbox')).toBeInTheDocument()
   })
+
+  test('should render role not found message', () => {
+    render(<Component resource={undefined} loading={false} resourceType="Role" />)
+
+    expect(screen.getByText('Role not found')).toBeInTheDocument()
+  })
+
+  test('should render YAML editor with role data', () => {
+    const mockRole = {
+      apiVersion: 'rbac.authorization.k8s.io/v1',
+      kind: 'ClusterRole',
+      metadata: {
+        name: 'test-role',
+        uid: 'test-role-uid',
+        creationTimestamp: '2025-01-24T17:48:45Z',
+      },
+      rules: [],
+    }
+
+    render(<Component resource={mockRole} loading={false} resourceType="Role" />)
+
+    expect(screen.getByRole('textbox')).toBeInTheDocument()
+  })
 })
