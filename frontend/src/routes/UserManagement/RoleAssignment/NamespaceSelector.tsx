@@ -32,8 +32,8 @@ const NamespaceSelector = ({
         return selectedStr === clusterStr
       })
 
-      if (isMatch && cluster.namespaces) {
-        clusterNamespaceGroupings.push([...cluster.namespaces])
+      if (isMatch) {
+        clusterNamespaceGroupings.push(cluster.namespaces ? [...cluster.namespaces] : [])
       }
     })
 

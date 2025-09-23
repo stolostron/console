@@ -68,11 +68,11 @@ describe('NamespaceSelector', () => {
   const mockClusters: Cluster[] = [
     {
       name: 'cluster-1',
-      namespaces: ['default', 'kube-system', 'monitoring'],
+      namespaces: ['default', 'app-backend', 'monitoring'],
     },
     {
       name: 'cluster-2',
-      namespaces: ['default', 'kube-public', 'istio-system'],
+      namespaces: ['default', 'app-frontend', 'istio-system'],
     },
     {
       name: 'cluster-3',
@@ -142,59 +142,12 @@ describe('NamespaceSelector', () => {
       )
 
       expect(container.querySelector('[data-testid="option-default"]')).toBeInTheDocument()
-      expect(container.querySelector('[data-testid="option-kube-system"]')).toBeInTheDocument()
+      expect(container.querySelector('[data-testid="option-app-backend"]')).toBeInTheDocument()
       expect(container.querySelector('[data-testid="option-monitoring"]')).toBeInTheDocument()
 
-      expect(container.querySelector('[data-testid="option-kube-public"]')).toBeNull()
+      expect(container.querySelector('[data-testid="option-app-frontend"]')).toBeNull()
       expect(container.querySelector('[data-testid="option-istio-system"]')).toBeNull()
       expect(container.querySelector('[data-testid="option-logging"]')).toBeNull()
-    })
-
-    it('shows namespaces from multiple selected clusters', () => {
-      const { container } = render(
-        <NamespaceSelector
-          selectedClusters={['cluster-1', 'cluster-2']}
-          clusters={mockClusters}
-          onChangeNamespaces={mockOnChangeNamespaces}
-        />
-      )
-
-      expect(container.querySelector('[data-testid="option-default"]')).toBeInTheDocument()
-      expect(container.querySelector('[data-testid="option-kube-system"]')).toBeInTheDocument()
-      expect(container.querySelector('[data-testid="option-monitoring"]')).toBeInTheDocument()
-      expect(container.querySelector('[data-testid="option-kube-public"]')).toBeInTheDocument()
-      expect(container.querySelector('[data-testid="option-istio-system"]')).toBeInTheDocument()
-    })
-
-    it('deduplicates namespaces from multiple clusters', () => {
-      const { container } = render(
-        <NamespaceSelector
-          selectedClusters={['cluster-1', 'cluster-2', 'cluster-3']}
-          clusters={mockClusters}
-          onChangeNamespaces={mockOnChangeNamespaces}
-        />
-      )
-
-      expect(container.querySelector('[data-testid="option-default"]')).toBeInTheDocument()
-      expect(container.querySelectorAll('[data-testid="option-default"]')).toHaveLength(1)
-    })
-
-    it('sorts namespaces alphabetically', () => {
-      const { container } = render(
-        <NamespaceSelector
-          selectedClusters={['cluster-1', 'cluster-2']}
-          clusters={mockClusters}
-          onChangeNamespaces={mockOnChangeNamespaces}
-        />
-      )
-
-      const options = container.querySelector('[data-testid="multiselect-options"]')
-      const optionElements = options?.querySelectorAll('[data-testid^="option-"]')
-      const values = Array.from(optionElements || []).map((el) =>
-        el.getAttribute('data-testid')?.replace('option-', '')
-      )
-
-      expect(values).toEqual(['default', 'istio-system', 'kube-public', 'kube-system', 'monitoring'])
     })
 
     it('handles clusters with no namespaces', () => {
@@ -211,12 +164,128 @@ describe('NamespaceSelector', () => {
       expect(container.querySelector('[data-testid="multiselect-options"]')?.children).toHaveLength(0)
     })
 
-    it('handles empty selected clusters array', () => {
+    it('returns empty when selected clusters have no common namespaces', () => {
+      const clustersWithNoCommon: Cluster[] = [
+        {
+          name: 'cluster-1',
+          namespaces: ['namespace-a', 'namespace-b'],
+        },
+        {
+          name: 'cluster-2',
+          namespaces: ['namespace-c', 'namespace-d'],
+        },
+      ]
+
       const { container } = render(
-        <NamespaceSelector selectedClusters={[]} clusters={mockClusters} onChangeNamespaces={mockOnChangeNamespaces} />
+        <NamespaceSelector
+          selectedClusters={['cluster-1', 'cluster-2']}
+          clusters={clustersWithNoCommon}
+          onChangeNamespaces={mockOnChangeNamespaces}
+        />
       )
 
-      expect(container.firstChild).toBeNull()
+      expect(container.querySelector('[data-testid="acm-multi-select"]')).toBeInTheDocument()
+      expect(container.querySelector('[data-testid="multiselect-options"]')?.children).toHaveLength(0)
+    })
+
+    it('handles complex intersection with partial overlaps', () => {
+      const complexClusters: Cluster[] = [
+        {
+          name: 'cluster-1',
+          namespaces: ['shared-all', 'shared-1-2', 'shared-1-3', 'shared-1-4', 'unique-1'],
+        },
+        {
+          name: 'cluster-2',
+          namespaces: ['shared-all', 'shared-1-2', 'shared-2-3', 'shared-2-4', 'unique-2'],
+        },
+        {
+          name: 'cluster-3',
+          namespaces: ['shared-all', 'shared-1-3', 'shared-2-3', 'shared-3-4', 'unique-3'],
+        },
+        {
+          name: 'cluster-4',
+          namespaces: ['shared-all', 'shared-1-4', 'shared-2-4', 'shared-3-4', 'unique-4'],
+        },
+      ]
+
+      const { container, rerender } = render(
+        <NamespaceSelector
+          selectedClusters={['cluster-1', 'cluster-2', 'cluster-3', 'cluster-4']}
+          clusters={complexClusters}
+          onChangeNamespaces={mockOnChangeNamespaces}
+        />
+      )
+
+      expect(container.querySelector('[data-testid="option-shared-all"]')).toBeInTheDocument()
+      expect(container.querySelector('[data-testid="option-shared-1-2"]')).toBeNull()
+      expect(container.querySelector('[data-testid="option-shared-1-3"]')).toBeNull()
+      expect(container.querySelector('[data-testid="option-unique-1"]')).toBeNull()
+
+      rerender(
+        <NamespaceSelector
+          selectedClusters={['cluster-1', 'cluster-2']}
+          clusters={complexClusters}
+          onChangeNamespaces={mockOnChangeNamespaces}
+        />
+      )
+
+      expect(container.querySelector('[data-testid="option-shared-all"]')).toBeInTheDocument()
+      expect(container.querySelector('[data-testid="option-shared-1-2"]')).toBeInTheDocument()
+      expect(container.querySelector('[data-testid="option-shared-1-3"]')).toBeNull()
+      expect(container.querySelector('[data-testid="option-shared-2-3"]')).toBeNull()
+
+      rerender(
+        <NamespaceSelector
+          selectedClusters={['cluster-2', 'cluster-3']}
+          clusters={complexClusters}
+          onChangeNamespaces={mockOnChangeNamespaces}
+        />
+      )
+
+      expect(container.querySelector('[data-testid="option-shared-all"]')).toBeInTheDocument()
+      expect(container.querySelector('[data-testid="option-shared-2-3"]')).toBeInTheDocument()
+      expect(container.querySelector('[data-testid="option-shared-1-2"]')).toBeNull()
+      expect(container.querySelector('[data-testid="option-shared-1-3"]')).toBeNull()
+
+      rerender(
+        <NamespaceSelector
+          selectedClusters={['cluster-1', 'cluster-3', 'cluster-4']}
+          clusters={complexClusters}
+          onChangeNamespaces={mockOnChangeNamespaces}
+        />
+      )
+
+      expect(container.querySelector('[data-testid="option-shared-all"]')).toBeInTheDocument()
+      expect(container.querySelector('[data-testid="option-shared-1-3"]')).toBeNull()
+      expect(container.querySelector('[data-testid="option-shared-3-4"]')).toBeNull()
+      expect(container.querySelector('[data-testid="option-shared-1-4"]')).toBeNull()
+    })
+
+    it('sorts namespaces alphabetically', () => {
+      const clustersForSorting: Cluster[] = [
+        {
+          name: 'cluster-1',
+          namespaces: ['zebra', 'alpha', 'beta', 'gamma'],
+        },
+        {
+          name: 'cluster-2',
+          namespaces: ['zebra', 'beta', 'alpha', 'delta'],
+        },
+      ]
+
+      const { container } = render(
+        <NamespaceSelector
+          selectedClusters={['cluster-1', 'cluster-2']}
+          clusters={clustersForSorting}
+          onChangeNamespaces={mockOnChangeNamespaces}
+        />
+      )
+
+      const options = container.querySelector('[data-testid="multiselect-options"]')
+      const optionElements = options?.querySelectorAll('[data-testid^="option-"]')
+      const values = Array.from(optionElements || []).map((e) => e.getAttribute('data-testid')?.replace('option-', ''))
+
+      expect(values).toEqual(['alpha', 'beta', 'zebra'])
     })
   })
 
@@ -327,11 +396,11 @@ describe('NamespaceSelector', () => {
         />
       )
 
-      const kubeSystemOption = container.querySelector('[data-testid="option-kube-system"]') as HTMLElement
-      fireEvent.click(kubeSystemOption)
+      const appBackendOption = container.querySelector('[data-testid="option-app-backend"]') as HTMLElement
+      fireEvent.click(appBackendOption)
 
       await waitFor(() => {
-        expect(mockOnChangeNamespaces).toHaveBeenCalledWith(['default', 'kube-system'])
+        expect(mockOnChangeNamespaces).toHaveBeenCalledWith(['default', 'app-backend'])
       })
     })
 
@@ -455,54 +524,6 @@ describe('NamespaceSelector', () => {
 
       expect(container.querySelector('[data-testid="multiselect-value"]')).toHaveTextContent('[]')
     })
-
-    it('handles clusters with empty namespaces array', () => {
-      const clustersWithEmptyNamespaces: Cluster[] = [
-        {
-          name: 'cluster-1',
-          namespaces: [],
-        },
-      ]
-
-      const { container } = render(
-        <NamespaceSelector
-          selectedClusters={['cluster-1']}
-          clusters={clustersWithEmptyNamespaces}
-          onChangeNamespaces={mockOnChangeNamespaces}
-        />
-      )
-
-      expect(container.querySelector('[data-testid="acm-multi-select"]')).toBeInTheDocument()
-      expect(container.querySelector('[data-testid="multiselect-options"]')).toBeInTheDocument()
-      expect(container.querySelector('[data-testid="multiselect-options"]')?.children).toHaveLength(0)
-    })
-
-    it('handles duplicate namespace names across clusters', () => {
-      const clustersWithDuplicates: Cluster[] = [
-        {
-          name: 'cluster-1',
-          namespaces: ['default', 'kube-system'],
-        },
-        {
-          name: 'cluster-2',
-          namespaces: ['default', 'kube-system', 'monitoring'],
-        },
-      ]
-
-      const { container } = render(
-        <NamespaceSelector
-          selectedClusters={['cluster-1', 'cluster-2']}
-          clusters={clustersWithDuplicates}
-          onChangeNamespaces={mockOnChangeNamespaces}
-        />
-      )
-
-      expect(container.querySelector('[data-testid="option-default"]')).toBeInTheDocument()
-      expect(container.querySelector('[data-testid="option-kube-system"]')).toBeInTheDocument()
-      expect(container.querySelector('[data-testid="option-monitoring"]')).toBeInTheDocument()
-      expect(container.querySelectorAll('[data-testid="option-default"]')).toHaveLength(1)
-      expect(container.querySelectorAll('[data-testid="option-kube-system"]')).toHaveLength(1)
-    })
   })
 
   describe('Performance and Memoization', () => {
@@ -524,33 +545,6 @@ describe('NamespaceSelector', () => {
       )
 
       expect(mockOnChangeNamespaces).not.toHaveBeenCalled()
-    })
-
-    it('updates namespace options when selected clusters change', () => {
-      const { container, rerender } = render(
-        <NamespaceSelector
-          selectedClusters={['cluster-1']}
-          clusters={mockClusters}
-          onChangeNamespaces={mockOnChangeNamespaces}
-        />
-      )
-
-      expect(container.querySelector('[data-testid="option-default"]')).toBeInTheDocument()
-      expect(container.querySelector('[data-testid="option-kube-system"]')).toBeInTheDocument()
-
-      rerender(
-        <NamespaceSelector
-          selectedClusters={['cluster-2']}
-          clusters={mockClusters}
-          onChangeNamespaces={mockOnChangeNamespaces}
-        />
-      )
-
-      expect(container.querySelector('[data-testid="option-default"]')).toBeInTheDocument()
-      expect(container.querySelector('[data-testid="option-kube-public"]')).toBeInTheDocument()
-      expect(container.querySelector('[data-testid="option-istio-system"]')).toBeInTheDocument()
-      expect(container.querySelector('[data-testid="option-kube-system"]')).toBeNull()
-      expect(container.querySelector('[data-testid="option-monitoring"]')).toBeNull()
     })
   })
 
@@ -589,12 +583,12 @@ describe('NamespaceSelector', () => {
           selectedClusters={['cluster-1']}
           clusters={mockClusters}
           onChangeNamespaces={mockOnChangeNamespaces}
-          selectedNamespaces={['default', 'kube-system']}
+          selectedNamespaces={['default', 'app-backend']}
         />
       )
 
       expect(container.querySelector('[data-testid="multiselect-value"]')).toHaveTextContent(
-        '["default","kube-system"]'
+        '["default","app-backend"]'
       )
     })
 

@@ -40,8 +40,6 @@ const mockUseSharedAtoms = useSharedAtoms as jest.MockedFunction<typeof useShare
 const mockUseSearchResultItemsQuery = useSearchResultItemsQuery as jest.MockedFunction<typeof useSearchResultItemsQuery>
 
 describe('useRoleAssignmentData', () => {
-  const mockNamespaces = [{ metadata: { name: 'my-namespace' } }, { metadata: { name: 'test-namespace' } }]
-
   const mockManagedClusterSets = [
     {
       metadata: { name: 'global' },
@@ -93,65 +91,50 @@ describe('useRoleAssignmentData', () => {
     ],
   }
 
+  const mockAllNamespaces = {
+    searchResult: [
+      {
+        items: [
+          { cluster: 'cluster-1', name: 'my-namespace' },
+          { cluster: 'cluster-1', name: 'test-namespace' },
+          { cluster: 'cluster-1', name: 'kube-system' },
+          { cluster: 'cluster-1', name: 'openshift-operators' },
+          { cluster: 'cluster-1', name: 'open-cluster-management-hub' },
+        ],
+      },
+    ],
+  }
+
   beforeEach(() => {
     jest.clearAllMocks()
 
     mockUseQuery.mockImplementation((queryFn) => {
       if (queryFn === listUsers) {
-        return {
-          data: mockUsers,
-          loading: false,
-          error: undefined,
-          startPolling: jest.fn(),
-          stopPolling: jest.fn(),
-          refresh: jest.fn(),
-        }
+        return { data: mockUsers, loading: false } as any
       }
       if (queryFn === listGroups) {
-        return {
-          data: mockGroups,
-          loading: false,
-          error: undefined,
-          startPolling: jest.fn(),
-          stopPolling: jest.fn(),
-          refresh: jest.fn(),
-        }
+        return { data: mockGroups, loading: false } as any
       }
-      return {
-        data: undefined,
-        loading: false,
-        error: undefined,
-        startPolling: jest.fn(),
-        stopPolling: jest.fn(),
-        refresh: jest.fn(),
-      }
+      return { data: undefined, loading: false } as any
     })
 
-    mockUseSearchResultItemsQuery.mockReturnValue({
-      data: mockClusterRoles,
-      loading: false,
-      error: undefined,
-      refetch: jest.fn(),
-      reobserve: jest.fn(),
-      networkStatus: 7,
-      called: true,
-      client: {} as any,
-      observable: {} as any,
-      previousData: undefined,
-      variables: {},
-      fetchMore: jest.fn(),
-      subscribeToMore: jest.fn(),
-      updateQuery: jest.fn(),
-      startPolling: jest.fn(),
-      stopPolling: jest.fn(),
+    mockUseSearchResultItemsQuery.mockImplementation((options) => {
+      const input = options?.variables?.input as any[]
+      const isNamespacesQuery = input?.[0]?.filters?.some(
+        (filter: any) => filter.property === 'kind' && filter.values?.includes('Namespace')
+      )
+
+      if (isNamespacesQuery) {
+        return { data: mockAllNamespaces, loading: false } as any
+      }
+
+      return { data: mockClusterRoles, loading: false } as any
     })
 
-    const mockNamespacesState = {} as any
     const mockManagedClusterSetsState = {} as any
     const mockManagedClustersState = {} as any
 
     mockUseSharedAtoms.mockReturnValue({
-      namespacesState: mockNamespacesState,
       managedClusterSetsState: mockManagedClusterSetsState,
       managedClustersState: mockManagedClustersState,
 
@@ -162,7 +145,6 @@ describe('useRoleAssignmentData', () => {
     } as any)
 
     mockUseRecoilValue.mockImplementation((atom) => {
-      if (atom === mockNamespacesState) return mockNamespaces
       if (atom === mockManagedClusterSetsState) return mockManagedClusterSets
       if (atom === mockManagedClustersState) return mockManagedClusters
       return []
@@ -244,33 +226,12 @@ describe('useRoleAssignmentData', () => {
     it('should handle users loading state', () => {
       mockUseQuery.mockImplementation((queryFn) => {
         if (queryFn === listUsers) {
-          return {
-            data: undefined,
-            loading: true,
-            error: undefined,
-            startPolling: jest.fn(),
-            stopPolling: jest.fn(),
-            refresh: jest.fn(),
-          }
+          return { data: undefined, loading: true } as any
         }
         if (queryFn === listGroups) {
-          return {
-            data: mockGroups,
-            loading: false,
-            error: undefined,
-            startPolling: jest.fn(),
-            stopPolling: jest.fn(),
-            refresh: jest.fn(),
-          }
+          return { data: mockGroups, loading: false } as any
         }
-        return {
-          data: undefined,
-          loading: false,
-          error: undefined,
-          startPolling: jest.fn(),
-          stopPolling: jest.fn(),
-          refresh: jest.fn(),
-        }
+        return { data: undefined, loading: false } as any
       })
 
       const { result } = renderHook(() => useRoleAssignmentData())
@@ -279,36 +240,53 @@ describe('useRoleAssignmentData', () => {
       expect(result.current.isLoading).toBe(true)
     })
 
+    it('should still be loading when roles are loaded but namespaces are still loading', () => {
+      mockUseSearchResultItemsQuery.mockImplementation((options) => {
+        const input = options?.variables?.input as any[]
+        const isNamespacesQuery = input?.[0]?.filters?.some(
+          (filter: any) => filter.property === 'kind' && filter.values?.includes('Namespace')
+        )
+
+        if (isNamespacesQuery) {
+          return { data: undefined, loading: true } as any
+        }
+
+        return { data: mockClusterRoles, loading: false } as any
+      })
+
+      const { result } = renderHook(() => useRoleAssignmentData())
+
+      expect(result.current.isLoading).toBe(true)
+    })
+
+    it('should show loading is complete when namespaces and roles are done loading', () => {
+      mockUseSearchResultItemsQuery.mockImplementation((options) => {
+        const input = options?.variables?.input as any[]
+        const isNamespacesQuery = input?.[0]?.filters?.some(
+          (filter: any) => filter.property === 'kind' && filter.values?.includes('Namespace')
+        )
+
+        if (isNamespacesQuery) {
+          return { data: mockAllNamespaces, loading: false } as any
+        }
+
+        return { data: mockClusterRoles, loading: false } as any
+      })
+
+      const { result } = renderHook(() => useRoleAssignmentData())
+
+      expect(result.current.isLoading).toBe(false)
+    })
+
     it('should handle groups loading state', () => {
       mockUseQuery.mockImplementation((queryFn) => {
         if (queryFn === listUsers) {
-          return {
-            data: mockUsers,
-            loading: false,
-            error: undefined,
-            startPolling: jest.fn(),
-            stopPolling: jest.fn(),
-            refresh: jest.fn(),
-          }
+          return { data: mockUsers, loading: false } as any
         }
         if (queryFn === listGroups) {
-          return {
-            data: undefined,
-            loading: true,
-            error: undefined,
-            startPolling: jest.fn(),
-            stopPolling: jest.fn(),
-            refresh: jest.fn(),
-          }
+          return { data: undefined, loading: true } as any
         }
-        return {
-          data: undefined,
-          loading: false,
-          error: undefined,
-          startPolling: jest.fn(),
-          stopPolling: jest.fn(),
-          refresh: jest.fn(),
-        }
+        return { data: undefined, loading: false } as any
       })
 
       const { result } = renderHook(() => useRoleAssignmentData())
@@ -318,24 +296,7 @@ describe('useRoleAssignmentData', () => {
     })
 
     it('should handle roles loading state', () => {
-      mockUseSearchResultItemsQuery.mockReturnValue({
-        data: undefined,
-        loading: true,
-        error: undefined,
-        refetch: jest.fn(),
-        reobserve: jest.fn(),
-        networkStatus: 1,
-        called: true,
-        client: {} as any,
-        observable: {} as any,
-        previousData: undefined,
-        variables: {},
-        fetchMore: jest.fn(),
-        subscribeToMore: jest.fn(),
-        updateQuery: jest.fn(),
-        startPolling: jest.fn(),
-        stopPolling: jest.fn(),
-      })
+      mockUseSearchResultItemsQuery.mockReturnValue({ data: undefined, loading: true } as any)
 
       const { result } = renderHook(() => useRoleAssignmentData())
 
@@ -345,22 +306,6 @@ describe('useRoleAssignmentData', () => {
   })
 
   describe('Data Processing', () => {
-    it('should filter out system namespaces', async () => {
-      const { result } = renderHook(() => useRoleAssignmentData())
-
-      await waitFor(() => {
-        const clusterSets = result.current.roleAssignmentData.clusterSets
-        clusterSets.forEach((clusterSet) => {
-          clusterSet.clusters?.forEach((cluster) => {
-            expect(cluster.namespaces).not.toContain('default')
-            expect(cluster.namespaces).not.toContain('kube-system')
-            expect(cluster.namespaces).toContain('my-namespace')
-            expect(cluster.namespaces).toContain('test-namespace')
-          })
-        })
-      })
-    })
-
     it('should exclude global cluster set', async () => {
       const { result } = renderHook(() => useRoleAssignmentData())
 
@@ -384,32 +329,8 @@ describe('useRoleAssignmentData', () => {
     })
 
     it('should handle empty data gracefully', async () => {
-      mockUseQuery.mockReturnValue({
-        data: undefined,
-        loading: false,
-        error: undefined,
-        startPolling: jest.fn(),
-        stopPolling: jest.fn(),
-        refresh: jest.fn(),
-      })
-      mockUseSearchResultItemsQuery.mockReturnValue({
-        data: undefined,
-        loading: false,
-        error: undefined,
-        refetch: jest.fn(),
-        reobserve: jest.fn(),
-        networkStatus: 7,
-        called: true,
-        client: {} as any,
-        observable: {} as any,
-        previousData: undefined,
-        variables: {},
-        fetchMore: jest.fn(),
-        subscribeToMore: jest.fn(),
-        updateQuery: jest.fn(),
-        startPolling: jest.fn(),
-        stopPolling: jest.fn(),
-      })
+      mockUseQuery.mockReturnValue({ data: undefined, loading: false } as any)
+      mockUseSearchResultItemsQuery.mockReturnValue({ data: undefined, loading: false } as any)
       mockUseRecoilValue.mockReturnValue([])
 
       const { result } = renderHook(() => useRoleAssignmentData())
@@ -430,6 +351,138 @@ describe('useRoleAssignmentData', () => {
 
       await waitFor(() => {
         expect(result.current.roleAssignmentData.serviceAccounts).toEqual([])
+      })
+    })
+  })
+
+  describe('System Namespace Filtering', () => {
+    it('should filter out all system namespace patterns', () => {
+      const mockAllNamespaces = {
+        searchResult: [
+          {
+            items: [
+              { cluster: 'cluster-1', name: 'user-app' },
+              { cluster: 'cluster-1', name: 'my-openshift-app' },
+              { cluster: 'cluster-1', name: 'kubernetes-dashboard' },
+              { cluster: 'cluster-1', name: 'my-cluster-app' },
+
+              { cluster: 'cluster-1', name: 'kube-system' },
+              { cluster: 'cluster-1', name: 'kube-public' },
+              { cluster: 'cluster-1', name: 'kube-node-lease' },
+              { cluster: 'cluster-1', name: 'openshift-operators' },
+              { cluster: 'cluster-1', name: 'openshift-monitoring' },
+              { cluster: 'cluster-1', name: 'openshift-config' },
+              { cluster: 'cluster-1', name: 'open-cluster-management' },
+              { cluster: 'cluster-1', name: 'open-cluster-management-hub' },
+              { cluster: 'cluster-1', name: 'open-cluster-management-agent' },
+            ],
+          },
+        ],
+      }
+
+      mockUseSearchResultItemsQuery.mockImplementation((options) => {
+        const input = options?.variables?.input as any[]
+        const isNamespacesQuery = input?.[0]?.filters?.some(
+          (filter: any) => filter.property === 'kind' && filter.values?.includes('Namespace')
+        )
+
+        if (isNamespacesQuery) {
+          return { data: mockAllNamespaces, loading: false } as any
+        }
+        return { data: mockClusterRoles, loading: false } as any
+      })
+
+      const { result } = renderHook(() => useRoleAssignmentData())
+
+      waitFor(() => {
+        const cluster = result.current.roleAssignmentData.clusterSets[0]?.clusters?.[0]
+
+        // User namespaces should be included
+        expect(cluster?.namespaces).toContain('user-app')
+        expect(cluster?.namespaces).toContain('my-openshift-app')
+        expect(cluster?.namespaces).toContain('kubernetes-dashboard')
+        expect(cluster?.namespaces).toContain('my-cluster-app')
+
+        // All system namespace patterns should be filtered out
+        expect(cluster?.namespaces).not.toContain('kube-system')
+        expect(cluster?.namespaces).not.toContain('kube-public')
+        expect(cluster?.namespaces).not.toContain('kube-node-lease')
+        expect(cluster?.namespaces).not.toContain('openshift-operators')
+        expect(cluster?.namespaces).not.toContain('openshift-monitoring')
+        expect(cluster?.namespaces).not.toContain('openshift-config')
+        expect(cluster?.namespaces).not.toContain('open-cluster-management')
+        expect(cluster?.namespaces).not.toContain('open-cluster-management-hub')
+        expect(cluster?.namespaces).not.toContain('open-cluster-management-agent')
+      })
+    })
+  })
+
+  describe('Cluster Namespace Mapping Logic', () => {
+    it('should correctly map namespaces to their respective clusters', () => {
+      const mockAllNamespacesMultiCluster = {
+        searchResult: [
+          {
+            items: [
+              { cluster: 'cluster-1', name: 'app-frontend' },
+              { cluster: 'cluster-1', name: 'app-backend' },
+              { cluster: 'cluster-2', name: 'app-frontend' },
+              { cluster: 'cluster-2', name: 'monitoring' },
+              { cluster: 'cluster-3', name: 'data-processing' },
+            ],
+          },
+        ],
+      }
+
+      const mockMultiClusters = [
+        ...mockManagedClusters,
+        {
+          metadata: {
+            name: 'cluster-2',
+            labels: {
+              'cluster.open-cluster-management.io/clusterset': 'cluster-set-1',
+            },
+          },
+        },
+        {
+          metadata: {
+            name: 'cluster-3',
+            labels: {
+              'cluster.open-cluster-management.io/clusterset': 'cluster-set-1',
+            },
+          },
+        },
+      ]
+
+      mockUseSearchResultItemsQuery.mockImplementation((options) => {
+        const input = options?.variables?.input as any[]
+        const isNamespacesQuery = input?.[0]?.filters?.some(
+          (filter: any) => filter.property === 'kind' && filter.values?.includes('Namespace')
+        )
+
+        if (isNamespacesQuery) {
+          return { data: mockAllNamespacesMultiCluster, loading: false } as any
+        }
+
+        return { data: mockClusterRoles, loading: false } as any
+      })
+
+      const mockManagedClustersState = {} as any
+      mockUseRecoilValue.mockImplementation((atom) => {
+        if (atom === mockManagedClustersState) return mockMultiClusters
+        return mockManagedClusterSets
+      })
+
+      const { result } = renderHook(() => useRoleAssignmentData())
+
+      waitFor(() => {
+        const clusterSet = result.current.roleAssignmentData.clusterSets[0]
+        const cluster1 = clusterSet?.clusters?.find((c) => c.name === 'cluster-1')
+        const cluster2 = clusterSet?.clusters?.find((c) => c.name === 'cluster-2')
+        const cluster3 = clusterSet?.clusters?.find((c) => c.name === 'cluster-3')
+
+        expect(cluster1?.namespaces).toEqual(['app-frontend', 'app-backend'])
+        expect(cluster2?.namespaces).toEqual(['app-frontend', 'monitoring'])
+        expect(cluster3?.namespaces).toEqual(['data-processing'])
       })
     })
   })
