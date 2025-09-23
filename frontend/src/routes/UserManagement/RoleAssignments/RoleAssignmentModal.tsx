@@ -75,17 +75,20 @@ const RoleAssignmentModal = ({ close, isOpen, isEditing, preselected }: RoleAssi
               autoClose: true,
             })
           )
-          .catch((e) =>
+          .catch((e) => {
+            const isDuplicateError = e?.message?.includes('Duplicate role assignment detected')
             toastContext.addAlert({
               title: t('Role assignment creation failed'),
-              message: t('The role assignment creation for {{role}} role failed. Error: {{error}}', {
-                role: roleAssignment.roleAssignment.clusterRole,
-                error: e,
-              }),
+              message: isDuplicateError
+                ? t('This role assignment already exists. Please modify the selection to create a unique assignment.')
+                : t('The role assignment creation for {{role}} role failed. Error: {{error}}', {
+                    role: roleAssignment.roleAssignment.clusterRole,
+                    error: e,
+                  }),
               type: 'danger',
               autoClose: true,
             })
-          )
+          })
       )
     )
     close()
