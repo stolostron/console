@@ -175,7 +175,7 @@ export function Searchbar(props: Readonly<SearchbarProps>) {
     // both cases need to be handled for backwards compatibility
     const value = typeof input === 'string' ? input : (input.target as HTMLInputElement).value
     const delimiters = [' ', ':', ',']
-    if (delimiters.indexOf(value) < 0) {
+    if (!delimiters.includes(value)) {
       // Delimiters are only used to enter chips - do not allow for entry in input
       setInputValue(value)
     }
@@ -189,7 +189,7 @@ export function Searchbar(props: Readonly<SearchbarProps>) {
       const tagToDelete = newSearchbarTags[chipToDeleteIndex]
       if (tagToDelete.name.includes(',')) {
         const values = tagToDelete.name.split(',')
-        values.splice(values.length - 1, 1)
+        values.slice(-1)
         tagToDelete.name = values.join(',')
       } else {
         newSearchbarTags.splice(chipToDeleteIndex, 1)
@@ -245,9 +245,9 @@ export function Searchbar(props: Readonly<SearchbarProps>) {
     function handleSuggestionMark(currentValue: DropdownSuggestionsProps) {
       if (parsedInputValue.includes('*')) {
         const lowerCaseParsedInput = parsedInputValue.toLowerCase()
-        const replacedSpecialChars = lowerCaseParsedInput.replace(/[/,?_\-.<>:;"'[\]{}\\+=()!&@^#%$]/g, '\\$&') // insert \ before all special characters so Regex doesn't break in processing
+        const replacedSpecialChars = lowerCaseParsedInput.replaceAll(/[/,?_\-.<>:;"'[\]{}\\+=()!&@^#%$]/g, '\\$&') // insert \ before all special characters so Regex doesn't break in processing
         const regex = handlePartialRegex(replacedSpecialChars)
-        const regexMatch = RegExp(regex).exec(currentValue.name.toLowerCase())?.[0] ?? ''
+        const regexMatch = new RegExp(regex).exec(currentValue.name.toLowerCase())?.[0] ?? ''
         if (regexMatch === '') {
           // If match is null -> return item without marks
           return currentValue.name
@@ -274,11 +274,11 @@ export function Searchbar(props: Readonly<SearchbarProps>) {
       .filter((item, index) => {
         if (parsedInputValue.includes('*')) {
           const lowerCaseParsedInput = parsedInputValue.toLowerCase()
-          const replacedSpecialChars = lowerCaseParsedInput.replace(/[/,?_\-.<>:;"'[\]{}\\+=()!&@^#%$]/g, '\\$&') // insert \ before all special characters so Regex doesn't break in processing
+          const replacedSpecialChars = lowerCaseParsedInput.replaceAll(/[/,?_\-.<>:;"'[\]{}\\+=()!&@^#%$]/g, '\\$&') // insert \ before all special characters so Regex doesn't break in processing
           const regex = handlePartialRegex(replacedSpecialChars)
           return (
             index !== 0 && // filter the headerItem suggestion
-            (!inputValue || RegExp(regex).exec(item.name.toLowerCase()))
+            (!inputValue || new RegExp(regex).exec(item.name.toLowerCase()))
           )
         }
         return (
@@ -346,7 +346,7 @@ export function Searchbar(props: Readonly<SearchbarProps>) {
       }
       newQueryTags = convertStringToTags(`${currentQuery}${newChipText}`)
       if (newQueryTags.length > 1) {
-        const lastTag = newQueryTags[newQueryTags.length - 1]
+        const lastTag = newQueryTags.at(-1)
         newQueryTags.forEach((t, idx) => {
           if (idx !== newQueryTags.length - 1 && lastTag && t.name.split(':')[0] === lastTag.name.split(':')[0]) {
             t.name = `${t.name},${lastTag.name.split(':')[1]}`
@@ -527,7 +527,7 @@ export function Searchbar(props: Readonly<SearchbarProps>) {
           onClick={() => {
             // Needs to suppport vm page refresh...
             // If run search is pressed but the query hasn't changed - we are refetching
-            if (transformBrowserUrlToSearchString(window.location.search).presetSearchQuery === currentQuery) {
+            if (transformBrowserUrlToSearchString(globalThis.location.search).presetSearchQuery === currentQuery) {
               refetchSearch() // if refetching we dont need to update browser url
             } else if (currentQuery !== '' && !currentQuery.endsWith(':')) {
               updateBrowserUrl(navigate, currentQuery)
@@ -593,7 +593,7 @@ export function Searchbar(props: Readonly<SearchbarProps>) {
                   onClick={() =>
                     handleCSVExport(currentQuery, savedSearchQueries, searchResultData, searchDefinitions, toast, t)
                   }
-                  isDisabled={window.location.search === ''}
+                  isDisabled={globalThis.location.search === ''}
                 >
                   {t('Export as CSV')}
                 </DropdownItem>
