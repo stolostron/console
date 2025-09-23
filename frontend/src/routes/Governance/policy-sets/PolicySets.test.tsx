@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render, screen, within } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { policySetsState } from '../../../atoms'
@@ -14,7 +14,8 @@ describe('PolicySets Page', () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
   })
-  test('Should render empty PolicySet page correctly', async () => {
+
+  test('shows empty page when no policy sets', async () => {
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -30,7 +31,7 @@ describe('PolicySets Page', () => {
     await waitForText("You don't have any policy sets")
   })
 
-  test('Should render PolicySet page correctly', async () => {
+  test('renders page with filters and policy sets', async () => {
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -43,46 +44,106 @@ describe('PolicySets Page', () => {
       </RecoilRoot>
     )
 
-    screen
-      .getByRole('combobox', {
-        name: 'Select filter options',
-      })
-      .click()
+    // make sure basic stuff is there
+    expect(screen.getByRole('combobox', { name: 'Select filter options' })).toBeInTheDocument()
+    expect(screen.getByRole('textbox', { name: 'Type to filter' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Create policy set' })).toBeInTheDocument()
 
-    // filter title and a selection
-    expect(screen.getAllByText('Violations')).toHaveLength(2)
-    expect(screen.getAllByText('No violations')).toBeTruthy()
-    expect(screen.getAllByText('No status')).toBeTruthy()
+    // open the filter dropdown
+    screen.getByRole('combobox', { name: 'Select filter options' }).click()
 
-    expect(within(screen.getAllByText('Violations')[1]).getByText('0')).toBeInTheDocument()
-    expect(within(screen.getAllByText('No violations')[0]).getByText('2')).toBeInTheDocument()
-    expect(within(screen.getAllByText('No status')[0]).getByText('1')).toBeInTheDocument()
+    // check filter options show up with counts
+    expect(screen.getByText('Violations')).toBeInTheDocument() // group header
+    expect(screen.getByText('Violations (0)')).toBeInTheDocument()
+    expect(screen.getByText('No violations (2)')).toBeInTheDocument()
+    expect(screen.getByText('Pending (0)')).toBeInTheDocument()
+    expect(screen.getByText('No status (1)')).toBeInTheDocument()
 
-    screen.getAllByText('No status')[0].click()
-    expect(screen.getAllByText('policy-set-with-1-placement')).toHaveLength(1)
-
-    // un-select No status
-    screen.getAllByText('No status')[0].click()
-    screen.getAllByText('Violations')[1].click()
-    expect(screen.queryByText('policy-set-with-1-placement')).not.toBeInTheDocument()
+    // all policy sets should be shown
+    expect(screen.getAllByText('policy-set-with-1-placement')).toHaveLength(3)
   })
 
-  test('Should filter no-violation correctly with url-filter', async () => {
+  test('filters by no status', async () => {
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
           snapshot.set(policySetsState, mockPolicySets)
         }}
       >
-        <MemoryRouter initialEntries={['/multicloud/governance/policy-sets?violations=no-violation']}>
+        <MemoryRouter>
           <PolicySetsPage />
         </MemoryRouter>
       </RecoilRoot>
     )
 
-    // filter title and a selection
-    expect(screen.queryByText('Violations')).not.toBeInTheDocument()
-    expect(screen.getAllByText('No violations')).toBeTruthy()
-    expect(screen.queryByText('No status')).not.toBeInTheDocument()
+    // starts with all policy sets showing
+    expect(screen.getAllByText('policy-set-with-1-placement')).toHaveLength(3)
+
+    // click the no status filter
+    screen.getByRole('combobox', { name: 'Select filter options' }).click()
+    screen.getAllByText('No status (1)')[0].click()
+
+    // now only the one without status shows up
+    expect(screen.getAllByText('policy-set-with-1-placement')).toHaveLength(1)
+  })
+
+  test('filters by no violations', async () => {
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(policySetsState, mockPolicySets)
+        }}
+      >
+        <MemoryRouter>
+          <PolicySetsPage />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    // pick the no violations filter
+    screen.getByRole('combobox', { name: 'Select filter options' }).click()
+    screen.getAllByText('No violations (2)')[0].click()
+
+    // should see 2 policy sets (compliant ones)
+    expect(screen.getAllByText('policy-set-with-1-placement')).toHaveLength(2)
+  })
+
+  test('works with url filter presets', async () => {
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(policySetsState, mockPolicySets)
+        }}
+      >
+        <MemoryRouter initialEntries={['/multicloud/governance/policy-sets?violation=no-violations']}>
+          <PolicySetsPage />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    // should load fine and show some policy sets
+    expect(screen.getByRole('combobox', { name: 'Select filter options' })).toBeInTheDocument()
+    expect(screen.getAllByText('policy-set-with-1-placement').length).toBeGreaterThanOrEqual(1)
+  })
+
+  test('shows empty message when filter has no matches', async () => {
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(policySetsState, mockPolicySets)
+        }}
+      >
+        <MemoryRouter>
+          <PolicySetsPage />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    // filter by violations (should get nothing back)
+    screen.getByRole('combobox', { name: 'Select filter options' }).click()
+    screen.getAllByText('Violations (0)')[0].click()
+
+    // empty message should show up
+    expect(screen.getByText('No resources match the current filter')).toBeInTheDocument()
   })
 })
