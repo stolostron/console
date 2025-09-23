@@ -139,9 +139,12 @@ export const getSearchCompleteString = (searchQuery: string) => {
   const queryTags = searchQuery.split(' ')
   if (queryTags.at(-1)?.endsWith(':')) {
     return queryTags.at(-1)?.replace(':', '') ?? ''
-  } else if (operators.some((op) => queryTags.at(-1)?.substring(queryTags.at(-1)?.length ?? 0 - op.length) === op)) {
+  } else if (
+    operators.some((op) => queryTags.at(-1)?.substring(queryTags[queryTags.length - 1].length - op.length) === op)
+  ) {
     const operator =
-      operators.find((op) => queryTags.at(-1)?.substring(queryTags.at(-1)?.length ?? 0 - op.length) === op) ?? ''
+      operators.find((op) => queryTags.at(-1)?.substring(queryTags[queryTags.length - 1].length - op.length) === op) ??
+      ''
     return queryTags.at(-1)?.replace(':', '').replace(operator, '') ?? ''
   }
   return ''

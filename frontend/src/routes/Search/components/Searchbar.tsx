@@ -189,7 +189,7 @@ export function Searchbar(props: Readonly<SearchbarProps>) {
       const tagToDelete = newSearchbarTags[chipToDeleteIndex]
       if (tagToDelete.name.includes(',')) {
         const values = tagToDelete.name.split(',')
-        values.slice(-1)
+        values.splice(values.length - 1, 1)
         tagToDelete.name = values.join(',')
       } else {
         newSearchbarTags.splice(chipToDeleteIndex, 1)
