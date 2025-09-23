@@ -358,7 +358,7 @@ export function Searchbar(props: Readonly<SearchbarProps>) {
       newQueryString = newQueryTags.map((t) => t.name).join(' ')
     } else if (
       operators.some((operator: string) => currentQuery.endsWith(operator)) &&
-      !isNaN(parseInt(newChipText, 10))
+      !Number.isNaN(Number.parseInt(newChipText, 10))
     ) {
       // case for user adding a number after operator
       newQueryTags = convertStringToTags(`${currentQuery}${newChipText}`)

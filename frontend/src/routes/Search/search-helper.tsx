@@ -51,8 +51,8 @@ export function formatSearchbarSuggestions(
         // operator is already chosen
         const numberRange =
           data.length > 2
-            ? `Min: ${parseInt(data[1], 10)} - Max: ${parseInt(data[2], 10)}`
-            : `Min: ${parseInt(data[1], 10)} - Max: ${parseInt(data[1], 10)}`
+            ? `Min: ${Number.parseInt(data[1], 10)} - Max: ${Number.parseInt(data[2], 10)}`
+            : `Min: ${Number.parseInt(data[1], 10)} - Max: ${Number.parseInt(data[1], 10)}`
 
         return [
           labelTag,
