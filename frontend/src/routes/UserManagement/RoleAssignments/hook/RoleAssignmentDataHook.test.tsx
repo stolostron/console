@@ -60,6 +60,22 @@ describe('useRoleAssignmentData', () => {
         },
       },
     },
+    {
+      metadata: {
+        name: 'production-cluster',
+        labels: {
+          'cluster.open-cluster-management.io/clusterset': 'cluster-set-1',
+        },
+      },
+    },
+    {
+      metadata: {
+        name: 'dev-cluster',
+        labels: {
+          'cluster.open-cluster-management.io/clusterset': 'cluster-set-1',
+        },
+      },
+    },
   ]
 
   const mockUsers = [{ metadata: { name: 'user1' } }, { metadata: { name: 'user2' } }]
@@ -209,6 +225,14 @@ describe('useRoleAssignmentData', () => {
                 name: 'cluster-1',
                 namespaces: ['my-namespace', 'test-namespace'],
               },
+              {
+                name: 'production-cluster',
+                namespaces: ['my-namespace', 'test-namespace'],
+              },
+              {
+                name: 'dev-cluster',
+                namespaces: ['my-namespace', 'test-namespace'],
+              },
             ],
           },
         ])
@@ -347,6 +371,18 @@ describe('useRoleAssignmentData', () => {
       })
     })
 
+    it('should extract all cluster names from managed clusters', async () => {
+      const { result } = renderHook(() => useRoleAssignmentData())
+
+      await waitFor(() => {
+        expect(result.current.roleAssignmentData.allClusterNames).toEqual([
+          'cluster-1',
+          'production-cluster',
+          'dev-cluster',
+        ])
+      })
+    })
+
     it('should handle empty data gracefully', async () => {
       mockUseQuery.mockReturnValue({
         data: undefined,
@@ -383,6 +419,7 @@ describe('useRoleAssignmentData', () => {
         expect(result.current.roleAssignmentData.groups).toEqual([])
         expect(result.current.roleAssignmentData.roles).toEqual([])
         expect(result.current.roleAssignmentData.clusterSets).toEqual([])
+        expect(result.current.roleAssignmentData.allClusterNames).toEqual([])
       })
     })
   })
