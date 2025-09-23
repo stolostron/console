@@ -1,12 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { constants, Http2ServerRequest, Http2ServerResponse, OutgoingHttpHeaders } from 'http2'
-import { request, RequestOptions } from 'https'
+import { request } from 'https'
 import { pipeline } from 'stream'
 import { URL } from 'url'
 import { getServiceAgent } from '../lib/agent'
 import { logger } from '../lib/logger'
 import { notFound, respondInternalServerError, unauthorized } from '../lib/respond'
 import { getToken } from '../lib/token'
+import { getRequestOptionsFromURL } from '../lib/request-options'
 
 const proxyHeaders = [
   constants.HTTP2_HEADER_ACCEPT,
@@ -27,7 +28,7 @@ export function prometheusProxy(req: Http2ServerRequest, res: Http2ServerRespons
   const token = getToken(req)
   if (!token) unauthorized(req, res)
 
-  const prometheusProxyService = 'https://prometheus-k8s.openshift-monitoring.svc.cluster.local:9091'
+  const prometheusProxyService = 'https://prometheus-k8s.openshift-monitoring.svc.cluster.local.:9091'
   const promURL = process.env.PROMETHEUS_ROUTE || prometheusProxyService
 
   metricsProxy(req, res, token, promURL)
@@ -37,7 +38,7 @@ export function observabilityProxy(req: Http2ServerRequest, res: Http2ServerResp
   const token = getToken(req)
   if (!token) unauthorized(req, res)
 
-  const obsProxyService = 'https://rbac-query-proxy.open-cluster-management-observability.svc.cluster.local:8443'
+  const obsProxyService = 'https://rbac-query-proxy.open-cluster-management-observability.svc.cluster.local.:8443'
   const obsURL = process.env.OBSERVABILITY_ROUTE || obsProxyService
 
   metricsProxy(req, res, token, obsURL)
@@ -51,16 +52,12 @@ function metricsProxy(req: Http2ServerRequest, res: Http2ServerResponse, token: 
   }
 
   if (!route) return respondInternalServerError(req, res)
-  const rbacQueryProxyUrl = new URL(route)
-  const options: RequestOptions = {
-    protocol: rbacQueryProxyUrl.protocol,
-    hostname: rbacQueryProxyUrl.hostname,
-    port: rbacQueryProxyUrl.port,
-    path,
+  const rbacQueryProxyUrl = new URL(`${route}${path}`)
+  const options = getRequestOptionsFromURL(rbacQueryProxyUrl, {
     method: req.method,
     headers,
     agent: getServiceAgent(),
-  }
+  })
   pipeline(
     req,
     request(options, (response) => {

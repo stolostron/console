@@ -76,9 +76,7 @@ export async function virtualMachineGETProxy(req: Http2ServerRequest, res: Http2
   const token = await getAuthenticatedToken(req, res)
   if (token) {
     try {
-      const mce = await getMultiClusterEngine()
-      const proxyService = `https://cluster-proxy-addon-user.${mce?.spec?.targetNamespace || 'multicluster-engine'}.svc.cluster.local:9092`
-      const proxyURL = process.env.CLUSTER_PROXY_ADDON_USER_ROUTE || proxyService
+      const proxyURL = await getProxyUrl()
       const urlSplit = req.url.split('/')
       // vm get requests have url /virtualmachines/get/<managedCluster>/<name>/<namespace>
       const managedCluster = urlSplit[3]
@@ -121,9 +119,7 @@ export async function virtualMachineProxy(req: Http2ServerRequest, res: Http2Ser
         mch?.spec?.overrides?.components?.find(
           (e: { enabled: boolean; name: string }) => e.name === 'fine-grained-rbac-preview'
         )?.enabled ?? false
-      const mce = await getMultiClusterEngine()
-      const proxyService = `https://cluster-proxy-addon-user.${mce?.spec?.targetNamespace || 'multicluster-engine'}.svc.cluster.local:9092`
-      const proxyURL = process.env.CLUSTER_PROXY_ADDON_USER_ROUTE || proxyService
+      const proxyURL = await getProxyUrl()
 
       const chucks: string[] = []
       req.on('data', (chuck: string) => {
@@ -328,7 +324,7 @@ async function getProxyUrl(): Promise<string> {
   }
   const mce = await getMultiClusterEngine()
   const targetNamespace = mce?.spec?.targetNamespace || 'multicluster-engine'
-  return `https://cluster-proxy-addon-user.${targetNamespace}.svc.cluster.local:9092`
+  return `https://cluster-proxy-addon-user.${targetNamespace}.svc.cluster.local.:9092`
 }
 
 /**

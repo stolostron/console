@@ -3,9 +3,11 @@ import { OutgoingHttpHeaders } from 'http2'
 import { RequestOptions, request } from 'https'
 import { URL } from 'url'
 import { getMultiClusterHub } from '../lib/multi-cluster-hub'
-import { getNamespace, getServiceAccountToken, getServiceCACertificate } from '../lib/serviceAccountToken'
+import { getNamespace, getServiceAccountToken } from '../lib/serviceAccountToken'
 import { logger } from './logger'
 import { IQuery } from '../routes/aggregators/applications'
+import { getServiceAgent } from './agent'
+import { getRequestOptionsFromURL } from './request-options'
 
 export type ISearchResult = {
   data: {
@@ -39,21 +41,16 @@ export async function getSearchRequestOptions(headers: OutgoingHttpHeaders): Pro
   const mch = await getMultiClusterHub()
   const namespace = getNamespace()
   const machineNs = process.env.NODE_ENV === 'test' ? 'undefined' : `${mch?.metadata?.namespace || namespace}`
-  const searchService = `https://search-search-api.${machineNs}.svc.cluster.local:4010`
+  const searchService = `https://search-search-api.${machineNs}.svc.cluster.local.:4010`
   const searchUrl = process.env.SEARCH_API_URL || searchService
   const endpoint = process.env.globalSearchFeatureFlag === 'enabled' ? '/federated' : '/searchapi/graphql'
   const url = new URL(searchUrl + endpoint)
   headers.host = url.hostname
-  const options: RequestOptions = {
-    protocol: url.protocol,
-    hostname: url.hostname,
-    port: url.port,
-    path: url.pathname,
+  return getRequestOptionsFromURL(url, {
     method: 'POST',
     headers,
-    ca: getServiceCACertificate(),
-  }
-  return options
+    agent: getServiceAgent(),
+  })
 }
 
 export async function getSearchResults(query: IQuery) {

@@ -43,7 +43,7 @@ describe('Virtual Machine actions', function () {
           },
         ],
       })
-    nock('https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local:9092')
+    nock('https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local.:9092')
       .put('/testCluster/apis/subresources.kubevirt.io/v1/namespaces/vmNamespace/virtualmachines/vmName/start')
       .reply(200, {
         statusCode: 200,
@@ -90,7 +90,7 @@ describe('Virtual Machine actions', function () {
           },
         ],
       })
-    nock('https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local:9092')
+    nock('https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local.:9092')
       .put('/testCluster/apis/subresources.kubevirt.io/v1/namespaces/vmNamespace/virtualmachineinstances/vmName/pause')
       .reply(200, {
         statusCode: 200,
@@ -137,7 +137,7 @@ describe('Virtual Machine actions', function () {
           },
         ],
       })
-    nock('https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local:9092')
+    nock('https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local.:9092')
       .post('/testCluster/apis/snapshot.kubevirt.io/v1beta1/namespaces/vmNamespace/virtualmachinesnapshots')
       .reply(200, {
         statusCode: 200,
@@ -208,7 +208,7 @@ describe('Virtual Machine actions', function () {
           },
         ],
       })
-    nock('https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local:9092')
+    nock('https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local.:9092')
       .put('/testCluster/apis/subresources.kubevirt.io/v1/namespaces/vmNamespace/virtualmachines/vmName/start')
       .reply(500)
     const res = await request('PUT', '/virtualmachines/start', {
@@ -237,7 +237,7 @@ describe('Virtual Machine actions', function () {
       kind: 'SecretList',
       items: [],
     })
-    nock('https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local:9092')
+    nock('https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local.:9092')
       .put('/testCluster/apis/subresources.kubevirt.io/v1/namespaces/vmNamespace/virtualmachines/vmName/start')
       .reply(500, {
         name: 'Error',
@@ -285,7 +285,7 @@ describe('Virtual Machine actions', function () {
           },
         ],
       })
-    nock('https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local:9092')
+    nock('https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local.:9092')
       .post('/testCluster/apis/snapshot.kubevirt.io/v1beta1/namespaces/vmNamespace/virtualmachinerestores')
       .reply(200, {
         statusCode: 200,
@@ -356,7 +356,7 @@ describe('Virtual Machine actions', function () {
           },
         ],
       })
-    nock('https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local:9092')
+    nock('https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local.:9092')
       .get('/testCluster/apis/kubevirt.io/v1/namespaces/vmNamespace/virtualmachines/vmName')
       .reply(200, {
         statusCode: 200,
@@ -399,7 +399,7 @@ describe('Virtual Machine actions', function () {
           },
         ],
       })
-    nock('https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local:9092')
+    nock('https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local.:9092')
       .get('/testCluster/apis/snapshot.kubevirt.io/v1beta1/namespaces/vmNamespace/virtualmachinesnapshots/vmName')
       .reply(200, {
         statusCode: 200,
@@ -442,7 +442,7 @@ describe('Virtual Machine actions', function () {
           },
         ],
       })
-    nock('https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local:9092')
+    nock('https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local.:9092')
       .delete('/testCluster/apis/kubevirt.io/v1/namespaces/vmNamespace/virtualmachines/vmName')
       .reply(200, {
         statusCode: 200,
@@ -490,7 +490,7 @@ describe('Virtual Machine actions', function () {
           },
         ],
       })
-    nock('https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local:9092')
+    nock('https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local.:9092')
       .delete('/testCluster/apis/snapshot.kubevirt.io/v1beta1/namespaces/vmNamespace/virtualmachinesnapshots/vmName')
       .reply(200, {
         statusCode: 200,
@@ -526,7 +526,7 @@ describe('vmResourceUsageProxy', () => {
     const vmiName2 = 'fedora'
     const podName2 = 'fedora-launcher'
 
-    nock('https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local:9092')
+    nock('https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local.:9092')
       .get(
         `/${clusterName}/apis/metrics.k8s.io/v1beta1/namespaces/${namespace}/pods?labelSelector=kubevirt.io=virt-launcher`
       )
@@ -599,7 +599,7 @@ describe('vmResourceUsageProxy', () => {
           },
         ],
       })
-    nock('https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local:9092')
+    nock('https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local.:9092')
       .get(`/${clusterName}/api/v1/namespaces/${namespace}/pods?labelSelector=kubevirt.io=virt-launcher`)
       .reply(200, {
         kind: 'PodList',
@@ -652,7 +652,7 @@ describe('vmResourceUsageProxy', () => {
           },
         ],
       })
-    nock('https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local:9092')
+    nock('https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local.:9092')
       .get(
         `/${clusterName}/apis/subresources.kubevirt.io/v1/namespaces/${namespace}/virtualmachineinstances/${vmiName}/filesystemlist`
       )
@@ -668,7 +668,7 @@ describe('vmResourceUsageProxy', () => {
         ],
         metadata: {},
       })
-    nock('https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local:9092')
+    nock('https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local.:9092')
       .get(
         `/${clusterName}/apis/subresources.kubevirt.io/v1/namespaces/${namespace}/virtualmachineinstances/${vmiName2}/filesystemlist`
       )

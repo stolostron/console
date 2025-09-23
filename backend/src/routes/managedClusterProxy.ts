@@ -3,10 +3,11 @@ import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { logger } from '../lib/logger'
 import { respondInternalServerError } from '../lib/respond'
 import { getAuthenticatedToken, isHttp2ServerResponse } from '../lib/token'
-import { getServiceCACertificate } from '../lib/serviceAccountToken'
 import { getMultiClusterEngine } from '../lib/multi-cluster-engine'
 import proxy from 'http2-proxy'
-import { TLSSocket } from 'tls'
+import { TLSSocket } from 'node:tls'
+import { getServiceAgent } from '../lib/agent'
+import { normalizeHostname } from '../lib/request-options'
 
 export async function managedClusterProxy(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void>
 export async function managedClusterProxy(req: Http2ServerRequest, socket: TLSSocket, head: Buffer): Promise<void>
@@ -26,7 +27,7 @@ export async function managedClusterProxy(
 
   try {
     const mce = await getMultiClusterEngine()
-    const proxyService = `cluster-proxy-addon-user.${mce?.spec?.targetNamespace || 'multicluster-engine'}.svc.cluster.local`
+    const proxyService = `cluster-proxy-addon-user.${mce?.spec?.targetNamespace || 'multicluster-engine'}.svc.cluster.local.`
     const proxyHost = process.env.CLUSTER_PROXY_ADDON_USER_HOST || proxyService
     const proxyPort = process.env.CLUSTER_PROXY_ADDON_USER_HOST ? 443 : 9092
 
@@ -39,8 +40,9 @@ export async function managedClusterProxy(
     const proxyOptions = {
       protocol: 'https',
       hostname: proxyHost,
+      servername: normalizeHostname(proxyHost),
       port: proxyPort,
-      ca: getServiceCACertificate(),
+      agent: getServiceAgent(),
     } as const
 
     const proxyHandler = (err: Error) => {

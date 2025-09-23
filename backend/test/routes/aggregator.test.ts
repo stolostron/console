@@ -466,7 +466,7 @@ const responseFiltered = {
 function setupNocks(prefixes?: boolean) {
   //
   // PING SEARCHAPI
-  nock('https://search-search-api.undefined.svc.cluster.local:4010')
+  nock('https://search-search-api.undefined.svc.cluster.local.:4010')
     .post(
       '/searchapi/graphql',
       '{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Pod"]},{"property":"name","values":["search-api*"]}],"limit":1}]},"query":"query searchResult($input: [SearchInput]) {\\n  searchResult: search(input: $input) {\\n    items\\n  }\\n}"}'
@@ -486,7 +486,7 @@ function setupNocks(prefixes?: boolean) {
     })
 
   // REMOTES: ARGO, OCP, FLUX
-  const nocked = nock('https://search-search-api.undefined.svc.cluster.local:4010').post(
+  const nocked = nock('https://search-search-api.undefined.svc.cluster.local.:4010').post(
     '/searchapi/graphql',
     '{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Application"]},{"property":"apigroup","values":["argoproj.io"]},{"property":"cluster","values":["!local-cluster"]}],"limit":20000},{"filters":[{"property":"kind","values":["Deployment"]},{"property":"label","values":["kustomize.toolkit.fluxcd.io/name=*","helm.toolkit.fluxcd.io/name=*","app=*","app.kubernetes.io/part-of=*"]},{"property":"namespace","values":["!openshift*"]},{"property":"namespace","values":["!open-cluster-management*"]}],"limit":20000},{"filters":[{"property":"kind","values":["Deployment"]},{"property":"label","values":["kustomize.toolkit.fluxcd.io/name=*","helm.toolkit.fluxcd.io/name=*","app=*","app.kubernetes.io/part-of=*"]},{"property":"namespace","values":["openshift*","open-cluster-management*"]},{"property":"cluster","values":["local-cluster"]}],"limit":20000}]},"query":"query searchResult($input: [SearchInput]) {\\n  searchResult: search(input: $input) {\\n    items\\n  }\\n}"}'
   )
