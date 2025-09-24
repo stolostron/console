@@ -245,18 +245,27 @@ export function ArgoWizard(props: ArgoWizardProps) {
         placement.metadata?.namespace === argoServer?.value?.metadata.namespace &&
         placement.metadata?.name === placementRefName
     )
+    const namespaceBoundClusterSets = new Set(
+      props.clusterSetBindings
+        .filter((clusterSetBinding) => clusterSetBinding.metadata?.namespace === applicationSetNamespace)
+        .map((clusterSetBinding) => clusterSetBinding.spec?.clusterSet)
+    )
     const clusterSets: IResource[] = props.clusterSets.filter((clusterSet) => {
-      if (placement?.spec?.clusterSets) {
-        if (placement?.spec?.clusterSets.length > 0) {
-          return placement?.spec?.clusterSets.includes(clusterSet.metadata?.name!)
-        }
-      } else {
-        return clusterSet
-      }
+      const clusterSetName = clusterSet.metadata?.name!
+      if (resources && resources.length > 0) {
+        return placement?.spec?.clusterSets?.includes(clusterSetName) || namespaceBoundClusterSets.has(clusterSetName)
+      } else return clusterSet
     })
 
     setFilteredClusterSets(clusterSets)
-  }, [applicationSetNamespace, props.argoServers, props.clusterSets, props.placements])
+  }, [
+    applicationSetNamespace,
+    props.argoServers,
+    props.clusterSets,
+    props.placements,
+    props.clusterSetBindings,
+    resources,
+  ])
 
   const translatedWizardStrings = useWizardStrings({
     stepsAriaLabel: t('Argo application steps'),
