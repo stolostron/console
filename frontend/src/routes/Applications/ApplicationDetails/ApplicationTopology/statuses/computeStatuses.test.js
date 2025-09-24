@@ -50,9 +50,11 @@ import {
   subscriptionInputRed,
   subscriptionInputRed1,
   subscriptionInputYellow,
-} from './computeStatuses.testdata.js/index.js'
-
-import { ansibleError, ansibleError2, ansibleErrorAllClusters, ansibleSuccess } from './TestingData'
+  ansibleError,
+  ansibleError2,
+  ansibleErrorAllClusters,
+  ansibleSuccess,
+} from './computeStatuses.testdata.js'
 
 const t = (string) => {
   return string

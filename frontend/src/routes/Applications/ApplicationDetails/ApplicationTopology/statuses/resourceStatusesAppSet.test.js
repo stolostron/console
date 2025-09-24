@@ -2,9 +2,518 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-import { getAppSetResourceStatuses } from './resourceStatusesAppSet.js'
+import { getAppSetResourceStatuses } from './resourceStatusesAppSet.ts'
 import { waitFor } from '@testing-library/react'
 import { nockSearch } from '../../../../../lib/nock-util'
+
+describe('getAppSetResourceStatuses', () => {
+  it('getAppSetResourceStatuses returns resourceStatuses', async () => {
+    const search = nockSearch(mockSearchQuery, mockSearchResponse)
+    await waitFor(() => expect(search.isDone()).toBeTruthy())
+    let result = await getAppSetResourceStatuses(application, appData)
+    expect(result).toStrictEqual({ resourceStatuses: mockSearchResponse })
+  })
+})
+const appData = {
+  subscription: null,
+  relatedKinds: ['applicationset', 'placement', 'cluster', 'consolelink'],
+  targetNamespaces: ['cluster-configs-rhacm'],
+  argoAppsLabelNames: [
+    'app.kubernetes.io/instance=mock-app-local-cluster',
+    'app.kubernetes.io/instance=mock-app-dyna1203',
+  ],
+}
+const application = {
+  name: 'mock-app',
+  namespace: 'mock-ns',
+  app: {
+    apiVersion: 'argoproj.io/v1alpha1',
+    kind: 'ApplicationSet',
+    metadata: {
+      creationTimestamp: '2022-12-07T16:04:20Z',
+      generation: 1,
+      name: 'mock-app',
+      namespace: 'mock-ns',
+      resourceVersion: '11864536',
+      uid: 'b12d45a2-b9c3-4e04-8f73-c9d78c22ca82',
+    },
+    spec: {
+      generators: [
+        {
+          clusterDecisionResource: {
+            configMapRef: 'acm-placement',
+            labelSelector: {
+              matchLabels: {
+                'cluster.open-cluster-management.io/placement': 'mock-app-placement',
+              },
+            },
+            requeueAfterSeconds: 180,
+          },
+        },
+      ],
+      template: {
+        metadata: {
+          labels: {
+            'velero.io/exclude-from-backup': 'true',
+          },
+          name: 'mock-app-{{name}}',
+        },
+        spec: {
+          destination: {
+            namespace: 'cluster-configs-rhacm',
+            server: '{{server}}',
+          },
+          project: 'default',
+          source: {
+            path: 'cluster/console',
+            repoURL: 'https://github.com/mock/mock',
+            targetRevision: 'main',
+          },
+          syncPolicy: {
+            automated: {
+              prune: true,
+              selfHeal: true,
+            },
+            syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
+          },
+        },
+      },
+    },
+    status: {
+      conditions: [
+        {
+          lastTransitionTime: '2022-12-07T16:04:20Z',
+          message: 'Successfully generated parameters for all Applications',
+          reason: 'ApplicationSetUpToDate',
+          status: 'False',
+          type: 'ErrorOccurred',
+        },
+        {
+          lastTransitionTime: '2022-12-07T16:04:20Z',
+          message: 'Successfully generated parameters for all Applications',
+          reason: 'ParametersGenerated',
+          status: 'True',
+          type: 'ParametersGenerated',
+        },
+        {
+          lastTransitionTime: '2022-12-07T16:04:20Z',
+          message: 'ApplicationSet up to date',
+          reason: 'ApplicationSetUpToDate',
+          status: 'True',
+          type: 'ResourcesUpToDate',
+        },
+      ],
+    },
+  },
+  metadata: {
+    creationTimestamp: '2022-12-07T16:04:20Z',
+    generation: 1,
+    name: 'mock-app',
+    namespace: 'mock-ns',
+    resourceVersion: '11864536',
+    uid: 'b12d45a2-b9c3-4e04-8f73-c9d78c22ca82',
+  },
+  placement: {
+    apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+    kind: 'Placement',
+    metadata: {
+      creationTimestamp: '2022-12-07T16:04:20Z',
+      generation: 1,
+      name: 'mock-app-placement',
+      namespace: 'mock-ns',
+      resourceVersion: '11864534',
+      uid: 'a1083ba8-bd6f-4b31-b89b-e22aa3a92a06',
+    },
+    spec: {
+      clusterSets: ['auto-gitops-cluster-set'],
+      predicates: [
+        {
+          requiredClusterSelector: {
+            labelSelector: {
+              matchExpressions: [
+                {
+                  key: 'cloud',
+                  operator: 'In',
+                  values: ['Amazon', 'IBM'],
+                },
+              ],
+            },
+          },
+        },
+      ],
+    },
+    status: {
+      conditions: [
+        {
+          lastTransitionTime: '2022-12-07T16:04:20Z',
+          message: 'Placement configurations check pass',
+          reason: 'Succeedconfigured',
+          status: 'False',
+          type: 'PlacementMisconfigured',
+        },
+        {
+          lastTransitionTime: '2022-12-07T16:04:20Z',
+          message: 'All cluster decisions scheduled',
+          reason: 'AllDecisionsScheduled',
+          status: 'True',
+          type: 'PlacementSatisfied',
+        },
+      ],
+      numberOfSelectedClusters: 2,
+    },
+  },
+  isArgoApp: false,
+  isAppSet: true,
+  isOCPApp: false,
+  isFluxApp: false,
+  appSetApps: [
+    {
+      apiVersion: 'argoproj.io/v1alpha1',
+      kind: 'Application',
+      metadata: {
+        creationTimestamp: '2022-12-07T16:04:20Z',
+        finalizers: ['resources-finalizer.argocd.argoproj.io'],
+        generation: 497,
+        labels: {
+          'velero.io/exclude-from-backup': 'true',
+        },
+        name: 'mock-app-local-cluster',
+        namespace: 'mock-ns',
+        ownerReferences: [
+          {
+            apiVersion: 'argoproj.io/v1alpha1',
+            blockOwnerDeletion: true,
+            controller: true,
+            kind: 'ApplicationSet',
+            name: 'mock-app',
+            uid: 'b12d45a2-b9c3-4e04-8f73-c9d78c22ca82',
+          },
+        ],
+        resourceVersion: '14468439',
+        uid: 'ce795818-f6e8-4b6e-b304-e69493437e82',
+      },
+      spec: {
+        destination: {
+          namespace: 'cluster-configs-rhacm',
+          server: 'https://api.mock2.com:6443',
+        },
+        project: 'default',
+        source: {
+          path: 'cluster/console',
+          repoURL: 'https://github.com/mock/mock',
+          targetRevision: 'main',
+        },
+        syncPolicy: {
+          automated: {
+            prune: true,
+            selfHeal: true,
+          },
+          syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
+        },
+      },
+      status: {
+        health: {
+          status: 'Healthy',
+        },
+        history: [
+          {
+            deployStartedAt: '2022-12-07T16:04:36Z',
+            deployedAt: '2022-12-07T16:04:42Z',
+            id: 0,
+            revision: '96e65f5d1a0762f9f471051f96460714a45d43d1',
+            source: {
+              path: 'cluster/console',
+              repoURL: 'https://github.com/mock/mock',
+              targetRevision: 'main',
+            },
+          },
+        ],
+        operationState: {
+          finishedAt: '2022-12-07T16:04:42Z',
+          message: 'successfully synced (all tasks run)',
+          operation: {
+            initiatedBy: {
+              automated: true,
+            },
+            retry: {
+              limit: 5,
+            },
+            sync: {
+              prune: true,
+              revision: '96e65f5d1a0762f9f471051f96460714a45d43d1',
+              syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
+            },
+          },
+          phase: 'Succeeded',
+          startedAt: '2022-12-07T16:04:36Z',
+          syncResult: {
+            resources: [
+              {
+                group: '',
+                hookPhase: 'Succeeded',
+                kind: 'Namespace',
+                message: 'namespace/cluster-configs-rhacm created',
+                name: 'cluster-configs-rhacm',
+                namespace: '',
+                status: 'Synced',
+                syncPhase: 'PreSync',
+                version: 'v1',
+              },
+              {
+                group: 'console.openshift.io',
+                hookPhase: 'Running',
+                kind: 'ConsoleLink',
+                message: 'consolelink.console.openshift.io/ocp100 created',
+                name: 'ocp100',
+                namespace: 'cluster-configs-rhacm',
+                status: 'Synced',
+                syncPhase: 'Sync',
+                version: 'v1',
+              },
+              {
+                group: 'console.openshift.io',
+                hookPhase: 'Running',
+                kind: 'ConsoleLink',
+                message: 'consolelink.console.openshift.io/application-menu-rh-developer-blog created',
+                name: 'application-menu-rh-developer-blog',
+                namespace: 'cluster-configs-rhacm',
+                status: 'Synced',
+                syncPhase: 'Sync',
+                version: 'v1',
+              },
+            ],
+            revision: '96e65f5d1a0762f9f471051f96460714a45d43d1',
+            source: {
+              path: 'cluster/console',
+              repoURL: 'https://github.com/mock/mock',
+              targetRevision: 'main',
+            },
+          },
+        },
+        reconciledAt: '2022-12-08T16:29:57Z',
+        resources: [
+          {
+            group: 'console.openshift.io',
+            kind: 'ConsoleLink',
+            name: 'application-menu-rh-developer-blog',
+            status: 'Synced',
+            version: 'v1',
+          },
+          {
+            group: 'console.openshift.io',
+            kind: 'ConsoleLink',
+            name: 'ocp100',
+            status: 'Synced',
+            version: 'v1',
+          },
+          {
+            name: 'helloworld-app-deploy',
+            namespace: 'cluster-configs-rhacm',
+            group: 'apps',
+            health: {
+              status: 'Healthy',
+            },
+            kind: 'Deployment',
+            status: 'Synced',
+            version: 'v1',
+          },
+        ],
+        sourceType: 'Directory',
+        summary: {},
+        sync: {
+          comparedTo: {
+            destination: {
+              namespace: 'cluster-configs-rhacm',
+              server: 'https://api.mock2.com:6443',
+            },
+            source: {
+              path: 'cluster/console',
+              repoURL: 'https://github.com/mock/mock',
+              targetRevision: 'main',
+            },
+          },
+          revision: '96e65f5d1a0762f9f471051f96460714a45d43d1',
+          status: 'Synced',
+        },
+      },
+    },
+    {
+      apiVersion: 'argoproj.io/v1alpha1',
+      kind: 'Application',
+      metadata: {
+        creationTimestamp: '2022-12-07T16:04:20Z',
+        finalizers: ['resources-finalizer.argocd.argoproj.io'],
+        generation: 497,
+        labels: {
+          'velero.io/exclude-from-backup': 'true',
+        },
+        name: 'mock-app-dyna1203',
+        namespace: 'mock-ns',
+        ownerReferences: [
+          {
+            apiVersion: 'argoproj.io/v1alpha1',
+            blockOwnerDeletion: true,
+            controller: true,
+            kind: 'ApplicationSet',
+            name: 'mock-app',
+            uid: 'b12d45a2-b9c3-4e04-8f73-c9d78c22ca82',
+          },
+        ],
+        resourceVersion: '14468440',
+        uid: '43f4699c-99a1-4e40-ae67-027b5145999d',
+      },
+      spec: {
+        destination: {
+          namespace: 'cluster-configs-rhacm',
+          server: 'https://api.mock.com:6443',
+        },
+        project: 'default',
+        source: {
+          path: 'cluster/console',
+          repoURL: 'https://github.com/mock/mock',
+          targetRevision: 'main',
+        },
+        syncPolicy: {
+          automated: {
+            prune: true,
+            selfHeal: true,
+          },
+          syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
+        },
+      },
+      status: {
+        health: {
+          status: 'Healthy',
+        },
+        history: [
+          {
+            deployStartedAt: '2022-12-07T16:04:25Z',
+            deployedAt: '2022-12-07T16:04:29Z',
+            id: 0,
+            revision: '96e65f5d1a0762f9f471051f96460714a45d43d1',
+            source: {
+              path: 'cluster/console',
+              repoURL: 'https://github.com/mock/mock',
+              targetRevision: 'main',
+            },
+          },
+        ],
+        operationState: {
+          finishedAt: '2022-12-07T16:04:29Z',
+          message: 'successfully synced (all tasks run)',
+          operation: {
+            initiatedBy: {
+              automated: true,
+            },
+            retry: {
+              limit: 5,
+            },
+            sync: {
+              prune: true,
+              revision: '96e65f5d1a0762f9f471051f96460714a45d43d1',
+              syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
+            },
+          },
+          phase: 'Succeeded',
+          startedAt: '2022-12-07T16:04:25Z',
+          syncResult: {
+            resources: [
+              {
+                group: '',
+                hookPhase: 'Succeeded',
+                kind: 'Namespace',
+                message: 'namespace/cluster-configs-rhacm created',
+                name: 'cluster-configs-rhacm',
+                namespace: '',
+                status: 'Synced',
+                syncPhase: 'PreSync',
+                version: 'v1',
+              },
+              {
+                group: 'console.openshift.io',
+                hookPhase: 'Running',
+                kind: 'ConsoleLink',
+                message: 'consolelink.console.openshift.io/application-menu-rh-developer-blog created',
+                name: 'application-menu-rh-developer-blog',
+                namespace: 'cluster-configs-rhacm',
+                status: 'Synced',
+                syncPhase: 'Sync',
+                version: 'v1',
+              },
+              {
+                group: 'console.openshift.io',
+                hookPhase: 'Running',
+                kind: 'ConsoleLink',
+                message: 'consolelink.console.openshift.io/ocp100 created',
+                name: 'ocp100',
+                namespace: 'cluster-configs-rhacm',
+                status: 'Synced',
+                syncPhase: 'Sync',
+                version: 'v1',
+              },
+            ],
+            revision: '96e65f5d1a0762f9f471051f96460714a45d43d1',
+            source: {
+              path: 'cluster/console',
+              repoURL: 'https://github.com/mock/mock',
+              targetRevision: 'main',
+            },
+          },
+        },
+        reconciledAt: '2022-12-08T16:29:57Z',
+        resources: [
+          {
+            group: 'console.openshift.io',
+            kind: 'ConsoleLink',
+            name: 'application-menu-rh-developer-blog',
+            status: 'Synced',
+            version: 'v1',
+          },
+          {
+            group: 'console.openshift.io',
+            kind: 'ConsoleLink',
+            name: 'ocp100',
+            status: 'Synced',
+            version: 'v1',
+          },
+        ],
+        sourceType: 'Directory',
+        summary: {},
+        sync: {
+          comparedTo: {
+            destination: {
+              namespace: 'cluster-configs-rhacm',
+              server: 'https://api.mock.com:6443',
+            },
+            source: {
+              path: 'cluster/console',
+              repoURL: 'https://github.com/mock/mock',
+              targetRevision: 'main',
+            },
+          },
+          revision: '96e65f5d1a0762f9f471051f96460714a45d43d1',
+          status: 'Synced',
+        },
+      },
+    },
+  ],
+  appSetClusters: [
+    {
+      name: 'local-cluster',
+      namespace: 'local-cluster',
+      url: 'https://api.mock2.com:6443',
+      status: 'ok',
+      created: '2022-12-03T16:34:07Z',
+    },
+    {
+      name: 'dyna1203',
+      namespace: 'dyna1203',
+      url: 'https://api.mock.com:6443',
+      status: 'ok',
+      created: '2022-12-03T16:54:06Z',
+    },
+  ],
+}
 
 const mockSearchQuery = {
   operationName: 'searchResultItemsAndRelatedItems',
@@ -12744,513 +13253,3 @@ const mockSearchResponse = {
   loading: false,
   networkStatus: 7,
 }
-
-describe('getAppSetResourceStatuses', () => {
-  const appData = {
-    subscription: null,
-    relatedKinds: ['applicationset', 'placement', 'cluster', 'consolelink'],
-    targetNamespaces: ['cluster-configs-rhacm'],
-    argoAppsLabelNames: [
-      'app.kubernetes.io/instance=mock-app-local-cluster',
-      'app.kubernetes.io/instance=mock-app-dyna1203',
-    ],
-  }
-  const application = {
-    name: 'mock-app',
-    namespace: 'mock-ns',
-    app: {
-      apiVersion: 'argoproj.io/v1alpha1',
-      kind: 'ApplicationSet',
-      metadata: {
-        creationTimestamp: '2022-12-07T16:04:20Z',
-        generation: 1,
-        name: 'mock-app',
-        namespace: 'mock-ns',
-        resourceVersion: '11864536',
-        uid: 'b12d45a2-b9c3-4e04-8f73-c9d78c22ca82',
-      },
-      spec: {
-        generators: [
-          {
-            clusterDecisionResource: {
-              configMapRef: 'acm-placement',
-              labelSelector: {
-                matchLabels: {
-                  'cluster.open-cluster-management.io/placement': 'mock-app-placement',
-                },
-              },
-              requeueAfterSeconds: 180,
-            },
-          },
-        ],
-        template: {
-          metadata: {
-            labels: {
-              'velero.io/exclude-from-backup': 'true',
-            },
-            name: 'mock-app-{{name}}',
-          },
-          spec: {
-            destination: {
-              namespace: 'cluster-configs-rhacm',
-              server: '{{server}}',
-            },
-            project: 'default',
-            source: {
-              path: 'cluster/console',
-              repoURL: 'https://github.com/mock/mock',
-              targetRevision: 'main',
-            },
-            syncPolicy: {
-              automated: {
-                prune: true,
-                selfHeal: true,
-              },
-              syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
-            },
-          },
-        },
-      },
-      status: {
-        conditions: [
-          {
-            lastTransitionTime: '2022-12-07T16:04:20Z',
-            message: 'Successfully generated parameters for all Applications',
-            reason: 'ApplicationSetUpToDate',
-            status: 'False',
-            type: 'ErrorOccurred',
-          },
-          {
-            lastTransitionTime: '2022-12-07T16:04:20Z',
-            message: 'Successfully generated parameters for all Applications',
-            reason: 'ParametersGenerated',
-            status: 'True',
-            type: 'ParametersGenerated',
-          },
-          {
-            lastTransitionTime: '2022-12-07T16:04:20Z',
-            message: 'ApplicationSet up to date',
-            reason: 'ApplicationSetUpToDate',
-            status: 'True',
-            type: 'ResourcesUpToDate',
-          },
-        ],
-      },
-    },
-    metadata: {
-      creationTimestamp: '2022-12-07T16:04:20Z',
-      generation: 1,
-      name: 'mock-app',
-      namespace: 'mock-ns',
-      resourceVersion: '11864536',
-      uid: 'b12d45a2-b9c3-4e04-8f73-c9d78c22ca82',
-    },
-    placement: {
-      apiVersion: 'cluster.open-cluster-management.io/v1beta1',
-      kind: 'Placement',
-      metadata: {
-        creationTimestamp: '2022-12-07T16:04:20Z',
-        generation: 1,
-        name: 'mock-app-placement',
-        namespace: 'mock-ns',
-        resourceVersion: '11864534',
-        uid: 'a1083ba8-bd6f-4b31-b89b-e22aa3a92a06',
-      },
-      spec: {
-        clusterSets: ['auto-gitops-cluster-set'],
-        predicates: [
-          {
-            requiredClusterSelector: {
-              labelSelector: {
-                matchExpressions: [
-                  {
-                    key: 'cloud',
-                    operator: 'In',
-                    values: ['Amazon', 'IBM'],
-                  },
-                ],
-              },
-            },
-          },
-        ],
-      },
-      status: {
-        conditions: [
-          {
-            lastTransitionTime: '2022-12-07T16:04:20Z',
-            message: 'Placement configurations check pass',
-            reason: 'Succeedconfigured',
-            status: 'False',
-            type: 'PlacementMisconfigured',
-          },
-          {
-            lastTransitionTime: '2022-12-07T16:04:20Z',
-            message: 'All cluster decisions scheduled',
-            reason: 'AllDecisionsScheduled',
-            status: 'True',
-            type: 'PlacementSatisfied',
-          },
-        ],
-        numberOfSelectedClusters: 2,
-      },
-    },
-    isArgoApp: false,
-    isAppSet: true,
-    isOCPApp: false,
-    isFluxApp: false,
-    appSetApps: [
-      {
-        apiVersion: 'argoproj.io/v1alpha1',
-        kind: 'Application',
-        metadata: {
-          creationTimestamp: '2022-12-07T16:04:20Z',
-          finalizers: ['resources-finalizer.argocd.argoproj.io'],
-          generation: 497,
-          labels: {
-            'velero.io/exclude-from-backup': 'true',
-          },
-          name: 'mock-app-local-cluster',
-          namespace: 'mock-ns',
-          ownerReferences: [
-            {
-              apiVersion: 'argoproj.io/v1alpha1',
-              blockOwnerDeletion: true,
-              controller: true,
-              kind: 'ApplicationSet',
-              name: 'mock-app',
-              uid: 'b12d45a2-b9c3-4e04-8f73-c9d78c22ca82',
-            },
-          ],
-          resourceVersion: '14468439',
-          uid: 'ce795818-f6e8-4b6e-b304-e69493437e82',
-        },
-        spec: {
-          destination: {
-            namespace: 'cluster-configs-rhacm',
-            server: 'https://api.mock2.com:6443',
-          },
-          project: 'default',
-          source: {
-            path: 'cluster/console',
-            repoURL: 'https://github.com/mock/mock',
-            targetRevision: 'main',
-          },
-          syncPolicy: {
-            automated: {
-              prune: true,
-              selfHeal: true,
-            },
-            syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
-          },
-        },
-        status: {
-          health: {
-            status: 'Healthy',
-          },
-          history: [
-            {
-              deployStartedAt: '2022-12-07T16:04:36Z',
-              deployedAt: '2022-12-07T16:04:42Z',
-              id: 0,
-              revision: '96e65f5d1a0762f9f471051f96460714a45d43d1',
-              source: {
-                path: 'cluster/console',
-                repoURL: 'https://github.com/mock/mock',
-                targetRevision: 'main',
-              },
-            },
-          ],
-          operationState: {
-            finishedAt: '2022-12-07T16:04:42Z',
-            message: 'successfully synced (all tasks run)',
-            operation: {
-              initiatedBy: {
-                automated: true,
-              },
-              retry: {
-                limit: 5,
-              },
-              sync: {
-                prune: true,
-                revision: '96e65f5d1a0762f9f471051f96460714a45d43d1',
-                syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
-              },
-            },
-            phase: 'Succeeded',
-            startedAt: '2022-12-07T16:04:36Z',
-            syncResult: {
-              resources: [
-                {
-                  group: '',
-                  hookPhase: 'Succeeded',
-                  kind: 'Namespace',
-                  message: 'namespace/cluster-configs-rhacm created',
-                  name: 'cluster-configs-rhacm',
-                  namespace: '',
-                  status: 'Synced',
-                  syncPhase: 'PreSync',
-                  version: 'v1',
-                },
-                {
-                  group: 'console.openshift.io',
-                  hookPhase: 'Running',
-                  kind: 'ConsoleLink',
-                  message: 'consolelink.console.openshift.io/ocp100 created',
-                  name: 'ocp100',
-                  namespace: 'cluster-configs-rhacm',
-                  status: 'Synced',
-                  syncPhase: 'Sync',
-                  version: 'v1',
-                },
-                {
-                  group: 'console.openshift.io',
-                  hookPhase: 'Running',
-                  kind: 'ConsoleLink',
-                  message: 'consolelink.console.openshift.io/application-menu-rh-developer-blog created',
-                  name: 'application-menu-rh-developer-blog',
-                  namespace: 'cluster-configs-rhacm',
-                  status: 'Synced',
-                  syncPhase: 'Sync',
-                  version: 'v1',
-                },
-              ],
-              revision: '96e65f5d1a0762f9f471051f96460714a45d43d1',
-              source: {
-                path: 'cluster/console',
-                repoURL: 'https://github.com/mock/mock',
-                targetRevision: 'main',
-              },
-            },
-          },
-          reconciledAt: '2022-12-08T16:29:57Z',
-          resources: [
-            {
-              group: 'console.openshift.io',
-              kind: 'ConsoleLink',
-              name: 'application-menu-rh-developer-blog',
-              status: 'Synced',
-              version: 'v1',
-            },
-            {
-              group: 'console.openshift.io',
-              kind: 'ConsoleLink',
-              name: 'ocp100',
-              status: 'Synced',
-              version: 'v1',
-            },
-            {
-              name: 'helloworld-app-deploy',
-              namespace: 'cluster-configs-rhacm',
-              group: 'apps',
-              health: {
-                status: 'Healthy',
-              },
-              kind: 'Deployment',
-              status: 'Synced',
-              version: 'v1',
-            },
-          ],
-          sourceType: 'Directory',
-          summary: {},
-          sync: {
-            comparedTo: {
-              destination: {
-                namespace: 'cluster-configs-rhacm',
-                server: 'https://api.mock2.com:6443',
-              },
-              source: {
-                path: 'cluster/console',
-                repoURL: 'https://github.com/mock/mock',
-                targetRevision: 'main',
-              },
-            },
-            revision: '96e65f5d1a0762f9f471051f96460714a45d43d1',
-            status: 'Synced',
-          },
-        },
-      },
-      {
-        apiVersion: 'argoproj.io/v1alpha1',
-        kind: 'Application',
-        metadata: {
-          creationTimestamp: '2022-12-07T16:04:20Z',
-          finalizers: ['resources-finalizer.argocd.argoproj.io'],
-          generation: 497,
-          labels: {
-            'velero.io/exclude-from-backup': 'true',
-          },
-          name: 'mock-app-dyna1203',
-          namespace: 'mock-ns',
-          ownerReferences: [
-            {
-              apiVersion: 'argoproj.io/v1alpha1',
-              blockOwnerDeletion: true,
-              controller: true,
-              kind: 'ApplicationSet',
-              name: 'mock-app',
-              uid: 'b12d45a2-b9c3-4e04-8f73-c9d78c22ca82',
-            },
-          ],
-          resourceVersion: '14468440',
-          uid: '43f4699c-99a1-4e40-ae67-027b5145999d',
-        },
-        spec: {
-          destination: {
-            namespace: 'cluster-configs-rhacm',
-            server: 'https://api.mock.com:6443',
-          },
-          project: 'default',
-          source: {
-            path: 'cluster/console',
-            repoURL: 'https://github.com/mock/mock',
-            targetRevision: 'main',
-          },
-          syncPolicy: {
-            automated: {
-              prune: true,
-              selfHeal: true,
-            },
-            syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
-          },
-        },
-        status: {
-          health: {
-            status: 'Healthy',
-          },
-          history: [
-            {
-              deployStartedAt: '2022-12-07T16:04:25Z',
-              deployedAt: '2022-12-07T16:04:29Z',
-              id: 0,
-              revision: '96e65f5d1a0762f9f471051f96460714a45d43d1',
-              source: {
-                path: 'cluster/console',
-                repoURL: 'https://github.com/mock/mock',
-                targetRevision: 'main',
-              },
-            },
-          ],
-          operationState: {
-            finishedAt: '2022-12-07T16:04:29Z',
-            message: 'successfully synced (all tasks run)',
-            operation: {
-              initiatedBy: {
-                automated: true,
-              },
-              retry: {
-                limit: 5,
-              },
-              sync: {
-                prune: true,
-                revision: '96e65f5d1a0762f9f471051f96460714a45d43d1',
-                syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
-              },
-            },
-            phase: 'Succeeded',
-            startedAt: '2022-12-07T16:04:25Z',
-            syncResult: {
-              resources: [
-                {
-                  group: '',
-                  hookPhase: 'Succeeded',
-                  kind: 'Namespace',
-                  message: 'namespace/cluster-configs-rhacm created',
-                  name: 'cluster-configs-rhacm',
-                  namespace: '',
-                  status: 'Synced',
-                  syncPhase: 'PreSync',
-                  version: 'v1',
-                },
-                {
-                  group: 'console.openshift.io',
-                  hookPhase: 'Running',
-                  kind: 'ConsoleLink',
-                  message: 'consolelink.console.openshift.io/application-menu-rh-developer-blog created',
-                  name: 'application-menu-rh-developer-blog',
-                  namespace: 'cluster-configs-rhacm',
-                  status: 'Synced',
-                  syncPhase: 'Sync',
-                  version: 'v1',
-                },
-                {
-                  group: 'console.openshift.io',
-                  hookPhase: 'Running',
-                  kind: 'ConsoleLink',
-                  message: 'consolelink.console.openshift.io/ocp100 created',
-                  name: 'ocp100',
-                  namespace: 'cluster-configs-rhacm',
-                  status: 'Synced',
-                  syncPhase: 'Sync',
-                  version: 'v1',
-                },
-              ],
-              revision: '96e65f5d1a0762f9f471051f96460714a45d43d1',
-              source: {
-                path: 'cluster/console',
-                repoURL: 'https://github.com/mock/mock',
-                targetRevision: 'main',
-              },
-            },
-          },
-          reconciledAt: '2022-12-08T16:29:57Z',
-          resources: [
-            {
-              group: 'console.openshift.io',
-              kind: 'ConsoleLink',
-              name: 'application-menu-rh-developer-blog',
-              status: 'Synced',
-              version: 'v1',
-            },
-            {
-              group: 'console.openshift.io',
-              kind: 'ConsoleLink',
-              name: 'ocp100',
-              status: 'Synced',
-              version: 'v1',
-            },
-          ],
-          sourceType: 'Directory',
-          summary: {},
-          sync: {
-            comparedTo: {
-              destination: {
-                namespace: 'cluster-configs-rhacm',
-                server: 'https://api.mock.com:6443',
-              },
-              source: {
-                path: 'cluster/console',
-                repoURL: 'https://github.com/mock/mock',
-                targetRevision: 'main',
-              },
-            },
-            revision: '96e65f5d1a0762f9f471051f96460714a45d43d1',
-            status: 'Synced',
-          },
-        },
-      },
-    ],
-    appSetClusters: [
-      {
-        name: 'local-cluster',
-        namespace: 'local-cluster',
-        url: 'https://api.mock2.com:6443',
-        status: 'ok',
-        created: '2022-12-03T16:34:07Z',
-      },
-      {
-        name: 'dyna1203',
-        namespace: 'dyna1203',
-        url: 'https://api.mock.com:6443',
-        status: 'ok',
-        created: '2022-12-03T16:54:06Z',
-      },
-    ],
-  }
-
-  it('getAppSetResourceStatuses returns resourceStatuses', async () => {
-    const search = nockSearch(mockSearchQuery, mockSearchResponse)
-    await waitFor(() => expect(search.isDone()).toBeTruthy())
-    let result = await getAppSetResourceStatuses(application, appData)
-    expect(result).toStrictEqual({ resourceStatuses: mockSearchResponse })
-  })
-})
