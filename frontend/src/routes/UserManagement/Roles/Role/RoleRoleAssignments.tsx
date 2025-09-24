@@ -22,9 +22,8 @@ const RoleRoleAssignments = () => {
 
   const roles = useMemo(
     () =>
-      !clusterRoles
-        ? []
-        : clusterRoles
+      clusterRoles
+        ? clusterRoles
             .map(
               (clusterRole: ClusterRole): Role => ({
                 name: clusterRole.metadata.name || '',
@@ -34,7 +33,8 @@ const RoleRoleAssignments = () => {
                 uid: clusterRole.metadata.uid || clusterRole.metadata.name || '',
               })
             )
-            .sort((a, b) => compareStrings(a.name, b.name)),
+            .sort((a, b) => compareStrings(a.name, b.name))
+        : [],
     [clusterRoles]
   )
 
@@ -54,11 +54,7 @@ const RoleRoleAssignments = () => {
       return (
         <ErrorPage
           error={new ResourceError(ResourceErrorCode.NotFound)}
-          actions={
-            <AcmButton role="link" onClick={() => navigate(NavigationPath.identitiesUsers)}>
-              {t('button.backToRoles')}
-            </AcmButton>
-          }
+          actions={<AcmButton onClick={() => navigate(NavigationPath.roles)}>{t('button.backToRoles')}</AcmButton>}
         />
       )
     default:
