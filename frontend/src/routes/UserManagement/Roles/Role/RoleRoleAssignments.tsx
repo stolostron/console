@@ -55,7 +55,7 @@ const RoleRoleAssignments = () => {
         <ErrorPage
           error={new ResourceError(ResourceErrorCode.NotFound)}
           actions={
-            <AcmButton role="link" onClick={() => navigate(NavigationPath.identitiesUsers)}>
+            <AcmButton role="link" onClick={() => navigate(NavigationPath.roles)}>
               {t('button.backToRoles')}
             </AcmButton>
           }

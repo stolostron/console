@@ -42,7 +42,7 @@ const RolePage = () => {
           <ErrorPage
             error={new ResourceError(ResourceErrorCode.NotFound)}
             actions={
-              <AcmButton role="link" onClick={() => navigate(NavigationPath.roles)} style={{ marginRight: '10px' }}>
+              <AcmButton onClick={() => navigate(NavigationPath.roles)} style={{ marginRight: '10px' }}>
                 {t('button.backToRoles')}
               </AcmButton>
             }

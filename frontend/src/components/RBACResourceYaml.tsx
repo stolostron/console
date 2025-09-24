@@ -24,18 +24,19 @@ const RBACResourceYaml = <T,>({ resource, loading, resourceType }: RBACResourceY
           <AcmLoadingPage />
         </PageSection>
       )
-    case !resource:
+    case !resource: {
+      const getNotFoundMessage = () => {
+        if (resourceType === 'User') return t('User not found')
+        if (resourceType === 'Group') return t('Group not found')
+        return t('Role not found')
+      }
+
       return (
         <PageSection>
-          <div>
-            {resourceType === 'User'
-              ? t('User not found')
-              : resourceType === 'Group'
-                ? t('Group not found')
-                : t('Role not found')}
-          </div>
+          <div>{getNotFoundMessage()}</div>
         </PageSection>
       )
+    }
     default: {
       // Reorder the resource to match Kubernetes standard format (first three fields)
       const orderedResource =
