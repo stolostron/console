@@ -2,9 +2,11 @@
 import { ButtonVariant, PageSection } from '@patternfly/react-core'
 import { fitContent, nowrap } from '@patternfly/react-table'
 import { useCallback, useMemo, useState } from 'react'
+import { generatePath, Link } from 'react-router-dom-v5-compat'
 import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../lib/doc-util'
+import { NavigationPath } from '../../../NavigationPath'
 import {
   deleteRoleAssignment,
   FlattenedRoleAssignment,
@@ -188,7 +190,11 @@ const RoleAssignments = ({
     {
       header: t('Role'),
       sort: (a, b) => compareStrings(a.clusterRole, b.clusterRole),
-      cell: (roleAssignment) => roleAssignment.clusterRole,
+      cell: (roleAssignment) => (
+        <Link to={generatePath(NavigationPath.roleDetails, { id: roleAssignment.clusterRole })}>
+          {roleAssignment.clusterRole}
+        </Link>
+      ),
       exportContent: (roleAssignment) => roleAssignment.clusterRole,
       isHidden: hiddenColumns?.includes('role'),
     },
