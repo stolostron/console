@@ -1,6 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "baseBranches": [
+  "baseBranchPatterns": [
     "main",
     "release-2.14",
     "release-2.13",
