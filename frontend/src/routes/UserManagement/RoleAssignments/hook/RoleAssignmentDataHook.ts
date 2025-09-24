@@ -125,27 +125,27 @@ const useRoleAssignmentData = (): RoleAssignmentHookReturnType => {
   const clusters = useMemo(() => {
     const manualClusters: Cluster[] = []
 
-    managedClusterSets.forEach((clusterSet) => {
+    for (const clusterSet of managedClusterSets) {
       if (clusterSet) {
         const isGlobal = clusterSet.metadata.name === 'global'
         if (isGlobal) {
-          return
+          continue
         }
         const matchingClusters = allManagedClusters.filter(
           (mc) => mc.metadata.labels?.['cluster.open-cluster-management.io/clusterset'] === clusterSet.metadata.name
         )
 
         if (matchingClusters.length !== 0) {
-          matchingClusters.forEach((mc) => {
+          for (const mc of matchingClusters) {
             manualClusters.push({
               name: mc.metadata.name,
               namespaces: [],
               clusterSet: clusterSet.metadata.name,
             } as Cluster)
-          })
+          }
         }
       }
-    })
+    }
 
     return manualClusters
   }, [managedClusterSets, allManagedClusters])
@@ -154,7 +154,7 @@ const useRoleAssignmentData = (): RoleAssignmentHookReturnType => {
     const items = allNamespacesQuery?.searchResult?.[0]?.items || []
     const map: Record<string, string[]> = {}
 
-    items.forEach((ns: any) => {
+    for (const ns of items) {
       const clusterName = ns.cluster
       const namespaceName = ns.name
 
@@ -169,7 +169,7 @@ const useRoleAssignmentData = (): RoleAssignmentHookReturnType => {
         }
         map[clusterName].push(namespaceName)
       }
-    })
+    }
 
     return map
   }, [allNamespacesQuery])

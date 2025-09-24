@@ -25,7 +25,7 @@ const NamespaceSelector = ({
 
     const clusterNamespaceGroupings: string[][] = []
 
-    clusters.forEach((cluster) => {
+    for (const cluster of clusters) {
       const isMatch = selectedClusters.some((selectedCluster) => {
         const selectedStr = selectedCluster?.toString().trim()
         const clusterStr = cluster.name?.toString().trim()
@@ -35,7 +35,7 @@ const NamespaceSelector = ({
       if (isMatch) {
         clusterNamespaceGroupings.push(cluster.namespaces ? [...cluster.namespaces] : [])
       }
-    })
+    }
 
     if (clusterNamespaceGroupings.length === 0) {
       return []
@@ -47,7 +47,7 @@ const NamespaceSelector = ({
       commonNamespaces = commonNamespaces.filter((namespace) => clusterNamespaceGroupings[i].includes(namespace))
     }
 
-    const options = commonNamespaces.sort().map((ns) => ({ id: ns, value: ns }))
+    const options = commonNamespaces.toSorted((a, b) => a.localeCompare(b)).map((ns) => ({ id: ns, value: ns }))
 
     return options
     // eslint-disable-next-line react-hooks/exhaustive-deps
