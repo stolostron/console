@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useParams, useLocation, Link, Outlet, useNavigate } from 'react-router-dom-v5-compat'
+import { useParams, useLocation, Link, Outlet, useNavigate, generatePath } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { useRolesContext, useCurrentRole } from '../RolesPage'
 import {
@@ -11,7 +11,6 @@ import {
   AcmButton,
 } from '../../../../ui-components'
 import { NavigationPath } from '../../../../NavigationPath'
-import { generatePath } from 'react-router-dom-v5-compat'
 import { Page, PageSection } from '@patternfly/react-core'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
