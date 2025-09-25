@@ -209,7 +209,23 @@ const RoleAssignments = ({
       header: t('Clusters'),
       cell: (roleAssignment) => {
         const clusterNames = roleAssignment.clusterSelection?.clusterNames || []
-        return <RoleAssignmentLabel elements={clusterNames} numLabel={3} />
+        return (
+          <span>
+            {clusterNames.map((clusterName, index) => (
+              <span key={clusterName}>
+                <Link
+                  to={generatePath(NavigationPath.clusterOverview, {
+                    namespace: clusterName,
+                    name: clusterName,
+                  })}
+                >
+                  {clusterName}
+                </Link>
+                {index < clusterNames.length - 1 && ', '}
+              </span>
+            ))}
+          </span>
+        )
       },
       exportContent: (roleAssignment) => {
         const clusterNames = roleAssignment.clusterSelection?.clusterNames || []
