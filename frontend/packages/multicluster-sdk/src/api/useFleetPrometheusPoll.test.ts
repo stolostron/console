@@ -89,7 +89,7 @@ describe('useFleetPrometheusPoll', () => {
     )
 
     expect(mockConsoleFetch.mock.calls[0][0]).toBe(
-      `/api/proxy/plugin/acm/console/multicloud/observability/query?namespace=${useFleetProps.namespace}&query=${useFleetProps.query}`
+      `/api/proxy/plugin/mce/console/multicloud/observability/query?namespace=${useFleetProps.namespace}&query=${useFleetProps.query}`
     )
   })
 
@@ -113,7 +113,7 @@ describe('useFleetPrometheusPoll', () => {
     )
 
     expect(mockConsoleFetch.mock.calls[0][0]).toBe(
-      `/api/proxy/plugin/acm/console/multicloud/observability/query?query=${useFleetProps.query}`
+      `/api/proxy/plugin/mce/console/multicloud/observability/query?query=${useFleetProps.query}`
     )
   })
 

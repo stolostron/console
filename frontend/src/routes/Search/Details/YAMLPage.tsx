@@ -2,7 +2,7 @@
 import { css } from '@emotion/css'
 import { ActionList, ActionListGroup, ActionListItem, Alert, Button, PageSection } from '@patternfly/react-core'
 import { DownloadIcon } from '@patternfly/react-icons'
-import { FleetK8sResourceCommon } from '@stolostron/multicluster-sdk/lib/types/fleet'
+import { FleetK8sResourceCommon } from '@stolostron/multicluster-sdk'
 import { saveAs } from 'file-saver'
 import jsYaml from 'js-yaml'
 import { Dispatch, SetStateAction, useCallback, useContext, useEffect, useState } from 'react'

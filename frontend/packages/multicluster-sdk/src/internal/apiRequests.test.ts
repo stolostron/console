@@ -184,10 +184,10 @@ describe('apiRequests', () => {
         ns: 'default',
         name: 'test-pod',
         cluster: 'cluster1',
-        basePath: '/api/proxy/plugin/acm/console/multicloud',
+        basePath: '/api/proxy/plugin/mce/console/multicloud',
       }
       const result = buildResourceURL(params)
-      expect(result).toBe('/api/proxy/plugin/acm/console/multicloud/api/v1/namespaces/default/pods/test-pod')
+      expect(result).toBe('/api/proxy/plugin/mce/console/multicloud/api/v1/namespaces/default/pods/test-pod')
     })
   })
 

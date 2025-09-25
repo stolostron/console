@@ -33,8 +33,6 @@ const isFleetK8sAPIOptionsWithResource = (
   return typeof resource === 'object' && !Array.isArray(resource)
 }
 
-export const getBackendUrl = () => '/api/proxy/plugin/acm/console/multicloud'
-
 const getK8sAPIPath = ({ apiGroup = 'core', apiVersion }: K8sModel): string => {
   const isLegacy = apiGroup === 'core' && apiVersion === 'v1'
   let p = isLegacy ? '/api/' : '/apis/'
