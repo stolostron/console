@@ -178,7 +178,11 @@ export const SelectListOptions = ({
             description={!isSimpleOption ? option.description : undefined}
             isDisabled={isDisabled}
             onClick={isCreateOption ? () => onCreate?.(!isSimpleOption ? option.value : option) : undefined}
-            isSelected={!isDisabled && !isCreateOption && optionValue === value.toString()}
+            isSelected={
+              !isDisabled && !isCreateOption && Array.isArray(value)
+                ? value.includes(optionValue)
+                : optionValue === value
+            }
           >
             {displayText}
           </SelectOption>
