@@ -86,6 +86,14 @@ export function DistributionField(props: {
   const openshiftText = 'OpenShift'
   const microshiftText = 'MicroShift'
 
+  // Get the correct version based on resource type
+  const displayVersion = useMemo(() => {
+    if (props.resource === 'nodepool' && props.nodepool?.status?.version) {
+      return `${openshiftText} ${props.nodepool.status.version}`
+    }
+    return props.cluster?.distribution?.displayVersion
+  }, [props.resource, props.nodepool?.status?.version, props.cluster?.distribution?.displayVersion])
+
   const hypershiftAvailableUpdates: Record<string, string> = useMemo(() => {
     if (!(props.cluster?.isHypershift || props.cluster?.isHostedCluster)) {
       return {}
@@ -245,7 +253,7 @@ export function DistributionField(props: {
     }
     return (
       <>
-        <div>{props.cluster?.distribution.displayVersion}</div>
+        <div>{displayVersion}</div>
         <AcmInlineStatus
           type={statusType}
           status={statusTitle}
@@ -259,13 +267,13 @@ export function DistributionField(props: {
     )
   }
   if (props.cluster?.status !== ClusterStatus.ready) {
-    return <>{props.cluster?.distribution.displayVersion ?? '-'}</>
+    return <>{displayVersion ?? '-'}</>
   }
   if (props.cluster?.distribution.upgradeInfo?.upgradeFailed) {
     // OCP UPGRADE FAILED
     return (
       <>
-        <div>{props.cluster?.distribution.displayVersion}</div>
+        <div>{displayVersion}</div>
         <AcmInlineStatus
           type={StatusType.danger}
           status={t('upgrade.upgradefailed')}
@@ -294,7 +302,7 @@ export function DistributionField(props: {
     const versionNum = getVersionFromReleaseImage(image)
     return (
       <>
-        <div>{props.cluster?.distribution.displayVersion}</div>
+        <div>{displayVersion}</div>
         <AcmInlineStatus
           type={StatusType.progress}
           status={
@@ -334,7 +342,7 @@ export function DistributionField(props: {
     // OCP UPGRADE IN PROGRESS
     return (
       <>
-        <div>{props.cluster?.distribution.displayVersion}</div>
+        <div>{displayVersion}</div>
         <AcmInlineStatus
           type={StatusType.progress}
           status={
@@ -384,7 +392,7 @@ export function DistributionField(props: {
     })
     return (
       <>
-        <div>{props.cluster?.distribution.displayVersion}</div>
+        <div>{displayVersion}</div>
         <AcmInlineStatus
           type={StatusType.danger}
           status={t('upgrade.upgradefailed')}
@@ -465,6 +473,6 @@ export function DistributionField(props: {
     )
   } else {
     // NO UPGRADE, JUST VERSION
-    return <>{props.cluster?.distribution.displayVersion ?? '-'}</>
+    return <>{displayVersion ?? '-'}</>
   }
 }
