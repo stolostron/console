@@ -562,7 +562,7 @@ const [deployment, loaded, error] = useFleetK8sWatchResource({
 ```
 
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetK8sWatchResource.ts#L55)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetK8sWatchResource.ts#L51)
 
 ### :gear: useFleetPrometheusPoll
 
@@ -728,7 +728,6 @@ Array with `isObservabilityInstalled`, `loaded` and `error` values.
 - [ResourceRouteHandler](#gear-resourceroutehandler)
 - [ResourceRouteProps](#gear-resourcerouteprops)
 - [SearchResult](#gear-searchresult)
-- [UseFleetK8sWatchResource](#gear-usefleetk8swatchresource)
 
 ### :gear: AdvancedSearchFilter
 
@@ -859,14 +858,6 @@ This extension allows plugins to customize the route used for resources of the g
 | `SearchResult` | `R extends (infer T)[] ? Fleet<T>[] : Fleet<R>` |
 
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/search.ts#L5)
-
-### :gear: UseFleetK8sWatchResource
-
-| Type | Type |
-| ---------- | ---------- |
-| `UseFleetK8sWatchResource` | `<R extends FleetK8sResourceCommon or FleetK8sResourceCommon[]>( initResource: FleetWatchK8sResource or null ) => WatchK8sResult<R> or [undefined, boolean, any]` |
-
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetK8sWatchResource.ts#L19)
 
 
 <!-- TSDOC_END -->

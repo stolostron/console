@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { TimestampProps, UseK8sWatchResource } from '@openshift-console/dynamic-plugin-sdk/lib/extensions/console-types'
-import { UseFleetK8sWatchResource } from '@stolostron/multicluster-sdk/lib/api/useFleetK8sWatchResource'
+import { useFleetK8sWatchResource } from '@stolostron/multicluster-sdk'
 import { Context, createContext, FC } from 'react'
 import { AcmExtension } from '../plugin-extensions/types'
 import { PluginData, PluginDataContext } from './PluginDataContext'
@@ -18,7 +18,7 @@ export type Plugin = {
     Timestamp?: FC<TimestampProps>
     useK8sWatchResource: UseK8sWatchResource
   }
-  multiclusterApi: { useFleetK8sWatchResource: UseFleetK8sWatchResource }
+  multiclusterApi: { useFleetK8sWatchResource: typeof useFleetK8sWatchResource }
 }
 
 export const defaultPlugin: Plugin = {

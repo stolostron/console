@@ -5,7 +5,7 @@ import {
   useK8sWatchResource,
   useResolvedExtensions,
 } from '@openshift-console/dynamic-plugin-sdk'
-import { useFleetK8sWatchResource } from '@stolostron/multicluster-sdk/lib/api/useFleetK8sWatchResource'
+import { useFleetK8sWatchResource } from '@stolostron/multicluster-sdk'
 import { ReactNode, useMemo } from 'react'
 import { PluginContext } from '../lib/PluginContext'
 import { useAcmExtension } from '../plugin-extensions/handler'
