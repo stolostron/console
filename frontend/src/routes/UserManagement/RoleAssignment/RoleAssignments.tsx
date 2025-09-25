@@ -11,6 +11,7 @@ import {
   deleteRoleAssignment,
   FlattenedRoleAssignment,
 } from '../../../resources/clients/multicluster-role-assignment-client'
+import { IRequestResult } from '../../../resources/utils/resource-request'
 import {
   AcmButton,
   AcmEmptyState,
@@ -25,6 +26,58 @@ import { RoleAssignmentActionDropdown } from './RoleAssignmentActionDropdown'
 import { RoleAssignmentLabel } from './RoleAssignmentLabel'
 import { RoleAssignmentModal } from '../RoleAssignments/RoleAssignmentModal'
 import { RoleAssignmentStatusComponent } from './RoleAssignmentStatusComponent'
+
+// Component for rendering clickable role links
+const RoleLinkCell = ({ roleName }: { roleName: string }) => (
+  <Link to={generatePath(NavigationPath.roleDetails, { id: roleName })}>{roleName}</Link>
+)
+
+// Component for rendering clickable cluster links
+const ClusterLinksCell = ({ clusterNames }: { clusterNames: string[] }) => (
+  <RoleAssignmentLabel
+    elements={clusterNames}
+    numLabel={3}
+    renderElement={(clusterName) => (
+      <Link
+        key={clusterName}
+        to={generatePath(NavigationPath.clusterOverview, {
+          namespace: clusterName,
+          name: clusterName,
+        })}
+      >
+        {clusterName}
+      </Link>
+    )}
+  />
+)
+
+// Component for rendering namespaces with label group
+const NamespacesCell = ({ namespaces }: { namespaces?: string[] }) => (
+  <RoleAssignmentLabel elements={namespaces} numLabel={5} />
+)
+
+// Component for rendering status
+const StatusCell = ({ status }: { status?: any }) => <RoleAssignmentStatusComponent status={status} />
+
+// Component for rendering created date placeholder
+const CreatedCell = () => <span>-</span>
+
+// Component for rendering action dropdown
+const ActionCell = ({
+  roleAssignment,
+  setModalProps,
+  deleteAction,
+}: {
+  roleAssignment: FlattenedRoleAssignment
+  setModalProps: React.Dispatch<React.SetStateAction<BulkActionModalProps<FlattenedRoleAssignment> | { open: false }>>
+  deleteAction: (roleAssignment: FlattenedRoleAssignment) => IRequestResult<unknown>
+}) => (
+  <RoleAssignmentActionDropdown
+    roleAssignment={roleAssignment}
+    setModalProps={setModalProps}
+    deleteAction={deleteAction}
+  />
+)
 
 type RoleAssignmentsProps = {
   roleAssignments: FlattenedRoleAssignment[]
@@ -107,7 +160,7 @@ const RoleAssignments = ({
     const allStatuses = new Set<string>()
 
     // Extract all unique values from role assignments
-    roleAssignments.forEach((roleAssignment) => {
+    for (const roleAssignment of roleAssignments) {
       // Add single role
       allRoles.add(roleAssignment.clusterRole)
 
@@ -117,13 +170,13 @@ const RoleAssignments = ({
 
       // Add cluster names and target namespaces
       const clusterNames = roleAssignment.clusterSelection?.clusterNames || []
-      clusterNames.forEach((clusterName) => {
+      for (const clusterName of clusterNames) {
         allClusters.add(clusterName)
-      })
-      roleAssignment.targetNamespaces?.forEach((namespace) => {
+      }
+      for (const namespace of roleAssignment.targetNamespaces || []) {
         allNamespaces.add(namespace)
-      })
-    })
+      }
+    }
 
     // Convert sets to sorted arrays for options
     const roleOptions = Array.from(allRoles)
@@ -190,11 +243,7 @@ const RoleAssignments = ({
     {
       header: t('Role'),
       sort: (a, b) => compareStrings(a.clusterRole, b.clusterRole),
-      cell: (roleAssignment) => (
-        <Link to={generatePath(NavigationPath.roleDetails, { id: roleAssignment.clusterRole })}>
-          {roleAssignment.clusterRole}
-        </Link>
-      ),
+      cell: (roleAssignment) => <RoleLinkCell roleName={roleAssignment.clusterRole} />,
       exportContent: (roleAssignment) => roleAssignment.clusterRole,
       isHidden: hiddenColumns?.includes('role'),
     },
@@ -209,23 +258,7 @@ const RoleAssignments = ({
       header: t('Clusters'),
       cell: (roleAssignment) => {
         const clusterNames = roleAssignment.clusterSelection?.clusterNames || []
-        return (
-          <span>
-            {clusterNames.map((clusterName, index) => (
-              <span key={clusterName}>
-                <Link
-                  to={generatePath(NavigationPath.clusterOverview, {
-                    namespace: clusterName,
-                    name: clusterName,
-                  })}
-                >
-                  {clusterName}
-                </Link>
-                {index < clusterNames.length - 1 && ', '}
-              </span>
-            ))}
-          </span>
-        )
+        return <ClusterLinksCell clusterNames={clusterNames} />
       },
       exportContent: (roleAssignment) => {
         const clusterNames = roleAssignment.clusterSelection?.clusterNames || []
@@ -235,12 +268,12 @@ const RoleAssignments = ({
     },
     {
       header: t('Namespaces'),
-      cell: (roleAssignment) => <RoleAssignmentLabel elements={roleAssignment.targetNamespaces} numLabel={5} />,
+      cell: (roleAssignment) => <NamespacesCell namespaces={roleAssignment.targetNamespaces} />,
       exportContent: (roleAssignment) => roleAssignment.targetNamespaces?.join(', ') ?? '',
     },
     {
       header: t('Status'),
-      cell: (roleAssignment) => <RoleAssignmentStatusComponent status={roleAssignment.status} />,
+      cell: (roleAssignment) => <StatusCell status={roleAssignment.status} />,
       exportContent: (roleAssignment) => roleAssignment.status?.status ?? '',
     },
     {
@@ -249,13 +282,13 @@ const RoleAssignments = ({
       cellTransforms: [nowrap],
       // FlattenedRoleAssignment doesn't have metadata.creationTimestamp
       // We could show the parent MulticlusterRoleAssignment creation time instead
-      cell: () => <span>-</span>,
+      cell: () => <CreatedCell />,
       exportContent: () => '',
     },
     {
       header: '',
       cell: (roleAssignment: FlattenedRoleAssignment) => (
-        <RoleAssignmentActionDropdown
+        <ActionCell
           roleAssignment={roleAssignment}
           setModalProps={setDeleteModalProps}
           deleteAction={deleteRoleAssignment}
