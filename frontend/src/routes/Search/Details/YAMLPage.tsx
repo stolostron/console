@@ -1,6 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { css } from '@emotion/css'
-import { ActionList, ActionListGroup, ActionListItem, Alert, Button, PageSection } from '@patternfly/react-core'
+import {
+  ActionList,
+  ActionListGroup,
+  ActionListItem,
+  Alert,
+  Button,
+  Divider,
+  PageSection,
+} from '@patternfly/react-core'
 import { DownloadIcon } from '@patternfly/react-icons'
 import { FleetK8sResourceCommon } from '@stolostron/multicluster-sdk/lib/types/fleet'
 import { saveAs } from 'file-saver'
@@ -23,25 +30,6 @@ import {
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmLoadingPage } from '../../../ui-components'
 import { useSearchDetailsContext } from './DetailsPage'
-
-const headerContainer = css({
-  display: 'flex',
-  backgroundColor: 'var(--pf-v5-global--palette--black-850)',
-  fontSize: '14px',
-})
-const spacer = css({
-  borderRight: '1px solid var(--pf-v5-global--palette--black-700)',
-  paddingLeft: '1rem',
-})
-const textTitle = css({
-  color: 'var(--pf-v5-global--palette--black-300)',
-  padding: '1rem',
-})
-const textContent = css({
-  color: 'var(--pf-v5-global--palette--white)',
-  padding: '1rem 0',
-  fontWeight: 700,
-})
 
 /* istanbul ignore next */
 function loadResource(
@@ -204,14 +192,22 @@ export function EditorHeaderBar(props: Readonly<{ cluster: string; namespace: st
   const { t } = useTranslation()
 
   return (
-    <div id={'yaml-editor-header-wrapper'} className={headerContainer}>
+    <div
+      id={'yaml-editor-header-wrapper'}
+      style={{
+        display: 'flex',
+        fontSize: '14px',
+        backgroundColor: 'var(--pf-v5-c-page__main-section--m-light--BackgroundColor)',
+      }}
+    >
       {/* No translation - this is a kube resource field */}
-      <p className={textTitle}>{'Cluster:'}</p>
-      <p className={textContent}>{cluster}</p>
-      <div className={spacer} />
+      <p style={{ padding: '1rem' }}>{'Cluster:'}</p>
+      <p style={{ padding: '1rem 0', fontWeight: 700 }}>{cluster}</p>
       {/* No translation - this is a kube resource field */}
-      <p className={textTitle}>{'Namespace:'}</p>
-      <p className={textContent}>{namespace !== '' ? namespace : t('Resource is not namespaced')}</p>
+      <p style={{ padding: '1rem' }}>{'Namespace:'}</p>
+      <p style={{ padding: '1rem 0', fontWeight: 700 }}>
+        {namespace !== '' ? namespace : t('Resource is not namespaced')}
+      </p>
     </div>
   )
 }
@@ -516,6 +512,7 @@ export default function YAMLPage() {
       }}
     >
       <EditorHeaderBar cluster={cluster} namespace={namespace} />
+      <Divider />
       <YamlEditor
         resourceYAML={resourceYaml}
         readOnly={!userCanEdit}
