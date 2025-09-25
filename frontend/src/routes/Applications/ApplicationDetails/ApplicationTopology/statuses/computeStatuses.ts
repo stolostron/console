@@ -1071,7 +1071,7 @@ export const setSubscriptionDeployStatus = (
     if (timeWindowDays) {
       details.push({
         labelValue: t('Time Window days'),
-        value: String(timeWindowDays),
+        value: JSON.stringify(timeWindowDays),
       })
     }
 
@@ -1845,6 +1845,7 @@ export const setResourceDeployStatus = (
               editLink: createEditLink(res as Record<string, unknown>, hubClusterName),
             },
           },
+          indent: true,
         })
       }
     })

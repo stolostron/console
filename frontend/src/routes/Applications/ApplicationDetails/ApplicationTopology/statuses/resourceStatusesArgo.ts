@@ -78,8 +78,15 @@ async function getArgoSource(application: ApplicationModel, appData: ArgoApplica
   } else {
     // For regular Argo applications, search by source repository configuration
     let targetRevisionFound = false
-    const { repoURL, path, chart, targetRevision } = appData.source ?? {}
-    const searchProperties = { repoURL, path, chart, targetRevision }
+    const searchProperties = ['repoURL', 'path', 'chart', 'targetRevision'].reduce(
+      (acc, key) => {
+        if (appData.source?.[key as keyof ArgoApplicationData['source']]) {
+          acc[key] = appData.source[key as keyof ArgoApplicationData['source']]
+        }
+        return acc
+      },
+      {} as Record<string, string>
+    )
 
     for (const [property, value] of Object.entries(searchProperties)) {
       // Add Argo app source filters based on repository configuration
@@ -157,7 +164,7 @@ async function getResourceStatuses(
       // Resolve cluster name from server URL or destination name
       const argoServerDest = findMatchingCluster(argoApp, appData.argoSecrets)
       const argoServerNameDest = argoServerDest || argoApp.destinationName
-      argoApp.destinationCluster = argoServerNameDest || argoApp.destinationServer
+      //argoApp.destinationCluster = argoServerNameDest || argoApp.destinationServer
 
       const targetClusterName = argoServerNameDest ? argoServerNameDest : argoServerDest ? argoServerDest : null
       if (targetClusterName) {

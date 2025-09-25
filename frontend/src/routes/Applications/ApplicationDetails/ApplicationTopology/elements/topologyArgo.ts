@@ -70,7 +70,6 @@ export function getArgoTopology(
       clusterNames.push(clusterName)
       clusters.push({
         metadata: { name: clusterName, namespace: clusterName },
-        name: clusterName,
         destination,
         status: 'ok',
       })
@@ -261,7 +260,7 @@ export function getArgoDestinationCluster(
     } else {
       // Find managed cluster by matching server URL
       const server = managedClusters.find((cls) => cls.kubeApiServer === serverApi)
-      clusterName = server ? server.name : 'unknown'
+      clusterName = server ? server.name ?? '' : 'unknown'
     }
   } else {
     // Target destination was set using the name property

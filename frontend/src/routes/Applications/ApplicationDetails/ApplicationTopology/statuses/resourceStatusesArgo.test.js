@@ -2,7 +2,7 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-import { getArgoResourceStatuses } from './resourceStatusesArgo.js'
+import { getArgoResourceStatuses } from './resourceStatusesArgo'
 import { waitFor } from '@testing-library/react'
 import { nockSearch } from '../../../../../lib/nock-util'
 
@@ -15065,7 +15065,8 @@ describe('getResourceStatuses', () => {
       },
     ],
   }
-
+  // const f =
+  //   '{"operationName":"searchResultItemsAndRelatedItems","variables":{"input":[{"keywords":[],"filters":[{"property":"kind","values":["application"]},{"property":"apigroup","values":["argoproj.io"]},{"property":"repoURL","values":["https://github.com/fxiang1/app-samples"]},{"property":"path","values":["multiresource"]},{"property":"chart","values":[null]},{"property":"targetRevision","values":["HEAD"]}],"relatedKinds":[]}]},"query":"query searchResultItemsAndRelatedItems($input: [SearchInput]) {\\n  searchResult: search(input: $input) {\\n    items\\n    related {\\n      kind\\n      items\\n      __typename\\n    }\\n    __typename\\n  }\\n}"}'
   it('getResourceStatuses returns resourceStatuses', async () => {
     const search0 = nockSearch(mockSearchQuery2, mockSearchResponse2)
     await waitFor(() => expect(search0.isDone()).toBeTruthy())

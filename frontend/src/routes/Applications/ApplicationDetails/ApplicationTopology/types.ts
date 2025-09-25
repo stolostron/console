@@ -95,7 +95,7 @@ export interface SearchQuery {
 
 // Minimal shape for a managed cluster used by topology utilities
 export interface ManagedCluster {
-  name: string
+  name?: string
   namespace?: string
   kubeApiServer?: string
   status?: string
@@ -116,8 +116,8 @@ export interface AppSetCluster {
 
 // Core application model returned by getApplication
 export interface ApplicationModel {
-  channels: SetStateAction<string[]>
-  activeChannel: SetStateAction<string | undefined>
+  channels?: SetStateAction<string[]>
+  activeChannel?: SetStateAction<string | undefined>
   name: string
   namespace: string
   app: Application | ApplicationSet
@@ -383,7 +383,7 @@ export interface ActiveFilters {
 
 // Cluster information interface
 export interface ClusterInfo {
-  name: string
+  name?: string
   namespace?: string
   status?: ClusterStatus
   metadata?: {
@@ -500,7 +500,7 @@ export interface StateNames {
 export interface DetailItem extends Record<string, unknown> {
   type?: 'label' | 'spacer' | 'link' | 'snippet' | 'clusterdetailcombobox' | 'relatedargoappdetails'
   labelValue?: string
-  value?: unknown
+  value?: any
   status?: StatusType
   indent?: boolean
   data?: ResourceAction

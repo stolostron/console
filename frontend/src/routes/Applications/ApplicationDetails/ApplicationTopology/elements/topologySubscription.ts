@@ -120,7 +120,7 @@ export const getSubscriptionTopology = (
 
       // Filter clusters based on placement decisions
       const filteredClusters = managedClusters.filter((cluster) => {
-        return ruleClusterNames.includes(cluster.name)
+        return ruleClusterNames.includes(cluster?.name ?? '')
       })
 
       // Determine clusters where subscription was deployed

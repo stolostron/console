@@ -141,7 +141,6 @@ export function generateTopology(
         name: application.app.cluster.name,
         namespace: application.app.cluster.namespace || application.app.cluster.name,
       },
-      name: application.app.cluster.name,
       status: application.app.cluster.status as ClusterInfo['status'],
     })
   }

@@ -50,7 +50,7 @@ class ChannelControl extends Component<ChannelControlProps, ChannelControlState>
    * @returns true if component should update, false otherwise
    */
   shouldComponentUpdate(nextProps: ChannelControlProps): boolean {
-    return !deepEqual(this.props.channelControl, nextProps.channelControl)
+    return deepEqual(this.props.channelControl, nextProps.channelControl)
   }
 
   /**

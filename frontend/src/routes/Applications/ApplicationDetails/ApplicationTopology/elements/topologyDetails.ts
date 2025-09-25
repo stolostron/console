@@ -89,7 +89,7 @@ export const addDiagramDetails = (
     topology.hubClusterName || ''
   ) as ClusterInfo[]
 
-  const clusterNamesList: string[] = clustersObjects.map((cluster) => cluster.name).sort()
+  const clusterNamesList: string[] = clustersObjects.map((cluster) => cluster?.name ?? '').sort()
 
   // Update topology nodes with cluster information
   if (topology.nodes) {

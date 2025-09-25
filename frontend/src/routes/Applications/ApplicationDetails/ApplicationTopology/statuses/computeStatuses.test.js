@@ -164,7 +164,7 @@ describe('setSubscriptionDeployStatus with time window', () => {
   const response = [
     { labelValue: 'Time Window', type: 'label' },
     { labelValue: 'Time Window type', value: 'blocked' },
-    { labelValue: 'Time Window days', value: '["Monday", "Tuesday"]' },
+    { labelValue: 'Time Window days', value: '["Monday","Tuesday"]' },
     { labelValue: 'Time Window hours', value: '09:18AM-09:18PM' },
     { labelValue: 'Time zone', value: 'America/Toronto' },
     { labelValue: 'Currently blocked', value: 'No' },
@@ -1607,7 +1607,7 @@ describe('setApplicationDeployStatus 2', () => {
   const result = [
     {
       labelValue: 'Subscription Selector',
-      status: false,
+      status: undefined,
       value: 'test',
     },
     { type: 'spacer' },
@@ -1639,7 +1639,7 @@ describe('setApplicationDeployStatus application', () => {
   const result = [
     {
       labelValue: 'Subscription Selector',
-      status: false,
+      status: undefined,
       value: 'test',
     },
     { type: 'spacer' },
@@ -1681,7 +1681,7 @@ describe('setApplicationDeployStatus no selector', () => {
   const result = [
     {
       labelValue: 'Subscription Selector',
-      status: true,
+      status: undefined,
       value: 'This application has no subscription match selector (spec.selector.matchExpressions)',
     },
     { type: 'spacer' },
@@ -1724,7 +1724,7 @@ describe('setApplicationDeployStatus channels', () => {
   const result = [
     {
       labelValue: 'Subscription Selector',
-      status: true,
+      status: undefined,
       value: 'This application has no subscription match selector (spec.selector.matchExpressions)',
     },
     { type: 'spacer' },
@@ -1789,27 +1789,6 @@ describe('setPodDeployStatus  with pod less then desired', () => {
             cluster: 'possiblereptile',
             namespace: 'default',
             status: 'Failed',
-
-            // "_uid": "console-managed/e434f8e1-942f-44c6-bf5d-b8c88ba4441e",
-            // "apiversion": "v1",
-            // "status": "Running",
-            // "created": "2022-04-06T16:04:39Z",
-            // "namespace": "default",
-            // "kind": "pod",
-            // "cluster": "console-managed",
-            // "hostIP": "10.0.187.69",
-            // "restarts": 2,
-            // "startedAt": "2022-04-06T16:04:39Z",
-            // "name": "helloworld-app-deploy-7998d94b96-ndnds",
-            // "container": "helloworld-app-container",
-            // "_rbac": "console-managed_null_pods",
-            // "_clusterNamespace": "console-managed",
-            // "image": "quay.io/fxiang1/helloworld:0.0.1",
-            // "label": "app=helloworld-app; pod-template-hash=7998d94b96",
-            // "_ownerUID": "console-managed/4348a1c7-01c7-4553-9750-3181f2f52a2f",
-            // "podIP": "10.128.0.57",
-            // "resStatus": "running",
-            // "pulse": "green"
           },
         ],
       },
@@ -1863,7 +1842,7 @@ describe('setPodDeployStatus  with pod less then desired', () => {
       labelValue: 'Created',
       status: undefined,
       type: 'label',
-      value: <AcmTimestamp timestamp={undefined} />,
+      value: 'N/A',
     },
     { type: 'spacer' },
   ]
@@ -1991,7 +1970,7 @@ describe('setPodDeployStatus with pod as desired', () => {
       labelValue: 'Created',
       status: undefined,
       type: 'label',
-      value: <AcmTimestamp timestamp={undefined} />,
+      value: 'N/A',
     },
     { type: 'spacer' },
     {
@@ -2039,7 +2018,7 @@ describe('setPodDeployStatus with pod as desired', () => {
       labelValue: 'Created',
       status: undefined,
       type: 'label',
-      value: <AcmTimestamp timestamp={undefined} />,
+      value: 'N/A',
     },
     { type: 'spacer' },
     {
@@ -2087,7 +2066,7 @@ describe('setPodDeployStatus with pod as desired', () => {
       labelValue: 'Created',
       status: undefined,
       type: 'label',
-      value: <AcmTimestamp timestamp={undefined} />,
+      value: 'N/A',
     },
     { type: 'spacer' },
   ]
@@ -2227,7 +2206,7 @@ describe('setPodDeployStatus - pod as desired with green filter', () => {
       labelValue: 'Created',
       status: undefined,
       type: 'label',
-      value: <AcmTimestamp timestamp={undefined} />,
+      value: 'N/A',
     },
     { type: 'spacer' },
   ]

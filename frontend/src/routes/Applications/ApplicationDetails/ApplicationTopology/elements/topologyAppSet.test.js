@@ -760,6 +760,7 @@ const result = {
           spec: {
             clusterSets: ['default'],
           },
+          placement: undefined,
           status: {
             conditions: [
               {
@@ -802,7 +803,7 @@ const result = {
         clustersNames: ['local-cluster'],
         resourceCount: 1,
         sortedClusterNames: ['local-cluster'],
-        subscription: null,
+        subscription: undefined,
         targetNamespaces: undefined,
         title: 'helloworld',
       },

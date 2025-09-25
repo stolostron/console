@@ -12584,7 +12584,7 @@ const result7 = {
           },
           parentType: 'cluster',
         },
-        resourceCount: 18,
+        resourceCount: 20,
         resources: [
           {
             apiVersion: 'batch/v1',

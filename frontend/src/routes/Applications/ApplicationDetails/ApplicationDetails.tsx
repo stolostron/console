@@ -422,7 +422,7 @@ export default function ApplicationDetailsPage() {
                 appData,
               })
               setActiveChannel(application ? application.activeChannel : '')
-              setAllChannels(application ? application.channels : [])
+              setAllChannels(application && application.channels ? application.channels : [])
             }
 
             // from then on, only refresh topology with new statuses
@@ -442,8 +442,8 @@ export default function ApplicationDetailsPage() {
               appData: appDataWithStatuses,
               statuses: resourceStatuses,
             })
-            setActiveChannel(application.activeChannel)
-            setAllChannels(application.channels)
+            setActiveChannel(application?.activeChannel ?? '')
+            setAllChannels(application?.channels ?? [])
             lastRefreshRef.current = { application, resourceStatuses, relatedResources }
           }
         })()

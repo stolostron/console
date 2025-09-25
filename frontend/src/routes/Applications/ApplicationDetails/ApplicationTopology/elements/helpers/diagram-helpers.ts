@@ -50,7 +50,7 @@ export const getNodePropery = (
   propPath: string | number | (string | number)[],
   key: string,
   defaultValue?: string,
-  status?: string
+  status?: any
 ): DetailItem | undefined => {
   const dataObj = getNestedProperty(node, propPath)
 
@@ -480,11 +480,6 @@ export const addResourceToModel = (
 /** Reduce complexity: return true if either object is falsy. */
 export const checkNotOrObjects = (obj1?: unknown, obj2?: unknown): boolean => {
   return !obj1 || !obj2
-}
-
-/** Reduce complexity: return true only if both objects are truthy. */
-export const checkAndObjects = (obj1?: unknown, obj2?: unknown): boolean => {
-  return !!(obj1 && obj2)
 }
 
 /**

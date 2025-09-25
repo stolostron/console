@@ -69,6 +69,7 @@ export const getApplication = async (
         'spec.generators[0].clusterDecisionResource.labelSelector.matchLabels["cluster.open-cluster-management.io/placement"]',
         ''
       )
+
       placement = recoilStates.placementDecisions?.find((placementDecision: PlacementDecision) => {
         const labels = placementDecision.metadata.labels as Record<string, string>
         return labels?.['cluster.open-cluster-management.io/placement'] === placementName
@@ -150,8 +151,6 @@ export const getApplication = async (
       namespace,
       app,
       metadata: (app as any).metadata,
-      channels: (app as any).channels ?? [],
-      activeChannel: (app as any).activeChannel ?? undefined,
       placement,
       isArgoApp: safeGet(app, 'apiVersion', '').indexOf('argoproj.io') > -1 && !isAppSet,
       isAppSet: isAppSet,

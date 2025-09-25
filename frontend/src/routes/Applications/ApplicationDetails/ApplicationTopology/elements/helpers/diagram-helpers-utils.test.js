@@ -22,9 +22,9 @@ import {
   getVMNameWithoutPodHash,
 } from './diagram-helpers-utils'
 
-import { getOnlineClusters, getPulseStatusForSubscription } from '../model/computeStatuses'
+import { getOnlineClusters, getPulseStatusForSubscription } from '../../statuses/computeStatuses'
 
-import { syncControllerRevisionPodStatusMap } from '../model/computeRelated'
+import { syncControllerRevisionPodStatusMap } from '../../elements/topologyDetails'
 
 describe('mustRefreshTopologyMap', () => {
   const updatedTime = 1621025105756

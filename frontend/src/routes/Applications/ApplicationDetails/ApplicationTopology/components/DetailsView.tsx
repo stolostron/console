@@ -19,7 +19,7 @@ import {
   StatusType,
   ResourceAction,
 } from '../types'
-import { getNodeDetails, typeToShapeMap } from './DetailsViewHelper'
+import { typeToShapeMap } from './DetailsViewHelper'
 import { TFunction } from 'react-i18next'
 
 /**
@@ -300,11 +300,14 @@ class DetailsView extends Component<DetailsViewProps, DetailsViewState> {
    * Switches between Details, Logs, and YAML views
    */
   renderTabContents(node: TopologyNodeWithStatus): JSX.Element | JSX.Element[] {
-    const { activeFilters, t, hubClusterName } = this.props
+    const { activeFilters, t, hubClusterName, options } = this.props
     const selectedNodeId = node.id
 
     // Get detailed information for the node
-    const details = getNodeDetails(node, activeFilters, t, hubClusterName as string)
+    const details =
+      options && typeof options.getNodeDetails === 'function'
+        ? options.getNodeDetails(node, activeFilters, t, hubClusterName as string)
+        : []
     const name = node.type === 'cluster' ? '' : node.name
     const yamlURL = createResourceURL(node, t)
     const { namespace, type } = node
@@ -314,7 +317,7 @@ class DetailsView extends Component<DetailsViewProps, DetailsViewState> {
     switch (activeTabKey) {
       case 0: // Details tab
       default:
-        return details.map((detail) => this.renderDetail(detail, t)) as unknown as JSX.Element[]
+        return details.map((detail) => this.renderDetail(detail as DetailItemExtended, t)) as unknown as JSX.Element[]
 
       case 1: // Logs tab
         return <LogsContainer node={node} t={t} renderResourceURLLink={this.renderResourceURLLink} />

@@ -1,10 +1,22 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 // Utility function to safely get nested properties (replaces lodash get)
+
+const rePropName = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g
+const reEscapeChar = /\\(\\)?/g
+
 export function safeGet<T = any>(obj: any, path: string | string[], defaultValue?: T): T {
   if (!obj || typeof obj !== 'object') return defaultValue as T
 
-  const keys = Array.isArray(path) ? path : path.split(/[.[\]]+/).filter((key) => key !== '')
+  let keys = [] as string[]
+  if (Array.isArray(path)) {
+    keys = path
+  } else {
+    path.replace(rePropName, (match, number, quote, subString) => {
+      keys.push(quote ? subString.replace(reEscapeChar, '$1') : number || match)
+      return ''
+    })
+  }
   let result = obj
 
   for (const key of keys) {

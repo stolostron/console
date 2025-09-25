@@ -22,7 +22,7 @@ import {
   processResourceActionLink,
   removeReleaseGeneratedSuffix,
 } from './diagram-helpers'
-import { nockIgnoreApiPaths } from '../../../../../lib/nock-util'
+import { nockIgnoreApiPaths } from '../../../../../../lib/nock-util'
 
 const t = i18n.t.bind(i18n)
 
@@ -1378,20 +1378,6 @@ describe('checkNotOrObjects', () => {
 
   it('should return true', () => {
     expect(checkNotOrObjects(definedObj1, undefinedObj)).toEqual(true)
-  })
-})
-
-describe('checkAndObjects', () => {
-  const definedObj1 = { name: 'mortgage' }
-  const definedObj2 = { name: 'mortgage' }
-  const undefinedObj = undefined
-
-  it('should check objects', () => {
-    expect(checkAndObjects(definedObj1, undefinedObj)).toEqual(undefinedObj)
-  })
-
-  it('should check objects', () => {
-    expect(checkAndObjects(definedObj1, definedObj2)).toEqual(definedObj1)
   })
 })
 
