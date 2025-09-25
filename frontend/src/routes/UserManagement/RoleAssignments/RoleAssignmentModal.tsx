@@ -39,7 +39,7 @@ const RoleAssignmentModal = ({ close, isOpen, isEditing, preselected }: RoleAssi
     )
     const existingMultiClusterRoleAssignment =
       existingRoleAssignments?.length > 0
-        ? existingRoleAssignments[existingRoleAssignments.length - 1].relatedMulticlusterRoleAssignment
+        ? existingRoleAssignments.at(-1)?.relatedMulticlusterRoleAssignment
         : undefined
 
     const roleAssignmentsToSave: {
@@ -47,8 +47,8 @@ const RoleAssignmentModal = ({ close, isOpen, isEditing, preselected }: RoleAssi
       subject: FlattenedRoleAssignment['subject']
     }[] = []
 
-    data.roles.forEach((role) => {
-      subjectNames.forEach((subjectName) => {
+    for (const role of data.roles) {
+      for (const subjectName of subjectNames) {
         roleAssignmentsToSave.push({
           roleAssignment: {
             clusterRole: role,
@@ -64,8 +64,8 @@ const RoleAssignmentModal = ({ close, isOpen, isEditing, preselected }: RoleAssi
             kind: data.subject.kind,
           },
         })
-      })
-    })
+      }
+    }
 
     await Promise.all(
       roleAssignmentsToSave.map((roleAssignment) =>

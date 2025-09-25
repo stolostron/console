@@ -96,15 +96,10 @@ const RoleAssignmentForm = ({
     const firstPart = isEditing ? t('Edit role assignment') : t('Create role assignment')
     let secondPart = ''
 
-    switch (true) {
-      case preselected?.subject && preselected.subject.value !== undefined && preselected.subject.kind !== undefined:
-        secondPart = ` ${t('for')} ${preselected.subject.value} ${preselected.subject.kind === UserKind ? t('user') : t('group')}`
-        break
-      case preselected?.roles && preselected?.roles.length > 0:
-        secondPart = ` ${treatRoleAssignmentEntityTitle(preselected.roles, t('roles'), t('role'))}`
-        break
-      default:
-        secondPart = ''
+    if (preselected?.subject?.value !== undefined && preselected?.subject?.kind !== undefined) {
+      secondPart = ` ${t('for')} ${preselected.subject.value} ${preselected.subject.kind === UserKind ? t('user') : t('group')}`
+    } else if (preselected?.roles && preselected.roles.length > 0) {
+      secondPart = ` ${treatRoleAssignmentEntityTitle(preselected.roles, t('roles'), t('role'))}`
     }
     setTitle(`${firstPart}${secondPart}`)
   }, [isEditing, preselected, t, treatRoleAssignmentEntityTitle])
@@ -276,12 +271,10 @@ const RoleAssignmentForm = ({
   }
 
   const getFormMode = (): AcmDataFormProps['mode'] => {
-    switch (true) {
-      case isViewing:
-        return 'details'
-      default:
-        return 'form'
+    if (isViewing) {
+      return 'details'
     }
+    return 'form'
   }
 
   const inmutables = ['apiVersion', 'kind']
