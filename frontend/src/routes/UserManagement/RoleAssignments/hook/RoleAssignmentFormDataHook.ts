@@ -8,8 +8,8 @@ import { RoleAssignmentHookType } from './RoleAssignmentDataHook'
 type RoleAssignmentFormDataType = {
   subject: {
     kind: UserKindType | GroupKindType | ServiceAccountKindType
-    user?: string
-    group?: string
+    user?: string[]
+    group?: string[]
   }
   scope: {
     kind: 'all' | 'specific'
@@ -45,13 +45,15 @@ const useRoleAssignmentFormData = (
         subject: {
           ...prevData.subject,
           kind: subjectKind as RoleAssignmentFormDataType['subject']['kind'],
+          user: subjectKind === UserKind ? prevData.subject.user : undefined,
+          group: subjectKind === GroupKind ? prevData.subject.group : undefined,
         },
       })),
     []
   )
 
   const onChangeUserValue = useCallback(
-    (user?: string) =>
+    (user?: string[]) =>
       setRoleAssignmentFormData((prevData) => ({
         ...prevData,
         subject: {
@@ -63,7 +65,7 @@ const useRoleAssignmentFormData = (
   )
 
   const onChangeGroupValue = useCallback(
-    (group?: string) =>
+    (group?: string[]) =>
       setRoleAssignmentFormData((prevData) => ({
         ...prevData,
         subject: {
@@ -128,10 +130,10 @@ const useRoleAssignmentFormData = (
       onChangeSubjectKind(subject.kind)
       switch (subject.kind) {
         case UserKind:
-          onChangeUserValue(subject.value)
+          onChangeUserValue(subject.value ? [subject.value] : undefined)
           break
         case GroupKind:
-          onChangeGroupValue(subject.value)
+          onChangeGroupValue(subject.value ? [subject.value] : undefined)
           break
       }
     }

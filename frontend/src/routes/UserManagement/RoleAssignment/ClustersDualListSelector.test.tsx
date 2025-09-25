@@ -5,16 +5,6 @@ import { ClusterSet } from '../RoleAssignments/hook/RoleAssignmentDataHook'
 
 jest.mock('@patternfly/react-core', () => ({
   DualListSelector: ({ availableOptions, chosenOptions, onListChange, onOptionCheck, ...props }: any) => {
-    console.log('Mock DualListSelector rendered with:', {
-      availableOptions,
-      chosenOptions,
-      props: {
-        isSearchable: props.isSearchable,
-        isTree: props.isTree,
-        id: props.id,
-      },
-    })
-
     const handleCheckboxChange = (e: any, isChecked: boolean, optionId: string) => {
       onOptionCheck?.(e, isChecked, optionId)
 
