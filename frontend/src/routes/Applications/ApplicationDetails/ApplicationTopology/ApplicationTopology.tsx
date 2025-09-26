@@ -3,7 +3,7 @@
 import { AcmDrawerContext } from '../../../../ui-components'
 import cloneDeep from 'lodash/cloneDeep'
 import { useContext, useEffect, useState } from 'react'
-import { Topology } from './topology/ResourceTopology'
+import { Topology } from './topology/Topology'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { useApplicationDetailsContext } from '../ApplicationDetails'
 import { processResourceActionLink } from './elements/helpers/diagram-helpers'
@@ -13,6 +13,7 @@ import './ApplicationTopology.css'
 import './components/Drawer.css'
 import './components/Toolbar.css'
 import { ArgoApp, ClusterDetailsContainerControl } from './types'
+import { nodeDetailsProvider } from './components/NodeDetailsProvider'
 
 export type ArgoAppDetailsContainerData = {
   page: number
@@ -139,6 +140,7 @@ export function ApplicationTopologyPageContent() {
         argoAppDetailsContainerControl={argoAppDetailsContainerControl}
         clusterDetailsContainerControl={clusterDetailsContainerControl}
         channelControl={channelControl}
+        nodeDetailsProvider={nodeDetailsProvider}
         setDrawerContent={setDrawerContent}
         hubClusterName={hubClusterName}
       />

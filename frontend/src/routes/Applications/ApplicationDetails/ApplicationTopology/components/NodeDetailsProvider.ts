@@ -23,7 +23,12 @@ import { TFunction } from 'react-i18next'
 const resName = 'resource.name'
 const unknonwnApiVersion = 'unknown'
 
-export const getNodeDetails = (node: any, activeFilters: Record<string, any>, t: TFunction, hubClusterName: string) => {
+export const nodeDetailsProvider = (
+  node: any,
+  activeFilters: Record<string, any>,
+  t: TFunction,
+  hubClusterName: string
+) => {
   const details: any[] = []
   if (node) {
     const { type, labels = [] } = node

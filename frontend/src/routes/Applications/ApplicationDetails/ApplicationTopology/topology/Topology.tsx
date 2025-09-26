@@ -17,7 +17,11 @@ import {
   VisualizationProvider,
   isNode,
 } from '@patternfly/react-topology'
-import { ToolbarItem, Split, SplitItem, Alert, Button } from '@patternfly/react-core'
+import { ToolbarItem } from '@patternfly/react-core'
+import { Split } from '@patternfly/react-core'
+import { SplitItem } from '@patternfly/react-core'
+import { Alert } from '@patternfly/react-core'
+import { Button } from '@patternfly/react-core'
 import layoutFactory from './layout/layoutFactory'
 import getLayoutModel from './layout/layoutModel'
 import '@patternfly/patternfly/patternfly.css'
@@ -37,6 +41,7 @@ import './components/future/topology-view.css'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { querySearchDisabledManagedClusters } from '../../../../../lib/search'
 import { useQuery } from '../../../../../lib/useQuery'
+import { TFunction } from 'react-i18next'
 
 export interface TopologyProps {
   elements: {
@@ -69,6 +74,7 @@ export interface TopologyProps {
     panelContent: React.ReactNode | React.ReactNode[],
     closeDrawer: boolean
   ) => void
+  nodeDetailsProvider?: (node: any, activeFilters: Record<string, any>, t: TFunction, hubClusterName: string) => any
   canUpdateStatuses?: boolean
   disableRenderConstraint?: boolean
   processActionLink?: (resource: any, toggleLoading: () => void, hubClusterName: string) => void
@@ -89,6 +95,7 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
     channelControl,
     setDrawerContent,
     elements,
+    nodeDetailsProvider,
     hubClusterName,
   } = topologyProps
   const [selectedIds, setSelectedIds] = useState<string[]>()
@@ -133,6 +140,7 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
           clusterDetailsContainerControl={clusterDetailsContainerControl}
           argoAppDetailsContainerControl={argoAppDetailsContainerControl}
           activeFilters={{}}
+          nodeDetailsProvider={nodeDetailsProvider}
           t={t}
           hubClusterName={hubClusterName}
         />

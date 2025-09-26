@@ -1101,8 +1101,7 @@ export interface DetailsViewProps {
   processActionLink?: (resource: any, toggleLoading: () => void, hubClusterName: string) => void
   /** ID of the currently selected node */
   selectedNodeId: string
-  /** Configuration options for the details view */
-  options?: DetailsViewOptions
+  nodeDetailsProvider?: (node: any, activeFilters: Record<string, any>, t: TFunction, hubClusterName: string) => any
   /** Active tab key for tab navigation */
   activeTabKey?: number
   /** Hub cluster name for multi-cluster scenarios */

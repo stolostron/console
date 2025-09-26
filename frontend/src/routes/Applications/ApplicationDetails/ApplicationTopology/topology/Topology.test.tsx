@@ -9,7 +9,7 @@ import {
   mockSearchResponseSearchDisabledManagedClusters,
 } from '../../../Application.sharedmocks'
 
-import { Topology, TopologyProps } from './ResourceTopology'
+import { Topology, TopologyProps } from './Topology'
 const mockProcessactionlink = jest.fn()
 const mockDispatchaction = jest.fn()
 const mockHandleerrormsg = jest.fn()
