@@ -2,7 +2,6 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-import AcmTimestamp from '../../../../../lib/AcmTimestamp'
 import {
   computeNodeStatus,
   getPodState,
