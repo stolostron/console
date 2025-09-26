@@ -23,6 +23,7 @@ import { IResource } from '../common/resources/IResource'
 import schema from './schema.json'
 import './CreateArgoResources.css'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
+import { validateKubernetesResourceName } from '../../lib/validation'
 
 export interface ICreateArgoResourcesModalProps {
   handleModalToggle: () => void
@@ -150,6 +151,7 @@ export function CreateArgoResources(props: ICreateArgoResourcesModalProps) {
             value: name,
             onChange: setName,
             isRequired: true,
+            validation: (value) => validateKubernetesResourceName(value, t),
           },
           {
             id: 'namespace',
