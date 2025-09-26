@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
+import { constants, Http2ServerRequest, Http2ServerResponse } from 'node:http2'
 import { HeadersInit } from 'node-fetch'
 import { getServiceAgent } from '../lib/agent'
 import { fetchRetry } from '../lib/fetch-retry'
@@ -77,7 +77,7 @@ export async function virtualMachineGETProxy(req: Http2ServerRequest, res: Http2
   if (token) {
     try {
       const mce = await getMultiClusterEngine()
-      const proxyService = `https://cluster-proxy-addon-user.${mce?.spec?.targetNamespace || 'multicluster-engine'}.svc.cluster.local:9092`
+      const proxyService = `https://cluster-proxy-addon-user.${mce?.spec?.targetNamespace || 'multicluster-engine'}.svc.cluster.local.:9092`
       const proxyURL = process.env.CLUSTER_PROXY_ADDON_USER_ROUTE || proxyService
       const urlSplit = req.url.split('/')
       // vm get requests have url /virtualmachines/get/<managedCluster>/<name>/<namespace>
@@ -122,7 +122,7 @@ export async function virtualMachineProxy(req: Http2ServerRequest, res: Http2Ser
           (e: { enabled: boolean; name: string }) => e.name === 'fine-grained-rbac-preview'
         )?.enabled ?? false
       const mce = await getMultiClusterEngine()
-      const proxyService = `https://cluster-proxy-addon-user.${mce?.spec?.targetNamespace || 'multicluster-engine'}.svc.cluster.local:9092`
+      const proxyService = `https://cluster-proxy-addon-user.${mce?.spec?.targetNamespace || 'multicluster-engine'}.svc.cluster.local.:9092`
       const proxyURL = process.env.CLUSTER_PROXY_ADDON_USER_ROUTE || proxyService
 
       const chucks: string[] = []
@@ -328,7 +328,7 @@ async function getProxyUrl(): Promise<string> {
   }
   const mce = await getMultiClusterEngine()
   const targetNamespace = mce?.spec?.targetNamespace || 'multicluster-engine'
-  return `https://cluster-proxy-addon-user.${targetNamespace}.svc.cluster.local:9092`
+  return `https://cluster-proxy-addon-user.${targetNamespace}.svc.cluster.local.:9092`
 }
 
 /**
@@ -435,18 +435,18 @@ async function calculateSingleVmiUsage(
   // --- Calculate CPU and Memory Usage ---
   let podRequestedCPU = 0
   let podRequestedMemory = 0
-  pod.spec.containers.forEach((c) => {
+  for (const c of pod.spec.containers) {
     // Assuming these helper functions handle undefined/null inputs gracefully (e.g., return 0)
     podRequestedCPU += toMillicores(c.resources?.requests?.cpu)
     podRequestedMemory += toMebibytes(c.resources?.requests?.memory)
-  })
+  }
 
   let podCpuUsage = 0
   let podMemoryUsage = 0
-  metric.containers.forEach((container) => {
+  for (const container of metric.containers) {
     podCpuUsage += convertNanocoresToMillicores(container.usage.cpu)
     podMemoryUsage += convertKibibytesToMebibytes(container.usage.memory)
-  })
+  }
 
   // --- Fetch and Calculate Storage Usage ---
   const { proxyURL, clusterName, namespace, token } = context
@@ -456,11 +456,11 @@ async function calculateSingleVmiUsage(
   let podStorageUsage = 0
   let podStorageTotal = 0
   if (filesystem?.items) {
-    filesystem.items.forEach((item) => {
+    for (const item of filesystem.items) {
       // Assuming these helpers convert bytes to GiB as in the original code
       podStorageUsage += convertBytesToGibibytes(item.usedBytes)
       podStorageTotal += convertBytesToGibibytes(item.totalBytes)
-    })
+    }
   }
 
   // --- Assemble final VMI usage object ---
