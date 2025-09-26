@@ -374,20 +374,23 @@ export function ClusterOverviewPageContent() {
   if (cluster?.provider && [Provider.hostinventory, Provider.nutanix].includes(cluster.provider)) {
     if (cluster.isHypershift) {
       details = <AIHypershiftClusterDetails />
-    } else if (!agentClusterInstall) {
-      details = (
-        <div style={{ marginBottom: '1rem' }} id={`missing-agentclusterinstall-alert`}>
-          <AcmAlert
-            isInline
-            variant={AlertVariant.danger}
-            title={<>{t('Cluster installation info unavailable')}</>}
-            message={t('Could not find the AgentClusterInstall resource.')}
-            noClose
-          />
-        </div>
-      )
-    } else {
-      details = <AIClusterDetails />
+    } else if (clusterDeployment) {
+      // Do not display alert or AIClusterDetails for imported Nutanix clusters (will not have a ClusterDeployment)
+      if (!agentClusterInstall) {
+        details = (
+          <div style={{ marginBottom: '1rem' }} id={`missing-agentclusterinstall-alert`}>
+            <AcmAlert
+              isInline
+              variant={AlertVariant.danger}
+              title={<>{t('Cluster installation info unavailable')}</>}
+              message={t('Could not find the AgentClusterInstall resource.')}
+              noClose
+            />
+          </div>
+        )
+      } else {
+        details = <AIClusterDetails />
+      }
     }
   }
 

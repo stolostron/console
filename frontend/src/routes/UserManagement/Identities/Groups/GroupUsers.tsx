@@ -18,11 +18,13 @@ import { useGroupDetailsContext } from './GroupPage'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { NavigationPath } from '../../../../NavigationPath'
 import { useNavigate, Link, generatePath } from 'react-router-dom-v5-compat'
+import { useFilters } from '../Users/UsersTableHelper'
 
 const GroupUsers = () => {
   const { t } = useTranslation()
   const { group, users, loading: groupLoading, usersLoading } = useGroupDetailsContext()
   const navigate = useNavigate()
+  const filters = useFilters()
 
   const groupUsers = useMemo(() => {
     if (!group || !users) return []
@@ -107,6 +109,7 @@ const GroupUsers = () => {
           <AcmTable<User>
             key="group-users-table"
             columns={columns}
+            filters={filters}
             keyFn={keyFn}
             items={groupUsers}
             emptyState={

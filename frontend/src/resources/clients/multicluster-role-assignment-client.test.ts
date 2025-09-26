@@ -5,12 +5,16 @@ import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { MulticlusterRoleAssignment, RoleAssignment } from '../multicluster-role-assignment'
 import { GroupKind, UserKind } from '../rbac'
 import { createResource, deleteResource, patchResource } from '../utils'
+import { ResourceError } from '../utils/resource-request'
 import multiclusterRoleAssignmentsMockData from './mock-data/multicluster-role-assignments.json'
 import {
+  addRoleAssignment,
   create,
   deleteRoleAssignment,
   FlattenedRoleAssignment,
+  mapRoleAssignmentBeforeSaving,
   useFindRoleAssignments,
+  validateRoleAssignmentName,
 } from './multicluster-role-assignment-client'
 
 jest.mock('../utils', () => ({
@@ -31,9 +35,8 @@ const useSharedAtomsMock = useSharedAtoms as jest.Mock
 const useRecoilValueMock = useRecoilValue as jest.Mock
 
 describe('multicluster-role-assignment-client', function () {
-  const mockMulticlusterRoleAssignments: MulticlusterRoleAssignment[] = JSON.parse(
-    JSON.stringify(multiclusterRoleAssignmentsMockData)
-  ) as MulticlusterRoleAssignment[]
+  const mockMulticlusterRoleAssignments: MulticlusterRoleAssignment[] =
+    multiclusterRoleAssignmentsMockData as MulticlusterRoleAssignment[]
 
   beforeAll(() => {
     jest.clearAllMocks()
@@ -67,29 +70,35 @@ describe('multicluster-role-assignment-client', function () {
           name: 'admin-user-role-assignment-console',
           namespace: 'open-cluster-management-global-set',
           uid: '2f4a6c8e-3b7d-4e9a-6c2f-8e4a7b9d2c5f',
-          labels: { 'console-created': 'true' },
+          labels: { 'open-cluster-management.io/managed-by': 'console' },
         },
         spec: {
           subject: { kind: 'User', name: 'admin.user' },
           roleAssignments: [
             {
-              name: '0ce91c74417862a94a58a0fc11062bfa7f7c17149702af184d1841537cd569fa',
+              name: 'kubevirt.io:admin-0ce91c74417862a9',
               clusterRole: 'kubevirt.io:admin',
               targetNamespaces: ['kubevirt-production'],
-              clusterSets: ['production-cluster'],
+              clusterSelection: {
+                type: 'clusterNames' as const,
+                clusterNames: ['production-cluster'],
+              },
             },
             {
-              name: '2f8bbe8b5ef6a39581db893b803f05ec598364736792ec447722aab14d17ae11',
+              name: 'live-migration-admin-2f8bbe8b5ef6a395',
               clusterRole: 'live-migration-admin',
               targetNamespaces: ['kubevirt-dev', 'vm-dev'],
-              clusterSets: ['development-cluster'],
+              clusterSelection: {
+                type: 'clusterNames' as const,
+                clusterNames: ['development-cluster'],
+              },
             },
           ],
         },
         status: {
           roleAssignments: [
-            { name: '0ce91c74417862a94a58a0fc11062bfa7f7c17149702af184d1841537cd569fa', status: 'Active' },
-            { name: '2f8bbe8b5ef6a39581db893b803f05ec598364736792ec447722aab14d17ae11', status: 'Active' },
+            { name: 'kubevirt.io:admin-0ce91c74417862a9', status: 'Active' },
+            { name: 'live-migration-admin-2f8bbe8b5ef6a395', status: 'Active' },
           ],
         },
       })
@@ -100,29 +109,35 @@ describe('multicluster-role-assignment-client', function () {
           name: 'admin-user-role-assignment-console',
           namespace: 'open-cluster-management-global-set',
           uid: '2f4a6c8e-3b7d-4e9a-6c2f-8e4a7b9d2c5f',
-          labels: { 'console-created': 'true' },
+          labels: { 'open-cluster-management.io/managed-by': 'console' },
         },
         spec: {
           subject: { kind: 'User', name: 'admin.user' },
           roleAssignments: [
             {
-              name: '0ce91c74417862a94a58a0fc11062bfa7f7c17149702af184d1841537cd569fa',
+              name: 'kubevirt.io:admin-0ce91c74417862a9',
               clusterRole: 'kubevirt.io:admin',
               targetNamespaces: ['kubevirt-production'],
-              clusterSets: ['production-cluster'],
+              clusterSelection: {
+                type: 'clusterNames' as const,
+                clusterNames: ['production-cluster'],
+              },
             },
             {
-              name: '2f8bbe8b5ef6a39581db893b803f05ec598364736792ec447722aab14d17ae11',
+              name: 'live-migration-admin-2f8bbe8b5ef6a395',
               clusterRole: 'live-migration-admin',
               targetNamespaces: ['kubevirt-dev', 'vm-dev'],
-              clusterSets: ['development-cluster'],
+              clusterSelection: {
+                type: 'clusterNames' as const,
+                clusterNames: ['development-cluster'],
+              },
             },
           ],
         },
         status: {
           roleAssignments: [
-            { name: '0ce91c74417862a94a58a0fc11062bfa7f7c17149702af184d1841537cd569fa', status: 'Active' },
-            { name: '2f8bbe8b5ef6a39581db893b803f05ec598364736792ec447722aab14d17ae11', status: 'Active' },
+            { name: 'kubevirt.io:admin-0ce91c74417862a9', status: 'Active' },
+            { name: 'live-migration-admin-2f8bbe8b5ef6a395', status: 'Active' },
           ],
         },
       })
@@ -163,15 +178,15 @@ describe('multicluster-role-assignment-client', function () {
       // Assert
       expect(result.current).toHaveLength(2)
 
-      expect(result.current[0].name).toBe('26f10cdfc6e71e8dea1a3ca9511402958f7764a11137f27e7640e97a79d9c4b3')
+      expect(result.current[0].name).toBe('kubevirt.io:view-26f10cdfc6e71e8d')
       expect(result.current[0].clusterRole).toBe('kubevirt.io:view')
       expect(result.current[0].targetNamespaces).toStrictEqual(['kubevirt-production'])
-      expect(result.current[0].clusterSets).toStrictEqual(['production-cluster'])
+      expect(result.current[0].clusterSelection.clusterNames).toStrictEqual(['production-cluster'])
 
-      expect(result.current[1].name).toBe('c89564b44096eb7ade487f6e419c0c37a2c32c0b48cce6d081a6118926d33fa9')
+      expect(result.current[1].name).toBe('kubevirt.io:view-c89564b44096eb7a')
       expect(result.current[1].clusterRole).toBe('kubevirt.io:view')
       expect(result.current[1].targetNamespaces).toStrictEqual(['security', 'audit-logs'])
-      expect(result.current[1].clusterSets).toStrictEqual(['security-cluster'])
+      expect(result.current[1].clusterSelection.clusterNames).toStrictEqual(['security-cluster'])
     })
 
     it('status properly mapped', () => {
@@ -189,22 +204,12 @@ describe('multicluster-role-assignment-client', function () {
 
       // Assert
       expect(result.current).toHaveLength(2)
-      expect(
-        (
-          result.current.find((e) => e.name === '26f10cdfc6e71e8dea1a3ca9511402958f7764a11137f27e7640e97a79d9c4b3') ??
-          {}
-        ).status
-      ).toStrictEqual({
-        name: '26f10cdfc6e71e8dea1a3ca9511402958f7764a11137f27e7640e97a79d9c4b3',
+      expect((result.current.find((e) => e.name === 'kubevirt.io:view-26f10cdfc6e71e8d') ?? {}).status).toStrictEqual({
+        name: 'kubevirt.io:view-26f10cdfc6e71e8d',
         status: 'Active',
       })
-      expect(
-        (
-          result.current.find((e) => e.name === 'c89564b44096eb7ade487f6e419c0c37a2c32c0b48cce6d081a6118926d33fa9') ??
-          {}
-        ).status
-      ).toStrictEqual({
-        name: 'c89564b44096eb7ade487f6e419c0c37a2c32c0b48cce6d081a6118926d33fa9',
+      expect((result.current.find((e) => e.name === 'kubevirt.io:view-c89564b44096eb7a') ?? {}).status).toStrictEqual({
+        name: 'kubevirt.io:view-c89564b44096eb7a',
         status: 'Error',
         reason: "permissions don't applied",
       })
@@ -270,33 +275,33 @@ describe('multicluster-role-assignment-client', function () {
       expect(result.current.filter((e) => e.clusterRole !== role)).toHaveLength(0)
     })
 
-    it('should filter by cluster set', () => {
+    it('should filter by cluster name', () => {
       // Arrange
-      const clusterSet = 'production-cluster'
+      const clusterName = 'production-cluster'
 
       // Act
       const { result } = renderHook(() =>
         useFindRoleAssignments({
-          clusterSets: [clusterSet],
+          clusterNames: [clusterName],
         })
       )
 
       // Assert
       expect(result.current).toHaveLength(13)
-      expect(result.current.filter((e) => !e.clusterSets.includes(clusterSet))).toHaveLength(0)
+      expect(result.current.filter((e) => !e.clusterSelection.clusterNames.includes(clusterName))).toHaveLength(0)
     })
 
     it('should filter by multiple criteria', () => {
       // Arrange
       const role = 'kubevirt.io:admin'
-      const clusterSet = 'production-cluster'
+      const clusterName = 'production-cluster'
 
       // Act
       const { result } = renderHook(() =>
         useFindRoleAssignments({
           subjectKinds: [UserKind],
           roles: [role],
-          clusterSets: [clusterSet],
+          clusterNames: [clusterName],
         })
       )
 
@@ -304,7 +309,10 @@ describe('multicluster-role-assignment-client', function () {
       expect(result.current).toHaveLength(3)
       expect(
         result.current.filter(
-          (e) => e.subject.kind !== UserKind || e.clusterRole !== role || !e.clusterSets.includes(clusterSet)
+          (e) =>
+            e.subject.kind !== UserKind ||
+            e.clusterRole !== role ||
+            !e.clusterSelection.clusterNames.includes(clusterName)
         )
       ).toHaveLength(0)
     })
@@ -343,13 +351,17 @@ describe('multicluster-role-assignment-client', function () {
   describe('deleteRoleAssignment', () => {
     it('deletes existing role assignment for a MulticlusterRoleAssignment with multiple elements', () => {
       // Arrange
-      const multiClusterRoleAssignment: MulticlusterRoleAssignment =
-        multiclusterRoleAssignmentsMockData[0] as MulticlusterRoleAssignment
+      const multiClusterRoleAssignment: MulticlusterRoleAssignment = {
+        ...multiclusterRoleAssignmentsMockData[0],
+      } as MulticlusterRoleAssignment
       const roleAssignmentToRemove: FlattenedRoleAssignment = {
         relatedMulticlusterRoleAssignment: multiClusterRoleAssignment,
         name: multiClusterRoleAssignment.spec.roleAssignments[0].name,
         clusterRole: multiClusterRoleAssignment.spec.roleAssignments[0].clusterRole,
-        clusterSets: multiClusterRoleAssignment.spec.roleAssignments[0].clusterSets,
+        clusterSelection: {
+          type: 'clusterNames',
+          clusterNames: multiClusterRoleAssignment.spec.roleAssignments[0].clusterSelection?.clusterNames || [],
+        },
         subject: {
           kind: multiClusterRoleAssignment.spec.subject.kind,
           name: multiClusterRoleAssignment.spec.subject.name,
@@ -376,14 +388,18 @@ describe('multicluster-role-assignment-client', function () {
 
     it('deletes existing role assignment for a MulticlusterRoleAssignment with single element', () => {
       // Arrange
-      const multiClusterRoleAssignment: MulticlusterRoleAssignment =
-        multiclusterRoleAssignmentsMockData[5] as MulticlusterRoleAssignment
+      const multiClusterRoleAssignment: MulticlusterRoleAssignment = {
+        ...multiclusterRoleAssignmentsMockData[5],
+      } as MulticlusterRoleAssignment
 
       const roleAssignmentToRemove: FlattenedRoleAssignment = {
         relatedMulticlusterRoleAssignment: multiClusterRoleAssignment,
         name: multiClusterRoleAssignment.spec.roleAssignments[0].name,
         clusterRole: multiClusterRoleAssignment.spec.roleAssignments[0].clusterRole,
-        clusterSets: multiClusterRoleAssignment.spec.roleAssignments[0].clusterSets,
+        clusterSelection: {
+          type: 'clusterNames',
+          clusterNames: multiClusterRoleAssignment.spec.roleAssignments[0].clusterSelection?.clusterNames || [],
+        },
         subject: {
           kind: multiClusterRoleAssignment.spec.subject.kind,
           name: multiClusterRoleAssignment.spec.subject.name,
@@ -406,15 +422,18 @@ describe('multicluster-role-assignment-client', function () {
         {
           name: 'A1',
           clusterRole: 'x',
-          clusterSets: [
-            'production-cluster',
-            'production-east',
-            'production-west',
-            'production-central',
-            'production-backup',
-            'production-dr',
-            'production-monitoring',
-          ],
+          clusterSelection: {
+            type: 'clusterNames' as const,
+            clusterNames: [
+              'production-cluster',
+              'production-east',
+              'production-west',
+              'production-central',
+              'production-backup',
+              'production-dr',
+              'production-monitoring',
+            ],
+          },
           targetNamespaces: [
             'kubevirt-production',
             'vm-workloads',
@@ -430,11 +449,14 @@ describe('multicluster-role-assignment-client', function () {
         },
       ],
       [
-        'no matching clusterSets',
+        'no matching clusterNames',
         {
           name: 'A1',
           clusterRole: 'kubevirt.io:admin',
-          clusterSets: ['x'],
+          clusterSelection: {
+            type: 'clusterNames' as const,
+            clusterNames: ['x'],
+          },
           targetNamespaces: [
             'kubevirt-production',
             'vm-workloads',
@@ -454,15 +476,18 @@ describe('multicluster-role-assignment-client', function () {
         {
           name: 'A1',
           clusterRole: 'kubevirt.io:admin',
-          clusterSets: [
-            'production-cluster',
-            'production-east',
-            'production-west',
-            'production-central',
-            'production-backup',
-            'production-dr',
-            'production-monitoring',
-          ],
+          clusterSelection: {
+            type: 'clusterNames' as const,
+            clusterNames: [
+              'production-cluster',
+              'production-east',
+              'production-west',
+              'production-central',
+              'production-backup',
+              'production-dr',
+              'production-monitoring',
+            ],
+          },
           targetNamespaces: ['x'],
         },
       ],
@@ -471,7 +496,10 @@ describe('multicluster-role-assignment-client', function () {
         {
           name: 'A1',
           clusterRole: 'x',
-          clusterSets: ['y'],
+          clusterSelection: {
+            type: 'clusterNames' as const,
+            clusterNames: ['y'],
+          },
           targetNamespaces: ['z'],
         },
       ],
@@ -479,8 +507,9 @@ describe('multicluster-role-assignment-client', function () {
       'deletes not existing role assignment for a MulticlusterRoleAssignment when %s',
       (_titleSuffix: string, roleAssignment: RoleAssignment) => {
         // Arrange
-        const multiClusterRoleAssignment: MulticlusterRoleAssignment =
-          multiclusterRoleAssignmentsMockData[0] as MulticlusterRoleAssignment
+        const multiClusterRoleAssignment: MulticlusterRoleAssignment = {
+          ...multiclusterRoleAssignmentsMockData[0],
+        } as MulticlusterRoleAssignment
         const roleAssignmentToRemove: FlattenedRoleAssignment = {
           relatedMulticlusterRoleAssignment: multiClusterRoleAssignment,
           subject: {
@@ -504,5 +533,183 @@ describe('multicluster-role-assignment-client', function () {
         }
       }
     )
+  })
+
+  describe('mapRoleAssignmentBeforeSaving', () => {
+    let roleAssignment: Omit<RoleAssignment, 'name'>
+
+    beforeEach(() => {
+      roleAssignment = {
+        clusterRole: 'admin',
+        targetNamespaces: ['default'],
+        clusterSelection: {
+          type: 'clusterNames' as const,
+          clusterNames: ['cluster-1'],
+        },
+      }
+    })
+
+    it('generates deterministic name with role prefix', () => {
+      // Act
+      const result = mapRoleAssignmentBeforeSaving(roleAssignment)
+
+      // Assert
+      expect(result.name).toMatch(/^admin-[a-f0-9]{16}$/)
+      expect(result.clusterRole).toBe(roleAssignment.clusterRole)
+      expect(result.targetNamespaces).toEqual(roleAssignment.targetNamespaces)
+      expect(result.clusterSelection).toEqual(roleAssignment.clusterSelection)
+    })
+
+    it('generates same name for identical input', () => {
+      // Act
+      const result1 = mapRoleAssignmentBeforeSaving(roleAssignment)
+      const result2 = mapRoleAssignmentBeforeSaving(roleAssignment)
+
+      // Assert
+      expect(result1.name).toBe(result2.name)
+    })
+
+    it('generates different names for different inputs', () => {
+      // Arrange
+      const roleAssignment2 = { ...roleAssignment, clusterRole: 'viewer' }
+
+      // Act
+      const result1 = mapRoleAssignmentBeforeSaving(roleAssignment)
+      const result2 = mapRoleAssignmentBeforeSaving(roleAssignment2)
+
+      // Assert
+      expect(result1.name).not.toBe(result2.name)
+      expect(result1.name).toMatch(/^admin-[a-f0-9]{16}$/)
+      expect(result2.name).toMatch(/^viewer-[a-f0-9]{16}$/)
+    })
+  })
+
+  describe('validateRoleAssignmentName', () => {
+    let newRoleAssignment: Omit<RoleAssignment, 'name'>
+    let existingRoleAssignments: RoleAssignment[]
+
+    beforeEach(() => {
+      newRoleAssignment = {
+        clusterRole: 'admin',
+        targetNamespaces: ['default'],
+        clusterSelection: {
+          type: 'clusterNames' as const,
+          clusterNames: ['cluster-1'],
+        },
+      }
+      existingRoleAssignments = []
+    })
+
+    it('returns true when name is unique', () => {
+      // Arrange
+      existingRoleAssignments = [
+        {
+          name: 'viewer-1234567890123456',
+          clusterRole: 'viewer',
+          targetNamespaces: ['kube-system'],
+          clusterSelection: { type: 'clusterNames', clusterNames: ['other-cluster'] },
+        },
+      ]
+
+      // Act
+      const result = validateRoleAssignmentName(newRoleAssignment, existingRoleAssignments)
+
+      // Assert
+      expect(result).toBe(true)
+    })
+
+    it('returns false when name already exists', () => {
+      // Arrange
+      const generatedName = mapRoleAssignmentBeforeSaving(newRoleAssignment).name
+      existingRoleAssignments = [
+        {
+          name: generatedName,
+          clusterRole: 'admin',
+          targetNamespaces: ['default'],
+          clusterSelection: { type: 'clusterNames', clusterNames: ['cluster-1'] },
+        },
+      ]
+
+      // Act
+      const result = validateRoleAssignmentName(newRoleAssignment, existingRoleAssignments)
+
+      // Assert
+      expect(result).toBe(false)
+    })
+
+    it('returns true for empty existing assignments list', () => {
+      // Act
+      const result = validateRoleAssignmentName(newRoleAssignment, existingRoleAssignments)
+
+      // Assert
+      expect(result).toBe(true)
+    })
+  })
+
+  describe('addRoleAssignment - validation logic', () => {
+    let roleAssignment: Omit<RoleAssignment, 'name'>
+    let subject: FlattenedRoleAssignment['subject']
+
+    beforeEach(() => {
+      roleAssignment = {
+        clusterRole: 'admin',
+        targetNamespaces: ['default'],
+        clusterSelection: {
+          type: 'clusterNames' as const,
+          clusterNames: ['cluster-1'],
+        },
+      }
+      subject = { kind: 'User', name: 'test.user' }
+    })
+
+    it('proceeds when role assignment name is unique', () => {
+      // Arrange
+      const mockResult = { promise: Promise.resolve({} as MulticlusterRoleAssignment), abort: jest.fn() }
+      patchResourceMock.mockReturnValue(mockResult)
+
+      const existingMRA: MulticlusterRoleAssignment = {
+        spec: {
+          roleAssignments: [
+            {
+              name: 'viewer-1234567890123456',
+              clusterRole: 'viewer',
+              targetNamespaces: ['kube-system'],
+              clusterSelection: { type: 'clusterNames', clusterNames: ['other-cluster'] },
+            },
+          ],
+        },
+      } as MulticlusterRoleAssignment
+
+      // Act
+      const result = addRoleAssignment(roleAssignment, subject, existingMRA)
+
+      // Assert
+      expect(patchResourceMock).toHaveBeenCalled()
+      expect(result).toBe(mockResult)
+    })
+
+    it('rejects with duplicate error when role assignment name already exists', async () => {
+      // Arrange
+      const generatedName = mapRoleAssignmentBeforeSaving(roleAssignment).name
+      const existingMRA: MulticlusterRoleAssignment = {
+        spec: {
+          roleAssignments: [
+            {
+              name: generatedName,
+              clusterRole: 'admin',
+              targetNamespaces: ['default'],
+              clusterSelection: { type: 'clusterNames', clusterNames: ['cluster-1'] },
+            },
+          ],
+        },
+      } as MulticlusterRoleAssignment
+
+      // Act
+      const result = addRoleAssignment(roleAssignment, subject, existingMRA)
+
+      // Assert
+      await expect(result.promise).rejects.toThrow('Duplicate role assignment detected.')
+      await expect(result.promise).rejects.toBeInstanceOf(ResourceError)
+    })
   })
 })

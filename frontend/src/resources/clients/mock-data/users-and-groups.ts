@@ -12,6 +12,7 @@ export const mockUsers: User[] = [
     },
     fullName: 'Test User',
     identities: ['htpasswd:test-user'],
+    groups: [],
   },
   {
     apiVersion: UserApiVersion,
@@ -23,6 +24,7 @@ export const mockUsers: User[] = [
     },
     fullName: 'Alice Trask',
     identities: ['ldap:alice.trask', 'htpasswd_provider:alice.trask'],
+    groups: ['kubevirt-admins', 'sre-team'],
   },
   {
     apiVersion: UserApiVersion,
@@ -34,6 +36,7 @@ export const mockUsers: User[] = [
     },
     fullName: 'Bob Levy',
     identities: ['oauth:github:bob.levy'],
+    groups: ['developers'],
   },
   {
     apiVersion: UserApiVersion,
@@ -45,6 +48,7 @@ export const mockUsers: User[] = [
     },
     fullName: 'Charlie Cranston',
     identities: ['oauth:google:charlie.cranston@company.com'],
+    groups: ['developers', 'security-auditors'],
   },
   {
     apiVersion: UserApiVersion,
@@ -56,6 +60,7 @@ export const mockUsers: User[] = [
     },
     fullName: 'Sarah Jones',
     identities: ['ldap:sarah.jones', 'oauth:saml:sarah.jones@enterprise.corp'],
+    groups: ['kubevirt-admins', 'storage-team'],
   },
   {
     apiVersion: UserApiVersion,
@@ -67,6 +72,7 @@ export const mockUsers: User[] = [
     },
     fullName: 'David Brown',
     identities: ['htpasswd_provider:david.brown'],
+    groups: [],
   },
 ]
 

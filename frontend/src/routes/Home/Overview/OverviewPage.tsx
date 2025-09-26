@@ -40,10 +40,12 @@ import {
   ModerateRiskIcon,
 } from '../../Infrastructure/Clusters/ManagedClusters/components/ClusterPolicySidebarIcons'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
+import { KubevirtProviderAlert } from '../../../components/KubevirtProviderAlert'
 import SavedSearchesCard from './components/SavedSearchesCard'
 import SummaryCard from './components/SummaryCard'
 import { SummaryClustersCard } from './components/SummaryClustersCard'
 import { Data, SummaryStatusCard } from './components/SummaryStatusCard'
+import { useVirtualMachineDetection } from '../../../hooks/useVirtualMachineDetection'
 import {
   getAddonHealth,
   getAppTypeSummary,
@@ -303,6 +305,9 @@ export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Re
     return getPolicySummary(policies, filteredClusterNames, allClusters.length, t)
   }, [policies, filteredClusterNames, allClusters.length, t])
 
+  // Check for VirtualMachine resources to conditionally show KubeVirt alert
+  const { hasVirtualMachines } = useVirtualMachineDetection()
+
   // Min width is determined based on how many legend items are in the child donut charts because the legend wraps at 6 items
   const minLegendCardWidth = useMemo(() => {
     const largestlegendSet = Math.max(clusterProviderSummary.length, clusterVersionSummary.length)
@@ -336,6 +341,11 @@ export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Re
   return (
     <AcmScrollable>
       <PageSection>
+        {hasVirtualMachines && (
+          <div style={{ marginBottom: '1rem' }}>
+            <KubevirtProviderAlert variant="search" component="hint" />
+          </div>
+        )}
         <AcmDynamicGrid minSize={minLegendCardWidth}>
           <SummaryClustersCard
             title={t('Clusters')}

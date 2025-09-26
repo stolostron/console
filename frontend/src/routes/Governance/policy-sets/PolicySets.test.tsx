@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render, screen, within } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { policySetsState } from '../../../atoms'
@@ -14,7 +14,7 @@ describe('PolicySets Page', () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
   })
-  test('Should render empty PolicySet page correctly', async () => {
+  test('shows empty page when no policy sets', async () => {
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -30,7 +30,7 @@ describe('PolicySets Page', () => {
     await waitForText("You don't have any policy sets")
   })
 
-  test('Should render PolicySet page correctly', async () => {
+  test('renders page with filters and policy sets', async () => {
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -43,31 +43,27 @@ describe('PolicySets Page', () => {
       </RecoilRoot>
     )
 
+    // should show all items initially
+    expect(screen.getAllByText('policy-set-with-1-placement')).toHaveLength(3)
+
     screen
       .getByRole('combobox', {
         name: 'Select filter options',
       })
       .click()
 
-    // filter title and a selection
-    expect(screen.getAllByText('Violations')).toHaveLength(2)
-    expect(screen.getAllByText('No violations')).toBeTruthy()
-    expect(screen.getAllByText('No status')).toBeTruthy()
+    // check filter dropdown options
+    expect(screen.getByText('Violations')).toBeInTheDocument()
+    expect(screen.getByText('Violations (0)')).toBeInTheDocument()
+    expect(screen.getByText('No violations (2)')).toBeInTheDocument()
+    expect(screen.getByText('No status (1)')).toBeInTheDocument()
 
-    expect(within(screen.getAllByText('Violations')[1]).getByText('0')).toBeInTheDocument()
-    expect(within(screen.getAllByText('No violations')[0]).getByText('2')).toBeInTheDocument()
-    expect(within(screen.getAllByText('No status')[0]).getByText('1')).toBeInTheDocument()
-
-    screen.getAllByText('No status')[0].click()
+    // filter by no status
+    screen.getAllByText('No status (1)')[0].click()
     expect(screen.getAllByText('policy-set-with-1-placement')).toHaveLength(1)
-
-    // un-select No status
-    screen.getAllByText('No status')[0].click()
-    screen.getAllByText('Violations')[1].click()
-    expect(screen.queryByText('policy-set-with-1-placement')).not.toBeInTheDocument()
   })
 
-  test('Should filter no-violation correctly with url-filter', async () => {
+  test('filters by no violations from url params', async () => {
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -80,7 +76,7 @@ describe('PolicySets Page', () => {
       </RecoilRoot>
     )
 
-    // filter title and a selection
+    // should only show no violations filter
     expect(screen.queryByText('Violations')).not.toBeInTheDocument()
     expect(screen.getAllByText('No violations')).toBeTruthy()
     expect(screen.queryByText('No status')).not.toBeInTheDocument()

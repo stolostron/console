@@ -1,4 +1,4 @@
-FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:8d786ab1cda0930d8a040b35a125a2e04fe6446b73af397b20291478141fe244 AS builder
+FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:754490f85d24ed528afaf986fc2df2748fd75e6a2591885f1c84fe267559e6e4 AS builder
 
 USER root
 ENV NPM_CONFIG_NODEDIR=/usr
@@ -7,16 +7,16 @@ WORKDIR /app
 COPY . .
 
 # Running installs concurrently fails on aarch64
-RUN npm ci --omit=optional --unsafe-perm --ignore-scripts --maxsockets=5 --network-concurrency=3
-RUN cd backend && npm ci --omit=optional  --unsafe-perm --ignore-scripts --maxsockets=5 --network-concurrency=3
-RUN cd frontend && npm ci --legacy-peer-deps --unsafe-perm --ignore-scripts --maxsockets=5 --network-concurrency=3
+RUN npm ci --omit=optional --unsafe-perm --ignore-scripts && npm cache clean --force 
+RUN cd backend && npm ci --omit=optional  --unsafe-perm --ignore-scripts && npm cache clean --force
+RUN cd frontend && npm ci --legacy-peer-deps --unsafe-perm --ignore-scripts && npm cache clean --force
 RUN npm run build:backend
-RUN cd frontend && npm run build:plugin:acm --maxsockets=5 --network-concurrency=3
+RUN cd frontend && npm run build:plugin:acm && npm cache clean --force
 
 # Remove build-time dependencies before packaging
-RUN cd backend && npm ci --omit=optional --only=production --unsafe-perm --ignore-scripts --maxsockets=5 --network-concurrency=3
+RUN cd backend && npm ci --omit=optional --only=production --unsafe-perm --ignore-scripts
 
-FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:8d786ab1cda0930d8a040b35a125a2e04fe6446b73af397b20291478141fe244
+FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:754490f85d24ed528afaf986fc2df2748fd75e6a2591885f1c84fe267559e6e4
 
 WORKDIR /app
 ENV NODE_ENV production
@@ -27,6 +27,7 @@ USER 1001
 CMD ["node", "backend.mjs"]
 
 LABEL com.redhat.component="console-container" \
+      url="https://github.com/stolostron/console" \
       name="rhacm2/console-rhel9" \
       summary="console" \
       io.openshift.expose-services="" \

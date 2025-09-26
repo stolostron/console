@@ -40,6 +40,7 @@ import {
 } from '../../overview/ClusterViolationSummary'
 import { useAddRemediationPolicies } from '../../common/useCustom'
 import { useLocalHubName } from '../../../../hooks/use-local-hub'
+import { getTextWidth } from '../../../../ui-components/utils'
 
 function renderDonutChart(
   clusterComplianceSummary: { compliant: string[]; nonCompliant: string[]; pending: string[] },
@@ -68,6 +69,11 @@ function renderDonutChart(
   const legendData: Array<{ name?: string; link?: string }> = formattedData.map((d) => ({
     name: `${d.value} ${d.key}`,
   }))
+  const chartWidth = 450
+  const availableWidth = 0.8 * chartWidth
+  const subtitleText = t('Violation', { count: clusterNonCompliantCount })
+  const subtitleWidth = getTextWidth(subtitleText)
+  const shouldPlaceSubtitleAtBottom = subtitleWidth > availableWidth
 
   return (
     <div style={{ maxHeight: '230px', maxWidth: '450px', marginTop: '-16px', marginBottom: '-16px' }}>
@@ -84,9 +90,11 @@ function renderDonutChart(
         labels={({ datum }) => `${datum.x}: ${datum.y}`}
         padding={{
           right: 300,
+          bottom: shouldPlaceSubtitleAtBottom ? 10 : 0,
         }}
         title={clusterNonCompliantCount.toString()}
         subTitle={t('Violation', { count: clusterNonCompliantCount })}
+        subTitlePosition={shouldPlaceSubtitleAtBottom ? 'bottom' : undefined}
         width={450}
         colorScale={colorThemes.criticalLowSuccess}
       />

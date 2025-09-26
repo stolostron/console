@@ -6,13 +6,13 @@
       "name": "alice-trask-role-assignment-console",
       "namespace": "open-cluster-management-global-set",
       "uid": "314843d9-ad5e-4d9c-9203-ae9553701e44",
-      "labels": { "console-created": "true" }
+      "labels": { "open-cluster-management.io/managed-by": "console" }
     },
     "spec": {
       "subject": { "kind": "User", "name": "alice.trask" },
       "roleAssignments": [
         {
-          "name": "15cd6d23a9e25f7b93ec146e98762da005d8ac4065105c48ced51cdee209be24",
+          "name": "kubevirt.io:admin-15cd6d23a9e25f7b",
           "clusterRole": "kubevirt.io:admin",
           "targetNamespaces": [
             "kubevirt-production",
@@ -26,18 +26,21 @@
             "vm-security",
             "vm-analytics"
           ],
-          "clusterSets": [
-            "production-cluster",
-            "production-east",
-            "production-west",
-            "production-central",
-            "production-backup",
-            "production-dr",
-            "production-monitoring"
-          ]
+          "clusterSelection": {
+            "type": "clusterNames",
+            "clusterNames": [
+              "production-cluster",
+              "production-east",
+              "production-west",
+              "production-central",
+              "production-backup",
+              "production-dr",
+              "production-monitoring"
+            ]
+          }
         },
         {
-          "name": "38441be39ccb822115d03bf0e0466eb14d7292c9854e3fc7ea80ede1559cdf83",
+          "name": "kubevirt.io:admin-38441be39ccb8221",
           "clusterRole": "kubevirt.io:admin",
           "targetNamespaces": [
             "kubevirt-staging",
@@ -49,17 +52,20 @@
             "vm-qa",
             "vm-perf"
           ],
-          "clusterSets": [
-            "staging-cluster",
-            "staging-east",
-            "staging-west",
-            "staging-testing",
-            "staging-preview",
-            "staging-integration"
-          ]
+          "clusterSelection": {
+            "type": "clusterNames",
+            "clusterNames": [
+              "staging-cluster",
+              "staging-east",
+              "staging-west",
+              "staging-testing",
+              "staging-preview",
+              "staging-integration"
+            ]
+          }
         },
         {
-          "name": "89075d2757649172783d5a56afa187de340ad11aad0c2f7ebfb0c8ffb634a76c",
+          "name": "cluster-admin-89075d2757649172",
           "clusterRole": "cluster-admin",
           "targetNamespaces": [
             "openshift-console",
@@ -72,19 +78,22 @@
             "console-networking",
             "console-security"
           ],
-          "clusterSets": [
-            "production-cluster",
-            "production-east",
-            "production-west",
-            "production-central",
-            "staging-cluster",
-            "staging-east",
-            "development-cluster",
-            "testing-cluster"
-          ]
+          "clusterSelection": {
+            "type": "clusterNames",
+            "clusterNames": [
+              "production-cluster",
+              "production-east",
+              "production-west",
+              "production-central",
+              "staging-cluster",
+              "staging-east",
+              "development-cluster",
+              "testing-cluster"
+            ]
+          }
         },
         {
-          "name": "a5f63d56c40bb7bcb3dc731c647239a90aa3cdb11d09c0de45c7e7f4ce4d0e71",
+          "name": "kubevirt.io:edit-a5f63d56c40bb7bc",
           "clusterRole": "kubevirt.io:edit",
           "targetNamespaces": [
             "kubevirt-dev",
@@ -95,17 +104,20 @@
             "vm-prototype",
             "vm-beta"
           ],
-          "clusterSets": [
-            "development-cluster",
-            "dev-east",
-            "dev-west",
-            "experimental-cluster",
-            "research-cluster",
-            "sandbox-cluster"
-          ]
+          "clusterSelection": {
+            "type": "clusterNames",
+            "clusterNames": [
+              "development-cluster",
+              "dev-east",
+              "dev-west",
+              "experimental-cluster",
+              "research-cluster",
+              "sandbox-cluster"
+            ]
+          }
         },
         {
-          "name": "d5429da41807b4f3cfc4f4d7764f684d7d2946a362f8650e641d42a88355a160",
+          "name": "storage-admin-d5429da41807b4f3",
           "clusterRole": "storage-admin",
           "targetNamespaces": [
             "openshift-storage",
@@ -119,30 +131,33 @@
             "storage-monitoring",
             "storage-analytics"
           ],
-          "clusterSets": [
-            "production-cluster",
-            "production-east",
-            "production-west",
-            "staging-cluster",
-            "development-cluster",
-            "storage-primary",
-            "storage-backup",
-            "storage-archive"
-          ]
+          "clusterSelection": {
+            "type": "clusterNames",
+            "clusterNames": [
+              "production-cluster",
+              "production-east",
+              "production-west",
+              "staging-cluster",
+              "development-cluster",
+              "storage-primary",
+              "storage-backup",
+              "storage-archive"
+            ]
+          }
         }
       ]
     },
     "status": {
       "roleAssignments": [
         {
-          "name": "15cd6d23a9e25f7b93ec146e98762da005d8ac4065105c48ced51cdee209be24",
+          "name": "kubevirt.io:admin-15cd6d23a9e25f7b",
           "status": "Error",
           "reason": "permissions don't applied"
         },
-        { "name": "38441be39ccb822115d03bf0e0466eb14d7292c9854e3fc7ea80ede1559cdf83", "status": "Active" },
-        { "name": "89075d2757649172783d5a56afa187de340ad11aad0c2f7ebfb0c8ffb634a76c", "status": "Active" },
-        { "name": "a5f63d56c40bb7bcb3dc731c647239a90aa3cdb11d09c0de45c7e7f4ce4d0e71", "status": "Active" },
-        { "name": "d5429da41807b4f3cfc4f4d7764f684d7d2946a362f8650e641d42a88355a160", "status": "Pending" }
+        { "name": "kubevirt.io:admin-38441be39ccb8221", "status": "Active" },
+        { "name": "cluster-admin-89075d2757649172", "status": "Active" },
+        { "name": "kubevirt.io:edit-a5f63d56c40bb7bc", "status": "Active" },
+        { "name": "storage-admin-d5429da41807b4f3", "status": "Pending" }
       ]
     }
   },
@@ -153,36 +168,45 @@
       "name": "kubevirt-admins-role-assignment-console",
       "namespace": "open-cluster-management-global-set",
       "uid": "7b8c9f2a-5e1d-4a6b-8c3f-9d2e7a5b8c1f",
-      "labels": { "console-created": "true" }
+      "labels": { "open-cluster-management.io/managed-by": "console" }
     },
     "spec": {
       "subject": { "kind": "Group", "name": "kubevirt-admins" },
       "roleAssignments": [
         {
-          "name": "1c62b44f8228851f0d19d83c2fe20342cd040066e9703cd7ffe3a8155bb778be",
+          "name": "kubevirt.io:admin-1c62b44f8228851f",
           "clusterRole": "kubevirt.io:admin",
           "targetNamespaces": ["kubevirt-production"],
-          "clusterSets": ["production-cluster", "staging-cluster"]
+          "clusterSelection": {
+            "type": "clusterNames",
+            "clusterNames": ["production-cluster", "staging-cluster"]
+          }
         },
         {
-          "name": "76a8596a50ec0535d471d1a433e4b2862c5d18e28d8ce9d0d92481b399a6a753",
+          "name": "live-migration-admin-76a8596a50ec0535",
           "clusterRole": "live-migration-admin",
           "targetNamespaces": ["kubevirt-dev", "vm-dev"],
-          "clusterSets": ["development-cluster", "testing-cluster"]
+          "clusterSelection": {
+            "type": "clusterNames",
+            "clusterNames": ["development-cluster", "testing-cluster"]
+          }
         },
         {
-          "name": "8490b172be44b55e700fcc5b65208958bce71ad36caff418cfd9aa4a211dea32",
+          "name": "kubevirt.io:admin-8490b172be44b55e",
           "clusterRole": "kubevirt.io:admin",
           "targetNamespaces": ["kubevirt-test", "vm-test", "storage-test"],
-          "clusterSets": ["testing-cluster"]
+          "clusterSelection": {
+            "type": "clusterNames",
+            "clusterNames": ["testing-cluster"]
+          }
         }
       ]
     },
     "status": {
       "roleAssignments": [
-        { "name": "1c62b44f8228851f0d19d83c2fe20342cd040066e9703cd7ffe3a8155bb778be", "status": "Active" },
-        { "name": "76a8596a50ec0535d471d1a433e4b2862c5d18e28d8ce9d0d92481b399a6a753", "status": "Active" },
-        { "name": "8490b172be44b55e700fcc5b65208958bce71ad36caff418cfd9aa4a211dea32", "status": "Active" }
+        { "name": "kubevirt.io:admin-1c62b44f8228851f", "status": "Active" },
+        { "name": "live-migration-admin-76a8596a50ec0535", "status": "Active" },
+        { "name": "kubevirt.io:admin-8490b172be44b55e", "status": "Active" }
       ]
     }
   },
@@ -193,29 +217,35 @@
       "name": "admin-user-role-assignment-console",
       "namespace": "open-cluster-management-global-set",
       "uid": "2f4a6c8e-3b7d-4e9a-6c2f-8e4a7b9d2c5f",
-      "labels": { "console-created": "true" }
+      "labels": { "open-cluster-management.io/managed-by": "console" }
     },
     "spec": {
       "subject": { "kind": "User", "name": "admin.user" },
       "roleAssignments": [
         {
-          "name": "0ce91c74417862a94a58a0fc11062bfa7f7c17149702af184d1841537cd569fa",
+          "name": "kubevirt.io:admin-0ce91c74417862a9",
           "clusterRole": "kubevirt.io:admin",
           "targetNamespaces": ["kubevirt-production"],
-          "clusterSets": ["production-cluster"]
+          "clusterSelection": {
+            "type": "clusterNames",
+            "clusterNames": ["production-cluster"]
+          }
         },
         {
-          "name": "2f8bbe8b5ef6a39581db893b803f05ec598364736792ec447722aab14d17ae11",
+          "name": "live-migration-admin-2f8bbe8b5ef6a395",
           "clusterRole": "live-migration-admin",
           "targetNamespaces": ["kubevirt-dev", "vm-dev"],
-          "clusterSets": ["development-cluster"]
+          "clusterSelection": {
+            "type": "clusterNames",
+            "clusterNames": ["development-cluster"]
+          }
         }
       ]
     },
     "status": {
       "roleAssignments": [
-        { "name": "0ce91c74417862a94a58a0fc11062bfa7f7c17149702af184d1841537cd569fa", "status": "Active" },
-        { "name": "2f8bbe8b5ef6a39581db893b803f05ec598364736792ec447722aab14d17ae11", "status": "Active" }
+        { "name": "kubevirt.io:admin-0ce91c74417862a9", "status": "Active" },
+        { "name": "live-migration-admin-2f8bbe8b5ef6a395", "status": "Active" }
       ]
     }
   },
@@ -226,29 +256,35 @@
       "name": "bob-levy-role-assignment-console",
       "namespace": "open-cluster-management-global-set",
       "uid": "9e1c5a7f-2d4b-4f8e-1c9a-5f7e2b4d8c1e",
-      "labels": { "console-created": "true" }
+      "labels": { "open-cluster-management.io/managed-by": "console" }
     },
     "spec": {
       "subject": { "kind": "User", "name": "bob.levy" },
       "roleAssignments": [
         {
-          "name": "5cadada1737ce91a85e3e3cbf6e0197e34c12716444947c03a86b004661e2ab1",
+          "name": "kubevirt.io:edit-5cadada1737ce91a",
           "clusterRole": "kubevirt.io:edit",
           "targetNamespaces": ["kubevirt-dev"],
-          "clusterSets": ["development-cluster"]
+          "clusterSelection": {
+            "type": "clusterNames",
+            "clusterNames": ["development-cluster"]
+          }
         },
         {
-          "name": "5500787468230612838782551b244e84ffd75b9eac9f4e7d5536f1a97bd544a0",
+          "name": "kubevirt.io:edit-5500787468230612",
           "clusterRole": "kubevirt.io:edit",
           "targetNamespaces": ["kubevirt-staging", "vm-staging"],
-          "clusterSets": ["staging-cluster"]
+          "clusterSelection": {
+            "type": "clusterNames",
+            "clusterNames": ["staging-cluster"]
+          }
         }
       ]
     },
     "status": {
       "roleAssignments": [
-        { "name": "5cadada1737ce91a85e3e3cbf6e0197e34c12716444947c03a86b004661e2ab1", "status": "Active" },
-        { "name": "5500787468230612838782551b244e84ffd75b9eac9f4e7d5536f1a97bd544a0", "status": "Active" }
+        { "name": "kubevirt.io:edit-5cadada1737ce91a", "status": "Active" },
+        { "name": "kubevirt.io:edit-5500787468230612", "status": "Active" }
       ]
     }
   },
@@ -259,36 +295,45 @@
       "name": "developers-role-assignment-console",
       "namespace": "open-cluster-management-global-set",
       "uid": "5d3e8b2c-7a1f-4e5d-3b8c-2f5e7a1d4b8c",
-      "labels": { "console-created": "true" }
+      "labels": { "open-cluster-management.io/managed-by": "console" }
     },
     "spec": {
       "subject": { "kind": "Group", "name": "developers" },
       "roleAssignments": [
         {
-          "name": "7fb501b5dce60c4e3a519cfa1e8f946eb5b6a1b6ad714fd85537b3eb5072885d",
+          "name": "kubevirt.io:edit-7fb501b5dce60c4e",
           "clusterRole": "kubevirt.io:edit",
           "targetNamespaces": ["kubevirt-dev", "vm-dev", "storage-dev", "networking-dev"],
-          "clusterSets": ["development-cluster"]
+          "clusterSelection": {
+            "type": "clusterNames",
+            "clusterNames": ["development-cluster"]
+          }
         },
         {
-          "name": "635dda6c190a3a6778ba556279544fb8acefbd55d3fc42d722de95da9f102572",
+          "name": "network-admin-635dda6c190a3a67",
           "clusterRole": "network-admin",
           "targetNamespaces": ["kubevirt-dev", "vm-dev", "storage-dev", "networking-dev"],
-          "clusterSets": ["development-cluster"]
+          "clusterSelection": {
+            "type": "clusterNames",
+            "clusterNames": ["development-cluster"]
+          }
         },
         {
-          "name": "d638bbf184da965a1fd95872d4f26142f08e49301dae3655bb1848babd4d03ed",
+          "name": "storage-admin-d638bbf184da965a",
           "clusterRole": "storage-admin",
           "targetNamespaces": ["kubevirt-dev", "vm-dev", "storage-dev", "networking-dev"],
-          "clusterSets": ["development-cluster"]
+          "clusterSelection": {
+            "type": "clusterNames",
+            "clusterNames": ["development-cluster"]
+          }
         }
       ]
     },
     "status": {
       "roleAssignments": [
-        { "name": "7fb501b5dce60c4e3a519cfa1e8f946eb5b6a1b6ad714fd85537b3eb5072885d", "status": "Active" },
-        { "name": "635dda6c190a3a6778ba556279544fb8acefbd55d3fc42d722de95da9f102572", "status": "Active" },
-        { "name": "d638bbf184da965a1fd95872d4f26142f08e49301dae3655bb1848babd4d03ed", "status": "Active" }
+        { "name": "kubevirt.io:edit-7fb501b5dce60c4e", "status": "Active" },
+        { "name": "network-admin-635dda6c190a3a67", "status": "Active" },
+        { "name": "storage-admin-d638bbf184da965a", "status": "Active" }
       ]
     }
   },
@@ -299,23 +344,24 @@
       "name": "intern-dev-role-assignment-console",
       "namespace": "open-cluster-management-global-set",
       "uid": "8c4f2e9a-6b5d-4c8f-2e9a-6d5b8c4f2e9a",
-      "labels": { "console-created": "true" }
+      "labels": { "open-cluster-management.io/managed-by": "console" }
     },
     "spec": {
       "subject": { "kind": "User", "name": "intern.dev" },
       "roleAssignments": [
         {
-          "name": "7fb501b5dce60c4e3a519cfa1e8f946eb5b6a1b6ad714fd85537b3eb5072885d",
+          "name": "kubevirt.io:edit-7fb501b5dce60c4e",
           "clusterRole": "kubevirt.io:edit",
           "targetNamespaces": ["kubevirt-dev", "vm-dev", "storage-dev", "networking-dev"],
-          "clusterSets": ["development-cluster"]
+          "clusterSelection": {
+            "type": "clusterNames",
+            "clusterNames": ["development-cluster"]
+          }
         }
       ]
     },
     "status": {
-      "roleAssignments": [
-        { "name": "7fb501b5dce60c4e3a519cfa1e8f946eb5b6a1b6ad714fd85537b3eb5072885d", "status": "Active" }
-      ]
+      "roleAssignments": [{ "name": "kubevirt.io:edit-7fb501b5dce60c4e", "status": "Active" }]
     }
   },
   {
@@ -325,23 +371,24 @@
       "name": "junior-dev-role-assignment-console",
       "namespace": "open-cluster-management-global-set",
       "uid": "1a9f7e3b-4c6d-4a1f-7e3b-4d6c1a9f7e3b",
-      "labels": { "console-created": "true" }
+      "labels": { "open-cluster-management.io/managed-by": "console" }
     },
     "spec": {
       "subject": { "kind": "User", "name": "junior.dev" },
       "roleAssignments": [
         {
-          "name": "7fb501b5dce60c4e3a519cfa1e8f946eb5b6a1b6ad714fd85537b3eb5072885d",
+          "name": "kubevirt.io:edit-7fb501b5dce60c4e",
           "clusterRole": "kubevirt.io:edit",
           "targetNamespaces": ["kubevirt-dev", "vm-dev", "storage-dev", "networking-dev"],
-          "clusterSets": ["development-cluster"]
+          "clusterSelection": {
+            "type": "clusterNames",
+            "clusterNames": ["development-cluster"]
+          }
         }
       ]
     },
     "status": {
-      "roleAssignments": [
-        { "name": "7fb501b5dce60c4e3a519cfa1e8f946eb5b6a1b6ad714fd85537b3eb5072885d", "status": "Active" }
-      ]
+      "roleAssignments": [{ "name": "kubevirt.io:edit-7fb501b5dce60c4e", "status": "Active" }]
     }
   },
   {
@@ -351,29 +398,35 @@
       "name": "charlie-cranston-role-assignment-console",
       "namespace": "open-cluster-management-global-set",
       "uid": "6e8d2c5a-9f1b-4e6d-2c5a-9b1f6e8d2c5a",
-      "labels": { "console-created": "true" }
+      "labels": { "open-cluster-management.io/managed-by": "console" }
     },
     "spec": {
       "subject": { "kind": "User", "name": "charlie.cranston" },
       "roleAssignments": [
         {
-          "name": "f8258078b0ae5a80a282ad438c8785ec5aaa5accc86eecb5a20cddba361aac97",
+          "name": "kubevirt.io:edit-f8258078b0ae5a80",
           "clusterRole": "kubevirt.io:edit",
           "targetNamespaces": ["edge-workloads", "kubevirt-edge"],
-          "clusterSets": ["edge-cluster-1"]
+          "clusterSelection": {
+            "type": "clusterNames",
+            "clusterNames": ["edge-cluster-1"]
+          }
         },
         {
-          "name": "07a0764a267d9313f25dfe6c014bb6374eb22c7f376b82f203262fd01df1bf38",
+          "name": "kubevirt.io:edit-07a0764a267d9313",
           "clusterRole": "kubevirt.io:edit",
           "targetNamespaces": ["edge-workloads"],
-          "clusterSets": ["edge-cluster-2"]
+          "clusterSelection": {
+            "type": "clusterNames",
+            "clusterNames": ["edge-cluster-2"]
+          }
         }
       ]
     },
     "status": {
       "roleAssignments": [
-        { "name": "f8258078b0ae5a80a282ad438c8785ec5aaa5accc86eecb5a20cddba361aac97", "status": "Active" },
-        { "name": "07a0764a267d9313f25dfe6c014bb6374eb22c7f376b82f203262fd01df1bf38", "status": "Active" }
+        { "name": "kubevirt.io:edit-f8258078b0ae5a80", "status": "Active" },
+        { "name": "kubevirt.io:edit-07a0764a267d9313", "status": "Active" }
       ]
     }
   },
@@ -384,36 +437,45 @@
       "name": "sre-team-role-assignment-console",
       "namespace": "open-cluster-management-global-set",
       "uid": "3f5c8e1d-7a2b-4f3c-8e1d-7b2a3f5c8e1d",
-      "labels": { "console-created": "true" }
+      "labels": { "open-cluster-management.io/managed-by": "console" }
     },
     "spec": {
       "subject": { "kind": "Group", "name": "sre-team" },
       "roleAssignments": [
         {
-          "name": "7ce72391fbd7f3d6d045b252285254b516e987e83e27308470f5e9c98e454721",
+          "name": "kubevirt.io:view-7ce72391fbd7f3d6",
           "clusterRole": "kubevirt.io:view",
           "targetNamespaces": ["kubevirt-production", "monitoring"],
-          "clusterSets": ["production-cluster"]
+          "clusterSelection": {
+            "type": "clusterNames",
+            "clusterNames": ["production-cluster"]
+          }
         },
         {
-          "name": "140faa438b1a5b8ac32a9771ea0d08ce67fa916ae4afbfbd3ba41ff9967a13b1",
+          "name": "kubevirt.io:view-140faa438b1a5b8a",
           "clusterRole": "kubevirt.io:view",
           "targetNamespaces": ["kubevirt-staging", "monitoring"],
-          "clusterSets": ["staging-cluster"]
+          "clusterSelection": {
+            "type": "clusterNames",
+            "clusterNames": ["staging-cluster"]
+          }
         },
         {
-          "name": "bcb41c8233207b7210b038e24e83ee8747fc2e21886bd5f4e2bbaf2a314ec68c",
+          "name": "kubevirt.io:view-bcb41c8233207b72",
           "clusterRole": "kubevirt.io:view",
           "targetNamespaces": ["kubevirt-dev", "monitoring"],
-          "clusterSets": ["development-cluster"]
+          "clusterSelection": {
+            "type": "clusterNames",
+            "clusterNames": ["development-cluster"]
+          }
         }
       ]
     },
     "status": {
       "roleAssignments": [
-        { "name": "7ce72391fbd7f3d6d045b252285254b516e987e83e27308470f5e9c98e454721", "status": "Active" },
-        { "name": "140faa438b1a5b8ac32a9771ea0d08ce67fa916ae4afbfbd3ba41ff9967a13b1", "status": "Active" },
-        { "name": "bcb41c8233207b7210b038e24e83ee8747fc2e21886bd5f4e2bbaf2a314ec68c", "status": "Active" }
+        { "name": "kubevirt.io:view-7ce72391fbd7f3d6", "status": "Active" },
+        { "name": "kubevirt.io:view-140faa438b1a5b8a", "status": "Active" },
+        { "name": "kubevirt.io:view-bcb41c8233207b72", "status": "Active" }
       ]
     }
   },
@@ -424,29 +486,35 @@
       "name": "sarah-jones-role-assignment-console",
       "namespace": "open-cluster-management-global-set",
       "uid": "4b7e9c2f-5d8a-4b7e-9c2f-5a8d4b7e9c2f",
-      "labels": { "console-created": "true" }
+      "labels": { "open-cluster-management.io/managed-by": "console" }
     },
     "spec": {
       "subject": { "kind": "User", "name": "sarah.jones" },
       "roleAssignments": [
         {
-          "name": "c8bd68c98116d021665fe62ed457827f161e00c006538e7a03fce37a3acb8d50",
+          "name": "kubevirt.io:view-c8bd68c98116d021",
           "clusterRole": "kubevirt.io:view",
           "targetNamespaces": ["kubevirt-production", "monitoring", "logging"],
-          "clusterSets": ["production-cluster"]
+          "clusterSelection": {
+            "type": "clusterNames",
+            "clusterNames": ["production-cluster"]
+          }
         },
         {
-          "name": "621909d423958298478c5e86ab5b1d8504a02de427e975ebce52fa1704d00aaf",
+          "name": "kubevirt.io:view-621909d423958298",
           "clusterRole": "kubevirt.io:view",
           "targetNamespaces": ["kubevirt-staging"],
-          "clusterSets": ["staging-cluster"]
+          "clusterSelection": {
+            "type": "clusterNames",
+            "clusterNames": ["staging-cluster"]
+          }
         }
       ]
     },
     "status": {
       "roleAssignments": [
-        { "name": "c8bd68c98116d021665fe62ed457827f161e00c006538e7a03fce37a3acb8d50", "status": "Active" },
-        { "name": "621909d423958298478c5e86ab5b1d8504a02de427e975ebce52fa1704d00aaf", "status": "Active" }
+        { "name": "kubevirt.io:view-c8bd68c98116d021", "status": "Active" },
+        { "name": "kubevirt.io:view-621909d423958298", "status": "Active" }
       ]
     }
   },
@@ -457,33 +525,39 @@
       "name": "security-auditors-role-assignment-console",
       "namespace": "open-cluster-management-global-set",
       "uid": "2c9e6b4f-8a1d-4c2e-6b4f-8d1a2c9e6b4f",
-      "labels": { "console-created": "true" }
+      "labels": { "open-cluster-management.io/managed-by": "console" }
     },
     "spec": {
       "subject": { "kind": "Group", "name": "security-auditors" },
       "roleAssignments": [
         {
-          "name": "26f10cdfc6e71e8dea1a3ca9511402958f7764a11137f27e7640e97a79d9c4b3",
+          "name": "kubevirt.io:view-26f10cdfc6e71e8d",
           "clusterRole": "kubevirt.io:view",
           "targetNamespaces": ["kubevirt-production"],
-          "clusterSets": ["production-cluster"]
+          "clusterSelection": {
+            "type": "clusterNames",
+            "clusterNames": ["production-cluster"]
+          }
         },
         {
-          "name": "c89564b44096eb7ade487f6e419c0c37a2c32c0b48cce6d081a6118926d33fa9",
+          "name": "kubevirt.io:view-c89564b44096eb7a",
           "clusterRole": "kubevirt.io:view",
           "targetNamespaces": ["security", "audit-logs"],
-          "clusterSets": ["security-cluster"]
+          "clusterSelection": {
+            "type": "clusterNames",
+            "clusterNames": ["security-cluster"]
+          }
         }
       ]
     },
     "status": {
       "roleAssignments": [
         {
-          "name": "c89564b44096eb7ade487f6e419c0c37a2c32c0b48cce6d081a6118926d33fa9",
+          "name": "kubevirt.io:view-c89564b44096eb7a",
           "status": "Error",
           "reason": "permissions don't applied"
         },
-        { "name": "26f10cdfc6e71e8dea1a3ca9511402958f7764a11137f27e7640e97a79d9c4b3", "status": "Active" }
+        { "name": "kubevirt.io:view-26f10cdfc6e71e8d", "status": "Active" }
       ]
     }
   },
@@ -494,45 +568,54 @@
       "name": "network-admin-role-assignment-console",
       "namespace": "open-cluster-management-global-set",
       "uid": "7f3a9d5c-2e8b-4f7a-9d5c-2b8e7f3a9d5c",
-      "labels": { "console-created": "true" }
+      "labels": { "open-cluster-management.io/managed-by": "console" }
     },
     "spec": {
       "subject": { "kind": "User", "name": "network.admin" },
       "roleAssignments": [
         {
-          "name": "f33330ad0dfcea02787e76bf764c3bf620cf38d041defadc28bf8e06d4344282",
+          "name": "network-admin-f33330ad0dfcea02",
           "clusterRole": "network-admin",
           "targetNamespaces": ["networking", "ingress"],
-          "clusterSets": ["production-cluster", "staging-cluster"]
+          "clusterSelection": {
+            "type": "clusterNames",
+            "clusterNames": ["production-cluster", "staging-cluster"]
+          }
         },
         {
-          "name": "ecc09134e893c629899defc1373f940ad3aae4ae70dfc63ab2f51734b3dc6b2a",
+          "name": "kubevirt.io:admin-ecc09134e893c629",
           "clusterRole": "kubevirt.io:admin",
           "targetNamespaces": ["networking", "ingress"],
-          "clusterSets": ["production-cluster"]
+          "clusterSelection": {
+            "type": "clusterNames",
+            "clusterNames": ["production-cluster"]
+          }
         },
         {
-          "name": "1c600ef975a114b85ff270b3d8cc93c1e0ea0d6127f731ebc2fdc43919720ea4",
+          "name": "network-admin-1c600ef975a114b8",
           "clusterRole": "network-admin",
           "targetNamespaces": ["networking"],
-          "clusterSets": ["edge-cluster-1", "edge-cluster-2"]
+          "clusterSelection": {
+            "type": "clusterNames",
+            "clusterNames": ["edge-cluster-1", "edge-cluster-2"]
+          }
         }
       ]
     },
     "status": {
       "roleAssignments": [
         {
-          "name": "f33330ad0dfcea02787e76bf764c3bf620cf38d041defadc28bf8e06d4344282",
+          "name": "network-admin-f33330ad0dfcea02",
           "status": "Error",
           "reason": "permissions don't applied"
         },
         {
-          "name": "26f10cdfc6e71e8dea1a3ca9511402958f7764a11137f27e7640e97a79d9c4b3",
+          "name": "kubevirt.io:view-26f10cdfc6e71e8d",
           "status": "Error",
           "reason": "permissions don't applied"
         },
         {
-          "name": "c89564b44096eb7ade487f6e419c0c37a2c32c0b48cce6d081a6118926d33fa9",
+          "name": "kubevirt.io:view-c89564b44096eb7a",
           "status": "Error",
           "reason": "invalid cluster set"
         }
@@ -546,45 +629,54 @@
       "name": "storage-team-role-assignment-console",
       "namespace": "open-cluster-management-global-set",
       "uid": "5e2b8c4a-9f6d-4e5b-8c4a-9d6f5e2b8c4a",
-      "labels": { "console-created": "true" }
+      "labels": { "open-cluster-management.io/managed-by": "console" }
     },
     "spec": {
       "subject": { "kind": "Group", "name": "storage-team" },
       "roleAssignments": [
         {
-          "name": "ae1fbb1f6168da6eeeb16d40a55f1387d03d4d2ef389a4d1b898e925f533cd86",
+          "name": "storage-admin-ae1fbb1f6168da6e",
           "clusterRole": "storage-admin",
           "targetNamespaces": ["storage-system", "csi"],
-          "clusterSets": ["production-cluster", "staging-cluster"]
+          "clusterSelection": {
+            "type": "clusterNames",
+            "clusterNames": ["production-cluster", "staging-cluster"]
+          }
         },
         {
-          "name": "92b695eaf558c074105aea85793963ab5ec6b81bfd0305bf404bda6830fed98a",
+          "name": "kubevirt.io:edit-92b695eaf558c074",
           "clusterRole": "kubevirt.io:edit",
           "targetNamespaces": ["storage-system", "csi"],
-          "clusterSets": ["production-cluster", "staging-cluster"]
+          "clusterSelection": {
+            "type": "clusterNames",
+            "clusterNames": ["production-cluster", "staging-cluster"]
+          }
         },
         {
-          "name": "3b8dd2b7e890941e12b53dec164485452e9135a8348fccbbe52ed56534ef44de",
+          "name": "storage-admin-3b8dd2b7e890941e",
           "clusterRole": "storage-admin",
           "targetNamespaces": ["storage-dev"],
-          "clusterSets": ["development-cluster", "testing-cluster"]
+          "clusterSelection": {
+            "type": "clusterNames",
+            "clusterNames": ["development-cluster", "testing-cluster"]
+          }
         }
       ]
     },
     "status": {
       "roleAssignments": [
         {
-          "name": "ae1fbb1f6168da6eeeb16d40a55f1387d03d4d2ef389a4d1b898e925f533cd86",
+          "name": "storage-admin-ae1fbb1f6168da6e",
           "status": "Error",
           "reason": "permissions don't applied"
         },
         {
-          "name": "92b695eaf558c074105aea85793963ab5ec6b81bfd0305bf404bda6830fed98a",
+          "name": "kubevirt.io:edit-92b695eaf558c074",
           "status": "Error",
           "reason": "permissions don't applied"
         },
         {
-          "name": "3b8dd2b7e890941e12b53dec164485452e9135a8348fccbbe52ed56534ef44de",
+          "name": "storage-admin-3b8dd2b7e890941e",
           "status": "Error",
           "reason": "invalid cluster set"
         }
@@ -598,23 +690,26 @@
       "name": "test-user-role-assignment-console",
       "namespace": "open-cluster-management-global-set",
       "uid": "9a4c7f1e-6b3d-4a9c-7f1e-6d3b9a4c7f1e",
-      "labels": { "console-created": "true" }
+      "labels": { "open-cluster-management.io/managed-by": "console" }
     },
     "spec": {
       "subject": { "kind": "User", "name": "test.user" },
       "roleAssignments": [
         {
-          "name": "466a100c909658b7d940a045684626e9e04136cdb5d057ba782c369e44007985",
+          "name": "kubevirt.io:edit-466a100c909658b7",
           "clusterRole": "kubevirt.io:edit",
           "targetNamespaces": ["shared-workloads"],
-          "clusterSets": ["production-cluster"]
+          "clusterSelection": {
+            "type": "clusterNames",
+            "clusterNames": ["production-cluster"]
+          }
         }
       ]
     },
     "status": {
       "roleAssignments": [
         {
-          "name": "466a100c909658b7d940a045684626e9e04136cdb5d057ba782c369e44007985",
+          "name": "kubevirt.io:edit-466a100c909658b7",
           "status": "Active"
         }
       ]

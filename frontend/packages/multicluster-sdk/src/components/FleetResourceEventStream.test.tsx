@@ -104,7 +104,7 @@ describe('FleetResourceEventStream', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     mockUseHubClusterName.mockReturnValue(['hub-cluster', true, undefined])
-    mockUseFleetK8sAPIPath.mockReturnValue(['/api/proxy/plugin/acm/console/multicloud', true, undefined])
+    mockUseFleetK8sAPIPath.mockReturnValue(['/api/proxy/plugin/mce/console/multicloud', true, undefined])
     mockFleetWatch.mockReturnValue(mockWebSocket)
   })
 
@@ -140,7 +140,7 @@ describe('FleetResourceEventStream', () => {
         ns: 'default',
         fieldSelector: 'involvedObject.uid=test-uid,involvedObject.name=test-pod,involvedObject.kind=Pod',
       }),
-      '/api/proxy/plugin/acm/console/multicloud'
+      '/api/proxy/plugin/mce/console/multicloud'
     )
   })
 

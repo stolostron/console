@@ -43,6 +43,16 @@ import {
 } from '../../Applications/Application.sharedmocks'
 import { SearchResultCountDocument } from '../../Search/search-sdk/search-sdk'
 import OverviewPage from './OverviewPage'
+
+// Mock the useVirtualMachineDetection hook
+jest.mock('../../../hooks/useVirtualMachineDetection', () => ({
+  useVirtualMachineDetection: jest.fn(() => ({
+    hasVirtualMachines: false,
+    isLoading: false,
+    error: undefined,
+    virtualMachines: [],
+  })),
+}))
 import {
   managedClusterInfos,
   managedClusters,

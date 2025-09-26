@@ -9,7 +9,7 @@ import { useYamlEditorHeight } from '../hooks/useYamlEditorHeight'
 interface RBACResourceYamlProps<T> {
   resource: T | undefined
   loading: boolean
-  resourceType: 'User' | 'Group'
+  resourceType: 'User' | 'Group' | 'Role'
 }
 
 const RBACResourceYaml = <T,>({ resource, loading, resourceType }: RBACResourceYamlProps<T>) => {
@@ -24,18 +24,37 @@ const RBACResourceYaml = <T,>({ resource, loading, resourceType }: RBACResourceY
           <AcmLoadingPage />
         </PageSection>
       )
-    case !resource:
+    case !resource: {
+      const getNotFoundMessage = () => {
+        if (resourceType === 'User') return t('User not found')
+        if (resourceType === 'Group') return t('Group not found')
+        return t('Role not found')
+      }
+
       return (
         <PageSection>
-          <div>{resourceType === 'User' ? t('User not found') : t('Group not found')}</div>
+          <div>{getNotFoundMessage()}</div>
         </PageSection>
       )
-    default:
+    }
+    default: {
+      // Reorder the resource to match Kubernetes standard format (first three fields)
+      const orderedResource =
+        resource && typeof resource === 'object'
+          ? {
+              apiVersion: (resource as any).apiVersion,
+              kind: (resource as any).kind,
+              metadata: (resource as any).metadata,
+              ...resource,
+            }
+          : resource
+
       return (
         <PageSection>
-          <YamlEditor resourceYAML={dump(resource, { indent: 2 })} readOnly={true} height={customHeight} />
+          <YamlEditor resourceYAML={dump(orderedResource, { indent: 2 })} readOnly={true} height={customHeight} />
         </PageSection>
       )
+    }
   }
 }
 

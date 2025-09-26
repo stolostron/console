@@ -6,7 +6,7 @@ import { render } from '@testing-library/react'
 import { RecoilRoot } from 'recoil'
 import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind } from '../../../../../resources'
 import { managedClustersState } from '../../../../../atoms'
-import { nockGet } from '../../../../../lib/nock-util'
+import { nockOff } from '../../../../../lib/nock-util'
 
 const t = i18n.t.bind(i18n)
 
@@ -24,18 +24,12 @@ const hubCluster: ManagedCluster = {
 
 const mockClusters = [hubCluster]
 
-const mockPod: any = {
-  apiVersion: 'v1',
-  kind: 'pods',
-  metadata: {
-    namespace: 'feng-hello',
-    name: 'helloworld-app-deploy-6969476b9f-z7cpr',
-  },
-}
-
 describe('YAML Container test', () => {
   beforeEach(async () => {
-    nockGet(mockPod)
+    nockOff(
+      '/api/v1/namespaces/feng-hello/pods/helloworld-app-deploy-6969476b9f-z7cpr/log?container=helloworld-app-container&tailLines=1000',
+      'testLogs'
+    )
   })
   const renderLogsContainer = async (node: any, t: TFunction, renderResourceURLLink: any) => {
     const retResource = render(

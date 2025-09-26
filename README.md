@@ -38,15 +38,15 @@ release-2.10 → backplane-2.5
 
 A number of the core NPM package dependencies are published from other repositories. To allow development of new features in these projects, branches are created each time a new release is started.
 
-| console branch                          | patternfly-labs/react-form-wizard | stolostron/react-data-view |
-| --------------------------------------- | --------------------------------- | -------------------------- |
-| main<br/>release-2.15<br/>backplane-2.10 | no longer used, now integrated   | main                       |
-| release-2.14<br/>backplane-2.9          | v2.7.z                            | v2.4.z                     |
-| release-2.13<br/>backplane-2.8          | v2.4.z                            | v2.3.z                     |
-| release-2.12<br/>backplane-2.7          | v1.32.z                           | v1.15.z                    |
-| release-2.11<br/>backplane-2.6          | v1.29.z                           | v1.14.z                    |
-| release-2.10<br/>backplane-2.5          | v1.27.z                           | v1.13.z                    |
-| release-2.9<br/>backplane-2.4           | v1.26.z                           | v1.12.z                    |
+| console branch                           | patternfly-labs/react-form-wizard | stolostron/react-data-view |
+| ---------------------------------------- | --------------------------------- | -------------------------- |
+| main<br/>release-2.15<br/>backplane-2.10 | no longer used, now integrated    | v2.5.z                     |
+| release-2.14<br/>backplane-2.9           | v2.7.z                            | v2.4.z                     |
+| release-2.13<br/>backplane-2.8           | v2.4.z                            | v2.3.z                     |
+| release-2.12<br/>backplane-2.7           | v1.32.z                           | v1.15.z                    |
+| release-2.11<br/>backplane-2.6           | v1.29.z                           | v1.14.z                    |
+| release-2.10<br/>backplane-2.5           | v1.27.z                           | v1.13.z                    |
+| release-2.9<br/>backplane-2.4            | v1.26.z                           | v1.12.z                    |
 
 ## Running
 

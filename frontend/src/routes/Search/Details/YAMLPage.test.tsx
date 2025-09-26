@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { UseK8sWatchResource } from '@openshift-console/dynamic-plugin-sdk'
-import { useFleetK8sWatchResource } from '@stolostron/multicluster-sdk/lib/api/useFleetK8sWatchResource'
+import { useFleetK8sWatchResource } from '@stolostron/multicluster-sdk'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'

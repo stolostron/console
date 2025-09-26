@@ -88,6 +88,8 @@ describe('Edit Policy Automation', () => {
   })
 
   test('can cancel editing policy automation', async () => {
+    nockAnsibleTower(mockAnsibleCredential, mockTemplateList)
+    nockAnsibleTower(mockAnsibleCredentialWorkflow, mockTemplateList)
     render(<EditPolicyAutomationTest subscriptions={[mockSubscriptionOperator]} />)
     screen.getByRole('button', { name: 'Cancel' }).click()
   })

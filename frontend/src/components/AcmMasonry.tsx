@@ -12,7 +12,7 @@ export function AcmMasonry(props: { minSize: number; maxColumns?: number; childr
   })
   const [span, setSpan] = useState<gridSpans>(12)
 
-  const [sizes, setSizes] = useState<Record<number, number>>({})
+  const [sizes, setSizes] = useState<Record<string, number>>({})
   const [isReady, setIsReady] = useState(false)
   useLayoutEffect(() => {
     switch (columns) {
@@ -44,17 +44,29 @@ export function AcmMasonry(props: { minSize: number; maxColumns?: number; childr
 
   const childrenCount = Children.count(props.children)
 
+  // create a map of child keys to indices for stable identification
+  const childKeyMap = useMemo(() => {
+    const map: Record<string, number> = {}
+    Children.forEach(props.children, (child, index) => {
+      const key =
+        child && typeof child === 'object' && 'key' in child && child.key ? (child.key as string) : `index-${index}`
+      map[key] = index
+    })
+    return map
+  }, [props.children])
+
   useLayoutEffect(() => {
     if (childrenCount === 0) {
       setIsReady(true)
       return
     }
 
-    const measuredCount = Object.keys(sizes).length
-    const allMeasured = measuredCount === childrenCount && measuredCount > 0
+    // check if all current children have been measured
+    const currentChildKeys = Object.keys(childKeyMap)
+    const allMeasured = currentChildKeys.every((key) => sizes[key] !== undefined) && currentChildKeys.length > 0
 
     setIsReady(allMeasured)
-  }, [sizes, childrenCount])
+  }, [sizes, childrenCount, childKeyMap])
 
   const itemColumns = useMemo(() => {
     const itemColumns: ReactNode[][] = new Array(realColumns).fill(0).map(() => [])
@@ -63,12 +75,14 @@ export function AcmMasonry(props: { minSize: number; maxColumns?: number; childr
       const smallest = Math.min(...columnHeights)
       const columnIndex = columnHeights.findIndex((column) => column === smallest)
       if (child && columnIndex !== undefined && columnIndex !== -1) {
+        const childKey =
+          child && typeof child === 'object' && 'key' in child && child.key ? (child.key as string) : `index-${index}`
         itemColumns[columnIndex].push(
-          <MasonryItem key={index} index={index} sizes={sizes} setSizes={setSizes}>
+          <MasonryItem key={childKey} childKey={childKey} sizes={sizes} setSizes={setSizes}>
             {child}
           </MasonryItem>
         )
-        const height = sizes[index]
+        const height = sizes[childKey]
         if (height !== undefined) {
           columnHeights[columnIndex] += height + 16
         }
@@ -93,16 +107,16 @@ export function AcmMasonry(props: { minSize: number; maxColumns?: number; childr
 
 function MasonryItem(props: {
   children?: ReactNode
-  index: number
-  sizes: Record<number, number>
-  setSizes: Dispatch<SetStateAction<Record<number, number>>>
+  childKey: string
+  sizes: Record<string, number>
+  setSizes: Dispatch<SetStateAction<Record<string, number>>>
 }) {
   const target = useRef(null)
   useResizeObserver(target, (entry) => {
     props.setSizes((sizes) => {
-      if (props.sizes[props.index] !== entry.contentRect.height) {
+      if (props.sizes[props.childKey] !== entry.contentRect.height) {
         sizes = { ...sizes }
-        sizes[props.index] = entry.contentRect.height
+        sizes[props.childKey] = entry.contentRect.height
       }
       return sizes
     })

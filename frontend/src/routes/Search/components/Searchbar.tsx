@@ -27,7 +27,7 @@ import { useTranslation } from '../../../lib/acm-i18next'
 import { SavedSearch } from '../../../resources/userpreference'
 import { useSharedAtoms } from '../../../shared-recoil'
 import { AcmButton, AcmChip, AcmChipGroup, AcmToastContext, IAlertContext } from '../../../ui-components'
-import { operators } from '../search-helper'
+import { DropdownSuggestionsProps, operators } from '../search-helper'
 import { SearchResultItemsQuery } from '../search-sdk/search-sdk'
 import { ResourceDefinitions, useSearchDefinitions } from '../searchDefinitions'
 import { generateSearchResultExport } from '../SearchResults/utils'
@@ -36,13 +36,6 @@ import { transformBrowserUrlToSearchString } from '../urlQuery'
 type SearchbarTag = {
   id: string
   name: string
-}
-
-export type DropdownSuggestionsProps = {
-  id: string | number
-  name: string
-  kind?: 'filter' | 'value' | 'label'
-  disabled?: boolean
 }
 
 type SearchbarProps = {
@@ -94,7 +87,7 @@ export const handleCSVExport = (
     savedSearchQueries.find((savedQuery: SavedSearch) => savedQuery.searchText === currentQuery)?.name ?? undefined
   generateSearchResultExport(
     existingSavedSearch
-      ? `${existingSavedSearch.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`
+      ? `${existingSavedSearch.toLowerCase().replaceAll(/\s+/g, '-')}-${Date.now()}`
       : `search-result-${Date.now()}`,
     searchResultData,
     searchDefinitions,
@@ -169,7 +162,7 @@ export function Searchbar(props: Readonly<SearchbarProps>) {
 
   const disableSaveSearch = useMemo(() => {
     return (
-      savedSearchQueries.find((savedQuery: SavedSearch) => savedQuery.searchText === currentQuery) !== undefined ||
+      savedSearchQueries.some((savedQuery: SavedSearch) => savedQuery.searchText === currentQuery) ||
       savedSearchQueries.length >= savedSearchLimit
     )
   }, [currentQuery, savedSearchLimit, savedSearchQueries])
@@ -182,7 +175,7 @@ export function Searchbar(props: Readonly<SearchbarProps>) {
     // both cases need to be handled for backwards compatibility
     const value = typeof input === 'string' ? input : (input.target as HTMLInputElement).value
     const delimiters = [' ', ':', ',']
-    if (delimiters.indexOf(value) < 0) {
+    if (!delimiters.includes(value)) {
       // Delimiters are only used to enter chips - do not allow for entry in input
       setInputValue(value)
     }
@@ -252,9 +245,9 @@ export function Searchbar(props: Readonly<SearchbarProps>) {
     function handleSuggestionMark(currentValue: DropdownSuggestionsProps) {
       if (parsedInputValue.includes('*')) {
         const lowerCaseParsedInput = parsedInputValue.toLowerCase()
-        const replacedSpecialChars = lowerCaseParsedInput.replace(/[/,?_\-.<>:;"'[\]{}\\+=()!&@^#%$]/g, '\\$&') // insert \ before all special characters so Regex doesn't break in processing
+        const replacedSpecialChars = lowerCaseParsedInput.replaceAll(/[/,?_\-.<>:;"'[\]{}\\+=()!&@^#%$]/g, '\\$&') // insert \ before all special characters so Regex doesn't break in processing
         const regex = handlePartialRegex(replacedSpecialChars)
-        const regexMatch = RegExp(regex).exec(currentValue.name.toLowerCase())?.[0] ?? ''
+        const regexMatch = new RegExp(regex).exec(currentValue.name.toLowerCase())?.[0] ?? ''
         if (regexMatch === '') {
           // If match is null -> return item without marks
           return currentValue.name
@@ -281,11 +274,11 @@ export function Searchbar(props: Readonly<SearchbarProps>) {
       .filter((item, index) => {
         if (parsedInputValue.includes('*')) {
           const lowerCaseParsedInput = parsedInputValue.toLowerCase()
-          const replacedSpecialChars = lowerCaseParsedInput.replace(/[/,?_\-.<>:;"'[\]{}\\+=()!&@^#%$]/g, '\\$&') // insert \ before all special characters so Regex doesn't break in processing
+          const replacedSpecialChars = lowerCaseParsedInput.replaceAll(/[/,?_\-.<>:;"'[\]{}\\+=()!&@^#%$]/g, '\\$&') // insert \ before all special characters so Regex doesn't break in processing
           const regex = handlePartialRegex(replacedSpecialChars)
           return (
             index !== 0 && // filter the headerItem suggestion
-            (!inputValue || RegExp(regex).exec(item.name.toLowerCase()))
+            (!inputValue || new RegExp(regex).exec(item.name.toLowerCase()))
           )
         }
         return (
@@ -353,7 +346,7 @@ export function Searchbar(props: Readonly<SearchbarProps>) {
       }
       newQueryTags = convertStringToTags(`${currentQuery}${newChipText}`)
       if (newQueryTags.length > 1) {
-        const lastTag = newQueryTags[newQueryTags.length - 1]
+        const lastTag = newQueryTags.at(-1)
         newQueryTags.forEach((t, idx) => {
           if (idx !== newQueryTags.length - 1 && lastTag && t.name.split(':')[0] === lastTag.name.split(':')[0]) {
             t.name = `${t.name},${lastTag.name.split(':')[1]}`
@@ -365,7 +358,7 @@ export function Searchbar(props: Readonly<SearchbarProps>) {
       newQueryString = newQueryTags.map((t) => t.name).join(' ')
     } else if (
       operators.some((operator: string) => currentQuery.endsWith(operator)) &&
-      !isNaN(parseInt(newChipText, 10))
+      !Number.isNaN(Number.parseInt(newChipText, 10))
     ) {
       // case for user adding a number after operator
       newQueryTags = convertStringToTags(`${currentQuery}${newChipText}`)
@@ -534,7 +527,7 @@ export function Searchbar(props: Readonly<SearchbarProps>) {
           onClick={() => {
             // Needs to suppport vm page refresh...
             // If run search is pressed but the query hasn't changed - we are refetching
-            if (transformBrowserUrlToSearchString(window.location.search).presetSearchQuery === currentQuery) {
+            if (transformBrowserUrlToSearchString(globalThis.location.search).presetSearchQuery === currentQuery) {
               refetchSearch() // if refetching we dont need to update browser url
             } else if (currentQuery !== '' && !currentQuery.endsWith(':')) {
               updateBrowserUrl(navigate, currentQuery)
@@ -592,6 +585,7 @@ export function Searchbar(props: Readonly<SearchbarProps>) {
                 )}
                 isOpen={isExportMenuOpen}
                 isPlain
+                popperProps={{ position: 'right' }} // changes dropdown placement to not go off screen
               >
                 <DropdownItem
                   style={{ width: '10rem' }}
@@ -599,7 +593,7 @@ export function Searchbar(props: Readonly<SearchbarProps>) {
                   onClick={() =>
                     handleCSVExport(currentQuery, savedSearchQueries, searchResultData, searchDefinitions, toast, t)
                   }
-                  isDisabled={window.location.search === ''}
+                  isDisabled={globalThis.location.search === ''}
                 >
                   {t('Export as CSV')}
                 </DropdownItem>

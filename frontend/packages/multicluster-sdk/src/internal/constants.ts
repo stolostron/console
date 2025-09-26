@@ -7,7 +7,7 @@ export const ALERTMANAGER_TENANCY_BASE_PATH = 'api/alertmanager-tenancy' // remo
 export const DEFAULT_PROMETHEUS_SAMPLES = 60
 export const DEFAULT_PROMETHEUS_TIMESPAN = 1000 * 60 * 60
 
-export const BACKEND_URL = '/api/proxy/plugin/acm/console/multicloud'
+export const BACKEND_URL = '/api/proxy/plugin/mce/console/multicloud'
 
 export const BASE_K8S_API_PATH = '/api/kubernetes'
 export const BASE_FLEET_SEARCH_PATH = '/multicloud/search/resources'
@@ -16,3 +16,5 @@ export const MANAGED_CLUSTER_API_PATH = 'managedclusterproxy'
 
 export const NO_FLEET_AVAILABLE_ERROR =
   'A version of RHACM that is compatible with the multicluster SDK is not available'
+
+export const MULTICLUSTER_OBSERVABILITY_NOT_INSTALLED = 'Multicluster observability is not installed on this cluster'

@@ -50,6 +50,8 @@ import {
   AcmSecondaryNavItem,
   Provider,
 } from '../../../../../ui-components'
+import { KubevirtProviderAlert } from '../../../../../components/KubevirtProviderAlert'
+import { useVirtualMachineDetection } from '../../../../../hooks/useVirtualMachineDetection'
 import { ClusterActionDropdown } from '../components/ClusterActionDropdown'
 import { ClusterDestroy } from '../components/ClusterDestroy'
 import { DownloadConfigurationDropdown } from '../components/DownloadConfigurationDropdown'
@@ -178,6 +180,8 @@ export default function ClusterDetailsPage() {
     }
   }, [namespace])
 
+  // Check for VirtualMachine resources on this specific cluster
+  const { hasVirtualMachines } = useVirtualMachineDetection({ clusterName: name })
   const clusterDetailsContext = useMemo<ClusterDetailsContext>(
     () => ({
       cluster,
@@ -312,6 +316,11 @@ export default function ClusterDetailsPage() {
         />
       }
     >
+      {hasVirtualMachines && (
+        <div style={{ marginTop: '1rem', paddingLeft: '1.5rem', paddingRight: '1.5rem' }}>
+          <KubevirtProviderAlert variant="clusterDetails" component="hint" />
+        </div>
+      )}
       <Suspense fallback={<Fragment />}>
         <Outlet context={clusterDetailsContext} />
       </Suspense>
