@@ -3,11 +3,11 @@
 import { render, screen } from '@testing-library/react'
 //import { render, fireEvent, waitFor, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { nockSearch } from '../../lib/nock-util'
+import { nockSearch } from '../../../../../lib/nock-util'
 import {
   mockSearchQuerySearchDisabledManagedClusters,
   mockSearchResponseSearchDisabledManagedClusters,
-} from '../../routes/Applications/Application.sharedmocks'
+} from '../../../Application.sharedmocks'
 
 import { Topology, TopologyProps } from './ResourceTopology'
 const mockProcessactionlink = jest.fn()

@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { cleanResults } from '../../../lib/test-shots'
+import { cleanResults } from '../../../../../../lib/test-shots'
 import * as nodeStyleAPI from './nodeStyle'
 
 describe('nodeStyle tests', () => {

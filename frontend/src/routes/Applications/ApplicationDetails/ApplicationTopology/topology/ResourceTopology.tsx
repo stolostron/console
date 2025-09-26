@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { action } from 'mobx'
 import head from 'lodash/head'
-import { useTranslation } from '../../lib/acm-i18next'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 import {
   TopologyView,
   TopologyControlBar,
@@ -25,21 +25,18 @@ import '@patternfly/patternfly/patternfly-addons.css'
 import componentFactory from './components/componentFactory'
 import { NodeIcons } from './components/nodeIcons'
 import { NodeStatusIcons } from './components/nodeStatusIcons'
-import LegendView from '../../routes/Applications/ApplicationDetails/ApplicationTopology/components/LegendView'
-import DetailsView from '../../routes/Applications/ApplicationDetails/ApplicationTopology/components/DetailsView'
-import {
-  ArgoAppDetailsContainerData,
-  ClusterDetailsContainerData,
-} from '../../routes/Applications/ApplicationDetails/ApplicationTopology/ApplicationTopology'
-import ChannelControl from '../../routes/Applications/ApplicationDetails/ApplicationTopology/components/ChannelControl'
+import LegendView from '../components/LegendView'
+import DetailsView from '../components/DetailsView'
+import { ArgoAppDetailsContainerData, ClusterDetailsContainerData } from '../ApplicationTopology'
+import ChannelControl from '../components/ChannelControl'
 import noop from 'lodash/noop'
 
 import './components/future/topology-components.css'
 import './components/future/topology-controlbar.css'
 import './components/future/topology-view.css'
-import { NavigationPath } from '../../NavigationPath'
-import { querySearchDisabledManagedClusters } from '../../lib/search'
-import { useQuery } from '../../lib/useQuery'
+import { NavigationPath } from '../../../../../NavigationPath'
+import { querySearchDisabledManagedClusters } from '../../../../../lib/search'
+import { useQuery } from '../../../../../lib/useQuery'
 
 export interface TopologyProps {
   elements: {
