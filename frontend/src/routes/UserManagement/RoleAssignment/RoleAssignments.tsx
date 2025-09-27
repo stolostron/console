@@ -62,6 +62,19 @@ const StatusCell = ({ status }: { status?: any }) => <RoleAssignmentStatusCompon
 // Component for rendering created date placeholder
 const CreatedCell = () => <span>-</span>
 
+// Cell renderer functions
+const renderRoleCell = (roleAssignment: FlattenedRoleAssignment) => (
+  <RoleLinkCell roleName={roleAssignment.clusterRole} />
+)
+
+const renderNamespacesCell = (roleAssignment: FlattenedRoleAssignment) => (
+  <NamespacesCell namespaces={roleAssignment.targetNamespaces} />
+)
+
+const renderStatusCell = (roleAssignment: FlattenedRoleAssignment) => <StatusCell status={roleAssignment.status} />
+
+const renderCreatedCell = () => <CreatedCell />
+
 // Component for rendering action dropdown
 const ActionCell = ({
   roleAssignment,
@@ -238,12 +251,21 @@ const RoleAssignments = ({
     [t]
   )
 
+  // Action cell renderer (needs access to component state)
+  const renderActionCell = (roleAssignment: FlattenedRoleAssignment) => (
+    <ActionCell
+      roleAssignment={roleAssignment}
+      setModalProps={setDeleteModalProps}
+      deleteAction={deleteRoleAssignment}
+    />
+  )
+
   // Table columns
   const columns: IAcmTableColumn<FlattenedRoleAssignment>[] = [
     {
       header: t('Role'),
       sort: (a, b) => compareStrings(a.clusterRole, b.clusterRole),
-      cell: (roleAssignment) => <RoleLinkCell roleName={roleAssignment.clusterRole} />,
+      cell: renderRoleCell,
       exportContent: (roleAssignment) => roleAssignment.clusterRole,
       isHidden: hiddenColumns?.includes('role'),
     },
@@ -268,12 +290,18 @@ const RoleAssignments = ({
     },
     {
       header: t('Namespaces'),
-      cell: (roleAssignment) => <NamespacesCell namespaces={roleAssignment.targetNamespaces} />,
+      tooltip: (
+        <span>
+          {t('To see full list of namespaces navigate and use the')} <Link to="/multicloud/search">{t('search')}</Link>{' '}
+          {t('functionality')}.
+        </span>
+      ),
+      cell: renderNamespacesCell,
       exportContent: (roleAssignment) => roleAssignment.targetNamespaces?.join(', ') ?? '',
     },
     {
       header: t('Status'),
-      cell: (roleAssignment) => <StatusCell status={roleAssignment.status} />,
+      cell: renderStatusCell,
       exportContent: (roleAssignment) => roleAssignment.status?.status ?? '',
     },
     {
@@ -282,18 +310,12 @@ const RoleAssignments = ({
       cellTransforms: [nowrap],
       // FlattenedRoleAssignment doesn't have metadata.creationTimestamp
       // We could show the parent MulticlusterRoleAssignment creation time instead
-      cell: () => <CreatedCell />,
+      cell: renderCreatedCell,
       exportContent: () => '',
     },
     {
       header: '',
-      cell: (roleAssignment: FlattenedRoleAssignment) => (
-        <ActionCell
-          roleAssignment={roleAssignment}
-          setModalProps={setDeleteModalProps}
-          deleteAction={deleteRoleAssignment}
-        />
-      ),
+      cell: renderActionCell,
       cellTransforms: [fitContent],
       isActionCol: true,
     },
