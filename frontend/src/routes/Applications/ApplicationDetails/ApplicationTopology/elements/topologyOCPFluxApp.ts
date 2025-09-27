@@ -266,7 +266,7 @@ const addOCPFluxResource = (
         clusterId, // Reference to parent cluster for navigation
       },
       resources, // Individual resource instances
-      resourceCount: (resourceCount || 0) * clusterNames.length, // Total count across clusters
+      resourceCount: (resourceCount || 0) + clusterNames.length, // Total count across clusters
     },
   }
 
