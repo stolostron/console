@@ -1,12 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import React from 'react'
 import { Label, LabelGroup } from '@patternfly/react-core'
 import { useTranslation } from '../../../lib/acm-i18next'
 
 type RoleAssignmentLabelProps = {
   elements?: string[]
   numLabel: number
+  renderElement?: (element: string) => React.ReactNode
 }
-const RoleAssignmentLabel = ({ elements, numLabel }: RoleAssignmentLabelProps) => {
+const RoleAssignmentLabel = ({ elements, numLabel, renderElement }: RoleAssignmentLabelProps) => {
   const { t } = useTranslation()
 
   return elements !== undefined && elements.length > 0 ? (
@@ -15,11 +17,15 @@ const RoleAssignmentLabel = ({ elements, numLabel }: RoleAssignmentLabelProps) =
       expandedText={t('Show less')}
       numLabels={numLabel}
     >
-      {elements?.map((e) => (
-        <Label key={e} style={{ fontSize: '14px' }}>
-          {e}
-        </Label>
-      ))}
+      {elements?.map((e) =>
+        renderElement ? (
+          renderElement(e)
+        ) : (
+          <Label key={e} style={{ fontSize: '14px' }}>
+            {e}
+          </Label>
+        )
+      )}
     </LabelGroup>
   ) : null
 }

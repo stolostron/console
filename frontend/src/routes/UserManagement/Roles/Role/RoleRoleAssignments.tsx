@@ -38,7 +38,7 @@ const RoleRoleAssignments = () => {
     [clusterRoles]
   )
 
-  useEffect(() => setRole(roles?.find((role) => role.uid === id) as Role), [id, roles])
+  useEffect(() => setRole(roles?.find((role) => role.uid === id || role.name === id) as Role), [id, roles])
 
   // TODO: conditionally get role assignments
   const roleAssignments = useFindRoleAssignments({ roles: [role?.name ?? ''] })

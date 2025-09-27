@@ -190,8 +190,8 @@ describe('RoleRoleAssignments', () => {
 
     render(<Component userId="kubevirt.io:edit" />)
 
-    // Verify the component renders without crashing
-    expect(screen.getByText('Back to roles')).toBeInTheDocument()
+    // Verify the component renders without crashing and does NOT show back button when role is found
+    expect(screen.queryByText('Back to roles')).not.toBeInTheDocument()
 
     // The component should render without crashing when role assignments are provided
     // The exact content may vary based on how the component processes the data
@@ -204,8 +204,8 @@ describe('RoleRoleAssignments', () => {
     // Test with network-admin role
     render(<Component userId="network-admin" />)
 
-    // Verify the component renders without crashing
-    expect(screen.getByText('Back to roles')).toBeInTheDocument()
+    // Verify the component renders without crashing and does NOT show back button when role is found
+    expect(screen.queryByText('Back to roles')).not.toBeInTheDocument()
 
     // The component should render without crashing when role assignments are provided
     // The exact content may vary based on how the component processes the data
@@ -215,18 +215,18 @@ describe('RoleRoleAssignments', () => {
     // Keep the default empty array mock - this will show no role assignments
     render(<Component userId="kubevirt.io:edit" />)
 
-    // The component should render without crashing
+    // The component should render without crashing and does NOT show back button when role is found
     // Since we're mocking empty role assignments, it should show no assignments
-    expect(screen.getByText('Back to roles')).toBeInTheDocument()
+    expect(screen.queryByText('Back to roles')).not.toBeInTheDocument()
   })
 
   it('shows loading state correctly', async () => {
     // Keep the default empty array mock - this will show no role assignments
     render(<Component userId="kubevirt.io:edit" />)
 
-    // The component should render without crashing
+    // The component should render without crashing and does NOT show back button when role is found
     // Since we're mocking empty role assignments, it should show no assignments
-    expect(screen.getByText('Back to roles')).toBeInTheDocument()
+    expect(screen.queryByText('Back to roles')).not.toBeInTheDocument()
   })
 
   it('renders loading state when component is actually loading', () => {
