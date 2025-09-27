@@ -290,12 +290,6 @@ const RoleAssignments = ({
     },
     {
       header: t('Namespaces'),
-      tooltip: (
-        <span>
-          {t('To see full list of namespaces navigate and use the')} <Link to="/multicloud/search">{t('search')}</Link>{' '}
-          {t('functionality')}.
-        </span>
-      ),
       cell: renderNamespacesCell,
       exportContent: (roleAssignment) => roleAssignment.targetNamespaces?.join(', ') ?? '',
     },
