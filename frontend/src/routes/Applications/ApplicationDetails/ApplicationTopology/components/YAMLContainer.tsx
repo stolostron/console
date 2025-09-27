@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { TFunction } from 'react-i18next'
-import _ from 'lodash'
 import { Fragment, useEffect, useState } from 'react'
 import { fireManagedClusterView } from '../../../../../resources/managedclusterview'
 import { SyncEditor } from '../../../../../components/SyncEditor/SyncEditor'
@@ -12,23 +11,23 @@ const typesWithoutDefaultName = ['replicaset', 'pod', 'replicationcontroller', '
 
 export interface IYAMLContainerProps {
   node: any
-  containerRef: HTMLDivElement
+  containerRef?: HTMLDivElement
   t: TFunction
   hubClusterName: string
 }
 
 export function YAMLContainer(props: IYAMLContainerProps) {
-  let name = _.get(props.node, 'name', '')
-  let cluster = _.get(props.node, 'cluster', _.get(props.node, 'specs.clustersNames', [''])[0])
-  const remoteArgoCluster = _.get(props.node, 'specs.raw.status.cluster')
+  let name = props.node?.name ?? ''
+  let cluster = props.node?.cluster ?? props.node?.specs?.clustersNames?.[0] ?? ''
+  const remoteArgoCluster = props.node?.specs?.raw?.status?.cluster
   if (remoteArgoCluster) {
     cluster = remoteArgoCluster
   }
-  const namespace = _.get(props.node, 'namespace', '')
-  const type = _.get(props.node, 'type', '')
+  const namespace = props.node?.namespace ?? ''
+  const type = props.node?.type ?? ''
   const kind = type === 'placements' || type === 'placement' ? 'placementdecision' : type
-  let apiVersion = _.get(props.node, 'specs.raw.apiVersion', '') // only works for app definition, for resource we need data from search
-  const isDesign = _.get(props.node, 'specs.isDesign', false)
+  let apiVersion = props.node?.specs?.raw?.apiVersion ?? '' // only works for app definition, for resource we need data from search
+  const isDesign = props.node?.specs?.isDesign ?? false
   const editorTitle = `${kind[0].toUpperCase() + kind.substring(1)} YAML`
   const [resource, setResource] = useState<any>(undefined)
   const [resourceError, setResourceError] = useState({ message: '', stack: '' })
@@ -39,11 +38,11 @@ export function YAMLContainer(props: IYAMLContainerProps) {
     apiVersion = 'project.openshift.io/v1'
   }
   if (typesWithoutDefaultName.includes(type)) {
-    const typeModel = _.get(props.node, `specs.${kind}Model`)
+    const typeModel = props.node?.specs?.[`${kind}Model`]
     if (typeModel && Object.keys(typeModel).length > 0) {
       const modelArray = typeModel[Object.keys(typeModel)[0]]
-      name = _.get(modelArray[0], 'name')
-      cluster = _.get(modelArray[0], 'cluster')
+      name = modelArray[0]?.name
+      cluster = modelArray[0]?.cluster
     }
   }
 
@@ -53,11 +52,11 @@ export function YAMLContainer(props: IYAMLContainerProps) {
   }
 
   if (!apiVersion) {
-    const resourceModel = _.get(props.node, `specs.${kind}Model`)
+    const resourceModel = props.node?.specs?.[`${kind}Model`]
     if (resourceModel && Object.keys(resourceModel).length > 0) {
       const modelArray = resourceModel[Object.keys(resourceModel)[0]]
-      const apigroup = _.get(modelArray[0], 'apigroup')
-      const apiver = _.get(modelArray[0], 'apiversion')
+      const apigroup = modelArray[0]?.apigroup
+      const apiver = modelArray[0]?.apiversion
       apiVersion = apigroup ? apigroup + '/' + apiver : apiver
     }
   }

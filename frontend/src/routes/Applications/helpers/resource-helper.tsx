@@ -31,7 +31,7 @@ import {
   SubscriptionKind,
 } from '../../../resources'
 import { Cluster } from '../../../resources/utils'
-import { getArgoDestinationCluster } from '../ApplicationDetails/ApplicationTopology/model/topologyArgo'
+import { getArgoDestinationCluster } from '../ApplicationDetails/ApplicationTopology/elements/topologyArgo'
 import { getSubscriptionAnnotations, isLocalSubscription } from './subscriptions'
 import AcmTimestamp from '../../../lib/AcmTimestamp'
 
@@ -91,13 +91,13 @@ export const getArgoClusterList = (
           getArgoDestinationCluster(
             resource.spec.destination,
             managedClusters,
-            resource.status?.cluster,
-            localCluster?.name
+            resource.status?.cluster ?? '',
+            localCluster?.name ?? ''
           )
         )
       } else {
         clusterSet.add(
-          getArgoDestinationCluster(resource.spec.destination, managedClusters, undefined, localCluster?.name)
+          getArgoDestinationCluster(resource.spec.destination, managedClusters, undefined, localCluster?.name ?? '')
         )
       }
     }

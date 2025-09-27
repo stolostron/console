@@ -118,7 +118,7 @@ describe('DetailsView no components', () => {
         processActionLink={mockData.processActionLink}
         nodes={laidoutNodes}
         t={t}
-        options={mockData.staticResourceData}
+        nodeDetailsProvider={mockNodeDetails}
       />
     )
 
@@ -797,14 +797,16 @@ describe('DetailsView 1 pod details', () => {
         processActionLink={mockData.processActionLink}
         nodes={mockLaidoutNodes.laidoutNodes}
         t={t}
-        options={mockData.staticResourceData}
+        nodeDetailsProvider={mockNodeDetails}
       />
     )
 
     await waitForText('Cluster')
   })
 
-  it('render as expected', () => {
+  it('render as expected', async () => {
+    await new Promise((resolve) => setTimeout(resolve, 500))
+    screen.logTestingPlaygroundURL()
     expect(screen.getByText('deployment')).toBeTruthy()
   })
 })

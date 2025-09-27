@@ -53,11 +53,12 @@ import { searchClient } from '../../Search/search-sdk/search-client'
 import { useSearchCompleteQuery } from '../../Search/search-sdk/search-sdk'
 import { DeleteResourceModal, IDeleteResourceModalProps } from '../components/DeleteResourceModal'
 import { getAppChildResources, getSearchLink, isResourceTypeOf } from '../helpers/resource-helper'
-import { getApplication } from './ApplicationTopology/model/application'
-import { getResourceStatuses } from './ApplicationTopology/model/resourceStatuses'
-import { getTopology } from './ApplicationTopology/model/topology'
-import { getApplicationData } from './ApplicationTopology/model/utils'
+import { getApplication } from './ApplicationTopology/common/application'
+import { getTopology } from './ApplicationTopology/elements/topology'
+import { getApplicationData } from './ApplicationTopology/elements/topologyUtils'
 import { useLocalHubName } from '../../../hooks/use-local-hub'
+import { RecoilStates } from './ApplicationTopology/types'
+import { getResourceStatuses } from './ApplicationTopology/statuses/computeStatuses'
 
 export const ApplicationContext = createContext<{
   readonly actions: null | ReactNode
@@ -392,7 +393,7 @@ export default function ApplicationDetailsPage() {
             name,
             backendUrl,
             activeChannel,
-            recoilStates,
+            recoilStates as unknown as RecoilStates,
             cluster,
             apiVersion,
             clusters
@@ -421,7 +422,7 @@ export default function ApplicationDetailsPage() {
                 appData,
               })
               setActiveChannel(application ? application.activeChannel : '')
-              setAllChannels(application ? application.channels : [])
+              setAllChannels(application && application.channels ? application.channels : [])
             }
 
             // from then on, only refresh topology with new statuses
@@ -441,8 +442,8 @@ export default function ApplicationDetailsPage() {
               appData: appDataWithStatuses,
               statuses: resourceStatuses,
             })
-            setActiveChannel(application.activeChannel)
-            setAllChannels(application.channels)
+            setActiveChannel(application?.activeChannel ?? '')
+            setAllChannels(application?.channels ?? [])
             lastRefreshRef.current = { application, resourceStatuses, relatedResources }
           }
         })()

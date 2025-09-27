@@ -36,7 +36,7 @@ import {
 import { reconcileResources, updateAppResources } from '../../../resources/utils'
 import './style.css'
 import { getApplicationResources } from './transformers/transform-data-to-resources'
-import { getApplication } from '../ApplicationDetails/ApplicationTopology/model/application'
+import { getApplication } from '../ApplicationDetails/ApplicationTopology/common/application'
 // Template Data
 import { controlData as getControlData } from './controlData/ControlData'
 import createTemplate from './templates/template.hbs'

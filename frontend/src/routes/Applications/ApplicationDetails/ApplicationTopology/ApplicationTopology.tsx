@@ -6,13 +6,14 @@ import { useContext, useEffect, useState } from 'react'
 import { Topology } from './topology/Topology'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { useApplicationDetailsContext } from '../ApplicationDetails'
-import { processResourceActionLink } from './helpers/diagram-helpers'
-import { getDiagramElements } from './model/topology'
-import { getOptions } from './options'
+import { processResourceActionLink } from './elements/helpers/diagram-helpers'
+import { getDiagramElements } from './elements/topology'
 import { DrawerShapes } from './components/DrawerShapes'
 import './ApplicationTopology.css'
 import './components/Drawer.css'
 import './components/Toolbar.css'
+import { ArgoApp, ClusterDetailsContainerControl } from './types'
+import { nodeDetailsProvider } from './components/NodeDetailsProvider'
 
 export type ArgoAppDetailsContainerData = {
   page: number
@@ -20,7 +21,7 @@ export type ArgoAppDetailsContainerData = {
   argoAppSearchToggle: boolean
   expandSectionToggleMap: Set<number>
   selected?: any
-  selectedArgoAppList: []
+  selectedArgoAppList: ArgoApp[]
   isLoading: boolean
 }
 
@@ -52,7 +53,6 @@ export function ApplicationTopologyPageContent() {
     hubClusterName = topology.hubClusterName
   }
   const { setDrawerContext } = useContext(AcmDrawerContext)
-  const [options] = useState<any>(getOptions())
   const [elements, setElements] = useState<{
     nodes: any[]
     links: any[]
@@ -67,7 +67,6 @@ export function ApplicationTopologyPageContent() {
     selectedArgoAppList: [],
     isLoading: false,
   })
-
   const [clusterDetailsContainerData, setClusterDetailsContainerData] = useState<ClusterDetailsContainerData>({
     page: 1,
     startIdx: 0,
@@ -114,19 +113,19 @@ export function ApplicationTopologyPageContent() {
     handleErrorMsg,
   }
 
-  const clusterDetailsContainerControl = {
+  const clusterDetailsContainerControl: ClusterDetailsContainerControl = {
     clusterDetailsContainerData,
     handleClusterDetailsContainerUpdate: setClusterDetailsContainerData,
   }
 
-  const processActionLink = (resource: any, toggleLoading: boolean, hubClusterName: string) => {
+  const processActionLink = (resource: any, toggleLoading: () => void, hubClusterName: string) => {
     processResourceActionLink(resource, toggleLoading, t, hubClusterName)
   }
 
   const canUpdateStatuses = !!statuses
   useEffect(() => {
     if (application && appData && topology) {
-      setElements(cloneDeep(getDiagramElements(appData, cloneDeep(topology), statuses, canUpdateStatuses, t)))
+      setElements(cloneDeep(getDiagramElements(cloneDeep(topology), statuses, canUpdateStatuses, t)))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshTime])
@@ -141,7 +140,7 @@ export function ApplicationTopologyPageContent() {
         argoAppDetailsContainerControl={argoAppDetailsContainerControl}
         clusterDetailsContainerControl={clusterDetailsContainerControl}
         channelControl={channelControl}
-        options={options}
+        nodeDetailsProvider={nodeDetailsProvider}
         setDrawerContent={setDrawerContent}
         hubClusterName={hubClusterName}
       />

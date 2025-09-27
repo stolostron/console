@@ -31,8 +31,9 @@ export interface ArgoSource {
 }
 
 type ArgoApplicationStatus = {
-  cluster: string
-  resourceName: string
+  cluster?: string
+  resourceName?: string
+  [key: string]: unknown
 }
 
 export interface ArgoApplication extends IResource {
