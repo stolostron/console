@@ -60,7 +60,11 @@ const NamespacesCell = ({ namespaces }: { namespaces?: string[] }) => (
 const StatusCell = ({ status }: { status?: any }) => <RoleAssignmentStatusComponent status={status} />
 
 // Component for rendering created date placeholder
-const CreatedCell = () => <span>-</span>
+const CreatedCell = () => {
+  // FlattenedRoleAssignment doesn't have metadata.creationTimestamp
+  // Show dash since this data is not available at the flattened level
+  return <span>-</span>
+}
 
 // Cell renderer functions
 const renderRoleCell = (roleAssignment: FlattenedRoleAssignment) => (
@@ -74,6 +78,11 @@ const renderNamespacesCell = (roleAssignment: FlattenedRoleAssignment) => (
 const renderStatusCell = (roleAssignment: FlattenedRoleAssignment) => <StatusCell status={roleAssignment.status} />
 
 const renderCreatedCell = () => <CreatedCell />
+
+const renderClustersCell = (roleAssignment: FlattenedRoleAssignment) => {
+  const clusterNames = roleAssignment.clusterSelection?.clusterNames || []
+  return <ClusterLinksCell clusterNames={clusterNames} />
+}
 
 // Component for rendering action dropdown
 const ActionCell = ({
@@ -278,10 +287,7 @@ const RoleAssignments = ({
     },
     {
       header: t('Clusters'),
-      cell: (roleAssignment) => {
-        const clusterNames = roleAssignment.clusterSelection?.clusterNames || []
-        return <ClusterLinksCell clusterNames={clusterNames} />
-      },
+      cell: renderClustersCell,
       exportContent: (roleAssignment) => {
         const clusterNames = roleAssignment.clusterSelection?.clusterNames || []
         return clusterNames.join(', ')
