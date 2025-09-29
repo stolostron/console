@@ -218,7 +218,7 @@ const RoleAssignments = ({
       isHidden: hiddenColumns?.includes('subject'),
     },
     {
-      header: t('Scope Cluster'),
+      header: t('Clusters'),
       cell: (roleAssignment) => {
         const clusterNames = roleAssignment.clusterSelection?.clusterNames || []
         return <RoleAssignmentLabel elements={clusterNames} numLabel={3} />

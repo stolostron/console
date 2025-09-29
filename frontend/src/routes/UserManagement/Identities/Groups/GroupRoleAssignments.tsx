@@ -92,7 +92,7 @@ const GroupRoleAssignments = () => {
         <RoleAssignments
           roleAssignments={roleAssignments}
           isLoading={isLoading}
-          hiddenColumns={['subject']}
+          hiddenColumns={['subject', 'name']}
           preselected={{ subject: { kind: GroupKind, value: group?.metadata.name } }}
         />
       )
