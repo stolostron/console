@@ -26,32 +26,62 @@ import { getOnlineClusters, getPulseStatusForSubscription } from '../model/compu
 
 import { syncControllerRevisionPodStatusMap } from '../model/topologyDetails'
 
+import type {
+  NodeLike,
+  ResourceItem,
+  ResourceMap,
+  ClusterInfo,
+  TopologyNode,
+  StatusType,
+  SubscriptionItem,
+  ResourceItemWithStatus,
+  Topology,
+} from '../types'
+
 describe('mustRefreshTopologyMap', () => {
   const updatedTime = 1621025105756
-  const topo = {
+  const topo: Topology = {
     nodes: [
       {
+        name: 'test-app',
+        namespace: 'default',
         type: 'application',
+        id: 'application',
+        uid: 'app-uid',
+        specs: {},
       },
     ],
+    links: [],
   }
 
-  const topo1 = {
+  const topo1: Topology = {
     nodes: [
       {
+        name: 'test-app',
+        namespace: 'default',
         type: 'application',
+        id: 'application',
+        uid: 'app-uid',
+        specs: {},
         _lastUpdated: 11111,
       },
     ],
+    links: [],
   }
 
-  const topo2 = {
+  const topo2: Topology = {
     nodes: [
       {
+        name: 'test-app',
+        namespace: 'default',
         type: 'application',
+        id: 'application',
+        uid: 'app-uid',
+        specs: {},
         _lastUpdated: updatedTime,
       },
     ],
+    links: [],
   }
 
   it('must call update, updated time is not set on the app node', () => {
@@ -86,7 +116,7 @@ describe('allClustersAreOnline', () => {
 })
 
 describe('getResourcesClustersForApp', () => {
-  const searchClusters = {
+  const searchClusters: { items: ClusterInfo[] } = {
     items: [
       {
         name: 'local-cluster',
@@ -105,16 +135,21 @@ describe('getResourcesClustersForApp', () => {
       },
     ],
   }
-  const nodesWithPlacementOnLocal = [
+  const nodesWithPlacementOnLocal: TopologyNode[] = [
     {
       name: 'rootApp',
+      namespace: 'default',
       type: 'application',
       id: 'application',
+      uid: 'app-uid',
+      specs: {},
     },
     {
       name: 'placementrule',
+      namespace: 'default',
       type: 'placements',
       id: 'member--rule--placement',
+      uid: 'placement-uid',
       specs: {
         raw: {
           status: {
@@ -133,16 +168,21 @@ describe('getResourcesClustersForApp', () => {
       },
     },
   ]
-  const nodesWithoutPlacementOnLocal = [
+  const nodesWithoutPlacementOnLocal: TopologyNode[] = [
     {
       name: 'rootApp',
+      namespace: 'default',
       type: 'application',
       id: 'application',
+      uid: 'app-uid',
+      specs: {},
     },
     {
       name: 'placementrule',
+      namespace: 'default',
       type: 'placements',
       id: 'member--rule--placement',
+      uid: 'placement-uid',
       specs: {
         raw: {
           status: {
@@ -157,16 +197,21 @@ describe('getResourcesClustersForApp', () => {
       },
     },
   ]
-  const nodesWithoutPlacementOnLocalAsDeployable = [
+  const nodesWithoutPlacementOnLocalAsDeployable: TopologyNode[] = [
     {
       name: 'rootApp',
+      namespace: 'default',
       type: 'application',
       id: 'application',
+      uid: 'app-uid',
+      specs: {},
     },
     {
       name: 'placementrule',
+      namespace: 'default',
       type: 'placements',
       id: 'member--deployable--placement',
+      uid: 'placement-uid',
       specs: {
         raw: {
           status: {
@@ -181,14 +226,17 @@ describe('getResourcesClustersForApp', () => {
       },
     },
   ]
-  const nodesWithNoPlacement = [
+  const nodesWithNoPlacement: TopologyNode[] = [
     {
       name: 'rootApp',
+      namespace: 'default',
       type: 'application',
       id: 'application',
+      uid: 'app-uid',
+      specs: {},
     },
   ]
-  const resultWithoutLocalCluster = [
+  const resultWithoutLocalCluster: ClusterInfo[] = [
     {
       name: 'ui-managed',
       consoleURL: 'https://console-openshift-console.apps.app-abcd.managed.com',
@@ -228,17 +276,17 @@ describe('getResourcesClustersForApp', () => {
 })
 
 describe('getTargetNsForNode', () => {
-  const v1 = {
+  const v1: ResourceItem = {
     cluster: 'local-cluster',
     kind: 'namespace',
     name: 'helloworld-123',
   }
-  const v2 = {
+  const v2: ResourceItem = {
     cluster: 'local-cluster',
     kind: 'namespace',
     name: 'helloworld-456',
   }
-  const inputNodeNS = {
+  const inputNodeNS: NodeLike = {
     id: 'member--member--deployable--member--clusters--local-cluster--vb-crash-ns--vb-app-crash-subscription-1-seeds-managed-acm-hello-world-helloworld-namespace--namespace--helloworld',
     name: 'helloworld',
     clusters: {
@@ -295,12 +343,12 @@ describe('getTargetNsForNode', () => {
     ])
   })
 
-  const clusterRole = {
+  const clusterRole: ResourceItem = {
     cluster: 'local-cluster',
     kind: 'clusterrole',
     name: 'clusterrole-helloworld-456',
   }
-  const inputNodeClusterRole = {
+  const inputNodeClusterRole: NodeLike = {
     id: 'member--member--deployable--member--clusters--local-cluster--vb-crash-ns--vb-app-crash-subscription-1-seeds-managed-acm-hello-world-helloworld-namespace--clusterrole--helloworld',
     name: 'helloworld',
     clusters: {
@@ -355,7 +403,7 @@ describe('getTargetNsForNode', () => {
     ])
   })
 
-  const polModel = {
+  const polModel: ResourceMap = {
     'openshift-gitops-installed-local-cluster': [
       {
         name: 'openshift-gitops-installed',
@@ -366,7 +414,7 @@ describe('getTargetNsForNode', () => {
     ],
   }
 
-  const inputNodePolicy = {
+  const inputNodePolicy: NodeLike = {
     id: 'member--member--deployable--member--clusters--local-cluster--vb-crash-ns--vb-app-crash-subscription-1-seeds-managed-configuration-openshift-gitops-installed-policy--policy--openshift-gitops-installed',
     uid: 'member--member--deployable--member--clusters--local-cluster--vb-crash-ns--vb-app-crash-subscription-1-seeds-managed-configuration-openshift-gitops-installed-policy--policy--openshift-gitops-installed',
     name: 'openshift-gitops-installed',
@@ -419,7 +467,7 @@ describe('getTargetNsForNode', () => {
 })
 
 describe('updateAppClustersMatchingSearch', () => {
-  const searchClusters = [
+  const searchClusters: ClusterInfo[] = [
     {
       name: 'local-cluster',
       consoleURL: 'https://console-openshift-console.apps.app-abcd.com',
@@ -436,7 +484,7 @@ describe('updateAppClustersMatchingSearch', () => {
       name: 'fxiang-eks',
     },
   ]
-  const clsNode1 = {
+  const clsNode1: NodeLike = {
     id: 'member--clusters--feng',
     specs: {
       appClusters: ['local-cluster', 'ui-managed'],
@@ -446,7 +494,7 @@ describe('updateAppClustersMatchingSearch', () => {
       },
     },
   }
-  const resultNode1 = {
+  const resultNode1: NodeLike = {
     id: 'member--clusters--feng',
     specs: {
       appClusters: ['local-cluster', 'ui-managed'],
@@ -463,7 +511,7 @@ describe('updateAppClustersMatchingSearch', () => {
 })
 
 describe('getOnlineClusters', () => {
-  const inputNodeOffLineRemote = {
+  const inputNodeOffLineRemote: NodeLike = {
     id: 'member--clusters--',
     specs: {
       searchClusters: [
@@ -479,7 +527,7 @@ describe('getOnlineClusters', () => {
       clustersNames: ['local-cluster', 'ui-managed'],
     },
   }
-  const inputNodeAllAvailable = {
+  const inputNodeAllAvailable: NodeLike = {
     id: 'member--clusters--',
     specs: {
       searchClusters: [
@@ -495,7 +543,7 @@ describe('getOnlineClusters', () => {
       clustersNames: ['local-cluster', 'ui-managed'],
     },
   }
-  const inputNodeLocalNotSet = {
+  const inputNodeLocalNotSet: NodeLike = {
     id: 'member--clusters--',
     specs: {
       searchClusters: [
@@ -520,7 +568,7 @@ describe('getOnlineClusters', () => {
 
 describe('getClusterName node returns clustersNames', () => {
   it('should return empty string', () => {
-    const clsNode1 = {
+    const clsNode1: NodeLike = {
       id: 'member--clusters--feng,feng2--',
       specs: {
         clustersNames: ['local-cluster', 'ui-managed'],
@@ -532,7 +580,7 @@ describe('getClusterName node returns clustersNames', () => {
 
 describe('getClusterName node returns union of clustersNames and appClusters', () => {
   it('should return empty string', () => {
-    const clsNode1 = {
+    const clsNode1: NodeLike = {
       id: 'member--clusters--feng,feng2--',
       clusters: {
         specs: {
@@ -549,7 +597,7 @@ describe('getClusterName node returns union of clustersNames and appClusters', (
 
 describe('getClusterName node clusters from nodeId', () => {
   it('should return empty string', () => {
-    const clsNode1 = {
+    const clsNode1: NodeLike = {
       id: 'member--clusters--feng,feng2--',
       clusters: {
         specs: {
@@ -560,13 +608,13 @@ describe('getClusterName node clusters from nodeId', () => {
         clustersNames: ['local-cluster', 'ui-managed'],
       },
     }
-    expect(getClusterName(clsNode1.id)).toEqual('feng,feng2')
+    expect(getClusterName(clsNode1.id, undefined, undefined, 'local-cluster')).toEqual('feng,feng2')
   })
 })
 
 describe('getClusterName node clusters from nodeId, local cluster', () => {
   it('should return empty string', () => {
-    const clsNode1 = {
+    const clsNode1: NodeLike = {
       id: 'member--',
       clusters: {
         specs: {
@@ -588,7 +636,7 @@ describe('nodeMustHavePods undefined data', () => {
 })
 
 describe('nodeMustHavePods node with no pods data', () => {
-  const node = {
+  const node: NodeLike = {
     type: 'daemonset1',
     specs: {
       raw: {
@@ -602,7 +650,7 @@ describe('nodeMustHavePods node with no pods data', () => {
 })
 
 describe('nodeMustHavePods node with replicas', () => {
-  const node = {
+  const node: NodeLike = {
     type: 'daemonset3',
     specs: {
       raw: {
@@ -618,7 +666,7 @@ describe('nodeMustHavePods node with replicas', () => {
 })
 
 describe('nodeMustHavePods node has desired', () => {
-  const node = {
+  const node: NodeLike = {
     type: 'daemonset',
     specs: {
       raw: {
@@ -634,7 +682,7 @@ describe('nodeMustHavePods node has desired', () => {
 })
 
 describe('nodeMustHavePods node with pods data', () => {
-  const node = {
+  const node: NodeLike = {
     type: 'deployment',
     specs: {
       raw: {
@@ -657,7 +705,7 @@ describe('nodeMustHavePods node with pods data', () => {
   })
 })
 describe('nodeMustHavePods node with pods POD object', () => {
-  const node = {
+  const node: NodeLike = {
     type: 'pod',
   }
   it('nodeMustHavePods POD object', () => {
@@ -666,7 +714,7 @@ describe('nodeMustHavePods node with pods POD object', () => {
 })
 
 describe('nodeMustHavePods controllerrevision node with VM parent type', () => {
-  const node = {
+  const node: NodeLike = {
     specs: {
       parent: {
         parentType: 'virtualmachine',
@@ -680,7 +728,7 @@ describe('nodeMustHavePods controllerrevision node with VM parent type', () => {
 })
 
 describe('isDeployableResource for regular subscription', () => {
-  const node = {
+  const node: NodeLike = {
     id: 'member--subscription--default--mortgagedc-subscription',
     name: 'mortgagedcNOStatus',
     specs: {
@@ -699,7 +747,7 @@ describe('isDeployableResource for regular subscription', () => {
 })
 
 describe('isDeployableResource for deployable subscription', () => {
-  const node = {
+  const node: NodeLike = {
     id: 'member--member--deployable--member--clusters--birsan2-remote--default--val-op-subscription-1-tmp-val-op-subscription-1-main-operators-config-cert-manager-operator-rhmp-test-subscription--subscription--cert-manager-operator-rhmp-test',
     name: 'cert-manager-operator-rhmp-test',
     namespace: 'default',
@@ -720,7 +768,7 @@ describe('isDeployableResource for deployable subscription', () => {
 })
 
 describe('getRouteNameWithoutIngressHash', () => {
-  const node = {
+  const node: ResourceItem = {
     apigroup: 'apps.open-cluster-management.io',
     apiversion: 'v1',
     channel: 'ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples',
@@ -745,12 +793,12 @@ describe('getRouteNameWithoutIngressHash', () => {
   }
 
   it('returns same name since this is not Route object', () => {
-    expect(getRouteNameWithoutIngressHash(node, node.name)).toEqual(node.name)
+    expect(getRouteNameWithoutIngressHash(node, node.name as string)).toEqual(node.name)
   })
 })
 
 describe('getRouteNameWithoutIngressHash', () => {
-  const node = {
+  const node: ResourceItem = {
     apigroup: 'route.openshift.io',
     apiversion: 'v1',
     cluster: 'local-cluster',
@@ -767,12 +815,12 @@ describe('getRouteNameWithoutIngressHash', () => {
   }
 
   it('returns name without hash since this is a Route object generated from Ingress', () => {
-    expect(getRouteNameWithoutIngressHash(node, node.name)).toEqual('nginx-virtual-host-ingress-placement')
+    expect(getRouteNameWithoutIngressHash(node, node.name as string)).toEqual('nginx-virtual-host-ingress-placement')
   })
 })
 
 describe('getRouteNameWithoutIngressHash', () => {
-  const node = {
+  const node: ResourceItem = {
     apigroup: 'route.openshift.io',
     apiversion: 'v1',
     cluster: 'local-cluster',
@@ -789,13 +837,13 @@ describe('getRouteNameWithoutIngressHash', () => {
   }
 
   it('returns same name since this is a Route object but not generated by Ingress', () => {
-    expect(getRouteNameWithoutIngressHash(node, node.name)).toEqual('nginx')
+    expect(getRouteNameWithoutIngressHash(node, node.name as string)).toEqual('nginx')
   })
 })
 
 describe('getOnlineCluster ok and pending', () => {
   //const clusterNamesA = ["cluster1", "cluster2", "cluster3"];
-  const clusterObjs = [
+  const clusterObjs: ClusterInfo[] = [
     {
       metadata: {
         name: 'cluster1',
@@ -815,7 +863,7 @@ describe('getOnlineCluster ok and pending', () => {
       status: 'offline',
     },
   ]
-  const node = {
+  const node: NodeLike = {
     specs: {
       clustersNames: ['cluster1', 'cluster2', 'cluster3'],
       searchClusters: clusterObjs,
@@ -827,7 +875,7 @@ describe('getOnlineCluster ok and pending', () => {
 })
 
 describe('getActiveFilterCodes all statuses filtered', () => {
-  const resourceStatuses = new Set(['green', 'yellow', 'orange', 'red'])
+  const resourceStatuses = new Set<StatusType>(['checkmark', 'warning', 'pending', 'failure'])
 
   it('should get filter codes', () => {
     expect(getActiveFilterCodes(resourceStatuses)).toEqual(new Set([3, 2, 1, 0]))
@@ -835,7 +883,7 @@ describe('getActiveFilterCodes all statuses filtered', () => {
 })
 
 describe('filterSubscriptionObject simple subscription object', () => {
-  const subs = {
+  const subs: ResourceMap = {
     sub1: [
       {
         status: 'Subscribed',
@@ -852,7 +900,7 @@ describe('filterSubscriptionObject simple subscription object', () => {
       },
     ],
   }
-  const resultSubs = {
+  const resultSubs: Record<string, SubscriptionItem> = {
     sub1: { status: 'Subscribed' },
     sub2: { status: 'Propagated' },
     sub3: { status: 'Fail' },
@@ -870,7 +918,7 @@ describe('getClusterHost', () => {
 })
 
 describe('getPulseStatusForSubscription no subscriptionItem.status', () => {
-  const node = {
+  const node: NodeLike = {
     id: 'member--subscription--default--mortgagedc-subscription',
     name: 'mortgagedcNOStatus',
     specs: {
@@ -890,7 +938,7 @@ describe('getPulseStatusForSubscription no subscriptionItem.status', () => {
 })
 
 describe('getPulseStatusForSubscription returns green pulse', () => {
-  const node = {
+  const node: NodeLike = {
     id: 'member--subscription--sahar-multins--sahar-multi-sample-subscription-1',
     name: 'mortgagedcNOStatus',
     specs: {
@@ -916,7 +964,7 @@ describe('getPulseStatusForSubscription returns green pulse', () => {
 })
 
 describe('getPulseStatusForSubscription package with Failed phase in statuses', () => {
-  const node = {
+  const node: NodeLike = {
     id: 'member--subscription--sahar-multins--sahar-multi-sample-subscription-1',
     name: 'mortgagedcNOStatus',
     specs: {
@@ -946,7 +994,7 @@ describe('getPulseStatusForSubscription package with Failed phase in statuses', 
 })
 
 describe('syncControllerRevisionPodStatusMap', () => {
-  const resourceMap = {
+  const resourceMap: Record<string, NodeLike> = {
     'daemonset-mortgageds-deploy-fxiang-eks': {
       specs: {
         daemonsetModel: {
@@ -986,7 +1034,7 @@ describe('syncControllerRevisionPodStatusMap', () => {
     },
   }
 
-  const resourceMap2 = {
+  const resourceMap2: Record<string, NodeLike> = {
     'daemonset-mortgageds-deploy-': {
       specs: {
         daemonsetModel: {
@@ -1026,7 +1074,7 @@ describe('syncControllerRevisionPodStatusMap', () => {
     },
   }
 
-  const resourceMapNoParentPodModel = {
+  const resourceMapNoParentPodModel: Record<string, NodeLike> = {
     'daemonset-mortgageds-deploy-fxiang-eks': {
       specs: {
         daemonsetModel: {
@@ -1080,7 +1128,7 @@ describe('syncControllerRevisionPodStatusMap', () => {
 })
 
 describe('fixMissingStateOptions', () => {
-  const itemNoAvailableReady = [
+  const itemNoAvailableReady: ResourceItemWithStatus[] = [
     {
       _uid: 'fxiang-eks/7c30f5d2-a522-40be-a8a6-5e833012b17b',
       apiversion: 'v1',
@@ -1100,7 +1148,7 @@ describe('fixMissingStateOptions', () => {
     },
   ]
 
-  const itemNoAvailable = [
+  const itemNoAvailable: ResourceItemWithStatus[] = [
     {
       _uid: 'fxiang-eks/7c30f5d2-a522-40be-a8a6-5e833012b17b',
       apiversion: 'v1',
@@ -1121,7 +1169,7 @@ describe('fixMissingStateOptions', () => {
     },
   ]
 
-  const itemComplete = [
+  const itemComplete: ResourceItemWithStatus[] = [
     {
       _uid: 'fxiang-eks/7c30f5d2-a522-40be-a8a6-5e833012b17b',
       apiversion: 'v1',
@@ -1157,7 +1205,7 @@ describe('fixMissingStateOptions', () => {
 })
 
 describe('namespaceMatchTargetServer', () => {
-  const relatedKind = {
+  const relatedKind: ResourceItem = {
     apigroup: 'route.openshift.io',
     apiversion: 'v1',
     cluster: 'ui-dev-remote',
@@ -1172,7 +1220,7 @@ describe('namespaceMatchTargetServer', () => {
     _uid: 'ui-dev-remote/ee84f8f5-bb3e-4c67-a918-2804e74f3f67',
   }
 
-  const resourceMapForObject = {
+  const resourceMapForObject: Record<string, NodeLike> = {
     clusters: {
       specs: {
         clusters: [
@@ -1226,7 +1274,7 @@ describe('getNameWithoutVolumePostfix', () => {
 })
 
 describe('getNameWithoutVMTypeHash', () => {
-  const resource = {
+  const resource: ResourceItem = {
     name: 'fedora-plum-walrus-98-u1.nano-8c88fd46-b8eb-44cd-b27f-62b78bb46494-1',
     label:
       'instancetype.kubevirt.io/object-generation=1; instancetype.kubevirt.io/object-kind=VirtualMachineClusterInstancetype; instancetype.kubevirt.io/object-name=u1.nano; instancetype.kubevirt.io/object-uid=8c88fd46-b8eb-44cd-b27f-62b78bb46494; instancetype.kubevirt.io/object-version=v1beta1',
@@ -1237,7 +1285,7 @@ describe('getNameWithoutVMTypeHash', () => {
 })
 
 describe('getNameWithoutVMTypeHash no label', () => {
-  const resource = {
+  const resource: ResourceItem = {
     name: 'fedora-plum-walrus-98-u1.nano-8c88fd46-b8eb-44cd-b27f-62b78bb46494-1',
   }
   it('getNameWithoutVMTypeHash controllerrevision no label', () => {
@@ -1246,7 +1294,7 @@ describe('getNameWithoutVMTypeHash no label', () => {
 })
 
 describe('getVMNameWithoutPodHash', () => {
-  const resource = {
+  const resource: ResourceItem = {
     name: 'virt-launcher-fedora-plum-walrus-98-xn828',
     label:
       'kubevirt.io=virt-launcher; kubevirt.io/created-by=f70fabbc-1d94-4a8e-ab8b-164cb66dce9c; kubevirt.io/nodeName=fog28.acm.lab.eng.rdu2.redhat.com; vm.kubevirt.io/name=fedora-plum-walrus-98',
@@ -1257,7 +1305,7 @@ describe('getVMNameWithoutPodHash', () => {
 })
 
 describe('getVMNameWithoutPodHash', () => {
-  const resource = {
+  const resource: ResourceItem = {
     name: 'virt-launcher-fedora-plum-walrus-98-xn828',
   }
   it('getVMNameWithoutPodHash pod name', () => {

@@ -5,8 +5,17 @@
 import { getArgoResourceStatuses } from './resourceStatusesArgo'
 import { waitFor } from '@testing-library/react'
 import { nockSearch } from '../../../../../lib/nock-util'
+import { SearchQuery } from '../types'
 
-const mockSearchQuery = {
+interface MockSearchQuery {
+  operationName: string
+  variables: {
+    input: SearchQuery[]
+  }
+  query: string
+}
+
+const mockSearchQuery: MockSearchQuery = {
   operationName: 'searchResultItemsAndRelatedItems',
   variables: {
     input: [
@@ -34,7 +43,7 @@ const mockSearchQuery = {
     'query searchResultItemsAndRelatedItems($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n    related {\n      kind\n      items\n      __typename\n    }\n    __typename\n  }\n}',
 }
 
-const mockSearchQuery2 = {
+const mockSearchQuery2: MockSearchQuery = {
   operationName: 'searchResultItemsAndRelatedItems',
   variables: {
     input: [
@@ -70,7 +79,7 @@ const mockSearchQuery2 = {
     'query searchResultItemsAndRelatedItems($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n    related {\n      kind\n      items\n      __typename\n    }\n    __typename\n  }\n}',
 }
 
-const mockSearchQuery3 = {
+const mockSearchQuery3: MockSearchQuery = {
   operationName: 'searchResultItemsAndRelatedItems',
   variables: {
     input: [
@@ -106,7 +115,7 @@ const mockSearchQuery3 = {
     'query searchResultItemsAndRelatedItems($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n    related {\n      kind\n      items\n      __typename\n    }\n    __typename\n  }\n}',
 }
 
-const mockSearchQuery4 = {
+const mockSearchQuery4: MockSearchQuery = {
   operationName: 'searchResultItemsAndRelatedItems',
   variables: {
     input: [
@@ -238,7 +247,7 @@ const mockSearchQuery4 = {
     'query searchResultItemsAndRelatedItems($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n    related {\n      kind\n      items\n      __typename\n    }\n    __typename\n  }\n}',
 }
 
-const mockSearchQuery5 = {
+const mockSearchQuery5: MockSearchQuery = {
   operationName: 'searchResultItemsAndRelatedItems',
   variables: {
     input: [
@@ -266,7 +275,17 @@ const mockSearchQuery5 = {
     'query searchResultItemsAndRelatedItems($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n    related {\n      kind\n      items\n      __typename\n    }\n    __typename\n  }\n}',
 }
 
-const mockSearchResponse = {
+interface MockSearchResponse {
+  data: {
+    searchResult: Array<{
+      __typename: string
+      items: any[]
+      related: any[] | null
+    }>
+  }
+}
+
+const mockSearchResponse: MockSearchResponse = {
   data: {
     searchResult: [
       {
@@ -12945,11 +12964,10 @@ const mockSearchResponse = {
       },
     ],
   },
-  loading: false,
   networkStatus: 7,
 }
 
-const mockSearchResponse2 = {
+const mockSearchResponse2: MockSearchResponse = {
   data: {
     searchResult: [
       {
@@ -13439,7 +13457,7 @@ const mockSearchResponse2 = {
   },
 }
 
-const mockSearchResponse3 = {
+const mockSearchResponse3: MockSearchResponse = {
   data: {
     searchResult: [
       {
@@ -13676,7 +13694,7 @@ const mockSearchResponse3 = {
   },
 }
 
-const mockSearchResponse4 = {
+const mockSearchResponse4: MockSearchResponse = {
   data: {
     searchResult: [
       {
@@ -14410,7 +14428,7 @@ const mockSearchResponse4 = {
   },
 }
 
-const mockSearchResponse5 = {
+const mockSearchResponse5: MockSearchResponse = {
   data: {
     searchResult: [
       {
@@ -14637,6 +14655,7 @@ describe('getResourceStatuses', () => {
     isAppSet: false,
     isOCPApp: false,
     isFluxApp: false,
+    isAppSetPullModel: false,
   }
 
   const topology = {
@@ -15072,12 +15091,12 @@ describe('getResourceStatuses', () => {
     await waitFor(() => expect(search0.isDone()).toBeTruthy())
     const search = nockSearch(mockSearchQuery, mockSearchResponse)
     await waitFor(() => expect(search.isDone()).toBeTruthy())
-    let result = await getArgoResourceStatuses(application, appData, topology)
+    const result = await getArgoResourceStatuses(application, appData, topology)
     expect(result).toStrictEqual({ resourceStatuses: mockSearchResponse })
   })
 })
 
-const mockSearchResponse6 = {
+const mockSearchResponse6: MockSearchResponse = {
   data: {
     searchResult: [
       {
@@ -15809,7 +15828,6 @@ const mockSearchResponse6 = {
       },
     ],
   },
-  loading: false,
   networkStatus: 7,
 }
 
@@ -16048,6 +16066,7 @@ describe('getResourceStatuses cluster scoped resources', () => {
     isAppSet: false,
     isOCPApp: false,
     isFluxApp: false,
+    isAppSetPullModel: false,
   }
 
   const topology = {
@@ -16531,7 +16550,7 @@ describe('getResourceStatuses cluster scoped resources', () => {
     await waitFor(() => expect(search.isDone()).toBeTruthy())
     const searchSecret = nockSearch(mockSearchQuery5, mockSearchResponse5)
     await waitFor(() => expect(searchSecret.isDone()).toBeTruthy())
-    let result = await getArgoResourceStatuses(application, appData, topology)
+    const result = await getArgoResourceStatuses(application, appData, topology)
     expect(result).toStrictEqual({ resourceStatuses: mockSearchResponse6 })
   })
 })

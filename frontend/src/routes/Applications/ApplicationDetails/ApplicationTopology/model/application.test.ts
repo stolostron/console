@@ -5,6 +5,16 @@ import { PlacementApiVersion } from '../../../../../wizards/common/resources/IPl
 import { getApplication } from './application'
 import { nockGet, nockAggegateRequest, nockIgnoreApiPaths } from '../../../../../lib/nock-util'
 import { waitForNocks } from '../../../../../lib/test-util'
+import {
+  ApplicationModel,
+  ManagedCluster,
+  RecoilStates,
+  ArgoApplication,
+  AppSetCluster,
+  Application,
+  ApplicationSet,
+  Placement,
+} from '../types'
 
 describe('getApplication Argo', () => {
   it('returns Argo app model', async () => {
@@ -13,7 +23,7 @@ describe('getApplication Argo', () => {
     const model = await getApplication(
       appData.namespace,
       appData.name,
-      process.env.JEST_DEFAULT_HOST,
+      process.env.JEST_DEFAULT_HOST as string,
       appData.selectedChannel,
       appData.recoilStates,
       appData.cluster,
@@ -32,7 +42,7 @@ describe('getApplication AppSet', () => {
     const model = await getApplication(
       appData2.namespace,
       appData2.name,
-      process.env.JEST_DEFAULT_HOST,
+      process.env.JEST_DEFAULT_HOST as string,
       appData2.selectedChannel,
       appData2.recoilStates,
       appData2.cluster,
@@ -51,7 +61,7 @@ describe('getApplication AppSet pull model', () => {
     const model = await getApplication(
       appData3.namespace,
       appData3.name,
-      process.env.JEST_DEFAULT_HOST,
+      process.env.JEST_DEFAULT_HOST as string,
       appData3.selectedChannel,
       appData3.recoilStates,
       appData3.cluster,
@@ -64,11 +74,22 @@ describe('getApplication AppSet pull model', () => {
   })
 })
 
-const appData = {
+interface TestAppData {
+  namespace: string
+  name: string
+  selectedChannel: string | undefined
+  recoilStates: RecoilStates
+  cluster: string | undefined
+  apiversion: string
+  clusters: ManagedCluster[]
+  relatedPlacement?: Placement
+}
+
+const appData: TestAppData = {
   namespace: 'openshift-gitops',
   name: 'feng-argo',
   selectedChannel: undefined,
-  recoilStates: {},
+  recoilStates: {} as RecoilStates,
   cluster: undefined,
   apiversion: 'application.argoproj.io',
   clusters: [
@@ -99,7 +120,7 @@ const appData = {
   ],
 }
 
-const mockArgoApp = {
+const mockArgoApp: Application = {
   apiVersion: 'argoproj.io/v1alpha1',
   kind: 'Application',
   metadata: {
@@ -158,7 +179,7 @@ const mockArgoApp = {
   },
 }
 
-const result = {
+const result: ApplicationModel = {
   app: {
     apiVersion: 'argoproj.io/v1alpha1',
     kind: 'Application',
@@ -253,7 +274,12 @@ const result = {
   placement: undefined,
 }
 
-const uidata = {
+interface UIData {
+  clusterList: string[]
+  appSetApps: ArgoApplication[]
+}
+
+const uidata: UIData = {
   clusterList: ['local-cluster'],
   appSetApps: [
     {
@@ -412,7 +438,7 @@ const uidata = {
     },
   ],
 }
-const appData2 = {
+const appData2: TestAppData = {
   namespace: 'openshift-gitops',
   name: 'magchen-old-appset',
   selectedChannel: undefined,
@@ -20997,7 +21023,7 @@ const appData2 = {
   ],
 }
 
-const result1 = {
+const result1: ApplicationModel = {
   app: {
     apiVersion: 'argoproj.io/v1alpha1',
     kind: 'ApplicationSet',
@@ -21325,7 +21351,7 @@ const result1 = {
   },
 }
 
-const mockAppset = {
+const mockAppset: ApplicationSet = {
   apiVersion: 'argoproj.io/v1alpha1',
   kind: 'ApplicationSet',
   metadata: {
@@ -21405,7 +21431,7 @@ const mockAppset = {
   },
 }
 
-const uidata2 = {
+const uidata2: UIData = {
   clusterList: ['local-cluster'],
   appSetApps: [
     {
@@ -21564,7 +21590,7 @@ const uidata2 = {
     },
   ],
 }
-const appData3 = {
+const appData3: TestAppData = {
   namespace: 'openshift-gitops',
   name: 'feng-pm',
   selectedChannel: undefined,
@@ -26139,7 +26165,7 @@ const appData3 = {
   ],
 }
 
-const result3 = {
+const result3: ApplicationModel = {
   app: {
     apiVersion: 'argoproj.io/v1alpha1',
     kind: 'ApplicationSet',
@@ -26434,7 +26460,7 @@ const result3 = {
   },
 }
 
-const mockAppset3 = {
+const mockAppset3: ApplicationSet = {
   apiVersion: 'argoproj.io/v1alpha1',
   kind: 'ApplicationSet',
   metadata: {
@@ -26517,7 +26543,7 @@ const mockAppset3 = {
   },
 }
 
-const uidata3 = {
+const uidata3: UIData = {
   clusterList: ['local-cluster'],
   appSetApps: [
     {

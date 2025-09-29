@@ -1,6 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { getArgoTopology } from './topologyArgo'
+import type {
+  ArgoApplicationTopologyData,
+  ArgoTopologyData,
+  ManagedCluster,
+  ArgoTopologyResult,
+} from '../types'
 
 it('getArgoTopology success scenario', () => {
   expect(getArgoTopology(application, argoData, managedClusters, 'local-cluster')).toEqual(result1)
@@ -10,7 +16,7 @@ it('getArgoTopology success scenario', () => {
   expect(getArgoTopology(application2, argoData2, managedClusters, 'local-cluster')).toEqual(result2)
 })
 
-const result1 = {
+const result1: ArgoTopologyResult = {
   links: [
     {
       from: {
@@ -465,7 +471,7 @@ const result1 = {
     },
   ],
 }
-const result2 = {
+const result2: ArgoTopologyResult = {
   links: [
     {
       from: {
@@ -920,7 +926,7 @@ const result2 = {
   ],
 }
 
-const application = {
+const application: ArgoApplicationTopologyData = {
   name: 'feng-argo-hello',
   namespace: 'openshift-gitops',
   app: {
@@ -1114,7 +1120,7 @@ const application = {
   isFluxApp: false,
 }
 
-const argoData = {
+const argoData: ArgoTopologyData = {
   topology: {
     nodes: [
       {
@@ -1552,7 +1558,7 @@ const argoData = {
   },
 }
 
-const managedClusters = [
+const managedClusters: ManagedCluster[] = [
   {
     name: 'local-cluster',
     displayName: 'local-cluster',
@@ -2045,7 +2051,7 @@ const managedClusters = [
   },
 ]
 
-const application2 = {
+const application2: ArgoApplicationTopologyData = {
   name: 'feng-argo-hello',
   namespace: 'openshift-gitops',
   app: {
@@ -2240,7 +2246,7 @@ const application2 = {
   isFluxApp: false,
 }
 
-const argoData2 = {
+const argoData2: ArgoTopologyData = {
   topology: {
     nodes: [
       {

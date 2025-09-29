@@ -1,15 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import React from 'react'
 import DetailsTable from './DetailsTable'
 import { render, screen } from '@testing-library/react'
 import { waitForText } from '../../../../../lib/test-util'
+import { DetailsTableNode, DetailsTableResourceItem, Translator } from '../types'
 
-const t = (string) => {
+const t: Translator = (string: string): string => {
   return string
 }
 
 describe('DetailsTable', () => {
-  const node = {
+  const node: DetailsTableNode = {
     name: '',
     namespace: '',
     type: 'deployment',
@@ -201,8 +203,10 @@ describe('DetailsTable', () => {
     },
   }
 
+  const mockHandleOpen = jest.fn<void, [DetailsTableNode, DetailsTableResourceItem]>()
+
   beforeEach(async () => {
-    render(<DetailsTable id="details-view-table" node={node} t={t} handleOpen={jest.fn} />)
+    render(<DetailsTable id="details-view-table" node={node} t={t} handleOpen={mockHandleOpen} />)
 
     await waitForText('pause-deploy')
   })

@@ -4,9 +4,10 @@
 import LegendView from './LegendView'
 import { render, screen } from '@testing-library/react'
 import { waitForText } from '../../../../../lib/test-util'
+import { TFunction } from 'react-i18next'
 
-const t = (string) => {
-  return string
+const t: TFunction = (s: string): string => {
+  return s
 }
 
 describe('LegendView', () => {

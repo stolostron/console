@@ -9,8 +9,45 @@ import {
   createDataVolumeChild,
   createVirtualMachineInstance,
 } from './topologySubscription'
+import {
+  TopologyNode,
+  TopologyLink,
+  Topology,
+  SubscriptionApplicationModel,
+  ManagedCluster,
+  ResourceItem,
+  RelatedKindGroup,
+  ParentObject,
+  NodeSpecs,
+} from '../types'
 
-const clustersNames = ['local-cluster']
+// Extended types for test data that may have additional properties
+interface TestRelatedKindGroup extends RelatedKindGroup {
+  __typename?: string
+  [key: string]: any
+}
+
+interface TestResourceItem extends ResourceItem {
+  [key: string]: any
+}
+
+interface TestTopologyNode extends TopologyNode {
+  [key: string]: any
+}
+
+interface TestSubscriptionApplicationModel extends SubscriptionApplicationModel {
+  [key: string]: any
+}
+
+interface TestManagedCluster extends ManagedCluster {
+  [key: string]: any
+}
+
+interface TestTopology extends Topology {
+  [key: string]: any
+}
+
+const clustersNames: string[] = ['local-cluster']
 
 describe('createReplicaChild', () => {
   it('creates replicatset', () => {
@@ -61,7 +98,7 @@ describe('createVirtualMachineInstance', () => {
     expect(createVirtualMachineInstance(node3, ['local-cluster'], [], [])).toEqual(result10)
   })
 })
-const template = {
+const template: { related: TestRelatedKindGroup[] } = {
   related: [
     {
       __typename: 'SearchRelatedResult',
@@ -116,7 +153,7 @@ const template = {
   ],
 }
 
-const result = {
+const result: TestTopologyNode = {
   id: 'member--deployed-resource--member--clusters--local-cluster--feng-hello-subscription-1--feng-hello--helloworld-app-deploy--deployment--replicaset--helloworld-app-deploy--pod--helloworld-app-deploy',
   name: 'helloworld-app-deploy',
   namespace: 'feng-hello',
@@ -763,7 +800,7 @@ const result = {
   type: 'pod',
   uid: 'member--deployed-resource--member--clusters--local-cluster--feng-hello-subscription-1--feng-hello--helloworld-app-deploy--deployment--replicaset--helloworld-app-deploy--pod--helloworld-app-deploy',
 }
-const parentObject = {
+const parentObject: TestTopologyNode = {
   name: 'helloworld-app-deploy',
   namespace: 'feng-hello',
   type: 'deployment',
@@ -1406,7 +1443,7 @@ const parentObject = {
   },
 }
 
-const parentObjectRC = {
+const parentObjectRC: TestTopologyNode = {
   name: 'helloworld-app-deploy',
   namespace: 'feng-hello',
   type: 'deploymentconfig',
@@ -2048,7 +2085,7 @@ const parentObjectRC = {
     resourceCount: 1,
   },
 }
-const template2 = {
+const template2: { related: TestRelatedKindGroup[] } = {
   related: [
     {
       __typename: 'SearchRelatedResult',
@@ -2103,7 +2140,7 @@ const template2 = {
   ],
 }
 
-const result2 = {
+const result2: TestTopologyNode = {
   id: 'member--deployed-resource--member--clusters--local-cluster--feng-hello-subscription-1--feng-hello--helloworld-app-deploy--deployment--replicaset--helloworld-app-deploy--pod--helloworld-app-deploy',
   name: 'helloworld-app-deploy',
   namespace: 'feng-hello',
@@ -2750,7 +2787,7 @@ const result2 = {
   type: 'pod',
   uid: 'member--deployed-resource--member--clusters--local-cluster--feng-hello-subscription-1--feng-hello--helloworld-app-deploy--deployment--replicaset--helloworld-app-deploy--pod--helloworld-app-deploy',
 }
-const template3 = {
+const template3: { related: TestRelatedKindGroup[] } = {
   related: [
     {
       __typename: 'SearchRelatedResult',
@@ -2805,7 +2842,7 @@ const template3 = {
   ],
 }
 
-const result3 = {
+const result3: TestTopologyNode = {
   id: 'member--deployed-resource--member--clusters--local-cluster--feng-hello-subscription-1--feng-hello--helloworld-app-deploy--deployment--replicationcontroller--helloworld-app-deploy--pod--helloworld-app-deploy',
   name: 'helloworld-app-deploy',
   namespace: 'feng-hello',
@@ -3453,7 +3490,7 @@ const result3 = {
   uid: 'member--deployed-resource--member--clusters--local-cluster--feng-hello-subscription-1--feng-hello--helloworld-app-deploy--deployment--replicationcontroller--helloworld-app-deploy--pod--helloworld-app-deploy',
 }
 
-const template4 = {
+const template4: { related: TestRelatedKindGroup[] } = {
   related: [
     {
       __typename: 'SearchRelatedResult',
@@ -3508,7 +3545,7 @@ const template4 = {
   ],
 }
 
-const result4 = {
+const result4: TestTopologyNode = {
   id: 'member--deployed-resource--member--clusters--local-cluster--feng-hello-subscription-1--feng-hello--helloworld-app-deploy--deployment--replicationcontroller--helloworld-app-deploy--pod--helloworld-app-deploy',
   name: 'helloworld-app-deploy',
   namespace: 'feng-hello',
@@ -4155,7 +4192,7 @@ const result4 = {
   type: 'pod',
   uid: 'member--deployed-resource--member--clusters--local-cluster--feng-hello-subscription-1--feng-hello--helloworld-app-deploy--deployment--replicationcontroller--helloworld-app-deploy--pod--helloworld-app-deploy',
 }
-const template5 = {
+const template5: { related: TestRelatedKindGroup[] } = {
   related: [
     {
       __typename: 'SearchRelatedResult',
@@ -4187,7 +4224,7 @@ const template5 = {
   ],
 }
 
-const result5 = {
+const result5: TestTopologyNode = {
   id: 'member--deployed-resource--member--clusters--local-cluster--feng-hello-subscription-1--feng-hello--helloworld-app-deploy--deployment--pod--helloworld-app-deploy',
   name: 'helloworld-app-deploy',
   namespace: 'feng-hello',
@@ -4834,7 +4871,7 @@ const result5 = {
   type: 'pod',
   uid: 'member--deployed-resource--member--clusters--local-cluster--feng-hello-subscription-1--feng-hello--helloworld-app-deploy--deployment--pod--helloworld-app-deploy',
 }
-const template6 = {
+const template6: { related: TestRelatedKindGroup[] } = {
   related: [
     {
       __typename: 'SearchRelatedResult',
@@ -4866,7 +4903,7 @@ const template6 = {
   ],
 }
 
-const result6 = {
+const result6: TestTopologyNode = {
   id: 'member--deployed-resource--member--clusters--local-cluster--feng-hello-subscription-1--feng-hello--helloworld-app-deploy--deployment--pod--helloworld-app-deploy',
   name: 'helloworld-app-deploy',
   namespace: 'feng-hello',
@@ -5513,7 +5550,7 @@ const result6 = {
   type: 'pod',
   uid: 'member--deployed-resource--member--clusters--local-cluster--feng-hello-subscription-1--feng-hello--helloworld-app-deploy--deployment--pod--helloworld-app-deploy',
 }
-const application = {
+const application: TestSubscriptionApplicationModel = {
   name: 'feng-cronjob',
   namespace: 'feng-cronjob',
   app: {
@@ -6234,7 +6271,7 @@ const application = {
     'feng-cronjob/feng-cronjob-subscription-1//ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples',
 }
 
-const managedClusters = [
+const managedClusters: TestManagedCluster[] = [
   {
     name: 'feng-managed',
     displayName: 'feng-managed',
@@ -7881,7 +7918,7 @@ const managedClusters = [
   },
 ]
 
-const result7 = {
+const result7: TestTopology = {
   links: [
     {
       from: {
@@ -12648,7 +12685,7 @@ const result7 = {
     },
   ],
 }
-const node = {
+const node: TestTopologyNode = {
   name: 'fedora-plum-walrus-98',
   namespace: 'feng-vm',
   type: 'virtualmachine',
@@ -12682,7 +12719,7 @@ const node = {
   },
 }
 
-const result8 = {
+const result8: TestTopologyNode = {
   id: 'member--member--deployable--member--clusters----virtualmachine--feng-vm--fedora-plum-walrus-98--controllerrevision--fedora-plum-walrus-98',
   name: 'fedora-plum-walrus-98',
   namespace: 'feng-vm',
@@ -12703,7 +12740,7 @@ const result8 = {
   type: 'controllerrevision',
   uid: 'member--member--deployable--member--clusters----virtualmachine--feng-vm--fedora-plum-walrus-98--controllerrevision--fedora-plum-walrus-98',
 }
-const node2 = {
+const node2: TestTopologyNode = {
   name: 'fedora-plum-walrus-98',
   namespace: 'feng-vm',
   type: 'virtualmachine',
@@ -12737,7 +12774,7 @@ const node2 = {
   },
 }
 
-const result9 = {
+const result9: TestTopologyNode = {
   id: 'member--member--deployable--member--clusters----virtualmachine--feng-vm--fedora-plum-walrus-98--datavolume--fedora-plum-walrus-98--persistentvolumeclaim--fedora-plum-walrus-98',
   name: 'fedora-plum-walrus-98',
   namespace: 'feng-vm',
@@ -12759,7 +12796,7 @@ const result9 = {
   type: 'persistentvolumeclaim',
   uid: 'member--member--deployable--member--clusters----virtualmachine--feng-vm--fedora-plum-walrus-98--datavolume--fedora-plum-walrus-98--persistentvolumeclaim--fedora-plum-walrus-98',
 }
-const node3 = {
+const node3: TestTopologyNode = {
   name: 'fedora-plum-walrus-98',
   namespace: 'feng-vm',
   type: 'virtualmachine',
@@ -12793,7 +12830,7 @@ const node3 = {
   },
 }
 
-const result10 = {
+const result10: TestTopologyNode = {
   id: 'member--member--deployable--member--clusters----virtualmachine--feng-vm--fedora-plum-walrus-98--virtualmachineinstance--fedora-plum-walrus-98--pod--fedora-plum-walrus-98',
   name: 'fedora-plum-walrus-98',
   namespace: 'feng-vm',

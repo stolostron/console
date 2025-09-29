@@ -7,13 +7,14 @@ import {
   getStatusFromPulse,
   showAnsibleJobDetails,
 } from './ansible-task'
+import { AnsibleCondition, AnsibleJobStatus, NodeLike, Translator, Pulse } from '../types'
 
-const t = (string) => {
+const t: Translator = (string: string): string => {
   return string
 }
 
 describe('getInfoForAnsibleTask', () => {
-  const condition1 = [
+  const condition1: AnsibleCondition[] = [
     {
       ansibleResult: 'Foo',
       reason: 'Successful',
@@ -21,7 +22,7 @@ describe('getInfoForAnsibleTask', () => {
     },
   ]
 
-  const condition2 = [
+  const condition2: AnsibleCondition[] = [
     {
       ansibleResult: 'Bar',
       reason: 'Failed',
@@ -29,7 +30,7 @@ describe('getInfoForAnsibleTask', () => {
     },
   ]
 
-  const condition3 = [
+  const condition3: AnsibleCondition[] = [
     {
       ansibleResult: 'FooBar',
       reason: 'Pending',
@@ -37,17 +38,17 @@ describe('getInfoForAnsibleTask', () => {
     },
   ]
 
-  const result1 = {
+  const result1: { pulse: Pulse | 'orange'; message: string | null } = {
     pulse: 'green',
     message: 'Successful: Test 1',
   }
 
-  const result2 = {
+  const result2: { pulse: Pulse | 'orange'; message: string | null } = {
     pulse: 'red',
     message: 'Failed: Test 2',
   }
 
-  const result3 = {
+  const result3: { pulse: Pulse | 'orange'; message: string | null } = {
     pulse: 'yellow',
     message: 'Pending: Test 3',
   }
@@ -60,45 +61,45 @@ describe('getInfoForAnsibleTask', () => {
 })
 
 describe('getInfoForAnsibleJob', () => {
-  const status1 = {
+  const status1: AnsibleJobStatus = {
     status: 'error',
     url: 'https://test/',
   }
 
-  const status2 = {
+  const status2: AnsibleJobStatus = {
     status: 'successful',
     url: 'https://test/',
   }
 
-  const status3 = {
+  const status3: AnsibleJobStatus = {
     status: 'canceled',
     url: 'https://test/',
   }
 
-  const status4 = {
+  const status4: AnsibleJobStatus = {
     status: 'unknown',
     url: 'https://test/',
   }
 
-  const result1 = {
+  const result1: { pulse: Pulse | 'orange'; message: string | null; url: string | null } = {
     message: 'error',
     pulse: 'red',
     url: 'https://test/',
   }
 
-  const result2 = {
+  const result2: { pulse: Pulse | 'orange'; message: string | null; url: string | null } = {
     message: 'successful',
     pulse: 'green',
     url: 'https://test/',
   }
 
-  const result3 = {
+  const result3: { pulse: Pulse | 'orange'; message: string | null; url: string | null } = {
     message: 'canceled',
     pulse: 'yellow',
     url: 'https://test/',
   }
 
-  const result4 = {
+  const result4: { pulse: Pulse | 'orange'; message: string | null; url: string | null } = {
     message: 'unknown',
     pulse: 'orange',
     url: 'https://test/',
@@ -113,7 +114,7 @@ describe('getInfoForAnsibleJob', () => {
 })
 
 describe('getPulseStatusForAnsibleNode', () => {
-  const node1 = {
+  const node1: NodeLike = {
     specs: {
       raw: {
         status: {
@@ -123,7 +124,7 @@ describe('getPulseStatusForAnsibleNode', () => {
     },
   }
 
-  const node2 = {
+  const node2: NodeLike = {
     specs: {
       raw: {
         status: {
@@ -143,7 +144,7 @@ describe('getPulseStatusForAnsibleNode', () => {
     },
   }
 
-  const node3 = {
+  const node3: NodeLike = {
     specs: {
       raw: {
         status: {
@@ -163,7 +164,7 @@ describe('getPulseStatusForAnsibleNode', () => {
     },
   }
 
-  const node4 = {
+  const node4: NodeLike = {
     specs: {
       raw: {
         status: {
@@ -183,7 +184,7 @@ describe('getPulseStatusForAnsibleNode', () => {
     },
   }
 
-  const node5 = {
+  const node5: NodeLike = {
     specs: {
       raw: {
         status: {
@@ -221,7 +222,7 @@ describe('getStatusFromPulse', () => {
 })
 
 describe('showAnsibleJobDetails', () => {
-  const node = {
+  const node: NodeLike = {
     specs: {
       raw: {
         status: {

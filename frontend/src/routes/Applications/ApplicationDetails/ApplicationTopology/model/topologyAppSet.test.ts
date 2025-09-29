@@ -2,9 +2,10 @@
 
 import { nockSearch } from '../../../../../lib/nock-util'
 import { getAppSetTopology, openArgoCDEditor } from './topologyAppSet'
-import i18next from 'i18next'
+import i18next, { TFunction } from 'i18next'
+import type { ApplicationModel, AppSetTopologyResult } from '../types'
 
-const t = i18next.t.bind(i18next)
+const t: TFunction = i18next.t.bind(i18next)
 
 it('getAppSetTopology success scenario', () => {
   expect(getAppSetTopology(application, 'local-cluster')).toEqual(result)
@@ -38,7 +39,7 @@ describe('openArgoCDEditor remote cluster', () => {
   })
 })
 
-const application = {
+const application: ApplicationModel = {
   name: 'feng-appset-hello',
   namespace: 'openshift-gitops',
   app: {
@@ -369,7 +370,7 @@ const application = {
     },
   ],
 }
-const result = {
+const result: AppSetTopologyResult = {
   links: [
     {
       from: {

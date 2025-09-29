@@ -10,13 +10,14 @@ import {
   isSearchAvailable,
   isYAMLEditAvailable,
 } from './search-helper'
+import type { SearchQuery } from '../types'
 
 describe('convertStringToQuery', () => {
-  const string1 = 'kind:subscription name:test'
-  const string2 = 'kind:channel name:test'
-  const string3 = 'kind:placementrule name:test'
+  const string1: string = 'kind:subscription name:test'
+  const string2: string = 'kind:channel name:test'
+  const string3: string = 'kind:placementrule name:test'
 
-  const result1 = {
+  const result1: SearchQuery = {
     filters: [
       {
         property: 'kind',
@@ -31,7 +32,7 @@ describe('convertStringToQuery', () => {
     relatedKinds: ['placementrule', 'deployable', 'application', 'subscription', 'channel'],
   }
 
-  const result2 = {
+  const result2: SearchQuery = {
     filters: [
       { property: 'kind', values: ['channel'] },
       { property: 'name', values: ['test'] },
@@ -39,7 +40,7 @@ describe('convertStringToQuery', () => {
     keywords: [],
     relatedKinds: ['subscription'],
   }
-  const result3 = {
+  const result3: SearchQuery = {
     filters: [
       { property: 'kind', values: ['placementrule'] },
       { property: 'name', values: ['test'] },

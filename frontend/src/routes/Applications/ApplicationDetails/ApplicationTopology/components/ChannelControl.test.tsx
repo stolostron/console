@@ -11,22 +11,23 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import ChannelController from './ChannelControl'
+import { MockChannelControlData, MockTranslationFunction, MockSetDrawerContent } from '../types'
 
-const t = (string) => {
+const t: MockTranslationFunction = (string: string): string => {
   return string
 }
 
-const channelControllerNoAllChannels = {
+const channelControllerNoAllChannels: MockChannelControlData = {
   activeChannel: '__ALL__/__ALL__//__ALL__/__ALL__',
   isChangingChannel: undefined,
-  changeTheChannel: jest.fn,
+  changeTheChannel: jest.fn(),
   allChannels: [],
 }
 
-const channelController = {
+const channelController: MockChannelControlData = {
   activeChannel: '__ALL__/__ALL__//__ALL__/__ALL__',
   isChangingChannel: undefined,
-  changeTheChannel: jest.fn,
+  changeTheChannel: jest.fn(),
   allChannels: [
     '__ALL__/__ALL__//__ALL__/__ALL__',
     'default/guestbook-app//gbapp-ch/guestbook-app-latest///cassandra-cassandra-service///mysql-wordpress-pd-wordpress-mysql-deployment',
@@ -34,11 +35,11 @@ const channelController = {
   ],
 }
 
-const channelController2 = {
+const channelController2: MockChannelControlData = {
   activeChannel:
     'default/guestbook-app//gbapp-ch/guestbook-app-latest///elasticsearch-es-replicationcontroller///persistent-volume-provisioning-glusterfs-heketi-secret-secret',
   isChangingChannel: undefined,
-  changeTheChannel: jest.fn,
+  changeTheChannel: jest.fn(),
   allChannels: [
     'default/guestbook-app//gbapp-ch/guestbook-app-latest///mysql-wordpress-pd-wordpress-mysql-service///staging-elasticsearch-elasticsearch-serviceaccount',
     'default/guestbook-app//gbapp-ch/guestbook-app-latest///elasticsearch-es-replicationcontroller///persistent-volume-provisioning-glusterfs-heketi-secret-secret',
@@ -46,10 +47,10 @@ const channelController2 = {
   ],
 }
 
-const channelController3 = {
+const channelController3: MockChannelControlData = {
   activeChannel: 'nginx-blue/blue-nginx-subscription//demo/gitops',
   isChangingChannel: undefined,
-  changeTheChannel: jest.fn,
+  changeTheChannel: jest.fn(),
   allChannels: [
     '__ALL__/__ALL__//__ALL__/__ALL__',
     'nginx-blue/blue-nginx-subscription//demo/gitops',
@@ -57,10 +58,10 @@ const channelController3 = {
   ],
 }
 
-const channelController4 = {
+const channelController4: MockChannelControlData = {
   activeChannel: undefined,
   isChangingChannel: false,
-  changeTheChannel: jest.fn,
+  changeTheChannel: jest.fn(),
   allChannels: [
     '__ALL__/__ALL__//__ALL__/__ALL__',
     'helloworld-demo-ns/helloworld-demo-subscription-1//rhacm-nginx-app-channel/nginx-app-channel',
@@ -69,7 +70,7 @@ const channelController4 = {
 }
 
 describe('ChannelController with noAllChannels', () => {
-  let container
+  let container: HTMLElement
   beforeEach(async () => {
     ;({ container } = render(<ChannelController channelControl={channelControllerNoAllChannels} t={t} />))
 
@@ -82,7 +83,7 @@ describe('ChannelController with noAllChannels', () => {
 })
 
 describe('ChannelController components 1', () => {
-  let container
+  let container: HTMLElement
   beforeEach(async () => {
     ;({ container } = render(<ChannelController channelControl={channelController} t={t} />))
 
@@ -94,7 +95,7 @@ describe('ChannelController components 1', () => {
 })
 
 describe('ChannelController components 2', () => {
-  let container
+  let container: HTMLElement
   beforeEach(async () => {
     ;({ container } = render(<ChannelController channelControl={channelController2} t={t} />))
 
@@ -107,7 +108,7 @@ describe('ChannelController components 2', () => {
 })
 
 describe('ChannelController components 2. 2', () => {
-  let container
+  let container: HTMLElement
   beforeEach(async () => {
     ;({ container } = render(<ChannelController channelControl={channelController2} t={t} />))
 
@@ -115,28 +116,30 @@ describe('ChannelController components 2. 2', () => {
   })
 
   it('ChannelController components 2 2', () => {
-    userEvent.click(container.querySelector(`button[aria-label="Go to first page"]`))
-    userEvent.type(container.querySelector(`button[aria-label="Go to first page"]`), '{enter}')
+    userEvent.click(container.querySelector(`button[aria-label="Go to first page"]`)!)
+    userEvent.type(container.querySelector(`button[aria-label="Go to first page"]`)!, '{enter}')
 
-    userEvent.click(container.querySelector(`button[aria-label="Go to previous page"]`))
-    userEvent.type(container.querySelector(`button[aria-label="Go to previous page"]`), '{enter}')
+    userEvent.click(container.querySelector(`button[aria-label="Go to previous page"]`)!)
+    userEvent.type(container.querySelector(`button[aria-label="Go to previous page"]`)!, '{enter}')
 
-    userEvent.click(container.querySelector(`button[aria-label="Go to next page"]`))
-    userEvent.type(container.querySelector(`button[aria-label="Go to next page"]`), '{enter}')
+    userEvent.click(container.querySelector(`button[aria-label="Go to next page"]`)!)
+    userEvent.type(container.querySelector(`button[aria-label="Go to next page"]`)!, '{enter}')
 
-    userEvent.click(container.querySelector(`button[aria-label="Go to last page"]`))
-    userEvent.type(container.querySelector(`button[aria-label="Go to last page"]`), '{enter}')
+    userEvent.click(container.querySelector(`button[aria-label="Go to last page"]`)!)
+    userEvent.type(container.querySelector(`button[aria-label="Go to last page"]`)!, '{enter}')
 
-    userEvent.click(container.querySelector(`.pf-v5-c-form-control`))
-    userEvent.type(container.querySelector(`.pf-v5-c-form-control`), '{enter}')
+    userEvent.click(container.querySelector(`.pf-v5-c-form-control`)!)
+    userEvent.type(container.querySelector(`.pf-v5-c-form-control`)!, '{enter}')
   })
 })
 
 describe('ChannelController components 3', () => {
-  let container
+  let container: HTMLElement
+  const setDrawerContent: MockSetDrawerContent = jest.fn()
+  
   beforeEach(async () => {
     ;({ container } = render(
-      <ChannelController channelControl={channelController3} t={t} setDrawerContent={jest.fn} />
+      <ChannelController channelControl={channelController3} t={t} setDrawerContent={setDrawerContent} />
     ))
 
     await waitFor(() => container.querySelector(`button[id="comboChannel"]`))
@@ -150,10 +153,12 @@ describe('ChannelController components 3', () => {
 })
 
 describe('ChannelController components 4', () => {
-  let container
+  let container: HTMLElement
+  const setDrawerContent: MockSetDrawerContent = jest.fn()
+  
   beforeEach(async () => {
     ;({ container } = render(
-      <ChannelController channelControl={channelController4} t={t} setDrawerContent={jest.fn} />
+      <ChannelController channelControl={channelController4} t={t} setDrawerContent={setDrawerContent} />
     ))
 
     await waitFor(() => container.querySelector(`button[id="comboChannel"]`))

@@ -3,15 +3,20 @@
 
 import { render, screen, waitFor } from '@testing-library/react'
 import ClusterDetailsContainer from './ClusterDetailsContainer'
+import { ClusterDetailsContainerControl, ClusterData } from '../types'
 
-const t = (string) => {
+const t = (string: string): string => {
   return string
 }
 
 window.open = () => {} // provide an empty implementation for window.open
 
 describe('ClusterDetailsContainer with no clusters', () => {
-  const mockData = {
+  const mockData: {
+    clusterID: string
+    clusters: ClusterData[]
+    clusterDetailsContainerControl: ClusterDetailsContainerControl
+  } = {
     clusterID: 'cluster1',
     clusters: [],
     clusterDetailsContainerControl: {
@@ -25,7 +30,7 @@ describe('ClusterDetailsContainer with no clusters', () => {
       handleClusterDetailsContainerUpdate: jest.fn(),
     },
   }
-  let container
+  let container: HTMLElement
   beforeEach(async () => {
     ;({ container } = render(
       <ClusterDetailsContainer
@@ -49,7 +54,11 @@ describe('ClusterDetailsContainer with no clusters', () => {
 })
 
 describe('ClusterDetailsContainer with some clusters', () => {
-  const mockData = {
+  const mockData: {
+    clusterID: string
+    clusters: ClusterData[]
+    clusterDetailsContainerControl: ClusterDetailsContainerControl
+  } = {
     clusterID: 'cluster1',
     clusters: [
       {
@@ -91,7 +100,7 @@ describe('ClusterDetailsContainer with some clusters', () => {
     },
   }
 
-  let container
+  let container: HTMLElement
   beforeEach(async () => {
     ;({ container } = render(
       <ClusterDetailsContainer
@@ -111,7 +120,11 @@ describe('ClusterDetailsContainer with some clusters', () => {
 })
 
 describe('ClusterDetailsContainer test functions', () => {
-  const mockData = {
+  const mockData: {
+    clusterID: string
+    clusters: ClusterData[]
+    clusterDetailsContainerControl: ClusterDetailsContainerControl
+  } = {
     clusterID: 'mycluster',
     clusters: [
       {
@@ -146,8 +159,8 @@ describe('ClusterDetailsContainer test functions', () => {
     },
   }
 
-  let container
-  let instance
+  let container: HTMLElement
+  let instance: any
   beforeEach(async () => {
     ;({ container } = render(
       <ClusterDetailsContainer
@@ -155,7 +168,7 @@ describe('ClusterDetailsContainer test functions', () => {
         t={t}
         clusterDetailsContainerControl={mockData.clusterDetailsContainerControl}
         clusterID={mockData.clusterID}
-        ref={(node) => {
+        ref={(node: any) => {
           instance = node
         }}
       />

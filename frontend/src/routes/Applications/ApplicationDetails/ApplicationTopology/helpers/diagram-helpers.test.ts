@@ -1,6 +1,5 @@
 // Copyright (c) 2020 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
-'use strict'
 
 import i18n from 'i18next'
 import { v4 as uuidv4 } from 'uuid'
@@ -23,6 +22,7 @@ import {
   removeReleaseGeneratedSuffix,
 } from './diagram-helpers'
 import { nockIgnoreApiPaths, nockList, nockOff } from '../../../../../lib/nock-util'
+import type { NodeLike, Translator, DetailItem, DetailsList, HelmReleaseDetector, ResourceAction } from '../types'
 
 // Mock UUID v4 to return predictable values during testing
 jest.mock('uuid', () => ({
@@ -32,11 +32,12 @@ jest.mock('uuid', () => ({
 const mockUuidV4 = jest.mocked(uuidv4)
 const MOCKED_UUID = 'test-action-uuid-12345'
 
-const t = i18n.t.bind(i18n)
+const t: Translator = i18n.t.bind(i18n)
 
-window.open = () => {} // provide an empty implementation for window.open
+// Provide an empty implementation for window.open
+window.open = jest.fn()
 
-const node = {
+const node: NodeLike = {
   specs: {
     raw: {
       metadata: {
@@ -47,13 +48,13 @@ const node = {
   },
 }
 
-const propPath = ['specs', 'raw', 'spec', 'clusterSelector', 'matchLabels']
-const propPath_found = ['specs', 'raw', 'metadata', 'namespace']
+const propPath: string[] = ['specs', 'raw', 'spec', 'clusterSelector', 'matchLabels']
+const propPath_found: string[] = ['specs', 'raw', 'metadata', 'namespace']
 const key = 'nskey'
 const defaultValue = 'test'
 
 describe('getNodePropery', () => {
-  const result = { labelValue: 'nskey', value: 'test' }
+  const result: DetailItem = { labelValue: 'nskey', value: 'test' }
   it('get property nodes, not found', () => {
     expect(getNodePropery(node, propPath, key, defaultValue)).toEqual(result)
   })
@@ -66,24 +67,24 @@ describe('getNodePropery', () => {
 })
 
 describe('getNodePropery', () => {
-  const result = { labelValue: 'nskey', value: 'nodeNS' }
+  const result: DetailItem = { labelValue: 'nskey', value: 'nodeNS' }
 
   it('get property nodes, found', () => {
     expect(getNodePropery(node, propPath_found, key)).toEqual(result)
   })
 })
 
-const list = []
+const list: DetailItem[] = []
 describe('addPropertyToList', () => {
-  const result = [{ labelValue: 'nskey', value: 'nodeNS' }]
-  const data = { labelValue: 'nskey', value: 'nodeNS' }
+  const result: DetailItem[] = [{ labelValue: 'nskey', value: 'nodeNS' }]
+  const data: DetailItem = { labelValue: 'nskey', value: 'nodeNS' }
   it('addPropertyToList', () => {
     expect(addPropertyToList(list, data)).toEqual(result)
   })
 })
 
 describe('addPropertyToList undefined list', () => {
-  const data = { labelValue: 'nskey', value: 'nodeNS' }
+  const data: DetailItem = { labelValue: 'nskey', value: 'nodeNS' }
   it('addPropertyToList', () => {
     expect(addPropertyToList(undefined, data)).toEqual(undefined)
   })
@@ -96,7 +97,7 @@ describe('addPropertyToList undefined data', () => {
 })
 
 describe('computeResourceName node with pods no _hostingDeployable', () => {
-  const node = {
+  const node: NodeLike = {
     apiversion: 'v1',
     cluster: 'sharingpenguin',
     container: 'secondary',
@@ -111,12 +112,24 @@ describe('computeResourceName node with pods no _hostingDeployable', () => {
     status: 'Running',
   }
   it('nodeMustHavePods POD no _hostingDeployable', () => {
-    expect(computeResourceName(node, null, 'redis-secondary', { value: 'true' })).toEqual('pod-redis-secondary')
+    expect(
+      computeResourceName(
+        {
+          kind: 'pod',
+          cluster: 'sharingpenguin',
+          name: 'redis-secondary-5bdcfd74c7-22ljj',
+          label: 'app; pod-template-hash=5bdcfd74c7; role=secondary; tier=backend',
+        } as any,
+        null,
+        'redis-secondary',
+        { value: true }
+      )
+    ).toEqual('pod-redis-secondary')
   })
 })
 
 describe('computeResourceName node with pods with _hostingDeployable', () => {
-  const node = {
+  const node: NodeLike = {
     apiversion: 'v1',
     cluster: 'sharingpenguin',
     container: 'secondary',
@@ -132,12 +145,25 @@ describe('computeResourceName node with pods with _hostingDeployable', () => {
     status: 'Running',
   }
   it('nodeMustHavePods POD with _hostingDeployable', () => {
-    expect(computeResourceName(node, null, 'redis-secondary', { value: 'true' })).toEqual('pod-redis-secondary')
+    expect(
+      computeResourceName(
+        {
+          kind: 'pod',
+          cluster: 'sharingpenguin',
+          name: 'redis-secondary-5bdcfd74c7-22ljj',
+          label: 'app=redis; pod-template-hash=5bdcfd74c7; role=secondary; tier=backend',
+          _hostingDeployable: 'aaa',
+        } as any,
+        null,
+        'redis-secondary',
+        { value: true }
+      )
+    ).toEqual('pod-redis-secondary')
   })
 })
 
 describe('getNameWithoutChartRelease', () => {
-  const nodeNameSameAsChartRelease = {
+  const nodeNameSameAsChartRelease: NodeLike = {
     _uid: 'ui-dev-remote/679d65a8-8091-4aa9-87c8-0c9a568ca793',
     cluster: 'ui-dev-remote',
     selfLink: '/api/v1/namespaces/val-helm-alias2-ns/secrets/my-redis',
@@ -151,7 +177,7 @@ describe('getNameWithoutChartRelease', () => {
     _rbac: 'ui-dev-remote_null_secrets',
   }
 
-  const node = {
+  const node: NodeLike = {
     apiversion: 'v1',
     cluster: 'sharingpenguin',
     container: 'secondary',
@@ -167,7 +193,7 @@ describe('getNameWithoutChartRelease', () => {
     status: 'Running',
   }
 
-  const nodePod = {
+  const nodePod: NodeLike = {
     _uid: 'local-cluster/d1332a59-0cdf-4bec-b034-7406e912ef58',
     name: 'nginx-7697f9fd6d-qnf6s',
     selfLink: '/api/v1/namespaces/vb-helm-nginx-ns/pods/nginx-7697f9fd6d-qnf6s',
@@ -185,7 +211,7 @@ describe('getNameWithoutChartRelease', () => {
     namespace: 'vb-helm-nginx-ns',
   }
 
-  const nodeWithReleaseNameInTheName = {
+  const nodeWithReleaseNameInTheName: NodeLike = {
     apigroup: 'apps',
     apiversion: 'v1',
     cluster: 'local-cluster',
@@ -204,7 +230,7 @@ describe('getNameWithoutChartRelease', () => {
     expect(
       getNameWithoutChartRelease(node, 'nginx-ingress-edafb-default-backend', {
         value: false,
-      })
+      } as HelmReleaseDetector)
     ).toEqual('nginx-ingress-edafb-default-backend')
   })
 
@@ -212,7 +238,7 @@ describe('getNameWithoutChartRelease', () => {
     expect(
       getNameWithoutChartRelease(nodeNameSameAsChartRelease, 'my-redis', {
         value: true,
-      })
+      } as HelmReleaseDetector)
     ).toEqual('my-redis')
   })
 
@@ -220,7 +246,7 @@ describe('getNameWithoutChartRelease', () => {
     expect(
       getNameWithoutChartRelease(nodePod, 'nginx-qnf6s', {
         value: true,
-      })
+      } as HelmReleaseDetector)
     ).toEqual('qnf6s')
   })
 
@@ -228,11 +254,11 @@ describe('getNameWithoutChartRelease', () => {
     expect(
       getNameWithoutChartRelease(nodeWithReleaseNameInTheName, 'redis-main', {
         value: false,
-      })
+      } as HelmReleaseDetector)
     ).toEqual('redis-main')
   })
 
-  const nodePodNoDeployable = {
+  const nodePodNoDeployable: NodeLike = {
     apiversion: 'v1',
     cluster: 'sharingpenguin',
     container: 'secondary',
@@ -252,13 +278,13 @@ describe('getNameWithoutChartRelease', () => {
     expect(
       getNameWithoutChartRelease(nodePodNoDeployable, 'nginx-ingress-edafb-default-backend', {
         value: false,
-      })
+      } as HelmReleaseDetector)
     ).toEqual('nginx-ingress-edafb-default-backend')
   })
 })
 
 describe('getNameWithoutChartRelease node with release name plus pod name', () => {
-  const node = {
+  const node: NodeLike = {
     apiversion: 'v1',
     cluster: 'sharingpenguin',
     container: 'secondary',
@@ -278,13 +304,13 @@ describe('getNameWithoutChartRelease node with release name plus pod name', () =
     expect(
       getNameWithoutChartRelease(node, 'nginx-ingress-edafb-controller', {
         value: true,
-      })
+      } as HelmReleaseDetector)
     ).toEqual('controller')
   })
 })
 
 describe('getNameWithoutChartRelease node for helmrelease no label', () => {
-  const node = {
+  const node: NodeLike = {
     apigroup: 'apps.open-cluster-management.io',
     apiversion: 'v1',
     branch: 'main',
@@ -308,13 +334,13 @@ describe('getNameWithoutChartRelease node for helmrelease no label', () => {
     expect(
       getNameWithoutChartRelease(node, 'ch-git-helm/git-helm-chart1-1.1.1', {
         value: true,
-      })
+      } as HelmReleaseDetector)
     ).toEqual('chart1-1.1.1')
   })
 })
 
 describe('getNameWithoutChartRelease node for subscription, with label', () => {
-  const node = {
+  const node: NodeLike = {
     apigroup: 'apps.open-cluster-management.io',
     apiversion: 'v1',
     channel: 'ch-git-helm/git-helm',
@@ -329,12 +355,14 @@ describe('getNameWithoutChartRelease node for subscription, with label', () => {
   }
 
   it('getNameWithoutChartRelease helm release  no no label', () => {
-    expect(getNameWithoutChartRelease(node, 'git-helm-sub', { value: true })).toEqual('git-helm-sub')
+    expect(getNameWithoutChartRelease(node, 'git-helm-sub', { value: true } as HelmReleaseDetector)).toEqual(
+      'git-helm-sub'
+    )
   })
 })
 
 describe('createResourceSearchLink for undefined details', () => {
-  const node = {
+  const node: NodeLike = {
     id: 'id',
     specs: {
       row: 20,
@@ -348,7 +376,7 @@ describe('createResourceSearchLink for undefined details', () => {
 })
 
 describe('createResourceSearchLink for cluster node no name', () => {
-  const node = {
+  const node: NodeLike = {
     id: 'id',
     type: 'cluster',
     specs: {
@@ -370,7 +398,7 @@ describe('createResourceSearchLink for cluster node no name', () => {
 })
 
 describe('createResourceSearchLink for cluster node w name', () => {
-  const node = {
+  const node: NodeLike = {
     id: 'id',
     type: 'cluster',
     name: 'a, b, c',
@@ -393,7 +421,7 @@ describe('createResourceSearchLink for cluster node w name', () => {
 })
 
 describe('createResourceSearchLink for cluster', () => {
-  const node = {
+  const node: NodeLike = {
     type: 'cluster',
     name: 'cls1, cls2, cls3',
     namespace: 'ns',
@@ -416,7 +444,7 @@ describe('createResourceSearchLink for cluster', () => {
 })
 
 describe('createResourceSearchLink for PR', () => {
-  const node = {
+  const node: NodeLike = {
     type: 'placements',
     name: 'rule1',
     namespace: 'ns',
@@ -448,7 +476,7 @@ describe('createResourceSearchLink for PR', () => {
 })
 
 describe('createResourceSearchLink for details', () => {
-  const node = {
+  const node: NodeLike = {
     type: 'deployment',
     name: 'name',
     namespace: 'ns',
@@ -480,7 +508,7 @@ describe('createResourceSearchLink for details', () => {
 })
 
 describe('createResourceSearchLink for details with model info, unique names', () => {
-  const node = {
+  const node: NodeLike = {
     type: 'deployment',
     name: 'name',
     namespace: 'ns',
@@ -517,7 +545,7 @@ describe('createResourceSearchLink for details with model info, unique names', (
 })
 
 describe('createResourceSearchLink for details with model info, same names', () => {
-  const node = {
+  const node: NodeLike = {
     type: 'deployment',
     name: 'name',
     namespace: 'ns',
@@ -554,7 +582,7 @@ describe('createResourceSearchLink for details with model info, same names', () 
 })
 
 describe('createResourceSearchLink for application node', () => {
-  const node = {
+  const node: NodeLike = {
     type: 'application',
     id: 'application--app-test',
     name: '',
@@ -583,7 +611,7 @@ describe('createResourceSearchLink for application node', () => {
 })
 
 describe('addNodeOCPRouteLocationForCluster no host spec', () => {
-  const node = {
+  const node: NodeLike = {
     type: 'route',
     name: 'mortgage-app-deploy',
     namespace: 'default',
@@ -618,7 +646,7 @@ describe('addNodeOCPRouteLocationForCluster no host spec', () => {
       },
     },
   }
-  const obj = {
+  const obj: NodeLike = {
     id: 'objID',
   }
   const result = [
@@ -643,7 +671,7 @@ describe('addNodeOCPRouteLocationForCluster no host spec', () => {
 })
 
 describe('addOCPRouteLocation spec no tls', () => {
-  const node = {
+  const node: NodeLike = {
     type: 'route',
     name: 'mortgage-app-deploy',
     namespace: 'default',
@@ -681,14 +709,14 @@ describe('addOCPRouteLocation spec no tls', () => {
       },
     },
   }
-  const result = []
+  const result: DetailsList = []
   it('addOCPRouteLocation no tls', () => {
     expect(addOCPRouteLocation(node, 'possiblereptile', 'default', [], t)).toEqual(result)
   })
 })
 
 describe('addNodeOCPRouteLocationForCluster spec no route', () => {
-  const node = {
+  const node: NodeLike = {
     type: 'route',
     name: 'mortgage-app-deploy',
     namespace: 'default',
@@ -724,7 +752,7 @@ describe('addNodeOCPRouteLocationForCluster spec no route', () => {
 })
 
 describe('addOCPRouteLocation spec with tls', () => {
-  const node = {
+  const node: NodeLike = {
     type: 'route',
     name: 'mortgage-app-deploy',
     namespace: 'default',
@@ -757,7 +785,7 @@ describe('addOCPRouteLocation spec with tls', () => {
 })
 
 describe('addNodeOCPRouteLocationForCluster', () => {
-  const node = {
+  const node: NodeLike = {
     type: 'route',
     name: 'mortgage-app-deploy',
     namespace: 'default',
@@ -794,7 +822,7 @@ describe('addNodeOCPRouteLocationForCluster', () => {
 })
 
 describe('addNodeOCPRouteLocationForCluster', () => {
-  const node = {
+  const node: NodeLike = {
     type: 'route',
     name: 'mortgage-app-deploy',
     namespace: 'default',
@@ -831,7 +859,7 @@ describe('addNodeOCPRouteLocationForCluster', () => {
 })
 
 describe('addNodeOCPRouteLocationForCluster', () => {
-  const node = {
+  const node: NodeLike = {
     type: 'route',
     name: 'mortgage-app-deploy',
     namespace: 'default',
@@ -875,7 +903,7 @@ describe('addNodeOCPRouteLocationForCluster', () => {
     },
   }
 
-  const obj = {
+  const obj: NodeLike = {
     _uid: 'objID',
     cluster: 'possiblereptile',
   }
@@ -903,7 +931,7 @@ describe('addNodeOCPRouteLocationForCluster', () => {
 })
 
 describe('addNodeOCPRouteLocationForCluster', () => {
-  const node = {
+  const node: NodeLike = {
     type: 'route',
     name: 'mortgage-app-deploy',
     namespace: 'default',
@@ -942,7 +970,7 @@ describe('addNodeOCPRouteLocationForCluster', () => {
     },
   }
 
-  const obj = {
+  const obj: NodeLike = {
     id: 'objID',
     cluster: 'possiblereptile',
   }
@@ -952,7 +980,7 @@ describe('addNodeOCPRouteLocationForCluster', () => {
 })
 
 describe('addNodeOCPRouteLocationForCluster', () => {
-  const node = {
+  const node: NodeLike = {
     type: 'route',
     name: 'mortgage-app-deploy',
     namespace: 'default',
@@ -1003,7 +1031,7 @@ describe('addNodeOCPRouteLocationForCluster', () => {
     },
   }
 
-  const obj = {
+  const obj: NodeLike = {
     cluster: 'possiblereptile',
     _uid: 'objID',
   }
@@ -1031,7 +1059,7 @@ describe('addNodeOCPRouteLocationForCluster', () => {
 })
 
 describe('addIngressNodeInfo 1', () => {
-  const node = {
+  const node: NodeLike = {
     type: 'ingress',
     name: 'mortgage-app-deploy',
     namespace: 'default',
@@ -1109,7 +1137,7 @@ describe('addIngressNodeInfo 1', () => {
 })
 
 describe('addIngressNodeInfo other node type', () => {
-  const node = {
+  const node: NodeLike = {
     type: 'ingress22',
     name: 'mortgage-app-deploy',
     namespace: 'default',
@@ -1129,7 +1157,7 @@ describe('addIngressNodeInfo other node type', () => {
 })
 
 describe('addNodeServiceLocation 1', () => {
-  const node = {
+  const node: NodeLike = {
     type: 'service',
     name: 'mortgage-app-deploy',
     namespace: 'default',
@@ -1164,7 +1192,7 @@ describe('addNodeServiceLocation 1', () => {
 })
 
 describe('addNodeInfoPerCluster 1', () => {
-  const node = {
+  const node: NodeLike = {
     type: 'service',
     name: 'mortgage-app-deploy',
     namespace: 'default',
@@ -1192,7 +1220,7 @@ describe('addNodeInfoPerCluster 1', () => {
       },
     },
   }
-  const testFn = (jest.fn = () => {
+  const testFn = jest.fn(() => {
     return {
       type: 'label',
       labelValue: 'clusterName',
@@ -1200,12 +1228,12 @@ describe('addNodeInfoPerCluster 1', () => {
     }
   })
   it('addNodeInfoPerCluster 1', () => {
-    expect(addNodeInfoPerCluster(node, 'possiblereptile', 'default', [], testFn)).toEqual([])
+    expect(addNodeInfoPerCluster(node, 'possiblereptile', 'default', [], testFn, t)).toEqual([])
   })
 })
 
 describe('addNodeServiceLocationForCluster 1', () => {
-  const node = {
+  const node: NodeLike = {
     type: 'service',
     name: 'mortgage-app-deploy',
     namespace: 'default',
@@ -1233,7 +1261,7 @@ describe('addNodeServiceLocationForCluster 1', () => {
       },
     },
   }
-  const obj = {
+  const obj: NodeLike = {
     cluster: 'possiblereptile',
     clusterIP: '172.30.129.147',
     created: '2020-05-26T19:18:18Z',
@@ -1252,7 +1280,7 @@ describe('addNodeServiceLocationForCluster 1', () => {
 })
 
 describe('addNodeServiceLocationForCluster 1', () => {
-  const node = {
+  const node: NodeLike = {
     type: 'service',
     name: 'mortgage-app-deploy',
     namespace: 'default',
@@ -1280,14 +1308,14 @@ describe('addNodeServiceLocationForCluster 1', () => {
       },
     },
   }
-  const result = []
+  const result: DetailsList = []
   it('addNodeServiceLocationForCluster no obj', () => {
     expect(addNodeServiceLocationForCluster(node, undefined, [], t)).toEqual(result)
   })
 })
 
 describe('processResourceActionLink search view2', () => {
-  const openSearchView = {
+  const openSearchView: ResourceAction = {
     action: 'show_search',
     kind: 'service',
     name: 'frontend',
@@ -1297,12 +1325,12 @@ describe('processResourceActionLink search view2', () => {
     '/multicloud/search?filters={"textsearch":"kind:service namespace:open-cluster-management name:frontend"}'
 
   it('processResourceActionLink opens search view2', () => {
-    expect(processResourceActionLink(openSearchView)).toEqual(result)
+    expect(processResourceActionLink(openSearchView, () => {}, t, 'local-cluster')).toEqual(result)
   })
 })
 
 describe('processResourceActionLink openRemoteresourceYaml', () => {
-  const openRemoteresourceYaml = {
+  const openRemoteresourceYaml: ResourceAction = {
     action: 'show_resource_yaml',
     cluster: 'possiblereptile',
     editLink:
@@ -1311,29 +1339,29 @@ describe('processResourceActionLink openRemoteresourceYaml', () => {
   const result =
     '/multicloud/search/resources/yaml?cluster=possiblereptile&apiversion=abc&kind=Application&name=ui-git&namespace=ns-123'
   it('processResourceActionLink openRemoteresourceYaml', () => {
-    expect(processResourceActionLink(openRemoteresourceYaml)).toEqual(result)
+    expect(processResourceActionLink(openRemoteresourceYaml, () => {}, t, 'local-cluster')).toEqual(result)
   })
 })
 
 describe('processResourceActionLink search view3', () => {
-  const genericLink = {
+  const genericLink: ResourceAction = {
     action: 'open_link',
     targetLink: 'http://www.example.com',
   }
   const result = 'http://www.example.com'
   it('processResourceActionLink opens search view3', () => {
-    expect(processResourceActionLink(genericLink)).toEqual(result)
+    expect(processResourceActionLink(genericLink, () => {}, t, 'local-cluster')).toEqual(result)
   })
 })
 
 describe('processResourceActionLink dummy link', () => {
-  const genericLink = {
+  const genericLink: ResourceAction = {
     action: 'open_link',
     targetLink1: 'http://www.example.com',
-  }
+  } as any
   const result = ''
   it('processResourceActionLink dummy link', () => {
-    expect(processResourceActionLink(genericLink)).toEqual(result)
+    expect(processResourceActionLink(genericLink, () => {}, t, 'local-cluster')).toEqual(result)
   })
 })
 
@@ -1341,7 +1369,7 @@ describe('processResourceActionLink open argo editor', () => {
   beforeEach(() => {
     nockIgnoreApiPaths()
   })
-  const genericLink = {
+  const genericLink: ResourceAction = {
     action: 'open_argo_editor',
     name: 'argo_test',
     namespace: 'argo_test',
@@ -1367,7 +1395,7 @@ describe('processResourceActionLink open route url', () => {
     mockUuidV4.mockReset()
     mockUuidV4.mockReturnValue(MOCKED_UUID)
   })
-  const genericLink = {
+  const genericLink: ResourceAction = {
     action: 'open_route_url',
     name: 'route_test',
     namespace: 'route_test',
@@ -1411,7 +1439,7 @@ describe('parseApplicationNodeName', () => {
 })
 
 describe('createEditLink subscriptionstatus', () => {
-  const node = {
+  const node: NodeLike = {
     name: 'feng-wordpress-subscription-1',
     namespace: 'feng-wordpress',
     type: 'subscription',
@@ -1862,7 +1890,7 @@ describe('createEditLink subscriptionstatus', () => {
 })
 
 describe('createEditLink deployment', () => {
-  const node = {
+  const node: NodeLike = {
     kind: 'deployment',
     apigroup: 'apps',
     apiversion: 'v1',
@@ -1878,7 +1906,7 @@ describe('createEditLink deployment', () => {
 })
 
 describe('createEditLink kind undefined', () => {
-  const node = {
+  const node: NodeLike = {
     apigroup: 'apps',
     apiversion: 'v1',
     cluster: 'local-cluster',

@@ -3,30 +3,34 @@
 
 import { render, screen, waitFor } from '@testing-library/react'
 import ArgoAppDetailsContainer from './ArgoAppDetailsContainer'
+import type { ArgoApp, ArgoAppDetailsContainerControl } from '../types'
 
-const t = (string) => {
+const t = (string: string): string => {
   return string
 }
-window.open = () => {} // provide an empty implementation for window.open
+window.open = (): Window | null => null // provide an empty implementation for window.open
 
 describe('ArgoAppDetailsContainer with no apps', () => {
-  const mockData = {
+  const mockData: {
+    argoAppList: ArgoApp[]
+    argoAppDetailsContainerControl: ArgoAppDetailsContainerControl
+  } = {
     argoAppList: [],
     argoAppDetailsContainerControl: {
       argoAppDetailsContainerData: {
         page: 1,
         startIdx: 0,
         argoAppSearchToggle: false,
-        expandSectionToggleMap: new Set(),
+        expandSectionToggleMap: new Set<number>(),
         selected: undefined,
-        selectedArgpAppList: [],
+        selectedArgoAppList: [],
         isLoading: false,
       },
       handleArgoAppDetailsContainerUpdate: jest.fn(),
       handleErrorMsg: jest.fn(),
     },
   }
-  let container
+  let container: HTMLElement
   beforeEach(async () => {
     ;({ container } = render(
       <ArgoAppDetailsContainer
@@ -48,22 +52,27 @@ describe('ArgoAppDetailsContainer with no apps', () => {
   })
 })
 
-describe('ArgoAppDetailsContainer with no apps', () => {
-  const mockData = {
+describe('ArgoAppDetailsContainer with apps', () => {
+  const mockData: {
+    argoAppList: ArgoApp[]
+    argoAppDetailsContainerControl: ArgoAppDetailsContainerControl
+  } = {
     argoAppList: [
       {
         name: 'test1',
         cluster: 'local-cluster',
         namespace: 'ns1',
-        destinationCluster: 'cluster1',
-        detinationNamespace: 'test1-ns',
+        destinationName: 'cluster1',
+        destinationNamespace: 'test1-ns',
+        healthStatus: 'Healthy',
       },
       {
         name: 'test2',
         cluster: 'local-cluster',
         namespace: 'ns2',
-        destinationCluster: 'cluster2',
-        detinationNamespace: 'test2-ns',
+        destinationName: 'cluster2',
+        destinationNamespace: 'test2-ns',
+        healthStatus: 'Healthy',
       },
     ],
     argoAppDetailsContainerControl: {
@@ -71,9 +80,9 @@ describe('ArgoAppDetailsContainer with no apps', () => {
         page: 1,
         startIdx: 0,
         argoAppSearchToggle: false,
-        expandSectionToggleMap: new Set(),
+        expandSectionToggleMap: new Set<number>(),
         selected: undefined,
-        selectedArgpAppList: [],
+        selectedArgoAppList: [],
         isLoading: false,
       },
       handleArgoAppDetailsContainerUpdate: jest.fn(),
@@ -81,7 +90,7 @@ describe('ArgoAppDetailsContainer with no apps', () => {
     },
   }
 
-  let container
+  let container: HTMLElement
   beforeEach(async () => {
     ;({ container } = render(
       <ArgoAppDetailsContainer
@@ -102,21 +111,26 @@ describe('ArgoAppDetailsContainer with no apps', () => {
 })
 
 describe('ArgoAppDetailsContainer test functions', () => {
-  const mockData = {
+  const mockData: {
+    argoAppList: ArgoApp[]
+    argoAppDetailsContainerControl: ArgoAppDetailsContainerControl
+  } = {
     argoAppList: [
       {
         name: 'test1',
         cluster: 'local-cluster',
         namespace: 'ns1',
-        destinationCluster: 'cluster1',
-        detinationNamespace: 'test1-ns',
+        destinationName: 'cluster1',
+        destinationNamespace: 'test1-ns',
+        healthStatus: 'Healthy',
       },
       {
         name: 'test2',
         cluster: 'local-cluster',
         namespace: 'ns2',
-        destinationCluster: 'cluster2',
-        detinationNamespace: 'test2-ns',
+        destinationName: 'cluster2',
+        destinationNamespace: 'test2-ns',
+        healthStatus: 'Healthy',
       },
     ],
     argoAppDetailsContainerControl: {
@@ -124,9 +138,9 @@ describe('ArgoAppDetailsContainer test functions', () => {
         page: 1,
         startIdx: 0,
         argoAppSearchToggle: false,
-        expandSectionToggleMap: new Set(),
+        expandSectionToggleMap: new Set<number>(),
         selected: undefined,
-        selectedArgpAppList: [],
+        selectedArgoAppList: [],
         isLoading: false,
       },
       handleArgoAppDetailsContainerUpdate: jest.fn(),
@@ -134,16 +148,18 @@ describe('ArgoAppDetailsContainer test functions', () => {
     },
   }
 
-  let container
-  let instance
+  let container: HTMLElement
+  let instance: ArgoAppDetailsContainer
   beforeEach(async () => {
     ;({ container } = render(
       <ArgoAppDetailsContainer
         argoAppList={mockData.argoAppList}
         t={t}
         argoAppDetailsContainerControl={mockData.argoAppDetailsContainerControl}
-        ref={(node) => {
-          instance = node
+        ref={(node: ArgoAppDetailsContainer | null) => {
+          if (node) {
+            instance = node
+          }
         }}
         hubClusterName="local-cluster"
       />

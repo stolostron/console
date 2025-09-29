@@ -11,19 +11,27 @@
 import { render, screen } from '@testing-library/react'
 import { waitForText } from '../../../../../lib/test-util'
 import DetailsView from './DetailsView'
+import { 
+  TopologyNodeWithStatus, 
+  DetailsViewProps, 
+  ActiveFilters, 
+  ArgoAppDetailsContainerData, 
+  ClusterDetailsContainerData,
+  MockTranslationFunction
+} from '../types'
 
-const t = (string) => {
+const t: MockTranslationFunction = (string: string): string => {
   return string
 }
 
 class MockViewContainer {
-  getBoundingClientRect() {
+  getBoundingClientRect(): Map<any, any> {
     return new Map()
   }
 }
 
 describe('DetailsView no components', () => {
-  const returnEmptyArr = jest.fn()
+  const returnEmptyArr = jest.fn<TopologyNodeWithStatus[], []>()
   returnEmptyArr.mockReturnValue([
     {
       uid: 'deployment1',
@@ -38,11 +46,11 @@ describe('DetailsView no components', () => {
           },
         },
       },
-    },
+    } as TopologyNodeWithStatus,
   ])
-  const viewContainer = jest.fn()
+  const viewContainer = jest.fn<MockViewContainer, []>()
   viewContainer.mockReturnValue(new MockViewContainer())
-  const nodeDetails = jest.fn()
+  const nodeDetails = jest.fn<any[], []>()
   nodeDetails.mockReturnValue([])
   const mockData = {
     locale: 'en-US',
@@ -57,7 +65,7 @@ describe('DetailsView no components', () => {
     processActionLink: jest.fn(),
   }
 
-  const laidoutNodes = [
+  const laidoutNodes: TopologyNodeWithStatus[] = [
     {
       id: 'deployment1',
       uid: 'deployment1',
@@ -105,16 +113,29 @@ describe('DetailsView no components', () => {
         y: 1.5,
         section: { name: 'preset', hashCode: 872479835, x: 0, y: 0 },
       },
-    },
+    } as TopologyNodeWithStatus,
   ]
 
   beforeEach(async () => {
+    const mockActiveFilters: ActiveFilters = {}
+    const mockArgoAppDetailsContainerControl = {
+      argoAppDetailsContainerData: {} as ArgoAppDetailsContainerData,
+      handleArgoAppDetailsContainerUpdate: jest.fn(),
+      handleErrorMsg: jest.fn(),
+    }
+    const mockClusterDetailsContainerControl = {
+      clusterDetailsContainerData: {} as ClusterDetailsContainerData,
+      handleClusterDetailsContainerUpdate: jest.fn(),
+    }
+
     render(
       <DetailsView
+        activeFilters={mockActiveFilters}
+        argoAppDetailsContainerControl={mockArgoAppDetailsContainerControl}
+        clusterDetailsContainerControl={mockClusterDetailsContainerControl}
         onClose={mockData.handleClose}
         getLayoutNodes={mockData.getLayoutNodes}
         selectedNodeId={mockData.selectedNodeId}
-        getViewContainer={mockData.getViewContainer}
         processActionLink={mockData.processActionLink}
         nodes={laidoutNodes}
         t={t}
@@ -218,7 +239,7 @@ const mockDetails = {
   ],
 }
 
-const mockLaidoutNodes = {
+const mockLaidoutNodes: { laidoutNodes: TopologyNodeWithStatus[] } = {
   laidoutNodes: [
     {
       id: 'application--mortgage-app',
@@ -707,13 +728,13 @@ const mockLaidoutNodes = {
         y: 481.5,
         section: { name: 'preset', hashCode: 872479835, x: 0, y: 0 },
       },
-    },
+    } as TopologyNodeWithStatus,
   ],
 }
 
-const mockNodeDetails = jest.fn()
+const mockNodeDetails = jest.fn<any[], [any, any, any, any]>()
 mockNodeDetails.mockReturnValue(mockDetails.details)
-const mockLayoutNodes = jest.fn()
+const mockLayoutNodes = jest.fn<TopologyNodeWithStatus[], []>()
 mockLayoutNodes.mockReturnValue(mockLaidoutNodes.laidoutNodes)
 const mockData = {
   locale: 'en-US',
@@ -778,22 +799,35 @@ const mockData = {
 const clusterSelectedNodeId = 'member--clusters--localcluster'
 
 class MockViewContainer2 {
-  getBoundingClientRect() {
+  getBoundingClientRect(): { height: number } {
     return { height: 667 }
   }
 }
 
-const viewContainer2 = jest.fn()
+const viewContainer2 = jest.fn<MockViewContainer2, []>()
 viewContainer2.mockReturnValue(new MockViewContainer2())
 
 describe('DetailsView 1 pod details', () => {
   beforeEach(async () => {
+    const mockActiveFilters: ActiveFilters = {}
+    const mockArgoAppDetailsContainerControl = {
+      argoAppDetailsContainerData: {} as ArgoAppDetailsContainerData,
+      handleArgoAppDetailsContainerUpdate: jest.fn(),
+      handleErrorMsg: jest.fn(),
+    }
+    const mockClusterDetailsContainerControl = {
+      clusterDetailsContainerData: {} as ClusterDetailsContainerData,
+      handleClusterDetailsContainerUpdate: jest.fn(),
+    }
+
     render(
       <DetailsView
+        activeFilters={mockActiveFilters}
+        argoAppDetailsContainerControl={mockArgoAppDetailsContainerControl}
+        clusterDetailsContainerControl={mockClusterDetailsContainerControl}
         onClose={mockData.handleClose}
         getLayoutNodes={mockLayoutNodes}
         selectedNodeId={clusterSelectedNodeId}
-        getViewContainer={viewContainer2}
         processActionLink={mockData.processActionLink}
         nodes={mockLaidoutNodes.laidoutNodes}
         t={t}

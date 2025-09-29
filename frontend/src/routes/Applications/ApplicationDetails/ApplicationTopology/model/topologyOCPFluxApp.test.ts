@@ -2,13 +2,21 @@
 'use strict'
 
 import { getQueryStringForLabel, processSearchResults, generateTopology } from './topologyOCPFluxApp'
+import type {
+  OCPFluxApplicationModel,
+  OCPFluxSearchResult,
+  OCPFluxTopologyResult,
+  ResourceItem,
+  SearchQuery,
+  ClusterInfo,
+} from '../types'
 
 describe('getQueryStringForLabel', () => {
   const label = 'label:app=test-app,app.kubernetes.io/part-of=test-app'
   const namespace = 'test-ns'
   const cluster = 'local-cluster'
 
-  const result = {
+  const result: SearchQuery = {
     filters: [
       { property: 'label', values: ['app=test-app', 'app.kubernetes.io/part-of=test-app'] },
       { property: 'namespace', values: ['test-ns'] },
@@ -33,7 +41,8 @@ describe('generateTopology', () => {
     expect(generateTopology(application, resources, {}, 'local-cluster')).toEqual(result2)
   })
 })
-const searchResults = {
+
+const searchResults: OCPFluxSearchResult = {
   data: {
     searchResult: [
       {
@@ -87,7 +96,7 @@ const searchResults = {
   },
 }
 
-const result = [
+const result: ResourceItem[] = [
   {
     _hubClusterResource: 'true',
     _rbac: 'app1_null_services',
@@ -125,7 +134,8 @@ const result = [
     status: 'Running',
   },
 ]
-const application = {
+
+const application: OCPFluxApplicationModel = {
   app: {
     apiVersion: 'ocp',
     cluster: {
@@ -140,11 +150,13 @@ const application = {
   isArgoApp: false,
   isFluxApp: false,
   isOCPApp: true,
+  isAppSetPullModel: false,
   name: 'nodejs-sample',
   namespace: 'app1',
   placement: undefined,
 }
-const resources = [
+
+const resources: ResourceItem[] = [
   {
     _hubClusterResource: 'true',
     _rbac: 'app1_null_services',
@@ -183,7 +195,7 @@ const resources = [
   },
 ]
 
-const result2 = {
+const result2: OCPFluxTopologyResult = {
   links: [
     {
       from: {
