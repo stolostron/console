@@ -61,7 +61,7 @@ const RoleRoleAssignments = () => {
       return (
         <RoleAssignments
           roleAssignments={roleAssignments}
-          hiddenColumns={['subject']}
+          hiddenColumns={['role']}
           preselected={{ roles: [role?.name ?? ''] }}
         />
       )
