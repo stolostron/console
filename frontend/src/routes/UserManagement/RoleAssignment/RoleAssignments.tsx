@@ -16,6 +16,8 @@ import { RoleAssignmentActionDropdown } from './RoleAssignmentActionDropdown'
 import { RoleAssignmentLabel } from './RoleAssignmentLabel'
 import { RoleAssignmentModal } from '../RoleAssignments/RoleAssignmentModal'
 import { RoleAssignmentStatusComponent } from './RoleAssignmentStatusComponent'
+import { generatePath, Link } from 'react-router-dom-v5-compat'
+import { NavigationPath } from '../../../NavigationPath'
 
 type RoleAssignmentsProps = {
   roleAssignments: FlattenedRoleAssignment[]
@@ -190,7 +192,17 @@ const RoleAssignments = ({
       sort: (a, b) => compareStrings(a.subject.name, b.subject.name),
       cell: (roleAssignment) => {
         const name = roleAssignment.subject.name
-        return name && name.trim() !== '' ? name : '-'
+        const kind = roleAssignment.subject.kind
+
+        if (!name || name.trim() === '') {
+          return '-'
+        }
+        const linkPath =
+          kind === 'Group'
+            ? generatePath(NavigationPath.identitiesGroupsDetails, { id: name })
+            : generatePath(NavigationPath.identitiesUsersDetails, { id: name })
+
+        return <Link to={linkPath}>{name}</Link>
       },
       exportContent: (roleAssignment) => {
         const name = roleAssignment.subject.name
