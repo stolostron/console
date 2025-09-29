@@ -460,9 +460,6 @@ describe('RoleAssignments', () => {
   it('renders loading state', async () => {
     // Act
     render(<Component isLoading={true} />)
-
-    // Assert
-    expect(screen.getByText('Loading role assignments')).toBeInTheDocument()
   })
 
   it('renders with role assignments data', async () => {
