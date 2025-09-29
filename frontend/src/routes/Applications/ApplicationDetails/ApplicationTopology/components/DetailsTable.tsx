@@ -14,7 +14,7 @@ import {
 } from '@patternfly/react-core'
 import { Table, Thead, Tr, Th, Tbody, Td, sortable, TableVariant } from '@patternfly/react-table'
 import { get, orderBy } from 'lodash'
-import { pulseValueArr } from '../elements/helpers/diagram-helpers'
+import { pulseValueArr } from '../helpers/diagram-helpers'
 import {
   PageSizes,
   TableData,

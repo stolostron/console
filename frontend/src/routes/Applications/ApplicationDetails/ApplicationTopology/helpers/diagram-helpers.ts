@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { openArgoCDEditor, openRouteURL } from '../topologyAppSet'
+import { openArgoCDEditor, openRouteURL } from '../model/topologyAppSet'
 import { isSearchAvailable } from './search-helper'
 import queryString from 'query-string'
 import type {
@@ -13,8 +13,8 @@ import type {
   EditLinkParams,
   DetailItem,
   StatusType,
-} from '../../types'
-import { getNestedProperty } from '../../utils'
+} from '../types'
+import { getNestedProperty } from '../utils'
 
 const showResourceYaml = 'show_resource_yaml'
 const apiVersionPath = 'specs.raw.apiVersion'

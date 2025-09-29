@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import type { SearchFilter, SearchQuery } from '../../types'
+import type { SearchFilter, SearchQuery } from '../types'
 
 const MAX_SEARCH_ATTEMPTS = 3
 let searchFailureCount = 0

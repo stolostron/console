@@ -9,18 +9,17 @@ import {
   ListItems,
 } from '../../../../ui-components'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import {
-  ButtonVariant,
-  Card,
-  CardBody,
-  PageSection,
-  Spinner,
-  Flex,
-  FlexItem,
-  Text,
-  Tooltip,
-} from '@patternfly/react-core'
-import { OutlinedQuestionCircleIcon, SyncAltIcon } from '@patternfly/react-icons'
+import { ButtonVariant } from '@patternfly/react-core'
+import { Card } from '@patternfly/react-core'
+import { CardBody } from '@patternfly/react-core'
+import { PageSection } from '@patternfly/react-core'
+import { Spinner } from '@patternfly/react-core'
+import { Flex } from '@patternfly/react-core'
+import { FlexItem } from '@patternfly/react-core'
+import { Text } from '@patternfly/react-core'
+import { Tooltip } from '@patternfly/react-core'
+import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
+import { SyncAltIcon } from '@patternfly/react-icons'
 import { Fragment, useEffect, useState } from 'react'
 import {
   getClusterCount,
@@ -47,8 +46,8 @@ import { getApplicationRepos } from '../../Overview'
 import { ApplicationDataType, useApplicationDetailsContext } from '../ApplicationDetails'
 import { NavigationPath } from '../../../../NavigationPath'
 import { ISyncResourceModalProps, SyncResourceModal } from '../../components/SyncResourceModal'
-import { isSearchAvailable } from '../ApplicationTopology/elements/helpers/search-helper'
-import { getDiagramElements } from '../ApplicationTopology/elements/topology'
+import { isSearchAvailable } from '../ApplicationTopology/helpers/search-helper'
+import { getDiagramElements } from '../ApplicationTopology/model/topology'
 import { getAuthorizedNamespaces, rbacCreate } from '../../../../lib/rbac-util'
 import { generatePath, Link } from 'react-router-dom-v5-compat'
 import { DrawerShapes } from '../ApplicationTopology/components/DrawerShapes'

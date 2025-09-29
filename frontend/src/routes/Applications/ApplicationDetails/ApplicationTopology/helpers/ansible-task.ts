@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { addDetails } from './diagram-helpers'
-import { AnsibleCondition, Pulse, AnsibleJobStatus, DetailsList, NodeLike, Translator } from '../../types'
-import { safeGet } from '../../utils'
+import { AnsibleCondition, Pulse, AnsibleJobStatus, DetailsList, NodeLike, Translator } from '../types'
+import { safeGet } from '../utils'
 
 const ansibleTaskErrorStates: string[] = ['Failed']
 const ansibleTaskSuccessStates: string[] = ['Successful', 'Running']

@@ -13,7 +13,7 @@ import {
   SelectOption,
 } from '@patternfly/react-core'
 import { AcmSelectBase, SelectVariant } from '../../../../../components/AcmSelectBase'
-import { processResourceActionLink, createEditLink } from '../elements/helpers/diagram-helpers'
+import { processResourceActionLink, createEditLink } from '../helpers/diagram-helpers'
 import type {
   ArgoApp,
   ArgoAppDetailsContainerProps,

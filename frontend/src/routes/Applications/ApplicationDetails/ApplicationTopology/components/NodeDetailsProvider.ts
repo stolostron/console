@@ -8,14 +8,14 @@ import {
   setPlacementRuleDeployStatus,
   setClusterStatus,
   setPlacementDeployStatus,
-} from '../statuses/computeStatuses'
+} from '../model/computeStatuses'
 import {
   getNodePropery,
   addPropertyToList,
   addDetails,
   addNodeOCPRouteLocationForCluster,
   addIngressNodeInfo,
-} from '../elements/helpers/diagram-helpers'
+} from '../helpers/diagram-helpers'
 import { getLabels, getMatchLabels } from '../../../CreateSubscriptionApplication/controlData/ControlDataPlacement'
 import { PlacementKind } from '../../../../../resources'
 import { TFunction } from 'react-i18next'

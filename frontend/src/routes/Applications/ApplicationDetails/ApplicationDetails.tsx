@@ -53,12 +53,12 @@ import { searchClient } from '../../Search/search-sdk/search-client'
 import { useSearchCompleteQuery } from '../../Search/search-sdk/search-sdk'
 import { DeleteResourceModal, IDeleteResourceModalProps } from '../components/DeleteResourceModal'
 import { getAppChildResources, getSearchLink, isResourceTypeOf } from '../helpers/resource-helper'
-import { getApplication } from './ApplicationTopology/common/application'
-import { getTopology } from './ApplicationTopology/elements/topology'
-import { getApplicationData } from './ApplicationTopology/elements/topologyUtils'
+import { getApplication } from './ApplicationTopology/model/application'
+import { getTopology } from './ApplicationTopology/model/topology'
+import { getApplicationData } from './ApplicationTopology/model/topologyUtils'
 import { useLocalHubName } from '../../../hooks/use-local-hub'
 import { RecoilStates } from './ApplicationTopology/types'
-import { getResourceStatuses } from './ApplicationTopology/statuses/computeStatuses'
+import { getResourceStatuses } from './ApplicationTopology/model/computeStatuses'
 
 export const ApplicationContext = createContext<{
   readonly actions: null | ReactNode

@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* eslint no-param-reassign: "error" */
 
-import { nodeMustHavePods } from './helpers/diagram-helpers-utils'
+import { nodeMustHavePods } from '../helpers/diagram-helpers-utils'
 import type { ApplicationData, ManagedCluster, Topology, TopologyLink, TopologyNode } from '../types'
 import { deepClone } from '../utils'
 

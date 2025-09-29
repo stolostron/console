@@ -4,7 +4,7 @@
 
 import { getAppSetResourceStatuses } from './resourceStatusesAppSet.ts'
 import { waitFor } from '@testing-library/react'
-import { nockSearch } from '../../../../../lib/nock-util'
+import { nockSearch } from '../../../../../lib/nock-util.js'
 
 describe('getAppSetResourceStatuses', () => {
   it('getAppSetResourceStatuses returns resourceStatuses', async () => {

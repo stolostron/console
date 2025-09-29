@@ -31,7 +31,7 @@ import {
   SubscriptionKind,
 } from '../../../resources'
 import { Cluster } from '../../../resources/utils'
-import { getArgoDestinationCluster } from '../ApplicationDetails/ApplicationTopology/elements/topologyArgo'
+import { getArgoDestinationCluster } from '../ApplicationDetails/ApplicationTopology/model/topologyArgo'
 import { getSubscriptionAnnotations, isLocalSubscription } from './subscriptions'
 import AcmTimestamp from '../../../lib/AcmTimestamp'
 

@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { getPulseStatusForAnsibleNode, showAnsibleJobDetails } from '../elements/helpers/ansible-task'
+import { getPulseStatusForAnsibleNode, showAnsibleJobDetails } from '../helpers/ansible-task'
 import {
   addDetails,
   addNodeServiceLocation,
@@ -8,7 +8,7 @@ import {
   createEditLink,
   getNodePropery,
   pulseValueArr,
-} from '../elements/helpers/diagram-helpers'
+} from '../helpers/diagram-helpers'
 import {
   filterSubscriptionObject,
   getActiveFilterCodes,
@@ -18,8 +18,8 @@ import {
   isResourceNamespaceScoped,
   nodeMustHavePods,
   showMissingClusterDetails,
-} from '../elements/helpers/diagram-helpers-utils'
-import { isSearchAvailable } from '../elements/helpers/search-helper'
+} from '../helpers/diagram-helpers-utils'
+import { isSearchAvailable } from '../helpers/search-helper'
 import type {
   TopologyNodeWithStatus,
   PulseColor,

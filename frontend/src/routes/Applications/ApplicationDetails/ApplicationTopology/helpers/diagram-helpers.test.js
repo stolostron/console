@@ -22,7 +22,7 @@ import {
   processResourceActionLink,
   removeReleaseGeneratedSuffix,
 } from './diagram-helpers'
-import { nockIgnoreApiPaths, nockList, nockOff } from '../../../../../../lib/nock-util'
+import { nockIgnoreApiPaths, nockList, nockOff } from '../../../../../lib/nock-util'
 
 // Mock UUID v4 to return predictable values during testing
 jest.mock('uuid', () => ({

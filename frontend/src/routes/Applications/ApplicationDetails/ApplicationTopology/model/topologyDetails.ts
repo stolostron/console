@@ -6,7 +6,7 @@ import {
   getNameWithoutPodHash,
   getNameWithoutChartRelease,
   computeResourceName,
-} from './helpers/diagram-helpers'
+} from '../helpers/diagram-helpers'
 import {
   getClusterName,
   getRouteNameWithoutIngressHash,
@@ -15,7 +15,7 @@ import {
   getNameWithoutVolumePostfix,
   getNameWithoutVMTypeHash,
   getVMNameWithoutPodHash,
-} from './helpers/diagram-helpers-utils'
+} from '../helpers/diagram-helpers-utils'
 import type {
   ResourceStatuses,
   ResourceMapObject,

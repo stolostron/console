@@ -3,7 +3,7 @@
 import React, { Component, Fragment, KeyboardEvent, MouseEvent } from 'react'
 import classNames from 'classnames'
 import { Button, Spinner, Tabs, Tab, TabTitleText } from '@patternfly/react-core'
-import { createResourceSearchLink, createResourceURL, getFilteredNode } from '../elements/helpers/diagram-helpers'
+import { createResourceSearchLink, createResourceURL, getFilteredNode } from '../helpers/diagram-helpers'
 import ClusterDetailsContainer from './ClusterDetailsContainer'
 import ArgoAppDetailsContainer from './ArgoAppDetailsContainer'
 import DetailsTable from './DetailsTable'
