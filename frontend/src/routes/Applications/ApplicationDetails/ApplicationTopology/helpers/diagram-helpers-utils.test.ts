@@ -875,7 +875,7 @@ describe('getOnlineCluster ok and pending', () => {
 })
 
 describe('getActiveFilterCodes all statuses filtered', () => {
-  const resourceStatuses = new Set<StatusType>(['checkmark', 'warning', 'pending', 'failure'])
+  const resourceStatuses = new Set(['green', 'yellow', 'orange', 'red'])
 
   it('should get filter codes', () => {
     expect(getActiveFilterCodes(resourceStatuses)).toEqual(new Set([3, 2, 1, 0]))

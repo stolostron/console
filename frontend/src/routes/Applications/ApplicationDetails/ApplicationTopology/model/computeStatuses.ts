@@ -394,7 +394,7 @@ export const getPulseStatusForArgoApp = (node: TopologyNodeWithStatus, isAppSet?
  * @param hubClusterName - Name of the hub cluster
  * @returns The pulse color representing cluster status
  */
-export const getPulseStatusForCluster = (node: TopologyNodeWithStatus, hubClusterName: string): PulseColor => {
+export const getPulseStatusForCluster = (node: TopologyNodeWithStatus, hubClusterName?: string): PulseColor => {
   // Gather cluster information from various sources
   const clusters: ClusterInfo[] = safeGet<ClusterInfo[]>(node, 'specs.clusters', [])
   const appClusters = safeGet<string[]>(node, 'specs.appClusters', [])

@@ -1,23 +1,15 @@
-// Copyright (c) 2022 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
-'use strict'
 
 import { getAppSetResourceStatuses } from './resourceStatusesAppSet'
 import { waitFor } from '@testing-library/react'
 import { nockSearch } from '../../../../../lib/nock-util'
-import {
-  AppSetApplicationData,
-  AppSetApplicationModel,
-  ApplicationSet,
-  SearchQuery,
-  ResourceStatusData,
-} from '../types'
+import { AppSetApplicationData, AppSetApplicationModel, SearchQuery } from '../types'
 
 describe('getAppSetResourceStatuses', () => {
   it('getAppSetResourceStatuses returns resourceStatuses', async () => {
     const search = nockSearch(mockSearchQuery, mockSearchResponse)
     await waitFor(() => expect(search.isDone()).toBeTruthy())
-    let result = await getAppSetResourceStatuses(application, appData)
+    const result = await getAppSetResourceStatuses(application, appData)
     expect(result).toStrictEqual({ resourceStatuses: mockSearchResponse })
   })
 })
@@ -25,6 +17,17 @@ describe('getAppSetResourceStatuses', () => {
 interface TestAppSetApplicationData extends AppSetApplicationData {
   subscription: null
   argoAppsLabelNames?: string[]
+}
+interface MockSearchResponse {
+  data: {
+    searchResult: Array<{
+      __typename: string
+      items: any[]
+      related: any[] | null
+    }>
+  }
+  loading?: boolean
+  networkStatus?: number
 }
 
 const appData: TestAppSetApplicationData = {
@@ -40,85 +43,85 @@ const appData: TestAppSetApplicationData = {
 const application: AppSetApplicationModel = {
   name: 'mock-app',
   namespace: 'mock-ns',
-  app: {
-    apiVersion: 'argoproj.io/v1alpha1',
-    kind: 'ApplicationSet',
-    metadata: {
-      creationTimestamp: '2022-12-07T16:04:20Z',
-      generation: 1,
-      name: 'mock-app',
-      namespace: 'mock-ns',
-      resourceVersion: '11864536',
-      uid: 'b12d45a2-b9c3-4e04-8f73-c9d78c22ca82',
-    },
-    spec: {
-      generators: [
-        {
-          clusterDecisionResource: {
-            configMapRef: 'acm-placement',
-            labelSelector: {
-              matchLabels: {
-                'cluster.open-cluster-management.io/placement': 'mock-app-placement',
-              },
-            },
-            requeueAfterSeconds: 180,
-          },
-        },
-      ],
-      template: {
-        metadata: {
-          labels: {
-            'velero.io/exclude-from-backup': 'true',
-          },
-          name: 'mock-app-{{name}}',
-        },
-        spec: {
-          destination: {
-            namespace: 'cluster-configs-rhacm',
-            server: '{{server}}',
-          },
-          project: 'default',
-          source: {
-            path: 'cluster/console',
-            repoURL: 'https://github.com/mock/mock',
-            targetRevision: 'main',
-          },
-          syncPolicy: {
-            automated: {
-              prune: true,
-              selfHeal: true,
-            },
-            syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
-          },
-        },
-      },
-    },
-    status: {
-      conditions: [
-        {
-          lastTransitionTime: '2022-12-07T16:04:20Z',
-          message: 'Successfully generated parameters for all Applications',
-          reason: 'ApplicationSetUpToDate',
-          status: 'False',
-          type: 'ErrorOccurred',
-        },
-        {
-          lastTransitionTime: '2022-12-07T16:04:20Z',
-          message: 'Successfully generated parameters for all Applications',
-          reason: 'ParametersGenerated',
-          status: 'True',
-          type: 'ParametersGenerated',
-        },
-        {
-          lastTransitionTime: '2022-12-07T16:04:20Z',
-          message: 'ApplicationSet up to date',
-          reason: 'ApplicationSetUpToDate',
-          status: 'True',
-          type: 'ResourcesUpToDate',
-        },
-      ],
-    },
-  } as ApplicationSet,
+  // app: {
+  //   apiVersion: 'argoproj.io/v1alpha1',
+  //   kind: 'ApplicationSet',
+  //   metadata: {
+  //     creationTimestamp: '2022-12-07T16:04:20Z',
+  //     generation: 1,
+  //     name: 'mock-app',
+  //     namespace: 'mock-ns',
+  //     resourceVersion: '11864536',
+  //     uid: 'b12d45a2-b9c3-4e04-8f73-c9d78c22ca82',
+  //   },
+  //   spec: {
+  //     generators: [
+  //       {
+  //         clusterDecisionResource: {
+  //           configMapRef: 'acm-placement',
+  //           labelSelector: {
+  //             matchLabels: {
+  //               'cluster.open-cluster-management.io/placement': 'mock-app-placement',
+  //             },
+  //           },
+  //           requeueAfterSeconds: 180,
+  //         },
+  //       },
+  //     ],
+  //     template: {
+  //       metadata: {
+  //         labels: {
+  //           'velero.io/exclude-from-backup': 'true',
+  //         },
+  //         name: 'mock-app-{{name}}',
+  //       },
+  //       spec: {
+  //         destination: {
+  //           namespace: 'cluster-configs-rhacm',
+  //           server: '{{server}}',
+  //         },
+  //         project: 'default',
+  //         source: {
+  //           path: 'cluster/console',
+  //           repoURL: 'https://github.com/mock/mock',
+  //           targetRevision: 'main',
+  //         },
+  //         syncPolicy: {
+  //           automated: {
+  //             prune: true,
+  //             selfHeal: true,
+  //           },
+  //           syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
+  //         },
+  //       },
+  //     },
+  //   },
+  //   status: {
+  //     conditions: [
+  //       {
+  //         lastTransitionTime: '2022-12-07T16:04:20Z',
+  //         message: 'Successfully generated parameters for all Applications',
+  //         reason: 'ApplicationSetUpToDate',
+  //         status: 'False',
+  //         type: 'ErrorOccurred',
+  //       },
+  //       {
+  //         lastTransitionTime: '2022-12-07T16:04:20Z',
+  //         message: 'Successfully generated parameters for all Applications',
+  //         reason: 'ParametersGenerated',
+  //         status: 'True',
+  //         type: 'ParametersGenerated',
+  //       },
+  //       {
+  //         lastTransitionTime: '2022-12-07T16:04:20Z',
+  //         message: 'ApplicationSet up to date',
+  //         reason: 'ApplicationSetUpToDate',
+  //         status: 'True',
+  //         type: 'ResourcesUpToDate',
+  //       },
+  //     ],
+  //   },
+  // } as AppSetApplicationModel,
   appSetApps: [
     {
       metadata: {
@@ -359,7 +362,7 @@ const mockSearchQuery: MockSearchQuery = {
     'query searchResultItemsAndRelatedItems($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n    related {\n      kind\n      items\n      __typename\n    }\n    __typename\n  }\n}',
 }
 
-const mockSearchResponse: ResourceStatusData = {
+const mockSearchResponse: MockSearchResponse = {
   data: {
     searchResult: [
       {
@@ -550,4 +553,6 @@ const mockSearchResponse: ResourceStatusData = {
       },
     ],
   },
+  loading: false,
+  networkStatus: 7,
 }

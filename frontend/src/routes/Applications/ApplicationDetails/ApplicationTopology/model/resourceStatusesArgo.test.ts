@@ -5,7 +5,7 @@
 import { getArgoResourceStatuses } from './resourceStatusesArgo'
 import { waitFor } from '@testing-library/react'
 import { nockSearch } from '../../../../../lib/nock-util'
-import { SearchQuery } from '../types'
+import { ApplicationModel, SearchQuery, Topology } from '../types'
 
 interface MockSearchQuery {
   operationName: string
@@ -283,6 +283,8 @@ interface MockSearchResponse {
       related: any[] | null
     }>
   }
+  loading?: boolean
+  networkStatus?: number
 }
 
 const mockSearchResponse: MockSearchResponse = {
@@ -12964,6 +12966,7 @@ const mockSearchResponse: MockSearchResponse = {
       },
     ],
   },
+  loading: false,
   networkStatus: 7,
 }
 
@@ -14656,7 +14659,7 @@ describe('getResourceStatuses', () => {
     isOCPApp: false,
     isFluxApp: false,
     isAppSetPullModel: false,
-  }
+  } as unknown as ApplicationModel
 
   const topology = {
     nodes: [
@@ -15083,9 +15086,7 @@ describe('getResourceStatuses', () => {
         type: '',
       },
     ],
-  }
-  // const f =
-  //   '{"operationName":"searchResultItemsAndRelatedItems","variables":{"input":[{"keywords":[],"filters":[{"property":"kind","values":["application"]},{"property":"apigroup","values":["argoproj.io"]},{"property":"repoURL","values":["https://github.com/fxiang1/app-samples"]},{"property":"path","values":["multiresource"]},{"property":"chart","values":[null]},{"property":"targetRevision","values":["HEAD"]}],"relatedKinds":[]}]},"query":"query searchResultItemsAndRelatedItems($input: [SearchInput]) {\\n  searchResult: search(input: $input) {\\n    items\\n    related {\\n      kind\\n      items\\n      __typename\\n    }\\n    __typename\\n  }\\n}"}'
+  } as Topology
   it('getResourceStatuses returns resourceStatuses', async () => {
     const search0 = nockSearch(mockSearchQuery2, mockSearchResponse2)
     await waitFor(() => expect(search0.isDone()).toBeTruthy())
@@ -15828,6 +15829,7 @@ const mockSearchResponse6: MockSearchResponse = {
       },
     ],
   },
+  loading: false,
   networkStatus: 7,
 }
 
@@ -16067,7 +16069,7 @@ describe('getResourceStatuses cluster scoped resources', () => {
     isOCPApp: false,
     isFluxApp: false,
     isAppSetPullModel: false,
-  }
+  } as unknown as ApplicationModel
 
   const topology = {
     nodes: [
@@ -16541,7 +16543,7 @@ describe('getResourceStatuses cluster scoped resources', () => {
         type: '',
       },
     ],
-  }
+  } as Topology
 
   it('getResourceStatuses work with cluster scoped resources', async () => {
     const search0 = nockSearch(mockSearchQuery3, mockSearchResponse3)
