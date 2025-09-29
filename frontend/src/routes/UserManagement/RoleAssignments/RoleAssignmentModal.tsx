@@ -100,7 +100,13 @@ const RoleAssignmentModal = ({ close, isOpen, isEditing, preselected }: RoleAssi
   }
 
   return (
-    <AcmModal isOpen={isOpen} onClose={close} variant={ModalVariant.large} height="90%">
+    <AcmModal 
+      isOpen={isOpen} 
+      onClose={close} 
+      variant={ModalVariant.large} 
+      height="90%"
+      aria-label={isEditing ? t('Edit role assignment') : t('Create role assignment')}
+    >
       <RoleAssignmentForm
         isEditing={isEditing}
         onCancel={close}

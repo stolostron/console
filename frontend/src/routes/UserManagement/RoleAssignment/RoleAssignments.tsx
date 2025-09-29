@@ -20,7 +20,7 @@ import { generatePath, Link } from 'react-router-dom-v5-compat'
 import { NavigationPath } from '../../../NavigationPath'
 
 type RoleAssignmentsProps = {
-  roleAssignments: FlattenedRoleAssignment[]
+  roleAssignments: FlattenedRoleAssignment[] | undefined
   isLoading?: boolean
   hiddenColumns?: ('subject' | 'role' | 'clusters' | 'name')[]
   // isCreateButtonHidden?: boolean
@@ -36,7 +36,11 @@ const RoleAssignments = ({
 }: RoleAssignmentsProps) => {
   const { t } = useTranslation()
   // Key function for the table that generates a unique key for each role assignment
-  const keyFn = useCallback((roleAssignment: FlattenedRoleAssignment) => roleAssignment.name, [])
+  const keyFn = useCallback(
+    (roleAssignment: FlattenedRoleAssignment) =>
+      `${roleAssignment.relatedMulticlusterRoleAssignment.metadata.name}-${roleAssignment.name}-${roleAssignment.subject.name}-${roleAssignment.clusterRole}`,
+    []
+  )
 
   // Modal state for delete confirmation
   const [deleteModalProps, setDeleteModalProps] = useState<
@@ -100,7 +104,7 @@ const RoleAssignments = ({
     const allStatuses = new Set<string>()
 
     // Extract all unique values from role assignments
-    roleAssignments.forEach((roleAssignment) => {
+    roleAssignments?.forEach((roleAssignment) => {
       // Add single role
       allRoles.add(roleAssignment.clusterRole)
 
@@ -321,7 +325,7 @@ const RoleAssignments = ({
         isOpen={isCreateModalOpen}
         preselected={preselected}
       />
-      <BulkActionModal<FlattenedRoleAssignment> {...deleteModalProps} />
+      {deleteModalProps.open && <BulkActionModal<FlattenedRoleAssignment> {...deleteModalProps} />}
     </PageSection>
   )
 }
