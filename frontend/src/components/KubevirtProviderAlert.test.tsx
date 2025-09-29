@@ -50,19 +50,19 @@ jest.mock('../lib/operatorCheck', () => ({
   useOperatorCheck: jest.fn(),
 }))
 
-// Mock useVirtualMachineDetection
-jest.mock('../hooks/useVirtualMachineDetection', () => ({
-  useVirtualMachineDetection: jest.fn(() => ({
-    hasVirtualMachines: false,
-    isLoading: false,
+// Mock useSearchResultRelatedCountQuery for the useClustersWithVirtualMachines hook
+jest.mock('../routes/Search/search-sdk/search-sdk', () => ({
+  useSearchResultRelatedCountQuery: jest.fn(() => ({
+    data: {
+      searchResult: [
+        {
+          related: [{ kind: 'cluster', count: 0 }],
+        },
+      ],
+    },
+    loading: false,
     error: undefined,
-    virtualMachines: [],
   })),
-}))
-
-// Mock useFleetSearchPoll for the useClustersWithVirtualMachines hook
-jest.mock('@stolostron/multicluster-sdk', () => ({
-  useFleetSearchPoll: jest.fn(() => [[], true, undefined, jest.fn()]), // [data, loaded, error, refetch]
 }))
 
 // Mock useAllClusters
@@ -89,7 +89,7 @@ jest.mock('../lib/doc-util', () => ({
 
 import { useSharedSelectors } from '../shared-recoil'
 import { SupportedOperator, useOperatorCheck } from '../lib/operatorCheck'
-import { useFleetSearchPoll } from '@stolostron/multicluster-sdk'
+import { useSearchResultRelatedCountQuery } from '../routes/Search/search-sdk/search-sdk'
 import { useAllClusters } from '../routes/Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { useLocalHubName } from '../hooks/use-local-hub'
 import { useClusterVersion } from '../hooks/use-cluster-version'
@@ -98,7 +98,9 @@ import { handleSemverOperatorComparison } from '../lib/search-utils'
 
 const mockUseSharedSelectors = useSharedSelectors as jest.MockedFunction<typeof useSharedSelectors>
 const mockUseOperatorCheck = useOperatorCheck as jest.MockedFunction<typeof useOperatorCheck>
-const mockUseFleetSearchPoll = useFleetSearchPoll as jest.MockedFunction<typeof useFleetSearchPoll>
+const mockUseSearchResultRelatedCountQuery = useSearchResultRelatedCountQuery as jest.MockedFunction<
+  typeof useSearchResultRelatedCountQuery
+>
 const mockUseAllClusters = useAllClusters as jest.MockedFunction<typeof useAllClusters>
 const mockUseLocalHubName = useLocalHubName as jest.MockedFunction<typeof useLocalHubName>
 const mockUseClusterVersion = useClusterVersion as jest.MockedFunction<typeof useClusterVersion>
@@ -186,7 +188,17 @@ describe('KubevirtProviderAlert', () => {
     mockUseAllClusters.mockReturnValue([])
     mockUseLocalHubName.mockReturnValue('local-cluster')
     mockUseMultiClusterHubConsoleUrl.mockReturnValue('/console')
-    mockUseFleetSearchPoll.mockReturnValue([[], true, undefined, jest.fn()])
+    mockUseSearchResultRelatedCountQuery.mockReturnValue({
+      data: {
+        searchResult: [
+          {
+            related: [{ kind: 'cluster', count: 0 }],
+          },
+        ],
+      },
+      loading: false,
+      error: undefined,
+    } as any)
   })
 
   it('should render alert when operator is not installed and variant is provided', () => {
@@ -335,12 +347,17 @@ describe('KubevirtProviderAlert', () => {
       mockHandleSemverOperatorComparison.mockReturnValue(false) // version is NOT less than 4.20
 
       // Mock VM search returning clusters with VMs
-      const mockVMs = [
-        { cluster: 'cluster1' },
-        { cluster: 'cluster2' },
-        { cluster: 'cluster1' }, // duplicate cluster should be deduplicated
-      ]
-      mockUseFleetSearchPoll.mockReturnValue([mockVMs, true, undefined, jest.fn()])
+      mockUseSearchResultRelatedCountQuery.mockReturnValue({
+        data: {
+          searchResult: [
+            {
+              related: [{ kind: 'cluster', count: 2 }],
+            },
+          ],
+        },
+        loading: false,
+        error: undefined,
+      } as any)
 
       renderKubevirtProviderAlert({ variant: 'search' })
 
@@ -364,8 +381,17 @@ describe('KubevirtProviderAlert', () => {
       mockHandleSemverOperatorComparison.mockReturnValue(true) // version IS less than 4.20
 
       // Mock VM search returning clusters with VMs
-      const mockVMs = [{ cluster: 'cluster1' }]
-      mockUseFleetSearchPoll.mockReturnValue([mockVMs, true, undefined, jest.fn()])
+      mockUseSearchResultRelatedCountQuery.mockReturnValue({
+        data: {
+          searchResult: [
+            {
+              related: [{ kind: 'cluster', count: 1 }],
+            },
+          ],
+        },
+        loading: false,
+        error: undefined,
+      } as any)
 
       renderKubevirtProviderAlert({ variant: 'search' })
 
@@ -387,7 +413,17 @@ describe('KubevirtProviderAlert', () => {
         error: undefined,
       })
       mockHandleSemverOperatorComparison.mockReturnValue(false)
-      mockUseFleetSearchPoll.mockReturnValue([[], true, undefined, jest.fn()])
+      mockUseSearchResultRelatedCountQuery.mockReturnValue({
+        data: {
+          searchResult: [
+            {
+              related: [{ kind: 'cluster', count: 0 }],
+            },
+          ],
+        },
+        loading: false,
+        error: undefined,
+      } as any)
 
       renderKubevirtProviderAlert({ variant: 'clusterDetails' })
 
@@ -408,7 +444,17 @@ describe('KubevirtProviderAlert', () => {
         error: undefined,
       })
       mockHandleSemverOperatorComparison.mockReturnValue(true)
-      mockUseFleetSearchPoll.mockReturnValue([[], true, undefined, jest.fn()])
+      mockUseSearchResultRelatedCountQuery.mockReturnValue({
+        data: {
+          searchResult: [
+            {
+              related: [{ kind: 'cluster', count: 0 }],
+            },
+          ],
+        },
+        loading: false,
+        error: undefined,
+      } as any)
 
       renderKubevirtProviderAlert({ variant: 'clusterDetails' })
 
@@ -432,7 +478,17 @@ describe('KubevirtProviderAlert', () => {
       })
       mockUseLocalHubName.mockReturnValue('local-cluster')
       mockUseMultiClusterHubConsoleUrl.mockReturnValue('/console')
-      mockUseFleetSearchPoll.mockReturnValue([[], true, undefined, jest.fn()])
+      mockUseSearchResultRelatedCountQuery.mockReturnValue({
+        data: {
+          searchResult: [
+            {
+              related: [{ kind: 'cluster', count: 0 }],
+            },
+          ],
+        },
+        loading: false,
+        error: undefined,
+      } as any)
     })
 
     it('should render label when useLabelAlert is true with variant', () => {
@@ -447,6 +503,107 @@ describe('KubevirtProviderAlert', () => {
       expect(screen.getByText('Operator recommended')).toBeInTheDocument()
       expect(screen.getByText('Operator recommended').closest('.pf-v5-c-label')).toBeInTheDocument()
     })
+
+    describe('hideAlertWhenNoVMsExists functionality', () => {
+      beforeEach(() => {
+        mockUseOperatorCheck.mockReturnValue({
+          operator: SupportedOperator.kubevirt,
+          installed: true,
+          pending: false,
+          version: 'v4.12.0',
+        })
+        mockUseLocalHubName.mockReturnValue('local-cluster')
+        mockUseClusterVersion.mockReturnValue({
+          version: '4.20.0',
+          isLoading: false,
+          error: undefined,
+        })
+        mockHandleSemverOperatorComparison.mockReturnValue(false)
+      })
+
+      it('should hide alert when hideAlertWhenNoVMsExists is true and no VMs exist', () => {
+        // Mock no VMs found
+        mockUseSearchResultRelatedCountQuery.mockReturnValue({
+          data: {
+            searchResult: [
+              {
+                related: [{ kind: 'cluster', count: 0 }],
+              },
+            ],
+          },
+          loading: false,
+          error: undefined,
+        } as any)
+
+        const { container } = renderKubevirtProviderAlert({
+          hideAlertWhenNoVMsExists: true,
+          variant: 'search',
+        })
+
+        // When hideAlertWhenNoVMsExists is true and no VMs exist, component should not render
+        expect(container.firstChild).toBeNull()
+      })
+
+      it('should show alert when hideAlertWhenNoVMsExists is true but VMs exist', () => {
+        // Mock VMs found in clusters
+        mockUseSearchResultRelatedCountQuery.mockReturnValue({
+          data: {
+            searchResult: [
+              {
+                related: [{ kind: 'cluster', count: 2 }],
+              },
+            ],
+          },
+          loading: false,
+          error: undefined,
+        } as any)
+
+        // Set operator as not installed to trigger alert display
+        mockUseOperatorCheck.mockReturnValue({
+          operator: SupportedOperator.kubevirt,
+          installed: false,
+          pending: false,
+          version: undefined,
+        })
+
+        renderKubevirtProviderAlert({
+          hideAlertWhenNoVMsExists: true,
+          variant: 'search',
+        })
+
+        expect(screen.getByText('Centrally manage VMs with Fleet Virtualization')).toBeInTheDocument()
+      })
+
+      it('should show alert when hideAlertWhenNoVMsExists is false regardless of VM count', () => {
+        // Mock no VMs found
+        mockUseSearchResultRelatedCountQuery.mockReturnValue({
+          data: {
+            searchResult: [
+              {
+                related: [{ kind: 'cluster', count: 0 }],
+              },
+            ],
+          },
+          loading: false,
+          error: undefined,
+        } as any)
+
+        // Set operator as not installed to trigger alert display
+        mockUseOperatorCheck.mockReturnValue({
+          operator: SupportedOperator.kubevirt,
+          installed: false,
+          pending: false,
+          version: undefined,
+        })
+
+        renderKubevirtProviderAlert({
+          hideAlertWhenNoVMsExists: false,
+          variant: 'search',
+        })
+
+        expect(screen.getByText('Centrally manage VMs with Fleet Virtualization')).toBeInTheDocument()
+      })
+    })
   })
 
   describe('edge cases', () => {
@@ -457,7 +614,17 @@ describe('KubevirtProviderAlert', () => {
         pending: false,
         version: undefined,
       })
-      mockUseFleetSearchPoll.mockReturnValue([[], true, undefined, jest.fn()])
+      mockUseSearchResultRelatedCountQuery.mockReturnValue({
+        data: {
+          searchResult: [
+            {
+              related: [{ kind: 'cluster', count: 0 }],
+            },
+          ],
+        },
+        loading: false,
+        error: undefined,
+      } as any)
       mockHandleSemverOperatorComparison.mockReturnValue(true)
 
       // Test with no version and hub cluster not found - both should default to upgrade path
@@ -486,7 +653,11 @@ describe('KubevirtProviderAlert', () => {
 
     it('should handle VM search errors', () => {
       const searchError = new Error('Search failed')
-      mockUseFleetSearchPoll.mockReturnValue([[], true, searchError, jest.fn()])
+      mockUseSearchResultRelatedCountQuery.mockReturnValue({
+        data: undefined,
+        loading: false,
+        error: searchError,
+      } as any)
       renderKubevirtProviderAlert({ variant: 'search' })
       expect(
         screen.getByText(
@@ -496,7 +667,17 @@ describe('KubevirtProviderAlert', () => {
     })
 
     it('should handle invalid data format', () => {
-      mockUseFleetSearchPoll.mockReturnValue(['invalid-data' as any, true, undefined, jest.fn()])
+      mockUseSearchResultRelatedCountQuery.mockReturnValue({
+        data: {
+          searchResult: [
+            {
+              related: undefined,
+            },
+          ],
+        },
+        loading: false,
+        error: undefined,
+      } as any)
       renderKubevirtProviderAlert({ variant: 'search' })
       expect(
         screen.getByText(
@@ -506,15 +687,18 @@ describe('KubevirtProviderAlert', () => {
     })
 
     it('should deduplicate clusters and filter invalid entries', () => {
-      const mockVMs = [
-        { cluster: 'cluster1' },
-        { cluster: 'cluster2' },
-        { cluster: 'cluster1' }, // duplicate
-        { name: 'vm-without-cluster' }, // missing cluster
-        { cluster: null }, // null cluster
-        { cluster: '' }, // empty cluster
-      ]
-      mockUseFleetSearchPoll.mockReturnValue([mockVMs, true, undefined, jest.fn()])
+      // Mock VM search returning 2 clusters (deduplication handled by the API)
+      mockUseSearchResultRelatedCountQuery.mockReturnValue({
+        data: {
+          searchResult: [
+            {
+              related: [{ kind: 'cluster', count: 2 }],
+            },
+          ],
+        },
+        loading: false,
+        error: undefined,
+      } as any)
 
       renderKubevirtProviderAlert({ variant: 'search' })
 
