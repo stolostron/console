@@ -91,6 +91,7 @@ import { handleStandardComparison, handleSemverOperatorComparison } from '../../
 import { useLocalHubName } from '../../../../hooks/use-local-hub'
 import AcmTimestamp from '../../../../lib/AcmTimestamp'
 import { getClusterLabelData } from './utils/utils'
+import { KubevirtProviderAlert } from '../../../../components/KubevirtProviderAlert'
 
 const onToggle = (acmCardID: string, setOpen: (open: boolean) => void) => {
   setOpen(false)
@@ -148,6 +149,9 @@ export default function ManagedClusters() {
         <OnboardingModal open={openOnboardingModal} close={() => onToggle(onBoardingModalID, setOpenOnboardingModal)} />
         <Stack hasGutter={true}>
           <StackItem>
+            <div style={{ marginBottom: '1em' }}>
+              <KubevirtProviderAlert variant="search" component="hint" />
+            </div>
             <ClustersTable
               clusters={clusters}
               tableButtonActions={[

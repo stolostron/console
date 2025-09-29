@@ -253,7 +253,7 @@ export function KubevirtProviderAlert(
               {popoverActionLinks}
             </div>
           }
-          minWidth="30em"
+          maxWidth="35em"
         >
           <Label color="blue" icon={<InfoCircleIcon />} isCompact>
             {t('Operator recommended')}
