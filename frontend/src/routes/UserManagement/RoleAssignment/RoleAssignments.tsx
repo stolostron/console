@@ -2,13 +2,16 @@
 import { ButtonVariant, PageSection } from '@patternfly/react-core'
 import { fitContent, nowrap } from '@patternfly/react-table'
 import { useCallback, useMemo, useState } from 'react'
+import { generatePath, Link } from 'react-router-dom-v5-compat'
 import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../lib/doc-util'
+import { NavigationPath } from '../../../NavigationPath'
 import {
   deleteRoleAssignment,
   FlattenedRoleAssignment,
 } from '../../../resources/clients/multicluster-role-assignment-client'
+import { IRequestResult } from '../../../resources/utils/resource-request'
 import {
   AcmButton,
   AcmEmptyState,
@@ -23,6 +26,80 @@ import { RoleAssignmentActionDropdown } from './RoleAssignmentActionDropdown'
 import { RoleAssignmentLabel } from './RoleAssignmentLabel'
 import { RoleAssignmentModal } from '../RoleAssignments/RoleAssignmentModal'
 import { RoleAssignmentStatusComponent } from './RoleAssignmentStatusComponent'
+
+// Component for rendering clickable role links
+const RoleLinkCell = ({ roleName }: { roleName: string }) => (
+  <Link to={generatePath(NavigationPath.roleDetails, { id: roleName })}>{roleName}</Link>
+)
+
+// Component for rendering clickable cluster links
+const ClusterLinksCell = ({ clusterNames }: { clusterNames: string[] }) => (
+  <RoleAssignmentLabel
+    elements={clusterNames}
+    numLabel={3}
+    renderElement={(clusterName) => (
+      <Link
+        key={clusterName}
+        to={generatePath(NavigationPath.clusterOverview, {
+          namespace: clusterName,
+          name: clusterName,
+        })}
+      >
+        {clusterName}
+      </Link>
+    )}
+  />
+)
+
+// Component for rendering namespaces with label group
+const NamespacesCell = ({ namespaces }: { namespaces?: string[] }) => (
+  <RoleAssignmentLabel elements={namespaces} numLabel={5} />
+)
+
+// Component for rendering status
+const StatusCell = ({ status }: { status?: any }) => <RoleAssignmentStatusComponent status={status} />
+
+// Component for rendering created date placeholder
+const CreatedCell = () => {
+  // FlattenedRoleAssignment doesn't have metadata.creationTimestamp
+  // Show dash since this data is not available at the flattened level
+  return <span>-</span>
+}
+
+// Cell renderer functions
+const renderRoleCell = (roleAssignment: FlattenedRoleAssignment) => (
+  <RoleLinkCell roleName={roleAssignment.clusterRole} />
+)
+
+const renderNamespacesCell = (roleAssignment: FlattenedRoleAssignment) => (
+  <NamespacesCell namespaces={roleAssignment.targetNamespaces} />
+)
+
+const renderStatusCell = (roleAssignment: FlattenedRoleAssignment) => <StatusCell status={roleAssignment.status} />
+
+const renderCreatedCell = () => <CreatedCell />
+
+const renderClustersCell = (roleAssignment: FlattenedRoleAssignment) => {
+  const clusterNames = roleAssignment.clusterSelection?.clusterNames || []
+  return <ClusterLinksCell clusterNames={clusterNames} />
+}
+
+// Component for rendering action dropdown
+const ActionCell = ({
+  roleAssignment,
+  setModalProps,
+  deleteAction,
+}: {
+  roleAssignment: FlattenedRoleAssignment
+  setModalProps: React.Dispatch<React.SetStateAction<BulkActionModalProps<FlattenedRoleAssignment> | { open: false }>>
+  deleteAction: (roleAssignment: FlattenedRoleAssignment) => IRequestResult<unknown>
+}) => (
+  <RoleAssignmentActionDropdown
+    roleAssignment={roleAssignment}
+    setModalProps={setModalProps}
+    deleteAction={deleteAction}
+  />
+)
 
 type RoleAssignmentsProps = {
   roleAssignments: FlattenedRoleAssignment[]
@@ -105,7 +182,7 @@ const RoleAssignments = ({
     const allStatuses = new Set<string>()
 
     // Extract all unique values from role assignments
-    roleAssignments.forEach((roleAssignment) => {
+    for (const roleAssignment of roleAssignments) {
       // Add single role
       allRoles.add(roleAssignment.clusterRole)
 
@@ -115,13 +192,13 @@ const RoleAssignments = ({
 
       // Add cluster names and target namespaces
       const clusterNames = roleAssignment.clusterSelection?.clusterNames || []
-      clusterNames.forEach((clusterName) => {
+      for (const clusterName of clusterNames) {
         allClusters.add(clusterName)
-      })
-      roleAssignment.targetNamespaces?.forEach((namespace) => {
+      }
+      for (const namespace of roleAssignment.targetNamespaces || []) {
         allNamespaces.add(namespace)
-      })
-    })
+      }
+    }
 
     // Convert sets to sorted arrays for options
     const roleOptions = Array.from(allRoles)
@@ -183,12 +260,21 @@ const RoleAssignments = ({
     [t]
   )
 
+  // Action cell renderer (needs access to component state)
+  const renderActionCell = (roleAssignment: FlattenedRoleAssignment) => (
+    <ActionCell
+      roleAssignment={roleAssignment}
+      setModalProps={setDeleteModalProps}
+      deleteAction={deleteRoleAssignment}
+    />
+  )
+
   // Table columns
   const columns: IAcmTableColumn<FlattenedRoleAssignment>[] = [
     {
       header: t('Role'),
       sort: (a, b) => compareStrings(a.clusterRole, b.clusterRole),
-      cell: (roleAssignment) => roleAssignment.clusterRole,
+      cell: renderRoleCell,
       exportContent: (roleAssignment) => roleAssignment.clusterRole,
       isHidden: hiddenColumns?.includes('role'),
     },
@@ -201,10 +287,7 @@ const RoleAssignments = ({
     },
     {
       header: t('Clusters'),
-      cell: (roleAssignment) => {
-        const clusterNames = roleAssignment.clusterSelection?.clusterNames || []
-        return <RoleAssignmentLabel elements={clusterNames} numLabel={3} />
-      },
+      cell: renderClustersCell,
       exportContent: (roleAssignment) => {
         const clusterNames = roleAssignment.clusterSelection?.clusterNames || []
         return clusterNames.join(', ')
@@ -213,12 +296,12 @@ const RoleAssignments = ({
     },
     {
       header: t('Namespaces'),
-      cell: (roleAssignment) => <RoleAssignmentLabel elements={roleAssignment.targetNamespaces} numLabel={5} />,
+      cell: renderNamespacesCell,
       exportContent: (roleAssignment) => roleAssignment.targetNamespaces?.join(', ') ?? '',
     },
     {
       header: t('Status'),
-      cell: (roleAssignment) => <RoleAssignmentStatusComponent status={roleAssignment.status} />,
+      cell: renderStatusCell,
       exportContent: (roleAssignment) => roleAssignment.status?.status ?? '',
     },
     {
@@ -227,18 +310,12 @@ const RoleAssignments = ({
       cellTransforms: [nowrap],
       // FlattenedRoleAssignment doesn't have metadata.creationTimestamp
       // We could show the parent MulticlusterRoleAssignment creation time instead
-      cell: () => <span>-</span>,
+      cell: renderCreatedCell,
       exportContent: () => '',
     },
     {
       header: '',
-      cell: (roleAssignment: FlattenedRoleAssignment) => (
-        <RoleAssignmentActionDropdown
-          roleAssignment={roleAssignment}
-          setModalProps={setDeleteModalProps}
-          deleteAction={deleteRoleAssignment}
-        />
-      ),
+      cell: renderActionCell,
       cellTransforms: [fitContent],
       isActionCol: true,
     },
