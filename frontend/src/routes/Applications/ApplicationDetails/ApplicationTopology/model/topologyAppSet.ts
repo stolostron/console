@@ -231,7 +231,7 @@ export function getAppSetTopology(application: ApplicationModel, hubClusterName:
           clusterId,
         },
         resources: deployableResources,
-        resourceCount,
+        resourceCount: resourceCount ? resourceCount : clusterNames.length,
       },
     }
 

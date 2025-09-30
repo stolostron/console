@@ -12587,7 +12587,7 @@ const result7: TestTopology = {
           },
           parentType: 'cluster',
         },
-        resourceCount: 20,
+        resourceCount: 18,
         resources: [
           {
             apiVersion: 'batch/v1',

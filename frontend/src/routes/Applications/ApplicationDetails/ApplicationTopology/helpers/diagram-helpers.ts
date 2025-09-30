@@ -54,9 +54,9 @@ export const getNodePropery = (
 ): DetailItem | undefined => {
   const dataObj = getNestedProperty(node, propPath)
 
-  let data = dataObj as unknown as string | undefined
+  let data = dataObj
   if (data) {
-    data = String(data).replace(/:/g, '=')
+    data = JSON.stringify(data).replace(/:/g, '=')
     data = data.replace(/{/g, '')
     data = data.replace(/}/g, '')
     data = data.replace(/"/g, '')

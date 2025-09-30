@@ -550,7 +550,7 @@ const addSubscriptionDeployedResource = (
       clustersNames,
       template,
       resources,
-      resourceCount,
+      resourceCount: resourceCount ? resourceCount : clustersNames.length,
     },
   }
 
