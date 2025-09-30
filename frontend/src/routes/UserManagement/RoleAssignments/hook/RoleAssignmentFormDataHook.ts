@@ -14,7 +14,7 @@ type RoleAssignmentFormDataType = {
   scope: {
     kind: 'all' | 'specific'
     clusterNames?: string[]
-    namespaces?: string[]
+    namespaces?: string[] | null
   }
   roles: string[]
 }
@@ -85,7 +85,7 @@ const useRoleAssignmentFormData = (
         scope: {
           kind: scopeKind,
           clusterNames: scopeKind === 'all' ? roleAssignmentData?.allClusterNames || [] : [],
-          namespaces: scopeKind === 'all' ? undefined : [],
+          namespaces: scopeKind === 'all' ? undefined : undefined,
         },
       }))
     },
@@ -103,7 +103,7 @@ const useRoleAssignmentFormData = (
   }, [])
 
   const onChangeScopeNamespaces = useCallback(
-    (namespaces: string[]) =>
+    (namespaces: string[] | null | undefined) =>
       setRoleAssignmentFormData((prevData) => ({
         ...prevData,
         scope: {

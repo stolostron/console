@@ -8,8 +8,9 @@ import { Cluster } from '../RoleAssignments/hook/RoleAssignmentDataHook'
 type NamespaceSelectorProps = {
   selectedClusters: string[]
   clusters: Cluster[]
-  onChangeNamespaces: (namespaces: string[]) => void
-  selectedNamespaces?: string[]
+  onChangeNamespaces: (namespaces: string[] | null | undefined) => void
+  selectedNamespaces?: string[] | null
+  disabled?: boolean
 }
 
 const NamespaceSelector = ({
@@ -17,6 +18,7 @@ const NamespaceSelector = ({
   clusters,
   onChangeNamespaces,
   selectedNamespaces = [],
+  disabled = false,
 }: NamespaceSelectorProps) => {
   const namespaceOptions = useMemo(() => {
     if (selectedClusters.length === 0) {
@@ -55,16 +57,23 @@ const NamespaceSelector = ({
 
   const handleNamespaceChange = useCallback(
     (namespaces: string[] | undefined) => {
-      onChangeNamespaces(namespaces || [])
+      if (!disabled) {
+        onChangeNamespaces(namespaces || undefined)
+      }
     },
-    [onChangeNamespaces]
+    [onChangeNamespaces, disabled]
   )
 
   useEffect(() => {
-    if (selectedClusters.length === 0 && selectedNamespaces.length > 0) {
+    if (
+      selectedClusters.length === 0 &&
+      selectedNamespaces &&
+      Array.isArray(selectedNamespaces) &&
+      selectedNamespaces.length > 0
+    ) {
       onChangeNamespaces([])
     }
-  }, [selectedClusters.length, selectedNamespaces.length, onChangeNamespaces])
+  }, [selectedClusters.length, selectedNamespaces, onChangeNamespaces])
 
   if (selectedClusters.length === 0) {
     return null
@@ -76,10 +85,11 @@ const NamespaceSelector = ({
       variant={SelectVariant.typeaheadMulti}
       label="Select shared namespaces"
       placeholder="Select namespaces to target"
-      value={selectedNamespaces}
+      value={selectedNamespaces || []}
       onChange={handleNamespaceChange}
       menuAppendTo="parent"
       maxHeight="18em"
+      isDisabled={disabled}
     >
       {namespaceOptions.map((option) => (
         <SelectOption key={option.id} value={option.value}>
