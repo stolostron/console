@@ -82,7 +82,7 @@ export const addClusters = (
   topology?: Topology
 ): string => {
   // create element if not already created
-  const sortedClusterNames = [...clusterNames].sort()
+  const sortedClusterNames = [...clusterNames].sort((a, b) => a.localeCompare(b))
   let clusterId = 'member--clusters'
   // do not use this for the id for argo app, we only know about one app here
   if (subscription) {

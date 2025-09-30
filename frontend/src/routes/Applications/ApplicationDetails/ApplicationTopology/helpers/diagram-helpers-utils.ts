@@ -275,14 +275,14 @@ export const updateAppClustersMatchingSearch = (
         const targetNSForAppCls = targetNamespaces[appCls]
         const targetNSForMatchedName = targetNamespaces[matchedClusterName]
         const unionSet = new Set([...(targetNSForAppCls ?? []), ...(targetNSForMatchedName ?? [])])
-        targetNamespaces[matchedClusterName] = Array.from(unionSet).sort()
+        targetNamespaces[matchedClusterName] = Array.from(unionSet).sort((a, b) => a.localeCompare(b))
       }
     } catch {
       // ignore error
     }
   })
   if (!(node as any).specs) (node as any).specs = {}
-  ;(node as any).specs.appClusters = appClusters.sort()
+  ;(node as any).specs.appClusters = appClusters.sort((a, b) => a.localeCompare(b))
   return node
 }
 
