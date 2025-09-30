@@ -13,8 +13,12 @@ jest.mock('../../../resources/clients/multicluster-role-assignment-client', () =
   findRoleAssignments: jest.fn(() => []),
 }))
 
+let capturedOnSubmit: any = null
+
 jest.mock('./RoleAssignmentForm', () => ({
   RoleAssignmentForm: ({ onSubmit, onCancel }: any) => {
+    capturedOnSubmit = onSubmit
+
     const mockFormData = {
       subject: { kind: UserKind, user: ['test-user'] },
       scope: {
@@ -78,6 +82,7 @@ describe('RoleAssignmentModal', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    capturedOnSubmit = null
   })
 
   describe('Modal success and failure', () => {
@@ -156,6 +161,60 @@ describe('RoleAssignmentModal', () => {
       userEvent.click(cancelButton)
 
       expect(mockClose).toHaveBeenCalled()
+    })
+  })
+
+  describe('Global Role Regression Tests', () => {
+    it('REGRESSION: should preserve clusterNames regardless of scope.kind (bug was conditional discard)', async () => {
+      mockAddRoleAssignment.mockReturnValue({
+        promise: Promise.resolve({} as any),
+        abort: jest.fn(),
+      })
+
+      render(
+        <TestWrapper>
+          <RoleAssignmentModal close={mockClose} isOpen={true} />
+        </TestWrapper>
+      )
+
+      await waitFor(() => {
+        expect(capturedOnSubmit).not.toBeNull()
+      })
+
+      const testCases = [
+        {
+          description: 'global role with multiple clusters',
+          kind: 'all' as const,
+          clusters: ['cluster-1', 'cluster-2', 'cluster-3'],
+          namespaces: undefined,
+        },
+        {
+          description: 'specific scope with single cluster',
+          kind: 'specific' as const,
+          clusters: ['specific-cluster'],
+          namespaces: ['namespace-1'],
+        },
+      ]
+
+      for (const testCase of testCases) {
+        mockAddRoleAssignment.mockClear()
+
+        await capturedOnSubmit({
+          subject: { kind: UserKind, user: ['test-user'] },
+          scope: {
+            kind: testCase.kind,
+            clusterNames: testCase.clusters,
+            namespaces: testCase.namespaces,
+          },
+          roles: ['admin'],
+        })
+
+        await waitFor(() => {
+          expect(mockAddRoleAssignment).toHaveBeenCalled()
+          const roleAssignment = mockAddRoleAssignment.mock.calls[0][0]
+          expect(roleAssignment.clusterSelection.clusterNames).toEqual(testCase.clusters)
+        })
+      }
     })
   })
 })
