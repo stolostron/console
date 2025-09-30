@@ -159,9 +159,12 @@ export const getApplication = async (
       isAppSetPullModel,
       relatedPlacement,
     }
-    const appForFetch: Record<string, any> = { ...app }
-    delete (appForFetch as any).cluster
-    const uidata: any = await fetchAggregate(SupportedAggregate.uidata, backendUrl, appForFetch as unknown as IResource)
+    const appForFetch: any = { ...app }
+    delete appForFetch.cluster
+    delete appForFetch.spec
+    delete appForFetch.status
+    delete appForFetch.metadata.managedFields
+    const uidata: any = await fetchAggregate(SupportedAggregate.uidata, backendUrl, appForFetch as IResource)
     ;(model as any).clusterList = uidata?.clusterList
 
     // a short sweet ride for argo, ocp, flux

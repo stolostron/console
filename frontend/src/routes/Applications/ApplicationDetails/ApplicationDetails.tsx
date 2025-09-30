@@ -133,7 +133,7 @@ export default function ApplicationDetailsPage() {
 
   const [waitForApplication, setWaitForApplication] = useState<boolean>(true)
   const [applicationNotFound, setApplicationNotFound] = useState<boolean>(false)
-  const [activeChannel, setActiveChannel] = useState<string>()
+  const [activeChannel, setActiveChannel] = useState<string | undefined>('')
   const [allChannels, setAllChannels] = useState<string[]>([])
   const [applicationData, setApplicationData] = useState<ApplicationDataType>()
   const [modalProps, setModalProps] = useState<IDeleteResourceModalProps | { open: false }>({
@@ -442,7 +442,7 @@ export default function ApplicationDetailsPage() {
               appData: appDataWithStatuses,
               statuses: resourceStatuses,
             })
-            setActiveChannel(application?.activeChannel ?? '')
+            setActiveChannel(application?.activeChannel ? application.activeChannel : '')
             setAllChannels(application?.channels ?? [])
             lastRefreshRef.current = { application, resourceStatuses, relatedResources }
           }
