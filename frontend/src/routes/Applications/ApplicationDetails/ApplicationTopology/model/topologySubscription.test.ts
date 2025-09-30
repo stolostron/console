@@ -9,25 +9,11 @@ import {
   createDataVolumeChild,
   createVirtualMachineInstance,
 } from './topologySubscription'
-import {
-  TopologyNode,
-  TopologyLink,
-  Topology,
-  SubscriptionApplicationModel,
-  ManagedCluster,
-  ResourceItem,
-  RelatedKindGroup,
-  ParentObject,
-  NodeSpecs,
-} from '../types'
+import { TopologyNode, Topology, SubscriptionApplicationModel, ManagedCluster, RelatedKindGroup } from '../types'
 
 // Extended types for test data that may have additional properties
 interface TestRelatedKindGroup extends RelatedKindGroup {
   __typename?: string
-  [key: string]: any
-}
-
-interface TestResourceItem extends ResourceItem {
   [key: string]: any
 }
 
@@ -77,7 +63,7 @@ describe('createReplicaChild', () => {
 
 describe('getSubscriptionTopology', () => {
   it('returns subscriptionTopology', () => {
-    expect(getSubscriptionTopology(application, managedClusters, undefined, 'local-cluster')).toEqual(result7)
+    expect(getSubscriptionTopology(application, managedClusters, {}, 'local-cluster')).toEqual(result7)
   })
 })
 
@@ -136,14 +122,14 @@ const template: { related: TestRelatedKindGroup[] } = {
           cluster: 'local-cluster',
           _hubClusterResource: 'true',
           apigroup: 'apps',
-          desired: 1,
+          desired: '1',
           namespace: 'feng-hello',
           label: 'app=helloworld-app; pod-template-hash=7998d94b96',
           _rbac: 'feng-hello_apps_replicasets',
           kind_plural: 'replicasets',
           apiversion: 'v1',
           name: 'helloworld-app-deploy-7998d94b96',
-          current: 1,
+          current: '1',
           _hostingSubscription: 'feng-hello/feng-hello-subscription-1-local',
           created: '2022-09-23T15:03:43Z',
           kind: 'replicaset',
@@ -793,7 +779,7 @@ const result: TestTopologyNode = {
       parentType: 'replicaset',
       resources: undefined,
     },
-    replicaCount: 1,
+    replicaCount: '1',
     resourceCount: 1,
     resources: undefined,
   },
@@ -2123,7 +2109,7 @@ const template2: { related: TestRelatedKindGroup[] } = {
           cluster: 'local-cluster',
           _hubClusterResource: 'true',
           apigroup: 'apps',
-          desired: 1,
+          desired: '1',
           namespace: 'feng-hello',
           label: 'app=helloworld-app; pod-template-hash=7998d94b96',
           _rbac: 'feng-hello_apps_replicasets',
@@ -2780,7 +2766,7 @@ const result2: TestTopologyNode = {
       parentType: 'replicaset',
       resources: undefined,
     },
-    replicaCount: 1,
+    replicaCount: '1',
     resourceCount: 1,
     resources: undefined,
   },
@@ -2825,14 +2811,14 @@ const template3: { related: TestRelatedKindGroup[] } = {
           cluster: 'local-cluster',
           _hubClusterResource: 'true',
           apigroup: 'apps',
-          desired: 1,
+          desired: '1',
           namespace: 'feng-hello',
           label: 'app=helloworld-app; pod-template-hash=7998d94b96',
           _rbac: 'feng-hello_apps_replicationcontrollers',
           kind_plural: 'replicationcontrollers',
           apiversion: 'v1',
           name: 'helloworld-app-deploy-7998d94b96',
-          current: 1,
+          current: '1',
           _hostingSubscription: 'feng-hello/feng-hello-subscription-1-local',
           created: '2022-09-23T15:03:43Z',
           kind: 'replicationcontroller',
@@ -3482,7 +3468,7 @@ const result3: TestTopologyNode = {
       parentType: 'replicationcontroller',
       resources: undefined,
     },
-    replicaCount: 1,
+    replicaCount: '1',
     resourceCount: 1,
     resources: undefined,
   },
@@ -3528,14 +3514,14 @@ const template4: { related: TestRelatedKindGroup[] } = {
           cluster: 'local-cluster',
           _hubClusterResource: 'true',
           apigroup: 'apps',
-          desired: 1,
+          desired: '1',
           namespace: 'feng-hello',
           label: 'app=helloworld-app; pod-template-hash=7998d94b96',
           _rbac: 'feng-hello_apps_ReplicationControllers',
           kind_plural: 'ReplicationControllers',
           apiversion: 'v1',
           name: 'helloworld-app-deploy-7998d94b96',
-          current: 1,
+          current: '1',
           _hostingSubscription: 'feng-hello/feng-hello-subscription-1-local',
           created: '2022-09-23T15:03:43Z',
           kind: 'ReplicationController',
@@ -4185,7 +4171,7 @@ const result4: TestTopologyNode = {
       parentType: 'replicationcontroller',
       resources: undefined,
     },
-    replicaCount: 1,
+    replicaCount: '1',
     resourceCount: 1,
     resources: undefined,
   },
@@ -5551,6 +5537,7 @@ const result6: TestTopologyNode = {
   uid: 'member--deployed-resource--member--clusters--local-cluster--feng-hello-subscription-1--feng-hello--helloworld-app-deploy--deployment--pod--helloworld-app-deploy',
 }
 const application: TestSubscriptionApplicationModel = {
+  isAppSetPullModel: false,
   name: 'feng-cronjob',
   namespace: 'feng-cronjob',
   app: {
@@ -5567,7 +5554,6 @@ const application: TestSubscriptionApplicationModel = {
           'c3lzdGVtOnNlcnZpY2VhY2NvdW50Om9wZW4tY2x1c3Rlci1tYW5hZ2VtZW50Om11bHRpY2x1c3Rlci1hcHBsaWNhdGlvbnM=',
       },
       creationTimestamp: '2023-04-27T14:32:09Z',
-      generation: 1,
       name: 'feng-cronjob',
       namespace: 'feng-cronjob',
       resourceVersion: '13641704',
@@ -5580,7 +5566,6 @@ const application: TestSubscriptionApplicationModel = {
           kind: 'Subscription',
         },
       ],
-      descriptor: {},
       selector: {
         matchExpressions: [
           {
@@ -5726,7 +5711,6 @@ const application: TestSubscriptionApplicationModel = {
           kind: 'Placement',
           metadata: {
             creationTimestamp: '2023-04-27T14:32:09Z',
-            generation: 1,
             labels: {
               app: 'feng-cronjob',
             },
@@ -5771,7 +5755,6 @@ const application: TestSubscriptionApplicationModel = {
         kind: 'SubscriptionReport',
         metadata: {
           creationTimestamp: '2023-04-27T14:32:10Z',
-          generation: 271,
           labels: {
             'apps.open-cluster-management.io/hosting-subscription': 'feng-cronjob.feng-cronjob-subscription-1',
           },
@@ -5946,7 +5929,6 @@ const application: TestSubscriptionApplicationModel = {
           kind: 'PlacementDecision',
           metadata: {
             creationTimestamp: '2023-04-27T14:32:09Z',
-            generation: 1,
             labels: {
               'cluster.open-cluster-management.io/placement': 'feng-cronjob-placement-1',
             },
@@ -5985,7 +5967,6 @@ const application: TestSubscriptionApplicationModel = {
           kind: 'Placement',
           metadata: {
             creationTimestamp: '2023-04-27T14:32:09Z',
-            generation: 1,
             labels: {
               app: 'feng-cronjob',
             },
@@ -6030,7 +6011,6 @@ const application: TestSubscriptionApplicationModel = {
         kind: 'SubscriptionReport',
         metadata: {
           creationTimestamp: '2023-04-27T14:32:10Z',
-          generation: 271,
           labels: {
             'apps.open-cluster-management.io/hosting-subscription': 'feng-cronjob.feng-cronjob-subscription-1',
           },
@@ -6164,7 +6144,6 @@ const application: TestSubscriptionApplicationModel = {
       kind: 'SubscriptionReport',
       metadata: {
         creationTimestamp: '2023-04-27T14:32:10Z',
-        generation: 271,
         labels: {
           'apps.open-cluster-management.io/hosting-subscription': 'feng-cronjob.feng-cronjob-subscription-1',
         },
@@ -8033,7 +8012,6 @@ const result7: TestTopology = {
                 kind: 'PlacementDecision',
                 metadata: {
                   creationTimestamp: '2023-04-27T14:32:09Z',
-                  generation: 1,
                   labels: {
                     'cluster.open-cluster-management.io/placement': 'feng-cronjob-placement-1',
                   },
@@ -8095,7 +8073,6 @@ const result7: TestTopology = {
                 kind: 'Placement',
                 metadata: {
                   creationTimestamp: '2023-04-27T14:32:09Z',
-                  generation: 1,
                   labels: {
                     app: 'feng-cronjob',
                   },
@@ -8142,7 +8119,6 @@ const result7: TestTopology = {
               kind: 'SubscriptionReport',
               metadata: {
                 creationTimestamp: '2023-04-27T14:32:10Z',
-                generation: 271,
                 labels: {
                   'apps.open-cluster-management.io/hosting-subscription': 'feng-cronjob.feng-cronjob-subscription-1',
                 },
@@ -8278,7 +8254,6 @@ const result7: TestTopology = {
                 'c3lzdGVtOnNlcnZpY2VhY2NvdW50Om9wZW4tY2x1c3Rlci1tYW5hZ2VtZW50Om11bHRpY2x1c3Rlci1hcHBsaWNhdGlvbnM=',
             },
             creationTimestamp: '2023-04-27T14:32:09Z',
-            generation: 1,
             name: 'feng-cronjob',
             namespace: 'feng-cronjob',
             resourceVersion: '13641704',
@@ -8291,7 +8266,6 @@ const result7: TestTopology = {
                 kind: 'Subscription',
               },
             ],
-            descriptor: {},
             selector: {
               matchExpressions: [
                 {
@@ -8316,7 +8290,6 @@ const result7: TestTopology = {
         kind: 'SubscriptionReport',
         metadata: {
           creationTimestamp: '2023-04-27T14:32:10Z',
-          generation: 271,
           labels: {
             'apps.open-cluster-management.io/hosting-subscription': 'feng-cronjob.feng-cronjob-subscription-1',
           },
@@ -8517,7 +8490,6 @@ const result7: TestTopology = {
               kind: 'Placement',
               metadata: {
                 creationTimestamp: '2023-04-27T14:32:09Z',
-                generation: 1,
                 labels: {
                   app: 'feng-cronjob',
                 },
@@ -8564,7 +8536,6 @@ const result7: TestTopology = {
             kind: 'SubscriptionReport',
             metadata: {
               creationTimestamp: '2023-04-27T14:32:10Z',
-              generation: 271,
               labels: {
                 'apps.open-cluster-management.io/hosting-subscription': 'feng-cronjob.feng-cronjob-subscription-1',
               },
@@ -8694,7 +8665,6 @@ const result7: TestTopology = {
         kind: PlacementKind,
         metadata: {
           creationTimestamp: '2023-04-27T14:32:09Z',
-          generation: 1,
           labels: {
             app: 'feng-cronjob',
           },
@@ -10525,7 +10495,6 @@ const result7: TestTopology = {
               kind: 'Placement',
               metadata: {
                 creationTimestamp: '2023-04-27T14:32:09Z',
-                generation: 1,
                 labels: {
                   app: 'feng-cronjob',
                 },
@@ -10572,7 +10541,6 @@ const result7: TestTopology = {
             kind: 'SubscriptionReport',
             metadata: {
               creationTimestamp: '2023-04-27T14:32:10Z',
-              generation: 271,
               labels: {
                 'apps.open-cluster-management.io/hosting-subscription': 'feng-cronjob.feng-cronjob-subscription-1',
               },
@@ -12452,7 +12420,6 @@ const result7: TestTopology = {
                   kind: 'Placement',
                   metadata: {
                     creationTimestamp: '2023-04-27T14:32:09Z',
-                    generation: 1,
                     labels: {
                       app: 'feng-cronjob',
                     },
@@ -12499,7 +12466,6 @@ const result7: TestTopology = {
                 kind: 'SubscriptionReport',
                 metadata: {
                   creationTimestamp: '2023-04-27T14:32:10Z',
-                  generation: 271,
                   labels: {
                     'apps.open-cluster-management.io/hosting-subscription': 'feng-cronjob.feng-cronjob-subscription-1',
                   },

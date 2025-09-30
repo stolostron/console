@@ -149,7 +149,7 @@ describe('ArgoAppDetailsContainer test functions', () => {
   }
 
   let container: HTMLElement
-  let instance: ArgoAppDetailsContainer
+  let instance: any
   beforeEach(async () => {
     ;({ container } = render(
       <ArgoAppDetailsContainer
@@ -172,7 +172,7 @@ describe('ArgoAppDetailsContainer test functions', () => {
     Object.prototype.toString.call(instance.toggleLinkLoading())
     Object.prototype.toString.call(instance.handleExpandSectionToggle(0))
     Object.prototype.toString.call(instance.handleSelection('test1'))
-    Object.prototype.toString.call(instance.handleSelection(undefined))
+    Object.prototype.toString.call(instance.handleSelection(null))
     Object.prototype.toString.call(instance.handleSelectToggle())
     Object.prototype.toString.call(instance.handleSelectionClear())
     Object.prototype.toString.call(instance.handleFirstClick())

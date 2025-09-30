@@ -1,7 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-// Copyright (c) 2021 Red Hat, Inc.
-// Copyright Contributors to the Open Cluster Management project
-'use strict'
 
 import React, { Component } from 'react'
 import {
@@ -14,13 +11,14 @@ import {
 } from '@patternfly/react-core'
 import { AcmSelectBase, SelectVariant } from '../../../../../components/AcmSelectBase'
 import { processResourceActionLink, createEditLink } from '../helpers/diagram-helpers'
+
 import type {
-  ArgoApp,
   ArgoAppDetailsContainerProps,
   ArgoAppDetailsContainerState,
   ArgoStatusIcon,
   ArgoResourceAction,
   NodeLike,
+  ArgoApp,
 } from '../types'
 import { TFunction } from 'react-i18next'
 

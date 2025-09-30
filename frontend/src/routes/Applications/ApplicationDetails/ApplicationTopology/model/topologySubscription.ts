@@ -438,7 +438,7 @@ const processServiceOwner = (
         case 'Route':
           service = (template as any)?.template?.spec?.to?.name
           if (service) {
-            servicesMap[service] = node.id
+            servicesMap[service] = node.id || ''
           }
           break
         case 'Ingress':
@@ -448,7 +448,7 @@ const processServiceOwner = (
             rulePaths.forEach((path: unknown) => {
               service = (path as any)?.backend?.serviceName
               if (service) {
-                servicesMap[service] = node.id
+                servicesMap[service] = node.id || ''
               }
             })
           })
@@ -456,13 +456,13 @@ const processServiceOwner = (
         case 'StatefulSet':
           service = (template as any)?.template?.spec?.serviceName
           if (service) {
-            servicesMap[service] = node.id
+            servicesMap[service] = node.id || ''
           }
           break
       }
     } else if (serviceOwners.length === 1) {
       // Fallback mapping when no related resources available
-      servicesMap[`serviceOwner${inx}`] = node.id
+      servicesMap[`serviceOwner${inx}`] = node.id || ''
     }
   })
 

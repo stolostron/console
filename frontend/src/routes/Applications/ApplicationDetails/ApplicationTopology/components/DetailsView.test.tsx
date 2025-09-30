@@ -11,14 +11,8 @@
 import { render, screen } from '@testing-library/react'
 import { waitForText } from '../../../../../lib/test-util'
 import DetailsView from './DetailsView'
-import { 
-  TopologyNodeWithStatus, 
-  DetailsViewProps, 
-  ActiveFilters, 
-  ArgoAppDetailsContainerData, 
-  ClusterDetailsContainerData,
-  MockTranslationFunction
-} from '../types'
+import { TopologyNodeWithStatus, ActiveFilters, MockTranslationFunction } from '../types'
+import { ArgoAppDetailsContainerData, ClusterDetailsContainerData } from '../ApplicationTopology'
 
 const t: MockTranslationFunction = (string: string): string => {
   return string
@@ -70,8 +64,8 @@ describe('DetailsView no components', () => {
       id: 'deployment1',
       uid: 'deployment1',
       name: 'deployment1-app',
-      cluster: null,
-      clusterName: null,
+      cluster: undefined,
+      clusterName: undefined,
       type: 'deployment',
       specs: {
         isDesign: true,
@@ -245,7 +239,7 @@ const mockLaidoutNodes: { laidoutNodes: TopologyNodeWithStatus[] } = {
       id: 'application--mortgage-app',
       uid: 'application--mortgage-app',
       name: 'mortgage-app',
-      cluster: null,
+      cluster: '',
       clusterName: null,
       type: 'application',
       specs: {
@@ -293,7 +287,7 @@ const mockLaidoutNodes: { laidoutNodes: TopologyNodeWithStatus[] } = {
       id: 'member--subscription--default--mortgage-app-subscription',
       uid: 'member--subscription--default--mortgage-app-subscription',
       name: 'mortgage-app-subscription',
-      cluster: null,
+      cluster: '',
       clusterName: null,
       type: 'subscription',
       specs: {
@@ -342,7 +336,7 @@ const mockLaidoutNodes: { laidoutNodes: TopologyNodeWithStatus[] } = {
       id: 'member--rules--default--mortgage-app-placement--0',
       uid: 'member--rules--default--mortgage-app-placement--0',
       name: 'mortgage-app-placement',
-      cluster: null,
+      cluster: '',
       clusterName: null,
       type: 'placements',
       specs: {
@@ -389,7 +383,7 @@ const mockLaidoutNodes: { laidoutNodes: TopologyNodeWithStatus[] } = {
       id: 'member--clusters--localcluster',
       uid: 'member--clusters--localcluster',
       name: 'localcluster',
-      cluster: null,
+      cluster: '',
       clusterName: null,
       type: 'cluster',
       specs: {
@@ -477,7 +471,7 @@ const mockLaidoutNodes: { laidoutNodes: TopologyNodeWithStatus[] } = {
       id: 'member--deployable--member--clusters--localcluster--default--mortgage-app-deployable',
       uid: 'member--deployable--member--clusters--localcluster--default--mortgage-app-deployable',
       name: 'mortgage-app-deployable',
-      cluster: null,
+      cluster: '',
       clusterName: null,
       type: 'deployable',
       specs: {
@@ -525,7 +519,7 @@ const mockLaidoutNodes: { laidoutNodes: TopologyNodeWithStatus[] } = {
       id: 'member--member--deployable--member--clusters--localcluster--default--mortgage-app-deployable--deployment--mortgage-app-deploy',
       uid: 'member--member--deployable--member--clusters--localcluster--default--mortgage-app-deployable--deployment--mortgage-app-deploy',
       name: 'mortgage-app-deploy',
-      cluster: null,
+      cluster: '',
       clusterName: null,
       type: 'deployment',
       specs: {
@@ -576,31 +570,33 @@ const mockLaidoutNodes: { laidoutNodes: TopologyNodeWithStatus[] } = {
       id: 'member--pod--member--deployable--member--clusters--localcluster--default--mortgage-app-deployable--mortgage-app-deploy',
       uid: 'member--pod--member--deployable--member--clusters--localcluster--default--mortgage-app-deployable--mortgage-app-deploy',
       name: 'mortgage-app-deploy',
-      cluster: null,
+      cluster: '',
       clusterName: null,
       type: 'deployment',
       specs: {
         row: 141,
         podModel: {
-          'mortgage-app-deploy-5578f5675b-krqs8': {
-            name: 'mortgage-app-deploy-5578f5675b-krqs8',
-            namespace: 'default',
-            status: 'Running',
-            cluster: {
-              metadata: {
-                name: 'localcluster',
+          'mortgage-app-deploy-5578f5675b-krqs8': [
+            {
+              name: 'mortgage-app-deploy-5578f5675b-krqs8',
+              namespace: 'default',
+              status: 'Running',
+              cluster: {
+                metadata: {
+                  name: 'localcluster',
+                },
               },
+              containers: [{ name: 'mortgage-app-mortgage', image: 'fxiang/mortgage:0.4.0' }],
+              labels: {
+                app: 'mortgage-app-mortgage',
+                'pod-template-hash': '5578f5675b',
+              },
+              hostIP: '10.16.44.146',
+              podIP: '10.254.12.220',
+              restarts: 1,
+              startedAt: '2020-02-18T23:59:09Z',
             },
-            containers: [{ name: 'mortgage-app-mortgage', image: 'fxiang/mortgage:0.4.0' }],
-            labels: {
-              app: 'mortgage-app-mortgage',
-              'pod-template-hash': '5578f5675b',
-            },
-            hostIP: '10.16.44.146',
-            podIP: '10.254.12.220',
-            restarts: 1,
-            startedAt: '2020-02-18T23:59:09Z',
-          },
+          ],
         },
         podStatus: {
           hasPending: false,
@@ -652,8 +648,8 @@ const mockLaidoutNodes: { laidoutNodes: TopologyNodeWithStatus[] } = {
       id: 'member--deployable--member--clusters--localcluster--default--mortgage-app-svc',
       uid: 'member--deployable--member--clusters--localcluster--default--mortgage-app-svc',
       name: 'mortgage-app-svc',
-      cluster: null,
-      clusterName: null,
+      cluster: undefined,
+      clusterName: undefined,
       type: 'deployable',
       specs: { isDesign: true, isDivider: true, row: 171 },
       namespace: 'default',
@@ -691,8 +687,8 @@ const mockLaidoutNodes: { laidoutNodes: TopologyNodeWithStatus[] } = {
       id: 'member--member--deployable--member--clusters--localcluster--default--mortgage-app-svc--service--mortgage-app-svc',
       uid: 'member--member--deployable--member--clusters--localcluster--default--mortgage-app-svc--service--mortgage-app-svc',
       name: 'mortgage-app-svc',
-      cluster: null,
-      clusterName: null,
+      cluster: undefined,
+      clusterName: undefined,
       type: 'service',
       specs: { deployStatuses: Array(1), isDesign: false, row: 201 },
       namespace: '',
@@ -839,8 +835,6 @@ describe('DetailsView 1 pod details', () => {
   })
 
   it('render as expected', async () => {
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    screen.logTestingPlaygroundURL()
     expect(screen.getByText('deployment')).toBeTruthy()
   })
 })

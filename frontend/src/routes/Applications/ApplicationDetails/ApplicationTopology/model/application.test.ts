@@ -1,20 +1,17 @@
 // Copyright Contributors to the Open Cluster Management project
 
-import { PlacementKind } from '../../../../../resources'
+import {
+  Placement,
+  PlacementKind,
+  ArgoApplication,
+  ApplicationSet,
+  ArgoApplicationApiVersion,
+} from '../../../../../resources'
 import { PlacementApiVersion } from '../../../../../wizards/common/resources/IPlacement'
 import { getApplication } from './application'
 import { nockGet, nockAggegateRequest, nockIgnoreApiPaths } from '../../../../../lib/nock-util'
 import { waitForNocks } from '../../../../../lib/test-util'
-import {
-  ApplicationModel,
-  ManagedCluster,
-  RecoilStates,
-  ArgoApplication,
-  AppSetCluster,
-  Application,
-  ApplicationSet,
-  Placement,
-} from '../types'
+import { ApplicationModel, ManagedCluster, RecoilStates } from '../types'
 
 describe('getApplication Argo', () => {
   it('returns Argo app model', async () => {
@@ -66,8 +63,7 @@ describe('getApplication AppSet pull model', () => {
       appData3.recoilStates,
       appData3.cluster,
       appData3.apiversion,
-      appData3.clusters,
-      appData3.relatedPlacement
+      appData3.clusters
     )
     await waitForNocks(nocks)
     expect(model).toEqual(result3)
@@ -120,15 +116,14 @@ const appData: TestAppData = {
   ],
 }
 
-const mockArgoApp: Application = {
-  apiVersion: 'argoproj.io/v1alpha1',
+const mockArgoApp: ArgoApplication = {
+  apiVersion: ArgoApplicationApiVersion,
   kind: 'Application',
   metadata: {
-    annotations: [
-      {
-        'argocd.argoproj.io/refresh': 'normal',
-      },
-    ],
+    annotations: {
+      'argocd.argoproj.io/refresh': 'normal',
+    },
+
     creationTimestamp: '2022-02-25T16:33:00Z',
     name: 'feng-argo',
     namespace: 'openshift-gitops',
@@ -184,11 +179,9 @@ const result: ApplicationModel = {
     apiVersion: 'argoproj.io/v1alpha1',
     kind: 'Application',
     metadata: {
-      annotations: [
-        {
-          'argocd.argoproj.io/refresh': 'normal',
-        },
-      ],
+      annotations: {
+        'argocd.argoproj.io/refresh': 'normal',
+      },
       creationTimestamp: '2022-02-25T16:33:00Z',
       name: 'feng-argo',
       namespace: 'openshift-gitops',
@@ -260,11 +253,9 @@ const result: ApplicationModel = {
   isOCPApp: false,
   isAppSetPullModel: false,
   metadata: {
-    annotations: [
-      {
-        'argocd.argoproj.io/refresh': 'normal',
-      },
-    ],
+    annotations: {
+      'argocd.argoproj.io/refresh': 'normal',
+    },
     creationTimestamp: '2022-02-25T16:33:00Z',
     name: 'feng-argo',
     namespace: 'openshift-gitops',
@@ -286,26 +277,8 @@ const uidata: UIData = {
       apiVersion: 'argoproj.io/v1alpha1',
       kind: 'Application',
       metadata: {
-        creationTimestamp: '2023-06-19T15:38:26Z',
-        finalizers: ['resources-finalizer.argocd.argoproj.io'],
-        generation: 364,
-        labels: {
-          'velero.io/exclude-from-backup': 'true',
-        },
         name: 'magchen-old-appset-local-cluster',
         namespace: 'openshift-gitops',
-        ownerReferences: [
-          {
-            apiVersion: 'argoproj.io/v1alpha1',
-            blockOwnerDeletion: true,
-            controller: true,
-            kind: 'ApplicationSet',
-            name: 'magchen-old-appset',
-            uid: '225ca82c-80c2-4850-9c0a-080aa1649bdd',
-          },
-        ],
-        resourceVersion: '40271054',
-        uid: '5583b297-cb6d-478a-944f-a656c665551d',
       },
       spec: {
         destination: {
@@ -471,7 +444,6 @@ const appData2: TestAppData = {
               kind: 'Subscription',
             },
           ],
-          descriptor: {},
           selector: {
             matchExpressions: [
               {
@@ -510,7 +482,6 @@ const appData2: TestAppData = {
               kind: 'Subscription',
             },
           ],
-          descriptor: {},
           selector: {
             matchExpressions: [
               {
@@ -1111,7 +1082,12 @@ const appData2: TestAppData = {
           },
         },
         status: {
-          lastUpdateTime: '2023-06-19T15:37:41Z',
+          statuses: {
+            '2023-06-19T15:37:41Z': {
+              message: 'Active',
+              phase: 'Propagated',
+            },
+          },
           message: 'Active',
           phase: 'Propagated',
         },
@@ -1270,12 +1246,14 @@ const appData2: TestAppData = {
         spec: {
           channel: 'ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples',
           placement: {
-            local: true,
+            placementRef: {
+              kind: 'Placement',
+              name: 'magchen-multiple-placement-1',
+            },
           },
         },
         status: {
           ansiblejobs: {},
-          appstatusReference: 'kubectl get appsubstatus -n magchen-multiple-ns magchen-multiple-subscription-1',
           lastUpdateTime: '2023-06-21T14:28:01Z',
           message: 'Active',
           phase: 'Subscribed',
@@ -1317,12 +1295,14 @@ const appData2: TestAppData = {
         spec: {
           channel: 'ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples',
           placement: {
-            local: true,
+            placementRef: {
+              kind: 'Placement',
+              name: 'magchen-multiple-placement-2',
+            },
           },
         },
         status: {
           ansiblejobs: {},
-          appstatusReference: 'kubectl get appsubstatus -n feng-multi feng-multi-subscription-2',
           lastUpdateTime: '2023-06-21T14:28:43Z',
           message: 'Active',
           phase: 'Subscribed',
@@ -1364,12 +1344,14 @@ const appData2: TestAppData = {
         spec: {
           channel: 'ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples',
           placement: {
-            local: true,
+            placementRef: {
+              kind: 'Placement',
+              name: 'magchen-multiple-placement-2',
+            },
           },
         },
         status: {
           ansiblejobs: {},
-          appstatusReference: 'kubectl get appsubstatus -n magchen-multiple-ns magchen-multiple-subscription-2',
           lastUpdateTime: '2023-06-21T14:28:43Z',
           message: 'Active',
           phase: 'Subscribed',
@@ -1411,12 +1393,14 @@ const appData2: TestAppData = {
         spec: {
           channel: 'ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples',
           placement: {
-            local: true,
+            placementRef: {
+              kind: 'Placement',
+              name: 'magchen-multiple-placement-1',
+            },
           },
         },
         status: {
           ansiblejobs: {},
-          appstatusReference: 'kubectl get appsubstatus -n feng-multi feng-multi-subscription-1',
           lastUpdateTime: '2023-06-21T14:28:43Z',
           message: 'Active',
           phase: 'Subscribed',
@@ -1454,6 +1438,7 @@ const appData2: TestAppData = {
             apiVersion: 'apiextensions.k8s.io/v1',
             kind: 'CustomResourceDefinition',
             name: 'cars.feng.example.com',
+            namespace: 'feng-multi',
           },
         ],
         results: [
@@ -21622,7 +21607,6 @@ const appData3: TestAppData = {
               kind: 'Subscription',
             },
           ],
-          descriptor: {},
           selector: {
             matchExpressions: [
               {
@@ -21660,7 +21644,6 @@ const appData3: TestAppData = {
               kind: 'Subscription',
             },
           ],
-          descriptor: {},
           selector: {
             matchExpressions: [
               {
@@ -21732,9 +21715,6 @@ const appData3: TestAppData = {
           uid: 'b13b4111-551d-489e-bc59-08fe6455e995',
         },
         spec: {
-          configMapRef: {
-            name: 'git-ca',
-          },
           pathname: 'https://gogs-svc-git-server.apps.collective.aws.red-chesterfield.com/testadmin/testrepo.git',
           secretRef: {
             name: 'client-cert',

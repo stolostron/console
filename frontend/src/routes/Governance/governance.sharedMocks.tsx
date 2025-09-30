@@ -578,7 +578,7 @@ const placement1: Placement = {
   status: {
     conditions: [
       {
-        lastTransitionTime: new Date('2022-03-02T14:45:53Z'),
+        lastTransitionTime: '2022-03-02T14:45:53Z',
         message: 'All ManagedClusterSets [cluster-set] have no member ManagedCluster',
         reason: 'AllManagedClusterSetsEmpty',
         status: 'False',

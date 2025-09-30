@@ -31,7 +31,6 @@ import type {
   ResourceItemWithStatus,
   SubscriptionItem,
   PodInfo,
-  ArgoApplication,
   ActiveFilters,
   StateNames,
   DetailItem,
@@ -44,7 +43,13 @@ import type {
   ResourceItem,
   AppSetApplicationModel,
   SubscriptionApplicationData,
+  ArgoApp,
 } from '../types'
+import {
+  ArgoApplication,
+  ArgoApplicationKind,
+  ArgoApplicationApiVersion,
+} from '../../../../../resources/argo-application'
 import { getArgoResourceStatuses } from './resourceStatusesArgo'
 import { getAppSetResourceStatuses } from './resourceStatusesAppSet'
 import { getSubscriptionResourceStatuses } from './resourceStatusesSubscription'
@@ -323,6 +328,20 @@ export const getPulseStatusForArgoApp = (node: TopologyNodeWithStatus, isAppSet?
     // For single applications, add this node's status to the evaluation
     const appStatus = safeGet<ArgoHealthStatus>(node, 'specs.raw.status.health.status', argoAppUnknownStatus)
     relatedApps.push({
+      apiVersion: ArgoApplicationApiVersion,
+      kind: ArgoApplicationKind,
+      metadata: {
+        name: node.name,
+        namespace: node.namespace,
+      },
+      spec: {
+        destination: {
+          name: node.cluster,
+          namespace: node.namespace,
+        },
+        project: '',
+        syncPolicy: undefined,
+      },
       status: { health: { status: appStatus } },
     })
   }
@@ -820,7 +839,7 @@ export const setArgoApplicationDeployStatus = (
   details: DetailItem[],
   t: TFunction
 ): void => {
-  const relatedArgoApps = safeGet<ArgoApplication[]>(node, 'specs.relatedApps', [])
+  const relatedArgoApps = safeGet<ArgoApp[]>(node, 'specs.relatedApps', [])
   if (relatedArgoApps.length === 0) {
     return // Search is not available
   }
@@ -857,7 +876,7 @@ export const setArgoApplicationDeployStatus = (
   details.push({
     type: 'relatedargoappdetails',
     relatedargoappsdata: {
-      argoAppList: sortedRelatedArgoApps as ArgoApplication[],
+      argoAppList: sortedRelatedArgoApps as ArgoApp[],
     },
   })
 }

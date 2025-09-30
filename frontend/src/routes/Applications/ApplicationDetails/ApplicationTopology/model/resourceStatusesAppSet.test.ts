@@ -128,8 +128,6 @@ const application: AppSetApplicationModel = {
         annotations: {
           'argocd.argoproj.io/sync-wave': '0',
         },
-        creationTimestamp: '2022-12-07T16:04:20Z',
-        finalizers: ['resources-finalizer.argocd.argoproj.io'],
         generation: 1,
         labels: {
           'app.kubernetes.io/instance': 'mock-app-local-cluster',
@@ -137,18 +135,6 @@ const application: AppSetApplicationModel = {
         },
         name: 'mock-app-local-cluster',
         namespace: 'mock-ns',
-        ownerReferences: [
-          {
-            apiVersion: 'argoproj.io/v1alpha1',
-            blockOwnerDeletion: true,
-            controller: true,
-            kind: 'ApplicationSet',
-            name: 'mock-app',
-            uid: 'b12d45a2-b9c3-4e04-8f73-c9d78c22ca82',
-          },
-        ],
-        resourceVersion: '11864538',
-        uid: '8e0b8b8b-b9c3-4e04-8f73-c9d78c22ca82',
       },
       spec: {
         destination: {
@@ -160,13 +146,6 @@ const application: AppSetApplicationModel = {
           path: 'cluster/console',
           repoURL: 'https://github.com/mock/mock',
           targetRevision: 'main',
-        },
-        syncPolicy: {
-          automated: {
-            prune: true,
-            selfHeal: true,
-          },
-          syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
         },
       },
       status: {
@@ -207,8 +186,6 @@ const application: AppSetApplicationModel = {
         annotations: {
           'argocd.argoproj.io/sync-wave': '0',
         },
-        creationTimestamp: '2022-12-07T16:04:20Z',
-        finalizers: ['resources-finalizer.argocd.argoproj.io'],
         generation: 1,
         labels: {
           'app.kubernetes.io/instance': 'mock-app-dyna1203',
@@ -216,18 +193,6 @@ const application: AppSetApplicationModel = {
         },
         name: 'mock-app-dyna1203',
         namespace: 'mock-ns',
-        ownerReferences: [
-          {
-            apiVersion: 'argoproj.io/v1alpha1',
-            blockOwnerDeletion: true,
-            controller: true,
-            kind: 'ApplicationSet',
-            name: 'mock-app',
-            uid: 'b12d45a2-b9c3-4e04-8f73-c9d78c22ca82',
-          },
-        ],
-        resourceVersion: '11864539',
-        uid: '9e0b8b8b-b9c3-4e04-8f73-c9d78c22ca82',
       },
       spec: {
         destination: {
@@ -239,13 +204,6 @@ const application: AppSetApplicationModel = {
           path: 'cluster/console',
           repoURL: 'https://github.com/mock/mock',
           targetRevision: 'main',
-        },
-        syncPolicy: {
-          automated: {
-            prune: true,
-            selfHeal: true,
-          },
-          syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
         },
       },
       status: {

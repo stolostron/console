@@ -59,7 +59,7 @@ const channelController3: MockChannelControlData = {
 }
 
 const channelController4: MockChannelControlData = {
-  activeChannel: undefined,
+  activeChannel: '',
   isChangingChannel: false,
   changeTheChannel: jest.fn(),
   allChannels: [
@@ -136,7 +136,7 @@ describe('ChannelController components 2. 2', () => {
 describe('ChannelController components 3', () => {
   let container: HTMLElement
   const setDrawerContent: MockSetDrawerContent = jest.fn()
-  
+
   beforeEach(async () => {
     ;({ container } = render(
       <ChannelController channelControl={channelController3} t={t} setDrawerContent={setDrawerContent} />
@@ -155,7 +155,7 @@ describe('ChannelController components 3', () => {
 describe('ChannelController components 4', () => {
   let container: HTMLElement
   const setDrawerContent: MockSetDrawerContent = jest.fn()
-  
+
   beforeEach(async () => {
     ;({ container } = render(
       <ChannelController channelControl={channelController4} t={t} setDrawerContent={setDrawerContent} />

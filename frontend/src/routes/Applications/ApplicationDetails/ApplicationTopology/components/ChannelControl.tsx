@@ -38,7 +38,7 @@ class ChannelControl extends Component<ChannelControlProps, ChannelControlState>
    * Sets up the current channel if multiple channels are available
    */
   componentDidMount(): void {
-    const { activeChannel, allChannels } = this.props.channelControl
+    const { activeChannel, allChannels } = this.props.channelControl ?? { activeChannel: '', allChannels: [] }
     if (allChannels.length > 1) {
       this.fetchCurrentChannel(activeChannel ?? '', allChannels)
     }
@@ -65,7 +65,7 @@ class ChannelControl extends Component<ChannelControlProps, ChannelControlState>
       // Set the current channel to the selected channel
       this.setState({ currentChannel: selectedItem })
       // Close drawer and refresh topology view
-      this.props.setDrawerContent('Close', false, true, true, true, undefined, true)
+      this.props.setDrawerContent?.('Close', false, true, true, true, undefined, true)
     }
   }
 
@@ -249,8 +249,8 @@ class ChannelControl extends Component<ChannelControlProps, ChannelControlState>
    * @returns Object containing selected subscription and current page information
    */
   getSelectedSubscriptionPage = (channelControl: ChannelControlProps['channelControl']): SelectedSubscriptionData => {
-    const { allChannels } = channelControl
-    let { activeChannel } = channelControl
+    const { allChannels } = channelControl ?? { allChannels: [] }
+    let { activeChannel } = channelControl ?? { activeChannel: '' }
     const { fetchChannel } = this.state
     activeChannel = fetchChannel || activeChannel || allChannels[0]
 

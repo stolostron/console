@@ -8,7 +8,6 @@ import type {
   OCPFluxTopologyResult,
   ResourceItem,
   SearchQuery,
-  ClusterInfo,
 } from '../types'
 
 describe('getQueryStringForLabel', () => {

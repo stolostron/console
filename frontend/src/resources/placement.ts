@@ -52,7 +52,7 @@ export interface PlacementRequiredClusterSelector {
 
 export interface PlacementStatus {
   conditions: Array<{
-    lastTransitionTime: Date
+    lastTransitionTime: string
     message: string
     reason: string
     status: string

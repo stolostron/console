@@ -33,6 +33,7 @@ export type ClusterDetailsContainerData = {
   clusterID?: string
   selected?: any
   selectedClusterList: any[]
+  isSelectOpen?: boolean
 }
 
 export function ApplicationTopologyPageContent() {

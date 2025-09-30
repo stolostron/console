@@ -47,7 +47,6 @@ const application: ApplicationModel = {
     kind: 'ApplicationSet',
     metadata: {
       creationTimestamp: '2023-01-23T16:50:12Z',
-      generation: 1,
       name: 'feng-appset-hello',
       namespace: 'openshift-gitops',
       resourceVersion: '1166741',
@@ -134,7 +133,6 @@ const application: ApplicationModel = {
     kind: 'Placement',
     metadata: {
       creationTimestamp: '2023-01-23T16:50:12Z',
-      generation: 1,
       name: 'feng-appset-hello-placement',
       namespace: 'openshift-gitops',
       resourceVersion: '1166737',
@@ -343,18 +341,6 @@ const application: ApplicationModel = {
           images: ['quay.io/fxiang1/helloworld:0.0.1'],
         },
         sync: {
-          comparedTo: {
-            destination: {
-              namespace: 'feng-appset-hello',
-              server: 'https://api.app-aws-411ga-hub-bwrqq.dev06.red-chesterfield.com:6443',
-            },
-            source: {
-              path: 'helloworld',
-              repoURL: 'https://github.com/fxiang1/app-samples',
-              targetRevision: 'main',
-            },
-          },
-          revision: 'b8fee607fd58e3477e74d674c0b7f8b9250a63be',
           status: 'Synced',
         },
       },
@@ -369,6 +355,7 @@ const application: ApplicationModel = {
       created: '2023-01-19T20:00:18Z',
     },
   ],
+  isAppSetPullModel: false,
 }
 const result: AppSetTopologyResult = {
   links: [
@@ -630,18 +617,6 @@ const result: AppSetTopologyResult = {
                 images: ['quay.io/fxiang1/helloworld:0.0.1'],
               },
               sync: {
-                comparedTo: {
-                  destination: {
-                    namespace: 'feng-appset-hello',
-                    server: 'https://api.app-aws-411ga-hub-bwrqq.dev06.red-chesterfield.com:6443',
-                  },
-                  source: {
-                    path: 'helloworld',
-                    repoURL: 'https://github.com/fxiang1/app-samples',
-                    targetRevision: 'main',
-                  },
-                },
-                revision: 'b8fee607fd58e3477e74d674c0b7f8b9250a63be',
                 status: 'Synced',
               },
             },
@@ -663,7 +638,6 @@ const result: AppSetTopologyResult = {
           kind: 'ApplicationSet',
           metadata: {
             creationTimestamp: '2023-01-23T16:50:12Z',
-            generation: 1,
             name: 'feng-appset-hello',
             namespace: 'openshift-gitops',
             resourceVersion: '1166741',
@@ -752,7 +726,6 @@ const result: AppSetTopologyResult = {
           kind: 'Placement',
           metadata: {
             creationTimestamp: '2023-01-23T16:50:12Z',
-            generation: 1,
             name: 'feng-appset-hello-placement',
             namespace: 'openshift-gitops',
             resourceVersion: '1166737',

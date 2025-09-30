@@ -97,20 +97,6 @@ describe('addPropertyToList undefined data', () => {
 })
 
 describe('computeResourceName node with pods no _hostingDeployable', () => {
-  const node: NodeLike = {
-    apiversion: 'v1',
-    cluster: 'sharingpenguin',
-    container: 'secondary',
-    created: '2020-05-26T19:18:21Z',
-    kind: 'pod',
-    label: 'app; pod-template-hash=5bdcfd74c7; role=secondary; tier=backend',
-    name: 'redis-secondary-5bdcfd74c7-22ljj',
-    namespace: 'app-guestbook-git-ns',
-    restarts: 0,
-    selfLink: '/api/v1/namespaces/app-guestbook-git-ns/pods/redis-secondary-5bdcfd74c7-22ljj',
-    startedAt: '2020-05-26T19:18:21Z',
-    status: 'Running',
-  }
   it('nodeMustHavePods POD no _hostingDeployable', () => {
     expect(
       computeResourceName(
@@ -129,21 +115,6 @@ describe('computeResourceName node with pods no _hostingDeployable', () => {
 })
 
 describe('computeResourceName node with pods with _hostingDeployable', () => {
-  const node: NodeLike = {
-    apiversion: 'v1',
-    cluster: 'sharingpenguin',
-    container: 'secondary',
-    created: '2020-05-26T19:18:21Z',
-    kind: 'pod',
-    label: 'app=redis; pod-template-hash=5bdcfd74c7; role=secondary; tier=backend',
-    name: 'redis-secondary-5bdcfd74c7-22ljj',
-    namespace: 'app-guestbook-git-ns',
-    restarts: 0,
-    _hostingDeployable: 'aaa',
-    selfLink: '/api/v1/namespaces/app-guestbook-git-ns/pods/redis-secondary-5bdcfd74c7-22ljj',
-    startedAt: '2020-05-26T19:18:21Z',
-    status: 'Running',
-  }
   it('nodeMustHavePods POD with _hostingDeployable', () => {
     expect(
       computeResourceName(
@@ -1221,11 +1192,13 @@ describe('addNodeInfoPerCluster 1', () => {
     },
   }
   const testFn = jest.fn(() => {
-    return {
-      type: 'label',
-      labelValue: 'clusterName',
-      value: 'location',
-    }
+    return [
+      {
+        type: 'label',
+        labelValue: 'clusterName',
+        value: 'location',
+      },
+    ]
   })
   it('addNodeInfoPerCluster 1', () => {
     expect(addNodeInfoPerCluster(node, 'possiblereptile', 'default', [], testFn, t)).toEqual([])
@@ -1384,7 +1357,7 @@ describe('processResourceActionLink open argo editor', () => {
         namespace: 'argo_test',
       },
     }
-    nockList(listRoutes) // get all 'routes' in 'argo_test' namespace
+    nockList(listRoutes, []) // get all 'routes' in 'argo_test' namespace
     expect(processResourceActionLink(genericLink, () => {}, t, 'local-cluster')).toEqual(result)
   })
 })

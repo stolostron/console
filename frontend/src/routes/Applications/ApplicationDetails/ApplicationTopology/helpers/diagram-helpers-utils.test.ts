@@ -16,7 +16,6 @@ import {
   getTargetNsForNode,
   getResourcesClustersForApp,
   allClustersAreOnline,
-  mustRefreshTopologyMap,
   getNameWithoutVolumePostfix,
   getNameWithoutVMTypeHash,
   getVMNameWithoutPodHash,
@@ -32,74 +31,11 @@ import type {
   ResourceMap,
   ClusterInfo,
   TopologyNode,
-  StatusType,
   SubscriptionItem,
   ResourceItemWithStatus,
-  Topology,
+  TopologyNodeWithStatus,
+  ResourceMapObject,
 } from '../types'
-
-describe('mustRefreshTopologyMap', () => {
-  const updatedTime = 1621025105756
-  const topo: Topology = {
-    nodes: [
-      {
-        name: 'test-app',
-        namespace: 'default',
-        type: 'application',
-        id: 'application',
-        uid: 'app-uid',
-        specs: {},
-      },
-    ],
-    links: [],
-  }
-
-  const topo1: Topology = {
-    nodes: [
-      {
-        name: 'test-app',
-        namespace: 'default',
-        type: 'application',
-        id: 'application',
-        uid: 'app-uid',
-        specs: {},
-        _lastUpdated: 11111,
-      },
-    ],
-    links: [],
-  }
-
-  const topo2: Topology = {
-    nodes: [
-      {
-        name: 'test-app',
-        namespace: 'default',
-        type: 'application',
-        id: 'application',
-        uid: 'app-uid',
-        specs: {},
-        _lastUpdated: updatedTime,
-      },
-    ],
-    links: [],
-  }
-
-  it('must call update, updated time is not set on the app node', () => {
-    expect(mustRefreshTopologyMap(topo, updatedTime)).toEqual(true)
-  })
-
-  it('must call update, updated time is set on the app node but not the same with the latest refresh', () => {
-    expect(mustRefreshTopologyMap(topo1, updatedTime)).toEqual(true)
-  })
-
-  it('must NOT call update, updated time is set on the app node AND IS the same with the latest refresh', () => {
-    expect(mustRefreshTopologyMap(topo2, updatedTime)).toEqual(false)
-  })
-
-  it('must call update, updated time not defined', () => {
-    expect(mustRefreshTopologyMap(topo2)).toEqual(true)
-  })
-})
 
 describe('allClustersAreOnline', () => {
   const onlineClusters = ['cls1', 'cls2']
@@ -127,7 +63,7 @@ describe('getResourcesClustersForApp', () => {
         consoleURL: 'https://console-openshift-console.apps.app-abcd.managed.com',
       },
       {
-        HubAcceptedManagedCluster: 'True',
+        HubAcceptedManagedCluster: true,
         ManagedClusterConditionAvailable: 'True',
         kind: 'cluster',
         label: 'cloud=Amazon; environment=Dev; name=fxiang-eks; vendor=EKS',
@@ -242,7 +178,7 @@ describe('getResourcesClustersForApp', () => {
       consoleURL: 'https://console-openshift-console.apps.app-abcd.managed.com',
     },
     {
-      HubAcceptedManagedCluster: 'True',
+      HubAcceptedManagedCluster: true,
       ManagedClusterConditionAvailable: 'True',
       kind: 'cluster',
       label: 'cloud=Amazon; environment=Dev; name=fxiang-eks; vendor=EKS',
@@ -320,7 +256,7 @@ describe('getTargetNsForNode', () => {
           _clusterNamespace: 'local-cluster',
           name: 'local-cluster',
           kind: 'cluster',
-          HubAcceptedManagedCluster: 'True',
+          HubAcceptedManagedCluster: true,
           ManagedClusterConditionAvailable: 'True',
           status: 'OK',
         },
@@ -382,7 +318,7 @@ describe('getTargetNsForNode', () => {
           _clusterNamespace: 'local-cluster',
           name: 'local-cluster',
           kind: 'cluster',
-          HubAcceptedManagedCluster: 'True',
+          HubAcceptedManagedCluster: true,
           ManagedClusterConditionAvailable: 'True',
           status: 'OK',
         },
@@ -442,7 +378,7 @@ describe('getTargetNsForNode', () => {
         {
           name: 'local-cluster',
           kind: 'cluster',
-          ManagedClusterConditionAvailable: 'True',
+          ManagedClusterConditionAvailable: true,
           status: 'OK',
         },
       ],
@@ -455,13 +391,7 @@ describe('getTargetNsForNode', () => {
 
   it('return local-cluster namespace for policy node type', () => {
     expect(
-      getTargetNsForNode(
-        inputNodePolicy,
-        Object.values(polModel)[0],
-        'local-cluster',
-        'openshift-gitops-installed',
-        '*'
-      )
+      getTargetNsForNode(inputNodePolicy, Object.values(polModel)[0], 'local-cluster', 'openshift-gitops-installed')
     ).toEqual(['vb-crash-ns'])
   })
 })
@@ -477,7 +407,7 @@ describe('updateAppClustersMatchingSearch', () => {
       consoleURL: 'https://console-openshift-console.apps.app-abcd.managed.com',
     },
     {
-      HubAcceptedManagedCluster: 'True',
+      HubAcceptedManagedCluster: true,
       ManagedClusterConditionAvailable: 'True',
       kind: 'cluster',
       label: 'cloud=Amazon; environment=Dev; name=fxiang-eks; vendor=EKS',
@@ -511,13 +441,13 @@ describe('updateAppClustersMatchingSearch', () => {
 })
 
 describe('getOnlineClusters', () => {
-  const inputNodeOffLineRemote: NodeLike = {
+  const inputNodeOffLineRemote: TopologyNodeWithStatus = {
     id: 'member--clusters--',
     specs: {
       searchClusters: [
         {
           name: 'local-cluster',
-          status: 'OK',
+          status: 'ok',
         },
         {
           name: 'ui-managed',
@@ -526,14 +456,18 @@ describe('getOnlineClusters', () => {
       ],
       clustersNames: ['local-cluster', 'ui-managed'],
     },
+    name: '',
+    namespace: '',
+    type: '',
+    uid: '',
   }
-  const inputNodeAllAvailable: NodeLike = {
+  const inputNodeAllAvailable: TopologyNodeWithStatus = {
     id: 'member--clusters--',
     specs: {
       searchClusters: [
         {
           name: 'local-cluster',
-          status: 'OK',
+          status: 'ok',
         },
         {
           name: 'ui-managed',
@@ -542,8 +476,12 @@ describe('getOnlineClusters', () => {
       ],
       clustersNames: ['local-cluster', 'ui-managed'],
     },
+    name: '',
+    namespace: '',
+    type: '',
+    uid: '',
   }
-  const inputNodeLocalNotSet: NodeLike = {
+  const inputNodeLocalNotSet: TopologyNodeWithStatus = {
     id: 'member--clusters--',
     specs: {
       searchClusters: [
@@ -554,12 +492,16 @@ describe('getOnlineClusters', () => {
       ],
       clustersNames: ['local-cluster', 'ui-managed'],
     },
+    name: '',
+    namespace: '',
+    type: '',
+    uid: '',
   }
   it('returns only local cluster', () => {
-    expect(getOnlineClusters(inputNodeOffLineRemote)).toEqual(['local-cluster'])
+    expect(getOnlineClusters(inputNodeOffLineRemote, 'local-cluster')).toEqual(['local-cluster'])
   })
   it('returns all clusters', () => {
-    expect(getOnlineClusters(inputNodeAllAvailable)).toEqual(['local-cluster', 'ui-managed'])
+    expect(getOnlineClusters(inputNodeAllAvailable, 'local-cluster')).toEqual(['local-cluster', 'ui-managed'])
   })
   it('returns all clusters, local not set', () => {
     expect(getOnlineClusters(inputNodeLocalNotSet, 'local-cluster')).toEqual(['local-cluster', 'ui-managed'])
@@ -626,12 +568,6 @@ describe('getClusterName node clusters from nodeId, local cluster', () => {
       },
     }
     expect(getClusterName(clsNode1.id, undefined, undefined, 'local-cluster')).toEqual('local-cluster')
-  })
-})
-
-describe('nodeMustHavePods undefined data', () => {
-  it('nodeMustHavePods', () => {
-    expect(nodeMustHavePods(undefined)).toEqual(false)
   })
 })
 
@@ -863,11 +799,16 @@ describe('getOnlineCluster ok and pending', () => {
       status: 'offline',
     },
   ]
-  const node: NodeLike = {
+  const node: TopologyNodeWithStatus = {
     specs: {
       clustersNames: ['cluster1', 'cluster2', 'cluster3'],
       searchClusters: clusterObjs,
     },
+    name: '',
+    namespace: '',
+    type: '',
+    id: '',
+    uid: '',
   }
   it('should process cluster node status', () => {
     expect(getOnlineClusters(node, 'local-cluster')).toEqual(['cluster1', 'cluster2', 'local-cluster'])
@@ -918,7 +859,7 @@ describe('getClusterHost', () => {
 })
 
 describe('getPulseStatusForSubscription no subscriptionItem.status', () => {
-  const node: NodeLike = {
+  const node: TopologyNodeWithStatus = {
     id: 'member--subscription--default--mortgagedc-subscription',
     name: 'mortgagedcNOStatus',
     specs: {
@@ -930,23 +871,25 @@ describe('getPulseStatusForSubscription no subscriptionItem.status', () => {
       row: 12,
     },
     type: 'subscription',
+    namespace: '',
+    uid: '',
   }
 
   it('getPulseStatusForSubscription no subscriptionItem.status', () => {
-    expect(getPulseStatusForSubscription(node)).toEqual('yellow')
+    expect(getPulseStatusForSubscription(node, 'local-cluster')).toEqual('yellow')
   })
 })
 
 describe('getPulseStatusForSubscription returns green pulse', () => {
-  const node: NodeLike = {
+  const node: TopologyNodeWithStatus = {
     id: 'member--subscription--sahar-multins--sahar-multi-sample-subscription-1',
     name: 'mortgagedcNOStatus',
     specs: {
       clustersNames: ['local-cluster', 'braveman', 'braveman2'],
       searchClusters: [
-        { name: 'local-cluster', status: 'OK' },
-        { name: 'braveman', status: 'OK' },
-        { name: 'braveman2', status: 'OK' },
+        { name: 'local-cluster', status: 'ok' },
+        { name: 'braveman', status: 'ok' },
+        { name: 'braveman2', status: 'ok' },
       ],
       raw: { spec: { clustersNames: ['local-cluster'] } },
       subscriptionModel: {
@@ -956,19 +899,21 @@ describe('getPulseStatusForSubscription returns green pulse', () => {
       row: 12,
     },
     type: 'subscription',
+    namespace: '',
+    uid: '',
   }
 
   it('getPulseStatusForSubscription returns green pulse', () => {
-    expect(getPulseStatusForSubscription(node)).toEqual('green')
+    expect(getPulseStatusForSubscription(node, 'local-cluster')).toEqual('green')
   })
 })
 
 describe('getPulseStatusForSubscription package with Failed phase in statuses', () => {
-  const node: NodeLike = {
+  const node: TopologyNodeWithStatus = {
     id: 'member--subscription--sahar-multins--sahar-multi-sample-subscription-1',
     name: 'mortgagedcNOStatus',
     specs: {
-      searchClusters: [{ name: 'local-cluster', status: 'OK' }],
+      searchClusters: [{ name: 'local-cluster', status: 'ok' }],
       raw: {
         spec: { clustersNames: ['local-cluster'] },
         status: {
@@ -986,16 +931,21 @@ describe('getPulseStatusForSubscription package with Failed phase in statuses', 
       row: 12,
     },
     type: 'subscription',
+    namespace: '',
+    uid: '',
   }
 
   it('getPulseStatusForSubscription return yellow status', () => {
-    expect(getPulseStatusForSubscription(node)).toEqual('yellow')
+    expect(getPulseStatusForSubscription(node, 'local-cluster')).toEqual('yellow')
   })
 })
 
 describe('syncControllerRevisionPodStatusMap', () => {
-  const resourceMap: Record<string, NodeLike> = {
+  const resourceMap: Record<string, ResourceMapObject> = {
     'daemonset-mortgageds-deploy-fxiang-eks': {
+      name: 'mortgageds-deploy',
+      namespace: 'feng',
+      type: 'daemonset',
       specs: {
         daemonsetModel: {
           'mortgageds-deploy-fxiang-eks': {
@@ -1023,6 +973,9 @@ describe('syncControllerRevisionPodStatusMap', () => {
       },
     },
     'controllerrevision-mortgageds-deploy-fxiang-eks': {
+      name: 'mortgageds-deploy',
+      namespace: 'feng',
+      type: 'controllerrevision',
       specs: {
         parent: {
           parentId:
@@ -1034,8 +987,11 @@ describe('syncControllerRevisionPodStatusMap', () => {
     },
   }
 
-  const resourceMap2: Record<string, NodeLike> = {
+  const resourceMap2: Record<string, ResourceMapObject> = {
     'daemonset-mortgageds-deploy-': {
+      name: 'mortgageds-deploy',
+      namespace: 'feng',
+      type: 'daemonset',
       specs: {
         daemonsetModel: {
           'mortgageds-deploy-fxiang-eks': {
@@ -1063,6 +1019,9 @@ describe('syncControllerRevisionPodStatusMap', () => {
       },
     },
     'controllerrevision-mortgageds-deploy-fxiang-eks': {
+      name: 'mortgageds-deploy',
+      namespace: 'feng',
+      type: 'controllerrevision',
       specs: {
         parent: {
           parentId:
@@ -1074,8 +1033,11 @@ describe('syncControllerRevisionPodStatusMap', () => {
     },
   }
 
-  const resourceMapNoParentPodModel: Record<string, NodeLike> = {
+  const resourceMapNoParentPodModel: Record<string, ResourceMapObject> = {
     'daemonset-mortgageds-deploy-fxiang-eks': {
+      name: 'mortgageds-deploy',
+      namespace: 'feng',
+      type: 'daemonset',
       specs: {
         daemonsetModel: {
           'mortgageds-deploy-fxiang-eks': {
@@ -1103,6 +1065,9 @@ describe('syncControllerRevisionPodStatusMap', () => {
       },
     },
     'controllerrevision-mortgageds-deploy-fxiang-eks': {
+      name: 'mortgageds-deploy',
+      namespace: 'feng',
+      type: 'controllerrevision',
       specs: {
         parent: {
           parentId:
@@ -1115,15 +1080,15 @@ describe('syncControllerRevisionPodStatusMap', () => {
   }
 
   it('should sync controllerRevision resource', () => {
-    expect(syncControllerRevisionPodStatusMap(resourceMap)).toEqual(undefined)
+    expect(syncControllerRevisionPodStatusMap(resourceMap, 'local-cluster')).toEqual(undefined)
   })
 
   it('should sync controllerRevision resource, no cluster on map key', () => {
-    expect(syncControllerRevisionPodStatusMap(resourceMap2)).toEqual(undefined)
+    expect(syncControllerRevisionPodStatusMap(resourceMap2, 'local-cluster')).toEqual(undefined)
   })
 
   it('should not sync controllerRevision resource', () => {
-    expect(syncControllerRevisionPodStatusMap(resourceMapNoParentPodModel)).toEqual(undefined)
+    expect(syncControllerRevisionPodStatusMap(resourceMapNoParentPodModel, 'local-cluster')).toEqual(undefined)
   })
 })
 
@@ -1279,13 +1244,12 @@ describe('getNameWithoutVMTypeHash', () => {
     label:
       'instancetype.kubevirt.io/object-generation=1; instancetype.kubevirt.io/object-kind=VirtualMachineClusterInstancetype; instancetype.kubevirt.io/object-name=u1.nano; instancetype.kubevirt.io/object-uid=8c88fd46-b8eb-44cd-b27f-62b78bb46494; instancetype.kubevirt.io/object-version=v1beta1',
   }
-  it('getNameWithoutVMTypeHash controllerrevision name', () => {
-    expect(getNameWithoutVMTypeHash(resource)).toEqual('fedora-plum-walrus-98')
-  })
+  it('getNameWithoutVMTypeHash controllerrevision name', () =>
+    expect(getNameWithoutVMTypeHash({ name: resource.name, label: resource.label })).toEqual('fedora-plum-walrus-98'))
 })
 
 describe('getNameWithoutVMTypeHash no label', () => {
-  const resource: ResourceItem = {
+  const resource: { name: string } = {
     name: 'fedora-plum-walrus-98-u1.nano-8c88fd46-b8eb-44cd-b27f-62b78bb46494-1',
   }
   it('getNameWithoutVMTypeHash controllerrevision no label', () => {
@@ -1300,7 +1264,7 @@ describe('getVMNameWithoutPodHash', () => {
       'kubevirt.io=virt-launcher; kubevirt.io/created-by=f70fabbc-1d94-4a8e-ab8b-164cb66dce9c; kubevirt.io/nodeName=fog28.acm.lab.eng.rdu2.redhat.com; vm.kubevirt.io/name=fedora-plum-walrus-98',
   }
   it('getVMNameWithoutPodHash pod name', () => {
-    expect(getVMNameWithoutPodHash(resource)).toEqual('fedora-plum-walrus-98')
+    expect(getVMNameWithoutPodHash({ name: resource.name, label: resource.label })).toEqual('fedora-plum-walrus-98')
   })
 })
 
@@ -1309,6 +1273,6 @@ describe('getVMNameWithoutPodHash', () => {
     name: 'virt-launcher-fedora-plum-walrus-98-xn828',
   }
   it('getVMNameWithoutPodHash pod name', () => {
-    expect(getVMNameWithoutPodHash(resource)).toEqual(resource.name)
+    expect(getVMNameWithoutPodHash({ name: resource.name })).toEqual(resource.name)
   })
 })

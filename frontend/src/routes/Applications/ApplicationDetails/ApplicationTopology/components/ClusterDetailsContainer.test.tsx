@@ -9,7 +9,7 @@ const t = (string: string): string => {
   return string
 }
 
-window.open = () => {} // provide an empty implementation for window.open
+window.open = () => null // provide an empty implementation for window.open
 
 describe('ClusterDetailsContainer with no clusters', () => {
   const mockData: {
@@ -26,6 +26,7 @@ describe('ClusterDetailsContainer with no clusters', () => {
         clusterSearchToggle: false,
         isSelectOpen: false,
         expandSectionToggleMap: new Set(),
+        selectedClusterList: [],
       },
       handleClusterDetailsContainerUpdate: jest.fn(),
     },
@@ -95,6 +96,7 @@ describe('ClusterDetailsContainer with some clusters', () => {
         clusterSearchToggle: false,
         isSelectOpen: false,
         expandSectionToggleMap: new Set(),
+        selectedClusterList: [],
       },
       handleClusterDetailsContainerUpdate: jest.fn(),
     },
@@ -154,6 +156,7 @@ describe('ClusterDetailsContainer test functions', () => {
         clusterSearchToggle: false,
         isSelectOpen: false,
         expandSectionToggleMap: new Set(),
+        selectedClusterList: [],
       },
       handleClusterDetailsContainerUpdate: jest.fn(),
     },

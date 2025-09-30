@@ -118,7 +118,7 @@ export const getDiagramElements = (
     const { id, type } = node
 
     // Handle application nodes to extract channel information
-    if (evaluateSingleAnd(type === 'application', id.startsWith('application'))) {
+    if (evaluateSingleAnd(type === 'application', id?.startsWith('application'))) {
       channelsList = (node.specs?.channels ?? []) as string[]
 
       // Filter out the special "all channels" entry and set default active channel

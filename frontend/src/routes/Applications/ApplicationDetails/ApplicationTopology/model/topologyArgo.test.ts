@@ -1,12 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { getArgoTopology } from './topologyArgo'
-import type {
-  ArgoApplicationTopologyData,
-  ArgoTopologyData,
-  ManagedCluster,
-  ArgoTopologyResult,
-} from '../types'
+import type { ArgoApplicationTopologyData, ArgoTopologyData, ManagedCluster, ArgoTopologyResult } from '../types'
 
 it('getArgoTopology success scenario', () => {
   expect(getArgoTopology(application, argoData, managedClusters, 'local-cluster')).toEqual(result1)
@@ -1106,18 +1101,6 @@ const application: ArgoApplicationTopologyData = {
       },
     },
   },
-  metadata: {
-    creationTimestamp: '2023-01-23T15:34:03Z',
-    generation: 20,
-    name: 'feng-argo-hello',
-    namespace: 'openshift-gitops',
-    resourceVersion: '1100922',
-    uid: '2a86cc10-0a18-43f6-8b66-63fd6393ee49',
-  },
-  isArgoApp: true,
-  isAppSet: false,
-  isOCPApp: false,
-  isFluxApp: false,
 }
 
 const argoData: ArgoTopologyData = {
@@ -2232,18 +2215,6 @@ const application2: ArgoApplicationTopologyData = {
       },
     },
   },
-  metadata: {
-    creationTimestamp: '2023-01-23T15:34:03Z',
-    generation: 20,
-    name: 'feng-argo-hello',
-    namespace: 'openshift-gitops',
-    resourceVersion: '1100922',
-    uid: '2a86cc10-0a18-43f6-8b66-63fd6393ee49',
-  },
-  isArgoApp: true,
-  isAppSet: false,
-  isOCPApp: false,
-  isFluxApp: false,
 }
 
 const argoData2: ArgoTopologyData = {

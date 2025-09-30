@@ -73,7 +73,7 @@ export const getClusterName = (
   nodeId: string | undefined,
   node: NodeLike | undefined,
   findAll: boolean | undefined,
-  hubClusterName: string
+  hubClusterName: string = 'unknown'
 ): string => {
   if (node) {
     if (findAll) {
@@ -438,26 +438,6 @@ export const findParentForOwnerID = (
       }
     }
   })
-}
-
-/**
- * Check if topology map needs to be recalculated depending on the last update marker.
- */
-export const mustRefreshTopologyMap = (topology: NodeLike | undefined, currentUpdate: string | undefined): boolean => {
-  if (
-    currentUpdate &&
-    topology &&
-    typeof topology === 'object' &&
-    Array.isArray((topology as any)?.nodes) &&
-    (topology as any).nodes.length > 0
-  ) {
-    const firstNode = (topology as any).nodes[0]
-    if (firstNode && typeof firstNode === 'object' && firstNode._lastUpdated === currentUpdate) {
-      return false
-    }
-    firstNode._lastUpdated = currentUpdate
-  }
-  return true
 }
 
 /**

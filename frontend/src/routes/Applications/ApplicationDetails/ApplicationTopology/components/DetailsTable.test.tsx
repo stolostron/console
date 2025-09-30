@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import React from 'react'
 import DetailsTable from './DetailsTable'
 import { render, screen } from '@testing-library/react'
 import { waitForText } from '../../../../../lib/test-util'
@@ -70,37 +69,16 @@ describe('DetailsTable', () => {
       },
       resources: [
         {
-          group: 'apps',
-          health: {
-            status: 'Healthy',
-          },
-          kind: 'Deployment',
           name: 'pause-deploy',
           namespace: 'feng-argo-perf',
-          status: 'Synced',
-          version: 'v1',
         },
         {
-          group: 'apps',
-          health: {
-            status: 'Healthy',
-          },
-          kind: 'Deployment',
           name: 'pause-deploy2',
           namespace: 'feng-argo-perf',
-          status: 'Synced',
-          version: 'v1',
         },
         {
-          group: 'apps',
-          health: {
-            status: 'Healthy',
-          },
-          kind: 'Deployment',
           name: 'pause-deploy3',
           namespace: 'feng-argo-perf',
-          status: 'Synced',
-          version: 'v1',
         },
       ],
       resourceCount: 3,

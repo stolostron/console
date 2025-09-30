@@ -63,7 +63,7 @@ export const createChildNode = (
   }
   nodes.push(node)
   links.push({
-    from: { uid: parentId },
+    from: { uid: parentId || '' },
     to: { uid: memberId },
     type: '',
   })

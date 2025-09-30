@@ -2,8 +2,9 @@ import { Dispatch, SetStateAction } from 'react'
 import {
   AnsibleJob,
   Application,
-  ApplicationSet,
+  ArgoApplication,
   Channel,
+  Metadata,
   MulticlusterApplicationSetReport,
   Placement,
   PlacementDecision,
@@ -27,7 +28,7 @@ export interface AnsibleJobStatus {
 
 export type Translator = (key: string) => string
 export type DetailsList = Array<Record<string, unknown>>
-export type NodeLike = Record<string, unknown>
+export type NodeLike = Record<string, any>
 
 // Describes optional URL search parameters supported by Argo helpers
 export interface URLSearchData {
@@ -36,7 +37,7 @@ export interface URLSearchData {
 }
 
 // Generic resource item returned by search/model collections
-export type ResourceItem = Record<string, unknown>
+export type ResourceItem = Record<string, any>
 
 // Map from arbitrary keys (e.g., cluster or kind key) to arrays of resources
 export type ResourceMap = Record<string, ResourceItem[]>
@@ -120,9 +121,9 @@ export interface ApplicationModel {
   activeChannel?: SetStateAction<string | undefined>
   name: string
   namespace: string
-  app: Application | ApplicationSet
-  metadata?: Record<string, unknown>
-  placement?: PlacementDecision
+  app: any
+  metadata?: Metadata
+  placement?: PlacementDecision | Placement
   isArgoApp: boolean
   isAppSet: boolean
   isOCPApp: boolean
@@ -300,8 +301,8 @@ export interface TopologyNode {
   name: string
   namespace: string
   type: string
-  id: string
-  uid: string
+  id?: string
+  uid?: string
   specs: Record<string, unknown>
   // Allow additional dynamic fields used throughout helpers
   [key: string]: unknown
@@ -426,28 +427,6 @@ export interface PodInfo extends ResourceItemWithStatus {
   startedAt?: string
 }
 
-// Argo application interface
-export interface ArgoApplication {
-  status?: {
-    health?: {
-      status?: ArgoHealthStatus
-    }
-    sync?: {
-      status?: string
-    }
-    conditions?: Array<{
-      type: string
-      message: string
-      [key: string]: unknown
-    }>
-  }
-  metadata?: {
-    name?: string
-    namespace?: string
-  }
-  [key: string]: unknown
-}
-
 // Node specification interface
 export interface NodeSpecs {
   pulse?: PulseColor
@@ -466,7 +445,7 @@ export interface NodeSpecs {
   appClusters?: string[]
   clustersNames?: string[]
   targetNamespaces?: Record<string, unknown>
-  searchClusters?: ClusterInfo[]
+  searchClusters?: ClusterInfo[] | string[]
   subscriptionModel?: ResourceMap
   podModel?: ResourceMap
   resourceCount?: number
@@ -508,10 +487,10 @@ export interface DetailItem extends Record<string, unknown> {
     clusterList: ClusterData[]
     sortedClusterNames?: string[]
     searchClusters?: ClusterData[]
-    clusterID: string
+    clusterID?: string
   }
   relatedargoappsdata?: {
-    argoAppList: ArgoApplication[]
+    argoAppList: ArgoApp[]
   }
 }
 
@@ -811,9 +790,9 @@ export interface DisplayChannel {
 }
 
 export interface ChannelControlProps {
-  channelControl: ChannelControlData
+  channelControl?: ChannelControlData
   t: TFunction
-  setDrawerContent: (
+  setDrawerContent?: (
     title: string,
     isInline: boolean,
     isResizable: boolean,
@@ -826,7 +805,7 @@ export interface ChannelControlProps {
 export interface ChannelControlData {
   allChannels: string[]
   activeChannel?: string
-  setActiveChannel: (channel: string) => void
+  setActiveChannel?: (channel: string) => void
 }
 
 export interface ChannelControlState {
@@ -979,6 +958,8 @@ export interface DetailsTableNode {
   name: string
   namespace: string
   type: string
+  id: string
+  uid: string
   specs: DetailsTableNodeSpecs
 }
 
@@ -1058,10 +1039,6 @@ export interface DetailItemExtended extends DetailItem {
     sortedClusterNames: string[]
     searchClusters: ClusterData[]
     clusterID: string
-  }
-  /** Related Argo application data */
-  relatedargoappsdata?: {
-    argoAppList: ArgoApp[]
   }
 }
 
@@ -1251,6 +1228,7 @@ export interface AppSetApplication {
     labels?: Record<string, string>
     /** Application annotations */
     annotations?: Record<string, string>
+    generation?: number
   }
   /** Application specification */
   spec: ArgoAppSpec

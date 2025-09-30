@@ -4,7 +4,6 @@
 
 import {
   computeNodeStatus,
-  getPodState,
   getPulseForData,
   setApplicationDeployStatus,
   setAppSetDeployStatus,
@@ -37,7 +36,6 @@ import {
   persVolumePendingStateYellow,
   placementsDeployable,
   placementDeployable,
-  podCrash,
   ruleNodeGreen2,
   ruleNodeRed,
   subscriptionGreenNotPlacedYellow,

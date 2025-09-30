@@ -1,23 +1,13 @@
 // Copyright Contributors to the Open Cluster Management project
 
-import {
-  TopologyNodeWithStatus,
-  ResourceItemWithStatus,
-  DetailItem,
-  ClusterInfo,
-  NodeSpecs,
-  ResourceMap,
-  StatusType,
-  ResourceAction,
-  ArgoApplication,
-  AppSetCluster,
-} from '../types'
+import { TopologyNodeWithStatus, ResourceItemWithStatus, DetailItem } from '../types'
 
 export const genericNodeYellowNotDefined: TopologyNodeWithStatus = {
   id: 'member--member--service--member--clusters--feng, cluster1, cluster2--default--mortgage-app-deployable--deployment--mortgage-app-deploy',
   uid: 'member--member--service--member--clusters--feng--default--mortgage-app-deployable--deployment--mortgage-app-deploy',
   name: 'mortgage-app-deploy',
-  cluster: null,
+  namespace: 'default',
+  cluster: '',
   clusterName: null,
   clusters: {
     specs: {
@@ -94,7 +84,8 @@ export const persVolumePendingStateYellow: TopologyNodeWithStatus = {
   id: 'member--member--service--member--clusters--feng, cluster1, cluster2--default--mortgage-app-deployable--persistentvolumeclaim--mortgage-app-deploy',
   uid: 'member--member--service--member--clusters--feng--default--mortgage-app-deployable--persistentvolumeclaim--mortgage-app-deploy',
   name: 'minio',
-  cluster: null,
+  namespace: 'default',
+  cluster: '',
   clusterName: null,
   clusters: {
     specs: {
@@ -119,7 +110,6 @@ export const persVolumePendingStateYellow: TopologyNodeWithStatus = {
     },
     raw: {},
   },
-  namespace: 'default',
 }
 
 export const persVolumePendingStatePendingRes: DetailItem[] = [
@@ -201,7 +191,8 @@ export const persVolumePendingStateGreen: TopologyNodeWithStatus = {
   id: 'member--member--service--member--clusters--feng, cluster1, cluster2--default--mortgage-app-deployable--persistentvolumeclaim--mortgage-app-deploy',
   uid: 'member--member--service--member--clusters--feng--default--mortgage-app-deployable--persistentvolumeclaim--mortgage-app',
   name: 'mortgage-app',
-  cluster: null,
+  namespace: 'default',
+  cluster: '',
   clusterName: null,
   clusters: {
     specs: {
@@ -232,12 +223,13 @@ export const persVolumePendingStateGreen: TopologyNodeWithStatus = {
     },
     raw: {},
   },
-  namespace: 'default',
 }
 
 export const subscriptionInputRed1: TopologyNodeWithStatus = {
   id: 'member--subscription--default--mortgagedc-subscription',
+  uid: 'member--subscription--default--mortgagedc-subscription',
   name: 'mortgagedc',
+  namespace: 'default',
   specs: {
     isDesign: true,
     clustersNames: ['braveman', 'braveman2'],
@@ -282,7 +274,9 @@ export const subscriptionInputRed1: TopologyNodeWithStatus = {
 }
 export const subscriptionInputRed: TopologyNodeWithStatus = {
   id: 'member--subscription--default--mortgagedc-subscription',
+  uid: 'member--subscription--default--mortgagedc-subscription',
   name: 'mortgagedc',
+  namespace: 'default',
   specs: {
     raw: {
       spec: { template: { spec: { containers: [{ name: 'c1' }] } } },
@@ -293,7 +287,9 @@ export const subscriptionInputRed: TopologyNodeWithStatus = {
 }
 export const subscriptionInputYellow: TopologyNodeWithStatus = {
   id: 'member--subscription--default--mortgagedc-subscription',
+  uid: 'member--subscription--default--mortgagedc-subscription',
   name: 'mortgagedc',
+  namespace: 'default',
   specs: {
     isDesign: true,
     raw: {
@@ -338,13 +334,14 @@ export const subscriptionInputYellow: TopologyNodeWithStatus = {
 
 export const subscriptionGreenNotPlacedYellow: TopologyNodeWithStatus = {
   id: 'member--subscription--default--mortgagedc-subscription',
+  uid: 'member--subscription--default--mortgagedc-subscription',
   name: 'mortgagedc',
+  namespace: 'default',
   specs: {
     isDesign: true,
     raw: {
       spec: { template: { spec: { containers: [{ name: 'c1' }] } } },
     },
-    subscriptionModel: [],
     row: 12,
   },
   type: 'subscription',
@@ -352,6 +349,7 @@ export const subscriptionGreenNotPlacedYellow: TopologyNodeWithStatus = {
 
 export const appSetDeployable: TopologyNodeWithStatus = {
   id: 'member--member--deployable--member--clusters--cluster1--default--appSet1--applicationset--appSet1',
+  uid: 'member--member--deployable--member--clusters--cluster1--default--appSet1--applicationset--appSet1',
   name: 'appSet1',
   namespace: 'default',
   specs: {
@@ -362,6 +360,7 @@ export const appSetDeployable: TopologyNodeWithStatus = {
 
 export const appSubDeployable: TopologyNodeWithStatus = {
   id: 'member--member--deployable--member--clusters--cluster1--default--appSet1--application--appSub1',
+  uid: 'member--member--deployable--member--clusters--cluster1--default--appSet1--application--appSub1',
   name: 'appSub1',
   namespace: 'default',
   specs: {
@@ -372,6 +371,7 @@ export const appSubDeployable: TopologyNodeWithStatus = {
 
 export const placementsDeployable: TopologyNodeWithStatus = {
   id: 'member--member--deployable--member--clusters--cluster1--default--appSet1--placements--placementrule1',
+  uid: 'member--member--deployable--member--clusters--cluster1--default--appSet1--placements--placementrule1',
   name: 'placementrule1',
   namespace: 'default',
   specs: {
@@ -382,6 +382,7 @@ export const placementsDeployable: TopologyNodeWithStatus = {
 
 export const placementDeployable: TopologyNodeWithStatus = {
   id: 'member--member--deployable--member--clusters--cluster1--default--appSet1--placement--placement1',
+  uid: 'member--member--deployable--member--clusters--cluster1--default--appSet1--placement--placement1',
   name: 'placement1',
   namespace: 'default',
   specs: {
@@ -391,11 +392,11 @@ export const placementDeployable: TopologyNodeWithStatus = {
 }
 
 export const clusterNode: TopologyNodeWithStatus = {
+  id: 'member--clusters--local-cluster--feng-hello-subscription-1',
+  uid: 'member--clusters--local-cluster--feng-hello-subscription-1',
   name: 'local-cluster',
   namespace: '',
   type: 'cluster',
-  id: 'member--clusters--local-cluster--feng-hello-subscription-1',
-  uid: 'member--clusters--local-cluster--feng-hello-subscription-1',
   specs: {
     title: '',
     subscription: {
@@ -1820,11 +1821,11 @@ export const clusterNode: TopologyNodeWithStatus = {
     appClusters: [],
     searchClusters: [
       {
-        HubAcceptedManagedCluster: 'True',
+        HubAcceptedManagedCluster: true,
         ManagedClusterConditionAvailable: 'True',
-        ManagedClusterConditionClockSynced: 'True',
-        ManagedClusterImportSucceeded: 'True',
-        ManagedClusterJoined: 'True',
+        ManagedClusterConditionClockSynced: true,
+        ManagedClusterImportSucceeded: true,
+        ManagedClusterJoined: true,
         _hubClusterResource: 'true',
         _relatedUids: ['local-cluster/0784b94b-ddb6-4234-bc1b-d07d641d7a0c'],
         _uid: 'cluster__local-cluster',
@@ -1863,11 +1864,12 @@ export const appSetDesignFalse: TopologyNodeWithStatus = {
 export const subscriptionInputNotPlaced: TopologyNodeWithStatus = {
   id: 'member--subscription--default--mortgagedc-subscription',
   name: 'mortgagedc',
+  namespace: 'default',
   specs: {
     searchClusters: [
       {
         name: 'braveman',
-        status: 'OK',
+        status: 'ok',
       },
       {
         name: 'braveman2',
@@ -1918,6 +1920,7 @@ export const subscriptionInputNotPlaced: TopologyNodeWithStatus = {
 export const genericNodeInputRed: TopologyNodeWithStatus = {
   id: 'member--pod--default--mortgagedc-subscription',
   name: 'mortgagedc',
+  namespace: 'default',
   clusters: {
     specs: {
       clusters: [],
@@ -1935,6 +1938,7 @@ export const genericNodeInputRed: TopologyNodeWithStatus = {
 export const genericNodeInputRed2: TopologyNodeWithStatus = {
   id: 'member--pod--default--mortgagedc-subscription',
   name: 'mortgagedc',
+  namespace: 'default',
   clusters: {
     specs: {
       clusters: [],
@@ -1954,7 +1958,8 @@ export const deploymentNodeYellow: TopologyNodeWithStatus = {
   id: 'member--member--deployable--member--clusters--feng, cluster1, cluster2--default--mortgage-app-deployable--deployment--mortgage-app-deploy',
   uid: 'member--member--deployable--member--clusters--feng--default--mortgage-app-deployable--deployment--mortgage-app-deploy',
   name: 'mortgage-app-deploy',
-  cluster: null,
+  namespace: 'default',
+  cluster: undefined,
   clusterName: null,
   clusters: {
     specs: {
@@ -2004,7 +2009,8 @@ export const deploymentNodeRed: TopologyNodeWithStatus = {
   id: 'member--member--deployable--member--clusters--feng, cluster1, cluster2--default--mortgage-app-deployable--deployment--mortgage-app-deploy',
   uid: 'member--member--deployable--member--clusters--feng--default--mortgage-app-deployable--deployment--mortgage-app-deploy',
   name: 'mortgage-app-deploy',
-  cluster: null,
+  namespace: 'default',
+  cluster: undefined,
   clusterName: null,
   clusters: {
     specs: {
@@ -2041,7 +2047,8 @@ export const deploymentNodeYellow4: TopologyNodeWithStatus = {
   id: 'member--member--deployable--member--clusters--feng, cluster1, cluster2--default--mortgage-app-deployable--deployment--mortgage-app-deploy',
   uid: 'member--member--deployable--member--clusters--feng--default--mortgage-app-deployable--deployment--mortgage-app-deploy',
   name: 'mortgage-app-deploy',
-  cluster: null,
+  namespace: 'default',
+  cluster: undefined,
   clusterName: null,
   clusters: {
     specs: {
@@ -2083,7 +2090,8 @@ export const deploymentNodeYellow2: TopologyNodeWithStatus = {
   id: 'member--member--deployable--member--clusters--feng, cluster1, cluster2--default--mortgage-app-deployable--deployment--mortgage-app-deploy',
   uid: 'member--member--deployable--member--clusters--feng--default--mortgage-app-deployable--deployment--mortgage-app-deploy',
   name: 'mortgage-app-deploy',
-  cluster: null,
+  namespace: 'default',
+  cluster: undefined,
   clusterName: null,
   clusters: {
     specs: {
@@ -2127,7 +2135,8 @@ export const deploymentNodeNoPODS: TopologyNodeWithStatus = {
   id: 'member--member--deployable--member--clusters--feng, cluster1, cluster2--default--mortgage-app-deployable--deployment--mortgage-app-deploy',
   uid: 'member--member--deployable--member--clusters--feng--default--mortgage-app-deployable--deployment--mortgage-app-deploy',
   name: 'mortgage-app-deploy',
-  cluster: null,
+  namespace: 'default',
+  cluster: undefined,
   clusterName: null,
   clusters: {
     specs: {
@@ -2203,7 +2212,6 @@ export const deploymentNodeNoPODS: TopologyNodeWithStatus = {
       },
     ],
   },
-  namespace: '',
   topology: null,
   labels: null,
   __typename: 'Resource',
@@ -2279,7 +2287,7 @@ export const deploymentNodeNoPODSNoRes: TopologyNodeWithStatus = {
   id: 'member--member--deployable--member--clusters--feng, cluster1, cluster2--default--mortgage-app-deployable--deployment--mortgage-app-deploy',
   uid: 'member--member--deployable--member--clusters--feng--default--mortgage-app-deployable--deployment--mortgage-app-deploy',
   name: 'mortgage-app-deploy',
-  cluster: null,
+  cluster: undefined,
   clusterName: null,
   clusters: {
     specs: {
@@ -2428,7 +2436,7 @@ export const deploymentNodeRed3: TopologyNodeWithStatus = {
   id: 'member--member--deployable--member--clusters--feng, cluster1, cluster2--default--mortgage-app-deployable--deployment--mortgage-app-deploy',
   uid: 'member--member--deployable--member--clusters--feng--default--mortgage-app-deployable--deployment--mortgage-app-deploy',
   name: 'mortgage-app-deploy',
-  cluster: null,
+  cluster: undefined,
   clusterName: null,
   clusters: {
     specs: {
@@ -2628,7 +2636,7 @@ export const deploymentNodeNoPodModel: TopologyNodeWithStatus = {
   id: 'member--member--deployable--member--clusters--feng, cluster1, cluster2--default--mortgage-app-deployable--deployment--mortgage-app-deploy',
   uid: 'member--member--deployable--member--clusters--feng--default--mortgage-app-deployable--deployment--mortgage-app-deploy',
   name: 'mortgage-app-deploy',
-  cluster: null,
+  cluster: undefined,
   clusterName: null,
   clusters: {
     specs: {
@@ -2714,7 +2722,8 @@ export const genericNodeYellow: TopologyNodeWithStatus = {
   id: 'member--member--service--member--clusters--feng, cluster1, cluster2--default--mortgage-app-deployable--deployment--mortgage-app-deploy',
   uid: 'member--member--service--member--clusters--feng--default--mortgage-app-deployable--deployment--mortgage-app-deploy',
   name: 'mortgage-app-deploy',
-  cluster: null,
+  namespace: 'default',
+  cluster: undefined,
   clusterName: null,
   clusters: {
     specs: {
@@ -2768,7 +2777,8 @@ export const packageNodeOrange: TopologyNodeWithStatus = {
   id: 'member--member--package--member--clusters--feng, cluster1, cluster2--default--mortgage-app-deployable--deployment--mortgage-app-deploy',
   uid: 'member--member--package--member--clusters--feng--default--mortgage-app-deployable--deployment--mortgage-app-deploy',
   name: 'mortgage-app-deploy',
-  cluster: null,
+  namespace: 'default',
+  cluster: undefined,
   clusterName: null,
   clusters: {
     specs: {
@@ -2802,7 +2812,8 @@ export const packageNodeOrange: TopologyNodeWithStatus = {
 
 export const ruleNodeRed: TopologyNodeWithStatus = {
   name: 'mortgage-app-deploy',
-  cluster: null,
+  namespace: 'default',
+  cluster: undefined,
   clusterName: null,
   type: 'placements',
   specs: {},
@@ -2810,7 +2821,8 @@ export const ruleNodeRed: TopologyNodeWithStatus = {
 
 export const ruleNodeGreen2: TopologyNodeWithStatus = {
   name: 'mortgage-app-deploy2',
-  cluster: null,
+  namespace: 'default',
+  cluster: undefined,
   clusterName: null,
   type: 'placements',
   specs: {
@@ -2826,7 +2838,8 @@ export const ruleNodeGreen2: TopologyNodeWithStatus = {
 
 export const appNoChannelRed: TopologyNodeWithStatus = {
   name: 'mortgage-app-deploy',
-  cluster: null,
+  cluster: undefined,
+  namespace: 'default',
   clusterName: null,
   type: 'application',
   specs: {
@@ -2836,7 +2849,8 @@ export const appNoChannelRed: TopologyNodeWithStatus = {
 
 export const appNoChannelGreen: TopologyNodeWithStatus = {
   name: 'mortgage-app-deploy',
-  cluster: null,
+  namespace: 'default',
+  cluster: undefined,
   clusterName: null,
   type: 'application',
   specs: {
@@ -5106,7 +5120,7 @@ export const staticResourceData: Record<string, any> = {
       {
         msgKey: 'table.header.applicationName',
         resourceKey: 'name',
-        transformFunction: (item) => item.name,
+        transformFunction: (item: { name: any }) => item.name,
       },
       {
         msgKey: 'table.header.namespace',
@@ -5143,7 +5157,7 @@ export const staticResourceDataApp: Record<string, any> = {
     {
       msgKey: 'table.header.applicationName',
       resourceKey: 'name',
-      transformFunction: (item) => item.name,
+      transformFunction: (item: { name: any }) => item.name,
     },
     {
       msgKey: 'table.header.namespace',
