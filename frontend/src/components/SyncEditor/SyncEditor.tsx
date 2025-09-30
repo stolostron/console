@@ -184,7 +184,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
   useEffect(() => {
     // if user is pasting a certificate, fix the indent
     const domNode = editorRef.current?.getDomNode()
-    domNode.addEventListener(
+    domNode?.addEventListener(
       'paste',
       (event: { stopPropagation: () => void; preventDefault: () => void; originalEvent: any; target: any }) => {
         const selection = editorRef.current?.getSelection()
@@ -196,19 +196,19 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
           event.stopPropagation()
           event.preventDefault()
           const lines = pasteText.split(/\r?\n/)
-          const spaces = model.getLineContent(selection.selectionStartLineNumber - 1).search(/\S/) + 2
+          const spaces = model?.getLineContent(selection.selectionStartLineNumber - 1).search(/\S/) + 2
           const leadSpaces = spaces - selection.selectionStartColumn + 1
           const lead = ' '.repeat(leadSpaces < 0 ? spaces : leadSpaces)
           const spacer = ' '.repeat(spaces)
           const joint = `\r\n${spacer}`
           const text = `${lead}${lines.map((line: string) => line.trim()).join(joint)}\r\n`
-          editorRef.current.executeEdits('my-source', [{ range: selection, text: text, forceMoveMarkers: true }])
+          editorRef.current?.executeEdits('my-source', [{ range: selection, text: text, forceMoveMarkers: true }])
         }
         // when user is pasting in a complete yaml, do we need to make sure the resource has a namespace
         if (
           autoCreateNs && // make sure resource has namespace
           selection.startColumn === 1 &&
-          selection.endLineNumber === model.getLineCount()
+          selection.endLineNumber === model?.getLineCount()
         ) {
           let nameInx
           let hasMetadata = false
@@ -235,7 +235,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             event.preventDefault()
             lines.splice(nameInx + 1, 0, '  namespace: ""')
             const text = lines.join('\r\n')
-            editorRef.current.executeEdits('my-source', [{ range: selection, text: text, forceMoveMarkers: true }])
+            editorRef.current?.executeEdits('my-source', [{ range: selection, text: text, forceMoveMarkers: true }])
           }
         }
       },
@@ -253,7 +253,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
 
   // prevent editor from flashing when typing in form
   useEffect(() => {
-    const model = editorRef.current.getModel()
+    const model = editorRef.current?.getModel()
     model?.onDidChangeContent(() => {
       model?.forceTokenization(model?.getLineCount())
     })
@@ -277,7 +277,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     if (mouseDownHandle) {
       mouseDownHandle.dispose()
     }
-    const handle = editorRef.current.onMouseDown(onMouseDown)
+    const handle = editorRef.current?.onMouseDown(onMouseDown)
     setMouseDownHandle(handle)
   }, [filteredRows, showFiltered])
 
@@ -306,7 +306,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     if (keyDownHandle) {
       keyDownHandle.dispose()
     }
-    const handle = editorRef.current.onKeyDown(
+    const handle = editorRef.current?.onKeyDown(
       (e: {
         code: string
         ctrlKey: boolean
@@ -314,9 +314,9 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         stopPropagation: () => void
         preventDefault: () => void
       }) => {
-        const selections = editorRef.current.getSelections()
+        const selections = editorRef.current?.getSelections()
         const editor = editorRef.current
-        const model = editor.getModel()
+        const model = editor?.getModel()
         const isAllSelected =
           selections.length === 1 &&
           selections[0].startColumn === 1 &&
@@ -324,7 +324,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         // if user presses enter, add new key: below this line
         let endOfLineEnter = false
         if (e.code === 'Enter') {
-          const pos = editor.getPosition()
+          const pos = editor?.getPosition()
           const thisLine = model.getLineContent(pos.lineNumber)
           endOfLineEnter = thisLine.length < pos.column
         }
@@ -391,7 +391,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         readonly === true,
         userEdits,
         validationRef.current,
-        model.getValue(),
+        model?.getValue(),
         editableUidSiblings
       )
       setProhibited(protectedRanges)
