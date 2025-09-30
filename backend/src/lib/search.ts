@@ -3,9 +3,10 @@ import { OutgoingHttpHeaders } from 'http2'
 import { RequestOptions, request } from 'https'
 import { URL } from 'url'
 import { getMultiClusterHub } from '../lib/multi-cluster-hub'
-import { getNamespace, getServiceAccountToken, getServiceCACertificate } from '../lib/serviceAccountToken'
+import { getNamespace, getServiceAccountToken } from '../lib/serviceAccountToken'
 import { logger } from './logger'
 import { IQuery } from '../routes/aggregators/applications'
+import { getServiceAgent } from './agent'
 
 export type ISearchResult = {
   data: {
@@ -51,7 +52,7 @@ export async function getSearchRequestOptions(headers: OutgoingHttpHeaders): Pro
     path: url.pathname,
     method: 'POST',
     headers,
-    ca: getServiceCACertificate(),
+    agent: getServiceAgent(),
   }
   return options
 }
