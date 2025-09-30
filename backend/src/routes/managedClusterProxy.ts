@@ -3,10 +3,10 @@ import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { logger } from '../lib/logger'
 import { respondInternalServerError } from '../lib/respond'
 import { getAuthenticatedToken, isHttp2ServerResponse } from '../lib/token'
-import { getServiceCACertificate } from '../lib/serviceAccountToken'
 import { getMultiClusterEngine } from '../lib/multi-cluster-engine'
 import proxy from 'http2-proxy'
 import { TLSSocket } from 'tls'
+import { getServiceAgent } from '../lib/agent'
 
 export async function managedClusterProxy(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void>
 export async function managedClusterProxy(req: Http2ServerRequest, socket: TLSSocket, head: Buffer): Promise<void>
@@ -40,7 +40,7 @@ export async function managedClusterProxy(
       protocol: 'https',
       hostname: proxyHost,
       port: proxyPort,
-      ca: getServiceCACertificate(),
+      agent: getServiceAgent(),
     } as const
 
     const proxyHandler = (err: Error) => {
