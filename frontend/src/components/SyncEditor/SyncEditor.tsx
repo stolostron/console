@@ -248,7 +248,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
   }, [])
 
   useEffect(() => {
-    monacoRef.current.editor.setTheme(readonly ? 'readonly-resource-editor' : 'resource-editor')
+    monacoRef.current?.editor?.setTheme(readonly ? 'readonly-resource-editor' : 'resource-editor')
   }, [readonly])
 
   // prevent editor from flashing when typing in form
@@ -286,7 +286,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     if (hoverProviderHandle) {
       hoverProviderHandle.dispose()
     }
-    const handle = monacoRef.current.languages.registerHoverProvider('yaml', {
+    const handle = monacoRef.current?.languages?.registerHoverProvider('yaml', {
       provideHover: (_model: any, position: any) => {
         return new Promise((resolve) => {
           squigglyTooltips.forEach((tip: { range: { containsPosition: (arg0: any) => any }; message: string }) => {
@@ -617,7 +617,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
               toolTipText={t('Undo')}
               isDisabled={!hasUndo}
               onClick={() => {
-                editorRef?.current.trigger('source', 'undo')
+                editorRef?.current?.trigger('source', 'undo')
               }}
             />
           )}
@@ -630,7 +630,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
               toolTipText={t('Redo')}
               isDisabled={!hasRedo}
               onClick={() => {
-                editorRef?.current.trigger('source', 'redo')
+                editorRef?.current?.trigger('source', 'redo')
               }}
             />
           )}
@@ -641,7 +641,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             aria-label={t('Find')}
             toolTipText={t('Find')}
             onClick={() => {
-              editorRef?.current.trigger('source', 'actions.find')
+              editorRef?.current?.trigger('source', 'actions.find')
             }}
           />
           {/* secrets */}
