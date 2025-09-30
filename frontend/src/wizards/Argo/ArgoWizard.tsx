@@ -236,24 +236,33 @@ export function ArgoWizard(props: ArgoWizardProps) {
 
   useEffect(() => {
     if (!props.argoServers?.length) return
-    const argoServer = props.argoServers.find(
+    const argoServers = props.argoServers.filter(
       (argoServer) => argoServer.value?.metadata?.namespace === applicationSetNamespace
     )
-    const placementRefName = argoServer?.value?.spec?.placementRef?.name
-    const placement = props.placements.find(
-      (placement) =>
-        placement.metadata?.namespace === argoServer?.value?.metadata.namespace &&
-        placement.metadata?.name === placementRefName
-    )
-    const clusterSets: IResource[] = props.clusterSets.filter((clusterSet) => {
-      if (placement?.spec?.clusterSets) {
-        if (placement?.spec?.clusterSets.length > 0) {
-          return placement?.spec?.clusterSets.includes(clusterSet.metadata?.name!)
-        }
-      } else {
-        return clusterSet
-      }
-    })
+    const placements = argoServers
+      .map((argoServer) => {
+        const placementRefName = argoServer?.value?.spec?.placementRef?.name
+        return props.placements.find(
+          (placement) =>
+            placement.metadata?.namespace === argoServer?.value?.metadata.namespace &&
+            placement.metadata?.name === placementRefName
+        )
+      })
+      .filter(Boolean)
+
+    const clusterSets: IResource[] =
+      placements.length === 0
+        ? props.clusterSets
+        : props.clusterSets.filter((clusterSet) => {
+            return placements.some((placement) => {
+              if (placement?.spec?.clusterSets) {
+                if (placement?.spec?.clusterSets.length > 0) {
+                  return placement?.spec?.clusterSets.includes(clusterSet.metadata?.name!)
+                }
+              }
+              return true
+            })
+          })
 
     setFilteredClusterSets(clusterSets)
   }, [applicationSetNamespace, props.argoServers, props.clusterSets, props.placements])
