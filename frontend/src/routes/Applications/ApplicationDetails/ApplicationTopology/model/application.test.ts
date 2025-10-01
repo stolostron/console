@@ -1,13 +1,6 @@
 // Copyright Contributors to the Open Cluster Management project
 
-import {
-  Placement,
-  PlacementKind,
-  ArgoApplication,
-  ApplicationSet,
-  ArgoApplicationApiVersion,
-} from '../../../../../resources'
-import { PlacementApiVersion } from '../../../../../wizards/common/resources/IPlacement'
+import { Placement, ArgoApplication, ApplicationSet } from '../../../../../resources'
 import { getApplication } from './application'
 import { nockGet, nockAggegateRequest, nockIgnoreApiPaths } from '../../../../../lib/nock-util'
 import { waitForNocks } from '../../../../../lib/test-util'
@@ -116,65 +109,22 @@ const appData: TestAppData = {
   ],
 }
 
-const mockArgoApp: ArgoApplication = {
-  apiVersion: ArgoApplicationApiVersion,
+const mockArgoApp = {
+  apiVersion: 'argoproj.io/v1alpha1',
   kind: 'Application',
   metadata: {
     annotations: {
       'argocd.argoproj.io/refresh': 'normal',
     },
-
     creationTimestamp: '2022-02-25T16:33:00Z',
     name: 'feng-argo',
     namespace: 'openshift-gitops',
   },
-  spec: {
-    destination: { name: 'in-cluster', namespace: 'feng-argo' },
-    project: 'default',
-    source: {
-      path: 'helloworld',
-      repoURL: 'https://github.com/fxiang1/app-samples.git',
-      targetRevision: 'HEAD',
-    },
-    syncPolicy: {
-      automated: { prune: true, selfHeal: true },
-      syncOptions: ['CreateNamespace=true'],
-    },
-  },
-  status: {
-    health: { status: 'Healthy' },
-    resources: [
-      {
-        health: { status: 'Healthy' },
-        kind: 'Service',
-        name: 'helloworld-app-svc',
-        namespace: 'feng-argo',
-        status: 'Synced',
-        version: 'v1',
-      },
-      {
-        group: 'apps',
-        health: { status: 'Healthy' },
-        kind: 'Deployment',
-        name: 'helloworld-app-deploy',
-        namespace: 'feng-argo',
-        status: 'Synced',
-        version: 'v1',
-      },
-      {
-        group: 'route.openshift.io',
-        health: { message: 'Route is healthy', status: 'Healthy' },
-        kind: 'Route',
-        name: 'helloworld-app-route',
-        namespace: 'feng-argo',
-        status: 'Synced',
-        version: 'v1',
-      },
-    ],
-  },
 }
 
 const result: ApplicationModel = {
+  name: 'feng-argo',
+  namespace: 'openshift-gitops',
   app: {
     apiVersion: 'argoproj.io/v1alpha1',
     kind: 'Application',
@@ -186,72 +136,7 @@ const result: ApplicationModel = {
       name: 'feng-argo',
       namespace: 'openshift-gitops',
     },
-    spec: {
-      destination: {
-        name: 'in-cluster',
-        namespace: 'feng-argo',
-      },
-      project: 'default',
-      source: {
-        path: 'helloworld',
-        repoURL: 'https://github.com/fxiang1/app-samples.git',
-        targetRevision: 'HEAD',
-      },
-      syncPolicy: {
-        automated: {
-          prune: true,
-          selfHeal: true,
-        },
-        syncOptions: ['CreateNamespace=true'],
-      },
-    },
-    status: {
-      health: {
-        status: 'Healthy',
-      },
-      resources: [
-        {
-          health: {
-            status: 'Healthy',
-          },
-          kind: 'Service',
-          name: 'helloworld-app-svc',
-          namespace: 'feng-argo',
-          status: 'Synced',
-          version: 'v1',
-        },
-        {
-          group: 'apps',
-          health: {
-            status: 'Healthy',
-          },
-          kind: 'Deployment',
-          name: 'helloworld-app-deploy',
-          namespace: 'feng-argo',
-          status: 'Synced',
-          version: 'v1',
-        },
-        {
-          group: 'route.openshift.io',
-          health: {
-            message: 'Route is healthy',
-            status: 'Healthy',
-          },
-          kind: 'Route',
-          name: 'helloworld-app-route',
-          namespace: 'feng-argo',
-          status: 'Synced',
-          version: 'v1',
-        },
-      ],
-    },
   },
-  clusterList: ['local-cluster'],
-  isAppSet: false,
-  isArgoApp: true,
-  isFluxApp: false,
-  isOCPApp: false,
-  isAppSetPullModel: false,
   metadata: {
     annotations: {
       'argocd.argoproj.io/refresh': 'normal',
@@ -260,11 +145,15 @@ const result: ApplicationModel = {
     name: 'feng-argo',
     namespace: 'openshift-gitops',
   },
-  name: 'feng-argo',
-  namespace: 'openshift-gitops',
   placement: undefined,
+  isArgoApp: true,
+  isAppSet: false,
+  isOCPApp: false,
+  isFluxApp: false,
+  isAppSetPullModel: false,
+  relatedPlacement: undefined,
+  clusterList: ['local-cluster'],
 }
-
 interface UIData {
   clusterList: string[]
   appSetApps: ArgoApplication[]
@@ -21008,7 +20897,9 @@ const appData2: TestAppData = {
   ],
 }
 
-const result1: ApplicationModel = {
+const result1 = {
+  name: 'magchen-old-appset',
+  namespace: 'openshift-gitops',
   app: {
     apiVersion: 'argoproj.io/v1alpha1',
     kind: 'ApplicationSet',
@@ -21020,74 +20911,23 @@ const result1: ApplicationModel = {
       resourceVersion: '38674970',
       uid: '225ca82c-80c2-4850-9c0a-080aa1649bdd',
     },
-    spec: {
-      generators: [
-        {
-          clusterDecisionResource: {
-            configMapRef: 'acm-placement',
-            labelSelector: {
-              matchLabels: {
-                'cluster.open-cluster-management.io/placement': 'magchen-old-appset-placement',
-              },
-            },
-            requeueAfterSeconds: 180,
-          },
-        },
-      ],
-      template: {
-        metadata: {
-          labels: {
-            'velero.io/exclude-from-backup': 'true',
-          },
-          name: 'magchen-old-appset-{{name}}',
-        },
-        spec: {
-          destination: {
-            namespace: 'philip-app',
-            server: '{{server}}',
-          },
-          project: 'default',
-          source: {
-            path: 'app1',
-            repoURL: 'https://github.com/philipwu08/example-k8s-app',
-            targetRevision: 'master',
-          },
-          syncPolicy: {
-            automated: {
-              prune: true,
-              selfHeal: true,
-            },
-            syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
-          },
-        },
-      },
-    },
-    status: {
-      conditions: [
-        {
-          lastTransitionTime: '2023-06-19T15:37:41Z',
-          message: 'Successfully generated parameters for all Applications',
-          reason: 'ApplicationSetUpToDate',
-          status: 'False',
-          type: 'ErrorOccurred',
-        },
-        {
-          lastTransitionTime: '2023-06-19T15:37:41Z',
-          message: 'Successfully generated parameters for all Applications',
-          reason: 'ParametersGenerated',
-          status: 'True',
-          type: 'ParametersGenerated',
-        },
-        {
-          lastTransitionTime: '2023-06-19T15:37:41Z',
-          message: 'ApplicationSet up to date',
-          reason: 'ApplicationSetUpToDate',
-          status: 'True',
-          type: 'ResourcesUpToDate',
-        },
-      ],
-    },
   },
+  metadata: {
+    creationTimestamp: '2023-06-14T17:45:14Z',
+    generation: 1,
+    name: 'magchen-old-appset',
+    namespace: 'openshift-gitops',
+    resourceVersion: '38674970',
+    uid: '225ca82c-80c2-4850-9c0a-080aa1649bdd',
+  },
+  placement: undefined,
+  isArgoApp: false,
+  isAppSet: true,
+  isOCPApp: false,
+  isFluxApp: false,
+  isAppSetPullModel: false,
+  relatedPlacement: undefined,
+  clusterList: ['local-cluster'],
   appSetApps: [
     {
       apiVersion: 'argoproj.io/v1alpha1',
@@ -21246,97 +21086,16 @@ const result1: ApplicationModel = {
   ],
   appSetClusters: [
     {
-      creationTimestamp: '2023-05-24T17:41:41Z',
       name: 'local-cluster',
       namespace: 'local-cluster',
-      status: 'ready',
       url: 'https://api.app-aws-central1-412-hub-n6kwd.dev11.red-chesterfield.com:6443',
+      status: 'ready',
+      creationTimestamp: '2023-05-24T17:41:41Z',
     },
   ],
-  isAppSet: true,
-  isArgoApp: false,
-  isFluxApp: false,
-  isAppSetPullModel: false,
-  isOCPApp: false,
-  clusterList: ['local-cluster'],
-  metadata: {
-    creationTimestamp: '2023-06-14T17:45:14Z',
-    generation: 1,
-    name: 'magchen-old-appset',
-    namespace: 'openshift-gitops',
-    resourceVersion: '38674970',
-    uid: '225ca82c-80c2-4850-9c0a-080aa1649bdd',
-  },
-  name: 'magchen-old-appset',
-  namespace: 'openshift-gitops',
-  relatedPlacement: {
-    kind: PlacementKind,
-    apiVersion: PlacementApiVersion,
-    metadata: {
-      creationTimestamp: '2023-06-14T17:45:14Z',
-      generation: 1,
-      name: 'magchen-old-appset-placement',
-      namespace: 'openshift-gitops',
-      resourceVersion: '39241989',
-      uid: '62cce892-d68f-483c-a0a0-bbe15ba976ef',
-    },
-    spec: {},
-    status: {
-      conditions: [
-        {
-          lastTransitionTime: '2023-06-14T17:45:14Z',
-          message: 'Placement configurations check pass',
-          reason: 'Succeedconfigured',
-          status: 'False',
-          type: 'PlacementMisconfigured',
-        },
-        {
-          lastTransitionTime: '2023-06-20T12:54:22Z',
-          message: 'All cluster decisions scheduled',
-          reason: 'AllDecisionsScheduled',
-          status: 'True',
-          type: 'PlacementSatisfied',
-        },
-      ],
-      numberOfSelectedClusters: 1,
-    },
-  },
-  placement: {
-    apiVersion: 'cluster.open-cluster-management.io/v1beta1',
-    kind: 'PlacementDecision',
-    metadata: {
-      creationTimestamp: '2023-06-14T17:45:14Z',
-      generation: 1,
-      labels: {
-        'cluster.open-cluster-management.io/placement': 'magchen-old-appset-placement',
-      },
-      name: 'magchen-old-appset-placement-decision-1',
-      namespace: 'openshift-gitops',
-      ownerReferences: [
-        {
-          apiVersion: 'cluster.open-cluster-management.io/v1beta1',
-          blockOwnerDeletion: true,
-          controller: true,
-          kind: 'Placement',
-          name: 'magchen-old-appset-placement',
-          uid: '62cce892-d68f-483c-a0a0-bbe15ba976ef',
-        },
-      ],
-      resourceVersion: '39241988',
-      uid: 'fc7c7254-e1fa-45f0-8c81-40f0061d017c',
-    },
-    status: {
-      decisions: [
-        {
-          clusterName: 'local-cluster',
-          reason: '',
-        },
-      ],
-    },
-  },
 }
 
-const mockAppset: ApplicationSet = {
+const mockAppset = {
   apiVersion: 'argoproj.io/v1alpha1',
   kind: 'ApplicationSet',
   metadata: {
@@ -21347,74 +21106,7 @@ const mockAppset: ApplicationSet = {
     resourceVersion: '38674970',
     uid: '225ca82c-80c2-4850-9c0a-080aa1649bdd',
   },
-  spec: {
-    generators: [
-      {
-        clusterDecisionResource: {
-          configMapRef: 'acm-placement',
-          labelSelector: {
-            matchLabels: {
-              'cluster.open-cluster-management.io/placement': 'magchen-old-appset-placement',
-            },
-          },
-          requeueAfterSeconds: 180,
-        },
-      },
-    ],
-    template: {
-      metadata: {
-        labels: {
-          'velero.io/exclude-from-backup': 'true',
-        },
-        name: 'magchen-old-appset-{{name}}',
-      },
-      spec: {
-        destination: {
-          namespace: 'philip-app',
-          server: '{{server}}',
-        },
-        project: 'default',
-        source: {
-          path: 'app1',
-          repoURL: 'https://github.com/philipwu08/example-k8s-app',
-          targetRevision: 'master',
-        },
-        syncPolicy: {
-          automated: {
-            prune: true,
-            selfHeal: true,
-          },
-          syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
-        },
-      },
-    },
-  },
-  status: {
-    conditions: [
-      {
-        lastTransitionTime: '2023-06-19T15:37:41Z',
-        message: 'Successfully generated parameters for all Applications',
-        reason: 'ApplicationSetUpToDate',
-        status: 'False',
-        type: 'ErrorOccurred',
-      },
-      {
-        lastTransitionTime: '2023-06-19T15:37:41Z',
-        message: 'Successfully generated parameters for all Applications',
-        reason: 'ParametersGenerated',
-        status: 'True',
-        type: 'ParametersGenerated',
-      },
-      {
-        lastTransitionTime: '2023-06-19T15:37:41Z',
-        message: 'ApplicationSet up to date',
-        reason: 'ApplicationSetUpToDate',
-        status: 'True',
-        type: 'ResourcesUpToDate',
-      },
-    ],
-  },
-}
+} as ApplicationSet
 
 const uidata2: UIData = {
   clusterList: ['local-cluster'],
@@ -26144,8 +25836,9 @@ const appData3: TestAppData = {
     },
   ],
 }
-
 const result3: ApplicationModel = {
+  name: 'feng-pm',
+  namespace: 'openshift-gitops',
   app: {
     apiVersion: 'argoproj.io/v1alpha1',
     kind: 'ApplicationSet',
@@ -26157,185 +25850,7 @@ const result3: ApplicationModel = {
       resourceVersion: '76441171',
       uid: '92436748-e765-4057-9621-2c3a74b3a487',
     },
-    spec: {
-      generators: [
-        {
-          clusterDecisionResource: {
-            configMapRef: 'acm-placement',
-            labelSelector: {
-              matchLabels: {
-                'cluster.open-cluster-management.io/placement': 'feng-pm-placement',
-              },
-            },
-            requeueAfterSeconds: 180,
-          },
-        },
-      ],
-      template: {
-        metadata: {
-          annotations: {
-            'apps.open-cluster-management.io/ocm-managed-cluster': '{{name}}',
-            'apps.open-cluster-management.io/ocm-managed-cluster-app-namespace': 'openshift-gitops',
-            'argocd.argoproj.io/skip-reconcile': 'true',
-          },
-          labels: {
-            'apps.open-cluster-management.io/pull-to-ocm-managed-cluster': 'true',
-            test1: 'test1',
-          },
-          name: 'feng-pm-{{name}}',
-        },
-        spec: {
-          destination: {
-            namespace: 'feng-pm',
-            server: 'https://kubernetes.default.svc',
-          },
-          project: 'default',
-          source: {
-            path: 'helloworld',
-            repoURL: 'https://github.com/fxiang1/app-samples',
-            targetRevision: 'main',
-          },
-          syncPolicy: {
-            automated: {},
-            syncOptions: ['CreateNamespace=true'],
-          },
-        },
-      },
-    },
-    status: {
-      conditions: [
-        {
-          lastTransitionTime: '2023-08-10T17:11:28Z',
-          message: 'Successfully generated parameters for all Applications',
-          reason: 'ApplicationSetUpToDate',
-          status: 'False',
-          type: 'ErrorOccurred',
-        },
-        {
-          lastTransitionTime: '2023-08-10T17:11:28Z',
-          message: 'Successfully generated parameters for all Applications',
-          reason: 'ParametersGenerated',
-          status: 'True',
-          type: 'ParametersGenerated',
-        },
-        {
-          lastTransitionTime: '2023-08-10T17:11:28Z',
-          message: 'ApplicationSet up to date',
-          reason: 'ApplicationSetUpToDate',
-          status: 'True',
-          type: 'ResourcesUpToDate',
-        },
-      ],
-    },
   },
-  appSetApps: [
-    {
-      apiVersion: 'argoproj.io/v1alpha1',
-      kind: 'Application',
-      metadata: {
-        name: 'feng-pm-feng-managed1',
-        namespace: 'openshift-gitops',
-      },
-      spec: {
-        destination: {
-          name: 'feng-managed1',
-        },
-      },
-      status: {
-        conditions: [],
-        health: {
-          status: 'Healthy',
-        },
-        resources: [
-          {
-            apiVersion: 'apps/v1',
-            kind: 'Deployment',
-            name: 'helloworld-app-deploy',
-            namespace: 'feng-pm',
-          },
-          {
-            apiVersion: 'route.openshift.io/v1',
-            kind: 'Route',
-            name: 'helloworld-app-route',
-            namespace: 'feng-pm',
-          },
-          {
-            apiVersion: '/v1',
-            kind: 'Service',
-            name: 'helloworld-app-svc',
-            namespace: 'feng-pm',
-          },
-        ],
-        sync: {
-          status: 'Synced',
-        },
-      },
-    },
-    {
-      apiVersion: 'argoproj.io/v1alpha1',
-      kind: 'Application',
-      metadata: {
-        name: 'feng-pm-feng-managed2',
-        namespace: 'openshift-gitops',
-      },
-      spec: {
-        destination: {
-          name: 'feng-managed2',
-        },
-      },
-      status: {
-        conditions: [],
-        health: {
-          status: 'Healthy',
-        },
-        resources: [
-          {
-            apiVersion: 'apps/v1',
-            kind: 'Deployment',
-            name: 'helloworld-app-deploy',
-            namespace: 'feng-pm',
-          },
-          {
-            apiVersion: 'route.openshift.io/v1',
-            kind: 'Route',
-            name: 'helloworld-app-route',
-            namespace: 'feng-pm',
-          },
-          {
-            apiVersion: '/v1',
-            kind: 'Service',
-            name: 'helloworld-app-svc',
-            namespace: 'feng-pm',
-          },
-        ],
-        sync: {
-          status: 'Synced',
-        },
-      },
-    },
-  ],
-  appSetClusters: [
-    {
-      created: '2023-08-08T18:13:26Z',
-      name: 'feng-managed1',
-      namespace: 'feng-managed1',
-      status: 'ok',
-      url: 'https://api.app-aws-east1-412-sno-2xl-nqk4s.dev11.red-chesterfield.com:6443',
-    },
-    {
-      created: '2023-08-08T18:27:06Z',
-      name: 'feng-managed2',
-      namespace: 'feng-managed2',
-      status: 'ok',
-      url: 'https://api.app-aws-east1-412-sno-2xl-dw2vk.dev11.red-chesterfield.com:6443',
-    },
-  ],
-  clusterList: ['local-cluster'],
-  isAppSet: true,
-  isAppSetPullModel: true,
-  isArgoApp: false,
-  isFluxApp: false,
-  isOCPApp: false,
   metadata: {
     creationTimestamp: '2023-08-02T18:01:14Z',
     generation: 2,
@@ -26344,103 +25859,182 @@ const result3: ApplicationModel = {
     resourceVersion: '76441171',
     uid: '92436748-e765-4057-9621-2c3a74b3a487',
   },
-  name: 'feng-pm',
-  namespace: 'openshift-gitops',
-  relatedPlacement: {
-    apiVersion: PlacementApiVersion,
-    kind: PlacementKind,
-    metadata: {
-      annotations: {
-        'kubectl.kubernetes.io/last-applied-configuration':
-          '{"apiVersion":"cluster.open-cluster-management.io/v1beta1","kind":"Placement","metadata":{"annotations":{},"name":"feng-pm-placement","namespace":"openshift-gitops"},"spec":{"clusterSets":["default"],"predicates":[{"requiredClusterSelector":{"labelSelector":{"matchExpressions":[]}}}]}}\n',
+  placement: undefined,
+  isArgoApp: false,
+  isAppSet: true,
+  isOCPApp: false,
+  isFluxApp: false,
+  isAppSetPullModel: false,
+  relatedPlacement: undefined,
+  clusterList: ['local-cluster'],
+  appSetApps: [
+    {
+      apiVersion: 'argoproj.io/v1alpha1',
+      kind: 'Application',
+      metadata: {
+        creationTimestamp: '2023-06-19T15:38:26Z',
+        finalizers: ['resources-finalizer.argocd.argoproj.io'],
+        generation: 364,
+        labels: {
+          'velero.io/exclude-from-backup': 'true',
+        },
+        name: 'magchen-old-appset-local-cluster',
+        namespace: 'openshift-gitops',
+        ownerReferences: [
+          {
+            apiVersion: 'argoproj.io/v1alpha1',
+            blockOwnerDeletion: true,
+            controller: true,
+            kind: 'ApplicationSet',
+            name: 'magchen-old-appset',
+            uid: '225ca82c-80c2-4850-9c0a-080aa1649bdd',
+          },
+        ],
+        resourceVersion: '40271054',
+        uid: '5583b297-cb6d-478a-944f-a656c665551d',
       },
-      creationTimestamp: '2023-08-02T17:59:14Z',
-      generation: 6,
-      name: 'feng-pm-placement',
-      namespace: 'openshift-gitops',
-      resourceVersion: '77555641',
-      uid: '554337d6-9137-4ed9-a03c-55d51485cb0d',
-    },
-    spec: {
-      clusterSets: ['default'],
-      predicates: [
-        {
-          requiredClusterSelector: {
-            labelSelector: {
-              matchExpressions: [
-                {
-                  key: 'name',
-                  operator: 'NotIn',
-                  values: ['local-cluster'],
-                },
-              ],
+      spec: {
+        destination: {
+          namespace: 'philip-app',
+          server: 'https://api.app-aws-central1-412-hub-n6kwd.dev11.red-chesterfield.com:6443',
+        },
+        project: 'default',
+        source: {
+          path: 'app1',
+          repoURL: 'https://github.com/philipwu08/example-k8s-app',
+          targetRevision: 'master',
+        },
+        syncPolicy: {
+          automated: {
+            prune: true,
+            selfHeal: true,
+          },
+          syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
+        },
+      },
+      status: {
+        health: {
+          status: 'Degraded',
+        },
+        history: [
+          {
+            deployStartedAt: '2023-06-19T15:38:26Z',
+            deployedAt: '2023-06-19T15:38:29Z',
+            id: 0,
+            revision: 'f56b7e6ce4501a8cb8cd446043a694fcba733dce',
+            source: {
+              path: 'app1',
+              repoURL: 'https://github.com/philipwu08/example-k8s-app',
+              targetRevision: 'master',
+            },
+          },
+        ],
+        operationState: {
+          finishedAt: '2023-06-19T15:38:29Z',
+          message: 'successfully synced (all tasks run)',
+          operation: {
+            initiatedBy: {
+              automated: true,
+            },
+            retry: {
+              limit: 5,
+            },
+            sync: {
+              prune: true,
+              revision: 'f56b7e6ce4501a8cb8cd446043a694fcba733dce',
+              syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
+            },
+          },
+          phase: 'Succeeded',
+          startedAt: '2023-06-19T15:38:26Z',
+          syncResult: {
+            resources: [
+              {
+                group: '',
+                hookPhase: 'Running',
+                kind: 'Namespace',
+                message: 'namespace/sandbox created',
+                name: 'sandbox',
+                namespace: 'philip-app',
+                status: 'Synced',
+                syncPhase: 'Sync',
+                version: 'v1',
+              },
+              {
+                group: 'apps',
+                hookPhase: 'Running',
+                kind: 'Deployment',
+                message: 'deployment.apps/example created',
+                name: 'example',
+                namespace: 'sandbox',
+                status: 'Synced',
+                syncPhase: 'Sync',
+                version: 'v1',
+              },
+            ],
+            revision: 'f56b7e6ce4501a8cb8cd446043a694fcba733dce',
+            source: {
+              path: 'app1',
+              repoURL: 'https://github.com/philipwu08/example-k8s-app',
+              targetRevision: 'master',
             },
           },
         },
-      ],
-    },
-    status: {
-      conditions: [
-        {
-          lastTransitionTime: '2023-08-02T17:59:14Z',
-          message: 'Placement configurations check pass',
-          reason: 'Succeedconfigured',
-          status: 'False',
-          type: 'PlacementMisconfigured',
+        reconciledAt: '2023-06-21T14:28:42Z',
+        resources: [
+          {
+            kind: 'Namespace',
+            name: 'sandbox',
+            status: 'Synced',
+            version: 'v1',
+          },
+          {
+            group: 'apps',
+            health: {
+              message: 'Deployment "example" exceeded its progress deadline',
+              status: 'Degraded',
+            },
+            kind: 'Deployment',
+            name: 'example',
+            namespace: 'sandbox',
+            status: 'Synced',
+            version: 'v1',
+          },
+        ],
+        sourceType: 'Kustomize',
+        summary: {
+          images: ['alpinelinux/darkhttpd'],
         },
-        {
-          lastTransitionTime: '2023-08-10T13:33:07Z',
-          message: 'All cluster decisions scheduled',
-          reason: 'AllDecisionsScheduled',
-          status: 'True',
-          type: 'PlacementSatisfied',
+        sync: {
+          comparedTo: {
+            destination: {
+              namespace: 'philip-app',
+              server: 'https://api.app-aws-central1-412-hub-n6kwd.dev11.red-chesterfield.com:6443',
+            },
+            source: {
+              path: 'app1',
+              repoURL: 'https://github.com/philipwu08/example-k8s-app',
+              targetRevision: 'master',
+            },
+          },
+          revision: 'f56b7e6ce4501a8cb8cd446043a694fcba733dce',
+          status: 'Synced',
         },
-      ],
-      numberOfSelectedClusters: 2,
-    },
-  },
-  placement: {
-    apiVersion: 'cluster.open-cluster-management.io/v1beta1',
-    kind: 'PlacementDecision',
-    metadata: {
-      creationTimestamp: '2023-08-02T17:59:14Z',
-      generation: 1,
-      labels: {
-        'cluster.open-cluster-management.io/decision-group-index': '0',
-        'cluster.open-cluster-management.io/decision-group-name': '',
-        'cluster.open-cluster-management.io/placement': 'feng-pm-placement',
       },
-      name: 'feng-pm-placement-decision-0',
-      namespace: 'openshift-gitops',
-      ownerReferences: [
-        {
-          apiVersion: 'cluster.open-cluster-management.io/v1beta1',
-          blockOwnerDeletion: true,
-          controller: true,
-          kind: 'Placement',
-          name: 'feng-pm-placement',
-          uid: '554337d6-9137-4ed9-a03c-55d51485cb0d',
-        },
-      ],
-      resourceVersion: '77555639',
-      uid: '2f0ffd00-f5e9-4af2-9b67-01ec50251edf',
     },
-    status: {
-      decisions: [
-        {
-          clusterName: 'feng-managed1',
-          reason: '',
-        },
-        {
-          clusterName: 'feng-managed2',
-          reason: '',
-        },
-      ],
+  ],
+  appSetClusters: [
+    {
+      name: 'local-cluster',
+      namespace: 'local-cluster',
+      url: 'https://api.app-aws-central1-412-hub-n6kwd.dev11.red-chesterfield.com:6443',
+      status: 'ready',
+      creationTimestamp: '2023-08-08T17:54:04Z',
     },
-  },
+  ],
 }
 
-const mockAppset3: ApplicationSet = {
+const mockAppset3 = {
   apiVersion: 'argoproj.io/v1alpha1',
   kind: 'ApplicationSet',
   metadata: {
@@ -26450,76 +26044,6 @@ const mockAppset3: ApplicationSet = {
     namespace: 'openshift-gitops',
     resourceVersion: '76441171',
     uid: '92436748-e765-4057-9621-2c3a74b3a487',
-  },
-  spec: {
-    generators: [
-      {
-        clusterDecisionResource: {
-          configMapRef: 'acm-placement',
-          labelSelector: {
-            matchLabels: {
-              'cluster.open-cluster-management.io/placement': 'feng-pm-placement',
-            },
-          },
-          requeueAfterSeconds: 180,
-        },
-      },
-    ],
-    template: {
-      metadata: {
-        annotations: {
-          'apps.open-cluster-management.io/ocm-managed-cluster': '{{name}}',
-          'apps.open-cluster-management.io/ocm-managed-cluster-app-namespace': 'openshift-gitops',
-          'argocd.argoproj.io/skip-reconcile': 'true',
-        },
-        labels: {
-          'apps.open-cluster-management.io/pull-to-ocm-managed-cluster': 'true',
-          test1: 'test1',
-        },
-        name: 'feng-pm-{{name}}',
-      },
-      spec: {
-        destination: {
-          namespace: 'feng-pm',
-          server: 'https://kubernetes.default.svc',
-        },
-        project: 'default',
-        source: {
-          path: 'helloworld',
-          repoURL: 'https://github.com/fxiang1/app-samples',
-          targetRevision: 'main',
-        },
-        syncPolicy: {
-          automated: {},
-          syncOptions: ['CreateNamespace=true'],
-        },
-      },
-    },
-  },
-  status: {
-    conditions: [
-      {
-        lastTransitionTime: '2023-08-10T17:11:28Z',
-        message: 'Successfully generated parameters for all Applications',
-        reason: 'ApplicationSetUpToDate',
-        status: 'False',
-        type: 'ErrorOccurred',
-      },
-      {
-        lastTransitionTime: '2023-08-10T17:11:28Z',
-        message: 'Successfully generated parameters for all Applications',
-        reason: 'ParametersGenerated',
-        status: 'True',
-        type: 'ParametersGenerated',
-      },
-      {
-        lastTransitionTime: '2023-08-10T17:11:28Z',
-        message: 'ApplicationSet up to date',
-        reason: 'ApplicationSetUpToDate',
-        status: 'True',
-        type: 'ResourcesUpToDate',
-      },
-    ],
   },
 }
 
