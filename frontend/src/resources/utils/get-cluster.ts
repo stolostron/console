@@ -1321,11 +1321,6 @@ export function getClusterStatus(
     } else if (provisionLaunchError) {
       cdStatus = ClusterStatus.provisionfailed
 
-      // certificate failure
-    } else if (unreachableError) {
-      cdStatus = ClusterStatus.unreachable
-      statusMessage = getConditionMessage('Unreachable', cdConditions)
-
       // provision success
     } else if (clusterDeployment.spec?.installed) {
       cdStatus = ClusterStatus.detached
@@ -1381,6 +1376,12 @@ export function getClusterStatus(
               break
           }
         }
+      }
+
+      // invode certificate failure only if not hibernating
+      if (cdStatus !== ClusterStatus.hibernating && unreachableError) {
+        cdStatus = ClusterStatus.unreachable
+        statusMessage = getConditionMessage('Unreachable', cdConditions)
       }
 
       // provisioning - default
