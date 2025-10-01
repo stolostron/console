@@ -113,6 +113,18 @@ const mockApplication0: Application = {
     },
   },
 }
+const mockApplicationUi = {
+  apiVersion: 'app.k8s.io/v1beta1',
+  kind: 'Application',
+  metadata: {
+    name: 'application-0',
+    namespace: 'namespace-0',
+    creationTimestamp: '2024-02-26T12:00:00Z',
+    annotations: {
+      'apps.open-cluster-management.io/subscriptions': 'namespace-0/subscription-0,namespace-0/subscription-0-local',
+    },
+  },
+}
 
 const mockSubscription: Subscription = {
   apiVersion: SubscriptionApiVersion,
@@ -654,7 +666,7 @@ describe('Create Subscription Application page', () => {
       nockGet(mockSubscriptionPlacement),
       nockGet(mockChannelNamespace),
       nockGet(mockPlacement),
-      nockAggegateRequest('uidata', mockApplication0, uidata, 200, true),
+      nockAggegateRequest('uidata', mockApplicationUi, uidata, 200, true),
     ]
     render(
       <RecoilRoot
