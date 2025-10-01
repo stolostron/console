@@ -183,13 +183,13 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
 
   useEffect(() => {
     // if user is pasting a certificate, fix the indent
-    const domNode = editorRef.current?.getDomNode()
+    const domNode = editorRef?.current?.getDomNode()
     domNode?.addEventListener(
       'paste',
       (event: { stopPropagation: () => void; preventDefault: () => void; originalEvent: any; target: any }) => {
-        const selection = editorRef.current?.getSelection()
+        const selection = editorRef?.current?.getSelection()
         const pasteText = (event.originalEvent ?? event).clipboardData.getData('text/plain').trim()
-        const model = editorRef.current?.getModel()
+        const model = editorRef?.current?.getModel()
         const lines = pasteText.split(/\r?\n/)
 
         if (selection.selectionStartLineNumber - 1 > 0 && pasteText.startsWith('-----BEGIN')) {
@@ -202,7 +202,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
           const spacer = ' '.repeat(spaces)
           const joint = `\r\n${spacer}`
           const text = `${lead}${lines.map((line: string) => line.trim()).join(joint)}\r\n`
-          editorRef.current?.executeEdits('my-source', [{ range: selection, text: text, forceMoveMarkers: true }])
+          editorRef?.current?.executeEdits('my-source', [{ range: selection, text: text, forceMoveMarkers: true }])
         }
         // when user is pasting in a complete yaml, do we need to make sure the resource has a namespace
         if (
@@ -235,7 +235,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             event.preventDefault()
             lines.splice(nameInx + 1, 0, '  namespace: ""')
             const text = lines.join('\r\n')
-            editorRef.current?.executeEdits('my-source', [{ range: selection, text: text, forceMoveMarkers: true }])
+            editorRef?.current?.executeEdits('my-source', [{ range: selection, text: text, forceMoveMarkers: true }])
           }
         }
       },
@@ -248,12 +248,12 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
   }, [])
 
   useEffect(() => {
-    monacoRef.current.editor.setTheme(readonly ? 'readonly-resource-editor' : 'resource-editor')
+    monacoRef.current?.editor?.setTheme(readonly ? 'readonly-resource-editor' : 'resource-editor')
   }, [readonly])
 
   // prevent editor from flashing when typing in form
   useEffect(() => {
-    const model = editorRef.current?.getModel()
+    const model = editorRef?.current?.getModel()
     model?.onDidChangeContent(() => {
       model?.forceTokenization(model?.getLineCount())
     })
@@ -277,7 +277,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     if (mouseDownHandle) {
       mouseDownHandle.dispose()
     }
-    const handle = editorRef.current?.onMouseDown(onMouseDown)
+    const handle = editorRef?.current?.onMouseDown(onMouseDown)
     setMouseDownHandle(handle)
   }, [filteredRows, showFiltered])
 
@@ -286,7 +286,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     if (hoverProviderHandle) {
       hoverProviderHandle.dispose()
     }
-    const handle = monacoRef.current.languages.registerHoverProvider('yaml', {
+    const handle = monacoRef.current?.languages?.registerHoverProvider('yaml', {
       provideHover: (_model: any, position: any) => {
         return new Promise((resolve) => {
           squigglyTooltips.forEach((tip: { range: { containsPosition: (arg0: any) => any }; message: string }) => {
@@ -306,7 +306,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     if (keyDownHandle) {
       keyDownHandle.dispose()
     }
-    const handle = editorRef.current?.onKeyDown(
+    const handle = editorRef?.current?.onKeyDown(
       (e: {
         code: string
         ctrlKey: boolean
@@ -314,18 +314,18 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         stopPropagation: () => void
         preventDefault: () => void
       }) => {
-        const selections = editorRef.current?.getSelections()
-        const editor = editorRef.current
+        const selections = editorRef?.current?.getSelections()
+        const editor = editorRef?.current
         const model = editor?.getModel()
         const isAllSelected =
           selections.length === 1 &&
           selections[0].startColumn === 1 &&
-          selections[0].endLineNumber === model.getLineCount()
+          selections[0].endLineNumber === model?.getLineCount()
         // if user presses enter, add new key: below this line
         let endOfLineEnter = false
         if (e.code === 'Enter') {
           const pos = editor?.getPosition()
-          const thisLine = model.getLineContent(pos.lineNumber)
+          const thisLine = model?.getLineContent(pos.lineNumber)
           endOfLineEnter = thisLine.length < pos.column
         }
         if (
@@ -351,7 +351,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
 
   // if editor loses focus, do form changes immediately
   useEffect(() => {
-    editorRef.current?.onDidBlurEditorWidget(() => {
+    editorRef?.current?.onDidBlurEditorWidget(() => {
       const editorHasFocus = !!document.querySelector('.monaco-editor.focused')
       const activeId = document.activeElement?.id as string
       if (!editorHasFocus && ['undo-button', 'redo-button'].indexOf(activeId) === -1) {
@@ -369,7 +369,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         return
       }
       // parse/validate/secrets
-      const model = editorRef.current?.getModel()
+      const model = editorRef?.current?.getModel()
       const {
         yaml,
         protectedRanges,
@@ -412,10 +412,10 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
       // update yaml in editor
       model.resources = cloneDeep(change.resources)
       const saveDecorations = getResourceEditorDecorations(editorRef, false)
-      const viewState = editorRef.current?.saveViewState()
+      const viewState = editorRef?.current?.saveViewState()
       model.setValue(yaml)
-      editorRef.current?.restoreViewState(viewState)
-      editorRef.current?.deltaDecorations([], saveDecorations)
+      editorRef?.current?.restoreViewState(viewState)
+      editorRef?.current?.deltaDecorations([], saveDecorations)
       setHasRedo(false)
       setHasUndo(false)
 
@@ -549,7 +549,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
       }
 
       // undo/redo enable
-      const model = editorRef.current?.getModel()
+      const model = editorRef?.current?.getModel()
       const editStack = model['_commandManager']
       setHasRedo(editStack?.future.length > 0)
       setHasUndo(editStack?.currentOpenStackElement ?? editStack?.past.length > 0)
@@ -617,7 +617,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
               toolTipText={t('Undo')}
               isDisabled={!hasUndo}
               onClick={() => {
-                editorRef?.current.trigger('source', 'undo')
+                editorRef?.current?.trigger('source', 'undo')
               }}
             />
           )}
@@ -630,7 +630,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
               toolTipText={t('Redo')}
               isDisabled={!hasRedo}
               onClick={() => {
-                editorRef?.current.trigger('source', 'redo')
+                editorRef?.current?.trigger('source', 'redo')
               }}
             />
           )}
@@ -641,7 +641,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             aria-label={t('Find')}
             toolTipText={t('Find')}
             onClick={() => {
-              editorRef?.current.trigger('source', 'actions.find')
+              editorRef?.current?.trigger('source', 'actions.find')
             }}
           />
           {/* secrets */}
