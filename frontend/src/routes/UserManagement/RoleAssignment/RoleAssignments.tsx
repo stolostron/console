@@ -12,14 +12,7 @@ import {
   FlattenedRoleAssignment,
 } from '../../../resources/clients/multicluster-role-assignment-client'
 import { IRequestResult } from '../../../resources/utils/resource-request'
-import {
-  AcmButton,
-  AcmEmptyState,
-  AcmLoadingPage,
-  AcmTable,
-  compareStrings,
-  IAcmTableColumn,
-} from '../../../ui-components'
+import { AcmButton, AcmEmptyState, AcmTable, compareStrings, IAcmTableColumn } from '../../../ui-components'
 import { IAcmTableAction, IAcmTableButtonAction, ITableFilter } from '../../../ui-components/AcmTable/AcmTableTypes'
 import { RoleAssignmentPreselected } from '../RoleAssignments/model/role-assignment-preselected'
 import { RoleAssignmentActionDropdown } from './RoleAssignmentActionDropdown'
@@ -104,7 +97,7 @@ const ActionCell = ({
 type RoleAssignmentsProps = {
   roleAssignments: FlattenedRoleAssignment[]
   isLoading?: boolean
-  hiddenColumns?: ('subject' | 'role' | 'clusters')[]
+  hiddenColumns?: ('subject' | 'role' | 'clusters' | 'name')[]
   // isCreateButtonHidden?: boolean
   preselected: RoleAssignmentPreselected
 }
@@ -279,9 +272,34 @@ const RoleAssignments = ({
       isHidden: hiddenColumns?.includes('role'),
     },
     {
-      header: t('Subject'),
+      header: t('Subject Name'),
       sort: (a, b) => compareStrings(a.subject.name, b.subject.name),
-      cell: (roleAssignment) => `${roleAssignment.subject.kind}: ${roleAssignment.subject.name}`,
+      cell: (roleAssignment) => {
+        const name = roleAssignment.subject.name
+        return name && name.trim() !== '' ? name : '-'
+      },
+      exportContent: (roleAssignment) => {
+        const name = roleAssignment.subject.name
+        return name && name.trim() !== '' ? name : '-'
+      },
+      isHidden: hiddenColumns?.includes('name'),
+    },
+    {
+      header: t('Type'),
+      sort: (a, b) => compareStrings(a.subject.name, b.subject.name),
+      cell: (roleAssignment) => {
+        const kind = roleAssignment.subject.kind
+        switch (kind.toLowerCase()) {
+          case 'group':
+            return 'Group'
+          case 'user':
+            return 'User'
+          case 'serviceaccount':
+            return 'ServiceAccount'
+          default:
+            return kind
+        }
+      },
       exportContent: (roleAssignment) => `${roleAssignment.subject.kind}: ${roleAssignment.subject.name}`,
       isHidden: hiddenColumns?.includes('subject'),
     },
@@ -323,48 +341,51 @@ const RoleAssignments = ({
 
   return (
     <PageSection>
-      {isLoading ? (
-        <AcmLoadingPage />
-      ) : (
-        <>
-          <AcmTable<FlattenedRoleAssignment>
-            key="role-assignments-table"
-            columns={columns}
-            keyFn={keyFn}
-            items={roleAssignments}
-            searchPlaceholder={t('Search for role assignments...')}
-            filters={filters}
-            tableActionButtons={tableActionButtons}
-            tableActions={tableActions}
-            emptyState={
-              <AcmEmptyState
-                key="roleAssignmentsEmptyState"
-                title={t('No role assignment created yet')}
-                message={t(
-                  'No role assignments have been created for this entity yet. Create a role assignment to grant specific permissions.'
-                )}
-                action={
-                  <div>
-                    {/* TODO: add RBAC for RA creation */}
-                    {/* {isCreateButtonHidden ? ( */}
-                    <AcmButton variant="primary" onClick={() => setIsCreateModalOpen(true)}>
-                      {t('Create role assignment')}
-                    </AcmButton>
-                    {/* ) : null} */}
-                    {/* TODO: add correct documentation link */}
-                    <ViewDocumentationLink doclink={DOC_LINKS.CLUSTERS} />
-                  </div>
-                }
-              />
+      <AcmTable<FlattenedRoleAssignment>
+        key="role-assignments-table"
+        columns={columns}
+        keyFn={keyFn}
+        items={isLoading ? undefined : roleAssignments}
+        searchPlaceholder={t('Search for role assignments...')}
+        filters={filters}
+        tableActionButtons={tableActionButtons}
+        tableActions={tableActions}
+        resultView={{
+          page: 1,
+          loading: isLoading ?? false,
+          refresh: () => {},
+          items: [],
+          emptyResult: false,
+          processedItemCount: 0,
+          isPreProcessed: true,
+        }}
+        emptyState={
+          <AcmEmptyState
+            key="roleAssignmentsEmptyState"
+            title={t('No role assignment created yet')}
+            message={t(
+              'No role assignments have been created for this entity yet. Create a role assignment to grant specific permissions.'
+            )}
+            action={
+              <div>
+                {/* TODO: add RBAC for RA creation */}
+                {/* {isCreateButtonHidden ? ( */}
+                <AcmButton variant="primary" onClick={() => setIsCreateModalOpen(true)}>
+                  {t('Create role assignment')}
+                </AcmButton>
+                {/* ) : null} */}
+                {/* TODO: add correct documentation link */}
+                <ViewDocumentationLink doclink={DOC_LINKS.CLUSTERS} />
+              </div>
             }
           />
-          <RoleAssignmentModal
-            close={() => setIsCreateModalOpen(false)}
-            isOpen={isCreateModalOpen}
-            preselected={preselected}
-          />
-        </>
-      )}
+        }
+      />
+      <RoleAssignmentModal
+        close={() => setIsCreateModalOpen(false)}
+        isOpen={isCreateModalOpen}
+        preselected={preselected}
+      />
       <BulkActionModal<FlattenedRoleAssignment> {...deleteModalProps} />
     </PageSection>
   )
