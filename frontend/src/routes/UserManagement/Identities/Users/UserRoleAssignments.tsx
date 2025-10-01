@@ -91,7 +91,7 @@ const UserRoleAssignments = () => {
         <RoleAssignments
           roleAssignments={roleAssignments}
           isLoading={isLoading}
-          hiddenColumns={['subject']}
+          hiddenColumns={['subject', 'name']}
           preselected={{ subject: { kind: UserKind, value: user?.metadata.name } }}
         />
       )
