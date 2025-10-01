@@ -6,15 +6,21 @@ import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RoleAssignmentModal } from './RoleAssignmentModal'
 import { AcmToastContext } from '../../../ui-components'
 import { UserKind } from '../../../resources'
-import { addRoleAssignment } from '../../../resources/clients/multicluster-role-assignment-client'
+import { addRoleAssignment, findRoleAssignments } from '../../../resources/clients/multicluster-role-assignment-client'
 
 jest.mock('../../../resources/clients/multicluster-role-assignment-client', () => ({
   addRoleAssignment: jest.fn(),
   findRoleAssignments: jest.fn(() => []),
 }))
 
+const mockFindRoleAssignments = findRoleAssignments as jest.MockedFunction<typeof findRoleAssignments>
+
+let capturedOnSubmit: any = null
+
 jest.mock('./RoleAssignmentForm', () => ({
   RoleAssignmentForm: ({ onSubmit, onCancel }: any) => {
+    capturedOnSubmit = onSubmit
+
     const mockFormData = {
       subject: { kind: UserKind, user: ['test-user'] },
       scope: {
@@ -78,6 +84,7 @@ describe('RoleAssignmentModal', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    capturedOnSubmit = null
   })
 
   describe('Modal success and failure', () => {
@@ -156,6 +163,177 @@ describe('RoleAssignmentModal', () => {
       userEvent.click(cancelButton)
 
       expect(mockClose).toHaveBeenCalled()
+    })
+  })
+
+  describe('Multi-Subject Role Assignments', () => {
+    it('should create separate role assignments for multiple users', async () => {
+      mockAddRoleAssignment.mockReturnValue({
+        promise: Promise.resolve({}) as any,
+        abort: jest.fn(),
+      })
+
+      render(
+        <TestWrapper>
+          <RoleAssignmentModal close={mockClose} isOpen={true} />
+        </TestWrapper>
+      )
+
+      await waitFor(() => {
+        expect(capturedOnSubmit).not.toBeNull()
+      })
+
+      await capturedOnSubmit({
+        subject: { kind: UserKind, user: ['user1', 'user2'] },
+        scope: { kind: 'specific', clusterNames: ['c1'] },
+        roles: ['admin'],
+      })
+
+      await waitFor(() => {
+        expect(mockAddRoleAssignment).toHaveBeenCalledTimes(2)
+        expect(mockAddRoleAssignment.mock.calls[0][1].name).toBe('user1')
+        expect(mockAddRoleAssignment.mock.calls[1][1].name).toBe('user2')
+      })
+    })
+  })
+
+  describe('Global Role Regression Tests', () => {
+    it('REGRESSION: should preserve clusterNames regardless of scope.kind (bug was conditional discard)', async () => {
+      mockAddRoleAssignment.mockReturnValue({
+        promise: Promise.resolve({} as any),
+        abort: jest.fn(),
+      })
+
+      render(
+        <TestWrapper>
+          <RoleAssignmentModal close={mockClose} isOpen={true} />
+        </TestWrapper>
+      )
+
+      await waitFor(() => {
+        expect(capturedOnSubmit).not.toBeNull()
+      })
+
+      const testCases = [
+        {
+          description: 'global role with multiple clusters',
+          kind: 'all' as const,
+          clusters: ['cluster-1', 'cluster-2', 'cluster-3'],
+          namespaces: undefined,
+        },
+        {
+          description: 'specific scope with single cluster',
+          kind: 'specific' as const,
+          clusters: ['specific-cluster'],
+          namespaces: ['namespace-1'],
+        },
+      ]
+
+      for (const testCase of testCases) {
+        mockAddRoleAssignment.mockClear()
+
+        await capturedOnSubmit({
+          subject: { kind: UserKind, user: ['test-user'] },
+          scope: {
+            kind: testCase.kind,
+            clusterNames: testCase.clusters,
+            namespaces: testCase.namespaces,
+          },
+          roles: ['admin'],
+        })
+
+        await waitFor(() => {
+          expect(mockAddRoleAssignment).toHaveBeenCalled()
+          const roleAssignment = mockAddRoleAssignment.mock.calls[0][0]
+          expect(roleAssignment.clusterSelection.clusterNames).toEqual(testCase.clusters)
+        })
+      }
+    })
+
+    it('should handle missing clusterNames and use existing role assignment', async () => {
+      const existingAssignment = { metadata: { name: 'existing' } } as any
+
+      mockFindRoleAssignments.mockReturnValue([{ relatedMulticlusterRoleAssignment: existingAssignment }] as any)
+
+      mockAddRoleAssignment.mockReturnValue({
+        promise: Promise.resolve({}) as any,
+        abort: jest.fn(),
+      })
+
+      render(
+        <TestWrapper>
+          <RoleAssignmentModal close={mockClose} isOpen={true} />
+        </TestWrapper>
+      )
+
+      await waitFor(() => expect(capturedOnSubmit).not.toBeNull())
+
+      await capturedOnSubmit({
+        subject: { kind: UserKind, user: ['user1'] },
+        scope: { kind: 'all' },
+        roles: ['admin'],
+      })
+
+      await waitFor(() => {
+        expect(mockAddRoleAssignment).toHaveBeenCalled()
+        expect(mockAddRoleAssignment.mock.calls[0][2]).toBe(existingAssignment)
+        expect(mockAddRoleAssignment.mock.calls[0][0].clusterSelection.clusterNames).toEqual([])
+      })
+    })
+
+    it('should handle empty existingRoleAssignments', async () => {
+      mockFindRoleAssignments.mockReturnValue([])
+
+      mockAddRoleAssignment.mockReturnValue({
+        promise: Promise.resolve({}) as any,
+        abort: jest.fn(),
+      })
+
+      render(
+        <TestWrapper>
+          <RoleAssignmentModal close={mockClose} isOpen={true} />
+        </TestWrapper>
+      )
+
+      await waitFor(() => expect(capturedOnSubmit).not.toBeNull())
+
+      await capturedOnSubmit({
+        subject: { kind: 'Group', group: ['group1'] },
+        scope: { kind: 'all', clusterNames: ['c1'] },
+        roles: ['admin'],
+      })
+
+      await waitFor(() => {
+        expect(mockAddRoleAssignment).toHaveBeenCalled()
+        expect(mockAddRoleAssignment.mock.calls[0][2]).toBeUndefined()
+      })
+    })
+
+    it('should handle group subjects', async () => {
+      mockAddRoleAssignment.mockReturnValue({
+        promise: Promise.resolve({}) as any,
+        abort: jest.fn(),
+      })
+
+      render(
+        <TestWrapper>
+          <RoleAssignmentModal close={mockClose} isOpen={true} />
+        </TestWrapper>
+      )
+
+      await waitFor(() => expect(capturedOnSubmit).not.toBeNull())
+
+      await capturedOnSubmit({
+        subject: { kind: 'Group', group: ['group1'] },
+        scope: { kind: 'specific', clusterNames: ['c1'] },
+        roles: ['admin'],
+      })
+
+      await waitFor(() => {
+        expect(mockAddRoleAssignment).toHaveBeenCalled()
+        expect(mockAddRoleAssignment.mock.calls[0][1].name).toBe('group1')
+        expect(mockAddRoleAssignment.mock.calls[0][1].kind).toBe('Group')
+      })
     })
   })
 })
