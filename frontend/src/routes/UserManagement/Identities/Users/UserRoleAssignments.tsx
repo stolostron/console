@@ -1,15 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom-v5-compat'
 import { User, UserKind } from '../../../../resources'
 import { listUsers } from '../../../../resources/rbac'
-import {
-  roleAssignmentToFlattenedRoleAssignment,
-  FlattenedRoleAssignment,
-} from '../../../../resources/clients/multicluster-role-assignment-client'
+import { useFindRoleAssignments } from '../../../../resources/clients/multicluster-role-assignment-client'
 import { useQuery } from '../../../../lib/useQuery'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
-import { compareStrings } from '../../../../ui-components'
 import { RoleAssignments } from '../../RoleAssignment/RoleAssignments'
 
 const UserRoleAssignments = () => {
@@ -27,31 +23,12 @@ const UserRoleAssignments = () => {
     setUser(user)
   }, [id, users])
 
-  const isLoading = isUsersLoading || isRoleAssignmentsLoading || !user || !multiclusterRoleAssignments
+  const roleAssignments = useFindRoleAssignments({
+    subjectNames: user?.metadata.name ? [user.metadata.name] : [],
+    subjectKinds: ['User'],
+  })
 
-  // TODO: call useFindRoleAssignments instead ACM-23633
-  const roleAssignments: FlattenedRoleAssignment[] = useMemo(
-    () =>
-      !user || !multiclusterRoleAssignments
-        ? []
-        : multiclusterRoleAssignments
-            .filter(
-              (multiclusterRoleAssignment) =>
-                multiclusterRoleAssignment.spec.subject.kind === 'User' &&
-                multiclusterRoleAssignment.spec.subject.name === user.metadata.name
-            )
-            .reduce(
-              (roleAssignmentsAcc: FlattenedRoleAssignment[], multiclusterRoleAssignmentCurr) => [
-                ...roleAssignmentsAcc,
-                ...multiclusterRoleAssignmentCurr.spec.roleAssignments.map((roleAssignment) =>
-                  roleAssignmentToFlattenedRoleAssignment(multiclusterRoleAssignmentCurr, roleAssignment)
-                ),
-              ],
-              []
-            )
-            .sort((a, b) => compareStrings(a.subject.name ?? '', b.subject.name ?? '')),
-    [multiclusterRoleAssignments, user]
-  )
+  const isLoading = isUsersLoading || isRoleAssignmentsLoading || !user || !multiclusterRoleAssignments
   return (
     <RoleAssignments
       roleAssignments={roleAssignments}

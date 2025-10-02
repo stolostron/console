@@ -1,14 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom-v5-compat'
 import { Group, GroupKind, listGroups } from '../../../../resources'
-import {
-  FlattenedRoleAssignment,
-  roleAssignmentToFlattenedRoleAssignment,
-} from '../../../../resources/clients/multicluster-role-assignment-client'
+import { useFindRoleAssignments } from '../../../../resources/clients/multicluster-role-assignment-client'
 import { useQuery } from '../../../../lib/useQuery'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
-import { compareStrings } from '../../../../ui-components'
 import { RoleAssignments } from '../../RoleAssignment/RoleAssignments'
 
 const GroupRoleAssignments = () => {
@@ -26,31 +22,12 @@ const GroupRoleAssignments = () => {
     setGroup(group)
   }, [id, groups])
 
-  const isLoading = isGroupsLoading || isRoleAssignmentsLoading || !group || !multiclusterRoleAssignments
+  const roleAssignments = useFindRoleAssignments({
+    subjectNames: group?.metadata.name ? [group.metadata.name] : [],
+    subjectKinds: ['Group'],
+  })
 
-  // TODO: call useFindRoleAssignments instead ACM-23633
-  const roleAssignments: FlattenedRoleAssignment[] = useMemo(
-    () =>
-      !group || !multiclusterRoleAssignments
-        ? []
-        : multiclusterRoleAssignments
-            .filter(
-              (multiclusterRoleAssignment) =>
-                multiclusterRoleAssignment.spec.subject.kind === 'Group' &&
-                multiclusterRoleAssignment.spec.subject.name === group.metadata.name
-            )
-            .reduce(
-              (roleAssignmentsAcc: FlattenedRoleAssignment[], multiclusterRoleAssignmentCurr) => [
-                ...roleAssignmentsAcc,
-                ...multiclusterRoleAssignmentCurr.spec.roleAssignments.map((roleAssignment) =>
-                  roleAssignmentToFlattenedRoleAssignment(multiclusterRoleAssignmentCurr, roleAssignment)
-                ),
-              ],
-              []
-            )
-            .sort((a, b) => compareStrings(a.subject.name ?? '', b.subject.name ?? '')),
-    [multiclusterRoleAssignments, group]
-  )
+  const isLoading = isGroupsLoading || isRoleAssignmentsLoading || !group || !multiclusterRoleAssignments
 
   return (
     <RoleAssignments
