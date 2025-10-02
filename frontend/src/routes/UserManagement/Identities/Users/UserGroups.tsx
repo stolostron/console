@@ -12,6 +12,24 @@ import { NavigationPath } from '../../../../NavigationPath'
 import { Link, generatePath } from 'react-router-dom-v5-compat'
 import { useFilters } from '../Groups/GroupsTableHelper'
 
+const GroupNameCell = ({ groupName, groupId }: { groupName: string; groupId: string }) => {
+  return groupName ? (
+    <Link to={generatePath(NavigationPath.identitiesGroupsDetails, { id: groupId })}>{groupName}</Link>
+  ) : (
+    ''
+  )
+}
+
+const GroupCreatedCell = ({ timestamp }: { timestamp?: string }) => {
+  return timestamp ? (
+    <span style={{ whiteSpace: 'nowrap' }}>
+      <AcmTimestamp timestamp={timestamp} />
+    </span>
+  ) : (
+    '-'
+  )
+}
+
 const UserGroups = () => {
   const { t } = useTranslation()
   const { user, groups, loading: userLoading, groupsLoading } = useUserDetailsContext()
@@ -32,28 +50,12 @@ const UserGroups = () => {
       sort: 'metadata.name',
       search: 'metadata.name',
       transforms: [cellWidth(40)],
-      cell: (group) => {
-        const groupName = group.metadata.name ?? ''
-        const groupId = group.metadata.uid ?? ''
-        return groupName ? (
-          <Link to={generatePath(NavigationPath.identitiesGroupsDetails, { id: groupId })}>{groupName}</Link>
-        ) : (
-          ''
-        )
-      },
+      cell: (group) => <GroupNameCell groupName={group.metadata.name ?? ''} groupId={group.metadata.uid ?? ''} />,
       exportContent: (group) => group.metadata.name ?? '',
     },
     {
       header: t('Created'),
-      cell: (group) => {
-        return group.metadata.creationTimestamp ? (
-          <span style={{ whiteSpace: 'nowrap' }}>
-            <AcmTimestamp timestamp={group.metadata.creationTimestamp} />
-          </span>
-        ) : (
-          '-'
-        )
-      },
+      cell: (group) => <GroupCreatedCell timestamp={group.metadata.creationTimestamp} />,
       transforms: [cellWidth(40)],
       sort: 'metadata.creationTimestamp',
       exportContent: (group) => {

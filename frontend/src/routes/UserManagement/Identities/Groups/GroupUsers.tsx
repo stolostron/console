@@ -12,6 +12,28 @@ import { NavigationPath } from '../../../../NavigationPath'
 import { Link, generatePath } from 'react-router-dom-v5-compat'
 import { useFilters } from '../Users/UsersTableHelper'
 
+const UserNameCell = ({ userName, userId }: { userName: string; userId: string }) => {
+  return userName ? (
+    <Link to={generatePath(NavigationPath.identitiesUsersDetails, { id: userId })}>{userName}</Link>
+  ) : (
+    ''
+  )
+}
+
+const UserCreatedCell = ({ timestamp }: { timestamp?: string }) => {
+  return timestamp ? (
+    <span style={{ whiteSpace: 'nowrap' }}>
+      <AcmTimestamp timestamp={timestamp} />
+    </span>
+  ) : (
+    '-'
+  )
+}
+
+const IdentityProviderCell = ({ identities }: { identities?: string[] }) => {
+  return identities ?? '-'
+}
+
 const GroupUsers = () => {
   const { t } = useTranslation()
   const { group, users, loading: groupLoading, usersLoading } = useGroupDetailsContext()
@@ -32,34 +54,18 @@ const GroupUsers = () => {
       sort: 'metadata.name',
       search: 'metadata.name',
       transforms: [cellWidth(40)],
-      cell: (user) => {
-        const userName = user.metadata.name ?? ''
-        const userId = user.metadata.uid ?? ''
-        return userName ? (
-          <Link to={generatePath(NavigationPath.identitiesUsersDetails, { id: userId })}>{userName}</Link>
-        ) : (
-          ''
-        )
-      },
+      cell: (user) => <UserNameCell userName={user.metadata.name ?? ''} userId={user.metadata.uid ?? ''} />,
       exportContent: (user) => user.metadata.name ?? '',
     },
     {
       header: t('Identity provider'),
-      cell: (user) => user.identities ?? '-',
+      cell: (user) => <IdentityProviderCell identities={user.identities} />,
       transforms: [cellWidth(20)],
       exportContent: (user) => user.identities ?? '-',
     },
     {
       header: t('Created'),
-      cell: (user) => {
-        return user.metadata.creationTimestamp ? (
-          <span style={{ whiteSpace: 'nowrap' }}>
-            <AcmTimestamp timestamp={user.metadata.creationTimestamp} />
-          </span>
-        ) : (
-          '-'
-        )
-      },
+      cell: (user) => <UserCreatedCell timestamp={user.metadata.creationTimestamp} />,
       transforms: [cellWidth(40)],
       sort: 'metadata.creationTimestamp',
       exportContent: (user) => {

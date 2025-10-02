@@ -13,9 +13,8 @@ const RolesTable = () => {
 
   const roles = useMemo(
     () =>
-      !clusterRoles
-        ? []
-        : clusterRoles
+      clusterRoles
+        ? clusterRoles
             .map(
               (clusterRole: ClusterRole): Role => ({
                 name: clusterRole.metadata.name || '',
@@ -25,7 +24,8 @@ const RolesTable = () => {
                 uid: clusterRole.metadata.uid || clusterRole.metadata.name || '',
               })
             )
-            .sort((a, b) => compareStrings(a.name, b.name)),
+            .sort((a, b) => compareStrings(a.name, b.name))
+        : [],
     [clusterRoles]
   )
 

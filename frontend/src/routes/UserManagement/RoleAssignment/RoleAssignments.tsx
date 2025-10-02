@@ -49,6 +49,19 @@ const NamespacesCell = ({ namespaces }: { namespaces?: string[] }) => (
   <RoleAssignmentLabel elements={namespaces} numLabel={5} />
 )
 
+const SubjectNameCell = ({ name, kind }: { name: string; kind: string }) => {
+  if (!name || name.trim() === '') {
+    return '-'
+  }
+
+  const linkPath =
+    kind === 'Group'
+      ? generatePath(NavigationPath.identitiesGroupsDetails, { id: name })
+      : generatePath(NavigationPath.identitiesUsersDetails, { id: name })
+
+  return <Link to={linkPath}>{name}</Link>
+}
+
 // Component for rendering status
 const StatusCell = ({ status }: { status?: any }) => <RoleAssignmentStatusComponent status={status} />
 
@@ -278,20 +291,9 @@ const RoleAssignments = ({
     {
       header: t('Subject Name'),
       sort: (a, b) => compareStrings(a.subject.name, b.subject.name),
-      cell: (roleAssignment) => {
-        const name = roleAssignment.subject.name
-        const kind = roleAssignment.subject.kind
-
-        if (!name || name.trim() === '') {
-          return '-'
-        }
-        const linkPath =
-          kind === 'Group'
-            ? generatePath(NavigationPath.identitiesGroupsDetails, { id: name })
-            : generatePath(NavigationPath.identitiesUsersDetails, { id: name })
-
-        return <Link to={linkPath}>{name}</Link>
-      },
+      cell: (roleAssignment) => (
+        <SubjectNameCell name={roleAssignment.subject.name} kind={roleAssignment.subject.kind} />
+      ),
       exportContent: (roleAssignment) => {
         const name = roleAssignment.subject.name
         return name && name.trim() !== '' ? name : '-'
