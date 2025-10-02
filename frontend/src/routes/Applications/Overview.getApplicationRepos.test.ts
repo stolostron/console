@@ -133,6 +133,29 @@ describe('getApplicationRepos', () => {
 
       expect(result).toHaveLength(0)
     })
+
+    it('should return empty array for application with incomplete source data (missing repoURL)', () => {
+      const incompleteSourceApplication: ArgoApplication = {
+        apiVersion: ArgoApplicationApiVersion,
+        kind: ArgoApplicationKind,
+        metadata: { name: 'incomplete-source-app', namespace: 'test' },
+        spec: {
+          destination: { namespace: 'test', server: 'https://kubernetes.default.svc' },
+          project: 'default',
+          source: {
+            repoURL: '', // empty repoURL indicates incomplete data from search
+            path: '',
+            chart: '',
+            targetRevision: 'HEAD',
+          },
+          syncPolicy: {},
+        },
+      }
+
+      const result = getApplicationRepos(incompleteSourceApplication, mockSubscriptions, mockChannels)
+
+      expect(result).toHaveLength(0)
+    })
   })
 
   describe('ApplicationSets', () => {
