@@ -504,7 +504,36 @@ function createSourceCards(
   subscriptions: Subscription[],
   channels: Channel[]
 ) {
-  const appRepos = getApplicationRepos(applicationSet, subscriptions, channels)
+  let appRepos = getApplicationRepos(applicationSet, subscriptions, channels)
+
+  // if no repository info found (empty due to incomplete search data),
+  // try to extract directly from the resource for the details page
+  if (!appRepos || appRepos.length === 0) {
+    const castType = applicationSet as any
+    if (castType?.spec?.source) {
+      appRepos = [
+        {
+          type: castType.spec.source.chart ? 'helmrepo' : 'git',
+          pathName: castType.spec.source.repoURL,
+          gitPath: castType.spec.source.path,
+          chart: castType.spec.source.chart,
+          targetRevision: castType.spec.source.targetRevision,
+        },
+      ]
+    } else if (castType?.spec?.sources) {
+      appRepos = []
+      castType.spec.sources.forEach((source: any) => {
+        appRepos!.push({
+          type: source.chart ? 'helmrepo' : 'git',
+          pathName: source.repoURL,
+          gitPath: source.path,
+          chart: source.chart,
+          targetRevision: source.targetRevision,
+        })
+      })
+    }
+  }
+
   return appRepos?.map((appRepo) => {
     if (appRepo) {
       return (
