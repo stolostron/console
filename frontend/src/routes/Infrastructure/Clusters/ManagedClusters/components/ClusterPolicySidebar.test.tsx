@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { act, render } from '@testing-library/react'
+import { act, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { clickByText, waitForText } from '../../../../../lib/test-util'
@@ -39,8 +39,6 @@ const mockPolicyReports: PolicyReport = {
         created_at: '2021-03-02T21:26:04Z',
         total_risk: '2',
         component: 'rule.id.2',
-        reason: 'testing-reason',
-        resolution: 'testing-resolution',
       },
       message: 'policyreport testing risk 2',
       policy: 'policyreport testing risk 2 policy',
@@ -135,6 +133,12 @@ describe('ClusterPolicySidebar', () => {
       await clickByText('policyreport testing risk 2 policy: policyreport testing risk 2')
       // wait for drilldown risk subdetail component
       await waitForText('Moderate')
+
+      // check reason and resolution not present
+      expect(screen.queryByText('testing-resolution')).not.toBeInTheDocument()
+      await clickByText('Reason')
+      expect(screen.queryByText('testing-reason')).not.toBeInTheDocument()
+
       // Click back button and wait for static text
       await clickByText('Back')
 
