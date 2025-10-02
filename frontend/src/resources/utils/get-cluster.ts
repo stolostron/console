@@ -1142,7 +1142,7 @@ export function getNodes(managedClusterInfo?: ManagedClusterInfo) {
   let unhealthy = 0
   let unknown = 0
 
-  nodeList.forEach((node: NodeInfo) => {
+  for (const node of nodeList) {
     const readyCondition = node.conditions?.find((condition) => condition.type === 'Ready')
     switch (readyCondition?.status) {
       case 'True':
@@ -1155,7 +1155,7 @@ export function getNodes(managedClusterInfo?: ManagedClusterInfo) {
       default:
         unknown++
     }
-  })
+  }
   return { nodeList, ready, unhealthy, unknown }
 }
 
@@ -1167,7 +1167,7 @@ export function getAddons(addons: ManagedClusterAddOn[], clusterManagementAddons
 
   const addonsStatus = mapAddons(clusterManagementAddons, addons)
 
-  addonsStatus?.forEach((addon) => {
+  for (const addon of addonsStatus ?? []) {
     switch (addon.status) {
       case AddonStatus.Available:
         available++
@@ -1184,7 +1184,7 @@ export function getAddons(addons: ManagedClusterAddOn[], clusterManagementAddons
       default:
         break
     }
-  })
+  }
 
   return { addonList: addons, available, progressing, degraded, unknown }
 }
