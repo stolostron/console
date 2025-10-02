@@ -100,8 +100,8 @@ jest.mock('../../RoleAssignment/RoleAssignments', () => ({
     <div id="role-assignments">
       <div id="loading">{isLoading ? 'Loading' : 'Loaded'}</div>
       <div id="hidden-columns">{hiddenColumns?.join(',') || 'none'}</div>
-      <div id="assignments-count">{roleAssignments.length}</div>
-      {roleAssignments.map((roleAssignment: FlattenedRoleAssignment, index: number) => (
+      <div id="assignments-count">{roleAssignments?.length || 0}</div>
+      {roleAssignments?.map((roleAssignment: FlattenedRoleAssignment, index: number) => (
         <div key={index} id={`assignment-${index}`}>
           <div id={`assignment-subject-${index}`}>
             {roleAssignment.subject.kind}: {roleAssignment.subject.name}

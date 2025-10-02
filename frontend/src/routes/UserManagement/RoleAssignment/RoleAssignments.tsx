@@ -110,8 +110,12 @@ const RoleAssignments = ({
   preselected,
 }: RoleAssignmentsProps) => {
   const { t } = useTranslation()
-  // Key function for the table that generates a unique key for each role assignment
-  const keyFn = useCallback((roleAssignment: FlattenedRoleAssignment) => roleAssignment.name, [])
+
+  const keyFn = useCallback(
+    (roleAssignment: FlattenedRoleAssignment) =>
+      `${roleAssignment.relatedMulticlusterRoleAssignment.metadata.name}-${roleAssignment.name}-${roleAssignment.subject.name}-${roleAssignment.clusterRole}`,
+    []
+  )
 
   // Modal state for delete confirmation
   const [deleteModalProps, setDeleteModalProps] = useState<

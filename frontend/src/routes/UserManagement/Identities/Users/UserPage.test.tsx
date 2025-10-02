@@ -68,11 +68,6 @@ describe('UserPage', () => {
     mockUseQuery.mockClear()
   })
 
-  test.skip('should render loading state', () => {
-    // Skipped: Component uses mock data and doesn't show loading state
-    // This test is not applicable when using hardcoded mock data
-  })
-
   test('should render user not found error', () => {
     mockUseQuery
       .mockReturnValueOnce({

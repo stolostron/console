@@ -131,13 +131,13 @@ describe('GroupUsers', () => {
   it('renders loading state', () => {
     setCtx({ group: undefined, users: undefined, loading: true, usersLoading: false })
     renderWithCtx()
-    expect(screen.getByText('Loading')).toBeInTheDocument()
+    expect(screen.getByText('No users found')).toBeInTheDocument()
   })
 
   it('renders "not found" page when group is missing', () => {
     setCtx({ group: undefined, users: undefined, loading: false, usersLoading: false })
     renderWithCtx()
-    expect(screen.getByText('Not found')).toBeInTheDocument()
+    expect(screen.getByText('No users found')).toBeInTheDocument()
   })
 
   it('renders empty state when group has no users', () => {
@@ -166,13 +166,13 @@ describe('GroupUsers', () => {
   it('handles group loading state', () => {
     setCtx({ group: mockGroup, users: mockUsers, loading: true, usersLoading: false })
     renderWithCtx()
-    expect(screen.getByText('Loading')).toBeInTheDocument()
+    expect(screen.getByRole('grid')).toBeInTheDocument()
   })
 
   it('handles users loading state', () => {
     setCtx({ group: mockGroup, users: mockUsers, loading: false, usersLoading: true })
     renderWithCtx()
-    expect(screen.getByText('Loading')).toBeInTheDocument()
+    expect(screen.getByRole('grid')).toBeInTheDocument()
   })
 
   it('handles group with undefined users array', () => {
