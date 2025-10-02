@@ -668,73 +668,6 @@ function getHostedClusterProvider(hostedCluster: HostedClusterK8sResource) {
   }
 }
 
-// Map provider labels to Provider enum values
-const PROVIDER_LABEL_MAP: Record<string, Provider | undefined> = {
-  OPENSTACK: Provider.openstack,
-  AMAZON: Provider.aws,
-  AWS: Provider.aws,
-  EKS: Provider.aws,
-  GOOGLE: Provider.gcp,
-  GKE: Provider.gcp,
-  GCP: Provider.gcp,
-  GCE: Provider.gcp,
-  AZURE: Provider.azure,
-  AKS: Provider.azure,
-  IBM: Provider.ibm,
-  IKS: Provider.ibm,
-  IBMPOWERPLATFORM: Provider.ibmpower,
-  IBMZPLATFORM: Provider.ibmz,
-  BAREMETAL: Provider.baremetal,
-  VMWARE: Provider.vmware,
-  VSPHERE: Provider.vmware,
-  ALIBABA: Provider.alibaba,
-  ALICLOUD: Provider.alibaba,
-  ALIBABACLOUD: Provider.alibaba,
-  'AUTO-DETECT': undefined,
-  KUBEVIRT: Provider.kubevirt,
-  NUTANIX: Provider.nutanix,
-  OTHER: Provider.other,
-}
-
-function getProviderFromAgentClusterInstall(agentClusterInstall?: AgentClusterInstallK8sResource): Provider {
-  return agentClusterInstall?.spec?.platformType === 'Nutanix' ? Provider.nutanix : Provider.hostinventory
-}
-
-function getProviderLabel(
-  managedClusterInfo?: ManagedClusterInfo,
-  managedCluster?: ManagedCluster,
-  clusterDeployment?: ClusterDeployment,
-  discoveredCluster?: DiscoveredCluster
-): string | undefined {
-  const cloudLabel = managedClusterInfo?.metadata?.labels?.['cloud']
-  const platformClusterClaim = managedCluster?.status?.clusterClaims?.find(
-    (claim) => claim.name === 'platform.open-cluster-management.io'
-  )
-  const hivePlatformLabel = clusterDeployment?.metadata?.labels?.['hive.openshift.io/cluster-platform']
-
-  if (!cloudLabel && !platformClusterClaim && !hivePlatformLabel) {
-    return undefined
-  }
-
-  let label = (
-    hivePlatformLabel && hivePlatformLabel !== 'unknown'
-      ? hivePlatformLabel
-      : cloudLabel ?? platformClusterClaim?.value ?? ''
-  ).toUpperCase()
-
-  // Hosted clusters imported from a managed MCE cluster will not have provider set
-  // Look it up from the corresponding DiscoveredCluster
-  if (getIsHostedCluster(managedCluster) && label === 'OTHER') {
-    if (discoveredCluster?.spec.isManagedCluster && discoveredCluster?.spec.cloudProvider) {
-      label = discoveredCluster.spec.cloudProvider.toUpperCase()
-    } else if (platformClusterClaim !== undefined) {
-      label = platformClusterClaim.value.toUpperCase()
-    }
-  }
-
-  return label
-}
-
 export function getProvider({
   managedClusterInfo,
   managedCluster,
@@ -750,13 +683,11 @@ export function getProvider({
   agentClusterInstall?: AgentClusterInstallK8sResource
   discoveredCluster?: DiscoveredCluster
 } = {}) {
-  if (hostedCluster) {
-    return getHostedClusterProvider(hostedCluster)
-  }
+  if (hostedCluster) return getHostedClusterProvider(hostedCluster)
 
   const clusterInstallRef = clusterDeployment?.spec?.clusterInstallRef
   if (clusterInstallRef?.kind === AgentClusterInstallKind) {
-    return getProviderFromAgentClusterInstall(agentClusterInstall)
+    return agentClusterInstall?.spec?.platformType === 'Nutanix' ? Provider.nutanix : Provider.hostinventory
   }
 
   const productClusterClaim = managedCluster?.status?.clusterClaims?.find(
@@ -768,13 +699,88 @@ export function getProvider({
     return Provider.microshift
   }
 
-  const providerLabel = getProviderLabel(managedClusterInfo, managedCluster, clusterDeployment, discoveredCluster)
+  const cloudLabel = managedClusterInfo?.metadata?.labels?.['cloud']
+  const platformClusterClaim = managedCluster?.status?.clusterClaims?.find(
+    (claim) => claim.name === 'platform.open-cluster-management.io'
+  )
+  const hivePlatformLabel = clusterDeployment?.metadata?.labels?.['hive.openshift.io/cluster-platform']
 
-  if (!providerLabel) {
+  if (!cloudLabel && !platformClusterClaim && !hivePlatformLabel) {
     return undefined
   }
 
-  return PROVIDER_LABEL_MAP[providerLabel] ?? Provider.other
+  let providerLabel = (
+    hivePlatformLabel && hivePlatformLabel !== 'unknown'
+      ? hivePlatformLabel
+      : cloudLabel ?? platformClusterClaim?.value ?? ''
+  ).toUpperCase()
+
+  // Hosted clusters imported from a managed MCE cluster will not have provider set
+  // Look it up from the corresponding DiscoveredCluster
+  if (getIsHostedCluster(managedCluster) && providerLabel === 'OTHER') {
+    if (discoveredCluster?.spec.isManagedCluster && discoveredCluster?.spec.cloudProvider) {
+      providerLabel = discoveredCluster.spec.cloudProvider.toUpperCase()
+    } else if (platformClusterClaim !== undefined) {
+      providerLabel = platformClusterClaim.value.toUpperCase()
+    }
+  }
+
+  let provider: Provider | undefined
+  switch (providerLabel) {
+    case 'OPENSTACK':
+      provider = Provider.openstack
+      break
+    case 'AMAZON':
+    case 'AWS':
+    case 'EKS':
+      provider = Provider.aws
+      break
+    case 'GOOGLE':
+    case 'GKE':
+    case 'GCP':
+    case 'GCE':
+      provider = Provider.gcp
+      break
+    case 'AZURE':
+    case 'AKS':
+      provider = Provider.azure
+      break
+    case 'IBM':
+    case 'IKS':
+      provider = Provider.ibm
+      break
+    case 'IBMPOWERPLATFORM':
+      provider = Provider.ibmpower
+      break
+    case 'IBMZPLATFORM':
+      provider = Provider.ibmz
+      break
+    case 'BAREMETAL':
+      provider = Provider.baremetal
+      break
+    case 'VMWARE':
+    case 'VSPHERE':
+      provider = Provider.vmware
+      break
+    case 'ALIBABA':
+    case 'ALICLOUD':
+    case 'ALIBABACLOUD':
+      provider = Provider.alibaba
+      break
+    case 'AUTO-DETECT':
+      provider = undefined
+      break
+    case 'KUBEVIRT':
+      provider = Provider.kubevirt
+      break
+    case 'NUTANIX':
+      provider = Provider.nutanix
+      break
+    case 'OTHER':
+    default:
+      provider = Provider.other
+  }
+  return provider
 }
 
 export enum CuratorCondition {
