@@ -156,8 +156,8 @@ describe('GroupRoleAssignments', () => {
   })
 
   it('renders GroupRoleAssignments component with no group found', async () => {
-    // Mock Recoil to return undefined (loading state)
-    ;(useRecoilValue as jest.Mock).mockReturnValue(undefined)
+    // Mock Recoil to return empty array (loading state)
+    ;(useRecoilValue as jest.Mock).mockReturnValue([])
 
     render(<Component groupId="non-existent-group" />)
     // The component should render without crashing

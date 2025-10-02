@@ -145,8 +145,8 @@ describe('UserRoleAssignments', () => {
   })
 
   it('renders UserRoleAssignments component with no user found', async () => {
-    // Mock Recoil to return undefined (loading state)
-    ;(useRecoilValue as jest.Mock).mockReturnValue(undefined)
+    // Mock Recoil to return empty array (loading state)
+    ;(useRecoilValue as jest.Mock).mockReturnValue([])
 
     render(<Component userId="non-existent-user" />)
     // The component should render without crashing
