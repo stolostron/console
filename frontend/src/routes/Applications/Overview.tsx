@@ -268,6 +268,11 @@ export const getApplicationRepos = (resource: IResource, subscriptions: Subscrip
       if (!castType.spec.source) {
         return []
       }
+      // if source data is incomplete (missing repoURL), return empty to show no information
+      // rather than incomplete information
+      if (!castType.spec.source.repoURL) {
+        return []
+      }
       return [
         {
           type: castType.spec.source.chart ? 'helmrepo' : 'git',
