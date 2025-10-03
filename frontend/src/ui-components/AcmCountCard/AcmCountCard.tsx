@@ -22,7 +22,7 @@ import {
   Popper,
 } from '@patternfly/react-core'
 import { EllipsisVIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
-import { ReactNode, useState } from 'react'
+import { ReactNode, useRef, useState } from 'react'
 import { useTranslation } from '../../lib/acm-i18next'
 import { AcmIcon, AcmIconVariant } from '../AcmIcons/AcmIcons'
 
@@ -115,23 +115,38 @@ const getStyles = (props: AcmCountCardProps) => ({
 
 export function CardDropdown(props: Readonly<CardDropdownProps>) {
   const [isOpen, setOpen] = useState<boolean>(false)
+  const toggleRef = useRef<HTMLButtonElement>(null)
 
   const handleToggleClick = (e: React.MouseEvent) => {
     setOpen(!isOpen)
     e.stopPropagation()
   }
 
+  const handleDocumentClick = (event?: MouseEvent) => {
+    // ignore clicks on the toggle itself
+    if (toggleRef.current?.contains(event?.target as Node)) {
+      return
+    }
+    setOpen(false)
+  }
+
   return (
     <Popper
       trigger={
-        <MenuToggle aria-label="Actions" variant="plain" onClick={handleToggleClick} isExpanded={isOpen}>
+        <MenuToggle
+          ref={toggleRef}
+          aria-label="Actions"
+          variant="plain"
+          onClick={handleToggleClick}
+          isExpanded={isOpen}
+        >
           <EllipsisVIcon />
         </MenuToggle>
       }
       isVisible={isOpen}
-      enableFlip={true} // smart positioning
-      placement="bottom-end" // better placement control
-      onDocumentClick={() => setOpen(false)} // outside click handling
+      enableFlip={true}
+      placement="bottom-end"
+      onDocumentClick={handleDocumentClick}
       popper={
         <Menu>
           <MenuContent>

@@ -54,10 +54,9 @@ const RoleAssignmentModal = ({ close, isOpen, isEditing, preselected }: RoleAssi
             clusterRole: role,
             clusterSelection: {
               type: 'clusterNames',
-              clusterNames: data.scope.kind === 'specific' ? data.scope.clusterNames || [] : [],
+              clusterNames: data.scope.clusterNames || [],
             },
-            targetNamespaces:
-              data.scope.kind === 'specific' && data.scope.namespaces?.length ? data.scope.namespaces : undefined,
+            targetNamespaces: data.scope.namespaces,
           },
           subject: {
             name: subjectName,
