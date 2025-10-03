@@ -1,14 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useMemo } from 'react'
-import {
-  useParams,
-  useLocation,
-  Link,
-  Outlet,
-  useNavigate,
-  generatePath,
-  useOutletContext,
-} from 'react-router-dom-v5-compat'
+import { useParams, useLocation, Link, Outlet, generatePath, useOutletContext } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { User, Group, listUsers, listGroups } from '../../../../resources/rbac'
 import { useQuery } from '../../../../lib/useQuery'
@@ -29,7 +21,6 @@ const GroupPage = () => {
   const { t } = useTranslation()
   const { id = undefined } = useParams()
   const location = useLocation()
-  const navigate = useNavigate()
 
   const { data: users, loading: usersLoading } = useQuery(listUsers)
 
@@ -62,11 +53,7 @@ const GroupPage = () => {
         <ErrorPage
           error={new ResourceError(ResourceErrorCode.NotFound)}
           actions={
-            <AcmButton
-              role="link"
-              onClick={() => navigate(NavigationPath.identitiesGroups)}
-              style={{ marginRight: '10px' }}
-            >
+            <AcmButton component="a" href={NavigationPath.identitiesGroups} style={{ marginRight: '10px' }}>
               {t('button.backToGroups')}
             </AcmButton>
           }

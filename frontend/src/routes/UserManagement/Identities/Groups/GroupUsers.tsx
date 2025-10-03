@@ -12,26 +12,28 @@ import { NavigationPath } from '../../../../NavigationPath'
 import { Link, generatePath } from 'react-router-dom-v5-compat'
 import { useFilters } from '../Users/UsersTableHelper'
 
-const UserNameCell = ({ userName, userId }: { userName: string; userId: string }) => {
-  return userName ? (
-    <Link to={generatePath(NavigationPath.identitiesUsersDetails, { id: userId })}>{userName}</Link>
+const renderUserNameCell = (user: User) => {
+  return user.metadata.name ? (
+    <Link to={generatePath(NavigationPath.identitiesUsersDetails, { id: user.metadata.uid ?? '' })}>
+      {user.metadata.name}
+    </Link>
   ) : (
     ''
   )
 }
 
-const UserCreatedCell = ({ timestamp }: { timestamp?: string }) => {
-  return timestamp ? (
+const renderUserCreatedCell = (user: User) => {
+  return user.metadata.creationTimestamp ? (
     <span style={{ whiteSpace: 'nowrap' }}>
-      <AcmTimestamp timestamp={timestamp} />
+      <AcmTimestamp timestamp={user.metadata.creationTimestamp} />
     </span>
   ) : (
     '-'
   )
 }
 
-const IdentityProviderCell = ({ identities }: { identities?: string[] }) => {
-  return identities ?? '-'
+const renderIdentityProviderCell = (user: User) => {
+  return user.identities ?? '-'
 }
 
 const GroupUsers = () => {
@@ -54,18 +56,18 @@ const GroupUsers = () => {
       sort: 'metadata.name',
       search: 'metadata.name',
       transforms: [cellWidth(40)],
-      cell: (user) => <UserNameCell userName={user.metadata.name ?? ''} userId={user.metadata.uid ?? ''} />,
+      cell: renderUserNameCell,
       exportContent: (user) => user.metadata.name ?? '',
     },
     {
       header: t('Identity provider'),
-      cell: (user) => <IdentityProviderCell identities={user.identities} />,
+      cell: renderIdentityProviderCell,
       transforms: [cellWidth(20)],
       exportContent: (user) => user.identities ?? '-',
     },
     {
       header: t('Created'),
-      cell: (user) => <UserCreatedCell timestamp={user.metadata.creationTimestamp} />,
+      cell: renderUserCreatedCell,
       transforms: [cellWidth(40)],
       sort: 'metadata.creationTimestamp',
       exportContent: (user) => {

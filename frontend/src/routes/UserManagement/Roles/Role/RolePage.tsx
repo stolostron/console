@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useParams, useLocation, Link, Outlet, useNavigate, generatePath } from 'react-router-dom-v5-compat'
+import { useParams, useLocation, Link, Outlet, generatePath } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { useRolesContext, useCurrentRole } from '../RolesPage'
 import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem, AcmButton } from '../../../../ui-components'
@@ -12,7 +12,6 @@ const RolePage = () => {
   const { t } = useTranslation()
   const { id = undefined } = useParams()
   const location = useLocation()
-  const navigate = useNavigate()
   const { loading } = useRolesContext()
   const role = useCurrentRole()
 
@@ -27,11 +26,7 @@ const RolePage = () => {
         <ErrorPage
           error={new ResourceError(ResourceErrorCode.NotFound)}
           actions={
-            <AcmButton
-              role="link"
-              onClick={() => navigate(NavigationPath.identitiesUsers)}
-              style={{ marginRight: '10px' }}
-            >
+            <AcmButton component="a" href={NavigationPath.identitiesUsers} style={{ marginRight: '10px' }}>
               {t('button.backToUsers')}
             </AcmButton>
           }

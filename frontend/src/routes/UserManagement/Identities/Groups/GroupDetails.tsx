@@ -1,6 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Page, PageSection, Stack, Text } from '@patternfly/react-core'
 import {
+  Page,
+  PageSection,
+  Stack,
+  Text,
   DescriptionList,
   DescriptionListTerm,
   DescriptionListGroup,
@@ -12,12 +15,10 @@ import { useGroupDetailsContext } from './GroupPage'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { NavigationPath } from '../../../../NavigationPath'
 import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
-import { useNavigate } from 'react-router-dom-v5-compat'
 
 const GroupDetails = () => {
   const { t } = useTranslation()
   const { group, loading } = useGroupDetailsContext()
-  const navigate = useNavigate()
 
   switch (true) {
     case loading:
@@ -32,11 +33,7 @@ const GroupDetails = () => {
           <ErrorPage
             error={new ResourceError(ResourceErrorCode.NotFound)}
             actions={
-              <AcmButton
-                role="link"
-                onClick={() => navigate(NavigationPath.identitiesGroups)}
-                style={{ marginRight: '10px' }}
-              >
+              <AcmButton component="a" href={NavigationPath.identitiesGroups} style={{ marginRight: '10px' }}>
                 {t('button.backToGroups')}
               </AcmButton>
             }
