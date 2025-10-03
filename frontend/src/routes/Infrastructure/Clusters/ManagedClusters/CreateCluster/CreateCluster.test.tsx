@@ -758,7 +758,7 @@ const mockNodePools = {
             size: '32Gi',
           },
         },
-        defaultPodNetwork: true,
+        attachDefaultNetwork: true,
       },
     },
     release: {
@@ -1907,7 +1907,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
               },
             },
             additionalNetworks: [{ name: 'ns1/name1' }, { name: 'ns2/name2' }],
-            defaultPodNetwork: false,
+            attachDefaultNetwork: false,
           },
         },
         release: {
@@ -2326,7 +2326,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
               size: '32Gi',
             },
           },
-          defaultPodNetwork: true,
+          attachDefaultNetwork: true,
         },
       },
       release: {
@@ -2796,7 +2796,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
               size: '32Gi',
             },
           },
-          defaultPodNetwork: true,
+          attachDefaultNetwork: true,
         },
       },
       release: {
@@ -3267,7 +3267,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
               size: '32Gi',
             },
           },
-          defaultPodNetwork: true,
+          attachDefaultNetwork: true,
         },
       },
       release: {
@@ -3763,7 +3763,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
             },
           },
           additionalNetworks: [{ name: 'ns1/name1' }],
-          defaultPodNetwork: true,
+          attachDefaultNetwork: true,
         },
       },
       release: {
@@ -3801,7 +3801,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
             },
           },
           additionalNetworks: [{ name: 'ns1/name1' }],
-          defaultPodNetwork: true,
+          attachDefaultNetwork: true,
         },
       },
       release: {
