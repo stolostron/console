@@ -132,6 +132,23 @@ export const mockApplicationUi = {
       'apps.open-cluster-management.io/subscriptions': 'namespace-0/subscription-0,namespace-0/subscription-0-local',
     },
   },
+  spec: {
+    componentKinds: [
+      {
+        group: 'apps.open-cluster-management.io',
+        kind: 'Subscription',
+      },
+    ],
+    selector: {
+      matchExpressions: [
+        {
+          key: 'app',
+          operator: 'In',
+          values: ['application-0-app'],
+        },
+      ],
+    },
+  },
   uidata: {
     appSetRelatedResources: ['', []],
     clusterList: ['local-cluster'],

@@ -13,7 +13,7 @@ import './ApplicationTopology.css'
 import './components/Drawer.css'
 import './components/Toolbar.css'
 import { ArgoApp, ClusterDetailsContainerControl } from './types'
-import { nodeDetailsProvider } from './components/NodeDetailsProvider'
+import { nodeDetailsProvider } from './model/NodeDetailsProvider'
 
 export type ArgoAppDetailsContainerData = {
   page: number

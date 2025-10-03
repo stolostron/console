@@ -2,16 +2,13 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-import {
-  computeNodeStatus,
-  getPulseForData,
-  setApplicationDeployStatus,
-  setAppSetDeployStatus,
-  setPlacementRuleDeployStatus,
-  setPodDeployStatus,
-  setResourceDeployStatus,
-  setSubscriptionDeployStatus,
-} from './computeStatuses'
+import { computeNodeStatus, getPulseForData } from './computeStatuses'
+import { setAppSetDeployStatus } from './NodeDetailsProviderStatuses'
+import { setPlacementRuleDeployStatus } from './NodeDetailsProviderStatuses'
+import { setApplicationDeployStatus } from './NodeDetailsProviderStatuses'
+import { setSubscriptionDeployStatus } from './NodeDetailsProviderStatuses'
+import { setPodDeployStatus } from './NodeDetailsProviderStatuses'
+import { setResourceDeployStatus } from './NodeDetailsProviderStatuses'
 
 import {
   appNoChannelGreen,

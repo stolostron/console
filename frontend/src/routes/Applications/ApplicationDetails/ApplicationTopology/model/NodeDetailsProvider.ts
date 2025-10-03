@@ -1,14 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-  setResourceDeployStatus,
-  setPodDeployStatus,
-  setSubscriptionDeployStatus,
-  setApplicationDeployStatus,
-  setPlacementRuleDeployStatus,
-  setClusterStatus,
-  setPlacementDeployStatus,
-} from '../model/computeStatuses'
+import { setPlacementDeployStatus } from './NodeDetailsProviderStatuses'
+import { setClusterStatus } from './NodeDetailsProviderStatuses'
+import { setPlacementRuleDeployStatus } from './NodeDetailsProviderStatuses'
+import { setApplicationDeployStatus } from './NodeDetailsProviderStatuses'
+import { setSubscriptionDeployStatus } from './NodeDetailsProviderStatuses'
+import { setPodDeployStatus } from './NodeDetailsProviderStatuses'
+import { setResourceDeployStatus } from './NodeDetailsProviderStatuses'
 import {
   getNodePropery,
   addPropertyToList,
@@ -192,10 +190,6 @@ function addK8Details(
     mainDetails,
     getNodePropery(node, ['specs', 'raw', 'spec', 'selector', 'matchLabels'], t('Pod Selector'))
   )
-
-  if (!node?.specs?.raw?.spec?.selector?.matchLabels) {
-    addPropertyToList(mainDetails, getNodePropery(node, ['specs', 'raw', 'spec', 'selector'], t('Pod Selector')))
-  }
 
   addPropertyToList(mainDetails, getNodePropery(node, ['specs', 'raw', 'spec', 'ports'], t('Ports')))
 
