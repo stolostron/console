@@ -28,7 +28,7 @@ const UserRoleAssignments = () => {
     subjectKinds: ['User'],
   })
 
-  const isLoading = isUsersLoading || isRoleAssignmentsLoading || !user || !multiclusterRoleAssignments
+  const isLoading = isUsersLoading || isRoleAssignmentsLoading || !user
   return (
     <RoleAssignments
       roleAssignments={roleAssignments}

@@ -27,7 +27,7 @@ const GroupRoleAssignments = () => {
     subjectKinds: ['Group'],
   })
 
-  const isLoading = isGroupsLoading || isRoleAssignmentsLoading || !group || !multiclusterRoleAssignments
+  const isLoading = isGroupsLoading || isRoleAssignmentsLoading || !group
 
   return (
     <RoleAssignments

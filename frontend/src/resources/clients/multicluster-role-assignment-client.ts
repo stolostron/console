@@ -79,25 +79,32 @@ export const useFindRoleAssignments = (query: MulticlusterRoleAssignmentQuery): 
   // TODO: replace by new aggregated API
   const { multiclusterRoleAssignmentState } = useSharedAtoms()
   const multiclusterRoleAssignments = useRecoilValue(multiclusterRoleAssignmentState)
-  return multiclusterRoleAssignments.reduce(
-    (
-      multiClusterRoleAssignmentAcc: FlattenedRoleAssignment[],
-      multiClusterRoleAssignmentCurr: MulticlusterRoleAssignment
-    ) =>
-      !isSubjectMatch(multiClusterRoleAssignmentCurr, query)
-        ? multiClusterRoleAssignmentAcc
-        : [
-            ...multiClusterRoleAssignmentAcc,
-            ...multiClusterRoleAssignmentCurr.spec.roleAssignments
-              .reduce(
-                (assignmentAcc: RoleAssignment[], assignmentCurr: RoleAssignment) =>
-                  !isClusterOrRoleMatch(assignmentCurr, query) ? assignmentAcc : [...assignmentAcc, assignmentCurr],
-                []
-              )
-              .map((e) => roleAssignmentToFlattenedRoleAssignment(multiClusterRoleAssignmentCurr, e)),
-          ],
-    []
-  )
+
+  return !multiclusterRoleAssignments
+    ? []
+    : multiclusterRoleAssignments
+        .reduce(
+          (
+            multiClusterRoleAssignmentAcc: FlattenedRoleAssignment[],
+            multiClusterRoleAssignmentCurr: MulticlusterRoleAssignment
+          ) =>
+            !isSubjectMatch(multiClusterRoleAssignmentCurr, query)
+              ? multiClusterRoleAssignmentAcc
+              : [
+                  ...multiClusterRoleAssignmentAcc,
+                  ...multiClusterRoleAssignmentCurr.spec.roleAssignments
+                    .reduce(
+                      (assignmentAcc: RoleAssignment[], assignmentCurr: RoleAssignment) =>
+                        !isClusterOrRoleMatch(assignmentCurr, query)
+                          ? assignmentAcc
+                          : [...assignmentAcc, assignmentCurr],
+                      []
+                    )
+                    .map((e) => roleAssignmentToFlattenedRoleAssignment(multiClusterRoleAssignmentCurr, e)),
+                ],
+          []
+        )
+        .sort((a, b) => a.subject.name?.localeCompare(b.subject.name ?? '') ?? 0)
 }
 
 export const findRoleAssignments = (
