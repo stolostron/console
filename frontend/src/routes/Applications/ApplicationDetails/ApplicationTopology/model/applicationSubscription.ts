@@ -1,6 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Placement, PlacementKind, PlacementRule, PlacementRuleKind, Subscription } from '../../../../../resources'
+import {
+  Placement,
+  PlacementKind,
+  PlacementRule,
+  PlacementRuleKind,
+  Subscription,
+  SubscriptionReport,
+} from '../../../../../resources'
 import { listResources } from '../../../../../resources/utils/resource-request'
 import type { IResource } from '../../../../../resources/resource'
 import { getSubscriptionAnnotations, isLocalSubscription } from '../../../helpers/subscriptions'
@@ -9,7 +16,6 @@ import type {
   PlacementDecisionKind,
   SubscriptionApplicationModel,
   SubscriptionKind,
-  SubscriptionReport,
   SubscriptionChannelsMap,
   SubscriptionDecisionsMap,
   SubscriptionHooksMap,
@@ -82,7 +88,7 @@ export const getSubscriptionApplication = async (
       })
       if (report) {
         subscription.report = report
-        model.reports.push(subscription.report as Record<string, unknown>)
+        model.reports.push(subscription.report as any)
       }
     })
 

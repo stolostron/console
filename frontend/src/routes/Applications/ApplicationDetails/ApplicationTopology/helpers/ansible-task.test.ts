@@ -7,7 +7,7 @@ import {
   getStatusFromPulse,
   showAnsibleJobDetails,
 } from './ansible-task'
-import { AnsibleCondition, AnsibleJobStatus, NodeLike, Translator, Pulse } from '../types'
+import { AnsibleCondition, AnsibleJobStatus, NodeLike, Translator, PulseColor } from '../types'
 
 const t: Translator = (string: string): string => {
   return string
@@ -38,17 +38,17 @@ describe('getInfoForAnsibleTask', () => {
     },
   ]
 
-  const result1: { pulse: Pulse | 'orange'; message: string | null } = {
+  const result1: { pulse: PulseColor | 'orange'; message: string | null } = {
     pulse: 'green',
     message: 'Successful: Test 1',
   }
 
-  const result2: { pulse: Pulse | 'orange'; message: string | null } = {
+  const result2: { pulse: PulseColor | 'orange'; message: string | null } = {
     pulse: 'red',
     message: 'Failed: Test 2',
   }
 
-  const result3: { pulse: Pulse | 'orange'; message: string | null } = {
+  const result3: { pulse: PulseColor | 'orange'; message: string | null } = {
     pulse: 'yellow',
     message: 'Pending: Test 3',
   }
@@ -81,25 +81,25 @@ describe('getInfoForAnsibleJob', () => {
     url: 'https://test/',
   }
 
-  const result1: { pulse: Pulse | 'orange'; message: string | null; url: string | null } = {
+  const result1: { pulse: PulseColor | 'orange'; message: string | null; url: string | null } = {
     message: 'error',
     pulse: 'red',
     url: 'https://test/',
   }
 
-  const result2: { pulse: Pulse | 'orange'; message: string | null; url: string | null } = {
+  const result2: { pulse: PulseColor | 'orange'; message: string | null; url: string | null } = {
     message: 'successful',
     pulse: 'green',
     url: 'https://test/',
   }
 
-  const result3: { pulse: Pulse | 'orange'; message: string | null; url: string | null } = {
+  const result3: { pulse: PulseColor | 'orange'; message: string | null; url: string | null } = {
     message: 'canceled',
     pulse: 'yellow',
     url: 'https://test/',
   }
 
-  const result4: { pulse: Pulse | 'orange'; message: string | null; url: string | null } = {
+  const result4: { pulse: PulseColor | 'orange'; message: string | null; url: string | null } = {
     message: 'unknown',
     pulse: 'orange',
     url: 'https://test/',

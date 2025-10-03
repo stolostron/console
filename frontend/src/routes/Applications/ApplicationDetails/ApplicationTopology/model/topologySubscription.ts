@@ -4,7 +4,6 @@ import { createChildNode, addClusters, processMultiples } from './topologyUtils'
 import type {
   ManagedCluster,
   SubscriptionKind,
-  SubscriptionReport,
   SubscriptionReportResource,
   TopologyNode,
   TopologyLink,
@@ -16,6 +15,7 @@ import type {
   AnsibleJobModel,
 } from '../types'
 import { deepClone } from '../utils'
+import { SubscriptionReport } from '../../../../../resources'
 // Resource types that typically have pods as children
 const typesWithPods = ['replicaset', 'replicationcontroller', 'statefulset', 'daemonset']
 

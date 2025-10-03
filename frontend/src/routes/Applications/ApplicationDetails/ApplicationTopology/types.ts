@@ -9,6 +9,7 @@ import {
   Placement,
   PlacementDecision,
   PlacementRule,
+  SubscriptionReport,
   Subscription,
 } from '../../../../resources'
 import { TFunction } from 'react-i18next'
@@ -197,12 +198,6 @@ export interface SubscriptionReportResult {
   [key: string]: unknown
 }
 
-export interface SubscriptionReport {
-  resources?: SubscriptionReportResource[]
-  results?: SubscriptionReportResult[]
-  [key: string]: unknown
-}
-
 // Minimal Subscription resource shape with fields accessed by topology helpers
 export interface SubscriptionKind {
   metadata: { name: string; namespace: string; [key: string]: unknown }
@@ -336,9 +331,6 @@ export type ArgoHealthStatus = 'Healthy' | 'Degraded' | 'Missing' | 'Progressing
 // Pulse colors for node status visualization
 export type PulseColor = 'red' | 'green' | 'yellow' | 'orange' | 'blocked' | 'spinner'
 
-// Pulse type that matches the existing pulseValueArr - includes blocked and spinner
-export type Pulse = 'red' | 'yellow' | 'orange' | 'green' | 'blocked' | 'spinner'
-
 // Resource state types
 export type ResourceState =
   | 'running'
@@ -392,8 +384,8 @@ export interface ClusterInfo {
     [key: string]: unknown
   }
   _clusterNamespace?: string
-  HubAcceptedManagedCluster?: boolean
-  ManagedClusterJoined?: boolean
+  HubAcceptedManagedCluster?: string
+  ManagedClusterJoined?: string
   ManagedClusterConditionAvailable?: string
   [key: string]: unknown
 }
@@ -852,8 +844,8 @@ export interface ClusterData {
     [key: string]: unknown
   }
   _clusterNamespace?: string
-  HubAcceptedManagedCluster?: boolean
-  ManagedClusterJoined?: boolean
+  HubAcceptedManagedCluster?: string
+  ManagedClusterJoined?: string
   ManagedClusterConditionAvailable?: string
   [key: string]: unknown
 }

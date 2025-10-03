@@ -57,7 +57,6 @@ import { getApplication } from './ApplicationTopology/model/application'
 import { getTopology } from './ApplicationTopology/model/topology'
 import { getApplicationData } from './ApplicationTopology/model/topologyUtils'
 import { useLocalHubName } from '../../../hooks/use-local-hub'
-import { RecoilStates } from './ApplicationTopology/types'
 import { getResourceStatuses } from './ApplicationTopology/model/computeStatuses'
 
 export const ApplicationContext = createContext<{
@@ -133,7 +132,7 @@ export default function ApplicationDetailsPage() {
 
   const [waitForApplication, setWaitForApplication] = useState<boolean>(true)
   const [applicationNotFound, setApplicationNotFound] = useState<boolean>(false)
-  const [activeChannel, setActiveChannel] = useState<string | undefined>('')
+  const [activeChannel, setActiveChannel] = useState<string | undefined>()
   const [allChannels, setAllChannels] = useState<string[]>([])
   const [applicationData, setApplicationData] = useState<ApplicationDataType>()
   const [modalProps, setModalProps] = useState<IDeleteResourceModalProps | { open: false }>({
@@ -393,7 +392,7 @@ export default function ApplicationDetailsPage() {
             name,
             backendUrl,
             activeChannel,
-            recoilStates as unknown as RecoilStates,
+            recoilStates,
             cluster,
             apiVersion,
             clusters
@@ -421,7 +420,7 @@ export default function ApplicationDetailsPage() {
                 topology,
                 appData,
               })
-              setActiveChannel(application ? application.activeChannel : '')
+              setActiveChannel(application.activeChannel)
               setAllChannels(application && application.channels ? application.channels : [])
             }
 
@@ -442,7 +441,7 @@ export default function ApplicationDetailsPage() {
               appData: appDataWithStatuses,
               statuses: resourceStatuses,
             })
-            setActiveChannel(application?.activeChannel ? application.activeChannel : '')
+            setActiveChannel(application.activeChannel)
             setAllChannels(application?.channels ?? [])
             lastRefreshRef.current = { application, resourceStatuses, relatedResources }
           }

@@ -23,9 +23,9 @@ import {
   TableColumnHeader,
   DetailsTableProps,
   DetailsTableState,
-  Pulse,
   DetailsTableNodeSpecs,
   DetailsTableNodeSpecsStatusMap,
+  PulseColor,
 } from '../types'
 
 /**
@@ -130,7 +130,8 @@ class DetailsTable extends Component<DetailsTableProps, DetailsTableState> {
      */
     available = available.sort((a, b) => {
       const cmp =
-        pulseValueArr.indexOf(a.pulse as Pulse | undefined) - pulseValueArr.indexOf(b.pulse as Pulse | undefined)
+        pulseValueArr.indexOf(a.pulse as PulseColor | undefined) -
+        pulseValueArr.indexOf(b.pulse as PulseColor | undefined)
       return cmp !== 0 ? cmp : a.name.localeCompare(b.name)
     })
 

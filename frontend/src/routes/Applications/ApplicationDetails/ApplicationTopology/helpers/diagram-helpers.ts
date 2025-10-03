@@ -8,7 +8,7 @@ import type {
   NodeLike,
   ResourceAction,
   Translator,
-  Pulse,
+  PulseColor,
   URLSearchData,
   EditLinkParams,
   DetailItem,
@@ -20,7 +20,7 @@ const showResourceYaml = 'show_resource_yaml'
 const apiVersionPath = 'specs.raw.apiVersion'
 
 // Ordered by severity for UI legend and filtering
-export const pulseValueArr: Array<Pulse | undefined> = ['red', 'orange', 'yellow', 'green', undefined]
+export const pulseValueArr: Array<PulseColor | undefined> = ['red', 'orange', 'yellow', 'green', undefined]
 
 /**
  * Push non-empty detail rows into the provided list.

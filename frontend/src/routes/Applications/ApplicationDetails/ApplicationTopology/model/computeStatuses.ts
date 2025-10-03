@@ -490,9 +490,9 @@ export const calculateArgoClusterStatus = (clusterData: ClusterInfo): string => 
   const clusterJoined = clusterData.ManagedClusterJoined
   const clusterAvailable = clusterData.ManagedClusterConditionAvailable
 
-  if (clusterAccepted === false) {
+  if (clusterAccepted !== 'True') {
     status = 'notaccepted'
-  } else if (clusterJoined === false) {
+  } else if (clusterJoined !== 'True') {
     status = 'pendingimport'
   } else {
     status = clusterAvailable && clusterAvailable === 'True' ? 'ok' : 'offline'

@@ -1821,11 +1821,11 @@ export const clusterNode: TopologyNodeWithStatus = {
     appClusters: [],
     searchClusters: [
       {
-        HubAcceptedManagedCluster: true,
+        HubAcceptedManagedCluster: 'True',
         ManagedClusterConditionAvailable: 'True',
         ManagedClusterConditionClockSynced: true,
         ManagedClusterImportSucceeded: true,
-        ManagedClusterJoined: true,
+        ManagedClusterJoined: 'True',
         _hubClusterResource: 'true',
         _relatedUids: ['local-cluster/0784b94b-ddb6-4234-bc1b-d07d641d7a0c'],
         _uid: 'cluster__local-cluster',
