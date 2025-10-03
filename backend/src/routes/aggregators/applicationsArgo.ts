@@ -287,7 +287,7 @@ function getRemoteArgoApps(ocpAppSetFilter: Set<string>, remoteArgoApps: IResour
     if (argoApp.cluster === getHubClusterName()) {
       return
     }
-    
+
     // cache Argo app signature for filtering OCP apps later
     ocpAppSetFilter.add(`${argoApp.name}-${argoApp.destinationNamespace}-${argoApp.cluster}`)
     if (argoApp._hostingResource) {
@@ -308,7 +308,7 @@ function getRemoteArgoApps(ocpAppSetFilter: Set<string>, remoteArgoApps: IResour
         return
       }
     }
-    
+
     // not owned by an applicationset, so it's a standalone argo app we should display
     apps.push({
       apiVersion: ArgoApplicationApiVersion,
@@ -335,7 +335,7 @@ function getRemoteArgoApps(ocpAppSetFilter: Set<string>, remoteArgoApps: IResour
         cluster: argoApp.cluster,
         health: {
           status: argoApp.healthStatus,
-          },
+        },
         sync: {
           status: argoApp.syncStatus,
         },
