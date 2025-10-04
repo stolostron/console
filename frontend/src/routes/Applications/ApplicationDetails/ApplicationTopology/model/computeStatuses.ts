@@ -324,7 +324,7 @@ export const getPulseStatusForArgoApp = (node: TopologyNodeWithStatus, isAppSet?
         project: '',
         syncPolicy: undefined,
       },
-      status: appStatus,
+      status: { health: { status: appStatus } },
     })
   }
 
@@ -340,9 +340,7 @@ export const getPulseStatusForArgoApp = (node: TopologyNodeWithStatus, isAppSet?
 
   // Categorize applications by health status
   relatedApps.forEach((app) => {
-    const relatedAppHealth = isAppSet
-      ? safeGet(app, 'status.health.status', argoAppUnknownStatus)
-      : (safeGet(app, 'status', '') as ArgoHealthStatus)
+    const relatedAppHealth = safeGet(app, 'status.health.status') || safeGet(app, 'status') || argoAppUnknownStatus
     const relatedAppConditions = isAppSet ? safeGet(app, 'status.conditions', []) : []
 
     if (relatedAppHealth === argoAppHealthyStatus) {

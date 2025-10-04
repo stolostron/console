@@ -52,7 +52,7 @@ export interface ArgoApplication extends IResource {
     sources?: ArgoSource[]
     syncPolicy?: ArgoSyncPolicy
   }
-  status?: ArgoApplicationStatus | string
+  status?: ArgoApplicationStatus
   transformed?: {
     clusterCount?: string
   }
