@@ -1092,25 +1092,114 @@ describe('DistributionField hypershift clusters', () => {
       isRegionalHubCluster: false,
     }
 
+    // Create a nodepool with version lower than cluster version to trigger upgrade
+    const testNodepool: NodePool = {
+      apiVersion: 'hypershift.openshift.io/v1beta1',
+      kind: 'NodePool',
+      metadata: {
+        name: 'test-nodepool',
+        namespace: 'clusters',
+      },
+      spec: {
+        management: { upgradeType: 'Replace' },
+        clusterName: 'hypershift-cluster1',
+        platform: {
+          aws: {
+            instanceProfile: '',
+            instanceType: '',
+            rootVolume: {
+              size: 1,
+              type: '',
+            },
+            securityGroups: [],
+            subnet: {
+              id: '',
+            },
+          },
+          type: '',
+        },
+        release: {
+          image: '',
+        },
+        replicas: 1,
+      },
+      status: {
+        conditions: [
+          {
+            message: '',
+            reason: 'AsExpected',
+            status: 'True',
+            type: 'Ready',
+          },
+        ],
+        version: '4.10.18', // Lower than cluster version 4.11.12
+      },
+    }
+
     const { queryAllByText } = await renderDistributionInfoField(
       mockCluster,
       true,
       false,
       undefined,
-      mockNodepools[0] as NodePool,
+      testNodepool,
       undefined,
-      false
+      false,
+      'nodepool'
     )
     expect(queryAllByText('Upgrade available').length).toBe(1)
   })
 
   it('should render distribution info for hypershift, no cluster', async () => {
+    // Create a nodepool for testing with no cluster
+    const testNodepool: NodePool = {
+      apiVersion: 'hypershift.openshift.io/v1beta1',
+      kind: 'NodePool',
+      metadata: {
+        name: 'test-nodepool',
+        namespace: 'clusters',
+      },
+      spec: {
+        management: { upgradeType: 'Replace' },
+        clusterName: '',
+        platform: {
+          aws: {
+            instanceProfile: '',
+            instanceType: '',
+            rootVolume: {
+              size: 1,
+              type: '',
+            },
+            securityGroups: [],
+            subnet: {
+              id: '',
+            },
+          },
+          type: '',
+        },
+        release: {
+          image: '',
+        },
+        replicas: 1,
+      },
+      status: {
+        conditions: [
+          {
+            message: '',
+            reason: 'AsExpected',
+            status: 'True',
+            type: 'Ready',
+          },
+        ],
+        version: '4.11.12',
+      },
+    }
+
     const { queryAllByText } = await renderDistributionInfoField(
       undefined,
       true,
       false,
       undefined,
-      mockNodepools[0] as NodePool,
+      testNodepool,
       undefined,
       false
     )
@@ -1280,5 +1369,221 @@ describe('DistributionField hypershift clusters', () => {
     )
     expect(queryAllByText(/upgrading to 4\.11\.22/i).length).toBe(1)
     expect(queryByRole('progressbar')).toBeTruthy()
+  })
+
+  it('should display nodepool version when resource is nodepool', async () => {
+    const mockCluster: Cluster = {
+      name: 'hypershift-cluster1',
+      displayName: 'hypershift-cluster1',
+      namespace: 'clusters',
+      uid: 'hypershift-cluster1-uid',
+      provider: undefined,
+      status: ClusterStatus.ready,
+      distribution: {
+        ocp: {
+          version: '4.11.12',
+          availableUpdates: [],
+          desiredVersion: '4.11.12',
+          upgradeFailed: false,
+        },
+        displayVersion: 'OpenShift 4.11.12',
+        isManagedOpenShift: false,
+      },
+      labels: { abc: '123' },
+      nodes: undefined,
+      kubeApiServer: '',
+      consoleURL: '',
+      hasAutomationTemplate: false,
+      hive: {
+        isHibernatable: true,
+        clusterPool: undefined,
+        secrets: {
+          installConfig: '',
+        },
+      },
+      hypershift: {
+        agent: false,
+        hostingNamespace: 'clusters',
+        nodePools: mockNodepools,
+        secretNames: ['feng-hs-bug-ssh-key', 'feng-hs-bug-pull-secret'],
+      },
+      isHive: false,
+      isManaged: true,
+      isCurator: true,
+      isHostedCluster: true,
+      isHypershift: true,
+      isSNOCluster: false,
+      owner: {},
+      kubeadmin: '',
+      kubeconfig: '',
+      isRegionalHubCluster: false,
+    }
+
+    const testNodepool: NodePool = {
+      apiVersion: 'hypershift.openshift.io/v1beta1',
+      kind: 'NodePool',
+      metadata: {
+        name: 'test-nodepool',
+        namespace: 'clusters',
+      },
+      spec: {
+        management: { upgradeType: 'Replace' },
+        clusterName: 'hypershift-cluster1',
+        platform: {
+          aws: {
+            instanceProfile: '',
+            instanceType: '',
+            rootVolume: {
+              size: 1,
+              type: '',
+            },
+            securityGroups: [],
+            subnet: {
+              id: '',
+            },
+          },
+          type: '',
+        },
+        release: {
+          image: '',
+        },
+        replicas: 1,
+      },
+      status: {
+        conditions: [
+          {
+            message: '',
+            reason: 'AsExpected',
+            status: 'True',
+            type: 'Ready',
+          },
+        ],
+        version: '4.10.15',
+      },
+    }
+
+    const { queryAllByText } = await renderDistributionInfoField(
+      mockCluster,
+      true,
+      false,
+      undefined,
+      testNodepool,
+      undefined,
+      false,
+      'nodepool'
+    )
+
+    // Should display the nodepool version instead of cluster version
+    expect(queryAllByText('OpenShift 4.10.15').length).toBe(1)
+    // Should show upgrade available since nodepool version (4.10.15) < cluster version (4.11.12)
+    expect(queryAllByText('Upgrade available').length).toBe(1)
+  })
+
+  it('should not show upgrade available when nodepool version equals cluster version', async () => {
+    const mockCluster: Cluster = {
+      name: 'hypershift-cluster1',
+      displayName: 'hypershift-cluster1',
+      namespace: 'clusters',
+      uid: 'hypershift-cluster1-uid',
+      provider: undefined,
+      status: ClusterStatus.ready,
+      distribution: {
+        ocp: {
+          version: '4.11.12',
+          availableUpdates: [],
+          desiredVersion: '4.11.12',
+          upgradeFailed: false,
+        },
+        displayVersion: 'OpenShift 4.11.12',
+        isManagedOpenShift: false,
+      },
+      labels: { abc: '123' },
+      nodes: undefined,
+      kubeApiServer: '',
+      consoleURL: '',
+      hasAutomationTemplate: false,
+      hive: {
+        isHibernatable: true,
+        clusterPool: undefined,
+        secrets: {
+          installConfig: '',
+        },
+      },
+      hypershift: {
+        agent: false,
+        hostingNamespace: 'clusters',
+        nodePools: mockNodepools,
+        secretNames: ['feng-hs-bug-ssh-key', 'feng-hs-bug-pull-secret'],
+      },
+      isHive: false,
+      isManaged: true,
+      isCurator: true,
+      isHostedCluster: true,
+      isHypershift: true,
+      isSNOCluster: false,
+      owner: {},
+      kubeadmin: '',
+      kubeconfig: '',
+      isRegionalHubCluster: false,
+    }
+
+    const testNodepool: NodePool = {
+      apiVersion: 'hypershift.openshift.io/v1beta1',
+      kind: 'NodePool',
+      metadata: {
+        name: 'test-nodepool',
+        namespace: 'clusters',
+      },
+      spec: {
+        management: { upgradeType: 'Replace' },
+        clusterName: 'hypershift-cluster1',
+        platform: {
+          aws: {
+            instanceProfile: '',
+            instanceType: '',
+            rootVolume: {
+              size: 1,
+              type: '',
+            },
+            securityGroups: [],
+            subnet: {
+              id: '',
+            },
+          },
+          type: '',
+        },
+        release: {
+          image: '',
+        },
+        replicas: 1,
+      },
+      status: {
+        conditions: [
+          {
+            message: '',
+            reason: 'AsExpected',
+            status: 'True',
+            type: 'Ready',
+          },
+        ],
+        version: '4.11.12',
+      },
+    }
+
+    const { queryAllByText } = await renderDistributionInfoField(
+      mockCluster,
+      true,
+      false,
+      undefined,
+      testNodepool,
+      undefined,
+      false,
+      'nodepool'
+    )
+
+    // Should display the nodepool version
+    expect(queryAllByText('OpenShift 4.11.12').length).toBe(1)
+    // Should not show upgrade available since nodepool version equals cluster version
+    expect(queryAllByText('Upgrade available').length).toBe(0)
   })
 })
