@@ -109,8 +109,8 @@ jest.mock('../../RoleAssignment/RoleAssignments', () => ({
     <div id="role-assignments">
       <div id="loading">{isLoading ? 'Loading' : 'Loaded'}</div>
       <div id="hidden-columns">{hiddenColumns?.join(',') || 'none'}</div>
-      <div id="assignments-count">{roleAssignments.length}</div>
-      {roleAssignments.map((roleAssignment: FlattenedRoleAssignment, index: number) => (
+      <div id="assignments-count">{roleAssignments?.length || 0}</div>
+      {roleAssignments?.map((roleAssignment: FlattenedRoleAssignment, index: number) => (
         <div key={index} id={`assignment-${index}`}>
           <div id={`assignment-subject-${index}`}>
             {roleAssignment.subject.kind}: {roleAssignment.subject.name}
@@ -156,8 +156,8 @@ describe('GroupRoleAssignments', () => {
   })
 
   it('renders GroupRoleAssignments component with no group found', async () => {
-    // Mock Recoil to return undefined (loading state)
-    ;(useRecoilValue as jest.Mock).mockReturnValue(undefined)
+    // Mock Recoil to return empty array (loading state)
+    ;(useRecoilValue as jest.Mock).mockReturnValue([])
 
     render(<Component groupId="non-existent-group" />)
     // The component should render without crashing

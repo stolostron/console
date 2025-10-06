@@ -3,7 +3,7 @@ import { PageSection } from '@patternfly/react-core'
 import { useMemo, useCallback } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { ClusterRole } from '../../../resources/rbac'
-import { AcmEmptyState, AcmTable, compareStrings, AcmLoadingPage } from '../../../ui-components'
+import { AcmEmptyState, AcmTable, compareStrings } from '../../../ui-components'
 import { rolesTableColumns, useFilters, Role } from './RolesTableHelper'
 import { useRolesContext } from './RolesPage'
 
@@ -13,9 +13,8 @@ const RolesTable = () => {
 
   const roles = useMemo(
     () =>
-      !clusterRoles
-        ? []
-        : clusterRoles
+      clusterRoles
+        ? clusterRoles
             .map(
               (clusterRole: ClusterRole): Role => ({
                 name: clusterRole.metadata.name || '',
@@ -25,7 +24,8 @@ const RolesTable = () => {
                 uid: clusterRole.metadata.uid || clusterRole.metadata.name || '',
               })
             )
-            .sort((a, b) => compareStrings(a.name, b.name)),
+            .sort((a, b) => compareStrings(a.name, b.name))
+        : [],
     [clusterRoles]
   )
 
@@ -36,18 +36,23 @@ const RolesTable = () => {
 
   return (
     <PageSection>
-      {loading ? (
-        <AcmLoadingPage />
-      ) : (
-        <AcmTable<Role>
-          key="roles-table"
-          filters={filters}
-          columns={columns}
-          keyFn={keyFn}
-          items={roles}
-          emptyState={<AcmEmptyState key="rolesEmptyState" title={t('No roles')} />}
-        />
-      )}
+      <AcmTable<Role>
+        key="roles-table"
+        filters={filters}
+        columns={columns}
+        keyFn={keyFn}
+        items={roles}
+        resultView={{
+          page: 1,
+          loading,
+          refresh: () => {},
+          items: [],
+          emptyResult: false,
+          processedItemCount: 0,
+          isPreProcessed: true,
+        }}
+        emptyState={<AcmEmptyState key="rolesEmptyState" title={t('No roles')} />}
+      />
     </PageSection>
   )
 }

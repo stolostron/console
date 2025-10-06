@@ -1,19 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useMemo } from 'react'
-import { useParams, useLocation, Link, Outlet, useNavigate } from 'react-router-dom-v5-compat'
+import { useParams, useLocation, Link, Outlet, generatePath, useOutletContext } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { User, Group, listUsers, listGroups } from '../../../../resources/rbac'
 import { useQuery } from '../../../../lib/useQuery'
-import {
-  AcmPage,
-  AcmPageHeader,
-  AcmSecondaryNav,
-  AcmSecondaryNavItem,
-  AcmLoadingPage,
-  AcmButton,
-} from '../../../../ui-components'
+import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem, AcmButton } from '../../../../ui-components'
 import { NavigationPath } from '../../../../NavigationPath'
-import { generatePath, useOutletContext } from 'react-router-dom-v5-compat'
 import { Page } from '@patternfly/react-core'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
@@ -29,7 +21,6 @@ const UserPage = () => {
   const { t } = useTranslation()
   const { id = undefined } = useParams()
   const location = useLocation()
-  const navigate = useNavigate()
 
   const { data: users, loading } = useQuery(listUsers)
 
@@ -61,11 +52,7 @@ const UserPage = () => {
         <ErrorPage
           error={new ResourceError(ResourceErrorCode.NotFound)}
           actions={
-            <AcmButton
-              role="link"
-              onClick={() => navigate(NavigationPath.identitiesUsers)}
-              style={{ marginRight: '10px' }}
-            >
+            <AcmButton component="a" href={NavigationPath.identitiesUsers} style={{ marginRight: '10px' }}>
               {t('button.backToUsers')}
             </AcmButton>
           }
@@ -108,7 +95,7 @@ const UserPage = () => {
         />
       }
     >
-      {loading ? <AcmLoadingPage /> : <Outlet context={userDetailsContext} />}
+      <Outlet context={userDetailsContext} />
     </AcmPage>
   )
 }

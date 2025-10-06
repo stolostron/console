@@ -20,7 +20,20 @@ const mockUseRolesContext = jest.mocked(useRolesContext)
 
 // Mock the entire ui-components module with all necessary exports
 jest.mock('../../../ui-components', () => ({
-  AcmTable: ({ items, emptyState, keyFn }: any) => {
+  AcmTable: ({ items, emptyState, keyFn, resultView }: any) => {
+    if (resultView?.loading) {
+      return (
+        <div data-testid="acm-table-loading">
+          {Array(10)
+            .fill(null)
+            .map((_, index) => (
+              <div key={index} role="progressbar" data-testid={`skeleton-${index}`}>
+                Loading skeleton {index + 1}
+              </div>
+            ))}
+        </div>
+      )
+    }
     if (!items || items.length === 0) {
       return emptyState
     }
@@ -129,7 +142,7 @@ describe('RolesTable', () => {
 
       render(<Component />)
 
-      expect(screen.getByText('Loading...')).toBeInTheDocument()
+      expect(screen.getAllByRole('progressbar')).toHaveLength(10)
     })
 
     it('should not show loading page when loading is false', () => {
@@ -140,7 +153,7 @@ describe('RolesTable', () => {
 
       render(<Component />)
 
-      expect(screen.queryByText('Loading...')).not.toBeInTheDocument()
+      expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
 
       // Should render the role when not loading
       expect(screen.getByText('test-admin-role')).toBeInTheDocument()
