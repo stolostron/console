@@ -2,6 +2,7 @@
 import nock from 'nock'
 import { parsePipedJsonBody } from '../../src/lib/body-parser'
 import { request } from '../mock-request'
+import { getProxyAgent } from '../../src/lib/agent'
 
 describe('Upgrade risks prediction Route', function () {
   it('should return the upgrade risks', async function () {
@@ -73,5 +74,25 @@ describe('Upgrade risks prediction Route', function () {
         },
       ])
     )
+  })
+
+  it('should use proxy agent when HTTPS_PROXY is set', function () {
+    // Set HTTPS_PROXY environment variable to trigger proxy agent creation
+    const originalHttpsProxy = process.env.HTTPS_PROXY
+    process.env.HTTPS_PROXY = 'https://proxy.example.com:8080'
+
+    try {
+      // Call getProxyAgent to trigger the code path that creates HttpsProxyAgent
+      const proxyAgent = getProxyAgent()
+      expect(proxyAgent).toBeDefined()
+      expect(proxyAgent).not.toBeNull()
+    } finally {
+      // Restore original environment variable
+      if (originalHttpsProxy) {
+        process.env.HTTPS_PROXY = originalHttpsProxy
+      } else {
+        delete process.env.HTTPS_PROXY
+      }
+    }
   })
 })
