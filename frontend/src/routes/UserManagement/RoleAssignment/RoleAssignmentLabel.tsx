@@ -27,7 +27,9 @@ const RoleAssignmentLabel = ({ elements, numLabel, renderElement }: RoleAssignme
         )
       )}
     </LabelGroup>
-  ) : null
+  ) : (
+    'All namespaces'
+  )
 }
 
 export { RoleAssignmentLabel }
