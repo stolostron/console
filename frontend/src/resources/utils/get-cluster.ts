@@ -1378,8 +1378,14 @@ export function getClusterStatus(
         }
       }
 
-      // invode certificate failure only if not hibernating
-      if (cdStatus !== ClusterStatus.hibernating && unreachableError) {
+      // invoke unreachable only if not these
+      // other valid states when resuming/hibernating
+      if (
+        unreachableError &&
+        ![(ClusterStatus.hibernating, ClusterStatus.unknown, ClusterStatus.stopping, ClusterStatus.resuming)].includes(
+          cdStatus
+        )
+      ) {
         cdStatus = ClusterStatus.unreachable
         statusMessage = getConditionMessage('Unreachable', cdConditions)
       }
