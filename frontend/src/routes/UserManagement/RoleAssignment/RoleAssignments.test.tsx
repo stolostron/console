@@ -12,6 +12,7 @@ import {
 import { MulticlusterRoleAssignment } from '../../../resources/multicluster-role-assignment'
 import { AcmToastContext } from '../../../ui-components'
 import { RoleAssignments } from './RoleAssignments'
+import { useIsAnyNamespaceAuthorized } from '../../../lib/rbac-util'
 
 // Mock Apollo Client
 jest.mock('@apollo/client', () => ({
@@ -224,6 +225,11 @@ const mockToastContext = {
   clearAlerts: jest.fn(),
 }
 
+jest.mock('../../../lib/rbac-util', () => ({
+  ...jest.requireActual('../../../lib/rbac-util'),
+  useIsAnyNamespaceAuthorized: jest.fn(() => true), // Defaults to true == authorized
+}))
+
 // Simplified mocks matching Infrastructure pattern style
 jest.mock('../../../ui-components', () => {
   const React = jest.requireActual('react')
@@ -295,14 +301,26 @@ jest.mock('../../../ui-components', () => {
 
           {/* Create button */}
           {tableActionButtons?.map((btn: any, i: number) => (
-            <button key={i} onClick={btn.click}>
+            <button
+              key={i}
+              onClick={btn.isDisabled ? undefined : btn.click}
+              disabled={btn.isDisabled}
+              title={btn.tooltip || ''}
+              aria-disabled={btn.isDisabled}
+            >
               {btn.title}
             </button>
           ))}
 
           {/* Bulk actions - simplified to avoid "Actions" text conflicts */}
           {tableActions?.map((action: any, i: number) => (
-            <button key={i} onClick={() => handleBulkAction(action.id)}>
+            <button
+              key={i}
+              onClick={action.isDisabled ? undefined : () => handleBulkAction(action.id)}
+              disabled={action.isDisabled}
+              title={action.tooltip || ''}
+              aria-disabled={action.isDisabled}
+            >
               {action.title}
             </button>
           ))}
@@ -420,6 +438,7 @@ jest.mock('../../../resources/clients/multicluster-role-assignment-client', () =
   deleteRoleAssignment: jest.fn(),
 }))
 const mockDeleteRoleAssignment = deleteRoleAssignment as jest.Mock
+const mockUseIsAnyNamespaceAuthorized = useIsAnyNamespaceAuthorized as jest.Mock
 
 const Component = ({
   roleAssignments = mockRoleAssignments,
@@ -706,6 +725,130 @@ describe('RoleAssignments', () => {
       await waitForText('admin', true) // Role column data
       await waitForText('User: test.user1', true) // Subject column data
       await waitForText('test-cluster-1', true) // Cluster column data
+    })
+  })
+
+  describe('RBAC Permissions and Button States', () => {
+    beforeEach(() => {
+      mockUseIsAnyNamespaceAuthorized.mockReturnValue(true)
+    })
+
+    describe('Create Permission Tests', () => {
+      it('enables Create button when user has both create and patch permissions', async () => {
+        mockUseIsAnyNamespaceAuthorized.mockReturnValueOnce(true)
+        render(<Component />)
+        await waitForText('test-cluster-1')
+
+        const createButton = screen.getByRole('button', { name: /create role assignment/i })
+        expect(createButton).toBeInTheDocument()
+        expect(createButton).not.toBeDisabled()
+      })
+
+      test.each([
+        {
+          scenario: 'disables Create button when user lacks create permission',
+          canCreate: false,
+          canPatch: true,
+          canDelete: true,
+        },
+        {
+          scenario: 'disables Create button when user lacks patch permission',
+          canCreate: true,
+          canPatch: false,
+          canDelete: true,
+        },
+        {
+          scenario: 'disables Create button when user lacks both create and patch permissions',
+          canCreate: false,
+          canPatch: false,
+          canDelete: true,
+        },
+      ])('$scenario', async ({ canCreate, canPatch, canDelete }) => {
+        mockUseIsAnyNamespaceAuthorized
+          .mockReturnValueOnce(canCreate)
+          .mockReturnValueOnce(canPatch)
+          .mockReturnValueOnce(canDelete)
+        render(<Component />)
+        await waitForText('test-cluster-1')
+
+        const createButton = screen.getByRole('button', { name: /create role assignment/i })
+        expect(createButton).toBeInTheDocument()
+        expect(createButton).toBeDisabled()
+        expect(createButton).toHaveAttribute('title', expect.stringContaining('not authorized'))
+      })
+    })
+
+    describe('Delete Permission Tests', () => {
+      it('enables Delete button when user has both delete and patch permissions', async () => {
+        mockUseIsAnyNamespaceAuthorized.mockReturnValueOnce(true)
+        render(<Component />)
+        await waitForText('test-cluster-1')
+
+        const deleteButton = screen.getByRole('button', { name: /delete role assignments/i })
+        expect(deleteButton).toBeInTheDocument()
+        expect(deleteButton).not.toBeDisabled()
+      })
+
+      test.each([
+        {
+          scenario: 'disables Delete button when user lacks delete permission',
+          canCreate: true,
+          canPatch: true,
+          canDelete: false,
+        },
+        {
+          scenario: 'disables Delete button when user lacks patch permission',
+          canCreate: true,
+          canPatch: false,
+          canDelete: true,
+        },
+        {
+          scenario: 'disables Delete button when user lacks both delete and patch permissions',
+          canCreate: true,
+          canPatch: false,
+          canDelete: false,
+        },
+      ])('$scenario', async ({ canCreate, canPatch, canDelete }) => {
+        mockUseIsAnyNamespaceAuthorized
+          .mockReturnValueOnce(canCreate)
+          .mockReturnValueOnce(canPatch)
+          .mockReturnValueOnce(canDelete)
+        render(<Component />)
+        await waitForText('test-cluster-1')
+
+        const deleteButton = screen.getByRole('button', { name: /delete role assignments/i })
+        expect(deleteButton).toBeInTheDocument()
+        expect(deleteButton).toBeDisabled()
+        expect(deleteButton).toHaveAttribute('title', expect.stringContaining('not authorized'))
+      })
+    })
+
+    describe('Empty State RBAC', () => {
+      it('enables Create button in empty state when user has permissions', async () => {
+        mockUseIsAnyNamespaceAuthorized.mockReturnValueOnce(true)
+        render(<Component roleAssignments={[]} />)
+        await waitForText('No role assignment created yet')
+
+        const createButtons = screen.getAllByText('Create role assignment')
+        expect(createButtons.length).toBeGreaterThan(0)
+
+        const emptyStateButton = createButtons.find((btn) => btn.closest('button'))?.closest('button')
+        expect(emptyStateButton).toBeTruthy()
+        expect(emptyStateButton).not.toHaveAttribute('aria-disabled', 'true')
+      })
+
+      it('disables Create button in empty state when user lacks permissions', async () => {
+        mockUseIsAnyNamespaceAuthorized.mockReturnValueOnce(false)
+        render(<Component roleAssignments={[]} />)
+        await waitForText('No role assignment created yet')
+
+        const createButtons = screen.getAllByText('Create role assignment')
+        expect(createButtons.length).toBeGreaterThan(0)
+
+        const emptyStateButton = createButtons.find((btn) => btn.closest('button'))?.closest('button')
+        expect(emptyStateButton).toBeTruthy()
+        expect(emptyStateButton).toHaveAttribute('aria-disabled', 'true')
+      })
     })
   })
 })
