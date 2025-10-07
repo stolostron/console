@@ -17,14 +17,13 @@ import {
 import { AngleLeftIcon, FlagIcon, ListIcon, OutlinedClockIcon } from '@patternfly/react-icons'
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import { Markdown } from '@redhat-cloud-services/rule-components/Markdown'
-import { TFunction } from 'react-i18next'
 import _ from 'lodash'
 import { useState } from 'react'
+import { TFunction } from 'react-i18next'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { PolicyReport, PolicyReportResults } from '../../../../../resources'
-import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
 import { AcmEmptyState, AcmLabels, AcmTable, colorThemes, compareStrings } from '../../../../../ui-components'
-import { CriticalRiskIcon, ImportantRiskIcon, LowRiskIcon, ModerateRiskIcon } from './ClusterPolicySidebarIcons'
+import { getTextWidth } from '../../../../../ui-components/utils'
 import {
   backAction,
   body,
@@ -34,7 +33,7 @@ import {
   tableTitle,
   titleText,
 } from '../../../../Governance/common/policySidebarStyles'
-import { getTextWidth } from '../../../../../ui-components/utils'
+import { CriticalRiskIcon, ImportantRiskIcon, LowRiskIcon, ModerateRiskIcon } from './ClusterPolicySidebarIcons'
 
 function renderDonutChart(data: PolicyReportResults[], t: TFunction) {
   const clusterRiskScores = data.map((issue) => issue.properties.total_risk)
@@ -106,11 +105,6 @@ function DetailsView(props: {
   selectedReport: PolicyReportResults | undefined
 }) {
   const { setDetailsView, selectedReport } = props
-  const { configMapsState } = useSharedAtoms()
-  const configmaps = useRecoilValue(configMapsState)
-  const contentMap = configmaps.find((cm) => cm.metadata.name === 'insight-content-data')
-  const policyContentData = contentMap?.data && contentMap?.data[selectedReport?.policy ?? '']
-  const policyContentDataParsed = policyContentData && JSON.parse(policyContentData)
   const { t } = useTranslation()
   const [tabState, setTabState] = useState<string | number>(0)
 
@@ -250,12 +244,12 @@ function DetailsView(props: {
       <Tabs activeKey={tabState} onSelect={(_e, tabIndex) => setTabState(tabIndex)} isFilled={true}>
         <Tab eventKey={0} title={<TabTitleText>{t('How to remediate')}</TabTitleText>}>
           <TextContent>
-            <Markdown template={policyContentDataParsed?.resolution ?? ''} definitions={getExtraData()} />
+            <Markdown template={selectedReport?.properties?.resolution ?? ''} definitions={getExtraData()} />
           </TextContent>
         </Tab>
         <Tab eventKey={1} title={<TabTitleText>{t('Reason')}</TabTitleText>}>
           <TextContent>
-            <Markdown template={policyContentDataParsed?.reason ?? ''} definitions={getExtraData()} />
+            <Markdown template={selectedReport?.properties?.reason ?? ''} definitions={getExtraData()} />
           </TextContent>
         </Tab>
       </Tabs>
