@@ -132,12 +132,30 @@ export const findRoleAssignments = (
   )
 
 export const mapRoleAssignmentBeforeSaving = (roleAssignment: Omit<RoleAssignment, 'name'>): RoleAssignment => {
-  const hash = sha256(
-    JSON.stringify(
-      roleAssignment,
-      Object.keys(roleAssignment).sort((a, b) => a.localeCompare(b))
-    )
-  )
+  const sortedKeys = Object.keys(roleAssignment).sort((a, b) => a.localeCompare(b))
+
+  const sortedObject: any = {}
+  sortedKeys.forEach((key) => {
+    const value = roleAssignment[key as keyof typeof roleAssignment]
+
+    if (key === 'clusterSelection' && value && typeof value === 'object' && 'clusterNames' in value) {
+      sortedObject[key] = {
+        ...value,
+        clusterNames: value.clusterNames
+          ? [...value.clusterNames].sort((a, b) => a.localeCompare(b))
+          : value.clusterNames,
+      }
+    } else if (key === 'targetNamespaces' && Array.isArray(value)) {
+      sortedObject[key] = [...value].sort((a, b) => a.localeCompare(b))
+    } else {
+      sortedObject[key] = value
+    }
+  })
+
+  const stringified = JSON.stringify(sortedObject)
+
+  const hash = sha256(stringified)
+
   const shortHash = hash.substring(0, 16)
   const newName = `${roleAssignment.clusterRole}-${shortHash}`
   return { name: newName, ...roleAssignment }
