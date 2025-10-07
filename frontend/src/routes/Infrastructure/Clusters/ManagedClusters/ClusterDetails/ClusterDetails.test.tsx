@@ -26,13 +26,16 @@ import {
 import {
   nockCreate,
   nockDelete,
-  nockGet,
   nockIgnoreRBAC,
   nockIgnoreApiPaths,
   nockList,
   nockNamespacedList,
   nockPostRequest,
+  nockSearch,
+  nockIgnoreOperatorCheck,
+  nockGet,
 } from '../../../../../lib/nock-util'
+import nock from 'nock'
 import { mockManagedClusterSet, mockOpenShiftConsoleConfigMap } from '../../../../../lib/test-metadata'
 import {
   clickByLabel,
@@ -105,6 +108,11 @@ jest.mock('../../../../../hooks/useVirtualMachineDetection', () => ({
     error: undefined,
     virtualMachines: [],
   })),
+}))
+
+// Mock KubevirtProviderAlert to avoid complex dependencies in error state tests
+jest.mock('../../../../../components/KubevirtProviderAlert', () => ({
+  KubevirtProviderAlert: () => null,
 }))
 
 const mockManagedClusterInfo: ManagedClusterInfo = {
@@ -1304,6 +1312,51 @@ describe('ClusterDetails', () => {
   beforeEach(async () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
+
+    // Mock required API calls for KubevirtProviderAlert
+    nockSearch(
+      {
+        operationName: 'searchResultItems',
+        variables: {
+          input: [
+            {
+              filters: [
+                {
+                  property: 'apigroup',
+                  values: ['kubevirt.io'],
+                },
+                {
+                  property: 'apiversion',
+                  values: ['v1'],
+                },
+                {
+                  property: 'kind',
+                  values: ['VirtualMachine'],
+                },
+              ],
+              limit: -1,
+            },
+          ],
+        },
+        query:
+          'query searchResultItems($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n    __typename\n  }\n}',
+      },
+      { data: { searchResult: { items: [], __typename: 'SearchResult' } } }
+    )
+
+    nock(process.env.JEST_DEFAULT_HOST as string)
+      .get('/cluster-version')
+      .reply(
+        200,
+        { version: '4.21.0' },
+        {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, OPTIONS',
+          'Access-Control-Allow-Credentials': 'true',
+        }
+      )
+    nockIgnoreOperatorCheck()
+
     render(<Component />)
   })
 

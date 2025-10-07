@@ -20,6 +20,8 @@ import {
   MenuList,
   MenuItem,
   Popper,
+  Flex,
+  FlexItem,
 } from '@patternfly/react-core'
 import { EllipsisVIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
 import { ReactNode, useRef, useState } from 'react'
@@ -108,6 +110,7 @@ const getStyles = (props: AcmCountCardProps) => ({
     height: props.cardFooter ? 'auto' : '250px',
   }),
   body: css({
+    position: props.cardHeader ? 'absolute' : 'relative',
     bottom: '0',
   }),
   ...styles,
@@ -215,7 +218,10 @@ export const AcmCountCard = (props: AcmCountCardProps) => {
             </Icon>
           )}
           <CardTitle>
-            {cardHeader.title} {props.alert}
+            <Flex rowGap={{ default: 'rowGapNone' }}>
+              <FlexItem spacer={{ default: 'spacerSm' }}>{cardHeader.title}</FlexItem>
+              {props.alert && <FlexItem>{props.alert}</FlexItem>}
+            </Flex>
           </CardTitle>
           <p className={classes.headerDescription}>{cardHeader.description}</p>
         </CardHeader>
