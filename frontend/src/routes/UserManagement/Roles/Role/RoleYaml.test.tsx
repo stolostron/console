@@ -14,13 +14,11 @@ jest.mock('../../../../lib/acm-i18next', () => ({
 
 jest.mock('../RolesPage', () => ({
   ...jest.requireActual('../RolesPage'),
-  useRolesContext: jest.fn(),
   useCurrentRole: jest.fn(),
 }))
 
-import { useRolesContext, useCurrentRole } from '../RolesPage'
+import { useCurrentRole } from '../RolesPage'
 
-const mockUseRolesContext = useRolesContext as jest.MockedFunction<typeof useRolesContext>
 const mockUseCurrentRole = useCurrentRole as jest.MockedFunction<typeof useCurrentRole>
 
 function Component() {
@@ -37,21 +35,10 @@ describe('RoleYaml', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
-    mockUseRolesContext.mockClear()
     mockUseCurrentRole.mockClear()
   })
 
-  it('should render loading state', () => {
-    mockUseRolesContext.mockReturnValue({ loading: true, clusterRoles: [] })
-    mockUseCurrentRole.mockReturnValue(undefined)
-
-    render(<Component />)
-
-    expect(screen.getByText('Loading')).toBeInTheDocument()
-  })
-
   it('should render role not found message', () => {
-    mockUseRolesContext.mockReturnValue({ loading: false, clusterRoles: [] })
     mockUseCurrentRole.mockReturnValue(undefined)
 
     render(<Component />)
@@ -71,7 +58,6 @@ describe('RoleYaml', () => {
       rules: [],
     }
 
-    mockUseRolesContext.mockReturnValue({ loading: false, clusterRoles: [mockRole] })
     mockUseCurrentRole.mockReturnValue(mockRole)
 
     render(<Component />)
@@ -117,7 +103,6 @@ describe('RoleYaml', () => {
       ],
     }
 
-    mockUseRolesContext.mockReturnValue({ loading: false, clusterRoles: [complexRole] })
     mockUseCurrentRole.mockReturnValue(complexRole)
 
     render(<Component />)
@@ -141,7 +126,6 @@ describe('RoleYaml', () => {
       rules: [],
     }
 
-    mockUseRolesContext.mockReturnValue({ loading: false, clusterRoles: [minimalRole] })
     mockUseCurrentRole.mockReturnValue(minimalRole)
 
     render(<Component />)
@@ -164,7 +148,6 @@ describe('RoleYaml', () => {
       rules: [],
     }
 
-    mockUseRolesContext.mockReturnValue({ loading: false, clusterRoles: [roleWithoutName] })
     mockUseCurrentRole.mockReturnValue(roleWithoutName)
 
     render(<Component />)
@@ -174,25 +157,5 @@ describe('RoleYaml', () => {
     expect(screen.getByDisplayValue(/no-name-uid/)).toBeInTheDocument()
     expect(screen.getByDisplayValue(/ClusterRole/)).toBeInTheDocument()
     expect(screen.getByDisplayValue(/rbac\.authorization\.k8s\.io\/v1/)).toBeInTheDocument()
-  })
-
-  it('should handle loading state from roles context', () => {
-    mockUseRolesContext.mockReturnValue({ loading: true, clusterRoles: [] })
-    mockUseCurrentRole.mockReturnValue(undefined)
-
-    render(<Component />)
-
-    expect(screen.getByText('Loading')).toBeInTheDocument()
-    expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
-  })
-
-  it('should handle empty roles context', () => {
-    mockUseRolesContext.mockReturnValue({ loading: false, clusterRoles: [] })
-    mockUseCurrentRole.mockReturnValue(undefined)
-
-    render(<Component />)
-
-    expect(screen.getByText('Role not found')).toBeInTheDocument()
-    expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
   })
 })

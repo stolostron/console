@@ -7,29 +7,25 @@ import { nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../../lib/nock-util'
 import { AcmLoadingPage } from '../../../../ui-components'
 import { RoleRoleAssignments } from './RoleRoleAssignments'
 import { FlattenedRoleAssignment } from '../../../../resources/clients/multicluster-role-assignment-client'
-import { RolesContextProvider } from '../RolesPage'
-import { useRecoilValue } from '../../../../shared-recoil'
+import { useCurrentRole } from '../RolesPage'
+import { useSharedAtoms, useRecoilValue } from '../../../../shared-recoil'
 
-// Mock the useQuery hook
-jest.mock('../../../../lib/useQuery', () => ({
-  useQuery: jest.fn(),
+jest.mock('../RolesPage', () => ({
+  useCurrentRole: jest.fn(),
 }))
 
-// Mock the Recoil hook
 jest.mock('../../../../shared-recoil', () => ({
   useRecoilValue: jest.fn(),
   useSharedAtoms: jest.fn(),
 }))
 
-import { useQuery } from '../../../../lib/useQuery'
-import { useSharedAtoms } from '../../../../shared-recoil'
-const mockUseQuery = useQuery as jest.MockedFunction<typeof useQuery>
+const mockUseCurrentRole = useCurrentRole as jest.MockedFunction<typeof useCurrentRole>
 const mockUseSharedAtoms = useSharedAtoms as jest.MockedFunction<typeof useSharedAtoms>
 
 const mockClusterRoles = [
   {
-    apiVersion: 'rbac.authorization.k8s.io/v1',
-    kind: 'ClusterRole',
+    apiVersion: 'rbac.authorization.k8s.io/v1' as const,
+    kind: 'ClusterRole' as const,
     metadata: {
       name: 'kubevirt.io:edit',
       uid: 'kubevirt-edit-uid',
@@ -47,8 +43,8 @@ const mockClusterRoles = [
     ],
   },
   {
-    apiVersion: 'rbac.authorization.k8s.io/v1',
-    kind: 'ClusterRole',
+    apiVersion: 'rbac.authorization.k8s.io/v1' as const,
+    kind: 'ClusterRole' as const,
     metadata: {
       name: 'network-admin',
       uid: 'network-admin-uid',
@@ -141,14 +137,7 @@ const Component = ({ userId = 'mock-user-alice-trask' }: { userId?: string } = {
   <RecoilRoot>
     <MemoryRouter initialEntries={[`/roles/${userId}/role-assignments`]}>
       <Routes>
-        <Route
-          path="/roles/:id/role-assignments"
-          element={
-            <RolesContextProvider>
-              <RoleRoleAssignments />
-            </RolesContextProvider>
-          }
-        />
+        <Route path="/roles/:id/role-assignments" element={<RoleRoleAssignments />} />
       </Routes>
     </MemoryRouter>
   </RecoilRoot>
@@ -159,51 +148,35 @@ describe('RoleRoleAssignments', () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
 
-    // Mock useQuery to return our mock data
-    mockUseQuery.mockReturnValue({
-      data: mockClusterRoles,
-      loading: false,
-      error: undefined,
-      startPolling: jest.fn(),
-      stopPolling: jest.fn(),
-      refresh: jest.fn(),
-    })
+    mockUseCurrentRole.mockClear()
 
-    // Mock useSharedAtoms to return the complete atoms module
     mockUseSharedAtoms.mockReturnValue({
-      multiclusterRoleAssignmentState: {} as any, // This will be overridden in individual tests
-      // Add other required properties as needed - we only need the ones actually used
+      multiclusterRoleAssignmentState: {} as any,
     } as any)
-
-    // Reset mocks before each test
-    ;(useRecoilValue as jest.Mock).mockClear()
 
     // Default mock return value for useRecoilValue
     ;(useRecoilValue as jest.Mock).mockReturnValue([])
   })
 
   it('renders RoleRoleAssignments component with no role found', async () => {
-    // Keep the default empty array mock - this will show loading state
+    mockUseCurrentRole.mockReturnValue(undefined)
     render(<Component userId="non-existent-role" />)
     // With hasDataToProcess logic, no role means loading state
     expect(screen.getByText('Loading...')).toBeInTheDocument()
   })
 
   it('renders RoleRoleAssignments component with role found', async () => {
-    // Mock Recoil to return our role assignments data
+    mockUseCurrentRole.mockReturnValue(mockClusterRoles[0])
     ;(useRecoilValue as jest.Mock).mockReturnValue(mockMulticlusterRoleAssignments)
 
     render(<Component userId="kubevirt.io:edit" />)
 
     // Verify the component renders without crashing
     expect(document.body).toBeInTheDocument()
-
-    // The component should render without crashing when role assignments are provided
-    // The exact content may vary based on how the component processes the data
   })
 
   it('renders with different role and shows their role assignments', async () => {
-    // Mock Recoil to return our role assignments data
+    mockUseCurrentRole.mockReturnValue(mockClusterRoles[1])
     ;(useRecoilValue as jest.Mock).mockReturnValue(mockMulticlusterRoleAssignments)
 
     // Test with network-admin role
@@ -211,28 +184,23 @@ describe('RoleRoleAssignments', () => {
 
     // Verify the component renders without crashing
     expect(document.body).toBeInTheDocument()
-
-    // The component should render without crashing when role assignments are provided
-    // The exact content may vary based on how the component processes the data
   })
 
   it('passes correct hidden columns to RoleAssignments component', async () => {
-    // Mock Recoil to return our role assignments data
+    mockUseCurrentRole.mockReturnValue(mockClusterRoles[0])
     ;(useRecoilValue as jest.Mock).mockReturnValue(mockMulticlusterRoleAssignments)
     render(<Component userId="kubevirt.io:edit" />)
 
-    // The component should render without crashing and shows empty state
-    // With role assignments data, it should show the assignments
+    // The component should render without crashing
     expect(document.body).toBeInTheDocument()
   })
 
   it('shows loading state correctly', async () => {
-    // Mock Recoil to return our role assignments data
+    mockUseCurrentRole.mockReturnValue(mockClusterRoles[0])
     ;(useRecoilValue as jest.Mock).mockReturnValue(mockMulticlusterRoleAssignments)
     render(<Component userId="kubevirt.io:edit" />)
 
-    // The component should render without crashing and shows empty state
-    // With role assignments data, it should show loading initially
+    // The component should render without crashing
     expect(document.body).toBeInTheDocument()
   })
 
