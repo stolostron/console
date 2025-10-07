@@ -923,8 +923,8 @@ export function getDistributionInfo(
     const matchesB = versionY.match(versionRegex)
     if (matchesA && matchesB && matchesA.length === 4 && matchesB.length === 4) {
       for (let index = 1; index < 4; index++) {
-        const parsedMatchA = parseInt(matchesA[index], 10)
-        const parsedMatchB = parseInt(matchesB[index], 10)
+        const parsedMatchA = Number.parseInt(matchesA[index], 10)
+        const parsedMatchB = Number.parseInt(matchesB[index], 10)
         if (parsedMatchA > parsedMatchB) {
           return true
         }
@@ -941,8 +941,8 @@ export function getDistributionInfo(
     const matchesB = versionY.match(versionRegex)
     if (matchesA && matchesB && matchesA.length === 4 && matchesB.length === 4) {
       for (let index = 1; index < 4; index++) {
-        const parsedMatchA = parseInt(matchesA[index], 10)
-        const parsedMatchB = parseInt(matchesB[index], 10)
+        const parsedMatchA = Number.parseInt(matchesA[index], 10)
+        const parsedMatchB = Number.parseInt(matchesB[index], 10)
         if (parsedMatchA !== parsedMatchB) {
           return false
         }
@@ -1142,7 +1142,7 @@ export function getNodes(managedClusterInfo?: ManagedClusterInfo) {
   let unhealthy = 0
   let unknown = 0
 
-  nodeList.forEach((node: NodeInfo) => {
+  for (const node of nodeList) {
     const readyCondition = node.conditions?.find((condition) => condition.type === 'Ready')
     switch (readyCondition?.status) {
       case 'True':
@@ -1155,7 +1155,7 @@ export function getNodes(managedClusterInfo?: ManagedClusterInfo) {
       default:
         unknown++
     }
-  })
+  }
   return { nodeList, ready, unhealthy, unknown }
 }
 
@@ -1167,7 +1167,7 @@ export function getAddons(addons: ManagedClusterAddOn[], clusterManagementAddons
 
   const addonsStatus = mapAddons(clusterManagementAddons, addons)
 
-  addonsStatus?.forEach((addon) => {
+  for (const addon of addonsStatus ?? []) {
     switch (addon.status) {
       case AddonStatus.Available:
         available++
@@ -1184,7 +1184,7 @@ export function getAddons(addons: ManagedClusterAddOn[], clusterManagementAddons
       default:
         break
     }
-  })
+  }
 
   return { addonList: addons, available, progressing, degraded, unknown }
 }
@@ -1321,11 +1321,6 @@ export function getClusterStatus(
     } else if (provisionLaunchError) {
       cdStatus = ClusterStatus.provisionfailed
 
-      // certificate failure
-    } else if (unreachableError) {
-      cdStatus = ClusterStatus.unreachable
-      statusMessage = getConditionMessage('Unreachable', cdConditions)
-
       // provision success
     } else if (clusterDeployment.spec?.installed) {
       cdStatus = ClusterStatus.detached
@@ -1381,6 +1376,16 @@ export function getClusterStatus(
               break
           }
         }
+      }
+
+      // invoke unreachable only if not these
+      // other valid states when resuming/hibernating
+      if (
+        unreachableError &&
+        ![(ClusterStatus.hibernating, ClusterStatus.stopping, ClusterStatus.resuming)].includes(cdStatus)
+      ) {
+        cdStatus = ClusterStatus.unreachable
+        statusMessage = getConditionMessage('Unreachable', cdConditions)
       }
 
       // provisioning - default
