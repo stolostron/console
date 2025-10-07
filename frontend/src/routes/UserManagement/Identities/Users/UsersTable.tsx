@@ -4,15 +4,16 @@ import { useCallback, useMemo } from 'react'
 import { Link } from 'react-router-dom-v5-compat'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
-import { User as RbacUser, listUsers } from '../../../../resources/rbac'
-import { useQuery } from '../../../../lib/useQuery'
+import { User as RbacUser } from '../../../../resources/rbac'
+import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { AcmButton, AcmEmptyState, AcmTable, compareStrings } from '../../../../ui-components'
 import { useFilters, usersTableColumns } from './UsersTableHelper'
 
 const UsersTable = () => {
   const { t } = useTranslation()
 
-  const { data: rbacUsers, loading } = useQuery(listUsers)
+  const { usersState } = useSharedAtoms()
+  const rbacUsers = useRecoilValue(usersState)
   const users = useMemo(
     () => rbacUsers?.sort((a, b) => compareStrings(a.metadata.name ?? '', b.metadata.name ?? '')) ?? [],
     [rbacUsers]
@@ -35,10 +36,10 @@ const UsersTable = () => {
         filters={filters}
         columns={columns}
         keyFn={keyFn}
-        items={loading ? undefined : users}
+        items={users}
         resultView={{
           page: 1,
-          loading,
+          loading: false,
           refresh: () => {},
           items: [],
           emptyResult: false,

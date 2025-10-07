@@ -5,6 +5,7 @@ import { RecoilRoot } from 'recoil'
 import { nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../../lib/nock-util'
 import { Group } from '../../../../resources/rbac'
 import { GroupsTable } from './GroupsTable'
+import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 
 jest.mock('../../../../lib/acm-i18next', () => ({
   useTranslation: jest.fn().mockReturnValue({
@@ -13,8 +14,9 @@ jest.mock('../../../../lib/acm-i18next', () => ({
   Trans: ({ children }: { children: React.ReactNode }) => children,
 }))
 
-jest.mock('../../../../lib/useQuery', () => ({
-  useQuery: jest.fn(),
+jest.mock('../../../../shared-recoil', () => ({
+  useRecoilValue: jest.fn(),
+  useSharedAtoms: jest.fn(),
 }))
 
 jest.mock('../../../../lib/rbac-util', () => ({
@@ -29,9 +31,8 @@ jest.mock('../../../../ui-components/IdentityStatus/IdentityStatus', () => ({
   isIdentityActive: jest.fn(() => true),
 }))
 
-import { useQuery } from '../../../../lib/useQuery'
-
-const mockUseQuery = useQuery as jest.MockedFunction<typeof useQuery>
+const mockUseRecoilValue = useRecoilValue as jest.MockedFunction<typeof useRecoilValue>
+const mockUseSharedAtoms = useSharedAtoms as jest.MockedFunction<typeof useSharedAtoms>
 
 const mockGroups: Group[] = [
   {
@@ -81,15 +82,11 @@ describe('GroupsTable', () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
 
-    // Mock useQuery to return our mock data
-    mockUseQuery.mockReturnValue({
-      data: mockGroups,
-      loading: false,
-      error: undefined,
-      startPolling: jest.fn(),
-      stopPolling: jest.fn(),
-      refresh: jest.fn(),
-    })
+    mockUseSharedAtoms.mockReturnValue({
+      groupsState: {} as any,
+    } as any)
+
+    mockUseRecoilValue.mockReturnValue(mockGroups)
   })
 
   test('should render groups table with mock data', async () => {
