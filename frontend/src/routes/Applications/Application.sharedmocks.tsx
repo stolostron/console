@@ -121,6 +121,40 @@ export const mockApplication0: Application & IUIResource = {
   },
 }
 
+export const mockApplicationUi = {
+  apiVersion: 'app.k8s.io/v1beta1',
+  kind: 'Application',
+  metadata: {
+    name: 'application-0',
+    namespace: 'namespace-0',
+    creationTimestamp: '2024-02-20T15:30:00Z',
+    annotations: {
+      'apps.open-cluster-management.io/subscriptions': 'namespace-0/subscription-0,namespace-0/subscription-0-local',
+    },
+  },
+  spec: {
+    componentKinds: [
+      {
+        group: 'apps.open-cluster-management.io',
+        kind: 'Subscription',
+      },
+    ],
+    selector: {
+      matchExpressions: [
+        {
+          key: 'app',
+          operator: 'In',
+          values: ['application-0-app'],
+        },
+      ],
+    },
+  },
+  uidata: {
+    appSetRelatedResources: ['', []],
+    clusterList: ['local-cluster'],
+    appSetApps: [],
+  },
+}
 export const uidata = {
   appSetRelatedResources: ['', []],
   clusterList: ['local-cluster'],

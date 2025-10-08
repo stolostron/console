@@ -24,6 +24,7 @@ import { GetMessagesDocument, SearchSchemaDocument } from '../../Search/search-s
 import {
   mockApplication0,
   mockApplications,
+  mockApplicationUi,
   mockChannels,
   mockManagedClusterInfos,
   mockManagedClusters,
@@ -325,7 +326,7 @@ describe('Applications Page', () => {
     nockIgnoreRBAC()
     nockSearch(mockSearchQuery, mockSearchResponse)
     nockIgnoreApiPaths()
-    const nock = nockAggegateRequest('uidata', mockApplication0, uidata, 200, true)
+    const nock = nockAggegateRequest('uidata', mockApplicationUi, uidata, 200, true)
     const mocks = [
       {
         request: {
