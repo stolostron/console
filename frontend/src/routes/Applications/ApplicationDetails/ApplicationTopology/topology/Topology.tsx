@@ -17,11 +17,7 @@ import {
   VisualizationProvider,
   isNode,
 } from '@patternfly/react-topology'
-import { ToolbarItem } from '@patternfly/react-core'
-import { Split } from '@patternfly/react-core'
-import { SplitItem } from '@patternfly/react-core'
-import { Alert } from '@patternfly/react-core'
-import { Button } from '@patternfly/react-core'
+import { ToolbarItem, Split, SplitItem, Alert, Button } from '@patternfly/react-core'
 import layoutFactory from './layout/layoutFactory'
 import getLayoutModel from './layout/layoutModel'
 import '@patternfly/patternfly/patternfly.css'
