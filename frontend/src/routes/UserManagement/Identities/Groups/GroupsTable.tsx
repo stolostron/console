@@ -50,7 +50,7 @@ const GroupsTable = () => {
             }
             action={
               <div>
-                <ViewDocumentationLink doclink={DOC_LINKS.CREATE_CONNECTION} />
+                <ViewDocumentationLink doclink={DOC_LINKS.IDENTITY_PROVIDER_CONFIGURATION} />
               </div>
             }
           />
