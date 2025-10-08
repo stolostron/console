@@ -88,10 +88,12 @@ const mockMulticlusterRoleAssignments: MulticlusterRoleAssignment[] = [
         {
           name: 'A1',
           status: 'Active',
+          createdAt: '2024-01-15T10:30:00Z',
         },
         {
           name: 'A2',
           status: 'Error',
+          createdAt: '2024-01-15T10:30:00Z',
         },
       ],
     },
@@ -123,6 +125,7 @@ const mockMulticlusterRoleAssignments: MulticlusterRoleAssignment[] = [
         {
           name: 'B1',
           status: 'Active',
+          createdAt: '2024-01-15T10:30:00Z',
         },
       ],
     },
@@ -371,6 +374,7 @@ jest.mock('../../../ui-components', () => {
               <div>{(item.clusterSelection?.clusterNames || []).join(', ') || 'No clusters'}</div>
               <div>{item.targetNamespaces?.join(', ') || 'No namespaces'}</div>
               <div>{`Status: ${item.status?.status ?? 'Unknown'}`}</div>
+              <div>{`CreatedAt: ${item.status?.createdAt}`}</div>
               <button onClick={() => mockToastContext.addAlert({ title: 'Action', type: 'info' })}>Row Actions</button>
             </div>
           ))}
@@ -494,6 +498,7 @@ describe('RoleAssignments', () => {
     expect(screen.getAllByText('Status: Active')).toHaveLength(2)
     expect(screen.getAllByText('Status: Error')).toHaveLength(1)
     expect(screen.getAllByText('Status: Unknown')).toHaveLength(1)
+    expect(screen.getAllByText('CreatedAt: 2024-01-15T10:30:00Z')).toHaveLength(3) // user1's two roles and user2's one role
   })
 
   it('renders empty state', async () => {

@@ -21,6 +21,7 @@ import { RoleAssignmentActionDropdown } from './RoleAssignmentActionDropdown'
 import { RoleAssignmentLabel } from './RoleAssignmentLabel'
 import { RoleAssignmentModal } from '../RoleAssignments/RoleAssignmentModal'
 import { RoleAssignmentStatusComponent } from './RoleAssignmentStatusComponent'
+import AcmTimestamp from '../../../lib/AcmTimestamp'
 
 // Component for rendering clickable role links
 const RoleLinkCell = ({ roleName }: { roleName: string }) => (
@@ -67,12 +68,10 @@ const renderSubjectNameCell = (name: string, kind: string) => {
 // Component for rendering status
 const StatusCell = ({ status }: { status?: any }) => <RoleAssignmentStatusComponent status={status} />
 
-// Component for rendering created date placeholder
-const CreatedCell = () => {
-  // FlattenedRoleAssignment doesn't have metadata.creationTimestamp
-  // Show dash since this data is not available at the flattened level
-  return <span>-</span>
-}
+// Component for rendering created timestamp placeholder
+const renderCreatedCell = (roleAssignment: FlattenedRoleAssignment) => (
+  <AcmTimestamp timestamp={roleAssignment.status?.createdAt ?? undefined} />
+)
 
 // Cell renderer functions
 const renderRoleCell = (roleAssignment: FlattenedRoleAssignment) => (
@@ -84,8 +83,6 @@ const renderNamespacesCell = (roleAssignment: FlattenedRoleAssignment) => (
 )
 
 const renderStatusCell = (roleAssignment: FlattenedRoleAssignment) => <StatusCell status={roleAssignment.status} />
-
-const renderCreatedCell = () => <CreatedCell />
 
 const renderClustersCell = (roleAssignment: FlattenedRoleAssignment) => {
   const clusterNames = roleAssignment.clusterSelection?.clusterNames || []
@@ -358,12 +355,10 @@ const RoleAssignments = ({
     },
     {
       header: t('Created'),
-      sort: 'metadata.creationTimestamp',
       cellTransforms: [nowrap],
-      // FlattenedRoleAssignment doesn't have metadata.creationTimestamp
-      // We could show the parent MulticlusterRoleAssignment creation time instead
+      sort: 'status.createdAt',
       cell: renderCreatedCell,
-      exportContent: () => '',
+      exportContent: (roleAssignment) => roleAssignment.status?.createdAt ?? '',
     },
     {
       header: '',
@@ -384,6 +379,10 @@ const RoleAssignments = ({
         filters={filters}
         tableActionButtons={tableActionButtons}
         tableActions={tableActions}
+        initialSort={{
+          index: 0, // default to sorting by violation count
+          direction: 'asc',
+        }}
         resultView={{
           page: 1,
           loading: isLoading ?? false,
@@ -391,7 +390,7 @@ const RoleAssignments = ({
           items: [],
           emptyResult: false,
           processedItemCount: 0,
-          isPreProcessed: true,
+          isPreProcessed: false,
         }}
         emptyState={
           <AcmEmptyState

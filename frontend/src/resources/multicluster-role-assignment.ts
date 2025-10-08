@@ -32,6 +32,7 @@ export interface RoleAssignmentStatus {
   status: 'Active' | 'Error' | 'Pending'
   reason?: string
   message?: string
+  createdAt?: string
 }
 
 export interface Condition {
