@@ -19,12 +19,14 @@ import { generatePath, Link } from 'react-router-dom-v5-compat'
 import { useLocalHubName } from '../../../../hooks/use-local-hub'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import AcmTimestamp from '../../../../lib/AcmTimestamp'
-import { getAuthorizedNamespaces, rbacCreate } from '../../../../lib/rbac-util'
+import { canUser, getAuthorizedNamespaces, rbacCreate } from '../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import {
   Application,
   ApplicationKind,
   ApplicationSet,
+  ApplicationSetDefinition,
+  ArgoApplicationDefinition,
   Channel,
   IResource,
   Subscription,
@@ -39,10 +41,10 @@ import {
   AcmPageContent,
   ListItems,
 } from '../../../../ui-components'
-import { AcmArgoSync } from '../../../../ui-components/AcmInlineStatus/AcmArgoSync'
 import LabelWithPopover from '../../components/LabelWithPopover'
 import ResourceLabels from '../../components/ResourceLabels'
 import { ISyncResourceModalProps, SyncResourceModal } from '../../components/SyncResourceModal'
+import { ISyncArgoCDModalProps, SyncArgoCDModal } from '../../components/SyncArgoCDModal'
 import { TimeWindowLabels } from '../../components/TimeWindowLabels'
 import '../../css/ApplicationOverview.css'
 import {
@@ -78,7 +80,11 @@ export function ApplicationOverviewPageContent() {
   const [modalProps, setModalProps] = useState<ISyncResourceModalProps | { open: false }>({
     open: false,
   })
+  const [argoAppModalProps, setArgoAppModalProps] = useState<ISyncArgoCDModalProps | { open: false }>({
+    open: false,
+  })
   const [hasSyncPermission, setHasSyncPermission] = useState(false)
+  const [hasArgoSyncPermission, setHasArgoSyncPermission] = useState(false)
   const openTabIcon = '#drawerShapes_open-new-tab'
 
   let isArgoApp = false
@@ -113,6 +119,25 @@ export function ApplicationOverviewPageContent() {
       })
     }
   }, [namespaces])
+
+  useEffect(() => {
+    if (applicationData) {
+      const isArgoApp = applicationData.application?.isArgoApp
+      const isAppSet = applicationData.application?.isAppSet
+
+      if (isArgoApp || isAppSet) {
+        const resourceDefinition = isAppSet ? ApplicationSetDefinition : ArgoApplicationDefinition
+        const namespace = applicationData.application.metadata.namespace
+        const name = applicationData.application.metadata.name
+
+        const canPatchArgoResource = canUser('patch', resourceDefinition, namespace, name)
+        canPatchArgoResource.promise
+          .then((result) => setHasArgoSyncPermission(result.status?.allowed!))
+          .catch((err) => console.error(err))
+        return () => canPatchArgoResource.abort()
+      }
+    }
+  }, [applicationData])
 
   if (applicationData) {
     isArgoApp = applicationData.application?.isArgoApp
@@ -245,10 +270,14 @@ export function ApplicationOverviewPageContent() {
           ),
 
           value: (
-            <>
-              <AcmTimestamp timestamp={lastSyncedTimeStamp} />
-              {(isAppSet || isArgoApp) && <AcmArgoSync app={applicationData.application} />}
-            </>
+            <Flex gap={{ default: 'gapNone' }} alignItems={{ default: 'alignItemsCenter' }}>
+              <FlexItem>
+                <AcmTimestamp timestamp={lastSyncedTimeStamp} />
+              </FlexItem>
+              <FlexItem>
+                {isAppSet && createArgoAppSyncButton(t, hasArgoSyncPermission, applicationData, setArgoAppModalProps)}
+              </FlexItem>
+            </Flex>
           ),
         },
       ]
@@ -333,6 +362,7 @@ export function ApplicationOverviewPageContent() {
   return (
     <AcmPageContent id="overview">
       <SyncResourceModal {...modalProps} />
+      <SyncArgoCDModal {...argoAppModalProps} />
       <DrawerShapes />
       <PageSection>
         <div className="overview-cards-container">
@@ -389,6 +419,37 @@ function createSyncButton(
         {syncInProgress && <Spinner size="sm" />}
       </AcmButton>
     </Fragment>
+  )
+}
+
+function createArgoAppSyncButton(
+  t: TFunction,
+  hasSyncPermission: boolean,
+  applicationData: ApplicationDataType,
+  setArgoAppModalProps: any
+) {
+  return (
+    <AcmButton
+      isDisabled={!hasSyncPermission}
+      variant={ButtonVariant.link}
+      id="sync-argo-app"
+      component="a"
+      rel="noreferrer"
+      icon={<SyncAltIcon />}
+      iconPosition="left"
+      size="sm"
+      onClick={() => {
+        setArgoAppModalProps({
+          open: true,
+          close: () => {
+            setArgoAppModalProps({ open: false })
+          },
+          appOrAppSet: applicationData.application,
+        })
+      }}
+    >
+      {t('Sync')}
+    </AcmButton>
   )
 }
 
