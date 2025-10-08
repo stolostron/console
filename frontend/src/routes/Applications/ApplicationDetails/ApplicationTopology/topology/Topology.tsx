@@ -39,7 +39,7 @@ import './components/future/topology-components.css'
 import './components/future/topology-controlbar.css'
 import './components/future/topology-view.css'
 import { NavigationPath } from '../../../../../NavigationPath'
-import { querySearchDisabledManagedClusters } from '../../../../../lib/search'
+import { useQuerySearchDisabledManagedClusters } from '../../../../../lib/search'
 import { useQuery } from '../../../../../lib/useQuery'
 import { TFunction } from 'react-i18next'
 
@@ -102,7 +102,8 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
   const [isSearchDisabled, setIsSearchDisabled] = useState<boolean>(false)
   const clusterNodes = elements.nodes.filter((node) => node.type === 'cluster')
   const clusterNames = clusterNodes.map((clusterNode) => clusterNode.name)
-  const { data, startPolling } = useQuery(querySearchDisabledManagedClusters)
+  const queryDisabled = useQuerySearchDisabledManagedClusters()
+  const { data, startPolling } = useQuery(queryDisabled)
 
   useEffect(startPolling, [startPolling])
   useEffect(() => {
