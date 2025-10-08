@@ -222,6 +222,8 @@ export const getAppSetApplicationPullModel = (
     const appStr = safeGet(argoApp, 'app')
     const appData = appStr ? (appStr as string).split('/') : []
     const conditions = safeGet(argoApp, 'conditions', [])
+    // TODO: Once the MulticlusterApplicationSetReport controller is updated to include reconciledAt,
+    // add it here: reconciledAt: argoApp.reconciledAt
     appSetApps.push({
       apiVersion: ArgoApplicationApiVersion,
       kind: ArgoApplicationKind,
@@ -243,6 +245,7 @@ export const getAppSetApplicationPullModel = (
           status: argoApp.syncStatus,
         },
         resources,
+        // reconciledAt: argoApp.reconciledAt, // TODO: Uncomment when available in MulticlusterApplicationSetReport
       },
     })
 
