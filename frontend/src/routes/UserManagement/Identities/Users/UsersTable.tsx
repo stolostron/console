@@ -1,12 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { PageSection } from '@patternfly/react-core'
 import { useCallback, useMemo } from 'react'
-import { Link } from 'react-router-dom-v5-compat'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
 import { User as RbacUser } from '../../../../resources/rbac'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
-import { AcmButton, AcmEmptyState, AcmTable, compareStrings } from '../../../../ui-components'
+import { AcmEmptyState, AcmTable, compareStrings } from '../../../../ui-components'
 import { useFilters, usersTableColumns } from './UsersTableHelper'
 
 const UsersTable = () => {
@@ -21,13 +20,8 @@ const UsersTable = () => {
 
   const keyFn = useCallback((user: RbacUser) => user.metadata.name ?? '', [])
 
-  // TODO: rbacCreate for IDP
-  const canAddAccessControl = true
-
   const filters = useFilters()
   const columns = usersTableColumns({ t })
-  // TODO: Uncomment when actions are implemented
-  // const rowActions = useRowActions({ t, navigate })
 
   return (
     <PageSection>
@@ -57,13 +51,6 @@ const UsersTable = () => {
             }
             action={
               <div>
-                <AcmButton
-                  isDisabled={!canAddAccessControl}
-                  tooltip={!canAddAccessControl ? t('rbac.unauthorized') : ''}
-                  component={Link}
-                >
-                  {t('Add Identity provider')}
-                </AcmButton>
                 <ViewDocumentationLink doclink={DOC_LINKS.CREATE_CONNECTION} />
               </div>
             }
