@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { render } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { RecoilRoot } from 'recoil'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RoleAssignmentForm } from './RoleAssignmentForm'
@@ -13,6 +13,20 @@ const mockOnChangeScopeKind = jest.fn()
 const mockOnChangeScopeValues = jest.fn()
 const mockOnChangeScopeNamespaces = jest.fn()
 const mockOnChangeRoles = jest.fn()
+
+let mockRoleAssignmentFormData: any = {
+  subject: {
+    kind: UserKind,
+    user: [],
+    group: [],
+  },
+  scope: {
+    kind: 'all',
+    clusterNames: [],
+    namespaces: [],
+  },
+  roles: [],
+}
 
 jest.mock('./hook/RoleAssignmentDataHook', () => ({
   useRoleAssignmentData: () => ({
@@ -29,7 +43,16 @@ jest.mock('./hook/RoleAssignmentDataHook', () => ({
         { id: 'role1', value: 'admin' },
         { id: 'role2', value: 'viewer' },
       ],
-      clusterSets: [{ id: 'clusterset1', value: 'default' }],
+      clusterSets: [
+        {
+          id: 'clusterset1',
+          value: 'default',
+          clusters: [
+            { name: 'cluster1', namespaces: ['namespace1', 'namespace2'] },
+            { name: 'cluster2', namespaces: ['namespace3'] },
+          ],
+        },
+      ],
     },
     isLoading: false,
     isUsersLoading: false,
@@ -41,19 +64,7 @@ jest.mock('./hook/RoleAssignmentDataHook', () => ({
 
 jest.mock('./hook/RoleAssignmentFormDataHook', () => ({
   useRoleAssignmentFormData: () => ({
-    roleAssignmentFormData: {
-      subject: {
-        kind: UserKind,
-        user: [],
-        group: [],
-      },
-      scope: {
-        kind: 'all',
-        clusterNames: [],
-        namespaces: [],
-      },
-      roles: [],
-    },
+    roleAssignmentFormData: mockRoleAssignmentFormData,
     onChangeSubjectKind: mockOnChangeSubjectKind,
     onChangeUserValue: mockOnChangeUserValue,
     onChangeGroupValue: mockOnChangeGroupValue,
@@ -64,18 +75,38 @@ jest.mock('./hook/RoleAssignmentFormDataHook', () => ({
   }),
 }))
 
+let mockFormData: any = null
+let mockOnChoseOptions: any = null
+
 jest.mock('../../../components/AcmDataForm', () => ({
-  AcmDataFormPage: ({ formData, mode }: any) => (
-    <div data-testid="acm-data-form-page" data-mode={mode}>
-      <div data-testid="form-title">{formData.title}</div>
-      <button data-testid="submit-button" onClick={formData.submit}>
-        {formData.submitText}
-      </button>
-      <button data-testid="cancel-button" onClick={formData.cancel}>
-        {formData.cancelLabel}
-      </button>
-    </div>
-  ),
+  AcmDataFormPage: ({ formData, mode }: any) => {
+    mockFormData = formData
+    return (
+      <div data-testid="acm-data-form-page" data-mode={mode}>
+        <div data-testid="form-title">{formData.title}</div>
+        <button data-testid="submit-button" onClick={formData.submit}>
+          {formData.submitText}
+        </button>
+        <button data-testid="cancel-button" onClick={formData.cancel}>
+          {formData.cancelLabel}
+        </button>
+        {formData.sections.map((section: any, index: number) => (
+          <div key={index} data-testid={`section-${index}`}>
+            {section.inputs?.map((input: any, inputIndex: number) => {
+              if (!input.isHidden) {
+                return (
+                  <div key={inputIndex} data-testid={`input-${input.id}`}>
+                    {input.component}
+                  </div>
+                )
+              }
+              return null
+            })}
+          </div>
+        ))}
+      </div>
+    )
+  },
 }))
 
 jest.mock('../../../lib/acm-i18next', () => ({
@@ -85,11 +116,24 @@ jest.mock('../../../lib/acm-i18next', () => ({
 }))
 
 jest.mock('../RoleAssignment/ClustersDualListSelector', () => ({
-  ClustersDualListSelector: () => <div data-testid="clusters-selector">Clusters Selector</div>,
+  ClustersDualListSelector: ({ onChoseOptions }: any) => {
+    mockOnChoseOptions = onChoseOptions
+    return <div data-testid="clusters-selector">Clusters Selector</div>
+  },
 }))
 
 jest.mock('../RoleAssignment/NamespaceSelector', () => ({
-  NamespaceSelector: () => <div data-testid="namespace-selector">Namespace Selector</div>,
+  NamespaceSelector: ({ onChangeNamespaces, disabled }: any) => (
+    <div data-testid="namespace-selector">
+      <button
+        data-testid="namespace-change-button"
+        onClick={() => onChangeNamespaces(['namespace1'])}
+        disabled={disabled}
+      >
+        Change Namespaces
+      </button>
+    </div>
+  ),
 }))
 
 jest.mock(
@@ -113,6 +157,21 @@ describe('RoleAssignmentForm', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    mockFormData = null
+    mockOnChoseOptions = null
+    mockRoleAssignmentFormData = {
+      subject: {
+        kind: UserKind,
+        user: [],
+        group: [],
+      },
+      scope: {
+        kind: 'all',
+        clusterNames: [],
+        namespaces: [],
+      },
+      roles: [],
+    }
   })
 
   it('should render without crashing', () => {
@@ -277,5 +336,212 @@ describe('RoleAssignmentForm', () => {
     )
 
     expect(container.firstChild).not.toBeNull()
+  })
+
+  it('should call onChangeScopeValues when onChoseOptions is called', () => {
+    mockRoleAssignmentFormData = {
+      ...mockRoleAssignmentFormData,
+      scope: {
+        kind: 'specific',
+        clusterNames: [],
+        namespaces: [],
+      },
+    }
+
+    render(
+      <TestWrapper>
+        <RoleAssignmentForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />
+      </TestWrapper>
+    )
+
+    mockOnChoseOptions([
+      { id: 'cluster1', value: 'cluster1' },
+      { id: 'cluster2', value: 'cluster2' },
+    ])
+
+    expect(mockOnChangeScopeValues).toHaveBeenCalledWith(['cluster1', 'cluster2'])
+  })
+
+  it('should return correct syncs from stateToSyncs', () => {
+    render(
+      <TestWrapper>
+        <RoleAssignmentForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />
+      </TestWrapper>
+    )
+
+    const syncs = mockFormData.stateToSyncs()
+    expect(syncs).toHaveLength(1)
+    expect(syncs[0].path).toBe('MulticlusterRoleAssignment[0].spec.roles')
+
+    syncs[0].setState(['admin', 'viewer'])
+    expect(mockOnChangeRoles).toHaveBeenCalledWith(['admin', 'viewer'])
+  })
+
+  it('should validate user selection correctly', () => {
+    render(
+      <TestWrapper>
+        <RoleAssignmentForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />
+      </TestWrapper>
+    )
+
+    const usersInput = mockFormData.sections[0].inputs.find((input: any) => input.id === 'users')
+    expect(usersInput.validation([])).toBe('a user should be selected')
+    expect(usersInput.validation(['user1'])).toBeUndefined()
+  })
+
+  it('should validate group selection correctly', () => {
+    mockRoleAssignmentFormData = {
+      ...mockRoleAssignmentFormData,
+      subject: {
+        kind: GroupKind,
+        user: [],
+        group: [],
+      },
+    }
+
+    render(
+      <TestWrapper>
+        <RoleAssignmentForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />
+      </TestWrapper>
+    )
+
+    const groupsInput = mockFormData.sections[0].inputs.find((input: any) => input.id === 'groups')
+    expect(groupsInput.validation([])).toBe('a group should be selected')
+    expect(groupsInput.validation(['group1'])).toBeUndefined()
+  })
+
+  it('should validate cluster selection correctly', () => {
+    mockRoleAssignmentFormData = {
+      ...mockRoleAssignmentFormData,
+      scope: {
+        kind: 'specific',
+        clusterNames: [],
+        namespaces: [],
+      },
+    }
+
+    render(
+      <TestWrapper>
+        <RoleAssignmentForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />
+      </TestWrapper>
+    )
+
+    const clustersInput = mockFormData.sections[2].inputs.find((input: any) => input.id === 'clusters')
+    expect(clustersInput.validation([])).toBe('at least one cluster should be selected')
+    expect(clustersInput.validation(['cluster1'])).toBeUndefined()
+  })
+
+  it('should validate namespace selection when clusters are selected', () => {
+    mockRoleAssignmentFormData = {
+      ...mockRoleAssignmentFormData,
+      scope: {
+        kind: 'specific',
+        clusterNames: ['cluster1'],
+        namespaces: [],
+      },
+    }
+
+    render(
+      <TestWrapper>
+        <RoleAssignmentForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />
+      </TestWrapper>
+    )
+
+    const namespacesInput = mockFormData.sections[2].inputs.find((input: any) => input.id === 'namespaces')
+
+    expect(namespacesInput.validation([])).toBe('You must either select "All namespaces" or choose specific namespaces')
+
+    expect(namespacesInput.validation(undefined)).toBeUndefined()
+
+    expect(namespacesInput.validation(['namespace1'])).toBeUndefined()
+  })
+
+  it('should validate namespace selection when no clusters are selected', () => {
+    mockRoleAssignmentFormData = {
+      ...mockRoleAssignmentFormData,
+      scope: {
+        kind: 'specific',
+        clusterNames: [],
+        namespaces: ['namespace1'],
+      },
+    }
+
+    render(
+      <TestWrapper>
+        <RoleAssignmentForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />
+      </TestWrapper>
+    )
+
+    const namespacesInput = mockFormData.sections[2].inputs.find((input: any) => input.id === 'namespaces')
+    expect(namespacesInput.validation(['namespace1'])).toBe('Clusters must be selected before selecting namespaces')
+  })
+
+  it('should handle "All namespaces" checkbox check', () => {
+    mockRoleAssignmentFormData = {
+      ...mockRoleAssignmentFormData,
+      scope: {
+        kind: 'specific',
+        clusterNames: ['cluster1'],
+        namespaces: ['namespace1'],
+      },
+    }
+
+    render(
+      <TestWrapper>
+        <RoleAssignmentForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />
+      </TestWrapper>
+    )
+
+    const checkbox = screen.getByLabelText('All namespaces')
+    fireEvent.click(checkbox)
+
+    expect(mockOnChangeScopeNamespaces).toHaveBeenCalledWith(undefined)
+  })
+
+  it('should handle "All namespaces" checkbox uncheck', () => {
+    mockRoleAssignmentFormData = {
+      ...mockRoleAssignmentFormData,
+      scope: {
+        kind: 'specific',
+        clusterNames: ['cluster1'],
+        namespaces: undefined,
+      },
+    }
+
+    render(
+      <TestWrapper>
+        <RoleAssignmentForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />
+      </TestWrapper>
+    )
+
+    const checkbox = screen.getByLabelText('All namespaces')
+    fireEvent.click(checkbox)
+
+    expect(mockOnChangeScopeNamespaces).toHaveBeenCalledWith([])
+  })
+
+  it('should call onChangeScopeNamespaces when namespace component triggers change', () => {
+    mockRoleAssignmentFormData = {
+      ...mockRoleAssignmentFormData,
+      scope: {
+        kind: 'specific',
+        clusterNames: ['cluster1'],
+        namespaces: [],
+      },
+    }
+
+    render(
+      <TestWrapper>
+        <RoleAssignmentForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />
+      </TestWrapper>
+    )
+
+    const namespacesInput = mockFormData.sections[2].inputs.find((input: any) => input.id === 'namespaces')
+
+    expect(namespacesInput.isHidden).toBe(false)
+
+    namespacesInput.onChange(['namespace1', 'namespace2'])
+
+    expect(mockOnChangeScopeNamespaces).toHaveBeenCalledWith(['namespace1', 'namespace2'])
   })
 })
