@@ -194,7 +194,7 @@ const RoleAssignments = ({
         },
         variant: 'bulk-action',
         isDisabled: !canDeleteRoleAssignment,
-        tooltip: !canDeleteRoleAssignment ? unauthorizedMessage : '',
+        tooltip: canDeleteRoleAssignment ? '' : unauthorizedMessage,
       },
     ],
     [t, keyFn, canDeleteRoleAssignment, unauthorizedMessage]
@@ -283,7 +283,7 @@ const RoleAssignments = ({
         click: () => setIsCreateModalOpen(true),
         variant: ButtonVariant.primary,
         isDisabled: !canCreateRoleAssignment,
-        tooltip: !canCreateRoleAssignment ? unauthorizedMessage : '',
+        tooltip: canCreateRoleAssignment ? '' : unauthorizedMessage,
       },
     ],
     [t, canCreateRoleAssignment, unauthorizedMessage]
@@ -406,7 +406,7 @@ const RoleAssignments = ({
                   variant="primary"
                   onClick={() => setIsCreateModalOpen(true)}
                   isDisabled={!canCreateRoleAssignment}
-                  tooltip={!canCreateRoleAssignment ? unauthorizedMessage : ''}
+                  tooltip={canCreateRoleAssignment ? '' : unauthorizedMessage}
                 >
                   {t('Create role assignment')}
                 </AcmButton>

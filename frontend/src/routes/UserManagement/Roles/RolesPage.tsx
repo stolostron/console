@@ -21,7 +21,6 @@ export const useCurrentRole = () => {
 const RolesPage = () => {
   const { t } = useTranslation()
 
-  // TODO: check page for rbac permission?
   return (
     <AcmPage
       header={

@@ -14,7 +14,7 @@ const GroupsTable = () => {
   const { groupsState } = useSharedAtoms()
   const groupsData = useRecoilValue(groupsState)
   const groups = useMemo(() => {
-    return groupsData?.sort((a, b) => compareStrings(a.metadata.name ?? '', b.metadata.name ?? '')) ?? []
+    return groupsData?.toSorted((a, b) => compareStrings(a.metadata.name ?? '', b.metadata.name ?? '')) ?? []
   }, [groupsData])
 
   const keyFn = useCallback((group: Group) => group.metadata.name ?? '', [])

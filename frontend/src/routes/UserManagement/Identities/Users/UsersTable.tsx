@@ -3,7 +3,7 @@ import { PageSection } from '@patternfly/react-core'
 import { useCallback, useMemo } from 'react'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
-import { User as RbacUser } from '../../../../resources/rbac'
+import { User } from '../../../../resources/rbac'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { AcmEmptyState, AcmTable, compareStrings } from '../../../../ui-components'
 import { useFilters, usersTableColumns } from './UsersTableHelper'
@@ -13,19 +13,18 @@ const UsersTable = () => {
 
   const { usersState } = useSharedAtoms()
   const rbacUsers = useRecoilValue(usersState)
-  const users = useMemo(
-    () => rbacUsers?.sort((a, b) => compareStrings(a.metadata.name ?? '', b.metadata.name ?? '')) ?? [],
-    [rbacUsers]
-  )
+  const users = useMemo(() => {
+    return rbacUsers?.toSorted((a, b) => compareStrings(a.metadata.name ?? '', b.metadata.name ?? '')) ?? []
+  }, [rbacUsers])
 
-  const keyFn = useCallback((user: RbacUser) => user.metadata.name ?? '', [])
+  const keyFn = useCallback((user: User) => user.metadata.name ?? '', [])
 
   const filters = useFilters()
   const columns = usersTableColumns({ t })
 
   return (
     <PageSection>
-      <AcmTable<RbacUser>
+      <AcmTable<User>
         key="users-table"
         filters={filters}
         columns={columns}

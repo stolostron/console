@@ -27,7 +27,7 @@ const RoleAssignmentActionDropdown = ({
       id: 'delete-role-assignment',
       text: t('Delete role assignment'),
       isDisabled: !canDelete,
-      tooltip: !canDelete ? t('rbac.unauthorized') : '',
+      tooltip: canDelete ? '' : t('rbac.unauthorized'),
       click: (roleAssignment: FlattenedRoleAssignment) => {
         setModalProps({
           open: true,
