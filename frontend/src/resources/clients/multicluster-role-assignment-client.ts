@@ -135,7 +135,7 @@ export const mapRoleAssignmentBeforeSaving = (roleAssignment: Omit<RoleAssignmen
   const sortedKeys = Object.keys(roleAssignment).sort((a, b) => a.localeCompare(b))
 
   const sortedObject: any = {}
-  sortedKeys.forEach((key) => {
+  for (const key of sortedKeys) {
     const value = roleAssignment[key as keyof typeof roleAssignment]
 
     if (key === 'clusterSelection' && value && typeof value === 'object' && 'clusterNames' in value) {
@@ -150,7 +150,7 @@ export const mapRoleAssignmentBeforeSaving = (roleAssignment: Omit<RoleAssignmen
     } else {
       sortedObject[key] = value
     }
-  })
+  }
 
   const stringified = JSON.stringify(sortedObject)
 

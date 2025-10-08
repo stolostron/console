@@ -225,19 +225,16 @@ const RoleAssignmentForm = ({
             onChange: onChangeScopeNamespaces,
             component: (() => {
               const isAllNamespaces = roleAssignmentFormData.scope.namespaces === undefined
+              const handleCheckboxChange = (_event: React.FormEvent<HTMLInputElement>, checked: boolean) => {
+                onChangeScopeNamespaces(checked ? undefined : [])
+              }
               return (
                 <div>
                   <Checkbox
                     id="crb"
                     label="All namespaces"
                     isChecked={isAllNamespaces}
-                    onChange={(_event, checked) => {
-                      if (checked) {
-                        onChangeScopeNamespaces(undefined)
-                      } else {
-                        onChangeScopeNamespaces([])
-                      }
-                    }}
+                    onChange={handleCheckboxChange}
                   />
                   <div style={{ marginTop: 'var(--pf-v5-global--spacer--sm)' }}>
                     <NamespaceSelector

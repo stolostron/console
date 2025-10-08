@@ -14,7 +14,7 @@ type RoleAssignmentFormDataType = {
   scope: {
     kind: 'all' | 'specific'
     clusterNames?: string[]
-    namespaces?: string[] | undefined
+    namespaces?: string[]
   }
   roles: string[]
 }
