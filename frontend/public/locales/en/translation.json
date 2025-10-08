@@ -3517,6 +3517,7 @@
   "You don't have any policies.": "You don't have any policies.",
   "You don't have any policy sets": "You don't have any policy sets",
   "You don't have any subscriptions": "You don't have any subscriptions",
+  "You must either select \"All namespaces\" or choose specific namespaces": "You must either select \"All namespaces\" or choose specific namespaces",
   "You must fill out all required fields before you can proceed.": "You must fill out all required fields before you can proceed.",
   "You must fix editor syntax errors.": "You must fix editor syntax errors.",
   "You must fix the issues with fields before you can proceed.": "You must fix the issues with fields before you can proceed.",
