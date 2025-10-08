@@ -2,8 +2,8 @@
 import { useMemo } from 'react'
 import { useParams, useLocation, Link, Outlet, generatePath, useOutletContext } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { User, Group, listUsers, listGroups } from '../../../../resources/rbac'
-import { useQuery } from '../../../../lib/useQuery'
+import { User, Group } from '../../../../resources/rbac'
+import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem, AcmButton } from '../../../../ui-components'
 import { NavigationPath } from '../../../../NavigationPath'
 import { Page } from '@patternfly/react-core'
@@ -13,8 +13,6 @@ import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
 export type UserDetailsContext = {
   readonly user?: User
   readonly groups?: Group[]
-  readonly loading: boolean
-  readonly groupsLoading: boolean
 }
 
 const UserPage = () => {
@@ -22,9 +20,9 @@ const UserPage = () => {
   const { id = undefined } = useParams()
   const location = useLocation()
 
-  const { data: users, loading } = useQuery(listUsers)
-
-  const { data: groups, loading: groupsLoading } = useQuery(listGroups)
+  const { usersState, groupsState } = useSharedAtoms()
+  const users = useRecoilValue(usersState)
+  const groups = useRecoilValue(groupsState)
 
   const user = useMemo(() => {
     if (!users || !id) return undefined
@@ -35,10 +33,8 @@ const UserPage = () => {
     () => ({
       user,
       groups,
-      loading,
-      groupsLoading,
     }),
-    [user, groups, loading, groupsLoading]
+    [user, groups]
   )
 
   const isDetailsActive = location.pathname === generatePath(NavigationPath.identitiesUsersDetails, { id: id ?? '' })
@@ -46,7 +42,7 @@ const UserPage = () => {
   const isRoleAssignmentsActive = location.pathname.includes('/role-assignments')
   const isGroupsActive = location.pathname.includes('/groups')
 
-  if (!loading && !user) {
+  if (!user) {
     return (
       <Page>
         <ErrorPage
@@ -66,13 +62,13 @@ const UserPage = () => {
       hasDrawer
       header={
         <AcmPageHeader
-          title={loading ? '' : user?.fullName ?? user?.metadata.name ?? t('Unknown User')}
-          description={loading ? '' : user?.metadata.name}
+          title={user?.fullName ?? user?.metadata.name ?? t('Unknown User')}
+          description={user?.metadata.name}
           breadcrumb={[
             { text: t('User Management'), to: NavigationPath.roles },
             { text: t('Identities'), to: NavigationPath.identities },
             { text: t('Users'), to: NavigationPath.identitiesUsers },
-            { text: loading ? '' : user?.fullName ?? user?.metadata.name ?? t('Unknown User') },
+            { text: user?.fullName ?? user?.metadata.name ?? t('Unknown User') },
           ]}
           navigation={
             <AcmSecondaryNav>

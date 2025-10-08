@@ -34,7 +34,7 @@ const renderGroupCreatedCell = (group: Group) => {
 
 const UserGroups = () => {
   const { t } = useTranslation()
-  const { user, groups, loading: userLoading, groupsLoading } = useUserDetailsContext()
+  const { user, groups } = useUserDetailsContext()
   const filters = useFilters()
 
   const userGroups = useMemo(() => {
@@ -78,7 +78,7 @@ const UserGroups = () => {
         items={userGroups}
         resultView={{
           page: 1,
-          loading: userLoading || groupsLoading,
+          loading: false,
           refresh: () => {},
           items: [],
           emptyResult: false,

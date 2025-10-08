@@ -2,9 +2,9 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Routes, Route } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../../lib/nock-util'
 import { Group, User } from '../../../../resources/rbac'
 import { GroupPage } from './GroupPage'
+import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 
 jest.mock('../../../../lib/acm-i18next', () => ({
   useTranslation: jest.fn().mockReturnValue({
@@ -18,13 +18,13 @@ jest.mock('../../../../lib/acm-i18next', () => ({
   }),
 }))
 
-jest.mock('../../../../lib/useQuery', () => ({
-  useQuery: jest.fn(),
+jest.mock('../../../../shared-recoil', () => ({
+  useRecoilValue: jest.fn(),
+  useSharedAtoms: jest.fn(),
 }))
 
-import { useQuery } from '../../../../lib/useQuery'
-
-const mockUseQuery = useQuery as jest.MockedFunction<typeof useQuery>
+const mockUseRecoilValue = useRecoilValue as jest.MockedFunction<typeof useRecoilValue>
+const mockUseSharedAtoms = useSharedAtoms as jest.MockedFunction<typeof useSharedAtoms>
 
 const mockGroups: Group[] = [
   {
@@ -93,32 +93,17 @@ function Component({ groupId = 'kubevirt-admins' }: { groupId?: string }) {
 
 describe('GroupPage', () => {
   beforeEach(() => {
-    nockIgnoreRBAC()
-    nockIgnoreApiPaths()
+    mockUseRecoilValue.mockClear()
+    mockUseSharedAtoms.mockClear()
 
-    // Reset mocks before each test
-    mockUseQuery.mockClear()
+    mockUseSharedAtoms.mockReturnValue({
+      usersState: {} as any,
+      groupsState: {} as any,
+    } as any)
   })
 
-  test('should render loading state', async () => {
-    // Mock useQuery to return groups data
-    mockUseQuery
-      .mockReturnValueOnce({
-        data: mockUsers,
-        loading: false,
-        error: undefined,
-        startPolling: jest.fn(),
-        stopPolling: jest.fn(),
-        refresh: jest.fn(),
-      })
-      .mockReturnValueOnce({
-        data: mockGroups,
-        loading: false,
-        error: undefined,
-        startPolling: jest.fn(),
-        stopPolling: jest.fn(),
-        refresh: jest.fn(),
-      })
+  test('should render group page with data', async () => {
+    mockUseRecoilValue.mockReturnValueOnce(mockUsers).mockReturnValueOnce(mockGroups)
 
     render(<Component />)
 
@@ -128,24 +113,7 @@ describe('GroupPage', () => {
   })
 
   test('should render group not found error', async () => {
-    // Mock useQuery to return empty data
-    mockUseQuery
-      .mockReturnValueOnce({
-        data: [],
-        loading: false,
-        error: undefined,
-        startPolling: jest.fn(),
-        stopPolling: jest.fn(),
-        refresh: jest.fn(),
-      })
-      .mockReturnValueOnce({
-        data: [],
-        loading: false,
-        error: undefined,
-        startPolling: jest.fn(),
-        stopPolling: jest.fn(),
-        refresh: jest.fn(),
-      })
+    mockUseRecoilValue.mockReturnValue([])
 
     render(<Component groupId="non-existent-group" />)
 
@@ -156,24 +124,7 @@ describe('GroupPage', () => {
   })
 
   test('should render group page with navigation tabs', async () => {
-    // Mock useQuery to return groups data
-    mockUseQuery
-      .mockReturnValueOnce({
-        data: mockUsers,
-        loading: false,
-        error: undefined,
-        startPolling: jest.fn(),
-        stopPolling: jest.fn(),
-        refresh: jest.fn(),
-      })
-      .mockReturnValueOnce({
-        data: mockGroups,
-        loading: false,
-        error: undefined,
-        startPolling: jest.fn(),
-        stopPolling: jest.fn(),
-        refresh: jest.fn(),
-      })
+    mockUseRecoilValue.mockReturnValueOnce(mockUsers).mockReturnValueOnce(mockGroups)
 
     render(<Component />)
 
@@ -188,24 +139,7 @@ describe('GroupPage', () => {
   })
 
   test('should render group page with empty group name', async () => {
-    // Mock useQuery to return empty data
-    mockUseQuery
-      .mockReturnValueOnce({
-        data: [],
-        loading: false,
-        error: undefined,
-        startPolling: jest.fn(),
-        stopPolling: jest.fn(),
-        refresh: jest.fn(),
-      })
-      .mockReturnValueOnce({
-        data: [],
-        loading: false,
-        error: undefined,
-        startPolling: jest.fn(),
-        stopPolling: jest.fn(),
-        refresh: jest.fn(),
-      })
+    mockUseRecoilValue.mockReturnValue([])
 
     render(<Component groupId="group-with-empty-name" />)
 
@@ -216,24 +150,7 @@ describe('GroupPage', () => {
   })
 
   test('should find group by UID', async () => {
-    // Mock useQuery to return groups data
-    mockUseQuery
-      .mockReturnValueOnce({
-        data: mockUsers,
-        loading: false,
-        error: undefined,
-        startPolling: jest.fn(),
-        stopPolling: jest.fn(),
-        refresh: jest.fn(),
-      })
-      .mockReturnValueOnce({
-        data: mockGroups,
-        loading: false,
-        error: undefined,
-        startPolling: jest.fn(),
-        stopPolling: jest.fn(),
-        refresh: jest.fn(),
-      })
+    mockUseRecoilValue.mockReturnValueOnce(mockUsers).mockReturnValueOnce(mockGroups)
 
     render(<Component groupId="kubevirt-admins" />)
 

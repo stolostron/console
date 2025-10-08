@@ -2,18 +2,12 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../../lib/nock-util'
 import { UserGroups } from './UserGroups'
 import { User, Group } from '../../../../resources/rbac'
 import { useUserDetailsContext } from './UserPage'
 
 jest.mock('../../../../lib/acm-i18next', () => ({
   useTranslation: () => ({ t: (s: string) => s }),
-}))
-
-jest.mock('../../../../ui-components', () => ({
-  ...jest.requireActual('../../../../ui-components'),
-  AcmLoadingPage: () => <div>Loading</div>,
 }))
 
 jest.mock('../../../../lib/AcmTimestamp', () => ({
@@ -84,23 +78,11 @@ function renderWithCtx() {
   )
 }
 
-function setCtx({
-  user,
-  groups,
-  loading = false,
-  groupsLoading = false,
-}: {
-  user?: User
-  groups?: Group[]
-  loading?: boolean
-  groupsLoading?: boolean
-}) {
+function setCtx({ user, groups }: { user?: User; groups?: Group[] }) {
   mockUseUserDetailsContext.mockReturnValue({
     user,
     groups,
-    loading,
-    groupsLoading,
-  } as any)
+  })
 }
 
 function createUser(overrides: Partial<User> = {}): User {
@@ -121,61 +103,41 @@ function createUser(overrides: Partial<User> = {}): User {
 
 describe('UserGroups', () => {
   beforeEach(() => {
-    nockIgnoreRBAC()
-    nockIgnoreApiPaths()
     mockUseUserDetailsContext.mockClear()
   })
 
-  it('renders loading state', () => {
-    setCtx({ user: undefined, groups: undefined, loading: true, groupsLoading: false })
-    renderWithCtx()
-    expect(screen.getByText('No groups found')).toBeInTheDocument()
-  })
-
-  it('renders "not found" page when user is missing', () => {
-    setCtx({ user: undefined, groups: undefined, loading: false, groupsLoading: false })
+  it('renders empty state when user is undefined', () => {
+    setCtx({ user: undefined, groups: undefined })
     renderWithCtx()
     expect(screen.getByText('No groups found')).toBeInTheDocument()
   })
 
   it('renders empty state when user has no groups', () => {
     const userWithoutGroups = createUser({ groups: [] })
-    setCtx({ user: userWithoutGroups, groups: mockGroups, loading: false, groupsLoading: false })
+    setCtx({ user: userWithoutGroups, groups: mockGroups })
     renderWithCtx()
     expect(screen.getByText('No groups found')).toBeInTheDocument()
     expect(screen.getByText('This user is not a member of any groups yet.')).toBeInTheDocument()
   })
 
   it('renders groups table with only the user groups', () => {
-    setCtx({ user: mockUser, groups: mockGroups, loading: false, groupsLoading: false })
+    setCtx({ user: mockUser, groups: mockGroups })
     renderWithCtx()
     expect(screen.getByText('developers')).toBeInTheDocument()
     expect(screen.getByText('admins')).toBeInTheDocument()
   })
 
   it('does not show groups that user is not a member of', () => {
-    setCtx({ user: mockUser, groups: mockGroups, loading: false, groupsLoading: false })
+    setCtx({ user: mockUser, groups: mockGroups })
     renderWithCtx()
     expect(screen.getByText('developers')).toBeInTheDocument()
     expect(screen.getByText('admins')).toBeInTheDocument()
     expect(screen.queryByText('viewers')).not.toBeInTheDocument()
   })
 
-  it('handles user loading state', () => {
-    setCtx({ user: mockUser, groups: mockGroups, loading: true, groupsLoading: false })
-    renderWithCtx()
-    expect(screen.getByRole('grid')).toBeInTheDocument()
-  })
-
-  it('handles groups loading state', () => {
-    setCtx({ user: mockUser, groups: mockGroups, loading: false, groupsLoading: true })
-    renderWithCtx()
-    expect(screen.getByRole('grid')).toBeInTheDocument()
-  })
-
   it('handles user with undefined groups array', () => {
     const userWithUndefinedGroups = createUser({ groups: undefined })
-    setCtx({ user: userWithUndefinedGroups, groups: mockGroups, loading: false, groupsLoading: false })
+    setCtx({ user: userWithUndefinedGroups, groups: mockGroups })
     renderWithCtx()
     expect(screen.getByText('No groups found')).toBeInTheDocument()
   })
@@ -190,7 +152,7 @@ describe('UserGroups', () => {
       groups: ['developers'],
       fullName: 'User With Null UID',
     })
-    setCtx({ user: userWithNullMetadata, groups: mockGroups, loading: false, groupsLoading: false })
+    setCtx({ user: userWithNullMetadata, groups: mockGroups })
     renderWithCtx()
     expect(screen.getByText('developers')).toBeInTheDocument()
   })
@@ -205,7 +167,7 @@ describe('UserGroups', () => {
       groups: ['developers'],
       fullName: 'User With Invalid Timestamp',
     })
-    setCtx({ user: userWithInvalidTimestamp, groups: mockGroups, loading: false, groupsLoading: false })
+    setCtx({ user: userWithInvalidTimestamp, groups: mockGroups })
     renderWithCtx()
     expect(screen.getByText('developers')).toBeInTheDocument()
   })

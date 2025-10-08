@@ -2,9 +2,9 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../../lib/nock-util'
 import { GroupYaml } from './GroupYaml'
 import { Group, UserApiVersion, GroupKind } from '../../../../resources/rbac'
+import { useGroupDetailsContext } from './GroupPage'
 
 jest.mock('../../../../lib/acm-i18next', () => ({
   useTranslation: jest.fn().mockReturnValue({
@@ -16,8 +16,6 @@ jest.mock('./GroupPage', () => ({
   ...jest.requireActual('./GroupPage'),
   useGroupDetailsContext: jest.fn(),
 }))
-
-import { useGroupDetailsContext } from './GroupPage'
 
 const mockUseGroupDetailsContext = useGroupDetailsContext as jest.MockedFunction<typeof useGroupDetailsContext>
 
@@ -33,30 +31,13 @@ function Component() {
 
 describe('GroupYaml', () => {
   beforeEach(() => {
-    nockIgnoreRBAC()
-    nockIgnoreApiPaths()
     mockUseGroupDetailsContext.mockClear()
-  })
-
-  test('should render loading state', () => {
-    mockUseGroupDetailsContext.mockReturnValue({
-      group: undefined,
-      users: [],
-      loading: true,
-      usersLoading: false,
-    })
-
-    render(<Component />)
-
-    expect(screen.getByText('Loading')).toBeInTheDocument()
   })
 
   test('should render group not found message', () => {
     mockUseGroupDetailsContext.mockReturnValue({
       group: undefined,
       users: [],
-      loading: false,
-      usersLoading: false,
     })
 
     render(<Component />)
@@ -79,8 +60,6 @@ describe('GroupYaml', () => {
     mockUseGroupDetailsContext.mockReturnValue({
       group: mockGroup,
       users: [],
-      loading: false,
-      usersLoading: false,
     })
 
     render(<Component />)
