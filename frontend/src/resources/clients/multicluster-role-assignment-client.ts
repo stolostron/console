@@ -12,7 +12,6 @@ import {
 } from '../multicluster-role-assignment'
 import { createResource, deleteResource, patchResource } from '../utils'
 import { IRequestResult, ResourceError, ResourceErrorCode } from '../utils/resource-request'
-import { Group } from '../rbac'
 
 export interface FlattenedRoleAssignment extends RoleAssignment {
   relatedMulticlusterRoleAssignment: MulticlusterRoleAssignment
@@ -280,14 +279,3 @@ export const deleteRoleAssignment = (roleAssignment: FlattenedRoleAssignment): I
   }
 }
 
-/**
- * Finds groups that contain a specific user and sorts them alphabetically
- * @param groups
- * @param username
- * @returns Groups containing the user, sorted alphabetically by group name
- */
-export const findGroupsContainingUser = (groups: Group[], username: string): Group[] => {
-  return groups
-    .filter((group) => group.users.includes(username))
-    .sort((a, b) => (a.metadata.name || '').localeCompare(b.metadata.name || ''))
-}

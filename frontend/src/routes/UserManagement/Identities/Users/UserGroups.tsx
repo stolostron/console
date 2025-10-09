@@ -11,7 +11,6 @@ import { useUserDetailsContext } from './UserPage'
 import { NavigationPath } from '../../../../NavigationPath'
 import { Link, generatePath } from 'react-router-dom-v5-compat'
 import { useFilters } from '../Groups/GroupsTableHelper'
-import { findGroupsContainingUser } from '../../../../resources/clients/multicluster-role-assignment-client'
 
 const renderGroupNameCell = (group: Group) => {
   return group.metadata.name ? (
@@ -33,16 +32,22 @@ const renderGroupCreatedCell = (group: Group) => {
   )
 }
 
+const findGroupsContainingUser = (groups: Group[], username: string): Group[] => {
+  return groups
+    .filter((group) => group.users.includes(username))
+    .sort((a, b) => (a.metadata.name || '').localeCompare(b.metadata.name || ''))
+}
+
 const UserGroups = () => {
   const { t } = useTranslation()
   const { user, groups } = useUserDetailsContext()
   const filters = useFilters()
 
   const userGroups = useMemo(() => {
-    if (userLoading || groupsLoading || !user || !groups) return []
+    if (!user || !groups) return []
 
     return findGroupsContainingUser(groups, user.metadata.name || '')
-  }, [user, groups, userLoading, groupsLoading])
+  }, [user, groups])
 
   const columns: IAcmTableColumn<Group>[] = [
     {
