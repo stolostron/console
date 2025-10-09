@@ -1,21 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useMemo } from 'react'
-import { useParams } from 'react-router-dom-v5-compat'
 import { UserKind } from '../../../../resources'
 import { useFindRoleAssignments } from '../../../../resources/clients/multicluster-role-assignment-client'
-import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { RoleAssignments } from '../../RoleAssignment/RoleAssignments'
+import { useCurrentUser } from './UserPage'
 
 const UserRoleAssignments = () => {
-  const { id = undefined } = useParams()
-
-  const { usersState } = useSharedAtoms()
-  const users = useRecoilValue(usersState)
-
-  const user = useMemo(
-    () => (!users || !id ? undefined : users.find((u) => u.metadata.uid === id || u.metadata.name === id)),
-    [users, id]
-  )
+  const user = useCurrentUser()
 
   const roleAssignments = useFindRoleAssignments({
     subjectNames: user?.metadata.name ? [user.metadata.name] : [],

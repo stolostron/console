@@ -103,7 +103,7 @@ describe('GroupPage', () => {
   })
 
   test('should render group page with data', async () => {
-    mockUseRecoilValue.mockReturnValueOnce(mockUsers).mockReturnValueOnce(mockGroups)
+    mockUseRecoilValue.mockReturnValueOnce(mockGroups).mockReturnValueOnce(mockUsers)
 
     render(<Component />)
 
@@ -124,7 +124,7 @@ describe('GroupPage', () => {
   })
 
   test('should render group page with navigation tabs', async () => {
-    mockUseRecoilValue.mockReturnValueOnce(mockUsers).mockReturnValueOnce(mockGroups)
+    mockUseRecoilValue.mockReturnValueOnce(mockGroups).mockReturnValueOnce(mockUsers)
 
     render(<Component />)
 
@@ -150,7 +150,7 @@ describe('GroupPage', () => {
   })
 
   test('should find group by UID', async () => {
-    mockUseRecoilValue.mockReturnValueOnce(mockUsers).mockReturnValueOnce(mockGroups)
+    mockUseRecoilValue.mockReturnValueOnce(mockGroups).mockReturnValueOnce(mockUsers)
 
     render(<Component groupId="kubevirt-admins" />)
 

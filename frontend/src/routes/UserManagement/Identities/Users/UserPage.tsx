@@ -10,6 +10,17 @@ import { Page } from '@patternfly/react-core'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
 
+export const useCurrentUser = (): User | undefined => {
+  const { id } = useParams()
+  const { usersState } = useSharedAtoms()
+  const users = useRecoilValue(usersState)
+
+  return useMemo(
+    () => (!users || !id ? undefined : users.find((u) => u.metadata.uid === id || u.metadata.name === id)),
+    [users, id]
+  )
+}
+
 export type UserDetailsContext = {
   readonly user?: User
   readonly groups?: Group[]
@@ -20,14 +31,9 @@ const UserPage = () => {
   const { id = undefined } = useParams()
   const location = useLocation()
 
-  const { usersState, groupsState } = useSharedAtoms()
-  const users = useRecoilValue(usersState)
+  const user = useCurrentUser()
+  const { groupsState } = useSharedAtoms()
   const groups = useRecoilValue(groupsState)
-
-  const user = useMemo(() => {
-    if (!users || !id) return undefined
-    return users.find((u) => u.metadata.uid === id || u.metadata.name === id)
-  }, [users, id])
 
   const userDetailsContext = useMemo<UserDetailsContext>(
     () => ({

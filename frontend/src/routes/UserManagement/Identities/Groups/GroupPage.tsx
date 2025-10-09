@@ -10,6 +10,17 @@ import { Page } from '@patternfly/react-core'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
 
+export const useCurrentGroup = (): Group | undefined => {
+  const { id } = useParams()
+  const { groupsState } = useSharedAtoms()
+  const groups = useRecoilValue(groupsState)
+
+  return useMemo(
+    () => (!groups || !id ? undefined : groups.find((g) => g.metadata.uid === id || g.metadata.name === id)),
+    [groups, id]
+  )
+}
+
 export type GroupDetailsContext = {
   readonly group?: Group
   readonly users?: User[]
@@ -20,14 +31,9 @@ const GroupPage = () => {
   const { id = undefined } = useParams()
   const location = useLocation()
 
-  const { usersState, groupsState } = useSharedAtoms()
+  const group = useCurrentGroup()
+  const { usersState } = useSharedAtoms()
   const users = useRecoilValue(usersState)
-  const groups = useRecoilValue(groupsState)
-
-  const group = useMemo(() => {
-    if (!groups || !id) return undefined
-    return groups.find((u) => u.metadata.uid === id || u.metadata.name === id)
-  }, [groups, id])
 
   const groupDetailsContext = useMemo<GroupDetailsContext>(
     () => ({
