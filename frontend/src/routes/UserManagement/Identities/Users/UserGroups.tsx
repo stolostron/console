@@ -2,15 +2,14 @@
 import { PageSection } from '@patternfly/react-core'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { Group } from '../../../../resources/rbac'
-import { useMemo } from 'react'
 import { AcmTable, IAcmTableColumn, AcmEmptyState } from '../../../../ui-components'
 import { cellWidth } from '@patternfly/react-table'
 import AcmTimestamp from '../../../../lib/AcmTimestamp'
 import { getISOStringTimestamp } from '../../../../resources/utils'
-import { useUserDetailsContext } from './UserPage'
 import { NavigationPath } from '../../../../NavigationPath'
 import { Link, generatePath } from 'react-router-dom-v5-compat'
 import { useFilters } from '../Groups/GroupsTableHelper'
+import { useUserGroups } from './useUserGroups'
 
 const renderGroupNameCell = (group: Group) => {
   return group.metadata.name ? (
@@ -34,14 +33,8 @@ const renderGroupCreatedCell = (group: Group) => {
 
 const UserGroups = () => {
   const { t } = useTranslation()
-  const { user, groups } = useUserDetailsContext()
+  const { userGroups } = useUserGroups()
   const filters = useFilters()
-
-  const userGroups = useMemo(() => {
-    if (!user || !groups) return []
-
-    return groups.filter((group) => group.users.includes(user.metadata.name || ''))
-  }, [user, groups])
 
   const columns: IAcmTableColumn<Group>[] = [
     {
