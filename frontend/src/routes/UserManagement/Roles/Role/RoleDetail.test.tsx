@@ -2,9 +2,9 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../../lib/nock-util'
 import { RoleDetail } from './RoleDetail'
 import { ClusterRole } from '../../../../resources/rbac'
+import { useCurrentRole } from '../RolesPage'
 
 const mockRole: ClusterRole = {
   apiVersion: 'rbac.authorization.k8s.io/v1',
@@ -28,8 +28,6 @@ jest.mock('../RolesPage', () => ({
   useCurrentRole: jest.fn(),
 }))
 
-import { useCurrentRole } from '../RolesPage'
-
 const mockUseCurrentRole = useCurrentRole as jest.MockedFunction<typeof useCurrentRole>
 
 function Component() {
@@ -44,8 +42,6 @@ function Component() {
 
 describe('RoleDetail', () => {
   beforeEach(() => {
-    nockIgnoreRBAC()
-    nockIgnoreApiPaths()
     mockUseCurrentRole.mockClear()
   })
 

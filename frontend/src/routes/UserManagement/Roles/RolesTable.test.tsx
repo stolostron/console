@@ -3,7 +3,6 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../lib/nock-util'
 import { RolesTable } from './RolesTable'
 import { ClusterRole } from '../../../resources/rbac'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
@@ -124,8 +123,6 @@ const mockClusterRoleNoAnnotations: ClusterRole = {
 
 describe('RolesTable', () => {
   beforeEach(() => {
-    nockIgnoreRBAC()
-    nockIgnoreApiPaths()
     jest.clearAllMocks()
     document.body.innerHTML = ''
 

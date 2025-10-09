@@ -2,9 +2,9 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../../lib/nock-util'
 import { RoleYaml } from './RoleYaml'
 import { ClusterRole, ClusterRoleKind } from '../../../../resources/rbac'
+import { useCurrentRole } from '../RolesPage'
 
 jest.mock('../../../../lib/acm-i18next', () => ({
   useTranslation: jest.fn().mockReturnValue({
@@ -16,8 +16,6 @@ jest.mock('../RolesPage', () => ({
   ...jest.requireActual('../RolesPage'),
   useCurrentRole: jest.fn(),
 }))
-
-import { useCurrentRole } from '../RolesPage'
 
 const mockUseCurrentRole = useCurrentRole as jest.MockedFunction<typeof useCurrentRole>
 
@@ -33,8 +31,6 @@ function Component() {
 
 describe('RoleYaml', () => {
   beforeEach(() => {
-    nockIgnoreRBAC()
-    nockIgnoreApiPaths()
     mockUseCurrentRole.mockClear()
   })
 

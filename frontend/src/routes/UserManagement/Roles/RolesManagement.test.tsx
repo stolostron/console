@@ -3,14 +3,9 @@
 import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
 import RolesManagement from './RolesManagement'
 
 describe('RolesManagement Router', () => {
-  beforeEach(() => {
-    nockIgnoreRBAC()
-    nockIgnoreApiPaths() //ignore /apiPaths
-  })
   test('should render without errors', () => {
     render(
       <RecoilRoot>

@@ -3,7 +3,6 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../../lib/nock-util'
 import { User } from '../../../../resources/rbac'
 import { UsersTable } from './UsersTable'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
@@ -49,9 +48,6 @@ function Component() {
 
 describe('Users Page', () => {
   beforeEach(() => {
-    nockIgnoreRBAC()
-    nockIgnoreApiPaths()
-
     mockUseSharedAtoms.mockReturnValue({
       usersState: {} as any,
     } as any)

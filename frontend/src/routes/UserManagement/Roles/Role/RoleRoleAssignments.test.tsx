@@ -3,7 +3,6 @@ import { PageSection } from '@patternfly/react-core'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Routes, Route } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../../lib/nock-util'
 import { AcmLoadingPage } from '../../../../ui-components'
 import { RoleRoleAssignments } from './RoleRoleAssignments'
 import { FlattenedRoleAssignment } from '../../../../resources/clients/multicluster-role-assignment-client'
@@ -145,9 +144,6 @@ const Component = ({ userId = 'mock-user-alice-trask' }: { userId?: string } = {
 
 describe('RoleRoleAssignments', () => {
   beforeEach(() => {
-    nockIgnoreRBAC()
-    nockIgnoreApiPaths()
-
     mockUseCurrentRole.mockClear()
 
     mockUseSharedAtoms.mockReturnValue({

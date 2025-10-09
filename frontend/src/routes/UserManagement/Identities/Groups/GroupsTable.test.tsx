@@ -2,7 +2,6 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../../lib/nock-util'
 import { Group } from '../../../../resources/rbac'
 import { GroupsTable } from './GroupsTable'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
@@ -79,9 +78,6 @@ function Component() {
 
 describe('GroupsTable', () => {
   beforeEach(() => {
-    nockIgnoreRBAC()
-    nockIgnoreApiPaths()
-
     mockUseSharedAtoms.mockReturnValue({
       groupsState: {} as any,
     } as any)
