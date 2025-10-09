@@ -3,7 +3,7 @@ import { PageSection } from '@patternfly/react-core'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { Group } from '../../../../resources/rbac'
 import { useMemo } from 'react'
-import { AcmTable, compareStrings, IAcmTableColumn, AcmEmptyState } from '../../../../ui-components'
+import { AcmTable, IAcmTableColumn, AcmEmptyState } from '../../../../ui-components'
 import { cellWidth } from '@patternfly/react-table'
 import AcmTimestamp from '../../../../lib/AcmTimestamp'
 import { getISOStringTimestamp } from '../../../../resources/utils'
@@ -11,6 +11,7 @@ import { useUserDetailsContext } from './UserPage'
 import { NavigationPath } from '../../../../NavigationPath'
 import { Link, generatePath } from 'react-router-dom-v5-compat'
 import { useFilters } from '../Groups/GroupsTableHelper'
+import { findGroupsContainingUser } from '../../../../resources/clients/multicluster-role-assignment-client'
 
 const renderGroupNameCell = (group: Group) => {
   return group.metadata.name ? (
@@ -38,13 +39,10 @@ const UserGroups = () => {
   const filters = useFilters()
 
   const userGroups = useMemo(() => {
-    if (!user || !groups) return []
+    if (userLoading || groupsLoading || !user || !groups) return []
 
-    const userGroupNames = user.groups ?? []
-    return groups
-      .filter((group) => userGroupNames.includes(group.metadata.name ?? ''))
-      .sort((a, b) => compareStrings(a.metadata.name ?? '', b.metadata.name ?? ''))
-  }, [user, groups])
+    return findGroupsContainingUser(groups, user.metadata.name || '')
+  }, [user, groups, userLoading, groupsLoading])
 
   const columns: IAcmTableColumn<Group>[] = [
     {
