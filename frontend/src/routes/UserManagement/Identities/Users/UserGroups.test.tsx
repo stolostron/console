@@ -66,6 +66,19 @@ const mockGroups: Group[] = [
   },
 ]
 
+const mockGroupsWithoutUser: Group[] = [
+  {
+    apiVersion: 'user.openshift.io/v1',
+    kind: 'Group',
+    metadata: {
+      name: 'developers',
+      uid: 'developers-uid',
+      creationTimestamp: '2025-01-24T16:00:00Z',
+    },
+    users: ['other-user'],
+  },
+]
+
 const mockUseUserDetailsContext = useUserDetailsContext as jest.MockedFunction<typeof useUserDetailsContext>
 
 function renderWithCtx() {
@@ -101,6 +114,21 @@ function createUser(overrides: Partial<User> = {}): User {
   }
 }
 
+function createGroupsWithUser(userName: string): Group[] {
+  return [
+    {
+      apiVersion: 'user.openshift.io/v1',
+      kind: 'Group',
+      metadata: {
+        name: 'developers',
+        uid: 'developers-uid',
+        creationTimestamp: '2025-01-24T16:00:00Z',
+      },
+      users: [userName],
+    },
+  ]
+}
+
 describe('UserGroups', () => {
   beforeEach(() => {
     mockUseUserDetailsContext.mockClear()
@@ -114,7 +142,7 @@ describe('UserGroups', () => {
 
   it('renders empty state when user has no groups', () => {
     const userWithoutGroups = createUser({ groups: [] })
-    setCtx({ user: userWithoutGroups, groups: mockGroups })
+    setCtx({ user: userWithoutGroups, groups: mockGroupsWithoutUser })
     renderWithCtx()
     expect(screen.getByText('No groups found')).toBeInTheDocument()
     expect(screen.getByText('This user is not a member of any groups yet.')).toBeInTheDocument()
@@ -137,7 +165,7 @@ describe('UserGroups', () => {
 
   it('handles user with undefined groups array', () => {
     const userWithUndefinedGroups = createUser({ groups: undefined })
-    setCtx({ user: userWithUndefinedGroups, groups: mockGroups })
+    setCtx({ user: userWithUndefinedGroups, groups: mockGroupsWithoutUser })
     renderWithCtx()
     expect(screen.getByText('No groups found')).toBeInTheDocument()
   })
@@ -152,7 +180,7 @@ describe('UserGroups', () => {
       groups: ['developers'],
       fullName: 'User With Null UID',
     })
-    setCtx({ user: userWithNullMetadata, groups: mockGroups })
+    setCtx({ user: userWithNullMetadata, groups: createGroupsWithUser('user-with-null-uid') })
     renderWithCtx()
     expect(screen.getByText('developers')).toBeInTheDocument()
   })
@@ -167,7 +195,7 @@ describe('UserGroups', () => {
       groups: ['developers'],
       fullName: 'User With Invalid Timestamp',
     })
-    setCtx({ user: userWithInvalidTimestamp, groups: mockGroups })
+    setCtx({ user: userWithInvalidTimestamp, groups: createGroupsWithUser('user-with-invalid-timestamp') })
     renderWithCtx()
     expect(screen.getByText('developers')).toBeInTheDocument()
   })
