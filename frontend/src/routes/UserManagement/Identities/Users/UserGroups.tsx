@@ -32,12 +32,6 @@ const renderGroupCreatedCell = (group: Group) => {
   )
 }
 
-const findGroupsContainingUser = (groups: Group[], username: string): Group[] => {
-  return groups
-    .filter((group) => group.users.includes(username))
-    .sort((a, b) => (a.metadata.name || '').localeCompare(b.metadata.name || ''))
-}
-
 const UserGroups = () => {
   const { t } = useTranslation()
   const { user, groups } = useUserDetailsContext()
@@ -46,7 +40,7 @@ const UserGroups = () => {
   const userGroups = useMemo(() => {
     if (!user || !groups) return []
 
-    return findGroupsContainingUser(groups, user.metadata.name || '')
+    return groups.filter((group) => group.users.includes(user.metadata.name || ''))
   }, [user, groups])
 
   const columns: IAcmTableColumn<Group>[] = [
@@ -86,7 +80,7 @@ const UserGroups = () => {
           items: [],
           emptyResult: false,
           processedItemCount: 0,
-          isPreProcessed: true,
+          isPreProcessed: false,
         }}
         emptyState={
           <AcmEmptyState

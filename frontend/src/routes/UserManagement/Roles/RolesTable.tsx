@@ -50,7 +50,7 @@ const RolesTable = () => {
           items: [],
           emptyResult: false,
           processedItemCount: 0,
-          isPreProcessed: true,
+          isPreProcessed: false,
         }}
         emptyState={<AcmEmptyState key="rolesEmptyState" title={t('No roles')} />}
       />

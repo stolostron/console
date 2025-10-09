@@ -278,4 +278,3 @@ export const deleteRoleAssignment = (roleAssignment: FlattenedRoleAssignment): I
     )
   }
 }
-
