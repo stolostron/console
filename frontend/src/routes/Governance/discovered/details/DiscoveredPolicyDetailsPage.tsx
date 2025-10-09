@@ -104,7 +104,7 @@ export function DiscoveredPolicyDetailsPage() {
           popoverPosition="bottom"
           navigation={
             <AcmSecondaryNav>
-              {!apiGroup.includes('gatekeeper') && (
+              {!apiGroup.includes('mutations.gatekeeper.sh') && (
                 <AcmSecondaryNavItem isActive={isResourcesTab}>
                   <Link to={resourcesUrl}>{t('Related resources')}</Link>
                 </AcmSecondaryNavItem>
