@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { render, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { generatePath, MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'
 import { NavigationPath } from '../../../../NavigationPath'
 import { DiscoveredDetailsContext } from './DiscoveredPolicyDetailsPage'
@@ -893,4 +894,241 @@ describe('DiscoveredResources', () => {
     expect(row2links).toHaveLength(3) // links in the Name column, Cluster column, and Violations column
     await waitFor(() => expect(row2).toHaveTextContent('check-for-labels-test: validation error'))
   })
+})
+test('Should render DiscoveredResources for Gatekeeper with tooltip when showing limited results', async () => {
+  const context: DiscoveredDetailsContext = {
+    isFetching: false,
+    policyItems: [
+      {
+        id: 'containerlivenessprobenotsetContainerLivenessprobeNotsetconstraints.gatekeeper.sh',
+        apigroup: 'constraints.gatekeeper.sh',
+        name: 'containerlivenessprobenotset',
+        kind: 'ContainerLivenessprobeNotset',
+        severity: 'unknown',
+        responseAction: 'dryrun',
+        policies: [
+          {
+            _hubClusterResource: true,
+            _uid: 'local-cluster/c3c561d8-d32d-424f-a593-085908f2d1ba',
+            apigroup: 'constraints.gatekeeper.sh',
+            apiversion: 'v1beta1',
+            cluster: 'local-cluster',
+            created: '2025-05-22T06:11:35Z',
+            kind: 'ContainerLivenessprobeNotset',
+            kind_plural: 'containerlivenessprobenotset',
+            name: 'containerlivenessprobenotset',
+            responseAction: 'dryrun',
+            totalViolations: 10, // More than 2 resources shown - triggers tooltip
+          },
+        ],
+      },
+    ],
+    relatedResources: [
+      {
+        _hubClusterResource: 'true',
+        apiversion: 'v1',
+        cluster: 'local-cluster',
+        kind: 'Pod',
+        kind_plural: 'pods',
+        name: 'pod-1',
+        namespace: 'default',
+        groupversion: 'v1',
+        compliant: 'noncompliant',
+        created: '2025-05-22T06:11:35Z',
+        templateInfo: {
+          clusterName: 'local-cluster',
+          kind: 'ContainerLivenessprobeNotset',
+          templateName: 'containerlivenessprobenotset',
+          templateNamespace: null,
+          apiGroup: 'constraints.gatekeeper.sh',
+          apiVersion: 'v1beta1',
+        },
+      },
+      {
+        _hubClusterResource: 'true',
+        apiversion: 'v1',
+        cluster: 'local-cluster',
+        kind: 'Pod',
+        kind_plural: 'pods',
+        name: 'pod-2',
+        namespace: 'default',
+        groupversion: 'v1',
+        compliant: 'noncompliant',
+        created: '2025-05-22T06:11:35Z',
+        templateInfo: {
+          clusterName: 'local-cluster',
+          kind: 'ContainerLivenessprobeNotset',
+          templateName: 'containerlivenessprobenotset',
+          templateNamespace: null,
+          apiGroup: 'constraints.gatekeeper.sh',
+          apiVersion: 'v1beta1',
+        },
+      },
+    ],
+    policyKind: 'ContainerLivenessprobeNotset',
+    apiGroup: 'constraints.gatekeeper.sh',
+    err: undefined,
+  }
+
+  nockIgnoreApiPaths()
+  const { container } = render(
+    <RecoilRoot
+      initializeState={(snapshot) => {
+        snapshot.set(channelsState, [])
+        snapshot.set(helmReleaseState, [])
+        snapshot.set(subscriptionsState, [])
+      }}
+    >
+      <MemoryRouter
+        initialEntries={[
+          generatePath(NavigationPath.discoveredResources, {
+            kind: 'ContainerLivenessprobeNotset',
+            policyName: 'containerlivenessprobenotset',
+            apiGroup: 'constraints.gatekeeper.sh',
+            apiVersion: 'v1beta1',
+          }),
+        ]}
+      >
+        <Routes>
+          <Route element={<Outlet context={context} />}>
+            <Route path={NavigationPath.discoveredResources} element={<DiscoveredResources />} />
+          </Route>
+        </Routes>
+      </MemoryRouter>
+    </RecoilRoot>
+  )
+
+  await waitForText('Related resources')
+
+  // Verify table rows are rendered correctly
+  const row1 = container.querySelector('table > tbody:nth-child(2) > tr')
+  expect(row1).toHaveTextContent('pod-1')
+  expect(row1).toHaveTextContent('local-cluster')
+  expect(row1).toHaveTextContent('default')
+  expect(row1).toHaveTextContent('Pod')
+  expect(row1).toHaveTextContent('v1')
+  expect(row1).toHaveTextContent('Violations')
+  const row1links = row1?.querySelectorAll('a')
+  expect(row1links).toHaveLength(2) // links in the Name column and the Cluster column
+
+  const row2 = container.querySelector('table > tbody:nth-child(3) > tr')
+  expect(row2).toHaveTextContent('pod-2')
+  expect(row2).toHaveTextContent('local-cluster')
+  expect(row2).toHaveTextContent('default')
+  expect(row2).toHaveTextContent('Pod')
+  expect(row2).toHaveTextContent('v1')
+  expect(row2).toHaveTextContent('Violations')
+  const row2links = row2?.querySelectorAll('a')
+  expect(row2links).toHaveLength(2)
+
+  // Verify tooltip appears because we're showing limited results (2 of 10)
+  userEvent.hover(screen.getByRole('button', { name: 'More info' }))
+  await waitFor(() => expect(screen.getByRole('tooltip')).toHaveTextContent('Showing 2 resource(s)'))
+})
+
+test('Should NOT render tooltip when showing all Gatekeeper results', async () => {
+  const context: DiscoveredDetailsContext = {
+    isFetching: false,
+    policyItems: [
+      {
+        id: 'containerlivenessprobenotsetContainerLivenessprobeNotsetconstraints.gatekeeper.sh',
+        apigroup: 'constraints.gatekeeper.sh',
+        name: 'containerlivenessprobenotset',
+        kind: 'ContainerLivenessprobeNotset',
+        severity: 'unknown',
+        responseAction: 'dryrun',
+        policies: [
+          {
+            _hubClusterResource: true,
+            _uid: 'local-cluster/c3c561d8-d32d-424f-a593-085908f2d1ba',
+            apigroup: 'constraints.gatekeeper.sh',
+            apiversion: 'v1beta1',
+            cluster: 'local-cluster',
+            created: '2025-05-22T06:11:35Z',
+            kind: 'ContainerLivenessprobeNotset',
+            kind_plural: 'containerlivenessprobenotset',
+            name: 'containerlivenessprobenotset',
+            responseAction: 'dryrun',
+            totalViolations: 2, // Matches the number of resources shown - no tooltip
+          },
+        ],
+      },
+    ],
+    relatedResources: [
+      {
+        _hubClusterResource: 'true',
+        apiversion: 'v1',
+        cluster: 'local-cluster',
+        kind: 'Pod',
+        kind_plural: 'pods',
+        name: 'pod-1',
+        namespace: 'default',
+        groupversion: 'v1',
+        compliant: 'noncompliant',
+        created: '2025-05-22T06:11:35Z',
+        templateInfo: {
+          clusterName: 'local-cluster',
+          kind: 'ContainerLivenessprobeNotset',
+          templateName: 'containerlivenessprobenotset',
+          templateNamespace: null,
+          apiGroup: 'constraints.gatekeeper.sh',
+          apiVersion: 'v1beta1',
+        },
+      },
+      {
+        _hubClusterResource: 'true',
+        apiversion: 'v1',
+        cluster: 'local-cluster',
+        kind: 'Pod',
+        kind_plural: 'pods',
+        name: 'pod-2',
+        namespace: 'default',
+        groupversion: 'v1',
+        compliant: 'noncompliant',
+        created: '2025-05-22T06:11:35Z',
+        templateInfo: {
+          clusterName: 'local-cluster',
+          kind: 'ContainerLivenessprobeNotset',
+          templateName: 'containerlivenessprobenotset',
+          templateNamespace: null,
+          apiGroup: 'constraints.gatekeeper.sh',
+          apiVersion: 'v1beta1',
+        },
+      },
+    ],
+    policyKind: 'ContainerLivenessprobeNotset',
+    apiGroup: 'constraints.gatekeeper.sh',
+    err: undefined,
+  }
+
+  nockIgnoreApiPaths()
+  render(
+    <RecoilRoot
+      initializeState={(s) => {
+        s.set(channelsState, [])
+        s.set(helmReleaseState, [])
+        s.set(subscriptionsState, [])
+      }}
+    >
+      <MemoryRouter
+        initialEntries={[
+          generatePath(NavigationPath.discoveredResources, {
+            kind: 'ContainerLivenessprobeNotset',
+            policyName: 'containerlivenessprobenotset',
+            apiGroup: 'constraints.gatekeeper.sh',
+            apiVersion: 'v1beta1',
+          }),
+        ]}
+      >
+        <Routes>
+          <Route element={<Outlet context={context} />}>
+            <Route path={NavigationPath.discoveredResources} element={<DiscoveredResources />} />
+          </Route>
+        </Routes>
+      </MemoryRouter>
+    </RecoilRoot>
+  )
+
+  await waitForText('Related resources')
+  expect(screen.queryByRole('button', { name: 'More info' })).not.toBeInTheDocument()
 })
