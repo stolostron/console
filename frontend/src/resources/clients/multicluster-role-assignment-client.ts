@@ -26,8 +26,7 @@ interface MulticlusterRoleAssignmentQuery {
   clusterNames?: string[]
 }
 
-// TODO: remove export as soon as the mock data is removed and the CR is ready ACM-23633
-export const roleAssignmentToFlattenedRoleAssignment = (
+const roleAssignmentToFlattenedRoleAssignment = (
   multiClusterRoleAssignment: MulticlusterRoleAssignment,
   roleAssignment: RoleAssignment
 ): FlattenedRoleAssignment => ({
