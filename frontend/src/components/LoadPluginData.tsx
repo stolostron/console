@@ -49,6 +49,12 @@ export const LoadPluginData = (props: { children?: ReactNode }) => {
 
       // Credentials
       NavigationPath.credentials,
+
+      // User Management
+      NavigationPath.roles,
+      NavigationPath.identities,
+      NavigationPath.identitiesUsers,
+      NavigationPath.identitiesGroups,
     ] as string[]
   ).includes(location.pathname.replace(/\/$/, ''))
   useEffect(() => {

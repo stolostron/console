@@ -3,7 +3,6 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { nockIgnoreRBAC } from '../../../lib/nock-util'
 import { RolesPage } from './RolesPage'
 
 function Component() {
@@ -17,10 +16,6 @@ function Component() {
 }
 
 describe('Roles Page', () => {
-  beforeEach(() => {
-    nockIgnoreRBAC()
-  })
-
   test('should render roles page', () => {
     render(<Component />)
 

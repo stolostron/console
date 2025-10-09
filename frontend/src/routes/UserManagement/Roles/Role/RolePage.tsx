@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useParams, useLocation, Link, Outlet, generatePath } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { useRolesContext, useCurrentRole } from '../RolesPage'
+import { useCurrentRole } from '../RolesPage'
 import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem, AcmButton } from '../../../../ui-components'
 import { NavigationPath } from '../../../../NavigationPath'
 import { Page } from '@patternfly/react-core'
@@ -12,7 +12,6 @@ const RolePage = () => {
   const { t } = useTranslation()
   const { id = undefined } = useParams()
   const location = useLocation()
-  const { loading } = useRolesContext()
   const role = useCurrentRole()
 
   const isDetailsActive = location.pathname === generatePath(NavigationPath.roleDetails, { id: id ?? '' })
@@ -20,7 +19,7 @@ const RolePage = () => {
   const isRoleAssignmentsActive = location.pathname.includes('/role-assignments')
   const isYamlActive = location.pathname.includes('/yaml')
 
-  if (!loading && !role) {
+  if (!role) {
     return (
       <Page>
         <ErrorPage

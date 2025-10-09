@@ -3,9 +3,9 @@ import { useUserDetailsContext } from './UserPage'
 import { RBACResourceYaml } from '../../../../components/RBACResourceYaml'
 
 const UserYaml = () => {
-  const { user, loading } = useUserDetailsContext()
+  const { user } = useUserDetailsContext()
 
-  return <RBACResourceYaml resource={user} loading={loading} resourceType="User" />
+  return <RBACResourceYaml resource={user} loading={false} resourceType="User" />
 }
 
 export { UserYaml }

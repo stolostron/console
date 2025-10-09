@@ -2,9 +2,9 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../../lib/nock-util'
 import IdentitiesManagement from '../IdentitiesManagement'
 import { User, Group } from '../../../../resources/rbac'
+import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 
 jest.mock('../../../../lib/acm-i18next', () => ({
   useTranslation: jest.fn().mockReturnValue({
@@ -18,13 +18,13 @@ jest.mock('../../../../lib/acm-i18next', () => ({
   }),
 }))
 
-jest.mock('../../../../lib/useQuery', () => ({
-  useQuery: jest.fn(),
+jest.mock('../../../../shared-recoil', () => ({
+  useRecoilValue: jest.fn(),
+  useSharedAtoms: jest.fn(),
 }))
 
-import { useQuery } from '../../../../lib/useQuery'
-
-const mockUseQuery = useQuery as jest.MockedFunction<typeof useQuery>
+const mockUseRecoilValue = useRecoilValue as jest.MockedFunction<typeof useRecoilValue>
+const mockUseSharedAtoms = useSharedAtoms as jest.MockedFunction<typeof useSharedAtoms>
 
 const mockUser: User = {
   apiVersion: 'user.openshift.io/v1',
@@ -63,29 +63,17 @@ function Component({ userId = 'test-user' }: { userId?: string }) {
 
 describe('UserPage', () => {
   beforeEach(() => {
-    nockIgnoreRBAC()
-    nockIgnoreApiPaths()
-    mockUseQuery.mockClear()
+    mockUseRecoilValue.mockClear()
+    mockUseSharedAtoms.mockClear()
+
+    mockUseSharedAtoms.mockReturnValue({
+      usersState: {} as any,
+      groupsState: {} as any,
+    } as any)
   })
 
   test('should render user not found error', () => {
-    mockUseQuery
-      .mockReturnValueOnce({
-        data: [],
-        loading: false,
-        error: undefined,
-        startPolling: jest.fn(),
-        stopPolling: jest.fn(),
-        refresh: jest.fn(),
-      })
-      .mockReturnValueOnce({
-        data: [],
-        loading: false,
-        error: undefined,
-        startPolling: jest.fn(),
-        stopPolling: jest.fn(),
-        refresh: jest.fn(),
-      })
+    mockUseRecoilValue.mockReturnValue([])
 
     render(<Component userId="non-existent-user" />)
 
@@ -94,23 +82,7 @@ describe('UserPage', () => {
   })
 
   test('should render user page with navigation tabs', () => {
-    mockUseQuery
-      .mockReturnValueOnce({
-        data: [mockUser],
-        loading: false,
-        error: undefined,
-        startPolling: jest.fn(),
-        stopPolling: jest.fn(),
-        refresh: jest.fn(),
-      })
-      .mockReturnValueOnce({
-        data: mockGroups,
-        loading: false,
-        error: undefined,
-        startPolling: jest.fn(),
-        stopPolling: jest.fn(),
-        refresh: jest.fn(),
-      })
+    mockUseRecoilValue.mockReturnValueOnce([mockUser]).mockReturnValueOnce(mockGroups)
 
     render(<Component />)
 
@@ -127,23 +99,7 @@ describe('UserPage', () => {
       ...mockUser,
       fullName: undefined,
     }
-    mockUseQuery
-      .mockReturnValueOnce({
-        data: [userWithoutFullName],
-        loading: false,
-        error: undefined,
-        startPolling: jest.fn(),
-        stopPolling: jest.fn(),
-        refresh: jest.fn(),
-      })
-      .mockReturnValueOnce({
-        data: mockGroups,
-        loading: false,
-        error: undefined,
-        startPolling: jest.fn(),
-        stopPolling: jest.fn(),
-        refresh: jest.fn(),
-      })
+    mockUseRecoilValue.mockReturnValueOnce([userWithoutFullName]).mockReturnValueOnce(mockGroups)
 
     render(<Component />)
 
@@ -152,23 +108,7 @@ describe('UserPage', () => {
   })
 
   test('should find user by UID', () => {
-    mockUseQuery
-      .mockReturnValueOnce({
-        data: [mockUser],
-        loading: false,
-        error: undefined,
-        startPolling: jest.fn(),
-        stopPolling: jest.fn(),
-        refresh: jest.fn(),
-      })
-      .mockReturnValueOnce({
-        data: mockGroups,
-        loading: false,
-        error: undefined,
-        startPolling: jest.fn(),
-        stopPolling: jest.fn(),
-        refresh: jest.fn(),
-      })
+    mockUseRecoilValue.mockReturnValueOnce([mockUser]).mockReturnValueOnce(mockGroups)
 
     render(<Component userId="test-user-uid" />)
 

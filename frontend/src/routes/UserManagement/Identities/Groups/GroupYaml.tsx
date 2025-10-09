@@ -3,9 +3,9 @@ import { useGroupDetailsContext } from './GroupPage'
 import { RBACResourceYaml } from '../../../../components/RBACResourceYaml'
 
 const GroupYaml = () => {
-  const { group, loading } = useGroupDetailsContext()
+  const { group } = useGroupDetailsContext()
 
-  return <RBACResourceYaml resource={group} loading={loading} resourceType="Group" />
+  return <RBACResourceYaml resource={group} loading={false} resourceType="Group" />
 }
 
 export { GroupYaml }

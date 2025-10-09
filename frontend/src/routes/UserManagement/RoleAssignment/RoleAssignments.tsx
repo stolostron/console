@@ -6,11 +6,13 @@ import { generatePath, Link } from 'react-router-dom-v5-compat'
 import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../lib/doc-util'
+import { rbacCreate, rbacDelete, rbacPatch, useIsAnyNamespaceAuthorized } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
 import {
   deleteRoleAssignment,
   FlattenedRoleAssignment,
 } from '../../../resources/clients/multicluster-role-assignment-client'
+import { MulticlusterRoleAssignmentDefinition } from '../../../resources/multicluster-role-assignment'
 import { IRequestResult } from '../../../resources/utils/resource-request'
 import { AcmButton, AcmEmptyState, AcmTable, compareStrings, IAcmTableColumn } from '../../../ui-components'
 import { IAcmTableAction, IAcmTableButtonAction, ITableFilter } from '../../../ui-components/AcmTable/AcmTableTypes'
@@ -95,15 +97,18 @@ const ActionCell = ({
   roleAssignment,
   setModalProps,
   deleteAction,
+  canDelete,
 }: {
   roleAssignment: FlattenedRoleAssignment
   setModalProps: React.Dispatch<React.SetStateAction<BulkActionModalProps<FlattenedRoleAssignment> | { open: false }>>
   deleteAction: (roleAssignment: FlattenedRoleAssignment) => IRequestResult<unknown>
+  canDelete: boolean
 }) => (
   <RoleAssignmentActionDropdown
     roleAssignment={roleAssignment}
     setModalProps={setModalProps}
     deleteAction={deleteAction}
+    canDelete={canDelete}
   />
 )
 
@@ -123,6 +128,16 @@ const RoleAssignments = ({
   preselected,
 }: RoleAssignmentsProps) => {
   const { t } = useTranslation()
+  const unauthorizedMessage = t('rbac.unauthorized')
+
+  const canCreate = useIsAnyNamespaceAuthorized(rbacCreate(MulticlusterRoleAssignmentDefinition))
+  const canPatch = useIsAnyNamespaceAuthorized(rbacPatch(MulticlusterRoleAssignmentDefinition))
+  const canDelete = useIsAnyNamespaceAuthorized(rbacDelete(MulticlusterRoleAssignmentDefinition))
+
+  // User needs both create and patch to add role assignments
+  const canCreateRoleAssignment = canCreate && canPatch
+  // User needs both delete and patch to remove role assignments
+  const canDeleteRoleAssignment = canDelete && canPatch
 
   const keyFn = useCallback(
     (roleAssignment: FlattenedRoleAssignment) =>
@@ -178,9 +193,11 @@ const RoleAssignments = ({
           })
         },
         variant: 'bulk-action',
+        isDisabled: !canDeleteRoleAssignment,
+        tooltip: canDeleteRoleAssignment ? '' : unauthorizedMessage,
       },
     ],
-    [t, keyFn]
+    [t, keyFn, canDeleteRoleAssignment, unauthorizedMessage]
   )
 
   // Filters for FlattenedRoleAssignment
@@ -265,9 +282,11 @@ const RoleAssignments = ({
         title: t('Create role assignment'),
         click: () => setIsCreateModalOpen(true),
         variant: ButtonVariant.primary,
+        isDisabled: !canCreateRoleAssignment,
+        tooltip: canCreateRoleAssignment ? '' : unauthorizedMessage,
       },
     ],
-    [t]
+    [t, canCreateRoleAssignment, unauthorizedMessage]
   )
 
   // Action cell renderer (needs access to component state)
@@ -276,6 +295,7 @@ const RoleAssignments = ({
       roleAssignment={roleAssignment}
       setModalProps={setDeleteModalProps}
       deleteAction={deleteRoleAssignment}
+      canDelete={canDeleteRoleAssignment}
     />
   )
 
@@ -382,9 +402,12 @@ const RoleAssignments = ({
             )}
             action={
               <div>
-                {/* TODO: add RBAC for RA creation */}
-                {/* {isCreateButtonHidden ? ( */}
-                <AcmButton variant="primary" onClick={() => setIsCreateModalOpen(true)}>
+                <AcmButton
+                  variant="primary"
+                  onClick={() => setIsCreateModalOpen(true)}
+                  isDisabled={!canCreateRoleAssignment}
+                  tooltip={canCreateRoleAssignment ? '' : unauthorizedMessage}
+                >
                   {t('Create role assignment')}
                 </AcmButton>
                 {/* ) : null} */}

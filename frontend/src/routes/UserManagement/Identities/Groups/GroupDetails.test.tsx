@@ -2,9 +2,9 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../../lib/nock-util'
 import { GroupDetails } from './GroupDetails'
 import { Group } from '../../../../resources/rbac'
+import { useGroupDetailsContext } from './GroupPage'
 
 const mockGroup: Group = {
   apiVersion: 'user.openshift.io/v1',
@@ -22,8 +22,6 @@ jest.mock('./GroupPage', () => ({
   useGroupDetailsContext: jest.fn(),
 }))
 
-import { useGroupDetailsContext } from './GroupPage'
-
 const mockUseGroupDetailsContext = useGroupDetailsContext as jest.MockedFunction<typeof useGroupDetailsContext>
 
 function Component() {
@@ -38,30 +36,13 @@ function Component() {
 
 describe('GroupDetails', () => {
   beforeEach(() => {
-    nockIgnoreRBAC()
-    nockIgnoreApiPaths()
     mockUseGroupDetailsContext.mockClear()
-  })
-
-  test('should render loading state', () => {
-    mockUseGroupDetailsContext.mockReturnValue({
-      group: undefined,
-      users: undefined,
-      loading: true,
-      usersLoading: false,
-    })
-
-    render(<Component />)
-
-    expect(screen.getByText('Loading')).toBeInTheDocument()
   })
 
   test('should render group not found message', () => {
     mockUseGroupDetailsContext.mockReturnValue({
       group: undefined,
       users: undefined,
-      loading: false,
-      usersLoading: false,
     })
 
     render(<Component />)
@@ -73,8 +54,6 @@ describe('GroupDetails', () => {
     mockUseGroupDetailsContext.mockReturnValue({
       group: mockGroup,
       users: [],
-      loading: false,
-      usersLoading: false,
     })
 
     render(<Component />)
@@ -95,8 +74,6 @@ describe('GroupDetails', () => {
     mockUseGroupDetailsContext.mockReturnValue({
       group: groupWithoutName,
       users: [],
-      loading: false,
-      usersLoading: false,
     })
 
     render(<Component />)

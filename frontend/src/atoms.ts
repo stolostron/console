@@ -28,10 +28,12 @@ import {
   ClusterManagementAddOn,
   ClusterPool,
   ClusterProvision,
+  ClusterRole,
   ConfigMap,
   DiscoveredCluster,
   DiscoveryConfig,
   GitOpsCluster,
+  Group,
   HelmRelease,
   IResource,
   MachinePool,
@@ -41,6 +43,7 @@ import {
   ManagedClusterSet,
   ManagedClusterSetBinding,
   MulticlusterApplicationSetReport,
+  MulticlusterRoleAssignment,
   MultiClusterEngine,
   Namespace,
   Placement,
@@ -57,8 +60,8 @@ import {
   Subscription,
   SubscriptionOperator,
   SubscriptionReport,
+  User,
 } from './resources'
-import { MulticlusterRoleAssignment } from './resources/multicluster-role-assignment'
 
 let atomArrayKey = 0
 function AtomArray<T>() {
@@ -74,8 +77,9 @@ export const THROTTLE_EVENTS_DELAY = 500
 export const managedClusterAddonsState = AtomMap<ManagedClusterAddOn>()
 
 export const agentClusterInstallsState = AtomArray<AgentClusterInstallK8sResource>()
-export const agentsState = AtomArray<AgentK8sResource>()
+export const agentMachinesState = AtomArray<AgentMachineK8sResource>()
 export const agentServiceConfigsState = AtomArray<AgentServiceConfigK8sResource>()
+export const agentsState = AtomArray<AgentK8sResource>()
 export const ansibleJobState = AtomArray<AnsibleJob>()
 export const applicationsState = AtomArray<Application>()
 export const argoCDsState = AtomArray<IResource>()
@@ -94,7 +98,9 @@ export const configMapsState = AtomArray<ConfigMap>()
 export const discoveredClusterState = AtomArray<DiscoveredCluster>()
 export const discoveryConfigState = AtomArray<DiscoveryConfig>()
 export const gitOpsClustersState = AtomArray<GitOpsCluster>()
+export const groupsState = AtomArray<Group>()
 export const helmReleaseState = AtomArray<HelmRelease>()
+export const hostedClustersState = AtomArray<HostedClusterK8sResource>()
 export const infraEnvironmentsState = AtomArray<InfraEnvK8sResource>()
 export const infrastructuresState = AtomArray<InfrastructureK8sResource>()
 export const machinePoolsState = AtomArray<MachinePool>()
@@ -104,27 +110,27 @@ export const managedClusterSetsState = AtomArray<ManagedClusterSet>()
 export const managedClustersState = AtomArray<ManagedCluster>()
 export const multiClusterEnginesState = AtomArray<MultiClusterEngine>()
 export const multiclusterApplicationSetReportState = AtomArray<MulticlusterApplicationSetReport>()
+export const multiclusterRoleAssignmentState = AtomArray<MulticlusterRoleAssignment>()
 export const namespacesState = AtomArray<Namespace>()
 export const nmStateConfigsState = AtomArray<NMStateK8sResource>()
+export const nodePoolsState = AtomArray<NodePoolK8sResource>()
+export const placementBindingsState = AtomArray<PlacementBinding>()
+export const placementDecisionsState = AtomArray<PlacementDecision>()
+export const placementRulesState = AtomArray<PlacementRule>()
+export const placementsState = AtomArray<Placement>()
 export const policiesState = AtomArray<Policy>()
 export const policyAutomationState = AtomArray<PolicyAutomation>()
-export const policySetsState = AtomArray<PolicySet>()
-export const placementBindingsState = AtomArray<PlacementBinding>()
-export const placementsState = AtomArray<Placement>()
-export const placementRulesState = AtomArray<PlacementRule>()
-export const placementDecisionsState = AtomArray<PlacementDecision>()
 export const policyreportState = AtomArray<PolicyReport>()
+export const policySetsState = AtomArray<PolicySet>()
 export const searchOperatorState = AtomArray<SearchOperator>()
 export const secretsState = AtomArray<Secret>()
 export const storageClassState = AtomArray<StorageClassK8sResource>()
 export const submarinerConfigsState = AtomArray<SubmarinerConfig>()
-export const subscriptionsState = AtomArray<Subscription>()
 export const subscriptionOperatorsState = AtomArray<SubscriptionOperator>()
 export const subscriptionReportsState = AtomArray<SubscriptionReport>()
-export const hostedClustersState = AtomArray<HostedClusterK8sResource>()
-export const nodePoolsState = AtomArray<NodePoolK8sResource>()
-export const agentMachinesState = AtomArray<AgentMachineK8sResource>()
-export const multiclusterRoleAssignmentState = AtomArray<MulticlusterRoleAssignment>()
+export const subscriptionsState = AtomArray<Subscription>()
+export const usersState = AtomArray<User>()
+export const vmClusterRolesState = AtomArray<ClusterRole>()
 
 export const settingsState = atom<Settings>({ key: 'settings', default: {} })
 
