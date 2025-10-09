@@ -30,9 +30,7 @@ import { exportObjectString, filterLabelFn } from '../../../resources/utils'
 import { isEqual } from 'lodash'
 
 function nameCell(item: DiscoveredPolicyTableItem): ReactNode {
-  const destination = item.policies[0].apigroup.includes('gatekeeper')
-    ? NavigationPath.discoveredByCluster
-    : NavigationPath.discoveredResources
+  const destination = NavigationPath.discoveredResources
   return (
     <Link
       to={generatePath(destination, {

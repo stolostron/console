@@ -1,22 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Card, CardBody, CardTitle, Icon, PageSection, Skeleton } from '@patternfly/react-core'
+import { Button, Card, CardBody, CardTitle, Icon, PageSection, Skeleton, Tooltip } from '@patternfly/react-core'
 import {
   CheckCircleIcon,
   ExclamationCircleIcon,
   ExclamationTriangleIcon,
   ExternalLinkAltIcon,
+  HelpIcon,
 } from '@patternfly/react-icons'
 import { ReactNode, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { generatePath, Link } from 'react-router-dom-v5-compat'
 import { NavigationPath } from '../../../../NavigationPath'
-import {
-  AcmEmptyState,
-  AcmTable,
-  AcmTablePaginationContextProvider,
-  compareStrings,
-  IAcmTableColumn,
-} from '../../../../ui-components'
+import { AcmTable, AcmTablePaginationContextProvider, compareStrings, IAcmTableColumn } from '../../../../ui-components'
 import { DiffModal } from '../../components/DiffModal'
 
 import { useDiscoveredDetailsContext } from './DiscoveredPolicyDetailsPage'
@@ -25,11 +20,25 @@ import { emptyResources } from '../../common/util'
 import { flexKyvernoMessages } from '../../policies/policy-details/PolicyTemplateDetail/KyvernoTable'
 
 export function DiscoveredResources() {
-  const { policyKind, apiGroup, isFetching, relatedResources } = useDiscoveredDetailsContext()
+  const { policyKind, apiGroup, isFetching, relatedResources, policyItems } = useDiscoveredDetailsContext()
   const { t } = useTranslation()
   const [relatedObjects, setRelatedObjects] = useState<any>(undefined)
   const isVAPB = apiGroup === 'admissionregistration.k8s.io' && policyKind === 'ValidatingAdmissionPolicyBinding'
   const isGatekeeperMutation = apiGroup === 'mutations.gatekeeper.sh'
+
+  const totalViolations = useMemo(() => {
+    // Only calculate for Gatekeeper constraints
+    if (apiGroup !== 'constraints.gatekeeper.sh') return 0
+
+    const policies = policyItems?.[0]?.policies
+    if (!policies) return 0
+
+    // Sum up violations across all clusters for this policy
+    return policies.reduce((sum, policy) => {
+      const violations = policy.totalViolations ?? 0
+      return sum + violations
+    }, 0)
+  }, [policyItems, apiGroup])
 
   useEffect(() => {
     if (!isFetching) {
@@ -136,7 +145,6 @@ export function DiscoveredResources() {
                     },
                   }
                 }, {})
-
                 break
               case 'CertificatePolicy':
                 update.certificateMessages = viewResponse?.result?.status?.compliancyDetails
@@ -146,6 +154,21 @@ export function DiscoveredResources() {
                 update.kyvernoMessages = viewResponse?.result?.results.map((r: any) => {
                   return { ruleName: r.rule, message: r.message }
                 })
+                break
+              default:
+                if (tmpl.apiGroup === 'constraints.gatekeeper.sh') {
+                  update.reasons = viewResponse?.result?.status?.violations?.reduce((acc: any, violation: any) => {
+                    const key =
+                      `${tmpl.clusterName}:${violation?.kind}:${violation?.group ? violation.group + '/' + violation?.version : violation?.version}` +
+                      `:${violation?.namespace}:${violation?.name}`
+                    return {
+                      ...acc,
+                      [key]: {
+                        reason: violation?.message,
+                      },
+                    }
+                  }, {})
+                }
                 break
             }
             setReasonCache((cache: any) => {
@@ -160,7 +183,11 @@ export function DiscoveredResources() {
   }, [reasonCache])
 
   const reasonColumn: IAcmTableColumn<any> = useMemo(() => {
-    if (apiGroup === 'policy.open-cluster-management.io' || apiGroup === 'kyverno.io') {
+    if (
+      apiGroup === 'policy.open-cluster-management.io' ||
+      apiGroup === 'kyverno.io' ||
+      apiGroup === 'constraints.gatekeeper.sh'
+    ) {
       return {
         header: t('Reason'),
         cell: (item: any) => {
@@ -187,7 +214,11 @@ export function DiscoveredResources() {
           } else if (foundReasons.loading === false) {
             if (apiGroup === 'kyverno.io' && foundReasons?.kyvernoMessages) {
               return flexKyvernoMessages(foundReasons.kyvernoMessages)
-            } else if (policyKind === 'ConfigurationPolicy' || policyKind === 'OperatorPolicy') {
+            } else if (
+              policyKind === 'ConfigurationPolicy' ||
+              policyKind === 'OperatorPolicy' ||
+              apiGroup === 'constraints.gatekeeper.sh'
+            ) {
               const key = `${item.cluster}:${item.kind}:${item.groupversion}:${item.namespace}:${item.name}`
               const reasonInfo = foundReasons.reasons?.[key]
 
@@ -284,22 +315,35 @@ export function DiscoveredResources() {
   }, [isVAPB, isGatekeeperMutation, violationColumn, reasonColumn, t])
 
   const emptyState: JSX.Element = useMemo(() => {
-    if (apiGroup.includes('gatekeeper')) {
-      return (
-        <AcmEmptyState
-          title={t('No related resources')}
-          message={t('Related resources are not collected for Gatekeeper resources across clusters.')}
-        />
-      )
-    }
     return emptyResources(isVAPB, isGatekeeperMutation, t)
-  }, [isVAPB, isGatekeeperMutation, apiGroup, t])
+  }, [isVAPB, isGatekeeperMutation, t])
+
+  const gatekeeperTooltip = useMemo(() => {
+    const shouldShowTooltip = relatedObjects?.length && relatedObjects.length < totalViolations
+    if (!shouldShowTooltip) return null
+
+    return (
+      <Tooltip content={t('discoveredPolicies.tooltip.gatekeeperRelatedResources', { limit: relatedObjects.length })}>
+        <Button
+          variant="plain"
+          aria-label="More info"
+          onClick={(e) => e.preventDefault()}
+          className="pf-v5-c-form__group-label-help"
+          style={{ marginLeft: 'var(--pf-v5-global--spacer--sm)' }}
+          icon={<HelpIcon />}
+        />
+      </Tooltip>
+    )
+  }, [relatedObjects?.length, totalViolations, t])
 
   return (
     <div>
       <PageSection>
         <Card>
-          <CardTitle>{isVAPB ? t('Parameter resources') : t('Related resources')}</CardTitle>
+          <CardTitle>
+            {isVAPB ? t('Parameter resources') : t('Related resources')}
+            {apiGroup === 'constraints.gatekeeper.sh' && gatekeeperTooltip}
+          </CardTitle>
           <CardBody>
             <AcmTablePaginationContextProvider localStorageKey="grc-discovered-resources">
               <AcmTable
