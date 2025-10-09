@@ -1,10 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { PageSection, Stack, Text } from '@patternfly/react-core'
 import {
   DescriptionList,
   DescriptionListTerm,
   DescriptionListGroup,
   DescriptionListDescription,
+  PageSection,
+  Stack,
+  Text,
 } from '@patternfly/react-core'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { useUserDetailsContext } from './UserPage'
