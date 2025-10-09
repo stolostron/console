@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useEffect, useState, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { PathParam, generatePath, useLocation, useNavigate, useParams } from 'react-router-dom-v5-compat'
 import {
   ACM_ENABLED_FEATURES,
@@ -61,7 +61,6 @@ const EditAICluster: React.FC = () => {
   const { name = '', namespace = '' } = useParams<PathParam<NavigationPath.editCluster>>()
   const searchParams = new URLSearchParams(search)
   const { t } = useTranslation()
-  const [patchingHoldInstallation, setPatchingHoldInstallation] = useState(true)
   const navigate = useNavigate()
   const { agentsState, clusterImageSetsState, nmStateConfigsState, clusterCuratorsState, bareMetalHostsState } =
     useSharedAtoms()
@@ -129,35 +128,11 @@ const EditAICluster: React.FC = () => {
     onSetInstallationDiskId,
   }
 
-  useEffect(() => {
-    const patch = async () => {
-      if (agentClusterInstall) {
-        try {
-          if (!agentClusterInstall.spec?.holdInstallation) {
-            await patchResource(agentClusterInstall as IResource, [
-              {
-                op: agentClusterInstall.spec?.holdInstallation === false ? 'replace' : 'add',
-                path: '/spec/holdInstallation',
-                value: true,
-              },
-            ]).promise
-          }
-        } finally {
-          setPatchingHoldInstallation(false)
-        }
-      }
-    }
-    patch()
-  }, [
-    // just once but when the ACI is loaded
-    !!agentClusterInstall,
-  ])
-
   const isNutanix = agentClusterInstall?.spec?.platformType === 'Nutanix'
 
   const clusterCurator = clusterCurators.find((c) => c.metadata?.namespace === namespace)
 
-  return patchingHoldInstallation || !clusterDeployment || !agentClusterInstall ? (
+  return !clusterDeployment || !agentClusterInstall ? (
     <LoadingState />
   ) : (
     <AcmPage
