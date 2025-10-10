@@ -9,6 +9,7 @@ COPY . .
 # Running installs concurrently fails on aarch64
 RUN npm ci --omit=optional --unsafe-perm --ignore-scripts && npm cache clean --force
 RUN cd backend && npm ci --omit=optional  --unsafe-perm --ignore-scripts && npm cache clean --force
+RUN ulimit
 RUN cd frontend && npm ci --legacy-peer-deps --unsafe-perm --ignore-scripts && npm cache clean --force
 RUN npm run build:backend
 RUN cd frontend && npm run build:plugin:mce
