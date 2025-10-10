@@ -159,17 +159,17 @@ export const getApplication = async (
       isAppSetPullModel,
       relatedPlacement,
     }
+    // a short sweet ride for argo, ocp, flux
+    if (model.isArgoApp || model.isOCPApp || model.isFluxApp) {
+      return model
+    }
+
     const appForFetch: any = { ...app }
     delete appForFetch.cluster
     delete appForFetch.status
     delete appForFetch.metadata.managedFields
     const uidata: any = await fetchAggregate(SupportedAggregate.uidata, backendUrl, appForFetch as IResource)
     ;(model as any).clusterList = uidata?.clusterList
-
-    // a short sweet ride for argo, ocp, flux
-    if (model.isArgoApp || model.isOCPApp || model.isFluxApp) {
-      return model
-    }
 
     if (isAppSet) {
       if (isAppSetPullModel) {

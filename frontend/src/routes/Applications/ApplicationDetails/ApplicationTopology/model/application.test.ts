@@ -9,7 +9,7 @@ import { ApplicationModel, ManagedCluster, RecoilStates } from '../types'
 describe('getApplication Argo', () => {
   it('returns Argo app model', async () => {
     nockIgnoreApiPaths()
-    const nocks = [nockGet(mockArgoApp), nockAggegateRequest('uidata', mockArgoApp, uidata)]
+    const nocks = [nockGet(mockArgoApp)]
     const model = await getApplication(
       appData.namespace,
       appData.name,
@@ -152,154 +152,12 @@ const result: ApplicationModel = {
   isFluxApp: false,
   isAppSetPullModel: false,
   relatedPlacement: undefined,
-  clusterList: ['local-cluster'],
 }
 interface UIData {
   clusterList: string[]
   appSetApps: ArgoApplication[]
 }
 
-const uidata: UIData = {
-  clusterList: ['local-cluster'],
-  appSetApps: [
-    {
-      apiVersion: 'argoproj.io/v1alpha1',
-      kind: 'Application',
-      metadata: {
-        name: 'magchen-old-appset-local-cluster',
-        namespace: 'openshift-gitops',
-      },
-      spec: {
-        destination: {
-          namespace: 'philip-app',
-          server: 'https://api.app-aws-central1-412-hub-n6kwd.dev11.red-chesterfield.com:6443',
-        },
-        project: 'default',
-        source: {
-          path: 'app1',
-          repoURL: 'https://github.com/philipwu08/example-k8s-app',
-          targetRevision: 'master',
-        },
-        syncPolicy: {
-          automated: {
-            prune: true,
-            selfHeal: true,
-          },
-          syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
-        },
-      },
-      status: {
-        health: {
-          status: 'Degraded',
-        },
-        history: [
-          {
-            deployStartedAt: '2023-06-19T15:38:26Z',
-            deployedAt: '2023-06-19T15:38:29Z',
-            id: 0,
-            revision: 'f56b7e6ce4501a8cb8cd446043a694fcba733dce',
-            source: {
-              path: 'app1',
-              repoURL: 'https://github.com/philipwu08/example-k8s-app',
-              targetRevision: 'master',
-            },
-          },
-        ],
-        operationState: {
-          finishedAt: '2023-06-19T15:38:29Z',
-          message: 'successfully synced (all tasks run)',
-          operation: {
-            initiatedBy: {
-              automated: true,
-            },
-            retry: {
-              limit: 5,
-            },
-            sync: {
-              prune: true,
-              revision: 'f56b7e6ce4501a8cb8cd446043a694fcba733dce',
-              syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
-            },
-          },
-          phase: 'Succeeded',
-          startedAt: '2023-06-19T15:38:26Z',
-          syncResult: {
-            resources: [
-              {
-                group: '',
-                hookPhase: 'Running',
-                kind: 'Namespace',
-                message: 'namespace/sandbox created',
-                name: 'sandbox',
-                namespace: 'philip-app',
-                status: 'Synced',
-                syncPhase: 'Sync',
-                version: 'v1',
-              },
-              {
-                group: 'apps',
-                hookPhase: 'Running',
-                kind: 'Deployment',
-                message: 'deployment.apps/example created',
-                name: 'example',
-                namespace: 'sandbox',
-                status: 'Synced',
-                syncPhase: 'Sync',
-                version: 'v1',
-              },
-            ],
-            revision: 'f56b7e6ce4501a8cb8cd446043a694fcba733dce',
-            source: {
-              path: 'app1',
-              repoURL: 'https://github.com/philipwu08/example-k8s-app',
-              targetRevision: 'master',
-            },
-          },
-        },
-        reconciledAt: '2023-06-21T14:28:42Z',
-        resources: [
-          {
-            kind: 'Namespace',
-            name: 'sandbox',
-            status: 'Synced',
-            version: 'v1',
-          },
-          {
-            group: 'apps',
-            health: {
-              message: 'Deployment "example" exceeded its progress deadline',
-              status: 'Degraded',
-            },
-            kind: 'Deployment',
-            name: 'example',
-            namespace: 'sandbox',
-            status: 'Synced',
-            version: 'v1',
-          },
-        ],
-        sourceType: 'Kustomize',
-        summary: {
-          images: ['alpinelinux/darkhttpd'],
-        },
-        sync: {
-          comparedTo: {
-            destination: {
-              namespace: 'philip-app',
-              server: 'https://api.app-aws-central1-412-hub-n6kwd.dev11.red-chesterfield.com:6443',
-            },
-            source: {
-              path: 'app1',
-              repoURL: 'https://github.com/philipwu08/example-k8s-app',
-              targetRevision: 'master',
-            },
-          },
-          revision: 'f56b7e6ce4501a8cb8cd446043a694fcba733dce',
-          status: 'Synced',
-        },
-      },
-    },
-  ],
-}
 const appData2: TestAppData = {
   namespace: 'openshift-gitops',
   name: 'magchen-old-appset',
