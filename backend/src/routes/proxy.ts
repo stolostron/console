@@ -6,7 +6,7 @@ import { URL } from 'url'
 import { logger } from '../lib/logger'
 import { notFound, unauthorized } from '../lib/respond'
 import { getToken } from '../lib/token'
-import { getCACertificate } from '../lib/serviceAccountToken'
+import { getDefaultAgent } from '../lib/agent'
 
 const proxyHeaders = [
   constants.HTTP2_HEADER_ACCEPT,
@@ -23,6 +23,15 @@ const proxyResponseHeaders = [
   constants.HTTP2_HEADER_ETAG,
 ]
 
+// Cache cluster URL to avoid parsing on every request
+let clusterUrl: URL
+function getClusterUrl(): URL {
+  if (!clusterUrl) {
+    clusterUrl = new URL(process.env.CLUSTER_API_URL)
+  }
+  return clusterUrl
+}
+
 export function proxy(req: Http2ServerRequest, res: Http2ServerResponse): void {
   const token = getToken(req)
   if (!token) return unauthorized(req, res)
@@ -34,15 +43,15 @@ export function proxy(req: Http2ServerRequest, res: Http2ServerResponse): void {
     if (req.headers[header]) headers[header] = req.headers[header]
   }
 
-  const clusterUrl = new URL(process.env.CLUSTER_API_URL)
+  const cluster = getClusterUrl()
   const options: RequestOptions = {
-    protocol: clusterUrl.protocol,
-    hostname: clusterUrl.hostname,
-    port: clusterUrl.port,
+    protocol: cluster.protocol,
+    hostname: cluster.hostname,
+    port: cluster.port,
     path: url,
     method: req.method,
     headers,
-    ca: getCACertificate(),
+    agent: getDefaultAgent(),
   }
   pipeline(
     req,

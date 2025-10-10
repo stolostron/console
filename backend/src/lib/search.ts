@@ -1,11 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { OutgoingHttpHeaders } from 'http2'
-import { RequestOptions, request } from 'https'
-import { URL } from 'url'
+import { OutgoingHttpHeaders } from 'node:http2'
+import { RequestOptions, request } from 'node:https'
+import { URL } from 'node:url'
 import { getMultiClusterHub } from '../lib/multi-cluster-hub'
-import { getNamespace, getServiceAccountToken, getServiceCACertificate } from '../lib/serviceAccountToken'
+import { getNamespace, getServiceAccountToken } from '../lib/serviceAccountToken'
 import { logger } from './logger'
 import { IQuery } from '../routes/aggregators/applications'
+import { getServiceAgent } from './agent'
 
 export type ISearchResult = {
   data: {
@@ -51,7 +52,7 @@ export async function getSearchRequestOptions(headers: OutgoingHttpHeaders): Pro
     path: url.pathname,
     method: 'POST',
     headers,
-    ca: getServiceCACertificate(),
+    agent: getServiceAgent(),
   }
   return options
 }
@@ -63,7 +64,7 @@ export async function getSearchResults(query: IQuery) {
     let body = ''
     const id = setTimeout(() => {
       logger.error(`getSearchResults request timeout`)
-      reject(Error('request timeout'))
+      reject(new Error('request timeout'))
     }, requestTimeout)
     const req = request(options, (res) => {
       res.on('data', (data) => {
@@ -75,7 +76,7 @@ export async function getSearchResults(query: IQuery) {
           const message = typeof result === 'string' ? result : result.message
           if (message) {
             logger.error(`getSearchResults return error ${message}`)
-            reject(Error(result.message))
+            reject(new Error(result.message))
           }
           resolve(result)
         } catch (e) {
@@ -83,7 +84,7 @@ export async function getSearchResults(query: IQuery) {
           // pause before next request
           logger.error(`getSearchResults parse error ${e} ${body}`)
           setTimeout(() => {
-            reject(Error(body))
+            reject(new Error(body))
           }, requestTimeout)
         }
         clearTimeout(id)
@@ -127,7 +128,7 @@ export async function pingSearchAPI() {
     const id = setTimeout(
       () => {
         logger.error(`ping searchAPI timeout`)
-        reject(Error('request timeout'))
+        reject(new Error('request timeout'))
       },
       4 * 60 * 1000
     )
