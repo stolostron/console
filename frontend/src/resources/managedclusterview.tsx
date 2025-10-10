@@ -172,8 +172,46 @@ export async function fireManagedClusterView(
 
 export async function pollManagedClusterView(viewName: string, clusterName: string): Promise<ManagedClusterView> {
   let retries = process.env.NODE_ENV === 'test' ? 0 : 20
+
+  /**
+   * FIX: Prevent phantom polling after timeout
+   * PROBLEM: setTimeout schedules polls that execute even after MCV deletion/timeout
+   * SOLUTION: Use cancelled flag to prevent queued polls from executing
+   */
+  let cancelled = false
+
   const poll = async (resolve: any, reject: any) => {
-    const response = await getManagedClusterView({ namespace: clusterName, name: viewName }).promise
+    // Check if polling was cancelled (happens when we exhaust retries)
+    if (cancelled) {
+      console.debug(`[MCV] Polling cancelled for ${viewName} on cluster ${clusterName}`)
+      return
+    }
+
+    /**
+     * FIX: Handle MCV deletion gracefully
+     * PROBLEM: getManagedClusterView throws NotFound error if MCV was deleted
+     * SOLUTION: Catch NotFound errors and reject with clear message
+     */
+    let response: ManagedClusterView | undefined
+    try {
+      response = await getManagedClusterView({ namespace: clusterName, name: viewName }).promise
+    } catch (err) {
+      // Handle case where MCV was deleted by another process or exhausted retries
+      if (err instanceof ResourceError && err.reason === 'NotFound') {
+        console.warn(
+          `[MCV] ManagedClusterView ${viewName} not found on cluster ${clusterName}. It may have been deleted.`
+        )
+        reject({
+          message: `ManagedClusterView ${viewName} was deleted or does not exist on cluster ${clusterName}.`,
+          code: 'MCV_NOT_FOUND',
+        })
+        return
+      }
+      // Other errors - propagate
+      reject(err)
+      return
+    }
+
     if (response?.status) {
       const isProcessing = _.get(response, 'status.conditions[0].type', undefined)
       const reason = _.get(response, 'status.conditions[0].reason', undefined)
@@ -198,9 +236,12 @@ export async function pollManagedClusterView(viewName: string, clusterName: stri
         console.debug('MCV poll - retries left: ', retries)
         setTimeout(poll, 100, resolve, reject)
       } else {
+        // Mark as cancelled to prevent scheduled polls from executing
+        cancelled = true
         deleteManagedClusterView({ namespace: clusterName, name: viewName })
         reject({
-          message: `Request for ManagedClusterView: ${viewName} on cluster: ${clusterName} failed due to too many requests. Make sure the work manager pod in namespace open-cluster-management-agent-addon is healthy.`,
+          message: `Request for ManagedClusterView: ${viewName} on cluster: ${clusterName} timed out after 20 retries. The resource may not exist on the managed cluster, or the work-manager pod in namespace open-cluster-management-agent-addon may be unhealthy.`,
+          code: 'MCV_TIMEOUT',
         })
       }
     }
