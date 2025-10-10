@@ -44,7 +44,10 @@ interface IArgoAppLocalResource extends IResource {
     resources: [{ namespace: string }]
   }
 }
-
+// NOTE: This interface represents Argo Application data from search results.
+// The search query does not currently include status.reconciledAt, which means
+// remote Argo Applications will not have the "Last reconciled" timestamp.
+// TODO: Enhance search query to include reconciledAt field
 export interface IArgoAppRemoteResource {
   _uid: string
   _hostingResource: string
@@ -62,6 +65,7 @@ export interface IArgoAppRemoteResource {
   cluster: string
   healthStatus: string
   syncStatus: string
+  // reconciledAt: string // TODO: Add when search includes this field
 }
 
 let hubClusterName: string
@@ -329,6 +333,7 @@ function getRemoteArgoApps(ocpAppSetFilter: Set<string>, remoteArgoApps: IResour
           sync: {
             status: argoApp.syncStatus,
           },
+          // reconciledAt: argoApp.reconciledAt, // TODO: Add when search includes this field
         },
       } as IResource)
     }
