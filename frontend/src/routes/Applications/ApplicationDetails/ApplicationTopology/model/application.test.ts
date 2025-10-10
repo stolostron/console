@@ -1,6 +1,12 @@
 // Copyright Contributors to the Open Cluster Management project
 
-import { Placement, ArgoApplication, ApplicationSet } from '../../../../../resources'
+import {
+  Placement,
+  ArgoApplication,
+  ApplicationSet,
+  ArgoApplicationApiVersion,
+  ArgoApplicationKind,
+} from '../../../../../resources'
 import { getApplication } from './application'
 import { nockGet, nockAggegateRequest, nockIgnoreApiPaths } from '../../../../../lib/nock-util'
 import { waitForNocks } from '../../../../../lib/test-util'
@@ -9,7 +15,7 @@ import { ApplicationModel, ManagedCluster, RecoilStates } from '../types'
 describe('getApplication Argo', () => {
   it('returns Argo app model', async () => {
     nockIgnoreApiPaths()
-    const nocks = [nockGet(mockArgoApp), nockAggegateRequest('uidata', mockArgoApp, uidata)]
+    const nocks = [nockGet(mockArgoApp)]
     const model = await getApplication(
       appData.namespace,
       appData.name,
@@ -152,154 +158,12 @@ const result: ApplicationModel = {
   isFluxApp: false,
   isAppSetPullModel: false,
   relatedPlacement: undefined,
-  clusterList: ['local-cluster'],
 }
 interface UIData {
   clusterList: string[]
   appSetApps: ArgoApplication[]
 }
 
-const uidata: UIData = {
-  clusterList: ['local-cluster'],
-  appSetApps: [
-    {
-      apiVersion: 'argoproj.io/v1alpha1',
-      kind: 'Application',
-      metadata: {
-        name: 'magchen-old-appset-local-cluster',
-        namespace: 'openshift-gitops',
-      },
-      spec: {
-        destination: {
-          namespace: 'philip-app',
-          server: 'https://api.app-aws-central1-412-hub-n6kwd.dev11.red-chesterfield.com:6443',
-        },
-        project: 'default',
-        source: {
-          path: 'app1',
-          repoURL: 'https://github.com/philipwu08/example-k8s-app',
-          targetRevision: 'master',
-        },
-        syncPolicy: {
-          automated: {
-            prune: true,
-            selfHeal: true,
-          },
-          syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
-        },
-      },
-      status: {
-        health: {
-          status: 'Degraded',
-        },
-        history: [
-          {
-            deployStartedAt: '2023-06-19T15:38:26Z',
-            deployedAt: '2023-06-19T15:38:29Z',
-            id: 0,
-            revision: 'f56b7e6ce4501a8cb8cd446043a694fcba733dce',
-            source: {
-              path: 'app1',
-              repoURL: 'https://github.com/philipwu08/example-k8s-app',
-              targetRevision: 'master',
-            },
-          },
-        ],
-        operationState: {
-          finishedAt: '2023-06-19T15:38:29Z',
-          message: 'successfully synced (all tasks run)',
-          operation: {
-            initiatedBy: {
-              automated: true,
-            },
-            retry: {
-              limit: 5,
-            },
-            sync: {
-              prune: true,
-              revision: 'f56b7e6ce4501a8cb8cd446043a694fcba733dce',
-              syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
-            },
-          },
-          phase: 'Succeeded',
-          startedAt: '2023-06-19T15:38:26Z',
-          syncResult: {
-            resources: [
-              {
-                group: '',
-                hookPhase: 'Running',
-                kind: 'Namespace',
-                message: 'namespace/sandbox created',
-                name: 'sandbox',
-                namespace: 'philip-app',
-                status: 'Synced',
-                syncPhase: 'Sync',
-                version: 'v1',
-              },
-              {
-                group: 'apps',
-                hookPhase: 'Running',
-                kind: 'Deployment',
-                message: 'deployment.apps/example created',
-                name: 'example',
-                namespace: 'sandbox',
-                status: 'Synced',
-                syncPhase: 'Sync',
-                version: 'v1',
-              },
-            ],
-            revision: 'f56b7e6ce4501a8cb8cd446043a694fcba733dce',
-            source: {
-              path: 'app1',
-              repoURL: 'https://github.com/philipwu08/example-k8s-app',
-              targetRevision: 'master',
-            },
-          },
-        },
-        reconciledAt: '2023-06-21T14:28:42Z',
-        resources: [
-          {
-            kind: 'Namespace',
-            name: 'sandbox',
-            status: 'Synced',
-            version: 'v1',
-          },
-          {
-            group: 'apps',
-            health: {
-              message: 'Deployment "example" exceeded its progress deadline',
-              status: 'Degraded',
-            },
-            kind: 'Deployment',
-            name: 'example',
-            namespace: 'sandbox',
-            status: 'Synced',
-            version: 'v1',
-          },
-        ],
-        sourceType: 'Kustomize',
-        summary: {
-          images: ['alpinelinux/darkhttpd'],
-        },
-        sync: {
-          comparedTo: {
-            destination: {
-              namespace: 'philip-app',
-              server: 'https://api.app-aws-central1-412-hub-n6kwd.dev11.red-chesterfield.com:6443',
-            },
-            source: {
-              path: 'app1',
-              repoURL: 'https://github.com/philipwu08/example-k8s-app',
-              targetRevision: 'master',
-            },
-          },
-          revision: 'f56b7e6ce4501a8cb8cd446043a694fcba733dce',
-          status: 'Synced',
-        },
-      },
-    },
-  ],
-}
 const appData2: TestAppData = {
   namespace: 'openshift-gitops',
   name: 'magchen-old-appset',
@@ -26206,3 +26070,328 @@ const uidata3: UIData = {
     },
   ],
 }
+
+// ===== NEW TESTS FOR PR ACM-25077 =====
+
+describe('getApplication Argo - Hub cluster push model', () => {
+  it('should fetch Argo app from hub cluster directly when cluster=hub', async () => {
+    nockIgnoreApiPaths()
+
+    const hubClusterName = 'local-cluster'
+    const mockArgoAppOnHub = {
+      apiVersion: ArgoApplicationApiVersion,
+      kind: ArgoApplicationKind,
+      metadata: {
+        name: 'test-push-app',
+        namespace: 'openshift-gitops',
+      },
+      spec: {
+        destination: {
+          name: 'rbrunopi-aws-01',
+          namespace: 'test-app',
+        },
+        source: {
+          repoURL: 'https://github.com/test/repo',
+          path: 'app',
+        },
+      },
+      status: {
+        health: { status: 'Healthy' },
+        sync: { status: 'Synced' },
+      },
+    }
+
+    const nocks = [nockGet(mockArgoAppOnHub)]
+
+    const model = await getApplication(
+      'openshift-gitops',
+      'test-push-app',
+      process.env.JEST_DEFAULT_HOST as string,
+      undefined,
+      { multiclusterApplicationSetReports: [] } as unknown as RecoilStates,
+      hubClusterName, // cluster parameter = hub
+      'application.argoproj.io',
+      [
+        {
+          name: 'local-cluster',
+          namespace: 'local-cluster',
+          kubeApiServer: 'https://api.hub.example.com:6443',
+          status: 'ready',
+        },
+        {
+          name: 'rbrunopi-aws-01',
+          namespace: 'rbrunopi-aws-01',
+          kubeApiServer: 'https://api.managed.example.com:6443',
+          status: 'ready',
+        },
+      ],
+      hubClusterName
+    )
+
+    await waitForNocks(nocks)
+    expect(model).toBeDefined()
+    expect(model?.isArgoApp).toBe(true)
+    expect(model?.app).toBeDefined()
+    // The destination cluster should be set from spec.destination.name
+    expect((model?.app as any).status.cluster).toBe('rbrunopi-aws-01')
+  })
+
+  it('should set destination cluster from server URL when name is not provided', async () => {
+    nockIgnoreApiPaths()
+
+    const hubClusterName = 'local-cluster'
+    const mockArgoAppWithServerURL = {
+      apiVersion: ArgoApplicationApiVersion,
+      kind: ArgoApplicationKind,
+      metadata: {
+        name: 'test-server-app',
+        namespace: 'openshift-gitops',
+      },
+      spec: {
+        destination: {
+          server: 'https://api.managed.example.com:6443',
+          namespace: 'test-app',
+        },
+        source: {
+          repoURL: 'https://github.com/test/repo',
+          path: 'app',
+        },
+      },
+      status: {
+        health: { status: 'Healthy' },
+      },
+    }
+
+    const nocks = [nockGet(mockArgoAppWithServerURL)]
+
+    const model = await getApplication(
+      'openshift-gitops',
+      'test-server-app',
+      process.env.JEST_DEFAULT_HOST as string,
+      undefined,
+      { multiclusterApplicationSetReports: [] } as unknown as RecoilStates,
+      hubClusterName,
+      'application.argoproj.io',
+      [
+        {
+          name: 'local-cluster',
+          namespace: 'local-cluster',
+          kubeApiServer: 'https://api.hub.example.com:6443',
+          status: 'ready',
+        },
+        {
+          name: 'rbrunopi-aws-01',
+          namespace: 'rbrunopi-aws-01',
+          kubeApiServer: 'https://api.managed.example.com:6443',
+          status: 'ready',
+        },
+      ],
+      hubClusterName
+    )
+
+    await waitForNocks(nocks)
+    expect(model).toBeDefined()
+    // Destination cluster should be resolved from server URL
+    expect((model?.app as any).status.cluster).toBe('rbrunopi-aws-01')
+  })
+
+  it('should keep hub cluster when destination is in-cluster', async () => {
+    nockIgnoreApiPaths()
+
+    const hubClusterName = 'local-cluster'
+    const mockArgoAppInCluster = {
+      apiVersion: ArgoApplicationApiVersion,
+      kind: ArgoApplicationKind,
+      metadata: {
+        name: 'test-in-cluster-app',
+        namespace: 'openshift-gitops',
+      },
+      spec: {
+        destination: {
+          name: 'in-cluster',
+          namespace: 'test-app',
+        },
+        source: {
+          repoURL: 'https://github.com/test/repo',
+          path: 'app',
+        },
+      },
+      status: {
+        health: { status: 'Healthy' },
+      },
+    }
+
+    const nocks = [nockGet(mockArgoAppInCluster)]
+
+    const model = await getApplication(
+      'openshift-gitops',
+      'test-in-cluster-app',
+      process.env.JEST_DEFAULT_HOST as string,
+      undefined,
+      { multiclusterApplicationSetReports: [] } as unknown as RecoilStates,
+      hubClusterName,
+      'application.argoproj.io',
+      [
+        {
+          name: 'local-cluster',
+          namespace: 'local-cluster',
+          kubeApiServer: 'https://api.hub.example.com:6443',
+          status: 'ready',
+        },
+      ],
+      hubClusterName
+    )
+
+    await waitForNocks(nocks)
+    expect(model).toBeDefined()
+    // Should remain as hub cluster for in-cluster destinations
+    expect((model?.app as any).status.cluster).toBe(hubClusterName)
+  })
+
+  it('should handle errors when fetching from hub cluster', async () => {
+    nockIgnoreApiPaths()
+
+    const hubClusterName = 'local-cluster'
+    const mockError = {
+      kind: 'Status',
+      apiVersion: 'v1',
+      metadata: {},
+      status: 'Failure',
+      message: 'applications.argoproj.io "nonexistent-app" not found',
+      reason: 'NotFound',
+      code: 404,
+    }
+
+    const nocks = [
+      nockGet(
+        {
+          apiVersion: ArgoApplicationApiVersion,
+          kind: ArgoApplicationKind,
+          metadata: {
+            name: 'nonexistent-app',
+            namespace: 'openshift-gitops',
+          },
+        },
+        mockError as any,
+        404,
+        false
+      ),
+    ]
+
+    const model = await getApplication(
+      'openshift-gitops',
+      'nonexistent-app',
+      process.env.JEST_DEFAULT_HOST as string,
+      undefined,
+      { multiclusterApplicationSetReports: [] } as unknown as RecoilStates,
+      hubClusterName,
+      'application.argoproj.io',
+      [],
+      hubClusterName
+    )
+
+    await waitForNocks(nocks)
+    expect(model).toBeUndefined()
+  })
+})
+
+describe('getApplication - Early return for Argo/OCP/Flux apps', () => {
+  it('should return Argo app model without calling fetchAggregate', async () => {
+    nockIgnoreApiPaths()
+
+    const mockArgoApp = {
+      apiVersion: ArgoApplicationApiVersion,
+      kind: ArgoApplicationKind,
+      metadata: {
+        name: 'simple-argo-app',
+        namespace: 'openshift-gitops',
+      },
+      spec: {
+        destination: {
+          name: 'test-cluster',
+          namespace: 'test-app',
+        },
+        source: {
+          repoURL: 'https://github.com/test/repo',
+          path: 'app',
+        },
+      },
+      status: {
+        health: { status: 'Healthy' },
+        sync: { status: 'Synced' },
+      },
+    }
+
+    const nocks = [nockGet(mockArgoApp)]
+
+    // Do NOT mock fetchAggregate - test ensures it's not called
+    const model = await getApplication(
+      'openshift-gitops',
+      'simple-argo-app',
+      process.env.JEST_DEFAULT_HOST as string,
+      undefined,
+      {} as RecoilStates,
+      undefined,
+      'application.argoproj.io',
+      []
+    )
+
+    await waitForNocks(nocks)
+    expect(model).toBeDefined()
+    expect(model?.isArgoApp).toBe(true)
+    // Should return early without aggregate data
+    expect((model as any).clusterList).toBeUndefined()
+  })
+
+  it('should return OCP app model without calling fetchAggregate', async () => {
+    nockIgnoreApiPaths()
+
+    const model = await getApplication(
+      'test-namespace',
+      'ocp-app',
+      process.env.JEST_DEFAULT_HOST as string,
+      undefined,
+      {} as RecoilStates,
+      'test-cluster',
+      'ocp',
+      [
+        {
+          name: 'test-cluster',
+          namespace: 'test-cluster',
+          kubeApiServer: 'https://api.test.example.com:6443',
+          status: 'ready',
+        },
+      ]
+    )
+
+    expect(model).toBeDefined()
+    expect(model?.isOCPApp).toBe(true)
+    expect((model as any).clusterList).toBeUndefined()
+  })
+
+  it('should return Flux app model without calling fetchAggregate', async () => {
+    nockIgnoreApiPaths()
+
+    const model = await getApplication(
+      'test-namespace',
+      'flux-app',
+      process.env.JEST_DEFAULT_HOST as string,
+      undefined,
+      {} as RecoilStates,
+      'test-cluster',
+      'flux',
+      [
+        {
+          name: 'test-cluster',
+          namespace: 'test-cluster',
+          kubeApiServer: 'https://api.test.example.com:6443',
+          status: 'ready',
+        },
+      ]
+    )
+
+    expect(model).toBeDefined()
+    expect(model?.isFluxApp).toBe(true)
+    expect((model as any).clusterList).toBeUndefined()
+  })
+})
