@@ -1,8 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useLocation } from 'react-router-dom-v5-compat'
 import { getBackendUrl, IRequestResult, postRequest } from '../resources/utils'
+import { useLocalHubName } from '../hooks/use-local-hub'
 
 export const apiSearchUrl = '/proxy/search'
 const searchFilterQuery =
@@ -33,22 +34,27 @@ export type SearchQuery = {
   query: string
 }
 
-export function querySearchDisabledManagedClusters(): IRequestResult<ISearchResult> {
-  return postRequest<SearchQuery, ISearchResult>(getBackendUrl() + apiSearchUrl, {
-    operationName: 'searchResult',
-    variables: {
-      input: [
-        {
-          filters: [
-            { property: 'kind', values: ['Cluster'] },
-            { property: 'addon', values: ['search-collector=false'] },
-            { property: 'name', values: ['!local-cluster'] },
+export function useQuerySearchDisabledManagedClusters(): () => IRequestResult<ISearchResult> {
+  const localHubName = useLocalHubName()
+  return useCallback(
+    () =>
+      postRequest<SearchQuery, ISearchResult>(getBackendUrl() + apiSearchUrl, {
+        operationName: 'searchResult',
+        variables: {
+          input: [
+            {
+              filters: [
+                { property: 'kind', values: ['Cluster'] },
+                { property: 'addon', values: ['search-collector=false'] },
+                { property: 'name', values: [`!${localHubName}`] },
+              ],
+            },
           ],
         },
-      ],
-    },
-    query: searchFilterQuery,
-  })
+        query: searchFilterQuery,
+      }),
+    [localHubName]
+  )
 }
 
 export function useSearchParams() {

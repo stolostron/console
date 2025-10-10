@@ -17,11 +17,7 @@ import {
   VisualizationProvider,
   isNode,
 } from '@patternfly/react-topology'
-import { ToolbarItem } from '@patternfly/react-core'
-import { Split } from '@patternfly/react-core'
-import { SplitItem } from '@patternfly/react-core'
-import { Alert } from '@patternfly/react-core'
-import { Button } from '@patternfly/react-core'
+import { ToolbarItem, Split, SplitItem, Alert, Button } from '@patternfly/react-core'
 import layoutFactory from './layout/layoutFactory'
 import getLayoutModel from './layout/layoutModel'
 import '@patternfly/patternfly/patternfly.css'
@@ -39,7 +35,7 @@ import './components/future/topology-components.css'
 import './components/future/topology-controlbar.css'
 import './components/future/topology-view.css'
 import { NavigationPath } from '../../../../../NavigationPath'
-import { querySearchDisabledManagedClusters } from '../../../../../lib/search'
+import { useQuerySearchDisabledManagedClusters } from '../../../../../lib/search'
 import { useQuery } from '../../../../../lib/useQuery'
 import { TFunction } from 'react-i18next'
 
@@ -102,13 +98,14 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
   const [isSearchDisabled, setIsSearchDisabled] = useState<boolean>(false)
   const clusterNodes = elements.nodes.filter((node) => node.type === 'cluster')
   const clusterNames = clusterNodes.map((clusterNode) => clusterNode.name)
-  const { data, startPolling } = useQuery(querySearchDisabledManagedClusters)
+  const queryDisabled = useQuerySearchDisabledManagedClusters()
+  const { data, startPolling } = useQuery(queryDisabled)
 
   useEffect(startPolling, [startPolling])
   useEffect(() => {
     const clustersWithSearchDisabled = data?.[0]?.data?.searchResult?.[0]?.items || []
-    const clusterWithDisabledSearch = clustersWithSearchDisabled.map((item: { name: string }) => item.name)
-    const found = clusterNames.some((r) => clusterWithDisabledSearch.includes(r))
+    const clusterWithDisabledSearch = new Set(clustersWithSearchDisabled.map((item: { name: string }) => item.name))
+    const found = clusterNames.some((r) => clusterWithDisabledSearch.has(r))
     if (found) {
       setIsSearchDisabled(true)
     }
