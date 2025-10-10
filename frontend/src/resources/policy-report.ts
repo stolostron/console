@@ -38,5 +38,7 @@ export interface PolicyReportResults {
     total_risk: string
     component: string
     extra_data?: string
+    reason?: string
+    resolution?: string
   }
 }

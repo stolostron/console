@@ -4,12 +4,12 @@ import { useContext, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom-v5-compat'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { PluginContext } from '../../../../../lib/PluginContext'
+import { SupportedAggregate, useAggregate } from '../../../../../lib/useAggregates'
 import { getClusterNavPath, NavigationPath } from '../../../../../NavigationPath'
 import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
 import { AcmCountCardSection, AcmDrawerContext } from '../../../../../ui-components'
 import { useClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 import { ClusterPolicySidebar } from './ClusterPolicySidebar'
-import { SupportedAggregate, useAggregate } from '../../../../../lib/useAggregates'
 
 export function StatusSummaryCount() {
   const { policyreportState, usePolicies } = useSharedAtoms()
@@ -54,12 +54,17 @@ export function StatusSummaryCount() {
   useEffect(() => {
     const autoShowIssueSidebar = decodeURIComponent(window.location.search).includes('showClusterIssues=true')
     if (autoShowIssueSidebar && policyReportViolationsCount > 0) {
-      setDrawerContext({
-        isExpanded: true,
-        onCloseClick: () => setDrawerContext(undefined),
-        panelContent: <ClusterPolicySidebar data={policyReport} />,
-        panelContentProps: { minSize: '50%' },
-      })
+      // Add a small delay to ensure the drawer context is ready after location change
+      const timeoutId = setTimeout(() => {
+        setDrawerContext({
+          isExpanded: true,
+          onCloseClick: () => setDrawerContext(undefined),
+          panelContent: <ClusterPolicySidebar data={policyReport} />,
+          panelContentProps: { minSize: '50%' },
+        })
+      }, 100) // 100ms delay to ensure drawer context is ready
+
+      return () => clearTimeout(timeoutId)
     }
   }, [policyReport, policyReportViolationsCount, setDrawerContext])
 
