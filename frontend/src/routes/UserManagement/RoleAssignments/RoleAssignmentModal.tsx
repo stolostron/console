@@ -37,10 +37,6 @@ const RoleAssignmentModal = ({ close, isOpen, isEditing, preselected }: RoleAssi
       },
       multiClusterRoleAssignments
     )
-    const existingMultiClusterRoleAssignment =
-      existingRoleAssignments?.length > 0
-        ? existingRoleAssignments.at(-1)?.relatedMulticlusterRoleAssignment
-        : undefined
 
     const roleAssignmentsToSave: {
       roleAssignment: Omit<RoleAssignment, 'name'>
@@ -66,9 +62,23 @@ const RoleAssignmentModal = ({ close, isOpen, isEditing, preselected }: RoleAssi
       }
     }
 
+    // Build quick lookup for existing assignments by subject+role to avoid O(n^2) scans
+    const existingBySubjectRole = new Map<string, any>()
+    for (const ra of existingRoleAssignments) {
+      const key = `${ra.subject.kind}|${ra.subject.name}|${ra.clusterRole}`
+      existingBySubjectRole.set(key, ra.relatedMulticlusterRoleAssignment)
+    }
+
     await Promise.all(
-      roleAssignmentsToSave.map((roleAssignment) =>
-        addRoleAssignment(roleAssignment.roleAssignment, roleAssignment.subject, existingMultiClusterRoleAssignment)
+      roleAssignmentsToSave.map((roleAssignment) => {
+        const lookupKey = `${roleAssignment.subject.kind}|${roleAssignment.subject.name}|${roleAssignment.roleAssignment.clusterRole}`
+        const existingMultiClusterRoleAssignment = existingBySubjectRole.get(lookupKey)
+
+        return addRoleAssignment(
+          roleAssignment.roleAssignment,
+          roleAssignment.subject,
+          existingMultiClusterRoleAssignment
+        )
           .promise.then(() =>
             toastContext.addAlert({
               title: t('Role assignment added'),
@@ -93,7 +103,7 @@ const RoleAssignmentModal = ({ close, isOpen, isEditing, preselected }: RoleAssi
               autoClose: true,
             })
           })
-      )
+      })
     )
     close()
   }

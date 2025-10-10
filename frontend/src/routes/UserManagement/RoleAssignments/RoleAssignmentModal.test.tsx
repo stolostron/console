@@ -253,7 +253,13 @@ describe('RoleAssignmentModal', () => {
     it('should handle missing clusterNames and use existing role assignment', async () => {
       const existingAssignment = { metadata: { name: 'existing' } } as any
 
-      mockFindRoleAssignments.mockReturnValue([{ relatedMulticlusterRoleAssignment: existingAssignment }] as any)
+      mockFindRoleAssignments.mockReturnValue([
+        {
+          subject: { kind: UserKind, name: 'user1' },
+          clusterRole: 'admin',
+          relatedMulticlusterRoleAssignment: existingAssignment,
+        },
+      ] as any)
 
       mockAddRoleAssignment.mockReturnValue({
         promise: Promise.resolve({}) as any,
@@ -278,6 +284,57 @@ describe('RoleAssignmentModal', () => {
         expect(mockAddRoleAssignment).toHaveBeenCalled()
         expect(mockAddRoleAssignment.mock.calls[0][2]).toBe(existingAssignment)
         expect(mockAddRoleAssignment.mock.calls[0][0].clusterSelection.clusterNames).toEqual([])
+      })
+    })
+
+    it('should handle multiple users', async () => {
+      const existingAssignment = { metadata: { name: 'existing' } } as any
+
+      // Only user1 has existing role assignment
+      mockFindRoleAssignments.mockReturnValue([
+        {
+          subject: { kind: UserKind, name: 'user1' },
+          clusterRole: 'admin',
+          relatedMulticlusterRoleAssignment: existingAssignment,
+        },
+      ] as any)
+
+      mockAddRoleAssignment.mockReturnValue({
+        promise: Promise.resolve({}) as any,
+        abort: jest.fn(),
+      })
+
+      render(
+        <TestWrapper>
+          <RoleAssignmentModal close={mockClose} isOpen={true} />
+        </TestWrapper>
+      )
+
+      await waitFor(() => expect(capturedOnSubmit).not.toBeNull())
+
+      await capturedOnSubmit({
+        subject: { kind: UserKind, user: ['user1', 'user2'] },
+        scope: { kind: 'all' },
+        roles: ['admin'],
+      })
+
+      await waitFor(() => {
+        expect(mockAddRoleAssignment).toHaveBeenCalledTimes(2)
+        // 1st call: user1 should reuse existing assignment
+        expect(mockAddRoleAssignment).toHaveBeenNthCalledWith(
+          1,
+          expect.any(Object), // roleAssignment payload
+          expect.objectContaining({ name: 'user1' }),
+          existingAssignment
+        )
+
+        // 2nd call: user2 should create a new assignment (no existing)
+        expect(mockAddRoleAssignment).toHaveBeenNthCalledWith(
+          2,
+          expect.any(Object),
+          expect.objectContaining({ name: 'user2' }),
+          undefined
+        )
       })
     })
 
