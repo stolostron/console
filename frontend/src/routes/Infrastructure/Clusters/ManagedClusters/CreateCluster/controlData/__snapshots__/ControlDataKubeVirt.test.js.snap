@@ -348,7 +348,7 @@ exports[`Cluster creation control data for KubeVirt generates correctly 1`] = `
       {
         "active": true,
         "disabled": true,
-        "id": "defaultPodNetwork",
+        "id": "attachDefaultNetwork",
         "name": "Attach default pod network",
         "tooltip": "Check this box to attach the default pod network to nodes from this pool.",
         "type": "checkbox",
@@ -806,7 +806,7 @@ exports[`Cluster creation control data for KubeVirt generates correctly for MCE 
       {
         "active": true,
         "disabled": true,
-        "id": "defaultPodNetwork",
+        "id": "attachDefaultNetwork",
         "name": "Attach default pod network",
         "tooltip": "Check this box to attach the default pod network to nodes from this pool.",
         "type": "checkbox",

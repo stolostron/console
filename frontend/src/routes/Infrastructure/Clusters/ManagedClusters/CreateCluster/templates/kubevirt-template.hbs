@@ -174,10 +174,10 @@ spec:
           {{/if}}
         {{/each}}
       {{/if}}
-      {{#if defaultPodNetwork}}
-      defaultPodNetwork: true
+      {{#if attachDefaultNetwork}}
+      attachDefaultNetwork: true
       {{else}}
-      defaultPodNetwork: false
+      attachDefaultNetwork: false
       {{/if}}
   release:
     image: {{{@root.releaseImage}}}
