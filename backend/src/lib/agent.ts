@@ -1,8 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Agent } from 'https'
+import { Agent, AgentOptions } from 'node:https'
 import { getCACertificate, getServiceCACertificate } from './serviceAccountToken'
 import { HttpsProxyAgent } from 'https-proxy-agent'
-import { AgentOptions } from 'http'
 
 const COMMON_AGENT_OPTIONS: Partial<AgentOptions> = {
   keepAlive: true, // Reuse connections
