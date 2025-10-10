@@ -9,7 +9,7 @@ import { ApplicationModel, ManagedCluster, RecoilStates } from '../types'
 describe('getApplication Argo', () => {
   it('returns Argo app model', async () => {
     nockIgnoreApiPaths()
-    const nocks = [nockGet(mockArgoApp), nockAggegateRequest('uidata', mockArgoApp, uidata)]
+    const nocks = [nockGet(mockArgoApp)]
     const model = await getApplication(
       appData.namespace,
       appData.name,
@@ -152,14 +152,14 @@ const result: ApplicationModel = {
   isFluxApp: false,
   isAppSetPullModel: false,
   relatedPlacement: undefined,
-  clusterList: ['local-cluster'],
 }
 interface UIData {
   clusterList: string[]
   appSetApps: ArgoApplication[]
 }
 
-const uidata: UIData = {
+// Unused uidata kept for reference - not needed for Argo app tests
+const _uidata: UIData = {
   clusterList: ['local-cluster'],
   appSetApps: [
     {
