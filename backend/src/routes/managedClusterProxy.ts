@@ -5,7 +5,7 @@ import { respondInternalServerError } from '../lib/respond'
 import { getAuthenticatedToken, isHttp2ServerResponse } from '../lib/token'
 import { getMultiClusterEngine } from '../lib/multi-cluster-engine'
 import proxy from 'http2-proxy'
-import { TLSSocket } from 'tls'
+import { TLSSocket } from 'node:tls'
 import { getServiceCACertificate } from '../lib/serviceAccountToken'
 
 export async function managedClusterProxy(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void>
