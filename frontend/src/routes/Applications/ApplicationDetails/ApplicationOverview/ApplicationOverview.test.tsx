@@ -580,4 +580,306 @@ describe('Overview Tab', () => {
     // created
     await waitForText(mockApplicationDataArgo.application.name, true)
   })
+
+  test('should extract repo info from ArgoApplication with single source when search data is incomplete', async () => {
+    const mockArgoAppWithSource: ApplicationDataType = {
+      refreshTime: 1648135176039,
+      appData: {
+        relatedKinds: ['application'],
+        subscription: null,
+      },
+      application: {
+        app: {
+          apiVersion: ArgoApplicationApiVersion,
+          kind: ArgoApplicationKind,
+          metadata: {
+            creationTimestamp: '2022-03-14T17:19:03Z',
+            name: 'test-git-app',
+            namespace: 'argocd',
+          },
+          spec: {
+            destination: { namespace: 'default', server: 'https://kubernetes.default.svc' },
+            project: 'default',
+            source: {
+              repoURL: 'https://github.com/example/repo.git',
+              path: 'manifests',
+              targetRevision: 'main',
+            },
+          },
+        },
+        name: 'test-git-app',
+        namespace: 'argocd',
+        metadata: {
+          creationTimestamp: '2022-03-14T17:19:03Z',
+          name: 'test-git-app',
+          namespace: 'argocd',
+        },
+        isAppSet: false,
+        isArgoApp: true,
+      },
+      topology: {
+        links: [],
+        nodes: [],
+      },
+    }
+
+    const context: Partial<ApplicationDetailsContext> = {
+      applicationData: mockArgoAppWithSource,
+    }
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(subscriptionsState, [])
+          snapshot.set(channelsState, [])
+        }}
+      >
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<ApplicationOverviewPageContent />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    await waitForText('Name')
+    await waitForText('test-git-app')
+    // should show Git badge from fallback extraction
+    await waitForText('Git')
+    await waitForText('https://github.com/example/repo.git')
+  })
+
+  test('should extract repo info from ArgoApplication with multiple sources when search data is incomplete', async () => {
+    const mockArgoAppWithSources: ApplicationDataType = {
+      refreshTime: 1648135176039,
+      appData: {
+        relatedKinds: ['application'],
+        subscription: null,
+      },
+      application: {
+        app: {
+          apiVersion: ArgoApplicationApiVersion,
+          kind: ArgoApplicationKind,
+          metadata: {
+            creationTimestamp: '2022-03-14T17:19:03Z',
+            name: 'test-multi-source-app',
+            namespace: 'argocd',
+          },
+          spec: {
+            destination: { namespace: 'default', server: 'https://kubernetes.default.svc' },
+            project: 'default',
+            sources: [
+              {
+                repoURL: 'https://github.com/example/repo1.git',
+                path: 'app1',
+                targetRevision: 'main',
+              },
+              {
+                repoURL: 'https://charts.bitnami.com/bitnami',
+                chart: 'redis',
+                targetRevision: '17.0.0',
+              },
+            ],
+          },
+        },
+        name: 'test-multi-source-app',
+        namespace: 'argocd',
+        metadata: {
+          creationTimestamp: '2022-03-14T17:19:03Z',
+          name: 'test-multi-source-app',
+          namespace: 'argocd',
+        },
+        isAppSet: false,
+        isArgoApp: true,
+      },
+      topology: {
+        links: [],
+        nodes: [],
+      },
+    }
+
+    const context: Partial<ApplicationDetailsContext> = {
+      applicationData: mockArgoAppWithSources,
+    }
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(subscriptionsState, [])
+          snapshot.set(channelsState, [])
+        }}
+      >
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<ApplicationOverviewPageContent />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    await waitForText('Name')
+    await waitForText('test-multi-source-app')
+    // should show both Git and Helm badges from fallback extraction
+    await waitForText('Git')
+    await waitForText('Helm')
+    await waitForText('https://github.com/example/repo1.git')
+    await waitForText('https://charts.bitnami.com/bitnami')
+  })
+
+  test('should extract repo info from ApplicationSet with single source when search data is incomplete', async () => {
+    const mockAppSetWithSource: ApplicationDataType = {
+      refreshTime: 1648135176039,
+      appData: {
+        relatedKinds: ['applicationset'],
+        subscription: null,
+      },
+      application: {
+        app: {
+          apiVersion: ApplicationSetApiVersion,
+          kind: ApplicationSetKind,
+          metadata: {
+            creationTimestamp: '2022-03-14T17:19:03Z',
+            name: 'test-appset',
+            namespace: 'argocd',
+          },
+          spec: {
+            generators: [],
+            template: {
+              spec: {
+                destination: { namespace: 'default', server: '{{server}}' },
+                project: 'default',
+                source: {
+                  repoURL: 'https://charts.example.com/charts',
+                  chart: 'nginx',
+                  targetRevision: '1.0.0',
+                },
+              },
+            },
+          },
+        },
+        appSetApps: [],
+        name: 'test-appset',
+        namespace: 'argocd',
+        metadata: {
+          creationTimestamp: '2022-03-14T17:19:03Z',
+          name: 'test-appset',
+          namespace: 'argocd',
+        },
+        isAppSet: true,
+        isArgoApp: false,
+      },
+      topology: {
+        links: [],
+        nodes: [],
+      },
+    }
+
+    const context: Partial<ApplicationDetailsContext> = {
+      applicationData: mockAppSetWithSource,
+    }
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(subscriptionsState, [])
+          snapshot.set(channelsState, [])
+        }}
+      >
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<ApplicationOverviewPageContent />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    await waitForText('Name')
+    await waitForText('test-appset')
+    // should show Helm badge from fallback extraction
+    await waitForText('Helm')
+    await waitForText('https://charts.example.com/charts')
+  })
+
+  test('should extract repo info from ApplicationSet with multiple sources when search data is incomplete', async () => {
+    const mockAppSetWithSources: ApplicationDataType = {
+      refreshTime: 1648135176039,
+      appData: {
+        relatedKinds: ['applicationset'],
+        subscription: null,
+      },
+      application: {
+        app: {
+          apiVersion: ApplicationSetApiVersion,
+          kind: ApplicationSetKind,
+          metadata: {
+            creationTimestamp: '2022-03-14T17:19:03Z',
+            name: 'test-appset-multi',
+            namespace: 'argocd',
+          },
+          spec: {
+            generators: [],
+            template: {
+              spec: {
+                destination: { namespace: 'default', server: '{{server}}' },
+                project: 'default',
+                sources: [
+                  {
+                    repoURL: 'https://github.com/example/config.git',
+                    path: 'config',
+                    targetRevision: 'v1.0',
+                  },
+                  {
+                    repoURL: 'https://helm.example.com',
+                    chart: 'postgresql',
+                    targetRevision: '12.0.0',
+                  },
+                ],
+              },
+            },
+          },
+        },
+        appSetApps: [],
+        name: 'test-appset-multi',
+        namespace: 'argocd',
+        metadata: {
+          creationTimestamp: '2022-03-14T17:19:03Z',
+          name: 'test-appset-multi',
+          namespace: 'argocd',
+        },
+        isAppSet: true,
+        isArgoApp: false,
+      },
+      topology: {
+        links: [],
+        nodes: [],
+      },
+    }
+
+    const context: Partial<ApplicationDetailsContext> = {
+      applicationData: mockAppSetWithSources,
+    }
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(subscriptionsState, [])
+          snapshot.set(channelsState, [])
+        }}
+      >
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<ApplicationOverviewPageContent />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    await waitForText('Name')
+    await waitForText('test-appset-multi')
+    // should show both Git and Helm badges from fallback extraction
+    await waitForText('Git')
+    await waitForText('Helm')
+    await waitForText('https://github.com/example/config.git')
+    await waitForText('https://helm.example.com')
+  })
 })
