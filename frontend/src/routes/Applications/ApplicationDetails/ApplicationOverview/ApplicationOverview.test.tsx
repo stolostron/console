@@ -882,4 +882,214 @@ describe('Overview Tab', () => {
     await waitForText('https://github.com/example/config.git')
     await waitForText('https://helm.example.com')
   })
+
+  test('should not use fallback when search returns valid repo data', async () => {
+    const mockAppSetWithSearchData: ApplicationDataType = {
+      refreshTime: 1648135176039,
+      appData: {
+        relatedKinds: ['applicationset'],
+        subscription: null,
+      },
+      application: {
+        app: {
+          apiVersion: ApplicationSetApiVersion,
+          kind: ApplicationSetKind,
+          metadata: {
+            creationTimestamp: '2022-03-14T17:19:03Z',
+            name: 'appset-with-search',
+            namespace: 'argocd',
+          },
+          spec: {
+            generators: [],
+            template: {
+              spec: {
+                destination: { namespace: 'default', server: '{{server}}' },
+                project: 'default',
+                source: {
+                  repoURL: 'https://charts.example.com/from-resource',
+                  chart: 'app-from-resource',
+                  targetRevision: '2.0.0',
+                },
+              },
+            },
+          },
+        },
+        appSetApps: [],
+        name: 'appset-with-search',
+        namespace: 'argocd',
+        metadata: {
+          creationTimestamp: '2022-03-14T17:19:03Z',
+          name: 'appset-with-search',
+          namespace: 'argocd',
+        },
+        isAppSet: true,
+        isArgoApp: false,
+      },
+      topology: {
+        links: [],
+        nodes: [],
+      },
+    }
+
+    const mockChannelForSearch: Channel = {
+      apiVersion: ChannelApiVersion,
+      kind: ChannelKind,
+      metadata: {
+        name: 'search-channel',
+        namespace: 'argocd',
+      },
+      spec: {
+        pathname: 'https://charts.example.com/from-search',
+        type: 'HelmRepo',
+      },
+    }
+
+    const context: Partial<ApplicationDetailsContext> = {
+      applicationData: mockAppSetWithSearchData,
+    }
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(subscriptionsState, [])
+          snapshot.set(channelsState, [mockChannelForSearch])
+        }}
+      >
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<ApplicationOverviewPageContent />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    await waitForText('Name')
+    await waitForText('appset-with-search')
+  })
+
+  test('should handle ArgoApplication with no source or sources', async () => {
+    const mockArgoAppNoSource: ApplicationDataType = {
+      refreshTime: 1648135176039,
+      appData: {
+        relatedKinds: ['application'],
+        subscription: null,
+      },
+      application: {
+        app: {
+          apiVersion: ArgoApplicationApiVersion,
+          kind: ArgoApplicationKind,
+          metadata: {
+            creationTimestamp: '2022-03-14T17:19:03Z',
+            name: 'test-no-source',
+            namespace: 'argocd',
+          },
+          spec: {
+            destination: { namespace: 'default', server: 'https://kubernetes.default.svc' },
+            project: 'default',
+          },
+        },
+        name: 'test-no-source',
+        namespace: 'argocd',
+        metadata: {
+          creationTimestamp: '2022-03-14T17:19:03Z',
+          name: 'test-no-source',
+          namespace: 'argocd',
+        },
+        isAppSet: false,
+        isArgoApp: true,
+      },
+      topology: {
+        links: [],
+        nodes: [],
+      },
+    }
+
+    const context: Partial<ApplicationDetailsContext> = {
+      applicationData: mockArgoAppNoSource,
+    }
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(subscriptionsState, [])
+          snapshot.set(channelsState, [])
+        }}
+      >
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<ApplicationOverviewPageContent />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    await waitForText('Name')
+    await waitForText('test-no-source')
+  })
+
+  test('should handle ApplicationSet with no source or sources', async () => {
+    const mockAppSetNoSource: ApplicationDataType = {
+      refreshTime: 1648135176039,
+      appData: {
+        relatedKinds: ['applicationset'],
+        subscription: null,
+      },
+      application: {
+        app: {
+          apiVersion: ApplicationSetApiVersion,
+          kind: ApplicationSetKind,
+          metadata: {
+            creationTimestamp: '2022-03-14T17:19:03Z',
+            name: 'appset-no-source',
+            namespace: 'argocd',
+          },
+          spec: {
+            generators: [],
+            template: {
+              spec: {
+                destination: { namespace: 'default', server: '{{server}}' },
+                project: 'default',
+              },
+            },
+          },
+        },
+        appSetApps: [],
+        name: 'appset-no-source',
+        namespace: 'argocd',
+        metadata: {
+          creationTimestamp: '2022-03-14T17:19:03Z',
+          name: 'appset-no-source',
+          namespace: 'argocd',
+        },
+        isAppSet: true,
+        isArgoApp: false,
+      },
+      topology: {
+        links: [],
+        nodes: [],
+      },
+    }
+
+    const context: Partial<ApplicationDetailsContext> = {
+      applicationData: mockAppSetNoSource,
+    }
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(subscriptionsState, [])
+          snapshot.set(channelsState, [])
+        }}
+      >
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<ApplicationOverviewPageContent />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    await waitForText('Name')
+    await waitForText('appset-no-source')
+  })
 })
