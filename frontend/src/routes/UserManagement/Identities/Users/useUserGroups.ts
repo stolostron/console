@@ -8,7 +8,7 @@ export const useUserGroups = () => {
   const userGroups = useMemo(() => {
     if (!user || !groups) return []
 
-    return groups.filter((group) => group.users.includes(user.metadata.name || ''))
+    return groups.filter((group) => group.users?.includes(user.metadata.name || ''))
   }, [user, groups])
 
   const userWithGroups = useMemo(() => {
