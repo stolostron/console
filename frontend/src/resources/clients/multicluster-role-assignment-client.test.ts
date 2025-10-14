@@ -16,6 +16,9 @@ import {
   useFindRoleAssignments,
   validateRoleAssignmentName,
 } from './multicluster-role-assignment-client'
+import * as req from '../../resources/utils/resource-request'
+
+const mockGetResource = jest.spyOn(req, 'getResource')
 
 jest.mock('../utils', () => ({
   createResource: jest.fn(),
@@ -349,11 +352,24 @@ describe('multicluster-role-assignment-client', function () {
   })
 
   describe('deleteRoleAssignment', () => {
-    it('deletes existing role assignment for a MulticlusterRoleAssignment with multiple elements', () => {
+    beforeEach(() => {
+      jest.clearAllMocks()
+      patchResourceMock.mockReturnValue({
+        promise: Promise.resolve({} as any),
+        abort: jest.fn(),
+      })
+      deleteResourceMock.mockReturnValue({
+        promise: Promise.resolve({} as any),
+        abort: jest.fn(),
+      })
+    })
+
+    it('deletes existing role assignment for a MulticlusterRoleAssignment with multiple elements', async () => {
       // Arrange
       const multiClusterRoleAssignment: MulticlusterRoleAssignment = {
         ...multiclusterRoleAssignmentsMockData[0],
       } as MulticlusterRoleAssignment
+
       const roleAssignmentToRemove: FlattenedRoleAssignment = {
         relatedMulticlusterRoleAssignment: multiClusterRoleAssignment,
         name: multiClusterRoleAssignment.spec.roleAssignments[0].name,
@@ -369,9 +385,13 @@ describe('multicluster-role-assignment-client', function () {
         targetNamespaces: multiClusterRoleAssignment.spec.roleAssignments[0].targetNamespaces,
       }
 
-      // Act
-      deleteRoleAssignment(roleAssignmentToRemove)
+      mockGetResource.mockReturnValueOnce({
+        promise: Promise.resolve(multiClusterRoleAssignment as MulticlusterRoleAssignment),
+        abort: jest.fn(),
+      })
 
+      // Act
+      await deleteRoleAssignment(roleAssignmentToRemove).promise
       // Assert
       expect(deleteResourceMock).toHaveBeenCalledTimes(0)
       expect(patchResourceMock).toHaveBeenCalledTimes(1)
@@ -386,7 +406,7 @@ describe('multicluster-role-assignment-client', function () {
       })
     })
 
-    it('deletes existing role assignment for a MulticlusterRoleAssignment with single element', () => {
+    it('deletes existing role assignment for a MulticlusterRoleAssignment with single element', async () => {
       // Arrange
       const multiClusterRoleAssignment: MulticlusterRoleAssignment = {
         ...multiclusterRoleAssignmentsMockData[5],
@@ -407,13 +427,87 @@ describe('multicluster-role-assignment-client', function () {
         targetNamespaces: multiClusterRoleAssignment.spec.roleAssignments[0].targetNamespaces,
       }
 
+      mockGetResource.mockReturnValueOnce({
+        promise: Promise.resolve(multiClusterRoleAssignment as MulticlusterRoleAssignment),
+        abort: jest.fn(),
+      })
+
       // Act
-      deleteRoleAssignment(roleAssignmentToRemove)
+      await deleteRoleAssignment(roleAssignmentToRemove).promise
 
       // Assert
       expect(patchResourceMock).toHaveBeenCalledTimes(0)
       expect(deleteResourceMock).toHaveBeenCalledTimes(1)
       expect(deleteResourceMock).toHaveBeenCalledWith(roleAssignmentToRemove.relatedMulticlusterRoleAssignment)
+    })
+
+    it('deletes mulitple role assignments under the same MulticlusterRoleAssignment', async () => {
+      // Arrange
+      const multiClusterRoleAssignment: MulticlusterRoleAssignment = {
+        ...multiclusterRoleAssignmentsMockData[2],
+      } as MulticlusterRoleAssignment
+
+      const roleAssignmentToRemoveFirst: FlattenedRoleAssignment = {
+        relatedMulticlusterRoleAssignment: multiClusterRoleAssignment,
+        name: multiClusterRoleAssignment.spec.roleAssignments[0].name,
+        clusterRole: multiClusterRoleAssignment.spec.roleAssignments[0].clusterRole,
+        clusterSelection: {
+          type: 'clusterNames',
+          clusterNames: multiClusterRoleAssignment.spec.roleAssignments[0].clusterSelection?.clusterNames || [],
+        },
+        subject: {
+          kind: multiClusterRoleAssignment.spec.subject.kind,
+          name: multiClusterRoleAssignment.spec.subject.name,
+        },
+        targetNamespaces: multiClusterRoleAssignment.spec.roleAssignments[0].targetNamespaces,
+      }
+
+      const roleAssignmentToRemoveSecond: FlattenedRoleAssignment = {
+        relatedMulticlusterRoleAssignment: multiClusterRoleAssignment,
+        name: multiClusterRoleAssignment.spec.roleAssignments[1].name,
+        clusterRole: multiClusterRoleAssignment.spec.roleAssignments[1].clusterRole,
+        clusterSelection: {
+          type: 'clusterNames',
+          clusterNames: multiClusterRoleAssignment.spec.roleAssignments[1].clusterSelection?.clusterNames || [],
+        },
+        subject: {
+          kind: multiClusterRoleAssignment.spec.subject.kind,
+          name: multiClusterRoleAssignment.spec.subject.name,
+        },
+        targetNamespaces: multiClusterRoleAssignment.spec.roleAssignments[1].targetNamespaces,
+      }
+
+      mockGetResource
+        .mockReturnValueOnce({
+          promise: Promise.resolve(multiClusterRoleAssignment as MulticlusterRoleAssignment),
+          abort: jest.fn(),
+        })
+        .mockReturnValueOnce({
+          promise: Promise.resolve({
+            ...multiClusterRoleAssignment,
+            spec: {
+              ...multiClusterRoleAssignment.spec,
+              roleAssignments: [...multiClusterRoleAssignment.spec.roleAssignments].slice(
+                1,
+                multiClusterRoleAssignment.spec.roleAssignments.length
+              ),
+            },
+          } as MulticlusterRoleAssignment),
+          abort: jest.fn(),
+        })
+
+      // Act
+      await deleteRoleAssignment(roleAssignmentToRemoveFirst).promise
+      expect(patchResourceMock).toHaveBeenCalledTimes(1)
+      expect(deleteResourceMock).toHaveBeenCalledTimes(0)
+
+      // Reset
+      patchResourceMock.mockClear()
+      deleteResourceMock.mockClear()
+
+      await deleteRoleAssignment(roleAssignmentToRemoveSecond).promise
+      expect(patchResourceMock).toHaveBeenCalledTimes(0)
+      expect(deleteResourceMock).toHaveBeenCalledTimes(1)
     })
 
     it.each([
@@ -505,7 +599,7 @@ describe('multicluster-role-assignment-client', function () {
       ],
     ])(
       'deletes not existing role assignment for a MulticlusterRoleAssignment when %s',
-      (_titleSuffix: string, roleAssignment: RoleAssignment) => {
+      async (_titleSuffix: string, roleAssignment: RoleAssignment) => {
         // Arrange
         const multiClusterRoleAssignment: MulticlusterRoleAssignment = {
           ...multiclusterRoleAssignmentsMockData[0],
@@ -519,9 +613,14 @@ describe('multicluster-role-assignment-client', function () {
           ...roleAssignment,
         }
 
+        mockGetResource.mockReturnValue({
+          promise: Promise.resolve(multiClusterRoleAssignment as MulticlusterRoleAssignment),
+          abort: jest.fn(),
+        })
+
         // Act
         try {
-          deleteRoleAssignment(roleAssignmentToRemove)
+          await deleteRoleAssignment(roleAssignmentToRemove).promise
           expect(true).toBe(false)
         } catch (e) {
           // Assert
@@ -660,6 +759,8 @@ describe('multicluster-role-assignment-client', function () {
         },
       }
       subject = { kind: 'User', name: 'test.user' }
+
+      jest.clearAllMocks()
     })
 
     it('proceeds when role assignment name is unique', () => {

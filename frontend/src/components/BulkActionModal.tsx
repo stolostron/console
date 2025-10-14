@@ -61,6 +61,11 @@ export interface ItemError<T> {
   error: Error
 }
 
+// Small post-processing delay to let UI (progress bar/toasts) settle before closing the modal.
+// Tune if UX requires more/less time; keep minimal to avoid test flakiness.
+const COMPLETE_DELAY_MS = 200
+const delay = (ms: number) => new Promise((r) => setTimeout(r, ms))
+
 export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { open: false }) {
   const { t } = useTranslation()
   const [progress, setProgress] = useState(0)
@@ -117,6 +122,36 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
   }
 
   const hasNoErrors = (errors?.length ?? 0) === 0
+
+  const isErrorValid = (err: unknown) => (isValidError ? isValidError(err as Error) : true)
+
+  function incrementProgress() {
+    setProgress((p) => p + 1)
+  }
+
+  async function runSequential(items: T[], errors: ItemError<T>[]) {
+    for (const item of items) {
+      const { promise } = actionFn(item, { deletePullSecret })
+      try {
+        await promise
+      } catch (err) {
+        if (isErrorValid(err)) errors.push({ item, error: err as Error })
+      }
+      incrementProgress()
+    }
+  }
+
+  async function runParallel(items: T[], errors: ItemError<T>[]) {
+    const promises = items.map((resource) => {
+      const r = actionFn(resource, { deletePullSecret })
+      return { promise: r.promise.finally(incrementProgress), abort: r.abort }
+    })
+    const requestResult = resultsSettled(promises)
+    const results = await requestResult.promise
+    for (const [index, res] of results.entries()) {
+      if (res.status === 'rejected' && isErrorValid(res.reason)) errors.push({ item: items[index], error: res.reason })
+    }
+  }
 
   return (
     <AcmModal
@@ -270,51 +305,12 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
                   variant={isDanger ? ButtonVariant.danger : ButtonVariant.primary}
                   onClick={async () => {
                     const errors: ItemError<T>[] = []
-
-                    const isErrorValid = (err: unknown) => (isValidError ? isValidError(err as Error) : true)
-
-                    const runSequential = async (items: T[]) => {
-                      for (const item of items) {
-                        const { promise } = actionFn(item, { deletePullSecret })
-                        try {
-                          await promise
-                        } catch (err) {
-                          if (isErrorValid(err)) errors.push({ item, error: err as Error })
-                        } finally {
-                          setProgress((p) => p + 1)
-                        }
-                      }
-                    }
-
-                    const runParallel = async (items: T[]) => {
-                      const requestResult = resultsSettled(
-                        items.map((resource) => {
-                          const r = actionFn(resource, { deletePullSecret })
-                          return {
-                            promise: r.promise.finally(() => setProgress((p) => p + 1)),
-                            abort: r.abort,
-                          }
-                        })
-                      )
-                      const results = await requestResult.promise
-                      for (const [index, res] of results.entries()) {
-                        if (res.status === 'rejected' && isErrorValid(res.reason)) {
-                          errors.push({ item: items[index], error: res.reason })
-                        }
-                      }
-                    }
-
                     setProgressCount(tableProps.items.length)
-                    if (actionOneByOne) {
-                      await runSequential(tableProps.items)
-                    } else {
-                      await runParallel(tableProps.items)
-                    }
-                    await new Promise((resolve) => setTimeout(resolve, 500))
+                    if (actionOneByOne) await runSequential(tableProps.items, errors)
+                    else await runParallel(tableProps.items, errors)
+                    await delay(COMPLETE_DELAY_MS)
                     setErrors(errors)
-                    if (errors.length === 0) {
-                      close()
-                    }
+                    if (errors.length === 0) close()
                   }}
                   label={action}
                   processingLabel={processing}
