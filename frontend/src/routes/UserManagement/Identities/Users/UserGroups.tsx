@@ -8,7 +8,7 @@ import AcmTimestamp from '../../../../lib/AcmTimestamp'
 import { getISOStringTimestamp } from '../../../../resources/utils'
 import { NavigationPath } from '../../../../NavigationPath'
 import { Link, generatePath } from 'react-router-dom-v5-compat'
-import { useFilters } from '../Groups/GroupsTableHelper'
+import { useFilters } from '../IdentityTableHelper'
 import { useUserGroups } from './useUserGroups'
 
 const renderGroupNameCell = (group: Group) => {
@@ -34,7 +34,7 @@ const renderGroupCreatedCell = (group: Group) => {
 const UserGroups = () => {
   const { t } = useTranslation()
   const { userGroups } = useUserGroups()
-  const filters = useFilters()
+  const filters = useFilters(userGroups, 'group')
 
   const columns: IAcmTableColumn<Group>[] = [
     {

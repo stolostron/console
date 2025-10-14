@@ -6,7 +6,7 @@ import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
 import { User } from '../../../../resources/rbac'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { AcmEmptyState, AcmTable, compareStrings } from '../../../../ui-components'
-import { useFilters, usersTableColumns } from './UsersTableHelper'
+import { useFilters, usersTableColumns } from '../IdentityTableHelper'
 
 const UsersTable = () => {
   const { t } = useTranslation()
@@ -19,7 +19,7 @@ const UsersTable = () => {
 
   const keyFn = useCallback((user: User) => user.metadata.name ?? '', [])
 
-  const filters = useFilters(users)
+  const filters = useFilters(users, 'user')
   const columns = usersTableColumns({ t })
 
   return (

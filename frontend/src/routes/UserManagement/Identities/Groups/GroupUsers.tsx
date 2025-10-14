@@ -10,7 +10,7 @@ import { getISOStringTimestamp } from '../../../../resources/utils'
 import { useGroupDetailsContext } from './GroupPage'
 import { NavigationPath } from '../../../../NavigationPath'
 import { Link, generatePath } from 'react-router-dom-v5-compat'
-import { useFilters } from '../Users/UsersTableHelper'
+import { useFilters } from '../IdentityTableHelper'
 
 const renderUserNameCell = (user: User) => {
   return user.metadata.name ? (
@@ -39,7 +39,7 @@ const renderIdentityProviderCell = (user: User) => {
 const GroupUsers = () => {
   const { t } = useTranslation()
   const { group, users } = useGroupDetailsContext()
-  const filters = useFilters()
+  const filters = useFilters(users, 'user')
 
   const groupUsers = useMemo(() => {
     if (!group || !users) return []
