@@ -115,6 +115,9 @@ export const mockApplication0: Application & IUIResource = {
     },
   },
   uidata: {
+    deployedStatuses: [2, 0, 3, 4],
+    syncedStatuses: [2, 0, 3, 4],
+    healthStatuses: [2, 0, 3, 4],
     appSetRelatedResources: ['', []],
     clusterList: ['local-cluster'],
     appSetApps: [],
@@ -401,6 +404,9 @@ export const mockArgoApplication1: ArgoApplication & IUIResource = {
     resourceName: 'argoapplication-1',
   },
   uidata: {
+    deployedStatuses: [2, 0, 3, 4],
+    syncedStatuses: [2, 0, 3, 4],
+    healthStatuses: [2, 0, 3, 4],
     clusterList: ['None'],
     appSetRelatedResources: ['', []],
     appSetApps: [],

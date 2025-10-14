@@ -49,8 +49,8 @@ export function requestAggregatedStatuses(
     const filterCounts: FilterCounts = { type: {}, cluster: {} }
     authorizedItems.forEach((item) => {
       if (item.transform) {
-        incFilterCounts(filterCounts, 'type', item.transform[AppColumns.type])
-        incFilterCounts(filterCounts, 'cluster', item.transform[AppColumns.clusters])
+        incFilterCounts(filterCounts, 'type', item.transform[AppColumns.type] as string[])
+        incFilterCounts(filterCounts, 'cluster', item.transform[AppColumns.clusters] as string[])
       }
     })
 

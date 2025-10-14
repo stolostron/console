@@ -18,9 +18,11 @@ import {
   AppColumns,
   ApplicationCache,
   ApplicationCacheType,
+  ApplicationStatusMap,
   getAppDict,
   ICompressedResource,
   ITransformedResource,
+  Transform,
 } from './applications'
 import { logger } from '../../lib/logger'
 import { getMultiClusterHub } from '../../lib/multi-cluster-hub'
@@ -35,6 +37,7 @@ import { deflateResource, inflateApp } from '../../lib/compression'
 
 export function transform(
   items: ITransformedResource[] | ICompressedResource[],
+  appStatusMap: ApplicationStatusMap,
   isRemote?: boolean,
   localCluster?: Cluster,
   clusters?: Cluster[],
@@ -48,7 +51,7 @@ export function transform(
     const type = getApplicationType(app)
     const _clusters = getApplicationClusters(app, type, subscriptions, placementDecisions, localCluster, clusters)
     items[inx] = {
-      transform: getTransform(app, type, _clusters),
+      transform: getTransform(app, type, appStatusMap, _clusters),
       remoteClusters:
         (isRemote || (type === 'subscription' && _clusters.filter((n) => n !== localClusterName)).length > 0) &&
         _clusters,
@@ -61,15 +64,22 @@ export function transform(
   return { resources: items as unknown as ICompressedResource[] }
 }
 
-export function getTransform(app: IResource, type: string, clusters: string[]): string[][] {
+export function getTransform(
+  app: IResource,
+  type: string,
+  appStatusMap: ApplicationStatusMap,
+  clusters: string[]
+): Transform {
+  const statusKey = `${type}/${app.metadata.namespace}/${app.metadata.name}`
+  const appStatuses = appStatusMap[statusKey] || { health: [], synced: [], deployed: [] }
   return [
     [app.metadata.name],
     [type],
     [getAppNamespace(app)],
     clusters,
-    ['r'],
-    [get(app, 'status.health.status', '') as string],
-    [get(app, 'status.sync.status', '') as string],
+    appStatuses.health,
+    appStatuses.synced,
+    appStatuses.deployed,
     [app.metadata.creationTimestamp as string],
   ]
 }
@@ -402,7 +412,7 @@ export function getNextApplicationPageChunk(
       const sz = 26 + 10
       const prefixFrequency = new Array(sz).fill(0) as number[]
       applications.forEach((app) => {
-        const name = app.transform[AppColumns.name][0]
+        const name = app.transform[AppColumns.name][0] as string
         const ltr = name.charCodeAt(0)
         const index = ltr < a ? ltr - z + 26 : ltr - a
         prefixFrequency[index]++
@@ -462,7 +472,7 @@ export function getNextApplicationPageChunk(
         })
         // for each app name, stuff it into the array that belongs to that key
         applications.forEach((app) => {
-          const name = app.transform[AppColumns.name][0]
+          const name = app.transform[AppColumns.name][0] as string
           reverse[name[0]].push(app)
         })
       }
@@ -478,11 +488,12 @@ export function getNextApplicationPageChunk(
 
 export function cacheRemoteApps(
   applicationCache: ApplicationCacheType,
+  appStatusMap: ApplicationStatusMap,
   remoteApps: IResource[],
   applicationPageChunk: ApplicationPageChunk,
   remoteCacheKey: string
 ) {
-  const resources = transform(remoteApps, true).resources
+  const resources = transform(remoteApps, appStatusMap, true).resources
   if (!applicationPageChunk) {
     applicationCache[remoteCacheKey].resources = resources
   } else {

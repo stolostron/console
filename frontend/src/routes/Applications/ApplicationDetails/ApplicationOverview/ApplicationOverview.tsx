@@ -1,26 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-  AcmActionGroup,
-  AcmButton,
-  AcmDescriptionList,
-  AcmInlineStatusGroup,
-  AcmPageContent,
-  ListItems,
-} from '../../../../ui-components'
+import { AcmActionGroup, AcmButton, AcmDescriptionList, AcmPageContent, ListItems } from '../../../../ui-components'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import {
-  ButtonVariant,
-  Card,
-  CardBody,
-  PageSection,
-  Spinner,
-  Flex,
-  FlexItem,
-  Text,
-  Tooltip,
-} from '@patternfly/react-core'
-import { OutlinedQuestionCircleIcon, SyncAltIcon } from '@patternfly/react-icons'
+import { ButtonVariant } from '@patternfly/react-core'
+import { Card } from '@patternfly/react-core'
+import { CardBody } from '@patternfly/react-core'
+import { PageSection } from '@patternfly/react-core'
+import { Spinner } from '@patternfly/react-core'
+import { Flex } from '@patternfly/react-core'
+import { FlexItem } from '@patternfly/react-core'
+import { Text } from '@patternfly/react-core'
+import { Tooltip } from '@patternfly/react-core'
+import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
+import { SyncAltIcon } from '@patternfly/react-icons'
 import { Fragment, useEffect, useState } from 'react'
 import {
   getClusterCount,
@@ -45,11 +37,10 @@ import ResourceLabels from '../../components/ResourceLabels'
 import '../../css/ApplicationOverview.css'
 import { TFunction } from 'react-i18next'
 import { getApplicationRepos } from '../../Overview'
-import { ApplicationDataType, useApplicationDetailsContext } from '../ApplicationDetails'
+import { useApplicationDetailsContext } from '../ApplicationDetails'
 import { NavigationPath } from '../../../../NavigationPath'
 import { ISyncResourceModalProps, SyncResourceModal } from '../../components/SyncResourceModal'
 import { isSearchAvailable } from '../ApplicationTopology/helpers/search-helper'
-import { getDiagramElements } from '../ApplicationTopology/model/topology'
 import { getAuthorizedNamespaces, rbacCreate } from '../../../../lib/rbac-util'
 import { generatePath, Link } from 'react-router-dom-v5-compat'
 import { DrawerShapes } from '../ApplicationTopology/components/DrawerShapes'
@@ -57,11 +48,6 @@ import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import LabelWithPopover from '../../components/LabelWithPopover'
 import AcmTimestamp from '../../../../lib/AcmTimestamp'
 import { useLocalHubName } from '../../../../hooks/use-local-hub'
-
-const clusterResourceStatusText = (t: TFunction) => t('Cluster resource status')
-const clusterResourceStatusTooltipSubscription = (t: TFunction) =>
-  t('Status represents the subscription selection within Resource topology.')
-const clusterResourceStatusTooltipOther = (t: TFunction) => t('Status of resources within the topology.')
 
 export function ApplicationOverviewPageContent() {
   const { applicationData } = useApplicationDetailsContext()
@@ -152,15 +138,6 @@ export function ApplicationOverviewPageContent() {
           key: t('Clusters'),
           value: cluster,
         },
-        {
-          key: clusterResourceStatusText(t),
-          value: createStatusIcons(applicationData, t),
-          keyAction: (
-            <Tooltip content={clusterResourceStatusTooltipOther(t)}>
-              <OutlinedQuestionCircleIcon className="help-icon" />
-            </Tooltip>
-          ),
-        },
       ]
     } else if (!isSubscription) {
       let lastSyncedTimeStamp = ''
@@ -222,15 +199,6 @@ export function ApplicationOverviewPageContent() {
           value: createSourceCards(applicationData?.application.app, t, subscriptions, channels),
         },
         {
-          key: clusterResourceStatusText(t),
-          value: createStatusIcons(applicationData, t),
-          keyAction: (
-            <Tooltip content={clusterResourceStatusTooltipOther(t)}>
-              <OutlinedQuestionCircleIcon className="help-icon" />
-            </Tooltip>
-          ),
-        },
-        {
           key: t('Created'),
           value: <AcmTimestamp timestamp={applicationData.application.metadata.creationTimestamp} />,
         },
@@ -269,15 +237,6 @@ export function ApplicationOverviewPageContent() {
         {
           key: t('Repository'),
           value: createSubsCards(subsList, t, applicationData?.application?.app, channels),
-        },
-        {
-          key: clusterResourceStatusText(t),
-          value: createStatusIcons(applicationData, t),
-          keyAction: (
-            <Tooltip content={clusterResourceStatusTooltipSubscription(t)}>
-              <OutlinedQuestionCircleIcon className="help-icon" />
-            </Tooltip>
-          ),
         },
         {
           key: t('Created'),
@@ -382,57 +341,6 @@ function createSyncButton(
       </AcmButton>
     </Fragment>
   )
-}
-
-interface INodeStatuses {
-  green: number
-  yellow: number
-  red: number
-  orange: number
-}
-
-function createStatusIcons(applicationData: ApplicationDataType, t: TFunction) {
-  const { application, appData, statuses, topology } = applicationData
-  let elements: {
-    nodes: any[]
-    links: any[]
-  } = { nodes: [], links: [] }
-  const nodeStatuses: INodeStatuses = { green: 0, yellow: 0, red: 0, orange: 0 }
-  const canUpdateStatuses = !!statuses
-  if (application && appData && topology) {
-    elements = _.cloneDeep(getDiagramElements(appData, _.cloneDeep(topology), statuses, canUpdateStatuses, t))
-
-    elements.nodes.forEach((node) => {
-      //get pulse for all objects generated from a deployable
-      const pulse: 'green' = _.get(node, 'specs.pulse')
-
-      if (pulse) {
-        // Get cluster resource statuses
-        if (
-          _.get(node, 'id', '').indexOf('--deployed') !== -1 ||
-          _.get(node, 'id', '').indexOf('--deployable') !== -1
-        ) {
-          nodeStatuses[pulse]++
-        }
-      }
-    })
-  }
-
-  if (statuses) {
-    // render the status of the application
-    return (
-      <Fragment>
-        <AcmInlineStatusGroup
-          healthy={nodeStatuses.green}
-          progress={nodeStatuses.orange}
-          warning={nodeStatuses.yellow}
-          danger={nodeStatuses.red}
-        />
-      </Fragment>
-    )
-  }
-
-  return <Spinner size="sm" />
 }
 
 interface IRenderCardsSectionProps {

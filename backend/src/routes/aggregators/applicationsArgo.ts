@@ -8,11 +8,15 @@ import {
   Cluster,
   IApplicationSet,
   IResource,
+  ISearchResource,
+  SearchResult,
 } from '../../resources/resource'
 import { getKubeResources, getHubClusterName } from '../events'
 import {
   applicationCache,
   ApplicationCacheType,
+  ApplicationStatuses,
+  ApplicationStatusMap,
   getAppDict,
   IArgoApplication,
   IQuery,
@@ -31,6 +35,7 @@ import {
 } from './utils'
 import { deflateResource } from '../../lib/compression'
 import { IWatchOptions } from '../../resources/watch-options'
+import { computeAppDeployedStatuses, computeAppHealthStatus, computeAppSyncStatus } from './computeStatues'
 
 interface IArgoAppLocalResource extends IResource {
   spec: {
@@ -130,20 +135,34 @@ export function addArgoQueryInputs(applicationCache: ApplicationCacheType, query
   }
   query.variables.input.push({
     filters,
+    relatedKinds: [
+      'pod',
+      'replicaset',
+      'deployment',
+      'statefulset',
+      'ansiblejob',
+      'cronjob',
+      'secret',
+      'configmap',
+      'service',
+      'ingress',
+      'route',
+    ],
     limit: SEARCH_QUERY_LIMIT,
   })
 }
 
-export function cacheArgoApplications(applicationCache: ApplicationCacheType, remoteArgoApps: IResource[]) {
+export function cacheArgoApplications(applicationCache: ApplicationCacheType, searchResult: SearchResult) {
   const hubClusterName = getHubClusterName()
   const clusters: Cluster[] = getClusters()
   const localCluster = clusters.find((cls) => cls.name === hubClusterName)
-
+  const remoteArgoApps = searchResult.items
+  const argoStatusMap = createArgoStatusMap(searchResult)
   // should be rarely used, argo apps are usually created by appsets
   if (applicationCache['localArgoApps']?.resourceUidMap) {
     try {
       const localArgoAppsMap = applicationCache['localArgoApps'].resourceUidMap
-      transform(Object.values(localArgoAppsMap), false, localCluster, clusters, localArgoAppsMap)
+      transform(Object.values(localArgoAppsMap), argoStatusMap, false, localCluster, clusters, localArgoAppsMap)
     } catch (e) {
       logger.error(`getLocalArgoApps exception ${e}`)
     }
@@ -152,6 +171,7 @@ export function cacheArgoApplications(applicationCache: ApplicationCacheType, re
     // cache remote argo apps
     cacheRemoteApps(
       applicationCache,
+      argoStatusMap,
       getRemoteArgoApps(ocpArgoAppFilter, remoteArgoApps),
       argoPageChunk,
       'remoteArgoApps'
@@ -163,7 +183,7 @@ export function cacheArgoApplications(applicationCache: ApplicationCacheType, re
   if (applicationCache['appset']?.resourceUidMap) {
     try {
       const appsetMap = applicationCache['appset'].resourceUidMap
-      transform(Object.values(appsetMap), false, localCluster, clusters, appsetMap)
+      transform(Object.values(appsetMap), argoStatusMap, false, localCluster, clusters, appsetMap)
     } catch (e) {
       logger.error(`aggregateLocalApplications appset exception ${e}`)
     }
@@ -208,7 +228,7 @@ export function polledArgoApplicationAggregation(
     if (!transform) {
       const type = getApplicationType(item)
       const _clusters = getApplicationClusters(item, type, [], placementDecisions, localCluster, clusters)
-      transform = getTransform(item, type, _clusters)
+      transform = getTransform(item, type, {}, _clusters)
     }
     resourceUidMap[uid] = { compressed: deflateResource(item, getAppDict()), transform }
     oldResourceUidSets[appKey].delete(uid)
@@ -269,7 +289,7 @@ function filterArgoApps(
   })
 }
 
-function getRemoteArgoApps(ocpAppSetFilter: Set<string>, remoteArgoApps: IResource[]) {
+function getRemoteArgoApps(ocpAppSetFilter: Set<string>, remoteArgoApps: ISearchResource[]) {
   const argoApps = remoteArgoApps as unknown as IArgoAppRemoteResource[]
   const apps: IResource[] = []
 
@@ -404,4 +424,49 @@ export function getAppSetRelatedResources(appSet: IResource, applicationSets: IA
   })
 
   return [currentAppSetPlacement, appSetsSharingPlacement]
+}
+
+export function createArgoStatusMap(searchResult: SearchResult) {
+  const argoStatusMap: ApplicationStatusMap = {}
+  const app2AppsetMap: Record<string, ApplicationStatuses> = {}
+
+  // create an app map with syncs and health
+  searchResult.items.forEach((app: ISearchResource) => {
+    let appKey
+    if (app._hostingResource) {
+      appKey = `appset/${app._hostingResource.split('/')[1]}/${app._hostingResource.split('/')[2]}`
+    } else if (app.applicationSet) {
+      // don't count the placeholder app on the hub for this pulled appset
+      if (!app.label.includes('apps.open-cluster-management.io/pull-to-ocm-managed-cluster=true')) {
+        appKey = `appset/${app.namespace}/${app.applicationSet}`
+      }
+    } else {
+      appKey = `argo/${app.namespace}/${app.name}`
+    }
+    if (appKey) {
+      let appStatuses = argoStatusMap[appKey]
+      if (!appStatuses) {
+        appStatuses = argoStatusMap[appKey] = {
+          health: [0, 0, 0, 0],
+          synced: [0, 0, 0, 0],
+          deployed: [0, 0, 0, 0],
+        }
+      }
+      app2AppsetMap[app._uid] = appStatuses
+      computeAppHealthStatus(appStatuses.health, app)
+      computeAppSyncStatus(appStatuses.synced, app)
+    }
+  })
+
+  // compute app statuses for related resources
+  searchResult.related.forEach((related) => {
+    related.items.forEach((item: ISearchResource) => {
+      const appStatuses = app2AppsetMap[item._relatedUids[0]]
+      if (appStatuses) {
+        computeAppDeployedStatuses(appStatuses.deployed, item)
+      }
+    })
+  })
+
+  return argoStatusMap
 }

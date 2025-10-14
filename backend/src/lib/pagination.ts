@@ -97,9 +97,9 @@ export function paginate(
               name: 'search',
               getFn: (item) => {
                 return [
-                  item.transform[AppColumns.name][0],
-                  item.transform[AppColumns.namespace][0],
-                  item.transform[AppColumns.clusters][0],
+                  item.transform[AppColumns.name][0] as string,
+                  item.transform[AppColumns.namespace][0] as string,
+                  item.transform[AppColumns.clusters][0] as string,
                 ]
               },
             },
@@ -112,8 +112,8 @@ export function paginate(
       if (sortBy && sortBy.index >= 0) {
         items = items.sort((a, b) => {
           if (sortBy.index > a.transform.length || !Array.isArray(a.transform[sortBy.index])) return 0
-          const acmp = a.transform[sortBy.index][0] || ''
-          const bcmp = b.transform[sortBy.index][0] || ''
+          const acmp = (a.transform[sortBy.index][0] as string) || ''
+          const bcmp = (b.transform[sortBy.index][0] as string) || ''
           return acmp.localeCompare(bcmp)
         })
         if (sortBy.direction === 'desc') {

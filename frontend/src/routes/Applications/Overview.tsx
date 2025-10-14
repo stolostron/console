@@ -48,6 +48,7 @@ import {
   AcmButton,
   AcmDropdown,
   AcmEmptyState,
+  AcmInlineStatusGroup,
   AcmTable,
   compareStrings,
   IAcmRowAction,
@@ -55,7 +56,6 @@ import {
 } from '../../ui-components'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { DeleteResourceModal, IDeleteResourceModalProps } from './components/DeleteResourceModal'
-import ResourceLabels from './components/ResourceLabels'
 import { argoAppSetQueryString } from './CreateArgoApplication/actions'
 import { subscriptionAppQueryString } from './CreateSubscriptionApplication/actions'
 import {
@@ -69,7 +69,6 @@ import {
   getSearchLink,
   getSubscriptionsFromAnnotation,
   hostingSubAnnotationStr,
-  isArgoApp,
   isResourceTypeOf,
 } from './helpers/resource-helper'
 import { isLocalSubscription } from './helpers/subscriptions'
@@ -497,34 +496,22 @@ export default function ApplicationsOverview() {
         },
       },
       {
-        header: t('Repository'),
-        cell: (resource) => {
-          const appRepos = getApplicationRepos(resource, subscriptions, channels)
-          return (
-            <ResourceLabels
-              appRepos={appRepos!}
-              showSubscriptionAttributes={true}
-              isArgoApp={isArgoApp(resource) || isResourceTypeOf(resource, ApplicationSetDefinition)}
-              translation={t}
-            />
-          )
-        },
-        tooltip: t('Provides links to each of the resource repositories used by the application.'),
-        sort: 'transformed.resourceText',
-        search: 'transformed.resourceText',
-        exportContent: (resource) => {
-          const appRepos = getApplicationRepos(resource, subscriptions, channels)
-          if (appRepos) {
-            return appRepos.map((repo) => repo.type).toString()
-          }
-        },
-      },
-      {
         header: t('Health Status'),
         cell: (resource) => {
-          return <span>{get(resource, 'status.health.status', '')}</span>
+          const healthStatuses = (resource as IUIResource)?.uidata?.healthStatuses ?? []
+          if (healthStatuses.length >= 4) {
+            return (
+              <AcmInlineStatusGroup
+                healthy={healthStatuses[0]}
+                progress={healthStatuses[1]}
+                warning={healthStatuses[2]}
+                danger={healthStatuses[3]}
+              />
+            )
+          }
+          return '-'
         },
-        tooltip: t('Health status for ArgoCD applications.'),
+        tooltip: t('Health status for applications.'),
         sort: 'transformed.healthStatus',
         search: 'transformed.healthStatus',
         exportContent: (resource) => {
@@ -534,13 +521,50 @@ export default function ApplicationsOverview() {
       {
         header: t('Sync Status'),
         cell: (resource) => {
-          return <span>{get(resource, 'status.sync.status', '')}</span>
+          const syncedStatuses = (resource as IUIResource)?.uidata?.syncedStatuses ?? []
+          if (syncedStatuses.length >= 4) {
+            return (
+              <AcmInlineStatusGroup
+                healthy={syncedStatuses[0]}
+                progress={syncedStatuses[1]}
+                warning={syncedStatuses[2]}
+                danger={syncedStatuses[3]}
+              />
+            )
+          }
+          return '-'
         },
-        tooltip: t('Sync status for ArgoCD applications.'),
+        tooltip: t('Sync status for applications.'),
         sort: 'transformed.syncStatus',
         search: 'transformed.syncStatus',
         exportContent: (resource) => {
           return get(resource, 'status.sync.status', '')
+        },
+      },
+      {
+        header: t('Deployed Status'),
+        cell: (resource) => {
+          const deployedStatuses = (resource as IUIResource)?.uidata?.deployedStatuses ?? []
+          if (deployedStatuses.length >= 4) {
+            return (
+              <AcmInlineStatusGroup
+                healthy={deployedStatuses[0]}
+                progress={deployedStatuses[1]}
+                warning={deployedStatuses[2]}
+                danger={deployedStatuses[3]}
+              />
+            )
+          }
+          return '-'
+        },
+        tooltip: t('Status of resources deployed by the application.'),
+        sort: 'transformed.resourceText',
+        search: 'transformed.resourceText',
+        exportContent: (resource) => {
+          const appRepos = getApplicationRepos(resource, subscriptions, channels)
+          if (appRepos) {
+            return appRepos.map((repo) => repo.type).toString()
+          }
         },
       },
       ...extensionColumns,

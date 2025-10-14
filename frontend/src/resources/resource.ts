@@ -18,6 +18,9 @@ export interface IResource<StatusType = unknown> extends IResourceDefinition {
 }
 export interface IUIData {
   clusterList: string[]
+  deployedStatuses: number[]
+  syncedStatuses: number[]
+  healthStatuses: number[]
   appSetRelatedResources: (string | string[])[]
   appSetApps: string[]
 }

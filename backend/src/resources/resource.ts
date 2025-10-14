@@ -1,4 +1,33 @@
 /* Copyright Contributors to the Open Cluster Management project */
+export interface ISearchResource {
+  apigroup: string
+  apiversion: string
+  kind: string
+  name: string
+  namespace: string
+  _uid?: string
+  cluster: string
+  label?: string
+  created: string
+  _hostingSubscription?: boolean
+  applicationSet?: string
+  _hostingResource?: string
+  _relatedUids?: string[]
+  status?: string
+  current?: string
+  desired?: string
+  available?: string
+  ready?: string
+  healthStatus?: string
+  syncStatus?: string
+}
+
+export type SearchResult = {
+  items: ISearchResource[]
+  related: {
+    items: ISearchResource[]
+  }[]
+}
 
 interface OwnerReference {
   apiVersion: string
@@ -26,6 +55,9 @@ export interface IResource {
 }
 export interface IUIData {
   clusterList: string[]
+  deployedStatuses?: number[]
+  syncedStatuses?: number[]
+  healthStatuses?: number[]
   appSetRelatedResources: unknown
   appSetApps: IResource[]
 }

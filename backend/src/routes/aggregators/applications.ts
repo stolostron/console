@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { getKubeResources } from '../events'
 import { addOCPQueryInputs, addSystemQueryInputs, cacheOCPApplications } from './applicationsOCP'
-import { ApplicationSetKind, IApplicationSet, IResource } from '../../resources/resource'
+import { ApplicationSetKind, IApplicationSet, IResource, SearchResult } from '../../resources/resource'
 import { FilterSelections } from '../../lib/pagination'
 import { logger } from '../../lib/logger'
 import {
@@ -27,9 +27,9 @@ export enum AppColumns {
   'type',
   'namespace',
   'clusters',
-  'repo',
   'health',
   'sync',
+  'deployed',
   'created',
 }
 export interface IArgoApplication extends IResource {
@@ -71,13 +71,14 @@ export interface ISubscription extends IResource {
     decisions?: [{ clusterName: string }]
   }
 }
+export type Transform = (number | string)[][]
 export interface ITransformedResource extends IResource {
-  transform?: string[][]
+  transform?: Transform
   remoteClusters?: string[]
 }
 export interface ICompressedResource {
   compressed: Buffer
-  transform?: string[][]
+  transform?: Transform
   remoteClusters?: string[]
 }
 
@@ -118,7 +119,7 @@ export const SEARCH_QUERY_LIMIT = 20000
 
 export interface IQuery {
   operationName: string
-  variables: { input: { filters: { property: string; values: string[] }[]; limit: number }[] }
+  variables: { input: { filters: { property: string; values: string[] }[]; relatedKinds: string[]; limit: number }[] }
   query: string
 }
 const queryTemplate: IQuery = {
@@ -126,8 +127,24 @@ const queryTemplate: IQuery = {
   variables: {
     input: [],
   },
-  query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  }\n}',
+  query:
+    'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  related {\n    items\n  }}\n}',
 }
+
+export type ApplicationStatuses = {
+  health: number[]
+  synced: number[]
+  deployed: number[]
+}
+
+export enum ApplicationStatus {
+  healthy = 0,
+  progress = 1,
+  warning = 2,
+  danger = 3,
+}
+
+export type ApplicationStatusMap = Record<string, ApplicationStatuses>
 
 export const promiseTimeout = <T>(promise: Promise<T>, delay: number) => {
   let timeoutID: string | number | NodeJS.Timeout
@@ -169,7 +186,7 @@ export function getApplications() {
   let items = getApplicationsHelper(applicationCache, Object.keys(applicationCache))
   // mock a large environment
   if (process.env.MOCK_CLUSTERS) {
-    items = items.concat(transform(getGiganticApps()).resources)
+    items = items.concat(transform(getGiganticApps(), {}).resources)
   }
   return items
 }
@@ -178,7 +195,10 @@ export function getApplications() {
 export function aggregateLocalApplications() {
   // ACM Apps
   try {
-    applicationCache['subscription'] = transform(structuredClone(getKubeResources('Application', 'app.k8s.io/v1beta1')))
+    applicationCache['subscription'] = transform(
+      structuredClone(getKubeResources('Application', 'app.k8s.io/v1beta1')),
+      {}
+    )
   } catch (e) {
     logger.error(`aggregateLocalApplications subscription exception ${e}`)
   }
@@ -220,6 +240,9 @@ export function addUIData(items: ITransformedResource[]) {
       ...item,
       uidata: {
         clusterList: item?.transform?.[AppColumns.clusters] || [],
+        deployedStatuses: item?.transform?.[AppColumns.deployed] || [],
+        syncedStatuses: item?.transform?.[AppColumns.sync] || [],
+        healthStatuses: item?.transform?.[AppColumns.health] || [],
         appSetRelatedResources:
           item.kind === ApplicationSetKind
             ? getAppSetRelatedResources(item, argoAppSets as IApplicationSet[])
@@ -266,10 +289,10 @@ export async function searchLoop() {
     // query and save the remote applications
     try {
       await promiseTimeout(aggregateRemoteApplications(pass), SEARCH_TIMEOUT * 2).catch((e) =>
-        logger.error(`startSearchLoop exception ${e}`)
+        logger.error(`aggregateRemoteApplications exception ${e}`)
       )
     } catch (e) {
-      logger.error(`startSearchLoop exception ${e}`)
+      logger.error(`aggregateRemoteApplications exception ${e}`)
     }
     pass++
     logApplicationCountChanges(applicationCache, pass)
@@ -302,11 +325,9 @@ export async function aggregateRemoteApplications(pass: number) {
     logger.error(`getSearchResults ${e}`)
     return
   }
+  const searchResult = results.data?.searchResult
   // //////////// SAVE RESULTS ///////////////////
-  const ocpArgoAppFilter = cacheArgoApplications(
-    applicationCache,
-    (results.data?.searchResult?.[0]?.items ?? []) as IResource[]
-  )
+  const ocpArgoAppFilter = cacheArgoApplications(applicationCache, searchResult?.[0] as SearchResult)
   cacheOCPApplications(
     applicationCache,
     (results.data?.searchResult?.[1]?.items || []) as IResource[],
