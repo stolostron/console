@@ -9,7 +9,6 @@ import { User as RbacUser } from '../../../../resources/rbac'
 import AcmTimestamp from '../../../../lib/AcmTimestamp'
 import { IAcmTableColumn, IAcmRowAction } from '../../../../ui-components/AcmTable/AcmTableTypes'
 import { getISOStringTimestamp } from '../../../../resources/utils'
-import { isIdentityActive } from '../../../../ui-components/IdentityStatus/IdentityStatus'
 
 const EXPORT_FILE_PREFIX = 'users-table'
 
@@ -99,47 +98,46 @@ const identityProviderFilter = (selection: string[], user: RbacUser): boolean =>
   return hasMatchingIdentity ?? false
 }
 
-const statusFilter = (selection: string[], user: RbacUser): boolean => {
-  if (selection.length === 0) return true
+export const useFilters = (users: RbacUser[] = []) => {
+  return useMemo(() => {
+    const identityProviders = new Set<string>()
+    users.forEach((user) => {
+      user.identities?.forEach((identity) => {
+        const provider = identity.split(':')[0]
+        if (provider) {
+          identityProviders.add(provider)
+        }
+      })
+    })
 
-  return selection.some((selected: string) => {
-    switch (selected) {
-      case 'active':
-        return isIdentityActive(user)
-      case 'inactive':
-        return !isIdentityActive(user)
-      default:
-        return false
-    }
-  })
-}
+    const identityProviderOptions = Array.from(identityProviders)
+      .sort((a, b) => a.localeCompare(b))
+      .map((provider) => ({ label: provider, value: provider }))
 
-export const useFilters = () => {
-  return useMemo(
-    () => [
+    return [
+      {
+        id: 'name',
+        label: 'User Name',
+        tableFilterFn: (selectedValues: string[], user: RbacUser) => {
+          if (selectedValues.length === 0) return true
+
+          const userName = user.metadata.name || ''
+          return selectedValues.some((selectedValue) => userName.toLowerCase().includes(selectedValue.toLowerCase()))
+        },
+        options: users
+          .map((user) => user.metadata.name)
+          .filter((name): name is string => name !== undefined && name !== null && name.trim() !== '')
+          .sort((a, b) => a.localeCompare(b))
+          .map((name) => ({ label: name, value: name })),
+      },
       {
         id: 'identity-provider',
         label: 'Identity Provider',
         tableFilterFn: identityProviderFilter,
-        options: [
-          { label: 'htpasswd', value: 'htpasswd' },
-          { label: 'ldap', value: 'ldap' },
-          { label: 'oauth', value: 'oauth' },
-          { label: 'github', value: 'github' },
-        ],
+        options: identityProviderOptions,
       },
-      {
-        id: 'status',
-        label: 'Status',
-        tableFilterFn: statusFilter,
-        options: [
-          { label: 'Active', value: 'active' },
-          { label: 'Inactive', value: 'inactive' },
-        ],
-      },
-    ],
-    []
-  )
+    ]
+  }, [users])
 }
 
 export const useRowActions = ({ t, navigate }: UsersTableHelperProps) => {

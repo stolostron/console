@@ -19,7 +19,7 @@ const UsersTable = () => {
 
   const keyFn = useCallback((user: User) => user.metadata.name ?? '', [])
 
-  const filters = useFilters()
+  const filters = useFilters(users)
   const columns = usersTableColumns({ t })
 
   return (
@@ -55,8 +55,6 @@ const UsersTable = () => {
             }
           />
         }
-        // TODO: Uncomment when actions are implemented
-        // rowActions={rowActions}
       />
     </PageSection>
   )

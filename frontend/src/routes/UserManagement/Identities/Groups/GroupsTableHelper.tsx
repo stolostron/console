@@ -9,7 +9,7 @@ import { Group } from '../../../../resources/rbac'
 import AcmTimestamp from '../../../../lib/AcmTimestamp'
 import { IAcmTableColumn, IAcmRowAction } from '../../../../ui-components/AcmTable/AcmTableTypes'
 import { getISOStringTimestamp } from '../../../../resources/utils'
-import { IdentityStatus, isIdentityActive } from '../../../../ui-components/IdentityStatus/IdentityStatus'
+import { IdentityStatus } from '../../../../ui-components/IdentityStatus/IdentityStatus'
 
 const EXPORT_FILE_PREFIX = 'users-table'
 
@@ -88,28 +88,26 @@ export const groupsTableColumns = ({ t }: Pick<GroupsTableHelperProps, 't'>): IA
   },
 ]
 
-export const useFilters = () => {
-  return useMemo(
-    () => [
+export const useFilters = (groups: Group[] = []) => {
+  return useMemo(() => {
+    return [
       {
-        id: 'status',
-        label: 'Status',
-        tableFilterFn: (selection: string[], user: Group) => {
-          if (selection.length === 0) return true
-          return selection.some((selected: string) => {
-            if (selected === 'active') return isIdentityActive(user)
-            if (selected === 'inactive') return !isIdentityActive(user)
-            return false
-          })
+        id: 'name',
+        label: 'Group Name',
+        tableFilterFn: (selectedValues: string[], group: Group) => {
+          if (selectedValues.length === 0) return true
+
+          const groupName = group.metadata.name || ''
+          return selectedValues.some((selectedValue) => groupName.toLowerCase().includes(selectedValue.toLowerCase()))
         },
-        options: [
-          { label: 'Active', value: 'active' },
-          { label: 'Inactive', value: 'inactive' },
-        ],
+        options: groups
+          .map((group) => group.metadata.name)
+          .filter((name): name is string => name !== undefined && name !== null && name.trim() !== '')
+          .sort((a, b) => a.localeCompare(b))
+          .map((name) => ({ label: name, value: name })),
       },
-    ],
-    []
-  )
+    ]
+  }, [groups])
 }
 
 export const useRowActions = ({ t, navigate }: GroupsTableHelperProps) => {

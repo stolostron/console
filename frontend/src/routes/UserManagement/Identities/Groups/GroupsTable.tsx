@@ -19,7 +19,7 @@ const GroupsTable = () => {
 
   const keyFn = useCallback((group: Group) => group.metadata.name ?? '', [])
 
-  const filters = useFilters()
+  const filters = useFilters(groups)
   const columns = groupsTableColumns({ t })
 
   return (
@@ -55,8 +55,6 @@ const GroupsTable = () => {
             }
           />
         }
-        // TODO: Uncomment when actions are implemented
-        // rowActions={rowActions}
       />
     </PageSection>
   )
