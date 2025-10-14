@@ -199,4 +199,45 @@ describe('UserGroups', () => {
     renderWithCtx()
     expect(screen.getByText('developers')).toBeInTheDocument()
   })
+
+  it('handles groups with null or undefined users array', () => {
+    const groupsWithNullUsers: Group[] = [
+      {
+        apiVersion: 'user.openshift.io/v1',
+        kind: 'Group',
+        metadata: {
+          name: 'group-with-null-users',
+          uid: 'null-users-uid',
+          creationTimestamp: '2025-01-24T16:00:00Z',
+        },
+        users: null as any,
+      },
+      {
+        apiVersion: 'user.openshift.io/v1',
+        kind: 'Group',
+        metadata: {
+          name: 'group-with-undefined-users',
+          uid: 'undefined-users-uid',
+          creationTimestamp: '2025-01-24T15:00:00Z',
+        },
+        users: undefined as any,
+      },
+      {
+        apiVersion: 'user.openshift.io/v1',
+        kind: 'Group',
+        metadata: {
+          name: 'valid-group',
+          uid: 'valid-group-uid',
+          creationTimestamp: '2025-01-24T14:00:00Z',
+        },
+        users: ['test-user'],
+      },
+    ]
+    setCtx({ user: mockUser, groups: groupsWithNullUsers })
+    renderWithCtx()
+
+    expect(screen.getByText('valid-group')).toBeInTheDocument()
+    expect(screen.queryByText('group-with-null-users')).not.toBeInTheDocument()
+    expect(screen.queryByText('group-with-undefined-users')).not.toBeInTheDocument()
+  })
 })
