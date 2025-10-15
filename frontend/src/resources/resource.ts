@@ -16,11 +16,16 @@ export interface IResource<StatusType = unknown> extends IResourceDefinition {
   kind: string
   metadata?: Metadata
 }
+export type ApplicationStatuses = {
+  health: number[]
+  synced: number[]
+  deployed: number[]
+}
+
+export type ApplicationStatusMap = Record<string, ApplicationStatuses>
 export interface IUIData {
   clusterList: string[]
-  deployedStatuses: number[]
-  syncedStatuses: number[]
-  healthStatuses: number[]
+  appClusterStatuses: ApplicationStatusMap[]
   appSetRelatedResources: (string | string[])[]
   appSetApps: string[]
 }

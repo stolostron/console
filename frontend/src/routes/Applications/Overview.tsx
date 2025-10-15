@@ -32,6 +32,7 @@ import {
   ApplicationSetApiVersion,
   ApplicationSetDefinition,
   ApplicationSetKind,
+  ApplicationStatuses,
   ArgoApplication,
   ArgoApplicationApiVersion,
   ArgoApplicationKind,
@@ -221,6 +222,26 @@ export function getAppSyncStatus(resource: IResource) {
   }
 
   return ''
+}
+
+export const getApplicationStatuses = (resource: IResource, status: 'health' | 'synced' | 'deployed') => {
+  const uidata = (resource as IUIResource).uidata
+  if (
+    Array.isArray(uidata.appClusterStatuses) &&
+    uidata.appClusterStatuses.length > 0 &&
+    Object.keys(uidata.appClusterStatuses[0]).length > 0
+  ) {
+    const allStatuses = [0, 0, 0, 0]
+    uidata.clusterList.forEach((cluster: string) => {
+      const clusterStatuses = uidata.appClusterStatuses[0][cluster]
+      const statuses = clusterStatuses ? (clusterStatuses as ApplicationStatuses)[status] ?? [] : []
+      for (let i = 0; i < 4; i++) {
+        allStatuses[i] += statuses[i] ?? 0
+      }
+    })
+    return allStatuses
+  }
+  return []
 }
 
 export const getApplicationRepos = (resource: IResource, subscriptions: Subscription[], channels: Channel[]) => {
@@ -498,7 +519,7 @@ export default function ApplicationsOverview() {
       {
         header: t('Health Status'),
         cell: (resource) => {
-          const healthStatuses = (resource as IUIResource)?.uidata?.healthStatuses ?? []
+          const healthStatuses = getApplicationStatuses(resource, 'health')
           if (healthStatuses.length >= 4) {
             return (
               <AcmInlineStatusGroup
@@ -521,7 +542,7 @@ export default function ApplicationsOverview() {
       {
         header: t('Sync Status'),
         cell: (resource) => {
-          const syncedStatuses = (resource as IUIResource)?.uidata?.syncedStatuses ?? []
+          const syncedStatuses = getApplicationStatuses(resource, 'synced')
           if (syncedStatuses.length >= 4) {
             return (
               <AcmInlineStatusGroup
@@ -544,7 +565,7 @@ export default function ApplicationsOverview() {
       {
         header: t('Deployed Status'),
         cell: (resource) => {
-          const deployedStatuses = (resource as IUIResource)?.uidata?.deployedStatuses ?? []
+          const deployedStatuses = getApplicationStatuses(resource, 'deployed')
           if (deployedStatuses.length >= 4) {
             return (
               <AcmInlineStatusGroup

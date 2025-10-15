@@ -15,8 +15,8 @@ import { getKubeResources, getHubClusterName } from '../events'
 import {
   applicationCache,
   ApplicationCacheType,
+  ApplicationClusterStatusMap,
   ApplicationStatuses,
-  ApplicationStatusMap,
   getAppDict,
   IArgoApplication,
   IQuery,
@@ -120,10 +120,6 @@ export function addArgoQueryInputs(applicationCache: ApplicationCacheType, query
     {
       property: 'apigroup',
       values: ['argoproj.io'],
-    },
-    {
-      property: 'cluster',
-      values: [`!${getHubClusterName()}`],
     },
   ]
   /* istanbul ignore if */
@@ -427,7 +423,7 @@ export function getAppSetRelatedResources(appSet: IResource, applicationSets: IA
 }
 
 export function createArgoStatusMap(searchResult: SearchResult) {
-  const argoStatusMap: ApplicationStatusMap = {}
+  const argoClusterStatusMap: ApplicationClusterStatusMap = {}
   const app2AppsetMap: Record<string, ApplicationStatuses> = {}
 
   // create an app map with syncs and health
@@ -444,9 +440,13 @@ export function createArgoStatusMap(searchResult: SearchResult) {
       appKey = `argo/${app.namespace}/${app.name}`
     }
     if (appKey) {
-      let appStatuses = argoStatusMap[appKey]
+      let appStatusMap = argoClusterStatusMap[appKey]
+      if (!appStatusMap) {
+        appStatusMap = argoClusterStatusMap[appKey] = {}
+      }
+      let appStatuses = appStatusMap[app.cluster]
       if (!appStatuses) {
-        appStatuses = argoStatusMap[appKey] = {
+        appStatuses = appStatusMap[app.cluster] = {
           health: [0, 0, 0, 0],
           synced: [0, 0, 0, 0],
           deployed: [0, 0, 0, 0],
@@ -468,5 +468,5 @@ export function createArgoStatusMap(searchResult: SearchResult) {
     })
   })
 
-  return argoStatusMap
+  return argoClusterStatusMap
 }

@@ -73,13 +73,11 @@ export function computeAppDeployedStatuses(deployed: number[], item: ISearchReso
 function computeDeploymentStatus(deployed: number[], item: ISearchResource) {
   const available = Number(item.available) ?? 0
   const desired = Number(item.desired) ?? 0
-  if (available === desired) {
+  if (available === desired || item.desired === '0') {
     deployed[ApplicationStatus.healthy]++
   } else if (available < desired) {
     deployed[ApplicationStatus.progress]++
-  } else if (desired <= 0) {
-    deployed[ApplicationStatus.warning]++
-  } else if (!desired && available === 0) {
+  } else if (!item.desired && available === 0) {
     deployed[ApplicationStatus.danger]++
   } else {
     deployed[ApplicationStatus.healthy]++

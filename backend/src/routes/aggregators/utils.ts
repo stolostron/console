@@ -18,7 +18,7 @@ import {
   AppColumns,
   ApplicationCache,
   ApplicationCacheType,
-  ApplicationStatusMap,
+  ApplicationClusterStatusMap,
   getAppDict,
   ICompressedResource,
   ITransformedResource,
@@ -37,7 +37,7 @@ import { deflateResource, inflateApp } from '../../lib/compression'
 
 export function transform(
   items: ITransformedResource[] | ICompressedResource[],
-  appStatusMap: ApplicationStatusMap,
+  argoClusterStatusMap: ApplicationClusterStatusMap,
   isRemote?: boolean,
   localCluster?: Cluster,
   clusters?: Cluster[],
@@ -51,7 +51,7 @@ export function transform(
     const type = getApplicationType(app)
     const _clusters = getApplicationClusters(app, type, subscriptions, placementDecisions, localCluster, clusters)
     items[inx] = {
-      transform: getTransform(app, type, appStatusMap, _clusters),
+      transform: getTransform(app, type, argoClusterStatusMap, _clusters),
       remoteClusters:
         (isRemote || (type === 'subscription' && _clusters.filter((n) => n !== localClusterName)).length > 0) &&
         _clusters,
@@ -67,19 +67,17 @@ export function transform(
 export function getTransform(
   app: IResource,
   type: string,
-  appStatusMap: ApplicationStatusMap,
+  argoClusterStatusMap: ApplicationClusterStatusMap,
   clusters: string[]
 ): Transform {
   const statusKey = `${type}/${app.metadata.namespace}/${app.metadata.name}`
-  const appStatuses = appStatusMap[statusKey] || { health: [], synced: [], deployed: [] }
+  const appStatuses = argoClusterStatusMap[statusKey] || {}
   return [
     [app.metadata.name],
     [type],
     [getAppNamespace(app)],
     clusters,
-    appStatuses.health,
-    appStatuses.synced,
-    appStatuses.deployed,
+    [appStatuses],
     [app.metadata.creationTimestamp as string],
   ]
 }
@@ -488,12 +486,12 @@ export function getNextApplicationPageChunk(
 
 export function cacheRemoteApps(
   applicationCache: ApplicationCacheType,
-  appStatusMap: ApplicationStatusMap,
+  argoClusterStatusMap: ApplicationClusterStatusMap,
   remoteApps: IResource[],
   applicationPageChunk: ApplicationPageChunk,
   remoteCacheKey: string
 ) {
-  const resources = transform(remoteApps, appStatusMap, true).resources
+  const resources = transform(remoteApps, argoClusterStatusMap, true).resources
   if (!applicationPageChunk) {
     applicationCache[remoteCacheKey].resources = resources
   } else {

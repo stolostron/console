@@ -11,6 +11,7 @@ export interface ISearchResource {
   created: string
   _hostingSubscription?: boolean
   applicationSet?: string
+  type?: string
   _hostingResource?: string
   _relatedUids?: string[]
   status?: string
@@ -52,14 +53,6 @@ export interface IResource {
     ownerReferences?: OwnerReference[]
     creationTimestamp?: string | number | Date
   }
-}
-export interface IUIData {
-  clusterList: string[]
-  deployedStatuses?: number[]
-  syncedStatuses?: number[]
-  healthStatuses?: number[]
-  appSetRelatedResources: unknown
-  appSetApps: IResource[]
 }
 
 export type Cluster = {

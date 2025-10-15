@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Http2ServerRequest, Http2ServerResponse } from 'http2'
-import { applicationCache } from './applications'
+import { applicationCache, IUIData } from './applications'
 import { getApplicationClusters, getApplicationsHelper, getApplicationType, getClusters } from './utils'
-import { Cluster, IApplicationSet, IResource, IUIData } from '../../resources/resource'
+import { Cluster, IApplicationSet, IResource } from '../../resources/resource'
 import { getHubClusterName, getKubeResources } from '../events'
 import { getPushedAppSetMap, getAppSetRelatedResources } from './applicationsArgo'
 import { inflateApps } from '../../lib/compression'

@@ -27,9 +27,7 @@ export enum AppColumns {
   'type',
   'namespace',
   'clusters',
-  'health',
-  'sync',
-  'deployed',
+  'statuses',
   'created',
 }
 export interface IArgoApplication extends IResource {
@@ -71,7 +69,28 @@ export interface ISubscription extends IResource {
     decisions?: [{ clusterName: string }]
   }
 }
-export type Transform = (number | string)[][]
+
+export type ApplicationStatuses = {
+  health: number[]
+  synced: number[]
+  deployed: number[]
+}
+
+export enum ApplicationStatus {
+  healthy = 0,
+  progress = 1,
+  warning = 2,
+  danger = 3,
+}
+
+// each app has distinct statuses for each cluster it's on
+// string is appid (type/ns/name)
+export type ApplicationClusterStatusMap = Record<string, ApplicationStatusMap>
+// string is cluster name
+export type ApplicationStatusMap = Record<string, ApplicationStatuses>
+
+// transform is either a string (for app name) or a map of the statuses of that app on each cluster
+export type Transform = (string | ApplicationStatusMap)[][]
 export interface ITransformedResource extends IResource {
   transform?: Transform
   remoteClusters?: string[]
@@ -80,6 +99,12 @@ export interface ICompressedResource {
   compressed: Buffer
   transform?: Transform
   remoteClusters?: string[]
+}
+export interface IUIData {
+  clusterList: string[]
+  appClusterStatuses?: ApplicationStatusMap
+  appSetRelatedResources: unknown
+  appSetApps: IResource[]
 }
 
 export type ApplicationCache = {
@@ -130,21 +155,6 @@ const queryTemplate: IQuery = {
   query:
     'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  related {\n    items\n  }}\n}',
 }
-
-export type ApplicationStatuses = {
-  health: number[]
-  synced: number[]
-  deployed: number[]
-}
-
-export enum ApplicationStatus {
-  healthy = 0,
-  progress = 1,
-  warning = 2,
-  danger = 3,
-}
-
-export type ApplicationStatusMap = Record<string, ApplicationStatuses>
 
 export const promiseTimeout = <T>(promise: Promise<T>, delay: number) => {
   let timeoutID: string | number | NodeJS.Timeout
@@ -240,9 +250,7 @@ export function addUIData(items: ITransformedResource[]) {
       ...item,
       uidata: {
         clusterList: item?.transform?.[AppColumns.clusters] || [],
-        deployedStatuses: item?.transform?.[AppColumns.deployed] || [],
-        syncedStatuses: item?.transform?.[AppColumns.sync] || [],
-        healthStatuses: item?.transform?.[AppColumns.health] || [],
+        appClusterStatuses: item?.transform?.[AppColumns.statuses] || [],
         appSetRelatedResources:
           item.kind === ApplicationSetKind
             ? getAppSetRelatedResources(item, argoAppSets as IApplicationSet[])
@@ -328,17 +336,8 @@ export async function aggregateRemoteApplications(pass: number) {
   const searchResult = results.data?.searchResult
   // //////////// SAVE RESULTS ///////////////////
   const ocpArgoAppFilter = cacheArgoApplications(applicationCache, searchResult?.[0] as SearchResult)
-  cacheOCPApplications(
-    applicationCache,
-    (results.data?.searchResult?.[1]?.items || []) as IResource[],
-    ocpArgoAppFilter
-  )
+  cacheOCPApplications(applicationCache, searchResult?.[1] as SearchResult, ocpArgoAppFilter)
   if (querySystemApps) {
-    cacheOCPApplications(
-      applicationCache,
-      (results.data?.searchResult?.[2]?.items ?? []) as IResource[],
-      ocpArgoAppFilter,
-      true
-    )
+    cacheOCPApplications(applicationCache, searchResult?.[2] as SearchResult, ocpArgoAppFilter, true)
   }
 }
