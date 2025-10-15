@@ -44,6 +44,12 @@ spec:
       type: npm
     - path: ./backend
       type: npm
+  - name: send-slack-notification
+    value: true
+  - name: konflux-application-name
+    value: release-mce-27
+  - name: slack-group-id
+    value: S09M3BVC3T3 # acm-console-build-focal group-id
   pipelineRef:
     resolver: git
     params:
