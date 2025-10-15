@@ -39,6 +39,12 @@ spec:
     value: "true"
   - name: prefetch-input
     value: '[{"path":".","type":"npm"},{"path":"./frontend","type":"npm"},{"path":"./backend","type":"npm"}]'
+  - name: send-slack-notification
+    value: true
+  - name: konflux-application-name
+    value: release-mce-29
+  - name: slack-group-id
+    value: S09M3BVC3T3 # acm-console-build-focal group-id
   pipelineRef:
     resolver: git
     params:
