@@ -37,6 +37,7 @@ import {
   ClusterPoolKind,
   ClusterProvisionApiVersion,
   ClusterProvisionKind,
+  ClusterRoleKind,
   ClusterVersionApiVersion,
   ClusterVersionKind,
   ConfigMapApiVersion,
@@ -47,6 +48,7 @@ import {
   DiscoveryConfigKind,
   GitOpsClusterApiVersion,
   GitOpsClusterKind,
+  GroupKind,
   HelmReleaseApiVersion,
   HelmReleaseKind,
   HostedClusterApiVersion,
@@ -70,6 +72,8 @@ import {
   ManagedClusterSetKind,
   MulticlusterApplicationSetReportApiVersion,
   MulticlusterApplicationSetReportKind,
+  MulticlusterRoleAssignmentApiVersion,
+  MulticlusterRoleAssignmentKind,
   MultiClusterEngineApiVersion,
   MultiClusterEngineKind,
   NamespaceApiVersion,
@@ -94,6 +98,7 @@ import {
   PolicyReportKind,
   PolicySetApiVersion,
   PolicySetKind,
+  RbacApiVersion,
   SearchOperatorApiVersion,
   SearchOperatorKind,
   SecretApiVersion,
@@ -108,6 +113,8 @@ import {
   SubscriptionOperatorKind,
   SubscriptionReportApiVersion,
   SubscriptionReportKind,
+  UserApiVersion,
+  UserKind,
 } from '../resources'
 import { getBackendUrl, getRequest } from '../resources/utils'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
@@ -134,6 +141,7 @@ import {
   discoveredClusterState,
   discoveryConfigState,
   gitOpsClustersState,
+  groupsState,
   helmReleaseState,
   hostedClustersState,
   infraEnvironmentsState,
@@ -171,21 +179,20 @@ import {
   subscriptionOperatorsState,
   subscriptionReportsState,
   subscriptionsState,
+  usersState,
+  vmClusterRolesState,
   WatchEvent,
 } from '../atoms'
 import { PluginDataContext } from '../lib/PluginDataContext'
 import { useQuery } from '../lib/useQuery'
 import { MultiClusterHubComponent } from '../resources/multi-cluster-hub-component'
-import {
-  MulticlusterRoleAssignmentApiVersion,
-  MulticlusterRoleAssignmentKind,
-} from '../resources/multicluster-role-assignment'
 
 export function LoadData(props: { children?: ReactNode }) {
   const { loadCompleted, setLoadStarted, setLoadCompleted } = useContext(PluginDataContext)
   const [eventsLoaded, setEventsLoaded] = useState(false)
 
   const setAgentClusterInstalls = useSetRecoilState(agentClusterInstallsState)
+  const setAgentMachinesState = useSetRecoilState(agentMachinesState)
   const setAgents = useSetRecoilState(agentsState)
   const setAgentServiceConfigs = useSetRecoilState(agentServiceConfigsState)
   const setAnsibleJobs = useSetRecoilState(ansibleJobState)
@@ -199,50 +206,52 @@ export function LoadData(props: { children?: ReactNode }) {
   const setClusterDeployments = useSetRecoilState(clusterDeploymentsState)
   const setClusterImageSets = useSetRecoilState(clusterImageSetsState)
   const setClusterManagementAddons = useSetRecoilState(clusterManagementAddonsState)
-  const setClusterVerions = useSetRecoilState(clusterVersionState)
   const setClusterPools = useSetRecoilState(clusterPoolsState)
   const setClusterProvisions = useSetRecoilState(clusterProvisionsState)
+  const setVMClusterRoles = useSetRecoilState(vmClusterRolesState)
+  const setClusterVerions = useSetRecoilState(clusterVersionState)
   const setConfigMaps = useSetRecoilState(configMapsState)
   const setDiscoveredClusters = useSetRecoilState(discoveredClusterState)
   const setDiscoveryConfigs = useSetRecoilState(discoveryConfigState)
   const setGitOpsClustersState = useSetRecoilState(gitOpsClustersState)
+  const setGroups = useSetRecoilState(groupsState)
   const setHelmReleases = useSetRecoilState(helmReleaseState)
+  const setHostedClustersState = useSetRecoilState(hostedClustersState)
   const setInfraEnvironments = useSetRecoilState(infraEnvironmentsState)
   const setInfrastructure = useSetRecoilState(infrastructuresState)
+  const setIsFineGrainedRbacEnabled = useSetRecoilState(isFineGrainedRbacEnabledState)
+  const setIsGlobalHub = useSetRecoilState(isGlobalHubState)
+  const setIsHubSelfManaged = useSetRecoilState(isHubSelfManagedState)
+  const setlocalHubName = useSetRecoilState(localHubNameState)
   const setMachinePools = useSetRecoilState(machinePoolsState)
   const setManagedClusterAddons = useSetRecoilState(managedClusterAddonsState)
   const setManagedClusterInfos = useSetRecoilState(managedClusterInfosState)
   const setManagedClusterSetBindings = useSetRecoilState(managedClusterSetBindingsState)
   const setManagedClusterSets = useSetRecoilState(managedClusterSetsState)
   const setManagedClusters = useSetRecoilState(managedClustersState)
-  const setMultiClusterEngines = useSetRecoilState(multiClusterEnginesState)
   const setMulticlusterApplicationSetReportState = useSetRecoilState(multiclusterApplicationSetReportState)
+  const setMultiClusterEngines = useSetRecoilState(multiClusterEnginesState)
+  const setMulticlusterRoleAssignments = useSetRecoilState(multiclusterRoleAssignmentState)
   const setNamespaces = useSetRecoilState(namespacesState)
   const setNMStateConfigs = useSetRecoilState(nmStateConfigsState)
+  const setNodePoolsState = useSetRecoilState(nodePoolsState)
+  const setPlacementBindingsState = useSetRecoilState(placementBindingsState)
+  const setPlacementDecisionsState = useSetRecoilState(placementDecisionsState)
+  const setPlacementRulesState = useSetRecoilState(placementRulesState)
+  const setPlacementsState = useSetRecoilState(placementsState)
   const setPoliciesState = useSetRecoilState(policiesState)
   const setPolicyAutomationState = useSetRecoilState(policyAutomationState)
-  const setPolicySetsState = useSetRecoilState(policySetsState)
-  const setPlacementBindingsState = useSetRecoilState(placementBindingsState)
-  const setPlacementsState = useSetRecoilState(placementsState)
-  const setPlacementRulesState = useSetRecoilState(placementRulesState)
-  const setPlacementDecisionsState = useSetRecoilState(placementDecisionsState)
   const setPolicyReports = useSetRecoilState(policyreportState)
+  const setPolicySetsState = useSetRecoilState(policySetsState)
   const setSearchOperator = useSetRecoilState(searchOperatorState)
   const setSecrets = useSetRecoilState(secretsState)
   const setSettings = useSetRecoilState(settingsState)
+  const setStorageClassState = useSetRecoilState(storageClassState)
   const setSubmarinerConfigs = useSetRecoilState(submarinerConfigsState)
-  const setSubscriptionsState = useSetRecoilState(subscriptionsState)
   const setSubscriptionOperatorsState = useSetRecoilState(subscriptionOperatorsState)
   const setSubscriptionReportsState = useSetRecoilState(subscriptionReportsState)
-  const setStorageClassState = useSetRecoilState(storageClassState)
-  const setHostedClustersState = useSetRecoilState(hostedClustersState)
-  const setNodePoolsState = useSetRecoilState(nodePoolsState)
-  const setAgentMachinesState = useSetRecoilState(agentMachinesState)
-  const setIsFineGrainedRbacEnabled = useSetRecoilState(isFineGrainedRbacEnabledState)
-  const setIsGlobalHub = useSetRecoilState(isGlobalHubState)
-  const setlocalHubName = useSetRecoilState(localHubNameState)
-  const setIsHubSelfManaged = useSetRecoilState(isHubSelfManagedState)
-  const setMulticlusterRoleAssignments = useSetRecoilState(multiclusterRoleAssignmentState)
+  const setSubscriptionsState = useSetRecoilState(subscriptionsState)
+  const setUsers = useSetRecoilState(usersState)
 
   const { setters, mappers, caches } = useMemo(() => {
     const setters: Record<string, Record<string, SetterOrUpdater<any[]>>> = {}
@@ -284,22 +293,16 @@ export function LoadData(props: { children?: ReactNode }) {
     addMapper(ManagedClusterAddOnApiVersion, ManagedClusterAddOnKind, setManagedClusterAddons, ['metadata.namespace'])
 
     // setters
-    addSetter(AgentClusterInstallApiVersion, AgentClusterInstallKind, setAgentClusterInstalls)
-    addSetter(AgentServiceConfigKindVersion, AgentServiceConfigKind, setAgentServiceConfigs)
-    addSetter(ApplicationApiVersion, ApplicationKind, setApplicationsState)
-    addSetter(ChannelApiVersion, ChannelKind, setChannelsState)
-    addSetter(PlacementApiVersionAlpha, PlacementKind, setPlacementsState)
-    addSetter(PlacementRuleApiVersion, PlacementRuleKind, setPlacementRulesState)
-    addSetter(PlacementDecisionApiVersion, PlacementDecisionKind, setPlacementDecisionsState)
-    addSetter(SubscriptionApiVersion, SubscriptionKind, setSubscriptionsState)
-    addSetter(SubscriptionOperatorApiVersion, SubscriptionOperatorKind, setSubscriptionOperatorsState)
-    addSetter(SubscriptionReportApiVersion, SubscriptionReportKind, setSubscriptionReportsState)
-    addSetter(GitOpsClusterApiVersion, GitOpsClusterKind, setGitOpsClustersState)
     addSetter('argoproj.io/v1alpha1', 'ArgoCD', setArgoCDsState)
+    addSetter(AgentClusterInstallApiVersion, AgentClusterInstallKind, setAgentClusterInstalls)
     addSetter(AgentKindVersion, AgentKind, setAgents)
+    addSetter(AgentMachineApiVersion, AgentMachineKind, setAgentMachinesState)
+    addSetter(AgentServiceConfigKindVersion, AgentServiceConfigKind, setAgentServiceConfigs)
     addSetter(AnsibleJobApiVersion, AnsibleJobKind, setAnsibleJobs)
+    addSetter(ApplicationApiVersion, ApplicationKind, setApplicationsState)
     addSetter(BareMetalHostApiVersion, BareMetalHostKind, setBareMetalHosts)
     addSetter(CertificateSigningRequestApiVersion, CertificateSigningRequestKind, setCertificateSigningRequests)
+    addSetter(ChannelApiVersion, ChannelKind, setChannelsState)
     addSetter(ClusterClaimApiVersion, ClusterClaimKind, setClusterClaims)
     addSetter(ClusterCuratorApiVersion, ClusterCuratorKind, setClusterCurators)
     addSetter(ClusterDeploymentApiVersion, ClusterDeploymentKind, setClusterDeployments)
@@ -311,7 +314,9 @@ export function LoadData(props: { children?: ReactNode }) {
     addSetter(ConfigMapApiVersion, ConfigMapKind, setConfigMaps)
     addSetter(DiscoveredClusterApiVersion, DiscoveredClusterKind, setDiscoveredClusters)
     addSetter(DiscoveryConfigApiVersion, DiscoveryConfigKind, setDiscoveryConfigs)
+    addSetter(GitOpsClusterApiVersion, GitOpsClusterKind, setGitOpsClustersState)
     addSetter(HelmReleaseApiVersion, HelmReleaseKind, setHelmReleases)
+    addSetter(HostedClusterApiVersion, HostedClusterKind, setHostedClustersState)
     addSetter(InfraEnvApiVersion, InfraEnvKind, setInfraEnvironments)
     addSetter(InfrastructureApiVersion, InfrastructureKind, setInfrastructure)
     addSetter(MachinePoolApiVersion, MachinePoolKind, setMachinePools)
@@ -319,31 +324,39 @@ export function LoadData(props: { children?: ReactNode }) {
     addSetter(ManagedClusterInfoApiVersion, ManagedClusterInfoKind, setManagedClusterInfos)
     addSetter(ManagedClusterSetApiVersion, ManagedClusterSetKind, setManagedClusterSets)
     addSetter(ManagedClusterSetBindingApiVersion, ManagedClusterSetBindingKind, setManagedClusterSetBindings)
-    addSetter(MultiClusterEngineApiVersion, MultiClusterEngineKind, setMultiClusterEngines)
     addSetter(
       MulticlusterApplicationSetReportApiVersion,
       MulticlusterApplicationSetReportKind,
       setMulticlusterApplicationSetReportState
     )
+    addSetter(MulticlusterRoleAssignmentApiVersion, MulticlusterRoleAssignmentKind, setMulticlusterRoleAssignments)
+    addSetter(MultiClusterEngineApiVersion, MultiClusterEngineKind, setMultiClusterEngines)
     addSetter(NamespaceApiVersion, NamespaceKind, setNamespaces)
     addSetter(NMStateConfigApiVersion, NMStateConfigKind, setNMStateConfigs)
+    addSetter(NodePoolApiVersion, NodePoolKind, setNodePoolsState)
+    addSetter(PlacementApiVersionAlpha, PlacementKind, setPlacementsState)
+    addSetter(PlacementBindingApiVersion, PlacementBindingKind, setPlacementBindingsState)
+    addSetter(PlacementDecisionApiVersion, PlacementDecisionKind, setPlacementDecisionsState)
+    addSetter(PlacementRuleApiVersion, PlacementRuleKind, setPlacementRulesState)
     addSetter(PolicyApiVersion, PolicyKind, setPoliciesState)
     addSetter(PolicyAutomationApiVersion, PolicyAutomationKind, setPolicyAutomationState)
-    addSetter(PolicySetApiVersion, PolicySetKind, setPolicySetsState)
-    addSetter(PlacementBindingApiVersion, PlacementBindingKind, setPlacementBindingsState)
     addSetter(PolicyReportApiVersion, PolicyReportKind, setPolicyReports)
+    addSetter(PolicySetApiVersion, PolicySetKind, setPolicySetsState)
+    addSetter(RbacApiVersion, ClusterRoleKind, setVMClusterRoles)
     addSetter(SearchOperatorApiVersion, SearchOperatorKind, setSearchOperator)
     addSetter(SecretApiVersion, SecretKind, setSecrets)
     addSetter(StorageClassApiVersion, StorageClassKind, setStorageClassState)
     addSetter(SubmarinerConfigApiVersion, SubmarinerConfigKind, setSubmarinerConfigs)
-    addSetter(HostedClusterApiVersion, HostedClusterKind, setHostedClustersState)
-    addSetter(NodePoolApiVersion, NodePoolKind, setNodePoolsState)
-    addSetter(AgentMachineApiVersion, AgentMachineKind, setAgentMachinesState)
-    addSetter(MulticlusterRoleAssignmentApiVersion, MulticlusterRoleAssignmentKind, setMulticlusterRoleAssignments)
+    addSetter(SubscriptionApiVersion, SubscriptionKind, setSubscriptionsState)
+    addSetter(SubscriptionOperatorApiVersion, SubscriptionOperatorKind, setSubscriptionOperatorsState)
+    addSetter(SubscriptionReportApiVersion, SubscriptionReportKind, setSubscriptionReportsState)
+    addSetter(UserApiVersion, GroupKind, setGroups)
+    addSetter(UserApiVersion, UserKind, setUsers)
 
     return { setters, mappers, caches }
   }, [
     setAgentClusterInstalls,
+    setAgentMachinesState,
     setAgents,
     setAgentServiceConfigs,
     setAnsibleJobs,
@@ -359,12 +372,15 @@ export function LoadData(props: { children?: ReactNode }) {
     setClusterManagementAddons,
     setClusterPools,
     setClusterProvisions,
+    setVMClusterRoles,
     setClusterVerions,
     setConfigMaps,
     setDiscoveredClusters,
     setDiscoveryConfigs,
     setGitOpsClustersState,
+    setGroups,
     setHelmReleases,
+    setHostedClustersState,
     setInfraEnvironments,
     setInfrastructure,
     setMachinePools,
@@ -373,10 +389,12 @@ export function LoadData(props: { children?: ReactNode }) {
     setManagedClusterSetBindings,
     setManagedClusterSets,
     setManagedClusters,
-    setMultiClusterEngines,
     setMulticlusterApplicationSetReportState,
+    setMultiClusterEngines,
+    setMulticlusterRoleAssignments,
     setNamespaces,
     setNMStateConfigs,
+    setNodePoolsState,
     setPlacementBindingsState,
     setPlacementDecisionsState,
     setPlacementRulesState,
@@ -389,13 +407,10 @@ export function LoadData(props: { children?: ReactNode }) {
     setSecrets,
     setStorageClassState,
     setSubmarinerConfigs,
+    setSubscriptionOperatorsState,
     setSubscriptionReportsState,
     setSubscriptionsState,
-    setSubscriptionOperatorsState,
-    setHostedClustersState,
-    setNodePoolsState,
-    setAgentMachinesState,
-    setMulticlusterRoleAssignments,
+    setUsers,
   ])
 
   useEffect(() => {

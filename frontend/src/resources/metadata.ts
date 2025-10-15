@@ -10,6 +10,7 @@ export interface Metadata {
   generateName?: string
   deletionTimestamp?: string
   selfLink?: string
+  generation?: number
   finalizers?: string[]
   ownerReferences?: OwnerReference[]
   managedFields?: unknown[]

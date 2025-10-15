@@ -1,59 +1,53 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { PageSection, Stack, Text } from '@patternfly/react-core'
 import {
   DescriptionList,
   DescriptionListTerm,
   DescriptionListGroup,
   DescriptionListDescription,
+  PageSection,
+  Stack,
+  Text,
 } from '@patternfly/react-core'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { AcmLoadingPage } from '../../../../ui-components'
 import { useUserDetailsContext } from './UserPage'
 
 const UserDetails = () => {
   const { t } = useTranslation()
-  const { user, loading } = useUserDetailsContext()
+  const { user } = useUserDetailsContext()
 
-  switch (true) {
-    case loading:
-      return (
-        <PageSection>
-          <AcmLoadingPage />
-        </PageSection>
-      )
-    case !user:
-      return (
-        <PageSection>
-          <div>{t('User not found')}</div>
-        </PageSection>
-      )
-    default:
-      return (
-        <PageSection>
-          <PageSection variant={'light'}>
-            <Text style={{ fontFamily: 'RedHatDisplay', marginBottom: '2rem' }}>{t('General information')}</Text>
-            <Stack hasGutter>
-              <DescriptionList isHorizontal={false}>
-                <DescriptionListGroup>
-                  <DescriptionListTerm>{t('Full name')}</DescriptionListTerm>
-                  <DescriptionListDescription>{user.fullName ?? '-'}</DescriptionListDescription>
-                </DescriptionListGroup>
-
-                <DescriptionListGroup>
-                  <DescriptionListTerm>{t('Username')}</DescriptionListTerm>
-                  <DescriptionListDescription>{user.metadata.name ?? '-'}</DescriptionListDescription>
-                </DescriptionListGroup>
-                {/* TODO: add 'last login' column once 'last login' is implemented */}
-                <DescriptionListGroup>
-                  <DescriptionListTerm>{t('Identity Provider')}</DescriptionListTerm>
-                  <DescriptionListDescription>{user.identities ?? '-'}</DescriptionListDescription>
-                </DescriptionListGroup>
-              </DescriptionList>
-            </Stack>
-          </PageSection>
-        </PageSection>
-      )
+  if (!user) {
+    return (
+      <PageSection>
+        <div>{t('User not found')}</div>
+      </PageSection>
+    )
   }
+
+  return (
+    <PageSection>
+      <PageSection variant={'light'}>
+        <Text style={{ fontFamily: 'RedHatDisplay', marginBottom: '2rem' }}>{t('General information')}</Text>
+        <Stack hasGutter>
+          <DescriptionList isHorizontal={false}>
+            <DescriptionListGroup>
+              <DescriptionListTerm>{t('Full name')}</DescriptionListTerm>
+              <DescriptionListDescription>{user.fullName ?? '-'}</DescriptionListDescription>
+            </DescriptionListGroup>
+
+            <DescriptionListGroup>
+              <DescriptionListTerm>{t('Username')}</DescriptionListTerm>
+              <DescriptionListDescription>{user.metadata.name ?? '-'}</DescriptionListDescription>
+            </DescriptionListGroup>
+            {/* TODO: add 'last login' column once 'last login' is implemented */}
+            <DescriptionListGroup>
+              <DescriptionListTerm>{t('Identity Provider')}</DescriptionListTerm>
+              <DescriptionListDescription>{user.identities ?? '-'}</DescriptionListDescription>
+            </DescriptionListGroup>
+          </DescriptionList>
+        </Stack>
+      </PageSection>
+    </PageSection>
+  )
 }
 
 export { UserDetails }

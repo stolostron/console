@@ -103,7 +103,7 @@ const useRoleAssignmentFormData = (
   }, [])
 
   const onChangeScopeNamespaces = useCallback(
-    (namespaces: string[]) =>
+    (namespaces: string[] | undefined) =>
       setRoleAssignmentFormData((prevData) => ({
         ...prevData,
         scope: {

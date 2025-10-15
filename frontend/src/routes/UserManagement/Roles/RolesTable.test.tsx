@@ -3,20 +3,17 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../lib/nock-util'
 import { RolesTable } from './RolesTable'
 import { ClusterRole } from '../../../resources/rbac'
+import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 
-// Mock the context to control test data
-jest.mock('./RolesPage', () => ({
-  useRolesContext: jest.fn(),
+jest.mock('../../../shared-recoil', () => ({
+  useRecoilValue: jest.fn(),
+  useSharedAtoms: jest.fn(),
 }))
 
-// Import the mocked function
-import { useRolesContext } from './RolesPage'
-
-// Get the mocked function using jest's mocked utility
-const mockUseRolesContext = jest.mocked(useRolesContext)
+const mockUseRecoilValue = jest.mocked(useRecoilValue)
+const mockUseSharedAtoms = jest.mocked(useSharedAtoms)
 
 // Mock the entire ui-components module with all necessary exports
 jest.mock('../../../ui-components', () => ({
@@ -126,120 +123,48 @@ const mockClusterRoleNoAnnotations: ClusterRole = {
 
 describe('RolesTable', () => {
   beforeEach(() => {
-    nockIgnoreRBAC()
-    nockIgnoreApiPaths()
     jest.clearAllMocks()
-    // Clean up any previous test state
     document.body.innerHTML = ''
+
+    mockUseSharedAtoms.mockReturnValue({
+      vmClusterRolesState: {} as any,
+    } as any)
   })
 
-  describe('Loading States', () => {
-    it('should show loading page when loading is true', () => {
-      mockUseRolesContext.mockReturnValue({
-        clusterRoles: [],
-        loading: true,
-      })
+  it('should render roles when data is available', () => {
+    mockUseRecoilValue.mockReturnValue([mockClusterRole])
 
-      render(<Component />)
+    render(<Component />)
 
-      expect(screen.getAllByRole('progressbar')).toHaveLength(10)
-    })
-
-    it('should not show loading page when loading is false', () => {
-      mockUseRolesContext.mockReturnValue({
-        clusterRoles: [mockClusterRole],
-        loading: false,
-      })
-
-      render(<Component />)
-
-      expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
-
-      // Should render the role when not loading
-      expect(screen.getByText('test-admin-role')).toBeInTheDocument()
-      expect(screen.getByText('apps, batch, networking.k8s.io')).toBeInTheDocument()
-    })
+    expect(screen.getByText('test-admin-role')).toBeInTheDocument()
+    expect(screen.getByText('apps, batch, networking.k8s.io')).toBeInTheDocument()
   })
 
-  describe('Empty States', () => {
-    it('should show empty state when no roles', () => {
-      mockUseRolesContext.mockReturnValue({
-        clusterRoles: [],
-        loading: false,
-      })
+  it('should show empty state when no roles', () => {
+    mockUseRecoilValue.mockReturnValue([])
 
-      render(<Component />)
+    render(<Component />)
 
-      expect(screen.getByText('No roles')).toBeInTheDocument()
-      expect(screen.queryByTestId('acm-table')).not.toBeInTheDocument()
-    })
-
-    it('should handle undefined clusterRoles', () => {
-      mockUseRolesContext.mockReturnValue({
-        clusterRoles: undefined,
-        loading: false,
-      })
-
-      render(<Component />)
-
-      // Should handle gracefully by showing empty state
-      expect(screen.getByText('No roles')).toBeInTheDocument()
-      expect(screen.queryByTestId('acm-table')).not.toBeInTheDocument()
-    })
+    expect(screen.getByText('No roles')).toBeInTheDocument()
+    expect(screen.queryByTestId('acm-table')).not.toBeInTheDocument()
   })
 
-  describe('Context Integration', () => {
-    it('should call useRolesContext hook', () => {
-      mockUseRolesContext.mockReturnValue({
-        clusterRoles: [],
-        loading: false,
-      })
+  it('should handle undefined clusterRoles', () => {
+    mockUseRecoilValue.mockReturnValue(undefined)
 
-      render(<Component />)
+    render(<Component />)
 
-      expect(mockUseRolesContext).toHaveBeenCalledTimes(1)
-    })
-
-    it('should re-render when context changes', () => {
-      const { rerender } = render(<Component />)
-
-      // Initial state: no roles
-      mockUseRolesContext.mockReturnValue({
-        clusterRoles: [],
-        loading: false,
-      })
-
-      rerender(<Component />)
-
-      expect(screen.getByText('No roles')).toBeInTheDocument()
-
-      // Change context: add roles
-      mockUseRolesContext.mockReturnValue({
-        clusterRoles: [mockClusterRole],
-        loading: false,
-      })
-
-      rerender(<Component />)
-
-      expect(screen.queryByText('No roles')).not.toBeInTheDocument()
-      // Should now show the role that was added
-      expect(screen.getByText('test-admin-role')).toBeInTheDocument()
-    })
+    expect(screen.getByText('No roles')).toBeInTheDocument()
+    expect(screen.queryByTestId('acm-table')).not.toBeInTheDocument()
   })
 
-  describe('Handling multiple roles', () => {
-    it('should process multiple cluster roles correctly', () => {
-      mockUseRolesContext.mockReturnValue({
-        clusterRoles: [mockClusterRole, mockClusterRoleNoPermissions, mockClusterRoleNoAnnotations],
-        loading: false,
-      })
+  it('should process multiple cluster roles correctly', () => {
+    mockUseRecoilValue.mockReturnValue([mockClusterRole, mockClusterRoleNoPermissions, mockClusterRoleNoAnnotations])
 
-      render(<Component />)
+    render(<Component />)
 
-      // Should handle multiple roles with different configurations
-      expect(screen.getByText('test-admin-role')).toBeInTheDocument()
-      expect(screen.getByText('test-viewer-role')).toBeInTheDocument()
-      expect(screen.getByText('test-basic-role')).toBeInTheDocument()
-    })
+    expect(screen.getByText('test-admin-role')).toBeInTheDocument()
+    expect(screen.getByText('test-viewer-role')).toBeInTheDocument()
+    expect(screen.getByText('test-basic-role')).toBeInTheDocument()
   })
 })

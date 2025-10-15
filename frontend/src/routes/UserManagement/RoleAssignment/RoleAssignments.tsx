@@ -6,11 +6,13 @@ import { generatePath, Link } from 'react-router-dom-v5-compat'
 import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../lib/doc-util'
+import { rbacCreate, rbacDelete, rbacPatch, useIsAnyNamespaceAuthorized } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
 import {
   deleteRoleAssignment,
   FlattenedRoleAssignment,
 } from '../../../resources/clients/multicluster-role-assignment-client'
+import { MulticlusterRoleAssignmentDefinition } from '../../../resources/multicluster-role-assignment'
 import { IRequestResult } from '../../../resources/utils/resource-request'
 import { AcmButton, AcmEmptyState, AcmTable, compareStrings, IAcmTableColumn } from '../../../ui-components'
 import { IAcmTableAction, IAcmTableButtonAction, ITableFilter } from '../../../ui-components/AcmTable/AcmTableTypes'
@@ -19,6 +21,7 @@ import { RoleAssignmentActionDropdown } from './RoleAssignmentActionDropdown'
 import { RoleAssignmentLabel } from './RoleAssignmentLabel'
 import { RoleAssignmentModal } from '../RoleAssignments/RoleAssignmentModal'
 import { RoleAssignmentStatusComponent } from './RoleAssignmentStatusComponent'
+import AcmTimestamp from '../../../lib/AcmTimestamp'
 
 // Component for rendering clickable role links
 const RoleLinkCell = ({ roleName }: { roleName: string }) => (
@@ -65,12 +68,10 @@ const renderSubjectNameCell = (name: string, kind: string) => {
 // Component for rendering status
 const StatusCell = ({ status }: { status?: any }) => <RoleAssignmentStatusComponent status={status} />
 
-// Component for rendering created date placeholder
-const CreatedCell = () => {
-  // FlattenedRoleAssignment doesn't have metadata.creationTimestamp
-  // Show dash since this data is not available at the flattened level
-  return <span>-</span>
-}
+// Component for rendering created timestamp placeholder
+const renderCreatedCell = (roleAssignment: FlattenedRoleAssignment) => (
+  <AcmTimestamp timestamp={roleAssignment.status?.createdAt ?? undefined} />
+)
 
 // Cell renderer functions
 const renderRoleCell = (roleAssignment: FlattenedRoleAssignment) => (
@@ -83,8 +84,6 @@ const renderNamespacesCell = (roleAssignment: FlattenedRoleAssignment) => (
 
 const renderStatusCell = (roleAssignment: FlattenedRoleAssignment) => <StatusCell status={roleAssignment.status} />
 
-const renderCreatedCell = () => <CreatedCell />
-
 const renderClustersCell = (roleAssignment: FlattenedRoleAssignment) => {
   const clusterNames = roleAssignment.clusterSelection?.clusterNames || []
   return <ClusterLinksCell clusterNames={clusterNames} />
@@ -95,15 +94,18 @@ const ActionCell = ({
   roleAssignment,
   setModalProps,
   deleteAction,
+  canDelete,
 }: {
   roleAssignment: FlattenedRoleAssignment
   setModalProps: React.Dispatch<React.SetStateAction<BulkActionModalProps<FlattenedRoleAssignment> | { open: false }>>
   deleteAction: (roleAssignment: FlattenedRoleAssignment) => IRequestResult<unknown>
+  canDelete: boolean
 }) => (
   <RoleAssignmentActionDropdown
     roleAssignment={roleAssignment}
     setModalProps={setModalProps}
     deleteAction={deleteAction}
+    canDelete={canDelete}
   />
 )
 
@@ -123,6 +125,16 @@ const RoleAssignments = ({
   preselected,
 }: RoleAssignmentsProps) => {
   const { t } = useTranslation()
+  const unauthorizedMessage = t('rbac.unauthorized')
+
+  const canCreate = useIsAnyNamespaceAuthorized(rbacCreate(MulticlusterRoleAssignmentDefinition))
+  const canPatch = useIsAnyNamespaceAuthorized(rbacPatch(MulticlusterRoleAssignmentDefinition))
+  const canDelete = useIsAnyNamespaceAuthorized(rbacDelete(MulticlusterRoleAssignmentDefinition))
+
+  // User needs both create and patch to add role assignments
+  const canCreateRoleAssignment = canCreate && canPatch
+  // User needs both delete and patch to remove role assignments
+  const canDeleteRoleAssignment = canDelete && canPatch
 
   const keyFn = useCallback(
     (roleAssignment: FlattenedRoleAssignment) =>
@@ -170,6 +182,7 @@ const RoleAssignments = ({
               },
             ],
             keyFn,
+            actionOneByOne: true,
             actionFn: deleteRoleAssignment,
             close: () => setDeleteModalProps({ open: false }),
             isDanger: true,
@@ -178,9 +191,11 @@ const RoleAssignments = ({
           })
         },
         variant: 'bulk-action',
+        isDisabled: !canDeleteRoleAssignment,
+        tooltip: canDeleteRoleAssignment ? '' : unauthorizedMessage,
       },
     ],
-    [t, keyFn]
+    [t, keyFn, canDeleteRoleAssignment, unauthorizedMessage]
   )
 
   // Filters for FlattenedRoleAssignment
@@ -265,9 +280,11 @@ const RoleAssignments = ({
         title: t('Create role assignment'),
         click: () => setIsCreateModalOpen(true),
         variant: ButtonVariant.primary,
+        isDisabled: !canCreateRoleAssignment,
+        tooltip: canCreateRoleAssignment ? '' : unauthorizedMessage,
       },
     ],
-    [t]
+    [t, canCreateRoleAssignment, unauthorizedMessage]
   )
 
   // Action cell renderer (needs access to component state)
@@ -276,6 +293,7 @@ const RoleAssignments = ({
       roleAssignment={roleAssignment}
       setModalProps={setDeleteModalProps}
       deleteAction={deleteRoleAssignment}
+      canDelete={canDeleteRoleAssignment}
     />
   )
 
@@ -338,12 +356,10 @@ const RoleAssignments = ({
     },
     {
       header: t('Created'),
-      sort: 'metadata.creationTimestamp',
       cellTransforms: [nowrap],
-      // FlattenedRoleAssignment doesn't have metadata.creationTimestamp
-      // We could show the parent MulticlusterRoleAssignment creation time instead
+      sort: 'status.createdAt',
       cell: renderCreatedCell,
-      exportContent: () => '',
+      exportContent: (roleAssignment) => roleAssignment.status?.createdAt ?? '',
     },
     {
       header: '',
@@ -364,6 +380,10 @@ const RoleAssignments = ({
         filters={filters}
         tableActionButtons={tableActionButtons}
         tableActions={tableActions}
+        initialSort={{
+          index: 0, // default to sorting by violation count
+          direction: 'asc',
+        }}
         resultView={{
           page: 1,
           loading: isLoading ?? false,
@@ -371,7 +391,7 @@ const RoleAssignments = ({
           items: [],
           emptyResult: false,
           processedItemCount: 0,
-          isPreProcessed: true,
+          isPreProcessed: false,
         }}
         emptyState={
           <AcmEmptyState
@@ -382,9 +402,12 @@ const RoleAssignments = ({
             )}
             action={
               <div>
-                {/* TODO: add RBAC for RA creation */}
-                {/* {isCreateButtonHidden ? ( */}
-                <AcmButton variant="primary" onClick={() => setIsCreateModalOpen(true)}>
+                <AcmButton
+                  variant="primary"
+                  onClick={() => setIsCreateModalOpen(true)}
+                  isDisabled={!canCreateRoleAssignment}
+                  tooltip={canCreateRoleAssignment ? '' : unauthorizedMessage}
+                >
                   {t('Create role assignment')}
                 </AcmButton>
                 {/* ) : null} */}

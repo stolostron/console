@@ -38,7 +38,7 @@ const renderIdentityProviderCell = (user: User) => {
 
 const GroupUsers = () => {
   const { t } = useTranslation()
-  const { group, users, loading: groupLoading, usersLoading } = useGroupDetailsContext()
+  const { group, users } = useGroupDetailsContext()
   const filters = useFilters()
 
   const groupUsers = useMemo(() => {
@@ -88,12 +88,12 @@ const GroupUsers = () => {
         items={groupUsers}
         resultView={{
           page: 1,
-          loading: groupLoading || usersLoading,
+          loading: false,
           refresh: () => {},
           items: [],
           emptyResult: false,
           processedItemCount: 0,
-          isPreProcessed: true,
+          isPreProcessed: false,
         }}
         emptyState={
           <AcmEmptyState

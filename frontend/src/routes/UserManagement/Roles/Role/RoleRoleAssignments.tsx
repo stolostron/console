@@ -1,55 +1,27 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useEffect, useMemo, useState } from 'react'
-import { useParams } from 'react-router-dom-v5-compat'
-import { ClusterRole } from '../../../../resources'
 import { useFindRoleAssignments } from '../../../../resources/clients/multicluster-role-assignment-client'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
-import { compareStrings } from '../../../../ui-components'
 import { RoleAssignments } from '../../RoleAssignment/RoleAssignments'
-import { useRolesContext } from '../RolesPage'
-import { Role } from '../RolesTableHelper'
+import { useCurrentRole } from '../RolesPage'
 
 const RoleRoleAssignments = () => {
-  const { id = undefined } = useParams()
-  const { clusterRoles, loading } = useRolesContext()
-  const [role, setRole] = useState<Role>()
+  const currentRole = useCurrentRole()
 
-  const roles = useMemo(
-    () =>
-      clusterRoles
-        ? clusterRoles
-            .map(
-              (clusterRole: ClusterRole): Role => ({
-                name: clusterRole.metadata.name || '',
-                permissions: clusterRole.rules
-                  ? [...new Set(clusterRole.rules.flatMap((rule) => rule.apiGroups || []))].join(', ')
-                  : '',
-                uid: clusterRole.metadata.uid || clusterRole.metadata.name || '',
-              })
-            )
-            .sort((a, b) => compareStrings(a.name, b.name))
-        : [],
-    [clusterRoles]
-  )
-
-  useEffect(() => setRole(roles?.find((role) => role.uid === id || role.name === id) as Role), [id, roles])
-
-  // TODO: conditionally get role assignments
   const { multiclusterRoleAssignmentState } = useSharedAtoms()
   const multiclusterRoleAssignments = useRecoilValue(multiclusterRoleAssignmentState)
   const isRoleAssignmentsLoading = multiclusterRoleAssignments === undefined
 
-  const roleAssignments = useFindRoleAssignments({ roles: [role?.name ?? ''] })
+  const roleAssignments = useFindRoleAssignments({ roles: [currentRole?.metadata.name ?? ''] })
 
-  const hasDataToProcess = role && multiclusterRoleAssignments
-  const isLoading = loading || isRoleAssignmentsLoading || !hasDataToProcess
+  const hasDataToProcess = currentRole && multiclusterRoleAssignments
+  const isLoading = isRoleAssignmentsLoading || !hasDataToProcess
 
   return (
     <RoleAssignments
       roleAssignments={roleAssignments}
       isLoading={isLoading}
       hiddenColumns={['role']}
-      preselected={{ roles: [role?.name ?? ''] }}
+      preselected={{ roles: [currentRole?.metadata.name ?? ''] }}
     />
   )
 }

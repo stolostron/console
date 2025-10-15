@@ -2,15 +2,14 @@
 import { PageSection } from '@patternfly/react-core'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { Group } from '../../../../resources/rbac'
-import { useMemo } from 'react'
-import { AcmTable, compareStrings, IAcmTableColumn, AcmEmptyState } from '../../../../ui-components'
+import { AcmTable, IAcmTableColumn, AcmEmptyState } from '../../../../ui-components'
 import { cellWidth } from '@patternfly/react-table'
 import AcmTimestamp from '../../../../lib/AcmTimestamp'
 import { getISOStringTimestamp } from '../../../../resources/utils'
-import { useUserDetailsContext } from './UserPage'
 import { NavigationPath } from '../../../../NavigationPath'
 import { Link, generatePath } from 'react-router-dom-v5-compat'
 import { useFilters } from '../Groups/GroupsTableHelper'
+import { useUserGroups } from './useUserGroups'
 
 const renderGroupNameCell = (group: Group) => {
   return group.metadata.name ? (
@@ -34,17 +33,8 @@ const renderGroupCreatedCell = (group: Group) => {
 
 const UserGroups = () => {
   const { t } = useTranslation()
-  const { user, groups, loading: userLoading, groupsLoading } = useUserDetailsContext()
+  const { userGroups } = useUserGroups()
   const filters = useFilters()
-
-  const userGroups = useMemo(() => {
-    if (!user || !groups) return []
-
-    const userGroupNames = user.groups ?? []
-    return groups
-      .filter((group) => userGroupNames.includes(group.metadata.name ?? ''))
-      .sort((a, b) => compareStrings(a.metadata.name ?? '', b.metadata.name ?? ''))
-  }, [user, groups])
 
   const columns: IAcmTableColumn<Group>[] = [
     {
@@ -78,12 +68,12 @@ const UserGroups = () => {
         items={userGroups}
         resultView={{
           page: 1,
-          loading: userLoading || groupsLoading,
+          loading: false,
           refresh: () => {},
           items: [],
           emptyResult: false,
           processedItemCount: 0,
-          isPreProcessed: true,
+          isPreProcessed: false,
         }}
         emptyState={
           <AcmEmptyState

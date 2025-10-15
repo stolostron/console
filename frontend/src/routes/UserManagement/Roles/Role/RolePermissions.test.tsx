@@ -3,16 +3,15 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Routes, Route } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { nockIgnoreRBAC } from '../../../../lib/nock-util'
 import { RolePermissions } from './RolePermissions'
 import { ClusterRole } from '../../../../resources/rbac'
+import { useCurrentRole } from '../RolesPage'
 
 // Mock useCurrentRole hook
 jest.mock('../RolesPage', () => ({
   useCurrentRole: jest.fn(),
 }))
 
-import { useCurrentRole } from '../RolesPage'
 const mockUseCurrentRole = useCurrentRole as jest.MockedFunction<typeof useCurrentRole>
 
 // Mock AcmTable to capture and test column functions directly
@@ -123,10 +122,6 @@ const Component = ({ roleId = 'test-role-with-permissions' }: { roleId?: string 
 )
 
 describe('RolePermissions', () => {
-  beforeEach(() => {
-    nockIgnoreRBAC()
-  })
-
   it('renders role permissions page with header and table columns', () => {
     mockUseCurrentRole.mockReturnValue(mockRoleWithPermissions)
     render(<Component roleId="test-role-with-permissions" />)

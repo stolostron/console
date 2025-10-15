@@ -34,6 +34,7 @@ import { getRawErrorInfo } from './ErrorPage'
 
 export type BulkActionModalProps<T = undefined> = {
   action: string
+  actionOneByOne?: boolean
   actionFn: (item: T, options?: { [key: string]: boolean }) => IRequestResult
   alert?: React.ReactNode
   checkBox?: JSX.Element
@@ -60,6 +61,11 @@ export interface ItemError<T> {
   error: Error
 }
 
+// Small post-processing delay to let UI (progress bar/toasts) settle before closing the modal.
+// Tune if UX requires more/less time; keep minimal to avoid test flakiness.
+const COMPLETE_DELAY_MS = 200
+const delay = (ms: number) => new Promise((r) => setTimeout(r, ms))
+
 export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { open: false }) {
   const { t } = useTranslation()
   const [progress, setProgress] = useState(0)
@@ -81,6 +87,7 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
   }
 
   const {
+    actionOneByOne,
     action,
     actionFn,
     alert,
@@ -114,6 +121,38 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
     return undefined
   }
 
+  const hasNoErrors = (errors?.length ?? 0) === 0
+
+  const isErrorValid = (err: unknown) => (isValidError ? isValidError(err as Error) : true)
+
+  function incrementProgress() {
+    setProgress((p) => p + 1)
+  }
+
+  async function runSequential(items: T[], errors: ItemError<T>[]) {
+    for (const item of items) {
+      const { promise } = actionFn(item, { deletePullSecret })
+      try {
+        await promise
+      } catch (err) {
+        if (isErrorValid(err)) errors.push({ item, error: err as Error })
+      }
+      incrementProgress()
+    }
+  }
+
+  async function runParallel(items: T[], errors: ItemError<T>[]) {
+    const promises = items.map((resource) => {
+      const r = actionFn(resource, { deletePullSecret })
+      return { promise: r.promise.finally(incrementProgress), abort: r.abort }
+    })
+    const requestResult = resultsSettled(promises)
+    const results = await requestResult.promise
+    for (const [index, res] of results.entries()) {
+      if (res.status === 'rejected' && isErrorValid(res.reason)) errors.push({ item: items[index], error: res.reason })
+    }
+  }
+
   return (
     <AcmModal
       variant={ModalVariant.large}
@@ -124,7 +163,7 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
       position="top"
     >
       <AcmForm style={{ gap: 0 }}>
-        {!errors?.length ? (
+        {hasNoErrors ? (
           <Fragment>
             {description}
             {checkBox}
@@ -266,43 +305,17 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
                   variant={isDanger ? ButtonVariant.danger : ButtonVariant.primary}
                   onClick={async () => {
                     const errors: ItemError<T>[] = []
-                    if (errors.length === 0) {
-                      setProgressCount(tableProps.items.length)
-                      const requestResult = resultsSettled(
-                        tableProps.items.map((resource) => {
-                          const r = actionFn(resource, { deletePullSecret })
-                          return {
-                            promise: r.promise.finally(() => setProgress((progress) => progress + 1)),
-                            abort: r.abort,
-                          }
-                        })
-                      )
-                      const promiseResults = await requestResult.promise
-                      promiseResults.forEach((promiseResult, index) => {
-                        if (promiseResult.status === 'rejected') {
-                          let validError = true
-                          if (isValidError) {
-                            validError = isValidError(promiseResult.reason)
-                          }
-                          if (validError) {
-                            errors.push({
-                              item: tableProps.items[index],
-                              error: promiseResult.reason,
-                            })
-                          }
-                        }
-                      })
-                    }
-                    await new Promise((resolve) => setTimeout(resolve, 500))
+                    setProgressCount(tableProps.items.length)
+                    if (actionOneByOne) await runSequential(tableProps.items, errors)
+                    else await runParallel(tableProps.items, errors)
+                    await delay(COMPLETE_DELAY_MS)
                     setErrors(errors)
-                    if (errors.length === 0) {
-                      close()
-                    }
+                    if (errors.length === 0) close()
                   }}
                   label={action}
                   processingLabel={processing}
                 />,
-                <Button variant="link" onClick={onCancel ? onCancel : close} key="cancel-bulk-action">
+                <Button variant="link" onClick={onCancel ?? close} key="cancel-bulk-action">
                   {t('cancel')}
                 </Button>,
               ]}

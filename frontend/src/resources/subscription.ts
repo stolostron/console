@@ -59,6 +59,8 @@ export interface Subscription extends IResource {
   status?: {
     message?: string
     phase?: string
+    lastUpdateTime?: string
+    ansiblejobs?: any
     statuses?: Record<string, SubscriptionClusterStatus>
   }
 }

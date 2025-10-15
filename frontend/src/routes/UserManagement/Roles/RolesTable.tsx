@@ -3,13 +3,14 @@ import { PageSection } from '@patternfly/react-core'
 import { useMemo, useCallback } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { ClusterRole } from '../../../resources/rbac'
+import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmEmptyState, AcmTable, compareStrings } from '../../../ui-components'
 import { rolesTableColumns, useFilters, Role } from './RolesTableHelper'
-import { useRolesContext } from './RolesPage'
 
 const RolesTable = () => {
   const { t } = useTranslation()
-  const { clusterRoles, loading } = useRolesContext()
+  const { vmClusterRolesState } = useSharedAtoms()
+  const clusterRoles = useRecoilValue(vmClusterRolesState)
 
   const roles = useMemo(
     () =>
@@ -44,12 +45,12 @@ const RolesTable = () => {
         items={roles}
         resultView={{
           page: 1,
-          loading,
+          loading: false,
           refresh: () => {},
           items: [],
           emptyResult: false,
           processedItemCount: 0,
-          isPreProcessed: true,
+          isPreProcessed: false,
         }}
         emptyState={<AcmEmptyState key="rolesEmptyState" title={t('No roles')} />}
       />

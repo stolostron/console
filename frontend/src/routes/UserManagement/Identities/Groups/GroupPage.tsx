@@ -2,19 +2,28 @@
 import { useMemo } from 'react'
 import { useParams, useLocation, Link, Outlet, generatePath, useOutletContext } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { User, Group, listUsers, listGroups } from '../../../../resources/rbac'
-import { useQuery } from '../../../../lib/useQuery'
+import { User, Group } from '../../../../resources/rbac'
+import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem, AcmButton } from '../../../../ui-components'
 import { NavigationPath } from '../../../../NavigationPath'
 import { Page } from '@patternfly/react-core'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
 
+export const useCurrentGroup = (): Group | undefined => {
+  const { id } = useParams()
+  const { groupsState } = useSharedAtoms()
+  const groups = useRecoilValue(groupsState)
+
+  return useMemo(
+    () => (!groups || !id ? undefined : groups.find((g) => g.metadata.uid === id || g.metadata.name === id)),
+    [groups, id]
+  )
+}
+
 export type GroupDetailsContext = {
   readonly group?: Group
   readonly users?: User[]
-  readonly loading: boolean
-  readonly usersLoading: boolean
 }
 
 const GroupPage = () => {
@@ -22,24 +31,16 @@ const GroupPage = () => {
   const { id = undefined } = useParams()
   const location = useLocation()
 
-  const { data: users, loading: usersLoading } = useQuery(listUsers)
-
-  const { data: groups, loading: groupsLoading } = useQuery(listGroups)
-
-  const loading = usersLoading || groupsLoading
-  const group = useMemo(() => {
-    if (!groups || !id) return undefined
-    return groups.find((u) => u.metadata.uid === id || u.metadata.name === id)
-  }, [groups, id])
+  const group = useCurrentGroup()
+  const { usersState } = useSharedAtoms()
+  const users = useRecoilValue(usersState)
 
   const groupDetailsContext = useMemo<GroupDetailsContext>(
     () => ({
       group,
       users,
-      loading,
-      usersLoading: groupsLoading,
     }),
-    [group, users, loading, groupsLoading]
+    [group, users]
   )
 
   const isDetailsActive = location.pathname === generatePath(NavigationPath.identitiesGroupsDetails, { id: id ?? '' })
@@ -47,7 +48,7 @@ const GroupPage = () => {
   const isRoleAssignmentsActive = location.pathname.includes('/role-assignments')
   const isUsersActive = location.pathname.includes('/users')
 
-  if (!loading && !group) {
+  if (!group) {
     return (
       <Page>
         <ErrorPage
@@ -67,13 +68,13 @@ const GroupPage = () => {
       hasDrawer
       header={
         <AcmPageHeader
-          title={loading ? '' : group?.metadata.name ?? t('Unknown Group')}
-          description={loading ? '' : group?.metadata.name}
+          title={group?.metadata.name ?? t('Unknown Group')}
+          description={group?.metadata.name}
           breadcrumb={[
             { text: t('User Management'), to: NavigationPath.identitiesGroups },
             { text: t('Identities'), to: NavigationPath.identities },
             { text: t('Groups'), to: NavigationPath.identitiesGroups },
-            { text: loading ? '' : group?.metadata.name ?? t('Unknown Group') },
+            { text: group?.metadata.name ?? t('Unknown Group') },
           ]}
           navigation={
             <AcmSecondaryNav>

@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useUserDetailsContext } from './UserPage'
 import { RBACResourceYaml } from '../../../../components/RBACResourceYaml'
+import { useUserGroups } from './useUserGroups'
 
 const UserYaml = () => {
-  const { user, loading } = useUserDetailsContext()
+  const { userWithGroups } = useUserGroups()
 
-  return <RBACResourceYaml resource={user} loading={loading} resourceType="User" />
+  return <RBACResourceYaml resource={userWithGroups} resourceType="User" loading={false} />
 }
 
 export { UserYaml }

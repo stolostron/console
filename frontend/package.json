@@ -91,7 +91,6 @@
     "lodash": "4.17.21",
     "monaco-editor": "^0.34.1",
     "parse-url": "^9.2.0",
-    "ramda": "0.28.0",
     "react-error-boundary": "3.1.4",
     "react-monaco-editor": "^0.51.0",
     "screenfull": "^6.0.2",

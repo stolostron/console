@@ -239,8 +239,14 @@ const definitions: IWatchOptions[] = [
     apiVersion: 'v1',
     fieldSelector: { 'metadata.name': 'grafana-dashboard-acm-openshift-virtualization-single-vm-view' },
   },
-  { kind: 'ClusterPermission', apiVersion: 'rbac.open-cluster-management.io/v1alpha1' },
   { kind: 'MulticlusterRoleAssignment', apiVersion: 'rbac.open-cluster-management.io/v1alpha1' },
+  { kind: 'User', apiVersion: 'user.openshift.io/v1' },
+  { kind: 'Group', apiVersion: 'user.openshift.io/v1' },
+  {
+    kind: 'ClusterRole',
+    apiVersion: 'rbac.authorization.k8s.io/v1',
+    labelSelector: { 'rbac.open-cluster-management.io/filter': 'vm-clusterroles' },
+  },
 ]
 
 export function startWatching(): void {

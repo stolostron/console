@@ -31,8 +31,9 @@ export interface ArgoSource {
 }
 
 type ArgoApplicationStatus = {
-  cluster: string
-  resourceName: string
+  cluster?: string
+  resourceName?: string
+  [key: string]: unknown
 }
 
 export interface ArgoApplication extends IResource {
@@ -43,13 +44,13 @@ export interface ArgoApplication extends IResource {
   spec: {
     destination: {
       name?: string
-      namespace: string
+      namespace?: string
       server?: string
     }
-    project: string
+    project?: string
     source?: ArgoSource
     sources?: ArgoSource[]
-    syncPolicy: ArgoSyncPolicy
+    syncPolicy?: ArgoSyncPolicy
   }
   status?: ArgoApplicationStatus
   transformed?: {
