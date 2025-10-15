@@ -300,7 +300,7 @@ describe('IdentityTableHelper', () => {
   describe('useIdentityFilters', () => {
     it('should return name filter for users', () => {
       const users: User[] = [mockUser, mockUserWithoutIdentities]
-      const { result } = renderHook(() => useIdentityFilters(users, 'user'))
+      const { result } = renderHook(() => useIdentityFilters('user', users))
 
       const nameFilter = result.current.find((f) => f.id === 'name')
       expect(nameFilter).toBeDefined()
@@ -316,7 +316,7 @@ describe('IdentityTableHelper', () => {
 
     it('should return name filter for groups', () => {
       const groups: Group[] = [mockGroup, mockGroupWithoutUsers]
-      const { result } = renderHook(() => useIdentityFilters(groups, 'group'))
+      const { result } = renderHook(() => useIdentityFilters('group', groups))
 
       const nameFilter = result.current.find((f) => f.id === 'name')
       expect(nameFilter).toBeDefined()
@@ -332,7 +332,7 @@ describe('IdentityTableHelper', () => {
 
     it('should include identity provider filter for users', () => {
       const users: User[] = [mockUser, mockUserWithoutIdentities]
-      const { result } = renderHook(() => useIdentityFilters(users, 'user'))
+      const { result } = renderHook(() => useIdentityFilters('user', users))
 
       const idpFilter = result.current.find((f) => f.id === 'identity-provider')
       expect(idpFilter).toBeDefined()
@@ -348,7 +348,7 @@ describe('IdentityTableHelper', () => {
 
     it('should not include identity provider filter for groups', () => {
       const groups: Group[] = [mockGroup]
-      const { result } = renderHook(() => useIdentityFilters(groups, 'group'))
+      const { result } = renderHook(() => useIdentityFilters('group', groups))
 
       const idpFilter = result.current.find((f) => f.id === 'identity-provider')
       expect(idpFilter).toBeUndefined()
@@ -356,7 +356,7 @@ describe('IdentityTableHelper', () => {
 
     it('should filter users by name correctly', () => {
       const users: User[] = [mockUser, mockUserWithoutIdentities]
-      const { result } = renderHook(() => useIdentityFilters(users, 'user'))
+      const { result } = renderHook(() => useIdentityFilters('user', users))
 
       const nameFilter = result.current.find((f) => f.id === 'name')
       const filterFn = nameFilter?.tableFilterFn
@@ -369,7 +369,7 @@ describe('IdentityTableHelper', () => {
 
     it('should filter users by identity provider correctly', () => {
       const users: User[] = [mockUser, mockUserWithoutIdentities]
-      const { result } = renderHook(() => useIdentityFilters(users, 'user'))
+      const { result } = renderHook(() => useIdentityFilters('user', users))
 
       const idpFilter = result.current.find((f) => f.id === 'identity-provider')
       const filterFn = idpFilter?.tableFilterFn
@@ -383,14 +383,14 @@ describe('IdentityTableHelper', () => {
 
     it('should handle users with no identities', () => {
       const users: User[] = [mockUserWithoutIdentities]
-      const { result } = renderHook(() => useIdentityFilters(users, 'user'))
+      const { result } = renderHook(() => useIdentityFilters('user', users))
 
       const idpFilter = result.current.find((f) => f.id === 'identity-provider')
       expect(idpFilter?.options).toHaveLength(0)
     })
 
     it('should handle empty identity list', () => {
-      const { result } = renderHook(() => useIdentityFilters([], 'user'))
+      const { result } = renderHook(() => useIdentityFilters('user', []))
 
       expect(result.current).toHaveLength(2)
       expect(result.current[0].options).toHaveLength(0)
@@ -405,7 +405,7 @@ describe('IdentityTableHelper', () => {
         { ...mockUser, metadata: { ...mockUser.metadata, name: '   ' } },
       ]
 
-      const { result } = renderHook(() => useIdentityFilters(identitiesWithBadNames, 'user'))
+      const { result } = renderHook(() => useIdentityFilters('user', identitiesWithBadNames))
       const nameFilter = result.current.find((f) => f.id === 'name')
 
       expect(nameFilter?.options).toHaveLength(1)

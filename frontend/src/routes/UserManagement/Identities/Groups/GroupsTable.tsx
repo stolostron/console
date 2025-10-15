@@ -19,7 +19,7 @@ const GroupsTable = () => {
 
   const keyFn = useCallback((group: Group) => group.metadata.name ?? '', [])
 
-  const filters = useFilters(groups, 'group')
+  const filters = useFilters('group', groups)
   const columns = groupsTableColumns({ t })
 
   return (

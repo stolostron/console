@@ -34,7 +34,7 @@ const renderGroupCreatedCell = (group: Group) => {
 const UserGroups = () => {
   const { t } = useTranslation()
   const { userGroups } = useUserGroups()
-  const filters = useFilters(userGroups, 'group')
+  const filters = useFilters('group', userGroups)
 
   const columns: IAcmTableColumn<Group>[] = [
     {

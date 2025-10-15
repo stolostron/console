@@ -39,7 +39,7 @@ const renderIdentityProviderCell = (user: User) => {
 const GroupUsers = () => {
   const { t } = useTranslation()
   const { group, users } = useGroupDetailsContext()
-  const filters = useFilters(users, 'user')
+  const filters = useFilters('user', users)
 
   const groupUsers = useMemo(() => {
     if (!group || !users) return []

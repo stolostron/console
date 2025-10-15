@@ -19,7 +19,7 @@ const UsersTable = () => {
 
   const keyFn = useCallback((user: User) => user.metadata.name ?? '', [])
 
-  const filters = useFilters(users, 'user')
+  const filters = useFilters('user', users)
   const columns = usersTableColumns({ t })
 
   return (

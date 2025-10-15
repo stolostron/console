@@ -16,6 +16,9 @@ const EXPORT_FILE_PREFIX = 'identity-table'
 export type IdentityItem = User | Group
 export type IdentityType = 'user' | 'group'
 
+const isUser = (identity: IdentityItem): identity is User => 'identities' in identity
+const isGroup = (identity: IdentityItem): identity is Group => 'users' in identity
+
 type IdentityTableHelperProps = {
   t: TFunction
 }
@@ -63,10 +66,10 @@ export const getIdentityTableColumns = ({
       search: 'metadata.name',
       transforms: [cellWidth(50)],
       cell: (identity, search) => {
-        if ('identities' in identity) {
-          return COLUMN_CELLS.USER_NAME(identity as User, search)
+        if (isUser(identity)) {
+          return COLUMN_CELLS.USER_NAME(identity, search)
         }
-        return COLUMN_CELLS.GROUP_NAME(identity as Group, search)
+        return COLUMN_CELLS.GROUP_NAME(identity, search)
       },
       exportContent: (identity) => identity.metadata.name ?? '',
       isHidden: hiddenColumns?.includes('name'),
@@ -78,8 +81,8 @@ export const getIdentityTableColumns = ({
       header: t('Identity provider'),
       sort: 'identities',
       cell: (identity) => {
-        if ('identities' in identity) {
-          return COLUMN_CELLS.USER_IDENTITY_PROVIDER(identity as User)
+        if (isUser(identity)) {
+          return COLUMN_CELLS.USER_IDENTITY_PROVIDER(identity)
         }
         return null
       },
@@ -92,8 +95,8 @@ export const getIdentityTableColumns = ({
       header: t('Users'),
       sort: 'users.length',
       cell: (identity) => {
-        if ('users' in identity) {
-          return COLUMN_CELLS.GROUP_USERS(identity as Group)
+        if (isGroup(identity)) {
+          return COLUMN_CELLS.GROUP_USERS(identity)
         }
         return null
       },
@@ -126,7 +129,7 @@ const identityProviderFilter = (selection: string[], user: User): boolean => {
   return hasMatchingIdentity ?? false
 }
 
-export const useIdentityFilters = (identities: IdentityItem[] = [], type: IdentityType) => {
+export const useIdentityFilters = (type: IdentityType, identities: IdentityItem[] = []) => {
   return useMemo(() => {
     const filters = [
       {
@@ -151,14 +154,14 @@ export const useIdentityFilters = (identities: IdentityItem[] = [], type: Identi
     if (type === 'user') {
       const users = identities as User[]
       const identityProviders = new Set<string>()
-      users.forEach((user) => {
-        user.identities?.forEach((identity) => {
+      for (const user of users) {
+        for (const identity of user.identities || []) {
           const provider = identity.split(':')[0]
           if (provider) {
             identityProviders.add(provider)
           }
-        })
-      })
+        }
+      }
 
       const identityProviderOptions = Array.from(identityProviders)
         .sort((a, b) => a.localeCompare(b))
@@ -184,6 +187,6 @@ export const usersTableColumns = ({ t, hiddenColumns }: { t: TFunction; hiddenCo
 export const groupsTableColumns = ({ t, hiddenColumns }: { t: TFunction; hiddenColumns?: string[] }) =>
   getIdentityTableColumns({ t, hiddenColumns: [...(hiddenColumns || []), 'identity-provider'] })
 
-export const useFilters = (identities: IdentityItem[] = [], type: IdentityType) => useIdentityFilters(identities, type)
+export const useFilters = (type: IdentityType, identities: IdentityItem[] = []) => useIdentityFilters(type, identities)
 
 export { EXPORT_FILE_PREFIX, COLUMN_CELLS }
