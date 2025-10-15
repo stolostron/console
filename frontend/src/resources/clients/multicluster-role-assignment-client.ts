@@ -11,7 +11,7 @@ import {
   RoleAssignmentStatus,
 } from '../multicluster-role-assignment'
 import { createResource, deleteResource, patchResource } from '../utils'
-import { IRequestResult, ResourceError, ResourceErrorCode } from '../utils/resource-request'
+import { getResource, IRequestResult, ResourceError, ResourceErrorCode } from '../utils/resource-request'
 
 export interface FlattenedRoleAssignment extends RoleAssignment {
   relatedMulticlusterRoleAssignment: MulticlusterRoleAssignment
@@ -251,29 +251,32 @@ export const addRoleAssignment = (
  * @returns the request result
  */
 export const deleteRoleAssignment = (roleAssignment: FlattenedRoleAssignment): IRequestResult<unknown> => {
-  const multiClusterRoleAssignment = roleAssignment.relatedMulticlusterRoleAssignment
-  const indexToRemove = multiClusterRoleAssignment.spec.roleAssignments.findIndex((e) =>
-    areRoleAssignmentsEquals(e, roleAssignment)
-  )
+  const mra = roleAssignment.relatedMulticlusterRoleAssignment
 
-  if (indexToRemove > -1) {
-    const newRoleAssignmentList = multiClusterRoleAssignment.spec.roleAssignments.filter(
-      (_e, index) => index !== indexToRemove
-    )
-    if (newRoleAssignmentList.length === 0) {
-      return deleteResource(multiClusterRoleAssignment)
-    } else {
-      return patchResource(multiClusterRoleAssignment, {
-        spec: {
-          ...multiClusterRoleAssignment.spec,
-          roleAssignments: newRoleAssignmentList,
-        },
-      })
+  const abortController = new AbortController()
+
+  const promise = (async () => {
+    const getReq = getResource<MulticlusterRoleAssignment>(mra)
+    abortController.signal.addEventListener('abort', getReq.abort)
+    const fresh = await getReq.promise.finally(() => abortController.signal.removeEventListener('abort', getReq.abort))
+
+    const idx = fresh.spec.roleAssignments.findIndex((e) => areRoleAssignmentsEquals(e, roleAssignment))
+    if (idx < 0) {
+      throw new ResourceError(
+        ResourceErrorCode.BadRequest,
+        'The role assignment does not exist for this particular MulticlusterRoleAssignment'
+      )
     }
-  } else {
-    throw new ResourceError(
-      ResourceErrorCode.BadRequest,
-      'The role assignment does not exist for this particular MulticlusterRoleAssignment'
-    )
-  }
+
+    const remaining = fresh.spec.roleAssignments.filter((_e, i) => i !== idx)
+    const writeReq =
+      remaining.length === 0
+        ? deleteResource(fresh)
+        : patchResource(fresh, { spec: { ...fresh.spec, roleAssignments: remaining } })
+
+    abortController.signal.addEventListener('abort', writeReq.abort)
+    return writeReq.promise.finally(() => abortController.signal.removeEventListener('abort', writeReq.abort))
+  })()
+
+  return { promise, abort: () => abortController.abort() }
 }

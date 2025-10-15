@@ -182,6 +182,7 @@ const RoleAssignments = ({
               },
             ],
             keyFn,
+            actionOneByOne: true,
             actionFn: deleteRoleAssignment,
             close: () => setDeleteModalProps({ open: false }),
             isDanger: true,
