@@ -379,8 +379,6 @@ export default function ApplicationsOverview() {
           resourceText: resourceText,
           createdText: getResourceTimestamp(tableItem, 'metadata.creationTimestamp'),
           namespace: transformedNamespace,
-          healthStatus: getAppHealthStatus(tableItem),
-          syncStatus: getAppSyncStatus(tableItem),
         },
       }
 
@@ -533,8 +531,7 @@ export default function ApplicationsOverview() {
           return '-'
         },
         tooltip: t('Health status for applications.'),
-        sort: 'transformed.healthStatus',
-        search: 'transformed.healthStatus',
+        // sort: getApplicationSortFn(AppColumns.health),
         exportContent: (resource) => {
           return get(resource, 'status.health.status', '')
         },
@@ -556,8 +553,7 @@ export default function ApplicationsOverview() {
           return '-'
         },
         tooltip: t('Sync status for applications.'),
-        sort: 'transformed.syncStatus',
-        search: 'transformed.syncStatus',
+        // sort: syncStatusSortFn,
         exportContent: (resource) => {
           return get(resource, 'status.sync.status', '')
         },
@@ -579,8 +575,7 @@ export default function ApplicationsOverview() {
           return '-'
         },
         tooltip: t('Status of resources deployed by the application.'),
-        sort: 'transformed.resourceText',
-        search: 'transformed.resourceText',
+        // sort: podStatusSortFn,
         exportContent: (resource) => {
           const appRepos = getApplicationRepos(resource, subscriptions, channels)
           if (appRepos) {

@@ -2,7 +2,7 @@
 import { getKubeResources } from '../events'
 import { addOCPQueryInputs, addSystemQueryInputs, cacheOCPApplications } from './applicationsOCP'
 import { ApplicationSetKind, IApplicationSet, IResource, SearchResult } from '../../resources/resource'
-import { FilterSelections } from '../../lib/pagination'
+import { FilterSelections, ISortBy } from '../../lib/pagination'
 import { logger } from '../../lib/logger'
 import {
   discoverSystemAppNamespacePrefixes,
@@ -23,6 +23,17 @@ import { createDictionary, inflateApps } from '../../lib/compression'
 import { IWatchOptions } from '../../resources/watch-options'
 
 export enum AppColumns {
+  'name' = 0,
+  'type',
+  'namespace',
+  'clusters',
+  'health',
+  'synced',
+  'deployed',
+  'created',
+}
+
+export enum TransformColumns {
   'name' = 0,
   'type',
   'namespace',
@@ -240,6 +251,76 @@ export function filterApplications(filters: FilterSelections, items: ICompressed
   return items
 }
 
+export function sortApplications(sortBy: ISortBy, items: ICompressedResource[]) {
+  const index = sortBy.index as AppColumns
+  const statusScoreMap =
+    index === AppColumns.health || index === AppColumns.synced || index === AppColumns.deployed
+      ? getStatusScoreMap(items, index)
+      : undefined
+  items = items.sort((a, b) => {
+    switch (sortBy.index as AppColumns) {
+      case AppColumns.name:
+      case AppColumns.namespace:
+      case AppColumns.clusters:
+      case AppColumns.created: {
+        const aValue = a.transform[sortBy.index]
+        const bValue = b.transform[sortBy.index]
+        if (!aValue || !bValue) return 0
+        return (aValue[0] as string).localeCompare(bValue[0] as string)
+      }
+      case AppColumns.health:
+      case AppColumns.synced:
+      case AppColumns.deployed: {
+        return statusScoreMap.get(b) - statusScoreMap.get(a)
+      }
+      default:
+        return 0
+    }
+  })
+  if (sortBy.direction === 'desc') {
+    items = items.reverse()
+  }
+  return items
+}
+
+export function getStatusScoreMap(items: ICompressedResource[], index: number) {
+  const getScore = (statuses: ApplicationStatusMap[], index: number, clusters: string[]): number => {
+    let score = 0
+    clusters.forEach((cluster) => {
+      const stats = statuses[0][cluster]
+      if (stats) {
+        let column: number[]
+        switch (index as AppColumns) {
+          case AppColumns.health:
+            column = stats.health
+            break
+          case AppColumns.synced:
+            column = stats.synced
+            break
+          case AppColumns.deployed:
+            column = stats.deployed
+            break
+        }
+        if (column) {
+          score =
+            column[ApplicationStatus.danger] * 1000 +
+            column[ApplicationStatus.warning] * 100 +
+            column[ApplicationStatus.healthy] * 10
+        }
+      }
+    })
+    return score
+  }
+  const weakMap = new WeakMap<ICompressedResource, number>()
+  items.forEach((item) => {
+    const clusters = item.transform[AppColumns.clusters] as string[]
+    const score = getScore(item.transform[TransformColumns.statuses] as ApplicationStatusMap[], index, clusters)
+    console.log(item.transform[TransformColumns.statuses], score, item.transform[AppColumns.name][0])
+    weakMap.set(item, score)
+  })
+  return weakMap
+}
+
 // add data to the apps that can be used by the ui but
 // w/o downloading all the appsets, apps, etc
 export function addUIData(items: ITransformedResource[]) {
@@ -250,7 +331,7 @@ export function addUIData(items: ITransformedResource[]) {
       ...item,
       uidata: {
         clusterList: item?.transform?.[AppColumns.clusters] || [],
-        appClusterStatuses: item?.transform?.[AppColumns.statuses] || [],
+        appClusterStatuses: item?.transform?.[TransformColumns.statuses] || [],
         appSetRelatedResources:
           item.kind === ApplicationSetKind
             ? getAppSetRelatedResources(item, argoAppSets as IApplicationSet[])

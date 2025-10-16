@@ -56,6 +56,7 @@ export function paginate(
   token: string,
   getItems: () => ICompressedResource[],
   filterItems: (filters: FilterSelections, items: ICompressedResource[]) => ICompressedResource[],
+  sortItems: (sort: ISortBy, items: ICompressedResource[]) => ICompressedResource[],
   addUIData: (items: ITransformedResource[]) => ITransformedResource[]
 ): void {
   const chucks: string[] = []
@@ -83,7 +84,7 @@ export function paginate(
     if (itemCount > backendLimit) {
       isPreProcessed = true // else we do filter/search/sort/paging here
       // filter
-      if (filters) {
+      if (Object.keys(filters).length > 0) {
         items = filterItems(filters, items)
       }
 
@@ -110,15 +111,7 @@ export function paginate(
 
       // sort
       if (sortBy && sortBy.index >= 0) {
-        items = items.sort((a, b) => {
-          if (sortBy.index > a.transform.length || !Array.isArray(a.transform[sortBy.index])) return 0
-          const acmp = (a.transform[sortBy.index][0] as string) || ''
-          const bcmp = (b.transform[sortBy.index][0] as string) || ''
-          return acmp.localeCompare(bcmp)
-        })
-        if (sortBy.direction === 'desc') {
-          items = items.reverse()
-        }
+        items = sortItems(sortBy, items)
       }
 
       // adjust page if now past end of items
