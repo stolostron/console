@@ -563,7 +563,7 @@ export default function ApplicationsOverview() {
         },
       },
       {
-        header: t('Pod Status'),
+        header: t('Pod Statuses'),
         cell: (resource) => {
           const deployedStatuses = getApplicationStatuses(resource, 'deployed')
           if (deployedStatuses.length >= 4) {

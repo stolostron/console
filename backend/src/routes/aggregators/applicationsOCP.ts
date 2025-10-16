@@ -11,7 +11,7 @@ import {
   IQuery,
   SEARCH_QUERY_LIMIT,
 } from './applications'
-import { computePodStatuses } from './computeStatues'
+import { computePodStatuses } from './utils'
 import {
   transform,
   getClusterMap,

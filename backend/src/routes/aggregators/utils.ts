@@ -13,12 +13,16 @@ import {
   ManagedCluster,
   ClusterDeployment,
   HostedClusterK8sResource,
+  ISearchResource,
+  SearchResult,
 } from '../../resources/resource'
 import {
   AppColumns,
   ApplicationCache,
   ApplicationCacheType,
   ApplicationClusterStatusMap,
+  ApplicationStatus,
+  ApplicationStatuses,
   getAppDict,
   ICompressedResource,
   ITransformedResource,
@@ -128,6 +132,141 @@ function isFluxApplication(label: string) {
   })
   return isFlux
 }
+
+//////////////////////////////////////////////////////////////////
+////////////// COMPUTE STATUSES /////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
+const argoAppHealthyStatus = 'Healthy' //green
+const argoAppDegradedStatus = 'Degraded' //red
+const resErrorStates = [
+  'err',
+  'off',
+  'invalid',
+  'kill',
+  'propagationfailed',
+  'imagepullbackoff',
+  'crashloopbackoff',
+  'lost',
+]
+const resWarningStates = ['pending', 'creating', 'terminating']
+
+export function computeAppHealthStatus(health: number[], app: ISearchResource) {
+  switch (app.healthStatus) {
+    case argoAppHealthyStatus:
+      health[ApplicationStatus.healthy]++
+      break
+    case argoAppDegradedStatus:
+      health[ApplicationStatus.danger]++
+      break
+    default:
+      health[ApplicationStatus.warning]++
+      break
+  }
+}
+
+export function computeAppSyncStatus(synced: number[], app: ISearchResource) {
+  switch (app.syncStatus) {
+    case 'Synced':
+      synced[ApplicationStatus.healthy]++
+      break
+    case 'OutOfSync':
+      synced[ApplicationStatus.danger]++
+      break
+    case 'Unknown':
+      synced[ApplicationStatus.warning]++
+      break
+    default:
+      synced[ApplicationStatus.danger]++
+      break
+  }
+}
+
+function createResourceMap(related: SearchResult['related'], kind: string): Map<string, ISearchResource[]> {
+  const map = new Map<string, ISearchResource[]>()
+  const relatedItems = related.find((r) => r.kind === kind)
+  relatedItems?.items.forEach((item: ISearchResource) => {
+    if (map.has(item._relatedUids[0])) {
+      map.get(item._relatedUids[0]).push(item)
+    } else {
+      map.set(item._relatedUids[0], [item])
+    }
+  })
+  return map
+}
+
+export function computePodStatuses(
+  related: SearchResult['related'],
+  app2AppsetMap: Record<string, ApplicationStatuses>
+) {
+  // create maps for deployment and replica set
+  const deploymentMap = createResourceMap(related, 'Deployment')
+  const replicaSetMap = createResourceMap(related, 'ReplicaSet')
+  const podMap = createResourceMap(related, 'Pod')
+  Object.keys(app2AppsetMap).forEach((appUid) => {
+    const appStatuses = app2AppsetMap[appUid]
+    if (appStatuses) {
+      if (appStatuses.health[ApplicationStatus.healthy] > 0 && appStatuses.synced[ApplicationStatus.healthy] > 0) {
+        if (computepDeployedStatus(appStatuses.deployed, deploymentMap.get(appUid))) {
+          if (computepDeployedStatus(appStatuses.deployed, replicaSetMap.get(appUid))) {
+            const pods = podMap.get(appUid)
+            if (pods) {
+              computePodStatus(appStatuses.deployed, pods)
+            } else {
+              const replicaSet = replicaSetMap.get(appUid)?.[0]
+              if (replicaSet) {
+                appStatuses.deployed[ApplicationStatus.warning] += Number(replicaSet.desired) ?? 0
+              } else {
+                appStatuses.deployed[ApplicationStatus.warning]++
+              }
+            }
+          }
+        }
+      } else {
+        appStatuses.deployed[ApplicationStatus.danger]++
+      }
+    }
+  })
+}
+
+export function computepDeployedStatus(deployed: number[], items: ISearchResource[]) {
+  let allHealthy = true
+  if (items && items.length) {
+    items.forEach((item) => {
+      const available = Number(item.available || item.current || 0)
+      const desired = Number(item.desired ?? 0)
+
+      if (available === desired) {
+        // nothing
+      } else if (available < desired) {
+        deployed[ApplicationStatus.progress]++
+        allHealthy = false
+      } else if (desired <= 0) {
+        deployed[ApplicationStatus.progress]++
+        allHealthy = false
+      } else if (!desired && available === 0) {
+        deployed[ApplicationStatus.danger]++
+        allHealthy = false
+      }
+    })
+  }
+  return allHealthy
+}
+
+function computePodStatus(deployed: number[], pods: ISearchResource[]) {
+  pods.forEach((pod) => {
+    const status = pod.status.toLocaleLowerCase()
+    if (resErrorStates.includes(status)) {
+      deployed[ApplicationStatus.danger]++
+    } else if (resWarningStates.includes(status)) {
+      deployed[ApplicationStatus.warning]++
+    }
+    deployed[ApplicationStatus.healthy]++
+  })
+}
+
+//////////////////////////////////////////////////////////////////
+////////////// OTHER /////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
 
 export const systemAppNamespacePrefixes: string[] = []
 export async function discoverSystemAppNamespacePrefixes() {
