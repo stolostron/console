@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { PageSection } from '@patternfly/react-core'
 import { useFindRoleAssignments } from '../../../../resources/clients/multicluster-role-assignment-client'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { RoleAssignments } from '../../RoleAssignment/RoleAssignments'
@@ -17,12 +18,14 @@ const RoleRoleAssignments = () => {
   const isLoading = isRoleAssignmentsLoading || !hasDataToProcess
 
   return (
-    <RoleAssignments
-      roleAssignments={roleAssignments}
-      isLoading={isLoading}
-      hiddenColumns={['role']}
-      preselected={{ roles: [currentRole?.metadata.name ?? ''] }}
-    />
+    <PageSection>
+      <RoleAssignments
+        roleAssignments={roleAssignments}
+        isLoading={isLoading}
+        hiddenColumns={['role']}
+        preselected={{ roles: [currentRole?.metadata.name ?? ''] }}
+      />
+    </PageSection>
   )
 }
 

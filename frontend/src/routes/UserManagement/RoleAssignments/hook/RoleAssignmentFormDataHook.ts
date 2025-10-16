@@ -147,6 +147,14 @@ const useRoleAssignmentFormData = (
   }, [preselected, onChangeRoles])
 
   useEffect(() => {
+    const clusterNames = get(preselected, 'clusterNames')
+    if (clusterNames?.length) {
+      onChangeScopeKind('specific')
+      onChangeScopeValues(clusterNames)
+    }
+  }, [preselected, onChangeScopeKind, onChangeScopeValues])
+
+  useEffect(() => {
     if (roleAssignmentFormData.scope.kind === 'all' && roleAssignmentData?.allClusterNames?.length) {
       setRoleAssignmentFormData((prevData) => ({
         ...prevData,

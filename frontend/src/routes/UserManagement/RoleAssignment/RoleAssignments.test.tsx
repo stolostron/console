@@ -464,7 +464,7 @@ const Component = ({
             preselected={{
               subject: undefined,
               roles: undefined,
-              cluterSets: undefined,
+              clusterSets: undefined,
             }}
           />
         </AcmToastContext.Provider>

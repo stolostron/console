@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { ButtonVariant, PageSection } from '@patternfly/react-core'
+import { ButtonVariant } from '@patternfly/react-core'
 import { fitContent, nowrap } from '@patternfly/react-table'
 import { useCallback, useMemo, useState } from 'react'
 import { generatePath, Link } from 'react-router-dom-v5-compat'
@@ -370,7 +370,7 @@ const RoleAssignments = ({
   ]
 
   return (
-    <PageSection>
+    <>
       <AcmTable<FlattenedRoleAssignment>
         key="role-assignments-table"
         columns={columns}
@@ -424,7 +424,7 @@ const RoleAssignments = ({
         preselected={preselected}
       />
       <BulkActionModal<FlattenedRoleAssignment> {...deleteModalProps} />
-    </PageSection>
+    </>
   )
 }
 
