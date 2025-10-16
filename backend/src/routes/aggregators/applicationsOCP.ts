@@ -11,7 +11,7 @@ import {
   IQuery,
   SEARCH_QUERY_LIMIT,
 } from './applications'
-import { computeAppDeployedStatuses } from './computeStatues'
+import { computePodStatuses } from './computeStatues'
 import {
   transform,
   getClusterMap,
@@ -147,18 +147,7 @@ export function cacheOCPApplications(
     })
 
     Object.entries(openShiftAppResourceMaps).forEach(([, value]) => {
-      let labelIdx
-      let i
-      for (i = 0; i < labelArr.length; i++) {
-        labelIdx = value.label?.indexOf(labelArr[i])
-        if (labelIdx > -1) {
-          break
-        }
-      }
-      labelIdx += labelArr[i].length
-
-      const semicolon = value.label?.indexOf(';', labelIdx)
-      const appLabel = value.label?.substring(labelIdx, semicolon > -1 ? semicolon : value.label?.length)
+      const appLabel = getAppNameFromLabel(value.label, value.name)
       const resourceName = value.name
       let apps
       if (value.cluster === getHubClusterName()) {
@@ -196,7 +185,7 @@ export function cacheOCPApplications(
       logger.error(`getLocalOCPApps exception ${e}`)
     }
     try {
-      cacheRemoteApps(applicationCache, {}, remoteOCPApps, ocpPageChunk, 'remoteOCPApps')
+      cacheRemoteApps(applicationCache, ocpStatusMap, remoteOCPApps, ocpPageChunk, 'remoteOCPApps')
     } catch (e) {
       logger.error(`getRemoteOCPApps exception ${e}`)
     }
@@ -216,6 +205,15 @@ export function cacheOCPApplications(
       logger.error(`cacheRemoteSystemApps exception ${e}`)
     }
   }
+}
+
+function getAppNameFromLabel(label: string, defaultName: string) {
+  const matchingLabel = labelArr.find((labelPattern) => label?.includes(labelPattern))
+  if (!matchingLabel) return defaultName
+
+  const startIdx = label.indexOf(matchingLabel) + matchingLabel.length
+  const endIdx = label.indexOf(';', startIdx)
+  return label.substring(startIdx, endIdx > -1 ? endIdx : undefined)
 }
 
 function cacheRemoteSystemApps(
@@ -304,7 +302,7 @@ export function createOCPStatusMap(ocpApps: ISearchResource[], relatedResources:
 
   // create an app map with syncs and health
   ocpApps.forEach((app: ISearchResource) => {
-    const appKey = `${app.type}/${app.namespace}/${app.name}`
+    const appKey = `${app.type}/${app.namespace}/${getAppNameFromLabel(app.label, app.name)}`
     let appStatusMap = ocpClusterStatusMap[appKey]
     if (!appStatusMap) {
       appStatusMap = ocpClusterStatusMap[appKey] = {}
@@ -336,15 +334,8 @@ export function createOCPStatusMap(ocpApps: ISearchResource[], relatedResources:
     }
   })
 
-  // compute app statuses for related resources
-  relatedResources.forEach((related) => {
-    related.items.forEach((item: ISearchResource) => {
-      const appStatuses = app2AppsetMap[item._relatedUids[0]]
-      if (appStatuses) {
-        computeAppDeployedStatuses(appStatuses.deployed, item)
-      }
-    })
-  })
+  // compute pod statuses
+  computePodStatuses(relatedResources, app2AppsetMap)
 
   return ocpClusterStatusMap
 }

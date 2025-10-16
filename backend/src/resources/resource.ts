@@ -1,19 +1,19 @@
 /* Copyright Contributors to the Open Cluster Management project */
 export interface ISearchResource {
+  _uid?: string
+  _hostingResource?: string
+  _relatedUids?: string[]
+  _hostingSubscription?: boolean
   apigroup: string
   apiversion: string
   kind: string
   name: string
   namespace: string
-  _uid?: string
   cluster: string
   label?: string
   created: string
-  _hostingSubscription?: boolean
   applicationSet?: string
   type?: string
-  _hostingResource?: string
-  _relatedUids?: string[]
   status?: string
   current?: string
   desired?: string
@@ -26,6 +26,7 @@ export interface ISearchResource {
 export type SearchResult = {
   items: ISearchResource[]
   related: {
+    kind: string
     items: ISearchResource[]
   }[]
 }

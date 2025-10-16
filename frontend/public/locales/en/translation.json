@@ -2401,7 +2401,7 @@
   "Replicas": "Replicas",
   "Reports the violation, which requires manual remediation.": "Reports the violation, which requires manual remediation.",
   "Reports the violation, which requires manual remediation. This cannot be overridden by the parent policy's remediation action.": "Reports the violation, which requires manual remediation. This cannot be overridden by the parent policy's remediation action.",
-  "Deployed Status": "Deployed Status",
+  "Pod Status": "Pod Status",
   "Repository type": "Repository type",
   "Request cancelled": "Request cancelled",
   "Request failed because of too many requests. Please retry.": "Request failed because of too many requests. Please retry.",

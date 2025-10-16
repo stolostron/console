@@ -153,7 +153,7 @@ const queryTemplate: IQuery = {
     input: [],
   },
   query:
-    'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  related {\n    items\n  }}\n}',
+    'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  related {\n    kind\n    items\n  }}\n}',
 }
 
 export const promiseTimeout = <T>(promise: Promise<T>, delay: number) => {

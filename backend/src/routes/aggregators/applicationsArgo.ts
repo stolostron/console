@@ -35,7 +35,7 @@ import {
 } from './utils'
 import { deflateResource } from '../../lib/compression'
 import { IWatchOptions } from '../../resources/watch-options'
-import { computeAppDeployedStatuses, computeAppHealthStatus, computeAppSyncStatus } from './computeStatues'
+import { computeAppHealthStatus, computeAppSyncStatus, computePodStatuses } from './computeStatues'
 
 interface IArgoAppLocalResource extends IResource {
   spec: {
@@ -131,19 +131,7 @@ export function addArgoQueryInputs(applicationCache: ApplicationCacheType, query
   }
   query.variables.input.push({
     filters,
-    relatedKinds: [
-      'pod',
-      'replicaset',
-      'deployment',
-      'statefulset',
-      'ansiblejob',
-      'cronjob',
-      'secret',
-      'configmap',
-      'service',
-      'ingress',
-      'route',
-    ],
+    relatedKinds: ['pod', 'replicaset', 'deployment', 'statefulset'],
     limit: SEARCH_QUERY_LIMIT,
   })
 }
@@ -458,15 +446,8 @@ export function createArgoStatusMap(searchResult: SearchResult) {
     }
   })
 
-  // compute app statuses for related resources
-  searchResult.related.forEach((related) => {
-    related.items.forEach((item: ISearchResource) => {
-      const appStatuses = app2AppsetMap[item._relatedUids[0]]
-      if (appStatuses) {
-        computeAppDeployedStatuses(appStatuses.deployed, item)
-      }
-    })
-  })
+  // compute pod statuses
+  computePodStatuses(searchResult.related, app2AppsetMap)
 
   return argoClusterStatusMap
 }

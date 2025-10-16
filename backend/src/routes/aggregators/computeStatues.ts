@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { ApplicationStatus } from './applications'
-import { ISearchResource } from '../../resources/resource'
+import { ApplicationStatus, ApplicationStatuses } from './applications'
+import { ISearchResource, SearchResult } from '../../resources/resource'
 
 //////////////////////////////////////////////////////////////////
 ////////////// COMPUTE STATUSES /////////////////////////////////////////
@@ -56,33 +56,62 @@ export function computeAppSyncStatus(synced: number[], app: ISearchResource) {
   }
 }
 
-export function computeAppDeployedStatuses(deployed: number[], item: ISearchResource) {
-  if (item.kind === 'Ansible') {
-    // computeAnsibleStatus(deployed, item)
-  } else if (item.desired !== undefined) {
-    computeDeploymentStatus(deployed, item)
-  } else if (item.status) {
-    computePodStatus(deployed, item)
-  } else {
-    deployed[ApplicationStatus.healthy]++
+function createResourceMap(related: SearchResult['related'], kind: string): Map<string, ISearchResource> {
+  const map = new Map<string, ISearchResource>()
+  const relatedItems = related.find((r) => r.kind === kind)
+  relatedItems?.items.forEach((item: ISearchResource) => {
+    map.set(item._relatedUids[0], item)
+  })
+  return map
+}
+
+export function computePodStatuses(
+  related: SearchResult['related'],
+  app2AppsetMap: Record<string, ApplicationStatuses>
+) {
+  const deploymentMap = createResourceMap(related, 'Deployment')
+  const replicaSetMap = createResourceMap(related, 'ReplicaSet')
+  const missingPods = Object.keys(app2AppsetMap)
+  const podItems = related.find((r) => r.kind === 'Pod')?.items
+  if (podItems) {
+    podItems.forEach((item: ISearchResource) => {
+      missingPods.splice(missingPods.indexOf(item._relatedUids[0]), 1)
+      const appStatuses = app2AppsetMap[item._relatedUids[0]]
+      if (appStatuses) {
+        const deployment = computepDeployedStatus(deploymentMap.get(item._relatedUids[0]))
+        const replicaSet = computepDeployedStatus(replicaSetMap.get(item._relatedUids[0]))
+        if (deployment === ApplicationStatus.progress || replicaSet === ApplicationStatus.progress) {
+          appStatuses.deployed[ApplicationStatus.progress]++
+          return
+        } else if (deployment === ApplicationStatus.danger || replicaSet === ApplicationStatus.danger) {
+          appStatuses.deployed[ApplicationStatus.danger]++
+          return
+        }
+        computePodStatus(appStatuses.deployed, item)
+      }
+    })
   }
+  missingPods.forEach((pod) => {
+    app2AppsetMap[pod].deployed[ApplicationStatus.danger]++
+  })
+}
+
+export function computepDeployedStatus(item: ISearchResource) {
+  if (item) {
+    const available = Number(item.available) ?? 0
+    const desired = Number(item.desired) ?? 0
+    if (available === desired || item.desired === '0') {
+      return ApplicationStatus.healthy
+    } else if (available < desired) {
+      return ApplicationStatus.progress
+    } else if (!item.desired && available === 0) {
+      return ApplicationStatus.danger
+    }
+  }
+  return ApplicationStatus.healthy
 }
 
 // export function computeAnsibleStatus(deployed: number[], item: ISearchResource) {}
-
-function computeDeploymentStatus(deployed: number[], item: ISearchResource) {
-  const available = Number(item.available) ?? 0
-  const desired = Number(item.desired) ?? 0
-  if (available === desired || item.desired === '0') {
-    deployed[ApplicationStatus.healthy]++
-  } else if (available < desired) {
-    deployed[ApplicationStatus.progress]++
-  } else if (!item.desired && available === 0) {
-    deployed[ApplicationStatus.danger]++
-  } else {
-    deployed[ApplicationStatus.healthy]++
-  }
-}
 
 function computePodStatus(deployed: number[], item: ISearchResource) {
   const status = item.status.toLocaleLowerCase()
