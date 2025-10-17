@@ -215,26 +215,6 @@ export function getAppNamespace(resource: IResource) {
   return resource.metadata?.namespace
 }
 
-export function getAppHealthStatus(resource: IResource) {
-  let castType
-  if (resource.apiVersion === ArgoApplicationApiVersion && resource.kind === ArgoApplicationKind) {
-    castType = resource as ArgoApplication
-    return get(castType, 'status.health.status', '')
-  }
-
-  return ''
-}
-
-export function getAppSyncStatus(resource: IResource) {
-  let castType
-  if (resource.apiVersion === ArgoApplicationApiVersion && resource.kind === ArgoApplicationKind) {
-    castType = resource as ArgoApplication
-    return get(castType, 'status.sync.status', '')
-  }
-
-  return ''
-}
-
 export const getApplicationStatuses = (resource: IResource, status: 'health' | 'synced' | 'deployed') => {
   const uidata = (resource as IUIResource).uidata
   if (
@@ -404,6 +384,9 @@ export default function ApplicationsOverview() {
           healthScore: healthScore,
           syncedScore: syncedScore,
           deployedScore: deployedScore,
+          healthStatus: healthScore < 100 ? 'Healthy' : 'Unhealthy',
+          syncedStatus: syncedScore < 100 ? 'Synced' : 'OutOfSync',
+          deployedStatus: deployedScore < 100 ? 'Deployed' : 'Not Deployed',
         },
       }
 
@@ -703,57 +686,54 @@ export default function ApplicationsOverview() {
         },
       },
       {
-        id: 'syncStatus',
-        label: t('Sync Status'),
-        options: [
-          {
-            label: t('Synced'),
-            value: 'Synced',
-          },
-          {
-            label: t('OutOfSync'),
-            value: 'OutOfSync',
-          },
-          {
-            label: t('Unknown'),
-            value: 'Unknown',
-          },
-        ],
-        tableFilterFn: (selectedValues: string[], item: IApplicationResource) => {
-          return selectedValues.includes(get(item, 'transformed.syncStatus'))
-        },
-      },
-      {
         id: 'healthStatus',
         label: t('Health Status'),
         options: [
           {
-            label: t('Unknown'),
-            value: 'Unknown',
-          },
-          {
-            label: t('Progressing'),
-            value: 'Progressing',
-          },
-          {
-            label: t('Suspended'),
-            value: 'Suspended',
+            label: t('Unhealthy'),
+            value: 'Unhealthy',
           },
           {
             label: t('Healthy'),
             value: 'Healthy',
           },
-          {
-            label: t('Degraded'),
-            value: 'Degraded',
-          },
-          {
-            label: t('Missing'),
-            value: 'Missing',
-          },
         ],
         tableFilterFn: (selectedValues: string[], item: IApplicationResource) => {
           return selectedValues.includes(get(item, 'transformed.healthStatus'))
+        },
+      },
+      {
+        id: 'syncStatus',
+        label: t('Sync Status'),
+        options: [
+          {
+            label: t('OutOfSync'),
+            value: 'OutOfSync',
+          },
+          {
+            label: t('Synced'),
+            value: 'Synced',
+          },
+        ],
+        tableFilterFn: (selectedValues: string[], item: IApplicationResource) => {
+          return selectedValues.includes(get(item, 'transformed.syncedStatus'))
+        },
+      },
+      {
+        id: 'podStatuses',
+        label: t('Pod Statuses'),
+        options: [
+          {
+            label: t('Not Deployed'),
+            value: 'Not Deployed',
+          },
+          {
+            label: t('Deployed'),
+            value: 'Deployed',
+          },
+        ],
+        tableFilterFn: (selectedValues: string[], item: IApplicationResource) => {
+          return selectedValues.includes(get(item, 'transformed.deployedStatus'))
         },
       },
     ],

@@ -564,7 +564,7 @@ export const getApplicationStatusScore = (
           column[ApplicationStatus.danger] * 10000 +
           column[ApplicationStatus.warning] * 1000 +
           column[ApplicationStatus.progress] * 100 +
-          column[ApplicationStatus.healthy] * 10
+          column[ApplicationStatus.healthy]
       }
     }
   })
