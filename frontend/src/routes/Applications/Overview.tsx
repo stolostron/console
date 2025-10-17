@@ -1,15 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-  PageSection,
-  Popover,
-  Stack,
-  StackItem,
-  Text,
-  TextContent,
-  TextVariants,
-  ToolbarItem,
-} from '@patternfly/react-core'
+import { PageSection } from '@patternfly/react-core'
+import { Popover } from '@patternfly/react-core'
+import { Stack } from '@patternfly/react-core'
+import { StackItem } from '@patternfly/react-core'
+import { Text } from '@patternfly/react-core'
+import { TextContent } from '@patternfly/react-core'
+import { TextVariants } from '@patternfly/react-core'
+import { ToolbarItem } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { cellWidth } from '@patternfly/react-table'
 import { get } from 'lodash'
@@ -33,6 +31,7 @@ import {
   ApplicationSetDefinition,
   ApplicationSetKind,
   ApplicationStatuses,
+  ApplicationStatusMap,
   ArgoApplication,
   ArgoApplicationApiVersion,
   ArgoApplicationKind,
@@ -71,6 +70,7 @@ import {
   getSubscriptionsFromAnnotation,
   hostingSubAnnotationStr,
   isResourceTypeOf,
+  getApplicationStatusScore,
 } from './helpers/resource-helper'
 import { isLocalSubscription } from './helpers/subscriptions'
 import { getISOStringTimestamp } from '../../resources/utils'
@@ -100,7 +100,18 @@ type ApplicationStatus = {
   resourceName: string
 }
 
-type IApplicationResource = IResource<ApplicationStatus> | OCPAppResource<ApplicationStatus>
+export type IApplicationResource = IResource<ApplicationStatus> | OCPAppResource<ApplicationStatus>
+
+export enum AppColumns {
+  'name' = 0,
+  'type',
+  'namespace',
+  'clusters',
+  'health',
+  'synced',
+  'deployed',
+  'created',
+}
 
 function isOCPAppResource(resource: IApplicationResource): resource is OCPAppResource<ApplicationStatus> {
   return 'label' in resource
@@ -372,6 +383,17 @@ export default function ApplicationsOverview() {
       })
 
       const transformedNamespace = getAppNamespace(tableItem)
+
+      const uidata = (
+        tableItem as IApplicationResource & {
+          uidata: { clusterList: string[]; appClusterStatuses: ApplicationStatusMap[] }
+        }
+      )?.uidata
+      const clusters = uidata?.clusterList ?? []
+      const healthScore = getApplicationStatusScore(uidata?.appClusterStatuses ?? [], AppColumns.health, clusters)
+      const syncedScore = getApplicationStatusScore(uidata?.appClusterStatuses ?? [], AppColumns.synced, clusters)
+      const deployedScore = getApplicationStatusScore(uidata?.appClusterStatuses ?? [], AppColumns.deployed, clusters)
+
       const transformedObject = {
         transformed: {
           clusterCount: clusterTransformData,
@@ -379,6 +401,9 @@ export default function ApplicationsOverview() {
           resourceText: resourceText,
           createdText: getResourceTimestamp(tableItem, 'metadata.creationTimestamp'),
           namespace: transformedNamespace,
+          healthScore: healthScore,
+          syncedScore: syncedScore,
+          deployedScore: deployedScore,
         },
       }
 
@@ -531,7 +556,7 @@ export default function ApplicationsOverview() {
           return '-'
         },
         tooltip: t('Health status for applications.'),
-        // sort: getApplicationSortFn(AppColumns.health),
+        sort: 'transformed.healthScore',
         exportContent: (resource) => {
           return get(resource, 'status.health.status', '')
         },
@@ -553,7 +578,7 @@ export default function ApplicationsOverview() {
           return '-'
         },
         tooltip: t('Sync status for applications.'),
-        // sort: syncStatusSortFn,
+        sort: 'transformed.syncedScore',
         exportContent: (resource) => {
           return get(resource, 'status.sync.status', '')
         },
@@ -575,7 +600,7 @@ export default function ApplicationsOverview() {
           return '-'
         },
         tooltip: t('Status of resources deployed by the application.'),
-        // sort: podStatusSortFn,
+        sort: 'transformed.deployedScore',
         exportContent: (resource) => {
           const appRepos = getApplicationRepos(resource, subscriptions, channels)
           if (appRepos) {
@@ -601,7 +626,7 @@ export default function ApplicationsOverview() {
         },
       },
     ],
-    [t, extensionColumns, systemAppNSPrefixes, subscriptions, localCluster, channels]
+    [t, extensionColumns, systemAppNSPrefixes, localCluster, subscriptions, channels]
   )
   const filters = useMemo(
     () => [

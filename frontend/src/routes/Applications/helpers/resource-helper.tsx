@@ -9,6 +9,7 @@ import {
   Application,
   ApplicationDefinition,
   ApplicationSet,
+  ApplicationStatusMap,
   ArgoApplication,
   ArgoApplicationApiVersion,
   ArgoApplicationKind,
@@ -519,118 +520,53 @@ export function getAnnotation(resource: IResource, annotationString: string) {
   return resource.metadata?.annotations !== undefined ? resource.metadata?.annotations[annotationString] : undefined
 }
 
-export function getClusterList(resource: IResource) {
-  return (resource as IUIResource)?.uidata?.clusterList ?? []
+export enum AppColumns {
+  'name' = 0,
+  'type',
+  'namespace',
+  'clusters',
+  'health',
+  'synced',
+  'deployed',
+  'created',
 }
 
-// export enum AppColumns {
-//   'name' = 0,
-//   'type',
-//   'namespace',
-//   'clusters',
-//   'health',
-//   'synced',
-//   'deployed',
-//   'created',
-// }
+enum ApplicationStatus {
+  healthy = 0,
+  progress = 1,
+  warning = 2,
+  danger = 3,
+}
 
-// export enum TransformColumns {
-//   'name' = 0,
-//   'type',
-//   'namespace',
-//   'clusters',
-//   'statuses',
-//   'created',
-// }
-
-// export type ApplicationStatuses = {
-//   health: number[]
-//   synced: number[]
-//   deployed: number[]
-// }
-
-// export enum ApplicationStatus {
-//   healthy = 0,
-//   progress = 1,
-//   warning = 2,
-//   danger = 3,
-// }
-
-// function getApplicationSortFn(label: string | string[]) {
-//   const labelSortFn = (a: NodeInfo, b: NodeInfo): number => {
-//     const aValue = getNodeLabelValue(a, label)
-//     const bValue = getNodeLabelValue(b, label)
-//     return aValue.localeCompare(bValue)
-//   }
-//   return labelSortFn
-// }
-
-// export function sortApplications(sortBy: ISortBy, items: ICompressedResource[]) {
-//   const index = sortBy.index as AppColumns
-//   const statusScore =
-//     index === AppColumns.health || index === AppColumns.synced || index === AppColumns.deployed
-//       ? getStatusScoreMap(items, index)
-//       : undefined
-//   items = items.sort((a, b) => {
-//     switch (sortBy.index as AppColumns) {
-//       case AppColumns.name:
-//       case AppColumns.namespace:
-//       case AppColumns.clusters:
-//       case AppColumns.created: {
-//         const aValue = a.transform[sortBy.index]
-//         const bValue = b.transform[sortBy.index]
-//         if (!aValue || !bValue) return 0
-//         return (aValue[0] as string).localeCompare(bValue[0] as string)
-//       }
-//       case AppColumns.health:
-//       case AppColumns.synced:
-//       case AppColumns.deployed: {
-//         return statusScore.get(b) - statusScore.get(a)
-//       }
-//       default:
-//         return 0
-//     }
-//   })
-//   if (sortBy.direction === 'desc') {
-//     items = items.reverse()
-//   }
-//   return items
-// }
-
-// export function getStatusScoreMap(items: ICompressedResource[], index: number) {
-//   const getScore = (statuses: ApplicationStatusMap[], index: number, clusters: string[]): number => {
-//     let score = 0
-//     clusters.forEach((cluster) => {
-//       const stats = statuses[0][cluster]
-//       if (stats) {
-//         let column: number[]
-//         switch (index as AppColumns) {
-//           case AppColumns.health:
-//             column = stats.health
-//             break
-//           case AppColumns.synced:
-//             column = stats.synced
-//             break
-//           case AppColumns.deployed:
-//             column = stats.deployed
-//             break
-//         }
-//         if (column) {
-//           score =
-//             column[ApplicationStatus.danger] * 1000 +
-//             column[ApplicationStatus.warning] * 100 +
-//             column[ApplicationStatus.healthy] * 10
-//         }
-//       }
-//     })
-//     return score
-//   }
-//   const weakMap = new WeakMap<ICompressedResource, number>()
-//   items.forEach((item) => {
-//     const clusters = item.transform[AppColumns.clusters] as string[]
-//     const score = getScore(item.transform[TransformColumns.statuses] as ApplicationStatusMap[], index, clusters)
-//     console.log(item.transform[TransformColumns.statuses], score, item.transform[AppColumns.name][0])
-//     weakMap.set(item, score)
-//   })
-//   return weakMap
-// }
+export const getApplicationStatusScore = (
+  statuses: ApplicationStatusMap[],
+  index: number,
+  clusters: string[]
+): number => {
+  let score = 0
+  clusters.forEach((cluster) => {
+    const stats = statuses[0][cluster]
+    if (stats) {
+      let column: number[] | undefined = undefined
+      switch (index as AppColumns) {
+        case AppColumns.health:
+          column = stats.health
+          break
+        case AppColumns.synced:
+          column = stats.synced
+          break
+        case AppColumns.deployed:
+          column = stats.deployed
+          break
+      }
+      if (column) {
+        score =
+          column[ApplicationStatus.danger] * 10000 +
+          column[ApplicationStatus.warning] * 1000 +
+          column[ApplicationStatus.progress] * 100 +
+          column[ApplicationStatus.healthy] * 10
+      }
+    }
+  })
+  return score
+}

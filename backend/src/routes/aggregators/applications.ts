@@ -303,8 +303,9 @@ export function getStatusScoreMap(items: ICompressedResource[], index: number) {
         }
         if (column) {
           score =
-            column[ApplicationStatus.danger] * 1000 +
-            column[ApplicationStatus.warning] * 100 +
+            column[ApplicationStatus.danger] * 10000 +
+            column[ApplicationStatus.warning] * 1000 +
+            column[ApplicationStatus.progress] * 100 +
             column[ApplicationStatus.healthy] * 10
         }
       }
@@ -315,7 +316,6 @@ export function getStatusScoreMap(items: ICompressedResource[], index: number) {
   items.forEach((item) => {
     const clusters = item.transform[AppColumns.clusters] as string[]
     const score = getScore(item.transform[TransformColumns.statuses] as ApplicationStatusMap[], index, clusters)
-    console.log(item.transform[TransformColumns.statuses], score, item.transform[AppColumns.name][0])
     weakMap.set(item, score)
   })
   return weakMap
