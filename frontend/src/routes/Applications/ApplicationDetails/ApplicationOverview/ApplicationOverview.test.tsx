@@ -9,8 +9,8 @@ import {
   placementRulesState,
   subscriptionsState,
 } from '../../../../atoms'
-import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../lib/nock-util'
-import { clickByText, waitForText } from '../../../../lib/test-util'
+import { nockIgnoreApiPaths, nockIgnoreRBAC, nockRBAC } from '../../../../lib/nock-util'
+import { clickByText, waitForNock, waitForText } from '../../../../lib/test-util'
 
 import {
   ApplicationApiVersion,
@@ -456,6 +456,57 @@ const mockApplicationDataArgo: ApplicationDataType = {
   },
 }
 
+const mockApplicationDataArgoApp: ApplicationDataType = {
+  refreshTime: 1648135176039,
+  appData: {
+    relatedKinds: ['application', 'placement', 'cluster', 'service', 'deployment', 'replicaset', 'pod', 'route'],
+    subscription: null,
+  },
+  application: {
+    app: {
+      apiVersion: ArgoApplicationApiVersion,
+      kind: ArgoApplicationKind,
+      metadata: {
+        creationTimestamp: '2022-03-14T17:19:03Z',
+        generation: 1,
+        name: 'argo-app-test',
+        namespace: 'argocd',
+        resourceVersion: '85929954',
+      },
+      status: {
+        reconciledAt: '2022-03-14T17:19:03Z',
+      },
+      spec: {
+        destination: {
+          namespace: 'test-app',
+          server: 'https://kubernetes.default.svc',
+        },
+        project: 'default',
+        source: {
+          path: 'guestbook',
+          repoURL: 'https://github.com/argoproj/argocd-example-apps.git',
+          targetRevision: 'HEAD',
+        },
+      },
+    },
+    name: 'argo-app-test',
+    namespace: 'argocd',
+    metadata: {
+      creationTimestamp: '2022-03-14T17:19:03Z',
+      generation: 1,
+      name: 'argo-app-test',
+      namespace: 'argocd',
+      resourceVersion: '85929954',
+    },
+    isAppSet: false,
+    isArgoApp: true,
+  },
+  topology: {
+    links: [],
+    nodes: [],
+  },
+}
+
 const mockNamespaces: Namespace[] = ['namespace1', 'namespace2', 'namespace3'].map((name) => ({
   apiVersion: NamespaceApiVersion,
   kind: NamespaceKind,
@@ -579,5 +630,136 @@ describe('Overview Tab', () => {
     await waitForText('None')
     // created
     await waitForText(mockApplicationDataArgo.application.name, true)
+  })
+})
+
+describe('Overview Tab RBAC', () => {
+  beforeEach(async () => {
+    nockIgnoreApiPaths()
+  })
+
+  test('should show ArgoCD sync button for ApplicationSet with patch permission', async () => {
+    const nock = nockRBAC(
+      {
+        name: 'appset-helm',
+        namespace: 'openshift-gitops',
+        resource: 'applicationsets',
+        verb: 'patch',
+        group: 'argoproj.io',
+      },
+      true
+    )
+    nockIgnoreRBAC()
+    const context: Partial<ApplicationDetailsContext> = {
+      applicationData: mockApplicationDataArgo,
+    }
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(subscriptionsState, mockSubscriptions)
+          snapshot.set(channelsState, mockChannels)
+          snapshot.set(placementRulesState, mockPlacementrules)
+          snapshot.set(managedClustersState, mockManagedClusters)
+          snapshot.set(namespacesState, mockNamespaces)
+        }}
+      >
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<ApplicationOverviewPageContent />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    await waitForText('Name')
+    await waitForNock(nock)
+
+    const syncButton = document.getElementById('sync-argo-app')
+    expect(syncButton).toBeTruthy()
+    expect(syncButton?.getAttribute('aria-disabled')).toBe('false')
+  })
+
+  test('should not show ArgoCD sync button for regular ArgoCD Application', async () => {
+    const nock = nockRBAC(
+      {
+        name: 'argo-app-test',
+        namespace: 'argocd',
+        resource: 'applications',
+        verb: 'patch',
+        group: 'argoproj.io',
+      },
+      true
+    )
+    nockIgnoreRBAC()
+    const context: Partial<ApplicationDetailsContext> = {
+      applicationData: mockApplicationDataArgoApp,
+    }
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(subscriptionsState, mockSubscriptions)
+          snapshot.set(channelsState, mockChannels)
+          snapshot.set(placementRulesState, mockPlacementrules)
+          snapshot.set(managedClustersState, mockManagedClusters)
+          snapshot.set(namespacesState, mockNamespaces)
+        }}
+      >
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<ApplicationOverviewPageContent />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    await waitForText('Name')
+    await waitForNock(nock)
+
+    const syncButton = document.getElementById('sync-argo-app')
+    expect(syncButton).toBeFalsy()
+  })
+
+  test('should disable ArgoCD sync button for ApplicationSet when user does not have patch permission', async () => {
+    const nock = nockRBAC(
+      {
+        name: 'appset-helm',
+        namespace: 'openshift-gitops',
+        resource: 'applicationsets',
+        verb: 'patch',
+        group: 'argoproj.io',
+      },
+      false
+    )
+    nockIgnoreRBAC()
+    const context: Partial<ApplicationDetailsContext> = {
+      applicationData: mockApplicationDataArgo,
+    }
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(subscriptionsState, mockSubscriptions)
+          snapshot.set(channelsState, mockChannels)
+          snapshot.set(placementRulesState, mockPlacementrules)
+          snapshot.set(managedClustersState, mockManagedClusters)
+          snapshot.set(namespacesState, mockNamespaces)
+        }}
+      >
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<ApplicationOverviewPageContent />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    await waitForText('Name')
+    await waitForNock(nock)
+
+    const syncButton = document.getElementById('sync-argo-app')
+    expect(syncButton).toBeTruthy()
+    expect(syncButton?.getAttribute('aria-disabled')).toBe('true')
   })
 })
