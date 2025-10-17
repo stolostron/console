@@ -1,15 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-  PageSection,
-  Popover,
-  Stack,
-  StackItem,
-  Text,
-  TextContent,
-  TextVariants,
-  ToolbarItem,
-} from '@patternfly/react-core'
+import { PageSection } from '@patternfly/react-core'
+import { Popover } from '@patternfly/react-core'
+import { Stack } from '@patternfly/react-core'
+import { StackItem } from '@patternfly/react-core'
+import { Text } from '@patternfly/react-core'
+import { TextContent } from '@patternfly/react-core'
+import { TextVariants } from '@patternfly/react-core'
+import { ToolbarItem } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { cellWidth } from '@patternfly/react-table'
 import { get } from 'lodash'
@@ -32,6 +30,8 @@ import {
   ApplicationSetApiVersion,
   ApplicationSetDefinition,
   ApplicationSetKind,
+  ApplicationStatuses,
+  ApplicationStatusMap,
   ArgoApplication,
   ArgoApplicationApiVersion,
   ArgoApplicationKind,
@@ -48,6 +48,7 @@ import {
   AcmButton,
   AcmDropdown,
   AcmEmptyState,
+  AcmInlineStatusGroup,
   AcmTable,
   compareStrings,
   IAcmRowAction,
@@ -55,7 +56,6 @@ import {
 } from '../../ui-components'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { DeleteResourceModal, IDeleteResourceModalProps } from './components/DeleteResourceModal'
-import ResourceLabels from './components/ResourceLabels'
 import { argoAppSetQueryString } from './CreateArgoApplication/actions'
 import { subscriptionAppQueryString } from './CreateSubscriptionApplication/actions'
 import {
@@ -69,8 +69,8 @@ import {
   getSearchLink,
   getSubscriptionsFromAnnotation,
   hostingSubAnnotationStr,
-  isArgoApp,
   isResourceTypeOf,
+  getApplicationStatusScore,
 } from './helpers/resource-helper'
 import { isLocalSubscription } from './helpers/subscriptions'
 import { getISOStringTimestamp } from '../../resources/utils'
@@ -100,7 +100,18 @@ type ApplicationStatus = {
   resourceName: string
 }
 
-type IApplicationResource = IResource<ApplicationStatus> | OCPAppResource<ApplicationStatus>
+export type IApplicationResource = IResource<ApplicationStatus> | OCPAppResource<ApplicationStatus>
+
+export enum AppColumns {
+  'name' = 0,
+  'type',
+  'namespace',
+  'clusters',
+  'health',
+  'synced',
+  'deployed',
+  'created',
+}
 
 function isOCPAppResource(resource: IApplicationResource): resource is OCPAppResource<ApplicationStatus> {
   return 'label' in resource
@@ -204,24 +215,24 @@ export function getAppNamespace(resource: IResource) {
   return resource.metadata?.namespace
 }
 
-export function getAppHealthStatus(resource: IResource) {
-  let castType
-  if (resource.apiVersion === ArgoApplicationApiVersion && resource.kind === ArgoApplicationKind) {
-    castType = resource as ArgoApplication
-    return get(castType, 'status.health.status', '')
+export const getApplicationStatuses = (resource: IResource, status: 'health' | 'synced' | 'deployed') => {
+  const uidata = (resource as IUIResource).uidata
+  if (
+    Array.isArray(uidata.appClusterStatuses) &&
+    uidata.appClusterStatuses.length > 0 &&
+    Object.keys(uidata.appClusterStatuses[0]).length > 0
+  ) {
+    const allStatuses = [0, 0, 0, 0]
+    uidata.clusterList.forEach((cluster: string) => {
+      const clusterStatuses = uidata.appClusterStatuses[0][cluster]
+      const statuses = clusterStatuses ? (clusterStatuses as ApplicationStatuses)[status] ?? [] : []
+      for (let i = 0; i < 4; i++) {
+        allStatuses[i] += statuses[i] ?? 0
+      }
+    })
+    return allStatuses
   }
-
-  return ''
-}
-
-export function getAppSyncStatus(resource: IResource) {
-  let castType
-  if (resource.apiVersion === ArgoApplicationApiVersion && resource.kind === ArgoApplicationKind) {
-    castType = resource as ArgoApplication
-    return get(castType, 'status.sync.status', '')
-  }
-
-  return ''
+  return []
 }
 
 export const getApplicationRepos = (resource: IResource, subscriptions: Subscription[], channels: Channel[]) => {
@@ -352,6 +363,17 @@ export default function ApplicationsOverview() {
       })
 
       const transformedNamespace = getAppNamespace(tableItem)
+
+      const uidata = (
+        tableItem as IApplicationResource & {
+          uidata: { clusterList: string[]; appClusterStatuses: ApplicationStatusMap[] }
+        }
+      )?.uidata
+      const clusters = uidata?.clusterList ?? []
+      const healthScore = getApplicationStatusScore(uidata?.appClusterStatuses ?? [], AppColumns.health, clusters)
+      const syncedScore = getApplicationStatusScore(uidata?.appClusterStatuses ?? [], AppColumns.synced, clusters)
+      const deployedScore = getApplicationStatusScore(uidata?.appClusterStatuses ?? [], AppColumns.deployed, clusters)
+
       const transformedObject = {
         transformed: {
           clusterCount: clusterTransformData,
@@ -359,8 +381,12 @@ export default function ApplicationsOverview() {
           resourceText: resourceText,
           createdText: getResourceTimestamp(tableItem, 'metadata.creationTimestamp'),
           namespace: transformedNamespace,
-          healthStatus: getAppHealthStatus(tableItem),
-          syncStatus: getAppSyncStatus(tableItem),
+          healthScore: healthScore,
+          syncedScore: syncedScore,
+          deployedScore: deployedScore,
+          healthStatus: healthScore < 100 ? 'Healthy' : 'Unhealthy',
+          syncedStatus: syncedScore < 100 ? 'Synced' : 'OutOfSync',
+          deployedStatus: deployedScore < 100 ? 'Deployed' : 'Not Deployed',
         },
       }
 
@@ -497,50 +523,90 @@ export default function ApplicationsOverview() {
         },
       },
       {
-        header: t('Repository'),
-        cell: (resource) => {
-          const appRepos = getApplicationRepos(resource, subscriptions, channels)
-          return (
-            <ResourceLabels
-              appRepos={appRepos!}
-              showSubscriptionAttributes={true}
-              isArgoApp={isArgoApp(resource) || isResourceTypeOf(resource, ApplicationSetDefinition)}
-              translation={t}
-            />
-          )
-        },
-        tooltip: t('Provides links to each of the resource repositories used by the application.'),
-        sort: 'transformed.resourceText',
-        search: 'transformed.resourceText',
-        exportContent: (resource) => {
-          const appRepos = getApplicationRepos(resource, subscriptions, channels)
-          if (appRepos) {
-            return appRepos.map((repo) => repo.type).toString()
-          }
-        },
-      },
-      {
         header: t('Health Status'),
         cell: (resource) => {
-          return <span>{get(resource, 'status.health.status', '')}</span>
+          const healthStatuses = getApplicationStatuses(resource, 'health')
+          if (healthStatuses.length >= 4) {
+            return (
+              <AcmInlineStatusGroup
+                healthy={healthStatuses[0]}
+                progress={healthStatuses[1]}
+                warning={healthStatuses[2]}
+                danger={healthStatuses[3]}
+              />
+            )
+          }
+          return '-'
         },
-        tooltip: t('Health status for ArgoCD applications.'),
-        sort: 'transformed.healthStatus',
-        search: 'transformed.healthStatus',
+        tooltip: t('Health status for applications.'),
+        sort: 'transformed.healthScore',
         exportContent: (resource) => {
-          return get(resource, 'status.health.status', '')
+          const stats = getApplicationStatuses(resource, 'health')
+          const statuses = [
+            { label: '', value: stats[0] },
+            { label: 'Progress', value: stats[1] },
+            { label: 'Warning', value: stats[2] },
+            { label: 'Danger', value: stats[3] },
+          ].filter((s) => s.value && s.value > 0)
+          return `Health: ${statuses.length > 0 ? statuses.map((s) => `${s.label}: ${s.value}`).join(' ') : '-'}`
         },
       },
       {
         header: t('Sync Status'),
         cell: (resource) => {
-          return <span>{get(resource, 'status.sync.status', '')}</span>
+          const syncedStatuses = getApplicationStatuses(resource, 'synced')
+          if (syncedStatuses.length >= 4) {
+            return (
+              <AcmInlineStatusGroup
+                healthy={syncedStatuses[0]}
+                progress={syncedStatuses[1]}
+                warning={syncedStatuses[2]}
+                danger={syncedStatuses[3]}
+              />
+            )
+          }
+          return '-'
         },
-        tooltip: t('Sync status for ArgoCD applications.'),
-        sort: 'transformed.syncStatus',
-        search: 'transformed.syncStatus',
+        tooltip: t('Sync status for applications.'),
+        sort: 'transformed.syncedScore',
         exportContent: (resource) => {
-          return get(resource, 'status.sync.status', '')
+          const stats = getApplicationStatuses(resource, 'synced')
+          const statuses = [
+            { label: '', value: stats[0] },
+            { label: 'Progress', value: stats[1] },
+            { label: 'Warning', value: stats[2] },
+            { label: 'Danger', value: stats[3] },
+          ].filter((s) => s.value && s.value > 0)
+          return `Synced: ${statuses.length > 0 ? statuses.map((s) => `${s.label}: ${s.value}`).join(' ') : '-'}`
+        },
+      },
+      {
+        header: t('Pod Statuses'),
+        cell: (resource) => {
+          const deployedStatuses = getApplicationStatuses(resource, 'deployed')
+          if (deployedStatuses.length >= 4) {
+            return (
+              <AcmInlineStatusGroup
+                healthy={deployedStatuses[0]}
+                progress={deployedStatuses[1]}
+                warning={deployedStatuses[2]}
+                danger={deployedStatuses[3]}
+              />
+            )
+          }
+          return '-'
+        },
+        tooltip: t('Status of resources deployed by the application.'),
+        sort: 'transformed.deployedScore',
+        exportContent: (resource) => {
+          const stats = getApplicationStatuses(resource, 'deployed')
+          const statuses = [
+            { label: '', value: stats[0] },
+            { label: 'Progress', value: stats[1] },
+            { label: 'Warning', value: stats[2] },
+            { label: 'Danger', value: stats[3] },
+          ].filter((s) => s.value && s.value > 0)
+          return `Deployed: ${statuses.length > 0 ? statuses.map((s) => `${s.label}: ${s.value}`).join(' ') : '-'}`
         },
       },
       ...extensionColumns,
@@ -561,7 +627,7 @@ export default function ApplicationsOverview() {
         },
       },
     ],
-    [t, extensionColumns, systemAppNSPrefixes, subscriptions, localCluster, channels]
+    [t, extensionColumns, systemAppNSPrefixes, localCluster]
   )
   const filters = useMemo(
     () => [
@@ -638,57 +704,54 @@ export default function ApplicationsOverview() {
         },
       },
       {
-        id: 'syncStatus',
-        label: t('Sync Status'),
-        options: [
-          {
-            label: t('Synced'),
-            value: 'Synced',
-          },
-          {
-            label: t('OutOfSync'),
-            value: 'OutOfSync',
-          },
-          {
-            label: t('Unknown'),
-            value: 'Unknown',
-          },
-        ],
-        tableFilterFn: (selectedValues: string[], item: IApplicationResource) => {
-          return selectedValues.includes(get(item, 'transformed.syncStatus'))
-        },
-      },
-      {
         id: 'healthStatus',
         label: t('Health Status'),
         options: [
           {
-            label: t('Unknown'),
-            value: 'Unknown',
-          },
-          {
-            label: t('Progressing'),
-            value: 'Progressing',
-          },
-          {
-            label: t('Suspended'),
-            value: 'Suspended',
+            label: t('Unhealthy'),
+            value: 'Unhealthy',
           },
           {
             label: t('Healthy'),
             value: 'Healthy',
           },
-          {
-            label: t('Degraded'),
-            value: 'Degraded',
-          },
-          {
-            label: t('Missing'),
-            value: 'Missing',
-          },
         ],
         tableFilterFn: (selectedValues: string[], item: IApplicationResource) => {
           return selectedValues.includes(get(item, 'transformed.healthStatus'))
+        },
+      },
+      {
+        id: 'syncStatus',
+        label: t('Sync Status'),
+        options: [
+          {
+            label: t('OutOfSync'),
+            value: 'OutOfSync',
+          },
+          {
+            label: t('Synced'),
+            value: 'Synced',
+          },
+        ],
+        tableFilterFn: (selectedValues: string[], item: IApplicationResource) => {
+          return selectedValues.includes(get(item, 'transformed.syncedStatus'))
+        },
+      },
+      {
+        id: 'podStatuses',
+        label: t('Pod Statuses'),
+        options: [
+          {
+            label: t('Not Deployed'),
+            value: 'Not Deployed',
+          },
+          {
+            label: t('Deployed'),
+            value: 'Deployed',
+          },
+        ],
+        tableFilterFn: (selectedValues: string[], item: IApplicationResource) => {
+          return selectedValues.includes(get(item, 'transformed.deployedStatus'))
         },
       },
     ],

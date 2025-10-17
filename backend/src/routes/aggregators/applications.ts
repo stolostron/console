@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { getKubeResources } from '../events'
 import { addOCPQueryInputs, addSystemQueryInputs, cacheOCPApplications } from './applicationsOCP'
-import { ApplicationSetKind, IApplicationSet, IResource } from '../../resources/resource'
-import { FilterSelections } from '../../lib/pagination'
+import { ApplicationSetKind, IApplicationSet, IResource, SearchResult } from '../../resources/resource'
+import { FilterSelections, ISortBy } from '../../lib/pagination'
 import { logger } from '../../lib/logger'
 import {
   discoverSystemAppNamespacePrefixes,
@@ -27,9 +27,19 @@ export enum AppColumns {
   'type',
   'namespace',
   'clusters',
-  'repo',
   'health',
-  'sync',
+  'synced',
+  'deployed',
+  'created',
+}
+
+export enum TransformColumns {
+  'name' = 0,
+  'type',
+  'namespace',
+  'clusters',
+  'statuses',
+  'scores',
   'created',
 }
 export interface IArgoApplication extends IResource {
@@ -71,14 +81,44 @@ export interface ISubscription extends IResource {
     decisions?: [{ clusterName: string }]
   }
 }
+
+export type ApplicationStatuses = {
+  health: number[]
+  synced: number[]
+  deployed: number[]
+}
+
+export enum ApplicationStatus {
+  healthy = 0,
+  progress = 1,
+  warning = 2,
+  danger = 3,
+}
+
+// each app has distinct statuses for each cluster it's on
+// string is appid (type/ns/name)
+export type ApplicationClusterStatusMap = Record<string, ApplicationStatusMap>
+// string is cluster name
+export type ApplicationStatusMap = Record<string, ApplicationStatuses>
+// string is AppColumns
+export type ApplicationScoresMap = Record<string, number>
+
+// transform is either a string (for app name) or a map of the statuses of that app on each cluster
+export type Transform = (string | ApplicationScoresMap | ApplicationStatusMap)[][]
 export interface ITransformedResource extends IResource {
-  transform?: string[][]
+  transform?: Transform
   remoteClusters?: string[]
 }
 export interface ICompressedResource {
   compressed: Buffer
-  transform?: string[][]
+  transform?: Transform
   remoteClusters?: string[]
+}
+export interface IUIData {
+  clusterList: string[]
+  appClusterStatuses?: ApplicationStatusMap
+  appSetRelatedResources: unknown
+  appSetApps: IResource[]
 }
 
 export type ApplicationCache = {
@@ -118,7 +158,7 @@ export const SEARCH_QUERY_LIMIT = 20000
 
 export interface IQuery {
   operationName: string
-  variables: { input: { filters: { property: string; values: string[] }[]; limit: number }[] }
+  variables: { input: { filters: { property: string; values: string[] }[]; relatedKinds: string[]; limit: number }[] }
   query: string
 }
 const queryTemplate: IQuery = {
@@ -126,7 +166,8 @@ const queryTemplate: IQuery = {
   variables: {
     input: [],
   },
-  query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  }\n}',
+  query:
+    'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  related {\n    kind\n    items\n  }}\n}',
 }
 
 export const promiseTimeout = <T>(promise: Promise<T>, delay: number) => {
@@ -169,7 +210,7 @@ export function getApplications() {
   let items = getApplicationsHelper(applicationCache, Object.keys(applicationCache))
   // mock a large environment
   if (process.env.MOCK_CLUSTERS) {
-    items = items.concat(transform(getGiganticApps()).resources)
+    items = items.concat(transform(getGiganticApps(), {}).resources)
   }
   return items
 }
@@ -178,7 +219,10 @@ export function getApplications() {
 export function aggregateLocalApplications() {
   // ACM Apps
   try {
-    applicationCache['subscription'] = transform(structuredClone(getKubeResources('Application', 'app.k8s.io/v1beta1')))
+    applicationCache['subscription'] = transform(
+      structuredClone(getKubeResources('Application', 'app.k8s.io/v1beta1')),
+      {}
+    )
   } catch (e) {
     logger.error(`aggregateLocalApplications subscription exception ${e}`)
   }
@@ -200,6 +244,22 @@ export function filterApplications(filters: FilterSelections, items: ICompressed
             (value: string) => item.transform[AppColumns.clusters].indexOf(value) !== -1
           )
           break
+        case 'podStatuses':
+          isMatch = filters['podStatuses'].some(
+            (value: string) => value === getStatusFilterKey(item, AppColumns.deployed)
+          )
+          break
+        case 'healthStatus':
+          isMatch = filters['healthStatus'].some(
+            (value: string) => value === getStatusFilterKey(item, AppColumns.health)
+          )
+          break
+        case 'syncStatus':
+          isMatch = filters['syncStatus'].some((value: string) => value === getStatusFilterKey(item, AppColumns.synced))
+          break
+        default:
+          isMatch = false
+          break
       }
       if (!isMatch) {
         isFilterMatch = false
@@ -207,6 +267,50 @@ export function filterApplications(filters: FilterSelections, items: ICompressed
     })
     return isFilterMatch
   })
+  return items
+}
+
+export function getStatusFilterKey(item: ICompressedResource, index: AppColumns) {
+  const score = (item.transform[TransformColumns.scores] as ApplicationScoresMap[])[0][index]
+  switch (index) {
+    case AppColumns.health:
+      return score < 100 ? 'Healthy' : 'Unhealthy'
+    case AppColumns.synced:
+      return score < 100 ? 'Synced' : 'OutOfSync'
+    case AppColumns.deployed:
+      return score < 100 ? 'Deployed' : 'Not Deployed'
+    default:
+      return ''
+  }
+}
+
+export function sortApplications(sortBy: ISortBy, items: ICompressedResource[]) {
+  const index = sortBy.index as AppColumns
+  items = items.sort((a, b) => {
+    switch (sortBy.index as AppColumns) {
+      case AppColumns.name:
+      case AppColumns.namespace:
+      case AppColumns.clusters:
+      case AppColumns.created: {
+        const aValue = a.transform[sortBy.index]
+        const bValue = b.transform[sortBy.index]
+        if (!aValue || !bValue) return 0
+        return (aValue[0] as string).localeCompare(bValue[0] as string)
+      }
+      case AppColumns.health:
+      case AppColumns.synced:
+      case AppColumns.deployed: {
+        const aScore = (a.transform[TransformColumns.scores] as ApplicationScoresMap[])[0][index]
+        const bScore = (b.transform[TransformColumns.scores] as ApplicationScoresMap[])[0][index]
+        return bScore - aScore
+      }
+      default:
+        return 0
+    }
+  })
+  if (sortBy.direction === 'desc') {
+    items = items.reverse()
+  }
   return items
 }
 
@@ -220,6 +324,7 @@ export function addUIData(items: ITransformedResource[]) {
       ...item,
       uidata: {
         clusterList: item?.transform?.[AppColumns.clusters] || [],
+        appClusterStatuses: item?.transform?.[TransformColumns.statuses] || [],
         appSetRelatedResources:
           item.kind === ApplicationSetKind
             ? getAppSetRelatedResources(item, argoAppSets as IApplicationSet[])
@@ -266,10 +371,10 @@ export async function searchLoop() {
     // query and save the remote applications
     try {
       await promiseTimeout(aggregateRemoteApplications(pass), SEARCH_TIMEOUT * 2).catch((e) =>
-        logger.error(`startSearchLoop exception ${e}`)
+        logger.error(`aggregateRemoteApplications exception ${e}`)
       )
     } catch (e) {
-      logger.error(`startSearchLoop exception ${e}`)
+      logger.error(`aggregateRemoteApplications exception ${e}`)
     }
     pass++
     logApplicationCountChanges(applicationCache, pass)
@@ -302,22 +407,11 @@ export async function aggregateRemoteApplications(pass: number) {
     logger.error(`getSearchResults ${e}`)
     return
   }
+  const searchResult = results.data?.searchResult
   // //////////// SAVE RESULTS ///////////////////
-  const ocpArgoAppFilter = cacheArgoApplications(
-    applicationCache,
-    (results.data?.searchResult?.[0]?.items ?? []) as IResource[]
-  )
-  cacheOCPApplications(
-    applicationCache,
-    (results.data?.searchResult?.[1]?.items || []) as IResource[],
-    ocpArgoAppFilter
-  )
+  const ocpArgoAppFilter = cacheArgoApplications(applicationCache, searchResult?.[0] as SearchResult)
+  cacheOCPApplications(applicationCache, searchResult?.[1] as SearchResult, ocpArgoAppFilter)
   if (querySystemApps) {
-    cacheOCPApplications(
-      applicationCache,
-      (results.data?.searchResult?.[2]?.items ?? []) as IResource[],
-      ocpArgoAppFilter,
-      true
-    )
+    cacheOCPApplications(applicationCache, searchResult?.[2] as SearchResult, ocpArgoAppFilter, true)
   }
 }

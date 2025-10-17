@@ -13,14 +13,21 @@ import {
   ManagedCluster,
   ClusterDeployment,
   HostedClusterK8sResource,
+  ISearchResource,
+  SearchResult,
 } from '../../resources/resource'
 import {
   AppColumns,
   ApplicationCache,
   ApplicationCacheType,
+  ApplicationClusterStatusMap,
+  ApplicationStatus,
+  ApplicationStatuses,
+  ApplicationStatusMap,
   getAppDict,
   ICompressedResource,
   ITransformedResource,
+  Transform,
 } from './applications'
 import { logger } from '../../lib/logger'
 import { getMultiClusterHub } from '../../lib/multi-cluster-hub'
@@ -35,6 +42,7 @@ import { deflateResource, inflateApp } from '../../lib/compression'
 
 export function transform(
   items: ITransformedResource[] | ICompressedResource[],
+  argoClusterStatusMap: ApplicationClusterStatusMap,
   isRemote?: boolean,
   localCluster?: Cluster,
   clusters?: Cluster[],
@@ -48,7 +56,7 @@ export function transform(
     const type = getApplicationType(app)
     const _clusters = getApplicationClusters(app, type, subscriptions, placementDecisions, localCluster, clusters)
     items[inx] = {
-      transform: getTransform(app, type, _clusters),
+      transform: getTransform(app, type, argoClusterStatusMap, _clusters),
       remoteClusters:
         (isRemote || (type === 'subscription' && _clusters.filter((n) => n !== localClusterName)).length > 0) &&
         _clusters,
@@ -61,15 +69,22 @@ export function transform(
   return { resources: items as unknown as ICompressedResource[] }
 }
 
-export function getTransform(app: IResource, type: string, clusters: string[]): string[][] {
+export function getTransform(
+  app: IResource,
+  type: string,
+  clusterStatusMap: ApplicationClusterStatusMap,
+  clusters: string[]
+): Transform {
+  const statusKey = `${type}/${app.metadata.namespace}/${app.metadata.name}`
+  const appStatuses = clusterStatusMap[statusKey] || {}
+  const appScores = getAppStatusScores(clusters, appStatuses)
   return [
     [app.metadata.name],
     [type],
     [getAppNamespace(app)],
     clusters,
-    ['r'],
-    [get(app, 'status.health.status', '') as string],
-    [get(app, 'status.sync.status', '') as string],
+    [appStatuses],
+    [appScores],
     [app.metadata.creationTimestamp as string],
   ]
 }
@@ -120,6 +135,178 @@ function isFluxApplication(label: string) {
   })
   return isFlux
 }
+
+//////////////////////////////////////////////////////////////////
+////////////// COMPUTE STATUSES /////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
+const argoAppHealthyStatus = 'Healthy' //green
+const argoAppDegradedStatus = 'Degraded' //red
+const resErrorStates = [
+  'err',
+  'off',
+  'invalid',
+  'kill',
+  'propagationfailed',
+  'imagepullbackoff',
+  'crashloopbackoff',
+  'lost',
+]
+const resWarningStates = ['pending', 'creating', 'terminating']
+
+export function computeAppHealthStatus(health: number[], app: ISearchResource) {
+  switch (app.healthStatus) {
+    case argoAppHealthyStatus:
+      health[ApplicationStatus.healthy]++
+      break
+    case argoAppDegradedStatus:
+      health[ApplicationStatus.danger]++
+      break
+    default:
+      health[ApplicationStatus.warning]++
+      break
+  }
+}
+
+export function computeAppSyncStatus(synced: number[], app: ISearchResource) {
+  switch (app.syncStatus) {
+    case 'Synced':
+      synced[ApplicationStatus.healthy]++
+      break
+    case 'OutOfSync':
+      synced[ApplicationStatus.danger]++
+      break
+    case 'Unknown':
+      synced[ApplicationStatus.warning]++
+      break
+    default:
+      synced[ApplicationStatus.danger]++
+      break
+  }
+}
+
+function createResourceMap(related: SearchResult['related'], kind: string): Map<string, ISearchResource[]> {
+  const map = new Map<string, ISearchResource[]>()
+  const relatedItems = related.find((r) => r.kind === kind)
+  relatedItems?.items.forEach((item: ISearchResource) => {
+    if (map.has(item._relatedUids[0])) {
+      map.get(item._relatedUids[0]).push(item)
+    } else {
+      map.set(item._relatedUids[0], [item])
+    }
+  })
+  return map
+}
+
+export function computePodStatuses(
+  related: SearchResult['related'],
+  app2AppsetMap: Record<string, ApplicationStatuses>
+) {
+  // create maps for deployment and replica set
+  const deploymentMap = createResourceMap(related, 'Deployment')
+  const replicaSetMap = createResourceMap(related, 'ReplicaSet')
+  const podMap = createResourceMap(related, 'Pod')
+  Object.keys(app2AppsetMap).forEach((appUid) => {
+    const appStatuses = app2AppsetMap[appUid]
+    if (appStatuses) {
+      if (appStatuses.health[ApplicationStatus.healthy] > 0 && appStatuses.synced[ApplicationStatus.healthy] > 0) {
+        if (computepDeployedStatus(appStatuses.deployed, deploymentMap.get(appUid))) {
+          if (computepDeployedStatus(appStatuses.deployed, replicaSetMap.get(appUid))) {
+            const pods = podMap.get(appUid)
+            if (pods) {
+              computePodStatus(appStatuses.deployed, pods)
+            } else {
+              const replicaSet = replicaSetMap.get(appUid)?.[0]
+              if (replicaSet) {
+                appStatuses.deployed[ApplicationStatus.warning] += Number(replicaSet.desired) ?? 0
+              } else {
+                appStatuses.deployed[ApplicationStatus.warning]++
+              }
+            }
+          }
+        }
+      } else {
+        appStatuses.deployed[ApplicationStatus.danger]++
+      }
+    }
+  })
+}
+
+export function computepDeployedStatus(deployed: number[], items: ISearchResource[]) {
+  let allHealthy = true
+  if (items && items.length) {
+    items.forEach((item) => {
+      const available = Number(item.available || item.current || 0)
+      const desired = Number(item.desired ?? 0)
+
+      if (available === desired) {
+        // nothing
+      } else if (available < desired) {
+        deployed[ApplicationStatus.progress]++
+        allHealthy = false
+      } else if (desired <= 0) {
+        deployed[ApplicationStatus.progress]++
+        allHealthy = false
+      } else if (!desired && available === 0) {
+        deployed[ApplicationStatus.danger]++
+        allHealthy = false
+      }
+    })
+  }
+  return allHealthy
+}
+
+function computePodStatus(deployed: number[], pods: ISearchResource[]) {
+  pods.forEach((pod) => {
+    const status = pod.status.toLocaleLowerCase()
+    if (resErrorStates.includes(status)) {
+      deployed[ApplicationStatus.danger]++
+    } else if (resWarningStates.includes(status)) {
+      deployed[ApplicationStatus.warning]++
+    }
+    deployed[ApplicationStatus.healthy]++
+  })
+}
+
+function getAppStatusScores(clusters: string[], appStatuses: ApplicationStatusMap) {
+  return {
+    [AppColumns.health]: getAppStatusScore(clusters, appStatuses, AppColumns.health),
+    [AppColumns.synced]: getAppStatusScore(clusters, appStatuses, AppColumns.synced),
+    [AppColumns.deployed]: getAppStatusScore(clusters, appStatuses, AppColumns.deployed),
+  }
+}
+
+function getAppStatusScore(clusters: string[], statuses: ApplicationStatusMap, index: AppColumns) {
+  let score = 0
+  clusters.forEach((cluster) => {
+    const stats = statuses[cluster]
+    if (stats) {
+      let column: number[]
+      switch (index) {
+        case AppColumns.health:
+          column = stats.health
+          break
+        case AppColumns.synced:
+          column = stats.synced
+          break
+        case AppColumns.deployed:
+          column = stats.deployed
+          break
+      }
+      if (column) {
+        score =
+          column[ApplicationStatus.danger] * 10000 +
+          column[ApplicationStatus.warning] * 1000 +
+          column[ApplicationStatus.progress] * 100 +
+          column[ApplicationStatus.healthy]
+      }
+    }
+  })
+  return score
+}
+
+//////////////////////////////////////////////////////////////////
+////////////// OTHER /////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
 
 export const systemAppNamespacePrefixes: string[] = []
 export async function discoverSystemAppNamespacePrefixes() {
@@ -402,7 +589,7 @@ export function getNextApplicationPageChunk(
       const sz = 26 + 10
       const prefixFrequency = new Array(sz).fill(0) as number[]
       applications.forEach((app) => {
-        const name = app.transform[AppColumns.name][0]
+        const name = app.transform[AppColumns.name][0] as string
         const ltr = name.charCodeAt(0)
         const index = ltr < a ? ltr - z + 26 : ltr - a
         prefixFrequency[index]++
@@ -462,7 +649,7 @@ export function getNextApplicationPageChunk(
         })
         // for each app name, stuff it into the array that belongs to that key
         applications.forEach((app) => {
-          const name = app.transform[AppColumns.name][0]
+          const name = app.transform[AppColumns.name][0] as string
           reverse[name[0]].push(app)
         })
       }
@@ -478,11 +665,12 @@ export function getNextApplicationPageChunk(
 
 export function cacheRemoteApps(
   applicationCache: ApplicationCacheType,
+  argoClusterStatusMap: ApplicationClusterStatusMap,
   remoteApps: IResource[],
   applicationPageChunk: ApplicationPageChunk,
   remoteCacheKey: string
 ) {
-  const resources = transform(remoteApps, true).resources
+  const resources = transform(remoteApps, argoClusterStatusMap, true).resources
   if (!applicationPageChunk) {
     applicationCache[remoteCacheKey].resources = resources
   } else {
