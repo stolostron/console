@@ -194,7 +194,11 @@ export function grouping(): {
               break
           }
 
-          item.compliant = 'compliant' // if it is noncompliant, it will be in _nonCompliantResources
+          // usually noncompliant resources will be in _nonCompliantResources
+          // except for gatekeeper constraints which only report noncompliant resources
+          const isGatekeeperConstraint = polInfo?.apigroup === 'constraints.gatekeeper.sh'
+
+          item.compliant = isGatekeeperConstraint ? 'noncompliant' : 'compliant'
           item.groupversion = groupversion
           item.templateInfo = {
             clusterName: cluster,
