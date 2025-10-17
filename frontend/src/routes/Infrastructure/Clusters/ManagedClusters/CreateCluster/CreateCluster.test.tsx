@@ -1167,7 +1167,7 @@ describe('CreateCluster on premise', () => {
       await typeByTestId('form-input-name-field', clusterName)
       await typeByTestId('form-input-baseDnsDomain-field', baseDomain)
 
-      await waitForText('OpenShift 4.8.15-x86_64') // single value of combobox
+      await waitForText('OpenShift 4.19.16-x86_64') // single value of combobox
       await typeByTestId('additionalLabels', 'myLabelKey=myValue')
       await clickByTestId('form-input-pullSecret-field')
 

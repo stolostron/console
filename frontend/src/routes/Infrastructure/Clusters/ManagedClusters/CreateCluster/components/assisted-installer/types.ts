@@ -15,3 +15,4 @@ export type FieldName =
   | 'openshiftVersion'
   | 'cpuArchitecture'
   | 'controlPlaneCount'
+  | 'platform'

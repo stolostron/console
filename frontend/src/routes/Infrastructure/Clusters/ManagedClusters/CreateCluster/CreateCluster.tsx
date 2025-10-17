@@ -65,6 +65,8 @@ import getControlDataVMW from './controlData/ControlDataVMW'
 import { useLocalHubName } from '../../../../../hooks/use-local-hub'
 import './style.css'
 import { VALID_DNS_LABEL } from '../../../../../components/TemplateEditor/utils/validation-types'
+import { getPlatform } from './components/assisted-installer/hypershift/utils'
+
 // Register the custom 'and' helper
 Handlebars.registerHelper('and', function (a, b) {
   return a && b
@@ -592,6 +594,8 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
       break
     case HostInventoryInfrastructureType.CIM:
       template = Handlebars.compile(cimTemplate)
+      Handlebars.registerHelper('convert', getPlatform)
+
       controlData = getControlDataCIM(t, handleModalToggle, <Warning />, isACMAvailable)
       breadcrumbs.push(controlPlaneBreadCrumbBM)
       break
@@ -607,6 +611,8 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
       break
     case HostInventoryInfrastructureType.AI:
       template = Handlebars.compile(aiTemplate)
+      Handlebars.registerHelper('convert', getPlatform)
+
       controlData = getControlDataAI(t, handleModalToggle, isACMAvailable)
       breadcrumbs.push(controlPlaneBreadCrumbBM, hostsBreadCrumb)
       break
