@@ -23,6 +23,7 @@ import {
   ApplicationClusterStatusMap,
   ApplicationStatus,
   ApplicationStatuses,
+  ApplicationStatusMap,
   getAppDict,
   ICompressedResource,
   ITransformedResource,
@@ -71,17 +72,19 @@ export function transform(
 export function getTransform(
   app: IResource,
   type: string,
-  argoClusterStatusMap: ApplicationClusterStatusMap,
+  clusterStatusMap: ApplicationClusterStatusMap,
   clusters: string[]
 ): Transform {
   const statusKey = `${type}/${app.metadata.namespace}/${app.metadata.name}`
-  const appStatuses = argoClusterStatusMap[statusKey] || {}
+  const appStatuses = clusterStatusMap[statusKey] || {}
+  const appScores = getAppStatusScores(clusters, appStatuses)
   return [
     [app.metadata.name],
     [type],
     [getAppNamespace(app)],
     clusters,
     [appStatuses],
+    [appScores],
     [app.metadata.creationTimestamp as string],
   ]
 }
@@ -262,6 +265,43 @@ function computePodStatus(deployed: number[], pods: ISearchResource[]) {
     }
     deployed[ApplicationStatus.healthy]++
   })
+}
+
+function getAppStatusScores(clusters: string[], appStatuses: ApplicationStatusMap) {
+  return {
+    [AppColumns.health]: getAppStatusScore(clusters, appStatuses, AppColumns.health),
+    [AppColumns.synced]: getAppStatusScore(clusters, appStatuses, AppColumns.synced),
+    [AppColumns.deployed]: getAppStatusScore(clusters, appStatuses, AppColumns.deployed),
+  }
+}
+
+function getAppStatusScore(clusters: string[], statuses: ApplicationStatusMap, index: AppColumns) {
+  let score = 0
+  clusters.forEach((cluster) => {
+    const stats = statuses[cluster]
+    if (stats) {
+      let column: number[]
+      switch (index) {
+        case AppColumns.health:
+          column = stats.health
+          break
+        case AppColumns.synced:
+          column = stats.synced
+          break
+        case AppColumns.deployed:
+          column = stats.deployed
+          break
+      }
+      if (column) {
+        score =
+          column[ApplicationStatus.danger] * 10000 +
+          column[ApplicationStatus.warning] * 1000 +
+          column[ApplicationStatus.progress] * 100 +
+          column[ApplicationStatus.healthy]
+      }
+    }
+  })
+  return score
 }
 
 //////////////////////////////////////////////////////////////////
