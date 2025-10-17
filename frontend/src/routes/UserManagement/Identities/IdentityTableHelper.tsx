@@ -16,8 +16,8 @@ const EXPORT_FILE_PREFIX = 'identity-table'
 export type IdentityItem = User | Group
 export type IdentityType = 'user' | 'group'
 
-const isUser = (identity: IdentityItem): identity is User => 'identities' in identity
-const isGroup = (identity: IdentityItem): identity is Group => 'users' in identity
+const isUser = (identity: IdentityItem): identity is User => identity.kind === 'User'
+const isGroup = (identity: IdentityItem): identity is Group => identity.kind === 'Group'
 
 type IdentityTableHelperProps = {
   t: TFunction
