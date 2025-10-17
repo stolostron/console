@@ -541,7 +541,14 @@ export default function ApplicationsOverview() {
         tooltip: t('Health status for applications.'),
         sort: 'transformed.healthScore',
         exportContent: (resource) => {
-          return get(resource, 'status.health.status', '')
+          const stats = getApplicationStatuses(resource, 'health')
+          const statuses = [
+            { label: '', value: stats[0] },
+            { label: 'Progress', value: stats[1] },
+            { label: 'Warning', value: stats[2] },
+            { label: 'Danger', value: stats[3] },
+          ].filter((s) => s.value && s.value > 0)
+          return `Health: ${statuses.length > 0 ? statuses.map((s) => `${s.label}: ${s.value}`).join(' ') : '-'}`
         },
       },
       {
@@ -563,7 +570,14 @@ export default function ApplicationsOverview() {
         tooltip: t('Sync status for applications.'),
         sort: 'transformed.syncedScore',
         exportContent: (resource) => {
-          return get(resource, 'status.sync.status', '')
+          const stats = getApplicationStatuses(resource, 'synced')
+          const statuses = [
+            { label: '', value: stats[0] },
+            { label: 'Progress', value: stats[1] },
+            { label: 'Warning', value: stats[2] },
+            { label: 'Danger', value: stats[3] },
+          ].filter((s) => s.value && s.value > 0)
+          return `Synced: ${statuses.length > 0 ? statuses.map((s) => `${s.label}: ${s.value}`).join(' ') : '-'}`
         },
       },
       {
@@ -585,10 +599,14 @@ export default function ApplicationsOverview() {
         tooltip: t('Status of resources deployed by the application.'),
         sort: 'transformed.deployedScore',
         exportContent: (resource) => {
-          const appRepos = getApplicationRepos(resource, subscriptions, channels)
-          if (appRepos) {
-            return appRepos.map((repo) => repo.type).toString()
-          }
+          const stats = getApplicationStatuses(resource, 'deployed')
+          const statuses = [
+            { label: '', value: stats[0] },
+            { label: 'Progress', value: stats[1] },
+            { label: 'Warning', value: stats[2] },
+            { label: 'Danger', value: stats[3] },
+          ].filter((s) => s.value && s.value > 0)
+          return `Deployed: ${statuses.length > 0 ? statuses.map((s) => `${s.label}: ${s.value}`).join(' ') : '-'}`
         },
       },
       ...extensionColumns,
@@ -609,7 +627,7 @@ export default function ApplicationsOverview() {
         },
       },
     ],
-    [t, extensionColumns, systemAppNSPrefixes, localCluster, subscriptions, channels]
+    [t, extensionColumns, systemAppNSPrefixes, localCluster]
   )
   const filters = useMemo(
     () => [
