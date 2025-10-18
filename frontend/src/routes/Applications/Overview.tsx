@@ -268,9 +268,14 @@ export const getApplicationRepos = (resource: IResource, subscriptions: Subscrip
       if (!castType.spec.source) {
         return []
       }
+      // if source data is incomplete (missing repoURL), return empty to show no information
+      // rather than incomplete information
+      if (!castType.spec.source.repoURL) {
+        return []
+      }
       return [
         {
-          type: castType.spec.source.path ? 'git' : 'helmrepo',
+          type: castType.spec.source.chart ? 'helmrepo' : 'git',
           pathName: castType.spec.source.repoURL,
           gitPath: castType.spec.source.path,
           chart: castType.spec.source.chart,
@@ -283,7 +288,7 @@ export const getApplicationRepos = (resource: IResource, subscriptions: Subscrip
       if (!castType.spec.template?.spec?.sources && castType.spec.template?.spec?.source) {
         return [
           {
-            type: castType.spec.template?.spec?.source.path ? 'git' : 'helmrepo',
+            type: castType.spec.template?.spec?.source.chart ? 'helmrepo' : 'git',
             pathName: castType.spec.template?.spec?.source.repoURL,
             gitPath: castType.spec.template?.spec?.source.path,
             chart: castType.spec.template?.spec?.source.chart,
