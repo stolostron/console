@@ -1,23 +1,23 @@
 # Copyright Contributors to the Open Cluster Management project
 
-FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:7eff4cf1dd4d4be85b90aecfa4b123c228d7c1a7f37c51068ced3c0ae26de7e8 as dynamic-plugin
+FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:5f64d6ce542fa7008deca5f47b2b972c0be6d73a50fc850c3d9b463599ec8411 as dynamic-plugin
 WORKDIR /app/frontend
 COPY ./frontend .
 RUN npm ci --legacy-peer-deps
 RUN npm run build:plugin:mce
 
-FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:7eff4cf1dd4d4be85b90aecfa4b123c228d7c1a7f37c51068ced3c0ae26de7e8 as backend
+FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:5f64d6ce542fa7008deca5f47b2b972c0be6d73a50fc850c3d9b463599ec8411 as backend
 WORKDIR /app/backend
 COPY ./backend .
 RUN npm ci --omit=optional --ignore-scripts
 RUN npm run build
 
-FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:7eff4cf1dd4d4be85b90aecfa4b123c228d7c1a7f37c51068ced3c0ae26de7e8 as production
+FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:5f64d6ce542fa7008deca5f47b2b972c0be6d73a50fc850c3d9b463599ec8411 as production
 WORKDIR /app/backend
 COPY ./backend/package-lock.json ./backend/package.json ./
 RUN npm ci --omit=optional --only=production --ignore-scripts
 
-FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:7eff4cf1dd4d4be85b90aecfa4b123c228d7c1a7f37c51068ced3c0ae26de7e8
+FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:5f64d6ce542fa7008deca5f47b2b972c0be6d73a50fc850c3d9b463599ec8411
 WORKDIR /app
 ENV NODE_ENV production
 COPY --from=production /app/backend/node_modules ./node_modules
