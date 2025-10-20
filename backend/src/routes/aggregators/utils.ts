@@ -221,7 +221,7 @@ export function computePodStatuses(
               if (replicaSet) {
                 appStatuses.deployed[ApplicationStatus.warning] += Number(replicaSet.desired) ?? 0
               } else {
-                appStatuses.deployed[ApplicationStatus.warning]++
+                appStatuses.deployed = [0, 0, 0, 0]
               }
             }
           }
