@@ -55,6 +55,8 @@ describe(`aggregator Route`, function () {
       },
     })
     expect(res.statusCode).toEqual(200)
+    // const f = await parseResponseJsonBody(res)
+    // console.log(f)
     expect(await parseResponseJsonBody(res)).toEqual(responseNoFilter)
   })
   it(`should page Filtered Applications`, async function () {
@@ -85,6 +87,7 @@ describe(`aggregator Route`, function () {
     })
     expect(res.statusCode).toEqual(200)
     // const f = await parseResponseJsonBody(res)
+    // console.log(f)
     expect(JSON.stringify(await parseResponseJsonBody(res))).toEqual(JSON.stringify(responseFiltered))
   })
   it(`should return application  counts`, async function () {
@@ -107,6 +110,8 @@ describe(`aggregator Route`, function () {
       clusters: ['local-cluster', 'feng-managed'],
     })
     expect(res.statusCode).toEqual(200)
+    // const f = await parseResponseJsonBody(res)
+    // console.log(f)
     expect(JSON.stringify(await parseResponseJsonBody(res))).toEqual(JSON.stringify(responseCount))
   })
   it(`should return ui data`, async function () {
@@ -157,22 +162,22 @@ describe(`aggregator Route`, function () {
 const systemPrefixes = ['openshift', 'hive', 'open-cluster-management', 'multicluster-engine']
 
 const responseCount = {
-  itemCount: '4',
+  itemCount: '1',
   filterCounts: {
     type: {
       subscription: 1,
-      appset: 1,
-      argo: 1,
-      openshift: 1,
     },
     cluster: {
-      'local-cluster': 3,
-      'feng-managed': 1,
+      'local-cluster': 1,
     },
+    podStatuses: {},
+    healthStatus: {},
+    syncStatus: {},
   },
   systemAppNSPrefixes: ['openshift', 'hive', 'open-cluster-management', 'multicluster-engine'],
   loading: false,
 }
+
 type RelatedResourcesType = (string | string[])[]
 
 const uidata = {
@@ -223,9 +228,9 @@ const responseNoFilter = {
         namespace: 'openshift-gitops',
         ownerReferences: [
           {
-            name: 'argoapplication-1',
             apiVersion: '',
             kind: '',
+            name: 'argoapplication-1',
           },
         ],
         uid: 'cc84e62f-edb9-413b-8bd7-38a32a21cf72',
@@ -246,6 +251,7 @@ const responseNoFilter = {
       status: {},
       uidata: {
         clusterList: ['unknown'],
+        appClusterStatuses: [{}],
         appSetRelatedResources: ['', []] as RelatedResourcesType,
         appSetApps: [] as string[],
       },
@@ -274,10 +280,10 @@ const responseNoFilter = {
         ],
         template: {
           metadata: {
+            name: 'magchen-appset-{{name}}',
             labels: {
               'velero.io/exclude-from-backup': 'true',
             },
-            name: 'magchen-appset-{{name}}',
           },
           spec: {
             destination: {
@@ -302,74 +308,9 @@ const responseNoFilter = {
       },
       uidata: {
         clusterList: ['local-cluster'],
+        appClusterStatuses: [{}],
         appSetRelatedResources: ['test-placement-1', []] as RelatedResourcesType,
-        appSetApps: ['argoapplication-2'] as string[],
-      },
-    },
-    {
-      apiVersion: 'apps/v1',
-      kind: 'deployment',
-      label: 'app=authentication-operator',
-      metadata: {
-        name: 'authentication-operator',
-        namespace: 'authentication-operator-ns',
-      },
-      status: {
-        cluster: 'local-cluster',
-        resourceName: 'authentication-operator',
-      },
-      uidata: {
-        clusterList: ['local-cluster'],
-        appSetRelatedResources: ['', []] as RelatedResourcesType,
-        appSetApps: [] as string[],
-      },
-    },
-    {
-      apiVersion: 'apps/v1',
-      kind: 'deployment',
-      label: 'app=authentication-operator',
-      metadata: {
-        name: 'authentication-operator',
-        namespace: 'authentication-operator-ns',
-      },
-      status: {
-        cluster: 'test-cluster',
-        resourceName: 'authentication-operator',
-      },
-      uidata: {
-        clusterList: ['test-cluster'],
-        appSetRelatedResources: ['', []],
-        appSetApps: [],
-      },
-    },
-    {
-      apiVersion: 'argoproj.io/v1alpha1',
-      kind: 'Application',
-      metadata: {
-        name: 'feng-remote-argo8',
-        namespace: 'openshift-gitops',
-        creationTimestamp: '2021-12-03T18:55:47Z',
-      },
-      spec: {
-        destination: {
-          namespace: 'feng-remote-namespace',
-          name: 'in-cluster',
-        },
-        source: {
-          path: 'helloworld-perf',
-          repoURL: 'https://github.com/fxiang1/app-samples',
-          targetRevision: 'HEAD',
-        },
-      },
-      status: {
-        cluster: 'feng-managed',
-        health: {},
-        sync: {},
-      },
-      uidata: {
-        clusterList: ['feng-managed'],
-        appSetRelatedResources: ['', []] as RelatedResourcesType,
-        appSetApps: [] as string[],
+        appSetApps: ['argoapplication-2'],
       },
     },
     {
@@ -387,30 +328,13 @@ const responseNoFilter = {
       },
       uidata: {
         clusterList: ['local-cluster'],
-        appSetRelatedResources: ['', []] as RelatedResourcesType,
-        appSetApps: [] as string[],
-      },
-    },
-    {
-      apiVersion: 'apps/v1',
-      kind: 'deployment',
-      label: 'app=test-app;kustomize.toolkit.fluxcd.io/name=test-app;kustomize.toolkit.fluxcd.io/namespace=test-app-ns',
-      metadata: {
-        name: 'test-app',
-        namespace: 'test-app-ns',
-      },
-      status: {
-        cluster: 'test-cluster',
-        resourceName: 'test-app',
-      },
-      uidata: {
-        clusterList: ['test-cluster'],
+        appClusterStatuses: [{}],
         appSetRelatedResources: ['', []] as RelatedResourcesType,
         appSetApps: [] as string[],
       },
     },
   ],
-  processedItemCount: 7,
+  processedItemCount: 3,
   emptyResult: false,
   isPreProcessed: true,
   request: {
@@ -430,17 +354,18 @@ const responseFiltered = {
       apiVersion: 'app.k8s.io/v1beta1',
       kind: 'Application',
       metadata: {
-        name: 'test',
-        namespace: 'default',
-        uid: 'cc84e62f-edb9-413b-8bd7-38a32a21ce72',
         annotations: {
           'apps.open-cluster-management.io/deployables': '',
           'apps.open-cluster-management.io/subscriptions':
             'default/test-subscription-1,default/test-subscription-1-local',
         },
+        name: 'test',
+        uid: 'cc84e62f-edb9-413b-8bd7-38a32a21ce72',
+        namespace: 'default',
       },
       uidata: {
         clusterList: ['local-cluster'],
+        appClusterStatuses: [{}],
         appSetRelatedResources: ['', []] as RelatedResourcesType,
         appSetApps: [] as string[],
       },
