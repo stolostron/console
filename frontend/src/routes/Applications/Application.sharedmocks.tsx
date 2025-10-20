@@ -155,6 +155,7 @@ export const mockApplicationUi = {
     appSetRelatedResources: ['', []],
     clusterList: ['local-cluster'],
     appSetApps: [],
+    appClusterStatuses: [],
   },
 }
 export const uidata = {
