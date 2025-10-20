@@ -4,7 +4,6 @@ import { GroupKindType, ServiceAccountKindType, UserKindType } from '../../../..
 type RoleAssignmentPreselected = {
   subject?: { kind: UserKindType | GroupKindType | ServiceAccountKindType; value?: string }
   roles?: string[]
-  clusterSets?: string[]
   clusterNames?: string[]
 }
 

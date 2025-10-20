@@ -198,10 +198,8 @@ const RoleAssignmentForm = ({
               { id: `all`, value: 'all', text: t('Global role (all clusters and namespaces)') },
               { id: `specific`, value: 'specific', text: t('Select specific') },
             ],
-            isRequired:
-              (preselected?.clusterSets === undefined || preselected?.clusterSets?.length === 0) &&
-              (preselected?.clusterNames === undefined || preselected?.clusterNames?.length === 0),
-            isHidden: preselected?.clusterSets?.length || preselected?.clusterNames?.length,
+            isRequired: preselected?.clusterNames === undefined || preselected?.clusterNames?.length === 0,
+            isHidden: preselected?.clusterNames?.length,
           },
           {
             id: `clusters`,
@@ -214,9 +212,7 @@ const RoleAssignmentForm = ({
             ) : (
               <ClustersDualListSelector onChoseOptions={onChoseOptions} clusterSets={roleAssignmentData.clusterSets} />
             ),
-            isRequired:
-              (preselected?.clusterSets === undefined || preselected?.clusterSets?.length === 0) &&
-              (preselected?.clusterNames === undefined || preselected?.clusterNames?.length === 0),
+            isRequired: preselected?.clusterNames === undefined || preselected?.clusterNames?.length === 0,
             isHidden: roleAssignmentFormData.scope.kind === 'all' || preselected?.clusterNames?.length,
             validation: (clusters: string[]) =>
               clusters?.length > 0 ? undefined : t('at least one cluster should be selected'),
