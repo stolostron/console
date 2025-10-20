@@ -23,6 +23,7 @@ const RoleRoleAssignments = () => {
         roleAssignments={roleAssignments}
         isLoading={isLoading}
         hiddenColumns={['role']}
+        hiddenFilters={[]}
         preselected={{ roles: [currentRole?.metadata.name ?? ''] }}
       />
     </PageSection>

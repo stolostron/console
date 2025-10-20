@@ -113,6 +113,7 @@ type RoleAssignmentsProps = {
   roleAssignments: FlattenedRoleAssignment[]
   isLoading?: boolean
   hiddenColumns?: ('subject' | 'role' | 'clusters' | 'name')[]
+  hiddenFilters?: ('role' | 'identity' | 'clusters' | 'namespace' | 'status')[]
   // isCreateButtonHidden?: boolean
   preselected: RoleAssignmentPreselected
 }
@@ -121,6 +122,7 @@ const RoleAssignments = ({
   roleAssignments,
   isLoading,
   hiddenColumns,
+  hiddenFilters,
   // isCreateButtonHidden,
   preselected,
 }: RoleAssignmentsProps) => {
@@ -205,6 +207,8 @@ const RoleAssignments = ({
     const allClusters = new Set<string>()
     const allNamespaces = new Set<string>()
     const allStatuses = new Set<string>()
+    const allUsers = new Set<string>()
+    const allGroups = new Set<string>()
 
     // Extract all unique values from role assignments
     for (const roleAssignment of roleAssignments) {
@@ -213,6 +217,13 @@ const RoleAssignments = ({
 
       if (roleAssignment.status?.status) {
         allStatuses.add(roleAssignment.status.status)
+      }
+      if (roleAssignment.subject?.name) {
+        if (roleAssignment.subject.kind === 'User') {
+          allUsers.add(roleAssignment.subject.name)
+        } else if (roleAssignment.subject.kind === 'Group') {
+          allGroups.add(roleAssignment.subject.name)
+        }
       }
 
       // Add cluster names and target namespaces
@@ -238,13 +249,33 @@ const RoleAssignments = ({
     const statusOptions = Array.from(allStatuses)
       .sort((a, b) => a.localeCompare(b))
       .map((status) => ({ label: status, value: status }))
+    const userOptions = Array.from(allUsers)
+      .sort((a, b) => a.localeCompare(b))
+      .map((user) => ({ label: user, value: `User:${user}` }))
+    const groupOptions = Array.from(allGroups)
+      .sort((a, b) => a.localeCompare(b))
+      .map((group) => ({ label: group, value: `Group:${group}` }))
 
-    return [
+    const identityOptions = [
+      ...userOptions.map((opt) => ({ ...opt, group: 'Users' })),
+      ...groupOptions.map((opt) => ({ ...opt, group: 'Groups' })),
+    ]
+
+    const allFilters: ITableFilter<FlattenedRoleAssignment>[] = [
       {
         id: 'role',
         label: t('Role'),
         options: roleOptions,
         tableFilterFn: (selectedValues, roleAssignment) => selectedValues.includes(roleAssignment.clusterRole),
+      },
+      {
+        id: 'identity',
+        label: t('Identity'),
+        options: identityOptions,
+        tableFilterFn: (selectedValues, roleAssignment) => {
+          const identityValue = `${roleAssignment.subject.kind}:${roleAssignment.subject.name}`
+          return selectedValues.includes(identityValue)
+        },
       },
       {
         id: 'clusters',
@@ -270,7 +301,9 @@ const RoleAssignments = ({
           selectedValues.some((selectedValues) => selectedValues.includes(roleAssignment.status?.status ?? '')),
       },
     ]
-  }, [roleAssignments, t])
+
+    return allFilters.filter((filter) => !hiddenFilters?.includes(filter.id as any))
+  }, [roleAssignments, t, hiddenFilters])
 
   // Table action buttons
   const tableActionButtons = useMemo<IAcmTableButtonAction[]>(

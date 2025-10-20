@@ -19,6 +19,7 @@ const ClusterRoleAssignments = () => {
       roleAssignments={roleAssignments}
       isLoading={false}
       hiddenColumns={['clusters']}
+      hiddenFilters={['clusters']}
       preselected={{ clusterNames }}
     />
   )

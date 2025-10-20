@@ -461,6 +461,7 @@ const Component = ({
             roleAssignments={roleAssignments}
             isLoading={isLoading}
             hiddenColumns={hiddenColumns}
+            hiddenFilters={[]}
             preselected={{
               subject: undefined,
               roles: undefined,

@@ -19,6 +19,7 @@ const UserRoleAssignments = () => {
         roleAssignments={roleAssignments}
         isLoading={false}
         hiddenColumns={['subject', 'name']}
+        hiddenFilters={['identity']}
         preselected={{ subject: { kind: UserKind, value: user?.metadata.name } }}
       />
     </PageSection>
