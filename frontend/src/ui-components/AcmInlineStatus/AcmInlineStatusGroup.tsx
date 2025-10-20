@@ -28,15 +28,7 @@ type AcmInlineStatusGroupProps = {
 }
 
 export function AcmInlineStatusGroup(props: AcmInlineStatusGroupProps) {
-  const show = (count?: number) => {
-    if (count === undefined) {
-      return false
-    } else if (count === 0) {
-      return props.showZeroes
-    } else {
-      return true
-    }
-  }
+  const show = (count?: number) => count !== undefined && (count > 0 || props.showZeroes)
   return (
     <LabelGroup defaultIsOpen isClosable={false} numLabels={10} id={props.groupId}>
       {show(props.healthy) && (
