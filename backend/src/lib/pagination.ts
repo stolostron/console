@@ -84,7 +84,7 @@ export function paginate(
     if (itemCount > backendLimit) {
       isPreProcessed = true // else we do filter/search/sort/paging here
       // filter
-      if (Object.keys(filters).length > 0) {
+      if (filters && Object.keys(filters).length > 0) {
         items = filterItems(filters, items)
       }
 
