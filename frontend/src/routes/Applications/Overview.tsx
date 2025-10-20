@@ -539,7 +539,9 @@ export default function ApplicationsOverview() {
           return '-'
         },
         tooltip: t('Health status for applications.'),
-        sort: 'transformed.healthScore',
+        sort: (itemA, itemB) => {
+          return get(itemB, 'transformed.healthScore') - get(itemA, 'transformed.healthScore')
+        },
         exportContent: (resource) => {
           const stats = getApplicationStatuses(resource, 'health')
           const statuses = [
@@ -568,7 +570,9 @@ export default function ApplicationsOverview() {
           return '-'
         },
         tooltip: t('Sync status for applications.'),
-        sort: 'transformed.syncedScore',
+        sort: (itemA, itemB) => {
+          return get(itemB, 'transformed.syncedScore') - get(itemA, 'transformed.syncedScore')
+        },
         exportContent: (resource) => {
           const stats = getApplicationStatuses(resource, 'synced')
           const statuses = [
@@ -597,7 +601,9 @@ export default function ApplicationsOverview() {
           return '-'
         },
         tooltip: t('Status of resources deployed by the application.'),
-        sort: 'transformed.deployedScore',
+        sort: (itemA, itemB) => {
+          return get(itemB, 'transformed.deployedScore') - get(itemA, 'transformed.deployedScore')
+        },
         exportContent: (resource) => {
           const stats = getApplicationStatuses(resource, 'deployed')
           const statuses = [

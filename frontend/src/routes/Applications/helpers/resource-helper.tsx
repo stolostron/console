@@ -35,6 +35,7 @@ import { Cluster } from '../../../resources/utils'
 import { getArgoDestinationCluster } from '../ApplicationDetails/ApplicationTopology/model/topologyArgo'
 import { getSubscriptionAnnotations, isLocalSubscription } from './subscriptions'
 import AcmTimestamp from '../../../lib/AcmTimestamp'
+import { AppColumns } from '../Overview'
 
 export const CHANNEL_TYPES = ['git', 'helmrepo', 'namespace', 'objectbucket']
 const appSetPlacementStr =
@@ -518,17 +519,6 @@ export const getAppChildResources = (
 
 export function getAnnotation(resource: IResource, annotationString: string) {
   return resource.metadata?.annotations !== undefined ? resource.metadata?.annotations[annotationString] : undefined
-}
-
-export enum AppColumns {
-  'name' = 0,
-  'type',
-  'namespace',
-  'clusters',
-  'health',
-  'synced',
-  'deployed',
-  'created',
 }
 
 enum ApplicationStatus {

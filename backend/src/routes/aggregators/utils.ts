@@ -186,13 +186,15 @@ export function computeAppSyncStatus(synced: number[], app: ISearchResource) {
 
 function createResourceMap(related: SearchResult['related'], kind: string): Map<string, ISearchResource[]> {
   const map = new Map<string, ISearchResource[]>()
-  const relatedItems = related.find((r) => r.kind === kind)
+  const relatedItems = related?.find((r) => r.kind === kind)
   relatedItems?.items.forEach((item: ISearchResource) => {
-    if (map.has(item._relatedUids[0])) {
-      map.get(item._relatedUids[0]).push(item)
-    } else {
-      map.set(item._relatedUids[0], [item])
-    }
+    item._relatedUids.forEach((uid) => {
+      if (map.has(uid)) {
+        map.get(uid).push(item)
+      } else {
+        map.set(uid, [item])
+      }
+    })
   })
   return map
 }
