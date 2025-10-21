@@ -155,12 +155,22 @@ export function DiscoveredResources() {
   const [reasonCache, setReasonCache] = useState<any>({}) // keys like cluster:kind:groupVersion:namespace:name
 
   useEffect(() => {
+    const updateReasonCacheEntry = (tmplKey: string, value: any) => {
+      setReasonCache((cache: any) => ({ ...cache, [tmplKey]: value }))
+    }
+
+    const updateReasonCacheLoading = (tmplKey: string, foundReasons: any) => {
+      updateReasonCacheEntry(tmplKey, { ...foundReasons, loading: true })
+    }
+
+    const updateReasonCacheAfterFetch = (tmplKey: string, update: any) => {
+      updateReasonCacheEntry(tmplKey, update)
+    }
+
     Object.keys(reasonCache).forEach((tmplKey) => {
       const foundReasons = reasonCache[tmplKey]
       if (foundReasons.loading === undefined) {
-        setReasonCache((cache: any) => {
-          return { ...cache, [tmplKey]: { ...foundReasons, loading: true } }
-        })
+        updateReasonCacheLoading(tmplKey, foundReasons)
 
         const tmpl = foundReasons.tmpl
 
@@ -187,9 +197,7 @@ export function DiscoveredResources() {
                 }
                 break
             }
-            setReasonCache((cache: any) => {
-              return { ...cache, [tmplKey]: update }
-            })
+            updateReasonCacheAfterFetch(tmplKey, update)
           })
           .catch((err: Error) => {
             console.error('Error getting resource: ', err)
@@ -199,6 +207,10 @@ export function DiscoveredResources() {
   }, [reasonCache])
 
   const reasonColumn: IAcmTableColumn<any> = useMemo(() => {
+    const resetReasonCacheForTemplate = (tmplKey: string, tmpl: any) => {
+      setReasonCache((cache: any) => ({ ...cache, [tmplKey]: { tmpl } }))
+    }
+
     if (
       apiGroup === 'policy.open-cluster-management.io' ||
       apiGroup === 'kyverno.io' ||
@@ -224,9 +236,7 @@ export function DiscoveredResources() {
 
           const foundReasons = reasonCache[tmplKey]
           if (foundReasons === undefined) {
-            setReasonCache((cache: any) => {
-              return { ...cache, [tmplKey]: { tmpl } }
-            })
+            resetReasonCacheForTemplate(tmplKey, tmpl)
           } else if (foundReasons.loading === false) {
             if (apiGroup === 'kyverno.io' && foundReasons?.kyvernoMessages) {
               return flexKyvernoMessages(foundReasons.kyvernoMessages)
@@ -240,9 +250,7 @@ export function DiscoveredResources() {
 
               if (reasonInfo && !reasonInfo.reason) {
                 // resource must be newer than the cached view: need to fetch it again
-                setReasonCache((cache: any) => {
-                  return { ...cache, [tmplKey]: { tmpl } }
-                })
+                resetReasonCacheForTemplate(tmplKey, tmpl)
               } else {
                 return (
                   <>
