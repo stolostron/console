@@ -70,7 +70,6 @@ import {
   getSubscriptionsFromAnnotation,
   hostingSubAnnotationStr,
   isResourceTypeOf,
-  getApplicationStatusScore,
 } from './helpers/resource-helper'
 import { isLocalSubscription } from './helpers/subscriptions'
 import { getISOStringTimestamp } from '../../resources/utils'
@@ -111,6 +110,13 @@ export enum AppColumns {
   'synced',
   'deployed',
   'created',
+}
+
+enum ApplicationStatusEnum {
+  healthy = 0,
+  progress = 1,
+  warning = 2,
+  danger = 3,
 }
 
 function isOCPAppResource(resource: IApplicationResource): resource is OCPAppResource<ApplicationStatus> {
@@ -218,13 +224,13 @@ export function getAppNamespace(resource: IResource) {
 export const getApplicationStatuses = (resource: IResource, status: 'health' | 'synced' | 'deployed') => {
   const uidata = (resource as IUIResource).uidata
   if (
-    Array.isArray(uidata.appClusterStatuses) &&
+    Array.isArray(uidata?.appClusterStatuses) &&
     uidata.appClusterStatuses.length > 0 &&
     Object.keys(uidata.appClusterStatuses[0]).length > 0
   ) {
     const allStatuses = [0, 0, 0, 0]
     uidata.clusterList.forEach((cluster: string) => {
-      const clusterStatuses = uidata.appClusterStatuses[0][cluster]
+      const clusterStatuses = uidata.appClusterStatuses[cluster]
       const statuses = clusterStatuses ? (clusterStatuses as ApplicationStatuses)[status] ?? [] : []
       for (let i = 0; i < 4; i++) {
         allStatuses[i] += statuses[i] ?? 0
@@ -363,6 +369,31 @@ export default function ApplicationsOverview() {
       })
 
       const transformedNamespace = getAppNamespace(tableItem)
+
+      const getApplicationStatusScore = (
+        statuses: ApplicationStatusMap[],
+        index: number,
+        clusters: string[]
+      ): number => {
+        let score = 0
+        clusters.forEach((cluster) => {
+          const stats = statuses[0]?.[cluster] ?? undefined
+          if (stats) {
+            let column: number[] | undefined = undefined
+            if (index === AppColumns.health) column = stats.health
+            if (index === AppColumns.synced) column = stats.synced
+            if (index === AppColumns.deployed) column = stats.deployed
+            if (column) {
+              score =
+                column[ApplicationStatusEnum.danger] * 10000 +
+                column[ApplicationStatusEnum.warning] * 1000 +
+                column[ApplicationStatusEnum.progress] * 100 +
+                column[ApplicationStatusEnum.healthy]
+            }
+          }
+        })
+        return score
+      }
 
       const uidata = (
         tableItem as IApplicationResource & {

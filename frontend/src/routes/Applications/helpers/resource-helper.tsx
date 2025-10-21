@@ -9,7 +9,6 @@ import {
   Application,
   ApplicationDefinition,
   ApplicationSet,
-  ApplicationStatusMap,
   ArgoApplication,
   ArgoApplicationApiVersion,
   ArgoApplicationKind,
@@ -35,7 +34,6 @@ import { Cluster } from '../../../resources/utils'
 import { getArgoDestinationCluster } from '../ApplicationDetails/ApplicationTopology/model/topologyArgo'
 import { getSubscriptionAnnotations, isLocalSubscription } from './subscriptions'
 import AcmTimestamp from '../../../lib/AcmTimestamp'
-import { AppColumns } from '../Overview'
 
 export const CHANNEL_TYPES = ['git', 'helmrepo', 'namespace', 'objectbucket']
 const appSetPlacementStr =
@@ -519,44 +517,4 @@ export const getAppChildResources = (
 
 export function getAnnotation(resource: IResource, annotationString: string) {
   return resource.metadata?.annotations !== undefined ? resource.metadata?.annotations[annotationString] : undefined
-}
-
-enum ApplicationStatus {
-  healthy = 0,
-  progress = 1,
-  warning = 2,
-  danger = 3,
-}
-
-export const getApplicationStatusScore = (
-  statuses: ApplicationStatusMap[],
-  index: number,
-  clusters: string[]
-): number => {
-  let score = 0
-  clusters.forEach((cluster) => {
-    const stats = statuses[0][cluster]
-    if (stats) {
-      let column: number[] | undefined = undefined
-      switch (index as AppColumns) {
-        case AppColumns.health:
-          column = stats.health
-          break
-        case AppColumns.synced:
-          column = stats.synced
-          break
-        case AppColumns.deployed:
-          column = stats.deployed
-          break
-      }
-      if (column) {
-        score =
-          column[ApplicationStatus.danger] * 10000 +
-          column[ApplicationStatus.warning] * 1000 +
-          column[ApplicationStatus.progress] * 100 +
-          column[ApplicationStatus.healthy]
-      }
-    }
-  })
-  return score
 }

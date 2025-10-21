@@ -25,7 +25,7 @@ export type ApplicationStatuses = {
 export type ApplicationStatusMap = Record<string, ApplicationStatuses>
 export interface IUIData {
   clusterList: string[]
-  appClusterStatuses: ApplicationStatusMap[]
+  appClusterStatuses: ApplicationStatusMap
   appSetRelatedResources: (string | string[])[]
   appSetApps: string[]
 }
