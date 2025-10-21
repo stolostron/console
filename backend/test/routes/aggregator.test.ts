@@ -3,6 +3,7 @@ import { parseResponseJsonBody } from '../../src/lib/body-parser'
 import {
   aggregateLocalApplications,
   aggregateRemoteApplications,
+  resetApplicationCache,
   searchLoop,
 } from '../../src/routes/aggregators/applications'
 import { cacheResource } from '../../src/routes/events'
@@ -15,6 +16,7 @@ import { IResource } from '../../src/resources/resource'
 /// to get exact nock request body, put bp at line 303 in /backend/node_modules/nock/lib/intercepted_request_router.js
 describe(`aggregator Route`, function () {
   it(`should page Unfiltered Applications`, async function () {
+    resetApplicationCache()
     nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
 
     // initialize events
@@ -60,6 +62,7 @@ describe(`aggregator Route`, function () {
     expect(await parseResponseJsonBody(res)).toEqual(responseNoFilter)
   })
   it(`should page Filtered Applications`, async function () {
+    resetApplicationCache()
     nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
 
     // initialize events
@@ -86,11 +89,10 @@ describe(`aggregator Route`, function () {
       },
     })
     expect(res.statusCode).toEqual(200)
-    // const f = await parseResponseJsonBody(res)
-    // console.log(f)
-    expect(JSON.stringify(await parseResponseJsonBody(res))).toEqual(JSON.stringify(responseFiltered))
+    expect(await parseResponseJsonBody(res)).toEqual(responseFiltered)
   })
   it(`should return application  counts`, async function () {
+    resetApplicationCache()
     nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
 
     // initialize events
@@ -110,11 +112,10 @@ describe(`aggregator Route`, function () {
       clusters: ['local-cluster', 'feng-managed'],
     })
     expect(res.statusCode).toEqual(200)
-    // const f = await parseResponseJsonBody(res)
-    // console.log(f)
-    expect(JSON.stringify(await parseResponseJsonBody(res))).toEqual(JSON.stringify(responseCount))
+    expect(await parseResponseJsonBody(res)).toEqual(responseCount)
   })
   it(`should return ui data`, async function () {
+    resetApplicationCache()
     nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
 
     // initialize events
@@ -413,7 +414,7 @@ function setupNocks(prefixes?: boolean) {
   // REMOTES: ARGO, OCP, FLUX
   const nocked = nock('https://search-search-api.undefined.svc.cluster.local:4010').post(
     '/searchapi/graphql',
-    '{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Application"]},{"property":"apigroup","values":["argoproj.io"]},{"property":"cluster","values":["!local-cluster"]}],"limit":20000},{"filters":[{"property":"kind","values":["Deployment"]},{"property":"label","values":["kustomize.toolkit.fluxcd.io/name=*","helm.toolkit.fluxcd.io/name=*","app=*","app.kubernetes.io/part-of=*"]},{"property":"namespace","values":["!openshift*"]},{"property":"namespace","values":["!open-cluster-management*"]}],"limit":20000},{"filters":[{"property":"kind","values":["Deployment"]},{"property":"label","values":["kustomize.toolkit.fluxcd.io/name=*","helm.toolkit.fluxcd.io/name=*","app=*","app.kubernetes.io/part-of=*"]},{"property":"namespace","values":["openshift*","open-cluster-management*"]},{"property":"cluster","values":["local-cluster"]}],"limit":20000}]},"query":"query searchResult($input: [SearchInput]) {\\n  searchResult: search(input: $input) {\\n    items\\n  }\\n}"}'
+    '{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Pod"]},{"property":"name","values":["search-api*"]}],"limit":1}]},"query":"query searchResult($input: [SearchInput]) {\\n  searchResult: search(input: $input) {\\n    items\\n  }\\n}"}'
   )
   nocked.reply(200, {
     data: {

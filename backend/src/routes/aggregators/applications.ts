@@ -146,9 +146,12 @@ const appKeys = [
   'localSysApps',
   'remoteSysApps',
 ]
-appKeys.forEach((key) => {
-  applicationCache[key] = { resources: [] }
-})
+export const resetApplicationCache = () => {
+  appKeys.forEach((key) => {
+    applicationCache[key] = { resources: [] }
+  })
+}
+resetApplicationCache()
 
 export const SEARCH_TIMEOUT = 5 * 60 * 1000
 
