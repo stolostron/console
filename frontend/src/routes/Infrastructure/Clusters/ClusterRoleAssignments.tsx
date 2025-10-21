@@ -3,15 +3,9 @@ import { useFindRoleAssignments } from '../../../resources/clients/multicluster-
 import { RoleAssignments } from '../../UserManagement/RoleAssignment/RoleAssignments'
 import { useParams } from 'react-router-dom-v5-compat'
 
-export const useCurrentCluster = () => {
-  const { name } = useParams()
-  return name
-}
-
 const ClusterRoleAssignments = () => {
-  const clusterName = useCurrentCluster()
+  const { name: clusterName } = useParams()
   const clusterNames = clusterName ? [clusterName] : []
-
   const roleAssignments = useFindRoleAssignments({ clusterNames })
 
   return (

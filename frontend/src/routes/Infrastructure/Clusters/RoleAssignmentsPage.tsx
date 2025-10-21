@@ -10,11 +10,9 @@ export default function RoleAssignmentsPage() {
   const { isFineGrainedRbacEnabledState } = useSharedAtoms()
   const isFineGrainedRbacEnabled = useRecoilValue(isFineGrainedRbacEnabledState)
 
-  if (!isFineGrainedRbacEnabled) {
-    return <Navigate to={generatePath(NavigationPath.clusterOverview, { name, namespace })} replace />
-  }
-
-  return (
+  return !isFineGrainedRbacEnabled ? (
+    <Navigate to={generatePath(NavigationPath.clusterOverview, { name, namespace })} replace />
+  ) : (
     <PageSection>
       <ClusterRoleAssignments />
     </PageSection>
