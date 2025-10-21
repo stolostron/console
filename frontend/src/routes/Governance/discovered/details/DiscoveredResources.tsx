@@ -19,6 +19,39 @@ import { fireManagedClusterView } from '../../../../resources'
 import { emptyResources } from '../../common/util'
 import { flexKyvernoMessages } from '../../policies/policy-details/PolicyTemplateDetail/KyvernoTable'
 
+const extractRelatedObjectReasons = (viewResponse: any, tmpl: any) => {
+  return viewResponse?.result?.status?.relatedObjects?.reduce((acc: any, relObj: any) => {
+    const key =
+      `${tmpl.clusterName}:${relObj?.object?.kind}:${relObj?.object?.apiVersion}` +
+      `:${relObj?.object?.metadata?.namespace}:${relObj?.object?.metadata?.name}`
+    return {
+      ...acc,
+      [key]: {
+        reason: relObj?.reason,
+        diff: relObj?.properties?.diff,
+      },
+    }
+  }, {})
+}
+
+const extractGKViolationReasons = (viewResponse: any, tmpl: any) => {
+  return viewResponse?.result?.status?.violations?.reduce((acc: any, violation: any) => {
+    const key =
+      `${tmpl.clusterName}:${violation?.kind}:${violation?.group ? violation.group + '/' + violation?.version : violation?.version}` +
+      `:${violation?.namespace}:${violation?.name}`
+    return {
+      ...acc,
+      [key]: {
+        reason: violation?.message,
+      },
+    }
+  }, {})
+}
+
+const mapKyvernoResults = (r: any) => {
+  return { ruleName: r.rule, message: r.message }
+}
+
 export function DiscoveredResources() {
   const { policyKind, apiGroup, isFetching, relatedResources, policyItems } = useDiscoveredDetailsContext()
   const { t } = useTranslation()
@@ -133,41 +166,18 @@ export function DiscoveredResources() {
             switch (tmpl.kind) {
               case 'ConfigurationPolicy':
               case 'OperatorPolicy':
-                update.reasons = viewResponse?.result?.status?.relatedObjects?.reduce((acc: any, relObj: any) => {
-                  const key =
-                    `${tmpl.clusterName}:${relObj?.object?.kind}:${relObj?.object?.apiVersion}` +
-                    `:${relObj?.object?.metadata?.namespace}:${relObj?.object?.metadata?.name}`
-                  return {
-                    ...acc,
-                    [key]: {
-                      reason: relObj?.reason,
-                      diff: relObj?.properties?.diff,
-                    },
-                  }
-                }, {})
+                update.reasons = extractRelatedObjectReasons(viewResponse, tmpl)
                 break
               case 'CertificatePolicy':
                 update.certificateMessages = viewResponse?.result?.status?.compliancyDetails
                 break
               case 'PolicyReport':
               case 'ClusterPolicyReport':
-                update.kyvernoMessages = viewResponse?.result?.results.map((r: any) => {
-                  return { ruleName: r.rule, message: r.message }
-                })
+                update.kyvernoMessages = viewResponse?.result?.results.map(mapKyvernoResults)
                 break
               default:
                 if (tmpl.apiGroup === 'constraints.gatekeeper.sh') {
-                  update.reasons = viewResponse?.result?.status?.violations?.reduce((acc: any, violation: any) => {
-                    const key =
-                      `${tmpl.clusterName}:${violation?.kind}:${violation?.group ? violation.group + '/' + violation?.version : violation?.version}` +
-                      `:${violation?.namespace}:${violation?.name}`
-                    return {
-                      ...acc,
-                      [key]: {
-                        reason: violation?.message,
-                      },
-                    }
-                  }, {})
+                  update.reasons = extractGKViolationReasons(viewResponse, tmpl)
                 }
                 break
             }
