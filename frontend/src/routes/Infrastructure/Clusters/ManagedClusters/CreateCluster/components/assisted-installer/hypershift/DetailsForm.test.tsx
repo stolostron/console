@@ -25,11 +25,9 @@ describe('DetailsForm', () => {
                   control={{
                     active: {
                       name: '',
-                      highAvailabilityMode: 'Full',
                       openshiftVersion: '',
                       pullSecret: '',
                       baseDnsDomain: '',
-                      SNODisclaimer: false,
                       useRedHatDnsService: true,
                       enableDiskEncryptionOnMasters: false,
                       enableDiskEncryptionOnWorkers: false,
@@ -41,6 +39,7 @@ describe('DetailsForm', () => {
                       userManagedNetworking: false,
                       customOpenshiftSelect: null,
                       controlPlaneCount: 3,
+                      enableDiskEncryptionOnArbiters: false,
                     },
                     step: {
                       title: {

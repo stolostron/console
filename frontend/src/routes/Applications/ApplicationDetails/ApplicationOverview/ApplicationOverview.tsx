@@ -1,6 +1,39 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
+  ButtonVariant,
+  Card,
+  CardBody,
+  Flex,
+  FlexItem,
+  PageSection,
+  Spinner,
+  Text,
+  Tooltip,
+} from '@patternfly/react-core'
+import { OutlinedQuestionCircleIcon, SyncAltIcon } from '@patternfly/react-icons'
+import { cloneDeep } from 'lodash'
+import { Fragment, useEffect, useState } from 'react'
+import { TFunction } from 'react-i18next'
+import { generatePath, Link } from 'react-router-dom-v5-compat'
+import { useLocalHubName } from '../../../../hooks/use-local-hub'
+import { useTranslation } from '../../../../lib/acm-i18next'
+import AcmTimestamp from '../../../../lib/AcmTimestamp'
+import { canUser, getAuthorizedNamespaces, rbacCreate } from '../../../../lib/rbac-util'
+import { NavigationPath } from '../../../../NavigationPath'
+import {
+  Application,
+  ApplicationKind,
+  ApplicationSet,
+  ApplicationSetDefinition,
+  ArgoApplicationDefinition,
+  Channel,
+  IResource,
+  Subscription,
+  SubscriptionDefinition,
+} from '../../../../resources'
+import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import {
   AcmActionGroup,
   AcmButton,
   AcmDescriptionList,
@@ -8,19 +41,12 @@ import {
   AcmPageContent,
   ListItems,
 } from '../../../../ui-components'
-import { useTranslation } from '../../../../lib/acm-i18next'
-import { ButtonVariant } from '@patternfly/react-core'
-import { Card } from '@patternfly/react-core'
-import { CardBody } from '@patternfly/react-core'
-import { PageSection } from '@patternfly/react-core'
-import { Spinner } from '@patternfly/react-core'
-import { Flex } from '@patternfly/react-core'
-import { FlexItem } from '@patternfly/react-core'
-import { Text } from '@patternfly/react-core'
-import { Tooltip } from '@patternfly/react-core'
-import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
-import { SyncAltIcon } from '@patternfly/react-icons'
-import { Fragment, useEffect, useState } from 'react'
+import LabelWithPopover from '../../components/LabelWithPopover'
+import ResourceLabels from '../../components/ResourceLabels'
+import { ISyncResourceModalProps, SyncResourceModal } from '../../components/SyncResourceModal'
+import { ISyncArgoCDModalProps, SyncArgoCDModal } from '../../components/SyncArgoCDModal'
+import { TimeWindowLabels } from '../../components/TimeWindowLabels'
+import '../../css/ApplicationOverview.css'
 import {
   getClusterCount,
   getClusterCountField,
@@ -28,35 +54,13 @@ import {
   getClusterCountString,
   getSearchLink,
 } from '../../helpers/resource-helper'
-import { TimeWindowLabels } from '../../components/TimeWindowLabels'
-import { REQUEST_STATUS } from './actions'
-import {
-  Application,
-  ApplicationKind,
-  ApplicationSet,
-  Channel,
-  IResource,
-  Subscription,
-  SubscriptionDefinition,
-} from '../../../../resources'
-import ResourceLabels from '../../components/ResourceLabels'
-import '../../css/ApplicationOverview.css'
-import { TFunction } from 'react-i18next'
 import { getApplicationRepos } from '../../Overview'
 import { ApplicationDataType, useApplicationDetailsContext } from '../ApplicationDetails'
-import { NavigationPath } from '../../../../NavigationPath'
-import { ISyncResourceModalProps, SyncResourceModal } from '../../components/SyncResourceModal'
+import { DrawerShapes } from '../ApplicationTopology/components/DrawerShapes'
 import { isSearchAvailable } from '../ApplicationTopology/helpers/search-helper'
 import { getDiagramElements } from '../ApplicationTopology/model/topology'
-import { getAuthorizedNamespaces, rbacCreate } from '../../../../lib/rbac-util'
-import { generatePath, Link } from 'react-router-dom-v5-compat'
-import { DrawerShapes } from '../ApplicationTopology/components/DrawerShapes'
-import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
-import LabelWithPopover from '../../components/LabelWithPopover'
-import AcmTimestamp from '../../../../lib/AcmTimestamp'
-import { useLocalHubName } from '../../../../hooks/use-local-hub'
 import { getNestedProperty } from '../ApplicationTopology/utils'
-import { cloneDeep } from 'lodash'
+import { REQUEST_STATUS } from './actions'
 
 const clusterResourceStatusText = (t: TFunction) => t('Cluster resource status')
 const clusterResourceStatusTooltipSubscription = (t: TFunction) =>
@@ -76,7 +80,11 @@ export function ApplicationOverviewPageContent() {
   const [modalProps, setModalProps] = useState<ISyncResourceModalProps | { open: false }>({
     open: false,
   })
+  const [argoAppModalProps, setArgoAppModalProps] = useState<ISyncArgoCDModalProps | { open: false }>({
+    open: false,
+  })
   const [hasSyncPermission, setHasSyncPermission] = useState(false)
+  const [hasArgoSyncPermission, setHasArgoSyncPermission] = useState(false)
   const openTabIcon = '#drawerShapes_open-new-tab'
 
   let isArgoApp = false
@@ -111,6 +119,25 @@ export function ApplicationOverviewPageContent() {
       })
     }
   }, [namespaces])
+
+  useEffect(() => {
+    if (applicationData) {
+      const isArgoApp = applicationData.application?.isArgoApp
+      const isAppSet = applicationData.application?.isAppSet
+
+      if (isArgoApp || isAppSet) {
+        const resourceDefinition = isAppSet ? ApplicationSetDefinition : ArgoApplicationDefinition
+        const namespace = applicationData.application.metadata.namespace
+        const name = applicationData.application.metadata.name
+
+        const canPatchArgoResource = canUser('patch', resourceDefinition, namespace, name)
+        canPatchArgoResource.promise
+          .then((result) => setHasArgoSyncPermission(result.status?.allowed!))
+          .catch((err) => console.error(err))
+        return () => canPatchArgoResource.abort()
+      }
+    }
+  }, [applicationData])
 
   if (applicationData) {
     isArgoApp = applicationData.application?.isArgoApp
@@ -241,7 +268,17 @@ export function ApplicationOverviewPageContent() {
               <OutlinedQuestionCircleIcon className="help-icon" />
             </Tooltip>
           ),
-          value: <AcmTimestamp timestamp={lastSyncedTimeStamp} />,
+
+          value: (
+            <Flex gap={{ default: 'gapNone' }} alignItems={{ default: 'alignItemsCenter' }}>
+              <FlexItem>
+                <AcmTimestamp timestamp={lastSyncedTimeStamp} />
+              </FlexItem>
+              <FlexItem>
+                {isAppSet && createArgoAppSyncButton(t, hasArgoSyncPermission, applicationData, setArgoAppModalProps)}
+              </FlexItem>
+            </Flex>
+          ),
         },
       ]
     } else {
@@ -325,6 +362,7 @@ export function ApplicationOverviewPageContent() {
   return (
     <AcmPageContent id="overview">
       <SyncResourceModal {...modalProps} />
+      <SyncArgoCDModal {...argoAppModalProps} />
       <DrawerShapes />
       <PageSection>
         <div className="overview-cards-container">
@@ -381,6 +419,37 @@ function createSyncButton(
         {syncInProgress && <Spinner size="sm" />}
       </AcmButton>
     </Fragment>
+  )
+}
+
+function createArgoAppSyncButton(
+  t: TFunction,
+  hasSyncPermission: boolean,
+  applicationData: ApplicationDataType,
+  setArgoAppModalProps: any
+) {
+  return (
+    <AcmButton
+      isDisabled={!hasSyncPermission}
+      variant={ButtonVariant.link}
+      id="sync-argo-app"
+      component="a"
+      rel="noreferrer"
+      icon={<SyncAltIcon />}
+      iconPosition="left"
+      size="sm"
+      onClick={() => {
+        setArgoAppModalProps({
+          open: true,
+          close: () => {
+            setArgoAppModalProps({ open: false })
+          },
+          appOrAppSet: applicationData.application,
+        })
+      }}
+    >
+      {t('Sync')}
+    </AcmButton>
   )
 }
 

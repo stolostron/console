@@ -59,13 +59,14 @@ export const mockAgentClusterInstall: AgentClusterInstallK8sResource = {
     clusterDeploymentRef: { name: 'test' },
     holdInstallation: true,
     provisionRequirements: { workerAgents: 0, controlPlaneAgents: 3 },
-    imageSetRef: { name: 'ocp-release48' },
+    imageSetRef: { name: 'img4.19.16-x86_64-appsub' },
     networking: {
       clusterNetwork: [{ cidr: '10.128.0.0/14', hostPrefix: 23 }],
       serviceNetwork: ['172.30.0.0/16'],
       networkType: 'OVNKubernetes',
     },
     sshPublicKey: '',
+    platformType: 'BareMetal',
   } as any,
 }
 
@@ -115,13 +116,13 @@ export const clusterImageSet: ClusterImageSetK8sResource = {
   apiVersion: ClusterImageSetApiVersion,
   kind: ClusterImageSetKind,
   metadata: {
-    name: 'ocp-release48',
+    name: 'img4.19.16-x86_64-appsub',
     labels: {
       visible: 'true',
     },
   },
   spec: {
-    releaseImage: 'quay.io/openshift-release-dev/ocp-release:4.8.15-x86_64',
+    releaseImage: 'quay.io/openshift-release-dev/ocp-release:4.19.16-x86_64',
   },
 }
 export const mockClusterImageSet = [clusterImageSet]

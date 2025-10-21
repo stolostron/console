@@ -6,7 +6,7 @@ import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
 import { Group } from '../../../../resources/rbac'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { AcmEmptyState, AcmTable, compareStrings } from '../../../../ui-components'
-import { groupsTableColumns, useFilters } from './GroupsTableHelper'
+import { useFilters, groupsTableColumns } from '../IdentityTableHelper'
 
 const GroupsTable = () => {
   const { t } = useTranslation()
@@ -19,7 +19,7 @@ const GroupsTable = () => {
 
   const keyFn = useCallback((group: Group) => group.metadata.name ?? '', [])
 
-  const filters = useFilters()
+  const filters = useFilters('group', groups)
   const columns = groupsTableColumns({ t })
 
   return (
@@ -55,8 +55,6 @@ const GroupsTable = () => {
             }
           />
         }
-        // TODO: Uncomment when actions are implemented
-        // rowActions={rowActions}
       />
     </PageSection>
   )
