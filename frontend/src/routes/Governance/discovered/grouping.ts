@@ -348,15 +348,64 @@ export function grouping(): {
       groupByNameKindGroup[nameKindGroup] = existingGroup
     })
 
+    const addResponseActions = (policy: any, allResponseActions: Set<string>) => {
+      const responseAction = getResponseAction(policy)
+
+      if (responseAction) {
+        policy.responseAction = responseAction
+        if (policy.kind === 'ValidatingAdmissionPolicyBinding') {
+          for (const action of responseAction.split('/')) {
+            allResponseActions.add(action)
+          }
+        } else {
+          allResponseActions.add(responseAction)
+        }
+      }
+    }
+
+    const updateSourceIfDifferent = (source: ISourceType, policySource: ISourceType): ISourceType => {
+      if (source.type === 'Multiple') {
+        return source
+      }
+
+      const isDifferent =
+        policySource.type !== source.type ||
+        policySource.parentNs !== source.parentNs ||
+        policySource.parentName !== source.parentName
+
+      if (isDifferent) {
+        return {
+          type: 'Multiple',
+          parentNs: '',
+          parentName: '',
+        }
+      }
+
+      return source
+    }
+
+    const determineResponseAction = (allResponseActions: Set<string>): string => {
+      const allResponseActionsList: string[] = Array.from(allResponseActions)
+
+      if (allResponseActions.size === 1) {
+        return allResponseActionsList[0]
+      }
+
+      if (allResponseActions.size === 2 && allResponseActions.has('inform') && allResponseActions.has('enforce')) {
+        return 'inform/enforce'
+      }
+
+      // Ignore the SonarCloud recommendation of sorting by locale since this is an API field.
+      return allResponseActionsList.sort().join('/') //NOSONAR
+    }
+
     const keys = Object.keys(groupByNameKindGroup)
 
-    // NOSONAR
     const policyItems = keys.map((nameKindGroup) => {
       const group = groupByNameKindGroup[nameKindGroup] || []
 
       let highestSeverity = 0
       const allResponseActions: Set<string> = new Set()
-
       let source = { ...group[0].source }
 
       for (const policy of group) {
@@ -367,51 +416,11 @@ export function grouping(): {
           highestSeverity = severityTable(policy.severity)
         }
 
-        const responseAction = getResponseAction(policy)
-
-        if (responseAction) {
-          policy.responseAction = responseAction
-          if (policy.kind === 'ValidatingAdmissionPolicyBinding') {
-            for (const action of responseAction.split('/')) {
-              allResponseActions.add(action)
-            }
-          } else {
-            allResponseActions.add(responseAction)
-          }
-        }
-
-        if (source.type === 'Multiple') {
-          continue
-        }
-
-        if (
-          policy.source.type !== source.type ||
-          policy.source.parentNs !== source.parentNs ||
-          policy.source.parentName !== source.parentName
-        ) {
-          source = {
-            type: 'Multiple',
-            parentNs: '',
-            parentName: '',
-          }
-        }
+        addResponseActions(policy, allResponseActions)
+        source = updateSourceIfDifferent(source, policy.source)
       }
 
-      let responseAction: string
-      const allResponseActionsList: string[] = Array.from(allResponseActions)
-
-      if (allResponseActions.size === 1) {
-        responseAction = allResponseActionsList[0]
-      } else if (
-        allResponseActions.size === 2 &&
-        allResponseActions.has('inform') &&
-        allResponseActions.has('enforce')
-      ) {
-        responseAction = 'inform/enforce'
-      } else {
-        // Ignore the SonarCloud recommendation of sorting by locale since this is an API field.
-        responseAction = allResponseActionsList.sort().join('/') //NOSONAR
-      }
+      const responseAction = determineResponseAction(allResponseActions)
 
       return {
         id: nameKindGroup,
