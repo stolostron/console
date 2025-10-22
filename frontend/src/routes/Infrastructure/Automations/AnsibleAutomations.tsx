@@ -275,8 +275,8 @@ function AnsibleJobTemplateTable() {
         ]}
         emptyState={
           <AcmEmptyState
-            title={t('template.emptyStateHeader')}
-            message={<Trans i18nKey="template.emptyStateMsg" components={{ bold: <strong /> }} />}
+            title={t("You don't have any automation templates yet")}
+            message={t('To get started, create your first automation template.')}
             action={
               <div>
                 <AcmButton

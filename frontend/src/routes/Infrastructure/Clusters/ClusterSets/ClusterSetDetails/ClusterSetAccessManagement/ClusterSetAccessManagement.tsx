@@ -43,7 +43,7 @@ import {
 } from '@patternfly/react-core'
 import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
 import { useEffect, useMemo, useState } from 'react'
-import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
+import { useTranslation } from '../../../../../../lib/acm-i18next'
 import { BulkActionModal, errorIsNot, BulkActionModalProps } from '../../../../../../components/BulkActionModal'
 import { ErrorPage, getErrorInfo } from '../../../../../../components/ErrorPage'
 import { useQuery } from '../../../../../../lib/useQuery'
@@ -244,8 +244,8 @@ export function ClusterSetAccessManagement() {
           emptyState={
             <AcmEmptyState
               key="accessEmptyState"
-              title={t('access.emptyTitle')}
-              message={<Trans i18nKey="access.emptyMessage" components={{ bold: <strong /> }} />}
+              title={t("You don't have any users or groups yet")}
+              message={t('To get started, add a user or group to this cluster set.')}
               action={
                 <AcmButton variant="primary" onClick={() => setAddModalOpen(true)}>
                   {t('access.emptyStateButton')}

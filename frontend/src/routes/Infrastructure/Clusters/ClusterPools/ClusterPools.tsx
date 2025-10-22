@@ -33,7 +33,7 @@ import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { BulkActionModal, errorIsNot, BulkActionModalProps } from '../../../../components/BulkActionModal'
 import { RbacButton, RbacDropdown } from '../../../../components/Rbac'
 import { TechPreviewAlert } from '../../../../components/TechPreviewAlert'
-import { Trans, useTranslation } from '../../../../lib/acm-i18next'
+import { useTranslation } from '../../../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
 import { rbacCreate, rbacDelete, rbacPatch } from '../../../../lib/rbac-util'
 import { navigateToBackCancelLocation, NavigationPath } from '../../../../NavigationPath'
@@ -121,10 +121,8 @@ export default function ClusterPoolsPage() {
               emptyState={
                 <AcmEmptyState
                   key="mcEmptyState"
-                  title={t('managed.clusterPools.emptyStateHeader')}
-                  message={
-                    <Trans i18nKey="managed.clusterPools.emptyStateMsg" components={{ bold: <strong />, p: <p /> }} />
-                  }
+                  title={t("You don't have any cluster pools yet")}
+                  message={t('To get started, create a cluster pool.')}
                   action={
                     <div>
                       <AcmButton

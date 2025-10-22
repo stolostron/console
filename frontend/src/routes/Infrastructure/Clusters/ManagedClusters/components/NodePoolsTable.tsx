@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { ButtonVariant, Icon, Stack, StackItem, Text } from '@patternfly/react-core'
+import { ButtonVariant, Icon, Stack, StackItem } from '@patternfly/react-core'
 import { CheckCircleIcon, InProgressIcon } from '@patternfly/react-icons'
 import { useCallback, useContext, useMemo, useState } from 'react'
 import { ClusterImageSetK8sResource, NodePoolK8sResource } from '@openshift-assisted/ui-lib/cim'
-import { useTranslation, Trans } from '../../../../../lib/acm-i18next'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 import { AcmButton, AcmEmptyState, AcmTable, IAcmRowAction, IAcmTableColumn } from '../../../../../ui-components'
 import { NodePool, NodePoolDefinition } from '../../../../../resources'
 import { HypershiftCloudPlatformType } from '../../../../../resources/utils'
@@ -370,15 +370,8 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
             emptyState={
               <AcmEmptyState
                 key="nodepoolTableEmptyState"
-                title={t("You don't have any node pools")}
-                message={
-                  <Text>
-                    <Trans
-                      i18nKey="Click <bold>Add node pool</bold> to create your resource."
-                      components={{ bold: <strong /> }}
-                    />
-                  </Text>
-                }
+                title={t("You don't have any node pools yet")}
+                message={t('To get started, add a node pool.')}
                 action={<>{addNodepoolButton}</>}
               />
             }

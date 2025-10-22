@@ -22,7 +22,7 @@ import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 
 import { Link, useNavigate } from 'react-router-dom-v5-compat'
 import { BulkActionModal, BulkActionModalProps, errorIsNot } from '../../../../components/BulkActionModal'
 import { Pages, usePageVisitMetricHandler } from '../../../../hooks/console-metrics'
-import { Trans, useTranslation } from '../../../../lib/acm-i18next'
+import { useTranslation } from '../../../../lib/acm-i18next'
 import { deleteCluster, detachCluster } from '../../../../lib/delete-cluster'
 import { canUser } from '../../../../lib/rbac-util'
 import { getClusterNavPath, navigateToBackCancelLocation, NavigationPath } from '../../../../NavigationPath'
@@ -175,8 +175,8 @@ export default function ManagedClusters() {
               emptyState={
                 <AcmEmptyState
                   key="mcEmptyState"
-                  title={t('managed.emptyStateHeader')}
-                  message={<Trans i18nKey="managed.emptyStateMsg" components={{ bold: <strong /> }} />}
+                  title={t("You don't have any clusters yet")}
+                  message={t('To get started, create a cluster or import an existing cluster.')}
                   action={<AddCluster type="button" />}
                 />
               }

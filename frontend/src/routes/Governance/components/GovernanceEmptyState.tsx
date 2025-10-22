@@ -11,10 +11,8 @@ export function GovernanceCreatePolicyEmptyState(props: { rbac: boolean }) {
   const { t } = useTranslation()
   return (
     <AcmEmptyState
-      title={t("You don't have any policies.")}
-      message={
-        <Trans i18nKey="Click <bold>Create policy</bold> to create your resource." components={{ bold: <strong /> }} />
-      }
+      title={t("You don't have any policies yet")}
+      message={t('To get started, create a policy.')}
       action={
         <div>
           <AcmButton
@@ -70,13 +68,8 @@ export function GovernanceCreatePolicysetEmptyState(props: { rbac: boolean }) {
   const { t } = useTranslation()
   return (
     <AcmEmptyState
-      title={t("You don't have any policy sets")}
-      message={
-        <Trans
-          i18nKey="Click <bold>Create policy set</bold> to create your resource."
-          components={{ bold: <strong /> }}
-        />
-      }
+      title={t("You don't have any policy sets yet")}
+      message={t('To get started, create a policy set.')}
       action={
         <div>
           <AcmButton

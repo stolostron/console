@@ -3,7 +3,7 @@
 import { ManagedClusterSetDefinition, isGlobalClusterSet } from '../../../../../../resources'
 import { AcmEmptyState, AcmPageContent } from '../../../../../../ui-components'
 import { PageSection } from '@patternfly/react-core'
-import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
+import { useTranslation } from '../../../../../../lib/acm-i18next'
 import { Link } from 'react-router-dom-v5-compat'
 import { RbacButton } from '../../../../../../components/Rbac'
 import { rbacCreate } from '../../../../../../lib/rbac-util'
@@ -30,10 +30,8 @@ export function ClusterSetClusterPoolsPageContent() {
           emptyState={
             <AcmEmptyState
               key="mcEmptyState"
-              title={t('managed.clusterSets.clusterPools.emptyStateHeader')}
-              message={
-                <Trans i18nKey="managed.clusterSets.clusterPools.emptyStateMsg" components={{ bold: <strong /> }} />
-              }
+              title={t("You don't have any cluster pools assigned to this cluster set yet")}
+              message={t('To get started, create a cluster pool and assign it to this cluster set.')}
               action={
                 <RbacButton
                   component={Link}

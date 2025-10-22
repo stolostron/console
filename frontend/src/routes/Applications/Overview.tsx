@@ -18,7 +18,7 @@ import { TFunction } from 'react-i18next'
 import { generatePath, Link, useNavigate } from 'react-router-dom-v5-compat'
 import { HighlightSearchText } from '../../components/HighlightSearchText'
 import { Pages, usePageVisitMetricHandler } from '../../hooks/console-metrics'
-import { Trans, useTranslation } from '../../lib/acm-i18next'
+import { useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../lib/doc-util'
 import { PluginContext } from '../../lib/PluginContext'
 import { rbacCreate, rbacDelete, useIsAnyNamespaceAuthorized } from '../../lib/rbac-util'
@@ -1068,15 +1068,8 @@ export default function ApplicationsOverview() {
         emptyState={
           <AcmEmptyState
             key="appOverviewEmptyState"
-            title={t("You don't have any applications")}
-            message={
-              <Text>
-                <Trans
-                  i18nKey="Click <bold>Create application</bold> to create your resource."
-                  components={{ bold: <strong /> }}
-                />
-              </Text>
-            }
+            title={t("You don't have any applications yet")}
+            message={t('To get started, create an application.')}
             action={emptyStateActions}
           />
         }

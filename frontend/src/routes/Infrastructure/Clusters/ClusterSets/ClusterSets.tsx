@@ -22,7 +22,7 @@ import {
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { fitContent } from '@patternfly/react-table'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
-import { Trans, useTranslation } from '../../../../lib/acm-i18next'
+import { useTranslation } from '../../../../lib/acm-i18next'
 import { Link, generatePath } from 'react-router-dom-v5-compat'
 import { BulkActionModal, errorIsNot, BulkActionModalProps } from '../../../../components/BulkActionModal'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
@@ -323,8 +323,8 @@ export function ClusterSetsTable(props: { managedClusterSets?: ManagedClusterSet
         emptyState={
           <AcmEmptyState
             key="mcEmptyState"
-            title={t('managed.clusterSets.emptyStateHeader')}
-            message={<Trans i18nKey="managed.clusterSets.emptyStateMsg" components={{ bold: <strong />, p: <p /> }} />}
+            title={t("You don't have any cluster sets yet")}
+            message={t('To get started, create a cluster set.')}
             action={
               <div>
                 <AcmButton

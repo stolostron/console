@@ -410,21 +410,17 @@ export function ClusterSetSubmarinerPageContent() {
                   key="mcEmptyState"
                   title={
                     clusters.length === 0
-                      ? t('managed.clusterSets.clusters.emptyStateHeader')
-                      : t('empty-state.submariner.title')
+                      ? t("You don't have any clusters assigned to this cluster set yet")
+                      : t('No submariner add-ons found yet')
                   }
                   message={
-                    clusters.length === 0 ? (
-                      <Trans
-                        i18nKey="managed.clusterSets.submariner.clusters.emptyStateMsg"
-                        components={{ bold: <strong />, p: <p /> }}
-                      />
-                    ) : (
-                      <Trans
-                        i18nKey="managed.clusterSets.submariner.addons.emptyStateMsg"
-                        components={{ bold: <strong />, p: <p /> }}
-                      />
-                    )
+                    clusters.length === 0
+                      ? t(
+                          'At least two clusters must be assigned to the cluster set to create a multicluster network. To get started, manage your resource assignments to add clusters.'
+                        )
+                      : t(
+                          'No clusters in this cluster set have the Submariner add-on installed. To get started, install Submariner add-ons to install the add-on on any available clusters in this cluster set.'
+                        )
                   }
                   action={
                     clusters.length === 0 ? (

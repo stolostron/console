@@ -42,7 +42,7 @@ describe('Overview Page', () => {
     )
 
     await waitForNock(metricNock)
-    expect(queryAllByText('Create policy').length).toBe(2)
+    expect(queryAllByText('Create policy').length).toBe(1)
   })
 
   test('Should render empty Overview page with manage policies button correctly', async () => {

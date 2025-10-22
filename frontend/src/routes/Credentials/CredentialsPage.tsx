@@ -18,7 +18,7 @@ import { Link, generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { BulkActionModal, BulkActionModalProps } from '../../components/BulkActionModal'
 import { RbacDropdown } from '../../components/Rbac'
-import { Trans, useTranslation } from '../../lib/acm-i18next'
+import { useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../lib/doc-util'
 import { rbacCreate, rbacDelete, rbacPatch, useIsAnyNamespaceAuthorized } from '../../lib/rbac-util'
 import { getBackCancelLocationLinkProps, navigateToBackCancelLocation, NavigationPath } from '../../NavigationPath'
@@ -134,13 +134,8 @@ export function CredentialsTable(props: {
         exportFilePrefix="credentials"
         emptyState={
           <AcmEmptyState
-            title={t(`You don't have any credentials`)}
-            message={
-              <Trans
-                i18nKey="Click <bold>Add credential</bold> to create your resource."
-                components={{ bold: <strong /> }}
-              />
-            }
+            title={t(`You don't have any credentials yet`)}
+            message={t('To get started, add your credentials.')}
             action={
               <div>
                 <AcmButton

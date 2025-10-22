@@ -45,8 +45,13 @@ function EmptyStateNoCRHCredentials() {
 
   return (
     <AcmEmptyState
-      title={t('emptystate.defaultState.title')}
-      message={<Trans i18nKey="emptystate.defaultState.msg" components={{ italic: <em />, bold: <strong /> }} />}
+      title={t("You don't have any discovered clusters yet")}
+      message={
+        <Trans
+          i18nKey="Credentials of <italic>Red Hat OpenShift Cluster Manager</italic> type must be added to configure Discovery. To get started, add your credentials."
+          components={{ italic: <em /> }}
+        />
+      }
       key="dcEmptyState"
       showSearchIcon={true}
       action={
@@ -99,7 +104,7 @@ function EmptyStateCRHCredentials(props: { credentials?: ProviderConnection[] })
   return (
     <AcmEmptyState
       action={action}
-      title={t('emptystate.credentials.title')}
+      title={t("You don't have any discovered clusters yet")}
       message={
         <Trans
           i18nKey="emptystate.credentials.msg"

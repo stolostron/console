@@ -198,7 +198,7 @@ describe('Automations page', () => {
 
   test('should render emptyState', async () => {
     render(<EmptyStateAutomationPage providerConnections={mockProviderConnections} />)
-    await waitForText("You don't have any automation templates")
+    await waitForText("You don't have any automation templates yet")
     await screen.getByRole('link', { name: /create automation template/i })
   })
 
