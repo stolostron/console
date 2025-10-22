@@ -435,9 +435,9 @@ export function createArgoStatusMap(searchResult: SearchResult) {
       let appStatuses = appStatusMap[app.cluster]
       if (!appStatuses) {
         appStatuses = appStatusMap[app.cluster] = {
-          health: [0, 0, 0, 0],
-          synced: [0, 0, 0, 0],
-          deployed: [0, 0, 0, 0],
+          health: [[0, 0, 0, 0], []],
+          synced: [[0, 0, 0, 0], []],
+          deployed: [[0, 0, 0, 0], []],
         }
       }
       app2AppsetMap[app._uid] = appStatuses

@@ -41,6 +41,7 @@ import {
   IResource,
   IUIResource,
   OCPAppResource,
+  StatusColumn,
   Subscription,
 } from '../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
@@ -221,24 +222,47 @@ export function getAppNamespace(resource: IResource) {
   return resource.metadata?.namespace
 }
 
-export const getApplicationStatuses = (resource: IResource, status: 'health' | 'synced' | 'deployed') => {
+export const getApplicationStatuses = (resource: IResource, type: 'health' | 'synced' | 'deployed') => {
   const uidata = (resource as IUIResource).uidata
   if (
     Array.isArray(uidata?.appClusterStatuses) &&
     uidata.appClusterStatuses.length > 0 &&
     Object.keys(uidata.appClusterStatuses[0]).length > 0
   ) {
-    const allStatuses = [0, 0, 0, 0]
+    const allCounts = [0, 0, 0, 0]
+    const messages: Record<string, string>[] = []
     uidata.clusterList.forEach((cluster: string) => {
-      const clusterStatuses = uidata.appClusterStatuses[cluster]
-      const statuses = clusterStatuses ? (clusterStatuses as ApplicationStatuses)[status] ?? [] : []
-      for (let i = 0; i < 4; i++) {
-        allStatuses[i] += statuses[i] ?? 0
+      const clusterStatuses = uidata.appClusterStatuses[0][cluster] as ApplicationStatuses
+      if (clusterStatuses) {
+        const counts = clusterStatuses[type][StatusColumn.counts] ?? []
+        for (let i = 0; i < 4; i++) {
+          allCounts[i] += counts[i] ?? 0
+        }
+        if (clusterStatuses[type][StatusColumn.messages]) {
+          clusterStatuses[type][StatusColumn.messages].forEach((message) => {
+            messages.push(message)
+          })
+        }
       }
     })
-    return allStatuses
+    return { counts: allCounts, messages }
   }
-  return []
+  return { counts: [0, 0, 0, 0], messages: undefined }
+}
+export function renderApplicationStatusGroup(resource: IResource, type: 'health' | 'synced' | 'deployed') {
+  const { counts, messages } = getApplicationStatuses(resource, type)
+  if (counts.length >= 4) {
+    return (
+      <AcmInlineStatusGroup
+        healthy={counts[0]}
+        progress={counts[1]}
+        warning={counts[2]}
+        danger={counts[3]}
+        messages={messages}
+      />
+    )
+  }
+  return '-'
 }
 
 export const getApplicationRepos = (resource: IResource, subscriptions: Subscription[], channels: Channel[]) => {
@@ -380,9 +404,9 @@ export default function ApplicationsOverview() {
           const stats = statuses[0]?.[cluster] ?? undefined
           if (stats) {
             let column: number[] | undefined = undefined
-            if (index === AppColumns.health) column = stats.health
-            if (index === AppColumns.synced) column = stats.synced
-            if (index === AppColumns.deployed) column = stats.deployed
+            if (index === AppColumns.health) column = stats.health[StatusColumn.counts]
+            if (index === AppColumns.synced) column = stats.synced[StatusColumn.counts]
+            if (index === AppColumns.deployed) column = stats.deployed[StatusColumn.counts]
             if (column) {
               score =
                 column[ApplicationStatusEnum.danger] * 10000 +
@@ -556,30 +580,19 @@ export default function ApplicationsOverview() {
       {
         header: t('Health Status'),
         cell: (resource) => {
-          const healthStatuses = getApplicationStatuses(resource, 'health')
-          if (healthStatuses.length >= 4) {
-            return (
-              <AcmInlineStatusGroup
-                healthy={healthStatuses[0]}
-                progress={healthStatuses[1]}
-                warning={healthStatuses[2]}
-                danger={healthStatuses[3]}
-              />
-            )
-          }
-          return '-'
+          return renderApplicationStatusGroup(resource, 'health')
         },
         tooltip: t('Health status for applications.'),
         sort: (itemA, itemB) => {
           return get(itemB, 'transformed.healthScore') - get(itemA, 'transformed.healthScore')
         },
         exportContent: (resource) => {
-          const stats = getApplicationStatuses(resource, 'health')
+          const { counts } = getApplicationStatuses(resource, 'health')
           const statuses = [
-            { label: '', value: stats[0] },
-            { label: 'Progress', value: stats[1] },
-            { label: 'Warning', value: stats[2] },
-            { label: 'Danger', value: stats[3] },
+            { label: '', value: counts[0] },
+            { label: 'Progress', value: counts[1] },
+            { label: 'Warning', value: counts[2] },
+            { label: 'Danger', value: counts[3] },
           ].filter((s) => s.value && s.value > 0)
           return `Health: ${statuses.length > 0 ? statuses.map((s) => `${s.label}: ${s.value}`).join(' ') : '-'}`
         },
@@ -587,30 +600,19 @@ export default function ApplicationsOverview() {
       {
         header: t('Sync Status'),
         cell: (resource) => {
-          const syncedStatuses = getApplicationStatuses(resource, 'synced')
-          if (syncedStatuses.length >= 4) {
-            return (
-              <AcmInlineStatusGroup
-                healthy={syncedStatuses[0]}
-                progress={syncedStatuses[1]}
-                warning={syncedStatuses[2]}
-                danger={syncedStatuses[3]}
-              />
-            )
-          }
-          return '-'
+          return renderApplicationStatusGroup(resource, 'synced')
         },
         tooltip: t('Sync status for applications.'),
         sort: (itemA, itemB) => {
           return get(itemB, 'transformed.syncedScore') - get(itemA, 'transformed.syncedScore')
         },
         exportContent: (resource) => {
-          const stats = getApplicationStatuses(resource, 'synced')
+          const { counts } = getApplicationStatuses(resource, 'synced')
           const statuses = [
-            { label: '', value: stats[0] },
-            { label: 'Progress', value: stats[1] },
-            { label: 'Warning', value: stats[2] },
-            { label: 'Danger', value: stats[3] },
+            { label: '', value: counts[0] },
+            { label: 'Progress', value: counts[1] },
+            { label: 'Warning', value: counts[2] },
+            { label: 'Danger', value: counts[3] },
           ].filter((s) => s.value && s.value > 0)
           return `Synced: ${statuses.length > 0 ? statuses.map((s) => `${s.label}: ${s.value}`).join(' ') : '-'}`
         },
@@ -618,30 +620,19 @@ export default function ApplicationsOverview() {
       {
         header: t('Pod Statuses'),
         cell: (resource) => {
-          const deployedStatuses = getApplicationStatuses(resource, 'deployed')
-          if (deployedStatuses.length >= 4) {
-            return (
-              <AcmInlineStatusGroup
-                healthy={deployedStatuses[0]}
-                progress={deployedStatuses[1]}
-                warning={deployedStatuses[2]}
-                danger={deployedStatuses[3]}
-              />
-            )
-          }
-          return '-'
+          return renderApplicationStatusGroup(resource, 'deployed')
         },
         tooltip: t('Status of resources deployed by the application.'),
         sort: (itemA, itemB) => {
           return get(itemB, 'transformed.deployedScore') - get(itemA, 'transformed.deployedScore')
         },
         exportContent: (resource) => {
-          const stats = getApplicationStatuses(resource, 'deployed')
+          const { counts } = getApplicationStatuses(resource, 'deployed')
           const statuses = [
-            { label: '', value: stats[0] },
-            { label: 'Progress', value: stats[1] },
-            { label: 'Warning', value: stats[2] },
-            { label: 'Danger', value: stats[3] },
+            { label: '', value: counts[0] },
+            { label: 'Progress', value: counts[1] },
+            { label: 'Warning', value: counts[2] },
+            { label: 'Danger', value: counts[3] },
           ].filter((s) => s.value && s.value > 0)
           return `Deployed: ${statuses.length > 0 ? statuses.map((s) => `${s.label}: ${s.value}`).join(' ') : '-'}`
         },

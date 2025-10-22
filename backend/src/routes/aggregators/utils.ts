@@ -21,13 +21,15 @@ import {
   ApplicationCache,
   ApplicationCacheType,
   ApplicationClusterStatusMap,
-  ApplicationStatus,
+  ScoreColumn,
   ApplicationStatuses,
   ApplicationStatusMap,
   getAppDict,
   ICompressedResource,
   ITransformedResource,
   Transform,
+  StatusColumn,
+  ApplicationStatusEntry,
 } from './applications'
 import { logger } from '../../lib/logger'
 import { getMultiClusterHub } from '../../lib/multi-cluster-hub'
@@ -153,33 +155,38 @@ const resErrorStates = [
 ]
 const resWarningStates = ['pending', 'creating', 'terminating']
 
-export function computeAppHealthStatus(health: number[], app: ISearchResource) {
+export function computeAppHealthStatus(health: ApplicationStatusEntry, app: ISearchResource) {
   switch (app.healthStatus) {
     case argoAppHealthyStatus:
-      health[ApplicationStatus.healthy]++
+      health[StatusColumn.counts][ScoreColumn.healthy]++
       break
     case argoAppDegradedStatus:
-      health[ApplicationStatus.danger]++
+      health[StatusColumn.counts][ScoreColumn.danger]++
+      extractMessages(health, app)
       break
     default:
-      health[ApplicationStatus.warning]++
+      health[StatusColumn.counts][ScoreColumn.warning]++
+      extractMessages(health, app)
       break
   }
 }
 
-export function computeAppSyncStatus(synced: number[], app: ISearchResource) {
+export function computeAppSyncStatus(synced: ApplicationStatusEntry, app: ISearchResource) {
   switch (app.syncStatus) {
     case 'Synced':
-      synced[ApplicationStatus.healthy]++
+      synced[StatusColumn.counts][ScoreColumn.healthy]++
       break
     case 'OutOfSync':
-      synced[ApplicationStatus.danger]++
+      synced[StatusColumn.counts][ScoreColumn.danger]++
+      extractMessages(synced, app)
       break
     case 'Unknown':
-      synced[ApplicationStatus.warning]++
+      synced[StatusColumn.counts][ScoreColumn.warning]++
+      extractMessages(synced, app)
       break
     default:
-      synced[ApplicationStatus.danger]++
+      synced[StatusColumn.counts][ScoreColumn.danger]++
+      extractMessages(synced, app)
       break
   }
 }
@@ -210,7 +217,10 @@ export function computePodStatuses(
   Object.keys(app2AppsetMap).forEach((appUid) => {
     const appStatuses = app2AppsetMap[appUid]
     if (appStatuses) {
-      if (appStatuses.health[ApplicationStatus.healthy] > 0 && appStatuses.synced[ApplicationStatus.healthy] > 0) {
+      if (
+        appStatuses.health[StatusColumn.counts][ScoreColumn.healthy] > 0 &&
+        appStatuses.synced[StatusColumn.counts][ScoreColumn.healthy] > 0
+      ) {
         if (computepDeployedStatus(appStatuses.deployed, deploymentMap.get(appUid))) {
           if (computepDeployedStatus(appStatuses.deployed, replicaSetMap.get(appUid))) {
             const pods = podMap.get(appUid)
@@ -219,21 +229,21 @@ export function computePodStatuses(
             } else {
               const replicaSet = replicaSetMap.get(appUid)?.[0]
               if (replicaSet) {
-                appStatuses.deployed[ApplicationStatus.warning] += Number(replicaSet.desired) ?? 0
+                appStatuses.deployed[StatusColumn.counts][ScoreColumn.warning] += Number(replicaSet.desired) ?? 0
               } else {
-                appStatuses.deployed = [0, 0, 0, 0]
+                appStatuses.deployed[StatusColumn.counts] = [0, 0, 0, 0]
               }
             }
           }
         }
       } else {
-        appStatuses.deployed[ApplicationStatus.danger]++
+        appStatuses.deployed[StatusColumn.counts][ScoreColumn.danger]++
       }
     }
   })
 }
 
-export function computepDeployedStatus(deployed: number[], items: ISearchResource[]) {
+export function computepDeployedStatus(deployed: ApplicationStatusEntry, items: ISearchResource[]) {
   let allHealthy = true
   if (items && items.length) {
     items.forEach((item) => {
@@ -243,13 +253,16 @@ export function computepDeployedStatus(deployed: number[], items: ISearchResourc
       if (available === desired) {
         // nothing
       } else if (available < desired) {
-        deployed[ApplicationStatus.progress]++
+        deployed[StatusColumn.counts][ScoreColumn.progress]++
+        extractMessages(deployed, item)
         allHealthy = false
       } else if (desired <= 0) {
-        deployed[ApplicationStatus.progress]++
+        deployed[StatusColumn.counts][ScoreColumn.progress]++
+        extractMessages(deployed, item)
         allHealthy = false
       } else if (!desired && available === 0) {
-        deployed[ApplicationStatus.danger]++
+        deployed[StatusColumn.counts][ScoreColumn.danger]++
+        extractMessages(deployed, item)
         allHealthy = false
       }
     })
@@ -257,15 +270,17 @@ export function computepDeployedStatus(deployed: number[], items: ISearchResourc
   return allHealthy
 }
 
-function computePodStatus(deployed: number[], pods: ISearchResource[]) {
+function computePodStatus(deployed: ApplicationStatusEntry, pods: ISearchResource[]) {
   pods.forEach((pod) => {
     const status = pod.status.toLocaleLowerCase()
     if (resErrorStates.includes(status)) {
-      deployed[ApplicationStatus.danger]++
+      deployed[StatusColumn.counts][ScoreColumn.danger]++
+      extractMessages(deployed, pod)
     } else if (resWarningStates.includes(status)) {
-      deployed[ApplicationStatus.warning]++
+      deployed[StatusColumn.counts][ScoreColumn.warning]++
+      extractMessages(deployed, pod)
     }
-    deployed[ApplicationStatus.healthy]++
+    deployed[StatusColumn.counts][ScoreColumn.healthy]++
   })
 }
 
@@ -285,25 +300,33 @@ function getAppStatusScore(clusters: string[], statuses: ApplicationStatusMap, i
       let column: number[]
       switch (index) {
         case AppColumns.health:
-          column = stats.health
+          column = stats.health[StatusColumn.counts]
           break
         case AppColumns.synced:
-          column = stats.synced
+          column = stats.synced[StatusColumn.counts]
           break
         case AppColumns.deployed:
-          column = stats.deployed
+          column = stats.deployed[StatusColumn.counts]
           break
       }
       if (column) {
         score =
-          column[ApplicationStatus.danger] * 10000 +
-          column[ApplicationStatus.warning] * 1000 +
-          column[ApplicationStatus.progress] * 100 +
-          column[ApplicationStatus.healthy]
+          column[ScoreColumn.danger] * 10000 +
+          column[ScoreColumn.warning] * 1000 +
+          column[ScoreColumn.progress] * 100 +
+          column[ScoreColumn.healthy]
       }
     }
   })
   return score
+}
+
+export function extractMessages(ase: ApplicationStatusEntry, app: ISearchResource) {
+  Object.entries(app).forEach((entry: [string, string]) => {
+    if (entry[0].startsWith('_') && (entry[0].includes('condition') || entry[0].includes('missing'))) {
+      ase[StatusColumn.messages].push({ key: entry[0], value: entry[1] })
+    }
+  })
 }
 
 //////////////////////////////////////////////////////////////////

@@ -82,17 +82,24 @@ export interface ISubscription extends IResource {
   }
 }
 
-export type ApplicationStatuses = {
-  health: number[]
-  synced: number[]
-  deployed: number[]
+export enum StatusColumn {
+  counts = 0,
+  messages = 1,
 }
 
-export enum ApplicationStatus {
+export enum ScoreColumn {
   healthy = 0,
   progress = 1,
   warning = 2,
   danger = 3,
+}
+
+export type ApplicationStatusEntry = [number[], Record<string, string>[]]
+
+export type ApplicationStatuses = {
+  health: ApplicationStatusEntry
+  synced: ApplicationStatusEntry
+  deployed: ApplicationStatusEntry
 }
 
 // each app has distinct statuses for each cluster it's on
@@ -116,7 +123,7 @@ export interface ICompressedResource {
 }
 export interface IUIData {
   clusterList: string[]
-  appClusterStatuses?: ApplicationStatusMap
+  appClusterStatuses?: ApplicationStatusMap[]
   appSetRelatedResources: unknown
   appSetApps: IResource[]
 }

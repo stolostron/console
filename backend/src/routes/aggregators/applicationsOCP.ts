@@ -6,12 +6,13 @@ import {
   AppColumns,
   ApplicationCacheType,
   ApplicationClusterStatusMap,
-  ApplicationStatus,
+  StatusColumn,
+  ScoreColumn,
   ApplicationStatuses,
   IQuery,
   SEARCH_QUERY_LIMIT,
 } from './applications'
-import { computePodStatuses } from './utils'
+import { computePodStatuses, extractMessages } from './utils'
 import {
   transform,
   getClusterMap,
@@ -310,28 +311,29 @@ export function createOCPStatusMap(ocpApps: ISearchResource[], relatedResources:
     let appStatuses = appStatusMap[app.cluster]
     if (!appStatuses) {
       appStatuses = appStatusMap[app.cluster] = {
-        health: [0, 0, 0, 0],
-        synced: [0, 0, 0, 0],
-        deployed: [0, 0, 0, 0],
+        health: [[0, 0, 0, 0], []],
+        synced: [[0, 0, 0, 0], []],
+        deployed: [[0, 0, 0, 0], []],
       }
     }
     app2AppsetMap[app._uid] = appStatuses
     const available = Number(app.available) ?? 0
     const desired = Number(app.desired) ?? 0
     if (available === desired) {
-      appStatuses.health[ApplicationStatus.healthy]++
-      appStatuses.synced[ApplicationStatus.healthy]++
+      appStatuses.health[StatusColumn.counts][ScoreColumn.healthy]++
+      appStatuses.synced[StatusColumn.counts][ScoreColumn.healthy]++
     } else if (available < desired) {
-      appStatuses.health[ApplicationStatus.healthy]++
-      appStatuses.synced[ApplicationStatus.progress]++
+      appStatuses.health[StatusColumn.counts][ScoreColumn.healthy]++
+      appStatuses.synced[StatusColumn.counts][ScoreColumn.progress]++
     } else if (desired <= 0) {
-      appStatuses.health[ApplicationStatus.warning]++
+      appStatuses.health[StatusColumn.counts][ScoreColumn.warning]++
     } else if (!desired && available === 0) {
-      appStatuses.health[ApplicationStatus.danger]++
+      appStatuses.health[StatusColumn.counts][ScoreColumn.danger]++
     } else {
-      appStatuses.health[ApplicationStatus.healthy]++
-      appStatuses.synced[ApplicationStatus.healthy]++
+      appStatuses.health[StatusColumn.counts][ScoreColumn.healthy]++
+      appStatuses.synced[StatusColumn.counts][ScoreColumn.healthy]++
     }
+    extractMessages(appStatuses.synced, app)
   })
 
   // compute pod statuses

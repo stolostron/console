@@ -119,7 +119,7 @@ export const mockApplication0: Application & IUIResource = {
     appSetRelatedResources: ['', []],
     clusterList: ['local-cluster'],
     appSetApps: [] as string[],
-    appClusterStatuses: {} as ApplicationStatusMap,
+    appClusterStatuses: [] as ApplicationStatusMap[],
   },
 }
 
@@ -441,7 +441,7 @@ export const mockArgoApplication1: ArgoApplication & IUIResource = {
     clusterList: ['None'],
     appSetRelatedResources: ['', []],
     appSetApps: [] as string[],
-    appClusterStatuses: {} as ApplicationStatusMap,
+    appClusterStatuses: [] as ApplicationStatusMap[],
   },
 }
 export const mockArgoApplication2: ArgoApplication = {
