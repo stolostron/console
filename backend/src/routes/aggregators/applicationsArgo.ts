@@ -140,7 +140,7 @@ export function cacheArgoApplications(applicationCache: ApplicationCacheType, se
   const hubClusterName = getHubClusterName()
   const clusters: Cluster[] = getClusters()
   const localCluster = clusters.find((cls) => cls.name === hubClusterName)
-  const remoteArgoApps = searchResult.items
+  const remoteArgoApps = searchResult.items.filter((app) => app.cluster !== hubClusterName)
   const argoStatusMap = createArgoStatusMap(searchResult)
   // should be rarely used, argo apps are usually created by appsets
   if (applicationCache['localArgoApps']?.resourceUidMap) {
