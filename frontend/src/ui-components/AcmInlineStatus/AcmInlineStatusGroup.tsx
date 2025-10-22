@@ -36,12 +36,20 @@ export function AcmInlineStatusGroup(props: AcmInlineStatusGroupProps) {
     return (
       <div style={{ width: '26.75rem' }}>
         {messages &&
-          messages.map((message) => (
-            <div key={message.key}>
-              <div>{message.key}</div>
-              <div>{message.value}</div>
-            </div>
-          ))}
+          messages.map((message) => {
+            // Remove leading underscore and "condition" from the key
+            let cleanedKey = message.key.replace(/^_/, '').replace(/^condition/i, '')
+            // Add space before each capitalized letter
+            cleanedKey = cleanedKey.replace(/([A-Z])/g, ' $1')
+            // Capitalize the first letter and trim any leading space
+            cleanedKey = cleanedKey.charAt(0).toUpperCase() + cleanedKey.slice(1)
+            cleanedKey = cleanedKey.trim()
+            return (
+              <div key={message.key} style={{ marginBottom: '0.5rem' }}>
+                <strong>{cleanedKey}:</strong> {message.value}
+              </div>
+            )
+          })}
       </div>
     )
   }
@@ -106,7 +114,9 @@ export function AcmInlineStatusGroup(props: AcmInlineStatusGroupProps) {
         flipBehavior={['left', 'left-end', 'left-end']}
         hasAutoWidth
       >
-        <div>{renderInlineStatusGroup()}</div>
+        <Label style={{ width: 'fit-content' }} isOverflowLabel>
+          {renderInlineStatusGroup()}
+        </Label>
       </Popover>
     )
   } else {
