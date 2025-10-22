@@ -141,8 +141,6 @@ function isFluxApplication(label: string) {
 //////////////////////////////////////////////////////////////////
 ////////////// COMPUTE STATUSES /////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
-const argoAppHealthyStatus = 'Healthy' //green
-const argoAppDegradedStatus = 'Degraded' //red
 const resErrorStates = [
   'err',
   'off',
@@ -157,16 +155,20 @@ const resWarningStates = ['pending', 'creating', 'terminating']
 
 export function computeAppHealthStatus(health: ApplicationStatusEntry, app: ISearchResource) {
   switch (app.healthStatus) {
-    case argoAppHealthyStatus:
+    case 'Healthy':
       health[StatusColumn.counts][ScoreColumn.healthy]++
       break
-    case argoAppDegradedStatus:
+    case 'Degraded':
       health[StatusColumn.counts][ScoreColumn.danger]++
-      extractMessages(health, app)
+      extractMessages(health, app, app.healthStatus)
+      break
+    case 'Progressing':
+      health[StatusColumn.counts][ScoreColumn.progress]++
+      extractMessages(health, app, app.healthStatus)
       break
     default:
       health[StatusColumn.counts][ScoreColumn.warning]++
-      extractMessages(health, app)
+      extractMessages(health, app, app.healthStatus)
       break
   }
 }
@@ -178,15 +180,15 @@ export function computeAppSyncStatus(synced: ApplicationStatusEntry, app: ISearc
       break
     case 'OutOfSync':
       synced[StatusColumn.counts][ScoreColumn.danger]++
-      extractMessages(synced, app)
+      extractMessages(synced, app, app.syncStatus)
       break
     case 'Unknown':
       synced[StatusColumn.counts][ScoreColumn.warning]++
-      extractMessages(synced, app)
+      extractMessages(synced, app, app.syncStatus)
       break
     default:
       synced[StatusColumn.counts][ScoreColumn.danger]++
-      extractMessages(synced, app)
+      extractMessages(synced, app, app.syncStatus)
       break
   }
 }
@@ -238,6 +240,7 @@ export function computePodStatuses(
         }
       } else {
         appStatuses.deployed[StatusColumn.counts][ScoreColumn.danger]++
+        appStatuses.deployed[StatusColumn.messages].push({ key: 'Status', value: 'Missing' })
       }
     }
   })
@@ -251,7 +254,7 @@ export function computepDeployedStatus(deployed: ApplicationStatusEntry, items: 
       const desired = Number(item.desired ?? 0)
 
       if (available === desired) {
-        // nothing
+        // nothing--drop through to success
       } else if (available < desired) {
         deployed[StatusColumn.counts][ScoreColumn.progress]++
         extractMessages(deployed, item)
@@ -275,10 +278,10 @@ function computePodStatus(deployed: ApplicationStatusEntry, pods: ISearchResourc
     const status = pod.status.toLocaleLowerCase()
     if (resErrorStates.includes(status)) {
       deployed[StatusColumn.counts][ScoreColumn.danger]++
-      extractMessages(deployed, pod)
+      extractMessages(deployed, pod, status)
     } else if (resWarningStates.includes(status)) {
       deployed[StatusColumn.counts][ScoreColumn.warning]++
-      extractMessages(deployed, pod)
+      extractMessages(deployed, pod, status)
     }
     deployed[StatusColumn.counts][ScoreColumn.healthy]++
   })
@@ -321,7 +324,10 @@ function getAppStatusScore(clusters: string[], statuses: ApplicationStatusMap, i
   return score
 }
 
-export function extractMessages(ase: ApplicationStatusEntry, app: ISearchResource) {
+export function extractMessages(ase: ApplicationStatusEntry, app: ISearchResource, status?: string) {
+  if (status) {
+    ase[StatusColumn.messages].push({ key: 'Status', value: status })
+  }
   Object.entries(app).forEach((entry: [string, string]) => {
     if (entry[0].startsWith('_') && (entry[0].includes('condition') || entry[0].includes('missing'))) {
       ase[StatusColumn.messages].push({ key: entry[0], value: entry[1] })

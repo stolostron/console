@@ -110,8 +110,8 @@ export function AcmInlineStatusGroup(props: AcmInlineStatusGroupProps) {
       <Popover
         id={'labels-popover'}
         bodyContent={renderPopoverContent()}
-        position={PopoverPosition.left}
-        flipBehavior={['left', 'left-end', 'left-end']}
+        position={PopoverPosition.bottom}
+        flipBehavior={['bottom', 'bottom-end', 'bottom-end']}
         hasAutoWidth
       >
         <Label style={{ width: 'fit-content' }} isOverflowLabel>
