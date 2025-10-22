@@ -317,8 +317,8 @@ export function createOCPStatusMap(ocpApps: ISearchResource[], relatedResources:
       }
     }
     app2AppsetMap[app._uid] = appStatuses
-    const available = Number(app.available) ?? 0
-    const desired = Number(app.desired) ?? 0
+    const available = Number(app.available)
+    const desired = Number(app.desired)
     if (available === desired) {
       appStatuses.health[StatusColumn.counts][ScoreColumn.healthy]++
       appStatuses.synced[StatusColumn.counts][ScoreColumn.healthy]++

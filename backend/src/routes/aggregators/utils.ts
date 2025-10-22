@@ -231,7 +231,7 @@ export function computePodStatuses(
             } else {
               const replicaSet = replicaSetMap.get(appUid)?.[0]
               if (replicaSet) {
-                appStatuses.deployed[StatusColumn.counts][ScoreColumn.warning] += Number(replicaSet.desired) ?? 0
+                appStatuses.deployed[StatusColumn.counts][ScoreColumn.warning] += Number(replicaSet.desired)
               } else {
                 appStatuses.deployed[StatusColumn.counts] = [0, 0, 0, 0]
               }
