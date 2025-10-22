@@ -94,6 +94,7 @@ export enum NavigationPath {
   clusterSettings = '/multicloud/infrastructure/clusters/details/:namespace/:name/settings',
   clusterMachinePools = '/multicloud/infrastructure/clusters/details/:namespace/:name/machinepools',
   clusterNodes = '/multicloud/infrastructure/clusters/details/:namespace/:name/nodes',
+  clusterRoleAssignments = '/multicloud/infrastructure/clusters/details/:namespace/:name/role-assignments',
   importCluster = '/multicloud/infrastructure/clusters/import',
   importCommand = '/multicloud/infrastructure/clusters/import/:clusterName',
 

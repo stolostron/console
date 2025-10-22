@@ -417,16 +417,6 @@ describe('useRoleAssignmentFormData', () => {
       expect(result.current.roleAssignmentFormData.roles).toEqual(['admin', 'view'])
     })
 
-    it('should handle preselected cluster sets', () => {
-      const preselected: RoleAssignmentPreselected = {
-        cluterSets: ['cluster-set-1', 'cluster-set-2'],
-      }
-
-      const { result } = renderHook(() => useRoleAssignmentFormData(preselected))
-
-      expect(result.current.roleAssignmentFormData).toBeDefined()
-    })
-
     it('should handle complete preselected data', () => {
       const preselected: RoleAssignmentPreselected = {
         subject: {
@@ -434,7 +424,7 @@ describe('useRoleAssignmentFormData', () => {
           value: 'test-user',
         },
         roles: ['admin', 'view'],
-        cluterSets: ['cluster-set-1'],
+        clusterNames: ['cluster-1'],
       }
 
       const { result } = renderHook(() => useRoleAssignmentFormData(preselected))
@@ -442,6 +432,7 @@ describe('useRoleAssignmentFormData', () => {
       expect(result.current.roleAssignmentFormData.subject.kind).toBe(UserKind)
       expect(result.current.roleAssignmentFormData.subject.user).toEqual(['test-user'])
       expect(result.current.roleAssignmentFormData.roles).toEqual(['admin', 'view'])
+      expect(result.current.roleAssignmentFormData.scope.clusterNames).toEqual(['cluster-1'])
     })
 
     it('should handle undefined preselected data', () => {
