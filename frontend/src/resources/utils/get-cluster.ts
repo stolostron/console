@@ -1382,7 +1382,7 @@ export function getClusterStatus(
       // other valid states when resuming/hibernating
       if (
         unreachableError &&
-        ![(ClusterStatus.hibernating, ClusterStatus.stopping, ClusterStatus.resuming)].includes(cdStatus)
+        ![ClusterStatus.hibernating, ClusterStatus.stopping, ClusterStatus.resuming].includes(cdStatus)
       ) {
         cdStatus = ClusterStatus.unreachable
         statusMessage = getConditionMessage('Unreachable', cdConditions)
