@@ -279,11 +279,11 @@ export const getApplicationRepos = (resource: IResource, subscriptions: Subscrip
 
       // multiple sources handling(fallback for details page when search data is incomplete)
       if (castType.spec.sources) {
-        castType.spec.sources.forEach((source) => {
+        for (const source of castType.spec.sources) {
           if (source.repoURL) {
             appRepos.push(createRepoFromArgoSource(source))
           }
-        })
+        }
       }
       return appRepos
     } else if (resource.kind === ApplicationSetKind) {
@@ -297,9 +297,9 @@ export const getApplicationRepos = (resource: IResource, subscriptions: Subscrip
 
       // multiple sources handling
       if (castType.spec.template?.spec?.sources) {
-        castType.spec.template.spec.sources.forEach((source) => {
+        for (const source of castType.spec.template.spec.sources) {
           appRepos.push(createRepoFromArgoSource(source))
-        })
+        }
       }
       return appRepos
     }
