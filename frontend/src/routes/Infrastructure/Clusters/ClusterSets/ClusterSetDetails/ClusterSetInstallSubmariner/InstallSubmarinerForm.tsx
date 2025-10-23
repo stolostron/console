@@ -109,8 +109,10 @@ export function InstallSubmarinerFormPage() {
       >
         <PageSection variant="light" isFilled>
           <AcmEmptyState
-            title={t('submariner.clusters.empty.title')}
-            message={<Trans i18nKey="submariner.clusters.empty.message" components={{ bold: <strong />, p: <p /> }} />}
+            title={t('No available clusters yet')}
+            message={t(
+              'All clusters in the cluster set already have the Submariner add-on installed. To get started, add more clusters to this cluster set.'
+            )}
             action={
               <>
                 <RbacButton

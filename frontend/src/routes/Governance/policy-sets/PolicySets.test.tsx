@@ -27,7 +27,7 @@ describe('PolicySets Page', () => {
       </RecoilRoot>
     )
 
-    await waitForText("You don't have any policy sets")
+    await waitForText("You don't have any policy sets yet")
   })
 
   test('renders page with filters and policy sets', async () => {

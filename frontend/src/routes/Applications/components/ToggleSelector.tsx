@@ -10,7 +10,6 @@ import { ApplicationDefinition, IResource } from '../../../resources'
 import { DeleteResourceModal, IDeleteResourceModalProps } from './DeleteResourceModal'
 import { NavigationPath } from '../../../NavigationPath'
 import { rbacCreate, useIsAnyNamespaceAuthorized } from '../../../lib/rbac-util'
-import { Trans } from '../../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../lib/doc-util'
 
 export interface IToggleSelectorProps<T = any> {
@@ -26,7 +25,7 @@ export function ToggleSelector(props: IToggleSelectorProps) {
   const t = props.t
   const defaultOption = props.defaultToggleOption ?? 'subscriptions'
   const options = [
-    { id: 'subscriptions', title: t('Subscriptions'), emptyMessage: t("You don't have any subscriptions") },
+    { id: 'subscriptions', title: t('Subscriptions'), emptyMessage: t("You don't have any subscriptions yet") },
     { id: 'channels', title: t('Channels'), emptyMessage: t("You don't have any channels") },
     { id: 'placements', title: t('Placements'), emptyMessage: t("You don't have any placements") },
     { id: 'placementrules', title: t('Placement rules'), emptyMessage: t("You don't have any placement rules") },
@@ -57,14 +56,7 @@ export function ToggleSelector(props: IToggleSelectorProps) {
         rowActionResolver={selectedResources.rowActionResolver}
         emptyState={
           <AcmEmptyState
-            message={
-              selectedId === 'subscriptions' ? (
-                <Trans
-                  i18nKey="advancedConfiguration.empty.subtitle"
-                  components={{ italic: <em />, bold: <strong /> }}
-                />
-              ) : null
-            }
+            message={selectedId === 'subscriptions' ? t('To get started, create an application.') : null}
             title={options.find((option) => option.id === selectedId)?.emptyMessage || ''}
             action={
               <Stack>

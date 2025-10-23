@@ -2014,7 +2014,7 @@ describe('Global ClusterSetDetails page', () => {
     await waitForText(mockGlobalManagedClusterSet.metadata.name!, true)
     await clickByText('User management', 0)
     await waitForNocks([nock])
-    await clickByText('Add user or group', 1)
+    await clickByText('Add user or group')
     await waitForText(
       'Adding a user or group will grant access permissions to the cluster set and all of its associated clusters. These permissions can be revoked at any time.'
     )
