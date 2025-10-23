@@ -294,6 +294,28 @@ export function renderApplicationStatusGroup(resource: IResource, type: 'health'
   return '-'
 }
 
+export function exportApplicationStatusGroup(resource: IResource, type: 'health' | 'synced' | 'deployed') {
+  const { counts, messages } = getApplicationStatuses(resource, type)
+  if (counts.some((count) => count > 0)) {
+    const statuses: string[] = []
+    if (counts[0] > 0) {
+      let label = ''
+      if (type === 'health') {
+        label = 'Healthy'
+      } else if (type === 'synced') {
+        label = 'Synced'
+      } else if (type === 'deployed') {
+        label = 'Deployed'
+      }
+      statuses.push(`${counts[0]} ${label}`)
+    }
+    if (Array.isArray(messages) && messages?.length && (counts[1] > 0 || counts[2] > 0 || counts[3] > 0)) {
+      statuses.push(`${messages[0].value}`)
+    }
+    return statuses.join(', ')
+  }
+  return '-'
+}
 export const getApplicationRepos = (resource: IResource, subscriptions: Subscription[], channels: Channel[]) => {
   let castType
   if (resource.apiVersion === ApplicationApiVersion) {
@@ -616,14 +638,7 @@ export default function ApplicationsOverview() {
           return get(itemB, 'transformed.healthScore') - get(itemA, 'transformed.healthScore')
         },
         exportContent: (resource) => {
-          const { counts } = getApplicationStatuses(resource, 'health')
-          const statuses = [
-            { label: '', value: counts[0] },
-            { label: 'Progress', value: counts[1] },
-            { label: 'Warning', value: counts[2] },
-            { label: 'Danger', value: counts[3] },
-          ].filter((s) => s.value && s.value > 0)
-          return `Health: ${statuses.length > 0 ? statuses.map((s) => `${s.label}: ${s.value}`).join(' ') : '-'}`
+          return exportApplicationStatusGroup(resource, 'health')
         },
       },
       {
@@ -636,14 +651,7 @@ export default function ApplicationsOverview() {
           return get(itemB, 'transformed.syncedScore') - get(itemA, 'transformed.syncedScore')
         },
         exportContent: (resource) => {
-          const { counts } = getApplicationStatuses(resource, 'synced')
-          const statuses = [
-            { label: '', value: counts[0] },
-            { label: 'Progress', value: counts[1] },
-            { label: 'Warning', value: counts[2] },
-            { label: 'Danger', value: counts[3] },
-          ].filter((s) => s.value && s.value > 0)
-          return `Synced: ${statuses.length > 0 ? statuses.map((s) => `${s.label}: ${s.value}`).join(' ') : '-'}`
+          return exportApplicationStatusGroup(resource, 'synced')
         },
       },
       {
@@ -656,14 +664,7 @@ export default function ApplicationsOverview() {
           return get(itemB, 'transformed.deployedScore') - get(itemA, 'transformed.deployedScore')
         },
         exportContent: (resource) => {
-          const { counts } = getApplicationStatuses(resource, 'deployed')
-          const statuses = [
-            { label: '', value: counts[0] },
-            { label: 'Progress', value: counts[1] },
-            { label: 'Warning', value: counts[2] },
-            { label: 'Danger', value: counts[3] },
-          ].filter((s) => s.value && s.value > 0)
-          return `Deployed: ${statuses.length > 0 ? statuses.map((s) => `${s.label}: ${s.value}`).join(' ') : '-'}`
+          return exportApplicationStatusGroup(resource, 'deployed')
         },
       },
       ...extensionColumns,
