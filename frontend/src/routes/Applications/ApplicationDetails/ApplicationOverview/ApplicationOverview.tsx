@@ -26,6 +26,7 @@ import {
   ApplicationKind,
   ApplicationSet,
   ApplicationSetDefinition,
+  ArgoApplication,
   ArgoApplicationDefinition,
   Channel,
   IResource,
@@ -570,66 +571,7 @@ function createSourceCards(
   subscriptions: Subscription[],
   channels: Channel[]
 ) {
-  let appRepos = getApplicationRepos(application, subscriptions, channels)
-
-  // if no repository info found (empty due to incomplete search data),
-  // try to extract directly from the resource for the details page
-  if (!appRepos || appRepos.length === 0) {
-    const isArgoApp = application.kind === ArgoApplicationKind
-    const isAppSet = application.kind === ApplicationSetKind
-
-    // for ArgoApplication: spec.source or spec.sources
-    // for ApplicationSet: spec.template.spec.source or spec.template.spec.sources
-    if (isArgoApp) {
-      const argoApp = application as ArgoApplication
-      if (argoApp.spec.source) {
-        appRepos = [
-          {
-            type: argoApp.spec.source.chart ? 'helmrepo' : 'git',
-            pathName: argoApp.spec.source.repoURL,
-            gitPath: argoApp.spec.source.path,
-            chart: argoApp.spec.source.chart,
-            targetRevision: argoApp.spec.source.targetRevision,
-          },
-        ]
-      } else if (argoApp.spec.sources) {
-        appRepos = []
-        argoApp.spec.sources.forEach((source) => {
-          appRepos!.push({
-            type: source.chart ? 'helmrepo' : 'git',
-            pathName: source.repoURL,
-            gitPath: source.path,
-            chart: source.chart,
-            targetRevision: source.targetRevision,
-          })
-        })
-      }
-    } else if (isAppSet) {
-      const appSet = application as ApplicationSet
-      if (appSet.spec.template?.spec?.source) {
-        appRepos = [
-          {
-            type: appSet.spec.template.spec.source.chart ? 'helmrepo' : 'git',
-            pathName: appSet.spec.template.spec.source.repoURL,
-            gitPath: appSet.spec.template.spec.source.path,
-            chart: appSet.spec.template.spec.source.chart,
-            targetRevision: appSet.spec.template.spec.source.targetRevision,
-          },
-        ]
-      } else if (appSet.spec.template?.spec?.sources) {
-        appRepos = []
-        appSet.spec.template.spec.sources.forEach((source) => {
-          appRepos!.push({
-            type: source.chart ? 'helmrepo' : 'git',
-            pathName: source.repoURL,
-            gitPath: source.path,
-            chart: source.chart,
-            targetRevision: source.targetRevision,
-          })
-        })
-      }
-    }
-  }
+  const appRepos = getApplicationRepos(application, subscriptions, channels)
 
   return appRepos?.map((appRepo) => {
     if (appRepo) {
