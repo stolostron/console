@@ -36,7 +36,7 @@ import {
 } from './utils'
 import { deflateResource } from '../../lib/compression'
 import { IWatchOptions } from '../../resources/watch-options'
-import { computeAppHealthStatus, computeAppSyncStatus, computePodStatuses } from './utils'
+import { computeAppHealthStatus, computeAppSyncStatus } from './utils'
 
 interface IArgoAppLocalResource extends IResource {
   spec: {

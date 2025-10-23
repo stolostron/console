@@ -6,13 +6,11 @@ import {
   AppColumns,
   ApplicationCacheType,
   ApplicationClusterStatusMap,
-  StatusColumn,
-  ScoreColumn,
   ApplicationStatuses,
   IQuery,
   SEARCH_QUERY_LIMIT,
 } from './applications'
-import { computePodStatuses, extractMessages } from './utils'
+import { computePodStatuses } from './utils'
 import {
   transform,
   getClusterMap,
