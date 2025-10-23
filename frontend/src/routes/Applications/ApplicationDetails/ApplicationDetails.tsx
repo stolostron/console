@@ -54,10 +54,10 @@ import { useSearchCompleteQuery } from '../../Search/search-sdk/search-sdk'
 import { DeleteResourceModal, IDeleteResourceModalProps } from '../components/DeleteResourceModal'
 import { getAppChildResources, getSearchLink, isResourceTypeOf } from '../helpers/resource-helper'
 import { getApplication } from './ApplicationTopology/model/application'
-import { getResourceStatuses } from './ApplicationTopology/model/resourceStatuses'
 import { getTopology } from './ApplicationTopology/model/topology'
-import { getApplicationData } from './ApplicationTopology/model/utils'
+import { getApplicationData } from './ApplicationTopology/model/topologyUtils'
 import { useLocalHubName } from '../../../hooks/use-local-hub'
+import { getResourceStatuses } from './ApplicationTopology/model/computeStatuses'
 
 export const ApplicationContext = createContext<{
   readonly actions: null | ReactNode
@@ -132,7 +132,7 @@ export default function ApplicationDetailsPage() {
 
   const [waitForApplication, setWaitForApplication] = useState<boolean>(true)
   const [applicationNotFound, setApplicationNotFound] = useState<boolean>(false)
-  const [activeChannel, setActiveChannel] = useState<string>()
+  const [activeChannel, setActiveChannel] = useState<string | undefined>()
   const [allChannels, setAllChannels] = useState<string[]>([])
   const [applicationData, setApplicationData] = useState<ApplicationDataType>()
   const [modalProps, setModalProps] = useState<IDeleteResourceModalProps | { open: false }>({
@@ -420,8 +420,8 @@ export default function ApplicationDetailsPage() {
                 topology,
                 appData,
               })
-              setActiveChannel(application ? application.activeChannel : '')
-              setAllChannels(application ? application.channels : [])
+              setActiveChannel(application.activeChannel)
+              setAllChannels(application && application.channels ? application.channels : [])
             }
 
             // from then on, only refresh topology with new statuses
@@ -442,7 +442,7 @@ export default function ApplicationDetailsPage() {
               statuses: resourceStatuses,
             })
             setActiveChannel(application.activeChannel)
-            setAllChannels(application.channels)
+            setAllChannels(application?.channels ?? [])
             lastRefreshRef.current = { application, resourceStatuses, relatedResources }
           }
         })()

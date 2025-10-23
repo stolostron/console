@@ -65,6 +65,7 @@ export const DOC_LINKS = {
   HYPERSHIFT_MANAGE_KUBEVIRT: `${OCP_DOC_BASE_PATH}/hosted_control_planes/hosted-control-planes-overview#deploying-hosted-control-planes-on-openshift-virtualization`,
   HOSTED_ENABLE_FEATURE_AWS: `${OCP_DOC_BASE_PATH}/hosted_control_planes/hosted-control-planes-overview#hcp-enable-manual_hcp-enable-disable`,
   HYPERSHIFT_OIDC: `${OCP_DOC_BASE_PATH}/hosted_control_planes/hosted-control-planes-overview#hcp-aws-prereqs_hcp-deploy-aws`,
+  IDENTITY_PROVIDER_CONFIGURATION: `${OCP_DOC_BASE_PATH}/authentication_and_authorization/understanding-identity-provider#understanding-identity-provider`,
   // Virtualization
   VM_SNAPSHOT: `${OCP_DOC_BASE_PATH}/storage/using-container-storage-interface-csi#persistent-storage-csi-snapshots`,
   // AI doc links

@@ -209,10 +209,14 @@ export default function ClusterDetailsPage() {
     ]
   )
 
+  const { isFineGrainedRbacEnabledState } = useSharedAtoms()
+  const isFineGrainedRbacEnabled = useRecoilValue(isFineGrainedRbacEnabledState)
+
   const isClusterOverview = !!useMatch(NavigationPath.clusterOverview)
   const isClusterNodes = !!useMatch(NavigationPath.clusterNodes)
   const isClusterMachinePools = !!useMatch(NavigationPath.clusterMachinePools)
   const isClusterSettings = !!useMatch(NavigationPath.clusterSettings)
+  const isClusterRoleAssignments = !!useMatch(NavigationPath.clusterRoleAssignments)
 
   if (
     (prevCluster?.isHive && prevCluster?.status === ClusterStatus.destroying) ||
@@ -310,6 +314,13 @@ export default function ClusterDetailsPage() {
               <AcmSecondaryNavItem isActive={isClusterSettings}>
                 <Link to={generatePath(NavigationPath.clusterSettings, { name, namespace })}>{t('tab.addons')}</Link>
               </AcmSecondaryNavItem>
+              {isFineGrainedRbacEnabled && (
+                <AcmSecondaryNavItem isActive={isClusterRoleAssignments}>
+                  <Link to={generatePath(NavigationPath.clusterRoleAssignments, { name, namespace })}>
+                    {t('Role Assignments')}
+                  </Link>
+                </AcmSecondaryNavItem>
+              )}
             </AcmSecondaryNav>
           }
           actions={<AcmActionGroup>{clusterActionGroupChildren}</AcmActionGroup>}

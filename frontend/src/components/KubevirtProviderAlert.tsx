@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useMemo } from 'react'
-import { useFleetSearchPoll } from '@stolostron/multicluster-sdk'
+import { useSearchResultRelatedCountQuery } from '../routes/Search/search-sdk/search-sdk'
+import { searchClient } from '../routes/Search/search-sdk/search-client'
 import { useSharedSelectors } from '../shared-recoil'
 import { useTranslation } from '../lib/acm-i18next'
 import { OperatorAlert } from './OperatorAlert'
@@ -23,6 +24,7 @@ export interface KubevirtProviderAlertProps {
   variant: 'search' | 'clusterDetails'
   className?: string
   useLabelAlert?: boolean
+  hideAlertWhenNoVMsExists?: boolean
 }
 
 /**
@@ -41,41 +43,41 @@ function isVersionLessThan420(version?: string): boolean {
  * @returns Object containing the count of clusters with VMs and loading state
  */
 function useClustersWithVirtualMachines() {
-  // Search for VirtualMachine resources across all clusters
-  const [virtualMachines, loaded, vmSearchError] = useFleetSearchPoll(
-    {
-      groupVersionKind: {
-        group: 'kubevirt.io',
-        version: 'v1',
-        kind: 'VirtualMachine',
-      },
-      isList: true,
+  // Search for VirtualMachine resources and get related cluster count
+  const { data, loading, error } = useSearchResultRelatedCountQuery({
+    client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
+    variables: {
+      input: [
+        {
+          filters: [
+            {
+              property: 'kind',
+              values: ['virtualmachine'],
+            },
+          ],
+          relatedKinds: ['cluster'],
+        },
+      ],
     },
-    undefined, // No cluster filter - search all clusters
-    120 // Poll every 120 seconds
-  )
+    pollInterval: 120000, // Poll every 120 seconds
+  })
 
   const clustersWithVMsCount = useMemo(() => {
     // Don't show positive result if there's an error searching
-    if (vmSearchError || !Array.isArray(virtualMachines)) {
+    if (error || !data?.searchResult?.[0]?.related) {
       return 0
     }
 
-    // Extract unique cluster names from VirtualMachine resources
-    const uniqueClusters = new Set<string>()
-    virtualMachines.forEach((vm: any) => {
-      if (vm?.cluster) {
-        uniqueClusters.add(vm.cluster)
-      }
-    })
+    // Find the cluster count from related resources
+    const clusterRelated = data.searchResult[0].related.find((related) => related?.kind?.toLowerCase() === 'cluster')
 
-    return uniqueClusters.size
-  }, [virtualMachines, vmSearchError])
+    return clusterRelated?.count || 0
+  }, [data, error])
 
   return {
     clustersWithVMsCount,
-    isLoading: !loaded,
-    error: vmSearchError,
+    isLoading: loading,
+    error,
   }
 }
 
@@ -86,6 +88,7 @@ export function KubevirtProviderAlert(
     description?: string
     variant: 'search' | 'clusterDetails'
     useLabelAlert?: boolean
+    hideAlertWhenNoVMsExists?: boolean
   }>
 ) {
   const { kubevirtOperatorSubscriptionsValue } = useSharedSelectors()
@@ -110,10 +113,11 @@ export function KubevirtProviderAlert(
     return isVersionLessThan420(version)
   }, [allClusters, localHubName, clusterVersionFromAPI, isClusterVersionLoading])
 
-  const { component, className, variant } = props
+  const { component, className, hideAlertWhenNoVMsExists, variant } = props
   const multiClusterHubConsoleUrl = useMultiClusterHubConsoleUrl()
 
-  const showInstallPrompt = !kubevirtOperator.installed
+  const hideAlert = hideAlertWhenNoVMsExists && clustersWithVMsCount === 0
+  const showInstallPrompt = !kubevirtOperator.installed && !hideAlert
 
   const { t } = useTranslation()
 
@@ -158,23 +162,30 @@ export function KubevirtProviderAlert(
   const getActionLinks = () => {
     if (!variant) return undefined
 
-    const primaryLink = isHubVersionLessThan420 ? (
-      <Link to="/settings/cluster/" target="_blank">
-        <Button variant="link" isInline>
-          {t('Upgrade hub cluster')}
-        </Button>
-      </Link>
-    ) : multiClusterHubConsoleUrl ? (
-      <Link to={multiClusterHubConsoleUrl} target="_blank">
-        <Button variant="link" isInline>
-          {t('Edit MultiClusterHub')}
-        </Button>
-      </Link>
-    ) : (
-      <Tooltip content={t('rbac.unauthorized')}>
-        <span className="link-disabled">{t('Edit MultiClusterHub')}</span>
-      </Tooltip>
-    )
+    let primaryLink
+    if (isHubVersionLessThan420) {
+      primaryLink = (
+        <Link to="/settings/cluster/" target="_blank">
+          <Button variant="link" isInline>
+            {t('Upgrade hub cluster')}
+          </Button>
+        </Link>
+      )
+    } else if (multiClusterHubConsoleUrl) {
+      primaryLink = (
+        <Link to={multiClusterHubConsoleUrl} target="_blank">
+          <Button variant="link" isInline>
+            {t('Edit MultiClusterHub')}
+          </Button>
+        </Link>
+      )
+    } else {
+      primaryLink = (
+        <Tooltip content={t('rbac.unauthorized')}>
+          <span className="link-disabled">{t('Edit MultiClusterHub')}</span>
+        </Tooltip>
+      )
+    }
 
     return (
       <AcmActionGroup>
@@ -215,7 +226,7 @@ export function KubevirtProviderAlert(
           isDisabled={!multiClusterHubConsoleUrl}
           onClick={() => window.open(multiClusterHubConsoleUrl ?? '', '_blank')}
           style={{ marginRight: '0.5em' }}
-          tooltip={!multiClusterHubConsoleUrl ? t('rbac.unauthorized') : undefined}
+          tooltip={multiClusterHubConsoleUrl ? undefined : t('rbac.unauthorized')}
         >
           {t('Edit MultiClusterHub')}
         </AcmButton>
@@ -234,12 +245,12 @@ export function KubevirtProviderAlert(
     )
 
     return (
-      <div
+      <button
+        type="button"
         onClick={(e) => e.stopPropagation()}
-        role="button"
-        tabIndex={0}
         onKeyDown={(e) => e.stopPropagation()}
         aria-label="Alert"
+        style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
       >
         <Popover
           aria-label="Operator recommendation"
@@ -253,13 +264,13 @@ export function KubevirtProviderAlert(
               {popoverActionLinks}
             </div>
           }
-          minWidth="30em"
+          maxWidth="35em"
         >
           <Label color="blue" icon={<InfoCircleIcon />} isCompact>
             {t('Operator recommended')}
           </Label>
         </Popover>
-      </div>
+      </button>
     )
   }
 

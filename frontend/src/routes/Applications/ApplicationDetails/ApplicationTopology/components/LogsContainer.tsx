@@ -3,7 +3,6 @@
 import { PageSection, SelectOption } from '@patternfly/react-core'
 import { AcmAlert, AcmLoadingPage, AcmLogWindow, AcmSelect } from '../../../../../ui-components'
 import { TFunction } from 'react-i18next'
-import _ from 'lodash'
 import { ReactNode, useEffect, useState } from 'react'
 import { fetchRetry, getBackendUrl } from '../../../../../resources/utils'
 import { createResourceURL } from '../helpers/diagram-helpers'
@@ -11,7 +10,7 @@ import './LogsContainer.css'
 import { useLocalHubName } from '../../../../../hooks/use-local-hub'
 
 export interface ILogsContainerProps {
-  node: any[]
+  node: any
   t: TFunction
   renderResourceURLLink: (data: any, t: TFunction, isPod: boolean) => ReactNode
 }
@@ -19,7 +18,7 @@ export interface ILogsContainerProps {
 export function LogsContainer(props: ILogsContainerProps) {
   let resourceError = ''
   const t = props.t
-  const podModel = _.get(props.node, 'specs.podModel')
+  const podModel = (props.node as any)?.specs?.podModel
   const pods = podModel && Object.keys(podModel).length > 0 ? podModel[Object.keys(podModel)[0]] : []
   const localHubName = useLocalHubName()
 

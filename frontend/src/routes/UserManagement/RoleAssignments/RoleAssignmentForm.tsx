@@ -17,6 +17,7 @@ import { RoleAssignmentFormDataType, useRoleAssignmentFormData } from './hook/Ro
 import { RoleAssignmentPreselected } from './model/role-assignment-preselected'
 import schema from './schema.json'
 import { LoadingState } from '@openshift-assisted/ui-lib/common'
+import { Checkbox } from '@patternfly/react-core'
 
 type RoleAssignmentFormProps = {
   onCancel: () => void
@@ -197,8 +198,8 @@ const RoleAssignmentForm = ({
               { id: `all`, value: 'all', text: t('Global role (all clusters and namespaces)') },
               { id: `specific`, value: 'specific', text: t('Select specific') },
             ],
-            isRequired: preselected?.cluterSets === undefined || preselected?.cluterSets?.length === 0,
-            isHidden: preselected?.cluterSets?.length,
+            isRequired: preselected?.clusterNames === undefined || preselected?.clusterNames?.length === 0,
+            isHidden: preselected?.clusterNames?.length,
           },
           {
             id: `clusters`,
@@ -211,8 +212,8 @@ const RoleAssignmentForm = ({
             ) : (
               <ClustersDualListSelector onChoseOptions={onChoseOptions} clusterSets={roleAssignmentData.clusterSets} />
             ),
-            isRequired: preselected?.cluterSets === undefined || preselected?.cluterSets?.length === 0,
-            isHidden: roleAssignmentFormData.scope.kind === 'all',
+            isRequired: preselected?.clusterNames === undefined || preselected?.clusterNames?.length === 0,
+            isHidden: roleAssignmentFormData.scope.kind === 'all' || preselected?.clusterNames?.length,
             validation: (clusters: string[]) =>
               clusters?.length > 0 ? undefined : t('at least one cluster should be selected'),
           },
@@ -223,13 +224,28 @@ const RoleAssignmentForm = ({
             value: roleAssignmentFormData.scope.namespaces,
             onChange: onChangeScopeNamespaces,
             component: (() => {
+              const isAllNamespaces = roleAssignmentFormData.scope.namespaces === undefined
+              const handleCheckboxChange = (_event: React.FormEvent<HTMLInputElement>, checked: boolean) => {
+                onChangeScopeNamespaces(checked ? undefined : [])
+              }
               return (
-                <NamespaceSelector
-                  selectedClusters={roleAssignmentFormData.scope.clusterNames || []}
-                  clusters={roleAssignmentData.clusterSets?.flatMap((cs) => cs.clusters || []) || []}
-                  onChangeNamespaces={onChangeScopeNamespaces}
-                  selectedNamespaces={roleAssignmentFormData.scope.namespaces}
-                />
+                <div>
+                  <Checkbox
+                    id="crb"
+                    label="All namespaces"
+                    isChecked={isAllNamespaces}
+                    onChange={handleCheckboxChange}
+                  />
+                  <div style={{ marginTop: 'var(--pf-v5-global--spacer--sm)' }}>
+                    <NamespaceSelector
+                      selectedClusters={roleAssignmentFormData.scope.clusterNames || []}
+                      clusters={roleAssignmentData.clusterSets?.flatMap((cs) => cs.clusters || []) || []}
+                      onChangeNamespaces={(namespaces) => onChangeScopeNamespaces(namespaces)}
+                      selectedNamespaces={roleAssignmentFormData.scope.namespaces || []}
+                      disabled={isAllNamespaces}
+                    />
+                  </div>
+                </div>
               )
             })(),
             isRequired: false,
@@ -238,9 +254,17 @@ const RoleAssignmentForm = ({
               const noClustersHidden = !roleAssignmentFormData.scope.clusterNames?.length
               return allScopeHidden || noClustersHidden
             })(),
-            validation: (namespaces: string[]) => {
+            validation: (namespaces: string[] | undefined) => {
+              if (roleAssignmentFormData.scope.clusterNames && roleAssignmentFormData.scope.clusterNames.length > 0) {
+                const isAllNamespaces = namespaces === undefined
+                const hasSpecificNamespaces = Array.isArray(namespaces) && namespaces.length > 0
+
+                if (!isAllNamespaces && !hasSpecificNamespaces) {
+                  return t('You must either select "All namespaces" or choose specific namespaces')
+                }
+              }
               if (
-                namespaces &&
+                Array.isArray(namespaces) &&
                 namespaces.length > 0 &&
                 (!roleAssignmentFormData.scope.clusterNames || roleAssignmentFormData.scope.clusterNames.length === 0)
               ) {

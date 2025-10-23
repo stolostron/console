@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { PageSection } from '@patternfly/react-core'
 import { useTranslation } from '../lib/acm-i18next'
-import { dump } from 'js-yaml'
+import jsYaml from 'js-yaml'
 import YamlEditor from './YamlEditor'
 import { AcmLoadingPage } from '../ui-components'
 import { useYamlEditorHeight } from '../hooks/useYamlEditorHeight'
@@ -14,8 +14,7 @@ interface RBACResourceYamlProps<T> {
 
 const RBACResourceYaml = <T,>({ resource, loading, resourceType }: RBACResourceYamlProps<T>) => {
   const { t } = useTranslation()
-  const baseHeight = useYamlEditorHeight()
-  const customHeight = Math.min(baseHeight, 450)
+  const editorHeight = useYamlEditorHeight()
 
   switch (true) {
     case loading:
@@ -51,7 +50,11 @@ const RBACResourceYaml = <T,>({ resource, loading, resourceType }: RBACResourceY
 
       return (
         <PageSection>
-          <YamlEditor resourceYAML={dump(orderedResource, { indent: 2 })} readOnly={true} height={customHeight} />
+          <YamlEditor
+            resourceYAML={jsYaml.dump(orderedResource, { indent: 2 })}
+            readOnly={true}
+            height={editorHeight}
+          />
         </PageSection>
       )
     }

@@ -1,12 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { act, render } from '@testing-library/react'
-import { RecoilRoot } from 'recoil'
-import { configMapsState } from '../../../../../atoms'
-import { clickByText, waitForText } from '../../../../../lib/test-util'
-import { ConfigMap, PolicyReport } from '../../../../../resources'
-import { ClusterPolicySidebar } from './ClusterPolicySidebar'
+import { act, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
+import { RecoilRoot } from 'recoil'
+import { clickByText, waitForText } from '../../../../../lib/test-util'
+import { PolicyReport } from '../../../../../resources'
+import { ClusterPolicySidebar } from './ClusterPolicySidebar'
 
 const mockPolicyReports: PolicyReport = {
   apiVersion: 'wgpolicyk8s.io/v1alpha2',
@@ -25,6 +24,8 @@ const mockPolicyReports: PolicyReport = {
         created_at: '2021-03-02T21:26:04Z',
         total_risk: '1',
         component: 'rule.id.1',
+        reason: 'testing-reason',
+        resolution: 'testing-resolution',
       },
       message: 'policyreport testing risk 1',
       policy: 'policyreport testing risk 1 policy',
@@ -51,6 +52,8 @@ const mockPolicyReports: PolicyReport = {
         created_at: '2021-04-02T21:26:04Z',
         total_risk: '3',
         component: 'rule.id.3',
+        reason: 'testing-reason',
+        resolution: 'testing-resolution',
       },
       message: 'policyreport testing risk 3',
       policy: 'policyreport testing risk 3 policy',
@@ -64,6 +67,8 @@ const mockPolicyReports: PolicyReport = {
         created_at: '2021-03-02T21:26:04Z',
         total_risk: '4',
         component: 'rule.id.4',
+        reason: 'testing-reason',
+        resolution: 'testing-resolution',
       },
       message: 'policyreport testing risk 4',
       policy: 'policyreport testing risk 4 policy',
@@ -77,6 +82,8 @@ const mockPolicyReports: PolicyReport = {
         created_at: '2021-03-02T21:26:04Z',
         total_risk: '4',
         component: 'rule.id.4',
+        reason: 'testing-reason',
+        resolution: 'testing-resolution',
       },
       message: 'policyreport testing risk 4',
       policy: 'policyreport testing risk 4 policy',
@@ -85,26 +92,9 @@ const mockPolicyReports: PolicyReport = {
   ],
 }
 
-const mockConfigmap: ConfigMap[] = [
-  {
-    kind: 'ConfigMap',
-    apiVersion: 'v1',
-    metadata: {
-      name: 'insight-content-data',
-      namespace: 'open-cluster-management',
-    },
-    data: {
-      'policyreport testing risk 1 policy': '{"reason":"testing-reason","resolution":"testing-resolution"}',
-      'policyreport testing risk 2 policy': '{"reason":"testing-reason","resolution":"testing-resolution"}',
-      'policyreport testing risk 3 policy': '{"reason":"testing-reason","resolution":"testing-resolution"}',
-      'policyreport testing risk 4 policy': '{"reason":"testing-reason","resolution":"testing-resolution"}',
-    },
-  },
-]
-
 describe('ClusterPolicySidebar', () => {
   const Component = () => (
-    <RecoilRoot initializeState={(snapshot) => snapshot.set(configMapsState, mockConfigmap)}>
+    <RecoilRoot>
       <MemoryRouter>
         <ClusterPolicySidebar data={mockPolicyReports} />
       </MemoryRouter>
@@ -143,6 +133,12 @@ describe('ClusterPolicySidebar', () => {
       await clickByText('policyreport testing risk 2 policy: policyreport testing risk 2')
       // wait for drilldown risk subdetail component
       await waitForText('Moderate')
+
+      // check reason and resolution not present
+      expect(screen.queryByText('testing-resolution')).not.toBeInTheDocument()
+      await clickByText('Reason')
+      expect(screen.queryByText('testing-reason')).not.toBeInTheDocument()
+
       // Click back button and wait for static text
       await clickByText('Back')
 

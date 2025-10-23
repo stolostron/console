@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { MemoryRouter, Routes, Route } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../../lib/nock-util'
 import { Group } from '../../../../resources/rbac'
 import { GroupRoleAssignments } from './GroupRoleAssignments'
 import { render, screen } from '@testing-library/react'
@@ -22,22 +21,13 @@ jest.mock('../../../../lib/acm-i18next', () => ({
   }),
 }))
 
-// Mock the useQuery hook
-jest.mock('../../../../lib/useQuery', () => ({
-  useQuery: jest.fn(),
-}))
-
 // Mock the Recoil state
 jest.mock('../../../../shared-recoil', () => ({
   useRecoilValue: jest.fn(),
   useSharedAtoms: jest.fn(() => ({
-    multiclusterRoleAssignmentState: 'multiclusterRoleAssignmentState',
+    groupsState: 'groupsState',
   })),
 }))
-
-import { useQuery } from '../../../../lib/useQuery'
-
-const mockUseQuery = useQuery as jest.MockedFunction<typeof useQuery>
 
 const mockGroups: Group[] = [
   {
@@ -109,8 +99,8 @@ jest.mock('../../RoleAssignment/RoleAssignments', () => ({
     <div id="role-assignments">
       <div id="loading">{isLoading ? 'Loading' : 'Loaded'}</div>
       <div id="hidden-columns">{hiddenColumns?.join(',') || 'none'}</div>
-      <div id="assignments-count">{roleAssignments.length}</div>
-      {roleAssignments.map((roleAssignment: FlattenedRoleAssignment, index: number) => (
+      <div id="assignments-count">{roleAssignments?.length || 0}</div>
+      {roleAssignments?.map((roleAssignment: FlattenedRoleAssignment, index: number) => (
         <div key={index} id={`assignment-${index}`}>
           <div id={`assignment-subject-${index}`}>
             {roleAssignment.subject.kind}: {roleAssignment.subject.name}
@@ -138,36 +128,19 @@ function Component({ groupId = 'developers' }: { groupId?: string } = {}) {
 
 describe('GroupRoleAssignments', () => {
   beforeEach(() => {
-    nockIgnoreRBAC()
-    nockIgnoreApiPaths()
-
-    // Mock useQuery to return our mock data
-    mockUseQuery.mockReturnValue({
-      data: mockGroups,
-      loading: false,
-      error: undefined,
-      startPolling: jest.fn(),
-      stopPolling: jest.fn(),
-      refresh: jest.fn(),
-    })
-
-    // Reset mocks before each test
     ;(useRecoilValue as jest.Mock).mockClear()
   })
 
   it('renders GroupRoleAssignments component with no group found', async () => {
-    // Mock Recoil to return undefined (loading state)
-    ;(useRecoilValue as jest.Mock).mockReturnValue(undefined)
+    ;(useRecoilValue as jest.Mock).mockReturnValueOnce([]).mockReturnValueOnce([])
 
     render(<Component groupId="non-existent-group" />)
-    // The component should render without crashing
-    // Since the group is not found, it should show loading or error state
-    expect(screen.getByText('Loading')).toBeInTheDocument()
+    expect(screen.getByText('Loaded')).toBeInTheDocument()
+    expect(screen.getByText('0')).toBeInTheDocument() // No assignments
   })
 
   it('renders GroupRoleAssignments component with developers group found', async () => {
-    // Mock Recoil to return our role assignments data
-    ;(useRecoilValue as jest.Mock).mockReturnValue(mockMulticlusterRoleAssignments)
+    ;(useRecoilValue as jest.Mock).mockReturnValueOnce(mockGroups).mockReturnValueOnce(mockMulticlusterRoleAssignments)
 
     render(<Component groupId="developers" />)
 

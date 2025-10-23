@@ -1,53 +1,46 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useMemo } from 'react'
-import { useParams, useLocation, Link, Outlet, useNavigate } from 'react-router-dom-v5-compat'
+import { useParams, useLocation, Link, Outlet, generatePath, useOutletContext } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { User, Group, listUsers, listGroups } from '../../../../resources/rbac'
-import { useQuery } from '../../../../lib/useQuery'
-import {
-  AcmPage,
-  AcmPageHeader,
-  AcmSecondaryNav,
-  AcmSecondaryNavItem,
-  AcmLoadingPage,
-  AcmButton,
-} from '../../../../ui-components'
+import { User, Group } from '../../../../resources/rbac'
+import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem, AcmButton } from '../../../../ui-components'
 import { NavigationPath } from '../../../../NavigationPath'
-import { generatePath, useOutletContext } from 'react-router-dom-v5-compat'
 import { Page } from '@patternfly/react-core'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
 
+export const useCurrentUser = (): User | undefined => {
+  const { id } = useParams()
+  const { usersState } = useSharedAtoms()
+  const users = useRecoilValue(usersState)
+
+  return useMemo(
+    () => (!users || !id ? undefined : users.find((u) => u.metadata.uid === id || u.metadata.name === id)),
+    [users, id]
+  )
+}
+
 export type UserDetailsContext = {
   readonly user?: User
   readonly groups?: Group[]
-  readonly loading: boolean
-  readonly groupsLoading: boolean
 }
 
 const UserPage = () => {
   const { t } = useTranslation()
   const { id = undefined } = useParams()
   const location = useLocation()
-  const navigate = useNavigate()
 
-  const { data: users, loading } = useQuery(listUsers)
-
-  const { data: groups, loading: groupsLoading } = useQuery(listGroups)
-
-  const user = useMemo(() => {
-    if (!users || !id) return undefined
-    return users.find((u) => u.metadata.uid === id || u.metadata.name === id)
-  }, [users, id])
+  const user = useCurrentUser()
+  const { groupsState } = useSharedAtoms()
+  const groups = useRecoilValue(groupsState)
 
   const userDetailsContext = useMemo<UserDetailsContext>(
     () => ({
       user,
       groups,
-      loading,
-      groupsLoading,
     }),
-    [user, groups, loading, groupsLoading]
+    [user, groups]
   )
 
   const isDetailsActive = location.pathname === generatePath(NavigationPath.identitiesUsersDetails, { id: id ?? '' })
@@ -55,17 +48,13 @@ const UserPage = () => {
   const isRoleAssignmentsActive = location.pathname.includes('/role-assignments')
   const isGroupsActive = location.pathname.includes('/groups')
 
-  if (!loading && !user) {
+  if (!user) {
     return (
       <Page>
         <ErrorPage
           error={new ResourceError(ResourceErrorCode.NotFound)}
           actions={
-            <AcmButton
-              role="link"
-              onClick={() => navigate(NavigationPath.identitiesUsers)}
-              style={{ marginRight: '10px' }}
-            >
+            <AcmButton component="a" href={NavigationPath.identitiesUsers} style={{ marginRight: '10px' }}>
               {t('button.backToUsers')}
             </AcmButton>
           }
@@ -79,13 +68,13 @@ const UserPage = () => {
       hasDrawer
       header={
         <AcmPageHeader
-          title={loading ? '' : user?.fullName ?? user?.metadata.name ?? t('Unknown User')}
-          description={loading ? '' : user?.metadata.name}
+          title={user?.fullName ?? user?.metadata.name ?? t('Unknown User')}
+          description={user?.metadata.name}
           breadcrumb={[
             { text: t('User Management'), to: NavigationPath.roles },
             { text: t('Identities'), to: NavigationPath.identities },
             { text: t('Users'), to: NavigationPath.identitiesUsers },
-            { text: loading ? '' : user?.fullName ?? user?.metadata.name ?? t('Unknown User') },
+            { text: user?.fullName ?? user?.metadata.name ?? t('Unknown User') },
           ]}
           navigation={
             <AcmSecondaryNav>
@@ -108,7 +97,7 @@ const UserPage = () => {
         />
       }
     >
-      {loading ? <AcmLoadingPage /> : <Outlet context={userDetailsContext} />}
+      <Outlet context={userDetailsContext} />
     </AcmPage>
   )
 }

@@ -2,9 +2,9 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../../lib/nock-util'
 import { UserDetails } from './UserDetails'
 import { User } from '../../../../resources/rbac'
+import { useUserDetailsContext } from './UserPage'
 
 const mockUser: User = {
   apiVersion: 'user.openshift.io/v1',
@@ -24,8 +24,6 @@ jest.mock('./UserPage', () => ({
   useUserDetailsContext: jest.fn(),
 }))
 
-import { useUserDetailsContext } from './UserPage'
-
 const mockUseUserDetailsContext = useUserDetailsContext as jest.MockedFunction<typeof useUserDetailsContext>
 
 function Component() {
@@ -40,30 +38,13 @@ function Component() {
 
 describe('UserDetails', () => {
   beforeEach(() => {
-    nockIgnoreRBAC()
-    nockIgnoreApiPaths()
     mockUseUserDetailsContext.mockClear()
-  })
-
-  test('should render loading state', () => {
-    mockUseUserDetailsContext.mockReturnValue({
-      user: undefined,
-      groups: undefined,
-      loading: true,
-      groupsLoading: false,
-    })
-
-    render(<Component />)
-
-    expect(screen.getByText('Loading')).toBeInTheDocument()
   })
 
   test('should render user not found message', () => {
     mockUseUserDetailsContext.mockReturnValue({
       user: undefined,
       groups: undefined,
-      loading: false,
-      groupsLoading: false,
     })
 
     render(<Component />)
@@ -75,8 +56,6 @@ describe('UserDetails', () => {
     mockUseUserDetailsContext.mockReturnValue({
       user: mockUser,
       groups: [],
-      loading: false,
-      groupsLoading: false,
     })
 
     render(<Component />)
@@ -96,8 +75,6 @@ describe('UserDetails', () => {
     mockUseUserDetailsContext.mockReturnValue({
       user: userWithoutFullName,
       groups: [],
-      loading: false,
-      groupsLoading: false,
     })
 
     render(<Component />)

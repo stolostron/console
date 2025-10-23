@@ -31,6 +31,7 @@ import { ClusterOverviewPageContent } from './ManagedClusters/ClusterDetails/Clu
 import { NodePoolsPageContent } from './ManagedClusters/ClusterDetails/ClusterNodes/ClusterNodes'
 import { MachinePoolsPageContent } from './ManagedClusters/ClusterDetails/ClusterMachinePools/ClusterMachinePools'
 import { ClustersSettingsPageContent } from './ManagedClusters/ClusterDetails/ClusterSettings/ClusterSettings'
+import RoleAssignmentsPage from './RoleAssignmentsPage'
 
 const clustersChildPath = createRoutePathFunction(NavigationPath.clusters)
 
@@ -52,6 +53,7 @@ export default function Clusters() {
         <Route path={clustersChildPath(NavigationPath.clusterNodes)} element={<NodePoolsPageContent />} />
         <Route path={clustersChildPath(NavigationPath.clusterMachinePools)} element={<MachinePoolsPageContent />} />
         <Route path={clustersChildPath(NavigationPath.clusterSettings)} element={<ClustersSettingsPageContent />} />
+        <Route path={clustersChildPath(NavigationPath.clusterRoleAssignments)} element={<RoleAssignmentsPage />} />
       </Route>
       <Route
         path={clustersChildPath(NavigationPath.clusterDetails, MatchType.SubRoutes)}

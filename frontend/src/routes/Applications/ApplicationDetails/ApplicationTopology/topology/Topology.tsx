@@ -35,8 +35,9 @@ import './components/future/topology-components.css'
 import './components/future/topology-controlbar.css'
 import './components/future/topology-view.css'
 import { NavigationPath } from '../../../../../NavigationPath'
-import { querySearchDisabledManagedClusters } from '../../../../../lib/search'
+import { useQuerySearchDisabledManagedClusters } from '../../../../../lib/search'
 import { useQuery } from '../../../../../lib/useQuery'
+import { TFunction } from 'react-i18next'
 
 export interface TopologyProps {
   elements: {
@@ -59,7 +60,7 @@ export interface TopologyProps {
     clusterDetailsContainerData: ClusterDetailsContainerData
     handleClusterDetailsContainerUpdate: React.Dispatch<React.SetStateAction<ClusterDetailsContainerData>>
   }
-  options: any
+  options?: any
   setDrawerContent: (
     title: string,
     isInline: boolean,
@@ -69,9 +70,10 @@ export interface TopologyProps {
     panelContent: React.ReactNode | React.ReactNode[],
     closeDrawer: boolean
   ) => void
+  nodeDetailsProvider?: (node: any, activeFilters: Record<string, any>, t: TFunction, hubClusterName: string) => any
   canUpdateStatuses?: boolean
   disableRenderConstraint?: boolean
-  processActionLink?: (resource: any, toggleLoading: boolean, hubClusterName: string) => void
+  processActionLink?: (resource: any, toggleLoading: () => void, hubClusterName: string) => void
   hubClusterName: string
 }
 
@@ -88,21 +90,22 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
     clusterDetailsContainerControl,
     channelControl,
     setDrawerContent,
-    options,
     elements,
+    nodeDetailsProvider,
     hubClusterName,
   } = topologyProps
   const [selectedIds, setSelectedIds] = useState<string[]>()
   const [isSearchDisabled, setIsSearchDisabled] = useState<boolean>(false)
   const clusterNodes = elements.nodes.filter((node) => node.type === 'cluster')
   const clusterNames = clusterNodes.map((clusterNode) => clusterNode.name)
-  const { data, startPolling } = useQuery(querySearchDisabledManagedClusters)
+  const queryDisabled = useQuerySearchDisabledManagedClusters()
+  const { data, startPolling } = useQuery(queryDisabled)
 
   useEffect(startPolling, [startPolling])
   useEffect(() => {
     const clustersWithSearchDisabled = data?.[0]?.data?.searchResult?.[0]?.items || []
-    const clusterWithDisabledSearch = clustersWithSearchDisabled.map((item: { name: string }) => item.name)
-    const found = clusterNames.some((r) => clusterWithDisabledSearch.includes(r))
+    const clusterWithDisabledSearch = new Set(clustersWithSearchDisabled.map((item: { name: string }) => item.name))
+    const found = clusterNames.some((r) => clusterWithDisabledSearch.has(r))
     if (found) {
       setIsSearchDisabled(true)
     }
@@ -119,7 +122,6 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
           return n.getData()
         })
     }
-
     setDrawerContent(
       selectedNodeId ? t('Details') : '',
       false, // inline
@@ -128,7 +130,6 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
       true, // no padding for drawerpanelbody
       selectedNodeId ? (
         <DetailsView
-          options={options}
           getLayoutNodes={getLayoutNodes}
           selectedNodeId={selectedNodeId}
           processActionLink={processActionLink}
@@ -136,6 +137,7 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
           clusterDetailsContainerControl={clusterDetailsContainerControl}
           argoAppDetailsContainerControl={argoAppDetailsContainerControl}
           activeFilters={{}}
+          nodeDetailsProvider={nodeDetailsProvider}
           t={t}
           hubClusterName={hubClusterName}
         />

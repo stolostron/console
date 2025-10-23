@@ -2,7 +2,6 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../lib/nock-util'
 import IdentitiesPage from './IdentitiesPage'
 
 function Component() {
@@ -16,11 +15,6 @@ function Component() {
 }
 
 describe('IdentitiesPage', () => {
-  beforeEach(() => {
-    nockIgnoreRBAC()
-    nockIgnoreApiPaths()
-  })
-
   afterEach(() => {
     jest.clearAllTimers()
   })
@@ -35,25 +29,25 @@ describe('IdentitiesPage', () => {
     expect(screen.getAllByText('Identities')).toHaveLength(2)
     expect(screen.getByText('User Management')).toBeInTheDocument()
 
-    const usersTab = screen.queryByText('Users')
-    const groupsTab = screen.queryByText('Groups')
-    const serviceAccountsTab = screen.queryByText('Service Accounts')
-    const unauthorizedMessage = screen.queryByText('Unauthorized')
-
-    const hasAllTabs = usersTab && groupsTab && serviceAccountsTab
-    const hasUnauthorized = !!unauthorizedMessage
-
-    expect(hasAllTabs || hasUnauthorized).toBe(true)
-
-    expect(usersTab || unauthorizedMessage).toBeTruthy()
-    expect(groupsTab || unauthorizedMessage).toBeTruthy()
-    expect(serviceAccountsTab || unauthorizedMessage).toBeTruthy()
+    expect(screen.getByText('Users')).toBeInTheDocument()
+    expect(screen.getByText('Groups')).toBeInTheDocument()
   })
 
-  test('should highlight correct tab based on route', async () => {
+  test.each([
+    {
+      route: '/multicloud/user-management/identities/users',
+      activeTab: 'Users',
+      inactiveTab: 'Groups',
+    },
+    {
+      route: '/multicloud/user-management/identities/groups',
+      activeTab: 'Groups',
+      inactiveTab: 'Users',
+    },
+  ])('should highlight $activeTab tab when route is $route', async ({ route, activeTab, inactiveTab }) => {
     render(
       <RecoilRoot>
-        <MemoryRouter initialEntries={['/multicloud/user-management/identities/groups']}>
+        <MemoryRouter initialEntries={[route]}>
           <IdentitiesPage />
         </MemoryRouter>
       </RecoilRoot>
@@ -63,9 +57,13 @@ describe('IdentitiesPage', () => {
       expect(screen.getAllByText('Identities')).toHaveLength(2)
     })
 
-    const groupsTab = screen.queryByText('Groups')
-    const unauthorizedMessage = screen.queryByText('Unauthorized')
+    const activeLink = screen.getByRole('link', { name: activeTab })
+    const inactiveLink = screen.getByRole('link', { name: inactiveTab })
 
-    expect(groupsTab || unauthorizedMessage).toBeTruthy()
+    expect(activeLink).toBeInTheDocument()
+    expect(inactiveLink).toBeInTheDocument()
+
+    expect(activeLink).toHaveAttribute('aria-current', 'page')
+    expect(inactiveLink).not.toHaveAttribute('aria-current')
   })
 })

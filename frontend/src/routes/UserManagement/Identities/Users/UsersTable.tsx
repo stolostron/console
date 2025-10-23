@@ -1,49 +1,43 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { PageSection } from '@patternfly/react-core'
 import { useCallback, useMemo } from 'react'
-import { Link } from 'react-router-dom-v5-compat'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
-import { User as RbacUser, listUsers } from '../../../../resources/rbac'
-import { useQuery } from '../../../../lib/useQuery'
-import { AcmButton, AcmEmptyState, AcmTable, compareStrings } from '../../../../ui-components'
-import { useFilters, usersTableColumns } from './UsersTableHelper'
+import { User } from '../../../../resources/rbac'
+import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import { AcmEmptyState, AcmTable, compareStrings } from '../../../../ui-components'
+import { useFilters, usersTableColumns } from '../IdentityTableHelper'
 
 const UsersTable = () => {
   const { t } = useTranslation()
 
-  const { data: rbacUsers, loading } = useQuery(listUsers)
-  const users = useMemo(
-    () => rbacUsers?.sort((a, b) => compareStrings(a.metadata.name ?? '', b.metadata.name ?? '')) ?? [],
-    [rbacUsers]
-  )
+  const { usersState } = useSharedAtoms()
+  const rbacUsers = useRecoilValue(usersState)
+  const users = useMemo(() => {
+    return rbacUsers?.toSorted((a, b) => compareStrings(a.metadata.name ?? '', b.metadata.name ?? '')) ?? []
+  }, [rbacUsers])
 
-  const keyFn = useCallback((user: RbacUser) => user.metadata.name ?? '', [])
+  const keyFn = useCallback((user: User) => user.metadata.name ?? '', [])
 
-  // TODO: rbacCreate for IDP
-  const canAddAccessControl = true
-
-  const filters = useFilters()
+  const filters = useFilters('user', users)
   const columns = usersTableColumns({ t })
-  // TODO: Uncomment when actions are implemented
-  // const rowActions = useRowActions({ t, navigate })
 
   return (
     <PageSection>
-      <AcmTable<RbacUser>
+      <AcmTable<User>
         key="users-table"
         filters={filters}
         columns={columns}
         keyFn={keyFn}
-        items={loading ? undefined : users}
+        items={users}
         resultView={{
           page: 1,
-          loading,
+          loading: false,
           refresh: () => {},
           items: [],
           emptyResult: false,
           processedItemCount: 0,
-          isPreProcessed: true,
+          isPreProcessed: false,
         }}
         emptyState={
           <AcmEmptyState
@@ -56,20 +50,11 @@ const UsersTable = () => {
             }
             action={
               <div>
-                <AcmButton
-                  isDisabled={!canAddAccessControl}
-                  tooltip={!canAddAccessControl ? t('rbac.unauthorized') : ''}
-                  component={Link}
-                >
-                  {t('Add Identity provider')}
-                </AcmButton>
-                <ViewDocumentationLink doclink={DOC_LINKS.CREATE_CONNECTION} />
+                <ViewDocumentationLink doclink={DOC_LINKS.IDENTITY_PROVIDER_CONFIGURATION} />
               </div>
             }
           />
         }
-        // TODO: Uncomment when actions are implemented
-        // rowActions={rowActions}
       />
     </PageSection>
   )

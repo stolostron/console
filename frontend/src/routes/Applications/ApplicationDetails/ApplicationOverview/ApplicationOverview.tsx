@@ -1,6 +1,39 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
+  ButtonVariant,
+  Card,
+  CardBody,
+  Flex,
+  FlexItem,
+  PageSection,
+  Spinner,
+  Text,
+  Tooltip,
+} from '@patternfly/react-core'
+import { OutlinedQuestionCircleIcon, SyncAltIcon } from '@patternfly/react-icons'
+import { cloneDeep } from 'lodash'
+import { Fragment, useEffect, useState } from 'react'
+import { TFunction } from 'react-i18next'
+import { generatePath, Link } from 'react-router-dom-v5-compat'
+import { useLocalHubName } from '../../../../hooks/use-local-hub'
+import { useTranslation } from '../../../../lib/acm-i18next'
+import AcmTimestamp from '../../../../lib/AcmTimestamp'
+import { canUser, getAuthorizedNamespaces, rbacCreate } from '../../../../lib/rbac-util'
+import { NavigationPath } from '../../../../NavigationPath'
+import {
+  Application,
+  ApplicationKind,
+  ApplicationSet,
+  ApplicationSetDefinition,
+  ArgoApplicationDefinition,
+  Channel,
+  IResource,
+  Subscription,
+  SubscriptionDefinition,
+} from '../../../../resources'
+import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import {
   AcmActionGroup,
   AcmButton,
   AcmDescriptionList,
@@ -8,20 +41,12 @@ import {
   AcmPageContent,
   ListItems,
 } from '../../../../ui-components'
-import { useTranslation } from '../../../../lib/acm-i18next'
-import {
-  ButtonVariant,
-  Card,
-  CardBody,
-  PageSection,
-  Spinner,
-  Flex,
-  FlexItem,
-  Text,
-  Tooltip,
-} from '@patternfly/react-core'
-import { OutlinedQuestionCircleIcon, SyncAltIcon } from '@patternfly/react-icons'
-import { Fragment, useEffect, useState } from 'react'
+import LabelWithPopover from '../../components/LabelWithPopover'
+import ResourceLabels from '../../components/ResourceLabels'
+import { ISyncResourceModalProps, SyncResourceModal } from '../../components/SyncResourceModal'
+import { ISyncArgoCDModalProps, SyncArgoCDModal } from '../../components/SyncArgoCDModal'
+import { TimeWindowLabels } from '../../components/TimeWindowLabels'
+import '../../css/ApplicationOverview.css'
 import {
   getClusterCount,
   getClusterCountField,
@@ -29,37 +54,13 @@ import {
   getClusterCountString,
   getSearchLink,
 } from '../../helpers/resource-helper'
-import { TimeWindowLabels } from '../../components/TimeWindowLabels'
-import _ from 'lodash'
-import { REQUEST_STATUS } from './actions'
-import {
-  Application,
-  ApplicationKind,
-  ApplicationSet,
-  ApplicationSetKind,
-  ArgoApplication,
-  ArgoApplicationKind,
-  Channel,
-  IResource,
-  Subscription,
-  SubscriptionDefinition,
-} from '../../../../resources'
-import ResourceLabels from '../../components/ResourceLabels'
-import '../../css/ApplicationOverview.css'
-import { TFunction } from 'react-i18next'
 import { getApplicationRepos } from '../../Overview'
 import { ApplicationDataType, useApplicationDetailsContext } from '../ApplicationDetails'
-import { NavigationPath } from '../../../../NavigationPath'
-import { ISyncResourceModalProps, SyncResourceModal } from '../../components/SyncResourceModal'
+import { DrawerShapes } from '../ApplicationTopology/components/DrawerShapes'
 import { isSearchAvailable } from '../ApplicationTopology/helpers/search-helper'
 import { getDiagramElements } from '../ApplicationTopology/model/topology'
-import { getAuthorizedNamespaces, rbacCreate } from '../../../../lib/rbac-util'
-import { generatePath, Link } from 'react-router-dom-v5-compat'
-import { DrawerShapes } from '../ApplicationTopology/components/DrawerShapes'
-import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
-import LabelWithPopover from '../../components/LabelWithPopover'
-import AcmTimestamp from '../../../../lib/AcmTimestamp'
-import { useLocalHubName } from '../../../../hooks/use-local-hub'
+import { getNestedProperty } from '../ApplicationTopology/utils'
+import { REQUEST_STATUS } from './actions'
 
 const clusterResourceStatusText = (t: TFunction) => t('Cluster resource status')
 const clusterResourceStatusTooltipSubscription = (t: TFunction) =>
@@ -79,7 +80,11 @@ export function ApplicationOverviewPageContent() {
   const [modalProps, setModalProps] = useState<ISyncResourceModalProps | { open: false }>({
     open: false,
   })
+  const [argoAppModalProps, setArgoAppModalProps] = useState<ISyncArgoCDModalProps | { open: false }>({
+    open: false,
+  })
   const [hasSyncPermission, setHasSyncPermission] = useState(false)
+  const [hasArgoSyncPermission, setHasArgoSyncPermission] = useState(false)
   const openTabIcon = '#drawerShapes_open-new-tab'
 
   let isArgoApp = false
@@ -114,6 +119,25 @@ export function ApplicationOverviewPageContent() {
       })
     }
   }, [namespaces])
+
+  useEffect(() => {
+    if (applicationData) {
+      const isArgoApp = applicationData.application?.isArgoApp
+      const isAppSet = applicationData.application?.isAppSet
+
+      if (isArgoApp || isAppSet) {
+        const resourceDefinition = isAppSet ? ApplicationSetDefinition : ArgoApplicationDefinition
+        const namespace = applicationData.application.metadata.namespace
+        const name = applicationData.application.metadata.name
+
+        const canPatchArgoResource = canUser('patch', resourceDefinition, namespace, name)
+        canPatchArgoResource.promise
+          .then((result) => setHasArgoSyncPermission(result.status?.allowed!))
+          .catch((err) => console.error(err))
+        return () => canPatchArgoResource.abort()
+      }
+    }
+  }, [applicationData])
 
   if (applicationData) {
     isArgoApp = applicationData.application?.isArgoApp
@@ -168,11 +192,11 @@ export function ApplicationOverviewPageContent() {
     } else if (!isSubscription) {
       let lastSyncedTimeStamp = ''
       if (isArgoApp) {
-        lastSyncedTimeStamp = _.get(applicationData, 'application.app.status.reconciledAt', '')
+        lastSyncedTimeStamp = applicationData?.application?.app?.status?.reconciledAt ?? ''
       } else if (isAppSet) {
         applicationData.application.appSetApps.forEach((appSet: ApplicationSet) => {
           if (!lastSyncedTimeStamp) {
-            lastSyncedTimeStamp = _.get(appSet, 'status.reconciledAt', '')
+            lastSyncedTimeStamp = (appSet as any)?.status?.reconciledAt ?? ''
           }
         })
       }
@@ -244,18 +268,28 @@ export function ApplicationOverviewPageContent() {
               <OutlinedQuestionCircleIcon className="help-icon" />
             </Tooltip>
           ),
-          value: <AcmTimestamp timestamp={lastSyncedTimeStamp} />,
+
+          value: (
+            <Flex gap={{ default: 'gapNone' }} alignItems={{ default: 'alignItemsCenter' }}>
+              <FlexItem>
+                <AcmTimestamp timestamp={lastSyncedTimeStamp} />
+              </FlexItem>
+              <FlexItem>
+                {isAppSet && createArgoAppSyncButton(t, hasArgoSyncPermission, applicationData, setArgoAppModalProps)}
+              </FlexItem>
+            </Flex>
+          ),
         },
       ]
     } else {
       /////////////////////////// subscription items //////////////////////////////////////////////
-      const allSubscriptions = _.get(applicationData.application, 'allSubscriptions', [])
+      const allSubscriptions = applicationData.application?.allSubscriptions ?? []
       subsList = allSubscriptions
 
       let lastSynced = ''
       allSubscriptions.forEach((subs: Subscription) => {
         if (!lastSynced) {
-          lastSynced = _.get(subs, `metadata.annotations["apps.open-cluster-management.io/manual-refresh-time"]`, '')
+          lastSynced = subs?.metadata?.annotations?.['apps.open-cluster-management.io/manual-refresh-time'] ?? ''
         }
       })
       leftItems = [
@@ -328,6 +362,7 @@ export function ApplicationOverviewPageContent() {
   return (
     <AcmPageContent id="overview">
       <SyncResourceModal {...modalProps} />
+      <SyncArgoCDModal {...argoAppModalProps} />
       <DrawerShapes />
       <PageSection>
         <div className="overview-cards-container">
@@ -387,6 +422,37 @@ function createSyncButton(
   )
 }
 
+function createArgoAppSyncButton(
+  t: TFunction,
+  hasSyncPermission: boolean,
+  applicationData: ApplicationDataType,
+  setArgoAppModalProps: any
+) {
+  return (
+    <AcmButton
+      isDisabled={!hasSyncPermission}
+      variant={ButtonVariant.link}
+      id="sync-argo-app"
+      component="a"
+      rel="noreferrer"
+      icon={<SyncAltIcon />}
+      iconPosition="left"
+      size="sm"
+      onClick={() => {
+        setArgoAppModalProps({
+          open: true,
+          close: () => {
+            setArgoAppModalProps({ open: false })
+          },
+          appOrAppSet: applicationData.application,
+        })
+      }}
+    >
+      {t('Sync')}
+    </AcmButton>
+  )
+}
+
 interface INodeStatuses {
   green: number
   yellow: number
@@ -403,18 +469,15 @@ function createStatusIcons(applicationData: ApplicationDataType, t: TFunction) {
   const nodeStatuses: INodeStatuses = { green: 0, yellow: 0, red: 0, orange: 0 }
   const canUpdateStatuses = !!statuses
   if (application && appData && topology) {
-    elements = _.cloneDeep(getDiagramElements(appData, _.cloneDeep(topology), statuses, canUpdateStatuses, t))
+    elements = cloneDeep(getDiagramElements(cloneDeep(topology), statuses, canUpdateStatuses, t))
 
     elements.nodes.forEach((node) => {
       //get pulse for all objects generated from a deployable
-      const pulse: 'green' = _.get(node, 'specs.pulse')
+      const pulse: 'green' = node?.specs?.pulse
 
       if (pulse) {
         // Get cluster resource statuses
-        if (
-          _.get(node, 'id', '').indexOf('--deployed') !== -1 ||
-          _.get(node, 'id', '').indexOf('--deployable') !== -1
-        ) {
+        if ((node?.id ?? '').indexOf('--deployed') !== -1 || (node?.id ?? '').indexOf('--deployable') !== -1) {
           nodeStatuses[pulse]++
         }
       }
@@ -715,8 +778,8 @@ function getSearchLinkForArgoApplications(resource: IResource, isArgoApp: boolea
     sourcePath = 'spec.template.spec.source'
   }
 
-  const source = _.get(resource, sourcePath)
-  const sources = _.get(resource, sourcesPath)
+  const source = getNestedProperty(resource, sourcePath)
+  const sources = getNestedProperty(resource, sourcesPath)
 
   sources?.forEach((source: { repoURL: string; chart: string; path: string }) => {
     const { repoURL, chart, path } = source
@@ -734,7 +797,7 @@ function getSearchLinkForArgoApplications(resource: IResource, isArgoApp: boolea
   })
 
   if (!sources && source) {
-    const sourceObj = _.get(resource, sourcePath)
+    const sourceObj = getNestedProperty(resource, sourcePath)
     path = sourceObj.path
     repoURL = sourceObj.repoURL
     chart = sourceObj.chart

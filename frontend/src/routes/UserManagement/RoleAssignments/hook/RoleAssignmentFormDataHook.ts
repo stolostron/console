@@ -103,7 +103,7 @@ const useRoleAssignmentFormData = (
   }, [])
 
   const onChangeScopeNamespaces = useCallback(
-    (namespaces: string[]) =>
+    (namespaces: string[] | undefined) =>
       setRoleAssignmentFormData((prevData) => ({
         ...prevData,
         scope: {
@@ -145,6 +145,14 @@ const useRoleAssignmentFormData = (
       onChangeRoles(roles)
     }
   }, [preselected, onChangeRoles])
+
+  useEffect(() => {
+    const clusterNames = get(preselected, 'clusterNames')
+    if (clusterNames?.length) {
+      onChangeScopeKind('specific')
+      onChangeScopeValues(clusterNames)
+    }
+  }, [preselected, onChangeScopeKind, onChangeScopeValues])
 
   useEffect(() => {
     if (roleAssignmentFormData.scope.kind === 'all' && roleAssignmentData?.allClusterNames?.length) {

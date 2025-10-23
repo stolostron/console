@@ -54,6 +54,51 @@ import {
   mockManagedCluster9,
 } from './ManagedClusters.sharedmocks'
 
+// Mock KubevirtProviderAlert component
+const mockKubevirtProviderAlert = jest.fn()
+
+jest.mock('../../../../components/KubevirtProviderAlert', () => ({
+  KubevirtProviderAlert: (props: any) => {
+    mockKubevirtProviderAlert(props)
+    return (
+      <div
+        data-testid="kubevirt-provider-alert"
+        data-variant={props.variant}
+        data-component={props.component}
+        data-hide-alert-when-no-vms={props.hideAlertWhenNoVMsExists}
+      >
+        Mocked KubevirtProviderAlert
+      </div>
+    )
+  },
+}))
+
+// Mock the hooks used by KubevirtProviderAlert
+jest.mock('../../../../lib/operatorCheck', () => ({
+  useOperatorCheck: jest.fn(() => ({
+    installed: false,
+    pending: false,
+  })),
+  SupportedOperator: {
+    kubevirt: 'kubevirt-hyperconverged',
+  },
+}))
+
+jest.mock('@stolostron/multicluster-sdk', () => ({
+  useFleetSearchPoll: jest.fn(() => [[], true, null]), // empty VMs, loaded, no error
+}))
+
+jest.mock('../../../../hooks/use-cluster-version', () => ({
+  useClusterVersion: jest.fn(() => ({
+    version: '4.21.0',
+    isLoading: false,
+  })),
+}))
+
+jest.mock('../../../../hooks/use-local-hub', () => ({
+  useLocalHubName: jest.fn(() => 'local-cluster'),
+}))
+
 function getClusterCuratorCreateResourceAttributes(name: string) {
   return {
     resource: 'clustercurators',
@@ -185,6 +230,20 @@ describe('Clusters Page', () => {
     await selectTableRow(4)
     await clickBulkAction('Select channels')
     await waitForText('Current channel')
+  })
+
+  test('should render KubevirtProviderAlert component with correct props', async () => {
+    // Wait for the component to be rendered
+    await waitForText(mockManagedCluster0.metadata.name!, true)
+
+    // The mock should have been called with the expected props
+    expect(mockKubevirtProviderAlert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        variant: 'search',
+        component: 'hint',
+        hideAlertWhenNoVMsExists: true,
+      })
+    )
   })
 })
 

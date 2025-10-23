@@ -1,15 +1,23 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 //import { render, fireEvent, waitFor, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { nockSearch } from '../../../../../lib/nock-util'
+import { RecoilRoot } from 'recoil'
 import {
   mockSearchQuerySearchDisabledManagedClusters,
   mockSearchResponseSearchDisabledManagedClusters,
 } from '../../../Application.sharedmocks'
 
 import { Topology, TopologyProps } from './Topology'
+
+// Mock the useQuery hook
+jest.mock('../../../../../lib/useQuery', () => ({
+  useQuery: jest.fn(),
+}))
+
+import { useQuery } from '../../../../../lib/useQuery'
 const mockProcessactionlink = jest.fn()
 const mockDispatchaction = jest.fn()
 const mockHandleerrormsg = jest.fn()
@@ -118,6 +126,103 @@ describe('Topology tests', () => {
     expect(container.querySelectorAll("[href = '#nodeStatusIcon_success']")).toHaveLength(9)
     expect(container.querySelectorAll("[href = '#nodeStatusIcon_warning']")).toHaveLength(1)
     expect(container.querySelectorAll("[href = '#nodeStatusIcon_pending']")).toHaveLength(0)
+  })
+
+  test('should show search disabled alert when clusters have search disabled', async () => {
+    // Mock useQuery to return data with search disabled clusters
+    // The data structure should match what the code expects: data[0].data.searchResult[0].items
+    const mockSearchDisabledData = {
+      data: {
+        searchResult: [
+          {
+            items: [mockSearchResponseSearchDisabledManagedClusters.data.searchResult[0].items], // Wrap in array
+          },
+        ],
+      },
+    }
+
+    ;(useQuery as jest.MockedFunction<typeof useQuery>).mockReturnValue({
+      data: [mockSearchDisabledData],
+      loading: false,
+      error: undefined,
+      startPolling: jest.fn(),
+      stopPolling: jest.fn(),
+      refresh: jest.fn(),
+    })
+
+    // Create props with cluster nodes that match the search disabled mock data
+    const propsWithSearchDisabledClusters: TopologyProps = {
+      ...props1,
+      elements: {
+        ...props1.elements,
+        nodes: [
+          ...props1.elements.nodes,
+          {
+            id: 'cluster--magchen-vm',
+            name: 'magchen-vm',
+            type: 'cluster',
+            uid: 'cluster--magchen-vm',
+            specs: {
+              raw: {
+                metadata: {
+                  name: 'magchen-vm',
+                },
+              },
+            },
+          },
+        ],
+      },
+    }
+
+    render(
+      <RecoilRoot>
+        <Topology {...propsWithSearchDisabledClusters} />
+      </RecoilRoot>
+    )
+
+    // Wait for the alert to appear
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          'Currently, search is disabled on some of your managed clusters. Some data might be missing from the topology view.'
+        )
+      ).toBeInTheDocument()
+    })
+
+    // Verify the link to view clusters with search disabled is present
+    expect(screen.getByText('View clusters with search add-on disabled.')).toBeInTheDocument()
+  })
+
+  test('should not show search disabled alert when no clusters have search disabled', async () => {
+    // Mock empty response for search disabled clusters
+    const emptySearchResponse = {
+      data: {
+        searchResult: [
+          {
+            items: [],
+          },
+        ],
+      },
+    }
+
+    // Override the nock for this test
+    nockSearch(mockSearchQuerySearchDisabledManagedClusters, emptySearchResponse)
+
+    render(
+      <RecoilRoot>
+        <Topology {...props1} />
+      </RecoilRoot>
+    )
+
+    // Wait to ensure the component has processed the empty response
+    await waitFor(() => {
+      // The alert should not be present
+      expect(
+        screen.queryByText(
+          'Currently, search is disabled on some of your managed clusters. Some data might be missing from the topology view.'
+        )
+      ).not.toBeInTheDocument()
+    })
   })
 })
 

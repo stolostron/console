@@ -8,6 +8,11 @@ import { waitForText } from '../../../lib/test-util'
 import Clusters from './Clusters'
 import { NavigationPath } from '../../../NavigationPath'
 
+// Mock KubevirtProviderAlert to avoid complex dependencies
+jest.mock('../../../components/KubevirtProviderAlert', () => ({
+  KubevirtProviderAlert: () => null,
+}))
+
 describe('Cluster Management', () => {
   test('Discovery Feature Flag Enabled', async () => {
     nockIgnoreRBAC()

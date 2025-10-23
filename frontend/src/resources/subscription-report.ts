@@ -1,4 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import {
+  SubscriptionReportResource,
+  SubscriptionReportResult,
+} from '../routes/Applications/ApplicationDetails/ApplicationTopology/types'
 import { Metadata } from './metadata'
 import { IResource, IResourceDefinition } from './resource'
 
@@ -17,5 +21,8 @@ export interface SubscriptionReport extends IResource {
   apiVersion: SubscriptionReportApiVersionType
   kind: SubscriptionReportKindType
   metadata: Metadata
-  spec: object
+  spec?: object
+  results?: SubscriptionReportResult[]
+  resources?: SubscriptionReportResource[]
+  [key: string]: unknown
 }

@@ -330,7 +330,7 @@ export const getControlDataKubeVirt = (
         {
           name: t('Attach default pod network'),
           tooltip: t('tooltip.creation.ocp.node.pool.default.pod.network'),
-          id: 'defaultPodNetwork',
+          id: 'attachDefaultNetwork',
           type: 'checkbox',
           active: true,
           disabled: true,

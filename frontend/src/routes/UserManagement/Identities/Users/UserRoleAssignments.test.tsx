@@ -8,14 +8,6 @@ import { FlattenedRoleAssignment } from '../../../../resources/clients/multiclus
 import { UserRoleAssignments } from './UserRoleAssignments'
 import { useRecoilValue } from '../../../../shared-recoil'
 
-// Mock the useQuery hook
-jest.mock('../../../../lib/useQuery', () => ({
-  useQuery: jest.fn(),
-}))
-
-import { useQuery } from '../../../../lib/useQuery'
-const mockUseQuery = useQuery as jest.MockedFunction<typeof useQuery>
-
 const mockUsers: User[] = [
   {
     apiVersion: 'user.openshift.io/v1',
@@ -90,7 +82,7 @@ jest.mock('../../../../lib/acm-i18next', () => ({
 jest.mock('../../../../shared-recoil', () => ({
   useRecoilValue: jest.fn(),
   useSharedAtoms: jest.fn(() => ({
-    multiclusterRoleAssignmentState: 'multiclusterRoleAssignmentState',
+    usersState: 'usersState',
   })),
 }))
 
@@ -100,8 +92,8 @@ jest.mock('../../RoleAssignment/RoleAssignments', () => ({
     <div id="role-assignments">
       <div id="loading">{isLoading ? 'Loading' : 'Loaded'}</div>
       <div id="hidden-columns">{hiddenColumns?.join(',') || 'none'}</div>
-      <div id="assignments-count">{roleAssignments.length}</div>
-      {roleAssignments.map((roleAssignment: FlattenedRoleAssignment, index: number) => (
+      <div id="assignments-count">{roleAssignments?.length || 0}</div>
+      {roleAssignments?.map((roleAssignment: FlattenedRoleAssignment, index: number) => (
         <div key={index} id={`assignment-${index}`}>
           <div id={`assignment-subject-${index}`}>
             {roleAssignment.subject.kind}: {roleAssignment.subject.name}
@@ -130,33 +122,20 @@ describe('UserRoleAssignments', () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
 
-    // Mock useQuery to return our mock data
-    mockUseQuery.mockReturnValue({
-      data: mockUsers,
-      loading: false,
-      error: undefined,
-      startPolling: jest.fn(),
-      stopPolling: jest.fn(),
-      refresh: jest.fn(),
-    })
-
     // Reset mocks before each test
     ;(useRecoilValue as jest.Mock).mockClear()
   })
 
   it('renders UserRoleAssignments component with no user found', async () => {
-    // Mock Recoil to return undefined (loading state)
-    ;(useRecoilValue as jest.Mock).mockReturnValue(undefined)
+    ;(useRecoilValue as jest.Mock).mockReturnValueOnce([]).mockReturnValueOnce([])
 
     render(<Component userId="non-existent-user" />)
-    // The component should render without crashing
-    // Since the user is not found, it should show loading or error state
-    expect(screen.getByText('Loading')).toBeInTheDocument()
+    expect(screen.getByText('Loaded')).toBeInTheDocument()
+    expect(screen.getByText('0')).toBeInTheDocument() // No assignments
   })
 
   it('renders UserRoleAssignments component with user found', async () => {
-    // Mock Recoil to return our role assignments data
-    ;(useRecoilValue as jest.Mock).mockReturnValue(mockMulticlusterRoleAssignments)
+    ;(useRecoilValue as jest.Mock).mockReturnValueOnce(mockUsers).mockReturnValueOnce(mockMulticlusterRoleAssignments)
 
     render(<Component userId="mock-user-alice-trask" />)
 

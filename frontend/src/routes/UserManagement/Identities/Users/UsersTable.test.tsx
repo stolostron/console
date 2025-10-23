@@ -3,17 +3,17 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../../lib/nock-util'
 import { User } from '../../../../resources/rbac'
 import { UsersTable } from './UsersTable'
+import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 
-jest.mock('../../../../lib/useQuery', () => ({
-  useQuery: jest.fn(),
+jest.mock('../../../../shared-recoil', () => ({
+  useRecoilValue: jest.fn(),
+  useSharedAtoms: jest.fn(),
 }))
 
-import { useQuery } from '../../../../lib/useQuery'
-
-const mockUseQuery = useQuery as jest.MockedFunction<typeof useQuery>
+const mockUseRecoilValue = useRecoilValue as jest.MockedFunction<typeof useRecoilValue>
+const mockUseSharedAtoms = useSharedAtoms as jest.MockedFunction<typeof useSharedAtoms>
 
 const mockUsers: User[] = [
   {
@@ -48,22 +48,14 @@ function Component() {
 
 describe('Users Page', () => {
   beforeEach(() => {
-    nockIgnoreRBAC()
-    nockIgnoreApiPaths()
+    mockUseSharedAtoms.mockReturnValue({
+      usersState: {} as any,
+    } as any)
 
-    // Mock useQuery to return our mock data
-    mockUseQuery.mockReturnValue({
-      data: mockUsers,
-      loading: false,
-      error: undefined,
-      startPolling: jest.fn(),
-      stopPolling: jest.fn(),
-      refresh: jest.fn(),
-    })
+    mockUseRecoilValue.mockReturnValue(mockUsers)
   })
 
   test('should render users table with mock users', async () => {
-    // No nockList needed since UsersTable uses hardcoded mock data
     render(<Component />)
 
     await waitFor(() => {

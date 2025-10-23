@@ -47,6 +47,11 @@ spec:
     {{else}}
     controlPlaneAgents: 3
     {{/if}}
+    {{#switch ai.controlPlaneCount}}
+    {{#case 2}}
+    arbiterAgents: 1
+    {{/case}}
+    {{/switch}}
   imageSetRef:
     name: '{{{ai.openshiftVersion}}}'
   networking:
@@ -64,6 +69,14 @@ spec:
 {{else}}
   sshPublicKey: ''
 {{/if}}
+  platformType: '{{convert ai.platform}}'
+  {{#switch ai.platform}}
+  {{#case 'external'}}
+  external:
+    platformName: 'External platform'
+    cloudControllerManager: External
+  {{/case}}
+  {{/switch}}
 
 ---
 apiVersion: v1

@@ -5,10 +5,10 @@ import { RoleAssignmentLabel } from './RoleAssignmentLabel'
 describe('RoleAssignmentsHelper', () => {
   it.each([[undefined], [[]]])('%s elements', (elements: undefined | string[]) => {
     // Act
-    const { container } = render(<RoleAssignmentLabel numLabel={0} elements={elements} />)
+    render(<RoleAssignmentLabel numLabel={0} elements={elements} />)
 
     // Assert
-    expect(container).toBeEmptyDOMElement()
+    expect(screen.getByText('All namespaces')).toBeInTheDocument()
   })
 
   it.each([

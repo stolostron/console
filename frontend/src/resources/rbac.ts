@@ -152,7 +152,3 @@ export function listRoles() {
 export function listRoleBindings() {
   return listResources<RoleBinding>(RoleBindingDefinition)
 }
-
-export function listVirtualizationClusterRoles() {
-  return listResources<ClusterRole>(ClusterRoleDefinition, ['rbac.open-cluster-management.io/filter=vm-clusterroles'])
-}

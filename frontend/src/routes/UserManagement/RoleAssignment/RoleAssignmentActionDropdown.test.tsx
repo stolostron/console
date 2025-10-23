@@ -40,12 +40,13 @@ const mockRoleAssignment: FlattenedRoleAssignment = {
 const mockSetModalProps = jest.fn()
 const mockDeleteAction = jest.fn()
 
-function Component() {
+function Component({ canDelete = true }: { canDelete?: boolean }) {
   return (
     <RoleAssignmentActionDropdown
       roleAssignment={mockRoleAssignment}
       setModalProps={mockSetModalProps}
       deleteAction={mockDeleteAction}
+      canDelete={canDelete}
     />
   )
 }
@@ -158,5 +159,35 @@ describe('RoleAssignmentActionDropdown', () => {
 
     // Verify setModalProps was called to close modal
     expect(mockSetModalProps).toHaveBeenCalledWith({ open: false })
+  })
+
+  it('disables delete option when canDelete is false', () => {
+    render(<Component canDelete={false} />)
+
+    const toggleButton = screen.getByRole('button')
+    fireEvent.click(toggleButton)
+
+    const deleteButton = screen.getByText(/delete role assignment/i).closest('button')
+
+    expect(deleteButton).toHaveAttribute('aria-disabled', 'true')
+    expect(deleteButton).toBeInTheDocument()
+
+    fireEvent.click(deleteButton!)
+    expect(mockSetModalProps).not.toHaveBeenCalled()
+  })
+
+  it('enables delete option when canDelete is true', () => {
+    render(<Component canDelete={true} />)
+
+    const toggleButton = screen.getByRole('button')
+    fireEvent.click(toggleButton)
+
+    const deleteButton = screen.getByText(/delete role assignment/i).closest('button')
+
+    expect(deleteButton).not.toHaveAttribute('aria-disabled', 'true')
+    expect(deleteButton).toBeInTheDocument()
+
+    fireEvent.click(deleteButton!)
+    expect(mockSetModalProps).toHaveBeenCalled()
   })
 })

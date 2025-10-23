@@ -13,7 +13,7 @@ import {
   Modal,
 } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'
+import { Fragment, ReactNode, useMemo, useState } from 'react'
 import {
   useItem,
   useData,
@@ -50,6 +50,7 @@ import { SourceSelector } from './SourceSelector'
 import { MultipleSourcesSelector } from './MultipleSourcesSelector'
 import { NavigationPath } from '../../NavigationPath'
 import { AcmAlert } from '../../ui-components'
+import { ClusterSetMonitor } from './ClusterSetMonitor'
 
 export interface Channel {
   metadata?: {
@@ -150,7 +151,6 @@ function onlyUnique(value: any, index: any, self: string | any[]) {
 export function ArgoWizard(props: ArgoWizardProps) {
   const { resources, isPullModel = false } = props
   const applicationSet: any = resources?.find((resource) => resource.kind === ApplicationSetKind)
-  const applicationSetNamespace = applicationSet?.metadata?.namespace
   const source = applicationSet?.spec.template.spec.source
   const sources = applicationSet?.spec.template.spec.sources
 
@@ -233,30 +233,6 @@ export function ArgoWizard(props: ArgoWizardProps) {
   const handleModalToggle = () => {
     setIsModalOpen(!isModalOpen)
   }
-
-  useEffect(() => {
-    if (!props.argoServers?.length) return
-    const argoServer = props.argoServers.find(
-      (argoServer) => argoServer.value?.metadata?.namespace === applicationSetNamespace
-    )
-    const placementRefName = argoServer?.value?.spec?.placementRef?.name
-    const placement = props.placements.find(
-      (placement) =>
-        placement.metadata?.namespace === argoServer?.value?.metadata.namespace &&
-        placement.metadata?.name === placementRefName
-    )
-    const clusterSets: IResource[] = props.clusterSets.filter((clusterSet) => {
-      if (placement?.spec?.clusterSets) {
-        if (placement?.spec?.clusterSets.length > 0) {
-          return placement?.spec?.clusterSets.includes(clusterSet.metadata?.name!)
-        }
-      } else {
-        return clusterSet
-      }
-    })
-
-    setFilteredClusterSets(clusterSets)
-  }, [applicationSetNamespace, props.argoServers, props.clusterSets, props.placements])
 
   const translatedWizardStrings = useWizardStrings({
     stepsAriaLabel: t('Argo application steps'),
@@ -424,6 +400,12 @@ export function ArgoWizard(props: ArgoWizardProps) {
         onSubmit={props.onSubmit}
       >
         <Step id="general" label={t('General')}>
+          <ClusterSetMonitor
+            argoServers={props.argoServers}
+            clusterSets={props.clusterSets}
+            placements={props.placements}
+            onFilteredClusterSetsChange={setFilteredClusterSets}
+          />
           <Sync
             kind={PlacementKind}
             path="metadata.name"
