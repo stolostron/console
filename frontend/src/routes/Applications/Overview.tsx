@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { PageSection } from '@patternfly/react-core'
+import { Label, PageSection, PopoverPosition } from '@patternfly/react-core'
 import { Popover } from '@patternfly/react-core'
 import { Stack } from '@patternfly/react-core'
 import { StackItem } from '@patternfly/react-core'
@@ -249,18 +249,47 @@ export const getApplicationStatuses = (resource: IResource, type: 'health' | 'sy
   }
   return { counts: [0, 0, 0, 0], messages: undefined }
 }
+
+const renderPopoverContent = (messages: Record<string, string>[]) => {
+  return (
+    <div style={{ width: '26.75rem' }}>
+      {messages &&
+        messages.map((message) => {
+          // Remove leading underscore and "condition" from the key
+          let cleanedKey = message.key.replace(/^_/, '').replace(/^condition/i, '')
+          // Add space before each capitalized letter
+          cleanedKey = cleanedKey.replace(/([A-Z])/g, ' $1')
+          // Capitalize the first letter and trim any leading space
+          cleanedKey = cleanedKey.charAt(0).toUpperCase() + cleanedKey.slice(1)
+          cleanedKey = cleanedKey.trim()
+          return (
+            <div key={message.key} style={{ marginBottom: '0.5rem' }}>
+              <strong>{cleanedKey}:</strong> {message.value}
+            </div>
+          )
+        })}
+    </div>
+  )
+}
+
 export function renderApplicationStatusGroup(resource: IResource, type: 'health' | 'synced' | 'deployed') {
   const { counts, messages } = getApplicationStatuses(resource, type)
-  if (counts.length >= 4) {
+  if (Array.isArray(messages) && messages.length > 0) {
     return (
-      <AcmInlineStatusGroup
-        healthy={counts[0]}
-        progress={counts[1]}
-        warning={counts[2]}
-        danger={counts[3]}
-        messages={messages}
-      />
+      <Popover
+        id={'labels-popover'}
+        bodyContent={renderPopoverContent(messages)}
+        position={PopoverPosition.bottom}
+        flipBehavior={['bottom', 'bottom-end', 'bottom-end']}
+        hasAutoWidth
+      >
+        <Label style={{ width: 'fit-content' }} isOverflowLabel>
+          {<AcmInlineStatusGroup healthy={counts[0]} progress={counts[1]} warning={counts[2]} danger={counts[3]} />}
+        </Label>
+      </Popover>
     )
+  } else if (counts.some((count) => count > 0)) {
+    return <AcmInlineStatusGroup healthy={counts[0]} progress={counts[1]} warning={counts[2]} danger={counts[3]} />
   }
   return '-'
 }
@@ -409,9 +438,9 @@ export default function ApplicationsOverview() {
             if (index === AppColumns.deployed) column = stats.deployed[StatusColumn.counts]
             if (column) {
               score =
-                column[ApplicationStatusEnum.danger] * 10000 +
-                column[ApplicationStatusEnum.warning] * 1000 +
-                column[ApplicationStatusEnum.progress] * 100 +
+                column[ApplicationStatusEnum.danger] * 100000 +
+                column[ApplicationStatusEnum.warning] * 10000 +
+                column[ApplicationStatusEnum.progress] * 1000 +
                 column[ApplicationStatusEnum.healthy]
             }
           }
@@ -439,9 +468,9 @@ export default function ApplicationsOverview() {
           healthScore: healthScore,
           syncedScore: syncedScore,
           deployedScore: deployedScore,
-          healthStatus: healthScore < 100 ? 'Healthy' : 'Unhealthy',
-          syncedStatus: syncedScore < 100 ? 'Synced' : 'OutOfSync',
-          deployedStatus: deployedScore < 100 ? 'Deployed' : 'Not Deployed',
+          healthStatus: healthScore < 1000 ? 'Healthy' : 'Unhealthy',
+          syncedStatus: syncedScore < 1000 ? 'Synced' : 'OutOfSync',
+          deployedStatus: deployedScore < 1000 ? 'Deployed' : 'Not Deployed',
         },
       }
 
@@ -618,7 +647,7 @@ export default function ApplicationsOverview() {
         },
       },
       {
-        header: t('Pod Statuses'),
+        header: t('Pod Status'),
         cell: (resource) => {
           return renderApplicationStatusGroup(resource, 'deployed')
         },
@@ -767,7 +796,7 @@ export default function ApplicationsOverview() {
       },
       {
         id: 'podStatuses',
-        label: t('Pod Statuses'),
+        label: t('Pod Status'),
         options: [
           {
             label: t('Not Deployed'),

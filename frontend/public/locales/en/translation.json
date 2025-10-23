@@ -2239,7 +2239,7 @@
   "Pod IP": "Pod IP",
   "Pod selector": "Pod selector",
   "Pod Selector": "Pod Selector",
-  "Pod Statuses": "Pod Statuses",
+  "Pod Status": "Pod Status",
   "Policies": "Policies",
   "policies.noviolations": "{{count}} policy with no violations",
   "policies.noviolations_plural": "{{count}} policies with no violations",

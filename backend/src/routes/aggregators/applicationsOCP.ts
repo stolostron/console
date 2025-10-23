@@ -317,23 +317,6 @@ export function createOCPStatusMap(ocpApps: ISearchResource[], relatedResources:
       }
     }
     app2AppsetMap[app._uid] = appStatuses
-    const available = Number(app.available)
-    const desired = Number(app.desired)
-    if (available === desired) {
-      appStatuses.health[StatusColumn.counts][ScoreColumn.healthy]++
-      appStatuses.synced[StatusColumn.counts][ScoreColumn.healthy]++
-    } else if (available < desired) {
-      appStatuses.health[StatusColumn.counts][ScoreColumn.healthy]++
-      appStatuses.synced[StatusColumn.counts][ScoreColumn.progress]++
-    } else if (desired <= 0) {
-      appStatuses.health[StatusColumn.counts][ScoreColumn.warning]++
-    } else if (!desired && available === 0) {
-      appStatuses.health[StatusColumn.counts][ScoreColumn.danger]++
-    } else {
-      appStatuses.health[StatusColumn.counts][ScoreColumn.healthy]++
-      appStatuses.synced[StatusColumn.counts][ScoreColumn.healthy]++
-    }
-    extractMessages(appStatuses.synced, app)
   })
 
   // compute pod statuses

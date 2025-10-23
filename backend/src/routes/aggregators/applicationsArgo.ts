@@ -32,6 +32,7 @@ import {
   getApplicationType,
   getApplicationClusters,
   getTransform,
+  computeDeployedPodStatuses,
 } from './utils'
 import { deflateResource } from '../../lib/compression'
 import { IWatchOptions } from '../../resources/watch-options'
@@ -447,7 +448,7 @@ export function createArgoStatusMap(searchResult: SearchResult) {
   })
 
   // compute pod statuses
-  computePodStatuses(searchResult.related, app2AppsetMap)
+  computeDeployedPodStatuses(searchResult.related, app2AppsetMap)
 
   return argoClusterStatusMap
 }

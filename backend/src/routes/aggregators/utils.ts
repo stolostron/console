@@ -208,7 +208,7 @@ function createResourceMap(related: SearchResult['related'], kind: string): Map<
   return map
 }
 
-export function computePodStatuses(
+export function computeDeployedPodStatuses(
   related: SearchResult['related'],
   app2AppsetMap: Record<string, ApplicationStatuses>
 ) {
@@ -238,9 +238,6 @@ export function computePodStatuses(
             }
           }
         }
-      } else {
-        appStatuses.deployed[StatusColumn.counts][ScoreColumn.danger]++
-        appStatuses.deployed[StatusColumn.messages].push({ key: 'Status', value: 'Missing' })
       }
     }
   })
@@ -271,6 +268,22 @@ export function computepDeployedStatus(deployed: ApplicationStatusEntry, items: 
     })
   }
   return allHealthy
+}
+
+export function computePodStatuses(
+  related: SearchResult['related'],
+  app2AppsetMap: Record<string, ApplicationStatuses>
+) {
+  const podMap = createResourceMap(related, 'Pod')
+  Object.keys(app2AppsetMap).forEach((appUid) => {
+    const appStatuses = app2AppsetMap[appUid]
+    if (appStatuses) {
+      const pods = podMap.get(appUid)
+      if (pods) {
+        computePodStatus(appStatuses.deployed, pods)
+      }
+    }
+  })
 }
 
 function computePodStatus(deployed: ApplicationStatusEntry, pods: ISearchResource[]) {
@@ -314,9 +327,9 @@ function getAppStatusScore(clusters: string[], statuses: ApplicationStatusMap, i
       }
       if (column) {
         score =
-          column[ScoreColumn.danger] * 10000 +
-          column[ScoreColumn.warning] * 1000 +
-          column[ScoreColumn.progress] * 100 +
+          column[ScoreColumn.danger] * 100000 +
+          column[ScoreColumn.warning] * 10000 +
+          column[ScoreColumn.progress] * 1000 +
           column[ScoreColumn.healthy]
       }
     }

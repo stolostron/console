@@ -284,11 +284,11 @@ export function getStatusFilterKey(item: ICompressedResource, index: AppColumns)
   const score = (item.transform[TransformColumns.scores] as ApplicationScoresMap[])[0][index]
   switch (index) {
     case AppColumns.health:
-      return score < 100 ? 'Healthy' : 'Unhealthy'
+      return score < 1000 ? 'Healthy' : 'Unhealthy'
     case AppColumns.synced:
-      return score < 100 ? 'Synced' : 'OutOfSync'
+      return score < 1000 ? 'Synced' : 'OutOfSync'
     case AppColumns.deployed:
-      return score < 100 ? 'Deployed' : 'Not Deployed'
+      return score < 1000 ? 'Deployed' : 'Not Deployed'
     default:
       return ''
   }
