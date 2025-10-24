@@ -361,44 +361,55 @@ export const getApplicationRepos = (resource: IResource, subscriptions: Subscrip
   } else if (resource.apiVersion === ArgoApplicationApiVersion) {
     if (resource.kind === ArgoApplicationKind) {
       castType = resource as ArgoApplication
-      if (!castType.spec.source) {
-        return []
+      const appRepos: any[] = []
+
+      // single source handling
+      if (castType.spec.source) {
+        // if the source data is incomplete (missing repoURL), return empty to show no information
+        // rather than incomplete information
+        if (!castType.spec.source.repoURL) {
+          return []
+        }
+        return [createRepoFromArgoSource(castType.spec.source)]
       }
-      return [
-        {
-          type: castType.spec.source.path ? 'git' : 'helmrepo',
-          pathName: castType.spec.source.repoURL,
-          gitPath: castType.spec.source.path,
-          chart: castType.spec.source.chart,
-          targetRevision: castType.spec.source.targetRevision,
-        },
-      ]
+
+      // multiple sources handling(fallback for details page when search data is incomplete)
+      if (castType.spec.sources) {
+        for (const source of castType.spec.sources) {
+          if (source.repoURL) {
+            appRepos.push(createRepoFromArgoSource(source))
+          }
+        }
+      }
+      return appRepos
     } else if (resource.kind === ApplicationSetKind) {
       castType = resource as ApplicationSet
       const appRepos: any[] = []
+
+      // single source handling
       if (!castType.spec.template?.spec?.sources && castType.spec.template?.spec?.source) {
-        return [
-          {
-            type: castType.spec.template?.spec?.source.path ? 'git' : 'helmrepo',
-            pathName: castType.spec.template?.spec?.source.repoURL,
-            gitPath: castType.spec.template?.spec?.source.path,
-            chart: castType.spec.template?.spec?.source.chart,
-            targetRevision: castType.spec.template?.spec?.source.targetRevision,
-          },
-        ]
-      } else if (castType.spec.template?.spec?.sources) {
-        castType.spec.template?.spec?.sources.forEach((source) => {
-          appRepos.push({
-            type: source.path ? 'git' : source.chart ? 'helmrepo' : 'git',
-            pathName: source.repoURL,
-            gitPath: source.path,
-            chart: source.chart,
-            targetRevision: source.targetRevision,
-          })
-        })
+        return [createRepoFromArgoSource(castType.spec.template.spec.source)]
+      }
+
+      // multiple sources handling
+      if (castType.spec.template?.spec?.sources) {
+        for (const source of castType.spec.template.spec.sources) {
+          appRepos.push(createRepoFromArgoSource(source))
+        }
       }
       return appRepos
     }
+  }
+}
+
+// repository object creation from an Argo source
+function createRepoFromArgoSource(source: any) {
+  return {
+    type: source.chart ? 'helmrepo' : 'git',
+    pathName: source.repoURL,
+    gitPath: source.path,
+    chart: source.chart,
+    targetRevision: source.targetRevision,
   }
 }
 

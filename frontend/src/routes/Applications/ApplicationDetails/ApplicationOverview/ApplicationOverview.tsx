@@ -26,6 +26,7 @@ import {
   ApplicationKind,
   ApplicationSet,
   ApplicationSetDefinition,
+  ArgoApplication,
   ArgoApplicationDefinition,
   Channel,
   IResource,
@@ -565,12 +566,13 @@ function renderCardsSection(props: IRenderCardsSectionProps) {
 }
 
 function createSourceCards(
-  applicationSet: ApplicationSet,
+  application: ArgoApplication | ApplicationSet,
   t: TFunction,
   subscriptions: Subscription[],
   channels: Channel[]
 ) {
-  const appRepos = getApplicationRepos(applicationSet, subscriptions, channels)
+  const appRepos = getApplicationRepos(application, subscriptions, channels)
+
   return appRepos?.map((appRepo) => {
     if (appRepo) {
       return (
