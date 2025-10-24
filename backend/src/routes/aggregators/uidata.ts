@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Http2ServerRequest, Http2ServerResponse } from 'http2'
-import { applicationCache, IUIData } from './applications'
+import { applicationCache } from './applications'
 import { getApplicationClusters, getApplicationsHelper, getApplicationType, getClusters } from './utils'
-import { Cluster, IApplicationSet, IResource } from '../../resources/resource'
+import { Cluster, IApplicationSet, IResource, IUIData } from '../../resources/resource'
 import { getHubClusterName, getKubeResources } from '../events'
 import { getPushedAppSetMap, getAppSetRelatedResources } from './applicationsArgo'
 import { inflateApps } from '../../lib/compression'
@@ -14,15 +14,7 @@ export function requestAggregatedUIData(req: Http2ServerRequest, res: Http2Serve
   })
   req.on('end', () => {
     const body = chucks.join()
-    let resource: IResource
-    try {
-      resource = JSON.parse(body) as IResource
-    } catch (error) {
-      console.error(error)
-      res.statusCode = 400
-      res.end(JSON.stringify({ error: 'Invalid request body' }))
-      return
-    }
+    const resource = JSON.parse(body) as IResource
     const argoAppSets = inflateApps(getApplicationsHelper(applicationCache, ['appset']))
     const subscriptions = getKubeResources('Subscription', 'apps.open-cluster-management.io/v1')
     const placementDecisions = getKubeResources('PlacementDecision', 'cluster.open-cluster-management.io/v1beta1')
