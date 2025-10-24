@@ -1379,13 +1379,11 @@ export function getClusterStatus(
       }
 
       // invoke unreachable only if not these
-      // other valid states when resuming/hibernating
-      if (
-        unreachableError &&
-        ![ClusterStatus.hibernating, ClusterStatus.stopping, ClusterStatus.resuming].includes(cdStatus)
-      ) {
+      // other valid states when hibernating/stopping
+      if (unreachableError && ![ClusterStatus.hibernating, ClusterStatus.stopping].includes(cdStatus)) {
         cdStatus = ClusterStatus.unreachable
         statusMessage = getConditionMessage('Unreachable', cdConditions)
+        return { status: cdStatus, statusMessage }
       }
 
       // provisioning - default
