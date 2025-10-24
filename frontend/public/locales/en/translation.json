@@ -2646,7 +2646,7 @@
   "Starting CSV": "Starting CSV",
   "Status": "Status",
   "Status icon legend": "Status icon legend",
-  "Status of pods deployed by the application.": "Status of pods deployed by the application. Also indirectly reflects the status of deployments and replicasets.",
+  "Status of pods deployed by the application.": "Status of pods deployed by the application.",
   "Status of resources within the topology.": "Status of resources within the topology.",
   "Status represents the subscription selection within Resource topology.": "Status represents the subscription selection within Resource topology.",
   "status.creating": "Creating",
