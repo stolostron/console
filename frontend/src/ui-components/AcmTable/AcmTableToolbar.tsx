@@ -513,7 +513,6 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
                   </MenuToggle>
                 )}
                 isOpen={isExportMenuOpen}
-                isPlain
                 popperProps={{
                   position: 'left',
                 }}
