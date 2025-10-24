@@ -633,7 +633,7 @@ export default function ApplicationsOverview() {
         cell: (resource) => {
           return renderApplicationStatusGroup(resource, 'health')
         },
-        tooltip: t('Health status for applications.'),
+        tooltip: t('Health status for ArgoCD applications.'),
         sort: (itemA, itemB) => {
           return get(itemB, 'transformed.healthScore') - get(itemA, 'transformed.healthScore')
         },
@@ -646,7 +646,7 @@ export default function ApplicationsOverview() {
         cell: (resource) => {
           return renderApplicationStatusGroup(resource, 'synced')
         },
-        tooltip: t('Sync status for applications.'),
+        tooltip: t('Sync status for ArgoCD applications.'),
         sort: (itemA, itemB) => {
           return get(itemB, 'transformed.syncedScore') - get(itemA, 'transformed.syncedScore')
         },
@@ -659,7 +659,7 @@ export default function ApplicationsOverview() {
         cell: (resource) => {
           return renderApplicationStatusGroup(resource, 'deployed')
         },
-        tooltip: t('Status of resources deployed by the application.'),
+        tooltip: t('Status of pods deployed by the application.'),
         sort: (itemA, itemB) => {
           return get(itemB, 'transformed.deployedScore') - get(itemA, 'transformed.deployedScore')
         },
