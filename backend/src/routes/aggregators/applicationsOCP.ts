@@ -1,9 +1,24 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { logger } from '../../lib/logger'
-import { IResource } from '../../resources/resource'
+import { IResource, ISearchResource, SearchResult } from '../../resources/resource'
 import { getKubeResources, getHubClusterName } from '../events'
-import { AppColumns, ApplicationCacheType, IQuery, SEARCH_QUERY_LIMIT } from './applications'
-import { transform, getClusterMap, ApplicationPageChunk, getNextApplicationPageChunk, cacheRemoteApps } from './utils'
+import {
+  AppColumns,
+  ApplicationCacheType,
+  ApplicationClusterStatusMap,
+  ApplicationStatuses,
+  IQuery,
+  SEARCH_QUERY_LIMIT,
+} from './applications'
+import { computePodStatuses } from './utils'
+import {
+  transform,
+  getClusterMap,
+  ApplicationPageChunk,
+  getNextApplicationPageChunk,
+  cacheRemoteApps,
+  getApplicationType,
+} from './utils'
 
 // getting system apps by its cluster name in cluster chunks
 const REMOTE_CLUSTER_CHUNKS = 10
@@ -15,18 +30,6 @@ const labelArr: string[] = [
   'app=',
   'app.kubernetes.io/part-of=',
 ]
-
-export interface IOCPAppResource extends IResource {
-  apigroup: string
-  apiversion: string
-  kind: string
-  name: string
-  namespace: string
-  cluster: string
-  label?: string
-  created: string
-  _hostingSubscription?: boolean
-}
 
 let ocpPageChunk: ApplicationPageChunk
 const ocpPageChunks: ApplicationPageChunk[] = []
@@ -62,6 +65,7 @@ export function addOCPQueryInputs(applicationCache: ApplicationCacheType, query:
   }
   query.variables.input.push({
     filters,
+    relatedKinds: ['pod', 'replicaset', 'statefulset'],
     limit: SEARCH_QUERY_LIMIT,
   })
 }
@@ -87,25 +91,26 @@ export function addSystemQueryInputs(applicationCache: ApplicationCacheType, que
         values: clusterNameChunk,
       },
     ],
+    relatedKinds: ['pod', 'replicaset', 'statefulset'],
     limit: SEARCH_QUERY_LIMIT,
   })
 }
 
 export function cacheOCPApplications(
   applicationCache: ApplicationCacheType,
-  searchedOcpApps: IResource[],
+  searchResult: SearchResult,
   ocpArgoAppFilter: Set<string>,
   isSystemMode?: boolean
 ) {
-  const ocpApps = searchedOcpApps as unknown as IOCPAppResource[]
   const helmReleases = getKubeResources('HelmRelease', 'apps.open-cluster-management.io/v1')
 
   // filter ocp apps from this search
   const localOCPApps: IResource[] = []
   const remoteOCPApps: IResource[] = []
+  const ocpApps: ISearchResource[] = []
   try {
-    const openShiftAppResourceMaps: Record<string, IOCPAppResource> = {}
-    ocpApps.forEach((ocpApp: IOCPAppResource) => {
+    const openShiftAppResourceMaps: Record<string, ISearchResource> = {}
+    searchResult.items.forEach((ocpApp: ISearchResource) => {
       if (ocpApp._hostingSubscription) {
         // don't list subscription apps as ocp
         return
@@ -141,18 +146,7 @@ export function cacheOCPApplications(
     })
 
     Object.entries(openShiftAppResourceMaps).forEach(([, value]) => {
-      let labelIdx
-      let i
-      for (i = 0; i < labelArr.length; i++) {
-        labelIdx = value.label?.indexOf(labelArr[i])
-        if (labelIdx > -1) {
-          break
-        }
-      }
-      labelIdx += labelArr[i].length
-
-      const semicolon = value.label?.indexOf(';', labelIdx)
-      const appLabel = value.label?.substring(labelIdx, semicolon > -1 ? semicolon : value.label?.length)
+      const appLabel = getAppNameFromLabel(value.label, value.name)
       const resourceName = value.name
       let apps
       if (value.cluster === getHubClusterName()) {
@@ -160,7 +154,7 @@ export function cacheOCPApplications(
       } else {
         apps = remoteOCPApps
       }
-      apps.push({
+      const app = {
         apiVersion: value.apigroup ? `${value.apigroup}/${value.apiversion}` : value.apiversion,
         kind: value.kind,
         label: value.label,
@@ -173,20 +167,24 @@ export function cacheOCPApplications(
           cluster: value.cluster,
           resourceName,
         },
-      } as unknown as IResource)
+      }
+      apps.push(app)
+      value.type = getApplicationType(app)
+      ocpApps.push(value)
     })
   } catch (e) {
     logger.error(`processing ${isSystemMode ? 'system' : 'ocp/flex'} exception ${e}`)
   }
+  const ocpStatusMap = createOCPStatusMap(ocpApps, searchResult.related)
 
   if (!isSystemMode) {
     try {
-      applicationCache['localOCPApps'] = transform(localOCPApps)
+      applicationCache['localOCPApps'] = transform(localOCPApps, ocpStatusMap)
     } catch (e) {
       logger.error(`getLocalOCPApps exception ${e}`)
     }
     try {
-      cacheRemoteApps(applicationCache, remoteOCPApps, ocpPageChunk, 'remoteOCPApps')
+      cacheRemoteApps(applicationCache, ocpStatusMap, remoteOCPApps, ocpPageChunk, 'remoteOCPApps')
     } catch (e) {
       logger.error(`getRemoteOCPApps exception ${e}`)
     }
@@ -194,22 +192,32 @@ export function cacheOCPApplications(
     // if we just got remote clusters this time, don't touch localSysApps
     if (localOCPApps.length) {
       try {
-        applicationCache['localSysApps'] = transform(localOCPApps)
+        applicationCache['localSysApps'] = transform(localOCPApps, ocpStatusMap)
       } catch (e) {
         logger.error(`getLocalSystemApps exception ${e}`)
       }
     }
     try {
       // cache remote system apps
-      cacheRemoteSystemApps(applicationCache, remoteOCPApps, clusterNameChunk)
+      cacheRemoteSystemApps(applicationCache, ocpStatusMap, remoteOCPApps, clusterNameChunk)
     } catch (e) {
       logger.error(`cacheRemoteSystemApps exception ${e}`)
     }
   }
 }
 
+function getAppNameFromLabel(label: string, defaultName: string) {
+  const matchingLabel = labelArr.find((labelPattern) => label?.includes(labelPattern))
+  if (!matchingLabel) return defaultName
+
+  const startIdx = label.indexOf(matchingLabel) + matchingLabel.length
+  const endIdx = label.indexOf(';', startIdx)
+  return label.substring(startIdx, endIdx > -1 ? endIdx : undefined)
+}
+
 function cacheRemoteSystemApps(
   applicationCache: ApplicationCacheType,
+  ocpStatusMap: ApplicationClusterStatusMap,
   remoteSysApps: IResource[],
   clusterNameChunk: string[]
 ) {
@@ -217,9 +225,9 @@ function cacheRemoteSystemApps(
   clusterNameChunk.forEach((clustername) => {
     applicationCache['remoteSysApps'].resourceMap[clustername] = []
   })
-  const resources = transform(remoteSysApps, true).resources
+  const resources = transform(remoteSysApps, ocpStatusMap, true).resources
   resources.forEach((resource) => {
-    const clustername = resource.transform[AppColumns.clusters].join()
+    const clustername = (resource.transform[AppColumns.clusters] as string[]).join()
     const clusterResources = applicationCache['remoteSysApps'].resourceMap[clustername]
     clusterResources.push(resource)
   })
@@ -285,4 +293,32 @@ function getValues(labels: { annotation: any; value: any }[]) {
     isManagedByHelm,
     argoInstanceLabelValue,
   }
+}
+
+export function createOCPStatusMap(ocpApps: ISearchResource[], relatedResources: SearchResult['related']) {
+  const ocpClusterStatusMap: ApplicationClusterStatusMap = {}
+  const app2AppsetMap: Record<string, ApplicationStatuses> = {}
+
+  // create an app map with syncs and health
+  ocpApps.forEach((app: ISearchResource) => {
+    const appKey = `${app.type}/${app.namespace}/${getAppNameFromLabel(app.label, app.name)}`
+    let appStatusMap = ocpClusterStatusMap[appKey]
+    if (!appStatusMap) {
+      appStatusMap = ocpClusterStatusMap[appKey] = {}
+    }
+    let appStatuses = appStatusMap[app.cluster]
+    if (!appStatuses) {
+      appStatuses = appStatusMap[app.cluster] = {
+        health: [[0, 0, 0, 0], []],
+        synced: [[0, 0, 0, 0], []],
+        deployed: [[0, 0, 0, 0], []],
+      }
+    }
+    app2AppsetMap[app._uid] = appStatuses
+  })
+
+  // compute pod statuses
+  computePodStatuses(relatedResources, app2AppsetMap)
+
+  return ocpClusterStatusMap
 }

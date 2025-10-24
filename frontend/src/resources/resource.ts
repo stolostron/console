@@ -16,8 +16,31 @@ export interface IResource<StatusType = unknown> extends IResourceDefinition {
   kind: string
   metadata?: Metadata
 }
+
+export enum StatusColumn {
+  counts = 0,
+  messages = 1,
+}
+
+export enum ScoreColumn {
+  healthy = 0,
+  progress = 1,
+  warning = 2,
+  danger = 3,
+}
+
+export type ApplicationStatusEntry = [number[], Record<string, string>[]]
+
+export type ApplicationStatuses = {
+  health: ApplicationStatusEntry
+  synced: ApplicationStatusEntry
+  deployed: ApplicationStatusEntry
+}
+
+export type ApplicationStatusMap = Record<string, ApplicationStatuses>
 export interface IUIData {
   clusterList: string[]
+  appClusterStatuses: ApplicationStatusMap[]
   appSetRelatedResources: (string | string[])[]
   appSetApps: string[]
 }

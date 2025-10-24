@@ -1,8 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
+  Label,
   PageSection,
   Popover,
+  PopoverPosition,
   Stack,
   StackItem,
   Text,
@@ -32,6 +34,8 @@ import {
   ApplicationSetApiVersion,
   ApplicationSetDefinition,
   ApplicationSetKind,
+  ApplicationStatuses,
+  ApplicationStatusMap,
   ArgoApplication,
   ArgoApplicationApiVersion,
   ArgoApplicationKind,
@@ -41,6 +45,7 @@ import {
   IResource,
   IUIResource,
   OCPAppResource,
+  StatusColumn,
   Subscription,
 } from '../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
@@ -48,6 +53,7 @@ import {
   AcmButton,
   AcmDropdown,
   AcmEmptyState,
+  AcmInlineStatusGroup,
   AcmTable,
   compareStrings,
   IAcmRowAction,
@@ -55,7 +61,6 @@ import {
 } from '../../ui-components'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { DeleteResourceModal, IDeleteResourceModalProps } from './components/DeleteResourceModal'
-import ResourceLabels from './components/ResourceLabels'
 import { argoAppSetQueryString } from './CreateArgoApplication/actions'
 import { subscriptionAppQueryString } from './CreateSubscriptionApplication/actions'
 import {
@@ -69,7 +74,6 @@ import {
   getSearchLink,
   getSubscriptionsFromAnnotation,
   hostingSubAnnotationStr,
-  isArgoApp,
   isResourceTypeOf,
 } from './helpers/resource-helper'
 import { isLocalSubscription } from './helpers/subscriptions'
@@ -100,7 +104,25 @@ type ApplicationStatus = {
   resourceName: string
 }
 
-type IApplicationResource = IResource<ApplicationStatus> | OCPAppResource<ApplicationStatus>
+export type IApplicationResource = IResource<ApplicationStatus> | OCPAppResource<ApplicationStatus>
+
+export enum AppColumns {
+  'name' = 0,
+  'type',
+  'namespace',
+  'clusters',
+  'health',
+  'synced',
+  'deployed',
+  'created',
+}
+
+enum ApplicationStatusEnum {
+  healthy = 0,
+  progress = 1,
+  warning = 2,
+  danger = 3,
+}
 
 function isOCPAppResource(resource: IApplicationResource): resource is OCPAppResource<ApplicationStatus> {
   return 'label' in resource
@@ -204,26 +226,100 @@ export function getAppNamespace(resource: IResource) {
   return resource.metadata?.namespace
 }
 
-export function getAppHealthStatus(resource: IResource) {
-  let castType
-  if (resource.apiVersion === ArgoApplicationApiVersion && resource.kind === ArgoApplicationKind) {
-    castType = resource as ArgoApplication
-    return get(castType, 'status.health.status', '')
+export const getApplicationStatuses = (resource: IResource, type: 'health' | 'synced' | 'deployed') => {
+  const uidata = (resource as IUIResource).uidata
+  if (
+    Array.isArray(uidata?.appClusterStatuses) &&
+    uidata.appClusterStatuses.length > 0 &&
+    Object.keys(uidata.appClusterStatuses[0]).length > 0
+  ) {
+    const allCounts = [0, 0, 0, 0]
+    const messages: Record<string, string>[] = []
+    uidata.clusterList.forEach((cluster: string) => {
+      const clusterStatuses = uidata.appClusterStatuses[0][cluster] as ApplicationStatuses
+      if (clusterStatuses) {
+        const counts = clusterStatuses[type][StatusColumn.counts] ?? []
+        for (let i = 0; i < 4; i++) {
+          allCounts[i] += counts[i] ?? 0
+        }
+        if (clusterStatuses[type][StatusColumn.messages]) {
+          clusterStatuses[type][StatusColumn.messages].forEach((message) => {
+            messages.push(message)
+          })
+        }
+      }
+    })
+    return { counts: allCounts, messages }
   }
-
-  return ''
+  return { counts: [0, 0, 0, 0], messages: undefined }
 }
 
-export function getAppSyncStatus(resource: IResource) {
-  let castType
-  if (resource.apiVersion === ArgoApplicationApiVersion && resource.kind === ArgoApplicationKind) {
-    castType = resource as ArgoApplication
-    return get(castType, 'status.sync.status', '')
-  }
-
-  return ''
+const renderPopoverContent = (messages: Record<string, string>[]) => {
+  return (
+    <div style={{ width: '26.75rem' }}>
+      {messages &&
+        messages.map((message) => {
+          // Remove leading underscore and "condition" from the key
+          let cleanedKey = message.key.replace(/^_/, '').replace(/^condition/i, '')
+          // Add space before each capitalized letter
+          cleanedKey = cleanedKey.replace(/([A-Z])/g, ' $1')
+          // Capitalize the first letter and trim any leading space
+          cleanedKey = cleanedKey.charAt(0).toUpperCase() + cleanedKey.slice(1)
+          cleanedKey = cleanedKey.trim()
+          return (
+            <div key={message.key} style={{ marginBottom: '0.5rem' }}>
+              <strong>{cleanedKey}:</strong> {message.value}
+            </div>
+          )
+        })}
+    </div>
+  )
 }
 
+export function renderApplicationStatusGroup(resource: IResource, type: 'health' | 'synced' | 'deployed') {
+  const { counts, messages } = getApplicationStatuses(resource, type)
+  if (Array.isArray(messages) && messages.length > 0) {
+    return (
+      <Popover
+        id={'labels-popover'}
+        bodyContent={renderPopoverContent(messages)}
+        position={PopoverPosition.bottom}
+        flipBehavior={['bottom', 'bottom-end', 'bottom-end']}
+        hasAutoWidth
+      >
+        <Label style={{ width: 'fit-content' }} isOverflowLabel>
+          {<AcmInlineStatusGroup healthy={counts[0]} progress={counts[1]} warning={counts[2]} danger={counts[3]} />}
+        </Label>
+      </Popover>
+    )
+  } else if (counts.some((count) => count > 0)) {
+    return <AcmInlineStatusGroup healthy={counts[0]} progress={counts[1]} warning={counts[2]} danger={counts[3]} />
+  }
+  return '-'
+}
+
+export function exportApplicationStatusGroup(resource: IResource, type: 'health' | 'synced' | 'deployed') {
+  const { counts, messages } = getApplicationStatuses(resource, type)
+  if (counts.some((count) => count > 0)) {
+    const statuses: string[] = []
+    if (counts[0] > 0) {
+      let label = ''
+      if (type === 'health') {
+        label = 'Healthy'
+      } else if (type === 'synced') {
+        label = 'Synced'
+      } else if (type === 'deployed') {
+        label = 'Deployed'
+      }
+      statuses.push(`${counts[0]} ${label}`)
+    }
+    if (Array.isArray(messages) && messages?.length && (counts[1] > 0 || counts[2] > 0 || counts[3] > 0)) {
+      statuses.push(`${messages[0].value}`)
+    }
+    return statuses.join(', ')
+  }
+  return '-'
+}
 export const getApplicationRepos = (resource: IResource, subscriptions: Subscription[], channels: Channel[]) => {
   let castType
   if (resource.apiVersion === ApplicationApiVersion) {
@@ -352,6 +448,42 @@ export default function ApplicationsOverview() {
       })
 
       const transformedNamespace = getAppNamespace(tableItem)
+
+      const getApplicationStatusScore = (
+        statuses: ApplicationStatusMap[],
+        index: number,
+        clusters: string[]
+      ): number => {
+        let score = 0
+        clusters.forEach((cluster) => {
+          const stats = statuses[0]?.[cluster] ?? undefined
+          if (stats) {
+            let column: number[] | undefined = undefined
+            if (index === AppColumns.health) column = stats.health[StatusColumn.counts]
+            if (index === AppColumns.synced) column = stats.synced[StatusColumn.counts]
+            if (index === AppColumns.deployed) column = stats.deployed[StatusColumn.counts]
+            if (column) {
+              score =
+                column[ApplicationStatusEnum.danger] * 100000 +
+                column[ApplicationStatusEnum.warning] * 10000 +
+                column[ApplicationStatusEnum.progress] * 1000 +
+                column[ApplicationStatusEnum.healthy]
+            }
+          }
+        })
+        return score
+      }
+
+      const uidata = (
+        tableItem as IApplicationResource & {
+          uidata: { clusterList: string[]; appClusterStatuses: ApplicationStatusMap[] }
+        }
+      )?.uidata
+      const clusters = uidata?.clusterList ?? []
+      const healthScore = getApplicationStatusScore(uidata?.appClusterStatuses ?? [], AppColumns.health, clusters)
+      const syncedScore = getApplicationStatusScore(uidata?.appClusterStatuses ?? [], AppColumns.synced, clusters)
+      const deployedScore = getApplicationStatusScore(uidata?.appClusterStatuses ?? [], AppColumns.deployed, clusters)
+
       const transformedObject = {
         transformed: {
           clusterCount: clusterTransformData,
@@ -359,8 +491,12 @@ export default function ApplicationsOverview() {
           resourceText: resourceText,
           createdText: getResourceTimestamp(tableItem, 'metadata.creationTimestamp'),
           namespace: transformedNamespace,
-          healthStatus: getAppHealthStatus(tableItem),
-          syncStatus: getAppSyncStatus(tableItem),
+          healthScore: healthScore,
+          syncedScore: syncedScore,
+          deployedScore: deployedScore,
+          healthStatus: healthScore < 1000 ? 'Healthy' : 'Unhealthy',
+          syncedStatus: syncedScore < 1000 ? 'Synced' : 'OutOfSync',
+          deployedStatus: deployedScore < 1000 ? 'Deployed' : 'Not Deployed',
         },
       }
 
@@ -497,50 +633,42 @@ export default function ApplicationsOverview() {
         },
       },
       {
-        header: t('Repository'),
-        cell: (resource) => {
-          const appRepos = getApplicationRepos(resource, subscriptions, channels)
-          return (
-            <ResourceLabels
-              appRepos={appRepos!}
-              showSubscriptionAttributes={true}
-              isArgoApp={isArgoApp(resource) || isResourceTypeOf(resource, ApplicationSetDefinition)}
-              translation={t}
-            />
-          )
-        },
-        tooltip: t('Provides links to each of the resource repositories used by the application.'),
-        sort: 'transformed.resourceText',
-        search: 'transformed.resourceText',
-        exportContent: (resource) => {
-          const appRepos = getApplicationRepos(resource, subscriptions, channels)
-          if (appRepos) {
-            return appRepos.map((repo) => repo.type).toString()
-          }
-        },
-      },
-      {
         header: t('Health Status'),
         cell: (resource) => {
-          return <span>{get(resource, 'status.health.status', '')}</span>
+          return renderApplicationStatusGroup(resource, 'health')
         },
         tooltip: t('Health status for ArgoCD applications.'),
-        sort: 'transformed.healthStatus',
-        search: 'transformed.healthStatus',
+        sort: (itemA, itemB) => {
+          return get(itemB, 'transformed.healthScore') - get(itemA, 'transformed.healthScore')
+        },
         exportContent: (resource) => {
-          return get(resource, 'status.health.status', '')
+          return exportApplicationStatusGroup(resource, 'health')
         },
       },
       {
         header: t('Sync Status'),
         cell: (resource) => {
-          return <span>{get(resource, 'status.sync.status', '')}</span>
+          return renderApplicationStatusGroup(resource, 'synced')
         },
         tooltip: t('Sync status for ArgoCD applications.'),
-        sort: 'transformed.syncStatus',
-        search: 'transformed.syncStatus',
+        sort: (itemA, itemB) => {
+          return get(itemB, 'transformed.syncedScore') - get(itemA, 'transformed.syncedScore')
+        },
         exportContent: (resource) => {
-          return get(resource, 'status.sync.status', '')
+          return exportApplicationStatusGroup(resource, 'synced')
+        },
+      },
+      {
+        header: t('Pod Status'),
+        cell: (resource) => {
+          return renderApplicationStatusGroup(resource, 'deployed')
+        },
+        tooltip: t('Status of pods deployed by the application.'),
+        sort: (itemA, itemB) => {
+          return get(itemB, 'transformed.deployedScore') - get(itemA, 'transformed.deployedScore')
+        },
+        exportContent: (resource) => {
+          return exportApplicationStatusGroup(resource, 'deployed')
         },
       },
       ...extensionColumns,
@@ -561,7 +689,7 @@ export default function ApplicationsOverview() {
         },
       },
     ],
-    [t, extensionColumns, systemAppNSPrefixes, subscriptions, localCluster, channels]
+    [t, extensionColumns, systemAppNSPrefixes, localCluster]
   )
   const filters = useMemo(
     () => [
@@ -638,57 +766,54 @@ export default function ApplicationsOverview() {
         },
       },
       {
-        id: 'syncStatus',
-        label: t('Sync Status'),
-        options: [
-          {
-            label: t('Synced'),
-            value: 'Synced',
-          },
-          {
-            label: t('OutOfSync'),
-            value: 'OutOfSync',
-          },
-          {
-            label: t('Unknown'),
-            value: 'Unknown',
-          },
-        ],
-        tableFilterFn: (selectedValues: string[], item: IApplicationResource) => {
-          return selectedValues.includes(get(item, 'transformed.syncStatus'))
-        },
-      },
-      {
         id: 'healthStatus',
         label: t('Health Status'),
         options: [
           {
-            label: t('Unknown'),
-            value: 'Unknown',
-          },
-          {
-            label: t('Progressing'),
-            value: 'Progressing',
-          },
-          {
-            label: t('Suspended'),
-            value: 'Suspended',
+            label: t('Unhealthy'),
+            value: 'Unhealthy',
           },
           {
             label: t('Healthy'),
             value: 'Healthy',
           },
-          {
-            label: t('Degraded'),
-            value: 'Degraded',
-          },
-          {
-            label: t('Missing'),
-            value: 'Missing',
-          },
         ],
         tableFilterFn: (selectedValues: string[], item: IApplicationResource) => {
           return selectedValues.includes(get(item, 'transformed.healthStatus'))
+        },
+      },
+      {
+        id: 'syncStatus',
+        label: t('Sync Status'),
+        options: [
+          {
+            label: t('OutOfSync'),
+            value: 'OutOfSync',
+          },
+          {
+            label: t('Synced'),
+            value: 'Synced',
+          },
+        ],
+        tableFilterFn: (selectedValues: string[], item: IApplicationResource) => {
+          return selectedValues.includes(get(item, 'transformed.syncedStatus'))
+        },
+      },
+      {
+        id: 'podStatuses',
+        label: t('Pod Status'),
+        options: [
+          {
+            label: t('Not Deployed'),
+            value: 'Not Deployed',
+          },
+          {
+            label: t('Deployed'),
+            value: 'Deployed',
+          },
+        ],
+        tableFilterFn: (selectedValues: string[], item: IApplicationResource) => {
+          return selectedValues.includes(get(item, 'transformed.deployedStatus'))
         },
       },
     ],

@@ -2,7 +2,14 @@
 import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { FilterCounts } from '../../lib/pagination'
 import { getAuthorizedResources } from '../events'
-import { AppColumns, ICompressedResource, ITransformedResource } from './applications'
+import {
+  AppColumns,
+  ApplicationStatusMap,
+  getStatusFilterKey,
+  ICompressedResource,
+  ITransformedResource,
+  TransformColumns,
+} from './applications'
 import { systemAppNamespacePrefixes } from './utils'
 
 export interface IRequestStatuses {
@@ -45,12 +52,15 @@ export function requestAggregatedStatuses(
       items.length
     )) as unknown as ITransformedResource[]
 
-    // count types
-    const filterCounts: FilterCounts = { type: {}, cluster: {} }
+    // count filter entries
+    const filterCounts: FilterCounts = { type: {}, cluster: {}, podStatuses: {}, healthStatus: {}, syncStatus: {} }
     authorizedItems.forEach((item) => {
       if (item.transform) {
-        incFilterCounts(filterCounts, 'type', item.transform[AppColumns.type])
-        incFilterCounts(filterCounts, 'cluster', item.transform[AppColumns.clusters])
+        incFilterCounts(filterCounts, 'type', item.transform[TransformColumns.type] as string[])
+        incFilterCounts(filterCounts, 'cluster', item.transform[TransformColumns.clusters] as string[])
+        incStatusCounts(filterCounts, 'podStatuses', item as unknown as ICompressedResource, AppColumns.deployed)
+        incStatusCounts(filterCounts, 'healthStatus', item as unknown as ICompressedResource, AppColumns.health)
+        incStatusCounts(filterCounts, 'syncStatus', item as unknown as ICompressedResource, AppColumns.synced)
       }
     })
 
@@ -76,4 +86,19 @@ function incFilterCounts(mapmap: FilterCounts, id: string, keys: string[]) {
       map[key] = 1
     }
   })
+}
+
+// add to filters count that appears in filter dropdown
+function incStatusCounts(mapmap: FilterCounts, id: string, item: ICompressedResource, index: AppColumns) {
+  let map = mapmap[id]
+  if (!map) map = mapmap[id] = {}
+  const statuses = (item.transform[TransformColumns.statuses] as ApplicationStatusMap[])[0]
+  if (Object.keys(statuses).length) {
+    const key = getStatusFilterKey(item, index)
+    if (key in map) {
+      map[key]++
+    } else {
+      map[key] = 1
+    }
+  }
 }

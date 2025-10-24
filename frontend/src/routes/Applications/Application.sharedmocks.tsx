@@ -6,6 +6,7 @@ import {
   ApplicationSet,
   ApplicationSetApiVersion,
   ApplicationSetKind,
+  ApplicationStatusMap,
   ArgoApplication,
   ArgoApplicationApiVersion,
   ArgoApplicationKind,
@@ -117,7 +118,8 @@ export const mockApplication0: Application & IUIResource = {
   uidata: {
     appSetRelatedResources: ['', []],
     clusterList: ['local-cluster'],
-    appSetApps: [],
+    appSetApps: [] as string[],
+    appClusterStatuses: [] as ApplicationStatusMap[],
   },
 }
 
@@ -153,6 +155,7 @@ export const mockApplicationUi = {
     appSetRelatedResources: ['', []],
     clusterList: ['local-cluster'],
     appSetApps: [],
+    appClusterStatuses: [],
   },
 }
 export const uidata = {
@@ -437,7 +440,8 @@ export const mockArgoApplication1: ArgoApplication & IUIResource = {
   uidata: {
     clusterList: ['None'],
     appSetRelatedResources: ['', []],
-    appSetApps: [],
+    appSetApps: [] as string[],
+    appClusterStatuses: [] as ApplicationStatusMap[],
   },
 }
 export const mockArgoApplication2: ArgoApplication = {
