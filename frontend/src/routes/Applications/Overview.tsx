@@ -1,13 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Label, PageSection, PopoverPosition } from '@patternfly/react-core'
-import { Popover } from '@patternfly/react-core'
-import { Stack } from '@patternfly/react-core'
-import { StackItem } from '@patternfly/react-core'
-import { Text } from '@patternfly/react-core'
-import { TextContent } from '@patternfly/react-core'
-import { TextVariants } from '@patternfly/react-core'
-import { ToolbarItem } from '@patternfly/react-core'
+import {
+  Label,
+  PageSection,
+  Popover,
+  PopoverPosition,
+  Stack,
+  StackItem,
+  Text,
+  TextContent,
+  TextVariants,
+  ToolbarItem,
+} from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { cellWidth } from '@patternfly/react-table'
 import { get } from 'lodash'
