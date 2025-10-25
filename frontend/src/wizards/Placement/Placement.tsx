@@ -137,7 +137,6 @@ export function Placement(props: {
       <WizNumberInput
         label={t('Limit the number of clusters selected')}
         path="spec.numberOfClusters"
-        zeroIsUndefined
         hidden={(placement) => placement.spec?.numberOfClusters === undefined}
       />
     </Fragment>
