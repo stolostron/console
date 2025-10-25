@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import {
   mockClusterSet,
@@ -139,6 +139,70 @@ describe('Policy wizard', () => {
     expect(screen.getByRole('button', { name: /Add cluster set/i })).not.toBeNull()
 
     expect(screen.getByRole('option', { name: /cluster-set-01/i })).not.toBeNull()
+  })
+
+  test('can toggle cluster limit checkbox and set number of clusters', async () => {
+    const { container } = render(<TestPolicyWizard />)
+
+    const nameTextbox = screen.getByRole('textbox', { name: /name/i })
+    userEvent.type(nameTextbox, 'test-policy')
+    screen.getByPlaceholderText(/select namespace/i).click()
+    screen.getByRole('option', { name: /argo-server-1/i }).click()
+
+    screen.getByRole('button', { name: /placement/i }).click()
+    screen.getByRole('button', { name: /new placement/i }).click()
+    await waitFor(() => screen.getByPlaceholderText(/select the cluster sets/i))
+
+    // Find the checkbox for limiting clusters
+    const limitCheckbox = screen.getByRole('checkbox', {
+      name: /set a limit on the number of clusters selected/i,
+    }) as HTMLInputElement
+
+    // Initially, checkbox should be unchecked and number input should not be visible
+    expect(limitCheckbox.checked).toBe(false)
+    expect(container.querySelector('#spec-numberofclusters')).toBeNull()
+
+    // Click the checkbox to enable cluster limit
+    userEvent.click(limitCheckbox)
+
+    // After checking, the checkbox should be checked and number input should appear
+    let numberInput: HTMLInputElement
+    await waitFor(() => {
+      expect(limitCheckbox.checked).toBe(true)
+      // PatternFly NumberInput has a nested input element
+      numberInput = container.querySelector('#spec-numberofclusters input') as HTMLInputElement
+      expect(numberInput).not.toBeNull()
+      // Default value should be 1
+      expect(numberInput?.value).toBe('1')
+    })
+
+    // Change the number of clusters
+    numberInput = container.querySelector('#spec-numberofclusters input') as HTMLInputElement
+    // Use fireEvent to directly change the value (more reliable for PatternFly NumberInput)
+    fireEvent.change(numberInput, { target: { value: '5' } })
+
+    await waitFor(() => {
+      const updatedInput = container.querySelector('#spec-numberofclusters input') as HTMLInputElement
+      expect(updatedInput.value).toBe('5')
+    })
+
+    // Uncheck the checkbox to disable cluster limit
+    userEvent.click(limitCheckbox)
+
+    // After unchecking, the number input should disappear
+    await waitFor(() => {
+      expect(limitCheckbox.checked).toBe(false)
+      expect(container.querySelector('#spec-numberofclusters')).toBeNull()
+    })
+
+    // Check again to verify the value persists (or resets to 1 if it was undefined)
+    userEvent.click(limitCheckbox)
+    await waitFor(() => {
+      const numberInputAgain = container.querySelector('#spec-numberofclusters input') as HTMLInputElement
+      expect(numberInputAgain).not.toBeNull()
+      // Should be 1 since we set it to undefined when unchecked
+      expect(numberInputAgain?.value).toBe('1')
+    })
   })
 
   test('policy template customization is disabled for Gatekeeper policy', async () => {
