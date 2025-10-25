@@ -104,6 +104,6 @@
         "webpack-dev-server": "4.15.2"
     },
     "optionalDependencies": {
-        "cypress": "^11.2.0"
+        "cypress": "^15.0.0"
     }
 }
