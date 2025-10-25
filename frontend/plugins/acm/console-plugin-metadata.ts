@@ -9,7 +9,7 @@ import { ConsolePluginBuildMetadata } from '@openshift-console/dynamic-plugin-sd
 
 export const pluginMetadata: ConsolePluginBuildMetadata = {
   name: 'acm',
-  version: '2.15.0',
+  version: '2.16.0',
   displayName: 'Red Hat Advanced Cluster Management for Kubernetes',
   description: 'Integrates Advanced Cluster Management functionality into the OpenShift Container Platform web console',
   exposedModules: {
@@ -25,6 +25,6 @@ export const pluginMetadata: ConsolePluginBuildMetadata = {
   },
   dependencies: {
     '@console/pluginAPI': '>=4.15.0',
-    mce: '>=2.10',
+    mce: '>=2.11',
   },
 }
