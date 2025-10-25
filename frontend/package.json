@@ -68,7 +68,7 @@
     "@reduxjs/toolkit": "1.8.x",
     "@stolostron/react-data-view": "^2.5.1",
     "@tanstack/react-query": "^4.36.1",
-    "ajv": "8.11.0",
+    "ajv": "8.17.1",
     "axios": "^0.27.2",
     "cidr-tools": "4.3.0",
     "debounce": "1.2.1",
