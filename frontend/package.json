@@ -131,7 +131,7 @@
     "@testing-library/user-event": "12.8.3",
     "@types/compression-webpack-plugin": "9.0.0",
     "@types/copy-webpack-plugin": "8.0.1",
-    "@types/debounce": "1.2.1",
+    "@types/debounce": "1.2.4",
     "@types/deep-diff": "1.0.1",
     "@types/diff": "5.0.2",
     "@types/file-saver": "^2.0.5",
