@@ -75,7 +75,7 @@
         "babel-loader": "8.4.1",
         "babel-plugin-istanbul": "6.1.1",
         "babel-plugin-transform-class-properties": "6.24.1",
-        "concurrently": "7.6.0",
+        "concurrently": "9.2.1",
         "cpy-cli": "4.2.0",
         "css-loader": "6.11.0",
         "css-minimizer-webpack-plugin": "3.4.1",
