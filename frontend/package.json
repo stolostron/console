@@ -138,7 +138,7 @@
     "@types/get-value": "3.0.2",
     "@types/jest": "28.1.6",
     "@types/jest-axe": "3.5.9",
-    "@types/js-yaml": "4.0.5",
+    "@types/js-yaml": "^4.0.9",
     "@types/lodash": "4.14.182",
     "@types/node": "^18.15.3",
     "@types/react": "^18.3.23",
