@@ -420,6 +420,44 @@ describe('AcmTable', () => {
     expect(container.querySelector('table')).toBeInTheDocument()
     expect(container.querySelector('table .pf-v5-c-table__action button')).toBeInTheDocument()
   })
+
+  test('keeps cells aligned when only some rows are expandable', () => {
+    const { container } = render(
+      <MemoryRouter>
+        <AcmTable<IExampleData>
+          emptyState={<AcmEmptyState title="No addresses found" message="You do not have any addresses yet" />}
+          showToolbar={false}
+          items={exampleData.slice(0, 4)}
+          addSubRows={(item: IExampleData) => {
+            return item.uid === 1
+              ? [
+                  {
+                    cells: [
+                      {
+                        title: <div>expanded</div>,
+                      },
+                    ],
+                  },
+                ]
+              : undefined
+          }}
+          columns={[
+            { header: 'First Name', sort: 'firstName', cell: 'firstName' },
+            { header: 'Last Name', sort: 'last_name', cell: 'last_name' },
+            { header: 'EMail', cell: 'email' },
+          ]}
+          keyFn={(item: IExampleData) => item.uid.toString()}
+        />
+      </MemoryRouter>
+    )
+    // Validate that every primary row's first cells are aligned under headers
+    const tbodies = Array.from(container.querySelectorAll('tbody'))
+    tbodies.forEach((tbody) => {
+      const primaryRow = tbody.querySelector('tr:first-of-type') as HTMLElement | null
+      expect(primaryRow?.querySelector('[data-label="First Name"]')).toBeTruthy()
+      expect(primaryRow?.querySelector('[data-label="Last Name"]')).toBeTruthy()
+    })
+  })
   test('renders pagination with autoHidePagination when more that perPage items', () => {
     const { container } = render(<Table items={exampleData} autoHidePagination />)
     expect(container.querySelector('.pf-v5-c-pagination')).toBeInTheDocument()
