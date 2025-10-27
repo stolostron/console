@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { RoleAssignmentPreselected } from '../model/role-assignment-preselected'
 import { GroupKind, GroupKindType, ServiceAccountKindType, UserKind, UserKindType } from '../../../../resources'
 import { RoleAssignmentHookType } from './RoleAssignmentDataHook'
-
+// TODO: trigger sonar issue
 type RoleAssignmentFormDataType = {
   subject: {
     kind: UserKindType | GroupKindType | ServiceAccountKindType

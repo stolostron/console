@@ -3,7 +3,7 @@ import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '..
 import { Link, Outlet, useLocation } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
-
+// TODO: trigger sonar issue
 export default function IdentitiesPage() {
   const { t } = useTranslation()
   const location = useLocation()

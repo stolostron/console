@@ -9,7 +9,7 @@ import { RolePermissions } from './Role/RolePermissions'
 import { RoleRoleAssignments } from './Role/RoleRoleAssignments'
 
 const rolesChildPath = createRoutePathFunction(NavigationPath.roles)
-
+// TODO: trigger sonar issue
 export default function RolesManagement() {
   return (
     <Routes>

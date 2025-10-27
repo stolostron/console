@@ -7,5 +7,5 @@ const GroupYaml = () => {
 
   return <RBACResourceYaml resource={group} loading={false} resourceType="Group" />
 }
-
+// TODO: trigger sonar issue
 export { GroupYaml }

@@ -12,7 +12,7 @@ type NamespaceSelectorProps = {
   selectedNamespaces?: string[]
   disabled?: boolean
 }
-
+// TODO: trigger sonar issue
 const NamespaceSelector = ({
   selectedClusters,
   clusters,

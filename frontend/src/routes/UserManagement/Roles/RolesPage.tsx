@@ -17,7 +17,7 @@ export const useCurrentRole = () => {
     [clusterRoles, id]
   )
 }
-
+// TODO: trigger sonar issue
 const RolesPage = () => {
   const { t } = useTranslation()
 

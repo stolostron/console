@@ -22,7 +22,7 @@ const UserDetails = () => {
       </PageSection>
     )
   }
-
+  // TODO: trigger sonar issue
   return (
     <PageSection>
       <PageSection variant={'light'}>

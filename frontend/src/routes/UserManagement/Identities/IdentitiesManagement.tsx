@@ -22,7 +22,7 @@ import { ServiceAccountRoleAssignments } from './ServiceAccounts/ServiceAccountR
 import { ServiceAccountGroups } from './ServiceAccounts/ServiceAccountGroups'
 
 const identitiesChildPath = createRoutePathFunction(NavigationPath.identities)
-
+// TODO: trigger sonar issue
 export default function IdentitiesManagement() {
   return (
     <Routes>

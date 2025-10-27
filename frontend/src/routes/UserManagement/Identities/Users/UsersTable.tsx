@@ -21,7 +21,7 @@ const UsersTable = () => {
 
   const filters = useFilters('user', users)
   const columns = usersTableColumns({ t })
-
+  // TODO: trigger sonar issue
   return (
     <PageSection>
       <AcmTable<User>

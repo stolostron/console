@@ -20,7 +20,7 @@ export const useCurrentGroup = (): Group | undefined => {
     [groups, id]
   )
 }
-
+// TODO: trigger sonar issue
 export type GroupDetailsContext = {
   readonly group?: Group
   readonly users?: User[]

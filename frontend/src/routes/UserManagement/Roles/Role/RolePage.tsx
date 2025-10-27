@@ -13,7 +13,7 @@ const RolePage = () => {
   const { id = undefined } = useParams()
   const location = useLocation()
   const role = useCurrentRole()
-
+  // TODO: trigger sonar issue
   const isDetailsActive = location.pathname === generatePath(NavigationPath.roleDetails, { id: id ?? '' })
   const isPermissionsActive = location.pathname.includes('/permissions')
   const isRoleAssignmentsActive = location.pathname.includes('/role-assignments')

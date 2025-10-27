@@ -7,5 +7,5 @@ const UserYaml = () => {
 
   return <RBACResourceYaml resource={userWithGroups} resourceType="User" loading={false} />
 }
-
+// TODO: trigger sonar issue
 export { UserYaml }
