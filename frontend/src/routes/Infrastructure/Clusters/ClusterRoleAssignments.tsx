@@ -8,14 +8,7 @@ const ClusterRoleAssignments = () => {
   const clusterNames = clusterName ? [clusterName] : []
   const roleAssignments = useFindRoleAssignments({ clusterNames })
 
-  return (
-    <RoleAssignments
-      roleAssignments={roleAssignments}
-      isLoading={false}
-      hiddenFilters={['clusters']}
-      preselected={{ clusterNames }}
-    />
-  )
+  return <RoleAssignments roleAssignments={roleAssignments} isLoading={false} preselected={{ clusterNames }} />
 }
 
 export { ClusterRoleAssignments }
