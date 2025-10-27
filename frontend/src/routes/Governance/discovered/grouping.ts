@@ -156,6 +156,75 @@ export function grouping(): {
     const resources = new Map() // keys like cluster:groupversion:kind:namespace:name
     let templateName = ''
 
+    const processRelatedItems = (related: any, polInfo: any, templateNamespace: Map<any, any>) => {
+      related?.items?.forEach((item: any) => {
+        const { apigroup, apiversion, kind, cluster, namespace, name } = item
+        const groupversion = apigroup ? apigroup + '/' + apiversion : apiversion
+
+        // exclude these kinds
+        switch (apigroup + ':' + kind) {
+          case 'internal.open-cluster-management.io:Cluster':
+          case 'policy.open-cluster-management.io:Policy':
+          case 'policy.open-cluster-management.io:ConfigurationPolicy':
+            return
+          case 'wgpolicyk8s.io:PolicyReport':
+          case 'wgpolicyk8s.io:ClusterPolicyReport':
+            if (polInfo?.apigroup === 'kyverno.io') return
+            break
+          case 'admissionregistration.k8s.io:ValidatingAdmissionPolicy':
+            if (polInfo?.apigroup === 'admissionregistration.k8s.io') return
+            break
+        }
+
+        // usually noncompliant resources will be in _nonCompliantResources
+        // except for gatekeeper constraints which only report noncompliant resources
+        const isGatekeeperConstraint = polInfo?.apigroup === 'constraints.gatekeeper.sh'
+
+        item.compliant = isGatekeeperConstraint ? 'noncompliant' : 'compliant'
+        item.groupversion = groupversion
+        item.templateInfo = {
+          clusterName: cluster,
+          apiVersion: polInfo?.apiversion,
+          apiGroup: polInfo?.apigroup,
+          kind: polInfo?.kind,
+          templateName: polInfo?.name,
+          templateNamespace: templateNamespace.get(cluster),
+        }
+
+        resources.set(`${cluster}:${groupversion}:${kind}:${namespace}:${name}`, item)
+      })
+    }
+
+    const processMissingResources = (missing: any[], cluster: any, polInfo: any, templateNamespace: Map<any, any>) => {
+      missing?.forEach((miniObj: any) => {
+        const obj = expandResource(miniObj)
+        const key = `${cluster}:${obj.groupversion}:${obj.kind}:${obj.namespace}:${obj.name}`
+        resources.set(key, {
+          ...obj,
+          cluster,
+          compliant: 'compliant', // if it is noncompliant, it will also be in the _nonCompliantResources
+          templateInfo: {
+            clusterName: cluster,
+            apiVersion: polInfo?.apiversion,
+            apiGroup: polInfo?.apigroup,
+            kind: polInfo?.kind,
+            templateName: polInfo?.name,
+            templateNamespace: templateNamespace.get(cluster),
+          },
+        })
+      })
+    }
+
+    const processNonCompliantResources = (nonComp: any[], cluster: any) => {
+      nonComp?.forEach((miniObj: any) => {
+        const obj = expandResource(miniObj)
+        const key = `${cluster}:${obj.groupversion}:${obj.kind}:${obj.namespace}:${obj.name}`
+        if (resources.has(key)) {
+          resources.get(key).compliant = 'noncompliant'
+        }
+      })
+    }
+
     data?.searchResult?.forEach((result: any) => {
       searchDataItems = searchDataItems.concat(result?.items || [])
 
@@ -174,71 +243,16 @@ export function grouping(): {
         templateNamespace.set(polItem.cluster, polItem.namespace)
       })
 
-      result?.related?.forEach((related: any) => {
-        related?.items?.forEach((item: any) => {
-          const { apigroup, apiversion, kind, cluster, namespace, name } = item
-          const groupversion = apigroup ? apigroup + '/' + apiversion : apiversion
-
-          // exclude these kinds
-          switch (apigroup + ':' + kind) {
-            case 'internal.open-cluster-management.io:Cluster':
-            case 'policy.open-cluster-management.io:Policy':
-            case 'policy.open-cluster-management.io:ConfigurationPolicy':
-              return
-            case 'wgpolicyk8s.io:PolicyReport':
-            case 'wgpolicyk8s.io:ClusterPolicyReport':
-              if (polInfo?.apigroup === 'kyverno.io') return
-              break
-            case 'admissionregistration.k8s.io:ValidatingAdmissionPolicy':
-              if (polInfo?.apigroup === 'admissionregistration.k8s.io') return
-              break
-          }
-
-          item.compliant = 'compliant' // if it is noncompliant, it will be in _nonCompliantResources
-          item.groupversion = groupversion
-          item.templateInfo = {
-            clusterName: cluster,
-            apiVersion: polInfo?.apiversion,
-            apiGroup: polInfo?.apigroup,
-            kind: polInfo?.kind,
-            templateName: polInfo?.name,
-            templateNamespace: templateNamespace.get(cluster),
-          }
-
-          resources.set(`${cluster}:${groupversion}:${kind}:${namespace}:${name}`, item)
-        })
-      })
+      result?.related?.forEach((related: any) => processRelatedItems(related, polInfo, templateNamespace))
 
       result?.items?.forEach((polItem: any) => {
         const cluster = polItem?.cluster
 
         const missing = JSON.parse(polItem?._missingResources || '[]')
-        missing?.forEach((miniObj: any) => {
-          const obj = expandResource(miniObj)
-          const key = `${cluster}:${obj.groupversion}:${obj.kind}:${obj.namespace}:${obj.name}`
-          resources.set(key, {
-            ...obj,
-            cluster,
-            compliant: 'compliant', // if it is noncompliant, it will also be in the _nonCompliantResources
-            templateInfo: {
-              clusterName: cluster,
-              apiVersion: polInfo?.apiversion,
-              apiGroup: polInfo?.apigroup,
-              kind: polInfo?.kind,
-              templateName: polInfo?.name,
-              templateNamespace: templateNamespace.get(cluster),
-            },
-          })
-        })
+        processMissingResources(missing, cluster, polInfo, templateNamespace)
 
         const nonComp = JSON.parse(polItem?._nonCompliantResources || '[]')
-        nonComp?.forEach((miniObj: any) => {
-          const obj = expandResource(miniObj)
-          const key = `${cluster}:${obj.groupversion}:${obj.kind}:${obj.namespace}:${obj.name}`
-          if (resources.has(key)) {
-            resources.get(key).compliant = 'noncompliant'
-          }
-        })
+        processNonCompliantResources(nonComp, cluster)
       })
     })
 
@@ -334,15 +348,64 @@ export function grouping(): {
       groupByNameKindGroup[nameKindGroup] = existingGroup
     })
 
+    const addResponseActions = (policy: any, allResponseActions: Set<string>) => {
+      const responseAction = getResponseAction(policy)
+
+      if (responseAction) {
+        policy.responseAction = responseAction
+        if (policy.kind === 'ValidatingAdmissionPolicyBinding') {
+          for (const action of responseAction.split('/')) {
+            allResponseActions.add(action)
+          }
+        } else {
+          allResponseActions.add(responseAction)
+        }
+      }
+    }
+
+    const updateSourceIfDifferent = (source: ISourceType, policySource: ISourceType): ISourceType => {
+      if (source.type === 'Multiple') {
+        return source
+      }
+
+      const isDifferent =
+        policySource.type !== source.type ||
+        policySource.parentNs !== source.parentNs ||
+        policySource.parentName !== source.parentName
+
+      if (isDifferent) {
+        return {
+          type: 'Multiple',
+          parentNs: '',
+          parentName: '',
+        }
+      }
+
+      return source
+    }
+
+    const determineResponseAction = (allResponseActions: Set<string>): string => {
+      const allResponseActionsList: string[] = Array.from(allResponseActions)
+
+      if (allResponseActions.size === 1) {
+        return allResponseActionsList[0]
+      }
+
+      if (allResponseActions.size === 2 && allResponseActions.has('inform') && allResponseActions.has('enforce')) {
+        return 'inform/enforce'
+      }
+
+      // Ignore the SonarCloud recommendation of sorting by locale since this is an API field.
+      return allResponseActionsList.sort().join('/') //NOSONAR
+    }
+
     const keys = Object.keys(groupByNameKindGroup)
 
-    // NOSONAR
     const policyItems = keys.map((nameKindGroup) => {
       const group = groupByNameKindGroup[nameKindGroup] || []
 
       let highestSeverity = 0
       const allResponseActions: Set<string> = new Set()
-
       let source = { ...group[0].source }
 
       for (const policy of group) {
@@ -353,51 +416,11 @@ export function grouping(): {
           highestSeverity = severityTable(policy.severity)
         }
 
-        const responseAction = getResponseAction(policy)
-
-        if (responseAction) {
-          policy.responseAction = responseAction
-          if (policy.kind === 'ValidatingAdmissionPolicyBinding') {
-            for (const action of responseAction.split('/')) {
-              allResponseActions.add(action)
-            }
-          } else {
-            allResponseActions.add(responseAction)
-          }
-        }
-
-        if (source.type === 'Multiple') {
-          continue
-        }
-
-        if (
-          policy.source.type !== source.type ||
-          policy.source.parentNs !== source.parentNs ||
-          policy.source.parentName !== source.parentName
-        ) {
-          source = {
-            type: 'Multiple',
-            parentNs: '',
-            parentName: '',
-          }
-        }
+        addResponseActions(policy, allResponseActions)
+        source = updateSourceIfDifferent(source, policy.source)
       }
 
-      let responseAction: string
-      const allResponseActionsList: string[] = Array.from(allResponseActions)
-
-      if (allResponseActions.size === 1) {
-        responseAction = allResponseActionsList[0]
-      } else if (
-        allResponseActions.size === 2 &&
-        allResponseActions.has('inform') &&
-        allResponseActions.has('enforce')
-      ) {
-        responseAction = 'inform/enforce'
-      } else {
-        // Ignore the SonarCloud recommendation of sorting by locale since this is an API field.
-        responseAction = allResponseActionsList.sort().join('/') //NOSONAR
-      }
+      const responseAction = determineResponseAction(allResponseActions)
 
       return {
         id: nameKindGroup,
