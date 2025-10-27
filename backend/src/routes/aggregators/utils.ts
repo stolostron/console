@@ -548,7 +548,7 @@ function getArgoCluster(resource: IArgoApplication, clusters: Cluster[]) {
   ) {
     return getHubClusterName()
   } else {
-    return getArgoDestinationCluster(resource.spec.destination, clusters, resource.status.cluster)
+    return getArgoDestinationCluster(resource.spec.destination, clusters, resource?.status?.cluster)
   }
 }
 

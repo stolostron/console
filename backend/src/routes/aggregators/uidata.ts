@@ -14,7 +14,15 @@ export function requestAggregatedUIData(req: Http2ServerRequest, res: Http2Serve
   })
   req.on('end', () => {
     const body = chucks.join()
-    const resource = JSON.parse(body) as IResource
+    let resource: IResource
+    try {
+      resource = JSON.parse(body) as IResource
+    } catch (error) {
+      console.error(error + body.substring(0, 64))
+      res.statusCode = 400
+      res.end(JSON.stringify({ error: 'Invalid request body' }))
+      return
+    }
     const argoAppSets = inflateApps(getApplicationsHelper(applicationCache, ['appset']))
     const subscriptions = getKubeResources('Subscription', 'apps.open-cluster-management.io/v1')
     const placementDecisions = getKubeResources('PlacementDecision', 'cluster.open-cluster-management.io/v1beta1')
