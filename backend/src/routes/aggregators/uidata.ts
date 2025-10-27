@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Http2ServerRequest, Http2ServerResponse } from 'http2'
+import { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
 import { applicationCache, IUIData } from './applications'
 import { getApplicationClusters, getApplicationsHelper, getApplicationType, getClusters } from './utils'
 import { Cluster, IApplicationSet, IResource } from '../../resources/resource'

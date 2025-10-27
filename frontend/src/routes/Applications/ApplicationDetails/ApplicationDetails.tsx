@@ -421,7 +421,7 @@ export default function ApplicationDetailsPage() {
                 appData,
               })
               setActiveChannel(application.activeChannel)
-              setAllChannels(application && application.channels ? application.channels : [])
+              setAllChannels(application.channels ?? [])
             }
 
             // from then on, only refresh topology with new statuses

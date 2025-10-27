@@ -141,7 +141,7 @@ function isFluxApplication(label: string) {
 //////////////////////////////////////////////////////////////////
 ////////////// COMPUTE STATUSES /////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
-const resErrorStates = [
+const resErrorStates = new Set([
   'err',
   'off',
   'invalid',
@@ -150,8 +150,8 @@ const resErrorStates = [
   'imagepullbackoff',
   'crashloopbackoff',
   'lost',
-]
-const resWarningStates = ['pending', 'creating', 'terminating']
+])
+const resWarningStates = new Set(['pending', 'creating', 'terminating'])
 
 export function computeAppHealthStatus(health: ApplicationStatusEntry, app: ISearchResource) {
   switch (app.healthStatus) {
@@ -177,10 +177,6 @@ export function computeAppSyncStatus(synced: ApplicationStatusEntry, app: ISearc
   switch (app.syncStatus) {
     case 'Synced':
       synced[StatusColumn.counts][ScoreColumn.healthy]++
-      break
-    case 'OutOfSync':
-      synced[StatusColumn.counts][ScoreColumn.danger]++
-      extractMessages(synced, app, app.syncStatus)
       break
     case 'Unknown':
       synced[StatusColumn.counts][ScoreColumn.warning]++
@@ -245,7 +241,7 @@ export function computeDeployedPodStatuses(
 
 export function computepDeployedStatus(deployed: ApplicationStatusEntry, items: ISearchResource[]) {
   let allHealthy = true
-  if (items && items.length) {
+  if (items && items.length > 0) {
     items.forEach((item) => {
       const available = Number(item.available || item.current || 0)
       const desired = Number(item.desired ?? 0)
@@ -289,10 +285,10 @@ export function computePodStatuses(
 function computePodStatus(deployed: ApplicationStatusEntry, pods: ISearchResource[]) {
   pods.forEach((pod) => {
     const status = pod.status.toLocaleLowerCase()
-    if (resErrorStates.includes(status)) {
+    if (resErrorStates.has(status)) {
       deployed[StatusColumn.counts][ScoreColumn.danger]++
       extractMessages(deployed, pod, status)
-    } else if (resWarningStates.includes(status)) {
+    } else if (resWarningStates.has(status)) {
       deployed[StatusColumn.counts][ScoreColumn.warning]++
       extractMessages(deployed, pod, status)
     }
@@ -482,7 +478,7 @@ function isLocalClusterURL(url: string, localCluster: Cluster | undefined) {
 
   const hostnameWithOutAPI = argoServerURL.hostname.substring(argoServerURL.hostname.indexOf('api.') + 4)
 
-  if (localClusterURL.host.indexOf(hostnameWithOutAPI) > -1) {
+  if (localClusterURL.host.includes(hostnameWithOutAPI)) {
     return true
   }
   return false
@@ -535,7 +531,7 @@ function getSubscriptionAnnotations(resource: IResource) {
 }
 
 const isLocalSubscription = (subName: string, subList: string[]) => {
-  return subName.endsWith(localSubSuffixStr) && subList.indexOf(subName.slice(0, -localSubSuffixStr.length)) !== -1
+  return subName.endsWith(localSubSuffixStr) && subList.includes(subName.slice(0, -localSubSuffixStr.length))
 }
 
 function getArgoCluster(resource: IArgoApplication, clusters: Cluster[]) {
