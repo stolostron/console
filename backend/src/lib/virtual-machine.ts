@@ -90,7 +90,7 @@ export function convertNanocoresToMillicores(nanocoreString: string): number {
   const nanocores = Number.parseInt(nanocoreString, 10)
 
   // Check if the parsing was successful and it's a valid number.
-  if (isNaN(nanocores)) {
+  if (Number.isNaN(nanocores)) {
     return 0 // Or throw an error, depending on desired behavior
   }
 
@@ -111,7 +111,7 @@ export function convertKibibytesToMebibytes(kibibyteString: string) {
   const kibibytes = Number.parseInt(kibibyteString, 10)
 
   // Check if the parsing was successful.
-  if (isNaN(kibibytes)) {
+  if (Number.isNaN(kibibytes)) {
     return 0 // Or throw an error
   }
 
@@ -127,7 +127,7 @@ export function convertKibibytesToMebibytes(kibibyteString: string) {
  * @returns {number} The equivalent value in gibibytes (GiB).
  */
 export function convertBytesToGibibytes(bytes: number) {
-  if (typeof bytes !== 'number' || isNaN(bytes)) {
+  if (typeof bytes !== 'number' || Number.isNaN(bytes)) {
     return 0
   }
 
@@ -160,7 +160,7 @@ export function toMillicores(cpuRequest: string): number {
     const millicores = Number.parseInt(numericPart, 10)
 
     // Ensure the part before "m" was a valid integer
-    if (isNaN(millicores) || String(millicores) !== numericPart) {
+    if (Number.isNaN(millicores) || String(millicores) !== numericPart) {
       throw new Error(`Invalid millicore value: "${cpuRequest}". The part before "m" must be an integer.`)
     }
     return millicores
@@ -170,7 +170,7 @@ export function toMillicores(cpuRequest: string): number {
   const coreValue = parseFloat(trimmedCpu)
 
   // Ensure the input was a valid number
-  if (isNaN(coreValue)) {
+  if (Number.isNaN(coreValue)) {
     throw new Error(`Invalid core value: "${cpuRequest}". Must be a number or end with 'm'.`)
   }
 

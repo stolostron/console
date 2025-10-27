@@ -9,7 +9,7 @@ interface SimpleTimestampProps {
 export const SimpleTimestamp: React.FC<SimpleTimestampProps> = ({ timestamp }) => {
   const date = new Date(timestamp)
 
-  if (isNaN(date.getTime())) {
+  if (Number.isNaN(date.getTime())) {
     return <>Invalid Date</>
   }
 

@@ -341,9 +341,9 @@ class YamlInline {
       d = ''
     h = (h + '').replace(/\s{2,}|^\s|\s$/g, ' ').replace(/[\t\r\n]/g, '')
     if (h === 'now') {
-      return b === null || isNaN(b) ? new Date().getTime() || 0 : b || 0
+      return b === null || Number.isNaN(b) ? new Date().getTime() || 0 : b || 0
     } else {
-      if (!isNaN((d = Date.parse(h)))) {
+      if (!Number.isNaN((d = Date.parse(h)))) {
         return d || 0
       } else {
         if (b) {

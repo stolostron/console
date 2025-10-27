@@ -73,7 +73,7 @@ export function quantityToScalar(quantity: string): number {
     }
   }
   const num = Number.parseInt(quantity, 10)
-  if (isNaN(num)) {
+  if (Number.isNaN(num)) {
     return 0
   }
   return num * units
