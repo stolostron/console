@@ -87,7 +87,7 @@ export type FilesystemType = {
 export function convertNanocoresToMillicores(nanocoreString: string): number {
   // Use parseInt to extract the numeric part of the string.
   // It will automatically stop at the non-numeric character 'n'.
-  const nanocores = parseInt(nanocoreString, 10)
+  const nanocores = Number.parseInt(nanocoreString, 10)
 
   // Check if the parsing was successful and it's a valid number.
   if (isNaN(nanocores)) {
@@ -108,7 +108,7 @@ export function convertNanocoresToMillicores(nanocoreString: string): number {
  */
 export function convertKibibytesToMebibytes(kibibyteString: string) {
   // Use parseInt to extract the numeric part of the string.
-  const kibibytes = parseInt(kibibyteString, 10)
+  const kibibytes = Number.parseInt(kibibyteString, 10)
 
   // Check if the parsing was successful.
   if (isNaN(kibibytes)) {
@@ -157,7 +157,7 @@ export function toMillicores(cpuRequest: string): number {
   // 2. Handle values already in millicores (ending with "m")
   if (trimmedCpu.endsWith('m')) {
     const numericPart = trimmedCpu.slice(0, -1)
-    const millicores = parseInt(numericPart, 10)
+    const millicores = Number.parseInt(numericPart, 10)
 
     // Ensure the part before "m" was a valid integer
     if (isNaN(millicores) || String(millicores) !== numericPart) {

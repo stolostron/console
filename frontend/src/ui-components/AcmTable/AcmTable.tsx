@@ -112,7 +112,7 @@ const AcmTablePaginationContext: React.Context<{
 export function AcmTablePaginationContextProvider(props: { children: ReactNode; localStorageKey: string }) {
   const { children, localStorageKey } = props
   const [perPage, setPerPage] = useState(
-    parseInt(localStorage.getItem(localStorageKey) || '0', 10) || DEFAULT_ITEMS_PER_PAGE
+    Number.parseInt(localStorage.getItem(localStorageKey) || '0', 10) || DEFAULT_ITEMS_PER_PAGE
   )
   const paginationContext = {
     perPage,

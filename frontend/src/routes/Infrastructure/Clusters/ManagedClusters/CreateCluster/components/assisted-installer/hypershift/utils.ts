@@ -15,8 +15,8 @@ export const getDefaultNetworkType = (
   clusterVersion = '4.11' /* Change if needed. Recent motivation >= 4.11 is with OVN, older with SDN */
 ): 'OVNKubernetes' | 'OpenShiftSDN' => {
   const [major, minor] = clusterVersion.split('.')
-  const majorInt = parseInt(major)
-  const minorInt = parseInt(minor)
+  const majorInt = Number.parseInt(major)
+  const minorInt = Number.parseInt(minor)
 
   if (majorInt === 4 && minorInt <= 10) {
     return 'OpenShiftSDN'

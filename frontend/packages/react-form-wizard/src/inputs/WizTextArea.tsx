@@ -36,11 +36,11 @@ export function WizTextArea(props: WizTextAreaProps) {
         const computed = window.getComputedStyle(field)
         // Calculate the height
         const height =
-          parseInt(computed.getPropertyValue('border-top-width')) +
-          parseInt(computed.getPropertyValue('padding-top')) +
+          Number.parseInt(computed.getPropertyValue('border-top-width')) +
+          Number.parseInt(computed.getPropertyValue('padding-top')) +
           field.scrollHeight +
-          parseInt(computed.getPropertyValue('padding-bottom')) +
-          parseInt(computed.getPropertyValue('border-bottom-width'))
+          Number.parseInt(computed.getPropertyValue('padding-bottom')) +
+          Number.parseInt(computed.getPropertyValue('border-bottom-width'))
         parent.style.setProperty('height', `${height}px`)
         setInitialHeightSet(true)
       }

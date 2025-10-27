@@ -292,7 +292,7 @@ class ChannelControl extends Component<ChannelControlProps, ChannelControlState>
     switch (action) {
       case 'input': {
         const target = e.target as HTMLInputElement
-        const inputValue = parseInt(target.value, 10)
+        const inputValue = Number.parseInt(target.value, 10)
         if (pageLimit && inputValue > 0 && inputValue <= pageLimit) {
           newPageSelection = selectedSubscription.subchannels[inputValue - 1]
         }

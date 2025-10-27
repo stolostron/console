@@ -39,7 +39,7 @@ export const getDefaultNetworkFormValues = (
   // Find a better way than parsing the yaml - is there already a parsed up-to-date template?
   const serviceNetworkCidr = getTemplateValue(templateYAML, 'serviceNetworkCidr', defaultServiceCIDR)
   const clusterNetworkCidr = getTemplateValue(templateYAML, 'clusterNetworkCidr', defaultPodCIDR)
-  const clusterNetworkHostPrefix = parseInt(
+  const clusterNetworkHostPrefix = Number.parseInt(
     getTemplateValue(templateYAML, 'clusterNetworkHostPrefix', defaultHostPrefix)
   )
   const sshPublicKey = getTemplateValue(templateYAML, 'id_rsa.pub', '') || initialSshPublicKey
@@ -49,7 +49,7 @@ export const getDefaultNetworkFormValues = (
   const noProxy = getTemplateValue(templateYAML, 'noProxy', '')
   const enableProxy = !!(httpProxy || httpsProxy || noProxy)
 
-  const nodePortPort: number = parseInt(getTemplateValue(templateYAML, 'port', '0'))
+  const nodePortPort: number = Number.parseInt(getTemplateValue(templateYAML, 'port', '0'))
   const nodePortAddress = getTemplateValue(templateYAML, 'address', '')
   const isNodePort: boolean = nodePortPort !== undefined || !!nodePortAddress
 

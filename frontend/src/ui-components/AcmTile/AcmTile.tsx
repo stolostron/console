@@ -50,8 +50,8 @@ export function AcmTile(props: AcmTileProps) {
   if (props.relatedResourceData) {
     // This render is specific to the search related resources tile
     let count = `${props.relatedResourceData.count}`
-    if (parseInt(count) >= 1000) {
-      count = `${(parseInt(count) - (parseInt(count) % 100)) / 1000}k`
+    if (Number.parseInt(count) >= 1000) {
+      count = `${(Number.parseInt(count) - (Number.parseInt(count) % 100)) / 1000}k`
     }
     return (
       <Tile

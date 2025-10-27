@@ -162,7 +162,7 @@ export const getNumericGTValidator = (t: TFunction, gt: number): Validator => ({
   tester: {
     test: (value: string) => {
       const regex = /^\d+$/
-      return regex.test(value) && parseInt(value, 10) > gt
+      return regex.test(value) && Number.parseInt(value, 10) > gt
     },
   },
   notification: t('Value must be integer greater than', [gt]),

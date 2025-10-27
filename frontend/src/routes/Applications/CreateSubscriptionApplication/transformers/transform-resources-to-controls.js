@@ -174,7 +174,7 @@ const discoverChannelFromSource = (
   if (subscriptionName) {
     const match = subscriptionName.match(/-(\d+)$/)
     if (match && match[1]) {
-      subscriptionDigit = parseInt(match[1], 10)
+      subscriptionDigit = Number.parseInt(match[1], 10)
     }
   }
   return subscriptionDigit

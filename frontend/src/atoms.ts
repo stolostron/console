@@ -209,27 +209,27 @@ export function useIsObservabilityInstalled() {
 
 export function useSavedSearchLimit() {
   const settings = useRecoilValue(settingsState)
-  return useMemo(() => parseInt(settings.SAVED_SEARCH_LIMIT ?? '10'), [settings])
+  return useMemo(() => Number.parseInt(settings.SAVED_SEARCH_LIMIT ?? '10'), [settings])
 }
 
 export function useSearchResultLimit() {
   const settings = useRecoilValue(settingsState)
-  return useMemo(() => parseInt(settings.SEARCH_RESULT_LIMIT ?? '1000'), [settings])
+  return useMemo(() => Number.parseInt(settings.SEARCH_RESULT_LIMIT ?? '1000'), [settings])
 }
 
 export function useSearchAutocompleteLimit() {
   const settings = useRecoilValue(settingsState)
-  return useMemo(() => parseInt(settings.SEARCH_AUTOCOMPLETE_LIMIT ?? '10000'), [settings])
+  return useMemo(() => Number.parseInt(settings.SEARCH_AUTOCOMPLETE_LIMIT ?? '10000'), [settings])
 }
 
 export function useAppArgoSearchResultLimit() {
   const settings = useRecoilValue(settingsState)
-  return useMemo(() => parseInt(settings.APP_ARGO_SEARCH_RESULT_LIMIT ?? '1000'), [settings])
+  return useMemo(() => Number.parseInt(settings.APP_ARGO_SEARCH_RESULT_LIMIT ?? '1000'), [settings])
 }
 
 export function useAppOCPSearchResultLimit() {
   const settings = useRecoilValue(settingsState)
-  return useMemo(() => parseInt(settings.APP_OCP_SEARCH_RESULT_LIMIT ?? '1000'), [settings])
+  return useMemo(() => Number.parseInt(settings.APP_OCP_SEARCH_RESULT_LIMIT ?? '1000'), [settings])
 }
 
 export function useVirtualMachineActionsEnabled() {
@@ -248,5 +248,5 @@ export function useVirtualMachineActionsEnabled() {
 
 export function useVitualMachineSearchResultLimit() {
   const settings = useRecoilValue(settingsState)
-  return useMemo(() => parseInt(settings.VM_RESULT_LIMIT ?? '-1'), [settings])
+  return useMemo(() => Number.parseInt(settings.VM_RESULT_LIMIT ?? '-1'), [settings])
 }

@@ -149,7 +149,7 @@ export function StatusSummaryCount() {
                   })
                 : '',
             // Show the card in danger mode if there is a Critical or Major violation on the cluster
-            isDanger: policyReportViolations.some((item) => parseInt(item.properties?.total_risk, 10) >= 3),
+            isDanger: policyReportViolations.some((item) => Number.parseInt(item.properties?.total_risk, 10) >= 3),
           },
         ]}
       />

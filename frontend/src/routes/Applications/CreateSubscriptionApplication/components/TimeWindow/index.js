@@ -361,7 +361,7 @@ export class TimeWindow extends Component {
 
   validateTime = (time) => {
     // hours only valid if they are [0-12]
-    const hours = parseInt(time.split(':')[0], 10)
+    const hours = Number.parseInt(time.split(':')[0], 10)
     const validHours = hours >= 0 && hours <= 12
     return this.getRegExp().test(time) && validHours
   }
@@ -379,8 +379,8 @@ export class TimeWindow extends Component {
         return ''
       }
 
-      let hours = parseInt(match[1], 10)
-      const minutes = parseInt(match[2], 10)
+      let hours = Number.parseInt(match[1], 10)
+      const minutes = Number.parseInt(match[2], 10)
       const period = match[3] ? match[3].toUpperCase() : null
 
       // create Date object with correct hours based on AM/PM
@@ -466,7 +466,7 @@ export class TimeWindow extends Component {
   handleTimeRange(value, targetID) {
     const { control, handleChange } = this.props
 
-    const timeID = parseInt(targetID.split('-')[2], 10)
+    const timeID = Number.parseInt(targetID.split('-')[2], 10)
     const parsedTime = this.parseTime(value)
     if (targetID.includes('start-time')) {
       // As long as first start-time is entered, all times will show

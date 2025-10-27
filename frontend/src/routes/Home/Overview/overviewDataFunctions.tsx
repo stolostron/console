@@ -87,7 +87,7 @@ export function getWorkerCoreTotal(workerCoreCountMetric: PrometheusResponse | u
         ? workerCoreCountMetric.data.result
         : workerCoreCountMetric.data.result.filter((alert) => clusterIDs.includes(alert.metric.managed_cluster_id))
     filteredCoreWorkerCounts.forEach((coreWorker) => {
-      totalCoreWorkerCount = totalCoreWorkerCount + parseInt(coreWorker?.value?.[1] ?? '0')
+      totalCoreWorkerCount = totalCoreWorkerCount + Number.parseInt(coreWorker?.value?.[1] ?? '0')
     })
   }
   return totalCoreWorkerCount

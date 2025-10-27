@@ -249,7 +249,7 @@ class DetailsTable extends Component<DetailsTableProps, DetailsTableState> {
 
     this.state = {
       page: 1,
-      perPage: parseInt(localStorage.getItem(`table-${id}-page-size`) || '', 10) || PAGE_SIZES.DEFAULT,
+      perPage: Number.parseInt(localStorage.getItem(`table-${id}-page-size`) || '', 10) || PAGE_SIZES.DEFAULT,
       sortBy: {},
       searchValue: '',
       detailType: type,

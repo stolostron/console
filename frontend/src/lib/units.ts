@@ -72,7 +72,7 @@ export function quantityToScalar(quantity: string): number {
       }
     }
   }
-  const num = parseInt(quantity, 10)
+  const num = Number.parseInt(quantity, 10)
   if (isNaN(num)) {
     return 0
   }
