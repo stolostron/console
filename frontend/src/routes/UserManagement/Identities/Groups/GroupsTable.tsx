@@ -16,7 +16,7 @@ const GroupsTable = () => {
   const groups = useMemo(() => {
     return groupsData?.toSorted((a, b) => compareStrings(a.metadata.name ?? '', b.metadata.name ?? '')) ?? []
   }, [groupsData])
-
+  // TODO: trigger sonar issue
   const keyFn = useCallback((group: Group) => group.metadata.name ?? '', [])
 
   const filters = useFilters('group', groups)

@@ -18,7 +18,7 @@ import { RoleAssignmentPreselected } from './model/role-assignment-preselected'
 import schema from './schema.json'
 import { LoadingState } from '@openshift-assisted/ui-lib/common'
 import { Checkbox } from '@patternfly/react-core'
-
+// TODO: trigger sonar issue
 type RoleAssignmentFormProps = {
   onCancel: () => void
   onSubmit: (data: RoleAssignmentFormDataType) => void

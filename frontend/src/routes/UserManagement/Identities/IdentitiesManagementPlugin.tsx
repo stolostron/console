@@ -2,7 +2,7 @@
 import { LoadPluginData } from '../../../components/LoadPluginData'
 import { PluginContextProvider } from '../../../components/PluginContextProvider'
 import IdentitiesManagement from './IdentitiesManagement'
-
+// TODO: trigger sonar issue
 export default function IdentitiesManagementPlugin() {
   return (
     <PluginContextProvider>

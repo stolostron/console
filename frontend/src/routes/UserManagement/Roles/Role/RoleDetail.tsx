@@ -17,7 +17,7 @@ import { ErrorPage } from '../../../../components/ErrorPage'
 import { NavigationPath } from '../../../../NavigationPath'
 import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
 import { useNavigate } from 'react-router-dom-v5-compat'
-
+// TODO: trigger sonar issue
 const RoleDetail = () => {
   const { t } = useTranslation()
   const role = useCurrentRole()

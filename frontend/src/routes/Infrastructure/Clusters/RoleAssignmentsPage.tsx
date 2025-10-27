@@ -4,7 +4,7 @@ import { Navigate, useParams, generatePath } from 'react-router-dom-v5-compat'
 import { useSharedAtoms, useRecoilValue } from '../../../shared-recoil'
 import { NavigationPath } from '../../../NavigationPath'
 import { ClusterRoleAssignments } from './ClusterRoleAssignments'
-
+// TODO: trigger sonar issue
 export default function RoleAssignmentsPage() {
   const { name = '', namespace = '' } = useParams()
   const { isFineGrainedRbacEnabledState } = useSharedAtoms()

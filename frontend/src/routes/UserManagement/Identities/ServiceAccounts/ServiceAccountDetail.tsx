@@ -7,7 +7,7 @@ import { AcmPage, AcmPageContent, AcmPageHeader } from '../../../../ui-component
 const ServiceAccountDetail = () => {
   const { t } = useTranslation()
   const { id = undefined } = useParams()
-
+  // TODO: trigger sonar issue
   return (
     <AcmPage header={<AcmPageHeader title={t('Service Account Details')} description={`Service Account: ${id}`} />}>
       <AcmPageContent id="service-account-details">
