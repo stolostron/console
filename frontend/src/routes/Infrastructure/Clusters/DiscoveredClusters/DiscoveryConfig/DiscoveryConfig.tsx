@@ -502,7 +502,9 @@ export function DiscoveryConfigPageContent(props: {
               updateDiscoveryConfig((discoveryConfig) => {
                 if (lastActive) {
                   discoveryConfig.spec.filters ??= {}
-                  discoveryConfig.spec.filters.lastActive = Number.parseInt(lastActive.substring(0, lastActive.length - 1))
+                  discoveryConfig.spec.filters.lastActive = Number.parseInt(
+                    lastActive.substring(0, lastActive.length - 1)
+                  )
                 }
               })
             }}

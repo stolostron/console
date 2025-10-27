@@ -1155,7 +1155,11 @@ class YamlParser {
       }
       var modifiers = this.isDefined(matches.modifiers) ? matches.modifiers : ''
 
-      return this.parseFoldedScalar(matches.separator, modifiers.replace(/\d+/g, ''), Math.abs(Number.parseInt(modifiers, 10)))
+      return this.parseFoldedScalar(
+        matches.separator,
+        modifiers.replace(/\d+/g, ''),
+        Math.abs(Number.parseInt(modifiers, 10))
+      )
     }
     try {
       return new YamlInline().parse(value)
