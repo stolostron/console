@@ -152,7 +152,7 @@ export const inflateKubeValue = (value?: string | number | null): number => {
         unit && unit.length === 2 ? factorize(BINARY_PREFIXES, unit, 'binary') : factorize(SI_PREFIXES, unit, 'si')
       return val * num
     }
-    return parseFloat(valueStr)
+    return Number.parseFloat(valueStr)
   }
   return 0
 }

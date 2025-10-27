@@ -270,7 +270,7 @@ class YamlInline {
     if (scalar.toLowerCase() == '.inf') return Infinity
     if (scalar.toLowerCase() == '.nan') return NaN
     if (scalar.toLowerCase() == '-.inf') return -Infinity
-    if (/^(-|\+)?[0-9,]+(\.[0-9]+)?$/.test(scalar)) return parseFloat(scalar.split(',').join(''))
+    if (/^(-|\+)?[0-9,]+(\.[0-9]+)?$/.test(scalar)) return Number.parseFloat(scalar.split(',').join(''))
     if (this.getTimestampRegex().test(scalar)) return new Date(this.strtotime(scalar))
     //else
     return '' + scalar

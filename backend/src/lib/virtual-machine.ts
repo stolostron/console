@@ -167,7 +167,7 @@ export function toMillicores(cpuRequest: string): number {
   }
 
   // 3. Handle values in full/fractional cores
-  const coreValue = parseFloat(trimmedCpu)
+  const coreValue = Number.parseFloat(trimmedCpu)
 
   // Ensure the input was a valid number
   if (Number.isNaN(coreValue)) {
@@ -222,7 +222,7 @@ export function toMebibytes(memoryRequest: string): number {
     throw new Error(`Invalid memory format: "${memoryRequest}". Expected a number followed by an optional unit.`)
   }
 
-  const numericValue = parseFloat(match[1])
+  const numericValue = Number.parseFloat(match[1])
   const unit = match[3] || '' // Default to empty string if no unit is present
 
   // 4. Calculate the value in bytes
