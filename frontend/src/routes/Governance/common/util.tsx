@@ -802,7 +802,7 @@ export const parseDiscoveredPolicies = (data: any): any => {
     }
 
     if (k === 'totalViolations') {
-      return parseInt(v)
+      return Number.parseInt(v)
     }
 
     return v

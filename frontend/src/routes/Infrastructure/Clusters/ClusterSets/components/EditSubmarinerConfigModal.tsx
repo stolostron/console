@@ -138,7 +138,7 @@ export function EditSubmarinerConfigModal(props: EditSubmarinerConfigModalProps)
                     {
                       op: 'replace',
                       path: '/spec/IPSecNATTPort',
-                      value: nattPort ? parseInt(nattPort) : submarinerConfigDefault.nattPort,
+                      value: nattPort ? Number.parseInt(nattPort) : submarinerConfigDefault.nattPort,
                     },
                     {
                       op: 'replace',
@@ -157,7 +157,7 @@ export function EditSubmarinerConfigModal(props: EditSubmarinerConfigModalProps)
                   patch.push({
                     op: 'replace',
                     path: '/spec/gatewayConfig/gateways',
-                    value: gateways ? parseInt(gateways) : submarinerConfigDefault.gateways,
+                    value: gateways ? Number.parseInt(gateways) : submarinerConfigDefault.gateways,
                   })
                   if (props.submarinerConfig?.spec.gatewayConfig?.aws === undefined && awsInstanceType) {
                     patch.push({ op: 'add', path: '/spec/gatewayConfig/aws', value: {} })

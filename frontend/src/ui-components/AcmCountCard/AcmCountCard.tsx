@@ -197,8 +197,8 @@ export const AcmCountCard = (props: AcmCountCardProps) => {
   const classes = getStyles(props)
   const { id, loading, countTitle, cardFooter, cardHeader } = props
   let count = `${props.count}`
-  if (parseInt(count) >= 1000) {
-    count = `${(parseInt(count) - (parseInt(count) % 100)) / 1000}k`
+  if (Number.parseInt(count) >= 1000) {
+    count = `${(Number.parseInt(count) - (Number.parseInt(count) % 100)) / 1000}k`
   }
   if (loading) return LoadingCard(props)
   return (

@@ -170,7 +170,7 @@ export default function SavedSearchQueries(props: {
               const isErrorIndex = (error && error?.graphQLErrors.findIndex((error) => error.path?.[1] === index)) ?? -1
               return (
                 <AcmCountCard
-                  key={parseInt(savedSearch.id)}
+                  key={Number.parseInt(savedSearch.id)}
                   cardHeader={{
                     hasIcon: false,
                     title: savedSearch.name,

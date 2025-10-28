@@ -256,10 +256,10 @@ class YamlInline {
 
     if ('null' == scalar.toLowerCase() || '' == scalar || '~' == scalar) return null
     if ((scalar + '').indexOf('!str ') == 0) return ('' + scalar).substring(5)
-    if ((scalar + '').indexOf('! ') == 0) return parseInt(this.parseScalar((scalar + '').substr(2)), 10)
+    if ((scalar + '').indexOf('! ') == 0) return Number.parseInt(this.parseScalar((scalar + '').substr(2)), 10)
     if (/^\d+$/.test(scalar)) {
       raw = scalar
-      cast = parseInt(scalar, 10)
+      cast = Number.parseInt(scalar, 10)
       return '0' == scalar.charAt(0) ? this.octdec(scalar) : '' + raw == '' + cast ? cast : raw
     }
     if ('true' == (scalar + '').toLowerCase()) return true
@@ -270,7 +270,7 @@ class YamlInline {
     if (scalar.toLowerCase() == '.inf') return Infinity
     if (scalar.toLowerCase() == '.nan') return NaN
     if (scalar.toLowerCase() == '-.inf') return -Infinity
-    if (/^(-|\+)?[0-9,]+(\.[0-9]+)?$/.test(scalar)) return parseFloat(scalar.split(',').join(''))
+    if (/^(-|\+)?[0-9,]+(\.[0-9]+)?$/.test(scalar)) return Number.parseFloat(scalar.split(',').join(''))
     if (this.getTimestampRegex().test(scalar)) return new Date(this.strtotime(scalar))
     //else
     return '' + scalar
@@ -324,13 +324,13 @@ class YamlInline {
   }
 
   octdec(input) {
-    return parseInt((input + '').replace(/[^0-7]/gi, ''), 8)
+    return Number.parseInt((input + '').replace(/[^0-7]/gi, ''), 8)
   }
 
   hexdec(input) {
     input = this.trim(input)
     if ((input + '').substr(0, 2) == '0x') input = (input + '').substring(2)
-    return parseInt((input + '').replace(/[^a-f0-9]/gi, ''), 16)
+    return Number.parseInt((input + '').replace(/[^a-f0-9]/gi, ''), 16)
   }
 
   strtotime(h, b) {
@@ -341,9 +341,9 @@ class YamlInline {
       d = ''
     h = (h + '').replace(/\s{2,}|^\s|\s$/g, ' ').replace(/[\t\r\n]/g, '')
     if (h === 'now') {
-      return b === null || isNaN(b) ? new Date().getTime() || 0 : b || 0
+      return b === null || Number.isNaN(b) ? new Date().getTime() || 0 : b || 0
     } else {
-      if (!isNaN((d = Date.parse(h)))) {
+      if (!Number.isNaN((d = Date.parse(h)))) {
         return d || 0
       } else {
         if (b) {
@@ -419,7 +419,7 @@ class YamlInline {
           break
         default:
           if (/\d+/.test(i[0])) {
-            n *= parseInt(i[0], 10)
+            n *= Number.parseInt(i[0], 10)
             switch (i[1].substring(0, 3)) {
               case 'yea':
                 b.setFullYear(b.getFullYear() + n)
@@ -468,7 +468,7 @@ class YamlInline {
           : k[0] >= 70 && k[0] <= 99
             ? '19' + k[0]
             : k[0] + ''
-      return parseInt(this.strtotime(k[2] + ' ' + k[1] + ' ' + k[0] + ' ' + g[2]) + (g[4] ? g[4] : ''), 10)
+      return Number.parseInt(this.strtotime(k[2] + ' ' + k[1] + ' ' + k[0] + ' ' + g[2]) + (g[4] ? g[4] : ''), 10)
     }
     var j =
       '([+-]?\\d+\\s(years?|months?|weeks?|days?|hours?|min|minutes?|sec|seconds?|sun\\.?|sunday|mon\\.?|monday|tue\\.?|tuesday|wed\\.?|wednesday|thu\\.?|thursday|fri\\.?|friday|sat\\.?|saturday)|(last|next)\\s(years?|months?|weeks?|days?|hours?|min|minutes?|sec|seconds?|sun\\.?|sunday|mon\\.?|monday|tue\\.?|tuesday|wed\\.?|wednesday|thu\\.?|thursday|fri\\.?|friday|sat\\.?|saturday))(\\sago)?'
@@ -938,7 +938,7 @@ class YamlParser {
   getRealCurrentLineNb(obj) {
     var inxNb = this.currentLine.lastIndexOf('#')
     if (inxNb !== -1) {
-      var row = parseInt(this.currentLine.substr(inxNb + 1), 10)
+      var row = Number.parseInt(this.currentLine.substr(inxNb + 1), 10)
       if (obj) {
         obj.$r = row
         obj.$l = 1
@@ -957,7 +957,7 @@ class YamlParser {
   getRealLineNb(line) {
     var row = line.lastIndexOf('#')
     if (row !== -1) {
-      row = parseInt(line.substr(row + 1), 10)
+      row = Number.parseInt(line.substr(row + 1), 10)
     }
     return row
   }
@@ -1155,7 +1155,11 @@ class YamlParser {
       }
       var modifiers = this.isDefined(matches.modifiers) ? matches.modifiers : ''
 
-      return this.parseFoldedScalar(matches.separator, modifiers.replace(/\d+/g, ''), Math.abs(parseInt(modifiers, 10)))
+      return this.parseFoldedScalar(
+        matches.separator,
+        modifiers.replace(/\d+/g, ''),
+        Math.abs(Number.parseInt(modifiers, 10))
+      )
     }
     try {
       return new YamlInline().parse(value)

@@ -784,7 +784,7 @@ export const getName = ({ data }) => data.root.ai?.name ?? data.root.name
 const versionRegex = /:([\d]{1,5})\.([\d]{1,5})\.([\d]{1,5})/
 function versionGreater(version, x, y) {
   const matches = version.match(versionRegex)
-  return matches && parseInt(matches[1], 10) >= x && parseInt(matches[2], 10) > y
+  return matches && Number.parseInt(matches[1], 10) >= x && Number.parseInt(matches[2], 10) > y
 }
 
 export const isHidden_lt_OCP48 = (control, controlData) => {

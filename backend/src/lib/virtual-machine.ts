@@ -87,10 +87,10 @@ export type FilesystemType = {
 export function convertNanocoresToMillicores(nanocoreString: string): number {
   // Use parseInt to extract the numeric part of the string.
   // It will automatically stop at the non-numeric character 'n'.
-  const nanocores = parseInt(nanocoreString, 10)
+  const nanocores = Number.parseInt(nanocoreString, 10)
 
   // Check if the parsing was successful and it's a valid number.
-  if (isNaN(nanocores)) {
+  if (Number.isNaN(nanocores)) {
     return 0 // Or throw an error, depending on desired behavior
   }
 
@@ -108,10 +108,10 @@ export function convertNanocoresToMillicores(nanocoreString: string): number {
  */
 export function convertKibibytesToMebibytes(kibibyteString: string) {
   // Use parseInt to extract the numeric part of the string.
-  const kibibytes = parseInt(kibibyteString, 10)
+  const kibibytes = Number.parseInt(kibibyteString, 10)
 
   // Check if the parsing was successful.
-  if (isNaN(kibibytes)) {
+  if (Number.isNaN(kibibytes)) {
     return 0 // Or throw an error
   }
 
@@ -127,7 +127,7 @@ export function convertKibibytesToMebibytes(kibibyteString: string) {
  * @returns {number} The equivalent value in gibibytes (GiB).
  */
 export function convertBytesToGibibytes(bytes: number) {
-  if (typeof bytes !== 'number' || isNaN(bytes)) {
+  if (typeof bytes !== 'number' || Number.isNaN(bytes)) {
     return 0
   }
 
@@ -157,20 +157,20 @@ export function toMillicores(cpuRequest: string): number {
   // 2. Handle values already in millicores (ending with "m")
   if (trimmedCpu.endsWith('m')) {
     const numericPart = trimmedCpu.slice(0, -1)
-    const millicores = parseInt(numericPart, 10)
+    const millicores = Number.parseInt(numericPart, 10)
 
     // Ensure the part before "m" was a valid integer
-    if (isNaN(millicores) || String(millicores) !== numericPart) {
+    if (Number.isNaN(millicores) || String(millicores) !== numericPart) {
       throw new Error(`Invalid millicore value: "${cpuRequest}". The part before "m" must be an integer.`)
     }
     return millicores
   }
 
   // 3. Handle values in full/fractional cores
-  const coreValue = parseFloat(trimmedCpu)
+  const coreValue = Number.parseFloat(trimmedCpu)
 
   // Ensure the input was a valid number
-  if (isNaN(coreValue)) {
+  if (Number.isNaN(coreValue)) {
     throw new Error(`Invalid core value: "${cpuRequest}". Must be a number or end with 'm'.`)
   }
 
@@ -222,7 +222,7 @@ export function toMebibytes(memoryRequest: string): number {
     throw new Error(`Invalid memory format: "${memoryRequest}". Expected a number followed by an optional unit.`)
   }
 
-  const numericValue = parseFloat(match[1])
+  const numericValue = Number.parseFloat(match[1])
   const unit = match[3] || '' // Default to empty string if no unit is present
 
   // 4. Calculate the value in bytes
