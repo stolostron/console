@@ -36,25 +36,25 @@ const ClustersDualListSelector = ({ onChoseOptions, clusterSets }: ClustersDualL
   const extractSelectedClusters = useCallback((options: DualListSelectorTreeItemData[]) => {
     const selectedClusters: { id: string; value: string }[] = []
 
-    options.forEach((option) => {
+    for (const option of options) {
       if (!option.children || option.children.length === 0) {
         if (option.isChecked) {
           selectedClusters.push({ id: option.id, value: option.text })
         }
       } else if (option.children) {
         if (option.isChecked) {
-          option.children.forEach((child) => {
+          for (const child of option.children) {
             selectedClusters.push({ id: child.id, value: child.text })
-          })
+          }
         } else {
-          option.children.forEach((child) => {
+          for (const child of option.children) {
             if (child.isChecked) {
               selectedClusters.push({ id: child.id, value: child.text })
             }
-          })
+          }
         }
       }
-    })
+    }
 
     return selectedClusters
   }, [])
@@ -65,8 +65,11 @@ const ClustersDualListSelector = ({ onChoseOptions, clusterSets }: ClustersDualL
       newAvailableOptions: DualListSelectorTreeItemData[],
       newChosenOptions: DualListSelectorTreeItemData[]
     ) => {
-      setAvailableOptions(newAvailableOptions.sort((a, b) => a.text.localeCompare(b.text)))
-      setChosenOptions(newChosenOptions.sort((a, b) => a.text.localeCompare(b.text)))
+      const sortedAvailableOptions = newAvailableOptions.toSorted((a, b) => a.text.localeCompare(b.text))
+      const sortedChosenOptions = newChosenOptions.toSorted((a, b) => a.text.localeCompare(b.text))
+
+      setAvailableOptions(sortedAvailableOptions)
+      setChosenOptions(sortedChosenOptions)
     },
     []
   )
