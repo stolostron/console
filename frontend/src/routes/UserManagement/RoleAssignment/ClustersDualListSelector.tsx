@@ -33,31 +33,51 @@ const ClustersDualListSelector = ({ onChoseOptions, clusterSets }: ClustersDualL
   const [chosenOptions, setChosenOptions] = React.useState<DualListSelectorTreeItemData[]>([])
   const previousSelectedClusters = useRef<{ id: string; value: string }[]>([])
 
-  const extractSelectedClusters = useCallback((options: DualListSelectorTreeItemData[]) => {
-    const selectedClusters: { id: string; value: string }[] = []
+  const addCheckedChildren = useCallback(
+    (children: DualListSelectorTreeItemData[], selectedClusters: { id: string; value: string }[]) => {
+      for (const child of children) {
+        if (child.isChecked) {
+          selectedClusters.push({ id: child.id, value: child.text })
+        }
+      }
+    },
+    []
+  )
 
-    for (const option of options) {
-      if (!option.children || option.children.length === 0) {
+  const processOption = useCallback(
+    (option: DualListSelectorTreeItemData, selectedClusters: { id: string; value: string }[]) => {
+      const hasChildren = option.children && option.children.length > 0
+
+      if (!hasChildren) {
         if (option.isChecked) {
           selectedClusters.push({ id: option.id, value: option.text })
         }
-      } else if (option.children) {
-        if (option.isChecked) {
-          for (const child of option.children) {
-            selectedClusters.push({ id: child.id, value: child.text })
-          }
-        } else {
-          for (const child of option.children) {
-            if (child.isChecked) {
-              selectedClusters.push({ id: child.id, value: child.text })
-            }
-          }
-        }
+        return
       }
-    }
 
-    return selectedClusters
-  }, [])
+      if (option.isChecked) {
+        for (const child of option.children!) {
+          selectedClusters.push({ id: child.id, value: child.text })
+        }
+      } else {
+        addCheckedChildren(option.children!, selectedClusters)
+      }
+    },
+    [addCheckedChildren]
+  )
+
+  const extractSelectedClusters = useCallback(
+    (options: DualListSelectorTreeItemData[]) => {
+      const selectedClusters: { id: string; value: string }[] = []
+
+      for (const option of options) {
+        processOption(option, selectedClusters)
+      }
+
+      return selectedClusters
+    },
+    [processOption]
+  )
 
   const onListChange = useCallback(
     (
