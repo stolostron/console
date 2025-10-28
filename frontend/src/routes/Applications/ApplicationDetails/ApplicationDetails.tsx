@@ -421,7 +421,7 @@ export default function ApplicationDetailsPage() {
                 appData,
               })
               setActiveChannel(application.activeChannel)
-              setAllChannels(application && application.channels ? application.channels : [])
+              setAllChannels(application.channels ?? [])
             }
 
             // from then on, only refresh topology with new statuses
@@ -451,8 +451,18 @@ export default function ApplicationDetailsPage() {
       15000
     )
     return () => clearInterval(interval)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [waitForApplication, activeChannel, apiVersion, cluster, name, namespace, getRecoilStates])
+  }, [
+    waitForApplication,
+    activeChannel,
+    apiVersion,
+    cluster,
+    name,
+    namespace,
+    getRecoilStates,
+    backendUrl,
+    clusters,
+    localHubName,
+  ])
 
   const overviewPath = generatePath(NavigationPath.applicationOverview, { name, namespace })
   const topologyPath = generatePath(NavigationPath.applicationTopology, { name, namespace })
