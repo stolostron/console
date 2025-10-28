@@ -135,7 +135,7 @@
     "@types/deep-diff": "^1.0.5",
     "@types/diff": "5.0.2",
     "@types/file-saver": "^2.0.5",
-    "@types/get-value": "3.0.2",
+    "@types/get-value": "3.0.5",
     "@types/jest": "28.1.6",
     "@types/jest-axe": "3.5.9",
     "@types/js-yaml": "4.0.5",
