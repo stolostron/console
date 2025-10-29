@@ -439,7 +439,12 @@ export const getArgoPushModelClusterList = (
   resources.forEach((resource) => {
     const isRemoteArgoApp = !!resource.status?.cluster
 
-    if (isLocalClusterURL(resource.spec.destination?.server ?? '', localCluster) || !isRemoteArgoApp) {
+    if (
+      (resource.spec.destination?.name === 'in-cluster' ||
+        resource.spec.destination?.name === localCluster?.name ||
+        isLocalClusterURL(resource.spec.destination?.server ?? '', localCluster)) &&
+      !isRemoteArgoApp
+    ) {
       clusterSet.add(localCluster?.name ?? '')
     } else if (isRemoteArgoApp) {
       clusterSet.add(
