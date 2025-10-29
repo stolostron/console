@@ -22,7 +22,7 @@ import { RoleAssignmentLabel } from './RoleAssignmentLabel'
 import { RoleAssignmentModal } from '../RoleAssignments/RoleAssignmentModal'
 import { RoleAssignmentStatusComponent } from './RoleAssignmentStatusComponent'
 import AcmTimestamp from '../../../lib/AcmTimestamp'
-// TODO: trigger sonar issue
+
 // Component for rendering clickable role links
 const RoleLinkCell = ({ roleName }: { roleName: string }) => (
   <Link to={generatePath(NavigationPath.roleDetails, { id: roleName })}>{roleName}</Link>

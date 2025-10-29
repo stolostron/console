@@ -16,7 +16,7 @@ const RoleRoleAssignments = () => {
 
   const hasDataToProcess = currentRole && multiclusterRoleAssignments
   const isLoading = isRoleAssignmentsLoading || !hasDataToProcess
-  // TODO: trigger sonar issue
+
   return (
     <PageSection>
       <RoleAssignments

@@ -8,5 +8,5 @@ const ServiceAccounts = () => {
     </PageSection>
   )
 }
-// TODO: trigger sonar issue
+
 export { ServiceAccounts }

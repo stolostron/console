@@ -25,5 +25,5 @@ const UserRoleAssignments = () => {
     </PageSection>
   )
 }
-// TODO: trigger sonar issue
+
 export { UserRoleAssignments }

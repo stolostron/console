@@ -10,7 +10,7 @@ type RoleAssignmentLabelProps = {
 }
 const RoleAssignmentLabel = ({ elements, numLabel, renderElement }: RoleAssignmentLabelProps) => {
   const { t } = useTranslation()
-  // TODO: trigger sonar issue
+
   return elements !== undefined && elements.length > 0 ? (
     <LabelGroup
       collapsedText={t('show.more', { count: elements.length - numLabel })}

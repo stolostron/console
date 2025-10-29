@@ -7,7 +7,7 @@ type ClustersDualListSelectorProps = {
   onChoseOptions: (values: { id: string; value: string }[]) => void
   clusterSets: ClusterSet[]
 }
-// TODO: trigger sonar issue
+
 const ClustersDualListSelector = ({ onChoseOptions, clusterSets }: ClustersDualListSelectorProps) => {
   const [availableOptions, setAvailableOptions] = React.useState<DualListSelectorTreeItemData[]>([])
 

@@ -11,7 +11,7 @@ const RolesTable = () => {
   const { t } = useTranslation()
   const { vmClusterRolesState } = useSharedAtoms()
   const clusterRoles = useRecoilValue(vmClusterRolesState)
-  // TODO: trigger sonar issue
+
   const roles = useMemo(
     () =>
       clusterRoles

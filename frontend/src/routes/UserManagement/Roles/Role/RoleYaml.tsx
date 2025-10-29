@@ -7,5 +7,5 @@ const RoleYaml = () => {
 
   return <RBACResourceYaml resource={role} loading={false} resourceType="Role" />
 }
-// TODO: trigger sonar issue
+
 export { RoleYaml }

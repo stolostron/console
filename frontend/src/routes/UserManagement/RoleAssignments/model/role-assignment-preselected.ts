@@ -6,5 +6,5 @@ type RoleAssignmentPreselected = {
   roles?: string[]
   clusterNames?: string[]
 }
-// TODO: trigger sonar issue
+
 export type { RoleAssignmentPreselected }

@@ -6,7 +6,7 @@ import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { compareStrings } from '../../../../ui-components/AcmTable/AcmTable'
 import { searchClient } from '../../../Search/search-sdk/search-client'
 import { useSearchResultItemsQuery } from '../../../Search/search-sdk/search-sdk'
-// TODO: trigger sonar issue
+
 type SelectOption = {
   id?: string
   value?: string
