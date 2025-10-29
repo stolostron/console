@@ -566,11 +566,73 @@ const [deployment, loaded, error] = useFleetK8sWatchResource({
 
 ### :gear: useFleetPrometheusPoll
 
+A fleet version of [`usePrometheusPoll`](https://github.com/openshift/console/blob/main/frontend/packages/console-dynamic-plugin-sdk/docs/api.md#useprometheuspoll) from
+the [dynamic plugin SDK](https://www.npmjs.com/package/@openshift-console/dynamic-plugin-sdk) that polls Prometheus for metrics data from a specific cluster or across all clusters.
+
+This hook intelligently routes Prometheus queries based on the target cluster:
+- If no cluster is specified or the cluster matches the hub cluster, it uses the local Prometheus instance
+- If a specific managed cluster is specified, it uses the fleet observability service (requires multicluster observability to be installed)
+- If `allClusters` is true, it queries across all clusters in the fleet using the observability service
+
+The hook automatically handles:
+- Checking if multicluster observability is installed when needed
+- Determining the hub cluster name for comparison
+- Routing queries to the appropriate Prometheus endpoint
+- Providing appropriate error states when dependencies are not available
+
 | Function | Type |
 | ---------- | ---------- |
 | `useFleetPrometheusPoll` | `(props: PrometheusPollProps and { cluster?: string or undefined; } and { allClusters?: boolean or undefined; }) => [response: PrometheusResponse or undefined, loaded: boolean, error: unknown]` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetPrometheusPoll.ts#L15)
+Parameters:
+
+* `props`: - Configuration object extending PrometheusPollProps with fleet-specific options
+* `props.cluster`: - The target cluster name. If not specified or matches hub cluster, queries local Prometheus
+* `props.allClusters`: - If true, queries across all clusters in the fleet (requires observability)
+* `props.delay`: - Polling interval in milliseconds
+* `props.endpoint`: - Prometheus endpoint URL (optional, uses default if not specified)
+* `props.endTime`: - End time for the query range (optional)
+* `props.namespace`: - Kubernetes namespace to scope the query (optional)
+* `props.query`: - PromQL query string to execute
+* `props.samples`: - Number of data points to return (defaults to DEFAULT_PROMETHEUS_SAMPLES)
+* `props.timeout`: - Request timeout in milliseconds (optional)
+* `props.timespan`: - Time range for the query in milliseconds (defaults to DEFAULT_PROMETHEUS_TIMESPAN)
+* `props.customDataSource`: - Custom data source configuration (optional)
+
+
+Returns:
+
+A tuple containing:
+- `response`: PrometheusResponse object with query results, or undefined if loading/error
+- `loaded`: Boolean indicating if the request has completed (successfully or with error)
+- `error`: Any error that occurred during the request, including dependency check failures
+
+Examples:
+
+```typescript
+// Query a specific cluster
+const [response, loaded, error] = useFleetPrometheusPoll({
+  cluster: 'my-managed-cluster',
+  query: 'up',
+  delay: 30000
+});
+
+// Query all clusters (requires observability)
+const [response, loaded, error] = useFleetPrometheusPoll({
+  allClusters: true,
+  query: 'cluster:cpu_usage_cores:sum',
+  delay: 30000
+});
+
+// Query hub cluster (same as local)
+const [response, loaded, error] = useFleetPrometheusPoll({
+  query: 'node_memory_MemAvailable_bytes',
+  delay: 15000
+});
+```
+
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetPrometheusPoll.ts#L72)
 
 ### :gear: useFleetSearchPoll
 
