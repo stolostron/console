@@ -569,35 +569,20 @@ const [deployment, loaded, error] = useFleetK8sWatchResource({
 A fleet version of [`usePrometheusPoll`](https://github.com/openshift/console/blob/main/frontend/packages/console-dynamic-plugin-sdk/docs/api.md#useprometheuspoll) from
 the [dynamic plugin SDK](https://www.npmjs.com/package/@openshift-console/dynamic-plugin-sdk) that polls Prometheus for metrics data from a specific cluster or across all clusters.
 
-This hook intelligently routes Prometheus queries based on the target cluster:
-- If no cluster is specified or the cluster matches the hub cluster, it uses the local Prometheus instance
-- If a specific managed cluster is specified, it uses the fleet observability service (requires multicluster observability to be installed)
-- If `allClusters` is true, it queries across all clusters in the fleet using the observability service
-
-The hook automatically handles:
-- Checking if multicluster observability is installed when needed
-- Determining the hub cluster name for comparison
-- Routing queries to the appropriate Prometheus endpoint
-- Providing appropriate error states when dependencies are not available
-
 | Function | Type |
 | ---------- | ---------- |
 | `useFleetPrometheusPoll` | `(props: PrometheusPollProps and { cluster?: string or undefined; } and { allClusters?: boolean or undefined; }) => [response: PrometheusResponse or undefined, loaded: boolean, error: unknown]` |
 
 Parameters:
 
-* `props`: - Configuration object extending PrometheusPollProps with fleet-specific options
-* `props.cluster`: - The target cluster name. If not specified or matches hub cluster, queries local Prometheus
-* `props.allClusters`: - If true, queries across all clusters in the fleet (requires observability)
-* `props.delay`: - Polling interval in milliseconds
-* `props.endpoint`: - Prometheus endpoint URL (optional, uses default if not specified)
-* `props.endTime`: - End time for the query range (optional)
-* `props.namespace`: - Kubernetes namespace to scope the query (optional)
-* `props.query`: - PromQL query string to execute
-* `props.samples`: - Number of data points to return (defaults to DEFAULT_PROMETHEUS_SAMPLES)
-* `props.timeout`: - Request timeout in milliseconds (optional)
-* `props.timespan`: - Time range for the query in milliseconds (defaults to DEFAULT_PROMETHEUS_TIMESPAN)
-* `props.customDataSource`: - Custom data source configuration (optional)
+* `endpoint`: - one of the PrometheusEndpoint (label, query, range, rules, targets)
+* `query`: - (optional) Prometheus query string. If empty or undefined, polling is not started.
+* `delay`: - (optional) polling delay interval (ms)
+* `endTime`: - (optional) for QUERY_RANGE enpoint, end of the query range
+* `samples`: - (optional) for QUERY_RANGE enpoint
+* `timespan`: - (optional) for QUERY_RANGE enpoint
+* `namespace`: - (optional) a search param to append
+* `timeout`: - (optional) a search param to append
 
 
 Returns:
@@ -617,7 +602,7 @@ const [response, loaded, error] = useFleetPrometheusPoll({
   delay: 30000
 });
 
-// Query all clusters (requires observability)
+// Query all clusters (requires observability -- see the useIsFleetObservabilityInstalled() hook)
 const [response, loaded, error] = useFleetPrometheusPoll({
   allClusters: true,
   query: 'cluster:cpu_usage_cores:sum',
@@ -632,7 +617,7 @@ const [response, loaded, error] = useFleetPrometheusPoll({
 ```
 
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetPrometheusPoll.ts#L72)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetPrometheusPoll.ts#L70)
 
 ### :gear: useFleetSearchPoll
 
@@ -736,7 +721,7 @@ Returns:
 
 ### :gear: useIsFleetObservabilityInstalled
 
-Hook that provides is observability installed.
+Hook that determines if the Observability service has been installed on the hub
 
 | Function | Type |
 | ---------- | ---------- |
@@ -744,9 +729,24 @@ Hook that provides is observability installed.
 
 Returns:
 
-Array with `isObservabilityInstalled`, `loaded` and `error` values.
+A tuple containing:
+- `response`: Boolean indicating whether the Observability service has been installed
+- `loaded`: Boolean indicating if the request has completed (successfully or with error)
+- `error`: Any error that occurred during the request, including dependency check failures
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useIsFleetObservabilityInstalled.ts#L9)
+Examples:
+
+```typescript
+// Check if the Observability service has been installed
+const [response, loaded, error] = useIsFleetObservabilityInstalled()
+if (response) {
+  console.log('Observability service is installed')
+} else {
+  console.log('Observability service is not installed')
+}
+
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useIsFleetObservabilityInstalled.ts#L28)
 
 
 ## :wrench: Constants

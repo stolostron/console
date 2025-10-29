@@ -16,29 +16,15 @@ import { useIsFleetObservabilityInstalled } from './useIsFleetObservabilityInsta
  * A fleet version of [`usePrometheusPoll`](https://github.com/openshift/console/blob/main/frontend/packages/console-dynamic-plugin-sdk/docs/api.md#useprometheuspoll) from
  * the [dynamic plugin SDK](https://www.npmjs.com/package/@openshift-console/dynamic-plugin-sdk) that polls Prometheus for metrics data from a specific cluster or across all clusters.
  *
- * This hook intelligently routes Prometheus queries based on the target cluster:
- * - If no cluster is specified or the cluster matches the hub cluster, it uses the local Prometheus instance
- * - If a specific managed cluster is specified, it uses the fleet observability service (requires multicluster observability to be installed)
- * - If `allClusters` is true, it queries across all clusters in the fleet using the observability service
  *
- * The hook automatically handles:
- * - Checking if multicluster observability is installed when needed
- * - Determining the hub cluster name for comparison
- * - Routing queries to the appropriate Prometheus endpoint
- * - Providing appropriate error states when dependencies are not available
- *
- * @param props - Configuration object extending PrometheusPollProps with fleet-specific options
- * @param props.cluster - The target cluster name. If not specified or matches hub cluster, queries local Prometheus
- * @param props.allClusters - If true, queries across all clusters in the fleet (requires observability)
- * @param props.delay - Polling interval in milliseconds
- * @param props.endpoint - Prometheus endpoint URL (optional, uses default if not specified)
- * @param props.endTime - End time for the query range (optional)
- * @param props.namespace - Kubernetes namespace to scope the query (optional)
- * @param props.query - PromQL query string to execute
- * @param props.samples - Number of data points to return (defaults to DEFAULT_PROMETHEUS_SAMPLES)
- * @param props.timeout - Request timeout in milliseconds (optional)
- * @param props.timespan - Time range for the query in milliseconds (defaults to DEFAULT_PROMETHEUS_TIMESPAN)
- * @param props.customDataSource - Custom data source configuration (optional)
+ * @param {PrometheusEndpoint} endpoint - one of the PrometheusEndpoint (label, query, range, rules, targets)
+ * @param {string} [query] - (optional) Prometheus query string. If empty or undefined, polling is not started.
+ * @param {number} [delay] - (optional) polling delay interval (ms)
+ * @param {number} [endTime] - (optional) for QUERY_RANGE enpoint, end of the query range
+ * @param {number} [samples] - (optional) for QUERY_RANGE enpoint
+ * @param {number} [timespan] - (optional) for QUERY_RANGE enpoint
+ * @param {string} [namespace] - (optional) a search param to append
+ * @param {string} [timeout] - (optional) a search param to append
  *
  * @returns A tuple containing:
  * - `response`: PrometheusResponse object with query results, or undefined if loading/error
@@ -54,7 +40,7 @@ import { useIsFleetObservabilityInstalled } from './useIsFleetObservabilityInsta
  *   delay: 30000
  * });
  *
- * // Query all clusters (requires observability)
+ * // Query all clusters (requires observability -- see the useIsFleetObservabilityInstalled() hook)
  * const [response, loaded, error] = useFleetPrometheusPoll({
  *   allClusters: true,
  *   query: 'cluster:cpu_usage_cores:sum',
@@ -67,6 +53,18 @@ import { useIsFleetObservabilityInstalled } from './useIsFleetObservabilityInsta
  *   delay: 15000
  * });
  * ```
+ *
+ * @remarks
+ * This hook intelligently routes Prometheus queries based on the target cluster:
+ * - If no cluster is specified or the cluster matches the hub cluster, it uses the local Prometheus instance
+ * - If a specific managed cluster is specified, it uses the fleet observability service (requires multicluster observability to be installed)
+ * - If `allClusters` is true, it queries across all clusters in the fleet using the observability service
+ *
+ * The hook automatically handles:
+ * - Checking if multicluster observability is installed when needed using useIsFleetObservabilityInstalled() hook
+ * - Determining the hub cluster name for comparison
+ * - Routing queries to the appropriate Prometheus endpoint
+ * - Providing appropriate error states when dependencies are not available
  */
 
 export const useFleetPrometheusPoll: (
