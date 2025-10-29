@@ -13,16 +13,23 @@ import { useHubConfigurationItem } from '../internal/useHubConfigurationItem'
  * ```typescript
  * // Check if the Observability service has been installed
  * const [response, loaded, error] = useIsFleetObservabilityInstalled()
- * if (response) {
- *   console.log('Observability service is installed')
- * } else {
- *   console.log('Observability service is not installed')
+ * if (loaded) {
+ *    if (response) {
+ *      console.log('Observability service is installed')
+ *    } else {
+ *      console.log('Observability service is not installed')
+ *    }
+ * } else if (!loaded) {
+ *   console.log('Checking if observability is installed')
+ * } else if (error) {
+ *   console.error('Error checking if Observability service is installed:', error)
  * }
  *
  * @remarks
  * This hook
  * - is used by the useFleetPrometheusPoll() hook to determine if metrics can be retrieved from clusters outside of the hub cluster.
- * - see RHACM 'enabling-observability-service' documentation for how to enable observability
+ * - see RHACM documentation for how to enable observability
+ * https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_management_for_kubernetes/2.14/html/observability/observing-environments-intro#enabling-observability-service
  *
  */
 export function useIsFleetObservabilityInstalled(): [

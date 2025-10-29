@@ -18,6 +18,8 @@ import { useIsFleetObservabilityInstalled } from './useIsFleetObservabilityInsta
  *
  *
  * @param {PrometheusEndpoint} endpoint - one of the PrometheusEndpoint (label, query, range, rules, targets)
+ * @param {string} [cluster] - The target cluster name. If not specified or matches hub cluster, queries local Prometheus
+ * @param {boolean} [allClusters] - If true, queries across all clusters in the fleet (requires observability)
  * @param {string} [query] - (optional) Prometheus query string. If empty or undefined, polling is not started.
  * @param {number} [delay] - (optional) polling delay interval (ms)
  * @param {number} [endTime] - (optional) for QUERY_RANGE enpoint, end of the query range

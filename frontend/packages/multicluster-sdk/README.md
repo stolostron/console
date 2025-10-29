@@ -576,6 +576,8 @@ the [dynamic plugin SDK](https://www.npmjs.com/package/@openshift-console/dynami
 Parameters:
 
 * `endpoint`: - one of the PrometheusEndpoint (label, query, range, rules, targets)
+* `cluster`: - The target cluster name. If not specified or matches hub cluster, queries local Prometheus
+* `allClusters`: - If true, queries across all clusters in the fleet (requires observability)
 * `query`: - (optional) Prometheus query string. If empty or undefined, polling is not started.
 * `delay`: - (optional) polling delay interval (ms)
 * `endTime`: - (optional) for QUERY_RANGE enpoint, end of the query range
@@ -617,7 +619,7 @@ const [response, loaded, error] = useFleetPrometheusPoll({
 ```
 
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetPrometheusPoll.ts#L70)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetPrometheusPoll.ts#L72)
 
 ### :gear: useFleetSearchPoll
 
@@ -739,14 +741,20 @@ Examples:
 ```typescript
 // Check if the Observability service has been installed
 const [response, loaded, error] = useIsFleetObservabilityInstalled()
-if (response) {
-  console.log('Observability service is installed')
-} else {
-  console.log('Observability service is not installed')
+if (loaded) {
+   if (response) {
+     console.log('Observability service is installed')
+   } else {
+     console.log('Observability service is not installed')
+   }
+} else if (!loaded) {
+  console.log('Checking if observability is installed')
+} else if (error) {
+  console.error('Error checking if Observability service is installed:', error)
 }
 
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useIsFleetObservabilityInstalled.ts#L28)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useIsFleetObservabilityInstalled.ts#L35)
 
 
 ## :wrench: Constants
