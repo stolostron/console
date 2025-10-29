@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import {
   EditMode,
+  useData,
   useEditMode,
   useItem,
   WizArrayInput,
@@ -9,10 +10,11 @@ import {
   WizNumberInput,
   WizTextInput,
 } from '@patternfly-labs/react-form-wizard'
-import { Alert, Button } from '@patternfly/react-core'
+import { Alert, Button, Checkbox } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import get from 'get-value'
 import { Fragment, ReactNode, useMemo } from 'react'
+import set from 'set-value'
 import { useTranslation } from '../../lib/acm-i18next'
 import { validateKubernetesResourceName } from '../../lib/validation'
 import { IClusterSetBinding } from '../common/resources/IClusterSetBinding'
@@ -85,6 +87,7 @@ export function Placement(props: {
 }) {
   const placement = useItem() as IPlacement
   const isClusterSet = placement.spec?.clusterSets?.length
+  const { update } = useData()
 
   // If a cluster set exists in the spec.clusterSets but is no longer in the given placement NS user needs to be able to deselect from dropdown.
   let namespacedClusterSetNames = [...props.namespaceClusterSetNames, ...(placement.spec?.clusterSets || [])]
@@ -140,11 +143,25 @@ export function Placement(props: {
       />
 
       <PlacementPredicate rootPath="spec.predicates.0." clusters={props.clusters} />
+      <Checkbox
+        id="limit-clusters-checkbox"
+        label={t('Set a limit on the number of clusters selected')}
+        isChecked={placement.spec?.numberOfClusters !== undefined}
+        onChange={(_event: any, checked: boolean) => {
+          if (checked) {
+            // Set default value to 1 when checkbox is enabled
+            set(placement, 'spec.numberOfClusters', placement.spec?.numberOfClusters ?? 1, { preservePaths: false })
+          } else {
+            // Set to undefined when checkbox is disabled
+            set(placement, 'spec.numberOfClusters', undefined, { preservePaths: false })
+          }
+          update()
+        }}
+      />
       <WizNumberInput
+        hidden={(placement) => placement.spec?.numberOfClusters === undefined}
         label={t('Limit the number of clusters selected')}
         path="spec.numberOfClusters"
-        zeroIsUndefined
-        hidden={(placement) => placement.spec?.numberOfClusters === undefined}
       />
     </Fragment>
   )
