@@ -15,7 +15,7 @@ export interface Role {
   uid: string
   roleTitle?: string
 }
-// TODO: trigger sonar issue
+
 type RolesTableHelperProps = {
   t: TFunction
 }

@@ -9,7 +9,7 @@ type RoleAssignmentStatusComponentProps = {
 }
 const RoleAssignmentStatusComponent = ({ status }: RoleAssignmentStatusComponentProps) => {
   const { t } = useTranslation()
-  // TODO: trigger sonar issue
+
   switch (status?.status) {
     case 'Active':
       return (

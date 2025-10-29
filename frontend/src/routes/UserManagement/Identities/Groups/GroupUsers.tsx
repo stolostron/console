@@ -21,7 +21,7 @@ const renderUserNameCell = (user: User) => {
     ''
   )
 }
-// TODO: trigger sonar issue
+
 const renderUserCreatedCell = (user: User) => {
   return user.metadata.creationTimestamp ? (
     <span style={{ whiteSpace: 'nowrap' }}>

@@ -21,7 +21,7 @@ type RoleAssignmentModalProps = {
   isEditing?: boolean
   preselected?: RoleAssignmentPreselected
 }
-// TODO: trigger sonar issue
+
 const RoleAssignmentModal = ({ close, isOpen, isEditing, preselected }: RoleAssignmentModalProps) => {
   const { multiclusterRoleAssignmentState } = useSharedAtoms()
   const multiClusterRoleAssignments = useRecoilValue(multiclusterRoleAssignmentState)

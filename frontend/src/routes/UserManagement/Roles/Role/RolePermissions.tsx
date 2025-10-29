@@ -51,7 +51,7 @@ const kindToAbbreviation = (resourceOrKind: string): string => {
   // https://github.com/openshift/console/blob/a228536605a2451468d172da9bb7b6ab812511ea/frontend/public/module/k8s/get-resources.ts#L29
   return ['ASS', 'FART'].includes(abbrKind) ? abbrKind.slice(0, -1) : abbrKind
 }
-// TODO: trigger sonar issue
+
 const RolePermissions = () => {
   const { t } = useTranslation()
   const currentRole = useCurrentRole()

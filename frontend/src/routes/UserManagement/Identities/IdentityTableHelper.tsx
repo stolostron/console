@@ -12,7 +12,7 @@ import { getISOStringTimestamp } from '../../../resources/utils'
 import { IdentityStatus } from '../../../ui-components/IdentityStatus/IdentityStatus'
 
 const EXPORT_FILE_PREFIX = 'identity-table'
-// TODO: trigger sonar issue
+
 export type IdentityItem = User | Group
 export type IdentityType = 'user' | 'group'
 

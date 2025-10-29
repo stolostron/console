@@ -12,7 +12,7 @@ const GroupRoleAssignments = () => {
     subjectNames: group?.metadata.name ? [group.metadata.name] : [],
     subjectKinds: ['Group'],
   })
-  // TODO: trigger sonar issue
+
   return (
     <PageSection>
       <RoleAssignments

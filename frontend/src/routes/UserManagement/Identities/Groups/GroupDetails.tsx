@@ -15,7 +15,7 @@ import { useGroupDetailsContext } from './GroupPage'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { NavigationPath } from '../../../../NavigationPath'
 import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
-// TODO: trigger sonar issue
+
 const GroupDetails = () => {
   const { t } = useTranslation()
   const { group } = useGroupDetailsContext()

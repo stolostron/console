@@ -18,7 +18,7 @@ export interface FlattenedRoleAssignment extends RoleAssignment {
   subject: Pick<Subject, 'name' | 'kind'>
   status?: RoleAssignmentStatus
 }
-// TODO: trigger sonar issue
+
 interface MulticlusterRoleAssignmentQuery {
   subjectNames?: string[]
   subjectKinds?: FlattenedRoleAssignment['subject']['kind'][]

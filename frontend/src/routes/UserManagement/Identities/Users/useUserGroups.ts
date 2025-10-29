@@ -4,7 +4,7 @@ import { useUserDetailsContext } from './UserPage'
 
 export const useUserGroups = () => {
   const { user, groups } = useUserDetailsContext()
-  // TODO: trigger sonar issue
+
   const userGroups = useMemo(() => {
     if (!user || !groups) return []
 

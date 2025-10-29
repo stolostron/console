@@ -19,7 +19,7 @@ const RoleAssignmentActionDropdown = ({
   canDelete: boolean
 }) => {
   const { t } = useTranslation()
-  // TODO: trigger sonar issue
+
   const keyFn = useCallback((roleAssignment: FlattenedRoleAssignment) => roleAssignment.name, [])
 
   const actions = [

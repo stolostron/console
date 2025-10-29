@@ -20,7 +20,7 @@ const renderGroupNameCell = (group: Group) => {
     ''
   )
 }
-// TODO: trigger sonar issue
+
 const renderGroupCreatedCell = (group: Group) => {
   return group.metadata.creationTimestamp ? (
     <span style={{ whiteSpace: 'nowrap' }}>
