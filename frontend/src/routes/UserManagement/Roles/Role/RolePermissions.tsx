@@ -52,6 +52,10 @@ const kindToAbbreviation = (resourceOrKind: string): string => {
   return ['ASS', 'FART'].includes(abbrKind) ? abbrKind.slice(0, -1) : abbrKind
 }
 
+const ActionsCellRenderer: IAcmTableColumn<Rule>['cell'] = (item) => <ActionsCell verbs={item.verbs} />
+
+const ResourcesCellRenderer: IAcmTableColumn<Rule>['cell'] = (item) => <ResourcesCell resources={item.resources} />
+
 const RolePermissions = () => {
   const { t } = useTranslation()
   const currentRole = useCurrentRole()
@@ -64,7 +68,7 @@ const RolePermissions = () => {
         header: t('Actions'),
         sort: (a: Rule, b: Rule) => compareStrings(a.verbs.join(', '), b.verbs.join(', ')),
         search: (item: Rule) => item.verbs.join(' '),
-        cell: (item) => <ActionsCell verbs={item.verbs} />,
+        cell: ActionsCellRenderer,
         transforms: [cellWidth(10)],
       },
       {
@@ -81,7 +85,7 @@ const RolePermissions = () => {
         header: t('Resources'),
         sort: (a: Rule, b: Rule) => compareStrings(a.resources.join(', '), b.resources.join(', ')),
         search: (item: Rule) => item.resources.join(' '),
-        cell: (item) => <ResourcesCell resources={item.resources} />,
+        cell: ResourcesCellRenderer,
         transforms: [cellWidth(60)],
       },
     ],
