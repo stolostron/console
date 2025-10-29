@@ -2570,6 +2570,7 @@
   "Service network CIDR": "Service network CIDR",
   "Service Port": "Service Port",
   "Service unavailable": "Service unavailable",
+  "Set a limit on the number of clusters selected": "Set a limit on the number of clusters selected",
   "Set time window": "Set time window",
   "set.delete": "Delete cluster set",
   "set.edit-bindings": "Edit namespace bindings",
