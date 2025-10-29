@@ -1,25 +1,25 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Alert, Button } from '@patternfly/react-core'
-import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import get from 'get-value'
-import { Fragment, ReactNode, useMemo } from 'react'
 import {
   EditMode,
   useEditMode,
   useItem,
-  WizKeyValue,
-  WizNumberInput,
   WizArrayInput,
-  WizTextInput,
+  WizKeyValue,
   WizMultiSelect,
+  WizNumberInput,
+  WizTextInput,
 } from '@patternfly-labs/react-form-wizard'
-import { IResource } from '../common/resources/IResource'
+import { Alert, Button } from '@patternfly/react-core'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import get from 'get-value'
+import { Fragment, ReactNode, useMemo } from 'react'
+import { useTranslation } from '../../lib/acm-i18next'
+import { validateKubernetesResourceName } from '../../lib/validation'
 import { IClusterSetBinding } from '../common/resources/IClusterSetBinding'
 import { IPlacement, PlacementKind, PlacementType, Predicate } from '../common/resources/IPlacement'
+import { IResource } from '../common/resources/IResource'
 import { useLabelValuesMap } from '../common/useLabelValuesMap'
-import { validateKubernetesResourceName } from '../../lib/validation'
 import { MatchExpression, MatchExpressionCollapsed, MatchExpressionSummary } from './MatchExpression'
-import { useTranslation } from '../../lib/acm-i18next'
 
 export function Placements(props: {
   clusterSets: IResource[]
@@ -86,6 +86,12 @@ export function Placement(props: {
   const placement = useItem() as IPlacement
   const isClusterSet = placement.spec?.clusterSets?.length
 
+  // If a cluster set exists in the spec.clusterSets but is no longer in the given placement NS user needs to be able to deselect from dropdown.
+  let namespacedClusterSetNames = [...props.namespaceClusterSetNames, ...(placement.spec?.clusterSets || [])]
+  // Create a new Set from the array - Sets only store unique values.
+  const uniqueSet = new Set(namespacedClusterSetNames)
+  namespacedClusterSetNames = [...uniqueSet]
+
   const { t } = useTranslation()
 
   return (
@@ -130,7 +136,7 @@ export function Placement(props: {
             </Button>
           ) : undefined
         }
-        options={props.namespaceClusterSetNames}
+        options={namespacedClusterSetNames}
       />
 
       <PlacementPredicate rootPath="spec.predicates.0." clusters={props.clusters} />
