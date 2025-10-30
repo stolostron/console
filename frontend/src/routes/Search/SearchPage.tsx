@@ -62,6 +62,19 @@ const dropdown = css({
     right: 'unset !important',
   },
 })
+const alertWrapper = css({
+  display: 'flex',
+  alignItems: 'baseline',
+})
+const fullWidthAlert = css({
+  alignSelf: 'stretch',
+  flex: 1,
+})
+const alertSection = css({
+  paddingTop: 0,
+  paddingBottom: 'var(--pf-v5-global--spacer--md)',
+  marginBottom: 0,
+})
 
 function HandleErrors(
   schemaError: ApolloError | undefined,
@@ -511,9 +524,11 @@ export default function SearchPage() {
           refetchSearch={refetch}
         />
         {hasVirtualMachineKinds(presetSearchQuery) && (
-          <div style={{ marginBottom: '1em' }}>
-            <KubevirtProviderAlert variant="search" component="hint" />
-          </div>
+          <PageSection className={alertSection}>
+            <div className={alertWrapper}>
+              <KubevirtProviderAlert variant="search" component="hint" className={fullWidthAlert} />
+            </div>
+          </PageSection>
         )}
         {!queryErrors &&
           (presetSearchQuery !== '' && (query.keywords.length > 0 || query.filters.length > 0) ? (
