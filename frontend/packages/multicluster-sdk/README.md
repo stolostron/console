@@ -569,6 +569,11 @@ const [deployment, loaded, error] = useFleetK8sWatchResource({
 A fleet version of [`usePrometheusPoll`](https://github.com/openshift/console/blob/main/frontend/packages/console-dynamic-plugin-sdk/docs/api.md#useprometheuspoll) from
 the [dynamic plugin SDK](https://www.npmjs.com/package/@openshift-console/dynamic-plugin-sdk) that polls Prometheus for metrics data from a specific cluster or across all clusters.
 
+Although this is intended as a drop-in replacement for usePrometheusPoll there are a couple of considerations:
+1. The Observabilty service must be running on the hub in order to access metric data outside of the hub. The isIsUseFleetObservabilityInstalled() hook can check this
+2. The PromQL query will be different for clusters outside of the hub. The query may be completely different but at the very least it will contain the cluster name(s)
+3. Ideally the Observabilty team will setup your queries so that you only need to add the cluster name-- see example
+
 | Function | Type |
 | ---------- | ---------- |
 | `useFleetPrometheusPoll` | `(props: PrometheusPollProps and { cluster?: string or undefined; } and { allClusters?: boolean or undefined; }) => [response: PrometheusResponse or undefined, loaded: boolean, error: unknown]` |
@@ -578,7 +583,7 @@ Parameters:
 * `endpoint`: - one of the PrometheusEndpoint (label, query, range, rules, targets)
 * `cluster`: - The target cluster name. If not specified or matches hub cluster, queries local Prometheus
 * `allClusters`: - If true, queries across all clusters in the fleet (requires observability)
-* `query`: - (optional) Prometheus query string. If empty or undefined, polling is not started.
+* `query`: - (optional) Prometheus query string. If empty or undefined, polling is not started. (See note above on format)
 * `delay`: - (optional) polling delay interval (ms)
 * `endTime`: - (optional) for QUERY_RANGE enpoint, end of the query range
 * `samples`: - (optional) for QUERY_RANGE enpoint
@@ -597,29 +602,38 @@ A tuple containing:
 Examples:
 
 ```typescript
-// Query a specific cluster
-const [response, loaded, error] = useFleetPrometheusPoll({
-  cluster: 'my-managed-cluster',
-  query: 'up',
-  delay: 30000
-});
+ // (OPTIONAL) Check if the Observability service has been installed 
+const [response, loaded, error] = useIsFleetObservabilityInstalled()
+if (!loaded) {
+   return <Loading />
+}
+if (error) {
+ return <ErrorState error={error} />
+}
 
-// Query all clusters (requires observability -- see the useIsFleetObservabilityInstalled() hook)
-const [response, loaded, error] = useFleetPrometheusPoll({
-  allClusters: true,
-  query: 'cluster:cpu_usage_cores:sum',
-  delay: 30000
-});
+// Get the query
+const [hubClusterName] = useHubClusterName();
+const clusterFilter = cluster !== hubClusterName ? `,cluster='$cluster}'` : '';
+const sumByCluster = !isEmpty(obj?.cluster) && obj?.cluster === hubClusterName ? ', cluster' : '';
+// NOTE: this assumes your queries are identical between hub and other fleet clusters
+// if not, you may need to use an entirely different query for fleet--consult the Observability team
+const query = `sum(rate(kubevirt_vmi_cpu_usage_seconds_total{name='${name}',namespace='${namespace}'${clusterFilter}}[${duration}])) BY (name, namespace${sumByCluster})`,
 
-// Query hub cluster (same as local)
+// Query metrics data
 const [response, loaded, error] = useFleetPrometheusPoll({
-  query: 'node_memory_MemAvailable_bytes',
-  delay: 15000
+ cluster: 'cluster',
+ query
 });
+if (!loaded) {
+ return <Loading />
+}
+if (error) {
+  return <ErrorState error={error} />
+}
 ```
 
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetPrometheusPoll.ts#L72)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetPrometheusPoll.ts#L86)
 
 ### :gear: useFleetSearchPoll
 
@@ -741,20 +755,22 @@ Examples:
 ```typescript
 // Check if the Observability service has been installed
 const [response, loaded, error] = useIsFleetObservabilityInstalled()
-if (loaded) {
-   if (response) {
-     console.log('Observability service is installed')
-   } else {
-     console.log('Observability service is not installed')
-   }
-} else if (!loaded) {
-  console.log('Checking if observability is installed')
-} else if (error) {
-  console.error('Error checking if Observability service is installed:', error)
+if (!loaded) {
+ return <Loading />
+}
+if (error) {
+  return <ErrorState error={error} />
+}
+if (!loaded) {
+  return <Loading />
+}
+
+if (error) {
+  return <ErrorState error={error} />
 }
 
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useIsFleetObservabilityInstalled.ts#L35)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useIsFleetObservabilityInstalled.ts#L37)
 
 
 ## :wrench: Constants

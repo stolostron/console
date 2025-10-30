@@ -13,16 +13,18 @@ import { useHubConfigurationItem } from '../internal/useHubConfigurationItem'
  * ```typescript
  * // Check if the Observability service has been installed
  * const [response, loaded, error] = useIsFleetObservabilityInstalled()
- * if (loaded) {
- *    if (response) {
- *      console.log('Observability service is installed')
- *    } else {
- *      console.log('Observability service is not installed')
- *    }
- * } else if (!loaded) {
- *   console.log('Checking if observability is installed')
- * } else if (error) {
- *   console.error('Error checking if Observability service is installed:', error)
+ * if (!loaded) {
+ *  return <Loading />
+ * }
+ * if (error) {
+ *   return <ErrorState error={error} />
+ * }
+ * if (!loaded) {
+ *   return <Loading />
+ * }
+ *
+ * if (error) {
+ *   return <ErrorState error={error} />
  * }
  *
  * @remarks
