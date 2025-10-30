@@ -33,9 +33,8 @@ export function WizMultiSelect(props: WizMultiSelectProps) {
 
   const allOptions = useMemo(() => {
     // If resource (value) contains values not available in props.options - they should be included in order to deselect from dropdown.
-    let allOptions = [...options, ...(value || [])]
     // Create a new Set from the array - Sets only store unique values.
-    const uniqueSet = new Set(allOptions)
+    const uniqueSet = new Set([...options, ...(value || [])])
     return [...uniqueSet]
   }, [options, value])
 
