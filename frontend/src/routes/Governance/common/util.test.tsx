@@ -1,7 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 'use strict'
 
-import { hasInformOnlyPolicies, getPolicyRemediation, resolveExternalStatus, parseStringMap } from './util'
+import {
+  hasInformOnlyPolicies,
+  getPolicyRemediation,
+  resolveExternalStatus,
+  parseStringMap,
+  policyHasDeletePruneBehavior,
+} from './util'
 import { PolicyTableItem } from '../policies/Policies'
 import { Policy, PolicyTemplate, REMEDIATION_ACTION } from '../../../resources'
 import { cloneDeep } from 'lodash'
@@ -899,5 +905,126 @@ describe('Test parseStringValue', () => {
         'cluster-namespace': 'managed3',
       })
     )
+  })
+})
+
+describe('Test policyHasDeletePruneBehavior', () => {
+  const basePolicy: Policy = {
+    apiVersion: 'policy.open-cluster-management.io/v1',
+    kind: 'Policy',
+    metadata: { name: 'test-policy', namespace: 'test' },
+    spec: {
+      disabled: false,
+      remediationAction: 'enforce',
+      'policy-templates': [
+        {
+          objectDefinition: {
+            apiVersion: 'policy.open-cluster-management.io/v1',
+            kind: 'ConfigurationPolicy',
+            metadata: { name: 'config-policy' },
+            spec: {
+              remediationAction: 'enforce',
+              pruneObjectBehavior: 'DeleteIfCreated',
+            },
+          },
+        },
+      ],
+    },
+  }
+
+  test('should return true for policy with enforce and DeleteIfCreated pruneObjectBehavior', () => {
+    const policy = cloneDeep(basePolicy)
+    expect(policyHasDeletePruneBehavior(policy)).toBe(true)
+  })
+
+  test('should return true for policy with enforce and DeleteAll pruneObjectBehavior', () => {
+    const policy = cloneDeep(basePolicy)
+    policy.spec['policy-templates']![0].objectDefinition.spec!.pruneObjectBehavior = 'DeleteAll'
+    expect(policyHasDeletePruneBehavior(policy)).toBe(true)
+  })
+
+  test('should return true when root policy is not set but template has enforce with delete prune', () => {
+    const policy = cloneDeep(basePolicy)
+    policy.spec.remediationAction = undefined
+    expect(policyHasDeletePruneBehavior(policy)).toBe(true)
+  })
+
+  test('should return false when root policy is inform even if template has enforce with delete prune', () => {
+    const policy = cloneDeep(basePolicy)
+    policy.spec.remediationAction = 'inform'
+    expect(policyHasDeletePruneBehavior(policy)).toBe(false)
+  })
+
+  test('should return false for disabled policy', () => {
+    const policy = cloneDeep(basePolicy)
+    policy.spec.disabled = true
+    expect(policyHasDeletePruneBehavior(policy)).toBe(false)
+  })
+
+  test('should return false for inform policy with delete prune', () => {
+    const policy = cloneDeep(basePolicy)
+    policy.spec.remediationAction = 'inform'
+    policy.spec['policy-templates']![0].objectDefinition.spec!.remediationAction = 'inform'
+    expect(policyHasDeletePruneBehavior(policy)).toBe(false)
+  })
+
+  test('should return false for informOnly policy with delete prune', () => {
+    const policy = cloneDeep(basePolicy)
+    policy.spec.remediationAction = 'informOnly'
+    policy.spec['policy-templates']![0].objectDefinition.spec!.remediationAction = 'informOnly'
+    expect(policyHasDeletePruneBehavior(policy)).toBe(false)
+  })
+
+  test('should return false for enforce policy without delete prune behavior', () => {
+    const policy = cloneDeep(basePolicy)
+    policy.spec['policy-templates']![0].objectDefinition.spec!.pruneObjectBehavior = 'None'
+    expect(policyHasDeletePruneBehavior(policy)).toBe(false)
+  })
+
+  test('should return false for enforce policy without pruneObjectBehavior set', () => {
+    const policy = cloneDeep(basePolicy)
+    delete policy.spec['policy-templates']![0].objectDefinition.spec!.pruneObjectBehavior
+    expect(policyHasDeletePruneBehavior(policy)).toBe(false)
+  })
+
+  test('should return false for non-ConfigurationPolicy template types', () => {
+    const policy = cloneDeep(basePolicy)
+    policy.spec['policy-templates']![0].objectDefinition.kind = 'IamPolicy'
+    expect(policyHasDeletePruneBehavior(policy)).toBe(false)
+  })
+
+  test('should return true when at least one template has delete prune behavior with enforce', () => {
+    const policy = cloneDeep(basePolicy)
+    policy.spec['policy-templates'] = [
+      {
+        objectDefinition: {
+          apiVersion: 'policy.open-cluster-management.io/v1',
+          kind: 'ConfigurationPolicy',
+          metadata: { name: 'config-policy-1' },
+          spec: {
+            remediationAction: 'inform',
+            pruneObjectBehavior: 'None',
+          },
+        },
+      },
+      {
+        objectDefinition: {
+          apiVersion: 'policy.open-cluster-management.io/v1',
+          kind: 'ConfigurationPolicy',
+          metadata: { name: 'config-policy-2' },
+          spec: {
+            remediationAction: 'enforce',
+            pruneObjectBehavior: 'DeleteIfCreated',
+          },
+        },
+      },
+    ]
+    expect(policyHasDeletePruneBehavior(policy)).toBe(true)
+  })
+
+  test('should return false for policy with no policy-templates', () => {
+    const policy = cloneDeep(basePolicy)
+    delete policy.spec['policy-templates']
+    expect(policyHasDeletePruneBehavior(policy)).toBe(false)
   })
 })
