@@ -387,6 +387,8 @@ export default function PoliciesPage() {
             variant: 'bulk-action',
             title: t('policy.table.actions.disable'),
             click: (item) => {
+              const containsDeletePruneBehavior =
+                [...item].filter((item) => policyHasDeletePruneBehavior(item.policy)).length > 0
               setModalProps({
                 open: true,
                 title: t('policy.modal.title.disable'),
@@ -415,6 +417,14 @@ export default function PoliciesPage() {
                   [...item].filter((item) => {
                     return item.source !== 'Local'
                   }).length > 0,
+                alert: containsDeletePruneBehavior ? (
+                  <AcmAlert
+                    variant="warning"
+                    title={t('policy.modal.warning.pruneParameter')}
+                    message={t('policy.modal.warning.pruneParameter.disableMessage')}
+                    isInline
+                  />
+                ) : undefined,
               })
             },
           },
@@ -1123,7 +1133,7 @@ export function DeletePolicyModal(props: Readonly<{ item: PolicyTableItem; onClo
             <AcmAlert
               variant="warning"
               title={t('policy.modal.warning.pruneParameter')}
-              message={t('policy.modal.warning.pruneParameter.disableMessage')}
+              message={t('policy.modal.warning.pruneParameter.deleteMessage')}
               isInline
             />
           </StackItem>
