@@ -6,10 +6,10 @@ import {
   MenuToggleElement,
   Select as PfSelect,
 } from '@patternfly/react-core'
-import { ReactNode, useCallback, useState } from 'react'
+import { ReactNode, useCallback, useMemo, useState } from 'react'
 import { DisplayMode } from '../contexts/DisplayModeContext'
 import { useStringContext } from '../contexts/StringContext'
-import { InputCommonProps, getSelectPlaceholder, useInput } from './Input'
+import { getSelectPlaceholder, InputCommonProps, useInput } from './Input'
 import { InputSelect, SelectListOptions } from './InputSelect'
 import { WizFormGroup } from './WizFormGroup'
 
@@ -30,6 +30,14 @@ export function WizMultiSelect(props: WizMultiSelectProps) {
   const placeholder = getSelectPlaceholder(props)
   const [open, setOpen] = useState(false)
   const [filteredOptions, setFilteredOptions] = useState<string[]>([])
+
+  const allOptions = useMemo(() => {
+    // If resource (value) contains values not available in props.options - they should be included in order to deselect from dropdown.
+    let allOptions = [...options, ...(value || [])]
+    // Create a new Set from the array - Sets only store unique values.
+    const uniqueSet = new Set(allOptions)
+    return [...uniqueSet]
+  }, [options, value])
 
   const handleSetOptions = useCallback((o: string[]) => {
     if (o.length > 0) {
@@ -94,7 +102,7 @@ export function WizMultiSelect(props: WizMultiSelectProps) {
               disabled={disabled}
               validated={validated}
               placeholder={placeholder}
-              options={options}
+              options={allOptions}
               setOptions={handleSetOptions}
               toggleRef={toggleRef}
               value={value}

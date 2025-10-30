@@ -89,12 +89,6 @@ export function Placement(props: {
   const isClusterSet = placement.spec?.clusterSets?.length
   const { update } = useData()
 
-  // If a cluster set exists in the spec.clusterSets but is no longer in the given placement NS user needs to be able to deselect from dropdown.
-  let namespacedClusterSetNames = [...props.namespaceClusterSetNames, ...(placement.spec?.clusterSets || [])]
-  // Create a new Set from the array - Sets only store unique values.
-  const uniqueSet = new Set(namespacedClusterSetNames)
-  namespacedClusterSetNames = [...uniqueSet]
-
   const { t } = useTranslation()
 
   return (
@@ -139,7 +133,7 @@ export function Placement(props: {
             </Button>
           ) : undefined
         }
-        options={namespacedClusterSetNames}
+        options={props.namespaceClusterSetNames}
       />
 
       <PlacementPredicate rootPath="spec.predicates.0." clusters={props.clusters} />
