@@ -238,32 +238,34 @@ export function DiscoveryConfigPageContent(props: {
       setModalProps({
         open: true,
         title: t('disable.title'),
-        confirm: async () => {
-          try {
-            if (discoveryConfig) {
-              await deleteResource(discoveryConfig).promise
-              setModalProps({
-                open: false,
-                confirm: () => {},
-                cancel: () => {},
-                title: '',
-                message: '',
-              })
-              toastContext.addAlert({
-                title: t('alert.deleted.header', {
-                  credentialName: getDiscoveryConfigCredential(discoveryConfig),
-                }),
-                message: t('alert.msg'),
-                type: 'success',
-                autoClose: true,
-              })
-              navigate(NavigationPath.discoveredClusters)
-            } else {
-              throw Error('Error retrieving discoveryconfigs')
-            }
-          } catch (err) {
+        confirm: () => {
+          const handleError = (err: Error) => {
             toastContext.clearAlerts()
             alertContext.addAlert(getErrorInfo(err, t)) //TODO: not currently displaying within modal
+          }
+          if (discoveryConfig) {
+            deleteResource(discoveryConfig)
+              .promise.then(() => {
+                setModalProps({
+                  open: false,
+                  confirm: () => {},
+                  cancel: () => {},
+                  title: '',
+                  message: '',
+                })
+                toastContext.addAlert({
+                  title: t('alert.deleted.header', {
+                    credentialName: getDiscoveryConfigCredential(discoveryConfig),
+                  }),
+                  message: t('alert.msg'),
+                  type: 'success',
+                  autoClose: true,
+                })
+                navigate(NavigationPath.discoveredClusters)
+              })
+              .catch(handleError)
+          } else {
+            handleError(new Error('Error retrieving discoveryconfigs'))
           }
         },
         confirmText: t('discoveryConfig.delete.btn'),
