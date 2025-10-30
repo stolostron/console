@@ -10,5 +10,8 @@
   "schedule": [
     "every weekend"
   ],
-  "timezone": "America/New_York"
+  "timezone": "America/New_York",
+  "lockFileMaintenance": {
+    "enabled": false
+  }
 }
