@@ -840,16 +840,18 @@ export function policyHasDeletePruneBehavior(policy: Policy) {
   if (policy.spec.disabled || policy.spec.remediationAction?.endsWith('nform')) {
     return false
   }
-  return policy.spec['policy-templates']?.some((tmpl) => {
-    if (
-      tmpl.objectDefinition.kind !== 'ConfigurationPolicy' ||
-      !tmpl.objectDefinition.spec?.pruneObjectBehavior?.startsWith('Delete')
-    ) {
-      return false
-    }
-    return (
-      policy.spec.remediationAction?.endsWith('nforce') ||
-      tmpl.objectDefinition.spec?.remediationAction?.endsWith('nforce')
-    )
-  })
+  return (
+    policy.spec['policy-templates']?.some((tmpl) => {
+      if (
+        tmpl.objectDefinition.kind !== 'ConfigurationPolicy' ||
+        !tmpl.objectDefinition.spec?.pruneObjectBehavior?.startsWith('Delete')
+      ) {
+        return false
+      }
+      return (
+        policy.spec.remediationAction?.endsWith('nforce') ||
+        tmpl.objectDefinition.spec?.remediationAction?.endsWith('nforce')
+      )
+    }) ?? false
+  )
 }
