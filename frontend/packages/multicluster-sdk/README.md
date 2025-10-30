@@ -570,7 +570,7 @@ A fleet version of [`usePrometheusPoll`](https://github.com/openshift/console/bl
 the [dynamic plugin SDK](https://www.npmjs.com/package/@openshift-console/dynamic-plugin-sdk) that polls Prometheus for metrics data from a specific cluster or across all clusters.
 
 Although this is intended as a drop-in replacement for usePrometheusPoll there are a couple of considerations:
-1. The Observabilty service must be running on the hub in order to access metric data outside of the hub. The isIsUseFleetObservabilityInstalled() hook can check this
+1. The Observabilty service must be running on the hub in order to access metric data outside of the hub. The useIsFleetObservabilityInstalled() hook can check this
 2. The PromQL query will be different for clusters outside of the hub. The query may be completely different but at the very least it will contain the cluster name(s)
 3. Ideally the Observabilty team will setup your queries so that you only need to add the cluster name-- see example
 
