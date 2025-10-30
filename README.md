@@ -26,12 +26,12 @@ Go to the [Contributing guide](CONTRIBUTING.md) to learn how to get involved.
 The same codebase is used to build images for **Red Hat Advanced Cluster Management for Kubernetes** (from `release-*` branches) and **multicluster engine for Kubernetes** (from `backplane-*` branches). The build system fast-forwards between branches to keep the content in sync. Pull requests should only be opened against the first branch in each line listed below. The arrow represents an automatic fast-forwarding of commits from one branch to the next.
 
 ```
-main → release-2.15 → backplane-2.10
+main → release-2.16 → backplane-2.11
+release-2.15 → backplane-2.10
 release-2.14 → backplane-2.9
 release-2.13 → backplane-2.8
 release-2.12 → backplane-2.7
 release-2.11 → backplane-2.6
-release-2.10 → backplane-2.5
 ```
 
 ## Core Dependencies - Release Branch Mapping
@@ -40,7 +40,8 @@ A number of the core NPM package dependencies are published from other repositor
 
 | console branch                           | patternfly-labs/react-form-wizard | stolostron/react-data-view |
 | ---------------------------------------- | --------------------------------- | -------------------------- |
-| main<br/>release-2.15<br/>backplane-2.10 | no longer used, now integrated    | v2.5.z                     |
+| main<br/>release-2.16<br/>backplane-2.11 | N/A                               | main                       |
+| release-2.15<br/>backplane-2.10          | no longer used, now integrated    | v2.5.z                     |
 | release-2.14<br/>backplane-2.9           | v2.7.z                            | v2.4.z                     |
 | release-2.13<br/>backplane-2.8           | v2.4.z                            | v2.3.z                     |
 | release-2.12<br/>backplane-2.7           | v1.32.z                           | v1.15.z                    |
