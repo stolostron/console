@@ -10,6 +10,8 @@ import { NavigationPath } from '../../../NavigationPath'
 import { Policy, PolicyApiVersion, PolicyDefinition, PolicyKind } from '../../../resources'
 import { patchResource } from '../../../resources/utils'
 import { AddToPolicySetModal, DeletePolicyModal, PolicyTableItem } from '../policies/Policies'
+import { policyHasDeletePruneBehavior } from '../common/util'
+import { AcmAlert } from '../../../ui-components'
 
 export function PolicyActionDropdown(props: {
   setModal: (modal: React.ReactNode) => void
@@ -152,6 +154,14 @@ export function PolicyActionDropdown(props: {
                     setModalProps({ open: false })
                   },
                   hasExternalResources: item.source !== 'Local',
+                  alert: policyHasDeletePruneBehavior(item.policy) ? (
+                    <AcmAlert
+                      variant="warning"
+                      title={t('policy.modal.warning.pruneParameter')}
+                      message={t('policy.modal.warning.pruneParameter.disableMessage')}
+                      isInline
+                    />
+                  ) : undefined,
                 })
               }
             },
