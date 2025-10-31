@@ -1,27 +1,27 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import {
+  EditMode,
+  useData,
+  useEditMode,
+  useItem,
+  WizArrayInput,
+  WizKeyValue,
+  WizMultiSelect,
+  WizNumberInput,
+  WizTextInput,
+} from '@patternfly-labs/react-form-wizard'
 import { Alert, Button, Checkbox } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import get from 'get-value'
-import set from 'set-value'
 import { Fragment, ReactNode, useMemo } from 'react'
-import {
-  EditMode,
-  useEditMode,
-  useItem,
-  useData,
-  WizKeyValue,
-  WizNumberInput,
-  WizArrayInput,
-  WizTextInput,
-  WizMultiSelect,
-} from '@patternfly-labs/react-form-wizard'
-import { IResource } from '../common/resources/IResource'
+import set from 'set-value'
+import { useTranslation } from '../../lib/acm-i18next'
+import { validateKubernetesResourceName } from '../../lib/validation'
 import { IClusterSetBinding } from '../common/resources/IClusterSetBinding'
 import { IPlacement, PlacementKind, PlacementType, Predicate } from '../common/resources/IPlacement'
+import { IResource } from '../common/resources/IResource'
 import { useLabelValuesMap } from '../common/useLabelValuesMap'
-import { validateKubernetesResourceName } from '../../lib/validation'
 import { MatchExpression, MatchExpressionCollapsed, MatchExpressionSummary } from './MatchExpression'
-import { useTranslation } from '../../lib/acm-i18next'
 
 export function Placements(props: {
   clusterSets: IResource[]
