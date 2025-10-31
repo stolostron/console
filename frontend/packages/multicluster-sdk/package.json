@@ -1,6 +1,6 @@
 {
   "name": "@stolostron/multicluster-sdk",
-  "version": "0.7.5",
+  "version": "0.7.6",
   "description": "Provides extensions and APIs that dynamic plugins can use to leverage multicluster capabilities provided by Red Hat Advanced Cluster Management.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
