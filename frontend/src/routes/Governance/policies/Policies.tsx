@@ -53,6 +53,7 @@ import {
   getPlacementsForResource,
   getPolicySource,
   hasInformOnlyPolicies,
+  policyHasDeletePruneBehavior,
 } from '../common/util'
 import { ClusterPolicyViolationIcons2 } from '../components/ClusterPolicyViolations'
 import { GovernanceCreatePolicyEmptyState } from '../components/GovernanceEmptyState'
@@ -386,6 +387,8 @@ export default function PoliciesPage() {
             variant: 'bulk-action',
             title: t('policy.table.actions.disable'),
             click: (item) => {
+              const containsDeletePruneBehavior =
+                [...item].filter((item) => policyHasDeletePruneBehavior(item.policy)).length > 0
               setModalProps({
                 open: true,
                 title: t('policy.modal.title.disable'),
@@ -414,6 +417,14 @@ export default function PoliciesPage() {
                   [...item].filter((item) => {
                     return item.source !== 'Local'
                   }).length > 0,
+                alert: containsDeletePruneBehavior ? (
+                  <AcmAlert
+                    variant="warning"
+                    title={t('policy.modal.warning.pruneParameter')}
+                    message={t('policy.modal.warning.pruneParameter.disableMessage')}
+                    isInline
+                  />
+                ) : undefined,
               })
             },
           },
@@ -1121,8 +1132,8 @@ export function DeletePolicyModal(props: Readonly<{ item: PolicyTableItem; onClo
           <StackItem>
             <AcmAlert
               variant="warning"
-              title={t('Some policies have the Prune parameter set.')}
-              message={t('Deleting this policy might delete some related objects on the managed cluster(s).')}
+              title={t('policy.modal.warning.pruneParameter')}
+              message={t('policy.modal.warning.pruneParameter.deleteMessage')}
               isInline
             />
           </StackItem>
@@ -1135,22 +1146,4 @@ export function DeletePolicyModal(props: Readonly<{ item: PolicyTableItem; onClo
       </Stack>
     </Modal>
   )
-}
-
-function policyHasDeletePruneBehavior(policy: Policy) {
-  if (policy.spec.disabled || policy.spec.remediationAction?.endsWith('nform')) {
-    return false
-  }
-  return policy.spec['policy-templates']?.some((tmpl) => {
-    if (
-      tmpl.objectDefinition.kind !== 'ConfigurationPolicy' ||
-      !tmpl.objectDefinition.spec?.pruneObjectBehavior?.startsWith('Delete')
-    ) {
-      return false
-    }
-    return (
-      policy.spec.remediationAction?.endsWith('nforce') ||
-      tmpl.objectDefinition.spec?.remediationAction?.endsWith('nforce')
-    )
-  })
 }

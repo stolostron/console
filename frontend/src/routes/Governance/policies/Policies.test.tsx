@@ -22,6 +22,7 @@ import {
   mockPolicyBinding,
   mockPolicyAutomation,
   mockOrderPolicy,
+  mockPolicyWithDeletePrune,
 } from '../governance.sharedMocks'
 
 describe('Policies Page', () => {
@@ -482,5 +483,45 @@ describe('Export from policy table', () => {
       { type: 'text/csv' }
     )
     expect(getCSVDownloadLink(createElementSpy)?.value.download).toMatch(/^rhacmallpolicies-[\d]+\.csv$/)
+  })
+})
+
+describe('Delete policy modal with delete prune behavior', () => {
+  test('should show delete prune warning when deleting policy with delete prune behavior', async () => {
+    const tableItem: PolicyTableItem = {
+      policy: mockPolicyWithDeletePrune,
+      source: 'Local',
+    }
+    const onClose = () => {}
+
+    render(
+      <RecoilRoot>
+        <DeletePolicyModal item={tableItem} onClose={onClose} />
+      </RecoilRoot>
+    )
+
+    screen.getByRole('heading', { name: 'Warning alert: Some policies have the Prune parameter set.' })
+    screen.getByText('Deleting this policy might delete some related objects on the managed cluster(s).')
+  })
+
+  test('should not show delete prune warning when deleting policy without delete prune behavior', async () => {
+    const tableItem: PolicyTableItem = {
+      policy: mockPolicy[0],
+      source: 'Local',
+    }
+    const onClose = () => {}
+
+    render(
+      <RecoilRoot>
+        <DeletePolicyModal item={tableItem} onClose={onClose} />
+      </RecoilRoot>
+    )
+
+    expect(
+      screen.queryByRole('heading', { name: 'Warning alert: Some policies have the Prune parameter set.' })
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByText('Deleting this policy might delete some related objects on the managed cluster(s).')
+    ).not.toBeInTheDocument()
   })
 })
