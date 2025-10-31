@@ -67,15 +67,11 @@ const ClustersDualListSelector = ({ onChoseOptions, clusterSets }: ClustersDualL
   )
 
   const extractSelectedClusters = useCallback(
-    (options: DualListSelectorTreeItemData[]) => {
-      const selectedClusters: { id: string; value: string }[] = []
-
-      for (const option of options) {
-        processOption(option, selectedClusters)
-      }
-
-      return selectedClusters
-    },
+    (options: DualListSelectorTreeItemData[]): { id: string; value: string }[] =>
+      options.reduce((acc, curr) => {
+        processOption(curr, acc)
+        return acc
+      }, []),
     [processOption]
   )
 
