@@ -1499,7 +1499,7 @@ export function CredentialsForm(
           }
         })
         patch.push({ op: 'replace', path: `/data`, value: data })
-        return patchResource(secret, patch).promise.then(() => {
+        patchResource(secret, patch).promise.then(() => {
           toastContext.addAlert({
             title: t('Credentials updated'),
             /*
@@ -1513,7 +1513,7 @@ export function CredentialsForm(
           navigate(NavigationPath.credentials)
         })
       } else {
-        return createResource(credentialData as IResource).promise.then((resource) => {
+        createResource(credentialData as IResource).promise.then((resource) => {
           toastContext.addAlert({
             title: t('Credentials created'),
             message: t('credentialsForm.created.message', { name }),

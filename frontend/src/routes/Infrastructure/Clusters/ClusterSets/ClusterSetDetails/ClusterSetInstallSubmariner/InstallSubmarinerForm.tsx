@@ -1195,7 +1195,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
         return createResource(resource)
       })
       const requests = resultsSettled(calls)
-      return requests.promise.then((results) => {
+      requests.promise.then((results) => {
         const errors: string[] = []
         results.forEach((res) => {
           if (res.status === 'rejected') {

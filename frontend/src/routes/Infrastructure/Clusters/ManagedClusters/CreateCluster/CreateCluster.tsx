@@ -694,7 +694,9 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
                   template={template}
                   portals={Portals}
                   createControl={{
-                    createResource,
+                    createResource: (resourceJSON, noRedirect) => {
+                      createResource(resourceJSON, noRedirect)
+                    },
                     cancelCreate,
                     pauseCreate: () => {},
                     creationStatus: creationStatus?.status,

@@ -285,7 +285,9 @@ function CreateClusterPoolWizard(props: { infrastructureType: ClusterPoolInfrast
         template={template}
         portals={Portals}
         createControl={{
-          createResource,
+          createResource: (resourceJSON) => {
+            createResource(resourceJSON)
+          },
           cancelCreate,
           pauseCreate: () => {},
           creationStatus: creationStatus?.status,
