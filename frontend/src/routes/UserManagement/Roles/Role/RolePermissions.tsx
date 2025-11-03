@@ -10,6 +10,37 @@ import { useMemo, useCallback } from 'react'
 import { useCurrentRole } from '../RolesPage'
 import { cellWidth } from '@patternfly/react-table'
 
+type ActionsCellProps = {
+  verbs: string[]
+}
+
+const ActionsCell = ({ verbs }: ActionsCellProps) => (
+  <div>
+    {verbs.map((verb) => (
+      <div key={verb}>
+        <strong>{verb}</strong>
+      </div>
+    ))}
+  </div>
+)
+
+type ResourcesCellProps = {
+  resources: string[]
+}
+
+const ResourcesCell = ({ resources }: ResourcesCellProps) => (
+  <Flex spaceItems={{ default: 'spaceItemsSm' }}>
+    {resources.map((resource) => (
+      <FlexItem key={resource}>
+        <Label isCompact color="blue">
+          {kindToAbbreviation(resource)}
+        </Label>{' '}
+        {resource}
+      </FlexItem>
+    ))}
+  </Flex>
+)
+
 const kindToAbbreviation = (resourceOrKind: string): string => {
   // Step 1: Extract the resource name part (before any path separators)
   const resourceName = resourceOrKind.split(/[/\\?#]/)[0] || resourceOrKind
@@ -20,6 +51,10 @@ const kindToAbbreviation = (resourceOrKind: string): string => {
   // https://github.com/openshift/console/blob/a228536605a2451468d172da9bb7b6ab812511ea/frontend/public/module/k8s/get-resources.ts#L29
   return ['ASS', 'FART'].includes(abbrKind) ? abbrKind.slice(0, -1) : abbrKind
 }
+
+const ActionsCellRenderer: IAcmTableColumn<Rule>['cell'] = (item) => <ActionsCell verbs={item.verbs} />
+
+const ResourcesCellRenderer: IAcmTableColumn<Rule>['cell'] = (item) => <ResourcesCell resources={item.resources} />
 
 const RolePermissions = () => {
   const { t } = useTranslation()
@@ -33,15 +68,7 @@ const RolePermissions = () => {
         header: t('Actions'),
         sort: (a: Rule, b: Rule) => compareStrings(a.verbs.join(', '), b.verbs.join(', ')),
         search: (item: Rule) => item.verbs.join(' '),
-        cell: (item) => (
-          <div>
-            {item.verbs.map((verb, index) => (
-              <div key={index}>
-                <strong>{verb}</strong>
-              </div>
-            ))}
-          </div>
-        ),
+        cell: ActionsCellRenderer,
         transforms: [cellWidth(10)],
       },
       {
@@ -58,18 +85,7 @@ const RolePermissions = () => {
         header: t('Resources'),
         sort: (a: Rule, b: Rule) => compareStrings(a.resources.join(', '), b.resources.join(', ')),
         search: (item: Rule) => item.resources.join(' '),
-        cell: (item) => (
-          <Flex spaceItems={{ default: 'spaceItemsSm' }}>
-            {item.resources.map((resource, index) => (
-              <FlexItem key={index}>
-                <Label isCompact color="blue">
-                  {kindToAbbreviation(resource)}
-                </Label>{' '}
-                {resource}
-              </FlexItem>
-            ))}
-          </Flex>
-        ),
+        cell: ResourcesCellRenderer,
         transforms: [cellWidth(60)],
       },
     ],

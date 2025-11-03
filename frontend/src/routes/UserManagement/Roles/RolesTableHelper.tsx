@@ -95,7 +95,7 @@ export const useFilters = (roles: Role[] = []) =>
         const apiGroups = role.permissions
           ?.split(', ')
           .map((e) => e.trim())
-          .filter((e) => e)
+          .filter(Boolean)
         return {
           allRoleNames: new Set([...acc.allRoleNames, role.name]),
           allRoleTitles: new Set([...acc.allRoleTitles, roleTitle]),
@@ -148,10 +148,10 @@ export const useFilters = (roles: Role[] = []) =>
           if (selectedValues.length === 0) return true
           if (!role.permissions) return false
 
-          const roleApiGroups = role.permissions.split(', ').map((g) => g.trim())
+          const roleApiGroups = new Set(role.permissions.split(', ').map((g) => g.trim()))
 
           // Check if any selected API group is in the role's permissions
-          return selectedValues.some((selectedApiGroup) => roleApiGroups.includes(selectedApiGroup))
+          return selectedValues.some((selectedApiGroup) => roleApiGroups.has(selectedApiGroup))
         },
       },
     ]
