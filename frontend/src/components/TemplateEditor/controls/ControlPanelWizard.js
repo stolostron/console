@@ -84,7 +84,7 @@ class ControlPanelWizard extends React.Component {
       )
     }
 
-    let lastType
+    let lastType = ''
     let lastReviewInx = 0
     steps = steps.map(({ title: control, controls, sections }, inx) => {
       const { id, type, title, comment, exception } = control
