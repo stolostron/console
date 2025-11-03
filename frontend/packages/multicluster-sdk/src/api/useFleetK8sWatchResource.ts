@@ -124,7 +124,6 @@ export function useFleetK8sWatchResource<R extends FleetK8sResourceCommon | Flee
   }, [cachedEntry, noCachedValue])
 
   useEffect(() => {
-    let socket: WebSocket | undefined
     const fetchData = async () => {
       if (!useFleet || nullResource) {
         store.setResource(requestPath, noCachedValue, false)
@@ -135,35 +134,58 @@ export function useFleetK8sWatchResource<R extends FleetK8sResourceCommon | Flee
         return
       }
 
-      // Check if we already have this resource cached and it's not expired
-      const existingEntry = store.getResource(requestPath)
-      if (existingEntry && !store.isResourceExpired(requestPath)) {
-        return
-      }
-
       const socketKey = getCacheKey({ model, cluster, namespace, name })
       const existingSocket = store.getSocket(socketKey)
 
-      // If we have a valid socket, increment reference count and use it
+      // Check for existing WebSocket connection
+      // If a valid socket exists, reuse it and return early (real-time updates already active)
+      // Socket ref counting is handled by the separate effect below
       if (existingSocket && existingSocket.socket.readyState === WebSocket.OPEN) {
-        store.addSocketRef(socketKey)
-        socket = existingSocket.socket
         return
       }
 
+      // No active socket exists - we need to fetch data and create a new socket
+      // Check cache to avoid unnecessary HTTP fetch
+      const existingEntry = store.getResource(requestPath)
+
+      // If another hook is already fetching (loaded: false), wait for it to complete
+      // This prevents race conditions where multiple hooks fetch the same data
+      if (existingEntry && !existingEntry.loaded && !existingEntry.error) {
+        // Data is being fetched by another instance, the cache update will trigger our re-render
+        // Socket ref counting is handled in the separate effect below
+        return
+      }
+
+      const needsFetch = !existingEntry || store.isResourceExpired(requestPath)
+
       try {
-        store.setResource(requestPath, noCachedValue, false) // Set loading state
+        let processedData: R
+        let resourceVersion: string | undefined
 
-        const data = (await consoleFetchJSON(requestPath, 'GET')) as R
+        if (needsFetch) {
+          // Cache miss or expired - fetch fresh data from API
+          store.setResource(requestPath, noCachedValue, false) // Set loading state
+          const rawData = await consoleFetchJSON(requestPath, 'GET')
 
-        const processedData = (
-          isList
-            ? (data as { items: K8sResourceCommon[] }).items.map((i) => ({ cluster, ...i }))
-            : { cluster, ...(data as K8sResourceCommon) }
-        ) as R
+          // Add cluster field to each item for identification
+          processedData = (
+            isList
+              ? (rawData as { items: K8sResourceCommon[] }).items.map((i) => ({ cluster, ...i }))
+              : { cluster, ...(rawData as K8sResourceCommon) }
+          ) as R
 
-        // Store the data in Zustand store
-        store.setResource(requestPath, processedData, true)
+          // Extract resourceVersion for list resources to enable watch continuation
+          // Single resources don't need this as watch uses fieldSelector instead
+          if (isList) {
+            resourceVersion = (rawData as { metadata?: { resourceVersion?: string } })?.metadata?.resourceVersion
+          }
+
+          // Store the fetched data in Zustand store with resourceVersion
+          store.setResource(requestPath, processedData, true, undefined, resourceVersion)
+        } else {
+          // Cache hit - use existing data for instant display, skip HTTP fetch
+          resourceVersion = existingEntry.resourceVersion
+        }
 
         const watchQuery: any = {
           ns: namespace,
@@ -177,12 +199,13 @@ export function useFleetK8sWatchResource<R extends FleetK8sResourceCommon | Flee
           watchQuery.labelSelector = selector
         }
 
-        if (isList) {
-          watchQuery.resourceVersion = (data as { metadata: { resourceVersion?: string } })?.metadata?.resourceVersion
+        // For list resources, use resourceVersion to continue from where we left off
+        // This prevents missing events between cache creation and socket connection
+        if (isList && resourceVersion) {
+          watchQuery.resourceVersion = resourceVersion
         }
 
-        // Only create a new WebSocket if we don't have a valid one
-        socket = fleetWatch(model, watchQuery, backendAPIPath as string)
+        const socket = fleetWatch(model, watchQuery, backendAPIPath as string)
         store.setSocket(socketKey, socket)
 
         socket.onmessage = (event) => {
@@ -200,7 +223,11 @@ export function useFleetK8sWatchResource<R extends FleetK8sResourceCommon | Flee
 
         socket.onerror = (err) => {
           console.error('WebSocket error:', err)
-          store.setResource(requestPath, processedData, true, err)
+          // Keep existing data, just add the error
+          const currentEntry = store.getResource(requestPath)
+          if (currentEntry) {
+            store.setResource(requestPath, currentEntry.data, true, err, currentEntry.resourceVersion)
+          }
         }
       } catch (err) {
         store.setResource(requestPath, noCachedValue, true, err)
@@ -208,14 +235,6 @@ export function useFleetK8sWatchResource<R extends FleetK8sResourceCommon | Flee
     }
 
     fetchData()
-
-    // Cleanup function - decrement reference count for socket
-    return () => {
-      if (useFleet && !nullResource && backendPathLoaded && model) {
-        const socketKey = getCacheKey({ model, cluster, namespace, name })
-        store.removeSocketRef(socketKey)
-      }
-    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     cluster,
@@ -231,6 +250,32 @@ export function useFleetK8sWatchResource<R extends FleetK8sResourceCommon | Flee
     backendAPIPath,
     selector,
   ])
+
+  // Separate effect to manage socket ref counting
+  // This ensures all hook instances properly increment/decrement refs even if they skip fetching
+  useEffect(() => {
+    if (!useFleet || nullResource || !backendPathLoaded || !model) {
+      return
+    }
+
+    const socketKey = getCacheKey({ model, cluster, namespace, name })
+    let attachedToSocket = false
+
+    // Check if socket exists (it might have been created by another hook instance)
+    const existingSocket = store.getSocket(socketKey)
+    if (existingSocket && existingSocket.socket.readyState === WebSocket.OPEN) {
+      store.addSocketRef(socketKey)
+      attachedToSocket = true
+    }
+
+    // Cleanup - only decrement if we actually incremented
+    return () => {
+      if (attachedToSocket) {
+        store.removeSocketRef(socketKey)
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [useFleet, nullResource, backendPathLoaded, model, cluster, namespace, name, cachedEntry?.loaded])
 
   const fallbackResult = useK8sWatchResource<R>(useFallback ? resource : null)
 

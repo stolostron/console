@@ -8,6 +8,7 @@ export interface CacheEntry<T = any> {
   loaded: boolean
   error?: any
   timestamp: number
+  resourceVersion?: string // For list resources, used to resume watch from correct version
 }
 
 export interface SocketCacheEntry {
@@ -23,11 +24,14 @@ export interface FleetK8sWatchResourceStore {
   // Socket cache
   socketCache: Record<string, SocketCacheEntry>
 
-  // Cache TTL in milliseconds (default 5 minutes)
+  // Cache TTL in milliseconds (default 30 seconds)
   cacheTTL: number
 
+  // Last cleanup timestamp for throttling
+  lastCleanupTime: number
+
   // Actions for resource cache
-  setResource: <T>(key: string, data: T, loaded: boolean, error?: any) => void
+  setResource: <T>(key: string, data: T, loaded: boolean, error?: any, resourceVersion?: string) => void
   getResource: <T>(key: string) => CacheEntry<T> | undefined
   isResourceExpired: (key: string) => boolean
 
@@ -47,10 +51,20 @@ export const useFleetK8sWatchResourceStore = create<FleetK8sWatchResourceStore>(
   subscribeWithSelector((set, get) => ({
     resourceCache: {},
     socketCache: {},
-    cacheTTL: 5 * 60 * 1000, // 5 minutes
+    // 30 seconds - matches searchPoll TTL to keep data consistent with useSearchPoll TTL
+    cacheTTL: 30 * 1000,
+    lastCleanupTime: 0,
 
-    setResource: (key, data, loaded, error) => {
+    setResource: (key, data, loaded, error, resourceVersion) => {
       const now = Date.now()
+      const store = get()
+
+      // Opportunistic cleanup: clear expired entries every 30 seconds
+      if (now - store.lastCleanupTime > store.cacheTTL) {
+        store.clearExpired()
+        set({ lastCleanupTime: now })
+      }
+
       set((state) => ({
         resourceCache: {
           ...state.resourceCache,
@@ -59,6 +73,7 @@ export const useFleetK8sWatchResourceStore = create<FleetK8sWatchResourceStore>(
             loaded,
             error,
             timestamp: now,
+            resourceVersion,
           },
         },
       }))
@@ -164,16 +179,9 @@ export const useFleetK8sWatchResourceStore = create<FleetK8sWatchResourceStore>(
           }
         })
 
-        // Clear expired sockets
-        const validSockets: Record<string, SocketCacheEntry> = {}
-        Object.entries(state.socketCache).forEach(([key, entry]) => {
-          if (now - entry.timestamp <= ttl) {
-            validSockets[key] = entry
-          } else if (entry.socket.readyState === WebSocket.OPEN) {
-            // Close expired socket
-            entry.socket.close()
-          }
-        })
+        // Keep all active sockets - they should only close when refCount reaches 0
+        // TTL doesn't apply to sockets, only to cached data
+        const validSockets: Record<string, SocketCacheEntry> = { ...state.socketCache }
 
         return {
           resourceCache: validResources,
@@ -195,6 +203,7 @@ export const useFleetK8sWatchResourceStore = create<FleetK8sWatchResourceStore>(
       set({
         resourceCache: {},
         socketCache: {},
+        lastCleanupTime: 0,
       })
     },
   }))

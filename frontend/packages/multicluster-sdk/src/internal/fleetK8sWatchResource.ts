@@ -24,29 +24,36 @@ export const handleWebsocketEvent = <R>(
 
   const store = useFleetK8sWatchResourceStore.getState()
 
+  // Handle single resource updates
   if (!isList) {
     const currentEntry = store.getResource(requestPath)
+    // Skip ADDED events if we already have data (prevents duplicates)
     if (eventType === 'ADDED' && currentEntry?.data) return
 
     const processedEventData = { cluster, ...(object as K8sResourceCommon) } as R
 
     if (processedEventData) {
       // Update the store with the new data - this will notify all subscribers
-      store.setResource(requestPath, processedEventData, true)
+      // Preserve resourceVersion from cache (undefined for single resources)
+      store.setResource(requestPath, processedEventData, true, undefined, currentEntry?.resourceVersion)
     }
 
     return
   }
 
+  // Handle list resource updates
+  // For DELETED events, remove the item from the list
   if (eventType === 'DELETED') {
     const currentEntry = store.getResource(requestPath)
     const storedData = currentEntry?.data as K8sResourceCommon[]
     if (!storedData) return
     const updatedData = storedData.filter((i) => i.metadata?.uid !== object?.metadata?.uid)
-    store.setResource(requestPath, updatedData as R, true)
+    // Preserve resourceVersion in cache to maintain watch continuity
+    store.setResource(requestPath, updatedData as R, true, undefined, currentEntry?.resourceVersion)
     return
   }
 
+  // Only handle ADDED and MODIFIED events for lists
   if (eventType !== 'ADDED' && eventType !== 'MODIFIED') {
     return
   }
@@ -61,14 +68,16 @@ export const handleWebsocketEvent = <R>(
 
   const objectExists = storedData.some((i) => i.metadata?.uid === object?.metadata?.uid)
 
+  // For MODIFIED events, update the existing item in the list
   if (objectExists && eventType === 'MODIFIED') {
     const updatedData = storedData.map((i) => (i.metadata?.uid === object?.metadata?.uid ? { cluster, ...object } : i))
-    store.setResource(requestPath, updatedData as R, true)
+    store.setResource(requestPath, updatedData as R, true, undefined, currentEntry?.resourceVersion)
     return
   }
 
+  // For ADDED events (or MODIFIED for new items), add to the list
   if (!objectExists) {
     const updatedData = [...storedData, { cluster, ...(object as K8sResourceCommon) }] as R
-    store.setResource(requestPath, updatedData, true)
+    store.setResource(requestPath, updatedData, true, undefined, currentEntry?.resourceVersion)
   }
 }
