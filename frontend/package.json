@@ -47,7 +47,7 @@
     "@emotion/react": "^11.10.5",
     "@emotion/styled": "^11.10.5",
     "@monaco-editor/react": "^4.6.0",
-    "@mui/material": "^5.11.1",
+    "@mui/material": "^7.0.0",
     "@octokit/rest": "19.0.3",
     "@octokit/types": "6.40.0",
     "@openshift-assisted/locales": "2.16.1-cim",
