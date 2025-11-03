@@ -37,7 +37,7 @@
     "peerDependencies": {
         "@patternfly/react-core": "^5",
         "@patternfly/react-icons": "^5",
-        "@patternfly/react-table": "^5",
+        "@patternfly/react-table": "^5 || ^6.0.0",
         "react": ">=17",
         "react-dom": ">=17"
     },
@@ -54,7 +54,7 @@
         "@cypress/code-coverage": "^3.14.4",
         "@patternfly/react-core": "^5.4.14",
         "@patternfly/react-icons": "^5.4.2",
-        "@patternfly/react-table": "^5.4.16",
+        "@patternfly/react-table": "^6.0.0",
         "@pmmmwh/react-refresh-webpack-plugin": "^0.6.1",
         "@react-hook/resize-observer": "1.2.6",
         "@svgr/webpack": "6.5.1",
