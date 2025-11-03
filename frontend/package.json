@@ -99,7 +99,7 @@
     "string-similarity": "4.0.4",
     "svg.js": "2.7.1",
     "validator": "13.7.0",
-    "yaml": "1.10.2",
+    "yaml": "2.8.1",
     "yup": "0.32.11"
   },
   "devDependencies": {
