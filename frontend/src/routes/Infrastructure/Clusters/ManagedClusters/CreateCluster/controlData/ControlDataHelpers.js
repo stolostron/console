@@ -915,19 +915,19 @@ export const updateDefaultPodNetwork = (_nameControl, globalControl) => {
 
     activeNodePools.forEach((nodepool) => {
       const additionalNetworks = nodepool.find(({ id }) => id === 'additionalNetworks')
-      const defaultPodNetwork = nodepool.find(({ id }) => id === 'defaultPodNetwork')
+      const attachDefaultNetwork = nodepool.find(({ id }) => id === 'attachDefaultNetwork')
 
-      if (additionalNetworks && defaultPodNetwork) {
+      if (additionalNetworks && attachDefaultNetwork) {
         // check if there are any networks
         const hasNetworks = additionalNetworks.active?.multitextEntries?.some((entry) => entry.trim() !== '') || false
 
         if (hasNetworks) {
           // if networks exist, enable checkbox
-          defaultPodNetwork.disabled = false
+          attachDefaultNetwork.disabled = false
         } else {
           // if no networks, force it to be checked and disabled
-          defaultPodNetwork.disabled = true
-          defaultPodNetwork.active = true
+          attachDefaultNetwork.disabled = true
+          attachDefaultNetwork.active = true
         }
       }
     })
