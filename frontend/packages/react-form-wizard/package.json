@@ -27,7 +27,9 @@
         "cypress:run": "npm run cypress:wait && cypress run --config video=false",
         "cypress:wait": "curl --no-progress-meter --retry-connrefused --retry 5 --retry-delay 5 'localhost:3000' 1>/dev/null",
         "upgrade": "ncu --upgrade --doctor --target latest --reject react-router-dom,@types/react-router-dom,@types/node && ncu --upgrade --doctor --target minor && ncu --upgrade --doctor --target patch",
-        "coverage": "open coverage/lcov-report/index.html"
+        "coverage": "open coverage/lcov-report/index.html",
+        "watch": "watch 'npm run watch:build' src wizards",
+        "watch:build": "tsc --build tsconfig.eslint.json"
     },
     "prettier": "@stolostron/prettier-config",
     "repository": {
@@ -99,6 +101,7 @@
         "type-fest": "2.19.0",
         "typescript": "4.9.5",
         "validator": "^13.15.22",
+        "watch": "^1.0.2",
         "webpack": "5.99.9",
         "webpack-cli": "4.10.0",
         "webpack-dev-server": "4.15.2"
