@@ -1667,16 +1667,19 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                 {primaryRows.map((row, rowIndex) => (
                   <Tbody key={`${row.props.key}-tablebody`} isExpanded={row.isOpen}>
                     <Tr key={`${row.props.key}-tablerow`} ouiaId={row?.props?.key}>
-                      {onCollapse && addedSubRows[rowIndex] && (
-                        <Td
-                          expand={{
-                            isExpanded: row.isOpen || false,
-                            rowIndex,
-                            onToggle: onCollapse,
-                            expandId: 'expandable-toggle',
-                          }}
-                        />
-                      )}
+                      {onCollapse &&
+                        (addedSubRows[rowIndex] ? (
+                          <Td
+                            expand={{
+                              isExpanded: row.isOpen || false,
+                              rowIndex,
+                              onToggle: onCollapse,
+                              expandId: 'expandable-toggle',
+                            }}
+                          />
+                        ) : (
+                          <Td />
+                        ))}
                       {hasSelectionColumn && (
                         <Td
                           key={`${row.props.key}-select`}
