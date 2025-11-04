@@ -62,14 +62,16 @@ export const InputSelect = ({
 
   const onInputKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLInputElement>) => {
-      if (!Array.isArray(value)) {
-        onSelect('')
-      }
-      setOpen(true)
-      switch (event.key) {
-        case 'Backspace':
-          !Array.isArray(value) && onSelect('')
-          break
+      if (!disabled) {
+        if (!Array.isArray(value)) {
+          onSelect('')
+        }
+        setOpen(true)
+        switch (event.key) {
+          case 'Backspace':
+            !Array.isArray(value) && onSelect('')
+            break
+        }
       }
     },
     [onSelect, open, setOpen, value]
@@ -85,7 +87,7 @@ export const InputSelect = ({
       ref={toggleRef}
       onClick={() => setOpen(!open)}
       isExpanded={open}
-      isDisabled={disabled}
+      isDisabled={true}
       isFullWidth
       status={validated === 'error' ? 'danger' : undefined}
     >
@@ -98,6 +100,7 @@ export const InputSelect = ({
           innerRef={textInputRef}
           placeholder={placeholder}
           isExpanded={open}
+          readOnly={true}
           autoComplete="off"
           aria-label={placeholder}
           role="combobox"
@@ -114,7 +117,10 @@ export const InputSelect = ({
           )}
         </TextInputGroupMain>
 
-        <TextInputGroupUtilities {...((!inputValue && !value) || required ? { style: { display: 'none' } } : {})}>
+        <TextInputGroupUtilities
+          style={(!inputValue && !value) || required ? { display: 'none' } : undefined}
+          disabled={true}
+        >
           <Button variant="plain" onClick={onClear}>
             <TimesIcon aria-hidden />
           </Button>
