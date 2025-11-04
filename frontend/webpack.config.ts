@@ -21,6 +21,12 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
   const isDevelopment = !isProduction
   const locales = supportedLanguages
   const openBrowser = !env.LAUNCH
+  const dummyAI = env.DUMMY_AI
+  if (dummyAI) {
+    console.log('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
+    console.log('%%%%%%%%% Assisted Installer CANNOT BE USED in Standalone mode  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
+    console.log('mock%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
+  }
   const useTsChecker = argv.hot || !openBrowser
   const config: webpack.Configuration & { devServer: DevServerConfiguration } = {
     resolve: {
@@ -35,6 +41,9 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
       },
       alias: {
         handlebars: 'handlebars/dist/handlebars.js',
+        ...(dummyAI && {
+          '@openshift-assisted/ui-lib/cim$': path.resolve(__dirname, '__mocks__/@openshift-assisted/dummy.ts'),
+        }),
       },
     },
     module: {
