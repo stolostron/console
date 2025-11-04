@@ -87,7 +87,7 @@ export const InputSelect = ({
       ref={toggleRef}
       onClick={() => setOpen(!open)}
       isExpanded={open}
-      isDisabled={true}
+      isDisabled={disabled}
       isFullWidth
       status={validated === 'error' ? 'danger' : undefined}
     >
@@ -100,7 +100,6 @@ export const InputSelect = ({
           innerRef={textInputRef}
           placeholder={placeholder}
           isExpanded={open}
-          readOnly={true}
           autoComplete="off"
           aria-label={placeholder}
           role="combobox"
@@ -117,10 +116,7 @@ export const InputSelect = ({
           )}
         </TextInputGroupMain>
 
-        <TextInputGroupUtilities
-          style={(!inputValue && !value) || required ? { display: 'none' } : undefined}
-          disabled={true}
-        >
+        <TextInputGroupUtilities {...((!inputValue && !value) || required ? { style: { display: 'none' } } : {})}>
           <Button variant="plain" onClick={onClear}>
             <TimesIcon aria-hidden />
           </Button>
