@@ -190,7 +190,7 @@ export function KubevirtProviderAlert(
     return (
       <AcmActionGroup>
         {primaryLink}
-        <Link to={DOC_LINKS.VIRTUALIZATION_DOC_BASE_PATH} target="_blank">
+        <Link to={DOC_LINKS.VIRTUALIZATION_ENABLE_MIGRATION} target="_blank">
           <Button variant="link" icon={<ExternalLinkAltIcon />} iconPosition="right" isInline>
             {t('View documentation')}
           </Button>
@@ -236,7 +236,7 @@ export function KubevirtProviderAlert(
     const popoverActionLinks = (
       <div style={{ marginTop: '1em' }}>
         {getPopoverPrimaryButton()}
-        <Link to={DOC_LINKS.VIRTUALIZATION_DOC_BASE_PATH} target={'_blank'} style={{ marginLeft: '1em' }}>
+        <Link to={DOC_LINKS.VIRTUALIZATION_ENABLE_MIGRATION} target={'_blank'} style={{ marginLeft: '1em' }}>
           <Button variant="link" icon={<ExternalLinkAltIcon />} iconPosition="right" isInline>
             {t('View documentation')}
           </Button>
