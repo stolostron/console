@@ -42,7 +42,7 @@ type FormControl = {
   }
   disabled?: VoidFunction
   reverse?: (control: { active: ClusterDetailsValues }, templateObject: any) => void
-  validate?: VoidFunction
+  validate?: () => Promise<unknown> | undefined
   summary?: VoidFunction
   step?: any
   additionalProps?: { isNutanix: boolean; aiFlow: boolean; promptSshPublicKey: boolean }

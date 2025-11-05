@@ -12,7 +12,7 @@ type FormControl = {
   active: any // CIM.HostsFormValues
   disabled?: VoidFunction
   reverse?: (control: { active: any /* CIM.HostsFormValues */ }, templateObject: any) => void
-  validate?: VoidFunction
+  validate?: () => Promise<unknown> | undefined
   summary?: VoidFunction
   step?: any
   additionalProps?: { [x: string]: string }
