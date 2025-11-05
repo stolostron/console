@@ -58,6 +58,7 @@ export const DOC_LINKS = {
   ACCESSING_CONSOLE: `${DOC_BASE_PATH}/web_console/web-console#accessing-your-console`,
   ROSA_DISCOVERY_AUTOIMPORT_POLICY_EXAMPLE: `${DOC_BASE_PATH}/multicluster_engine_operator_with_red_hat_advanced_cluster_management/mce-acm-integration#import-discover-rosa`,
   VIRTUALIZATION_DOC_BASE_PATH: `${DOC_BASE_PATH}/virtualization/index`,
+  VIRTUALIZATION_ENABLE_MIGRATION: `${DOC_BASE_PATH}/virtualization/index#migrate-vm`,
   // OCP doc links
   HYPERSHIFT_INTRO: `${OCP_DOC_BASE_PATH}/hosted_control_planes/hosted-control-planes-overview#hosted-control-planes-overview_hcp-overview`,
   HYPERSHIFT_DEPLOY_AWS: `${OCP_DOC_BASE_PATH}/hosted_control_planes/hosted-control-planes-overview#deploying-hosted-control-planes-on-aws`,
