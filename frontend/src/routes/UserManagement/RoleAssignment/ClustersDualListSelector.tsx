@@ -33,31 +33,47 @@ const ClustersDualListSelector = ({ onChoseOptions, clusterSets }: ClustersDualL
   const [chosenOptions, setChosenOptions] = React.useState<DualListSelectorTreeItemData[]>([])
   const previousSelectedClusters = useRef<{ id: string; value: string }[]>([])
 
-  const extractSelectedClusters = useCallback((options: DualListSelectorTreeItemData[]) => {
-    const selectedClusters: { id: string; value: string }[] = []
+  const addCheckedChildren = useCallback(
+    (children: DualListSelectorTreeItemData[], selectedClusters: { id: string; value: string }[]) => {
+      for (const child of children) {
+        if (child.isChecked) {
+          selectedClusters.push({ id: child.id, value: child.text })
+        }
+      }
+    },
+    []
+  )
 
-    options.forEach((option) => {
-      if (!option.children || option.children.length === 0) {
+  const processOption = useCallback(
+    (option: DualListSelectorTreeItemData, selectedClusters: { id: string; value: string }[]) => {
+      const hasChildren = option.children && option.children.length > 0
+
+      if (!hasChildren) {
         if (option.isChecked) {
           selectedClusters.push({ id: option.id, value: option.text })
         }
-      } else if (option.children) {
-        if (option.isChecked) {
-          option.children.forEach((child) => {
-            selectedClusters.push({ id: child.id, value: child.text })
-          })
-        } else {
-          option.children.forEach((child) => {
-            if (child.isChecked) {
-              selectedClusters.push({ id: child.id, value: child.text })
-            }
-          })
-        }
+        return
       }
-    })
 
-    return selectedClusters
-  }, [])
+      if (option.isChecked) {
+        for (const child of option.children!) {
+          selectedClusters.push({ id: child.id, value: child.text })
+        }
+      } else {
+        addCheckedChildren(option.children!, selectedClusters)
+      }
+    },
+    [addCheckedChildren]
+  )
+
+  const extractSelectedClusters = useCallback(
+    (options: DualListSelectorTreeItemData[]): { id: string; value: string }[] =>
+      options.reduce((acc, curr) => {
+        processOption(curr, acc)
+        return acc
+      }, []),
+    [processOption]
+  )
 
   const onListChange = useCallback(
     (
@@ -65,8 +81,11 @@ const ClustersDualListSelector = ({ onChoseOptions, clusterSets }: ClustersDualL
       newAvailableOptions: DualListSelectorTreeItemData[],
       newChosenOptions: DualListSelectorTreeItemData[]
     ) => {
-      setAvailableOptions(newAvailableOptions.sort((a, b) => a.text.localeCompare(b.text)))
-      setChosenOptions(newChosenOptions.sort((a, b) => a.text.localeCompare(b.text)))
+      const sortedAvailableOptions = newAvailableOptions.toSorted((a, b) => a.text.localeCompare(b.text))
+      const sortedChosenOptions = newChosenOptions.toSorted((a, b) => a.text.localeCompare(b.text))
+
+      setAvailableOptions(sortedAvailableOptions)
+      setChosenOptions(sortedChosenOptions)
     },
     []
   )
