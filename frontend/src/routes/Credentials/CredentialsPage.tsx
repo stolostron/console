@@ -1,6 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { ButtonVariant, PageSection } from '@patternfly/react-core'
-import { fitContent } from '@patternfly/react-table'
 import {
   AcmButton,
   AcmEmptyState,
@@ -9,19 +7,29 @@ import {
   AcmPageContent,
   AcmPageHeader,
   AcmTable,
-  compareStrings,
   Provider,
   ProviderLongTextMap,
+  compareStrings,
 } from '../../ui-components'
-import { Fragment, useMemo, useState } from 'react'
-import { Link, generatePath, useNavigate } from 'react-router-dom-v5-compat'
-import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { BulkActionModal, BulkActionModalProps } from '../../components/BulkActionModal'
-import { RbacDropdown } from '../../components/Rbac'
-import { useTranslation } from '../../lib/acm-i18next'
+import {
+  Button,
+  ButtonVariant,
+  MenuToggle,
+  NumberInput,
+  NumberInputProps,
+  PageSection,
+  Radio,
+  Select,
+  SelectList,
+  SelectOption,
+  Split,
+  SplitItem,
+  Stack,
+  StackItem,
+  TextInput,
+} from '@patternfly/react-core'
 import { DOC_LINKS, ViewDocumentationLink } from '../../lib/doc-util'
-import { rbacCreate, rbacDelete, rbacPatch, useIsAnyNamespaceAuthorized } from '../../lib/rbac-util'
-import { getBackCancelLocationLinkProps, navigateToBackCancelLocation, NavigationPath } from '../../NavigationPath'
 import {
   DiscoveryConfig,
   ProviderConnection,
@@ -29,8 +37,450 @@ import {
   SecretDefinition,
   unpackProviderConnection,
 } from '../../resources'
+import {
+  FleetK8sResourceCommon,
+  fleetK8sCreate,
+  fleetK8sDelete,
+  fleetK8sPatch,
+  useFleetClusterNames,
+  useFleetK8sWatchResource,
+  useFleetK8sWatchResources,
+  useHubClusterName,
+} from '@stolostron/multicluster-sdk'
+import { Fragment, useCallback, useMemo, useState } from 'react'
+import { Link, generatePath, useNavigate } from 'react-router-dom-v5-compat'
+import { NavigationPath, getBackCancelLocationLinkProps, navigateToBackCancelLocation } from '../../NavigationPath'
 import { deleteResource, getISOStringTimestamp } from '../../resources/utils'
+import { rbacCreate, rbacDelete, rbacPatch, useIsAnyNamespaceAuthorized } from '../../lib/rbac-util'
+import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
+
 import AcmTimestamp from '../../lib/AcmTimestamp'
+import { RbacDropdown } from '../../components/Rbac'
+import { fitContent } from '@patternfly/react-table'
+import { useTranslation } from '../../lib/acm-i18next'
+
+const CM_NAME = 'kevin-test'
+const CM_NAMESPACE = 'default'
+const SECRET_NAME = 'kevin-test'
+const SECRET_NAMESPACE = 'default'
+const CLUSTER_NAME = 'virt-managed'
+const HUB_NAME = 'virt-hub'
+
+function ValueDisplay(props: { value?: string; cluster?: string; loaded: boolean; error?: any; count?: number }) {
+  const { value, cluster, loaded, error, count } = props
+  return (
+    <p>
+      {value} ({cluster}) / {loaded ? 'true' : 'false'}
+      {count !== undefined ? ` / count: ${count}` : ''} / {error ? error.toString() : ''}
+    </p>
+  )
+}
+
+function MultiValueDisplay(props: {
+  text: string
+  watches: { key: string; value?: string; cluster?: string; loaded: boolean; loadError?: any }[]
+}) {
+  const { watches } = props
+  return (
+    <>
+      {watches.map(({ key, value, cluster, loaded, loadError }) => (
+        <p key={key}>
+          {key}: {value} ({cluster}) / {loaded ? 'true' : 'false'} / {loadError ? loadError.toString() : ''}
+        </p>
+      ))}
+    </>
+  )
+}
+
+type ValueType = FleetK8sResourceCommon & { data: { value: string } }
+type ListType = ValueType[]
+
+type WatchSecretAndConfigMap = {
+  configmap: ValueType
+  secret: ValueType
+}
+
+function ConfigMapWatchDisplayComponent() {
+  const [result, loaded, error] = useFleetK8sWatchResource<ValueType>({
+    cluster: CLUSTER_NAME,
+    groupVersionKind: { kind: 'ConfigMap', version: 'v1' },
+    namespace: CM_NAMESPACE,
+    name: CM_NAME,
+  })
+  const cluster = result?.cluster
+  const value = result?.data?.value ?? ''
+  return <ValueDisplay value={value} cluster={cluster} loaded={loaded} error={error} />
+}
+
+function ConfigMapWatchDisplayComponentList() {
+  const [result, loaded, error] = useFleetK8sWatchResource<ListType>({
+    cluster: CLUSTER_NAME,
+    groupVersionKind: { kind: 'ConfigMap', version: 'v1' },
+    namespace: CM_NAMESPACE,
+    isList: true,
+  })
+  const configmap = result?.find((r) => r?.metadata?.name === CM_NAME)
+  const cluster = configmap?.cluster
+  const value = configmap?.data?.value ?? ''
+  return <ValueDisplay value={value} cluster={cluster} loaded={loaded} error={error} count={result?.length} />
+}
+
+function ConfigMapHubWatchDisplayComponent() {
+  const [result, loaded, error] = useFleetK8sWatchResource<ValueType>({
+    groupVersionKind: { kind: 'ConfigMap', version: 'v1' },
+    namespace: CM_NAMESPACE,
+    name: CM_NAME,
+  })
+  const cluster = result?.cluster
+  const value = result?.data?.value ?? ''
+  return <ValueDisplay value={value} cluster={cluster} loaded={loaded} error={error} />
+}
+
+function ConfigMapHubWatchDisplayComponentList() {
+  const [result, loaded, error] = useFleetK8sWatchResource<ListType>({
+    groupVersionKind: { kind: 'ConfigMap', version: 'v1' },
+    namespace: CM_NAMESPACE,
+    isList: true,
+  })
+  const configmap = result?.find((r) => r?.metadata?.name === CM_NAME)
+  const cluster = configmap?.cluster
+  const value = configmap?.data?.value ?? ''
+  return <ValueDisplay value={value} cluster={cluster} loaded={loaded} error={error} count={result?.length} />
+}
+
+function SecretWatchDisplayComponent() {
+  const [result, loaded, error] = useFleetK8sWatchResource<ValueType>({
+    cluster: CLUSTER_NAME,
+    groupVersionKind: { kind: 'Secret', version: 'v1' },
+    name: SECRET_NAME,
+    namespace: SECRET_NAMESPACE,
+  })
+  const cluster = result?.cluster
+  const value = result?.data?.value ? Buffer.from(result?.data?.value, 'base64').toString() : ''
+  return <ValueDisplay value={value} cluster={cluster} loaded={loaded} error={error} />
+}
+
+function SecretWatchDisplayComponentList() {
+  const [result, loaded, error] = useFleetK8sWatchResource<ListType>({
+    cluster: CLUSTER_NAME,
+    groupVersionKind: { kind: 'Secret', version: 'v1' },
+    namespace: SECRET_NAMESPACE,
+    isList: true,
+  })
+  const count = result?.length
+  const secret = result?.find((r) => r?.metadata?.name === CM_NAME)
+  const cluster = secret?.cluster
+  const value = secret?.data?.value ? Buffer.from(secret.data?.value, 'base64').toString() : ''
+  return <ValueDisplay value={value} cluster={cluster} loaded={loaded} error={error} count={count} />
+}
+
+function WatchDisplayComponent() {
+  const { configmap, secret } = useFleetK8sWatchResources<WatchSecretAndConfigMap>({
+    configmap: {
+      cluster: CLUSTER_NAME,
+      groupVersionKind: { kind: 'ConfigMap', version: 'v1' },
+      name: CM_NAME,
+      namespace: CM_NAMESPACE,
+    },
+    secret: {
+      cluster: CLUSTER_NAME,
+      groupVersionKind: { kind: 'Secret', version: 'v1' },
+      name: SECRET_NAME,
+      namespace: SECRET_NAMESPACE,
+    },
+  })
+  const cluster = configmap?.data?.cluster
+  const cValue = configmap?.data?.data?.value
+  const sValue = secret?.data?.data?.value ? Buffer.from(secret.data?.data?.value, 'base64').toString() : ''
+  const watches = [
+    { key: 'configmap', cluster, value: cValue, ...configmap },
+    { key: 'secret', cluster, value: sValue, ...secret },
+  ]
+  return <MultiValueDisplay text="Multi Managed" watches={watches} />
+}
+
+function WatchDisplayComponentMixed() {
+  const { configmap, secret } = useFleetK8sWatchResources<WatchSecretAndConfigMap>({
+    configmap: {
+      cluster: CLUSTER_NAME,
+      groupVersionKind: { kind: 'ConfigMap', version: 'v1' },
+      name: CM_NAME,
+      namespace: CM_NAMESPACE,
+    },
+    secret: {
+      cluster: HUB_NAME,
+      groupVersionKind: { kind: 'Secret', version: 'v1' },
+      name: SECRET_NAME,
+      namespace: SECRET_NAMESPACE,
+    },
+  })
+  const cCluster = configmap?.data?.cluster
+  const cValue = configmap?.data?.data?.value
+  const sValue = secret?.data?.data?.value ? Buffer.from(secret.data?.data?.value, 'base64').toString() : ''
+  const sCluster = secret?.data?.cluster
+  const watches = [
+    { key: 'configmap', cluster: cCluster, value: cValue, ...configmap },
+    { key: 'secret', cluster: sCluster, value: sValue, ...secret },
+  ]
+  return <MultiValueDisplay text="Multi Mixed" watches={watches} />
+}
+
+function WatchDisplayComponentHub() {
+  const { configmap, secret } = useFleetK8sWatchResources<WatchSecretAndConfigMap>({
+    configmap: {
+      cluster: HUB_NAME,
+      groupVersionKind: { kind: 'ConfigMap', version: 'v1' },
+      name: CM_NAME,
+      namespace: CM_NAMESPACE,
+    },
+    secret: {
+      cluster: HUB_NAME,
+      groupVersionKind: { kind: 'Secret', version: 'v1' },
+      name: SECRET_NAME,
+      namespace: SECRET_NAMESPACE,
+    },
+  })
+  const cluster = configmap.data?.cluster
+  const cValue = configmap?.data?.data?.value
+  const sValue = secret?.data?.data?.value ? Buffer.from(secret.data.data.value, 'base64').toString() : ''
+  const watches = [
+    { key: 'configmap', cluster, value: cValue, ...configmap },
+    { key: 'secret', cluster, value: sValue, ...secret },
+  ]
+  return <MultiValueDisplay text="Multi Hub" watches={watches} />
+}
+
+const ConfigMapModel = {
+  apiVersion: 'v1',
+  apiGroup: 'core',
+  kind: 'ConfigMap',
+  plural: 'configmaps',
+  namespaced: true,
+  abbr: 'CM',
+  label: 'ConfigMap',
+  labelPlural: 'ConfigMaps',
+} as const
+const SecretCrudModel = {
+  apiVersion: 'v1',
+  apiGroup: 'core',
+  kind: 'Secret',
+  plural: 'secrets',
+  namespaced: true,
+  abbr: 'S',
+  label: 'Secret',
+  labelPlural: 'Secrets',
+} as const
+
+function CrudTestWidget() {
+  const [resourceKind, setResourceKind] = useState<'Secret' | 'ConfigMap'>('ConfigMap')
+  const [clusterName, setClusterName] = useState(CLUSTER_NAME)
+  const [name, setName] = useState('kevin-test')
+  const [clusterSelectOpen, setClusterSelectOpen] = useState(false)
+  const [status, setStatus] = useState('')
+
+  const [clusterNames, clustersLoaded] = useFleetClusterNames(true)
+  const [hubClusterName] = useHubClusterName()
+  const allClusters = useMemo(() => {
+    const names = [...clusterNames]
+    if (hubClusterName && !names.includes(hubClusterName)) {
+      names.unshift(hubClusterName)
+    }
+    return names.sort((a, b) => a.localeCompare(b))
+  }, [clusterNames, hubClusterName])
+
+  const model = resourceKind === 'Secret' ? SecretCrudModel : ConfigMapModel
+
+  const handleCreate = useCallback(async () => {
+    setStatus('Creating...')
+    try {
+      const randomValue = String(Math.floor(Math.random() * 100000))
+      const resource: FleetK8sResourceCommon & {
+        data?: Record<string, string>
+        stringData?: Record<string, string>
+      } = {
+        apiVersion: 'v1',
+        kind: resourceKind,
+        metadata: { name, namespace: 'default' },
+      }
+      if (resourceKind === 'Secret') {
+        resource.stringData = { value: randomValue }
+      } else {
+        resource.data = { value: randomValue }
+      }
+      await fleetK8sCreate({ model, cluster: clusterName, data: resource as any })
+      setStatus(`Created ${resourceKind} "${name}" with value=${randomValue}`)
+    } catch (e: any) {
+      setStatus(`Create failed: ${e?.message ?? e}`)
+    }
+  }, [resourceKind, model, clusterName, name])
+
+  const handleRandomize = useCallback(async () => {
+    setStatus('Randomizing...')
+    try {
+      const randomValue = String(Math.floor(Math.random() * 100000))
+      const resource: FleetK8sResourceCommon = {
+        apiVersion: 'v1',
+        kind: resourceKind,
+        metadata: { name, namespace: 'default' },
+      }
+      if (resourceKind === 'Secret') {
+        const encoded = Buffer.from(randomValue).toString('base64')
+        await fleetK8sPatch({
+          model,
+          cluster: clusterName,
+          resource: resource as any,
+          data: [{ op: 'replace', path: '/data/value', value: encoded }],
+        })
+      } else {
+        await fleetK8sPatch({
+          model,
+          cluster: clusterName,
+          resource: resource as any,
+          data: [{ op: 'replace', path: '/data/value', value: randomValue }],
+        })
+      }
+      setStatus(`Set value=${randomValue} on ${resourceKind} "${name}"`)
+    } catch (e: any) {
+      setStatus(`Randomize failed: ${e?.message ?? e}`)
+    }
+  }, [resourceKind, model, clusterName, name])
+
+  const handleDelete = useCallback(async () => {
+    setStatus('Deleting...')
+    try {
+      const resource: FleetK8sResourceCommon = {
+        apiVersion: 'v1',
+        kind: resourceKind,
+        metadata: { name, namespace: 'default' },
+      }
+      await fleetK8sDelete({ model, cluster: clusterName, resource: resource as any })
+      setStatus(`Deleted ${resourceKind} "${name}"`)
+    } catch (e: any) {
+      setStatus(`Delete failed: ${e?.message ?? e}`)
+    }
+  }, [resourceKind, model, clusterName, name])
+
+  return (
+    <Stack hasGutter>
+      <StackItem>
+        <b>CRUD Test Widget</b>
+      </StackItem>
+      <StackItem>
+        <Split hasGutter>
+          <SplitItem>
+            <Radio
+              id="crud-radio-configmap"
+              name="crud-resource-kind"
+              label="ConfigMap"
+              isChecked={resourceKind === 'ConfigMap'}
+              onChange={() => setResourceKind('ConfigMap')}
+            />
+          </SplitItem>
+          <SplitItem>
+            <Radio
+              id="crud-radio-secret"
+              name="crud-resource-kind"
+              label="Secret"
+              isChecked={resourceKind === 'Secret'}
+              onChange={() => setResourceKind('Secret')}
+            />
+          </SplitItem>
+        </Split>
+      </StackItem>
+      <StackItem>
+        <Select
+          id="crud-cluster-select"
+          isOpen={clusterSelectOpen}
+          onOpenChange={setClusterSelectOpen}
+          onSelect={(_e: React.MouseEvent | undefined, value: string | number | undefined) => {
+            setClusterName(value as string)
+            setClusterSelectOpen(false)
+          }}
+          selected={clusterName}
+          toggle={(toggleRef) => (
+            <MenuToggle
+              ref={toggleRef}
+              onClick={() => setClusterSelectOpen(!clusterSelectOpen)}
+              isExpanded={clusterSelectOpen}
+            >
+              {clusterName || (clustersLoaded ? 'Select cluster' : 'Loading...')}
+            </MenuToggle>
+          )}
+        >
+          <SelectList>
+            {allClusters.map((c) => (
+              <SelectOption key={c} value={c}>
+                {c}
+              </SelectOption>
+            ))}
+          </SelectList>
+        </Select>
+      </StackItem>
+      <StackItem>
+        <TextInput
+          id="crud-name-input"
+          value={name}
+          onChange={(_e: React.FormEvent<HTMLInputElement>, value: string) => setName(value)}
+          aria-label="Resource name"
+        />
+      </StackItem>
+      <StackItem>
+        <Split hasGutter>
+          <SplitItem>
+            <Button variant="primary" onClick={handleCreate}>
+              Create
+            </Button>
+          </SplitItem>
+          <SplitItem>
+            <Button variant="secondary" onClick={handleRandomize}>
+              Randomize
+            </Button>
+          </SplitItem>
+          <SplitItem>
+            <Button variant="danger" onClick={handleDelete}>
+              Delete
+            </Button>
+          </SplitItem>
+        </Split>
+      </StackItem>
+      <StackItem>
+        <i>{status}</i>
+      </StackItem>
+    </Stack>
+  )
+}
+
+function MultiComponent(props: { title: string; component: React.FC }) {
+  const { title, component: Component } = props
+  const [value, setValue] = useState(0)
+  const onMinus = useCallback(() => setValue((value) => (value > 0 ? value - 1 : 0)), [])
+  const onPlus = useCallback(() => setValue((value) => value + 1), [])
+  const onChange = useCallback<NonNullable<NumberInputProps['onChange']>>((event) => {
+    const newValue = Number.parseInt((event.target as HTMLInputElement).value, 10)
+    if (Number.isInteger(newValue) && newValue >= 0) {
+      setValue(newValue)
+    }
+  }, [])
+  const keys = new Array(value)
+  for (let i = 0; i < value; i++) {
+    keys[i] = i + 1
+  }
+  return (
+    <Stack>
+      <StackItem>
+        <b>{title}</b>
+      </StackItem>
+      <StackItem>
+        <NumberInput value={value} onMinus={onMinus} onPlus={onPlus} onChange={onChange} />
+      </StackItem>
+      {keys.map((k) => (
+        <StackItem key={`item-${k}`}>
+          <Component />
+        </StackItem>
+      ))}
+    </Stack>
+  )
+}
 
 export default function CredentialsPage() {
   const { secretsState, discoveryConfigState } = useSharedAtoms()
@@ -51,6 +501,48 @@ export default function CredentialsPage() {
     <AcmPage header={<AcmPageHeader title={t('Credentials')} />}>
       <AcmPageContent id="credentials">
         <PageSection hasBodyWrapper={false}>
+          <Split hasGutter>
+            <SplitItem>
+              <Stack>
+                <StackItem>
+                  <MultiComponent title="ConfigMap Spoke" component={ConfigMapWatchDisplayComponent} />
+                </StackItem>
+                <StackItem>
+                  <MultiComponent title="ConfigMap Spoke (list)" component={ConfigMapWatchDisplayComponentList} />
+                </StackItem>
+              </Stack>
+            </SplitItem>
+            <SplitItem>
+              <Stack>
+                <StackItem>
+                  <MultiComponent title="ConfigMap Hub" component={ConfigMapHubWatchDisplayComponent} />
+                </StackItem>
+                <StackItem>
+                  <MultiComponent title="ConfigMap Hub (list)" component={ConfigMapHubWatchDisplayComponentList} />
+                </StackItem>
+              </Stack>
+            </SplitItem>
+            <SplitItem>
+              <StackItem>
+                <MultiComponent title="Secret Spoke" component={SecretWatchDisplayComponent} />
+              </StackItem>
+              <StackItem>
+                <MultiComponent title="Secret Spoke (list)" component={SecretWatchDisplayComponentList} />
+              </StackItem>
+            </SplitItem>
+            <SplitItem>
+              <MultiComponent title="Multi Spoke" component={WatchDisplayComponent} />
+            </SplitItem>
+            <SplitItem>
+              <MultiComponent title="Multi Spoke/Hub" component={WatchDisplayComponentMixed} />
+            </SplitItem>
+            <SplitItem>
+              <MultiComponent title="Multi Hub" component={WatchDisplayComponentHub} />
+            </SplitItem>
+          </Split>
+
+          <CrudTestWidget />
+
           <CredentialsTable
             providerConnections={providerConnections}
             discoveryConfigs={discoveryConfigs}
