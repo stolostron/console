@@ -539,14 +539,12 @@ function ObjectTemplate() {
             path="default.memory"
             label="Memory limit"
             placeholder="Enter memory limit"
-            required
             helperText="Examples: 512Mi, 2Gi"
           />
           <WizTextInput
             path="defaultRequest.memory"
             label="Memory request"
             placeholder="Enter memory request"
-            required
             helperText="Examples: 512Mi, 2Gi"
           />
         </WizArrayInput>
