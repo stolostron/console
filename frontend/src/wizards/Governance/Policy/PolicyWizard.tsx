@@ -805,14 +805,12 @@ function ObjectTemplate() {
             path="default.memory"
             label={t('Memory limit')}
             placeholder={t('Enter memory limit')}
-            required
             helperText={t('Examples: 512Mi, 2Gi')}
           />
           <WizTextInput
             path="defaultRequest.memory"
             label={t('Memory request')}
             placeholder={t('Enter memory request')}
-            required
             helperText={t('Examples: 512Mi, 2Gi')}
           />
         </WizArrayInput>
