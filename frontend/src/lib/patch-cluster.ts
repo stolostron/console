@@ -57,7 +57,7 @@ export function patchClusterSetLabel(
           if (result.status === 'rejected') {
             const error = result.reason
             if (error instanceof ResourceError && error.code !== ResourceErrorCode.NotFound) {
-              return reject(result)
+              return reject(error)
             }
           }
         }

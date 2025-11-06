@@ -16,7 +16,7 @@ type FormControl = {
   active: any
   disabled?: VoidFunction
   reverse?: (control: { active: any }, templateObject: any) => void
-  validate?: VoidFunction
+  validate?: () => Promise<unknown> | undefined
   summary?: VoidFunction
   step?: any
   additionalProps?: { [x: string]: string }
