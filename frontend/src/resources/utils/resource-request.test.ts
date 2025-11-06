@@ -18,6 +18,7 @@ import {
   reconcileResources,
   ResourceError,
   updateResources,
+  isAnsibleGatewayURL,
 } from './resource-request'
 
 export const clusterName = 'test-cluster'
@@ -69,6 +70,18 @@ describe('reconcileResources', () => {
     await expect(async () => {
       await reconcileResources([mockClusterCurator, mockClusterNamespace], [])
     }).rejects.toThrow(ResourceError)
+  })
+})
+
+describe('isAnsibleGatewayURL', () => {
+  it('returns false for controller URL (name-controller-namespace)', () => {
+    const host = 'https://example-controller-aap.apps.lucas-sno.apps.ocp.rdu.eng.ansible.com'
+    expect(isAnsibleGatewayURL(host)).toBe(false)
+  })
+
+  it('returns true for gateway URL (name-namespace)', () => {
+    const host = 'https://example-aap.apps.lucas-sno.apps.ocp.rdu.eng.ansible.com'
+    expect(isAnsibleGatewayURL(host)).toBe(true)
   })
 })
 describe('createResource', () => {

@@ -13,7 +13,16 @@ interface AnsibleCredential {
 }
 
 // must match ansiblePaths in frontend/src/resources/utils/resource-request.ts
-export const ansiblePaths = ['/api/v2/job_templates/', '/api/v2/workflow_job_templates/', '/api/v2/inventories/']
+// 2.5 and later ansible operator version only support Gateway URL. Gateway URL need below paths.
+// '/api/controller/v2/job_templates/', '/api/controller/v2/workflow_job_templates/', '/api/controller/v2/inventories/''
+export const ansiblePaths = [
+  '/api/v2/job_templates/',
+  '/api/v2/workflow_job_templates/',
+  '/api/v2/inventories/',
+  '/api/controller/v2/job_templates/',
+  '/api/controller/v2/workflow_job_templates/',
+  '/api/controller/v2/inventories/',
+]
 
 export function ansibleTower(req: Http2ServerRequest, res: Http2ServerResponse): void {
   getAuthenticatedToken(req, res)
