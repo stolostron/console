@@ -13,8 +13,10 @@ import { Status, StatusKind } from '../status'
 import { AnsibleTowerInventory, AnsibleTowerInventoryList } from '../ansible-inventory'
 
 // must match ansiblePaths in backend/src/routes/ansibletower.ts
-const ansiblePaths = ['/api/v2/job_templates/', '/api/v2/workflow_job_templates/']
-
+const ansibleControllerPaths = ['/api/v2/job_templates/', '/api/v2/workflow_job_templates/']
+// Ansible Automation Platform Operator v2.5 and later only supports the Gateway URL.
+// For Gateway URLs, use the following path prefixes:
+const ansibleGatewayPaths = ['/api/controller/v2/job_templates/', '/api/controller/v2/workflow_job_templates/']
 export interface IRequestResult<ResultType = unknown> {
   promise: Promise<ResultType>
   abort: () => void
@@ -477,6 +479,13 @@ export function listNamespacedResources<Resource extends IResource>(
   }
 }
 
+export function isAnsibleGatewayURL(ansibleHostUrl: string): boolean {
+  const firstLabel = ansibleHostUrl.split('.')[0] ?? ''
+
+  if (/^.+-controller-.+$/.test(firstLabel)) return false
+  return true
+}
+
 async function getAnsibleTemplates(
   backendURLPath: string,
   ansibleHostUrl: string,
@@ -484,6 +493,7 @@ async function getAnsibleTemplates(
   abortController: AbortController
 ) {
   const ansibleJobs: AnsibleTowerJobTemplate[] = []
+  const ansiblePaths = isAnsibleGatewayURL(ansibleHostUrl) ? ansibleGatewayPaths : ansibleControllerPaths
 
   for (const path of ansiblePaths) {
     let jobUrl: string = ansibleHostUrl + path
@@ -512,6 +522,7 @@ async function getAnsibleTemplates(
     }),
   }
 }
+
 // TODO: validation for URL input
 // Code assumes protocol is present & ansiblehosturl ends without a /
 export function listAnsibleTowerJobs(
@@ -554,7 +565,8 @@ async function getAnsibleInventories(
   abortController: AbortController
 ) {
   const ansibleInventories: AnsibleTowerInventory[] = []
-  const inventoryUrl: string = ansibleHostUrl + '/api/v2/inventories/'
+  const inventoryUrl: string =
+    ansibleHostUrl + (isAnsibleGatewayURL(ansibleHostUrl) ? '/api/controller/v2/inventories/' : '/api/v2/inventories/')
   const result = await fetchGetAnsibleInventories(backendURLPath, inventoryUrl, token, abortController.signal)
   if (result.data.results) {
     ansibleInventories.push(...result.data.results)
