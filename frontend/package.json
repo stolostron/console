@@ -185,7 +185,7 @@
     "react-dom": "^18.2.0",
     "react-hot-loader": "^4.13.0",
     "react-i18next": "11.16.9",
-    "react-redux": "7.2.8",
+    "react-redux": "7.2.9",
     "react-refresh": "0.14.0",
     "react-refresh-typescript": "^2.0.9",
     "react-router-dom-v5-compat": "^6.23.1",
