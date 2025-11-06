@@ -62,14 +62,16 @@ export const InputSelect = ({
 
   const onInputKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLInputElement>) => {
-      if (!Array.isArray(value)) {
-        onSelect('')
-      }
-      setOpen(true)
-      switch (event.key) {
-        case 'Backspace':
-          !Array.isArray(value) && onSelect('')
-          break
+      if (!disabled) {
+        if (!Array.isArray(value)) {
+          onSelect('')
+        }
+        setOpen(true)
+        switch (event.key) {
+          case 'Backspace':
+            !Array.isArray(value) && onSelect('')
+            break
+        }
       }
     },
     [onSelect, open, setOpen, value]
