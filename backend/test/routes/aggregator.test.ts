@@ -309,7 +309,31 @@ const responseNoFilter = {
       },
       uidata: {
         clusterList: ['local-cluster'],
-        appClusterStatuses: [{}],
+        appClusterStatuses: [
+          {
+            'local-cluster': {
+              deployed: [[0, 0, 0, 0, 0], []],
+              health: [
+                [0, 0, 0, 0, 1],
+                [
+                  {
+                    key: 'Status',
+                    value: 'Missing',
+                  },
+                ],
+              ],
+              synced: [
+                [0, 0, 0, 0, 1],
+                [
+                  {
+                    key: 'Status',
+                    value: 'Missing',
+                  },
+                ],
+              ],
+            },
+          },
+        ],
         appSetRelatedResources: ['test-placement-1', []] as RelatedResourcesType,
         appSetApps: ['argoapplication-2'],
       },

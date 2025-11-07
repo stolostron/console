@@ -117,12 +117,14 @@ export enum AppColumns {
   'created',
 }
 
-enum ApplicationStatusEnum {
+enum ScoreColumn {
   healthy = 0,
   progress = 1,
   warning = 2,
   danger = 3,
+  unknown = 4,
 }
+const ScoreColumnSize = Object.keys(ScoreColumn).length / 2
 
 function isOCPAppResource(resource: IApplicationResource): resource is OCPAppResource<ApplicationStatus> {
   return 'label' in resource
@@ -228,18 +230,18 @@ export function getAppNamespace(resource: IResource) {
 
 export const getApplicationStatuses = (resource: IResource, type: 'health' | 'synced' | 'deployed') => {
   const uidata = (resource as IUIResource).uidata
+  const allCounts = Array(ScoreColumnSize).fill(0) as number[]
   if (
     Array.isArray(uidata?.appClusterStatuses) &&
     uidata.appClusterStatuses.length > 0 &&
     Object.keys(uidata.appClusterStatuses[0]).length > 0
   ) {
-    const allCounts = [0, 0, 0, 0]
     const messages: Record<string, string>[] = []
     uidata.clusterList.forEach((cluster: string) => {
       const clusterStatuses = uidata.appClusterStatuses[0][cluster] as ApplicationStatuses
       if (clusterStatuses) {
         const counts = clusterStatuses[type][StatusColumn.counts] ?? []
-        for (let i = 0; i < 4; i++) {
+        for (let i = 0; i < ScoreColumnSize; i++) {
           allCounts[i] += counts[i] ?? 0
         }
         if (clusterStatuses[type][StatusColumn.messages]) {
@@ -251,13 +253,17 @@ export const getApplicationStatuses = (resource: IResource, type: 'health' | 'sy
     })
     return { counts: allCounts, messages }
   }
-  return { counts: [0, 0, 0, 0], messages: undefined }
+  return { counts: allCounts, messages: undefined }
 }
 
-const renderPopoverContent = (messages: Record<string, string>[]) => {
+const renderPopoverContent = (
+  resource: IResource,
+  type: 'health' | 'synced' | 'deployed',
+  messages?: Record<string, string>[]
+) => {
   return (
     <div style={{ width: '26.75rem' }}>
-      {messages &&
+      {messages && messages.length > 0 ? (
         messages.map((message) => {
           // Remove leading underscore and "condition" from the key
           let cleanedKey = message.key.replace(/^_/, '').replace(/^condition/i, '')
@@ -271,29 +277,40 @@ const renderPopoverContent = (messages: Record<string, string>[]) => {
               <strong>{cleanedKey}:</strong> {message.value}
             </div>
           )
-        })}
+        })
+      ) : (
+        <div key={`${resource.metadata?.name}-${type}-status`} style={{ marginBottom: '0.5rem' }}>
+          <strong>Status</strong> {'OK'}
+        </div>
+      )}
     </div>
   )
 }
 
 export function renderApplicationStatusGroup(resource: IResource, type: 'health' | 'synced' | 'deployed') {
   const { counts, messages } = getApplicationStatuses(resource, type)
-  if (Array.isArray(messages) && messages.length > 0) {
+  if (counts.some((count) => count > 0)) {
     return (
       <Popover
         id={'labels-popover'}
-        bodyContent={renderPopoverContent(messages)}
+        bodyContent={renderPopoverContent(resource, type, messages)}
         position={PopoverPosition.bottom}
         flipBehavior={['bottom', 'bottom-end', 'bottom-end']}
         hasAutoWidth
       >
         <Label style={{ width: 'fit-content' }} isOverflowLabel>
-          {<AcmInlineStatusGroup healthy={counts[0]} progress={counts[1]} warning={counts[2]} danger={counts[3]} />}
+          {
+            <AcmInlineStatusGroup
+              healthy={counts[ScoreColumn.healthy]}
+              progress={counts[ScoreColumn.progress]}
+              warning={counts[ScoreColumn.warning]}
+              danger={counts[ScoreColumn.danger]}
+              unknown={counts[ScoreColumn.unknown]}
+            />
+          }
         </Label>
       </Popover>
     )
-  } else if (counts.some((count) => count > 0)) {
-    return <AcmInlineStatusGroup healthy={counts[0]} progress={counts[1]} warning={counts[2]} danger={counts[3]} />
   }
   return '-'
 }
@@ -313,7 +330,11 @@ export function exportApplicationStatusGroup(resource: IResource, type: 'health'
       }
       statuses.push(`${counts[0]} ${label}`)
     }
-    if (Array.isArray(messages) && messages?.length && (counts[1] > 0 || counts[2] > 0 || counts[3] > 0)) {
+    if (
+      Array.isArray(messages) &&
+      messages?.length &&
+      (counts[1] > 0 || counts[2] > 0 || counts[3] > 0 || counts[4] > 0)
+    ) {
       statuses.push(`${messages[0].value}`)
     }
     return statuses.join(', ')
@@ -475,10 +496,11 @@ export default function ApplicationsOverview() {
             if (index === AppColumns.deployed) column = stats.deployed[StatusColumn.counts]
             if (column) {
               score =
-                column[ApplicationStatusEnum.danger] * 100000 +
-                column[ApplicationStatusEnum.warning] * 10000 +
-                column[ApplicationStatusEnum.progress] * 1000 +
-                column[ApplicationStatusEnum.healthy]
+                column[ScoreColumn.danger] * 1000000 +
+                column[ScoreColumn.warning] * 100000 +
+                column[ScoreColumn.progress] * 10000 +
+                column[ScoreColumn.unknown] * 1000 +
+                column[ScoreColumn.healthy]
             }
           }
         })

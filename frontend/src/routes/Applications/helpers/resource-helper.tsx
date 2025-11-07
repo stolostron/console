@@ -199,6 +199,8 @@ export function getClusterCountString(
 ) {
   if (resource && (isArgoApp(resource) || isOCPAppResourceKind(resource.kind))) {
     return clusterList?.length ? clusterList[0] : t('None')
+  } else if (clusterList && clusterList.length === 1 && clusterList[0] === '-') {
+    return t('None')
   } else if (clusterCount.remoteCount && clusterCount.localPlacement) {
     return t('{{remoteCount}} Remote, 1 Local', { remoteCount: clusterCount.remoteCount })
   } else if (clusterCount.remoteCount) {
@@ -215,7 +217,11 @@ export function getClusterCountSearchLink(resource: IResource, clusterCount: Clu
     const cluster = clusterList ? clusterList[0] : ''
     return generatePath(NavigationPath.clusterDetails, { name: cluster, namespace: cluster })
   }
-  if ((isArgoApp(resource) && !clusterList?.length) || (!clusterCount.remoteCount && !clusterCount.localPlacement)) {
+  if (
+    (isArgoApp(resource) && !clusterList?.length) ||
+    (!clusterCount.remoteCount && !clusterCount.localPlacement) ||
+    (clusterList && clusterList.length === 1 && clusterList[0] === '-')
+  ) {
     return undefined
   }
   return getSearchLink(
