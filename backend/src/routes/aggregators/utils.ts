@@ -30,6 +30,7 @@ import {
   Transform,
   StatusColumn,
   ApplicationStatusEntry,
+  ScoreColumnSize,
 } from './applications'
 import { logger } from '../../lib/logger'
 import { getMultiClusterHub } from '../../lib/multi-cluster-hub'
@@ -78,7 +79,7 @@ export function getTransform(
   clusters: string[]
 ): Transform {
   const statusKey = `${type}/${app.metadata.namespace}/${app.metadata.name}`
-  const appStatuses = clusterStatusMap[statusKey] || {}
+  const appStatuses = getAppStatues(type, statusKey, clusterStatusMap, clusters)
   const appScores = getAppStatusScores(clusters, appStatuses)
   return [
     [app.metadata.name],
@@ -89,6 +90,37 @@ export function getTransform(
     [appScores],
     [app.metadata.creationTimestamp as string],
   ]
+}
+
+function getAppStatues(
+  type: string,
+  statusKey: string,
+  clusterStatusMap: ApplicationClusterStatusMap,
+  clusters: string[]
+) {
+  const appStatuses = clusterStatusMap[statusKey]
+  if (!appStatuses) {
+    if (type === 'appset') {
+      if (clusters.length === 0) {
+        if (clusters.length === 0) {
+          clusters.push('-')
+        }
+        // Build a single ApplicationStatusMap object rather than an array of objects
+        const appStatusMap: ApplicationStatusMap = {}
+        clusters.forEach((cluster) => {
+          appStatusMap[cluster] = {
+            health: [[0, 0, 0, 0, 1], [{ key: 'Status', value: 'Missing' }]],
+            synced: [[0, 0, 0, 0, 1], [{ key: 'Status', value: 'Missing' }]],
+            deployed: [[0, 0, 0, 0, 0], []],
+          }
+        })
+        return appStatusMap
+      } else {
+        return {}
+      }
+    }
+  }
+  return appStatuses
 }
 
 export function getAppNamespace(resource: IResource): string {
@@ -166,6 +198,10 @@ export function computeAppHealthStatus(health: ApplicationStatusEntry, app: ISea
       health[StatusColumn.counts][ScoreColumn.progress]++
       extractMessages(health, app, app.healthStatus)
       break
+    case 'Unknown':
+      health[StatusColumn.counts][ScoreColumn.unknown]++
+      extractMessages(health, app, app.healthStatus)
+      break
     default:
       health[StatusColumn.counts][ScoreColumn.warning]++
       extractMessages(health, app, app.healthStatus)
@@ -179,7 +215,7 @@ export function computeAppSyncStatus(synced: ApplicationStatusEntry, app: ISearc
       synced[StatusColumn.counts][ScoreColumn.healthy]++
       break
     case 'Unknown':
-      synced[StatusColumn.counts][ScoreColumn.warning]++
+      synced[StatusColumn.counts][ScoreColumn.unknown]++
       extractMessages(synced, app, app.syncStatus)
       break
     default:
@@ -229,8 +265,9 @@ export function computeDeployedPodStatuses(
               if (replicaSet) {
                 appStatuses.deployed[StatusColumn.counts][ScoreColumn.warning] += Number(replicaSet.desired)
               } else {
-                appStatuses.deployed[StatusColumn.counts] = [0, 0, 0, 0]
+                appStatuses.deployed[StatusColumn.counts] = Array(ScoreColumnSize).fill(0) as number[]
               }
+              appStatuses.deployed[StatusColumn.messages] = []
             }
           }
         }
@@ -285,14 +322,17 @@ export function computePodStatuses(
 function computePodStatus(deployed: ApplicationStatusEntry, pods: ISearchResource[]) {
   pods.forEach((pod) => {
     const status = pod.status.toLocaleLowerCase()
-    if (resErrorStates.has(status)) {
-      deployed[StatusColumn.counts][ScoreColumn.danger]++
-      extractMessages(deployed, pod, status)
-    } else if (resWarningStates.has(status)) {
-      deployed[StatusColumn.counts][ScoreColumn.warning]++
-      extractMessages(deployed, pod, status)
+    if (status !== 'terminating') {
+      if (resErrorStates.has(status)) {
+        deployed[StatusColumn.counts][ScoreColumn.danger]++
+        extractMessages(deployed, pod, status)
+      } else if (resWarningStates.has(status)) {
+        deployed[StatusColumn.counts][ScoreColumn.warning]++
+        extractMessages(deployed, pod, status)
+      } else {
+        deployed[StatusColumn.counts][ScoreColumn.healthy]++
+      }
     }
-    deployed[StatusColumn.counts][ScoreColumn.healthy]++
   })
 }
 
@@ -323,9 +363,10 @@ function getAppStatusScore(clusters: string[], statuses: ApplicationStatusMap, i
       }
       if (column) {
         score =
-          column[ScoreColumn.danger] * 100000 +
-          column[ScoreColumn.warning] * 10000 +
-          column[ScoreColumn.progress] * 1000 +
+          column[ScoreColumn.danger] * 1000000 +
+          column[ScoreColumn.warning] * 100000 +
+          column[ScoreColumn.progress] * 10000 +
+          column[ScoreColumn.unknown] * 1000 +
           column[ScoreColumn.healthy]
       }
     }

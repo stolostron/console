@@ -21,6 +21,7 @@ import {
   IArgoApplication,
   IQuery,
   ITransformedResource,
+  ScoreColumnSize,
   SEARCH_QUERY_LIMIT,
 } from './applications'
 import {
@@ -436,9 +437,9 @@ export function createArgoStatusMap(searchResult: SearchResult) {
       let appStatuses = appStatusMap[app.cluster]
       if (!appStatuses) {
         appStatuses = appStatusMap[app.cluster] = {
-          health: [[0, 0, 0, 0], []],
-          synced: [[0, 0, 0, 0], []],
-          deployed: [[0, 0, 0, 0], []],
+          health: [Array(ScoreColumnSize).fill(0) as number[], []],
+          synced: [Array(ScoreColumnSize).fill(0) as number[], []],
+          deployed: [Array(ScoreColumnSize).fill(0) as number[], []],
         }
       }
       app2AppsetMap[app._uid] = appStatuses

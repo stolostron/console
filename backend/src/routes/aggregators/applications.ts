@@ -92,7 +92,9 @@ export enum ScoreColumn {
   progress = 1,
   warning = 2,
   danger = 3,
+  unknown = 4,
 }
+export const ScoreColumnSize = Object.keys(ScoreColumn).length / 2
 
 export type ApplicationStatusEntry = [number[], Record<string, string>[]]
 
