@@ -102,22 +102,20 @@ function getAppStatues(
   if (!appStatuses) {
     if (type === 'appset') {
       if (clusters.length === 0) {
-        if (clusters.length === 0) {
-          clusters.push('-')
-        }
-        // Build a single ApplicationStatusMap object rather than an array of objects
-        const appStatusMap: ApplicationStatusMap = {}
-        clusters.forEach((cluster) => {
-          appStatusMap[cluster] = {
-            health: [[0, 0, 0, 0, 1], [{ key: 'Status', value: 'Missing' }]],
-            synced: [[0, 0, 0, 0, 1], [{ key: 'Status', value: 'Missing' }]],
-            deployed: [[0, 0, 0, 0, 0], []],
-          }
-        })
-        return appStatusMap
-      } else {
-        return {}
+        clusters.push('-')
       }
+      // Build a single ApplicationStatusMap object rather than an array of objects
+      const appStatusMap: ApplicationStatusMap = {}
+      clusters.forEach((cluster) => {
+        appStatusMap[cluster] = {
+          health: [[0, 0, 0, 0, 1], [{ key: 'Status', value: 'Missing' }]],
+          synced: [[0, 0, 0, 0, 1], [{ key: 'Status', value: 'Missing' }]],
+          deployed: [[0, 0, 0, 0, 0], []],
+        }
+      })
+      return appStatusMap
+    } else {
+      return {}
     }
   }
   return appStatuses
@@ -347,7 +345,7 @@ function getAppStatusScores(clusters: string[], appStatuses: ApplicationStatusMa
 function getAppStatusScore(clusters: string[], statuses: ApplicationStatusMap, index: AppColumns) {
   let score = 0
   clusters.forEach((cluster) => {
-    const stats = statuses[cluster]
+    const stats = statuses?.[cluster]
     if (stats) {
       let column: number[]
       switch (index) {
