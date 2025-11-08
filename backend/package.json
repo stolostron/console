@@ -60,7 +60,7 @@
     "nodemon": "^3.1.0",
     "pino-zen": "2.0.8",
     "prettier": "^3.2.5",
-    "rollup": "2.77.0",
+    "rollup": "4.53.1",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.2"
