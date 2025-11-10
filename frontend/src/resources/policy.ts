@@ -71,6 +71,13 @@ export interface PolicyTemplate {
       severity?: string
       maxClusterRoleBindingUsers?: number
       pruneObjectBehavior?: string
+      complianceType?: string // for operator policies
+      removalBehavior?: {
+        clusterServiceVersions?: 'Keep' | 'Delete' | 'DeleteIfUnused'
+        customResourceDefinitions?: 'Keep' | 'Delete' | 'DeleteIfUnused'
+        operatorGroups?: 'Keep' | 'Delete' | 'DeleteIfUnused'
+        subscriptions?: 'Keep' | 'Delete' | 'DeleteIfUnused'
+      }
     }
   }
 }

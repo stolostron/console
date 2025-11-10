@@ -961,13 +961,6 @@ describe('Test policyHasDeletePruneBehavior', () => {
     expect(policyHasDeletePruneBehavior(policy)).toBe(false)
   })
 
-  test('should return false for inform policy with delete prune', () => {
-    const policy = cloneDeep(basePolicy)
-    policy.spec.remediationAction = 'inform'
-    policy.spec['policy-templates']![0].objectDefinition.spec!.remediationAction = 'inform'
-    expect(policyHasDeletePruneBehavior(policy)).toBe(false)
-  })
-
   test('should return false for informOnly policy with delete prune', () => {
     const policy = cloneDeep(basePolicy)
     policy.spec.remediationAction = 'informOnly'
@@ -987,9 +980,9 @@ describe('Test policyHasDeletePruneBehavior', () => {
     expect(policyHasDeletePruneBehavior(policy)).toBe(false)
   })
 
-  test('should return false for non-ConfigurationPolicy template types', () => {
+  test('should return false for non-ConfigurationPolicy and non-OperatorPolicy template types', () => {
     const policy = cloneDeep(basePolicy)
-    policy.spec['policy-templates']![0].objectDefinition.kind = 'IamPolicy'
+    policy.spec['policy-templates']![0].objectDefinition.kind = 'CertificatePolicy'
     expect(policyHasDeletePruneBehavior(policy)).toBe(false)
   })
 
@@ -1025,6 +1018,121 @@ describe('Test policyHasDeletePruneBehavior', () => {
   test('should return false for policy with no policy-templates', () => {
     const policy = cloneDeep(basePolicy)
     delete policy.spec['policy-templates']
+    expect(policyHasDeletePruneBehavior(policy)).toBe(false)
+  })
+
+  // OperatorPolicy tests
+  const baseOperatorPolicy: Policy = {
+    apiVersion: 'policy.open-cluster-management.io/v1',
+    kind: 'Policy',
+    metadata: { name: 'test-operator-policy', namespace: 'test' },
+    spec: {
+      disabled: false,
+      remediationAction: 'enforce',
+      'policy-templates': [
+        {
+          objectDefinition: {
+            apiVersion: 'policy.open-cluster-management.io/v1beta1',
+            kind: 'OperatorPolicy',
+            metadata: { name: 'operator-policy' },
+            spec: {
+              remediationAction: 'enforce',
+              complianceType: 'mustnothave',
+              removalBehavior: {
+                clusterServiceVersions: 'Delete',
+                subscriptions: 'Delete',
+              },
+            },
+          },
+        },
+      ],
+    },
+  }
+
+  test('should return true for OperatorPolicy with enforce and Delete removalBehavior', () => {
+    const policy = cloneDeep(baseOperatorPolicy)
+    expect(policyHasDeletePruneBehavior(policy)).toBe(true)
+  })
+
+  test('should return true for OperatorPolicy with enforce and DeleteIfUnused removalBehavior', () => {
+    const policy = cloneDeep(baseOperatorPolicy)
+    policy.spec['policy-templates']![0].objectDefinition.spec!.removalBehavior = {
+      operatorGroups: 'DeleteIfUnused',
+    }
+    expect(policyHasDeletePruneBehavior(policy)).toBe(true)
+  })
+
+  test('should return true when root policy is not set but OperatorPolicy template has enforce with delete removal', () => {
+    const policy = cloneDeep(baseOperatorPolicy)
+    policy.spec.remediationAction = undefined
+    expect(policyHasDeletePruneBehavior(policy)).toBe(true)
+  })
+
+  test('should return false when root policy is inform even if OperatorPolicy template has enforce with delete removal', () => {
+    const policy = cloneDeep(baseOperatorPolicy)
+    policy.spec.remediationAction = 'inform'
+    expect(policyHasDeletePruneBehavior(policy)).toBe(false)
+  })
+
+  test('should return false for inform OperatorPolicy with delete removal', () => {
+    const policy = cloneDeep(baseOperatorPolicy)
+    policy.spec.remediationAction = 'inform'
+    policy.spec['policy-templates']![0].objectDefinition.spec!.remediationAction = 'inform'
+    expect(policyHasDeletePruneBehavior(policy)).toBe(false)
+  })
+
+  test('should return false for enforce OperatorPolicy without delete removal behavior', () => {
+    const policy = cloneDeep(baseOperatorPolicy)
+    policy.spec['policy-templates']![0].objectDefinition.spec!.removalBehavior = {
+      clusterServiceVersions: 'Keep',
+      customResourceDefinitions: 'Keep',
+      operatorGroups: 'Keep',
+      subscriptions: 'Keep',
+    }
+    expect(policyHasDeletePruneBehavior(policy)).toBe(false)
+  })
+
+  test('should return false for enforce OperatorPolicy without removalBehavior set', () => {
+    const policy = cloneDeep(baseOperatorPolicy)
+    delete policy.spec['policy-templates']![0].objectDefinition.spec!.removalBehavior
+    expect(policyHasDeletePruneBehavior(policy)).toBe(false)
+  })
+
+  test('should return true when only OperatorPolicy has delete removal behavior', () => {
+    const policy = cloneDeep(basePolicy)
+    policy.spec['policy-templates'] = [
+      {
+        objectDefinition: {
+          apiVersion: 'policy.open-cluster-management.io/v1',
+          kind: 'ConfigurationPolicy',
+          metadata: { name: 'config-policy' },
+          spec: {
+            remediationAction: 'enforce',
+            pruneObjectBehavior: 'None',
+          },
+        },
+      },
+      {
+        objectDefinition: {
+          apiVersion: 'policy.open-cluster-management.io/v1beta1',
+          kind: 'OperatorPolicy',
+          metadata: { name: 'operator-policy' },
+          spec: {
+            remediationAction: 'enforce',
+            complianceType: 'mustnothave',
+            removalBehavior: {
+              subscriptions: 'DeleteIfUnused',
+            },
+          },
+        },
+      },
+    ]
+    expect(policyHasDeletePruneBehavior(policy)).toBe(true)
+  })
+
+  test('should return false for OperatorPolicy with musthave complianceType even with delete removalBehavior', () => {
+    const policy = cloneDeep(baseOperatorPolicy)
+    policy.spec['policy-templates']![0].objectDefinition.spec!.complianceType = 'musthave'
     expect(policyHasDeletePruneBehavior(policy)).toBe(false)
   })
 })

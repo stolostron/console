@@ -501,6 +501,43 @@ const policyWithDeletePrune: Policy = {
     status: [{ clustername: 'local-cluster', clusternamespace: 'local-cluster', compliant: 'Compliant' }],
   },
 }
+
+const policyWithOperatorDeleteRemoval: Policy = {
+  apiVersion: 'policy.open-cluster-management.io/v1',
+  kind: 'Policy',
+  metadata: {
+    name: 'policy-with-operator-delete-removal',
+    namespace: 'test',
+    uid: '30761783-5b48-4f9c-b12c-d5a6b2fac4b7',
+  },
+  spec: {
+    disabled: false,
+    remediationAction: 'enforce',
+    'policy-templates': [
+      {
+        objectDefinition: {
+          apiVersion: 'policy.open-cluster-management.io/v1beta1',
+          kind: 'OperatorPolicy',
+          metadata: { name: 'policy-with-operator-delete-removal-op' },
+          spec: {
+            remediationAction: 'enforce',
+            severity: 'high',
+            complianceType: 'mustnothave',
+            removalBehavior: {
+              clusterServiceVersions: 'Delete',
+              subscriptions: 'Delete',
+            },
+          },
+        },
+      },
+    ],
+  },
+  status: {
+    compliant: 'Compliant',
+    status: [{ clustername: 'local-cluster', clusternamespace: 'local-cluster', compliant: 'Compliant' }],
+  },
+}
+
 const policyWithoutStatus: Policy = {
   apiVersion: PolicyApiVersion,
   kind: PolicyKind,
@@ -883,6 +920,7 @@ export const mockPolicyBinding: Policy[] = [rootPolicy, policy2]
 export const mockPendingPolicy: Policy[] = [pendingPolicy, pendingPolicy0]
 export const mockOrderPolicy: Policy[] = [pendingPolicy, policyForOrder1]
 export const mockPolicyWithDeletePrune: Policy = policyWithDeletePrune
+export const mockPolicyWithOperatorDeleteRemoval: Policy = policyWithOperatorDeleteRemoval
 
 export const mockPolicyNoStatus: Policy = policyWithoutStatus
 

@@ -2278,7 +2278,7 @@
   "policy.modal.title.enable": "Enable policy",
   "policy.modal.title.enforce": "Enforce policy",
   "policy.modal.title.inform": "Inform policy",
-  "policy.modal.warning.pruneParameter": "Some policies have the Prune parameter set.",
+  "policy.modal.warning.pruneParameter": "Some policies have the Prune or Removal Behavior parameter set.",
   "policy.modal.warning.pruneParameter.deleteMessage": "Deleting this policy might delete some related objects on the managed cluster(s).",
   "policy.modal.warning.pruneParameter.disableMessage": "Disabling this policy might delete some related objects on the managed cluster(s).",
   "policy.table.actionGroup.status": "Status",

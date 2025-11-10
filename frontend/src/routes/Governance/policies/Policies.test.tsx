@@ -23,6 +23,7 @@ import {
   mockPolicyAutomation,
   mockOrderPolicy,
   mockPolicyWithDeletePrune,
+  mockPolicyWithOperatorDeleteRemoval,
 } from '../governance.sharedMocks'
 
 describe('Policies Page', () => {
@@ -500,7 +501,9 @@ describe('Delete policy modal with delete prune behavior', () => {
       </RecoilRoot>
     )
 
-    screen.getByRole('heading', { name: 'Warning alert: Some policies have the Prune parameter set.' })
+    screen.getByRole('heading', {
+      name: 'Warning alert: Some policies have the Prune or Removal Behavior parameter set.',
+    })
     screen.getByText('Deleting this policy might delete some related objects on the managed cluster(s).')
   })
 
@@ -518,10 +521,31 @@ describe('Delete policy modal with delete prune behavior', () => {
     )
 
     expect(
-      screen.queryByRole('heading', { name: 'Warning alert: Some policies have the Prune parameter set.' })
+      screen.queryByRole('heading', {
+        name: 'Warning alert: Some policies have the Prune or Removal Behavior parameter set.',
+      })
     ).not.toBeInTheDocument()
     expect(
       screen.queryByText('Deleting this policy might delete some related objects on the managed cluster(s).')
     ).not.toBeInTheDocument()
+  })
+
+  test('should show delete removal warning when deleting OperatorPolicy with delete removal behavior', async () => {
+    const tableItem: PolicyTableItem = {
+      policy: mockPolicyWithOperatorDeleteRemoval,
+      source: 'Local',
+    }
+    const onClose = () => {}
+
+    render(
+      <RecoilRoot>
+        <DeletePolicyModal item={tableItem} onClose={onClose} />
+      </RecoilRoot>
+    )
+
+    screen.getByRole('heading', {
+      name: 'Warning alert: Some policies have the Prune or Removal Behavior parameter set.',
+    })
+    screen.getByText('Deleting this policy might delete some related objects on the managed cluster(s).')
   })
 })
