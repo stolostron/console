@@ -704,6 +704,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
                     },
                     backButtonOverride,
                   }}
+                  localHubName={localHubName}
                   logging={process.env.NODE_ENV !== 'production'}
                   i18n={t}
                   onControlInitialize={onControlInitialize}

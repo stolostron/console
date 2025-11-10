@@ -66,6 +66,7 @@ export default class TemplateEditor extends React.Component {
       backButtonOverride: PropTypes.func,
     }).isRequired,
     editorReadOnly: PropTypes.bool,
+    localHubName: PropTypes.string,
     fetchControl: PropTypes.shape({
       resources: PropTypes.array,
       isLoaded: PropTypes.bool,
@@ -161,6 +162,12 @@ export default class TemplateEditor extends React.Component {
       /* istanbul ignore else */
       if (showControl) {
         showControl.active = showSecrets || !showEditor
+      }
+
+      const localHubNameControl = controlData.find(({ id: idCtrl }) => idCtrl === 'localHubName')
+      /* istanbul ignore else */
+      if (localHubNameControl) {
+        localHubNameControl.active = props.localHubName
       }
     }
 
