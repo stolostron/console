@@ -18,7 +18,7 @@ import '../../Applications/CreateSubscriptionApplication/style.css'
 import { createProject, IResource } from '../../../resources'
 import { createResource } from '../../../resources/utils'
 import { deleteResources } from '../../../lib/delete-resources'
-import { useLocalHubName } from '../../../hooks/use-local-hub'
+
 import './CreateInfraEnv.css'
 
 const controlData = [
@@ -41,7 +41,7 @@ const CreateInfraEnv: React.FC = () => {
   const i18n = (key: any, arg: any) => {
     return tEditor(key, arg)
   }
-  const localHubName = useLocalHubName()
+
   const switches = (
     <div className="switch-controls">
       <div id={Portals.editBtn} />
@@ -139,7 +139,6 @@ const CreateInfraEnv: React.FC = () => {
                 creationStatus: creationStatus?.status,
                 creationMsg: creationStatus?.messages,
               }}
-              localHubName={localHubName}
               logging={process.env.NODE_ENV !== 'production'}
               i18n={i18n}
             />
