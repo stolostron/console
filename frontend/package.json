@@ -192,7 +192,7 @@
     "react-tagsinput": "3.19.x",
     "recoil": "0.7.4",
     "redux": "4.2.0",
-    "redux-thunk": "2.4.1",
+    "redux-thunk": "2.4.2",
     "reselect": "4.1.6",
     "sass": "1.53.0",
     "sass-loader": "13.0.2",
