@@ -30,6 +30,7 @@ export default function TemplateEditor(props: {
   onControlInitialize?: (control: any) => void
   onControlChange?: (control: any) => void
   editorReadOnly?: boolean
+  localHubName?: string
   onStepChange?: (step: any, prevStep: any) => void
   ref?: any
   controlProps?: any

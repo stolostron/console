@@ -40,6 +40,7 @@ import getControlDataAZR from './controlData/ControlDataAZR'
 import { ClusterPoolInfrastructureType } from '../ClusterPoolInfrastructureType'
 import { fixupControlsForClusterPool } from './controlData/ControlDataHelper'
 import { localeCompare } from '../../../../../utils/localeCompare'
+import { useLocalHubName } from '../../../../../hooks/use-local-hub'
 interface CreationStatus {
   status: string
   messages: any[] | null
@@ -121,6 +122,7 @@ function CreateClusterPoolWizard(props: { infrastructureType: ClusterPoolInfrast
   const clusterPools = useRecoilValue(clusterPoolsState)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [newSecret, setNewSecret] = useState<Secret>()
+  const localHubName = useLocalHubName()
 
   const { projects } = useProjects()
 
@@ -295,6 +297,7 @@ function CreateClusterPoolWizard(props: { infrastructureType: ClusterPoolInfrast
           backButtonOverride,
         }}
         logging={process.env.NODE_ENV !== 'production'}
+        localHubName={localHubName}
         onControlChange={onControlChange}
         onControlInitialize={onControlInitialize}
         i18n={t}
