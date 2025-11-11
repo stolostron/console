@@ -82,6 +82,11 @@ exports[`Cluster creation control data for OST generates correctly 1`] = `
     "type": "hidden",
   },
   {
+    "active": "local-cluster",
+    "id": "localHubName",
+    "type": "hidden",
+  },
+  {
     "fetchAvailable": {
       "emptyDesc": "No default images. Enter a release image path.",
       "loadingDesc": "Loading release image sets...",
@@ -709,6 +714,11 @@ exports[`Cluster creation control data for OST generates correctly for MCE 1`] =
     "type": "hidden",
   },
   {
+    "active": "local-cluster",
+    "id": "localHubName",
+    "type": "hidden",
+  },
+  {
     "fetchAvailable": {
       "emptyDesc": "No default images. Enter a release image path.",
       "loadingDesc": "Loading release image sets...",
@@ -1333,6 +1343,11 @@ exports[`Cluster creation control data for OST generates correctly with SNO enab
   {
     "active": false,
     "id": "showSecrets",
+    "type": "hidden",
+  },
+  {
+    "active": "local-cluster",
+    "id": "localHubName",
     "type": "hidden",
   },
   {
