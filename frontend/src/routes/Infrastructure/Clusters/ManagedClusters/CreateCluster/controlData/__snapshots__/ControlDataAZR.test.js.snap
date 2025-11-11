@@ -79,6 +79,11 @@ exports[`Cluster creation control data for AZR generates correctly 1`] = `
     "type": "hidden",
   },
   {
+    "active": "local-cluster",
+    "id": "localHubName",
+    "type": "hidden",
+  },
+  {
     "fetchAvailable": {
       "emptyDesc": "No default images. Enter a release image path.",
       "loadingDesc": "Loading release image sets...",
@@ -1536,6 +1541,11 @@ exports[`Cluster creation control data for AZR generates correctly for MCE 1`] =
   {
     "active": false,
     "id": "showSecrets",
+    "type": "hidden",
+  },
+  {
+    "active": "local-cluster",
+    "id": "localHubName",
     "type": "hidden",
   },
   {
@@ -3001,6 +3011,11 @@ exports[`Cluster creation control data for AZR generates correctly for cluster p
     "type": "hidden",
   },
   {
+    "active": "local-cluster",
+    "id": "localHubName",
+    "type": "hidden",
+  },
+  {
     "available": [],
     "id": "clusterSet",
     "name": "Cluster set",
@@ -4392,6 +4407,11 @@ exports[`Cluster creation control data for AZR generates correctly with SNO enab
   {
     "active": false,
     "id": "showSecrets",
+    "type": "hidden",
+  },
+  {
+    "active": "local-cluster",
+    "id": "localHubName",
     "type": "hidden",
   },
   {
