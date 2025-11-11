@@ -83,6 +83,11 @@ export const fixupControlsForClusterPool = (controlData, t) => {
       id: 'showSecrets',
       type: 'hidden',
       active: false,
+    },
+    {
+      id: 'localHubName',
+      type: 'hidden',
+      active: 'local-cluster',
     }
   )
 
