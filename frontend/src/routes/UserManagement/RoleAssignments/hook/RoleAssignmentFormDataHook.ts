@@ -79,17 +79,18 @@ const useRoleAssignmentFormData = (
   const onChangeScopeKind = useCallback(
     (scope: string) => {
       const scopeKind = scope as RoleAssignmentFormDataType['scope']['kind']
-
-      setRoleAssignmentFormData((prevData) => ({
-        ...prevData,
-        scope: {
-          kind: scopeKind,
-          clusterNames: scopeKind === 'all' ? roleAssignmentData?.allClusterNames || [] : [],
-          namespaces: scopeKind === 'all' ? undefined : [],
-        },
-      }))
+      if (roleAssignmentFormData.scope.kind !== scopeKind) {
+        setRoleAssignmentFormData((prevData) => ({
+          ...prevData,
+          scope: {
+            kind: scopeKind,
+            clusterNames: scopeKind === 'all' ? roleAssignmentData?.allClusterNames || [] : [],
+            namespaces: scopeKind === 'all' ? undefined : [],
+          },
+        }))
+      }
     },
-    [roleAssignmentData?.allClusterNames]
+    [roleAssignmentData?.allClusterNames, roleAssignmentFormData.scope.kind]
   )
 
   const onChangeScopeValues = useCallback((values: string[]) => {
