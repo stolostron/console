@@ -50,6 +50,11 @@ export const controlData = (isLocalCluster, handleModalToggle, t) => {
       active: false,
     },
     {
+      id: 'localHubName',
+      type: 'hidden',
+      active: 'local-cluster',
+    },
+    {
       name: t('creation.app.name'),
       tooltip: t('tooltip.creation.app.name'),
       id: 'name',
