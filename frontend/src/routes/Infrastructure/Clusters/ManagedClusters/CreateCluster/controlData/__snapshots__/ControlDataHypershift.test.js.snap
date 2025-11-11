@@ -20,6 +20,11 @@ exports[`Cluster creation control data for Hypershift generates correctly 1`] = 
     "type": "reviewinfo",
   },
   {
+    "active": "local-cluster",
+    "id": "localHubName",
+    "type": "hidden",
+  },
+  {
     "available": [],
     "footer": <CreateCredentialModal
       handleModalToggle={[MockFunction]}
@@ -186,6 +191,11 @@ exports[`Cluster creation control data for Hypershift generates correctly for MC
     "id": "controlplane",
     "name": "Control plane type",
     "type": "reviewinfo",
+  },
+  {
+    "active": "local-cluster",
+    "id": "localHubName",
+    "type": "hidden",
   },
   {
     "available": [],
