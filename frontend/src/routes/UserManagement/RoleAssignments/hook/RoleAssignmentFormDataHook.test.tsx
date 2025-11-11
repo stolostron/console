@@ -169,19 +169,54 @@ describe('useRoleAssignmentFormData', () => {
     })
 
     it('should change scope kind to all', () => {
+      // Arrange
       const { result } = renderHook(() => useRoleAssignmentFormData())
-
       act(() => {
         result.current.onChangeScopeKind('specific')
       })
 
-      expect(result.current.roleAssignmentFormData.scope.kind).toBe('specific')
-
+      // Act
       act(() => {
         result.current.onChangeScopeKind('all')
       })
 
+      // Assert
       expect(result.current.roleAssignmentFormData.scope.kind).toBe('all')
+    })
+
+    it("shouldn't change scope kind to all", () => {
+      // Arrange
+      const { result } = renderHook(() => useRoleAssignmentFormData())
+      act(() => {
+        result.current.onChangeScopeNamespaces(['a', 'b', 'c'])
+      })
+
+      // Act
+      act(() => {
+        result.current.onChangeScopeKind('all')
+      })
+
+      // Assert
+      expect(result.current.roleAssignmentFormData.scope.namespaces).toStrictEqual(['a', 'b', 'c'])
+    })
+
+    it("shouldn't change scope kind to specific", () => {
+      // Arrange
+      const { result } = renderHook(() => useRoleAssignmentFormData())
+      act(() => {
+        result.current.onChangeScopeKind('specific')
+      })
+      act(() => {
+        result.current.onChangeScopeNamespaces(['a', 'b', 'c'])
+      })
+
+      // Act
+      act(() => {
+        result.current.onChangeScopeKind('specific')
+      })
+
+      // Assert
+      expect(result.current.roleAssignmentFormData.scope.namespaces).toStrictEqual(['a', 'b', 'c'])
     })
 
     it('should change scope cluster names', () => {
