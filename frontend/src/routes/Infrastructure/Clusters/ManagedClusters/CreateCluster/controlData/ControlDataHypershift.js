@@ -32,6 +32,11 @@ export const getControlDataHypershift = (
       active: 'Hosted',
       type: 'reviewinfo',
     },
+    {
+      id: 'localHubName',
+      type: 'hidden',
+      active: 'local-cluster',
+    },
     /////////////////////// ACM Credentials  /////////////////////////////////////
     {
       name: t('creation.ocp.cloud.connection'),
