@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useHubClusterName } from './useHubClusterName'
-import { FleetK8sResourceCommon, FleetWatchK8sResource } from '../types'
+import { FleetK8sResourceCommon, FleetWatchK8sResource, FleetWatchK8sResult } from '../types'
 import {
   consoleFetchJSON,
   useK8sModel,
@@ -50,7 +50,7 @@ import { useDeepCompareMemoize } from '../internal/hooks/useDeepCompareMemoize'
  */
 export function useFleetK8sWatchResource<R extends FleetK8sResourceCommon | FleetK8sResourceCommon[]>(
   initResource: FleetWatchK8sResource | null
-): WatchK8sResult<R> | [undefined, boolean, any] {
+): FleetWatchK8sResult<R> {
   const [hubClusterName, hubClusterNameLoaded] = useHubClusterName()
 
   const memoizedResource = useDeepCompareMemoize(initResource, true)
