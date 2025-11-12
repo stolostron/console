@@ -119,7 +119,7 @@ describe('acmResourceRouteHandler', () => {
         cluster: 'test-cluster',
       })
       expect(result).toBe(
-        '/multicloud/applications/details/app-namespace/my-app/overview?apiVersion=application.app.k8s.io&cluster=test-cluster'
+        '/multicloud/applications/details/app-namespace/my-app/details?apiVersion=application.app.k8s.io&cluster=test-cluster'
       )
     })
 
@@ -145,7 +145,7 @@ describe('acmResourceRouteHandler', () => {
         cluster: 'argo-cluster',
       })
       expect(result).toBe(
-        '/multicloud/applications/details/argo-namespace/argo-app/overview?apiVersion=application.argoproj.io&cluster=argo-cluster'
+        '/multicloud/applications/details/argo-namespace/argo-app/details?apiVersion=application.argoproj.io&cluster=argo-cluster'
       )
     })
 
@@ -170,7 +170,7 @@ describe('acmResourceRouteHandler', () => {
         name: 'my-app',
       })
       expect(result).toBe(
-        '/multicloud/applications/details/resource-namespace/my-app/overview?apiVersion=application.app.k8s.io&cluster=test-cluster'
+        '/multicloud/applications/details/resource-namespace/my-app/details?apiVersion=application.app.k8s.io&cluster=test-cluster'
       )
     })
 
@@ -209,7 +209,7 @@ describe('acmResourceRouteHandler', () => {
         cluster: 'resource-cluster',
       })
       expect(result).toBe(
-        '/multicloud/applications/details/app-namespace/my-app/overview?apiVersion=application.app.k8s.io&cluster=resource-cluster'
+        '/multicloud/applications/details/app-namespace/my-app/details?apiVersion=application.app.k8s.io&cluster=resource-cluster'
       )
     })
   })
@@ -368,7 +368,7 @@ describe('acmResourceRouteHandler', () => {
         cluster: 'param-cluster',
       })
       expect(result).toBe(
-        '/multicloud/applications/details/param-namespace/param-name/overview?apiVersion=application.app.k8s.io&cluster=param-cluster'
+        '/multicloud/applications/details/param-namespace/param-name/details?apiVersion=application.app.k8s.io&cluster=param-cluster'
       )
     })
 
@@ -397,7 +397,7 @@ describe('acmResourceRouteHandler', () => {
         cluster: 'resource-cluster',
       })
       expect(result).toBe(
-        '/multicloud/applications/details/resource-namespace/resource-name/overview?apiVersion=application.app.k8s.io&cluster=resource-cluster'
+        '/multicloud/applications/details/resource-namespace/resource-name/details?apiVersion=application.app.k8s.io&cluster=resource-cluster'
       )
     })
   })
