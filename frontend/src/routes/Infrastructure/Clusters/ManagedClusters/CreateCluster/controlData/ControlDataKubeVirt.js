@@ -121,6 +121,11 @@ export const getControlDataKubeVirt = (
       active: true,
     },
     {
+      id: 'localHubName',
+      type: 'hidden',
+      active: 'local-cluster',
+    },
+    {
       name: t('creation.ocp.name'),
       tooltip: t('tooltip.creation.ocp.name'),
       placeholder: t('creation.ocp.name.placeholder'),

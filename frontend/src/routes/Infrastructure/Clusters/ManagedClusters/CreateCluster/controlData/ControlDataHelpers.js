@@ -452,6 +452,11 @@ export const clusterDetailsControlData = (t) => {
       type: 'hidden',
       active: false,
     },
+    {
+      id: 'localHubName',
+      type: 'hidden',
+      active: 'local-cluster',
+    },
   ]
 }
 
