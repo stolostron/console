@@ -80,7 +80,7 @@
     "fuse.js": "6.6.2",
     "get-value": "3.0.1",
     "graphql": "16.9.0",
-    "handlebars": "4.7.7",
+    "handlebars": "4.7.8",
     "highlight.js": "^11.9.0",
     "i18next": "21.7.1",
     "i18next-browser-languagedetector": "6.1.4",
