@@ -58,9 +58,9 @@ export function requestAggregatedStatuses(
       if (item.transform) {
         incFilterCounts(filterCounts, 'type', item.transform[TransformColumns.type] as string[])
         incFilterCounts(filterCounts, 'cluster', item.transform[TransformColumns.clusters] as string[])
-        incStatusCounts(filterCounts, 'podStatuses', item as unknown as ICompressedResource, AppColumns.deployed)
         incStatusCounts(filterCounts, 'healthStatus', item as unknown as ICompressedResource, AppColumns.health)
         incStatusCounts(filterCounts, 'syncStatus', item as unknown as ICompressedResource, AppColumns.synced)
+        incStatusCounts(filterCounts, 'podStatuses', item as unknown as ICompressedResource, AppColumns.deployed)
       }
     })
 
@@ -92,13 +92,17 @@ function incFilterCounts(mapmap: FilterCounts, id: string, keys: string[]) {
 function incStatusCounts(mapmap: FilterCounts, id: string, item: ICompressedResource, index: AppColumns) {
   let map = mapmap[id]
   if (!map) map = mapmap[id] = {}
-  const statuses = (item.transform[TransformColumns.statuses] as ApplicationStatusMap[])[0]
-  if (Object.keys(statuses).length) {
-    const key = getStatusFilterKey(item, index)
-    if (key in map) {
-      map[key]++
-    } else {
-      map[key] = 1
+  const type = (item.transform[TransformColumns.type] as string[])[0]
+  // don't count health or sync for non-argo apps
+  if ((index === AppColumns.health || index === AppColumns.synced) && (type === 'appset' || type === 'argo')) {
+    const statuses = (item.transform[TransformColumns.statuses] as ApplicationStatusMap[])[0]
+    if (Object.keys(statuses).length) {
+      const key = getStatusFilterKey(item, index)
+      if (key in map) {
+        map[key]++
+      } else {
+        map[key] = 1
+      }
     }
   }
 }
