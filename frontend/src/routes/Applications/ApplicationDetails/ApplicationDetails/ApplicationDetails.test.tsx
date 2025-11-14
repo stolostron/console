@@ -36,7 +36,7 @@ import {
   SubscriptionKind,
 } from '../../../../resources'
 import { ApplicationDataType, ApplicationDetailsContext } from '../ApplicationDetails'
-import { ApplicationOverviewPageContent } from './ApplicationOverview'
+import { ApplicationDetailsPageContent } from './ApplicationDetails'
 
 //////////////// Mock Data /////////////////
 
@@ -552,7 +552,7 @@ describe('Overview Tab', () => {
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={context} />}>
-              <Route path="*" element={<ApplicationOverviewPageContent />} />
+              <Route path="*" element={<ApplicationDetailsPageContent />} />
             </Route>
           </Routes>
         </MemoryRouter>
@@ -585,7 +585,7 @@ describe('Overview Tab', () => {
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={context} />}>
-              <Route path="*" element={<ApplicationOverviewPageContent />} />
+              <Route path="*" element={<ApplicationDetailsPageContent />} />
             </Route>
           </Routes>
         </MemoryRouter>
@@ -618,7 +618,7 @@ describe('Overview Tab', () => {
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={context} />}>
-              <Route path="*" element={<ApplicationOverviewPageContent />} />
+              <Route path="*" element={<ApplicationDetailsPageContent />} />
             </Route>
           </Routes>
         </MemoryRouter>
@@ -687,7 +687,7 @@ describe('Overview Tab', () => {
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={context} />}>
-              <Route path="*" element={<ApplicationOverviewPageContent />} />
+              <Route path="*" element={<ApplicationDetailsPageContent />} />
             </Route>
           </Routes>
         </MemoryRouter>
@@ -762,7 +762,7 @@ describe('Overview Tab', () => {
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={context} />}>
-              <Route path="*" element={<ApplicationOverviewPageContent />} />
+              <Route path="*" element={<ApplicationDetailsPageContent />} />
             </Route>
           </Routes>
         </MemoryRouter>
@@ -838,7 +838,7 @@ describe('Overview Tab', () => {
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={context} />}>
-              <Route path="*" element={<ApplicationOverviewPageContent />} />
+              <Route path="*" element={<ApplicationDetailsPageContent />} />
             </Route>
           </Routes>
         </MemoryRouter>
@@ -919,7 +919,7 @@ describe('Overview Tab', () => {
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={context} />}>
-              <Route path="*" element={<ApplicationOverviewPageContent />} />
+              <Route path="*" element={<ApplicationDetailsPageContent />} />
             </Route>
           </Routes>
         </MemoryRouter>
@@ -1008,7 +1008,7 @@ describe('Overview Tab', () => {
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={context} />}>
-              <Route path="*" element={<ApplicationOverviewPageContent />} />
+              <Route path="*" element={<ApplicationDetailsPageContent />} />
             </Route>
           </Routes>
         </MemoryRouter>
@@ -1068,7 +1068,7 @@ describe('Overview Tab', () => {
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={context} />}>
-              <Route path="*" element={<ApplicationOverviewPageContent />} />
+              <Route path="*" element={<ApplicationDetailsPageContent />} />
             </Route>
           </Routes>
         </MemoryRouter>
@@ -1134,7 +1134,7 @@ describe('Overview Tab', () => {
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={context} />}>
-              <Route path="*" element={<ApplicationOverviewPageContent />} />
+              <Route path="*" element={<ApplicationDetailsPageContent />} />
             </Route>
           </Routes>
         </MemoryRouter>
@@ -1178,7 +1178,7 @@ describe('Overview Tab RBAC', () => {
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={context} />}>
-              <Route path="*" element={<ApplicationOverviewPageContent />} />
+              <Route path="*" element={<ApplicationDetailsPageContent />} />
             </Route>
           </Routes>
         </MemoryRouter>
@@ -1220,7 +1220,7 @@ describe('Overview Tab RBAC', () => {
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={context} />}>
-              <Route path="*" element={<ApplicationOverviewPageContent />} />
+              <Route path="*" element={<ApplicationDetailsPageContent />} />
             </Route>
           </Routes>
         </MemoryRouter>
@@ -1261,7 +1261,7 @@ describe('Overview Tab RBAC', () => {
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={context} />}>
-              <Route path="*" element={<ApplicationOverviewPageContent />} />
+              <Route path="*" element={<ApplicationDetailsPageContent />} />
             </Route>
           </Routes>
         </MemoryRouter>

@@ -58,6 +58,7 @@ import { getTopology } from './ApplicationTopology/model/topology'
 import { getApplicationData } from './ApplicationTopology/model/topologyUtils'
 import { useLocalHubName } from '../../../hooks/use-local-hub'
 import { getResourceStatuses } from './ApplicationTopology/model/computeStatuses'
+import { LoadingPage } from '../../../components/LoadingPage'
 
 export const ApplicationContext = createContext<{
   readonly actions: null | ReactNode
@@ -479,6 +480,9 @@ export default function ApplicationDetailsPage() {
     [activeChannel, allChannels, applicationData]
   )
 
+  if (!applicationData) {
+    return <LoadingPage />
+  }
   return (
     <AcmPage
       hasDrawer
@@ -491,11 +495,11 @@ export default function ApplicationDetailsPage() {
           title={name}
           navigation={
             <AcmSecondaryNav>
-              <AcmSecondaryNavItem isActive={location.pathname === overviewPath}>
-                <Link to={{ pathname: overviewPath, search }}>{t('Overview')}</Link>
-              </AcmSecondaryNavItem>
               <AcmSecondaryNavItem isActive={location.pathname === topologyPath}>
                 <Link to={{ pathname: topologyPath, search }}>{t('Topology')}</Link>
+              </AcmSecondaryNavItem>
+              <AcmSecondaryNavItem isActive={location.pathname === overviewPath}>
+                <Link to={{ pathname: overviewPath, search }}>{t('Details')}</Link>
               </AcmSecondaryNavItem>
             </AcmSecondaryNav>
           }

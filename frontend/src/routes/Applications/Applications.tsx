@@ -9,7 +9,7 @@ import { EditArgoApplicationSet } from './CreateArgoApplication/EditArgoApplicat
 import { CreateApplicationArgoPullModel } from './CreateArgoApplication/CreateApplicationArgoPullModel'
 import CreateSubscriptionApplicationPage from './CreateSubscriptionApplication/SubscriptionApplication'
 import { MatchType, NavigationPath, SubRoutesRedirect, createRoutePathFunction } from '../../NavigationPath'
-import { ApplicationOverviewPageContent } from './ApplicationDetails/ApplicationOverview/ApplicationOverview'
+import { ApplicationDetailsPageContent } from './ApplicationDetails/ApplicationDetails/ApplicationDetails'
 import { ApplicationTopologyPageContent } from './ApplicationDetails/ApplicationTopology/ApplicationTopology'
 
 const applicationsChildPath = createRoutePathFunction(NavigationPath.applications)
@@ -33,28 +33,28 @@ export default function Applications() {
       />
       <Route element={<ApplicationsDetailsPage />}>
         <Route
-          path={applicationsChildPath(NavigationPath.applicationOverview)}
-          element={<ApplicationOverviewPageContent />}
-        />
-        <Route
           path={applicationsChildPath(NavigationPath.applicationTopology)}
           element={<ApplicationTopologyPageContent />}
         />
+        <Route
+          path={applicationsChildPath(NavigationPath.applicationOverview)}
+          element={<ApplicationDetailsPageContent />}
+        />
       </Route>
-      <Route
-        path={applicationsChildPath(NavigationPath.applicationTopology, MatchType.SubRoutes)}
-        element={
-          <SubRoutesRedirect
-            matchPath={NavigationPath.applicationTopology}
-            targetPath={NavigationPath.applicationTopology}
-          />
-        }
-      />
       <Route
         path={applicationsChildPath(NavigationPath.applicationDetails, MatchType.SubRoutes)}
         element={
           <SubRoutesRedirect
             matchPath={NavigationPath.applicationDetails}
+            targetPath={NavigationPath.applicationTopology}
+          />
+        }
+      />
+      <Route
+        path={applicationsChildPath(NavigationPath.applicationOverview, MatchType.SubRoutes)}
+        element={
+          <SubRoutesRedirect
+            matchPath={NavigationPath.applicationOverview}
             targetPath={NavigationPath.applicationOverview}
           />
         }

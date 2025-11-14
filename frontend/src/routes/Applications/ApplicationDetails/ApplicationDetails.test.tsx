@@ -384,8 +384,8 @@ describe('Applications Page', () => {
   })
 
   test('Render ApplicationDetailsPage', async () => {
-    expect(screen.getByText('Overview')).toBeTruthy()
     expect(screen.getByText('Topology')).toBeTruthy()
+    expect(screen.getByText('Details')).toBeTruthy()
     await waitForText('Actions', true)
     userEvent.click(screen.getByText('Actions'))
     userEvent.click(
