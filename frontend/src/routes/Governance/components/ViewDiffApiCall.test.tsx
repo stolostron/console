@@ -179,7 +179,7 @@ const item: ResultsTableData = {
   remediationAction: 'inform',
 }
 
-describe('ViewDiffApCall components test', () => {
+describe('ViewDiffApiCall components test', () => {
   beforeEach(() => {
     // Reset the mock before each test
     mockUuidV4.mockReset()
@@ -187,13 +187,15 @@ describe('ViewDiffApCall components test', () => {
     nockIgnoreApiPaths()
   })
   test('Should render ViewDiffApCall correctly', async () => {
-    const getResourceNock = nockGet(getResourceRequest, getResourceResponse)
+    const getResourceNockMount = nockGet(getResourceRequest, getResourceResponse)
+    const getResourceNockModal = nockGet(getResourceRequest, getResourceResponse)
     render(<ViewDiffApiCall item={item} />)
 
-    await waitForNocks([getResourceNock])
+    await waitForNocks([getResourceNockMount])
     await waitForText('View diff')
     const viewDiffLink = screen.getByText('View diff')
     userEvent.click(viewDiffLink)
+    await waitForNocks([getResourceNockModal])
     await waitForText('policy-set-with-1-placement-policy-1')
     await waitForText('Difference for the Namespace ns-1')
     await waitForText('Difference for the ConfigMap configmap-1')
@@ -203,5 +205,56 @@ describe('ViewDiffApCall components test', () => {
     const modal = screen.getByRole('dialog')
     expect(modal).toHaveTextContent('--- testing : existing')
     expect(modal).toHaveTextContent('+++ configmap-1 : updated')
+  })
+
+  test('Should not render ViewDiffApiCall button when no diff data is available', async () => {
+    const getResourceRequestNoDiff = {
+      ...getResourceRequest,
+      metadata: {
+        ...getResourceRequest.metadata,
+        name: 'MOCKED_UUID_NO_DIFF',
+      },
+    }
+
+    const getResourceResponseNoDiff = {
+      ...getResourceResponse,
+      metadata: {
+        ...getResourceResponse.metadata,
+        name: 'MOCKED_UUID_NO_DIFF',
+      },
+      status: {
+        ...getResourceResponse.status,
+        result: {
+          ...getResourceResponse.status.result,
+          status: {
+            compliant: 'NonCompliant',
+            relatedObjects: [
+              {
+                compliant: 'NonCompliant',
+                object: {
+                  apiVersion: 'v1',
+                  kind: 'ConfigMap',
+                  metadata: {
+                    name: '-',
+                    namespace: 'open-cluster-management',
+                  },
+                },
+                reason: 'Resource found but does not match',
+              },
+            ],
+          },
+        },
+      },
+    }
+
+    mockUuidV4.mockReturnValue('MOCKED_UUID_NO_DIFF')
+    const getResourceNock = nockGet(getResourceRequestNoDiff, getResourceResponseNoDiff)
+    render(<ViewDiffApiCall item={item} />)
+
+    // Wait for skeleton to appear during loading
+    await waitForText('Loading diff')
+
+    await waitForNocks([getResourceNock])
+    expect(screen.queryByText('View diff')).not.toBeInTheDocument()
   })
 })

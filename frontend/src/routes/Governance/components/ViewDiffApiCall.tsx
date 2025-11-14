@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { fireManagedClusterView } from '../../../resources'
 import { ResultsTableData } from '../policies/policy-details/PolicyDetailsResults'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -12,9 +12,10 @@ import { CodeBlock } from './CodeBlock'
 export function ViewDiffApiCall({ item }: Readonly<{ item: ResultsTableData }>) {
   const { templateName, apiVersion, kind, cluster } = item
   const [templateErr, setTemplateErr] = useState<string | undefined>()
-  const [isFetching, setIsFetching] = useState<boolean>(false)
+  const [isFetching, setIsFetching] = useState<boolean>(true)
   const [relatedObjs, setRelatedObjs] = useState<any[]>()
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const hasInitialFetch = useRef<boolean>(false)
 
   const { t } = useTranslation()
   const handleModalToggle = () => {
@@ -23,9 +24,8 @@ export function ViewDiffApiCall({ item }: Readonly<{ item: ResultsTableData }>) 
   useEffect(() => {
     let ignore = false
 
-    if (isModalOpen) {
+    if (isModalOpen || !hasInitialFetch.current) {
       setIsFetching(true)
-      setRelatedObjs(undefined)
       setTemplateErr(undefined)
 
       fireManagedClusterView(cluster, kind, apiVersion, templateName, cluster)
@@ -39,6 +39,7 @@ export function ViewDiffApiCall({ item }: Readonly<{ item: ResultsTableData }>) 
           } else {
             setRelatedObjs(viewResponse.result.status?.relatedObjects)
           }
+          hasInitialFetch.current = true
         })
         .catch((err) => {
           if (ignore) {
@@ -62,13 +63,27 @@ export function ViewDiffApiCall({ item }: Readonly<{ item: ResultsTableData }>) 
     }
   }, [isModalOpen, kind, apiVersion, templateName, cluster, t])
 
+  const isAllDiffEmpty = relatedObjs?.every((obj: any) => !obj.properties?.diff)
+  const diffVisibility = isAllDiffEmpty ? 'hidden' : 'visible'
+  const separatorVisibility = isAllDiffEmpty || isFetching ? 'hidden' : 'visible'
+  const buttonWidth = '4em'
+
   return (
     <>
-      <span> {'-'} </span>
+      <span style={{ visibility: separatorVisibility }}> {'-'} </span>
       <div style={{ display: 'inline-block' }}>
-        <Button variant="link" isInline onClick={handleModalToggle} width={50}>
-          {t('View diff')}
-        </Button>
+        {isFetching ? (
+          <Skeleton width={buttonWidth} height="0.8em" screenreaderText={t('Loading diff')} />
+        ) : (
+          <Button
+            variant="link"
+            isInline
+            onClick={handleModalToggle}
+            style={{ visibility: diffVisibility, width: buttonWidth }}
+          >
+            {t('View diff')}
+          </Button>
+        )}
       </div>
 
       <Modal

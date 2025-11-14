@@ -1808,6 +1808,7 @@
   "Limit the number of clusters selected": "Limit the number of clusters selected",
   "Limits": "Limits",
   "Loading": "Loading",
+  "Loading diff": "Loading diff",
   "Loading etcd storage classes...": "Loading etcd storage classes...",
   "Loading more...": "Loading more...",
   "Loading namespaces...": "Loading namespaces...",
