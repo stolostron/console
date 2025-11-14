@@ -31,6 +31,23 @@ import {
 } from '../../resources'
 import { deleteResource, getISOStringTimestamp } from '../../resources/utils'
 import AcmTimestamp from '../../lib/AcmTimestamp'
+import { FleetK8sResourceCommon, useFleetK8sWatchResource } from '@stolostron/multicluster-sdk'
+
+function ConfigMapDisplayComponent() {
+  const [result] = useFleetK8sWatchResource<FleetK8sResourceCommon & { data: { value: string } }>({
+    cluster: 'virt-spoke',
+    groupVersionKind: { kind: 'ConfigMap', version: 'v1' },
+    name: 'kevin-test',
+    namespace: 'default',
+  })
+  const value = result?.data?.value
+  return (
+    <dl>
+      <dt>Secret Value</dt>
+      <dd>{value}</dd>
+    </dl>
+  )
+}
 
 export default function CredentialsPage() {
   const { secretsState, discoveryConfigState } = useSharedAtoms()
@@ -51,6 +68,9 @@ export default function CredentialsPage() {
     <AcmPage header={<AcmPageHeader title={t('Credentials')} />}>
       <AcmPageContent id="credentials">
         <PageSection>
+          <ConfigMapDisplayComponent />
+          <ConfigMapDisplayComponent />
+          <ConfigMapDisplayComponent />
           <CredentialsTable
             providerConnections={providerConnections}
             discoveryConfigs={discoveryConfigs}
