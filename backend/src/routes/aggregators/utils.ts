@@ -253,52 +253,78 @@ export function computeDeployedPodStatuses(
         appStatuses.health[StatusColumn.counts][ScoreColumn.healthy] > 0 &&
         appStatuses.synced[StatusColumn.counts][ScoreColumn.healthy] > 0
       ) {
-        if (computepDeployedStatus(appStatuses.deployed, deploymentMap.get(appUid))) {
-          if (computepDeployedStatus(appStatuses.deployed, replicaSetMap.get(appUid))) {
-            const pods = podMap.get(appUid)
-            if (pods) {
-              computePodStatus(appStatuses.deployed, pods)
-            } else {
-              const replicaSet = replicaSetMap.get(appUid)?.[0]
-              if (replicaSet) {
-                appStatuses.deployed[StatusColumn.counts][ScoreColumn.warning] += Number(replicaSet.desired)
-              } else {
-                appStatuses.deployed[StatusColumn.counts] = Array(ScoreColumnSize).fill(0) as number[]
+        // compute pod statuses
+        computePodStatus(appStatuses.deployed, podMap.get(appUid))
+        const replicaItems = replicaSetMap.get(appUid)
+        const deploymentItems = deploymentMap.get(appUid)
+
+        // calculate current pod count from deployed status
+        const currentPodCount =
+          appStatuses.deployed[StatusColumn.counts][ScoreColumn.danger] +
+          appStatuses.deployed[StatusColumn.counts][ScoreColumn.warning] +
+          appStatuses.deployed[StatusColumn.counts][ScoreColumn.healthy] +
+          appStatuses.deployed[StatusColumn.counts][ScoreColumn.progress]
+
+        // compute desired pod count
+        let desiredPodCount = 1
+        if (replicaItems && replicaItems.length > 0) {
+          desiredPodCount = replicaItems.reduce((acc, item) => {
+            const desired = Number(item.desired ?? 1)
+            return acc * desired
+          }, 1)
+        }
+        if (deploymentItems && deploymentItems.length > 0) {
+          desiredPodCount *= deploymentItems.reduce((acc, item) => {
+            const desired = Number(item.desired ?? 1)
+            return acc * desired
+          }, 1)
+        }
+
+        // handle missing pods
+        const deployed = appStatuses.deployed
+        if (currentPodCount < desiredPodCount) {
+          let missingCount = desiredPodCount - currentPodCount
+
+          // helper function to process items
+          const processItems = (items: ISearchResource[]) => {
+            for (const item of items) {
+              if (missingCount <= 0) break
+
+              const available = Number(item.available ?? item.current ?? 0)
+              const desired = Number(item.desired ?? 0)
+
+              if (available === desired) {
+                continue
+              } else if (available < desired || desired <= 0) {
+                deployed[StatusColumn.counts][ScoreColumn.progress]++
+                extractMessages(deployed, item)
+                missingCount--
+              } else if (item.desired === undefined || available === 0) {
+                deployed[StatusColumn.counts][ScoreColumn.danger]++
+                extractMessages(deployed, item)
+                missingCount--
               }
-              appStatuses.deployed[StatusColumn.messages] = []
             }
           }
+
+          // process replicaItems and deploymentItems
+          if (replicaItems && replicaItems.length > 0) {
+            processItems(replicaItems)
+          }
+          if (deploymentItems && deploymentItems.length > 0) {
+            processItems(deploymentItems)
+          }
+          // if there are still missing pods, add them to the danger count
+          if (missingCount > 0) {
+            deployed[StatusColumn.counts][ScoreColumn.warning] += missingCount
+            deployed[StatusColumn.messages] = [] //[{ key: 'Status', value: `Missing ${missingCount} pods` }]
+          }
+        } else if (desiredPodCount === 0) {
+          appStatuses.deployed[StatusColumn.counts] = Array(ScoreColumnSize).fill(0) as number[]
         }
       }
     }
   })
-}
-
-export function computepDeployedStatus(deployed: ApplicationStatusEntry, items: ISearchResource[]) {
-  let allHealthy = true
-  if (items && items.length > 0) {
-    items.forEach((item) => {
-      const available = Number(item.available || item.current || 0)
-      const desired = Number(item.desired ?? 0)
-
-      if (available === desired) {
-        // nothing--drop through to success
-      } else if (available < desired) {
-        deployed[StatusColumn.counts][ScoreColumn.progress]++
-        extractMessages(deployed, item)
-        allHealthy = false
-      } else if (desired <= 0) {
-        deployed[StatusColumn.counts][ScoreColumn.progress]++
-        extractMessages(deployed, item)
-        allHealthy = false
-      } else if (!desired && available === 0) {
-        deployed[StatusColumn.counts][ScoreColumn.danger]++
-        extractMessages(deployed, item)
-        allHealthy = false
-      }
-    })
-  }
-  return allHealthy
 }
 
 export function computePodStatuses(
@@ -306,15 +332,21 @@ export function computePodStatuses(
   app2AppsetMap: Record<string, ApplicationStatuses>
 ) {
   const podMap = createResourceMap(related, 'Pod')
-  Object.keys(app2AppsetMap).forEach((appUid) => {
-    const appStatuses = app2AppsetMap[appUid]
-    if (appStatuses) {
-      const pods = podMap.get(appUid)
-      if (pods) {
-        computePodStatus(appStatuses.deployed, pods)
+  if (podMap) {
+    const keys = Object.keys(app2AppsetMap)
+    keys.forEach((appUid) => {
+      const appStatuses = app2AppsetMap[appUid]
+      if (appStatuses) {
+        const pods = podMap.get(appUid)
+        if (pods) {
+          computePodStatus(appStatuses.deployed, pods)
+        }
       }
-    }
-  })
+    })
+    return keys.length
+  } else {
+    return 0
+  }
 }
 
 function computePodStatus(deployed: ApplicationStatusEntry, pods: ISearchResource[]) {
@@ -378,7 +410,10 @@ export function extractMessages(ase: ApplicationStatusEntry, app: ISearchResourc
   }
   Object.entries(app).forEach((entry: [string, string]) => {
     if (entry[0].startsWith('_') && (entry[0].includes('condition') || entry[0].includes('missing'))) {
-      ase[StatusColumn.messages].push({ key: entry[0], value: entry[1] })
+      // Don't add message if it already exists
+      if (!ase[StatusColumn.messages].some((msg) => msg.key === entry[0])) {
+        ase[StatusColumn.messages].push({ key: entry[0], value: entry[1] })
+      }
     }
   })
 }
