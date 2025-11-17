@@ -633,7 +633,7 @@ export function cacheResource(resource: IResource) {
   cache[uid] = { compressed, eventID }
 
   if (resource.kind === 'ManagedCluster') {
-    if (resource?.metadata?.labels['local-cluster'] === 'true') {
+    if (resource?.metadata?.labels?.['local-cluster'] === 'true') {
       hubClusterName = resource?.metadata?.name
       isHubSelfManaged = true
     }
