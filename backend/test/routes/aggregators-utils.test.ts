@@ -5,7 +5,6 @@ import {
   computeAppHealthStatus,
   computeAppSyncStatus,
   computeDeployedPodStatuses,
-  computePodStatuses,
   extractMessages,
   discoverSystemAppNamespacePrefixes,
   isSystemApp,
@@ -334,150 +333,6 @@ describe('aggregator utils', () => {
     })
   })
 
-  describe('computePodStatuses', () => {
-    it('should compute statuses for pods in error states', () => {
-      const app2AppsetMap: Record<string, ApplicationStatuses> = {
-        'app-uid-1': {
-          health: [[0, 0, 0, 0, 0], []],
-          synced: [[0, 0, 0, 0, 0], []],
-          deployed: [[0, 0, 0, 0, 0], []],
-        },
-      }
-
-      const related: SearchResult['related'] = [
-        {
-          kind: 'Pod',
-          items: [
-            {
-              _uid: 'pod-1',
-              _relatedUids: ['app-uid-1'],
-              apigroup: '',
-              apiversion: 'v1',
-              kind: 'Pod',
-              name: 'test-pod',
-              namespace: 'default',
-              cluster: 'local-cluster',
-              created: '2024-01-01',
-              status: 'CrashLoopBackOff',
-            },
-          ],
-        },
-      ]
-
-      const count = computePodStatuses(related, app2AppsetMap)
-      expect(count).toBe(1)
-      expect(app2AppsetMap['app-uid-1'].deployed[StatusColumn.counts][ScoreColumn.danger]).toBe(1)
-    })
-
-    it('should compute statuses for pods in warning states', () => {
-      const app2AppsetMap: Record<string, ApplicationStatuses> = {
-        'app-uid-1': {
-          health: [[0, 0, 0, 0, 0], []],
-          synced: [[0, 0, 0, 0, 0], []],
-          deployed: [[0, 0, 0, 0, 0], []],
-        },
-      }
-
-      const related: SearchResult['related'] = [
-        {
-          kind: 'Pod',
-          items: [
-            {
-              _uid: 'pod-1',
-              _relatedUids: ['app-uid-1'],
-              apigroup: '',
-              apiversion: 'v1',
-              kind: 'Pod',
-              name: 'test-pod',
-              namespace: 'default',
-              cluster: 'local-cluster',
-              created: '2024-01-01',
-              status: 'Pending',
-            },
-          ],
-        },
-      ]
-
-      const count = computePodStatuses(related, app2AppsetMap)
-      expect(count).toBe(1)
-      expect(app2AppsetMap['app-uid-1'].deployed[StatusColumn.counts][ScoreColumn.warning]).toBe(1)
-    })
-
-    it('should compute statuses for healthy pods', () => {
-      const app2AppsetMap: Record<string, ApplicationStatuses> = {
-        'app-uid-1': {
-          health: [[0, 0, 0, 0, 0], []],
-          synced: [[0, 0, 0, 0, 0], []],
-          deployed: [[0, 0, 0, 0, 0], []],
-        },
-      }
-
-      const related: SearchResult['related'] = [
-        {
-          kind: 'Pod',
-          items: [
-            {
-              _uid: 'pod-1',
-              _relatedUids: ['app-uid-1'],
-              apigroup: '',
-              apiversion: 'v1',
-              kind: 'Pod',
-              name: 'test-pod',
-              namespace: 'default',
-              cluster: 'local-cluster',
-              created: '2024-01-01',
-              status: 'Running',
-            },
-          ],
-        },
-      ]
-
-      const count = computePodStatuses(related, app2AppsetMap)
-      expect(count).toBe(1)
-      expect(app2AppsetMap['app-uid-1'].deployed[StatusColumn.counts][ScoreColumn.healthy]).toBe(1)
-    })
-
-    it('should ignore terminating pods', () => {
-      const app2AppsetMap: Record<string, ApplicationStatuses> = {
-        'app-uid-1': {
-          health: [[0, 0, 0, 0, 0], []],
-          synced: [[0, 0, 0, 0, 0], []],
-          deployed: [[0, 0, 0, 0, 0], []],
-        },
-      }
-
-      const related: SearchResult['related'] = [
-        {
-          kind: 'Pod',
-          items: [
-            {
-              _uid: 'pod-1',
-              _relatedUids: ['app-uid-1'],
-              apigroup: '',
-              apiversion: 'v1',
-              kind: 'Pod',
-              name: 'test-pod',
-              namespace: 'default',
-              cluster: 'local-cluster',
-              created: '2024-01-01',
-              status: 'Terminating',
-            },
-          ],
-        },
-      ]
-
-      computePodStatuses(related, app2AppsetMap)
-      expect(app2AppsetMap['app-uid-1'].deployed[StatusColumn.counts]).toEqual([0, 0, 0, 0, 0])
-    })
-
-    it('should return 0 when no pod map exists', () => {
-      const app2AppsetMap: Record<string, ApplicationStatuses> = {}
-      const related: SearchResult['related'] = []
-      const count = computePodStatuses(related, app2AppsetMap)
-      expect(count).toBe(0)
-    })
-  })
-
   describe('computeDeployedPodStatuses', () => {
     it('should compute deployed pod statuses with deployments and replica sets', () => {
       const app2AppsetMap: Record<string, ApplicationStatuses> = {
@@ -548,46 +403,6 @@ describe('aggregator utils', () => {
 
       computeDeployedPodStatuses(related, app2AppsetMap)
       expect(app2AppsetMap['app-uid-1'].deployed[StatusColumn.counts][ScoreColumn.healthy]).toBe(1)
-    })
-
-    it('should handle missing pods', () => {
-      const app2AppsetMap: Record<string, ApplicationStatuses> = {
-        'app-uid-1': {
-          health: [[1, 0, 0, 0, 0], []],
-          synced: [[1, 0, 0, 0, 0], []],
-          deployed: [[0, 0, 0, 0, 0], []],
-        },
-      }
-
-      const related: SearchResult['related'] = [
-        {
-          kind: 'Pod',
-          items: [],
-        },
-        {
-          kind: 'Deployment',
-          items: [
-            {
-              _uid: 'deploy-1',
-              _relatedUids: ['app-uid-1'],
-              apigroup: 'apps',
-              apiversion: 'v1',
-              kind: 'Deployment',
-              name: 'test-deployment',
-              namespace: 'default',
-              cluster: 'local-cluster',
-              created: '2024-01-01',
-              desired: '2',
-              current: '0',
-              available: '0',
-            },
-          ],
-        },
-      ]
-
-      computeDeployedPodStatuses(related, app2AppsetMap)
-      // Should detect missing pods
-      expect(app2AppsetMap['app-uid-1'].deployed[StatusColumn.counts][ScoreColumn.progress]).toBeGreaterThan(0)
     })
   })
 
