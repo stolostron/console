@@ -11,7 +11,7 @@ import {
   ScoreColumnSize,
   SEARCH_QUERY_LIMIT,
 } from './applications'
-import { computePodStatuses } from './utils'
+import { computeDeployedPodStatuses } from './utils'
 import {
   transform,
   getClusterMap,
@@ -319,7 +319,7 @@ export function createOCPStatusMap(ocpApps: ISearchResource[], relatedResources:
   })
 
   // compute pod statuses
-  computePodStatuses(relatedResources, app2AppsetMap)
+  computeDeployedPodStatuses(relatedResources, app2AppsetMap, true)
 
   return ocpClusterStatusMap
 }

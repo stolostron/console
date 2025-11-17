@@ -306,10 +306,11 @@ export function processSearchResults(searchResults: OCPFluxSearchResult): Resour
   // Start with direct items
   let allItems: ResourceItem[] = items.slice()
 
-  // Append all related items to the main array
+  // Append all related items to the main array, filtering out Deployments which are other ocp apps
   related.forEach((relatedGroup) => {
     if (relatedGroup.items) {
-      allItems = allItems.concat(relatedGroup.items)
+      const filteredItems = relatedGroup.items.filter((item) => item.kind !== 'Deployment')
+      allItems = allItems.concat(filteredItems)
     }
   })
 

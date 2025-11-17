@@ -240,7 +240,8 @@ function createResourceMap(related: SearchResult['related'], kind: string): Map<
 
 export function computeDeployedPodStatuses(
   related: SearchResult['related'],
-  app2AppsetMap: Record<string, ApplicationStatuses>
+  app2AppsetMap: Record<string, ApplicationStatuses>,
+  ignoreHealthCheck?: boolean
 ) {
   // create maps for deployment and replica set
   const deploymentMap = createResourceMap(related, 'Deployment')
@@ -250,8 +251,9 @@ export function computeDeployedPodStatuses(
     const appStatuses = app2AppsetMap[appUid]
     if (appStatuses) {
       if (
-        appStatuses.health[StatusColumn.counts][ScoreColumn.healthy] > 0 &&
-        appStatuses.synced[StatusColumn.counts][ScoreColumn.healthy] > 0
+        (appStatuses.health[StatusColumn.counts][ScoreColumn.healthy] > 0 &&
+          appStatuses.synced[StatusColumn.counts][ScoreColumn.healthy] > 0) ||
+        ignoreHealthCheck
       ) {
         // compute pod statuses
         computePodStatus(appStatuses.deployed, podMap.get(appUid))
@@ -266,12 +268,12 @@ export function computeDeployedPodStatuses(
           appStatuses.deployed[StatusColumn.counts][ScoreColumn.progress]
 
         // compute desired pod count
-        let desiredPodCount = 1
+        let desiredPodCount = 0
         if (replicaItems && replicaItems.length > 0) {
           desiredPodCount = replicaItems.reduce((acc, item) => {
-            const desired = Number(item.desired ?? 1)
-            return acc * desired
-          }, 1)
+            const desired = Number(item.desired ?? 0)
+            return acc + desired
+          }, 0)
         }
         if (deploymentItems && deploymentItems.length > 0) {
           desiredPodCount *= deploymentItems.reduce((acc, item) => {
@@ -319,34 +321,12 @@ export function computeDeployedPodStatuses(
             deployed[StatusColumn.counts][ScoreColumn.warning] += missingCount
             deployed[StatusColumn.messages] = [] //[{ key: 'Status', value: `Missing ${missingCount} pods` }]
           }
-        } else if (desiredPodCount === 0) {
+        } else if (currentPodCount === 0 && desiredPodCount === 0) {
           appStatuses.deployed[StatusColumn.counts] = Array(ScoreColumnSize).fill(0) as number[]
         }
       }
     }
   })
-}
-
-export function computePodStatuses(
-  related: SearchResult['related'],
-  app2AppsetMap: Record<string, ApplicationStatuses>
-) {
-  const podMap = createResourceMap(related, 'Pod')
-  if (podMap) {
-    const keys = Object.keys(app2AppsetMap)
-    keys.forEach((appUid) => {
-      const appStatuses = app2AppsetMap[appUid]
-      if (appStatuses) {
-        const pods = podMap.get(appUid)
-        if (pods) {
-          computePodStatus(appStatuses.deployed, pods)
-        }
-      }
-    })
-    return keys.length
-  } else {
-    return 0
-  }
 }
 
 function computePodStatus(deployed: ApplicationStatusEntry, pods: ISearchResource[] = []) {
