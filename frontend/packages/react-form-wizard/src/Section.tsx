@@ -74,7 +74,7 @@ function SectionInternal(props: SectionProps) {
               {(hasValidationError) => (
                 <section
                   id={id}
-                  className="pf-v5-c-form__section"
+                  className="pf-v6-c-form__section"
                   role="group"
                   style={{ display: !hasInputs && props.autohide !== false ? 'none' : undefined }}
                 >
@@ -87,7 +87,7 @@ function SectionInternal(props: SectionProps) {
                     <SplitItem isFilled>
                       <Stack>
                         <Split hasGutter>
-                          <div className="pf-v5-c-form__section-title">
+                          <div className="pf-v6-c-form__section-title">
                             {props.label}
                             {props.id && (
                               <LabelHelp
@@ -98,6 +98,7 @@ function SectionInternal(props: SectionProps) {
                             )}
                           </div>
                         </Split>
+                        {/* TODO this causes react minified error in prod.. */}
                         {/* {expanded && props.description !== undefined && (
                             {/* <Content component={ContentVariants.small} style={{ paddingTop: 8 }}>
                             {props.description}
@@ -117,7 +118,7 @@ function SectionInternal(props: SectionProps) {
                             </Icon>
                           </SplitItem>
                           <SplitItem>
-                            <span className="pf-v5-c-form__helper-text pf-m-error">
+                            <span className="pf-v6-c-form__helper-text pf-m-error">
                               &nbsp; {expandToFixValidationErrors}
                             </span>
                           </SplitItem>

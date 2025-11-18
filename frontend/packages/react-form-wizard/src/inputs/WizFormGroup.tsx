@@ -18,13 +18,8 @@ export function WizFormGroup(props: PropsWithChildren<WizFormGroupProps>) {
       id={`${id}-form-group`}
       key={`${id}-form-group`}
       fieldId={id}
-      label={
-        <>
-          {props.label}
-          {/* v6 Issue: labelHelp should be included in labelHelp component prop - this wasn't working in original upgrade from v5 -> v6 */}
-          <LabelHelp id={id} labelHelp={props.labelHelp} labelHelpTitle={props.labelHelpTitle} />
-        </>
-      }
+      label={props.label}
+      labelHelp={<LabelHelp id={id} labelHelp={props.labelHelp} labelHelpTitle={props.labelHelpTitle} />}
       isRequired={props.required}
     >
       {props.children}

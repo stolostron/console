@@ -158,7 +158,7 @@ export function WizArrayInput(props: WizArrayInputProps) {
     }
     return (
       <Fragment>
-        <div className="pf-v5-c-description-list__term">{props.label}</div>
+        <div className="pf-v6-c-description-list__term">{props.label}</div>
         <Indented id={id}>
           <List style={{ marginTop: -4 }} isPlain={props.summaryList !== true}>
             {values.map((value, index) => (
@@ -187,14 +187,14 @@ export function WizArrayInput(props: WizArrayInputProps) {
         <div style={{ paddingBottom: 8, paddingTop: 0 }}>
           {props.isSection ? (
             <Split hasGutter style={{ paddingBottom: 8 }}>
-              <span className="pf-v5-c-form__section-title">{props.label}</span>
+              <span className="pf-v6-c-form__section-title">{props.label}</span>
               {props.labelHelp && (
                 <LabelHelp id={id} labelHelp={props.labelHelp} labelHelpTitle={props.labelHelpTitle} />
               )}
             </Split>
           ) : (
             <div>
-              <span className="pf-v5-c-form__label pf-v5-c-form__label-text">{props.label}</span>
+              <span className="pf-v6-c-form__label pf-v6-c-form__label-text">{props.label}</span>
               {props.labelHelp && (
                 <LabelHelp id={id} labelHelp={props.labelHelp} labelHelpTitle={props.labelHelpTitle} />
               )}
@@ -350,7 +350,7 @@ export function ArrayInputItem(props: {
                                 </Icon>
                               </SplitItem>
                               <SplitItem>
-                                <span className="pf-v5-c-form__helper-text pf-m-error">
+                                <span className="pf-v6-c-form__helper-text pf-m-error">
                                   &nbsp; {expandToFixValidationErrors}
                                 </span>
                               </SplitItem>

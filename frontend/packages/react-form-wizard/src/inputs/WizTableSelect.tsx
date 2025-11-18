@@ -124,7 +124,7 @@ export function WizTableSelect<T = any>(props: WizTableSelectProps<T>) {
     }
     return (
       <Fragment>
-        <div className="pf-v5-c-description-list__term">{props.label}</div>
+        <div className="pf-v6-c-description-list__term">{props.label}</div>
         <Indented paddingBottom={4}>
           <List style={{ marginTop: -4 }} isPlain={props.summaryList !== true}>
             {values.map((value, index) => (

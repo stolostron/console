@@ -13,8 +13,8 @@ export function LabelHelp(props: { id: string; labelHelp?: ReactNode; labelHelpT
         isInline
         id={`${props.id}-label-help-button`}
         aria-label={moreInfo}
-        className="pf-v5-c-form__group-label-help"
-        style={{ ['--pf-v5-c-form__group-label-help--TranslateY' as any]: 0 }}
+        className="pf-v6-c-form__group-label-help"
+        style={{ ['padding' as any]: 0 }}
         icon={<HelpIcon />}
       />
     </Popover>

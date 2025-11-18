@@ -302,7 +302,7 @@ function MyFooter(props: WizardFooterProps) {
 
   if (isLastStep) {
     return (
-      <div className="pf-v5-u-box-shadow-sm-top">
+      <div className="pf-v6-u-box-shadow-sm-top">
         {editorValidationStatus === EditorValidationStatus.failure && showWizardValidation && (
           <Alert title={fixEditorValidationErrorsMsg} isInline variant="danger" />
         )}
@@ -341,7 +341,7 @@ function MyFooter(props: WizardFooterProps) {
               </Button>
             </ActionListGroup>
             <ActionListGroup>
-              <div className="pf-v5-c-wizard__footer-cancel">
+              <div className="pf-v6-c-wizard__footer-cancel">
                 <Button variant="link" onClick={onClose}>
                   {cancelButtonText}
                 </Button>
@@ -355,7 +355,7 @@ function MyFooter(props: WizardFooterProps) {
   }
 
   return (
-    <div className="pf-v5-u-box-shadow-sm-top">
+    <div className="pf-v6-u-box-shadow-sm-top">
       {activeStepHasValidationError && activeStepShowValidation && (
         <Alert title={fixValidationErrorsMsg} isInline variant="danger" />
       )}
@@ -390,7 +390,7 @@ function MyFooter(props: WizardFooterProps) {
             </ActionListItem>
           </ActionListGroup>
           <ActionListGroup>
-            <div className="pf-v5-c-wizard__footer-cancel">
+            <div className="pf-v6-c-wizard__footer-cancel">
               <Button variant="link" onClick={onClose}>
                 {cancelButtonText}
               </Button>

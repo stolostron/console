@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Button, FormHelperText, HelperText, HelperTextItem, Split, SplitItem } from '@patternfly/react-core'
-import { InputCommonProps, useInputValidation } from '../inputs/Input'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { InputCommonProps, useInputValidation } from '../inputs/Input'
 
 export function WizHelperText(props: Partial<Omit<InputCommonProps, 'path'>> & { path: string | null }) {
   const { validated, error } = useInputValidation({ ...props, path: props.path || '' })
@@ -21,7 +21,7 @@ export function WizHelperText(props: Partial<Omit<InputCommonProps, 'path'>> & {
           <SplitItem>
             <Button
               variant="link"
-              style={{ ['--pf-v5-c-button--PaddingRight' as any]: '0px' }}
+              style={{ ['padding-right' as any]: '0px' }}
               onClick={() => window.open(prompt?.href)}
               isDisabled={prompt?.isDisabled}
               icon={<ExternalLinkAltIcon />}
