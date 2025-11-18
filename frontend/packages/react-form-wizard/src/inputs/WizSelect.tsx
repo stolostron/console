@@ -12,7 +12,7 @@ import get from 'get-value'
 import { ReactNode, useCallback, useMemo, useState } from 'react'
 import { DisplayMode } from '../contexts/DisplayModeContext'
 import { useStringContext } from '../contexts/StringContext'
-import { InputCommonProps, getSelectPlaceholder, useInput } from './Input'
+import { getSelectPlaceholder, InputCommonProps, useInput } from './Input'
 import { InputSelect, SelectListOptions } from './InputSelect'
 import { WizFormGroup } from './WizFormGroup'
 
@@ -123,7 +123,7 @@ function WizSelectBase<T = any>(props: SelectProps<T>) {
         setFilteredOptions([{ id: o[0], label: noResults, value: o[0], keyedValue: '' }])
       }
     },
-    [selectOptions]
+    [noResults, selectOptions]
   )
 
   const onSelect = useCallback(
@@ -177,6 +177,7 @@ function WizSelectBase<T = any>(props: SelectProps<T>) {
                 />
               )}
               selected={value}
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-call
               onSelect={(_event, value) => onSelect(value?.toString() ?? '')}
             >
               <SelectListOptions

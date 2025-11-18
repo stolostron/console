@@ -12,19 +12,13 @@ describe('edit policy automation', () => {
     })
 
     it('jobs', () => {
-        cy.get('#job').within(() => {
-            cy.get('.pf-v6-c-input-group > div').within(() => {
-                cy.get('[value="job1"]').click()
-            })
-            cy.get('#job2').click()
-        })
+        cy.get('#job').click()
+        cy.get('#job2').click()
     })
 
     it('mode', () => {
-        cy.get('#mode').within(() => {
-            cy.get('.pf-v6-c-input-group > div').click()
-            cy.get('#Once').click()
-        })
+        cy.get('#mode').click()
+        cy.get('#Once').click()
         cy.contains('Next').click()
     })
 
@@ -55,10 +49,8 @@ describe('edit policy automation', () => {
     })
 
     it('mode', () => {
-        cy.get('#mode').within(() => {
-            cy.get('.pf-v6-c-input-group > div').click()
-            cy.get('#EveryEvent').click()
-        })
+        cy.get('#mode').click()
+        cy.get('#EveryEvent').click()
         cy.get('#spec-delayafterrunseconds-form-group').within(() => {
             cy.get('[aria-label="Plus"]').click().click().click()
         })

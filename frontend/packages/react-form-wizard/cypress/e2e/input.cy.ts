@@ -42,11 +42,11 @@ describe('inputs wizard', () => {
     cy.contains('Please fix validation errors')
     cy.get('section #select').within(() => {
       cy.contains('Required')
-      cy.get('#select').within(() => {
-        cy.get('#select-value').click().get(`#Option\\ 1`).click()
-        cy.get('#select-required').click().get(`#Option\\ 2`).click()
-      })
     })
+    cy.get('#select').click()
+    cy.get('#select-value').click().get(`#Option\\ 1`).click()
+    cy.get('#select-required').click().get(`#Option\\ 2`).click()
+
     cy.contains('Next').click()
   })
 

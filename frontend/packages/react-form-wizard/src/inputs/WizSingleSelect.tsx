@@ -11,7 +11,7 @@ import {
 import { ReactNode, useCallback, useState } from 'react'
 import { DisplayMode } from '../contexts/DisplayModeContext'
 import { useStringContext } from '../contexts/StringContext'
-import { InputCommonProps, getSelectPlaceholder, useInput } from './Input'
+import { getSelectPlaceholder, InputCommonProps, useInput } from './Input'
 import { InputSelect, SelectListOptions } from './InputSelect'
 import { WizFormGroup } from './WizFormGroup'
 
@@ -41,13 +41,16 @@ export function WizSingleSelect(props: WizSingleSelectProps) {
     [setValue]
   )
 
-  const handleSetOptions = useCallback((o: string[]) => {
-    if (o.length > 0) {
-      setFilteredOptions(o)
-    } else {
-      setFilteredOptions([noResults])
-    }
-  }, [])
+  const handleSetOptions = useCallback(
+    (o: string[]) => {
+      if (o.length > 0) {
+        setFilteredOptions(o)
+      } else {
+        setFilteredOptions([noResults])
+      }
+    },
+    [noResults]
+  )
 
   if (hidden) return null
 
@@ -87,6 +90,7 @@ export function WizSingleSelect(props: WizSingleSelectProps) {
                 />
               )}
               selected={value}
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-call
               onSelect={(_event, value) => onSelect(value?.toString() ?? '')}
             >
               <SelectListOptions value={value} options={filteredOptions} isCreatable={isCreatable} footer={footer} />

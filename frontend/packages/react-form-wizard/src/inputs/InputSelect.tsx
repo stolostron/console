@@ -74,7 +74,7 @@ export const InputSelect = ({
         }
       }
     },
-    [onSelect, open, setOpen, value]
+    [disabled, onSelect, setOpen, value]
   )
 
   const onTextInputChange = useCallback((_event: FormEvent<HTMLInputElement>, value: string) => {
