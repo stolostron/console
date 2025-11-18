@@ -1,11 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import {
-  DescriptionListDescription,
-  DescriptionListGroup,
-  DescriptionListTerm,
-  Gallery,
-  Tile as PFTile,
-} from '@patternfly/react-core'
+import { DescriptionListDescription, DescriptionListGroup, DescriptionListTerm, Gallery } from '@patternfly/react-core'
+import { Tile as PFTile } from '@patternfly/react-core/deprecated'
 import { Children, Fragment, isValidElement, ReactNode, useContext } from 'react'
 import { IRadioGroupContextState, RadioGroupContext } from '..'
 import { DisplayMode } from '../contexts/DisplayModeContext'

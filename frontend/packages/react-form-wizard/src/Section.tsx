@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { DescriptionList, Divider, Icon, Split, SplitItem, Stack, Text, Title } from '@patternfly/react-core'
+import { DescriptionList, Divider, Icon, Split, SplitItem, Stack, Title } from '@patternfly/react-core'
 import { AngleDownIcon, AngleLeftIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
 import { Fragment, ReactNode, useEffect, useState } from 'react'
 import { LabelHelp } from './components/LabelHelp'
@@ -98,10 +98,13 @@ function SectionInternal(props: SectionProps) {
                             )}
                           </div>
                         </Split>
-                        {expanded && props.description && (
-                          <Text component="small" style={{ paddingTop: 8 }}>
+                        {/* {expanded && props.description !== undefined && (
+                            {/* <Content component={ContentVariants.small} style={{ paddingTop: 8 }}>
                             {props.description}
-                          </Text>
+                          </Content>
+                        )} */}
+                        {expanded && props.description !== undefined && (
+                          <small style={{ paddingTop: 8 }}>{props.description}</small>
                         )}
                       </Stack>
                     </SplitItem>

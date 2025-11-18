@@ -2,9 +2,9 @@
 import { Button, Divider, List, ListItem, TextInput } from '@patternfly/react-core'
 import { PlusCircleIcon, TrashIcon } from '@patternfly/react-icons'
 import { Fragment } from 'react'
-import { WizHelperText } from '../components/WizHelperText'
 import { Indented } from '../components/Indented'
 import { LabelHelp } from '../components/LabelHelp'
+import { WizHelperText } from '../components/WizHelperText'
 import { DisplayMode } from '../contexts/DisplayModeContext'
 import { useStringContext } from '../contexts/StringContext'
 import { getAddPlaceholder, InputCommonProps, useInput } from './Input'
@@ -110,9 +110,12 @@ export function WizKeyValue(props: KeyValueProps) {
                 spellCheck="false"
                 onChange={(_event, value) => onValueChange(index, value)}
               />
-              <Button variant="plain" aria-label={removeItemAriaLabel} onClick={() => onDeleteKey(index)}>
-                <TrashIcon />
-              </Button>
+              <Button
+                icon={<TrashIcon />}
+                variant="plain"
+                aria-label={removeItemAriaLabel}
+                onClick={() => onDeleteKey(index)}
+              />
             </Fragment>
           )
         })}

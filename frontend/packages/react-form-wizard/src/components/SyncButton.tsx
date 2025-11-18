@@ -7,9 +7,7 @@ export function SyncButton(props: { onClick: () => void }) {
   const { syncButtonTooltip } = useStringContext()
   return (
     <Tooltip content={syncButtonTooltip}>
-      <Button variant="control" onClick={props.onClick}>
-        <SyncAltIcon />
-      </Button>
+      <Button icon={<SyncAltIcon />} variant="control" onClick={props.onClick} />
     </Tooltip>
   )
 }

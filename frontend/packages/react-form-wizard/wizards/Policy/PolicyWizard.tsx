@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Alert, Button, Stack, Text, Title } from '@patternfly/react-core'
+import { Alert, Button, Content, Stack, Title } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import get from 'get-value'
 import { klona } from 'klona/json'
@@ -9,7 +9,6 @@ import {
   EditMode,
   Radio,
   Section,
-  WizSelect,
   Step,
   StringsMapInput,
   WizardCancel,
@@ -23,18 +22,19 @@ import {
   WizKeyValue,
   WizNumberInput,
   WizRadioGroup,
+  WizSelect,
   WizSingleSelect,
   WizStringsInput,
   WizTextInput,
 } from '../../src'
+import { IResource } from '../../src/common/resource'
 import { useEditMode } from '../../src/contexts/EditModeContext'
 import { ItemContext, useItem } from '../../src/contexts/ItemContext'
-import { IResource } from '../../src/common/resource'
+import { Sync } from '../../src/Sync'
 import { IClusterSetBinding } from '../common/resources/IClusterSetBinding'
 import { PlacementBindingKind } from '../common/resources/IPlacementBinding'
 import { PlacementRuleKind } from '../common/resources/IPlacementRule'
 import { PolicyApiGroup, PolicyKind, PolicyType } from '../common/resources/IPolicy'
-import { Sync } from '../../src/Sync'
 import { isValidKubernetesResourceName, validatePolicyName } from '../common/validation'
 import { MatchExpression, MatchExpressionCollapsed } from '../Placement/MatchExpression'
 import { PlacementSection } from '../Placement/PlacementSection'
@@ -346,7 +346,9 @@ export function PolicyWizardTemplates(props: { policies: IResource[] }) {
         <WizHidden hidden={(template: any) => template?.objectDefinition?.kind !== 'ConfigurationPolicy'}>
           <div>
             <Title headingLevel="h6">Configuration Policy</Title>
-            <Text component="small">A configuration policy creates configuration objects on managed clusters.</Text>
+            <Content component="small">
+              A configuration policy creates configuration objects on managed clusters.
+            </Content>
           </div>
 
           <WizTextInput
@@ -472,7 +474,7 @@ function ObjectTemplate() {
     <Fragment>
       <WizHidden hidden={(template: any) => template?.complianceType === undefined}>
         <Stack>
-          <Text component="small">
+          <Content component="small">
             {template?.complianceType === 'musthave'
               ? 'Must have'
               : template?.complianceType === 'mustonlyhave'
@@ -480,7 +482,7 @@ function ObjectTemplate() {
               : template?.complianceType === 'mustnothave'
               ? 'Must not have'
               : template?.complianceType}
-          </Text>
+          </Content>
           <WizHidden hidden={(template: any) => template?.objectDefinition?.kind === undefined}>
             <Title headingLevel="h6">{pascalCaseToSentenceCase(template?.objectDefinition?.kind)}</Title>
           </WizHidden>

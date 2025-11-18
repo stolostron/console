@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { FormGroup } from '@patternfly/react-core'
 import { PropsWithChildren } from 'react'
 import { LabelHelp } from '../components/LabelHelp'
-import { InputCommonProps, convertId } from './Input'
-import { FormGroup } from '@patternfly/react-core'
 import { WizHelperText } from '../components/WizHelperText'
+import { convertId, InputCommonProps } from './Input'
 
 type WizFormGroupProps = InputCommonProps & {
   noHelperText?: boolean
@@ -12,14 +12,20 @@ type WizFormGroupProps = InputCommonProps & {
 export function WizFormGroup(props: PropsWithChildren<WizFormGroupProps>) {
   const { noHelperText } = props
   const id = convertId(props)
+
   return (
     <FormGroup
       id={`${id}-form-group`}
       key={`${id}-form-group`}
       fieldId={id}
-      label={props.label}
+      label={
+        <>
+          {props.label}
+          {/* v6 Issue: labelHelp should be included in labelHelp component prop - this wasn't working in original upgrade from v5 -> v6 */}
+          <LabelHelp id={id} labelHelp={props.labelHelp} labelHelpTitle={props.labelHelpTitle} />
+        </>
+      }
       isRequired={props.required}
-      labelIcon={<LabelHelp id={id} labelHelp={props.labelHelp} labelHelpTitle={props.labelHelpTitle} />}
     >
       {props.children}
       {!noHelperText && <WizHelperText {...props} />}
