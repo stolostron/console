@@ -11,7 +11,7 @@ function displays() {
 
 function credentialsType(type: string) {
     cy.get('#credentials-type').within(() => {
-        cy.get(`#${type}`).click()
+        cy.get(`#tile-${type}`).click()
     })
     cy.contains('Next').click()
 }

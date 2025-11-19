@@ -114,7 +114,7 @@ export function useInput(props: InputCommonProps) {
   const { validated, error } = useInputValidation(props)
   const hasValidationError = useHasValidationError()
   const setHasValidationError = useSetHasValidationError()
-  
+
   // Update hasValidationError in useLayoutEffect to avoid updating state during render
   useLayoutEffect(() => {
     if (!hidden && error && !hasValidationError) {
@@ -130,17 +130,15 @@ export function useInput(props: InputCommonProps) {
   const [previousError, setPreviousError] = useState(error)
   const validate = useValidate()
 
-  useLayoutEffect(() => {
-    if (value !== previousValue || hidden !== previousHidden || error !== previousError) {
-      setPreviousValue(value)
-      setPreviousHidden(hidden)
-      setPreviousError(error)
-      if (hidden && !previousHidden) {
-        updateHasInputs()
-      }
-      validate()
+  if (value !== previousValue || hidden !== previousHidden || error !== previousError) {
+    setPreviousValue(value)
+    setPreviousHidden(hidden)
+    setPreviousError(error)
+    if (hidden && !previousHidden) {
+      updateHasInputs()
     }
-  }, [value, hidden, error, previousValue, previousHidden, previousError, updateHasInputs, validate])
+    validate()
+  }
 
   const id = convertId(props)
 
@@ -148,11 +146,9 @@ export function useInput(props: InputCommonProps) {
   const setHasValue = useSetHasValue()
   // anything other than empty array counts as having a value
   // Update hasValue in useLayoutEffect to avoid updating state during render
-  useLayoutEffect(() => {
-    if (!hasValue && value && (!Array.isArray(value) || value.length > 0)) {
-      setHasValue()
-    }
-  }, [hasValue, value, setHasValue])
+  if (!hasValue && value && (!Array.isArray(value) || value.length > 0)) {
+    setHasValue()
+  }
 
   let disabled = props.disabled
   if (editMode === EditMode.Edit) {
