@@ -45,12 +45,16 @@ export function ValidationProvider(props: { children: ReactNode }) {
   }, [setHasValidationErrorState])
 
   const parentValidate = useContext(ValidateContext)
-  if (hasValidationError !== previousHasValidationError) {
-    setPreviousHasValidationError(hasValidationError)
-    if (!hasValidationError) {
-      parentValidate()
+  
+  // Update previousHasValidationError and call parentValidate in useLayoutEffect to avoid updating state during render
+  useLayoutEffect(() => {
+    if (hasValidationError !== previousHasValidationError) {
+      setPreviousHasValidationError(hasValidationError)
+      if (!hasValidationError) {
+        parentValidate()
+      }
     }
-  }
+  }, [hasValidationError, previousHasValidationError, parentValidate])
 
   // When this control goes away - parentValidate
   useLayoutEffect(

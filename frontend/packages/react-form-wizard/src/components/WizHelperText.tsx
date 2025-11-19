@@ -21,7 +21,7 @@ export function WizHelperText(props: Partial<Omit<InputCommonProps, 'path'>> & {
           <SplitItem>
             <Button
               variant="link"
-              style={{ ['padding-right' as any]: '0px' }}
+              style={{ ['paddingRight' as any]: '0px' }}
               onClick={() => window.open(prompt?.href)}
               isDisabled={prompt?.isDisabled}
               icon={<ExternalLinkAltIcon />}

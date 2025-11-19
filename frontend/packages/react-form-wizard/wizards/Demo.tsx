@@ -376,7 +376,7 @@ function ExampleWizards() {
   return (
     <Catalog
       title="Example Wizards"
-      breadcrumbs={[{ label: 'Example Wizards' }]}
+      breadcrumbs={[{ label: 'Example Wizards', id: 'example-wizards' }]}
       filterGroups={[
         {
           id: 'labels',

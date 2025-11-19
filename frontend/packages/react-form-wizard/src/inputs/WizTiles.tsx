@@ -1,11 +1,20 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { DescriptionListDescription, DescriptionListGroup, DescriptionListTerm, Gallery } from '@patternfly/react-core'
-import { Tile as PFTile } from '@patternfly/react-core/deprecated'
+import {
+  Card,
+  CardBody,
+  CardHeader,
+  CardTitle,
+  DescriptionListDescription,
+  DescriptionListGroup,
+  DescriptionListTerm,
+  Gallery,
+  Icon,
+} from '@patternfly/react-core'
 import { Children, Fragment, isValidElement, ReactNode, useContext } from 'react'
-import { IRadioGroupContextState, RadioGroupContext } from '..'
 import { DisplayMode } from '../contexts/DisplayModeContext'
 import { InputCommonProps, useInput } from './Input'
 import { WizFormGroup } from './WizFormGroup'
+import { IRadioGroupContextState, RadioGroupContext } from './WizRadio'
 
 type WizTilesProps = InputCommonProps & { children?: ReactNode }
 
@@ -68,21 +77,29 @@ export function Tile(props: {
   icon?: ReactNode
   children?: ReactNode
 }) {
-  const context = useContext(RadioGroupContext)
+  const context = useContext(RadioGroupContext) || {}
+  const isSelected = context.value === props.value
+
+  if (!props) return <Fragment />
+
   return (
-    <PFTile
-      id={props.id}
-      name={props.label}
-      title={props.label}
-      isDisabled={context.disabled}
-      readOnly={context.readonly}
-      isSelected={context.value === props.value}
-      onClick={() => context.setValue?.(props.value)}
-      icon={props.icon}
-      isDisplayLarge
-      isStacked
-    >
-      {props.description}
-    </PFTile>
+    <Card id={`tile-${props.id}`} isSelectable isSelected={isSelected}>
+      <CardHeader
+        selectableActions={{
+          selectableActionId: props.id,
+          selectableActionAriaLabelledby: `tile-${props.id}`,
+          name: props.id,
+          variant: 'single',
+          onChange: () => context.setValue?.(props.value),
+          isHidden: true,
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <Icon size={'xl'}>{props.icon}</Icon>
+          <CardTitle>{props.label}</CardTitle>
+        </div>
+      </CardHeader>
+      {props.description && <CardBody>{props.description}</CardBody>}
+    </Card>
   )
 }
