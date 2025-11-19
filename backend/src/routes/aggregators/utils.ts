@@ -363,9 +363,23 @@ function createResourceMap(related: SearchResult['related'], kind: string) {
 function collectRelatedResources(
   cluster: string,
   map: { byName: Map<string, ISearchResource[]>; byUid: Map<string, ISearchResource[]> },
-  ids: { appName: string; uids: string[] }
+  ids: { appName: string; deployments?: ISearchResource[]; uids: string[] }
 ) {
-  const items: ISearchResource[] = map.byName.get(`${cluster}/${ids.appName}`) || []
+  let items: ISearchResource[] = []
+  // if this ocp app is made up of multiple deployments, find resources for each deployment
+  if (ids.deployments && ids.deployments.length > 1) {
+    ids.deployments.forEach((deployment: ISearchResource) => {
+      const item =
+        map.byName.get(`${cluster}/${deployment.namespace}/${deployment.name}`) || map.byUid.get(deployment._uid) || []
+      if (item) {
+        items.push(...item)
+      }
+    })
+  } else {
+    // otherwise, just find resources using the app label
+    items = map.byName.get(`${cluster}/${ids.appName}`) || []
+  }
+  // if no resources found, find resources using the app ownerId
   if (items.length === 0) {
     ids.uids.forEach((uid) => {
       const related = map.byUid.get(uid)
@@ -442,6 +456,7 @@ export const appOwnerLabels: string[] = [
   'helm.toolkit.fluxcd.io/name=', // Flux
   'app=', // OpenShift
   'app.kubernetes.io/part-of=', // OpenShift
+  // 'app.kubernetes.io/name=', // OpenShift
 ]
 
 export function getAppNameFromLabel(label: string, defaultName?: string) {

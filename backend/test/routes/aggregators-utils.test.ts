@@ -335,13 +335,20 @@ describe('aggregator utils', () => {
 
   describe('computeDeployedPodStatuses', () => {
     it('should compute deployed pod statuses with deployments and replica sets', () => {
-      const app2AppsetMap: Record<string, ApplicationStatuses> = {
-        'app-uid-1': {
-          health: [[1, 0, 0, 0, 0], []],
-          synced: [[1, 0, 0, 0, 0], []],
-          deployed: [[0, 0, 0, 0, 0], []],
+      const appStatuses: ApplicationStatuses = {
+        health: [[1, 0, 0, 0, 0], []],
+        synced: [[1, 0, 0, 0, 0], []],
+        deployed: [[0, 0, 0, 0, 0], []],
+      }
+
+      const appStatusesMap: Record<string, Record<string, ApplicationStatuses>> = {
+        'test-app': {
+          'local-cluster': appStatuses,
         },
       }
+
+      const statuses2IDMap = new WeakMap<ApplicationStatuses, { appName: string; uids: string[] }>()
+      statuses2IDMap.set(appStatuses, { appName: 'test-app', uids: ['app-uid-1'] })
 
       const related: SearchResult['related'] = [
         {
@@ -401,8 +408,8 @@ describe('aggregator utils', () => {
         },
       ]
 
-      computeDeployedPodStatuses(related, app2AppsetMap)
-      expect(app2AppsetMap['app-uid-1'].deployed[StatusColumn.counts][ScoreColumn.healthy]).toBe(1)
+      computeDeployedPodStatuses(related, appStatusesMap, statuses2IDMap)
+      expect(appStatusesMap['test-app']['local-cluster'].deployed[StatusColumn.counts][ScoreColumn.healthy]).toBe(1)
     })
   })
 

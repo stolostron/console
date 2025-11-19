@@ -103,7 +103,7 @@ export function cacheOCPApplications(
   const remoteOCPApps: IResource[] = []
   const ocpApps: ISearchResource[] = []
   try {
-    const openShiftAppResourceMaps: Record<string, ISearchResource> = {}
+    const openShiftAppResourceMaps: Record<string, ISearchResource[]> = {}
     searchResult.items.forEach((ocpApp: ISearchResource) => {
       if (ocpApp._hostingSubscription) {
         // don't list subscription apps as ocp
@@ -134,12 +134,20 @@ export function cacheOCPApplications(
         const argoKey = `${argoInstanceLabelValue}-${ocpApp.namespace}-${ocpApp.cluster}`
         // filter out ocp apps that are argo apps
         if (!ocpArgoAppFilter.has(argoKey)) {
-          openShiftAppResourceMaps[key] = ocpApp
+          const existing = openShiftAppResourceMaps[key]
+          // check if this ocp app is using multiple deployments :)
+          // and if so, remember them all when creating pod status
+          if (existing) {
+            existing.push(ocpApp)
+          } else {
+            openShiftAppResourceMaps[key] = [ocpApp]
+          }
         }
       }
     })
 
-    Object.entries(openShiftAppResourceMaps).forEach(([, value]) => {
+    Object.entries(openShiftAppResourceMaps).forEach(([, values]) => {
+      const value = values[0]
       const appLabel = getAppNameFromLabel(value.label, value.name)
       const resourceName = value.name
       let apps
@@ -164,6 +172,7 @@ export function cacheOCPApplications(
       }
       apps.push(app)
       value.type = getApplicationType(app)
+      value.deployments = values
       ocpApps.push(value)
     })
   } catch (e) {
@@ -282,7 +291,10 @@ function getValues(labels: { annotation: any; value: any }[]) {
 
 export function createOCPStatusMap(ocpApps: ISearchResource[], relatedResources: SearchResult['related']) {
   const ocpClusterStatusMap: ApplicationClusterStatusMap = {}
-  const statuses2IDMap = new WeakMap<ApplicationStatuses, { appName: string; uids: string[] }>()
+  const statuses2IDMap = new WeakMap<
+    ApplicationStatuses,
+    { appName: string; deployments: ISearchResource[]; uids: string[] }
+  >()
 
   // create an app map with syncs and health
   ocpApps.forEach((app: ISearchResource) => {
@@ -302,7 +314,7 @@ export function createOCPStatusMap(ocpApps: ISearchResource[], relatedResources:
     }
     let appIDMap = statuses2IDMap.get(appStatuses)
     if (!appIDMap) {
-      appIDMap = { appName, uids: [] }
+      appIDMap = { appName, deployments: app.deployments, uids: [] }
       statuses2IDMap.set(appStatuses, appIDMap)
     }
     appIDMap.uids.push(app._uid)
