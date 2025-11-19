@@ -21,6 +21,7 @@ export interface ISearchResource {
   ready?: string
   healthStatus?: string
   syncStatus?: string
+  deployments?: ISearchResource[]
 }
 
 export type SearchResult = {
