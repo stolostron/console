@@ -317,7 +317,7 @@ export default function ClusterDetailsPage() {
               {isFineGrainedRbacEnabled && (
                 <AcmSecondaryNavItem isActive={isClusterRoleAssignments}>
                   <Link to={generatePath(NavigationPath.clusterRoleAssignments, { name, namespace })}>
-                    {t('Role Assignments')}
+                    {t('Role assignments')}
                   </Link>
                 </AcmSecondaryNavItem>
               )}
