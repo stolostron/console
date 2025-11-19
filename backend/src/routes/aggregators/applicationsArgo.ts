@@ -414,20 +414,24 @@ export function getAppSetRelatedResources(appSet: IResource, applicationSets: IA
 
 export function createArgoStatusMap(searchResult: SearchResult) {
   const argoClusterStatusMap: ApplicationClusterStatusMap = {}
-  const app2AppsetMap: Record<string, ApplicationStatuses> = {}
+  const statuses2IDMap = new WeakMap<ApplicationStatuses, { appName: string; uids: string[] }>()
 
   // create an app map with syncs and health
   searchResult.items.forEach((app: ISearchResource) => {
     let appKey
+    let appName
     if (app._hostingResource) {
-      appKey = `appset/${app._hostingResource.split('/')[1]}/${app._hostingResource.split('/')[2]}`
+      appName = `${app._hostingResource.split('/')[1]}/${app._hostingResource.split('/')[2]}`
+      appKey = `appset/${appName}`
     } else if (app.applicationSet) {
       // don't count the placeholder app on the hub for this pulled appset
       if (!app.label.includes('apps.open-cluster-management.io/pull-to-ocm-managed-cluster=true')) {
-        appKey = `appset/${app.namespace}/${app.applicationSet}`
+        appName = `${app.namespace}/${app.applicationSet}`
+        appKey = `appset/${appName}`
       }
     } else {
-      appKey = `argo/${app.namespace}/${app.name}`
+      appName = `${app.namespace}/${app.name}`
+      appKey = `argo/${appName}`
     }
     if (appKey) {
       let appStatusMap = argoClusterStatusMap[appKey]
@@ -442,14 +446,19 @@ export function createArgoStatusMap(searchResult: SearchResult) {
           deployed: [Array(ScoreColumnSize).fill(0) as number[], []],
         }
       }
-      app2AppsetMap[app._uid] = appStatuses
       computeAppHealthStatus(appStatuses.health, app)
       computeAppSyncStatus(appStatuses.synced, app)
+      let appIDMap = statuses2IDMap.get(appStatuses)
+      if (!appIDMap) {
+        appIDMap = { appName, uids: [] }
+        statuses2IDMap.set(appStatuses, appIDMap)
+      }
+      appIDMap.uids.push(app._uid)
     }
   })
 
   // compute pod statuses
-  computeDeployedPodStatuses(searchResult.related, app2AppsetMap)
+  computeDeployedPodStatuses(searchResult.related, argoClusterStatusMap, statuses2IDMap)
 
   return argoClusterStatusMap
 }
