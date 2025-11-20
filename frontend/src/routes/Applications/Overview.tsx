@@ -598,25 +598,7 @@ export default function ApplicationsOverview() {
     () => [
       {
         header: t('Name'),
-        sort: (itemA, itemB) => {
-          const typeA = getApplicationType(itemA, systemAppNSPrefixes, t)
-          const typeB = getApplicationType(itemB, systemAppNSPrefixes, t)
-          const clusterCountA = get(itemA, 'transformed.clusterCount', '')
-          const clusterCountB = get(itemB, 'transformed.clusterCount', '')
-          const nameA = get(itemA, 'metadata.name', '').toLowerCase()
-          const nameB = get(itemB, 'metadata.name', '').toLowerCase()
-
-          // Sort to always put System type at bottom
-          if (typeA === 'System' && typeB !== 'System') return 1
-          if (typeA !== 'System' && typeB === 'System') return -1
-
-          // Group by cluster count
-          const clusterCompare = clusterCountA.localeCompare(clusterCountB)
-          if (clusterCompare !== 0) return clusterCompare
-
-          // Sort name alphabetically
-          return nameA.localeCompare(nameB)
-        },
+        sort: 'metadata.name',
         search: 'metadata.name',
         transforms: [cellWidth(20)],
         cell: (resource, search) => getApplicationName(resource, search),
