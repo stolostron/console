@@ -1227,14 +1227,6 @@ export default function ApplicationsOverview() {
 
   return (
     <PageSection>
-      <style>{`
-        .application-name-link-selected {
-          background-color: #FFF4E5;
-          padding: 4px 8px;
-          border-radius: 4px;
-          font-weight: 600;
-        }
-      `}</style>
       <DeleteResourceModal {...modalProps} />
       {pluginModal}
       <AcmTable<IResource<ApplicationStatus>>
