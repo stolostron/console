@@ -17,7 +17,7 @@ import { cellWidth } from '@patternfly/react-table'
 import { get } from 'lodash'
 import { useCallback, useContext, useMemo, useState } from 'react'
 import { TFunction } from 'react-i18next'
-import { generatePath, Link, useNavigate } from 'react-router-dom-v5-compat'
+import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { HighlightSearchText } from '../../components/HighlightSearchText'
 import { Pages, usePageVisitMetricHandler } from '../../hooks/console-metrics'
 import { useTranslation } from '../../lib/acm-i18next'
@@ -54,6 +54,7 @@ import {
   AcmDropdown,
   AcmEmptyState,
   AcmInlineStatusGroup,
+  AcmLink,
   AcmTable,
   compareStrings,
   IAcmRowAction,
@@ -167,7 +168,7 @@ export function getApplicationName(application: IApplicationResource, search: st
   }
   return (
     <span style={{ whiteSpace: 'nowrap' }}>
-      <Link
+      <AcmLink
         to={{
           pathname: generatePath(NavigationPath.applicationDetails, {
             namespace: application.metadata?.namespace!,
@@ -175,9 +176,11 @@ export function getApplicationName(application: IApplicationResource, search: st
           }),
           search: `?apiVersion=${apiVersion}${clusterQuery}`,
         }}
+        storageKey="selectedApplicationName"
+        storageValue={application.metadata?.name}
       >
         <HighlightSearchText text={application.metadata?.name} searchText={search} isLink useFuzzyHighlighting />
-      </Link>
+      </AcmLink>
     </span>
   )
 }
@@ -1224,6 +1227,14 @@ export default function ApplicationsOverview() {
 
   return (
     <PageSection>
+      <style>{`
+        .application-name-link-selected {
+          background-color: #FFF4E5;
+          padding: 4px 8px;
+          border-radius: 4px;
+          font-weight: 600;
+        }
+      `}</style>
       <DeleteResourceModal {...modalProps} />
       {pluginModal}
       <AcmTable<IResource<ApplicationStatus>>

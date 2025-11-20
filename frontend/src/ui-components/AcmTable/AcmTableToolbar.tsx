@@ -44,6 +44,7 @@ import {
 } from './AcmTableTypes'
 import { FilterSelect } from './FilterSelect'
 import { getLocalStorage, setLocalStorage } from './localColumnStorage'
+import { getItemWithExpiration, setItemWithExpiration } from './AcmTable'
 
 // when a filter has more then this many options, give it its own dropdown
 const SPLIT_FILTER_THRESHOLD = 30
@@ -320,7 +321,21 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
 
   const { t } = useTranslation()
   const initialSearch = props.initialSearch ?? ''
-  const [stateSearch, stateSetSearch] = useState(initialSearch)
+  const tableSearchLocalStorageKey = id ? `acm-table-search.${id}` : undefined
+
+  // Initialize search from localStorage if available, otherwise use initialSearch
+  const [stateSearch, stateSetSearch] = useState(() => {
+    if (tableSearchLocalStorageKey) {
+      try {
+        const savedSearch = getItemWithExpiration(tableSearchLocalStorageKey)
+        return savedSearch !== null ? savedSearch : initialSearch
+      } catch {
+        return initialSearch
+      }
+    }
+    return initialSearch
+  })
+
   const search = props.search ?? stateSearch
   const setSearch = props.setSearch ?? stateSetSearch
   const searchPlaceholder = props.searchPlaceholder ?? t('Search')
@@ -352,6 +367,17 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
     }
   }, [search, setInternalSearchWithDebounce])
 
+  // Save search to localStorage whenever it changes
+  useEffect(() => {
+    if (tableSearchLocalStorageKey && search !== undefined) {
+      try {
+        setItemWithExpiration(tableSearchLocalStorageKey, search)
+      } catch {
+        // Catch possible errors
+      }
+    }
+  }, [search, tableSearchLocalStorageKey])
+
   const clearSearch = useCallback(() => {
     /* istanbul ignore if */
     if (process.env.NODE_ENV !== 'test') {
@@ -363,7 +389,23 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
     if (preFilterSort) {
       setSort(preFilterSort)
     }
-  }, [setSearch, setInternalSearch, setPage, preFilterSort, setInternalSearchWithDebounce, setSort])
+    // Clear search from localStorage
+    if (tableSearchLocalStorageKey) {
+      try {
+        setItemWithExpiration(tableSearchLocalStorageKey, '')
+      } catch {
+        // Catch possible errors
+      }
+    }
+  }, [
+    setSearch,
+    setInternalSearch,
+    setPage,
+    preFilterSort,
+    setInternalSearchWithDebounce,
+    setSort,
+    tableSearchLocalStorageKey,
+  ])
 
   const clearSearchAndFilters = useCallback(() => {
     clearSearch()
