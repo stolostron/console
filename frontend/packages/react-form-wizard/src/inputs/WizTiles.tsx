@@ -83,14 +83,20 @@ export function Tile(props: {
   if (!props) return <Fragment />
 
   return (
-    <Card id={`tile-${props.id}`} isSelectable isSelected={isSelected}>
+    <Card
+      id={`tile-${props.id}`}
+      isSelectable
+      isSelected={isSelected}
+      onClick={() => {
+        context.setValue?.(props.value)
+      }}
+    >
       <CardHeader
         selectableActions={{
           selectableActionId: props.id,
           selectableActionAriaLabelledby: `tile-${props.id}`,
           name: props.id,
           variant: 'single',
-          onChange: () => context.setValue?.(props.value),
           isHidden: true,
         }}
       >
