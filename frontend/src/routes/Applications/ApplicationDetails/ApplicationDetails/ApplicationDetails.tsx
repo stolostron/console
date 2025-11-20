@@ -47,7 +47,7 @@ import ResourceLabels from '../../components/ResourceLabels'
 import { ISyncResourceModalProps, SyncResourceModal } from '../../components/SyncResourceModal'
 import { ISyncArgoCDModalProps, SyncArgoCDModal } from '../../components/SyncArgoCDModal'
 import { TimeWindowLabels } from '../../components/TimeWindowLabels'
-import '../../css/ApplicationOverview.css'
+import '../../css/ApplicationDetails.css'
 import {
   getClusterCount,
   getClusterCountField,
@@ -68,7 +68,7 @@ const clusterResourceStatusTooltipSubscription = (t: TFunction) =>
   t('Status represents the subscription selection within Resource topology.')
 const clusterResourceStatusTooltipOther = (t: TFunction) => t('Status of resources within the topology.')
 
-export function ApplicationOverviewPageContent() {
+export function ApplicationDetailsPageContent() {
   const { applicationData } = useApplicationDetailsContext()
   const { t } = useTranslation()
 

@@ -223,101 +223,104 @@ export function computeAppSyncStatus(synced: ApplicationStatusEntry, app: ISearc
   }
 }
 
-function createResourceMap(related: SearchResult['related'], kind: string): Map<string, ISearchResource[]> {
-  const map = new Map<string, ISearchResource[]>()
-  const relatedItems = related?.find((r) => r.kind === kind)
-  relatedItems?.items.forEach((item: ISearchResource) => {
-    item._relatedUids.forEach((uid) => {
-      if (map.has(uid)) {
-        map.get(uid).push(item)
-      } else {
-        map.set(uid, [item])
-      }
-    })
-  })
-  return map
-}
-
 export function computeDeployedPodStatuses(
   related: SearchResult['related'],
-  app2AppsetMap: Record<string, ApplicationStatuses>
+  appStatusesMap: ApplicationClusterStatusMap,
+  statuses2IDMap: WeakMap<ApplicationStatuses, { appName: string; uids: string[] }>,
+  ignoreHealthCheck?: boolean
 ) {
   // create maps for deployment and replica set
   const deploymentMap = createResourceMap(related, 'Deployment')
   const replicaSetMap = createResourceMap(related, 'ReplicaSet')
   const podMap = createResourceMap(related, 'Pod')
-  Object.keys(app2AppsetMap).forEach((appUid) => {
-    const appStatuses = app2AppsetMap[appUid]
-    if (appStatuses) {
-      if (
-        appStatuses.health[StatusColumn.counts][ScoreColumn.healthy] > 0 &&
-        appStatuses.synced[StatusColumn.counts][ScoreColumn.healthy] > 0
-      ) {
-        if (computepDeployedStatus(appStatuses.deployed, deploymentMap.get(appUid))) {
-          if (computepDeployedStatus(appStatuses.deployed, replicaSetMap.get(appUid))) {
-            const pods = podMap.get(appUid)
-            if (pods) {
-              computePodStatus(appStatuses.deployed, pods)
-            } else {
-              const replicaSet = replicaSetMap.get(appUid)?.[0]
-              if (replicaSet) {
-                appStatuses.deployed[StatusColumn.counts][ScoreColumn.warning] += Number(replicaSet.desired)
-              } else {
-                appStatuses.deployed[StatusColumn.counts] = Array(ScoreColumnSize).fill(0) as number[]
+  Object.keys(appStatusesMap).forEach((appMapKey) => {
+    Object.keys(appStatusesMap[appMapKey]).forEach((clusterKey) => {
+      const appStatuses = appStatusesMap[appMapKey][clusterKey]
+      if (appStatuses) {
+        if (
+          (appStatuses.health[StatusColumn.counts][ScoreColumn.healthy] > 0 &&
+            appStatuses.synced[StatusColumn.counts][ScoreColumn.healthy] > 0) ||
+          ignoreHealthCheck
+        ) {
+          // use these ids to find matching resources to add to app statuses
+          const ids = statuses2IDMap.get(appStatuses)
+          const podItems = collectRelatedResources(clusterKey, podMap, ids)
+          const replicaItems = collectRelatedResources(clusterKey, replicaSetMap, ids)
+          const deploymentItems = collectRelatedResources(clusterKey, deploymentMap, ids)
+          // compute pod statuses
+          computePodStatus(appStatuses.deployed, podItems)
+
+          // calculate current pod count from deployed status
+          const currentPodCount =
+            appStatuses.deployed[StatusColumn.counts][ScoreColumn.danger] +
+            appStatuses.deployed[StatusColumn.counts][ScoreColumn.warning] +
+            appStatuses.deployed[StatusColumn.counts][ScoreColumn.healthy] +
+            appStatuses.deployed[StatusColumn.counts][ScoreColumn.progress]
+
+          // compute desired pod count
+          let desiredPodCount = 0
+          if (replicaItems && replicaItems.length > 0) {
+            desiredPodCount = replicaItems.reduce((acc, item) => {
+              const desired = Number(item.desired ?? 0)
+              return acc + desired
+            }, 0)
+          }
+          if (deploymentItems && deploymentItems.length > 0) {
+            desiredPodCount *= deploymentItems.reduce((acc, item) => {
+              const desired = Number(item.desired ?? 1)
+              return acc * desired
+            }, 1)
+          }
+
+          // handle missing pods
+          const deployed = appStatuses.deployed
+          if (currentPodCount < desiredPodCount) {
+            let missingCount = desiredPodCount - currentPodCount
+
+            // helper function to process items
+            const processItems = (items: ISearchResource[]) => {
+              for (const item of items) {
+                if (missingCount <= 0) break
+
+                const available = Number(item.available ?? item.current ?? 0)
+                const desired = Number(item.desired ?? 0)
+
+                if (available === desired) {
+                  continue
+                } else if (available < desired || desired <= 0) {
+                  deployed[StatusColumn.counts][ScoreColumn.progress]++
+                  extractMessages(deployed, item)
+                  missingCount--
+                } else if (item.desired === undefined || available === 0) {
+                  deployed[StatusColumn.counts][ScoreColumn.danger]++
+                  extractMessages(deployed, item)
+                  missingCount--
+                }
               }
-              appStatuses.deployed[StatusColumn.messages] = []
             }
+
+            // process replicaItems and deploymentItems
+            if (replicaItems && replicaItems.length > 0) {
+              processItems(replicaItems)
+            }
+            if (deploymentItems && deploymentItems.length > 0) {
+              processItems(deploymentItems)
+            }
+            // if there are still missing pods, add them to the danger count
+            if (missingCount > 0) {
+              deployed[StatusColumn.counts][ScoreColumn.warning] += missingCount
+              deployed[StatusColumn.messages] = [] //[{ key: 'Status', value: `Missing ${missingCount} pods` }]
+            }
+          } else if (currentPodCount === 0 && desiredPodCount === 0) {
+            appStatuses.deployed[StatusColumn.counts] = Array(ScoreColumnSize).fill(0) as number[]
           }
         }
       }
-    }
-  })
-}
-
-export function computepDeployedStatus(deployed: ApplicationStatusEntry, items: ISearchResource[]) {
-  let allHealthy = true
-  if (items && items.length > 0) {
-    items.forEach((item) => {
-      const available = Number(item.available || item.current || 0)
-      const desired = Number(item.desired ?? 0)
-
-      if (available === desired) {
-        // nothing--drop through to success
-      } else if (available < desired) {
-        deployed[StatusColumn.counts][ScoreColumn.progress]++
-        extractMessages(deployed, item)
-        allHealthy = false
-      } else if (desired <= 0) {
-        deployed[StatusColumn.counts][ScoreColumn.progress]++
-        extractMessages(deployed, item)
-        allHealthy = false
-      } else if (!desired && available === 0) {
-        deployed[StatusColumn.counts][ScoreColumn.danger]++
-        extractMessages(deployed, item)
-        allHealthy = false
-      }
     })
-  }
-  return allHealthy
-}
-
-export function computePodStatuses(
-  related: SearchResult['related'],
-  app2AppsetMap: Record<string, ApplicationStatuses>
-) {
-  const podMap = createResourceMap(related, 'Pod')
-  Object.keys(app2AppsetMap).forEach((appUid) => {
-    const appStatuses = app2AppsetMap[appUid]
-    if (appStatuses) {
-      const pods = podMap.get(appUid)
-      if (pods) {
-        computePodStatus(appStatuses.deployed, pods)
-      }
-    }
   })
 }
 
-function computePodStatus(deployed: ApplicationStatusEntry, pods: ISearchResource[]) {
+function computePodStatus(deployed: ApplicationStatusEntry, pods: ISearchResource[] = []) {
   pods.forEach((pod) => {
     const status = pod.status.toLocaleLowerCase()
     if (status !== 'terminating') {
@@ -332,6 +335,67 @@ function computePodStatus(deployed: ApplicationStatusEntry, pods: ISearchResourc
       }
     }
   })
+}
+
+function createResourceMap(related: SearchResult['related'], kind: string) {
+  const byName = new Map<string, ISearchResource[]>()
+  const byUid = new Map<string, ISearchResource[]>()
+  const relatedItems = related?.find((r) => r.kind === kind)
+  relatedItems?.items.forEach((item: ISearchResource) => {
+    let name = getAppNameFromLabel(item.label)
+    if (name) {
+      name = `${item.cluster}/${item.namespace}/${name}`
+      byName.set(name, [...(byName.get(name) || []), item])
+    }
+    if (item._relatedUids) {
+      item._relatedUids.forEach((uid) => {
+        if (byUid.has(uid)) {
+          byUid.get(uid).push(item)
+        } else {
+          byUid.set(uid, [item])
+        }
+      })
+    }
+  })
+  return { byName, byUid }
+}
+
+function collectRelatedResources(
+  cluster: string,
+  map: { byName: Map<string, ISearchResource[]>; byUid: Map<string, ISearchResource[]> },
+  ids: { appName: string; deployments?: ISearchResource[]; uids: string[] }
+) {
+  let items: ISearchResource[] = []
+  // if this ocp app is made up of multiple deployments, find resources for each deployment
+  if (ids.deployments && ids.deployments.length > 1) {
+    ids.deployments.forEach((deployment: ISearchResource) => {
+      const item =
+        map.byName.get(`${cluster}/${deployment.namespace}/${deployment.name}`) || map.byUid.get(deployment._uid) || []
+      if (item) {
+        items.push(...item)
+      }
+    })
+  } else {
+    // otherwise, just find resources using the app label
+    items = map.byName.get(`${cluster}/${ids.appName}`) || []
+  }
+  // if no resources found, find resources using the app ownerId
+  if (items.length === 0) {
+    ids.uids.forEach((uid) => {
+      const related = map.byUid.get(uid)
+      if (related) {
+        items.push(...(related || []))
+      }
+    })
+  }
+  // Remove duplicates based on _uid
+  const uniqueItems = new Map<string, ISearchResource>()
+  items.forEach((item) => {
+    if (item._uid) {
+      uniqueItems.set(item._uid, item)
+    }
+  })
+  return Array.from(uniqueItems.values())
 }
 
 function getAppStatusScores(clusters: string[], appStatuses: ApplicationStatusMap) {
@@ -378,9 +442,30 @@ export function extractMessages(ase: ApplicationStatusEntry, app: ISearchResourc
   }
   Object.entries(app).forEach((entry: [string, string]) => {
     if (entry[0].startsWith('_') && (entry[0].includes('condition') || entry[0].includes('missing'))) {
-      ase[StatusColumn.messages].push({ key: entry[0], value: entry[1] })
+      // Don't add message if it already exists
+      if (!ase[StatusColumn.messages].some((msg) => msg.key === entry[0])) {
+        ase[StatusColumn.messages].push({ key: entry[0], value: entry[1] })
+      }
     }
   })
+}
+
+// when these labels are found on a resource they denote what application created them
+export const appOwnerLabels: string[] = [
+  'kustomize.toolkit.fluxcd.io/name=', // Flux
+  'helm.toolkit.fluxcd.io/name=', // Flux
+  'app=', // OpenShift
+  'app.kubernetes.io/part-of=', // OpenShift
+  // 'app.kubernetes.io/name=', // OpenShift
+]
+
+export function getAppNameFromLabel(label: string, defaultName?: string) {
+  const matchingLabel = appOwnerLabels.find((labelPattern) => label?.includes(labelPattern))
+  if (!matchingLabel) return defaultName
+
+  const startIdx = label.indexOf(matchingLabel) + matchingLabel.length
+  const endIdx = label.indexOf(';', startIdx)
+  return label.substring(startIdx, endIdx > -1 ? endIdx : undefined)
 }
 
 //////////////////////////////////////////////////////////////////

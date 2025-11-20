@@ -131,7 +131,7 @@ exports[`Correctly returns CreateDetailsLink - ACM-Application 1`] = `
 <body>
   <div>
     <a
-      href="/multicloud/applications/details/testApplicationNamespace/testApplicationName/overview?apiVersion=application.app.k8s.io&cluster=cluster"
+      href="/multicloud/applications/details/testApplicationNamespace/testApplicationName/details?apiVersion=application.app.k8s.io&cluster=cluster"
     >
       testApplicationName
     </a>
@@ -271,7 +271,7 @@ exports[`Correctly returns CreateGlobalSearchDetailsLink managed cluster Applica
       data-ouia-component-id="OUIA-Generated-Button-link-3"
       data-ouia-component-type="PF5/Button"
       data-ouia-safe="true"
-      href="undefined/multicloud/applications/details/testClusterNamespace/testClusterName/overview?apiVersion=application.app.k8s.io&cluster=leaf-cluster"
+      href="undefined/multicloud/applications/details/testClusterNamespace/testClusterName/details?apiVersion=application.app.k8s.io&cluster=leaf-cluster"
       target="_blank"
     >
       testClusterName
@@ -418,7 +418,7 @@ exports[`Correctly returns CreateGlobalSearchDetailsLink managed hub Application
 <body>
   <div>
     <a
-      href="/multicloud/applications/details/testClusterNamespace/testClusterName/overview?apiVersion=application.app.k8s.io"
+      href="/multicloud/applications/details/testClusterNamespace/testClusterName/details?apiVersion=application.app.k8s.io"
     >
       testClusterName
     </a>

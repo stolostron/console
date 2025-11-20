@@ -11,7 +11,7 @@ import {
   ScoreColumnSize,
   SEARCH_QUERY_LIMIT,
 } from './applications'
-import { computePodStatuses } from './utils'
+import { appOwnerLabels, computeDeployedPodStatuses, getAppNameFromLabel } from './utils'
 import {
   transform,
   getClusterMap,
@@ -24,13 +24,6 @@ import {
 // getting system apps by its cluster name in cluster chunks
 const REMOTE_CLUSTER_CHUNKS = 10
 const clusterNameChunks: string[][] = []
-
-const labelArr: string[] = [
-  'kustomize.toolkit.fluxcd.io/name=',
-  'helm.toolkit.fluxcd.io/name=',
-  'app=',
-  'app.kubernetes.io/part-of=',
-]
 
 let ocpPageChunk: ApplicationPageChunk
 const ocpPageChunks: ApplicationPageChunk[] = []
@@ -47,7 +40,7 @@ export function addOCPQueryInputs(applicationCache: ApplicationCacheType, query:
     },
     {
       property: 'label',
-      values: [...labelArr.map((label) => `${label}*`)],
+      values: [...appOwnerLabels.map((label) => `${label}*`)],
     },
     {
       property: 'namespace',
@@ -81,7 +74,7 @@ export function addSystemQueryInputs(applicationCache: ApplicationCacheType, que
       },
       {
         property: 'label',
-        values: [...labelArr.map((label) => `${label}*`)],
+        values: [...appOwnerLabels.map((label) => `${label}*`)],
       },
       {
         property: 'namespace',
@@ -110,7 +103,7 @@ export function cacheOCPApplications(
   const remoteOCPApps: IResource[] = []
   const ocpApps: ISearchResource[] = []
   try {
-    const openShiftAppResourceMaps: Record<string, ISearchResource> = {}
+    const openShiftAppResourceMaps: Record<string, ISearchResource[]> = {}
     searchResult.items.forEach((ocpApp: ISearchResource) => {
       if (ocpApp._hostingSubscription) {
         // don't list subscription apps as ocp
@@ -141,12 +134,20 @@ export function cacheOCPApplications(
         const argoKey = `${argoInstanceLabelValue}-${ocpApp.namespace}-${ocpApp.cluster}`
         // filter out ocp apps that are argo apps
         if (!ocpArgoAppFilter.has(argoKey)) {
-          openShiftAppResourceMaps[key] = ocpApp
+          const existing = openShiftAppResourceMaps[key]
+          // check if this ocp app is using multiple deployments :)
+          // and if so, remember them all when creating pod status
+          if (existing) {
+            existing.push(ocpApp)
+          } else {
+            openShiftAppResourceMaps[key] = [ocpApp]
+          }
         }
       }
     })
 
-    Object.entries(openShiftAppResourceMaps).forEach(([, value]) => {
+    Object.entries(openShiftAppResourceMaps).forEach(([, values]) => {
+      const value = values[0]
       const appLabel = getAppNameFromLabel(value.label, value.name)
       const resourceName = value.name
       let apps
@@ -171,6 +172,7 @@ export function cacheOCPApplications(
       }
       apps.push(app)
       value.type = getApplicationType(app)
+      value.deployments = values
       ocpApps.push(value)
     })
   } catch (e) {
@@ -205,15 +207,6 @@ export function cacheOCPApplications(
       logger.error(`cacheRemoteSystemApps exception ${e}`)
     }
   }
-}
-
-function getAppNameFromLabel(label: string, defaultName: string) {
-  const matchingLabel = labelArr.find((labelPattern) => label?.includes(labelPattern))
-  if (!matchingLabel) return defaultName
-
-  const startIdx = label.indexOf(matchingLabel) + matchingLabel.length
-  const endIdx = label.indexOf(';', startIdx)
-  return label.substring(startIdx, endIdx > -1 ? endIdx : undefined)
 }
 
 function cacheRemoteSystemApps(
@@ -298,11 +291,15 @@ function getValues(labels: { annotation: any; value: any }[]) {
 
 export function createOCPStatusMap(ocpApps: ISearchResource[], relatedResources: SearchResult['related']) {
   const ocpClusterStatusMap: ApplicationClusterStatusMap = {}
-  const app2AppsetMap: Record<string, ApplicationStatuses> = {}
+  const statuses2IDMap = new WeakMap<
+    ApplicationStatuses,
+    { appName: string; deployments: ISearchResource[]; uids: string[] }
+  >()
 
   // create an app map with syncs and health
   ocpApps.forEach((app: ISearchResource) => {
-    const appKey = `${app.type}/${app.namespace}/${getAppNameFromLabel(app.label, app.name)}`
+    const appName = `${app.namespace}/${getAppNameFromLabel(app.label, app.name)}`
+    const appKey = `${app.type}/${appName}`
     let appStatusMap = ocpClusterStatusMap[appKey]
     if (!appStatusMap) {
       appStatusMap = ocpClusterStatusMap[appKey] = {}
@@ -315,11 +312,16 @@ export function createOCPStatusMap(ocpApps: ISearchResource[], relatedResources:
         deployed: [Array(ScoreColumnSize).fill(0) as number[], []],
       }
     }
-    app2AppsetMap[app._uid] = appStatuses
+    let appIDMap = statuses2IDMap.get(appStatuses)
+    if (!appIDMap) {
+      appIDMap = { appName, deployments: app.deployments, uids: [] }
+      statuses2IDMap.set(appStatuses, appIDMap)
+    }
+    appIDMap.uids.push(app._uid)
   })
 
   // compute pod statuses
-  computePodStatuses(relatedResources, app2AppsetMap)
+  computeDeployedPodStatuses(relatedResources, ocpClusterStatusMap, statuses2IDMap, true)
 
   return ocpClusterStatusMap
 }
