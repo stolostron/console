@@ -148,17 +148,19 @@ export interface AcmLinkProps extends LinkProps {
 export function AcmLink({ storageKey, storageValue, ...props }: AcmLinkProps) {
   const handleClick = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
     if (storageKey && storageValue) {
-      // Get existing visited values
-      const storedItem = localStorage.getItem(storageKey)
+      // Get existing visited values using expiration helper
+      const storedValue = getItemWithExpiration(storageKey)
       let visitedValues: string[] = []
 
-      try {
-        const parsed = JSON.parse(storedItem || '{}')
-        if (Array.isArray(parsed?.value)) {
-          visitedValues = parsed.value
+      if (storedValue) {
+        try {
+          const parsed = JSON.parse(storedValue)
+          if (Array.isArray(parsed)) {
+            visitedValues = parsed
+          }
+        } catch {
+          // If parsing fails, start with empty array
         }
-      } catch {
-        // If parsing fails, start with empty array
       }
 
       // Add current value if not already present
@@ -166,12 +168,8 @@ export function AcmLink({ storageKey, storageValue, ...props }: AcmLinkProps) {
         visitedValues.push(storageValue)
       }
 
-      // Store updated array with timestamp
-      const item: StorageItem = {
-        value: visitedValues as any,
-        timestamp: Date.now(),
-      }
-      localStorage.setItem(storageKey, JSON.stringify(item))
+      // Store updated array with expiration helper
+      setItemWithExpiration(storageKey, JSON.stringify(visitedValues))
     }
     props.onClick?.(event)
   }
@@ -179,14 +177,16 @@ export function AcmLink({ storageKey, storageValue, ...props }: AcmLinkProps) {
   // Check if this link value was visited before
   let wasVisited = false
   if (storageKey && storageValue) {
-    const storedItem = localStorage.getItem(storageKey)
-    try {
-      const parsed = JSON.parse(storedItem || '{}')
-      if (Array.isArray(parsed?.value)) {
-        wasVisited = parsed.value.includes(storageValue)
+    const storedValue = getItemWithExpiration(storageKey)
+    if (storedValue) {
+      try {
+        const parsed = JSON.parse(storedValue)
+        if (Array.isArray(parsed)) {
+          wasVisited = parsed.includes(storageValue)
+        }
+      } catch {
+        // If parsing fails, assume not visited
       }
-    } catch {
-      // If parsing fails, assume not visited
     }
   }
 
