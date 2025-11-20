@@ -258,29 +258,32 @@ export const getApplicationStatuses = (resource: IResource, type: 'health' | 'sy
 
 const renderPopoverContent = (
   resource: IResource,
+  counts: number[],
   type: 'health' | 'synced' | 'deployed',
   messages?: Record<string, string>[]
 ) => {
   return (
     <div style={{ width: '26.75rem' }}>
       {messages && messages.length > 0 ? (
-        messages.map((message) => {
-          // Remove leading underscore and "condition" from the key
-          let cleanedKey = message.key.replace(/^_/, '').replace(/^condition/i, '')
-          // Add space before each capitalized letter
-          cleanedKey = cleanedKey.replace(/([A-Z])/g, ' $1')
-          // Capitalize the first letter and trim any leading space
-          cleanedKey = cleanedKey.charAt(0).toUpperCase() + cleanedKey.slice(1)
-          cleanedKey = cleanedKey.trim()
-          return (
-            <div key={message.key} style={{ marginBottom: '0.5rem' }}>
-              <strong>{cleanedKey}:</strong> {message.value}
-            </div>
-          )
-        })
+        <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+          {messages.map((message) => {
+            // Remove leading underscore and "condition" from the key
+            let cleanedKey = message.key.replace(/^_/, '').replace(/^condition/i, '')
+            // Add space before each capitalized letter
+            cleanedKey = cleanedKey.replace(/([A-Z])/g, ' $1')
+            // Capitalize the first letter and trim any leading space
+            cleanedKey = cleanedKey.charAt(0).toUpperCase() + cleanedKey.slice(1)
+            cleanedKey = cleanedKey.trim()
+            return (
+              <div key={message.key} style={{ marginBottom: '0.5rem' }}>
+                <strong>{cleanedKey}:</strong> {message.value}
+              </div>
+            )
+          })}
+        </div>
       ) : (
         <div key={`${resource.metadata?.name}-${type}-status`} style={{ marginBottom: '0.5rem' }}>
-          <strong>Status</strong> {'OK'}
+          <strong>Status</strong> {counts[0] > 0 && counts.slice(1).every((count) => count === 0) ? 'OK' : 'Error'}
         </div>
       )}
     </div>
@@ -293,9 +296,9 @@ export function renderApplicationStatusGroup(resource: IResource, type: 'health'
     return (
       <Popover
         id={'labels-popover'}
-        bodyContent={renderPopoverContent(resource, type, messages)}
+        bodyContent={renderPopoverContent(resource, counts, type, messages)}
         position={PopoverPosition.bottom}
-        flipBehavior={['bottom', 'bottom-end', 'bottom-end']}
+        flipBehavior={['bottom', 'top-end', 'top-end']}
         hasAutoWidth
       >
         <Label style={{ width: 'fit-content' }} isOverflowLabel>
@@ -812,7 +815,10 @@ export default function ApplicationsOverview() {
           },
         ],
         tableFilterFn: (selectedValues: string[], item: IApplicationResource) => {
-          return selectedValues.includes(get(item, 'transformed.healthStatus'))
+          return (
+            selectedValues.includes(get(item, 'transformed.healthStatus')) &&
+            (item.apiVersion === ApplicationSetApiVersion || item.apiVersion === ArgoApplicationApiVersion)
+          )
         },
       },
       {
@@ -829,7 +835,10 @@ export default function ApplicationsOverview() {
           },
         ],
         tableFilterFn: (selectedValues: string[], item: IApplicationResource) => {
-          return selectedValues.includes(get(item, 'transformed.syncedStatus'))
+          return (
+            selectedValues.includes(get(item, 'transformed.syncedStatus')) &&
+            (item.apiVersion === ApplicationSetApiVersion || item.apiVersion === ArgoApplicationApiVersion)
+          )
         },
       },
       {
