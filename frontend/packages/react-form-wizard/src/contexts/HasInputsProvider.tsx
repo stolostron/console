@@ -24,17 +24,14 @@ export function HasInputsProvider(props: { children: ReactNode }) {
     setHasInputsState(true)
   }, [setHasInputsState])
 
+  if (hasInputs && !parentHasInputs) {
+    parentSetHasInputs()
+  }
+
   const updateHasInputs = useCallback(() => {
     setHasInputsState(false)
     parentUpdateHasInputs()
   }, [setHasInputsState, parentUpdateHasInputs])
-
-  // Update parent when hasInputs changes
-  useLayoutEffect(() => {
-    if (hasInputs && !parentHasInputs) {
-      parentSetHasInputs()
-    }
-  }, [hasInputs, parentHasInputs, parentSetHasInputs])
 
   // When this control goes away - parentUpdateHasInputs
   useLayoutEffect(
