@@ -94,6 +94,12 @@ const tableClass = css({
   },
 })
 
+const visitedLinkClass = css`
+  span {
+    color: var(--pf-v5-global--link--Color--visited) !important;
+  }
+`
+
 const DEFAULT_ITEMS_PER_PAGE = 10
 const STORAGE_EXPIRATION_MS = 30 * 60 * 1000 // 30 minutes in milliseconds
 
@@ -189,13 +195,9 @@ export function AcmLink({ storageKey, storageValue, ...props }: AcmLinkProps) {
       }
     }
   }
+  const linkClassName = wasVisited ? visitedLinkClass : ''
 
-  return (
-    <Link onClick={handleClick} {...props}>
-      {props.children}
-      {wasVisited ? '✓' : ''}
-    </Link>
-  )
+  return <Link onClick={handleClick} {...props} className={linkClassName} />
 }
 
 const BREAKPOINT_SIZES = [
