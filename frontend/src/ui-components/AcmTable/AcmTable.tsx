@@ -95,6 +95,7 @@ const tableClass = css({
 })
 
 const visitedLinkClass = css`
+  color: var(--pf-v5-global--link--Color--visited) !important;
   span {
     color: var(--pf-v5-global--link--Color--visited) !important;
   }
@@ -146,9 +147,9 @@ export function getItemWithExpiration(key: string): string | null {
  */
 export interface AcmLinkProps extends LinkProps {
   /** The localStorage key to use for storing the value */
-  storageKey?: string
+  storageKey: string
   /** The value to store in localStorage when the link is clicked */
-  storageValue?: string
+  storageValue: string
 }
 
 export function AcmLink({ storageKey, storageValue, ...props }: AcmLinkProps) {
