@@ -23,43 +23,8 @@ import { useSharedAtoms, useRecoilValue } from '../../../../../shared-recoil'
 import { Link } from 'react-router-dom-v5-compat'
 import { getSearchLink } from '../../../../Applications/helpers/resource-helper'
 import { getNodepoolStatus } from './NodePoolsTable'
-
-const isUpdateVersionAcceptable = (currentVersion: string, newVersion: string) => {
-  const currentVersionParts = currentVersion.split('.')
-  const newVersionParts = newVersion.split('.')
-
-  if (newVersionParts[0] !== currentVersionParts[0]) {
-    return false
-  }
-
-  if (newVersionParts[0] === currentVersionParts[0] && Number(newVersionParts[1]) > Number(currentVersionParts[1])) {
-    return true
-  }
-
-  if (
-    newVersionParts[0] === currentVersionParts[0] &&
-    Number(newVersionParts[1]) === Number(currentVersionParts[1]) &&
-    Number(newVersionParts[2]) > Number(currentVersionParts[2])
-  ) {
-    return true
-  }
-
-  return false
-}
-
-export const getCPUArchFromReleaseImage = (releaseImage = '') => {
-  const match = /.+:.*-(.*)/gm.exec(releaseImage)
-  if (match && match.length > 1 && match[1]) {
-    return match[1]
-  }
-}
-
-export const getVersionFromReleaseImage = (releaseImage = '') => {
-  const match = /.+:(\d+\.\d+(?:\.\d+)?)/gm.exec(releaseImage)
-  if (match && match.length > 1 && match[1]) {
-    return match[1]
-  }
-}
+import { useHypershiftAvailableUpdates } from '../hooks/useHypershiftAvailableUpdates'
+import { getVersionFromReleaseImage } from '../utils/utils'
 
 export function DistributionField(props: {
   cluster?: Cluster
@@ -80,8 +45,6 @@ export function DistributionField(props: {
     name: props.cluster?.name,
     namespace: props.cluster?.namespace,
   })
-  const image = props.cluster?.distribution?.ocp?.desired?.image
-  const archType = getCPUArchFromReleaseImage(image) ?? 'multi'
 
   const openshiftText = 'OpenShift'
   const microshiftText = 'MicroShift'
@@ -94,31 +57,7 @@ export function DistributionField(props: {
     return props.cluster?.distribution?.displayVersion
   }, [props.resource, props.nodepool?.status?.version, props.cluster?.distribution?.displayVersion])
 
-  const hypershiftAvailableUpdates: Record<string, string> = useMemo(() => {
-    if (!(props.cluster?.isHypershift || props.cluster?.isHostedCluster)) {
-      return {}
-    }
-    const updates: any = {}
-    clusterImageSets.forEach((cis) => {
-      if (cis.spec?.releaseImage.includes(archType)) {
-        const releaseImageVersion = getVersionFromReleaseImage(cis.spec?.releaseImage)
-        if (
-          releaseImageVersion &&
-          isUpdateVersionAcceptable(props.cluster?.distribution?.ocp?.version || '', releaseImageVersion)
-        ) {
-          updates[releaseImageVersion] = cis.spec?.releaseImage
-        }
-      }
-    })
-
-    return updates
-  }, [
-    archType,
-    clusterImageSets,
-    props.cluster?.distribution?.ocp?.version,
-    props.cluster?.isHostedCluster,
-    props.cluster?.isHypershift,
-  ])
+  const hypershiftAvailableUpdates = useHypershiftAvailableUpdates(props?.cluster)
 
   const isUpdateAvailable: boolean = useMemo(() => {
     //if nodepool table
