@@ -44,7 +44,7 @@ import {
 } from './AcmTableTypes'
 import { FilterSelect } from './FilterSelect'
 import { getLocalStorage, setLocalStorage } from './localColumnStorage'
-import { getItemWithExpiration, setItemWithExpiration } from './AcmTable'
+import { setItemWithExpiration } from './AcmTable'
 
 // when a filter has more then this many options, give it its own dropdown
 const SPLIT_FILTER_THRESHOLD = 30
@@ -307,7 +307,7 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
     selected,
     setSelected,
     disabled,
-    internalSearch,
+    internalSearch: propsInternalSearch,
     setInternalSearch,
     preFilterSort,
     exportTable,
@@ -320,22 +320,9 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
   } = props
 
   const { t } = useTranslation()
-  const initialSearch = props.initialSearch ?? ''
   const tableSearchLocalStorageKey = id ? `acm-table-search.${id}` : undefined
-
-  // Initialize search from localStorage if available, otherwise use initialSearch
-  const [stateSearch, stateSetSearch] = useState(() => {
-    if (tableSearchLocalStorageKey) {
-      try {
-        const savedSearch = getItemWithExpiration(tableSearchLocalStorageKey)
-        return savedSearch !== null ? savedSearch : initialSearch
-      } catch {
-        return initialSearch
-      }
-    }
-    return initialSearch
-  })
-
+  const initialSearch = propsInternalSearch ?? ''
+  const [stateSearch, stateSetSearch] = useState(initialSearch)
   const search = props.search ?? stateSearch
   const setSearch = props.setSearch ?? stateSetSearch
   const searchPlaceholder = props.searchPlaceholder ?? t('Search')
@@ -491,7 +478,7 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
                 <AcmSearchInput
                   placeholder={searchPlaceholder}
                   spellCheck={false}
-                  resultsCount={`${search === internalSearch ? filteredCount : '-'} / ${totalCount}`}
+                  resultsCount={`${search === propsInternalSearch ? filteredCount : '-'} / ${totalCount}`}
                   style={{ flexGrow: 1 }}
                   canAddConstraints
                   useAdvancedSearchPopper={advancedFilters.length > 0}

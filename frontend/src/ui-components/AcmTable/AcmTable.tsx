@@ -285,7 +285,20 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     direction: SortByDirection.asc,
   }
   const initialSort = props.initialSort || defaultSort
-  const initialSearch = props.initialSearch ?? ''
+  let initialSearch = props.initialSearch ?? ''
+  const tableSearchLocalStorageKey = id ? `acm-table-search.${id}` : undefined
+  if (tableSearchLocalStorageKey) {
+    try {
+      const savedSearch = getItemWithExpiration(tableSearchLocalStorageKey)
+      if (savedSearch !== null) {
+        initialSearch = savedSearch
+      }
+    } catch {
+      // If parsing fails, it might be an old format without expiration
+      // Remove it and return null
+      localStorage.removeItem(tableSearchLocalStorageKey)
+    }
+  }
   const { isPreProcessed, loading, emptyResult } = resultView || {}
 
   const { t } = useTranslation()
@@ -671,7 +684,8 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     const sorted: ITableItem<T>[] = [...filtered]
 
     // if using a result view from backend, the items have already been sorted
-    if (!isPreProcessed && sort?.index !== undefined) {
+    // also if user is searching, that's its own type of sorting
+    if (!isPreProcessed && sort?.index !== undefined && internalSearch === '') {
       const compare = selectedSortedCols[sort.index].sort
       /* istanbul ignore else */
       if (compare) {
@@ -686,7 +700,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       }
     }
     return { sorted, itemCount: (isPreProcessed && resultCounts?.itemCount) || sorted.length }
-  }, [filtered, isPreProcessed, sort, resultCounts?.itemCount, selectedSortedCols])
+  }, [filtered, isPreProcessed, sort, resultCounts?.itemCount, selectedSortedCols, internalSearch])
 
   const actualPage = useMemo<number>(() => {
     let actualPage = page
