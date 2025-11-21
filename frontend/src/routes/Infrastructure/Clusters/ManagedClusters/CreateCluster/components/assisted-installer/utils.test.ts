@@ -134,7 +134,12 @@ describe('setProvisionRequirements', () => {
         provisionRequirements: undefined,
       },
     }
-    setProvisionRequirements(mockAgentClusterInstall as unknown as AgentClusterInstallK8sResource, undefined, undefined)
+    setProvisionRequirements(
+      mockAgentClusterInstall as unknown as AgentClusterInstallK8sResource,
+      undefined,
+      undefined,
+      undefined
+    )
     //expect(patchResource).toHaveBeenCalledWith(mockAgentClusterInstall, [
     //  { op: 'add', path: '/spec/provisionRequirements', value: {} },
     //])
@@ -151,7 +156,7 @@ describe('setProvisionRequirements', () => {
         },
       },
     }
-    setProvisionRequirements(mockAgentClusterInstall as unknown as AgentClusterInstallK8sResource, 4, 3)
+    setProvisionRequirements(mockAgentClusterInstall as unknown as AgentClusterInstallK8sResource, 4, 0, 3)
     /*
     expect(patchResource).toHaveBeenCalledWith(mockAgentClusterInstall, [
       {
