@@ -16,6 +16,7 @@ import {
 } from '@patternfly/react-core'
 import { EllipsisVIcon } from '@patternfly/react-icons'
 import { css as cssPF } from '@patternfly/react-styles'
+import { Link, LinkProps } from 'react-router-dom-v5-compat'
 import {
   ActionsColumn,
   CustomActionsToggleProps,
@@ -93,7 +94,112 @@ const tableClass = css({
   },
 })
 
+const visitedLinkClass = css`
+  color: var(--pf-v5-global--link--Color--visited) !important;
+  span {
+    color: var(--pf-v5-global--link--Color--visited) !important;
+  }
+`
+
 const DEFAULT_ITEMS_PER_PAGE = 10
+const STORAGE_EXPIRATION_MS = 30 * 60 * 1000 // 30 minutes in milliseconds
+
+// Helper functions for localStorage with expiration
+interface StorageItem {
+  value: string
+  timestamp: number
+}
+
+export function setItemWithExpiration(key: string, value: string): void {
+  const item: StorageItem = {
+    value,
+    timestamp: Date.now(),
+  }
+  localStorage.setItem(key, JSON.stringify(item))
+}
+
+export function getItemWithExpiration(key: string): string | null {
+  const itemStr = localStorage.getItem(key)
+  if (!itemStr) return null
+
+  try {
+    const item: StorageItem = JSON.parse(itemStr)
+    const now = Date.now()
+
+    // Check if item has expired (older than 30 minutes)
+    if (now - item.timestamp > STORAGE_EXPIRATION_MS) {
+      localStorage.removeItem(key)
+      return null
+    }
+
+    return item.value
+  } catch {
+    // If parsing fails, it might be an old format without expiration
+    // Remove it and return null
+    localStorage.removeItem(key)
+    return null
+  }
+}
+
+/**
+ * Enhanced Link component that stores a value in localStorage with expiration when clicked.
+ * Uses the same 30-minute expiration pattern as other table state.
+ */
+export interface AcmLinkProps extends LinkProps {
+  /** The localStorage key to use for storing the value */
+  storageKey: string
+  /** The value to store in localStorage when the link is clicked */
+  storageValue: string
+}
+
+export function AcmLink({ storageKey, storageValue, ...props }: AcmLinkProps) {
+  const handleClick = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+    if (storageKey && storageValue) {
+      // Get existing visited values using expiration helper
+      const storedValue = getItemWithExpiration(storageKey)
+      let visitedValues: string[] = []
+
+      if (storedValue) {
+        try {
+          const parsed = JSON.parse(storedValue)
+          if (Array.isArray(parsed)) {
+            visitedValues = parsed
+          }
+        } catch {
+          // If parsing fails, start with empty array
+        }
+      }
+
+      // Add current value if not already present
+      if (!visitedValues.includes(storageValue)) {
+        visitedValues.push(storageValue)
+      }
+
+      // Store updated array with expiration helper
+      setItemWithExpiration(storageKey, JSON.stringify(visitedValues))
+    }
+    props.onClick?.(event)
+  }
+
+  // Check if this link value was visited before
+  let wasVisited = false
+  if (storageKey && storageValue) {
+    const storedValue = getItemWithExpiration(storageKey)
+    if (storedValue) {
+      try {
+        const parsed = JSON.parse(storedValue)
+        if (Array.isArray(parsed)) {
+          wasVisited = parsed.includes(storageValue)
+        }
+      } catch {
+        // If parsing fails, assume not visited
+      }
+    }
+  }
+  const linkClassName = wasVisited ? visitedLinkClass : ''
+
+  return <Link onClick={handleClick} {...props} className={linkClassName} />
+}
 
 const BREAKPOINT_SIZES = [
   { name: TableGridBreakpoint.none, size: 0 },
@@ -112,12 +218,12 @@ const AcmTablePaginationContext: React.Context<{
 export function AcmTablePaginationContextProvider(props: { children: ReactNode; localStorageKey: string }) {
   const { children, localStorageKey } = props
   const [perPage, setPerPage] = useState(
-    Number.parseInt(localStorage.getItem(localStorageKey) || '0', 10) || DEFAULT_ITEMS_PER_PAGE
+    Number.parseInt(getItemWithExpiration(localStorageKey) || '0', 10) || DEFAULT_ITEMS_PER_PAGE
   )
   const paginationContext = {
     perPage,
     setPerPage: (perPage: number) => {
-      localStorage.setItem(localStorageKey, String(perPage))
+      setItemWithExpiration(localStorageKey, String(perPage))
       setPerPage(perPage)
     },
   }
@@ -180,7 +286,20 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     direction: SortByDirection.asc,
   }
   const initialSort = props.initialSort || defaultSort
-  const initialSearch = props.initialSearch ?? ''
+  let initialSearch = props.initialSearch ?? ''
+  const tableSearchLocalStorageKey = id ? `acm-table-search.${id}` : undefined
+  if (tableSearchLocalStorageKey) {
+    try {
+      const savedSearch = getItemWithExpiration(tableSearchLocalStorageKey)
+      if (savedSearch !== null) {
+        initialSearch = savedSearch
+      }
+    } catch {
+      // If parsing fails, it might be an old format without expiration
+      // Remove it and return null
+      localStorage.removeItem(tableSearchLocalStorageKey)
+    }
+  }
   const { isPreProcessed, loading, emptyResult } = resultView || {}
 
   const { t } = useTranslation()
@@ -198,19 +317,91 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     }
   }, [items, loading, loadStarted, loadCompleted, resultView])
 
-  // State that can come from context or component state (perPage)
-  const [statePerPage, stateSetPerPage] = useState(props.initialPerPage || DEFAULT_ITEMS_PER_PAGE)
-  const { perPage: contextPerPage, setPerPage: contextSetPerPage } = useContext(AcmTablePaginationContext)
-  const perPage = contextPerPage || statePerPage
-  const setPerPage = contextSetPerPage || stateSetPerPage
+  // =============================================================================
+  // TABLE STATE WITH LOCALSTORAGE PERSISTENCE
+  // All table states below are persisted to localStorage when table has an id prop
+  // This allows the table to restore user preferences when the page is reopened
+  // =============================================================================
 
-  // State that can be controlled from component props or uncontrolled from component state (page, search, sort)
-  const [statePage, stateSetPage] = useState(props.initialPage || 1)
+  // PERPAGE STATE - Restore items per page from localStorage if available
+  const [statePerPage, stateSetPerPage] = useState(() => {
+    if (id) {
+      const savedPerPage = getItemWithExpiration(`acm-table-perPage-${id}`)
+      if (savedPerPage) {
+        const parsedPerPage = Number.parseInt(savedPerPage, 10)
+        if (!isNaN(parsedPerPage) && parsedPerPage > 0) {
+          return parsedPerPage
+        }
+      }
+    }
+    return props.initialPerPage || DEFAULT_ITEMS_PER_PAGE
+  })
+  const { perPage: contextPerPage, setPerPage: contextSetPerPage } = useContext(AcmTablePaginationContext)
+  const setPerPageWithStorage = useCallback(
+    (newPerPage: number) => {
+      stateSetPerPage(newPerPage)
+      if (id) {
+        setItemWithExpiration(`acm-table-perPage-${id}`, String(newPerPage))
+      }
+    },
+    [id]
+  )
+  const perPage = contextPerPage || statePerPage
+  const setPerPage = contextSetPerPage || setPerPageWithStorage
+
+  // PAGE STATE - Restore page from localStorage if available
+  const [statePage, stateSetPage] = useState(() => {
+    if (id) {
+      const savedPage = getItemWithExpiration(`acm-table-page-${id}`)
+      if (savedPage) {
+        const parsedPage = Number.parseInt(savedPage, 10)
+        if (!isNaN(parsedPage) && parsedPage > 0) {
+          return parsedPage
+        }
+      }
+    }
+    return props.initialPage || 1
+  })
   const page = props.page || statePage
-  const setPage = props.setPage || stateSetPage
-  const [stateSort, stateSetSort] = useState<ISortBy | undefined>(initialSort)
+  const setPageWithStorage = useCallback(
+    (newPage: number) => {
+      stateSetPage(newPage)
+      if (id) {
+        setItemWithExpiration(`acm-table-page-${id}`, String(newPage))
+      }
+    },
+    [id]
+  )
+  const setPage = props.setPage || setPageWithStorage
+
+  // SORT STATE - Restore sort from localStorage if available
+  const [stateSort, stateSetSort] = useState<ISortBy | undefined>(() => {
+    if (id) {
+      const savedSort = getItemWithExpiration(`acm-table-sort-${id}`)
+      if (savedSort) {
+        try {
+          const parsedSort = JSON.parse(savedSort) as ISortBy
+          if (parsedSort && typeof parsedSort.index === 'number' && parsedSort.direction) {
+            return parsedSort
+          }
+        } catch {
+          // Invalid JSON, fall back to initialSort
+        }
+      }
+    }
+    return initialSort
+  })
   const sort = props.sort || stateSort
-  const setSort = props.setSort || stateSetSort
+  const setSortWithStorage = useCallback(
+    (newSort: ISortBy | undefined) => {
+      stateSetSort(newSort)
+      if (id && newSort) {
+        setItemWithExpiration(`acm-table-sort-${id}`, JSON.stringify(newSort))
+      }
+    },
+    [id]
+  )
+  const setSort = props.setSort || setSortWithStorage
   const [activeAdvancedFilters, setActiveAdvancedFilters] = useState<SearchConstraint[]>([])
 
   // State that is only stored in the component state
@@ -494,7 +685,8 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     const sorted: ITableItem<T>[] = [...filtered]
 
     // if using a result view from backend, the items have already been sorted
-    if (!isPreProcessed && sort?.index !== undefined) {
+    // also if user is searching, that's its own type of sorting
+    if (!isPreProcessed && sort?.index !== undefined && internalSearch === '') {
       const compare = selectedSortedCols[sort.index].sort
       /* istanbul ignore else */
       if (compare) {
@@ -509,7 +701,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       }
     }
     return { sorted, itemCount: (isPreProcessed && resultCounts?.itemCount) || sorted.length }
-  }, [filtered, isPreProcessed, sort, resultCounts?.itemCount, selectedSortedCols])
+  }, [filtered, isPreProcessed, sort, resultCounts?.itemCount, selectedSortedCols, internalSearch])
 
   const actualPage = useMemo<number>(() => {
     let actualPage = page
@@ -716,18 +908,19 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         // sort changed while filtering; forget previous setting
         setPreFilterSort(undefined)
       }
+      // Reset page to 1 when sort changes
+      setPage(1)
     },
-    [filtered.length, internalSearch, setSort]
+    [filtered.length, internalSearch, setSort, setPage]
   )
 
   const updatePerPage = useCallback(
     (newPerPage: number) => {
-      // keep the first item in view on pagination size change
-      const newPage = Math.floor(((page - 1) * perPage) / newPerPage) + 1
-      setPage(newPage)
+      // Reset to page 1 when items per page changes
+      setPage(1)
       setPerPage(newPerPage)
     },
-    [page, perPage, setPage, setPerPage]
+    [setPage, setPerPage]
   )
 
   const onSelect = useCallback(

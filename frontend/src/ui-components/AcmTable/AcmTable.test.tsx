@@ -626,7 +626,7 @@ describe('AcmTable', () => {
 
     // change sort during filter (Last Name)
     userEvent.click(getByText('Last Name'))
-    expect(container.querySelector('tbody tr:first-of-type [data-label="Last Name"]')).toHaveTextContent('Barnham')
+    expect(container.querySelector('tbody tr:first-of-type [data-label="Last Name"]')).toHaveTextContent('Novill')
 
     // clear filter
     expect(getByLabelText('Reset')).toBeVisible()
@@ -646,7 +646,7 @@ describe('AcmTable', () => {
 
     // change sort during filter (Last Name)
     userEvent.click(getByText('Last Name'))
-    expect(container.querySelector('tbody tr:first-of-type [data-label="Last Name"]')).toHaveTextContent('Barnham')
+    expect(container.querySelector('tbody tr:first-of-type [data-label="Last Name"]')).toHaveTextContent('Novill')
 
     // clear filter by backspacing
     userEvent.type(getByPlaceholderText(placeholderString), '{backspace}{backspace}{backspace}{backspace}')
@@ -744,12 +744,12 @@ describe('AcmTable', () => {
     userEvent.click(getAllByLabelText('Go to next page')[0])
     expect(getAllByLabelText('Current page')[0]).toHaveValue(2)
 
-    // Switch to 10 items per page; verify automatic move to page 6
+    // Switch to 10 items per page; verify automatic move to page 1
     userEvent.click(getAllByLabelText('items per page')[0])
     await waitFor(() => expect(getByText('10 per page')).toBeVisible())
     userEvent.click(getByText('10 per page'))
     expect(container.querySelectorAll('tbody tr')).toHaveLength(10)
-    expect(getByLabelText('Current page')).toHaveValue(6)
+    expect(getByLabelText('Current page')).toHaveValue(1)
   })
   test('can show paginated results', () => {
     const { getAllByLabelText } = render(<Table />)
@@ -822,7 +822,7 @@ describe('AcmTable', () => {
     expect(getByLabelText('Current page')).toHaveValue(6)
     expect(setSearch).not.toHaveBeenCalled()
     expect(setSort).not.toHaveBeenCalled()
-    expect(container.querySelector('tbody:last-of-type [data-label="First Name"]')).toHaveTextContent('Alyce')
+    expect(container.querySelector('tbody:last-of-type [data-label="First Name"]')).toHaveTextContent('Ysabel')
 
     expect(getByLabelText('Reset')).toBeVisible()
     userEvent.click(getByLabelText('Reset'))

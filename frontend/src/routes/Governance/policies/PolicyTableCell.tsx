@@ -11,20 +11,23 @@ import { AutomationDetailsSidebar } from '../components/AutomationDetailsSidebar
 import { ButtonVariant } from '@patternfly/react-core'
 import { TFunction } from 'react-i18next'
 import AcmTimestamp from '../../../lib/AcmTimestamp'
+import { AcmLink } from '../../../ui-components/AcmTable'
 
 export function handleNameCell(item: PolicyTableItem) {
   return (
-    <Link
+    <AcmLink
       to={generatePath(NavigationPath.policyDetails, {
         namespace: item.policy.metadata.namespace!,
         name: item.policy.metadata.name!,
       })}
+      storageKey="policyNames"
+      storageValue={`${item.policy.metadata.namespace}/${item.policy.metadata.name!}`}
       state={{
         from: NavigationPath.policies,
       }}
     >
       {item.policy.metadata.name}
-    </Link>
+    </AcmLink>
   )
 }
 
