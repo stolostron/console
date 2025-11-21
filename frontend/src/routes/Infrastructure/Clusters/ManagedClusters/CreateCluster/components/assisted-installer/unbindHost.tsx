@@ -30,9 +30,10 @@ export const getUnbindHostAction =
     if (agent?.spec?.clusterDeploymentName?.name) {
       if (agentClusterInstall) {
         const masterCount = undefined /* Only workers can be removed */
+        const arbiterCount = agentClusterInstall.spec?.provisionRequirements.arbiterAgents || 0
         const workerCount = (agentClusterInstall.spec?.provisionRequirements.workerAgents || 1) - 1
         // TODO(mlibra): include following promise in the returned one to handle errors
-        setProvisionRequirements(agentClusterInstall, workerCount, masterCount)
+        setProvisionRequirements(agentClusterInstall, workerCount, arbiterCount, masterCount)
       }
 
       return patchResource(agent as IResource, [

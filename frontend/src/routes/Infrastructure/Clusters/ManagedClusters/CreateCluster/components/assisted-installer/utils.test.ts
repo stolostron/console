@@ -18,6 +18,7 @@ import {
   useProvisioningConfiguration,
   onEditFinish,
 } from './utils'
+import { getUnbindHostAction } from './unbindHost'
 import {
   AgentClusterInstallApiVersion,
   AgentClusterInstallKind,
@@ -134,10 +135,15 @@ describe('setProvisionRequirements', () => {
         provisionRequirements: undefined,
       },
     }
-    setProvisionRequirements(mockAgentClusterInstall as unknown as AgentClusterInstallK8sResource, undefined, undefined)
-    //expect(patchResource).toHaveBeenCalledWith(mockAgentClusterInstall, [
-    //  { op: 'add', path: '/spec/provisionRequirements', value: {} },
-    //])
+    setProvisionRequirements(
+      mockAgentClusterInstall as unknown as AgentClusterInstallK8sResource,
+      undefined,
+      undefined,
+      undefined
+    )
+    expect(resourceUtils.patchResource).toHaveBeenCalledWith(mockAgentClusterInstall, [
+      { op: 'add', path: '/spec/provisionRequirements', value: {} },
+    ])
   })
 
   it('updates provisioning requirements if some are already set', () => {
@@ -151,23 +157,96 @@ describe('setProvisionRequirements', () => {
         },
       },
     }
-    setProvisionRequirements(mockAgentClusterInstall as unknown as AgentClusterInstallK8sResource, 4, 3)
-    /*
-    expect(patchResource).toHaveBeenCalledWith(mockAgentClusterInstall, [
+    setProvisionRequirements(mockAgentClusterInstall as unknown as AgentClusterInstallK8sResource, 4, 0, 3)
+    expect(resourceUtils.patchResource).toHaveBeenCalledWith(mockAgentClusterInstall, [
       {
         op: 'replace',
         path: '/spec/provisionRequirements',
         value: {
           workerAgents: 4,
+          arbiterAgents: 0,
           controlPlaneAgents: 3,
         },
       },
     ])
-    */
+  })
+
+  it('accounts for arbiter nodes when updating provisioning requirements if some are already set', () => {
+    const mockAgentClusterInstall = {
+      apiVersion: AgentClusterInstallApiVersion,
+      kind: AgentClusterInstallKind,
+      spec: {
+        provisionRequirements: {
+          arbiterAgents: 1,
+          controlPlaneAgents: 2,
+        },
+      },
+    }
+    setProvisionRequirements(mockAgentClusterInstall as unknown as AgentClusterInstallK8sResource, 0, 1, 2)
+    expect(resourceUtils.patchResource).toHaveBeenCalledWith(mockAgentClusterInstall, [
+      {
+        op: 'replace',
+        path: '/spec/provisionRequirements',
+        value: {
+          workerAgents: 0,
+          arbiterAgents: 1,
+          controlPlaneAgents: 2,
+        },
+      },
+    ])
+  })
+})
+
+describe('getUnbindHostAction', () => {
+  it('unbinds hosts', async () => {
+    const mockAgent: AgentK8sResource = {
+      apiVersion: 'agent-install.openshift.io/v1beta1',
+      kind: 'Agent',
+      metadata: {
+        name: 'test-agent',
+        namespace: 'test-namespace',
+      },
+      spec: {
+        approved: true,
+        role: 'auto-assign',
+        clusterDeploymentName: {
+          name: 'foo',
+          namespace: 'test-namespace',
+        },
+      },
+    }
+
+    const mockAgentClusterInstall = {
+      apiVersion: AgentClusterInstallApiVersion,
+      kind: AgentClusterInstallKind,
+      spec: {
+        provisionRequirements: {
+          workerAgents: 2,
+          controlPlaneAgents: 3,
+        },
+      },
+    } as AgentClusterInstallK8sResource
+
+    getUnbindHostAction(mockAgent, mockAgentClusterInstall)()
+    expect(resourceUtils.patchResource).toHaveBeenNthCalledWith(1, mockAgentClusterInstall, [
+      {
+        op: 'replace',
+        path: '/spec/provisionRequirements',
+        value: {
+          arbiterAgents: 0,
+          controlPlaneAgents: 3,
+          workerAgents: 1,
+        },
+      },
+    ])
   })
 })
 
 describe('onHostsNext', () => {
+  afterEach(() => {
+    jest.clearAllMocks()
+  })
+
   it('adds provision requirements if none are set', () => {
     const clusterDeployment: ClusterDeploymentK8sResource = {
       metadata: {
@@ -182,6 +261,41 @@ describe('onHostsNext', () => {
       agents: [],
       agentClusterInstall,
     })
+  })
+
+  it('updates provision requirements when masterCount is set', async () => {
+    const clusterDeployment: ClusterDeploymentK8sResource = {
+      metadata: {
+        name: 'foo',
+        namespace: 'bar',
+      },
+    }
+    const agentClusterInstall = {
+      spec: {
+        provisionRequirements: {
+          controlPlaneAgents: 3,
+        },
+      },
+    } as AgentClusterInstallK8sResource
+
+    await onHostsNext({
+      values: { selectedHostIds: ['host1', 'host2', 'host3', 'host4', 'host5'], agentLabels: [], locations: [] },
+      clusterDeployment,
+      agents: [],
+      agentClusterInstall,
+    })
+
+    expect(resourceUtils.patchResource).toHaveBeenNthCalledWith(1, agentClusterInstall, [
+      {
+        op: 'replace',
+        path: '/spec/provisionRequirements',
+        value: {
+          arbiterAgents: 0,
+          controlPlaneAgents: 3,
+          workerAgents: 2,
+        },
+      },
+    ])
   })
 })
 

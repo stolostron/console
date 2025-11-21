@@ -95,11 +95,15 @@ const addAgentsToCluster = async ({
 export const setProvisionRequirements = (
   agentClusterInstall: AgentClusterInstallK8sResource,
   workerCount: number | undefined,
+  arbiterCount: number | undefined,
   masterCount: number | undefined
 ) => {
   const provisionRequirements = { ...(agentClusterInstall.spec?.provisionRequirements || {}) }
   if (workerCount !== undefined) {
     provisionRequirements.workerAgents = workerCount
+  }
+  if (arbiterCount !== undefined) {
+    provisionRequirements.arbiterAgents = arbiterCount
   }
   if (masterCount !== undefined) {
     provisionRequirements.controlPlaneAgents = masterCount
@@ -144,11 +148,12 @@ export const onHostsNext = async ({ values, clusterDeployment, agents, agentClus
   await addAgentsToCluster({ agents, name, namespace, hostIds })
 
   const masterCount = agentClusterInstall.spec?.provisionRequirements?.controlPlaneAgents
+  const arbiterCount = agentClusterInstall.spec?.provisionRequirements?.arbiterAgents || 0
   if (masterCount) {
-    let workerCount = hostIds.length - masterCount
+    let workerCount = hostIds.length - masterCount - arbiterCount
     workerCount = workerCount > 0 ? workerCount : 0
 
-    await setProvisionRequirements(agentClusterInstall, workerCount, masterCount)
+    await setProvisionRequirements(agentClusterInstall, workerCount, arbiterCount, masterCount)
   }
 
   //if (clusterDeployment) {
@@ -175,11 +180,12 @@ export const onDiscoveryHostsNext = async ({ clusterDeployment, agents, agentClu
   })
 
   const masterCount = agentClusterInstall.spec?.provisionRequirements?.controlPlaneAgents
+  const arbiterCount = agentClusterInstall.spec?.provisionRequirements?.arbiterAgents || 0
   if (masterCount) {
-    let workerCount = agents.length - masterCount
+    let workerCount = agents.length - masterCount - arbiterCount
     workerCount = workerCount > 0 ? workerCount : 0
 
-    await setProvisionRequirements(agentClusterInstall, workerCount, masterCount)
+    await setProvisionRequirements(agentClusterInstall, workerCount, arbiterCount, masterCount)
   }
 }
 
@@ -476,9 +482,10 @@ export const getDeleteHostAction =
 
     if (agentClusterInstall) {
       const masterCount = undefined /* Only workers can be removed */
+      const arbiterCount = agentClusterInstall.spec?.provisionRequirements.arbiterAgents || 0
       const workerCount = (agentClusterInstall.spec?.provisionRequirements.workerAgents || 1) - 1
       // TODO(mlibra): include following promise in the returned one to handle errors
-      setProvisionRequirements(agentClusterInstall, workerCount, masterCount)
+      setProvisionRequirements(agentClusterInstall, workerCount, arbiterCount, masterCount)
     }
 
     return deleteResources(resources as IResource[])
