@@ -2,13 +2,12 @@
 import {
   Breadcrumb,
   BreadcrumbItem,
+  Content,
   Flex,
   Page,
   PageSection,
   PageSectionTypes,
-  PageSectionVariants,
   Switch,
-  Text,
   Title,
 } from '@patternfly/react-core'
 import { ReactNode, useCallback, useState } from 'react'
@@ -37,6 +36,7 @@ export function WizardPage(props: WizardPageProps) {
   }, [])
   return (
     <Page
+      sidebar={null}
       breadcrumb={
         props.breadcrumb && (
           <Breadcrumb>
@@ -48,26 +48,17 @@ export function WizardPage(props: WizardPageProps) {
           </Breadcrumb>
         )
       }
-      isBreadcrumbGrouped
-      additionalGroupedContent={
-        <PageSection variant="light">
-          <Flex alignItems={{ default: 'alignItemsCenter' }} wrap="noWrap" style={{ flexWrap: 'nowrap', gap: 16 }}>
-            <Title headingLevel="h1">{props.title}</Title>
-            {props.yaml !== false && (
-              <Switch
-                id="yaml-switch"
-                label="YAML"
-                isChecked={drawerExpanded}
-                onChange={() => toggleDrawerExpanded()}
-              />
-            )}
-          </Flex>
-          {props.description && <Text component="small">{props.description}</Text>}
-        </PageSection>
-      }
-      groupProps={{ stickyOnBreakpoint: { default: 'top' } }}
     >
-      <PageSection type={PageSectionTypes.wizard} variant={PageSectionVariants.light}>
+      <PageSection hasBodyWrapper={false}>
+        <Flex alignItems={{ default: 'alignItemsCenter' }} wrap="noWrap" style={{ flexWrap: 'nowrap', gap: 16 }}>
+          <Title headingLevel="h1">{props.title}</Title>
+          {props.yaml !== false && (
+            <Switch id="yaml-switch" label="YAML" isChecked={drawerExpanded} onChange={() => toggleDrawerExpanded()} />
+          )}
+        </Flex>
+        {props.description && <Content component="small">{props.description}</Content>}
+      </PageSection>
+      <PageSection hasBodyWrapper={false} type={PageSectionTypes.wizard}>
         <Wizard {...props} showHeader={false} showYaml={drawerExpanded} yamlEditor={yamlEditor}>
           {props.children}
         </Wizard>

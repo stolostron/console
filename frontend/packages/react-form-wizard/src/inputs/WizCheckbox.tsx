@@ -39,7 +39,7 @@ export function WizCheckbox(props: WizCheckboxProps) {
       <Fragment>
         <Split id={id}>
           <CheckIcon style={{ paddingRight: 5 }} />
-          <div className="pf-v5-c-description-list__term" style={{ paddingLeft: 2 }}>
+          <div className="pf-v6-c-description-list__term" style={{ paddingLeft: 2 }}>
             {props.label}
           </div>
         </Split>

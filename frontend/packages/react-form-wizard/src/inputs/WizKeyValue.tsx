@@ -2,9 +2,9 @@
 import { Button, Divider, List, ListItem, TextInput } from '@patternfly/react-core'
 import { PlusCircleIcon, TrashIcon } from '@patternfly/react-icons'
 import { Fragment } from 'react'
-import { WizHelperText } from '../components/WizHelperText'
 import { Indented } from '../components/Indented'
 import { LabelHelp } from '../components/LabelHelp'
+import { WizHelperText } from '../components/WizHelperText'
 import { DisplayMode } from '../contexts/DisplayModeContext'
 import { useStringContext } from '../contexts/StringContext'
 import { getAddPlaceholder, InputCommonProps, useInput } from './Input'
@@ -64,7 +64,7 @@ export function WizKeyValue(props: KeyValueProps) {
     if (!pairs.length) return <Fragment />
     return (
       <Fragment>
-        <div className="pf-v5-c-description-list__term">{props.label}</div>
+        <div className="pf-v6-c-description-list__term">{props.label}</div>
         <Indented id={id}>
           <List style={{ marginTop: -4 }} isPlain={props.summaryList !== true}>
             {pairs.map((pair, index) => (
@@ -81,7 +81,7 @@ export function WizKeyValue(props: KeyValueProps) {
   return (
     <div id={id} style={{ display: 'flex', flexDirection: 'column', rowGap: pairs.length ? 8 : 4 }}>
       <div>
-        <span className="pf-v5-c-form__label pf-v5-c-form__label-text">{props.label}</span>
+        <span className="pf-v6-c-form__label pf-v6-c-form__label-text">{props.label}</span>
         {props.labelHelp && <LabelHelp id={id} labelHelp={props.labelHelp} labelHelpTitle={props.labelHelpTitle} />}
       </div>
       <WizHelperText {...props} />
@@ -110,9 +110,12 @@ export function WizKeyValue(props: KeyValueProps) {
                 spellCheck="false"
                 onChange={(_event, value) => onValueChange(index, value)}
               />
-              <Button variant="plain" aria-label={removeItemAriaLabel} onClick={() => onDeleteKey(index)}>
-                <TrashIcon />
-              </Button>
+              <Button
+                icon={<TrashIcon />}
+                variant="plain"
+                aria-label={removeItemAriaLabel}
+                onClick={() => onDeleteKey(index)}
+              />
             </Fragment>
           )
         })}

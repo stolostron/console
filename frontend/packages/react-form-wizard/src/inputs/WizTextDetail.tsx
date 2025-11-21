@@ -57,9 +57,12 @@ export function WizTextDetail(props: {
             <SplitItem isFilled>{props.secret && !showSecrets ? '****************' : stringValue}</SplitItem>
             {props.secret && (
               <SplitItem>
-                <Button variant="plain" style={{ marginTop: '-8px' }} onClick={() => setShowSecrets(!showSecrets)}>
-                  {showSecrets ? <EyeIcon /> : <EyeSlashIcon />}
-                </Button>
+                <Button
+                  icon={showSecrets ? <EyeIcon /> : <EyeSlashIcon />}
+                  variant="plain"
+                  style={{ marginTop: '-8px' }}
+                  onClick={() => setShowSecrets(!showSecrets)}
+                />
               </SplitItem>
             )}
           </Split>

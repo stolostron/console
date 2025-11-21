@@ -38,13 +38,16 @@ export function WizMultiSelect(props: WizMultiSelectProps) {
     return [...uniqueSet]
   }, [options, value])
 
-  const handleSetOptions = useCallback((o: string[]) => {
-    if (o.length > 0) {
-      setFilteredOptions(o)
-    } else {
-      setFilteredOptions([noResults])
-    }
-  }, [])
+  const handleSetOptions = useCallback(
+    (o: string[]) => {
+      if (o.length > 0) {
+        setFilteredOptions(o)
+      } else {
+        setFilteredOptions([noResults])
+      }
+    },
+    [noResults]
+  )
 
   const onSelect = useCallback(
     (selectedString: string | undefined) => {
@@ -111,6 +114,7 @@ export function WizMultiSelect(props: WizMultiSelectProps) {
             />
           )}
           selected={value}
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-call
           onSelect={(_event, value) => onSelect(value?.toString() ?? '')}
         >
           <SelectListOptions

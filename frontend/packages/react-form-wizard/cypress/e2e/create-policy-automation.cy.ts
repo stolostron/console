@@ -4,7 +4,7 @@ import YAML from 'yaml'
 import { PolicyAutomationType } from '../../wizards/common/resources/IPolicyAutomation'
 import { RouteE } from '../../wizards/Routes'
 
-describe('edit policy automation', () => {
+describe('create policy automation', () => {
     it('displays', () => {
         cy.visit(`http://localhost:3000/${RouteE.CreatePolicyAutomation}`)
         cy.get('#nav-toggle').click()
@@ -12,19 +12,13 @@ describe('edit policy automation', () => {
     })
 
     it('credentials', () => {
-        cy.get('#secret').within(() => {
-            cy.get('.pf-v5-c-input-group > div').click()
-            cy.get('#my-ansible-creds').click()
-        })
+        cy.get('#secret').click()
+        cy.get('#my-ansible-creds').click()
     })
 
     it('jobs', () => {
-        cy.get('#job').within(() => {
-            cy.get('.pf-v5-c-input-group > div').within(() => {
-                cy.get('[placeholder="Select the ansible job"]').click()
-            })
-            cy.get('#job1').click()
-        })
+        cy.get('#job').click()
+        cy.get('#job1').click()
     })
 
     it('extra_vars', () => {
@@ -34,10 +28,8 @@ describe('edit policy automation', () => {
     })
 
     it('mode', () => {
-        cy.get('#mode').within(() => {
-            cy.get('.pf-v5-c-input-group > div').click()
-            cy.get('#Disabled').click()
-        })
+        cy.get('#mode').click()
+        cy.get('#Disabled').click()
         cy.contains('Next').click()
     })
 

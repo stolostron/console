@@ -5,18 +5,17 @@ import {
   DescriptionListTerm,
   Dropdown,
   DropdownItem,
+  DropdownList,
   EmptyState,
   EmptyStateBody,
   List,
   ListItem,
+  MenuToggle,
+  MenuToggleCheckbox,
+  MenuToggleElement,
   OnSetPage,
   Pagination,
   PaginationVariant,
-  EmptyStateHeader,
-  MenuToggleCheckbox,
-  MenuToggleElement,
-  MenuToggle,
-  DropdownList,
 } from '@patternfly/react-core'
 import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table'
 import { Fragment, ReactNode, useCallback, useMemo, useState } from 'react'
@@ -125,7 +124,7 @@ export function WizTableSelect<T = any>(props: WizTableSelectProps<T>) {
     }
     return (
       <Fragment>
-        <div className="pf-v5-c-description-list__term">{props.label}</div>
+        <div className="pf-v6-c-description-list__term">{props.label}</div>
         <Indented paddingBottom={4}>
           <List style={{ marginTop: -4 }} isPlain={props.summaryList !== true}>
             {values.map((value, index) => (
@@ -141,8 +140,7 @@ export function WizTableSelect<T = any>(props: WizTableSelectProps<T>) {
 
   if (props.items.length === 0) {
     return (
-      <EmptyState>
-        <EmptyStateHeader titleText={<>{props.emptyTitle}</>} headingLevel="h4" />
+      <EmptyState headingLevel="h4" titleText={<>{props.emptyTitle}</>}>
         <EmptyStateBody>{props.emptyMessage}</EmptyStateBody>
       </EmptyState>
     )
@@ -260,19 +258,17 @@ function BulkSelect(props: {
         <MenuToggle
           ref={toggleRef}
           onClick={onDropDownToggle}
-          splitButtonOptions={{
-            items: [
-              <MenuToggleCheckbox
-                id="example-checkbox-2"
-                key="split-checkbox"
-                aria-label={anySelected ? deselectAllAriaLabel : selectAllAriaLabel}
-                isChecked={isChecked}
-                onChange={onCheckbox}
-              >
-                {props.selectedCount !== 0 && <Fragment>{selected(props.selectedCount)}</Fragment>}
-              </MenuToggleCheckbox>,
-            ],
-          }}
+          splitButtonItems={[
+            <MenuToggleCheckbox
+              id="example-checkbox-2"
+              key="split-checkbox"
+              aria-label={anySelected ? deselectAllAriaLabel : selectAllAriaLabel}
+              isChecked={isChecked}
+              onChange={onCheckbox}
+            >
+              {props.selectedCount !== 0 && <Fragment>{selected(props.selectedCount)}</Fragment>}
+            </MenuToggleCheckbox>,
+          ]}
         />
       )
     },

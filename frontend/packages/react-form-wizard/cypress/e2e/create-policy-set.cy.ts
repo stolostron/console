@@ -28,10 +28,15 @@ describe('create policy set', () => {
 
     it('placement', () => {
         cy.get('#add-button').click()
-        cy.get('#label-expressions').within(() => {
-            cy.get('#key').click().get('#region').click()
-            cy.get('#values').multiselect('us-east-1')
-        })
+
+        // set label expression label
+        cy.get('#key').click()
+        cy.get('#region').click()
+
+        // set label expression value
+        cy.get('#values').click()
+        cy.get('#us-east-1').click()
+
         cy.contains('Next').click()
     })
 

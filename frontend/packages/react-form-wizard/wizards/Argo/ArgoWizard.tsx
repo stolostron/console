@@ -823,7 +823,7 @@ function ArgoWizardPlacementSection(props: {
         <WizDetailsHidden>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {editMode === EditMode.Create && (
-              <span className="pf-v5-c-form__label pf-v5-c-form__label-text">How do you want to select clusters?</span>
+              <span className="pf-v6-c-form__label pf-v6-c-form__label-text">How do you want to select clusters?</span>
             )}
             <ToggleGroup>
               <ToggleGroupItem

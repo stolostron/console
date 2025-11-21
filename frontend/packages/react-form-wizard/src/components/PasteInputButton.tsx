@@ -12,6 +12,7 @@ export function PasteInputButton(props: {
   return (
     <Tooltip content={pasteButtonTooltip}>
       <Button
+        icon={<PasteIcon />}
         variant="control"
         onClick={() => {
           void navigator.clipboard.readText().then((value) => {
@@ -20,9 +21,7 @@ export function PasteInputButton(props: {
           })
         }}
         tabIndex={-1}
-      >
-        <PasteIcon />
-      </Button>
+      />
     </Tooltip>
   )
 }

@@ -8,9 +8,7 @@ export function ClearInputButton(props: { onClick: () => void }) {
   const { clearButtonTooltip } = useStringContext()
   return (
     <Tooltip content={clearButtonTooltip}>
-      <Button variant="control" onClick={onClick} tabIndex={-1}>
-        <TimesCircleIcon />
-      </Button>
+      <Button icon={<TimesCircleIcon />} variant="control" onClick={onClick} tabIndex={-1} />
     </Tooltip>
   )
 }
