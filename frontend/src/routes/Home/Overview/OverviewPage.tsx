@@ -17,10 +17,12 @@ import {
   Skeleton,
   TextVariants,
 } from '@patternfly/react-core'
-import { AngleDownIcon, AngleUpIcon, ExternalLinkAltIcon, HelpIcon, EllipsisVIcon } from '@patternfly/react-icons'
+import { AngleDownIcon, AngleUpIcon, EllipsisVIcon, ExternalLinkAltIcon, HelpIcon } from '@patternfly/react-icons'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AcmDynamicGrid } from '../../../components/AcmDynamicGrid'
+import { KubevirtProviderAlert } from '../../../components/KubevirtProviderAlert'
 import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
+import { useVirtualMachineDetection } from '../../../hooks/useVirtualMachineDetection'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../lib/doc-util'
 import { getUpgradeRiskPredictions } from '../../../lib/get-upgrade-risk-predictions'
@@ -40,12 +42,10 @@ import {
   ModerateRiskIcon,
 } from '../../Infrastructure/Clusters/ManagedClusters/components/ClusterPolicySidebarIcons'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
-import { KubevirtProviderAlert } from '../../../components/KubevirtProviderAlert'
 import SavedSearchesCard from './components/SavedSearchesCard'
 import SummaryCard from './components/SummaryCard'
 import { SummaryClustersCard } from './components/SummaryClustersCard'
 import { Data, SummaryStatusCard } from './components/SummaryStatusCard'
-import { useVirtualMachineDetection } from '../../../hooks/useVirtualMachineDetection'
 import {
   getAddonHealth,
   getAppTypeSummary,
@@ -338,6 +338,29 @@ export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Re
     )
   }, [])
 
+  const workerCoreCardContent = useMemo(() => {
+    if (workerCoreCountError && workerCoreCountError !== 'Forbidden') {
+      return (
+        <Alert
+          isInline
+          title={
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              {t('An unexpected error occurred while retrieving metrics.')}
+              {workerCoreLaunchLink(t('Launch to metric'), false)}
+            </div>
+          }
+          variant="danger"
+        />
+      )
+    }
+
+    if (workerCoreCountLoading) {
+      return <Skeleton width="50%" />
+    }
+
+    return workerCoreLaunchLink(`${workerCoreTotal}`, true)
+  }, [workerCoreCountError, workerCoreCountLoading, workerCoreTotal, t, workerCoreLaunchLink])
+
   return (
     <AcmScrollable>
       <PageSection>
@@ -397,23 +420,7 @@ export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Re
                   </DropdownItem>
                 </Dropdown>
               </CardTitle>
-              <CardBody isFilled={false}>
-                <>
-                  {workerCoreCountError && (
-                    <Alert
-                      isInline={true}
-                      title={
-                        <div style={{ display: 'flex', flexDirection: 'column' }}>
-                          {t('An unexpected error occurred while retrieving metrics.')}
-                          {workerCoreLaunchLink(t('Launch to metric'), false)}
-                        </div>
-                      }
-                      variant={'danger'}
-                    />
-                  )}
-                  {workerCoreCountLoading ? <Skeleton width="50%" /> : workerCoreLaunchLink(`${workerCoreTotal}`, true)}
-                </>
-              </CardBody>
+              <CardBody isFilled={false}>{workerCoreCardContent}</CardBody>
             </Card>
           )}
         </AcmDynamicGrid>
