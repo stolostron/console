@@ -40,10 +40,11 @@ import { DestroyHostedModal } from './DestroyHostedModal'
 import { deleteHypershiftCluster } from '../../../../../lib/delete-hypershift-cluster'
 import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
 import { importHostedControlPlaneCluster } from './HypershiftImportCommand'
-import { getVersionFromReleaseImage, HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
+import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { HypershiftUpgradeModal } from './HypershiftUpgradeModal'
 import { getNodepoolStatus } from './NodePoolsTable'
 import { useLocalHubName } from '../../../../../hooks/use-local-hub'
+import { useHypershiftAvailableUpdates } from '../hooks/useHypershiftAvailableUpdates'
 
 export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolean }) {
   const { t } = useTranslation()
@@ -62,60 +63,17 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
   const [modalProps, setModalProps] = useState<BulkActionModalProps<Cluster> | { open: false }>({
     open: false,
   })
-  const { hostedClustersState, infraEnvironmentsState, agentMachinesState, agentsState, clusterImageSetsState } =
-    useSharedAtoms()
+  const { hostedClustersState, infraEnvironmentsState, agentMachinesState, agentsState } = useSharedAtoms()
   const agents = useRecoilValue(agentsState)
   const agentMachines = useRecoilValue(agentMachinesState)
   const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
   const infraEnvs = useRecoilValue(infraEnvironmentsState)
   const hostedClusters = useRecoilValue(hostedClustersState)
-  const clusterImageSets = useRecoilValue(clusterImageSetsState)
   const localHubName = useLocalHubName()
 
   const { cluster } = props
 
-  const isUpdateVersionAcceptable = (currentVersion: string, newVersion: string) => {
-    const currentVersionParts = currentVersion.split('.')
-    const newVersionParts = newVersion.split('.')
-
-    if (newVersionParts[0] !== currentVersionParts[0]) {
-      return false
-    }
-
-    if (newVersionParts[0] === currentVersionParts[0] && Number(newVersionParts[1]) > Number(currentVersionParts[1])) {
-      return true
-    }
-
-    if (
-      newVersionParts[0] === currentVersionParts[0] &&
-      Number(newVersionParts[1]) === Number(currentVersionParts[1]) &&
-      Number(newVersionParts[2]) > Number(currentVersionParts[2])
-    ) {
-      return true
-    }
-
-    return false
-  }
-
-  const hypershiftAvailableUpdates: Record<string, string> = useMemo(() => {
-    if (!(cluster?.isHypershift || cluster?.isHostedCluster)) {
-      return {}
-    }
-    const updates: any = {}
-    clusterImageSets.forEach((cis) => {
-      if (cis.spec?.releaseImage.includes('multi')) {
-        const releaseImageVersion = getVersionFromReleaseImage(cis.spec?.releaseImage)
-        if (
-          releaseImageVersion &&
-          isUpdateVersionAcceptable(cluster?.distribution?.ocp?.version || '', releaseImageVersion)
-        ) {
-          updates[releaseImageVersion] = cis.spec?.releaseImage
-        }
-      }
-    })
-
-    return updates
-  }, [clusterImageSets, cluster?.distribution?.ocp?.version, cluster?.isHostedCluster, cluster?.isHypershift])
+  const hypershiftAvailableUpdates = useHypershiftAvailableUpdates(cluster)
 
   const isHypershiftUpdateAvailable: boolean = useMemo(() => {
     //if managed cluster page - cluster, cluster curator and hosted cluster
