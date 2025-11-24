@@ -31,9 +31,6 @@ import { ArgoAppDetailsContainerData, ClusterDetailsContainerData } from '../App
 import ChannelControl from '../components/ChannelControl'
 import noop from 'lodash/noop'
 
-import './components/future/topology-components.css'
-import './components/future/topology-controlbar.css'
-import './components/future/topology-view.css'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { useQuerySearchDisabledManagedClusters } from '../../../../../lib/search'
 import { useQuery } from '../../../../../lib/useQuery'
