@@ -9,7 +9,7 @@ import {
   MulticlusterRoleAssignment,
   MulticlusterRoleAssignmentKind,
 } from '../../../resources/multicluster-role-assignment'
-import { truncateMiddle } from '../../Applications/ApplicationDetails/ApplicationTopology/topology/components/future/truncate-middle'
+import { truncateMiddle } from '../../../lib/truncate-middle'
 import { ClustersDualListSelector } from '../RoleAssignment/ClustersDualListSelector'
 import { NamespaceSelector } from '../RoleAssignment/NamespaceSelector'
 import { useRoleAssignmentData } from './hook/RoleAssignmentDataHook'
