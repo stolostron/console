@@ -59,7 +59,7 @@ spec:
       value: main
     - name: pathInRepo
       value: pipelines/common_mce_2.7.yaml
-    taskRunTemplate:
+  taskRunTemplate:
     serviceAccountName: build-pipeline-console-mce-mce-27
   workspaces:
   - name: git-auth
