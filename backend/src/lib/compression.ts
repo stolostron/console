@@ -116,7 +116,6 @@ export function deflateResource(resource: IResource, dictionary: Dictionary): Bu
 function compressResource(resource: UncompressedResourceType, dictionary: Dictionary): CompressedResourceType {
   if (resource) {
     if (Array.isArray(resource)) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call
       return resource.map((item: UncompressedResourceType) => compressResource(item, dictionary))
     } else if (typeof resource === 'object') {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -152,7 +152,6 @@ export const ArgoApplicationDefinition: IResourceDefinition = {
 export interface IArgoApplication extends IResource {
   cluster?: string
   spec: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     source?: {
       path?: string
       repoURL: string
