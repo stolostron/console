@@ -126,6 +126,7 @@ export const InputSelect = ({
 
 type SelectListOptionsProps<T = any> = {
   value: string
+  allOptions: string[] | OptionType<T>[]
   options: string[] | OptionType<T>[]
   footer?: ReactNode
   isCreatable?: boolean
@@ -135,6 +136,7 @@ type SelectListOptionsProps<T = any> = {
 
 export const SelectListOptions = ({
   value,
+  allOptions,
   options,
   isCreatable,
   onCreate,
@@ -142,15 +144,30 @@ export const SelectListOptions = ({
   isMultiSelect,
 }: SelectListOptionsProps) => {
   const { noResults, createOption } = useStringContext()
+
+  // Create a new Set from the array to remove any duplicates
+  const uniqueOptions = [...new Set([...options])]
   return (
     <SelectList isAriaMultiselectable={isMultiSelect}>
-      {options.map((option, index) => {
-        const isLastItem = index === options.length - 1
-        const isSingleItem = options.length === 1
+      {uniqueOptions.map((option, index) => {
+        const isLastItem = index === uniqueOptions.length - 1
+        const isSingleItem = uniqueOptions.length === 1
         const isSimpleOption = typeof option === 'string'
+        const isInputOption = typeof option !== 'string' && option.id === 'input'
         const valueString = String(isSimpleOption ? option : option.value)
-        const isCreateOption = isSingleItem && isCreatable && value !== valueString
-        const shouldSkipLastItem = isLastItem && (!isSingleItem || (isCreatable && value === valueString))
+        const labelString = String(isSimpleOption ? option : option.label)
+        const isCreateOption =
+          isLastItem &&
+          isCreatable &&
+          // checks if the user typed string is already selected
+          (Array.isArray(value) ? !value.includes(valueString) : value !== valueString) &&
+          // check if valueString exists in all options
+          (typeof allOptions[0] === 'string'
+            ? (allOptions as string[]).filter((op) => op === valueString).length === 0
+            : (allOptions as OptionType<any>[]).filter((op) => op.value === valueString).length === 0)
+
+        const shouldSkipLastItem =
+          isLastItem && ((!isCreatable && !isSingleItem) || (isCreatable && (isInputOption || valueString === '')))
 
         if (shouldSkipLastItem) {
           return null
@@ -159,12 +176,10 @@ export const SelectListOptions = ({
         let displayText: string
         if (isCreateOption) {
           displayText = `${createOption} "${valueString}"`
-        } else if (isSingleItem) {
+        } else if (isSingleItem && !value.includes(valueString)) {
           displayText = noResults
-        } else if (isSimpleOption) {
-          displayText = option
         } else {
-          displayText = option.label
+          displayText = labelString
         }
 
         const isDisabled = displayText === noResults || (!isSimpleOption && option.disabled)
