@@ -115,6 +115,7 @@ export function WizMultiSelect(props: WizMultiSelectProps) {
         >
           <SelectListOptions
             value={value}
+            allOptions={options}
             options={filteredOptions}
             isCreatable={isCreatable}
             footer={footer}
