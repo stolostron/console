@@ -1,5 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import {
+  ActionList,
+  ActionListGroup,
+  ActionListItem,
   Alert,
   Button,
   DescriptionList,
@@ -8,10 +11,10 @@ import {
   DrawerContentBody,
   DrawerPanelContent,
   Icon,
-  Wizard as PFWizard,
   Split,
   SplitItem,
   useWizardContext,
+  Wizard as PFWizard,
   WizardFooterWrapper,
   WizardStep,
 } from '@patternfly/react-core'
@@ -299,7 +302,7 @@ function MyFooter(props: WizardFooterProps) {
 
   if (isLastStep) {
     return (
-      <div className="pf-v5-u-box-shadow-sm-top">
+      <div className="pf-v6-u-box-shadow-sm-top">
         {editorValidationStatus === EditorValidationStatus.failure && showWizardValidation && (
           <Alert title={fixEditorValidationErrorsMsg} isInline variant="danger" />
         )}
@@ -311,34 +314,40 @@ function MyFooter(props: WizardFooterProps) {
         )}
         {submitError && <Alert title={submitError} isInline variant="danger" />}
         <WizardFooterWrapper>
-          <Button
-            onClick={onSubmitClick}
-            isDisabled={
-              ((wizardHasValidationError || editorValidationStatus !== EditorValidationStatus.success) &&
-                showWizardValidation) ||
-              submitting
-            }
-            isLoading={submitting}
-            type="submit"
-          >
-            {!submitButtonText && (submitting ? submittingText : submitText)}
-            {submitting ? submittingButtonText : submitButtonText}
-          </Button>
-          <Button
-            variant="secondary"
-            onClick={() => {
-              void (async () => {
-                await onBack()
-              })()
-            }}
-          >
-            {backButtonText}
-          </Button>
-          <div className="pf-v5-c-wizard__footer-cancel">
-            <Button variant="link" onClick={onClose}>
-              {cancelButtonText}
-            </Button>
-          </div>
+          <ActionList>
+            <ActionListGroup>
+              <Button
+                onClick={onSubmitClick}
+                isDisabled={
+                  ((wizardHasValidationError || editorValidationStatus !== EditorValidationStatus.success) &&
+                    showWizardValidation) ||
+                  submitting
+                }
+                isLoading={submitting}
+                type="submit"
+              >
+                {!submitButtonText && (submitting ? submittingText : submitText)}
+                {submitting ? submittingButtonText : submitButtonText}
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  void (async () => {
+                    await onBack()
+                  })()
+                }}
+              >
+                {backButtonText}
+              </Button>
+            </ActionListGroup>
+            <ActionListGroup>
+              <div className="pf-v6-c-wizard__footer-cancel">
+                <Button variant="link" onClick={onClose}>
+                  {cancelButtonText}
+                </Button>
+              </div>
+            </ActionListGroup>
+          </ActionList>
         </WizardFooterWrapper>
         <RenderHiddenSteps stepComponents={props.steps} />
       </div>
@@ -346,38 +355,48 @@ function MyFooter(props: WizardFooterProps) {
   }
 
   return (
-    <div className="pf-v5-u-box-shadow-sm-top">
+    <div className="pf-v6-u-box-shadow-sm-top">
       {activeStepHasValidationError && activeStepShowValidation && (
         <Alert title={fixValidationErrorsMsg} isInline variant="danger" />
       )}
       <WizardFooterWrapper>
-        <Button
-          variant="primary"
-          onClick={() => {
-            void (async () => {
-              await onNextClick()
-            })()
-          }}
-          isDisabled={(activeStepHasValidationError && activeStepShowValidation) || submitting}
-        >
-          {nextButtonText}
-        </Button>
-        <Button
-          variant="secondary"
-          onClick={() => {
-            void (async () => {
-              await onBack()
-            })()
-          }}
-          isDisabled={activeStep.index === 1}
-        >
-          {backButtonText}
-        </Button>
-        <div className="pf-v5-c-wizard__footer-cancel">
-          <Button variant="link" onClick={onClose}>
-            {cancelButtonText}
-          </Button>
-        </div>
+        <ActionList>
+          <ActionListGroup>
+            <ActionListItem>
+              <Button
+                variant="primary"
+                onClick={() => {
+                  void (async () => {
+                    await onNextClick()
+                  })()
+                }}
+                isDisabled={(activeStepHasValidationError && activeStepShowValidation) || submitting}
+              >
+                {nextButtonText}
+              </Button>
+            </ActionListItem>
+            <ActionListItem>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  void (async () => {
+                    await onBack()
+                  })()
+                }}
+                isDisabled={activeStep.index === 1}
+              >
+                {backButtonText}
+              </Button>
+            </ActionListItem>
+          </ActionListGroup>
+          <ActionListGroup>
+            <div className="pf-v6-c-wizard__footer-cancel">
+              <Button variant="link" onClick={onClose}>
+                {cancelButtonText}
+              </Button>
+            </div>
+          </ActionListGroup>
+        </ActionList>
       </WizardFooterWrapper>
       <RenderHiddenSteps stepComponents={props.steps} />
     </div>

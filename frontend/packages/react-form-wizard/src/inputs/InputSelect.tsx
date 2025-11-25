@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import {
   Button,
-  Chip,
-  ChipGroup,
+  Label,
+  LabelGroup,
   MenuFooter,
   MenuToggle,
   MenuToggleElement,
@@ -74,7 +74,7 @@ export const InputSelect = ({
         }
       }
     },
-    [onSelect, open, setOpen, value]
+    [disabled, onSelect, setOpen, value]
   )
 
   const onTextInputChange = useCallback((_event: FormEvent<HTMLInputElement>, value: string) => {
@@ -106,20 +106,18 @@ export const InputSelect = ({
           aria-controls="select-typeahead-listbox"
         >
           {Array.isArray(value) && (
-            <ChipGroup style={{ marginTop: -8, marginBottom: -8 }} numChips={9999}>
+            <LabelGroup style={{ marginTop: -8, marginBottom: -8 }} numLabels={9999}>
               {value.map((selection) => (
-                <Chip isReadOnly key={selection}>
+                <Label variant="outline" key={selection}>
                   {selection}
-                </Chip>
+                </Label>
               ))}
-            </ChipGroup>
+            </LabelGroup>
           )}
         </TextInputGroupMain>
 
         <TextInputGroupUtilities {...((!inputValue && !value) || required ? { style: { display: 'none' } } : {})}>
-          <Button variant="plain" onClick={onClear}>
-            <TimesIcon aria-hidden />
-          </Button>
+          <Button icon={<TimesIcon aria-hidden />} variant="plain" onClick={onClear} />
         </TextInputGroupUtilities>
       </TextInputGroup>
     </MenuToggle>

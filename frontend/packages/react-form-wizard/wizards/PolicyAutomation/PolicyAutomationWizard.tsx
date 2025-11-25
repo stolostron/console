@@ -3,17 +3,17 @@ import { Alert, AlertVariant, Button, ButtonVariant } from '@patternfly/react-co
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { ReactNode, useEffect, useMemo, useState } from 'react'
 import {
-  WizDetailsHidden,
   EditMode,
-  WizKeyValue,
   Section,
-  WizSelect,
   Step,
   WizardCancel,
   WizardPage,
   WizardSubmit,
   WizCheckbox,
+  WizDetailsHidden,
+  WizKeyValue,
   WizNumberInput,
+  WizSelect,
 } from '../../src'
 import { IResource } from '../../src/common/resource'
 import { ConfigMap } from '../common/resources/IConfigMap'
@@ -59,6 +59,7 @@ export function PolicyAutomationWizard(props: {
           <div>
             {'Install the Operator through the following link: '}
             <Button
+              icon={<ExternalLinkAltIcon style={{ marginLeft: '4px', verticalAlign: 'middle' }} />}
               isInline
               variant={ButtonVariant.link}
               onClick={() =>
@@ -66,7 +67,6 @@ export function PolicyAutomationWizard(props: {
               }
             >
               OperatorHub
-              <ExternalLinkAltIcon style={{ marginLeft: '4px', verticalAlign: 'middle' }} />
             </Button>
           </div>
         ) : (

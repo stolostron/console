@@ -3,31 +3,31 @@ import {
   Button,
   Divider,
   Dropdown,
-  DropdownList,
   DropdownItem,
+  DropdownList,
   FormFieldGroupHeader,
   Icon,
   List,
   ListItem,
   MenuToggle,
+  MenuToggleElement,
   Split,
   SplitItem,
   Title,
-  MenuToggleElement,
 } from '@patternfly/react-core'
 import { ArrowDownIcon, ArrowUpIcon, ExclamationCircleIcon, PlusCircleIcon, TrashIcon } from '@patternfly/react-icons'
 import get from 'get-value'
 import { Fragment, ReactNode, useCallback, useContext, useMemo, useState } from 'react'
 import { WizTextDetail } from '..'
 import { FieldGroup } from '../components/FieldGroup'
-import { WizHelperText } from '../components/WizHelperText'
 import { Indented } from '../components/Indented'
 import { LabelHelp } from '../components/LabelHelp'
+import { WizHelperText } from '../components/WizHelperText'
 import { useData } from '../contexts/DataContext'
-import { useStringContext } from '../contexts/StringContext'
 import { DisplayMode } from '../contexts/DisplayModeContext'
 import { ItemContext } from '../contexts/ItemContext'
 import { ShowValidationContext } from '../contexts/ShowValidationProvider'
+import { useStringContext } from '../contexts/StringContext'
 import { HasValidationErrorContext, ValidationProvider } from '../contexts/ValidationProvider'
 import { getCollapsedPlaceholder, InputCommonProps, useInput } from './Input'
 
@@ -158,7 +158,7 @@ export function WizArrayInput(props: WizArrayInputProps) {
     }
     return (
       <Fragment>
-        <div className="pf-v5-c-description-list__term">{props.label}</div>
+        <div className="pf-v6-c-description-list__term">{props.label}</div>
         <Indented id={id}>
           <List style={{ marginTop: -4 }} isPlain={props.summaryList !== true}>
             {values.map((value, index) => (
@@ -187,14 +187,14 @@ export function WizArrayInput(props: WizArrayInputProps) {
         <div style={{ paddingBottom: 8, paddingTop: 0 }}>
           {props.isSection ? (
             <Split hasGutter style={{ paddingBottom: 8 }}>
-              <span className="pf-v5-c-form__section-title">{props.label}</span>
+              <span className="pf-v6-c-form__section-title">{props.label}</span>
               {props.labelHelp && (
                 <LabelHelp id={id} labelHelp={props.labelHelp} labelHelpTitle={props.labelHelpTitle} />
               )}
             </Split>
           ) : (
             <div>
-              <span className="pf-v5-c-form__label pf-v5-c-form__label-text">{props.label}</span>
+              <span className="pf-v6-c-form__label pf-v6-c-form__label-text">{props.label}</span>
               {props.labelHelp && (
                 <LabelHelp id={id} labelHelp={props.labelHelp} labelHelpTitle={props.labelHelpTitle} />
               )}
@@ -350,7 +350,7 @@ export function ArrayInputItem(props: {
                                 </Icon>
                               </SplitItem>
                               <SplitItem>
-                                <span className="pf-v5-c-form__helper-text pf-m-error">
+                                <span className="pf-v6-c-form__helper-text pf-m-error">
                                   &nbsp; {expandToFixValidationErrors}
                                 </span>
                               </SplitItem>
@@ -369,31 +369,28 @@ export function ArrayInputItem(props: {
                           {props.sortable && (
                             <Fragment>
                               <Button
+                                icon={<ArrowUpIcon />}
                                 variant="plain"
                                 aria-label={sortableMoveItemUpAriaLabel}
                                 isDisabled={index === 0}
                                 onClick={() => moveUp(index)}
-                              >
-                                <ArrowUpIcon />
-                              </Button>
+                              />
                               <Button
+                                icon={<ArrowDownIcon />}
                                 variant="plain"
                                 aria-label={sortableMoveItemDownAriaLabel}
                                 isDisabled={index === count - 1}
                                 onClick={() => moveDown(index)}
-                              >
-                                <ArrowDownIcon />
-                              </Button>
+                              />
                             </Fragment>
                           )}
                           {(!required || count > 1) && (
                             <Button
+                              icon={<TrashIcon />}
                               variant="plain"
                               aria-label={removeItemAriaLabel}
                               onClick={() => removeItem(props.value)}
-                            >
-                              <TrashIcon />
-                            </Button>
+                            />
                           )}
                         </Fragment>
                       }
@@ -408,32 +405,29 @@ export function ArrayInputItem(props: {
                       {props.sortable && (
                         <Fragment>
                           <Button
+                            icon={<ArrowUpIcon />}
                             variant="plain"
                             aria-label={sortableMoveItemUpAriaLabel}
                             isDisabled={index === 0}
                             onClick={() => moveUp(index)}
-                          >
-                            <ArrowUpIcon />
-                          </Button>
+                          />
                           <Button
+                            icon={<ArrowDownIcon />}
                             variant="plain"
                             aria-label={sortableMoveItemDownAriaLabel}
                             isDisabled={index === count - 1}
                             onClick={() => moveDown(index)}
-                          >
-                            <ArrowDownIcon />
-                          </Button>
+                          />
                         </Fragment>
                       )}
                       {(!required || count > 1) && (
                         <Button
+                          icon={<TrashIcon />}
                           variant="plain"
                           aria-label={removeItemAriaLabel}
                           onClick={() => removeItem(props.value)}
                           style={{ marginTop: -6 }}
-                        >
-                          <TrashIcon />
-                        </Button>
+                        />
                       )}
                     </SplitItem>
                   </Split>

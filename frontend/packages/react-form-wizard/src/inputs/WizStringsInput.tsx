@@ -6,8 +6,8 @@ import {
   DescriptionListTerm,
   Divider,
   InputGroup,
-  TextInput as PFTextInput,
   InputGroupItem,
+  TextInput as PFTextInput,
 } from '@patternfly/react-core'
 import { PlusCircleIcon, TrashIcon } from '@patternfly/react-icons'
 import { Fragment } from 'react'
@@ -76,14 +76,13 @@ export function WizStringsInput(props: WizStringsInputProps) {
                 </InputGroupItem>
                 <InputGroupItem>
                   <Button
+                    icon={<TrashIcon />}
                     variant="plain"
                     isDisabled={props.required === true && values.length === 1}
                     aria-label={removeItemAriaLabel}
                     onClick={() => onDeleteKey(index)}
                     style={{ alignSelf: 'start' }}
-                  >
-                    <TrashIcon />
-                  </Button>
+                  />
                 </InputGroupItem>
               </InputGroup>
             )
@@ -181,14 +180,13 @@ export function StringsMapInput(props: StringsMapInputProps) {
                 </InputGroupItem>
                 <InputGroupItem>
                   <Button
+                    icon={<TrashIcon />}
                     variant="plain"
                     isDisabled={props.required === true && values.length === 1}
                     aria-label={removeItemAriaLabel}
                     onClick={() => onDeleteKey(index)}
                     style={{ alignSelf: 'start' }}
-                  >
-                    <TrashIcon />
-                  </Button>
+                  />
                 </InputGroupItem>
               </InputGroup>
             )

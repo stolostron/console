@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { DescriptionList, Divider, Icon, Split, SplitItem, Stack, Text, Title } from '@patternfly/react-core'
+import { DescriptionList, Divider, Icon, Split, SplitItem, Stack, Title } from '@patternfly/react-core'
 import { AngleDownIcon, AngleLeftIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
 import { Fragment, ReactNode, useEffect, useState } from 'react'
 import { LabelHelp } from './components/LabelHelp'
@@ -74,7 +74,7 @@ function SectionInternal(props: SectionProps) {
               {(hasValidationError) => (
                 <section
                   id={id}
-                  className="pf-v5-c-form__section"
+                  className="pf-v6-c-form__section"
                   role="group"
                   style={{ display: !hasInputs && props.autohide !== false ? 'none' : undefined }}
                 >
@@ -87,7 +87,7 @@ function SectionInternal(props: SectionProps) {
                     <SplitItem isFilled>
                       <Stack>
                         <Split hasGutter>
-                          <div className="pf-v5-c-form__section-title">
+                          <div className="pf-v6-c-form__section-title">
                             {props.label}
                             {props.id && (
                               <LabelHelp
@@ -98,10 +98,14 @@ function SectionInternal(props: SectionProps) {
                             )}
                           </div>
                         </Split>
-                        {expanded && props.description && (
-                          <Text component="small" style={{ paddingTop: 8 }}>
+                        {/* TODO this causes react minified error in prod.. */}
+                        {/* {expanded && props.description !== undefined && (
+                            {/* <Content component={ContentVariants.small} style={{ paddingTop: 8 }}>
                             {props.description}
-                          </Text>
+                          </Content>
+                        )} */}
+                        {expanded && props.description !== undefined && (
+                          <small style={{ paddingTop: 8 }}>{props.description}</small>
                         )}
                       </Stack>
                     </SplitItem>
@@ -114,7 +118,7 @@ function SectionInternal(props: SectionProps) {
                             </Icon>
                           </SplitItem>
                           <SplitItem>
-                            <span className="pf-v5-c-form__helper-text pf-m-error">
+                            <span className="pf-v6-c-form__helper-text pf-m-error">
                               &nbsp; {expandToFixValidationErrors}
                             </span>
                           </SplitItem>

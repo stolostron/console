@@ -6,8 +6,8 @@ import {
   Radio as PfRadio,
 } from '@patternfly/react-core'
 import { Children, createContext, Fragment, isValidElement, ReactElement, ReactNode, useContext } from 'react'
-import { WizHelperText } from '../components/WizHelperText'
 import { Indented } from '../components/Indented'
+import { WizHelperText } from '../components/WizHelperText'
 import { DisplayMode } from '../contexts/DisplayModeContext'
 import { useRandomID } from '../contexts/useRandomID'
 import { InputCommonProps, useInput } from './Input'
