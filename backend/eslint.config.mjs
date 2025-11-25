@@ -5,6 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import js from "@eslint/js";
 import { FlatCompat } from "@eslint/eslintrc";
+import unicorn from 'eslint-plugin-unicorn';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -25,6 +26,7 @@ export default defineConfig([{
 
     plugins: {
         prettier,
+        unicorn
     },
 
     languageOptions: {
@@ -50,5 +52,6 @@ export default defineConfig([{
         "@typescript-eslint/no-misused-promises": ["error", {
             checksVoidReturn: false,
         }],
+        "unicorn/new-for-builtins": "error"
     },
 }]);
