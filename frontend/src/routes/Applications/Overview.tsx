@@ -54,7 +54,7 @@ import {
   AcmDropdown,
   AcmEmptyState,
   AcmInlineStatusGroup,
-  AcmLink,
+  AcmTableLinkWithVisitedStatus,
   AcmTable,
   compareStrings,
   IAcmRowAction,
@@ -168,7 +168,7 @@ export function getApplicationName(application: IApplicationResource, search: st
   }
   return (
     <span style={{ whiteSpace: 'nowrap' }}>
-      <AcmLink
+      <AcmTableLinkWithVisitedStatus
         to={{
           pathname: generatePath(NavigationPath.applicationDetails, {
             namespace: application.metadata?.namespace!,
@@ -177,10 +177,10 @@ export function getApplicationName(application: IApplicationResource, search: st
           search: `?apiVersion=${apiVersion}${clusterQuery}`,
         }}
         storageKey="selectedApplicationName"
-        storageValue={`${application.metadata?.namespace}/${application.metadata?.name}`}
+        storageValue={`${(application as IUIResource).uidata?.clusterList.join(',')}/${application.metadata?.namespace}/${application.metadata?.name}`}
       >
         <HighlightSearchText text={application.metadata?.name} searchText={search} isLink useFuzzyHighlighting />
-      </AcmLink>
+      </AcmTableLinkWithVisitedStatus>
     </span>
   )
 }

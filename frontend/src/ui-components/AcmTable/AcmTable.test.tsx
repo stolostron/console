@@ -744,12 +744,12 @@ describe('AcmTable', () => {
     userEvent.click(getAllByLabelText('Go to next page')[0])
     expect(getAllByLabelText('Current page')[0]).toHaveValue(2)
 
-    // Switch to 10 items per page; verify automatic move to page 1
+    // Switch to 10 items per page; verify automatic move to page 6
     userEvent.click(getAllByLabelText('items per page')[0])
     await waitFor(() => expect(getByText('10 per page')).toBeVisible())
     userEvent.click(getByText('10 per page'))
     expect(container.querySelectorAll('tbody tr')).toHaveLength(10)
-    expect(getByLabelText('Current page')).toHaveValue(1)
+    expect(getByLabelText('Current page')).toHaveValue(6)
   })
   test('can show paginated results', () => {
     const { getAllByLabelText } = render(<Table />)

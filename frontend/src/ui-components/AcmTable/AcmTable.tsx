@@ -145,14 +145,18 @@ export function getItemWithExpiration(key: string): string | null {
  * Enhanced Link component that stores a value in localStorage with expiration when clicked.
  * Uses the same 30-minute expiration pattern as other table state.
  */
-export interface AcmLinkProps extends LinkProps {
+export interface AcmTableLinkWithVisitedStatusProps extends LinkProps {
   /** The localStorage key to use for storing the value */
   storageKey: string
   /** The value to store in localStorage when the link is clicked */
   storageValue: string
 }
 
-export function AcmLink({ storageKey, storageValue, ...props }: AcmLinkProps) {
+export function AcmTableLinkWithVisitedStatus({
+  storageKey,
+  storageValue,
+  ...props
+}: AcmTableLinkWithVisitedStatusProps) {
   const handleClick = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
     if (storageKey && storageValue) {
       // Get existing visited values using expiration helper
@@ -218,12 +222,12 @@ const AcmTablePaginationContext: React.Context<{
 export function AcmTablePaginationContextProvider(props: { children: ReactNode; localStorageKey: string }) {
   const { children, localStorageKey } = props
   const [perPage, setPerPage] = useState(
-    Number.parseInt(getItemWithExpiration(localStorageKey) || '0', 10) || DEFAULT_ITEMS_PER_PAGE
+    Number.parseInt(localStorage.getItem(localStorageKey) || '0', 10) || DEFAULT_ITEMS_PER_PAGE
   )
   const paginationContext = {
     perPage,
     setPerPage: (perPage: number) => {
-      setItemWithExpiration(localStorageKey, String(perPage))
+      localStorage.setItem(localStorageKey, String(perPage))
       setPerPage(perPage)
     },
   }
@@ -317,39 +321,17 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     }
   }, [items, loading, loadStarted, loadCompleted, resultView])
 
+  // State that can come from context or component state (perPage)
+  const [statePerPage, stateSetPerPage] = useState(props.initialPerPage || DEFAULT_ITEMS_PER_PAGE)
+  const { perPage: contextPerPage, setPerPage: contextSetPerPage } = useContext(AcmTablePaginationContext)
+  const perPage = contextPerPage || statePerPage
+  const setPerPage = contextSetPerPage || stateSetPerPage
+
   // =============================================================================
   // TABLE STATE WITH LOCALSTORAGE PERSISTENCE
   // All table states below are persisted to localStorage when table has an id prop
   // This allows the table to restore user preferences when the page is reopened
   // =============================================================================
-
-  // PERPAGE STATE - Restore items per page from localStorage if available
-  const [statePerPage, stateSetPerPage] = useState(() => {
-    if (id) {
-      const savedPerPage = getItemWithExpiration(`acm-table-perPage-${id}`)
-      if (savedPerPage) {
-        const parsedPerPage = Number.parseInt(savedPerPage, 10)
-        if (!isNaN(parsedPerPage) && parsedPerPage > 0) {
-          return parsedPerPage
-        }
-      }
-    }
-    return props.initialPerPage || DEFAULT_ITEMS_PER_PAGE
-  })
-  const { perPage: contextPerPage, setPerPage: contextSetPerPage } = useContext(AcmTablePaginationContext)
-  const setPerPageWithStorage = useCallback(
-    (newPerPage: number) => {
-      stateSetPerPage(newPerPage)
-      if (id) {
-        setItemWithExpiration(`acm-table-perPage-${id}`, String(newPerPage))
-      }
-    },
-    [id]
-  )
-  const perPage = contextPerPage || statePerPage
-  const setPerPage = contextSetPerPage || setPerPageWithStorage
-
-  // PAGE STATE - Restore page from localStorage if available
   const [statePage, stateSetPage] = useState(() => {
     if (id) {
       const savedPage = getItemWithExpiration(`acm-table-page-${id}`)
@@ -908,19 +890,18 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         // sort changed while filtering; forget previous setting
         setPreFilterSort(undefined)
       }
-      // Reset page to 1 when sort changes
-      setPage(1)
     },
-    [filtered.length, internalSearch, setSort, setPage]
+    [filtered.length, internalSearch, setSort]
   )
 
   const updatePerPage = useCallback(
     (newPerPage: number) => {
-      // Reset to page 1 when items per page changes
-      setPage(1)
+      // keep the first item in view on pagination size change
+      const newPage = Math.floor(((page - 1) * perPage) / newPerPage) + 1
+      setPage(newPage)
       setPerPage(newPerPage)
     },
-    [setPage, setPerPage]
+    [page, perPage, setPage, setPerPage]
   )
 
   const onSelect = useCallback(
