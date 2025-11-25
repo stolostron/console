@@ -312,7 +312,7 @@ export function computeDeployedPodStatuses(
               deployed[StatusColumn.messages] = [] //[{ key: 'Status', value: `Missing ${missingCount} pods` }]
             }
           } else if (currentPodCount === 0 && desiredPodCount === 0) {
-            appStatuses.deployed[StatusColumn.counts] = Array(ScoreColumnSize).fill(0) as number[]
+            appStatuses.deployed[StatusColumn.counts] = new Array(ScoreColumnSize).fill(0) as number[]
           }
         }
       }
