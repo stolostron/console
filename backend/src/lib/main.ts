@@ -27,7 +27,6 @@ process.on('exit', function processExit(code) {
 })
 
 process.on('SIGINT', () => {
-  // eslint-disable-next-line no-console
   if (process.env.NODE_ENV === 'development') console.log()
   logger.debug({ msg: 'process SIGINT' })
   void stop()

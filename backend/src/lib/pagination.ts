@@ -65,7 +65,7 @@ export function paginate(
   })
   req.on('end', async () => {
     const body = chucks.join()
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
     const request = JSON.parse(body) as IRequestListView
     const { search, sortBy, filters } = request
     let { page, perPage } = request
