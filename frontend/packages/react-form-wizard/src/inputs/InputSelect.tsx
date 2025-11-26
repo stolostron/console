@@ -156,15 +156,17 @@ export const SelectListOptions = ({
         const isInputOption = typeof option !== 'string' && option.id === 'input'
         const valueString = String(isSimpleOption ? option : option.value)
         const labelString = String(isSimpleOption ? option : option.label)
+        const isCustomOption =
+          typeof allOptions[0] === 'string'
+            ? (allOptions as string[]).filter((op) => op === valueString).length === 0
+            : (allOptions as OptionType<any>[]).filter((op) => op.value === valueString).length === 0
         const isCreateOption =
           isLastItem &&
           isCreatable &&
           // checks if the user typed string is already selected
           (Array.isArray(value) ? !value.includes(valueString) : value !== valueString) &&
           // check if valueString exists in all options
-          (typeof allOptions[0] === 'string'
-            ? (allOptions as string[]).filter((op) => op === valueString).length === 0
-            : (allOptions as OptionType<any>[]).filter((op) => op.value === valueString).length === 0)
+          isCustomOption
 
         const shouldSkipLastItem =
           isLastItem && ((!isCreatable && !isSingleItem) || (isCreatable && (isInputOption || valueString === '')))
@@ -176,7 +178,7 @@ export const SelectListOptions = ({
         let displayText: string
         if (isCreateOption) {
           displayText = `${createOption} "${valueString}"`
-        } else if (isSingleItem && !value.includes(valueString)) {
+        } else if (isSingleItem && !isCreatable && !isInputOption && isCustomOption) {
           displayText = noResults
         } else {
           displayText = labelString
