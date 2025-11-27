@@ -57,6 +57,7 @@ import {
   AcmInlineStatusGroup,
   AcmLabels,
   AcmLaunchLink,
+  AcmTableLinkWithVisitedStatus,
   AcmPageContent,
   AcmTable,
   compareStrings,
@@ -687,9 +688,13 @@ export function useClusterNameColumn(): IAcmTableColumn<Cluster> {
     cell: (cluster, search) => (
       <>
         <span style={{ whiteSpace: 'nowrap' }}>
-          <Link to={getClusterNavPath(NavigationPath.clusterDetails, cluster)}>
+          <AcmTableLinkWithVisitedStatus
+            to={getClusterNavPath(NavigationPath.clusterDetails, cluster)}
+            storageKey="managedClustersNames"
+            storageValue={`${cluster.namespace}/${cluster.name!}`}
+          >
             <HighlightSearchText text={cluster.displayName} searchText={search} isLink useFuzzyHighlighting />
-          </Link>
+          </AcmTableLinkWithVisitedStatus>
         </span>
         {cluster.hive.clusterClaimName && (
           <TextContent>

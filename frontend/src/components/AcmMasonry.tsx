@@ -2,7 +2,7 @@
 import { Grid, GridItem, gridSpans, Stack } from '@patternfly/react-core'
 import useResizeObserver from '@react-hook/resize-observer'
 import { Children, Dispatch, ReactNode, SetStateAction, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { AcmLoadingPage } from '../ui-components'
+import { LoadingPage } from './LoadingPage'
 
 export function AcmMasonry(props: { minSize: number; maxColumns?: number; children?: ReactNode }) {
   const target = useRef(null)
@@ -93,7 +93,7 @@ export function AcmMasonry(props: { minSize: number; maxColumns?: number; childr
 
   return (
     <div ref={target}>
-      {!isReady && <AcmLoadingPage />}
+      {!isReady && <LoadingPage />}
       <Grid hasGutter style={{ maxWidth: realColumns * props.minSize, visibility: isReady ? 'visible' : 'hidden' }}>
         {itemColumns.map((column, index) => (
           <GridItem span={span} key={index}>

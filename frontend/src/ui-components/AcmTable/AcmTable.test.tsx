@@ -626,7 +626,7 @@ describe('AcmTable', () => {
 
     // change sort during filter (Last Name)
     userEvent.click(getByText('Last Name'))
-    expect(container.querySelector('tbody tr:first-of-type [data-label="Last Name"]')).toHaveTextContent('Barnham')
+    expect(container.querySelector('tbody tr:first-of-type [data-label="Last Name"]')).toHaveTextContent('Novill')
 
     // clear filter
     expect(getByLabelText('Reset')).toBeVisible()
@@ -646,7 +646,7 @@ describe('AcmTable', () => {
 
     // change sort during filter (Last Name)
     userEvent.click(getByText('Last Name'))
-    expect(container.querySelector('tbody tr:first-of-type [data-label="Last Name"]')).toHaveTextContent('Barnham')
+    expect(container.querySelector('tbody tr:first-of-type [data-label="Last Name"]')).toHaveTextContent('Novill')
 
     // clear filter by backspacing
     userEvent.type(getByPlaceholderText(placeholderString), '{backspace}{backspace}{backspace}{backspace}')
@@ -822,7 +822,7 @@ describe('AcmTable', () => {
     expect(getByLabelText('Current page')).toHaveValue(6)
     expect(setSearch).not.toHaveBeenCalled()
     expect(setSort).not.toHaveBeenCalled()
-    expect(container.querySelector('tbody:last-of-type [data-label="First Name"]')).toHaveTextContent('Alyce')
+    expect(container.querySelector('tbody:last-of-type [data-label="First Name"]')).toHaveTextContent('Ysabel')
 
     expect(getByLabelText('Reset')).toBeVisible()
     userEvent.click(getByLabelText('Reset'))

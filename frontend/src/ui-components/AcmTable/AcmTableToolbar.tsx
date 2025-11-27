@@ -44,6 +44,7 @@ import {
 } from './AcmTableTypes'
 import { FilterSelect } from './FilterSelect'
 import { getLocalStorage, setLocalStorage } from './localColumnStorage'
+import { setItemWithExpiration } from './AcmTable'
 
 // when a filter has more then this many options, give it its own dropdown
 const SPLIT_FILTER_THRESHOLD = 30
@@ -306,7 +307,7 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
     selected,
     setSelected,
     disabled,
-    internalSearch,
+    internalSearch: propsInternalSearch,
     setInternalSearch,
     preFilterSort,
     exportTable,
@@ -319,7 +320,8 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
   } = props
 
   const { t } = useTranslation()
-  const initialSearch = props.initialSearch ?? ''
+  const tableSearchLocalStorageKey = id ? `acm-table-search.${id}` : undefined
+  const initialSearch = propsInternalSearch ?? ''
   const [stateSearch, stateSetSearch] = useState(initialSearch)
   const search = props.search ?? stateSearch
   const setSearch = props.setSearch ?? stateSetSearch
@@ -352,6 +354,17 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
     }
   }, [search, setInternalSearchWithDebounce])
 
+  // Save search to localStorage whenever it changes
+  useEffect(() => {
+    if (tableSearchLocalStorageKey && search !== undefined) {
+      try {
+        setItemWithExpiration(tableSearchLocalStorageKey, search)
+      } catch {
+        // Catch possible errors
+      }
+    }
+  }, [search, tableSearchLocalStorageKey])
+
   const clearSearch = useCallback(() => {
     /* istanbul ignore if */
     if (process.env.NODE_ENV !== 'test') {
@@ -363,7 +376,23 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
     if (preFilterSort) {
       setSort(preFilterSort)
     }
-  }, [setSearch, setInternalSearch, setPage, preFilterSort, setInternalSearchWithDebounce, setSort])
+    // Clear search from localStorage
+    if (tableSearchLocalStorageKey) {
+      try {
+        setItemWithExpiration(tableSearchLocalStorageKey, '')
+      } catch {
+        // Catch possible errors
+      }
+    }
+  }, [
+    setSearch,
+    setInternalSearch,
+    setPage,
+    preFilterSort,
+    setInternalSearchWithDebounce,
+    setSort,
+    tableSearchLocalStorageKey,
+  ])
 
   const clearSearchAndFilters = useCallback(() => {
     clearSearch()
@@ -449,7 +478,7 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
                 <AcmSearchInput
                   placeholder={searchPlaceholder}
                   spellCheck={false}
-                  resultsCount={`${search === internalSearch ? filteredCount : '-'} / ${totalCount}`}
+                  resultsCount={`${search === propsInternalSearch ? filteredCount : '-'} / ${totalCount}`}
                   style={{ flexGrow: 1 }}
                   canAddConstraints
                   useAdvancedSearchPopper={advancedFilters.length > 0}
