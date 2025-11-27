@@ -6,17 +6,13 @@ import {
   CimConfigProgressAlert,
   CimConfigurationModal,
   CimStorageMissingAlert,
-  CreateResourceFuncType,
   getAgentStatusKey,
   getCurrentClusterVersion,
   getMajorMinorVersion,
-  GetResourceFuncType,
   InfraEnvK8sResource,
   InfrastructureK8sResource,
   isCIMConfigured,
   isStorageConfigured,
-  ListResourcesFuncType,
-  PatchResourceFuncType,
 } from '@openshift-assisted/ui-lib/cim'
 import { K8sResourceCommon } from '@openshift-console/dynamic-plugin-sdk'
 import { Button, ButtonVariant, Flex, FlexItem, PageSection, Popover, Stack, StackItem } from '@patternfly/react-core'
@@ -38,15 +34,7 @@ import { DOC_LINKS, OCP_DOC, ViewDocumentationLink } from '../../../lib/doc-util
 import { canUser, rbacDelete } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { IResource } from '../../../resources/resource'
-import {
-  createResource,
-  exportObjectString,
-  getISOStringTimestamp,
-  getResource,
-  listResources,
-  patchResource,
-  ResourceError,
-} from '../../../resources/utils'
+import { exportObjectString, getISOStringTimestamp, ResourceError } from '../../../resources/utils'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import {
   AcmButton,
@@ -154,18 +142,6 @@ const deleteInfraEnv = (
   }
 }
 
-const k8sPrimitives: {
-  createResource: CreateResourceFuncType
-  getResource: GetResourceFuncType
-  listResources: ListResourcesFuncType
-  patchResource: PatchResourceFuncType
-} = {
-  createResource: (res) => createResource(res).promise,
-  getResource: (res) => getResource(res).promise,
-  listResources: (...params) => listResources(...params).promise,
-  patchResource: (...params) => patchResource(...params).promise,
-}
-
 const InfraEnvironmentsPage: React.FC = () => {
   const { agentsState, infraEnvironmentsState, infrastructuresState, agentServiceConfigsState, storageClassState } =
     useSharedAtoms()
@@ -251,7 +227,6 @@ const InfraEnvironmentsPage: React.FC = () => {
 
       {isCimConfigurationModalOpen && (
         <CimConfigurationModal
-          {...k8sPrimitives}
           isOpen
           onClose={() => setIsCimConfigurationModalOpen(false)}
           agentServiceConfig={agentServiceConfig}
