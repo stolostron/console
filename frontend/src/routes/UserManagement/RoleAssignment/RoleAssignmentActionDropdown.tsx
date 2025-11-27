@@ -57,7 +57,7 @@ const RoleAssignmentActionDropdown = ({
           close: () => setModalProps({ open: false }),
           isDanger: true,
           icon: 'warning',
-          confirmText: 'delete',
+          confirmText: t('confirm'),
         })
       },
     },
