@@ -537,7 +537,7 @@ describe('RoleAssignments', () => {
     expect(screen.getByRole('button', { name: /delete role assignments/i })).toBeInTheDocument()
     await clickByText('Delete role assignments')
     await waitForText('Delete role assignments?')
-    await waitForText('Confirm by typing "delete" below:')
+    await waitForText('Confirm by typing "confirm" below:')
 
     // Test delete confirmation button
     expect(screen.getByRole('button', { name: /^delete$/i })).toBeInTheDocument()
