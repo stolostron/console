@@ -437,11 +437,9 @@ export const getCSVDownloadLink = (createElementSpy: jest.SpyInstance<HTMLElemen
   )
 
 export const templateMaker = function (obj: unknown) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return function (context: { [x: string]: any }) {
     const replacer = function (_key: string, val: () => string | number) {
       if (typeof val === 'function') {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return context[val()]
       }
       return val

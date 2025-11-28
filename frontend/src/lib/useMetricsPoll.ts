@@ -119,7 +119,7 @@ export const useMetricsPoll: UsePoll = (
           if (err.name !== 'AbortError') {
             setResponse(undefined)
             setError(err?.message)
-            // eslint-disable-next-line no-console
+
             console.error(`Error polling URL: ${err?.message}`)
           }
         })
