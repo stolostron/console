@@ -14,8 +14,8 @@
     "check:fix": "npm run prettier:fix && npm run lint:fix && npm run tsc",
     "test": "npm run jest --",
     "jest": "node --experimental-vm-modules node_modules/.bin/jest --testResultsProcessor jest-sonar-reporter",
-    "lint": "eslint src test --ext .ts --max-warnings=0",
-    "lint:fix": "eslint src test --ext .ts --fix",
+    "lint": "eslint src test --max-warnings=0",
+    "lint:fix": "eslint src test --fix",
     "prettier": "prettier --check src test",
     "prettier:fix": "prettier --write src test",
     "update": "npx npm-check-updates --doctor --upgrade && npm audit fix && npm dedup"
