@@ -53,7 +53,7 @@ export function useFleetK8sWatchResource<R extends FleetK8sResourceCommon | Flee
   const [hubClusterName, hubClusterNameLoaded, hubClusterNameLoadedError] = useHubClusterName()
 
   const memoizedResource = useDeepCompareMemoize(initResource, true)
-  const { cluster, ...resource } = memoizedResource || {}
+  const { cluster, ...resource } = memoizedResource ?? {}
   const { groupVersionKind } = resource
   const [model, modelLoading] = useK8sModel(groupVersionKind)
   const [backendAPIPath, backendPathLoaded] = useFleetK8sAPIPath(cluster)
