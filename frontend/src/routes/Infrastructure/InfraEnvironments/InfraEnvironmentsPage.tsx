@@ -28,10 +28,6 @@ import {
   CimConfigProgressAlert,
   getCurrentClusterVersion,
   getMajorMinorVersion,
-  CreateResourceFuncType,
-  GetResourceFuncType,
-  ListResourcesFuncType,
-  PatchResourceFuncType,
   InfrastructureK8sResource,
 } from '@openshift-assisted/ui-lib/cim'
 import { useState, useEffect, useMemo } from 'react'
@@ -47,15 +43,7 @@ import { getDateTimeCell } from '../helpers/table-row-helpers'
 import { useSharedAtoms, useRecoilValue } from '../../../shared-recoil'
 import { IResource } from '../../../resources/resource'
 import { K8sResourceCommon } from '@openshift-console/dynamic-plugin-sdk'
-import {
-  ResourceError,
-  createResource,
-  exportObjectString,
-  getISOStringTimestamp,
-  getResource,
-  listResources,
-  patchResource,
-} from '../../../resources/utils'
+import { ResourceError, exportObjectString, getISOStringTimestamp } from '../../../resources/utils'
 import get from 'lodash/get'
 import groupBy from 'lodash/groupBy'
 import { Dictionary } from 'lodash'
@@ -154,18 +142,6 @@ const deleteInfraEnv = (
   }
 }
 
-const k8sPrimitives: {
-  createResource: CreateResourceFuncType
-  getResource: GetResourceFuncType
-  listResources: ListResourcesFuncType
-  patchResource: PatchResourceFuncType
-} = {
-  createResource: (res) => createResource(res).promise,
-  getResource: (res) => getResource(res).promise,
-  listResources: (...params) => listResources(...params).promise,
-  patchResource: (...params) => patchResource(...params).promise,
-}
-
 const InfraEnvironmentsPage: React.FC = () => {
   const { agentsState, infraEnvironmentsState, infrastructuresState, agentServiceConfigsState, storageClassState } =
     useSharedAtoms()
@@ -251,7 +227,6 @@ const InfraEnvironmentsPage: React.FC = () => {
 
       {isCimConfigurationModalOpen && (
         <CimConfigurationModal
-          {...k8sPrimitives}
           isOpen
           onClose={() => setIsCimConfigurationModalOpen(false)}
           agentServiceConfig={agentServiceConfig}
