@@ -21,7 +21,8 @@
   font-size: 14px;
 }
 
-.app-topology-view .pf-v5-c-toolbar {
+.app-topology-view {
+  background-color: var(--pf-v5-c-page__main-section--m-light--BackgroundColor);
   padding-bottom: 0;
 }
 
