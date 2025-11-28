@@ -66,7 +66,7 @@ export const useFleetK8sWatchResourceStore = create<FleetK8sWatchResourceStore>(
         cache: {
           ...state.cache,
           [key]: {
-            ...(state.cache[key] || {}),
+            ...state.cache[key],
             socket,
           },
         },
@@ -127,7 +127,7 @@ export const useFleetK8sWatchResourceStore = create<FleetK8sWatchResourceStore>(
         cache: {
           ...state.cache,
           [key]: {
-            ...(state.cache[key] || {}),
+            ...state.cache[key],
             timestamp: Date.now(),
           },
         },

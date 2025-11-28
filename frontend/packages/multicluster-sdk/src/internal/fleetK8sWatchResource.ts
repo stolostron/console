@@ -24,7 +24,7 @@ const getRequestPathFromResource = (resource: FleetWatchK8sResource, model: K8sM
 }
 
 const getDefaultData = (resource?: FleetWatchK8sResource | null) => {
-  const { isList } = resource || {}
+  const { isList } = resource ?? {}
   return isList ? [] : undefined
 }
 
