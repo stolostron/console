@@ -93,7 +93,13 @@ export function WizSingleSelect(props: WizSingleSelectProps) {
               // eslint-disable-next-line @typescript-eslint/no-unsafe-call
               onSelect={(_event, value) => onSelect(value?.toString() ?? '')}
             >
-              <SelectListOptions value={value} options={filteredOptions} isCreatable={isCreatable} footer={footer} />
+              <SelectListOptions
+                value={value}
+                allOptions={options}
+                options={filteredOptions}
+                isCreatable={isCreatable}
+                footer={footer}
+              />
             </PfSelect>
           </InputGroupItem>
         </InputGroup>

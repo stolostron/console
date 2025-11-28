@@ -55,8 +55,8 @@ import {
   SecretKind,
 } from '../../../resources'
 import { gitOpsOperators } from '../Application.sharedmocks'
-import { EditArgoApplicationSet } from './EditArgoApplicationSet'
 import { CreateApplicationArgoPullModel } from './CreateApplicationArgoPullModel'
+import { EditArgoApplicationSet } from './EditArgoApplicationSet'
 
 const gitOpsCluster: GitOpsCluster = {
   apiVersion: GitOpsClusterApiVersion,
@@ -421,12 +421,11 @@ describe('Create Argo Application Set', () => {
       nockArgoGitPathSha(channelGit.spec.pathname, 'branch-01', { commit: { sha: '01' } }),
       nockArgoGitPathTree(channelGit.spec.pathname, { tree: [{ path: 'application-test', type: 'tree' }] }),
     ]
-
-    await clickByRole('option', { name: /create new option "branch-01"/i })
+    await clickByRole('option', { name: /branch-01/i })
     await waitForNocks(pathNocks)
 
     await clickByRole('combobox', { name: 'Enter or select a repository path' })
-    await clickByRole('option', { name: /create new option "application-test"/i })
+    await clickByRole('option', { name: /application-test/i })
 
     await typeByRole('gitops-ns', 'textbox')
     await clickByText('Next')

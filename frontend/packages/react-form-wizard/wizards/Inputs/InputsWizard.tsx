@@ -1,24 +1,24 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useHistory } from 'react-router-dom'
 import {
-  WizKeyValue,
-  WizMultiSelect,
   Radio,
-  WizRadioGroup,
   Section,
-  WizSelect,
-  WizSingleSelect,
   Step,
-  WizStringsInput,
-  WizTableSelect,
-  WizTextArea,
   Tile,
-  WizTiles,
   WizardPage,
   WizArrayInput,
   WizCheckbox,
-  WizTextInput,
+  WizKeyValue,
+  WizMultiSelect,
+  WizRadioGroup,
+  WizSelect,
+  WizSingleSelect,
+  WizStringsInput,
   WizSwitch,
+  WizTableSelect,
+  WizTextArea,
+  WizTextInput,
+  WizTiles,
 } from '../../src'
 import { onCancel, onSubmit } from '../common/utils'
 
@@ -69,9 +69,8 @@ export function InputsWizard() {
         <Section label="SingleSelect with prompt">
           <WizSingleSelect
             label="SingleSelect"
-            path="singleSelect.value"
+            path="singleSelectPrompt.value"
             options={['Option 1', 'Option 2']}
-            helperText="isCreatable"
             prompt={{ label: 'See selection', href: '/?route=inputs' }}
           />
         </Section>
