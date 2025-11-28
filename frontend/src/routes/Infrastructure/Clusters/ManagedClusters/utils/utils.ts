@@ -39,3 +39,16 @@ export function getClusterLabelData(clusters: Cluster[]) {
     }),
   }
 }
+export const getCPUArchFromReleaseImage = (releaseImage = '') => {
+  const match = /.+:.*-(.*)/gm.exec(releaseImage)
+  if (match && match.length > 1 && match[1]) {
+    return match[1]
+  }
+}
+
+export const getVersionFromReleaseImage = (releaseImage = '') => {
+  const match = /.+:(\d+\.\d+(?:\.\d+)?)/gm.exec(releaseImage)
+  if (match && match.length > 1 && match[1]) {
+    return match[1]
+  }
+}
