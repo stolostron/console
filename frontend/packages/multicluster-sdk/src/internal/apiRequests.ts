@@ -146,6 +146,7 @@ export const fleetWatch = (
   query: {
     labelSelector?: Selector
     resourceVersion?: string
+    allowWatchBookmarks?: boolean
     ns?: string
     fieldSelector?: string
     cluster?: string
@@ -168,6 +169,10 @@ export const fleetWatch = (
 
   if (query.resourceVersion) {
     queryParams.resourceVersion = query.resourceVersion
+  }
+
+  if (query.allowWatchBookmarks) {
+    queryParams.allowWatchBookmarks = 'true'
   }
 
   const requestPath = buildResourceURL({
