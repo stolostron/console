@@ -22,8 +22,8 @@ import { NodeIcons } from './components/nodeIcons'
 import { NodeStatusIcons } from './components/nodeStatusIcons'
 import DetailsView from '../components/DetailsView'
 import { ArgoAppDetailsContainerData, ClusterDetailsContainerData } from '../ApplicationTopology'
-import TopologyControlBar from './components/TopologyControlBar'
-import { TopologyDetailsView } from './components/TopologyDetailsView'
+import TopologyZoomBar from './components/TopologyZoomBar'
+import TopologyToolbar from './components/TopologyToolbar'
 
 import './css/topology-components.css'
 import './css/topology-controlbar.css'
@@ -31,7 +31,6 @@ import './css/topology-view.css'
 import { useQuerySearchDisabledManagedClusters } from '../../../../../lib/search'
 import { useQuery } from '../../../../../lib/useQuery'
 import { TFunction } from 'react-i18next'
-import MenuContextBar from './components/TopologyMenuBar'
 
 export interface TopologyProps {
   elements: {
@@ -82,6 +81,7 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
     processActionLink,
     argoAppDetailsContainerControl,
     clusterDetailsContainerControl,
+    channelControl,
     setDrawerContent,
     elements,
     nodeDetailsProvider,
@@ -140,12 +140,8 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
 
   return (
     <TopologyView
-      className="app-topology-view"
-      controlBar={<TopologyControlBar />}
-      contextToolbar={<MenuContextBar />}
-      sideBar={<TopologyDetailsView selectedIds={selectedIds} setSelectedIds={setSelectedIds} />}
-      //sideBarOpen={true}
-      sideBarResizable={true}
+      controlBar={<TopologyZoomBar />}
+      contextToolbar={<TopologyToolbar channelControl={channelControl} setDrawerContent={setDrawerContent} />}
     >
       <VisualizationSurface state={{ selectedIds }} />
     </TopologyView>

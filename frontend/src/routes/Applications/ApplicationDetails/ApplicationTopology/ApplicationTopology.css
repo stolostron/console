@@ -21,11 +21,6 @@
   font-size: 14px;
 }
 
-.app-topology-view {
-  background-color: var(--pf-v5-c-page__main-section--m-light--BackgroundColor);
-  padding-bottom: 0;
-}
-
 .pf-topology__node__icon {
   fill: #000;
   stroke: 'none';

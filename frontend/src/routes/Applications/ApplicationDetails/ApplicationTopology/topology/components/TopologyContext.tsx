@@ -1,28 +1,7 @@
 import { createContext } from 'react'
 import { action, makeObservable, observable } from 'mobx'
-import { LabelPosition } from '@patternfly/react-topology'
-import { GeneratorEdgeOptions, GeneratorNodeOptions } from './generator'
 
 export class TopologyModel {
-  protected nodeOptionsP: GeneratorNodeOptions = {
-    showStatus: false,
-    showShapes: false,
-    showDecorators: false,
-    labels: true,
-    secondaryLabels: false,
-    labelPosition: LabelPosition.bottom,
-    badges: false,
-    icons: false,
-    contextMenus: false,
-    hulledOutline: true,
-  }
-  protected edgeOptionsP: GeneratorEdgeOptions = {
-    showStyles: false,
-    showStatus: false,
-    showAnimations: false,
-    showTags: false,
-    terminalTypes: false,
-  }
   protected creationCountsP: { numNodes: number; numEdges: number; numGroups: number; nestedLevel: number } = {
     numNodes: 6,
     numEdges: 2,
@@ -62,20 +41,6 @@ export class TopologyModel {
       setMedScale: action,
       setLowScale: action,
     })
-  }
-
-  public get nodeOptions(): GeneratorNodeOptions {
-    return this.nodeOptionsP
-  }
-  public setNodeOptions = (options: GeneratorNodeOptions): void => {
-    this.nodeOptionsP = options
-  }
-
-  public get edgeOptions(): GeneratorEdgeOptions {
-    return this.edgeOptionsP
-  }
-  public setEdgeOptions = (options: GeneratorEdgeOptions): void => {
-    this.edgeOptionsP = options
   }
 
   public get creationCounts(): { numNodes: number; numEdges: number; numGroups: number; nestedLevel: number } {

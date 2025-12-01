@@ -1,3 +1,33 @@
+.pf-v6-c-toolbar {
+  padding: 10px;
+  background-color: var(--pf-v5-c-page__main-section--m-light--BackgroundColor);
+  border-color: var(--pf-v5-global--BorderColor--100);
+}
+.pf-topology-control-bar {
+  position: absolute;
+  bottom: 0;
+  left: var(--pf-t--global--spacer--lg);
+}
+.pf-topology-control-bar__button.pf-v6-c-button.pf-m-tertiary {
+  margin-right: var(--pf-t--global--spacer--gap--control-to-control--default);
+  margin-top: var(--pf-t--global--spacer--xs);
+  padding: var(--pf-t--global--spacer--control--vertical--plain)
+    var(--pf-t--global--spacer--control--horizontal--default);
+  border: none;
+  border-radius: var(--pf-t--global--border--radius--small);
+  box-shadow: var(--pf-t--global--box-shadow--sm);
+}
+.pf-topology-control-bar__button.pf-v6-c-button.pf-m-tertiary:not(.pf-m-disabled) {
+  background-color: var(--pf-t--global--background--color--primary--default);
+}
+.pf-topology-control-bar__button.pf-v6-c-button.pf-m-tertiary:after {
+  display: none;
+}
+.pf-topology-control-bar__button.pf-v6-c-button.pf-m-tertiary:hover {
+  border: none;
+  box-shadow: var(--pf-t--global--box-shadow--md);
+}
+
 .channel-controls-container {
   display: flex;
   align-items: baseline;

@@ -11,7 +11,6 @@ import { getDiagramElements } from './model/topology'
 import { DrawerShapes } from './components/DrawerShapes'
 import './ApplicationTopology.css'
 import './topology/css/Drawer.css'
-import './topology/css/Toolbar.css'
 import { ArgoApp, ClusterDetailsContainerControl } from './types'
 import { nodeDetailsProvider } from './model/NodeDetailsProvider'
 

@@ -5,8 +5,9 @@ import {
   useVisualizationController,
   action,
 } from '@patternfly/react-topology'
+import '../css/topology-toolbar.css'
 
-const TopologyControlBar: React.FC<{ collapseAllCallback?: (collapseAll: boolean) => void }> = ({
+const TopologyZoomBar: React.FC<{ collapseAllCallback?: (collapseAll: boolean) => void }> = ({
   collapseAllCallback,
 }) => {
   const controller = useVisualizationController()
@@ -30,16 +31,10 @@ const TopologyControlBar: React.FC<{ collapseAllCallback?: (collapseAll: boolean
           controller.getGraph().reset()
           controller.getGraph().layout()
         }),
-        // expandAllCallback: action(() => {
-        //   collapseAllCallback(false)
-        // }),
-        // collapseAllCallback: action(() => {
-        //   collapseAllCallback(true)
-        // }),
         legend: false,
       })}
     />
   )
 }
 
-export default TopologyControlBar
+export default TopologyZoomBar
