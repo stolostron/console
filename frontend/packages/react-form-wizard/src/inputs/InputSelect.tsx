@@ -147,12 +147,32 @@ export const SelectListOptions = ({
 
   // Create a new Set from the array to remove any duplicates
   const uniqueOptions = [...new Set([...options])]
+  if (uniqueOptions.length === 0) {
+    return (
+      <SelectList isAriaMultiselectable={isMultiSelect}>
+        <SelectOption
+          id={'option-no-results'}
+          key={'option-no-results'}
+          value={undefined}
+          isDisabled={true}
+          onClick={undefined}
+          isSelected={true}
+        >
+          {noResults}
+        </SelectOption>
+        {footer && <MenuFooter>{footer}</MenuFooter>}
+      </SelectList>
+    )
+  }
   return (
     <SelectList isAriaMultiselectable={isMultiSelect}>
       {uniqueOptions.map((option, index) => {
         const isLastItem = index === uniqueOptions.length - 1
         const isSingleItem = uniqueOptions.length === 1
         const isSimpleOption = typeof option === 'string'
+        const isEmptyOption = isSimpleOption
+          ? option === ''
+          : option.id === '' && option.label === '' && option.value === ''
         const isInputOption = typeof option !== 'string' && option.id === 'input'
         const valueString = String(isSimpleOption ? option : option.value)
         const labelString = String(isSimpleOption ? option : option.label)
@@ -169,7 +189,8 @@ export const SelectListOptions = ({
           isCustomOption
 
         const shouldSkipLastItem =
-          isLastItem && ((!isCreatable && !isSingleItem) || (isCreatable && (isInputOption || valueString === '')))
+          isLastItem &&
+          ((!isCreatable && !isSingleItem) || (isCreatable && !isSingleItem && (isInputOption || valueString === '')))
 
         if (shouldSkipLastItem) {
           return null
@@ -178,7 +199,7 @@ export const SelectListOptions = ({
         let displayText: string
         if (isCreateOption) {
           displayText = `${createOption} "${valueString}"`
-        } else if (isSingleItem && !isCreatable && !isInputOption && isCustomOption) {
+        } else if (isSingleItem && ((!isCreatable && !isInputOption && isCustomOption) || isEmptyOption)) {
           displayText = noResults
         } else {
           displayText = labelString
