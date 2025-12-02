@@ -4,7 +4,11 @@ import { Button } from '@patternfly/react-core'
 import { useTranslation } from '../../lib/acm-i18next'
 import { AcmEmptyState } from '../../ui-components'
 
-export function CommonProjectsEmptyState({ onCreateCommonProject }: { readonly onCreateCommonProject: () => void }) {
+interface CommonProjectsEmptyStateProps {
+  onCreateCommonProject: () => void
+}
+
+export function CommonProjectsEmptyState({ onCreateCommonProject }: CommonProjectsEmptyStateProps) {
   const { t } = useTranslation()
 
   return (
