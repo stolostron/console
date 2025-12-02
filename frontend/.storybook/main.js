@@ -11,7 +11,7 @@ module.exports = {
     '@chromatic-com/storybook'
   ],
 
-  stories: ['../src/ui-components/AcmPage/AcmPage.stories.tsx', '../src/ui-components/**/*.stories.tsx'],
+  stories: ['../src/ui-components/AcmPage/AcmPage.stories.tsx', '../src/**/*.stories.tsx'],
 
   webpackFinal: async (config) => {
     config.module.rules.push(
