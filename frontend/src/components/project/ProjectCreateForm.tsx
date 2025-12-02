@@ -7,20 +7,21 @@ import { AcmForm, AcmSubmit } from '../../ui-components/AcmForm/AcmForm'
 import { AcmTextInput } from '../../ui-components/AcmTextInput/AcmTextInput'
 import { validateName } from './validation'
 
-export interface ProjectCreateFormProps {
-  /** Callback function called when the cancel button is clicked */
-  onCancelCallback: () => void
-  /** Callback function called when the form is submitted with valid data */
-  onSubmit: (data: ProjectFormData) => void | Promise<void>
-}
-
 export interface ProjectFormData {
   name: string
   displayName: string
   description: string
 }
 
-export function ProjectCreateForm({ onCancelCallback, onSubmit }: ProjectCreateFormProps) {
+export function ProjectCreateForm({
+  onCancelCallback,
+  onSubmit,
+}: {
+  /** Callback function called when the cancel button is clicked */
+  onCancelCallback: () => void
+  /** Callback function called when the form is submitted with valid data */
+  onSubmit: (data: ProjectFormData) => void | Promise<void>
+}) {
   const { t } = useTranslation()
 
   // Form state

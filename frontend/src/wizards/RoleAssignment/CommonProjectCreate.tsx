@@ -7,22 +7,24 @@ import { ProjectCreateForm, ProjectFormData } from '../../components/project'
 import { createProject } from '../../resources/project'
 import { AcmToastContext } from '../../ui-components'
 
-export interface CommonProjectCreateProps {
+export function CommonProjectCreate({
+  onCancelCallback,
+  onSuccess,
+  onError,
+}: {
   /** Callback function called when the cancel button is clicked */
   onCancelCallback: () => void
   /** Optional callback function called when the project is successfully created */
   onSuccess?: () => void
   /** Optional callback function called when project creation fails */
   onError?: (error: Error) => void
-}
-
-export function CommonProjectCreate({ onCancelCallback, onSuccess, onError }: CommonProjectCreateProps) {
+}) {
   const { t } = useTranslation()
   const toastContext = useContext(AcmToastContext)
 
   const handleSubmit = async (data: ProjectFormData) => {
     try {
-      const response = await createProject(
+      const response = createProject(
         data.name,
         undefined, // labels
         {
