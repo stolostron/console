@@ -13,11 +13,11 @@ export function CommonProjectCreate({
   onError,
 }: {
   /** Callback function called when the cancel button is clicked */
-  onCancelCallback: () => void
+  readonly onCancelCallback: () => void
   /** Optional callback function called when the project is successfully created */
-  onSuccess?: () => void
+  readonly onSuccess?: () => void
   /** Optional callback function called when project creation fails */
-  onError?: (error: Error) => void
+  readonly onError?: (error: Error) => void
 }) {
   const { t } = useTranslation()
   const toastContext = useContext(AcmToastContext)

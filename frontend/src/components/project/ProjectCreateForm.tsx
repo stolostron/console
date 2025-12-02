@@ -18,9 +18,9 @@ export function ProjectCreateForm({
   onSubmit,
 }: {
   /** Callback function called when the cancel button is clicked */
-  onCancelCallback: () => void
+  readonly onCancelCallback: () => void
   /** Callback function called when the form is submitted with valid data */
-  onSubmit: (data: ProjectFormData) => void | Promise<void>
+  readonly onSubmit: (data: ProjectFormData) => void | Promise<void>
 }) {
   const { t } = useTranslation()
 
