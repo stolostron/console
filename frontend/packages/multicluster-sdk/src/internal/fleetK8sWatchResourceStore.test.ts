@@ -103,7 +103,7 @@ describe('FleetK8sWatchResourceStore', () => {
       result.current.setSocket(key, mockSocket)
     })
 
-    const cachedSocket = result.current.getSocket(key)
+    const cachedSocket = result.current.cache[key]?.socket
     expect(cachedSocket).toBe(mockSocket)
   })
 
@@ -145,14 +145,14 @@ describe('FleetK8sWatchResourceStore', () => {
       result.current.setSocket(key, mockSocket)
     })
 
-    expect(result.current.getSocket(key)).toBe(mockSocket)
+    expect(result.current.cache[key]?.socket).toBe(mockSocket)
 
     act(() => {
       result.current.decrementRefCount(key)
     })
 
     expect(mockSocket.close).toHaveBeenCalled()
-    expect(result.current.getSocket(key)).toBeUndefined()
+    expect(result.current.cache[key]?.socket).toBeUndefined()
   })
 
   it('should store and retrieve resource version', () => {
@@ -301,7 +301,7 @@ describe('Ref count management with sockets', () => {
 
     expect(result.current.getRefCount(key)).toBe(1)
     expect(mockSocket.close).not.toHaveBeenCalled()
-    expect(result.current.getSocket(key)).toBe(mockSocket)
+    expect(result.current.cache[key]?.socket).toBe(mockSocket)
   })
 
   it('should prevent ref count from going negative', () => {
@@ -333,7 +333,7 @@ describe('Ref count management with sockets', () => {
     })
 
     expect(result.current.getRefCount(key)).toBe(3)
-    expect(result.current.getSocket(key)).toBe(mockSocket)
+    expect(result.current.cache[key]?.socket).toBe(mockSocket)
 
     // First hook unmounts
     act(() => {
@@ -466,14 +466,14 @@ describe('Edge cases and error scenarios', () => {
     })
 
     // Should still store the socket
-    expect(result.current.getSocket('invalid-socket')).toBeDefined()
+    expect(result.current.cache['invalid-socket']?.socket).toBeDefined()
 
     // Decrement should not crash
     act(() => {
       result.current.decrementRefCount('invalid-socket')
     })
 
-    expect(result.current.getSocket('invalid-socket')).toBeUndefined()
+    expect(result.current.cache['invalid-socket']?.socket).toBeUndefined()
   })
 
   it('should handle concurrent updates to same cache key', () => {
@@ -530,7 +530,7 @@ describe('Edge cases and error scenarios', () => {
       result.current.setSocket(key, mockSocket)
     })
 
-    expect(result.current.getSocket(key)).toBe(mockSocket)
+    expect(result.current.cache[key]?.socket).toBe(mockSocket)
 
     // Then increment ref count
     act(() => {
@@ -587,7 +587,7 @@ describe('Edge cases and error scenarios', () => {
       result.current.setResult(key, { metadata: { name: 'pod-1' } }, true)
     })
 
-    expect(result.current.getSocket(key)).toBe(mockSocket)
+    expect(result.current.cache[key]?.socket).toBe(mockSocket)
     expect(result.current.getRefCount(key)).toBe(1)
 
     // Update result
@@ -596,7 +596,7 @@ describe('Edge cases and error scenarios', () => {
     })
 
     // Socket and ref count should be preserved
-    expect(result.current.getSocket(key)).toBe(mockSocket)
+    expect(result.current.cache[key]?.socket).toBe(mockSocket)
     expect(result.current.getRefCount(key)).toBe(1)
     expect((result.current.getResult(key)?.data as any)?.metadata?.name).toBe('pod-2')
   })
@@ -626,7 +626,7 @@ describe('Integration scenarios', () => {
     })
 
     expect(result.current.getRefCount(key)).toBe(1)
-    expect(result.current.getSocket(key)).toBe(mockSocket)
+    expect(result.current.cache[key]?.socket).toBe(mockSocket)
 
     // Receive updates
     act(() => {
@@ -641,7 +641,7 @@ describe('Integration scenarios', () => {
     })
 
     expect(mockSocket.close).toHaveBeenCalled()
-    expect(result.current.getSocket(key)).toBeUndefined()
+    expect(result.current.cache[key]?.socket).toBeUndefined()
   })
 
   it('should handle multiple components watching same resource', () => {
@@ -671,7 +671,7 @@ describe('Integration scenarios', () => {
     })
 
     expect(mockSocket.close).not.toHaveBeenCalled()
-    expect(result.current.getSocket(key)).toBe(mockSocket)
+    expect(result.current.cache[key]?.socket).toBe(mockSocket)
 
     // Component 2 unmounts
     act(() => {

@@ -84,7 +84,7 @@ afterEach(() => {
   // Clear the store
   const store = useFleetK8sWatchResourceStore.getState()
   Object.keys(store.cache).forEach((key) => {
-    const socket = store.getSocket(key)
+    const socket = store.cache[key]?.socket
     if (socket) {
       socket.close()
     }
