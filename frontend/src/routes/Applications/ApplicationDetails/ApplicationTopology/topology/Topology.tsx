@@ -80,7 +80,6 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
     processActionLink,
     argoAppDetailsContainerControl,
     clusterDetailsContainerControl,
-    channelControl,
     setDrawerContent,
     elements,
     nodeDetailsProvider,
@@ -138,10 +137,7 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
   })
 
   return (
-    <TopologyView
-      controlBar={<TopologyZoomBar />}
-      contextToolbar={<TopologyToolbar channelControl={channelControl} setDrawerContent={setDrawerContent} />}
-    >
+    <TopologyView controlBar={<TopologyZoomBar />} contextToolbar={<TopologyToolbar {...topologyProps} />}>
       <VisualizationSurface state={{ selectedIds }} />
     </TopologyView>
   )
@@ -150,10 +146,13 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
 export const Topology = (props: TopologyProps) => {
   const controllerRef = useRef<Controller>()
   let controller = controllerRef.current
-  if (!controller) {
+  const nodeIds = props.elements.nodes.map((node) => node.id).join(',')
+  const currentNodeIds = useRef<string>()
+  if (!controller || currentNodeIds.current !== nodeIds) {
     controller = controllerRef.current = new Visualization()
     controller.registerLayoutFactory(layoutFactory)
     controller.registerComponentFactory(componentFactory)
+    currentNodeIds.current = nodeIds
   }
   controller.fromModel(getLayoutModel(props.elements))
   controller.setRenderConstraint(!props.disableRenderConstraint) // for testing
