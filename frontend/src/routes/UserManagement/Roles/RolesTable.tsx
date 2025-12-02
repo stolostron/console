@@ -1,16 +1,26 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { PageSection } from '@patternfly/react-core'
-import { useMemo, useCallback } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { ClusterRole } from '../../../resources/rbac'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmEmptyState, AcmTable, compareStrings } from '../../../ui-components'
-import { rolesTableColumns, useFilters, Role } from './RolesTableHelper'
+import { Role, rolesTableColumns, useFilters } from './RolesTableHelper'
 
-const RolesTable = () => {
+interface RolesTableProps {
+  columnsToDisplay?: string[]
+  onRadioSelect?: (roleName: string) => void
+  areLinksAllowed?: boolean
+}
+
+const RolesTable = ({
+  columnsToDisplay = ['name', 'permissions'],
+  onRadioSelect,
+  areLinksAllowed = true,
+}: RolesTableProps) => {
   const { t } = useTranslation()
   const { vmClusterRolesState } = useSharedAtoms()
   const clusterRoles = useRecoilValue(vmClusterRolesState)
+  const [selectedRole, setSelectedRole] = useState<string>()
 
   const roles = useMemo(
     () =>
@@ -32,29 +42,38 @@ const RolesTable = () => {
 
   const keyFn = useCallback((role: Role) => role.uid, [])
 
+  const handleRadioSelect = (roleName: string) => {
+    setSelectedRole(roleName)
+    onRadioSelect?.(roleName)
+  }
+
   const filters = useFilters(roles)
-  const columns = rolesTableColumns({ t })
+  const columns = rolesTableColumns({
+    t,
+    columnsToDisplay,
+    onRadioSelect: handleRadioSelect,
+    selectedRole,
+    areLinksAllowed,
+  })
 
   return (
-    <PageSection>
-      <AcmTable<Role>
-        key="roles-table"
-        filters={filters}
-        columns={columns}
-        keyFn={keyFn}
-        items={roles}
-        resultView={{
-          page: 1,
-          loading: false,
-          refresh: () => {},
-          items: [],
-          emptyResult: false,
-          processedItemCount: 0,
-          isPreProcessed: false,
-        }}
-        emptyState={<AcmEmptyState key="rolesEmptyState" title={t('No roles')} />}
-      />
-    </PageSection>
+    <AcmTable<Role>
+      key="roles-table"
+      filters={filters}
+      columns={columns}
+      keyFn={keyFn}
+      items={roles}
+      resultView={{
+        page: 1,
+        loading: false,
+        refresh: () => {},
+        items: [],
+        emptyResult: false,
+        processedItemCount: 0,
+        isPreProcessed: false,
+      }}
+      emptyState={<AcmEmptyState key="rolesEmptyState" title={t('No roles')} />}
+    />
   )
 }
 

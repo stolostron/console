@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { Badge, Radio } from '@patternfly/react-core'
 import { cellWidth } from '@patternfly/react-table'
 import { useMemo } from 'react'
 import { TFunction } from 'react-i18next'
@@ -16,11 +17,26 @@ export interface Role {
   roleTitle?: string
 }
 
-type RolesTableHelperProps = {
+const createColumnCells = ({
+  t,
+  onRadioSelect,
+  selectedRole,
+  areLinksAllowed,
+}: {
   t: TFunction
-}
-
-const createColumnCells = () => ({
+  onRadioSelect?: (roleName: string) => void
+  selectedRole?: string
+  areLinksAllowed: boolean
+}) => ({
+  RADIO_SELECT: (role: Role) => (
+    <Radio
+      id={`radio-${role.uid}`}
+      name="role-selection"
+      isChecked={selectedRole === role.name}
+      onChange={() => onRadioSelect?.(role.name)}
+      aria-label={`Select role ${role.name}`}
+    />
+  ),
   NAME: (role: Role, search: string) => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
       <span
@@ -32,9 +48,13 @@ const createColumnCells = () => ({
           maxWidth: '200px',
         }}
       >
-        <Link to={generatePath(NavigationPath.roleDetails, { id: role.uid })}>
+        {areLinksAllowed ? (
+          <Link to={generatePath(NavigationPath.roleDetails, { id: role.uid })}>
+            <HighlightSearchText text={role.name} searchText={search} useFuzzyHighlighting />
+          </Link>
+        ) : (
           <HighlightSearchText text={role.name} searchText={search} useFuzzyHighlighting />
-        </Link>
+        )}
       </span>
     </div>
   ),
@@ -44,7 +64,11 @@ const createColumnCells = () => ({
     if (permissionsArray.length === 0) {
       return (
         <span style={{ whiteSpace: 'nowrap' }}>
-          No permissions <Link to={generatePath(NavigationPath.rolePermissions, { id: role.uid })}>No Permissions</Link>
+          {areLinksAllowed ? (
+            <Link to={generatePath(NavigationPath.rolePermissions, { id: role.uid })}>{t('No permissions')}</Link>
+          ) : (
+            t('No permissions')
+          )}
         </span>
       )
     }
@@ -59,17 +83,40 @@ const createColumnCells = () => ({
             {permission}
           </span>
         ))}
-        {hasMore && <Link to={generatePath(NavigationPath.rolePermissions, { id: role.uid })}>See All</Link>}
+        {hasMore &&
+          (areLinksAllowed ? (
+            <Link to={generatePath(NavigationPath.rolePermissions, { id: role.uid })}>See All</Link>
+          ) : (
+            <Badge isRead>+{permissionsArray.length - 3}</Badge>
+          ))}
       </div>
     )
   },
 })
 
-export const rolesTableColumns = ({ t }: Pick<RolesTableHelperProps, 't'>): IAcmTableColumn<Role>[] => {
-  const COLUMN_CELLS = createColumnCells()
+export const rolesTableColumns = ({
+  t,
+  columnsToDisplay = [],
+  onRadioSelect,
+  selectedRole,
+  areLinksAllowed,
+}: {
+  t: TFunction
+  columnsToDisplay?: string[]
+  onRadioSelect?: (roleName: string) => void
+  selectedRole?: string
+  areLinksAllowed: boolean
+}): IAcmTableColumn<Role>[] => {
+  const COLUMN_CELLS = createColumnCells({ t, onRadioSelect, selectedRole, areLinksAllowed })
 
-  return [
-    {
+  const allColumns: Record<string, IAcmTableColumn<Role>> = {
+    radioSelect: {
+      header: ' ',
+      cell: (role) => COLUMN_CELLS.RADIO_SELECT(role),
+      transforms: [cellWidth(10)],
+      disableExport: true,
+    },
+    name: {
       header: t('Role'),
       sort: 'name',
       search: 'name',
@@ -77,14 +124,16 @@ export const rolesTableColumns = ({ t }: Pick<RolesTableHelperProps, 't'>): IAcm
       cell: (role, search) => COLUMN_CELLS.NAME(role, search),
       exportContent: (role) => role.name,
     },
-    {
+    permissions: {
       header: t('Permissions'),
       sort: 'permissions',
       transforms: [cellWidth(15)],
       cell: (role) => COLUMN_CELLS.PERMISSIONS(role),
       exportContent: (role) => role.permissions.toString(),
     },
-  ]
+  }
+
+  return columnsToDisplay.map((columnKey) => allColumns[columnKey]).filter(Boolean)
 }
 
 export const useFilters = (roles: Role[] = []) =>
