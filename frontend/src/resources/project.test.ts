@@ -16,7 +16,7 @@ const mockReplaceResource = replaceResource as jest.MockedFunction<typeof replac
 describe('createProject', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    
+
     // Default mock for createResource
     mockCreateResource.mockReturnValue({
       promise: Promise.resolve({
@@ -26,7 +26,7 @@ describe('createProject', () => {
       }),
       abort: jest.fn(),
     })
-    
+
     // Default mock for replaceResource
     mockReplaceResource.mockReturnValue({
       promise: Promise.resolve({
@@ -52,8 +52,8 @@ describe('createProject', () => {
     expect(mockCreateResource).toHaveBeenCalledWith({
       apiVersion: 'project.openshift.io/v1',
       kind: 'ProjectRequest',
-      metadata: { 
-        name: 'test-project'
+      metadata: {
+        name: 'test-project',
       },
     })
     expect(result).toHaveProperty('promise')
@@ -61,18 +61,18 @@ describe('createProject', () => {
   })
 
   it('should create project with labels', () => {
-    const labels = { 
-      'app': 'test-app',
-      'environment': 'development'
+    const labels = {
+      app: 'test-app',
+      environment: 'development',
     }
-    
+
     createProject('test-project', labels)
 
     expect(mockCreateResource).toHaveBeenCalledWith({
       apiVersion: 'project.openshift.io/v1',
       kind: 'ProjectRequest',
-      metadata: { 
-        name: 'test-project'
+      metadata: {
+        name: 'test-project',
       },
     })
   })
@@ -80,7 +80,7 @@ describe('createProject', () => {
   it('should create project with all properties', () => {
     const properties: ProjectProperties = {
       displayName: 'Test Project',
-      description: 'A test project for testing'
+      description: 'A test project for testing',
     }
 
     createProject('test-project', undefined, properties)
@@ -96,7 +96,7 @@ describe('createProject', () => {
 
   it('should create project with partial properties', () => {
     const properties: ProjectProperties = {
-      displayName: 'Test Project'
+      displayName: 'Test Project',
       // description is omitted
     }
 
@@ -125,10 +125,10 @@ describe('createProject', () => {
   })
 
   it('should create project with labels and properties', () => {
-    const labels = { 'team': 'frontend' }
+    const labels = { team: 'frontend' }
     const properties: ProjectProperties = {
       displayName: 'Frontend Project',
-      description: 'Project for frontend team'
+      description: 'Project for frontend team',
     }
 
     createProject('frontend-project', labels, properties)
@@ -143,7 +143,7 @@ describe('createProject', () => {
   })
 
   it('should handle labels by updating namespace after project creation', async () => {
-    const labels = { 'environment': 'production' }
+    const labels = { environment: 'production' }
     const mockProject = {
       apiVersion: 'project.openshift.io/v1' as const,
       kind: 'Project' as const,
@@ -166,13 +166,13 @@ describe('createProject', () => {
       kind: NamespaceKind,
       metadata: {
         ...mockProject.metadata,
-        labels
+        labels,
       },
     })
   })
 
   it('should call replaceResource when labels are provided', async () => {
-    const labels = { 'environment': 'staging' }
+    const labels = { environment: 'staging' }
     const mockProject = {
       apiVersion: 'project.openshift.io/v1' as const,
       kind: 'Project' as const,
@@ -188,17 +188,17 @@ describe('createProject', () => {
 
     // The main promise should resolve with the project
     await expect(result.promise).resolves.toEqual(mockProject)
-    
+
     // Wait a bit to ensure the labels update promise has time to execute
-    await new Promise(resolve => setTimeout(resolve, 10))
-    
+    await new Promise((resolve) => setTimeout(resolve, 10))
+
     // Verify that replaceResource was called to update namespace with labels
     expect(mockReplaceResource).toHaveBeenCalledWith({
       apiVersion: NamespaceApiVersion,
       kind: NamespaceKind,
       metadata: {
         ...mockProject.metadata,
-        labels
+        labels,
       },
     })
   })
@@ -206,7 +206,7 @@ describe('createProject', () => {
   it('should filter out undefined property values', () => {
     const properties: ProjectProperties = {
       displayName: 'Test Project',
-      description: undefined
+      description: undefined,
     }
 
     createProject('test-project', undefined, properties)
@@ -223,7 +223,7 @@ describe('createProject', () => {
   it('should filter out empty string property values', () => {
     const properties: ProjectProperties = {
       displayName: '',
-      description: 'Valid description'
+      description: 'Valid description',
     }
 
     createProject('test-project', undefined, properties)

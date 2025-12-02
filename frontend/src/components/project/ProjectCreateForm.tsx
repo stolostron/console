@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { useTranslation } from '../../lib/acm-i18next'
 import { AcmForm, AcmSubmit } from '../../ui-components/AcmForm/AcmForm'
 import { AcmTextInput } from '../../ui-components/AcmTextInput/AcmTextInput'
-import { validateDescription, validateDisplayName, validateName } from './validation'
+import { validateName } from './validation'
 
 export interface ProjectCreateFormProps {
   /** Callback function called when the cancel button is clicked */
@@ -32,8 +32,6 @@ export function ProjectCreateForm({ onCancelCallback, onSubmit }: ProjectCreateF
 
   // Validation function wrappers that include translation context
   const validateNameWithTranslation = (value: string): string | undefined => validateName(value, t)
-  const validateDisplayNameWithTranslation = (value: string): string | undefined => validateDisplayName(value, t)
-  const validateDescriptionWithTranslation = (value: string): string | undefined => validateDescription(value, t)
 
   // Form handlers
   const handleSubmit = async () => await onSubmit(formData)
@@ -58,7 +56,6 @@ export function ProjectCreateForm({ onCancelCallback, onSubmit }: ProjectCreateF
         placeholder={t('Enter display name (optional)')}
         value={formData.displayName}
         onChange={(_event, value) => setFormData({ ...formData, displayName: value })}
-        validation={validateDisplayNameWithTranslation}
       />
 
       <AcmTextInput
@@ -67,7 +64,6 @@ export function ProjectCreateForm({ onCancelCallback, onSubmit }: ProjectCreateF
         placeholder={t('Enter description (optional)')}
         value={formData.description}
         onChange={(_event, value) => setFormData({ ...formData, description: value })}
-        validation={validateDescriptionWithTranslation}
       />
 
       <ActionGroup>

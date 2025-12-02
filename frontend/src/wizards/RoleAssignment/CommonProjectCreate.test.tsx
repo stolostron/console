@@ -45,9 +45,7 @@ const mockToastContext = {
 
 // Wrapper component to provide toast context
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
-  <AcmToastContext.Provider value={mockToastContext}>
-    {children}
-  </AcmToastContext.Provider>
+  <AcmToastContext.Provider value={mockToastContext}>{children}</AcmToastContext.Provider>
 )
 
 describe('CommonProjectCreate', () => {
@@ -90,11 +88,7 @@ describe('CommonProjectCreate', () => {
   it('creates project correctly with properties structure', async () => {
     render(
       <TestWrapper>
-        <CommonProjectCreate
-          onCancelCallback={mockOnCancel}
-          onSuccess={mockOnSuccess}
-          onError={mockOnError}
-        />
+        <CommonProjectCreate onCancelCallback={mockOnCancel} onSuccess={mockOnSuccess} onError={mockOnError} />
       </TestWrapper>
     )
 
@@ -107,7 +101,7 @@ describe('CommonProjectCreate', () => {
         undefined, // labels
         {
           displayName: 'Test Project',
-          description: 'Test Description'
+          description: 'Test Description',
         }
       )
     })
@@ -159,14 +153,10 @@ describe('CommonProjectCreate', () => {
 
     // Verify createProject was called with the new properties structure
     await waitFor(() => {
-      expect(mockCreateProject).toHaveBeenCalledWith(
-        'test-project',
-        undefined,
-        {
-          displayName: 'Test Project',
-          description: 'Test Description'
-        }
-      )
+      expect(mockCreateProject).toHaveBeenCalledWith('test-project', undefined, {
+        displayName: 'Test Project',
+        description: 'Test Description',
+      })
     })
   })
 })
