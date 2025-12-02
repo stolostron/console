@@ -13,15 +13,14 @@ export interface ProjectFormData {
   description: string
 }
 
-export function ProjectCreateForm({
-  onCancelCallback,
-  onSubmit,
-}: {
+interface ProjectCreateFormProps {
   /** Callback function called when the cancel button is clicked */
-  readonly onCancelCallback: () => void
+  onCancelCallback: () => void
   /** Callback function called when the form is submitted with valid data */
-  readonly onSubmit: (data: ProjectFormData) => void | Promise<void>
-}) {
+  onSubmit: (data: ProjectFormData) => void | Promise<void>
+}
+
+export function ProjectCreateForm({ onCancelCallback, onSubmit }: ProjectCreateFormProps) {
   const { t } = useTranslation()
 
   // Form state
