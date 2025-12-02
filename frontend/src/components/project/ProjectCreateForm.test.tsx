@@ -11,8 +11,6 @@ const mockOnSubmit = jest.fn()
 // Mock the validation functions
 jest.mock('./validation', () => ({
   validateName: jest.fn(),
-  validateDisplayName: jest.fn(),
-  validateDescription: jest.fn(),
 }))
 
 const mockValidation = validation as jest.Mocked<typeof validation>
@@ -22,8 +20,6 @@ describe('ProjectCreateForm', () => {
     jest.clearAllMocks()
     // Reset validation mocks to return undefined (valid) by default
     mockValidation.validateName.mockReturnValue(undefined)
-    mockValidation.validateDisplayName.mockReturnValue(undefined)
-    mockValidation.validateDescription.mockReturnValue(undefined)
   })
 
   it('renders the form with all required elements', () => {
@@ -57,17 +53,11 @@ describe('ProjectCreateForm', () => {
     render(<ProjectCreateForm onCancelCallback={mockOnCancel} onSubmit={mockOnSubmit} />)
 
     const nameInput = screen.getByLabelText(/Name/)
-    const displayNameInput = screen.getByLabelText(/Display name/)
-    const descriptionInput = screen.getByLabelText(/Description/)
 
     await userEvent.type(nameInput, 'test-name')
-    await userEvent.type(displayNameInput, 'Test Display Name')
-    await userEvent.type(descriptionInput, 'Test description')
 
-    // Validation functions should be called with the translation function
+    // Only name validation function should be called since displayName and description validation was removed
     expect(mockValidation.validateName).toHaveBeenCalled()
-    expect(mockValidation.validateDisplayName).toHaveBeenCalled()
-    expect(mockValidation.validateDescription).toHaveBeenCalled()
   })
 
   it('calls validation functions with correct parameters', async () => {
