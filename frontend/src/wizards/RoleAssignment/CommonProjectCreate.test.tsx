@@ -45,7 +45,7 @@ const mockToastContext = {
 
 // Wrapper component to provide toast context
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
-  <AcmToastContext.Provider value={mockToastContext}>{children}</AcmToastContext.Provider>
+  <AcmToastContext.Provider value={mockToastContext as any}>{children}</AcmToastContext.Provider>
 )
 
 describe('CommonProjectCreate', () => {
