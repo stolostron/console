@@ -35,7 +35,6 @@ export type FleetK8sWatchResourceStore = {
 
   // Getters for cache
   getResult: (key: string) => FleetWatchK8sResultsObject<Data> | undefined
-  getSocket: (key: string) => WebSocket | undefined
   getRefCount: (key: string) => number
   getResourceVersion: (key: string) => string | undefined
 }
@@ -146,7 +145,6 @@ export const useFleetK8sWatchResourceStore = create<FleetK8sWatchResourceStore>(
     },
 
     getResult: (key) => get().cache[key]?.result,
-    getSocket: (key) => get().cache[key]?.socket,
     getRefCount: (key) => get().cache[key]?.refCount,
     getResourceVersion: (key) => get().cache[key]?.resourceVersion,
   }))
