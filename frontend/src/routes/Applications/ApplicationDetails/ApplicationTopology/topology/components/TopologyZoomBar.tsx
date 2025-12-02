@@ -5,7 +5,7 @@ import {
   useVisualizationController,
   action,
 } from '@patternfly/react-topology'
-import '../css/topology-toolbar.css'
+import '../css/topology-zoombar.css'
 
 const TopologyZoomBar: React.FC<{ collapseAllCallback?: (collapseAll: boolean) => void }> = ({
   collapseAllCallback,

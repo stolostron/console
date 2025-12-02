@@ -381,8 +381,6 @@ export default function ApplicationDetailsPage() {
   // refresh application the first time and then every n seconds
   const clustersString = JSON.stringify(clusters)
   useEffect(() => {
-    setApplicationData(undefined)
-    lastRefreshRef.current = undefined
     const interval = setInterval(
       (function refresh() {
         ;(async () => {

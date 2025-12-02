@@ -26,7 +26,6 @@ import TopologyZoomBar from './components/TopologyZoomBar'
 import TopologyToolbar from './components/TopologyToolbar'
 
 import './css/topology-components.css'
-import './css/topology-controlbar.css'
 import './css/topology-view.css'
 import { useQuerySearchDisabledManagedClusters } from '../../../../../lib/search'
 import { useQuery } from '../../../../../lib/useQuery'
