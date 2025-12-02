@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ActionGroup, ActionList, ActionListGroup, ActionListItem, Button, Title } from '@patternfly/react-core'
+import { ActionGroup, ActionList, ActionListGroup, ActionListItem, Button } from '@patternfly/react-core'
 import { useState } from 'react'
 import { useTranslation } from '../../lib/acm-i18next'
 import { AcmForm, AcmSubmit } from '../../ui-components/AcmForm/AcmForm'
@@ -41,55 +41,49 @@ export function ProjectCreateForm({ onCancelCallback, onSubmit }: ProjectCreateF
   const handleCancel = () => onCancelCallback()
 
   return (
-    <div>
-      <Title headingLevel="h1" size="lg" style={{ marginBottom: '1rem' }}>
-        {t('Create common project')}
-      </Title>
+    <AcmForm>
+      <AcmTextInput
+        id="project-name"
+        label={t('Name')}
+        placeholder={t('Enter project name')}
+        value={formData.name}
+        onChange={(_event, value) => setFormData({ ...formData, name: value })}
+        validation={validateNameWithTranslation}
+        isRequired
+      />
 
-      <AcmForm>
-        <AcmTextInput
-          id="project-name"
-          label={t('Name')}
-          placeholder={t('Enter project name')}
-          value={formData.name}
-          onChange={(_event, value) => setFormData({ ...formData, name: value })}
-          validation={validateNameWithTranslation}
-          isRequired
-        />
+      <AcmTextInput
+        id="project-display-name"
+        label={t('Display name')}
+        placeholder={t('Enter display name (optional)')}
+        value={formData.displayName}
+        onChange={(_event, value) => setFormData({ ...formData, displayName: value })}
+        validation={validateDisplayNameWithTranslation}
+      />
 
-        <AcmTextInput
-          id="project-display-name"
-          label={t('Display name')}
-          placeholder={t('Enter display name (optional)')}
-          value={formData.displayName}
-          onChange={(_event, value) => setFormData({ ...formData, displayName: value })}
-          validation={validateDisplayNameWithTranslation}
-        />
+      <AcmTextInput
+        id="project-description"
+        label={t('Description')}
+        placeholder={t('Enter description (optional)')}
+        value={formData.description}
+        onChange={(_event, value) => setFormData({ ...formData, description: value })}
+        validation={validateDescriptionWithTranslation}
+      />
 
-        <AcmTextInput
-          id="project-description"
-          label={t('Description')}
-          placeholder={t('Enter description (optional)')}
-          value={formData.description}
-          onChange={(_event, value) => setFormData({ ...formData, description: value })}
-          validation={validateDescriptionWithTranslation}
-        />
-
-        <ActionGroup>
-          <ActionList>
-            <ActionListGroup>
-              <ActionListItem>
-                <AcmSubmit label={t('Save')} processingLabel={t('Saving...')} onClick={handleSubmit} />
-              </ActionListItem>
-              <ActionListItem>
-                <Button variant="link" onClick={handleCancel}>
-                  {t('Cancel')}
-                </Button>
-              </ActionListItem>
-            </ActionListGroup>
-          </ActionList>
-        </ActionGroup>
-      </AcmForm>
-    </div>
+      <ActionGroup>
+        <ActionList>
+          <ActionListGroup>
+            <ActionListItem>
+              <AcmSubmit label={t('Save')} processingLabel={t('Saving...')} onClick={handleSubmit} />
+            </ActionListItem>
+            <ActionListItem>
+              <Button variant="link" onClick={handleCancel}>
+                {t('Cancel')}
+              </Button>
+            </ActionListItem>
+          </ActionListGroup>
+        </ActionList>
+      </ActionGroup>
+    </AcmForm>
   )
 }
