@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { ProjectCreateForm, ProjectFormData } from './ProjectCreateForm'
+import { ProjectCreateForm } from './ProjectCreateForm'
 import * as validation from './validation'
 
 const mockOnCancel = jest.fn()
