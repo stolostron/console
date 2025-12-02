@@ -12,14 +12,19 @@ jest.mock('../../lib/acm-i18next', () => ({
 }))
 
 // Mock AcmEmptyState
+const mockAcmEmptyState = jest.fn()
+
 jest.mock('../../ui-components', () => ({
-  AcmEmptyState: ({ title, message, action }: any) => (
-    <div data-testid="acm-empty-state">
-      <h1>{title}</h1>
-      <p>{message}</p>
-      <div data-testid="empty-state-action">{action}</div>
-    </div>
-  ),
+  AcmEmptyState: (props: any) => {
+    mockAcmEmptyState(props)
+    return (
+      <div data-testid="acm-empty-state">
+        <h1>{props.title}</h1>
+        <p>{props.message}</p>
+        <div data-testid="empty-state-action">{props.action}</div>
+      </div>
+    )
+  },
 }))
 
 describe('CommonProjectsEmptyState', () => {
@@ -27,6 +32,7 @@ describe('CommonProjectsEmptyState', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    mockAcmEmptyState.mockClear()
   })
 
   it('renders the empty state with correct title and message', () => {
@@ -56,11 +62,61 @@ describe('CommonProjectsEmptyState', () => {
     expect(mockOnCreateCommonProject).toHaveBeenCalledTimes(1)
   })
 
-  it('renders with AcmEmptyState component', () => {
+  it('passes correct props to AcmEmptyState', () => {
     render(<CommonProjectsEmptyState onCreateCommonProject={mockOnCreateCommonProject} />)
 
-    // Verify that the component renders without errors and contains expected elements
+    // Verify AcmEmptyState was called with correct props
+    expect(mockAcmEmptyState).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'No common projects found',
+        message: 'Go back and select different clusters, or create projects with the same name on these clusters.',
+        action: expect.any(Object), // The Button component
+      })
+    )
+  })
+
+  it('renders Button with correct variant and onClick handler', () => {
+    render(<CommonProjectsEmptyState onCreateCommonProject={mockOnCreateCommonProject} />)
+
+    // Get the action prop that was passed to AcmEmptyState
+    const actionProp = mockAcmEmptyState.mock.calls[0][0].action
+
+    // Verify it's a Button with correct props
+    expect(actionProp.props.variant).toBe('primary')
+    expect(actionProp.props.onClick).toBe(mockOnCreateCommonProject)
+    expect(actionProp.props.children).toBe('Create common project')
+  })
+
+  it('uses translation function for all text content', () => {
+    render(<CommonProjectsEmptyState onCreateCommonProject={mockOnCreateCommonProject} />)
+
+    // Verify that translation keys are used (our mock returns the key as-is)
     expect(screen.getByText('No common projects found')).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        'Go back and select different clusters, or create projects with the same name on these clusters.'
+      )
+    ).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Create common project' })).toBeInTheDocument()
+  })
+
+  it('renders complete component structure', () => {
+    render(<CommonProjectsEmptyState onCreateCommonProject={mockOnCreateCommonProject} />)
+
+    // Verify the complete component structure is rendered
+    expect(mockAcmEmptyState).toHaveBeenCalledTimes(1)
+
+    const callArgs = mockAcmEmptyState.mock.calls[0][0]
+    expect(callArgs).toEqual({
+      title: 'No common projects found',
+      message: 'Go back and select different clusters, or create projects with the same name on these clusters.',
+      action: expect.objectContaining({
+        props: expect.objectContaining({
+          variant: 'primary',
+          onClick: mockOnCreateCommonProject,
+          children: 'Create common project',
+        }),
+      }),
+    })
   })
 })
