@@ -21,6 +21,7 @@ describe('package index', () => {
       'useFleetClusterNames',
       'useFleetK8sAPIPath',
       'useFleetK8sWatchResource',
+      'useFleetK8sWatchResources',
       'useFleetPrometheusPoll',
       'useFleetSearchPoll',
       'useHubClusterName',
