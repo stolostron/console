@@ -7,16 +7,12 @@ import { AcmEmptyState, AcmTable, compareStrings } from '../../../ui-components'
 import { Role, rolesTableColumns, useFilters } from './RolesTableHelper'
 
 interface RolesTableProps {
-  columnsToDisplay?: string[]
+  hiddenColumns?: string[]
   onRadioSelect?: (roleName: string) => void
   areLinksAllowed?: boolean
 }
 
-const RolesTable = ({
-  columnsToDisplay = ['name', 'permissions'],
-  onRadioSelect,
-  areLinksAllowed = true,
-}: RolesTableProps) => {
+const RolesTable = ({ hiddenColumns, onRadioSelect, areLinksAllowed = true }: RolesTableProps) => {
   const { t } = useTranslation()
   const { vmClusterRolesState } = useSharedAtoms()
   const clusterRoles = useRecoilValue(vmClusterRolesState)
@@ -50,7 +46,7 @@ const RolesTable = ({
   const filters = useFilters(roles)
   const columns = rolesTableColumns({
     t,
-    columnsToDisplay,
+    hiddenColumns,
     onRadioSelect: handleRadioSelect,
     selectedRole,
     areLinksAllowed,

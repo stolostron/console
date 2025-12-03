@@ -17,11 +17,7 @@ export function RolesList({ onRadioSelect }: RolesListProps) {
         {t('Roles')}
       </Title>
       <Text style={{ marginBottom: '1rem' }}>{t('Choose a role to assign.')}</Text>
-      <RolesTable
-        columnsToDisplay={['radioSelect', 'name', 'permissions']}
-        onRadioSelect={onRadioSelect}
-        areLinksAllowed={false}
-      />
+      <RolesTable onRadioSelect={onRadioSelect} areLinksAllowed={false} />
     </PageSection>
   )
 }

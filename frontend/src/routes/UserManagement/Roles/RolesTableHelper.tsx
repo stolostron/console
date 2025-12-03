@@ -96,44 +96,49 @@ const createColumnCells = ({
 
 export const rolesTableColumns = ({
   t,
-  columnsToDisplay = [],
+  hiddenColumns,
   onRadioSelect,
   selectedRole,
   areLinksAllowed,
 }: {
   t: TFunction
-  columnsToDisplay?: string[]
+  hiddenColumns?: string[]
   onRadioSelect?: (roleName: string) => void
   selectedRole?: string
   areLinksAllowed: boolean
 }): IAcmTableColumn<Role>[] => {
   const COLUMN_CELLS = createColumnCells({ t, onRadioSelect, selectedRole, areLinksAllowed })
 
-  const allColumns: Record<string, IAcmTableColumn<Role>> = {
-    radioSelect: {
-      header: ' ',
-      cell: (role) => COLUMN_CELLS.RADIO_SELECT(role),
-      transforms: [cellWidth(10)],
-      disableExport: true,
-    },
-    name: {
-      header: t('Role'),
-      sort: 'name',
-      search: 'name',
-      transforms: [cellWidth(25)],
-      cell: (role, search) => COLUMN_CELLS.NAME(role, search),
-      exportContent: (role) => role.name,
-    },
-    permissions: {
-      header: t('Permissions'),
-      sort: 'permissions',
-      transforms: [cellWidth(15)],
-      cell: (role) => COLUMN_CELLS.PERMISSIONS(role),
-      exportContent: (role) => role.permissions.toString(),
-    },
-  }
+  const columns: IAcmTableColumn<Role>[] = []
 
-  return columnsToDisplay.map((columnKey) => allColumns[columnKey]).filter(Boolean)
+  columns.push({
+    header: ' ',
+    cell: (role) => COLUMN_CELLS.RADIO_SELECT(role),
+    transforms: [cellWidth(10)],
+    disableExport: true,
+    isHidden: hiddenColumns?.includes('radio'),
+  })
+
+  columns.push({
+    header: t('Role'),
+    sort: 'name',
+    search: 'name',
+    transforms: [cellWidth(25)],
+    cell: (role, search) => COLUMN_CELLS.NAME(role, search),
+    exportContent: (role) => role.name,
+    isHidden: hiddenColumns?.includes('name'),
+  })
+
+  columns.push({
+    header: t('Permissions'),
+    sort: 'permissions',
+    transforms: [cellWidth(15)],
+    cell: (role) => COLUMN_CELLS.PERMISSIONS(role),
+    exportContent: (role) => role.permissions.toString(),
+    isHidden: hiddenColumns?.includes('permissions'),
+  })
+
+  return columns
 }
 
 export const useFilters = (roles: Role[] = []) =>

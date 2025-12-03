@@ -80,7 +80,6 @@ describe('RolesList', () => {
     render(<RolesList onRadioSelect={mockOnRadioSelect} />)
 
     expect(mockRolesTable).toHaveBeenCalledWith({
-      columnsToDisplay: ['radioSelect', 'name', 'permissions'],
       onRadioSelect: expect.any(Function), // Now it's the internal handler
       areLinksAllowed: false,
     })

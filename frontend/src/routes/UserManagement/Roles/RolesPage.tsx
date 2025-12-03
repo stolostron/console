@@ -34,7 +34,7 @@ const RolesPage = () => {
     >
       <AcmPageContent id="roles">
         <PageSection>
-          <RolesTable />
+          <RolesTable hiddenColumns={['radio']} />
         </PageSection>
       </AcmPageContent>
     </AcmPage>

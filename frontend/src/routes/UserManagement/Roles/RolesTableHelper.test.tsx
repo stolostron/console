@@ -43,20 +43,23 @@ describe('RolesTableHelper', () => {
     it('creates columns with links when areLinksAllowed is true (default)', () => {
       const columns = rolesTableColumns({
         t: mockT,
-        columnsToDisplay: ['name', 'permissions'],
+        hiddenColumns: ['radio'],
         areLinksAllowed: true,
       })
 
-      expect(columns).toHaveLength(2)
+      expect(columns).toHaveLength(3)
+      expect(columns[0].isHidden).toBe(true) // radio column is hidden
+      expect(columns[1].isHidden).toBe(false) // name column is visible
+      expect(columns[2].isHidden).toBe(false) // permissions column is visible
 
       // Test NAME column with links
-      const nameCell = columns[0].cell as (role: Role, search?: string) => React.ReactNode
+      const nameCell = columns[1].cell as (role: Role, search?: string) => React.ReactNode
       const nameElement = nameCell(mockRole, '')
       render(<div>{nameElement}</div>)
       expect(screen.getByRole('link')).toBeInTheDocument()
 
       // Test PERMISSIONS column with "See All" link
-      const permissionsCell = columns[1].cell as (role: Role) => React.ReactNode
+      const permissionsCell = columns[2].cell as (role: Role) => React.ReactNode
       const permissionsElement = permissionsCell(mockRole)
       render(<div>{permissionsElement}</div>)
       expect(screen.getByText('See All')).toBeInTheDocument()
@@ -66,21 +69,24 @@ describe('RolesTableHelper', () => {
     it('creates columns without links when areLinksAllowed is false', () => {
       const columns = rolesTableColumns({
         t: mockT,
-        columnsToDisplay: ['name', 'permissions'],
+        hiddenColumns: ['radio'],
         areLinksAllowed: false,
       })
 
-      expect(columns).toHaveLength(2)
+      expect(columns).toHaveLength(3)
+      expect(columns[0].isHidden).toBe(true) // radio column is hidden
+      expect(columns[1].isHidden).toBe(false) // name column is visible
+      expect(columns[2].isHidden).toBe(false) // permissions column is visible
 
       // Test NAME column without links
-      const nameCell = columns[0].cell as (role: Role, search?: string) => React.ReactNode
+      const nameCell = columns[1].cell as (role: Role, search?: string) => React.ReactNode
       const nameElement = nameCell(mockRole, '')
       render(<div>{nameElement}</div>)
       expect(screen.queryByRole('link')).not.toBeInTheDocument()
       expect(screen.getByText('test-role')).toBeInTheDocument()
 
       // Test PERMISSIONS column with Badge instead of "See All" link
-      const permissionsCell = columns[1].cell as (role: Role) => React.ReactNode
+      const permissionsCell = columns[2].cell as (role: Role) => React.ReactNode
       const permissionsElement = permissionsCell(mockRole)
       render(<div>{permissionsElement}</div>)
       expect(screen.queryByText('See All')).not.toBeInTheDocument()
@@ -96,11 +102,16 @@ describe('RolesTableHelper', () => {
 
       const columns = rolesTableColumns({
         t: mockT,
-        columnsToDisplay: ['permissions'],
+        hiddenColumns: ['radio', 'name'],
         areLinksAllowed: false,
       })
 
-      const permissionsCell = columns[0].cell as (role: Role) => React.ReactNode
+      expect(columns).toHaveLength(3)
+      expect(columns[0].isHidden).toBe(true) // radio column is hidden
+      expect(columns[1].isHidden).toBe(true) // name column is hidden
+      expect(columns[2].isHidden).toBe(false) // permissions column is visible
+
+      const permissionsCell = columns[2].cell as (role: Role) => React.ReactNode
       const permissionsElement = permissionsCell(roleWithNoPermissions)
       render(<div>{permissionsElement}</div>)
 
@@ -119,11 +130,16 @@ describe('RolesTableHelper', () => {
 
       const columns = rolesTableColumns({
         t: mockT,
-        columnsToDisplay: ['permissions'],
+        hiddenColumns: ['radio', 'name'],
         areLinksAllowed: false,
       })
 
-      const permissionsCell = columns[0].cell as (role: Role) => React.ReactNode
+      expect(columns).toHaveLength(3)
+      expect(columns[0].isHidden).toBe(true) // radio column is hidden
+      expect(columns[1].isHidden).toBe(true) // name column is hidden
+      expect(columns[2].isHidden).toBe(false) // permissions column is visible
+
+      const permissionsCell = columns[2].cell as (role: Role) => React.ReactNode
       const permissionsElement = permissionsCell(roleWithFewPermissions)
       render(<div>{permissionsElement}</div>)
 
@@ -137,12 +153,15 @@ describe('RolesTableHelper', () => {
     it('includes radio column when specified', () => {
       const columns = rolesTableColumns({
         t: mockT,
-        columnsToDisplay: ['radioSelect'],
+        hiddenColumns: ['name', 'permissions'],
         onRadioSelect: jest.fn(),
         areLinksAllowed: true,
       })
 
-      expect(columns).toHaveLength(1)
+      expect(columns).toHaveLength(3)
+      expect(columns[0].isHidden).toBe(false) // radio column is visible
+      expect(columns[1].isHidden).toBe(true) // name column is hidden
+      expect(columns[2].isHidden).toBe(true) // permissions column is hidden
       expect(columns[0].header).toBe(' ') // Space header for radio column
 
       const radioCell = columns[0].cell as (role: Role) => React.ReactNode
