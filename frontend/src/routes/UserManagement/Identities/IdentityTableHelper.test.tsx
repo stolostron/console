@@ -373,7 +373,12 @@ describe('IdentityTableHelper', () => {
 
     it('should hide columns based on hiddenColumns parameter', () => {
       const mockOnRadioSelect = jest.fn()
-      const columns = getIdentityTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect, areLinksDisplayed: true, hiddenColumns: ['name', 'created'] })
+      const columns = getIdentityTableColumns({
+        t: mockT,
+        onRadioSelect: mockOnRadioSelect,
+        areLinksDisplayed: true,
+        hiddenColumns: ['name', 'created'],
+      })
 
       const nameColumn = columns.find((col) => col.id === 'name')
       const createdColumn = columns.find((col) => col.id === 'created')
@@ -561,7 +566,12 @@ describe('IdentityTableHelper', () => {
 
     it('should hide columns based on hiddenColumns parameter', () => {
       const mockOnRadioSelect = jest.fn()
-      const columns = usersTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect, areLinksDisplayed: true, hiddenColumns: ['identity-provider'] })
+      const columns = usersTableColumns({
+        t: mockT,
+        onRadioSelect: mockOnRadioSelect,
+        areLinksDisplayed: true,
+        hiddenColumns: ['identity-provider'],
+      })
       const idpColumn = columns.find((col) => col.id === 'identity-provider')
       expect(idpColumn?.isHidden).toBe(true)
     })
@@ -658,7 +668,12 @@ describe('IdentityTableHelper', () => {
 
     it('should hide columns based on hiddenColumns parameter', () => {
       const mockOnRadioSelect = jest.fn()
-      const columns = groupsTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect, areLinksDisplayed: true, hiddenColumns: ['users'] })
+      const columns = groupsTableColumns({
+        t: mockT,
+        onRadioSelect: mockOnRadioSelect,
+        areLinksDisplayed: true,
+        hiddenColumns: ['users'],
+      })
       const usersColumn = columns.find((col) => col.id === 'users')
       expect(usersColumn?.isHidden).toBe(true)
     })
