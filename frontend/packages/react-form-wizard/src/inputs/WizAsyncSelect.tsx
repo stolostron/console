@@ -124,7 +124,13 @@ export function WizAsyncSelect(props: WizAsyncSelectProps) {
             onSelect={(_event, value) => onSelect(value?.toString() ?? '')}
             shouldFocusFirstItemOnOpen={false}
           >
-            <SelectListOptions options={filteredOptions} value={value} isCreatable={isCreatable} footer={footer} />
+            <SelectListOptions
+              allOptions={options}
+              options={filteredOptions}
+              value={value}
+              isCreatable={isCreatable}
+              footer={footer}
+            />
           </PfSelect>
         </InputGroupItem>
         {props.asyncCallback && loading && <SpinnerButton />}
