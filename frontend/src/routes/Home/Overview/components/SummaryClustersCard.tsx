@@ -4,6 +4,7 @@ import { ChartDonut, ChartLabel, ChartLegend, ChartPie } from '@patternfly/react
 import { Card, CardTitle } from '@patternfly/react-core'
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom-v5-compat'
+import { Truncate } from '../../../../components/Truncate'
 import { getTextWidth } from '../../../../ui-components/utils'
 
 type Data = {
@@ -16,10 +17,39 @@ type LegendData = {
   link?: string
 }
 
-const LegendLabel = ({ ...props }) => {
+const LegendLabel = ({
+  maxWidth,
+  ...props
+}: {
+  maxWidth?: number
+  datum?: { name?: string; link?: string }
+  x?: number
+  y?: number
+  style?: React.CSSProperties
+}) => {
   const link = props.datum?.link
-  const chartLabel = <ChartLabel {...props} style={{ fill: 'var(--pf-v5-global--Color--100)' }} />
-  return link ? <Link to={link}>{chartLabel}</Link> : chartLabel
+  const name = props.datum?.name ?? ''
+
+  // Use foreignObject to render HTML content (Truncate component) inside SVG
+  const content = (
+    <foreignObject x={props.x} y={(props.y ?? 0) - 10} width={maxWidth ?? 150} height={20}>
+      <div
+        style={{
+          color: 'var(--pf-v5-global--Color--100)',
+        }}
+      >
+        {link ? (
+          <Link to={link} style={{ color: 'inherit' }}>
+            <Truncate content={name} position="end" tooltipPosition="top" style={{ textDecoration: 'underline' }} />
+          </Link>
+        ) : (
+          <Truncate content={name} position="end" tooltipPosition="top" />
+        )}
+      </div>
+    </foreignObject>
+  )
+
+  return content
 }
 
 export function SummaryClustersCard(props: {
@@ -97,57 +127,54 @@ export function SummaryClustersCard(props: {
   const FONT_SIZE = 12
   const FONT_FAMILY = 'RedHatText'
   const ITEMS_PER_COLUMN = 6
-  const GUTTER = 10
+  const GUTTER = 16
   const ROW_GUTTER = -5
   const SYMBOL = 8
   const SYMBOL_SPACER = 8
   const ROW_HEIGHT = 18.5
+  const MAX_LABEL_WIDTH = 140 // Maximum width for each label before truncation
 
-  const legendWidth = useMemo(() => {
-    const totalLabels = legendData.length
-    const columns = Math.ceil(totalLabels / ITEMS_PER_COLUMN)
-    let cumulativeLongestLabelWidth = 0
-    for (let i = 0; i < columns; i++) {
-      const longest = Math.max(
-        ...legendData
-          .slice(i * ITEMS_PER_COLUMN, (i + 1) * ITEMS_PER_COLUMN)
-          .map((item) => getTextWidth(item.name, FONT_SIZE, FONT_FAMILY))
-      )
-      cumulativeLongestLabelWidth += longest
+  // Split legend data into columns
+  const legendColumns = useMemo(() => {
+    const columns: Array<LegendData>[] = []
+    for (let i = 0; i < legendData.length; i += ITEMS_PER_COLUMN) {
+      columns.push(legendData.slice(i, i + ITEMS_PER_COLUMN))
     }
-    return cumulativeLongestLabelWidth + columns * (SYMBOL + SYMBOL_SPACER + GUTTER)
+    return columns
   }, [legendData])
 
-  const legendHeight = useMemo(() => {
-    return (legendData.length < ITEMS_PER_COLUMN ? legendData.length : ITEMS_PER_COLUMN) * ROW_HEIGHT
-  }, [legendData])
+  const columnWidth = MAX_LABEL_WIDTH + SYMBOL + SYMBOL_SPACER
+  const columnHeight = ITEMS_PER_COLUMN * ROW_HEIGHT
 
   return (
-    <div>
-      <Card
-        id={`${title.toLowerCase().replace(/\s+/g, '-')}-chart`}
-        isRounded
-        style={{ height: '200px', ['--pf-v5-c-card__title--not--last-child--PaddingBottom' as any]: 0 }}
-      >
-        <CardTitle>{title}</CardTitle>
-        <div style={{ display: 'flex', height: '150px', alignItems: 'center' }}>
-          <div style={{ width: '150px', marginRight: '16px' }}>{chart}</div>
-          <div>
+    <Card
+      id={`${title.toLowerCase().replace(/\s+/g, '-')}-chart`}
+      isRounded
+      style={{
+        height: '200px',
+        overflow: 'hidden',
+        ['--pf-v5-c-card__title--not--last-child--PaddingBottom' as any]: 0,
+      }}
+    >
+      <CardTitle>{title}</CardTitle>
+      <div style={{ display: 'flex', height: '150px', alignItems: 'center', overflow: 'hidden' }}>
+        <div style={{ width: '150px', minWidth: '100px', marginRight: '16px', flexShrink: 1 }}>{chart}</div>
+        <div style={{ display: 'flex', gap: `${GUTTER}px`, flexShrink: 1, overflow: 'hidden' }}>
+          {legendColumns.map((columnData) => (
             <ChartLegend
-              labelComponent={<LegendLabel />}
-              data={legendData}
-              itemsPerRow={ITEMS_PER_COLUMN}
+              key={`legend-col-${columnData[0]?.name}`}
+              labelComponent={<LegendLabel maxWidth={MAX_LABEL_WIDTH} />}
+              data={columnData}
               rowGutter={ROW_GUTTER}
-              gutter={GUTTER}
               symbolSpacer={SYMBOL_SPACER}
-              height={legendHeight}
-              width={legendWidth}
+              height={columnHeight}
+              width={columnWidth}
               orientation={'vertical'}
               style={{ labels: { fontSize: FONT_SIZE, fontFamily: FONT_FAMILY } }}
             />
-          </div>
+          ))}
         </div>
-      </Card>
-    </div>
+      </div>
+    </Card>
   )
 }
