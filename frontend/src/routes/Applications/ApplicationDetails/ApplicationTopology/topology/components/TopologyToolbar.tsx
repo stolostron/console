@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { Alert, Button, Flex, FlexItem } from '@patternfly/react-core'
 import '../css/topology-toolbar.css'
 import { useTranslation } from '../../../../../../lib/acm-i18next'

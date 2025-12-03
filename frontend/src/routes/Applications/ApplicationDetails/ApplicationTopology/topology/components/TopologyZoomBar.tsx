@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import {
   createTopologyControlButtons,
   defaultControlButtonsOptions,
@@ -14,6 +15,7 @@ const TopologyZoomBar: React.FC<{ collapseAllCallback?: (collapseAll: boolean) =
 
   return (
     <PfTopologyControlBar
+      className="topology-zoombar"
       controlButtons={createTopologyControlButtons({
         ...defaultControlButtonsOptions,
         expandAll: !!collapseAllCallback,

@@ -1485,7 +1485,6 @@
   "Find clusters": "Find clusters",
   "Find the Amazon Web Services (AWS) STS credential and role ARN that you used to create your hosted cluster. The STS credential by default expires in 12 hours so a new one may be needed.": "Find the Amazon Web Services (AWS) STS credential and role ARN that you used to create your hosted cluster. The STS credential by default expires in 12 hours so a new one may be needed.",
   "find.label": "Find",
-  "Fit to Screen": "Fit to Screen",
   "Fix editor syntax errors": "Fix editor syntax errors",
   "Fix exceptions": "Fix exceptions",
   "Fix validation errors": "Fix validation errors",
@@ -2402,7 +2401,6 @@
   "Requires this format: http://<username>:<pswd>@<ip>:<port>": "Requires this format: http://<username>:<pswd>@<ip>:<port>",
   "Requires this format: https://<username>:<pswd>@<ip>:<port>": "Requires this format: https://<username>:<pswd>@<ip>:<port>",
   "Reset": "Reset",
-  "Reset View": "Reset View",
   "resource": "resource",
   "Resource deploy status": "Resource deploy status",
   "Resource icon": "Resource icon",
@@ -3539,7 +3537,5 @@
   "Your tenant ID. This is the value of the 'tenantId' property in the output of the command: 'az account show'": "Your tenant ID. This is the value of the 'tenantId' property in the output of the command: 'az account show'",
   "Your tenant ID. This is the value of the 'tenantId' property in the output of the following command: 'az account show'": "Your tenant ID. This is the value of the 'tenantId' property in the output of the following command: 'az account show'",
   "Your view": "Your view",
-  "Z1d - With SSD, fastest processor": "Z1d - With SSD, fastest processor",
-  "Zoom In": "Zoom In",
-  "Zoom Out": "Zoom Out"
+  "Z1d - With SSD, fastest processor": "Z1d - With SSD, fastest processor"
 }
