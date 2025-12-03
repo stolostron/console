@@ -46,7 +46,7 @@ function Component() {
   )
 }
 
-describe('Users Page', () => {
+describe('UsersTable', () => {
   beforeEach(() => {
     mockUseSharedAtoms.mockReturnValue({
       usersState: {} as any,
