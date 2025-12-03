@@ -26,12 +26,7 @@ export function CreatePreAuthorizedUser({ onCancel, onSubmit }: CreatePreAuthori
       </Title>
 
       <Form onSubmit={handleSubmit}>
-        <FormGroup
-          label={t('Username')}
-          fieldId="username"
-          isRequired
-          helperText={t('Enter the username of the user to pre-authorize')}
-        >
+        <FormGroup label={t('Username')} fieldId="username" isRequired>
           <TextInput
             id="username"
             name="username"

@@ -179,7 +179,7 @@ describe('IdentityTableHelper', () => {
 
     it('should return 5 columns when onRadioSelect is provided', () => {
       const mockOnRadioSelect = jest.fn()
-      const columns = getIdentityTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect })
+      const columns = getIdentityTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect, areLinksDisplayed: true })
       expect(columns).toHaveLength(5)
 
       const radioColumn = columns.find((col) => col.id === 'radio')
@@ -192,6 +192,7 @@ describe('IdentityTableHelper', () => {
       const columns = getIdentityTableColumns({
         t: mockT,
         onRadioSelect: mockOnRadioSelect,
+        areLinksDisplayed: true,
         hiddenColumns: ['radio'],
       })
 
