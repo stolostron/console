@@ -1,3 +1,10 @@
+.pf-v6-c-toolbar {
+  padding: 10px 0 7px 25px;
+  min-height: 40px;
+  background-color: var(--pf-v5-c-page__main-section--m-light--BackgroundColor);
+  border-color: var(--pf-v5-global--BorderColor--100);
+}
+
 .channel-controls-container {
   display: flex;
   align-items: baseline;

@@ -1,5 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { cleanResults } from '../../../../../../lib/test-shots'
+
+jest.mock('@patternfly/react-topology', () => ({
+  NodeStatus: {
+    success: 'success',
+    danger: 'danger',
+    warning: 'warning',
+    default: 'default',
+  },
+}))
+
+jest.mock('./nodeStatusIcons.css', () => ({}))
+
 import * as nodeStyleAPI from './nodeStyle'
 
 describe('nodeStyle tests', () => {

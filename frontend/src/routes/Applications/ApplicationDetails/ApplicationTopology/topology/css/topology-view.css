@@ -15,3 +15,9 @@
 .pf-topology-connector-arrow {
   fill: #808080;
 }
+.pf-v5-c-drawer__body:last-child {
+  height: 100%;
+}
+.pf-topology-view__project-toolbar {
+  width: 100%;
+}

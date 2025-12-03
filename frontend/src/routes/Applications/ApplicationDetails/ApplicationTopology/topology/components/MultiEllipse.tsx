@@ -2,9 +2,7 @@
 import { css } from '@patternfly/react-styles'
 import styles from '@patternfly/react-topology/dist/esm/css/topology-components'
 import * as React from 'react'
-import { useAnchor, EllipseAnchor } from '@patternfly/react-topology'
-
-import { ShapeProps } from './future/shapeUtils'
+import { useAnchor, EllipseAnchor, ShapeProps } from '@patternfly/react-topology'
 
 type MultiEllipseProps = ShapeProps
 

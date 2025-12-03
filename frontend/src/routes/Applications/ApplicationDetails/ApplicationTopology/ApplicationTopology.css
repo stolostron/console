@@ -21,10 +21,6 @@
   font-size: 14px;
 }
 
-.app-topology-view .pf-v5-c-toolbar {
-  padding-bottom: 0;
-}
-
 .pf-topology__node__icon {
   fill: #000;
   stroke: 'none';
