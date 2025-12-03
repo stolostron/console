@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef } from 'react'
 import head from 'lodash/head'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import {
@@ -27,8 +27,6 @@ import TopologyToolbar from './components/TopologyToolbar'
 
 import './css/topology-components.css'
 import './css/topology-view.css'
-import { useQuerySearchDisabledManagedClusters } from '../../../../../lib/search'
-import { useQuery } from '../../../../../lib/useQuery'
 import { TFunction } from 'react-i18next'
 
 export interface TopologyProps {
@@ -86,20 +84,6 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
     hubClusterName,
   } = topologyProps
   const [selectedIds, setSelectedIds] = useState<string[]>()
-  const clusterNodes = elements.nodes.filter((node) => node.type === 'cluster')
-  const clusterNames = clusterNodes.map((clusterNode) => clusterNode.name)
-  const queryDisabled = useQuerySearchDisabledManagedClusters()
-  const { data, startPolling } = useQuery(queryDisabled)
-
-  useEffect(startPolling, [startPolling])
-  useEffect(() => {
-    const clustersWithSearchDisabled = data?.[0]?.data?.searchResult?.[0]?.items || []
-    const clusterWithDisabledSearch = new Set(clustersWithSearchDisabled.map((item: { name: string }) => item.name))
-    const found = clusterNames.some((r) => clusterWithDisabledSearch.has(r))
-    if (found) {
-      // setIsSearchDisabled(true)
-    }
-  }, [data, clusterNames])
 
   useEventListener<SelectionEventListener>(SELECTION_EVENT, (ids) => {
     setSelectedIds(ids)
@@ -155,7 +139,6 @@ export const Topology = (props: TopologyProps) => {
     currentNodeIds.current = nodeIds
   }
   controller.fromModel(getLayoutModel(props.elements))
-  controller.setRenderConstraint(!props.disableRenderConstraint) // for testing
 
   return (
     <VisualizationProvider controller={controller}>
