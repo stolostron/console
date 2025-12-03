@@ -40,11 +40,11 @@ describe('RolesTableHelper', () => {
   const mockT = (key: string) => key
 
   describe('rolesTableColumns', () => {
-    it('creates columns with links when areLinksAllowed is true (default)', () => {
+    it('creates columns with links when areLinksDisplayed is true (default)', () => {
       const columns = rolesTableColumns({
         t: mockT,
         hiddenColumns: ['radio'],
-        areLinksAllowed: true,
+        areLinksDisplayed: true,
       })
 
       expect(columns).toHaveLength(3)
@@ -66,11 +66,11 @@ describe('RolesTableHelper', () => {
       expect(screen.getByRole('link', { name: 'See All' })).toBeInTheDocument()
     })
 
-    it('creates columns without links when areLinksAllowed is false', () => {
+    it('creates columns without links when areLinksDisplayed is false', () => {
       const columns = rolesTableColumns({
         t: mockT,
         hiddenColumns: ['radio'],
-        areLinksAllowed: false,
+        areLinksDisplayed: false,
       })
 
       expect(columns).toHaveLength(3)
@@ -93,7 +93,7 @@ describe('RolesTableHelper', () => {
       expect(screen.getByText('+2')).toBeInTheDocument() // 5 permissions - 3 shown = +2
     })
 
-    it('handles role with no permissions when areLinksAllowed is false', () => {
+    it('handles role with no permissions when areLinksDisplayed is false', () => {
       const roleWithNoPermissions: Role = {
         name: 'empty-role',
         permissions: '',
@@ -103,7 +103,7 @@ describe('RolesTableHelper', () => {
       const columns = rolesTableColumns({
         t: mockT,
         hiddenColumns: ['radio', 'name'],
-        areLinksAllowed: false,
+        areLinksDisplayed: false,
       })
 
       expect(columns).toHaveLength(3)
@@ -117,7 +117,7 @@ describe('RolesTableHelper', () => {
 
       // Check that "No permissions" text is present (may be split across elements)
       expect(screen.getByText(/No permissions/)).toBeInTheDocument()
-      // Check that there are no links when areLinksAllowed is false
+      // Check that there are no links when areLinksDisplayed is false
       expect(screen.queryByRole('link')).not.toBeInTheDocument()
     })
 
@@ -131,7 +131,7 @@ describe('RolesTableHelper', () => {
       const columns = rolesTableColumns({
         t: mockT,
         hiddenColumns: ['radio', 'name'],
-        areLinksAllowed: false,
+        areLinksDisplayed: false,
       })
 
       expect(columns).toHaveLength(3)
@@ -155,7 +155,7 @@ describe('RolesTableHelper', () => {
         t: mockT,
         hiddenColumns: ['name', 'permissions'],
         onRadioSelect: jest.fn(),
-        areLinksAllowed: true,
+        areLinksDisplayed: true,
       })
 
       expect(columns).toHaveLength(3)

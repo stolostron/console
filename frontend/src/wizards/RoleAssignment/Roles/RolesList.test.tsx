@@ -81,7 +81,7 @@ describe('RolesList', () => {
 
     expect(mockRolesTable).toHaveBeenCalledWith({
       onRadioSelect: expect.any(Function), // Now it's the internal handler
-      areLinksAllowed: false,
+      areLinksDisplayed: false,
     })
   })
 
@@ -115,12 +115,12 @@ describe('RolesList', () => {
     expect(mockOnRadioSelect).toHaveBeenCalledWith('viewer')
   })
 
-  it('passes areLinksAllowed=false to RolesTable', () => {
+  it('passes areLinksDisplayed=false to RolesTable', () => {
     render(<RolesList onRadioSelect={mockOnRadioSelect} />)
 
     expect(mockRolesTable).toHaveBeenCalledWith(
       expect.objectContaining({
-        areLinksAllowed: false,
+        areLinksDisplayed: false,
       })
     )
   })

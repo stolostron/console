@@ -9,10 +9,10 @@ import { Role, rolesTableColumns, useFilters } from './RolesTableHelper'
 interface RolesTableProps {
   hiddenColumns?: string[]
   onRadioSelect?: (roleName: string) => void
-  areLinksAllowed?: boolean
+  areLinksDisplayed?: boolean
 }
 
-const RolesTable = ({ hiddenColumns, onRadioSelect, areLinksAllowed = true }: RolesTableProps) => {
+const RolesTable = ({ hiddenColumns, onRadioSelect, areLinksDisplayed = true }: RolesTableProps) => {
   const { t } = useTranslation()
   const { vmClusterRolesState } = useSharedAtoms()
   const clusterRoles = useRecoilValue(vmClusterRolesState)
@@ -49,7 +49,7 @@ const RolesTable = ({ hiddenColumns, onRadioSelect, areLinksAllowed = true }: Ro
     hiddenColumns,
     onRadioSelect: handleRadioSelect,
     selectedRole,
-    areLinksAllowed,
+    areLinksDisplayed,
   })
 
   return (

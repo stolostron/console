@@ -21,12 +21,12 @@ const createColumnCells = ({
   t,
   onRadioSelect,
   selectedRole,
-  areLinksAllowed,
+  areLinksDisplayed,
 }: {
   t: TFunction
   onRadioSelect?: (roleName: string) => void
   selectedRole?: string
-  areLinksAllowed: boolean
+  areLinksDisplayed: boolean
 }) => ({
   RADIO_SELECT: (role: Role) => (
     <Radio
@@ -48,7 +48,7 @@ const createColumnCells = ({
           maxWidth: '200px',
         }}
       >
-        {areLinksAllowed ? (
+        {areLinksDisplayed ? (
           <Link to={generatePath(NavigationPath.roleDetails, { id: role.uid })}>
             <HighlightSearchText text={role.name} searchText={search} useFuzzyHighlighting />
           </Link>
@@ -64,7 +64,7 @@ const createColumnCells = ({
     if (permissionsArray.length === 0) {
       return (
         <span style={{ whiteSpace: 'nowrap' }}>
-          {areLinksAllowed ? (
+          {areLinksDisplayed ? (
             <Link to={generatePath(NavigationPath.rolePermissions, { id: role.uid })}>{t('No permissions')}</Link>
           ) : (
             t('No permissions')
@@ -84,7 +84,7 @@ const createColumnCells = ({
           </span>
         ))}
         {hasMore &&
-          (areLinksAllowed ? (
+          (areLinksDisplayed ? (
             <Link to={generatePath(NavigationPath.rolePermissions, { id: role.uid })}>See All</Link>
           ) : (
             <Badge isRead>+{permissionsArray.length - 3}</Badge>
@@ -99,15 +99,15 @@ export const rolesTableColumns = ({
   hiddenColumns,
   onRadioSelect,
   selectedRole,
-  areLinksAllowed,
+  areLinksDisplayed,
 }: {
   t: TFunction
   hiddenColumns?: string[]
   onRadioSelect?: (roleName: string) => void
   selectedRole?: string
-  areLinksAllowed: boolean
+  areLinksDisplayed: boolean
 }): IAcmTableColumn<Role>[] => {
-  const COLUMN_CELLS = createColumnCells({ t, onRadioSelect, selectedRole, areLinksAllowed })
+  const COLUMN_CELLS = createColumnCells({ t, onRadioSelect, selectedRole, areLinksDisplayed })
 
   const columns: IAcmTableColumn<Role>[] = []
 
