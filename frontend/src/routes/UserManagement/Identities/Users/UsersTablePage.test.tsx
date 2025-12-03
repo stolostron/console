@@ -42,9 +42,10 @@ describe('UsersTablePage', () => {
   })
 
   test('should pass hiddenColumns prop to UsersTable with radio column hidden', () => {
-    const { getByTestId } = render(<Component />)
+    const { container } = render(<Component />)
 
-    const usersTable = getByTestId('mocked-users-table')
+    const usersTable = container.querySelector('[data-testid="mocked-users-table"]')
+    expect(usersTable).toBeInTheDocument()
     expect(usersTable).toHaveAttribute('data-hiddencolumns', '["radio"]')
   })
 })

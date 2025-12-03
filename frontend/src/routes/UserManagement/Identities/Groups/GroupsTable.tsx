@@ -46,11 +46,11 @@ const GroupsTable = ({
       groupsTableColumns({
         t,
         hiddenColumns,
-        onRadioSelect: handleRadioSelect,
+        onRadioSelect: setSelectedGroup ? handleRadioSelect : () => {},
         areLinksDisplayed,
         selectedIdentity: selectedGroup,
       }),
-    [areLinksDisplayed, handleRadioSelect, hiddenColumns, selectedGroup, t]
+    [areLinksDisplayed, handleRadioSelect, hiddenColumns, selectedGroup, setSelectedGroup, t]
   )
 
   return (

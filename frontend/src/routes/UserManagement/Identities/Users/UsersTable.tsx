@@ -40,11 +40,11 @@ const UsersTable = ({ hiddenColumns, areLinksDisplayed = true, selectedUser, set
       usersTableColumns({
         t,
         hiddenColumns,
-        onRadioSelect: handleRadioSelect,
+        onRadioSelect: setSelectedUser ? handleRadioSelect : () => {},
         areLinksDisplayed,
         selectedIdentity: selectedUser,
       }),
-    [areLinksDisplayed, handleRadioSelect, hiddenColumns, selectedUser, t]
+    [areLinksDisplayed, handleRadioSelect, hiddenColumns, selectedUser, setSelectedUser, t]
   )
 
   return (
