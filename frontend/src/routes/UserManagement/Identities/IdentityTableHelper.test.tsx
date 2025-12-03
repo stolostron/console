@@ -87,7 +87,7 @@ describe('IdentityTableHelper', () => {
   describe('COLUMN_CELLS', () => {
     describe('USER_NAME', () => {
       it('should render user name with link and highlight search text by default', () => {
-        const { getByText } = render(<MemoryRouter>{COLUMN_CELLS.USER_NAME(mockUser, 'test')}</MemoryRouter>)
+        const { getByText } = render(<MemoryRouter>{COLUMN_CELLS.USER_NAME(mockUser, 'test', true)}</MemoryRouter>)
         expect(getByText('test-user')).toBeInTheDocument()
       })
 
@@ -105,7 +105,7 @@ describe('IdentityTableHelper', () => {
 
     describe('GROUP_NAME', () => {
       it('should render group name with link and highlight search text by default', () => {
-        const { getByText } = render(<MemoryRouter>{COLUMN_CELLS.GROUP_NAME(mockGroup, 'dev')}</MemoryRouter>)
+        const { getByText } = render(<MemoryRouter>{COLUMN_CELLS.GROUP_NAME(mockGroup, 'dev', true)}</MemoryRouter>)
         expect(getByText('developers')).toBeInTheDocument()
       })
 
@@ -172,8 +172,9 @@ describe('IdentityTableHelper', () => {
 
   describe('getIdentityTableColumns', () => {
     it('should return 4 columns by default', () => {
-      const columns = getIdentityTableColumns({ t: mockT })
-      expect(columns).toHaveLength(4)
+      const mockOnRadioSelect = jest.fn()
+      const columns = getIdentityTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect, areLinksDisplayed: true })
+      expect(columns).toHaveLength(5) // Now includes radio column
     })
 
     it('should return 5 columns when onRadioSelect is provided', () => {
@@ -183,7 +184,7 @@ describe('IdentityTableHelper', () => {
 
       const radioColumn = columns.find((col) => col.id === 'radio')
       expect(radioColumn).toBeDefined()
-      expect(radioColumn?.header).toBe('')
+      expect(radioColumn?.header).toBe(' ')
     })
 
     it('should hide radio column when specified in hiddenColumns', () => {
@@ -199,7 +200,8 @@ describe('IdentityTableHelper', () => {
     })
 
     it('should have Name column with correct properties', () => {
-      const columns = getIdentityTableColumns({ t: mockT })
+      const mockOnRadioSelect = jest.fn()
+      const columns = getIdentityTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect, areLinksDisplayed: true })
       const nameColumn = columns.find((col) => col.id === 'name')
 
       expect(nameColumn).toBeDefined()
@@ -211,7 +213,8 @@ describe('IdentityTableHelper', () => {
     })
 
     it('should have Identity Provider column with correct properties', () => {
-      const columns = getIdentityTableColumns({ t: mockT })
+      const mockOnRadioSelect = jest.fn()
+      const columns = getIdentityTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect, areLinksDisplayed: true })
       const idpColumn = columns.find((col) => col.id === 'identity-provider')
 
       expect(idpColumn).toBeDefined()
@@ -222,7 +225,8 @@ describe('IdentityTableHelper', () => {
     })
 
     it('should have Users column with correct properties', () => {
-      const columns = getIdentityTableColumns({ t: mockT })
+      const mockOnRadioSelect = jest.fn()
+      const columns = getIdentityTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect, areLinksDisplayed: true })
       const usersColumn = columns.find((col) => col.id === 'users')
 
       expect(usersColumn).toBeDefined()
@@ -233,7 +237,8 @@ describe('IdentityTableHelper', () => {
     })
 
     it('should have Created column with correct properties', () => {
-      const columns = getIdentityTableColumns({ t: mockT })
+      const mockOnRadioSelect = jest.fn()
+      const columns = getIdentityTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect, areLinksDisplayed: true })
       const createdColumn = columns.find((col) => col.id === 'created')
 
       expect(createdColumn).toBeDefined()
@@ -244,7 +249,8 @@ describe('IdentityTableHelper', () => {
     })
 
     it('should render user name in Name column cell for user identity with links by default', () => {
-      const columns = getIdentityTableColumns({ t: mockT })
+      const mockOnRadioSelect = jest.fn()
+      const columns = getIdentityTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect, areLinksDisplayed: true })
       const nameColumn = columns.find((col) => col.id === 'name')
 
       expect(nameColumn?.cell).toBeDefined()
@@ -256,7 +262,8 @@ describe('IdentityTableHelper', () => {
     })
 
     it('should render user name in Name column cell without links when areLinksDisplayed is false', () => {
-      const columns = getIdentityTableColumns({ t: mockT, areLinksDisplayed: false })
+      const mockOnRadioSelect = jest.fn()
+      const columns = getIdentityTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect, areLinksDisplayed: false })
       const nameColumn = columns.find((col) => col.id === 'name')
 
       expect(nameColumn?.cell).toBeDefined()
@@ -269,7 +276,8 @@ describe('IdentityTableHelper', () => {
     })
 
     it('should render group name in Name column cell for group identity with links by default', () => {
-      const columns = getIdentityTableColumns({ t: mockT })
+      const mockOnRadioSelect = jest.fn()
+      const columns = getIdentityTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect, areLinksDisplayed: true })
       const nameColumn = columns.find((col) => col.id === 'name')
 
       expect(nameColumn?.cell).toBeDefined()
@@ -281,7 +289,8 @@ describe('IdentityTableHelper', () => {
     })
 
     it('should render group name in Name column cell without links when areLinksDisplayed is false', () => {
-      const columns = getIdentityTableColumns({ t: mockT, areLinksDisplayed: false })
+      const mockOnRadioSelect = jest.fn()
+      const columns = getIdentityTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect, areLinksDisplayed: false })
       const nameColumn = columns.find((col) => col.id === 'name')
 
       expect(nameColumn?.cell).toBeDefined()
@@ -294,7 +303,8 @@ describe('IdentityTableHelper', () => {
     })
 
     it('should render identity provider cell for user', () => {
-      const columns = getIdentityTableColumns({ t: mockT })
+      const mockOnRadioSelect = jest.fn()
+      const columns = getIdentityTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect, areLinksDisplayed: true })
       const idpColumn = columns.find((col) => col.id === 'identity-provider')
 
       expect(idpColumn?.cell).toBeDefined()
@@ -307,7 +317,8 @@ describe('IdentityTableHelper', () => {
     })
 
     it('should render null in identity provider cell for group', () => {
-      const columns = getIdentityTableColumns({ t: mockT })
+      const mockOnRadioSelect = jest.fn()
+      const columns = getIdentityTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect, areLinksDisplayed: true })
       const idpColumn = columns.find((col) => col.id === 'identity-provider')
 
       expect(idpColumn?.cell).toBeDefined()
@@ -318,7 +329,8 @@ describe('IdentityTableHelper', () => {
     })
 
     it('should render users count cell for group', () => {
-      const columns = getIdentityTableColumns({ t: mockT })
+      const mockOnRadioSelect = jest.fn()
+      const columns = getIdentityTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect, areLinksDisplayed: true })
       const usersColumn = columns.find((col) => col.id === 'users')
 
       expect(usersColumn?.cell).toBeDefined()
@@ -330,7 +342,8 @@ describe('IdentityTableHelper', () => {
     })
 
     it('should render null in users cell for user identity', () => {
-      const columns = getIdentityTableColumns({ t: mockT })
+      const mockOnRadioSelect = jest.fn()
+      const columns = getIdentityTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect, areLinksDisplayed: true })
       const usersColumn = columns.find((col) => col.id === 'users')
 
       expect(usersColumn?.cell).toBeDefined()
@@ -341,7 +354,8 @@ describe('IdentityTableHelper', () => {
     })
 
     it('should export name content correctly', () => {
-      const columns = getIdentityTableColumns({ t: mockT })
+      const mockOnRadioSelect = jest.fn()
+      const columns = getIdentityTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect, areLinksDisplayed: true })
       const nameColumn = columns.find((col) => col.id === 'name')
 
       expect(nameColumn?.exportContent?.(mockUser, '')).toBe('test-user')
@@ -349,7 +363,8 @@ describe('IdentityTableHelper', () => {
     })
 
     it('should export created timestamp content correctly', () => {
-      const columns = getIdentityTableColumns({ t: mockT })
+      const mockOnRadioSelect = jest.fn()
+      const columns = getIdentityTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect, areLinksDisplayed: true })
       const createdColumn = columns.find((col) => col.id === 'created')
 
       expect(createdColumn?.exportContent?.(mockUser, '')).toContain('2025-01-24')
@@ -357,7 +372,8 @@ describe('IdentityTableHelper', () => {
     })
 
     it('should hide columns based on hiddenColumns parameter', () => {
-      const columns = getIdentityTableColumns({ t: mockT, hiddenColumns: ['name', 'created'] })
+      const mockOnRadioSelect = jest.fn()
+      const columns = getIdentityTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect, areLinksDisplayed: true, hiddenColumns: ['name', 'created'] })
 
       const nameColumn = columns.find((col) => col.id === 'name')
       const createdColumn = columns.find((col) => col.id === 'created')
@@ -484,9 +500,10 @@ describe('IdentityTableHelper', () => {
   })
 
   describe('usersTableColumns', () => {
-    it('should return 4 columns with users column hidden by default', () => {
-      const columns = usersTableColumns({ t: mockT })
-      expect(columns).toHaveLength(4)
+    it('should return 5 columns with users column hidden by default', () => {
+      const mockOnRadioSelect = jest.fn()
+      const columns = usersTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect, areLinksDisplayed: true })
+      expect(columns).toHaveLength(5) // Now includes radio column
 
       const usersColumn = columns.find((col) => col.id === 'users')
       expect(usersColumn?.isHidden).toBe(true)
@@ -494,28 +511,30 @@ describe('IdentityTableHelper', () => {
 
     it('should return 5 columns when onRadioSelect is provided', () => {
       const mockOnRadioSelect = jest.fn()
-      const columns = usersTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect })
+      const columns = usersTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect, areLinksDisplayed: true })
       expect(columns).toHaveLength(5)
 
       const radioColumn = columns.find((col) => col.id === 'radio')
       expect(radioColumn).toBeDefined()
     })
 
-    it('should have correct column IDs without radio', () => {
-      const columns = usersTableColumns({ t: mockT })
+    it('should have correct column IDs with radio', () => {
+      const mockOnRadioSelect = jest.fn()
+      const columns = usersTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect, areLinksDisplayed: true })
       const columnIds = columns.map((col) => col.id)
-      expect(columnIds).toEqual(['name', 'identity-provider', 'users', 'created'])
+      expect(columnIds).toEqual(['radio', 'name', 'identity-provider', 'users', 'created'])
     })
 
     it('should have correct column IDs with radio', () => {
       const mockOnRadioSelect = jest.fn()
-      const columns = usersTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect })
+      const columns = usersTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect, areLinksDisplayed: true })
       const columnIds = columns.map((col) => col.id)
       expect(columnIds).toEqual(['radio', 'name', 'identity-provider', 'users', 'created'])
     })
 
     it('should render user name cell correctly with links by default', () => {
-      const columns = usersTableColumns({ t: mockT })
+      const mockOnRadioSelect = jest.fn()
+      const columns = usersTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect, areLinksDisplayed: true })
       const nameColumn = columns.find((col) => col.id === 'name')
 
       expect(nameColumn?.cell).toBeDefined()
@@ -527,7 +546,8 @@ describe('IdentityTableHelper', () => {
     })
 
     it('should render user name cell without links when areLinksDisplayed is false', () => {
-      const columns = usersTableColumns({ t: mockT, areLinksDisplayed: false })
+      const mockOnRadioSelect = jest.fn()
+      const columns = usersTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect, areLinksDisplayed: false })
       const nameColumn = columns.find((col) => col.id === 'name')
 
       expect(nameColumn?.cell).toBeDefined()
@@ -540,7 +560,8 @@ describe('IdentityTableHelper', () => {
     })
 
     it('should hide columns based on hiddenColumns parameter', () => {
-      const columns = usersTableColumns({ t: mockT, hiddenColumns: ['identity-provider'] })
+      const mockOnRadioSelect = jest.fn()
+      const columns = usersTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect, areLinksDisplayed: true, hiddenColumns: ['identity-provider'] })
       const idpColumn = columns.find((col) => col.id === 'identity-provider')
       expect(idpColumn?.isHidden).toBe(true)
     })
@@ -550,6 +571,7 @@ describe('IdentityTableHelper', () => {
       const columns = usersTableColumns({
         t: mockT,
         onRadioSelect: mockOnRadioSelect,
+        areLinksDisplayed: true,
         hiddenColumns: ['radio'],
       })
       const radioColumn = columns.find((col) => col.id === 'radio')
@@ -561,6 +583,7 @@ describe('IdentityTableHelper', () => {
       const columns = usersTableColumns({
         t: mockT,
         onRadioSelect: mockOnRadioSelect,
+        areLinksDisplayed: true,
         selectedIdentity: mockUser,
       })
       const radioColumn = columns.find((col) => col.id === 'radio')
@@ -574,9 +597,10 @@ describe('IdentityTableHelper', () => {
   })
 
   describe('groupsTableColumns', () => {
-    it('should return 4 columns with identity-provider column hidden by default', () => {
-      const columns = groupsTableColumns({ t: mockT })
-      expect(columns).toHaveLength(4)
+    it('should return 5 columns with identity-provider column hidden by default', () => {
+      const mockOnRadioSelect = jest.fn()
+      const columns = groupsTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect, areLinksDisplayed: true })
+      expect(columns).toHaveLength(5) // Now includes radio column
 
       const idpColumn = columns.find((col) => col.id === 'identity-provider')
       expect(idpColumn?.isHidden).toBe(true)
@@ -584,28 +608,30 @@ describe('IdentityTableHelper', () => {
 
     it('should return 5 columns when onRadioSelect is provided', () => {
       const mockOnRadioSelect = jest.fn()
-      const columns = groupsTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect })
+      const columns = groupsTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect, areLinksDisplayed: true })
       expect(columns).toHaveLength(5)
 
       const radioColumn = columns.find((col) => col.id === 'radio')
       expect(radioColumn).toBeDefined()
     })
 
-    it('should have correct column IDs without radio', () => {
-      const columns = groupsTableColumns({ t: mockT })
+    it('should have correct column IDs with radio', () => {
+      const mockOnRadioSelect = jest.fn()
+      const columns = groupsTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect, areLinksDisplayed: true })
       const columnIds = columns.map((col) => col.id)
-      expect(columnIds).toEqual(['name', 'identity-provider', 'users', 'created'])
+      expect(columnIds).toEqual(['radio', 'name', 'identity-provider', 'users', 'created'])
     })
 
     it('should have correct column IDs with radio', () => {
       const mockOnRadioSelect = jest.fn()
-      const columns = groupsTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect })
+      const columns = groupsTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect, areLinksDisplayed: true })
       const columnIds = columns.map((col) => col.id)
       expect(columnIds).toEqual(['radio', 'name', 'identity-provider', 'users', 'created'])
     })
 
     it('should render group name cell correctly with links by default', () => {
-      const columns = groupsTableColumns({ t: mockT })
+      const mockOnRadioSelect = jest.fn()
+      const columns = groupsTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect, areLinksDisplayed: true })
       const nameColumn = columns.find((col) => col.id === 'name')
 
       expect(nameColumn?.cell).toBeDefined()
@@ -617,7 +643,8 @@ describe('IdentityTableHelper', () => {
     })
 
     it('should render group name cell without links when areLinksDisplayed is false', () => {
-      const columns = groupsTableColumns({ t: mockT, areLinksDisplayed: false })
+      const mockOnRadioSelect = jest.fn()
+      const columns = groupsTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect, areLinksDisplayed: false })
       const nameColumn = columns.find((col) => col.id === 'name')
 
       expect(nameColumn?.cell).toBeDefined()
@@ -630,7 +657,8 @@ describe('IdentityTableHelper', () => {
     })
 
     it('should hide columns based on hiddenColumns parameter', () => {
-      const columns = groupsTableColumns({ t: mockT, hiddenColumns: ['users'] })
+      const mockOnRadioSelect = jest.fn()
+      const columns = groupsTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect, areLinksDisplayed: true, hiddenColumns: ['users'] })
       const usersColumn = columns.find((col) => col.id === 'users')
       expect(usersColumn?.isHidden).toBe(true)
     })
@@ -640,6 +668,7 @@ describe('IdentityTableHelper', () => {
       const columns = groupsTableColumns({
         t: mockT,
         onRadioSelect: mockOnRadioSelect,
+        areLinksDisplayed: true,
         hiddenColumns: ['radio'],
       })
       const radioColumn = columns.find((col) => col.id === 'radio')
@@ -651,6 +680,7 @@ describe('IdentityTableHelper', () => {
       const columns = groupsTableColumns({
         t: mockT,
         onRadioSelect: mockOnRadioSelect,
+        areLinksDisplayed: true,
         selectedIdentity: mockGroup,
       })
       const radioColumn = columns.find((col) => col.id === 'radio')
@@ -666,7 +696,7 @@ describe('IdentityTableHelper', () => {
   describe('Radio button functionality', () => {
     it('should render radio button cell correctly', () => {
       const mockOnRadioSelect = jest.fn()
-      const columns = getIdentityTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect })
+      const columns = getIdentityTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect, areLinksDisplayed: true })
       const radioColumn = columns.find((col) => col.id === 'radio')
 
       expect(radioColumn?.cell).toBeDefined()
@@ -677,13 +707,13 @@ describe('IdentityTableHelper', () => {
 
       const radioInput = container.querySelector('input[type="radio"]')
       expect(radioInput).toBeInTheDocument()
-      expect(radioInput).toHaveAttribute('name', 'identity-selection')
+      expect(radioInput).toHaveAttribute('name', 'radio-user-uid-123')
       expect(radioInput).toHaveAttribute('id', 'radio-user-uid-123')
     })
 
     it('should render radio button with correct onChange handler', () => {
       const mockOnRadioSelect = jest.fn()
-      const columns = getIdentityTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect })
+      const columns = getIdentityTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect, areLinksDisplayed: true })
       const radioColumn = columns.find((col) => col.id === 'radio')
 
       const cell = (radioColumn?.cell as any)(mockUser, '')
@@ -691,7 +721,7 @@ describe('IdentityTableHelper', () => {
 
       const radioInput = container.querySelector('input[type="radio"]') as HTMLInputElement
       expect(radioInput).toBeInTheDocument()
-      expect(radioInput).toHaveAttribute('name', 'identity-selection')
+      expect(radioInput).toHaveAttribute('name', 'radio-user-uid-123')
       expect(radioInput).toHaveAttribute('id', 'radio-user-uid-123')
 
       // The onChange handler is properly attached to the component
@@ -703,6 +733,7 @@ describe('IdentityTableHelper', () => {
       const columns = getIdentityTableColumns({
         t: mockT,
         onRadioSelect: mockOnRadioSelect,
+        areLinksDisplayed: true,
         selectedIdentity: mockUser,
       })
       const radioColumn = columns.find((col) => col.id === 'radio')
@@ -720,6 +751,7 @@ describe('IdentityTableHelper', () => {
       const columns = getIdentityTableColumns({
         t: mockT,
         onRadioSelect: mockOnRadioSelect,
+        areLinksDisplayed: true,
         selectedIdentity: mockGroup, // Different identity selected
       })
       const radioColumn = columns.find((col) => col.id === 'radio')
@@ -737,6 +769,7 @@ describe('IdentityTableHelper', () => {
       const columns = getIdentityTableColumns({
         t: mockT,
         onRadioSelect: mockOnRadioSelect,
+        areLinksDisplayed: true,
         selectedIdentity: undefined,
       })
       const radioColumn = columns.find((col) => col.id === 'radio')
@@ -752,7 +785,7 @@ describe('IdentityTableHelper', () => {
     it('should handle identity without uid gracefully', () => {
       const identityWithoutUid = { ...mockUser, metadata: { ...mockUser.metadata, uid: undefined } }
       const mockOnRadioSelect = jest.fn()
-      const columns = getIdentityTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect })
+      const columns = getIdentityTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect, areLinksDisplayed: true })
       const radioColumn = columns.find((col) => col.id === 'radio')
 
       const cell = (radioColumn?.cell as any)(identityWithoutUid, '')
@@ -768,7 +801,7 @@ describe('IdentityTableHelper', () => {
 
     it('should create unique radio button IDs for different identities', () => {
       const mockOnRadioSelect = jest.fn()
-      const columns = getIdentityTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect })
+      const columns = getIdentityTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect, areLinksDisplayed: true })
       const radioColumn = columns.find((col) => col.id === 'radio')
 
       const userCell = (radioColumn?.cell as any)(mockUser, '')
@@ -784,9 +817,9 @@ describe('IdentityTableHelper', () => {
       expect(groupRadio).toHaveAttribute('id', 'radio-group-uid-789')
     })
 
-    it('should use same name attribute for all radio buttons to ensure single selection', () => {
+    it('should use unique name attributes for radio buttons', () => {
       const mockOnRadioSelect = jest.fn()
-      const columns = getIdentityTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect })
+      const columns = getIdentityTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect, areLinksDisplayed: true })
       const radioColumn = columns.find((col) => col.id === 'radio')
 
       const userCell = (radioColumn?.cell as any)(mockUser, '')
@@ -798,8 +831,8 @@ describe('IdentityTableHelper', () => {
       const userRadio = userContainer.querySelector('input[type="radio"]')
       const groupRadio = groupContainer.querySelector('input[type="radio"]')
 
-      expect(userRadio).toHaveAttribute('name', 'identity-selection')
-      expect(groupRadio).toHaveAttribute('name', 'identity-selection')
+      expect(userRadio).toHaveAttribute('name', 'radio-user-uid-123')
+      expect(groupRadio).toHaveAttribute('name', 'radio-group-uid-789')
     })
   })
 })

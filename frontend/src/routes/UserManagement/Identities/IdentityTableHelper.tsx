@@ -25,7 +25,7 @@ type IdentityTableHelperProps = {
 }
 
 const COLUMN_CELLS = {
-  USER_NAME: (user: User, search: string, areLinksDisplayed = true) => (
+  USER_NAME: (user: User, search: string, areLinksDisplayed: boolean) => (
     <span style={{ whiteSpace: 'nowrap' }}>
       {areLinksDisplayed ? (
         <Link to={generatePath(NavigationPath.identitiesUsersDetails, { id: user.metadata.uid ?? '' })}>
@@ -36,7 +36,7 @@ const COLUMN_CELLS = {
       )}
     </span>
   ),
-  GROUP_NAME: (group: Group, search: string, areLinksDisplayed = true) => (
+  GROUP_NAME: (group: Group, search: string, areLinksDisplayed: boolean) => (
     <span style={{ whiteSpace: 'nowrap' }}>
       {areLinksDisplayed ? (
         <Link to={generatePath(NavigationPath.identitiesGroupsDetails, { id: group.metadata.uid ?? '' })}>
@@ -67,12 +67,12 @@ export const getIdentityTableColumns = ({
   t,
   hiddenColumns,
   onRadioSelect,
-  areLinksDisplayed = true,
+  areLinksDisplayed,
   selectedIdentity,
 }: Pick<IdentityTableHelperProps, 't'> & {
   hiddenColumns?: string[]
   onRadioSelect: (identityUid: string) => void
-  areLinksDisplayed?: boolean
+  areLinksDisplayed: boolean
   selectedIdentity?: IdentityItem
 }): IAcmTableColumn<IdentityItem>[] => {
   const columns: IAcmTableColumn<IdentityItem>[] = []
@@ -230,7 +230,7 @@ export const usersTableColumns = ({
   t: TFunction
   hiddenColumns?: string[]
   onRadioSelect: (identityUid: string) => void
-  areLinksDisplayed?: boolean
+  areLinksDisplayed: boolean
   selectedIdentity?: IdentityItem
 }) =>
   getIdentityTableColumns({
@@ -251,7 +251,7 @@ export const groupsTableColumns = ({
   t: TFunction
   hiddenColumns?: string[]
   onRadioSelect: (identityUid: string) => void
-  areLinksDisplayed?: boolean
+  areLinksDisplayed: boolean
   selectedIdentity?: IdentityItem
 }) =>
   getIdentityTableColumns({
