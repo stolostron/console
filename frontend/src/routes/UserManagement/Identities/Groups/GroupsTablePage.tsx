@@ -2,12 +2,10 @@
 import { PageSection } from '@patternfly/react-core'
 import { GroupsTable } from './GroupsTable'
 
-const GroupsTablePage = () => {
-  return (
-    <PageSection>
-      <GroupsTable />
-    </PageSection>
-  )
-}
+const GroupsTablePage = () => (
+  <PageSection>
+    <GroupsTable hiddenColumns={['radio']} />
+  </PageSection>
+)
 
 export { GroupsTablePage }

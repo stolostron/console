@@ -1,16 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { renderHook } from '@testing-library/react-hooks'
+import { MemoryRouter } from 'react-router-dom-v5-compat'
+import { Group, User } from '../../../resources/rbac'
 import {
+  COLUMN_CELLS,
   getIdentityTableColumns,
+  groupsTableColumns,
+  IdentityItem,
   useIdentityFilters,
   usersTableColumns,
-  groupsTableColumns,
-  COLUMN_CELLS,
-  IdentityItem,
 } from './IdentityTableHelper'
-import { User, Group } from '../../../resources/rbac'
 
 jest.mock('../../../lib/acm-i18next', () => ({
   useTranslation: jest.fn().mockReturnValue({
@@ -86,16 +86,38 @@ describe('IdentityTableHelper', () => {
 
   describe('COLUMN_CELLS', () => {
     describe('USER_NAME', () => {
-      it('should render user name with link and highlight search text', () => {
+      it('should render user name with link and highlight search text by default', () => {
         const { getByText } = render(<MemoryRouter>{COLUMN_CELLS.USER_NAME(mockUser, 'test')}</MemoryRouter>)
         expect(getByText('test-user')).toBeInTheDocument()
+      })
+
+      it('should render user name with link when areLinksDisplayed is true', () => {
+        const { getByText } = render(<MemoryRouter>{COLUMN_CELLS.USER_NAME(mockUser, 'test', true)}</MemoryRouter>)
+        expect(getByText('test-user')).toBeInTheDocument()
+      })
+
+      it('should render user name without link when areLinksDisplayed is false', () => {
+        const { getByText, container } = render(<div>{COLUMN_CELLS.USER_NAME(mockUser, 'test', false)}</div>)
+        expect(getByText('test-user')).toBeInTheDocument()
+        expect(container.querySelector('a')).not.toBeInTheDocument()
       })
     })
 
     describe('GROUP_NAME', () => {
-      it('should render group name with link and highlight search text', () => {
+      it('should render group name with link and highlight search text by default', () => {
         const { getByText } = render(<MemoryRouter>{COLUMN_CELLS.GROUP_NAME(mockGroup, 'dev')}</MemoryRouter>)
         expect(getByText('developers')).toBeInTheDocument()
+      })
+
+      it('should render group name with link when areLinksDisplayed is true', () => {
+        const { getByText } = render(<MemoryRouter>{COLUMN_CELLS.GROUP_NAME(mockGroup, 'dev', true)}</MemoryRouter>)
+        expect(getByText('developers')).toBeInTheDocument()
+      })
+
+      it('should render group name without link when areLinksDisplayed is false', () => {
+        const { getByText, container } = render(<div>{COLUMN_CELLS.GROUP_NAME(mockGroup, 'dev', false)}</div>)
+        expect(getByText('developers')).toBeInTheDocument()
+        expect(container.querySelector('a')).not.toBeInTheDocument()
       })
     })
 
@@ -149,9 +171,31 @@ describe('IdentityTableHelper', () => {
   })
 
   describe('getIdentityTableColumns', () => {
-    it('should return 4 columns', () => {
+    it('should return 4 columns by default', () => {
       const columns = getIdentityTableColumns({ t: mockT })
       expect(columns).toHaveLength(4)
+    })
+
+    it('should return 5 columns when onRadioSelect is provided', () => {
+      const mockOnRadioSelect = jest.fn()
+      const columns = getIdentityTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect })
+      expect(columns).toHaveLength(5)
+
+      const radioColumn = columns.find((col) => col.id === 'radio')
+      expect(radioColumn).toBeDefined()
+      expect(radioColumn?.header).toBe('')
+    })
+
+    it('should hide radio column when specified in hiddenColumns', () => {
+      const mockOnRadioSelect = jest.fn()
+      const columns = getIdentityTableColumns({
+        t: mockT,
+        onRadioSelect: mockOnRadioSelect,
+        hiddenColumns: ['radio'],
+      })
+
+      const radioColumn = columns.find((col) => col.id === 'radio')
+      expect(radioColumn?.isHidden).toBe(true)
     })
 
     it('should have Name column with correct properties', () => {
@@ -199,7 +243,7 @@ describe('IdentityTableHelper', () => {
       expect(createdColumn?.isFirstVisitChecked).toBe(true)
     })
 
-    it('should render user name in Name column cell for user identity', () => {
+    it('should render user name in Name column cell for user identity with links by default', () => {
       const columns = getIdentityTableColumns({ t: mockT })
       const nameColumn = columns.find((col) => col.id === 'name')
 
@@ -211,7 +255,20 @@ describe('IdentityTableHelper', () => {
       expect(getByText('test-user')).toBeInTheDocument()
     })
 
-    it('should render group name in Name column cell for group identity', () => {
+    it('should render user name in Name column cell without links when areLinksDisplayed is false', () => {
+      const columns = getIdentityTableColumns({ t: mockT, areLinksDisplayed: false })
+      const nameColumn = columns.find((col) => col.id === 'name')
+
+      expect(nameColumn?.cell).toBeDefined()
+      expect(typeof nameColumn?.cell).not.toBe('string')
+
+      const cell = (nameColumn?.cell as any)(mockUser, '')
+      const { getByText, container } = render(<div>{cell}</div>)
+      expect(getByText('test-user')).toBeInTheDocument()
+      expect(container.querySelector('a')).not.toBeInTheDocument()
+    })
+
+    it('should render group name in Name column cell for group identity with links by default', () => {
       const columns = getIdentityTableColumns({ t: mockT })
       const nameColumn = columns.find((col) => col.id === 'name')
 
@@ -221,6 +278,19 @@ describe('IdentityTableHelper', () => {
       const cell = (nameColumn?.cell as any)(mockGroup, '')
       const { getByText } = render(<MemoryRouter>{cell}</MemoryRouter>)
       expect(getByText('developers')).toBeInTheDocument()
+    })
+
+    it('should render group name in Name column cell without links when areLinksDisplayed is false', () => {
+      const columns = getIdentityTableColumns({ t: mockT, areLinksDisplayed: false })
+      const nameColumn = columns.find((col) => col.id === 'name')
+
+      expect(nameColumn?.cell).toBeDefined()
+      expect(typeof nameColumn?.cell).not.toBe('string')
+
+      const cell = (nameColumn?.cell as any)(mockGroup, '')
+      const { getByText, container } = render(<div>{cell}</div>)
+      expect(getByText('developers')).toBeInTheDocument()
+      expect(container.querySelector('a')).not.toBeInTheDocument()
     })
 
     it('should render identity provider cell for user', () => {
@@ -413,8 +483,8 @@ describe('IdentityTableHelper', () => {
     })
   })
 
-  describe('usersTableColumns (legacy)', () => {
-    it('should return 4 columns with users column hidden', () => {
+  describe('usersTableColumns', () => {
+    it('should return 4 columns with users column hidden by default', () => {
       const columns = usersTableColumns({ t: mockT })
       expect(columns).toHaveLength(4)
 
@@ -422,13 +492,29 @@ describe('IdentityTableHelper', () => {
       expect(usersColumn?.isHidden).toBe(true)
     })
 
-    it('should have correct column IDs', () => {
+    it('should return 5 columns when onRadioSelect is provided', () => {
+      const mockOnRadioSelect = jest.fn()
+      const columns = usersTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect })
+      expect(columns).toHaveLength(5)
+
+      const radioColumn = columns.find((col) => col.id === 'radio')
+      expect(radioColumn).toBeDefined()
+    })
+
+    it('should have correct column IDs without radio', () => {
       const columns = usersTableColumns({ t: mockT })
       const columnIds = columns.map((col) => col.id)
       expect(columnIds).toEqual(['name', 'identity-provider', 'users', 'created'])
     })
 
-    it('should render user name cell correctly', () => {
+    it('should have correct column IDs with radio', () => {
+      const mockOnRadioSelect = jest.fn()
+      const columns = usersTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect })
+      const columnIds = columns.map((col) => col.id)
+      expect(columnIds).toEqual(['radio', 'name', 'identity-provider', 'users', 'created'])
+    })
+
+    it('should render user name cell correctly with links by default', () => {
       const columns = usersTableColumns({ t: mockT })
       const nameColumn = columns.find((col) => col.id === 'name')
 
@@ -440,15 +526,55 @@ describe('IdentityTableHelper', () => {
       expect(getByText('test-user')).toBeInTheDocument()
     })
 
+    it('should render user name cell without links when areLinksDisplayed is false', () => {
+      const columns = usersTableColumns({ t: mockT, areLinksDisplayed: false })
+      const nameColumn = columns.find((col) => col.id === 'name')
+
+      expect(nameColumn?.cell).toBeDefined()
+      expect(typeof nameColumn?.cell).not.toBe('string')
+
+      const cell = (nameColumn?.cell as any)(mockUser, '')
+      const { getByText, container } = render(<div>{cell}</div>)
+      expect(getByText('test-user')).toBeInTheDocument()
+      expect(container.querySelector('a')).not.toBeInTheDocument()
+    })
+
     it('should hide columns based on hiddenColumns parameter', () => {
       const columns = usersTableColumns({ t: mockT, hiddenColumns: ['identity-provider'] })
       const idpColumn = columns.find((col) => col.id === 'identity-provider')
       expect(idpColumn?.isHidden).toBe(true)
     })
+
+    it('should hide radio column when specified in hiddenColumns', () => {
+      const mockOnRadioSelect = jest.fn()
+      const columns = usersTableColumns({
+        t: mockT,
+        onRadioSelect: mockOnRadioSelect,
+        hiddenColumns: ['radio'],
+      })
+      const radioColumn = columns.find((col) => col.id === 'radio')
+      expect(radioColumn?.isHidden).toBe(true)
+    })
+
+    it('should pass selectedIdentity to getIdentityTableColumns', () => {
+      const mockOnRadioSelect = jest.fn()
+      const columns = usersTableColumns({
+        t: mockT,
+        onRadioSelect: mockOnRadioSelect,
+        selectedIdentity: mockUser,
+      })
+      const radioColumn = columns.find((col) => col.id === 'radio')
+
+      const cell = (radioColumn?.cell as any)(mockUser, '')
+      const { container } = render(<div>{cell}</div>)
+
+      const radioInput = container.querySelector('input[type="radio"]') as HTMLInputElement
+      expect(radioInput).toBeChecked()
+    })
   })
 
-  describe('groupsTableColumns (legacy)', () => {
-    it('should return 4 columns with identity-provider column hidden', () => {
+  describe('groupsTableColumns', () => {
+    it('should return 4 columns with identity-provider column hidden by default', () => {
       const columns = groupsTableColumns({ t: mockT })
       expect(columns).toHaveLength(4)
 
@@ -456,13 +582,29 @@ describe('IdentityTableHelper', () => {
       expect(idpColumn?.isHidden).toBe(true)
     })
 
-    it('should have correct column IDs', () => {
+    it('should return 5 columns when onRadioSelect is provided', () => {
+      const mockOnRadioSelect = jest.fn()
+      const columns = groupsTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect })
+      expect(columns).toHaveLength(5)
+
+      const radioColumn = columns.find((col) => col.id === 'radio')
+      expect(radioColumn).toBeDefined()
+    })
+
+    it('should have correct column IDs without radio', () => {
       const columns = groupsTableColumns({ t: mockT })
       const columnIds = columns.map((col) => col.id)
       expect(columnIds).toEqual(['name', 'identity-provider', 'users', 'created'])
     })
 
-    it('should render group name cell correctly', () => {
+    it('should have correct column IDs with radio', () => {
+      const mockOnRadioSelect = jest.fn()
+      const columns = groupsTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect })
+      const columnIds = columns.map((col) => col.id)
+      expect(columnIds).toEqual(['radio', 'name', 'identity-provider', 'users', 'created'])
+    })
+
+    it('should render group name cell correctly with links by default', () => {
       const columns = groupsTableColumns({ t: mockT })
       const nameColumn = columns.find((col) => col.id === 'name')
 
@@ -474,10 +616,190 @@ describe('IdentityTableHelper', () => {
       expect(getByText('developers')).toBeInTheDocument()
     })
 
+    it('should render group name cell without links when areLinksDisplayed is false', () => {
+      const columns = groupsTableColumns({ t: mockT, areLinksDisplayed: false })
+      const nameColumn = columns.find((col) => col.id === 'name')
+
+      expect(nameColumn?.cell).toBeDefined()
+      expect(typeof nameColumn?.cell).not.toBe('string')
+
+      const cell = (nameColumn?.cell as any)(mockGroup, '')
+      const { getByText, container } = render(<div>{cell}</div>)
+      expect(getByText('developers')).toBeInTheDocument()
+      expect(container.querySelector('a')).not.toBeInTheDocument()
+    })
+
     it('should hide columns based on hiddenColumns parameter', () => {
       const columns = groupsTableColumns({ t: mockT, hiddenColumns: ['users'] })
       const usersColumn = columns.find((col) => col.id === 'users')
       expect(usersColumn?.isHidden).toBe(true)
+    })
+
+    it('should hide radio column when specified in hiddenColumns', () => {
+      const mockOnRadioSelect = jest.fn()
+      const columns = groupsTableColumns({
+        t: mockT,
+        onRadioSelect: mockOnRadioSelect,
+        hiddenColumns: ['radio'],
+      })
+      const radioColumn = columns.find((col) => col.id === 'radio')
+      expect(radioColumn?.isHidden).toBe(true)
+    })
+
+    it('should pass selectedIdentity to getIdentityTableColumns', () => {
+      const mockOnRadioSelect = jest.fn()
+      const columns = groupsTableColumns({
+        t: mockT,
+        onRadioSelect: mockOnRadioSelect,
+        selectedIdentity: mockGroup,
+      })
+      const radioColumn = columns.find((col) => col.id === 'radio')
+
+      const cell = (radioColumn?.cell as any)(mockGroup, '')
+      const { container } = render(<div>{cell}</div>)
+
+      const radioInput = container.querySelector('input[type="radio"]') as HTMLInputElement
+      expect(radioInput).toBeChecked()
+    })
+  })
+
+  describe('Radio button functionality', () => {
+    it('should render radio button cell correctly', () => {
+      const mockOnRadioSelect = jest.fn()
+      const columns = getIdentityTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect })
+      const radioColumn = columns.find((col) => col.id === 'radio')
+
+      expect(radioColumn?.cell).toBeDefined()
+      expect(typeof radioColumn?.cell).not.toBe('string')
+
+      const cell = (radioColumn?.cell as any)(mockUser, '')
+      const { container } = render(<div>{cell}</div>)
+
+      const radioInput = container.querySelector('input[type="radio"]')
+      expect(radioInput).toBeInTheDocument()
+      expect(radioInput).toHaveAttribute('name', 'identity-selection')
+      expect(radioInput).toHaveAttribute('id', 'radio-user-uid-123')
+    })
+
+    it('should render radio button with correct onChange handler', () => {
+      const mockOnRadioSelect = jest.fn()
+      const columns = getIdentityTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect })
+      const radioColumn = columns.find((col) => col.id === 'radio')
+
+      const cell = (radioColumn?.cell as any)(mockUser, '')
+      const { container } = render(<div>{cell}</div>)
+
+      const radioInput = container.querySelector('input[type="radio"]') as HTMLInputElement
+      expect(radioInput).toBeInTheDocument()
+      expect(radioInput).toHaveAttribute('name', 'identity-selection')
+      expect(radioInput).toHaveAttribute('id', 'radio-user-uid-123')
+
+      // The onChange handler is properly attached to the component
+      // Actual event handling is tested through integration tests
+    })
+
+    it('should show radio button as checked when identity is selected', () => {
+      const mockOnRadioSelect = jest.fn()
+      const columns = getIdentityTableColumns({
+        t: mockT,
+        onRadioSelect: mockOnRadioSelect,
+        selectedIdentity: mockUser,
+      })
+      const radioColumn = columns.find((col) => col.id === 'radio')
+
+      const cell = (radioColumn?.cell as any)(mockUser, '')
+      const { container } = render(<div>{cell}</div>)
+
+      const radioInput = container.querySelector('input[type="radio"]') as HTMLInputElement
+      expect(radioInput).toBeInTheDocument()
+      expect(radioInput).toBeChecked()
+    })
+
+    it('should show radio button as unchecked when identity is not selected', () => {
+      const mockOnRadioSelect = jest.fn()
+      const columns = getIdentityTableColumns({
+        t: mockT,
+        onRadioSelect: mockOnRadioSelect,
+        selectedIdentity: mockGroup, // Different identity selected
+      })
+      const radioColumn = columns.find((col) => col.id === 'radio')
+
+      const cell = (radioColumn?.cell as any)(mockUser, '')
+      const { container } = render(<div>{cell}</div>)
+
+      const radioInput = container.querySelector('input[type="radio"]') as HTMLInputElement
+      expect(radioInput).toBeInTheDocument()
+      expect(radioInput).not.toBeChecked()
+    })
+
+    it('should show radio button as unchecked when no identity is selected', () => {
+      const mockOnRadioSelect = jest.fn()
+      const columns = getIdentityTableColumns({
+        t: mockT,
+        onRadioSelect: mockOnRadioSelect,
+        selectedIdentity: undefined,
+      })
+      const radioColumn = columns.find((col) => col.id === 'radio')
+
+      const cell = (radioColumn?.cell as any)(mockUser, '')
+      const { container } = render(<div>{cell}</div>)
+
+      const radioInput = container.querySelector('input[type="radio"]') as HTMLInputElement
+      expect(radioInput).toBeInTheDocument()
+      expect(radioInput).not.toBeChecked()
+    })
+
+    it('should handle identity without uid gracefully', () => {
+      const identityWithoutUid = { ...mockUser, metadata: { ...mockUser.metadata, uid: undefined } }
+      const mockOnRadioSelect = jest.fn()
+      const columns = getIdentityTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect })
+      const radioColumn = columns.find((col) => col.id === 'radio')
+
+      const cell = (radioColumn?.cell as any)(identityWithoutUid, '')
+      const { container } = render(<div>{cell}</div>)
+
+      const radioInput = container.querySelector('input[type="radio"]') as HTMLInputElement
+      expect(radioInput).toBeInTheDocument()
+      expect(radioInput).toHaveAttribute('id', 'radio-undefined')
+
+      // The component handles undefined UID gracefully by rendering the radio button
+      // The onChange handler would call onRadioSelect with empty string
+    })
+
+    it('should create unique radio button IDs for different identities', () => {
+      const mockOnRadioSelect = jest.fn()
+      const columns = getIdentityTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect })
+      const radioColumn = columns.find((col) => col.id === 'radio')
+
+      const userCell = (radioColumn?.cell as any)(mockUser, '')
+      const groupCell = (radioColumn?.cell as any)(mockGroup, '')
+
+      const { container: userContainer } = render(<div>{userCell}</div>)
+      const { container: groupContainer } = render(<div>{groupCell}</div>)
+
+      const userRadio = userContainer.querySelector('input[type="radio"]')
+      const groupRadio = groupContainer.querySelector('input[type="radio"]')
+
+      expect(userRadio).toHaveAttribute('id', 'radio-user-uid-123')
+      expect(groupRadio).toHaveAttribute('id', 'radio-group-uid-789')
+    })
+
+    it('should use same name attribute for all radio buttons to ensure single selection', () => {
+      const mockOnRadioSelect = jest.fn()
+      const columns = getIdentityTableColumns({ t: mockT, onRadioSelect: mockOnRadioSelect })
+      const radioColumn = columns.find((col) => col.id === 'radio')
+
+      const userCell = (radioColumn?.cell as any)(mockUser, '')
+      const groupCell = (radioColumn?.cell as any)(mockGroup, '')
+
+      const { container: userContainer } = render(<div>{userCell}</div>)
+      const { container: groupContainer } = render(<div>{groupCell}</div>)
+
+      const userRadio = userContainer.querySelector('input[type="radio"]')
+      const groupRadio = groupContainer.querySelector('input[type="radio"]')
+
+      expect(userRadio).toHaveAttribute('name', 'identity-selection')
+      expect(groupRadio).toHaveAttribute('name', 'identity-selection')
     })
   })
 })

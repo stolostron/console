@@ -5,11 +5,19 @@ import { useTranslation } from '../../../lib/acm-i18next'
 import { GroupsTable } from '../../../routes/UserManagement/Identities/Groups/GroupsTable'
 import { UsersTable } from '../../../routes/UserManagement/Identities/Users/UsersTable'
 import { CreatePreAuthorizedUser } from './CreatePreAuthorizedUser'
+import { User, Group } from '../../../resources/rbac'
 
-export function IdentitiesList() {
+interface IdentitiesListProps {
+  onUserSelect?: (user: User) => void
+  onGroupSelect?: (group: Group) => void
+}
+
+export function IdentitiesList({ onUserSelect, onGroupSelect }: IdentitiesListProps = {}) {
   const { t } = useTranslation()
   const [activeTabKey, setActiveTabKey] = useState<string | number>('users')
   const [showCreatePreAuthorized, setShowCreatePreAuthorized] = useState(false)
+  const [selectedUser, setSelectedUser] = useState<User>()
+  const [selectedGroup, setSelectedGroup] = useState<Group>()
 
   const handleTabClick = (_event: React.MouseEvent<HTMLElement, MouseEvent>, tabIndex: string | number) => {
     setActiveTabKey(tabIndex)
@@ -25,6 +33,16 @@ export function IdentitiesList() {
   const handleCancelPreAuthorized = () => setShowCreatePreAuthorized(false)
 
   const handlePreAuthorizedSubmit = () => setShowCreatePreAuthorized(false)
+
+  const handleOnUserSelect = (user: User) => {
+    setSelectedUser(user)
+    onUserSelect?.(user)
+  }
+
+  const handleOnGroupSelect = (group: Group) => {
+    setSelectedGroup(group)
+    onGroupSelect?.(group)
+  }
 
   return (
     <PageSection>
@@ -56,12 +74,12 @@ export function IdentitiesList() {
           {showCreatePreAuthorized ? (
             <CreatePreAuthorizedUser onCancel={handleCancelPreAuthorized} onSubmit={handlePreAuthorizedSubmit} />
           ) : (
-            <UsersTable />
+            <UsersTable areLinksDisplayed={false} selectedUser={selectedUser} setSelectedUser={handleOnUserSelect} />
           )}
         </Tab>
 
         <Tab eventKey="groups" title={<TabTitleText>{t('Groups')}</TabTitleText>} aria-label={t('Groups tab')}>
-          <GroupsTable />
+          <GroupsTable areLinksDisplayed={false} selectedGroup={selectedGroup} setSelectedGroup={handleOnGroupSelect} />
         </Tab>
       </Tabs>
     </PageSection>

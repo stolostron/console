@@ -5,9 +5,21 @@ import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
 import { Group } from '../../../../resources/rbac'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { AcmEmptyState, AcmTable, compareStrings } from '../../../../ui-components'
-import { useFilters, groupsTableColumns } from '../IdentityTableHelper'
+import { groupsTableColumns, useFilters } from '../IdentityTableHelper'
 
-const GroupsTable = () => {
+interface GroupsTableProps {
+  hiddenColumns?: string[]
+  areLinksDisplayed?: boolean
+  selectedGroup?: Group
+  setSelectedGroup?: (group: Group) => void
+}
+
+const GroupsTable = ({
+  hiddenColumns,
+  areLinksDisplayed = true,
+  selectedGroup,
+  setSelectedGroup,
+}: GroupsTableProps) => {
   const { t } = useTranslation()
 
   const { groupsState } = useSharedAtoms()
@@ -16,10 +28,30 @@ const GroupsTable = () => {
     return groupsData?.toSorted((a, b) => compareStrings(a.metadata.name ?? '', b.metadata.name ?? '')) ?? []
   }, [groupsData])
 
+  const handleRadioSelect = useCallback(
+    (uid: string) => {
+      const group = uid ? groups.find((group) => group.metadata.uid === uid) : undefined
+      if (group) {
+        setSelectedGroup?.(group)
+      }
+    },
+    [groups, setSelectedGroup]
+  )
+
   const keyFn = useCallback((group: Group) => group.metadata.name ?? '', [])
 
   const filters = useFilters('group', groups)
-  const columns = groupsTableColumns({ t })
+  const columns = useMemo(
+    () =>
+      groupsTableColumns({
+        t,
+        hiddenColumns,
+        onRadioSelect: handleRadioSelect,
+        areLinksDisplayed,
+        selectedIdentity: selectedGroup,
+      }),
+    [areLinksDisplayed, handleRadioSelect, hiddenColumns, selectedGroup, t]
+  )
 
   return (
     <AcmTable<Group>

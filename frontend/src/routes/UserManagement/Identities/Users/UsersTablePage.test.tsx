@@ -7,7 +7,11 @@ import { UsersTablePage } from './UsersTablePage'
 
 // Mock the UsersTable component and its dependencies
 jest.mock('./UsersTable', () => ({
-  UsersTable: jest.fn(() => <div data-testid="mocked-users-table">Mocked Users Table</div>),
+  UsersTable: jest.fn((props: any) => (
+    <div data-testid="mocked-users-table" data-hiddencolumns={JSON.stringify(props.hiddenColumns)}>
+      Mocked Users Table
+    </div>
+  )),
 }))
 
 jest.mock('../../../../shared-recoil', () => ({
@@ -35,5 +39,12 @@ describe('UsersTablePage', () => {
     const { container } = render(<Component />)
     // Just verify the component structure exists
     expect(container.firstChild).toBeInTheDocument()
+  })
+
+  test('should pass hiddenColumns prop to UsersTable with radio column hidden', () => {
+    const { getByTestId } = render(<Component />)
+
+    const usersTable = getByTestId('mocked-users-table')
+    expect(usersTable).toHaveAttribute('data-hiddencolumns', '["radio"]')
   })
 })

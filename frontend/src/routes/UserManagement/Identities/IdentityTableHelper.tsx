@@ -1,14 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { Radio } from '@patternfly/react-core'
 import { cellWidth } from '@patternfly/react-table'
 import { useMemo } from 'react'
 import { TFunction } from 'react-i18next'
 import { generatePath, Link } from 'react-router-dom-v5-compat'
 import { HighlightSearchText } from '../../../components/HighlightSearchText'
-import { NavigationPath } from '../../../NavigationPath'
-import { User, Group } from '../../../resources/rbac'
 import AcmTimestamp from '../../../lib/AcmTimestamp'
-import { IAcmTableColumn } from '../../../ui-components/AcmTable/AcmTableTypes'
+import { NavigationPath } from '../../../NavigationPath'
+import { Group, User } from '../../../resources/rbac'
 import { getISOStringTimestamp } from '../../../resources/utils'
+import { IAcmTableColumn } from '../../../ui-components/AcmTable/AcmTableTypes'
 import { IdentityStatus } from '../../../ui-components/IdentityStatus/IdentityStatus'
 
 const EXPORT_FILE_PREFIX = 'identity-table'
@@ -24,18 +25,26 @@ type IdentityTableHelperProps = {
 }
 
 const COLUMN_CELLS = {
-  USER_NAME: (user: User, search: string) => (
+  USER_NAME: (user: User, search: string, areLinksDisplayed = true) => (
     <span style={{ whiteSpace: 'nowrap' }}>
-      <Link to={generatePath(NavigationPath.identitiesUsersDetails, { id: user.metadata.uid ?? '' })}>
+      {areLinksDisplayed ? (
+        <Link to={generatePath(NavigationPath.identitiesUsersDetails, { id: user.metadata.uid ?? '' })}>
+          <HighlightSearchText text={user.metadata.name ?? ''} searchText={search} useFuzzyHighlighting />
+        </Link>
+      ) : (
         <HighlightSearchText text={user.metadata.name ?? ''} searchText={search} useFuzzyHighlighting />
-      </Link>
+      )}
     </span>
   ),
-  GROUP_NAME: (group: Group, search: string) => (
+  GROUP_NAME: (group: Group, search: string, areLinksDisplayed = true) => (
     <span style={{ whiteSpace: 'nowrap' }}>
-      <Link to={generatePath(NavigationPath.identitiesGroupsDetails, { id: group.metadata.uid ?? '' })}>
+      {areLinksDisplayed ? (
+        <Link to={generatePath(NavigationPath.identitiesGroupsDetails, { id: group.metadata.uid ?? '' })}>
+          <HighlightSearchText text={group.metadata.name ?? ''} searchText={search} />
+        </Link>
+      ) : (
         <HighlightSearchText text={group.metadata.name ?? ''} searchText={search} />
-      </Link>
+      )}
     </span>
   ),
   USER_IDENTITY_PROVIDER: (user: User) =>
@@ -57,8 +66,36 @@ const COLUMN_CELLS = {
 export const getIdentityTableColumns = ({
   t,
   hiddenColumns,
-}: Pick<IdentityTableHelperProps, 't'> & { hiddenColumns?: string[] }): IAcmTableColumn<IdentityItem>[] => {
-  return [
+  onRadioSelect,
+  areLinksDisplayed = true,
+  selectedIdentity,
+}: Pick<IdentityTableHelperProps, 't'> & {
+  hiddenColumns?: string[]
+  onRadioSelect: (identityUid: string) => void
+  areLinksDisplayed?: boolean
+  selectedIdentity?: IdentityItem
+}): IAcmTableColumn<IdentityItem>[] => {
+  const columns: IAcmTableColumn<IdentityItem>[] = []
+
+  columns.push({
+    id: 'radio',
+    header: ' ',
+    transforms: [cellWidth(10)],
+    cell: (identity) => (
+      <Radio
+        id={`radio-${identity.metadata.uid}`}
+        name={`radio-${identity.metadata.uid}`}
+        key={`radio-${identity.metadata.uid}`}
+        value={identity.metadata.uid}
+        isChecked={selectedIdentity?.metadata.uid === identity.metadata.uid}
+        onChange={() => onRadioSelect(identity.metadata.uid ?? '')}
+        aria-label={`Select ${identity.metadata.name}`}
+      />
+    ),
+    isHidden: hiddenColumns?.includes('radio'),
+  })
+
+  columns.push(
     {
       id: 'name',
       header: t('Name'),
@@ -67,9 +104,9 @@ export const getIdentityTableColumns = ({
       transforms: [cellWidth(50)],
       cell: (identity, search) => {
         if (isUser(identity)) {
-          return COLUMN_CELLS.USER_NAME(identity, search)
+          return COLUMN_CELLS.USER_NAME(identity, search, areLinksDisplayed)
         }
-        return COLUMN_CELLS.GROUP_NAME(identity, search)
+        return COLUMN_CELLS.GROUP_NAME(identity, search, areLinksDisplayed)
       },
       exportContent: (identity) => identity.metadata.name ?? '',
       isHidden: hiddenColumns?.includes('name'),
@@ -114,8 +151,10 @@ export const getIdentityTableColumns = ({
       isHidden: hiddenColumns?.includes('created'),
       isDefault: true,
       isFirstVisitChecked: true,
-    },
-  ]
+    }
+  )
+
+  return columns
 }
 
 const identityProviderFilter = (selection: string[], user: User): boolean => {
@@ -181,12 +220,48 @@ export const useIdentityFilters = (type: IdentityType, identities: IdentityItem[
   }, [identities, type])
 }
 
-export const usersTableColumns = ({ t, hiddenColumns }: { t: TFunction; hiddenColumns?: string[] }) =>
-  getIdentityTableColumns({ t, hiddenColumns: [...(hiddenColumns || []), 'users'] })
+export const usersTableColumns = ({
+  t,
+  hiddenColumns,
+  onRadioSelect,
+  areLinksDisplayed,
+  selectedIdentity,
+}: {
+  t: TFunction
+  hiddenColumns?: string[]
+  onRadioSelect: (identityUid: string) => void
+  areLinksDisplayed?: boolean
+  selectedIdentity?: IdentityItem
+}) =>
+  getIdentityTableColumns({
+    t,
+    hiddenColumns: [...(hiddenColumns || []), 'users'],
+    onRadioSelect,
+    areLinksDisplayed,
+    selectedIdentity,
+  })
 
-export const groupsTableColumns = ({ t, hiddenColumns }: { t: TFunction; hiddenColumns?: string[] }) =>
-  getIdentityTableColumns({ t, hiddenColumns: [...(hiddenColumns || []), 'identity-provider'] })
+export const groupsTableColumns = ({
+  t,
+  hiddenColumns,
+  onRadioSelect,
+  areLinksDisplayed,
+  selectedIdentity,
+}: {
+  t: TFunction
+  hiddenColumns?: string[]
+  onRadioSelect: (identityUid: string) => void
+  areLinksDisplayed?: boolean
+  selectedIdentity?: IdentityItem
+}) =>
+  getIdentityTableColumns({
+    t,
+    hiddenColumns: [...(hiddenColumns || []), 'identity-provider'],
+    onRadioSelect,
+    areLinksDisplayed,
+    selectedIdentity,
+  })
 
 export const useFilters = (type: IdentityType, identities: IdentityItem[] = []) => useIdentityFilters(type, identities)
 
-export { EXPORT_FILE_PREFIX, COLUMN_CELLS }
+export { COLUMN_CELLS, EXPORT_FILE_PREFIX }

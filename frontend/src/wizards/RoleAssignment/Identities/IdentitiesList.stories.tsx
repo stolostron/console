@@ -2,7 +2,6 @@
 
 import { Meta, StoryObj } from '@storybook/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
-import { RecoilRoot } from 'recoil'
 import { IdentitiesList } from './IdentitiesList'
 
 // Mock the table components for Storybook
@@ -34,17 +33,14 @@ const meta: Meta<typeof IdentitiesList> = {
   component: IdentitiesList,
   decorators: [
     (Story) => (
-      <RecoilRoot>
-        <MemoryRouter>
-          <Story />
-        </MemoryRouter>
-      </RecoilRoot>
+      <MemoryRouter>
+        <Story />
+      </MemoryRouter>
     ),
   ],
   argTypes: {
     onUserSelect: { action: 'onUserSelect' },
     onGroupSelect: { action: 'onGroupSelect' },
-    onPreAuthorizedUserAdd: { action: 'onPreAuthorizedUserAdd' },
   },
 }
 
@@ -54,9 +50,8 @@ type Story = StoryObj<typeof IdentitiesList>
 
 export const Default: Story = {
   args: {
-    onUserSelect: (username) => console.log('User selected:', username),
-    onGroupSelect: (groupname) => console.log('Group selected:', groupname),
-    onPreAuthorizedUserAdd: (username) => console.log('Pre-authorized user added:', username),
+    onUserSelect: (user) => console.log('User selected:', user),
+    onGroupSelect: (group) => console.log('Group selected:', group),
   },
 }
 

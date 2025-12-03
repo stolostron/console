@@ -7,19 +7,45 @@ import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { AcmEmptyState, AcmTable, compareStrings } from '../../../../ui-components'
 import { useFilters, usersTableColumns } from '../IdentityTableHelper'
 
-const UsersTable = () => {
-  const { t } = useTranslation()
+interface UsersTableProps {
+  hiddenColumns?: string[]
+  areLinksDisplayed?: boolean
+  selectedUser?: User
+  setSelectedUser?: (user: User) => void
+}
 
+const UsersTable = ({ hiddenColumns, areLinksDisplayed = true, selectedUser, setSelectedUser }: UsersTableProps) => {
+  const { t } = useTranslation()
   const { usersState } = useSharedAtoms()
   const rbacUsers = useRecoilValue(usersState)
   const users = useMemo(() => {
     return rbacUsers?.toSorted((a, b) => compareStrings(a.metadata.name ?? '', b.metadata.name ?? '')) ?? []
   }, [rbacUsers])
 
+  const handleRadioSelect = useCallback(
+    (uid: string) => {
+      const user = uid ? users.find((user) => user.metadata.uid === uid) : undefined
+      if (user) {
+        setSelectedUser?.(user)
+      }
+    },
+    [users, setSelectedUser]
+  )
+
   const keyFn = useCallback((user: User) => user.metadata.name ?? '', [])
 
   const filters = useFilters('user', users)
-  const columns = usersTableColumns({ t })
+  const columns = useMemo(
+    () =>
+      usersTableColumns({
+        t,
+        hiddenColumns,
+        onRadioSelect: handleRadioSelect,
+        areLinksDisplayed,
+        selectedIdentity: selectedUser,
+      }),
+    [areLinksDisplayed, handleRadioSelect, hiddenColumns, selectedUser, t]
+  )
 
   return (
     <AcmTable<User>
