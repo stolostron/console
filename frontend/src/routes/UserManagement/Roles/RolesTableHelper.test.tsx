@@ -13,7 +13,7 @@ jest.mock('../../../lib/acm-i18next', () => ({
 
 // Mock react-router-dom-v5-compat
 jest.mock('react-router-dom-v5-compat', () => ({
-  generatePath: jest.fn((path, params) => `/mock-path/${params.id}`),
+  generatePath: jest.fn((_path, params) => `/mock-path/${params.id}`),
   Link: ({ children, to }: any) => <a href={to}>{children}</a>,
 }))
 
