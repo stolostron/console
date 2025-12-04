@@ -7,6 +7,7 @@ import { createUser, User } from '../../../resources/rbac'
 import { AcmForm, AcmSubmit } from '../../../ui-components/AcmForm/AcmForm'
 import { AcmSelect } from '../../../ui-components/AcmSelect/AcmSelect'
 import { AcmTextInput } from '../../../ui-components/AcmTextInput/AcmTextInput'
+import { useGetIdentityProviders } from '../../../resources/clients/oauth-client'
 
 interface CreateUserFormProps {
   saveButtonText: string
@@ -44,6 +45,10 @@ export function CreateUserForm({
     userIdentifier: '',
     identityProvider: '',
   })
+
+  const identityProviders = useGetIdentityProviders()
+
+  console.log('KIKE identityProviders', identityProviders)
 
   const validateUserIdentifier = (value: string): string | undefined => {
     if (!value || value.trim() === '') {

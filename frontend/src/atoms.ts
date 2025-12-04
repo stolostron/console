@@ -62,6 +62,7 @@ import {
   SubscriptionReport,
   User,
 } from './resources'
+import { OAuth } from './resources/oauth'
 
 let atomArrayKey = 0
 function AtomArray<T>() {
@@ -114,6 +115,7 @@ export const multiclusterRoleAssignmentState = AtomArray<MulticlusterRoleAssignm
 export const namespacesState = AtomArray<Namespace>()
 export const nmStateConfigsState = AtomArray<NMStateK8sResource>()
 export const nodePoolsState = AtomArray<NodePoolK8sResource>()
+export const oauthState = AtomArray<OAuth>()
 export const placementBindingsState = AtomArray<PlacementBinding>()
 export const placementDecisionsState = AtomArray<PlacementDecision>()
 export const placementRulesState = AtomArray<PlacementRule>()
