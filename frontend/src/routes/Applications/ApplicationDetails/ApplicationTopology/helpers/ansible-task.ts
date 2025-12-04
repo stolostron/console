@@ -138,11 +138,11 @@ export const showAnsibleJobDetails = (node: NodeLike, details: DetailsList, t: T
 
   addDetails(details, [
     {
-      labelValue: t('Ansible Tower Job template name'),
+      labelValue: t('Ansible Automation controller Job template name'),
       value: safeGet(node, 'specs.raw.status.k8sJob.env.templateName'),
     },
     {
-      labelValue: t('Ansible Tower secret'),
+      labelValue: t('Ansible Automation controller secret'),
       value: safeGet(node, 'specs.raw.status.k8sJob.env.secretNamespacedName'),
     },
   ])
@@ -159,7 +159,7 @@ export const showAnsibleJobDetails = (node: NodeLike, details: DetailsList, t: T
 
     details.push({
       type: 'label',
-      labelValue: t('Ansible Tower Job URL'),
+      labelValue: t('Ansible Automation controller Job URL'),
     })
 
     details.push({
