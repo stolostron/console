@@ -53,6 +53,7 @@ Setup depends on your usage scenarios.
 - [useFleetClusterNames](#gear-usefleetclusternames)
 - [useFleetK8sAPIPath](#gear-usefleetk8sapipath)
 - [useFleetK8sWatchResource](#gear-usefleetk8swatchresource)
+- [useFleetK8sWatchResources](#gear-usefleetk8swatchresources)
 - [useFleetPrometheusPoll](#gear-usefleetprometheuspoll)
 - [useFleetSearchPoll](#gear-usefleetsearchpoll)
 - [useHubClusterName](#gear-usehubclustername)
@@ -515,7 +516,7 @@ Returns:
 
 Array with `k8sAPIPath`, `loaded` and `error` values.
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetK8sAPIPath.ts#L11)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetK8sAPIPath.ts#L12)
 
 ### :gear: useFleetK8sWatchResource
 
@@ -534,7 +535,17 @@ and remote clusters using WebSocket connections for real-time updates.
 Parameters:
 
 * `initResource`: - The resource to watch. Can be null to disable the watch.
-* `initResource.cluster`: - The managed cluster on which the resource resides; null for the hub cluster
+* `initResource.cluster`: - The managed cluster on which the resource resides; null or undefined for the hub cluster
+* `initResource.groupVersionKind`: - The group, version, and kind of the resource (e.g., `{ group: 'apps', version: 'v1', kind: 'Deployment' }`)
+* `initResource.name`: - The name of the resource (for watching a specific resource)
+* `initResource.namespace`: - The namespace of the resource
+* `initResource.isList`: - Whether to watch a list of resources (true) or a single resource (false)
+* `initResource.selector`: - Label selector to filter resources (e.g., `{ matchLabels: { app: 'myapp' } }`)
+* `initResource.fieldSelector`: - Field selector to filter resources (e.g., `status.phase=Running`)
+* `initResource.limit`: - Maximum number of resources to return (not supported yet)
+* `initResource.namespaced`: - Whether the resource is namespaced (not supported yet)
+* `initResource.optional`: - If true, errors will not be thrown when the resource is not found (not supported yet)
+* `initResource.partialMetadata`: - If true, only fetch metadata for the resources (not supported yet)
 
 
 Returns:
@@ -559,10 +570,82 @@ const [deployment, loaded, error] = useFleetK8sWatchResource({
   name: 'my-app',
   namespace: 'default'
 })
+
+// Watch pods with label selector on remote cluster
+const [filteredPods, loaded, error] = useFleetK8sWatchResource({
+  groupVersionKind: { version: 'v1', kind: 'Pod' },
+  isList: true,
+  cluster: 'remote-cluster',
+  namespace: 'default',
+  selector: { matchLabels: { app: 'myapp' } }
+})
 ```
 
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetK8sWatchResource.ts#L49)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetK8sWatchResource.ts#L73)
+
+### :gear: useFleetK8sWatchResources
+
+A hook for watching multiple Kubernetes resources with support for multi-cluster environments.
+It is equivalent to the [`useK8sWatchResources`](https://github.com/openshift/console/blob/main/frontend/packages/console-dynamic-plugin-sdk/docs/api.md#usek8swatchresources)
+hook from the [OpenShift Console Dynamic Plugin SDK](https://www.npmjs.com/package/@openshift-console/dynamic-plugin-sdk)
+but allows you to retrieve data from any cluster managed by Red Hat Advanced Cluster Management.
+
+It automatically detects the hub cluster and handles resource watching on both hub
+and remote clusters using WebSocket connections for real-time updates.
+
+| Function | Type |
+| ---------- | ---------- |
+| `useFleetK8sWatchResources` | `<R extends FleetResourcesObject>(initResources: FleetWatchK8sResources<R> or null) => FleetWatchK8sResults<R>` |
+
+Parameters:
+
+* `initResources`: - An object where each key represents a resource identifier and each value is a resource watch configuration. Can be null to disable all watches.
+* `initResources`: key].cluster - The managed cluster on which the resource resides; null or undefined for the hub cluster
+* `initResources`: key].groupVersionKind - The group, version, and kind of the resource (e.g., `{ group: 'apps', version: 'v1', kind: 'Deployment' }`)
+* `initResources`: key].name - The name of the resource (for watching a specific resource)
+* `initResources`: key].namespace - The namespace of the resource
+* `initResources`: key].isList - Whether to watch a list of resources (true) or a single resource (false)
+* `initResources`: key].selector - Label selector to filter resources (e.g., `{ matchLabels: { app: 'myapp' } }`)
+* `initResources`: key].fieldSelector - Field selector to filter resources (e.g., `status.phase=Running`)
+* `initResources`: key].limit - Maximum number of resources to return (not supported yet)
+* `initResources`: key].namespaced - Whether the resource is namespaced (not supported yet)
+* `initResources`: key].optional - If true, errors will not be thrown when the resource is not found (not supported yet)
+* `initResources`: key].partialMetadata - If true, only fetch metadata for the resources (not supported yet)
+
+
+Returns:
+
+An object with the same keys as initResources, where each value contains the watched resource data,
+a boolean indicating if the data is loaded, and any error that occurred. The hook returns live-updating data.
+
+Examples:
+
+```typescript
+// Watch multiple resources on different clusters
+const result = useFleetK8sWatchResources({
+  pods: {
+    groupVersionKind: { version: 'v1', kind: 'Pod' },
+    isList: true,
+    cluster: 'remote-cluster-1',
+    namespace: 'default'
+  },
+  deployments: {
+    groupVersionKind: { group: 'apps', version: 'v1', kind: 'Deployment' },
+    isList: true,
+    cluster: 'remote-cluster-2',
+    namespace: 'default'
+  }
+})
+
+// Access individual resources
+const { pods, deployments } = result
+console.log(pods.data, pods.loaded, pods.loadError)
+console.log(deployments.data, deployments.loaded, deployments.loadError)
+```
+
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetK8sWatchResources.ts#L77)
 
 ### :gear: useFleetPrometheusPoll
 
@@ -811,6 +894,7 @@ if (error) {
 - [FleetResourceLinkProps](#gear-fleetresourcelinkprops)
 - [FleetResourcesObject](#gear-fleetresourcesobject)
 - [FleetWatchK8sResource](#gear-fleetwatchk8sresource)
+- [FleetWatchK8sResources](#gear-fleetwatchk8sresources)
 - [FleetWatchK8sResult](#gear-fleetwatchk8sresult)
 - [FleetWatchK8sResults](#gear-fleetwatchk8sresults)
 - [FleetWatchK8sResultsObject](#gear-fleetwatchk8sresultsobject)
@@ -841,7 +925,7 @@ if (error) {
 | ---------- | ---------- |
 | `FleetAccessReviewResourceAttributes` | `Fleet<AccessReviewResourceAttributes>` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L33)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L36)
 
 ### :gear: FleetK8sCreateUpdateOptions
 
@@ -849,7 +933,7 @@ if (error) {
 | ---------- | ---------- |
 | `FleetK8sCreateUpdateOptions` | `{ model: K8sModel name?: string ns?: string path?: string cluster?: string queryParams?: QueryParams data: R }` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L38)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L41)
 
 ### :gear: FleetK8sDeleteOptions
 
@@ -857,7 +941,7 @@ if (error) {
 | ---------- | ---------- |
 | `FleetK8sDeleteOptions` | `{ model: K8sModel name?: string ns?: string path?: string cluster?: string queryParams?: QueryParams resource: R requestInit?: RequestInit json?: Record<string, any> }` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L69)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L72)
 
 ### :gear: FleetK8sGetOptions
 
@@ -865,7 +949,7 @@ if (error) {
 | ---------- | ---------- |
 | `FleetK8sGetOptions` | `{ model: K8sModel name?: string ns?: string path?: string cluster?: string queryParams?: QueryParams requestInit?: RequestInit }` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L48)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L51)
 
 ### :gear: FleetK8sListOptions
 
@@ -873,7 +957,7 @@ if (error) {
 | ---------- | ---------- |
 | `FleetK8sListOptions` | `{ model: K8sModel queryParams: { [key: string]: any } requestInit?: RequestInit }` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L81)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L84)
 
 ### :gear: FleetK8sPatchOptions
 
@@ -881,7 +965,7 @@ if (error) {
 | ---------- | ---------- |
 | `FleetK8sPatchOptions` | `{ model: K8sModel name?: string ns?: string path?: string cluster?: string queryParams?: QueryParams resource: R data: Patch[] }` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L58)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L61)
 
 ### :gear: FleetK8sResourceCommon
 
@@ -897,7 +981,7 @@ if (error) {
 | ---------- | ---------- |
 | `FleetResourceEventStreamProps` | `{ resource: FleetK8sResourceCommon }` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L36)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L39)
 
 ### :gear: FleetResourceLinkProps
 
@@ -905,7 +989,7 @@ if (error) {
 | ---------- | ---------- |
 | `FleetResourceLinkProps` | `Fleet<ResourceLinkProps>` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L35)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L38)
 
 ### :gear: FleetResourcesObject
 
@@ -913,7 +997,7 @@ if (error) {
 | ---------- | ---------- |
 | `FleetResourcesObject` | `{ [key: string]: FleetK8sResourceCommon or FleetK8sResourceCommon[] }` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L22)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L25)
 
 ### :gear: FleetWatchK8sResource
 
@@ -923,13 +1007,21 @@ if (error) {
 
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L15)
 
+### :gear: FleetWatchK8sResources
+
+| Type | Type |
+| ---------- | ---------- |
+| `FleetWatchK8sResources` | `{ [k in keyof R]: FleetWatchK8sResource }` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L16)
+
 ### :gear: FleetWatchK8sResult
 
 | Type | Type |
 | ---------- | ---------- |
 | `FleetWatchK8sResult` | `[ R or undefined, boolean, any, ]` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L16)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L19)
 
 ### :gear: FleetWatchK8sResults
 
@@ -937,7 +1029,7 @@ if (error) {
 | ---------- | ---------- |
 | `FleetWatchK8sResults` | `{ [k in keyof R]: FleetWatchK8sResultsObject<R[k]> }` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L29)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L32)
 
 ### :gear: FleetWatchK8sResultsObject
 
@@ -945,7 +1037,7 @@ if (error) {
 | ---------- | ---------- |
 | `FleetWatchK8sResultsObject` | `{ data: R or undefined loaded: boolean loadError?: any }` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L23)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L26)
 
 ### :gear: ResourceRoute
 

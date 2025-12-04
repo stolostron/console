@@ -10,9 +10,14 @@ import { useK8sModel, useK8sWatchResource } from '@openshift-console/dynamic-plu
 import { useIsFleetAvailable } from './useIsFleetAvailable'
 import { useEffect, useMemo, useState } from 'react'
 import { useDeepCompareMemoize } from '../internal/hooks/useDeepCompareMemoize'
-import { NO_FLEET_AVAILABLE_ERROR } from '../internal/constants'
 import { useFleetK8sAPIPath } from './useFleetK8sAPIPath'
-import { getInitialResult, startWatch, stopWatch } from '../internal/fleetK8sWatchResource'
+import {
+  getRequestPathFromResource,
+  startWatch,
+  stopWatch,
+  subscribe,
+  useGetInitialResult,
+} from '../internal/fleetK8sWatchResource'
 
 /**
  * A hook for watching Kubernetes resources with support for multi-cluster environments.
@@ -24,7 +29,17 @@ import { getInitialResult, startWatch, stopWatch } from '../internal/fleetK8sWat
  * and remote clusters using WebSocket connections for real-time updates.
  *
  * @param initResource - The resource to watch. Can be null to disable the watch.
- * @param initResource.cluster - The managed cluster on which the resource resides; null for the hub cluster
+ * @param initResource.cluster - The managed cluster on which the resource resides; null or undefined for the hub cluster
+ * @param initResource.groupVersionKind - The group, version, and kind of the resource (e.g., `{ group: 'apps', version: 'v1', kind: 'Deployment' }`)
+ * @param initResource.name - The name of the resource (for watching a specific resource)
+ * @param initResource.namespace - The namespace of the resource
+ * @param initResource.isList - Whether to watch a list of resources (true) or a single resource (false)
+ * @param initResource.selector - Label selector to filter resources (e.g., `{ matchLabels: { app: 'myapp' } }`)
+ * @param initResource.fieldSelector - Field selector to filter resources (e.g., `status.phase=Running`)
+ * @param initResource.limit - Maximum number of resources to return (not supported yet)
+ * @param initResource.namespaced - Whether the resource is namespaced (not supported yet)
+ * @param initResource.optional - If true, errors will not be thrown when the resource is not found (not supported yet)
+ * @param initResource.partialMetadata - If true, only fetch metadata for the resources (not supported yet)
  * @returns A tuple containing the watched resource data, a boolean indicating if the data is loaded,
  *          and any error that occurred. The hook returns live-updating data.
  *
@@ -44,33 +59,46 @@ import { getInitialResult, startWatch, stopWatch } from '../internal/fleetK8sWat
  *   name: 'my-app',
  *   namespace: 'default'
  * })
+ *
+ * // Watch pods with label selector on remote cluster
+ * const [filteredPods, loaded, error] = useFleetK8sWatchResource({
+ *   groupVersionKind: { version: 'v1', kind: 'Pod' },
+ *   isList: true,
+ *   cluster: 'remote-cluster',
+ *   namespace: 'default',
+ *   selector: { matchLabels: { app: 'myapp' } }
+ * })
  * ```
  */
 export function useFleetK8sWatchResource<R extends FleetK8sResourceCommon | FleetK8sResourceCommon[]>(
   initResource: FleetWatchK8sResource | null
 ): FleetWatchK8sResult<R> {
   const isFleetAvailable = useIsFleetAvailable()
-  const [hubClusterName, hubClusterNameLoaded, hubClusterNameLoadedError] = useHubClusterName()
+  const [hubClusterName, hubClusterNameLoaded] = useHubClusterName()
 
-  const memoizedResource = useDeepCompareMemoize(initResource, true)
+  const [memoizedResource, memoizedResourceChanged] = useDeepCompareMemoize(initResource, true)
   const { cluster, ...resource } = memoizedResource ?? {}
   const { groupVersionKind } = resource
   const [model, modelLoading] = useK8sModel(groupVersionKind)
   const [backendAPIPath, backendPathLoaded] = useFleetK8sAPIPath(cluster)
 
   const waitingForHubClusterName = !!cluster && !hubClusterNameLoaded
-  const isFleetQuery = cluster && cluster !== hubClusterName
+  const isProbablyFleetQuery = !!cluster && cluster !== hubClusterName
 
   // avoid using the fleet query if it is not available
   // avoid using either query if we are still waiting for the hub name to compare against the supplied cluster name
-  const useFleet = isFleetQuery && isFleetAvailable && !waitingForHubClusterName
-  const useLocal = !isFleetQuery && !waitingForHubClusterName
+  const useFleet = isProbablyFleetQuery && isFleetAvailable && !waitingForHubClusterName
+  const useLocal = !isProbablyFleetQuery && !waitingForHubClusterName
 
   const isResourceNull = !memoizedResource || !groupVersionKind
 
-  const [fleetResult, setFleetResult] = useState<FleetWatchK8sResultsObject<R>>(
-    getInitialResult(memoizedResource, model, backendAPIPath)
-  )
+  const getInitialResult = useGetInitialResult()
+
+  const initialResult = getInitialResult<R>(memoizedResource, model, backendAPIPath)
+  const [fleetResult, setFleetResult] = useState<FleetWatchK8sResultsObject<R>>(initialResult)
+  if (memoizedResourceChanged) {
+    setFleetResult(initialResult)
+  }
   const fleetResultTuple = useMemo<FleetWatchK8sResult<R>>(() => {
     const { data, loaded, loadError } = fleetResult
     return [data, loaded, loadError]
@@ -80,21 +108,16 @@ export function useFleetK8sWatchResource<R extends FleetK8sResourceCommon | Flee
 
   useEffect(() => {
     if (useFleet && !isResourceNull && backendPathLoaded && backendAPIPath && !modelLoading && model) {
-      startWatch(memoizedResource, model, backendAPIPath, setFleetResult)
-      return () => stopWatch(memoizedResource, model, backendAPIPath)
+      const requestPath = getRequestPathFromResource(memoizedResource, model, backendAPIPath)
+      const unsubscribe = subscribe(memoizedResource, requestPath, setFleetResult)
+      startWatch(memoizedResource, model, backendAPIPath)
+
+      return () => {
+        unsubscribe()
+        stopWatch(memoizedResource, model, backendAPIPath)
+      }
     }
   }, [backendAPIPath, backendPathLoaded, isResourceNull, memoizedResource, model, modelLoading, useFleet])
 
-  if (waitingForHubClusterName) {
-    // if we are still waiting for hub name to load,
-    // there is no result, loaded is false, and we should return any error fetching the hub name
-    return [undefined, false, hubClusterNameLoadedError]
-  } else if (isFleetQuery && !isFleetAvailable) {
-    // if we need to use fleet support but it it not available,
-    // we return an error
-    return [undefined, false, NO_FLEET_AVAILABLE_ERROR]
-  } else {
-    // otherwise, we return the fleet or single-cluster result accordingly
-    return useFleet ? fleetResultTuple : localResult
-  }
+  return useLocal ? localResult : fleetResultTuple
 }
