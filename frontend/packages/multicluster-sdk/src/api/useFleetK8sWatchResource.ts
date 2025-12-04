@@ -52,7 +52,7 @@ export function useFleetK8sWatchResource<R extends FleetK8sResourceCommon | Flee
   const isFleetAvailable = useIsFleetAvailable()
   const [hubClusterName, hubClusterNameLoaded, hubClusterNameLoadedError] = useHubClusterName()
 
-  const memoizedResource = useDeepCompareMemoize(initResource, true)
+  const [memoizedResource, memoizedResourceChanged] = useDeepCompareMemoize(initResource, true)
   const { cluster, ...resource } = memoizedResource ?? {}
   const { groupVersionKind } = resource
   const [model, modelLoading] = useK8sModel(groupVersionKind)
@@ -68,9 +68,11 @@ export function useFleetK8sWatchResource<R extends FleetK8sResourceCommon | Flee
 
   const isResourceNull = !memoizedResource || !groupVersionKind
 
-  const [fleetResult, setFleetResult] = useState<FleetWatchK8sResultsObject<R>>(
-    getInitialResult(memoizedResource, model, backendAPIPath)
-  )
+  const initialResult = getInitialResult<R>(memoizedResource, model, backendAPIPath)
+  const [fleetResult, setFleetResult] = useState<FleetWatchK8sResultsObject<R>>(initialResult)
+  if (memoizedResourceChanged) {
+    setFleetResult(initialResult)
+  }
   const fleetResultTuple = useMemo<FleetWatchK8sResult<R>>(() => {
     const { data, loaded, loadError } = fleetResult
     return [data, loaded, loadError]
