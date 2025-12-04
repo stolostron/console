@@ -1,14 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ArgoWizard, ArgoWizardProps } from './ArgoWizard'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { MemoryRouter, Routes, Route } from 'react-router-dom-v5-compat'
-import { NavigationPath } from '../../NavigationPath'
-import { clickByRole, clickByText, typeByRole, waitForNocks, waitForText } from '../../lib/test-util'
 import { argoCDsState, managedClusterSetsState, namespacesState, subscriptionOperatorsState } from '../../atoms'
-import { gitOpsOperators, mockArgoCD, mockClusterSets } from '../../routes/Applications/Application.sharedmocks'
 import {
   nockArgoGitBranches,
   nockArgoGitPathSha,
@@ -16,6 +12,8 @@ import {
   nockIgnoreApiPaths,
   nockIgnoreOperatorCheck,
 } from '../../lib/nock-util'
+import { clickByRole, clickByText, typeByRole, waitForNocks, waitForText } from '../../lib/test-util'
+import { NavigationPath } from '../../NavigationPath'
 import {
   GitOpsClusterApiVersion,
   GitOpsClusterKind,
@@ -23,6 +21,8 @@ import {
   NamespaceApiVersion,
   NamespaceKind,
 } from '../../resources'
+import { gitOpsOperators, mockArgoCD, mockClusterSets } from '../../routes/Applications/Application.sharedmocks'
+import { ArgoWizard, ArgoWizardProps } from './ArgoWizard'
 
 const mockCreateclustersetcallback = jest.fn()
 const mockGetgitchannelbranches = jest.fn().mockImplementation(async () => {
@@ -113,7 +113,7 @@ describe('ArgoWizard tests', () => {
     const appBranchNocks = [nockArgoGitBranches(url, { branchList: [{ name: 'main' }] })]
     userEvent.click(
       screen.getByRole('option', {
-        name: /create new option "https:\/\/github\.com\/fxiang1\/app-samples"/i,
+        name: /https:\/\/github\.com\/fxiang1\/app-samples/i,
       })
     )
 
@@ -124,12 +124,12 @@ describe('ArgoWizard tests', () => {
       nockArgoGitPathTree(url, { tree: [{ path: 'application-test', type: 'tree' }] }),
     ]
 
-    await clickByRole('option', { name: /create new option "main"/i })
+    await clickByRole('option', { name: /main/i })
     await waitForNocks(pathNocks)
 
     await typeByRole('ansible', 'combobox', { name: /enter or select a repository path/i })
     await clickByRole('option', {
-      name: /create new option "ansible"/i,
+      name: /ansible/i,
     })
 
     await typeByRole('default', 'textbox')
