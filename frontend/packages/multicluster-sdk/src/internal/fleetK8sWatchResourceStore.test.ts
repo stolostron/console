@@ -269,6 +269,33 @@ describe('isCacheEntryValid function', () => {
 
     expect(isCacheEntryValid(entry)).toBe(false)
   })
+
+  it('should return false for entry with loadError even if recent', () => {
+    const testError = new Error('Failed to load resource')
+    const entry = {
+      refCount: 1,
+      timestamp: Date.now(), // Current timestamp (recent)
+      result: { data: undefined, loaded: false, loadError: testError },
+    }
+
+    // Even though the entry is recent, it should be invalid because it has an error
+    expect(isCacheEntryValid(entry)).toBe(false)
+  })
+
+  it('should return false for entry with loadError even with active socket', () => {
+    const mockSocket = new WebSocket('wss://example.com')
+    const testError = new Error('Failed to load resource')
+    const entry = {
+      socket: mockSocket,
+      refCount: 1,
+      timestamp: Date.now(),
+      result: { data: [], loaded: true, loadError: testError },
+    }
+
+    // Even with an active socket, entry should be invalid if it has an error
+    // This ensures we retry failed requests instead of serving stale errors
+    expect(isCacheEntryValid(entry)).toBe(false)
+  })
 })
 
 describe('Ref count management with sockets', () => {

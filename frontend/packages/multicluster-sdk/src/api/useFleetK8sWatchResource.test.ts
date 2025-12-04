@@ -604,5 +604,51 @@ describe('useFleetK8sWatchResource', () => {
       // Should immediately return empty loading state for the new resource
       expect(result.current).toEqual([[], false, undefined])
     })
+
+    it('should not use cached error result when initResource changes', () => {
+      const podsResource = {
+        groupVersionKind: { version: 'v1', kind: 'Pod' },
+        isList: true,
+        cluster: remoteClusterName,
+        namespace: 'default',
+      }
+
+      const deploymentsResource = {
+        groupVersionKind: { group: 'apps', version: 'v1', kind: 'Deployment' },
+        isList: true,
+        cluster: remoteClusterName,
+        namespace: 'default',
+      }
+
+      // Mock getInitialResult to return valid data for pods
+      // For deployments, it should filter out any cached error and return empty state
+      const podsInitialData = [{ metadata: { name: 'pod1' }, cluster: remoteClusterName }]
+
+      mockGetInitialResult.mockImplementation((resource) => {
+        if (resource?.groupVersionKind?.kind === 'Pod') {
+          return { data: podsInitialData, loaded: true }
+        } else if (resource?.groupVersionKind?.kind === 'Deployment') {
+          // In reality, getInitialResult would see a cached error and return empty state
+          // This tests that when switching resources, the hook properly uses that empty state
+          return { data: [], loaded: false }
+        }
+        return { data: [], loaded: false }
+      })
+
+      const { result, rerender } = renderHook(({ resource }) => useFleetK8sWatchResource(resource), {
+        initialProps: { resource: podsResource },
+      })
+
+      // Initial render should return pods data
+      expect(result.current).toEqual([podsInitialData, true, undefined])
+
+      // Change to deployments resource (has cached error, but getInitialResult filters it)
+      rerender({ resource: deploymentsResource })
+
+      // Should not use the cached error result - should return empty loading state to retry
+      expect(result.current[2]).toBeUndefined() // no error should be returned
+      expect(result.current[1]).toBe(false) // should be in loading state to retry
+      expect(result.current[0]).toEqual([]) // should have empty data, not stale cached data
+    })
   })
 })
