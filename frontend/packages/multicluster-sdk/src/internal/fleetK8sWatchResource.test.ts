@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { handleWebsocketEvent, getInitialResult, startWatch, stopWatch } from './fleetK8sWatchResource'
+import { handleWebsocketEvent, getInitialResult, startWatch, stopWatch, subscribe } from './fleetK8sWatchResource'
 import { useFleetK8sWatchResourceStore } from './fleetK8sWatchResourceStore'
 import type { K8sResourceCommon, K8sModel } from '@openshift-console/dynamic-plugin-sdk'
 import type { FleetWatchK8sResource } from '../types'
@@ -500,9 +500,7 @@ describe('startWatch and stopWatch', () => {
     }
     ;(apiRequests.fleetWatch as jest.Mock).mockReturnValue(mockSocket)
 
-    const setResult = jest.fn()
-
-    await startWatch(mockResource, mockModel, mockBasePath, setResult)
+    await startWatch(mockResource, mockModel, mockBasePath)
 
     expect(mockConsoleFetchJSON).toHaveBeenCalledWith(mockRequestPath, 'GET')
     expect(apiRequests.fleetWatch).toHaveBeenCalled()
@@ -541,9 +539,7 @@ describe('startWatch and stopWatch', () => {
     }
     ;(apiRequests.fleetWatch as jest.Mock).mockReturnValue(mockSocket)
 
-    const setResult = jest.fn()
-
-    await startWatch(mockResource, mockModel, mockBasePath, setResult)
+    await startWatch(mockResource, mockModel, mockBasePath)
 
     // Should not fetch since cache is valid
     expect(mockConsoleFetchJSON).not.toHaveBeenCalled()
@@ -568,9 +564,7 @@ describe('startWatch and stopWatch', () => {
     }
     ;(apiRequests.fleetWatch as jest.Mock).mockReturnValue(mockSocket)
 
-    const setResult = jest.fn()
-
-    await startWatch(mockResource, mockModel, mockBasePath, setResult)
+    await startWatch(mockResource, mockModel, mockBasePath)
 
     const store = useFleetK8sWatchResourceStore.getState()
     const result = store.getResult(mockRequestPath)
@@ -603,9 +597,7 @@ describe('startWatch and stopWatch', () => {
     }
     ;(apiRequests.fleetWatch as jest.Mock).mockReturnValue(mockSocket)
 
-    const setResult = jest.fn()
-
-    await startWatch(mockResource, mockModel, mockBasePath, setResult)
+    await startWatch(mockResource, mockModel, mockBasePath)
 
     const store = useFleetK8sWatchResourceStore.getState()
     const result = store.getResult(mockRequestPath)
@@ -663,10 +655,8 @@ describe('startWatch and stopWatch', () => {
     }
     store.setSocket(mockRequestPath, mockSocket as any)
 
-    const setResult = jest.fn()
-
     // Start second watch
-    await startWatch(mockResource, mockModel, mockBasePath, setResult)
+    await startWatch(mockResource, mockModel, mockBasePath)
 
     // Should not fetch or open new socket
     expect(mockConsoleFetchJSON).not.toHaveBeenCalled()
@@ -702,7 +692,11 @@ describe('startWatch and stopWatch', () => {
 
     const setResult = jest.fn()
 
-    await startWatch(mockResource, mockModel, mockBasePath, setResult)
+    // Subscribe to updates
+    const unsubscribe = subscribe(mockResource, mockRequestPath, setResult)
+
+    // Start the watch
+    await startWatch(mockResource, mockModel, mockBasePath)
 
     // Give time for subscription to trigger
     await new Promise((resolve) => setTimeout(resolve, 10))
@@ -712,5 +706,8 @@ describe('startWatch and stopWatch', () => {
     const lastCall = setResult.mock.calls[setResult.mock.calls.length - 1][0]
     expect(lastCall.data).toEqual([{ cluster: 'test-cluster', ...mockPod }])
     expect(lastCall.loaded).toBe(true)
+
+    // Cleanup
+    unsubscribe()
   })
 })
