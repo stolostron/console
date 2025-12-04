@@ -1,20 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useHubClusterName } from './useHubClusterName'
-import { FleetK8sResourceCommon, FleetWatchK8sResource } from '../types'
 import {
-  consoleFetchJSON,
-  useK8sModel,
-  useK8sWatchResource,
-  WatchK8sResult,
-} from '@openshift-console/dynamic-plugin-sdk'
-import { useFleetK8sAPIPath } from './useFleetK8sAPIPath'
+  FleetK8sResourceCommon,
+  FleetWatchK8sResource,
+  FleetWatchK8sResult,
+  FleetWatchK8sResultsObject,
+} from '../types'
+import { useK8sModel, useK8sWatchResource } from '@openshift-console/dynamic-plugin-sdk'
 import { useIsFleetAvailable } from './useIsFleetAvailable'
 import { useEffect, useMemo, useState } from 'react'
-import { buildResourceURL, fleetWatch } from '../internal/apiRequests'
-import { handleWebsocketEvent } from '../internal/fleetK8sWatchResource'
-import { getCacheKey, useFleetK8sWatchResourceStore } from '../internal/fleetK8sWatchResourceStore'
-import { selectorToString } from '../internal/requirements'
 import { useDeepCompareMemoize } from '../internal/hooks/useDeepCompareMemoize'
+import { NO_FLEET_AVAILABLE_ERROR } from '../internal/constants'
+import { useFleetK8sAPIPath } from './useFleetK8sAPIPath'
+import { getInitialResult, startWatch, stopWatch } from '../internal/fleetK8sWatchResource'
 
 /**
  * A hook for watching Kubernetes resources with support for multi-cluster environments.
@@ -50,195 +48,53 @@ import { useDeepCompareMemoize } from '../internal/hooks/useDeepCompareMemoize'
  */
 export function useFleetK8sWatchResource<R extends FleetK8sResourceCommon | FleetK8sResourceCommon[]>(
   initResource: FleetWatchK8sResource | null
-): WatchK8sResult<R> | [undefined, boolean, any] {
-  const [hubClusterName, hubClusterNameLoaded] = useHubClusterName()
+): FleetWatchK8sResult<R> {
+  const isFleetAvailable = useIsFleetAvailable()
+  const [hubClusterName, hubClusterNameLoaded, hubClusterNameLoadedError] = useHubClusterName()
 
   const memoizedResource = useDeepCompareMemoize(initResource, true)
-
-  const clusterSpecified = memoizedResource?.cluster !== undefined
-  const shouldWaitForHubClusterName = clusterSpecified && !hubClusterNameLoaded
-
   const { cluster, ...resource } = memoizedResource ?? {}
-  const nullResource = !memoizedResource || !resource?.groupVersionKind
-  const selector = memoizedResource?.selector
-
-  const { isList, groupVersionKind, namespace, name } = resource ?? {}
-  const [model] = useK8sModel(groupVersionKind)
+  const { groupVersionKind } = resource
+  const [model, modelLoading] = useK8sModel(groupVersionKind)
   const [backendAPIPath, backendPathLoaded] = useFleetK8sAPIPath(cluster)
-  const isFleetAvailable = useIsFleetAvailable()
-  const isRemoteCluster = !!cluster && cluster !== hubClusterName
-  const useFleet = isFleetAvailable && !shouldWaitForHubClusterName && isRemoteCluster
-  const useFallback = !isFleetAvailable || (!shouldWaitForHubClusterName && !isRemoteCluster)
 
-  const noCachedValue = useMemo(() => (isList ? [] : (undefined as unknown)) as R, [isList])
+  const waitingForHubClusterName = !!cluster && !hubClusterNameLoaded
+  const isFleetQuery = cluster && cluster !== hubClusterName
 
-  const requestPath = useMemo(
-    () =>
-      backendPathLoaded && model
-        ? buildResourceURL({
-            model,
-            ns: namespace,
-            name,
-            cluster,
-            queryParams: {
-              ...(memoizedResource?.fieldSelector ? { fieldSelector: memoizedResource?.fieldSelector } : {}),
-              labelSelector: selectorToString(memoizedResource?.selector || {}),
-            },
-            basePath: backendAPIPath as string,
-          })
-        : '',
+  // avoid using the fleet query if it is not available
+  // avoid using either query if we are still waiting for the hub name to compare against the supplied cluster name
+  const useFleet = isFleetQuery && isFleetAvailable && !waitingForHubClusterName
+  const useLocal = !isFleetQuery && !waitingForHubClusterName
 
-    [
-      model,
-      namespace,
-      name,
-      cluster,
-      backendPathLoaded,
-      backendAPIPath,
-      memoizedResource?.selector,
-      memoizedResource?.fieldSelector,
-    ]
+  const isResourceNull = !memoizedResource || !groupVersionKind
+
+  const [fleetResult, setFleetResult] = useState<FleetWatchK8sResultsObject<R>>(
+    getInitialResult(memoizedResource, model, backendAPIPath)
   )
+  const fleetResultTuple = useMemo<FleetWatchK8sResult<R>>(() => {
+    const { data, loaded, loadError } = fleetResult
+    return [data, loaded, loadError]
+  }, [fleetResult])
 
-  // Subscribe to store changes for this specific resource path
-  const cachedEntry = useFleetK8sWatchResourceStore((state) => state.resourceCache[requestPath])
-
-  // Get store instance for imperative operations
-  const store = useFleetK8sWatchResourceStore.getState()
-
-  const [data, setData] = useState<R>(cachedEntry?.data ?? noCachedValue)
-  const [loaded, setLoaded] = useState<boolean>(cachedEntry?.loaded ?? false)
-  const [error, setError] = useState<any>(cachedEntry?.error)
-
-  // Update local state when store changes
-  useEffect(() => {
-    if (cachedEntry) {
-      setData(cachedEntry.data ?? noCachedValue)
-      setLoaded(cachedEntry.loaded)
-      setError(cachedEntry.error)
-    } else {
-      setData(noCachedValue)
-      setLoaded(false)
-      setError(undefined)
-    }
-  }, [cachedEntry, noCachedValue])
+  const localResult = useK8sWatchResource<R>(useLocal && !isResourceNull ? resource : null)
 
   useEffect(() => {
-    let socket: WebSocket | undefined
-    const fetchData = async () => {
-      if (!useFleet || nullResource) {
-        store.setResource(requestPath, noCachedValue, false)
-        return
-      }
-
-      if (!backendPathLoaded) {
-        return
-      }
-
-      // Check if we already have this resource cached and it's not expired
-      const existingEntry = store.getResource(requestPath)
-      if (existingEntry && !store.isResourceExpired(requestPath)) {
-        return
-      }
-
-      const socketKey = getCacheKey({ model, cluster, namespace, name })
-      const existingSocket = store.getSocket(socketKey)
-
-      // If we have a valid socket, increment reference count and use it
-      if (existingSocket && existingSocket.socket.readyState === WebSocket.OPEN) {
-        store.addSocketRef(socketKey)
-        socket = existingSocket.socket
-        return
-      }
-
-      try {
-        store.setResource(requestPath, noCachedValue, false) // Set loading state
-
-        const data = (await consoleFetchJSON(requestPath, 'GET')) as R
-
-        const processedData = (
-          isList
-            ? (data as { items: K8sResourceCommon[] }).items.map((i) => ({ cluster, ...i }))
-            : { cluster, ...(data as K8sResourceCommon) }
-        ) as R
-
-        // Store the data in Zustand store
-        store.setResource(requestPath, processedData, true)
-
-        const watchQuery: any = {
-          ns: namespace,
-          cluster,
-        }
-
-        if (name) {
-          watchQuery.fieldSelector = `metadata.name=${name}`
-        }
-        if (selector) {
-          watchQuery.labelSelector = selector
-        }
-
-        if (isList) {
-          watchQuery.resourceVersion = (data as { metadata: { resourceVersion?: string } })?.metadata?.resourceVersion
-        }
-
-        // Only create a new WebSocket if we don't have a valid one
-        socket = fleetWatch(model, watchQuery, backendAPIPath as string)
-        store.setSocket(socketKey, socket)
-
-        socket.onmessage = (event) => {
-          try {
-            // Handle WebSocket event - this will update the store and notify all subscribers
-            handleWebsocketEvent(event, requestPath, isList, cluster)
-          } catch (e) {
-            console.error('Failed to parse WebSocket message', e)
-          }
-        }
-
-        socket.onclose = () => {
-          store.removeSocket(socketKey)
-        }
-
-        socket.onerror = (err) => {
-          console.error('WebSocket error:', err)
-          store.setResource(requestPath, processedData, true, err)
-        }
-      } catch (err) {
-        store.setResource(requestPath, noCachedValue, true, err)
-      }
+    if (useFleet && !isResourceNull && backendPathLoaded && backendAPIPath && !modelLoading && model) {
+      startWatch(memoizedResource, model, backendAPIPath, setFleetResult)
+      return () => stopWatch(memoizedResource, model, backendAPIPath)
     }
+  }, [backendAPIPath, backendPathLoaded, isResourceNull, memoizedResource, model, modelLoading, useFleet])
 
-    fetchData()
-
-    // Cleanup function - decrement reference count for socket
-    return () => {
-      if (useFleet && !nullResource && backendPathLoaded && model) {
-        const socketKey = getCacheKey({ model, cluster, namespace, name })
-        store.removeSocketRef(socketKey)
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    cluster,
-    isList,
-    requestPath,
-    name,
-    namespace,
-    nullResource,
-    noCachedValue,
-    useFleet,
-    backendPathLoaded,
-    model,
-    backendAPIPath,
-    selector,
-  ])
-
-  const fallbackResult = useK8sWatchResource<R>(useFallback ? resource : null)
-
-  if (!nullResource && useFallback) {
-    return fallbackResult
-  } else if (!nullResource && useFleet) {
-    return [data, loaded, error]
+  if (waitingForHubClusterName) {
+    // if we are still waiting for hub name to load,
+    // there is no result, loaded is false, and we should return any error fetching the hub name
+    return [undefined, false, hubClusterNameLoadedError]
+  } else if (isFleetQuery && !isFleetAvailable) {
+    // if we need to use fleet support but it it not available,
+    // we return an error
+    return [undefined, false, NO_FLEET_AVAILABLE_ERROR]
   } else {
-    return [undefined, false, undefined]
+    // otherwise, we return the fleet or single-cluster result accordingly
+    return useFleet ? fleetResultTuple : localResult
   }
 }

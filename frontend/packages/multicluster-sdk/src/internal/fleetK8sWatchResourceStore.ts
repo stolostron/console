@@ -1,104 +1,118 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { K8sModel } from '@openshift-console/dynamic-plugin-sdk'
 import { create } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
+import { FleetK8sResourceCommon, FleetWatchK8sResultsObject } from '../types'
 
-export interface CacheEntry<T = any> {
-  data: T
-  loaded: boolean
-  error?: any
+type Data = FleetK8sResourceCommon | FleetK8sResourceCommon[]
+
+type CacheEntry = {
+  result?: FleetWatchK8sResultsObject<Data>
+  socket?: WebSocket
+  refCount: number
   timestamp: number
+  resourceVersion?: string
+  timeout?: NodeJS.Timeout
 }
 
-export interface SocketCacheEntry {
-  socket: WebSocket
-  timestamp: number
-  refCount: number // Track how many hooks are using this socket
+const CACHE_TTL = 30 * 1000 // 30 seconds
+const CACHE_REMOVE_GRACE = 10 * 1000 // 10 seconds; wait a bit longer than TTL to remove cache entry so it is not removed between retrieval of initial value and start of watching
+
+export const isCacheEntryValid = (entry: CacheEntry) => {
+  return !!entry.socket || Date.now() - entry.timestamp < CACHE_TTL
 }
 
-export interface FleetK8sWatchResourceStore {
-  // Resource cache
-  resourceCache: Record<string, CacheEntry>
+export type FleetK8sWatchResourceStore = {
+  // Cache
+  cache: Record<string, CacheEntry>
 
-  // Socket cache
-  socketCache: Record<string, SocketCacheEntry>
-
-  // Cache TTL in milliseconds (default 5 minutes)
-  cacheTTL: number
-
-  // Actions for resource cache
-  setResource: <T>(key: string, data: T, loaded: boolean, error?: any) => void
-  getResource: <T>(key: string) => CacheEntry<T> | undefined
-  isResourceExpired: (key: string) => boolean
-
-  // Actions for socket cache
+  // Actions for cache
+  setResult: (key: string, data: Data | undefined, loaded: boolean, loadError?: any, resourceVersion?: string) => void
   setSocket: (key: string, socket: WebSocket) => void
-  getSocket: (key: string) => SocketCacheEntry | undefined
-  addSocketRef: (key: string) => void
-  removeSocketRef: (key: string) => void
-  removeSocket: (key: string) => void
+  incrementRefCount: (key: string) => void
+  decrementRefCount: (key: string) => void
+  touchEntry: (key: string) => void
+  removeEntry: (key: string) => void
 
-  // Cleanup actions
-  clearExpired: () => void
-  clearAll: () => void
+  // Getters for cache
+  getResult: (key: string) => FleetWatchK8sResultsObject<Data> | undefined
+  getRefCount: (key: string) => number
+  getResourceVersion: (key: string) => string | undefined
 }
 
 export const useFleetK8sWatchResourceStore = create<FleetK8sWatchResourceStore>()(
   subscribeWithSelector((set, get) => ({
-    resourceCache: {},
-    socketCache: {},
-    cacheTTL: 5 * 60 * 1000, // 5 minutes
+    cache: {},
 
-    setResource: (key, data, loaded, error) => {
-      const now = Date.now()
-      set((state) => ({
-        resourceCache: {
-          ...state.resourceCache,
-          [key]: {
-            data,
-            loaded,
-            error,
-            timestamp: now,
+    setResult: (key, data, loaded, loadError, resourceVersion) => {
+      set((state) => {
+        const originalResult = state.cache[key] || {}
+        return {
+          cache: {
+            ...state.cache,
+            [key]: {
+              ...originalResult,
+              result: { data, loaded, loadError },
+              timestamp: Date.now(),
+              resourceVersion: resourceVersion ?? originalResult.resourceVersion,
+            },
           },
-        },
-      }))
-    },
-
-    getResource: (key) => {
-      const entry = get().resourceCache[key]
-      return entry
-    },
-
-    isResourceExpired: (key) => {
-      const entry = get().resourceCache[key]
-      if (!entry) return true
-      return Date.now() - entry.timestamp > get().cacheTTL
+        }
+      })
     },
 
     setSocket: (key, socket) => {
-      const now = Date.now()
       set((state) => ({
-        socketCache: {
-          ...state.socketCache,
+        cache: {
+          ...state.cache,
           [key]: {
+            ...state.cache[key],
             socket,
-            timestamp: now,
-            refCount: 1,
           },
         },
       }))
     },
 
-    addSocketRef: (key) => {
+    incrementRefCount: (key) => {
       set((state) => {
-        const entry = state.socketCache[key]
+        const entry = state.cache[key] || {}
+        const { refCount, timeout } = entry
+        if (timeout) {
+          // cancel scheduled cache removal
+          clearTimeout(timeout)
+        }
+        return {
+          cache: {
+            ...state.cache,
+            [key]: {
+              ...entry,
+              refCount: (refCount || 0) + 1,
+              timeout: undefined,
+            },
+          },
+        }
+      })
+    },
+
+    decrementRefCount: (key) => {
+      set((state) => {
+        const entry = state.cache[key]
         if (entry) {
+          const { socket, refCount } = entry
+          const newRefCount = refCount > 0 ? refCount - 1 : 0
+          if (newRefCount === 0 && socket) {
+            socket.close()
+          }
           return {
-            socketCache: {
-              ...state.socketCache,
+            cache: {
+              ...state.cache,
               [key]: {
                 ...entry,
-                refCount: entry.refCount + 1,
+                refCount: newRefCount,
+                socket: newRefCount > 0 ? socket : undefined,
+                timeout:
+                  newRefCount === 0
+                    ? setTimeout(() => state.removeEntry(key), CACHE_TTL + CACHE_REMOVE_GRACE) // schedule removal of entry
+                    : undefined,
               },
             },
           }
@@ -107,123 +121,31 @@ export const useFleetK8sWatchResourceStore = create<FleetK8sWatchResourceStore>(
       })
     },
 
-    removeSocketRef: (key) => {
-      set((state) => {
-        const entry = state.socketCache[key]
-        if (entry) {
-          const newRefCount = entry.refCount - 1
-          if (newRefCount <= 0) {
-            // Close socket when no more references
-            if (entry.socket.readyState === WebSocket.OPEN) {
-              entry.socket.close()
-            }
-            const { [key]: removed, ...rest } = state.socketCache
-            return { socketCache: rest }
-          } else {
-            return {
-              socketCache: {
-                ...state.socketCache,
-                [key]: {
-                  ...entry,
-                  refCount: newRefCount,
-                },
-              },
-            }
-          }
-        }
-        return state
-      })
+    touchEntry: (key) => {
+      set((state) => ({
+        cache: {
+          ...state.cache,
+          [key]: {
+            ...state.cache[key],
+            timestamp: Date.now(),
+          },
+        },
+      }))
     },
 
-    getSocket: (key) => {
-      const entry = get().socketCache[key]
-      return entry
-    },
-
-    removeSocket: (key) => {
+    removeEntry: (key) => {
       set((state) => {
-        const entry = state.socketCache[key]
-        if (entry?.socket && entry.socket.readyState === WebSocket.OPEN) {
-          entry.socket.close()
-        }
-        const { [key]: removed, ...rest } = state.socketCache
-        return { socketCache: rest }
-      })
-    },
-
-    clearExpired: () => {
-      const now = Date.now()
-      const ttl = get().cacheTTL
-
-      set((state) => {
-        // Clear expired resources
-        const validResources: Record<string, CacheEntry> = {}
-        Object.entries(state.resourceCache).forEach(([key, entry]) => {
-          if (now - entry.timestamp <= ttl) {
-            validResources[key] = entry
-          }
-        })
-
-        // Clear expired sockets
-        const validSockets: Record<string, SocketCacheEntry> = {}
-        Object.entries(state.socketCache).forEach(([key, entry]) => {
-          if (now - entry.timestamp <= ttl) {
-            validSockets[key] = entry
-          } else if (entry.socket.readyState === WebSocket.OPEN) {
-            // Close expired socket
-            entry.socket.close()
-          }
-        })
-
+        const { [key]: removed, ...rest } = state.cache
         return {
-          resourceCache: validResources,
-          socketCache: validSockets,
+          cache: {
+            ...rest,
+          },
         }
       })
     },
 
-    clearAll: () => {
-      const state = get()
-
-      // Close all sockets before clearing
-      Object.values(state.socketCache).forEach((entry) => {
-        if (entry.socket.readyState === WebSocket.OPEN) {
-          entry.socket.close()
-        }
-      })
-
-      set({
-        resourceCache: {},
-        socketCache: {},
-      })
-    },
+    getResult: (key) => get().cache[key]?.result,
+    getRefCount: (key) => get().cache[key]?.refCount,
+    getResourceVersion: (key) => get().cache[key]?.resourceVersion,
   }))
 )
-
-// Utility function to generate cache keys (moved from the original file)
-export const getCacheKey = ({
-  model,
-  cluster,
-  namespace,
-  name,
-}: {
-  model: K8sModel
-  cluster?: string
-  namespace?: string
-  name?: string
-}) => {
-  return [cluster, model?.apiGroup, model?.apiVersion, model?.kind, namespace, name].join('|')
-}
-
-// Utility hook for cache management
-export const useFleetK8sCache = () => {
-  const store = useFleetK8sWatchResourceStore()
-
-  return {
-    clearExpired: store.clearExpired,
-    clearAll: store.clearAll,
-    setCacheTTL: (ttl: number) => {
-      useFleetK8sWatchResourceStore.setState({ cacheTTL: ttl })
-    },
-  }
-}

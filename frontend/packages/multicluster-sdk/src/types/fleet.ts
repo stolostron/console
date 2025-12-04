@@ -10,9 +10,26 @@ import {
 } from '@openshift-console/dynamic-plugin-sdk'
 
 export type Fleet<T> = T & { cluster?: string }
+export type FleetK8sResourceCommon = Fleet<K8sResourceCommon>
 
 export type FleetWatchK8sResource = Fleet<WatchK8sResource>
-export type FleetK8sResourceCommon = Fleet<K8sResourceCommon>
+export type FleetWatchK8sResult<R extends FleetK8sResourceCommon | FleetK8sResourceCommon[]> = [
+  R | undefined,
+  boolean,
+  any,
+]
+
+export type FleetResourcesObject = { [key: string]: FleetK8sResourceCommon | FleetK8sResourceCommon[] }
+export type FleetWatchK8sResultsObject<R extends K8sResourceCommon | K8sResourceCommon[]> = {
+  data: R | undefined
+  loaded: boolean
+  loadError?: any
+}
+
+export type FleetWatchK8sResults<R extends FleetResourcesObject> = {
+  [k in keyof R]: FleetWatchK8sResultsObject<R[k]>
+}
+
 export type FleetAccessReviewResourceAttributes = Fleet<AccessReviewResourceAttributes>
 
 export type FleetResourceLinkProps = Fleet<ResourceLinkProps>
