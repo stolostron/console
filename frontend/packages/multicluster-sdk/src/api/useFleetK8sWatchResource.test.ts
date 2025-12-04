@@ -19,8 +19,10 @@ jest.mock('./useHubClusterName', () => ({
 
 jest.mock('../internal/fleetK8sWatchResource', () => ({
   getInitialResult: jest.fn(),
+  getRequestPathFromResource: jest.fn(),
   startWatch: jest.fn(),
   stopWatch: jest.fn(),
+  subscribe: jest.fn(),
 }))
 
 import { renderHook } from '@testing-library/react-hooks'
@@ -29,7 +31,13 @@ import { useFleetK8sAPIPath } from './useFleetK8sAPIPath'
 import { useIsFleetAvailable } from './useIsFleetAvailable'
 import { useHubClusterName } from './useHubClusterName'
 import { useFleetK8sWatchResource } from './useFleetK8sWatchResource'
-import { getInitialResult, startWatch, stopWatch } from '../internal/fleetK8sWatchResource'
+import {
+  getInitialResult,
+  getRequestPathFromResource,
+  startWatch,
+  stopWatch,
+  subscribe,
+} from '../internal/fleetK8sWatchResource'
 import { NO_FLEET_AVAILABLE_ERROR } from '../internal/constants'
 
 const mockUseK8sModel = useK8sModel as jest.MockedFunction<typeof useK8sModel>
@@ -38,8 +46,12 @@ const mockUseFleetK8sAPIPath = useFleetK8sAPIPath as jest.MockedFunction<typeof 
 const mockUseIsFleetAvailable = useIsFleetAvailable as jest.MockedFunction<typeof useIsFleetAvailable>
 const mockUseHubClusterName = useHubClusterName as jest.MockedFunction<typeof useHubClusterName>
 const mockGetInitialResult = getInitialResult as jest.MockedFunction<typeof getInitialResult>
+const mockGetRequestPathFromResource = getRequestPathFromResource as jest.MockedFunction<
+  typeof getRequestPathFromResource
+>
 const mockStartWatch = startWatch as jest.MockedFunction<typeof startWatch>
 const mockStopWatch = stopWatch as jest.MockedFunction<typeof stopWatch>
+const mockSubscribe = subscribe as jest.MockedFunction<typeof subscribe>
 
 describe('useFleetK8sWatchResource', () => {
   const hubClusterName = 'hub-cluster'
@@ -63,6 +75,8 @@ describe('useFleetK8sWatchResource', () => {
     mockUseFleetK8sAPIPath.mockReturnValue([mockFleetAPIUrl, true, undefined])
     mockUseHubClusterName.mockReturnValue([hubClusterName, true, undefined])
     mockGetInitialResult.mockReturnValue({ data: [], loaded: false })
+    mockGetRequestPathFromResource.mockReturnValue('/api/test/path')
+    mockSubscribe.mockReturnValue(jest.fn()) // Return unsubscribe function
   })
 
   describe('when using hub cluster (no fleet)', () => {
@@ -137,8 +151,14 @@ describe('useFleetK8sWatchResource', () => {
 
       const { result } = renderHook(() => useFleetK8sWatchResource(initResource))
 
-      // Should call startWatch with correct parameters
-      expect(mockStartWatch).toHaveBeenCalledWith(initResource, mockModel, mockFleetAPIUrl, expect.any(Function))
+      // Should call getRequestPathFromResource to get the path
+      expect(mockGetRequestPathFromResource).toHaveBeenCalledWith(initResource, mockModel, mockFleetAPIUrl)
+
+      // Should call subscribe with correct parameters
+      expect(mockSubscribe).toHaveBeenCalledWith(initResource, '/api/test/path', expect.any(Function))
+
+      // Should call startWatch with correct parameters (without callback)
+      expect(mockStartWatch).toHaveBeenCalledWith(initResource, mockModel, mockFleetAPIUrl)
 
       // Should not call useK8sWatchResource with the resource
       expect(mockUseK8sWatchResource).toHaveBeenCalledWith(null)
@@ -149,13 +169,17 @@ describe('useFleetK8sWatchResource', () => {
 
     it('should call stopWatch on cleanup', () => {
       mockGetInitialResult.mockReturnValue({ data: [], loaded: false })
+      const mockUnsubscribe = jest.fn()
+      mockSubscribe.mockReturnValue(mockUnsubscribe)
 
       const { unmount } = renderHook(() => useFleetK8sWatchResource(initResource))
 
       expect(mockStartWatch).toHaveBeenCalled()
+      expect(mockSubscribe).toHaveBeenCalled()
 
       unmount()
 
+      expect(mockUnsubscribe).toHaveBeenCalled()
       expect(mockStopWatch).toHaveBeenCalledWith(initResource, mockModel, mockFleetAPIUrl)
     })
 
@@ -171,7 +195,7 @@ describe('useFleetK8sWatchResource', () => {
 
       const { result } = renderHook(() => useFleetK8sWatchResource(singleResourceInit))
 
-      expect(mockStartWatch).toHaveBeenCalledWith(singleResourceInit, mockModel, mockFleetAPIUrl, expect.any(Function))
+      expect(mockStartWatch).toHaveBeenCalledWith(singleResourceInit, mockModel, mockFleetAPIUrl)
 
       expect(result.current).toEqual([mockSingleData, true, undefined])
     })
@@ -186,16 +210,16 @@ describe('useFleetK8sWatchResource', () => {
       mockGetInitialResult.mockReturnValue({ data: initialData, loaded: true })
 
       let setResultCallback: any
-      mockStartWatch.mockImplementation((_resource, _model, _basePath, setResult) => {
+      mockSubscribe.mockImplementation((_resource, _requestPath, setResult) => {
         setResultCallback = setResult
-        return Promise.resolve()
+        return jest.fn() // return unsubscribe function
       })
 
       const { result, rerender } = renderHook(() => useFleetK8sWatchResource(initResource))
 
       expect(result.current).toEqual([initialData, true, undefined])
 
-      // Simulate watch update
+      // Simulate watch update via subscribe callback
       setResultCallback({ data: updatedData, loaded: true })
       rerender()
 
@@ -384,7 +408,7 @@ describe('useFleetK8sWatchResource', () => {
 
       renderHook(() => useFleetK8sWatchResource(initResource))
 
-      expect(mockStartWatch).toHaveBeenCalledWith(initResource, mockModel, mockFleetAPIUrl, expect.any(Function))
+      expect(mockStartWatch).toHaveBeenCalledWith(initResource, mockModel, mockFleetAPIUrl)
     })
 
     it('should handle fieldSelector and selector parameters', () => {
@@ -399,7 +423,7 @@ describe('useFleetK8sWatchResource', () => {
 
       renderHook(() => useFleetK8sWatchResource(initResource))
 
-      expect(mockStartWatch).toHaveBeenCalledWith(initResource, mockModel, mockFleetAPIUrl, expect.any(Function))
+      expect(mockStartWatch).toHaveBeenCalledWith(initResource, mockModel, mockFleetAPIUrl)
     })
 
     it('should memoize resource to prevent unnecessary re-renders', () => {
