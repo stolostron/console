@@ -520,5 +520,89 @@ describe('useFleetK8sWatchResource', () => {
 
       expect(mockGetInitialResult).toHaveBeenCalledWith(initResource, mockModel, undefined)
     })
+
+    it('should immediately return correct initial value when initResource changes', () => {
+      const podsResource = {
+        groupVersionKind: { version: 'v1', kind: 'Pod' },
+        isList: true,
+        cluster: remoteClusterName,
+        namespace: 'default',
+      }
+
+      const deploymentsResource = {
+        groupVersionKind: { group: 'apps', version: 'v1', kind: 'Deployment' },
+        isList: true,
+        cluster: remoteClusterName,
+        namespace: 'default',
+      }
+
+      // Mock getInitialResult to return different values for different resources
+      const podsInitialData = [{ metadata: { name: 'pod1' }, cluster: remoteClusterName }]
+      const deploymentsInitialData = [{ metadata: { name: 'deployment1' }, cluster: remoteClusterName }]
+
+      // Mock getInitialResult to return the appropriate data based on the resource
+      mockGetInitialResult.mockImplementation((resource) => {
+        if (resource?.groupVersionKind?.kind === 'Pod') {
+          return { data: podsInitialData, loaded: true }
+        } else if (resource?.groupVersionKind?.kind === 'Deployment') {
+          return { data: deploymentsInitialData, loaded: true }
+        }
+        return { data: [], loaded: false }
+      })
+
+      const { result, rerender } = renderHook(({ resource }) => useFleetK8sWatchResource(resource), {
+        initialProps: { resource: podsResource },
+      })
+
+      // Initial render should return pods data
+      expect(result.current).toEqual([podsInitialData, true, undefined])
+
+      // Change to deployments resource
+      rerender({ resource: deploymentsResource })
+
+      // Should immediately return deployments initial data (either cached or empty loading state)
+      expect(result.current).toEqual([deploymentsInitialData, true, undefined])
+    })
+
+    it('should return empty loading state when initResource changes and no cache exists', () => {
+      const podsResource = {
+        groupVersionKind: { version: 'v1', kind: 'Pod' },
+        isList: true,
+        cluster: remoteClusterName,
+        namespace: 'default',
+      }
+
+      const deploymentsResource = {
+        groupVersionKind: { group: 'apps', version: 'v1', kind: 'Deployment' },
+        isList: true,
+        cluster: remoteClusterName,
+        namespace: 'default',
+      }
+
+      // Mock getInitialResult to return cached data for pods, but empty state for deployments
+      const podsInitialData = [{ metadata: { name: 'pod1' }, cluster: remoteClusterName }]
+
+      mockGetInitialResult.mockImplementation((resource) => {
+        if (resource?.groupVersionKind?.kind === 'Pod') {
+          return { data: podsInitialData, loaded: true }
+        } else if (resource?.groupVersionKind?.kind === 'Deployment') {
+          return { data: [], loaded: false }
+        }
+        return { data: [], loaded: false }
+      })
+
+      const { result, rerender } = renderHook(({ resource }) => useFleetK8sWatchResource(resource), {
+        initialProps: { resource: podsResource },
+      })
+
+      // Initial render should return pods data
+      expect(result.current).toEqual([podsInitialData, true, undefined])
+
+      // Change to deployments resource (no cache)
+      rerender({ resource: deploymentsResource })
+
+      // Should immediately return empty loading state for the new resource
+      expect(result.current).toEqual([[], false, undefined])
+    })
   })
 })
