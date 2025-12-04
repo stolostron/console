@@ -1412,7 +1412,6 @@
   "Enter the SourceNamespace  of the catalog source namespace of a Submariner subscription. if left blank the default values will be used.": "Enter the SourceNamespace  of the catalog source namespace of a Submariner subscription. if left blank the default values will be used.",
   "Enter the startingCSV": "Enter the startingCSV",
   "Enter the startingCSV of a Submariner subscription": "Enter the startingCSV of a Submariner subscription",
-  "Enter the username of the user to pre-authorize": "Enter the username of the user to pre-authorize",
   "Enter the version or versions": "Enter the version or versions",
   "Enter the VMware credentials": "Enter the VMware credentials",
   "Enter username": "Enter username",
