@@ -12,7 +12,13 @@ import { useEffect, useMemo, useState } from 'react'
 import { useDeepCompareMemoize } from '../internal/hooks/useDeepCompareMemoize'
 import { NO_FLEET_AVAILABLE_ERROR } from '../internal/constants'
 import { useFleetK8sAPIPath } from './useFleetK8sAPIPath'
-import { getInitialResult, startWatch, stopWatch } from '../internal/fleetK8sWatchResource'
+import {
+  getInitialResult,
+  getRequestPathFromResource,
+  startWatch,
+  stopWatch,
+  subscribe,
+} from '../internal/fleetK8sWatchResource'
 
 /**
  * A hook for watching Kubernetes resources with support for multi-cluster environments.
@@ -82,8 +88,14 @@ export function useFleetK8sWatchResource<R extends FleetK8sResourceCommon | Flee
 
   useEffect(() => {
     if (useFleet && !isResourceNull && backendPathLoaded && backendAPIPath && !modelLoading && model) {
-      startWatch(memoizedResource, model, backendAPIPath, setFleetResult)
-      return () => stopWatch(memoizedResource, model, backendAPIPath)
+      const requestPath = getRequestPathFromResource(memoizedResource, model, backendAPIPath)
+      const unsubscribe = subscribe(memoizedResource, requestPath, setFleetResult)
+      startWatch(memoizedResource, model, backendAPIPath)
+
+      return () => {
+        unsubscribe()
+        stopWatch(memoizedResource, model, backendAPIPath)
+      }
     }
   }, [backendAPIPath, backendPathLoaded, isResourceNull, memoizedResource, model, modelLoading, useFleet])
 

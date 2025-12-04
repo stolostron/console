@@ -8,7 +8,7 @@ import { consoleFetchJSON, type K8sModel, type K8sResourceCommon } from '@opensh
 import { selectorToString } from './requirements'
 import { buildResourceURL, fleetWatch } from './apiRequests'
 
-const getRequestPathFromResource = (resource: FleetWatchK8sResource, model: K8sModel, basePath: string) => {
+export const getRequestPathFromResource = (resource: FleetWatchK8sResource, model: K8sModel, basePath: string) => {
   const { cluster, name, namespace, fieldSelector, selector } = resource
   return buildResourceURL({
     model,
@@ -106,17 +106,12 @@ export const getInitialResult = <R extends FleetK8sResourceCommon | FleetK8sReso
   return { data: getDefaultData(resource), loaded: false } as FleetWatchK8sResultsObject<R>
 }
 
-export const startWatch = async <R extends FleetK8sResourceCommon | FleetK8sResourceCommon[]>(
+export const subscribe = <R extends FleetK8sResourceCommon | FleetK8sResourceCommon[]>(
   resource: FleetWatchK8sResource,
-  model: K8sModel,
-  basePath: string,
+  requestPath: string,
   setResult: (result: FleetWatchK8sResultsObject<R>) => void
 ) => {
-  const { cluster, isList } = resource
-  const requestPath = getRequestPathFromResource(resource, model, basePath)
-  const store = useFleetK8sWatchResourceStore.getState()
-  store.incrementRefCount(requestPath)
-  useFleetK8sWatchResourceStore.subscribe(
+  return useFleetK8sWatchResourceStore.subscribe(
     (state) => state.cache[requestPath]?.result,
     (result) => {
       if (result) {
@@ -126,28 +121,33 @@ export const startWatch = async <R extends FleetK8sResourceCommon | FleetK8sReso
       }
     }
   )
+}
 
-  // if there were already other subscribers, there is nothing more to do (WebSocket will be opened even if it is not yet in the store)
-  if (store.getRefCount(requestPath) > 1) {
-    return
-  }
+export const startWatch = async (resource: FleetWatchK8sResource, model: K8sModel, basePath: string) => {
+  const { cluster, isList } = resource
+  const requestPath = getRequestPathFromResource(resource, model, basePath)
+  const store = useFleetK8sWatchResourceStore.getState()
+  store.incrementRefCount(requestPath)
 
-  // if there is a cached value that is not expired, we can skip the initial fetch
-  const entry = store.cache[requestPath]
-  if (!entry || !isCacheEntryValid(entry)) {
-    try {
-      // load initial data into the zustand store
-      const data = await consoleFetchJSON(requestPath, 'GET')
-      const processedData = isList
-        ? (data as { items: K8sResourceCommon[] }).items.map((i) => ({ cluster, ...i }))
-        : { cluster, ...(data as K8sResourceCommon) }
-      const resourceVersion = isList ? (data as K8sResourceCommon)?.metadata?.resourceVersion : undefined
-      store.setResult(requestPath, processedData, true, undefined, resourceVersion)
-    } catch (err) {
-      handleError(err, requestPath, resource)
+  // if we are the first subscriber, we are responsible for getting the initial data and watching for updates
+  if (store.getRefCount(requestPath) === 1) {
+    // if there is a cached value that is not expired, we can skip the initial fetch
+    const entry = store.cache[requestPath]
+    if (!entry || !isCacheEntryValid(entry)) {
+      try {
+        // load initial data into the zustand store
+        const data = await consoleFetchJSON(requestPath, 'GET')
+        const processedData = isList
+          ? (data as { items: K8sResourceCommon[] }).items.map((i) => ({ cluster, ...i }))
+          : { cluster, ...(data as K8sResourceCommon) }
+        const resourceVersion = isList ? (data as K8sResourceCommon)?.metadata?.resourceVersion : undefined
+        store.setResult(requestPath, processedData, true, undefined, resourceVersion)
+      } catch (err) {
+        handleError(err, requestPath, resource)
+      }
     }
+    openFleetWatchSocket(requestPath, resource, model, basePath)
   }
-  openFleetWatchSocket(requestPath, resource, model, basePath)
 }
 
 export const stopWatch = (resource: FleetWatchK8sResource, model: K8sModel, basePath: string) => {
