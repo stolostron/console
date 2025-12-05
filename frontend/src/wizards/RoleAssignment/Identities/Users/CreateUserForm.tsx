@@ -1,13 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ActionGroup, ActionList, ActionListGroup, ActionListItem, Button, SelectOption } from '@patternfly/react-core'
+import { ActionGroup, ActionList, ActionListGroup, ActionListItem, Button } from '@patternfly/react-core'
 import { useState } from 'react'
-import { useTranslation } from '../../../lib/acm-i18next'
-import { createUser, User } from '../../../resources/rbac'
-import { AcmForm, AcmSubmit } from '../../../ui-components/AcmForm/AcmForm'
-import { AcmSelect } from '../../../ui-components/AcmSelect/AcmSelect'
-import { AcmTextInput } from '../../../ui-components/AcmTextInput/AcmTextInput'
-import { useGetIdentityProviders } from '../../../resources/clients/oauth-client'
+import { useTranslation } from '../../../../lib/acm-i18next'
+import { createUser, User } from '../../../../resources/rbac'
+import { AcmForm, AcmSubmit } from '../../../../ui-components/AcmForm/AcmForm'
+import { AcmSelect } from '../../../../ui-components/AcmSelect/AcmSelect'
+import { AcmTextInput } from '../../../../ui-components/AcmTextInput/AcmTextInput'
+import { useGetIdentityProviders } from '../../../../resources/clients/oauth-client'
+import { IdentityProviderSelectOption } from '../common/IdentityProviderSelectOption'
 
 interface CreateUserFormProps {
   saveButtonText: string
@@ -21,17 +22,6 @@ interface FormData {
   userIdentifier: string
   identityProvider: string
 }
-
-// Common identity providers based on the codebase patterns
-const identityProviderOptions = [
-  { id: 'any', text: 'Any identity provider', value: '' },
-  { id: 'htpasswd', text: 'HTPasswd', value: 'htpasswd' },
-  { id: 'ldap', text: 'LDAP', value: 'ldap' },
-  { id: 'oauth', text: 'OAuth', value: 'oauth' },
-  { id: 'github', text: 'GitHub', value: 'github' },
-  { id: 'google', text: 'Google', value: 'google' },
-  { id: 'saml', text: 'SAML', value: 'saml' },
-]
 
 export function CreateUserForm({
   saveButtonText,
@@ -47,8 +37,6 @@ export function CreateUserForm({
   })
 
   const identityProviders = useGetIdentityProviders()
-
-  console.log('KIKE identityProviders', identityProviders)
 
   const validateUserIdentifier = (value: string): string | undefined => {
     if (!value || value.trim() === '') {
@@ -93,10 +81,8 @@ export function CreateUserForm({
         value={formData.identityProvider}
         onChange={(value) => setFormData({ ...formData, identityProvider: value || '' })}
       >
-        {identityProviderOptions.map((option) => (
-          <SelectOption key={option.id} value={option.value}>
-            {option.text}
-          </SelectOption>
+        {identityProviders.map((provider) => (
+          <IdentityProviderSelectOption key={provider.name} identityProvider={provider} />
         ))}
       </AcmSelect>
 
