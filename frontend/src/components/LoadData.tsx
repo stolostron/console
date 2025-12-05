@@ -399,6 +399,7 @@ export function LoadData(props: { children?: ReactNode }) {
     setNamespaces,
     setNMStateConfigs,
     setNodePoolsState,
+    setOAuth,
     setPlacementBindingsState,
     setPlacementDecisionsState,
     setPlacementRulesState,

@@ -9,5 +9,5 @@ import { IdentityProvider, OAuth } from '../oauth'
 export const useGetIdentityProviders = (): IdentityProvider[] => {
   const { oauthState } = useSharedAtoms()
   const oauth: OAuth[] = useRecoilValue(oauthState)
-  return oauth.length ? oauth[0].spec.identityProviders : []
+  return oauth.length ? oauth[0].spec?.identityProviders || [] : []
 }

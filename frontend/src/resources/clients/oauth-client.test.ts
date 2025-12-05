@@ -366,7 +366,7 @@ describe('useGetIdentityProviders', () => {
     expect(firstResult).toBe(secondResult)
   })
 
-  it('should handle oauth resource with undefined spec gracefully', () => {
+  it('should return empty array when oauth resource has undefined spec', () => {
     // Arrange
     const mockOAuth: OAuth[] = [
       {
@@ -378,10 +378,10 @@ describe('useGetIdentityProviders', () => {
     ]
     useRecoilValueMock.mockReturnValue(mockOAuth)
 
-    // Act & Assert
-    expect(() => {
-      const { result } = renderHook(() => useGetIdentityProviders())
-      result.current
-    }).toThrow()
+    // Act
+    const { result } = renderHook(() => useGetIdentityProviders())
+
+    // Assert - should handle undefined spec gracefully by returning empty array
+    expect(result.current).toEqual([])
   })
 })
