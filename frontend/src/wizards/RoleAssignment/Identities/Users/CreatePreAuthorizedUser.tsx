@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { useContext } from 'react'
-import { useTranslation } from '../../../lib/acm-i18next'
-import { AcmToastContext } from '../../../ui-components/AcmAlert/AcmToast'
-import { User } from '../../../resources/rbac'
+import { useTranslation } from '../../../../lib/acm-i18next'
+import { AcmToastContext } from '../../../../ui-components/AcmAlert/AcmToast'
+import { User } from '../../../../resources/rbac'
 import { CreateUserForm } from './CreateUserForm'
 
 interface CreatePreAuthorizedUserProps {

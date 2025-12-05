@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event'
 import { CreatePreAuthorizedUser } from './CreatePreAuthorizedUser'
 
 // Mock the translation hook
-jest.mock('../../../lib/acm-i18next', () => ({
+jest.mock('../../../../lib/acm-i18next', () => ({
   useTranslation: () => ({
     t: (key: string) => key,
   }),

@@ -7,7 +7,6 @@ import { IdentityProvider, OAuth } from '../oauth'
  * @returns the list of IDPs for the only expected oauth element
  */
 export const useGetIdentityProviders = (): IdentityProvider[] => {
-  // TODO: replace by new aggregated API
   const { oauthState } = useSharedAtoms()
   const oauth: OAuth[] = useRecoilValue(oauthState)
   return oauth.length ? oauth[0].spec.identityProviders : []
