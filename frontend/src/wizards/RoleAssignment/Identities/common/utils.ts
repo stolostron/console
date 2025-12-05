@@ -15,13 +15,13 @@ export const getTypeColor = (type: string): 'blue' | 'cyan' | 'green' | 'orange'
 
   // Polynomial rolling hash with prime multiplier
   for (let i = 0; i < type.length; i++) {
-    hash = (hash * 31 + type.charCodeAt(i)) % 1000
+    hash = (hash * 31 + (type.codePointAt(i) || 0)) % 1000
   }
 
   // Add weighted factors for better distribution
   hash += type.length * 1 // String length factor
-  hash += type.charCodeAt(0) * 1 // First character factor
-  hash += type.charCodeAt(type.length - 1) * 5 // Last character factor (weighted higher)
+  hash += (type.codePointAt(0) || 0) * 1 // First character factor
+  hash += (type.codePointAt(type.length - 1) || 0) * 5 // Last character factor (weighted higher)
 
   const colors: ('blue' | 'cyan' | 'green' | 'orange' | 'purple' | 'red' | 'grey')[] = [
     'blue',
