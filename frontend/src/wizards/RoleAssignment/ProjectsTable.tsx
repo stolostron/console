@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useMemo } from 'react'
+import { useMemo, useState, useCallback, useEffect } from 'react'
 import { ButtonVariant, Label, LabelGroup } from '@patternfly/react-core'
 import { generatePath, Link } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../lib/acm-i18next'
@@ -22,6 +22,7 @@ interface ProjectsTableProps {
   projects?: ProjectTableData[]
   onSelectionChange?: (selectedProjects: ProjectTableData[]) => void
   onCreateClick?: () => void
+  onRefresh?: (refetchFn: () => void) => void
   isLoading?: boolean
 }
 
@@ -30,11 +31,13 @@ export function ProjectsTable({
   projects: projectsProp,
   onSelectionChange,
   onCreateClick,
+  onRefresh,
   isLoading: isLoadingProp,
 }: ProjectsTableProps) {
   const { t } = useTranslation()
+  const [hasSelectedProjects, setHasSelectedProjects] = useState(false)
 
-  const { roleAssignmentData, isLoading: isRoleAssignmentDataLoading } = useRoleAssignmentData()
+  const { roleAssignmentData, isLoading: isRoleAssignmentDataLoading, refetchNamespaces } = useRoleAssignmentData()
 
   const clusters = useMemo(
     () => roleAssignmentData.clusterSets?.flatMap((cs) => cs.clusters || []) || [],
@@ -87,6 +90,12 @@ export function ProjectsTable({
 
   const isLoading = isLoadingProp ?? isRoleAssignmentDataLoading
 
+  useEffect(() => {
+    if (onRefresh && refetchNamespaces) {
+      onRefresh(refetchNamespaces)
+    }
+  }, [onRefresh, refetchNamespaces])
+
   const tableActionButtons = useMemo<IAcmTableButtonAction[]>(() => {
     if (!onCreateClick) {
       return []
@@ -98,9 +107,11 @@ export function ProjectsTable({
         title: t('Create common project'),
         click: onCreateClick,
         variant: ButtonVariant.primary,
+        isDisabled: hasSelectedProjects,
+        tooltip: hasSelectedProjects ? t('Deselect projects to create a new common project') : undefined,
       },
     ]
-  }, [t, onCreateClick])
+  }, [t, onCreateClick, hasSelectedProjects])
 
   const filters = useMemo<ITableFilter<ProjectTableData>[]>(() => {
     const allFilters: ITableFilter<ProjectTableData>[] = [
@@ -136,7 +147,6 @@ export function ProjectsTable({
       },
     ]
 
-    console.log('ProjectsTable - filters:', allFilters)
     return allFilters
   }, [t, projectsData])
 
@@ -181,13 +191,23 @@ export function ProjectsTable({
     },
   ]
 
+  const handleSelect = useCallback(
+    (projects: ProjectTableData[]) => {
+      setHasSelectedProjects(projects.length > 0)
+      if (onSelectionChange) {
+        onSelectionChange(projects)
+      }
+    },
+    [onSelectionChange]
+  )
+
   return (
     <AcmTable<ProjectTableData>
       items={isLoading ? undefined : projectsData}
       columns={columns}
       keyFn={(project) => `${project.name}-${project.clusters.join(',')}`}
       tableActionButtons={tableActionButtons.length > 0 ? tableActionButtons : undefined}
-      onSelect={onSelectionChange}
+      onSelect={handleSelect}
       filters={filters}
       searchPlaceholder={t('Search projects')}
       autoHidePagination
