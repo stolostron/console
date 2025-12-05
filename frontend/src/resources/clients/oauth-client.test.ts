@@ -240,21 +240,21 @@ describe('useGetIdentityProviders', () => {
     // Assert
     expect(result.current).toEqual(mockIdentityProviders)
     expect(result.current).toHaveLength(4)
-    
+
     // Verify each provider type
-    const ldapProvider = result.current.find(p => p.type === 'LDAP')
+    const ldapProvider = result.current.find((p) => p.type === 'LDAP')
     expect(ldapProvider?.name).toBe('ldap-provider')
     expect(ldapProvider?.ldap?.url).toBe('ldaps://ldap.example.com:636/OU=Users,DC=example,DC=com?sAMAccountName?sub')
-    
-    const htpasswdProvider = result.current.find(p => p.type === 'HTPasswd')
+
+    const htpasswdProvider = result.current.find((p) => p.type === 'HTPasswd')
     expect(htpasswdProvider?.name).toBe('htpasswd-provider')
     expect(htpasswdProvider?.htpasswd?.fileData.name).toBe('htpasswd-secret')
-    
-    const githubProvider = result.current.find(p => p.type === 'GitHub')
+
+    const githubProvider = result.current.find((p) => p.type === 'GitHub')
     expect(githubProvider?.name).toBe('github-provider')
     expect(githubProvider?.github?.clientID).toBe('github-client-id')
-    
-    const openidProvider = result.current.find(p => p.type === 'OpenID')
+
+    const openidProvider = result.current.find((p) => p.type === 'OpenID')
     expect(openidProvider?.name).toBe('openid-provider')
     expect(openidProvider?.openID?.issuer).toBe('https://auth.example.com')
   })
