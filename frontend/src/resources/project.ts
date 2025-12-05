@@ -39,13 +39,26 @@ export interface ProjectRequest extends IResource {
   metadata: Metadata
 }
 
-export const createProject = (name: string | undefined, labels?: Metadata['labels']) => {
+export interface ProjectProperties {
+  displayName?: string
+  description?: string
+}
+
+export const createProject = (
+  name: string | undefined,
+  labels?: Metadata['labels'],
+  properties?: ProjectProperties
+) => {
   if (!name) throw new Error('Project name is undefined')
+
   const response = createResource<ProjectRequest, Project>({
     apiVersion: ProjectRequestApiVersion,
     kind: ProjectRequestKind,
     metadata: { name },
+    ...(properties?.displayName && properties.displayName.trim() !== '' && { displayName: properties.displayName }),
+    ...(properties?.description && properties.description.trim() !== '' && { description: properties.description }),
   })
+
   if (labels) {
     response.promise
       .then((project) => {

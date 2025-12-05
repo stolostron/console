@@ -291,7 +291,7 @@ describe('add automation template page', () => {
     await clickByText('Add')
     await waitForNock(createNock)
   })
-  it('should visit the correct Ansible tower inventory template url', async () => {
+  it('should visit the correct Ansible Automation controller inventory template url', async () => {
     render(<AddAnsibleTemplateTest />)
 
     // template information
@@ -317,7 +317,7 @@ describe('add automation template page', () => {
     expect(window.open).toHaveBeenCalledWith('https://ansible-tower-web-svc-tower.com/#/inventories/inventory/1')
   })
 
-  it('should visit the correct Ansible tower job template url', async () => {
+  it('should visit the correct Ansible Automation controller job template url', async () => {
     render(<AddAnsibleTemplateTest />)
 
     // template information
@@ -348,7 +348,7 @@ describe('add automation template page', () => {
     expect(window.open).toHaveBeenCalledWith('https://ansible-tower-web-svc-tower.com/#/templates/job_template/1')
   })
 
-  it('should visit the correct Ansible tower workflow job template url', async () => {
+  it('should visit the correct Ansible Automation controller workflow job template url', async () => {
     render(<AddAnsibleTemplateTest />)
 
     // template information
@@ -413,7 +413,9 @@ describe('add automation template page', () => {
     await clickByText(mockSecret.metadata.name!)
 
     // wait for the async error to be displayed
-    await waitForText('The credential returned an error response from Ansible Tower. Please review the host and token.')
+    await waitForText(
+      'The credential returned an error response from Ansible Automation controller. Please review the host and token.'
+    )
 
     // assert that the "Next" button is disabled before it's clicked
     const nextButton = screen.getByRole('button', { name: /Next/i })

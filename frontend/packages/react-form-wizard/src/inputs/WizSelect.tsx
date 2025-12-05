@@ -120,7 +120,7 @@ function WizSelectBase<T = any>(props: SelectProps<T>) {
       if (filtered.length > 0) {
         setFilteredOptions([...filtered, { id: 'input', label: '', value: o[0], keyedValue: '' }])
       } else {
-        setFilteredOptions([{ id: o[0], label: noResults, value: o[0], keyedValue: '' }])
+        setFilteredOptions([{ id: o[0], label: o[0] ?? noResults, value: o[0], keyedValue: '' }])
       }
     },
     [noResults, selectOptions]
@@ -182,6 +182,7 @@ function WizSelectBase<T = any>(props: SelectProps<T>) {
             >
               <SelectListOptions
                 value={value}
+                allOptions={selectOptions ?? []}
                 options={filteredOptions}
                 isCreatable={isCreatable}
                 onCreate={props.onCreate}
