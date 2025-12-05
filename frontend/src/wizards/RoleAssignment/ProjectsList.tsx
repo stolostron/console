@@ -1,30 +1,55 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { PageSection } from '@patternfly/react-core'
 import { ProjectsTable, ProjectTableData } from './ProjectsTable'
+import { CommonProjectCreate } from './CommonProjectCreate'
 
 export function ProjectsList() {
   const [selectedClusters] = useState<string[]>(['local-cluster']) // TODO: Get from props or context
-  // const [selectedClusters] = useState<string[]>(['local-cluster', 'sno-2-lpwmd']) // TODO: Get from props or context
+  const [isCreateCommonProject, setIsCreateCommonProject] = useState(false)
   const [selectedProjects, setSelectedProjects] = useState<ProjectTableData[]>([])
+  const [refreshKey, setRefreshKey] = useState(0)
+  const refetchRef = useRef<(() => void) | null>(null)
+
+  const handleCreateClick = () => {
+    setIsCreateCommonProject(true)
+  }
+
+  const handleModalClose = () => {
+    setIsCreateCommonProject(false)
+  }
+
+  const handleCreateSuccess = () => {
+    setIsCreateCommonProject(false)
+    setTimeout(() => {
+      setRefreshKey((prev) => prev + 1)
+      if (refetchRef.current) {
+        refetchRef.current()
+      }
+    }, 2000)
+  }
+
+  const handleRefetch = (refetchFn: () => void) => {
+    refetchRef.current = refetchFn
+  }
 
   const handleSelectionChange = (projects: ProjectTableData[]) => {
     setSelectedProjects(projects)
-    console.log('Selected projects:', projects)
   }
-
-  const handleCreateClick = () => {
-    console.log('Create project clicked with selected projects:', selectedProjects)
-  }
-
   return (
     <PageSection>
-      <ProjectsTable
-        selectedClusters={selectedClusters}
-        onSelectionChange={handleSelectionChange}
-        onCreateClick={handleCreateClick}
-      />
+      {isCreateCommonProject ? (
+        <CommonProjectCreate onCancelCallback={handleModalClose} onSuccess={handleCreateSuccess} />
+      ) : (
+        <ProjectsTable
+          key={refreshKey}
+          selectedClusters={selectedClusters}
+          onCreateClick={handleCreateClick}
+          onSelectionChange={handleSelectionChange}
+          onRefresh={handleRefetch}
+        />
+      )}
     </PageSection>
   )
 }
