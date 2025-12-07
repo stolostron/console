@@ -84,7 +84,7 @@
     "highlight.js": "^11.9.0",
     "i18next": "21.7.1",
     "i18next-browser-languagedetector": "6.1.8",
-    "i18next-http-backend": "1.4.5",
+    "i18next-http-backend": "3.0.2",
     "ip-cidr": "2.1.5",
     "js-sha256": "^0.11.1",
     "js-yaml": "4.1.0",
