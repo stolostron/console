@@ -7,6 +7,9 @@ import { isCacheEntryValid, useFleetK8sWatchResourceStore } from './fleetK8sWatc
 import { consoleFetchJSON, type K8sModel, type K8sResourceCommon } from '@openshift-console/dynamic-plugin-sdk'
 import { selectorToString } from './requirements'
 import { buildResourceURL, fleetWatch } from './apiRequests'
+import { NO_FLEET_AVAILABLE_ERROR } from './constants'
+import { useHubClusterName, useIsFleetAvailable } from '../api'
+import { useCallback } from 'react'
 
 export const getRequestPathFromResource = (resource: FleetWatchK8sResource, model: K8sModel, basePath: string) => {
   const { cluster, name, namespace, fieldSelector, selector } = resource
@@ -90,20 +93,38 @@ const openFleetWatchSocket = (
   }
 }
 
-export const getInitialResult = <R extends FleetK8sResourceCommon | FleetK8sResourceCommon[]>(
-  resource?: FleetWatchK8sResource | null,
-  model?: K8sModel,
-  basePath?: string
-) => {
-  if (resource && model && basePath) {
-    const requestPath = getRequestPathFromResource(resource, model, basePath)
-    const store = useFleetK8sWatchResourceStore.getState()
-    const entry = store.cache[requestPath]
-    if (entry && isCacheEntryValid(entry)) {
-      return store.getResult(requestPath) as FleetWatchK8sResultsObject<R>
-    }
-  }
-  return { data: getDefaultData(resource), loaded: false } as FleetWatchK8sResultsObject<R>
+export function useGetInitialResult() {
+  const isFleetAvailable = useIsFleetAvailable()
+  const [hubClusterName, hubClusterNameLoaded, hubClusterNameLoadedError] = useHubClusterName()
+  return useCallback(
+    <R extends FleetK8sResourceCommon | FleetK8sResourceCommon[]>(
+      resource?: FleetWatchK8sResource | null,
+      model?: K8sModel,
+      basePath?: string
+    ) => {
+      if (resource && model && basePath) {
+        const requestPath = getRequestPathFromResource(resource, model, basePath)
+        const store = useFleetK8sWatchResourceStore.getState()
+        const entry = store.cache[requestPath]
+        if (entry && isCacheEntryValid(entry)) {
+          return store.getResult(requestPath) as FleetWatchK8sResultsObject<R>
+        }
+      }
+      // Return default data and error, if any
+      const waitingForHubClusterName = !!resource?.cluster && !hubClusterNameLoaded
+      const isProbablyFleetQuery = !!resource?.cluster && resource?.cluster !== hubClusterName
+      let loadError = undefined
+      if (waitingForHubClusterName) {
+        // if we are still waiting for hub name to load, we should return any error fetching the hub name
+        loadError = hubClusterNameLoadedError
+      } else if (isProbablyFleetQuery && !isFleetAvailable) {
+        // if we need to use fleet support but it it not available, we return an error
+        loadError = NO_FLEET_AVAILABLE_ERROR
+      }
+      return { data: getDefaultData(resource), loaded: false, loadError } as FleetWatchK8sResultsObject<R>
+    },
+    [isFleetAvailable, hubClusterName, hubClusterNameLoaded, hubClusterNameLoadedError]
+  )
 }
 
 export const subscribe = <R extends FleetK8sResourceCommon | FleetK8sResourceCommon[]>(

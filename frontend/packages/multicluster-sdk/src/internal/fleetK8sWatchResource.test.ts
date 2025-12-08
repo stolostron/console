@@ -1,9 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { handleWebsocketEvent, getInitialResult, startWatch, stopWatch, subscribe } from './fleetK8sWatchResource'
+import { handleWebsocketEvent, useGetInitialResult, startWatch, stopWatch, subscribe } from './fleetK8sWatchResource'
 import { useFleetK8sWatchResourceStore } from './fleetK8sWatchResourceStore'
 import type { K8sResourceCommon, K8sModel } from '@openshift-console/dynamic-plugin-sdk'
 import type { FleetWatchK8sResource } from '../types'
+import { renderHook } from '@testing-library/react-hooks'
+import { NO_FLEET_AVAILABLE_ERROR } from './constants'
 
 // Mock console methods
 const originalConsoleWarn = console.warn
@@ -59,6 +61,15 @@ jest.mock('@openshift-console/dynamic-plugin-sdk', () => ({
   consoleFetchJSON: (...args: any[]) => mockConsoleFetchJSON(...args),
 }))
 
+// Mock the hooks used by useGetInitialResult
+const mockUseIsFleetAvailable = jest.fn()
+const mockUseHubClusterName = jest.fn()
+
+jest.mock('../api', () => ({
+  useIsFleetAvailable: () => mockUseIsFleetAvailable(),
+  useHubClusterName: () => mockUseHubClusterName(),
+}))
+
 // Import after mocking
 import * as apiRequests from './apiRequests'
 
@@ -75,6 +86,10 @@ beforeEach(() => {
   mockConsoleFetchJSON.mockClear()
   ;(apiRequests.buildResourceURL as jest.Mock).mockClear()
   ;(apiRequests.fleetWatch as jest.Mock).mockClear()
+
+  // Set default mock return values for hooks
+  mockUseIsFleetAvailable.mockReturnValue(true)
+  mockUseHubClusterName.mockReturnValue(['hub-cluster', true, undefined])
 })
 
 afterEach(() => {
@@ -364,7 +379,7 @@ describe('handleWebsocketEvent', () => {
   })
 })
 
-describe('getInitialResult', () => {
+describe('useGetInitialResult', () => {
   const mockModel: K8sModel = {
     apiVersion: 'v1',
     apiGroup: 'core',
@@ -396,10 +411,12 @@ describe('getInitialResult', () => {
     const store = useFleetK8sWatchResourceStore.getState()
     store.setResult(mockRequestPath, [{ cluster: 'test-cluster', ...mockPod }], true)
 
-    const result = getInitialResult(mockResource, mockModel, mockBasePath)
+    const { result } = renderHook(() => useGetInitialResult())
+    const getInitialResult = result.current
+    const resultValue = getInitialResult(mockResource, mockModel, mockBasePath)
 
-    expect(result.data).toEqual([{ cluster: 'test-cluster', ...mockPod }])
-    expect(result.loaded).toBe(true)
+    expect(resultValue.data).toEqual([{ cluster: 'test-cluster', ...mockPod }])
+    expect(resultValue.loaded).toBe(true)
   })
 
   it('should return default data for list if cache is not valid', () => {
@@ -412,10 +429,12 @@ describe('getInitialResult', () => {
     const mockRequestPath = '/api/fleet/api/v1/namespaces/default/pods'
     ;(apiRequests.buildResourceURL as jest.Mock).mockReturnValue(mockRequestPath)
 
-    const result = getInitialResult(mockResource, mockModel, mockBasePath)
+    const { result } = renderHook(() => useGetInitialResult())
+    const getInitialResult = result.current
+    const resultValue = getInitialResult(mockResource, mockModel, mockBasePath)
 
-    expect(result.data).toEqual([])
-    expect(result.loaded).toBe(false)
+    expect(resultValue.data).toEqual([])
+    expect(resultValue.loaded).toBe(false)
   })
 
   it('should return default data for single resource if cache is not valid', () => {
@@ -429,13 +448,18 @@ describe('getInitialResult', () => {
     const mockRequestPath = '/api/fleet/api/v1/namespaces/default/pods/test-pod'
     ;(apiRequests.buildResourceURL as jest.Mock).mockReturnValue(mockRequestPath)
 
-    const result = getInitialResult(mockResource, mockModel, mockBasePath)
+    const { result } = renderHook(() => useGetInitialResult())
+    const getInitialResult = result.current
+    const resultValue = getInitialResult(mockResource, mockModel, mockBasePath)
 
-    expect(result.data).toBeUndefined()
-    expect(result.loaded).toBe(false)
+    expect(resultValue.data).toBeUndefined()
+    expect(resultValue.loaded).toBe(false)
   })
 
   it('should return default data when resource, model, or basePath is missing', () => {
+    const { result } = renderHook(() => useGetInitialResult())
+    const getInitialResult = result.current
+
     const result1 = getInitialResult(null, mockModel, mockBasePath)
     expect(result1.data).toBeUndefined()
     expect(result1.loaded).toBe(false)
@@ -446,13 +470,88 @@ describe('getInitialResult', () => {
       isList: true,
     }
 
-    const result2 = getInitialResult(mockResource, undefined, mockBasePath)
+    const result2 = getInitialResult(mockResource, mockModel, mockBasePath)
     expect(result2.data).toEqual([])
     expect(result2.loaded).toBe(false)
 
     const result3 = getInitialResult(mockResource, mockModel, undefined)
     expect(result3.data).toEqual([])
     expect(result3.loaded).toBe(false)
+  })
+
+  it('should return hub cluster name load error when waiting for hub cluster name', () => {
+    const mockError = new Error('Failed to load hub cluster name')
+    mockUseHubClusterName.mockReturnValue(['', false, mockError])
+
+    const mockResource: FleetWatchK8sResource = {
+      cluster: 'test-cluster',
+      namespace: 'default',
+      isList: true,
+    }
+
+    const { result } = renderHook(() => useGetInitialResult())
+    const getInitialResult = result.current
+    const resultValue = getInitialResult(mockResource, mockModel, mockBasePath)
+
+    expect(resultValue.data).toEqual([])
+    expect(resultValue.loaded).toBe(false)
+    expect(resultValue.loadError).toBe(mockError)
+  })
+
+  it('should return NO_FLEET_AVAILABLE_ERROR when fleet is not available for remote cluster query', () => {
+    mockUseIsFleetAvailable.mockReturnValue(false)
+    mockUseHubClusterName.mockReturnValue(['hub-cluster', true, undefined])
+
+    const mockResource: FleetWatchK8sResource = {
+      cluster: 'remote-cluster',
+      namespace: 'default',
+      isList: true,
+    }
+
+    const { result } = renderHook(() => useGetInitialResult())
+    const getInitialResult = result.current
+    const resultValue = getInitialResult(mockResource, mockModel, mockBasePath)
+
+    expect(resultValue.data).toEqual([])
+    expect(resultValue.loaded).toBe(false)
+    expect(resultValue.loadError).toBe(NO_FLEET_AVAILABLE_ERROR)
+  })
+
+  it('should not return error when cluster matches hub cluster name', () => {
+    mockUseIsFleetAvailable.mockReturnValue(false)
+    mockUseHubClusterName.mockReturnValue(['hub-cluster', true, undefined])
+
+    const mockResource: FleetWatchK8sResource = {
+      cluster: 'hub-cluster',
+      namespace: 'default',
+      isList: true,
+    }
+
+    const { result } = renderHook(() => useGetInitialResult())
+    const getInitialResult = result.current
+    const resultValue = getInitialResult(mockResource, mockModel, mockBasePath)
+
+    expect(resultValue.data).toEqual([])
+    expect(resultValue.loaded).toBe(false)
+    expect(resultValue.loadError).toBeUndefined()
+  })
+
+  it('should not return error when no cluster is specified', () => {
+    mockUseIsFleetAvailable.mockReturnValue(false)
+    mockUseHubClusterName.mockReturnValue(['hub-cluster', true, undefined])
+
+    const mockResource: FleetWatchK8sResource = {
+      namespace: 'default',
+      isList: true,
+    }
+
+    const { result } = renderHook(() => useGetInitialResult())
+    const getInitialResult = result.current
+    const resultValue = getInitialResult(mockResource, mockModel, mockBasePath)
+
+    expect(resultValue.data).toEqual([])
+    expect(resultValue.loaded).toBe(false)
+    expect(resultValue.loadError).toBeUndefined()
   })
 })
 
