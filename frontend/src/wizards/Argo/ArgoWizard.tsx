@@ -299,12 +299,12 @@ export function ArgoWizard(props: ArgoWizardProps) {
               tolerations: [
                 {
                   key: 'cluster.open-cluster-management.io/unreachable',
-                  operator: 'Exists'
+                  operator: 'Exists',
                 },
                 {
                   key: 'cluster.open-cluster-management.io/unavailable',
-                  operator: 'Exists'
-                }
+                  operator: 'Exists',
+                },
               ],
               numberOfClusters: 1,
               predicates: [
@@ -374,12 +374,12 @@ export function ArgoWizard(props: ArgoWizardProps) {
               tolerations: [
                 {
                   key: 'cluster.open-cluster-management.io/unreachable',
-                  operator: 'Exists'
+                  operator: 'Exists',
                 },
                 {
                   key: 'cluster.open-cluster-management.io/unavailable',
-                  operator: 'Exists'
-                }
+                  operator: 'Exists',
+                },
               ],
               numberOfClusters: 1,
             },
