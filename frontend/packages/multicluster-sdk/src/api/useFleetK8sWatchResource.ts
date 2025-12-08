@@ -12,7 +12,13 @@ import { useEffect, useMemo, useState } from 'react'
 import { useDeepCompareMemoize } from '../internal/hooks/useDeepCompareMemoize'
 import { NO_FLEET_AVAILABLE_ERROR } from '../internal/constants'
 import { useFleetK8sAPIPath } from './useFleetK8sAPIPath'
-import { getInitialResult, startWatch, stopWatch } from '../internal/fleetK8sWatchResource'
+import {
+  getInitialResult,
+  getRequestPathFromResource,
+  startWatch,
+  stopWatch,
+  subscribe,
+} from '../internal/fleetK8sWatchResource'
 
 /**
  * A hook for watching Kubernetes resources with support for multi-cluster environments.
@@ -52,7 +58,7 @@ export function useFleetK8sWatchResource<R extends FleetK8sResourceCommon | Flee
   const isFleetAvailable = useIsFleetAvailable()
   const [hubClusterName, hubClusterNameLoaded, hubClusterNameLoadedError] = useHubClusterName()
 
-  const memoizedResource = useDeepCompareMemoize(initResource, true)
+  const [memoizedResource, memoizedResourceChanged] = useDeepCompareMemoize(initResource, true)
   const { cluster, ...resource } = memoizedResource ?? {}
   const { groupVersionKind } = resource
   const [model, modelLoading] = useK8sModel(groupVersionKind)
@@ -68,9 +74,11 @@ export function useFleetK8sWatchResource<R extends FleetK8sResourceCommon | Flee
 
   const isResourceNull = !memoizedResource || !groupVersionKind
 
-  const [fleetResult, setFleetResult] = useState<FleetWatchK8sResultsObject<R>>(
-    getInitialResult(memoizedResource, model, backendAPIPath)
-  )
+  const initialResult = getInitialResult<R>(memoizedResource, model, backendAPIPath)
+  const [fleetResult, setFleetResult] = useState<FleetWatchK8sResultsObject<R>>(initialResult)
+  if (memoizedResourceChanged) {
+    setFleetResult(initialResult)
+  }
   const fleetResultTuple = useMemo<FleetWatchK8sResult<R>>(() => {
     const { data, loaded, loadError } = fleetResult
     return [data, loaded, loadError]
@@ -80,8 +88,14 @@ export function useFleetK8sWatchResource<R extends FleetK8sResourceCommon | Flee
 
   useEffect(() => {
     if (useFleet && !isResourceNull && backendPathLoaded && backendAPIPath && !modelLoading && model) {
-      startWatch(memoizedResource, model, backendAPIPath, setFleetResult)
-      return () => stopWatch(memoizedResource, model, backendAPIPath)
+      const requestPath = getRequestPathFromResource(memoizedResource, model, backendAPIPath)
+      const unsubscribe = subscribe(memoizedResource, requestPath, setFleetResult)
+      startWatch(memoizedResource, model, backendAPIPath)
+
+      return () => {
+        unsubscribe()
+        stopWatch(memoizedResource, model, backendAPIPath)
+      }
     }
   }, [backendAPIPath, backendPathLoaded, isResourceNull, memoizedResource, model, modelLoading, useFleet])
 
