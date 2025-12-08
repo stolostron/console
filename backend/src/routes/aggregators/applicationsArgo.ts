@@ -441,9 +441,9 @@ export function createArgoStatusMap(searchResult: SearchResult) {
       let appStatuses = appStatusMap[app.cluster]
       if (!appStatuses) {
         appStatuses = appStatusMap[app.cluster] = {
-          health: [Array(ScoreColumnSize).fill(0) as number[], []],
-          synced: [Array(ScoreColumnSize).fill(0) as number[], []],
-          deployed: [Array(ScoreColumnSize).fill(0) as number[], []],
+          health: [new Array(ScoreColumnSize).fill(0) as number[], []],
+          synced: [new Array(ScoreColumnSize).fill(0) as number[], []],
+          deployed: [new Array(ScoreColumnSize).fill(0) as number[], []],
         }
       }
       computeAppHealthStatus(appStatuses.health, app)

@@ -613,12 +613,12 @@ describe('Create Subscription Application page', () => {
 
     userEvent.type(
       screen.getByRole('textbox', {
-        name: /ansible tower host/i,
+        name: /Ansible Automation controller host/i,
       }),
       'https://invalid.com'
     )
 
-    userEvent.type(screen.getByPlaceholderText(/enter the ansible tower token/i), 'token')
+    userEvent.type(screen.getByPlaceholderText(/enter the Ansible Automation controller token/i), 'token')
 
     userEvent.click(
       screen.getByRole('button', {

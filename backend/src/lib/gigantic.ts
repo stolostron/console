@@ -17,7 +17,7 @@ export function getGiganticApps(): ITransformedResource[] {
   const MOCK_CLUSTERS = Number(process.env.MOCK_CLUSTERS)
   const apps: ITransformedResource[] = []
   const template = templateMaker(applicationsTemplate)
-  Array.from(Array(MOCK_CLUSTERS).keys()).forEach((inx) => {
+  Array.from(new Array(MOCK_CLUSTERS).keys()).forEach((inx) => {
     apps.push(...(template({ name: `cluster${inx + 1}` }) as ITransformedResource[]))
   })
   return apps
@@ -40,7 +40,7 @@ const templateMaker = function (obj: unknown) {
 function getMockClusters(n: number): ServerSideEvent[] {
   const template = templateMaker(clusterTemplate)
   return [template({ name: 'local-cluster' })].concat(
-    Array.from(Array(n).keys()).map((inx) => {
+    Array.from(new Array(n).keys()).map((inx) => {
       return template({ name: `cluster${inx + 1}` })
     })
   )
@@ -49,7 +49,7 @@ function getMockClusters(n: number): ServerSideEvent[] {
 function getMockClusterInfo(n: number): ServerSideEvent[] {
   const template = templateMaker(managedClusterInfoTemplate)
   return [template({ name: 'local-cluster' })].concat(
-    Array.from(Array(n).keys()).map((inx) => {
+    Array.from(new Array(n).keys()).map((inx) => {
       return template({ name: `cluster${inx + 1}` })
     })
   )
@@ -59,7 +59,7 @@ function getMockClusterAddsons(n: number): ServerSideEvent[] {
   let addons
   let template = templateMaker(appmanager)
   addons = [template({ name: 'local-cluster' })].concat(
-    Array.from(Array(n).keys()).map((inx) => {
+    Array.from(new Array(n).keys()).map((inx) => {
       return template({ name: `cluster${inx + 1}` })
     })
   )
@@ -67,7 +67,7 @@ function getMockClusterAddsons(n: number): ServerSideEvent[] {
   addons = [
     ...addons,
     template({ name: 'local-cluster' }),
-    ...Array.from(Array(n).keys()).map((inx) => {
+    ...Array.from(new Array(n).keys()).map((inx) => {
       return template({ name: `cluster${inx + 1}` })
     }),
   ]
@@ -75,7 +75,7 @@ function getMockClusterAddsons(n: number): ServerSideEvent[] {
   addons = [
     ...addons,
     template({ name: 'local-cluster' }),
-    ...Array.from(Array(n).keys()).map((inx) => {
+    ...Array.from(new Array(n).keys()).map((inx) => {
       return template({ name: `cluster${inx + 1}` })
     }),
   ]
@@ -83,7 +83,7 @@ function getMockClusterAddsons(n: number): ServerSideEvent[] {
   addons = [
     ...addons,
     template({ name: 'local-cluster' }),
-    ...Array.from(Array(n).keys()).map((inx) => {
+    ...Array.from(new Array(n).keys()).map((inx) => {
       return template({ name: `cluster${inx + 1}` })
     }),
   ]
@@ -91,7 +91,7 @@ function getMockClusterAddsons(n: number): ServerSideEvent[] {
   addons = [
     ...addons,
     template({ name: 'local-cluster' }),
-    ...Array.from(Array(n).keys()).map((inx) => {
+    ...Array.from(new Array(n).keys()).map((inx) => {
       return template({ name: `cluster${inx + 1}` })
     }),
   ]
@@ -99,7 +99,7 @@ function getMockClusterAddsons(n: number): ServerSideEvent[] {
   addons = [
     ...addons,
     template({ name: 'local-cluster' }),
-    ...Array.from(Array(n).keys()).map((inx) => {
+    ...Array.from(new Array(n).keys()).map((inx) => {
       return template({ name: `cluster${inx + 1}` })
     }),
   ]
@@ -107,7 +107,7 @@ function getMockClusterAddsons(n: number): ServerSideEvent[] {
   addons = [
     ...addons,
     template({ name: 'local-cluster' }),
-    ...Array.from(Array(n).keys()).map((inx) => {
+    ...Array.from(new Array(n).keys()).map((inx) => {
       return template({ name: `cluster${inx + 1}` })
     }),
   ]
@@ -115,7 +115,7 @@ function getMockClusterAddsons(n: number): ServerSideEvent[] {
   addons = [
     ...addons,
     template({ name: 'local-cluster' }),
-    ...Array.from(Array(n).keys()).map((inx) => {
+    ...Array.from(new Array(n).keys()).map((inx) => {
       return template({ name: `cluster${inx + 1}` })
     }),
   ]
@@ -130,9 +130,9 @@ const NONCOMPLIANT = [
 type PolicyTemplateType = typeof policyTemplate
 function getMockPolicies(n: number): ServerSideEvent[] {
   const template = templateMaker(policyTemplate)
-  return Array.from(Array(3).keys()).map((pinx) => {
+  return Array.from(new Array(3).keys()).map((pinx) => {
     const mockPolicy = template({ name: `policy${pinx + 1}` }) as PolicyTemplateType
-    Array.from(Array(n).keys()).forEach((inx) => {
+    Array.from(new Array(n).keys()).forEach((inx) => {
       let compliant = NONCOMPLIANT[pinx].indexOf(inx) !== -1 ? 'NonCompliant' : 'Compliant'
       switch (pinx) {
         case 0:

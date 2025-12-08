@@ -96,7 +96,7 @@ describe('RoleAssignmentActionDropdown', () => {
         items: [mockRoleAssignment],
         isDanger: true,
         icon: 'warning',
-        confirmText: 'delete',
+        confirmText: 'confirm',
       })
     )
   })

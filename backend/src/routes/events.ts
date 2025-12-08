@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-/* eslint-disable no-constant-condition */
 
 import eventStream from 'event-stream'
 import get from 'get-value'

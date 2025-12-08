@@ -189,7 +189,7 @@ const RoleAssignments = ({
             close: () => setDeleteModalProps({ open: false }),
             isDanger: true,
             icon: 'warning',
-            confirmText: 'delete',
+            confirmText: t('confirm'),
           })
         },
         variant: 'bulk-action',

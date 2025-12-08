@@ -1,5 +1,5 @@
-import { IResource } from './../resources/resource'
 /* Copyright Contributors to the Open Cluster Management project */
+import { IResource } from './../resources/resource'
 import { pipeline, Readable, Transform } from 'stream'
 import {
   createBrotliCompress,
@@ -116,7 +116,6 @@ export function deflateResource(resource: IResource, dictionary: Dictionary): Bu
 function compressResource(resource: UncompressedResourceType, dictionary: Dictionary): CompressedResourceType {
   if (resource) {
     if (Array.isArray(resource)) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call
       return resource.map((item: UncompressedResourceType) => compressResource(item, dictionary))
     } else if (typeof resource === 'object') {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

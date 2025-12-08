@@ -251,7 +251,7 @@ describe('showAnsibleJobDetails', () => {
   const result = [
     {
       indent: undefined,
-      labelValue: 'Ansible Tower Job template name',
+      labelValue: 'Ansible Automation controller Job template name',
       status: undefined,
       type: 'label',
       value: 'AnsibleJob1',
@@ -260,7 +260,7 @@ describe('showAnsibleJobDetails', () => {
       type: 'spacer',
     },
     {
-      labelValue: 'Ansible Tower Job URL',
+      labelValue: 'Ansible Automation controller Job URL',
       type: 'label',
     },
     {
