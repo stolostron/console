@@ -16,7 +16,6 @@ import {
 } from '@patternfly/react-core'
 import { EllipsisVIcon } from '@patternfly/react-icons'
 import { css as cssPF } from '@patternfly/react-styles'
-import { Link, LinkProps } from 'react-router-dom-v5-compat'
 import {
   ActionsColumn,
   CustomActionsToggleProps,
@@ -94,13 +93,6 @@ const tableClass = css({
   },
 })
 
-const visitedLinkClass = css`
-  color: var(--pf-v5-global--link--Color--visited) !important;
-  span {
-    color: var(--pf-v5-global--link--Color--visited) !important;
-  }
-`
-
 const DEFAULT_ITEMS_PER_PAGE = 10
 const STORAGE_EXPIRATION_MS = 30 * 60 * 1000 // 30 minutes in milliseconds
 
@@ -139,70 +131,6 @@ export function getItemWithExpiration(key: string): string | null {
     localStorage.removeItem(key)
     return null
   }
-}
-
-/**
- * Enhanced Link component that stores a value in localStorage with expiration when clicked.
- * Uses the same 30-minute expiration pattern as other table state.
- */
-export interface AcmTableLinkWithVisitedStatusProps extends LinkProps {
-  /** The localStorage key to use for storing the value */
-  storageKey: string
-  /** The value to store in localStorage when the link is clicked */
-  storageValue: string
-}
-
-export function AcmTableLinkWithVisitedStatus({
-  storageKey,
-  storageValue,
-  ...props
-}: AcmTableLinkWithVisitedStatusProps) {
-  const handleClick = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
-    if (storageKey && storageValue) {
-      // Get existing visited values using expiration helper
-      const storedValue = getItemWithExpiration(storageKey)
-      let visitedValues: string[] = []
-
-      if (storedValue) {
-        try {
-          const parsed = JSON.parse(storedValue)
-          if (Array.isArray(parsed)) {
-            visitedValues = parsed
-          }
-        } catch {
-          // If parsing fails, start with empty array
-        }
-      }
-
-      // Add current value if not already present
-      if (!visitedValues.includes(storageValue)) {
-        visitedValues.push(storageValue)
-      }
-
-      // Store updated array with expiration helper
-      setItemWithExpiration(storageKey, JSON.stringify(visitedValues))
-    }
-    props.onClick?.(event)
-  }
-
-  // Check if this link value was visited before
-  let wasVisited = false
-  if (storageKey && storageValue) {
-    const storedValue = getItemWithExpiration(storageKey)
-    if (storedValue) {
-      try {
-        const parsed = JSON.parse(storedValue)
-        if (Array.isArray(parsed)) {
-          wasVisited = parsed.includes(storageValue)
-        }
-      } catch {
-        // If parsing fails, assume not visited
-      }
-    }
-  }
-  const linkClassName = wasVisited ? visitedLinkClass : ''
-
-  return <Link onClick={handleClick} {...props} className={linkClassName} />
 }
 
 const BREAKPOINT_SIZES = [

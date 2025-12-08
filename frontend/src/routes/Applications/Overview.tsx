@@ -17,7 +17,7 @@ import { cellWidth } from '@patternfly/react-table'
 import { get } from 'lodash'
 import { useCallback, useContext, useMemo, useState } from 'react'
 import { TFunction } from 'react-i18next'
-import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
+import { generatePath, Link, useNavigate } from 'react-router-dom-v5-compat'
 import { HighlightSearchText } from '../../components/HighlightSearchText'
 import { Pages, usePageVisitMetricHandler } from '../../hooks/console-metrics'
 import { useTranslation } from '../../lib/acm-i18next'
@@ -54,7 +54,6 @@ import {
   AcmDropdown,
   AcmEmptyState,
   AcmInlineStatusGroup,
-  AcmTableLinkWithVisitedStatus,
   AcmTable,
   compareStrings,
   IAcmRowAction,
@@ -168,7 +167,7 @@ export function getApplicationName(application: IApplicationResource, search: st
   }
   return (
     <span style={{ whiteSpace: 'nowrap' }}>
-      <AcmTableLinkWithVisitedStatus
+      <Link
         to={{
           pathname: generatePath(NavigationPath.applicationDetails, {
             namespace: application.metadata?.namespace!,
@@ -176,11 +175,9 @@ export function getApplicationName(application: IApplicationResource, search: st
           }),
           search: `?apiVersion=${apiVersion}${clusterQuery}`,
         }}
-        storageKey="selectedApplicationName"
-        storageValue={`${(application as IUIResource).uidata?.clusterList?.join(',') ?? ''}/${application.metadata?.namespace}/${application.metadata?.name}`}
       >
         <HighlightSearchText text={application.metadata?.name} searchText={search} isLink useFuzzyHighlighting />
-      </AcmTableLinkWithVisitedStatus>
+      </Link>
     </span>
   )
 }
