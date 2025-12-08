@@ -19,8 +19,10 @@ jest.mock('./useHubClusterName', () => ({
 
 jest.mock('../internal/fleetK8sWatchResource', () => ({
   getInitialResult: jest.fn(),
+  getRequestPathFromResource: jest.fn(),
   startWatch: jest.fn(),
   stopWatch: jest.fn(),
+  subscribe: jest.fn(),
 }))
 
 import { renderHook } from '@testing-library/react-hooks'
@@ -29,7 +31,13 @@ import { useFleetK8sAPIPath } from './useFleetK8sAPIPath'
 import { useIsFleetAvailable } from './useIsFleetAvailable'
 import { useHubClusterName } from './useHubClusterName'
 import { useFleetK8sWatchResource } from './useFleetK8sWatchResource'
-import { getInitialResult, startWatch, stopWatch } from '../internal/fleetK8sWatchResource'
+import {
+  getInitialResult,
+  getRequestPathFromResource,
+  startWatch,
+  stopWatch,
+  subscribe,
+} from '../internal/fleetK8sWatchResource'
 import { NO_FLEET_AVAILABLE_ERROR } from '../internal/constants'
 
 const mockUseK8sModel = useK8sModel as jest.MockedFunction<typeof useK8sModel>
@@ -38,8 +46,12 @@ const mockUseFleetK8sAPIPath = useFleetK8sAPIPath as jest.MockedFunction<typeof 
 const mockUseIsFleetAvailable = useIsFleetAvailable as jest.MockedFunction<typeof useIsFleetAvailable>
 const mockUseHubClusterName = useHubClusterName as jest.MockedFunction<typeof useHubClusterName>
 const mockGetInitialResult = getInitialResult as jest.MockedFunction<typeof getInitialResult>
+const mockGetRequestPathFromResource = getRequestPathFromResource as jest.MockedFunction<
+  typeof getRequestPathFromResource
+>
 const mockStartWatch = startWatch as jest.MockedFunction<typeof startWatch>
 const mockStopWatch = stopWatch as jest.MockedFunction<typeof stopWatch>
+const mockSubscribe = subscribe as jest.MockedFunction<typeof subscribe>
 
 describe('useFleetK8sWatchResource', () => {
   const hubClusterName = 'hub-cluster'
@@ -63,6 +75,8 @@ describe('useFleetK8sWatchResource', () => {
     mockUseFleetK8sAPIPath.mockReturnValue([mockFleetAPIUrl, true, undefined])
     mockUseHubClusterName.mockReturnValue([hubClusterName, true, undefined])
     mockGetInitialResult.mockReturnValue({ data: [], loaded: false })
+    mockGetRequestPathFromResource.mockReturnValue('/api/test/path')
+    mockSubscribe.mockReturnValue(jest.fn()) // Return unsubscribe function
   })
 
   describe('when using hub cluster (no fleet)', () => {
@@ -137,8 +151,14 @@ describe('useFleetK8sWatchResource', () => {
 
       const { result } = renderHook(() => useFleetK8sWatchResource(initResource))
 
-      // Should call startWatch with correct parameters
-      expect(mockStartWatch).toHaveBeenCalledWith(initResource, mockModel, mockFleetAPIUrl, expect.any(Function))
+      // Should call getRequestPathFromResource to get the path
+      expect(mockGetRequestPathFromResource).toHaveBeenCalledWith(initResource, mockModel, mockFleetAPIUrl)
+
+      // Should call subscribe with correct parameters
+      expect(mockSubscribe).toHaveBeenCalledWith(initResource, '/api/test/path', expect.any(Function))
+
+      // Should call startWatch with correct parameters (without callback)
+      expect(mockStartWatch).toHaveBeenCalledWith(initResource, mockModel, mockFleetAPIUrl)
 
       // Should not call useK8sWatchResource with the resource
       expect(mockUseK8sWatchResource).toHaveBeenCalledWith(null)
@@ -149,13 +169,17 @@ describe('useFleetK8sWatchResource', () => {
 
     it('should call stopWatch on cleanup', () => {
       mockGetInitialResult.mockReturnValue({ data: [], loaded: false })
+      const mockUnsubscribe = jest.fn()
+      mockSubscribe.mockReturnValue(mockUnsubscribe)
 
       const { unmount } = renderHook(() => useFleetK8sWatchResource(initResource))
 
       expect(mockStartWatch).toHaveBeenCalled()
+      expect(mockSubscribe).toHaveBeenCalled()
 
       unmount()
 
+      expect(mockUnsubscribe).toHaveBeenCalled()
       expect(mockStopWatch).toHaveBeenCalledWith(initResource, mockModel, mockFleetAPIUrl)
     })
 
@@ -171,7 +195,7 @@ describe('useFleetK8sWatchResource', () => {
 
       const { result } = renderHook(() => useFleetK8sWatchResource(singleResourceInit))
 
-      expect(mockStartWatch).toHaveBeenCalledWith(singleResourceInit, mockModel, mockFleetAPIUrl, expect.any(Function))
+      expect(mockStartWatch).toHaveBeenCalledWith(singleResourceInit, mockModel, mockFleetAPIUrl)
 
       expect(result.current).toEqual([mockSingleData, true, undefined])
     })
@@ -186,16 +210,16 @@ describe('useFleetK8sWatchResource', () => {
       mockGetInitialResult.mockReturnValue({ data: initialData, loaded: true })
 
       let setResultCallback: any
-      mockStartWatch.mockImplementation((_resource, _model, _basePath, setResult) => {
+      mockSubscribe.mockImplementation((_resource, _requestPath, setResult) => {
         setResultCallback = setResult
-        return Promise.resolve()
+        return jest.fn() // return unsubscribe function
       })
 
       const { result, rerender } = renderHook(() => useFleetK8sWatchResource(initResource))
 
       expect(result.current).toEqual([initialData, true, undefined])
 
-      // Simulate watch update
+      // Simulate watch update via subscribe callback
       setResultCallback({ data: updatedData, loaded: true })
       rerender()
 
@@ -384,7 +408,7 @@ describe('useFleetK8sWatchResource', () => {
 
       renderHook(() => useFleetK8sWatchResource(initResource))
 
-      expect(mockStartWatch).toHaveBeenCalledWith(initResource, mockModel, mockFleetAPIUrl, expect.any(Function))
+      expect(mockStartWatch).toHaveBeenCalledWith(initResource, mockModel, mockFleetAPIUrl)
     })
 
     it('should handle fieldSelector and selector parameters', () => {
@@ -399,7 +423,7 @@ describe('useFleetK8sWatchResource', () => {
 
       renderHook(() => useFleetK8sWatchResource(initResource))
 
-      expect(mockStartWatch).toHaveBeenCalledWith(initResource, mockModel, mockFleetAPIUrl, expect.any(Function))
+      expect(mockStartWatch).toHaveBeenCalledWith(initResource, mockModel, mockFleetAPIUrl)
     })
 
     it('should memoize resource to prevent unnecessary re-renders', () => {
@@ -519,6 +543,136 @@ describe('useFleetK8sWatchResource', () => {
       renderHook(() => useFleetK8sWatchResource(initResource))
 
       expect(mockGetInitialResult).toHaveBeenCalledWith(initResource, mockModel, undefined)
+    })
+
+    it('should immediately return correct initial value when initResource changes', () => {
+      const podsResource = {
+        groupVersionKind: { version: 'v1', kind: 'Pod' },
+        isList: true,
+        cluster: remoteClusterName,
+        namespace: 'default',
+      }
+
+      const deploymentsResource = {
+        groupVersionKind: { group: 'apps', version: 'v1', kind: 'Deployment' },
+        isList: true,
+        cluster: remoteClusterName,
+        namespace: 'default',
+      }
+
+      // Mock getInitialResult to return different values for different resources
+      const podsInitialData = [{ metadata: { name: 'pod1' }, cluster: remoteClusterName }]
+      const deploymentsInitialData = [{ metadata: { name: 'deployment1' }, cluster: remoteClusterName }]
+
+      // Mock getInitialResult to return the appropriate data based on the resource
+      mockGetInitialResult.mockImplementation((resource) => {
+        if (resource?.groupVersionKind?.kind === 'Pod') {
+          return { data: podsInitialData, loaded: true }
+        } else if (resource?.groupVersionKind?.kind === 'Deployment') {
+          return { data: deploymentsInitialData, loaded: true }
+        }
+        return { data: [], loaded: false }
+      })
+
+      const { result, rerender } = renderHook(({ resource }) => useFleetK8sWatchResource(resource), {
+        initialProps: { resource: podsResource },
+      })
+
+      // Initial render should return pods data
+      expect(result.current).toEqual([podsInitialData, true, undefined])
+
+      // Change to deployments resource
+      rerender({ resource: deploymentsResource })
+
+      // Should immediately return deployments initial data (either cached or empty loading state)
+      expect(result.current).toEqual([deploymentsInitialData, true, undefined])
+    })
+
+    it('should return empty loading state when initResource changes and no cache exists', () => {
+      const podsResource = {
+        groupVersionKind: { version: 'v1', kind: 'Pod' },
+        isList: true,
+        cluster: remoteClusterName,
+        namespace: 'default',
+      }
+
+      const deploymentsResource = {
+        groupVersionKind: { group: 'apps', version: 'v1', kind: 'Deployment' },
+        isList: true,
+        cluster: remoteClusterName,
+        namespace: 'default',
+      }
+
+      // Mock getInitialResult to return cached data for pods, but empty state for deployments
+      const podsInitialData = [{ metadata: { name: 'pod1' }, cluster: remoteClusterName }]
+
+      mockGetInitialResult.mockImplementation((resource) => {
+        if (resource?.groupVersionKind?.kind === 'Pod') {
+          return { data: podsInitialData, loaded: true }
+        } else if (resource?.groupVersionKind?.kind === 'Deployment') {
+          return { data: [], loaded: false }
+        }
+        return { data: [], loaded: false }
+      })
+
+      const { result, rerender } = renderHook(({ resource }) => useFleetK8sWatchResource(resource), {
+        initialProps: { resource: podsResource },
+      })
+
+      // Initial render should return pods data
+      expect(result.current).toEqual([podsInitialData, true, undefined])
+
+      // Change to deployments resource (no cache)
+      rerender({ resource: deploymentsResource })
+
+      // Should immediately return empty loading state for the new resource
+      expect(result.current).toEqual([[], false, undefined])
+    })
+
+    it('should not use cached error result when initResource changes', () => {
+      const podsResource = {
+        groupVersionKind: { version: 'v1', kind: 'Pod' },
+        isList: true,
+        cluster: remoteClusterName,
+        namespace: 'default',
+      }
+
+      const deploymentsResource = {
+        groupVersionKind: { group: 'apps', version: 'v1', kind: 'Deployment' },
+        isList: true,
+        cluster: remoteClusterName,
+        namespace: 'default',
+      }
+
+      // Mock getInitialResult to return valid data for pods
+      // For deployments, it should filter out any cached error and return empty state
+      const podsInitialData = [{ metadata: { name: 'pod1' }, cluster: remoteClusterName }]
+
+      mockGetInitialResult.mockImplementation((resource) => {
+        if (resource?.groupVersionKind?.kind === 'Pod') {
+          return { data: podsInitialData, loaded: true }
+        } else if (resource?.groupVersionKind?.kind === 'Deployment') {
+          // In reality, getInitialResult would see a cached error and return empty state
+          // This tests that when switching resources, the hook properly uses that empty state
+          return { data: [], loaded: false }
+        }
+        return { data: [], loaded: false }
+      })
+
+      const { result, rerender } = renderHook(({ resource }) => useFleetK8sWatchResource(resource), {
+        initialProps: { resource: podsResource },
+      })
+
+      // Initial render should return pods data
+      expect(result.current).toEqual([podsInitialData, true, undefined])
+
+      // Change to deployments resource (has cached error, but getInitialResult filters it)
+      rerender({ resource: deploymentsResource })
+
+      // Should not use the cached error result - should return empty loading state to retry
+      expect(result.current[2]).toBeUndefined() // no error should be returned
+      expect(result.current[1]).toBe(false) // should be in loading state to retry
+      expect(result.current[0]).toEqual([]) // should have empty data, not stale cached data
     })
   })
 })
