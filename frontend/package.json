@@ -87,7 +87,7 @@
     "i18next-http-backend": "1.4.0",
     "ip-cidr": "2.1.5",
     "js-sha256": "^0.11.1",
-    "js-yaml": "4.1.0",
+    "js-yaml": "4.1.1",
     "lodash": "4.17.21",
     "monaco-editor": "^0.34.1",
     "parse-url": "^9.2.0",
