@@ -233,9 +233,7 @@ const useRoleAssignmentData = (): RoleAssignmentHookReturnType => {
     isGroupsLoading,
     isRolesLoading,
     isClusterSetLoading,
-    refetchNamespaces: () => {
-      refetchNamespaces()
-    },
+    refetchNamespaces,
   }
 }
 

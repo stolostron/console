@@ -24,9 +24,7 @@ export function ProjectsList() {
     setIsCreateCommonProject(false)
     setTimeout(() => {
       setRefreshKey((prev) => prev + 1)
-      if (refetchRef.current) {
-        refetchRef.current()
-      }
+      refetchRef.current?.()
     }, 2000)
   }
 

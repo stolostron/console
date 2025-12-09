@@ -1,13 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useMemo, useState, useCallback, useEffect } from 'react'
 import { ButtonVariant, Label, LabelGroup } from '@patternfly/react-core'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { generatePath, Link } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../lib/acm-i18next'
 import { NavigationPath } from '../../NavigationPath'
-import { AcmEmptyState, AcmTable, IAcmTableColumn, AcmButton } from '../../ui-components'
-import { IAcmTableButtonAction, ITableFilter } from '../../ui-components/AcmTable/AcmTableTypes'
 import { useRoleAssignmentData } from '../../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHook'
+import { AcmButton, AcmEmptyState, AcmTable, IAcmTableColumn } from '../../ui-components'
+import { IAcmTableButtonAction, ITableFilter } from '../../ui-components/AcmTable/AcmTableTypes'
+import { isClusterInClusters } from './utils'
 
 export interface ProjectTableData {
   name: string
@@ -23,16 +24,14 @@ interface ProjectsTableProps {
   onSelectionChange?: (selectedProjects: ProjectTableData[]) => void
   onCreateClick?: () => void
   onRefresh?: (refetchFn: () => void) => void
-  isLoading?: boolean
 }
 
 export function ProjectsTable({
   selectedClusters,
-  projects: projectsProp,
+  projects,
   onSelectionChange,
   onCreateClick,
   onRefresh,
-  isLoading: isLoadingProp,
 }: ProjectsTableProps) {
   const { t } = useTranslation()
   const [hasSelectedProjects, setHasSelectedProjects] = useState(false)
@@ -45,73 +44,49 @@ export function ProjectsTable({
   )
 
   const projectsData: ProjectTableData[] = useMemo(() => {
-    if (projectsProp) {
-      return projectsProp
+    if (projects) {
+      return projects
     }
 
-    if (selectedClusters.length === 0) {
+    if (selectedClusters.length) {
       return []
     }
 
-    const clusterNamespaceGroupings: string[][] = []
-
-    for (const cluster of clusters) {
-      const isMatch = selectedClusters.some((selectedCluster) => {
-        const selectedStr = selectedCluster?.toString().trim()
-        const clusterStr = cluster.name?.toString().trim()
-        return selectedStr === clusterStr
-      })
-
-      if (isMatch) {
-        clusterNamespaceGroupings.push(cluster.namespaces ? [...cluster.namespaces] : [])
-      }
-    }
-
-    if (clusterNamespaceGroupings.length === 0) {
-      return []
-    }
-
-    let commonNamespaces: string[] = clusterNamespaceGroupings[0] || []
-
-    for (let i = 1; i < clusterNamespaceGroupings.length; i++) {
-      commonNamespaces = commonNamespaces.filter((namespace) => clusterNamespaceGroupings[i].includes(namespace))
-    }
-
-    const transformed = commonNamespaces
+    const commonNamespaces: string[] = clusters
+      .filter((cluster) => isClusterInClusters(selectedClusters, cluster))
+      .reduce((acc: string[][], curr) => [...acc, curr.namespaces ? [...curr.namespaces] : []], [])
+      .flatMap((namespaces) => [...new Set(namespaces)])
       .sort((a, b) => a.localeCompare(b))
-      .map((ns) => ({
-        name: ns,
-        type: 'Namespace',
-        clusters: selectedClusters,
-      }))
 
-    return transformed
-  }, [projectsProp, selectedClusters, clusters])
-
-  const isLoading = isLoadingProp ?? isRoleAssignmentDataLoading
+    return commonNamespaces.map((ns) => ({
+      name: ns,
+      type: 'Namespace',
+      clusters: selectedClusters,
+    }))
+  }, [projects, selectedClusters, clusters])
 
   useEffect(() => {
-    if (onRefresh && refetchNamespaces) {
-      onRefresh(refetchNamespaces)
+    if (refetchNamespaces) {
+      onRefresh?.(refetchNamespaces)
     }
   }, [onRefresh, refetchNamespaces])
 
-  const tableActionButtons = useMemo<IAcmTableButtonAction[]>(() => {
-    if (!onCreateClick) {
-      return []
-    }
-
-    return [
-      {
-        id: 'create-project',
-        title: t('Create common project'),
-        click: onCreateClick,
-        variant: ButtonVariant.primary,
-        isDisabled: hasSelectedProjects,
-        tooltip: hasSelectedProjects ? t('Deselect projects to create a new common project') : undefined,
-      },
-    ]
-  }, [t, onCreateClick, hasSelectedProjects])
+  const tableActionButtons = useMemo<IAcmTableButtonAction[]>(
+    () =>
+      !onCreateClick
+        ? []
+        : [
+            {
+              id: 'create-project',
+              title: t('Create common project'),
+              click: onCreateClick,
+              variant: ButtonVariant.primary,
+              isDisabled: hasSelectedProjects,
+              tooltip: hasSelectedProjects ? t('Deselect projects to create a new common project') : undefined,
+            },
+          ],
+    [t, onCreateClick, hasSelectedProjects]
+  )
 
   const filters = useMemo<ITableFilter<ProjectTableData>[]>(() => {
     const allFilters: ITableFilter<ProjectTableData>[] = [
@@ -169,44 +144,40 @@ export function ProjectsTable({
     },
     {
       header: t('Clusters'),
-      cell: (project) => {
-        return (
-          <LabelGroup numLabels={2}>
-            {project.clusters.map((cluster) => (
-              <Label key={cluster} isCompact color="grey">
-                <Link
-                  to={generatePath(NavigationPath.clusterOverview, {
-                    namespace: cluster,
-                    name: cluster,
-                  })}
-                  style={{ textDecoration: 'none' }}
-                >
-                  {cluster}
-                </Link>
-              </Label>
-            ))}
-          </LabelGroup>
-        )
-      },
+      cell: (project) => (
+        <LabelGroup numLabels={2}>
+          {project.clusters.map((cluster) => (
+            <Label key={cluster} isCompact color="grey">
+              <Link
+                to={generatePath(NavigationPath.clusterOverview, {
+                  namespace: cluster,
+                  name: cluster,
+                })}
+                style={{ textDecoration: 'none' }}
+              >
+                {cluster}
+              </Link>
+            </Label>
+          ))}
+        </LabelGroup>
+      ),
     },
   ]
 
   const handleSelect = useCallback(
     (projects: ProjectTableData[]) => {
       setHasSelectedProjects(projects.length > 0)
-      if (onSelectionChange) {
-        onSelectionChange(projects)
-      }
+      onSelectionChange?.(projects)
     },
     [onSelectionChange]
   )
 
   return (
     <AcmTable<ProjectTableData>
-      items={isLoading ? undefined : projectsData}
+      items={isRoleAssignmentDataLoading ? undefined : projectsData}
       columns={columns}
       keyFn={(project) => `${project.name}-${project.clusters.join(',')}`}
-      tableActionButtons={tableActionButtons.length > 0 ? tableActionButtons : undefined}
+      tableActionButtons={tableActionButtons.length ? tableActionButtons : undefined}
       onSelect={handleSelect}
       filters={filters}
       searchPlaceholder={t('Search projects')}
