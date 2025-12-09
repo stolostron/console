@@ -680,7 +680,7 @@ describe('aggregator utils', () => {
   })
 
   describe('getClusters', () => {
-    it('should return list of clusters from managed clusters and deployments', () => {
+    it('should return list of clusters from managed clusters and deployments', async () => {
       const managedCluster: ManagedCluster = {
         apiVersion: 'cluster.open-cluster-management.io/v1',
         kind: 'ManagedCluster',
@@ -696,10 +696,10 @@ describe('aggregator utils', () => {
         status: { consoleURL: 'https://console.test.com' },
       }
 
-      cacheResource(managedCluster)
-      cacheResource(clusterInfo)
+      await cacheResource(managedCluster)
+      await cacheResource(clusterInfo)
 
-      const clusters = getClusters()
+      const clusters = await getClusters()
       expect(clusters.length).toBeGreaterThan(0)
       const testCluster = clusters.find((c) => c.name === 'test-cluster')
       expect(testCluster).toBeDefined()

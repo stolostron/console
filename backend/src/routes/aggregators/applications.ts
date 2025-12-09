@@ -209,30 +209,30 @@ export function stopAggregatingApplications(): void {
   stopping = true
 }
 
-export function polledApplicationAggregation(
+export async function polledApplicationAggregation(
   options: IWatchOptions,
   items: IResource[],
   shouldPostProcess: boolean
-): void {
-  polledArgoApplicationAggregation(options, items, shouldPostProcess)
+): Promise<void> {
+  return polledArgoApplicationAggregation(options, items, shouldPostProcess)
 }
 
-export function getApplications() {
-  aggregateLocalApplications()
+export async function getApplications() {
+  await aggregateLocalApplications()
   let items = getApplicationsHelper(applicationCache, Object.keys(applicationCache))
   // mock a large environment
   if (process.env.MOCK_CLUSTERS) {
-    items = items.concat(transform(getGiganticApps(), {}).resources)
+    items = items.concat((await transform(getGiganticApps(), {})).resources)
   }
   return items
 }
 
 // not going to be many, will grab on each query from client
-export function aggregateLocalApplications() {
+export async function aggregateLocalApplications() {
   // ACM Apps
   try {
-    applicationCache['subscription'] = transform(
-      structuredClone(getKubeResources('Application', 'app.k8s.io/v1beta1')),
+    applicationCache['subscription'] = await transform(
+      structuredClone(await getKubeResources('Application', 'app.k8s.io/v1beta1')),
       {}
     )
   } catch (e) {
@@ -328,8 +328,8 @@ export function sortApplications(sortBy: ISortBy, items: ICompressedResource[]) 
 
 // add data to the apps that can be used by the ui but
 // w/o downloading all the appsets, apps, etc
-export function addUIData(items: ITransformedResource[]) {
-  const argoAppSets = inflateApps(getApplicationsHelper(applicationCache, ['appset']))
+export async function addUIData(items: ITransformedResource[]) {
+  const argoAppSets = await inflateApps(getApplicationsHelper(applicationCache, ['appset']))
   const pushedAppSetMap = getPushedAppSetMap()
   items = items.map((item) => {
     return {
@@ -408,7 +408,7 @@ export async function aggregateRemoteApplications(pass: number) {
   addArgoQueryInputs(applicationCache, query)
   addOCPQueryInputs(applicationCache, query)
   if (querySystemApps) {
-    addSystemQueryInputs(applicationCache, query)
+    await addSystemQueryInputs(applicationCache, query)
   }
 
   //////////// MAKE QUERY //////////////////////////
@@ -421,9 +421,9 @@ export async function aggregateRemoteApplications(pass: number) {
   }
   const searchResult = results.data?.searchResult
   // //////////// SAVE RESULTS ///////////////////
-  const ocpArgoAppFilter = cacheArgoApplications(applicationCache, searchResult?.[0] as SearchResult)
-  cacheOCPApplications(applicationCache, searchResult?.[1] as SearchResult, ocpArgoAppFilter)
+  const ocpArgoAppFilter = await cacheArgoApplications(applicationCache, searchResult?.[0] as SearchResult)
+  await cacheOCPApplications(applicationCache, searchResult?.[1] as SearchResult, ocpArgoAppFilter)
   if (querySystemApps) {
-    cacheOCPApplications(applicationCache, searchResult?.[2] as SearchResult, ocpArgoAppFilter, true)
+    await cacheOCPApplications(applicationCache, searchResult?.[2] as SearchResult, ocpArgoAppFilter, true)
   }
 }
