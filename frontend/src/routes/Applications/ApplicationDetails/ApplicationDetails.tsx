@@ -451,6 +451,8 @@ export default function ApplicationDetailsPage() {
       15000
     )
     return () => clearInterval(interval)
+    // disabling to use clustersString instead of clusters
+    // because clusters is an array and will change on every render
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     waitForApplication,
