@@ -77,6 +77,7 @@ describe('AcmTable', () => {
       useCustomTableAction?: boolean
       addSubRows?: () => ExportableIRow[]
       advancedFilters?: ITableAdvancedFilter<IExampleData>[]
+      useRouter?: boolean
     } & Partial<AcmTableProps<IExampleData>>
   ) => {
     const {
@@ -87,212 +88,212 @@ describe('AcmTable', () => {
       useCustomTableAction = false,
       addSubRows,
       advancedFilters,
+      useRouter = true,
     } = props
     const [items, setItems] = useState<IExampleData[]>(testItems)
-    return (
-      <MemoryRouter>
-        <Routes>
-          <Route
-            path="/*"
-            element={
-              <AcmTable<IExampleData>
-                advancedFilters={advancedFilters}
-                emptyState={<AcmEmptyState title="No addresses found" message="You do not have any addresses yet" />}
-                items={items}
-                columns={[
-                  {
-                    header: 'First Name',
-                    sort: 'firstName',
-                    cell: 'firstName',
-                    search: useSearch ? 'firstName' : undefined,
+    const acmTable = (
+      <AcmTable<IExampleData>
+        advancedFilters={advancedFilters}
+        emptyState={<AcmEmptyState title="No addresses found" message="You do not have any addresses yet" />}
+        items={items}
+        columns={[
+          {
+            header: 'First Name',
+            sort: 'firstName',
+            cell: 'firstName',
+            search: useSearch ? 'firstName' : undefined,
+          },
+          {
+            header: 'Last Name',
+            sort: 'last_name',
+            cell: 'last_name',
+          },
+          {
+            header: 'EMail',
+            cell: 'email',
+            search: useSearch ? 'email' : undefined,
+          },
+          {
+            header: 'Gender',
+            sort: 'gender',
+            cell: (item) => item.gender,
+            search: useSearch ? 'gender' : undefined,
+          },
+          {
+            header: 'IP Address',
+            sort: sortFunction,
+            cell: 'ip_address',
+            search: useSearch ? (item) => item['ip_address'] : undefined,
+          },
+          {
+            header: 'UID',
+            sort: 'uid',
+            cell: 'uid',
+            search: useSearch ? 'uid' : undefined,
+            tooltip: 'Tooltip Example',
+            transforms: props.transforms ? [fitContent] : undefined,
+          },
+          {
+            header: 'Clusters',
+            sort: 'cluster',
+            cell: (item) => item.cluster,
+            search: useSearch ? 'cluster' : undefined,
+          },
+        ]}
+        addSubRows={addSubRows}
+        keyFn={(item: IExampleData) => item.uid.toString()}
+        tableActionButtons={
+          useTableActions
+            ? [
+                {
+                  id: 'primary-table-button',
+                  title: 'Primary action',
+                  click: () => primaryTableActionFunction(),
+                  isDisabled: false,
+                  variant: ButtonVariant.primary,
+                },
+                {
+                  id: 'secondary-table-button',
+                  title: 'Secondary action',
+                  click: () => secondaryTableActionFunction(),
+                  variant: ButtonVariant.secondary,
+                },
+              ]
+            : undefined
+        }
+        tableActions={
+          useTableActions
+            ? [
+                {
+                  id: 'status-group',
+                  title: 'Status',
+                  actions: [
+                    {
+                      id: 'status-1',
+                      title: 'Status 1',
+                      click: () => null,
+                      variant: 'bulk-action',
+                    },
+                    {
+                      id: 'status-2',
+                      title: 'Status 2',
+                      click: () => null,
+                      variant: 'bulk-action',
+                    },
+                  ],
+                  variant: 'action-group',
+                },
+                {
+                  id: 'separator-1',
+                  variant: 'action-separator',
+                },
+                {
+                  id: 'delete',
+                  title: 'Delete',
+                  click: (it: IExampleData[]) => {
+                    setItems(items ? items.filter((i: { uid: number }) => !it.find((item) => item.uid === i.uid)) : [])
+                    bulkDeleteAction(it)
                   },
-                  {
-                    header: 'Last Name',
-                    sort: 'last_name',
-                    cell: 'last_name',
+                  variant: 'bulk-action',
+                },
+              ]
+            : undefined
+        }
+        rowActions={
+          useRowActions
+            ? [
+                {
+                  id: 'delete',
+                  title: 'Delete item',
+                  click: (item: IExampleData) => {
+                    deleteAction(item)
+                    setItems(items.filter((i) => i.uid !== item.uid))
                   },
-                  {
-                    header: 'EMail',
-                    cell: 'email',
-                    search: useSearch ? 'email' : undefined,
+                },
+                {
+                  id: 'deletedisabled',
+                  title: 'Disabled delete item',
+                  isDisabled: true,
+                  tooltip: 'This button is disabled',
+                  click: (item: IExampleData) => {
+                    deleteAction(item)
+                    setItems(items.filter((i) => i.uid !== item.uid))
                   },
-                  {
-                    header: 'Gender',
-                    sort: 'gender',
-                    cell: (item) => item.gender,
-                    search: useSearch ? 'gender' : undefined,
+                },
+                {
+                  id: 'deletetooltipped',
+                  title: 'Tooltipped delete item',
+                  isDisabled: false,
+                  tooltip: 'This button is not disabled',
+                  click: (item: IExampleData) => {
+                    deleteAction(item)
+                    setItems(items.filter((i) => i.uid !== item.uid))
                   },
-                  {
-                    header: 'IP Address',
-                    sort: sortFunction,
-                    cell: 'ip_address',
-                    search: useSearch ? (item) => item['ip_address'] : undefined,
+                },
+                {
+                  id: 'disablednotooltip',
+                  title: 'Disabled item',
+                  isDisabled: true,
+                  click: (item: IExampleData) => {
+                    deleteAction(item)
+                    setItems(items.filter((i) => i.uid !== item.uid))
                   },
-                  {
-                    header: 'UID',
-                    sort: 'uid',
-                    cell: 'uid',
-                    search: useSearch ? 'uid' : undefined,
-                    tooltip: 'Tooltip Example',
-                    transforms: props.transforms ? [fitContent] : undefined,
-                  },
-                  {
-                    header: 'Clusters',
-                    sort: 'cluster',
-                    cell: (item) => item.cluster,
-                    search: useSearch ? 'cluster' : undefined,
-                  },
-                ]}
-                addSubRows={addSubRows}
-                keyFn={(item: IExampleData) => item.uid.toString()}
-                tableActionButtons={
-                  useTableActions
-                    ? [
-                        {
-                          id: 'primary-table-button',
-                          title: 'Primary action',
-                          click: () => primaryTableActionFunction(),
-                          isDisabled: false,
-                          variant: ButtonVariant.primary,
-                        },
-                        {
-                          id: 'secondary-table-button',
-                          title: 'Secondary action',
-                          click: () => secondaryTableActionFunction(),
-                          variant: ButtonVariant.secondary,
-                        },
-                      ]
-                    : undefined
-                }
-                tableActions={
-                  useTableActions
-                    ? [
-                        {
-                          id: 'status-group',
-                          title: 'Status',
-                          actions: [
-                            {
-                              id: 'status-1',
-                              title: 'Status 1',
-                              click: () => null,
-                              variant: 'bulk-action',
-                            },
-                            {
-                              id: 'status-2',
-                              title: 'Status 2',
-                              click: () => null,
-                              variant: 'bulk-action',
-                            },
-                          ],
-                          variant: 'action-group',
-                        },
-                        {
-                          id: 'separator-1',
-                          variant: 'action-separator',
-                        },
-                        {
-                          id: 'delete',
-                          title: 'Delete',
-                          click: (it: IExampleData[]) => {
-                            setItems(
-                              items ? items.filter((i: { uid: number }) => !it.find((item) => item.uid === i.uid)) : []
-                            )
-                            bulkDeleteAction(it)
-                          },
-                          variant: 'bulk-action',
-                        },
-                      ]
-                    : undefined
-                }
-                rowActions={
-                  useRowActions
-                    ? [
-                        {
-                          id: 'delete',
-                          title: 'Delete item',
-                          click: (item: IExampleData) => {
-                            deleteAction(item)
-                            setItems(items.filter((i) => i.uid !== item.uid))
-                          },
-                        },
-                        {
-                          id: 'deletedisabled',
-                          title: 'Disabled delete item',
-                          isDisabled: true,
-                          tooltip: 'This button is disabled',
-                          click: (item: IExampleData) => {
-                            deleteAction(item)
-                            setItems(items.filter((i) => i.uid !== item.uid))
-                          },
-                        },
-                        {
-                          id: 'deletetooltipped',
-                          title: 'Tooltipped delete item',
-                          isDisabled: false,
-                          tooltip: 'This button is not disabled',
-                          click: (item: IExampleData) => {
-                            deleteAction(item)
-                            setItems(items.filter((i) => i.uid !== item.uid))
-                          },
-                        },
-                        {
-                          id: 'disablednotooltip',
-                          title: 'Disabled item',
-                          isDisabled: true,
-                          click: (item: IExampleData) => {
-                            deleteAction(item)
-                            setItems(items.filter((i) => i.uid !== item.uid))
-                          },
-                        },
-                      ]
-                    : undefined
-                }
-                extraToolbarControls={
-                  useExtraToolbarControls ? (
-                    <ToggleGroup>
-                      <ToggleGroupItem isSelected={true} text="View 1" />
-                      <ToggleGroupItem text="View 2" />
-                    </ToggleGroup>
-                  ) : undefined
-                }
-                customTableAction={
-                  useCustomTableAction ? (
-                    <AcmDropdown
-                      isDisabled={false}
-                      tooltip="Disabled"
-                      id="create"
-                      onSelect={() => null}
-                      text="Create"
-                      dropdownItems={[
-                        {
-                          id: 'action1',
-                          text: 'Action 1',
-                          tooltip: 'Disabled',
-                          href: '/action1',
-                          tooltipPosition: TooltipPosition.right,
-                        },
-                        {
-                          id: 'action2',
-                          text: 'Action 2',
-                          tooltip: 'Disabled',
-                          href: '/action1',
-                          tooltipPosition: TooltipPosition.right,
-                        },
-                      ]}
-                      isKebab={false}
-                      isPlain={true}
-                      isPrimary={true}
-                      tooltipPosition={TooltipPosition.right}
-                    />
-                  ) : undefined
-                }
-                {...props}
-              />
-            }
-          />
-        </Routes>
-      </MemoryRouter>
+                },
+              ]
+            : undefined
+        }
+        extraToolbarControls={
+          useExtraToolbarControls ? (
+            <ToggleGroup>
+              <ToggleGroupItem isSelected={true} text="View 1" />
+              <ToggleGroupItem text="View 2" />
+            </ToggleGroup>
+          ) : undefined
+        }
+        customTableAction={
+          useCustomTableAction ? (
+            <AcmDropdown
+              isDisabled={false}
+              tooltip="Disabled"
+              id="create"
+              onSelect={() => null}
+              text="Create"
+              dropdownItems={[
+                {
+                  id: 'action1',
+                  text: 'Action 1',
+                  tooltip: 'Disabled',
+                  href: '/action1',
+                  tooltipPosition: TooltipPosition.right,
+                },
+                {
+                  id: 'action2',
+                  text: 'Action 2',
+                  tooltip: 'Disabled',
+                  href: '/action1',
+                  tooltipPosition: TooltipPosition.right,
+                },
+              ]}
+              isKebab={false}
+              isPlain={true}
+              isPrimary={true}
+              tooltipPosition={TooltipPosition.right}
+            />
+          ) : undefined
+        }
+        {...props}
+      />
     )
+    if (useRouter) {
+      return (
+        <MemoryRouter>
+          <Routes>
+            <Route path="/*" element={acmTable} />
+          </Routes>
+        </MemoryRouter>
+      )
+    }
+    return acmTable
   }
   const addSubRowsCallback = () => {
     return [
@@ -627,7 +628,7 @@ describe('AcmTable', () => {
 
     // change sort during filter (Last Name)
     userEvent.click(getByText('Last Name'))
-    expect(container.querySelector('tbody tr:first-of-type [data-label="Last Name"]')).toHaveTextContent('Novill')
+    expect(container.querySelector('tbody tr:first-of-type [data-label="Last Name"]')).toHaveTextContent('Barnham')
 
     // clear filter
     expect(getByLabelText('Reset')).toBeVisible()
@@ -647,7 +648,7 @@ describe('AcmTable', () => {
 
     // change sort during filter (Last Name)
     userEvent.click(getByText('Last Name'))
-    expect(container.querySelector('tbody tr:first-of-type [data-label="Last Name"]')).toHaveTextContent('Novill')
+    expect(container.querySelector('tbody tr:first-of-type [data-label="Last Name"]')).toHaveTextContent('Barnham')
 
     // clear filter by backspacing
     userEvent.type(getByPlaceholderText(placeholderString), '{backspace}{backspace}{backspace}{backspace}')
@@ -777,17 +778,27 @@ describe('AcmTable', () => {
   })
   test('can use saved pagination', async () => {
     const { getAllByLabelText, getByText, container } = render(
-      <AcmTableStateProvider localStorageKey="my-table">
-        <Table />
-        <Table />
-      </AcmTableStateProvider>
+      <MemoryRouter>
+        <Routes>
+          <Route
+            path="/*"
+            element={
+              <AcmTableStateProvider localStorageKey="my-table">
+                <Table useRouter={false} />
+                <Table useRouter={false} />
+              </AcmTableStateProvider>
+            }
+          />
+        </Routes>
+      </MemoryRouter>
     )
     // set pagination on first table
     userEvent.click(getAllByLabelText('items per page')[0])
     await waitFor(() => expect(getByText('100 per page')).toBeVisible())
     userEvent.click(getByText('100 per page'))
+
     // verify pagination changes on both tables
-    expect(container.querySelectorAll('tbody tr')).toHaveLength(200)
+    await waitFor(() => expect(container.querySelectorAll('tbody tr')).toHaveLength(200))
   })
   test('has zero accessibility defects', async () => {
     const { container } = render(<Table />)
@@ -823,7 +834,7 @@ describe('AcmTable', () => {
     expect(getByLabelText('Current page')).toHaveValue(6)
     expect(setSearch).not.toHaveBeenCalled()
     expect(setSort).not.toHaveBeenCalled()
-    expect(container.querySelector('tbody:last-of-type [data-label="First Name"]')).toHaveTextContent('Ysabel')
+    expect(container.querySelector('tbody:last-of-type [data-label="First Name"]')).toHaveTextContent('Alyce')
 
     expect(getByLabelText('Reset')).toBeVisible()
     userEvent.click(getByLabelText('Reset'))

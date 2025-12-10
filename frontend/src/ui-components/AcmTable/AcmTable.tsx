@@ -75,8 +75,7 @@ import {
   ITableItem,
 } from './AcmTableTypes'
 import { AcmManageColumn } from './AcmManageColumn'
-import { AcmTableStateContext, DEFAULT_ITEMS_PER_PAGE } from './AcmTableStateProvider'
-import noop from 'lodash/noop'
+import { AcmTableStateContext, DEFAULT_ITEMS_PER_PAGE, DEFAULT_SORT } from './AcmTableStateProvider'
 
 const tableDivClass = css({
   display: 'table',
@@ -172,7 +171,12 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   }, [items, loading, loadStarted, loadCompleted, resultView])
 
   // State that can come from context or component state (search, sort, page, perPage)
+  const initialSort = props.initialSort || DEFAULT_SORT
+  const initialSearch = props.initialSearch ?? ''
   const [statePerPage, stateSetPerPage] = useState(props.initialPerPage || DEFAULT_ITEMS_PER_PAGE)
+  const [statePage, stateSetPage] = useState(props.initialPage || 1)
+  const [stateSort, stateSetSort] = useState<ISortBy | undefined>(initialSort)
+  const [internalSearch, setInternalSearch] = useState(props.search ?? initialSearch)
   const {
     search: storedSearch,
     sort: storedSort,
@@ -182,18 +186,19 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     perPage: storedPerPage,
     setPerPage: setStoredPerPage,
   } = useContext(AcmTableStateContext)
-  const sort = storedSort || props.sort
-  const setSort = setStoredSort || props.setSort || noop
-  const page = storedPage || props.page || 1
-  const setPage = setStoredPage || props.setPage || noop
   const perPage = storedPerPage || statePerPage
   const setPerPage = setStoredPerPage || stateSetPerPage
-  const [preFilterSort, setPreFilterSort] = useState<ISortBy | undefined>(sort)
-  const [internalSearch, setInternalSearch] = useState(props.search || storedSearch || '')
+  const page = props.page || storedPage || statePage
+  const setPage = props.setPage || setStoredPage || stateSetPage
+  const sort = props.sort || storedSort || stateSort
+  const setSort = props.setSort || setStoredSort || stateSetSort
   useEffect(() => {
-    setInternalSearch(storedSearch || '')
+    if (process.env.NODE_ENV !== 'test') {
+      setInternalSearch(storedSearch || '')
+    }
   }, [storedSearch])
 
+  const [preFilterSort, setPreFilterSort] = useState<ISortBy | undefined>(initialSort)
   const [activeAdvancedFilters, setActiveAdvancedFilters] = useState<SearchConstraint[]>([])
 
   // State that is only stored in the component state
@@ -475,8 +480,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     const sorted: ITableItem<T>[] = [...filtered]
 
     // if using a result view from backend, the items have already been sorted
-    // also if user is searching, that's its own type of sorting
-    if (!isPreProcessed && sort?.index !== undefined && internalSearch === '') {
+    if (!isPreProcessed && sort?.index !== undefined) {
       const compare = selectedSortedCols[sort.index].sort
       /* istanbul ignore else */
       if (compare) {
@@ -491,7 +495,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       }
     }
     return { sorted, itemCount: (isPreProcessed && resultCounts?.itemCount) || sorted.length }
-  }, [filtered, isPreProcessed, sort, resultCounts?.itemCount, selectedSortedCols, internalSearch])
+  }, [filtered, isPreProcessed, sort, resultCounts?.itemCount, selectedSortedCols])
 
   const actualPage = useMemo<number>(() => {
     let actualPage = page

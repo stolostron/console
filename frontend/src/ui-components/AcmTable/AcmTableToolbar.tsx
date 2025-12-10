@@ -332,9 +332,12 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
 
   const { t } = useTranslation()
   const initialSearch = props.initialSearch ?? ''
-  const { search: storedSearch, setSearch: setStoredSearch } = useContext(AcmTableStateContext)
-  const search = storedSearch ?? initialSearch
-  const setSearch = setStoredSearch ?? props.setSearch ?? noop
+
+  const [stateSearch, stateSetSearch] = useState(initialSearch)
+  const { search: storedSearch, setSearch: setStoredSearch = noop } = useContext(AcmTableStateContext)
+  const search = props.search ?? storedSearch ?? stateSearch
+  const setSearch = props.setSearch ?? stateSetSearch
+
   const searchPlaceholder = props.searchPlaceholder ?? t('Search')
   const hasSearch = useMemo(() => columns.some((column) => column.search), [columns])
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false)
@@ -371,11 +374,12 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
     }
     setSearch('')
     setInternalSearch('')
+    setStoredSearch('')
     setPage(1)
     if (preFilterSort) {
       setSort(preFilterSort)
     }
-  }, [setSearch, setInternalSearch, setPage, preFilterSort, setInternalSearchWithDebounce, setSort])
+  }, [setSearch, setStoredSearch, setInternalSearch, setPage, preFilterSort, setInternalSearchWithDebounce, setSort])
 
   const clearSearchAndFilters = useCallback(() => {
     clearSearch()
@@ -392,6 +396,7 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
       // both cases need to be handled for backwards compatibility
       const newSearch = typeof input === 'string' ? input : (input.target as HTMLInputElement).value
       setSearch(newSearch)
+      setStoredSearch(newSearch)
       setPage(1)
       if (!newSearch) {
         // clearing filtered state; restore previous sorting if applicable
@@ -406,7 +411,7 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
     },
     // setSort/setSearch/setPage can come from props, but setPreFilterSort is only from state and therefore
     // guaranteed stable - not needed in dependency list
-    [setSearch, setPage, search, preFilterSort, setSort, setPreFilterSort, sort]
+    [setSearch, setStoredSearch, setPage, search, preFilterSort, setSort, setPreFilterSort, sort]
   )
 
   return (
