@@ -2,12 +2,12 @@
 import { ButtonVariant, Label, LabelGroup } from '@patternfly/react-core'
 import { useCallback, useMemo, useState } from 'react'
 import { generatePath, Link } from 'react-router-dom-v5-compat'
-import { useTranslation } from '../../lib/acm-i18next'
-import { NavigationPath } from '../../NavigationPath'
-import { useRoleAssignmentData } from '../../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHook'
-import { AcmButton, AcmEmptyState, AcmTable, IAcmTableColumn } from '../../ui-components'
-import { IAcmTableButtonAction, ITableFilter } from '../../ui-components/AcmTable/AcmTableTypes'
-import { isClusterInClusters } from './utils'
+import { useTranslation } from '../lib/acm-i18next'
+import { NavigationPath } from '../NavigationPath'
+import { useRoleAssignmentData } from '../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHook'
+import { AcmButton, AcmEmptyState, AcmTable, IAcmTableColumn } from '../ui-components'
+import { IAcmTableButtonAction, ITableFilter } from '../ui-components/AcmTable/AcmTableTypes'
+import { isClusterInClusters } from '../wizards/RoleAssignment/utils'
 
 export interface ProjectTableData {
   name: string
@@ -24,7 +24,12 @@ interface ProjectsTableProps {
   onCreateClick?: () => void
 }
 
-export function ProjectsTable({ selectedClusters, projects, onSelectionChange, onCreateClick }: ProjectsTableProps) {
+export function RBACProjectsTable({
+  selectedClusters,
+  projects,
+  onSelectionChange,
+  onCreateClick,
+}: ProjectsTableProps) {
   const { t } = useTranslation()
   const [hasSelectedProjects, setHasSelectedProjects] = useState(false)
 

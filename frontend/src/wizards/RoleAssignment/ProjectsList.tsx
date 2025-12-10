@@ -2,11 +2,11 @@
 
 import { useState } from 'react'
 import { PageSection } from '@patternfly/react-core'
-import { ProjectsTable, ProjectTableData } from './ProjectsTable'
+import { RBACProjectsTable, ProjectTableData } from '../../components/RBACProjectsTable'
 import { CommonProjectCreate } from './CommonProjectCreate'
 
 export function ProjectsList() {
-  const [selectedClusters] = useState<string[]>(['local-cluster']) // TODO: Get from props or context
+  const [selectedClusters] = useState<string[]>(['local-cluster', 'sno-2-dmn9v']) // TODO: Get from props or context
   const [isCreateCommonProject, setIsCreateCommonProject] = useState(false)
   const [selectedProjects, setSelectedProjects] = useState<ProjectTableData[]>([])
 
@@ -30,7 +30,7 @@ export function ProjectsList() {
       {isCreateCommonProject ? (
         <CommonProjectCreate onCancelCallback={handleModalClose} onSuccess={handleCreateSuccess} />
       ) : (
-        <ProjectsTable
+        <RBACProjectsTable
           selectedClusters={selectedClusters}
           onCreateClick={handleCreateClick}
           onSelectionChange={handleSelectionChange}
