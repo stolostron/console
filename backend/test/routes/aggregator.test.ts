@@ -20,9 +20,9 @@ describe(`aggregator Route`, function () {
     nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
 
     // initialize events
-    resources.forEach((resource) => cacheResource(resource))
+    await Promise.all(resources.map((resource) => cacheResource(resource)))
 
-    polledAggregation(
+    await polledAggregation(
       {
         kind: 'Application',
         apiVersion: '',
@@ -30,7 +30,7 @@ describe(`aggregator Route`, function () {
       argoApps,
       true
     )
-    polledAggregation(
+    await polledAggregation(
       {
         kind: 'ApplicationSet',
         apiVersion: '',
@@ -44,7 +44,7 @@ describe(`aggregator Route`, function () {
 
     // fill in application cache from resourceCache and search api mocks
     await searchLoop()
-    aggregateLocalApplications()
+    await aggregateLocalApplications()
     await aggregateRemoteApplications(1)
 
     // NO FILTER
@@ -66,13 +66,13 @@ describe(`aggregator Route`, function () {
     nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
 
     // initialize events
-    resources.forEach((resource) => cacheResource(resource))
+    await Promise.all(resources.map((resource) => cacheResource(resource)))
 
     // setup nocks
     setupNocks()
 
     // fill in application cache from resourceCache and search api mocks
-    aggregateLocalApplications()
+    await aggregateLocalApplications()
     await aggregateRemoteApplications(1)
 
     // FILTERED
@@ -96,7 +96,7 @@ describe(`aggregator Route`, function () {
     nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
 
     // initialize events
-    resources.forEach((resource) => cacheResource(resource))
+    await Promise.all(resources.map((resource) => cacheResource(resource)))
 
     // setup nocks
     setupNocks(true)
@@ -104,7 +104,7 @@ describe(`aggregator Route`, function () {
     // fill in application cache from resourceCache and search api mocks
     const prefixes = await discoverSystemAppNamespacePrefixes()
     expect(JSON.stringify(prefixes)).toEqual(JSON.stringify(systemPrefixes))
-    aggregateLocalApplications()
+    await aggregateLocalApplications()
     await aggregateRemoteApplications(1)
 
     // FILTERED
@@ -120,7 +120,7 @@ describe(`aggregator Route`, function () {
 
     // initialize events
     resources.forEach((resource) => cacheResource(resource))
-    polledAggregation(
+    await polledAggregation(
       {
         kind: 'Application',
         apiVersion: '',
@@ -128,7 +128,7 @@ describe(`aggregator Route`, function () {
       argoApps,
       true
     )
-    polledAggregation(
+    await polledAggregation(
       {
         kind: 'ApplicationSet',
         apiVersion: '',
@@ -143,7 +143,7 @@ describe(`aggregator Route`, function () {
     // fill in application cache from resourceCache and search api mocks
     const prefixes = await discoverSystemAppNamespacePrefixes()
     expect(JSON.stringify(prefixes)).toEqual(JSON.stringify(systemPrefixes))
-    aggregateLocalApplications()
+    await aggregateLocalApplications()
     await aggregateRemoteApplications(1)
 
     // FILTERED
