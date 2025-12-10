@@ -22,6 +22,7 @@ interface ProjectsTableProps {
   projects?: ProjectTableData[]
   onSelectionChange?: (selectedProjects: ProjectTableData[]) => void
   onCreateClick?: () => void
+  areLinksDisplayed?: boolean
 }
 
 export function RBACProjectsTable({
@@ -29,6 +30,7 @@ export function RBACProjectsTable({
   projects,
   onSelectionChange,
   onCreateClick,
+  areLinksDisplayed = true,
 }: ProjectsTableProps) {
   const { t } = useTranslation()
   const [hasSelectedProjects, setHasSelectedProjects] = useState(false)
@@ -145,15 +147,19 @@ export function RBACProjectsTable({
         <LabelGroup numLabels={2}>
           {project.clusters.map((cluster) => (
             <Label key={cluster} isCompact color="grey">
-              <Link
-                to={generatePath(NavigationPath.clusterOverview, {
-                  namespace: cluster,
-                  name: cluster,
-                })}
-                style={{ textDecoration: 'none' }}
-              >
-                {cluster}
-              </Link>
+              {areLinksDisplayed ? (
+                <Link
+                  to={generatePath(NavigationPath.clusterOverview, {
+                    namespace: cluster,
+                    name: cluster,
+                  })}
+                  style={{ textDecoration: 'none' }}
+                >
+                  {cluster}
+                </Link>
+              ) : (
+                cluster
+              )}
             </Label>
           ))}
         </LabelGroup>
