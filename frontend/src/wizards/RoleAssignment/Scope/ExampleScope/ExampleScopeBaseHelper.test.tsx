@@ -1,7 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import React from 'react'
 import { render } from '@testing-library/react'
-import { getExampleTreeData, getExampleTitle } from './ExampleScopeBaseHelper'
+import { getExampleTitle, getExampleTreeData } from './ExampleScopeBaseHelper'
 
 // Mock translation function
 const mockT = (key: string) => key
@@ -72,18 +73,15 @@ describe('ExampleScopeBaseHelper', () => {
       // Check root level
       expect(treeData[0].icon).toBeDefined()
 
-      // Check nested levels
-      if (treeData[0].children) {
-        expect(treeData[0].children[0].icon).toBeDefined()
+      // For full access example, we know the structure exists
+      expect(treeData[0].children).toBeDefined()
+      expect(treeData[0].children![0].icon).toBeDefined()
 
-        if (treeData[0].children[0].children) {
-          expect(treeData[0].children[0].children[0].icon).toBeDefined()
+      expect(treeData[0].children![0].children).toBeDefined()
+      expect(treeData[0].children![0].children![0].icon).toBeDefined()
 
-          if (treeData[0].children[0].children[0].children) {
-            expect(treeData[0].children[0].children[0].children[0].icon).toBeDefined()
-          }
-        }
-      }
+      expect(treeData[0].children![0].children![0].children).toBeDefined()
+      expect(treeData[0].children![0].children![0].children![0].icon).toBeDefined()
     })
 
     it('creates proper tree structure with correct IDs', () => {
@@ -91,18 +89,17 @@ describe('ExampleScopeBaseHelper', () => {
 
       expect(treeData[0].id).toBe('case2-cluster-set-1')
 
-      if (treeData[0].children) {
-        expect(treeData[0].children[0].id).toBe('case2-cluster-1')
+      // For example 2, we know the structure exists
+      expect(treeData[0].children).toBeDefined()
+      expect(treeData[0].children![0].id).toBe('case2-cluster-1')
 
-        if (treeData[0].children[0].children) {
-          expect(treeData[0].children[0].children[0].id).toBe('case2-project-1')
-        }
-      }
+      expect(treeData[0].children![0].children).toBeDefined()
+      expect(treeData[0].children![0].children![0].id).toBe('case2-project-1')
     })
 
     it('handles translation function correctly', () => {
       const mockTranslate = jest.fn((key: string) => `translated-${key}`)
-      const treeData = getExampleTreeData(0, mockTranslate)
+      getExampleTreeData(0, mockTranslate)
 
       expect(mockTranslate).toHaveBeenCalledWith('Cluster set')
       expect(mockTranslate).toHaveBeenCalledWith('Cluster')
