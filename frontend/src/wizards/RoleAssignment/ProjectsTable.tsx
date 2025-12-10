@@ -184,7 +184,7 @@ export function ProjectsTable({ selectedClusters, projects, onSelectionChange, o
               <AcmButton variant="primary" onClick={onCreateClick}>
                 {t('Create common project')}
               </AcmButton>
-            ) : undefined
+            ) : null
           }
         />
       }
