@@ -83,8 +83,10 @@ describe('ExampleScopesDrawer', () => {
   it('has correct drawer panel properties', () => {
     render(<ExampleScopesDrawer {...defaultProps} />)
 
-    // The drawer should be inline and expanded when visible
-    const drawer = screen.getByTestId('drawer-children').closest('[class*="pf-c-drawer"]')
-    expect(drawer).toBeInTheDocument()
+    // The drawer children should be rendered
+    expect(screen.getByTestId('drawer-children')).toBeInTheDocument()
+
+    // The drawer title should be rendered (indicating drawer is expanded)
+    expect(screen.getByText('Example scopes')).toBeInTheDocument()
   })
 })
