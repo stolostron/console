@@ -11,8 +11,8 @@ export const ExampleScopes = () => {
   const [currentStep, setCurrentStep] = useState(0)
   const totalSteps = 9
 
-  const handlePrevious = () => setCurrentStep((prev) => (prev > 0 ? prev - 1 : totalSteps - 1))
-  const handleNext = () => setCurrentStep((prev) => (prev < totalSteps - 1 ? prev + 1 : 0))
+  const handlePrevious = () => setCurrentStep((prev) => Math.max(0, prev - 1))
+  const handleNext = () => setCurrentStep((prev) => Math.min(totalSteps - 1, prev + 1))
 
   return (
     <Stack hasGutter>
