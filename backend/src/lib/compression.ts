@@ -8,14 +8,15 @@ import {
   createGunzip,
   createGzip,
   createInflate,
-  inflateRawSync,
-  deflateRawSync,
+  inflateRaw,
+  deflateRaw,
   Zlib,
-} from 'zlib'
+} from 'node:zlib'
 import { logger } from './logger'
 import { ServerSideEvent, WatchEvent } from './server-side-events'
 import { getEventDict } from '../routes/events'
 import { getAppDict, ICompressedResource, ITransformedResource } from '../routes/aggregators/applications'
+import { promisify } from 'node:util'
 
 type Dictionary = {
   arr: string[]
@@ -66,9 +67,9 @@ type CompressedResourceType = Record<number, any> | Record<number, any[]> | stri
 
 const NUMBER_MARKER = '#!%'
 
-export function deflateResource(resource: IResource, dictionary: Dictionary): Buffer {
+export async function deflateResource(resource: IResource, dictionary: Dictionary): Promise<Buffer> {
   const res = compressResource(resource as UncompressedResourceType, dictionary)
-  return deflateRawSync(JSON.stringify(res))
+  return await promisify(deflateRaw)(JSON.stringify(res))
 }
 
 function compressResource(resource: UncompressedResourceType, dictionary: Dictionary): CompressedResourceType {
@@ -117,29 +118,29 @@ function compressResource(resource: UncompressedResourceType, dictionary: Dictio
   return resource
 }
 
-export function inflateResource(buffer: Buffer, dictionary: Dictionary): IResource {
-  const inflated = inflateRawSync(buffer).toString()
+export async function inflateResource(buffer: Buffer, dictionary: Dictionary): Promise<IResource> {
+  const inflated = (await promisify(inflateRaw)(buffer)).toString()
   const res = JSON.parse(inflated) as CompressedResourceType
   return decompressResource(res, dictionary) as IResource
 }
 
-export function inflateEvent(event: ServerSideEvent): ServerSideEvent {
+export async function inflateEvent(event: ServerSideEvent): Promise<ServerSideEvent> {
   const { id, data } = event
   const { type, object } = data as WatchEvent
   return !object
     ? event
-    : { id, data: { type, object: Buffer.isBuffer(object) ? inflateResource(object, getEventDict()) : object } }
+    : { id, data: { type, object: Buffer.isBuffer(object) ? await inflateResource(object, getEventDict()) : object } }
 }
 
-export function inflateApps(apps: ICompressedResource[]): ITransformedResource[] {
-  return apps.map((app) => inflateApp(app))
+export async function inflateApps(apps: ICompressedResource[]): Promise<ITransformedResource[]> {
+  return await Promise.all(apps.map(async (app) => await inflateApp(app)))
 }
 
-export function inflateApp(app: ITransformedResource | ICompressedResource): ITransformedResource {
+export async function inflateApp(app: ITransformedResource | ICompressedResource): Promise<ITransformedResource> {
   const capp = app as ICompressedResource
   if (capp.compressed) {
     return {
-      ...inflateResource(capp.compressed, getAppDict()),
+      ...(await inflateResource(capp.compressed, getAppDict())),
       transform: capp.transform,
       remoteClusters: capp.remoteClusters,
     }

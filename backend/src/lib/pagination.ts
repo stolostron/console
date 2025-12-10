@@ -54,9 +54,9 @@ export function paginate(
   req: Http2ServerRequest,
   res: Http2ServerResponse,
   token: string,
-  getItems: () => ICompressedResource[],
+  getItems: () => Promise<ICompressedResource[]>,
   filterItems: (filters: FilterSelections, items: ICompressedResource[]) => ICompressedResource[],
-  addUIData: (items: ITransformedResource[]) => ITransformedResource[]
+  addUIData: (items: ITransformedResource[]) => Promise<ITransformedResource[]>
 ): void {
   const chucks: string[] = []
   req.on('data', (chuck: string) => {
@@ -68,7 +68,7 @@ export function paginate(
     const request = JSON.parse(body) as IRequestListView
     const { search, sortBy, filters } = request
     let { page, perPage } = request
-    let items = getItems()
+    let items = await getItems()
     let itemCount = items.length
     if (perPage === -1) {
       page = 1
@@ -146,7 +146,7 @@ export function paginate(
     )) as unknown as ITransformedResource[]
 
     // add data required by ui
-    authorizedItems = addUIData(authorizedItems)
+    authorizedItems = await addUIData(authorizedItems)
 
     // remove the transform work attribute
     authorizedItems = authorizedItems.map(({ transform, remoteClusters, ...keepAttrs }) => keepAttrs)

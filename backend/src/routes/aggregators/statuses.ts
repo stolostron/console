@@ -20,7 +20,7 @@ export function requestAggregatedStatuses(
   req: Http2ServerRequest,
   res: Http2ServerResponse,
   token: string,
-  getItems: () => ICompressedResource[]
+  getItems: () => Promise<ICompressedResource[]>
 ): void {
   const chucks: string[] = []
   req.on('data', (chuck: string) => {
@@ -29,7 +29,7 @@ export function requestAggregatedStatuses(
   req.on('end', async () => {
     const body = chucks.join()
     const { clusters = [] } = JSON.parse(body) as IRequestStatuses
-    let items = getItems()
+    let items = await getItems()
 
     // should we filter count by provided cluster names
     if (clusters.length) {

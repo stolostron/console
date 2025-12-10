@@ -66,8 +66,8 @@ export function addOCPQueryInputs(applicationCache: ApplicationCacheType, query:
   })
 }
 
-export function addSystemQueryInputs(applicationCache: ApplicationCacheType, query: IQuery) {
-  clusterNameChunk = getNextClusterNameChunk(applicationCache)
+export async function addSystemQueryInputs(applicationCache: ApplicationCacheType, query: IQuery) {
+  clusterNameChunk = await getNextClusterNameChunk(applicationCache)
   query.variables.input.push({
     filters: [
       {
@@ -91,14 +91,14 @@ export function addSystemQueryInputs(applicationCache: ApplicationCacheType, que
   })
 }
 
-export function cacheOCPApplications(
+export async function cacheOCPApplications(
   applicationCache: ApplicationCacheType,
   searchedOcpApps: IResource[],
   argAppSet: Set<string>,
   isSystemMode?: boolean
 ) {
   const ocpApps = searchedOcpApps as unknown as IOCPAppResource[]
-  const helmReleases = getKubeResources('HelmRelease', 'apps.open-cluster-management.io/v1')
+  const helmReleases = await getKubeResources('HelmRelease', 'apps.open-cluster-management.io/v1')
 
   // filter ocp apps from this search
   const localOCPApps: IResource[] = []
@@ -180,12 +180,12 @@ export function cacheOCPApplications(
 
   if (!isSystemMode) {
     try {
-      applicationCache['localOCPApps'] = transform(localOCPApps)
+      applicationCache['localOCPApps'] = await transform(localOCPApps)
     } catch (e) {
       logger.error(`getLocalOCPApps exception ${e}`)
     }
     try {
-      cacheRemoteApps(applicationCache, remoteOCPApps, ocpPageChunk, 'remoteOCPApps')
+      await cacheRemoteApps(applicationCache, remoteOCPApps, ocpPageChunk, 'remoteOCPApps')
     } catch (e) {
       logger.error(`getRemoteOCPApps exception ${e}`)
     }
@@ -193,21 +193,21 @@ export function cacheOCPApplications(
     // if we just got remote clusters this time, don't touch localSysApps
     if (localOCPApps.length) {
       try {
-        applicationCache['localSysApps'] = transform(localOCPApps)
+        applicationCache['localSysApps'] = await transform(localOCPApps)
       } catch (e) {
         logger.error(`getLocalSystemApps exception ${e}`)
       }
     }
     try {
       // cache remote system apps
-      cacheRemoteSystemApps(applicationCache, remoteOCPApps, clusterNameChunk)
+      await cacheRemoteSystemApps(applicationCache, remoteOCPApps, clusterNameChunk)
     } catch (e) {
       logger.error(`cacheRemoteSystemApps exception ${e}`)
     }
   }
 }
 
-function cacheRemoteSystemApps(
+async function cacheRemoteSystemApps(
   applicationCache: ApplicationCacheType,
   remoteSysApps: IResource[],
   clusterNameChunk: string[]
@@ -216,7 +216,7 @@ function cacheRemoteSystemApps(
   clusterNameChunk.forEach((clustername) => {
     applicationCache['remoteSysApps'].resourceMap[clustername] = []
   })
-  const resources = transform(remoteSysApps, true).resources
+  const resources = (await transform(remoteSysApps, true)).resources
   resources.forEach((resource) => {
     const clustername = resource.transform[AppColumns.clusters].join()
     const clusterResources = applicationCache['remoteSysApps'].resourceMap[clustername]
@@ -224,10 +224,10 @@ function cacheRemoteSystemApps(
   })
 }
 
-function getNextClusterNameChunk(applicationCache: ApplicationCacheType): string[] {
+async function getNextClusterNameChunk(applicationCache: ApplicationCacheType): Promise<string[]> {
   // if no cluster name chucks left, create a new array of chunks
   if (clusterNameChunks.length === 0) {
-    const clusterMap = getClusterMap()
+    const clusterMap = await getClusterMap()
     const clusterNames = Object.keys(clusterMap)
     if (clusterNames.length > 0) {
       const chunks = clusterNames.reduce((chunks: string[][], clusterName, index) => {

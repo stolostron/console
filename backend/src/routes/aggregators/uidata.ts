@@ -12,15 +12,15 @@ export function requestAggregatedUIData(req: Http2ServerRequest, res: Http2Serve
   req.on('data', (chuck: string) => {
     chucks.push(chuck)
   })
-  req.on('end', () => {
+  req.on('end', async () => {
     const body = chucks.join()
     const resource = JSON.parse(body) as IResource
-    const argoAppSets = inflateApps(getApplicationsHelper(applicationCache, ['appset']))
-    const subscriptions = getKubeResources('Subscription', 'apps.open-cluster-management.io/v1')
-    const placementDecisions = getKubeResources('PlacementDecision', 'cluster.open-cluster-management.io/v1beta1')
+    const argoAppSets = await inflateApps(getApplicationsHelper(applicationCache, ['appset']))
+    const subscriptions = await getKubeResources('Subscription', 'apps.open-cluster-management.io/v1')
+    const placementDecisions = await getKubeResources('PlacementDecision', 'cluster.open-cluster-management.io/v1beta1')
     const type = getApplicationType(resource)
     const hubClusterName = getHubClusterName()
-    const clusters: Cluster[] = getClusters()
+    const clusters: Cluster[] = await getClusters()
     const localCluster = clusters.find((cls) => cls.name === hubClusterName)
     const clusterList = getApplicationClusters(
       resource,

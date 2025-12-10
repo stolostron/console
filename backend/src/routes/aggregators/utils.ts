@@ -33,27 +33,29 @@ import { deflateResource, inflateApp } from '../../lib/compression'
 ////////////// TRANSFORM /////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
 
-export function transform(
+export async function transform(
   items: ITransformedResource[] | ICompressedResource[],
   isRemote?: boolean,
   localCluster?: Cluster,
   clusters?: Cluster[]
-): ApplicationCache {
-  const subscriptions = getKubeResources('Subscription', 'apps.open-cluster-management.io/v1')
-  const placementDecisions = getKubeResources('PlacementDecision', 'cluster.open-cluster-management.io/v1beta1')
+): Promise<ApplicationCache> {
+  const subscriptions = await getKubeResources('Subscription', 'apps.open-cluster-management.io/v1')
+  const placementDecisions = await getKubeResources('PlacementDecision', 'cluster.open-cluster-management.io/v1beta1')
   const localClusterName = getHubClusterName()
-  items.forEach((app, inx) => {
-    app = inflateApp(app)
-    const type = getApplicationType(app)
-    const _clusters = getApplicationClusters(app, type, subscriptions, placementDecisions, localCluster, clusters)
-    items[inx] = {
-      transform: getTransform(app, type, _clusters),
-      remoteClusters:
-        (isRemote || (type === 'subscription' && _clusters.filter((n) => n !== localClusterName)).length > 0) &&
-        _clusters,
-      compressed: deflateResource(app, getAppDict()),
-    }
-  }) as unknown as ICompressedResource[]
+  await Promise.all(
+    items.map(async (app, inx) => {
+      app = await inflateApp(app)
+      const type = getApplicationType(app)
+      const _clusters = getApplicationClusters(app, type, subscriptions, placementDecisions, localCluster, clusters)
+      items[inx] = {
+        transform: getTransform(app, type, _clusters),
+        remoteClusters:
+          (isRemote || (type === 'subscription' && _clusters.filter((n) => n !== localClusterName)).length > 0) &&
+          _clusters,
+        compressed: await deflateResource(app, getAppDict()),
+      }
+    })
+  )
   return { resources: items as unknown as ICompressedResource[] }
 }
 
@@ -373,8 +375,8 @@ export function getArgoDestinationCluster(
 export type ClusterMapType = {
   [key: string]: IResource
 }
-export function getClusterMap(): ClusterMapType {
-  const managedClusters = getKubeResources('ManagedCluster', 'cluster.open-cluster-management.io/v1')
+export async function getClusterMap(): Promise<ClusterMapType> {
+  const managedClusters = await getKubeResources('ManagedCluster', 'cluster.open-cluster-management.io/v1')
   return managedClusters.reduce((clusterMap, cluster) => {
     if (cluster.metadata.name) {
       clusterMap[cluster.metadata.name] = cluster
@@ -486,13 +488,13 @@ export function getNextApplicationPageChunk(
   return applicationPageChunks.shift()
 }
 
-export function cacheRemoteApps(
+export async function cacheRemoteApps(
   applicationCache: ApplicationCacheType,
   remoteApps: IResource[],
   applicationPageChunk: ApplicationPageChunk,
   remoteCacheKey: string
 ) {
-  const resources = transform(remoteApps, true).resources
+  const resources = (await transform(remoteApps, true)).resources
   if (!applicationPageChunk) {
     applicationCache[remoteCacheKey].resources = resources
   } else {
@@ -521,11 +523,14 @@ export function getApplicationsHelper(applicationCache: ApplicationCacheType, ke
 //////////////////////////////////////////////////////////////////
 
 // stream lined version of map clusters in frontend
-export function getClusters(): Cluster[] {
-  const managedClusters = getKubeResources('ManagedCluster', 'cluster.open-cluster-management.io/v1')
-  const clusterDeployments = getKubeResources('ClusterDeployment', 'hive.openshift.io/v1')
-  const managedClusterInfos = getKubeResources('ManagedClusterInfo', 'internal.open-cluster-management.io/v1beta1')
-  const hostedClusters = getKubeResources('HostedCluster', 'hypershift.openshift.io/v1beta1')
+export async function getClusters(): Promise<Cluster[]> {
+  const managedClusters = await getKubeResources('ManagedCluster', 'cluster.open-cluster-management.io/v1')
+  const clusterDeployments = await getKubeResources('ClusterDeployment', 'hive.openshift.io/v1')
+  const managedClusterInfos = await getKubeResources(
+    'ManagedClusterInfo',
+    'internal.open-cluster-management.io/v1beta1'
+  )
+  const hostedClusters = await getKubeResources('HostedCluster', 'hypershift.openshift.io/v1beta1')
   const mcs = managedClusters.filter((mc) => mc.metadata?.name) ?? []
   const cds = clusterDeployments.filter(
     // CDs with AgentCluster as owner are just meta objects for AI. We can ignore them.
