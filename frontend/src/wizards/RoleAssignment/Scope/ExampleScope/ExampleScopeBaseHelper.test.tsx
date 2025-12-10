@@ -43,15 +43,25 @@ describe('ExampleScopeBaseHelper', () => {
     it('returns tree data for example index 1 (partial access)', () => {
       const treeData = getExampleTreeData(1, mockT)
 
-      expect(treeData).toHaveLength(3)
+      // Single cluster set scenario
+      expect(treeData).toHaveLength(1)
+      expect(treeData[0].id).toBe('case1-cluster-set-1')
       expect(treeData[0].children).toBeDefined()
 
       // Check that some items are checked and some are not
-      const firstCluster = treeData[0].children![0]
+      const clusters = treeData[0].children!
+      expect(clusters).toHaveLength(2)
+
+      const firstCluster = clusters[0]
+      expect(firstCluster.id).toBe('case1-cluster-1')
       expect(firstCluster.children).toBeDefined()
 
       const projects = firstCluster.children!
       expect(projects).toHaveLength(2)
+
+      // Verify partial access - some projects checked, some not
+      expect(projects[0].id).toBe('case1-project-1')
+      expect(projects[1].id).toBe('case1-project-2')
     })
 
     it('returns tree data for single cluster examples (index 5)', () => {
