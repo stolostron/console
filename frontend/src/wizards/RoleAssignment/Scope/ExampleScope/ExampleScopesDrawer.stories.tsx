@@ -69,26 +69,28 @@ export const Closed: Story = {
   },
 }
 
-export const Interactive: Story = {
-  render: () => {
-    const [isVisible, setIsVisible] = useState(false)
+const InteractiveDemo = () => {
+  const [isVisible, setIsVisible] = useState(false)
 
-    return (
-      <ExampleScopesDrawer isVisible={isVisible} onClose={() => setIsVisible(false)}>
-        <div style={{ padding: '2rem', minHeight: '400px' }}>
-          <h2>Interactive Drawer Demo</h2>
-          <p>Use the button below to toggle the drawer visibility:</p>
-          <Button variant="primary" onClick={() => setIsVisible(!isVisible)}>
-            {isVisible ? 'Close' : 'Open'} Example Scopes Drawer
-          </Button>
-          <div style={{ marginTop: '2rem' }}>
-            <p>Main content area that remains visible when drawer is open.</p>
-            <p>The drawer provides additional context without blocking the main workflow.</p>
-          </div>
+  return (
+    <ExampleScopesDrawer isVisible={isVisible} onClose={() => setIsVisible(false)}>
+      <div style={{ padding: '2rem', minHeight: '400px' }}>
+        <h2>Interactive Drawer Demo</h2>
+        <p>Use the button below to toggle the drawer visibility:</p>
+        <Button variant="primary" onClick={() => setIsVisible(!isVisible)}>
+          {isVisible ? 'Close' : 'Open'} Example Scopes Drawer
+        </Button>
+        <div style={{ marginTop: '2rem' }}>
+          <p>Main content area that remains visible when drawer is open.</p>
+          <p>The drawer provides additional context without blocking the main workflow.</p>
         </div>
-      </ExampleScopesDrawer>
-    )
-  },
+      </div>
+    </ExampleScopesDrawer>
+  )
+}
+
+export const Interactive: Story = {
+  render: () => <InteractiveDemo />,
   parameters: {
     docs: {
       description: {
