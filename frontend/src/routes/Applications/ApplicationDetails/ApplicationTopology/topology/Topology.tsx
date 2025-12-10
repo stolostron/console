@@ -1,13 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useState, useRef, useEffect } from 'react'
-import { action } from 'mobx'
+import { useState, useRef } from 'react'
 import head from 'lodash/head'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import {
   TopologyView,
-  TopologyControlBar,
-  createTopologyControlButtons,
-  defaultControlButtonsOptions,
   VisualizationSurface,
   SELECTION_EVENT,
   SelectionEventListener,
@@ -17,7 +13,6 @@ import {
   VisualizationProvider,
   isNode,
 } from '@patternfly/react-topology'
-import { ToolbarItem, Split, SplitItem, Alert, Button } from '@patternfly/react-core'
 import layoutFactory from './layout/layoutFactory'
 import getLayoutModel from './layout/layoutModel'
 import '@patternfly/patternfly/patternfly.css'
@@ -25,18 +20,13 @@ import '@patternfly/patternfly/patternfly-addons.css'
 import componentFactory from './components/componentFactory'
 import { NodeIcons } from './components/nodeIcons'
 import { NodeStatusIcons } from './components/nodeStatusIcons'
-import LegendView from '../components/LegendView'
 import DetailsView from '../components/DetailsView'
 import { ArgoAppDetailsContainerData, ClusterDetailsContainerData } from '../ApplicationTopology'
-import ChannelControl from '../components/ChannelControl'
-import noop from 'lodash/noop'
+import TopologyZoomBar from './components/TopologyZoomBar'
+import TopologyToolbar from './components/TopologyToolbar'
 
-import './components/future/topology-components.css'
-import './components/future/topology-controlbar.css'
-import './components/future/topology-view.css'
-import { NavigationPath } from '../../../../../NavigationPath'
-import { useQuerySearchDisabledManagedClusters } from '../../../../../lib/search'
-import { useQuery } from '../../../../../lib/useQuery'
+import './css/topology-components.css'
+import './css/topology-view.css'
 import { TFunction } from 'react-i18next'
 
 export interface TopologyProps {
@@ -88,28 +78,12 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
     processActionLink,
     argoAppDetailsContainerControl,
     clusterDetailsContainerControl,
-    channelControl,
     setDrawerContent,
     elements,
     nodeDetailsProvider,
     hubClusterName,
   } = topologyProps
   const [selectedIds, setSelectedIds] = useState<string[]>()
-  const [isSearchDisabled, setIsSearchDisabled] = useState<boolean>(false)
-  const clusterNodes = elements.nodes.filter((node) => node.type === 'cluster')
-  const clusterNames = clusterNodes.map((clusterNode) => clusterNode.name)
-  const queryDisabled = useQuerySearchDisabledManagedClusters()
-  const { data, startPolling } = useQuery(queryDisabled)
-
-  useEffect(startPolling, [startPolling])
-  useEffect(() => {
-    const clustersWithSearchDisabled = data?.[0]?.data?.searchResult?.[0]?.items || []
-    const clusterWithDisabledSearch = new Set(clustersWithSearchDisabled.map((item: { name: string }) => item.name))
-    const found = clusterNames.some((r) => clusterWithDisabledSearch.has(r))
-    if (found) {
-      setIsSearchDisabled(true)
-    }
-  }, [data, clusterNames])
 
   useEventListener<SelectionEventListener>(SELECTION_EVENT, (ids) => {
     setSelectedIds(ids)
@@ -146,99 +120,8 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
     )
   })
 
-  const channelChanger = (
-    <Split>
-      <SplitItem>
-        {channelControl?.allChannels?.length > 1 && (
-          <ChannelControl channelControl={channelControl} t={t} setDrawerContent={setDrawerContent} />
-        )}
-      </SplitItem>
-    </Split>
-  )
-
-  const viewToolbar = (
-    <>
-      <ToolbarItem>{channelChanger}</ToolbarItem>
-      {isSearchDisabled && (
-        <Alert
-          variant="warning"
-          title={t(
-            'Currently, search is disabled on some of your managed clusters. Some data might be missing from the topology view.'
-          )}
-        >
-          <Button
-            variant="link"
-            className={'abc'}
-            style={{ padding: '0' }}
-            onClick={() =>
-              window.open(
-                `${NavigationPath.search}?filters={"textsearch":"kind%3ACluster%20addon%3Asearch-collector%3Dfalse%20name%3A!${hubClusterName}"}`,
-                '_blank'
-              )
-            }
-          >
-            {t('View clusters with search add-on disabled.')}
-          </Button>
-        </Alert>
-      )}
-
-      <div style={{ position: 'absolute', right: '30px' }}>
-        <ToolbarItem style={{ marginLeft: 'auto', marginRight: 0 }}>
-          <div className="diagram-title">
-            <span
-              className="how-to-read-text"
-              tabIndex={0}
-              onClick={() => {
-                setDrawerContent(t('How to read topology'), false, false, false, false, <LegendView t={t} />, false)
-              }}
-              onKeyPress={noop}
-              role="button"
-            >
-              {t('How to read topology')}
-              <svg className="how-to-read-icon">
-                <use href={'#drawerShapes__sidecar'} />
-              </svg>
-            </span>
-          </div>
-        </ToolbarItem>
-      </div>
-    </>
-  )
-
   return (
-    <TopologyView
-      className="app-topology-view"
-      controlBar={
-        <TopologyControlBar
-          controlButtons={createTopologyControlButtons({
-            ...defaultControlButtonsOptions,
-            zoomInTip: t('Zoom In'),
-            zoomInAriaLabel: t('Zoom In'),
-            zoomInCallback: action(() => {
-              controller.getGraph().scaleBy(4 / 3)
-            }),
-            zoomOutTip: t('Zoom Out'),
-            zoomOutAriaLabel: t('Zoom Out'),
-            zoomOutCallback: action(() => {
-              controller.getGraph().scaleBy(0.75)
-            }),
-            fitToScreenTip: t('Fit to Screen'),
-            fitToScreenAriaLabel: t('Fit to Screen'),
-            fitToScreenCallback: action(() => {
-              controller.getGraph().fit(160)
-            }),
-            resetViewTip: t('Reset View'),
-            resetViewAriaLabel: t('Reset View'),
-            resetViewCallback: action(() => {
-              controller.getGraph().reset()
-              controller.getGraph().layout()
-            }),
-            legend: false,
-          })}
-        />
-      }
-      viewToolbar={viewToolbar}
-    >
+    <TopologyView controlBar={<TopologyZoomBar />} contextToolbar={<TopologyToolbar {...topologyProps} />}>
       <VisualizationSurface state={{ selectedIds }} />
     </TopologyView>
   )
@@ -247,13 +130,15 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
 export const Topology = (props: TopologyProps) => {
   const controllerRef = useRef<Controller>()
   let controller = controllerRef.current
-  if (!controller) {
+  const nodeIds = props.elements.nodes.map((node) => node.id).join(',')
+  const currentNodeIds = useRef<string>()
+  if (!controller || currentNodeIds.current !== nodeIds) {
     controller = controllerRef.current = new Visualization()
     controller.registerLayoutFactory(layoutFactory)
     controller.registerComponentFactory(componentFactory)
+    currentNodeIds.current = nodeIds
   }
   controller.fromModel(getLayoutModel(props.elements))
-  // 4.86 controller.setRenderConstraint(!props.disableRenderConstraint) // for testing
 
   return (
     <VisualizationProvider controller={controller}>
