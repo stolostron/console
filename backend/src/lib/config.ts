@@ -59,7 +59,7 @@ export async function loadConfigSettings(): Promise<void> {
     }
     const data: SettingsEvent = { type: 'SETTINGS', settings }
     if (settingsEventID) ServerSideEvents.removeEvent(settingsEventID)
-    settingsEventID = ServerSideEvents.pushEvent({ data })
+    settingsEventID = await ServerSideEvents.pushEvent({ data })
     logger.info({ msg: 'loaded settings', settings })
   } catch (err) {
     // Do Nothing
