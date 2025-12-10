@@ -40,7 +40,6 @@ type RoleAssignmentHookReturnType = {
   isGroupsLoading: boolean
   isRolesLoading: boolean
   isClusterSetLoading: boolean
-  refetchNamespaces: () => void
 }
 /**
  * custom hook for retrieving whatever the data is needed for RoleAssignment creation/edit
@@ -93,11 +92,7 @@ const useRoleAssignmentData = (): RoleAssignmentHookReturnType => {
   })
 
   // This query returns all namespaces in all clusters
-  const {
-    data: allNamespacesQuery,
-    loading: isAllNamespacesLoading,
-    refetch: refetchNamespaces,
-  } = useSearchResultItemsQuery({
+  const { data: allNamespacesQuery, loading: isAllNamespacesLoading } = useSearchResultItemsQuery({
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
     variables: {
       input: [
@@ -233,7 +228,6 @@ const useRoleAssignmentData = (): RoleAssignmentHookReturnType => {
     isGroupsLoading,
     isRolesLoading,
     isClusterSetLoading,
-    refetchNamespaces,
   }
 }
 

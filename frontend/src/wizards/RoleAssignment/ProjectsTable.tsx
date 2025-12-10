@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { ButtonVariant, Label, LabelGroup } from '@patternfly/react-core'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { generatePath, Link } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../lib/acm-i18next'
 import { NavigationPath } from '../../NavigationPath'
@@ -22,20 +22,13 @@ interface ProjectsTableProps {
   projects?: ProjectTableData[]
   onSelectionChange?: (selectedProjects: ProjectTableData[]) => void
   onCreateClick?: () => void
-  onRefresh?: (refetchFn: () => void) => void
 }
 
-export function ProjectsTable({
-  selectedClusters,
-  projects,
-  onSelectionChange,
-  onCreateClick,
-  onRefresh,
-}: ProjectsTableProps) {
+export function ProjectsTable({ selectedClusters, projects, onSelectionChange, onCreateClick }: ProjectsTableProps) {
   const { t } = useTranslation()
   const [hasSelectedProjects, setHasSelectedProjects] = useState(false)
 
-  const { roleAssignmentData, isLoading: isRoleAssignmentDataLoading, refetchNamespaces } = useRoleAssignmentData()
+  const { roleAssignmentData, isLoading: isRoleAssignmentDataLoading } = useRoleAssignmentData()
 
   const clusters = useMemo(
     () => roleAssignmentData.clusterSets?.flatMap((cs) => cs.clusters || []) || [],
@@ -69,12 +62,6 @@ export function ProjectsTable({
       clusters: selectedClusters,
     }))
   }, [projects, selectedClusters, clusters])
-
-  useEffect(() => {
-    if (refetchNamespaces) {
-      onRefresh?.(refetchNamespaces)
-    }
-  }, [onRefresh, refetchNamespaces])
 
   const tableActionButtons = useMemo<IAcmTableButtonAction[]>(
     () =>
