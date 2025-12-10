@@ -20,6 +20,7 @@ import {
   AnsibleJob,
   Application,
   CertificateSigningRequest,
+  CertificatePolicy,
   Channel,
   ClusterClaim,
   ClusterCurator,
@@ -30,6 +31,7 @@ import {
   ClusterProvision,
   ClusterRole,
   ConfigMap,
+  ConfigurationPolicy,
   DiscoveredCluster,
   DiscoveryConfig,
   GitOpsCluster,
@@ -46,6 +48,7 @@ import {
   MulticlusterRoleAssignment,
   MultiClusterEngine,
   Namespace,
+  OperatorPolicy,
   Placement,
   PlacementBinding,
   PlacementDecision,
@@ -85,6 +88,7 @@ export const applicationsState = AtomArray<Application>()
 export const argoCDsState = AtomArray<IResource>()
 export const bareMetalHostsState = AtomArray<BareMetalHostK8sResource>()
 export const certificateSigningRequestsState = AtomArray<CertificateSigningRequest>()
+export const certificatePoliciesState = AtomArray<CertificatePolicy>()
 export const channelsState = AtomArray<Channel>()
 export const clusterClaimsState = AtomArray<ClusterClaim>()
 export const clusterCuratorsState = AtomArray<ClusterCurator>()
@@ -95,6 +99,7 @@ export const clusterPoolsState = AtomArray<ClusterPool>()
 export const clusterProvisionsState = AtomArray<ClusterProvision>()
 export const clusterVersionState = AtomArray<ClusterVersionK8sResource>()
 export const configMapsState = AtomArray<ConfigMap>()
+export const configurationPoliciesState = AtomArray<ConfigurationPolicy>()
 export const discoveredClusterState = AtomArray<DiscoveredCluster>()
 export const discoveryConfigState = AtomArray<DiscoveryConfig>()
 export const gitOpsClustersState = AtomArray<GitOpsCluster>()
@@ -114,6 +119,7 @@ export const multiclusterRoleAssignmentState = AtomArray<MulticlusterRoleAssignm
 export const namespacesState = AtomArray<Namespace>()
 export const nmStateConfigsState = AtomArray<NMStateK8sResource>()
 export const nodePoolsState = AtomArray<NodePoolK8sResource>()
+export const operatorPoliciesState = AtomArray<OperatorPolicy>()
 export const placementBindingsState = AtomArray<PlacementBinding>()
 export const placementDecisionsState = AtomArray<PlacementDecision>()
 export const placementRulesState = AtomArray<PlacementRule>()

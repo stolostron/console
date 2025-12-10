@@ -21,6 +21,8 @@ import {
   BareMetalHostKind,
   CertificateSigningRequestApiVersion,
   CertificateSigningRequestKind,
+  CertificatePolicyApiVersion,
+  CertificatePolicyKind,
   ChannelApiVersion,
   ChannelKind,
   ClusterClaimApiVersion,
@@ -42,6 +44,8 @@ import {
   ClusterVersionKind,
   ConfigMapApiVersion,
   ConfigMapKind,
+  ConfigurationPolicyApiVersion,
+  ConfigurationPolicyKind,
   DiscoveredClusterApiVersion,
   DiscoveredClusterKind,
   DiscoveryConfigApiVersion,
@@ -82,6 +86,8 @@ import {
   NMStateConfigKind,
   NodePoolApiVersion,
   NodePoolKind,
+  OperatorPolicyApiVersion,
+  OperatorPolicyKind,
   PlacementApiVersionAlpha,
   PlacementBindingApiVersion,
   PlacementBindingKind,
@@ -127,6 +133,7 @@ import {
   applicationsState,
   argoCDsState,
   bareMetalHostsState,
+  certificatePoliciesState,
   certificateSigningRequestsState,
   channelsState,
   clusterClaimsState,
@@ -138,6 +145,7 @@ import {
   clusterProvisionsState,
   clusterVersionState,
   configMapsState,
+  configurationPoliciesState,
   discoveredClusterState,
   discoveryConfigState,
   gitOpsClustersState,
@@ -162,6 +170,7 @@ import {
   namespacesState,
   nmStateConfigsState,
   nodePoolsState,
+  operatorPoliciesState,
   placementBindingsState,
   placementDecisionsState,
   placementRulesState,
@@ -200,6 +209,7 @@ export function LoadData(props: { children?: ReactNode }) {
   const setArgoCDsState = useSetRecoilState(argoCDsState)
   const setBareMetalHosts = useSetRecoilState(bareMetalHostsState)
   const setCertificateSigningRequests = useSetRecoilState(certificateSigningRequestsState)
+  const setCertificatePoliciesState = useSetRecoilState(certificatePoliciesState)
   const setChannelsState = useSetRecoilState(channelsState)
   const setClusterClaims = useSetRecoilState(clusterClaimsState)
   const setClusterCurators = useSetRecoilState(clusterCuratorsState)
@@ -211,6 +221,7 @@ export function LoadData(props: { children?: ReactNode }) {
   const setVMClusterRoles = useSetRecoilState(vmClusterRolesState)
   const setClusterVerions = useSetRecoilState(clusterVersionState)
   const setConfigMaps = useSetRecoilState(configMapsState)
+  const setConfigurationPolicies = useSetRecoilState(configurationPoliciesState)
   const setDiscoveredClusters = useSetRecoilState(discoveredClusterState)
   const setDiscoveryConfigs = useSetRecoilState(discoveryConfigState)
   const setGitOpsClustersState = useSetRecoilState(gitOpsClustersState)
@@ -235,6 +246,7 @@ export function LoadData(props: { children?: ReactNode }) {
   const setNamespaces = useSetRecoilState(namespacesState)
   const setNMStateConfigs = useSetRecoilState(nmStateConfigsState)
   const setNodePoolsState = useSetRecoilState(nodePoolsState)
+  const setOperatorPoliciesState = useSetRecoilState(operatorPoliciesState)
   const setPlacementBindingsState = useSetRecoilState(placementBindingsState)
   const setPlacementDecisionsState = useSetRecoilState(placementDecisionsState)
   const setPlacementRulesState = useSetRecoilState(placementRulesState)
@@ -302,6 +314,7 @@ export function LoadData(props: { children?: ReactNode }) {
     addSetter(ApplicationApiVersion, ApplicationKind, setApplicationsState)
     addSetter(BareMetalHostApiVersion, BareMetalHostKind, setBareMetalHosts)
     addSetter(CertificateSigningRequestApiVersion, CertificateSigningRequestKind, setCertificateSigningRequests)
+    addSetter(CertificatePolicyApiVersion, CertificatePolicyKind, setCertificatePoliciesState)
     addSetter(ChannelApiVersion, ChannelKind, setChannelsState)
     addSetter(ClusterClaimApiVersion, ClusterClaimKind, setClusterClaims)
     addSetter(ClusterCuratorApiVersion, ClusterCuratorKind, setClusterCurators)
@@ -312,6 +325,7 @@ export function LoadData(props: { children?: ReactNode }) {
     addSetter(ClusterProvisionApiVersion, ClusterProvisionKind, setClusterProvisions)
     addSetter(ClusterVersionApiVersion, ClusterVersionKind, setClusterVerions)
     addSetter(ConfigMapApiVersion, ConfigMapKind, setConfigMaps)
+    addSetter(ConfigurationPolicyApiVersion, ConfigurationPolicyKind, setConfigurationPolicies)
     addSetter(DiscoveredClusterApiVersion, DiscoveredClusterKind, setDiscoveredClusters)
     addSetter(DiscoveryConfigApiVersion, DiscoveryConfigKind, setDiscoveryConfigs)
     addSetter(GitOpsClusterApiVersion, GitOpsClusterKind, setGitOpsClustersState)
@@ -334,6 +348,7 @@ export function LoadData(props: { children?: ReactNode }) {
     addSetter(NamespaceApiVersion, NamespaceKind, setNamespaces)
     addSetter(NMStateConfigApiVersion, NMStateConfigKind, setNMStateConfigs)
     addSetter(NodePoolApiVersion, NodePoolKind, setNodePoolsState)
+    addSetter(OperatorPolicyApiVersion, OperatorPolicyKind, setOperatorPoliciesState)
     addSetter(PlacementApiVersionAlpha, PlacementKind, setPlacementsState)
     addSetter(PlacementBindingApiVersion, PlacementBindingKind, setPlacementBindingsState)
     addSetter(PlacementDecisionApiVersion, PlacementDecisionKind, setPlacementDecisionsState)
@@ -364,6 +379,7 @@ export function LoadData(props: { children?: ReactNode }) {
     setArgoCDsState,
     setBareMetalHosts,
     setCertificateSigningRequests,
+    setCertificatePoliciesState,
     setChannelsState,
     setClusterClaims,
     setClusterCurators,
@@ -375,6 +391,7 @@ export function LoadData(props: { children?: ReactNode }) {
     setVMClusterRoles,
     setClusterVerions,
     setConfigMaps,
+    setConfigurationPolicies,
     setDiscoveredClusters,
     setDiscoveryConfigs,
     setGitOpsClustersState,
@@ -395,6 +412,7 @@ export function LoadData(props: { children?: ReactNode }) {
     setNamespaces,
     setNMStateConfigs,
     setNodePoolsState,
+    setOperatorPoliciesState,
     setPlacementBindingsState,
     setPlacementDecisionsState,
     setPlacementRulesState,
