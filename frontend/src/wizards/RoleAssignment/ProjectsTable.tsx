@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
 import { ButtonVariant, Label, LabelGroup } from '@patternfly/react-core'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { generatePath, Link } from 'react-router-dom-v5-compat'
@@ -48,14 +47,20 @@ export function ProjectsTable({
       return projects
     }
 
-    if (selectedClusters.length) {
+    if (selectedClusters.length === 0) {
       return []
     }
 
-    const commonNamespaces: string[] = clusters
+    const clusterNamespaceGroupings: string[][] = clusters
       .filter((cluster) => isClusterInClusters(selectedClusters, cluster))
-      .reduce((acc: string[][], curr) => [...acc, curr.namespaces ? [...curr.namespaces] : []], [])
-      .flatMap((namespaces) => [...new Set(namespaces)])
+      .map((cluster) => (cluster.namespaces ? [...cluster.namespaces] : []))
+
+    if (clusterNamespaceGroupings.length === 0) {
+      return []
+    }
+
+    const commonNamespaces: string[] = clusterNamespaceGroupings
+      .reduce((acc, namespaces) => acc.filter((ns) => namespaces.includes(ns)))
       .sort((a, b) => a.localeCompare(b))
 
     return commonNamespaces.map((ns) => ({
