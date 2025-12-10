@@ -8,7 +8,8 @@ import { configureAxe } from 'jest-axe'
 import { useState } from 'react'
 import { AcmDropdown } from '../AcmDropdown/AcmDropdown'
 import { AcmEmptyState } from '../AcmEmptyState'
-import { AcmTable, AcmTablePaginationContextProvider } from './AcmTable'
+import { AcmTable } from './AcmTable'
+import { AcmTableStateProvider } from './AcmTableStateProvider'
 import { AcmTableProps, ExportableIRow, ITableAdvancedFilter } from './AcmTableTypes'
 
 import { exampleData } from './AcmTable.stories'
@@ -776,10 +777,10 @@ describe('AcmTable', () => {
   })
   test('can use saved pagination', async () => {
     const { getAllByLabelText, getByText, container } = render(
-      <AcmTablePaginationContextProvider localStorageKey="my-table">
+      <AcmTableStateProvider localStorageKey="my-table">
         <Table />
         <Table />
-      </AcmTablePaginationContextProvider>
+      </AcmTableStateProvider>
     )
     // set pagination on first table
     userEvent.click(getAllByLabelText('items per page')[0])

@@ -44,7 +44,6 @@ import get from 'get-value'
 import { mergeWith } from 'lodash'
 import {
   cloneElement,
-  createContext,
   FormEvent,
   Fragment,
   ReactNode,
@@ -76,6 +75,8 @@ import {
   ITableItem,
 } from './AcmTableTypes'
 import { AcmManageColumn } from './AcmManageColumn'
+import { AcmTableStateContext, DEFAULT_ITEMS_PER_PAGE } from './AcmTableStateProvider'
+import noop from 'lodash/noop'
 
 const tableDivClass = css({
   display: 'table',
@@ -93,46 +94,6 @@ const tableClass = css({
   },
 })
 
-const DEFAULT_ITEMS_PER_PAGE = 10
-const STORAGE_EXPIRATION_MS = 30 * 60 * 1000 // 30 minutes in milliseconds
-
-// Helper functions for localStorage with expiration
-interface StorageItem {
-  value: string
-  timestamp: number
-}
-
-export function setItemWithExpiration(key: string, value: string): void {
-  const item: StorageItem = {
-    value,
-    timestamp: Date.now(),
-  }
-  localStorage.setItem(key, JSON.stringify(item))
-}
-
-export function getItemWithExpiration(key: string): string | null {
-  const itemStr = localStorage.getItem(key)
-  if (!itemStr) return null
-
-  try {
-    const item: StorageItem = JSON.parse(itemStr)
-    const now = Date.now()
-
-    // Check if item has expired (older than 30 minutes)
-    if (now - item.timestamp > STORAGE_EXPIRATION_MS) {
-      localStorage.removeItem(key)
-      return null
-    }
-
-    return item.value
-  } catch {
-    // If parsing fails, it might be an old format without expiration
-    // Remove it and return null
-    localStorage.removeItem(key)
-    return null
-  }
-}
-
 const BREAKPOINT_SIZES = [
   { name: TableGridBreakpoint.none, size: 0 },
   { name: TableGridBreakpoint.gridMd, size: 768 },
@@ -141,26 +102,6 @@ const BREAKPOINT_SIZES = [
   { name: TableGridBreakpoint.grid2xl, size: 1450 },
   { name: TableGridBreakpoint.grid, size: Infinity },
 ]
-
-const AcmTablePaginationContext: React.Context<{
-  perPage?: number
-  setPerPage?: (perPage: number) => void
-}> = createContext({})
-
-export function AcmTablePaginationContextProvider(props: { children: ReactNode; localStorageKey: string }) {
-  const { children, localStorageKey } = props
-  const [perPage, setPerPage] = useState(
-    Number.parseInt(localStorage.getItem(localStorageKey) || '0', 10) || DEFAULT_ITEMS_PER_PAGE
-  )
-  const paginationContext = {
-    perPage,
-    setPerPage: (perPage: number) => {
-      localStorage.setItem(localStorageKey, String(perPage))
-      setPerPage(perPage)
-    },
-  }
-  return <AcmTablePaginationContext.Provider value={paginationContext}>{children}</AcmTablePaginationContext.Provider>
-}
 
 function mergeProps(...props: any) {
   const firstProps = props[0]
@@ -213,25 +154,6 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
 
   // a ref forwarded from toolbar to access its methods
   const toolbarRef = useRef<ToolbarRef>(null)
-  const defaultSort = {
-    index: 0,
-    direction: SortByDirection.asc,
-  }
-  const initialSort = props.initialSort || defaultSort
-  let initialSearch = props.initialSearch ?? ''
-  const tableSearchLocalStorageKey = id ? `acm-table-search.${id}` : undefined
-  if (tableSearchLocalStorageKey) {
-    try {
-      const savedSearch = getItemWithExpiration(tableSearchLocalStorageKey)
-      if (savedSearch !== null) {
-        initialSearch = savedSearch
-      }
-    } catch {
-      // If parsing fails, it might be an old format without expiration
-      // Remove it and return null
-      localStorage.removeItem(tableSearchLocalStorageKey)
-    }
-  }
   const { isPreProcessed, loading, emptyResult } = resultView || {}
 
   const { t } = useTranslation()
@@ -249,77 +171,35 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     }
   }, [items, loading, loadStarted, loadCompleted, resultView])
 
-  // State that can come from context or component state (perPage)
+  // State that can come from context or component state (search, sort, page, perPage)
   const [statePerPage, stateSetPerPage] = useState(props.initialPerPage || DEFAULT_ITEMS_PER_PAGE)
-  const { perPage: contextPerPage, setPerPage: contextSetPerPage } = useContext(AcmTablePaginationContext)
-  const perPage = contextPerPage || statePerPage
-  const setPerPage = contextSetPerPage || stateSetPerPage
+  const {
+    search: storedSearch,
+    sort: storedSort,
+    setSort: setStoredSort,
+    page: storedPage,
+    setPage: setStoredPage,
+    perPage: storedPerPage,
+    setPerPage: setStoredPerPage,
+  } = useContext(AcmTableStateContext)
+  const sort = storedSort || props.sort
+  const setSort = setStoredSort || props.setSort || noop
+  const page = storedPage || props.page || 1
+  const setPage = setStoredPage || props.setPage || noop
+  const perPage = storedPerPage || statePerPage
+  const setPerPage = setStoredPerPage || stateSetPerPage
+  const [preFilterSort, setPreFilterSort] = useState<ISortBy | undefined>(sort)
+  const [internalSearch, setInternalSearch] = useState(props.search || storedSearch || '')
+  useEffect(() => {
+    setInternalSearch(storedSearch || '')
+  }, [storedSearch])
 
-  // =============================================================================
-  // TABLE STATE WITH LOCALSTORAGE PERSISTENCE
-  // All table states below are persisted to localStorage when table has an id prop
-  // This allows the table to restore user preferences when the page is reopened
-  // =============================================================================
-  const [statePage, stateSetPage] = useState(() => {
-    if (id) {
-      const savedPage = getItemWithExpiration(`acm-table-page-${id}`)
-      if (savedPage) {
-        const parsedPage = Number.parseInt(savedPage, 10)
-        if (!isNaN(parsedPage) && parsedPage > 0) {
-          return parsedPage
-        }
-      }
-    }
-    return props.initialPage || 1
-  })
-  const page = props.page || statePage
-  const setPageWithStorage = useCallback(
-    (newPage: number) => {
-      stateSetPage(newPage)
-      if (id) {
-        setItemWithExpiration(`acm-table-page-${id}`, String(newPage))
-      }
-    },
-    [id]
-  )
-  const setPage = props.setPage || setPageWithStorage
-
-  // SORT STATE - Restore sort from localStorage if available
-  const [stateSort, stateSetSort] = useState<ISortBy | undefined>(() => {
-    if (id) {
-      const savedSort = getItemWithExpiration(`acm-table-sort-${id}`)
-      if (savedSort) {
-        try {
-          const parsedSort = JSON.parse(savedSort) as ISortBy
-          if (parsedSort && typeof parsedSort.index === 'number' && parsedSort.direction) {
-            return parsedSort
-          }
-        } catch {
-          // Invalid JSON, fall back to initialSort
-        }
-      }
-    }
-    return initialSort
-  })
-  const sort = props.sort || stateSort
-  const setSortWithStorage = useCallback(
-    (newSort: ISortBy | undefined) => {
-      stateSetSort(newSort)
-      if (id && newSort) {
-        setItemWithExpiration(`acm-table-sort-${id}`, JSON.stringify(newSort))
-      }
-    },
-    [id]
-  )
-  const setSort = props.setSort || setSortWithStorage
   const [activeAdvancedFilters, setActiveAdvancedFilters] = useState<SearchConstraint[]>([])
 
   // State that is only stored in the component state
   const [selected, setSelected] = useState<{ [uid: string]: boolean }>({})
   const [disabled, setDisabled] = useState<{ [uid: string]: boolean }>({})
-  const [preFilterSort, setPreFilterSort] = useState<ISortBy | undefined>(initialSort)
   const [expanded, setExpanded] = useState<{ [uid: string]: boolean }>({})
-  const [internalSearch, setInternalSearch] = useState(props.search ?? initialSearch)
 
   // Dynamic gridBreakPoint
   const [breakpoint, setBreakpoint] = useState<TableGridBreakpoint>(TableGridBreakpoint.none)

@@ -19,7 +19,17 @@ import { ExportIcon } from '@patternfly/react-icons'
 import { ISortBy } from '@patternfly/react-table'
 import { debounce } from 'debounce'
 import { parse, ParsedQuery, stringify } from 'query-string'
-import { forwardRef, Fragment, Ref, useCallback, useEffect, useImperativeHandle, useMemo, useState } from 'react'
+import {
+  forwardRef,
+  Fragment,
+  Ref,
+  useCallback,
+  useContext,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useState,
+} from 'react'
 import { useLocation, useNavigate } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../lib/acm-i18next'
 import { FilterCounts } from '../../lib/useAggregates'
@@ -44,7 +54,8 @@ import {
 } from './AcmTableTypes'
 import { FilterSelect } from './FilterSelect'
 import { getLocalStorage, setLocalStorage } from './localColumnStorage'
-import { setItemWithExpiration } from './AcmTable'
+import { AcmTableStateContext } from './AcmTableStateProvider'
+import { noop } from 'lodash'
 
 // when a filter has more then this many options, give it its own dropdown
 const SPLIT_FILTER_THRESHOLD = 30
@@ -307,7 +318,7 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
     selected,
     setSelected,
     disabled,
-    internalSearch: propsInternalSearch,
+    internalSearch,
     setInternalSearch,
     preFilterSort,
     exportTable,
@@ -320,11 +331,10 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
   } = props
 
   const { t } = useTranslation()
-  const tableSearchLocalStorageKey = id ? `acm-table-search.${id}` : undefined
-  const initialSearch = propsInternalSearch ?? ''
-  const [stateSearch, stateSetSearch] = useState(initialSearch)
-  const search = props.search ?? stateSearch
-  const setSearch = props.setSearch ?? stateSetSearch
+  const initialSearch = props.initialSearch ?? ''
+  const { search: storedSearch, setSearch: setStoredSearch } = useContext(AcmTableStateContext)
+  const search = storedSearch ?? initialSearch
+  const setSearch = setStoredSearch ?? props.setSearch ?? noop
   const searchPlaceholder = props.searchPlaceholder ?? t('Search')
   const hasSearch = useMemo(() => columns.some((column) => column.search), [columns])
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false)
@@ -354,17 +364,6 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
     }
   }, [search, setInternalSearchWithDebounce])
 
-  // Save search to localStorage whenever it changes
-  useEffect(() => {
-    if (tableSearchLocalStorageKey && search !== undefined) {
-      try {
-        setItemWithExpiration(tableSearchLocalStorageKey, search)
-      } catch {
-        // Catch possible errors
-      }
-    }
-  }, [search, tableSearchLocalStorageKey])
-
   const clearSearch = useCallback(() => {
     /* istanbul ignore if */
     if (process.env.NODE_ENV !== 'test') {
@@ -376,23 +375,7 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
     if (preFilterSort) {
       setSort(preFilterSort)
     }
-    // Clear search from localStorage
-    if (tableSearchLocalStorageKey) {
-      try {
-        setItemWithExpiration(tableSearchLocalStorageKey, '')
-      } catch {
-        // Catch possible errors
-      }
-    }
-  }, [
-    setSearch,
-    setInternalSearch,
-    setPage,
-    preFilterSort,
-    setInternalSearchWithDebounce,
-    setSort,
-    tableSearchLocalStorageKey,
-  ])
+  }, [setSearch, setInternalSearch, setPage, preFilterSort, setInternalSearchWithDebounce, setSort])
 
   const clearSearchAndFilters = useCallback(() => {
     clearSearch()
@@ -478,7 +461,7 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
                 <AcmSearchInput
                   placeholder={searchPlaceholder}
                   spellCheck={false}
-                  resultsCount={`${search === propsInternalSearch ? filteredCount : '-'} / ${totalCount}`}
+                  resultsCount={`${search === internalSearch ? filteredCount : '-'} / ${totalCount}`}
                   style={{ flexGrow: 1 }}
                   canAddConstraints
                   useAdvancedSearchPopper={advancedFilters.length > 0}
