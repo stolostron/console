@@ -311,39 +311,39 @@ describe('ClustersTableHelper', () => {
   describe('Column Export Content', () => {
     it('should export cluster name correctly', () => {
       const column = useClusterNameColumn(true)
-      expect(column.exportContent?.(mockCluster)).toBe('Test Cluster')
+      expect(column.exportContent?.(mockCluster, '')).toBe('Test Cluster')
     })
 
     it('should export cluster status correctly', () => {
       const column = useClusterStatusColumn()
-      expect(column.exportContent?.(mockCluster)).toBe('ready')
+      expect(column.exportContent?.(mockCluster, '')).toBe('ready')
     })
 
     it('should export cluster provider correctly', () => {
       const column = useClusterProviderColumn()
-      expect(column.exportContent?.(mockCluster)).toBe('Amazon Web Services')
+      expect(column.exportContent?.(mockCluster, '')).toBe('Amazon Web Services')
     })
 
     it('should export cluster control plane correctly', () => {
       const column = useClusterControlPlaneColumn('local-cluster')
-      expect(column.exportContent?.(mockCluster)).toBe('Standalone')
+      expect(column.exportContent?.(mockCluster, '')).toBe('Standalone')
     })
 
     it('should export cluster distribution correctly', () => {
       const column = useClusterDistributionColumn([mockCluster], [], [])
-      expect(column.exportContent?.(mockCluster)).toBe('OpenShift 4.12.0')
+      expect(column.exportContent?.(mockCluster, '')).toBe('OpenShift 4.12.0')
     })
 
     it('should export cluster labels correctly', () => {
       const column = useClusterLabelsColumn(false, 'local-cluster')
-      const result = column.exportContent?.(mockCluster)
+      const result = column.exportContent?.(mockCluster, '')
       expect(result).toContain('test-label=test-value')
       expect(result).toContain('environment=production')
     })
 
     it('should export cluster nodes correctly', () => {
       const column = useClusterNodesColumn()
-      const result = column.exportContent?.(mockCluster)
+      const result = column.exportContent?.(mockCluster, '')
       expect(result).toContain('healthy: 3')
       expect(result).toContain('danger: 0')
       expect(result).toContain('unknown: 0')
@@ -351,7 +351,7 @@ describe('ClustersTableHelper', () => {
 
     it('should export cluster addons correctly', () => {
       const column = useClusterAddonColumn()
-      const result = column.exportContent?.(mockCluster)
+      const result = column.exportContent?.(mockCluster, '')
       expect(result).toContain('healthy: 2')
       expect(result).toContain('danger: 0')
       expect(result).toContain('in progress: 0')
@@ -360,7 +360,7 @@ describe('ClustersTableHelper', () => {
 
     it('should export cluster created date correctly', () => {
       const column = useClusterCreatedDateColumn()
-      const result = column.exportContent?.(mockCluster)
+      const result = column.exportContent?.(mockCluster, '')
       expect(result).toBe('2023-01-01T00:00:00.000Z')
     })
   })

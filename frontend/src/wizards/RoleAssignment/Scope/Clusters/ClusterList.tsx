@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import { useMemo } from 'react'
 import { ClustersTable } from '../../../../components/Clusters'
 import { useTranslation } from '../../../../lib/acm-i18next'
