@@ -5,7 +5,7 @@ import { generatePath, Link } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../lib/acm-i18next'
 import { NavigationPath } from '../NavigationPath'
 import { useRoleAssignmentData } from '../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHook'
-import { AcmButton, AcmEmptyState, AcmTable, IAcmTableColumn } from '../ui-components'
+import { AcmButton, AcmEmptyState, AcmTable, AcmTableStateProvider, IAcmTableColumn } from '../ui-components'
 import { IAcmTableButtonAction, ITableFilter } from '../ui-components/AcmTable/AcmTableTypes'
 import { isClusterInClusters } from '../wizards/RoleAssignment/utils'
 
@@ -23,6 +23,7 @@ interface ProjectsTableProps {
   onSelectionChange?: (selectedProjects: ProjectTableData[]) => void
   onCreateClick?: () => void
   areLinksDisplayed?: boolean
+  useRoleAssignmentDataHook?: typeof useRoleAssignmentData
 }
 
 export const RBACProjectsTable = ({
@@ -31,11 +32,13 @@ export const RBACProjectsTable = ({
   onSelectionChange,
   onCreateClick,
   areLinksDisplayed = true,
+  useRoleAssignmentDataHook = useRoleAssignmentData,
 }: ProjectsTableProps) => {
   const { t } = useTranslation()
-  const [hasSelectedProjects, setHasSelectedProjects] = useState(false)
+  const [selectedProjects, setSelectedProjects] = useState<ProjectTableData[]>([])
+  const hasSelectedProjects = selectedProjects.length > 0
 
-  const { roleAssignmentData, isLoading: isRoleAssignmentDataLoading } = useRoleAssignmentData()
+  const { roleAssignmentData, isLoading: isRoleAssignmentDataLoading } = useRoleAssignmentDataHook()
 
   const clusters = useMemo(
     () => roleAssignmentData.clusterSets?.flatMap((cs) => cs.clusters || []) || [],
@@ -72,7 +75,7 @@ export const RBACProjectsTable = ({
 
   const tableActionButtons = useMemo<IAcmTableButtonAction[]>(
     () =>
-      !onCreateClick
+      !onCreateClick || isRoleAssignmentDataLoading
         ? []
         : [
             {
@@ -84,7 +87,7 @@ export const RBACProjectsTable = ({
               tooltip: hasSelectedProjects ? t('Deselect projects to create a new common project') : undefined,
             },
           ],
-    [t, onCreateClick, hasSelectedProjects]
+    [t, onCreateClick, hasSelectedProjects, isRoleAssignmentDataLoading]
   )
 
   const filters = useMemo<ITableFilter<ProjectTableData>[]>(() => {
@@ -169,36 +172,40 @@ export const RBACProjectsTable = ({
 
   const handleSelect = useCallback(
     (projects: ProjectTableData[]) => {
-      setHasSelectedProjects(projects.length > 0)
+      setSelectedProjects(projects)
       onSelectionChange?.(projects)
     },
     [onSelectionChange]
   )
 
   return (
-    <AcmTable<ProjectTableData>
-      items={isRoleAssignmentDataLoading ? undefined : projectsData}
-      columns={columns}
-      keyFn={(project) => `${project.name}-${project.clusters.join(',')}`}
-      tableActionButtons={tableActionButtons.length ? tableActionButtons : undefined}
-      onSelect={handleSelect}
-      filters={filters}
-      searchPlaceholder={t('Search projects')}
-      autoHidePagination
-      emptyState={
-        <AcmEmptyState
-          key="projectsEmptyState"
-          title={t('No common projects found')}
-          message={t('Go back and select different clusters, or create projects with the same name on these clusters.')}
-          action={
-            onCreateClick ? (
-              <AcmButton variant="primary" onClick={onCreateClick}>
-                {t('Create common project')}
-              </AcmButton>
-            ) : null
-          }
-        />
-      }
-    />
+    <AcmTableStateProvider localStorageKey="rbac-projects-table">
+      <AcmTable<ProjectTableData>
+        items={isRoleAssignmentDataLoading ? undefined : projectsData}
+        columns={columns}
+        keyFn={(project) => `${project.name}-${project.clusters.join(',')}`}
+        tableActionButtons={tableActionButtons.length ? tableActionButtons : undefined}
+        onSelect={handleSelect}
+        filters={filters}
+        searchPlaceholder={t('Search projects')}
+        autoHidePagination
+        emptyState={
+          <AcmEmptyState
+            key="projectsEmptyState"
+            title={t('No common projects found')}
+            message={t(
+              'Go back and select different clusters, or create projects with the same name on these clusters.'
+            )}
+            action={
+              onCreateClick ? (
+                <AcmButton variant="primary" onClick={onCreateClick}>
+                  {t('Create common project')}
+                </AcmButton>
+              ) : null
+            }
+          />
+        }
+      />
+    </AcmTableStateProvider>
   )
 }
