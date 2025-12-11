@@ -139,14 +139,16 @@ export function ClustersTable({
       clusterNodesColumn,
       clusterAddonsColumn,
       clusterCreatedDataColumn,
-      {
-        header: '',
-        cell: (cluster: Cluster) => {
-          return <ClusterActionDropdown cluster={cluster} isKebab={true} />
-        },
-        cellTransforms: [fitContent],
-        isActionCol: true,
-      },
+      ...(!hideTableActions
+        ? [
+            {
+              header: '',
+              cell: (cluster: Cluster) => <ClusterActionDropdown cluster={cluster} isKebab={true} />,
+              cellTransforms: [fitContent],
+              isActionCol: true,
+            },
+          ]
+        : []),
     ],
     [
       clusterNameColumn,
@@ -159,6 +161,7 @@ export function ClustersTable({
       clusterNodesColumn,
       clusterAddonsColumn,
       clusterCreatedDataColumn,
+      hideTableActions,
     ]
   )
 
@@ -383,8 +386,6 @@ export function ClustersTable({
     [modalColumns, infraEnvs, t]
   )
 
-  const rowActions = useMemo(() => [], [])
-
   const advancedFilters = useMemo<ITableAdvancedFilter<Cluster>[]>(() => {
     return [
       {
@@ -540,7 +541,7 @@ export function ClustersTable({
         key="managedClustersTable"
         tableActionButtons={tableButtonActions}
         tableActions={hideTableActions ? [] : tableActions}
-        rowActions={rowActions}
+        rowActions={[]}
         emptyState={emptyState}
         filters={filters}
         advancedFilters={advancedFilters}
