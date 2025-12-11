@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { BrowserRouter } from 'react-router-dom-v5-compat'
 import { AcmChartGroup } from '../AcmChartGroup'
 import { AcmDonutChart } from './AcmDonutChart'
 
@@ -45,27 +44,25 @@ export const DonutChart = () => {
     { key: 'Low', value: 1 },
   ]
   return (
-    <BrowserRouter>
-      <AcmChartGroup>
-        <AcmDonutChart
-          title="Cluster violations"
-          description="Overview of policy compliance status"
-          data={complianceData}
-        />
-        <AcmDonutChart title="Pods" description="Overview of pod count and status" data={podData} />
-        <AcmDonutChart title="Cluster status" description="Overview of cluster status" data={clusterData} />
-        <AcmDonutChart
-          title="Cluster issues"
-          description="Overview of cluster issues"
-          data={insightData}
-          donutLabel={{
-            title: '1',
-            subTitle: 'Clusters with issues',
-          }}
-          colorScale={['#E62325', '#EC7A08', '#F4C145', '#2B9AF3', '#72767B']}
-        />
-      </AcmChartGroup>
-    </BrowserRouter>
+    <AcmChartGroup>
+      <AcmDonutChart
+        title="Cluster violations"
+        description="Overview of policy compliance status"
+        data={complianceData}
+      />
+      <AcmDonutChart title="Pods" description="Overview of pod count and status" data={podData} />
+      <AcmDonutChart title="Cluster status" description="Overview of cluster status" data={clusterData} />
+      <AcmDonutChart
+        title="Cluster issues"
+        description="Overview of cluster issues"
+        data={insightData}
+        donutLabel={{
+          title: '1',
+          subTitle: 'Clusters with issues',
+        }}
+        colorScale={['#E62325', '#EC7A08', '#F4C145', '#2B9AF3', '#72767B']}
+      />
+    </AcmChartGroup>
   )
 }
 
