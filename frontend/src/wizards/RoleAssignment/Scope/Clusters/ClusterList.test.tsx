@@ -6,18 +6,23 @@ import { RecoilRoot } from 'recoil'
 import ClusterList from './ClusterList'
 import { Cluster, ClusterStatus } from '../../../../resources/utils'
 import { Provider } from '../../../../ui-components'
+import { useAllClusters } from '../../../../routes/Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
+
+jest.mock('../../../../routes/Infrastructure/Clusters/ManagedClusters/components/useAllClusters')
 
 // Mock the translation hook
 jest.mock('../../../../lib/acm-i18next', () => ({
-  useTranslation: () => ({
-    t: (key: string, options?: any) => {
+  useTranslation: () => {
+    const t = (key: string, options?: Record<string, unknown>) => {
       if (options?.count !== undefined) {
         return `${key} ${options.count}`
       }
       return key
-    },
-    i18n: { language: 'en' },
-  }),
+    }
+    const i18n = { language: 'en' }
+    // Return an object that supports both object and array destructuring
+    return Object.assign([t, i18n], { t, i18n })
+  },
 }))
 
 // Mock the shared atoms
@@ -108,7 +113,11 @@ jest.mock('../../../../routes/Infrastructure/Clusters/ManagedClusters/components
 }))
 
 jest.mock('../../../../routes/Infrastructure/Clusters/ManagedClusters/components/AddCluster', () => ({
-  AddCluster: ({ type }: { type: string }) => <button data-testid="add-cluster" type={type === 'button' ? 'button' : 'submit'}>Add Cluster</button>,
+  AddCluster: ({ type }: { type: string }) => (
+    <button data-testid="add-cluster" type={type === 'button' ? 'button' : 'submit'}>
+      Add Cluster
+    </button>
+  ),
 }))
 
 jest.mock('../../../../routes/Infrastructure/Clusters/ManagedClusters/utils/cluster-actions', () => ({
@@ -218,7 +227,7 @@ const mockClusters: Cluster[] = [
       },
     },
     labels: {
-      'environment': 'production',
+      environment: 'production',
     },
     nodes: {
       nodeList: [],
@@ -274,7 +283,7 @@ const mockClusters: Cluster[] = [
       },
     },
     labels: {
-      'environment': 'staging',
+      environment: 'staging',
     },
     nodes: {
       nodeList: [],
@@ -314,9 +323,8 @@ const mockClusters: Cluster[] = [
   },
 ]
 
-jest.mock('../../../../routes/Infrastructure/Clusters/ManagedClusters/components/useAllClusters', () => ({
-  useAllClusters: jest.fn(() => mockClusters),
-}))
+const mockUseAllClusters = jest.mocked(useAllClusters)
+mockUseAllClusters.mockReturnValue(mockClusters)
 
 const renderWithProviders = (component: React.ReactElement) => {
   return render(
@@ -344,8 +352,7 @@ describe('ClusterList', () => {
 
     it('renders empty state when no clusters are available', () => {
       // Mock useAllClusters to return empty array
-      const { useAllClusters } = require('../../../../routes/Infrastructure/Clusters/ManagedClusters/components/useAllClusters')
-      useAllClusters.mockReturnValue([])
+      mockUseAllClusters.mockReturnValue([])
 
       renderWithProviders(<ClusterList onSelectCluster={mockOnSelectCluster} />)
 
@@ -367,9 +374,7 @@ describe('ClusterList', () => {
     })
 
     it('shows empty state when no clusters match the namespace filter', () => {
-      renderWithProviders(
-        <ClusterList onSelectCluster={mockOnSelectCluster} namespaces={['non-existent-namespace']} />
-      )
+      renderWithProviders(<ClusterList onSelectCluster={mockOnSelectCluster} namespaces={['non-existent-namespace']} />)
 
       expect(screen.getByText("You don't have any clusters yet")).toBeInTheDocument()
     })
@@ -392,7 +397,7 @@ describe('ClusterList', () => {
       // - areLinksDisplayed: false
       // - tableKey: "clusterList"
       // - specific hiddenColumns with translation keys
-      
+
       expect(document.body).toBeInTheDocument()
     })
 
@@ -410,17 +415,17 @@ describe('ClusterList', () => {
       // Test that the component renders successfully with the expected hiddenColumns configuration
       // The hiddenColumns should include translation keys for:
       // - table.namespace
-      // - Add-ons  
+      // - Add-ons
       // - table.controlplane
       // - table.labels
       // - table.creationDate
-      
+
       renderWithProviders(<ClusterList onSelectCluster={mockOnSelectCluster} />)
 
       // Verify the component renders without errors, indicating the hiddenColumns
       // configuration is working correctly with the translation system
       expect(document.body).toBeInTheDocument()
-      
+
       // The actual hiddenColumns values are passed to ClustersTable and processed there
       // This test verifies the integration works correctly
     })
@@ -435,8 +440,7 @@ describe('ClusterList', () => {
         },
       ]
 
-      const { useAllClusters } = require('../../../../routes/Infrastructure/Clusters/ManagedClusters/components/useAllClusters')
-      useAllClusters.mockReturnValue(clustersWithoutNamespace)
+      mockUseAllClusters.mockReturnValue(clustersWithoutNamespace as Cluster[])
 
       renderWithProviders(<ClusterList onSelectCluster={mockOnSelectCluster} namespaces={['namespace-1']} />)
 
