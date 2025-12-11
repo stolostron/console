@@ -6,8 +6,9 @@ import {
   HostedClusterK8sResource,
 } from '@openshift-assisted/ui-lib/cim'
 import { Alert, Label, Text, TextContent, TextVariants, Tooltip } from '@patternfly/react-core'
-import { nowrap } from '@patternfly/react-table'
+import { fitContent, nowrap } from '@patternfly/react-table'
 import { Link } from 'react-router-dom-v5-compat'
+import { useMemo } from 'react'
 import { useTranslation } from '../../lib/acm-i18next'
 import { getClusterNavPath, NavigationPath } from '../../NavigationPath'
 import {
@@ -49,6 +50,7 @@ import {
 import { getDateTimeCell } from '../../routes/Infrastructure/helpers/table-row-helpers'
 import { DistributionField } from '../../routes/Infrastructure/Clusters/ManagedClusters/components/DistributionField'
 import { StatusField } from '../../routes/Infrastructure/Clusters/ManagedClusters/components/StatusField'
+import { ClusterActionDropdown } from '../../routes/Infrastructure/Clusters/ManagedClusters/components/ClusterActionDropdown'
 import { TFunction } from 'react-i18next'
 import keyBy from 'lodash/keyBy'
 import { HighlightSearchText } from '../HighlightSearchText'
@@ -763,4 +765,90 @@ export function useFilters(clusters: Cluster[]): ITableFilter<Cluster>[] {
         }),
     },
   ]
+}
+
+interface UseTableColumnsParams {
+  clusters: Cluster[]
+  areLinksDisplayed: boolean
+  localHubName: string
+  clusterCurators: any[]
+  hostedClusters: any[]
+  hideTableActions: boolean
+  hiddenColumns: string[]
+}
+
+export function useTableColumns({
+  clusters,
+  areLinksDisplayed,
+  localHubName,
+  clusterCurators,
+  hostedClusters,
+  hideTableActions,
+  hiddenColumns,
+}: UseTableColumnsParams) {
+  const clusterNameColumn = useClusterNameColumn(areLinksDisplayed)
+  const clusterNameColumnModal = useClusterNameColumnModal(areLinksDisplayed)
+  const clusterNamespaceColumn = useClusterNamespaceColumn()
+  const clusterStatusColumn = useClusterStatusColumn()
+  const clusterProviderColumn = useClusterProviderColumn()
+  const clusterControlPlaneColumn = useClusterControlPlaneColumn(localHubName)
+  const clusterDistributionColumn = useClusterDistributionColumn(clusters, clusterCurators, hostedClusters)
+  const clusterLabelsColumn = useClusterLabelsColumn(clusters.length > 10, localHubName)
+  const clusterNodesColumn = useClusterNodesColumn()
+  const clusterAddonsColumn = useClusterAddonColumn()
+  const clusterCreatedDataColumn = useClusterCreatedDateColumn()
+
+  const modalColumns = useModalColumns(clusterNameColumnModal, clusterStatusColumn, clusterProviderColumn)
+
+  const allTableColumns = useMemo<IAcmTableColumn<Cluster>[]>(
+    () => [
+      clusterNameColumn,
+      clusterNamespaceColumn,
+      clusterStatusColumn,
+      clusterProviderColumn,
+      clusterControlPlaneColumn,
+      clusterDistributionColumn,
+      clusterLabelsColumn,
+      clusterNodesColumn,
+      clusterAddonsColumn,
+      clusterCreatedDataColumn,
+      ...(!hideTableActions
+        ? [
+            {
+              header: '',
+              cell: (cluster: Cluster) => <ClusterActionDropdown cluster={cluster} isKebab={true} />,
+              cellTransforms: [fitContent],
+              isActionCol: true,
+            },
+          ]
+        : []),
+    ],
+    [
+      clusterNameColumn,
+      clusterNamespaceColumn,
+      clusterStatusColumn,
+      clusterProviderColumn,
+      clusterControlPlaneColumn,
+      clusterDistributionColumn,
+      clusterLabelsColumn,
+      clusterNodesColumn,
+      clusterAddonsColumn,
+      clusterCreatedDataColumn,
+      hideTableActions,
+    ]
+  )
+
+  // Filter out hidden columns
+  const columns = useMemo(
+    () =>
+      allTableColumns.filter((column) =>
+        typeof column.header === 'string' ? !hiddenColumns.includes(column.header) : true
+      ),
+    [allTableColumns, hiddenColumns]
+  )
+
+  return {
+    columns,
+    modalColumns,
+  }
 }

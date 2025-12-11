@@ -26,6 +26,7 @@ export function ClusterSetClustersPageContent() {
       <PageSection>
         <ClustersTable
           clusters={clusters}
+          tableKey="clusterSetClusters"
           emptyState={
             <AcmEmptyState
               key="mcEmptyState"

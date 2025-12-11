@@ -10,7 +10,9 @@ const ClusterList = () => {
   return (
     <ClustersTable
       clusters={clusters}
-        // hideTableActions={true}
+      tableKey="clusterList"
+      hideTableActions={true}
+      onSelectCluster={() => {}}
       showExportButton={false}
       areLinksDisplayed={false}
       hiddenColumns={[

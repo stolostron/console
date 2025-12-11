@@ -80,6 +80,7 @@ export default function ManagedClusters() {
             </div>
             <ClustersTable
               clusters={clusters}
+              tableKey="managedClusters"
               tableButtonActions={[
                 {
                   id: 'createCluster',

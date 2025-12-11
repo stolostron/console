@@ -1,34 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { fitContent } from '@patternfly/react-table'
-import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
+import { Fragment, useCallback, useEffect, useState } from 'react'
 import { BulkActionModal, BulkActionModalProps } from '../BulkActionModal'
 import { Cluster } from '../../resources/utils'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
-import { AcmTable, IAcmTableButtonAction, IAcmTableColumn } from '../../ui-components'
+import { AcmTable, IAcmTableButtonAction } from '../../ui-components'
 import { BatchChannelSelectModal } from '../../routes/Infrastructure/Clusters/ManagedClusters/components/BatchChannelSelectModal'
 import { BatchUpgradeModal } from '../../routes/Infrastructure/Clusters/ManagedClusters/components/BatchUpgradeModal'
-import { ClusterActionDropdown } from '../../routes/Infrastructure/Clusters/ManagedClusters/components/ClusterActionDropdown'
 import { RemoveAutomationModal } from '../../routes/Infrastructure/Clusters/ManagedClusters/components/RemoveAutomationModal'
 import { UpdateAutomationModal } from '../../routes/Infrastructure/Clusters/ManagedClusters/components/UpdateAutomationModal'
 import { useLocalHubName } from '../../hooks/use-local-hub'
-import {
-  useClusterNameColumn,
-  useClusterNameColumnModal,
-  useClusterNamespaceColumn,
-  useClusterStatusColumn,
-  useClusterProviderColumn,
-  useClusterControlPlaneColumn,
-  useClusterDistributionColumn,
-  useClusterLabelsColumn,
-  useClusterNodesColumn,
-  useClusterAddonColumn,
-  useClusterCreatedDateColumn,
-  useModalColumns,
-  useTableActions,
-  useAdvancedFilters,
-  useFilters,
-} from './ClustersTableHelper'
+import { useTableColumns, useTableActions, useAdvancedFilters, useFilters } from './ClustersTableHelper'
 
 interface ClustersTableProps {
   clusters?: Cluster[]
@@ -39,6 +21,7 @@ interface ClustersTableProps {
   areLinksDisplayed?: boolean
   hiddenColumns?: string[]
   onSelectCluster?: (clusterList: Cluster[]) => void
+  tableKey: string
 }
 
 export function ClustersTable({
@@ -50,6 +33,7 @@ export function ClustersTable({
   areLinksDisplayed = true,
   hiddenColumns = [],
   onSelectCluster,
+  tableKey,
 }: ClustersTableProps) {
   useEffect(() => {
     sessionStorage.removeItem('DiscoveredClusterDisplayName')
@@ -71,73 +55,21 @@ export function ClustersTable({
     open: false,
   })
 
-  const mckeyFn = useCallback(function mckeyFn(cluster: Cluster) {
-    return cluster.name!
-  }, [])
+  const keyFn = useCallback((cluster: Cluster) => cluster.name!, [])
 
-  const clusterNameColumn = useClusterNameColumn(areLinksDisplayed)
-  const clusterNameColumnModal = useClusterNameColumnModal(areLinksDisplayed)
-  const clusterNamespaceColumn = useClusterNamespaceColumn()
-  const clusterStatusColumn = useClusterStatusColumn()
-  const clusterProviderColumn = useClusterProviderColumn()
-  const clusterControlPlaneColumn = useClusterControlPlaneColumn(localHubName)
-  const clusterDistributionColumn = useClusterDistributionColumn(clusters, clusterCurators, hostedClusters)
-  const clusterLabelsColumn = useClusterLabelsColumn(clusters.length > 10, localHubName)
-  const clusterNodesColumn = useClusterNodesColumn()
-  const clusterAddonsColumn = useClusterAddonColumn()
-  const clusterCreatedDataColumn = useClusterCreatedDateColumn()
   const { agentClusterInstallsState, clusterImageSetsState } = useSharedAtoms()
   const clusterImageSets = useRecoilValue(clusterImageSetsState)
   const agentClusterInstalls = useRecoilValue(agentClusterInstallsState)
 
-  const modalColumns = useModalColumns(clusterNameColumnModal, clusterStatusColumn, clusterProviderColumn)
-
-  const allColumns = useMemo<IAcmTableColumn<Cluster>[]>(
-    () => [
-      clusterNameColumn,
-      clusterNamespaceColumn,
-      clusterStatusColumn,
-      clusterProviderColumn,
-      clusterControlPlaneColumn,
-      clusterDistributionColumn,
-      clusterLabelsColumn,
-      clusterNodesColumn,
-      clusterAddonsColumn,
-      clusterCreatedDataColumn,
-      ...(!hideTableActions
-        ? [
-            {
-              header: '',
-              cell: (cluster: Cluster) => <ClusterActionDropdown cluster={cluster} isKebab={true} />,
-              cellTransforms: [fitContent],
-              isActionCol: true,
-            },
-          ]
-        : []),
-    ],
-    [
-      clusterNameColumn,
-      clusterNamespaceColumn,
-      clusterStatusColumn,
-      clusterProviderColumn,
-      clusterControlPlaneColumn,
-      clusterDistributionColumn,
-      clusterLabelsColumn,
-      clusterNodesColumn,
-      clusterAddonsColumn,
-      clusterCreatedDataColumn,
-      hideTableActions,
-    ]
-  )
-
-  // Filter out hidden columns
-  const columns = useMemo(
-    () =>
-      allColumns.filter((column) =>
-        typeof column.header === 'string' ? !hiddenColumns.includes(column.header) : true
-      ),
-    [allColumns, hiddenColumns]
-  )
+  const { columns, modalColumns } = useTableColumns({
+    clusters,
+    areLinksDisplayed,
+    localHubName,
+    clusterCurators,
+    hostedClusters,
+    hideTableActions,
+    hiddenColumns,
+  })
 
   const tableActions = useTableActions(
     modalColumns,
@@ -150,7 +82,6 @@ export function ClustersTable({
   )
 
   const advancedFilters = useAdvancedFilters(clusters, clusterImageSets, agentClusterInstalls)
-
   const filters = useFilters(clusters)
 
   return (
@@ -187,18 +118,18 @@ export function ClustersTable({
       <AcmTable<Cluster>
         items={clusters}
         columns={columns}
-        keyFn={mckeyFn}
-        key="managedClustersTable"
+        keyFn={keyFn}
+        key={tableKey}
         tableActionButtons={tableButtonActions}
         tableActions={hideTableActions ? [] : tableActions}
         rowActions={[]}
         emptyState={emptyState}
         filters={filters}
         advancedFilters={advancedFilters}
-        id="managedClusters"
+        id={tableKey}
         showExportButton={showExportButton}
         secondaryFilterIds={['label']}
-        exportFilePrefix="managedclusters"
+        exportFilePrefix={tableKey}
         onSelect={onSelectCluster}
       />
     </Fragment>
