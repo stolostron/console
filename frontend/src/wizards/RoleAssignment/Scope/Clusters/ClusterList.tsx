@@ -3,11 +3,11 @@ import { ClustersTable } from '../../../../components/Clusters'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { AddCluster } from '../../../../routes/Infrastructure/Clusters/ManagedClusters/components/AddCluster'
 import { useAllClusters } from '../../../../routes/Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
-import { Cluster } from '../../../../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHook'
+import { Cluster } from '../../../../resources/utils'
 import { AcmEmptyState } from '../../../../ui-components'
 
 interface ClusterListProps {
-  onSelectCluster?: (clusters: Cluster[]) => void
+  onSelectCluster: (clusters: Cluster[]) => void
   namespaces?: string[]
 }
 
@@ -33,11 +33,8 @@ const ClusterList = ({ onSelectCluster, namespaces }: ClusterListProps) => {
       hiddenColumns={[
         t('table.namespace'),
         t('Add-ons'),
-        t('table.provider'),
         t('table.controlplane'),
-        t('table.distribution'),
         t('table.labels'),
-        t('table.nodes'),
         t('table.creationDate'),
       ]}
       emptyState={

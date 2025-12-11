@@ -3,7 +3,6 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import { ButtonVariant } from '@patternfly/react-core'
 import {
   getControlPlaneString,
   getClusterDistributionString,
@@ -16,6 +15,10 @@ import {
   useClusterNodesColumn,
   useClusterAddonColumn,
   useClusterCreatedDateColumn,
+  useTableColumns,
+  useTableActions,
+  useAdvancedFilters,
+  useFilters,
 } from './ClustersTableHelper'
 import { Cluster, ClusterStatus } from '../../resources/utils'
 import { Provider } from '../../ui-components'
@@ -58,9 +61,7 @@ jest.mock('../../routes/Infrastructure/Clusters/ManagedClusters/components/Distr
 }))
 
 jest.mock('../../routes/Infrastructure/Clusters/ManagedClusters/components/StatusField', () => ({
-  StatusField: ({ cluster }: { cluster: Cluster }) => (
-    <div data-testid="status-field">{cluster.status}</div>
-  ),
+  StatusField: ({ cluster }: { cluster: Cluster }) => <div data-testid="status-field">{cluster.status}</div>,
 }))
 
 jest.mock('../../routes/Infrastructure/Clusters/ManagedClusters/utils/cluster-actions', () => ({
@@ -99,7 +100,7 @@ const mockCluster: Cluster = {
   },
   labels: {
     'test-label': 'test-value',
-    'environment': 'production',
+    environment: 'production',
   },
   nodes: {
     nodeList: [],
@@ -141,9 +142,7 @@ const mockCluster: Cluster = {
 const renderWithProviders = (component: React.ReactElement) => {
   return render(
     <RecoilRoot>
-      <MemoryRouter>
-        {component}
-      </MemoryRouter>
+      <MemoryRouter>{component}</MemoryRouter>
     </RecoilRoot>
   )
 }
@@ -226,7 +225,7 @@ describe('ClustersTableHelper', () => {
 
   describe('Column Hooks', () => {
     // Test component to render column hooks
-    const TestColumnComponent = ({ column, cluster }: { column: any, cluster: Cluster }) => {
+    const TestColumnComponent = ({ column, cluster }: { column: any; cluster: Cluster }) => {
       const cellContent = column.cell(cluster, '')
       return <div>{cellContent}</div>
     }
@@ -234,7 +233,7 @@ describe('ClustersTableHelper', () => {
     it('should render cluster name column with link', () => {
       const column = useClusterNameColumn(true)
       renderWithProviders(<TestColumnComponent column={column} cluster={mockCluster} />)
-      
+
       expect(screen.getByRole('link')).toBeInTheDocument()
       expect(screen.getByText('Test Cluster')).toBeInTheDocument()
     })
@@ -242,7 +241,7 @@ describe('ClustersTableHelper', () => {
     it('should render cluster name column without link', () => {
       const column = useClusterNameColumn(false)
       renderWithProviders(<TestColumnComponent column={column} cluster={mockCluster} />)
-      
+
       expect(screen.queryByRole('link')).not.toBeInTheDocument()
       expect(screen.getByText('Test Cluster')).toBeInTheDocument()
     })
@@ -250,14 +249,14 @@ describe('ClustersTableHelper', () => {
     it('should render cluster status column', () => {
       const column = useClusterStatusColumn()
       renderWithProviders(<TestColumnComponent column={column} cluster={mockCluster} />)
-      
+
       expect(screen.getByTestId('status-field')).toBeInTheDocument()
     })
 
     it('should render cluster provider column', () => {
       const column = useClusterProviderColumn()
       renderWithProviders(<TestColumnComponent column={column} cluster={mockCluster} />)
-      
+
       // The AcmInlineProvider component should be rendered
       expect(screen.getByText('Test Cluster')).toBeInTheDocument()
     })
@@ -265,21 +264,21 @@ describe('ClustersTableHelper', () => {
     it('should render cluster control plane column', () => {
       const column = useClusterControlPlaneColumn('local-cluster')
       renderWithProviders(<TestColumnComponent column={column} cluster={mockCluster} />)
-      
+
       expect(screen.getByText('Standalone')).toBeInTheDocument()
     })
 
     it('should render cluster distribution column', () => {
       const column = useClusterDistributionColumn([mockCluster], [], [])
       renderWithProviders(<TestColumnComponent column={column} cluster={mockCluster} />)
-      
+
       expect(screen.getByTestId('distribution-field')).toBeInTheDocument()
     })
 
     it('should render cluster labels column', () => {
       const column = useClusterLabelsColumn(false, 'local-cluster')
       renderWithProviders(<TestColumnComponent column={column} cluster={mockCluster} />)
-      
+
       // The AcmLabels component should render the labels
       expect(screen.getByText('Test Cluster')).toBeInTheDocument()
     })
@@ -287,7 +286,7 @@ describe('ClustersTableHelper', () => {
     it('should render cluster nodes column', () => {
       const column = useClusterNodesColumn()
       renderWithProviders(<TestColumnComponent column={column} cluster={mockCluster} />)
-      
+
       // The AcmInlineStatusGroup component should be rendered
       expect(screen.getByText('Test Cluster')).toBeInTheDocument()
     })
@@ -295,7 +294,7 @@ describe('ClustersTableHelper', () => {
     it('should render cluster addon column', () => {
       const column = useClusterAddonColumn()
       renderWithProviders(<TestColumnComponent column={column} cluster={mockCluster} />)
-      
+
       // The AcmInlineStatusGroup component should be rendered
       expect(screen.getByText('Test Cluster')).toBeInTheDocument()
     })
@@ -303,7 +302,7 @@ describe('ClustersTableHelper', () => {
     it('should render cluster created date column', () => {
       const column = useClusterCreatedDateColumn()
       renderWithProviders(<TestColumnComponent column={column} cluster={mockCluster} />)
-      
+
       // The AcmTimestamp component should be rendered
       expect(screen.getByText('Test Cluster')).toBeInTheDocument()
     })
@@ -311,7 +310,7 @@ describe('ClustersTableHelper', () => {
 
   describe('Column Export Content', () => {
     it('should export cluster name correctly', () => {
-      const column = useClusterNameColumn()
+      const column = useClusterNameColumn(true)
       expect(column.exportContent?.(mockCluster)).toBe('Test Cluster')
     })
 
@@ -368,10 +367,10 @@ describe('ClustersTableHelper', () => {
 
   describe('Column Headers and Properties', () => {
     it('should have correct headers for all columns', () => {
-      expect(useClusterNameColumn().header).toBe('table.name')
+      expect(useClusterNameColumn(true).header).toBe('table.name')
       expect(useClusterStatusColumn().header).toBe('table.status')
       expect(useClusterProviderColumn().header).toBe('table.provider')
-      expect(useClusterControlPlaneColumn().header).toBe('table.controlplane')
+      expect(useClusterControlPlaneColumn('').header).toBe('table.controlplane')
       expect(useClusterDistributionColumn([], [], []).header).toBe('table.distribution')
       expect(useClusterLabelsColumn(false).header).toBe('table.labels')
       expect(useClusterNodesColumn().header).toBe('table.nodes')
@@ -380,12 +379,160 @@ describe('ClustersTableHelper', () => {
     })
 
     it('should have correct sort properties', () => {
-      expect(useClusterNameColumn().sort).toBe('displayName')
+      expect(useClusterNameColumn(true).sort).toBe('displayName')
       expect(useClusterStatusColumn().sort).toBe('status')
       expect(useClusterProviderColumn().sort).toBe('provider')
       expect(useClusterDistributionColumn([], [], []).sort).toBe('distribution.displayVersion')
       expect(useClusterNodesColumn().sort).toBe('nodes')
       expect(useClusterAddonColumn().sort).toBe('addons')
     })
+  })
+})
+
+describe('useTableColumns', () => {
+  const mockParams = {
+    clusters: [mockCluster],
+    areLinksDisplayed: true,
+    localHubName: 'local-cluster',
+    clusterCurators: [],
+    hostedClusters: [],
+    hideTableActions: false,
+    hiddenColumns: [],
+  }
+
+  it('should return columns and modalColumns', () => {
+    const TestComponent = () => {
+      const result = useTableColumns(mockParams)
+      return (
+        <div>
+          <span data-testid="columns-length">{result.columns.length}</span>
+          <span data-testid="modal-columns-length">{result.modalColumns.length}</span>
+        </div>
+      )
+    }
+
+    render(
+      <RecoilRoot>
+        <MemoryRouter>
+          <TestComponent />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    expect(screen.getByTestId('columns-length')).toHaveTextContent('11') // 10 data columns + 1 action column
+    expect(screen.getByTestId('modal-columns-length')).toHaveTextContent('3')
+  })
+
+  it('should hide action column when hideTableActions is true', () => {
+    const TestComponent = () => {
+      const result = useTableColumns({ ...mockParams, hideTableActions: true })
+      return <span data-testid="columns-length">{result.columns.length}</span>
+    }
+
+    render(
+      <RecoilRoot>
+        <MemoryRouter>
+          <TestComponent />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    expect(screen.getByTestId('columns-length')).toHaveTextContent('10') // 10 data columns only
+  })
+
+  it('should filter out hidden columns', () => {
+    const TestComponent = () => {
+      const result = useTableColumns({ ...mockParams, hiddenColumns: ['table.name', 'table.namespace'] })
+      return <span data-testid="columns-length">{result.columns.length}</span>
+    }
+
+    render(
+      <RecoilRoot>
+        <MemoryRouter>
+          <TestComponent />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    expect(screen.getByTestId('columns-length')).toHaveTextContent('9') // 8 data columns + 1 action column
+  })
+})
+
+describe('useTableActions', () => {
+  const mockModalColumns = [
+    { header: 'Name', cell: () => <div>Name</div> },
+    { header: 'Status', cell: () => <div>Status</div> },
+    { header: 'Provider', cell: () => <div>Provider</div> },
+  ]
+  const mockInfraEnvs: any[] = []
+  const mockSetters = {
+    setUpgradeClusters: jest.fn(),
+    setSelectChannels: jest.fn(),
+    setUpdateAutomationTemplates: jest.fn(),
+    setRemoveAutomationTemplates: jest.fn(),
+    setModalProps: jest.fn(),
+  }
+
+  it('should return table actions', () => {
+    const TestComponent = () => {
+      const actions = useTableActions(
+        mockModalColumns,
+        mockInfraEnvs,
+        mockSetters.setUpgradeClusters,
+        mockSetters.setSelectChannels,
+        mockSetters.setUpdateAutomationTemplates,
+        mockSetters.setRemoveAutomationTemplates,
+        mockSetters.setModalProps
+      )
+      return <span data-testid="actions-length">{actions.length}</span>
+    }
+
+    render(
+      <RecoilRoot>
+        <MemoryRouter>
+          <TestComponent />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    expect(screen.getByTestId('actions-length')).toHaveTextContent('10') // 7 actions + 3 separators
+  })
+})
+
+describe('useAdvancedFilters', () => {
+  it('should return advanced filters', () => {
+    const TestComponent = () => {
+      const filters = useAdvancedFilters([mockCluster], [], [])
+      return <span data-testid="filters-length">{filters.length}</span>
+    }
+
+    render(
+      <RecoilRoot>
+        <MemoryRouter>
+          <TestComponent />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    expect(screen.getByTestId('filters-length')).toHaveTextContent('3')
+  })
+})
+
+describe('useFilters', () => {
+  it('should return filters', () => {
+    const TestComponent = () => {
+      const filters = useFilters([mockCluster])
+      return <span data-testid="filters-length">{filters.length}</span>
+    }
+
+    render(
+      <RecoilRoot>
+        <MemoryRouter>
+          <TestComponent />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    expect(screen.getByTestId('filters-length')).toHaveTextContent('5')
   })
 })

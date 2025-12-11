@@ -18,6 +18,7 @@ jest.mock('../../lib/acm-i18next', () => ({
       }
       return key
     },
+    i18n: { language: 'en' },
   }),
 }))
 
@@ -110,6 +111,35 @@ jest.mock('../../NavigationPath', () => ({
   },
 }))
 
+// Mock React Router hooks
+jest.mock('react-router-dom-v5-compat', () => ({
+  ...jest.requireActual('react-router-dom-v5-compat'),
+  useLocation: () => ({
+    pathname: '/clusters',
+    search: '',
+    hash: '',
+    state: null,
+  }),
+  useNavigate: () => jest.fn(),
+}))
+
+// Mock local hub hook
+jest.mock('../../hooks/use-local-hub', () => ({
+  useLocalHubName: () => 'local-cluster',
+}))
+
+// Mock search utils
+jest.mock('../../lib/search-utils', () => ({
+  handleStandardComparison: jest.fn(() => true),
+  handleSemverOperatorComparison: jest.fn(() => true),
+}))
+
+// Mock AcmTimestamp
+jest.mock('../../lib/AcmTimestamp', () => ({
+  __esModule: true,
+  default: ({ timestamp }: { timestamp: string }) => <div data-testid="timestamp">{timestamp}</div>,
+}))
+
 const mockCluster: Cluster = {
   name: 'test-cluster',
   displayName: 'Test Cluster',
@@ -170,6 +200,7 @@ const mockCluster: Cluster = {
 const defaultProps = {
   clusters: [mockCluster],
   emptyState: <AcmEmptyState title="No clusters" message="No clusters found" />,
+  tableKey: 'test-clusters-table',
 }
 
 const renderWithProviders = (props: any) => {
