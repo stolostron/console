@@ -64,7 +64,7 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
         <div style={{ position: 'absolute', height: '100%', width: '100%' }}>
           <AcmToastProvider>
             <AcmToastGroup />
-            <AcmTableStateProvider localStorageKey="clusters">{props.children}</AcmTableStateProvider>
+            <AcmTableStateProvider>{props.children}</AcmTableStateProvider>
           </AcmToastProvider>
         </div>
       </div>
