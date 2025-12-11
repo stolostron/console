@@ -5,13 +5,31 @@ import {
   getVersionFromReleaseImage,
   HostedClusterK8sResource,
 } from '@openshift-assisted/ui-lib/cim'
-import { Label, Text, TextContent, TextVariants, Tooltip } from '@patternfly/react-core'
+import { Alert, Label, Text, TextContent, TextVariants, Tooltip } from '@patternfly/react-core'
 import { nowrap } from '@patternfly/react-table'
 import { Link } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../lib/acm-i18next'
 import { getClusterNavPath, NavigationPath } from '../../NavigationPath'
-import { ClusterCurator, ClusterImageSet, getRoles, NodeInfo } from '../../resources'
-import { Cluster, exportObjectString, getClusterStatusLabel, getISOStringTimestamp } from '../../resources/utils'
+import {
+  ClusterCurator,
+  ClusterImageSet,
+  getRoles,
+  NodeInfo,
+  ClusterDeployment,
+  ClusterDeploymentDefinition,
+} from '../../resources'
+import {
+  Cluster,
+  exportObjectString,
+  getClusterStatusLabel,
+  getISOStringTimestamp,
+  AddonStatus,
+  ClusterStatus,
+  getAddonStatusLabel,
+  ResourceErrorCode,
+  patchResource,
+  filterLabelFn,
+} from '../../resources/utils'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import {
   AcmInlineProvider,
@@ -21,15 +39,30 @@ import {
   IAcmTableColumn,
   Provider,
   ProviderLongTextMap,
+  AcmEmptyState,
+  getNodeStatusLabel,
+  IAcmTableAction,
+  ITableAdvancedFilter,
+  ITableFilter,
+  StatusType,
 } from '../../ui-components'
 import { getDateTimeCell } from '../../routes/Infrastructure/helpers/table-row-helpers'
 import { DistributionField } from '../../routes/Infrastructure/Clusters/ManagedClusters/components/DistributionField'
 import { StatusField } from '../../routes/Infrastructure/Clusters/ManagedClusters/components/StatusField'
-import { clusterDestroyable } from '../../routes/Infrastructure/Clusters/ManagedClusters/utils/cluster-actions'
 import { TFunction } from 'react-i18next'
 import keyBy from 'lodash/keyBy'
 import { HighlightSearchText } from '../HighlightSearchText'
 import AcmTimestamp from '../../lib/AcmTimestamp'
+import { BulkActionModalProps, errorIsNot } from '../BulkActionModal'
+import { deleteCluster, detachCluster } from '../../lib/delete-cluster'
+import {
+  ClusterAction,
+  clusterDestroyable,
+  clusterSupportsAction,
+} from '../../routes/Infrastructure/Clusters/ManagedClusters/utils/cluster-actions'
+import { SearchOperator } from '../../ui-components/AcmSearchInput'
+import { handleStandardComparison, handleSemverOperatorComparison } from '../../lib/search-utils'
+import { getClusterLabelData } from '../../routes/Infrastructure/Clusters/ManagedClusters/utils/utils'
 
 export function useClusterNameColumn(areLinksDisplayed: boolean = true): IAcmTableColumn<Cluster> {
   const { t } = useTranslation()
@@ -377,4 +410,357 @@ export function useClusterCreatedDateColumn(): IAcmTableColumn<Cluster> {
       }
     },
   }
+}
+
+export function useModalColumns(
+  clusterNameColumnModal: IAcmTableColumn<Cluster>,
+  clusterStatusColumn: IAcmTableColumn<Cluster>,
+  clusterProviderColumn: IAcmTableColumn<Cluster>
+): IAcmTableColumn<Cluster>[] {
+  return [clusterNameColumnModal, clusterStatusColumn, clusterProviderColumn]
+}
+
+export function useTableActions(
+  modalColumns: IAcmTableColumn<Cluster>[],
+  infraEnvs: any[],
+  setUpgradeClusters: (clusters: Array<Cluster> | undefined) => void,
+  setSelectChannels: (clusters: Array<Cluster> | undefined) => void,
+  setUpdateAutomationTemplates: (clusters: Array<Cluster> | undefined) => void,
+  setRemoveAutomationTemplates: (clusters: Array<Cluster> | undefined) => void,
+  setModalProps: (props: BulkActionModalProps<Cluster> | { open: false }) => void
+): IAcmTableAction<Cluster>[] {
+  const { t } = useTranslation()
+
+  return [
+    {
+      id: 'upgradeClusters',
+      title: t('managed.upgrade.plural'),
+      click: (managedClusters: Array<Cluster>) => {
+        if (!managedClusters) return
+        setUpgradeClusters(managedClusters)
+      },
+      variant: 'bulk-action',
+    },
+    {
+      id: 'selectChannels',
+      title: t('managed.selectChannel.plural'),
+      click: (managedClusters: Array<Cluster>) => {
+        if (!managedClusters) return
+        setSelectChannels(managedClusters)
+      },
+      variant: 'bulk-action',
+    },
+    { id: 'seperator-0', variant: 'action-separator' },
+    {
+      id: 'updateAutomationTemplates',
+      title: t('Update automation template'),
+      click: (managedClusters: Array<Cluster>) => {
+        if (!managedClusters) return
+        setUpdateAutomationTemplates(managedClusters)
+      },
+      variant: 'bulk-action',
+    },
+    {
+      id: 'removeAutomationTemplates',
+      title: t('Remove automation templates'),
+      click: (managedClusters: Array<Cluster>) => {
+        if (!managedClusters) return
+        setRemoveAutomationTemplates(managedClusters)
+      },
+      variant: 'bulk-action',
+    },
+    { id: 'seperator-1', variant: 'action-separator' },
+    {
+      id: 'hibernate-cluster',
+      title: t('managed.hibernate.plural'),
+      click: (clusters) => {
+        setModalProps({
+          open: true,
+          title: t('bulk.title.hibernate'),
+          action: t('hibernate'),
+          processing: t('hibernating'),
+          items: clusters.filter((cluster) => clusterSupportsAction(cluster, ClusterAction.Hibernate)),
+          emptyState: (
+            <AcmEmptyState
+              title={t('No clusters available')}
+              message={t('None of the selected clusters can be hibernated.')}
+            />
+          ),
+          description: t('bulk.message.hibernate'),
+          columns: modalColumns,
+          keyFn: (cluster) => cluster.name as string,
+          actionFn: (cluster) => {
+            return patchResource(
+              {
+                apiVersion: ClusterDeploymentDefinition.apiVersion,
+                kind: ClusterDeploymentDefinition.kind,
+                metadata: {
+                  name: cluster.name!,
+                  namespace: cluster.namespace!,
+                },
+              } as ClusterDeployment,
+              [{ op: 'replace', path: '/spec/powerState', value: 'Hibernating' }]
+            )
+          },
+          close: () => {
+            setModalProps({ open: false })
+          },
+          isValidError: errorIsNot([ResourceErrorCode.NotFound]),
+        })
+      },
+      variant: 'bulk-action',
+    },
+    {
+      id: 'resume-cluster',
+      title: t('managed.resume.plural'),
+      click: (clusters) => {
+        setModalProps({
+          open: true,
+          title: t('bulk.title.resume'),
+          action: t('resume'),
+          processing: t('resuming'),
+          items: clusters.filter((cluster) => clusterSupportsAction(cluster, ClusterAction.Resume)),
+          emptyState: (
+            <AcmEmptyState
+              title={t('No clusters available')}
+              message={t('None of the selected clusters can be resumed.')}
+            />
+          ),
+          description: t('bulk.message.resume'),
+          columns: modalColumns,
+          keyFn: (cluster) => cluster.name as string,
+          actionFn: (cluster) => {
+            return patchResource(
+              {
+                apiVersion: ClusterDeploymentDefinition.apiVersion,
+                kind: ClusterDeploymentDefinition.kind,
+                metadata: {
+                  name: cluster.name!,
+                  namespace: cluster.namespace!,
+                },
+              } as ClusterDeployment,
+              [{ op: 'replace', path: '/spec/powerState', value: 'Running' }]
+            )
+          },
+          close: () => {
+            setModalProps({ open: false })
+          },
+          isValidError: errorIsNot([ResourceErrorCode.NotFound]),
+        })
+      },
+      variant: 'bulk-action',
+    },
+    { id: 'seperator-2', variant: 'action-separator' },
+    {
+      id: 'detachCluster',
+      title: t('managed.detach.plural'),
+      click: (clusters) => {
+        setModalProps({
+          open: true,
+          title: t('bulk.title.detach'),
+          action: t('detach'),
+          processing: t('detaching'),
+          items: clusters.filter((cluster) => clusterSupportsAction(cluster, ClusterAction.Detach)),
+          emptyState: (
+            <AcmEmptyState
+              title={t('No clusters available')}
+              message={t('None of the selected clusters can be detached.')}
+            />
+          ),
+          description: t('bulk.message.detach'),
+          columns: modalColumns,
+          keyFn: (cluster) => cluster.name as string,
+          actionFn: (cluster) => detachCluster(cluster),
+          close: () => setModalProps({ open: false }),
+          isDanger: true,
+          icon: 'warning',
+          confirmText: t('confirm'),
+          isValidError: errorIsNot([ResourceErrorCode.NotFound]),
+        })
+      },
+      variant: 'bulk-action',
+    },
+    {
+      id: 'destroyCluster',
+      title: t('managed.destroy.plural'),
+      click: (clusters) => {
+        const unDestroyedClusters = clusters.filter((cluster) => !clusterDestroyable(cluster))
+        setModalProps({
+          open: true,
+          alert:
+            unDestroyedClusters.length > 0 ? (
+              <Alert
+                variant="danger"
+                isInline
+                title={t('You selected {{count}} cluster that cannot be destroyed', {
+                  count: unDestroyedClusters.length,
+                })}
+                style={{ marginTop: '20px' }}
+              >
+                <TextContent>
+                  {t('It will not be destroyed when you perform this action.', {
+                    count: unDestroyedClusters.length,
+                  })}
+                </TextContent>
+              </Alert>
+            ) : undefined,
+          title: t('bulk.title.destroy'),
+          action: t('destroy'),
+          processing: t('destroying'),
+          items: clusters.filter(
+            (cluster) =>
+              clusterSupportsAction(cluster, ClusterAction.Destroy) ||
+              clusterSupportsAction(cluster, ClusterAction.Detach)
+          ),
+          emptyState: (
+            <AcmEmptyState
+              title={t('No clusters available')}
+              message={t('None of the selected clusters can be destroyed or detached.')}
+            />
+          ),
+          description: t('bulk.message.destroy'),
+          columns: modalColumns,
+          keyFn: (cluster) => cluster.name as string,
+          actionFn: (cluster, options) =>
+            deleteCluster({
+              cluster,
+              ignoreClusterDeploymentNotFound: true,
+              infraEnvs,
+              deletePullSecret: !!options?.deletePullSecret,
+            }),
+          close: () => setModalProps({ open: false }),
+          isDanger: true,
+          icon: 'warning',
+          confirmText: t('confirm'),
+          isValidError: errorIsNot([ResourceErrorCode.NotFound]),
+          enableDeletePullSecret: true,
+        })
+      },
+      variant: 'bulk-action',
+    },
+  ]
+}
+
+export function useAdvancedFilters(
+  clusters: Cluster[],
+  clusterImageSets: any[],
+  agentClusterInstalls: any[]
+): ITableAdvancedFilter<Cluster>[] {
+  const { t } = useTranslation()
+
+  return [
+    {
+      id: 'name',
+      label: t('table.name'),
+      availableOperators: [SearchOperator.Equals],
+      tableFilterFn: ({ value }, cluster) => handleStandardComparison(cluster.name, value, SearchOperator.Equals),
+    },
+    {
+      id: 'namespace',
+      label: t('table.namespace'),
+      availableOperators: [SearchOperator.Equals],
+      tableFilterFn: ({ value }, cluster) => handleStandardComparison(cluster.name, value, SearchOperator.Equals),
+    },
+    {
+      id: 'distribution',
+      label: t('table.distribution'),
+      availableOperators: [
+        SearchOperator.Equals,
+        SearchOperator.GreaterThan,
+        SearchOperator.LessThan,
+        SearchOperator.GreaterThanOrEqualTo,
+        SearchOperator.LessThanOrEqualTo,
+        SearchOperator.NotEquals,
+      ],
+      tableFilterFn: ({ operator, value }, cluster) => {
+        const clusterVersion = getClusterDistributionString(cluster, clusterImageSets, agentClusterInstalls, clusters)
+        return handleSemverOperatorComparison(clusterVersion ?? '', value, operator)
+      },
+    },
+  ]
+}
+
+export function useFilters(clusters: Cluster[]): ITableFilter<Cluster>[] {
+  const { t } = useTranslation()
+  const { labelOptions, labelMap } = getClusterLabelData(clusters || []) || {}
+
+  return [
+    {
+      id: 'provider',
+      label: t('table.provider'),
+      options: Object.values(Provider)
+        .map((key) => ({
+          label: ProviderLongTextMap[key],
+          value: key,
+        }))
+        .sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
+      tableFilterFn: (selectedValues, cluster) => selectedValues.includes(cluster.provider ?? ''),
+    },
+    {
+      id: 'label',
+      label: t('table.labels'),
+      options: labelOptions || [],
+      supportsInequality: true,
+      tableFilterFn: (selectedValues, item) => filterLabelFn(selectedValues, item, labelMap),
+    },
+    {
+      id: 'status',
+      label: t('table.status'),
+      options: Object.keys(ClusterStatus)
+        .map((status) => ({
+          label: getClusterStatusLabel(status as ClusterStatus, t),
+          value: status,
+        }))
+        .sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
+      tableFilterFn: (selectedValues, cluster) => selectedValues.includes(cluster.status),
+    },
+    {
+      id: 'nodes',
+      label: t('table.nodes'),
+      options: Object.keys(StatusType)
+        .map((status) => ({
+          label: getNodeStatusLabel(status as StatusType, t),
+          value: status,
+        }))
+        .sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
+      tableFilterFn: (selectedValues, cluster) =>
+        selectedValues.some((value) => {
+          switch (value) {
+            case StatusType.healthy:
+              return !!cluster.nodes?.ready
+            case StatusType.danger:
+              return !!cluster.nodes?.unhealthy
+            case StatusType.unknown:
+              return !!cluster.nodes?.unknown
+            default:
+              return false
+          }
+        }),
+    },
+    {
+      id: 'add-ons',
+      label: t('Add-ons'),
+      options: Object.keys(AddonStatus)
+        .map((status) => ({
+          label: getAddonStatusLabel(status as AddonStatus, t),
+          value: status,
+        }))
+        .sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
+      tableFilterFn: (selectedValues, cluster) =>
+        selectedValues.some((value) => {
+          switch (value) {
+            case AddonStatus.Available:
+              return !!cluster.addons?.available
+            case AddonStatus.Degraded:
+              return !!cluster.addons?.degraded
+            case AddonStatus.Progressing:
+              return !!cluster.addons?.progressing
+            case AddonStatus.Unknown:
+              return !!cluster.addons?.unknown
+            default:
+              return false
+          }
+        }),
+    },
+  ]
 }
