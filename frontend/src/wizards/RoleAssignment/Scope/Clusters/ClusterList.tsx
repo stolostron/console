@@ -1,18 +1,33 @@
+import { useMemo } from 'react'
 import { ClustersTable } from '../../../../components/Clusters'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { AddCluster } from '../../../../routes/Infrastructure/Clusters/ManagedClusters/components/AddCluster'
 import { useAllClusters } from '../../../../routes/Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
+import { Cluster } from '../../../../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHook'
 import { AcmEmptyState } from '../../../../ui-components'
 
-const ClusterList = () => {
+interface ClusterListProps {
+  onSelectCluster?: (clusters: Cluster[]) => void
+  namespaces?: string[]
+}
+
+const ClusterList = ({ onSelectCluster, namespaces }: ClusterListProps) => {
   const clusters = useAllClusters(true)
+  const filteredClusters = useMemo(
+    () =>
+      namespaces
+        ? clusters.filter((cluster) => cluster.namespace !== undefined && namespaces?.includes(cluster.namespace))
+        : clusters,
+    [clusters, namespaces]
+  )
+
   const { t } = useTranslation()
   return (
     <ClustersTable
-      clusters={clusters}
+      clusters={filteredClusters}
       tableKey="clusterList"
       hideTableActions={true}
-      onSelectCluster={() => {}}
+      onSelectCluster={onSelectCluster}
       showExportButton={false}
       areLinksDisplayed={false}
       hiddenColumns={[
