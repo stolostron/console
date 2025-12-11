@@ -378,9 +378,8 @@ export default function ApplicationDetailsPage() {
   const localHubName = useLocalHubName()
 
   // refresh application the first time and then every n seconds
+  const clustersString = JSON.stringify(clusters)
   useEffect(() => {
-    setApplicationData(undefined)
-    lastRefreshRef.current = undefined
     const interval = setInterval(
       (function refresh() {
         ;(async () => {
@@ -451,6 +450,9 @@ export default function ApplicationDetailsPage() {
       15000
     )
     return () => clearInterval(interval)
+    // disabling to use clustersString instead of clusters
+    // because clusters is an array and will change on every render
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     waitForApplication,
     activeChannel,
@@ -460,7 +462,7 @@ export default function ApplicationDetailsPage() {
     namespace,
     getRecoilStates,
     backendUrl,
-    clusters,
+    clustersString,
     localHubName,
   ])
 
