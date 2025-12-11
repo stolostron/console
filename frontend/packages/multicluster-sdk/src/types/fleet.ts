@@ -13,6 +13,9 @@ export type Fleet<T> = T & { cluster?: string }
 export type FleetK8sResourceCommon = Fleet<K8sResourceCommon>
 
 export type FleetWatchK8sResource = Fleet<WatchK8sResource>
+export type FleetWatchK8sResources<R extends FleetResourcesObject> = {
+  [k in keyof R]: FleetWatchK8sResource
+}
 export type FleetWatchK8sResult<R extends FleetK8sResourceCommon | FleetK8sResourceCommon[]> = [
   R | undefined,
   boolean,

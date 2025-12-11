@@ -8,6 +8,7 @@ import {
   ComponentFactory,
   withDragNode,
   withSelection,
+  WithSelectionProps,
 } from '@patternfly/react-topology'
 
 import StyledNode from './StyledNode'
@@ -22,15 +23,9 @@ const defaultComponentFactory: ComponentFactory = (
       // @ts-ignore: Fixed in next pf topology
       return withPanZoom()(GraphComponent)
     case ModelKind.node:
-      // 4.86 return withDragNode(nodeDragSourceSpec('node', true, true))(withSelection()(StyledNode))
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore: Fixed in next pf topology
-      return withDragNode()(withSelection()(StyledNode))
+      return withDragNode()(withSelection()(StyledNode as any as ComponentType<WithSelectionProps>))
     case ModelKind.edge:
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore: Fixed in next pf topology
-      return StyledEdge
-    /* istanbul ignore next */
+      return StyledEdge as any as ComponentType<{ element: GraphElement }>
     default:
       return undefined
   }

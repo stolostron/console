@@ -277,6 +277,16 @@ const placementGit: Placement = {
   },
   spec: {
     numberOfClusters: 1,
+    tolerations: [
+      {
+        key: 'cluster.open-cluster-management.io/unreachable',
+        operator: 'Exists',
+      },
+      {
+        key: 'cluster.open-cluster-management.io/unavailable',
+        operator: 'Exists',
+      },
+    ],
     clusterSets: [clusterSetBinding.spec.clusterSet],
   },
 }
@@ -289,6 +299,16 @@ const placementHelm: Placement = {
   },
   spec: {
     numberOfClusters: 1,
+    tolerations: [
+      {
+        key: 'cluster.open-cluster-management.io/unreachable',
+        operator: 'Exists',
+      },
+      {
+        key: 'cluster.open-cluster-management.io/unavailable',
+        operator: 'Exists',
+      },
+    ],
     clusterSets: [clusterSetBinding.spec.clusterSet],
   },
 }

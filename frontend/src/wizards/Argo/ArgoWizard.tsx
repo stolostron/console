@@ -296,6 +296,16 @@ export function ArgoWizard(props: ArgoWizardProps) {
             ...PlacementType,
             metadata: { name: '', namespace: '' },
             spec: {
+              tolerations: [
+                {
+                  key: 'cluster.open-cluster-management.io/unreachable',
+                  operator: 'Exists',
+                },
+                {
+                  key: 'cluster.open-cluster-management.io/unavailable',
+                  operator: 'Exists',
+                },
+              ],
               numberOfClusters: 1,
               predicates: [
                 {
@@ -361,6 +371,16 @@ export function ArgoWizard(props: ArgoWizardProps) {
             ...PlacementType,
             metadata: { name: '', namespace: '' },
             spec: {
+              tolerations: [
+                {
+                  key: 'cluster.open-cluster-management.io/unreachable',
+                  operator: 'Exists',
+                },
+                {
+                  key: 'cluster.open-cluster-management.io/unavailable',
+                  operator: 'Exists',
+                },
+              ],
               numberOfClusters: 1,
             },
           },

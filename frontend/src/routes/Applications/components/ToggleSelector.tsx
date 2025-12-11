@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import _ from 'lodash'
-import { AcmTable, AcmEmptyState, AcmTablePaginationContextProvider, AcmButton } from '../../../ui-components'
+import { AcmTable, AcmEmptyState, AcmTableStateProvider, AcmButton } from '../../../ui-components'
 import { Stack, StackItem, ToggleGroup, ToggleGroupItem } from '@patternfly/react-core'
 import { TFunction } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom-v5-compat'
@@ -35,7 +35,7 @@ export function ToggleSelector(props: IToggleSelectorProps) {
   const selectedResources = _.get(props.table, `${selectedId}`)
 
   return (
-    <AcmTablePaginationContextProvider localStorageKey="advanced-tables-pagination">
+    <AcmTableStateProvider localStorageKey="advanced-tables-pagination">
       <DeleteResourceModal {...props.modalProps} />
       <AcmTable<IResource>
         showExportButton
@@ -80,7 +80,7 @@ export function ToggleSelector(props: IToggleSelectorProps) {
           />
         }
       />
-    </AcmTablePaginationContextProvider>
+    </AcmTableStateProvider>
   )
 }
 

@@ -15,7 +15,7 @@ import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
 import {
   AcmEmptyState,
   AcmTable,
-  AcmTablePaginationContextProvider,
+  AcmTableStateProvider,
   compareStrings,
 } from '../../../../../ui-components'
 import { getISOStringTimestamp } from '../../../../../resources/utils'
@@ -209,7 +209,7 @@ export function PolicyDetailsHistory() {
     <PageSection>
       <Title headingLevel="h3">{clusterName}</Title>
       <Title headingLevel="h4">{t('Template: {{templateName}}', { templateName })}</Title>
-      <AcmTablePaginationContextProvider localStorageKey="grc-status-view">
+      <AcmTableStateProvider localStorageKey="grc-status-view">
         <AcmTable<HistoryTableData>
           showExportButton
           exportFilePrefix={`${policyName}-${policyNamespace}-${clusterName}-${templateName}`}
@@ -228,7 +228,7 @@ export function PolicyDetailsHistory() {
           }}
           fuseThreshold={0}
         />
-      </AcmTablePaginationContextProvider>
+      </AcmTableStateProvider>
     </PageSection>
   )
 }
