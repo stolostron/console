@@ -1,3 +1,5 @@
+import { Cluster } from '../../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHook'
+
 export const isClusterInClusters = (clusters: string[], cluster: Cluster) =>
   clusters.some((selectedCluster) => {
     const selectedStr = selectedCluster?.toString().trim()

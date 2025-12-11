@@ -25,13 +25,13 @@ interface ProjectsTableProps {
   areLinksDisplayed?: boolean
 }
 
-export function RBACProjectsTable({
+export const RBACProjectsTable = ({
   selectedClusters,
   projects,
   onSelectionChange,
   onCreateClick,
   areLinksDisplayed = true,
-}: ProjectsTableProps) {
+}: ProjectsTableProps) => {
   const { t } = useTranslation()
   const [hasSelectedProjects, setHasSelectedProjects] = useState(false)
 
