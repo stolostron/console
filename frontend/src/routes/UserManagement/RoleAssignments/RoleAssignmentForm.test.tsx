@@ -136,12 +136,9 @@ jest.mock('../RoleAssignment/NamespaceSelector', () => ({
   ),
 }))
 
-jest.mock(
-  '../../Applications/ApplicationDetails/ApplicationTopology/topology/components/future/truncate-middle',
-  () => ({
-    truncateMiddle: (text: string) => text,
-  })
-)
+jest.mock('../../../lib/truncate-middle', () => ({
+  truncateMiddle: (text: string) => text,
+}))
 
 jest.mock('./schema.json', () => ({}))
 

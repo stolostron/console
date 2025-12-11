@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 const sass = require('sass')
+const path = require('path')
 
 module.exports = {
   addons: [
@@ -36,7 +37,15 @@ module.exports = {
         ],
       }
     )
+    
     config.resolve.extensions.push('.ts', '.tsx')
+    
+    // Add alias for mocking @openshift-assisted/ui-lib
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@openshift-assisted/ui-lib/cim$': path.resolve(__dirname, '../__mocks__/@openshift-assisted/dummy.ts'),
+    }
+    
     return config
   },
 

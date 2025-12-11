@@ -84,11 +84,11 @@ export class ServerSideEvents {
     return Promise.resolve()
   }
 
-  public static pushEvent(event: ServerSideEvent): number {
+  public static async pushEvent(event: ServerSideEvent): Promise<number> {
     const eventID = ++this.eventID
     event.id = eventID.toString()
     this.events[eventID] = event
-    this.broadcastEvent(event)
+    await this.broadcastEvent(event)
 
     this.removeEvent(this.lastLoadedID)
     this.lastLoadedID = ++this.eventID
@@ -97,23 +97,23 @@ export class ServerSideEvents {
       data: { type: 'LOADED' },
     }
     this.events[this.lastLoadedID] = loadedEvent
-    this.broadcastEvent(loadedEvent)
+    await this.broadcastEvent(loadedEvent)
 
     return eventID
   }
 
-  private static broadcastEvent(event: ServerSideEvent): void {
+  private static async broadcastEvent(event: ServerSideEvent): Promise<void> {
     for (const clientID in this.clients) {
-      this.sendEvent(clientID, event)
+      await this.sendEvent(clientID, event)
     }
   }
 
-  private static sendEvent(clientID: string, event: ServerSideEvent): void {
+  private static async sendEvent(clientID: string, event: ServerSideEvent): Promise<void> {
     const client = this.clients[clientID]
     if (!client) return
     if (client.events && !client.events[event.name]) return
     if (client.namespaces && !client.namespaces[event.namespace]) return
-    event = inflateEvent(event)
+    event = await inflateEvent(event)
     if (this.eventFilter) {
       client.eventQueue.push(
         this.eventFilter(client.token, event)
@@ -220,7 +220,11 @@ export class ServerSideEvents {
     return this.events
   }
 
-  public static handleRequest(token: string, req: Http2ServerRequest, res: Http2ServerResponse): ServerSideEventClient {
+  public static async handleRequest(
+    token: string,
+    req: Http2ServerRequest,
+    res: Http2ServerResponse
+  ): Promise<ServerSideEventClient> {
     const [writableStream, compressionStream, encoding] = getEncodeStream(
       res as unknown as NodeJS.WritableStream,
       req.headers[HTTP2_HEADER_ACCEPT_ENCODING] as string,
@@ -293,9 +297,7 @@ export class ServerSideEvents {
     // uncompress and split events into packets
     const values = Object.values(this.events)
     const compressed = sizeOf(values)
-    let parts = values.map((event) => {
-      return inflateEvent(event)
-    })
+    let parts = await Promise.all(values.map((event) => inflateEvent(event)))
 
     // mock a large environment
     if (process.env.MOCK_CLUSTERS) {
@@ -406,10 +408,13 @@ export class ServerSideEvents {
       sending.push(...remainder.splice(0, 1978))
     } while (remainder.length)
     sending.push(end)
-    sending.forEach((event) => {
-      this.sendEvent(clientID, event)
-      sentCount++
-    })
+    await Promise.all(
+      sending.map((event) => {
+        const promise = this.sendEvent(clientID, event)
+        sentCount++
+        return promise
+      })
+    )
     const uncompressed = sizeOf(sending)
 
     logger.info({ msg: 'event stream start', events: sentCount, compression: 100 - (compressed / uncompressed) * 100 })

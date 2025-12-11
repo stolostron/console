@@ -277,6 +277,16 @@ const placementGit: Placement = {
   },
   spec: {
     numberOfClusters: 1,
+    tolerations: [
+      {
+        key: 'cluster.open-cluster-management.io/unreachable',
+        operator: 'Exists',
+      },
+      {
+        key: 'cluster.open-cluster-management.io/unavailable',
+        operator: 'Exists',
+      },
+    ],
     clusterSets: [clusterSetBinding.spec.clusterSet],
   },
 }
@@ -289,6 +299,16 @@ const placementHelm: Placement = {
   },
   spec: {
     numberOfClusters: 1,
+    tolerations: [
+      {
+        key: 'cluster.open-cluster-management.io/unreachable',
+        operator: 'Exists',
+      },
+      {
+        key: 'cluster.open-cluster-management.io/unavailable',
+        operator: 'Exists',
+      },
+    ],
     clusterSets: [clusterSetBinding.spec.clusterSet],
   },
 }
@@ -365,11 +385,11 @@ describe('Create Argo Application Set', () => {
       nockArgoGitPathSha(channelGit.spec.pathname, 'branch-01', { commit: { sha: '01' } }),
       nockArgoGitPathTree(channelGit.spec.pathname, { tree: [{ path: 'application-test', type: 'tree' }] }),
     ]
-    await clickByRole('option', { name: /create new option "branch-01"/i })
+    await clickByRole('option', { name: /branch-01/i })
     await waitForNocks(pathNocks)
 
     await clickByRole('combobox', { name: /enter or select a repository path/i })
-    await clickByRole('option', { name: /create new option "application-test"/i })
+    await clickByRole('option', { name: /application-test/i })
     await typeByRole('gitops-ns', 'textbox')
     await clickByText('Next')
 

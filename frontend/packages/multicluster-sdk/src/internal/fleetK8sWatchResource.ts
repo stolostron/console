@@ -7,8 +7,11 @@ import { isCacheEntryValid, useFleetK8sWatchResourceStore } from './fleetK8sWatc
 import { consoleFetchJSON, type K8sModel, type K8sResourceCommon } from '@openshift-console/dynamic-plugin-sdk'
 import { selectorToString } from './requirements'
 import { buildResourceURL, fleetWatch } from './apiRequests'
+import { NO_FLEET_AVAILABLE_ERROR } from './constants'
+import { useHubClusterName, useIsFleetAvailable } from '../api'
+import { useCallback } from 'react'
 
-const getRequestPathFromResource = (resource: FleetWatchK8sResource, model: K8sModel, basePath: string) => {
+export const getRequestPathFromResource = (resource: FleetWatchK8sResource, model: K8sModel, basePath: string) => {
   const { cluster, name, namespace, fieldSelector, selector } = resource
   return buildResourceURL({
     model,
@@ -90,33 +93,46 @@ const openFleetWatchSocket = (
   }
 }
 
-export const getInitialResult = <R extends FleetK8sResourceCommon | FleetK8sResourceCommon[]>(
-  resource?: FleetWatchK8sResource | null,
-  model?: K8sModel,
-  basePath?: string
-) => {
-  if (resource && model && basePath) {
-    const requestPath = getRequestPathFromResource(resource, model, basePath)
-    const store = useFleetK8sWatchResourceStore.getState()
-    const entry = store.cache[requestPath]
-    if (entry && isCacheEntryValid(entry)) {
-      return store.getResult(requestPath) as FleetWatchK8sResultsObject<R>
-    }
-  }
-  return { data: getDefaultData(resource), loaded: false } as FleetWatchK8sResultsObject<R>
+export function useGetInitialResult() {
+  const isFleetAvailable = useIsFleetAvailable()
+  const [hubClusterName, hubClusterNameLoaded, hubClusterNameLoadedError] = useHubClusterName()
+  return useCallback(
+    <R extends FleetK8sResourceCommon | FleetK8sResourceCommon[]>(
+      resource?: FleetWatchK8sResource | null,
+      model?: K8sModel,
+      basePath?: string
+    ) => {
+      if (resource && model && basePath) {
+        const requestPath = getRequestPathFromResource(resource, model, basePath)
+        const store = useFleetK8sWatchResourceStore.getState()
+        const entry = store.cache[requestPath]
+        if (entry && isCacheEntryValid(entry)) {
+          return store.getResult(requestPath) as FleetWatchK8sResultsObject<R>
+        }
+      }
+      // Return default data and error, if any
+      const waitingForHubClusterName = !!resource?.cluster && !hubClusterNameLoaded
+      const isProbablyFleetQuery = !!resource?.cluster && resource?.cluster !== hubClusterName
+      let loadError = undefined
+      if (waitingForHubClusterName) {
+        // if we are still waiting for hub name to load, we should return any error fetching the hub name
+        loadError = hubClusterNameLoadedError
+      } else if (isProbablyFleetQuery && !isFleetAvailable) {
+        // if we need to use fleet support but it it not available, we return an error
+        loadError = NO_FLEET_AVAILABLE_ERROR
+      }
+      return { data: getDefaultData(resource), loaded: false, loadError } as FleetWatchK8sResultsObject<R>
+    },
+    [isFleetAvailable, hubClusterName, hubClusterNameLoaded, hubClusterNameLoadedError]
+  )
 }
 
-export const startWatch = async <R extends FleetK8sResourceCommon | FleetK8sResourceCommon[]>(
+export const subscribe = <R extends FleetK8sResourceCommon | FleetK8sResourceCommon[]>(
   resource: FleetWatchK8sResource,
-  model: K8sModel,
-  basePath: string,
+  requestPath: string,
   setResult: (result: FleetWatchK8sResultsObject<R>) => void
 ) => {
-  const { cluster, isList } = resource
-  const requestPath = getRequestPathFromResource(resource, model, basePath)
-  const store = useFleetK8sWatchResourceStore.getState()
-  store.incrementRefCount(requestPath)
-  useFleetK8sWatchResourceStore.subscribe(
+  return useFleetK8sWatchResourceStore.subscribe(
     (state) => state.cache[requestPath]?.result,
     (result) => {
       if (result) {
@@ -126,28 +142,33 @@ export const startWatch = async <R extends FleetK8sResourceCommon | FleetK8sReso
       }
     }
   )
+}
 
-  // if there were already other subscribers, there is nothing more to do (WebSocket will be opened even if it is not yet in the store)
-  if (store.getRefCount(requestPath) > 1) {
-    return
-  }
+export const startWatch = async (resource: FleetWatchK8sResource, model: K8sModel, basePath: string) => {
+  const { cluster, isList } = resource
+  const requestPath = getRequestPathFromResource(resource, model, basePath)
+  const store = useFleetK8sWatchResourceStore.getState()
+  store.incrementRefCount(requestPath)
 
-  // if there is a cached value that is not expired, we can skip the initial fetch
-  const entry = store.cache[requestPath]
-  if (!entry || !isCacheEntryValid(entry)) {
-    try {
-      // load initial data into the zustand store
-      const data = await consoleFetchJSON(requestPath, 'GET')
-      const processedData = isList
-        ? (data as { items: K8sResourceCommon[] }).items.map((i) => ({ cluster, ...i }))
-        : { cluster, ...(data as K8sResourceCommon) }
-      const resourceVersion = isList ? (data as K8sResourceCommon)?.metadata?.resourceVersion : undefined
-      store.setResult(requestPath, processedData, true, undefined, resourceVersion)
-    } catch (err) {
-      handleError(err, requestPath, resource)
+  // if we are the first subscriber, we are responsible for getting the initial data and watching for updates
+  if (store.getRefCount(requestPath) === 1) {
+    // if there is a cached value that is not expired, we can skip the initial fetch
+    const entry = store.cache[requestPath]
+    if (!entry || !isCacheEntryValid(entry)) {
+      try {
+        // load initial data into the zustand store
+        const data = await consoleFetchJSON(requestPath, 'GET')
+        const processedData = isList
+          ? (data as { items: K8sResourceCommon[] }).items.map((i) => ({ cluster, ...i }))
+          : { cluster, ...(data as K8sResourceCommon) }
+        const resourceVersion = isList ? (data as K8sResourceCommon)?.metadata?.resourceVersion : undefined
+        store.setResult(requestPath, processedData, true, undefined, resourceVersion)
+      } catch (err) {
+        handleError(err, requestPath, resource)
+      }
     }
+    openFleetWatchSocket(requestPath, resource, model, basePath)
   }
-  openFleetWatchSocket(requestPath, resource, model, basePath)
 }
 
 export const stopWatch = (resource: FleetWatchK8sResource, model: K8sModel, basePath: string) => {

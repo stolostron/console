@@ -3,6 +3,13 @@ import * as React from 'react'
 import {
   DEFAULT_LAYER,
   Layer,
+  Ellipse,
+  Decorator,
+  DefaultNode,
+  TopologyQuadrant,
+  ScaleDetailsLevel,
+  getDefaultShapeDecoratorCenter,
+  ShapeProps,
   Node,
   observer,
   TOP_LAYER,
@@ -13,12 +20,6 @@ import {
   WithSelectionProps,
 } from '@patternfly/react-topology'
 
-// topology 4.85
-import Ellipse from './future/Ellipse'
-import DefaultNode from './future/DefaultNode'
-import Decorator from './future/Decorator'
-import { getDefaultShapeDecoratorCenter, ShapeProps } from './future/shapeUtils'
-import { TopologyQuadrant, ScaleDetailsLevel } from './future/types'
 const DEFAULT_DECORATOR_RADIUS = 12
 
 import { SVGIconProps } from '@patternfly/react-icons/dist/esm/createIcon'
