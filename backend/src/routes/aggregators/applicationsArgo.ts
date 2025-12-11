@@ -138,9 +138,9 @@ export function addArgoQueryInputs(applicationCache: ApplicationCacheType, query
   })
 }
 
-export function cacheArgoApplications(applicationCache: ApplicationCacheType, searchResult: SearchResult) {
+export async function cacheArgoApplications(applicationCache: ApplicationCacheType, searchResult: SearchResult) {
   const hubClusterName = getHubClusterName()
-  const clusters: Cluster[] = getClusters()
+  const clusters: Cluster[] = await getClusters()
   const localCluster = clusters.find((cls) => cls.name === hubClusterName)
   const remoteArgoApps = searchResult.items.filter((app) => app.cluster !== hubClusterName)
   const argoStatusMap = createArgoStatusMap(searchResult)
@@ -148,14 +148,14 @@ export function cacheArgoApplications(applicationCache: ApplicationCacheType, se
   if (applicationCache['localArgoApps']?.resourceUidMap) {
     try {
       const localArgoAppsMap = applicationCache['localArgoApps'].resourceUidMap
-      transform(Object.values(localArgoAppsMap), argoStatusMap, false, localCluster, clusters, localArgoAppsMap)
+      await transform(Object.values(localArgoAppsMap), argoStatusMap, false, localCluster, clusters, localArgoAppsMap)
     } catch (e) {
       logger.error(`getLocalArgoApps exception ${e}`)
     }
   }
   try {
     // cache remote argo apps
-    cacheRemoteApps(
+    await cacheRemoteApps(
       applicationCache,
       argoStatusMap,
       getRemoteArgoApps(ocpArgoAppFilter, remoteArgoApps),
@@ -169,7 +169,7 @@ export function cacheArgoApplications(applicationCache: ApplicationCacheType, se
   if (applicationCache['appset']?.resourceUidMap) {
     try {
       const appsetMap = applicationCache['appset'].resourceUidMap
-      transform(Object.values(appsetMap), argoStatusMap, false, localCluster, clusters, appsetMap)
+      await transform(Object.values(appsetMap), argoStatusMap, false, localCluster, clusters, appsetMap)
     } catch (e) {
       logger.error(`aggregateLocalApplications appset exception ${e}`)
     }
@@ -178,11 +178,11 @@ export function cacheArgoApplications(applicationCache: ApplicationCacheType, se
   return ocpArgoAppFilter
 }
 
-export function polledArgoApplicationAggregation(
+export async function polledArgoApplicationAggregation(
   options: IWatchOptions,
   items: ITransformedResource[],
   shouldPostProcess: boolean
-): void {
+): Promise<void> {
   const { kind } = options
 
   // get resourceUidMap
@@ -197,9 +197,9 @@ export function polledArgoApplicationAggregation(
   if (!oldResourceUidSets[appKey]) {
     oldResourceUidSets[appKey] = new Set(Object.keys(resourceUidMap))
     hubClusterName = getHubClusterName()
-    clusters = getClusters()
+    clusters = await getClusters()
     localCluster = clusters.find((cls) => cls.name === hubClusterName)
-    placementDecisions = getKubeResources('PlacementDecision', 'cluster.open-cluster-management.io/v1beta1')
+    placementDecisions = await getKubeResources('PlacementDecision', 'cluster.open-cluster-management.io/v1beta1')
   }
 
   // filter out apps that belong to an appset
@@ -208,17 +208,19 @@ export function polledArgoApplicationAggregation(
   }
 
   // add uidata transforms
-  items.forEach((item) => {
-    const uid = get(item, 'metadata.uid') as string
-    let transform = resourceUidMap[uid]?.transform
-    if (!transform) {
-      const type = getApplicationType(item)
-      const _clusters = getApplicationClusters(item, type, [], placementDecisions, localCluster, clusters)
-      transform = getTransform(item, type, {}, _clusters)
-    }
-    resourceUidMap[uid] = { compressed: deflateResource(item, getAppDict()), transform }
-    oldResourceUidSets[appKey].delete(uid)
-  })
+  await Promise.all(
+    items.map(async (item) => {
+      const uid = get(item, 'metadata.uid') as string
+      let transform = resourceUidMap[uid]?.transform
+      if (!transform) {
+        const type = getApplicationType(item)
+        const _clusters = getApplicationClusters(item, type, [], placementDecisions, localCluster, clusters)
+        transform = getTransform(item, type, {}, _clusters)
+      }
+      resourceUidMap[uid] = { compressed: await deflateResource(item, getAppDict()), transform }
+      oldResourceUidSets[appKey].delete(uid)
+    })
+  )
 
   if (shouldPostProcess) {
     // cleanup resourceUidMap

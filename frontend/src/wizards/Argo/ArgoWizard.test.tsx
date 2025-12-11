@@ -60,6 +60,25 @@ function TestArgoWizard() {
   )
 }
 
+function TestArgoWizardPullModel() {
+  return (
+    <RecoilRoot
+      initializeState={(snapshot) => {
+        snapshot.set(subscriptionOperatorsState, gitOpsOperators)
+        snapshot.set(managedClusterSetsState, mockClusterSets)
+        snapshot.set(argoCDsState, [mockArgoCD])
+        snapshot.set(namespacesState, mockNamespaces)
+      }}
+    >
+      <MemoryRouter initialEntries={[NavigationPath.createApplicationArgo]}>
+        <Routes>
+          <Route path={NavigationPath.createApplicationArgo} element={<ArgoWizard {...props} isPullModel={true} />} />
+        </Routes>
+      </MemoryRouter>
+    </RecoilRoot>
+  )
+}
+
 describe('ArgoWizard tests', () => {
   beforeEach(() => {
     jest.clearAllMocks()
@@ -275,6 +294,80 @@ describe('ArgoWizard tests', () => {
     )
 
     expect(mockOnsubmit).toHaveBeenCalledWith(submittedHelm)
+  })
+
+  //=====================================================================
+  //                      GIT - PULL MODEL
+  //=====================================================================
+  test('create git pull model', async () => {
+    nockIgnoreApiPaths()
+    const url = 'https://github.com/fxiang1/app-samples'
+
+    render(<TestArgoWizardPullModel />)
+
+    //=====================================================================
+    //                      general page
+    //=====================================================================
+    userEvent.type(
+      screen.getByRole('textbox', {
+        name: /name/i,
+      }),
+      'testapp'
+    )
+    await clickByRole('combobox', { name: 'Select the Argo server' })
+    await clickByRole('option', { name: /http:\/\/argoserver\.com/i })
+    await clickByRole('combobox', { name: 'Select the requeue time' })
+    await clickByRole('option', { name: /120/i })
+    await clickByText('Next')
+
+    //=====================================================================
+    //                      template page
+    //=====================================================================
+    await clickByText('Git')
+    await typeByRole(url, 'combobox', { name: /Enter or select a Git URL/i })
+
+    const appBranchNocks = [nockArgoGitBranches(url, { branchList: [{ name: 'main' }] })]
+    userEvent.click(
+      screen.getByRole('option', {
+        name: /https:\/\/github\.com\/fxiang1\/app-samples/i,
+      })
+    )
+
+    await waitForNocks(appBranchNocks)
+    await clickByRole('combobox', { name: /enter or select a tracking revision/i })
+    const pathNocks = [
+      nockArgoGitPathSha(url, 'main', { commit: { sha: '01' } }),
+      nockArgoGitPathTree(url, { tree: [{ path: 'application-test', type: 'tree' }] }),
+    ]
+
+    await clickByRole('option', { name: /main/i })
+    await waitForNocks(pathNocks)
+
+    await typeByRole('ansible', 'combobox', { name: /enter or select a repository path/i })
+    await clickByRole('option', {
+      name: /ansible/i,
+    })
+
+    await typeByRole('default', 'textbox')
+
+    await clickByText('Next')
+
+    //=====================================================================
+    //                      sync page
+    //=====================================================================
+    await clickByText('Next')
+
+    //=====================================================================
+    //                      placement page - using default placement
+    //                      which already excludes hub cluster for pull model
+    //=====================================================================
+    await clickByText('Next')
+
+    //=====================================================================
+    //                      review page
+    //=====================================================================
+    await clickByRole('button', { name: 'Submit' })
+    expect(mockOnsubmit).toHaveBeenCalledWith(submittedGitPullModel)
   })
 })
 
@@ -525,6 +618,104 @@ const submittedHelm = [
           },
         },
       },
+    },
+  },
+]
+
+const submittedGitPullModel = [
+  {
+    apiVersion: 'argoproj.io/v1alpha1',
+    kind: 'ApplicationSet',
+    metadata: {
+      name: 'testapp',
+      namespace: 'http://argoserver.com',
+    },
+    spec: {
+      generators: [
+        {
+          clusterDecisionResource: {
+            configMapRef: 'acm-placement',
+            labelSelector: {
+              matchLabels: {
+                'cluster.open-cluster-management.io/placement': 'testapp-placement',
+              },
+            },
+            requeueAfterSeconds: 120,
+          },
+        },
+      ],
+      template: {
+        metadata: {
+          annotations: {
+            'apps.open-cluster-management.io/ocm-managed-cluster': '{{name}}',
+            'apps.open-cluster-management.io/ocm-managed-cluster-app-namespace': 'openshift-gitops',
+            'argocd.argoproj.io/skip-reconcile': 'true',
+          },
+          labels: {
+            'velero.io/exclude-from-backup': 'true',
+            'apps.open-cluster-management.io/pull-to-ocm-managed-cluster': 'true',
+          },
+          name: 'testapp-{{name}}',
+        },
+        spec: {
+          destination: {
+            namespace: 'default',
+            server: '{{server}}',
+          },
+          project: 'default',
+          sources: [
+            {
+              path: 'ansible',
+              repoURL: 'https://github.com/fxiang1/app-samples',
+              repositoryType: 'git',
+              targetRevision: 'main',
+            },
+          ],
+          syncPolicy: {
+            automated: {
+              prune: true,
+              selfHeal: true,
+            },
+            syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
+          },
+        },
+      },
+    },
+  },
+  {
+    apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+    kind: 'Placement',
+    metadata: {
+      name: 'testapp-placement',
+      namespace: 'http://argoserver.com',
+    },
+    spec: {
+      tolerations: [
+        {
+          key: 'cluster.open-cluster-management.io/unreachable',
+          operator: 'Exists',
+        },
+        {
+          key: 'cluster.open-cluster-management.io/unavailable',
+          operator: 'Exists',
+        },
+      ],
+      numberOfClusters: 1,
+      predicates: [
+        {
+          requiredClusterSelector: {
+            labelSelector: {
+              matchExpressions: [
+                {
+                  key: 'name',
+                  operator: 'NotIn',
+                  values: ['local-cluster'],
+                },
+              ],
+            },
+          },
+        },
+      ],
     },
   },
 ]

@@ -1,5 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+jest.mock('@patternfly/react-topology', () => ({
+  ColaLayout: class MockColaLayout {
+    constructor() {}
+  },
+  Graph: class MockGraph {},
+  LayoutNode: class MockLayoutNode {},
+  NodeModel: class MockNodeModel {},
+}))
+
 import * as treeLayoutAPI from './TreeLayout'
 
 describe('TreeLayout tests', () => {
