@@ -44,7 +44,6 @@ import get from 'get-value'
 import { mergeWith } from 'lodash'
 import {
   cloneElement,
-  createContext,
   FormEvent,
   Fragment,
   ReactNode,
@@ -76,6 +75,7 @@ import {
   ITableItem,
 } from './AcmTableTypes'
 import { AcmManageColumn } from './AcmManageColumn'
+import { AcmTableStateContext, DEFAULT_ITEMS_PER_PAGE, DEFAULT_SORT } from './AcmTableStateProvider'
 
 const tableDivClass = css({
   display: 'table',
@@ -93,8 +93,6 @@ const tableClass = css({
   },
 })
 
-const DEFAULT_ITEMS_PER_PAGE = 10
-
 const BREAKPOINT_SIZES = [
   { name: TableGridBreakpoint.none, size: 0 },
   { name: TableGridBreakpoint.gridMd, size: 768 },
@@ -103,26 +101,6 @@ const BREAKPOINT_SIZES = [
   { name: TableGridBreakpoint.grid2xl, size: 1450 },
   { name: TableGridBreakpoint.grid, size: Infinity },
 ]
-
-const AcmTablePaginationContext: React.Context<{
-  perPage?: number
-  setPerPage?: (perPage: number) => void
-}> = createContext({})
-
-export function AcmTablePaginationContextProvider(props: { children: ReactNode; localStorageKey: string }) {
-  const { children, localStorageKey } = props
-  const [perPage, setPerPage] = useState(
-    Number.parseInt(localStorage.getItem(localStorageKey) || '0', 10) || DEFAULT_ITEMS_PER_PAGE
-  )
-  const paginationContext = {
-    perPage,
-    setPerPage: (perPage: number) => {
-      localStorage.setItem(localStorageKey, String(perPage))
-      setPerPage(perPage)
-    },
-  }
-  return <AcmTablePaginationContext.Provider value={paginationContext}>{children}</AcmTablePaginationContext.Provider>
-}
 
 function mergeProps(...props: any) {
   const firstProps = props[0]
@@ -175,12 +153,6 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
 
   // a ref forwarded from toolbar to access its methods
   const toolbarRef = useRef<ToolbarRef>(null)
-  const defaultSort = {
-    index: 0,
-    direction: SortByDirection.asc,
-  }
-  const initialSort = props.initialSort || defaultSort
-  const initialSearch = props.initialSearch ?? ''
   const { isPreProcessed, loading, emptyResult } = resultView || {}
 
   const { t } = useTranslation()
@@ -198,27 +170,41 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     }
   }, [items, loading, loadStarted, loadCompleted, resultView])
 
-  // State that can come from context or component state (perPage)
+  // State that can come from context or component state (search, sort, page, perPage)
+  const initialSort = props.initialSort || DEFAULT_SORT
+  const initialSearch = props.initialSearch ?? ''
   const [statePerPage, stateSetPerPage] = useState(props.initialPerPage || DEFAULT_ITEMS_PER_PAGE)
-  const { perPage: contextPerPage, setPerPage: contextSetPerPage } = useContext(AcmTablePaginationContext)
-  const perPage = contextPerPage || statePerPage
-  const setPerPage = contextSetPerPage || stateSetPerPage
-
-  // State that can be controlled from component props or uncontrolled from component state (page, search, sort)
   const [statePage, stateSetPage] = useState(props.initialPage || 1)
-  const page = props.page || statePage
-  const setPage = props.setPage || stateSetPage
   const [stateSort, stateSetSort] = useState<ISortBy | undefined>(initialSort)
-  const sort = props.sort || stateSort
-  const setSort = props.setSort || stateSetSort
+  const [internalSearch, setInternalSearch] = useState(props.search ?? initialSearch)
+  const {
+    search: storedSearch,
+    sort: storedSort,
+    setSort: setStoredSort,
+    page: storedPage,
+    setPage: setStoredPage,
+    perPage: storedPerPage,
+    setPerPage: setStoredPerPage,
+  } = useContext(AcmTableStateContext)
+  const perPage = storedPerPage || statePerPage
+  const setPerPage = setStoredPerPage || stateSetPerPage
+  const page = props.page || storedPage || statePage
+  const setPage = props.setPage || setStoredPage || stateSetPage
+  const sort = props.sort || storedSort || stateSort
+  const setSort = props.setSort || setStoredSort || stateSetSort
+  useEffect(() => {
+    if (process.env.NODE_ENV !== 'test') {
+      setInternalSearch(storedSearch || '')
+    }
+  }, [storedSearch])
+
+  const [preFilterSort, setPreFilterSort] = useState<ISortBy | undefined>(initialSort)
   const [activeAdvancedFilters, setActiveAdvancedFilters] = useState<SearchConstraint[]>([])
 
   // State that is only stored in the component state
   const [selected, setSelected] = useState<{ [uid: string]: boolean }>({})
   const [disabled, setDisabled] = useState<{ [uid: string]: boolean }>({})
-  const [preFilterSort, setPreFilterSort] = useState<ISortBy | undefined>(initialSort)
   const [expanded, setExpanded] = useState<{ [uid: string]: boolean }>({})
-  const [internalSearch, setInternalSearch] = useState(props.search ?? initialSearch)
 
   // Dynamic gridBreakPoint
   const [breakpoint, setBreakpoint] = useState<TableGridBreakpoint>(TableGridBreakpoint.none)
