@@ -25,7 +25,7 @@ const pipeline = promisify(Stream.pipeline)
 export async function events(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
   const token = await getAuthenticatedToken(req, res)
   if (token) {
-    ServerSideEvents.handleRequest(token, req, res)
+    await ServerSideEvents.handleRequest(token, req, res)
   }
 }
 
@@ -43,12 +43,14 @@ type ServerSideEventData = WatchEvent | SettingsEvent | { type: 'START' | 'LOADE
 
 let requests: { cancel: () => void }[] = []
 
-export function getKubeResources(kind: string, apiVersion: string) {
+export async function getKubeResources(kind: string, apiVersion: string) {
   const option = { apiVersion, kind }
   const apiVersionPlural = apiVersionPluralFn(option)
-  return Object.values(resourceCache[apiVersionPlural] || {}).map((event) => {
-    return inflateResource(event.compressed, eventDict)
-  })
+  return await Promise.all(
+    Object.values(resourceCache[apiVersionPlural] || {}).map((event) => {
+      return inflateResource(event.compressed, eventDict)
+    })
+  )
 }
 
 let hubClusterName = 'local-cluster'
@@ -77,11 +79,13 @@ export async function getAuthorizedResources(
   const chunkSize = stopInx > 100 ? 100 : 50
   while (resources.length > inx && authorized.length < stopInx) {
     // perform it in item chunks
-    const _resources = resources.slice(inx, inx + chunkSize).map((compressedResource) => {
-      const { compressed, transform, remoteClusters } = compressedResource
-      const resource = inflateResource(compressed, getAppDict())
-      return { ...resource, transform, remoteClusters }
-    }) as ITransformedResource[]
+    const _resources = (await Promise.all(
+      resources.slice(inx, inx + chunkSize).map(async (compressedResource) => {
+        const { compressed, transform, remoteClusters } = compressedResource
+        const resource = await inflateResource(compressed, getAppDict())
+        return { ...resource, transform, remoteClusters }
+      })
+    )) as ITransformedResource[]
     const queue = _resources.map((resource) => {
       return (
         resource.remoteClusters
@@ -311,7 +315,7 @@ async function listKubernetesObjects(serviceAccountToken: string, options: IWatc
       _continue = body.metadata._continue ?? body.metadata.continue
       const pruned = pruneResources(options, body.items)
       if (isPolled) {
-        polledAggregation(options, pruned, !_continue)
+        await polledAggregation(options, pruned, !_continue)
         itemCount += pruned.length
       } else {
         items = items.concat(pruned)
@@ -338,7 +342,7 @@ async function listKubernetesObjects(serviceAccountToken: string, options: IWatc
   }
 
   for (const item of items) {
-    cacheResource(item)
+    await cacheResource(item)
   }
 
   // Remove items that are no longer in kubernetes
@@ -347,7 +351,7 @@ async function listKubernetesObjects(serviceAccountToken: string, options: IWatc
   const removeResources: IResource[] = []
   for (const uid in cache) {
     const existing = cache[uid]
-    const resource = inflateResource(existing.compressed, eventDict)
+    const resource = await inflateResource(existing.compressed, eventDict)
     if (options.fieldSelector && !matchesSelector(resource, options.fieldSelector)) {
       // skip as this object would not be in the items result for this list operation
       continue
@@ -361,7 +365,7 @@ async function listKubernetesObjects(serviceAccountToken: string, options: IWatc
     }
   }
   for (const resource of removeResources) {
-    deleteResource(resource)
+    await deleteResource(resource)
   }
 
   return { resourceVersion, size: items.length }
@@ -426,16 +430,16 @@ async function watchKubernetesObjects(serviceAccountToken: string, options: IWat
         await pipeline(
           request,
           split('\n'),
-          map(function (data: string) {
+          map(async (data: string) => {
             const watchEvent = JSON.parse(data) as WatchEvent
             pruneResources(options, [watchEvent.object])
             switch (watchEvent.type) {
               case 'ADDED':
               case 'MODIFIED':
-                cacheResource(watchEvent.object)
+                await cacheResource(watchEvent.object)
                 break
               case 'DELETED':
-                deleteResource(watchEvent.object)
+                await deleteResource(watchEvent.object)
                 break
             }
 
@@ -600,7 +604,7 @@ function resourceUrl(options: IWatchOptions, query: Record<string, string>) {
   return url
 }
 
-export function cacheResource(resource: IResource) {
+export async function cacheResource(resource: IResource) {
   const apiVersionPlural = apiVersionPluralFn(resource)
   let cache = resourceCache[apiVersionPlural]
   if (!cache) {
@@ -613,24 +617,27 @@ export function cacheResource(resource: IResource) {
 
   let eventID = -1
   if (existing) {
-    if (inflateResource(existing.compressed, eventDict).metadata.resourceVersion === resource.metadata.resourceVersion)
+    if (
+      (await inflateResource(existing.compressed, eventDict)).metadata.resourceVersion ===
+      resource.metadata.resourceVersion
+    )
       return resource.metadata.resourceVersion
     ServerSideEvents.removeEvent(existing.eventID)
   }
 
-  const compressed = deflateResource(resource, eventDict)
-  eventID = ServerSideEvents.pushEvent({ data: { type: 'MODIFIED', object: compressed } })
+  const compressed = await deflateResource(resource, eventDict)
+  eventID = await ServerSideEvents.pushEvent({ data: { type: 'MODIFIED', object: compressed } })
   cache[uid] = { compressed, eventID }
 
   if (resource.kind === 'ManagedCluster') {
-    if (resource?.metadata?.labels['local-cluster'] === 'true') {
+    if (resource?.metadata?.labels?.['local-cluster'] === 'true') {
       hubClusterName = resource?.metadata?.name
       isHubSelfManaged = true
     }
   }
 }
 
-function deleteResource(resource: IResource) {
+async function deleteResource(resource: IResource) {
   const apiVersionPlural = apiVersionPluralFn(resource)
   const cache = resourceCache[apiVersionPlural]
   if (!cache) return
@@ -640,7 +647,7 @@ function deleteResource(resource: IResource) {
   const existing = cache[uid]
   if (existing) ServerSideEvents.removeEvent(existing.eventID)
 
-  const deletedID = ServerSideEvents.pushEvent({
+  const deletedID = await ServerSideEvents.pushEvent({
     data: {
       type: 'DELETED',
       object: {

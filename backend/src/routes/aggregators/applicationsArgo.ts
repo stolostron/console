@@ -105,28 +105,33 @@ export function addArgoQueryInputs(applicationCache: ApplicationCacheType, query
   })
 }
 
-export function cacheArgoApplications(applicationCache: ApplicationCacheType, remoteArgoApps: IResource[]) {
+export async function cacheArgoApplications(applicationCache: ApplicationCacheType, remoteArgoApps: IResource[]) {
   const argoAppSet = localArgoAppSet
   const hubClusterName = getHubClusterName()
-  const clusters: Cluster[] = getClusters()
+  const clusters: Cluster[] = await getClusters()
   const localCluster = clusters.find((cls) => cls.name === hubClusterName)
 
   if (applicationCache['localArgoApps']?.resourceUidMap) {
     try {
-      transform(Object.values(applicationCache['localArgoApps'].resourceUidMap), false, localCluster, clusters)
+      await transform(Object.values(applicationCache['localArgoApps'].resourceUidMap), false, localCluster, clusters)
     } catch (e) {
       logger.error(`getLocalArgoApps exception ${e}`)
     }
   }
   try {
     // cache remote argo apps
-    cacheRemoteApps(applicationCache, getRemoteArgoApps(argoAppSet, remoteArgoApps), argoPageChunk, 'remoteArgoApps')
+    await cacheRemoteApps(
+      applicationCache,
+      getRemoteArgoApps(argoAppSet, remoteArgoApps),
+      argoPageChunk,
+      'remoteArgoApps'
+    )
   } catch (e) {
     logger.error(`cacheRemoteApps exception ${e}`)
   }
 
   try {
-    transform(getApplicationsHelper(applicationCache, ['appset']), false, localCluster, clusters)
+    await transform(getApplicationsHelper(applicationCache, ['appset']), false, localCluster, clusters)
   } catch (e) {
     logger.error(`aggregateLocalApplications appset exception ${e}`)
   }
@@ -140,11 +145,11 @@ let localCluster: Cluster
 let placementDecisions: IResource[]
 const localArgoAppSet: Set<string> = new Set()
 
-export function polledArgoApplicationAggregation(
+export async function polledArgoApplicationAggregation(
   options: IWatchOptions,
   items: ITransformedResource[],
   shouldPostProcess: boolean
-): void {
+): Promise<void> {
   const { kind } = options
 
   // get resourceUidMap
@@ -159,9 +164,9 @@ export function polledArgoApplicationAggregation(
   if (!oldResourceUidSets[appKey]) {
     oldResourceUidSets[appKey] = new Set(Object.keys(resourceUidMap))
     hubClusterName = getHubClusterName()
-    clusters = getClusters()
+    clusters = await getClusters()
     localCluster = clusters.find((cls) => cls.name === hubClusterName)
-    placementDecisions = getKubeResources('PlacementDecision', 'cluster.open-cluster-management.io/v1beta1')
+    placementDecisions = await getKubeResources('PlacementDecision', 'cluster.open-cluster-management.io/v1beta1')
   }
 
   // filter out apps that belong to an appset
@@ -170,17 +175,19 @@ export function polledArgoApplicationAggregation(
   }
 
   // add uidata transforms
-  items.forEach((item) => {
-    const uid = get(item, 'metadata.uid') as string
-    let transform = resourceUidMap[uid]?.transform
-    if (!transform) {
-      const type = getApplicationType(item)
-      const _clusters = getApplicationClusters(item, type, [], placementDecisions, localCluster, clusters)
-      transform = getTransform(item, type, _clusters)
-    }
-    resourceUidMap[uid] = { compressed: deflateResource(item, getAppDict()), transform }
-    oldResourceUidSets[appKey].delete(uid)
-  })
+  await Promise.all(
+    items.map(async (item) => {
+      const uid = get(item, 'metadata.uid') as string
+      let transform = resourceUidMap[uid]?.transform
+      if (!transform) {
+        const type = getApplicationType(item)
+        const _clusters = getApplicationClusters(item, type, [], placementDecisions, localCluster, clusters)
+        transform = getTransform(item, type, _clusters)
+      }
+      resourceUidMap[uid] = { compressed: await deflateResource(item, getAppDict()), transform }
+      oldResourceUidSets[appKey].delete(uid)
+    })
+  )
 
   if (shouldPostProcess) {
     // cleanup resourceUidMap
