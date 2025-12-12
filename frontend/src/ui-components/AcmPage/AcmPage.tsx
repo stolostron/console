@@ -142,11 +142,6 @@ export function AcmPageHeader(props: AcmPageHeaderProps) {
                 </Stack>
               </PageSection>
             </StackItem>
-            {/* {props.navigation && (
-              <StackItem>
-                {props.navigation}
-              </StackItem>
-            )} */}
           </Stack>
         </SplitItem>
         {(props.controls || props.actions || props.searchbar) && (
@@ -181,12 +176,7 @@ export function AcmPageHeader(props: AcmPageHeaderProps) {
           </SplitItem>
         )}
       </Split>
-      {
-        props.navigation &&
-          // <StackItem>
-          props.navigation
-        // </StackItem>
-      }
+      {props.navigation}
     </PageSection>
   )
 }

@@ -1229,7 +1229,7 @@ export default class TemplateEditor extends React.Component {
           }
         }
         this.renderedPortals = true
-        let switchLabel = i18n ? (editorReadOnly ? i18n('edit.yaml.on.ro') : i18n('edit.yaml.on')) : 'Show Yaml'
+        let switchLabel = ''
         if (showEditor) {
           switchLabel = i18n ? i18n('edit.yaml.on') : 'Show Yaml'
         } else {
