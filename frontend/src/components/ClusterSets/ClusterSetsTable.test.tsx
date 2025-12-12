@@ -52,7 +52,7 @@ const Component = ({
       snapshot.set(certificateSigningRequestsState, [])
       snapshot.set(clusterClaimsState, [])
       snapshot.set(clusterDeploymentsState, [])
-      snapshot.set(managedClusterAddonsState, [])
+      snapshot.set(managedClusterAddonsState, {})
       snapshot.set(clusterManagementAddonsState, [])
       snapshot.set(managedClusterInfosState, [])
       snapshot.set(managedClustersState, [])
