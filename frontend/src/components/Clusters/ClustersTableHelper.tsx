@@ -351,9 +351,9 @@ export function useClusterNodesColumn(): IAcmTableColumn<Cluster> {
     cell: (cluster) =>
       cluster.nodes?.nodeList?.length ? (
         <AcmInlineStatusGroup
-          healthy={cluster.nodes!.ready}
-          danger={cluster.nodes!.unhealthy}
-          unknown={cluster.nodes!.unknown}
+          healthy={cluster.nodes?.ready}
+          danger={cluster.nodes?.unhealthy}
+          unknown={cluster.nodes?.unknown}
         />
       ) : (
         '-'
