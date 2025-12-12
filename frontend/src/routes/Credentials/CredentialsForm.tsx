@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { PageSection } from '@patternfly/react-core'
-import _, { get, noop } from 'lodash'
+import { PageSection, TextContent, Text } from '@patternfly/react-core'
+import _, { get } from 'lodash'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useParams, useNavigate, useMatch, generatePath } from 'react-router-dom-v5-compat'
 import YAML from 'yaml'
@@ -620,20 +620,19 @@ export function CredentialsForm(
         inputs: [
           {
             id: 'credentialsType',
-            type: 'Select',
+            type: 'Custom',
             label: t('Credential type'),
+            component: (
+              <TextContent
+                id="credentialsType-label"
+                style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '16px' }}
+              >
+                {credentialsType && <AcmIcon icon={ProviderIconMap[credentialsType as Provider]} />}
+                <Text>{credentialsType ? ProviderLongTextMap[credentialsType as Provider] : ''}</Text>
+              </TextContent>
+            ),
             value: credentialsType,
-            onChange: noop,
-            options: [
-              {
-                id: credentialsType,
-                value: credentialsType,
-                icon: credentialsType ? <AcmIcon icon={ProviderIconMap[credentialsType as Provider]} /> : '',
-                text: credentialsType ? ProviderLongTextMap[credentialsType as Provider] : '',
-              },
-            ],
             isRequired: false, // always pre-filled
-            isDisabled: true, // always pre-filled
           },
           {
             id: 'disable-alert',

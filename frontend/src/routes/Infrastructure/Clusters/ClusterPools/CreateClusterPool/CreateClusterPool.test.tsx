@@ -294,7 +294,7 @@ describe('CreateClusterPool AWS', () => {
     // Should show the modal wizard
     await clickByText('Add credential')
     // Credentials type
-    await waitForTestId('credentialsType-input-toggle')
+    await waitForTestId('credentialsType-label')
     await typeByTestId('credentialsName', newProviderConnection.metadata.name!)
     await selectByText('Select a namespace for the credential', newProviderConnection.metadata.namespace!)
     await clickByText('Cancel', 1)
@@ -362,7 +362,7 @@ describe('CreateClusterPool AWS', () => {
     // Should show the modal wizard
     await clickByText('Add credential')
     // Credentials type
-    await waitForTestId('credentialsType-input-toggle')
+    await waitForTestId('credentialsType-label')
     await typeByTestId('credentialsName', newProviderConnection.metadata.name!)
     await selectByText('Select a namespace for the credential', newProviderConnection.metadata.namespace!)
     await clickByText('Cancel', 1)
