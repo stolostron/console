@@ -9,16 +9,7 @@ import {
   AcmPageContent,
   AcmTable,
 } from '../../../../ui-components'
-import {
-  ButtonVariant,
-  Flex,
-  FlexItem,
-  PageSection,
-  Stack,
-  Text,
-  TextContent,
-  TextVariants,
-} from '@patternfly/react-core'
+import { ButtonVariant, Flex, FlexItem, PageSection, Stack, Content, ContentVariants } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { fitContent } from '@patternfly/react-table'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
@@ -51,16 +42,16 @@ export default function ClusterSetsPage() {
 
   return (
     <AcmPageContent id="clusters">
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <Stack hasGutter style={{ height: 'unset' }}>
           <AcmExpandableCard title={t('learn.terminology')} id="cluster-sets-learn">
             <Flex style={{ flexWrap: 'inherit' }}>
               <Flex style={{ maxWidth: '50%' }}>
                 <FlexItem>
-                  <TextContent>
-                    <Text component={TextVariants.h4}>{t('clusterSets')}</Text>
-                    <Text component={TextVariants.p}>{t('learn.clusterSets')}</Text>
-                  </TextContent>
+                  <Content>
+                    <Content component={ContentVariants.h4}>{t('clusterSets')}</Content>
+                    <Content component={ContentVariants.p}>{t('learn.clusterSets')}</Content>
+                  </Content>
                 </FlexItem>
                 <FlexItem align={{ default: 'alignRight' }}>
                   <AcmButton
@@ -77,10 +68,10 @@ export default function ClusterSetsPage() {
               {isSubmarinerAvailable && (
                 <Flex>
                   <FlexItem>
-                    <TextContent>
-                      <Text component={TextVariants.h4}>{t('submariner')}</Text>
-                      <Text component={TextVariants.p}>{t('learn.submariner')}</Text>
-                    </TextContent>
+                    <Content>
+                      <Content component={ContentVariants.h4}>{t('submariner')}</Content>
+                      <Content component={ContentVariants.p}>{t('learn.submariner')}</Content>
+                    </Content>
                   </FlexItem>
                   <FlexItem align={{ default: 'alignRight' }}>
                     <AcmButton

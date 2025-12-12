@@ -43,14 +43,14 @@ exports[`EditorHeader component renders as expected 1`] = `
         class="creation-view-yaml-header-secrets"
       >
         <div
-          class="pf-v5-c-check pf-m-standalone"
+          class="pf-v6-c-check pf-m-standalone"
         >
           <input
             aria-invalid="false"
             aria-label="show-secrets"
-            class="pf-v5-c-check__input"
+            class="pf-v6-c-check__input"
             data-ouia-component-id="OUIA-Generated-Checkbox-1"
-            data-ouia-component-type="PF5/Checkbox"
+            data-ouia-component-type="PF6/Checkbox"
             data-ouia-safe="true"
             id="show-secrets"
             type="checkbox"
@@ -59,44 +59,46 @@ exports[`EditorHeader component renders as expected 1`] = `
         <div />
       </div>
       <div
-        class="pf-v5-c-clipboard-copy pf-m-inline pf-m-block"
-        data-ouia-component-type="PF5/ClipboardCopy"
+        class="pf-v6-c-clipboard-copy pf-m-inline pf-m-block"
+        data-ouia-component-type="PF6/ClipboardCopy"
         data-ouia-safe="true"
       >
         <span
-          class="pf-v5-c-clipboard-copy__text"
+          class="pf-v6-c-clipboard-copy__text"
           id="text-input-0"
         />
         <span
-          class="pf-v5-c-clipboard-copy__actions"
+          class="pf-v6-c-clipboard-copy__actions"
         >
           <span
-            class="pf-v5-c-clipboard-copy__actions-item"
+            class="pf-v6-c-clipboard-copy__actions-item"
           >
             <button
-              aria-disabled="false"
               aria-label="Copy to clipboard"
-              aria-labelledby="copy-button-0 text-input-0"
-              class="pf-v5-c-button pf-m-plain"
+              class="pf-v6-c-button pf-m-plain pf-m-no-padding"
               data-ouia-component-id="OUIA-Generated-Button-plain-1"
-              data-ouia-component-type="PF5/Button"
+              data-ouia-component-type="PF6/Button"
               data-ouia-safe="true"
               id="copy-button-0"
               type="button"
             >
-              <svg
-                aria-hidden="true"
-                class="pf-v5-svg"
-                fill="currentColor"
-                height="1em"
-                role="img"
-                viewBox="0 0 448 512"
-                width="1em"
+              <span
+                class="pf-v6-c-button__icon"
               >
-                <path
-                  d="M320 448v40c0 13.255-10.745 24-24 24H24c-13.255 0-24-10.745-24-24V120c0-13.255 10.745-24 24-24h72v296c0 30.879 25.121 56 56 56h168zm0-344V0H152c-13.255 0-24 10.745-24 24v368c0 13.255 10.745 24 24 24h272c13.255 0 24-10.745 24-24V128H344c-13.2 0-24-10.8-24-24zm120.971-31.029L375.029 7.029A24 24 0 0 0 358.059 0H352v96h96v-6.059a24 24 0 0 0-7.029-16.97z"
-                />
-              </svg>
+                <svg
+                  aria-hidden="true"
+                  class="pf-v6-svg"
+                  fill="currentColor"
+                  height="1em"
+                  role="img"
+                  viewBox="0 0 448 512"
+                  width="1em"
+                >
+                  <path
+                    d="M320 448v40c0 13.255-10.745 24-24 24H24c-13.255 0-24-10.745-24-24V120c0-13.255 10.745-24 24-24h72v296c0 30.879 25.121 56 56 56h168zm0-344V0H152c-13.255 0-24 10.745-24 24v368c0 13.255 10.745 24 24 24h272c13.255 0 24-10.745 24-24V128H344c-13.2 0-24-10.8-24-24zm120.971-31.029L375.029 7.029A24 24 0 0 0 358.059 0H352v96h96v-6.059a24 24 0 0 0-7.029-16.97z"
+                  />
+                </svg>
+              </span>
             </button>
           </span>
         </span>

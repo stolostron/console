@@ -364,7 +364,7 @@ const ClusterSelector = (props: {
             <FormGroup
               id="clusterSelector-container"
               label={i18n('creation.app.settings.clusterSelector')}
-              labelIcon={
+              labelHelp={
                 /* istanbul ignore next */
                 <Popover
                   id={`${controlId}-label-help-popover`}
@@ -375,7 +375,7 @@ const ClusterSelector = (props: {
                     id={`${controlId}-label-help-button`}
                     aria-label="More info"
                     onClick={(e) => e.preventDefault()}
-                    className="pf-v5-c-form__group-label-help"
+                    className="pf-v6-c-form__group-label-help"
                     style={{ ['--pf-v5-c-form__group-label-help--TranslateY' as any]: 0 }}
                     icon={<HelpIcon />}
                   />

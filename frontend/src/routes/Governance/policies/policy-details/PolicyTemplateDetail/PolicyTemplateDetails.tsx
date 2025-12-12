@@ -9,6 +9,7 @@ import {
 import { ReactNode, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 
+import { useParams } from 'react-router-dom-v5-compat'
 import { NavigationPath } from '../../../../../NavigationPath'
 import {
   AcmAlert,
@@ -19,18 +20,17 @@ import {
   IAcmTableColumn,
   ListItems,
 } from '../../../../../ui-components'
-import { DiffModal } from '../../../components/DiffModal'
-import { useTemplateDetailsContext } from './PolicyTemplateDetailsPage'
-import { useParams } from 'react-router-dom-v5-compat'
 import { emptyResources, getEngineWithSvg } from '../../../common/util'
-import { useFetchKyvernoRelated, useFetchVapb, useFetchOnlyRelatedResources } from './PolicyTemplateDetailHooks'
+import { DiffModal } from '../../../components/DiffModal'
+import { KyvernoRelatedResources } from './KyvernoRelatedResources'
+import { useFetchKyvernoRelated, useFetchOnlyRelatedResources, useFetchVapb } from './PolicyTemplateDetailHooks'
 import {
   addRowsForConstraint,
   addRowsForHasVapb,
   addRowsForOperatorPolicy,
   addRowsForVapb,
 } from './PolicyTemplateDetailsColumns'
-import { KyvernoRelatedResources } from './KyvernoRelatedResources'
+import { useTemplateDetailsContext } from './PolicyTemplateDetailsPage'
 
 export function PolicyTemplateDetails() {
   const { t } = useTranslation()
@@ -243,7 +243,7 @@ export function PolicyTemplateDetails() {
           case 'inapplicable':
             violationCell = (
               <div>
-                <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" /> {t('Inapplicable')}
+                <ExclamationTriangleIcon color="var(--pf-t--global--color--status--warning--100)" /> {t('Inapplicable')}
               </div>
             )
             break
@@ -418,11 +418,11 @@ export function PolicyTemplateDetails() {
   return (
     <div>
       {(vapb.err || kyvernoRelated.err) && (
-        <PageSection style={{ paddingBottom: '0' }}>
+        <PageSection hasBodyWrapper={false} style={{ paddingBottom: '0' }}>
           <AcmAlert variant="danger" title={vapb.err ?? kyvernoRelated.err} isInline noClose />
         </PageSection>
       )}
-      <PageSection style={{ paddingBottom: '0' }}>
+      <PageSection hasBodyWrapper={false} style={{ paddingBottom: '0' }}>
         <AcmDescriptionList
           id={'template-details-section'}
           title={kind + ' ' + t('details')}
@@ -432,7 +432,7 @@ export function PolicyTemplateDetails() {
           xl2={4}
         />
       </PageSection>
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <Card>
           <CardTitle>{isVAPB ? t('Parameter resources') : t('Related resources')}</CardTitle>
           <CardBody>

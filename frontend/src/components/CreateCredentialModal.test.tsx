@@ -49,7 +49,7 @@ describe('CreateCredentialModal', () => {
     const button = screen.getByRole('button', { name: 'Add credential' })
 
     // checks Patternfly classes
-    expect(button).toHaveClass('pf-v5-c-button') // base button class
+    expect(button).toHaveClass('pf-v6-c-button') // base button class
     expect(button).toHaveClass('pf-m-link') // link variant class
     expect(button).toHaveClass('pf-m-inline') // online class
   })

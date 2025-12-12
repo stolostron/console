@@ -199,7 +199,7 @@ export default function PolicySetsPage() {
 
   if (!policySets || policySets.length === 0) {
     return (
-      <PageSection isFilled>
+      <PageSection hasBodyWrapper={false} isFilled>
         <GovernanceCreatePolicysetEmptyState rbac={canCreatePolicySet} />
       </PageSection>
     )
@@ -212,13 +212,13 @@ export default function PolicySetsPage() {
           <ToolbarContent>
             <Fragment>
               <ToolbarGroup variant="filter-group">
-                <ToolbarItem variant="search-filter">
+                <ToolbarItem>
                   <CardViewToolbarFilter
                     setViolationFilters={setViolationFilters}
                     preSelectedFilters={violationFilters}
                   />
                 </ToolbarItem>
-                <ToolbarItem variant="search-filter">
+                <ToolbarItem>
                   <CardViewToolbarSearch
                     searchData={searchData}
                     dataKeyNames={searchDataKeyNames}
@@ -257,7 +257,7 @@ export default function PolicySetsPage() {
         {filteredPolicySets.length === 0 ? (
           <AcmEmptyState title={t('No resources match the current filter')} showSearchIcon={true} />
         ) : (
-          <PageSection isFilled>
+          <PageSection hasBodyWrapper={false} isFilled>
             <AcmMasonry minSize={400}>
               {/* Need to compute all cards here then slice. The PolicySet card render uses react hooks.
                         So paging to a page with less cards than the previous causes a react hook error if rendered in time. */}

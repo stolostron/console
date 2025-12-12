@@ -55,21 +55,21 @@ export default function GovernanceOverview() {
   if (loadCompleted || process.env.NODE_ENV === 'test') {
     if (policies.length === 0) {
       return (
-        <PageSection isFilled>
+        <PageSection hasBodyWrapper={false} isFilled>
           <GovernanceCreatePolicyEmptyState rbac={canCreatePolicy} />
         </PageSection>
       )
     }
     if (!(policyViolationSummary.compliant || policyViolationSummary.noncompliant || policyViolationSummary.pending)) {
       return (
-        <PageSection isFilled>
+        <PageSection hasBodyWrapper={false} isFilled>
           <GovernanceManagePoliciesEmptyState rbac={canCreatePolicy} />
         </PageSection>
       )
     }
   }
   return (
-    <PageSection>
+    <PageSection hasBodyWrapper={false}>
       <Stack hasGutter>
         {loadStarted ? (
           <AcmMasonry minSize={415} maxColumns={3}>
@@ -159,7 +159,7 @@ function SecurityGroupCard(props: { title: string; group: string; policies: Poli
 
   return (
     <div>
-      <Card isRounded>
+      <Card>
         <CardTitle>{props.title}</CardTitle>
         <CardBody>
           <div
@@ -364,7 +364,7 @@ function ClustersCard() {
 
   return (
     <div>
-      <Card isRounded>
+      <Card>
         <CardTitle>{t('Clusters')}</CardTitle>
         <CardBody>
           {renderClusterList(topClustersList, onClick, t)}

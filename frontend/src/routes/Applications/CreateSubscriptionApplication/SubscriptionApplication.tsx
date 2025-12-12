@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Modal, ModalVariant, PageSection } from '@patternfly/react-core'
+import { PageSection } from '@patternfly/react-core'
+import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
 import {
   AcmErrorBoundary,
   AcmPage,
@@ -139,7 +140,7 @@ export default function CreateSubscriptionApplicationPage() {
     >
       <AcmErrorBoundary>
         <AcmPageContent id="subscription-application-editor">
-          <PageSection variant="light" type="wizard">
+          <PageSection hasBodyWrapper={false} type="wizard">
             <Modal
               variant={ModalVariant.large}
               showClose={false}

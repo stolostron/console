@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { ExpandableSection } from '@patternfly/react-core'
-import { AcmButton } from '../../../../../../ui-components'
-import { TFunction } from 'react-i18next'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { TFunction } from 'react-i18next'
 import { DOC_LINKS } from '../../../../../../lib/doc-util'
+import { AcmButton } from '../../../../../../ui-components'
 import { HypershiftDiagram } from './HypershiftDiagram'
 
 type HypershiftDiagramExpandProps = {
@@ -19,12 +19,21 @@ export const HypershiftDiagramExpand = (props: HypershiftDiagramExpandProps) => 
 
   return (
     <ExpandableSection
-      style={{ paddingTop: '24px', backgroundColor: 'var(--pf-v5-global--BackgroundColor--light-300)' }}
+      style={{
+        paddingTop: '24px',
+        backgroundColor: 'var(--pf-t--global--background--color--secondary--default)',
+      }}
       isExpanded={isDiagramExpanded}
       onToggle={(_event, isExpanded) => onDiagramToggle(isExpanded)}
       toggleContent={
         <>
-          <span style={{ color: 'var(--pf-v5-global--Color--100)', display: 'block', textAlign: 'left' }}>
+          <span
+            style={{
+              color: 'var(--pf-t--global--text--color--100)',
+              display: 'block',
+              textAlign: 'left',
+            }}
+          >
             {t('Compare control plane types')}
           </span>
           <AcmButton

@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Chip } from '@patternfly/react-core'
+import { Label } from '@patternfly/react-core'
 import { TFunction } from 'react-i18next'
 import { useMemo, useState } from 'react'
 import { Link, NavigateFunction, To } from 'react-router-dom-v5-compat'
@@ -451,9 +451,15 @@ export function PolicySetList(props: { policySets: PolicySet[] }) {
       policySetLinks = policySetLinks.slice(0, 2)
     }
     policySetLinks.push(
-      <Chip key={'overflow-btn'} isOverflowChip component={'button'} onClick={() => setShowAll(!showAll)}>
+      <Label
+        variant="outline"
+        key={'overflow-btn'}
+        isOverflowChip
+        component={'button'}
+        onClose={() => setShowAll(!showAll)}
+      >
         {!showAll ? t('more') : t('Show less')}
-      </Chip>
+      </Label>
     )
   }
   return <div>{policySetLinks}</div>

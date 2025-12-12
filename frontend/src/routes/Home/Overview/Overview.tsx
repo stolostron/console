@@ -1,7 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useContext, useState } from 'react'
+import { useContext, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { PluginContext } from '../../../lib/PluginContext'
+import { NavigationPath } from '../../../NavigationPath'
 import { AcmErrorBoundary, AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../ui-components'
 import ReuseableSearchbar from '../../Search/components/ReuseableSearchbar'
 import OverviewClusterLabelSelector from './OverviewClusterLabelSelector'
@@ -11,10 +13,11 @@ const CLUSTERS_TAB: string = 'overview-tab'
 
 export default function Overview() {
   const { t } = useTranslation()
-  const [selectedTab, setSelectedTab] = useState<string>(CLUSTERS_TAB)
+  const [selectedTab, setSelectedTab] = useState<string>(location.pathname.replace(NavigationPath.overview, ''))
   const [selectedClusterLabels, setSelectedClusterLabels] = useState<Record<string, string[]>>({})
   const { acmExtensions } = useContext(PluginContext)
-
+  console.log('selectedTab: ', selectedTab)
+  console.log('acmExtensions: ', acmExtensions.overviewTab)
   let content = <OverviewPage selectedClusterLabels={selectedClusterLabels} />
   if (selectedTab) {
     const Component = acmExtensions?.overviewTab?.find((o) => o.uid === selectedTab)?.properties.component
@@ -27,36 +30,46 @@ export default function Overview() {
     }
   }
 
+  const navItems = useMemo(() => {
+    const items: JSX.Element[] = [
+      <AcmSecondaryNavItem
+        key={CLUSTERS_TAB}
+        // isActive={selectedTab === CLUSTERS_TAB}
+        isActive={location.pathname === NavigationPath.overview}
+        onClick={() => setSelectedTab(CLUSTERS_TAB)}
+      >
+        <Link to={NavigationPath.overview}>{t('Clusters')}</Link>
+      </AcmSecondaryNavItem>,
+    ]
+
+    const extTab = acmExtensions?.overviewTab?.map((tabExtension) => (
+      <AcmSecondaryNavItem
+        key={tabExtension.uid}
+        // isActive={selectedTab === tabExtension.uid}
+        isActive={location.pathname === `${NavigationPath.overview}/${tabExtension.uid}`}
+        onClick={() => setSelectedTab(tabExtension.uid)}
+      >
+        {/* {tabExtension.properties.tabTitle} */}
+        <Link to={`${NavigationPath.overview}/${tabExtension.uid}`}>{tabExtension.properties.tabTitle}</Link>
+      </AcmSecondaryNavItem>
+    ))
+
+    if (extTab) {
+      extTab.forEach((tab) => items.push(tab))
+    }
+
+    return items
+  }, [acmExtensions?.overviewTab, setSelectedTab, t])
+
   return (
     <AcmPage
       header={
         <div>
-          <div style={{ borderBottom: '1px solid var(--pf-v5-global--BorderColor--100)' }}>
-            <AcmPageHeader
-              title={t('Overview')}
-              searchbar={<ReuseableSearchbar />}
-              navigation={
-                <AcmSecondaryNav>
-                  <AcmSecondaryNavItem
-                    key={CLUSTERS_TAB}
-                    isActive={selectedTab === CLUSTERS_TAB}
-                    onClick={() => setSelectedTab(CLUSTERS_TAB)}
-                  >
-                    {t('Clusters')}
-                  </AcmSecondaryNavItem>
-                  {acmExtensions?.overviewTab?.map((tabExtension) => (
-                    <AcmSecondaryNavItem
-                      key={tabExtension.uid}
-                      isActive={selectedTab === tabExtension.uid}
-                      onClick={() => setSelectedTab(tabExtension.uid)}
-                    >
-                      {tabExtension.properties.tabTitle}
-                    </AcmSecondaryNavItem>
-                  ))}
-                </AcmSecondaryNav>
-              }
-            />
-          </div>
+          <AcmPageHeader
+            title={t('Overview')}
+            searchbar={<ReuseableSearchbar />}
+            navigation={<AcmSecondaryNav>{navItems}</AcmSecondaryNav>}
+          />
           {/* Fleet view includes a cluster label filter */}
           {selectedTab === CLUSTERS_TAB && (
             <OverviewClusterLabelSelector

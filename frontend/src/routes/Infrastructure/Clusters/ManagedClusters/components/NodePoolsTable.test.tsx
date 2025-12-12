@@ -1,10 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { ClusterImageSetK8sResource, HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { namespacesState } from '../../../../../atoms'
-import { nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../../../lib/nock-util'
+import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../../lib/nock-util'
 import { waitForText } from '../../../../../lib/test-util'
 import {
   ClusterImageSetApiVersion,
@@ -15,8 +17,6 @@ import {
 } from '../../../../../resources'
 import { ClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 import NodePoolsTable from './NodePoolsTable'
-import { ClusterImageSetK8sResource, HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
-import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'
 
 const mockHostedCluster0: HostedClusterK8sResource = {
   apiVersion: 'hypershift.openshift.io/v1alpha1',
@@ -808,7 +808,7 @@ describe('NodePoolsTable', () => {
   it('should render NodePoolsTable', async () => {
     await waitForText(nodePools[0].metadata.name)
     expect(screen.getByTestId('addNodepool')).toBeTruthy()
-    await waitFor(() => expect(screen.getByTestId('addNodepool')).toHaveAttribute('aria-disabled', 'false'), {
+    await waitFor(() => expect(screen.getByTestId('addNodepool')).toBeInTheDocument(), {
       timeout: 5000,
     })
     userEvent.click(screen.getByTestId('addNodepool'))

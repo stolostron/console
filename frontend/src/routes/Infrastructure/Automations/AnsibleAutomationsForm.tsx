@@ -1,16 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import {
-  ActionGroup,
-  Button,
-  Flex,
-  FlexItem,
-  FormGroup,
-  Label,
-  Modal,
-  ModalVariant,
-  Radio,
-  SelectOption,
-} from '@patternfly/react-core'
+import { ActionGroup, Button, Flex, FlexItem, FormGroup, Label, Radio, SelectOption } from '@patternfly/react-core'
+import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
 import { SelectVariant } from '../../../components/AcmSelectBase'
 import { Fragment, SetStateAction, useCallback, useContext, useEffect, useState } from 'react'
 import { useParams, useNavigate, useMatch } from 'react-router-dom-v5-compat'

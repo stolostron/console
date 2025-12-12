@@ -308,7 +308,7 @@ export default function PolicyDetailsResults() {
   )
 
   return (
-    <PageSection>
+    <PageSection hasBodyWrapper={false}>
       <Title headingLevel="h3">{t('Clusters')}</Title>
       <AcmTablePaginationContextProvider localStorageKey="grc-status-view">
         <AcmTable<ResultsTableData>

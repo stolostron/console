@@ -1,8 +1,53 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import {
+  AgentK8sResource,
+  AgentServiceConfigK8sResource,
+  AGENT_LOCATION_LABEL_KEY,
+  CimConfigProgressAlert,
+  CimConfigurationModal,
+  CimStorageMissingAlert,
+  CreateResourceFuncType,
+  getAgentStatusKey,
+  getCurrentClusterVersion,
+  getMajorMinorVersion,
+  GetResourceFuncType,
+  InfraEnvK8sResource,
+  InfrastructureK8sResource,
+  isCIMConfigured,
+  isStorageConfigured,
+  ListResourcesFuncType,
+  PatchResourceFuncType,
+} from '@openshift-assisted/ui-lib/cim'
+import { K8sResourceCommon } from '@openshift-console/dynamic-plugin-sdk'
 import { Button, ButtonVariant, Flex, FlexItem, PageSection, Popover, Stack, StackItem } from '@patternfly/react-core'
 import { CogIcon, InfoCircleIcon, OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
 import { fitContent } from '@patternfly/react-table'
-import { global_palette_blue_300 as blueInfoColor } from '@patternfly/react-tokens/dist/js/global_palette_blue_300'
+import { t_color_blue_40 as blueInfoColor } from '@patternfly/react-tokens/dist/js/t_color_blue_40'
+import { Dictionary } from 'lodash'
+import get from 'lodash/get'
+import groupBy from 'lodash/groupBy'
+import isMatch from 'lodash/isMatch'
+import { useEffect, useMemo, useState } from 'react'
+import { generatePath, Link, useNavigate } from 'react-router-dom-v5-compat'
+import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
+import { RbacDropdown } from '../../../components/Rbac'
+import { useLocalHubName } from '../../../hooks/use-local-hub'
+import { useTranslation } from '../../../lib/acm-i18next'
+import { deleteResources } from '../../../lib/delete-resources'
+import { DOC_LINKS, OCP_DOC, ViewDocumentationLink } from '../../../lib/doc-util'
+import { canUser, rbacDelete } from '../../../lib/rbac-util'
+import { NavigationPath } from '../../../NavigationPath'
+import { IResource } from '../../../resources/resource'
+import {
+  createResource,
+  exportObjectString,
+  getISOStringTimestamp,
+  getResource,
+  listResources,
+  patchResource,
+  ResourceError,
+} from '../../../resources/utils'
+import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import {
   AcmButton,
   AcmEmptyState,
@@ -14,52 +59,7 @@ import {
   AcmTable,
   compareStrings,
 } from '../../../ui-components'
-import isMatch from 'lodash/isMatch'
-import {
-  AgentK8sResource,
-  InfraEnvK8sResource,
-  AGENT_LOCATION_LABEL_KEY,
-  getAgentStatusKey,
-  isCIMConfigured,
-  isStorageConfigured,
-  CimConfigurationModal,
-  AgentServiceConfigK8sResource,
-  CimStorageMissingAlert,
-  CimConfigProgressAlert,
-  getCurrentClusterVersion,
-  getMajorMinorVersion,
-  CreateResourceFuncType,
-  GetResourceFuncType,
-  ListResourcesFuncType,
-  PatchResourceFuncType,
-  InfrastructureK8sResource,
-} from '@openshift-assisted/ui-lib/cim'
-import { useState, useEffect, useMemo } from 'react'
-import { Link, generatePath, useNavigate } from 'react-router-dom-v5-compat'
-import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
-import { RbacDropdown } from '../../../components/Rbac'
-import { useTranslation } from '../../../lib/acm-i18next'
-import { deleteResources } from '../../../lib/delete-resources'
-import { DOC_LINKS, OCP_DOC, ViewDocumentationLink } from '../../../lib/doc-util'
-import { canUser, rbacDelete } from '../../../lib/rbac-util'
-import { NavigationPath } from '../../../NavigationPath'
 import { getDateTimeCell } from '../helpers/table-row-helpers'
-import { useSharedAtoms, useRecoilValue } from '../../../shared-recoil'
-import { IResource } from '../../../resources/resource'
-import { K8sResourceCommon } from '@openshift-console/dynamic-plugin-sdk'
-import {
-  ResourceError,
-  createResource,
-  exportObjectString,
-  getISOStringTimestamp,
-  getResource,
-  listResources,
-  patchResource,
-} from '../../../resources/utils'
-import get from 'lodash/get'
-import groupBy from 'lodash/groupBy'
-import { Dictionary } from 'lodash'
-import { useLocalHubName } from '../../../hooks/use-local-hub'
 
 // Will change perspective, still in the OCP Console app
 const storageOperatorUrl = '/operatorhub/ns/multicluster-engine?category=Storage'
@@ -227,11 +227,11 @@ const InfraEnvironmentsPage: React.FC = () => {
           }
           actions={
             <Button
+              icon={<CogIcon />}
               isDisabled={!isStorage || !canUserAgentServiceConfig}
               variant={ButtonVariant.link}
               onClick={() => setIsCimConfigurationModalOpen(true)}
             >
-              <CogIcon />
               &nbsp;{t('Configure host inventory settings')}
             </Button>
           }
@@ -239,7 +239,7 @@ const InfraEnvironmentsPage: React.FC = () => {
       }
     >
       <AcmPageContent id="infra-environments">
-        <PageSection>
+        <PageSection hasBodyWrapper={false}>
           <InfraEnvsTable
             infraEnvs={infraEnvs}
             agents={agents}

@@ -1,14 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ActionGroup, Button, ButtonVariant, Checkbox, ModalVariant, SelectOption } from '@patternfly/react-core'
-import { Table /* data-codemods */, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table'
 import {
   AgentK8sResource,
   AgentMachineK8sResource,
   HostedClusterK8sResource,
   NodePoolK8sResource,
 } from '@openshift-assisted/ui-lib/cim'
+import { ActionGroup, Button, ButtonVariant, Checkbox, SelectOption } from '@patternfly/react-core'
+import { ModalVariant } from '@patternfly/react-core/deprecated'
+import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table'
+import _ from 'lodash'
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import semver from 'semver'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import {
   HostedClusterApiVersion,
@@ -19,6 +22,7 @@ import {
   NodePoolKind,
 } from '../../../../../resources'
 import { Cluster, IRequestResult, patchResource, ResourceError, resultsSettled } from '../../../../../resources/utils'
+import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
 import {
   AcmAlert,
   AcmExpandableCheckbox,
@@ -30,9 +34,6 @@ import {
 } from '../../../../../ui-components'
 import { getNodepoolAgents } from '../utils/nodepool'
 import { ReleaseNotesLink } from './ReleaseNotesLink'
-import { useSharedAtoms, useRecoilValue } from '../../../../../shared-recoil'
-import _ from 'lodash'
-import semver from 'semver'
 
 export function HypershiftUpgradeModal(props: {
   close: () => void

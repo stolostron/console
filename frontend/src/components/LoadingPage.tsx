@@ -1,19 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-  EmptyState,
-  EmptyStateIcon,
-  EmptyStateBody,
-  Title,
-  Spinner,
-  PageSection,
-  Bullseye,
-  Page,
-  EmptyStateActions,
-  EmptyStateHeader,
-  EmptyStateFooter,
-} from '@patternfly/react-core'
 import { css } from '@emotion/css'
+import {
+  Bullseye,
+  EmptyState,
+  EmptyStateActions,
+  EmptyStateBody,
+  EmptyStateFooter,
+  PageSection,
+  Spinner,
+  Title,
+} from '@patternfly/react-core'
 
 const max = css({
   maxWidth: '335px',
@@ -26,11 +23,10 @@ export function LoadingPage(props: {
   secondaryActions?: React.ReactNode
 }) {
   return (
-    <Page>
-      <PageSection isFilled>
+    <>
+      <PageSection hasBodyWrapper={false} isFilled>
         <Bullseye>
-          <EmptyState>
-            <EmptyStateHeader icon={<EmptyStateIcon icon={Spinner} />} />
+          <EmptyState icon={Spinner}>
             <EmptyStateFooter>
               <div className={max}>
                 <Title size="lg" headingLevel="h4">
@@ -44,6 +40,6 @@ export function LoadingPage(props: {
           </EmptyState>
         </Bullseye>
       </PageSection>
-    </Page>
+    </>
   )
 }

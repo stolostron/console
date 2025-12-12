@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { css } from '@emotion/css'
-import { createSubjectAccessReview, ResourceAttributes } from '../resources'
-import { AcmButton, AcmDropdown, AcmDropdownItems, AcmDropdownProps } from '../ui-components'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../lib/acm-i18next'
+import { createSubjectAccessReview, ResourceAttributes } from '../resources'
+import { AcmButton, AcmDropdown, AcmDropdownItems, AcmDropdownProps } from '../ui-components'
 
 type RbacDropdownProps<T = unknown> = Pick<
   AcmDropdownProps,
@@ -185,7 +185,9 @@ export function RbacButton(props: RbacButtonProps) {
       tooltip={isDisabled ? t('rbac.unauthorized') : ''}
       className={css({
         '& svg': {
-          fill: isDisabled ? 'var(--pf-v5-global--disabled-color--200)' : 'var(--pf-v5-global--primary-color--100)',
+          fill: isDisabled
+            ? 'var(--pf-t--global--color--disabled--200)'
+            : 'var(--pf-t--global--border--color--nonstatus--blue--default)',
         },
       })}
     />

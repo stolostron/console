@@ -1,16 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { css } from '@emotion/css'
-import {
-  ButtonVariant,
-  Flex,
-  FlexItem,
-  PageSection,
-  Stack,
-  Text,
-  TextContent,
-  TextVariants,
-} from '@patternfly/react-core'
+import { ButtonVariant, Flex, FlexItem, PageSection, Stack, Content, ContentVariants } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { fitContent } from '@patternfly/react-table'
 import {
@@ -61,17 +52,17 @@ export default function ClusterPoolsPage() {
   /* t('preview.clusterPools') */
   return (
     <AcmPageContent id="clusters">
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <TechPreviewAlert i18nKey="preview.clusterPools" docHref={DOC_LINKS.CLUSTER_POOLS} />
         <Stack hasGutter style={{ height: 'unset' }}>
           <AcmExpandableCard title={t('learn.terminology')} id="cluster-pools-learn">
             <Flex style={{ flexWrap: 'inherit' }}>
               <Flex style={{ maxWidth: '50%' }}>
                 <FlexItem>
-                  <TextContent>
-                    <Text component={TextVariants.h4}>{t('clusterPools')}</Text>
-                    <Text component={TextVariants.p}>{t('learn.clusterPools')}</Text>
-                  </TextContent>
+                  <Content>
+                    <Content component={ContentVariants.h4}>{t('clusterPools')}</Content>
+                    <Content component={ContentVariants.p}>{t('learn.clusterPools')}</Content>
+                  </Content>
                 </FlexItem>
                 <FlexItem align={{ default: 'alignRight' }}>
                   <AcmButton
@@ -87,10 +78,10 @@ export default function ClusterPoolsPage() {
               </Flex>
               <Flex>
                 <FlexItem>
-                  <TextContent>
-                    <Text component={TextVariants.h4}>{t('clusterClaims')}</Text>
-                    <Text component={TextVariants.p}>{t('learn.clusterClaims')}</Text>
-                  </TextContent>
+                  <Content>
+                    <Content component={ContentVariants.h4}>{t('clusterClaims')}</Content>
+                    <Content component={ContentVariants.p}>{t('learn.clusterClaims')}</Content>
+                  </Content>
                 </FlexItem>
                 <FlexItem align={{ default: 'alignRight' }}>
                   <AcmButton
@@ -295,9 +286,9 @@ export function ClusterPoolsTable(props: {
                 {
                   title: (
                     <>
-                      <TextContent>
-                        <Text component={TextVariants.h3}>{t('clusterPool.clusters')}</Text>
-                      </TextContent>
+                      <Content>
+                        <Content component={ContentVariants.h3}>{t('clusterPool.clusters')}</Content>
+                      </Content>
                       <ClusterPoolClustersTable clusters={clusterPoolClusters} />
                     </>
                   ),
@@ -311,9 +302,9 @@ export function ClusterPoolsTable(props: {
                 {
                   title: (
                     <>
-                      <TextContent>
-                        <Text component={TextVariants.h3}>{t('pending.cluster.claims')}</Text>
-                      </TextContent>
+                      <Content>
+                        <Content component={ContentVariants.h3}>{t('pending.cluster.claims')}</Content>
+                      </Content>
                       <ClusterPoolClaimsTable claims={clusterPoolClaims} />
                     </>
                   ),
@@ -590,7 +581,7 @@ export function ClusterPoolsTable(props: {
 }
 
 const table = css({
-  '& .pf-v5-c-table tr > *:first-child': {
+  '& .pf-v6-c-table tr > *:first-child': {
     paddingLeft: '0 !important',
   },
 })
@@ -615,9 +606,9 @@ function ClusterPoolClustersTable(props: { clusters: Cluster[] }) {
               <>
                 <span style={{ whiteSpace: 'nowrap' }}>{cluster.displayName}</span>
                 {cluster.hive.clusterClaimName && (
-                  <TextContent>
-                    <Text component={TextVariants.small}>{cluster.hive.clusterClaimName}</Text>
-                  </TextContent>
+                  <Content>
+                    <Content component={ContentVariants.small}>{cluster.hive.clusterClaimName}</Content>
+                  </Content>
                 )}
               </>
             ),

@@ -27,7 +27,7 @@ describe('AcmMasonry', () => {
   it('renders with no children', () => {
     const { container } = render(<AcmMasonry minSize={200} />)
     // check that the component renders a div with a grid inside
-    expect(container.querySelector('.pf-v5-l-grid')).toBeInTheDocument()
+    expect(container.querySelector('.pf-v6-l-grid')).toBeInTheDocument()
   })
 
   it('renders children in masonry layout', () => {
@@ -52,14 +52,14 @@ describe('AcmMasonry', () => {
       </AcmMasonry>
     )
 
-    const grid = container.querySelector('[class*="pf-v5-l-grid"]')
+    const grid = container.querySelector('[class*="pf-v6-l-grid"]')
     expect(grid).toHaveStyle('visibility: hidden')
   })
 
   it('shows grid when no children are provided', () => {
     const { container } = render(<AcmMasonry minSize={200} />)
 
-    const grid = container.querySelector('[class*="pf-v5-l-grid"]')
+    const grid = container.querySelector('[class*="pf-v6-l-grid"]')
     expect(grid).toHaveStyle('visibility: visible')
   })
 
@@ -84,7 +84,7 @@ describe('AcmMasonry', () => {
     )
 
     // initially should be hidden until measurements complete
-    let grid = container.querySelector('[class*="pf-v5-l-grid"]')
+    let grid = container.querySelector('[class*="pf-v6-l-grid"]')
     expect(grid).toHaveStyle('visibility: hidden')
 
     // change children (simulate search filtering with new items)
@@ -96,7 +96,7 @@ describe('AcmMasonry', () => {
     )
 
     // should still be hidden as new measurements need to complete
-    grid = container.querySelector('[class*="pf-v5-l-grid"]')
+    grid = container.querySelector('[class*="pf-v6-l-grid"]')
     expect(grid).toHaveStyle('visibility: hidden')
   })
 
@@ -117,7 +117,7 @@ describe('AcmMasonry', () => {
     )
 
     // component should handle reordering gracefully
-    const grid = container.querySelector('[class*="pf-v5-l-grid"]')
+    const grid = container.querySelector('[class*="pf-v6-l-grid"]')
     expect(grid).toBeInTheDocument()
   })
 
@@ -139,7 +139,7 @@ describe('AcmMasonry', () => {
         <div>Test Item 3</div>
       </AcmMasonry>
     )
-    expect(container.querySelector('.pf-v5-l-grid')).toBeInTheDocument()
+    expect(container.querySelector('.pf-v6-l-grid')).toBeInTheDocument()
 
     // test 2 columns
     mockResizeCallback({ contentRect: { width: 450 } })
@@ -150,7 +150,7 @@ describe('AcmMasonry', () => {
         <div>Test Item 3</div>
       </AcmMasonry>
     )
-    expect(container.querySelector('.pf-v5-l-grid')).toBeInTheDocument()
+    expect(container.querySelector('.pf-v6-l-grid')).toBeInTheDocument()
 
     // test 5 columns (edge case)
     mockResizeCallback({ contentRect: { width: 1050 } })
@@ -161,7 +161,7 @@ describe('AcmMasonry', () => {
         <div>Test Item 3</div>
       </AcmMasonry>
     )
-    expect(container.querySelector('.pf-v5-l-grid')).toBeInTheDocument()
+    expect(container.querySelector('.pf-v6-l-grid')).toBeInTheDocument()
 
     // test default case (>6 columns)
     mockResizeCallback({ contentRect: { width: 1500 } })
@@ -172,7 +172,7 @@ describe('AcmMasonry', () => {
         <div>Test Item 3</div>
       </AcmMasonry>
     )
-    expect(container.querySelector('.pf-v5-l-grid')).toBeInTheDocument()
+    expect(container.querySelector('.pf-v6-l-grid')).toBeInTheDocument()
   })
 
   it('respects maxColumns prop', () => {
@@ -197,7 +197,7 @@ describe('AcmMasonry', () => {
       </AcmMasonry>
     )
 
-    expect(container.querySelector('.pf-v5-l-grid')).toBeInTheDocument()
+    expect(container.querySelector('.pf-v6-l-grid')).toBeInTheDocument()
   })
 
   it('handles children without explicit keys', () => {
@@ -237,7 +237,7 @@ describe('AcmMasonry', () => {
     )
 
     // initially should be hidden
-    const grid = container.querySelector('[class*="pf-v5-l-grid"]')
+    const grid = container.querySelector('[class*="pf-v6-l-grid"]')
     expect(grid).toHaveStyle('visibility: hidden')
 
     // simulate measurements completing by triggering resize callback
@@ -314,7 +314,7 @@ describe('AcmMasonry', () => {
     expect(screen.getByText('Medium item')).toBeInTheDocument()
 
     // should have proper grid structure
-    const gridItems = container.querySelectorAll('[class*="pf-v5-l-grid__item"]')
+    const gridItems = container.querySelectorAll('[class*="pf-v6-l-grid__item"]')
     expect(gridItems.length).toBeGreaterThan(0)
   })
 
@@ -362,7 +362,7 @@ describe('AcmMasonry', () => {
       </AcmMasonry>
     )
 
-    expect(container.querySelector('.pf-v5-l-grid')).toBeInTheDocument()
+    expect(container.querySelector('.pf-v6-l-grid')).toBeInTheDocument()
   })
 
   it('handles edge case with very wide container', () => {
@@ -382,6 +382,6 @@ describe('AcmMasonry', () => {
     )
 
     expect(screen.getByText('Test Item')).toBeInTheDocument()
-    expect(container.querySelector('.pf-v5-l-grid')).toBeInTheDocument()
+    expect(container.querySelector('.pf-v6-l-grid')).toBeInTheDocument()
   })
 })

@@ -169,7 +169,7 @@ const EditAICluster: React.FC = () => {
     >
       <AcmErrorBoundary>
         <AcmPageContent id="edit-cluster">
-          <PageSection variant="light" type="wizard" isFilled>
+          <PageSection hasBodyWrapper={false} type="wizard" isFilled>
             <BulkActionModal<AgentK8sResource | BareMetalHostK8sResource> {...bulkModalProps} />
             {/* @ts-expect-error @openshift-assisted/ui-lib needs React 18 updates */}
             <FeatureGateContextProvider features={ACM_ENABLED_FEATURES}>

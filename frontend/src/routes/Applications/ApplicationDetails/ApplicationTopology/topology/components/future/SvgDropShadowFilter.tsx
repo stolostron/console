@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import * as React from 'react'
-import { global_palette_black_1000 as globalBlack1000 } from '@patternfly/react-tokens/dist/js/global_palette_black_1000'
+import { t_color_black as globalBlack1000 } from '@patternfly/react-tokens/dist/js/t_color_black'
 import { SVGDefs } from '@patternfly/react-topology'
+import * as React from 'react'
 
 interface SvgDropShadowFilterProps {
   // The unique ID that identifies the filter.

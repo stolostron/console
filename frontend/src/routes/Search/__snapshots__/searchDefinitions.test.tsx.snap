@@ -84,21 +84,24 @@ exports[`Correctly returns CreateApplicationTopologyLink - global search 1`] = `
 <body>
   <div>
     <a
-      aria-disabled="false"
-      class="pf-v5-c-button pf-m-link pf-m-inline"
+      class="pf-v6-c-button pf-m-link pf-m-inline"
       data-ouia-component-id="OUIA-Generated-Button-link-6"
-      data-ouia-component-type="PF5/Button"
+      data-ouia-component-type="PF6/Button"
       data-ouia-safe="true"
       href="undefined/multicloud/applications/details/testNamespace/testApp/topology?apiVersion=application.app.k8s.io"
       target="_blank"
     >
-      View topology
       <span
-        class="pf-v5-c-button__icon pf-m-end"
+        class="pf-v6-c-button__text"
+      >
+        View topology
+      </span>
+      <span
+        class="pf-v6-c-button__icon pf-m-end"
       >
         <svg
           aria-hidden="true"
-          class="pf-v5-svg"
+          class="pf-v6-svg"
           fill="currentColor"
           height="1em"
           role="img"
@@ -231,21 +234,24 @@ exports[`Correctly returns CreateExternalVMLink 1`] = `
 <body>
   <div>
     <a
-      aria-disabled="false"
-      class="pf-v5-c-button pf-m-link pf-m-inline"
+      class="pf-v6-c-button pf-m-link pf-m-inline"
       data-ouia-component-id="OUIA-Generated-Button-link-7"
-      data-ouia-component-type="PF5/Button"
+      data-ouia-component-type="PF6/Button"
       data-ouia-safe="true"
       href="https://testCluster.com/k8s/ns/testVM/kubevirt.io~v1~VirtualMachine/testVM"
       target="_blank"
     >
-      Details
       <span
-        class="pf-v5-c-button__icon pf-m-end"
+        class="pf-v6-c-button__text"
+      >
+        Details
+      </span>
+      <span
+        class="pf-v6-c-button__icon pf-m-end"
       >
         <svg
           aria-hidden="true"
-          class="pf-v5-svg"
+          class="pf-v6-svg"
           fill="currentColor"
           height="1em"
           role="img"
@@ -266,21 +272,24 @@ exports[`Correctly returns CreateGlobalSearchDetailsLink managed cluster Applica
 <body>
   <div>
     <a
-      aria-disabled="false"
-      class="pf-v5-c-button pf-m-link pf-m-inline"
+      class="pf-v6-c-button pf-m-link pf-m-inline"
       data-ouia-component-id="OUIA-Generated-Button-link-3"
-      data-ouia-component-type="PF5/Button"
+      data-ouia-component-type="PF6/Button"
       data-ouia-safe="true"
       href="undefined/multicloud/applications/details/testClusterNamespace/testClusterName/details?apiVersion=application.app.k8s.io&cluster=leaf-cluster"
       target="_blank"
     >
-      testClusterName
       <span
-        class="pf-v5-c-button__icon pf-m-end"
+        class="pf-v6-c-button__text"
+      >
+        testClusterName
+      </span>
+      <span
+        class="pf-v6-c-button__icon pf-m-end"
       >
         <svg
           aria-hidden="true"
-          class="pf-v5-svg"
+          class="pf-v6-svg"
           fill="currentColor"
           height="1em"
           role="img"
@@ -301,21 +310,24 @@ exports[`Correctly returns CreateGlobalSearchDetailsLink managed cluster Cluster
 <body>
   <div>
     <a
-      aria-disabled="false"
-      class="pf-v5-c-button pf-m-link pf-m-inline"
+      class="pf-v6-c-button pf-m-link pf-m-inline"
       data-ouia-component-id="OUIA-Generated-Button-link-2"
-      data-ouia-component-type="PF5/Button"
+      data-ouia-component-type="PF6/Button"
       data-ouia-safe="true"
       href="undefined/multicloud/infrastructure/clusters/details/testClusterName/testClusterName/overview?cluster%3Dundefined%26kind%3DCluster%26namespace%3DtestClusterNamespace%26name%3DtestClusterName"
       target="_blank"
     >
-      testClusterName
       <span
-        class="pf-v5-c-button__icon pf-m-end"
+        class="pf-v6-c-button__text"
+      >
+        testClusterName
+      </span>
+      <span
+        class="pf-v6-c-button__icon pf-m-end"
       >
         <svg
           aria-hidden="true"
-          class="pf-v5-svg"
+          class="pf-v6-svg"
           fill="currentColor"
           height="1em"
           role="img"
@@ -348,21 +360,24 @@ exports[`Correctly returns CreateGlobalSearchDetailsLink managed cluster PolicyR
 <body>
   <div>
     <a
-      aria-disabled="false"
-      class="pf-v5-c-button pf-m-link pf-m-inline"
+      class="pf-v6-c-button pf-m-link pf-m-inline"
       data-ouia-component-id="OUIA-Generated-Button-link-5"
-      data-ouia-component-type="PF5/Button"
+      data-ouia-component-type="PF6/Button"
       data-ouia-safe="true"
       href="undefined/multicloud/infrastructure/clusters/details/testClusterNamespace/testClusterNamespace/overview?showClusterIssues%3Dtrue"
       target="_blank"
     >
-      leaf-cluster-policyreport
       <span
-        class="pf-v5-c-button__icon pf-m-end"
+        class="pf-v6-c-button__text"
+      >
+        leaf-cluster-policyreport
+      </span>
+      <span
+        class="pf-v6-c-button__icon pf-m-end"
       >
         <svg
           aria-hidden="true"
-          class="pf-v5-svg"
+          class="pf-v6-svg"
           fill="currentColor"
           height="1em"
           role="img"
@@ -383,21 +398,24 @@ exports[`Correctly returns CreateGlobalSearchDetailsLink managed cluster default
 <body>
   <div>
     <a
-      aria-disabled="false"
-      class="pf-v5-c-button pf-m-link pf-m-inline"
+      class="pf-v6-c-button pf-m-link pf-m-inline"
       data-ouia-component-id="OUIA-Generated-Button-link-1"
-      data-ouia-component-type="PF5/Button"
+      data-ouia-component-type="PF6/Button"
       data-ouia-safe="true"
       href="https://leaf-hub.com/multicloud/search/resources?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestPodNamespace%26name%3DtestPodName"
       target="_blank"
     >
-      testPodName
       <span
-        class="pf-v5-c-button__icon pf-m-end"
+        class="pf-v6-c-button__text"
+      >
+        testPodName
+      </span>
+      <span
+        class="pf-v6-c-button__icon pf-m-end"
       >
         <svg
           aria-hidden="true"
-          class="pf-v5-svg"
+          class="pf-v6-svg"
           fill="currentColor"
           height="1em"
           role="img"
@@ -442,21 +460,24 @@ exports[`Correctly returns CreateGlobalSearchDetailsLink managed hub Policy reso
 <body>
   <div>
     <a
-      aria-disabled="false"
-      class="pf-v5-c-button pf-m-link pf-m-inline"
+      class="pf-v6-c-button pf-m-link pf-m-inline"
       data-ouia-component-id="OUIA-Generated-Button-link-4"
-      data-ouia-component-type="PF5/Button"
+      data-ouia-component-type="PF6/Button"
       data-ouia-safe="true"
       href="undefined/multicloud/governance/policies/details/default/hub-a-policy-test"
       target="_blank"
     >
-      hub-a-policy-test
       <span
-        class="pf-v5-c-button__icon pf-m-end"
+        class="pf-v6-c-button__text"
+      >
+        hub-a-policy-test
+      </span>
+      <span
+        class="pf-v6-c-button__icon pf-m-end"
       >
         <svg
           aria-hidden="true"
-          class="pf-v5-svg"
+          class="pf-v6-svg"
           fill="currentColor"
           height="1em"
           role="img"
@@ -504,14 +525,14 @@ exports[`Correctly returns VMLaunchLinks 1`] = `
       style="display: contents;"
     >
       <span
-        class="pf-v5-c-label"
+        class="pf-v6-c-label pf-m-filled pf-m-clickable"
       >
         <button
-          class="pf-v5-c-label__content"
+          class="pf-v6-c-label__content pf-m-clickable"
           type="button"
         >
           <span
-            class="pf-v5-c-label__text"
+            class="pf-v6-c-label__text"
           >
             Launch links
           </span>
@@ -526,27 +547,27 @@ exports[`Correctly returns VirtualMachineSnapshot indications 1`] = `
 <body>
   <div>
     <div
-      class="pf-v5-c-label-group pf-m-vertical"
+      class="pf-v6-c-label-group pf-m-vertical"
     >
       <div
-        class="pf-v5-c-label-group__main"
+        class="pf-v6-c-label-group__main"
       >
         <ul
           aria-label="Label group category"
-          class="pf-v5-c-label-group__list"
+          class="pf-v6-c-label-group__list"
           role="list"
         >
           <li
-            class="pf-v5-c-label-group__list-item"
+            class="pf-v6-c-label-group__list-item"
           >
             <span
-              class="pf-v5-c-label css-wm1cuv"
+              class="pf-v6-c-label pf-m-filled css-wm1cuv"
             >
               <span
-                class="pf-v5-c-label__content"
+                class="pf-v6-c-label__content"
               >
                 <span
-                  class="pf-v5-c-label__text"
+                  class="pf-v6-c-label__text"
                 >
                   indication1
                 </span>
@@ -554,16 +575,16 @@ exports[`Correctly returns VirtualMachineSnapshot indications 1`] = `
             </span>
           </li>
           <li
-            class="pf-v5-c-label-group__list-item"
+            class="pf-v6-c-label-group__list-item"
           >
             <span
-              class="pf-v5-c-label css-wm1cuv"
+              class="pf-v6-c-label pf-m-filled css-wm1cuv"
             >
               <span
-                class="pf-v5-c-label__content"
+                class="pf-v6-c-label__content"
               >
                 <span
-                  class="pf-v5-c-label__text"
+                  class="pf-v6-c-label__text"
                 >
                   indication2
                 </span>
@@ -2725,181 +2746,6 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-virtualma
 ]
 `;
 
-exports[`Correctly returns all resource definitions: SearchDefinitions-virtualmachinespage 1`] = `
-[
-  {
-    "cell": <CreateDetailsLink
-      item={
-        {
-          "cluster": "testCluster",
-          "created": "2021-01-01T00:00:00Z",
-          "kind": "Pod",
-          "label": "testLabel=label; testLabel1=label1",
-          "name": "testName",
-          "namespace": "testNamespace",
-          "selfLink": "/apigroup/cluster/name",
-        }
-      }
-    />,
-    "header": "Name",
-    "id": "name",
-    "isDefault": true,
-    "order": 1,
-    "sort": "name",
-  },
-  {
-    "cell": "-",
-    "header": "Status",
-    "id": "status",
-    "isDefault": false,
-    "isFirstVisitChecked": true,
-    "order": 2,
-    "sort": "status",
-  },
-  {
-    "cell": <React.Fragment>
-      testCluster
-    </React.Fragment>,
-    "header": "Cluster",
-    "id": "cluster",
-    "isDefault": false,
-    "isFirstVisitChecked": true,
-    "order": 3,
-    "sort": "cluster",
-  },
-  {
-    "cell": "testNamespace",
-    "header": "Namespace",
-    "id": "namespace",
-    "isDefault": false,
-    "isFirstVisitChecked": true,
-    "order": 4,
-    "sort": "namespace",
-  },
-  {
-    "cell": "-",
-    "header": "Node",
-    "id": "node",
-    "isDefault": false,
-    "isFirstVisitChecked": true,
-    "order": 5,
-    "sort": "node",
-  },
-  {
-    "cell": "-",
-    "header": "IP address",
-    "id": "ipaddress",
-    "isDefault": false,
-    "isFirstVisitChecked": true,
-    "order": 6,
-    "sort": "ipaddress",
-  },
-  {
-    "cell": <VMLaunchLinks
-      item={
-        {
-          "cluster": "testCluster",
-          "created": "2021-01-01T00:00:00Z",
-          "kind": "Pod",
-          "label": "testLabel=label; testLabel1=label1",
-          "name": "testName",
-          "namespace": "testNamespace",
-          "selfLink": "/apigroup/cluster/name",
-        }
-      }
-      t={[Function]}
-    />,
-    "header": "Launch links",
-    "id": "launch-links",
-    "isDefault": false,
-    "isFirstVisitChecked": true,
-    "order": 7,
-  },
-  {
-    "cell": <AcmTimestamp
-      timestamp="2021-01-01T00:00:00Z"
-    />,
-    "header": "Created",
-    "id": "created",
-    "isDefault": false,
-    "isFirstVisitChecked": false,
-    "order": 8,
-    "sort": "created",
-  },
-  {
-    "cell": "-",
-    "header": "Agent connected",
-    "id": "agent-connected",
-    "isDefault": false,
-    "isFirstVisitChecked": false,
-    "order": 9,
-    "sort": "agentConnected",
-  },
-  {
-    "cell": "-",
-    "header": "Flavor",
-    "id": "flavor",
-    "isDefault": false,
-    "isFirstVisitChecked": false,
-    "order": 10,
-    "sort": "flavor",
-  },
-  {
-    "cell": "-",
-    "header": "OS Name",
-    "id": "os-name",
-    "isDefault": false,
-    "isFirstVisitChecked": false,
-    "order": 11,
-    "sort": "osName",
-  },
-  {
-    "cell": "-",
-    "header": "Workload",
-    "id": "workload",
-    "isDefault": false,
-    "isFirstVisitChecked": false,
-    "order": 12,
-    "sort": "workload",
-  },
-  {
-    "cell": "-",
-    "header": "OS Version",
-    "id": "os-version",
-    "isDefault": false,
-    "isFirstVisitChecked": false,
-    "order": 13,
-    "sort": "osVersion",
-  },
-  {
-    "cell": "-",
-    "header": "VM Size",
-    "id": "vm-size",
-    "isDefault": false,
-    "isFirstVisitChecked": false,
-    "order": 14,
-    "sort": "vmSize",
-  },
-  {
-    "cell": <AcmLabels
-      collapse={[]}
-      labels={
-        [
-          "testLabel=label",
-          "testLabel1=label1",
-        ]
-      }
-    />,
-    "header": "Labels",
-    "id": "labels",
-    "isDefault": false,
-    "isFirstVisitChecked": false,
-    "order": 15,
-    "sort": "label",
-  },
-]
-`;
-
 exports[`Correctly returns category components 1`] = `
 <AcmLabels
   collapse={[]}
@@ -2995,13 +2841,13 @@ exports[`Correctly returns resource with managedHub column: SearchDefinitions-gl
   {
     "cell": <React.Fragment>
       testCluster
-      <TextContent>
-        <Text
+      <Content>
+        <Content
           component="small"
         >
           testManagedHub
-        </Text>
-      </TextContent>
+        </Content>
+      </Content>
     </React.Fragment>,
     "header": "Cluster",
     "sort": "cluster",

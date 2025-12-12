@@ -25,7 +25,7 @@ describe('AcmMultiSelect', () => {
   test('can apply and clear selections', async () => {
     const { container, getByRole } = render(<Select />)
 
-    expect(container.querySelector<HTMLSpanElement>('.pf-v5-c-badge')).toBeNull()
+    expect(container.querySelector<HTMLSpanElement>('.pf-v6-c-badge')).toBeNull()
     screen
       .getByRole('combobox', {
         name: /ACM select/i,
@@ -36,22 +36,22 @@ describe('AcmMultiSelect', () => {
         name: /red/i,
       })
       .click()
-    expect(container.querySelector<HTMLSpanElement>('.pf-v5-c-badge')).toHaveTextContent('1')
+    expect(container.querySelector<HTMLSpanElement>('.pf-v6-c-badge')).toHaveTextContent('1')
     screen
       .getByRole('checkbox', {
         name: /green/i,
       })
       .click()
-    expect(container.querySelector<HTMLSpanElement>('.pf-v5-c-badge')).toHaveTextContent('2')
+    expect(container.querySelector<HTMLSpanElement>('.pf-v6-c-badge')).toHaveTextContent('2')
     screen
       .getByRole('checkbox', {
         name: /green/i,
       })
       .click()
-    expect(container.querySelector<HTMLSpanElement>('.pf-v5-c-badge')).toHaveTextContent('1')
+    expect(container.querySelector<HTMLSpanElement>('.pf-v6-c-badge')).toHaveTextContent('1')
 
     userEvent.click(getByRole('button', { name: 'Clear input value' }))
-    expect(container.querySelector<HTMLSpanElement>('.pf-v5-c-badge')).toBeNull()
+    expect(container.querySelector<HTMLSpanElement>('.pf-v6-c-badge')).toBeNull()
   })
 
   test('validates required input if undefined', async () => {
@@ -76,7 +76,7 @@ describe('AcmMultiSelect', () => {
         name: /label/i,
       })
       .click()
-    container.querySelector<HTMLInputElement>('.pf-v5-c-check__input')?.click()
+    container.querySelector<HTMLInputElement>('.pf-v6-c-check__input')?.click()
     expect(getByTestId('input-label')).not.toContainHTML('pf-m-error')
   })
 
@@ -106,9 +106,9 @@ describe('AcmMultiSelect', () => {
         name: /label/i,
       })
       .click()
-    container.querySelector<HTMLInputElement>('.pf-v5-c-check__input')?.click()
+    container.querySelector<HTMLInputElement>('.pf-v6-c-check__input')?.click()
     expect(getByTestId('input-label')).not.toContainHTML('pf-m-error')
-    container.querySelector<HTMLInputElement>('.pf-v5-c-check__input')?.click()
+    container.querySelector<HTMLInputElement>('.pf-v6-c-check__input')?.click()
     expect(getByTestId('input-label')).toContainHTML('pf-m-error')
   })
 

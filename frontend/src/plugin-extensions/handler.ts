@@ -31,7 +31,18 @@ export function useAcmExtension() {
   // Resolving overview tab to acm compatible type
   const [overviewTab, resolvedOverviewTab] = useResolvedExtensions(isOverviewTab)
   if (resolvedOverviewTab) {
-    acmExtension.overviewTab = overviewTab
+    acmExtension.overviewTab = [
+      {
+        pluginID: 'test-plugin',
+        pluginName: 'test-plugin',
+        type: 'acm.overview/tab',
+        uid: 'test-plugin-tab',
+        properties: {
+          tabTitle: 'Test tab',
+          component: () => '<div>Test extension content</div>',
+        },
+      },
+    ]
   }
 
   // Resolving virtualmachine action to acm compatible type

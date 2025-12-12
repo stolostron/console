@@ -1,16 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ChartDonut, ChartLabel, ChartLegend } from '@patternfly/react-charts'
-import {
-  Split,
-  SplitItem,
-  Stack,
-  Text,
-  TextContent,
-  TextVariants,
-  ToggleGroup,
-  ToggleGroupItem,
-} from '@patternfly/react-core'
+import { ChartDonut, ChartLabel, ChartLegend } from '@patternfly/react-charts/victory'
+import { Split, SplitItem, Stack, Content, ContentVariants, ToggleGroup, ToggleGroupItem } from '@patternfly/react-core'
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import {
   AcmEmptyState,
@@ -359,8 +350,8 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
 
   return (
     <Stack hasGutter>
-      <TextContent>
-        <Text component={TextVariants.p}>
+      <Content>
+        <Content component={ContentVariants.p}>
           <Split hasGutter>
             <SplitItem>
               <Trans
@@ -381,9 +372,9 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
               />
             </SplitItem>
           </Split>
-        </Text>
-        <Text component={TextVariants.p}>{policySet.spec.description}</Text>
-      </TextContent>
+        </Content>
+        <Content component={ContentVariants.p}>{policySet.spec.description}</Content>
+      </Content>
       <div>{policySetClusters.length > 0 && renderDonutChart(policySetClusterCompliance, t)}</div>
       <Split>
         <SplitItem isFilled />

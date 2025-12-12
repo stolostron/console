@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ClipboardCopyButton, CodeBlockAction, Text, TextVariants } from '@patternfly/react-core'
+import { ClipboardCopyButton, CodeBlockAction, Content, ContentVariants } from '@patternfly/react-core'
 import { Fragment, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../../../../../lib/acm-i18next'
 
@@ -34,8 +34,8 @@ export function Actions(code: string, id: string) {
 
 export function GetOCLogInCommand() {
   return (
-    <Text component={TextVariants.p}>
+    <Content component={ContentVariants.p}>
       <Trans i18nKey="copy.login.command.instructions" components={{ bold: <strong />, code: <code /> }} />
-    </Text>
+    </Content>
   )
 }

@@ -346,8 +346,8 @@ export function DiscoveredResources() {
           variant="plain"
           aria-label="More info"
           onClick={(e) => e.preventDefault()}
-          className="pf-v5-c-form__group-label-help"
-          style={{ marginLeft: 'var(--pf-v5-global--spacer--sm)' }}
+          className="pf-v6-c-form__group-label-help"
+          style={{ marginLeft: 'var(--pf-t--global--spacer--sm)' }}
           icon={<HelpIcon />}
         />
       </Tooltip>
@@ -356,7 +356,7 @@ export function DiscoveredResources() {
 
   return (
     <div>
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <Card>
           <CardTitle>
             {isVAPB ? t('Parameter resources') : t('Related resources')}

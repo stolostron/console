@@ -2,11 +2,11 @@
 
 import { SelectOption } from '@patternfly/react-core'
 import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
+import { SelectVariant } from '../../components/AcmSelectBase'
 import { AcmForm, AcmSubmit } from '../AcmForm/AcmForm'
 import { AcmSelect } from './AcmSelect'
-import { SelectVariant } from '../../components/AcmSelectBase'
-import userEvent from '@testing-library/user-event'
 
 describe('AcmSelect', () => {
   const Select = () => {
@@ -187,7 +187,7 @@ describe('AcmSelect', () => {
       // Assert
       await waitFor(() => expect(screen.getByText(/create new yellow/i)).toBeVisible())
       getAllByRole('option')[0].click()
-      expect(container.querySelector('#select-typeahead-Yellow > span')).toBeInTheDocument()
+      expect(container.querySelector('#select-typeahead-Yellow')).toBeInTheDocument()
     })
   })
 })

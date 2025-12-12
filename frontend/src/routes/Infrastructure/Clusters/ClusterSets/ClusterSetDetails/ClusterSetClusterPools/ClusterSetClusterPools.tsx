@@ -23,7 +23,7 @@ export function ClusterSetClusterPoolsPageContent() {
 
   return (
     <AcmPageContent id="cluster-pools">
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <ClusterPoolsTable
           clusterPools={clusterPools}
           clusters={clusters}

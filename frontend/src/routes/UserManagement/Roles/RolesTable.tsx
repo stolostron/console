@@ -36,7 +36,7 @@ const RolesTable = () => {
   const columns = rolesTableColumns({ t })
 
   return (
-    <PageSection>
+    <PageSection hasBodyWrapper={false}>
       <AcmTable<Role>
         key="roles-table"
         filters={filters}

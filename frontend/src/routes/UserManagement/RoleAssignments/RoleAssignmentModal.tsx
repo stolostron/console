@@ -13,7 +13,7 @@ import { AcmModal, AcmToastContext } from '../../../ui-components'
 import { RoleAssignmentFormDataType } from './hook/RoleAssignmentFormDataHook'
 import { RoleAssignmentPreselected } from './model/role-assignment-preselected'
 import { RoleAssignmentForm } from './RoleAssignmentForm'
-import { ModalVariant } from '@patternfly/react-core'
+import { ModalVariant } from '@patternfly/react-core/deprecated'
 
 type RoleAssignmentModalProps = {
   close: () => void

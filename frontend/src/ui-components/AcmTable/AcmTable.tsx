@@ -64,7 +64,7 @@ import { AcmToastContext } from '../AcmAlert/AcmToast'
 import { AcmButton } from '../AcmButton/AcmButton'
 import { AcmEmptyState } from '../AcmEmptyState/AcmEmptyState'
 import { SearchConstraint } from '../AcmSearchInput'
-import { setColumnValues, getColumnValues } from './localColumnStorage'
+import { AcmManageColumn } from './AcmManageColumn'
 import { AcmTableToolbar, applyFilters, ToolbarRef, useTableFilterSelections } from './AcmTableToolbar'
 import {
   AcmTableProps,
@@ -75,7 +75,7 @@ import {
   IAcmTableColumn,
   ITableItem,
 } from './AcmTableTypes'
-import { AcmManageColumn } from './AcmManageColumn'
+import { getColumnValues, setColumnValues } from './localColumnStorage'
 
 const tableDivClass = css({
   display: 'table',
@@ -900,7 +900,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       {props.extraToolbarControls && (
         <Toolbar style={topToolbarStyle} inset={{ default: 'insetMd', xl: 'insetLg' }}>
           <ToolbarContent>
-            <ToolbarGroup align={{ default: 'alignRight' }}>
+            <ToolbarGroup align={{ default: 'alignEnd' }}>
               <ToolbarItem>{props.extraToolbarControls}</ToolbarItem>
             </ToolbarGroup>
           </ToolbarContent>
@@ -936,8 +936,12 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         />
       )}
       {!items || !rows || !filtered || !paged || (process.env.NODE_ENV !== 'test' && isLoading) ? (
-        <PageSection variant="light" padding={{ default: 'noPadding' }}>
-          <PageSection variant={props.extraToolbarControls ? 'light' : 'default'} padding={{ default: 'padding' }}>
+        <PageSection hasBodyWrapper={false} padding={{ default: 'noPadding' }}>
+          <PageSection
+            hasBodyWrapper={false}
+            variant={props.extraToolbarControls ? 'secondary' : 'default'}
+            padding={{ default: 'padding' }}
+          >
             <Fragment>
               {Array(10).fill(
                 <>
@@ -950,7 +954,11 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         </PageSection>
       ) : items.length === 0 && !emptyResult ? (
         props.emptyState && (
-          <PageSection variant={props.extraToolbarControls ? 'light' : 'default'} padding={{ default: 'noPadding' }}>
+          <PageSection
+            hasBodyWrapper={false}
+            variant={props.extraToolbarControls ? 'secondary' : 'default'}
+            padding={{ default: 'noPadding' }}
+          >
             {props.emptyState}
           </PageSection>
         )
@@ -1098,7 +1106,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
             </div>
           </div>
           {!filtered.length && (
-            <PageSection variant="light" padding={{ default: 'noPadding' }}>
+            <PageSection hasBodyWrapper={false} padding={{ default: 'noPadding' }}>
               <AcmEmptyState
                 title={t('No results found')}
                 message={t('No results match the filter criteria. Clear filters to show results.')}

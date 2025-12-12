@@ -1,46 +1,46 @@
 /* Copyright Contributors to the Open Cluster Management project */
 'use strict'
 
-import React from 'react'
-import ReactDOM from 'react-dom'
-import classNames from 'classnames'
-import PropTypes from 'prop-types'
-import isEmpty from 'lodash/isEmpty'
 import {
   Button,
-  Switch,
   Drawer,
   DrawerColorVariant,
   DrawerContent,
   DrawerContentBody,
   DrawerPanelContent,
   PageSection,
+  Switch,
 } from '@patternfly/react-core'
-import {
-  initializeControls,
-  parseYAML,
-  getDecorationData,
-  getDecorationRows,
-  generateSource,
-  cacheUserData,
-  cloneControlData,
-} from './utils/source-utils'
-import { logCreateErrors, logSourceErrors } from './utils/logger'
-import { validateControls } from './utils/validate-controls'
-import { updateEditStack } from './utils/refresh-source-from-stack'
-import { highlightChanges, highlightAllChanges, highlightDecorations } from './utils/refresh-source-highlighting'
-import ControlPanel from './controls/ControlPanel'
-import EditorHeader from './components/EditorHeader'
-import YamlEditor from './components/YamlEditor'
-import EditorBar from './components/EditorBar'
-import './css/template-editor.css'
+import classNames from 'classnames'
 import cloneDeep from 'lodash/cloneDeep'
-import get from 'lodash/get'
 import debounce from 'lodash/debounce'
+import get from 'lodash/get'
+import isEmpty from 'lodash/isEmpty'
 import keyBy from 'lodash/keyBy'
 import merge from 'lodash/merge'
 import set from 'lodash/set'
+import PropTypes from 'prop-types'
+import React from 'react'
+import ReactDOM from 'react-dom'
 import { LostChangesContext, LostChangesPrompt } from '../LostChanges'
+import EditorBar from './components/EditorBar'
+import EditorHeader from './components/EditorHeader'
+import YamlEditor from './components/YamlEditor'
+import ControlPanel from './controls/ControlPanel'
+import './css/template-editor.css'
+import { logCreateErrors, logSourceErrors } from './utils/logger'
+import { updateEditStack } from './utils/refresh-source-from-stack'
+import { highlightAllChanges, highlightChanges, highlightDecorations } from './utils/refresh-source-highlighting'
+import {
+  cacheUserData,
+  cloneControlData,
+  generateSource,
+  getDecorationData,
+  getDecorationRows,
+  initializeControls,
+  parseYAML,
+} from './utils/source-utils'
+import { validateControls } from './utils/validate-controls'
 
 const TEMPLATE_EDITOR_OPEN_COOKIE = 'yaml'
 const TEMPLATE_EDITOR_SHOW_SECRETS_COOKIE = 'template-editor-show-secrets-cookie'
@@ -273,9 +273,13 @@ export default class TemplateEditor extends React.Component {
   setYamlViewRef = () => {
     this.editorPanel = document.getElementById('editor-drawer-panel')
     if (window.ResizeObserver && this.editorPanel) {
+      let timeout
       const resizeObserver = new ResizeObserver(
         (() => {
-          this.layoutEditors()
+          clearTimeout(timeout)
+          timeout = setTimeout(() => {
+            this.layoutEditors()
+          }, 100)
         }).bind(this)
       )
       resizeObserver.observe(this.editorPanel)
@@ -355,7 +359,7 @@ export default class TemplateEditor extends React.Component {
                 defaultSize="600px"
                 maxSize={maxSize}
                 minSize="200px"
-                colorVariant={DrawerColorVariant.light200}
+                colorVariant={DrawerColorVariant.secondary}
                 id="editor-drawer-panel"
               >
                 {showEditor && this.renderEditor()}
@@ -363,7 +367,7 @@ export default class TemplateEditor extends React.Component {
             }
           >
             <DrawerContentBody style={{ height: '100%' }}>
-              <PageSection isFilled type="wizard" style={{ height: '100%' }}>
+              <PageSection hasBodyWrapper={false} isFilled type="wizard" style={{ height: '100%' }}>
                 {this.renderControls(isLoaded)}
               </PageSection>
             </DrawerContentBody>
@@ -1225,14 +1229,23 @@ export default class TemplateEditor extends React.Component {
           }
         }
         this.renderedPortals = true
+        let switchLabel = i18n ? (editorReadOnly ? i18n('edit.yaml.on.ro') : i18n('edit.yaml.on')) : 'Show Yaml'
+        if (showEditor) {
+          switchLabel = i18n ? i18n('edit.yaml.on') : 'Show Yaml'
+        } else {
+          switchLabel = i18n ? i18n('edit.yaml.off') : 'Hide Yaml'
+        }
+        if (editorReadOnly) {
+          switchLabel = i18n ? i18n('edit.yaml.on.ro') : 'YAML (read only): On'
+        }
+
         return ReactDOM.createPortal(
           <div className="edit-template-switch">
             <Switch
               id="edit-yaml"
               key={`is${showEditor}`}
               isChecked={showEditor}
-              label={i18n ? (editorReadOnly ? i18n('edit.yaml.on.ro') : i18n('edit.yaml.on')) : 'Show Yaml'}
-              labelOff={i18n ? i18n('edit.yaml.off') : 'Hide Yaml'}
+              label={switchLabel}
               onChange={handleToggle}
             />
           </div>,

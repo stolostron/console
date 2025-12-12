@@ -1,11 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 'use strict'
 
-import React from 'react'
-import TemplateEditor from './TemplateEditor'
-import { render, fireEvent, act, waitFor, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { BrowserRouter as Router } from 'react-router-dom-v5-compat'
+import TemplateEditor from './TemplateEditor'
 // loads mocked monaco from __mocks__
 import MonacoEditor from 'react-monaco-editor'
 
@@ -138,7 +137,7 @@ describe('TemplateEditor component', () => {
 
     // open editor
     let yamlBtn = await waitFor(() =>
-      screen.getByRole('checkbox', {
+      screen.getByRole('switch', {
         name: /edit\.yaml\.off/i,
       })
     )

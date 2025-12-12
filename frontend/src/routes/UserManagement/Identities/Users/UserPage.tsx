@@ -1,14 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useMemo } from 'react'
-import { useParams, useLocation, Link, Outlet, generatePath, useOutletContext } from 'react-router-dom-v5-compat'
-import { useTranslation } from '../../../../lib/acm-i18next'
-import { User, Group } from '../../../../resources/rbac'
-import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
-import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem, AcmButton } from '../../../../ui-components'
-import { NavigationPath } from '../../../../NavigationPath'
-import { Page } from '@patternfly/react-core'
+import { generatePath, Link, Outlet, useLocation, useOutletContext, useParams } from 'react-router-dom-v5-compat'
 import { ErrorPage } from '../../../../components/ErrorPage'
+import { useTranslation } from '../../../../lib/acm-i18next'
+import { NavigationPath } from '../../../../NavigationPath'
+import { Group, User } from '../../../../resources/rbac'
 import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
+import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import { AcmButton, AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../../ui-components'
 
 export const useCurrentUser = (): User | undefined => {
   const { id } = useParams()
@@ -50,7 +49,7 @@ const UserPage = () => {
 
   if (!user) {
     return (
-      <Page>
+      <>
         <ErrorPage
           error={new ResourceError(ResourceErrorCode.NotFound)}
           actions={
@@ -59,7 +58,7 @@ const UserPage = () => {
             </AcmButton>
           }
         />
-      </Page>
+      </>
     )
   }
 

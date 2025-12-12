@@ -6,14 +6,11 @@ import {
   Divider,
   EmptyState,
   EmptyStateBody,
-  EmptyStateIcon,
   FlexItem,
   Label,
   Skeleton,
-  Text,
-  TextContent,
-  TextVariants,
-  EmptyStateHeader,
+  Content,
+  ContentVariants,
 } from '@patternfly/react-core'
 import { ExclamationCircleIcon } from '@patternfly/react-icons'
 import { ReactNode } from 'react'
@@ -57,7 +54,7 @@ export default function SummaryCard(props: {
   const { t } = useTranslation()
 
   return (
-    <Card isRounded isFullHeight>
+    <Card isFullHeight>
       <CardTitle>
         {
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -91,7 +88,7 @@ export default function SummaryCard(props: {
                         {summary.count > 0 ? (
                           getLink(summary.link.type, summary.link.path, summary.count)
                         ) : (
-                          <TextContent>{summary.count}</TextContent>
+                          <Content>{summary.count}</Content>
                         )}
                       </div>
                     ) : (
@@ -99,27 +96,21 @@ export default function SummaryCard(props: {
                     )}
                   </div>
                   <FlexItem>
-                    <TextContent>
-                      <Text component={TextVariants.h4}>{summary.label}</Text>
-                    </TextContent>
+                    <Content>
+                      <Content component={ContentVariants.h4}>{summary.label}</Content>
+                    </Content>
                   </FlexItem>
                 </div>
               ))}
             </div>
           </div>
         ) : (
-          <EmptyState style={{ paddingTop: 0, marginTop: 'auto' }}>
-            <EmptyStateHeader
-              titleText={<>{t('An unexpected error occurred while retrieving metrics.')}</>}
-              icon={
-                <EmptyStateIcon
-                  style={{ fontSize: '36px', marginBottom: '1rem' }}
-                  icon={ExclamationCircleIcon}
-                  color={'var(--pf-v5-global--danger-color--100)'}
-                />
-              }
-              headingLevel="h4"
-            />
+          <EmptyState
+            headingLevel="h4"
+            icon={ExclamationCircleIcon}
+            titleText={<>{t('An unexpected error occurred while retrieving metrics.')}</>}
+            style={{ paddingTop: 0, marginTop: 'auto' }}
+          >
             <EmptyStateBody>{error}</EmptyStateBody>
           </EmptyState>
         )}
@@ -130,7 +121,7 @@ export default function SummaryCard(props: {
 
 export function LoadingCard() {
   return (
-    <Card isRounded isFullHeight>
+    <Card isFullHeight>
       <CardTitle>
         <Skeleton shape={'square'} width="100px" height="25px" />
       </CardTitle>

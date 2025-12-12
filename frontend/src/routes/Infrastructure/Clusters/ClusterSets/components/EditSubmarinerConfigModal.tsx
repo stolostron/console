@@ -11,7 +11,8 @@ import {
   AcmTextInput,
   Provider,
 } from '../../../../../ui-components'
-import { ActionGroup, Checkbox, ModalVariant, SelectOption } from '@patternfly/react-core'
+import { ActionGroup, Checkbox, SelectOption } from '@patternfly/react-core'
+import { ModalVariant } from '@patternfly/react-core/deprecated'
 import { useCallback, useEffect, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { getErrorInfo } from '../../../../../components/ErrorPage'

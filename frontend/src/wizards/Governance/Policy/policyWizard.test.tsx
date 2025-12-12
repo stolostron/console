@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { render, screen, waitFor, fireEvent } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import {
   mockClusterSet,
@@ -9,12 +9,12 @@ import {
   mockPolicy,
 } from '../../../routes/Governance/governance.sharedMocks'
 
-import { Policy } from '../../../resources'
-import { isExistingTemplateName, PolicyWizard } from './PolicyWizard'
-import { BrowserRouter as Router } from 'react-router-dom-v5-compat'
 import { IResource } from '@patternfly-labs/react-form-wizard'
+import { BrowserRouter as Router } from 'react-router-dom-v5-compat'
 import { waitForText } from '../../../lib/test-util'
+import { Policy } from '../../../resources'
 import { WizardSyncEditor } from '../../../routes/Governance/policies/CreatePolicy'
+import { isExistingTemplateName, PolicyWizard } from './PolicyWizard'
 
 describe('ExistingTemplateName', () => {
   test('should return false for non-existing name', () => {
@@ -231,7 +231,7 @@ describe('Policy wizard', () => {
     userEvent.type(nsInput as Element, 'my-namespace')
 
     // Open the YAML editor.
-    const yamlCheckBox = screen.getByRole('checkbox', { name: /yaml/i }) as HTMLInputElement
+    const yamlCheckBox = screen.getByRole('switch', { name: /yaml/i }) as HTMLInputElement
     if (!yamlCheckBox.checked) {
       userEvent.click(yamlCheckBox)
     }
@@ -270,7 +270,7 @@ describe('Policy wizard', () => {
     userEvent.type(nsInput as Element, 'my-namespace')
 
     // Open the YAML editor.
-    const yamlCheckBox = screen.getByRole('checkbox', { name: /yaml/i }) as HTMLInputElement
+    const yamlCheckBox = screen.getByRole('switch', { name: /yaml/i }) as HTMLInputElement
     if (!yamlCheckBox.checked) {
       userEvent.click(yamlCheckBox)
     }

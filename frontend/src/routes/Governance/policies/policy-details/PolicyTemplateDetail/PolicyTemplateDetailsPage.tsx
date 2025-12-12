@@ -234,7 +234,7 @@ export function PolicyTemplateDetailsPage() {
     >
       <Suspense fallback={<Fragment />}>
         {templateError ? (
-          <PageSection style={{ paddingBottom: '0' }}>
+          <PageSection hasBodyWrapper={false} style={{ paddingBottom: '0' }}>
             <AcmAlert variant="danger" title={templateError} isInline noClose />
           </PageSection>
         ) : (

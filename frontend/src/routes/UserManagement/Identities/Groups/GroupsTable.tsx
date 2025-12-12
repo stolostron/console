@@ -23,7 +23,7 @@ const GroupsTable = () => {
   const columns = groupsTableColumns({ t })
 
   return (
-    <PageSection>
+    <PageSection hasBodyWrapper={false}>
       <AcmTable<Group>
         key="groups-table"
         filters={filters}

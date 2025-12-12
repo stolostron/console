@@ -10,7 +10,7 @@ import {
   ResourceErrorCode,
 } from '../../../../../resources/utils'
 import { AcmEmptyState, AcmSelect } from '../../../../../ui-components'
-import { Text, TextContent, TextVariants, SelectOption } from '@patternfly/react-core'
+import { Content, ContentVariants, SelectOption } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { BulkActionModal } from '../../../../../components/BulkActionModal'
@@ -88,9 +88,9 @@ export function BatchChannelSelectModal(props: {
             <>
               <span style={{ whiteSpace: 'nowrap' }}>{cluster.displayName}</span>
               {cluster.hive.clusterClaimName && (
-                <TextContent>
-                  <Text component={TextVariants.small}>{cluster.hive.clusterClaimName}</Text>
-                </TextContent>
+                <Content>
+                  <Content component={ContentVariants.small}>{cluster.hive.clusterClaimName}</Content>
+                </Content>
               )}
             </>
           ),

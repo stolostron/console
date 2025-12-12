@@ -34,9 +34,9 @@ const exampleRow = css({
   },
   '& > span': {
     margin: '0.4rem 0 !important',
-    fontSize: 'var(--pf-v5-global--FontSize--xs)',
-    backgroundColor: 'var(--pf-v5-global--palette--blue-50)',
-    color: 'var(--pf-v5-global--info-color--200)',
+    fontSize: 'var(--pf-t--global--font--size--xs)',
+    backgroundColor: 'var(--pf-t--color--blue--10)',
+    color: 'var(--pf-t--global--icon--color--status--info--default)',
   },
 })
 

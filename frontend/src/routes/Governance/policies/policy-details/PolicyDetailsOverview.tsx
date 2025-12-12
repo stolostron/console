@@ -1,11 +1,19 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Alert, ButtonVariant, Icon, LabelGroup, PageSection, Stack, Text, TextVariants } from '@patternfly/react-core'
+import {
+  Alert,
+  ButtonVariant,
+  Content,
+  ContentVariants,
+  Icon,
+  LabelGroup,
+  PageSection,
+  Stack,
+} from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
-import { AcmButton, AcmDescriptionList, AcmDrawerContext, AcmTable } from '../../../../ui-components'
 import { ReactNode, useCallback, useContext, useMemo, useState } from 'react'
-import { Link, generatePath } from 'react-router-dom-v5-compat'
-import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import { generatePath, Link } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../lib/acm-i18next'
+import AcmTimestamp from '../../../../lib/AcmTimestamp'
 import { rbacCreate, rbacUpdate, useIsAnyNamespaceAuthorized } from '../../../../lib/rbac-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import {
@@ -20,6 +28,9 @@ import {
   PolicySet,
 } from '../../../../resources'
 import { Metadata } from '../../../../resources/metadata'
+import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import { AcmButton, AcmDescriptionList, AcmDrawerContext, AcmTable } from '../../../../ui-components'
+import { usePropagatedPolicies } from '../../common/useCustom'
 import {
   getPlacementDecisionsForPlacements,
   getPlacementsForResource,
@@ -29,9 +40,7 @@ import {
 import { AutomationDetailsSidebar } from '../../components/AutomationDetailsSidebar'
 import { ClusterPolicyViolationIcons } from '../../components/ClusterPolicyViolations'
 import { useGovernanceData } from '../../useGovernanceData'
-import { usePropagatedPolicies } from '../../common/useCustom'
 import { usePolicyDetailsContext } from './PolicyDetailsPage'
-import AcmTimestamp from '../../../../lib/AcmTimestamp'
 
 interface TableData {
   apiVersion: string
@@ -105,7 +114,7 @@ export default function PolicyDetailsOverview() {
             <ClusterPolicyViolationIcons risks={govData.clusterRisks} />
           ) : (
             <div>
-              <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" /> {'No status'}
+              <ExclamationTriangleIcon color="var(--pf-t--global--color--status--warning--100)" /> {'No status'}
             </div>
           ),
       },
@@ -311,7 +320,7 @@ export default function PolicyDetailsOverview() {
           const statusList = []
           for (const status of Object.keys(clusterList)) {
             let statusMsg = t(' No status: ')
-            let icon = <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" />
+            let icon = <ExclamationTriangleIcon color="var(--pf-t--global--color--status--warning--100)" />
             switch (status) {
               case 'noncompliant':
                 statusMsg = t(' Violations: ')
@@ -387,7 +396,7 @@ export default function PolicyDetailsOverview() {
           if (statusList.length === 0) {
             return (
               <div>
-                <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" /> {t('No status')}
+                <ExclamationTriangleIcon color="var(--pf-t--global--color--status--warning--100)" /> {t('No status')}
               </div>
             )
           }
@@ -399,21 +408,21 @@ export default function PolicyDetailsOverview() {
   )
 
   return (
-    <PageSection>
+    <PageSection hasBodyWrapper={false}>
       {modal !== undefined && modal}
       <Stack hasGutter>
         <div id="violation.details">
           <AcmDescriptionList title={t('Policy details')} leftItems={leftItems} rightItems={rightItems} />
         </div>
         <div>
-          <Text
-            component={TextVariants.h5}
+          <Content
+            component={ContentVariants.h5}
             style={{
               fontWeight: '700',
             }}
           >
             {t('Placement')}
-          </Text>
+          </Content>
           {placementMatches.length > 0 || placementRuleMatches.length > 0 ? (
             <AcmTable<TableData>
               key="cluster-placement-list"

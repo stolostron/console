@@ -23,7 +23,7 @@ const UsersTable = () => {
   const columns = usersTableColumns({ t })
 
   return (
-    <PageSection>
+    <PageSection hasBodyWrapper={false}>
       <AcmTable<User>
         key="users-table"
         filters={filters}
