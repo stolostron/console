@@ -7,8 +7,12 @@ import { Trans, useTranslation } from 'react-i18next'
 import { getFirstTime, getLastTime, NodeModel, referenceFor, resourcePathFromModel, typeFilter } from './utils'
 import { FC, useEffect } from 'react'
 import { Link } from 'react-router-dom-v5-compat'
+import type { ComponentType } from 'react'
 
 import { EventComponentProps } from './EventStreamList'
+
+// Type assertion to fix TypeScript JSX recognition issue with react-i18next v15
+const TransComponent = Trans as ComponentType<any>
 
 const Inner: FC<EventComponentProps> = ({ event, cache, list, index }) => {
   const { t } = useTranslation()
@@ -74,10 +78,10 @@ const Inner: FC<EventComponentProps> = ({ event, cache, list, index }) => {
                   sourceComponent: component,
                 })}
               {component === 'kubelet' && canGetNodes && (
-                <Trans ns="public">
+                <TransComponent ns="public">
                   Generated from {{ sourceComponent: component }} on{' '}
                   <Link to={resourcePathFromModel(NodeModel, source.host)}>{{ sourceHost: source.host }}</Link>
-                </Trans>
+                </TransComponent>
               )}
               {component === 'kubelet' &&
                 !canGetNodes &&
@@ -88,17 +92,17 @@ const Inner: FC<EventComponentProps> = ({ event, cache, list, index }) => {
             </small>
             <div className="co-sysevent__count-and-actions">
               {count > 1 && firstTime && (
-                <Trans ns="public">
+                <TransComponent ns="public">
                   <small className="co-sysevent__count pf-v6-u-text-color-subtle">
                     {{ eventCount: count }} times in the last{' '}
                     <Timestamp timestamp={firstTime} simple={true} omitSuffix={true} />
                   </small>
-                </Trans>
+                </TransComponent>
               )}
               {count > 1 && !firstTime && (
-                <Trans ns="public">
+                <TransComponent ns="public">
                   <small className="co-sysevent__count pf-v6-u-text-color-subtle">{{ eventCount: count }} times</small>
-                </Trans>
+                </TransComponent>
               )}
             </div>
           </div>
