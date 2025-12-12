@@ -13,7 +13,7 @@ interface ClusterListProps {
   namespaces?: string[]
 }
 
-const ClusterList = ({ onSelectCluster, namespaces }: ClusterListProps) => {
+export const ClusterList = ({ onSelectCluster, namespaces }: ClusterListProps) => {
   const clusters = useAllClusters(true)
   const filteredClusters = useMemo(
     () =>
@@ -50,5 +50,3 @@ const ClusterList = ({ onSelectCluster, namespaces }: ClusterListProps) => {
     />
   )
 }
-
-export default ClusterList
