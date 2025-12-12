@@ -1130,7 +1130,6 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
           }
         }
       }
-      let selections: string | SelectOptionObject | (string | SelectOptionObject)[] = input.value
       switch (input.type) {
         case 'Select':
         case 'GroupedSelect': {
@@ -1145,21 +1144,6 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
                 if (selectedOption !== undefined) break
               }
               break
-          }
-          if (selectedOption?.icon) {
-            selections = {
-              toString: () => {
-                return (
-                  <Fragment>
-                    <span style={{ paddingRight: '8px' }}>{selectedOption?.icon}</span>
-                    {selectedOption?.text}
-                  </Fragment>
-                ) as unknown as string
-              },
-              compareTo: (option: any) => {
-                return option?.value === selectedOption?.value
-              },
-            }
           }
           break
         }
@@ -1216,7 +1200,6 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
         <SelectWithToggle
           {...inputProps}
           toggleId={`${input.id}-input-toggle`}
-          selections={selections}
           onSelect={onSelect}
           onClear={onClear}
           isCreatable={input.type === 'CreatableMultiselect'}
