@@ -1,8 +1,18 @@
 .pf-v6-c-toolbar {
-  padding: 10px 0 7px 25px;
+  padding: 10px 0 7px 14px;
   min-height: 40px;
   background-color: var(--pf-v5-c-page__main-section--m-light--BackgroundColor);
   border-color: var(--pf-v5-global--BorderColor--100);
+}
+
+.pf-v5-c-toolbar__item {
+  margin-right: 14px;
+}
+
+.how-to-read-text-container {
+  margin-left: 14px;
+  font-weight: bold;
+  font-size: 14px;
 }
 
 .channel-controls-container {
