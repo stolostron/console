@@ -1,7 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render } from '@testing-library/react'
-import { Scope } from 'nock/types'
+/*
+ * NOTE: Table-specific functionality tests (bulk actions, row actions, upgrades, etc.)
+ * have been moved to ClustersTable.test.tsx since ClustersTable is now a separate component.
+ * This test file focuses on the ManagedClusters page component integration and props passing.
+ */
+
+import { cleanup, render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import {
@@ -13,49 +18,32 @@ import {
   managedClusterInfosState,
   managedClustersState,
 } from '../../../../atoms'
-import { nockDelete, nockIgnoreApiPaths, nockIgnoreRBAC, nockPostRequest, nockRBAC } from '../../../../lib/nock-util'
-import { rbacCreateTestHelper } from '../../../../lib/rbac-util'
-import {
-  clickBulkAction,
-  clickByLabel,
-  clickByText,
-  selectTableRow,
-  typeByText,
-  waitForNock,
-  waitForNocks,
-  waitForNotText,
-  waitForTestId,
-  waitForText,
-  getCSVExportSpies,
-  getCSVDownloadLink,
-  clickRowKebabAction,
-  clickByRole,
-} from '../../../../lib/test-util'
-import { ManagedCluster, ManagedClusterDefinition, ManagedClusterInfo, ResourceAttributes } from '../../../../resources'
+import { nockIgnoreApiPaths, nockIgnoreRBAC, nockPostRequest } from '../../../../lib/nock-util'
+import { waitForNock, waitForTestId } from '../../../../lib/test-util'
+import { ManagedCluster, ManagedClusterInfo } from '../../../../resources'
 import ManagedClusters from './ManagedClusters'
 import {
   mockCertificateSigningRequests,
   mockClusterDeployments,
   mockClusterManagementAddon,
-  mockManagedClusters,
-  mockManagedCluster0,
+  mockHostedClusters,
   mockManagedCluster6,
   mockManagedCluster7,
   mockManagedCluster8,
+  mockManagedCluster9,
   mockManagedClusterAddon,
-  mockManagedClusterInfos,
-  upgradeableMockManagedClusters,
-  mockClusterDeployment0,
-  mockManagedCluster1,
   mockManagedClusterInfo6,
   mockManagedClusterInfo7,
-  mockHostedClusters,
   mockManagedClusterInfo8,
-  mockManagedCluster9,
+  mockManagedClusterInfos,
+  mockManagedClusters,
 } from './ManagedClusters.sharedmocks'
 
-// Mock KubevirtProviderAlert component
+// Mock variables (must be declared before jest.mock calls)
 const mockKubevirtProviderAlert = jest.fn()
+const mockClustersTable = jest.fn()
+
+// Mock KubevirtProviderAlert component
 
 jest.mock('../../../../components/KubevirtProviderAlert', () => ({
   KubevirtProviderAlert: (props: any) => {
@@ -68,6 +56,43 @@ jest.mock('../../../../components/KubevirtProviderAlert', () => ({
         data-hide-alert-when-no-vms={props.hideAlertWhenNoVMsExists}
       >
         Mocked KubevirtProviderAlert
+      </div>
+    )
+  },
+}))
+
+// Mock ClustersTable component
+
+jest.mock('../../../../components/Clusters/ClustersTable', () => ({
+  ClustersTable: (props: any) => {
+    mockClustersTable(props)
+    return (
+      <div
+        id="clusters-table"
+        data-testid="clusters-table"
+        data-table-key={props.tableKey}
+        data-clusters-count={props.clusters?.length || 0}
+      >
+        <div data-testid="table-button-actions">
+          {props.tableButtonActions?.map((action: any) => (
+            <button
+              key={action.id}
+              data-testid={`action-${action.id}`}
+              disabled={action.isDisabled}
+              onClick={action.click}
+            >
+              {action.title}
+            </button>
+          ))}
+        </div>
+        <div data-testid="empty-state">{props.clusters?.length === 0 && props.emptyState}</div>
+        <div data-testid="cluster-list">
+          {props.clusters?.map((cluster: any) => (
+            <div key={cluster.metadata?.name} data-testid={`cluster-${cluster.metadata?.name}`}>
+              {cluster.metadata?.name}
+            </div>
+          ))}
+        </div>
       </div>
     )
   },
@@ -99,25 +124,50 @@ jest.mock('../../../../hooks/use-local-hub', () => ({
   useLocalHubName: jest.fn(() => 'local-cluster'),
 }))
 
-function getClusterCuratorCreateResourceAttributes(name: string) {
-  return {
-    resource: 'clustercurators',
-    verb: 'create',
-    group: 'cluster.open-cluster-management.io',
-    namespace: name,
-  } as ResourceAttributes
-}
-function getClusterCuratorPatchResourceAttributes(name: string) {
-  return {
-    resource: 'clustercurators',
-    verb: 'patch',
-    group: 'cluster.open-cluster-management.io',
-    namespace: name,
-  } as ResourceAttributes
-}
+// Mock other required components and hooks
+jest.mock('./components/useAllClusters', () => ({
+  useAllClusters: jest.fn(),
+}))
+
+jest.mock('../ClustersPage', () => ({
+  usePageContext: jest.fn(),
+}))
+
+jest.mock('./components/AddCluster', () => ({
+  AddCluster: () => <button data-testid="add-cluster">Add Cluster</button>,
+}))
+
+jest.mock('./components/OnboardingModal', () => ({
+  OnboardingModal: ({ open, close }: { open: boolean; close: () => void }) =>
+    open ? (
+      <button data-testid="onboarding-modal" onClick={close}>
+        Onboarding Modal
+      </button>
+    ) : null,
+}))
+
+// Mock navigation
+jest.mock('react-router-dom-v5-compat', () => ({
+  ...jest.requireActual('react-router-dom-v5-compat'),
+  useNavigate: () => jest.fn(),
+}))
+
+// Mock RBAC
+jest.mock('../../../../lib/rbac-util', () => ({
+  ...jest.requireActual('../../../../lib/rbac-util'),
+  canUser: jest.fn(() => ({ promise: Promise.resolve({ status: { allowed: true } }), abort: jest.fn() })),
+}))
 
 describe('Clusters Page', () => {
   beforeEach(async () => {
+    // Clear mocks and DOM
+    jest.clearAllMocks()
+    cleanup()
+
+    // Setup mocks
+    const { useAllClusters } = jest.requireMock('./components/useAllClusters')
+    useAllClusters.mockReturnValue(mockManagedClusters)
+
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
     const metricNock = nockPostRequest('/metrics?clusters', {})
@@ -138,103 +188,65 @@ describe('Clusters Page', () => {
       </RecoilRoot>
     )
     await waitForNock(metricNock)
-    await waitForText(mockManagedCluster0.metadata.name!, true)
+    await waitForTestId('clusters-table')
   })
 
-  test('should render node column', () => {
-    waitForText('Add-ons')
-    waitForTestId('add-ons')
-  })
+  test('should render ClustersTable component with correct props', async () => {
+    await waitForTestId('clusters-table')
 
-  test('should be able to delete cluster using bulk action', async () => {
-    await selectTableRow(1)
-    await clickBulkAction('Destroy clusters')
-    await typeByText('Confirm by typing "confirm" below:', 'confirm')
-    const deleteNocks: Scope[] = [nockDelete(mockManagedCluster0), nockDelete(mockClusterDeployment0)]
-    await clickByText('Destroy')
-    await waitForNocks(deleteNocks)
-  })
-
-  test('should be able to delete cluster using row action', async () => {
-    await clickRowKebabAction(1, 'Destroy cluster')
-    await typeByText(
-      `Confirm by typing "${mockManagedCluster0.metadata!.name!}" below:`,
-      mockManagedCluster0.metadata!.name!
+    // Verify ClustersTable was called with correct props
+    expect(mockClustersTable).toHaveBeenCalledWith(
+      expect.objectContaining({
+        clusters: expect.any(Array),
+        tableKey: 'managedClusters',
+        tableButtonActions: expect.arrayContaining([
+          expect.objectContaining({
+            id: 'createCluster',
+            title: 'Create cluster',
+          }),
+          expect.objectContaining({
+            id: 'importCluster',
+            title: 'Import cluster',
+          }),
+        ]),
+        emptyState: expect.any(Object),
+      })
     )
-    const deleteNocks: Scope[] = [nockDelete(mockManagedCluster0), nockDelete(mockClusterDeployment0)]
-    await clickByText('Destroy')
-    await waitForText('Destroying')
-    await waitForNocks(deleteNocks)
   })
 
-  test('should be able to detach cluster using row action', async () => {
-    await clickRowKebabAction(1, 'Detach cluster')
-    await typeByText(
-      `Confirm by typing "${mockManagedCluster0.metadata!.name!}" below:`,
-      mockManagedCluster0.metadata!.name!
+  test('should pass clusters data to ClustersTable', async () => {
+    await waitForTestId('clusters-table')
+
+    // Verify that the correct number of clusters is passed
+    expect(mockClustersTable).toHaveBeenCalledWith(
+      expect.objectContaining({
+        clusters: expect.arrayContaining(mockManagedClusters),
+      })
     )
-    const deleteNocks: Scope[] = [nockDelete(mockManagedCluster0)]
-    await clickByText('Detach')
-    await waitForText('Detaching')
-    await waitForNocks(deleteNocks)
   })
 
-  test('should be able to detach cluster using bulk action', async () => {
-    await selectTableRow(2)
-    await clickBulkAction('Detach clusters')
-    await typeByText('Confirm by typing "confirm" below:', 'confirm')
-    const deleteNocks: Scope[] = [nockDelete(mockManagedCluster1)]
-    await clickByText('Detach')
-    await waitForNocks(deleteNocks)
-  })
+  test('should render table button actions', async () => {
+    await waitForTestId('clusters-table')
 
-  test('overflow menu should hide upgrade option if no available upgrade', async () => {
-    await clickByLabel('Actions', 2)
-    await waitForNotText('Upgrade cluster')
-  })
-  test('overflow menu should hide channel select option if no available channels', async () => {
-    await clickByLabel('Actions', 2)
-    await waitForNotText('Select channel')
-  })
-
-  test('overflow menu should hide upgrade and channel select options if currently upgrading', async () => {
-    await clickByLabel('Actions', 5)
-    await waitForNotText('Upgrade cluster')
-    await waitForNotText('Select channel')
-  })
-
-  test('overflow menu should allow upgrade if has available upgrade', async () => {
-    await clickByLabel('Actions', 4)
-    await clickByRole('menuitem', { name: 'Upgrade cluster' })
-    await waitForText('Current version')
-  })
-
-  test('overflow menu should allow channel select if has available channels', async () => {
-    await clickByLabel('Actions', 4)
-    await clickByRole('menuitem', { name: 'Select channel' })
-    await waitForText('Current channel')
-  })
-
-  test('batch upgrade support when upgrading multiple clusters', async () => {
-    await selectTableRow(1)
-    await selectTableRow(2)
-    await selectTableRow(3)
-    await selectTableRow(4)
-    await clickBulkAction('Upgrade clusters')
-    await waitForText(`Current version`)
-  })
-  test('batch select channel support when updating multiple clusters', async () => {
-    await selectTableRow(1)
-    await selectTableRow(2)
-    await selectTableRow(3)
-    await selectTableRow(4)
-    await clickBulkAction('Select channels')
-    await waitForText('Current channel')
+    // Verify that the table button actions are passed correctly
+    expect(mockClustersTable).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tableButtonActions: expect.arrayContaining([
+          expect.objectContaining({
+            id: 'createCluster',
+            title: 'Create cluster',
+          }),
+          expect.objectContaining({
+            id: 'importCluster',
+            title: 'Import cluster',
+          }),
+        ]),
+      })
+    )
   })
 
   test('should render KubevirtProviderAlert component with correct props', async () => {
-    // Wait for the component to be rendered
-    await waitForText(mockManagedCluster0.metadata.name!, true)
+    await waitForTestId('clusters-table')
 
     // The mock should have been called with the expected props
     expect(mockKubevirtProviderAlert).toHaveBeenCalledWith(
@@ -247,18 +259,64 @@ describe('Clusters Page', () => {
   })
 })
 
-describe('Clusters Page RBAC', () => {
-  test('should perform RBAC checks', async () => {
+describe('Clusters Page Empty State', () => {
+  test('should render empty state when no clusters', async () => {
+    // Clear mocks and DOM
+    jest.clearAllMocks()
+    cleanup()
+
+    // Setup mocks for empty state
+    const { useAllClusters } = jest.requireMock('./components/useAllClusters')
+    useAllClusters.mockReturnValue([])
+
+    nockIgnoreRBAC()
     nockIgnoreApiPaths()
     const metricNock = nockPostRequest('/metrics?clusters', {})
-    const rbacCreateManagedClusterNock = nockRBAC(rbacCreateTestHelper(ManagedClusterDefinition))
-    const upgradeRBACNocks: Scope[] = upgradeableMockManagedClusters.reduce((prev, mockManagedCluster) => {
-      prev.push(
-        nockRBAC(getClusterCuratorPatchResourceAttributes(mockManagedCluster.metadata.name!)),
-        nockRBAC(getClusterCuratorCreateResourceAttributes(mockManagedCluster.metadata.name!))
-      )
-      return prev
-    }, [] as Scope[])
+
+    // Render with empty clusters
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(managedClustersState, [])
+          snapshot.set(clusterDeploymentsState, [])
+          snapshot.set(managedClusterInfosState, [])
+          snapshot.set(certificateSigningRequestsState, [])
+          snapshot.set(managedClusterAddonsState, {})
+          snapshot.set(clusterManagementAddonsState, [])
+        }}
+      >
+        <MemoryRouter>
+          <ManagedClusters />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    await waitForNock(metricNock)
+    await waitForTestId('clusters-table')
+
+    // Verify that empty clusters array is passed
+    expect(mockClustersTable).toHaveBeenCalledWith(
+      expect.objectContaining({
+        clusters: [],
+      })
+    )
+  })
+})
+
+describe('Clusters Page RBAC', () => {
+  test('should render component with RBAC restrictions', async () => {
+    // Setup mocks
+    const { useAllClusters } = jest.requireMock('./components/useAllClusters')
+    useAllClusters.mockReturnValue(mockManagedClusters)
+
+    // Mock RBAC to return false (no permissions)
+    const { canUser } = jest.requireMock('../../../../lib/rbac-util')
+    canUser.mockReturnValue({ promise: Promise.resolve({ status: { allowed: false } }), abort: jest.fn() })
+
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+    const metricNock = nockPostRequest('/metrics?clusters', {})
+
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -273,17 +331,29 @@ describe('Clusters Page RBAC', () => {
         </MemoryRouter>
       </RecoilRoot>
     )
-    await waitForText(mockManagedCluster0.metadata.name!, true)
-    await waitForNocks([metricNock, rbacCreateManagedClusterNock, ...upgradeRBACNocks])
+    await waitForNock(metricNock)
+    await waitForTestId('clusters-table')
+
+    // Verify that ClustersTable is rendered even with RBAC restrictions
+    expect(mockClustersTable).toHaveBeenCalledWith(
+      expect.objectContaining({
+        clusters: expect.any(Array),
+        tableKey: 'managedClusters',
+      })
+    )
   })
 })
 
 describe('Clusters Page hypershift', () => {
   test('should render hypershift clusters', async () => {
+    // Setup mocks
+    const hypershiftMockManagedClusters: ManagedCluster[] = [mockManagedCluster6, mockManagedCluster7]
+    const { useAllClusters } = jest.requireMock('./components/useAllClusters')
+    useAllClusters.mockReturnValue(hypershiftMockManagedClusters)
+
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
     const metricNock = nockPostRequest('/metrics?clusters', {})
-    const hypershiftMockManagedClusters: ManagedCluster[] = [mockManagedCluster6, mockManagedCluster7]
     const hypershiftMockManagedClusterInfos: ManagedClusterInfo[] = [mockManagedClusterInfo6, mockManagedClusterInfo7]
     render(
       <RecoilRoot
@@ -301,16 +371,20 @@ describe('Clusters Page hypershift', () => {
       </RecoilRoot>
     )
     await waitForNock(metricNock)
-    await waitForText(mockManagedCluster6.metadata.name!, true)
+    await waitForTestId('clusters-table')
   })
 })
 
 describe('Clusters Page regional hub cluster', () => {
   test('should render regional hub clusters', async () => {
+    // Setup mocks
+    const mockRegionalHubClusters: ManagedCluster[] = [mockManagedCluster8]
+    const { useAllClusters } = jest.requireMock('./components/useAllClusters')
+    useAllClusters.mockReturnValue(mockRegionalHubClusters)
+
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
     const metricNock = nockPostRequest('/metrics?clusters', {})
-    const mockRegionalHubClusters: ManagedCluster[] = [mockManagedCluster8]
     const mockRegionalHubClusterInfos: ManagedClusterInfo[] = [mockManagedClusterInfo8]
     render(
       <RecoilRoot
@@ -327,14 +401,17 @@ describe('Clusters Page regional hub cluster', () => {
       </RecoilRoot>
     )
     await waitForNock(metricNock)
-    await waitForText(mockManagedCluster8.metadata.name!, true)
-    await waitForText('Hub')
+    await waitForTestId('clusters-table')
   })
   test('should treat regional hub clusters as standalone if addon unreachable', async () => {
+    // Setup mocks
+    const mockRegionalHubClustersUnreachable: ManagedCluster[] = [mockManagedCluster9]
+    const { useAllClusters } = jest.requireMock('./components/useAllClusters')
+    useAllClusters.mockReturnValue(mockRegionalHubClustersUnreachable)
+
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
     const metricNock = nockPostRequest('/metrics?clusters', {})
-    const mockRegionalHubClustersUnreachable: ManagedCluster[] = [mockManagedCluster9]
     const mockRegionalHubClusterInfosUnreachable: ManagedClusterInfo[] = [mockManagedClusterInfo8]
     render(
       <RecoilRoot
@@ -350,18 +427,18 @@ describe('Clusters Page regional hub cluster', () => {
       </RecoilRoot>
     )
     await waitForNock(metricNock)
-    await waitForText(mockManagedCluster8.metadata.name!, true)
-    await waitForNotText('Hub')
-    await waitForText('Standalone')
+    await waitForTestId('clusters-table')
   })
 })
 
 describe('Clusters Page export', () => {
-  beforeEach(async () => {
+  test('export functionality is handled by ClustersTable component', async () => {
+    // Setup mocks
+    const { useAllClusters } = jest.requireMock('./components/useAllClusters')
+    useAllClusters.mockReturnValue(mockManagedClusters)
+
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
-    window.URL.createObjectURL = jest.fn()
-    window.URL.revokeObjectURL = jest.fn()
     const metricNock = nockPostRequest('/metrics?clusters', {})
     render(
       <RecoilRoot
@@ -380,29 +457,14 @@ describe('Clusters Page export', () => {
       </RecoilRoot>
     )
     await waitForNock(metricNock)
-    await waitForText(mockManagedCluster0.metadata.name!, true)
-  })
-  test('export button should produce a file for download', async () => {
-    const { blobConstructorSpy, createElementSpy } = getCSVExportSpies()
+    await waitForTestId('clusters-table')
 
-    // download for subscriptions
-    await clickByLabel('export-search-result')
-    await clickByText('Export all to CSV')
-
-    expect(blobConstructorSpy).toHaveBeenCalledWith(
-      [
-        'Name,Namespace,Status,Infrastructure,Control plane type,Distribution version,Labels,Nodes,Add-ons,Creation date\n' +
-          '"managed-cluster-0-clusterset","managed-cluster-0-clusterset","Creating","Amazon Web Services","Standalone",-,"\'cluster.open-cluster-management.io/clusterset\':\'test-cluster-set\'","healthy: 0, danger: 0, unknown: 0","healthy: 0, danger: 0, in progress: 0, unknown: 0",-\n' +
-          '"managed-cluster-6-no-managed-cluster","managed-cluster-6-no-managed-cluster","Detached","Amazon Web Services","Standalone",-,-,"healthy: 0, danger: 0, unknown: 0","healthy: 0, danger: 0, in progress: 0, unknown: 0",-\n' +
-          '"managed-cluster-1","managed-cluster-1","Failed","Google Cloud Platform","Standalone",-,"\'cloud\':\'Google\'","healthy: 0, danger: 0, unknown: 0","healthy: 1, danger: 0, in progress: 0, unknown: 0",-\n' +
-          '"managed-cluster-2-no-upgrade","managed-cluster-2-no-upgrade","Ready",-,"Standalone","OpenShift 1.2.3",-,"healthy: 0, danger: 0, unknown: 0","healthy: 0, danger: 0, in progress: 0, unknown: 0",-\n' +
-          '"managed-cluster-3-upgrade-available","managed-cluster-3-upgrade-available","Ready",-,"Standalone","OpenShift 1.2.3",-,"healthy: 0, danger: 0, unknown: 0","healthy: 0, danger: 0, in progress: 0, unknown: 0",-\n' +
-          '"managed-cluster-4-upgrading","managed-cluster-4-upgrading","Ready",-,"Standalone","OpenShift 1.2.3",-,"healthy: 0, danger: 0, unknown: 0","healthy: 0, danger: 0, in progress: 0, unknown: 0",-\n' +
-          '"managed-cluster-5-upgrade-available","managed-cluster-5-upgrade-available","Ready",-,"Standalone","OpenShift 1.2.3",-,"healthy: 1, danger: 1, unknown: 1","healthy: 0, danger: 0, in progress: 0, unknown: 0",-',
-      ],
-      { type: 'text/csv' }
+    // Verify that ClustersTable is rendered and will handle export functionality
+    expect(mockClustersTable).toHaveBeenCalledWith(
+      expect.objectContaining({
+        clusters: expect.any(Array),
+        tableKey: 'managedClusters',
+      })
     )
-
-    expect(getCSVDownloadLink(createElementSpy)?.value.download).toMatch(/^managedclusters-[\d]+\.csv$/)
   })
 })

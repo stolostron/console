@@ -52,8 +52,8 @@ import TemplateSummaryModal from '../../../../../../components/TemplateSummaryMo
 import { CredentialsForm } from '../../../../../Credentials/CredentialsForm'
 import { useProjects } from '../../../../../../hooks/useProjects'
 import { ClusterAction, clusterSupportsAction } from '../../utils/cluster-actions'
-import { getControlPlaneString } from '../../ManagedClusters'
 import { useLocalHubName } from '../../../../../../hooks/use-local-hub'
+import { getControlPlaneString } from '../../../../../../components/Clusters'
 
 function getAIClusterProperties(
   clusterDeployment: ClusterDeployment,
