@@ -3,7 +3,7 @@ import { PageSection } from '@patternfly/react-core'
 import { GroupsTable } from './GroupsTable'
 
 const GroupsTablePage = () => (
-  <PageSection>
+  <PageSection hasBodyWrapper={false}>
     <GroupsTable hiddenColumns={['radio']} />
   </PageSection>
 )

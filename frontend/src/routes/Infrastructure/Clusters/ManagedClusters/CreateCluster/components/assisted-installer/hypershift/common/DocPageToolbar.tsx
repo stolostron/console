@@ -11,7 +11,7 @@ type DocPageProps = {
 const DocPageToolbar: React.FC<DocPageProps> = ({ onCancel, onBack }) => {
   const { t } = useTranslation()
   return (
-    <PageSection>
+    <PageSection hasBodyWrapper={false}>
       <Toolbar>
         <ToolbarGroup>
           <ToolbarItem>

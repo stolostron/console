@@ -24,7 +24,7 @@ describe('ClusterSetAccessLevel', () => {
 
     const panel = container.querySelector('.pf-v5-c-panel')
     expect(panel).toHaveStyle({
-      backgroundColor: 'var(--pf-v5-global--BackgroundColor--200)',
+      backgroundColor: 'var(--pf-t--global--background--color--secondary--default)',
     })
   })
 

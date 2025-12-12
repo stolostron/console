@@ -347,7 +347,7 @@ function RenderDropDownAndNewTab(props: Readonly<DropDownAndNewTabProps>) {
   }
 
   return (
-    <PageSection>
+    <PageSection hasBodyWrapper={false}>
       <AcmActionGroup>
         <SavedSearchDropdown selectedSearch={selectedSearch} savedSearchQueries={savedSearchQueries} />
         <AcmButton
