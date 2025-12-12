@@ -111,7 +111,17 @@ const bigStrings: FifoSet<string> = new FifoSet(200)
 
 export async function deflateResource(resource: IResource, dictionary: Dictionary): Promise<Buffer> {
   const res = compressResource(resource as UncompressedResourceType, dictionary)
-  return await promisify(deflateRaw)(JSON.stringify(res))
+  let buffer
+  try {
+    buffer = await promisify(deflateRaw)(JSON.stringify(res))
+  } catch (err: unknown) {
+    logger.error({
+      msg: 'Error from deflateRaw during deflateResource',
+      error: err instanceof Error ? err.message : err,
+    })
+    throw err
+  }
+  return buffer
 }
 
 function compressResource(resource: UncompressedResourceType, dictionary: Dictionary): CompressedResourceType {
@@ -185,7 +195,16 @@ function compressResource(resource: UncompressedResourceType, dictionary: Dictio
 }
 
 export async function inflateResource(buffer: Buffer, dictionary: Dictionary): Promise<IResource> {
-  const inflated = (await promisify(inflateRaw)(buffer)).toString()
+  let inflated
+  try {
+    inflated = (await promisify(inflateRaw)(buffer)).toString()
+  } catch (err: unknown) {
+    logger.error({
+      msg: 'Error from inflateRaw during inflateResource',
+      error: err instanceof Error ? err.message : err,
+    })
+    throw err
+  }
   const res = JSON.parse(inflated) as CompressedResourceType
   return decompressResource(res, dictionary) as IResource
 }
