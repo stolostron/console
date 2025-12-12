@@ -320,7 +320,7 @@ describe('AcmTable', () => {
   test('renders without actions', () => {
     const { container } = render(<Table useTableActions={false} useRowActions={false} />)
     expect(container.querySelector('table')).toBeInTheDocument()
-    expect(container.querySelector('table .pf-v6-c-table__action buton')).toBeNull()
+    expect(container.querySelector('table .pf-v6-c-table__action button')).toBeNull()
   })
   test('renders actions given an actionResolver', () => {
     const tableActionResolver = (item: IExampleData) => {
@@ -498,21 +498,22 @@ describe('AcmTable', () => {
     expect(bulkDeleteAction).toHaveBeenCalledWith(defaultSortedItems.slice(0, 1))
   })
 
-  test('can support table actions with multiple selections', () => {
-    const { getByLabelText, getByText, getAllByRole, queryAllByText, container } = render(
-      <Table useTableActions={true} />
-    )
+  test('can support table actions with multiple selections', async () => {
+    const { getByLabelText, getByText, getAllByRole, queryAllByText } = render(<Table useTableActions={true} />)
 
     userEvent.click(getByLabelText('Select'))
-    userEvent.click(container.querySelectorAll('.pf-v6-c-menu__item-main')[1]) // Select page
+    await waitFor(() => expect(getByText(/Select page/i)).toBeInTheDocument())
+    userEvent.click(getByText(/Select page/i))
     expect(getByText('10 selected')).toBeInTheDocument()
 
     userEvent.click(getByLabelText('Select'))
-    userEvent.click(container.querySelectorAll('.pf-v6-c-menu__item-main')[2]) // Select all
+    await waitFor(() => expect(getByText(/Select all/i)).toBeInTheDocument())
+    userEvent.click(getByText(/Select all/i))
     expect(getByText('105 selected')).toBeInTheDocument()
 
     userEvent.click(getByLabelText('Select'))
-    userEvent.click(container.querySelectorAll('.pf-v6-c-menu__item-main')[0]) // Select None
+    await waitFor(() => expect(getByText(/Select none/i)).toBeInTheDocument())
+    userEvent.click(getByText(/Select none/i))
     expect(queryAllByText('105 selected')).toHaveLength(0)
 
     userEvent.click(getAllByRole('checkbox')[0]) // Select all by checkbox
@@ -1009,7 +1010,7 @@ describe('AcmTable', () => {
   })
 
   test('renders with filtering and successfully deletes selected filters', async () => {
-    const { container, getAllByText, getByText, getByTestId, getAllByLabelText, getByLabelText } = render(
+    const { container, getAllByText, getByText, getByTestId, getByLabelText } = render(
       <Table
         filters={[
           {
@@ -1041,9 +1042,16 @@ describe('AcmTable', () => {
     userEvent.click(getByText('Filter'))
     userEvent.click(getByTestId('gender-male'))
     userEvent.click(getByTestId('gender-female'))
-    userEvent.click(getAllByLabelText('close')[1])
+    const labelItems = container.querySelectorAll('.pf-v6-c-label-group__list-item')
+    expect(labelItems.length).toBe(2)
+    // Find close buttons within label items - PatternFly uses button elements with TimesIcon
+    const closeButtons = Array.from(labelItems).map((item) => item.querySelector('button'))
+    expect(closeButtons.length).toBe(2)
+    expect(closeButtons[0]).toBeTruthy()
+    expect(closeButtons[1]).toBeTruthy()
+    userEvent.click(closeButtons[1]!)
     expect(container.querySelectorAll('.pf-v6-c-label-group__list-item')).toHaveLength(1)
-    userEvent.click(getAllByLabelText('close')[0])
+    userEvent.click(closeButtons[0]!)
     expect(container.querySelectorAll('.pf-v6-c-label-group__list-item')).toHaveLength(0)
 
     // test deleting all selected filters

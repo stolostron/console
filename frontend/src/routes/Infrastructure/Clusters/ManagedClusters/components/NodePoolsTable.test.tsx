@@ -18,6 +18,11 @@ import {
 import { ClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 import NodePoolsTable from './NodePoolsTable'
 
+jest.mock('../../../../../lib/rbac-util', () => ({
+  ...jest.requireActual('../../../../../lib/rbac-util'),
+  useIsAnyNamespaceAuthorized: jest.fn(() => true),
+}))
+
 const mockHostedCluster0: HostedClusterK8sResource = {
   apiVersion: 'hypershift.openshift.io/v1alpha1',
   kind: 'HostedCluster',
@@ -808,9 +813,16 @@ describe('NodePoolsTable', () => {
   it('should render NodePoolsTable', async () => {
     await waitForText(nodePools[0].metadata.name)
     expect(screen.getByTestId('addNodepool')).toBeTruthy()
-    await waitFor(() => expect(screen.getByTestId('addNodepool')).toBeInTheDocument(), {
-      timeout: 5000,
-    })
+    await waitFor(
+      () => {
+        const addButton = screen.getByTestId('addNodepool')
+        expect(addButton).toBeInTheDocument()
+        expect(addButton).not.toBeDisabled()
+      },
+      {
+        timeout: 5000,
+      }
+    )
     userEvent.click(screen.getByTestId('addNodepool'))
     expect(screen.queryAllByText('Node pool name').length).toBe(1)
     await waitForText('Cancel')
