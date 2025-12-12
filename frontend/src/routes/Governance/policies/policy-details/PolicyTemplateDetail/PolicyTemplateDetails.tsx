@@ -15,7 +15,7 @@ import {
   AcmAlert,
   AcmDescriptionList,
   AcmTable,
-  AcmTablePaginationContextProvider,
+  AcmTableStateProvider,
   compareStrings,
   IAcmTableColumn,
   ListItems,
@@ -436,7 +436,7 @@ export function PolicyTemplateDetails() {
         <Card>
           <CardTitle>{isVAPB ? t('Parameter resources') : t('Related resources')}</CardTitle>
           <CardBody>
-            <AcmTablePaginationContextProvider localStorageKey="grc-template-details">
+            <AcmTableStateProvider localStorageKey="grc-template-details">
               {isKyverno ? (
                 <KyvernoRelatedResources {...{ name, namespace, template, relatedObjects, violationColumn }} />
               ) : (
@@ -452,7 +452,7 @@ export function PolicyTemplateDetails() {
                   perPageOptions={isKyverno ? [] : undefined}
                 />
               )}
-            </AcmTablePaginationContextProvider>
+            </AcmTableStateProvider>
           </CardBody>
         </Card>
       </PageSection>

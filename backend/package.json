@@ -36,10 +36,10 @@
     "pino": "7.11.0",
     "pluralize": "8.0.0",
     "prom-client": "^14.2.0",
-    "raw-body": "2.5.2"
+    "raw-body": "2.5.3"
   },
   "devDependencies": {
-    "@types/eslint": "8.4.5",
+    "@types/eslint": "8.56.12",
     "@types/event-stream": "4.0.6",
     "@types/get-value": "3.0.5",
     "@types/jest": "27.5.2",
@@ -49,7 +49,7 @@
     "@types/pluralize": "^0.0.33",
     "@typescript-eslint/eslint-plugin": "8.47.0",
     "@typescript-eslint/parser": "^8.48.0",
-    "concurrently": "7.2.2",
+    "concurrently": "7.6.0",
     "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",

@@ -6,7 +6,7 @@ import { useMemo } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { Policy, PolicyStatusDetails } from '../../../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
-import { AcmEmptyState, AcmTable, AcmTablePaginationContextProvider, compareStrings } from '../../../../ui-components'
+import { AcmEmptyState, AcmTable, AcmTableStateProvider, compareStrings } from '../../../../ui-components'
 import { getISOStringTimestamp } from '../../../../resources/utils'
 import AcmTimestamp from '../../../../lib/AcmTimestamp'
 
@@ -151,7 +151,7 @@ export function PolicyDetailsHistory(props: {
     <PageSection hasBodyWrapper={false}>
       <Title headingLevel="h3">{clusterName}</Title>
       <Title headingLevel="h4">{t('Template: {{templateName}}', { templateName })}</Title>
-      <AcmTablePaginationContextProvider localStorageKey="grc-status-view">
+      <AcmTableStateProvider localStorageKey="grc-status-view">
         <AcmTable<HistoryTableData>
           showExportButton
           exportFilePrefix={`${policyName}-${policyNamespace}-${clusterName}-${templateName}`}
@@ -170,7 +170,7 @@ export function PolicyDetailsHistory(props: {
           }}
           fuseThreshold={0}
         />
-      </AcmTablePaginationContextProvider>
+      </AcmTableStateProvider>
     </PageSection>
   )
 }

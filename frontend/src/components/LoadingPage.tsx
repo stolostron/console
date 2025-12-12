@@ -11,6 +11,7 @@ import {
   Spinner,
   Title,
 } from '@patternfly/react-core'
+import { useTranslation } from '../lib/acm-i18next'
 
 const max = css({
   maxWidth: '335px',
@@ -22,6 +23,7 @@ export function LoadingPage(props: {
   primaryAction?: React.ReactNode
   secondaryActions?: React.ReactNode
 }) {
+  const { t } = useTranslation()
   return (
     <>
       <PageSection hasBodyWrapper={false} isFilled>
@@ -30,7 +32,7 @@ export function LoadingPage(props: {
             <EmptyStateFooter>
               <div className={max}>
                 <Title size="lg" headingLevel="h4">
-                  {props.title ?? 'Loading'}
+                  {props.title ?? t('Loading')}
                 </Title>
                 <EmptyStateBody>{props.message}</EmptyStateBody>
               </div>

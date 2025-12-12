@@ -2,24 +2,24 @@
 import { Navigate, Route, Routes } from 'react-router-dom-v5-compat'
 import { NavigationPath, createRoutePathFunction } from '../../../NavigationPath'
 import IdentitiesPage from './IdentitiesPage'
-import { UsersTable } from './Users/UsersTable'
-import { GroupsTable } from './Groups/GroupsTable'
 import { ServiceAccounts } from './ServiceAccounts/ServiceAccounts'
-import { UserPage } from './Users/UserPage'
 import { UserDetails } from './Users/UserDetails'
+import { UserPage } from './Users/UserPage'
 import { UserYaml } from './Users/UserYaml'
 // import { RoleAssignments } from './../Roles/RoleAssignments'
-import { UserRoleAssignments } from './Users/UserRoleAssignments'
-import { UserGroups } from './Users/UserGroups'
-import { GroupPage } from './Groups/GroupPage'
 import { GroupDetails } from './Groups/GroupDetails'
-import { GroupYaml } from './Groups/GroupYaml'
+import { GroupPage } from './Groups/GroupPage'
 import { GroupRoleAssignments } from './Groups/GroupRoleAssignments'
+import { GroupsTablePage } from './Groups/GroupsTablePage'
 import { GroupUsers } from './Groups/GroupUsers'
+import { GroupYaml } from './Groups/GroupYaml'
 import { ServiceAccountDetail } from './ServiceAccounts/ServiceAccountDetail'
-import { ServiceAccountYaml } from './ServiceAccounts/ServiceAccountYaml'
-import { ServiceAccountRoleAssignments } from './ServiceAccounts/ServiceAccountRoleAssignments'
 import { ServiceAccountGroups } from './ServiceAccounts/ServiceAccountGroups'
+import { ServiceAccountRoleAssignments } from './ServiceAccounts/ServiceAccountRoleAssignments'
+import { ServiceAccountYaml } from './ServiceAccounts/ServiceAccountYaml'
+import { UserGroups } from './Users/UserGroups'
+import { UserRoleAssignments } from './Users/UserRoleAssignments'
+import { UsersTablePage } from './Users/UsersTablePage'
 
 const identitiesChildPath = createRoutePathFunction(NavigationPath.identities)
 
@@ -77,8 +77,8 @@ export default function IdentitiesManagement() {
 
       {/* Main page with tabs with Users, Groups, and Service Accounts */}
       <Route element={<IdentitiesPage />}>
-        <Route path={identitiesChildPath(NavigationPath.identitiesUsers)} element={<UsersTable />} />
-        <Route path={identitiesChildPath(NavigationPath.identitiesGroups)} element={<GroupsTable />} />
+        <Route path={identitiesChildPath(NavigationPath.identitiesUsers)} element={<UsersTablePage />} />
+        <Route path={identitiesChildPath(NavigationPath.identitiesGroups)} element={<GroupsTablePage />} />
         <Route path={identitiesChildPath(NavigationPath.identitiesServiceAccounts)} element={<ServiceAccounts />} />
       </Route>
 

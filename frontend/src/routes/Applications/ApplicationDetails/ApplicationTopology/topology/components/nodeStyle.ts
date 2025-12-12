@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import capitalize from 'lodash/capitalize'
 import get from 'lodash/get'
+import { NodeStatus } from '@patternfly/react-topology'
 import { typeToIconMap } from './nodeIconsMap'
 import { statusToIconMap } from './nodeStatusIconMap'
 import './nodeStatusIcons.css'
@@ -10,9 +11,6 @@ export const NODE_HEIGHT = 65
 export const X_SPACER = 80
 export const Y_SPACER = 60
 const MAX_LABEL_WIDTH = 18
-
-// 4.86 '@patternfly/react-topology'
-import { NodeStatus } from './future/types'
 
 export const getNodeStyle = (
   d: {

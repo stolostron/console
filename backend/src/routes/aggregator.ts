@@ -25,8 +25,12 @@ export function stopAggregating(): void {
   stopAggregatingApplications()
 }
 
-export function polledAggregation(options: IWatchOptions, items: IResource[], shouldPostProcess: boolean): void {
-  polledApplicationAggregation(options, items, shouldPostProcess)
+export async function polledAggregation(
+  options: IWatchOptions,
+  items: IResource[],
+  shouldPostProcess: boolean
+): Promise<void> {
+  await polledApplicationAggregation(options, items, shouldPostProcess)
 }
 
 export async function aggregate(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {

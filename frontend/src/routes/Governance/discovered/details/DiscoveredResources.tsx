@@ -11,7 +11,7 @@ import { ReactNode, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { generatePath, Link } from 'react-router-dom-v5-compat'
 import { NavigationPath } from '../../../../NavigationPath'
-import { AcmTable, AcmTablePaginationContextProvider, compareStrings, IAcmTableColumn } from '../../../../ui-components'
+import { AcmTable, AcmTableStateProvider, compareStrings, IAcmTableColumn } from '../../../../ui-components'
 import { DiffModal } from '../../components/DiffModal'
 
 import { useDiscoveredDetailsContext } from './DiscoveredPolicyDetailsPage'
@@ -363,7 +363,7 @@ export function DiscoveredResources() {
             {apiGroup === 'constraints.gatekeeper.sh' && gatekeeperTooltip}
           </CardTitle>
           <CardBody>
-            <AcmTablePaginationContextProvider localStorageKey="grc-discovered-resources">
+            <AcmTableStateProvider localStorageKey="grc-discovered-resources">
               <AcmTable
                 items={relatedObjects}
                 emptyState={emptyState}
@@ -374,7 +374,7 @@ export function DiscoveredResources() {
                   direction: 'asc',
                 }}
               />
-            </AcmTablePaginationContextProvider>
+            </AcmTableStateProvider>
           </CardBody>
         </Card>
       </PageSection>

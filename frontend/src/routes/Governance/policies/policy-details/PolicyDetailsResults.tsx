@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Icon, PageSection, Title, Tooltip } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
-import { AcmEmptyState, AcmTable, AcmTablePaginationContextProvider, compareStrings } from '../../../../ui-components'
+import { AcmEmptyState, AcmTable, AcmTableStateProvider, compareStrings } from '../../../../ui-components'
 import { ReactNode, useMemo } from 'react'
 import { Link, generatePath } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
@@ -310,7 +310,7 @@ export default function PolicyDetailsResults() {
   return (
     <PageSection hasBodyWrapper={false}>
       <Title headingLevel="h3">{t('Clusters')}</Title>
-      <AcmTablePaginationContextProvider localStorageKey="grc-status-view">
+      <AcmTableStateProvider localStorageKey="grc-status-view">
         <AcmTable<ResultsTableData>
           showExportButton
           exportFilePrefix={`${policy.metadata.name}-${policy.metadata.namespace}`}
@@ -335,7 +335,7 @@ export default function PolicyDetailsResults() {
           searchPlaceholder={t('Find clusters')}
           fuseThreshold={0}
         />
-      </AcmTablePaginationContextProvider>
+      </AcmTableStateProvider>
     </PageSection>
   )
 }
