@@ -52,6 +52,11 @@ describe('add credentials page', () => {
 
     await typeByTestId('credentialsName', providerConnection.metadata.name!)
     await selectByText('Select a namespace for the credential', providerConnection.metadata.namespace!)
+    // Confirm input value contains exactly the namespace
+    expect(screen.getByPlaceholderText<HTMLInputElement>('Select a namespace for the credential').value).toBe(
+      providerConnection.metadata.namespace!
+    )
+
     await typeByTestId('baseDomain', providerConnection.stringData?.baseDomain!)
     await clickByText('Next')
 
