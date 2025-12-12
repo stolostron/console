@@ -1196,6 +1196,23 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
             variant = SelectVariant.single
         }
       }
+
+      const renderSelectOption = (option: SelectOptionInput) => {
+        const content = option.text ?? option.value
+        // icon is included in the children rather than via SelectOption icon prop so that it displays in the toggle when selected
+        const children: ReactNode = option.icon
+          ? [
+              <span key={option.value} style={{ paddingRight: '8px' }}>
+                {option.icon}
+              </span>,
+              content,
+            ]
+          : content
+        return (
+          <SelectOption key={option.value} value={option.value} description={option.description} children={children} />
+        )
+      }
+
       return (
         <SelectWithToggle
           {...inputProps}
@@ -1208,24 +1225,10 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
           placeholderText={input.placeholder}
         >
           {input.type === 'Select' || input.type === 'Multiselect' || input.type === 'CreatableMultiselect'
-            ? input.options.map((option) => {
-                return (
-                  <SelectOption key={option.value} value={option.value} description={option.description}>
-                    {option.icon !== undefined && <span style={{ paddingRight: '8px' }}>{option.icon}</span>}
-                    {option.text ?? option.value}
-                  </SelectOption>
-                )
-              })
+            ? input.options.map((option) => renderSelectOption(option))
             : input.groups.map((group, index) => (
                 <SelectGroup key={index} label={group.group}>
-                  {group.options.map((option) => {
-                    return (
-                      <SelectOption key={option.value} value={option.value} description={option.description}>
-                        {option.icon !== undefined && <span style={{ paddingRight: '8px' }}>{option.icon}</span>}
-                        {option.text ?? option.value}
-                      </SelectOption>
-                    )
-                  })}
+                  {group.options.map((option) => renderSelectOption(option))}
                 </SelectGroup>
               ))}
         </SelectWithToggle>
