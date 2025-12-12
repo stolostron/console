@@ -1,13 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useState } from 'react'
+import { ButtonVariant } from '@patternfly/react-core'
 import { render, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
-import { AcmForm, AcmSubmit } from './AcmForm'
+import { useState } from 'react'
 import { AcmAlertGroup, AcmAlertProvider } from '../AcmAlert/AcmAlert'
 import { AcmTextInput } from '../AcmTextInput/AcmTextInput'
-import userEvent from '@testing-library/user-event'
-import { ButtonVariant } from '@patternfly/react-core'
+import { AcmForm, AcmSubmit } from './AcmForm'
 
 describe('AcmForm', () => {
   test('renders', () => {
@@ -60,7 +60,7 @@ describe('AcmForm', () => {
     getByText('Submit').click()
     expect(mockClickCallback).not.toHaveBeenCalled()
 
-    await waitFor(() => expect(getByText('Submit')).toHaveAttribute('disabled'))
+    await waitFor(() => expect(getByText('Submit').parentElement).toHaveAttribute('disabled'))
     expect(getByTestId('input')).toHaveAttribute('aria-invalid', 'true')
 
     userEvent.type(getByTestId('input'), 'Hello')

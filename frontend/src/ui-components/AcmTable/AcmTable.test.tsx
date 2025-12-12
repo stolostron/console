@@ -772,7 +772,7 @@ describe('AcmTable', () => {
     const { container } = render(<Table />)
     expect(
       container.querySelector(
-        '[data-ouia-component-type="PF5/TableRow"][data-ouia-component-id="25"] [data-label="First Name"]'
+        '[data-ouia-component-type="PF6/TableRow"][data-ouia-component-id="25"] [data-label="First Name"]'
       )
     ).toHaveTextContent('Arabela')
   })
@@ -979,15 +979,15 @@ describe('AcmTable', () => {
 
     // Filtering works
     userEvent.click(getByTestId('gender-male'))
-    expect(container.querySelectorAll('.pf-v6-c-chip-group__list-item')).toHaveLength(1)
+    expect(container.querySelectorAll('.pf-v6-c-label-group__list-item')).toHaveLength(1)
     userEvent.click(getByTestId('gender-female'))
-    expect(container.querySelectorAll('.pf-v6-c-chip-group__list-item')).toHaveLength(2)
+    expect(container.querySelectorAll('.pf-v6-c-label-group__list-item')).toHaveLength(2)
 
     // Unselect current options
     userEvent.click(getByTestId('gender-female'))
-    expect(container.querySelectorAll('.pf-v6-c-chip-group__list-item')).toHaveLength(1)
+    expect(container.querySelectorAll('.pf-v6-c-label-group__list-item')).toHaveLength(1)
     userEvent.click(getByTestId('gender-male'))
-    expect(container.querySelectorAll('.pf-v6-c-chip-group__list-item')).toHaveLength(0)
+    expect(container.querySelectorAll('.pf-v6-c-label-group__list-item')).toHaveLength(0)
   })
 
   test('render table with multiple sub rows', async () => {
@@ -1028,30 +1028,30 @@ describe('AcmTable', () => {
       />
     )
 
-    // Test deleting chip group
+    // Test deleting label group
     expect(getByText('Filter')).toBeInTheDocument()
     userEvent.click(getByText('Filter'))
     userEvent.click(getByTestId('gender-male'))
     userEvent.click(getByTestId('gender-female'))
-    userEvent.click(getByLabelText('Close chip group'))
-    expect(container.querySelectorAll('.pf-v6-c-chip-group__list-item')).toHaveLength(0)
+    userEvent.click(getByLabelText('Close label group'))
+    expect(container.querySelectorAll('.pf-v6-c-label-group__list-item')).toHaveLength(0)
 
-    // test deleting single chip
+    // test deleting single label
     expect(getByText('Filter')).toBeInTheDocument()
     userEvent.click(getByText('Filter'))
     userEvent.click(getByTestId('gender-male'))
     userEvent.click(getByTestId('gender-female'))
     userEvent.click(getAllByLabelText('close')[1])
-    expect(container.querySelectorAll('.pf-v6-c-chip-group__list-item')).toHaveLength(1)
+    expect(container.querySelectorAll('.pf-v6-c-label-group__list-item')).toHaveLength(1)
     userEvent.click(getAllByLabelText('close')[0])
-    expect(container.querySelectorAll('.pf-v6-c-chip-group__list-item')).toHaveLength(0)
+    expect(container.querySelectorAll('.pf-v6-c-label-group__list-item')).toHaveLength(0)
 
     // test deleting all selected filters
     expect(getByText('Filter')).toBeInTheDocument()
     userEvent.click(getByText('Filter'))
     userEvent.click(getByTestId('gender-male'))
     userEvent.click(getAllByText('Clear all filters')[0])
-    expect(container.querySelectorAll('.pf-v6-c-chip-group__list-item')).toHaveLength(0)
+    expect(container.querySelectorAll('.pf-v6-c-label-group__list-item')).toHaveLength(0)
   })
 
   test('renders a table with secondary filter', async () => {
@@ -1085,14 +1085,14 @@ describe('AcmTable', () => {
       />
     )
 
-    // Test deleting chip group
+    // Test deleting label group
     expect(getByText('Cluster')).toBeInTheDocument()
     userEvent.click(getByText('Cluster'))
     userEvent.click(getByTestId('cluster-cluster21'))
     userEvent.click(getByTestId('cluster-cluster31'))
-    expect(container.querySelectorAll('.pf-v6-c-chip-group__list-item')).toHaveLength(2)
-    userEvent.click(getByLabelText('Close chip group'))
-    expect(container.querySelectorAll('.pf-v6-c-chip-group__list-item')).toHaveLength(0)
+    expect(container.querySelectorAll('.pf-v6-c-label-group__list-item')).toHaveLength(2)
+    userEvent.click(getByLabelText('Close label group'))
+    expect(container.querySelectorAll('.pf-v6-c-label-group__list-item')).toHaveLength(0)
   })
 
   test('renders with customTableAction', () => {
