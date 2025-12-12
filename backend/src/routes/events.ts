@@ -5,8 +5,7 @@ import get from 'get-value'
 import got, { CancelError, HTTPError, TimeoutError } from 'got'
 import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import pluralize from 'pluralize'
-import { Stream } from 'stream'
-import { promisify } from 'util'
+import { pipeline } from 'node:stream/promises'
 import { createDictionary, deflateResource, inflateResource } from '../lib/compression'
 import { jsonPost } from '../lib/json-request'
 import { logger } from '../lib/logger'
@@ -19,7 +18,6 @@ import { polledAggregation } from './aggregator'
 import { getAppDict, ICompressedResource, ITransformedResource } from './aggregators/applications'
 
 const { map, split } = eventStream
-const pipeline = promisify(Stream.pipeline)
 
 export async function events(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
   const token = await getAuthenticatedToken(req, res)
@@ -440,15 +438,40 @@ async function watchKubernetesObjects(serviceAccountToken: string, options: IWat
           request,
           split('\n'),
           map(async (data: string) => {
-            const watchEvent = JSON.parse(data) as WatchEvent
+            let watchEvent
+            try {
+              watchEvent = JSON.parse(data) as WatchEvent
+            } catch (err: unknown) {
+              logger.error({
+                msg: 'JSON.parse failed',
+                error: err instanceof Error ? err.message : err,
+                data,
+                url,
+              })
+              return
+            }
             pruneResources(options, [watchEvent.object])
             switch (watchEvent.type) {
               case 'ADDED':
               case 'MODIFIED':
-                await cacheResource(watchEvent.object)
+                try {
+                  await cacheResource(watchEvent.object)
+                } catch (err: unknown) {
+                  logger.error({
+                    msg: 'cacheResource failed',
+                    error: err instanceof Error ? err.message : err,
+                  })
+                }
                 break
               case 'DELETED':
-                await deleteResource(watchEvent.object)
+                try {
+                  await deleteResource(watchEvent.object)
+                } catch (err: unknown) {
+                  logger.error({
+                    msg: 'deleteResource failed',
+                    error: err instanceof Error ? err.message : err,
+                  })
+                }
                 break
             }
 

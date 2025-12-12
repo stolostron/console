@@ -50,7 +50,11 @@ process.on('multipleResolves', (type: unknown, _promise, reason: unknown) => {
 })
 
 process.on('unhandledRejection', (reason, _promise) => {
-  logger.error({ msg: 'process unhandledRejection', reason })
+  logger.error({
+    msg: 'process unhandledRejection',
+    reason: reason instanceof Error ? reason.message : reason,
+    stack: reason instanceof Error ? reason.stack : undefined,
+  })
 })
 
 void start()
