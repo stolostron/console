@@ -2,12 +2,7 @@
 import { render } from '@testing-library/react'
 import { MemoryRouter, generatePath, Routes, Route } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import {
-  policiesState,
-  configurationPoliciesState,
-  operatorPoliciesState,
-  certificatePoliciesState,
-} from '../../../../../atoms'
+import { policiesState } from '../../../../../atoms'
 import {
   waitForText,
   clickByText,
@@ -15,10 +10,11 @@ import {
   getCSVExportSpies,
   getCSVDownloadLink,
 } from '../../../../../lib/test-util'
-import { Policy, ConfigurationPolicy, OperatorPolicy, CertificatePolicy } from '../../../../../resources'
+import { Policy } from '../../../../../resources'
 import { PolicyDetailsHistory } from './PolicyDetailsHistory'
 import { mockPendingPolicy } from '../../../governance.sharedMocks'
 import { NavigationPath } from '../../../../../NavigationPath'
+import * as PolicyTemplateDetailsPage from './PolicyTemplateDetailsPage'
 
 const rootPolicy: Policy = {
   apiVersion: 'policy.open-cluster-management.io/v1',
@@ -109,8 +105,18 @@ const policy0: Policy = {
 
 export const mockPolicy: Policy[] = [rootPolicy, policy0]
 
-// Mock discovered ConfigurationPolicy
-const mockConfigurationPolicy: ConfigurationPolicy = {
+// Mock template context for discovered policies
+const mockTemplateDetailsContext = (template: any) => {
+  jest.spyOn(PolicyTemplateDetailsPage, 'useTemplateDetailsContext').mockReturnValue({
+    clusterName: 'local-cluster',
+    template,
+    templateLoading: false,
+    handleAuditViolation: jest.fn(),
+  })
+}
+
+// Mock templates for discovered policies
+const mockConfigurationPolicyTemplate = {
   apiVersion: 'policy.open-cluster-management.io/v1',
   kind: 'ConfigurationPolicy',
   metadata: {
@@ -132,8 +138,7 @@ const mockConfigurationPolicy: ConfigurationPolicy = {
   },
 }
 
-// Mock discovered OperatorPolicy
-const mockOperatorPolicy: OperatorPolicy = {
+const mockOperatorPolicyTemplate = {
   apiVersion: 'policy.open-cluster-management.io/v1beta1',
   kind: 'OperatorPolicy',
   metadata: {
@@ -151,8 +156,7 @@ const mockOperatorPolicy: OperatorPolicy = {
   },
 }
 
-// Mock discovered CertificatePolicy
-const mockCertificatePolicy: CertificatePolicy = {
+const mockCertificatePolicyTemplate = {
   apiVersion: 'policy.open-cluster-management.io/v1',
   kind: 'CertificatePolicy',
   metadata: {
@@ -171,6 +175,16 @@ const mockCertificatePolicy: CertificatePolicy = {
 }
 
 describe('Policy Details History content', () => {
+  beforeEach(() => {
+    // Mock the context with undefined template for parent policy tests
+    // (parent policies use policiesState, not template from context)
+    mockTemplateDetailsContext(undefined)
+  })
+
+  afterEach(() => {
+    jest.restoreAllMocks()
+  })
+
   test('Should render Policy Details History Page content correctly', async () => {
     render(
       <RecoilRoot
@@ -246,12 +260,10 @@ describe('Policy Details History content', () => {
   })
 
   test('Should render history for discovered ConfigurationPolicy', async () => {
+    mockTemplateDetailsContext(mockConfigurationPolicyTemplate)
+
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(configurationPoliciesState, [mockConfigurationPolicy])
-        }}
-      >
+      <RecoilRoot>
         <MemoryRouter
           initialEntries={[
             generatePath(NavigationPath.discoveredPolicyDetailsHistory, {
@@ -280,12 +292,10 @@ describe('Policy Details History content', () => {
   })
 
   test('Should render history for discovered OperatorPolicy', async () => {
+    mockTemplateDetailsContext(mockOperatorPolicyTemplate)
+
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(operatorPoliciesState, [mockOperatorPolicy])
-        }}
-      >
+      <RecoilRoot>
         <MemoryRouter
           initialEntries={[
             generatePath(NavigationPath.discoveredPolicyDetailsHistory, {
@@ -314,12 +324,10 @@ describe('Policy Details History content', () => {
   })
 
   test('Should render history for discovered CertificatePolicy', async () => {
+    mockTemplateDetailsContext(mockCertificatePolicyTemplate)
+
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(certificatePoliciesState, [mockCertificatePolicy])
-        }}
-      >
+      <RecoilRoot>
         <MemoryRouter
           initialEntries={[
             generatePath(NavigationPath.discoveredPolicyDetailsHistory, {
@@ -348,19 +356,17 @@ describe('Policy Details History content', () => {
   })
 
   test('Should render empty state when discovered policy has no history', async () => {
-    const policyWithNoHistory: ConfigurationPolicy = {
-      ...mockConfigurationPolicy,
+    const templateWithNoHistory = {
+      ...mockConfigurationPolicyTemplate,
       status: {
         compliant: 'Compliant',
         history: [],
       },
     }
+    mockTemplateDetailsContext(templateWithNoHistory)
+
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(configurationPoliciesState, [policyWithNoHistory])
-        }}
-      >
+      <RecoilRoot>
         <MemoryRouter
           initialEntries={[
             generatePath(NavigationPath.discoveredPolicyDetailsHistory, {
@@ -390,6 +396,14 @@ describe('Policy Details History content', () => {
 })
 
 describe('Export from policy details history table', () => {
+  beforeEach(() => {
+    mockTemplateDetailsContext(undefined)
+  })
+
+  afterEach(() => {
+    jest.restoreAllMocks()
+  })
+
   test('export button should produce a file for download', async () => {
     render(
       <RecoilRoot

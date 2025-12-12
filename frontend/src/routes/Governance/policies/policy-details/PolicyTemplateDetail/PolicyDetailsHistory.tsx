@@ -4,18 +4,13 @@ import { Icon, PageSection, Title } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { useMemo } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import {
-  CertificatePolicy,
-  ConfigurationPolicy,
-  OperatorPolicy,
-  Policy,
-  PolicyStatusDetails,
-} from '../../../../../resources'
+import { Policy, PolicyStatusDetails } from '../../../../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
 import { AcmEmptyState, AcmTable, AcmTableStateProvider, compareStrings } from '../../../../../ui-components'
 import { getISOStringTimestamp } from '../../../../../resources/utils'
 import AcmTimestamp from '../../../../../lib/AcmTimestamp'
 import { useParams } from 'react-router-dom-v5-compat'
+import { useTemplateDetailsContext } from './PolicyTemplateDetailsPage'
 
 interface HistoryTableData {
   message: string
@@ -23,30 +18,23 @@ interface HistoryTableData {
   index: number
 }
 
-const CONFIGURATION_POLICY_KIND = 'ConfigurationPolicy'
-const OPERATOR_POLICY_KIND = 'OperatorPolicy'
-const CERTIFICATE_POLICY_KIND = 'CertificatePolicy'
-
 export function PolicyDetailsHistory() {
   const { t } = useTranslation()
-  const { policiesState, configurationPoliciesState, operatorPoliciesState, certificatePoliciesState } =
-    useSharedAtoms()
+  const { policiesState } = useSharedAtoms()
   const urlParams = useParams()
   const policyName = urlParams.name ?? ''
   const policyNamespace = urlParams.namespace ?? ''
   const clusterName = urlParams.clusterName ?? ''
   const templateName = urlParams.templateName ?? ''
-  const kind = urlParams.kind ?? ''
+
   const policies = useRecoilValue(policiesState)
-  const configurationPolicies = useRecoilValue(configurationPoliciesState)
-  const operatorPolicies = useRecoilValue(operatorPoliciesState)
-  const certificatePolicies = useRecoilValue(certificatePoliciesState)
+  const { template } = useTemplateDetailsContext()
 
   const statusItems: HistoryTableData[] = useMemo(() => {
     let policyResponse
-    let discoveredPolicyResponse
     const statuses: HistoryTableData[] = []
 
+    // Policies have more history than the template
     if (policyName && policyNamespace && clusterName && templateName) {
       // policy kind
       policyResponse = policies.find(
@@ -65,24 +53,10 @@ export function PolicyDetailsHistory() {
             })
           })
         })
-    } else if (templateName && clusterName) {
-      if (kind === CONFIGURATION_POLICY_KIND) {
-        discoveredPolicyResponse = configurationPolicies.find(
-          (p: ConfigurationPolicy) => p.metadata.name === templateName && p.metadata.namespace === clusterName
-        )
-      }
-      if (kind === OPERATOR_POLICY_KIND) {
-        discoveredPolicyResponse = operatorPolicies.find(
-          (p: OperatorPolicy) => p.metadata.name === templateName && p.metadata.namespace === clusterName
-        )
-      }
-      if (kind === CERTIFICATE_POLICY_KIND) {
-        discoveredPolicyResponse = certificatePolicies.find(
-          (p: CertificatePolicy) => p.metadata.name === templateName && p.metadata.namespace === clusterName
-        )
-      }
+    } else if (templateName && clusterName && template?.status?.history) {
+      // reuse the policy from the template
       let i = 0
-      ;(discoveredPolicyResponse?.status?.history ?? []).forEach((history) => {
+      ;(template?.status?.history ?? []).forEach((history: any) => {
         statuses.push({
           message: history.message ?? '-',
           timestamp: history.lastTimestamp ?? '-',
@@ -92,17 +66,7 @@ export function PolicyDetailsHistory() {
     }
 
     return statuses
-  }, [
-    policyName,
-    policyNamespace,
-    clusterName,
-    templateName,
-    policies,
-    configurationPolicies,
-    operatorPolicies,
-    certificatePolicies,
-    kind,
-  ])
+  }, [policyName, policyNamespace, clusterName, templateName, policies, template])
 
   const columns = useMemo(
     () => [
