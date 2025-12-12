@@ -110,7 +110,9 @@ export function useClusterNameColumnModal(areLinksDisplayed: boolean = true): IA
           ) : (
             <span>{cluster.displayName}</span>
           )}
-          {!clusterDestroyable(cluster) ? (
+          {clusterDestroyable(cluster) ? (
+            ''
+          ) : (
             <Tooltip
               content={
                 <Text>
@@ -126,8 +128,6 @@ export function useClusterNameColumnModal(areLinksDisplayed: boolean = true): IA
                 {t('Undestroyable')}
               </Label>
             </Tooltip>
-          ) : (
-            ''
           )}
         </span>
         {cluster.hive.clusterClaimName && (
@@ -348,8 +348,8 @@ export function useClusterNodesColumn(): IAcmTableColumn<Cluster> {
   return {
     header: t('table.nodes'),
     sort: 'nodes',
-    cell: (cluster) => {
-      return cluster.nodes!.nodeList!.length > 0 ? (
+    cell: (cluster) =>
+      cluster.nodes?.nodeList?.length ? (
         <AcmInlineStatusGroup
           healthy={cluster.nodes!.ready}
           danger={cluster.nodes!.unhealthy}
@@ -357,8 +357,7 @@ export function useClusterNodesColumn(): IAcmTableColumn<Cluster> {
         />
       ) : (
         '-'
-      )
-    },
+      ),
     exportContent: (cluster) => {
       return `${t('healthy')}: ${cluster.nodes!.ready}, ${t('danger')}: ${cluster.nodes!.unhealthy}, ${t('unknown')}: ${cluster.nodes!.unknown}`
     },
@@ -475,7 +474,7 @@ export function useTableActions(
     {
       id: 'hibernate-cluster',
       title: t('managed.hibernate.plural'),
-      click: (clusters) => {
+      click: (clusters) =>
         setModalProps({
           open: true,
           title: t('bulk.title.hibernate'),
@@ -490,26 +489,22 @@ export function useTableActions(
           ),
           description: t('bulk.message.hibernate'),
           columns: modalColumns,
-          keyFn: (cluster) => cluster.name as string,
-          actionFn: (cluster) => {
-            return patchResource(
+          keyFn: (cluster) => cluster.name,
+          actionFn: (cluster) =>
+            patchResource(
               {
                 apiVersion: ClusterDeploymentDefinition.apiVersion,
                 kind: ClusterDeploymentDefinition.kind,
                 metadata: {
-                  name: cluster.name!,
+                  name: cluster.name,
                   namespace: cluster.namespace!,
                 },
               } as ClusterDeployment,
               [{ op: 'replace', path: '/spec/powerState', value: 'Hibernating' }]
-            )
-          },
-          close: () => {
-            setModalProps({ open: false })
-          },
+            ),
+          close: () => setModalProps({ open: false }),
           isValidError: errorIsNot([ResourceErrorCode.NotFound]),
-        })
-      },
+        }),
       variant: 'bulk-action',
     },
     {
@@ -530,23 +525,20 @@ export function useTableActions(
           ),
           description: t('bulk.message.resume'),
           columns: modalColumns,
-          keyFn: (cluster) => cluster.name as string,
-          actionFn: (cluster) => {
-            return patchResource(
+          keyFn: (cluster) => cluster.name,
+          actionFn: (cluster) =>
+            patchResource(
               {
                 apiVersion: ClusterDeploymentDefinition.apiVersion,
                 kind: ClusterDeploymentDefinition.kind,
                 metadata: {
-                  name: cluster.name!,
+                  name: cluster.name,
                   namespace: cluster.namespace!,
                 },
               } as ClusterDeployment,
               [{ op: 'replace', path: '/spec/powerState', value: 'Running' }]
-            )
-          },
-          close: () => {
-            setModalProps({ open: false })
-          },
+            ),
+          close: () => setModalProps({ open: false }),
           isValidError: errorIsNot([ResourceErrorCode.NotFound]),
         })
       },
@@ -556,7 +548,7 @@ export function useTableActions(
     {
       id: 'detachCluster',
       title: t('managed.detach.plural'),
-      click: (clusters) => {
+      click: (clusters) =>
         setModalProps({
           open: true,
           title: t('bulk.title.detach'),
@@ -571,15 +563,14 @@ export function useTableActions(
           ),
           description: t('bulk.message.detach'),
           columns: modalColumns,
-          keyFn: (cluster) => cluster.name as string,
+          keyFn: (cluster) => cluster.name,
           actionFn: (cluster) => detachCluster(cluster),
           close: () => setModalProps({ open: false }),
           isDanger: true,
           icon: 'warning',
           confirmText: t('confirm'),
           isValidError: errorIsNot([ResourceErrorCode.NotFound]),
-        })
-      },
+        }),
       variant: 'bulk-action',
     },
     {
@@ -622,7 +613,7 @@ export function useTableActions(
           ),
           description: t('bulk.message.destroy'),
           columns: modalColumns,
-          keyFn: (cluster) => cluster.name as string,
+          keyFn: (cluster) => cluster.name,
           actionFn: (cluster, options) =>
             deleteCluster({
               cluster,
@@ -812,16 +803,16 @@ export function useTableColumns({
       clusterNodesColumn,
       clusterAddonsColumn,
       clusterCreatedDataColumn,
-      ...(!hideTableActions
-        ? [
+      ...(hideTableActions
+        ? []
+        : [
             {
               header: '',
               cell: (cluster: Cluster) => <ClusterActionDropdown cluster={cluster} isKebab={true} />,
               cellTransforms: [fitContent],
               isActionCol: true,
             },
-          ]
-        : []),
+          ]),
     ],
     [
       clusterNameColumn,

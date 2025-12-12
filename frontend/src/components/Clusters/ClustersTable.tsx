@@ -55,7 +55,7 @@ export function ClustersTable({
     open: false,
   })
 
-  const keyFn = useCallback((cluster: Cluster) => cluster.name!, [])
+  const keyFn = useCallback((cluster: Cluster) => cluster.name, [])
 
   const { agentClusterInstallsState, clusterImageSetsState } = useSharedAtoms()
   const clusterImageSets = useRecoilValue(clusterImageSetsState)
