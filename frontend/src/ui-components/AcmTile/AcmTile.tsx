@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { css } from '@emotion/css'
-import { Skeleton, TileProps } from '@patternfly/react-core'
-import { Tile } from '@patternfly/react-core/deprecated'
+import { Skeleton } from '@patternfly/react-core'
+import { Tile, TileProps } from '@patternfly/react-core/deprecated'
 
 type AcmTileProps = TileProps & {
   loading?: boolean
