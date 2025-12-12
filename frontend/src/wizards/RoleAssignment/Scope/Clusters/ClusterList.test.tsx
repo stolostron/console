@@ -3,7 +3,7 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import ClusterList from './ClusterList'
+import { ClusterList } from './ClusterList'
 import { Cluster, ClusterStatus } from '../../../../resources/utils'
 import { Provider } from '../../../../ui-components'
 import { useAllClusters } from '../../../../routes/Infrastructure/Clusters/ManagedClusters/components/useAllClusters'

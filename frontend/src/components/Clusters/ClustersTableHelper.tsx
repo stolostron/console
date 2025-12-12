@@ -66,6 +66,19 @@ import { SearchOperator } from '../../ui-components/AcmSearchInput'
 import { handleStandardComparison, handleSemverOperatorComparison } from '../../lib/search-utils'
 import { getClusterLabelData } from '../../routes/Infrastructure/Clusters/ManagedClusters/utils/utils'
 
+const patchClusterPowerState = (cluster: Cluster, powerState: 'Hibernating' | 'Running') =>
+  patchResource(
+    {
+      apiVersion: ClusterDeploymentDefinition.apiVersion,
+      kind: ClusterDeploymentDefinition.kind,
+      metadata: {
+        name: cluster.name,
+        namespace: cluster.namespace!,
+      },
+    } as ClusterDeployment,
+    [{ op: 'replace', path: '/spec/powerState', value: powerState }]
+  )
+
 export function useClusterNameColumn(areLinksDisplayed: boolean = true): IAcmTableColumn<Cluster> {
   const { t } = useTranslation()
   return {
@@ -351,9 +364,9 @@ export function useClusterNodesColumn(): IAcmTableColumn<Cluster> {
     cell: (cluster) =>
       cluster.nodes?.nodeList?.length ? (
         <AcmInlineStatusGroup
-          healthy={cluster.nodes!.ready}
-          danger={cluster.nodes!.unhealthy}
-          unknown={cluster.nodes!.unknown}
+          healthy={cluster.nodes?.ready}
+          danger={cluster.nodes?.unhealthy}
+          unknown={cluster.nodes?.unknown}
         />
       ) : (
         '-'
@@ -490,18 +503,7 @@ export function useTableActions(
           description: t('bulk.message.hibernate'),
           columns: modalColumns,
           keyFn: (cluster) => cluster.name,
-          actionFn: (cluster) =>
-            patchResource(
-              {
-                apiVersion: ClusterDeploymentDefinition.apiVersion,
-                kind: ClusterDeploymentDefinition.kind,
-                metadata: {
-                  name: cluster.name,
-                  namespace: cluster.namespace!,
-                },
-              } as ClusterDeployment,
-              [{ op: 'replace', path: '/spec/powerState', value: 'Hibernating' }]
-            ),
+          actionFn: (cluster) => patchClusterPowerState(cluster, 'Hibernating'),
           close: () => setModalProps({ open: false }),
           isValidError: errorIsNot([ResourceErrorCode.NotFound]),
         }),
@@ -526,18 +528,7 @@ export function useTableActions(
           description: t('bulk.message.resume'),
           columns: modalColumns,
           keyFn: (cluster) => cluster.name,
-          actionFn: (cluster) =>
-            patchResource(
-              {
-                apiVersion: ClusterDeploymentDefinition.apiVersion,
-                kind: ClusterDeploymentDefinition.kind,
-                metadata: {
-                  name: cluster.name,
-                  namespace: cluster.namespace!,
-                },
-              } as ClusterDeployment,
-              [{ op: 'replace', path: '/spec/powerState', value: 'Running' }]
-            ),
+          actionFn: (cluster) => patchClusterPowerState(cluster, 'Running'),
           close: () => setModalProps({ open: false }),
           isValidError: errorIsNot([ResourceErrorCode.NotFound]),
         })
