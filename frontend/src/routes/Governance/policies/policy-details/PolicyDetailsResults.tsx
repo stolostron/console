@@ -290,11 +290,17 @@ export default function PolicyDetailsResults() {
           const policyNamespace = item?.policyNamespace
           const cluster = item?.cluster
           const templateName = item?.templateName
-          if (policyName && policyNamespace && cluster && templateName) {
+          const apiVersionStr = item?.apiVersion
+          const kind = item?.kind
+          if (policyName && policyNamespace && cluster && templateName && apiVersionStr && kind) {
+            const { apiGroup, version } = getGroupFromApiVersion(apiVersionStr)
             const statusHistoryURL = generatePath(NavigationPath.policyDetailsHistory, {
               namespace: policyNamespace,
               name: policyName,
               clusterName: cluster,
+              apiGroup,
+              apiVersion: version,
+              kind,
               templateName,
             })
             return <Link to={statusHistoryURL}>{t('View history')}</Link>
