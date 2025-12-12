@@ -23,7 +23,7 @@ interface MulticlusterRoleAssignmentQuery {
   subjectNames?: string[]
   subjectKinds?: FlattenedRoleAssignment['subject']['kind'][]
   roles?: string[]
-  clusterNames?: string[]
+  placements?: string[]
 }
 
 const roleAssignmentToFlattenedRoleAssignment = (
@@ -57,9 +57,9 @@ const isSubjectMatch = (
 
 const isClusterOrRoleMatch = (roleAssignment: RoleAssignment, query: MulticlusterRoleAssignmentQuery): boolean => {
   switch (true) {
-    // Filter by cluster names
-    case query.clusterNames?.length &&
-      !roleAssignment.clusterSelection.clusterNames.some((clusterName) => query.clusterNames!.includes(clusterName)):
+    // Filter by placements
+    case query.placements?.length &&
+      !roleAssignment.clusterSelection.placements.some((placement) => query.placements!.includes(placement)):
       return false
     // Filter by roles
     case query.roles?.length && !query.roles.includes(roleAssignment.clusterRole):
@@ -137,12 +137,12 @@ export const mapRoleAssignmentBeforeSaving = (roleAssignment: Omit<RoleAssignmen
   for (const key of sortedKeys) {
     const value = roleAssignment[key as keyof typeof roleAssignment]
 
-    if (key === 'clusterSelection' && value && typeof value === 'object' && 'clusterNames' in value) {
+    if (key === 'clusterSelection' && value && typeof value === 'object' && 'placements' in value) {
       sortedObject[key] = {
         ...value,
-        clusterNames: value.clusterNames
-          ? [...value.clusterNames].sort((a, b) => a.localeCompare(b))
-          : value.clusterNames,
+        placements: value.placements
+          ? [...value.placements].sort((a, b) => a.localeCompare(b))
+          : value.placements,
       }
     } else if (key === 'targetNamespaces' && Array.isArray(value)) {
       sortedObject[key] = [...value].sort((a, b) => a.localeCompare(b))

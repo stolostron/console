@@ -68,8 +68,8 @@ const mockMulticlusterRoleAssignments: MulticlusterRoleAssignment[] = [
           clusterRole: 'admin',
           targetNamespaces: ['default', 'kube-system'],
           clusterSelection: {
-            type: 'clusterNames',
-            clusterNames: ['test-cluster-1'],
+            type: 'placements',
+            placements: ['test-cluster-1'],
           },
         },
         {
@@ -77,8 +77,8 @@ const mockMulticlusterRoleAssignments: MulticlusterRoleAssignment[] = [
           clusterRole: 'cluster-admin',
           targetNamespaces: ['monitoring'],
           clusterSelection: {
-            type: 'clusterNames',
-            clusterNames: ['test-cluster-2'],
+            type: 'placements',
+            placements: ['test-cluster-2'],
           },
         },
       ],
@@ -114,8 +114,8 @@ const mockMulticlusterRoleAssignments: MulticlusterRoleAssignment[] = [
           clusterRole: 'developer',
           targetNamespaces: ['app-namespace'],
           clusterSelection: {
-            type: 'clusterNames',
-            clusterNames: ['dev-cluster'],
+            type: 'placements',
+            placements: ['dev-cluster'],
           },
         },
       ],
@@ -145,8 +145,8 @@ const mockMulticlusterRoleAssignments: MulticlusterRoleAssignment[] = [
           clusterRole: 'viewer',
           targetNamespaces: ['staging-ns-1', 'staging-ns-2'],
           clusterSelection: {
-            type: 'clusterNames',
-            clusterNames: ['staging-cluster'],
+            type: 'placements',
+            placements: ['staging-cluster'],
           },
         },
       ],
@@ -161,8 +161,8 @@ const mockRoleAssignments: FlattenedRoleAssignment[] = [
     clusterRole: 'admin',
     targetNamespaces: ['default', 'kube-system'],
     clusterSelection: {
-      type: 'clusterNames',
-      clusterNames: ['test-cluster-1'],
+      type: 'placements',
+      placements: ['test-cluster-1'],
     },
     relatedMulticlusterRoleAssignment: mockMulticlusterRoleAssignments[0],
     subject: {
@@ -176,8 +176,8 @@ const mockRoleAssignments: FlattenedRoleAssignment[] = [
     clusterRole: 'cluster-admin',
     targetNamespaces: ['monitoring'],
     clusterSelection: {
-      type: 'clusterNames',
-      clusterNames: ['test-cluster-2'],
+      type: 'placements',
+      placements: ['test-cluster-2'],
     },
     relatedMulticlusterRoleAssignment: mockMulticlusterRoleAssignments[0],
     subject: {
@@ -191,8 +191,8 @@ const mockRoleAssignments: FlattenedRoleAssignment[] = [
     clusterRole: 'developer',
     targetNamespaces: ['app-namespace'],
     clusterSelection: {
-      type: 'clusterNames',
-      clusterNames: ['dev-cluster'],
+      type: 'placements',
+      placements: ['dev-cluster'],
     },
     relatedMulticlusterRoleAssignment: mockMulticlusterRoleAssignments[1],
     subject: {
@@ -206,8 +206,8 @@ const mockRoleAssignments: FlattenedRoleAssignment[] = [
     clusterRole: 'viewer',
     targetNamespaces: ['staging-ns-1', 'staging-ns-2'],
     clusterSelection: {
-      type: 'clusterNames',
-      clusterNames: ['staging-cluster'],
+      type: 'placements',
+      placements: ['staging-cluster'],
     },
     relatedMulticlusterRoleAssignment: mockMulticlusterRoleAssignments[2],
     subject: {
@@ -266,8 +266,8 @@ jest.mock('../../../ui-components', () => {
               case 'role':
                 return item.clusterRole === value
               case 'clusters': {
-                const clusterNames = item.clusterSelection?.clusterNames || []
-                return clusterNames.includes(value)
+                const placements = item.clusterSelection?.placements || []
+                return placements.includes(value)
               }
               case 'namespace':
                 return item.targetNamespaces?.includes(value)
@@ -371,7 +371,7 @@ jest.mock('../../../ui-components', () => {
                 {item.subject.kind}: {item.subject.name}
               </div>
               <div>{item.clusterRole}</div>
-              <div>{(item.clusterSelection?.clusterNames || []).join(', ') || 'No clusters'}</div>
+              <div>{(item.clusterSelection?.placements || []).join(', ') || 'No clusters'}</div>
               <div>{item.targetNamespaces?.join(', ') || 'No namespaces'}</div>
               <div>{`Status: ${item.status?.status ?? 'Unknown'}`}</div>
               <div>{`CreatedAt: ${item.status?.createdAt}`}</div>
@@ -465,7 +465,7 @@ const Component = ({
             preselected={{
               subject: undefined,
               roles: undefined,
-              clusterNames: undefined,
+              placements: undefined,
             }}
           />
         </AcmToastContext.Provider>

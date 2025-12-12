@@ -83,8 +83,8 @@ describe('multicluster-role-assignment-client', function () {
               clusterRole: 'kubevirt.io:admin',
               targetNamespaces: ['kubevirt-production'],
               clusterSelection: {
-                type: 'clusterNames' as const,
-                clusterNames: ['production-cluster'],
+                type: 'placements' as const,
+                placements: ['production-cluster'],
               },
             },
             {
@@ -92,8 +92,8 @@ describe('multicluster-role-assignment-client', function () {
               clusterRole: 'live-migration-admin',
               targetNamespaces: ['kubevirt-dev', 'vm-dev'],
               clusterSelection: {
-                type: 'clusterNames' as const,
-                clusterNames: ['development-cluster'],
+                type: 'placements' as const,
+                placements: ['development-cluster'],
               },
             },
           ],
@@ -122,8 +122,8 @@ describe('multicluster-role-assignment-client', function () {
               clusterRole: 'kubevirt.io:admin',
               targetNamespaces: ['kubevirt-production'],
               clusterSelection: {
-                type: 'clusterNames' as const,
-                clusterNames: ['production-cluster'],
+                type: 'placements' as const,
+                placements: ['production-cluster'],
               },
             },
             {
@@ -131,8 +131,8 @@ describe('multicluster-role-assignment-client', function () {
               clusterRole: 'live-migration-admin',
               targetNamespaces: ['kubevirt-dev', 'vm-dev'],
               clusterSelection: {
-                type: 'clusterNames' as const,
-                clusterNames: ['development-cluster'],
+                type: 'placements' as const,
+                placements: ['development-cluster'],
               },
             },
           ],
@@ -184,12 +184,12 @@ describe('multicluster-role-assignment-client', function () {
       expect(result.current[0].name).toBe('kubevirt.io:view-26f10cdfc6e71e8d')
       expect(result.current[0].clusterRole).toBe('kubevirt.io:view')
       expect(result.current[0].targetNamespaces).toStrictEqual(['kubevirt-production'])
-      expect(result.current[0].clusterSelection.clusterNames).toStrictEqual(['production-cluster'])
+      expect(result.current[0].clusterSelection.placements).toStrictEqual(['production-cluster'])
 
       expect(result.current[1].name).toBe('kubevirt.io:view-c89564b44096eb7a')
       expect(result.current[1].clusterRole).toBe('kubevirt.io:view')
       expect(result.current[1].targetNamespaces).toStrictEqual(['security', 'audit-logs'])
-      expect(result.current[1].clusterSelection.clusterNames).toStrictEqual(['security-cluster'])
+      expect(result.current[1].clusterSelection.placements).toStrictEqual(['security-cluster'])
     })
 
     it('status properly mapped', () => {
@@ -285,13 +285,13 @@ describe('multicluster-role-assignment-client', function () {
       // Act
       const { result } = renderHook(() =>
         useFindRoleAssignments({
-          clusterNames: [clusterName],
+          placements: [clusterName],
         })
       )
 
       // Assert
       expect(result.current).toHaveLength(13)
-      expect(result.current.filter((e) => !e.clusterSelection.clusterNames.includes(clusterName))).toHaveLength(0)
+      expect(result.current.filter((e) => !e.clusterSelection.placements.includes(clusterName))).toHaveLength(0)
     })
 
     it('should filter by multiple criteria', () => {
@@ -304,7 +304,7 @@ describe('multicluster-role-assignment-client', function () {
         useFindRoleAssignments({
           subjectKinds: [UserKind],
           roles: [role],
-          clusterNames: [clusterName],
+          placements: [clusterName],
         })
       )
 
@@ -315,7 +315,7 @@ describe('multicluster-role-assignment-client', function () {
           (e) =>
             e.subject.kind !== UserKind ||
             e.clusterRole !== role ||
-            !e.clusterSelection.clusterNames.includes(clusterName)
+            !e.clusterSelection.placements.includes(clusterName)
         )
       ).toHaveLength(0)
     })
@@ -375,8 +375,8 @@ describe('multicluster-role-assignment-client', function () {
         name: multiClusterRoleAssignment.spec.roleAssignments[0].name,
         clusterRole: multiClusterRoleAssignment.spec.roleAssignments[0].clusterRole,
         clusterSelection: {
-          type: 'clusterNames',
-          clusterNames: multiClusterRoleAssignment.spec.roleAssignments[0].clusterSelection?.clusterNames || [],
+          type: 'placements',
+          placements: multiClusterRoleAssignment.spec.roleAssignments[0].clusterSelection?.placements || [],
         },
         subject: {
           kind: multiClusterRoleAssignment.spec.subject.kind,
@@ -417,8 +417,8 @@ describe('multicluster-role-assignment-client', function () {
         name: multiClusterRoleAssignment.spec.roleAssignments[0].name,
         clusterRole: multiClusterRoleAssignment.spec.roleAssignments[0].clusterRole,
         clusterSelection: {
-          type: 'clusterNames',
-          clusterNames: multiClusterRoleAssignment.spec.roleAssignments[0].clusterSelection?.clusterNames || [],
+          type: 'placements',
+          placements: multiClusterRoleAssignment.spec.roleAssignments[0].clusterSelection?.placements || [],
         },
         subject: {
           kind: multiClusterRoleAssignment.spec.subject.kind,
@@ -452,8 +452,8 @@ describe('multicluster-role-assignment-client', function () {
         name: multiClusterRoleAssignment.spec.roleAssignments[0].name,
         clusterRole: multiClusterRoleAssignment.spec.roleAssignments[0].clusterRole,
         clusterSelection: {
-          type: 'clusterNames',
-          clusterNames: multiClusterRoleAssignment.spec.roleAssignments[0].clusterSelection?.clusterNames || [],
+          type: 'placements',
+          placements: multiClusterRoleAssignment.spec.roleAssignments[0].clusterSelection?.placements || [],
         },
         subject: {
           kind: multiClusterRoleAssignment.spec.subject.kind,
@@ -467,8 +467,8 @@ describe('multicluster-role-assignment-client', function () {
         name: multiClusterRoleAssignment.spec.roleAssignments[1].name,
         clusterRole: multiClusterRoleAssignment.spec.roleAssignments[1].clusterRole,
         clusterSelection: {
-          type: 'clusterNames',
-          clusterNames: multiClusterRoleAssignment.spec.roleAssignments[1].clusterSelection?.clusterNames || [],
+          type: 'placements',
+          placements: multiClusterRoleAssignment.spec.roleAssignments[1].clusterSelection?.placements || [],
         },
         subject: {
           kind: multiClusterRoleAssignment.spec.subject.kind,
@@ -517,8 +517,8 @@ describe('multicluster-role-assignment-client', function () {
           name: 'A1',
           clusterRole: 'x',
           clusterSelection: {
-            type: 'clusterNames' as const,
-            clusterNames: [
+            type: 'placements' as const,
+            placements: [
               'production-cluster',
               'production-east',
               'production-west',
@@ -548,8 +548,8 @@ describe('multicluster-role-assignment-client', function () {
           name: 'A1',
           clusterRole: 'kubevirt.io:admin',
           clusterSelection: {
-            type: 'clusterNames' as const,
-            clusterNames: ['x'],
+            type: 'placements' as const,
+            placements: ['x'],
           },
           targetNamespaces: [
             'kubevirt-production',
@@ -571,8 +571,8 @@ describe('multicluster-role-assignment-client', function () {
           name: 'A1',
           clusterRole: 'kubevirt.io:admin',
           clusterSelection: {
-            type: 'clusterNames' as const,
-            clusterNames: [
+            type: 'placements' as const,
+            placements: [
               'production-cluster',
               'production-east',
               'production-west',
@@ -591,8 +591,8 @@ describe('multicluster-role-assignment-client', function () {
           name: 'A1',
           clusterRole: 'x',
           clusterSelection: {
-            type: 'clusterNames' as const,
-            clusterNames: ['y'],
+            type: 'placements' as const,
+            placements: ['y'],
           },
           targetNamespaces: ['z'],
         },
@@ -641,10 +641,10 @@ describe('multicluster-role-assignment-client', function () {
       roleAssignment = {
         clusterRole: 'admin',
         targetNamespaces: ['default'],
-        clusterSelection: {
-          type: 'clusterNames' as const,
-          clusterNames: ['cluster-1'],
-        },
+          clusterSelection: {
+            type: 'placements' as const,
+            placements: ['cluster-1'],
+          },
       }
     })
 
@@ -691,10 +691,10 @@ describe('multicluster-role-assignment-client', function () {
       newRoleAssignment = {
         clusterRole: 'admin',
         targetNamespaces: ['default'],
-        clusterSelection: {
-          type: 'clusterNames' as const,
-          clusterNames: ['cluster-1'],
-        },
+          clusterSelection: {
+            type: 'placements' as const,
+            placements: ['cluster-1'],
+          },
       }
       existingRoleAssignments = []
     })
@@ -706,7 +706,7 @@ describe('multicluster-role-assignment-client', function () {
           name: 'viewer-1234567890123456',
           clusterRole: 'viewer',
           targetNamespaces: ['kube-system'],
-          clusterSelection: { type: 'clusterNames', clusterNames: ['other-cluster'] },
+          clusterSelection: { type: 'placements', placements: ['other-cluster'] },
         },
       ]
 
@@ -725,7 +725,7 @@ describe('multicluster-role-assignment-client', function () {
           name: generatedName,
           clusterRole: 'admin',
           targetNamespaces: ['default'],
-          clusterSelection: { type: 'clusterNames', clusterNames: ['cluster-1'] },
+          clusterSelection: { type: 'placements', placements: ['cluster-1'] },
         },
       ]
 
@@ -753,10 +753,10 @@ describe('multicluster-role-assignment-client', function () {
       roleAssignment = {
         clusterRole: 'admin',
         targetNamespaces: ['default'],
-        clusterSelection: {
-          type: 'clusterNames' as const,
-          clusterNames: ['cluster-1'],
-        },
+          clusterSelection: {
+            type: 'placements' as const,
+            placements: ['cluster-1'],
+          },
       }
       subject = { kind: 'User', name: 'test.user' }
 
@@ -775,7 +775,7 @@ describe('multicluster-role-assignment-client', function () {
               name: 'viewer-1234567890123456',
               clusterRole: 'viewer',
               targetNamespaces: ['kube-system'],
-              clusterSelection: { type: 'clusterNames', clusterNames: ['other-cluster'] },
+              clusterSelection: { type: 'placements', placements: ['other-cluster'] },
             },
           ],
         },
@@ -799,7 +799,7 @@ describe('multicluster-role-assignment-client', function () {
               name: generatedName,
               clusterRole: 'admin',
               targetNamespaces: ['default'],
-              clusterSelection: { type: 'clusterNames', clusterNames: ['cluster-1'] },
+              clusterSelection: { type: 'placements', placements: ['cluster-1'] },
             },
           ],
         },

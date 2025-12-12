@@ -30,7 +30,7 @@ type RoleAssignmentHookType = {
   serviceAccounts: SelectOption[]
   roles: SelectOption[]
   clusterSets: ClusterSet[]
-  allClusterNames: string[]
+  allPlacements: string[]
 }
 
 type RoleAssignmentHookReturnType = {
@@ -52,7 +52,7 @@ const useRoleAssignmentData = (): RoleAssignmentHookReturnType => {
     serviceAccounts: [],
     roles: [],
     clusterSets: [],
-    allClusterNames: [],
+    allPlacements: [],
   })
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
@@ -197,7 +197,7 @@ const useRoleAssignmentData = (): RoleAssignmentHookReturnType => {
       })),
     }))
 
-    const allClusterNames = allManagedClusters
+    const allPlacements = allManagedClusters
       .map((cluster) => cluster.metadata.name || '')
       .filter((name) => name !== '')
 
@@ -208,7 +208,7 @@ const useRoleAssignmentData = (): RoleAssignmentHookReturnType => {
       serviceAccounts: [],
       roles,
       clusterSets,
-      allClusterNames,
+      allPlacements,
     }))
     setIsClusterSetLoading(false)
   }, [clusters, users, groups, roles, allManagedClusters, clusterNamespaceMap])

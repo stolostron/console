@@ -22,8 +22,8 @@ export interface RoleAssignment {
   clusterRole: string
   targetNamespaces?: string[]
   clusterSelection: {
-    type: 'clusterNames'
-    clusterNames: string[]
+    type: 'placements'
+    placements: string[]
   }
 }
 

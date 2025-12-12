@@ -42,7 +42,7 @@ describe('ClusterRoleAssignments', () => {
     render(<Component clusterName="production-cluster" />)
 
     expect(mockUseFindRoleAssignments).toHaveBeenCalledWith({
-      clusterNames: ['production-cluster'],
+      placements: ['production-cluster'],
     })
   })
 
@@ -52,7 +52,7 @@ describe('ClusterRoleAssignments', () => {
         name: 'test-assignment',
         subject: { kind: 'User', name: 'alice' },
         clusterRole: 'admin',
-        clusterSelection: { type: 'clusterNames', clusterNames: ['local-cluster'] },
+        clusterSelection: { type: 'placements', placements: ['local-cluster'] },
         targetNamespaces: ['default'],
         relatedMulticlusterRoleAssignment: { metadata: { name: 'test', namespace: 'default' } },
       },
@@ -65,7 +65,7 @@ describe('ClusterRoleAssignments', () => {
       expect.objectContaining({
         roleAssignments: mockAssignments,
         isLoading: false,
-        preselected: { clusterNames: ['local-cluster'] },
+        preselected: { placements: ['local-cluster'] },
       })
     )
   })

@@ -5,10 +5,10 @@ import { useParams } from 'react-router-dom-v5-compat'
 
 const ClusterRoleAssignments = () => {
   const { name: clusterName } = useParams()
-  const clusterNames = clusterName ? [clusterName] : []
-  const roleAssignments = useFindRoleAssignments({ clusterNames })
+  const placements = clusterName ? [clusterName] : []
+  const roleAssignments = useFindRoleAssignments({ placements })
 
-  return <RoleAssignments roleAssignments={roleAssignments} isLoading={false} preselected={{ clusterNames }} />
+  return <RoleAssignments roleAssignments={roleAssignments} isLoading={false} preselected={{ placements }} />
 }
 
 export { ClusterRoleAssignments }

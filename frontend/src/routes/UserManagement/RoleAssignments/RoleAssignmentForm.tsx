@@ -198,22 +198,22 @@ const RoleAssignmentForm = ({
               { id: `all`, value: 'all', text: t('Global role (all clusters and namespaces)') },
               { id: `specific`, value: 'specific', text: t('Select specific') },
             ],
-            isRequired: preselected?.clusterNames === undefined || preselected?.clusterNames?.length === 0,
-            isHidden: preselected?.clusterNames?.length,
+            isRequired: preselected?.placements === undefined || preselected?.placements?.length === 0,
+            isHidden: preselected?.placements?.length,
           },
           {
             id: `clusters`,
             type: 'Custom',
             isInline: false,
-            value: roleAssignmentFormData.scope.clusterNames,
+            value: roleAssignmentFormData.scope.placements,
             onChange: onChangeScopeValues,
             component: isClusterSetLoading ? (
               <LoadingState />
             ) : (
               <ClustersDualListSelector onChoseOptions={onChoseOptions} clusterSets={roleAssignmentData.clusterSets} />
             ),
-            isRequired: preselected?.clusterNames === undefined || preselected?.clusterNames?.length === 0,
-            isHidden: roleAssignmentFormData.scope.kind === 'all' || preselected?.clusterNames?.length,
+            isRequired: preselected?.placements === undefined || preselected?.placements?.length === 0,
+            isHidden: roleAssignmentFormData.scope.kind === 'all' || preselected?.placements?.length,
             validation: (clusters: string[]) =>
               clusters?.length > 0 ? undefined : t('at least one cluster should be selected'),
           },
@@ -238,7 +238,7 @@ const RoleAssignmentForm = ({
                   />
                   <div style={{ marginTop: 'var(--pf-v5-global--spacer--sm)' }}>
                     <NamespaceSelector
-                      selectedClusters={roleAssignmentFormData.scope.clusterNames || []}
+                      selectedClusters={roleAssignmentFormData.scope.placements || []}
                       clusters={roleAssignmentData.clusterSets?.flatMap((cs) => cs.clusters || []) || []}
                       onChangeNamespaces={(namespaces) => onChangeScopeNamespaces(namespaces)}
                       selectedNamespaces={roleAssignmentFormData.scope.namespaces || []}
@@ -251,11 +251,11 @@ const RoleAssignmentForm = ({
             isRequired: false,
             isHidden: (() => {
               const allScopeHidden = roleAssignmentFormData.scope.kind === 'all'
-              const noClustersHidden = !roleAssignmentFormData.scope.clusterNames?.length
+              const noClustersHidden = !roleAssignmentFormData.scope.placements?.length
               return allScopeHidden || noClustersHidden
             })(),
             validation: (namespaces: string[] | undefined) => {
-              if (roleAssignmentFormData.scope.clusterNames && roleAssignmentFormData.scope.clusterNames.length > 0) {
+              if (roleAssignmentFormData.scope.placements && roleAssignmentFormData.scope.placements.length > 0) {
                 const isAllNamespaces = namespaces === undefined
                 const hasSpecificNamespaces = Array.isArray(namespaces) && namespaces.length > 0
 
@@ -266,7 +266,7 @@ const RoleAssignmentForm = ({
               if (
                 Array.isArray(namespaces) &&
                 namespaces.length > 0 &&
-                (!roleAssignmentFormData.scope.clusterNames || roleAssignmentFormData.scope.clusterNames.length === 0)
+                (!roleAssignmentFormData.scope.placements || roleAssignmentFormData.scope.placements.length === 0)
               ) {
                 return t('Clusters must be selected before selecting namespaces')
               }

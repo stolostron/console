@@ -25,7 +25,7 @@ jest.mock('./RoleAssignmentForm', () => ({
       subject: { kind: UserKind, user: ['test-user'] },
       scope: {
         kind: 'specific' as const,
-        clusterNames: ['test-cluster'],
+        placements: ['test-cluster'],
         namespaces: ['test-namespace'],
       },
       roles: ['admin'],
@@ -185,7 +185,7 @@ describe('RoleAssignmentModal', () => {
 
       await capturedOnSubmit({
         subject: { kind: UserKind, user: ['user1', 'user2'] },
-        scope: { kind: 'specific', clusterNames: ['c1'] },
+        scope: { kind: 'specific', placements: ['c1'] },
         roles: ['admin'],
       })
 
@@ -236,7 +236,7 @@ describe('RoleAssignmentModal', () => {
           subject: { kind: UserKind, user: ['test-user'] },
           scope: {
             kind: testCase.kind,
-            clusterNames: testCase.clusters,
+            placements: testCase.clusters,
             namespaces: testCase.namespaces,
           },
           roles: ['admin'],
@@ -245,7 +245,7 @@ describe('RoleAssignmentModal', () => {
         await waitFor(() => {
           expect(mockAddRoleAssignment).toHaveBeenCalled()
           const roleAssignment = mockAddRoleAssignment.mock.calls[0][0]
-          expect(roleAssignment.clusterSelection.clusterNames).toEqual(testCase.clusters)
+          expect(roleAssignment.clusterSelection.placements).toEqual(testCase.clusters)
         })
       }
     })
@@ -283,7 +283,7 @@ describe('RoleAssignmentModal', () => {
       await waitFor(() => {
         expect(mockAddRoleAssignment).toHaveBeenCalled()
         expect(mockAddRoleAssignment.mock.calls[0][2]).toBe(existingAssignment)
-        expect(mockAddRoleAssignment.mock.calls[0][0].clusterSelection.clusterNames).toEqual([])
+        expect(mockAddRoleAssignment.mock.calls[0][0].clusterSelection.placements).toEqual([])
       })
     })
 
@@ -356,7 +356,7 @@ describe('RoleAssignmentModal', () => {
 
       await capturedOnSubmit({
         subject: { kind: 'Group', group: ['group1'] },
-        scope: { kind: 'all', clusterNames: ['c1'] },
+        scope: { kind: 'all', placements: ['c1'] },
         roles: ['admin'],
       })
 
@@ -382,7 +382,7 @@ describe('RoleAssignmentModal', () => {
 
       await capturedOnSubmit({
         subject: { kind: 'Group', group: ['group1'] },
-        scope: { kind: 'specific', clusterNames: ['c1'] },
+        scope: { kind: 'specific', placements: ['c1'] },
         roles: ['admin'],
       })
 

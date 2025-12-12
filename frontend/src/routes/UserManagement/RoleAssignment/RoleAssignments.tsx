@@ -29,9 +29,9 @@ const RoleLinkCell = ({ roleName }: { roleName: string }) => (
 )
 
 // Component for rendering clickable cluster links
-const ClusterLinksCell = ({ clusterNames }: { clusterNames: string[] }) => (
+const ClusterLinksCell = ({ placements }: { placements: string[] }) => (
   <RoleAssignmentLabel
-    elements={clusterNames}
+    elements={placements}
     numLabel={3}
     renderElement={(clusterName) => (
       <Link
@@ -85,8 +85,8 @@ const renderNamespacesCell = (roleAssignment: FlattenedRoleAssignment) => (
 const renderStatusCell = (roleAssignment: FlattenedRoleAssignment) => <StatusCell status={roleAssignment.status} />
 
 const renderClustersCell = (roleAssignment: FlattenedRoleAssignment) => {
-  const clusterNames = roleAssignment.clusterSelection?.clusterNames || []
-  return <ClusterLinksCell clusterNames={clusterNames} />
+  const placements = roleAssignment.clusterSelection?.placements || []
+  return <ClusterLinksCell placements={placements} />
 }
 
 // Component for rendering action dropdown
@@ -226,10 +226,10 @@ const RoleAssignments = ({
         }
       }
 
-      // Add cluster names and target namespaces
-      const clusterNames = roleAssignment.clusterSelection?.clusterNames || []
-      for (const clusterName of clusterNames) {
-        allClusters.add(clusterName)
+      // Add placements and target namespaces
+      const placements = roleAssignment.clusterSelection?.placements || []
+      for (const placement of placements) {
+        allClusters.add(placement)
       }
       for (const namespace of roleAssignment.targetNamespaces || []) {
         allNamespaces.add(namespace)
@@ -282,8 +282,8 @@ const RoleAssignments = ({
         label: t('Clusters'),
         options: clusterOptions,
         tableFilterFn: (selectedValues, roleAssignment) => {
-          const clusterNames = roleAssignment.clusterSelection?.clusterNames || []
-          return selectedValues.some((selectedClusterName) => clusterNames.includes(selectedClusterName))
+          const placements = roleAssignment.clusterSelection?.placements || []
+          return selectedValues.some((selectedPlacement) => placements.includes(selectedPlacement))
         },
       },
       {
@@ -372,8 +372,8 @@ const RoleAssignments = ({
       header: t('Clusters'),
       cell: renderClustersCell,
       exportContent: (roleAssignment) => {
-        const clusterNames = roleAssignment.clusterSelection?.clusterNames || []
-        return clusterNames.join(', ')
+        const placements = roleAssignment.clusterSelection?.placements || []
+        return placements.join(', ')
       },
       isHidden: hiddenColumns?.includes('clusters'),
     },

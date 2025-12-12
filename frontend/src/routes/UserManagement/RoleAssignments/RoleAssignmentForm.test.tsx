@@ -22,7 +22,7 @@ let mockRoleAssignmentFormData: any = {
   },
   scope: {
     kind: 'all',
-    clusterNames: [],
+    placements: [],
     namespaces: [],
   },
   roles: [],
@@ -164,7 +164,7 @@ describe('RoleAssignmentForm', () => {
       },
       scope: {
         kind: 'all',
-        clusterNames: [],
+        placements: [],
         namespaces: [],
       },
       roles: [],
@@ -340,7 +340,7 @@ describe('RoleAssignmentForm', () => {
       ...mockRoleAssignmentFormData,
       scope: {
         kind: 'specific',
-        clusterNames: [],
+        placements: [],
         namespaces: [],
       },
     }
@@ -412,7 +412,7 @@ describe('RoleAssignmentForm', () => {
       ...mockRoleAssignmentFormData,
       scope: {
         kind: 'specific',
-        clusterNames: [],
+        placements: [],
         namespaces: [],
       },
     }
@@ -433,7 +433,7 @@ describe('RoleAssignmentForm', () => {
       ...mockRoleAssignmentFormData,
       scope: {
         kind: 'specific',
-        clusterNames: ['cluster1'],
+        placements: ['cluster1'],
         namespaces: [],
       },
     }
@@ -458,7 +458,7 @@ describe('RoleAssignmentForm', () => {
       ...mockRoleAssignmentFormData,
       scope: {
         kind: 'specific',
-        clusterNames: [],
+        placements: [],
         namespaces: ['namespace1'],
       },
     }
@@ -478,7 +478,7 @@ describe('RoleAssignmentForm', () => {
       ...mockRoleAssignmentFormData,
       scope: {
         kind: 'specific',
-        clusterNames: ['cluster1'],
+        placements: ['cluster1'],
         namespaces: ['namespace1'],
       },
     }
@@ -500,7 +500,7 @@ describe('RoleAssignmentForm', () => {
       ...mockRoleAssignmentFormData,
       scope: {
         kind: 'specific',
-        clusterNames: ['cluster1'],
+        placements: ['cluster1'],
         namespaces: undefined,
       },
     }
@@ -522,7 +522,7 @@ describe('RoleAssignmentForm', () => {
       ...mockRoleAssignmentFormData,
       scope: {
         kind: 'specific',
-        clusterNames: ['cluster1'],
+        placements: ['cluster1'],
         namespaces: [],
       },
     }

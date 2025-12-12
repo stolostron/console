@@ -13,7 +13,7 @@ type RoleAssignmentFormDataType = {
   }
   scope: {
     kind: 'all' | 'specific'
-    clusterNames?: string[]
+    placements?: string[]
     namespaces?: string[]
   }
   roles: string[]
@@ -33,7 +33,7 @@ const useRoleAssignmentFormData = (
     subject: { kind: UserKind },
     scope: {
       kind: 'all',
-      clusterNames: [],
+      placements: [],
     },
     roles: [],
   })
@@ -84,13 +84,13 @@ const useRoleAssignmentFormData = (
           ...prevData,
           scope: {
             kind: scopeKind,
-            clusterNames: scopeKind === 'all' ? roleAssignmentData?.allClusterNames || [] : [],
+            placements: scopeKind === 'all' ? roleAssignmentData?.allPlacements || [] : [],
             namespaces: scopeKind === 'all' ? undefined : [],
           },
         }))
       }
     },
-    [roleAssignmentData?.allClusterNames, roleAssignmentFormData.scope.kind]
+    [roleAssignmentData?.allPlacements, roleAssignmentFormData.scope.kind]
   )
 
   const onChangeScopeValues = useCallback((values: string[]) => {
@@ -98,7 +98,7 @@ const useRoleAssignmentFormData = (
       ...prevData,
       scope: {
         ...prevData.scope,
-        clusterNames: values,
+        placements: values,
       },
     }))
   }, [])
@@ -148,25 +148,25 @@ const useRoleAssignmentFormData = (
   }, [preselected, onChangeRoles])
 
   useEffect(() => {
-    const clusterNames = get(preselected, 'clusterNames')
-    if (clusterNames?.length) {
+    const placements = get(preselected, 'placements')
+    if (placements?.length) {
       onChangeScopeKind('specific')
-      onChangeScopeValues(clusterNames)
+      onChangeScopeValues(placements)
     }
   }, [preselected, onChangeScopeKind, onChangeScopeValues])
 
   useEffect(() => {
-    if (roleAssignmentFormData.scope.kind === 'all' && roleAssignmentData?.allClusterNames?.length) {
+    if (roleAssignmentFormData.scope.kind === 'all' && roleAssignmentData?.allPlacements?.length) {
       setRoleAssignmentFormData((prevData) => ({
         ...prevData,
         scope: {
           ...prevData.scope,
-          clusterNames: roleAssignmentData.allClusterNames,
+          placements: roleAssignmentData.allPlacements,
           namespaces: undefined,
         },
       }))
     }
-  }, [roleAssignmentData?.allClusterNames, roleAssignmentFormData.scope.kind])
+  }, [roleAssignmentData?.allPlacements, roleAssignmentFormData.scope.kind])
 
   return {
     roleAssignmentFormData,

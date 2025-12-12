@@ -36,7 +36,7 @@ describe('useRoleAssignmentFormData', () => {
         subject: { kind: UserKind },
         scope: {
           kind: 'all',
-          clusterNames: [],
+          placements: [],
         },
         roles: [],
       })
@@ -228,7 +228,7 @@ describe('useRoleAssignmentFormData', () => {
         result.current.onChangeScopeValues(clusterNames)
       })
 
-      expect(result.current.roleAssignmentFormData.scope.clusterNames).toEqual(clusterNames)
+      expect(result.current.roleAssignmentFormData.scope.placements).toEqual(clusterNames)
     })
 
     it('should change scope namespaces', () => {
@@ -250,7 +250,7 @@ describe('useRoleAssignmentFormData', () => {
         result.current.onChangeScopeValues([])
       })
 
-      expect(result.current.roleAssignmentFormData.scope.clusterNames).toEqual([])
+      expect(result.current.roleAssignmentFormData.scope.placements).toEqual([])
     })
 
     it('should handle empty namespaces array', () => {
@@ -271,7 +271,7 @@ describe('useRoleAssignmentFormData', () => {
       serviceAccounts: [],
       roles: [],
       clusterSets: [],
-      allClusterNames: ['cluster-1', 'cluster-2', 'cluster-3'],
+      allPlacements: ['cluster-1', 'cluster-2', 'cluster-3'],
     }
 
     it('should populate all clusters when scope kind changes to "all"', () => {
@@ -282,14 +282,14 @@ describe('useRoleAssignmentFormData', () => {
       })
 
       expect(result.current.roleAssignmentFormData.scope.kind).toBe('specific')
-      expect(result.current.roleAssignmentFormData.scope.clusterNames).toEqual([])
+      expect(result.current.roleAssignmentFormData.scope.placements).toEqual([])
 
       act(() => {
         result.current.onChangeScopeKind('all')
       })
 
       expect(result.current.roleAssignmentFormData.scope.kind).toBe('all')
-      expect(result.current.roleAssignmentFormData.scope.clusterNames).toEqual(['cluster-1', 'cluster-2', 'cluster-3'])
+      expect(result.current.roleAssignmentFormData.scope.placements).toEqual(['cluster-1', 'cluster-2', 'cluster-3'])
     })
 
     it('should handle scope transitions between "all" and "specific"', () => {
@@ -302,7 +302,7 @@ describe('useRoleAssignmentFormData', () => {
       })
 
       expect(result.current.roleAssignmentFormData.scope.kind).toBe('specific')
-      expect(result.current.roleAssignmentFormData.scope.clusterNames).toEqual(['cluster-1'])
+      expect(result.current.roleAssignmentFormData.scope.placements).toEqual(['cluster-1'])
       expect(result.current.roleAssignmentFormData.scope.namespaces).toEqual(['ns-1', 'ns-2'])
 
       act(() => {
@@ -310,7 +310,7 @@ describe('useRoleAssignmentFormData', () => {
       })
 
       expect(result.current.roleAssignmentFormData.scope.kind).toBe('all')
-      expect(result.current.roleAssignmentFormData.scope.clusterNames).toEqual(['cluster-1', 'cluster-2', 'cluster-3'])
+      expect(result.current.roleAssignmentFormData.scope.placements).toEqual(['cluster-1', 'cluster-2', 'cluster-3'])
       expect(result.current.roleAssignmentFormData.scope.namespaces).toBeUndefined()
 
       act(() => {
@@ -318,7 +318,7 @@ describe('useRoleAssignmentFormData', () => {
       })
 
       expect(result.current.roleAssignmentFormData.scope.kind).toBe('specific')
-      expect(result.current.roleAssignmentFormData.scope.clusterNames).toEqual([])
+      expect(result.current.roleAssignmentFormData.scope.placements).toEqual([])
       expect(result.current.roleAssignmentFormData.scope.namespaces).toEqual([])
     })
 
@@ -329,7 +329,7 @@ describe('useRoleAssignmentFormData', () => {
         serviceAccounts: [],
         roles: [],
         clusterSets: [],
-        allClusterNames: ['cluster-1'],
+        allPlacements: ['cluster-1'],
       }
 
       const { result, rerender } = renderHook(
@@ -341,16 +341,16 @@ describe('useRoleAssignmentFormData', () => {
         result.current.onChangeScopeKind('all')
       })
 
-      expect(result.current.roleAssignmentFormData.scope.clusterNames).toEqual(['cluster-1'])
+      expect(result.current.roleAssignmentFormData.scope.placements).toEqual(['cluster-1'])
 
       const updatedData = {
         ...initialData,
-        allClusterNames: ['cluster-1', 'cluster-2', 'cluster-3'],
+        allPlacements: ['cluster-1', 'cluster-2', 'cluster-3'],
       }
 
       rerender({ roleAssignmentData: updatedData })
 
-      expect(result.current.roleAssignmentFormData.scope.clusterNames).toEqual(['cluster-1', 'cluster-2', 'cluster-3'])
+      expect(result.current.roleAssignmentFormData.scope.placements).toEqual(['cluster-1', 'cluster-2', 'cluster-3'])
     })
 
     it('should handle empty allClusterNames array', () => {
@@ -360,7 +360,7 @@ describe('useRoleAssignmentFormData', () => {
         serviceAccounts: [],
         roles: [],
         clusterSets: [],
-        allClusterNames: [],
+        allPlacements: [],
       }
 
       const { result } = renderHook(() => useRoleAssignmentFormData(undefined, emptyData))
@@ -369,7 +369,7 @@ describe('useRoleAssignmentFormData', () => {
         result.current.onChangeScopeKind('all')
       })
 
-      expect(result.current.roleAssignmentFormData.scope.clusterNames).toEqual([])
+      expect(result.current.roleAssignmentFormData.scope.placements).toEqual([])
     })
   })
 
@@ -459,7 +459,7 @@ describe('useRoleAssignmentFormData', () => {
           value: 'test-user',
         },
         roles: ['admin', 'view'],
-        clusterNames: ['cluster-1'],
+        placements: ['cluster-1'],
       }
 
       const { result } = renderHook(() => useRoleAssignmentFormData(preselected))
@@ -467,7 +467,7 @@ describe('useRoleAssignmentFormData', () => {
       expect(result.current.roleAssignmentFormData.subject.kind).toBe(UserKind)
       expect(result.current.roleAssignmentFormData.subject.user).toEqual(['test-user'])
       expect(result.current.roleAssignmentFormData.roles).toEqual(['admin', 'view'])
-      expect(result.current.roleAssignmentFormData.scope.clusterNames).toEqual(['cluster-1'])
+      expect(result.current.roleAssignmentFormData.scope.placements).toEqual(['cluster-1'])
     })
 
     it('should handle undefined preselected data', () => {
@@ -477,7 +477,7 @@ describe('useRoleAssignmentFormData', () => {
         subject: { kind: UserKind },
         scope: {
           kind: 'all',
-          clusterNames: [],
+          placements: [],
         },
         roles: [],
       })
@@ -492,7 +492,7 @@ describe('useRoleAssignmentFormData', () => {
         subject: { kind: UserKind },
         scope: {
           kind: 'all',
-          clusterNames: [],
+          placements: [],
         },
         roles: [],
       })
@@ -517,7 +517,7 @@ describe('useRoleAssignmentFormData', () => {
 
       expect(result.current.roleAssignmentFormData.subject.kind).toBe(GroupKind)
       expect(result.current.roleAssignmentFormData.roles).toEqual(initialState.roles)
-      expect(result.current.roleAssignmentFormData.scope.clusterNames).toEqual(initialState.scope.clusterNames)
+      expect(result.current.roleAssignmentFormData.scope.placements).toEqual(initialState.scope.placements)
       expect(result.current.roleAssignmentFormData.scope.namespaces).toEqual(initialState.scope.namespaces)
     })
 
@@ -556,7 +556,7 @@ describe('useRoleAssignmentFormData', () => {
 
       expect(result.current.roleAssignmentFormData.roles).toEqual(['admin', 'view'])
       expect(result.current.roleAssignmentFormData.subject.user).toBe(initialState.subject.user)
-      expect(result.current.roleAssignmentFormData.scope.clusterNames).toEqual(initialState.scope.clusterNames)
+      expect(result.current.roleAssignmentFormData.scope.placements).toEqual(initialState.scope.placements)
     })
   })
 
@@ -624,7 +624,7 @@ describe('useRoleAssignmentFormData', () => {
         result.current.onChangeScopeValues(['cluster-1', null as any, 'cluster-2'])
       })
 
-      expect(result.current.roleAssignmentFormData.scope.clusterNames).toEqual(['cluster-1', null, 'cluster-2'])
+      expect(result.current.roleAssignmentFormData.scope.placements).toEqual(['cluster-1', null, 'cluster-2'])
     })
 
     it('should handle very long arrays', () => {
@@ -636,7 +636,7 @@ describe('useRoleAssignmentFormData', () => {
         result.current.onChangeScopeValues(longArray)
       })
 
-      expect(result.current.roleAssignmentFormData.scope.clusterNames).toEqual(longArray)
+      expect(result.current.roleAssignmentFormData.scope.placements).toEqual(longArray)
     })
   })
 
@@ -648,7 +648,7 @@ describe('useRoleAssignmentFormData', () => {
 
       expect(typeof formData.subject.kind).toBe('string')
       expect(typeof formData.scope.kind).toBe('string')
-      expect(Array.isArray(formData.scope.clusterNames)).toBe(true)
+      expect(Array.isArray(formData.scope.placements)).toBe(true)
       expect(Array.isArray(formData.roles)).toBe(true)
     })
   })

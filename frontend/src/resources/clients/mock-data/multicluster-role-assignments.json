@@ -27,8 +27,8 @@
             "vm-analytics"
           ],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": [
+            "type": "placements",
+            "placements": [
               "production-cluster",
               "production-east",
               "production-west",
@@ -53,8 +53,8 @@
             "vm-perf"
           ],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": [
+            "type": "placements",
+            "placements": [
               "staging-cluster",
               "staging-east",
               "staging-west",
@@ -79,8 +79,8 @@
             "console-security"
           ],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": [
+            "type": "placements",
+            "placements": [
               "production-cluster",
               "production-east",
               "production-west",
@@ -105,8 +105,8 @@
             "vm-beta"
           ],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": [
+            "type": "placements",
+            "placements": [
               "development-cluster",
               "dev-east",
               "dev-west",
@@ -132,8 +132,8 @@
             "storage-analytics"
           ],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": [
+            "type": "placements",
+            "placements": [
               "production-cluster",
               "production-east",
               "production-west",
@@ -178,8 +178,8 @@
           "clusterRole": "kubevirt.io:admin",
           "targetNamespaces": ["kubevirt-production"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["production-cluster", "staging-cluster"]
+            "type": "placements",
+            "placements": ["production-cluster", "staging-cluster"]
           }
         },
         {
@@ -187,8 +187,8 @@
           "clusterRole": "live-migration-admin",
           "targetNamespaces": ["kubevirt-dev", "vm-dev"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["development-cluster", "testing-cluster"]
+            "type": "placements",
+            "placements": ["development-cluster", "testing-cluster"]
           }
         },
         {
@@ -196,8 +196,8 @@
           "clusterRole": "kubevirt.io:admin",
           "targetNamespaces": ["kubevirt-test", "vm-test", "storage-test"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["testing-cluster"]
+            "type": "placements",
+            "placements": ["testing-cluster"]
           }
         }
       ]
@@ -227,8 +227,8 @@
           "clusterRole": "kubevirt.io:admin",
           "targetNamespaces": ["kubevirt-production"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["production-cluster"]
+            "type": "placements",
+            "placements": ["production-cluster"]
           }
         },
         {
@@ -236,8 +236,8 @@
           "clusterRole": "live-migration-admin",
           "targetNamespaces": ["kubevirt-dev", "vm-dev"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["development-cluster"]
+            "type": "placements",
+            "placements": ["development-cluster"]
           }
         }
       ]
@@ -266,8 +266,8 @@
           "clusterRole": "kubevirt.io:edit",
           "targetNamespaces": ["kubevirt-dev"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["development-cluster"]
+            "type": "placements",
+            "placements": ["development-cluster"]
           }
         },
         {
@@ -275,8 +275,8 @@
           "clusterRole": "kubevirt.io:edit",
           "targetNamespaces": ["kubevirt-staging", "vm-staging"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["staging-cluster"]
+            "type": "placements",
+            "placements": ["staging-cluster"]
           }
         }
       ]
@@ -305,8 +305,8 @@
           "clusterRole": "kubevirt.io:edit",
           "targetNamespaces": ["kubevirt-dev", "vm-dev", "storage-dev", "networking-dev"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["development-cluster"]
+            "type": "placements",
+            "placements": ["development-cluster"]
           }
         },
         {
@@ -314,8 +314,8 @@
           "clusterRole": "network-admin",
           "targetNamespaces": ["kubevirt-dev", "vm-dev", "storage-dev", "networking-dev"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["development-cluster"]
+            "type": "placements",
+            "placements": ["development-cluster"]
           }
         },
         {
@@ -323,8 +323,8 @@
           "clusterRole": "storage-admin",
           "targetNamespaces": ["kubevirt-dev", "vm-dev", "storage-dev", "networking-dev"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["development-cluster"]
+            "type": "placements",
+            "placements": ["development-cluster"]
           }
         }
       ]
@@ -354,8 +354,8 @@
           "clusterRole": "kubevirt.io:edit",
           "targetNamespaces": ["kubevirt-dev", "vm-dev", "storage-dev", "networking-dev"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["development-cluster"]
+            "type": "placements",
+            "placements": ["development-cluster"]
           }
         }
       ]
@@ -381,8 +381,8 @@
           "clusterRole": "kubevirt.io:edit",
           "targetNamespaces": ["kubevirt-dev", "vm-dev", "storage-dev", "networking-dev"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["development-cluster"]
+            "type": "placements",
+            "placements": ["development-cluster"]
           }
         }
       ]
@@ -408,8 +408,8 @@
           "clusterRole": "kubevirt.io:edit",
           "targetNamespaces": ["edge-workloads", "kubevirt-edge"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["edge-cluster-1"]
+            "type": "placements",
+            "placements": ["edge-cluster-1"]
           }
         },
         {
@@ -417,8 +417,8 @@
           "clusterRole": "kubevirt.io:edit",
           "targetNamespaces": ["edge-workloads"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["edge-cluster-2"]
+            "type": "placements",
+            "placements": ["edge-cluster-2"]
           }
         }
       ]
@@ -447,8 +447,8 @@
           "clusterRole": "kubevirt.io:view",
           "targetNamespaces": ["kubevirt-production", "monitoring"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["production-cluster"]
+            "type": "placements",
+            "placements": ["production-cluster"]
           }
         },
         {
@@ -456,8 +456,8 @@
           "clusterRole": "kubevirt.io:view",
           "targetNamespaces": ["kubevirt-staging", "monitoring"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["staging-cluster"]
+            "type": "placements",
+            "placements": ["staging-cluster"]
           }
         },
         {
@@ -465,8 +465,8 @@
           "clusterRole": "kubevirt.io:view",
           "targetNamespaces": ["kubevirt-dev", "monitoring"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["development-cluster"]
+            "type": "placements",
+            "placements": ["development-cluster"]
           }
         }
       ]
@@ -496,8 +496,8 @@
           "clusterRole": "kubevirt.io:view",
           "targetNamespaces": ["kubevirt-production", "monitoring", "logging"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["production-cluster"]
+            "type": "placements",
+            "placements": ["production-cluster"]
           }
         },
         {
@@ -505,8 +505,8 @@
           "clusterRole": "kubevirt.io:view",
           "targetNamespaces": ["kubevirt-staging"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["staging-cluster"]
+            "type": "placements",
+            "placements": ["staging-cluster"]
           }
         }
       ]
@@ -535,8 +535,8 @@
           "clusterRole": "kubevirt.io:view",
           "targetNamespaces": ["kubevirt-production"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["production-cluster"]
+            "type": "placements",
+            "placements": ["production-cluster"]
           }
         },
         {
@@ -544,8 +544,8 @@
           "clusterRole": "kubevirt.io:view",
           "targetNamespaces": ["security", "audit-logs"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["security-cluster"]
+            "type": "placements",
+            "placements": ["security-cluster"]
           }
         }
       ]
@@ -578,8 +578,8 @@
           "clusterRole": "network-admin",
           "targetNamespaces": ["networking", "ingress"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["production-cluster", "staging-cluster"]
+            "type": "placements",
+            "placements": ["production-cluster", "staging-cluster"]
           }
         },
         {
@@ -587,8 +587,8 @@
           "clusterRole": "kubevirt.io:admin",
           "targetNamespaces": ["networking", "ingress"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["production-cluster"]
+            "type": "placements",
+            "placements": ["production-cluster"]
           }
         },
         {
@@ -596,8 +596,8 @@
           "clusterRole": "network-admin",
           "targetNamespaces": ["networking"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["edge-cluster-1", "edge-cluster-2"]
+            "type": "placements",
+            "placements": ["edge-cluster-1", "edge-cluster-2"]
           }
         }
       ]
@@ -639,8 +639,8 @@
           "clusterRole": "storage-admin",
           "targetNamespaces": ["storage-system", "csi"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["production-cluster", "staging-cluster"]
+            "type": "placements",
+            "placements": ["production-cluster", "staging-cluster"]
           }
         },
         {
@@ -648,8 +648,8 @@
           "clusterRole": "kubevirt.io:edit",
           "targetNamespaces": ["storage-system", "csi"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["production-cluster", "staging-cluster"]
+            "type": "placements",
+            "placements": ["production-cluster", "staging-cluster"]
           }
         },
         {
@@ -657,8 +657,8 @@
           "clusterRole": "storage-admin",
           "targetNamespaces": ["storage-dev"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["development-cluster", "testing-cluster"]
+            "type": "placements",
+            "placements": ["development-cluster", "testing-cluster"]
           }
         }
       ]
@@ -700,8 +700,8 @@
           "clusterRole": "kubevirt.io:edit",
           "targetNamespaces": ["shared-workloads"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["production-cluster"]
+            "type": "placements",
+            "placements": ["production-cluster"]
           }
         }
       ]

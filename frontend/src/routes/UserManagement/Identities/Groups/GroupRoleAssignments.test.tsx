@@ -58,8 +58,8 @@ const mockMulticlusterRoleAssignments = [
           name: 'kubevirt-edit-role',
           clusterRole: 'kubevirt.io:edit',
           clusterSelection: {
-            type: 'clusterNames' as const,
-            clusterNames: ['development-cluster'],
+            type: 'placements' as const,
+            placements: ['development-cluster'],
           },
           targetNamespaces: ['kubevirt-dev', 'vm-dev'],
         },
@@ -67,8 +67,8 @@ const mockMulticlusterRoleAssignments = [
           name: 'network-admin-role',
           clusterRole: 'network-admin',
           clusterSelection: {
-            type: 'clusterNames' as const,
-            clusterNames: ['development-cluster'],
+            type: 'placements' as const,
+            placements: ['development-cluster'],
           },
           targetNamespaces: ['networking-dev'],
         },
@@ -76,8 +76,8 @@ const mockMulticlusterRoleAssignments = [
           name: 'storage-admin-role',
           clusterRole: 'storage-admin',
           clusterSelection: {
-            type: 'clusterNames' as const,
-            clusterNames: ['development-cluster'],
+            type: 'placements' as const,
+            placements: ['development-cluster'],
           },
           targetNamespaces: ['storage-dev'],
         },
@@ -106,7 +106,7 @@ jest.mock('../../RoleAssignment/RoleAssignments', () => ({
             {roleAssignment.subject.kind}: {roleAssignment.subject.name}
           </div>
           <div id={`assignment-role-${index}`}>{roleAssignment.clusterRole}</div>
-          <div id={`assignment-clusters-${index}`}>{roleAssignment.clusterSelection.clusterNames.join(', ')}</div>
+          <div id={`assignment-clusters-${index}`}>{roleAssignment.clusterSelection.placements.join(', ')}</div>
           <div id={`assignment-namespaces-${index}`}>{roleAssignment.targetNamespaces?.join(', ') ?? ''}</div>
         </div>
       ))}
