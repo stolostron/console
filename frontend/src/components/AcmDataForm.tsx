@@ -1095,7 +1095,6 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
     case 'Multiselect':
     case 'GroupedMultiselect':
     case 'CreatableMultiselect': {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { onChange, placeholder, validate, validation, isRequired, ...inputProps } = input
       const onSelect = (selection: string | SelectOptionObject) => {
         switch (input.type) {
@@ -1128,24 +1127,6 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
               input.onChange([])
               break
           }
-        }
-      }
-      switch (input.type) {
-        case 'Select':
-        case 'GroupedSelect': {
-          let selectedOption: SelectOptionInput | undefined
-          switch (input.type) {
-            case 'Select':
-              selectedOption = input.options.find((option) => option.value === input.value)
-              break
-            case 'GroupedSelect':
-              for (const group of input.groups) {
-                selectedOption = group.options.find((option) => option.value === input.value)
-                if (selectedOption !== undefined) break
-              }
-              break
-          }
-          break
         }
       }
       let hasIcons = false
@@ -1209,7 +1190,9 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
             ]
           : content
         return (
-          <SelectOption key={option.value} value={option.value} description={option.description} children={children} />
+          <SelectOption key={option.value} value={option.value} description={option.description}>
+            {children}
+          </SelectOption>
         )
       }
 
