@@ -1,37 +1,37 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Label } from '@patternfly/react-core'
-import { TFunction } from 'react-i18next'
 import { useMemo, useState } from 'react'
+import { TFunction } from 'react-i18next'
 import { Link, NavigateFunction, To } from 'react-router-dom-v5-compat'
+import { LostChangesContext } from '../../../components/LostChanges'
+import { useTranslation } from '../../../lib/acm-i18next'
+import GatekeeperSvg from '../../../logos/gatekeeper.svg'
+import Kubernetes from '../../../logos/kubernetes.svg'
+import KyvernoSvg from '../../../logos/kyverno.svg'
+import OcmSvg from '../../../logos/ocm.svg'
 import { NavigationPath } from '../../../NavigationPath'
 import {
   Channel,
   HelmRelease,
+  IResource,
   ManagedCluster,
   Placement,
   PlacementBinding,
   PlacementRule,
   Policy,
-  PolicySet,
   PolicyAutomation,
-  Subscription,
-  IResource,
-  Secret,
-  REMEDIATION_ACTION,
+  PolicySet,
   PolicyTemplate,
+  REMEDIATION_ACTION,
+  Secret,
+  Subscription,
 } from '../../../resources'
-import { reconcileResources } from '../../../resources/utils'
 import { PlacementDecision } from '../../../resources/placement-decision'
-import ResourceLabels from '../../Applications/components/ResourceLabels'
+import { reconcileResources } from '../../../resources/utils'
 import { AcmEmptyState, IAlertContext } from '../../../ui-components'
-import { useTranslation } from '../../../lib/acm-i18next'
+import ResourceLabels from '../../Applications/components/ResourceLabels'
+import { DiscoveredPolicyItem, DiscoveredPolicyTableItem } from '../discovered/useFetchPolicies'
 import { PolicyTableItem } from '../policies/Policies'
-import { LostChangesContext } from '../../../components/LostChanges'
-import { DiscoveredPolicyTableItem, DiscoveredPolicyItem } from '../discovered/useFetchPolicies'
-import GatekeeperSvg from '../../../logos/gatekeeper.svg'
-import OcmSvg from '../../../logos/ocm.svg'
-import Kubernetes from '../../../logos/kubernetes.svg'
-import KyvernoSvg from '../../../logos/kyverno.svg'
 export interface PolicyCompliance {
   policyName: string
   policyNamespace: string
@@ -451,14 +451,8 @@ export function PolicySetList(props: { policySets: PolicySet[] }) {
       policySetLinks = policySetLinks.slice(0, 2)
     }
     policySetLinks.push(
-      <Label
-        variant="outline"
-        key={'overflow-btn'}
-        isOverflowChip
-        component={'button'}
-        onClose={() => setShowAll(!showAll)}
-      >
-        {!showAll ? t('more') : t('Show less')}
+      <Label variant="outline" key={'overflow-btn'} onClick={() => setShowAll(!showAll)}>
+        {!showAll ? t('Show more') : t('Show less')}
       </Label>
     )
   }

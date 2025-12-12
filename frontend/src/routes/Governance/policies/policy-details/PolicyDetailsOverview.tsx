@@ -178,7 +178,7 @@ export default function PolicyDetailsOverview() {
               namespace: policy.metadata.namespace!,
               name: policy.metadata.name!,
             })}
-            state={{
+            linkState={{
               from: generatePath(NavigationPath.policyDetails, {
                 namespace: policy.metadata.namespace!,
                 name: policy.metadata.name!,

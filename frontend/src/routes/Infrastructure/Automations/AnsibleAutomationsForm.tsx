@@ -1,20 +1,21 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { ActionGroup, Button, Flex, FlexItem, FormGroup, Label, Radio, SelectOption } from '@patternfly/react-core'
 import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
-import { SelectVariant } from '../../../components/AcmSelectBase'
+import get from 'lodash/get'
 import { Fragment, SetStateAction, useCallback, useContext, useEffect, useState } from 'react'
-import { useParams, useNavigate, useMatch } from 'react-router-dom-v5-compat'
+import { useMatch, useNavigate, useParams } from 'react-router-dom-v5-compat'
 import { AcmDataFormPage } from '../../../components/AcmDataForm'
 import { FormData, LinkType, Section } from '../../../components/AcmFormData'
+import { SelectVariant } from '../../../components/AcmSelectBase'
 import { AutomationProviderHint } from '../../../components/AutomationProviderHint'
 import { CreateCredentialModal } from '../../../components/CreateCredentialModal'
 import { ErrorPage } from '../../../components/ErrorPage'
-import { useProjects } from '../../../hooks/useProjects'
 import { LoadingPage } from '../../../components/LoadingPage'
+import { LostChangesContext } from '../../../components/LostChanges'
+import { useProjects } from '../../../hooks/useProjects'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { validateKubernetesDnsName } from '../../../lib/validation'
 import { NavigationPath } from '../../../NavigationPath'
-import { AcmHelperTextPrompt } from '../../../ui-components/AcmHelperTextPrompt/AcmHelperTextPrompt'
 import {
   ClusterCurator,
   ClusterCuratorAnsibleJob,
@@ -45,10 +46,9 @@ import {
   AcmSubmit,
   Provider,
 } from '../../../ui-components'
+import { AcmHelperTextPrompt } from '../../../ui-components/AcmHelperTextPrompt/AcmHelperTextPrompt'
 import { CredentialsForm } from '../../Credentials/CredentialsForm'
-import get from 'lodash/get'
 import schema from './schema.json'
-import { LostChangesContext } from '../../../components/LostChanges'
 
 export default function AnsibleAutomationsFormPage() {
   const params = useParams()
@@ -438,7 +438,7 @@ export function AnsibleAutomationsForm(props: {
             {Object.keys(ansibleJob.extra_vars)
               .filter((key) => typeof ansibleJob.extra_vars?.[key] === 'string')
               .map((key) => (
-                <AcmChip isReadOnly key={`${ansibleJob.name}-${key}`}>
+                <AcmChip key={`${ansibleJob.name}-${key}`}>
                   {key}={ansibleJob.extra_vars![key]}
                 </AcmChip>
               ))}

@@ -53,13 +53,13 @@ export const SearchInfoModal = (props: any) => {
           <p>{t('To search for a keyword, type the word in the search box.')}</p>
           <div className={exampleRow}>
             <AcmChipGroup aria-label={t('Type')}>
-              <AcmChip isReadOnly>{t('Type')}</AcmChip>
+              <AcmChip>{t('Type')}</AcmChip>
             </AcmChipGroup>
             <p>OpenShift</p>
           </div>
           <div className={exampleRow}>
             <AcmChipGroup aria-label={t('Show')}>
-              <AcmChip isReadOnly>{t('Show')}</AcmChip>
+              <AcmChip>{t('Show')}</AcmChip>
             </AcmChipGroup>
             <p>{t('A list of resources that contain the keyword "OpenShift" in any field.')}</p>
           </div>
@@ -73,13 +73,13 @@ export const SearchInfoModal = (props: any) => {
           </p>
           <div className={exampleRow}>
             <AcmChipGroup aria-label={t('Type')}>
-              <AcmChip isReadOnly>{t('Type')}</AcmChip>
+              <AcmChip>{t('Type')}</AcmChip>
             </AcmChipGroup>
             <p>status:failed,pending</p>
           </div>
           <div className={exampleRow}>
             <AcmChipGroup aria-label={t('Show')}>
-              <AcmChip isReadOnly>{t('Show')}</AcmChip>
+              <AcmChip>{t('Show')}</AcmChip>
             </AcmChipGroup>
             <p>{t('Resources with "failed" or "pending" status.')}</p>
           </div>
