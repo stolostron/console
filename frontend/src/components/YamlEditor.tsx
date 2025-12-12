@@ -1,13 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import jsYaml from 'js-yaml'
-import { debounce } from 'lodash'
-import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
-import 'monaco-editor/esm/vs/editor/editor.all.js'
-import * as monacoEditor from 'monaco-editor/esm/vs/editor/editor.api'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import MonacoEditor, { monaco } from 'react-monaco-editor'
-import './YAMLEditor.css'
-import { defineThemes, getTheme } from './theme'
+import { useMemo } from 'react'
+import { YamlCodeEditor } from 'nxtcm-components'
 
 /**
  *
@@ -25,118 +19,19 @@ export const findResourceFieldLineNumber = (resourceYaml: object, fieldPath: str
 export default function YAMLEditor(props: {
   resourceYAML: string
   readOnly: boolean
-  height: number // in pixels - to be convested to string in memo hook
+  height: number // in pixels - to be converted to string
   setResourceYaml?: React.Dispatch<React.SetStateAction<string>>
   defaultScrollToLine?: number
 }) {
-  const { resourceYAML, readOnly, height, setResourceYaml, defaultScrollToLine } = props
-  const editorRef = useRef<monacoEditor.editor.IStandaloneCodeEditor | null>(null)
-  const monacoRef = useRef<typeof monacoEditor | null>(null)
-  const [hasManagedFieldsFolded, setHasManagedFieldsFolded] = useState<boolean>(false)
+  const { resourceYAML, readOnly, height, setResourceYaml } = props
 
   const editorHeight: string = useMemo(() => {
     return height < 100 ? '100px' : `${height}px`
   }, [height])
 
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'test') return
-    /* istanbul ignore if */
-    if (resourceYAML && defaultScrollToLine) {
-      editorRef.current?.setSelection(new monaco.Range(0, 0, 0, 0))
-    }
-  }, [resourceYAML, defaultScrollToLine])
-
-  // By default we will collapse the managedFields section
-  useEffect(() => {
-    let managedFieldsStart = 0
-    let managedFieldsEnd = 0
-    if (resourceYAML && !hasManagedFieldsFolded) {
-      const resourceLines = resourceYAML.split('\n')
-      resourceLines.forEach((line, i) => {
-        if (line === '  managedFields:') {
-          managedFieldsStart = i + 1
-        } else if (managedFieldsStart > 0 && managedFieldsEnd === 0 && (line[2] !== ' ' || line[0] !== ' ')) {
-          managedFieldsEnd = i
-        }
-      })
-      /* istanbul ignore if */
-      if (managedFieldsStart > 0 && managedFieldsEnd > 0) {
-        if (process.env.NODE_ENV === 'test') return
-        const top = editorRef.current?.getScrollTop()
-        editorRef.current?.setSelection(new monaco.Range(managedFieldsStart, 0, managedFieldsEnd, 0))
-        editorRef.current
-          ?.getAction('editor.fold')
-          .run()
-          .then(() => {
-            if (defaultScrollToLine) {
-              editorRef.current?.setSelection(new monaco.Range(0, 0, 0, 0))
-            } else {
-              editorRef.current?.setScrollTop(Math.abs(top ?? 0))
-            }
-            setHasManagedFieldsFolded(true)
-          })
-          .catch(() => console.error('Encountered an error while trying to fold the ManagedFields section.'))
-      }
-    }
-
-    if (editorRef?.current) {
-      window.getEditorValue = () => editorRef?.current?.getValue()
-    }
-
-    return () => {
-      delete window.getEditorValue
-    }
-  }, [editorRef, resourceYAML, defaultScrollToLine, hasManagedFieldsFolded])
-
-  /* istanbul ignore next */
-  function onEditorDidMount(editor: monacoEditor.editor.IStandaloneCodeEditor, monaco: typeof monacoEditor) {
-    // make sure this instance of monaco editor has the ocp console themes
-    defineThemes(monaco?.editor)
-
-    // if we don't reset the themes to vs
-    // and console-light or console-dark were set, monaco wouldn't
-    // update the 'monoco-colors' style with the right colors
-    monaco?.editor?.setTheme('vs')
-    ;(window as any).monaco?.editor?.setTheme('vs')
-    monaco?.editor?.setTheme(getTheme())
-    ;(window as any).monaco?.editor?.setTheme(getTheme())
-
-    // observe documentElement class changes (theme toggles)
-    if (typeof MutationObserver !== 'undefined') {
-      const classObserver = new MutationObserver(() => {
-        monaco?.editor?.setTheme(getTheme())
-        ;(window as any).monaco?.editor?.setTheme(getTheme())
-      })
-      classObserver.observe(document.documentElement, {
-        attributes: true,
-        attributeFilter: ['class'],
-      })
-    }
-
-    editor.changeViewZones(
-      (changeAccessor: {
-        addZone: (arg0: { afterLineNumber: number; heightInPx: number; domNode: HTMLDivElement }) => void
-      }) => {
-        const domNode = document.createElement('div')
-        changeAccessor.addZone({
-          afterLineNumber: 0,
-          heightInPx: 10,
-          domNode: domNode,
-        })
-      }
-    )
-    editorRef.current = editor
-    monacoRef.current = monaco
+  const handleChange = (value: string) => {
+    setResourceYaml?.(value)
   }
-
-  // react to changes from editing yaml
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const onChange = useCallback(
-    debounce((value) => {
-      setResourceYaml?.(value)
-    }, 100),
-    []
-  )
 
   return (
     <div
@@ -146,30 +41,13 @@ export default function YAMLEditor(props: {
         position: 'relative',
       }}
     >
-      <MonacoEditor
-        language="yaml"
-        theme="console"
+      <YamlCodeEditor
+        code={resourceYAML}
+        onChange={setResourceYaml ? handleChange : undefined}
         height={editorHeight}
-        value={resourceYAML}
-        options={{
-          readOnly,
-          theme: getTheme(),
-          wordWrap: 'wordWrapColumn',
-          wordWrapColumn: 132,
-          scrollBeyondLastLine: true,
-          smoothScrolling: true,
-          glyphMargin: true,
-          tabSize: 2,
-          minimap: {
-            enabled: false,
-          },
-          scrollbar: {
-            verticalScrollbarSize: 17,
-            horizontalScrollbarSize: 17,
-          },
-        }}
-        editorDidMount={onEditorDidMount}
-        onChange={onChange}
+        isReadOnly={readOnly}
+        isLineNumbersVisible={true}
+        enableSyntaxHighlighting={true}
       />
     </div>
   )
