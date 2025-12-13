@@ -1,4 +1,4 @@
-.pf-v5-c-truncate {
+.pf-v6-c-truncate {
   --pf-v5-c-truncate--MinWidth: 12ch;
   --pf-v5-c-truncate__start--MinWidth: 6ch;
 
@@ -8,28 +8,28 @@
   min-width: var(--pf-v5-c-truncate--MinWidth);
 }
 
-.pf-v5-c-truncate__start,
-.pf-v5-c-truncate__end {
+.pf-v6-c-truncate__start,
+.pf-v6-c-truncate__end {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.pf-v5-c-truncate__start {
+.pf-v6-c-truncate__start {
   min-width: var(--pf-v5-c-truncate__start--MinWidth);
 }
 
-.pf-v5-c-truncate__end {
+.pf-v6-c-truncate__end {
   direction: rtl;
 }
 
-.pf-v5-c-truncate__start + .pf-v5-c-truncate__end {
+.pf-v6-c-truncate__start + .pf-v6-c-truncate__end {
   overflow: visible;
   direction: ltr;
 }
 
 @supports (-webkit-hyphens: none) {
-  .pf-v5-c-truncate__end {
+  .pf-v6-c-truncate__end {
     direction: ltr;
   }
 }

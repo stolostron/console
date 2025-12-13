@@ -122,7 +122,7 @@ const CreateInfraEnv: React.FC = () => {
     >
       <AcmErrorBoundary>
         <AcmPageContent id="create-infra-env">
-          <PageSection variant="light" className="create-infra-env__content" type="wizard">
+          <PageSection hasBodyWrapper={false} className="create-infra-env__content" type="wizard">
             <TemplateEditor
               type="Infra env"
               title="InfraEnv YAML"

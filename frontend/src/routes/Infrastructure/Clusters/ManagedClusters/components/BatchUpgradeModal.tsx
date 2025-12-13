@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Skeleton, Stack, StackItem, Text, TextContent, TextVariants, SelectOption } from '@patternfly/react-core'
+import { Skeleton, Stack, StackItem, Content, ContentVariants, SelectOption } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { useEffect, useMemo, useState } from 'react'
 import { BulkActionModal } from '../../../../../components/BulkActionModal'
@@ -158,9 +158,9 @@ export function BatchUpgradeModal(props: {
             <>
               <span style={{ whiteSpace: 'nowrap' }}>{cluster.displayName}</span>
               {cluster.hive.clusterClaimName && (
-                <TextContent>
-                  <Text component={TextVariants.small}>{cluster.hive.clusterClaimName}</Text>
-                </TextContent>
+                <Content>
+                  <Content component={ContentVariants.small}>{cluster.hive.clusterClaimName}</Content>
+                </Content>
               )}
             </>
           ),
@@ -180,7 +180,7 @@ export function BatchUpgradeModal(props: {
               return (
                 <AcmButton
                   variant={'link'}
-                  component={TextVariants.a}
+                  component={ContentVariants.a}
                   href={`https://console.redhat.com/openshift/insights/advisor/clusters/${clusterID}?active_tab=update_risks`}
                   target="_blank"
                   style={{ padding: 0, fontSize: '14px' }}

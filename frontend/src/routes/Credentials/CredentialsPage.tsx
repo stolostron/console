@@ -50,7 +50,7 @@ export default function CredentialsPage() {
   return (
     <AcmPage header={<AcmPageHeader title={t('Credentials')} />}>
       <AcmPageContent id="credentials">
-        <PageSection>
+        <PageSection hasBodyWrapper={false}>
           <CredentialsTable
             providerConnections={providerConnections}
             discoveryConfigs={discoveryConfigs}

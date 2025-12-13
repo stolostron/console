@@ -1,6 +1,25 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
+  ActionGroup,
+  ButtonVariant,
+  PageSection,
+  Popover,
+  SelectOption,
+  Split,
+  SplitItem,
+  ToggleGroup,
+  ToggleGroupItem,
+} from '@patternfly/react-core'
+import { ModalVariant } from '@patternfly/react-core/deprecated'
+import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
+import { useEffect, useMemo, useState } from 'react'
+import { SelectVariant } from '../../../../../../components/AcmSelectBase'
+import { BulkActionModal, BulkActionModalProps, errorIsNot } from '../../../../../../components/BulkActionModal'
+import { ErrorPage, getErrorInfo } from '../../../../../../components/ErrorPage'
+import { useTranslation } from '../../../../../../lib/acm-i18next'
+import { useQuery } from '../../../../../../lib/useQuery'
+import {
   ClusterRoleBinding,
   ClusterRoleBindingKind,
   ClusterRoleKind,
@@ -28,25 +47,6 @@ import {
   compareStrings,
   IAcmTableColumn,
 } from '../../../../../../ui-components'
-import { SelectVariant } from '../../../../../../components/AcmSelectBase'
-import {
-  ActionGroup,
-  ButtonVariant,
-  ModalVariant,
-  PageSection,
-  Popover,
-  Split,
-  SplitItem,
-  ToggleGroup,
-  ToggleGroupItem,
-  SelectOption,
-} from '@patternfly/react-core'
-import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
-import { useEffect, useMemo, useState } from 'react'
-import { useTranslation } from '../../../../../../lib/acm-i18next'
-import { BulkActionModal, errorIsNot, BulkActionModalProps } from '../../../../../../components/BulkActionModal'
-import { ErrorPage, getErrorInfo } from '../../../../../../components/ErrorPage'
-import { useQuery } from '../../../../../../lib/useQuery'
 import { useClusterSetDetailsContext } from '../ClusterSetDetails'
 
 export function ClusterSetAccessManagement() {
@@ -162,7 +162,7 @@ export function ClusterSetAccessManagement() {
 
   return (
     <AcmPageContent id="access-management">
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <BulkActionModal<ClusterRoleBinding> {...modalProps} />
         <AddUsersModal
           isOpen={addModalOpen}
@@ -331,9 +331,9 @@ function AddUsersModal(props: {
               <div>{t('access.add.message')}</div>
               &nbsp;
               <div>
-                <div className="pf-v5-c-form__group-label">
-                  <span className="pf-v5-c-form__label pf-v5-c-form__label-text">{t('access.add.userGroup')}</span>
-                  <span className="pf-v5-c-form__label-required">*</span>
+                <div className="pf-v6-c-form__group-label">
+                  <span className="pf-v6-c-form__label pf-v6-c-form__label-text">{t('access.add.userGroup')}</span>
+                  <span className="pf-v6-c-form__label-required">*</span>
                 </div>
                 <Split hasGutter>
                   <SplitItem>
@@ -472,7 +472,11 @@ function GroupUsersPopover(props: { group?: Group; useIcon?: boolean }) {
         >
           {props.useIcon ? (
             <OutlinedQuestionCircleIcon
-              style={{ width: '14px', fill: 'var(--pf-v5-global--link--Color)', paddingTop: '2px' }}
+              style={{
+                width: '14px',
+                fill: 'var(--pf-t--global--text--color--link--default)',
+                paddingTop: '2px',
+              }}
             />
           ) : (
             t('access.usersInGroup.view')

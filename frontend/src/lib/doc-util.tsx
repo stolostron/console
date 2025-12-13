@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { TextContent } from '@patternfly/react-core'
+import { Content } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { AcmButton } from '../ui-components'
 import { useTranslation } from './acm-i18next'
@@ -76,7 +76,7 @@ export const DOC_LINKS = {
 export function ViewDocumentationLink(props: { doclink: string }): JSX.Element {
   const { t } = useTranslation()
   return (
-    <TextContent>
+    <Content>
       <a href={props.doclink} target="_blank" rel="noreferrer">
         <AcmButton
           onClick={(e) => {
@@ -95,6 +95,6 @@ export function ViewDocumentationLink(props: { doclink: string }): JSX.Element {
           {t('View documentation')}
         </AcmButton>
       </a>
-    </TextContent>
+    </Content>
   )
 }

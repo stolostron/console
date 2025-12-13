@@ -257,8 +257,8 @@ describe('add automation template page', () => {
     await clickByText('Save')
 
     // open yaml and use yaml to change stuff
-    await waitFor(() => screen.getByRole('checkbox', { name: /yaml/i }))
-    userEvent.click(screen.getByRole('checkbox', { name: /yaml/i }))
+    await waitFor(() => screen.getByRole('switch', { name: /yaml/i }))
+    userEvent.click(screen.getByRole('switch', { name: /yaml/i }))
     const input = screen.getByRole('textbox', {
       name: /monaco/i,
     }) as HTMLTextAreaElement
@@ -281,7 +281,7 @@ describe('add automation template page', () => {
     await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
 
     // close yaml
-    userEvent.click(screen.getByRole('checkbox', { name: /yaml/i }))
+    userEvent.click(screen.getByRole('switch', { name: /yaml/i }))
     await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
 
     await clickByText('Next')

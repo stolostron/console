@@ -12,9 +12,8 @@ import {
   PageSection,
   Stack,
   StackItem,
-  Text,
-  TextContent,
-  TextVariants,
+  Content,
+  ContentVariants,
   Tooltip,
 } from '@patternfly/react-core'
 import { fitContent, nowrap } from '@patternfly/react-table'
@@ -117,8 +116,8 @@ export default function ManagedClusters() {
 
   const OnBoardingModalLink = useCallback(() => {
     return (
-      <Text
-        component={TextVariants.a}
+      <Content
+        component={ContentVariants.a}
         isVisitedLink
         style={{
           cursor: 'pointer',
@@ -127,7 +126,7 @@ export default function ManagedClusters() {
         onClick={() => setOpenOnboardingModal(true)}
       >
         {t('Get started with Multicluster Hub')}
-      </Text>
+      </Content>
     )
   }, [t])
 
@@ -145,7 +144,7 @@ export default function ManagedClusters() {
 
   return (
     <AcmPageContent id="clusters">
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <OnboardingModal open={openOnboardingModal} close={() => onToggle(onBoardingModalID, setOpenOnboardingModal)} />
         <Stack hasGutter={true}>
           <StackItem>
@@ -457,11 +456,11 @@ export function ClustersTable(props: {
                   })}
                   style={{ marginTop: '20px' }}
                 >
-                  <TextContent>
+                  <Content>
                     {t('It will not be destroyed when you perform this action.', {
                       count: unDestroyedClusters.length,
                     })}
-                  </TextContent>
+                  </Content>
                 </Alert>
               ) : undefined,
             title: t('bulk.title.destroy'),
@@ -692,9 +691,9 @@ export function useClusterNameColumn(): IAcmTableColumn<Cluster> {
           </Link>
         </span>
         {cluster.hive.clusterClaimName && (
-          <TextContent>
-            <Text component={TextVariants.small}>{cluster.hive.clusterClaimName}</Text>
-          </TextContent>
+          <Content>
+            <Content component={ContentVariants.small}>{cluster.hive.clusterClaimName}</Content>
+          </Content>
         )}
       </>
     ),
@@ -716,13 +715,13 @@ export function useClusterNameColumnModal(): IAcmTableColumn<Cluster> {
           {!clusterDestroyable(cluster) ? (
             <Tooltip
               content={
-                <Text>
+                <Content component="p">
                   {cluster.isHypershift
                     ? t(
                         'Hosted clusters cannot be destroyed from the console. Use the individual cluster destroy option to see CLI instructions.'
                       )
                     : t('Imported clusters cannot be destroyed.')}
-                </Text>
+                </Content>
               }
             >
               <Label style={{ marginLeft: '5px' }} color="red">
@@ -734,9 +733,9 @@ export function useClusterNameColumnModal(): IAcmTableColumn<Cluster> {
           )}
         </span>
         {cluster.hive.clusterClaimName && (
-          <TextContent>
-            <Text component={TextVariants.small}>{cluster.hive.clusterClaimName}</Text>
-          </TextContent>
+          <Content>
+            <Content component={ContentVariants.small}>{cluster.hive.clusterClaimName}</Content>
+          </Content>
         )}
       </>
     ),

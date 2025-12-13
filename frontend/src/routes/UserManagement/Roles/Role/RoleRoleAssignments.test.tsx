@@ -203,7 +203,7 @@ describe('RoleRoleAssignments', () => {
   it('renders loading state when component is actually loading', () => {
     // Directly render the loading state that the component would show
     render(
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <AcmLoadingPage />
       </PageSection>
     )

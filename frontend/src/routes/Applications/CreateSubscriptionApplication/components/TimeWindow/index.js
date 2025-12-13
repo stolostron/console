@@ -165,17 +165,16 @@ export class TimeWindow extends Component {
             />
 
             <Accordion style={{ display: 'block' }}>
-              <AccordionItem>
+              <AccordionItem isExpanded={isExpanded}>
                 <AccordionToggle
                   onClick={() => {
                     onToggle(isExpanded)
                   }}
-                  isExpanded={isExpanded}
                   id="time-window-header"
                 >
                   {i18n('creation.app.settings.timeWindow.config')}
                 </AccordionToggle>
-                <AccordionContent isHidden={!isExpanded}>
+                <AccordionContent>
                   <div className="timeWindow-config-container" id="timeWindow-config">
                     <div className="config-days-section" style={{ marginBottom: '20px' }}>
                       <div

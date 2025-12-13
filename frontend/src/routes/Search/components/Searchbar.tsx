@@ -215,7 +215,7 @@ export function Searchbar(props: Readonly<SearchbarProps>) {
     const mark = (
       <mark
         style={{
-          color: 'var(--pf-v5-global--link--Color)',
+          color: 'var(--pf-t--global--text--color--link--default)',
           textDecoration: 'underline',
           background: 'none',
           fontWeight: 600,
@@ -503,7 +503,7 @@ export function Searchbar(props: Readonly<SearchbarProps>) {
             {searchbarTags.map((searchbarTag, idx) => (
               <AcmChip
                 key={searchbarTag.id}
-                onClick={() => deleteChip(idx)}
+                onClose={() => deleteChip(idx)}
                 closeBtnAriaLabel={t('delete-chip')}
                 textMaxWidth={'100%'}
               >
@@ -514,13 +514,17 @@ export function Searchbar(props: Readonly<SearchbarProps>) {
         </TextInputGroupMain>
         {showClearButton && (
           <TextInputGroupUtilities>
-            <Button variant="plain" onClick={clearChipsAndInput} aria-label={t('Clear button for chips and input')}>
-              <TimesIcon />
-            </Button>
+            <Button
+              icon={<TimesIcon />}
+              variant="plain"
+              onClick={clearChipsAndInput}
+              aria-label={t('Clear button for chips and input')}
+            />
           </TextInputGroupUtilities>
         )}
         <Divider orientation={{ default: 'vertical' }} />
         <Button
+          icon={<ArrowRightIcon />}
           id="run-search-button"
           isInline
           variant="plain"
@@ -535,13 +539,15 @@ export function Searchbar(props: Readonly<SearchbarProps>) {
             setMenuIsOpen(false)
           }}
           isDisabled={currentQuery === '' || currentQuery.endsWith(':')}
-        >
-          <ArrowRightIcon />
-        </Button>
+        />
         <Divider orientation={{ default: 'vertical' }} />
-        <Button isInline variant="plain" onClick={toggleInfoModal} aria-label={t('Search help modal toggle')}>
-          <HelpIcon color={'var(--pf-v5-global--active-color--100)'} />
-        </Button>
+        <Button
+          icon={<HelpIcon color={'var(--pf-t--color--blue--50)'} />}
+          isInline
+          variant="plain"
+          onClick={toggleInfoModal}
+          aria-label={t('Search help modal toggle')}
+        />
         {setSaveSearch && (
           <>
             <Divider orientation={{ default: 'vertical' }} />

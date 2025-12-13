@@ -13,7 +13,7 @@ const ServiceAccountRoleAssignments = () => {
       header={<AcmPageHeader title={t('Service Account Role Assignments')} description={`Service Account: ${id}`} />}
     >
       <AcmPageContent id="service-account-role-assignments">
-        <PageSection>Service Account role assignments page for ID: {id}</PageSection>
+        <PageSection hasBodyWrapper={false}>Service Account role assignments page for ID: {id}</PageSection>
       </AcmPageContent>
     </AcmPage>
   )

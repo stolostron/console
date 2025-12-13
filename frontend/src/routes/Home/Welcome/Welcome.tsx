@@ -1,8 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Card, CardBody, CardTitle, Page, PageSection, Stack, Text, Title } from '@patternfly/react-core'
+import { Card, CardBody, CardTitle, Content, PageSection, Stack, Title } from '@patternfly/react-core'
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom-v5-compat'
 import { AcmDynamicGrid } from '../../../components/AcmDynamicGrid'
+import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import OverviewIcon from './graphics/welcome-card-1-icon.svg'
 import InfrastructureIcon from './graphics/welcome-card-2-icon.svg'
@@ -12,7 +13,6 @@ import NetworkingIcon from './graphics/welcome-card-5-icon.svg'
 import CommunityIcon from './graphics/welcome-community-icon.svg'
 import HeaderGraphic from './graphics/Welcome-page-header.png'
 import SupportIcon from './graphics/welcome-support-icon.svg'
-import { useTranslation } from '../../../lib/acm-i18next'
 
 export default function WelcomePage() {
   const { t } = useTranslation()
@@ -110,7 +110,7 @@ export default function WelcomePage() {
         icon: <CommunityIcon />,
         title: t('Technical community'),
         description: t('Want more information? Check out the developer community.'),
-        link: 'https://www.redhat.com/en/blog/products',
+        link: 'https://www.redhat.com/en/technologies/management/advanced-cluster-management',
       },
       // {
       //     icon: <SlackIcon />,
@@ -128,37 +128,32 @@ export default function WelcomePage() {
   )
 
   return (
-    <Page>
+    <>
       <PageSection
-        variant="darker"
+        hasBodyWrapper={false}
         style={{ backgroundColor: '#333', backgroundImage: 'linear-gradient(to right, #333, #111)' }}
+        variant="secondary"
       >
-        <div style={{ display: 'flex', gap: 64 }}>
+        <div style={{ display: 'flex', gap: 64, color: 'white' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: 32 }}>
-            <Title headingLevel="h1">
+            <Content component="h1" style={{ color: 'white' }}>
               {t('Welcome!')} &nbsp; {t('Let’s get started.')}
-            </Title>
-            <Text>
+            </Content>
+            <Content component="p" style={{ color: 'white' }}>
               {t(
                 'Red Hat Advanced Cluster Management for Kubernetes provides the tools and capabilities to address various challenges with managing multiple clusters and consoles, distributed business applications, and inconsistent security controls across Kubernetes clusters that are deployed on-premises, or across public clouds.'
               )}
-            </Text>
+            </Content>
           </div>
           {/* eslint-disable-next-line jsx-a11y/alt-text */}
           <img src={HeaderGraphic} style={{ height: '180px', paddingRight: 32 }} />
         </div>
       </PageSection>
-      <PageSection variant="default">
+      <PageSection hasBodyWrapper={false} variant="secondary">
         <AcmDynamicGrid minSize={600}>
           {cards.map((card) => (
             <Link key={card.title} to={card.link} style={{ color: 'inherit', textDecoration: 'none' }}>
-              <Card
-                isRounded
-                isLarge
-                isFullHeight
-                key={card.title}
-                style={{ transition: 'box-shadow 0.25s', cursor: 'pointer' }}
-              >
+              <Card isLarge isFullHeight key={card.title} style={{ transition: 'box-shadow 0.25s', cursor: 'pointer' }}>
                 <CardTitle>
                   <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
                     {card.icon}
@@ -171,18 +166,18 @@ export default function WelcomePage() {
           ))}
         </AcmDynamicGrid>
       </PageSection>
-      <PageSection variant="light">
+      <PageSection hasBodyWrapper={false}>
         <Stack hasGutter>
           <Title headingLevel="h2">{t('Easy, simple, and secure.')}</Title>
-          <Text>
+          <Content component="p">
             {t(
               'Easy to use and simple to understand, Red Hat Advanced Cluster Management for Kubernetes provides the following mission critical capabilities based on open source projects:'
             )}
-          </Text>
+          </Content>
           <div style={{ paddingTop: 16 }}>
             <AcmDynamicGrid minSize={400}>
               {capabilities.map((card) => (
-                <Card isRounded isFlat isFullHeight key={card.title}>
+                <Card isFullHeight key={card.title}>
                   <CardTitle>{card.title}</CardTitle>
                   <CardBody>{card.description}</CardBody>
                 </Card>
@@ -191,18 +186,13 @@ export default function WelcomePage() {
           </div>
         </Stack>
       </PageSection>
-      <PageSection variant="default">
+      <PageSection hasBodyWrapper={false} variant="secondary">
         <Stack hasGutter>
           <Title headingLevel="h2">{t('Converse and connect.')}</Title>
           <AcmDynamicGrid minSize={400}>
             {connections.map((card) => (
               <a key={card.title} href={card.link} target="_blank" style={{ color: 'inherit', textDecoration: 'none' }}>
-                <Card
-                  isRounded
-                  isFullHeight
-                  key={card.title}
-                  style={{ transition: 'box-shadow 0.25s', cursor: 'pointer' }}
-                >
+                <Card isFullHeight key={card.title} style={{ transition: 'box-shadow 0.25s', cursor: 'pointer' }}>
                   <CardTitle>
                     <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
                       {card.icon}
@@ -216,6 +206,6 @@ export default function WelcomePage() {
           </AcmDynamicGrid>
         </Stack>
       </PageSection>
-    </Page>
+    </>
   )
 }

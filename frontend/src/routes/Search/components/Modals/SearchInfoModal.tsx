@@ -34,9 +34,9 @@ const exampleRow = css({
   },
   '& > span': {
     margin: '0.4rem 0 !important',
-    fontSize: 'var(--pf-v5-global--FontSize--xs)',
-    backgroundColor: 'var(--pf-v5-global--palette--blue-50)',
-    color: 'var(--pf-v5-global--info-color--200)',
+    fontSize: 'var(--pf-t--global--font--size--xs)',
+    backgroundColor: 'var(--pf-t--color--blue--10)',
+    color: 'var(--pf-t--global--icon--color--status--info--default)',
   },
 })
 
@@ -53,13 +53,13 @@ export const SearchInfoModal = (props: any) => {
           <p>{t('To search for a keyword, type the word in the search box.')}</p>
           <div className={exampleRow}>
             <AcmChipGroup aria-label={t('Type')}>
-              <AcmChip isReadOnly>{t('Type')}</AcmChip>
+              <AcmChip>{t('Type')}</AcmChip>
             </AcmChipGroup>
             <p>OpenShift</p>
           </div>
           <div className={exampleRow}>
             <AcmChipGroup aria-label={t('Show')}>
-              <AcmChip isReadOnly>{t('Show')}</AcmChip>
+              <AcmChip>{t('Show')}</AcmChip>
             </AcmChipGroup>
             <p>{t('A list of resources that contain the keyword "OpenShift" in any field.')}</p>
           </div>
@@ -73,13 +73,13 @@ export const SearchInfoModal = (props: any) => {
           </p>
           <div className={exampleRow}>
             <AcmChipGroup aria-label={t('Type')}>
-              <AcmChip isReadOnly>{t('Type')}</AcmChip>
+              <AcmChip>{t('Type')}</AcmChip>
             </AcmChipGroup>
             <p>status:failed,pending</p>
           </div>
           <div className={exampleRow}>
             <AcmChipGroup aria-label={t('Show')}>
-              <AcmChip isReadOnly>{t('Show')}</AcmChip>
+              <AcmChip>{t('Show')}</AcmChip>
             </AcmChipGroup>
             <p>{t('Resources with "failed" or "pending" status.')}</p>
           </div>

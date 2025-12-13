@@ -99,14 +99,14 @@ export default function SnapshotsTab() {
 
   if (loading || vmLoading) {
     return (
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <AcmLoadingPage />
       </PageSection>
     )
   }
   if (error) {
     return (
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <Alert variant={'danger'} isInline={true} title={t('An unexpected error occurred.')}>
           {error.message}
         </Alert>
@@ -116,7 +116,7 @@ export default function SnapshotsTab() {
 
   if (!loading && !error && snapshotItems.length === 0) {
     return (
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <Alert
           variant={'info'}
           isInline={true}
@@ -150,7 +150,7 @@ export default function SnapshotsTab() {
         resource={deleteExternalResource.resource}
         hubCluster={deleteExternalResource.hubCluster}
       />
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <Stack hasGutter>
           {snapshotItems.length >= searchResultLimit ? (
             <Alert
@@ -161,7 +161,7 @@ export default function SnapshotsTab() {
               )}
             />
           ) : null}
-          <PageSection isFilled={false} variant={'light'}>
+          <PageSection hasBodyWrapper={false} isFilled={false}>
             <AcmTable
               items={snapshotItems}
               emptyState={undefined} // table only shown for kinds with related resources

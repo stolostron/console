@@ -23,7 +23,7 @@ import {
 import { useMemo } from 'react'
 import { useLocation } from 'react-router-dom-v5-compat'
 import { useDiscoveredDetailsContext } from './DiscoveredPolicyDetailsPage'
-import { EmptyState, EmptyStateIcon, PageSection, Spinner, EmptyStateHeader } from '@patternfly/react-core'
+import { EmptyState, PageSection, Spinner } from '@patternfly/react-core'
 
 export default function DiscoveredByCluster() {
   const { policyKind, apiGroup, ...details } = useDiscoveredDetailsContext()
@@ -237,10 +237,8 @@ export default function DiscoveredByCluster() {
 
   if (details.isFetching && !details.policyItems) {
     return (
-      <PageSection>
-        <EmptyState>
-          <EmptyStateHeader titleText={t('Loading')} icon={<EmptyStateIcon icon={Spinner} />} headingLevel="h4" />
-        </EmptyState>
+      <PageSection hasBodyWrapper={false}>
+        <EmptyState headingLevel="h4" icon={Spinner} titleText={t('Loading')}></EmptyState>
       </PageSection>
     )
   }
@@ -251,7 +249,7 @@ export default function DiscoveredByCluster() {
         policies.length > 0 &&
         policyKind !== 'ValidatingAdmissionPolicyBinding' &&
         !isGatekeeperMutation && (
-          <PageSection style={{ paddingBottom: '0' }}>
+          <PageSection hasBodyWrapper={false} style={{ paddingBottom: '0' }}>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', flexShrink: '0' }}>
               <DiscoveredViolationsCard
                 policyKind={policyKind}
@@ -319,7 +317,7 @@ export default function DiscoveredByCluster() {
             </div>
           </PageSection>
         )}
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <AcmTable<DiscoveredPolicyItem>
           id={`${policyKind}ByCluster`}
           columns={cols}

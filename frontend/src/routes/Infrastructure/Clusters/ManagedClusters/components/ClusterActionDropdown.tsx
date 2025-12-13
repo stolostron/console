@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Text, TextContent, TextVariants } from '@patternfly/react-core'
+import { Content, ContentVariants } from '@patternfly/react-core'
 import { AcmInlineProvider, AcmToastContext } from '../../../../../ui-components'
 import { useCallback, useContext, useMemo, useState } from 'react'
 import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
@@ -106,9 +106,9 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
           <>
             <span style={{ whiteSpace: 'nowrap' }}>{cluster.displayName}</span>
             {cluster.hive.clusterClaimName && (
-              <TextContent>
-                <Text component={TextVariants.small}>{cluster.hive.clusterClaimName}</Text>
-              </TextContent>
+              <Content>
+                <Content component={ContentVariants.small}>{cluster.hive.clusterClaimName}</Content>
+              </Content>
             )}
           </>
         ),
@@ -170,9 +170,9 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                   <>
                     <span style={{ whiteSpace: 'nowrap' }}>{cluster.displayName}</span>
                     {cluster.hive.clusterClaimName && (
-                      <TextContent>
-                        <Text component={TextVariants.small}>{cluster.hive.clusterClaimName}</Text>
-                      </TextContent>
+                      <Content>
+                        <Content component={ContentVariants.small}>{cluster.hive.clusterClaimName}</Content>
+                      </Content>
                     )}
                   </>
                 ),

@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { css } from '@emotion/css'
-import { Modal, ModalVariant, PageSection } from '@patternfly/react-core'
+import { PageSection } from '@patternfly/react-core'
+import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
 import Handlebars from 'handlebars'
 import { cloneDeep, get, keyBy, set } from 'lodash'
 import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js'
@@ -100,7 +101,7 @@ const Portals = Object.freeze({
 })
 
 const wizardBody = css({
-  '& .pf-v5-c-wizard__outer-wrap .pf-v5-c-wizard__main .pf-v5-c-wizard__main-body': {
+  '& .pf-v6-c-wizard__outer-wrap .pf-v6-c-wizard__main .pf-v6-c-wizard__main-body': {
     height: '100%',
   },
 })
@@ -663,7 +664,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
     >
       <AcmErrorBoundary>
         <AcmPageContent id="create-cluster">
-          <PageSection variant="light" isFilled type="wizard">
+          <PageSection hasBodyWrapper={false} isFilled type="wizard">
             <WarningContext.Provider value={warning}>
               <HypershiftAgentContext.Provider value={hypershiftValues}>
                 <Modal

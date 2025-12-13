@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { render, fireEvent, waitFor } from '@testing-library/react'
-import { ClustersDualListSelector } from './ClustersDualListSelector'
+import { fireEvent, render, waitFor } from '@testing-library/react'
 import { ClusterSet } from '../RoleAssignments/hook/RoleAssignmentDataHook'
+import { ClustersDualListSelector } from './ClustersDualListSelector'
 
-jest.mock('@patternfly/react-core', () => ({
+jest.mock('@patternfly/react-core/deprecated', () => ({
   DualListSelector: ({ availableOptions, chosenOptions, onListChange, onOptionCheck, ...props }: any) => {
     const handleCheckboxChange = (e: any, isChecked: boolean, optionId: string) => {
       onOptionCheck?.(e, isChecked, optionId)

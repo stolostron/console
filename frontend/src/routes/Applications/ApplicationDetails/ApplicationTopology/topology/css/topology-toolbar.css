@@ -1,8 +1,6 @@
 .pf-v6-c-toolbar {
   padding: 10px 0 7px 25px;
   min-height: 40px;
-  background-color: var(--pf-v5-c-page__main-section--m-light--BackgroundColor);
-  border-color: var(--pf-v5-global--BorderColor--100);
 }
 
 .channel-controls-container {
@@ -14,19 +12,19 @@
   font-weight: 400;
   font-size: 14px;
 }
-.channel-controls-container .channelsCombo .pf-v5-c-dropdown,
+.channel-controls-container .channelsCombo .pf-v6-c-dropdown,
 .channel-controls-container .channelsCombo #comboChannel {
   width: 100%;
 }
-.channel-controls-container .channelsCombo .pf-v5-c-dropdown__toggle-text {
+.channel-controls-container .channelsCombo .pf-v6-c-dropdown__toggle-text {
   white-space: normal;
   text-align: left;
   font-size: 14px;
 }
-.channel-controls-container .channelsCombo .pf-v5-c-dropdown__menu-item {
+.channel-controls-container .channelsCombo .pf-v6-c-dropdown__menu-item {
   font-size: 14px;
 }
-.channel-controls-container .pf-v5-c-options-menu {
+.channel-controls-container .pf-v6-c-options-menu {
   display: none;
 }
 .channel-controls-container .label {

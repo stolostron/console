@@ -28,7 +28,7 @@ const ControlPanelFormGroup = (props: {
           label={!hideLabel && name}
           isRequired={validation.required}
           fieldId={controlId}
-          labelIcon={
+          labelHelp={
             /* istanbul ignore next */
             tooltip ? (
               <Popover id={`${controlId}-label-help-popover`} bodyContent={tooltip}>
@@ -38,7 +38,7 @@ const ControlPanelFormGroup = (props: {
                     id={`${controlId}-label-help-button`}
                     aria-label={i18n('More info')}
                     onClick={(e) => e.preventDefault()}
-                    className="pf-v5-c-form__group-label-help"
+                    className="pf-v6-c-form__group-label-help"
                     style={{ ['--pf-v5-c-form__group-label-help--TranslateY' as any]: 0 }}
                     icon={<HelpIcon />}
                   />

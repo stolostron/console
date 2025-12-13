@@ -37,7 +37,7 @@ export default function AnsibleAutomationsPage() {
   return (
     <AcmPage hasDrawer header={<AcmPageHeader title={t('template.title')} />}>
       <AcmPageContent id="clusters">
-        <PageSection>
+        <PageSection hasBodyWrapper={false}>
           <AutomationProviderHint component="hint" className={css({ marginBottom: '16px' })} />
           <AnsibleJobTemplateTable />
         </PageSection>

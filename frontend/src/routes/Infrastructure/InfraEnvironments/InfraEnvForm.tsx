@@ -6,8 +6,6 @@ import {
   FormGroup,
   Grid,
   GridItem,
-  Modal,
-  ModalVariant,
   PageSection,
   SelectOption,
   Split,
@@ -15,6 +13,7 @@ import {
   Stack,
   StackItem,
 } from '@patternfly/react-core'
+import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
 import { AcmSelectBase, SelectVariant } from '../../../components/AcmSelectBase'
 import {
   InfraEnvFormPage,
@@ -43,7 +42,7 @@ export const Portals = Object.freeze({
 })
 
 const portals = (
-  <PageSection variant="light" isFilled className="infra-env-form__section">
+  <PageSection hasBodyWrapper={false} isFilled className="infra-env-form__section">
     <Split hasGutter>
       <SplitItem>
         <div id={Portals.createBtn} />
@@ -133,7 +132,7 @@ const InfraEnvForm: React.FC<InfraEnvFormProps> = ({ control, handleChange }) =>
   const currentConnection = providerConnections.find((p) => p.metadata.uid === credentialsUID)
   return (
     <>
-      <PageSection variant="light" isFilled className="infra-env-form__section">
+      <PageSection hasBodyWrapper={false} isFilled className="infra-env-form__section">
         <Grid hasGutter className="infra-env-form">
           <GridItem span={8}>
             {/*@ts-expect-error @openshift-assisted/ui-lib needs React 18 updates*/}

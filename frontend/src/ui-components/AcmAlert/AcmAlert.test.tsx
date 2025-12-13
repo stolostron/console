@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render, waitFor, act } from '@testing-library/react'
+import { act, render, waitFor } from '@testing-library/react'
 import { axe } from 'jest-axe'
 import { Fragment } from 'react'
 import { AcmButton } from '../AcmButton/AcmButton'
@@ -84,18 +84,26 @@ describe('AcmToast', () => {
     )
 
     expect(queryAllByText('Info')).toHaveLength(0)
-    getByText('Add Info').click()
-    await waitFor(() => expect(queryAllByText('Info')).toHaveLength(1))
+    await act(async () => {
+      getByText('Add Info').click()
+    })
+    await waitFor(() => expect(queryAllByText('Info')).toHaveLength(1), { timeout: 1000 })
 
     expect(queryAllByText('Error')).toHaveLength(0)
-    getByText('Add Error').click()
-    await waitFor(() => expect(queryAllByText('Error')).toHaveLength(1))
-    getByText('Add Error').click()
-    await waitFor(() => expect(queryAllByText('Error')).toHaveLength(2))
+    await act(async () => {
+      getByText('Add Error').click()
+    })
+    await waitFor(() => expect(queryAllByText('Error')).toHaveLength(1), { timeout: 1000 })
+    await act(async () => {
+      getByText('Add Error').click()
+    })
+    await waitFor(() => expect(queryAllByText('Error')).toHaveLength(2), { timeout: 1000 })
 
     expect(queryAllByText('Warning')).toHaveLength(0)
-    getByText('Add Warning').click()
-    await waitFor(() => expect(queryAllByText('Warning')).toHaveLength(1))
+    await act(async () => {
+      getByText('Add Warning').click()
+    })
+    await waitFor(() => expect(queryAllByText('Warning')).toHaveLength(1), { timeout: 1000 })
 
     await act(async () => {
       expect(queryAllByText('Expiring')).toHaveLength(0)
@@ -106,16 +114,22 @@ describe('AcmToast', () => {
 
     expect(await axe(container)).toHaveNoViolations()
 
-    getByText('Clear Warnings').click()
-    await waitFor(() => expect(queryAllByText('Warning')).toHaveLength(0))
-    await waitFor(() => expect(queryAllByText('Info')).toHaveLength(1))
-    await waitFor(() => expect(queryAllByText('Error')).toHaveLength(2))
+    await act(async () => {
+      getByText('Clear Warnings').click()
+    })
+    await waitFor(() => expect(queryAllByText('Warning')).toHaveLength(0), { timeout: 1000 })
+    await waitFor(() => expect(queryAllByText('Info')).toHaveLength(1), { timeout: 1000 })
+    await waitFor(() => expect(queryAllByText('Error')).toHaveLength(2), { timeout: 1000 })
 
-    getByRole('button', { name: 'Close Info alert: alert: Info' }).click()
-    await waitFor(() => expect(queryAllByText('Info')).toHaveLength(0))
+    await act(async () => {
+      getByRole('button', { name: 'Close Info alert: alert: Info' }).click()
+    })
+    await waitFor(() => expect(queryAllByText('Info')).toHaveLength(0), { timeout: 1000 })
 
-    getByText('Clear Alerts').click()
-    await waitFor(() => expect(queryAllByText('Error')).toHaveLength(0))
+    await act(async () => {
+      getByText('Clear Alerts').click()
+    })
+    await waitFor(() => expect(queryAllByText('Error')).toHaveLength(0), { timeout: 1000 })
 
     await new Promise((resolve) => setTimeout(resolve, 1000))
   })

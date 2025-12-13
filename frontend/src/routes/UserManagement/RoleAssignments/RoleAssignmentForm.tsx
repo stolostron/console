@@ -236,7 +236,7 @@ const RoleAssignmentForm = ({
                     isChecked={isAllNamespaces}
                     onChange={handleCheckboxChange}
                   />
-                  <div style={{ marginTop: 'var(--pf-v5-global--spacer--sm)' }}>
+                  <div style={{ marginTop: 'var(--pf-t--global--spacer--sm)' }}>
                     <NamespaceSelector
                       selectedClusters={roleAssignmentFormData.scope.clusterNames || []}
                       clusters={roleAssignmentData.clusterSets?.flatMap((cs) => cs.clusters || []) || []}

@@ -5,13 +5,12 @@ import {
   AlertActionLink,
   ButtonVariant,
   Divider,
-  Modal,
-  ModalVariant,
   PageSection,
-  Text,
-  TextVariants,
+  Content,
+  ContentVariants,
   SelectOption,
 } from '@patternfly/react-core'
+import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
 import { Fragment, useCallback, useContext, useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom-v5-compat'
 import { ConfirmModal, IConfirmModalProps } from '../../../../../components/ConfirmModal'
@@ -88,13 +87,13 @@ export default function DiscoveryConfigPage() {
       }
     >
       <AcmPageContent id="discoveryConfigPageContent">
-        <PageSection variant="light">
+        <PageSection hasBodyWrapper={false}>
           <Alert
             variant="info"
             isInline
             title={t('Import your clusters automatically')}
             style={{ marginBottom: '1em' }}
-            className="pf-v5-u-mb-md"
+            className="pf-v6-u-mb-md"
             actionLinks={[
               [
                 <AlertActionLink
@@ -426,7 +425,7 @@ export function DiscoveryConfigPageContent(props: {
       <AcmFormSection
         title={editing ? t('discoveryConfig.header.edit') : t('discoveryConfig.header.add')}
       ></AcmFormSection>
-      <Text component={TextVariants.h3}>{t('discoveryConfig.subheader')}</Text>
+      <Content component={ContentVariants.h3}>{t('discoveryConfig.subheader')}</Content>
       {editing ? (
         <AcmSelect
           id="namespaces"
@@ -494,7 +493,7 @@ export function DiscoveryConfigPageContent(props: {
       {discoveryConfig.metadata!.namespace ? (
         <Fragment>
           <AcmFormSection title={t('discoveryConfig.filterform.header')}></AcmFormSection>
-          <Text component={TextVariants.h3}>{t('discoveryConfig.filterform.subheader')}</Text>
+          <Content component={ContentVariants.h3}>{t('discoveryConfig.filterform.subheader')}</Content>
           <AcmSelect
             id="lastActiveFilter"
             label={t('discoveryConfig.lastActiveFilter.label')}

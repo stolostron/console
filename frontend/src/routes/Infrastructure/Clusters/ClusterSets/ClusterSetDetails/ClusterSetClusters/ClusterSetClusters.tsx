@@ -23,7 +23,7 @@ export function ClusterSetClustersPageContent() {
 
   return (
     <AcmPageContent id="clusters">
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <ClustersTable
           clusters={clusters}
           emptyState={

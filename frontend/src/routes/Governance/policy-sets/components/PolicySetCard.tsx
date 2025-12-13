@@ -13,11 +13,10 @@ import {
   DescriptionListGroup,
   DescriptionListTerm,
   Icon,
-  Modal,
-  ModalVariant,
   Stack,
   StackItem,
 } from '@patternfly/react-core'
+import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { ReactNode, useCallback, useContext, useState } from 'react'
 import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
@@ -75,9 +74,7 @@ export default function PolicySetCard(props: {
     <div>
       {modal !== undefined && modal}
       <Card
-        isRounded
         isFullHeight
-        isSelectableRaised
         isSelected={selectedCardID === cardID}
         id={cardID}
         key={cardID}

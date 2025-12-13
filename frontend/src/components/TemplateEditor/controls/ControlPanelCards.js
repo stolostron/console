@@ -4,7 +4,8 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import groupBy from 'lodash/groupBy'
-import { Title, TitleSizes, Gallery, Tile, Stack } from '@patternfly/react-core'
+import { Title, TitleSizes, Gallery, Stack } from '@patternfly/react-core'
+import { Tile } from '@patternfly/react-core/deprecated'
 import Tooltip from '../components/Tooltip'
 import isEmpty from 'lodash/isEmpty'
 

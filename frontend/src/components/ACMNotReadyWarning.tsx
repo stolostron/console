@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { PropsWithChildren, useCallback, useContext, useState } from 'react'
-import { Checkbox, Split, SplitItem, Stack, StackItem, Text, TextContent, TextVariants } from '@patternfly/react-core'
+import { Checkbox, Split, SplitItem, Stack, StackItem, Content, ContentVariants } from '@patternfly/react-core'
 import { useSharedSelectors } from '../shared-recoil'
 import { SupportedOperator, useOperatorCheck } from '../lib/operatorCheck'
 import { AcmAlert, AcmButton, AcmModal } from '../ui-components'
@@ -54,17 +54,17 @@ export const ACMNotReadyWarning = (props: PropsWithChildren) => {
     >
       <Stack hasGutter>
         <StackItem>
-          <TextContent>
-            <Text component={TextVariants.p}>
+          <Content>
+            <Content component={ContentVariants.p}>
               <Trans i18nKey="acm.plugin.not.ready" components={{ bold: <strong /> }} />
-            </Text>
-            <Text component={TextVariants.p}>
+            </Content>
+            <Content component={ContentVariants.p}>
               <Trans
                 i18nKey="acm.plugin.not.ready.tips"
                 components={{ code: <span style={{ fontFamily: 'monospace' }} /> }}
               />
-            </Text>
-          </TextContent>
+            </Content>
+          </Content>
         </StackItem>
         <StackItem>
           <Split hasGutter>
@@ -107,11 +107,11 @@ export const ACMNotReadyWarning = (props: PropsWithChildren) => {
           </Split>
         </StackItem>
         <StackItem>
-          <TextContent>
-            <Text component={TextVariants.p}>
+          <Content>
+            <Content component={ContentVariants.p}>
               <Trans i18nKey="mce.dependency.of.acm" components={{ bold: <strong /> }} />
-            </Text>
-          </TextContent>
+            </Content>
+          </Content>
         </StackItem>
         <StackItem>
           <AcmAlert

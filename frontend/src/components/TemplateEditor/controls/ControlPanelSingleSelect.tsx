@@ -80,7 +80,7 @@ const ControlPanelSingleSelect = (props: {
       <div className="creation-view-controls-singleselect" ref={setControlRef}>
         <ControlPanelFormGroup i18n={i18n} controlId={controlId} control={control} controlData={controlData}>
           {isLoading || isRefetching ? (
-            <div className="creation-view-controls-singleselect-loading  pf-v5-c-form-control">
+            <div className="creation-view-controls-singleselect-loading  pf-v6-c-form-control">
               <Spinner size="md" />
               <div>{active}</div>
             </div>

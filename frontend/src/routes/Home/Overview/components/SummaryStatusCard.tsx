@@ -22,7 +22,7 @@ export interface Data {
 export function SummaryStatusCard(props: { key: string; title: string; data: Data }) {
   const { key, title, data } = props
   return (
-    <Card isRounded key={key} style={{ height: '200px' }}>
+    <Card key={key} style={{ height: '200px' }}>
       <CardTitle>{title}</CardTitle>
       <CardBody>
         <div style={{ display: 'flex', flexDirection: 'row', height: '100%' }}>

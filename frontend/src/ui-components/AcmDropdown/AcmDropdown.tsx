@@ -245,7 +245,7 @@ export function AcmDropdown(props: AcmDropdownProps) {
 
       // checks if it's a menu item
       const isMenuItem =
-        activeElement.classList.contains('pf-v5-c-menu__item') || activeElement.closest('.pf-v5-c-menu__item')
+        activeElement.classList.contains('pf-v6-c-menu__item') || activeElement.closest('.pf-v6-c-menu__item')
 
       if (isMenuItem) {
         // gets the item ID
@@ -255,7 +255,7 @@ export function AcmDropdown(props: AcmDropdownProps) {
         }
 
         // checking if it has a toggle icon to determine if an item has its own submenu(parent item with submenu)
-        const hasToggleIcon = activeElement.querySelector('.pf-v5-c-menu__item-toggle-icon')
+        const hasToggleIcon = activeElement.querySelector('.pf-v6-c-menu__item-toggle-icon')
 
         // handle only non-parent items (items without their own submenus)
         if (!hasToggleIcon) {

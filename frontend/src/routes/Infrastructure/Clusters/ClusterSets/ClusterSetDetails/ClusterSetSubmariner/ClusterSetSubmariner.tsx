@@ -7,9 +7,8 @@ import {
   PageSection,
   Stack,
   StackItem,
-  Text,
-  TextContent,
-  TextVariants,
+  Content,
+  ContentVariants,
 } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { fitContent } from '@patternfly/react-table'
@@ -256,7 +255,7 @@ export function ClusterSetSubmarinerPageContent() {
 
   return (
     <AcmPageContent id="clusters">
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <EditSubmarinerConfigModal {...editSubmarinerConfigModalProps} />
         <BulkActionModal<ManagedClusterAddOn> {...modalProps} />
         <Stack hasGutter>
@@ -264,13 +263,13 @@ export function ClusterSetSubmarinerPageContent() {
             <AcmExpandableCard title={t('multi-cluster.networking')} id="submariner-info">
               <Flex spaceItems={{ default: 'spaceItemsLg' }}>
                 <FlexItem flex={{ default: 'flex_1' }}>
-                  <TextContent>
-                    <Text component={TextVariants.h4}>{t('submariner')}</Text>
-                    <Text component={TextVariants.p}>{t('learn.submariner')}</Text>
-                    <Text component={TextVariants.p}>
+                  <Content>
+                    <Content component={ContentVariants.h4}>{t('submariner')}</Content>
+                    <Content component={ContentVariants.p}>{t('learn.submariner')}</Content>
+                    <Content component={ContentVariants.p}>
                       <Trans i18nKey="learn.submariner.additional" components={{ bold: <strong /> }} />
-                    </Text>
-                  </TextContent>
+                    </Content>
+                  </Content>
                 </FlexItem>
               </Flex>
               <Flex justifyContent={{ default: 'justifyContentFlexEnd' }}>

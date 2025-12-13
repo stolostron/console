@@ -1,10 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Chip, ChipGroup, ChipProps, ChipGroupProps } from '@patternfly/react-core'
+import { Label, LabelGroup, LabelGroupProps, LabelProps } from '@patternfly/react-core'
+
 import { useTranslation } from '../../lib/acm-i18next'
 
 export function AcmChipGroup(
-  props: Omit<ChipGroupProps, 'ref'> &
+  props: Omit<LabelGroupProps, 'ref'> &
     ({ categoryName: string; 'aria-label'?: never } | { categoryName?: never; 'aria-label': string })
 ) {
   const {
@@ -18,23 +19,23 @@ export function AcmChipGroup(
   } = props
   const { t } = useTranslation()
   return (
-    <ChipGroup
+    <LabelGroup
       closeBtnAriaLabel={closeBtnAriaLabel ?? t('Clear all')}
       collapsedText={collapsedText ?? t('{{remaining}} more', { remaining: '${remaining}' })}
       expandedText={expandedText ?? t('Show less')}
       {...otherProps}
     >
       {children}
-    </ChipGroup>
+    </LabelGroup>
   )
 }
 
-export function AcmChip(props: Omit<ChipProps, 'ref'>) {
+export function AcmChip(props: Omit<LabelProps, 'ref'>) {
   const { children, ...otherProps } = props
   const { t } = useTranslation()
   return (
-    <Chip closeBtnAriaLabel={t('Close')} {...otherProps}>
+    <Label variant="outline" closeBtnAriaLabel={t('Close')} {...otherProps}>
       {children}
-    </Chip>
+    </Label>
   )
 }

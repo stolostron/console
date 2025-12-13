@@ -107,7 +107,7 @@ const SnapshotDeadlineFormField: FC<{
           <HelperTextItem
             icon={
               validated === ValidatedOptions.error && (
-                <ExclamationCircleIcon color="var(--pf-v5-global--danger-color--100)" />
+                <ExclamationCircleIcon color="var(--pf-t--global--icon--color--status--danger--default)" />
               )
             }
             variant={validated}

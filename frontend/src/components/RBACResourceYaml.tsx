@@ -19,7 +19,7 @@ const RBACResourceYaml = <T,>({ resource, loading, resourceType }: RBACResourceY
   switch (true) {
     case loading:
       return (
-        <PageSection>
+        <PageSection hasBodyWrapper={false}>
           <AcmLoadingPage />
         </PageSection>
       )
@@ -31,7 +31,7 @@ const RBACResourceYaml = <T,>({ resource, loading, resourceType }: RBACResourceY
       }
 
       return (
-        <PageSection>
+        <PageSection hasBodyWrapper={false}>
           <div>{getNotFoundMessage()}</div>
         </PageSection>
       )
@@ -49,7 +49,7 @@ const RBACResourceYaml = <T,>({ resource, loading, resourceType }: RBACResourceY
           : resource
 
       return (
-        <PageSection>
+        <PageSection hasBodyWrapper={false}>
           <YamlEditor
             resourceYAML={jsYaml.dump(orderedResource, { indent: 2 })}
             readOnly={true}

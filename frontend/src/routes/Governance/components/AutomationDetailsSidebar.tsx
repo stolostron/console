@@ -2,13 +2,13 @@
 import {
   Button,
   ButtonVariant,
+  Content,
   DescriptionList,
   DescriptionListDescription,
   DescriptionListGroup,
   DescriptionListTerm,
   Icon,
   Stack,
-  Text,
 } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { useMemo, useState } from 'react'
@@ -16,6 +16,7 @@ import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { AutomationProviderHint } from '../../../components/AutomationProviderHint'
 import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
 import { Trans, useTranslation } from '../../../lib/acm-i18next'
+import AcmTimestamp from '../../../lib/AcmTimestamp'
 import { NavigationPath } from '../../../NavigationPath'
 import { AnsibleJob, Policy, PolicyAutomation, Secret } from '../../../resources'
 import { deleteResource } from '../../../resources/utils'
@@ -23,7 +24,6 @@ import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmEmptyState, AcmTable } from '../../../ui-components'
 import { ClusterPolicyViolationIcons } from '../components/ClusterPolicyViolations'
 import { useGovernanceData } from '../useGovernanceData'
-import AcmTimestamp from '../../../lib/AcmTimestamp'
 
 export interface JobTableData {
   name: string
@@ -195,7 +195,7 @@ export function AutomationDetailsSidebar(props: {
                 <ClusterPolicyViolationIcons risks={govData.clusterRisks} />
               ) : (
                 <div>
-                  <ExclamationTriangleIcon color="var(--pf-v5-global--warning-color--100)" /> {'No status'}
+                  <ExclamationTriangleIcon color="var(--pf-t--global--color--status--warning--100)" /> {'No status'}
                 </div>
               )}
             </DescriptionListDescription>
@@ -265,13 +265,13 @@ export function AutomationDetailsSidebar(props: {
               items: [policyAutomationMatch],
               emptyState: undefined, // there is always 1 item supplied
               description: (
-                <Text>
+                <Content component="p">
                   <Trans
                     i18nKey="Deleting <italic>{{policyAutomation}}</italic> is irreversible. Any associated Ansible job will be deleted."
                     values={{ policyAutomation: policyAutomationMatch.metadata.name! }}
                     components={{ italic: <em /> }}
                   />
-                </Text>
+                </Content>
               ),
               keyFn: (policyAutomationMatch: PolicyAutomation) => policyAutomationMatch.metadata.uid as string,
               actionFn: (policyAutomationMatch) => {

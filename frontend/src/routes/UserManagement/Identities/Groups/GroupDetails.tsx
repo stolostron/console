@@ -1,20 +1,19 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import {
-  Page,
+  Content,
+  DescriptionList,
+  DescriptionListDescription,
+  DescriptionListGroup,
+  DescriptionListTerm,
   PageSection,
   Stack,
-  Text,
-  DescriptionList,
-  DescriptionListTerm,
-  DescriptionListGroup,
-  DescriptionListDescription,
 } from '@patternfly/react-core'
-import { useTranslation } from '../../../../lib/acm-i18next'
-import { AcmButton } from '../../../../ui-components'
-import { useGroupDetailsContext } from './GroupPage'
 import { ErrorPage } from '../../../../components/ErrorPage'
+import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
+import { AcmButton } from '../../../../ui-components'
+import { useGroupDetailsContext } from './GroupPage'
 
 const GroupDetails = () => {
   const { t } = useTranslation()
@@ -22,7 +21,7 @@ const GroupDetails = () => {
 
   if (!group) {
     return (
-      <Page>
+      <>
         <ErrorPage
           error={new ResourceError(ResourceErrorCode.NotFound)}
           actions={
@@ -31,14 +30,16 @@ const GroupDetails = () => {
             </AcmButton>
           }
         />
-      </Page>
+      </>
     )
   }
 
   return (
-    <PageSection>
-      <PageSection variant={'light'}>
-        <Text style={{ fontFamily: 'RedHatDisplay', marginBottom: '2rem' }}>{t('General information')}</Text>
+    <PageSection hasBodyWrapper={false}>
+      <PageSection hasBodyWrapper={false}>
+        <Content component="p" style={{ fontFamily: 'RedHatDisplay', marginBottom: '2rem' }}>
+          {t('General information')}
+        </Content>
         <Stack hasGutter>
           <DescriptionList isHorizontal={false}>
             <DescriptionListGroup>

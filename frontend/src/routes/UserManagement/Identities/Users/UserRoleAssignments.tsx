@@ -14,7 +14,7 @@ const UserRoleAssignments = () => {
   })
 
   return (
-    <PageSection>
+    <PageSection hasBodyWrapper={false}>
       <RoleAssignments
         roleAssignments={roleAssignments}
         isLoading={false}

@@ -19,7 +19,8 @@ import {
   Provider,
   AcmAlert,
 } from '../../../../../../ui-components'
-import { AlertVariant, ButtonVariant, Modal, ModalVariant, PageSection, Popover } from '@patternfly/react-core'
+import { AlertVariant, ButtonVariant, PageSection, Popover } from '@patternfly/react-core'
+import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
 import { ExternalLinkAltIcon, OutlinedQuestionCircleIcon, PencilAltIcon } from '@patternfly/react-icons'
 import { Fragment, useState } from 'react'
 import {
@@ -416,7 +417,7 @@ export function ClusterOverviewPageContent() {
           />
         </Modal>
       </Fragment>
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         {clusterCurator && (
           <TemplateSummaryModal
             curatorTemplate={clusterCurator}

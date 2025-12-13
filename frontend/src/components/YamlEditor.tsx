@@ -6,8 +6,8 @@ import 'monaco-editor/esm/vs/editor/editor.all.js'
 import * as monacoEditor from 'monaco-editor/esm/vs/editor/editor.api'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import MonacoEditor, { monaco } from 'react-monaco-editor'
-import './YAMLEditor.css'
 import { defineThemes, getTheme } from './theme'
+import './YAMLEditor.css'
 
 /**
  *
@@ -142,7 +142,6 @@ export default function YAMLEditor(props: {
     <div
       style={{
         minHeight: '100px',
-        flex: 1,
         position: 'relative',
       }}
     >

@@ -3,26 +3,18 @@
 // Copyright Contributors to the Open Cluster Management project
 import { ApolloError } from '@apollo/client'
 import { css } from '@emotion/css'
-import {
-  ButtonVariant,
-  EmptyState,
-  EmptyStateBody,
-  EmptyStateHeader,
-  EmptyStateIcon,
-  PageSection,
-  Stack,
-  StackItem,
-} from '@patternfly/react-core'
+import { ButtonVariant, EmptyState, EmptyStateBody, PageSection, Stack, StackItem } from '@patternfly/react-core'
 import { ExclamationCircleIcon, ExternalLinkAltIcon, InfoCircleIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom-v5-compat'
+import { KubevirtProviderAlert } from '../../components/KubevirtProviderAlert'
 import { Pages, usePageVisitMetricHandler } from '../../hooks/console-metrics'
 import { useTranslation } from '../../lib/acm-i18next'
 import { NavigationPath } from '../../NavigationPath'
 import { getUserPreference, SavedSearch, UserPreference } from '../../resources/userpreference'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
-import { AcmActionGroup, AcmButton, AcmDropdown, AcmPage, AcmScrollable } from '../../ui-components'
+import { AcmActionGroup, AcmButton, AcmDropdown, AcmPage } from '../../ui-components'
 import HeaderWithNotification from './components/HeaderWithNotification'
 import { SaveAndEditSearchModal } from './components/Modals/SaveAndEditSearchModal'
 import { SearchInfoModal } from './components/Modals/SearchInfoModal'
@@ -48,15 +40,7 @@ import {
 } from './search-sdk/search-sdk'
 import SearchResults from './SearchResults/SearchResults'
 import { transformBrowserUrlToSearchString, updateBrowserUrl } from './urlQuery'
-import { KubevirtProviderAlert } from '../../components/KubevirtProviderAlert'
 
-const actionGroup = css({
-  backgroundColor: 'var(--pf-v5-global--BackgroundColor--100)',
-  paddingRight: 'var(--pf-v5-c-page__main-section--PaddingRight)',
-  paddingLeft: 'var(--pf-v5-c-page__main-section--PaddingLeft)',
-  paddingBottom: 'var(--pf-v5-c-page__header-sidebar-toggle__c-button--PaddingBottom)',
-  paddingTop: 'var(--pf-v5-c-page__header-sidebar-toggle__c-button--PaddingTop)',
-})
 const dropdown = css({
   '& ul': {
     right: 'unset !important',
@@ -72,7 +56,7 @@ const fullWidthAlert = css({
 })
 const alertSection = css({
   paddingTop: 0,
-  paddingBottom: 'var(--pf-v5-global--spacer--md)',
+  paddingBottom: 'var(--pf-t--global--spacer--md)',
   marginBottom: 0,
 })
 
@@ -90,12 +74,7 @@ function HandleErrors(
 
   if (schemaError?.message.includes(notEnabled) || completeError?.message.includes(notEnabled)) {
     return (
-      <EmptyState>
-        <EmptyStateHeader
-          titleText={<>{t('search.filter.info.title')}</>}
-          icon={<EmptyStateIcon icon={InfoCircleIcon} color={'var(--pf-v5-global--info-color--100)'} />}
-          headingLevel="h4"
-        />
+      <EmptyState headingLevel="h4" icon={InfoCircleIcon} titleText={<>{t('search.filter.info.title')}</>}>
         <EmptyStateBody>{schemaError?.message ?? completeError?.message}</EmptyStateBody>
       </EmptyState>
     )
@@ -107,12 +86,7 @@ function HandleErrors(
         schemaError?.message) ||
       completeError?.message
     return (
-      <EmptyState>
-        <EmptyStateHeader
-          titleText={<>{t('search.filter.errors.title')}</>}
-          icon={<EmptyStateIcon icon={ExclamationCircleIcon} color={'var(--pf-v5-global--danger-color--100)'} />}
-          headingLevel="h4"
-        />
+      <EmptyState headingLevel="h4" icon={ExclamationCircleIcon} titleText={<>{t('search.filter.errors.title')}</>}>
         <EmptyStateBody>
           <Stack>
             <StackItem>{t('Error occurred while contacting the search service.')}</StackItem>
@@ -277,7 +251,7 @@ function RenderSearchBar(props: Readonly<SearchbarProps>) {
   }, [currentSearch, savedSearchLimit, savedSearchQueries, t])
 
   return (
-    <PageSection>
+    <PageSection hasBodyWrapper={false}>
       <SaveAndEditSearchModal
         setSelectedSearch={setSelectedSearch}
         savedSearch={saveSearch}
@@ -373,7 +347,7 @@ function RenderDropDownAndNewTab(props: Readonly<DropDownAndNewTabProps>) {
   }
 
   return (
-    <div className={actionGroup}>
+    <PageSection hasBodyWrapper={false}>
       <AcmActionGroup>
         <SavedSearchDropdown selectedSearch={selectedSearch} savedSearchQueries={savedSearchQueries} />
         <AcmButton
@@ -389,7 +363,7 @@ function RenderDropDownAndNewTab(props: Readonly<DropDownAndNewTabProps>) {
           {t('Open new search tab')}
         </AcmButton>
       </AcmActionGroup>
-    </div>
+    </PageSection>
   )
 }
 
@@ -508,48 +482,46 @@ export default function SearchPage() {
         </div>
       }
     >
-      <AcmScrollable>
-        <PageSection style={{ paddingTop: 0, paddingBottom: 0 }}>
-          <SearchAlertGroup />
+      <PageSection hasBodyWrapper={false} style={{ paddingTop: 0, paddingBottom: 0 }}>
+        <SearchAlertGroup />
+      </PageSection>
+      <RenderSearchBar
+        presetSearchQuery={presetSearchQuery}
+        setSelectedSearch={setSelectedSearch}
+        queryErrors={queryErrors}
+        setQueryErrors={setQueryErrors}
+        savedSearchQueries={userSavedSearches}
+        userPreference={userPreference}
+        setUserPreference={setUserPreference}
+        searchResultData={data}
+        refetchSearch={refetch}
+      />
+      {hasVirtualMachineKinds(presetSearchQuery) && (
+        <PageSection hasBodyWrapper={false} className={alertSection}>
+          <div className={alertWrapper}>
+            <KubevirtProviderAlert variant="search" component="hint" className={fullWidthAlert} />
+          </div>
         </PageSection>
-        <RenderSearchBar
-          presetSearchQuery={presetSearchQuery}
-          setSelectedSearch={setSelectedSearch}
-          queryErrors={queryErrors}
-          setQueryErrors={setQueryErrors}
-          savedSearchQueries={userSavedSearches}
-          userPreference={userPreference}
-          setUserPreference={setUserPreference}
-          searchResultData={data}
-          refetchSearch={refetch}
-        />
-        {hasVirtualMachineKinds(presetSearchQuery) && (
-          <PageSection className={alertSection}>
-            <div className={alertWrapper}>
-              <KubevirtProviderAlert variant="search" component="hint" className={fullWidthAlert} />
-            </div>
-          </PageSection>
-        )}
-        {!queryErrors &&
-          (presetSearchQuery !== '' && (query.keywords.length > 0 || query.filters.length > 0) ? (
-            <SearchResults
-              currentQuery={presetSearchQuery}
-              error={error}
-              loading={loading}
-              data={data}
-              preSelectedRelatedResources={preSelectedRelatedResources}
-            />
-          ) : (
-            <SavedSearchQueries
-              isUserPreferenceLoading={isUserPreferenceLoading}
-              savedSearches={userSavedSearches}
-              setSelectedSearch={setSelectedSearch}
-              userPreference={userPreference}
-              setUserPreference={setUserPreference}
-              suggestedSearches={suggestedSearches}
-            />
-          ))}
-      </AcmScrollable>
+      )}
+      {!queryErrors &&
+        (presetSearchQuery !== '' && (query.keywords.length > 0 || query.filters.length > 0) ? (
+          <SearchResults
+            currentQuery={presetSearchQuery}
+            error={error}
+            loading={loading}
+            data={data}
+            preSelectedRelatedResources={preSelectedRelatedResources}
+          />
+        ) : (
+          <SavedSearchQueries
+            isUserPreferenceLoading={isUserPreferenceLoading}
+            savedSearches={userSavedSearches}
+            setSelectedSearch={setSelectedSearch}
+            userPreference={userPreference}
+            setUserPreference={setUserPreference}
+            suggestedSearches={suggestedSearches}
+          />
+        ))}
     </AcmPage>
   )
 }

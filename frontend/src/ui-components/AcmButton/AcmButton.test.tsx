@@ -9,7 +9,7 @@ describe('AcmButton', () => {
   test('renders', () => {
     const { getByText } = render(<AcmButton onClick={() => null}>Button Label</AcmButton>)
     expect(getByText('Button Label')).toBeInTheDocument()
-    expect(getByText('Button Label')).toBeInstanceOf(HTMLButtonElement)
+    expect(getByText('Button Label')).toBeInstanceOf(HTMLSpanElement)
   })
   test('renders with tooltip', async () => {
     const { getByText } = render(
@@ -19,7 +19,7 @@ describe('AcmButton', () => {
     )
     userEvent.tab()
     userEvent.hover(getByText('Button Label'))
-    expect(getByText('Button Label')).toHaveFocus()
+    expect(getByText('Button Label').parentElement).toHaveFocus()
     await waitFor(() => expect(screen.getByRole('tooltip')).toBeInTheDocument())
     userEvent.unhover(getByText('Button Label'))
     await waitFor(() => expect(screen.queryByRole('tooltip')).not.toBeInTheDocument())

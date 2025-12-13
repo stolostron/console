@@ -1,22 +1,21 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import {
-  Page,
+  Content,
+  DescriptionList,
+  DescriptionListDescription,
+  DescriptionListGroup,
+  DescriptionListTerm,
   PageSection,
   Stack,
-  Text,
-  DescriptionList,
-  DescriptionListTerm,
-  DescriptionListGroup,
-  DescriptionListDescription,
 } from '@patternfly/react-core'
-import { useTranslation } from '../../../../lib/acm-i18next'
-import { AcmButton } from '../../../../ui-components'
-import AcmTimestamp from '../../../../lib/AcmTimestamp'
-import { useCurrentRole } from '../RolesPage'
+import { useNavigate } from 'react-router-dom-v5-compat'
 import { ErrorPage } from '../../../../components/ErrorPage'
+import { useTranslation } from '../../../../lib/acm-i18next'
+import AcmTimestamp from '../../../../lib/AcmTimestamp'
 import { NavigationPath } from '../../../../NavigationPath'
 import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
-import { useNavigate } from 'react-router-dom-v5-compat'
+import { AcmButton } from '../../../../ui-components'
+import { useCurrentRole } from '../RolesPage'
 
 const RoleDetail = () => {
   const { t } = useTranslation()
@@ -25,7 +24,7 @@ const RoleDetail = () => {
 
   if (!role) {
     return (
-      <Page>
+      <>
         <ErrorPage
           error={new ResourceError(ResourceErrorCode.NotFound)}
           actions={
@@ -34,14 +33,16 @@ const RoleDetail = () => {
             </AcmButton>
           }
         />
-      </Page>
+      </>
     )
   }
 
   return (
-    <PageSection>
-      <PageSection variant={'light'}>
-        <Text style={{ fontFamily: 'RedHatDisplay', marginBottom: '2rem' }}>{t('General information')}</Text>
+    <PageSection hasBodyWrapper={false}>
+      <PageSection hasBodyWrapper={false}>
+        <Content component="p" style={{ fontFamily: 'RedHatDisplay', marginBottom: '2rem' }}>
+          {t('General information')}
+        </Content>
         <Stack hasGutter>
           <DescriptionList isHorizontal={false}>
             <DescriptionListGroup>

@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Button, ModalVariant } from '@patternfly/react-core'
+import { Button } from '@patternfly/react-core'
+import { ModalVariant } from '@patternfly/react-core/deprecated'
 import { AcmModal, AcmToastContext } from '../../../ui-components'
 import { TFunction } from 'react-i18next'
 import _ from 'lodash'

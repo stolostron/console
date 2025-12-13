@@ -8,9 +8,8 @@ import {
   PageSection,
   Stack,
   StackItem,
-  Text,
-  TextContent,
-  TextVariants,
+  Content,
+  ContentVariants,
 } from '@patternfly/react-core'
 import { cellWidth } from '@patternfly/react-table'
 import _ from 'lodash'
@@ -822,9 +821,9 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
             )}
           />
         </Split>
-        <TextContent>
-          <Text
-            component={TextVariants.p}
+        <Content>
+          <Content
+            component={ContentVariants.p}
             style={{
               textAlign: 'right',
               display: 'inline-block',
@@ -832,14 +831,14 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
             }}
           >
             <ViewDocumentationLink doclink={DOC_LINKS.MANAGE_APPLICATIONS} />
-          </Text>
-        </TextContent>
+          </Content>
+        </Content>
       </AcmExpandableCard>
     )
   }
 
   return (
-    <PageSection>
+    <PageSection hasBodyWrapper={false}>
       <Stack hasGutter>
         <StackItem>
           <ApplicationDeploymentHighlights />

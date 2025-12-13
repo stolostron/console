@@ -26,7 +26,7 @@ export function Form() {
   return (
     <AcmPage header={<AcmPageHeader title="AcmForm" />}>
       <AcmPageContent id="form">
-        <PageSection variant="light">
+        <PageSection hasBodyWrapper={false}>
           <FormStory />
         </PageSection>
       </AcmPageContent>

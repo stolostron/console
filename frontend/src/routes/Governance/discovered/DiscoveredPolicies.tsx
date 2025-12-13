@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { EmptyState, EmptyStateIcon, PageSection, Spinner, EmptyStateHeader } from '@patternfly/react-core'
+import { EmptyState, PageSection, Spinner } from '@patternfly/react-core'
 import {
   AcmEmptyState,
   compareStrings,
@@ -271,16 +271,14 @@ export default function DiscoveredPolicies() {
 
   if (isFetching) {
     return (
-      <PageSection>
-        <EmptyState>
-          <EmptyStateHeader titleText={t('Loading')} icon={<EmptyStateIcon icon={Spinner} />} headingLevel="h4" />
-        </EmptyState>
+      <PageSection hasBodyWrapper={false}>
+        <EmptyState headingLevel="h4" icon={Spinner} titleText={t('Loading')}></EmptyState>
       </PageSection>
     )
   }
 
   return (
-    <PageSection>
+    <PageSection hasBodyWrapper={false}>
       <AcmTable<DiscoveredPolicyTableItem>
         id="discoveredPolicyTable"
         columns={discoveredPoliciesCols}

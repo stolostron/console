@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { useEffect, useContext } from 'react'
-import { Modal, ModalProps } from '@patternfly/react-core'
+import { Modal, ModalProps } from '@patternfly/react-core/deprecated'
 import { AcmAlertProvider, AcmAlertContext } from '../AcmAlert/AcmAlert'
 
 const ACM_MODAL_TOP_OFFSET = '10em' as const

@@ -11,7 +11,7 @@ export default function RoleAssignmentsPage() {
   const isFineGrainedRbacEnabled = useRecoilValue(isFineGrainedRbacEnabledState)
 
   return isFineGrainedRbacEnabled ? (
-    <PageSection>
+    <PageSection hasBodyWrapper={false}>
       <ClusterRoleAssignments />
     </PageSection>
   ) : (

@@ -5,14 +5,14 @@ import {
   Card,
   CardBody,
   CardTitle,
+  Content,
+  ContentVariants,
   Divider,
   Flex,
   FlexItem,
   Skeleton,
   Split,
   SplitItem,
-  Text,
-  TextVariants,
 } from '@patternfly/react-core'
 import { Link } from 'react-router-dom-v5-compat'
 
@@ -91,7 +91,7 @@ const sectionStyles = {
     fontSize: '28px',
     '& a': {
       textDecoration: 'none !important',
-      fontColor: 'var(--pf-v5-global--Color--100) !important',
+      fontColor: 'var(--pf-t--global--text--color--100)',
     },
   }),
   description: css({
@@ -113,7 +113,6 @@ const SummarySection = (props: SummarySectionProps) => {
     <Card
       component="div"
       className={sectionStyles.card}
-      isFlat
       id={`${props.description.toLowerCase().replace(/\s+/g, '-')}-summary`}
     >
       {props.isLoading ? (
@@ -123,12 +122,12 @@ const SummarySection = (props: SummarySectionProps) => {
         </CardBody>
       ) : (
         <CardBody className={sectionStyles.cardBody}>
-          <Text component={TextVariants.p} className={sectionStyles.count}>
+          <Content component={ContentVariants.p} className={sectionStyles.count}>
             {props.href ? <Link to={props.href}>{props.count}</Link> : props.count}
-          </Text>
-          <Text component={TextVariants.p} className={sectionStyles.description}>
+          </Content>
+          <Content component={ContentVariants.p} className={sectionStyles.description}>
             {props.description}
-          </Text>
+          </Content>
         </CardBody>
       )}
     </Card>

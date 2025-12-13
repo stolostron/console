@@ -2,14 +2,14 @@
 
 import { Label, LabelGroup } from '@patternfly/react-core'
 import {
+  AsleepIcon,
   CheckCircleIcon,
   ExclamationCircleIcon,
   ExclamationTriangleIcon,
-  MinusCircleIcon,
-  UnknownIcon,
   InProgressIcon,
-  AsleepIcon,
+  MinusCircleIcon,
   RunningIcon,
+  UnknownIcon,
 } from '@patternfly/react-icons'
 import { BrokenLinkIcon } from '../AcmIcons/BrokenLinkIcon'
 
@@ -67,7 +67,7 @@ export function AcmInlineStatusGroup(props: AcmInlineStatusGroupProps) {
         </Label>
       )}
       {show(props.pending) && (
-        <Label variant="outline" icon={<MinusCircleIcon color="var(--pf-v5-global--disabled-color--100)" />}>
+        <Label variant="outline" icon={<MinusCircleIcon color="var(--pf-t--global--text--color--disabled)" />}>
           {props.pending}
         </Label>
       )}

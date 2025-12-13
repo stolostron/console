@@ -1,19 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-  EmptyState,
-  EmptyStateIcon,
-  EmptyStateBody,
-  Title,
-  Spinner,
-  PageSection,
-  Bullseye,
-  Page,
-  EmptyStateActions,
-  EmptyStateHeader,
-  EmptyStateFooter,
-} from '@patternfly/react-core'
 import { css } from '@emotion/css'
+import {
+  Bullseye,
+  EmptyState,
+  EmptyStateActions,
+  EmptyStateBody,
+  EmptyStateFooter,
+  PageSection,
+  Spinner,
+  Title,
+} from '@patternfly/react-core'
 import { useTranslation } from '../lib/acm-i18next'
 
 const max = css({
@@ -28,11 +25,10 @@ export function LoadingPage(props: {
 }) {
   const { t } = useTranslation()
   return (
-    <Page>
-      <PageSection isFilled>
+    <>
+      <PageSection hasBodyWrapper={false} isFilled>
         <Bullseye>
-          <EmptyState>
-            <EmptyStateHeader icon={<EmptyStateIcon icon={Spinner} />} />
+          <EmptyState icon={Spinner}>
             <EmptyStateFooter>
               <div className={max}>
                 <Title size="lg" headingLevel="h4">
@@ -46,6 +42,6 @@ export function LoadingPage(props: {
           </EmptyState>
         </Bullseye>
       </PageSection>
-    </Page>
+    </>
   )
 }

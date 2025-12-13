@@ -55,7 +55,7 @@ export function AcmTextInput(props: AcmTextInputProps) {
       isRequired={props.isRequired}
       fieldId={props.id}
       hidden={props.hidden}
-      labelIcon={
+      labelHelp={
         /* istanbul ignore next */
         props.labelHelp ? (
           <Popover id={`${props.id}-label-help-popover`} headerContent={labelHelpTitle} bodyContent={labelHelp}>
@@ -65,7 +65,7 @@ export function AcmTextInput(props: AcmTextInputProps) {
               aria-label="More info"
               onClick={(e) => e.preventDefault()}
               // aria-describedby="simple-form-name"
-              className="pf-v5-c-form__group-label-help"
+              className="pf-v6-c-form__group-label-help"
               style={{ ['--pf-v5-c-form__group-label-help--TranslateY' as any]: 0 }}
               icon={<HelpIcon />}
             />

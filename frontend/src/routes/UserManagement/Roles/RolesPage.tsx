@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { PageSection } from '@patternfly/react-core'
 import { useMemo } from 'react'
 import { useParams } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmPage, AcmPageContent, AcmPageHeader } from '../../../ui-components'
 import { RolesTable } from './RolesTable'
-import { PageSection } from '@patternfly/react-core'
 
 export const useCurrentRole = () => {
   const { id } = useParams()
@@ -33,7 +33,7 @@ const RolesPage = () => {
       }
     >
       <AcmPageContent id="roles">
-        <PageSection>
+        <PageSection hasBodyWrapper={false}>
           <RolesTable hiddenColumns={['radio']} />
         </PageSection>
       </AcmPageContent>

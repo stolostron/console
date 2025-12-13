@@ -9,13 +9,12 @@ import {
   DescriptionListDescription,
   DescriptionListGroup,
   DescriptionListTerm,
-  Modal,
-  ModalVariant,
   PageSection,
   Stack,
   StackItem,
   SelectOption,
 } from '@patternfly/react-core'
+import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
 import { fitContent } from '@patternfly/react-table'
 import { ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
@@ -625,7 +624,7 @@ export default function PoliciesPage() {
   )
 
   return (
-    <PageSection>
+    <PageSection hasBodyWrapper={false}>
       {modal !== undefined && modal}
       <BulkActionModal<PolicyTableItem> {...modalProps} />
       <AcmTable<PolicyTableItem>

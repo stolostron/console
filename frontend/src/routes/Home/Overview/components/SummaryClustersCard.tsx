@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ChartDonut, ChartLabel, ChartLegend, ChartPie } from '@patternfly/react-charts'
+import { ChartDonut, ChartLabel, ChartLegend, ChartPie } from '@patternfly/react-charts/victory'
 import { Card, CardTitle } from '@patternfly/react-core'
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom-v5-compat'
@@ -35,7 +35,7 @@ const LegendLabel = ({
     <foreignObject x={props.x} y={(props.y ?? 0) - 10} width={maxWidth ?? 150} height={20}>
       <div
         style={{
-          color: 'var(--pf-v5-global--Color--100)',
+          color: 'var(--pf-t--global--text--color--100)',
         }}
       >
         {link ? (
@@ -110,7 +110,7 @@ export function SummaryClustersCard(props: {
             style={[
               {
                 fontSize: '24px',
-                fill: 'var(--pf-v5-global--Color--100)', // title color
+                fill: 'var(--pf-t--global--text--color--100)', // title color
               },
               {
                 fill: 'var(--pf-v5-chart-donut--label--subtitle--Fill)', // subtitle color
@@ -149,7 +149,6 @@ export function SummaryClustersCard(props: {
   return (
     <Card
       id={`${title.toLowerCase().replace(/\s+/g, '-')}-chart`}
-      isRounded
       style={{
         height: '200px',
         overflow: 'hidden',

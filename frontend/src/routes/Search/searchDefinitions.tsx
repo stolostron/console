@@ -2,7 +2,7 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 
-import { ButtonProps, Icon, Label, Popover, Text, TextContent, TextVariants } from '@patternfly/react-core'
+import { ButtonProps, Content, ContentVariants, Icon, Label, Popover } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
 import queryString from 'query-string'
@@ -47,7 +47,6 @@ export interface ResourceDefinitions {
   'subscription.apps.open-cluster-management.io': Record<'columns', SearchColumnDefinition[]>
   'subscription.operators.coreos.com': Record<'columns', SearchColumnDefinition[]>
   virtualmachine: Record<'columns', SearchColumnDefinition[]>
-  virtualmachinespage: Record<'columns', SearchColumnDefinition[]>
   virtualmachineinstance: Record<'columns', SearchColumnDefinition[]>
   virtualmachinesnapshot: Record<'columns', SearchColumnDefinition[]>
 }
@@ -407,112 +406,6 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
         AddColumn('created', t('Created')),
       ],
     },
-    virtualmachinespage: {
-      columns: [
-        { id: 'name', order: 1, isDefault: true, ...AddColumn('name', t('Name')) },
-        {
-          id: 'status',
-          order: 2,
-          isDefault: false,
-          isFirstVisitChecked: true,
-          ...AddColumn('status', t('Status')),
-        },
-        {
-          id: 'cluster',
-          order: 3,
-          isDefault: false,
-          isFirstVisitChecked: true,
-          ...AddColumn('cluster', t('Cluster')),
-        },
-        {
-          id: 'namespace',
-          order: 4,
-          isDefault: false,
-          isFirstVisitChecked: true,
-          ...AddColumn('namespace', t('Namespace')),
-        },
-        {
-          id: 'node',
-          order: 5,
-          isDefault: false,
-          isFirstVisitChecked: true,
-          ...AddColumn('node', t('Node')),
-        },
-        {
-          id: 'ipaddress',
-          order: 6,
-          isDefault: false,
-          isFirstVisitChecked: true,
-          ...AddColumn('ipaddress', t('IP address')),
-        },
-        {
-          id: 'launch-links',
-          order: 7,
-          isDefault: false,
-          isFirstVisitChecked: true,
-          header: t('Launch links'),
-          cell: (item: any) => {
-            return <VMLaunchLinks item={item} t={t} />
-          },
-        },
-        {
-          id: 'created',
-          order: 8,
-          isDefault: false,
-          isFirstVisitChecked: false,
-          ...AddColumn('created', t('Created')),
-        },
-        {
-          id: 'agent-connected',
-          order: 9,
-          isDefault: false,
-          isFirstVisitChecked: false,
-          ...AddColumn('agentConnected', t('Agent connected')),
-        },
-        {
-          id: 'flavor',
-          order: 10,
-          isDefault: false,
-          isFirstVisitChecked: false,
-          ...AddColumn('flavor', t('Flavor')),
-        },
-        {
-          id: 'os-name',
-          order: 11,
-          isDefault: false,
-          isFirstVisitChecked: false,
-          ...AddColumn('osName', t('OS Name')),
-        },
-        {
-          id: 'workload',
-          order: 12,
-          isDefault: false,
-          isFirstVisitChecked: false,
-          ...AddColumn('workload', t('Workload')),
-        },
-        {
-          id: 'os-version',
-          order: 13,
-          isDefault: false,
-          isFirstVisitChecked: false,
-          ...AddColumn('osVersion', t('OS Version')),
-        },
-        {
-          id: 'vm-size',
-          order: 14,
-          isDefault: false,
-          isFirstVisitChecked: false,
-          ...AddColumn('vmSize', t('VM Size')),
-        },
-        {
-          id: 'labels',
-          order: 15,
-          isDefault: false,
-          isFirstVisitChecked: false,
-          ...AddColumn('labels', t('Labels')),
-        },
-      ],
-    },
   }
 }
 
@@ -868,9 +761,9 @@ function AddColumn(key: string, localizedColumnName: string): SearchColumnDefini
             <>
               {item?.cluster ?? '-'}
               {item?.managedHub && (
-                <TextContent>
-                  <Text component={TextVariants.small}>{item.managedHub}</Text>
-                </TextContent>
+                <Content>
+                  <Content component={ContentVariants.small}>{item.managedHub}</Content>
+                </Content>
               )}
             </>
           )

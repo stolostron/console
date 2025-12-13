@@ -1,13 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Page } from '@patternfly/react-core'
-import { AcmButton, AcmPageProcess } from '../../../../../ui-components'
 import { Fragment, Suspense, useEffect, useMemo, useState } from 'react'
-import { useParams, useNavigate, Outlet, useOutletContext } from 'react-router-dom-v5-compat'
-import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
+import { Outlet, useNavigate, useOutletContext, useParams } from 'react-router-dom-v5-compat'
 import { ErrorPage } from '../../../../../components/ErrorPage'
 import { usePrevious } from '../../../../../components/usePrevious'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
+import { useQuery } from '../../../../../lib/useQuery'
 import { NavigationPath } from '../../../../../NavigationPath'
 import {
   ClusterDeployment,
@@ -20,9 +18,10 @@ import {
   managedClusterSetLabel,
 } from '../../../../../resources'
 import { Cluster, ResourceError, ResourceErrorCode } from '../../../../../resources/utils'
+import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
+import { AcmButton, AcmPageProcess } from '../../../../../ui-components'
 import { useClusterSetBindings } from '../components/ManagedClusterSetBindingModal'
 import { useClusters } from '../components/useClusters'
-import { useQuery } from '../../../../../lib/useQuery'
 
 export type ClusterSetDetailsContext = {
   readonly clusterSet?: ManagedClusterSet
@@ -148,7 +147,7 @@ export default function ClusterSetDetails() {
 
   if (clusterSet === undefined) {
     return (
-      <Page>
+      <>
         <ErrorPage
           error={new ResourceError(ResourceErrorCode.NotFound)}
           actions={
@@ -157,7 +156,7 @@ export default function ClusterSetDetails() {
             </AcmButton>
           }
         />
-      </Page>
+      </>
     )
   }
 

@@ -22,6 +22,12 @@ export function AcmExpandableCheckbox(props: {
   return (
     <div>
       <Button
+        icon={
+          <>
+            {!props.expanded && <AngleRightIcon />}
+            {props.expanded && <AngleDownIcon />}
+          </>
+        }
         aria-label={t('Expand')}
         variant={ButtonVariant.plain}
         id={`${props.id}-toggle`}
@@ -32,10 +38,7 @@ export function AcmExpandableCheckbox(props: {
           paddingRight: '6px',
         }}
         onClick={() => props.onToggle(props.expanded)}
-      >
-        {!props.expanded && <AngleRightIcon />}
-        {props.expanded && <AngleDownIcon />}
-      </Button>
+      />
       <span style={{ paddingRight: '10px' }}>
         <Checkbox
           isChecked={props.checked}

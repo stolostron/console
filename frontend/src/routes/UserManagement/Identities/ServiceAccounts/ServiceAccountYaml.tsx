@@ -11,7 +11,7 @@ const ServiceAccountYaml = () => {
   return (
     <AcmPage header={<AcmPageHeader title={t('Service Account YAML')} description={`Service Account: ${id}`} />}>
       <AcmPageContent id="service-account-yaml">
-        <PageSection>Service Account YAML page for ID: {id}</PageSection>
+        <PageSection hasBodyWrapper={false}>Service Account YAML page for ID: {id}</PageSection>
       </AcmPageContent>
     </AcmPage>
   )

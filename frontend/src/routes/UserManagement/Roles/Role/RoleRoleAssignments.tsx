@@ -18,7 +18,7 @@ const RoleRoleAssignments = () => {
   const isLoading = isRoleAssignmentsLoading || !hasDataToProcess
 
   return (
-    <PageSection>
+    <PageSection hasBodyWrapper={false}>
       <RoleAssignments
         roleAssignments={roleAssignments}
         isLoading={isLoading}

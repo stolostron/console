@@ -25,7 +25,7 @@ class Tooltip extends React.PureComponent {
             e.preventDefault()
             e.stopPropagation()
           }}
-          className={`pf-v5-c-form__group-label-help ${className || ''}`}
+          className={`pf-v6-c-form__group-label-help ${className || ''}`}
         >
           <HelpIcon noVerticalAlign />
         </button>

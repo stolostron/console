@@ -19,7 +19,7 @@ export const InlineProvider = () => {
   const leftItems = providers.slice(0, midpoint)
   const rightItems = providers.slice(midpoint)
   return (
-    <PageSection>
+    <PageSection hasBodyWrapper={false}>
       <AcmDescriptionList title="Providers" leftItems={leftItems} rightItems={rightItems} />
     </PageSection>
   )

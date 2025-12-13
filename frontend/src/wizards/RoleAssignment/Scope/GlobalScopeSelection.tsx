@@ -9,7 +9,7 @@ export const GlobalScopeSelection = () => {
   return (
     <Panel
       style={{
-        backgroundColor: 'var(--pf-v5-global--BackgroundColor--200)', // #f5f5f5 - rgb(245, 245, 245)
+        backgroundColor: 'var(--pf-t--global--background--color--secondary--default)',
       }}
     >
       <PanelMain>

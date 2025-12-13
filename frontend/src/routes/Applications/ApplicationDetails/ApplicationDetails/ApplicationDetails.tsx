@@ -4,11 +4,11 @@ import {
   ButtonVariant,
   Card,
   CardBody,
+  Content,
   Flex,
   FlexItem,
   PageSection,
   Spinner,
-  Text,
   Tooltip,
 } from '@patternfly/react-core'
 import { OutlinedQuestionCircleIcon, SyncAltIcon } from '@patternfly/react-icons'
@@ -44,8 +44,8 @@ import {
 } from '../../../../ui-components'
 import LabelWithPopover from '../../components/LabelWithPopover'
 import ResourceLabels from '../../components/ResourceLabels'
-import { ISyncResourceModalProps, SyncResourceModal } from '../../components/SyncResourceModal'
 import { ISyncArgoCDModalProps, SyncArgoCDModal } from '../../components/SyncArgoCDModal'
+import { ISyncResourceModalProps, SyncResourceModal } from '../../components/SyncResourceModal'
 import { TimeWindowLabels } from '../../components/TimeWindowLabels'
 import '../../css/ApplicationDetails.css'
 import {
@@ -365,7 +365,7 @@ export function ApplicationDetailsPageContent() {
       <SyncResourceModal {...modalProps} />
       <SyncArgoCDModal {...argoAppModalProps} />
       <DrawerShapes />
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <div className="overview-cards-container">
           <AcmDescriptionList title={t('Details')} leftItems={leftItems} rightItems={rightItems}></AcmDescriptionList>
         </div>
@@ -587,7 +587,7 @@ function createSourceCards(
               />
             </div>
             <div className="sub-card-content">
-              <Text>{appRepo?.pathName}</Text>
+              <Content component="p">{appRepo?.pathName}</Content>
             </div>
           </CardBody>
         </Card>

@@ -165,7 +165,7 @@ export function PolicyDetailsHistory() {
   )
 
   return (
-    <PageSection>
+    <PageSection hasBodyWrapper={false}>
       <Title headingLevel="h3">{clusterName}</Title>
       <Title headingLevel="h4">{t('Template: {{templateName}}', { templateName })}</Title>
       <AcmTableStateProvider localStorageKey="grc-status-view">

@@ -12,7 +12,8 @@ import {
   AcmNumberInput,
   AcmSubmit,
 } from '../../../../../ui-components'
-import { ActionGroup, ModalVariant } from '@patternfly/react-core'
+import { ActionGroup } from '@patternfly/react-core'
+import { ModalVariant } from '@patternfly/react-core/deprecated'
 import { useEffect, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 

@@ -8,7 +8,7 @@ export function AcmButton(
   props: ButtonProps & {
     tooltip?: string | React.ReactNode
     to?: LinkProps['to']
-    state?: LinkProps['state']
+    linkState?: LinkProps['state']
   }
 ) {
   const { isDisabled, tooltip, children, ...otherProps } = props

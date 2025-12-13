@@ -55,7 +55,7 @@ const HostsTab: React.FC = () => {
     <>
       <BulkActionModal<AgentK8sResource | BareMetalHostK8sResource> {...bulkModalProps} />
       <AcmPageContent id="hosts">
-        <PageSection>
+        <PageSection hasBodyWrapper={false}>
           <Card isPlain>
             <AgentAlerts infraEnv={infraEnv} bareMetalHosts={bareMetalHosts} docVersion={DOC_VERSION} />
             {!!assistedServiceConfigMap && (

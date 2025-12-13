@@ -63,7 +63,7 @@ describe('IdentitiesPage', () => {
     expect(activeLink).toBeInTheDocument()
     expect(inactiveLink).toBeInTheDocument()
 
-    expect(activeLink).toHaveAttribute('aria-current', 'page')
+    expect(activeLink.parentElement).toHaveClass('pf-m-current')
     expect(inactiveLink).not.toHaveAttribute('aria-current')
   })
 })

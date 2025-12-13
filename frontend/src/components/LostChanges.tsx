@@ -10,7 +10,8 @@ import {
   Dispatch,
 } from 'react'
 import { useNavigate, Location } from 'react-router-dom-v5-compat'
-import { Modal, ModalVariant, Button } from '@patternfly/react-core'
+import { Button } from '@patternfly/react-core'
+import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
 import isEqual from 'lodash/isEqual'
 import { useTranslation } from '../lib/acm-i18next'
 import { noop } from 'lodash'

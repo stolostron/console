@@ -6,7 +6,7 @@ export const body = css({
   top: '-35px',
   padding: '0 8px',
   '& section': {
-    paddingTop: 'var(--pf-v5-global--spacer--lg)',
+    paddingTop: 'var(--pf-t--global--spacer--lg)',
   },
 })
 
@@ -17,38 +17,38 @@ export const sectionSeparator = css({
 })
 
 export const titleText = css({
-  paddingBottom: 'var(--pf-v5-global--spacer--xl)',
+  paddingBottom: 'var(--pf-t--global--spacer--xl)',
   '& h4': {
-    color: 'var(--pf-v5-global--Color--200)',
+    color: 'var(--pf-t--global--text--color--200)',
   },
 })
 
 export const donutContainer = css({
   maxWidth: '450px',
-  paddingBottom: 'var(--pf-v5-global--spacer--md)',
+  paddingBottom: 'var(--pf-t--global--spacer--md)',
   marginLeft: '-4rem',
 })
 
 export const tableTitle = css({
-  paddingBottom: 'var(--pf-v5-global--spacer--md)',
+  paddingBottom: 'var(--pf-t--global--spacer--md)',
 })
 
 export const backAction = css({
-  paddingBottom: 'var(--pf-v5-global--spacer--lg)',
+  paddingBottom: 'var(--pf-t--global--spacer--lg)',
 })
 
 export const subDetailComponents = css({
-  paddingBottom: 'var(--pf-v5-global--spacer--xl)',
+  paddingBottom: 'var(--pf-t--global--spacer--xl)',
   '& small': {
     color: 'inherit',
-    paddingBottom: 'var(--pf-v5-global--spacer--sm)',
+    paddingBottom: 'var(--pf-t--global--spacer--sm)',
   },
 })
 
 export const riskSubDetail = css({
-  paddingLeft: 'var(--pf-v5-global--spacer--lg)',
+  paddingLeft: 'var(--pf-t--global--spacer--lg)',
   '& p': {
-    fontSize: 'var(--pf-v5-global--FontSize--xs)',
+    fontSize: 'var(--pf-t--global--font--size--xs)',
     color: '#5A6872',
   },
 })

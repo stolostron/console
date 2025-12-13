@@ -1,5 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { HostedClusterK8sResource, NodePoolK8sResource } from '@openshift-assisted/ui-lib/cim'
+import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import * as nock from 'nock'
+import { MemoryRouter } from 'react-router-dom-v5-compat'
+import { RecoilRoot } from 'recoil'
+import { ansibleJobState, clusterImageSetsState, nodePoolsState } from '../../../../../atoms'
+import { nockIgnoreApiPaths, nockIgnoreRBAC, nockRBAC } from '../../../../../lib/nock-util'
+import { clickByText, waitForCalled, waitForNock, waitForNotText, waitForText } from '../../../../../lib/test-util'
 import {
   AnsibleJob,
   AnsibleJobApiVersion,
@@ -16,16 +25,7 @@ import {
   ResourceAttributes,
 } from '../../../../../resources'
 import { Cluster, ClusterStatus, CuratorCondition, DistributionInfo } from '../../../../../resources/utils'
-import { render, waitFor, screen } from '@testing-library/react'
-import * as nock from 'nock'
-import { RecoilRoot } from 'recoil'
-import { ansibleJobState, clusterImageSetsState, nodePoolsState } from '../../../../../atoms'
-import { nockIgnoreApiPaths, nockIgnoreRBAC, nockRBAC } from '../../../../../lib/nock-util'
-import { clickByText, waitForCalled, waitForNock, waitForNotText, waitForText } from '../../../../../lib/test-util'
 import { DistributionField } from './DistributionField'
-import { MemoryRouter } from 'react-router-dom-v5-compat'
-import { HostedClusterK8sResource, NodePoolK8sResource } from '@openshift-assisted/ui-lib/cim'
-import userEvent from '@testing-library/user-event'
 
 const mockDistributionInfo: DistributionInfo = {
   ocp: {
@@ -753,8 +753,8 @@ describe('DistributionField', () => {
   })
 
   it('should disable the upgrade button when the user lacks permissions', async () => {
-    const { queryByText } = await renderDistributionInfoField(mockDistributionInfo, false, true)
-    expect(queryByText('Upgrade available')).toHaveAttribute('aria-disabled', 'true')
+    const { queryByRole } = await renderDistributionInfoField(mockDistributionInfo, false, true)
+    expect(queryByRole('button')).toHaveAttribute('aria-disabled', 'true')
   })
 
   it('should show upgrade button when not upgrading and has available upgrades, and should show modal when click', async () => {

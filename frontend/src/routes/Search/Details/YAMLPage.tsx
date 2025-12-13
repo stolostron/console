@@ -197,7 +197,6 @@ export function EditorHeaderBar(props: Readonly<{ cluster: string; namespace: st
       style={{
         display: 'flex',
         fontSize: '14px',
-        backgroundColor: 'var(--pf-v5-c-page__main-section--m-light--BackgroundColor)',
       }}
     >
       {/* No translation - this is a kube resource field */}
@@ -258,7 +257,8 @@ export function EditorActionBar(
     <div
       id={'yaml-editor-action-wrapper'}
       style={{
-        borderTop: 'var(--pf-v5-global--BorderWidth--sm) solid var(--pf-v5-global--BorderColor--100)',
+        padding: '1rem 0',
+        borderTop: '1px solid var(--pf-t--global--border--width--regular)',
       }}
     >
       {updateSuccess || updateError || stale ? (
@@ -438,8 +438,8 @@ export default function YAMLPage() {
   }, [resource])
 
   function getEditorHeight() {
-    const pageContentHeight = document.getElementsByClassName('pf-v5-c-page__main')[0]?.clientHeight
-    const pageSectionHeader = document.getElementsByClassName('pf-v5-c-page__main-group')[0]?.clientHeight ?? 0
+    const pageContentHeight = document.getElementsByClassName('pf-v6-c-page__main')[0]?.clientHeight
+    const pageSectionHeader = document.getElementById('page-header')?.clientHeight ?? 0
     const headerSectionHeight = document.getElementById('yaml-editor-header-wrapper')?.clientHeight ?? 0
     const actionsSectionHeight = document.getElementById('yaml-editor-action-wrapper')?.clientHeight ?? 0
     let editorHeight = pageContentHeight - pageSectionHeader - actionsSectionHeight - headerSectionHeight - 48 // 48px content padding
@@ -487,7 +487,7 @@ export default function YAMLPage() {
 
   if (resourceError) {
     return (
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <Alert variant={'danger'} isInline={true} title={`${t('Error querying for resource:')} ${name}`}>
           {resourceError}
         </Alert>
@@ -495,7 +495,7 @@ export default function YAMLPage() {
     )
   } else if (resourceLoading) {
     return (
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <AcmLoadingPage />
       </PageSection>
     )
@@ -503,12 +503,14 @@ export default function YAMLPage() {
 
   return (
     <PageSection
+      hasBodyWrapper={false}
       style={{
         position: 'relative',
         display: 'flex',
         height: '100%',
         flex: 1,
         flexDirection: 'column',
+        gap: 0,
       }}
     >
       <EditorHeaderBar cluster={cluster} namespace={namespace} />

@@ -19,7 +19,7 @@ export function AlertGroup() {
   return (
     <AcmPage header={<AcmPageHeader title="AcmAlertGroup" />}>
       <AcmPageContent id="alerts">
-        <PageSection variant="light">
+        <PageSection hasBodyWrapper={false}>
           <AlertGroupStory />
         </PageSection>
       </AcmPageContent>
@@ -33,7 +33,7 @@ export function ToastGroup() {
       <AcmToastProvider>
         <AcmToastGroup />
         <AcmPageContent id="alerts">
-          <PageSection variant="light">
+          <PageSection hasBodyWrapper={false}>
             <AlertGroupStory useToast />
           </PageSection>
         </AcmPageContent>

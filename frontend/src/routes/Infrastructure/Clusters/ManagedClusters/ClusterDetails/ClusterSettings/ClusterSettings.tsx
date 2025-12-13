@@ -10,7 +10,7 @@ export function ClustersSettingsPageContent() {
   const { addons } = useClusterDetailsContext()
   return (
     <AcmPageContent id="addons">
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <ClusterSettingsTable addons={addons} />
       </PageSection>
     </AcmPageContent>

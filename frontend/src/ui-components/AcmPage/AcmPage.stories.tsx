@@ -76,7 +76,7 @@ export const Page = (args: {
           label={args.label}
           labelColor={args.labelColor as AcmPageHeaderProps['labelColor']}
           description={args.description}
-          switches={args.showSwitch && <Switch label="YAML on" labelOff="YAML off" />}
+          switches={args.showSwitch && <Switch label="YAML on" />}
           controls={
             args.showControls && (
               <Fragment>
@@ -141,13 +141,13 @@ export const Page = (args: {
       {/* Each tab needs it's own AcmPageContent so it has its own ErrorBoundary and AlertGroup */}
       {secondaryTab === 'table' ? (
         <AcmPageContent id="table">
-          <PageSection>
+          <PageSection hasBodyWrapper={false}>
             <TableStory />
           </PageSection>
         </AcmPageContent>
       ) : secondaryTab === 'form' ? (
         <AcmPageContent id="form">
-          <PageSection>
+          <PageSection hasBodyWrapper={false}>
             <Card isLarge>
               <CardBody>
                 <FormStory />
@@ -157,13 +157,13 @@ export const Page = (args: {
         </AcmPageContent>
       ) : secondaryTab === 'descriptionList' ? (
         <AcmPageContent id="descriptionList">
-          <PageSection>
+          <PageSection hasBodyWrapper={false}>
             <DescriptionListStory />
           </PageSection>
         </AcmPageContent>
       ) : secondaryTab === 'loading' ? (
         <AcmPageContent id="loading">
-          <PageSection isFilled>
+          <PageSection hasBodyWrapper={false} isFilled>
             <Bullseye>
               <LoadingPageStory />
             </Bullseye>
@@ -171,7 +171,7 @@ export const Page = (args: {
         </AcmPageContent>
       ) : secondaryTab === 'alerts' ? (
         <AcmPageContent id="alerts">
-          <PageSection>
+          <PageSection hasBodyWrapper={false}>
             <AlertGroupStory />
           </PageSection>
         </AcmPageContent>

@@ -1,7 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
-import { ButtonVariant, ModalVariant } from '@patternfly/react-core'
+import { ButtonVariant } from '@patternfly/react-core'
+import { ModalVariant } from '@patternfly/react-core/deprecated'
 import { useContext, useEffect, useState } from 'react'
 import { TFunction } from 'react-i18next'
 import { useTranslation } from '../../../../lib/acm-i18next'

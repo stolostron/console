@@ -3,8 +3,8 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
-import { AcmFeedbackModal } from './AcmFeedbackModal'
 import { DOC_VERSION } from '../lib/doc-util'
+import { AcmFeedbackModal } from './AcmFeedbackModal'
 
 window.open = jest.fn()
 
@@ -23,15 +23,15 @@ describe('AcmFeedbackModal', () => {
   })
 
   it('opens share feedback and support case links', () => {
-    const { getByText } = render(<AcmFeedbackModal />)
+    const { getByTestId } = render(<AcmFeedbackModal />)
     userEvent.click(screen.getByRole('button', { name: /Feedback/i }))
 
-    userEvent.click(getByText(/share feedback/i))
+    userEvent.click(getByTestId('feedback-card-1'))
     expect(window.open).toHaveBeenCalledWith(
       `https://console.redhat.com/self-managed-feedback-form?source=acm&version=${DOC_VERSION}`,
       '_blank'
     )
-    userEvent.click(getByText(/support case/i))
+    userEvent.click(getByTestId('open-support-case-card-1'))
     expect(window.open).toHaveBeenCalledWith(
       'https://access.redhat.com/support/cases/#/case/new/open-case?caseCreate=true',
       '_blank'

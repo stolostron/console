@@ -1,7 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { css } from '@emotion/css'
-import { Skeleton, Tile, TileProps } from '@patternfly/react-core'
+import { Skeleton } from '@patternfly/react-core'
+import { Tile, TileProps } from '@patternfly/react-core/deprecated'
 
 type AcmTileProps = TileProps & {
   loading?: boolean
@@ -27,7 +28,7 @@ const relatedResourceContainer = css({
 })
 const relatedResourceCount = css({
   fontSize: '28px',
-  color: 'var(--pf-v5-global--palette--blue-400)',
+  color: 'var(--pf-t--color--blue--50)',
   marginRight: '.5rem',
 })
 const relatedResourceKind = css({

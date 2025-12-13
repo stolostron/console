@@ -2,13 +2,13 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 import { css } from '@emotion/css'
-import { Button, Checkbox, PageSection, Tooltip, SelectOption } from '@patternfly/react-core'
-import { AcmSelectBase, SelectVariant, SelectOptionObject } from '../../../components/AcmSelectBase'
+import { Button, Checkbox, PageSection, SelectOption, Tooltip } from '@patternfly/react-core'
 import { CompressIcon, DownloadIcon, ExpandIcon, OutlinedWindowRestoreIcon } from '@patternfly/react-icons'
 import { LogViewer } from '@patternfly/react-log-viewer'
 import { Dispatch, MutableRefObject, ReactNode, SetStateAction, useEffect, useMemo, useRef, useState } from 'react'
 import { Navigate, useLocation } from 'react-router-dom-v5-compat'
 import screenfull from 'screenfull'
+import { AcmSelectBase, SelectOptionObject, SelectVariant } from '../../../components/AcmSelectBase'
 import { Trans, useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { fetchRetry, getBackendUrl } from '../../../resources/utils'
@@ -30,7 +30,7 @@ const toolbarContainerFullscreen = css({
   flexWrap: 'wrap',
   justifyContent: 'space-between',
   marginBottom: '5px',
-  backgroundColor: 'var(--pf-v5-global--BackgroundColor--100)',
+  backgroundColor: 'var(--pf-t--global--background--color--primary--default)',
   padding: '0 10px',
 })
 const toolbarGroup = css({
@@ -51,7 +51,7 @@ const logWindowHeader = css({
   display: 'flex',
   alignItems: 'center',
   color: '#f5f5f5',
-  backgroundColor: 'var(--pf-v5-global--BackgroundColor--dark-300)',
+  backgroundColor: 'var(--pf-t--global--background--color--400)',
   fontSize: '14px',
 })
 const logWindowHeaderItem = css({
@@ -187,8 +187,12 @@ export function LogsToolbar(props: {
         <span aria-hidden="true" className={toolbarItemSpacer}>
           |
         </span>
-        <Button variant="link" isInline onClick={() => openRawTab()}>
-          <OutlinedWindowRestoreIcon className={toolbarItemIcon} />
+        <Button
+          icon={<OutlinedWindowRestoreIcon className={toolbarItemIcon} />}
+          variant="link"
+          isInline
+          onClick={() => openRawTab()}
+        >
           {t('Raw')}
         </Button>
         <span aria-hidden="true" className={toolbarItemSpacer}>
@@ -341,7 +345,7 @@ export default function LogsPage() {
       })
       logsResult
         .then((result) => {
-          setLogs(result.data as string)
+          setLogs((result.data as string) ?? '')
           setIsLoadingLogs(false)
         })
         .catch((err) => {
@@ -366,7 +370,7 @@ export default function LogsPage() {
       })
       logsResult
         .then((result) => {
-          setLogs(result.data as string)
+          setLogs((result.data as string) ?? '')
           setIsLoadingLogs(false)
         })
         .catch((err) => {
@@ -375,7 +379,7 @@ export default function LogsPage() {
     }
   }, [cluster, container, managedClusters, name, namespace, previousLogs, isHubClusterResource])
 
-  const linesLength = useMemo(() => logs.split('\n').length - 1, [logs])
+  const linesLength = useMemo(() => logs?.split('\n').length - 1, [logs])
 
   const toggleFullscreen = () => {
     if (resourceLogRef.current && screenfull.isEnabled) {
@@ -405,7 +409,7 @@ export default function LogsPage() {
     return <Navigate to={{ pathname: NavigationPath.resources, search }} replace />
   } else if (resourceError !== '') {
     return (
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <AcmAlert
           noClose={true}
           variant={'danger'}
@@ -417,7 +421,7 @@ export default function LogsPage() {
     )
   } else if (logsError) {
     return (
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <AcmAlert
           noClose={true}
           variant={'danger'}
@@ -429,18 +433,19 @@ export default function LogsPage() {
     )
   } else if (resourceError === '' && !logsError && isLoadingLogs) {
     return (
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <AcmLoadingPage />
       </PageSection>
     )
   }
 
   return (
-    <PageSection>
+    <PageSection hasBodyWrapper={true}>
       <div ref={resourceLogRef} style={{ height: '100%' }}>
         <LogViewer
           ref={logViewerRef}
-          height={'100%'}
+          // height={'100%'}
+          height={'450px'}
           data={logs}
           theme="dark"
           isTextWrapped={wrapLines}

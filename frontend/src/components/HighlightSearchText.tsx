@@ -19,14 +19,14 @@ const buttonClass = css({
   margin: '0 2px',
   minWidth: '16px',
   // Higher specificity to override PatternFly button styles
-  '&.pf-v5-c-button.pf-m-plain': {
+  '&.pf-v6-c-button.pf-m-plain': {
     padding: '4px 0px',
     lineHeight: '10px',
   },
 })
 
 const highlightClass = css({
-  color: 'var(--pf-v5-global--link--Color)',
+  color: 'var(--pf-t--global--text--color--link--default)',
   textDecoration: 'underline',
   background: 'none',
   fontWeight: 600,
@@ -37,7 +37,7 @@ const highlightClass = css({
 })
 
 const linkClass = css({
-  color: 'var(--pf-v5-global--link--Color)',
+  color: 'var(--pf-t--global--text--color--link--default)',
   textDecoration: 'underline',
   background: 'none',
   fontWeight: 'normal',
@@ -270,9 +270,7 @@ const ToggleButton = ({ label, toggleEquality }: ToggleButtonProps) => {
   return (
     <div className={buttonDivClass}>
       <span>{prefix}</span>
-      <Button variant="plain" className={buttonClass} onClick={toggleEquality}>
-        {oper}
-      </Button>
+      <Button icon={oper} variant="plain" className={buttonClass} onClick={toggleEquality} />
       <span style={{ marginRight: '4px' }}>{suffix}</span>
     </div>
   )

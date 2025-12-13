@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Button, Checkbox, ModalVariant } from '@patternfly/react-core'
+import { Button, Checkbox } from '@patternfly/react-core'
+import { ModalVariant } from '@patternfly/react-core/deprecated'
 import { ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { AcmAlert, AcmModal } from '../../../ui-components'
 import { TFunction } from 'react-i18next'

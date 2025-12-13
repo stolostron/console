@@ -7,9 +7,8 @@ import {
   PopoverPosition,
   Stack,
   StackItem,
-  Text,
-  TextContent,
-  TextVariants,
+  Content,
+  ContentVariants,
   ToolbarItem,
 } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
@@ -301,7 +300,7 @@ export function renderApplicationStatusGroup(resource: IResource, type: 'health'
         flipBehavior={['bottom', 'top-end', 'top-end']}
         hasAutoWidth
       >
-        <Label style={{ width: 'fit-content' }} isOverflowLabel>
+        <Label style={{ width: 'fit-content' }} variant="overflow">
           {
             <AcmInlineStatusGroup
               healthy={counts[ScoreColumn.healthy]}
@@ -610,9 +609,9 @@ export default function ApplicationsOverview() {
         tooltip: (
           <span>
             {t('Displays the type of the application. ')}
-            <TextContent>
-              <Text
-                component={TextVariants.a}
+            <Content>
+              <Content
+                component={ContentVariants.a}
                 isVisitedLink
                 href={DOC_LINKS.MANAGE_APPLICATIONS}
                 target="_blank"
@@ -625,8 +624,8 @@ export default function ApplicationsOverview() {
                 }}
               >
                 {t('View documentation')} <ExternalLinkAltIcon />
-              </Text>
-            </TextContent>
+              </Content>
+            </Content>
           </span>
         ),
         transforms: [cellWidth(10)],
@@ -1143,40 +1142,40 @@ export default function ApplicationsOverview() {
           <>
             <div>
               <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
-                <Text>{t('Argo CD ApplicationSet - Pull model')}</Text>
+                <Content component="p">{t('Argo CD ApplicationSet - Pull model')}</Content>
               </span>
               <span>
-                <Text>
+                <Content component="p">
                   {t(
                     'ApplicationSet application where Argo CD application resources are distributed from the hub cluster to the managed clusters. Each managed cluster independently reconciles and deploys the application by using the received application resource.'
                   )}
-                </Text>
+                </Content>
               </span>
             </div>
             <div style={{ paddingTop: '10px' }}>
               <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
-                <Text>{t('Argo CD ApplicationSet - Push model')}</Text>
+                <Content component="p">{t('Argo CD ApplicationSet - Push model')}</Content>
               </span>
               <span>
-                <Text>
+                <Content component="p">
                   {t(
                     'ApplicationSet application where Argo CD application resources are created on the hub cluster. The hub cluster is responsible for reconciling and pushing the deployed application to the managed clusters.'
                   )}
-                </Text>
+                </Content>
               </span>
             </div>
             <div style={{ paddingTop: '10px' }}>
               <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
-                <Text>
+                <Content component="p">
                   <DeprecatedTitle title={t('Subscription')} />
-                </Text>
+                </Content>
               </span>
               <span>
-                <Text>
+                <Content component="p">
                   {t(
                     'Subscription application where subscription resources are distributed from the hub cluster to the managed clusters. Each managed cluster independently reconciles and deploys the application using the received subscription resource.'
                   )}
-                </Text>
+                </Content>
               </span>
             </div>
           </>
@@ -1214,7 +1213,7 @@ export default function ApplicationsOverview() {
   )
 
   return (
-    <PageSection>
+    <PageSection hasBodyWrapper={false}>
       <DeleteResourceModal {...modalProps} />
       {pluginModal}
       <AcmTable<IResource<ApplicationStatus>>

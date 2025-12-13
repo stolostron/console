@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import {
   Button,
+  Content,
   DescriptionList,
   DescriptionListDescription,
   DescriptionListGroup,
@@ -12,7 +13,6 @@ import {
   LabelGroup,
   PageSection,
   Stack,
-  Text,
   Tooltip,
 } from '@patternfly/react-core'
 import { ExternalLinkAltIcon, GlobeAmericasIcon, PencilAltIcon, SearchIcon } from '@patternfly/react-icons'
@@ -65,7 +65,7 @@ export function LablesGroup(props: { labels: Record<string, string> }) {
     return (
       <LabelGroup
         style={{
-          color: 'var(--pf-v5-global--Color--200)',
+          color: 'var(--pf-t--global--text--color--200)',
           fontSize: '14px',
         }}
       >
@@ -194,10 +194,10 @@ export function ResourceConditions(props: { conditions: ResourceCondition[] }) {
   return (
     <Fragment>
       <Divider />
-      <PageSection variant={'light'}>
-        <Text style={{ fontSize: '1.25rem', fontFamily: 'RedHatDisplay' }} component={'h2'}>
+      <PageSection hasBodyWrapper={false}>
+        <Content style={{ fontSize: '1.25rem', fontFamily: 'RedHatDisplay' }} component={'h2'}>
           {t('Conditions')}
-        </Text>
+        </Content>
         {conditions.length ? (
           <AcmTable<ResourceCondition>
             items={conditions}
@@ -356,7 +356,7 @@ export default function DetailsOverviewPage() {
 
   if (resourceError) {
     return (
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <AcmAlert
           noClose={true}
           variant={'danger'}
@@ -368,7 +368,7 @@ export default function DetailsOverviewPage() {
     )
   } else if (resourceLoading) {
     return (
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <AcmLoadingPage />
       </PageSection>
     )
@@ -376,12 +376,12 @@ export default function DetailsOverviewPage() {
 
   if (resource && !resourceLoading && !resourceError) {
     return (
-      <PageSection>
-        <PageSection variant={'light'}>
+      <PageSection hasBodyWrapper={false}>
+        <PageSection hasBodyWrapper={false}>
           <Stack hasGutter>
-            <Text style={{ fontSize: '1.25rem', fontFamily: 'RedHatDisplay' }} component={'h2'}>
+            <Content style={{ fontSize: '1.25rem', fontFamily: 'RedHatDisplay' }} component={'h2'}>
               {t('search.resource.details', { resource: resource.kind })}
-            </Text>
+            </Content>
             <DescriptionList
               columnModifier={{
                 default: '2Col',
@@ -449,9 +449,9 @@ export default function DetailsOverviewPage() {
                 </Flex>
                 <DescriptionListDescription
                   style={{
-                    border: '1px solid var(--pf-v5-global--BorderColor--300)',
-                    borderRadius: 'var(--pf-v5-c-label-group--m-category--BorderRadius)',
-                    padding: '0.25rem',
+                    border: '1px solid var(--pf-t--global--border--color--default)',
+                    borderRadius: 'var(--pf-t--global--border--radius--small)',
+                    padding: 'var(--pf-t--global--spacer--xs)',
                   }}
                 >
                   <LablesGroup labels={resource.metadata?.labels ?? {}} />

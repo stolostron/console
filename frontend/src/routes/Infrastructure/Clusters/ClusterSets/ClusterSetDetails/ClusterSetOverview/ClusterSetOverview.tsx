@@ -63,7 +63,7 @@ export function ClusterSetOverviewPageContent() {
 
   return (
     <AcmPageContent id="overview">
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <ManagedClusterSetBindingModal
           clusterSet={showManagedClusterSetBindingModal ? clusterSet : undefined}
           onClose={() => setShowManagedClusterSetBindingModal(false)}

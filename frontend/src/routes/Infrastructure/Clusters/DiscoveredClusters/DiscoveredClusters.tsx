@@ -33,7 +33,7 @@ import {
 export default function DiscoveredClustersPage() {
   return (
     <AcmPageContent id="discovered-clusters">
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <DiscoveredClustersPageContent />
       </PageSection>
     </AcmPageContent>

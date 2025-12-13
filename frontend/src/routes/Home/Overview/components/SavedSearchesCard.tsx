@@ -4,15 +4,12 @@ import {
   Card,
   CardBody,
   CardTitle,
+  Content,
+  ContentVariants,
   Divider,
   EmptyState,
   EmptyStateBody,
-  EmptyStateIcon,
   Skeleton,
-  Text,
-  TextContent,
-  TextVariants,
-  EmptyStateHeader,
 } from '@patternfly/react-core'
 import { CogIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
 import { Fragment, useEffect, useState } from 'react'
@@ -36,9 +33,9 @@ const CardHeader = (props: { isSearchDisabled: boolean }) => {
         {!isSearchDisabled && (
           <Link style={{ display: 'flex', alignItems: 'center' }} to={NavigationPath.search}>
             <CogIcon />
-            <Text style={{ paddingLeft: '.25rem' }} component={TextVariants.small}>
+            <Content style={{ paddingLeft: '.25rem' }} component={ContentVariants.small}>
               {t('Manage')}
-            </Text>
+            </Content>
           </Link>
         )}
       </div>
@@ -89,7 +86,7 @@ export default function SavedSearchesCard(
   if (isUserPreferenceLoading || loading || isSearchDisabledLoading) {
     return (
       <div>
-        <Card isRounded>
+        <Card>
           <CardHeader isSearchDisabled={false} />
           <CardBody>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -109,37 +106,30 @@ export default function SavedSearchesCard(
     const searchDisabledTitle = 'This view is disabled with the current configuration.'
     const searchDisabledMessage = 'Enable the search service to see this view.'
     return (
-      <Card isRounded>
+      <Card>
         <CardHeader isSearchDisabled />
-        <EmptyState style={{ paddingTop: 0, marginTop: 'auto' }}>
-          {!isSearchDisabled && (
-            <EmptyStateIcon
-              style={{ fontSize: '36px', marginBottom: '1rem' }}
-              icon={ExclamationCircleIcon}
-              color={'var(--pf-v5-global--danger-color--100)'}
-            />
-          )}
-          <EmptyStateHeader
-            titleText={
-              <>{isSearchDisabled ? searchDisabledTitle : t('Error occurred while getting the result count.')}</>
-            }
-            headingLevel="h4"
-          />
+        <EmptyState
+          headingLevel="h4"
+          icon={!isSearchDisabled ? ExclamationCircleIcon : undefined}
+          titleText={
+            <>{isSearchDisabled ? searchDisabledTitle : t('Error occurred while getting the result count.')}</>
+          }
+          style={{ paddingTop: 0, marginTop: 'auto' }}
+        >
           <EmptyStateBody>{isSearchDisabled ? searchDisabledMessage : error.message}</EmptyStateBody>
         </EmptyState>
       </Card>
     )
   } else if (!isUserPreferenceLoading && savedSearches.length === 0) {
     return (
-      <Card isRounded>
+      <Card>
         <CardBody>
-          <EmptyState>
-            <EmptyStateHeader titleText={<>{t('Personalize this view')}</>} headingLevel="h4" />
+          <EmptyState headingLevel="h4" titleText={<>{t('Personalize this view')}</>}>
             <EmptyStateBody>
               <span style={{ display: 'flex', flexDirection: 'column' }}>
                 {t('Use search to query your resources. When you save a search query, this view will show your data.')}
                 <Link to={NavigationPath.search}>
-                  <Text component={TextVariants.small}>{t('Go to search')}</Text>
+                  <Content component={ContentVariants.small}>{t('Go to search')}</Content>
                 </Link>
               </span>
             </EmptyStateBody>
@@ -151,7 +141,7 @@ export default function SavedSearchesCard(
 
   return (
     <div>
-      <Card isRounded>
+      <Card>
         <CardHeader isSearchDisabled={false} />
         <CardBody>
           <div style={{ display: 'grid', gridTemplateColumns: 'auto auto auto auto auto', columnGap: 16 }}>
@@ -168,9 +158,9 @@ export default function SavedSearchesCard(
                   >
                     <span>{savedSearch.name}</span>
                     {savedSearch?.description && (
-                      <TextContent>
-                        <Text component={TextVariants.small}>{savedSearch.description ?? ''}</Text>
-                      </TextContent>
+                      <Content>
+                        <Content component={ContentVariants.small}>{savedSearch.description ?? ''}</Content>
+                      </Content>
                     )}
                   </div>
                   {resultCount > 0 ? (

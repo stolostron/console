@@ -1,5 +1,5 @@
 .hypershift-diagram-majorRectStyle {
-  background-color: var(--pf-v5-global--BackgroundColor--100);
+  background-color: var(--pf-t--global--background--color--primary--default);
   padding: 24px;
   width: 50%;
 }
@@ -15,7 +15,7 @@
 }
 
 .hypershift-diagram-minorRectStyle {
-  background-color: var(--pf-v5-global--BackgroundColor--100);
+  background-color: var(--pf-t--global--background--color--primary--default);
   border: 2px solid #0e5ecd;
   padding: 18px;
 }

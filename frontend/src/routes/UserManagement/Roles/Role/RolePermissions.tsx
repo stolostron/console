@@ -99,7 +99,7 @@ const RolePermissions = () => {
 
   return (
     <AcmPageContent id="role-permissions">
-      <PageSection className="wide-search-input">
+      <PageSection hasBodyWrapper={false} className="wide-search-input">
         <Title headingLevel="h1" style={{ marginBottom: '1rem' }}>
           {t('Permissions')}
         </Title>

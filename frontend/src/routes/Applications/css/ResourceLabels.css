@@ -7,7 +7,7 @@
   display: inline-block;
   margin-right: 8px;
 }
-.label-with-popover.pf-v5-c-popover {
+.label-with-popover.pf-v6-c-popover {
   --pf-v5-c-popover__content--Padding: 0px;
   --pf-v5-c-popover__content--PaddingTop: var(--pf-v5-c-popover__content--Padding);
   --pf-v5-c-popover__content--PaddingLeft: var(--pf-v5-c-popover__content--Padding);
@@ -15,20 +15,20 @@
   --pf-v5-c-popover__content--PaddingRight: var(--pf-v5-c-popover__content--Padding);
   --pf-v5-c-popover__close--Right: 0;
 }
-.label-with-popover.pf-v5-c-popover .pf-v5-c-popover__content .pf-v5-c-button {
+.label-with-popover.pf-v6-c-popover .pf-v6-c-popover__content .pf-v6-c-button {
   --pf-v5-c-button--PaddingTop: 1rem;
 }
-.label-with-popover.pf-v5-c-popover .pf-v5-c-popover__content h6 {
+.label-with-popover.pf-v6-c-popover .pf-v6-c-popover__content h6 {
   padding: 1rem 1rem 0 1rem;
 }
 .channel-labels {
   --gutter: 0.5rem;
   --margin: 1rem;
 }
-.channel-labels .pf-v5-l-split {
+.channel-labels .pf-v6-l-split {
   --pf-v5-l-split--m-gutter--MarginRight: var(--gutter);
 }
-.channel-labels .pf-v5-l-stack {
+.channel-labels .pf-v6-l-stack {
   --pf-v5-l-stack--m-gutter--MarginBottom: var(--gutter);
 }
 .channel-labels .channel-label {

@@ -4,9 +4,8 @@
 import {
   ButtonVariant,
   PageSection,
-  Text,
-  TextContent,
-  TextVariants,
+  Content,
+  ContentVariants,
   ToggleGroup,
   ToggleGroupItem,
 } from '@patternfly/react-core'
@@ -82,7 +81,7 @@ function TableEmptyState(args: Record<string, unknown>) {
 export function Table(args: Record<string, unknown>) {
   return (
     <AcmPage header={<AcmPageHeader title="AcmTable" />}>
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <TableStory {...args} />
       </PageSection>
     </AcmPage>
@@ -107,7 +106,7 @@ export function TableExpandable(args: Record<string, unknown>) {
   return (
     <AcmPage header={<AcmPageHeader title="AcmTable with expandable row" />}>
       <AcmPageContent id="table">
-        <PageSection>
+        <PageSection hasBodyWrapper={false}>
           <AcmTable<IExampleData>
             emptyState={<TableEmptyState {...args} />}
             items={items}
@@ -124,9 +123,9 @@ export function TableExpandable(args: Record<string, unknown>) {
                     {
                       title: (
                         <>
-                          <TextContent>
-                            <Text component={TextVariants.h3}>Favorite Colors</Text>
-                          </TextContent>
+                          <Content>
+                            <Content component={ContentVariants.h3}>Favorite Colors</Content>
+                          </Content>
                           <AcmTable<IExampleSubData>
                             resultView={{
                               loading: false,
@@ -185,7 +184,7 @@ export function TableFiltered(args: Record<string, unknown>) {
   return (
     <AcmPage header={<AcmPageHeader title="AcmTable with Filtering" />}>
       <AcmPageContent id="table">
-        <PageSection>
+        <PageSection hasBodyWrapper={false}>
           <TableFilteredStory {...args} />
         </PageSection>
       </AcmPageContent>
@@ -239,7 +238,7 @@ export function TableEmpty(args: Record<string, unknown>) {
   return (
     <AcmPage header={<AcmPageHeader title="AcmTable Empty" />}>
       <AcmPageContent id="table">
-        <PageSection>
+        <PageSection hasBodyWrapper={false}>
           <TableEmptyStory {...args} />
         </PageSection>
       </AcmPageContent>
@@ -266,7 +265,7 @@ export function TableLoading(args: Record<string, unknown>) {
   return (
     <AcmPage header={<AcmPageHeader title="AcmTable Loading" />}>
       <AcmPageContent id="table">
-        <PageSection>
+        <PageSection hasBodyWrapper={false}>
           <TableLoadingStory {...args} />
         </PageSection>
       </AcmPageContent>

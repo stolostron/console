@@ -22,8 +22,8 @@
   height: 1em;
 }
 
-.temptifly .pf-v5-c-drawer__panel,
-.creation-view .pf-v5-c-drawer__panel {
+.temptifly .pf-v6-c-drawer__panel,
+.creation-view .pf-v6-c-drawer__panel {
   transition: none;
 }
 .temptifly .creation-view-split-container.showEditor .creation-view-yaml,
@@ -50,7 +50,7 @@
   height: 100%;
 }
 
-.pf-v5-c-content .temptifly .pf-v5-c-wizard__toggle-list {
+.pf-v6-c-content .temptifly .pf-v6-c-wizard__toggle-list {
   margin-bottom: 0;
 }
 

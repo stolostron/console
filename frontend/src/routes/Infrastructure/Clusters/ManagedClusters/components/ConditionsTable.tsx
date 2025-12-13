@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Flex, FlexItem, Icon } from '@patternfly/react-core'
-import { CheckCircleIcon, ExclamationCircleIcon, UnknownIcon, InProgressIcon } from '@patternfly/react-icons'
-import { Table /* data-codemods */, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table'
+import { CheckCircleIcon, ExclamationCircleIcon, InProgressIcon, UnknownIcon } from '@patternfly/react-icons'
+import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table'
 import { CreateCredentialModal } from '../../../../../components/CreateCredentialModal'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 

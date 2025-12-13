@@ -1,7 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import {
-  EmptyStateHeader,
-  EmptyStateIcon,
   Spinner,
   ToggleGroup,
   ToggleGroupItem,
@@ -94,18 +92,13 @@ export const KyvernoRelatedResources: FunctionComponent<IKyvernoRelatedResources
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [classifiedRelatedObjects, selectedId])
 
-  if (!name || !template || !relatedObjects || !violationColumn)
-    return (
-      <EmptyState>
-        <EmptyStateHeader icon={<EmptyStateIcon icon={Spinner} />} />
-      </EmptyState>
-    )
+  if (!name || !template || !relatedObjects || !violationColumn) return <EmptyState icon={Spinner}></EmptyState>
 
   return (
     <>
       <Toolbar inset={{ default: 'insetMd', xl: 'insetLg' }}>
         <ToolbarContent>
-          <ToolbarGroup align={{ default: 'alignLeft' }}>
+          <ToolbarGroup align={{ default: 'alignStart' }}>
             <ToolbarItem>
               <ToggleGroup aria-label="choose kyverno resource panel">
                 {Object.keys(classifiedRelatedObjects)

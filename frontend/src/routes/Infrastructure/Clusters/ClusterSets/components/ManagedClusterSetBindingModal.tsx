@@ -19,7 +19,8 @@ import {
 } from '../../../../../ui-components'
 import { SelectVariant } from '../../../../../components/AcmSelectBase'
 
-import { ActionGroup, Button, ModalVariant, SelectOption } from '@patternfly/react-core'
+import { ActionGroup, Button, SelectOption } from '@patternfly/react-core'
+import { ModalVariant } from '@patternfly/react-core/deprecated'
 import { useEffect, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'

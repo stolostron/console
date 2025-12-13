@@ -129,14 +129,14 @@ export default function RelatedResourceDetailsTab() {
 
   if (loading || resourceLoading) {
     return (
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <AcmLoadingPage />
       </PageSection>
     )
   }
   if (error) {
     return (
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <Alert variant={'danger'} isInline={true} title={t('An unexpected error occurred.')}>
           {error.toString()}
         </Alert>
@@ -146,7 +146,7 @@ export default function RelatedResourceDetailsTab() {
 
   if (data?.searchResult && relatedResultItems.length === 0) {
     return (
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <Alert variant={'info'} isInline={true} title={t('There are no resources related to your search results.')}>
           {error}
         </Alert>
@@ -155,7 +155,7 @@ export default function RelatedResourceDetailsTab() {
   }
 
   return (
-    <PageSection>
+    <PageSection hasBodyWrapper={false}>
       <Stack hasGutter>
         {relatedResultItems.length >= searchResultLimit ? (
           <Alert
@@ -166,7 +166,7 @@ export default function RelatedResourceDetailsTab() {
             )}
           />
         ) : null}
-        <PageSection isFilled={false} variant={'light'}>
+        <PageSection hasBodyWrapper={false} isFilled={false}>
           <Accordion isBordered asDefinitionList={true}>
             {kinds.map((kind: string, idx: number) => {
               const accordionItemKey = `${kind}-${idx}`
@@ -175,7 +175,7 @@ export default function RelatedResourceDetailsTab() {
 
               const kindString = kind.split('.').pop() ?? ''
               return (
-                <AccordionItem key={`${kind}-accordion-item`}>
+                <AccordionItem isExpanded={accordionKeys.includes(accordionItemKey)} key={`${kind}-accordion-item`}>
                   <AccordionToggle
                     onClick={() => {
                       const index = accordionKeys.indexOf(accordionItemKey)
@@ -185,7 +185,6 @@ export default function RelatedResourceDetailsTab() {
                           : [...accordionKeys, accordionItemKey]
                       setAccordionKeys(newExpanded)
                     }}
-                    isExpanded={accordionKeys.includes(accordionItemKey)}
                     id={accordionItemKey}
                   >
                     <span style={{ flexDirection: 'row' }}>
@@ -196,8 +195,8 @@ export default function RelatedResourceDetailsTab() {
                           <span
                             style={{
                               marginLeft: '10px',
-                              fontSize: 'var(--pf-v5-global--FontSize--sm)',
-                              color: 'var(--pf-v5-global--Color--200)',
+                              fontSize: 'var(--pf-t--global--font--size--sm)',
+                              color: 'var(--pf-t--global--text--color--200)',
                             }}
                           >
                             {apiGroup}
@@ -206,8 +205,8 @@ export default function RelatedResourceDetailsTab() {
                         <div
                           style={{
                             marginLeft: '10px',
-                            fontSize: 'var(--pf-v5-global--FontSize--sm)',
-                            color: 'var(--pf-v5-global--Color--200)',
+                            fontSize: 'var(--pf-t--global--font--size--sm)',
+                            color: 'var(--pf-t--global--text--color--200)',
                           }}
                         >
                           {`(${items.length})`}
@@ -215,7 +214,7 @@ export default function RelatedResourceDetailsTab() {
                       </span>
                     </span>
                   </AccordionToggle>
-                  <AccordionContent isHidden={!accordionKeys.includes(accordionItemKey)}>
+                  <AccordionContent>
                     {accordionKeys.includes(accordionItemKey) && renderContent(kind, items)}
                   </AccordionContent>
                 </AccordionItem>

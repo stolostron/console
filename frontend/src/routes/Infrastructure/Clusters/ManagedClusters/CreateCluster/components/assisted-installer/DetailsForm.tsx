@@ -5,7 +5,7 @@ import { FormikProps } from 'formik'
 import { set, get, isEqual, debounce } from 'lodash'
 // eslint-disable-next-line
 import { TFunction } from 'react-i18next'
-import { Text, SelectOption } from '@patternfly/react-core'
+import { Content, SelectOption } from '@patternfly/react-core'
 import { Link } from 'react-router-dom-v5-compat'
 import { NavigationPath } from '../../../../../../../NavigationPath'
 import { Secret, ManagedClusterSet } from '../../../../../../../resources'
@@ -95,9 +95,9 @@ export const getExtensionAfter = ({
       isDisabled={canJoinClusterSets === undefined || canJoinClusterSets.length === 0}
       hidden={canJoinClusterSets === undefined}
       helperText={
-        <Text component="small">
+        <Content component="small">
           <Link to={NavigationPath.clusterSets}>{t('import.manage.cluster.sets')}</Link>
-        </Text>
+        </Content>
       }
       isRequired={mustJoinClusterSet}
     >

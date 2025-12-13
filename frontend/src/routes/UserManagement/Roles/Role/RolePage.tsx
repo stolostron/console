@@ -1,12 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useParams, useLocation, Link, Outlet, generatePath } from 'react-router-dom-v5-compat'
-import { useTranslation } from '../../../../lib/acm-i18next'
-import { useCurrentRole } from '../RolesPage'
-import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem, AcmButton } from '../../../../ui-components'
-import { NavigationPath } from '../../../../NavigationPath'
-import { Page } from '@patternfly/react-core'
+import { generatePath, Link, Outlet, useLocation, useParams } from 'react-router-dom-v5-compat'
 import { ErrorPage } from '../../../../components/ErrorPage'
+import { useTranslation } from '../../../../lib/acm-i18next'
+import { NavigationPath } from '../../../../NavigationPath'
 import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
+import { AcmButton, AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../../ui-components'
+import { useCurrentRole } from '../RolesPage'
 
 const RolePage = () => {
   const { t } = useTranslation()
@@ -21,7 +20,7 @@ const RolePage = () => {
 
   if (!role) {
     return (
-      <Page>
+      <>
         <ErrorPage
           error={new ResourceError(ResourceErrorCode.NotFound)}
           actions={
@@ -30,7 +29,7 @@ const RolePage = () => {
             </AcmButton>
           }
         />
-      </Page>
+      </>
     )
   }
   return (

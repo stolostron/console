@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Label, Spinner, Tooltip } from '@patternfly/react-core'
+import { CheckCircleIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { RoleAssignmentStatus } from '../../../resources/multicluster-role-assignment'
-import { CheckCircleIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
 
 type RoleAssignmentStatusComponentProps = {
   status?: RoleAssignmentStatus
@@ -15,7 +15,11 @@ const RoleAssignmentStatusComponent = ({ status }: RoleAssignmentStatusComponent
       return (
         <Label variant="outline">
           <span style={{ paddingRight: '8px' }}>
-            <CheckCircleIcon style={{ color: 'var(--pf-v5-global--success-color--100)' }} />
+            <CheckCircleIcon
+              style={{
+                color: 'var(--pf-t--global--icon--color--status--success--default)',
+              }}
+            />
           </span>
           {t('Active')}
         </Label>
@@ -25,7 +29,7 @@ const RoleAssignmentStatusComponent = ({ status }: RoleAssignmentStatusComponent
         <Tooltip content={`${status.reason}: ${status.message}`}>
           <Label variant="outline">
             <span style={{ paddingRight: '8px' }}>
-              <ExclamationCircleIcon color="var(--pf-v5-global--danger-color--100)" />
+              <ExclamationCircleIcon color="var(--pf-t--global--icon--color--status--danger--default)" />
             </span>
             {t('Error')}
           </Label>

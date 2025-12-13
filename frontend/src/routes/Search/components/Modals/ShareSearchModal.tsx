@@ -1,7 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
-import { ClipboardCopy, ModalVariant } from '@patternfly/react-core'
+import { ClipboardCopy } from '@patternfly/react-core'
+import { ModalVariant } from '@patternfly/react-core/deprecated'
 import { Fragment } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { SavedSearch } from '../../../../resources/userpreference'

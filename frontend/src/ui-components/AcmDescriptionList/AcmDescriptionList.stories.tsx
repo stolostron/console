@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Fragment } from 'react'
-import { AcmDescriptionList } from './AcmDescriptionList'
-import { AcmLabels } from '../AcmLabels/AcmLabels'
-import { CheckCircleIcon, PencilAltIcon } from '@patternfly/react-icons'
 import { Button, ButtonVariant, Icon } from '@patternfly/react-core'
+import { CheckCircleIcon, PencilAltIcon } from '@patternfly/react-icons'
+import { Fragment } from 'react'
+import { AcmLabels } from '../AcmLabels/AcmLabels'
+import { AcmDescriptionList } from './AcmDescriptionList'
 
 export default {
   title: 'DescriptionList',
@@ -36,9 +36,11 @@ const leftItems = [
   {
     key: 'Labels',
     keyAction: (
-      <Button variant={ButtonVariant.plain} aria-label="pencil">
-        <PencilAltIcon color="var(--pf-v5-global--primary-color--100)" />
-      </Button>
+      <Button
+        icon={<PencilAltIcon color="var(--pf-t--color--blue--50)" />}
+        variant={ButtonVariant.plain}
+        aria-label="pencil"
+      />
     ),
     value: (
       <AcmLabels labels={['cloud=Amazon', 'clusterID=1b1asdfd8c-1a94-4fd3-a05c-f34easfe5f3', 'vendor=OpenShift']} />

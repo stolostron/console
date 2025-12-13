@@ -557,17 +557,13 @@ class ArgoAppDetailsContainer extends Component<ArgoAppDetailsContainerProps, Ar
       // Create the accordion item for this application
       appItems.push(
         <div className="appDetailItem" style={parentDivStyle} key={`${name}${i}`}>
-          <AccordionItem>
-            <AccordionToggle
-              onClick={() => this.handleExpandSectionToggle(toggleItemNum)}
-              isExpanded={expandSectionToggleMap.has(toggleItemNum)}
-              id={name}
-            >
+          <AccordionItem isExpanded={expandSectionToggleMap.has(toggleItemNum)}>
+            <AccordionToggle onClick={() => this.handleExpandSectionToggle(toggleItemNum)} id={name}>
               {this.renderArgoAppStatusIcon(statusIcon)}
               <span style={{ paddingRight: '10px' }} />
               {name}
             </AccordionToggle>
-            <AccordionContent isHidden={!expandSectionToggleMap.has(toggleItemNum)}>
+            <AccordionContent>
               {/* Argo editor link */}
               <span style={argoEditorLinkStyle}>{this.renderURLLink(argoEditorResource, true, t)}</span>
               <div className="spacer" />

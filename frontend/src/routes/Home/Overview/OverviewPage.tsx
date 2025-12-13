@@ -5,6 +5,7 @@ import {
   Card,
   CardBody,
   CardTitle,
+  ContentVariants,
   Divider,
   Dropdown,
   DropdownItem,
@@ -15,7 +16,6 @@ import {
   PageSection,
   Popover,
   Skeleton,
-  TextVariants,
 } from '@patternfly/react-core'
 import { AngleDownIcon, AngleUpIcon, EllipsisVIcon, ExternalLinkAltIcon, HelpIcon } from '@patternfly/react-icons'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -32,7 +32,7 @@ import { NavigationPath } from '../../../NavigationPath'
 import { getUserPreference, UserPreference } from '../../../resources'
 import { Cluster } from '../../../resources/utils'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
-import { AcmButton, AcmDonutChart, AcmScrollable, colorThemes } from '../../../ui-components'
+import { AcmButton, AcmDonutChart, colorThemes } from '../../../ui-components'
 import { useAddRemediationPolicies } from '../../Governance/common/useCustom'
 import { useClusterAddons } from '../../Infrastructure/Clusters/ClusterSets/components/useClusterAddons'
 import {
@@ -362,8 +362,8 @@ export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Re
   }, [workerCoreCountError, workerCoreCountLoading, workerCoreTotal, t, workerCoreLaunchLink])
 
   return (
-    <AcmScrollable>
-      <PageSection>
+    <>
+      <PageSection hasBodyWrapper={false}>
         {hasVirtualMachines && (
           <div style={{ marginBottom: '1rem' }}>
             <KubevirtProviderAlert variant="search" component="hint" />
@@ -383,7 +383,7 @@ export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Re
           <SummaryClustersCard isPieChart title={t('Cluster version')} data={clusterVersionSummary} />
           <SummaryStatusCard key={'node-summary'} title={t('Nodes')} data={nodeSummary} />
           {summarySectionWidgetToggle['coreCount'].visible && (
-            <Card isRounded style={{ height: '200px' }}>
+            <Card style={{ height: '200px' }}>
               <CardTitle style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 {t('Worker core count')}
                 <Dropdown
@@ -426,7 +426,7 @@ export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Re
         </AcmDynamicGrid>
       </PageSection>
 
-      <PageSection style={{ paddingTop: 0 }}>
+      <PageSection hasBodyWrapper={false} style={{ paddingTop: 0 }}>
         <Card>
           <CardTitle>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -455,15 +455,14 @@ export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Re
                   }
                 >
                   <Button
+                    icon={<HelpIcon />}
                     variant="plain"
                     style={{
                       padding: 0,
                       marginLeft: '8px',
                       verticalAlign: 'middle',
                     }}
-                  >
-                    <HelpIcon />
-                  </Button>
+                  />
                 </Popover>
               </div>
 
@@ -519,15 +518,14 @@ export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Re
                         )}
                       >
                         <Button
+                          icon={<HelpIcon />}
                           variant="plain"
                           style={{
                             padding: 0,
                             marginLeft: '8px',
                             verticalAlign: 'middle',
                           }}
-                        >
-                          <HelpIcon />
-                        </Button>
+                        />
                       </Popover>
                     }
                     summaryTotalHeader={{
@@ -648,12 +646,12 @@ export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Re
                 )}
                 {!isObservabilityInstalled && (
                   <GalleryItem key={'alerts-card'} style={{ flex: 1, minWidth: '375px' }}>
-                    <Card isRounded isFullHeight>
+                    <Card isFullHeight>
                       <CardTitle>{t('Enable Observability to see more metrics')}</CardTitle>
                       <CardBody isFilled={false}>
                         <AcmButton
                           variant={'link'}
-                          component={TextVariants.a}
+                          component={ContentVariants.a}
                           href={DOC_LINKS.ENABLE_OBSERVABILITY}
                           target="_blank"
                           style={{ padding: 0 }}
@@ -744,6 +742,6 @@ export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Re
           )}
         </Card>
       </PageSection>
-    </AcmScrollable>
+    </>
   )
 }

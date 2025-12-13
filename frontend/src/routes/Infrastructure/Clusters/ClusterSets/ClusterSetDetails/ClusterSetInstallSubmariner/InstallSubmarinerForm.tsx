@@ -107,7 +107,7 @@ export function InstallSubmarinerFormPage() {
           />
         }
       >
-        <PageSection variant="light" isFilled>
+        <PageSection hasBodyWrapper={false} isFilled>
           <AcmEmptyState
             title={t('No available clusters yet')}
             message={t(

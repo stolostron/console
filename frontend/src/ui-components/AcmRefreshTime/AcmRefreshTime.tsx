@@ -14,11 +14,11 @@ const timestampClass = css({
   display: 'flex',
   justifyContent: 'flex-end',
   alignItems: 'center',
-  color: 'var(--pf-v5-global--Color--200)',
+  color: 'var(--pf-t--global--text--color--200)',
   fontSize: '10px',
   lineHeight: '20px',
 
-  '& .pf-v5-c-spinner': {
+  '& .pf-v6-c-spinner': {
     marginRight: '.4rem',
   },
 })

@@ -119,13 +119,13 @@ describe('OverviewClusterLabelSelector', () => {
     await waitFor(() =>
       expect(
         screen.getByRole('button', {
-          name: /close chip group env/i,
+          name: /close label group env/i,
         })
       ).toBeTruthy()
     )
     userEvent.click(
       screen.getByRole('button', {
-        name: /close chip group env/i,
+        name: /close label group env/i,
       })
     )
 

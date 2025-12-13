@@ -80,7 +80,7 @@ const INSTANCE_TYPE_LABELS = ['node.kubernetes.io/instance-type', 'beta.kubernet
 export function NodePoolsPageContent() {
   return (
     <AcmPageContent id="nodes">
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <NodesPoolsTable />
       </PageSection>
     </AcmPageContent>

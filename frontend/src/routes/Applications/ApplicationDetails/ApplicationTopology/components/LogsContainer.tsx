@@ -109,7 +109,7 @@ export function LogsContainer(props: ILogsContainerProps) {
 
   if (resourceError !== '') {
     return (
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <AcmAlert
           noClose={true}
           variant={'danger'}
@@ -121,14 +121,14 @@ export function LogsContainer(props: ILogsContainerProps) {
     )
   } else if (resourceError === '' && !logsError && logs === '') {
     return (
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <AcmLoadingPage />
       </PageSection>
     )
   }
   if (logsError) {
     return (
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <AcmAlert
           noClose={true}
           variant={'danger'}
