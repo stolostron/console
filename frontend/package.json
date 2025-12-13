@@ -89,7 +89,7 @@
     "js-sha256": "^0.11.1",
     "js-yaml": "4.1.1",
     "lodash": "4.17.21",
-    "monaco-editor": "^0.34.1",
+    "monaco-editor": "^0.55.0",
     "parse-url": "^9.2.0",
     "react-error-boundary": "3.1.4",
     "react-monaco-editor": "^0.51.0",
@@ -217,7 +217,7 @@
   "overrides": {
     "@openshift-assisted/ui-lib": {
       "@openshift-console/dynamic-plugin-sdk": "4.19.0",
-      "monaco-editor": "^0.34.1"
+      "monaco-editor": "^0.55.0"
     }
   },
   "browserslist": {
