@@ -51,7 +51,7 @@
     "@octokit/rest": "19.0.13",
     "@octokit/types": "6.41.0",
     "@openshift-assisted/locales": "2.16.3-cim",
-    "@openshift-assisted/ui-lib": "2.16.3-cim",
+    "@openshift-assisted/ui-lib": "2.48.0",
     "@patternfly/patternfly": "^5.4.2",
     "@patternfly/react-charts": "^7.4.7",
     "@patternfly/react-code-editor": "^5.4.13",
