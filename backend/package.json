@@ -36,7 +36,7 @@
     "pino": "7.11.0",
     "pluralize": "8.0.0",
     "prom-client": "^14.2.0",
-    "raw-body": "2.5.3"
+    "raw-body": "3.0.2"
   },
   "devDependencies": {
     "@types/eslint": "8.56.12",
