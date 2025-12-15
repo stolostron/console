@@ -378,8 +378,17 @@ export default function ApplicationDetailsPage() {
 
   const localHubName = useLocalHubName()
 
+  // use clustersString instead of clusters
+  // because clusters has lots of constaantly changing things
+  const clustersString = JSON.stringify(
+    clusters.map((cluster) => {
+      return {
+        name: cluster.name,
+        status: cluster.status,
+      }
+    })
+  )
   // refresh application the first time and then every n seconds
-  const clustersString = JSON.stringify(clusters)
   useEffect(() => {
     const interval = setInterval(
       (function refresh() {
