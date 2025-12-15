@@ -148,7 +148,7 @@ export const RBACProjectsTable = ({
     {
       header: t('Clusters'),
       cell: (project) => (
-        <LabelGroup numLabels={2}>
+        <LabelGroup numLabels={2} isCompact>
           {project.clusters.map((cluster) => (
             <Label key={cluster} isCompact color="grey">
               {areLinksDisplayed ? (
