@@ -39,7 +39,6 @@ const ControlPanelFormGroup = (props: {
                     aria-label={i18n('More info')}
                     onClick={(e) => e.preventDefault()}
                     className="pf-v6-c-form__group-label-help"
-                    style={{ ['--pf-v5-c-form__group-label-help--TranslateY' as any]: 0 }}
                     icon={<HelpIcon />}
                   />
                   {icon ? <div style={{ display: 'inline-block', marginLeft: '20px' }}>{icon}</div> : null}

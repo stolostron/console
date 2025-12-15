@@ -9,6 +9,7 @@ import {
   MastheadBrand,
   MastheadContent,
   MastheadLogo,
+  MastheadMain,
   MastheadToggle,
   MenuToggle,
   MenuToggleElement,
@@ -319,30 +320,32 @@ function AppHeader() {
   return (
     <Masthead style={{ gridTemplateColumns: '1fr auto' }}>
       <Flex>
-        <MastheadToggle>
-          <PageToggleButton
-            isHamburgerButton
-            variant="plain"
-            aria-label="Global navigation"
-            isSidebarOpen={isNavOpen}
-            onSidebarToggle={toggleNav}
-            id="vertical-nav-toggle"
-          ></PageToggleButton>
-        </MastheadToggle>
-        <MastheadBrand>
-          <MastheadLogo>
-            <div style={{ display: 'flex', gap: 8, alignItems: 'start' }}>
-              <div>
-                <Title headingLevel="h4" style={{ fontWeight: 'bold', lineHeight: 1.2 }}>
-                  @stolostron/console
-                </Title>
-                <Title headingLevel="h3" style={{ fontWeight: 'lighter', lineHeight: 1.2 }}>
-                  <Truncate content="Development Console" />
-                </Title>
+        <MastheadMain>
+          <MastheadToggle>
+            <PageToggleButton
+              isHamburgerButton
+              variant="plain"
+              aria-label="Global navigation"
+              isSidebarOpen={isNavOpen}
+              onSidebarToggle={toggleNav}
+              id="vertical-nav-toggle"
+            ></PageToggleButton>
+          </MastheadToggle>
+          <MastheadBrand>
+            <MastheadLogo>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'start' }}>
+                <div>
+                  <Title headingLevel="h4" style={{ fontWeight: 'bold', lineHeight: 1.2 }}>
+                    @stolostron/console
+                  </Title>
+                  <Title headingLevel="h3" style={{ fontWeight: 'lighter', lineHeight: 1.2 }}>
+                    <Truncate content="Development Console" />
+                  </Title>
+                </div>
               </div>
-            </div>
-          </MastheadLogo>
-        </MastheadBrand>
+            </MastheadLogo>
+          </MastheadBrand>
+        </MastheadMain>
         <MastheadContent
           style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginLeft: 'auto' }}
         >

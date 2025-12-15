@@ -69,7 +69,6 @@ export function AcmNumberInput(props: AcmNumberInputProps) {
               onClick={(e) => e.preventDefault()}
               // aria-describedby="simple-form-name"
               className="pf-v6-c-form__group-label-help"
-              style={{ ['--pf-v5-c-form__group-label-help--TranslateY' as any]: 0 }}
               icon={<HelpIcon />}
             />
           </Popover>

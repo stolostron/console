@@ -52,13 +52,11 @@ export function TemplateDetailTitle({
           {t('Audit violations')}{' '}
           <span
             style={{
-              backgroundColor: 'var(--pf-c-label__icon--Color)',
               borderRadius: 10,
               marginLeft: 8,
               fontSize: '0.75rem',
               padding: '0 6px',
               paddingTop: 2,
-              color: 'var(--pf-v5-c-label__content--Color)',
             }}
           >
             {auditViolations}{' '}

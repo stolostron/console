@@ -34,7 +34,6 @@ const getStyles = (props: StyleProps) => ({
     '& .pf-v6-c-chart > svg g path:last-of-type': {
       fill: props.danger ? '#E62325 !important' : undefined,
     },
-    '--pf-v5-c-card__title--not--last-child--PaddingBottom': 0,
     overflow: 'hidden',
   }),
   chartContainer: css({

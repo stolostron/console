@@ -96,7 +96,6 @@ exports[`DetailsForm it renders 1`] = `
               data-ouia-component-type="PF6/Button"
               data-ouia-safe="true"
               id="managedClusterSet-label-help-button"
-              style="--pf-v5-c-form__group-label-help--TranslateY: 0;"
               type="button"
             >
               <span

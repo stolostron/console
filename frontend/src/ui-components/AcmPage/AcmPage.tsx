@@ -75,7 +75,6 @@ export function AcmPageHeader(props: AcmPageHeaderProps) {
                 hasBodyWrapper={false}
                 style={{
                   paddingBottom: props.navigation ? 'inherit' : undefined,
-                  paddingTop: props.breadcrumb ? 'var(--pf-v5-c-page__main-breadcrumb--PaddingTop)' : undefined,
                 }}
               >
                 <Stack hasGutter>

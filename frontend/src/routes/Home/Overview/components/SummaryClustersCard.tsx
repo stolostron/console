@@ -152,7 +152,6 @@ export function SummaryClustersCard(props: {
       style={{
         height: '200px',
         overflow: 'hidden',
-        ['--pf-v5-c-card__title--not--last-child--PaddingBottom' as any]: 0,
       }}
     >
       <CardTitle>{title}</CardTitle>
