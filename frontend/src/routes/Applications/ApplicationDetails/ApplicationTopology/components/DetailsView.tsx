@@ -19,7 +19,7 @@ import {
   StatusType,
   ResourceAction,
 } from '../types'
-import { typeToShapeMap } from '../model/NodeDetailsProvider'
+import { typeToShapeMap } from '../statuses/NodeDetailsProvider'
 import { TFunction } from 'react-i18next'
 
 /**

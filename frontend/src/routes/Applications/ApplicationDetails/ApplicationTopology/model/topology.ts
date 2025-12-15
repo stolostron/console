@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { getClusterName, isDeployableResource } from '../helpers/diagram-helpers-utils'
 import { addDiagramDetails } from './topologyDetails'
-import { computeNodeStatus } from './computeStatuses'
+import { computeNodeStatus } from '../statuses/computeStatuses'
 import { getArgoTopology } from './topologyArgo'
 import { getSubscriptionTopology } from './topologySubscription'
 import { getAppSetTopology } from './topologyAppSet'
