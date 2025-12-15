@@ -20,6 +20,8 @@ import type {
   HelmReleasesState,
   ResourceStatuses,
   Translator,
+  ArgoApplicationTopologyData,
+  OCPFluxApplicationModel,
 } from '../types'
 import { ToolbarControl } from '../topology/components/TopologyToolbar'
 
@@ -43,26 +45,24 @@ export const getTopology = async (
   argoData: ArgoData
 ): Promise<Topology | ExtendedTopology | undefined> => {
   let topology: Topology | ExtendedTopology | undefined
-
-  console.log('toolbarControl in getTopology', toolbarControl)
-  toolbarControl.setActiveApplication(application?.name ?? '')
-
   if (application) {
     if (application.isArgoApp) {
       // Generate topology for Argo CD applications
       topology = getArgoTopology(
-        application as unknown as Parameters<typeof getArgoTopology>[0],
+        toolbarControl,
+        application as unknown as ArgoApplicationTopologyData,
         argoData,
         managedClusters,
         localHubName
       )
     } else if (application.isAppSet) {
       // Generate topology for ApplicationSets
-      topology = getAppSetTopology(application, localHubName)
+      topology = getAppSetTopology(toolbarControl, application, localHubName)
     } else if (application.isOCPApp || application.isFluxApp) {
       // Generate topology for OpenShift or Flux applications (async operation)
       topology = await getOCPFluxAppTopology(
-        application as unknown as Parameters<typeof getOCPFluxAppTopology>[0],
+        toolbarControl,
+        application as unknown as OCPFluxApplicationModel,
         localHubName
       )
     } else {

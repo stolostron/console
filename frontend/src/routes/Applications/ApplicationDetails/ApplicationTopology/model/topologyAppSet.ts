@@ -25,6 +25,7 @@ import {
   SearchQuery,
 } from '../types'
 import { TFunction } from 'react-i18next'
+import { ToolbarControl } from '../topology/components/TopologyToolbar'
 
 /**
  * Generates topology data for ApplicationSet applications
@@ -38,7 +39,11 @@ import { TFunction } from 'react-i18next'
  * @param hubClusterName - Name of the hub cluster
  * @returns Topology structure with nodes and links
  */
-export function getAppSetTopology(application: ApplicationModel, hubClusterName: string): AppSetTopologyResult {
+export function getAppSetTopology(
+  toolbarControl: ToolbarControl,
+  application: ApplicationModel,
+  hubClusterName: string
+): AppSetTopologyResult {
   const links: TopologyLink[] = []
   const nodes: TopologyNode[] = []
   const { name, namespace, appSetClusters, appSetApps, relatedPlacement } = application

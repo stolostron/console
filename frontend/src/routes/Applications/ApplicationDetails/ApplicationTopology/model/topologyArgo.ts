@@ -18,6 +18,7 @@ import type {
   TopologyLink,
   ArgoApplicationResource,
 } from '../types'
+import { ToolbarControl } from '../topology/components/TopologyToolbar'
 
 /**
  * Generates topology data for Argo CD applications
@@ -33,6 +34,7 @@ import type {
  * @returns Topology object containing nodes and links for visualization
  */
 export function getArgoTopology(
+  toolbarControl: ToolbarControl,
   application: ArgoApplicationTopologyData,
   argoData: ArgoTopologyData,
   managedClusters: ManagedCluster[],

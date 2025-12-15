@@ -17,6 +17,7 @@ import type {
   ClusterInfo,
   OCPFluxClusterSummary,
 } from '../types'
+import { ToolbarControl } from '../topology/components/TopologyToolbar'
 
 /**
  * List of Kubernetes resource kinds that are excluded from topology visualization
@@ -36,6 +37,7 @@ const excludedKindList: string[] = ['Cluster', 'Pod', 'ReplicaSet', 'Replication
  * @returns Promise resolving to topology data with nodes, links, and raw search data
  */
 export async function getOCPFluxAppTopology(
+  toolbarControl: ToolbarControl,
   application: OCPFluxApplicationModel,
   hubClusterName: string
 ): Promise<OCPFluxTopologyResult> {
