@@ -8,10 +8,6 @@ import {
   ModalVariant,
   Drawer,
   DrawerContent,
-  DrawerPanelContent,
-  DrawerHead,
-  DrawerActions,
-  DrawerCloseButton,
   Button,
   Title,
   Text,
@@ -19,6 +15,7 @@ import {
 } from '@patternfly/react-core'
 import { RoleAssignmentPreselected } from '../../routes/UserManagement/RoleAssignments/model/role-assignment-preselected'
 import { useState } from 'react'
+import { ExampleScopesPanelContent } from './Scope/ExampleScope/ExampleScopesPanelContent'
 
 interface RoleAssignmentWizardModalProps {
   isOpen: boolean
@@ -50,26 +47,14 @@ export function RoleAssignmentWizardModal({
     ? t('Edit role assignment')
     : t('Create role assignment for {{preselected}}', { preselected: preselected?.subject?.value })
 
-  const drawerPanel = (
-    <DrawerPanelContent>
-      <DrawerHead>
-        <Title headingLevel="h2" size="xl">
-          {t('Example scopes')}
-        </Title>
-        <DrawerActions>
-          <DrawerCloseButton onClick={() => setIsDrawerExpanded(false)} />
-        </DrawerActions>
-      </DrawerHead>
-      <div style={{ padding: '1rem' }}>
-        <p>{t('These examples show different ways to scope role assignments.')}</p>
-      </div>
-    </DrawerPanelContent>
-  )
-
   return (
     <Modal variant={ModalVariant.large} isOpen={isOpen} showClose={false} hasNoBodyWrapper>
       <Drawer isExpanded={isDrawerExpanded}>
-        <DrawerContent panelContent={drawerPanel}>
+        <DrawerContent
+          panelContent={
+            <ExampleScopesPanelContent isVisible={isDrawerExpanded} onClose={() => setIsDrawerExpanded(false)} />
+          }
+        >
           <Wizard
             onClose={onClose}
             header={
@@ -84,7 +69,9 @@ export function RoleAssignmentWizardModal({
                         'A role assignment specifies a distinct action users or groups can perform when associated with a particular role.'
                       )}
                     </p>
-                    <a href="https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_management_for_kubernetes/2.0/html/about/welcome-to-red-hat-advanced-cluster-management-for-kubernetes">Learn more about user management, including an example YAML file.</a>
+                    <a href="https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_management_for_kubernetes/2.0/html/about/welcome-to-red-hat-advanced-cluster-management-for-kubernetes">
+                      Learn more about user management, including an example YAML file.
+                    </a>
                   </div>
                 }
                 descriptionId="role-assignment-wizard-description"
