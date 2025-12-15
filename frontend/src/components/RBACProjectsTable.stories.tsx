@@ -87,3 +87,9 @@ export const WithoutLinks: Story = {
     areLinksDisplayed: false,
   },
 }
+
+export const EmptyState: Story = {
+  args: {
+    projects: [],
+  },
+}
