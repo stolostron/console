@@ -17,7 +17,7 @@ import {
   ToolbarToggleGroup,
 } from '@patternfly/react-core'
 import '../css/topology-toolbar.css'
-import { FC, Ref, useEffect, useState } from 'react'
+import { FC, Ref, useContext, useEffect, useMemo, useState } from 'react'
 import { FilterIcon } from '@patternfly/react-icons'
 import { TopologyProps } from '../Topology'
 import LegendView from '../../components/LegendView'
@@ -27,20 +27,54 @@ import ChannelControl from '../../components/ChannelControl'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import { useQuerySearchDisabledManagedClusters } from '../../../../../../lib/search'
 import { useQuery } from '../../../../../../lib/useQuery'
-//import { TopologyContext } from './TopologyContext'
+import { TopologyContext } from './TopologyContext'
+
+export type ToolbarControl = {
+  allClusters: string[] | undefined
+  activeCluster: string | undefined
+  setActiveCluster: (cluster: string | undefined) => void
+  setAllClusters: (clusters: string[] | undefined) => void
+  allApplications: string[] | undefined
+  activeApplication: string | undefined
+  setAllApplications: (applications: string[] | undefined) => void
+  setActiveApplication: (application: string | undefined) => void
+}
+
+export function useToolbarControl(): ToolbarControl {
+  const [allClusters, setAllClusters] = useState<string[]>()
+  const [activeCluster, setActiveCluster] = useState<string | undefined>()
+
+  const [allApplications, setAllApplications] = useState<string[]>()
+  const [activeApplication, setActiveApplication] = useState<string | undefined>()
+
+  return useMemo(
+    () => ({
+      allClusters,
+      setAllClusters,
+      activeCluster,
+      setActiveCluster,
+      allApplications,
+      setAllApplications,
+      activeApplication,
+      setActiveApplication,
+    }),
+    [allClusters, activeCluster, allApplications, activeApplication]
+  )
+}
 
 const TopologyToolbar: FC<TopologyProps> = (topologyProps) => {
   const { t } = useTranslation()
-  const { channelControl, setDrawerContent, elements, hubClusterName } = topologyProps
+  const { channelControl, setDrawerContent, elements, hubClusterName, toolbarControl } = topologyProps
   const [isSearchDisabled, setIsSearchDisabled] = useState<boolean>(false)
-  const [hasMultipleClusters] = useState<boolean>(false)
-  const [hasMultipleApplications] = useState<boolean>(false)
+  console.log('toolbarControl', toolbarControl)
+  const [hasMultipleClusters] = useState<boolean>(true)
+  const [hasMultipleApplications] = useState<boolean>(true)
   const clusterNodes = elements.nodes.filter((node) => node.type === 'cluster')
   const clusterNames = clusterNodes.map((clusterNode) => clusterNode.name)
   const queryDisabled = useQuerySearchDisabledManagedClusters()
   const { data, startPolling } = useQuery(queryDisabled)
-  //   const options = useContext(TopologyContext)
-
+  const options = useContext(TopologyContext)
+  console.log('options', options)
   useEffect(startPolling, [startPolling])
   useEffect(() => {
     const clustersWithSearchDisabled = data?.[0]?.data?.searchResult?.[0]?.items || []
@@ -187,7 +221,9 @@ const TopologyToolbar: FC<TopologyProps> = (topologyProps) => {
                   {filters.risk.length > 0 && <Badge isRead>{filters.risk.length}</Badge>}
                 </MenuToggle>
               )}
-              // onSelect={onRiskSelect}
+              onSelect={(_e, selection) => {
+                toolbarControl.setActiveCluster(selection as string)
+              }}
               selected={filters.risk}
               isOpen={isRiskExpanded}
               onOpenChange={(isOpen) => setIsRiskExpanded(isOpen)}

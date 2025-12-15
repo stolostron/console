@@ -21,7 +21,7 @@ import componentFactory from './components/componentFactory'
 import { NodeIcons } from './components/nodeIcons'
 import { NodeStatusIcons } from './components/nodeStatusIcons'
 import DetailsView from '../components/DetailsView'
-import { TopologyContext, useTopologyContextValue } from './components/TopologyContext'
+import { ToolbarControl } from './components/TopologyToolbar'
 
 import { ArgoAppDetailsContainerData, ClusterDetailsContainerData } from '../ApplicationTopology'
 import TopologyZoomBar from './components/TopologyZoomBar'
@@ -43,6 +43,7 @@ export interface TopologyProps {
     activeChannel: string | undefined
     setActiveChannel: (channel: string) => void
   }
+  toolbarControl: ToolbarControl
   argoAppDetailsContainerControl: {
     argoAppDetailsContainerData: ArgoAppDetailsContainerData
     handleArgoAppDetailsContainerUpdate: React.Dispatch<React.SetStateAction<ArgoAppDetailsContainerData>>
@@ -86,7 +87,6 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
     hubClusterName,
   } = topologyProps
   const [selectedIds, setSelectedIds] = useState<string[]>()
-  const topologyOptions = useTopologyContextValue()
 
   useEventListener<SelectionEventListener>(SELECTION_EVENT, (ids) => {
     setSelectedIds(ids)
@@ -124,11 +124,9 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
   })
 
   return (
-    <TopologyContext.Provider value={{ ...topologyOptions }}>
-      <TopologyView controlBar={<TopologyZoomBar />} contextToolbar={<TopologyToolbar {...topologyProps} />}>
-        <VisualizationSurface state={{ selectedIds }} />
-      </TopologyView>
-    </TopologyContext.Provider>
+    <TopologyView controlBar={<TopologyZoomBar />} contextToolbar={<TopologyToolbar {...topologyProps} />}>
+      <VisualizationSurface state={{ selectedIds }} />
+    </TopologyView>
   )
 }
 

@@ -21,6 +21,7 @@ import type {
   ResourceStatuses,
   Translator,
 } from '../types'
+import { ToolbarControl } from '../topology/components/TopologyToolbar'
 
 /**
  * Main function to get topology data for different application types.
@@ -34,6 +35,7 @@ import type {
  * @returns Promise resolving to topology structure or undefined
  */
 export const getTopology = async (
+  toolbarControl: ToolbarControl,
   application: ApplicationModel | null,
   managedClusters: ManagedCluster[],
   localHubName: string,
@@ -41,6 +43,9 @@ export const getTopology = async (
   argoData: ArgoData
 ): Promise<Topology | ExtendedTopology | undefined> => {
   let topology: Topology | ExtendedTopology | undefined
+
+  console.log('toolbarControl in getTopology', toolbarControl)
+  toolbarControl.setActiveApplication(application?.name ?? '')
 
   if (application) {
     if (application.isArgoApp) {
