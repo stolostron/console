@@ -6,11 +6,11 @@ import { RoleAssignmentPreselected } from '../../routes/UserManagement/RoleAssig
 import { useState, useCallback } from 'react'
 import { ExampleScopesPanelContent } from './Scope/ExampleScope/ExampleScopesPanelContent'
 import { WizSelect } from '@patternfly-labs/react-form-wizard/lib/src/inputs/WizSelect'
-import { ClusterSetAccessLevel } from './Scope/AccessLevel/ClusterSetAccessLevel'
 import { useItem, ItemContext } from '@patternfly-labs/react-form-wizard/lib/src/contexts/ItemContext'
 import { DataContext } from '@patternfly-labs/react-form-wizard/lib/src/contexts/DataContext'
 import { ClusterSetsList } from './Scope/ClusterSets/ClusterSetsList'
 import { ClusterList } from './Scope/Clusters/ClusterList'
+import { GlobalScopeSelection } from './Scope/GlobalScopeSelection'
 
 interface RoleAssignmentWizardModalProps {
   isOpen: boolean
@@ -20,7 +20,7 @@ interface RoleAssignmentWizardModalProps {
   preselected?: RoleAssignmentPreselected
 }
 
-const ScopeStepContent = ({
+const ScopeSelectionStepContent = ({
   isDrawerExpanded,
   setIsDrawerExpanded,
 }: {
@@ -77,30 +77,21 @@ const ScopeStepContent = ({
           },
         ]}
       />
-      {(() => {
-        switch (selectedScope) {
-          case 'Global access':
-            return (
-              <div style={{ marginTop: '16px' }}>
-                <ClusterSetAccessLevel />
-              </div>
-            )
-          case 'Select cluster sets':
-            return (
-              <div style={{ marginTop: '16px' }}>
-                <ClusterSetsList onSelectClusterSet={(clusterSets) => console.log(clusterSets)} />
-              </div>
-            )
-          case 'Select clusters':
-            return (
-              <div style={{ marginTop: '16px' }}>
-                <ClusterList onSelectCluster={(clusters) => console.log(clusters)} />
-              </div>
-            )
-          default:
-            return null
-        }
-      })()}
+      {selectedScope === 'Global access' && (
+        <div style={{ marginTop: '16px' }}>
+          <GlobalScopeSelection />
+        </div>
+      )}
+      {selectedScope === 'Select cluster sets' && (
+        <div style={{ marginTop: '16px' }}>
+          <ClusterSetsList onSelectClusterSet={(clusterSets) => console.log(clusterSets)} />
+        </div>
+      )}
+      {selectedScope === 'Select clusters' && (
+        <div style={{ marginTop: '16px' }}>
+          <ClusterList onSelectCluster={(clusters) => console.log(clusters)} />
+        </div>
+      )}
     </div>
   )
 }
@@ -132,6 +123,24 @@ export const RoleAssignmentWizardModal = ({
     ? t('Edit role assignment')
     : t('Create role assignment for {{preselected}}', { preselected: preselected?.subject?.value })
 
+  const scopeSubSteps =
+    formData.scope === 'Select cluster sets'
+      ? [
+          <WizardStep key="cluster-sets" name={t('Select cluster sets')} id="scope-cluster-sets">
+            <ScopeSelectionStepContent isDrawerExpanded={isDrawerExpanded} setIsDrawerExpanded={setIsDrawerExpanded} />
+          </WizardStep>,
+        ]
+      : formData.scope === 'Select clusters'
+        ? [
+            <WizardStep key="clusters" name={t('Select clusters')} id="scope-clusters">
+              <ScopeSelectionStepContent
+                isDrawerExpanded={isDrawerExpanded}
+                setIsDrawerExpanded={setIsDrawerExpanded}
+              />
+            </WizardStep>,
+          ]
+        : undefined
+
   return (
     <Modal variant={ModalVariant.large} isOpen={isOpen} showClose={false} hasNoBodyWrapper>
       <Drawer isExpanded={isDrawerExpanded}>
@@ -143,6 +152,7 @@ export const RoleAssignmentWizardModal = ({
           <ItemContext.Provider value={formData}>
             <DataContext.Provider value={{ update }}>
               <Wizard
+                key={formData.scope}
                 onClose={onClose}
                 header={
                   <WizardHeader
@@ -166,8 +176,11 @@ export const RoleAssignmentWizardModal = ({
                   />
                 }
               >
-                <WizardStep name={t('Scope')} id="scope">
-                  <ScopeStepContent isDrawerExpanded={isDrawerExpanded} setIsDrawerExpanded={setIsDrawerExpanded} />
+                <WizardStep name={t('Scope')} id="scope" {...(scopeSubSteps && { steps: scopeSubSteps })}>
+                  <ScopeSelectionStepContent
+                    isDrawerExpanded={isDrawerExpanded}
+                    setIsDrawerExpanded={setIsDrawerExpanded}
+                  />
                 </WizardStep>
 
                 <WizardStep name={t('Roles')} id="role">
