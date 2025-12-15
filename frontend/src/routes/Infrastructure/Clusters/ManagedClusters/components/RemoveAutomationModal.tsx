@@ -14,8 +14,8 @@ import { Button, ButtonVariant, Stack, StackItem } from '@patternfly/react-core'
 import { ModalVariant } from '@patternfly/react-core/deprecated'
 import { useMemo, useState, JSX } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { useClusterDistributionColumn, useClusterProviderColumn } from '../ManagedClusters'
 import { useSharedAtoms, useRecoilValue, useSharedSelectors } from '../../../../../shared-recoil'
+import { useClusterDistributionColumn, useClusterProviderColumn } from '../../../../../components/Clusters'
 
 const table = css({
   '& .pf-v6-c-toolbar': {

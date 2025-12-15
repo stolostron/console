@@ -31,12 +31,12 @@ import { Button, Stack, StackItem, SelectOption } from '@patternfly/react-core'
 import { ModalVariant } from '@patternfly/react-core/deprecated'
 import { useMemo, useState, JSX } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { useClusterDistributionColumn, useClusterProviderColumn } from '../ManagedClusters'
 import { cloneDeep } from 'lodash'
 import { useSharedAtoms, useRecoilValue, useSharedSelectors } from '../../../../../shared-recoil'
 import { ClusterAction, clusterSupportsAction } from '../utils/cluster-actions'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { generatePath } from 'react-router-dom-v5-compat'
+import { useClusterDistributionColumn, useClusterProviderColumn } from '../../../../../components/Clusters'
 
 const select = css({
   '& > div': {
