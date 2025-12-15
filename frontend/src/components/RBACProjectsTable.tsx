@@ -5,9 +5,10 @@ import { generatePath, Link } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../lib/acm-i18next'
 import { NavigationPath } from '../NavigationPath'
 import { useRoleAssignmentData } from '../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHook'
-import { AcmButton, AcmEmptyState, AcmTable, AcmTableStateProvider, IAcmTableColumn } from '../ui-components'
+import { AcmTable, AcmTableStateProvider, IAcmTableColumn } from '../ui-components'
 import { IAcmTableButtonAction, ITableFilter } from '../ui-components/AcmTable/AcmTableTypes'
 import { isClusterInClusters } from '../wizards/RoleAssignment/utils'
+import { CommonProjectsEmptyState } from './project/CommonProjectsEmptyState'
 
 export interface ProjectTableData {
   name: string
@@ -189,22 +190,7 @@ export const RBACProjectsTable = ({
         filters={filters}
         searchPlaceholder={t('Search projects')}
         autoHidePagination
-        emptyState={
-          <AcmEmptyState
-            key="projectsEmptyState"
-            title={t('No common projects found')}
-            message={t(
-              'Go back and select different clusters, or create projects with the same name on these clusters.'
-            )}
-            action={
-              onCreateClick ? (
-                <AcmButton variant="primary" onClick={onCreateClick}>
-                  {t('Create common project')}
-                </AcmButton>
-              ) : null
-            }
-          />
-        }
+        emptyState={onCreateClick ? <CommonProjectsEmptyState onCreateCommonProject={onCreateClick} /> : null}
       />
     </AcmTableStateProvider>
   )
