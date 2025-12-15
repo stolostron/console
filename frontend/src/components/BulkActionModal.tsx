@@ -7,7 +7,7 @@ import {
   AcmModal,
   AcmSubmit,
   AcmTable,
-  AcmTablePaginationContextProvider,
+  AcmTableStateProvider,
   AcmTableProps,
   AcmTextInput,
 } from '../ui-components'
@@ -169,7 +169,7 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
             {checkBox}
             {alert}
             {columns && !(hideTableAfterSubmit && progress != 0) && (
-              <AcmTablePaginationContextProvider localStorageKey="model">
+              <AcmTableStateProvider localStorageKey="model">
                 <AcmTable<T>
                   gridBreakPoint={TableGridBreakpoint.none}
                   tableActions={[]}
@@ -179,7 +179,7 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
                   columns={columns}
                   {...tableProps}
                 />
-              </AcmTablePaginationContextProvider>
+              </AcmTableStateProvider>
             )}
 
             <div style={{ paddingTop: '12px', paddingBottom: '12px' }}>
@@ -227,7 +227,7 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
               message={t('Expand the table rows to view detailed error messages.')}
             />
             {columns && (
-              <AcmTablePaginationContextProvider localStorageKey="model">
+              <AcmTableStateProvider localStorageKey="model">
                 <AcmTable<T>
                   emptyState={undefined} // table only displayed when there are errors
                   items={tableProps.items.filter((item) => getItemError(item) !== undefined)}
@@ -269,7 +269,7 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
                   perPageOptions={[]}
                   autoHidePagination
                 />
-              </AcmTablePaginationContextProvider>
+              </AcmTableStateProvider>
             )}
             <div style={{ minHeight: '24px' }} />
           </Fragment>

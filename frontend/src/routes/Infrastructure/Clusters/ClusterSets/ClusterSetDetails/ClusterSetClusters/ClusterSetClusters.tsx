@@ -8,8 +8,8 @@ import { Link, generatePath } from 'react-router-dom-v5-compat'
 import { RbacButton } from '../../../../../../components/Rbac'
 import { rbacCreate } from '../../../../../../lib/rbac-util'
 import { NavigationPath, SubRoutesRedirect } from '../../../../../../NavigationPath'
-import { ClustersTable } from '../../../ManagedClusters/ManagedClusters'
 import { useClusterSetDetailsContext } from '../ClusterSetDetails'
+import { ClustersTable } from '../../../../../../components/Clusters'
 
 export function ClusterSetClustersPageContent() {
   const { t } = useTranslation()
@@ -26,6 +26,7 @@ export function ClusterSetClustersPageContent() {
       <PageSection>
         <ClustersTable
           clusters={clusters}
+          tableKey="clusterSetClusters"
           emptyState={
             <AcmEmptyState
               key="mcEmptyState"

@@ -2,6 +2,7 @@
 import { V1CustomResourceDefinitionCondition } from '@kubernetes/client-node'
 import { Metadata } from './metadata'
 import { IResource, IResourceDefinition } from './resource'
+import { Cluster } from './utils'
 
 export const ManagedClusterSetApiVersion = 'cluster.open-cluster-management.io/v1beta2'
 export type ManagedClusterSetApiVersionType = 'cluster.open-cluster-management.io/v1beta2'
@@ -27,6 +28,10 @@ export interface ManagedClusterSet extends IResource {
   status?: {
     conditions: V1CustomResourceDefinitionCondition[]
   }
+}
+
+export interface ExtendedManagedClusterSet extends ManagedClusterSet {
+  clusters?: Cluster[]
 }
 
 export const managedClusterSetLabel = 'cluster.open-cluster-management.io/clusterset'

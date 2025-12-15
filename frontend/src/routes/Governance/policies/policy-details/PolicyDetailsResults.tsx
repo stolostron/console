@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Icon, PageSection, Title, Tooltip } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
-import { AcmEmptyState, AcmTable, AcmTablePaginationContextProvider, compareStrings } from '../../../../ui-components'
+import { AcmEmptyState, AcmTable, AcmTableStateProvider, compareStrings } from '../../../../ui-components'
 import { ReactNode, useMemo } from 'react'
 import { Link, generatePath } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
@@ -290,11 +290,17 @@ export default function PolicyDetailsResults() {
           const policyNamespace = item?.policyNamespace
           const cluster = item?.cluster
           const templateName = item?.templateName
-          if (policyName && policyNamespace && cluster && templateName) {
+          const apiVersionStr = item?.apiVersion
+          const kind = item?.kind
+          if (policyName && policyNamespace && cluster && templateName && apiVersionStr && kind) {
+            const { apiGroup, version } = getGroupFromApiVersion(apiVersionStr)
             const statusHistoryURL = generatePath(NavigationPath.policyDetailsHistory, {
               namespace: policyNamespace,
               name: policyName,
               clusterName: cluster,
+              apiGroup,
+              apiVersion: version,
+              kind,
               templateName,
             })
             return <Link to={statusHistoryURL}>{t('View history')}</Link>
@@ -310,7 +316,7 @@ export default function PolicyDetailsResults() {
   return (
     <PageSection>
       <Title headingLevel="h3">{t('Clusters')}</Title>
-      <AcmTablePaginationContextProvider localStorageKey="grc-status-view">
+      <AcmTableStateProvider localStorageKey="grc-status-view">
         <AcmTable<ResultsTableData>
           showExportButton
           exportFilePrefix={`${policy.metadata.name}-${policy.metadata.namespace}`}
@@ -335,7 +341,7 @@ export default function PolicyDetailsResults() {
           searchPlaceholder={t('Find clusters')}
           fuseThreshold={0}
         />
-      </AcmTablePaginationContextProvider>
+      </AcmTableStateProvider>
     </PageSection>
   )
 }
