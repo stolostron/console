@@ -1,15 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { PageSection } from '@patternfly/react-core'
 import _, { get, noop } from 'lodash'
-import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { useParams, useNavigate, useMatch, generatePath } from 'react-router-dom-v5-compat'
-import YAML from 'yaml'
 import set from 'lodash/set'
+import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { generatePath, useMatch, useNavigate, useParams } from 'react-router-dom-v5-compat'
+import YAML from 'yaml'
 import { AcmDataFormPage } from '../../components/AcmDataForm'
 import { FormData, Input } from '../../components/AcmFormData'
 import { ErrorPage } from '../../components/ErrorPage'
 import { LoadingPage } from '../../components/LoadingPage'
 import { LostChangesContext } from '../../components/LostChanges'
+import { useLocalHubName } from '../../hooks/use-local-hub'
+import { useProjects } from '../../hooks/useProjects'
 import { useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS } from '../../lib/doc-util'
 import {
@@ -53,9 +55,7 @@ import {
 } from '../../ui-components'
 import { awsRegions } from '../Infrastructure/Clusters/ManagedClusters/CreateCluster/controlData/ControlDataAWS'
 import { CredentialsType } from './CredentialsType'
-import { useProjects } from '../../hooks/useProjects'
 import schema from './schema.json'
-import { useLocalHubName } from '../../hooks/use-local-hub'
 
 type ProviderConnectionOrCredentialsType =
   | { providerConnection: ProviderConnection; credentialsType?: never }
@@ -80,7 +80,7 @@ export function CreateCredentialsFormPage(props: { credentialsType: CredentialsT
           />
         }
       >
-        <PageSection variant="light" isFilled>
+        <PageSection hasBodyWrapper={false} isFilled>
           <AcmEmptyState title={t('Unauthorized')} message={t('rbac.unauthorized.namespace')} showSearchIcon={true} />
         </PageSection>
       </AcmPage>

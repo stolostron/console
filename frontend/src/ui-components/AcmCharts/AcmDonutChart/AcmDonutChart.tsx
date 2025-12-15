@@ -1,12 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { css } from '@emotion/css'
-import { ChartDonut, ChartLabel, ChartLegend } from '@patternfly/react-charts'
+import { ChartDonut, ChartLabel, ChartLegend } from '@patternfly/react-charts/victory'
 import { Badge, Card, CardTitle, Skeleton } from '@patternfly/react-core'
 
 import { Link } from 'react-router-dom-v5-compat'
-import { useViewport } from '../AcmChartGroup'
 import { getTextWidth } from '../../utils'
+import { useViewport } from '../AcmChartGroup'
 
 type StyleProps = {
   danger?: boolean
@@ -31,10 +31,10 @@ const getStyles = (props: StyleProps) => ({
     maxHeight: '259px',
     minWidth: props.viewWidth > 376 ? '376px' : undefined,
     maxWidth: props.viewWidth < 376 ? '376px' : undefined,
-    '& .pf-v5-c-chart > svg g path:last-of-type': {
+    '& .pf-v6-c-chart > svg g path:last-of-type': {
       fill: props.danger ? '#E62325 !important' : undefined,
     },
-    '--pf-v5-c-card__title--not--last-child--PaddingBottom': 0,
+    overflow: 'hidden',
   }),
   chartContainer: css({
     maxWidth: '376px',
@@ -60,10 +60,10 @@ const LegendLabel = ({ ...props }: { datum?: Data }) => {
   const link = props.datum?.link
   return link ? (
     <Link to={link}>
-      <ChartLabel {...props} style={{ fill: 'var(--pf-v5-global--Color--100)' }} />
+      <ChartLabel {...props} style={{ fill: 'var(--pf-t--global--text--color--100)' }} />
     </Link>
   ) : (
-    <ChartLabel {...props} style={{ fill: 'var(--pf-v5-global--Color--100)' }} />
+    <ChartLabel {...props} style={{ fill: 'var(--pf-t--global--text--color--100)' }} />
   )
 }
 
@@ -146,7 +146,7 @@ export function AcmDonutChart(props: {
               style={[
                 {
                   fontSize: '24px',
-                  fill: 'var(--pf-v5-global--Color--100)', // title color
+                  fill: 'var(--pf-t--global--text--color--100)', // title color
                 },
                 {
                   fill: 'var(--pf-v5-chart-donut--label--subtitle--Fill)', // subtitle color
@@ -167,12 +167,12 @@ export function AcmDonutChart(props: {
   )
 }
 
-const criticalColorClass = 'var(--pf-v5-global--palette--red-200)'
-const importantColorClass = 'var(--pf-v5-global--palette--orange-400)'
-const moderateColorClass = 'var(--pf-v5-global--palette--gold-400)'
-const lowColorClass = 'var(--pf-v5-global--palette--black-500)'
-const successColorClass = 'var(--pf-v5-global--palette--blue-300)'
-const unknownColorClass = 'var(--pf-v5-global--palette--black-300)'
+const criticalColorClass = 'var(--pf-t--global--icon--color--severity--critical--default)'
+const importantColorClass = 'var(--pf-t--global--icon--color--severity--important--default)'
+const moderateColorClass = 'var(--pf-t--global--icon--color--severity--moderate--default)'
+const lowColorClass = 'var(--pf-t--global--icon--color--severity--minor--default)'
+const successColorClass = 'var(--pf-t--global--icon--color--severity--none--default)'
+const unknownColorClass = 'var(--pf-t--global--icon--color--severity--undefined--default)'
 
 export const colorThemes = {
   criticalImportantSuccess: [criticalColorClass, importantColorClass, successColorClass],

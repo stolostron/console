@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useState } from 'react'
-import { Stack, StackItem, Text, Button, Flex, FlexItem, Card, CardBody } from '@patternfly/react-core'
+import { Button, Card, CardBody, Content, Flex, FlexItem, Stack, StackItem } from '@patternfly/react-core'
 import { AngleLeftIcon, AngleRightIcon } from '@patternfly/react-icons'
+import { useState } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { ExampleScopeBase } from './ExampleScopeBase'
 
@@ -17,7 +17,7 @@ export const ExampleScopes = () => {
   return (
     <Stack hasGutter>
       <StackItem>
-        <Text>{t('These examples show different ways to scope role assignments.')}</Text>
+        <Content component="p">{t('These examples show different ways to scope role assignments.')}</Content>
       </StackItem>
 
       <StackItem>
@@ -32,7 +32,9 @@ export const ExampleScopes = () => {
             />
           </FlexItem>
           <FlexItem>
-            <Text>{t('Example {{current}} of {{total}}', { current: currentStep + 1, total: totalSteps })}</Text>
+            <Content component="p">
+              {t('Example {{current}} of {{total}}', { current: currentStep + 1, total: totalSteps })}
+            </Content>
           </FlexItem>
           <FlexItem>
             <Button
@@ -50,7 +52,7 @@ export const ExampleScopes = () => {
         <Card>
           <CardBody
             style={{
-              backgroundColor: 'var(--pf-v5-global--BackgroundColor--200)', // #f5f5f5 - rgb(245, 245, 245)
+              backgroundColor: 'var(--pf-t--global--background--color--secondary--default)',
             }}
           >
             <ExampleScopeBase exampleIndex={currentStep} />

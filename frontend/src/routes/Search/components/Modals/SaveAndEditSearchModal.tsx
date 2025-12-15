@@ -2,7 +2,8 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 import { css } from '@emotion/css'
-import { ButtonVariant, ModalVariant } from '@patternfly/react-core'
+import { ButtonVariant } from '@patternfly/react-core'
+import { ModalVariant } from '@patternfly/react-core/deprecated'
 import { Fragment, useEffect, useReducer, useState } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import {

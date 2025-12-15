@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { DualListSelector, DualListSelectorTreeItemData } from '@patternfly/react-core'
+import { DualListSelectorTreeItemData } from '@patternfly/react-core'
+import { DualListSelector } from '@patternfly/react-core/deprecated'
 import React, { useCallback, useEffect, useRef } from 'react'
 import { ClusterSet } from '../RoleAssignments/hook/RoleAssignmentDataHook'
 

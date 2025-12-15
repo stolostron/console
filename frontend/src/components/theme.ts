@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { global_BackgroundColor_200 as globalBackground200 } from '@patternfly/react-tokens/dist/js/global_BackgroundColor_200'
-import { global_BackgroundColor_dark_100 as darkEditorBackground } from '@patternfly/react-tokens/dist/js/global_BackgroundColor_dark_100'
-import { global_Color_light_100 as globalColorLight100 } from '@patternfly/react-tokens/dist/js/global_Color_light_100'
+import { t_color_white as globalColorLight100 } from '@patternfly/react-tokens/dist/js/t_color_white'
+import { t_global_background_color_200 as globalBackground200 } from '@patternfly/react-tokens/dist/js/t_global_background_color_200'
+import { t_global_background_color_secondary_default as darkEditorBackground } from '@patternfly/react-tokens/dist/js/t_global_background_color_secondary_default'
 export const THEME_LOCAL_STORAGE_KEY = 'bridge/theme'
 const THEME_SYSTEM_DEFAULT = 'systemDefault'
 export const darkThemeMq = window.matchMedia('(prefers-color-scheme: dark)')

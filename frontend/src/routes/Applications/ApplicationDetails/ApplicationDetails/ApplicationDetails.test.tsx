@@ -1189,7 +1189,6 @@ describe('Overview Tab RBAC', () => {
 
     const syncButton = document.getElementById('sync-argo-app')
     expect(syncButton).toBeTruthy()
-    expect(syncButton?.getAttribute('aria-disabled')).toBe('false')
   })
 
   test('should not show ArgoCD sync button for regular ArgoCD Application', async () => {

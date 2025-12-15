@@ -1,34 +1,34 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Page } from '@patternfly/react-core'
-import { AcmButton, AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../../ui-components'
-import { isMatch } from 'lodash'
 import {
-  AgentClusterInstallK8sResource,
-  InfraEnvHostsTabAgentsWarning,
-  INFRAENV_AGENTINSTALL_LABEL_KEY,
-  getAgentsHostsNames,
   AddHostDropdown,
-  InfraEnvK8sResource,
+  AgentClusterInstallK8sResource,
   AgentK8sResource,
   BareMetalHostK8sResource,
+  getAgentsHostsNames,
+  InfraEnvHostsTabAgentsWarning,
+  InfraEnvK8sResource,
+  INFRAENV_AGENTINSTALL_LABEL_KEY,
   NMStateK8sResource,
 } from '@openshift-assisted/ui-lib/cim'
+import { isMatch } from 'lodash'
 import { Fragment, Suspense, useMemo } from 'react'
 import {
+  generatePath,
   Link,
+  Outlet,
+  PathParam,
   useLocation,
   useNavigate,
-  useParams,
-  PathParam,
-  generatePath,
   useOutletContext,
-  Outlet,
+  useParams,
 } from 'react-router-dom-v5-compat'
-import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { useTranslation } from '../../../../lib/acm-i18next'
+import { DOC_VERSION } from '../../../../lib/doc-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
+import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import { AcmButton, AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../../ui-components'
 import {
   getOnCreateBMH,
   getOnSaveISOParams,
@@ -37,7 +37,6 @@ import {
   useProvisioningConfiguration,
 } from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
 import { getInfraEnvNMStates } from '../utils'
-import { DOC_VERSION } from '../../../../lib/doc-util'
 
 type InfraEnvironmentDetailsContext = {
   agentClusterInstalls: AgentClusterInstallK8sResource[]
@@ -97,7 +96,7 @@ const InfraEnvironmentDetailsPage: React.FC = () => {
   const provisioningConfigResult = useProvisioningConfiguration()
   if (!infraEnv) {
     return (
-      <Page>
+      <>
         <ErrorPage
           error={new ResourceError(ResourceErrorCode.NotFound)}
           actions={
@@ -106,7 +105,7 @@ const InfraEnvironmentDetailsPage: React.FC = () => {
             </AcmButton>
           }
         />
-      </Page>
+      </>
     )
   }
 

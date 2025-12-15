@@ -41,7 +41,7 @@ exports[`EditorBar component renders as expected 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="pf-v5-svg"
+              class="pf-v6-svg"
               fill="currentColor"
               height="1em"
               role="img"
@@ -61,7 +61,7 @@ exports[`EditorBar component renders as expected 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="pf-v5-svg"
+              class="pf-v6-svg"
               fill="currentColor"
               height="1em"
               role="img"
@@ -82,21 +82,21 @@ exports[`EditorBar component renders as expected 1`] = `
             role="region"
           >
             <div
-              class="pf-v5-c-text-input-group"
+              class="pf-v6-c-text-input-group"
               id="template-editor-search-undefined"
             >
               <div
-                class="pf-v5-c-text-input-group__main pf-m-icon"
+                class="pf-v6-c-text-input-group__main pf-m-icon"
               >
                 <span
-                  class="pf-v5-c-text-input-group__text"
+                  class="pf-v6-c-text-input-group__text"
                 >
                   <span
-                    class="pf-v5-c-text-input-group__icon"
+                    class="pf-v6-c-text-input-group__icon"
                   >
                     <svg
                       aria-hidden="true"
-                      class="pf-v5-svg"
+                      class="pf-v6-svg"
                       fill="currentColor"
                       height="1em"
                       role="img"
@@ -110,7 +110,7 @@ exports[`EditorBar component renders as expected 1`] = `
                   </span>
                   <input
                     aria-label="Search input"
-                    class="pf-v5-c-text-input-group__text-input"
+                    class="pf-v6-c-text-input-group__text-input"
                     type="text"
                     value=""
                   />
@@ -125,7 +125,7 @@ exports[`EditorBar component renders as expected 1`] = `
             >
               <svg
                 aria-hidden="true"
-                class="pf-v5-svg"
+                class="pf-v6-svg"
                 fill="currentColor"
                 height="1em"
                 role="img"
@@ -145,7 +145,7 @@ exports[`EditorBar component renders as expected 1`] = `
             >
               <svg
                 aria-hidden="true"
-                class="pf-v5-svg"
+                class="pf-v6-svg"
                 fill="currentColor"
                 height="1em"
                 role="img"
@@ -175,7 +175,7 @@ exports[`EditorBar component renders as expected 1`] = `
         >
           <svg
             aria-hidden="true"
-            class="pf-v5-svg"
+            class="pf-v6-svg"
             fill="currentColor"
             height="1em"
             role="img"

@@ -1,9 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
-import { ButtonVariant, PageSection, Stack, StackItem, Text, TextVariants } from '@patternfly/react-core'
+import { ButtonVariant, Content, ContentVariants, PageSection, Stack, StackItem } from '@patternfly/react-core'
 import { useCallback, useContext, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom-v5-compat'
+import { ClustersTable } from '../../../../components/Clusters/ClustersTable'
+import { KubevirtProviderAlert } from '../../../../components/KubevirtProviderAlert'
 import { Pages, usePageVisitMetricHandler } from '../../../../hooks/console-metrics'
+import { useLocalHubName } from '../../../../hooks/use-local-hub'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { canUser } from '../../../../lib/rbac-util'
 import { navigateToBackCancelLocation, NavigationPath } from '../../../../NavigationPath'
@@ -15,9 +17,6 @@ import { usePageContext } from '../ClustersPage'
 import { AddCluster } from './components/AddCluster'
 import { OnboardingModal } from './components/OnboardingModal'
 import { useAllClusters } from './components/useAllClusters'
-import { useLocalHubName } from '../../../../hooks/use-local-hub'
-import { KubevirtProviderAlert } from '../../../../components/KubevirtProviderAlert'
-import { ClustersTable } from '../../../../components/Clusters/ClustersTable'
 
 const onToggle = (acmCardID: string, setOpen: (open: boolean) => void) => {
   setOpen(false)
@@ -43,8 +42,8 @@ export default function ManagedClusters() {
 
   const OnBoardingModalLink = useCallback(() => {
     return (
-      <Text
-        component={TextVariants.a}
+      <Content
+        component={ContentVariants.a}
         isVisitedLink
         style={{
           cursor: 'pointer',
@@ -53,7 +52,7 @@ export default function ManagedClusters() {
         onClick={() => setOpenOnboardingModal(true)}
       >
         {t('Get started with Multicluster Hub')}
-      </Text>
+      </Content>
     )
   }, [t])
 
@@ -71,7 +70,7 @@ export default function ManagedClusters() {
 
   return (
     <AcmPageContent id="clusters">
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <OnboardingModal open={openOnboardingModal} close={() => onToggle(onBoardingModalID, setOpenOnboardingModal)} />
         <Stack hasGutter={true}>
           <StackItem>

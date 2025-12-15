@@ -1,14 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmAlertContext, AcmButton, AcmExpandableCard, AcmPageContent } from '../../../../ui-components'
-import { Flex, FlexItem, PageSection, Stack, Text, TextContent, TextVariants } from '@patternfly/react-core'
+import { Content, ContentVariants, Flex, FlexItem, PageSection, Stack } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { useContext, useEffect } from 'react'
+import { ClusterSetsTable } from '../../../../components/ClusterSets/ClusterSetsTable'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../../lib/doc-util'
 import { PluginContext } from '../../../../lib/PluginContext'
-import { useSharedAtoms, useRecoilValue } from '../../../../shared-recoil'
-import { ClusterSetsTable } from '../../../../components/ClusterSets/ClusterSetsTable'
+import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import { AcmAlertContext, AcmButton, AcmExpandableCard, AcmPageContent } from '../../../../ui-components'
 
 export default function ClusterSetsPage() {
   const { t } = useTranslation()
@@ -23,16 +23,16 @@ export default function ClusterSetsPage() {
 
   return (
     <AcmPageContent id="clusters">
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <Stack hasGutter style={{ height: 'unset' }}>
           <AcmExpandableCard title={t('learn.terminology')} id="cluster-sets-learn">
             <Flex style={{ flexWrap: 'inherit' }}>
               <Flex style={{ maxWidth: '50%' }}>
                 <FlexItem>
-                  <TextContent>
-                    <Text component={TextVariants.h4}>{t('clusterSets')}</Text>
-                    <Text component={TextVariants.p}>{t('learn.clusterSets')}</Text>
-                  </TextContent>
+                  <Content>
+                    <Content component={ContentVariants.h4}>{t('clusterSets')}</Content>
+                    <Content component={ContentVariants.p}>{t('learn.clusterSets')}</Content>
+                  </Content>
                 </FlexItem>
                 <FlexItem align={{ default: 'alignRight' }}>
                   <AcmButton
@@ -49,10 +49,10 @@ export default function ClusterSetsPage() {
               {isSubmarinerAvailable && (
                 <Flex>
                   <FlexItem>
-                    <TextContent>
-                      <Text component={TextVariants.h4}>{t('submariner')}</Text>
-                      <Text component={TextVariants.p}>{t('learn.submariner')}</Text>
-                    </TextContent>
+                    <Content>
+                      <Content component={ContentVariants.h4}>{t('submariner')}</Content>
+                      <Content component={ContentVariants.p}>{t('learn.submariner')}</Content>
+                    </Content>
                   </FlexItem>
                   <FlexItem align={{ default: 'alignRight' }}>
                     <AcmButton

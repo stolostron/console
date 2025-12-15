@@ -63,7 +63,7 @@ export function ClusterSetManageResourcesPage() {
       }
     >
       <AcmPageContent id="manage-cluster-set">
-        <PageSection variant="light" isFilled={true}>
+        <PageSection hasBodyWrapper={false} isFilled={true}>
           <ClusterSetManageResourcesContent />
         </PageSection>
       </AcmPageContent>

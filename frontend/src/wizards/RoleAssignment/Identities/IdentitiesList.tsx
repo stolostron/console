@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { PageSection, Tab, Tabs, TabTitleText, Text, Title } from '@patternfly/react-core'
+import { Content, PageSection, Tab, Tabs, TabTitleText, Title } from '@patternfly/react-core'
 import { useState } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
+import { Group, User } from '../../../resources/rbac'
 import { GroupsTable } from '../../../routes/UserManagement/Identities/Groups/GroupsTable'
 import { UsersTable } from '../../../routes/UserManagement/Identities/Users/UsersTable'
 import { CreatePreAuthorizedUser } from './CreatePreAuthorizedUser'
-import { User, Group } from '../../../resources/rbac'
 
 interface IdentitiesListProps {
   onUserSelect?: (user: User) => void
@@ -45,12 +45,12 @@ export function IdentitiesList({ onUserSelect, onGroupSelect }: IdentitiesListPr
   }
 
   return (
-    <PageSection>
+    <PageSection hasBodyWrapper={false}>
       <Title headingLevel="h1" size="lg" style={{ marginBottom: '0.5rem' }}>
         {t('Identities')}
       </Title>
 
-      <Text style={{ marginBottom: '1.5rem' }}>
+      <Content component="p" style={{ marginBottom: '1.5rem' }}>
         {t('Select a user or group to assign this role, or ')}{' '}
         <button
           type="button"
@@ -67,7 +67,7 @@ export function IdentitiesList({ onUserSelect, onGroupSelect }: IdentitiesListPr
         >
           {t('add pre-authorized user')}
         </button>
-      </Text>
+      </Content>
 
       <Tabs activeKey={activeTabKey} onSelect={handleTabClick} aria-label={t('Identity selection tabs')}>
         <Tab eventKey="users" title={<TabTitleText>{t('Users')}</TabTitleText>} aria-label={t('Users tab')}>

@@ -10,18 +10,16 @@ import {
   CardTitle,
   EmptyState,
   EmptyStateBody,
-  EmptyStateIcon,
-  MenuToggle,
-  Skeleton,
-  EmptyStateHeader,
+  Flex,
+  FlexItem,
   Icon,
   Menu,
   MenuContent,
-  MenuList,
   MenuItem,
+  MenuList,
+  MenuToggle,
   Popper,
-  Flex,
-  FlexItem,
+  Skeleton,
 } from '@patternfly/react-core'
 import { EllipsisVIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
 import { ReactNode, useRef, useState } from 'react'
@@ -84,7 +82,7 @@ const styles = {
     },
   }),
   headerDescription: css({
-    fontSize: 'var(--pf-v5-global--FontSize--sm)',
+    fontSize: 'var(--pf-t--global--font--size--sm)',
     lineHeight: '1.4',
     overflowWrap: 'anywhere',
     display: '-webkit-box',
@@ -97,7 +95,7 @@ const styles = {
     padding: '0',
   }),
   countTitle: css({
-    fontSize: 'var(--pf-v5-global--FontSize--sm)',
+    fontSize: 'var(--pf-t--global--font--size--sm)',
     fontWeight: 700,
   }),
   footer: css({
@@ -229,33 +227,32 @@ export const AcmCountCard = (props: AcmCountCardProps) => {
       {!props.error ? (
         <CardBody className={classes.body}>
           {props.count !== 0 ? (
-            <div style={{ color: 'var(--pf-v5-global--link--Color)', fontSize: 'var(--pf-v5-global--FontSize--3xl)' }}>
+            <div
+              style={{
+                color: 'var(--pf-t--global--text--color--link--default)',
+                fontSize: 'var(--pf-t--global--font--size--3xl)',
+              }}
+            >
               {count}
             </div>
           ) : (
-            <div style={{ fontSize: 'var(--pf-v5-global--FontSize--3xl)' }}>{count}</div>
+            <div style={{ fontSize: 'var(--pf-t--global--font--size--3xl)' }}>{count}</div>
           )}
           <div className={classes.countTitle}>{countTitle}</div>
         </CardBody>
       ) : (
-        <EmptyState style={{ paddingTop: 0, marginTop: 'auto' }}>
-          <EmptyStateHeader
-            titleText={
-              <>
-                {t('Error occurred while getting the result count.', {
-                  searchName: cardHeader?.title,
-                })}
-              </>
-            }
-            icon={
-              <EmptyStateIcon
-                style={{ fontSize: '36px', marginBottom: '1rem' }}
-                icon={ExclamationCircleIcon}
-                color={'var(--pf-v5-global--danger-color--100)'}
-              />
-            }
-            headingLevel="h4"
-          />
+        <EmptyState
+          headingLevel="h4"
+          icon={ExclamationCircleIcon}
+          titleText={
+            <>
+              {t('Error occurred while getting the result count.', {
+                searchName: cardHeader?.title,
+              })}
+            </>
+          }
+          style={{ paddingTop: 0, marginTop: 'auto' }}
+        >
           <EmptyStateBody>{props.errorMessage}</EmptyStateBody>
         </EmptyState>
       )}

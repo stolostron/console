@@ -262,9 +262,12 @@ export default function CardViewToolbarSearch(props: {
         </TextInputGroupMain>
         <TextInputGroupUtilities>
           {showClearButton && (
-            <Button variant="plain" onClick={clearChipsAndInput} aria-label="Clear button and input">
-              <TimesIcon />
-            </Button>
+            <Button
+              icon={<TimesIcon />}
+              variant="plain"
+              onClick={clearChipsAndInput}
+              aria-label="Clear button and input"
+            />
           )}
         </TextInputGroupUtilities>
       </TextInputGroup>

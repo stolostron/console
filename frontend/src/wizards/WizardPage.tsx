@@ -49,7 +49,7 @@ export function WizardPage(props: { id: string } & WizardPageProps) {
     >
       <AcmErrorBoundary>
         <AcmPageContent id={id}>
-          <PageSection variant="light" type="wizard" className="no-drawer-transition">
+          <PageSection hasBodyWrapper={false} type="wizard" className="no-drawer-transition">
             <LostChangesPrompt initialData={props.defaultData} />
             <Wizard {...props} showHeader={false} showYaml={drawerExpanded} yamlEditor={yamlEditor}>
               {(

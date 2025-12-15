@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Button, CodeBlock, CodeBlockCode, ModalVariant, Text, TextVariants } from '@patternfly/react-core'
+import { Button, CodeBlock, CodeBlockCode, Content, ContentVariants } from '@patternfly/react-core'
+import { ModalVariant } from '@patternfly/react-core/deprecated'
 import { AcmModal } from '../../../../../ui-components'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import DocPage from '../CreateCluster/components/assisted-installer/hypershift/common/DocPage'
@@ -29,11 +30,11 @@ hcp destroy cluster aws \\
       content: (
         <Fragment>
           {GetOCLogInCommand()}
-          <Text component={TextVariants.p}>
+          <Content component={ContentVariants.p}>
             {t(
               'Find the Amazon Web Services (AWS) STS credential and role ARN that you used to create your hosted cluster. The STS credential by default expires in 12 hours so a new one may be needed.'
             )}
-          </Text>
+          </Content>
         </Fragment>
       ),
     },
@@ -41,13 +42,15 @@ hcp destroy cluster aws \\
       title: t('Destroy the hosted cluster'),
       content: (
         <Fragment>
-          <Text>{t('Destroy the Hosted Control Plane by copying and pasting the following command:')}</Text>
+          <Content component="p">
+            {t('Destroy the Hosted Control Plane by copying and pasting the following command:')}
+          </Content>
           <CodeBlock actions={Actions(destroyCode, 'code-command')}>
             <CodeBlockCode id="destroy-content">{destroyCode}</CodeBlockCode>
           </CodeBlock>
-          <Text style={{ marginTop: '1em' }}>
+          <Content component="p" style={{ marginTop: '1em' }}>
             {t('Use the following command to get a list of available parameters:')}
-          </Text>
+          </Content>
           <CodeBlock actions={Actions(destroyhelperCommand, 'helper-command')}>
             <CodeBlockCode id="helper-command">{destroyhelperCommand}</CodeBlockCode>
           </CodeBlock>

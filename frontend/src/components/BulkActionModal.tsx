@@ -19,7 +19,6 @@ import {
   DescriptionListDescription,
   DescriptionListGroup,
   DescriptionListTerm,
-  ModalVariant,
   Progress,
   ProgressMeasureLocation,
   Stack,
@@ -27,6 +26,7 @@ import {
   Checkbox,
   AlertProps,
 } from '@patternfly/react-core'
+import { ModalVariant } from '@patternfly/react-core/deprecated'
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from '../lib/acm-i18next'

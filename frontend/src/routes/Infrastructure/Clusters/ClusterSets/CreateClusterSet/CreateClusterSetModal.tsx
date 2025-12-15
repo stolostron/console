@@ -11,7 +11,8 @@ import {
   AcmSubmit,
   AcmTextInput,
 } from '../../../../../ui-components'
-import { ActionGroup, ModalVariant } from '@patternfly/react-core'
+import { ActionGroup } from '@patternfly/react-core'
+import { ModalVariant } from '@patternfly/react-core/deprecated'
 import { useState } from 'react'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { generatePath, useNavigate } from 'react-router-dom-v5-compat'

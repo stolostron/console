@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { CodeBlock, CodeBlockCode, Modal, ModalVariant, Page, Text, TextVariants } from '@patternfly/react-core'
+import { CodeBlock, CodeBlockCode, Content, ContentVariants } from '@patternfly/react-core'
+import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
 import { ICatalogBreadcrumb } from '@stolostron/react-data-view'
 import { Fragment, useState } from 'react'
 import { useProjects } from '../../../../../../../../hooks/useProjects'
@@ -59,10 +60,10 @@ hcp create cluster aws \\
       title: t('Prerequisites and Configuration'),
       content: (
         <Fragment>
-          <Text component={TextVariants.p}>{t('Download and install the Hosted Control Plane CLI.')}</Text>
-          <Text component={TextVariants.a} href={DOC_LINKS.HYPERSHIFT_DEPLOY_AWS} target="_blank">
+          <Content component={ContentVariants.p}>{t('Download and install the Hosted Control Plane CLI.')}</Content>
+          <Content component={ContentVariants.a} href={DOC_LINKS.HYPERSHIFT_DEPLOY_AWS} target="_blank">
             {t('Follow documentation for more information.')}
-          </Text>
+          </Content>
         </Fragment>
       ),
     },
@@ -70,10 +71,10 @@ hcp create cluster aws \\
       title: t('Create Amazon Web Services (AWS) Security Token Service (STS) credential'),
       content: (
         <Fragment>
-          <Text component={TextVariants.p}>{t('This creates a STS credential JSON file.')}</Text>
-          <Text component={TextVariants.a} href={DOC_LINKS.HYPERSHIFT_STS_ARN} target="_blank">
+          <Content component={ContentVariants.p}>{t('This creates a STS credential JSON file.')}</Content>
+          <Content component={ContentVariants.a} href={DOC_LINKS.HYPERSHIFT_STS_ARN} target="_blank">
             {t('Follow documentation for more information.')}
-          </Text>
+          </Content>
         </Fragment>
       ),
     },
@@ -81,10 +82,10 @@ hcp create cluster aws \\
       title: t('Create AWS Identity and Access Management (IAM) role'),
       content: (
         <Fragment>
-          <Text component={TextVariants.p}>{t('This creates a AWS IAM role.')}</Text>
-          <Text component={TextVariants.a} href={DOC_LINKS.HYPERSHIFT_STS_ARN} target="_blank">
+          <Content component={ContentVariants.p}>{t('This creates a AWS IAM role.')}</Content>
+          <Content component={ContentVariants.a} href={DOC_LINKS.HYPERSHIFT_STS_ARN} target="_blank">
             {t('Follow documentation for more information.')}
-          </Text>
+          </Content>
         </Fragment>
       ),
     },
@@ -92,9 +93,9 @@ hcp create cluster aws \\
       title: t('Create Red Hat OpenShift Container Platform pull secret'),
       content: (
         <Fragment>
-          <Text component={TextVariants.p}>
+          <Content component={ContentVariants.p}>
             {t('This creates a Red Hat OpenShift Container Platform pull secret.')}
-          </Text>
+          </Content>
           <a href={'https://console.redhat.com/openshift/install/pull-secret'} target="_blank" rel="noreferrer">
             {t('How do I get the Red Hat OpenShift Container Platform pull secret?')}
           </a>
@@ -105,18 +106,18 @@ hcp create cluster aws \\
       title: t('Create the Hosted Control Plane'),
       content: (
         <Fragment>
-          <Text component={TextVariants.h4}>{t('Log in to OpenShift Container Platform')}</Text>
+          <Content component={ContentVariants.h4}>{t('Log in to OpenShift Container Platform')}</Content>
           {GetOCLogInCommand()}
-          <Text component={TextVariants.h4}>{t('Run command')}</Text>
-          <Text component={TextVariants.p}>
+          <Content component={ContentVariants.h4}>{t('Run command')}</Content>
+          <Content component={ContentVariants.p}>
             {t('Create the Hosted Control Plane by copying and pasting the following command:')}
-          </Text>
+          </Content>
           <CodeBlock actions={Actions(code, 'code-command')}>
             <CodeBlockCode id="code-content">{code}</CodeBlockCode>
           </CodeBlock>
-          <Text style={{ marginTop: '1em' }}>
+          <Content component="p" style={{ marginTop: '1em' }}>
             {t('Use the following command to get a list of available parameters: ')}
-          </Text>
+          </Content>
           <CodeBlock actions={Actions(helperCommand, 'helper-command')}>
             <CodeBlockCode id="helper-command">{helperCommand}</CodeBlockCode>
           </CodeBlock>
@@ -127,7 +128,7 @@ hcp create cluster aws \\
   ]
 
   return (
-    <Page>
+    <>
       <Modal
         variant={ModalVariant.large}
         showClose={false}
@@ -170,6 +171,6 @@ hcp create cluster aws \\
         onBack={back(NavigationPath.createAWSControlPlane)}
         onCancel={cancel(NavigationPath.managedClusters)}
       />
-    </Page>
+    </>
   )
 }

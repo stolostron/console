@@ -1,17 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Card, CardBody, Grid, GridItem, ModalVariant, Text } from '@patternfly/react-core'
+import { Card, CardBody, Content, Grid, GridItem } from '@patternfly/react-core'
+import { ModalVariant } from '@patternfly/react-core/deprecated'
+import { CloudTenantIcon, ConnectedIcon, ExternalLinkAltIcon, ImportIcon } from '@patternfly/react-icons'
 import { useContext, useMemo } from 'react'
 import { Link } from 'react-router-dom-v5-compat'
-import { useTranslation, Trans } from '../../../../../lib/acm-i18next'
-import { AcmButton, AcmExpandableSection, AcmModal } from '../../../../../ui-components'
-import MainIcon from './OnboardingModalIcon.svg'
-import { ImportIcon, CloudTenantIcon, ConnectedIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { NavigationPath } from '../../../../../NavigationPath'
-import './OnboardingModal.css'
+import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
+import { DOC_HOME } from '../../../../../lib/doc-util'
 import { launchToOCP } from '../../../../../lib/ocp-utils'
 import { PluginContext } from '../../../../../lib/PluginContext'
-import { DOC_HOME } from '../../../../../lib/doc-util'
+import { NavigationPath } from '../../../../../NavigationPath'
+import { AcmButton, AcmExpandableSection, AcmModal } from '../../../../../ui-components'
+import './OnboardingModal.css'
+import MainIcon from './OnboardingModalIcon.svg'
 
 export interface IOnboardingModalProps {
   close: () => void
@@ -72,15 +73,19 @@ export function OnboardingModal(props: IOnboardingModalProps) {
         </GridItem>
         <GridItem span={9}>
           <div>
-            <span className="pf-v5-u-color-100" style={{ fontSize: '24px' }}>
+            <span className="pf-v6-u-color-100" style={{ fontSize: '24px' }}>
               <Trans i18nKey="Managing clusters <bold>just got easier</bold>" components={{ bold: <strong /> }} />
             </span>
           </div>
-          <div className="pf-v5-u-color-400" style={{ fontSize: '14px', paddingTop: '8px' }}>
-            <Text>{t('Create and manage a fleet of clusters with ease using this all clusters view. ')}</Text>
-            <Text>{t('To access a single cluster you can select it from the cluster list table.')}</Text>
+          <div className="pf-v6-u-color-400" style={{ fontSize: '14px', paddingTop: '8px' }}>
+            <Content component="p">
+              {t('Create and manage a fleet of clusters with ease using this all clusters view. ')}
+            </Content>
+            <Content component="p">
+              {t('To access a single cluster you can select it from the cluster list table.')}
+            </Content>
           </div>
-          <div className="pf-v5-u-color-100" style={{ fontSize: '16px', paddingTop: '1em' }}>
+          <div className="pf-v6-u-color-100" style={{ fontSize: '16px', paddingTop: '1em' }}>
             {t('How would you like to create your cluster?')}
           </div>
         </GridItem>
@@ -89,10 +94,10 @@ export function OnboardingModal(props: IOnboardingModalProps) {
         {cards.map((card) => (
           <GridItem key={card.id} span={4} style={card.style}>
             <Link key={card.id} to={card.link} style={{ color: 'inherit', textDecoration: 'none' }}>
-              <Card id={card.id} key={card.id} isSelectable isFlat>
+              <Card id={card.id} key={card.id} isSelectable>
                 <CardBody style={{ minHeight: '160px' }}>
                   <div
-                    className="pf-v5-u-color-100"
+                    className="pf-v6-u-color-100"
                     style={{
                       position: 'absolute',
                       top: '50%',
@@ -108,7 +113,11 @@ export function OnboardingModal(props: IOnboardingModalProps) {
             </Link>
           </GridItem>
         ))}
-        <GridItem style={{ backgroundColor: 'var(--pf-v5-global--BackgroundColor--200)' }}>
+        <GridItem
+          style={{
+            backgroundColor: 'var(--pf-t--global--background--color--200)',
+          }}
+        >
           <div className="onboarding-modal-footer">
             <AcmExpandableSection
               label={t('Want to learn more?')}
@@ -138,7 +147,7 @@ export function OnboardingModal(props: IOnboardingModalProps) {
                 <li>
                   <AcmButton
                     variant="link"
-                    icon={<ExternalLinkAltIcon className="pf-v5-u-font-size-xs" style={{ padding: '0.5px' }} />}
+                    icon={<ExternalLinkAltIcon className="pf-v6-u-font-size-xs" style={{ padding: '0.5px' }} />}
                     iconPosition="right"
                     isInline
                     onClick={() =>
