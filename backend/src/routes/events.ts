@@ -410,7 +410,7 @@ async function pollKubernetesObjects(serviceAccountToken: string, options: IWatc
 /**
  * Creates a Transform stream that splits incoming data by newline characters
  */
-function createSplitStream() {
+export function createSplitStream() {
   let buffer = ''
   return new Transform({
     objectMode: true,
@@ -440,7 +440,7 @@ function createSplitStream() {
 /**
  * Helper to convert unknown error to string
  */
-function errorToString(err: unknown): string {
+export function errorToString(err: unknown): string {
   if (err instanceof Error) {
     return err.message
   }
@@ -453,10 +453,10 @@ function errorToString(err: unknown): string {
 /**
  * Creates a Transform stream that processes watch events with async operations
  */
-function createWatchEventProcessor(options: IWatchOptions, url: string, resourceVersionRef: { value: string }) {
+export function createWatchEventProcessor(options: IWatchOptions, url: string, resourceVersionRef: { value: string }) {
   return new Transform({
     objectMode: true,
-    async transform(data: string, _encoding, callback) {
+    async transform(data: string, _encoding, callback): Promise<void> {
       try {
         let watchEvent: WatchEvent
         try {
