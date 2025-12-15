@@ -64,7 +64,7 @@ export const RBACProjectsTable = ({
     }
 
     const commonNamespaces: string[] = clusterNamespaceGroupings
-      .reduce((acc, namespaces) => acc.filter((ns) => namespaces.includes(ns)))
+      .reduce((acc, namespaces) => acc.filter((ns) => namespaces.includes(ns)), clusterNamespaceGroupings[0] || [])
       .sort((a, b) => a.localeCompare(b))
 
     return commonNamespaces.map((ns) => ({
