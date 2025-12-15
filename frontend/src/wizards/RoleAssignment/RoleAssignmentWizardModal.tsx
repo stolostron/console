@@ -1,18 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useTranslation } from '../../lib/acm-i18next'
-import {
-  Modal,
-  Wizard,
-  WizardStep,
-  WizardHeader,
-  ModalVariant,
-  Drawer,
-  DrawerContent,
-  Button,
-  Title,
-  Text,
-  TextContent,
-} from '@patternfly/react-core'
+import { Wizard, WizardStep, WizardHeader, Drawer, DrawerContent, Button, Title, Content } from '@patternfly/react-core'
+import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
 import { RoleAssignmentPreselected } from '../../routes/UserManagement/RoleAssignments/model/role-assignment-preselected'
 import { useState, useCallback } from 'react'
 import { ExampleScopesPanelContent } from './Scope/ExampleScope/ExampleScopesPanelContent'
@@ -59,14 +48,12 @@ const ScopeStepContent = ({
           {t('View examples')}
         </Button>
       </div>
-      <TextContent style={{ marginBottom: '8px' }}>
-        <Text component="p">
-          {t('Define the scope of access by selecting which resources this role will apply to.')}
-        </Text>
-      </TextContent>
-      <TextContent style={{ marginBottom: '16px' }}>
-        <Text component="p">{t('Select one option:')}</Text>
-      </TextContent>
+      <Content component="p" style={{ marginBottom: '8px' }}>
+        {t('Define the scope of access by selecting which resources this role will apply to.')}
+      </Content>
+      <Content component="p" style={{ marginBottom: '16px' }}>
+        {t('Select one option:')}
+      </Content>
       <WizSelect
         pathValueToInputValue={(pathValue) => pathValue || 'Global access'}
         path="scope"
