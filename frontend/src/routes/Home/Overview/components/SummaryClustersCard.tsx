@@ -35,7 +35,7 @@ const LegendLabel = ({
     <foreignObject x={props.x} y={(props.y ?? 0) - 10} width={maxWidth ?? 150} height={20}>
       <div
         style={{
-          color: 'var(--pf-t--global--text--color--100)',
+          color: 'var(--pf-t--global--text--color--regular)',
         }}
       >
         {link ? (
@@ -110,7 +110,7 @@ export function SummaryClustersCard(props: {
             style={[
               {
                 fontSize: '24px',
-                fill: 'var(--pf-t--global--text--color--100)', // title color
+                fill: 'var(--pf-t--global--text--color--regular)', // title color
               },
               {
                 fill: 'var(--pf-v5-chart-donut--label--subtitle--Fill)', // subtitle color

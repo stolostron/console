@@ -60,10 +60,10 @@ const LegendLabel = ({ ...props }: { datum?: Data }) => {
   const link = props.datum?.link
   return link ? (
     <Link to={link}>
-      <ChartLabel {...props} style={{ fill: 'var(--pf-t--global--text--color--100)' }} />
+      <ChartLabel {...props} style={{ fill: 'var(--pf-t--global--text--color--regular)' }} />
     </Link>
   ) : (
-    <ChartLabel {...props} style={{ fill: 'var(--pf-t--global--text--color--100)' }} />
+    <ChartLabel {...props} style={{ fill: 'var(--pf-t--global--text--color--regular)' }} />
   )
 }
 
@@ -146,7 +146,7 @@ export function AcmDonutChart(props: {
               style={[
                 {
                   fontSize: '24px',
-                  fill: 'var(--pf-t--global--text--color--100)', // title color
+                  fill: 'var(--pf-t--global--text--color--regular)', // title color
                 },
                 {
                   fill: 'var(--pf-v5-chart-donut--label--subtitle--Fill)', // subtitle color

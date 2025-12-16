@@ -884,7 +884,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   return (
     <Fragment>
       {props.extraToolbarControls && (
-        <Toolbar style={topToolbarStyle} inset={{ default: 'insetMd', xl: 'insetLg' }}>
+        <Toolbar style={topToolbarStyle} inset={{ default: 'insetNone' }}>
           <ToolbarContent>
             <ToolbarGroup align={{ default: 'alignEnd' }}>
               <ToolbarItem>{props.extraToolbarControls}</ToolbarItem>
