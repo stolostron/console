@@ -6,7 +6,7 @@ import { useTranslation } from '../../lib/acm-i18next'
 import { ProjectCreateForm, ProjectFormData } from '../../components/project'
 import { createProject } from '../../resources/project'
 import { AcmToastContext } from '../../ui-components'
-import { Cluster } from '../../resources/utils'
+import type { Cluster } from '../../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHook'
 
 interface CommonProjectCreateProps {
   /** Callback function called when the cancel button is clicked */
@@ -19,12 +19,7 @@ interface CommonProjectCreateProps {
   selectedClusters: Cluster[]
 }
 
-export function CommonProjectCreate({
-  onCancelCallback,
-  onSuccess,
-  onError,
-  selectedClusters,
-}: CommonProjectCreateProps) {
+export function CommonProjectCreate({ onCancelCallback, onSuccess, onError }: CommonProjectCreateProps) {
   const { t } = useTranslation()
   const toastContext = useContext(AcmToastContext)
 

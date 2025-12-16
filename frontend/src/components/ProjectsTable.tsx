@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Label, LabelGroup } from '@patternfly/react-core'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState, useEffect } from 'react'
 import { generatePath, Link } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../lib/acm-i18next'
 import { NavigationPath } from '../NavigationPath'
-import { Cluster } from '../resources/utils'
 import { useRoleAssignmentData } from '../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHook'
+import type { Cluster } from '../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHook'
 import { AcmTable, AcmTableStateProvider, IAcmTableColumn } from '../ui-components'
 import { IAcmTableButtonAction, ITableFilter } from '../ui-components/AcmTable/AcmTableTypes'
 import { isClusterInClusters } from '../wizards/RoleAssignment/utils'
@@ -163,7 +163,9 @@ export const ProjectsTable = ({
     },
     [onSelectionChange]
   )
-
+  useEffect(() => {
+    console.log('selectedProjects changed:', selectedProjects)
+  }, [selectedProjects])
   return (
     <AcmTableStateProvider localStorageKey="projects-table">
       <AcmTable<ProjectTableData>

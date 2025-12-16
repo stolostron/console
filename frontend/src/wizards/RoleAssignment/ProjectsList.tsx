@@ -3,7 +3,7 @@ import { ButtonVariant, PageSection } from '@patternfly/react-core'
 import { useEffect, useMemo, useState } from 'react'
 import { ProjectsTable, ProjectTableData } from '../../components/ProjectsTable'
 import { useTranslation } from '../../lib/acm-i18next'
-import { Cluster } from '../../resources/utils'
+import type { Cluster } from '../../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHook'
 import { IAcmTableButtonAction } from '../../ui-components/AcmTable/AcmTableTypes'
 import { CommonProjectCreate } from './CommonProjectCreate'
 
