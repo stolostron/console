@@ -31,7 +31,7 @@ import {
   useClusterNameColumn,
   useClusterNodesColumn,
   useClusterProviderColumn,
-} from '../../../ManagedClusters/ManagedClusters'
+} from '../../../../../../components/Clusters'
 import { noop } from 'lodash'
 import { useLocalHubName } from '../../../../../../hooks/use-local-hub'
 
@@ -63,7 +63,7 @@ export function ClusterSetManageResourcesPage() {
       }
     >
       <AcmPageContent id="manage-cluster-set">
-        <PageSection variant="light" isFilled={true}>
+        <PageSection hasBodyWrapper={false} isFilled={true}>
           <ClusterSetManageResourcesContent />
         </PageSection>
       </AcmPageContent>
@@ -115,7 +115,7 @@ export function ClusterSetManageResourcesContent() {
   const clusterNodesColumn = useClusterNodesColumn()
   // collapse all cluster labels when there are lots clusters
   // so that each cluster row doesn't take up multiple rows
-  const clusterLabelsColumn = useClusterLabelsColumn(localHubName, clusters.length > 10)
+  const clusterLabelsColumn = useClusterLabelsColumn(clusters.length > 10, localHubName)
 
   const columns = useMemo<IAcmTableColumn<Cluster>[]>(
     () => [

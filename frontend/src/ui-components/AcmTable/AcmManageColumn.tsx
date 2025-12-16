@@ -8,16 +8,12 @@ import {
   DataListDragButton,
   DataListItem,
   DataListItemRow,
-  Modal,
-  TextContent,
+  Content,
   Tooltip,
-  Text,
   DataListItemCells,
   DataListCell,
-  DragDrop,
-  Droppable,
-  Draggable,
 } from '@patternfly/react-core'
+import { Modal, DragDrop, Droppable, Draggable } from '@patternfly/react-core/deprecated'
 import { IAcmTableColumn } from './AcmTableTypes'
 import { useTranslation } from '../../lib/acm-i18next'
 import ColumnsIcon from '@patternfly/react-icons/dist/js/icons/columns-icon'
@@ -168,9 +164,11 @@ function ManageColumnModal<T>(props: ManageColumnModalProps<T>) {
       isOpen={isModalOpen}
       variant="small"
       description={
-        <TextContent>
-          <Text>{t('Selected columns will appear in the table. Drag and drop the columns to reorder them.')}</Text>
-        </TextContent>
+        <Content>
+          <Content component="p">
+            {t('Selected columns will appear in the table. Drag and drop the columns to reorder them.')}
+          </Content>
+        </Content>
       }
       onClose={onClose}
       actions={[

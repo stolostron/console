@@ -29,7 +29,7 @@ export function MachinePoolsPageContent() {
   }
   return (
     <AcmPageContent id="nodes">
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <MachinePoolsTable />
       </PageSection>
     </AcmPageContent>

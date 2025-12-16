@@ -10,14 +10,15 @@ import {
 import { Cluster, IRequestResult, ResourceError, deleteResource } from '../../../../../resources/utils'
 import { css } from '@emotion/css'
 import { AcmEmptyState, AcmForm, AcmModal, AcmTable, IAcmTableColumn } from '../../../../../ui-components'
-import { Button, ButtonVariant, ModalVariant, Stack, StackItem } from '@patternfly/react-core'
+import { Button, ButtonVariant, Stack, StackItem } from '@patternfly/react-core'
+import { ModalVariant } from '@patternfly/react-core/deprecated'
 import { useMemo, useState, JSX } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { useClusterDistributionColumn, useClusterProviderColumn } from '../ManagedClusters'
 import { useSharedAtoms, useRecoilValue, useSharedSelectors } from '../../../../../shared-recoil'
+import { useClusterDistributionColumn, useClusterProviderColumn } from '../../../../../components/Clusters'
 
 const table = css({
-  '& .pf-v5-c-toolbar': {
+  '& .pf-v6-c-toolbar': {
     display: 'none',
   },
 })

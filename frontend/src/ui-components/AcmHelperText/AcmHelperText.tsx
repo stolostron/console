@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { FormHelperText, HelperText, HelperTextItem, Split, SplitItem } from '@patternfly/react-core'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { ReactNode } from 'react'
 import { LinkType, Prompt } from '../../components/AcmFormData'
-import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { AcmButton } from '../AcmButton'
 
 type AcmHelperTextProps = {
@@ -30,7 +30,6 @@ export function AcmHelperText({ controlId, helperText, validated, error, prompt 
           <SplitItem>
             <AcmButton
               variant="link"
-              style={{ ['--pf-v5-c-button--PaddingRight' as any]: '0px' }}
               onClick={prompt.callback}
               isDisabled={prompt.isDisabled}
               icon={

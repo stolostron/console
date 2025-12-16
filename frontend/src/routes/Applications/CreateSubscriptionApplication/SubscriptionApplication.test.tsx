@@ -1,7 +1,37 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen } from '@testing-library/react'
-import { MemoryRouter, Route, Routes, generatePath } from 'react-router-dom-v5-compat'
+import userEvent from '@testing-library/user-event'
+import { Scope } from 'nock/types'
+import { generatePath, MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
+import {
+  applicationsState,
+  channelsState,
+  managedClusterSetsState,
+  managedClustersState,
+  namespacesState,
+  placementsState,
+  secretsState,
+} from '../../../atoms'
+import {
+  nockAggegateRequest,
+  nockCreate,
+  nockGet,
+  nockIgnoreApiPaths,
+  nockIgnoreRBAC,
+  nockList,
+  nockPatch,
+} from '../../../lib/nock-util'
+import { mockGlobalClusterSet } from '../../../lib/test-metadata'
+import {
+  clickBySelector,
+  clickByTestId,
+  clickByText,
+  typeByTestId,
+  waitForNock,
+  waitForNocks,
+  waitForText,
+} from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import {
   Application,
@@ -36,38 +66,8 @@ import {
   SubscriptionApiVersion,
   SubscriptionKind,
 } from '../../../resources'
-import CreateSubscriptionApplicationPage from './SubscriptionApplication'
-import {
-  applicationsState,
-  channelsState,
-  managedClusterSetsState,
-  managedClustersState,
-  namespacesState,
-  placementsState,
-  secretsState,
-} from '../../../atoms'
-import {
-  clickBySelector,
-  clickByTestId,
-  clickByText,
-  typeByTestId,
-  waitForNock,
-  waitForNocks,
-  waitForText,
-} from '../../../lib/test-util'
-import {
-  nockAggegateRequest,
-  nockCreate,
-  nockGet,
-  nockIgnoreApiPaths,
-  nockIgnoreRBAC,
-  nockList,
-  nockPatch,
-} from '../../../lib/nock-util'
-import userEvent from '@testing-library/user-event'
-import { Scope } from 'nock/types'
-import { mockGlobalClusterSet } from '../../../lib/test-metadata'
 import { uidata } from '../Application.sharedmocks'
+import CreateSubscriptionApplicationPage from './SubscriptionApplication'
 
 ///////////////////////////////// Mock Data /////////////////////////////////////////////////////
 

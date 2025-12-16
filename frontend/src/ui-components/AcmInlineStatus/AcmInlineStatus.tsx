@@ -7,11 +7,11 @@ import {
   CheckCircleIcon,
   ExclamationCircleIcon,
   ExclamationTriangleIcon,
+  FileAltIcon,
   MinusCircleIcon,
-  UnknownIcon,
   ResourcesEmptyIcon,
   RunningIcon,
-  FileAltIcon,
+  UnknownIcon,
 } from '@patternfly/react-icons'
 import { TFunction } from 'react-i18next'
 
@@ -118,7 +118,11 @@ function StatusIcon(props: { type: StatusType }) {
       return <AcmIcon icon={AcmIconVariant.brokenlink} />
     case StatusType.pending:
       return (
-        <span style={{ color: 'var(--pf-v5-global--disabled-color--100)' }}>
+        <span
+          style={{
+            color: 'var(--pf-t--global--icon--color--disabled)',
+          }}
+        >
           <Icon isInline>
             <MinusCircleIcon />
           </Icon>
@@ -126,7 +130,11 @@ function StatusIcon(props: { type: StatusType }) {
       )
     case StatusType.sleep:
       return (
-        <span style={{ color: 'var(--pf-v5-global--palette--purple-500)' }}>
+        <span
+          style={{
+            color: 'var(var(--pf-v6-c-alert--m-info__icon--Color))',
+          }}
+        >
           <Icon isInline>
             <AsleepIcon />
           </Icon>
@@ -134,7 +142,11 @@ function StatusIcon(props: { type: StatusType }) {
       )
     case StatusType.empty:
       return (
-        <span style={{ color: 'var(--pf-v5-global--disabled-color--100)' }}>
+        <span
+          style={{
+            color: 'var(--pf-t--global--icon--color--disabled)',
+          }}
+        >
           <Icon isInline>
             <ResourcesEmptyIcon />
           </Icon>
@@ -142,7 +154,11 @@ function StatusIcon(props: { type: StatusType }) {
       )
     case StatusType.draft:
       return (
-        <span style={{ color: 'var(--pf-v5-global--disabled-color--100)' }}>
+        <span
+          style={{
+            color: 'var(--pf-t--global--icon--color--disabled)',
+          }}
+        >
           <Icon isInline>
             <FileAltIcon />
           </Icon>
@@ -157,7 +173,11 @@ function StatusIcon(props: { type: StatusType }) {
     case 'unknown':
     default:
       return (
-        <span style={{ color: 'var(--pf-v5-global--disabled-color--100)' }}>
+        <span
+          style={{
+            color: 'var(--pf-t--global--icon--color--disabled)',
+          }}
+        >
           <Icon isInline>
             <UnknownIcon />
           </Icon>

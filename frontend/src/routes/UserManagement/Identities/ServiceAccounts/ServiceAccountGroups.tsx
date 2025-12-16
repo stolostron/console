@@ -11,7 +11,7 @@ const ServiceAccountGroups = () => {
   return (
     <AcmPage header={<AcmPageHeader title={t('Service Account Groups')} description={`Service Account: ${id}`} />}>
       <AcmPageContent id="service-account-groups">
-        <PageSection>Service Account groups page for ID: {id}</PageSection>
+        <PageSection hasBodyWrapper={false}>Service Account groups page for ID: {id}</PageSection>
       </AcmPageContent>
     </AcmPage>
   )

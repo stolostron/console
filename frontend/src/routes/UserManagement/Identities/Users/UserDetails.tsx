@@ -6,7 +6,7 @@ import {
   DescriptionListDescription,
   PageSection,
   Stack,
-  Text,
+  Content,
 } from '@patternfly/react-core'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { useUserDetailsContext } from './UserPage'
@@ -17,16 +17,18 @@ const UserDetails = () => {
 
   if (!user) {
     return (
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <div>{t('User not found')}</div>
       </PageSection>
     )
   }
 
   return (
-    <PageSection>
-      <PageSection variant={'light'}>
-        <Text style={{ fontFamily: 'RedHatDisplay', marginBottom: '2rem' }}>{t('General information')}</Text>
+    <PageSection hasBodyWrapper={false}>
+      <PageSection hasBodyWrapper={false}>
+        <Content component="p" style={{ fontFamily: 'RedHatDisplay', marginBottom: '2rem' }}>
+          {t('General information')}
+        </Content>
         <Stack hasGutter>
           <DescriptionList isHorizontal={false}>
             <DescriptionListGroup>

@@ -290,11 +290,17 @@ export default function PolicyDetailsResults() {
           const policyNamespace = item?.policyNamespace
           const cluster = item?.cluster
           const templateName = item?.templateName
-          if (policyName && policyNamespace && cluster && templateName) {
+          const apiVersionStr = item?.apiVersion
+          const kind = item?.kind
+          if (policyName && policyNamespace && cluster && templateName && apiVersionStr && kind) {
+            const { apiGroup, version } = getGroupFromApiVersion(apiVersionStr)
             const statusHistoryURL = generatePath(NavigationPath.policyDetailsHistory, {
               namespace: policyNamespace,
               name: policyName,
               clusterName: cluster,
+              apiGroup,
+              apiVersion: version,
+              kind,
               templateName,
             })
             return <Link to={statusHistoryURL}>{t('View history')}</Link>
@@ -308,7 +314,7 @@ export default function PolicyDetailsResults() {
   )
 
   return (
-    <PageSection>
+    <PageSection hasBodyWrapper={false}>
       <Title headingLevel="h3">{t('Clusters')}</Title>
       <AcmTableStateProvider localStorageKey="grc-status-view">
         <AcmTable<ResultsTableData>

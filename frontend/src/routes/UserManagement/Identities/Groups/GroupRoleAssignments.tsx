@@ -14,7 +14,7 @@ const GroupRoleAssignments = () => {
   })
 
   return (
-    <PageSection>
+    <PageSection hasBodyWrapper={false}>
       <RoleAssignments
         roleAssignments={roleAssignments}
         isLoading={false}

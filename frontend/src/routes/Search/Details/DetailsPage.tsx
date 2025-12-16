@@ -172,6 +172,38 @@ export default function DetailsPage() {
     [apiversion, cluster, containers, kind, name, namespace, resource, resourceError, isHubClusterResource]
   )
 
+  const navItems = useMemo(() => {
+    const items: JSX.Element[] = [
+      <AcmSecondaryNavItem key="details" isActive={location.pathname === NavigationPath.resources}>
+        <Link to={`${NavigationPath.resources}${window.location.search}`}>{t('Details')}</Link>
+      </AcmSecondaryNavItem>,
+      <AcmSecondaryNavItem key="yaml" isActive={location.pathname === NavigationPath.resourceYAML}>
+        <Link to={`${NavigationPath.resourceYAML}${window.location.search}`}>{t('YAML')}</Link>
+      </AcmSecondaryNavItem>,
+      <AcmSecondaryNavItem key="related" isActive={location.pathname === NavigationPath.resourceRelated}>
+        <Link to={`${NavigationPath.resourceRelated}${window.location.search}`}>{t('Related resources')}</Link>
+      </AcmSecondaryNavItem>,
+    ]
+
+    if (kind.toLowerCase() === 'virtualmachine') {
+      items.push(
+        <AcmSecondaryNavItem key="snapshots" isActive={location.pathname === NavigationPath.vmSnapshots}>
+          <Link to={`${NavigationPath.vmSnapshots}${window.location.search}`}>{t('Snapshots')}</Link>
+        </AcmSecondaryNavItem>
+      )
+    }
+
+    if (kind.toLowerCase() === 'pod' || kind.toLowerCase() === 'pods') {
+      items.push(
+        <AcmSecondaryNavItem key="logs" isActive={location.pathname === NavigationPath.resourceLogs}>
+          <Link to={`${NavigationPath.resourceLogs}${window.location.search}`}>{t('Logs')}</Link>
+        </AcmSecondaryNavItem>
+      )
+    }
+
+    return items
+  }, [kind, location.pathname, t])
+
   const closeModal = () => {
     setVMAction(ClosedVMActionModalProps)
   }
@@ -395,31 +427,7 @@ export default function DetailsPage() {
                 to: '',
               },
             ]}
-            navigation={
-              <AcmSecondaryNav>
-                <AcmSecondaryNavItem isActive={location.pathname === NavigationPath.resources}>
-                  <Link to={`${NavigationPath.resources}${window.location.search}`}>{t('Details')}</Link>
-                </AcmSecondaryNavItem>
-                <AcmSecondaryNavItem isActive={location.pathname === NavigationPath.resourceYAML}>
-                  <Link to={`${NavigationPath.resourceYAML}${window.location.search}`}>{t('YAML')}</Link>
-                </AcmSecondaryNavItem>
-                <AcmSecondaryNavItem isActive={location.pathname === NavigationPath.resourceRelated}>
-                  <Link to={`${NavigationPath.resourceRelated}${window.location.search}`}>
-                    {t('Related resources')}
-                  </Link>
-                </AcmSecondaryNavItem>
-                {kind.toLowerCase() === 'virtualmachine' && (
-                  <AcmSecondaryNavItem isActive={location.pathname === NavigationPath.vmSnapshots}>
-                    <Link to={`${NavigationPath.vmSnapshots}${window.location.search}`}>{t('Snapshots')}</Link>
-                  </AcmSecondaryNavItem>
-                )}
-                {(kind.toLowerCase() === 'pod' || kind.toLowerCase() === 'pods') && (
-                  <AcmSecondaryNavItem isActive={location.pathname === NavigationPath.resourceLogs}>
-                    <Link to={`${NavigationPath.resourceLogs}${window.location.search}`}>{t('Logs')}</Link>
-                  </AcmSecondaryNavItem>
-                )}
-              </AcmSecondaryNav>
-            }
+            navigation={<AcmSecondaryNav>{navItems}</AcmSecondaryNav>}
             actions={
               <Dropdown
                 isOpen={resourceActionsOpen}

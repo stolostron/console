@@ -6,18 +6,16 @@ import {
   Button,
   Card,
   CardBody,
+  Content,
   Label,
   LabelProps,
-  Page,
   PageSection,
-  PageSectionVariants,
   Popover,
   PopoverProps,
   Split,
   SplitItem,
   Stack,
   StackItem,
-  TextContent,
   Title,
 } from '@patternfly/react-core'
 import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
@@ -29,12 +27,10 @@ import { AcmErrorBoundary } from '../AcmErrorBoundary/AcmErrorBoundary'
 
 export function AcmPage(props: { header: ReactNode; children: ReactNode; hasDrawer?: boolean }) {
   const page = (
-    <Page
-      additionalGroupedContent={<Fragment>{props.header}</Fragment>}
-      groupProps={{ stickyOnBreakpoint: { default: 'top' } }}
-    >
+    <>
+      <Fragment>{props.header}</Fragment>
       {props.children}
-    </Page>
+    </>
   )
   return props.hasDrawer ? (
     <AcmDrawerProvider>
@@ -63,16 +59,22 @@ export interface AcmPageHeaderProps {
 
 export function AcmPageHeader(props: AcmPageHeaderProps) {
   return (
-    <PageSection variant={PageSectionVariants.light} padding={{ default: 'noPadding' }}>
+    <PageSection
+      id={'page-header'}
+      hasBodyWrapper={false}
+      padding={{ default: 'noPadding' }}
+      style={{
+        border: 'none',
+      }}
+    >
       <Split>
         <SplitItem isFilled>
           <Stack hasGutter>
             <StackItem isFilled>
               <PageSection
-                variant={PageSectionVariants.light}
+                hasBodyWrapper={false}
                 style={{
                   paddingBottom: props.navigation ? 'inherit' : undefined,
-                  paddingTop: props.breadcrumb ? 'var(--pf-v5-c-page__main-breadcrumb--PaddingTop)' : undefined,
                 }}
               >
                 <Stack hasGutter>
@@ -84,7 +86,7 @@ export function AcmPageHeader(props: AcmPageHeaderProps) {
                   <StackItem isFilled>
                     <Split hasGutter>
                       <SplitItem>
-                        <TextContent>
+                        <Content>
                           <Title headingLevel="h1">
                             {props.title}
                             {props.titleTooltip && (
@@ -100,19 +102,18 @@ export function AcmPageHeader(props: AcmPageHeaderProps) {
                                 }
                               >
                                 <Button
+                                  icon={<OutlinedQuestionCircleIcon />}
                                   variant="plain"
                                   style={{
                                     padding: 0,
                                     marginLeft: '8px',
                                     verticalAlign: 'middle',
                                   }}
-                                >
-                                  <OutlinedQuestionCircleIcon />
-                                </Button>
+                                />
                               </Popover>
                             )}
                           </Title>
-                        </TextContent>
+                        </Content>
                       </SplitItem>
                       {props.label && props.labelColor && (
                         <SplitItem>
@@ -140,18 +141,11 @@ export function AcmPageHeader(props: AcmPageHeaderProps) {
                 </Stack>
               </PageSection>
             </StackItem>
-            {props.navigation && (
-              <StackItem>
-                <PageSection variant={PageSectionVariants.light} type="nav" style={{ paddingTop: 0, paddingBottom: 0 }}>
-                  {props.navigation}
-                </PageSection>
-              </StackItem>
-            )}
           </Stack>
         </SplitItem>
         {(props.controls || props.actions || props.searchbar) && (
           <SplitItem>
-            <PageSection variant={PageSectionVariants.light} style={{ height: '100%' }}>
+            <PageSection hasBodyWrapper={false} style={{ height: '100%' }}>
               <Stack hasGutter>
                 {props.searchbar && (
                   <SplitItem style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>
@@ -181,13 +175,14 @@ export function AcmPageHeader(props: AcmPageHeaderProps) {
           </SplitItem>
         )}
       </Split>
+      {props.navigation}
     </PageSection>
   )
 }
 
 export function AcmPageCard(props: { children: ReactNode }) {
   return (
-    <PageSection>
+    <PageSection hasBodyWrapper={false}>
       <Card>
         <CardBody>{props.children}</CardBody>
       </Card>
@@ -204,11 +199,11 @@ export function AcmBreadcrumb(props: { breadcrumb?: { text: string; to?: string 
           <BreadcrumbItem key={i}>
             {breadcrumb.length > 1 && i === breadcrumb.length - 1 ? (
               // eslint-disable-next-line jsx-a11y/anchor-is-valid
-              <a aria-current="page" className="pf-v5-c-breadcrumb__link pf-m-current">
+              <a aria-current="page" className="pf-v6-c-breadcrumb__link pf-m-current">
                 {crumb.text}
               </a>
             ) : (
-              <Link to={crumb.to as string} className="pf-v5-c-breadcrumb__link">
+              <Link to={crumb.to as string} className="pf-v6-c-breadcrumb__link">
                 {crumb.text}
               </Link>
             )}
@@ -226,8 +221,6 @@ export type AcmPageContentProps = {
 
   /** React children for this component */
   children: ReactNode
-
-  variant?: 'light'
 }
 
 export function AcmPageContent(props: AcmPageContentProps) {
@@ -238,7 +231,7 @@ export function AcmPageContent(props: AcmPageContentProps) {
           {(context) => (
             <Fragment>
               {context.alertInfos.length > 0 && (
-                <PageSection variant={props.variant} style={{ paddingBottom: 0 }}>
+                <PageSection hasBodyWrapper={false} style={{ paddingBottom: 0 }}>
                   <AcmAlertGroup isInline canClose />
                 </PageSection>
               )}

@@ -10,7 +10,7 @@ export default function PolicyTemplateYaml() {
   const editorHeight = useYamlEditorHeight()
 
   return (
-    <PageSection>
+    <PageSection hasBodyWrapper={false}>
       <YamlEditor resourceYAML={jsYaml.dump(template, { indent: 2 })} readOnly={true} height={editorHeight} />
     </PageSection>
   )

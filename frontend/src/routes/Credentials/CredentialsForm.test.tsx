@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { namespacesState } from '../../atoms'
@@ -17,11 +18,10 @@ import {
   waitForText,
 } from '../../lib/test-util'
 import { NavigationPath } from '../../NavigationPath'
+import { createProviderConnection, mockNamespaces } from '../../test-helpers/createProviderConnection'
+import { Provider } from '../../ui-components'
 import { CreateCredentialsFormPage } from './CredentialsForm'
 import { CredentialsType } from './CredentialsType'
-import { Provider } from '../../ui-components'
-import userEvent from '@testing-library/user-event'
-import { createProviderConnection, mockNamespaces } from '../../test-helpers/createProviderConnection'
 
 describe('add credentials page', () => {
   beforeEach(() => {
@@ -52,6 +52,11 @@ describe('add credentials page', () => {
 
     await typeByTestId('credentialsName', providerConnection.metadata.name!)
     await selectByText('Select a namespace for the credential', providerConnection.metadata.namespace!)
+    // Confirm input value contains exactly the namespace
+    expect(screen.getByPlaceholderText<HTMLInputElement>('Select a namespace for the credential').value).toBe(
+      providerConnection.metadata.namespace!
+    )
+
     await typeByTestId('baseDomain', providerConnection.stringData?.baseDomain!)
     await clickByText('Next')
 
@@ -100,8 +105,8 @@ describe('add credentials page', () => {
     await selectByText('Select region', providerConnection.stringData?.region!)
 
     // open yaml and use yaml to change aws_access_key_id
-    await waitFor(() => screen.getByRole('checkbox', { name: /yaml/i }))
-    userEvent.click(screen.getByRole('checkbox', { name: /yaml/i }))
+    await waitFor(() => screen.getByRole('switch', { name: /yaml/i }))
+    userEvent.click(screen.getByRole('switch', { name: /yaml/i }))
     const input = screen.getByRole('textbox', {
       name: /monaco/i,
     }) as HTMLTextAreaElement
@@ -120,7 +125,7 @@ describe('add credentials page', () => {
     changeYaml('aws_access_key_id=', 'a')
     changeYaml('aws_secret_access_key=', 'e')
     await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
-    userEvent.click(screen.getByRole('checkbox', { name: /yaml/i }))
+    userEvent.click(screen.getByRole('switch', { name: /yaml/i }))
     await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
 
     await clickByText('Next')

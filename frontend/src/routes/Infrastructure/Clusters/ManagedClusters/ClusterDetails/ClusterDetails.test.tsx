@@ -1,12 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { AgentClusterInstallK8sResource, HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import _ from 'lodash'
+import cloneDeep from 'lodash/cloneDeep'
+import nock from 'nock'
 import { Scope } from 'nock/types'
-import { AgentClusterInstallK8sResource, HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { generatePath, MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import cloneDeep from 'lodash/cloneDeep'
 import {
   agentClusterInstallsState,
   certificateSigningRequestsState,
@@ -26,16 +27,15 @@ import {
 import {
   nockCreate,
   nockDelete,
-  nockIgnoreRBAC,
+  nockGet,
   nockIgnoreApiPaths,
+  nockIgnoreOperatorCheck,
+  nockIgnoreRBAC,
   nockList,
   nockNamespacedList,
   nockPostRequest,
   nockSearch,
-  nockIgnoreOperatorCheck,
-  nockGet,
 } from '../../../../../lib/nock-util'
-import nock from 'nock'
 import { mockManagedClusterSet, mockOpenShiftConsoleConfigMap } from '../../../../../lib/test-metadata'
 import {
   clickByLabel,
@@ -70,6 +70,9 @@ import {
   ClusterProvisionKind,
   HostedClusterApiVersion,
   HostedClusterKind,
+  KlusterletAddonConfig,
+  KlusterletAddonConfigApiVersion,
+  KlusterletAddonConfigKind,
   ManagedCluster,
   ManagedClusterAddOn,
   ManagedClusterAddOnApiVersion,
@@ -79,26 +82,23 @@ import {
   ManagedClusterInfoApiVersion,
   ManagedClusterInfoKind,
   ManagedClusterKind,
+  Namespace,
+  NamespaceApiVersion,
+  NamespaceKind,
   PodApiVersion,
   PodKind,
   PodList,
   Secret,
   SecretApiVersion,
   SecretKind,
-  Namespace,
-  NamespaceApiVersion,
-  NamespaceKind,
-  KlusterletAddonConfig,
-  KlusterletAddonConfigApiVersion,
-  KlusterletAddonConfigKind,
 } from '../../../../../resources'
 import {
   MultiClusterEngine,
   MultiClusterEngineApiVersion,
   MultiClusterEngineKind,
 } from '../../../../../resources/multi-cluster-engine'
-import { clusterName, mockMachinePoolAuto, mockMachinePoolManual } from './ClusterDetails.sharedmocks'
 import Clusters from '../../Clusters'
+import { clusterName, mockMachinePoolAuto, mockMachinePoolManual } from './ClusterDetails.sharedmocks'
 
 // Mock the useVirtualMachineDetection hook
 jest.mock('../../../../../hooks/useVirtualMachineDetection', () => ({
@@ -1607,7 +1607,7 @@ describe('ClusterDetails with not found', () => {
       </RecoilRoot>
     )
     await waitForText('Not found')
-    await clickByRole('button', { name: /back to clusters/i })
+    await clickByRole('link', { name: /back to clusters/i })
     expect(window.location.pathname).toEqual('/')
     await waitForNock(metricNock)
   })

@@ -34,6 +34,7 @@ export function PolicyTemplateDetailsPage() {
   const kind = urlParams.kind ?? ''
   const templateName = urlParams.templateName ?? ''
   const isYamlTab = location.pathname.endsWith('/yaml')
+  const isHistoryTab = location.pathname.endsWith('/history')
   const hasParentPolicy = policyNamespace && policyName
   const detailsUrl = hasParentPolicy
     ? generatePath(NavigationPath.policyTemplateDetails, {
@@ -65,6 +66,25 @@ export function PolicyTemplateDetailsPage() {
         templateName,
       })
     : generatePath(NavigationPath.discoveredPolicyYaml, {
+        clusterName,
+        apiGroup,
+        apiVersion,
+        kind,
+        // discovered policy name
+        templateName,
+        templateNamespace: urlParams.templateNamespace ?? '',
+      })
+  const historyUrl = hasParentPolicy
+    ? generatePath(NavigationPath.policyDetailsHistory, {
+        namespace: policyNamespace,
+        name: policyName,
+        clusterName,
+        apiGroup,
+        apiVersion,
+        kind,
+        templateName,
+      })
+    : generatePath(NavigationPath.discoveredPolicyDetailsHistory, {
         clusterName,
         apiGroup,
         apiVersion,
@@ -221,11 +241,14 @@ export function PolicyTemplateDetailsPage() {
           popoverPosition="bottom"
           navigation={
             <AcmSecondaryNav>
-              <AcmSecondaryNavItem isActive={!isYamlTab}>
+              <AcmSecondaryNavItem isActive={!isYamlTab && !isHistoryTab}>
                 <Link to={detailsUrl}>{t('Details')}</Link>
               </AcmSecondaryNavItem>
-              <AcmSecondaryNavItem isActive={isYamlTab}>
+              <AcmSecondaryNavItem isActive={isYamlTab && !isHistoryTab}>
                 <Link to={yamlUrl}>{t('YAML')}</Link>
+              </AcmSecondaryNavItem>
+              <AcmSecondaryNavItem isActive={!isYamlTab && isHistoryTab}>
+                <Link to={historyUrl}>{t('History')}</Link>
               </AcmSecondaryNavItem>
             </AcmSecondaryNav>
           }
@@ -234,7 +257,7 @@ export function PolicyTemplateDetailsPage() {
     >
       <Suspense fallback={<Fragment />}>
         {templateError ? (
-          <PageSection style={{ paddingBottom: '0' }}>
+          <PageSection hasBodyWrapper={false} style={{ paddingBottom: '0' }}>
             <AcmAlert variant="danger" title={templateError} isInline noClose />
           </PageSection>
         ) : (

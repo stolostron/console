@@ -1,14 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { css } from '@emotion/css'
-import { ExpandableSection, ModalVariant, Button, ButtonVariant } from '@patternfly/react-core'
-import { Table /* data-codemods */, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table'
-import { ClusterCurator, ClusterCuratorAnsibleJob, Curation, CuratorAction, curatorActionHasJobs } from '../resources'
-import { AcmModal } from '../ui-components'
-import { useTranslation } from '../lib/acm-i18next'
+import { Button, ButtonVariant, ExpandableSection } from '@patternfly/react-core'
+import { ModalVariant } from '@patternfly/react-core/deprecated'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { NavigationPath } from '../NavigationPath'
+import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table'
 import { useState } from 'react'
 import { generatePath } from 'react-router-dom-v5-compat'
+import { useTranslation } from '../lib/acm-i18next'
+import { NavigationPath } from '../NavigationPath'
+import { ClusterCurator, ClusterCuratorAnsibleJob, Curation, CuratorAction, curatorActionHasJobs } from '../resources'
+import { AcmModal } from '../ui-components'
 
 export interface ITemplateSummaryModalProps {
   curatorTemplate: ClusterCurator
@@ -184,7 +185,13 @@ export function TemplateLinkOut(props: { templateCurator?: ClusterCurator }) {
   }
   return (
     <div>
-      <Button isInline variant={ButtonVariant.link}>
+      <Button
+        icon={
+          <ExternalLinkAltIcon style={{ marginLeft: '6px', verticalAlign: 'middle' }} className={externalLinkIcon} />
+        }
+        isInline
+        variant={ButtonVariant.link}
+      >
         <a
           target="_blank"
           rel="noopener noreferrer"
@@ -196,7 +203,6 @@ export function TemplateLinkOut(props: { templateCurator?: ClusterCurator }) {
         >
           {t('View {{templateName}}', { templateName: templateCurator.metadata.name })}
         </a>
-        <ExternalLinkAltIcon style={{ marginLeft: '6px', verticalAlign: 'middle' }} className={externalLinkIcon} />
       </Button>
     </div>
   )

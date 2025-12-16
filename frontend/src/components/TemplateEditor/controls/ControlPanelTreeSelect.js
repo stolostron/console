@@ -222,7 +222,7 @@ class ControlPanelTreeSelect extends React.Component {
       .join('-')}`
     const validated = exception ? 'error' : undefined
     const inputClasses = classNames({
-      'pf-v5-c-form-control': true,
+      'pf-v6-c-form-control': true,
       input: true,
       disabled: disabled,
     })
@@ -245,7 +245,7 @@ class ControlPanelTreeSelect extends React.Component {
                   onKeyPress={this.pressToggle.bind(this)}
                 >
                   <input
-                    className="pf-v5-c-combo-control"
+                    className="pf-v6-c-combo-control"
                     aria-label={name}
                     ref={this.setInputRef}
                     spellCheck="false"

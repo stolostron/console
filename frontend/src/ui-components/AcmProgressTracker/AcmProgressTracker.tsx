@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { css } from '@emotion/css'
-import { Gallery, GalleryItem, PopoverProps, Text, TextContent } from '@patternfly/react-core'
+import { Gallery, GalleryItem, PopoverProps, Content } from '@patternfly/react-core'
 import { Fragment } from 'react'
 import { useViewport } from '../AcmCharts/AcmChartGroup'
 import { AcmInlineStatus, StatusType } from '../AcmInlineStatus'
@@ -79,21 +79,21 @@ export function AcmProgressTracker(props: AcmProgressTrackerProps) {
 
   return (
     <Fragment>
-      <TextContent>
-        <Text component="h3">{props.Title}</Text>
-        <Text component="small">{props.Subtitle}</Text>
-      </TextContent>
+      <Content>
+        <Content component="h3">{props.Title}</Content>
+        <Content component="small">{props.Subtitle}</Content>
+      </Content>
 
       <Gallery className={isStacked ? popoverParentContainer : parentContainer}>
         {props.steps.map((step, index) => (
           <GalleryItem key={step.stepID} className={stepContainer}>
             <div>
               <AcmInlineStatus type={step.statusType} status={step.statusText} />
-              <TextContent>
-                <Text className={stepStatus} component="small">
+              <Content>
+                <Content className={stepStatus} component="small">
                   {step.statusSubtitle}
-                </Text>
-              </TextContent>
+                </Content>
+              </Content>
               {step.link && (
                 <AcmButton
                   id={step.stepID && `${step.stepID}-link`}
