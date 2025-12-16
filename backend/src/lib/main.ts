@@ -47,11 +47,20 @@ process.on('uncaughtException', (_err) => {
 process.on('multipleResolves', (type: unknown, _promise, reason: unknown) => {
   // node-fetch throws multipleResolves on aborted resolved request
   if (!reason || (reason as { type?: string }).type === 'aborted') return
-  logger.error({ msg: 'process multipleResolves', type, reason })
+  logger.error({
+    msg: 'process multipleResolves',
+    type,
+    reason: reason instanceof Error ? reason.message : reason,
+    stack: reason instanceof Error ? reason.stack : undefined,
+  })
 })
 
 process.on('unhandledRejection', (reason, _promise) => {
-  logger.error({ msg: 'process unhandledRejection', reason })
+  logger.error({
+    msg: 'process unhandledRejection',
+    reason: reason instanceof Error ? reason.message : reason,
+    stack: reason instanceof Error ? reason.stack : undefined,
+  })
 })
 
 void start()
