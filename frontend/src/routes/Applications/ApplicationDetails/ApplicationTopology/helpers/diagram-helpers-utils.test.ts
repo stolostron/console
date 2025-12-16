@@ -21,7 +21,7 @@ import {
   getVMNameWithoutPodHash,
 } from './diagram-helpers-utils'
 
-import { getOnlineClusters, getPulseStatusForSubscription } from '../model/computeStatuses'
+import { getOnlineClusters, getPulseStatusForSubscription } from '../statuses/computeStatuses'
 
 import { syncControllerRevisionPodStatusMap } from '../model/topologyDetails'
 

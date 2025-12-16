@@ -1,27 +1,86 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Alert, Button, Flex, FlexItem } from '@patternfly/react-core'
+import {
+  Alert,
+  Badge,
+  Button,
+  Flex,
+  FlexItem,
+  MenuToggle,
+  MenuToggleElement,
+  Select,
+  SelectList,
+  SelectOption,
+  Toolbar,
+  ToolbarContent,
+  ToolbarFilter,
+  ToolbarGroup,
+  ToolbarToggleGroup,
+} from '@patternfly/react-core'
 import '../css/topology-toolbar.css'
-import { useTranslation } from '../../../../../../lib/acm-i18next'
+import { FC, Ref, useEffect, useMemo, useState } from 'react'
+import { FilterIcon } from '@patternfly/react-icons'
+import { TopologyProps } from '../Topology'
 import LegendView from '../../components/LegendView'
+import { useTranslation } from '../../../../../../lib/acm-i18next'
 import noop from 'lodash/noop'
 import ChannelControl from '../../components/ChannelControl'
 import { NavigationPath } from '../../../../../../NavigationPath'
-import { useEffect, useState } from 'react'
-import { TopologyProps } from '../Topology'
 import { useQuerySearchDisabledManagedClusters } from '../../../../../../lib/search'
 import { useQuery } from '../../../../../../lib/useQuery'
 
-const TopologyToolbar: React.FC<TopologyProps> = (topologyProps) => {
+export type ToolbarControl = {
+  allClusters: string[] | undefined
+  activeClusters: string[] | undefined
+  setActiveClusters: (clusters: string[] | undefined) => void
+  setAllClusters: (clusters: string[] | undefined) => void
+  allApplications: string[] | undefined
+  activeApplications: string[] | undefined
+  setAllApplications: (applications: string[] | undefined) => void
+  setActiveApplications: (applications: string[] | undefined) => void
+  allTypes: string[] | undefined
+  activeTypes: string[] | undefined
+  setAllTypes: (types: string[] | undefined) => void
+  setActiveTypes: (types: string[] | undefined) => void
+}
+
+export function useToolbarControl(): ToolbarControl {
+  const [allClusters, setAllClusters] = useState<string[]>()
+  const [activeClusters, setActiveClusters] = useState<string[] | undefined>()
+
+  const [allApplications, setAllApplications] = useState<string[]>()
+  const [activeApplications, setActiveApplications] = useState<string[] | undefined>()
+
+  const [allTypes, setAllTypes] = useState<string[]>()
+  const [activeTypes, setActiveTypes] = useState<string[] | undefined>()
+
+  return useMemo(
+    () => ({
+      allClusters,
+      setAllClusters,
+      activeClusters,
+      setActiveClusters,
+      allApplications,
+      setAllApplications,
+      activeApplications,
+      setActiveApplications,
+      allTypes,
+      setAllTypes,
+      activeTypes,
+      setActiveTypes,
+    }),
+    [allClusters, activeClusters, allApplications, activeApplications, allTypes, activeTypes]
+  )
+}
+
+const TopologyToolbar: FC<TopologyProps> = (topologyProps) => {
   const { t } = useTranslation()
-  const { channelControl, setDrawerContent, elements, hubClusterName } = topologyProps
+  const { channelControl, setDrawerContent, elements, hubClusterName, toolbarControl } = topologyProps
   const [isSearchDisabled, setIsSearchDisabled] = useState<boolean>(false)
   const clusterNodes = elements.nodes.filter((node) => node.type === 'cluster')
   const clusterNames = clusterNodes.map((clusterNode) => clusterNode.name)
   const queryDisabled = useQuerySearchDisabledManagedClusters()
   const { data, startPolling } = useQuery(queryDisabled)
-
   useEffect(startPolling, [startPolling])
-
   useEffect(() => {
     const clustersWithSearchDisabled = data?.[0]?.data?.searchResult?.[0]?.items || []
     const clusterWithDisabledSearch = new Set(clustersWithSearchDisabled.map((item: { name: string }) => item.name))
@@ -30,39 +89,291 @@ const TopologyToolbar: React.FC<TopologyProps> = (topologyProps) => {
       setIsSearchDisabled(true)
     }
   }, [data, clusterNames])
-  return (
-    <Flex style={{ width: '100%' }} alignItems={{ default: 'alignItemsCenter' }}>
-      <FlexItem>
-        {channelControl?.allChannels?.length > 1 && (
-          <ChannelControl channelControl={channelControl} t={t} setDrawerContent={setDrawerContent} />
-        )}
-      </FlexItem>
-      <FlexItem flex={{ default: 'flex_1' }} />
-      {isSearchDisabled && (
-        <Alert
-          variant="warning"
-          title={t(
-            'Currently, search is disabled on some of your managed clusters. Some data might be missing from the topology view.'
-          )}
-        >
-          <Button
-            variant="link"
-            className={'abc'}
-            style={{ padding: '0' }}
-            onClick={() =>
-              window.open(
-                `${NavigationPath.search}?filters={"textsearch":"kind%3ACluster%20addon%3Asearch-collector%3Dfalse%20name%3A!${hubClusterName}"}`,
-                '_blank'
-              )
-            }
-          >
-            {t('View clusters with search add-on disabled.')}
-          </Button>
-        </Alert>
-      )}
 
-      <FlexItem>
-        <div className="diagram-title">
+  const [isClustersExpanded, setIsClustersExpanded] = useState(false)
+  const [isApplicationsExpanded, setIsApplicationsExpanded] = useState(false)
+  const [isTypesExpanded, setIsTypesExpanded] = useState(false)
+
+  const { hasToolbarSelection, hasChannelSelection } = useMemo(() => {
+    return {
+      hasToolbarSelection:
+        (toolbarControl.allClusters?.length ?? 0) > 0 ||
+        (toolbarControl.allApplications?.length ?? 0) > 0 ||
+        (toolbarControl.allTypes?.length ?? 0) > 0,
+      hasChannelSelection: (channelControl?.allChannels?.length ?? 0) > 1,
+    }
+  }, [toolbarControl.allClusters, toolbarControl.allApplications, toolbarControl.allTypes, channelControl?.allChannels])
+
+  const onApplicationsSelect = (selection: string) => {
+    if (selection === 'all-applications') {
+      toolbarControl.setActiveApplications(undefined)
+    } else if (toolbarControl.activeApplications?.includes(selection)) {
+      toolbarControl.setActiveApplications(toolbarControl.activeApplications.filter((app) => app !== selection))
+    } else {
+      toolbarControl.setActiveApplications([...(toolbarControl.activeApplications || []), selection])
+    }
+  }
+
+  const onClustersSelect = (selection: string) => {
+    if (selection === 'all-clusters') {
+      toolbarControl.setActiveClusters(undefined)
+    } else if (toolbarControl.activeClusters?.includes(selection)) {
+      toolbarControl.setActiveClusters(toolbarControl.activeClusters.filter((cluster) => cluster !== selection))
+    } else {
+      toolbarControl.setActiveClusters([...(toolbarControl.activeClusters || []), selection])
+    }
+  }
+
+  const onTypesSelect = (selection: string) => {
+    if (selection === 'all-types') {
+      toolbarControl.setActiveTypes(undefined)
+    } else if (toolbarControl.activeTypes?.includes(selection)) {
+      toolbarControl.setActiveTypes(toolbarControl.activeTypes.filter((type) => type !== selection))
+    } else {
+      toolbarControl.setActiveTypes([...(toolbarControl.activeTypes || []), selection])
+    }
+  }
+
+  const onDelete = (type: string, id: string) => {
+    if (type === 'Clusters') {
+      toolbarControl.setActiveClusters(toolbarControl.activeClusters?.filter((cluster) => cluster !== id))
+    } else if (type === 'Applications') {
+      toolbarControl.setActiveApplications(toolbarControl.activeApplications?.filter((app) => app !== id))
+    } else if (type === 'Types') {
+      toolbarControl.setActiveTypes(toolbarControl.activeTypes?.filter((t) => t !== id))
+    } else {
+      toolbarControl.setActiveClusters(undefined)
+      toolbarControl.setActiveApplications(undefined)
+      toolbarControl.setActiveTypes(undefined)
+    }
+  }
+
+  const onDeleteGroup = (type: string) => {
+    if (type === 'Clusters') {
+      toolbarControl.setActiveClusters(undefined)
+    } else if (type === 'Applications') {
+      toolbarControl.setActiveApplications(undefined)
+    } else if (type === 'Types') {
+      toolbarControl.setActiveTypes(undefined)
+    }
+  }
+
+  const onClustersToggle = () => {
+    setIsClustersExpanded(!isClustersExpanded)
+  }
+
+  const onApplicationsToggle = () => {
+    setIsApplicationsExpanded(!isApplicationsExpanded)
+  }
+
+  const onTypesToggle = () => {
+    setIsTypesExpanded(!isTypesExpanded)
+  }
+
+  const createMenuItems = (
+    allItems: string[] | undefined,
+    activeItems: string[] | undefined,
+    prefix: string,
+    allValue: string,
+    allLabel: string
+  ) => (
+    <SelectList>
+      {(allItems?.length ?? 0) > 1 && (
+        <SelectOption hasCheckbox key={`${prefix}-all`} value={allValue} isSelected={!activeItems?.length}>
+          {t(allLabel)}
+        </SelectOption>
+      )}
+      {allItems?.map((item) => (
+        <SelectOption hasCheckbox key={`${prefix}-${item}`} value={item} isSelected={activeItems?.includes(item)}>
+          {item}
+        </SelectOption>
+      ))}
+    </SelectList>
+  )
+
+  const clustersMenuItems = createMenuItems(
+    toolbarControl.allClusters,
+    toolbarControl.activeClusters,
+    'cluster',
+    'all-clusters',
+    'All clusters'
+  )
+  const applicationsMenuItems = createMenuItems(
+    toolbarControl.allApplications,
+    toolbarControl.activeApplications,
+    'application',
+    'all-applications',
+    'All applications'
+  )
+  const typesMenuItems = createMenuItems(
+    toolbarControl.allTypes,
+    toolbarControl.activeTypes,
+    'type',
+    'all-types',
+    'All types'
+  )
+
+  const toggleGroupItems = (
+    <>
+      <ToolbarGroup variant="filter-group">
+        <ToolbarFilter
+          chips={toolbarControl.activeClusters}
+          deleteChip={(category, chip) => onDelete(category as string, chip as string)}
+          categoryName="Clusters"
+        >
+          <Flex alignItems={{ default: 'alignItemsCenter' }} spaceItems={{ default: 'spaceItemsSm' }}>
+            <FlexItem>
+              {t('Clusters')} ({toolbarControl.allClusters?.length ?? 0}):
+            </FlexItem>
+            <FlexItem>
+              <Select
+                aria-label="Clusters"
+                role="menu"
+                toggle={(toggleRef: Ref<MenuToggleElement>) => (
+                  <MenuToggle
+                    ref={toggleRef}
+                    onClick={onClustersToggle}
+                    isExpanded={isClustersExpanded}
+                    isDisabled={(toolbarControl.allClusters?.length ?? 0) <= 1}
+                  >
+                    {toolbarControl.allClusters?.length === 1 ? toolbarControl.allClusters[0] : t('Clusters')}
+                    {toolbarControl.allClusters?.length !== 1 && !!toolbarControl.activeClusters?.length && (
+                      <Badge isRead>{toolbarControl.activeClusters?.length ?? 0}</Badge>
+                    )}
+                  </MenuToggle>
+                )}
+                onSelect={(_e, selection) => {
+                  onClustersSelect(selection as string)
+                }}
+                selected={toolbarControl.activeClusters}
+                isOpen={isClustersExpanded}
+                onOpenChange={(isOpen) => setIsClustersExpanded(isOpen)}
+              >
+                {clustersMenuItems}
+              </Select>
+            </FlexItem>
+          </Flex>
+        </ToolbarFilter>
+        <ToolbarFilter
+          chips={toolbarControl.activeApplications}
+          deleteChip={(category, chip) => onDelete(category as string, chip as string)}
+          deleteChipGroup={(category) => onDeleteGroup(category as string)}
+          categoryName="Applications"
+        >
+          <Flex alignItems={{ default: 'alignItemsCenter' }} spaceItems={{ default: 'spaceItemsSm' }}>
+            <FlexItem style={{ marginLeft: '20px' }}>
+              {t('Applications')} ({toolbarControl.allApplications?.length ?? 0}):
+            </FlexItem>
+            <FlexItem>
+              <Select
+                aria-label="Applications"
+                role="menu"
+                toggle={(toggleRef: Ref<MenuToggleElement>) => (
+                  <MenuToggle
+                    ref={toggleRef}
+                    onClick={onApplicationsToggle}
+                    isExpanded={isApplicationsExpanded}
+                    isDisabled={(toolbarControl.allApplications?.length ?? 0) <= 1}
+                  >
+                    {toolbarControl.allApplications?.length === 1
+                      ? toolbarControl.allApplications[0]
+                      : t('Applications')}
+                    {toolbarControl.allApplications?.length !== 1 && !!toolbarControl.activeApplications?.length && (
+                      <Badge isRead>{toolbarControl.activeApplications?.length ?? 0}</Badge>
+                    )}
+                  </MenuToggle>
+                )}
+                onSelect={(_e, selection) => {
+                  onApplicationsSelect(selection as string)
+                }}
+                selected={toolbarControl.activeApplications}
+                isOpen={isApplicationsExpanded}
+                onOpenChange={(isOpen) => setIsApplicationsExpanded(isOpen)}
+              >
+                {applicationsMenuItems}
+              </Select>
+            </FlexItem>
+          </Flex>
+        </ToolbarFilter>
+        <ToolbarFilter
+          chips={toolbarControl.activeTypes}
+          deleteChip={(category, chip) => onDelete(category as string, chip as string)}
+          deleteChipGroup={(category) => onDeleteGroup(category as string)}
+          categoryName="Types"
+        >
+          <Flex alignItems={{ default: 'alignItemsCenter' }} spaceItems={{ default: 'spaceItemsSm' }}>
+            <FlexItem style={{ marginLeft: '20px' }}>
+              {t('Types')} ({toolbarControl.allTypes?.length ?? 0}):
+            </FlexItem>
+            <FlexItem>
+              <Select
+                aria-label="Types"
+                role="menu"
+                toggle={(toggleRef: Ref<MenuToggleElement>) => (
+                  <MenuToggle
+                    ref={toggleRef}
+                    onClick={onTypesToggle}
+                    isExpanded={isTypesExpanded}
+                    isDisabled={(toolbarControl.allTypes?.length ?? 0) <= 1}
+                  >
+                    {t('Types')}
+                    {!!toolbarControl.activeTypes?.length && (
+                      <Badge isRead>{toolbarControl.activeTypes?.length ?? 0}</Badge>
+                    )}
+                  </MenuToggle>
+                )}
+                onSelect={(_e, selection) => {
+                  onTypesSelect(selection as string)
+                }}
+                selected={toolbarControl.activeTypes}
+                isOpen={isTypesExpanded}
+                onOpenChange={(isOpen) => setIsTypesExpanded(isOpen)}
+              >
+                {typesMenuItems}
+              </Select>
+            </FlexItem>
+          </Flex>
+        </ToolbarFilter>
+      </ToolbarGroup>
+    </>
+  )
+
+  const toolbarItems = (
+    <Flex direction={{ default: 'column' }} style={{ width: '100%' }}>
+      <Flex direction={{ default: 'row' }} id="row1" style={{ width: '100%' }}>
+        {hasToolbarSelection && (
+          <ToolbarToggleGroup toggleIcon={<FilterIcon />} breakpoint="xl">
+            {toggleGroupItems}
+          </ToolbarToggleGroup>
+        )}
+        <FlexItem>
+          {hasChannelSelection && (
+            <ChannelControl channelControl={channelControl} t={t} setDrawerContent={setDrawerContent} />
+          )}
+        </FlexItem>
+        <FlexItem flex={{ default: 'flex_1' }} />
+        {isSearchDisabled && (
+          <Alert
+            variant="warning"
+            title={t(
+              'Currently, search is disabled on some of your managed clusters. Some data might be missing from the topology view.'
+            )}
+          >
+            <Button
+              variant="link"
+              style={{ padding: '0' }}
+              onClick={() =>
+                window.open(
+                  `${NavigationPath.search}?filters={"textsearch":"kind%3ACluster%20addon%3Asearch-collector%3Dfalse%20name%3A!${hubClusterName}"}`,
+                  '_blank'
+                )
+              }
+            >
+              {t('View clusters with search add-on disabled.')}
+            </Button>
+          </Alert>
+        )}
+        <FlexItem className="how-to-read-text-container">
           <span
             className="how-to-read-text"
             tabIndex={0}
@@ -79,9 +390,23 @@ const TopologyToolbar: React.FC<TopologyProps> = (topologyProps) => {
               <use href={'#drawerShapes__sidecar'} />
             </svg>
           </span>
-        </div>
-      </FlexItem>
+        </FlexItem>
+      </Flex>
     </Flex>
+  )
+
+  return (
+    <Toolbar
+      className="pf-m-toggle-group-container"
+      style={{
+        rowGap: '14px',
+        width: '100%',
+      }}
+      collapseListedFiltersBreakpoint="xl"
+      clearAllFilters={() => onDelete('', '')}
+    >
+      <ToolbarContent>{toolbarItems}</ToolbarContent>
+    </Toolbar>
   )
 }
 

@@ -7,7 +7,7 @@ import {
   pendingCode,
   failureCode,
   metadataName,
-} from '../model/computeStatuses'
+} from '../statuses/computeStatuses'
 import type { DetailsList, NodeLike, ResourceItem, ResourceMap, AddResourceToModelFn, Translator } from '../types'
 
 /**

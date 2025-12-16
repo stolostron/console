@@ -21,6 +21,8 @@ import componentFactory from './components/componentFactory'
 import { NodeIcons } from './components/nodeIcons'
 import { NodeStatusIcons } from './components/nodeStatusIcons'
 import DetailsView from '../components/DetailsView'
+import { ToolbarControl } from './components/TopologyToolbar'
+
 import { ArgoAppDetailsContainerData, ClusterDetailsContainerData } from '../ApplicationTopology'
 import TopologyZoomBar from './components/TopologyZoomBar'
 import TopologyToolbar from './components/TopologyToolbar'
@@ -41,6 +43,7 @@ export interface TopologyProps {
     activeChannel: string | undefined
     setActiveChannel: (channel: string) => void
   }
+  toolbarControl: ToolbarControl
   argoAppDetailsContainerControl: {
     argoAppDetailsContainerData: ArgoAppDetailsContainerData
     handleArgoAppDetailsContainerUpdate: React.Dispatch<React.SetStateAction<ArgoAppDetailsContainerData>>

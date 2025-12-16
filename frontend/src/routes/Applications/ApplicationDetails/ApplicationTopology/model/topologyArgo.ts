@@ -18,6 +18,7 @@ import type {
   TopologyLink,
   ArgoApplicationResource,
 } from '../types'
+import { ToolbarControl } from '../topology/components/TopologyToolbar'
 
 /**
  * Generates topology data for Argo CD applications
@@ -33,6 +34,7 @@ import type {
  * @returns Topology object containing nodes and links for visualization
  */
 export function getArgoTopology(
+  toolbarControl: ToolbarControl,
   application: ArgoApplicationTopologyData,
   argoData: ArgoTopologyData,
   managedClusters: ManagedCluster[],
@@ -81,6 +83,7 @@ export function getArgoTopology(
 
   // Remove duplicate cluster names
   clusterNames = Array.from(new Set(clusterNames))
+  toolbarControl.setAllClusters?.(clusterNames)
 
   // Extract related applications from topology data if available
   const relatedApps = topology ? topology.nodes[0]?.specs?.relatedApps : undefined

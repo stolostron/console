@@ -25,6 +25,7 @@ import {
   SearchQuery,
 } from '../types'
 import { TFunction } from 'react-i18next'
+import { ToolbarControl } from '../topology/components/TopologyToolbar'
 
 /**
  * Generates topology data for ApplicationSet applications
@@ -38,16 +39,34 @@ import { TFunction } from 'react-i18next'
  * @param hubClusterName - Name of the hub cluster
  * @returns Topology structure with nodes and links
  */
-export function getAppSetTopology(application: ApplicationModel, hubClusterName: string): AppSetTopologyResult {
+export function getAppSetTopology(
+  toolbarControl: ToolbarControl,
+  application: ApplicationModel,
+  hubClusterName: string
+): AppSetTopologyResult {
   const links: TopologyLink[] = []
   const nodes: TopologyNode[] = []
   const { name, namespace, appSetClusters, appSetApps, relatedPlacement } = application
-
+  toolbarControl.setAllTypes?.(['Pod', 'ReplicaSet', 'Deployment', 'StatefulSet', 'DaemonSet', 'Job', 'CronJob'])
+  toolbarControl.setAllApplications?.([
+    'timmy',
+    'jerry',
+    'bugs',
+    'daffy',
+    'elmer',
+    'foghorn',
+    'roadrunner',
+    'tweety',
+    'wile e. coyote',
+    'yosemite sam',
+  ])
+  toolbarControl.setAllClusters?.(['weekly', 'monthly', 'yearly', 'daily', 'hourly', 'minutely', 'secondly'])
   // Extract cluster names from the ApplicationSet clusters
   const clusterNames =
     appSetClusters?.map((cluster: AppSetCluster) => {
       return cluster.name
     }) || []
+  toolbarControl.setAllClusters?.(clusterNames)
 
   // Create the main ApplicationSet node
   const appId = `application--${name}`

@@ -12,7 +12,7 @@ import { DrawerShapes } from './components/DrawerShapes'
 import './ApplicationTopology.css'
 import './topology/css/Drawer.css'
 import { ArgoApp, ClusterDetailsContainerControl } from './types'
-import { nodeDetailsProvider } from './model/NodeDetailsProvider'
+import { nodeDetailsProvider } from './statuses/NodeDetailsProvider'
 
 export type ArgoAppDetailsContainerData = {
   page: number
@@ -45,6 +45,7 @@ export function ApplicationTopologyPageContent() {
       statuses: undefined,
     },
     channelControl,
+    toolbarControl,
   } = useApplicationDetailsContext()
   const { t } = useTranslation()
   const { refreshTime, application, appData, topology, statuses } = applicationData
@@ -140,6 +141,7 @@ export function ApplicationTopologyPageContent() {
         argoAppDetailsContainerControl={argoAppDetailsContainerControl}
         clusterDetailsContainerControl={clusterDetailsContainerControl}
         channelControl={channelControl}
+        toolbarControl={toolbarControl}
         nodeDetailsProvider={nodeDetailsProvider}
         setDrawerContent={setDrawerContent}
         hubClusterName={hubClusterName}

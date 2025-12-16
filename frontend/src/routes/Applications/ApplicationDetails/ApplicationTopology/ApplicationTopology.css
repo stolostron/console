@@ -15,12 +15,6 @@
   fill: #06c;
 }
 
-.diagram-title {
-  float: right;
-  font-weight: bold;
-  font-size: 14px;
-}
-
 .pf-topology__node__icon {
   fill: #000;
   stroke: 'none';
