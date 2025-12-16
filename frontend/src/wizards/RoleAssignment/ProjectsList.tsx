@@ -1,13 +1,22 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useState, useEffect } from 'react'
-import { PageSection } from '@patternfly/react-core'
-import { RBACProjectsTable, ProjectTableData } from '../../components/RBACProjectsTable'
+import { ButtonVariant, PageSection } from '@patternfly/react-core'
+import { useEffect, useMemo, useState } from 'react'
+import { ProjectsTable, ProjectTableData } from '../../components/ProjectsTable'
+import { useTranslation } from '../../lib/acm-i18next'
+import { Cluster } from '../../resources/utils'
+import { IAcmTableButtonAction } from '../../ui-components/AcmTable/AcmTableTypes'
 import { CommonProjectCreate } from './CommonProjectCreate'
 
-export const ProjectsList = () => {
-  const [selectedClusters] = useState<string[]>(['local-cluster', 'sno-2-dmn9v']) // TODO: Get from props or context
+interface ProjectsListProps {
+  selectedClusters: Cluster[]
+}
+
+export const ProjectsList = ({ selectedClusters }: ProjectsListProps) => {
+  const { t } = useTranslation()
   const [isCreateCommonProject, setIsCreateCommonProject] = useState(false)
   const [selectedProjects, setSelectedProjects] = useState<ProjectTableData[]>([])
+
+  const hasSelectedProjects = selectedProjects.length > 0
 
   const handleCreateClick = () => {
     setIsCreateCommonProject(true)
@@ -25,6 +34,20 @@ export const ProjectsList = () => {
     setSelectedProjects(projects)
   }
 
+  const tableActionButtons = useMemo<IAcmTableButtonAction[]>(
+    () => [
+      {
+        id: 'create-project',
+        title: t('Create common project'),
+        click: handleCreateClick,
+        variant: ButtonVariant.primary,
+        isDisabled: hasSelectedProjects,
+        tooltip: hasSelectedProjects ? t('Deselect projects to create a new common project') : undefined,
+      },
+    ],
+    [t, hasSelectedProjects]
+  )
+
   useEffect(() => {
     console.log('selectedProjects:', selectedProjects)
   }, [selectedProjects])
@@ -32,12 +55,17 @@ export const ProjectsList = () => {
   return (
     <PageSection>
       {isCreateCommonProject ? (
-        <CommonProjectCreate onCancelCallback={handleModalClose} onSuccess={handleCreateSuccess} />
+        <CommonProjectCreate
+          onCancelCallback={handleModalClose}
+          onSuccess={handleCreateSuccess}
+          selectedClusters={selectedClusters}
+        />
       ) : (
-        <RBACProjectsTable
+        <ProjectsTable
           selectedClusters={selectedClusters}
           onCreateClick={handleCreateClick}
           onSelectionChange={handleSelectionChange}
+          tableActionButtons={tableActionButtons}
         />
       )}
     </PageSection>

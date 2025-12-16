@@ -1,9 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import type { Meta, StoryObj } from '@storybook/react'
 import { action } from '@storybook/addon-actions'
+import { ButtonVariant } from '@patternfly/react-core'
 import { PluginDataContextProvider } from '../components/PluginDataContextProvider'
 import { defaultContext as pluginDataDefaultContext } from '../lib/PluginDataContext'
-import { RBACProjectsTable, ProjectTableData } from './RBACProjectsTable'
+import { ProjectsTable, ProjectTableData } from './ProjectsTable'
+import { IAcmTableButtonAction } from '../ui-components/AcmTable/AcmTableTypes'
 
 const sampleProjects: ProjectTableData[] = [
   {
@@ -57,9 +59,18 @@ const mockPluginData = {
   loadCompleted: true,
 }
 
-const meta: Meta<typeof RBACProjectsTable> = {
-  title: 'RBAC/RBACProjectsTable',
-  component: RBACProjectsTable,
+const sampleTableActionButtons: IAcmTableButtonAction[] = [
+  {
+    id: 'create-project',
+    title: 'Create common project',
+    click: action('create-common-project'),
+    variant: ButtonVariant.primary,
+  },
+]
+
+const meta: Meta<typeof ProjectsTable> = {
+  title: 'Components/ProjectsTable',
+  component: ProjectsTable,
   decorators: [
     (Story) => (
       <PluginDataContextProvider value={mockPluginData}>
@@ -76,6 +87,7 @@ const meta: Meta<typeof RBACProjectsTable> = {
     onSelectionChange: action('selection-change'),
     onCreateClick: action('create-common-project'),
     useRoleAssignmentDataHook: useMockRoleAssignmentData,
+    tableActionButtons: sampleTableActionButtons,
   },
 }
 
@@ -93,3 +105,10 @@ export const EmptyState: Story = {
     projects: [],
   },
 }
+
+export const WithoutActionButtons: Story = {
+  args: {
+    tableActionButtons: undefined,
+  },
+}
+

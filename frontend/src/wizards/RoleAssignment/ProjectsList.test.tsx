@@ -3,9 +3,9 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ProjectsList } from './ProjectsList'
 
-jest.mock('../../components/RBACProjectsTable', () => ({
-  RBACProjectsTable: ({ selectedClusters, onCreateClick, onSelectionChange }: any) => (
-    <div id="rbac-projects-table">
+jest.mock('../../components/ProjectsTable', () => ({
+  ProjectsTable: ({ selectedClusters, onCreateClick, onSelectionChange }: any) => (
+    <div data-testid="projects-table">
       <div>Clusters: {selectedClusters.join(', ')}</div>
       <button onClick={onCreateClick}>Create common project</button>
       <button
@@ -41,7 +41,7 @@ describe('ProjectsList', () => {
     await waitFor(() => {
       expect(screen.queryByTestId('common-project-create')).not.toBeInTheDocument()
     })
-    expect(screen.getByTestId('rbac-projects-table')).toBeInTheDocument()
+    expect(screen.getByTestId('projects-table')).toBeInTheDocument()
   })
 
   it('returns to table view when project creation succeeds', async () => {
@@ -52,14 +52,14 @@ describe('ProjectsList', () => {
     await waitFor(() => {
       expect(screen.queryByTestId('common-project-create')).not.toBeInTheDocument()
     })
-    expect(screen.getByTestId('rbac-projects-table')).toBeInTheDocument()
+    expect(screen.getByTestId('projects-table')).toBeInTheDocument()
   })
 
   it('handles project selection changes', async () => {
     render(<ProjectsList />)
-    expect(screen.getByTestId('rbac-projects-table')).toBeInTheDocument()
+    expect(screen.getByTestId('projects-table')).toBeInTheDocument()
     const selectButton = screen.getByText('Select Project')
     await userEvent.click(selectButton)
-    expect(screen.getByTestId('rbac-projects-table')).toBeInTheDocument()
+    expect(screen.getByTestId('projects-table')).toBeInTheDocument()
   })
 })
