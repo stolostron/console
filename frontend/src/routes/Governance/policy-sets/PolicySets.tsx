@@ -208,52 +208,54 @@ export default function PolicySetsPage() {
   return (
     <Fragment>
       <div style={{ display: 'flex', flexDirection: 'column', overflowY: 'auto', height: '100%' }}>
-        <Toolbar id="toolbar-group-types" isSticky>
-          <ToolbarContent>
-            <Fragment>
-              <ToolbarGroup variant="filter-group">
-                <ToolbarItem>
-                  <CardViewToolbarFilter
-                    setViolationFilters={setViolationFilters}
-                    preSelectedFilters={violationFilters}
+        <PageSection hasBodyWrapper={false}>
+          <Toolbar id="toolbar-group-types" inset={{ default: 'insetNone' }}>
+            <ToolbarContent>
+              <Fragment>
+                <ToolbarGroup variant="filter-group">
+                  <ToolbarItem>
+                    <CardViewToolbarFilter
+                      setViolationFilters={setViolationFilters}
+                      preSelectedFilters={violationFilters}
+                    />
+                  </ToolbarItem>
+                  <ToolbarItem>
+                    <CardViewToolbarSearch
+                      searchData={searchData}
+                      dataKeyNames={searchDataKeyNames}
+                      searchFilter={searchFilter}
+                      setSearchFilter={setSearchFilter}
+                    />
+                  </ToolbarItem>
+                </ToolbarGroup>
+                <ToolbarItem key={`create-policy-set-toolbar-item`}>
+                  <AcmButton
+                    isDisabled={!canCreatePolicySet}
+                    tooltip={!canCreatePolicySet ? t('rbac.unauthorized') : ''}
+                    component={Link}
+                    variant="primary"
+                    to={NavigationPath.createPolicySet}
+                  >
+                    {t('Create policy set')}
+                  </AcmButton>
+                </ToolbarItem>
+                <ToolbarItem variant="pagination">
+                  <Pagination
+                    titles={translatedPaginationTitles}
+                    itemCount={filteredPolicySets.length}
+                    perPage={perPage}
+                    page={page}
+                    variant={PaginationVariant.top}
+                    onSetPage={(_event, page) => setPage(page)}
+                    onPerPageSelect={(_event, perPage) => updatePerPage(perPage)}
+                    aria-label={t('Pagination top')}
+                    isCompact
                   />
                 </ToolbarItem>
-                <ToolbarItem>
-                  <CardViewToolbarSearch
-                    searchData={searchData}
-                    dataKeyNames={searchDataKeyNames}
-                    searchFilter={searchFilter}
-                    setSearchFilter={setSearchFilter}
-                  />
-                </ToolbarItem>
-              </ToolbarGroup>
-              <ToolbarItem key={`create-policy-set-toolbar-item`}>
-                <AcmButton
-                  isDisabled={!canCreatePolicySet}
-                  tooltip={!canCreatePolicySet ? t('rbac.unauthorized') : ''}
-                  component={Link}
-                  variant="primary"
-                  to={NavigationPath.createPolicySet}
-                >
-                  {t('Create policy set')}
-                </AcmButton>
-              </ToolbarItem>
-              <ToolbarItem variant="pagination">
-                <Pagination
-                  titles={translatedPaginationTitles}
-                  itemCount={filteredPolicySets.length}
-                  perPage={perPage}
-                  page={page}
-                  variant={PaginationVariant.top}
-                  onSetPage={(_event, page) => setPage(page)}
-                  onPerPageSelect={(_event, perPage) => updatePerPage(perPage)}
-                  aria-label={t('Pagination top')}
-                  isCompact
-                />
-              </ToolbarItem>
-            </Fragment>
-          </ToolbarContent>
-        </Toolbar>
+              </Fragment>
+            </ToolbarContent>
+          </Toolbar>
+        </PageSection>
         {filteredPolicySets.length === 0 ? (
           <AcmEmptyState title={t('No resources match the current filter')} showSearchIcon={true} />
         ) : (

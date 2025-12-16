@@ -268,7 +268,7 @@ export function CreateClusterCatalog() {
                   toggleContent={
                     <span
                       style={{
-                        color: 'var(--pf-t--global--text--color--100)',
+                        color: 'var(--pf-t--global--text--color--regular)',
                       }}
                     >
                       {t('Additional providers')}
@@ -277,7 +277,7 @@ export function CreateClusterCatalog() {
                 >
                   <div
                     style={{
-                      color: 'var(--pf-t--global--text--color--100)',
+                      color: 'var(--pf-t--global--text--color--regular)',
                       paddingBottom: '24px',
                     }}
                   >
