@@ -346,7 +346,7 @@ export function AcmDropdown(props: AcmDropdownProps) {
             </MenuToggle>
           }
           isVisible={isOpen}
-          appendTo={popperContainer.current || document.body}
+          appendTo={document.body}
           distance={0}
           enableFlip={true}
           minWidth="fit-content"
