@@ -81,7 +81,7 @@ const meta: Meta<typeof ProjectsTable> = {
     ),
   ],
   args: {
-    selectedClusters: ['local-cluster', 'dev-cluster', 'prod-cluster'],
+    selectedClusters: [{ name: 'local-cluster' }, { name: 'dev-cluster' }, { name: 'prod-cluster' }],
     projects: sampleProjects,
     areLinksDisplayed: true,
     onSelectionChange: action('selection-change'),
@@ -111,4 +111,3 @@ export const WithoutActionButtons: Story = {
     tableActionButtons: undefined,
   },
 }
-

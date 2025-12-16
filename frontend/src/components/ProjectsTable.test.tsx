@@ -69,7 +69,7 @@ function renderProjectsTable(props: React.ComponentProps<typeof ProjectsTable>) 
 describe('ProjectsTable', () => {
   it('renders provided projects', async () => {
     renderProjectsTable({
-      selectedClusters: ['local-cluster'],
+      selectedClusters: [{ name: 'local-cluster' }],
       projects: sampleProjects,
       useRoleAssignmentDataHook: createMockUseRoleAssignmentDataHook(),
     })
@@ -81,7 +81,7 @@ describe('ProjectsTable', () => {
   it('fires selection callback when a row is selected', async () => {
     const onSelectionChange = jest.fn()
     renderProjectsTable({
-      selectedClusters: ['local-cluster'],
+      selectedClusters: [{ name: 'local-cluster' }],
       projects: sampleProjects,
       onSelectionChange,
       useRoleAssignmentDataHook: createMockUseRoleAssignmentDataHook(),
@@ -112,11 +112,10 @@ describe('ProjectsTable', () => {
     })
 
     renderProjectsTable({
-      selectedClusters: ['local-cluster', 'dev-cluster'],
+      selectedClusters: [{ name: 'local-cluster' }, { name: 'dev-cluster' }],
       useRoleAssignmentDataHook: mockHook,
     })
 
     expect(await screen.findByText('shared')).toBeInTheDocument()
   })
 })
-

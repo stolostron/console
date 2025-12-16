@@ -64,4 +64,3 @@ describe('isClusterInClusters', () => {
     expect(isClusterInClusters(clusters, cluster)).toBe(true)
   })
 })
-

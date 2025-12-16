@@ -4,8 +4,8 @@ import userEvent from '@testing-library/user-event'
 import { ProjectsList } from './ProjectsList'
 
 jest.mock('../../components/ProjectsTable', () => ({
-  ProjectsTable: ({ selectedClusters, onCreateClick, onSelectionChange }: any) => (
-    <div data-testid="projects-table">
+  ProjectsTable: ({ selectedClusters = [], onCreateClick, onSelectionChange }: any) => (
+    <div id="projects-table">
       <div>Clusters: {selectedClusters.join(', ')}</div>
       <button onClick={onCreateClick}>Create common project</button>
       <button
@@ -32,7 +32,7 @@ jest.mock('./CommonProjectCreate', () => ({
 
 describe('ProjectsList', () => {
   it('returns to table view when cancel is clicked', async () => {
-    render(<ProjectsList />)
+    render(<ProjectsList selectedClusters={[]} />)
     await userEvent.click(screen.getByText('Create common project'))
     await waitFor(() => {
       expect(screen.getByTestId('common-project-create')).toBeInTheDocument()
@@ -45,7 +45,7 @@ describe('ProjectsList', () => {
   })
 
   it('returns to table view when project creation succeeds', async () => {
-    render(<ProjectsList />)
+    render(<ProjectsList selectedClusters={[]} />)
     await userEvent.click(screen.getByText('Create common project'))
     expect(await screen.findByTestId('common-project-create')).toBeInTheDocument()
     await userEvent.click(screen.getByText('Submit'))
@@ -56,7 +56,7 @@ describe('ProjectsList', () => {
   })
 
   it('handles project selection changes', async () => {
-    render(<ProjectsList />)
+    render(<ProjectsList selectedClusters={[]} />)
     expect(screen.getByTestId('projects-table')).toBeInTheDocument()
     const selectButton = screen.getByText('Select Project')
     await userEvent.click(selectButton)
