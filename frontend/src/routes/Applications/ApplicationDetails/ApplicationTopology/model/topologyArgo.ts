@@ -83,6 +83,7 @@ export function getArgoTopology(
 
   // Remove duplicate cluster names
   clusterNames = Array.from(new Set(clusterNames))
+  toolbarControl.setAllClusters?.(clusterNames)
 
   // Extract related applications from topology data if available
   const relatedApps = topology ? topology.nodes[0]?.specs?.relatedApps : undefined

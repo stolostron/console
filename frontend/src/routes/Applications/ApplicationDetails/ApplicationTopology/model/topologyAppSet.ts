@@ -47,12 +47,26 @@ export function getAppSetTopology(
   const links: TopologyLink[] = []
   const nodes: TopologyNode[] = []
   const { name, namespace, appSetClusters, appSetApps, relatedPlacement } = application
-
+  toolbarControl.setAllTypes?.(['Pod', 'ReplicaSet', 'Deployment', 'StatefulSet', 'DaemonSet', 'Job', 'CronJob'])
+  toolbarControl.setAllApplications?.([
+    'timmy',
+    'jerry',
+    'bugs',
+    'daffy',
+    'elmer',
+    'foghorn',
+    'roadrunner',
+    'tweety',
+    'wile e. coyote',
+    'yosemite sam',
+  ])
+  toolbarControl.setAllClusters?.(['weekly', 'monthly', 'yearly', 'daily', 'hourly', 'minutely', 'secondly'])
   // Extract cluster names from the ApplicationSet clusters
   const clusterNames =
     appSetClusters?.map((cluster: AppSetCluster) => {
       return cluster.name
     }) || []
+  toolbarControl.setAllClusters?.(clusterNames)
 
   // Create the main ApplicationSet node
   const appId = `application--${name}`

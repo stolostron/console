@@ -51,7 +51,7 @@ export async function getOCPFluxAppTopology(
   const resources: ResourceItem[] = processSearchResults(searchResults)
 
   // Generate the topology graph from processed resources
-  return generateTopology(application, resources, searchResults, hubClusterName)
+  return generateTopology(toolbarControl, application, resources, searchResults, hubClusterName)
 }
 
 /**
@@ -123,6 +123,7 @@ export const getQueryStringForLabel = (label: string, namespace: string, cluster
  * @returns Complete topology with nodes, links, and raw data
  */
 export function generateTopology(
+  toolbarControl: ToolbarControl,
   application: OCPFluxApplicationModel,
   resources: ResourceItem[],
   searchResults: OCPFluxSearchResult,
@@ -138,6 +139,7 @@ export function generateTopology(
   // Extract cluster information from application configuration
   if (application.app.cluster) {
     clusterNames.push(application.app.cluster.name)
+    toolbarControl.setAllClusters?.(clusterNames)
     clusters.push({
       metadata: {
         name: application.app.cluster.name,
