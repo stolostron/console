@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import i18next from 'i18next'
 import { I18nextProvider } from 'react-i18next'
-import { RBACProjectsTable, ProjectTableData } from './RBACProjectsTable'
+import { ProjectsTable, ProjectTableData } from './ProjectsTable'
 import type { RoleAssignmentHookType } from '../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHook'
 import { PluginContext, defaultPlugin } from '../lib/PluginContext'
 import { PluginDataContext, defaultContext as pluginDataDefaultContext } from '../lib/PluginDataContext'
@@ -50,14 +50,14 @@ i18n.init({
   resources: { en: { translation: {} } },
 })
 
-function renderProjectsTable(props: React.ComponentProps<typeof RBACProjectsTable>) {
+function renderProjectsTable(props: React.ComponentProps<typeof ProjectsTable>) {
   return render(
     <MemoryRouter>
       <I18nextProvider i18n={i18n}>
         <PluginContext.Provider value={defaultPlugin}>
           <PluginDataContext.Provider value={{ ...pluginDataDefaultContext, loadStarted: true, loadCompleted: true }}>
             <AcmTableStateProvider localStorageKey="test-table">
-              <RBACProjectsTable {...props} />
+              <ProjectsTable {...props} />
             </AcmTableStateProvider>
           </PluginDataContext.Provider>
         </PluginContext.Provider>
@@ -66,7 +66,7 @@ function renderProjectsTable(props: React.ComponentProps<typeof RBACProjectsTabl
   )
 }
 
-describe('RBACProjectsTable', () => {
+describe('ProjectsTable', () => {
   it('renders provided projects', async () => {
     renderProjectsTable({
       selectedClusters: ['local-cluster'],
@@ -119,3 +119,4 @@ describe('RBACProjectsTable', () => {
     expect(await screen.findByText('shared')).toBeInTheDocument()
   })
 })
+

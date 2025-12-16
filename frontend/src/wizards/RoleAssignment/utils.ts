@@ -1,9 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Cluster } from '../../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHook'
 
-export const isClusterInClusters = (clusters: string[], cluster: Cluster) =>
-  clusters.some((selectedCluster) => {
-    const selectedStr = selectedCluster?.toString().trim()
-    const clusterStr = cluster.name?.toString().trim()
-    return selectedStr === clusterStr
-  })
+export const isClusterInClusters = (clusters: Cluster[], cluster: Cluster) =>
+  clusters.some((selectedCluster) => selectedCluster.name?.toString().trim() === cluster.name?.toString().trim())

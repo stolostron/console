@@ -1,9 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { ButtonVariant, Label, LabelGroup } from '@patternfly/react-core'
+import { Label, LabelGroup } from '@patternfly/react-core'
 import { useCallback, useMemo, useState } from 'react'
 import { generatePath, Link } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../lib/acm-i18next'
 import { NavigationPath } from '../NavigationPath'
+import { Cluster } from '../resources/utils'
 import { useRoleAssignmentData } from '../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHook'
 import { AcmTable, AcmTableStateProvider, IAcmTableColumn } from '../ui-components'
 import { IAcmTableButtonAction, ITableFilter } from '../ui-components/AcmTable/AcmTableTypes'
@@ -19,25 +20,26 @@ export interface ProjectTableData {
 }
 
 interface ProjectsTableProps {
-  selectedClusters: string[]
+  selectedClusters: Cluster[]
   projects?: ProjectTableData[]
   onSelectionChange?: (selectedProjects: ProjectTableData[]) => void
   onCreateClick?: () => void
   areLinksDisplayed?: boolean
   useRoleAssignmentDataHook?: typeof useRoleAssignmentData
+  tableActionButtons?: IAcmTableButtonAction[]
 }
 
-export const RBACProjectsTable = ({
+export const ProjectsTable = ({
   selectedClusters,
   projects,
   onSelectionChange,
   onCreateClick,
   areLinksDisplayed = true,
   useRoleAssignmentDataHook = useRoleAssignmentData,
+  tableActionButtons,
 }: ProjectsTableProps) => {
   const { t } = useTranslation()
   const [selectedProjects, setSelectedProjects] = useState<ProjectTableData[]>([])
-  const hasSelectedProjects = selectedProjects.length > 0
 
   const { roleAssignmentData, isLoading: isRoleAssignmentDataLoading } = useRoleAssignmentDataHook()
 
@@ -70,26 +72,9 @@ export const RBACProjectsTable = ({
     return commonNamespaces.map((ns) => ({
       name: ns,
       type: 'Namespace',
-      clusters: selectedClusters,
+      clusters: selectedClusters.map((cluster) => cluster.name),
     }))
   }, [projects, selectedClusters, clusters])
-
-  const tableActionButtons = useMemo<IAcmTableButtonAction[]>(
-    () =>
-      !onCreateClick || isRoleAssignmentDataLoading
-        ? []
-        : [
-            {
-              id: 'create-project',
-              title: t('Create common project'),
-              click: onCreateClick,
-              variant: ButtonVariant.primary,
-              isDisabled: hasSelectedProjects,
-              tooltip: hasSelectedProjects ? t('Deselect projects to create a new common project') : undefined,
-            },
-          ],
-    [t, onCreateClick, hasSelectedProjects, isRoleAssignmentDataLoading]
-  )
 
   const filters = useMemo<ITableFilter<ProjectTableData>[]>(() => {
     const allFilters: ITableFilter<ProjectTableData>[] = [
@@ -180,12 +165,12 @@ export const RBACProjectsTable = ({
   )
 
   return (
-    <AcmTableStateProvider localStorageKey="rbac-projects-table">
+    <AcmTableStateProvider localStorageKey="projects-table">
       <AcmTable<ProjectTableData>
         items={isRoleAssignmentDataLoading ? undefined : projectsData}
         columns={columns}
         keyFn={(project) => `${project.name}-${project.clusters.join(',')}`}
-        tableActionButtons={tableActionButtons.length ? tableActionButtons : undefined}
+        tableActionButtons={tableActionButtons?.length ? tableActionButtons : undefined}
         onSelect={handleSelect}
         filters={filters}
         searchPlaceholder={t('Search projects')}
