@@ -16,7 +16,7 @@ export const ProjectsList = ({ selectedClusters }: ProjectsListProps) => {
   const [isCreateCommonProject, setIsCreateCommonProject] = useState(false)
   const [selectedProjects, setSelectedProjects] = useState<ProjectTableData[]>([])
 
-  const hasSelectedProjects = selectedProjects.length > 0
+  const hasSelectedProjects = useMemo(() => selectedProjects.length > 0, [selectedProjects.length])
 
   const handleCreateClick = () => {
     setIsCreateCommonProject(true)

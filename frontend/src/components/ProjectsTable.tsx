@@ -114,6 +114,50 @@ export const ProjectsTable = ({
     return allFilters
   }, [t, projectsData])
 
+  const renderTypeCell = useCallback((project: ProjectTableData) => {
+    return (
+      <Label isCompact color="blue">
+        {project.type}
+      </Label>
+    )
+  }, [])
+
+  const renderClusterLabel = useCallback(
+    (cluster: string) => {
+      const content = areLinksDisplayed ? (
+        <Link
+          to={generatePath(NavigationPath.clusterOverview, {
+            namespace: cluster,
+            name: cluster,
+          })}
+          style={{ textDecoration: 'none' }}
+        >
+          {cluster}
+        </Link>
+      ) : (
+        cluster
+      )
+
+      return (
+        <Label key={cluster} isCompact color="grey">
+          {content}
+        </Label>
+      )
+    },
+    [areLinksDisplayed]
+  )
+
+  const renderClustersCell = useCallback(
+    (project: ProjectTableData) => {
+      return (
+        <LabelGroup numLabels={2} isCompact>
+          {project.clusters.map(renderClusterLabel)}
+        </LabelGroup>
+      )
+    },
+    [renderClusterLabel]
+  )
+
   const columns: IAcmTableColumn<ProjectTableData>[] = [
     {
       header: t('Name'),
@@ -125,35 +169,11 @@ export const ProjectsTable = ({
       header: t('Type'),
       sort: 'type',
       search: 'type',
-      cell: (project) => (
-        <Label isCompact color="blue">
-          {project.type}
-        </Label>
-      ),
+      cell: renderTypeCell,
     },
     {
       header: t('Clusters'),
-      cell: (project) => (
-        <LabelGroup numLabels={2} isCompact>
-          {project.clusters.map((cluster) => (
-            <Label key={cluster} isCompact color="grey">
-              {areLinksDisplayed ? (
-                <Link
-                  to={generatePath(NavigationPath.clusterOverview, {
-                    namespace: cluster,
-                    name: cluster,
-                  })}
-                  style={{ textDecoration: 'none' }}
-                >
-                  {cluster}
-                </Link>
-              ) : (
-                cluster
-              )}
-            </Label>
-          ))}
-        </LabelGroup>
-      ),
+      cell: renderClustersCell,
     },
   ]
 

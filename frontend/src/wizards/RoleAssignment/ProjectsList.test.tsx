@@ -32,12 +32,17 @@ jest.mock('./CommonProjectCreate', () => ({
 
 describe('ProjectsList', () => {
   it('returns to table view when cancel is clicked', async () => {
+    // Arrange
     render(<ProjectsList selectedClusters={[]} />)
+
+    // Act
     await userEvent.click(screen.getByText('Create common project'))
     await waitFor(() => {
       expect(screen.getByTestId('common-project-create')).toBeInTheDocument()
     })
     await userEvent.click(screen.getByText('Cancel'))
+
+    // Assert
     await waitFor(() => {
       expect(screen.queryByTestId('common-project-create')).not.toBeInTheDocument()
     })
@@ -45,10 +50,15 @@ describe('ProjectsList', () => {
   })
 
   it('returns to table view when project creation succeeds', async () => {
+    // Arrange
     render(<ProjectsList selectedClusters={[]} />)
+
+    // Act
     await userEvent.click(screen.getByText('Create common project'))
     expect(await screen.findByTestId('common-project-create')).toBeInTheDocument()
     await userEvent.click(screen.getByText('Submit'))
+
+    // Assert
     await waitFor(() => {
       expect(screen.queryByTestId('common-project-create')).not.toBeInTheDocument()
     })
@@ -56,10 +66,14 @@ describe('ProjectsList', () => {
   })
 
   it('handles project selection changes', async () => {
+    // Arrange
     render(<ProjectsList selectedClusters={[]} />)
-    expect(screen.getByTestId('projects-table')).toBeInTheDocument()
+
+    // Act
     const selectButton = screen.getByText('Select Project')
     await userEvent.click(selectButton)
+
+    // Assert
     expect(screen.getByTestId('projects-table')).toBeInTheDocument()
   })
 })

@@ -19,16 +19,17 @@ const baseRoleAssignmentData: RoleAssignmentHookType = {
   allClusterNames: [],
 }
 
-function createMockUseRoleAssignmentDataHook(data?: Partial<RoleAssignmentHookType>) {
-  return () => ({
-    roleAssignmentData: { ...baseRoleAssignmentData, ...data },
-    isLoading: false,
-    isUsersLoading: false,
-    isGroupsLoading: false,
-    isRolesLoading: false,
-    isClusterSetLoading: false,
-  })
-}
+const mockRoleAssignmentData = (data?: Partial<RoleAssignmentHookType>) => ({
+  roleAssignmentData: { ...baseRoleAssignmentData, ...data },
+  isLoading: false,
+  isUsersLoading: false,
+  isGroupsLoading: false,
+  isRolesLoading: false,
+  isClusterSetLoading: false,
+})
+
+const createMockUseRoleAssignmentDataHook = (data?: Partial<RoleAssignmentHookType>) =>
+  jest.fn(() => mockRoleAssignmentData(data))
 
 const sampleProjects: ProjectTableData[] = [
   {
@@ -50,7 +51,8 @@ i18n.init({
   resources: { en: { translation: {} } },
 })
 
-const renderProjectsTable = (props: React.ComponentProps<typeof ProjectsTable>)  => render(
+const renderProjectsTable = (props: React.ComponentProps<typeof ProjectsTable>) =>
+  render(
     <MemoryRouter>
       <I18nextProvider i18n={i18n}>
         <PluginContext.Provider value={defaultPlugin}>
@@ -66,17 +68,20 @@ const renderProjectsTable = (props: React.ComponentProps<typeof ProjectsTable>) 
 
 describe('ProjectsTable', () => {
   it('renders provided projects', async () => {
+    // Arrange
     renderProjectsTable({
       selectedClusters: [{ name: 'local-cluster' }],
       projects: sampleProjects,
       useRoleAssignmentDataHook: createMockUseRoleAssignmentDataHook(),
     })
 
+    // Assert
     expect(await screen.findByText('alpha')).toBeInTheDocument()
     expect(screen.getByText('beta')).toBeInTheDocument()
   })
 
   it('fires selection callback when a row is selected', async () => {
+    // Arrange
     const onSelectionChange = jest.fn()
     renderProjectsTable({
       selectedClusters: [{ name: 'local-cluster' }],
@@ -85,9 +90,11 @@ describe('ProjectsTable', () => {
       useRoleAssignmentDataHook: createMockUseRoleAssignmentDataHook(),
     })
 
+    // Act
     const checkboxes = await screen.findAllByRole('checkbox')
     await userEvent.click(checkboxes[1])
 
+    // Assert
     await waitFor(() => {
       expect(onSelectionChange).toHaveBeenCalled()
     })
@@ -97,6 +104,7 @@ describe('ProjectsTable', () => {
   })
 
   it('builds projects from common namespaces when no projects are provided', async () => {
+    // Arrange
     const mockHook = createMockUseRoleAssignmentDataHook({
       clusterSets: [
         {
@@ -114,6 +122,7 @@ describe('ProjectsTable', () => {
       useRoleAssignmentDataHook: mockHook,
     })
 
+    // Assert
     expect(await screen.findByText('shared')).toBeInTheDocument()
   })
 })
