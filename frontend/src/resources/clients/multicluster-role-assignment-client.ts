@@ -8,11 +8,13 @@ import {
   MulticlusterRoleAssignmentNamespace,
   RoleAssignment,
 } from '../multicluster-role-assignment'
+import { Placement } from '../placement'
 import { createResource, deleteResource, patchResource } from '../utils'
 import { getResource, IRequestResult, ResourceError, ResourceErrorCode } from '../utils/resource-request'
+import { createForClusterSets as createForClusterSetsBinding } from './managed-cluster-set-binding-client'
 import { FlattenedRoleAssignment } from './model/flattened-role-assignment'
 import { RoleAssignmentToSave } from './model/role-assignment-to-save'
-import { useGetClustersForPlacement } from './placement-client'
+import { createForClusters, createForClusterSets, useGetClustersForPlacement } from './placement-client'
 
 interface MulticlusterRoleAssignmentQuery {
   subjectNames?: string[]
@@ -78,7 +80,6 @@ export const useFindRoleAssignments = (query: MulticlusterRoleAssignmentQuery): 
   // TODO: replace by new aggregated API
   const { multiclusterRoleAssignmentState } = useSharedAtoms()
   const multiclusterRoleAssignments = useRecoilValue(multiclusterRoleAssignmentState)
-  console.log('KIKE multiclusterRoleAssignments', multiclusterRoleAssignments)
 
   return multiclusterRoleAssignments
     ? multiclusterRoleAssignments
@@ -145,60 +146,48 @@ export const findRoleAssignments = (
     []
   )
 
-// TODO
-const mapRoleAssignmentBeforeSaving = (roleAssignment: RoleAssignmentToSave | RoleAssignment): RoleAssignment => {
+const getRoleAssignmentName = (roleAssignment: RoleAssignmentToSave): string => {
   const sortedKeys = Object.keys(roleAssignment).sort((a, b) => a.localeCompare(b))
-
   const sortedObject: any = {}
   for (const key of sortedKeys) {
     const value = roleAssignment[key as keyof typeof roleAssignment]
 
-    if (key === 'clusterSelection' && value && typeof value === 'object' && 'clusterNames' in value) {
-      sortedObject[key] = {
-        ...value,
-        clusterNames: value.clusterNames
-          ? [...value.clusterNames].sort((a, b) => a.localeCompare(b)) // TODO
-          : value.clusterNames,
-      }
-    } else if (key === 'targetNamespaces' && Array.isArray(value)) {
+    if (key === 'clusterNames' || key === 'clusterSetNames') {
+      sortedObject[key] = value
+    } else if (
+      (key === 'targetNamespaces' || key === 'clusterNames' || key === 'clusterSetNames') &&
+      value &&
+      Array.isArray(value)
+    ) {
       sortedObject[key] = [...value].sort((a, b) => a.localeCompare(b))
     } else {
       sortedObject[key] = value
     }
   }
-
   const stringified = JSON.stringify(sortedObject)
 
   const hash = sha256(stringified)
 
   const shortHash = hash.substring(0, 16)
-  const newName = `${roleAssignment.clusterRole}-${shortHash}`
-  return { name: newName, ...roleAssignment }
+  return shortHash
 }
+
+const mapRoleAssignmentBeforeSaving = (roleAssignment: RoleAssignmentToSave, placement: Placement): RoleAssignment => ({
+  ...roleAssignment,
+  name: getRoleAssignmentName(roleAssignment),
+  clusterSelection: {
+    type: 'placements',
+    placements: [{ name: placement.metadata.name!, namespace: placement.metadata.namespace! }],
+  },
+})
 
 const validateRoleAssignmentName = (
   newRoleAssignment: RoleAssignmentToSave,
   existingRoleAssignments: RoleAssignment[]
 ): boolean => {
-  const newName = mapRoleAssignmentBeforeSaving(newRoleAssignment).name
+  const newName = getRoleAssignmentName(newRoleAssignment)
   const existingNames = existingRoleAssignments.map((ea) => ea.name)
   return !existingNames.includes(newName)
-}
-
-/**
- * it creates a new MulticlusterRoleAssignment on the CR
- * @param multiclusterRoleAssignment the element to be created
- * @returns the new MulticlusterRoleAssignment
- */
-const create = (multiclusterRoleAssignment: MulticlusterRoleAssignment): IRequestResult<MulticlusterRoleAssignment> => {
-  const treatedMulticlusterRoleAssignment = {
-    ...multiclusterRoleAssignment,
-    spec: {
-      ...multiclusterRoleAssignment.spec,
-      roleAssignments: multiclusterRoleAssignment.spec.roleAssignments.map(mapRoleAssignmentBeforeSaving),
-    },
-  }
-  return createResource<MulticlusterRoleAssignment>(treatedMulticlusterRoleAssignment)
 }
 
 /**
@@ -209,6 +198,16 @@ const create = (multiclusterRoleAssignment: MulticlusterRoleAssignment): IReques
  */
 const areRoleAssignmentsEquals = (a: RoleAssignment, b: RoleAssignment) => a.name === b.name
 
+async function createAdditionalRoleAssignmentResources(roleAssignment: RoleAssignmentToSave): Promise<Placement> {
+  await Promise.all(
+    roleAssignment.clusterSetNames?.map((clusterSetName) => createForClusterSetsBinding(clusterSetName).promise) || []
+  )
+
+  return roleAssignment.clusterNames
+    ? await createForClusters(roleAssignment.clusterNames).promise
+    : await createForClusterSets(roleAssignment.clusterSetNames!).promise
+}
+
 // TODO: get existingRelatedRoleAssignmets once useFindRoleAssignments is not a custom hook
 /**
  * adds a new roleAssignment either to an existing MulticlusterRoleAssignment or it creates a new one adding the new roleAssignment
@@ -216,10 +215,10 @@ const areRoleAssignmentsEquals = (a: RoleAssignment, b: RoleAssignment) => a.nam
  * @param subject
  * @returns the patched or new MulticlusterRoleAssignment
  */
-export const addRoleAssignment = (
+export const addRoleAssignment = async (
   roleAssignment: RoleAssignmentToSave,
   existingMulticlusterRoleAssignment?: MulticlusterRoleAssignment
-): IRequestResult<MulticlusterRoleAssignment> => {
+): Promise<IRequestResult<MulticlusterRoleAssignment>> => {
   const existingRoleAssignments = existingMulticlusterRoleAssignment?.spec.roleAssignments || []
   const isUnique = validateRoleAssignmentName(roleAssignment, existingRoleAssignments)
 
@@ -230,31 +229,39 @@ export const addRoleAssignment = (
     }
   }
 
-  const mappedRoleAssignment = mapRoleAssignmentBeforeSaving(roleAssignment)
+  if (roleAssignment.clusterNames?.length || roleAssignment.clusterSetNames?.length) {
+    const placement: Placement = await createAdditionalRoleAssignmentResources(roleAssignment)
 
-  if (existingMulticlusterRoleAssignment) {
-    return patchResource(existingMulticlusterRoleAssignment, {
-      spec: {
-        ...existingMulticlusterRoleAssignment.spec,
-        roleAssignments: [...existingMulticlusterRoleAssignment.spec.roleAssignments, mappedRoleAssignment],
-      },
-    })
-  } else {
-    const newMultiClusterRoleAssignment: MulticlusterRoleAssignment = {
-      apiVersion: MulticlusterRoleAssignmentApiVersion,
-      kind: MulticlusterRoleAssignmentKind,
-      metadata: {
-        name: `role-assignment-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
-        namespace: MulticlusterRoleAssignmentNamespace,
-        labels: { 'open-cluster-management.io/managed-by': 'console' },
-      },
-      spec: {
-        subject: roleAssignment.subject,
-        roleAssignments: [mappedRoleAssignment],
-      },
-      status: {},
+    const mappedRoleAssignment = mapRoleAssignmentBeforeSaving(roleAssignment, placement)
+    if (existingMulticlusterRoleAssignment) {
+      return patchResource(existingMulticlusterRoleAssignment, {
+        spec: {
+          ...existingMulticlusterRoleAssignment.spec,
+          roleAssignments: [...existingMulticlusterRoleAssignment.spec.roleAssignments, mappedRoleAssignment],
+        },
+      })
+    } else {
+      const newMultiClusterRoleAssignment: MulticlusterRoleAssignment = {
+        apiVersion: MulticlusterRoleAssignmentApiVersion,
+        kind: MulticlusterRoleAssignmentKind,
+        metadata: {
+          name: `role-assignment-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
+          namespace: MulticlusterRoleAssignmentNamespace,
+          labels: { 'open-cluster-management.io/managed-by': 'console' },
+        },
+        spec: {
+          subject: roleAssignment.subject,
+          roleAssignments: [mappedRoleAssignment],
+        },
+        status: {},
+      }
+      return createResource<MulticlusterRoleAssignment>(newMultiClusterRoleAssignment)
     }
-    return create(newMultiClusterRoleAssignment)
+  } else {
+    return {
+      promise: Promise.reject(new ResourceError(ResourceErrorCode.BadRequest, 'No cluster or cluster set selected.')),
+      abort: () => {},
+    }
   }
 }
 

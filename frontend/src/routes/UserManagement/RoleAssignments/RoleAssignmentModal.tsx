@@ -5,7 +5,6 @@ import { useTranslation } from '../../../lib/acm-i18next'
 import { UserKind } from '../../../resources'
 import { RoleAssignmentToSave } from '../../../resources/clients/model/role-assignment-to-save'
 import { addRoleAssignment, findRoleAssignments } from '../../../resources/clients/multicluster-role-assignment-client'
-import { Cluster } from '../../../resources/utils'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmModal, AcmToastContext } from '../../../ui-components'
 import { RoleAssignmentFormDataType } from './hook/RoleAssignmentFormDataHook'
@@ -41,7 +40,8 @@ const RoleAssignmentModal = ({ close, isOpen, isEditing, preselected }: RoleAssi
       for (const subjectName of subjectNames) {
         roleAssignmentsToSave.push({
           clusterRole: role,
-          clusters: data.scope.clusterNames?.map((name) => ({ name }) as Cluster) ?? [],
+          clusterNames: data.scope.clusterNames,
+          clusterSetNames: [], // TODO: on the new wizard
           targetNamespaces: data.scope.namespaces,
           subject: {
             name: subjectName,
@@ -63,7 +63,7 @@ const RoleAssignmentModal = ({ close, isOpen, isEditing, preselected }: RoleAssi
         const existingMultiClusterRoleAssignment = existingBySubjectRole.get(lookupKey)
 
         return addRoleAssignment(roleAssignment, existingMultiClusterRoleAssignment)
-          .promise.then(() =>
+          .then(() =>
             toastContext.addAlert({
               title: t('Role assignment added'),
               message: t('A role assignment for {{role}} role added.', {
