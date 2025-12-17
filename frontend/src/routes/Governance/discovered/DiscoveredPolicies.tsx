@@ -1,20 +1,22 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { EmptyState, PageSection, Spinner } from '@patternfly/react-core'
-import {
-  AcmEmptyState,
-  compareStrings,
-  ITableFilter,
-  IAcmTableColumn,
-  AcmAlert,
-  AcmTable,
-  AcmLabels,
-} from '../../../ui-components'
-import { DiscoveredPolicyTableItem, useFetchPolicies } from './useFetchPolicies'
-import { useTranslation } from '../../../lib/acm-i18next'
+import { isEqual } from 'lodash'
 import { ReactNode, useMemo } from 'react'
-import { Link, generatePath } from 'react-router-dom-v5-compat'
-import { getEngineString, getEngineWithSvg } from '../common/util'
+import { generatePath, Link } from 'react-router-dom-v5-compat'
+import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
+import { exportObjectString, filterLabelFn } from '../../../resources/utils'
+import {
+  AcmAlert,
+  AcmEmptyState,
+  AcmLabels,
+  AcmTable,
+  compareStrings,
+  IAcmTableColumn,
+  ITableFilter,
+} from '../../../ui-components'
+import { getEngineString, getEngineWithSvg } from '../common/util'
+import { ClusterPolicyViolationIcons2 } from '../components/ClusterPolicyViolations'
 import {
   discoveredSourceCell,
   getResponseActionFilter,
@@ -25,9 +27,7 @@ import {
   responseActionCell,
   severityCell,
 } from './details/common'
-import { ClusterPolicyViolationIcons2 } from '../components/ClusterPolicyViolations'
-import { exportObjectString, filterLabelFn } from '../../../resources/utils'
-import { isEqual } from 'lodash'
+import { DiscoveredPolicyTableItem, useFetchPolicies } from './useFetchPolicies'
 
 function nameCell(item: DiscoveredPolicyTableItem): ReactNode {
   const destination = NavigationPath.discoveredResources
@@ -273,6 +273,20 @@ export default function DiscoveredPolicies() {
     return (
       <PageSection hasBodyWrapper={false}>
         <EmptyState headingLevel="h4" icon={Spinner} titleText={t('Loading')}></EmptyState>
+      </PageSection>
+    )
+  }
+
+  if (!isFetching && err) {
+    return (
+      <PageSection hasBodyWrapper={false}>
+        <AcmAlert
+          isInline
+          data-testid={'delete-resource-error'}
+          noClose={true}
+          variant={'danger'}
+          title={<>{err.message}</>}
+        />
       </PageSection>
     )
   }

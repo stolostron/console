@@ -251,6 +251,7 @@ export default function CardViewToolbarSearch(props: {
           }}
           onFocus={() => setMenuIsOpen(true)}
           onKeyDown={handleTextInputKeyDown}
+          placeholder={t('Search')}
         >
           <AcmChipGroup aria-label={t('Attribute filters')}>
             {currentChips.map((currentChip) => (
