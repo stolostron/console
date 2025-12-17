@@ -57,9 +57,6 @@ export const useGetClustersForPlacement = (query: PlacementQuery) => {
     globalClusters.map((cluster) => cluster.name)
   )
 
-  console.log('KIKE useGetClustersForPlacement', query.placementNames, [
-    ...new Set([...clusterFromPlacements, ...clustersFromPlacementDecisions]),
-  ])
   return [...new Set([...clusterFromPlacements, ...clustersFromPlacementDecisions])]
 }
 
