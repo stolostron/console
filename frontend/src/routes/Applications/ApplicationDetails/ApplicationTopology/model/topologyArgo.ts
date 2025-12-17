@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { getClusterName, addClusters, processMultiples } from './topologyUtils'
+import { getClusterName, addClusters, processMultiples, getResourceTypes } from './topologyUtils'
 import {
   createReplicaChild,
   createControllerRevisionChild,
@@ -46,6 +46,7 @@ export function getArgoTopology(
 
   // Extract application name and namespace
   const { name, namespace } = application
+  toolbarControl.setAllApplications?.([name])
 
   const clusters: ArgoClusterInfo[] = []
   let clusterNames: string[] = []
@@ -134,6 +135,9 @@ export function getArgoTopology(
 
   // Get deployed resources from the Argo application status
   const resources = (application.app?.status?.resources ?? []) as ArgoApplicationResource[]
+
+  // set toolbar filter types
+  toolbarControl.setAllTypes?.(getResourceTypes(resources))
 
   // Process and create nodes for each deployed resource
   processMultiples(resources).forEach((deployable) => {

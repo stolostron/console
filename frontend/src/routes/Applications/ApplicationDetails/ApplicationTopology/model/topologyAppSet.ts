@@ -12,7 +12,7 @@ import {
   createDataVolumeChild,
   createVirtualMachineInstance,
 } from './topologySubscription'
-import { addClusters, getClusterName, processMultiples } from './topologyUtils'
+import { addClusters, getClusterName, getResourceTypes, processMultiples } from './topologyUtils'
 import {
   ApplicationModel,
   AppSetCluster,
@@ -47,26 +47,13 @@ export function getAppSetTopology(
   const links: TopologyLink[] = []
   const nodes: TopologyNode[] = []
   const { name, namespace, appSetClusters, appSetApps, relatedPlacement } = application
-  toolbarControl.setAllTypes?.(['Pod', 'ReplicaSet', 'Deployment', 'StatefulSet', 'DaemonSet', 'Job', 'CronJob'])
-  toolbarControl.setAllApplications?.([
-    'timmy',
-    'jerry',
-    'bugs',
-    'daffy',
-    'elmer',
-    'foghorn',
-    'roadrunner',
-    'tweety',
-    'wile e. coyote',
-    'yosemite sam',
-  ])
-  toolbarControl.setAllClusters?.(['weekly', 'monthly', 'yearly', 'daily', 'hourly', 'minutely', 'secondly'])
   // Extract cluster names from the ApplicationSet clusters
   const clusterNames =
     appSetClusters?.map((cluster: AppSetCluster) => {
       return cluster.name
     }) || []
   toolbarControl.setAllClusters?.(clusterNames)
+  toolbarControl.setAllApplications?.([name])
 
   // Create the main ApplicationSet node
   const appId = `application--${name}`
@@ -196,6 +183,9 @@ export function getAppSetTopology(
       })
     })
   }
+
+  // set toolbar filter types
+  toolbarControl.setAllTypes?.(getResourceTypes(resources))
 
   // Process and create nodes for deployed resources
   processMultiples(resources).forEach((deployable: Record<string, unknown>) => {

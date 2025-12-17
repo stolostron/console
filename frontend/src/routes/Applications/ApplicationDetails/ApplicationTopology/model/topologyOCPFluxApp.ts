@@ -4,7 +4,7 @@ import { searchClient } from '../../../../Search/search-sdk/search-client'
 import { SearchResultItemsAndRelatedItemsDocument } from '../../../../Search/search-sdk/search-sdk'
 import { convertStringToQuery } from '../helpers/search-helper'
 import { createReplicaChild } from './topologySubscription'
-import { addClusters, getClusterName, processMultiples } from './topologyUtils'
+import { addClusters, getClusterName, getResourceTypes, processMultiples } from './topologyUtils'
 import type {
   OCPFluxApplicationModel,
   OCPFluxSearchResult,
@@ -135,6 +135,7 @@ export function generateTopology(
   const { name, namespace } = application
   const clusters: ClusterInfo[] = []
   const clusterNames: string[] = []
+  toolbarControl.setAllApplications?.([name])
 
   // Extract cluster information from application configuration
   if (application.app.cluster) {
@@ -180,6 +181,9 @@ export function generateTopology(
     const kind: string = (obj.kind ?? '') as string
     return !excludedKindList.includes(kind)
   })
+
+  // set toolbar filter types
+  toolbarControl.setAllTypes?.(getResourceTypes(filteredResources))
 
   // Process resources with multiplicity handling and add to topology
   processMultiples(filteredResources).forEach((resource: Record<string, unknown>) => {

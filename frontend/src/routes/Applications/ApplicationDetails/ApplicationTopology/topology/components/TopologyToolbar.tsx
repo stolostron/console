@@ -236,7 +236,11 @@ const TopologyToolbar: FC<TopologyProps> = (topologyProps) => {
                     isExpanded={isClustersExpanded}
                     isDisabled={(toolbarControl.allClusters?.length ?? 0) <= 1}
                   >
-                    {toolbarControl.allClusters?.length === 1 ? toolbarControl.allClusters[0] : t('Clusters')}
+                    {toolbarControl.allClusters?.length === 0
+                      ? t('No clusters')
+                      : toolbarControl.allClusters?.length === 1
+                        ? toolbarControl.allClusters[0]
+                        : t('Clusters')}
                     {toolbarControl.allClusters?.length !== 1 && !!toolbarControl.activeClusters?.length && (
                       <Badge isRead>{toolbarControl.activeClusters?.length ?? 0}</Badge>
                     )}
@@ -316,7 +320,11 @@ const TopologyToolbar: FC<TopologyProps> = (topologyProps) => {
                     isExpanded={isTypesExpanded}
                     isDisabled={(toolbarControl.allTypes?.length ?? 0) <= 1}
                   >
-                    {t('Types')}
+                    {!toolbarControl.allTypes?.length
+                      ? t('No types')
+                      : toolbarControl.activeTypes?.length
+                        ? t('Types')
+                        : t('All types')}
                     {!!toolbarControl.activeTypes?.length && (
                       <Badge isRead>{toolbarControl.activeTypes?.length ?? 0}</Badge>
                     )}

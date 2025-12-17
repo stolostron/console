@@ -380,6 +380,11 @@ export default function ApplicationDetailsPage() {
     })
   )
   // refresh application the first time and then every n seconds
+  const toolbarActives = JSON.stringify({
+    activeTypes: toolbarControl.activeTypes,
+    activeClusters: toolbarControl.activeClusters,
+    activeApplications: toolbarControl.activeApplications,
+  })
   useEffect(() => {
     const interval = setInterval(
       (function refresh() {
@@ -473,6 +478,7 @@ export default function ApplicationDetailsPage() {
     backendUrl,
     clustersString,
     localHubName,
+    toolbarActives,
   ])
 
   const overviewPath = generatePath(NavigationPath.applicationOverview, { name, namespace })

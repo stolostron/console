@@ -185,6 +185,16 @@ export const getAppSetArgoCluster = (search: string, clusters: ManagedCluster[])
   return clusters.find((cluster) => cluster.name === search || (cluster as unknown as { url?: string }).url === search)
 }
 
+// Extract unique resource kinds from resources, sorted with Deployment/ReplicaSet/Pod at end
+export const getResourceTypes = (resources: Array<Record<string, unknown>>): string[] => {
+  const types = Array.from(new Set(resources.map((resource) => resource.kind as string))).sort()
+  if (types.includes('Deployment')) {
+    const priority = ['Deployment', 'ReplicaSet', 'Pod']
+    return [...priority, ...types.filter((t) => !priority.includes(t))]
+  }
+  return types
+}
+
 // Group large lists of resources by kind for presentation; multiply counts by deployed clusters
 export const processMultiples = (
   resources: Array<Record<string, unknown>>,
