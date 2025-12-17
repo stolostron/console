@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { Writable } from 'node:stream'
 import { request } from '../mock-request'
 import {
   getKubeResources,
@@ -6,6 +7,9 @@ import {
   getEventCache,
   getHubClusterName,
   getIsHubSelfManaged,
+  createSplitStream,
+  errorToString,
+  createWatchEventProcessor,
 } from '../../src/routes/events'
 import { IArgoApplication, IResource } from '../../src/resources/resource'
 import { ServerSideEvents } from '../../src/lib/server-side-events'
@@ -525,6 +529,446 @@ describe('events Route', () => {
 
       const clusters = await getKubeResources('ManagedCluster', 'cluster.open-cluster-management.io/v1')
       expect(clusters).toHaveLength(1)
+    })
+  })
+
+  describe('createSplitStream', () => {
+    it('should split data by newline characters', async () => {
+      const collected: string[] = []
+      const splitStream = createSplitStream()
+      const collectStream = new Writable({
+        objectMode: true,
+        write(chunk: string, _encoding, callback) {
+          collected.push(chunk)
+          callback()
+        },
+      })
+
+      splitStream.pipe(collectStream)
+      splitStream.write(Buffer.from('line1\nline2\nline3\n'))
+      splitStream.end()
+
+      await new Promise((resolve) => collectStream.on('finish', resolve))
+
+      expect(collected).toEqual(['line1', 'line2', 'line3'])
+    })
+
+    it('should buffer incomplete lines across chunks', async () => {
+      const collected: string[] = []
+      const splitStream = createSplitStream()
+      const collectStream = new Writable({
+        objectMode: true,
+        write(chunk: string, _encoding, callback) {
+          collected.push(chunk)
+          callback()
+        },
+      })
+
+      splitStream.pipe(collectStream)
+      splitStream.write(Buffer.from('partial'))
+      splitStream.write(Buffer.from('_line\ncomplete\n'))
+      splitStream.end()
+
+      await new Promise((resolve) => collectStream.on('finish', resolve))
+
+      expect(collected).toEqual(['partial_line', 'complete'])
+    })
+
+    it('should flush remaining buffered data on end', async () => {
+      const collected: string[] = []
+      const splitStream = createSplitStream()
+      const collectStream = new Writable({
+        objectMode: true,
+        write(chunk: string, _encoding, callback) {
+          collected.push(chunk)
+          callback()
+        },
+      })
+
+      splitStream.pipe(collectStream)
+      splitStream.write(Buffer.from('line1\nno_newline_at_end'))
+      splitStream.end()
+
+      await new Promise((resolve) => collectStream.on('finish', resolve))
+
+      expect(collected).toEqual(['line1', 'no_newline_at_end'])
+    })
+
+    it('should skip empty lines', async () => {
+      const collected: string[] = []
+      const splitStream = createSplitStream()
+      const collectStream = new Writable({
+        objectMode: true,
+        write(chunk: string, _encoding, callback) {
+          collected.push(chunk)
+          callback()
+        },
+      })
+
+      splitStream.pipe(collectStream)
+      splitStream.write(Buffer.from('line1\n\n\nline2\n'))
+      splitStream.end()
+
+      await new Promise((resolve) => collectStream.on('finish', resolve))
+
+      expect(collected).toEqual(['line1', 'line2'])
+    })
+
+    it('should skip lines with only whitespace', async () => {
+      const collected: string[] = []
+      const splitStream = createSplitStream()
+      const collectStream = new Writable({
+        objectMode: true,
+        write(chunk: string, _encoding, callback) {
+          collected.push(chunk)
+          callback()
+        },
+      })
+
+      splitStream.pipe(collectStream)
+      splitStream.write(Buffer.from('line1\n   \n\t\nline2\n'))
+      splitStream.end()
+
+      await new Promise((resolve) => collectStream.on('finish', resolve))
+
+      expect(collected).toEqual(['line1', 'line2'])
+    })
+
+    it('should handle empty input', async () => {
+      const collected: string[] = []
+      const splitStream = createSplitStream()
+      const collectStream = new Writable({
+        objectMode: true,
+        write(chunk: string, _encoding, callback) {
+          collected.push(chunk)
+          callback()
+        },
+      })
+
+      splitStream.pipe(collectStream)
+      splitStream.write(Buffer.from(''))
+      splitStream.end()
+
+      await new Promise((resolve) => collectStream.on('finish', resolve))
+
+      expect(collected).toEqual([])
+    })
+
+    it('should handle single line without newline', async () => {
+      const collected: string[] = []
+      const splitStream = createSplitStream()
+      const collectStream = new Writable({
+        objectMode: true,
+        write(chunk: string, _encoding, callback) {
+          collected.push(chunk)
+          callback()
+        },
+      })
+
+      splitStream.pipe(collectStream)
+      splitStream.write(Buffer.from('single_line'))
+      splitStream.end()
+
+      await new Promise((resolve) => collectStream.on('finish', resolve))
+
+      expect(collected).toEqual(['single_line'])
+    })
+
+    it('should handle multiple chunks forming one line', async () => {
+      const collected: string[] = []
+      const splitStream = createSplitStream()
+      const collectStream = new Writable({
+        objectMode: true,
+        write(chunk: string, _encoding, callback) {
+          collected.push(chunk)
+          callback()
+        },
+      })
+
+      splitStream.pipe(collectStream)
+      splitStream.write(Buffer.from('part1'))
+      splitStream.write(Buffer.from('part2'))
+      splitStream.write(Buffer.from('part3\n'))
+      splitStream.end()
+
+      await new Promise((resolve) => collectStream.on('finish', resolve))
+
+      expect(collected).toEqual(['part1part2part3'])
+    })
+  })
+
+  describe('errorToString', () => {
+    it('should convert Error instance to message string', () => {
+      const error = new Error('test error message')
+      expect(errorToString(error)).toBe('test error message')
+    })
+
+    it('should handle Error with empty message', () => {
+      const error = new Error('')
+      expect(errorToString(error)).toBe('')
+    })
+
+    it('should return string directly if input is string', () => {
+      expect(errorToString('simple string error')).toBe('simple string error')
+    })
+
+    it('should JSON stringify objects', () => {
+      const errorObj = { code: 500, message: 'Internal error' }
+      expect(errorToString(errorObj)).toBe('{"code":500,"message":"Internal error"}')
+    })
+  })
+
+  describe('createWatchEventProcessor', () => {
+    beforeEach(() => {
+      // Clear the cache before each test
+      const cache = getEventCache()
+      for (const key in cache) {
+        delete cache[key]
+      }
+    })
+
+    it('should process ADDED event and cache the resource', async () => {
+      const options = { kind: 'ConfigMap', apiVersion: 'v1' }
+      const resourceVersionRef = { value: '0' }
+      const processor = createWatchEventProcessor(options, 'http://test/url', resourceVersionRef)
+
+      const watchEvent = {
+        type: 'ADDED',
+        object: {
+          kind: 'ConfigMap',
+          apiVersion: 'v1',
+          metadata: {
+            name: 'test-config',
+            namespace: 'default',
+            uid: 'added-uid-123',
+            resourceVersion: '100',
+          },
+        },
+      }
+
+      processor.write(JSON.stringify(watchEvent))
+      processor.end()
+
+      await new Promise((resolve) => setTimeout(resolve, 50))
+
+      expect(resourceVersionRef.value).toBe('100')
+      const cache = getEventCache()
+      expect(cache['/v1/configmaps']?.['added-uid-123']).toBeDefined()
+    })
+
+    it('should process MODIFIED event and update the cache', async () => {
+      const options = { kind: 'Secret', apiVersion: 'v1' }
+      const resourceVersionRef = { value: '0' }
+
+      // First cache a resource
+      await cacheResource({
+        kind: 'Secret',
+        apiVersion: 'v1',
+        metadata: {
+          name: 'test-secret',
+          namespace: 'default',
+          uid: 'modified-uid-456',
+          resourceVersion: '50',
+        },
+      })
+
+      const processor = createWatchEventProcessor(options, 'http://test/url', resourceVersionRef)
+
+      const watchEvent = {
+        type: 'MODIFIED',
+        object: {
+          kind: 'Secret',
+          apiVersion: 'v1',
+          metadata: {
+            name: 'test-secret',
+            namespace: 'default',
+            uid: 'modified-uid-456',
+            resourceVersion: '200',
+          },
+        },
+      }
+
+      processor.write(JSON.stringify(watchEvent))
+      processor.end()
+
+      await new Promise((resolve) => setTimeout(resolve, 50))
+
+      expect(resourceVersionRef.value).toBe('200')
+    })
+
+    it('should process DELETED event and remove from cache', async () => {
+      const options = { kind: 'Pod', apiVersion: 'v1' }
+      const resourceVersionRef = { value: '0' }
+
+      // First cache a resource
+      await cacheResource({
+        kind: 'Pod',
+        apiVersion: 'v1',
+        metadata: {
+          name: 'test-pod',
+          namespace: 'default',
+          uid: 'deleted-uid-789',
+          resourceVersion: '100',
+        },
+      })
+
+      const cache = getEventCache()
+      expect(cache['/v1/pods']?.['deleted-uid-789']).toBeDefined()
+
+      const processor = createWatchEventProcessor(options, 'http://test/url', resourceVersionRef)
+
+      const watchEvent = {
+        type: 'DELETED',
+        object: {
+          kind: 'Pod',
+          apiVersion: 'v1',
+          metadata: {
+            name: 'test-pod',
+            namespace: 'default',
+            uid: 'deleted-uid-789',
+            resourceVersion: '300',
+          },
+        },
+      }
+
+      processor.write(JSON.stringify(watchEvent))
+      processor.end()
+
+      await new Promise((resolve) => setTimeout(resolve, 50))
+
+      expect(resourceVersionRef.value).toBe('300')
+      expect(cache['/v1/pods']?.['deleted-uid-789']).toBeUndefined()
+    })
+
+    it('should process BOOKMARK event and update resourceVersion', async () => {
+      const options = { kind: 'Namespace', apiVersion: 'v1' }
+      const resourceVersionRef = { value: '0' }
+      const processor = createWatchEventProcessor(options, 'http://test/url', resourceVersionRef)
+
+      const watchEvent = {
+        type: 'BOOKMARK',
+        object: {
+          kind: 'Namespace',
+          apiVersion: 'v1',
+          metadata: {
+            resourceVersion: '500',
+          },
+        },
+      }
+
+      processor.write(JSON.stringify(watchEvent))
+      processor.end()
+
+      await new Promise((resolve) => setTimeout(resolve, 50))
+
+      expect(resourceVersionRef.value).toBe('500')
+    })
+
+    it('should handle ERROR event with too old resource version', async () => {
+      const options = { kind: 'Service', apiVersion: 'v1' }
+      const resourceVersionRef = { value: '100' }
+      const processor = createWatchEventProcessor(options, 'http://test/url', resourceVersionRef)
+
+      const watchEvent = {
+        type: 'ERROR',
+        object: {
+          kind: 'Status',
+          apiVersion: 'v1',
+          metadata: {},
+          message: 'too old resource version: 100 (12345)',
+          reason: 'Expired',
+        },
+      }
+
+      processor.write(JSON.stringify(watchEvent))
+      processor.end()
+
+      await new Promise((resolve) => setTimeout(resolve, 50))
+
+      // Should not throw, just log warning
+      expect(resourceVersionRef.value).toBe('100') // Should remain unchanged for ERROR
+    })
+
+    it('should handle ERROR event with other error messages', async () => {
+      const options = { kind: 'Deployment', apiVersion: 'apps/v1' }
+      const resourceVersionRef = { value: '100' }
+      const processor = createWatchEventProcessor(options, 'http://test/url', resourceVersionRef)
+
+      const watchEvent = {
+        type: 'ERROR',
+        object: {
+          kind: 'Status',
+          apiVersion: 'v1',
+          metadata: {},
+          message: 'some other error',
+          reason: 'InternalError',
+        },
+      }
+
+      processor.write(JSON.stringify(watchEvent))
+      processor.end()
+
+      await new Promise((resolve) => setTimeout(resolve, 50))
+
+      // Should not throw, just log warning
+      expect(resourceVersionRef.value).toBe('100')
+    })
+
+    it('should handle invalid JSON and throw error', async () => {
+      const options = { kind: 'ConfigMap', apiVersion: 'v1' }
+      const resourceVersionRef = { value: '0' }
+      const processor = createWatchEventProcessor(options, 'http://test/url', resourceVersionRef)
+
+      let caughtError: Error | null = null
+      processor.on('error', (err) => {
+        caughtError = err
+      })
+
+      processor.write('not valid json')
+      processor.end()
+
+      await new Promise((resolve) => setTimeout(resolve, 50))
+
+      expect(caughtError).not.toBeNull()
+      expect(caughtError).toBeInstanceOf(SyntaxError)
+    })
+
+    it('should work with pipeline and splitStream', async () => {
+      const options = { kind: 'ConfigMap', apiVersion: 'v1' }
+      const resourceVersionRef = { value: '0' }
+
+      const splitStream = createSplitStream()
+      const processor = createWatchEventProcessor(options, 'http://test/url', resourceVersionRef)
+
+      const event1 = JSON.stringify({
+        type: 'ADDED',
+        object: {
+          kind: 'ConfigMap',
+          apiVersion: 'v1',
+          metadata: { name: 'cm1', namespace: 'ns1', uid: 'uid-1', resourceVersion: '1' },
+        },
+      })
+
+      const event2 = JSON.stringify({
+        type: 'ADDED',
+        object: {
+          kind: 'ConfigMap',
+          apiVersion: 'v1',
+          metadata: { name: 'cm2', namespace: 'ns2', uid: 'uid-2', resourceVersion: '2' },
+        },
+      })
+
+      splitStream.pipe(processor)
+
+      splitStream.write(Buffer.from(event1 + '\n' + event2 + '\n'))
+      splitStream.end()
+
+      await new Promise((resolve) => setTimeout(resolve, 100))
+
+      expect(resourceVersionRef.value).toBe('2')
+      const cache = getEventCache()
+      expect(cache['/v1/configmaps']?.['uid-1']).toBeDefined()
+      expect(cache['/v1/configmaps']?.['uid-2']).toBeDefined()
     })
   })
 })
