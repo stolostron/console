@@ -1,7 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useAllClusters } from '../../routes/Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
-import { Placement } from '../placement'
+import { Placement, PlacementApiVersionBeta, PlacementKind } from '../placement'
+import { createResource, IRequestResult } from '../utils'
 import { useGetClustersFromPlacementDecision } from './placement-decision-client'
 
 interface PlacementQuery {
@@ -60,4 +61,58 @@ export const useGetClustersForPlacement = (query: PlacementQuery) => {
     ...new Set([...clusterFromPlacements, ...clustersFromPlacementDecisions]),
   ])
   return [...new Set([...clusterFromPlacements, ...clustersFromPlacementDecisions])]
+}
+
+const create = (placement: Placement): IRequestResult<Placement> => createResource<Placement>(placement)
+
+export const createForClusterSets = (clusterSets: string[], namespace = 'open-cluster-management-global-set') => {
+  const placement: Placement = {
+    apiVersion: PlacementApiVersionBeta,
+    kind: PlacementKind,
+    metadata: { name: clusterSets.join('-and-'), namespace },
+    spec: {
+      clusterSets,
+      tolerations: [
+        {
+          key: 'cluster.open-cluster-management.io/unreachable',
+          operator: 'Equal',
+        },
+        {
+          key: 'cluster.open-cluster-management.io/unavailable',
+          operator: 'Equal',
+        },
+      ],
+    },
+  }
+  return create(placement)
+}
+
+export const createForClusters = (clusters: string[], namespace = 'open-cluster-management-global-set') => {
+  const placement: Placement = {
+    apiVersion: PlacementApiVersionBeta,
+    kind: PlacementKind,
+    metadata: { name: `clusters-${clusters.join('-and-')}`, namespace },
+    spec: {
+      predicates: [
+        {
+          requiredClusterSelector: {
+            labelSelector: {
+              matchExpressions: [{ key: 'name', operator: 'In', values: clusters }],
+            },
+          },
+        },
+      ],
+      tolerations: [
+        {
+          key: 'cluster.open-cluster-management.io/unreachable',
+          operator: 'Equal',
+        },
+        {
+          key: 'cluster.open-cluster-management.io/unavailable',
+          operator: 'Equal',
+        },
+      ],
+    },
+  }
+  return create(placement)
 }

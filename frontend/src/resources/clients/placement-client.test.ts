@@ -2,9 +2,15 @@
 import { renderHook } from '@testing-library/react-hooks'
 import { useAllClusters } from '../../routes/Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
-import { Placement } from '../placement'
+import { Placement, PlacementApiVersionBeta, PlacementKind } from '../placement'
 import { PlacementDecision } from '../placement-decision'
-import { useFindPlacements, useGetClustersForPlacement } from './placement-client'
+import { createResource } from '../utils'
+import {
+  createForClusters,
+  createForClusterSets,
+  useFindPlacements,
+  useGetClustersForPlacement,
+} from './placement-client'
 
 jest.mock('../../shared-recoil', () => ({
   useRecoilValue: jest.fn(),
@@ -14,6 +20,12 @@ jest.mock('../../shared-recoil', () => ({
 jest.mock('../../routes/Infrastructure/Clusters/ManagedClusters/components/useAllClusters', () => ({
   useAllClusters: jest.fn(),
 }))
+
+jest.mock('../utils', () => ({
+  createResource: jest.fn(),
+}))
+
+const createResourceMock = createResource as jest.MockedFunction<typeof createResource>
 
 const useSharedAtomsMock = useSharedAtoms as jest.Mock
 const useRecoilValueMock = useRecoilValue as jest.Mock
@@ -386,6 +398,358 @@ describe('placement-client', () => {
       expect(result.current).toContain('cluster-d')
       expect(result.current).toContain('cluster-e')
       expect(result.current).toContain('cluster-f')
+    })
+  })
+
+  describe('createForClusterSets', () => {
+    beforeEach(() => {
+      jest.clearAllMocks()
+    })
+
+    it('should create a Placement with the provided cluster sets', () => {
+      // Arrange
+      const clusterSets = ['cluster-set-1', 'cluster-set-2']
+      const mockResult = {
+        promise: Promise.resolve({} as Placement),
+        abort: jest.fn(),
+      }
+      createResourceMock.mockReturnValue(mockResult)
+
+      // Act
+      createForClusterSets(clusterSets)
+
+      // Assert
+      expect(createResourceMock).toHaveBeenCalledTimes(1)
+      expect(createResourceMock).toHaveBeenCalledWith({
+        apiVersion: PlacementApiVersionBeta,
+        kind: PlacementKind,
+        metadata: {
+          name: 'cluster-set-1-and-cluster-set-2',
+          namespace: 'open-cluster-management-global-set',
+        },
+        spec: {
+          clusterSets,
+          tolerations: [
+            {
+              key: 'cluster.open-cluster-management.io/unreachable',
+              operator: 'Equal',
+            },
+            {
+              key: 'cluster.open-cluster-management.io/unavailable',
+              operator: 'Equal',
+            },
+          ],
+        },
+      })
+    })
+
+    it('should use default namespace when not provided', () => {
+      // Arrange
+      const clusterSets = ['test-set']
+      const mockResult = {
+        promise: Promise.resolve({} as Placement),
+        abort: jest.fn(),
+      }
+      createResourceMock.mockReturnValue(mockResult)
+
+      // Act
+      createForClusterSets(clusterSets)
+
+      // Assert
+      expect(createResourceMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          metadata: expect.objectContaining({
+            namespace: 'open-cluster-management-global-set',
+          }),
+        })
+      )
+    })
+
+    it('should use custom namespace when provided', () => {
+      // Arrange
+      const clusterSets = ['custom-set']
+      const namespace = 'custom-namespace'
+      const mockResult = {
+        promise: Promise.resolve({} as Placement),
+        abort: jest.fn(),
+      }
+      createResourceMock.mockReturnValue(mockResult)
+
+      // Act
+      createForClusterSets(clusterSets, namespace)
+
+      // Assert
+      expect(createResourceMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          metadata: expect.objectContaining({
+            namespace,
+          }),
+        })
+      )
+    })
+
+    it('should join cluster set names with -and- for the placement name', () => {
+      // Arrange
+      const clusterSets = ['set-a', 'set-b', 'set-c']
+      const mockResult = {
+        promise: Promise.resolve({} as Placement),
+        abort: jest.fn(),
+      }
+      createResourceMock.mockReturnValue(mockResult)
+
+      // Act
+      createForClusterSets(clusterSets)
+
+      // Assert
+      expect(createResourceMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          metadata: expect.objectContaining({
+            name: 'set-a-and-set-b-and-set-c',
+          }),
+        })
+      )
+    })
+
+    it('should return the IRequestResult from createResource', () => {
+      // Arrange
+      const clusterSets = ['result-test']
+      const expectedResult = {
+        promise: Promise.resolve({} as Placement),
+        abort: jest.fn(),
+      }
+      createResourceMock.mockReturnValue(expectedResult)
+
+      // Act
+      const result = createForClusterSets(clusterSets)
+
+      // Assert
+      expect(result).toBe(expectedResult)
+    })
+
+    it('should include tolerations for unreachable and unavailable clusters', () => {
+      // Arrange
+      const clusterSets = ['toleration-test']
+      const mockResult = {
+        promise: Promise.resolve({} as Placement),
+        abort: jest.fn(),
+      }
+      createResourceMock.mockReturnValue(mockResult)
+
+      // Act
+      createForClusterSets(clusterSets)
+
+      // Assert
+      expect(createResourceMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          spec: expect.objectContaining({
+            tolerations: [
+              {
+                key: 'cluster.open-cluster-management.io/unreachable',
+                operator: 'Equal',
+              },
+              {
+                key: 'cluster.open-cluster-management.io/unavailable',
+                operator: 'Equal',
+              },
+            ],
+          }),
+        })
+      )
+    })
+  })
+
+  describe('createForClusters', () => {
+    beforeEach(() => {
+      jest.clearAllMocks()
+    })
+
+    it('should create a Placement with predicates for the provided clusters', () => {
+      // Arrange
+      const clusters = ['cluster-1', 'cluster-2']
+      const mockResult = {
+        promise: Promise.resolve({} as Placement),
+        abort: jest.fn(),
+      }
+      createResourceMock.mockReturnValue(mockResult)
+
+      // Act
+      createForClusters(clusters)
+
+      // Assert
+      expect(createResourceMock).toHaveBeenCalledTimes(1)
+      expect(createResourceMock).toHaveBeenCalledWith({
+        apiVersion: PlacementApiVersionBeta,
+        kind: PlacementKind,
+        metadata: {
+          name: 'clusters-cluster-1-and-cluster-2',
+          namespace: 'open-cluster-management-global-set',
+        },
+        spec: {
+          predicates: [
+            {
+              requiredClusterSelector: {
+                labelSelector: {
+                  matchExpressions: [{ key: 'name', operator: 'In', values: clusters }],
+                },
+              },
+            },
+          ],
+          tolerations: [
+            {
+              key: 'cluster.open-cluster-management.io/unreachable',
+              operator: 'Equal',
+            },
+            {
+              key: 'cluster.open-cluster-management.io/unavailable',
+              operator: 'Equal',
+            },
+          ],
+        },
+      })
+    })
+
+    it('should use default namespace when not provided', () => {
+      // Arrange
+      const clusters = ['test-cluster']
+      const mockResult = {
+        promise: Promise.resolve({} as Placement),
+        abort: jest.fn(),
+      }
+      createResourceMock.mockReturnValue(mockResult)
+
+      // Act
+      createForClusters(clusters)
+
+      // Assert
+      expect(createResourceMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          metadata: expect.objectContaining({
+            namespace: 'open-cluster-management-global-set',
+          }),
+        })
+      )
+    })
+
+    it('should use custom namespace when provided', () => {
+      // Arrange
+      const clusters = ['custom-cluster']
+      const namespace = 'custom-namespace'
+      const mockResult = {
+        promise: Promise.resolve({} as Placement),
+        abort: jest.fn(),
+      }
+      createResourceMock.mockReturnValue(mockResult)
+
+      // Act
+      createForClusters(clusters, namespace)
+
+      // Assert
+      expect(createResourceMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          metadata: expect.objectContaining({
+            namespace,
+          }),
+        })
+      )
+    })
+
+    it('should prefix placement name with clusters- and join with -and-', () => {
+      // Arrange
+      const clusters = ['alpha', 'beta', 'gamma']
+      const mockResult = {
+        promise: Promise.resolve({} as Placement),
+        abort: jest.fn(),
+      }
+      createResourceMock.mockReturnValue(mockResult)
+
+      // Act
+      createForClusters(clusters)
+
+      // Assert
+      expect(createResourceMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          metadata: expect.objectContaining({
+            name: 'clusters-alpha-and-beta-and-gamma',
+          }),
+        })
+      )
+    })
+
+    it('should return the IRequestResult from createResource', () => {
+      // Arrange
+      const clusters = ['result-test']
+      const expectedResult = {
+        promise: Promise.resolve({} as Placement),
+        abort: jest.fn(),
+      }
+      createResourceMock.mockReturnValue(expectedResult)
+
+      // Act
+      const result = createForClusters(clusters)
+
+      // Assert
+      expect(result).toBe(expectedResult)
+    })
+
+    it('should include tolerations for unreachable and unavailable clusters', () => {
+      // Arrange
+      const clusters = ['toleration-test']
+      const mockResult = {
+        promise: Promise.resolve({} as Placement),
+        abort: jest.fn(),
+      }
+      createResourceMock.mockReturnValue(mockResult)
+
+      // Act
+      createForClusters(clusters)
+
+      // Assert
+      expect(createResourceMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          spec: expect.objectContaining({
+            tolerations: [
+              {
+                key: 'cluster.open-cluster-management.io/unreachable',
+                operator: 'Equal',
+              },
+              {
+                key: 'cluster.open-cluster-management.io/unavailable',
+                operator: 'Equal',
+              },
+            ],
+          }),
+        })
+      )
+    })
+
+    it('should create predicates with matchExpressions using In operator', () => {
+      // Arrange
+      const clusters = ['cluster-x']
+      const mockResult = {
+        promise: Promise.resolve({} as Placement),
+        abort: jest.fn(),
+      }
+      createResourceMock.mockReturnValue(mockResult)
+
+      // Act
+      createForClusters(clusters)
+
+      // Assert
+      expect(createResourceMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          spec: expect.objectContaining({
+            predicates: [
+              {
+                requiredClusterSelector: {
+                  labelSelector: {
+                    matchExpressions: [{ key: 'name', operator: 'In', values: clusters }],
+                  },
+                },
+              },
+            ],
+          }),
+        })
+      )
     })
   })
 })
