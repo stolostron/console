@@ -3,9 +3,10 @@ import { Subject } from './kubernetes-client'
 import { Metadata } from './metadata'
 import { IResource, IResourceDefinition } from './resource'
 import { UserKind } from './rbac'
+import { Cluster } from './utils'
 
-export const MulticlusterRoleAssignmentApiVersion = 'rbac.open-cluster-management.io/v1alpha1'
-export type MulticlusterRoleAssignmentApiVersionType = 'rbac.open-cluster-management.io/v1alpha1'
+export const MulticlusterRoleAssignmentApiVersion = 'rbac.open-cluster-management.io/v1beta1'
+export type MulticlusterRoleAssignmentApiVersionType = 'rbac.open-cluster-management.io/v1beta1'
 
 export const MulticlusterRoleAssignmentKind = 'MulticlusterRoleAssignment'
 export type MulticlusterRoleAssignmentKindType = 'MulticlusterRoleAssignment'
@@ -17,14 +18,23 @@ export const MulticlusterRoleAssignmentDefinition: IResourceDefinition = {
   kind: MulticlusterRoleAssignmentKind,
 }
 
+export interface PlacementRef {
+  name: string
+  namespace: string
+}
+
+export interface ClusterSelection {
+  type: 'placements'
+  placements: PlacementRef[]
+}
+
 export interface RoleAssignment {
   name: string
   clusterRole: string
   targetNamespaces?: string[]
-  clusterSelection: {
-    type: 'clusterNames'
-    clusterNames: string[]
-  }
+  clusterSelection: ClusterSelection
+  // to be filled by the client
+  clusters?: Cluster[]
 }
 
 export interface RoleAssignmentStatus {
