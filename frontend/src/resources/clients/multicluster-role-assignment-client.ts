@@ -8,10 +8,11 @@ import {
   MulticlusterRoleAssignmentNamespace,
   RoleAssignment,
 } from '../multicluster-role-assignment'
-import { Cluster, createResource, deleteResource, patchResource } from '../utils'
+import { createResource, deleteResource, patchResource } from '../utils'
 import { getResource, IRequestResult, ResourceError, ResourceErrorCode } from '../utils/resource-request'
 import { FlattenedRoleAssignment } from './model/flattened-role-assignment'
 import { RoleAssignmentToSave } from './model/role-assignment-to-save'
+import { useGetClustersForPlacement } from './placement-client'
 
 interface MulticlusterRoleAssignmentQuery {
   subjectNames?: string[]
@@ -22,7 +23,8 @@ interface MulticlusterRoleAssignmentQuery {
 
 const roleAssignmentToFlattenedRoleAssignment = (
   multiClusterRoleAssignment: MulticlusterRoleAssignment,
-  roleAssignment: RoleAssignment
+  roleAssignment: RoleAssignment,
+  clusterNames: string[]
 ): FlattenedRoleAssignment => ({
   ...roleAssignment,
   subject: {
@@ -31,8 +33,7 @@ const roleAssignmentToFlattenedRoleAssignment = (
   },
   relatedMulticlusterRoleAssignment: multiClusterRoleAssignment,
   status: multiClusterRoleAssignment?.status?.roleAssignments?.find((e) => e.name === roleAssignment.name),
-  // TODO
-  clusters: [],
+  clusterNames,
 })
 
 const isSubjectMatch = (
@@ -58,7 +59,7 @@ const isClusterOrRoleMatch = (
   switch (true) {
     // Filter by cluster names
     case query.clusterNames?.length &&
-      !roleAssignment.clusters.some((cluster: Cluster) => query.clusterNames!.includes(cluster.name)):
+      !roleAssignment.clusterNames.some((clusterName) => query.clusterNames!.includes(clusterName)):
       return false
     // Filter by roles
     case query.roles?.length && !query.roles.includes(roleAssignment.clusterRole):
@@ -77,6 +78,7 @@ export const useFindRoleAssignments = (query: MulticlusterRoleAssignmentQuery): 
   // TODO: replace by new aggregated API
   const { multiclusterRoleAssignmentState } = useSharedAtoms()
   const multiclusterRoleAssignments = useRecoilValue(multiclusterRoleAssignmentState)
+  console.log('KIKE multiclusterRoleAssignments', multiclusterRoleAssignments)
 
   return multiclusterRoleAssignments
     ? multiclusterRoleAssignments
@@ -89,7 +91,16 @@ export const useFindRoleAssignments = (query: MulticlusterRoleAssignmentQuery): 
               ? [
                   ...multiClusterRoleAssignmentAcc,
                   ...multiClusterRoleAssignmentCurr.spec.roleAssignments
-                    .map((e) => roleAssignmentToFlattenedRoleAssignment(multiClusterRoleAssignmentCurr, e))
+                    .map((roleAssignment) => {
+                      const clusters = useGetClustersForPlacement({
+                        placementNames: roleAssignment.clusterSelection.placements.map((e) => e.name),
+                      })
+                      return roleAssignmentToFlattenedRoleAssignment(
+                        multiClusterRoleAssignmentCurr,
+                        roleAssignment,
+                        clusters
+                      )
+                    })
                     .reduce(
                       (assignmentAcc: FlattenedRoleAssignment[], assignmentCurr: FlattenedRoleAssignment) =>
                         isClusterOrRoleMatch(assignmentCurr, query)
@@ -118,7 +129,12 @@ export const findRoleAssignments = (
         ? [
             ...multiClusterRoleAssignmentAcc,
             ...multiClusterRoleAssignmentCurr.spec.roleAssignments
-              .map((e) => roleAssignmentToFlattenedRoleAssignment(multiClusterRoleAssignmentCurr, e))
+              .map((roleAssignment) => {
+                const clusters = useGetClustersForPlacement({
+                  placementNames: roleAssignment.clusterSelection.placements.map((e) => e.name),
+                })
+                return roleAssignmentToFlattenedRoleAssignment(multiClusterRoleAssignmentCurr, roleAssignment, clusters)
+              })
               .reduce(
                 (assignmentAcc: FlattenedRoleAssignment[], assignmentCurr: FlattenedRoleAssignment) =>
                   isClusterOrRoleMatch(assignmentCurr, query) ? [...assignmentAcc, assignmentCurr] : assignmentAcc,
