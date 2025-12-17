@@ -47,7 +47,7 @@ export function SummaryStatusCard(props: { key: string; title: string; data: Dat
               {data?.loading ? (
                 <Skeleton style={{ marginBottom: '10px', height: '30px' }} />
               ) : data.mainSection.link ? (
-                <Link style={{ fontSize: 24 }} to={data.mainSection.link}>
+                <Link style={{ fontSize: 24, marginBottom: '.5rem' }} to={data.mainSection.link}>
                   {data.mainSection.title}
                 </Link>
               ) : (
