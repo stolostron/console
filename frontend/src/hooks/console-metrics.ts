@@ -13,8 +13,18 @@ export enum Pages {
   governance = 'governance',
 }
 
+export function isTelemetryEnabled(): boolean {
+  return !(
+    window.SERVER_FLAGS?.telemetry?.DISABLED === 'true' ||
+    window.SERVER_FLAGS?.telemetry?.DEVSANDBOX_DISABLED === 'true' ||
+    window.SERVER_FLAGS?.telemetry?.TELEMETER_CLIENT_DISABLED === 'true'
+  )
+}
+
 export function usePageVisitMetricHandler(page: Pages) {
   useEffect(() => {
-    postRequest(getBackendUrl() + `/metrics?${page}`, {})
+    if (isTelemetryEnabled()) {
+      postRequest(getBackendUrl() + `/metrics?${page}`, {})
+    }
   }, [page])
 }
