@@ -2,7 +2,8 @@
 
 import { searchClient } from '../../../../Search/search-sdk/search-client'
 import { SearchResultItemsAndRelatedItemsDocument } from '../../../../Search/search-sdk/search-sdk'
-import { getArgoSecret, getQueryStringForResource } from './resourceStatusesArgo'
+import { getQueryStringForResource } from '../model/topologyUtils'
+import { getArgoSecret } from './resourceStatusesArgo'
 import {
   AppSetApplicationModel,
   AppSetApplicationData,

@@ -13,8 +13,7 @@ import {
 } from './topologyUtils'
 import type {
   OCPFluxApplicationModel,
-  OCPFluxSearchResult,
-  OCPFluxTopologyResult,
+  TopologySearchResult,
   ProcessedOCPFluxResource,
   ResourceItem,
   TopologyNode,
@@ -22,6 +21,7 @@ import type {
   SearchQuery,
   ClusterInfo,
   OCPFluxClusterSummary,
+  ExtendedTopology,
 } from '../types'
 import { ToolbarControl } from '../topology/components/TopologyToolbar'
 
@@ -46,9 +46,9 @@ export async function getOCPFluxAppTopology(
   toolbarControl: ToolbarControl,
   application: OCPFluxApplicationModel,
   hubClusterName: string
-): Promise<OCPFluxTopologyResult> {
+): Promise<ExtendedTopology> {
   // Initialize search results container
-  let searchResults: OCPFluxSearchResult = {}
+  let searchResults: TopologySearchResult = {}
 
   // Fetch resource data from search API based on application labels
   searchResults = await getResourcesWithAppLabel(application)
@@ -58,59 +58,6 @@ export async function getOCPFluxAppTopology(
 
   // Generate the topology graph from processed resources
   return generateTopology(toolbarControl, application, resources, searchResults, hubClusterName)
-}
-
-/**
- * Fetches resources from the search API based on application labels
- *
- * This function constructs appropriate label selectors for OCP and Flux applications
- * and queries the search API to find all related Kubernetes resources.
- *
- * @param application - The application model containing name, namespace, and type info
- * @returns Promise resolving to search results from GraphQL API
- */
-async function getResourcesWithAppLabel(application: OCPFluxApplicationModel): Promise<OCPFluxSearchResult> {
-  const { name, namespace, app } = application
-  const { cluster } = app
-
-  // Construct label selector based on application type
-  // OCP apps use standard Kubernetes labels, Flux apps use toolkit-specific labels
-  const label: string = application.isOCPApp
-    ? `label:app=${name},app.kubernetes.io/part-of=${name}`
-    : `label:kustomize.toolkit.fluxcd.io/name=${name},helm.toolkit.fluxcd.io/name=${name}`
-
-  // Build the complete search query with namespace and cluster filters
-  const query: SearchQuery = getQueryStringForLabel(label, namespace, cluster?.name || '')
-
-  // Execute GraphQL search query
-  return searchClient.query({
-    query: SearchResultItemsAndRelatedItemsDocument,
-    variables: {
-      input: [{ ...query }],
-      limit: 1000, // Set reasonable limit to avoid performance issues
-    },
-    fetchPolicy: 'network-only', // Always fetch fresh data for topology
-  })
-}
-
-/**
- * Constructs a search query string for label-based resource filtering
- *
- * This function combines label selectors with namespace and cluster filters
- * to create a comprehensive search query for finding application resources.
- *
- * @param label - Label selector string (e.g., "label:app=myapp")
- * @param namespace - Target namespace for resource filtering
- * @param cluster - Target cluster name for resource filtering
- * @returns Parsed search query object with filters and keywords
- */
-export const getQueryStringForLabel = (label: string, namespace: string, cluster: string): SearchQuery => {
-  // Construct namespace and cluster filter strings
-  const namespaceQuery: string = `namespace:${namespace}`
-  const clusterQuery: string = `cluster:${cluster}`
-
-  // Combine all filters and convert to structured query object
-  return convertStringToQuery(`${label} ${namespaceQuery} ${clusterQuery}`)
 }
 
 /**
@@ -132,9 +79,9 @@ export function generateTopology(
   toolbarControl: ToolbarControl,
   application: OCPFluxApplicationModel,
   resources: ResourceItem[],
-  searchResults: OCPFluxSearchResult,
+  searchResults: TopologySearchResult,
   hubClusterName: string
-): OCPFluxTopologyResult {
+): ExtendedTopology {
   // Initialize topology containers
   const links: TopologyLink[] = []
   const nodes: TopologyNode[] = []
@@ -296,6 +243,59 @@ const addOCPFluxResource = (
 }
 
 /**
+ * Fetches resources from the search API based on application labels
+ *
+ * This function constructs appropriate label selectors for OCP and Flux applications
+ * and queries the search API to find all related Kubernetes resources.
+ *
+ * @param application - The application model containing name, namespace, and type info
+ * @returns Promise resolving to search results from GraphQL API
+ */
+async function getResourcesWithAppLabel(application: OCPFluxApplicationModel): Promise<TopologySearchResult> {
+  const { name, namespace, app } = application
+  const { cluster } = app
+
+  // Construct label selector based on application type
+  // OCP apps use standard Kubernetes labels, Flux apps use toolkit-specific labels
+  const label: string = application.isOCPApp
+    ? `label:app=${name},app.kubernetes.io/part-of=${name}`
+    : `label:kustomize.toolkit.fluxcd.io/name=${name},helm.toolkit.fluxcd.io/name=${name}`
+
+  // Build the complete search query with namespace and cluster filters
+  const query: SearchQuery = getQueryStringForLabel(label, namespace, cluster?.name || '')
+
+  // Execute GraphQL search query
+  return searchClient.query({
+    query: SearchResultItemsAndRelatedItemsDocument,
+    variables: {
+      input: [{ ...query }],
+      limit: 1000, // Set reasonable limit to avoid performance issues
+    },
+    fetchPolicy: 'network-only', // Always fetch fresh data for topology
+  })
+}
+
+/**
+ * Constructs a search query string for label-based resource filtering
+ *
+ * This function combines label selectors with namespace and cluster filters
+ * to create a comprehensive search query for finding application resources.
+ *
+ * @param label - Label selector string (e.g., "label:app=myapp")
+ * @param namespace - Target namespace for resource filtering
+ * @param cluster - Target cluster name for resource filtering
+ * @returns Parsed search query object with filters and keywords
+ */
+export const getQueryStringForLabel = (label: string, namespace: string, cluster: string): SearchQuery => {
+  // Construct namespace and cluster filter strings
+  const namespaceQuery: string = `namespace:${namespace}`
+  const clusterQuery: string = `cluster:${cluster}`
+
+  // Combine all filters and convert to structured query object
+  return convertStringToQuery(`${label} ${namespaceQuery} ${clusterQuery}`)
+}
+
+/**
  * Processes raw search results to extract and combine resource items
  *
  * This function takes the GraphQL search response and flattens it into
@@ -305,7 +305,7 @@ const addOCPFluxResource = (
  * @param searchResults - Raw search results from GraphQL API
  * @returns Flattened array of all resource items
  */
-export function processSearchResults(searchResults: OCPFluxSearchResult): ResourceItem[] {
+export function processSearchResults(searchResults: TopologySearchResult): Array<Record<string, unknown>> {
   // Extract direct search result items with null safety
   const items: ResourceItem[] = searchResults?.data?.searchResult?.[0]?.items ?? []
 

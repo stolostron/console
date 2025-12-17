@@ -2,8 +2,47 @@
 /* eslint no-param-reassign: "error" */
 
 import { nodeMustHavePods } from '../helpers/diagram-helpers-utils'
-import type { ApplicationData, ManagedCluster, Topology, TopologyLink, TopologyNode } from '../types'
+import { convertStringToQuery } from '../helpers/search-helper'
+import type { ApplicationData, ManagedCluster, SearchQuery, Topology, TopologyLink, TopologyNode } from '../types'
 import { deepClone } from '../utils'
+
+/**
+ * Constructs a search query string for finding specific Kubernetes resources.
+ * This function builds search queries with appropriate filters for resource kind,
+ * name, namespace, and cluster to locate deployed resources.
+ *
+ * @param resourcename - The Kubernetes resource kind or array of kinds to search for
+ * @param name - Optional resource name to filter by
+ * @param namespace - Optional namespace to filter by (can be comma-separated list)
+ * @param cluster - Optional cluster name to filter by
+ * @returns Formatted search query object with appropriate filters
+ */
+export const getQueryStringForResource = (
+  resourcename: string | string[] | null,
+  name: string | null,
+  namespace: string | null,
+  cluster?: string
+): SearchQuery => {
+  let resource = ''
+  const nameForQuery = name ? `name:${name}` : ''
+  const namespaceForQuery = namespace ? ` namespace:${namespace}` : ''
+  const clusterForQuery = cluster ? ` cluster:${cluster}` : ''
+
+  if (resourcename) {
+    switch (resourcename) {
+      case 'Subscription':
+        resource = 'kind:subscription '
+        break
+      case 'Application':
+        resource = 'kind:application'
+        break
+      default:
+        resource = `kind:${resourcename} `
+    }
+  }
+
+  return convertStringToQuery(`${resource} ${nameForQuery} ${namespaceForQuery} ${clusterForQuery}`)
+}
 
 // Extract cluster name encoded in a node id; fall back to hub cluster if not encoded
 export const getClusterName = (nodeId: string | undefined, hubClusterName?: string): string => {

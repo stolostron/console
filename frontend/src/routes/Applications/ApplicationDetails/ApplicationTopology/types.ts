@@ -132,7 +132,7 @@ export interface ApplicationModel {
   isAppSetPullModel: boolean
   relatedPlacement?: Placement
   clusterList?: string[]
-  appSetApps?: ArgoApplication[]
+  appSetApps?: AppSetApplication[]
   appSetClusters?: AppSetCluster[]
 }
 
@@ -1654,7 +1654,7 @@ export interface OCPFluxApplicationModel extends ApplicationModel {
 /**
  * Search result structure from GraphQL search queries
  */
-export interface OCPFluxSearchResult {
+export interface TopologySearchResult {
   /** GraphQL query response data */
   data?: {
     /** Array of search results */
@@ -1707,7 +1707,7 @@ export interface OCPFluxClusterSummary {
  */
 export interface OCPFluxTopologyResult extends ExtendedTopology {
   /** Raw search data from GraphQL queries */
-  rawSearchData?: OCPFluxSearchResult
+  rawSearchData?: TopologySearchResult
 }
 
 /**

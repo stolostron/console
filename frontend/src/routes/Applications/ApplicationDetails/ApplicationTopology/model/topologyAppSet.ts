@@ -4,7 +4,7 @@
 import { getResource, listNamespacedResources } from '../../../../../resources/utils'
 import { fireManagedClusterView } from '../../../../../resources'
 import { searchClient } from '../../../../Search/search-sdk/search-client'
-import { SearchResultItemsAndRelatedItemsDocument } from '../../../../Search/search-sdk/search-sdk'
+import { SearchRelatedResult, SearchResultItemsAndRelatedItemsDocument } from '../../../../Search/search-sdk/search-sdk'
 import { convertStringToQuery } from '../helpers/search-helper'
 import {
   addClusters,
@@ -22,11 +22,12 @@ import {
   AppSetCluster,
   TopologyNode,
   TopologyLink,
-  AppSetTopologyResult,
   RouteObject,
   ManagedClusterViewData,
   ProcessedDeployableResource,
   SearchQuery,
+  ResourceItem,
+  ExtendedTopology,
 } from '../types'
 import { TFunction } from 'react-i18next'
 import { ToolbarControl } from '../topology/components/TopologyToolbar'
@@ -43,19 +44,16 @@ import { ToolbarControl } from '../topology/components/TopologyToolbar'
  * @param hubClusterName - Name of the hub cluster
  * @returns Topology structure with nodes and links
  */
-export function getAppSetTopology(
+export async function getAppSetTopology(
   toolbarControl: ToolbarControl,
   application: ApplicationModel,
   hubClusterName: string
-): AppSetTopologyResult {
+): Promise<ExtendedTopology> {
   const links: TopologyLink[] = []
   const nodes: TopologyNode[] = []
-  const { name, namespace, appSetClusters, appSetApps, relatedPlacement } = application
+  const { name, namespace, appSetClusters = [], appSetApps = [], relatedPlacement } = application
   // Extract cluster names from the ApplicationSet clusters
-  const clusterNames =
-    appSetClusters?.map((cluster: AppSetCluster) => {
-      return cluster.name
-    }) || []
+  const clusterNames = appSetClusters.map((cluster: AppSetCluster) => cluster.name)
   toolbarControl.setAllClusters?.(clusterNames)
   toolbarControl.setAllApplications?.([name])
   const { activeTypes } = toolbarControl
@@ -166,29 +164,36 @@ export function getAppSetTopology(
     links,
     nodes
   )
-  const resources: any[] = []
+  // const resources: any[] = []
 
-  // Collect resources from all ApplicationSet applications
-  if (appSetApps && appSetApps.length > 0) {
-    appSetApps.forEach((app: any) => {
-      const appResources = app.status?.resources ?? []
-      let appClusterName = app.spec?.destination?.name
+  // // Collect resources from all ApplicationSet applications
+  // if (appSetApps && appSetApps.length > 0) {
+  //   appSetApps.forEach((app: any) => {
+  //     const appResources = app.status?.resources ?? []
+  //     let appClusterName = app.spec?.destination?.name
 
-      // If cluster name not found, try to find it by server URL
-      if (!appClusterName) {
-        const appCluster = application.appSetClusters?.find(
-          (cls: AppSetCluster) => cls.url === app.spec?.destination?.server
-        )
-        appClusterName = appCluster ? appCluster.name : undefined
-      }
+  //     // If cluster name not found, try to find it by server URL
+  //     if (!appClusterName) {
+  //       const appCluster = application.appSetClusters?.find(
+  //         (cls: AppSetCluster) => cls.url === app.spec?.destination?.server
+  //       )
+  //       appClusterName = appCluster ? appCluster.name : undefined
+  //     }
 
-      // Add cluster information to each resource
-      appResources.forEach((resource: any) => {
-        resources.push({ ...resource, cluster: appClusterName })
-      })
-    })
-  }
+  //     // Add cluster information to each resource
+  //     appResources.forEach((resource: any) => {
+  //       resources.push({ ...resource, cluster: appClusterName })
+  //     })
+  //   })
+  // }
 
+  // Make sure appSetApps is defined before calling getAppSetResources
+  const { searchResults, relatedResourcesMap } = await getAppSetResources(
+    name,
+    namespace,
+    appSetClusters.map((cluster: AppSetCluster) => cluster.name)
+  )
+  const resources = Array.from(relatedResourcesMap.byName.values()).flat() as ResourceItem[]
   // set toolbar filter types
   toolbarControl.setAllTypes?.(getResourceTypes(resources))
 
@@ -265,10 +270,12 @@ export function getAppSetTopology(
     // Create virtual machine instance child nodes (for KubeVirt)
     createVirtualMachineInstance(deployableObj, clusterNames || [], activeTypes, links, nodes)
   })
-
-  // Return unique nodes and all links
-  const uniqueNodes = nodes.filter((node, index, self) => index === self.findIndex((n) => n.uid === node.uid))
-  return { nodes: uniqueNodes, links }
+  // Return complete topology with unique nodes and all links
+  return {
+    nodes: nodes.filter((node, index, array) => array.findIndex((n) => n.uid === node.uid) === index), // Remove duplicate nodes based on unique ID
+    links,
+    rawSearchData: searchResults, // Include raw data for debugging/details
+  }
 }
 
 /**
@@ -550,4 +557,86 @@ const openRouteURLWindow = (route: RouteObject): void => {
   const transport = route.spec?.tls ? 'https' : 'http'
   const routeURL = `${transport}://${hostName}`
   window.open(`${routeURL}`, '_blank')
+}
+
+async function getAppSetResources(name: string, namespace: string, appSetClusters: string[]) {
+  // first get all applications that belong to this appset
+  let query: SearchQuery = convertStringToQuery(
+    `applicationSet:${name} namespace:${namespace} cluster:${appSetClusters.join(',')} apigroup:argoproj.io`
+  )
+  const appsetSearchResult = await searchClient.query({
+    query: SearchResultItemsAndRelatedItemsDocument,
+    variables: {
+      input: [{ ...query }],
+      limit: 1000,
+    },
+    fetchPolicy: 'network-only',
+  })
+
+  // then get all resources that belong to these applications
+  const applications = appsetSearchResult.data?.searchResult?.[0]?.items
+  query = convertStringToQuery(
+    `name:${applications?.map((application: ResourceItem) => application.name).join(',')} namespace:${namespace} cluster:${appSetClusters.join(',')} apigroup:argoproj.io`
+  )
+  // Query all related kinds except: Application, ApplicationSet, Cluster, Subscription, Namespace
+  // Leave relatedKinds empty to get all related kinds, then filter out excluded ones from results
+  const applicationSearchResult = await searchClient.query({
+    query: SearchResultItemsAndRelatedItemsDocument,
+    variables: {
+      input: [{ ...query }],
+      limit: 1000,
+    },
+    fetchPolicy: 'network-only',
+  })
+
+  // Filter out excluded kinds from related results
+  const excludedKinds = ['application', 'applicationset', 'cluster', 'subscription', 'namespace', 'pod', 'replicaset']
+  const relatedResults = applicationSearchResult.data?.searchResult?.[0]?.related.filter(
+    (relatedResult: SearchRelatedResult | null) =>
+      relatedResult && !excludedKinds.includes(relatedResult.kind.toLowerCase())
+  )
+  return {
+    searchResults: applicationSearchResult,
+    applications,
+    relatedResourcesMap: createRelatedResourcesMap(relatedResults),
+  }
+}
+
+function createRelatedResourcesMap(relatedResults: SearchRelatedResult[]): {
+  byUid: Map<string, ResourceItem[]>
+  byName: Map<string, ResourceItem[]>
+} {
+  const byUid = new Map<string, ResourceItem[]>()
+  const byName = new Map<string, ResourceItem[]>()
+  relatedResults.forEach((relatedResult: SearchRelatedResult) => {
+    relatedResult.items?.forEach((item: ResourceItem) => {
+      let name = getAppNameFromLabel(item.label)
+      if (name) {
+        name = `${item.cluster}/${item.namespace}/${name}`
+        byName.set(name, [...(byName.get(name) || []), item])
+      }
+      if (item._relatedUids) {
+        item._relatedUids.forEach((uid: string) => {
+          const existingItems = byUid.get(uid)
+          if (existingItems) {
+            existingItems.push(item)
+          } else {
+            byUid.set(uid, [item])
+          }
+        })
+      }
+    })
+  })
+  return { byUid, byName }
+}
+
+export const appOwnerLabels: string[] = ['app.kubernetes.io/part-of=']
+
+export function getAppNameFromLabel(label: string, defaultName?: string) {
+  const matchingLabel = appOwnerLabels.find((labelPattern) => label?.includes(labelPattern))
+  if (!matchingLabel) return defaultName
+
+  const startIdx = label.indexOf(matchingLabel) + matchingLabel.length
+  const endIdx = label.indexOf(';', startIdx)
+  return label.substring(startIdx, endIdx > -1 ? endIdx : undefined)
 }
