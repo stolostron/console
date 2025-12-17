@@ -1,10 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import {
-  ManagedClusterSetBindingApiVersion,
-  ManagedClusterSetBindingKind,
-} from '../managed-cluster-set-binding'
+import { ManagedClusterSetBindingApiVersion, ManagedClusterSetBindingKind } from '../managed-cluster-set-binding'
 import { createResource } from '../utils'
-import { createForClusterSets } from './managed-cluster-set-binding'
+import { createForClusterSets } from './managed-cluster-set-binding-client'
 
 jest.mock('../utils', () => ({
   createResource: jest.fn(),
@@ -135,4 +132,3 @@ describe('managed-cluster-set-binding-client', () => {
     })
   })
 })
-
