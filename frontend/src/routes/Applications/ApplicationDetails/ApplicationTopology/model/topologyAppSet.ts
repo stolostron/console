@@ -7,12 +7,16 @@ import { searchClient } from '../../../../Search/search-sdk/search-client'
 import { SearchResultItemsAndRelatedItemsDocument } from '../../../../Search/search-sdk/search-sdk'
 import { convertStringToQuery } from '../helpers/search-helper'
 import {
+  addClusters,
+  getClusterName,
+  getResourceTypes,
+  processMultiples,
   createReplicaChild,
   createControllerRevisionChild,
   createDataVolumeChild,
   createVirtualMachineInstance,
-} from './topologySubscription'
-import { addClusters, getClusterName, getResourceTypes, processMultiples } from './topologyUtils'
+  addTopologyNode,
+} from './topologyUtils'
 import {
   ApplicationModel,
   AppSetCluster,
@@ -54,6 +58,7 @@ export function getAppSetTopology(
     }) || []
   toolbarControl.setAllClusters?.(clusterNames)
   toolbarControl.setAllApplications?.([name])
+  const { activeTypes } = toolbarControl
 
   // Create the main ApplicationSet node
   const appId = `application--${name}`
@@ -226,7 +231,7 @@ export function getAppSetTopology(
     }
 
     // Create deployable resource node
-    const deployableObj: TopologyNode = {
+    let deployableObj: TopologyNode = {
       name: deployableName,
       namespace: deployableNamespace,
       type,
@@ -245,27 +250,20 @@ export function getAppSetTopology(
     }
 
     // Add deployable node and link to cluster
-    nodes.push(deployableObj)
-    links.push({
-      from: { uid: clusterId },
-      to: { uid: memberId },
-      type: '',
-    })
-
-    // Create child nodes for specific resource types
-    const template = { metadata: {} }
+    deployableObj = addTopologyNode(clusterId, deployableObj, activeTypes, links, nodes)
 
     // Create replica child nodes (for Deployments, ReplicaSets, etc.)
-    createReplicaChild(deployableObj, clusterNames, template, links, nodes)
+    const template = { metadata: {} }
+    createReplicaChild(deployableObj, clusterNames || [], template, activeTypes, links, nodes)
 
     // Create controller revision child nodes (for DaemonSets, StatefulSets)
-    createControllerRevisionChild(deployableObj, clusterNames, links, nodes)
+    createControllerRevisionChild(deployableObj, clusterNames || [], activeTypes, links, nodes)
 
     // Create data volume child nodes (for KubeVirt)
-    createDataVolumeChild(deployableObj, clusterNames, links, nodes)
+    createDataVolumeChild(deployableObj, clusterNames || [], activeTypes, links, nodes)
 
     // Create virtual machine instance child nodes (for KubeVirt)
-    createVirtualMachineInstance(deployableObj, clusterNames, links, nodes)
+    createVirtualMachineInstance(deployableObj, clusterNames || [], activeTypes, links, nodes)
   })
 
   // Return unique nodes and all links

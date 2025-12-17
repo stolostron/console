@@ -3,8 +3,14 @@
 import { searchClient } from '../../../../Search/search-sdk/search-client'
 import { SearchResultItemsAndRelatedItemsDocument } from '../../../../Search/search-sdk/search-sdk'
 import { convertStringToQuery } from '../helpers/search-helper'
-import { createReplicaChild } from './topologySubscription'
-import { addClusters, getClusterName, getResourceTypes, processMultiples } from './topologyUtils'
+import {
+  addClusters,
+  getClusterName,
+  getResourceTypes,
+  processMultiples,
+  createReplicaChild,
+  addTopologyNode,
+} from './topologyUtils'
 import type {
   OCPFluxApplicationModel,
   OCPFluxSearchResult,
@@ -136,6 +142,7 @@ export function generateTopology(
   const clusters: ClusterInfo[] = []
   const clusterNames: string[] = []
   toolbarControl.setAllApplications?.([name])
+  const { activeTypes } = toolbarControl
 
   // Extract cluster information from application configuration
   if (application.app.cluster) {
@@ -189,7 +196,7 @@ export function generateTopology(
   processMultiples(filteredResources).forEach((resource: Record<string, unknown>) => {
     // Cast the processed resource to our expected type with proper type assertion
     const typedResource = resource as unknown as ProcessedOCPFluxResource
-    addOCPFluxResource(clusterId, clusterNames, typedResource, links, nodes, hubClusterName)
+    addOCPFluxResource(clusterId, clusterNames, typedResource, activeTypes, links, nodes, hubClusterName)
   })
 
   // Return complete topology with unique nodes and all links
@@ -216,8 +223,9 @@ export function generateTopology(
  */
 const addOCPFluxResource = (
   clusterId: string,
-  clusterNames: string[],
+  clusterNames: string[] | undefined,
   resource: ProcessedOCPFluxResource,
+  activeTypes: string[] | undefined,
   links: TopologyLink[],
   nodes: TopologyNode[],
   hubClusterName: string
@@ -260,7 +268,7 @@ const addOCPFluxResource = (
   }
 
   // Create the deployable resource node
-  const deployableObj: TopologyNode = {
+  let deployableObj: TopologyNode = {
     name: deployableName,
     namespace: deployableNamespace,
     type,
@@ -269,29 +277,22 @@ const addOCPFluxResource = (
     specs: {
       isDesign: false, // This is a runtime resource, not a design element
       raw,
-      clustersNames: clusterNames,
+      clustersNames: clusterNames || [],
       parent: {
         clusterId, // Reference to parent cluster for navigation
       },
       resources, // Individual resource instances
-      resourceCount: resourceCount ? resourceCount : clusterNames.length,
+      resourceCount: resourceCount ? resourceCount : clusterNames?.length || 0,
     },
   }
 
   // Add node to topology
-  nodes.push(deployableObj)
-
-  // Create link from cluster to resource
-  links.push({
-    from: { uid: clusterId },
-    to: { uid: memberId },
-    type: '', // Empty type for standard parent-child relationship
-  })
+  deployableObj = addTopologyNode(clusterId, deployableObj, activeTypes, links, nodes)
 
   // Create replica children for deployment-type resources
   // This handles ReplicaSets, ReplicationControllers, and their Pods
   const template: Record<string, unknown> = { metadata: {} }
-  createReplicaChild(deployableObj, clusterNames, template, links, nodes)
+  createReplicaChild(deployableObj, clusterNames || [], template, activeTypes, links, nodes)
 }
 
 /**
