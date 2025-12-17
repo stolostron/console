@@ -117,6 +117,16 @@ export function CreateArgoResources(props: ICreateArgoResourcesModalProps) {
       kind: PlacementKind,
       metadata: { name: `${name}-placement`, namespace: namespace },
       spec: {
+        tolerations: [
+          {
+            key: 'cluster.open-cluster-management.io/unreachable',
+            operator: 'Exists',
+          },
+          {
+            key: 'cluster.open-cluster-management.io/unavailable',
+            operator: 'Exists',
+          },
+        ],
         clusterSets: clusterSet,
       },
     }
