@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { ButtonVariant, PageSection } from '@patternfly/react-core'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { ProjectsTable, ProjectTableData } from '../../components/ProjectsTable'
 import { useTranslation } from '../../lib/acm-i18next'
 import type { Cluster } from '../../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHook'
@@ -47,11 +47,6 @@ export const ProjectsList = ({ selectedClusters }: ProjectsListProps) => {
     ],
     [t, hasSelectedProjects]
   )
-
-  useEffect(() => {
-    console.log('selectedProjects:', selectedProjects)
-  }, [selectedProjects])
-
   return (
     <PageSection>
       {isCreateCommonProject ? (
@@ -63,6 +58,7 @@ export const ProjectsList = ({ selectedClusters }: ProjectsListProps) => {
       ) : (
         <ProjectsTable
           selectedClusters={selectedClusters}
+          selectedProjects={selectedProjects}
           onCreateClick={handleCreateClick}
           onSelectionChange={handleSelectionChange}
           tableActionButtons={tableActionButtons}

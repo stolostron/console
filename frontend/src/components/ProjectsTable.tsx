@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Label, LabelGroup } from '@patternfly/react-core'
-import { useCallback, useMemo, useState, useEffect } from 'react'
+import { useCallback, useMemo } from 'react'
 import { generatePath, Link } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../lib/acm-i18next'
 import { NavigationPath } from '../NavigationPath'
@@ -22,6 +22,7 @@ export interface ProjectTableData {
 interface ProjectsTableProps {
   selectedClusters: Cluster[]
   projects?: ProjectTableData[]
+  selectedProjects?: ProjectTableData[]
   onSelectionChange?: (selectedProjects: ProjectTableData[]) => void
   onCreateClick?: () => void
   areLinksDisplayed?: boolean
@@ -32,6 +33,7 @@ interface ProjectsTableProps {
 export const ProjectsTable = ({
   selectedClusters,
   projects,
+  selectedProjects,
   onSelectionChange,
   onCreateClick,
   areLinksDisplayed = true,
@@ -39,7 +41,6 @@ export const ProjectsTable = ({
   tableActionButtons,
 }: ProjectsTableProps) => {
   const { t } = useTranslation()
-  const [selectedProjects, setSelectedProjects] = useState<ProjectTableData[]>([])
 
   const { roleAssignmentData, isLoading: isRoleAssignmentDataLoading } = useRoleAssignmentDataHook()
 
@@ -158,20 +159,18 @@ export const ProjectsTable = ({
 
   const handleSelect = useCallback(
     (projects: ProjectTableData[]) => {
-      setSelectedProjects(projects)
       onSelectionChange?.(projects)
     },
     [onSelectionChange]
   )
-  useEffect(() => {
-    console.log('selectedProjects changed:', selectedProjects)
-  }, [selectedProjects])
+
   return (
     <AcmTableStateProvider localStorageKey="projects-table">
       <AcmTable<ProjectTableData>
         items={isRoleAssignmentDataLoading ? undefined : projectsData}
         columns={columns}
         keyFn={(project) => `${project.name}-${project.clusters.join(',')}`}
+        initialSelectedItems={selectedProjects}
         tableActionButtons={tableActionButtons?.length ? tableActionButtons : undefined}
         onSelect={handleSelect}
         filters={filters}

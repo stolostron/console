@@ -50,8 +50,7 @@ i18n.init({
   resources: { en: { translation: {} } },
 })
 
-function renderProjectsTable(props: React.ComponentProps<typeof ProjectsTable>) {
-  return render(
+const renderProjectsTable = (props: React.ComponentProps<typeof ProjectsTable>)  => render(
     <MemoryRouter>
       <I18nextProvider i18n={i18n}>
         <PluginContext.Provider value={defaultPlugin}>
@@ -64,7 +63,6 @@ function renderProjectsTable(props: React.ComponentProps<typeof ProjectsTable>) 
       </I18nextProvider>
     </MemoryRouter>
   )
-}
 
 describe('ProjectsTable', () => {
   it('renders provided projects', async () => {
