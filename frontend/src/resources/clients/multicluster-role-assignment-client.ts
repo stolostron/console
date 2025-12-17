@@ -93,6 +93,7 @@ export const useFindRoleAssignments = (query: MulticlusterRoleAssignmentQuery): 
                   ...multiClusterRoleAssignmentAcc,
                   ...multiClusterRoleAssignmentCurr.spec.roleAssignments
                     .map((roleAssignment) => {
+                      // TODO
                       const clusters = useGetClustersForPlacement({
                         placementNames: roleAssignment.clusterSelection.placements.map((e) => e.name),
                       })
