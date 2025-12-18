@@ -560,12 +560,19 @@ exports[`NetworkForm it renders 1`] = `
                     >
                       <div
                         class="pf-v6-c-helper-text__item"
-                        data-testid="input-field-form-input-httpProxy-field-helper-text"
                         id="form-input-httpProxy-field-helper"
                       >
                         <span
                           class="pf-v6-c-helper-text__item-text"
-                        />
+                        >
+                          <div>
+                            ai:URL must start with 
+                            <strong>
+                              http
+                            </strong>
+                            .
+                          </div>
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -666,12 +673,19 @@ exports[`NetworkForm it renders 1`] = `
                     >
                       <div
                         class="pf-v6-c-helper-text__item"
-                        data-testid="input-field-form-input-httpsProxy-field-helper-text"
                         id="form-input-httpsProxy-field-helper"
                       >
                         <span
                           class="pf-v6-c-helper-text__item-text"
-                        />
+                        >
+                          <div>
+                            ai:URL must start with 
+                            <strong>
+                              http
+                            </strong>
+                             (https schemes are not currently supported).
+                          </div>
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -772,12 +786,23 @@ exports[`NetworkForm it renders 1`] = `
                     >
                       <div
                         class="pf-v6-c-helper-text__item"
-                        data-testid="input-field-form-input-noProxy-field-helper-text"
                         id="form-input-noProxy-field-helper"
                       >
                         <span
                           class="pf-v6-c-helper-text__item-text"
-                        />
+                        >
+                          <div>
+                            ai:Use a comma to separate each listed domain. Preface a domain with 
+                            <strong>
+                              .
+                            </strong>
+                             to include its subdomains. Use 
+                            <strong>
+                              *
+                            </strong>
+                             to bypass the proxy for all destinations.
+                          </div>
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -973,7 +998,7 @@ exports[`NetworkForm it renders 1`] = `
                     <span
                       class="pf-v6-c-helper-text__item-text"
                     >
-                      ai:Paste the content of a public ssh key you want to use to connect to the hosts into this field.
+                      ai:Paste the content of a public SSH key you want to use to connect to the hosts into this field.
                        
                       <a
                         class="pf-v6-c-content--a"
