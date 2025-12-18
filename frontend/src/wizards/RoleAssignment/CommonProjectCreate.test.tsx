@@ -64,7 +64,7 @@ describe('CommonProjectCreate', () => {
   it('renders the component with title', () => {
     render(
       <TestWrapper>
-        <CommonProjectCreate onCancelCallback={mockOnCancel} />
+        <CommonProjectCreate onCancelCallback={mockOnCancel} selectedClusters={[]} />
       </TestWrapper>
     )
 
@@ -75,7 +75,7 @@ describe('CommonProjectCreate', () => {
   it('calls onCancelCallback when cancel is clicked', async () => {
     render(
       <TestWrapper>
-        <CommonProjectCreate onCancelCallback={mockOnCancel} />
+        <CommonProjectCreate onCancelCallback={mockOnCancel} selectedClusters={[]} />
       </TestWrapper>
     )
 
@@ -88,7 +88,12 @@ describe('CommonProjectCreate', () => {
   it('creates project correctly with properties structure', async () => {
     render(
       <TestWrapper>
-        <CommonProjectCreate onCancelCallback={mockOnCancel} onSuccess={mockOnSuccess} onError={mockOnError} />
+        <CommonProjectCreate
+          onCancelCallback={mockOnCancel}
+          onSuccess={mockOnSuccess}
+          onError={mockOnError}
+          selectedClusters={[]}
+        />
       </TestWrapper>
     )
 
@@ -124,7 +129,7 @@ describe('CommonProjectCreate', () => {
   it('shows success toast with project name from response', async () => {
     render(
       <TestWrapper>
-        <CommonProjectCreate onCancelCallback={mockOnCancel} onSuccess={mockOnSuccess} />
+        <CommonProjectCreate onCancelCallback={mockOnCancel} onSuccess={mockOnSuccess} selectedClusters={[]} />
       </TestWrapper>
     )
 
@@ -144,7 +149,7 @@ describe('CommonProjectCreate', () => {
   it('calls createProject with correct properties structure', async () => {
     render(
       <TestWrapper>
-        <CommonProjectCreate onCancelCallback={mockOnCancel} onSuccess={mockOnSuccess} />
+        <CommonProjectCreate onCancelCallback={mockOnCancel} onSuccess={mockOnSuccess} selectedClusters={[]} />
       </TestWrapper>
     )
 
