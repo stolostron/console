@@ -23,10 +23,9 @@ export const useFindPlacementDecisions = (query: PlacementDecisionQuery): Placem
   return placementDecisions?.filter((placement) => isNameMatch(placement, query) || isPlacementMatch(placement, query))
 }
 
-export const useGetClustersFromPlacementDecision = (query: PlacementDecisionQuery) => [
-  ...new Set(
-    useFindPlacementDecisions(query)
-      .filter((placementDecision) => placementDecision.status)
-      .flatMap((placementDecision) => placementDecision.status!.decisions.map((decision) => decision.clusterName))
-  ),
+export const getClustersFromPlacementDecision = (placementDecision: PlacementDecision): string[] =>
+  placementDecision.status?.decisions?.map((decision) => decision.clusterName) || []
+
+export const useGetClustersFromPlacementDecision = (query: PlacementDecisionQuery): string[] => [
+  ...new Set(useFindPlacementDecisions(query).flatMap(getClustersFromPlacementDecision)),
 ]

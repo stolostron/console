@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { sha256 } from 'js-sha256'
+import { get } from 'lodash'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import {
   MulticlusterRoleAssignment,
@@ -14,7 +15,7 @@ import { getResource, IRequestResult, ResourceError, ResourceErrorCode } from '.
 import { createForClusterSets as createForClusterSetsBinding } from './managed-cluster-set-binding-client'
 import { FlattenedRoleAssignment } from './model/flattened-role-assignment'
 import { RoleAssignmentToSave } from './model/role-assignment-to-save'
-import { createForClusters, createForClusterSets, useGetClustersForPlacement } from './placement-client'
+import { createForClusters, createForClusterSets, useGetClustersForPlacementMap } from './placement-client'
 
 interface MulticlusterRoleAssignmentQuery {
   subjectNames?: string[]
@@ -71,6 +72,15 @@ const isClusterOrRoleMatch = (
   }
 }
 
+const useGetClusterFromPlacements = (multiclusterRoleAssignments: MulticlusterRoleAssignment[]) =>
+  useGetClustersForPlacementMap(
+    multiclusterRoleAssignments.flatMap((multiclusterRoleAssignment) =>
+      multiclusterRoleAssignment.spec.roleAssignments.flatMap((roleAssignment) =>
+        roleAssignment.clusterSelection.placements.map((e) => e.name)
+      )
+    )
+  )
+
 /**
  * Filters MulticlusterRoleAssignments by query parameters, returns only relevant nested RoleAssignments that match
  * @param query the query to filter multiclusterRoleAssignments
@@ -79,73 +89,69 @@ const isClusterOrRoleMatch = (
 export const useFindRoleAssignments = (query: MulticlusterRoleAssignmentQuery): FlattenedRoleAssignment[] => {
   // TODO: replace by new aggregated API
   const { multiclusterRoleAssignmentState } = useSharedAtoms()
-  const multiclusterRoleAssignments = useRecoilValue(multiclusterRoleAssignmentState)
+  const multiclusterRoleAssignments =
+    useRecoilValue(multiclusterRoleAssignmentState)?.filter((multiclusterRoleAssignment) =>
+      isSubjectMatch(multiclusterRoleAssignment, query)
+    ) || []
+  const clustersForPlacements = useGetClusterFromPlacements(multiclusterRoleAssignments)
 
   return multiclusterRoleAssignments
-    ? multiclusterRoleAssignments
-        .reduce(
-          (
-            multiClusterRoleAssignmentAcc: FlattenedRoleAssignment[],
-            multiClusterRoleAssignmentCurr: MulticlusterRoleAssignment
-          ) =>
-            isSubjectMatch(multiClusterRoleAssignmentCurr, query)
-              ? [
-                  ...multiClusterRoleAssignmentAcc,
-                  ...multiClusterRoleAssignmentCurr.spec.roleAssignments
-                    .map((roleAssignment) => {
-                      // TODO
-                      const clusters = useGetClustersForPlacement({
-                        placementNames: roleAssignment.clusterSelection.placements.map((e) => e.name),
-                      })
-                      return roleAssignmentToFlattenedRoleAssignment(
-                        multiClusterRoleAssignmentCurr,
-                        roleAssignment,
-                        clusters
-                      )
-                    })
-                    .reduce(
-                      (assignmentAcc: FlattenedRoleAssignment[], assignmentCurr: FlattenedRoleAssignment) =>
-                        isClusterOrRoleMatch(assignmentCurr, query)
-                          ? [...assignmentAcc, assignmentCurr]
-                          : assignmentAcc,
-                      []
-                    ),
-                ]
-              : multiClusterRoleAssignmentAcc,
-          []
-        )
-        .sort((a, b) => a.subject.name?.localeCompare(b.subject.name ?? '') ?? 0)
-    : []
+    .reduce(
+      (
+        multiClusterRoleAssignmentAcc: FlattenedRoleAssignment[],
+        multiClusterRoleAssignmentCurr: MulticlusterRoleAssignment
+      ) => [
+        ...multiClusterRoleAssignmentAcc,
+        ...multiClusterRoleAssignmentCurr.spec.roleAssignments
+          .map((roleAssignment) => {
+            const clusters: string[] = roleAssignment.clusterSelection.placements
+              .map((e) => e.name)
+              .flatMap((placementName: string) => get(clustersForPlacements, placementName))
+            return roleAssignmentToFlattenedRoleAssignment(multiClusterRoleAssignmentCurr, roleAssignment, clusters)
+          })
+          .reduce(
+            (assignmentAcc: FlattenedRoleAssignment[], assignmentCurr: FlattenedRoleAssignment) =>
+              isClusterOrRoleMatch(assignmentCurr, query) ? [...assignmentAcc, assignmentCurr] : assignmentAcc,
+            []
+          ),
+      ],
+      []
+    )
+    .sort((a, b) => a.subject.name?.localeCompare(b.subject.name ?? '') ?? 0)
 }
 
 export const findRoleAssignments = (
   query: MulticlusterRoleAssignmentQuery,
-  multiClusterRoleAssignments: MulticlusterRoleAssignment[]
-): FlattenedRoleAssignment[] =>
-  multiClusterRoleAssignments.reduce(
+  multiClusterRoleAssignments: MulticlusterRoleAssignment[],
+  clustersForPlacements: Record<string, string[]>
+): FlattenedRoleAssignment[] => {
+  const filteredMulticlusterRoleAssignments =
+    multiClusterRoleAssignments.filter((multiclusterRoleAssignment) =>
+      isSubjectMatch(multiclusterRoleAssignment, query)
+    ) || []
+
+  return filteredMulticlusterRoleAssignments.reduce(
     (
       multiClusterRoleAssignmentAcc: FlattenedRoleAssignment[],
       multiClusterRoleAssignmentCurr: MulticlusterRoleAssignment
-    ) =>
-      isSubjectMatch(multiClusterRoleAssignmentCurr, query)
-        ? [
-            ...multiClusterRoleAssignmentAcc,
-            ...multiClusterRoleAssignmentCurr.spec.roleAssignments
-              .map((roleAssignment) => {
-                const clusters = useGetClustersForPlacement({
-                  placementNames: roleAssignment.clusterSelection.placements.map((e) => e.name),
-                })
-                return roleAssignmentToFlattenedRoleAssignment(multiClusterRoleAssignmentCurr, roleAssignment, clusters)
-              })
-              .reduce(
-                (assignmentAcc: FlattenedRoleAssignment[], assignmentCurr: FlattenedRoleAssignment) =>
-                  isClusterOrRoleMatch(assignmentCurr, query) ? [...assignmentAcc, assignmentCurr] : assignmentAcc,
-                []
-              ),
-          ]
-        : multiClusterRoleAssignmentAcc,
+    ) => [
+      ...multiClusterRoleAssignmentAcc,
+      ...multiClusterRoleAssignmentCurr.spec.roleAssignments
+        .map((roleAssignment) => {
+          const clusters: string[] = roleAssignment.clusterSelection.placements
+            .map((e) => e.name)
+            .flatMap((placementName: string) => get(clustersForPlacements, placementName))
+          return roleAssignmentToFlattenedRoleAssignment(multiClusterRoleAssignmentCurr, roleAssignment, clusters)
+        })
+        .reduce(
+          (assignmentAcc: FlattenedRoleAssignment[], assignmentCurr: FlattenedRoleAssignment) =>
+            isClusterOrRoleMatch(assignmentCurr, query) ? [...assignmentAcc, assignmentCurr] : assignmentAcc,
+          []
+        ),
+    ],
     []
   )
+}
 
 const getRoleAssignmentName = (roleAssignment: RoleAssignmentToSave): string => {
   const sortedKeys = Object.keys(roleAssignment).sort((a, b) => a.localeCompare(b))

@@ -41,8 +41,12 @@ jest.mock('./RoleAssignmentForm', () => ({
 }))
 
 jest.mock('../../../shared-recoil', () => ({
-  useRecoilValue: jest.fn(),
-  useSharedAtoms: jest.fn(() => ({})),
+  useRecoilValue: jest.fn(() => []),
+  useSharedAtoms: jest.fn(() => ({ multiclusterRoleAssignmentState: {} })),
+}))
+
+jest.mock('../../../resources/clients/placement-client', () => ({
+  useGetClustersForPlacementMap: jest.fn(() => ({})),
 }))
 
 const mockAddRoleAssignment = addRoleAssignment as jest.MockedFunction<typeof addRoleAssignment>
@@ -57,7 +61,9 @@ const mockToastContext = {
 }
 
 const setupModalTest = (mockReturn: any, close: jest.Mock) => {
-  mockAddRoleAssignment.mockReturnValue(mockReturn)
+  // addRoleAssignment is async and returns Promise<IRequestResult>
+  // For .then() on the modal to work, we need to return a resolved promise
+  mockAddRoleAssignment.mockResolvedValue(mockReturn)
   render(
     <TestWrapper>
       <RoleAssignmentModal close={close} isOpen={true} />
@@ -90,13 +96,14 @@ describe('RoleAssignmentModal', () => {
   describe('Modal success and failure', () => {
     it('should display duplicate error message when duplicate role assignment is detected', async () => {
       const duplicateError = new Error('Duplicate role assignment detected for user test-user')
-      const submitButton = setupModalTest(
-        {
-          promise: Promise.reject(duplicateError),
-          abort: jest.fn(),
-        },
-        mockClose
+      // Use mockRejectedValue so the outer async function rejects
+      mockAddRoleAssignment.mockRejectedValue(duplicateError)
+      render(
+        <TestWrapper>
+          <RoleAssignmentModal close={mockClose} isOpen={true} />
+        </TestWrapper>
       )
+      const submitButton = screen.getByText('Submit Form')
 
       await clickSubmitAndWait(submitButton)
 
@@ -111,13 +118,14 @@ describe('RoleAssignmentModal', () => {
 
     it('should display generic error message for non-duplicate errors', async () => {
       const genericError = new Error('Network connection failed')
-      const submitButton = setupModalTest(
-        {
-          promise: Promise.reject(genericError),
-          abort: jest.fn(),
-        },
-        mockClose
+      // Use mockRejectedValue so the outer async function rejects
+      mockAddRoleAssignment.mockRejectedValue(genericError)
+      render(
+        <TestWrapper>
+          <RoleAssignmentModal close={mockClose} isOpen={true} />
+        </TestWrapper>
       )
+      const submitButton = screen.getByText('Submit Form')
 
       await clickSubmitAndWait(submitButton)
 
@@ -168,7 +176,7 @@ describe('RoleAssignmentModal', () => {
 
   describe('Multi-Subject Role Assignments', () => {
     it('should create separate role assignments for multiple users', async () => {
-      mockAddRoleAssignment.mockReturnValue({
+      mockAddRoleAssignment.mockResolvedValue({
         promise: Promise.resolve({}) as any,
         abort: jest.fn(),
       })
@@ -191,15 +199,16 @@ describe('RoleAssignmentModal', () => {
 
       await waitFor(() => {
         expect(mockAddRoleAssignment).toHaveBeenCalledTimes(2)
-        expect(mockAddRoleAssignment.mock.calls[0][1].name).toBe('user1')
-        expect(mockAddRoleAssignment.mock.calls[1][1].name).toBe('user2')
+        // roleAssignment is the first argument, subject is nested inside it
+        expect(mockAddRoleAssignment.mock.calls[0][0].subject.name).toBe('user1')
+        expect(mockAddRoleAssignment.mock.calls[1][0].subject.name).toBe('user2')
       })
     })
   })
 
   describe('Global Role Regression Tests', () => {
     it('REGRESSION: should preserve clusterNames regardless of scope.kind (bug was conditional discard)', async () => {
-      mockAddRoleAssignment.mockReturnValue({
+      mockAddRoleAssignment.mockResolvedValue({
         promise: Promise.resolve({} as any),
         abort: jest.fn(),
       })
@@ -245,7 +254,7 @@ describe('RoleAssignmentModal', () => {
         await waitFor(() => {
           expect(mockAddRoleAssignment).toHaveBeenCalled()
           const roleAssignment = mockAddRoleAssignment.mock.calls[0][0]
-          expect(roleAssignment.clusterSelection.clusterNames).toEqual(testCase.clusters)
+          expect(roleAssignment.clusterNames).toEqual(testCase.clusters)
         })
       }
     })
@@ -261,7 +270,7 @@ describe('RoleAssignmentModal', () => {
         },
       ] as any)
 
-      mockAddRoleAssignment.mockReturnValue({
+      mockAddRoleAssignment.mockResolvedValue({
         promise: Promise.resolve({}) as any,
         abort: jest.fn(),
       })
@@ -282,8 +291,10 @@ describe('RoleAssignmentModal', () => {
 
       await waitFor(() => {
         expect(mockAddRoleAssignment).toHaveBeenCalled()
-        expect(mockAddRoleAssignment.mock.calls[0][2]).toBe(existingAssignment)
-        expect(mockAddRoleAssignment.mock.calls[0][0].clusterSelection.clusterNames).toEqual([])
+        // existingMulticlusterRoleAssignment is the second argument (index 1)
+        expect(mockAddRoleAssignment.mock.calls[0][1]).toBe(existingAssignment)
+        // When scope.kind is 'all' but no clusterNames are provided, the value is undefined
+        expect(mockAddRoleAssignment.mock.calls[0][0].clusterNames).toBeUndefined()
       })
     })
 
@@ -299,7 +310,7 @@ describe('RoleAssignmentModal', () => {
         },
       ] as any)
 
-      mockAddRoleAssignment.mockReturnValue({
+      mockAddRoleAssignment.mockResolvedValue({
         promise: Promise.resolve({}) as any,
         abort: jest.fn(),
       })
@@ -321,18 +332,17 @@ describe('RoleAssignmentModal', () => {
       await waitFor(() => {
         expect(mockAddRoleAssignment).toHaveBeenCalledTimes(2)
         // 1st call: user1 should reuse existing assignment
+        // addRoleAssignment(roleAssignment, existingMulticlusterRoleAssignment)
         expect(mockAddRoleAssignment).toHaveBeenNthCalledWith(
           1,
-          expect.any(Object), // roleAssignment payload
-          expect.objectContaining({ name: 'user1' }),
+          expect.objectContaining({ subject: expect.objectContaining({ name: 'user1' }) }),
           existingAssignment
         )
 
         // 2nd call: user2 should create a new assignment (no existing)
         expect(mockAddRoleAssignment).toHaveBeenNthCalledWith(
           2,
-          expect.any(Object),
-          expect.objectContaining({ name: 'user2' }),
+          expect.objectContaining({ subject: expect.objectContaining({ name: 'user2' }) }),
           undefined
         )
       })
@@ -341,7 +351,7 @@ describe('RoleAssignmentModal', () => {
     it('should handle empty existingRoleAssignments', async () => {
       mockFindRoleAssignments.mockReturnValue([])
 
-      mockAddRoleAssignment.mockReturnValue({
+      mockAddRoleAssignment.mockResolvedValue({
         promise: Promise.resolve({}) as any,
         abort: jest.fn(),
       })
@@ -362,12 +372,13 @@ describe('RoleAssignmentModal', () => {
 
       await waitFor(() => {
         expect(mockAddRoleAssignment).toHaveBeenCalled()
-        expect(mockAddRoleAssignment.mock.calls[0][2]).toBeUndefined()
+        // existingMulticlusterRoleAssignment is at index 1, should be undefined for new assignments
+        expect(mockAddRoleAssignment.mock.calls[0][1]).toBeUndefined()
       })
     })
 
     it('should handle group subjects', async () => {
-      mockAddRoleAssignment.mockReturnValue({
+      mockAddRoleAssignment.mockResolvedValue({
         promise: Promise.resolve({}) as any,
         abort: jest.fn(),
       })
@@ -388,8 +399,9 @@ describe('RoleAssignmentModal', () => {
 
       await waitFor(() => {
         expect(mockAddRoleAssignment).toHaveBeenCalled()
-        expect(mockAddRoleAssignment.mock.calls[0][1].name).toBe('group1')
-        expect(mockAddRoleAssignment.mock.calls[0][1].kind).toBe('Group')
+        // subject is nested inside roleAssignment (index 0)
+        expect(mockAddRoleAssignment.mock.calls[0][0].subject.name).toBe('group1')
+        expect(mockAddRoleAssignment.mock.calls[0][0].subject.kind).toBe('Group')
       })
     })
   })

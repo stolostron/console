@@ -10,6 +10,7 @@ import { AcmModal, AcmToastContext } from '../../../ui-components'
 import { RoleAssignmentFormDataType } from './hook/RoleAssignmentFormDataHook'
 import { RoleAssignmentPreselected } from './model/role-assignment-preselected'
 import { RoleAssignmentForm } from './RoleAssignmentForm'
+import { useGetClustersForPlacementMap } from '../../../resources/clients/placement-client'
 
 type RoleAssignmentModalProps = {
   close: () => void
@@ -21,6 +22,11 @@ type RoleAssignmentModalProps = {
 const RoleAssignmentModal = ({ close, isOpen, isEditing, preselected }: RoleAssignmentModalProps) => {
   const { multiclusterRoleAssignmentState } = useSharedAtoms()
   const multiClusterRoleAssignments = useRecoilValue(multiclusterRoleAssignmentState)
+  const clustersForPlacements = useGetClustersForPlacementMap(
+    multiClusterRoleAssignments.flatMap((e) =>
+      e.spec.roleAssignments.flatMap((ea) => ea.clusterSelection.placements.map((p) => p.name))
+    )
+  )
   const toastContext = useContext(AcmToastContext)
   const { t } = useTranslation()
 
@@ -31,7 +37,8 @@ const RoleAssignmentModal = ({ close, isOpen, isEditing, preselected }: RoleAssi
         subjectKinds: [data.subject.kind],
         subjectNames: subjectNames.filter((e) => e !== undefined),
       },
-      multiClusterRoleAssignments
+      multiClusterRoleAssignments,
+      clustersForPlacements
     )
 
     const roleAssignmentsToSave: RoleAssignmentToSave[] = []

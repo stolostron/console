@@ -1,8 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { Placement, PlacementApiVersionBeta, PlacementKind } from '../placement'
+import { PlacementDecision } from '../placement-decision'
 import { createResource, IRequestResult } from '../utils'
-import { useGetClustersFromPlacementDecision } from './placement-decision-client'
+import {
+  getClustersFromPlacementDecision,
+  useFindPlacementDecisions,
+  useGetClustersFromPlacementDecision,
+} from './placement-decision-client'
 
 interface PlacementQuery {
   placementNames?: string[]
@@ -48,9 +53,34 @@ export const useGetClustersForPlacement = (query: PlacementQuery) => {
       .filter((placement) => placement.metadata.name !== undefined)
       .map((placement) => placement.metadata.name!),
   })
-  const clusterFromPlacements: string[] = getClusterFromPlacements(placements)
+  const clustersFromPlacements: string[] = getClusterFromPlacements(placements)
 
-  return [...new Set([...clusterFromPlacements, ...clustersFromPlacementDecisions])]
+  return [...new Set([...clustersFromPlacements, ...clustersFromPlacementDecisions])]
+}
+
+const doesPlacementDecisionBelongToPlacement = (placementDecision: PlacementDecision, placement: Placement) =>
+  placementDecision.metadata.ownerReferences
+    ?.filter((e) => e.kind === 'Placement')
+    .some((ownerReference) => ownerReference.name === placement.metadata.name)
+
+export const useGetClustersForPlacementMap = (placementNames: string[]) => {
+  const placements = useFindPlacements({ placementNames })
+  const placementDecisions = useFindPlacementDecisions({ placementNames })
+
+  return placements.reduce((acc, placement) => {
+    const placementDecision = placementDecisions.find((placementDecision) =>
+      doesPlacementDecisionBelongToPlacement(placementDecision, placement)
+    )
+    const clustersFromPlacementDecisions: string[] = placementDecision
+      ? getClustersFromPlacementDecision(placementDecision)
+      : []
+    const clustersFromPlacements: string[] = getClusterFromPlacements([placement])
+
+    return {
+      ...acc,
+      [`${placement.metadata.name}`]: [...new Set([...clustersFromPlacements, ...clustersFromPlacementDecisions])],
+    }
+  }, {})
 }
 
 const create = (placement: Placement): IRequestResult<Placement> => createResource<Placement>(placement)
