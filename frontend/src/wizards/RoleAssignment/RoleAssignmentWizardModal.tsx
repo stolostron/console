@@ -1,125 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useTranslation } from '../../lib/acm-i18next'
-import { Wizard, WizardStep, WizardHeader, Drawer, DrawerContent, Button, Title, Content } from '@patternfly/react-core'
+import { Wizard, WizardStep, WizardHeader, Drawer, DrawerContent } from '@patternfly/react-core'
 import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
-import { RoleAssignmentPreselected } from '../../routes/UserManagement/RoleAssignments/model/role-assignment-preselected'
 import { useState, useCallback } from 'react'
 import { ExampleScopesPanelContent } from './Scope/ExampleScope/ExampleScopesPanelContent'
-import { WizSelect } from '@patternfly-labs/react-form-wizard/lib/src/inputs/WizSelect'
-import { useItem, ItemContext } from '@patternfly-labs/react-form-wizard/lib/src/contexts/ItemContext'
+import { ItemContext } from '@patternfly-labs/react-form-wizard/lib/src/contexts/ItemContext'
 import { DataContext } from '@patternfly-labs/react-form-wizard/lib/src/contexts/DataContext'
-import { ClusterSetsList } from './Scope/ClusterSets/ClusterSetsList'
-import { ClusterList } from './Scope/Clusters/ClusterList'
-import { GlobalScopeSelection } from './Scope/GlobalScopeSelection'
-
-interface RoleAssignmentWizardModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onSubmit?: (data: any) => void
-  isEditing?: boolean
-  preselected?: RoleAssignmentPreselected
-}
-
-const GranularityStepContent = ({ title, description }: { title: string; description: string }) => {
-  return (
-    <div>
-      <Title headingLevel="h2" size="xl">
-        {title}
-      </Title>
-      <Content component="p" style={{ marginTop: '8px' }}>
-        {description}
-      </Content>
-    </div>
-  )
-}
-
-const ScopeSelectionStepContent = ({
-  isDrawerExpanded,
-  setIsDrawerExpanded,
-  onSelectClusterSets,
-  onSelectClusters,
-}: {
-  isDrawerExpanded: boolean
-  setIsDrawerExpanded: (expanded: boolean) => void
-  onSelectClusterSets?: (clusterSets: any[]) => void
-  onSelectClusters?: (clusters: any[]) => void
-}) => {
-  const { t } = useTranslation()
-  const item = useItem()
-  const selectedScope = item?.scope
-  return (
-    <div>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '8px',
-        }}
-      >
-        <Title headingLevel="h2" size="xl">
-          {t('Scope')}
-        </Title>
-        <Button variant="link" onClick={() => setIsDrawerExpanded(!isDrawerExpanded)}>
-          {t('View examples')}
-        </Button>
-      </div>
-      <Content component="p" style={{ marginBottom: '8px' }}>
-        {t('Define the scope of access by selecting which resources this role will apply to.')}
-      </Content>
-      <Content component="p" style={{ marginBottom: '16px' }}>
-        {t('Select one option:')}
-      </Content>
-      <WizSelect
-        pathValueToInputValue={(pathValue) => pathValue || 'Global access'}
-        path="scope"
-        label=""
-        required
-        options={[
-          {
-            label: 'Global access',
-            value: 'Global access',
-            description: 'Grant access to all resources across all clusters registred in ACM',
-          },
-          {
-            label: 'Select cluster sets',
-            value: 'Select cluster sets',
-            description:
-              'Grant access to 1 or more cluster sets. Optionally, narrow this access to specific clusters and projects',
-          },
-          {
-            label: 'Select clusters',
-            value: 'Select clusters',
-            description: 'Grant access to 1 or more clusters. Optionally, narrow this access to projects',
-          },
-        ]}
-      />
-      {selectedScope === 'Global access' && (
-        <div style={{ marginTop: '16px' }}>
-          <GlobalScopeSelection />
-        </div>
-      )}
-      {selectedScope === 'Select cluster sets' && (
-        <div style={{ marginTop: '16px' }}>
-          <ClusterSetsList
-            onSelectClusterSet={(clusterSets) => {
-              onSelectClusterSets?.(clusterSets)
-            }}
-          />
-        </div>
-      )}
-      {selectedScope === 'Select clusters' && (
-        <div style={{ marginTop: '16px' }}>
-          <ClusterList
-            onSelectCluster={(clusters) => {
-              onSelectClusters?.(clusters)
-            }}
-          />
-        </div>
-      )}
-    </div>
-  )
-}
+import { GranularityStepContent } from './GranularityStepContent'
+import { ScopeSelectionStepContent } from './ScopeSelectionStepContent'
+import { RoleAssignmentWizardModalProps, RoleAssignmentFormData } from './types'
 
 export const RoleAssignmentWizardModal = ({
   isOpen,
@@ -130,11 +19,7 @@ export const RoleAssignmentWizardModal = ({
 }: RoleAssignmentWizardModalProps) => {
   const { t } = useTranslation()
   const [isDrawerExpanded, setIsDrawerExpanded] = useState(false)
-  const [formData, setFormData] = useState<{
-    scope: string
-    selectedClusterSets?: any[]
-    selectedClusters?: any[]
-  }>({ scope: 'Global access' })
+  const [formData, setFormData] = useState<RoleAssignmentFormData>({ scope: 'Global access' })
   const [selectedClusterSets, setSelectedClusterSets] = useState<any[]>([])
   const [selectedClusters, setSelectedClusters] = useState<any[]>([])
 
@@ -158,6 +43,7 @@ export const RoleAssignmentWizardModal = ({
     }
     onClose()
   }
+
   const title = isEditing
     ? t('Edit role assignment')
     : t('Create role assignment for {{preselected}}', { preselected: preselected?.subject?.value })
