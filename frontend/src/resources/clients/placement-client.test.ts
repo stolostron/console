@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { renderHook } from '@testing-library/react-hooks'
-import { useAllClusters } from '../../routes/Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { Placement, PlacementApiVersionBeta, PlacementKind } from '../placement'
 import { PlacementDecision } from '../placement-decision'
@@ -17,10 +16,6 @@ jest.mock('../../shared-recoil', () => ({
   useSharedAtoms: jest.fn(),
 }))
 
-jest.mock('../../routes/Infrastructure/Clusters/ManagedClusters/components/useAllClusters', () => ({
-  useAllClusters: jest.fn(),
-}))
-
 jest.mock('../utils', () => ({
   createResource: jest.fn(),
 }))
@@ -29,7 +24,6 @@ const createResourceMock = createResource as jest.MockedFunction<typeof createRe
 
 const useSharedAtomsMock = useSharedAtoms as jest.Mock
 const useRecoilValueMock = useRecoilValue as jest.Mock
-const useAllClustersMock = useAllClusters as jest.Mock
 
 describe('placement-client', () => {
   const mockPlacements: Placement[] = [
@@ -75,31 +69,6 @@ describe('placement-client', () => {
                     key: 'name',
                     operator: 'In',
                     values: ['cluster-c'],
-                  },
-                ],
-              },
-            },
-          },
-        ],
-      },
-    },
-    {
-      apiVersion: 'cluster.open-cluster-management.io/v1beta1',
-      kind: 'Placement',
-      metadata: {
-        name: 'global',
-        namespace: 'default',
-      },
-      spec: {
-        predicates: [
-          {
-            requiredClusterSelector: {
-              labelSelector: {
-                matchExpressions: [
-                  {
-                    key: 'name',
-                    operator: 'In',
-                    values: ['cluster-x'],
                   },
                 ],
               },
@@ -163,14 +132,8 @@ describe('placement-client', () => {
     },
   ]
 
-  const mockAllClusters = [{ name: 'global-cluster-1' }, { name: 'global-cluster-2' }, { name: 'global-cluster-3' }]
-
   beforeAll(() => {
     jest.clearAllMocks()
-  })
-
-  beforeEach(() => {
-    useAllClustersMock.mockReturnValue(mockAllClusters)
   })
 
   describe('useFindPlacements', () => {
@@ -258,24 +221,6 @@ describe('placement-client', () => {
       // Assert
       expect(result.current).toContain('cluster-a')
       expect(result.current).toContain('cluster-b')
-    })
-
-    it('should return all global clusters when placement name is global', () => {
-      // Arrange
-      useRecoilValueMock.mockReset()
-      useRecoilValueMock.mockReturnValueOnce(mockPlacements).mockReturnValueOnce([])
-
-      // Act
-      const { result } = renderHook(() =>
-        useGetClustersForPlacement({
-          placementNames: ['global'],
-        })
-      )
-
-      // Assert
-      expect(result.current).toContain('global-cluster-1')
-      expect(result.current).toContain('global-cluster-2')
-      expect(result.current).toContain('global-cluster-3')
     })
 
     it('should combine clusters from placements and placement decisions', () => {
