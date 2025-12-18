@@ -1,11 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { renderHook } from '@testing-library/react-hooks'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
+import { MulticlusterRoleAssignmentNamespace } from '../multicluster-role-assignment'
 import { Placement, PlacementApiVersionBeta, PlacementKind } from '../placement'
-import { PlacementDecision } from '../placement-decision'
 import { createResource } from '../utils'
 import { createForClusters, createForClusterSets, useFindPlacements } from './placement-client'
-import { MulticlusterRoleAssignmentNamespace } from '../multicluster-role-assignment'
 
 jest.mock('../../shared-recoil', () => ({
   useRecoilValue: jest.fn(),
@@ -81,50 +80,6 @@ describe('placement-client', () => {
         namespace: 'default',
       },
       spec: {},
-    },
-  ]
-
-  const mockPlacementDecisions: PlacementDecision[] = [
-    {
-      apiVersion: 'cluster.open-cluster-management.io/v1beta1',
-      kind: 'PlacementDecision',
-      metadata: {
-        name: 'placement-decision-1',
-        namespace: 'default',
-        ownerReferences: [
-          {
-            apiVersion: 'cluster.open-cluster-management.io/v1beta1',
-            kind: 'Placement',
-            name: 'placement-1',
-            uid: 'uid-1',
-          },
-        ],
-      },
-      status: {
-        decisions: [
-          { clusterName: 'cluster-d', reason: 'Matched' },
-          { clusterName: 'cluster-e', reason: 'Matched' },
-        ],
-      },
-    },
-    {
-      apiVersion: 'cluster.open-cluster-management.io/v1beta1',
-      kind: 'PlacementDecision',
-      metadata: {
-        name: 'placement-decision-2',
-        namespace: 'default',
-        ownerReferences: [
-          {
-            apiVersion: 'cluster.open-cluster-management.io/v1beta1',
-            kind: 'Placement',
-            name: 'placement-2',
-            uid: 'uid-2',
-          },
-        ],
-      },
-      status: {
-        decisions: [{ clusterName: 'cluster-f', reason: 'Matched' }],
-      },
     },
   ]
 

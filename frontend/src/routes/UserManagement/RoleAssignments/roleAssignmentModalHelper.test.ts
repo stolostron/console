@@ -4,7 +4,6 @@ import { findManagedClusterSetBinding } from '../../../resources/clients/managed
 import { addRoleAssignment, findRoleAssignments } from '../../../resources/clients/multicluster-role-assignment-client'
 import { FlattenedRoleAssignment } from '../../../resources/clients/model/flattened-role-assignment'
 import { RoleAssignmentToSave } from '../../../resources/clients/model/role-assignment-to-save'
-import { findPlacements } from '../../../resources/clients/placement-client'
 import {
   MulticlusterRoleAssignment,
   MulticlusterRoleAssignmentApiVersion,
@@ -31,10 +30,6 @@ jest.mock('../../../resources/clients/multicluster-role-assignment-client', () =
 
 jest.mock('../../../resources/clients/managed-cluster-set-binding-client', () => ({
   findManagedClusterSetBinding: jest.fn(),
-}))
-
-jest.mock('../../../resources/clients/placement-client', () => ({
-  findPlacements: jest.fn(),
 }))
 
 describe('roleAssignmentHelper', () => {
@@ -373,7 +368,7 @@ describe('roleAssignmentHelper', () => {
         },
       ]
       const multiClusterRoleAssignments: MulticlusterRoleAssignment[] = []
-      const clustersForPlacements: Record<string, string[]> = {}
+      const clustersForPlacements: Record<string, { placement: Placement; clusters: string[] }> = {}
 
       const result = existingRoleAssignmentsBySubjectRole(
         roleAssignmentsToSave,
@@ -490,9 +485,15 @@ describe('roleAssignmentHelper', () => {
           subject: { name: 'user1', kind: UserKind },
         },
       ]
-      const clustersForPlacements = {
-        'placement-1': ['cluster-a', 'cluster-b'],
-        'placement-2': ['cluster-c'],
+      const createMockPlacement = (name: string): Placement => ({
+        apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+        kind: 'Placement',
+        metadata: { name, namespace: MulticlusterRoleAssignmentNamespace },
+        spec: { clusterSets: ['default'] },
+      })
+      const clustersForPlacements: Record<string, { placement: Placement; clusters: string[] }> = {
+        'placement-1': { placement: createMockPlacement('placement-1'), clusters: ['cluster-a', 'cluster-b'] },
+        'placement-2': { placement: createMockPlacement('placement-2'), clusters: ['cluster-c'] },
       }
 
       existingRoleAssignmentsBySubjectRole(roleAssignmentsToSave, UserKind, [], clustersForPlacements)
@@ -556,7 +557,6 @@ describe('roleAssignmentHelper', () => {
     const mockFindManagedClusterSetBinding = findManagedClusterSetBinding as jest.MockedFunction<
       typeof findManagedClusterSetBinding
     >
-    const mockFindPlacements = findPlacements as jest.MockedFunction<typeof findPlacements>
 
     beforeEach(() => {
       jest.clearAllMocks()
@@ -592,16 +592,26 @@ describe('roleAssignmentHelper', () => {
       spec: { clusterSet: name },
     })
 
+    const createClustersForPlacements = (
+      entries: { name: string; clusters: string[] }[]
+    ): Record<string, { placement: Placement; clusters: string[] }> =>
+      entries.reduce(
+        (acc, { name, clusters }) => ({
+          ...acc,
+          [name]: { placement: createMockPlacement(name), clusters },
+        }),
+        {}
+      )
+
     it('should call addRoleAssignment with correct parameters and invoke onSuccess callback', async () => {
       const existingMcra = createMockMulticlusterRoleAssignment('existing-mcra')
       const existingBySubjectRole = new Map<string, MulticlusterRoleAssignment>()
       existingBySubjectRole.set(`${UserKind}|user1`, existingMcra)
 
       const mockMcsb = createMockManagedClusterSetBinding('cluster-set-1')
-      const mockPlacement = createMockPlacement('placement-1')
+      const clustersForPlacements = createClustersForPlacements([{ name: 'placement-1', clusters: ['cluster-1'] }])
 
       mockFindManagedClusterSetBinding.mockReturnValue([mockMcsb])
-      mockFindPlacements.mockReturnValue([mockPlacement])
       mockAddRoleAssignment.mockResolvedValue({} as never)
 
       const roleAssignment: RoleAssignmentToSave = {
@@ -617,23 +627,23 @@ describe('roleAssignmentHelper', () => {
       }
 
       const managedClusterSetBindings = [mockMcsb]
-      const placements = [mockPlacement]
 
-      await saveRoleAssignment(roleAssignment, existingBySubjectRole, managedClusterSetBindings, placements, callbacks)
+      await saveRoleAssignment(
+        roleAssignment,
+        existingBySubjectRole,
+        managedClusterSetBindings,
+        clustersForPlacements,
+        callbacks
+      )
 
       expect(mockFindManagedClusterSetBinding).toHaveBeenCalledWith(managedClusterSetBindings, {
         clusterSets: ['cluster-set-1'],
         namespaces: [MulticlusterRoleAssignmentNamespace],
       })
-      expect(mockFindPlacements).toHaveBeenCalledWith(placements, {
-        clusterNames: ['cluster-1'],
-        clusterSetNames: ['cluster-set-1'],
-        logicalOperator: 'or',
-      })
       expect(mockAddRoleAssignment).toHaveBeenCalledWith(roleAssignment, {
         existingMulticlusterRoleAssignment: existingMcra,
         existingManagedClusterSetBindings: [mockMcsb],
-        existingPlacement: mockPlacement,
+        existingPlacement: clustersForPlacements['placement-1'].placement,
       })
       expect(callbacks.onSuccess).toHaveBeenCalledWith('admin')
       expect(callbacks.onError).not.toHaveBeenCalled()
@@ -641,7 +651,6 @@ describe('roleAssignmentHelper', () => {
 
     it('should invoke onError callback when addRoleAssignment fails', async () => {
       mockFindManagedClusterSetBinding.mockReturnValue([])
-      mockFindPlacements.mockReturnValue([])
       mockAddRoleAssignment.mockRejectedValue(new Error('Network error'))
 
       const roleAssignment: RoleAssignmentToSave = {
@@ -656,7 +665,7 @@ describe('roleAssignmentHelper', () => {
         onError: jest.fn(),
       }
 
-      await saveRoleAssignment(roleAssignment, new Map(), [], [], callbacks)
+      await saveRoleAssignment(roleAssignment, new Map(), [], {}, callbacks)
 
       expect(callbacks.onSuccess).not.toHaveBeenCalled()
       expect(callbacks.onError).toHaveBeenCalledWith('viewer', expect.any(Error), false)
@@ -664,7 +673,6 @@ describe('roleAssignmentHelper', () => {
 
     it('should detect duplicate error and pass isDuplicateError=true to onError', async () => {
       mockFindManagedClusterSetBinding.mockReturnValue([])
-      mockFindPlacements.mockReturnValue([])
       mockAddRoleAssignment.mockRejectedValue(new Error('Duplicate role assignment detected for this subject'))
 
       const roleAssignment: RoleAssignmentToSave = {
@@ -679,14 +687,13 @@ describe('roleAssignmentHelper', () => {
         onError: jest.fn(),
       }
 
-      await saveRoleAssignment(roleAssignment, new Map(), [], [], callbacks)
+      await saveRoleAssignment(roleAssignment, new Map(), [], {}, callbacks)
 
       expect(callbacks.onError).toHaveBeenCalledWith('editor', expect.any(Error), true)
     })
 
     it('should pass undefined for existingMulticlusterRoleAssignment when not found in map', async () => {
       mockFindManagedClusterSetBinding.mockReturnValue([])
-      mockFindPlacements.mockReturnValue([])
       mockAddRoleAssignment.mockResolvedValue({} as never)
 
       const roleAssignment: RoleAssignmentToSave = {
@@ -701,7 +708,7 @@ describe('roleAssignmentHelper', () => {
         onError: jest.fn(),
       }
 
-      await saveRoleAssignment(roleAssignment, new Map(), [], [], callbacks)
+      await saveRoleAssignment(roleAssignment, new Map(), [], {}, callbacks)
 
       expect(mockAddRoleAssignment).toHaveBeenCalledWith(roleAssignment, {
         existingMulticlusterRoleAssignment: undefined,
@@ -710,12 +717,13 @@ describe('roleAssignmentHelper', () => {
       })
     })
 
-    it('should pass first placement when multiple placements are found', async () => {
-      const placement1 = createMockPlacement('placement-1')
-      const placement2 = createMockPlacement('placement-2')
+    it('should find placement matching exact cluster list', async () => {
+      const clustersForPlacements = createClustersForPlacements([
+        { name: 'placement-1', clusters: ['cluster-1'] },
+        { name: 'placement-2', clusters: ['cluster-1', 'cluster-2'] },
+      ])
 
       mockFindManagedClusterSetBinding.mockReturnValue([])
-      mockFindPlacements.mockReturnValue([placement1, placement2])
       mockAddRoleAssignment.mockResolvedValue({} as never)
 
       const roleAssignment: RoleAssignmentToSave = {
@@ -730,12 +738,13 @@ describe('roleAssignmentHelper', () => {
         onError: jest.fn(),
       }
 
-      await saveRoleAssignment(roleAssignment, new Map(), [], [placement1, placement2], callbacks)
+      await saveRoleAssignment(roleAssignment, new Map(), [], clustersForPlacements, callbacks)
 
+      // Should find placement-1 which exactly matches ['cluster-1']
       expect(mockAddRoleAssignment).toHaveBeenCalledWith(
         roleAssignment,
         expect.objectContaining({
-          existingPlacement: placement1,
+          existingPlacement: clustersForPlacements['placement-1'].placement,
         })
       )
     })
@@ -746,7 +755,6 @@ describe('roleAssignmentHelper', () => {
       existingBySubjectRole.set(`${GroupKind}|developers`, existingMcra)
 
       mockFindManagedClusterSetBinding.mockReturnValue([])
-      mockFindPlacements.mockReturnValue([])
       mockAddRoleAssignment.mockResolvedValue({} as never)
 
       const roleAssignment: RoleAssignmentToSave = {
@@ -761,7 +769,7 @@ describe('roleAssignmentHelper', () => {
         onError: jest.fn(),
       }
 
-      await saveRoleAssignment(roleAssignment, existingBySubjectRole, [], [], callbacks)
+      await saveRoleAssignment(roleAssignment, existingBySubjectRole, [], {}, callbacks)
 
       expect(mockAddRoleAssignment).toHaveBeenCalledWith(
         roleAssignment,

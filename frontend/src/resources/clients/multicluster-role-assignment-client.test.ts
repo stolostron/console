@@ -24,20 +24,46 @@ jest.mock('../../shared-recoil', () => ({
   useSharedAtoms: jest.fn(),
 }))
 
-// Mock useGetClustersForPlacementMap
+// Helper to create mock placement
+const createMockPlacement = (name: string): placementClient.Placement => ({
+  apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+  kind: 'Placement',
+  metadata: { name, namespace: MulticlusterRoleAssignmentNamespace },
+  spec: { clusterSets: ['default'] },
+})
+
+// Mock useGetClustersForPlacementMap with new structure { placement, clusters }
 jest.spyOn(placementClient, 'useGetClustersForPlacementMap').mockReturnValue({
-  'placement-production': ['production-cluster'],
-  'placement-staging': ['staging-cluster'],
-  'placement-development': ['development-cluster'],
-  'placement-all-clusters': ['production-cluster', 'staging-cluster', 'development-cluster', 'testing-cluster'],
-  'placement-storage': ['production-cluster', 'storage-primary', 'storage-backup'],
-  'placement-prod-staging': ['production-cluster', 'staging-cluster'],
-  'placement-dev-test': ['development-cluster', 'testing-cluster'],
-  'placement-testing': ['testing-cluster'],
-  'placement-edge-1': ['edge-cluster-1'],
-  'placement-edge-2': ['edge-cluster-2'],
-  'placement-edge': ['edge-cluster-1', 'edge-cluster-2'],
-  'placement-security': ['security-cluster'],
+  'placement-production': { placement: createMockPlacement('placement-production'), clusters: ['production-cluster'] },
+  'placement-staging': { placement: createMockPlacement('placement-staging'), clusters: ['staging-cluster'] },
+  'placement-development': {
+    placement: createMockPlacement('placement-development'),
+    clusters: ['development-cluster'],
+  },
+  'placement-all-clusters': {
+    placement: createMockPlacement('placement-all-clusters'),
+    clusters: ['production-cluster', 'staging-cluster', 'development-cluster', 'testing-cluster'],
+  },
+  'placement-storage': {
+    placement: createMockPlacement('placement-storage'),
+    clusters: ['production-cluster', 'storage-primary', 'storage-backup'],
+  },
+  'placement-prod-staging': {
+    placement: createMockPlacement('placement-prod-staging'),
+    clusters: ['production-cluster', 'staging-cluster'],
+  },
+  'placement-dev-test': {
+    placement: createMockPlacement('placement-dev-test'),
+    clusters: ['development-cluster', 'testing-cluster'],
+  },
+  'placement-testing': { placement: createMockPlacement('placement-testing'), clusters: ['testing-cluster'] },
+  'placement-edge-1': { placement: createMockPlacement('placement-edge-1'), clusters: ['edge-cluster-1'] },
+  'placement-edge-2': { placement: createMockPlacement('placement-edge-2'), clusters: ['edge-cluster-2'] },
+  'placement-edge': {
+    placement: createMockPlacement('placement-edge'),
+    clusters: ['edge-cluster-1', 'edge-cluster-2'],
+  },
+  'placement-security': { placement: createMockPlacement('placement-security'), clusters: ['security-cluster'] },
 })
 
 const deleteResourceMock = deleteResource as jest.MockedFunction<typeof deleteResource>

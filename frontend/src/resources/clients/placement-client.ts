@@ -6,32 +6,77 @@ import { PlacementDecision } from '../placement-decision'
 import { createResource, IRequestResult } from '../utils'
 import { getClustersFromPlacementDecision, useFindPlacementDecisions } from './placement-decision-client'
 
+/**
+ * Query parameters for filtering Placement resources.
+ */
 interface PlacementQuery {
+  /** Filter by placement names. Empty array matches all placements. */
   placementNames?: string[]
+  /** Filter by cluster names found in placement predicates. Empty array matches all. */
   clusterNames?: string[]
+  /** Filter by cluster set names. Empty array matches all. */
   clusterSetNames?: string[]
+  /** Logical operator for combining filters: 'and' (default) requires all to match, 'or' requires any to match. */
   logicalOperator?: 'and' | 'or'
 }
 
-const isPlacementNameMatch = (placement: Placement, query: PlacementQuery) =>
-  !query.placementNames?.length || (placement.metadata.name && query.placementNames.includes(placement.metadata.name))
+/**
+ * Checks if a placement matches the placementNames filter.
+ * Returns true if no placementNames filter is provided or if placement name is in the filter list.
+ */
+const isPlacementNameMatch = (placement: Placement, query: PlacementQuery): boolean =>
+  !query.placementNames?.length ||
+  (placement.metadata.name && query.placementNames.includes(placement.metadata.name as string)) ||
+  false
 
-const isClusterNameMatch = (placement: Placement, query: PlacementQuery) =>
-  !query.clusterNames?.length ||
-  placement.spec.predicates?.some((predicate) =>
-    predicate.requiredClusterSelector?.labelSelector?.matchExpressions?.some(
-      (matchExpression) =>
-        matchExpression.key === 'name' &&
-        matchExpression.values?.length &&
-        matchExpression.values?.some((value) => query.clusterNames?.includes(value))
-    )
+/**
+ * Checks if a placement matches the clusterNames filter.
+ * Returns true if no clusterNames filter is provided or if any of the placement's
+ * cluster names are in the filter list.
+ */
+const isClusterNameMatch = (placement: Placement, query: PlacementQuery): boolean => {
+  if (!query.clusterNames?.length) return true
+  const clusterNamesFromPlacements: string[] =
+    placement.spec.predicates
+      ?.flatMap((predicate) =>
+        predicate.requiredClusterSelector?.labelSelector?.matchExpressions
+          ?.filter((matchExpression) => matchExpression.key === 'name' && matchExpression.values?.length)
+          .flatMap((matchExpression) => matchExpression.values)
+      )
+      .filter((value): value is string => value !== undefined) || []
+
+  return (
+    clusterNamesFromPlacements?.length === query.clusterNames.length &&
+    clusterNamesFromPlacements.every((value) => query.clusterNames!.includes(value))
   )
+}
 
-const isClusterSetNameMatch = (placement: Placement, query: PlacementQuery) =>
-  !query.clusterSetNames?.length ||
-  placement.spec.clusterSets?.some((clusterSet) => query.clusterSetNames!.includes(clusterSet))
+/**
+ * Checks if a placement matches the clusterSetNames filter.
+ * Returns true if no clusterSetNames filter is provided or if any of the placement's
+ * cluster set names are in the filter list.
+ */
+const isClusterSetNameMatch = (placement: Placement, query: PlacementQuery): boolean => {
+  if (!query.clusterSetNames?.length) {
+    return true
+  }
+  const clusterSetNamesFromPlacements: string[] = placement.spec.clusterSets || []
+  return (
+    clusterSetNamesFromPlacements?.length === query.clusterSetNames.length &&
+    clusterSetNamesFromPlacements.every((value) => query.clusterSetNames!.includes(value))
+  )
+}
 
-export const findPlacements = (placements: Placement[], query: PlacementQuery): Placement[] => {
+/**
+ * Filters placements based on the provided query parameters.
+ * Supports filtering by placement names, cluster names (from predicates), and cluster set names.
+ * Uses logical AND by default; set logicalOperator to 'or' for OR logic.
+ *
+ * @param placements - Array of Placement resources to filter
+ * @param query - Query parameters for filtering
+ * @returns Filtered array of Placement resources matching the query
+ */
+const findPlacements = (placements: Placement[], query: PlacementQuery): Placement[] => {
   const isPlacementNameMatchFn = (placement: Placement) => isPlacementNameMatch(placement, query)
   const isClusterNameMatchFn = (placement: Placement) => isClusterNameMatch(placement, query)
   const isClusterSetNameMatchFn = (placement: Placement) => isClusterSetNameMatch(placement, query)
@@ -49,6 +94,12 @@ export const findPlacements = (placements: Placement[], query: PlacementQuery): 
   }
 }
 
+/**
+ * React hook to find placements matching the query from the global Recoil state.
+ *
+ * @param query - Query parameters for filtering placements
+ * @returns Array of Placement resources matching the query
+ */
 export const useFindPlacements = (query: PlacementQuery): Placement[] => {
   const { placementsState } = useSharedAtoms()
   const placements = useRecoilValue(placementsState)
@@ -56,6 +107,13 @@ export const useFindPlacements = (query: PlacementQuery): Placement[] => {
   return findPlacements(placements, query)
 }
 
+/**
+ * Extracts unique cluster names from placement predicates.
+ * Looks for matchExpressions with key 'name' and extracts their values.
+ *
+ * @param placements - Array of Placement resources to extract clusters from
+ * @returns Array of unique cluster names found in the placements' predicates
+ */
 const getClusterFromPlacements = (placements: Placement[]) => [
   ...new Set(
     placements
@@ -78,12 +136,29 @@ const getClusterFromPlacements = (placements: Placement[]) => [
   ),
 ]
 
+/**
+ * Checks if a PlacementDecision belongs to a specific Placement by examining owner references.
+ *
+ * @param placementDecision - The PlacementDecision to check
+ * @param placement - The Placement to check ownership against
+ * @returns True if the PlacementDecision is owned by the Placement
+ */
 const doesPlacementDecisionBelongToPlacement = (placementDecision: PlacementDecision, placement: Placement) =>
   placementDecision.metadata.ownerReferences
     ?.filter((e) => e.kind === 'Placement')
     .some((ownerReference) => ownerReference.name === placement.metadata.name)
 
-export const useGetClustersForPlacementMap = (placementNames: string[]) => {
+/**
+ * React hook that creates a map of placement names to their resolved cluster names.
+ * Combines clusters from both placement predicates and PlacementDecision resources.
+ * This is used to resolve which clusters a RoleAssignment applies to based on its placements.
+ *
+ * @param placementNames - Array of placement names to resolve clusters for
+ * @returns Record mapping placement names to arrays of unique cluster names
+ */
+export const useGetClustersForPlacementMap = (
+  placementNames: string[]
+): Record<string, { placement: Placement; clusters: string[] }> => {
   const placements = useFindPlacements({ placementNames })
   const placementDecisions = useFindPlacementDecisions({ placementNames })
 
@@ -97,13 +172,31 @@ export const useGetClustersForPlacementMap = (placementNames: string[]) => {
     const clustersFromPlacements: string[] = getClusterFromPlacements([placement])
     return {
       ...acc,
-      [`${placement.metadata.name}`]: [...new Set([...clustersFromPlacements, ...clustersFromPlacementDecisions])],
+      [`${placement.metadata.name}`]: {
+        placement,
+        clusters: [...new Set([...clustersFromPlacements, ...clustersFromPlacementDecisions])],
+      },
     }
   }, {})
 }
 
+/**
+ * Creates a new Placement resource.
+ *
+ * @param placement - The Placement resource to create
+ * @returns IRequestResult containing the promise and abort function
+ */
 const create = (placement: Placement): IRequestResult<Placement> => createResource<Placement>(placement)
 
+/**
+ * Creates a Placement resource that selects clusters based on cluster sets.
+ * The placement name is generated by joining cluster set names with '-and-'.
+ * Includes tolerations for unreachable and unavailable clusters.
+ *
+ * @param clusterSets - Array of cluster set names to include in the placement
+ * @param namespace - Namespace for the placement (defaults to MulticlusterRoleAssignmentNamespace)
+ * @returns IRequestResult containing the promise and abort function
+ */
 export const createForClusterSets = (clusterSets: string[], namespace = MulticlusterRoleAssignmentNamespace) => {
   const placement: Placement = {
     apiVersion: PlacementApiVersionBeta,
@@ -126,6 +219,16 @@ export const createForClusterSets = (clusterSets: string[], namespace = Multiclu
   return create(placement)
 }
 
+/**
+ * Creates a Placement resource that selects specific clusters using label selectors.
+ * Uses predicates with matchExpressions to select clusters by their 'name' label.
+ * The placement name is prefixed with 'clusters-' followed by cluster names joined with '-and-'.
+ * Includes tolerations for unreachable and unavailable clusters.
+ *
+ * @param clusters - Array of cluster names to select
+ * @param namespace - Namespace for the placement (defaults to MulticlusterRoleAssignmentNamespace)
+ * @returns IRequestResult containing the promise and abort function
+ */
 export const createForClusters = (clusters: string[], namespace = MulticlusterRoleAssignmentNamespace) => {
   const placement: Placement = {
     apiVersion: PlacementApiVersionBeta,

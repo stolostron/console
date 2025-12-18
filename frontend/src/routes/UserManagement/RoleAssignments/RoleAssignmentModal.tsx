@@ -33,9 +33,6 @@ const RoleAssignmentModal = ({ close, isOpen, isEditing, preselected }: RoleAssi
   const { managedClusterSetBindingsState } = useSharedAtoms()
   const managedClusterSetBindings = useRecoilValue(managedClusterSetBindingsState)
 
-  const { placementsState } = useSharedAtoms()
-  const placements = useRecoilValue(placementsState)
-
   const toastContext = useContext(AcmToastContext)
   const { t } = useTranslation()
 
@@ -50,7 +47,7 @@ const RoleAssignmentModal = ({ close, isOpen, isEditing, preselected }: RoleAssi
 
     await Promise.all(
       roleAssignmentsToSave.map((roleAssignment) =>
-        saveRoleAssignment(roleAssignment, existingBySubjectRole, managedClusterSetBindings, placements, {
+        saveRoleAssignment(roleAssignment, existingBySubjectRole, managedClusterSetBindings, clustersForPlacements, {
           onSuccess: (role) =>
             toastContext.addAlert({
               title: t('Role assignment added'),

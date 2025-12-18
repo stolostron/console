@@ -3,7 +3,6 @@ import { ManagedClusterSetBinding, MulticlusterRoleAssignmentNamespace, UserKind
 import { findManagedClusterSetBinding } from '../../../resources/clients/managed-cluster-set-binding-client'
 import { RoleAssignmentToSave } from '../../../resources/clients/model/role-assignment-to-save'
 import { addRoleAssignment, findRoleAssignments } from '../../../resources/clients/multicluster-role-assignment-client'
-import { findPlacements } from '../../../resources/clients/placement-client'
 import { Subject } from '../../../resources/kubernetes-client'
 import { MulticlusterRoleAssignment } from '../../../resources/multicluster-role-assignment'
 import { Placement } from '../../../resources/placement'
@@ -51,7 +50,7 @@ export const existingRoleAssignmentsBySubjectRole = (
   roleAssignmentsToSave: RoleAssignmentToSave[],
   subjectKind: Subject['kind'],
   multiClusterRoleAssignments: MulticlusterRoleAssignment[],
-  clustersForPlacements: Record<string, string[]>
+  clustersForPlacements: Record<string, { placement: Placement; clusters: string[] }>
 ): Map<string, MulticlusterRoleAssignment> => {
   const subjectNames = roleAssignmentsToSave.map((ra) => ra.subject.name).filter((e): e is string => e !== undefined)
 
@@ -86,7 +85,7 @@ export const saveRoleAssignment = (
   roleAssignment: RoleAssignmentToSave,
   existingBySubjectRole: Map<string, MulticlusterRoleAssignment>,
   managedClusterSetBindings: ManagedClusterSetBinding[],
-  placements: Placement[],
+  clustersForPlacements: Record<string, { placement: Placement; clusters: string[] }>,
   callbacks: {
     onSuccess: (role: string) => void
     onError: (role: string, error: unknown, isDuplicateError: boolean) => void
@@ -98,23 +97,16 @@ export const saveRoleAssignment = (
     clusterSets: roleAssignment.clusterSetNames,
     namespaces: [MulticlusterRoleAssignmentNamespace],
   })
-  const existingPlacements = findPlacements(placements, {
-    clusterNames: roleAssignment.clusterNames,
-    clusterSetNames: roleAssignment.clusterSetNames,
-    logicalOperator: 'or',
-  })
-  console.log(
-    'KIKE saveRoleAssignment',
-    existingPlacements,
-    existingManagedClusterSetBindings,
-    roleAssignment.clusterNames,
-    roleAssignment.clusterSetNames
-  )
+  const existingPlacement: Placement | undefined = Object.values(clustersForPlacements).find(
+    (entry) =>
+      entry.clusters.every((cluster) => roleAssignment.clusterNames?.includes(cluster)) &&
+      entry.clusters.length === roleAssignment.clusterNames?.length
+  )?.placement
 
   return addRoleAssignment(roleAssignment, {
     existingMulticlusterRoleAssignment,
     existingManagedClusterSetBindings,
-    existingPlacement: existingPlacements?.[0],
+    existingPlacement,
   })
     .then(() => callbacks.onSuccess(roleAssignment.clusterRole))
     .catch((e) => {

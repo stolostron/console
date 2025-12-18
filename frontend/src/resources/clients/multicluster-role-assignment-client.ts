@@ -147,7 +147,7 @@ export const useFindRoleAssignments = (query: MulticlusterRoleAssignmentQuery): 
           .map((roleAssignment) => {
             const clusters: string[] = roleAssignment.clusterSelection.placements
               .map((e) => e.name)
-              .flatMap((placementName: string) => get(clustersForPlacements, placementName))
+              .flatMap((placementName: string) => get(clustersForPlacements, placementName).clusters)
             return roleAssignmentToFlattenedRoleAssignment(multiClusterRoleAssignmentCurr, roleAssignment, clusters)
           })
           .reduce(
@@ -174,7 +174,7 @@ export const useFindRoleAssignments = (query: MulticlusterRoleAssignmentQuery): 
 export const findRoleAssignments = (
   query: MulticlusterRoleAssignmentQuery,
   multiClusterRoleAssignments: MulticlusterRoleAssignment[],
-  clustersForPlacements: Record<string, string[]>
+  clustersForPlacements: Record<string, { placement: Placement; clusters: string[] }>
 ): FlattenedRoleAssignment[] => {
   const filteredMulticlusterRoleAssignments =
     multiClusterRoleAssignments.filter((multiclusterRoleAssignment) =>
@@ -191,7 +191,7 @@ export const findRoleAssignments = (
         .map((roleAssignment) => {
           const clusters: string[] = roleAssignment.clusterSelection.placements
             .map((e) => e.name)
-            .flatMap((placementName: string) => get(clustersForPlacements, placementName))
+            .flatMap((placementName: string) => get(clustersForPlacements, placementName).clusters)
           return roleAssignmentToFlattenedRoleAssignment(multiClusterRoleAssignmentCurr, roleAssignment, clusters)
         })
         .reduce(
