@@ -176,6 +176,7 @@ function WizSelectBase<T = any>(props: SelectProps<T>) {
                   setOpen={setOpen}
                 />
               )}
+              popperProps={{appendTo: 'inline'}}
               selected={value}
               // eslint-disable-next-line @typescript-eslint/no-unsafe-call
               onSelect={(_event, value) => onSelect(value?.toString() ?? '')}
