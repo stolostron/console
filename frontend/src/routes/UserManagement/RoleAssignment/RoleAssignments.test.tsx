@@ -6,16 +6,14 @@ import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
 import { defaultPlugin, PluginContext } from '../../../lib/PluginContext'
 import { useIsAnyNamespaceAuthorized } from '../../../lib/rbac-util'
 import { clickByText, waitForText } from '../../../lib/test-util'
-import {
-  deleteRoleAssignment,
-  FlattenedRoleAssignment,
-} from '../../../resources/clients/multicluster-role-assignment-client'
+import { deleteRoleAssignment } from '../../../resources/clients/multicluster-role-assignment-client'
 import {
   MulticlusterRoleAssignment,
   MulticlusterRoleAssignmentNamespace,
 } from '../../../resources/multicluster-role-assignment'
 import { AcmToastContext } from '../../../ui-components'
 import { RoleAssignments } from './RoleAssignments'
+import { FlattenedRoleAssignment } from '../../../resources/clients/model/flattened-role-assignment'
 
 // Mock Apollo Client
 jest.mock('@apollo/client', () => ({

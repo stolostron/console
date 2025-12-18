@@ -4,10 +4,10 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../lib/nock-util'
 import { User } from '../../../../resources/rbac'
-import { FlattenedRoleAssignment } from '../../../../resources/clients/multicluster-role-assignment-client'
 import { UserRoleAssignments } from './UserRoleAssignments'
 import { useRecoilValue } from '../../../../shared-recoil'
 import { MulticlusterRoleAssignmentNamespace } from '../../../../resources'
+import { FlattenedRoleAssignment } from '../../../../resources/clients/model/flattened-role-assignment'
 
 const mockUsers: User[] = [
   {

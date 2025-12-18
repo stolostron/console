@@ -4,9 +4,9 @@ import { RecoilRoot } from 'recoil'
 import { Group } from '../../../../resources/rbac'
 import { GroupRoleAssignments } from './GroupRoleAssignments'
 import { render, screen } from '@testing-library/react'
-import { FlattenedRoleAssignment } from '../../../../resources/clients/multicluster-role-assignment-client'
 import { useRecoilValue } from '../../../../shared-recoil'
 import { MulticlusterRoleAssignmentNamespace } from '../../../../resources'
+import { FlattenedRoleAssignment } from '../../../../resources/clients/model/flattened-role-assignment'
 
 // Mock the translation hook
 jest.mock('../../../../lib/acm-i18next', () => ({

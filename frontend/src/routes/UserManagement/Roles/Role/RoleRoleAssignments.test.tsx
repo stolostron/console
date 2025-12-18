@@ -5,10 +5,10 @@ import { MemoryRouter, Routes, Route } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { AcmLoadingPage } from '../../../../ui-components'
 import { RoleRoleAssignments } from './RoleRoleAssignments'
-import { FlattenedRoleAssignment } from '../../../../resources/clients/multicluster-role-assignment-client'
 import { useCurrentRole } from '../RolesPage'
 import { useSharedAtoms, useRecoilValue } from '../../../../shared-recoil'
 import { MulticlusterRoleAssignmentNamespace } from '../../../../resources'
+import { FlattenedRoleAssignment } from '../../../../resources/clients/model/flattened-role-assignment'
 
 jest.mock('../RolesPage', () => ({
   useCurrentRole: jest.fn(),

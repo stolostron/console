@@ -1,12 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { fireEvent, render, screen } from '@testing-library/react'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
-import { FlattenedRoleAssignment } from '../../../resources/clients/model/flattened-role-assignment'
 import {
   MulticlusterRoleAssignment,
   MulticlusterRoleAssignmentNamespace,
 } from '../../../resources/multicluster-role-assignment'
 import { RoleAssignmentActionDropdown } from './RoleAssignmentActionDropdown'
+import { FlattenedRoleAssignment } from '../../../resources/clients/model/flattened-role-assignment'
 
 // Mock Dropdown component to show the key data we want to verify
 jest.mock('@patternfly/react-core', () => ({

@@ -1,14 +1,15 @@
 /* eslint-disable jest/no-conditional-expect */
 /* Copyright Contributors to the Open Cluster Management project */
 import { renderHook } from '@testing-library/react-hooks'
+import * as req from '../../resources/utils/resource-request'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { MulticlusterRoleAssignment, MulticlusterRoleAssignmentNamespace } from '../multicluster-role-assignment'
+import { Placement } from '../placement'
 import { GroupKind, UserKind } from '../rbac'
 import { deleteResource, patchResource } from '../utils'
 import multiclusterRoleAssignmentsMockData from './mock-data/multicluster-role-assignments.json'
-import { deleteRoleAssignment, useFindRoleAssignments } from './multicluster-role-assignment-client'
 import { FlattenedRoleAssignment } from './model/flattened-role-assignment'
-import * as req from '../../resources/utils/resource-request'
+import { deleteRoleAssignment, useFindRoleAssignments } from './multicluster-role-assignment-client'
 import * as placementClient from './placement-client'
 
 const mockGetResource = jest.spyOn(req, 'getResource')
@@ -25,7 +26,7 @@ jest.mock('../../shared-recoil', () => ({
 }))
 
 // Helper to create mock placement
-const createMockPlacement = (name: string): placementClient.Placement => ({
+const createMockPlacement = (name: string): Placement => ({
   apiVersion: 'cluster.open-cluster-management.io/v1beta1',
   kind: 'Placement',
   metadata: { name, namespace: MulticlusterRoleAssignmentNamespace },
