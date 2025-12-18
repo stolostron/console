@@ -218,13 +218,7 @@ const getRoleAssignmentName = (roleAssignment: RoleAssignmentToSave): string => 
   for (const key of sortedKeys) {
     const value = roleAssignment[key as keyof typeof roleAssignment]
 
-    if (key === 'clusterNames' || key === 'clusterSetNames') {
-      sortedObject[key] = value
-    } else if (
-      (key === 'targetNamespaces' || key === 'clusterNames' || key === 'clusterSetNames') &&
-      value &&
-      Array.isArray(value)
-    ) {
+    if (['targetNamespaces', 'clusterNames', 'clusterSetNames'].includes(key) && value && Array.isArray(value)) {
       sortedObject[key] = [...value].sort((a, b) => a.localeCompare(b))
     } else {
       sortedObject[key] = value
