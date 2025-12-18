@@ -1,8 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { fireEvent, render, screen } from '@testing-library/react'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
-import { FlattenedRoleAssignment } from '../../../resources/clients/multicluster-role-assignment-client'
-import { MulticlusterRoleAssignment, MulticlusterRoleAssignmentNamespace } from '../../../resources/multicluster-role-assignment'
+import { FlattenedRoleAssignment } from '../../../resources/clients/model/flattened-role-assignment'
+import {
+  MulticlusterRoleAssignment,
+  MulticlusterRoleAssignmentNamespace,
+} from '../../../resources/multicluster-role-assignment'
 import { RoleAssignmentActionDropdown } from './RoleAssignmentActionDropdown'
 
 // Mock Dropdown component to show the key data we want to verify

@@ -28,9 +28,7 @@
           ],
           "clusterSelection": {
             "type": "placements",
-            "placements": [
-              { "name": "placement-production", "namespace": "open-cluster-management-global-set" }
-            ]
+            "placements": [{ "name": "placement-production", "namespace": "open-cluster-management-global-set" }]
           }
         },
         {
@@ -48,9 +46,7 @@
           ],
           "clusterSelection": {
             "type": "placements",
-            "placements": [
-              { "name": "placement-staging", "namespace": "open-cluster-management-global-set" }
-            ]
+            "placements": [{ "name": "placement-staging", "namespace": "open-cluster-management-global-set" }]
           }
         },
         {
@@ -69,9 +65,7 @@
           ],
           "clusterSelection": {
             "type": "placements",
-            "placements": [
-              { "name": "placement-all-clusters", "namespace": "open-cluster-management-global-set" }
-            ]
+            "placements": [{ "name": "placement-all-clusters", "namespace": "open-cluster-management-global-set" }]
           }
         },
         {
@@ -88,9 +82,7 @@
           ],
           "clusterSelection": {
             "type": "placements",
-            "placements": [
-              { "name": "placement-development", "namespace": "open-cluster-management-global-set" }
-            ]
+            "placements": [{ "name": "placement-development", "namespace": "open-cluster-management-global-set" }]
           }
         },
         {
@@ -110,9 +102,7 @@
           ],
           "clusterSelection": {
             "type": "placements",
-            "placements": [
-              { "name": "placement-storage", "namespace": "open-cluster-management-global-set" }
-            ]
+            "placements": [{ "name": "placement-storage", "namespace": "open-cluster-management-global-set" }]
           }
         }
       ]
@@ -149,9 +139,7 @@
           "targetNamespaces": ["kubevirt-production"],
           "clusterSelection": {
             "type": "placements",
-            "placements": [
-              { "name": "placement-prod-staging", "namespace": "open-cluster-management-global-set" }
-            ]
+            "placements": [{ "name": "placement-prod-staging", "namespace": "open-cluster-management-global-set" }]
           }
         },
         {
@@ -160,9 +148,7 @@
           "targetNamespaces": ["kubevirt-dev", "vm-dev"],
           "clusterSelection": {
             "type": "placements",
-            "placements": [
-              { "name": "placement-dev-test", "namespace": "open-cluster-management-global-set" }
-            ]
+            "placements": [{ "name": "placement-dev-test", "namespace": "open-cluster-management-global-set" }]
           }
         },
         {
@@ -171,9 +157,7 @@
           "targetNamespaces": ["kubevirt-test", "vm-test", "storage-test"],
           "clusterSelection": {
             "type": "placements",
-            "placements": [
-              { "name": "placement-testing", "namespace": "open-cluster-management-global-set" }
-            ]
+            "placements": [{ "name": "placement-testing", "namespace": "open-cluster-management-global-set" }]
           }
         }
       ]
@@ -204,9 +188,7 @@
           "targetNamespaces": ["kubevirt-production"],
           "clusterSelection": {
             "type": "placements",
-            "placements": [
-              { "name": "placement-production", "namespace": "open-cluster-management-global-set" }
-            ]
+            "placements": [{ "name": "placement-production", "namespace": "open-cluster-management-global-set" }]
           }
         },
         {
@@ -215,9 +197,7 @@
           "targetNamespaces": ["kubevirt-dev", "vm-dev"],
           "clusterSelection": {
             "type": "placements",
-            "placements": [
-              { "name": "placement-development", "namespace": "open-cluster-management-global-set" }
-            ]
+            "placements": [{ "name": "placement-development", "namespace": "open-cluster-management-global-set" }]
           }
         }
       ]
@@ -247,9 +227,7 @@
           "targetNamespaces": ["kubevirt-dev"],
           "clusterSelection": {
             "type": "placements",
-            "placements": [
-              { "name": "placement-development", "namespace": "open-cluster-management-global-set" }
-            ]
+            "placements": [{ "name": "placement-development", "namespace": "open-cluster-management-global-set" }]
           }
         },
         {
@@ -258,9 +236,7 @@
           "targetNamespaces": ["kubevirt-staging", "vm-staging"],
           "clusterSelection": {
             "type": "placements",
-            "placements": [
-              { "name": "placement-staging", "namespace": "open-cluster-management-global-set" }
-            ]
+            "placements": [{ "name": "placement-staging", "namespace": "open-cluster-management-global-set" }]
           }
         }
       ]
@@ -290,9 +266,7 @@
           "targetNamespaces": ["kubevirt-dev", "vm-dev", "storage-dev", "networking-dev"],
           "clusterSelection": {
             "type": "placements",
-            "placements": [
-              { "name": "placement-development", "namespace": "open-cluster-management-global-set" }
-            ]
+            "placements": [{ "name": "placement-development", "namespace": "open-cluster-management-global-set" }]
           }
         },
         {
@@ -301,9 +275,7 @@
           "targetNamespaces": ["kubevirt-dev", "vm-dev", "storage-dev", "networking-dev"],
           "clusterSelection": {
             "type": "placements",
-            "placements": [
-              { "name": "placement-development", "namespace": "open-cluster-management-global-set" }
-            ]
+            "placements": [{ "name": "placement-development", "namespace": "open-cluster-management-global-set" }]
           }
         },
         {
@@ -312,9 +284,7 @@
           "targetNamespaces": ["kubevirt-dev", "vm-dev", "storage-dev", "networking-dev"],
           "clusterSelection": {
             "type": "placements",
-            "placements": [
-              { "name": "placement-development", "namespace": "open-cluster-management-global-set" }
-            ]
+            "placements": [{ "name": "placement-development", "namespace": "open-cluster-management-global-set" }]
           }
         }
       ]
@@ -345,9 +315,7 @@
           "targetNamespaces": ["kubevirt-dev", "vm-dev", "storage-dev", "networking-dev"],
           "clusterSelection": {
             "type": "placements",
-            "placements": [
-              { "name": "placement-development", "namespace": "open-cluster-management-global-set" }
-            ]
+            "placements": [{ "name": "placement-development", "namespace": "open-cluster-management-global-set" }]
           }
         }
       ]
@@ -374,9 +342,7 @@
           "targetNamespaces": ["kubevirt-dev", "vm-dev", "storage-dev", "networking-dev"],
           "clusterSelection": {
             "type": "placements",
-            "placements": [
-              { "name": "placement-development", "namespace": "open-cluster-management-global-set" }
-            ]
+            "placements": [{ "name": "placement-development", "namespace": "open-cluster-management-global-set" }]
           }
         }
       ]
@@ -403,9 +369,7 @@
           "targetNamespaces": ["edge-workloads", "kubevirt-edge"],
           "clusterSelection": {
             "type": "placements",
-            "placements": [
-              { "name": "placement-edge-1", "namespace": "open-cluster-management-global-set" }
-            ]
+            "placements": [{ "name": "placement-edge-1", "namespace": "open-cluster-management-global-set" }]
           }
         },
         {
@@ -414,9 +378,7 @@
           "targetNamespaces": ["edge-workloads"],
           "clusterSelection": {
             "type": "placements",
-            "placements": [
-              { "name": "placement-edge-2", "namespace": "open-cluster-management-global-set" }
-            ]
+            "placements": [{ "name": "placement-edge-2", "namespace": "open-cluster-management-global-set" }]
           }
         }
       ]
@@ -446,9 +408,7 @@
           "targetNamespaces": ["kubevirt-production", "monitoring"],
           "clusterSelection": {
             "type": "placements",
-            "placements": [
-              { "name": "placement-production", "namespace": "open-cluster-management-global-set" }
-            ]
+            "placements": [{ "name": "placement-production", "namespace": "open-cluster-management-global-set" }]
           }
         },
         {
@@ -457,9 +417,7 @@
           "targetNamespaces": ["kubevirt-staging", "monitoring"],
           "clusterSelection": {
             "type": "placements",
-            "placements": [
-              { "name": "placement-staging", "namespace": "open-cluster-management-global-set" }
-            ]
+            "placements": [{ "name": "placement-staging", "namespace": "open-cluster-management-global-set" }]
           }
         },
         {
@@ -468,9 +426,7 @@
           "targetNamespaces": ["kubevirt-dev", "monitoring"],
           "clusterSelection": {
             "type": "placements",
-            "placements": [
-              { "name": "placement-development", "namespace": "open-cluster-management-global-set" }
-            ]
+            "placements": [{ "name": "placement-development", "namespace": "open-cluster-management-global-set" }]
           }
         }
       ]
@@ -501,9 +457,7 @@
           "targetNamespaces": ["kubevirt-production", "monitoring", "logging"],
           "clusterSelection": {
             "type": "placements",
-            "placements": [
-              { "name": "placement-production", "namespace": "open-cluster-management-global-set" }
-            ]
+            "placements": [{ "name": "placement-production", "namespace": "open-cluster-management-global-set" }]
           }
         },
         {
@@ -512,9 +466,7 @@
           "targetNamespaces": ["kubevirt-staging"],
           "clusterSelection": {
             "type": "placements",
-            "placements": [
-              { "name": "placement-staging", "namespace": "open-cluster-management-global-set" }
-            ]
+            "placements": [{ "name": "placement-staging", "namespace": "open-cluster-management-global-set" }]
           }
         }
       ]
@@ -544,9 +496,7 @@
           "targetNamespaces": ["kubevirt-production"],
           "clusterSelection": {
             "type": "placements",
-            "placements": [
-              { "name": "placement-production", "namespace": "open-cluster-management-global-set" }
-            ]
+            "placements": [{ "name": "placement-production", "namespace": "open-cluster-management-global-set" }]
           }
         },
         {
@@ -555,9 +505,7 @@
           "targetNamespaces": ["security", "audit-logs"],
           "clusterSelection": {
             "type": "placements",
-            "placements": [
-              { "name": "placement-security", "namespace": "open-cluster-management-global-set" }
-            ]
+            "placements": [{ "name": "placement-security", "namespace": "open-cluster-management-global-set" }]
           }
         }
       ]
@@ -591,9 +539,7 @@
           "targetNamespaces": ["networking", "ingress"],
           "clusterSelection": {
             "type": "placements",
-            "placements": [
-              { "name": "placement-prod-staging", "namespace": "open-cluster-management-global-set" }
-            ]
+            "placements": [{ "name": "placement-prod-staging", "namespace": "open-cluster-management-global-set" }]
           }
         },
         {
@@ -602,9 +548,7 @@
           "targetNamespaces": ["networking", "ingress"],
           "clusterSelection": {
             "type": "placements",
-            "placements": [
-              { "name": "placement-production", "namespace": "open-cluster-management-global-set" }
-            ]
+            "placements": [{ "name": "placement-production", "namespace": "open-cluster-management-global-set" }]
           }
         },
         {
@@ -613,9 +557,7 @@
           "targetNamespaces": ["networking"],
           "clusterSelection": {
             "type": "placements",
-            "placements": [
-              { "name": "placement-edge", "namespace": "open-cluster-management-global-set" }
-            ]
+            "placements": [{ "name": "placement-edge", "namespace": "open-cluster-management-global-set" }]
           }
         }
       ]
@@ -658,9 +600,7 @@
           "targetNamespaces": ["storage-system", "csi"],
           "clusterSelection": {
             "type": "placements",
-            "placements": [
-              { "name": "placement-prod-staging", "namespace": "open-cluster-management-global-set" }
-            ]
+            "placements": [{ "name": "placement-prod-staging", "namespace": "open-cluster-management-global-set" }]
           }
         },
         {
@@ -669,9 +609,7 @@
           "targetNamespaces": ["storage-system", "csi"],
           "clusterSelection": {
             "type": "placements",
-            "placements": [
-              { "name": "placement-prod-staging", "namespace": "open-cluster-management-global-set" }
-            ]
+            "placements": [{ "name": "placement-prod-staging", "namespace": "open-cluster-management-global-set" }]
           }
         },
         {
@@ -680,9 +618,7 @@
           "targetNamespaces": ["storage-dev"],
           "clusterSelection": {
             "type": "placements",
-            "placements": [
-              { "name": "placement-dev-test", "namespace": "open-cluster-management-global-set" }
-            ]
+            "placements": [{ "name": "placement-dev-test", "namespace": "open-cluster-management-global-set" }]
           }
         }
       ]
@@ -725,9 +661,7 @@
           "targetNamespaces": ["shared-workloads"],
           "clusterSelection": {
             "type": "placements",
-            "placements": [
-              { "name": "placement-production", "namespace": "open-cluster-management-global-set" }
-            ]
+            "placements": [{ "name": "placement-production", "namespace": "open-cluster-management-global-set" }]
           }
         }
       ]
