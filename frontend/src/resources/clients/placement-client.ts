@@ -4,11 +4,7 @@ import { MulticlusterRoleAssignmentNamespace } from '../multicluster-role-assign
 import { Placement, PlacementApiVersionBeta, PlacementKind } from '../placement'
 import { PlacementDecision } from '../placement-decision'
 import { createResource, IRequestResult } from '../utils'
-import {
-  getClustersFromPlacementDecision,
-  useFindPlacementDecisions,
-  useGetClustersFromPlacementDecision,
-} from './placement-decision-client'
+import { getClustersFromPlacementDecision, useFindPlacementDecisions } from './placement-decision-client'
 
 interface PlacementQuery {
   placementNames?: string[]
@@ -81,19 +77,6 @@ const getClusterFromPlacements = (placements: Placement[]) => [
       )
   ),
 ]
-
-export const useGetClustersForPlacement = (query: PlacementQuery) => {
-  const placements = useFindPlacements(query)
-
-  const clustersFromPlacementDecisions: string[] = useGetClustersFromPlacementDecision({
-    placementNames: placements
-      .filter((placement) => placement.metadata.name !== undefined)
-      .map((placement) => placement.metadata.name!),
-  })
-  const clustersFromPlacements: string[] = getClusterFromPlacements(placements)
-
-  return [...new Set([...clustersFromPlacements, ...clustersFromPlacementDecisions])]
-}
 
 const doesPlacementDecisionBelongToPlacement = (placementDecision: PlacementDecision, placement: Placement) =>
   placementDecision.metadata.ownerReferences
