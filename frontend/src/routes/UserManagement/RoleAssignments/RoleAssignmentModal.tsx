@@ -2,15 +2,17 @@
 import { ModalVariant } from '@patternfly/react-core'
 import { useContext } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
-import { UserKind } from '../../../resources'
-import { RoleAssignmentToSave } from '../../../resources/clients/model/role-assignment-to-save'
-import { addRoleAssignment, findRoleAssignments } from '../../../resources/clients/multicluster-role-assignment-client'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmModal, AcmToastContext } from '../../../ui-components'
 import { RoleAssignmentFormDataType } from './hook/RoleAssignmentFormDataHook'
 import { RoleAssignmentPreselected } from './model/role-assignment-preselected'
 import { RoleAssignmentForm } from './RoleAssignmentForm'
 import { useGetClustersForPlacementMap } from '../../../resources/clients/placement-client'
+import {
+  dataToRoleAssignmentToSave,
+  existingRoleAssignmentsBySubjectRole,
+  saveRoleAssignment,
+} from './roleAssignmentHelper'
 
 type RoleAssignmentModalProps = {
   close: () => void
@@ -27,74 +29,46 @@ const RoleAssignmentModal = ({ close, isOpen, isEditing, preselected }: RoleAssi
       e.spec.roleAssignments.flatMap((ea) => ea.clusterSelection.placements.map((p) => p.name))
     )
   )
+
+  const { managedClusterSetBindingsState } = useSharedAtoms()
+  const managedClusterSetBindings = useRecoilValue(managedClusterSetBindingsState)
+
+  const { placementsState } = useSharedAtoms()
+  const placements = useRecoilValue(placementsState)
+
   const toastContext = useContext(AcmToastContext)
   const { t } = useTranslation()
 
   const save = async (data: RoleAssignmentFormDataType) => {
-    const subjectNames = data.subject.kind === UserKind ? data.subject.user || [] : data.subject.group || []
-    const existingRoleAssignments = findRoleAssignments(
-      {
-        subjectKinds: [data.subject.kind],
-        subjectNames: subjectNames.filter((e) => e !== undefined),
-      },
+    const roleAssignmentsToSave = dataToRoleAssignmentToSave(data)
+    const existingBySubjectRole = existingRoleAssignmentsBySubjectRole(
+      roleAssignmentsToSave,
+      data.subject.kind,
       multiClusterRoleAssignments,
       clustersForPlacements
     )
 
-    const roleAssignmentsToSave: RoleAssignmentToSave[] = []
-
-    for (const role of data.roles) {
-      for (const subjectName of subjectNames) {
-        roleAssignmentsToSave.push({
-          clusterRole: role,
-          clusterNames: data.scope.clusterNames,
-          clusterSetNames: [], // TODO: on the new wizard
-          targetNamespaces: data.scope.namespaces,
-          subject: {
-            name: subjectName,
-            kind: data.subject.kind,
-          },
-        })
-      }
-    }
-
-    const existingBySubjectRole = new Map<string, any>()
-    for (const ra of existingRoleAssignments) {
-      const key = `${ra.subject.kind}|${ra.subject.name}`
-      existingBySubjectRole.set(key, ra.relatedMulticlusterRoleAssignment)
-    }
-
     await Promise.all(
-      roleAssignmentsToSave.map((roleAssignment) => {
-        const lookupKey = `${roleAssignment.subject.kind}|${roleAssignment.subject.name}`
-        const existingMultiClusterRoleAssignment = existingBySubjectRole.get(lookupKey)
-
-        return addRoleAssignment(roleAssignment, existingMultiClusterRoleAssignment)
-          .then(() =>
+      roleAssignmentsToSave.map((roleAssignment) =>
+        saveRoleAssignment(roleAssignment, existingBySubjectRole, managedClusterSetBindings, placements, {
+          onSuccess: (role) =>
             toastContext.addAlert({
               title: t('Role assignment added'),
-              message: t('A role assignment for {{role}} role added.', {
-                role: roleAssignment.clusterRole,
-              }),
+              message: t('A role assignment for {{role}} role added.', { role }),
               type: 'success',
               autoClose: true,
-            })
-          )
-          .catch((e) => {
-            const isDuplicateError = e?.message?.includes('Duplicate role assignment detected')
+            }),
+          onError: (role, error, isDuplicateError) =>
             toastContext.addAlert({
               title: t('Role assignment creation failed'),
               message: isDuplicateError
                 ? t('This role assignment already exists. Please modify the selection to create a unique assignment.')
-                : t('The role assignment creation for {{role}} role failed. Error: {{error}}', {
-                    role: roleAssignment.clusterRole,
-                    error: e,
-                  }),
+                : t('The role assignment creation for {{role}} role failed. Error: {{error}}', { role, error }),
               type: 'danger',
               autoClose: true,
-            })
-          })
-      })
+            }),
+        })
+      )
     )
     close()
   }

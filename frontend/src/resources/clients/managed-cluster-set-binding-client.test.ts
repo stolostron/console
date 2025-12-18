@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { ManagedClusterSetBindingApiVersion, ManagedClusterSetBindingKind } from '../managed-cluster-set-binding'
+import { MulticlusterRoleAssignmentNamespace } from '../multicluster-role-assignment'
 import { createResource } from '../utils'
 import { createForClusterSets } from './managed-cluster-set-binding-client'
 
@@ -34,7 +35,7 @@ describe('managed-cluster-set-binding-client', () => {
         kind: ManagedClusterSetBindingKind,
         metadata: {
           name: clusterSet,
-          namespace: 'open-cluster-management-global-set',
+          namespace: MulticlusterRoleAssignmentNamespace,
         },
         spec: {
           clusterSet,
@@ -58,7 +59,7 @@ describe('managed-cluster-set-binding-client', () => {
       expect(createResourceMock).toHaveBeenCalledWith(
         expect.objectContaining({
           metadata: expect.objectContaining({
-            namespace: 'open-cluster-management-global-set',
+            namespace: MulticlusterRoleAssignmentNamespace,
           }),
         })
       )

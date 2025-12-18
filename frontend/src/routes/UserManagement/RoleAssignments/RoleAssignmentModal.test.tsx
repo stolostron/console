@@ -47,6 +47,11 @@ jest.mock('../../../shared-recoil', () => ({
 
 jest.mock('../../../resources/clients/placement-client', () => ({
   useGetClustersForPlacementMap: jest.fn(() => ({})),
+  findPlacements: jest.fn(() => []),
+}))
+
+jest.mock('../../../resources/clients/managed-cluster-set-binding-client', () => ({
+  findManagedClusterSetBinding: jest.fn(() => []),
 }))
 
 const mockAddRoleAssignment = addRoleAssignment as jest.MockedFunction<typeof addRoleAssignment>
@@ -291,8 +296,8 @@ describe('RoleAssignmentModal', () => {
 
       await waitFor(() => {
         expect(mockAddRoleAssignment).toHaveBeenCalled()
-        // existingMulticlusterRoleAssignment is the second argument (index 1)
-        expect(mockAddRoleAssignment.mock.calls[0][1]).toBe(existingAssignment)
+        // The second argument is an object with existingMulticlusterRoleAssignment
+        expect(mockAddRoleAssignment.mock.calls[0][1].existingMulticlusterRoleAssignment).toBe(existingAssignment)
         // When scope.kind is 'all' but no clusterNames are provided, the value is undefined
         expect(mockAddRoleAssignment.mock.calls[0][0].clusterNames).toBeUndefined()
       })
@@ -332,18 +337,18 @@ describe('RoleAssignmentModal', () => {
       await waitFor(() => {
         expect(mockAddRoleAssignment).toHaveBeenCalledTimes(2)
         // 1st call: user1 should reuse existing assignment
-        // addRoleAssignment(roleAssignment, existingMulticlusterRoleAssignment)
+        // addRoleAssignment(roleAssignment, { existingMulticlusterRoleAssignment, ... })
         expect(mockAddRoleAssignment).toHaveBeenNthCalledWith(
           1,
           expect.objectContaining({ subject: expect.objectContaining({ name: 'user1' }) }),
-          existingAssignment
+          expect.objectContaining({ existingMulticlusterRoleAssignment: existingAssignment })
         )
 
         // 2nd call: user2 should create a new assignment (no existing)
         expect(mockAddRoleAssignment).toHaveBeenNthCalledWith(
           2,
           expect.objectContaining({ subject: expect.objectContaining({ name: 'user2' }) }),
-          undefined
+          expect.objectContaining({ existingMulticlusterRoleAssignment: undefined })
         )
       })
     })
@@ -372,8 +377,8 @@ describe('RoleAssignmentModal', () => {
 
       await waitFor(() => {
         expect(mockAddRoleAssignment).toHaveBeenCalled()
-        // existingMulticlusterRoleAssignment is at index 1, should be undefined for new assignments
-        expect(mockAddRoleAssignment.mock.calls[0][1]).toBeUndefined()
+        // existingMulticlusterRoleAssignment should be undefined for new assignments
+        expect(mockAddRoleAssignment.mock.calls[0][1].existingMulticlusterRoleAssignment).toBeUndefined()
       })
     })
 

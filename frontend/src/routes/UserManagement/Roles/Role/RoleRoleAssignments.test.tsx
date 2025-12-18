@@ -8,6 +8,7 @@ import { RoleRoleAssignments } from './RoleRoleAssignments'
 import { FlattenedRoleAssignment } from '../../../../resources/clients/multicluster-role-assignment-client'
 import { useCurrentRole } from '../RolesPage'
 import { useSharedAtoms, useRecoilValue } from '../../../../shared-recoil'
+import { MulticlusterRoleAssignmentNamespace } from '../../../../resources'
 
 jest.mock('../RolesPage', () => ({
   useCurrentRole: jest.fn(),
@@ -83,7 +84,7 @@ const mockMulticlusterRoleAssignments = [
     kind: 'MulticlusterRoleAssignment',
     metadata: {
       name: 'kubevirt-edit-role-assignment',
-      namespace: 'open-cluster-management-global-set',
+      namespace: MulticlusterRoleAssignmentNamespace,
       uid: '1',
     },
     spec: {
@@ -94,7 +95,7 @@ const mockMulticlusterRoleAssignments = [
           clusterRole: 'kubevirt.io:edit',
           clusterSelection: {
             type: 'placements' as const,
-            placements: [{ name: 'placement-development-cluster', namespace: 'open-cluster-management-global-set' }],
+            placements: [{ name: 'placement-development-cluster', namespace: MulticlusterRoleAssignmentNamespace }],
           },
           targetNamespaces: ['kubevirt-dev', 'vm-dev'],
         },

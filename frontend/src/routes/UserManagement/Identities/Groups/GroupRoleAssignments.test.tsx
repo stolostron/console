@@ -6,6 +6,7 @@ import { GroupRoleAssignments } from './GroupRoleAssignments'
 import { render, screen } from '@testing-library/react'
 import { FlattenedRoleAssignment } from '../../../../resources/clients/multicluster-role-assignment-client'
 import { useRecoilValue } from '../../../../shared-recoil'
+import { MulticlusterRoleAssignmentNamespace } from '../../../../resources'
 
 // Mock the translation hook
 jest.mock('../../../../lib/acm-i18next', () => ({
@@ -65,7 +66,7 @@ const mockMulticlusterRoleAssignments = [
     kind: 'MulticlusterRoleAssignment',
     metadata: {
       name: 'developers-role-assignment',
-      namespace: 'open-cluster-management-global-set',
+      namespace: MulticlusterRoleAssignmentNamespace,
       uid: '1',
     },
     spec: {
@@ -76,7 +77,7 @@ const mockMulticlusterRoleAssignments = [
           clusterRole: 'kubevirt.io:edit',
           clusterSelection: {
             type: 'placements' as const,
-            placements: [{ name: 'placement-development-cluster', namespace: 'open-cluster-management-global-set' }],
+            placements: [{ name: 'placement-development-cluster', namespace: MulticlusterRoleAssignmentNamespace }],
           },
           targetNamespaces: ['kubevirt-dev', 'vm-dev'],
         },
@@ -85,7 +86,7 @@ const mockMulticlusterRoleAssignments = [
           clusterRole: 'network-admin',
           clusterSelection: {
             type: 'placements' as const,
-            placements: [{ name: 'placement-development-cluster', namespace: 'open-cluster-management-global-set' }],
+            placements: [{ name: 'placement-development-cluster', namespace: MulticlusterRoleAssignmentNamespace }],
           },
           targetNamespaces: ['networking-dev'],
         },
@@ -94,7 +95,7 @@ const mockMulticlusterRoleAssignments = [
           clusterRole: 'storage-admin',
           clusterSelection: {
             type: 'placements' as const,
-            placements: [{ name: 'placement-development-cluster', namespace: 'open-cluster-management-global-set' }],
+            placements: [{ name: 'placement-development-cluster', namespace: MulticlusterRoleAssignmentNamespace }],
           },
           targetNamespaces: ['storage-dev'],
         },

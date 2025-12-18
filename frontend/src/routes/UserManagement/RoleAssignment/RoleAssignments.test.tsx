@@ -4,15 +4,18 @@ import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
 import { defaultPlugin, PluginContext } from '../../../lib/PluginContext'
+import { useIsAnyNamespaceAuthorized } from '../../../lib/rbac-util'
 import { clickByText, waitForText } from '../../../lib/test-util'
 import {
   deleteRoleAssignment,
   FlattenedRoleAssignment,
 } from '../../../resources/clients/multicluster-role-assignment-client'
-import { MulticlusterRoleAssignment } from '../../../resources/multicluster-role-assignment'
+import {
+  MulticlusterRoleAssignment,
+  MulticlusterRoleAssignmentNamespace,
+} from '../../../resources/multicluster-role-assignment'
 import { AcmToastContext } from '../../../ui-components'
 import { RoleAssignments } from './RoleAssignments'
-import { useIsAnyNamespaceAuthorized } from '../../../lib/rbac-util'
 
 // Mock Apollo Client
 jest.mock('@apollo/client', () => ({
@@ -69,7 +72,7 @@ const mockMulticlusterRoleAssignments: MulticlusterRoleAssignment[] = [
           targetNamespaces: ['default', 'kube-system'],
           clusterSelection: {
             type: 'placements',
-            placements: [{ name: 'placement-test-cluster-1', namespace: 'open-cluster-management-global-set' }],
+            placements: [{ name: 'placement-test-cluster-1', namespace: MulticlusterRoleAssignmentNamespace }],
           },
         },
         {
@@ -78,7 +81,7 @@ const mockMulticlusterRoleAssignments: MulticlusterRoleAssignment[] = [
           targetNamespaces: ['monitoring'],
           clusterSelection: {
             type: 'placements',
-            placements: [{ name: 'placement-test-cluster-2', namespace: 'open-cluster-management-global-set' }],
+            placements: [{ name: 'placement-test-cluster-2', namespace: MulticlusterRoleAssignmentNamespace }],
           },
         },
       ],
@@ -115,7 +118,7 @@ const mockMulticlusterRoleAssignments: MulticlusterRoleAssignment[] = [
           targetNamespaces: ['app-namespace'],
           clusterSelection: {
             type: 'placements',
-            placements: [{ name: 'placement-dev-cluster', namespace: 'open-cluster-management-global-set' }],
+            placements: [{ name: 'placement-dev-cluster', namespace: MulticlusterRoleAssignmentNamespace }],
           },
         },
       ],
@@ -146,7 +149,7 @@ const mockMulticlusterRoleAssignments: MulticlusterRoleAssignment[] = [
           targetNamespaces: ['staging-ns-1', 'staging-ns-2'],
           clusterSelection: {
             type: 'placements',
-            placements: [{ name: 'placement-staging-cluster', namespace: 'open-cluster-management-global-set' }],
+            placements: [{ name: 'placement-staging-cluster', namespace: MulticlusterRoleAssignmentNamespace }],
           },
         },
       ],
@@ -162,7 +165,7 @@ const mockRoleAssignments: FlattenedRoleAssignment[] = [
     targetNamespaces: ['default', 'kube-system'],
     clusterSelection: {
       type: 'placements',
-      placements: [{ name: 'placement-test-cluster-1', namespace: 'open-cluster-management-global-set' }],
+      placements: [{ name: 'placement-test-cluster-1', namespace: MulticlusterRoleAssignmentNamespace }],
     },
     clusterNames: ['test-cluster-1'],
     relatedMulticlusterRoleAssignment: mockMulticlusterRoleAssignments[0],
@@ -178,7 +181,7 @@ const mockRoleAssignments: FlattenedRoleAssignment[] = [
     targetNamespaces: ['monitoring'],
     clusterSelection: {
       type: 'placements',
-      placements: [{ name: 'placement-test-cluster-2', namespace: 'open-cluster-management-global-set' }],
+      placements: [{ name: 'placement-test-cluster-2', namespace: MulticlusterRoleAssignmentNamespace }],
     },
     clusterNames: ['test-cluster-2'],
     relatedMulticlusterRoleAssignment: mockMulticlusterRoleAssignments[0],
@@ -194,7 +197,7 @@ const mockRoleAssignments: FlattenedRoleAssignment[] = [
     targetNamespaces: ['app-namespace'],
     clusterSelection: {
       type: 'placements',
-      placements: [{ name: 'placement-dev-cluster', namespace: 'open-cluster-management-global-set' }],
+      placements: [{ name: 'placement-dev-cluster', namespace: MulticlusterRoleAssignmentNamespace }],
     },
     clusterNames: ['dev-cluster'],
     relatedMulticlusterRoleAssignment: mockMulticlusterRoleAssignments[1],
@@ -210,7 +213,7 @@ const mockRoleAssignments: FlattenedRoleAssignment[] = [
     targetNamespaces: ['staging-ns-1', 'staging-ns-2'],
     clusterSelection: {
       type: 'placements',
-      placements: [{ name: 'placement-staging-cluster', namespace: 'open-cluster-management-global-set' }],
+      placements: [{ name: 'placement-staging-cluster', namespace: MulticlusterRoleAssignmentNamespace }],
     },
     clusterNames: ['staging-cluster'],
     relatedMulticlusterRoleAssignment: mockMulticlusterRoleAssignments[2],

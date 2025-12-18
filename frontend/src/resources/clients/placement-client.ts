@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
+import { MulticlusterRoleAssignmentNamespace } from '../multicluster-role-assignment'
 import { Placement, PlacementApiVersionBeta, PlacementKind } from '../placement'
 import { PlacementDecision } from '../placement-decision'
 import { createResource, IRequestResult } from '../utils'
@@ -11,16 +12,49 @@ import {
 
 interface PlacementQuery {
   placementNames?: string[]
+  clusterNames?: string[]
+  clusterSetNames?: string[]
+  logicalOperator?: 'and' | 'or'
 }
 
 const isPlacementNameMatch = (placement: Placement, query: PlacementQuery) =>
   placement.metadata.name && query.placementNames?.length && query.placementNames.includes(placement.metadata.name)
 
+const isClusterNameMatch = (placement: Placement, query: PlacementQuery) =>
+  placement.spec.predicates?.some((predicate) =>
+    predicate.requiredClusterSelector?.labelSelector?.matchExpressions?.some(
+      (matchExpression) =>
+        matchExpression.key === 'name' &&
+        matchExpression.values?.length &&
+        matchExpression.values?.some((value) => query.clusterNames?.includes(value))
+    )
+  )
+
+const isClusterSetNameMatch = (placement: Placement, query: PlacementQuery) =>
+  placement.spec.clusterSets?.some((clusterSet) => query.clusterSetNames?.includes(clusterSet))
+
+export const findPlacements = (placements: Placement[], query: PlacementQuery): Placement[] => {
+  const isPlacementNameMatchFn = (placement: Placement) => isPlacementNameMatch(placement, query)
+  const isClusterNameMatchFn = (placement: Placement) => isClusterNameMatch(placement, query)
+  const isClusterSetNameMatchFn = (placement: Placement) => isClusterSetNameMatch(placement, query)
+  if (query.logicalOperator === 'or') {
+    return placements?.filter(
+      (placement) =>
+        isPlacementNameMatchFn(placement) || isClusterNameMatchFn(placement) || isClusterSetNameMatchFn(placement)
+    )
+  } else {
+    return placements?.filter(
+      (placement) =>
+        isPlacementNameMatchFn(placement) && isClusterNameMatchFn(placement) && isClusterSetNameMatchFn(placement)
+    )
+  }
+}
+
 export const useFindPlacements = (query: PlacementQuery): Placement[] => {
   const { placementsState } = useSharedAtoms()
   const placements = useRecoilValue(placementsState)
 
-  return placements?.filter((placement) => isPlacementNameMatch(placement, query))
+  return findPlacements(placements, query)
 }
 
 const getClusterFromPlacements = (placements: Placement[]) => [
@@ -85,7 +119,7 @@ export const useGetClustersForPlacementMap = (placementNames: string[]) => {
 
 const create = (placement: Placement): IRequestResult<Placement> => createResource<Placement>(placement)
 
-export const createForClusterSets = (clusterSets: string[], namespace = 'open-cluster-management-global-set') => {
+export const createForClusterSets = (clusterSets: string[], namespace = MulticlusterRoleAssignmentNamespace) => {
   const placement: Placement = {
     apiVersion: PlacementApiVersionBeta,
     kind: PlacementKind,
@@ -107,7 +141,7 @@ export const createForClusterSets = (clusterSets: string[], namespace = 'open-cl
   return create(placement)
 }
 
-export const createForClusters = (clusters: string[], namespace = 'open-cluster-management-global-set') => {
+export const createForClusters = (clusters: string[], namespace = MulticlusterRoleAssignmentNamespace) => {
   const placement: Placement = {
     apiVersion: PlacementApiVersionBeta,
     kind: PlacementKind,

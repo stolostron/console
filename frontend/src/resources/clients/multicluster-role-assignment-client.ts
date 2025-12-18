@@ -2,6 +2,7 @@
 import { sha256 } from 'js-sha256'
 import { get } from 'lodash'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
+import { ManagedClusterSetBinding } from '../managed-cluster-set-binding'
 import {
   MulticlusterRoleAssignment,
   MulticlusterRoleAssignmentApiVersion,
@@ -205,14 +206,26 @@ const validateRoleAssignmentName = (
  */
 const areRoleAssignmentsEquals = (a: RoleAssignment, b: RoleAssignment) => a.name === b.name
 
-async function createAdditionalRoleAssignmentResources(roleAssignment: RoleAssignmentToSave): Promise<Placement> {
-  await Promise.all(
-    roleAssignment.clusterSetNames?.map((clusterSetName) => createForClusterSetsBinding(clusterSetName).promise) || []
-  )
+async function createAdditionalRoleAssignmentResources(
+  roleAssignment: RoleAssignmentToSave,
+  {
+    existingManagedClusterSetBindings,
+    existingPlacement,
+  }: { existingManagedClusterSetBindings?: ManagedClusterSetBinding[]; existingPlacement?: Placement }
+): Promise<Placement> {
+  if (!existingManagedClusterSetBindings?.length) {
+    await Promise.all(
+      roleAssignment.clusterSetNames?.map((clusterSetName) => createForClusterSetsBinding(clusterSetName).promise) || []
+    )
+  }
 
-  return roleAssignment.clusterNames
-    ? await createForClusters(roleAssignment.clusterNames).promise
-    : await createForClusterSets(roleAssignment.clusterSetNames!).promise
+  if (!existingPlacement) {
+    return roleAssignment.clusterNames
+      ? await createForClusters(roleAssignment.clusterNames).promise
+      : await createForClusterSets(roleAssignment.clusterSetNames!).promise
+  } else {
+    return existingPlacement
+  }
 }
 
 // TODO: get existingRelatedRoleAssignmets once useFindRoleAssignments is not a custom hook
@@ -224,7 +237,15 @@ async function createAdditionalRoleAssignmentResources(roleAssignment: RoleAssig
  */
 export const addRoleAssignment = async (
   roleAssignment: RoleAssignmentToSave,
-  existingMulticlusterRoleAssignment?: MulticlusterRoleAssignment
+  {
+    existingMulticlusterRoleAssignment,
+    existingManagedClusterSetBindings,
+    existingPlacement,
+  }: {
+    existingMulticlusterRoleAssignment?: MulticlusterRoleAssignment
+    existingManagedClusterSetBindings?: ManagedClusterSetBinding[]
+    existingPlacement?: Placement
+  }
 ): Promise<IRequestResult<MulticlusterRoleAssignment>> => {
   const existingRoleAssignments = existingMulticlusterRoleAssignment?.spec.roleAssignments || []
   const isUnique = validateRoleAssignmentName(roleAssignment, existingRoleAssignments)
@@ -237,7 +258,10 @@ export const addRoleAssignment = async (
   }
 
   if (roleAssignment.clusterNames?.length || roleAssignment.clusterSetNames?.length) {
-    const placement: Placement = await createAdditionalRoleAssignmentResources(roleAssignment)
+    const placement: Placement = await createAdditionalRoleAssignmentResources(roleAssignment, {
+      existingManagedClusterSetBindings,
+      existingPlacement,
+    })
 
     const mappedRoleAssignment = mapRoleAssignmentBeforeSaving(roleAssignment, placement)
     if (existingMulticlusterRoleAssignment) {

@@ -2,7 +2,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { renderHook } from '@testing-library/react-hooks'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
-import { MulticlusterRoleAssignment } from '../multicluster-role-assignment'
+import { MulticlusterRoleAssignment, MulticlusterRoleAssignmentNamespace } from '../multicluster-role-assignment'
 import { GroupKind, UserKind } from '../rbac'
 import { deleteResource, patchResource } from '../utils'
 import multiclusterRoleAssignmentsMockData from './mock-data/multicluster-role-assignments.json'
@@ -79,7 +79,7 @@ describe('multicluster-role-assignment-client', function () {
         kind: 'MulticlusterRoleAssignment',
         metadata: {
           name: 'admin-user-role-assignment-console',
-          namespace: 'open-cluster-management-global-set',
+          namespace: MulticlusterRoleAssignmentNamespace,
           uid: '2f4a6c8e-3b7d-4e9a-6c2f-8e4a7b9d2c5f',
           labels: { 'open-cluster-management.io/managed-by': 'console' },
         },
@@ -92,7 +92,7 @@ describe('multicluster-role-assignment-client', function () {
               targetNamespaces: ['kubevirt-production'],
               clusterSelection: {
                 type: 'placements',
-                placements: [{ name: 'placement-production', namespace: 'open-cluster-management-global-set' }],
+                placements: [{ name: 'placement-production', namespace: MulticlusterRoleAssignmentNamespace }],
               },
             },
             {
@@ -101,7 +101,7 @@ describe('multicluster-role-assignment-client', function () {
               targetNamespaces: ['kubevirt-dev', 'vm-dev'],
               clusterSelection: {
                 type: 'placements',
-                placements: [{ name: 'placement-development', namespace: 'open-cluster-management-global-set' }],
+                placements: [{ name: 'placement-development', namespace: MulticlusterRoleAssignmentNamespace }],
               },
             },
           ],
@@ -462,7 +462,7 @@ describe('multicluster-role-assignment-client', function () {
         clusterRole: 'non-existing',
         clusterSelection: {
           type: 'placements',
-          placements: [{ name: 'placement-production', namespace: 'open-cluster-management-global-set' }],
+          placements: [{ name: 'placement-production', namespace: MulticlusterRoleAssignmentNamespace }],
         },
         clusterNames: ['production-cluster'],
         subject: {

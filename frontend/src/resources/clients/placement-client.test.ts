@@ -10,6 +10,7 @@ import {
   useFindPlacements,
   useGetClustersForPlacement,
 } from './placement-client'
+import { MulticlusterRoleAssignmentNamespace } from '../multicluster-role-assignment'
 
 jest.mock('../../shared-recoil', () => ({
   useRecoilValue: jest.fn(),
@@ -370,7 +371,7 @@ describe('placement-client', () => {
         kind: PlacementKind,
         metadata: {
           name: 'cluster-set-1-and-cluster-set-2',
-          namespace: 'open-cluster-management-global-set',
+          namespace: MulticlusterRoleAssignmentNamespace,
         },
         spec: {
           clusterSets,
@@ -404,7 +405,7 @@ describe('placement-client', () => {
       expect(createResourceMock).toHaveBeenCalledWith(
         expect.objectContaining({
           metadata: expect.objectContaining({
-            namespace: 'open-cluster-management-global-set',
+            namespace: MulticlusterRoleAssignmentNamespace,
           }),
         })
       )
@@ -527,7 +528,7 @@ describe('placement-client', () => {
         kind: PlacementKind,
         metadata: {
           name: 'clusters-cluster-1-and-cluster-2',
-          namespace: 'open-cluster-management-global-set',
+          namespace: MulticlusterRoleAssignmentNamespace,
         },
         spec: {
           predicates: [
@@ -569,7 +570,7 @@ describe('placement-client', () => {
       expect(createResourceMock).toHaveBeenCalledWith(
         expect.objectContaining({
           metadata: expect.objectContaining({
-            namespace: 'open-cluster-management-global-set',
+            namespace: MulticlusterRoleAssignmentNamespace,
           }),
         })
       )

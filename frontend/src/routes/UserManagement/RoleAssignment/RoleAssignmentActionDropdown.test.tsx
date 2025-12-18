@@ -2,7 +2,7 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
 import { FlattenedRoleAssignment } from '../../../resources/clients/multicluster-role-assignment-client'
-import { MulticlusterRoleAssignment } from '../../../resources/multicluster-role-assignment'
+import { MulticlusterRoleAssignment, MulticlusterRoleAssignmentNamespace } from '../../../resources/multicluster-role-assignment'
 import { RoleAssignmentActionDropdown } from './RoleAssignmentActionDropdown'
 
 // Mock Dropdown component to show the key data we want to verify
@@ -35,8 +35,8 @@ const mockRoleAssignment: FlattenedRoleAssignment = {
   clusterSelection: {
     type: 'placements',
     placements: [
-      { name: 'placement-production', namespace: 'open-cluster-management-global-set' },
-      { name: 'placement-staging', namespace: 'open-cluster-management-global-set' },
+      { name: 'placement-production', namespace: MulticlusterRoleAssignmentNamespace },
+      { name: 'placement-staging', namespace: MulticlusterRoleAssignmentNamespace },
     ],
   },
   clusterNames: ['production', 'staging'],

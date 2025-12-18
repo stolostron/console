@@ -7,6 +7,7 @@ import { User } from '../../../../resources/rbac'
 import { FlattenedRoleAssignment } from '../../../../resources/clients/multicluster-role-assignment-client'
 import { UserRoleAssignments } from './UserRoleAssignments'
 import { useRecoilValue } from '../../../../shared-recoil'
+import { MulticlusterRoleAssignmentNamespace } from '../../../../resources'
 
 const mockUsers: User[] = [
   {
@@ -29,7 +30,7 @@ const mockMulticlusterRoleAssignments = [
     kind: 'MulticlusterRoleAssignment',
     metadata: {
       name: 'alice-trask-role-assignment',
-      namespace: 'open-cluster-management-global-set',
+      namespace: MulticlusterRoleAssignmentNamespace,
       uid: '1',
     },
     spec: {
@@ -40,7 +41,7 @@ const mockMulticlusterRoleAssignments = [
           clusterRole: 'kubevirt.io:edit',
           clusterSelection: {
             type: 'placements' as const,
-            placements: [{ name: 'placement-development-cluster', namespace: 'open-cluster-management-global-set' }],
+            placements: [{ name: 'placement-development-cluster', namespace: MulticlusterRoleAssignmentNamespace }],
           },
           targetNamespaces: ['kubevirt-dev', 'vm-dev'],
         },
@@ -49,7 +50,7 @@ const mockMulticlusterRoleAssignments = [
           clusterRole: 'network-admin',
           clusterSelection: {
             type: 'placements' as const,
-            placements: [{ name: 'placement-development-cluster', namespace: 'open-cluster-management-global-set' }],
+            placements: [{ name: 'placement-development-cluster', namespace: MulticlusterRoleAssignmentNamespace }],
           },
           targetNamespaces: ['networking-dev'],
         },
