@@ -15,8 +15,14 @@ import {
   dataToRoleAssignmentToSave,
   existingRoleAssignmentsBySubjectRole,
   saveRoleAssignment,
-  SaveRoleAssignmentCallbacks,
-} from './roleAssignmentHelper'
+} from './roleAssignmentModalHelper'
+import { RoleAssignmentFormDataType } from './hook/RoleAssignmentFormDataHook'
+import { Subject } from '../../../resources/kubernetes-client'
+
+type SaveRoleAssignmentCallbacks = {
+  onSuccess: (role: string) => void
+  onError: (role: string, error: unknown, isDuplicateError: boolean) => void
+}
 
 jest.mock('../../../resources/clients/multicluster-role-assignment-client', () => ({
   findRoleAssignments: jest.fn(),
@@ -325,13 +331,13 @@ describe('roleAssignmentHelper', () => {
     const createMockMulticlusterRoleAssignment = (
       name: string,
       subjectName: string,
-      subjectKind: string
+      subjectKind: Subject['kind']
     ): MulticlusterRoleAssignment => ({
       apiVersion: MulticlusterRoleAssignmentApiVersion,
       kind: MulticlusterRoleAssignmentKind,
       metadata: { name, namespace: 'open-cluster-management-global-set' },
       spec: {
-        subjects: [{ name: subjectName, kind: subjectKind, apiGroup: 'rbac.authorization.k8s.io' }],
+        subject: { name: subjectName, kind: subjectKind, apiGroup: 'rbac.authorization.k8s.io' },
         roleAssignments: [
           {
             name: 'test-role-assignment',
@@ -344,14 +350,14 @@ describe('roleAssignmentHelper', () => {
 
     const createMockFlattenedRoleAssignment = (
       subjectName: string,
-      subjectKind: string,
+      subjectKind: Subject['kind'],
       multiclusterRoleAssignment: MulticlusterRoleAssignment
     ): FlattenedRoleAssignment => ({
       name: 'test-role-assignment',
       clusterRole: 'admin',
       clusterSelection: { type: 'placements', placements: [{ name: 'test-placement', namespace: 'test-ns' }] },
       clusterNames: ['cluster-1'],
-      subject: { name: subjectName, kind: subjectKind, apiGroup: 'rbac.authorization.k8s.io' },
+      subject: { name: subjectName, kind: subjectKind },
       relatedMulticlusterRoleAssignment: multiclusterRoleAssignment,
     })
 
@@ -393,8 +399,18 @@ describe('roleAssignmentHelper', () => {
       mockFindRoleAssignments.mockReturnValue([flattened1, flattened2])
 
       const roleAssignmentsToSave: RoleAssignmentToSave[] = [
-        { clusterRole: 'admin', clusterNames: ['cluster-1'], clusterSetNames: [], subject: { name: 'user1', kind: UserKind } },
-        { clusterRole: 'admin', clusterNames: ['cluster-1'], clusterSetNames: [], subject: { name: 'user2', kind: UserKind } },
+        {
+          clusterRole: 'admin',
+          clusterNames: ['cluster-1'],
+          clusterSetNames: [],
+          subject: { name: 'user1', kind: UserKind },
+        },
+        {
+          clusterRole: 'admin',
+          clusterNames: ['cluster-1'],
+          clusterSetNames: [],
+          subject: { name: 'user2', kind: UserKind },
+        },
       ]
 
       const result = existingRoleAssignmentsBySubjectRole(roleAssignmentsToSave, UserKind, [], {})
@@ -411,7 +427,12 @@ describe('roleAssignmentHelper', () => {
       mockFindRoleAssignments.mockReturnValue([flattened])
 
       const roleAssignmentsToSave: RoleAssignmentToSave[] = [
-        { clusterRole: 'editor', clusterNames: ['cluster-1'], clusterSetNames: [], subject: { name: 'developers', kind: GroupKind } },
+        {
+          clusterRole: 'editor',
+          clusterNames: ['cluster-1'],
+          clusterSetNames: [],
+          subject: { name: 'developers', kind: GroupKind },
+        },
       ]
 
       const result = existingRoleAssignmentsBySubjectRole(roleAssignmentsToSave, GroupKind, [], {})
@@ -429,9 +450,24 @@ describe('roleAssignmentHelper', () => {
       mockFindRoleAssignments.mockReturnValue([])
 
       const roleAssignmentsToSave: RoleAssignmentToSave[] = [
-        { clusterRole: 'admin', clusterNames: ['cluster-1'], clusterSetNames: [], subject: { name: 'user1', kind: UserKind } },
-        { clusterRole: 'admin', clusterNames: ['cluster-1'], clusterSetNames: [], subject: { name: undefined, kind: UserKind } },
-        { clusterRole: 'admin', clusterNames: ['cluster-1'], clusterSetNames: [], subject: { name: 'user2', kind: UserKind } },
+        {
+          clusterRole: 'admin',
+          clusterNames: ['cluster-1'],
+          clusterSetNames: [],
+          subject: { name: 'user1', kind: UserKind },
+        },
+        {
+          clusterRole: 'admin',
+          clusterNames: ['cluster-1'],
+          clusterSetNames: [],
+          subject: { name: undefined as unknown as string, kind: UserKind },
+        },
+        {
+          clusterRole: 'admin',
+          clusterNames: ['cluster-1'],
+          clusterSetNames: [],
+          subject: { name: 'user2', kind: UserKind },
+        },
       ]
 
       existingRoleAssignmentsBySubjectRole(roleAssignmentsToSave, UserKind, [], {})
@@ -447,7 +483,12 @@ describe('roleAssignmentHelper', () => {
       mockFindRoleAssignments.mockReturnValue([])
 
       const roleAssignmentsToSave: RoleAssignmentToSave[] = [
-        { clusterRole: 'admin', clusterNames: ['cluster-1'], clusterSetNames: [], subject: { name: 'user1', kind: UserKind } },
+        {
+          clusterRole: 'admin',
+          clusterNames: ['cluster-1'],
+          clusterSetNames: [],
+          subject: { name: 'user1', kind: UserKind },
+        },
       ]
       const clustersForPlacements = {
         'placement-1': ['cluster-a', 'cluster-b'],
@@ -472,7 +513,12 @@ describe('roleAssignmentHelper', () => {
       mockFindRoleAssignments.mockReturnValue([flattened1, flattened2])
 
       const roleAssignmentsToSave: RoleAssignmentToSave[] = [
-        { clusterRole: 'admin', clusterNames: ['cluster-1'], clusterSetNames: [], subject: { name: 'user1', kind: UserKind } },
+        {
+          clusterRole: 'admin',
+          clusterNames: ['cluster-1'],
+          clusterSetNames: [],
+          subject: { name: 'user1', kind: UserKind },
+        },
       ]
 
       const result = existingRoleAssignmentsBySubjectRole(roleAssignmentsToSave, UserKind, [], {})
@@ -489,7 +535,12 @@ describe('roleAssignmentHelper', () => {
       mockFindRoleAssignments.mockReturnValue([flattenedUser])
 
       const roleAssignmentsToSave: RoleAssignmentToSave[] = [
-        { clusterRole: 'admin', clusterNames: ['cluster-1'], clusterSetNames: [], subject: { name: 'user1', kind: UserKind } },
+        {
+          clusterRole: 'admin',
+          clusterNames: ['cluster-1'],
+          clusterSetNames: [],
+          subject: { name: 'user1', kind: UserKind },
+        },
       ]
 
       const result = existingRoleAssignmentsBySubjectRole(roleAssignmentsToSave, UserKind, [], {})
@@ -516,7 +567,7 @@ describe('roleAssignmentHelper', () => {
       kind: MulticlusterRoleAssignmentKind,
       metadata: { name, namespace: MulticlusterRoleAssignmentNamespace },
       spec: {
-        subjects: [{ name: 'user1', kind: UserKind, apiGroup: 'rbac.authorization.k8s.io' }],
+        subject: { name: 'user1', kind: UserKind },
         roleAssignments: [
           {
             name: 'test-role-assignment',
@@ -722,4 +773,3 @@ describe('roleAssignmentHelper', () => {
     })
   })
 })
-

@@ -12,7 +12,7 @@ import {
   dataToRoleAssignmentToSave,
   existingRoleAssignmentsBySubjectRole,
   saveRoleAssignment,
-} from './roleAssignmentHelper'
+} from './roleAssignmentModalHelper'
 
 type RoleAssignmentModalProps = {
   close: () => void
