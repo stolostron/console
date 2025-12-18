@@ -103,6 +103,13 @@ export const saveRoleAssignment = (
     clusterSetNames: roleAssignment.clusterSetNames,
     logicalOperator: 'or',
   })
+  console.log(
+    'KIKE saveRoleAssignment',
+    existingPlacements,
+    existingManagedClusterSetBindings,
+    roleAssignment.clusterNames,
+    roleAssignment.clusterSetNames
+  )
 
   return addRoleAssignment(roleAssignment, {
     existingMulticlusterRoleAssignment,

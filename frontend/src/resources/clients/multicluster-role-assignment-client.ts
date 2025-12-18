@@ -18,13 +18,29 @@ import { FlattenedRoleAssignment } from './model/flattened-role-assignment'
 import { RoleAssignmentToSave } from './model/role-assignment-to-save'
 import { createForClusters, createForClusterSets, useGetClustersForPlacementMap } from './placement-client'
 
+/**
+ * Query parameters for filtering MulticlusterRoleAssignment resources.
+ */
 interface MulticlusterRoleAssignmentQuery {
+  /** Filter by subject names (users, groups, or service accounts) */
   subjectNames?: string[]
+  /** Filter by subject kinds (User, Group, ServiceAccount) */
   subjectKinds?: FlattenedRoleAssignment['subject']['kind'][]
+  /** Filter by role names */
   roles?: string[]
+  /** Filter by cluster names (resolved from placements) */
   clusterNames?: string[]
 }
 
+/**
+ * Converts a RoleAssignment within a MulticlusterRoleAssignment to a flattened structure.
+ * Combines the subject info from the parent with the role assignment details.
+ *
+ * @param multiClusterRoleAssignment - The parent MulticlusterRoleAssignment
+ * @param roleAssignment - The nested RoleAssignment to flatten
+ * @param clusterNames - Resolved cluster names from the placement
+ * @returns FlattenedRoleAssignment with all relevant data combined
+ */
 const roleAssignmentToFlattenedRoleAssignment = (
   multiClusterRoleAssignment: MulticlusterRoleAssignment,
   roleAssignment: RoleAssignment,
@@ -40,6 +56,14 @@ const roleAssignmentToFlattenedRoleAssignment = (
   clusterNames,
 })
 
+/**
+ * Checks if a MulticlusterRoleAssignment's subject matches the query filters.
+ * Filters by subject names and/or subject kinds.
+ *
+ * @param multiClusterRoleAssignment - The assignment to check
+ * @param query - Query containing subject filters
+ * @returns True if the subject matches all provided filters
+ */
 const isSubjectMatch = (
   multiClusterRoleAssignment: MulticlusterRoleAssignment,
   query: MulticlusterRoleAssignmentQuery
@@ -56,6 +80,14 @@ const isSubjectMatch = (
   }
 }
 
+/**
+ * Checks if a FlattenedRoleAssignment matches the cluster and role filters.
+ * Filters by cluster names (resolved from placements) and/or role names.
+ *
+ * @param roleAssignment - The flattened role assignment to check
+ * @param query - Query containing cluster and role filters
+ * @returns True if the assignment matches all provided filters
+ */
 const isClusterOrRoleMatch = (
   roleAssignment: FlattenedRoleAssignment,
   query: MulticlusterRoleAssignmentQuery
@@ -73,6 +105,14 @@ const isClusterOrRoleMatch = (
   }
 }
 
+/**
+ * React hook that resolves placement names to cluster names for all role assignments.
+ * Extracts all placement names from the MulticlusterRoleAssignments and uses
+ * useGetClustersForPlacementMap to resolve them to actual cluster names.
+ *
+ * @param multiclusterRoleAssignments - Array of MulticlusterRoleAssignments to process
+ * @returns Record mapping placement names to arrays of cluster names
+ */
 const useGetClusterFromPlacements = (multiclusterRoleAssignments: MulticlusterRoleAssignment[]) =>
   useGetClustersForPlacementMap(
     multiclusterRoleAssignments.flatMap((multiclusterRoleAssignment) =>
@@ -121,6 +161,16 @@ export const useFindRoleAssignments = (query: MulticlusterRoleAssignmentQuery): 
     .sort((a, b) => a.subject.name?.localeCompare(b.subject.name ?? '') ?? 0)
 }
 
+/**
+ * Filters MulticlusterRoleAssignments and returns flattened role assignments matching the query.
+ * Non-hook version that accepts pre-resolved clusters for placements.
+ * Used when the clusters map is already available (e.g., in modal save operations).
+ *
+ * @param query - Query parameters for filtering
+ * @param multiClusterRoleAssignments - Array of MulticlusterRoleAssignments to filter
+ * @param clustersForPlacements - Pre-resolved map of placement names to cluster names
+ * @returns Array of FlattenedRoleAssignments matching all query filters
+ */
 export const findRoleAssignments = (
   query: MulticlusterRoleAssignmentQuery,
   multiClusterRoleAssignments: MulticlusterRoleAssignment[],
@@ -154,6 +204,14 @@ export const findRoleAssignments = (
   )
 }
 
+/**
+ * Generates a unique name for a role assignment using SHA-256 hash.
+ * Creates a deterministic name based on the role assignment's properties.
+ * Used to detect duplicate role assignments.
+ *
+ * @param roleAssignment - The role assignment to generate a name for
+ * @returns A 16-character hash string as the role assignment name
+ */
 const getRoleAssignmentName = (roleAssignment: RoleAssignmentToSave): string => {
   const sortedKeys = Object.keys(roleAssignment).sort((a, b) => a.localeCompare(b))
   const sortedObject: any = {}
@@ -180,6 +238,14 @@ const getRoleAssignmentName = (roleAssignment: RoleAssignmentToSave): string => 
   return shortHash
 }
 
+/**
+ * Maps a RoleAssignmentToSave to a RoleAssignment ready for storage.
+ * Generates the name using hash and sets up the clusterSelection with the placement reference.
+ *
+ * @param roleAssignment - The role assignment data to transform
+ * @param placement - The Placement resource to reference in clusterSelection
+ * @returns RoleAssignment ready to be added to a MulticlusterRoleAssignment
+ */
 const mapRoleAssignmentBeforeSaving = (roleAssignment: RoleAssignmentToSave, placement: Placement): RoleAssignment => ({
   ...roleAssignment,
   name: getRoleAssignmentName(roleAssignment),
@@ -189,6 +255,14 @@ const mapRoleAssignmentBeforeSaving = (roleAssignment: RoleAssignmentToSave, pla
   },
 })
 
+/**
+ * Validates that a new role assignment doesn't duplicate an existing one.
+ * Compares the generated hash name against existing role assignment names.
+ *
+ * @param newRoleAssignment - The new role assignment to validate
+ * @param existingRoleAssignments - Array of existing role assignments to check against
+ * @returns True if the role assignment is unique, false if it's a duplicate
+ */
 const validateRoleAssignmentName = (
   newRoleAssignment: RoleAssignmentToSave,
   existingRoleAssignments: RoleAssignment[]
@@ -206,6 +280,17 @@ const validateRoleAssignmentName = (
  */
 const areRoleAssignmentsEquals = (a: RoleAssignment, b: RoleAssignment) => a.name === b.name
 
+/**
+ * Creates additional Kubernetes resources needed for a role assignment.
+ * Creates ManagedClusterSetBindings for cluster sets (if not existing) and
+ * creates a Placement resource (if not existing) for the target clusters/cluster sets.
+ * Reuses existing resources when available to avoid duplicates.
+ *
+ * @param roleAssignment - The role assignment being created
+ * @param existingManagedClusterSetBindings - Existing bindings that can be reused
+ * @param existingPlacement - Existing placement that can be reused
+ * @returns The Placement resource to reference in the role assignment
+ */
 async function createAdditionalRoleAssignmentResources(
   roleAssignment: RoleAssignmentToSave,
   {
@@ -230,10 +315,19 @@ async function createAdditionalRoleAssignmentResources(
 
 // TODO: get existingRelatedRoleAssignmets once useFindRoleAssignments is not a custom hook
 /**
- * adds a new roleAssignment either to an existing MulticlusterRoleAssignment or it creates a new one adding the new roleAssignment
- * @param roleAssignment
- * @param subject
- * @returns the patched or new MulticlusterRoleAssignment
+ * Adds a new role assignment, either to an existing MulticlusterRoleAssignment or by creating a new one.
+ * Handles the complete workflow:
+ * 1. Validates that the role assignment is not a duplicate
+ * 2. Creates ManagedClusterSetBindings if needed (for cluster set selections)
+ * 3. Creates or reuses a Placement for the cluster/cluster set selection
+ * 4. Patches existing or creates new MulticlusterRoleAssignment
+ *
+ * @param roleAssignment - The role assignment data to save
+ * @param existingMulticlusterRoleAssignment - Existing MCRA for the same subject (to patch instead of create)
+ * @param existingManagedClusterSetBindings - Existing bindings that can be reused
+ * @param existingPlacement - Existing placement that can be reused
+ * @returns IRequestResult containing the created/patched MulticlusterRoleAssignment
+ * @throws ResourceError if duplicate detected or no cluster/cluster set selected
  */
 export const addRoleAssignment = async (
   roleAssignment: RoleAssignmentToSave,
