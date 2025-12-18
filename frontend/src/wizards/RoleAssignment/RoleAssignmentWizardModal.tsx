@@ -20,6 +20,19 @@ interface RoleAssignmentWizardModalProps {
   preselected?: RoleAssignmentPreselected
 }
 
+const GranularityStepContent = ({ title, description }: { title: string; description: string }) => {
+  return (
+    <div>
+      <Title headingLevel="h2" size="xl">
+        {title}
+      </Title>
+      <Content component="p" style={{ marginTop: '8px' }}>
+        {description}
+      </Content>
+    </div>
+  )
+}
+
 const ScopeSelectionStepContent = ({
   isDrawerExpanded,
   setIsDrawerExpanded,
@@ -34,7 +47,6 @@ const ScopeSelectionStepContent = ({
   const { t } = useTranslation()
   const item = useItem()
   const selectedScope = item?.scope
-  console.log(selectedScope, 'selectedScope')
   return (
     <div>
       <div
@@ -62,6 +74,7 @@ const ScopeSelectionStepContent = ({
         pathValueToInputValue={(pathValue) => pathValue || 'Global access'}
         path="scope"
         label=""
+        required
         options={[
           {
             label: 'Global access',
@@ -90,7 +103,6 @@ const ScopeSelectionStepContent = ({
         <div style={{ marginTop: '16px' }}>
           <ClusterSetsList
             onSelectClusterSet={(clusterSets) => {
-              console.log(clusterSets)
               onSelectClusterSets?.(clusterSets)
             }}
           />
@@ -100,7 +112,6 @@ const ScopeSelectionStepContent = ({
         <div style={{ marginTop: '16px' }}>
           <ClusterList
             onSelectCluster={(clusters) => {
-              console.log(clusters)
               onSelectClusters?.(clusters)
             }}
           />
@@ -119,7 +130,11 @@ export const RoleAssignmentWizardModal = ({
 }: RoleAssignmentWizardModalProps) => {
   const { t } = useTranslation()
   const [isDrawerExpanded, setIsDrawerExpanded] = useState(false)
-  const [formData, setFormData] = useState({ scope: 'Global access' })
+  const [formData, setFormData] = useState<{
+    scope: string
+    selectedClusterSets?: any[]
+    selectedClusters?: any[]
+  }>({ scope: 'Global access' })
   const [selectedClusterSets, setSelectedClusterSets] = useState<any[]>([])
   const [selectedClusters, setSelectedClusters] = useState<any[]>([])
 
@@ -127,14 +142,22 @@ export const RoleAssignmentWizardModal = ({
     setFormData({ ...formData })
   }, [formData])
 
+  const handleClusterSetsChange = useCallback((clusterSets: any[]) => {
+    setSelectedClusterSets(clusterSets)
+    setFormData((prev) => ({ ...prev, selectedClusterSets: clusterSets }))
+  }, [])
+
+  const handleClustersChange = useCallback((clusters: any[]) => {
+    setSelectedClusters(clusters)
+    setFormData((prev) => ({ ...prev, selectedClusters: clusters }))
+  }, [])
+
   const handleSubmit = async () => {
     if (onSubmit) {
-      // TODO: Collect data from wizard steps
       await onSubmit(formData)
     }
     onClose()
   }
-  console.log(preselected, 'preselected')
   const title = isEditing
     ? t('Edit role assignment')
     : t('Create role assignment for {{preselected}}', { preselected: preselected?.subject?.value })
@@ -151,8 +174,24 @@ export const RoleAssignmentWizardModal = ({
             <ScopeSelectionStepContent
               isDrawerExpanded={isDrawerExpanded}
               setIsDrawerExpanded={setIsDrawerExpanded}
-              onSelectClusterSets={setSelectedClusterSets}
-              onSelectClusters={setSelectedClusters}
+              onSelectClusterSets={handleClusterSetsChange}
+              onSelectClusters={handleClustersChange}
+            />
+          </WizardStep>,
+          <WizardStep
+            key="cluster-set-granularity"
+            name={t('Define cluster set granularity')}
+            id="scope-cluster-set-granularity"
+          >
+            <GranularityStepContent
+              title={t('Define cluster set granularity')}
+              description={t('Define granular access controls for the selected cluster sets.')}
+            />
+          </WizardStep>,
+          <WizardStep key="cluster-granularity" name={t('Define cluster granularity')} id="scope-cluster-granularity">
+            <GranularityStepContent
+              title={t('Define cluster granularity')}
+              description={t('Define cluster granularity options.')}
             />
           </WizardStep>,
         ]
@@ -167,8 +206,14 @@ export const RoleAssignmentWizardModal = ({
               <ScopeSelectionStepContent
                 isDrawerExpanded={isDrawerExpanded}
                 setIsDrawerExpanded={setIsDrawerExpanded}
-                onSelectClusterSets={setSelectedClusterSets}
-                onSelectClusters={setSelectedClusters}
+                onSelectClusterSets={handleClusterSetsChange}
+                onSelectClusters={handleClustersChange}
+              />
+            </WizardStep>,
+            <WizardStep key="cluster-granularity" name={t('Define cluster granularity')} id="scope-cluster-granularity">
+              <GranularityStepContent
+                title={t('Define cluster granularity')}
+                description={t('Define cluster granularity options.')}
               />
             </WizardStep>,
           ]
@@ -213,8 +258,8 @@ export const RoleAssignmentWizardModal = ({
                   <ScopeSelectionStepContent
                     isDrawerExpanded={isDrawerExpanded}
                     setIsDrawerExpanded={setIsDrawerExpanded}
-                    onSelectClusterSets={setSelectedClusterSets}
-                    onSelectClusters={setSelectedClusters}
+                    onSelectClusterSets={handleClusterSetsChange}
+                    onSelectClusters={handleClustersChange}
                   />
                 </WizardStep>
 
