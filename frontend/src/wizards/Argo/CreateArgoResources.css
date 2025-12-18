@@ -1,3 +1,12 @@
 .pf-v6-c-modal-box .pf-v6-c-page__main {
   height: 600px;
 }
+
+/* Ensure the modal displays above dropdowns from the wizard behind */
+.pf-v6-c-backdrop:has(.argo-server-modal) {
+  z-index: 9999 !important;
+}
+
+.argo-server-modal {
+  z-index: 9999 !important;
+}

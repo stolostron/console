@@ -16,8 +16,18 @@ import {
   WizSelect,
   WizTextInput,
 } from '@patternfly-labs/react-form-wizard'
-import { Button, Content, ContentVariants, Flex, FlexItem, ToggleGroup, ToggleGroupItem } from '@patternfly/react-core'
-import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
+import {
+  Button,
+  Content,
+  ContentVariants,
+  Flex,
+  FlexItem,
+  Modal,
+  ModalBody,
+  ModalVariant,
+  ToggleGroup,
+  ToggleGroupItem,
+} from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { get } from 'lodash'
 import { Fragment, ReactNode, useMemo, useState } from 'react'
@@ -39,6 +49,7 @@ import { Placement } from '../Placement/Placement'
 import { WizardPage } from '../WizardPage'
 import { ClusterSetMonitor } from './ClusterSetMonitor'
 import { CreateArgoResources } from './CreateArgoResources'
+import './CreateArgoResources.css'
 import { MultipleSourcesSelector } from './MultipleSourcesSelector'
 import { SourceSelector } from './SourceSelector'
 
@@ -381,14 +392,15 @@ export function ArgoWizard(props: ArgoWizardProps) {
     <Fragment>
       <Modal
         variant={ModalVariant.large}
-        showClose={false}
         isOpen={isModalOpen}
         aria-labelledby="modal-wizard-label"
         aria-describedby="modal-wizard-description"
         onClose={handleModalToggle}
-        hasNoBodyWrapper
+        className="argo-server-modal"
       >
-        <CreateArgoResources handleModalToggle={handleModalToggle} clusterSets={props.clusterSets} />
+        <ModalBody style={{ padding: 0 }}>
+          <CreateArgoResources handleModalToggle={handleModalToggle} clusterSets={props.clusterSets} />
+        </ModalBody>
       </Modal>
       <WizardPage
         id="application-set-wizard"
