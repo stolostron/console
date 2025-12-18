@@ -114,13 +114,14 @@ export const ProjectsTable = ({
     return allFilters
   }, [t, projectsData])
 
-  const renderTypeCell = useCallback((project: ProjectTableData) => {
-    return (
+  const renderTypeCell = useCallback(
+    (project: ProjectTableData) => (
       <Label isCompact color="blue">
         {project.type}
       </Label>
-    )
-  }, [])
+    ),
+    []
+  )
 
   const renderClusterLabel = useCallback(
     (cluster: string) => {
@@ -148,13 +149,11 @@ export const ProjectsTable = ({
   )
 
   const renderClustersCell = useCallback(
-    (project: ProjectTableData) => {
-      return (
-        <LabelGroup numLabels={2} isCompact>
-          {project.clusters.map(renderClusterLabel)}
-        </LabelGroup>
-      )
-    },
+    (project: ProjectTableData) => (
+      <LabelGroup numLabels={2} isCompact>
+        {project.clusters.map(renderClusterLabel)}
+      </LabelGroup>
+    ),
     [renderClusterLabel]
   )
 
@@ -177,12 +176,7 @@ export const ProjectsTable = ({
     },
   ]
 
-  const handleSelect = useCallback(
-    (projects: ProjectTableData[]) => {
-      onSelectionChange?.(projects)
-    },
-    [onSelectionChange]
-  )
+  const handleSelect = useCallback((projects: ProjectTableData[]) => onSelectionChange?.(projects), [onSelectionChange])
 
   return (
     <AcmTableStateProvider localStorageKey="projects-table">

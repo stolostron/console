@@ -18,21 +18,13 @@ export const ProjectsList = ({ selectedClusters }: ProjectsListProps) => {
 
   const hasSelectedProjects = useMemo(() => selectedProjects.length > 0, [selectedProjects.length])
 
-  const handleCreateClick = () => {
-    setIsCreateCommonProject(true)
-  }
+  const handleCreateClick = () => setIsCreateCommonProject(true)
 
-  const handleModalClose = () => {
-    setIsCreateCommonProject(false)
-  }
+  const handleModalClose = () => setIsCreateCommonProject(false)
 
-  const handleCreateSuccess = () => {
-    setIsCreateCommonProject(false)
-  }
+  const handleCreateSuccess = () => setIsCreateCommonProject(false)
 
-  const handleSelectionChange = (projects: ProjectTableData[]) => {
-    setSelectedProjects(projects)
-  }
+  const handleSelectionChange = (projects: ProjectTableData[]) => setSelectedProjects(projects)
 
   const tableActionButtons = useMemo<IAcmTableButtonAction[]>(
     () => [
