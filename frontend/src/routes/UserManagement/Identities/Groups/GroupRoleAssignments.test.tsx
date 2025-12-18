@@ -36,7 +36,12 @@ jest.mock('../../../../shared-recoil', () => ({
 jest.mock('../../../../resources/clients/placement-client', () => ({
   useFindPlacements: jest.fn(() => []),
   useGetClustersForPlacement: jest.fn(() => []),
-  useGetClustersForPlacementMap: jest.fn(() => ({ 'placement-development-cluster': ['development-cluster'] })),
+  useGetClustersForPlacementMap: jest.fn(() => ({
+    'placement-development-cluster': {
+      placement: { metadata: { name: 'placement-development-cluster' } },
+      clusters: ['development-cluster'],
+    },
+  })),
   createForClusterSets: jest.fn(),
   createForClusters: jest.fn(),
 }))
