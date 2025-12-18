@@ -18,9 +18,10 @@ interface PlacementQuery {
 }
 
 const isPlacementNameMatch = (placement: Placement, query: PlacementQuery) =>
-  placement.metadata.name && query.placementNames?.length && query.placementNames.includes(placement.metadata.name)
+  !query.placementNames?.length || (placement.metadata.name && query.placementNames.includes(placement.metadata.name))
 
 const isClusterNameMatch = (placement: Placement, query: PlacementQuery) =>
+  !query.clusterNames?.length ||
   placement.spec.predicates?.some((predicate) =>
     predicate.requiredClusterSelector?.labelSelector?.matchExpressions?.some(
       (matchExpression) =>
@@ -31,12 +32,14 @@ const isClusterNameMatch = (placement: Placement, query: PlacementQuery) =>
   )
 
 const isClusterSetNameMatch = (placement: Placement, query: PlacementQuery) =>
-  placement.spec.clusterSets?.some((clusterSet) => query.clusterSetNames?.includes(clusterSet))
+  !query.clusterSetNames?.length ||
+  placement.spec.clusterSets?.some((clusterSet) => query.clusterSetNames!.includes(clusterSet))
 
 export const findPlacements = (placements: Placement[], query: PlacementQuery): Placement[] => {
   const isPlacementNameMatchFn = (placement: Placement) => isPlacementNameMatch(placement, query)
   const isClusterNameMatchFn = (placement: Placement) => isClusterNameMatch(placement, query)
   const isClusterSetNameMatchFn = (placement: Placement) => isClusterSetNameMatch(placement, query)
+
   if (query.logicalOperator === 'or') {
     return placements?.filter(
       (placement) =>
@@ -109,7 +112,6 @@ export const useGetClustersForPlacementMap = (placementNames: string[]) => {
       ? getClustersFromPlacementDecision(placementDecision)
       : []
     const clustersFromPlacements: string[] = getClusterFromPlacements([placement])
-
     return {
       ...acc,
       [`${placement.metadata.name}`]: [...new Set([...clustersFromPlacements, ...clustersFromPlacementDecisions])],

@@ -181,7 +181,7 @@ describe('placement-client', () => {
       expect(result.current).toHaveLength(0)
     })
 
-    it('should return empty array when placementNames is empty', () => {
+    it('should return all placements when placementNames is empty', () => {
       // Act
       const { result } = renderHook(() =>
         useFindPlacements({
@@ -189,16 +189,16 @@ describe('placement-client', () => {
         })
       )
 
-      // Assert
-      expect(result.current).toHaveLength(0)
+      // Assert - empty placementNames matches all placements
+      expect(result.current).toHaveLength(mockPlacements.length)
     })
 
-    it('should return empty array when no query filters are provided', () => {
+    it('should return all placements when no query filters are provided', () => {
       // Act
       const { result } = renderHook(() => useFindPlacements({}))
 
-      // Assert
-      expect(result.current).toHaveLength(0)
+      // Assert - no filters means match all
+      expect(result.current).toHaveLength(mockPlacements.length)
     })
   })
 
