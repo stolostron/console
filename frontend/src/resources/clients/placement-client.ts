@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { MulticlusterRoleAssignmentNamespace } from '../multicluster-role-assignment'
-import { Placement, PlacementApiVersionBeta, PlacementKind } from '../placement'
+import { Placement, PlacementApiVersionBeta, PlacementKind, PlacementPredicates } from '../placement'
 import { PlacementDecision } from '../placement-decision'
 import { createResource, IRequestResult } from '../utils'
 import { getClustersFromPlacementDecision, useFindPlacementDecisions } from './placement-decision-client'
@@ -108,29 +108,36 @@ export const useFindPlacements = (query: PlacementQuery): Placement[] => {
 }
 
 /**
+ * Extracts cluster names from a single predicate's matchExpressions.
+ * Only extracts values from matchExpressions where key is 'name'.
+ *
+ * @param predicate - The placement predicate to extract cluster names from
+ * @returns Array of cluster names from the predicate's matchExpressions
+ */
+const getClusterNamesFromPredicate = (predicate: PlacementPredicates): string[] => {
+  const matchExpressions = predicate.requiredClusterSelector.labelSelector?.matchExpressions
+
+  return matchExpressions?.length
+    ? matchExpressions
+        .filter((expr) => expr.key === 'name' && expr.values?.length)
+        .flatMap((expr) => expr.values!.filter(Boolean))
+    : []
+}
+
+/**
  * Extracts unique cluster names from placement predicates.
  * Looks for matchExpressions with key 'name' and extracts their values.
  *
  * @param placements - Array of Placement resources to extract clusters from
  * @returns Array of unique cluster names found in the placements' predicates
  */
-const getClusterFromPlacements = (placements: Placement[]) => [
-  ...new Set(
-    placements
-      .filter((placement) => placement.spec.predicates?.length)
-      .flatMap((placement) =>
-        placement.spec
-          .predicates!.filter((predicate) => predicate.requiredClusterSelector.labelSelector?.matchExpressions?.length)
-          .flatMap((predicate) =>
-            predicate.requiredClusterSelector
-              .labelSelector!.matchExpressions!.filter(
-                (matchExpression) => matchExpression.key === 'name' && matchExpression.values?.length
-              )
-              .flatMap((matchExpression) => matchExpression.values!.filter(Boolean))
-          )
-      )
-  ),
-]
+const getClusterFromPlacements = (placements: Placement[]): string[] => {
+  const clusterNames = placements
+    .filter((placement) => placement.spec.predicates?.length)
+    .flatMap((placement) => placement.spec.predicates!.flatMap(getClusterNamesFromPredicate))
+
+  return [...new Set(clusterNames)]
+}
 
 /**
  * Checks if a PlacementDecision belongs to a specific Placement by examining owner references.
