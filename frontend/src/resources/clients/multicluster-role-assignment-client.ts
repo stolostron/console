@@ -298,12 +298,12 @@ async function createAdditionalRoleAssignmentResources(
     )
   }
 
-  if (!existingPlacement) {
+  if (existingPlacement) {
+    return existingPlacement
+  } else {
     return roleAssignment.clusterNames
       ? await createForClusters(roleAssignment.clusterNames).promise
       : await createForClusterSets(roleAssignment.clusterSetNames!).promise
-  } else {
-    return existingPlacement
   }
 }
 

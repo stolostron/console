@@ -26,7 +26,7 @@ interface PlacementQuery {
  */
 const isPlacementNameMatch = (placement: Placement, query: PlacementQuery): boolean =>
   !query.placementNames?.length ||
-  (placement.metadata.name && query.placementNames.includes(placement.metadata.name as string)) ||
+  (placement.metadata.name && query.placementNames.includes(placement.metadata.name)) ||
   false
 
 /**
@@ -120,17 +120,13 @@ const getClusterFromPlacements = (placements: Placement[]) => [
       .filter((placement) => placement.spec.predicates?.length)
       .flatMap((placement) =>
         placement.spec
-          .predicates!.filter(
-            (predicate) =>
-              predicate.requiredClusterSelector.labelSelector?.matchExpressions &&
-              predicate.requiredClusterSelector.labelSelector.matchExpressions.length
-          )
+          .predicates!.filter((predicate) => predicate.requiredClusterSelector.labelSelector?.matchExpressions?.length)
           .flatMap((predicate) =>
             predicate.requiredClusterSelector
               .labelSelector!.matchExpressions!.filter(
                 (matchExpression) => matchExpression.key === 'name' && matchExpression.values?.length
               )
-              .flatMap((matchExpression) => matchExpression.values!.filter((e) => e))
+              .flatMap((matchExpression) => matchExpression.values!.filter(Boolean))
           )
       )
   ),
