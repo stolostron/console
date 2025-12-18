@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-@stolostron/console is the user interface for Red Hat Advanced Cluster Management (ACM) for Kubernetes and Red Hat MultiCluster Engine (MCE). It's a sophisticated multi-cluster management console that can run both as a standalone application and as OpenShift Console dynamic plugins.
+@stolostron/console is the user interface for Red Hat Advanced Cluster Management (ACM) for Kubernetes and Red Hat MultiCluster Engine (MCE). It's a sophisticated multi-cluster management console that can run both as a standalone application (for development purposes) and as OpenShift Console dynamic plugins.
 
 ## Development Commands
 
@@ -31,10 +31,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm run test:backend` - Run backend tests only
 - Individual test files: `npm test -- <test-file-pattern>`
 
-### Docker/Podman
-- `npm run docker:build` - Build production Docker image
-- `npm run podman:build` - Build production Podman image (for ARM64 compatibility)
-
 ## Architecture
 
 ### Monorepo Structure
@@ -49,7 +45,7 @@ console/
 ### Frontend Architecture
 - **Framework**: React 18+ with TypeScript in strict mode
 - **State Management**: Recoil for global state, Redux Toolkit for complex scenarios
-- **UI Framework**: PatternFly 5+ (Red Hat's design system)
+- **UI Framework**: PatternFly 6+ (Red Hat's design system)
 - **Routing**: React Router with v5 compatibility layer
 - **Build**: Webpack 5 with module federation for dynamic plugins
 - **Testing**: Jest with React Testing Library
@@ -74,7 +70,7 @@ The console supports three deployment modes:
 
 ## Development Prerequisites
 
-1. **Node.js 20** and **npm 8** are required
+1. **Node.js 20** and **npm 9** are required
 2. **OpenShift 4.x cluster** with ACM or MCE installed for full functionality
 3. **openssl** for certificate generation
 
@@ -119,7 +115,7 @@ The `@stolostron/multicluster-sdk` package provides:
 ### Linting and Formatting
 - ESLint with TypeScript rules
 - Prettier for code formatting
-- Husky pre-commit hooks enforce quality checks
+- Husky pre-commit hook enforces Signed-off-by line on commits
 
 ## Feature Flags
 
@@ -131,7 +127,7 @@ Features can be enabled/disabled via the `console-config` ConfigMap in the insta
 If experiencing proxy errors, remove `backend/certs` folder and run `npm run ci:backend` to regenerate certificates.
 
 ### Module Resolution Errors
-Ensure Node.js 20 and npm 8 are being used. Version mismatches cause ESM module resolution failures.
+Ensure Node.js 20 and npm 9 are being used. Version mismatches cause ESM module resolution failures.
 
 ### Missing .env File
 Run `npm run setup` to generate the required `backend/.env` file with cluster connection details.
@@ -140,5 +136,5 @@ Run `npm run setup` to generate the required `backend/.env` file with cluster co
 
 The project uses automatic fast-forwarding between release branches:
 - Pull requests should target the first branch in each release line
-- `main → release-2.15 → backplane-2.10` (current active branches)
+- `main → release-2.16 → backplane-2.11` (current active release branch will begin with `main`)
 - Multiple release lines are maintained for different product versions
