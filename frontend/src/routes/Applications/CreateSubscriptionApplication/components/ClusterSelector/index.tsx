@@ -351,7 +351,7 @@ const ClusterSelector = (props: {
 
         <div className="clusterSelector-container" style={{ fontSize: '14px', position: 'relative' }}>
           {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
-          <div style={{ display: 'flex', alignItems: 'center' }} onClick={handleMode}>
+          <div style={{ display: 'flex', alignItems: 'baseline' }} onClick={handleMode}>
             <Radio
               className="clusterSelector-checkbox"
               isChecked={modeSelected}
