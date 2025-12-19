@@ -158,6 +158,193 @@ describe('placement-client', () => {
       // Assert - no filters means match all
       expect(result.current).toHaveLength(mockPlacements.length)
     })
+
+    it('should filter by clusterNames and return placements with exact matching clusters', () => {
+      // Act
+      const { result } = renderHook(() =>
+        useFindPlacements({
+          clusterNames: ['cluster-a', 'cluster-b'],
+        })
+      )
+
+      // Assert - only placement-1 has exactly cluster-a and cluster-b
+      expect(result.current).toHaveLength(1)
+      expect(result.current[0].metadata.name).toBe('placement-1')
+    })
+
+    it('should return empty when clusterNames do not match exactly', () => {
+      // Act
+      const { result } = renderHook(() =>
+        useFindPlacements({
+          clusterNames: ['cluster-a'], // placement-1 has cluster-a and cluster-b
+        })
+      )
+
+      // Assert - no exact match
+      expect(result.current).toHaveLength(0)
+    })
+
+    it('should filter by clusterSetNames and return placements with exact matching cluster sets', () => {
+      // Arrange - add a placement with clusterSets
+      const placementsWithClusterSets: Placement[] = [
+        ...mockPlacements,
+        {
+          apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+          kind: 'Placement',
+          metadata: { name: 'placement-with-sets', namespace: 'default' },
+          spec: { clusterSets: ['set-1', 'set-2'] },
+        },
+      ]
+      useRecoilValueMock.mockReturnValue(placementsWithClusterSets)
+
+      // Act
+      const { result } = renderHook(() =>
+        useFindPlacements({
+          clusterSetNames: ['set-1', 'set-2'],
+        })
+      )
+
+      // Assert
+      expect(result.current).toHaveLength(1)
+      expect(result.current[0].metadata.name).toBe('placement-with-sets')
+    })
+
+    it('should return empty when clusterSetNames do not match exactly', () => {
+      // Arrange
+      const placementsWithClusterSets: Placement[] = [
+        {
+          apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+          kind: 'Placement',
+          metadata: { name: 'placement-with-sets', namespace: 'default' },
+          spec: { clusterSets: ['set-1', 'set-2'] },
+        },
+      ]
+      useRecoilValueMock.mockReturnValue(placementsWithClusterSets)
+
+      // Act
+      const { result } = renderHook(() =>
+        useFindPlacements({
+          clusterSetNames: ['set-1'], // only one of the two sets
+        })
+      )
+
+      // Assert - no exact match
+      expect(result.current).toHaveLength(0)
+    })
+
+    it('should use OR logic when logicalOperator is or', () => {
+      // Arrange
+      const placementsWithMixed: Placement[] = [
+        {
+          apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+          kind: 'Placement',
+          metadata: { name: 'placement-by-name', namespace: 'default' },
+          spec: {},
+        },
+        {
+          apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+          kind: 'Placement',
+          metadata: { name: 'placement-by-clusters', namespace: 'default' },
+          spec: {
+            predicates: [
+              {
+                requiredClusterSelector: {
+                  labelSelector: {
+                    matchExpressions: [{ key: 'name', operator: 'In', values: ['cluster-x'] }],
+                  },
+                },
+              },
+            ],
+          },
+        },
+        {
+          apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+          kind: 'Placement',
+          metadata: { name: 'placement-by-sets', namespace: 'default' },
+          spec: { clusterSets: ['set-x'] },
+        },
+      ]
+      useRecoilValueMock.mockReturnValue(placementsWithMixed)
+
+      // Act
+      const { result } = renderHook(() =>
+        useFindPlacements({
+          placementNames: ['placement-by-name'],
+          clusterNames: ['cluster-x'],
+          clusterSetNames: ['set-x'],
+          logicalOperator: 'or',
+        })
+      )
+
+      // Assert - all three match via OR
+      expect(result.current).toHaveLength(3)
+    })
+
+    it('should use AND logic by default', () => {
+      // Arrange
+      const placementsWithMixed: Placement[] = [
+        {
+          apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+          kind: 'Placement',
+          metadata: { name: 'placement-matching-all', namespace: 'default' },
+          spec: {
+            clusterSets: ['set-a'],
+            predicates: [
+              {
+                requiredClusterSelector: {
+                  labelSelector: {
+                    matchExpressions: [{ key: 'name', operator: 'In', values: ['cluster-a'] }],
+                  },
+                },
+              },
+            ],
+          },
+        },
+        {
+          apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+          kind: 'Placement',
+          metadata: { name: 'placement-partial', namespace: 'default' },
+          spec: { clusterSets: ['set-a'] }, // missing cluster predicates
+        },
+      ]
+      useRecoilValueMock.mockReturnValue(placementsWithMixed)
+
+      // Act
+      const { result } = renderHook(() =>
+        useFindPlacements({
+          placementNames: ['placement-matching-all'],
+          clusterNames: ['cluster-a'],
+          clusterSetNames: ['set-a'],
+        })
+      )
+
+      // Assert - only the one matching all criteria
+      expect(result.current).toHaveLength(1)
+      expect(result.current[0].metadata.name).toBe('placement-matching-all')
+    })
+
+    it('should handle placement with empty clusterSets array', () => {
+      // Arrange
+      const placementsWithEmptySets: Placement[] = [
+        {
+          apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+          kind: 'Placement',
+          metadata: { name: 'empty-sets', namespace: 'default' },
+          spec: { clusterSets: [] },
+        },
+      ]
+      useRecoilValueMock.mockReturnValue(placementsWithEmptySets)
+
+      // Act
+      const { result } = renderHook(() =>
+        useFindPlacements({
+          clusterSetNames: ['some-set'],
+        })
+      )
+
+      // Assert - empty clusterSets cannot match
+      expect(result.current).toHaveLength(0)
+    })
   })
 
   describe('createForClusterSets', () => {

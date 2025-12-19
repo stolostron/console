@@ -314,6 +314,42 @@ describe('roleAssignmentHelper', () => {
       expect(result).toHaveLength(1)
       expect(result[0].clusterNames).toBeUndefined()
     })
+
+    it('should return empty array when group is undefined for GroupKind', () => {
+      const data: RoleAssignmentFormDataType = {
+        subject: {
+          kind: GroupKind,
+          group: undefined,
+        },
+        scope: {
+          kind: 'specific',
+          clusterNames: ['cluster-1'],
+        },
+        roles: ['admin'],
+      }
+
+      const result = dataToRoleAssignmentToSave(data)
+
+      expect(result).toHaveLength(0)
+    })
+
+    it('should return empty array when group is empty array for GroupKind', () => {
+      const data: RoleAssignmentFormDataType = {
+        subject: {
+          kind: GroupKind,
+          group: [],
+        },
+        scope: {
+          kind: 'specific',
+          clusterNames: ['cluster-1'],
+        },
+        roles: ['admin'],
+      }
+
+      const result = dataToRoleAssignmentToSave(data)
+
+      expect(result).toHaveLength(0)
+    })
   })
 
   describe('existingRoleAssignmentsBySubjectRole', () => {

@@ -40,10 +40,18 @@ jest.mock('./RoleAssignmentForm', () => ({
   },
 }))
 
+import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+
 jest.mock('../../../shared-recoil', () => ({
-  useRecoilValue: jest.fn(() => []),
-  useSharedAtoms: jest.fn(() => ({ multiclusterRoleAssignmentState: {} })),
+  useRecoilValue: jest.fn(),
+  useSharedAtoms: jest.fn(() => ({
+    multiclusterRoleAssignmentState: {},
+    managedClusterSetBindingsState: {},
+  })),
 }))
+
+const mockUseRecoilValue = useRecoilValue as jest.Mock
+const mockUseSharedAtoms = useSharedAtoms as jest.Mock
 
 jest.mock('../../../resources/clients/placement-client', () => ({
   useGetClustersForPlacementMap: jest.fn(() => ({})),
@@ -96,6 +104,12 @@ describe('RoleAssignmentModal', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     capturedOnSubmit = null
+    // Default mock: empty arrays
+    mockUseRecoilValue.mockReturnValue([])
+    mockUseSharedAtoms.mockReturnValue({
+      multiclusterRoleAssignmentState: {},
+      managedClusterSetBindingsState: {},
+    })
   })
 
   describe('Modal success and failure', () => {
@@ -408,6 +422,107 @@ describe('RoleAssignmentModal', () => {
         expect(mockAddRoleAssignment.mock.calls[0][0].subject.name).toBe('group1')
         expect(mockAddRoleAssignment.mock.calls[0][0].subject.kind).toBe('Group')
       })
+    })
+  })
+
+  describe('Modal aria-label based on isEditing', () => {
+    it('should use "Edit role assignment" aria-label when isEditing is true', () => {
+      render(
+        <TestWrapper>
+          <RoleAssignmentModal close={mockClose} isOpen={true} isEditing={true} />
+        </TestWrapper>
+      )
+
+      // The modal should have the edit aria-label
+      const modal = screen.getByRole('dialog', { name: /edit role assignment/i })
+      expect(modal).toBeInTheDocument()
+    })
+
+    it('should use "Create role assignment" aria-label when isEditing is false', () => {
+      render(
+        <TestWrapper>
+          <RoleAssignmentModal close={mockClose} isOpen={true} isEditing={false} />
+        </TestWrapper>
+      )
+
+      const modal = screen.getByRole('dialog', { name: /create role assignment/i })
+      expect(modal).toBeInTheDocument()
+    })
+
+    it('should use "Create role assignment" aria-label when isEditing is undefined', () => {
+      render(
+        <TestWrapper>
+          <RoleAssignmentModal close={mockClose} isOpen={true} />
+        </TestWrapper>
+      )
+
+      const modal = screen.getByRole('dialog', { name: /create role assignment/i })
+      expect(modal).toBeInTheDocument()
+    })
+  })
+
+  describe('Placements extraction from multiclusterRoleAssignments', () => {
+    it('should extract placement names from multiclusterRoleAssignments with placements', async () => {
+      const mockMulticlusterRoleAssignments = [
+        {
+          metadata: { name: 'mra-1' },
+          spec: {
+            roleAssignments: [
+              {
+                clusterSelection: {
+                  placements: [
+                    { name: 'placement-1', namespace: 'ns1' },
+                    { name: 'placement-2', namespace: 'ns1' },
+                  ],
+                },
+              },
+              {
+                clusterSelection: {
+                  placements: [{ name: 'placement-3', namespace: 'ns2' }],
+                },
+              },
+            ],
+          },
+        },
+      ]
+
+      // First call returns multiclusterRoleAssignments, second returns managedClusterSetBindings
+      mockUseRecoilValue.mockReturnValueOnce(mockMulticlusterRoleAssignments).mockReturnValueOnce([])
+
+      mockAddRoleAssignment.mockResolvedValue({
+        promise: Promise.resolve({}) as any,
+        abort: jest.fn(),
+      })
+
+      render(
+        <TestWrapper>
+          <RoleAssignmentModal close={mockClose} isOpen={true} />
+        </TestWrapper>
+      )
+
+      // The modal should render without errors
+      expect(screen.getByRole('dialog')).toBeInTheDocument()
+    })
+
+    it('should handle multiclusterRoleAssignments with empty roleAssignments', async () => {
+      const mockMulticlusterRoleAssignments = [
+        {
+          metadata: { name: 'mra-empty' },
+          spec: {
+            roleAssignments: [],
+          },
+        },
+      ]
+
+      mockUseRecoilValue.mockReturnValueOnce(mockMulticlusterRoleAssignments).mockReturnValueOnce([])
+
+      render(
+        <TestWrapper>
+          <RoleAssignmentModal close={mockClose} isOpen={true} />
+        </TestWrapper>
+      )
+
+      expect(screen.getByRole('dialog')).toBeInTheDocument()
     })
   })
 })
