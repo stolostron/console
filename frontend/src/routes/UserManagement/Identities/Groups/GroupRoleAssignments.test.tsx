@@ -4,8 +4,9 @@ import { RecoilRoot } from 'recoil'
 import { Group } from '../../../../resources/rbac'
 import { GroupRoleAssignments } from './GroupRoleAssignments'
 import { render, screen } from '@testing-library/react'
-import { FlattenedRoleAssignment } from '../../../../resources/clients/multicluster-role-assignment-client'
 import { useRecoilValue } from '../../../../shared-recoil'
+import { MulticlusterRoleAssignmentNamespace } from '../../../../resources'
+import { FlattenedRoleAssignment } from '../../../../resources/clients/model/flattened-role-assignment'
 
 // Mock the translation hook
 jest.mock('../../../../lib/acm-i18next', () => ({
@@ -26,7 +27,34 @@ jest.mock('../../../../shared-recoil', () => ({
   useRecoilValue: jest.fn(),
   useSharedAtoms: jest.fn(() => ({
     groupsState: 'groupsState',
+    placementsState: 'placementsState',
+    placementDecisionsState: 'placementDecisionsState',
   })),
+}))
+
+// Mock placement-client hooks
+jest.mock('../../../../resources/clients/placement-client', () => ({
+  useFindPlacements: jest.fn(() => []),
+  useGetPlacementClusters: jest.fn(() => [
+    {
+      placement: {
+        apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+        kind: 'Placement',
+        metadata: { name: 'placement-development-cluster', namespace: 'open-cluster-management-global-set' },
+        spec: {},
+      },
+      clusters: ['development-cluster'],
+      clusterSetNames: ['development-cluster'],
+    },
+  ]),
+  createForClusterSets: jest.fn(),
+  createForClusters: jest.fn(),
+}))
+
+// Mock placement-decision-client hooks
+jest.mock('../../../../resources/clients/placement-decision-client', () => ({
+  useFindPlacementDecisions: jest.fn(() => []),
+  useGetClustersFromPlacementDecision: jest.fn(() => []),
 }))
 
 const mockGroups: Group[] = [
@@ -44,11 +72,11 @@ const mockGroups: Group[] = [
 
 const mockMulticlusterRoleAssignments = [
   {
-    apiVersion: 'rbac.open-cluster-management.io/v1alpha1',
+    apiVersion: 'rbac.open-cluster-management.io/v1beta1',
     kind: 'MulticlusterRoleAssignment',
     metadata: {
       name: 'developers-role-assignment',
-      namespace: 'open-cluster-management-global-set',
+      namespace: MulticlusterRoleAssignmentNamespace,
       uid: '1',
     },
     spec: {
@@ -58,8 +86,8 @@ const mockMulticlusterRoleAssignments = [
           name: 'kubevirt-edit-role',
           clusterRole: 'kubevirt.io:edit',
           clusterSelection: {
-            type: 'clusterNames' as const,
-            clusterNames: ['development-cluster'],
+            type: 'placements' as const,
+            placements: [{ name: 'placement-development-cluster', namespace: MulticlusterRoleAssignmentNamespace }],
           },
           targetNamespaces: ['kubevirt-dev', 'vm-dev'],
         },
@@ -67,8 +95,8 @@ const mockMulticlusterRoleAssignments = [
           name: 'network-admin-role',
           clusterRole: 'network-admin',
           clusterSelection: {
-            type: 'clusterNames' as const,
-            clusterNames: ['development-cluster'],
+            type: 'placements' as const,
+            placements: [{ name: 'placement-development-cluster', namespace: MulticlusterRoleAssignmentNamespace }],
           },
           targetNamespaces: ['networking-dev'],
         },
@@ -76,8 +104,8 @@ const mockMulticlusterRoleAssignments = [
           name: 'storage-admin-role',
           clusterRole: 'storage-admin',
           clusterSelection: {
-            type: 'clusterNames' as const,
-            clusterNames: ['development-cluster'],
+            type: 'placements' as const,
+            placements: [{ name: 'placement-development-cluster', namespace: MulticlusterRoleAssignmentNamespace }],
           },
           targetNamespaces: ['storage-dev'],
         },
@@ -106,7 +134,7 @@ jest.mock('../../RoleAssignment/RoleAssignments', () => ({
             {roleAssignment.subject.kind}: {roleAssignment.subject.name}
           </div>
           <div id={`assignment-role-${index}`}>{roleAssignment.clusterRole}</div>
-          <div id={`assignment-clusters-${index}`}>{roleAssignment.clusterSelection.clusterNames.join(', ')}</div>
+          <div id={`assignment-clusters-${index}`}>{(roleAssignment.clusterNames || []).join(', ')}</div>
           <div id={`assignment-namespaces-${index}`}>{roleAssignment.targetNamespaces?.join(', ') ?? ''}</div>
         </div>
       ))}

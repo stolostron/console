@@ -5,9 +5,10 @@ import { MemoryRouter, Routes, Route } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { AcmLoadingPage } from '../../../../ui-components'
 import { RoleRoleAssignments } from './RoleRoleAssignments'
-import { FlattenedRoleAssignment } from '../../../../resources/clients/multicluster-role-assignment-client'
 import { useCurrentRole } from '../RolesPage'
 import { useSharedAtoms, useRecoilValue } from '../../../../shared-recoil'
+import { MulticlusterRoleAssignmentNamespace } from '../../../../resources'
+import { FlattenedRoleAssignment } from '../../../../resources/clients/model/flattened-role-assignment'
 
 jest.mock('../RolesPage', () => ({
   useCurrentRole: jest.fn(),
@@ -16,6 +17,20 @@ jest.mock('../RolesPage', () => ({
 jest.mock('../../../../shared-recoil', () => ({
   useRecoilValue: jest.fn(),
   useSharedAtoms: jest.fn(),
+}))
+
+// Mock placement-client hooks
+jest.mock('../../../../resources/clients/placement-client', () => ({
+  useFindPlacements: jest.fn(() => []),
+  useGetPlacementClusters: jest.fn(() => []),
+  createForClusterSets: jest.fn(),
+  createForClusters: jest.fn(),
+}))
+
+// Mock placement-decision-client hooks
+jest.mock('../../../../resources/clients/placement-decision-client', () => ({
+  useFindPlacementDecisions: jest.fn(() => []),
+  useGetClustersFromPlacementDecision: jest.fn(() => []),
 }))
 
 const mockUseCurrentRole = useCurrentRole as jest.MockedFunction<typeof useCurrentRole>
@@ -64,11 +79,11 @@ const mockClusterRoles = [
 
 const mockMulticlusterRoleAssignments = [
   {
-    apiVersion: 'rbac.open-cluster-management.io/v1alpha1',
+    apiVersion: 'rbac.open-cluster-management.io/v1beta1',
     kind: 'MulticlusterRoleAssignment',
     metadata: {
       name: 'kubevirt-edit-role-assignment',
-      namespace: 'open-cluster-management-global-set',
+      namespace: MulticlusterRoleAssignmentNamespace,
       uid: '1',
     },
     spec: {
@@ -78,8 +93,8 @@ const mockMulticlusterRoleAssignments = [
           name: 'kubevirt-edit-role',
           clusterRole: 'kubevirt.io:edit',
           clusterSelection: {
-            type: 'clusterNames' as const,
-            clusterNames: ['development-cluster'],
+            type: 'placements' as const,
+            placements: [{ name: 'placement-development-cluster', namespace: MulticlusterRoleAssignmentNamespace }],
           },
           targetNamespaces: ['kubevirt-dev', 'vm-dev'],
         },
@@ -121,7 +136,7 @@ jest.mock('../../RoleAssignment/RoleAssignments', () => ({
               {roleAssignment.subject.kind}: {roleAssignment.subject.name}
             </div>
             <div id={`assignment-role-${index}`}>{roleAssignment.clusterRole}</div>
-            <div id={`assignment-clusters-${index}`}>{roleAssignment.clusterSelection.clusterNames.join(', ')}</div>
+            <div id={`assignment-clusters-${index}`}>{(roleAssignment.clusterNames || []).join(', ')}</div>
             <div id={`assignment-namespaces-${index}`}>{roleAssignment.targetNamespaces?.join(', ') ?? ''}</div>
           </div>
         ))

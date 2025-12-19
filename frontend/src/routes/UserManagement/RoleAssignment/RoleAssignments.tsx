@@ -5,23 +5,21 @@ import { useCallback, useMemo, useState } from 'react'
 import { generatePath, Link } from 'react-router-dom-v5-compat'
 import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
 import { useTranslation } from '../../../lib/acm-i18next'
+import AcmTimestamp from '../../../lib/AcmTimestamp'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../lib/doc-util'
 import { rbacCreate, rbacDelete, rbacPatch, useIsAnyNamespaceAuthorized } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
-import {
-  deleteRoleAssignment,
-  FlattenedRoleAssignment,
-} from '../../../resources/clients/multicluster-role-assignment-client'
+import { FlattenedRoleAssignment } from '../../../resources/clients/model/flattened-role-assignment'
+import { deleteRoleAssignment } from '../../../resources/clients/multicluster-role-assignment-client'
 import { MulticlusterRoleAssignmentDefinition } from '../../../resources/multicluster-role-assignment'
 import { IRequestResult } from '../../../resources/utils/resource-request'
 import { AcmButton, AcmEmptyState, AcmTable, compareStrings, IAcmTableColumn } from '../../../ui-components'
 import { IAcmTableAction, IAcmTableButtonAction, ITableFilter } from '../../../ui-components/AcmTable/AcmTableTypes'
 import { RoleAssignmentPreselected } from '../RoleAssignments/model/role-assignment-preselected'
+import { RoleAssignmentModal } from '../RoleAssignments/RoleAssignmentModal'
 import { RoleAssignmentActionDropdown } from './RoleAssignmentActionDropdown'
 import { RoleAssignmentLabel } from './RoleAssignmentLabel'
-import { RoleAssignmentModal } from '../RoleAssignments/RoleAssignmentModal'
 import { RoleAssignmentStatusComponent } from './RoleAssignmentStatusComponent'
-import AcmTimestamp from '../../../lib/AcmTimestamp'
 
 // Component for rendering clickable role links
 const RoleLinkCell = ({ roleName }: { roleName: string }) => (
@@ -84,10 +82,9 @@ const renderNamespacesCell = (roleAssignment: FlattenedRoleAssignment) => (
 
 const renderStatusCell = (roleAssignment: FlattenedRoleAssignment) => <StatusCell status={roleAssignment.status} />
 
-const renderClustersCell = (roleAssignment: FlattenedRoleAssignment) => {
-  const clusterNames = roleAssignment.clusterSelection?.clusterNames || []
-  return <ClusterLinksCell clusterNames={clusterNames} />
-}
+const renderClustersCell = (roleAssignment: FlattenedRoleAssignment) => (
+  <ClusterLinksCell clusterNames={roleAssignment.clusterNames} />
+)
 
 // Component for rendering action dropdown
 const ActionCell = ({
@@ -227,8 +224,7 @@ const RoleAssignments = ({
       }
 
       // Add cluster names and target namespaces
-      const clusterNames = roleAssignment.clusterSelection?.clusterNames || []
-      for (const clusterName of clusterNames) {
+      for (const clusterName of roleAssignment.clusterNames) {
         allClusters.add(clusterName)
       }
       for (const namespace of roleAssignment.targetNamespaces || []) {
@@ -281,10 +277,8 @@ const RoleAssignments = ({
         id: 'clusters',
         label: t('Clusters'),
         options: clusterOptions,
-        tableFilterFn: (selectedValues, roleAssignment) => {
-          const clusterNames = roleAssignment.clusterSelection?.clusterNames || []
-          return selectedValues.some((selectedClusterName) => clusterNames.includes(selectedClusterName))
-        },
+        tableFilterFn: (selectedValues, roleAssignment) =>
+          selectedValues.some((selectedClusterName) => roleAssignment.clusterNames.includes(selectedClusterName)),
       },
       {
         id: 'namespace',
@@ -371,10 +365,7 @@ const RoleAssignments = ({
     {
       header: t('Clusters'),
       cell: renderClustersCell,
-      exportContent: (roleAssignment) => {
-        const clusterNames = roleAssignment.clusterSelection?.clusterNames || []
-        return clusterNames.join(', ')
-      },
+      exportContent: (roleAssignment) => roleAssignment.clusterNames.join(', '),
       isHidden: hiddenColumns?.includes('clusters'),
     },
     {

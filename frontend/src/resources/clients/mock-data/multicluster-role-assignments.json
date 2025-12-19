@@ -1,6 +1,6 @@
 [
   {
-    "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
+    "apiVersion": "rbac.open-cluster-management.io/v1beta1",
     "kind": "MulticlusterRoleAssignment",
     "metadata": {
       "name": "alice-trask-role-assignment-console",
@@ -27,16 +27,8 @@
             "vm-analytics"
           ],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": [
-              "production-cluster",
-              "production-east",
-              "production-west",
-              "production-central",
-              "production-backup",
-              "production-dr",
-              "production-monitoring"
-            ]
+            "type": "placements",
+            "placements": [{ "name": "placement-production", "namespace": "open-cluster-management-global-set" }]
           }
         },
         {
@@ -53,15 +45,8 @@
             "vm-perf"
           ],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": [
-              "staging-cluster",
-              "staging-east",
-              "staging-west",
-              "staging-testing",
-              "staging-preview",
-              "staging-integration"
-            ]
+            "type": "placements",
+            "placements": [{ "name": "placement-staging", "namespace": "open-cluster-management-global-set" }]
           }
         },
         {
@@ -79,17 +64,8 @@
             "console-security"
           ],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": [
-              "production-cluster",
-              "production-east",
-              "production-west",
-              "production-central",
-              "staging-cluster",
-              "staging-east",
-              "development-cluster",
-              "testing-cluster"
-            ]
+            "type": "placements",
+            "placements": [{ "name": "placement-all-clusters", "namespace": "open-cluster-management-global-set" }]
           }
         },
         {
@@ -105,15 +81,8 @@
             "vm-beta"
           ],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": [
-              "development-cluster",
-              "dev-east",
-              "dev-west",
-              "experimental-cluster",
-              "research-cluster",
-              "sandbox-cluster"
-            ]
+            "type": "placements",
+            "placements": [{ "name": "placement-development", "namespace": "open-cluster-management-global-set" }]
           }
         },
         {
@@ -132,17 +101,8 @@
             "storage-analytics"
           ],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": [
-              "production-cluster",
-              "production-east",
-              "production-west",
-              "staging-cluster",
-              "development-cluster",
-              "storage-primary",
-              "storage-backup",
-              "storage-archive"
-            ]
+            "type": "placements",
+            "placements": [{ "name": "placement-storage", "namespace": "open-cluster-management-global-set" }]
           }
         }
       ]
@@ -162,7 +122,7 @@
     }
   },
   {
-    "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
+    "apiVersion": "rbac.open-cluster-management.io/v1beta1",
     "kind": "MulticlusterRoleAssignment",
     "metadata": {
       "name": "kubevirt-admins-role-assignment-console",
@@ -178,8 +138,8 @@
           "clusterRole": "kubevirt.io:admin",
           "targetNamespaces": ["kubevirt-production"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["production-cluster", "staging-cluster"]
+            "type": "placements",
+            "placements": [{ "name": "placement-prod-staging", "namespace": "open-cluster-management-global-set" }]
           }
         },
         {
@@ -187,8 +147,8 @@
           "clusterRole": "live-migration-admin",
           "targetNamespaces": ["kubevirt-dev", "vm-dev"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["development-cluster", "testing-cluster"]
+            "type": "placements",
+            "placements": [{ "name": "placement-dev-test", "namespace": "open-cluster-management-global-set" }]
           }
         },
         {
@@ -196,8 +156,8 @@
           "clusterRole": "kubevirt.io:admin",
           "targetNamespaces": ["kubevirt-test", "vm-test", "storage-test"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["testing-cluster"]
+            "type": "placements",
+            "placements": [{ "name": "placement-testing", "namespace": "open-cluster-management-global-set" }]
           }
         }
       ]
@@ -211,7 +171,7 @@
     }
   },
   {
-    "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
+    "apiVersion": "rbac.open-cluster-management.io/v1beta1",
     "kind": "MulticlusterRoleAssignment",
     "metadata": {
       "name": "admin-user-role-assignment-console",
@@ -227,8 +187,8 @@
           "clusterRole": "kubevirt.io:admin",
           "targetNamespaces": ["kubevirt-production"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["production-cluster"]
+            "type": "placements",
+            "placements": [{ "name": "placement-production", "namespace": "open-cluster-management-global-set" }]
           }
         },
         {
@@ -236,8 +196,8 @@
           "clusterRole": "live-migration-admin",
           "targetNamespaces": ["kubevirt-dev", "vm-dev"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["development-cluster"]
+            "type": "placements",
+            "placements": [{ "name": "placement-development", "namespace": "open-cluster-management-global-set" }]
           }
         }
       ]
@@ -250,7 +210,7 @@
     }
   },
   {
-    "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
+    "apiVersion": "rbac.open-cluster-management.io/v1beta1",
     "kind": "MulticlusterRoleAssignment",
     "metadata": {
       "name": "bob-levy-role-assignment-console",
@@ -266,8 +226,8 @@
           "clusterRole": "kubevirt.io:edit",
           "targetNamespaces": ["kubevirt-dev"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["development-cluster"]
+            "type": "placements",
+            "placements": [{ "name": "placement-development", "namespace": "open-cluster-management-global-set" }]
           }
         },
         {
@@ -275,8 +235,8 @@
           "clusterRole": "kubevirt.io:edit",
           "targetNamespaces": ["kubevirt-staging", "vm-staging"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["staging-cluster"]
+            "type": "placements",
+            "placements": [{ "name": "placement-staging", "namespace": "open-cluster-management-global-set" }]
           }
         }
       ]
@@ -289,7 +249,7 @@
     }
   },
   {
-    "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
+    "apiVersion": "rbac.open-cluster-management.io/v1beta1",
     "kind": "MulticlusterRoleAssignment",
     "metadata": {
       "name": "developers-role-assignment-console",
@@ -305,8 +265,8 @@
           "clusterRole": "kubevirt.io:edit",
           "targetNamespaces": ["kubevirt-dev", "vm-dev", "storage-dev", "networking-dev"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["development-cluster"]
+            "type": "placements",
+            "placements": [{ "name": "placement-development", "namespace": "open-cluster-management-global-set" }]
           }
         },
         {
@@ -314,8 +274,8 @@
           "clusterRole": "network-admin",
           "targetNamespaces": ["kubevirt-dev", "vm-dev", "storage-dev", "networking-dev"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["development-cluster"]
+            "type": "placements",
+            "placements": [{ "name": "placement-development", "namespace": "open-cluster-management-global-set" }]
           }
         },
         {
@@ -323,8 +283,8 @@
           "clusterRole": "storage-admin",
           "targetNamespaces": ["kubevirt-dev", "vm-dev", "storage-dev", "networking-dev"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["development-cluster"]
+            "type": "placements",
+            "placements": [{ "name": "placement-development", "namespace": "open-cluster-management-global-set" }]
           }
         }
       ]
@@ -338,7 +298,7 @@
     }
   },
   {
-    "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
+    "apiVersion": "rbac.open-cluster-management.io/v1beta1",
     "kind": "MulticlusterRoleAssignment",
     "metadata": {
       "name": "intern-dev-role-assignment-console",
@@ -354,8 +314,8 @@
           "clusterRole": "kubevirt.io:edit",
           "targetNamespaces": ["kubevirt-dev", "vm-dev", "storage-dev", "networking-dev"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["development-cluster"]
+            "type": "placements",
+            "placements": [{ "name": "placement-development", "namespace": "open-cluster-management-global-set" }]
           }
         }
       ]
@@ -365,7 +325,7 @@
     }
   },
   {
-    "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
+    "apiVersion": "rbac.open-cluster-management.io/v1beta1",
     "kind": "MulticlusterRoleAssignment",
     "metadata": {
       "name": "junior-dev-role-assignment-console",
@@ -381,8 +341,8 @@
           "clusterRole": "kubevirt.io:edit",
           "targetNamespaces": ["kubevirt-dev", "vm-dev", "storage-dev", "networking-dev"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["development-cluster"]
+            "type": "placements",
+            "placements": [{ "name": "placement-development", "namespace": "open-cluster-management-global-set" }]
           }
         }
       ]
@@ -392,7 +352,7 @@
     }
   },
   {
-    "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
+    "apiVersion": "rbac.open-cluster-management.io/v1beta1",
     "kind": "MulticlusterRoleAssignment",
     "metadata": {
       "name": "charlie-cranston-role-assignment-console",
@@ -408,8 +368,8 @@
           "clusterRole": "kubevirt.io:edit",
           "targetNamespaces": ["edge-workloads", "kubevirt-edge"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["edge-cluster-1"]
+            "type": "placements",
+            "placements": [{ "name": "placement-edge-1", "namespace": "open-cluster-management-global-set" }]
           }
         },
         {
@@ -417,8 +377,8 @@
           "clusterRole": "kubevirt.io:edit",
           "targetNamespaces": ["edge-workloads"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["edge-cluster-2"]
+            "type": "placements",
+            "placements": [{ "name": "placement-edge-2", "namespace": "open-cluster-management-global-set" }]
           }
         }
       ]
@@ -431,7 +391,7 @@
     }
   },
   {
-    "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
+    "apiVersion": "rbac.open-cluster-management.io/v1beta1",
     "kind": "MulticlusterRoleAssignment",
     "metadata": {
       "name": "sre-team-role-assignment-console",
@@ -447,8 +407,8 @@
           "clusterRole": "kubevirt.io:view",
           "targetNamespaces": ["kubevirt-production", "monitoring"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["production-cluster"]
+            "type": "placements",
+            "placements": [{ "name": "placement-production", "namespace": "open-cluster-management-global-set" }]
           }
         },
         {
@@ -456,8 +416,8 @@
           "clusterRole": "kubevirt.io:view",
           "targetNamespaces": ["kubevirt-staging", "monitoring"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["staging-cluster"]
+            "type": "placements",
+            "placements": [{ "name": "placement-staging", "namespace": "open-cluster-management-global-set" }]
           }
         },
         {
@@ -465,8 +425,8 @@
           "clusterRole": "kubevirt.io:view",
           "targetNamespaces": ["kubevirt-dev", "monitoring"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["development-cluster"]
+            "type": "placements",
+            "placements": [{ "name": "placement-development", "namespace": "open-cluster-management-global-set" }]
           }
         }
       ]
@@ -480,7 +440,7 @@
     }
   },
   {
-    "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
+    "apiVersion": "rbac.open-cluster-management.io/v1beta1",
     "kind": "MulticlusterRoleAssignment",
     "metadata": {
       "name": "sarah-jones-role-assignment-console",
@@ -496,8 +456,8 @@
           "clusterRole": "kubevirt.io:view",
           "targetNamespaces": ["kubevirt-production", "monitoring", "logging"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["production-cluster"]
+            "type": "placements",
+            "placements": [{ "name": "placement-production", "namespace": "open-cluster-management-global-set" }]
           }
         },
         {
@@ -505,8 +465,8 @@
           "clusterRole": "kubevirt.io:view",
           "targetNamespaces": ["kubevirt-staging"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["staging-cluster"]
+            "type": "placements",
+            "placements": [{ "name": "placement-staging", "namespace": "open-cluster-management-global-set" }]
           }
         }
       ]
@@ -519,7 +479,7 @@
     }
   },
   {
-    "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
+    "apiVersion": "rbac.open-cluster-management.io/v1beta1",
     "kind": "MulticlusterRoleAssignment",
     "metadata": {
       "name": "security-auditors-role-assignment-console",
@@ -535,8 +495,8 @@
           "clusterRole": "kubevirt.io:view",
           "targetNamespaces": ["kubevirt-production"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["production-cluster"]
+            "type": "placements",
+            "placements": [{ "name": "placement-production", "namespace": "open-cluster-management-global-set" }]
           }
         },
         {
@@ -544,8 +504,8 @@
           "clusterRole": "kubevirt.io:view",
           "targetNamespaces": ["security", "audit-logs"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["security-cluster"]
+            "type": "placements",
+            "placements": [{ "name": "placement-security", "namespace": "open-cluster-management-global-set" }]
           }
         }
       ]
@@ -562,7 +522,7 @@
     }
   },
   {
-    "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
+    "apiVersion": "rbac.open-cluster-management.io/v1beta1",
     "kind": "MulticlusterRoleAssignment",
     "metadata": {
       "name": "network-admin-role-assignment-console",
@@ -578,8 +538,8 @@
           "clusterRole": "network-admin",
           "targetNamespaces": ["networking", "ingress"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["production-cluster", "staging-cluster"]
+            "type": "placements",
+            "placements": [{ "name": "placement-prod-staging", "namespace": "open-cluster-management-global-set" }]
           }
         },
         {
@@ -587,8 +547,8 @@
           "clusterRole": "kubevirt.io:admin",
           "targetNamespaces": ["networking", "ingress"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["production-cluster"]
+            "type": "placements",
+            "placements": [{ "name": "placement-production", "namespace": "open-cluster-management-global-set" }]
           }
         },
         {
@@ -596,8 +556,8 @@
           "clusterRole": "network-admin",
           "targetNamespaces": ["networking"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["edge-cluster-1", "edge-cluster-2"]
+            "type": "placements",
+            "placements": [{ "name": "placement-edge", "namespace": "open-cluster-management-global-set" }]
           }
         }
       ]
@@ -623,7 +583,7 @@
     }
   },
   {
-    "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
+    "apiVersion": "rbac.open-cluster-management.io/v1beta1",
     "kind": "MulticlusterRoleAssignment",
     "metadata": {
       "name": "storage-team-role-assignment-console",
@@ -639,8 +599,8 @@
           "clusterRole": "storage-admin",
           "targetNamespaces": ["storage-system", "csi"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["production-cluster", "staging-cluster"]
+            "type": "placements",
+            "placements": [{ "name": "placement-prod-staging", "namespace": "open-cluster-management-global-set" }]
           }
         },
         {
@@ -648,8 +608,8 @@
           "clusterRole": "kubevirt.io:edit",
           "targetNamespaces": ["storage-system", "csi"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["production-cluster", "staging-cluster"]
+            "type": "placements",
+            "placements": [{ "name": "placement-prod-staging", "namespace": "open-cluster-management-global-set" }]
           }
         },
         {
@@ -657,8 +617,8 @@
           "clusterRole": "storage-admin",
           "targetNamespaces": ["storage-dev"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["development-cluster", "testing-cluster"]
+            "type": "placements",
+            "placements": [{ "name": "placement-dev-test", "namespace": "open-cluster-management-global-set" }]
           }
         }
       ]
@@ -684,7 +644,7 @@
     }
   },
   {
-    "apiVersion": "rbac.open-cluster-management.io/v1alpha1",
+    "apiVersion": "rbac.open-cluster-management.io/v1beta1",
     "kind": "MulticlusterRoleAssignment",
     "metadata": {
       "name": "test-user-role-assignment-console",
@@ -700,8 +660,8 @@
           "clusterRole": "kubevirt.io:edit",
           "targetNamespaces": ["shared-workloads"],
           "clusterSelection": {
-            "type": "clusterNames",
-            "clusterNames": ["production-cluster"]
+            "type": "placements",
+            "placements": [{ "name": "placement-production", "namespace": "open-cluster-management-global-set" }]
           }
         }
       ]
