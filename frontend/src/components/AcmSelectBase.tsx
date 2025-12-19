@@ -722,6 +722,7 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
       onOpenChange={() => closeMenu()}
       selected={selections}
       onSelect={_onSelect}
+      popperProps={{ appendTo: 'inline' }}
       innerRef={menuRef as React.MutableRefObject<any>}
     >
       {renderSelectList()}

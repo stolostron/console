@@ -7,7 +7,7 @@ exports[`ControlPanelCheckbox component renders as expected 1`] = `
     style="flex-direction: column; align-items: flex-start;"
   >
     <div
-      style="display: flex; align-items: center;"
+      style="display: flex; align-items: baseline;"
     >
       <div
         class="pf-v6-c-check pf-m-standalone"
