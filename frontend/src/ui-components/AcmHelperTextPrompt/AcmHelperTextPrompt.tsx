@@ -19,11 +19,11 @@ export function AcmHelperTextPrompt(props: AcmHelperTextPromptProps) {
       <SplitItem>
         <Button
           variant="link"
-          style={{ paddingRight: '0px' }}
+          isInline
           onClick={() => window.open(prompt?.href)}
           isDisabled={prompt?.isDisabled}
           icon={<ExternalLinkAltIcon />}
-          iconPosition="right"
+          iconPosition="end"
         >
           {prompt?.label}
         </Button>

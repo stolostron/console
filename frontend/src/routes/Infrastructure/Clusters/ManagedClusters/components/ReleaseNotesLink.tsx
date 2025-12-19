@@ -3,6 +3,7 @@
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { OCP_DOC } from '../../../../../lib/doc-util'
+import { Button } from '@patternfly/react-core'
 
 // must be x.y.z version prop
 export const ReleaseNotesLink = (props: { version?: string }) => {
@@ -14,13 +15,17 @@ export const ReleaseNotesLink = (props: { version?: string }) => {
   const [x, y, z] = props.version.split('.')
 
   return (
-    <a
+    <Button
+      icon={<ExternalLinkAltIcon />}
+      iconPosition="end"
+      component="a"
+      variant="link"
+      isInline
       href={`${OCP_DOC}/${x}.${y}/html/release_notes/ocp-${x}-${y}-release-notes.html#ocp-${x}-${y}-${z}`}
       target="_blank"
       rel="noreferrer"
-      style={{ display: 'block', marginTop: '6px' }}
     >
-      {t('view.releaseNotes')} <ExternalLinkAltIcon />
-    </a>
+      {t('view.releaseNotes')}
+    </Button>
   )
 }
