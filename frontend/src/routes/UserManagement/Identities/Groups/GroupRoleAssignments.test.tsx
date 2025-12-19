@@ -35,13 +35,18 @@ jest.mock('../../../../shared-recoil', () => ({
 // Mock placement-client hooks
 jest.mock('../../../../resources/clients/placement-client', () => ({
   useFindPlacements: jest.fn(() => []),
-  useGetClustersForPlacement: jest.fn(() => []),
-  useGetClustersForPlacementMap: jest.fn(() => ({
-    'placement-development-cluster': {
-      placement: { metadata: { name: 'placement-development-cluster' } },
+  useGetPlacementClusters: jest.fn(() => [
+    {
+      placement: {
+        apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+        kind: 'Placement',
+        metadata: { name: 'placement-development-cluster', namespace: 'open-cluster-management-global-set' },
+        spec: {},
+      },
       clusters: ['development-cluster'],
+      clusterSetNames: ['development-cluster'],
     },
-  })),
+  ]),
   createForClusterSets: jest.fn(),
   createForClusters: jest.fn(),
 }))
