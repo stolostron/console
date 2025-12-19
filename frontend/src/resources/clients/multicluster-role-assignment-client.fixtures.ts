@@ -1,5 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { MulticlusterRoleAssignmentNamespace } from '../multicluster-role-assignment'
+import { FlattenedRoleAssignment } from './model/flattened-role-assignment'
+import { Subject } from '../kubernetes-client'
+import {
+  MulticlusterRoleAssignment,
+  MulticlusterRoleAssignmentNamespace,
+} from '../multicluster-role-assignment'
 import { Placement } from '../placement'
 import { UserKind } from '../rbac'
 import { PlacementClusters } from './model/placement-clusters'
@@ -304,5 +309,191 @@ export const combinedMatchingTestCases: GetPlacementsTestCase[] = [
       subject: { name: 'user1', kind: UserKind },
     },
     expectedPlacementNames: ['placement-exact-clusters', 'placement-subset-sets-1', 'placement-subset-sets-2'],
+  },
+]
+
+/**
+ * Helper to create a minimal FlattenedRoleAssignment for testing sort
+ */
+const createFlattenedRoleAssignment = (
+  subjectName: string | undefined,
+  clusterRole: string = 'admin'
+): FlattenedRoleAssignment => ({
+  name: `role-${subjectName ?? 'unknown'}`,
+  subject: { name: subjectName, kind: UserKind } as Pick<Subject, 'name' | 'kind'>,
+  clusterRole,
+  clusterSelection: { type: 'placements', placements: [] },
+  clusterNames: [],
+  targetNamespaces: [],
+  relatedMulticlusterRoleAssignment: {} as MulticlusterRoleAssignment,
+})
+
+/**
+ * Test case fixture for findRoleAssignments sort
+ */
+export interface FindRoleAssignmentsSortTestCase {
+  description: string
+  subjectNames: (string | undefined)[]
+  expectedOrder: (string | undefined)[]
+}
+
+/**
+ * Test cases for findRoleAssignments sort covering all conditions
+ */
+export const findRoleAssignmentsSortTestCases: FindRoleAssignmentsSortTestCase[] = [
+  {
+    description: 'should sort subjects alphabetically when all names are defined',
+    subjectNames: ['charlie', 'alice', 'bob'],
+    expectedOrder: ['alice', 'bob', 'charlie'],
+  },
+  {
+    description: 'should handle undefined subject name in first position (a.subject.name is undefined)',
+    subjectNames: [undefined, 'alice', 'bob'],
+    expectedOrder: [undefined, 'alice', 'bob'],
+  },
+  {
+    description: 'should handle undefined subject name in second position (b.subject.name is undefined)',
+    subjectNames: ['alice', undefined, 'bob'],
+    expectedOrder: [undefined, 'alice', 'bob'],
+  },
+  {
+    description: 'should handle both subject names undefined',
+    subjectNames: [undefined, undefined],
+    expectedOrder: [undefined, undefined],
+  },
+  {
+    description: 'should handle mixed undefined and defined names correctly',
+    subjectNames: ['charlie', undefined, 'alice', undefined, 'bob'],
+    expectedOrder: [undefined, undefined, 'alice', 'bob', 'charlie'],
+  },
+]
+
+/**
+ * Helper to create FlattenedRoleAssignments for sort test cases
+ */
+export const createFlattenedRoleAssignmentsForSort = (subjectNames: (string | undefined)[]): FlattenedRoleAssignment[] =>
+  subjectNames.map((name) => createFlattenedRoleAssignment(name))
+
+/**
+ * Test case fixture for addRoleAssignment
+ */
+export interface AddRoleAssignmentTestCase {
+  description: string
+  roleAssignment: RoleAssignmentToSave
+  existingMulticlusterRoleAssignment?: MulticlusterRoleAssignment
+  existingPlacements: Placement[]
+  shouldSucceed: boolean
+  expectedErrorMessage?: string
+}
+
+/**
+ * Helper to create a mock MulticlusterRoleAssignment
+ */
+export const createMockMulticlusterRoleAssignment = (
+  name: string,
+  subject: Subject,
+  roleAssignmentNames: string[] = []
+): MulticlusterRoleAssignment => ({
+  apiVersion: 'rbac.open-cluster-management.io/v1beta1',
+  kind: 'MulticlusterRoleAssignment',
+  metadata: { name, namespace: MulticlusterRoleAssignmentNamespace },
+  spec: {
+    subject,
+    roleAssignments: roleAssignmentNames.map((raName) => ({
+      name: raName,
+      clusterRole: 'admin',
+      clusterSelection: { type: 'placements' as const, placements: [] },
+      targetNamespaces: [],
+    })),
+  },
+  status: {},
+})
+
+/**
+ * Test cases for addRoleAssignment
+ */
+export const addRoleAssignmentTestCases: AddRoleAssignmentTestCase[] = [
+  {
+    description: 'should reject when no cluster or cluster set is selected',
+    roleAssignment: {
+      clusterRole: 'admin',
+      subject: { name: 'user1', kind: UserKind },
+      // No clusterNames or clusterSetNames
+    },
+    existingPlacements: [],
+    shouldSucceed: false,
+    expectedErrorMessage: 'No cluster or cluster set selected.',
+  },
+  {
+    description: 'should reject when empty clusterNames and clusterSetNames arrays',
+    roleAssignment: {
+      clusterRole: 'admin',
+      clusterNames: [],
+      clusterSetNames: [],
+      subject: { name: 'user1', kind: UserKind },
+    },
+    existingPlacements: [],
+    shouldSucceed: false,
+    expectedErrorMessage: 'No cluster or cluster set selected.',
+  },
+  {
+    description: 'should create new MulticlusterRoleAssignment when clusterNames provided',
+    roleAssignment: {
+      clusterRole: 'admin',
+      clusterNames: ['cluster-a'],
+      subject: { name: 'user1', kind: UserKind },
+    },
+    existingPlacements: [],
+    shouldSucceed: true,
+  },
+  {
+    description: 'should create new MulticlusterRoleAssignment when clusterSetNames provided',
+    roleAssignment: {
+      clusterRole: 'admin',
+      clusterSetNames: ['cs01'],
+      subject: { name: 'user1', kind: UserKind },
+    },
+    existingPlacements: [],
+    shouldSucceed: true,
+  },
+  {
+    description: 'should patch existing MulticlusterRoleAssignment when one exists',
+    roleAssignment: {
+      clusterRole: 'viewer',
+      clusterNames: ['cluster-b'],
+      subject: { name: 'user1', kind: UserKind },
+    },
+    existingMulticlusterRoleAssignment: createMockMulticlusterRoleAssignment(
+      'existing-mra',
+      { name: 'user1', kind: UserKind },
+      ['existing-role']
+    ),
+    existingPlacements: [],
+    shouldSucceed: true,
+  },
+]
+
+/**
+ * Test cases for duplicate detection in addRoleAssignment
+ */
+export interface DuplicateDetectionTestCase {
+  description: string
+  roleAssignment: RoleAssignmentToSave
+  existingRoleAssignmentData: RoleAssignmentToSave
+}
+
+export const duplicateDetectionTestCases: DuplicateDetectionTestCase[] = [
+  {
+    description: 'should reject when role assignment is a duplicate (same clusterRole, clusters, and subject)',
+    roleAssignment: {
+      clusterRole: 'admin',
+      clusterNames: ['cluster-a'],
+      subject: { name: 'user1', kind: UserKind },
+    },
+    existingRoleAssignmentData: {
+      clusterRole: 'admin',
+      clusterNames: ['cluster-a'],
+      subject: { name: 'user1', kind: UserKind },
+    },
   },
 ]
