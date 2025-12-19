@@ -1,8 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { ManagedClusterSetBinding, MulticlusterRoleAssignmentNamespace, UserKind } from '../../../resources'
 import { findManagedClusterSetBinding } from '../../../resources/clients/managed-cluster-set-binding-client'
+import { PlacementClusters } from '../../../resources/clients/model/placement-clusters'
 import { RoleAssignmentToSave } from '../../../resources/clients/model/role-assignment-to-save'
-import { addRoleAssignment, findRoleAssignments } from '../../../resources/clients/multicluster-role-assignment-client'
+import {
+  addRoleAssignment,
+  findRoleAssignments,
+  getPlacementsForRoleAssignment,
+} from '../../../resources/clients/multicluster-role-assignment-client'
 import { Subject } from '../../../resources/kubernetes-client'
 import { MulticlusterRoleAssignment } from '../../../resources/multicluster-role-assignment'
 import { Placement } from '../../../resources/placement'
@@ -43,14 +48,14 @@ export const dataToRoleAssignmentToSave = (data: RoleAssignmentFormDataType): Ro
  * @param roleAssignmentsToSave - Array of role assignments to save (used to extract subject names)
  * @param subjectKind - The kind of subject (User, Group, or ServiceAccount)
  * @param multiClusterRoleAssignments - All multicluster role assignments to search through
- * @param clustersForPlacements - Map of placement names to cluster names
+ * @param placementClusters - PlacementClusters for the placements together with the clusters and cluster sets
  * @returns Map where key is "subjectKind|subjectName" and value is the related MulticlusterRoleAssignment
  */
 export const existingRoleAssignmentsBySubjectRole = (
   roleAssignmentsToSave: RoleAssignmentToSave[],
   subjectKind: Subject['kind'],
   multiClusterRoleAssignments: MulticlusterRoleAssignment[],
-  clustersForPlacements: Record<string, { placement: Placement; clusters: string[] }>
+  placementClusters: PlacementClusters[]
 ): Map<string, MulticlusterRoleAssignment> => {
   const subjectNames = roleAssignmentsToSave.map((ra) => ra.subject.name).filter((e): e is string => e !== undefined)
 
@@ -60,7 +65,7 @@ export const existingRoleAssignmentsBySubjectRole = (
       subjectNames,
     },
     multiClusterRoleAssignments,
-    clustersForPlacements
+    placementClusters
   )
 
   return existingRoleAssignments.reduce((acc, ra) => {
@@ -85,7 +90,7 @@ export const saveRoleAssignment = (
   roleAssignment: RoleAssignmentToSave,
   existingBySubjectRole: Map<string, MulticlusterRoleAssignment>,
   managedClusterSetBindings: ManagedClusterSetBinding[],
-  clustersForPlacements: Record<string, { placement: Placement; clusters: string[] }>,
+  placementClusters: PlacementClusters[],
   callbacks: {
     onSuccess: (role: string) => void
     onError: (role: string, error: unknown, isDuplicateError: boolean) => void
@@ -97,16 +102,12 @@ export const saveRoleAssignment = (
     clusterSets: roleAssignment.clusterSetNames,
     namespaces: [MulticlusterRoleAssignmentNamespace],
   })
-  const existingPlacement: Placement | undefined = Object.values(clustersForPlacements).find(
-    (entry) =>
-      entry.clusters.every((cluster) => roleAssignment.clusterNames?.includes(cluster)) &&
-      entry.clusters.length === roleAssignment.clusterNames?.length
-  )?.placement
+  const existingPlacements: Placement[] = getPlacementsForRoleAssignment(roleAssignment, placementClusters)
 
   return addRoleAssignment(roleAssignment, {
     existingMulticlusterRoleAssignment,
     existingManagedClusterSetBindings,
-    existingPlacement,
+    existingPlacements,
   })
     .then(() => callbacks.onSuccess(roleAssignment.clusterRole))
     .catch((e) => {

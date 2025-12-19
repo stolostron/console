@@ -4,6 +4,7 @@ import { MulticlusterRoleAssignmentNamespace } from '../multicluster-role-assign
 import { Placement, PlacementApiVersionBeta, PlacementKind, PlacementPredicates } from '../placement'
 import { PlacementDecision } from '../placement-decision'
 import { createResource, IRequestResult } from '../utils'
+import { PlacementClusters } from './model/placement-clusters'
 import { getClustersFromPlacementDecision, useFindPlacementDecisions } from './placement-decision-client'
 
 /**
@@ -157,15 +158,13 @@ const doesPlacementDecisionBelongToPlacement = (placementDecision: PlacementDeci
  * This is used to resolve which clusters a RoleAssignment applies to based on its placements.
  *
  * @param placementNames - Array of placement names to resolve clusters for
- * @returns Record mapping placement names to arrays of unique cluster names
+ * @returns Array of PlacementClusters for the placements together with the clusters and cluster sets
  */
-export const useGetClustersForPlacementMap = (
-  placementNames: string[]
-): Record<string, { placement: Placement; clusters: string[] }> => {
+export const useGetPlacementClusters = (placementNames: string[]): PlacementClusters[] => {
   const placements = useFindPlacements({ placementNames })
   const placementDecisions = useFindPlacementDecisions({ placementNames })
 
-  return placements.reduce((acc, placement) => {
+  return placements.reduce((acc: PlacementClusters[], placement: Placement) => {
     const placementDecision = placementDecisions.find((placementDecision) =>
       doesPlacementDecisionBelongToPlacement(placementDecision, placement)
     )
@@ -173,14 +172,15 @@ export const useGetClustersForPlacementMap = (
       ? getClustersFromPlacementDecision(placementDecision)
       : []
     const clustersFromPlacements: string[] = getClusterFromPlacements([placement])
-    return {
+    return [
       ...acc,
-      [`${placement.metadata.name}`]: {
+      {
         placement,
         clusters: [...new Set([...clustersFromPlacements, ...clustersFromPlacementDecisions])],
+        clusterSetNames: placement.spec.clusterSets,
       },
-    }
-  }, {})
+    ]
+  }, [])
 }
 
 /**

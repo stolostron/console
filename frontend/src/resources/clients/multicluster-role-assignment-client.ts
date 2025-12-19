@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { sha256 } from 'js-sha256'
-import { get } from 'lodash'
+import { useMemo } from 'react'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { ManagedClusterSetBinding } from '../managed-cluster-set-binding'
 import {
@@ -15,9 +15,9 @@ import { createResource, deleteResource, patchResource } from '../utils'
 import { getResource, IRequestResult, ResourceError, ResourceErrorCode } from '../utils/resource-request'
 import { createForClusterSets as createForClusterSetsBinding } from './managed-cluster-set-binding-client'
 import { FlattenedRoleAssignment } from './model/flattened-role-assignment'
+import { PlacementClusters } from './model/placement-clusters'
 import { RoleAssignmentToSave } from './model/role-assignment-to-save'
-import { createForClusters, createForClusterSets, useGetClustersForPlacementMap } from './placement-client'
-import { useMemo } from 'react'
+import { createForClusters, createForClusterSets, useGetPlacementClusters } from './placement-client'
 
 /**
  * Query parameters for filtering MulticlusterRoleAssignment resources.
@@ -107,15 +107,17 @@ const isClusterOrRoleMatch = (
 }
 
 /**
- * React hook that resolves placement names to cluster names for all role assignments.
+ * React hook that resolves MulticlusterRoleAssignments to PlacementClusters
  * Extracts all placement names from the MulticlusterRoleAssignments and uses
- * useGetClustersForPlacementMap to resolve them to actual cluster names.
+ * useGetPlacementClusters to resolve them to PlacementClusters.
  *
  * @param multiclusterRoleAssignments - Array of MulticlusterRoleAssignments to process
- * @returns Record mapping placement names to arrays of cluster names
+ * @returns Array of PlacementClusters for the placements together with the clusters and cluster sets
  */
-const useGetClusterFromPlacements = (multiclusterRoleAssignments: MulticlusterRoleAssignment[]) =>
-  useGetClustersForPlacementMap(
+const useGetPlacementClustersForMulticlusterRoleAssignments = (
+  multiclusterRoleAssignments: MulticlusterRoleAssignment[]
+): PlacementClusters[] =>
+  useGetPlacementClusters(
     multiclusterRoleAssignments.flatMap((multiclusterRoleAssignment) =>
       multiclusterRoleAssignment.spec.roleAssignments.flatMap((roleAssignment) =>
         roleAssignment.clusterSelection.placements.map((e) => e.name)
@@ -130,13 +132,13 @@ const useGetClusterFromPlacements = (multiclusterRoleAssignments: MulticlusterRo
  *
  * @param query - Query parameters for filtering
  * @param multiClusterRoleAssignments - Array of MulticlusterRoleAssignments to filter
- * @param clustersForPlacements - Pre-resolved map of placement names to cluster names
+ * @param placementClusters - Pre-resolved map of placement names to cluster names
  * @returns Array of FlattenedRoleAssignments matching all query filters
  */
 export const findRoleAssignments = (
   query: MulticlusterRoleAssignmentQuery,
   multiClusterRoleAssignments: MulticlusterRoleAssignment[],
-  clustersForPlacements: Record<string, { placement: Placement; clusters: string[] }>
+  placementClusters: PlacementClusters[]
 ): FlattenedRoleAssignment[] => {
   const filteredMulticlusterRoleAssignments =
     multiClusterRoleAssignments.filter((multiclusterRoleAssignment) =>
@@ -154,7 +156,12 @@ export const findRoleAssignments = (
           .map((roleAssignment) => {
             const clusters: string[] = roleAssignment.clusterSelection.placements
               .map((e) => e.name)
-              .flatMap((placementName: string) => get(clustersForPlacements, placementName).clusters)
+              .flatMap(
+                (placementName: string) =>
+                  placementClusters.find(
+                    (placementCluster) => placementCluster.placement.metadata.name === placementName
+                  )?.clusters ?? []
+              )
             return roleAssignmentToFlattenedRoleAssignment(multiClusterRoleAssignmentCurr, roleAssignment, clusters)
           })
           .reduce(
@@ -176,7 +183,7 @@ export const findRoleAssignments = (
 export const useFindRoleAssignments = (query: MulticlusterRoleAssignmentQuery): FlattenedRoleAssignment[] => {
   const { multiclusterRoleAssignmentState } = useSharedAtoms()
   const multiclusterRoleAssignments = useRecoilValue(multiclusterRoleAssignmentState)
-  const clustersForPlacements = useGetClusterFromPlacements(multiclusterRoleAssignments)
+  const clustersForPlacements = useGetPlacementClustersForMulticlusterRoleAssignments(multiclusterRoleAssignments)
 
   return useMemo(
     () => findRoleAssignments(query, multiclusterRoleAssignments, clustersForPlacements),
@@ -217,15 +224,21 @@ const getRoleAssignmentName = (roleAssignment: RoleAssignmentToSave): string => 
  * Generates the name using hash and sets up the clusterSelection with the placement reference.
  *
  * @param roleAssignment - The role assignment data to transform
- * @param placement - The Placement resource to reference in clusterSelection
+ * @param placements - The Placement resources to reference in clusterSelection
  * @returns RoleAssignment ready to be added to a MulticlusterRoleAssignment
  */
-const mapRoleAssignmentBeforeSaving = (roleAssignment: RoleAssignmentToSave, placement: Placement): RoleAssignment => ({
+const mapRoleAssignmentBeforeSaving = (
+  roleAssignment: RoleAssignmentToSave,
+  placements: Placement[]
+): RoleAssignment => ({
   ...roleAssignment,
   name: getRoleAssignmentName(roleAssignment),
   clusterSelection: {
     type: 'placements',
-    placements: [{ name: placement.metadata.name!, namespace: placement.metadata.namespace! }],
+    placements: placements.map((placement) => ({
+      name: placement.metadata.name!,
+      namespace: placement.metadata.namespace!,
+    })),
   },
 })
 
@@ -269,21 +282,21 @@ async function createAdditionalRoleAssignmentResources(
   roleAssignment: RoleAssignmentToSave,
   {
     existingManagedClusterSetBindings,
-    existingPlacement,
-  }: { existingManagedClusterSetBindings?: ManagedClusterSetBinding[]; existingPlacement?: Placement }
-): Promise<Placement> {
+    existingPlacements,
+  }: { existingManagedClusterSetBindings?: ManagedClusterSetBinding[]; existingPlacements?: Placement[] }
+): Promise<Placement[]> {
   if (!existingManagedClusterSetBindings?.length) {
     await Promise.all(
       roleAssignment.clusterSetNames?.map((clusterSetName) => createForClusterSetsBinding(clusterSetName).promise) || []
     )
   }
 
-  if (existingPlacement) {
-    return existingPlacement
+  if (existingPlacements?.length) {
+    return existingPlacements
   } else {
     return roleAssignment.clusterNames
-      ? await createForClusters(roleAssignment.clusterNames).promise
-      : await createForClusterSets(roleAssignment.clusterSetNames!).promise
+      ? [await createForClusters(roleAssignment.clusterNames).promise]
+      : [await createForClusterSets(roleAssignment.clusterSetNames!).promise]
   }
 }
 
@@ -308,11 +321,11 @@ export const addRoleAssignment = async (
   {
     existingMulticlusterRoleAssignment,
     existingManagedClusterSetBindings,
-    existingPlacement,
+    existingPlacements,
   }: {
     existingMulticlusterRoleAssignment?: MulticlusterRoleAssignment
     existingManagedClusterSetBindings?: ManagedClusterSetBinding[]
-    existingPlacement?: Placement
+    existingPlacements: Placement[]
   }
 ): Promise<IRequestResult<MulticlusterRoleAssignment>> => {
   const existingRoleAssignments = existingMulticlusterRoleAssignment?.spec.roleAssignments || []
@@ -326,12 +339,12 @@ export const addRoleAssignment = async (
   }
 
   if (roleAssignment.clusterNames?.length || roleAssignment.clusterSetNames?.length) {
-    const placement: Placement = await createAdditionalRoleAssignmentResources(roleAssignment, {
+    const placements: Placement[] = await createAdditionalRoleAssignmentResources(roleAssignment, {
       existingManagedClusterSetBindings,
-      existingPlacement,
+      existingPlacements,
     })
 
-    const mappedRoleAssignment = mapRoleAssignmentBeforeSaving(roleAssignment, placement)
+    const mappedRoleAssignment = mapRoleAssignmentBeforeSaving(roleAssignment, placements)
     if (existingMulticlusterRoleAssignment) {
       return patchResource(existingMulticlusterRoleAssignment, {
         spec: {
@@ -398,4 +411,23 @@ export const deleteRoleAssignment = (roleAssignment: FlattenedRoleAssignment): I
   })()
 
   return { promise, abort: () => abortController.abort() }
+}
+
+export const getPlacementsForRoleAssignment = (
+  roleAssignment: RoleAssignmentToSave,
+  placementClusters: PlacementClusters[]
+): Placement[] => {
+  const placementForClusters = placementClusters
+    .filter((placementCluster) =>
+      placementCluster.clusters.every((cluster) => roleAssignment.clusterNames?.includes(cluster))
+    )
+    .map((placementCluster) => placementCluster.placement)
+  const placementForClusterSets = placementClusters
+    .filter((placementCluster) =>
+      placementCluster.clusterSetNames?.every((clusterSetName) =>
+        roleAssignment.clusterSetNames?.includes(clusterSetName)
+      )
+    )
+    .map((placementCluster) => placementCluster.placement)
+  return [...placementForClusters, ...placementForClusterSets]
 }
