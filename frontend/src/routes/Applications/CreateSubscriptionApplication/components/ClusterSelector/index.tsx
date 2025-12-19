@@ -385,7 +385,7 @@ const ClusterSelector = (props: {
           </div>
           <div style={!modeSelected ? { pointerEvents: 'none', opacity: 0.3 } : {}}>
             <Accordion style={{ display: 'block' }}>
-              <AccordionItem>
+              <AccordionItem isExpanded>
                 <AccordionContent>
                   <div className="clusterSelector-labels-section">
                     <div
