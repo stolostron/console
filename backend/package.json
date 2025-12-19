@@ -60,7 +60,7 @@
     "pino-zen": "2.0.8",
     "prettier": "^3.2.5",
     "rollup": "2.77.0",
-    "ts-jest": "^29.2.5",
+    "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.2"
   },
