@@ -1,10 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { FlattenedRoleAssignment } from './model/flattened-role-assignment'
 import { Subject } from '../kubernetes-client'
-import {
-  MulticlusterRoleAssignment,
-  MulticlusterRoleAssignmentNamespace,
-} from '../multicluster-role-assignment'
+import { MulticlusterRoleAssignment, MulticlusterRoleAssignmentNamespace } from '../multicluster-role-assignment'
 import { Placement } from '../placement'
 import { UserKind } from '../rbac'
 import { PlacementClusters } from './model/placement-clusters'
@@ -371,8 +368,9 @@ export const findRoleAssignmentsSortTestCases: FindRoleAssignmentsSortTestCase[]
 /**
  * Helper to create FlattenedRoleAssignments for sort test cases
  */
-export const createFlattenedRoleAssignmentsForSort = (subjectNames: (string | undefined)[]): FlattenedRoleAssignment[] =>
-  subjectNames.map((name) => createFlattenedRoleAssignment(name))
+export const createFlattenedRoleAssignmentsForSort = (
+  subjectNames: (string | undefined)[]
+): FlattenedRoleAssignment[] => subjectNames.map((name) => createFlattenedRoleAssignment(name))
 
 /**
  * Test case fixture for addRoleAssignment
