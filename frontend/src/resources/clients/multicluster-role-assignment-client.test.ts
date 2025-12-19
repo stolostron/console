@@ -1035,24 +1035,62 @@ describe('multicluster-role-assignment-client', function () {
 
     describe('duplicate detection', () => {
       it('should reject when adding duplicate role assignment', async () => {
+        // Import sha256 to compute the expected hash
+        const { sha256 } = await import('js-sha256')
+
         const roleAssignment: RoleAssignmentToSave = {
           clusterRole: 'admin',
           clusterNames: ['cluster-a'],
           subject: { name: 'user1', kind: UserKind },
         }
 
-        // Create an existing MRA with a role assignment that has the same name (hash)
-        // We need to generate the same hash - since getRoleAssignmentName is private,
-        // we'll use an existing role assignment with a known hash pattern
-        const existingMRA = createMockMulticlusterRoleAssignment('existing-mra', roleAssignment.subject, [])
+        // Compute the expected hash the same way getRoleAssignmentName does
+        const sortedKeys = Object.keys(roleAssignment).sort((a, b) => a.localeCompare(b))
+        const sortedObject: Record<string, unknown> = {}
+        for (const key of sortedKeys) {
+          const value = roleAssignment[key as keyof typeof roleAssignment]
+          if (['targetNamespaces', 'clusterNames', 'clusterSetNames'].includes(key) && value && Array.isArray(value)) {
+            sortedObject[key] = [...value].sort((a: string, b: string) => a.localeCompare(b))
+          } else {
+            sortedObject[key] = value
+          }
+        }
+        const expectedHash = sha256(JSON.stringify(sortedObject)).substring(0, 16)
 
-        // Add a role assignment with the exact same properties - this will generate the same hash
+        // Create an existing MRA with a role assignment that has the same hash name
+        const existingMRA = createMockMulticlusterRoleAssignment('existing-mra', roleAssignment.subject, [])
         existingMRA.spec.roleAssignments = [
           {
-            name: 'any-name', // The name comparison uses the generated hash from properties
+            name: expectedHash, // Use the computed hash to trigger duplicate detection
             clusterRole: 'admin',
             clusterSelection: { type: 'placements', placements: [] },
-            targetNamespaces: undefined,
+          },
+        ]
+
+        // Test with existing MRA that has matching role assignment - should reject as duplicate
+        const result = await addRoleAssignment(roleAssignment, {
+          existingMulticlusterRoleAssignment: existingMRA,
+          existingManagedClusterSetBindings: [],
+          existingPlacements: [],
+        })
+
+        await expect(result.promise).rejects.toThrow('Duplicate role assignment detected.')
+      })
+
+      it('should succeed when role assignment is unique', async () => {
+        const roleAssignment: RoleAssignmentToSave = {
+          clusterRole: 'admin',
+          clusterNames: ['cluster-a'],
+          subject: { name: 'user1', kind: UserKind },
+        }
+
+        // Create an existing MRA with a role assignment that has a different hash
+        const existingMRA = createMockMulticlusterRoleAssignment('existing-mra', roleAssignment.subject, [])
+        existingMRA.spec.roleAssignments = [
+          {
+            name: 'different-hash-value', // Different hash, not a duplicate
+            clusterRole: 'viewer', // Different role
+            clusterSelection: { type: 'placements', placements: [] },
           },
         ]
 
@@ -1069,14 +1107,14 @@ describe('multicluster-role-assignment-client', function () {
           abort: jest.fn(),
         })
 
-        // Test with no existing MRA - should create new
         const result = await addRoleAssignment(roleAssignment, {
-          existingMulticlusterRoleAssignment: undefined,
+          existingMulticlusterRoleAssignment: existingMRA,
           existingManagedClusterSetBindings: [],
           existingPlacements: [],
         })
 
         await expect(result.promise).resolves.toBeDefined()
+        expect(mockPatchResourceForAdd).toHaveBeenCalled()
       })
     })
   })
