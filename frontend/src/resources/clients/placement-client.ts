@@ -67,6 +67,20 @@ const isClusterSetNameMatch = (placement: Placement, query: PlacementQuery): boo
     clusterSetNamesFromPlacements.every((value) => query.clusterSetNames!.includes(value))
   )
 }
+export const isPlacementForClusterSets = (placement: Placement): boolean =>
+  placement.spec.clusterSets !== undefined && placement.spec.clusterSets.length > 0
+
+export const isPlacementForClusterNames = (placement: Placement): boolean => !isPlacementForClusterSets(placement)
+
+export const doesPlacementContainsClusterName = (placement: Placement, clusterName: string): boolean =>
+  placement.spec.predicates?.some((predicate) =>
+    predicate.requiredClusterSelector?.labelSelector?.matchExpressions?.some(
+      (expression) => expression.key === 'name' && expression.values?.includes(clusterName)
+    )
+  ) || false
+
+export const doesPlacementContainsClusterSet = (placement: Placement, clusterSetName: string): boolean =>
+  placement.spec.clusterSets?.includes(clusterSetName) || false
 
 /**
  * Filters placements based on the provided query parameters.
@@ -160,7 +174,7 @@ const doesPlacementDecisionBelongToPlacement = (placementDecision: PlacementDeci
  * @param placementNames - Array of placement names to resolve clusters for
  * @returns Array of PlacementClusters for the placements together with the clusters and cluster sets
  */
-export const useGetPlacementClusters = (placementNames: string[]): PlacementClusters[] => {
+export const useGetPlacementClusters = (placementNames?: string[]): PlacementClusters[] => {
   const placements = useFindPlacements({ placementNames })
   const placementDecisions = useFindPlacementDecisions({ placementNames })
 

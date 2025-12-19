@@ -24,11 +24,7 @@ type RoleAssignmentModalProps = {
 const RoleAssignmentModal = ({ close, isOpen, isEditing, preselected }: RoleAssignmentModalProps) => {
   const { multiclusterRoleAssignmentState } = useSharedAtoms()
   const multiClusterRoleAssignments = useRecoilValue(multiclusterRoleAssignmentState)
-  const clustersForPlacements = useGetPlacementClusters(
-    multiClusterRoleAssignments.flatMap((e) =>
-      e.spec.roleAssignments.flatMap((ea) => ea.clusterSelection.placements.map((p) => p.name))
-    )
-  )
+  const placementClusters = useGetPlacementClusters()
 
   const { managedClusterSetBindingsState } = useSharedAtoms()
   const managedClusterSetBindings = useRecoilValue(managedClusterSetBindingsState)
@@ -42,12 +38,12 @@ const RoleAssignmentModal = ({ close, isOpen, isEditing, preselected }: RoleAssi
       roleAssignmentsToSave,
       data.subject.kind,
       multiClusterRoleAssignments,
-      clustersForPlacements
+      placementClusters
     )
 
     await Promise.all(
       roleAssignmentsToSave.map((roleAssignment) =>
-        saveRoleAssignment(roleAssignment, existingBySubjectRole, managedClusterSetBindings, clustersForPlacements, {
+        saveRoleAssignment(roleAssignment, existingBySubjectRole, managedClusterSetBindings, placementClusters, {
           onSuccess: (role) =>
             toastContext.addAlert({
               title: t('Role assignment added'),

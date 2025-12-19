@@ -11,6 +11,7 @@ import { addRoleAssignment, findRoleAssignments } from '../../../resources/clien
 jest.mock('../../../resources/clients/multicluster-role-assignment-client', () => ({
   addRoleAssignment: jest.fn(),
   findRoleAssignments: jest.fn(() => []),
+  getPlacementsForRoleAssignment: jest.fn(() => []),
 }))
 
 const mockFindRoleAssignments = findRoleAssignments as jest.MockedFunction<typeof findRoleAssignments>
@@ -54,8 +55,7 @@ const mockUseRecoilValue = useRecoilValue as jest.Mock
 const mockUseSharedAtoms = useSharedAtoms as jest.Mock
 
 jest.mock('../../../resources/clients/placement-client', () => ({
-  useGetClustersForPlacementMap: jest.fn(() => ({})),
-  findPlacements: jest.fn(() => []),
+  useGetPlacementClusters: jest.fn(() => []),
 }))
 
 jest.mock('../../../resources/clients/managed-cluster-set-binding-client', () => ({

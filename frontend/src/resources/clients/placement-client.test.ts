@@ -9,9 +9,19 @@ import { createResource } from '../utils'
 import {
   createForClusters,
   createForClusterSets,
-  useGetClustersForPlacementMap,
+  doesPlacementContainsClusterName,
+  doesPlacementContainsClusterSet,
+  isPlacementForClusterNames,
+  isPlacementForClusterSets,
+  useGetPlacementClusters,
   useFindPlacements,
 } from './placement-client'
+import {
+  doesPlacementContainsClusterNameTestCases,
+  doesPlacementContainsClusterSetTestCases,
+  isPlacementForClusterNamesTestCases,
+  isPlacementForClusterSetsTestCases,
+} from './placement-client.fixtures'
 import * as placementDecisionClient from './placement-decision-client'
 
 jest.mock('../../shared-recoil', () => ({
@@ -699,7 +709,7 @@ describe('placement-client', () => {
     })
   })
 
-  describe('useGetClustersForPlacementMap', () => {
+  describe('useGetPlacementClusters', () => {
     const useFindPlacementDecisionsSpy = jest.spyOn(placementDecisionClient, 'useFindPlacementDecisions')
     const getClustersFromPlacementDecisionSpy = jest.spyOn(placementDecisionClient, 'getClustersFromPlacementDecision')
 
@@ -761,7 +771,7 @@ describe('placement-client', () => {
       },
     })
 
-    describe('getClusterFromPlacements logic (via useGetClustersForPlacementMap)', () => {
+    describe('getClusterFromPlacements logic (via useGetPlacementClusters)', () => {
       it('should extract cluster names from placement predicates with key=name', () => {
         // Arrange
         const placement = createPlacementWithPredicates('placement-with-clusters', ['cluster-a', 'cluster-b'])
@@ -769,11 +779,11 @@ describe('placement-client', () => {
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
-        const { result } = renderHook(() => useGetClustersForPlacementMap(['placement-with-clusters']))
+        const { result } = renderHook(() => useGetPlacementClusters(['placement-with-clusters']))
 
         // Assert
-        expect(result.current['placement-with-clusters'].clusters).toEqual(['cluster-a', 'cluster-b'])
-        expect(result.current['placement-with-clusters'].placement).toBe(placement)
+        expect(result.current[0].clusters).toEqual(['cluster-a', 'cluster-b'])
+        expect(result.current[0].placement).toBe(placement)
       })
 
       it('should return empty clusters array for placement without predicates', () => {
@@ -788,10 +798,10 @@ describe('placement-client', () => {
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
-        const { result } = renderHook(() => useGetClustersForPlacementMap(['no-predicates']))
+        const { result } = renderHook(() => useGetPlacementClusters(['no-predicates']))
 
         // Assert
-        expect(result.current['no-predicates'].clusters).toEqual([])
+        expect(result.current[0].clusters).toEqual([])
       })
 
       it('should return empty clusters array for placement with empty predicates array', () => {
@@ -806,10 +816,10 @@ describe('placement-client', () => {
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
-        const { result } = renderHook(() => useGetClustersForPlacementMap(['empty-predicates']))
+        const { result } = renderHook(() => useGetPlacementClusters(['empty-predicates']))
 
         // Assert
-        expect(result.current['empty-predicates'].clusters).toEqual([])
+        expect(result.current[0].clusters).toEqual([])
       })
 
       it('should ignore matchExpressions with key other than name', () => {
@@ -837,10 +847,10 @@ describe('placement-client', () => {
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
-        const { result } = renderHook(() => useGetClustersForPlacementMap(['wrong-key']))
+        const { result } = renderHook(() => useGetPlacementClusters(['wrong-key']))
 
         // Assert
-        expect(result.current['wrong-key'].clusters).toEqual([])
+        expect(result.current[0].clusters).toEqual([])
       })
 
       it('should extract only values from matchExpressions with key=name', () => {
@@ -869,10 +879,10 @@ describe('placement-client', () => {
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
-        const { result } = renderHook(() => useGetClustersForPlacementMap(['mixed-keys']))
+        const { result } = renderHook(() => useGetPlacementClusters(['mixed-keys']))
 
         // Assert
-        expect(result.current['mixed-keys'].clusters).toEqual(['cluster-x', 'cluster-y'])
+        expect(result.current[0].clusters).toEqual(['cluster-x', 'cluster-y'])
       })
 
       it('should handle placement with no labelSelector', () => {
@@ -893,10 +903,10 @@ describe('placement-client', () => {
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
-        const { result } = renderHook(() => useGetClustersForPlacementMap(['no-label-selector']))
+        const { result } = renderHook(() => useGetPlacementClusters(['no-label-selector']))
 
         // Assert
-        expect(result.current['no-label-selector'].clusters).toEqual([])
+        expect(result.current[0].clusters).toEqual([])
       })
 
       it('should handle placement with no matchExpressions', () => {
@@ -919,10 +929,10 @@ describe('placement-client', () => {
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
-        const { result } = renderHook(() => useGetClustersForPlacementMap(['no-match-expressions']))
+        const { result } = renderHook(() => useGetPlacementClusters(['no-match-expressions']))
 
         // Assert
-        expect(result.current['no-match-expressions'].clusters).toEqual([])
+        expect(result.current[0].clusters).toEqual([])
       })
 
       it('should handle placement with empty matchExpressions array', () => {
@@ -947,10 +957,10 @@ describe('placement-client', () => {
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
-        const { result } = renderHook(() => useGetClustersForPlacementMap(['empty-match-expressions']))
+        const { result } = renderHook(() => useGetPlacementClusters(['empty-match-expressions']))
 
         // Assert
-        expect(result.current['empty-match-expressions'].clusters).toEqual([])
+        expect(result.current[0].clusters).toEqual([])
       })
 
       it('should handle matchExpression with key=name but no values', () => {
@@ -975,10 +985,10 @@ describe('placement-client', () => {
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
-        const { result } = renderHook(() => useGetClustersForPlacementMap(['no-values']))
+        const { result } = renderHook(() => useGetPlacementClusters(['no-values']))
 
         // Assert
-        expect(result.current['no-values'].clusters).toEqual([])
+        expect(result.current[0].clusters).toEqual([])
       })
 
       it('should handle matchExpression with key=name but empty values array', () => {
@@ -1003,10 +1013,10 @@ describe('placement-client', () => {
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
-        const { result } = renderHook(() => useGetClustersForPlacementMap(['empty-values']))
+        const { result } = renderHook(() => useGetPlacementClusters(['empty-values']))
 
         // Assert
-        expect(result.current['empty-values'].clusters).toEqual([])
+        expect(result.current[0].clusters).toEqual([])
       })
 
       it('should filter out falsy values from matchExpression values', () => {
@@ -1037,10 +1047,10 @@ describe('placement-client', () => {
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
-        const { result } = renderHook(() => useGetClustersForPlacementMap(['falsy-values']))
+        const { result } = renderHook(() => useGetPlacementClusters(['falsy-values']))
 
         // Assert
-        expect(result.current['falsy-values'].clusters).toEqual(['cluster-a', 'cluster-b'])
+        expect(result.current[0].clusters).toEqual(['cluster-a', 'cluster-b'])
       })
 
       it('should deduplicate cluster names from predicates', () => {
@@ -1075,10 +1085,10 @@ describe('placement-client', () => {
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
-        const { result } = renderHook(() => useGetClustersForPlacementMap(['duplicates']))
+        const { result } = renderHook(() => useGetPlacementClusters(['duplicates']))
 
         // Assert
-        expect(result.current['duplicates'].clusters).toEqual(['cluster-a', 'cluster-b', 'cluster-c', 'cluster-d'])
+        expect(result.current[0].clusters).toEqual(['cluster-a', 'cluster-b', 'cluster-c', 'cluster-d'])
       })
 
       it('should handle multiple predicates each with their own matchExpressions', () => {
@@ -1117,10 +1127,10 @@ describe('placement-client', () => {
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
-        const { result } = renderHook(() => useGetClustersForPlacementMap(['multi-predicates']))
+        const { result } = renderHook(() => useGetPlacementClusters(['multi-predicates']))
 
         // Assert
-        expect(result.current['multi-predicates'].clusters).toEqual(['cluster-1', 'cluster-2', 'cluster-3'])
+        expect(result.current[0].clusters).toEqual(['cluster-1', 'cluster-2', 'cluster-3'])
       })
     })
 
@@ -1134,13 +1144,13 @@ describe('placement-client', () => {
         getClustersFromPlacementDecisionSpy.mockReturnValue(['cluster-from-decision'])
 
         // Act
-        const { result } = renderHook(() => useGetClustersForPlacementMap(['combined']))
+        const { result } = renderHook(() => useGetPlacementClusters(['combined']))
 
         // Assert
-        expect(result.current['combined'].clusters).toEqual(
+        expect(result.current[0].clusters).toEqual(
           expect.arrayContaining(['cluster-from-predicate', 'cluster-from-decision'])
         )
-        expect(result.current['combined'].clusters).toHaveLength(2)
+        expect(result.current[0].clusters).toHaveLength(2)
       })
 
       it('should deduplicate clusters from predicates and PlacementDecision', () => {
@@ -1155,13 +1165,13 @@ describe('placement-client', () => {
         getClustersFromPlacementDecisionSpy.mockReturnValue(['shared-cluster', 'decision-only'])
 
         // Act
-        const { result } = renderHook(() => useGetClustersForPlacementMap(['dedupe-combined']))
+        const { result } = renderHook(() => useGetPlacementClusters(['dedupe-combined']))
 
         // Assert
-        expect(result.current['dedupe-combined'].clusters).toEqual(
+        expect(result.current[0].clusters).toEqual(
           expect.arrayContaining(['shared-cluster', 'predicate-only', 'decision-only'])
         )
-        expect(result.current['dedupe-combined'].clusters).toHaveLength(3)
+        expect(result.current[0].clusters).toHaveLength(3)
       })
 
       it('should handle PlacementDecision without matching Placement', () => {
@@ -1172,10 +1182,10 @@ describe('placement-client', () => {
         useFindPlacementDecisionsSpy.mockReturnValue([placementDecision])
 
         // Act
-        const { result } = renderHook(() => useGetClustersForPlacementMap(['orphan-test']))
+        const { result } = renderHook(() => useGetPlacementClusters(['orphan-test']))
 
         // Assert - only clusters from predicate, not from orphan decision
-        expect(result.current['orphan-test'].clusters).toEqual(['cluster-a'])
+        expect(result.current[0].clusters).toEqual(['cluster-a'])
       })
 
       it('should use PlacementDecision clusters when placement has no predicates', () => {
@@ -1195,15 +1205,15 @@ describe('placement-client', () => {
         getClustersFromPlacementDecisionSpy.mockReturnValue(['decision-cluster-1', 'decision-cluster-2'])
 
         // Act
-        const { result } = renderHook(() => useGetClustersForPlacementMap(['decision-only-clusters']))
+        const { result } = renderHook(() => useGetPlacementClusters(['decision-only-clusters']))
 
         // Assert
-        expect(result.current['decision-only-clusters'].clusters).toEqual(['decision-cluster-1', 'decision-cluster-2'])
+        expect(result.current[0].clusters).toEqual(['decision-cluster-1', 'decision-cluster-2'])
       })
     })
 
     describe('multiple placements', () => {
-      it('should return map with entries for each requested placement', () => {
+      it('should return array with entries for each requested placement', () => {
         // Arrange
         const placement1 = createPlacementWithPredicates('placement-a', ['cluster-1'])
         const placement2 = createPlacementWithPredicates('placement-b', ['cluster-2'])
@@ -1212,27 +1222,28 @@ describe('placement-client', () => {
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
-        const { result } = renderHook(() =>
-          useGetClustersForPlacementMap(['placement-a', 'placement-b', 'placement-c'])
-        )
+        const { result } = renderHook(() => useGetPlacementClusters(['placement-a', 'placement-b', 'placement-c']))
 
         // Assert
-        expect(Object.keys(result.current)).toEqual(['placement-a', 'placement-b', 'placement-c'])
-        expect(result.current['placement-a'].clusters).toEqual(['cluster-1'])
-        expect(result.current['placement-b'].clusters).toEqual(['cluster-2'])
-        expect(result.current['placement-c'].clusters).toEqual(['cluster-3'])
+        expect(result.current).toHaveLength(3)
+        expect(result.current[0].placement.metadata.name).toBe('placement-a')
+        expect(result.current[0].clusters).toEqual(['cluster-1'])
+        expect(result.current[1].placement.metadata.name).toBe('placement-b')
+        expect(result.current[1].clusters).toEqual(['cluster-2'])
+        expect(result.current[2].placement.metadata.name).toBe('placement-c')
+        expect(result.current[2].clusters).toEqual(['cluster-3'])
       })
 
-      it('should return empty map when no placements match', () => {
+      it('should return empty array when no placements match', () => {
         // Arrange
         useRecoilValueMock.mockReturnValue([])
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
-        const { result } = renderHook(() => useGetClustersForPlacementMap(['nonexistent']))
+        const { result } = renderHook(() => useGetPlacementClusters(['nonexistent']))
 
         // Assert
-        expect(result.current).toEqual({})
+        expect(result.current).toEqual([])
       })
 
       it('should associate correct PlacementDecisions with each Placement', () => {
@@ -1250,12 +1261,70 @@ describe('placement-client', () => {
         })
 
         // Act
-        const { result } = renderHook(() => useGetClustersForPlacementMap(['p1', 'p2']))
+        const { result } = renderHook(() => useGetPlacementClusters(['p1', 'p2']))
 
         // Assert
-        expect(result.current['p1'].clusters).toEqual(['c1'])
-        expect(result.current['p2'].clusters).toEqual(['c2'])
+        const p1Entry = result.current.find((e) => e.placement.metadata.name === 'p1')
+        const p2Entry = result.current.find((e) => e.placement.metadata.name === 'p2')
+        expect(p1Entry?.clusters).toEqual(['c1'])
+        expect(p2Entry?.clusters).toEqual(['c2'])
       })
+
+      it('should return all placements when called without arguments', () => {
+        // Arrange
+        const placement1 = createPlacementWithPredicates('placement-a', ['cluster-1'])
+        const placement2 = createPlacementWithPredicates('placement-b', ['cluster-2'])
+        const placement3 = createPlacementWithPredicates('placement-c', ['cluster-3'])
+        useRecoilValueMock.mockReturnValue([placement1, placement2, placement3])
+        useFindPlacementDecisionsSpy.mockReturnValue([])
+
+        // Act
+        const { result } = renderHook(() => useGetPlacementClusters())
+
+        // Assert
+        expect(result.current).toHaveLength(3)
+        expect(result.current[0].placement.metadata.name).toBe('placement-a')
+        expect(result.current[1].placement.metadata.name).toBe('placement-b')
+        expect(result.current[2].placement.metadata.name).toBe('placement-c')
+      })
+
+      it('should return all placements when called with undefined', () => {
+        // Arrange
+        const placement1 = createPlacementWithPredicates('p1', ['c1'])
+        const placement2 = createPlacementWithPredicates('p2', ['c2'])
+        useRecoilValueMock.mockReturnValue([placement1, placement2])
+        useFindPlacementDecisionsSpy.mockReturnValue([])
+
+        // Act
+        const { result } = renderHook(() => useGetPlacementClusters(undefined))
+
+        // Assert
+        expect(result.current).toHaveLength(2)
+      })
+    })
+  })
+
+  describe('isPlacementForClusterSets', () => {
+    it.each(isPlacementForClusterSetsTestCases)('$description', ({ placement, expected }) => {
+      expect(isPlacementForClusterSets(placement)).toBe(expected)
+    })
+  })
+
+  describe('isPlacementForClusterNames', () => {
+    it.each(isPlacementForClusterNamesTestCases)('$description', ({ placement, expected }) => {
+      expect(isPlacementForClusterNames(placement)).toBe(expected)
+    })
+  })
+
+  describe('doesPlacementContainsClusterName', () => {
+    it.each(doesPlacementContainsClusterNameTestCases)('$description', ({ placement, clusterName, expected }) => {
+      expect(doesPlacementContainsClusterName(placement, clusterName)).toBe(expected)
+    })
+  })
+
+  describe('doesPlacementContainsClusterSet', () => {
+    it.each(doesPlacementContainsClusterSetTestCases)('$description', ({ placement, clusterSetName, expected }) => {
+      expect(doesPlacementContainsClusterSet(placement, clusterSetName)).toBe(expected)
     })
   })
 })

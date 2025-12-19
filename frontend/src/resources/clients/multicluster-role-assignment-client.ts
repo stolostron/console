@@ -17,7 +17,15 @@ import { createForClusterSets as createForClusterSetsBinding } from './managed-c
 import { FlattenedRoleAssignment } from './model/flattened-role-assignment'
 import { PlacementClusters } from './model/placement-clusters'
 import { RoleAssignmentToSave } from './model/role-assignment-to-save'
-import { createForClusters, createForClusterSets, useGetPlacementClusters } from './placement-client'
+import {
+  createForClusters,
+  createForClusterSets,
+  doesPlacementContainsClusterName,
+  doesPlacementContainsClusterSet,
+  isPlacementForClusterNames,
+  isPlacementForClusterSets,
+  useGetPlacementClusters,
+} from './placement-client'
 
 /**
  * Query parameters for filtering MulticlusterRoleAssignment resources.
@@ -278,26 +286,46 @@ const areRoleAssignmentsEquals = (a: RoleAssignment, b: RoleAssignment) => a.nam
  * @param existingPlacement - Existing placement that can be reused
  * @returns The Placement resource to reference in the role assignment
  */
-async function createAdditionalRoleAssignmentResources(
+export async function createAdditionalRoleAssignmentResources(
   roleAssignment: RoleAssignmentToSave,
   {
     existingManagedClusterSetBindings,
     existingPlacements,
   }: { existingManagedClusterSetBindings?: ManagedClusterSetBinding[]; existingPlacements?: Placement[] }
 ): Promise<Placement[]> {
-  if (!existingManagedClusterSetBindings?.length) {
-    await Promise.all(
-      roleAssignment.clusterSetNames?.map((clusterSetName) => createForClusterSetsBinding(clusterSetName).promise) || []
-    )
-  }
+  // create new ManagedClusterSetBindings for cluster sets that are not already created
+  await Promise.all(
+    roleAssignment.clusterSetNames
+      ?.filter(
+        (clusterSetName) =>
+          !existingManagedClusterSetBindings?.some((binding) => binding.spec.clusterSet === clusterSetName)
+      )
+      .map((clusterSetName) => createForClusterSetsBinding(clusterSetName).promise) || []
+  )
 
-  if (existingPlacements?.length) {
-    return existingPlacements
-  } else {
-    return roleAssignment.clusterNames
-      ? [await createForClusters(roleAssignment.clusterNames).promise]
-      : [await createForClusterSets(roleAssignment.clusterSetNames!).promise]
-  }
+  // create new Placement (just one) for clusters that are not already created
+  const clustersToCreatePlacementFor: string[] | undefined = roleAssignment.clusterNames?.filter(
+    (clusterName) =>
+      !existingPlacements
+        ?.filter(isPlacementForClusterNames)
+        ?.some((placement) => doesPlacementContainsClusterName(placement, clusterName))
+  )
+  const placementsForNames: Placement[] = clustersToCreatePlacementFor?.length
+    ? [await createForClusters(clustersToCreatePlacementFor).promise]
+    : []
+
+  // create new Placements (one per cluster set, in order to be reusable) for cluster sets that are not already created
+  const placementsForSets: Placement[] = await Promise.all(
+    roleAssignment.clusterSetNames
+      ?.filter(
+        (clusterSetName) =>
+          !existingPlacements
+            ?.filter(isPlacementForClusterSets)
+            ?.some((placement) => doesPlacementContainsClusterSet(placement, clusterSetName))
+      )
+      .map((clusterSetName) => createForClusterSets([clusterSetName]).promise) || []
+  )
+  return [...(existingPlacements ?? []), ...placementsForNames, ...placementsForSets]
 }
 
 // TODO: get existingRelatedRoleAssignmets once useFindRoleAssignments is not a custom hook
@@ -413,21 +441,62 @@ export const deleteRoleAssignment = (roleAssignment: FlattenedRoleAssignment): I
   return { promise, abort: () => abortController.abort() }
 }
 
+/**
+ * Checks if a placement's cluster sets are a subset of the role assignment's cluster sets.
+ * A placement matches if ALL of its cluster sets are included in the role assignment's cluster sets.
+ *
+ * @param placementClusterSetNames - The cluster set names from the placement
+ * @param roleAssignmentClusterSetNames - The cluster set names from the role assignment
+ * @returns True if all placement cluster sets are in the role assignment's cluster sets
+ */
+const isPlacementClusterSetsSubset = (
+  placementClusterSetNames: string[] | undefined,
+  roleAssignmentClusterSetNames: string[] | undefined
+): boolean =>
+  !placementClusterSetNames?.length || !roleAssignmentClusterSetNames?.length
+    ? false
+    : placementClusterSetNames.every((clusterSetName) => roleAssignmentClusterSetNames.includes(clusterSetName))
+
+/**
+ * Checks if a placement's cluster names exactly match the role assignment's cluster names.
+ * Both arrays must contain the same elements (order doesn't matter).
+ *
+ * @param placementClusterNames - The cluster names from the placement
+ * @param roleAssignmentClusterNames - The cluster names from the role assignment
+ * @returns True if both arrays contain exactly the same elements
+ */
+const isPlacementClustersExactMatch = (
+  placementClusterNames: string[],
+  roleAssignmentClusterNames: string[] | undefined
+): boolean =>
+  !placementClusterNames.length ||
+  !roleAssignmentClusterNames?.length ||
+  roleAssignmentClusterNames.length !== placementClusterNames.length
+    ? false
+    : placementClusterNames.every((cluster) => roleAssignmentClusterNames.includes(cluster))
+
+/**
+ * Finds placements that match a role assignment based on cluster names or cluster sets.
+ * A placement matches by clusters if its clusters exactly match the role assignment's cluster names.
+ * A placement matches by cluster sets if all its cluster sets are in the role assignment's cluster set names (subset).
+ *
+ * @param roleAssignment - The role assignment to find placements for
+ * @param placementClusters - Array of PlacementClusters to search through
+ * @returns Array of Placement resources that match the role assignment
+ */
 export const getPlacementsForRoleAssignment = (
   roleAssignment: RoleAssignmentToSave,
   placementClusters: PlacementClusters[]
 ): Placement[] => {
-  const placementForClusters = placementClusters
-    .filter((placementCluster) =>
-      placementCluster.clusters.every((cluster) => roleAssignment.clusterNames?.includes(cluster))
-    )
-    .map((placementCluster) => placementCluster.placement)
-  const placementForClusterSets = placementClusters
-    .filter((placementCluster) =>
-      placementCluster.clusterSetNames?.every((clusterSetName) =>
-        roleAssignment.clusterSetNames?.includes(clusterSetName)
-      )
-    )
-    .map((placementCluster) => placementCluster.placement)
-  return [...placementForClusters, ...placementForClusterSets]
+  const placementClustersForClusterNames = placementClusters.filter((placementCluster) =>
+    isPlacementClustersExactMatch(placementCluster.clusters, roleAssignment.clusterNames)
+  )
+
+  const placementClustersForClusterSets = placementClusters.filter((placementCluster) =>
+    isPlacementClusterSetsSubset(placementCluster.clusterSetNames, roleAssignment.clusterSetNames)
+  )
+
+  return [...placementClustersForClusterNames, ...placementClustersForClusterSets].map(
+    (placementCluster) => placementCluster.placement
+  )
 }
