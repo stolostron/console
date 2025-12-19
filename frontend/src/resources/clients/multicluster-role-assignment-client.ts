@@ -17,6 +17,7 @@ import { createForClusterSets as createForClusterSetsBinding } from './managed-c
 import { FlattenedRoleAssignment } from './model/flattened-role-assignment'
 import { RoleAssignmentToSave } from './model/role-assignment-to-save'
 import { createForClusters, createForClusterSets, useGetClustersForPlacementMap } from './placement-client'
+import { useMemo } from 'react'
 
 /**
  * Query parameters for filtering MulticlusterRoleAssignment resources.
@@ -123,20 +124,26 @@ const useGetClusterFromPlacements = (multiclusterRoleAssignments: MulticlusterRo
   )
 
 /**
- * Filters MulticlusterRoleAssignments by query parameters, returns only relevant nested RoleAssignments that match
- * @param query the query to filter multiclusterRoleAssignments
- * @returns role assignments with kind and name
+ * Filters MulticlusterRoleAssignments and returns flattened role assignments matching the query.
+ * Non-hook version that accepts pre-resolved clusters for placements.
+ * Used when the clusters map is already available (e.g., in modal save operations).
+ *
+ * @param query - Query parameters for filtering
+ * @param multiClusterRoleAssignments - Array of MulticlusterRoleAssignments to filter
+ * @param clustersForPlacements - Pre-resolved map of placement names to cluster names
+ * @returns Array of FlattenedRoleAssignments matching all query filters
  */
-export const useFindRoleAssignments = (query: MulticlusterRoleAssignmentQuery): FlattenedRoleAssignment[] => {
-  // TODO: replace by new aggregated API
-  const { multiclusterRoleAssignmentState } = useSharedAtoms()
-  const multiclusterRoleAssignments =
-    useRecoilValue(multiclusterRoleAssignmentState)?.filter((multiclusterRoleAssignment) =>
+export const findRoleAssignments = (
+  query: MulticlusterRoleAssignmentQuery,
+  multiClusterRoleAssignments: MulticlusterRoleAssignment[],
+  clustersForPlacements: Record<string, { placement: Placement; clusters: string[] }>
+): FlattenedRoleAssignment[] => {
+  const filteredMulticlusterRoleAssignments =
+    multiClusterRoleAssignments.filter((multiclusterRoleAssignment) =>
       isSubjectMatch(multiclusterRoleAssignment, query)
     ) || []
-  const clustersForPlacements = useGetClusterFromPlacements(multiclusterRoleAssignments)
 
-  return multiclusterRoleAssignments
+  return filteredMulticlusterRoleAssignments
     .reduce(
       (
         multiClusterRoleAssignmentAcc: FlattenedRoleAssignment[],
@@ -162,45 +169,18 @@ export const useFindRoleAssignments = (query: MulticlusterRoleAssignmentQuery): 
 }
 
 /**
- * Filters MulticlusterRoleAssignments and returns flattened role assignments matching the query.
- * Non-hook version that accepts pre-resolved clusters for placements.
- * Used when the clusters map is already available (e.g., in modal save operations).
- *
- * @param query - Query parameters for filtering
- * @param multiClusterRoleAssignments - Array of MulticlusterRoleAssignments to filter
- * @param clustersForPlacements - Pre-resolved map of placement names to cluster names
- * @returns Array of FlattenedRoleAssignments matching all query filters
+ * Filters MulticlusterRoleAssignments by query parameters, returns only relevant nested RoleAssignments that match
+ * @param query the query to filter multiclusterRoleAssignments
+ * @returns role assignments with kind and name
  */
-export const findRoleAssignments = (
-  query: MulticlusterRoleAssignmentQuery,
-  multiClusterRoleAssignments: MulticlusterRoleAssignment[],
-  clustersForPlacements: Record<string, { placement: Placement; clusters: string[] }>
-): FlattenedRoleAssignment[] => {
-  const filteredMulticlusterRoleAssignments =
-    multiClusterRoleAssignments.filter((multiclusterRoleAssignment) =>
-      isSubjectMatch(multiclusterRoleAssignment, query)
-    ) || []
+export const useFindRoleAssignments = (query: MulticlusterRoleAssignmentQuery): FlattenedRoleAssignment[] => {
+  const { multiclusterRoleAssignmentState } = useSharedAtoms()
+  const multiclusterRoleAssignments = useRecoilValue(multiclusterRoleAssignmentState)
+  const clustersForPlacements = useGetClusterFromPlacements(multiclusterRoleAssignments)
 
-  return filteredMulticlusterRoleAssignments.reduce(
-    (
-      multiClusterRoleAssignmentAcc: FlattenedRoleAssignment[],
-      multiClusterRoleAssignmentCurr: MulticlusterRoleAssignment
-    ) => [
-      ...multiClusterRoleAssignmentAcc,
-      ...multiClusterRoleAssignmentCurr.spec.roleAssignments
-        .map((roleAssignment) => {
-          const clusters: string[] = roleAssignment.clusterSelection.placements
-            .map((e) => e.name)
-            .flatMap((placementName: string) => get(clustersForPlacements, placementName).clusters)
-          return roleAssignmentToFlattenedRoleAssignment(multiClusterRoleAssignmentCurr, roleAssignment, clusters)
-        })
-        .reduce(
-          (assignmentAcc: FlattenedRoleAssignment[], assignmentCurr: FlattenedRoleAssignment) =>
-            isClusterOrRoleMatch(assignmentCurr, query) ? [...assignmentAcc, assignmentCurr] : assignmentAcc,
-          []
-        ),
-    ],
-    []
+  return useMemo(
+    () => findRoleAssignments(query, multiclusterRoleAssignments, clustersForPlacements),
+    [query, multiclusterRoleAssignments, clustersForPlacements]
   )
 }
 
