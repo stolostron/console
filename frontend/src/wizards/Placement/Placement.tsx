@@ -5,12 +5,13 @@ import {
   useEditMode,
   useItem,
   WizArrayInput,
+  WizCheckbox,
   WizKeyValue,
   WizMultiSelect,
   WizNumberInput,
   WizTextInput,
 } from '@patternfly-labs/react-form-wizard'
-import { Alert, Button, Checkbox } from '@patternfly/react-core'
+import { Alert, Button } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import get from 'get-value'
 import { Fragment, ReactNode, useMemo } from 'react'
@@ -137,14 +138,15 @@ export function Placement(props: {
       />
 
       <PlacementPredicate rootPath="spec.predicates.0." clusters={props.clusters} />
-      <Checkbox
+      <WizCheckbox
         id="limit-clusters-checkbox"
         label={t('Set a limit on the number of clusters selected')}
-        isChecked={placement.spec?.numberOfClusters !== undefined}
-        onChange={(_event: any, checked: boolean) => {
-          if (checked) {
+        path="spec.numberOfClusters"
+        pathValueToInputValue={(value) => !!value || value === 0}
+        onValueChange={(value) => {
+          if (value) {
             // Set default value to 1 when checkbox is enabled
-            set(placement, 'spec.numberOfClusters', placement.spec?.numberOfClusters ?? 1, { preservePaths: false })
+            set(placement, 'spec.numberOfClusters', 1, { preservePaths: false })
           } else {
             // Set to undefined when checkbox is disabled
             set(placement, 'spec.numberOfClusters', undefined, { preservePaths: false })
