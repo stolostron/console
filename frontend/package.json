@@ -63,7 +63,7 @@
     "@patternfly/react-table": "^6.4.0",
     "@patternfly/react-topology": "^6.4.0",
     "@patternfly/react-user-feedback": "^6.2.0",
-    "@react-hook/resize-observer": "1.2.6",
+    "@react-hook/resize-observer": "2.0.2",
     "@redhat-cloud-services/rule-components": "^4.0.24",
     "@reduxjs/toolkit": "1.8.x",
     "@stolostron/react-data-view": "^3.1.0",
