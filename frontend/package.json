@@ -92,7 +92,7 @@
     "monaco-editor": "^0.34.1",
     "parse-url": "^9.2.0",
     "react-error-boundary": "3.1.4",
-    "react-monaco-editor": "^0.51.0",
+    "react-monaco-editor": "^0.59.0",
     "screenfull": "^6.0.2",
     "semver": "^7.6.3",
     "set-value": "^4.1.0",
