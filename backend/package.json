@@ -38,7 +38,7 @@
     "raw-body": "2.5.1"
   },
   "devDependencies": {
-    "@types/eslint": "8.4.5",
+    "@types/eslint": "8.56.12",
     "@types/get-value": "3.0.5",
     "@types/jest": "27.5.2",
     "@types/node": "^18.15.3",
