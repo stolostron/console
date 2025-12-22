@@ -30,7 +30,7 @@ export default function GovernancePage() {
               navItems={[
                 {
                   key: 'governance-overview',
-                  title: t('Overivew'),
+                  title: t('Overview'),
                   isActive: isOverview,
                   to: NavigationPath.governance,
                 },
