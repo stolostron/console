@@ -19,7 +19,7 @@ import {
 } from './topologyUtils'
 import {
   ApplicationModel,
-  AppSetCluster,
+  // AppSetCluster,
   TopologyNode,
   TopologyLink,
   RouteObject,
@@ -51,14 +51,16 @@ export async function getAppSetTopology(
 ): Promise<ExtendedTopology> {
   const links: TopologyLink[] = []
   const nodes: TopologyNode[] = []
-  const { name, namespace, appSetClusters = [], appSetApps = [], relatedPlacement } = application
-  // Extract cluster names from the ApplicationSet clusters
-  const clusterNames = appSetClusters.map((cluster: AppSetCluster) => cluster.name)
-  toolbarControl.setAllClusters?.(clusterNames)
-  toolbarControl.setAllApplications?.([name])
+  // const { name, namespace, appSetClusters = [], appSetApps = [], relatedPlacement } = application
+  // const clusterNames = appSetClusters.map((cluster: AppSetCluster) => cluster.name)
+  const { namespace, appSetClusters = [], appSetApps = [], relatedPlacement } = application
+  const name = 'app-matrix-test-1'
+  const clusterNames = ['clc-test'] //  appSetClusters.map((cluster: AppSetCluster) => cluster.name)
   const { activeTypes } = toolbarControl
 
-  // Create the main ApplicationSet node
+  /////////////////////////////////////////////
+  ////  APPLICATION SET NODE /////////////////
+  /////////////////////////////////////////////
   const appId = `application--${name}`
   nodes.push({
     name,
@@ -78,6 +80,10 @@ export async function getAppSetTopology(
       appSetClusters,
     },
   })
+
+  /////////////////////////////////////////////
+  ////  PLACEMENT NODE /////////////////
+  /////////////////////////////////////////////
 
   // Extract placement name from ApplicationSet generators configuration
   const appSetPlacementName = (application.app as any)?.spec?.generators?.[0]?.clusterDecisionResource?.labelSelector
@@ -145,7 +151,7 @@ export async function getAppSetTopology(
   ;(nodes[0] as any).isArgoCDPullModelTargetLocalCluster = isArgoCDPullModelTargetLocalCluster
 
   // Determine the parent node for clusters (placement if exists, otherwise ApplicationSet)
-  const clusterParentId = placement ? placementId : appId
+  const clusterParentId = appId
 
   // Extract source path from ApplicationSet template or generators
   const templateSourcePath = (application.app as any)?.spec?.template?.spec?.source?.path ?? ''
@@ -154,50 +160,532 @@ export async function getAppSetTopology(
       ? templateSourcePath
       : (Object.values((application.app as any)?.spec?.generators?.[0] ?? {})[0] as any)?.directories?.[0]?.path ?? ''
 
-  // Add cluster nodes to topology
-  const clusterId = addClusters(
-    clusterParentId,
-    undefined,
-    source,
-    clusterNames,
-    (appSetClusters || []) as any,
-    links,
-    nodes
-  )
-  // const resources: any[] = []
-
-  // // Collect resources from all ApplicationSet applications
-  // if (appSetApps && appSetApps.length > 0) {
-  //   appSetApps.forEach((app: any) => {
-  //     const appResources = app.status?.resources ?? []
-  //     let appClusterName = app.spec?.destination?.name
-
-  //     // If cluster name not found, try to find it by server URL
-  //     if (!appClusterName) {
-  //       const appCluster = application.appSetClusters?.find(
-  //         (cls: AppSetCluster) => cls.url === app.spec?.destination?.server
-  //       )
-  //       appClusterName = appCluster ? appCluster.name : undefined
-  //     }
-
-  //     // Add cluster information to each resource
-  //     appResources.forEach((resource: any) => {
-  //       resources.push({ ...resource, cluster: appClusterName })
-  //     })
-  //   })
-  // }
-
-  // Make sure appSetApps is defined before calling getAppSetResources
-  const { searchResults, relatedResourcesMap } = await getAppSetResources(
+  ////////////////////////////////////////////////////////////////
+  ////  USE SEARCH TO GET APPLICATIONSET RESOURCES /////////////////
+  ////////////////////////////////////////////////////////////////
+  const { applicationResourceMap, generatedApplicationNames } = await getAppSetResources(
+    name,
     namespace,
     appSetApps,
-    appSetClusters.map((cluster: AppSetCluster) => cluster.name)
+    clusterNames
   )
-  const resources = Array.from(relatedResourcesMap.byName.values()).flat() as ResourceItem[]
-  // set toolbar filter types
-  toolbarControl.setAllTypes?.(getResourceTypes(resources))
 
-  // Process and create nodes for deployed resources
+  ////  SET TOOLBAR FILTERS ///////////////////
+  toolbarControl.setAllClusters?.(clusterNames)
+  toolbarControl.setAllApplications(generatedApplicationNames.length > 0 ? generatedApplicationNames : [name])
+  const allApplicationTypes = new Set<string>()
+
+  /////////////////////////////////////////////
+  ////  CLUSTER AND RESOURCE NODES /////////////////
+  /////////////////////////////////////////////
+
+  // Iterate over applicationResourceMap which maps cluster names to application resources
+  Object.entries(applicationResourceMap).forEach(([clusterName, appResourceMap]) => {
+    // Add cluster node for this cluster
+    const clusterId = addClusters(
+      clusterParentId,
+      undefined,
+      source,
+      [clusterName],
+      (appSetClusters || []).filter((c: any) => c.name === clusterName) as any,
+      links,
+      nodes
+    )
+
+    // For each application in this cluster
+    Object.entries(appResourceMap).forEach(([appName, resources]) => {
+      if (appName === '') {
+        // No application name - process resources directly under cluster
+        const types = getResourceTypes(resources as Record<string, unknown>[])
+        types.forEach((type) => allApplicationTypes.add(type))
+        processResources(resources, clusterId, [clusterName], hubClusterName, activeTypes ?? [], links, nodes)
+      } else {
+        // Has application name - create application node
+        const appNodeId = `member--application--${clusterName}--${appName}`
+        const appNode: TopologyNode = {
+          name: appName,
+          namespace,
+          type: 'application',
+          id: appNodeId,
+          uid: appNodeId,
+          specs: {
+            isDesign: false,
+            clustersNames: [clusterName],
+            parent: {
+              clusterId,
+            },
+          },
+        }
+        addTopologyNode(clusterId, appNode, activeTypes, links, nodes)
+
+        // Collect resource types
+        const types = getResourceTypes(resources as Record<string, unknown>[])
+        types.forEach((type) => allApplicationTypes.add(type))
+
+        // Process and create resource nodes under the application node
+        processResources(resources, appNodeId, [clusterName], hubClusterName, activeTypes ?? [], links, nodes)
+      }
+    })
+  })
+
+  // Set all resource types in toolbar
+  toolbarControl.setAllTypes?.([...allApplicationTypes])
+  // Return complete topology with unique nodes and all links
+  return {
+    nodes: nodes.filter((node, index, array) => array.findIndex((n) => n.uid === node.uid) === index), // Remove duplicate nodes based on unique ID
+    links,
+  }
+}
+
+async function getAppSetResources(name: string, namespace: string, appSetApps: any[], appSetClusters: string[]) {
+  console.log('getAppSetResources', name, namespace, appSetApps, appSetClusters)
+  // // // first get all applications that belong to this appset
+  // const query: SearchQuery = convertStringToQuery(
+  //   `name:${appSetApps?.map((application: ResourceItem) => application.metadata?.name).join(',')} kind:application namespace:${namespace} cluster:${appSetClusters.join(',')} apigroup:argoproj.io`
+  // )
+  // const appsetSearchResult = await searchClient.query({
+  //   query: SearchResultItemsAndRelatedItemsDocument,
+  //   variables: {
+  //     input: [{ ...query }],
+  //     limit: 1000,
+  //   },
+  //   fetchPolicy: 'network-only',
+  // })
+
+  const appsetSearchResultItems = [
+    {
+      __typename: 'SearchResult',
+      items: [
+        {
+          _hostingResource: 'ApplicationSet/openshift-gitops/app-matrix-test-1',
+          _uid: 'clc-test/5d925940-82f0-4feb-8717-18516c5913a2',
+          apigroup: 'argoproj.io',
+          apiversion: 'v1alpha1',
+          applicationSet: '',
+          chart: '',
+          cluster: 'clc-test',
+          created: '2025-12-19T16:45:02Z',
+          destinationName: '',
+          destinationNamespace: 'argo-workflows',
+          destinationServer: 'https://kubernetes.default.svc',
+          healthStatus: 'Healthy',
+          kind: 'Application',
+          kind_plural: 'applications',
+          label: 'apps.open-cluster-management.io/application-set=true; velero.io/exclude-from-backup=true',
+          name: 'app-matrix-test-1-clc-test-argo-workflows',
+          namespace: 'openshift-gitops',
+          path: '',
+          repoURL: '',
+          syncStatus: 'Synced',
+          targetRevision: 'HEAD',
+        },
+        {
+          _hostingResource: 'ApplicationSet/openshift-gitops/app-matrix-test-1',
+          _uid: 'clc-test/5ea49784-6899-4b5a-afbb-fad17473c6cd',
+          apigroup: 'argoproj.io',
+          apiversion: 'v1alpha1',
+          applicationSet: '',
+          chart: '',
+          cluster: 'clc-test',
+          created: '2025-12-19T16:45:02Z',
+          destinationName: '',
+          destinationNamespace: 'prometheus-operator',
+          destinationServer: 'https://kubernetes.default.svc',
+          healthStatus: 'Healthy',
+          kind: 'Application',
+          kind_plural: 'applications',
+          label: 'apps.open-cluster-management.io/application-set=true; velero.io/exclude-from-backup=true',
+          name: 'app-matrix-test-1-clc-test-prometheus-operator',
+          namespace: 'openshift-gitops',
+          path: '',
+          repoURL: '',
+          syncStatus: 'Synced',
+          targetRevision: 'HEAD',
+        },
+      ],
+      related: [
+        {
+          __typename: 'SearchRelatedResult',
+          kind: 'ReplicaSet',
+          items: [
+            {
+              _relatedUids: ['clc-test/5ea49784-6899-4b5a-afbb-fad17473c6cd'],
+              _uid: 'clc-test/4f71ff52-030d-4e86-956b-b1a162119938',
+              apigroup: 'apps',
+              apiversion: 'v1',
+              cluster: 'clc-test',
+              created: '2025-12-19T16:52:48Z',
+              current: '1',
+              desired: '1',
+              kind: 'ReplicaSet',
+              kind_plural: 'replicasets',
+              label: 'app=helloworld-app; pod-template-hash=f44c4b7fc',
+              name: 'helloworld-app-deploy-f44c4b7fc',
+              namespace: 'prometheus-operator',
+            },
+            {
+              _relatedUids: ['clc-test/5d925940-82f0-4feb-8717-18516c5913a2'],
+              _uid: 'clc-test/fe7a1f99-cc6a-4cc1-b230-d94811a6e957',
+              apigroup: 'apps',
+              apiversion: 'v1',
+              cluster: 'clc-test',
+              created: '2025-12-19T16:53:02Z',
+              current: '1',
+              desired: '1',
+              kind: 'ReplicaSet',
+              kind_plural: 'replicasets',
+              label: 'app=helloworld-app; pod-template-hash=f44c4b7fc',
+              name: 'helloworld-app-deploy-f44c4b7fc',
+              namespace: 'argo-workflows',
+            },
+          ],
+        },
+        {
+          __typename: 'SearchRelatedResult',
+          kind: 'Service',
+          items: [
+            {
+              _relatedUids: ['clc-test/5d925940-82f0-4feb-8717-18516c5913a2'],
+              _uid: 'clc-test/799a3dde-ff45-4dea-903d-ea50870a0e4c',
+              apiversion: 'v1',
+              cluster: 'clc-test',
+              clusterIP: '172.30.156.151',
+              created: '2025-12-19T16:53:02Z',
+              kind: 'Service',
+              kind_plural: 'services',
+              label: 'app=helloworld-app',
+              name: 'helloworld-app-svc',
+              namespace: 'argo-workflows',
+              port: '3002:32380/tcp',
+              type: 'NodePort',
+            },
+            {
+              _relatedUids: ['clc-test/5ea49784-6899-4b5a-afbb-fad17473c6cd'],
+              _uid: 'clc-test/efdbcaab-1357-4958-9d3f-9bec85778763',
+              apiversion: 'v1',
+              cluster: 'clc-test',
+              clusterIP: '172.30.136.97',
+              created: '2025-12-19T16:52:48Z',
+              kind: 'Service',
+              kind_plural: 'services',
+              label: 'app=helloworld-app',
+              name: 'helloworld-app-svc',
+              namespace: 'prometheus-operator',
+              port: '3002:30601/tcp',
+              type: 'NodePort',
+            },
+          ],
+        },
+        {
+          __typename: 'SearchRelatedResult',
+          kind: 'Route',
+          items: [
+            {
+              _relatedUids: ['clc-test/5ea49784-6899-4b5a-afbb-fad17473c6cd'],
+              _uid: 'clc-test/87abd767-4dc5-444b-abc5-08c64834376d',
+              apigroup: 'route.openshift.io',
+              apiversion: 'v1',
+              cluster: 'clc-test',
+              created: '2025-12-19T16:52:48Z',
+              kind: 'Route',
+              kind_plural: 'routes',
+              label: 'app=helloworld-app',
+              name: 'helloworld-app-route',
+              namespace: 'prometheus-operator',
+            },
+            {
+              _relatedUids: ['clc-test/5d925940-82f0-4feb-8717-18516c5913a2'],
+              _uid: 'clc-test/ce7dc665-4241-43c9-bdd8-35c2706e131b',
+              apigroup: 'route.openshift.io',
+              apiversion: 'v1',
+              cluster: 'clc-test',
+              created: '2025-12-19T16:53:02Z',
+              kind: 'Route',
+              kind_plural: 'routes',
+              label: 'app=helloworld-app',
+              name: 'helloworld-app-route',
+              namespace: 'argo-workflows',
+            },
+          ],
+        },
+        {
+          __typename: 'SearchRelatedResult',
+          kind: 'Cluster',
+          items: [
+            {
+              HubAcceptedManagedCluster: 'True',
+              ManagedClusterConditionAvailable: 'True',
+              ManagedClusterConditionClockSynced: 'True',
+              ManagedClusterImportSucceeded: 'True',
+              ManagedClusterJoined: 'True',
+              _hubClusterResource: 'true',
+              _relatedUids: [
+                'clc-test/5d925940-82f0-4feb-8717-18516c5913a2',
+                'clc-test/5ea49784-6899-4b5a-afbb-fad17473c6cd',
+              ],
+              _uid: 'cluster__clc-test',
+              addon:
+                'application-manager=true; cert-policy-controller=true; cluster-proxy=true; config-policy-controller=true; governance-policy-framework=true; iam-policy-controller=false; observability-controller=false; search-collector=true; work-manager=true',
+              apiEndpoint: 'https://api.clc-test.dev09.red-chesterfield.com:6443',
+              apigroup: 'internal.open-cluster-management.io',
+              cluster: 'clc-test',
+              consoleURL: 'https://console-openshift-console.apps.clc-test.dev09.red-chesterfield.com',
+              cpu: '24',
+              created: '2025-12-19T14:52:54Z',
+              kind: 'Cluster',
+              kind_plural: 'managedclusterinfos',
+              kubernetesVersion: 'v1.33.6',
+              label:
+                'cloud=Amazon; cluster.open-cluster-management.io/clusterset=auto-gitops-cluster-set; clusterID=672d88d7-857a-4b1a-a2ae-ac95a26a29d5; feature.open-cluster-management.io/addon-application-manager=available; feature.open-cluster-management.io/addon-cert-policy-controller=available; feature.open-cluster-management.io/addon-cluster-proxy=available; feature.open-cluster-management.io/addon-config-policy-controller=available; feature.open-cluster-management.io/addon-governance-policy-framework=available; feature.open-cluster-management.io/addon-managed-serviceaccount=available; feature.open-cluster-management.io/addon-search-collector=available; feature.open-cluster-management.io/addon-work-manager=available; name=clc-test; openshiftVersion=4.20.8; openshiftVersion-major=4; openshiftVersion-major-minor=4.20; region=us-east-1; vendor=OpenShift',
+              memory: '96418856Ki',
+              name: 'clc-test',
+              nodes: '6',
+            },
+          ],
+        },
+        {
+          __typename: 'SearchRelatedResult',
+          kind: 'EndpointSlice',
+          items: [
+            {
+              _relatedUids: ['clc-test/5ea49784-6899-4b5a-afbb-fad17473c6cd'],
+              _uid: 'clc-test/08584f5d-5603-46f0-a6b7-9fee1c7653e3',
+              apigroup: 'discovery.k8s.io',
+              apiversion: 'v1',
+              cluster: 'clc-test',
+              created: '2025-12-19T16:52:48Z',
+              kind: 'EndpointSlice',
+              kind_plural: 'endpointslices',
+              label:
+                'app=helloworld-app; endpointslice.kubernetes.io/managed-by=endpointslice-controller.k8s.io; kubernetes.io/service-name=helloworld-app-svc',
+              name: 'helloworld-app-svc-mr9n9',
+              namespace: 'prometheus-operator',
+            },
+            {
+              _relatedUids: ['clc-test/5d925940-82f0-4feb-8717-18516c5913a2'],
+              _uid: 'clc-test/ac91791f-9fbd-4b8a-a79d-0857ebcf0b67',
+              apigroup: 'discovery.k8s.io',
+              apiversion: 'v1',
+              cluster: 'clc-test',
+              created: '2025-12-19T16:53:02Z',
+              kind: 'EndpointSlice',
+              kind_plural: 'endpointslices',
+              label:
+                'app=helloworld-app; endpointslice.kubernetes.io/managed-by=endpointslice-controller.k8s.io; kubernetes.io/service-name=helloworld-app-svc',
+              name: 'helloworld-app-svc-gnxsh',
+              namespace: 'argo-workflows',
+            },
+          ],
+        },
+        {
+          __typename: 'SearchRelatedResult',
+          kind: 'Deployment',
+          items: [
+            {
+              _relatedUids: ['clc-test/5d925940-82f0-4feb-8717-18516c5913a2'],
+              _uid: 'clc-test/0f87e865-6948-430e-abb4-8306ff757ac1',
+              apigroup: 'apps',
+              apiversion: 'v1',
+              available: '1',
+              cluster: 'clc-test',
+              created: '2025-12-19T16:53:02Z',
+              current: '1',
+              desired: '1',
+              kind: 'Deployment',
+              kind_plural: 'deployments',
+              label: 'app=helloworld-app',
+              name: 'helloworld-app-deploy',
+              namespace: 'argo-workflows',
+              ready: '1',
+            },
+            {
+              _relatedUids: ['clc-test/5ea49784-6899-4b5a-afbb-fad17473c6cd'],
+              _uid: 'clc-test/bf42569f-811a-4054-a5be-f6c3c8d05ab3',
+              apigroup: 'apps',
+              apiversion: 'v1',
+              available: '1',
+              cluster: 'clc-test',
+              created: '2025-12-19T16:52:48Z',
+              current: '1',
+              desired: '1',
+              kind: 'Deployment',
+              kind_plural: 'deployments',
+              label: 'app=helloworld-app',
+              name: 'helloworld-app-deploy',
+              namespace: 'prometheus-operator',
+              ready: '1',
+            },
+          ],
+        },
+        {
+          __typename: 'SearchRelatedResult',
+          kind: 'Pod',
+          items: [
+            {
+              _ownerUID: 'clc-test/fe7a1f99-cc6a-4cc1-b230-d94811a6e957',
+              _relatedUids: ['clc-test/5d925940-82f0-4feb-8717-18516c5913a2'],
+              _uid: 'clc-test/33cfbd17-2158-468e-b341-b9f39db52a47',
+              apiversion: 'v1',
+              cluster: 'clc-test',
+              condition:
+                'ContainersReady=True; Initialized=True; PodReadyToStartContainers=True; PodScheduled=True; Ready=True',
+              container: 'helloworld-app-container',
+              created: '2025-12-19T16:53:02Z',
+              hostIP: '10.0.45.134',
+              image: 'quay.io/fxiang1/helloworld:0.0.1',
+              kind: 'Pod',
+              kind_plural: 'pods',
+              label: 'app=helloworld-app; pod-template-hash=f44c4b7fc',
+              name: 'helloworld-app-deploy-f44c4b7fc-tkckn',
+              namespace: 'argo-workflows',
+              podIP: '10.131.2.21',
+              restarts: '0',
+              startedAt: '2025-12-19T16:53:02Z',
+              status: 'Running',
+            },
+            {
+              _ownerUID: 'clc-test/4f71ff52-030d-4e86-956b-b1a162119938',
+              _relatedUids: ['clc-test/5ea49784-6899-4b5a-afbb-fad17473c6cd'],
+              _uid: 'clc-test/615031f0-9519-4d63-afe7-82c40a7392fa',
+              apiversion: 'v1',
+              cluster: 'clc-test',
+              condition:
+                'ContainersReady=True; Initialized=True; PodReadyToStartContainers=True; PodScheduled=True; Ready=True',
+              container: 'helloworld-app-container',
+              created: '2025-12-19T16:52:48Z',
+              hostIP: '10.0.45.134',
+              image: 'quay.io/fxiang1/helloworld:0.0.1',
+              kind: 'Pod',
+              kind_plural: 'pods',
+              label: 'app=helloworld-app; pod-template-hash=f44c4b7fc',
+              name: 'helloworld-app-deploy-f44c4b7fc-xd8pc',
+              namespace: 'prometheus-operator',
+              podIP: '10.131.2.20',
+              restarts: '0',
+              startedAt: '2025-12-19T16:52:48Z',
+              status: 'Running',
+            },
+          ],
+        },
+      ],
+    },
+  ]
+
+  // then get all resources that belong to these applications
+  const applications = appsetSearchResultItems[0]?.items
+  // // Filter out excluded kinds from related results
+  const excludedKinds = ['application', 'applicationset', 'cluster', 'subscription', 'namespace', 'pod', 'replicaset']
+  const relatedResults = appsetSearchResultItems[0]?.related.filter(
+    (relatedResult: SearchRelatedResult | null) =>
+      relatedResult && !excludedKinds.includes(relatedResult.kind.toLowerCase())
+  )
+  // Sort cluster names by length (longest first) to match longer names before shorter ones
+  const sortedAppSetClusters = [...appSetClusters].sort((a, b) => b.length - a.length)
+
+  const generatedApplicationNames = new Set<string>()
+  const applicationMap: Record<
+    string,
+    { clusterNames: string[]; applicationNames: string[]; resourceList: ResourceItem[] }
+  > = {}
+  applications?.forEach((application: ResourceItem) => {
+    const compositeName = application.name as string
+    const applicationUid = application._uid as string
+
+    // first remove the appset name from the front of the application.name which becomes namePart
+    let namePart = compositeName
+    if (namePart.startsWith(name)) {
+      namePart = namePart.substring(name.length + 1)
+    }
+
+    const clusterNames: string[] = []
+    const applicationNames: string[] = []
+
+    // find the cluster name that matches the start of namePart (sorted longest first for correct matching)
+    const clusterName = sortedAppSetClusters.find((cluster: string) => namePart.startsWith(cluster))
+    if (clusterName) {
+      clusterNames.push(clusterName)
+      // get the part after the cluster name
+      let remainingPart = namePart.substring(clusterName.length)
+      if (remainingPart.startsWith('-')) {
+        remainingPart = remainingPart.substring(1)
+      }
+      if (remainingPart) {
+        applicationNames.push(remainingPart)
+      }
+    } else {
+      // no cluster match found, treat entire namePart as application name
+      if (namePart) {
+        applicationNames.push(namePart)
+      }
+    }
+
+    // add unique names to generatedApplicationNames
+    applicationNames.forEach((appName) => {
+      generatedApplicationNames.add(appName)
+    })
+
+    // create the resourceList by taking the application._uid from the application above,
+    // then finding a resource in relatedResults whose _relatedUids array is a match with application._uid
+    const resourceList: ResourceItem[] = []
+    relatedResults?.forEach((relatedResult: SearchRelatedResult | null) => {
+      relatedResult?.items?.forEach((item: ResourceItem) => {
+        if (item._relatedUids?.includes(applicationUid)) {
+          resourceList.push(item)
+        }
+      })
+    })
+
+    applicationMap[applicationUid] = { clusterNames, applicationNames, resourceList }
+  })
+
+  // Convert applicationMap to applicationResourceMap
+  // For each entry, create entries for each clusterName as key
+  // If applicationNames exists, use applicationNames[0] as nested key
+  // If no applicationNames, use empty string as the nested key
+  const applicationResourceMap: Record<string, Record<string, ResourceItem[]>> = {}
+
+  Object.entries(applicationMap).forEach(([, { clusterNames, applicationNames, resourceList }]) => {
+    clusterNames.forEach((clusterName) => {
+      if (!applicationResourceMap[clusterName]) {
+        applicationResourceMap[clusterName] = {}
+      }
+      if (applicationNames.length > 0) {
+        // Has applicationNames - use applicationNames[0] as key
+        applicationResourceMap[clusterName][applicationNames[0]] = resourceList
+      } else {
+        // No applicationNames - add resourceList directly as value with empty key
+        applicationResourceMap[clusterName][''] = resourceList
+      }
+    })
+  })
+
+  return {
+    applicationResourceMap,
+    generatedApplicationNames: [...generatedApplicationNames],
+  }
+}
+
+/**
+ * Processes resources and creates topology nodes for deployable resources
+ * Creates nodes for each resource including child nodes for replicas, controller revisions, etc.
+ *
+ * @param resources - Array of resources to process
+ * @param parentId - ID of the parent node to link resources to
+ * @param parentClusterNames - Array of cluster names where resources are deployed
+ * @param hubClusterName - Name of the hub cluster
+ * @param activeTypes - Active resource types from toolbar filter
+ * @param links - Array to add topology links to
+ * @param nodes - Array to add topology nodes to
+ */
+export function processResources(
+  resources: ResourceItem[],
+  parentId: string,
+  parentClusterNames: string[],
+  hubClusterName: string,
+  activeTypes: string[],
+  links: TopologyLink[],
+  nodes: TopologyNode[]
+): void {
   processMultiples(resources).forEach((deployable: Record<string, unknown>) => {
     const typedDeployable = deployable as unknown as ProcessedDeployableResource
     const {
@@ -213,7 +701,7 @@ export async function getAppSetTopology(
 
     // Generate unique member ID for the deployable resource
     const memberId = `member--member--deployable--member--clusters--${getClusterName(
-      clusterId,
+      parentId,
       hubClusterName
     )}--${type}--${deployableNamespace}--${deployableName}`
 
@@ -245,37 +733,31 @@ export async function getAppSetTopology(
       specs: {
         isDesign: false,
         raw,
-        clustersNames: clusterNames,
+        clustersNames: parentClusterNames,
         parent: {
-          clusterId,
+          clusterId: parentId,
         },
         resources: deployableResources,
-        resourceCount: resourceCount ? resourceCount : clusterNames.length,
+        resourceCount: resourceCount ? resourceCount : parentClusterNames.length,
       },
     }
 
-    // Add deployable node and link to cluster
-    deployableObj = addTopologyNode(clusterId, deployableObj, activeTypes, links, nodes)
+    // Add deployable node and link to parent
+    deployableObj = addTopologyNode(parentId, deployableObj, activeTypes, links, nodes)
 
     // Create replica child nodes (for Deployments, ReplicaSets, etc.)
     const template = { metadata: {} }
-    createReplicaChild(deployableObj, clusterNames || [], template, activeTypes, links, nodes)
+    createReplicaChild(deployableObj, parentClusterNames || [], template, activeTypes, links, nodes)
 
     // Create controller revision child nodes (for DaemonSets, StatefulSets)
-    createControllerRevisionChild(deployableObj, clusterNames || [], activeTypes, links, nodes)
+    createControllerRevisionChild(deployableObj, parentClusterNames || [], activeTypes, links, nodes)
 
     // Create data volume child nodes (for KubeVirt)
-    createDataVolumeChild(deployableObj, clusterNames || [], activeTypes, links, nodes)
+    createDataVolumeChild(deployableObj, parentClusterNames || [], activeTypes, links, nodes)
 
     // Create virtual machine instance child nodes (for KubeVirt)
-    createVirtualMachineInstance(deployableObj, clusterNames || [], activeTypes, links, nodes)
+    createVirtualMachineInstance(deployableObj, parentClusterNames || [], activeTypes, links, nodes)
   })
-  // Return complete topology with unique nodes and all links
-  return {
-    nodes: nodes.filter((node, index, array) => array.findIndex((n) => n.uid === node.uid) === index), // Remove duplicate nodes based on unique ID
-    links,
-    rawSearchData: searchResults, // Include raw data for debugging/details
-  }
 }
 
 /**
@@ -557,94 +1039,4 @@ const openRouteURLWindow = (route: RouteObject): void => {
   const transport = route.spec?.tls ? 'https' : 'http'
   const routeURL = `${transport}://${hostName}`
   window.open(`${routeURL}`, '_blank')
-}
-
-async function getAppSetResources(namespace: string, appSetApps: any[], appSetClusters: string[]) {
-  // first get all applications that belong to this appset
-  let query: SearchQuery = convertStringToQuery(
-    `name:${appSetApps?.map((application: ResourceItem) => application.name).join(',')} kind:application namespace:${namespace} cluster:${appSetClusters.join(',')} apigroup:argoproj.io`
-  )
-
-  // 'clc-test/5ea49784-6899-4b5a-afbb-fad17473c6cd')
-  // "clc-test/5d925940-82f0-4feb-8717-18516c5913a2"
-
-  // "weekly/744a7abe-15c0-46c2-9eed-23e37849eae3"
-  // "weekly/c5cf2ee3-85b9-41a7-a214-ca57bc15042f"
-
-  console.log('appSetApps', appSetApps)
-  const appsetSearchResult = await searchClient.query({
-    query: SearchResultItemsAndRelatedItemsDocument,
-    variables: {
-      input: [{ ...query }],
-      limit: 1000,
-    },
-    fetchPolicy: 'network-only',
-  })
-
-  // then get all resources that belong to these applications
-  const applications = appsetSearchResult.data?.searchResult?.[0]?.items
-  query = convertStringToQuery(
-    `name:${applications?.map((application: ResourceItem) => application.name).join(',')} namespace:${namespace} cluster:${appSetClusters.join(',')} apigroup:argoproj.io`
-  )
-  // Query all related kinds except: Application, ApplicationSet, Cluster, Subscription, Namespace
-  // Leave relatedKinds empty to get all related kinds, then filter out excluded ones from results
-  const applicationSearchResult = await searchClient.query({
-    query: SearchResultItemsAndRelatedItemsDocument,
-    variables: {
-      input: [{ ...query }],
-      limit: 1000,
-    },
-    fetchPolicy: 'network-only',
-  })
-
-  // Filter out excluded kinds from related results
-  const excludedKinds = ['application', 'applicationset', 'cluster', 'subscription', 'namespace', 'pod', 'replicaset']
-  const relatedResults = applicationSearchResult.data?.searchResult?.[0]?.related.filter(
-    (relatedResult: SearchRelatedResult | null) =>
-      relatedResult && !excludedKinds.includes(relatedResult.kind.toLowerCase())
-  )
-  return {
-    searchResults: applicationSearchResult,
-    applications,
-    relatedResourcesMap: createRelatedResourcesMap(relatedResults),
-  }
-}
-
-function createRelatedResourcesMap(relatedResults: SearchRelatedResult[]): {
-  byUid: Map<string, ResourceItem[]>
-  byName: Map<string, ResourceItem[]>
-} {
-  const byUid = new Map<string, ResourceItem[]>()
-  const byName = new Map<string, ResourceItem[]>()
-  relatedResults.forEach((relatedResult: SearchRelatedResult) => {
-    relatedResult.items?.forEach((item: ResourceItem) => {
-      let name = getAppNameFromLabel(item.label)
-      if (name) {
-        name = `${item.cluster}/${item.namespace}/${name}`
-        byName.set(name, [...(byName.get(name) || []), item])
-      }
-      if (item._relatedUids) {
-        item._relatedUids.forEach((uid: string) => {
-          const existingItems = byUid.get(uid)
-          if (existingItems) {
-            existingItems.push(item)
-          } else {
-            byUid.set(uid, [item])
-          }
-        })
-      }
-    })
-  })
-  return { byUid, byName }
-}
-
-export const appOwnerLabels: string[] = ['app.kubernetes.io/part-of=']
-
-export function getAppNameFromLabel(label: string, defaultName?: string) {
-  const matchingLabel = appOwnerLabels.find((labelPattern) => label?.includes(labelPattern))
-  if (!matchingLabel) return defaultName
-
-  const startIdx = label.indexOf(matchingLabel) + matchingLabel.length
-  const endIdx = label.indexOf(';', startIdx)
-  return label.substring(startIdx, endIdx > -1 ? endIdx : undefined)
 }
