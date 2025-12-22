@@ -42,7 +42,6 @@ import {
   ManagedClusterInfo,
   ManagedClusterSet,
   ManagedClusterSetBinding,
-  MulticlusterApplicationSetReport,
   MulticlusterRoleAssignment,
   MultiClusterEngine,
   Namespace,
@@ -109,7 +108,6 @@ export const managedClusterSetBindingsState = AtomArray<ManagedClusterSetBinding
 export const managedClusterSetsState = AtomArray<ManagedClusterSet>()
 export const managedClustersState = AtomArray<ManagedCluster>()
 export const multiClusterEnginesState = AtomArray<MultiClusterEngine>()
-export const multiclusterApplicationSetReportState = AtomArray<MulticlusterApplicationSetReport>()
 export const multiclusterRoleAssignmentState = AtomArray<MulticlusterRoleAssignment>()
 export const namespacesState = AtomArray<Namespace>()
 export const nmStateConfigsState = AtomArray<NMStateK8sResource>()

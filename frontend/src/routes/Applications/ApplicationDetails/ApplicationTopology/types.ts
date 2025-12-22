@@ -5,7 +5,6 @@ import {
   ArgoApplication,
   Channel,
   Metadata,
-  MulticlusterApplicationSetReport,
   Placement,
   PlacementDecision,
   PlacementRule,
@@ -267,7 +266,6 @@ export interface RecoilStates {
   applications: Application[]
   placementDecisions?: PlacementDecision[]
   placements: Placement[]
-  multiclusterApplicationSetReports?: MulticlusterApplicationSetReport[]
   ansibleJob: AnsibleJob[]
   subscriptions?: Subscription[]
   channels?: Channel[]

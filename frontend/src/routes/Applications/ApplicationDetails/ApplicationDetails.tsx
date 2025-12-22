@@ -117,7 +117,6 @@ export default function ApplicationDetailsPage() {
     placementDecisionsState,
     subscriptionReportsState,
     subscriptionsState,
-    multiclusterApplicationSetReportState,
     THROTTLE_EVENTS_DELAY,
   } = useSharedAtoms()
 
@@ -156,7 +155,6 @@ export default function ApplicationDetailsPage() {
   const subscriptionsGetter = useRecoilValueGetter(subscriptionsState)
   const subscriptionReportsGetter = useRecoilValueGetter(subscriptionReportsState)
   const placementDecisionsGetter = useRecoilValueGetter(placementDecisionsState)
-  const multiclusterApplicationSetReportsGetter = useRecoilValueGetter(multiclusterApplicationSetReportState)
 
   const getRecoilStates = useCallback(
     () => ({
@@ -168,7 +166,6 @@ export default function ApplicationDetailsPage() {
       subscriptions: subscriptionsGetter(),
       subscriptionReports: subscriptionReportsGetter(),
       placementDecisions: placementDecisionsGetter(),
-      multiclusterApplicationSetReports: multiclusterApplicationSetReportsGetter(),
     }),
     [
       ansibleJobGetter,
@@ -179,7 +176,6 @@ export default function ApplicationDetailsPage() {
       placementsGetter,
       subscriptionReportsGetter,
       subscriptionsGetter,
-      multiclusterApplicationSetReportsGetter,
     ]
   )
 
