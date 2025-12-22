@@ -74,9 +74,7 @@ export default function ManagedClusters() {
         <OnboardingModal open={openOnboardingModal} close={() => onToggle(onBoardingModalID, setOpenOnboardingModal)} />
         <Stack hasGutter={true}>
           <StackItem>
-            <div style={{ marginBottom: '1em' }}>
-              <KubevirtProviderAlert variant="search" component="hint" hideAlertWhenNoVMsExists />
-            </div>
+            <KubevirtProviderAlert variant="search" component="hint" hideAlertWhenNoVMsExists />
             <ClustersTable
               clusters={clusters}
               tableKey="managedClusters"

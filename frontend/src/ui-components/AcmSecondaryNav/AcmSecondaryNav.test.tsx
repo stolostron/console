@@ -2,28 +2,35 @@
 
 import { render } from '@testing-library/react'
 import { axe } from 'jest-axe'
-import { BrowserRouter, Link } from 'react-router-dom-v5-compat'
-import { AcmSecondaryNav, AcmSecondaryNavItem } from './AcmSecondaryNav'
+import { BrowserRouter } from 'react-router-dom-v5-compat'
+import { AcmSecondaryNav } from './AcmSecondaryNav'
 
 describe('AcmSecondaryNav', () => {
   const SecondaryNav = () => (
     <BrowserRouter>
-      <AcmSecondaryNav>
-        <AcmSecondaryNavItem isActive={false}>
-          <Link to={'/multicloud/test'}>{'Tab1'}</Link>
-        </AcmSecondaryNavItem>
-        <AcmSecondaryNavItem isActive={true}>
-          <Link to={'/multicloud/foo'}>{'Tab2'}</Link>
-        </AcmSecondaryNavItem>
-      </AcmSecondaryNav>
+      <AcmSecondaryNav
+        navItems={[
+          {
+            key: 'key-tab-1',
+            title: 'Tab1',
+            isActive: false,
+            to: '/multicloud/test',
+          },
+          {
+            key: 'key-tab-2',
+            title: 'Tab2',
+            isActive: true,
+            to: '/multicloud/foo',
+          },
+        ]}
+      />
     </BrowserRouter>
   )
   test('renders', () => {
     const { getByText } = render(<SecondaryNav />)
 
     expect(getByText('Tab1')).toBeInTheDocument()
-    expect(getByText('Tab1')).toBeInstanceOf(HTMLAnchorElement)
-    expect(getByText('Tab1').getAttribute('href')).toEqual('/multicloud/test')
+    expect(getByText('Tab1')).toBeInstanceOf(HTMLSpanElement)
   })
   test('has zero accessibility defects', async () => {
     const { container } = render(<SecondaryNav />)

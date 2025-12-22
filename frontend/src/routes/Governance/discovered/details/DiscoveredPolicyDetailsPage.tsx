@@ -1,24 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { ApolloError } from '@apollo/client'
+import { Box } from '@mui/material'
+import Grid from '@mui/material/Grid'
 import { Fragment, Suspense, useMemo } from 'react'
-import {
-  Link,
-  useLocation,
-  useParams,
-  generatePath,
-  Outlet,
-  useNavigate,
-  useOutletContext,
-} from 'react-router-dom-v5-compat'
+import { generatePath, Outlet, useLocation, useNavigate, useOutletContext, useParams } from 'react-router-dom-v5-compat'
+import { ErrorPage } from '../../../../components/ErrorPage'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
-import { AcmButton, AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../../ui-components'
-import Grid from '@mui/material/Grid'
+import { AcmButton, AcmPage, AcmPageHeader, AcmSecondaryNav } from '../../../../ui-components'
 import { getEngineWithSvg } from '../../common/util'
-import { Box } from '@mui/material'
 import { DiscoveredPolicyTableItem, useFetchPolicies } from '../useFetchPolicies'
-import { ApolloError } from '@apollo/client'
-import { ErrorPage } from '../../../../components/ErrorPage'
 
 export type DiscoveredDetailsContext = {
   isFetching: boolean
@@ -103,14 +95,22 @@ export function DiscoveredPolicyDetailsPage() {
           popoverAutoWidth={false}
           popoverPosition="bottom"
           navigation={
-            <AcmSecondaryNav>
-              <AcmSecondaryNavItem isActive={isResourcesTab}>
-                <Link to={resourcesUrl}>{t('Related resources')}</Link>
-              </AcmSecondaryNavItem>
-              <AcmSecondaryNavItem isActive={!isResourcesTab}>
-                <Link to={byClusterUrl}>{t('Clusters')}</Link>
-              </AcmSecondaryNavItem>
-            </AcmSecondaryNav>
+            <AcmSecondaryNav
+              navItems={[
+                {
+                  key: 'governance-discovered-related-resources',
+                  title: t('Related resources'),
+                  isActive: isResourcesTab,
+                  to: resourcesUrl,
+                },
+                {
+                  key: 'governance-discovered-clusters',
+                  title: t('Clusters'),
+                  isActive: !isResourcesTab,
+                  to: byClusterUrl,
+                },
+              ]}
+            />
           }
         />
       }
