@@ -455,7 +455,11 @@ export const addTopologyNode = (
   links: TopologyLink[],
   nodes: TopologyNode[]
 ): TopologyNode => {
-  if (!activeTypes || activeTypes.map((t) => t.toLowerCase()).includes(node.type.toLowerCase())) {
+  if (
+    !activeTypes ||
+    activeTypes.length === 0 ||
+    activeTypes.map((t) => t.toLowerCase()).includes(node.type.toLowerCase())
+  ) {
     nodes.push(node)
     links.push({
       from: { uid: parentId },

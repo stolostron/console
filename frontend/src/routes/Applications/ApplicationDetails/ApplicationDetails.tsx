@@ -56,7 +56,7 @@ import { getApplication } from './ApplicationTopology/model/application'
 import { getTopology } from './ApplicationTopology/model/topology'
 import { getApplicationData } from './ApplicationTopology/model/topologyUtils'
 import { useLocalHubName } from '../../../hooks/use-local-hub'
-import { getResourceStatuses } from './ApplicationTopology/statuses/computeStatuses'
+import { getResourceStatuses } from './ApplicationTopology/model/computeStatuses'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { ToolbarControl, useToolbarControl } from './ApplicationTopology/topology/components/TopologyToolbar'
 

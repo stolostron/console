@@ -12,7 +12,7 @@ import { DrawerShapes } from './components/DrawerShapes'
 import './ApplicationTopology.css'
 import './topology/css/Drawer.css'
 import { ArgoApp, ClusterDetailsContainerControl } from './types'
-import { nodeDetailsProvider } from './statuses/NodeDetailsProvider'
+import { nodeDetailsProvider } from './model/NodeDetailsProvider'
 
 export type ArgoAppDetailsContainerData = {
   page: number

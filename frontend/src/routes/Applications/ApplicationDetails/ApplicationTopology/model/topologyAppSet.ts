@@ -189,8 +189,8 @@ export async function getAppSetTopology(
 
   // Make sure appSetApps is defined before calling getAppSetResources
   const { searchResults, relatedResourcesMap } = await getAppSetResources(
-    name,
     namespace,
+    appSetApps,
     appSetClusters.map((cluster: AppSetCluster) => cluster.name)
   )
   const resources = Array.from(relatedResourcesMap.byName.values()).flat() as ResourceItem[]
@@ -559,11 +559,19 @@ const openRouteURLWindow = (route: RouteObject): void => {
   window.open(`${routeURL}`, '_blank')
 }
 
-async function getAppSetResources(name: string, namespace: string, appSetClusters: string[]) {
+async function getAppSetResources(namespace: string, appSetApps: any[], appSetClusters: string[]) {
   // first get all applications that belong to this appset
   let query: SearchQuery = convertStringToQuery(
-    `applicationSet:${name} namespace:${namespace} cluster:${appSetClusters.join(',')} apigroup:argoproj.io`
+    `name:${appSetApps?.map((application: ResourceItem) => application.name).join(',')} kind:application namespace:${namespace} cluster:${appSetClusters.join(',')} apigroup:argoproj.io`
   )
+
+  // 'clc-test/5ea49784-6899-4b5a-afbb-fad17473c6cd')
+  // "clc-test/5d925940-82f0-4feb-8717-18516c5913a2"
+
+  // "weekly/744a7abe-15c0-46c2-9eed-23e37849eae3"
+  // "weekly/c5cf2ee3-85b9-41a7-a214-ca57bc15042f"
+
+  console.log('appSetApps', appSetApps)
   const appsetSearchResult = await searchClient.query({
     query: SearchResultItemsAndRelatedItemsDocument,
     variables: {

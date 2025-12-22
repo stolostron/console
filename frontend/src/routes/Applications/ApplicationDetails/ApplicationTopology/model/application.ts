@@ -172,11 +172,6 @@ export const getApplication = async (
     }
 
     if (isAppSet) {
-      if (isAppSetPullModel) {
-        return getAppSetApplicationPullModel(model, app, recoilStates, clusters ?? [])
-      }
-      // because these values require all argo apps to calculate
-      // we get the data from the backend
       ;(model as any).appSetApps = uidata.appSetApps
       ;(model as any).appSetClusters = uidata.clusterList.reduce((list: any[], clusterName: string) => {
         const _cluster = (clusters ?? []).find((c) => c.name === clusterName)
