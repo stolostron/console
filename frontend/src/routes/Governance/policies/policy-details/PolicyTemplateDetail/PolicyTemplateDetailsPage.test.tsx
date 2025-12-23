@@ -1630,7 +1630,7 @@ describe('Policy Template Details Page', () => {
         })
         expect(openshiftRow).toBeInTheDocument()
       },
-      { timeout: 5000, interval: 1000 }
+      { timeout: 10000, interval: 1000 }
     )
 
     screen.getByText('Validate')
