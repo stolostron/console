@@ -161,7 +161,7 @@ export async function getAppSetTopology(
       : (Object.values((application.app as any)?.spec?.generators?.[0] ?? {})[0] as any)?.directories?.[0]?.path ?? ''
 
   ////////////////////////////////////////////////////////////////
-  ////  USE SEARCH TO GET APPLICATIONSET RESOURCES /////////////////
+  ////  USE SEARCH TO GET APPLICATION SET RESOURCES /////////////////
   ////////////////////////////////////////////////////////////////
   const { applicationResourceMap, generatedApplicationNames } = await getAppSetResources(
     name,
@@ -182,12 +182,13 @@ export async function getAppSetTopology(
   // Iterate over applicationResourceMap which maps cluster names to application resources
   Object.entries(applicationResourceMap).forEach(([clusterName, appResourceMap]) => {
     // Add cluster node for this cluster
-    const clusterId = addClusters(
+    const { id: clusterId = '' } = addClusters(
       clusterParentId,
       undefined,
       source,
       [clusterName],
       (appSetClusters || []).filter((c: any) => c.name === clusterName) as any,
+      activeTypes ?? [],
       links,
       nodes
     )
@@ -583,80 +584,37 @@ async function getAppSetResources(name: string, namespace: string, appSetApps: a
   const sortedAppSetClusters = [...appSetClusters].sort((a, b) => b.length - a.length)
 
   const generatedApplicationNames = new Set<string>()
-  const applicationMap: Record<
-    string,
-    { clusterNames: string[]; applicationNames: string[]; resourceList: ResourceItem[] }
-  > = {}
+  const applicationResourceMap: Record<string, Record<string, ResourceItem[]>> = {}
+
   applications?.forEach((application: ResourceItem) => {
     const compositeName = application.name as string
     const applicationUid = application._uid as string
 
-    // first remove the appset name from the front of the application.name which becomes namePart
-    let namePart = compositeName
-    if (namePart.startsWith(name)) {
-      namePart = namePart.substring(name.length + 1)
-    }
+    // Remove appset name prefix to get namePart
+    const namePart = compositeName.startsWith(name) ? compositeName.substring(name.length + 1) : compositeName
 
-    const clusterNames: string[] = []
-    const applicationNames: string[] = []
-
-    // find the cluster name that matches the start of namePart (sorted longest first for correct matching)
+    // Find matching cluster name (sorted longest first for correct matching)
     const clusterName = sortedAppSetClusters.find((cluster: string) => namePart.startsWith(cluster))
-    if (clusterName) {
-      clusterNames.push(clusterName)
-      // get the part after the cluster name
-      let remainingPart = namePart.substring(clusterName.length)
-      if (remainingPart.startsWith('-')) {
-        remainingPart = remainingPart.substring(1)
-      }
-      if (remainingPart) {
-        applicationNames.push(remainingPart)
-      }
-    } else {
-      // no cluster match found, treat entire namePart as application name
-      if (namePart) {
-        applicationNames.push(namePart)
-      }
+
+    // Extract application name from remaining part after cluster name
+    const appName = clusterName ? namePart.substring(clusterName.length).replace(/^-/, '') : namePart
+
+    if (appName) {
+      generatedApplicationNames.add(appName)
     }
 
-    // add unique names to generatedApplicationNames
-    applicationNames.forEach((appName) => {
-      generatedApplicationNames.add(appName)
-    })
+    // Find related resources for this application
+    const resourceList =
+      relatedResults?.flatMap(
+        (relatedResult: SearchRelatedResult | null) =>
+          relatedResult?.items?.filter((item: ResourceItem) => item._relatedUids?.includes(applicationUid)) ?? []
+      ) ?? []
 
-    // create the resourceList by taking the application._uid from the application above,
-    // then finding a resource in relatedResults whose _relatedUids array is a match with application._uid
-    const resourceList: ResourceItem[] = []
-    relatedResults?.forEach((relatedResult: SearchRelatedResult | null) => {
-      relatedResult?.items?.forEach((item: ResourceItem) => {
-        if (item._relatedUids?.includes(applicationUid)) {
-          resourceList.push(item)
-        }
-      })
-    })
-
-    applicationMap[applicationUid] = { clusterNames, applicationNames, resourceList }
-  })
-
-  // Convert applicationMap to applicationResourceMap
-  // For each entry, create entries for each clusterName as key
-  // If applicationNames exists, use applicationNames[0] as nested key
-  // If no applicationNames, use empty string as the nested key
-  const applicationResourceMap: Record<string, Record<string, ResourceItem[]>> = {}
-
-  Object.entries(applicationMap).forEach(([, { clusterNames, applicationNames, resourceList }]) => {
-    clusterNames.forEach((clusterName) => {
-      if (!applicationResourceMap[clusterName]) {
-        applicationResourceMap[clusterName] = {}
-      }
-      if (applicationNames.length > 0) {
-        // Has applicationNames - use applicationNames[0] as key
-        applicationResourceMap[clusterName][applicationNames[0]] = resourceList
-      } else {
-        // No applicationNames - add resourceList directly as value with empty key
-        applicationResourceMap[clusterName][''] = resourceList
-      }
-    })
+    // Add to map: clusterName -> appName -> resources
+    if (clusterName) {
+      applicationResourceMap[clusterName] ??= {}
+      applicationResourceMap[clusterName][appName] = resourceList
+    }
   })
 
   return {

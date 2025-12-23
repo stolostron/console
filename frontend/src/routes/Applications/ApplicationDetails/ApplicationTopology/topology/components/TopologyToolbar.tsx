@@ -240,7 +240,7 @@ const TopologyToolbar: FC<TopologyProps> = (topologyProps) => {
                       ? t('No clusters')
                       : toolbarControl.allClusters?.length === 1
                         ? toolbarControl.allClusters[0]
-                        : t('Clusters')}
+                        : t('All clusters')}
                     {toolbarControl.allClusters?.length !== 1 && !!toolbarControl.activeClusters?.length && (
                       <Badge isRead>{toolbarControl.activeClusters?.length ?? 0}</Badge>
                     )}
@@ -279,10 +279,12 @@ const TopologyToolbar: FC<TopologyProps> = (topologyProps) => {
                     isExpanded={isApplicationsExpanded}
                     isDisabled={(toolbarControl.allApplications?.length ?? 0) <= 1}
                   >
-                    {toolbarControl.allApplications?.length === 1
-                      ? toolbarControl.allApplications[0]
-                      : t('Applications')}
-                    {toolbarControl.allApplications?.length !== 1 && !!toolbarControl.activeApplications?.length && (
+                    {!toolbarControl.allApplications?.length
+                      ? t('No applications')
+                      : toolbarControl.activeApplications?.length
+                        ? t('Applications')
+                        : t('All applications')}
+                    {!!toolbarControl.activeApplications?.length && (
                       <Badge isRead>{toolbarControl.activeApplications?.length ?? 0}</Badge>
                     )}
                   </MenuToggle>

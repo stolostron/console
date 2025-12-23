@@ -75,7 +75,6 @@ export const getSubscriptionTopology = (
   })
 
   // Process each subscription in the application
-  let clusterId: string
   if (application.subscriptions) {
     application.subscriptions.forEach((subscription) => {
       // Build rule decision mapping for cluster placement
@@ -148,7 +147,16 @@ export const getSubscriptionTopology = (
       }
 
       // Add cluster nodes for subscription deployment
-      clusterId = addClusters(subscriptionId, subscription, '', ruleClusterNames, filteredClusters, links, nodes)
+      const { id: clusterId = '' } = addClusters(
+        subscriptionId,
+        subscription,
+        '',
+        ruleClusterNames,
+        filteredClusters,
+        [],
+        links,
+        nodes
+      )
 
       // Add pre-hook and post-hook nodes if they exist
       if (subscription.prehooks && subscription.prehooks.length > 0) {
