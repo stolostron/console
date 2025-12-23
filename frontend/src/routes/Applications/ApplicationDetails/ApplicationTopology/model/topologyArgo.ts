@@ -124,7 +124,7 @@ export function getArgoTopology(
 
   // Create cluster node and get its ID for linking deployed resources
   const source = (application.app?.spec?.source?.path ?? '') as string
-  const { id: clusterId = '' } = addClusters(
+  const clusterId = addClusters(
     appId,
     undefined, // No subscription for Argo apps
     source,
@@ -133,7 +133,6 @@ export function getArgoTopology(
       (cluster, index, self) =>
         index === self.findIndex((c) => (c.metadata as any).name === (cluster.metadata as any).name)
     ),
-    activeTypes ?? [],
     links,
     nodes,
     topology
@@ -203,7 +202,7 @@ export function getArgoTopology(
         raw,
         clustersNames: clusterNames,
         parent: {
-          clusterId: clusterId || '',
+          clusterId,
         },
         resources: deployableResources,
         resourceCount: resourceCount ? resourceCount : clusterNames.length,
@@ -211,7 +210,7 @@ export function getArgoTopology(
     }
 
     // Add the deployable node and link it to the cluster
-    deployableObj = addTopologyNode(clusterId || '', deployableObj, activeTypes, links, nodes)
+    deployableObj = addTopologyNode(clusterId, deployableObj, activeTypes, links, nodes)
 
     // Create replica child nodes if this resource defines replicas
     const template = { metadata: {} }

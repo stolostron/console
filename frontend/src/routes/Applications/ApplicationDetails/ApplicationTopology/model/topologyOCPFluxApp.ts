@@ -128,17 +128,7 @@ export function generateTopology(
   })
 
   // Add cluster nodes and establish parent-child relationships
-  const { id: clusterId = '' } = addClusters(
-    appId,
-    undefined,
-    '',
-    clusterNames,
-    clusters,
-    activeTypes ?? [],
-    links,
-    nodes,
-    undefined
-  )
+  const clusterId: string = addClusters(appId, undefined, '', clusterNames, clusters, links, nodes, undefined)
 
   // Filter out excluded resource types (Pods, ReplicaSets, etc.)
   const filteredResources: ResourceItem[] = resources.filter((obj: ResourceItem) => {

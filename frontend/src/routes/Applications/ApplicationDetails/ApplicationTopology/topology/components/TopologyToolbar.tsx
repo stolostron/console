@@ -279,12 +279,12 @@ const TopologyToolbar: FC<TopologyProps> = (topologyProps) => {
                     isExpanded={isApplicationsExpanded}
                     isDisabled={(toolbarControl.allApplications?.length ?? 0) <= 1}
                   >
-                    {!toolbarControl.allApplications?.length
-                      ? t('No applications')
-                      : toolbarControl.activeApplications?.length
+                    {toolbarControl.allApplications?.length === 1
+                      ? toolbarControl.allApplications[0]
+                      : toolbarControl.allApplications?.length
                         ? t('Applications')
                         : t('All applications')}
-                    {!!toolbarControl.activeApplications?.length && (
+                    {toolbarControl.allApplications?.length !== 1 && !!toolbarControl.activeApplications?.length && (
                       <Badge isRead>{toolbarControl.activeApplications?.length ?? 0}</Badge>
                     )}
                   </MenuToggle>

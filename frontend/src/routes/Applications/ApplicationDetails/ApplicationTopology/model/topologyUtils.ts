@@ -65,11 +65,10 @@ export const addClusters = (
   source: string,
   clusterNames: string[],
   managedClusters: ManagedCluster[],
-  activeTypes: string[] | undefined,
   links: TopologyLink[],
   nodes: TopologyNode[],
   topology?: Topology
-): TopologyNode => {
+): string => {
   // create element if not already created
   const sortedClusterNames = [...clusterNames].sort((a, b) => a.localeCompare(b))
   let clusterId = 'member--clusters'
@@ -82,7 +81,7 @@ export const addClusters = (
     clusterId = 'member--clusters--'
   }
   const topoClusterNode = topology ? topology.nodes.find((node) => node.id === 'member--clusters') : undefined
-  const node = {
+  nodes.push({
     name: clusterNames.length === 1 ? clusterNames[0] : '',
     namespace: '',
     type: 'cluster',
@@ -98,8 +97,14 @@ export const addClusters = (
       appClusters: topoClusterNode ? (topoClusterNode as TopologyNode).specs.appClusters : undefined,
       targetNamespaces: topoClusterNode ? (topoClusterNode as TopologyNode).specs.targetNamespaces : undefined,
     },
-  }
-  return addTopologyNode(parentId, node, activeTypes, links, nodes)
+  })
+  links.push({
+    from: { uid: parentId },
+    to: { uid: clusterId },
+    type: '',
+    specs: { isDesign: true },
+  })
+  return clusterId
 }
 
 // Collects info needed to query Search for related kinds from the visible nodes
