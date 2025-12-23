@@ -1620,12 +1620,12 @@ describe('Policy Template Details Page', () => {
     await waitFor(
       () => {
         // Wait until policyReport messages are up
-        const myappRow = screen.getByRole('row', {
+        const myappRow = screen.queryByRole('row', {
           name: /my-app - namespace v1 violations view report require-labels: validation error: the label `owner` is required\. rule require-labels failed at path \/metadata\/labels/i,
         })
         expect(myappRow).toBeInTheDocument()
 
-        const openshiftRow = screen.getByRole('row', {
+        const openshiftRow = screen.queryByRole('row', {
           name: /validation error: the label `owner` is required\. rule require-labels failed at path \/metadata\/labels\/owner\//i,
         })
         expect(openshiftRow).toBeInTheDocument()
