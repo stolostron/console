@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../ui-components'
 import { Fragment, ReactNode, Suspense, useState } from 'react'
-import { Link, useLocation, Outlet } from 'react-router-dom-v5-compat'
+import { Outlet, useLocation } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../lib/acm-i18next'
 import { NavigationPath } from '../../NavigationPath'
+import { AcmPage, AcmPageHeader, AcmSecondaryNav } from '../../ui-components'
 import { PageContext } from '../Infrastructure/Clusters/ClustersPage'
 
 export default function GovernancePage() {
@@ -26,20 +26,34 @@ export default function GovernancePage() {
           popoverAutoWidth={false}
           popoverPosition="bottom"
           navigation={
-            <AcmSecondaryNav>
-              <AcmSecondaryNavItem isActive={isOverview}>
-                <Link to={NavigationPath.governance}>{t('Overview')}</Link>
-              </AcmSecondaryNavItem>
-              <AcmSecondaryNavItem isActive={!isOverview && location.pathname.startsWith(NavigationPath.policySets)}>
-                <Link to={NavigationPath.policySets}>{t('Policy sets')}</Link>
-              </AcmSecondaryNavItem>
-              <AcmSecondaryNavItem isActive={!isOverview && location.pathname.startsWith(NavigationPath.policies)}>
-                <Link to={NavigationPath.policies}>{t('Policies')}</Link>
-              </AcmSecondaryNavItem>
-              <AcmSecondaryNavItem isActive={location.pathname.startsWith(NavigationPath.discoveredPolicies)}>
-                <Link to={NavigationPath.discoveredPolicies}>{t('Discovered policies')}</Link>
-              </AcmSecondaryNavItem>
-            </AcmSecondaryNav>
+            <AcmSecondaryNav
+              navItems={[
+                {
+                  key: 'governance-overview',
+                  title: t('Overview'),
+                  isActive: isOverview,
+                  to: NavigationPath.governance,
+                },
+                {
+                  key: 'governance-policy-sets',
+                  title: t('Policy sets'),
+                  isActive: !isOverview && location.pathname.startsWith(NavigationPath.policySets),
+                  to: NavigationPath.policySets,
+                },
+                {
+                  key: 'governance-policies',
+                  title: t('Policies'),
+                  isActive: !isOverview && location.pathname.startsWith(NavigationPath.policies),
+                  to: NavigationPath.policies,
+                },
+                {
+                  key: 'governance-discovered-policies',
+                  title: t('Discovered policies'),
+                  isActive: location.pathname.startsWith(NavigationPath.discoveredPolicies),
+                  to: NavigationPath.discoveredPolicies,
+                },
+              ]}
+            />
           }
           actions={actions}
         />

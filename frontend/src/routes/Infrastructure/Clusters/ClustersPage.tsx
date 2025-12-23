@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { createContext, ElementType, Fragment, ReactNode, Suspense, useContext, useEffect, useState } from 'react'
-import { Link, Outlet, useLocation } from 'react-router-dom-v5-compat'
+import { Outlet, useLocation } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../lib/doc-util'
 import { NavigationPath } from '../../../NavigationPath'
-import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../ui-components'
+import { AcmPage, AcmPageHeader, AcmSecondaryNav } from '../../../ui-components'
 export const PageContext = createContext<{
   readonly actions: null | ReactNode
   setActions: (actions: null | ReactNode) => void
@@ -61,20 +61,34 @@ export function ClustersPage() {
             </>
           }
           navigation={
-            <AcmSecondaryNav>
-              <AcmSecondaryNavItem isActive={location.pathname.startsWith(NavigationPath.managedClusters)}>
-                <Link to={NavigationPath.clusters}>{t('Cluster list')}</Link>
-              </AcmSecondaryNavItem>
-              <AcmSecondaryNavItem isActive={location.pathname.startsWith(NavigationPath.clusterSets)}>
-                <Link to={NavigationPath.clusterSets}>{t('Cluster sets')}</Link>
-              </AcmSecondaryNavItem>
-              <AcmSecondaryNavItem isActive={location.pathname.startsWith(NavigationPath.clusterPools)}>
-                <Link to={NavigationPath.clusterPools}>{t('Cluster pools')}</Link>
-              </AcmSecondaryNavItem>
-              <AcmSecondaryNavItem isActive={location.pathname.startsWith(NavigationPath.discoveredClusters)}>
-                <Link to={NavigationPath.discoveredClusters}>{t('Discovered clusters')}</Link>
-              </AcmSecondaryNavItem>
-            </AcmSecondaryNav>
+            <AcmSecondaryNav
+              navItems={[
+                {
+                  key: 'infra-cluster-list',
+                  title: t('Cluster list'),
+                  isActive: location.pathname.startsWith(NavigationPath.managedClusters),
+                  to: NavigationPath.clusters,
+                },
+                {
+                  key: 'infra-cluster-sets',
+                  title: t('Cluster sets'),
+                  isActive: location.pathname.startsWith(NavigationPath.clusterSets),
+                  to: NavigationPath.clusterSets,
+                },
+                {
+                  key: 'infra-cluster-pools',
+                  title: t('Cluster pools'),
+                  isActive: location.pathname.startsWith(NavigationPath.clusterPools),
+                  to: NavigationPath.clusterPools,
+                },
+                {
+                  key: 'infra-discovered-clusters',
+                  title: t('Discovered clusters'),
+                  isActive: location.pathname.startsWith(NavigationPath.discoveredClusters),
+                  to: NavigationPath.discoveredClusters,
+                },
+              ]}
+            />
           }
           actions={actions}
         />

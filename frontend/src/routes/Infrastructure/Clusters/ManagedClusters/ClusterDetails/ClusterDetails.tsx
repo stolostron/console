@@ -8,15 +8,7 @@ import {
 } from '@openshift-assisted/ui-lib/cim'
 import keyBy from 'lodash/keyBy'
 import { Fragment, Suspense, useEffect, useMemo, useState } from 'react'
-import {
-  generatePath,
-  Link,
-  Outlet,
-  useMatch,
-  useNavigate,
-  useOutletContext,
-  useParams,
-} from 'react-router-dom-v5-compat'
+import { generatePath, Outlet, useMatch, useNavigate, useOutletContext, useParams } from 'react-router-dom-v5-compat'
 import { ErrorPage } from '../../../../../components/ErrorPage'
 import { KubevirtProviderAlert } from '../../../../../components/KubevirtProviderAlert'
 import { usePrevious } from '../../../../../components/usePrevious'
@@ -49,7 +41,6 @@ import {
   AcmPage,
   AcmPageHeader,
   AcmSecondaryNav,
-  AcmSecondaryNavItem,
   Provider,
 } from '../../../../../ui-components'
 import { ClusterActionDropdown } from '../components/ClusterActionDropdown'
@@ -219,35 +210,41 @@ export default function ClusterDetailsPage() {
 
   const navItems = useMemo(() => {
     const items = [
-      <AcmSecondaryNavItem key={'tab.overview'} isActive={isClusterOverview}>
-        <Link to={generatePath(NavigationPath.clusterOverview, { name, namespace })}>{t('tab.overview')}</Link>
-      </AcmSecondaryNavItem>,
-      <AcmSecondaryNavItem key={'tab.nodes'} isActive={isClusterNodes}>
-        <Link to={generatePath(NavigationPath.clusterNodes, { name, namespace })}>{t('tab.nodes')}</Link>
-      </AcmSecondaryNavItem>,
+      {
+        key: 'cluster-details-overview',
+        title: t('tab.overview'),
+        isActive: isClusterOverview,
+        to: generatePath(NavigationPath.clusterOverview, { name, namespace }),
+      },
+      {
+        key: 'cluster-details-nodes',
+        title: t('tab.nodes'),
+        isActive: isClusterNodes,
+        to: generatePath(NavigationPath.clusterNodes, { name, namespace }),
+      },
     ]
+
     if (showMachinePoolTab) {
-      items.push(
-        <AcmSecondaryNavItem key={'tab.machinepools'} isActive={isClusterMachinePools}>
-          <Link to={generatePath(NavigationPath.clusterMachinePools, { name, namespace })}>
-            {t('tab.machinepools')}
-          </Link>
-        </AcmSecondaryNavItem>
-      )
+      items.push({
+        key: 'cluster-details-machinepools',
+        title: t('tab.machinepools'),
+        isActive: isClusterMachinePools,
+        to: generatePath(NavigationPath.clusterMachinePools, { name, namespace }),
+      })
     }
-    items.push(
-      <AcmSecondaryNavItem key={'tab.addons'} isActive={isClusterSettings}>
-        <Link to={generatePath(NavigationPath.clusterSettings, { name, namespace })}>{t('tab.addons')}</Link>
-      </AcmSecondaryNavItem>
-    )
+    items.push({
+      key: 'cluster-details-addons',
+      title: t('tab.addons'),
+      isActive: isClusterSettings,
+      to: generatePath(NavigationPath.clusterSettings, { name, namespace }),
+    })
     if (isFineGrainedRbacEnabled) {
-      items.push(
-        <AcmSecondaryNavItem key={'tab.roleAssignments'} isActive={isClusterRoleAssignments}>
-          <Link to={generatePath(NavigationPath.clusterRoleAssignments, { name, namespace })}>
-            {t('Role assignments')}
-          </Link>
-        </AcmSecondaryNavItem>
-      )
+      items.push({
+        key: 'cluster-details-roleAssignments',
+        title: t('Role assignments'),
+        isActive: isClusterRoleAssignments,
+        to: generatePath(NavigationPath.clusterRoleAssignments, { name, namespace }),
+      })
     }
 
     return items
@@ -348,7 +345,7 @@ export default function ClusterDetailsPage() {
               </span>
             )
           }
-          navigation={<AcmSecondaryNav>{navItems}</AcmSecondaryNav>}
+          navigation={<AcmSecondaryNav navItems={navItems} />}
           actions={<AcmActionGroup>{clusterActionGroupChildren}</AcmActionGroup>}
         />
       }

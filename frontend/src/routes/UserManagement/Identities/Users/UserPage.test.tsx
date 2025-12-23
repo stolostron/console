@@ -88,10 +88,10 @@ describe('UserPage', () => {
 
     expect(screen.getByRole('heading', { level: 1, name: 'Test User' })).toBeInTheDocument()
     expect(screen.getAllByText('test-user').length).toBeGreaterThan(0)
-    expect(screen.getByRole('link', { name: 'Details' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'YAML' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Role assignments' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Groups' })).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: 'Details' })).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: 'YAML' })).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: 'Role assignments' })).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: 'Groups' })).toBeInTheDocument()
   })
 
   test('should render user page with unknown user name', () => {

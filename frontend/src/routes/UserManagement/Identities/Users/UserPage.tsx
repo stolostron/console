@@ -1,13 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useMemo } from 'react'
-import { generatePath, Link, Outlet, useLocation, useOutletContext, useParams } from 'react-router-dom-v5-compat'
+import { generatePath, Outlet, useLocation, useOutletContext, useParams } from 'react-router-dom-v5-compat'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import { Group, User } from '../../../../resources/rbac'
 import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
-import { AcmButton, AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../../ui-components'
+import { AcmButton, AcmPage, AcmPageHeader, AcmSecondaryNav } from '../../../../ui-components'
 
 export const useCurrentUser = (): User | undefined => {
   const { id } = useParams()
@@ -76,22 +76,34 @@ const UserPage = () => {
             { text: user?.fullName ?? user?.metadata.name ?? t('Unknown User') },
           ]}
           navigation={
-            <AcmSecondaryNav>
-              <AcmSecondaryNavItem isActive={isDetailsActive}>
-                <Link to={generatePath(NavigationPath.identitiesUsersDetails, { id: id ?? '' })}>{t('Details')}</Link>
-              </AcmSecondaryNavItem>
-              <AcmSecondaryNavItem isActive={isYamlActive}>
-                <Link to={generatePath(NavigationPath.identitiesUsersYaml, { id: id ?? '' })}>{t('YAML')}</Link>
-              </AcmSecondaryNavItem>
-              <AcmSecondaryNavItem isActive={isRoleAssignmentsActive}>
-                <Link to={generatePath(NavigationPath.identitiesUsersRoleAssignments, { id: id ?? '' })}>
-                  {t('Role assignments')}
-                </Link>
-              </AcmSecondaryNavItem>
-              <AcmSecondaryNavItem isActive={isGroupsActive}>
-                <Link to={generatePath(NavigationPath.identitiesUsersGroups, { id: id ?? '' })}>{t('Groups')}</Link>
-              </AcmSecondaryNavItem>
-            </AcmSecondaryNav>
+            <AcmSecondaryNav
+              navItems={[
+                {
+                  key: 'user-mgmt-identities-users-details',
+                  title: t('Details'),
+                  isActive: isDetailsActive,
+                  to: generatePath(NavigationPath.identitiesUsersDetails, { id: id ?? '' }),
+                },
+                {
+                  key: 'user-mgmt-identities-users-yaml',
+                  title: t('YAML'),
+                  isActive: isYamlActive,
+                  to: generatePath(NavigationPath.identitiesUsersYaml, { id: id ?? '' }),
+                },
+                {
+                  key: 'user-mgmt-identities-users-role-assignments',
+                  title: t('Role assignments'),
+                  isActive: isRoleAssignmentsActive,
+                  to: generatePath(NavigationPath.identitiesUsersRoleAssignments, { id: id ?? '' }),
+                },
+                {
+                  key: 'user-mgmt-identities-users-groups',
+                  title: t('Groups'),
+                  isActive: isGroupsActive,
+                  to: generatePath(NavigationPath.identitiesUsersGroups, { id: id ?? '' }),
+                },
+              ]}
+            />
           }
         />
       }

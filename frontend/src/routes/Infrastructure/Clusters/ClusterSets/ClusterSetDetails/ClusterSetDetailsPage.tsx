@@ -1,12 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { useContext, useMemo } from 'react'
-import { generatePath, Link, Outlet, useLocation, useParams } from 'react-router-dom-v5-compat'
+import { generatePath, Outlet, useLocation, useParams } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { PluginContext } from '../../../../../lib/PluginContext'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { isGlobalClusterSet } from '../../../../../resources'
-import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../../../ui-components'
+import { AcmPage, AcmPageHeader, AcmSecondaryNav } from '../../../../../ui-components'
 import { ClusterSetActionDropdown } from '../components/ClusterSetActionDropdown'
 import { useClusterSetDetailsContext } from './ClusterSetDetails'
 
@@ -26,35 +26,46 @@ export default function ClusterSetDetailsPage() {
   const accessPath = generatePath(NavigationPath.clusterSetAccess, { id })
 
   const navItems = useMemo(() => {
-    const items: JSX.Element[] = [
-      <AcmSecondaryNavItem key={'tab.overview'} isActive={location.pathname === overviewPath}>
-        <Link to={overviewPath}>{t('tab.overview')}</Link>
-      </AcmSecondaryNavItem>,
+    const items = [
+      {
+        key: 'clustersets-details-overview',
+        title: t('tab.overview'),
+        isActive: location.pathname === overviewPath,
+        to: overviewPath,
+      },
     ]
 
     if (isSubmarinerAvailable && !isGlobalClusterSet(clusterSet)) {
-      items.push(
-        <AcmSecondaryNavItem key={'tab.submariner'} isActive={location.pathname === submarinerPath}>
-          <Link to={submarinerPath}>{t('tab.submariner')}</Link>
-        </AcmSecondaryNavItem>
-      )
+      items.push({
+        key: 'clustersets-details-submariner',
+        title: t('tab.submariner'),
+        isActive: location.pathname === submarinerPath,
+        to: submarinerPath,
+      })
     }
 
     if (!isGlobalClusterSet(clusterSet)) {
       items.push(
-        <AcmSecondaryNavItem key={'tab.clusters'} isActive={location.pathname === clustersPath}>
-          <Link to={clustersPath}>{t('tab.clusters')}</Link>
-        </AcmSecondaryNavItem>,
-        <AcmSecondaryNavItem key={'tab.clusterPools'} isActive={location.pathname === poolsPath}>
-          <Link to={poolsPath}>{t('tab.clusterPools')}</Link>
-        </AcmSecondaryNavItem>
+        {
+          key: 'clustersets-details-clusters',
+          title: t('tab.clusters'),
+          isActive: location.pathname === clustersPath,
+          to: clustersPath,
+        },
+        {
+          key: 'clustersets-details-cluster-pools',
+          title: t('tab.clusterPools'),
+          isActive: location.pathname === poolsPath,
+          to: poolsPath,
+        }
       )
     }
-    items.push(
-      <AcmSecondaryNavItem key={'tab.userManagement'} isActive={location.pathname === accessPath}>
-        <Link to={accessPath}>{t('tab.userManagement')}</Link>
-      </AcmSecondaryNavItem>
-    )
+    items.push({
+      key: 'clustersets-details-user-management',
+      title: t('tab.userManagement'),
+      isActive: location.pathname === accessPath,
+      to: accessPath,
+    })
 
     return items
   }, [
@@ -80,7 +91,7 @@ export default function ClusterSetDetailsPage() {
           ]}
           title={id}
           actions={<ClusterSetActionDropdown managedClusterSet={clusterSet} isKebab={false} />}
-          navigation={<AcmSecondaryNav>{navItems}</AcmSecondaryNav>}
+          navigation={<AcmSecondaryNav navItems={navItems} />}
         />
       }
     >

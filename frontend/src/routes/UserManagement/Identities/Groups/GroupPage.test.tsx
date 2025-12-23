@@ -131,10 +131,10 @@ describe('GroupPage', () => {
     await waitFor(() => {
       expect(screen.getByRole('heading', { level: 1, name: 'kubevirt-admins' })).toBeInTheDocument()
       expect(screen.getAllByText('kubevirt-admins').length).toBeGreaterThan(0)
-      expect(screen.getByRole('link', { name: 'Details' })).toBeInTheDocument()
-      expect(screen.getByRole('link', { name: 'YAML' })).toBeInTheDocument()
-      expect(screen.getByRole('link', { name: 'Role assignments' })).toBeInTheDocument()
-      expect(screen.getByRole('link', { name: 'Users' })).toBeInTheDocument()
+      expect(screen.getByRole('tab', { name: 'Details' })).toBeInTheDocument()
+      expect(screen.getByRole('tab', { name: 'YAML' })).toBeInTheDocument()
+      expect(screen.getByRole('tab', { name: 'Role assignments' })).toBeInTheDocument()
+      expect(screen.getByRole('tab', { name: 'Users' })).toBeInTheDocument()
     })
   })
 

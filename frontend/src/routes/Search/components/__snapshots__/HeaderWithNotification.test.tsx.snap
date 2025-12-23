@@ -67,16 +67,11 @@ exports[`renders clusters disabled message 1`] = `
           </div>
         </section>
       </div>
-      <div
-        class="pf-v6-c-card"
-        data-ouia-component-id="OUIA-Generated-Card-1"
-        data-ouia-component-type="PF6/Card"
-        data-ouia-safe="true"
-        id=""
-        style="box-shadow: none;"
+      <section
+        class="pf-v6-c-page__main-section"
       >
         <div
-          class="pf-v6-c-card__body"
+          class="pf-v6-c-page__main-body"
         >
           <div
             class="css-k008qs"
@@ -129,7 +124,7 @@ exports[`renders clusters disabled message 1`] = `
             </span>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   </div>
 </body>
@@ -274,16 +269,11 @@ exports[`renders unknown message 1`] = `
           </div>
         </section>
       </div>
-      <div
-        class="pf-v6-c-card"
-        data-ouia-component-id="OUIA-Generated-Card-2"
-        data-ouia-component-type="PF6/Card"
-        data-ouia-safe="true"
-        id=""
-        style="box-shadow: none;"
+      <section
+        class="pf-v6-c-page__main-section"
       >
         <div
-          class="pf-v6-c-card__body"
+          class="pf-v6-c-page__main-body"
         >
           <div
             class="css-k008qs"
@@ -336,7 +326,7 @@ exports[`renders unknown message 1`] = `
             </span>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   </div>
 </body>

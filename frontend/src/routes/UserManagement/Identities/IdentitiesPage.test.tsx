@@ -57,8 +57,8 @@ describe('IdentitiesPage', () => {
       expect(screen.getAllByText('Identities')).toHaveLength(2)
     })
 
-    const activeLink = screen.getByRole('link', { name: activeTab })
-    const inactiveLink = screen.getByRole('link', { name: inactiveTab })
+    const activeLink = screen.getByRole('tab', { name: activeTab })
+    const inactiveLink = screen.getByRole('tab', { name: inactiveTab })
 
     expect(activeLink).toBeInTheDocument()
     expect(inactiveLink).toBeInTheDocument()

@@ -281,7 +281,9 @@ export function KubevirtProviderAlert(
   return (
     <>
       {!kubevirtOperator.pending && !isVMCountLoading && showInstallPrompt && message && (
-        <OperatorAlert {...{ component, message, operatorName, className, title, actionLinks }} isUpgrade={false} />
+        <div style={{ marginBottom: '1em' }}>
+          <OperatorAlert {...{ component, message, operatorName, className, title, actionLinks }} isUpgrade={false} />
+        </div>
       )}
     </>
   )

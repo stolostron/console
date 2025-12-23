@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Link, Outlet, useMatch } from 'react-router-dom-v5-compat'
+import { Outlet, useMatch } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../lib/acm-i18next'
 import { NavigationPath } from '../../NavigationPath'
-import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../ui-components'
+import { AcmPage, AcmPageHeader, AcmSecondaryNav } from '../../ui-components'
 
 export default function ApplicationsPage() {
   const { t } = useTranslation()
@@ -19,14 +19,22 @@ export default function ApplicationsPage() {
         <AcmPageHeader
           title={t('Applications')}
           navigation={
-            <AcmSecondaryNav>
-              <AcmSecondaryNavItem isActive={applicationsMatchExact}>
-                <Link to={NavigationPath.applications}>{t('Overview')}</Link>
-              </AcmSecondaryNavItem>
-              <AcmSecondaryNavItem isActive={!!advancedMatchExact}>
-                <Link to={NavigationPath.advancedConfiguration}>{t('Advanced configuration')}</Link>
-              </AcmSecondaryNavItem>
-            </AcmSecondaryNav>
+            <AcmSecondaryNav
+              navItems={[
+                {
+                  key: 'apps-overview',
+                  title: t('Overview'),
+                  isActive: applicationsMatchExact,
+                  to: NavigationPath.applications,
+                },
+                {
+                  key: 'apps-advanced-config',
+                  title: t('Advanced configuration'),
+                  isActive: !!advancedMatchExact,
+                  to: NavigationPath.advancedConfiguration,
+                },
+              ]}
+            />
           }
         />
       }
