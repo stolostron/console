@@ -189,7 +189,7 @@
     "react-refresh": "0.14.0",
     "react-refresh-typescript": "^2.0.9",
     "react-router-dom-v5-compat": "^6.23.1",
-    "react-tagsinput": "3.19.x",
+    "react-tagsinput": "3.20.x",
     "recoil": "0.7.4",
     "redux": "4.2.0",
     "redux-thunk": "2.4.1",
