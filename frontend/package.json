@@ -195,7 +195,7 @@
     "redux-thunk": "2.4.1",
     "reselect": "4.1.6",
     "sass": "1.53.0",
-    "sass-loader": "13.0.2",
+    "sass-loader": "13.3.3",
     "stacktrace-js": "2.0.2",
     "storybook": "8.0.9",
     "stream-browserify": "3.0.0",
