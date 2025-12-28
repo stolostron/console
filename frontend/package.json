@@ -208,7 +208,7 @@
     "tsconfig-paths": "4.0.0",
     "tsconfig-paths-webpack-plugin": "^3.5.2",
     "typescript": "^5.8.2",
-    "v8-compile-cache": "2.3.0",
+    "v8-compile-cache": "2.4.0",
     "vm-browserify": "^1.1.2",
     "webpack": "5.75.0",
     "webpack-bundle-analyzer": "4.5.0",
