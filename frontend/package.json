@@ -50,7 +50,7 @@
     "@mui/material": "^5.11.1",
     "@octokit/rest": "19.0.3",
     "@octokit/types": "6.40.0",
-    "@openshift-assisted/locales": "2.16.5-cim",
+    "@openshift-assisted/locales": "2.48.6",
     "@openshift-assisted/ui-lib": "2.16.5-cim",
     "@patternfly/patternfly": "^5.4.2",
     "@patternfly/react-charts": "^7.4.7",
