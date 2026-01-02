@@ -62,7 +62,6 @@ const HostsTab: React.FC = () => {
               <InfoAndTroubleshootingNotification assistedServiceConfigMap={assistedServiceConfigMap} />
             )}
           </Card>
-          <br />
           <Card>
             <CardBody>
               <InfraEnvAgentTable
