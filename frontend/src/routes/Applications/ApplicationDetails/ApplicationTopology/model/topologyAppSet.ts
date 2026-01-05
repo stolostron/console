@@ -194,7 +194,13 @@ export async function getAppSetTopology(
   Object.entries(applicationResourceMap).forEach(([appName, resources]) => {
     // if there are multiple applications and moe then one application is selected,
     // we need to insert an application node above the resources
-    if (activeApplications && activeApplications.includes(appName)) {
+    const isApplicationFiltered =
+      applicationNames.length > 0 && activeApplications && !activeApplications.includes(appName)
+    if (
+      applicationNames.length > 0 &&
+      !isApplicationFiltered &&
+      (!activeApplications || activeApplications?.length > 1)
+    ) {
       // Has application name - create application node
       parentNodeId = `member--application--${clusterNames.join('-')}--${appName}`
       const appNode: TopologyNode = {
@@ -218,11 +224,14 @@ export async function getAppSetTopology(
         type: '',
       })
     }
-    // Collect resource types
-    const types = getResourceTypes(resources as Record<string, unknown>[])
-    types.forEach((type) => allApplicationTypes.add(type))
+    if (!isApplicationFiltered) {
+      // Collect resource types
+      const types = getResourceTypes(resources as Record<string, unknown>[])
+      types.forEach((type) => allApplicationTypes.add(type))
 
-    // Process and create resource nodes under the cluster or application node
+      // Process and create resource nodes under the cluster or application node
+      processResources(resources, parentNodeId, clusterNames, hubClusterName, activeTypes ?? [], links, nodes)
+    }
     processResources(resources, parentNodeId, clusterNames, hubClusterName, activeTypes ?? [], links, nodes)
   })
 
