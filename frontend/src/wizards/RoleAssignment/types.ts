@@ -1,12 +1,27 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { RoleAssignmentPreselected } from '../../routes/UserManagement/RoleAssignments/model/role-assignment-preselected'
-
-export type ScopeType = 'Global access' | 'Select cluster sets' | 'Select clusters'
+import { GroupKindType, ServiceAccountKindType, UserKindType } from '../../resources'
 
 export interface RoleAssignmentFormData {
-  scope: ScopeType
+  subject: {
+    kind: UserKindType | GroupKindType | ServiceAccountKindType
+    user?: string[]
+    group?: string[]
+  }
+  scope: {
+    kind: 'all' | 'specific'
+    clusterNames?: string[]
+    namespaces?: string[]
+  }
+  roles: string[]
+}
+
+export interface RoleAssignmentWizardFormData extends RoleAssignmentFormData {
+  scopeType?: 'Global access' | 'Select cluster sets' | 'Select clusters'
   selectedClusterSets?: any[]
   selectedClusters?: any[]
+  clusterSetAccessLevel?: 'Cluster set role assignment' | 'Cluster role assignment'
+  selectedClustersAccessLevel?: 'Cluster role assignment' | 'Project role assignment'
 }
 
 export interface RoleAssignmentWizardModalProps {

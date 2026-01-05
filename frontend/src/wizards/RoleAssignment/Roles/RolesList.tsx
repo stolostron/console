@@ -1,8 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Content, PageSection, Title } from '@patternfly/react-core'
+import { PageSection } from '@patternfly/react-core'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { RolesTable } from '../../../routes/UserManagement/Roles/RolesTable'
+import { GranularityStepContent } from '../GranularityStepContent'
 
 interface RolesListProps {
   onRadioSelect: (roleName: string) => void
@@ -13,12 +14,7 @@ export function RolesList({ onRadioSelect }: RolesListProps) {
 
   return (
     <PageSection hasBodyWrapper={false}>
-      <Title headingLevel="h2" size="lg" style={{ marginBottom: '0.5rem' }}>
-        {t('Roles')}
-      </Title>
-      <Content component="p" style={{ marginBottom: '1rem' }}>
-        {t('Choose a role to assign.')}
-      </Content>
+      <GranularityStepContent title={t('Roles')} description={t('Choose a role to assign.')} titleSize="lg" />
       <RolesTable onRadioSelect={onRadioSelect} areLinksDisplayed={false} />
     </PageSection>
   )

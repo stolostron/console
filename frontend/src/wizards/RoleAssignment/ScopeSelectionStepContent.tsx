@@ -1,11 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useTranslation } from '../../lib/acm-i18next'
-import { Button, Title, Content } from '@patternfly/react-core'
+import { Button } from '@patternfly/react-core'
 import { WizSelect } from '@patternfly-labs/react-form-wizard/lib/src/inputs/WizSelect'
 import { useItem } from '@patternfly-labs/react-form-wizard/lib/src/contexts/ItemContext'
 import { ClusterSetsList } from './Scope/ClusterSets/ClusterSetsList'
 import { ClusterList } from './Scope/Clusters/ClusterList'
 import { GlobalScopeSelection } from './Scope/GlobalScopeSelection'
+import { GranularityStepContent } from './GranularityStepContent'
 
 interface ScopeSelectionStepContentProps {
   isDrawerExpanded: boolean
@@ -22,34 +23,25 @@ export const ScopeSelectionStepContent = ({
 }: ScopeSelectionStepContentProps) => {
   const { t } = useTranslation()
   const item = useItem()
-  const selectedScope = item?.scope
+  const selectedScope = item?.scopeType
 
   return (
     <div>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '8px',
-        }}
-      >
-        <Title headingLevel="h2" size="xl">
-          {t('Scope')}
-        </Title>
-        <Button variant="link" onClick={() => setIsDrawerExpanded(!isDrawerExpanded)}>
-          {t('View examples')}
-        </Button>
-      </div>
-      <Content component="p" style={{ marginBottom: '8px' }}>
-        {t('Define the scope of access by selecting which resources this role will apply to.')}
-      </Content>
-      <Content component="p" style={{ marginBottom: '16px' }}>
-        {t('Select one option:')}
-      </Content>
+      <GranularityStepContent
+        title={t('Scope')}
+        description={[
+          t('Define the scope of access by selecting which resources this role will apply to.'),
+          t('Select one option:'),
+        ]}
+        action={
+          <Button variant="link" onClick={() => setIsDrawerExpanded(!isDrawerExpanded)}>
+            {t('View examples')}
+          </Button>
+        }
+      />
       <WizSelect
         pathValueToInputValue={(pathValue) => pathValue || 'Global access'}
-        path="scope"
+        path="scopeType"
         label=""
         required
         options={[
