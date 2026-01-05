@@ -52,8 +52,10 @@ export async function getAppSetTopology(
   const links: TopologyLink[] = []
   const nodes: TopologyNode[] = []
   const { name, namespace, appSetClusters = [], appSetApps = [], relatedPlacement } = application
-  const clusterNames = appSetClusters.map((cluster: AppSetCluster) => cluster.name)
-  const { activeTypes } = toolbarControl
+  const allClusterNames = appSetClusters.map((cluster: AppSetCluster) => cluster.name)
+  toolbarControl.setAllClusters?.(allClusterNames)
+  const { activeTypes, activeClusters, activeApplications } = toolbarControl
+  const clusterNames = activeClusters && activeClusters.length > 0 ? activeClusters : allClusterNames
 
   /////////////////////////////////////////////
   ////  APPLICATION SET NODE /////////////////
@@ -69,10 +71,10 @@ export async function getAppSetTopology(
       isDesign: true,
       raw: application.app,
       allClusters: {
-        isLocal: clusterNames.includes(hubClusterName),
-        remoteCount: clusterNames.includes(hubClusterName) ? clusterNames.length - 1 : clusterNames.length,
+        isLocal: allClusterNames.includes(hubClusterName),
+        remoteCount: allClusterNames.includes(hubClusterName) ? allClusterNames.length - 1 : allClusterNames.length,
       },
-      clusterNames,
+      clusterNames: allClusterNames,
       appSetApps,
       appSetClusters,
     },
@@ -160,14 +162,12 @@ export async function getAppSetTopology(
   /////////////////////////////////////////////
   ////  CLUSTER NODE /////////////////
   /////////////////////////////////////////////
-  toolbarControl.setAllClusters?.(clusterNames)
-  const activeClusters = toolbarControl.activeClusters
 
   const clusterId = addClusters(
     clusterParentId,
     undefined,
     source,
-    activeClusters ?? clusterNames,
+    activeClusters ?? allClusterNames,
     (appSetClusters || []) as any,
     links,
     nodes
@@ -176,65 +176,54 @@ export async function getAppSetTopology(
   ////////////////////////////////////////////////////////////////
   ////  USE SEARCH TO GET APPLICATION SET RESOURCES /////////////////
   ////////////////////////////////////////////////////////////////
-  const { applicationResourceMap, generatedApplicationNames } = await getAppSetResources(
+  const { applicationResourceMap, applicationNames } = await getAppSetResources(
     name,
     namespace,
     appSetApps,
-    clusterNames
+    allClusterNames
   )
 
   ////  SET TOOLBAR FILTERS ///////////////////
-  toolbarControl.setAllApplications(generatedApplicationNames.length > 0 ? generatedApplicationNames : [name])
+  toolbarControl.setAllApplications(applicationNames.length > 0 ? applicationNames : [name])
   const allApplicationTypes = new Set<string>()
 
   /////////////////////////////////////////////
-  ////  CLUSTER AND RESOURCE NODES /////////////////
+  ////  APPLICATION RESOURCE NODES /////////////////
   /////////////////////////////////////////////
-
-  // Iterate over applicationResourceMap which maps cluster names to application resources
-  const activeApplications = toolbarControl.activeApplications
-  Object.entries(applicationResourceMap).forEach(([clusterName, appResourceMap]) => {
-    // For each application in this cluster
-    Object.entries(appResourceMap).forEach(([appName, resources]) => {
-      if (appName === '') {
-        // No application name - process resources directly under cluster
-        const types = getResourceTypes(resources as Record<string, unknown>[])
-        types.forEach((type) => allApplicationTypes.add(type))
-        processResources(resources, clusterId, [clusterName], hubClusterName, activeTypes ?? [], links, nodes)
-      } else {
-        if (!activeApplications || activeApplications.includes(appName)) {
-          // Has application name - create application node
-          const appNodeId = `member--application--${clusterName}--${appName}`
-          const appNode: TopologyNode = {
-            name: appName,
-            namespace,
-            type: 'application',
-            id: appNodeId,
-            uid: appNodeId,
-            specs: {
-              isDesign: false,
-              clustersNames: [clusterName],
-              parent: {
-                clusterId,
-              },
-            },
-          }
-          nodes.push(appNode)
-          links.push({
-            from: { uid: clusterId },
-            to: { uid: appNodeId },
-            type: '',
-          })
-
-          // Collect resource types
-          const types = getResourceTypes(resources as Record<string, unknown>[])
-          types.forEach((type) => allApplicationTypes.add(type))
-
-          // Process and create resource nodes under the application node
-          processResources(resources, appNodeId, [clusterName], hubClusterName, activeTypes ?? [], links, nodes)
-        }
+  let parentNodeId = clusterId
+  Object.entries(applicationResourceMap).forEach(([appName, resources]) => {
+    // if there are multiple applications and moe then one application is selected,
+    // we need to insert an application node above the resources
+    if (activeApplications && activeApplications.includes(appName)) {
+      // Has application name - create application node
+      parentNodeId = `member--application--${clusterNames.join('-')}--${appName}`
+      const appNode: TopologyNode = {
+        name: appName,
+        namespace,
+        type: 'application',
+        id: parentNodeId,
+        uid: parentNodeId,
+        specs: {
+          isDesign: false,
+          clustersNames: clusterNames,
+          parent: {
+            clusterId,
+          },
+        },
       }
-    })
+      nodes.push(appNode)
+      links.push({
+        from: { uid: clusterId },
+        to: { uid: parentNodeId },
+        type: '',
+      })
+    }
+    // Collect resource types
+    const types = getResourceTypes(resources as Record<string, unknown>[])
+    types.forEach((type) => allApplicationTypes.add(type))
+
+    // Process and create resource nodes under the cluster or application node
+    processResources(resources, parentNodeId, clusterNames, hubClusterName, activeTypes ?? [], links, nodes)
   })
 
   // Set all resource types in toolbar
@@ -246,10 +235,10 @@ export async function getAppSetTopology(
   }
 }
 
-async function getAppSetResources(name: string, namespace: string, appSetApps: any[], appSetClusters: string[]) {
+async function getAppSetResources(name: string, namespace: string, appSetApps: any[], allClusterNames: string[]) {
   // first get all applications that belong to this appset
   const query: SearchQuery = convertStringToQuery(
-    `name:${appSetApps?.map((application: ResourceItem) => application.metadata?.name).join(',')} namespace:${namespace} cluster:${appSetClusters.join(',')} apigroup:argoproj.io`
+    `name:${appSetApps?.map((application: ResourceItem) => application.metadata?.name).join(',')} namespace:${namespace} cluster:${allClusterNames.join(',')} apigroup:argoproj.io`
   )
   const appsetSearchResult = await searchClient.query({
     query: SearchResultItemsAndRelatedItemsDocument,
@@ -269,45 +258,42 @@ async function getAppSetResources(name: string, namespace: string, appSetApps: a
   )
 
   // Sort cluster names by length (longest first) to match longer names before shorter ones
-  const sortedAppSetClusters = [...appSetClusters].sort((a, b) => b.length - a.length)
+  const sortedAllClusterNames = [...allClusterNames].sort((a, b) => b.length - a.length)
 
-  const generatedApplicationNames = new Set<string>()
-  const applicationResourceMap: Record<string, Record<string, ResourceItem[]>> = {}
+  const applicationNameSet = new Set<string>()
+  const applicationResourceMap: Record<string, ResourceItem[]> = {}
 
   applications?.forEach((application: ResourceItem) => {
     const compositeName = application.name as string
     const applicationUid = application._uid as string
 
-    // Remove appset name prefix to get namePart
-    const namePart = compositeName.startsWith(name) ? compositeName.substring(name.length + 1) : compositeName
-
-    // Find matching cluster name (sorted longest first for correct matching)
-    const clusterName = sortedAppSetClusters.find((cluster: string) => namePart.startsWith(cluster))
-
-    // Extract application name from remaining part after cluster name
-    const appName = clusterName ? namePart.substring(clusterName.length).replace(/^-/, '') : namePart
-
-    if (appName) {
-      generatedApplicationNames.add(appName)
-    }
-
-    // Find related resources for this application
+    // Find related resources for this application on this cluster
     const resourceList =
       relatedResults?.flatMap(
         (relatedResult: SearchRelatedResult | null) =>
           relatedResult?.items?.filter((item: ResourceItem) => item._relatedUids?.includes(applicationUid)) ?? []
       ) ?? []
 
-    // Add to map: clusterName -> appName -> resources
-    if (clusterName) {
-      applicationResourceMap[clusterName] ??= {}
-      applicationResourceMap[clusterName][appName] = resourceList
+    // Remove appset name prefix to get namePart
+    const namePart = compositeName.startsWith(name) ? compositeName.substring(name.length + 1) : compositeName
+
+    // Find matching cluster name (sorted longest first for correct matching)
+    const clusterName = sortedAllClusterNames.find((cluster: string) => namePart.startsWith(cluster))
+
+    // Extract application name from remaining part after cluster name
+    const appName = clusterName ? namePart.substring(clusterName.length).replace(/^-/, '') : namePart
+
+    if (appName) {
+      applicationNameSet.add(appName)
+      applicationResourceMap[appName] = resourceList
+    } else {
+      applicationResourceMap[name] = resourceList
     }
   })
 
   return {
     applicationResourceMap,
-    generatedApplicationNames: [...generatedApplicationNames],
+    applicationNames: [...applicationNameSet] as string[],
   }
 }
 
@@ -323,7 +309,7 @@ async function getAppSetResources(name: string, namespace: string, appSetApps: a
  * @param links - Array to add topology links to
  * @param nodes - Array to add topology nodes to
  */
-export function processResources(
+function processResources(
   resources: ResourceItem[],
   parentId: string,
   parentClusterNames: string[],
@@ -332,7 +318,16 @@ export function processResources(
   links: TopologyLink[],
   nodes: TopologyNode[]
 ): void {
-  processMultiples(resources).forEach((deployable: Record<string, unknown>) => {
+  // clone resources for each cluster
+  const allResources: ResourceItem[] = []
+  parentClusterNames.forEach((clusterName: string) => {
+    resources.forEach((resource: any) => {
+      allResources.push({ ...resource, cluster: clusterName })
+    })
+  })
+
+  // create nodes for each resource
+  processMultiples(allResources).forEach((deployable: Record<string, unknown>) => {
     const typedDeployable = deployable as unknown as ProcessedDeployableResource
     const {
       name: deployableName,
