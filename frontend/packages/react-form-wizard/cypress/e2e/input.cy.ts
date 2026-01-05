@@ -12,13 +12,11 @@ describe('inputs wizard', () => {
   it('text input', () => {
     cy.contains('Next').click()
     cy.contains('Please fix validation errors')
-    cy.get('section #text-input').within(() => {
+    cy.get('section #text-input').last().within(() => {
       cy.contains('Required')
-      cy.get('#text-input').within(() => {
-        cy.get('#textinput-text').type('text-input')
-        cy.get('#textinput-required').type('text-input-required')
-        cy.get('#textinput-secret').type('text-input-secret')
-      })
+      cy.get('#textinput-text').type('text-input')
+      cy.get('#textinput-required').type('text-input-required')
+      cy.get('#textinput-secret').type('text-input-secret')
     })
     cy.contains('Next').click()
   })
@@ -26,13 +24,11 @@ describe('inputs wizard', () => {
   it('text area', () => {
     cy.contains('Next').click()
     cy.contains('Please fix validation errors')
-    cy.get('section #text-area').within(() => {
+    cy.get('section #text-area').last().within(() => {
       cy.contains('Required')
-      cy.get('#text-area').within(() => {
-        cy.get('#textarea-text').type('text-area')
-        cy.get('#textarea-required').type('text-area-required')
-        cy.get('#textarea-secret').type('text-area-secret')
-      })
+      cy.get('#textarea-text').type('text-area')
+      cy.get('#textarea-required').type('text-area-required')
+      cy.get('#textarea-secret').type('text-area-secret')
     })
     cy.contains('Next').click()
   })
@@ -40,25 +36,26 @@ describe('inputs wizard', () => {
   it('select', () => {
     cy.contains('Next').click()
     cy.contains('Please fix validation errors')
-    cy.get('section #select').within(() => {
+    cy.get('section #select').last().within(() => {
       cy.contains('Required')
     })
-    cy.get('#select').click()
-    cy.get('#select-value').click().get(`#Option\\ 1`).click()
-    cy.get('#select-required').click().get(`#Option\\ 2`).click()
+    cy.get('#select-value').last().click()
+    cy.get(`#Option\\ 1`).click()
+    cy.get('#select-required').last().click()
+    cy.get(`#Option\\ 2`).click()
 
     cy.contains('Next').click()
   })
 
   it('tiles', () => {
-    cy.get('#tiles').within(() => {})
+    cy.get('#tiles').should('exist')
     cy.contains('Next').click()
   })
 
   it('radio', () => {
     cy.contains('Next').click()
     cy.contains('Please fix validation errors')
-    cy.get('section #radio-step').within(() => {
+    cy.get('section #radio-step').last().within(() => {
       cy.get('#group-5').within(() => {
         cy.contains('label', 'Radio 1').click()
       })
@@ -67,14 +64,14 @@ describe('inputs wizard', () => {
   })
 
   it('switch', () => {
-    cy.get('section #switch-step').within(() => {
+    cy.get('section #switch-step').last().within(() => {
       cy.get('#switch-3').parent().click()
     })
     cy.contains('Next').click()
   })
 
   it('checkbox', () => {
-    cy.get('section #checkbox-step').within(() => {
+    cy.get('section #checkbox-step').last().within(() => {
       cy.get('#checkbox-1').click()
       cy.get('#checkbox-2').click()
       cy.get('#checkbox-3').click()
@@ -82,7 +79,7 @@ describe('inputs wizard', () => {
     })
     cy.contains('Next').click()
     cy.contains('Please fix validation errors')
-    cy.get('section #checkbox-step').within(() => {
+    cy.get('section #checkbox-step').last().within(() => {
       cy.get('#checkbox-2-text').type('hello')
       cy.get('#checkbox-4').click()
     })
@@ -90,29 +87,29 @@ describe('inputs wizard', () => {
   })
 
   it('key-value', () => {
-    cy.get('#key-value').within(() => {})
+    cy.get('#key-value').should('exist')
     cy.contains('Next').click()
   })
 
   it('strings-input', () => {
-    cy.get('#strings-input').within(() => {})
+    cy.get('#strings-input').should('exist')
     cy.contains('Next').click()
   })
 
   it('array-input', () => {
-    cy.get('#array-input').within(() => {})
+    cy.get('#array-input').should('exist')
     cy.contains('Next').click()
   })
 
   it('table-select', () => {
-    cy.get('#table-select').within(() => {})
+    cy.get('#table-select').should('exist')
     cy.contains('Next').click()
   })
 
   it('section', () => {
     cy.contains('Next').click()
     cy.contains('Please fix validation errors')
-    cy.get('section #section-step').within(() => {
+    cy.get('section #section-step').last().within(() => {
       cy.contains('Required')
       cy.get('#text-1').type('text-1')
       cy.get('#text-3').type('text-3')
@@ -122,19 +119,19 @@ describe('inputs wizard', () => {
   })
 
   it('hidden', () => {
-    cy.get('div #hidden-step').within(() => {
+    cy.get('div #hidden-step').last().within(() => {
       cy.get('#show-hidden').click()
     })
     cy.contains('Next').click()
     cy.contains('Please fix validation errors')
-    cy.get('div #hidden-step').within(() => {
+    cy.get('div #hidden-step').last().within(() => {
       cy.get('#show-hidden').click()
     })
     cy.contains('Next').click()
   })
 
   it('review', () => {
-    cy.get('#review').within(() => {
+    cy.get('#review').last().within(() => {
       cy.get('#text-input').within(() => {
         cy.get('#textinput-text').contains('text-input')
         cy.get('#textinput-required').contains('text-input-required')
