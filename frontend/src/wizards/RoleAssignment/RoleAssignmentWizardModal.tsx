@@ -171,7 +171,15 @@ export const RoleAssignmentWizardModal = ({
 
   const title = isEditing
     ? t('Edit role assignment')
-    : t('Create role assignment for {{preselected}}', { preselected: preselected?.subject?.value })
+    : preselected?.subject?.value
+      ? t('Create role assignment for {{preselected}}', { preselected: preselected.subject.value })
+      : preselected?.roles && preselected.roles.length > 0
+        ? t('Create role assignment for {{preselected}}', { preselected: preselected.roles[0] })
+        : preselected?.clusterNames && preselected.clusterNames.length > 0
+          ? t('Create role assignment for {{preselected}}', {
+              preselected: preselected.clusterNames.join(', '),
+            })
+          : t('Create role assignment')
 
   const scopeSubSteps = [
     <WizardStep key="scope-selection" name={t('Select scope')} id="scope-selection">
