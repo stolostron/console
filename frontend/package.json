@@ -43,9 +43,9 @@
   "dependencies": {
     "@apollo/client": "3.10.8",
     "@babel/runtime": "7.18.9",
-    "@emotion/css": "^11.11.2",
-    "@emotion/react": "^11.10.5",
-    "@emotion/styled": "^11.10.5",
+    "@emotion/css": "^11.13.5",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
     "@monaco-editor/react": "^4.6.0",
     "@mui/material": "^5.11.1",
     "@octokit/rest": "19.0.13",
