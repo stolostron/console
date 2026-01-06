@@ -4,8 +4,18 @@ import { useEffect, useRef, useState } from 'react'
 import { fireManagedClusterView } from '../../../resources'
 import { ResultsTableData } from '../policies/policy-details/PolicyDetailsResults'
 import { useTranslation } from '../../../lib/acm-i18next'
-import { Alert, Button, Content, ModalBody, ModalFooter, ModalHeader, Skeleton, Title } from '@patternfly/react-core'
-import { Modal, ModalVariant } from '@patternfly/react-core'
+import {
+  Alert,
+  Button,
+  Content,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+  ModalVariant,
+  Skeleton,
+  Title,
+} from '@patternfly/react-core'
 import { Grid } from '@mui/material'
 import { TemplateDetailTitle } from './TemplateDetailTitle'
 import { CodeBlock } from './CodeBlock'
