@@ -49,7 +49,9 @@ describe('Policy Details Results', () => {
     await waitForText('policy-set-with-1-placement-policy-1', true)
     expect(screen.getByTestId('template-name-link-disabled')).toBeInTheDocument()
     await waitForText(
-      'notification - namespaces [test] found as specified, therefore this Object template is compliant'
+      'notification - namespaces [test] found as specified, therefore this Object template is compliant - ',
+      false,
+      { trim: false }
     )
     await waitForText('Remediation')
     await waitForText('inform')
