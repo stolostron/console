@@ -24,6 +24,8 @@ export const ScopeSelectionStepContent = ({
   const { t } = useTranslation()
   const item = useItem()
   const selectedScope = item?.scopeType
+  const selectedClusterSets = item?.selectedClusterSets
+  const selectedClusters = item?.selectedClusters
 
   return (
     <div>
@@ -71,6 +73,7 @@ export const ScopeSelectionStepContent = ({
       {selectedScope === 'Select cluster sets' && (
         <div style={{ marginTop: '16px' }}>
           <ClusterSetsList
+            selectedClusterSets={selectedClusterSets}
             onSelectClusterSet={(clusterSets) => {
               onSelectClusterSets?.(clusterSets)
             }}
@@ -80,6 +83,7 @@ export const ScopeSelectionStepContent = ({
       {selectedScope === 'Select clusters' && (
         <div style={{ marginTop: '16px' }}>
           <ClusterList
+            selectedClusters={selectedClusters}
             onSelectCluster={(clusters) => {
               onSelectClusters?.(clusters)
             }}

@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { ClusterRole } from '../../../resources/rbac'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
@@ -10,13 +10,23 @@ interface RolesTableProps {
   hiddenColumns?: string[]
   onRadioSelect?: (roleName: string) => void
   areLinksDisplayed?: boolean
+  initialSelectedRole?: string
 }
 
-const RolesTable = ({ hiddenColumns, onRadioSelect, areLinksDisplayed = true }: RolesTableProps) => {
+const RolesTable = ({
+  hiddenColumns,
+  onRadioSelect,
+  areLinksDisplayed = true,
+  initialSelectedRole,
+}: RolesTableProps) => {
   const { t } = useTranslation()
   const { vmClusterRolesState } = useSharedAtoms()
   const clusterRoles = useRecoilValue(vmClusterRolesState)
-  const [selectedRole, setSelectedRole] = useState<string>()
+  const [selectedRole, setSelectedRole] = useState<string | undefined>(initialSelectedRole)
+
+  useEffect(() => {
+    setSelectedRole(initialSelectedRole)
+  }, [initialSelectedRole])
 
   const roles = useMemo(
     () =>

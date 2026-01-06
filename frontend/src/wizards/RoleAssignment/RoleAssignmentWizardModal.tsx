@@ -18,6 +18,7 @@ import { ReviewStepContent } from './ReviewStepContent'
 import { IdentitiesList } from './Identities/IdentitiesList'
 import { UserKind, GroupKind } from '../../resources'
 import { useEffect } from 'react'
+import { isType } from '../../lib/is-type'
 
 const getInitialFormData = (): RoleAssignmentWizardFormData => ({
   subject: { kind: UserKind },
@@ -48,7 +49,8 @@ export const RoleAssignmentWizardModal = ({
 
   const handleClusterSetsChange = useCallback((clusterSets: any[]) => {
     setSelectedClusterSets(clusterSets)
-    setFormData((prev) => ({ ...prev, selectedClusterSets: clusterSets }))
+    setSelectedClusters([])
+    setFormData((prev) => ({ ...prev, selectedClusterSets: clusterSets, selectedClusters: [] }))
   }, [])
 
   const handleClustersChange = useCallback((clusters: any[]) => {
@@ -59,7 +61,7 @@ export const RoleAssignmentWizardModal = ({
   const handleRoleSelect = useCallback((roleName: string) => {
     setFormData((prev) => ({
       ...prev,
-      roles: prev.roles.includes(roleName) ? prev.roles.filter((r) => r !== roleName) : [...prev.roles, roleName],
+      roles: [roleName],
     }))
   }, [])
 
@@ -224,13 +226,15 @@ export const RoleAssignmentWizardModal = ({
       {formData.clusterSetAccessLevel === 'Cluster role assignment' && (
         <div style={{ marginTop: '16px' }}>
           <ClusterList
+            selectedClusters={formData.selectedClusters}
+            namespaces={formData.selectedClusterSets?.map((cs) => cs.metadata?.name).filter(isType)}
             onSelectCluster={(clusters) => {
               handleClustersChange(clusters)
             }}
           />
         </div>
       )}
-      <ClusterSetAccessLevel />
+      {formData.clusterSetAccessLevel === 'Cluster set role assignment' && <ClusterSetAccessLevel />}
     </WizardStep>,
     <WizardStep
       key="cluster-set-cluster-granularity"
@@ -371,7 +375,14 @@ export const RoleAssignmentWizardModal = ({
                 />
 
                 {!hideRolesStep && (
-                  <WizardStep key="role" name={t('Roles')} id="role">
+                  <WizardStep
+                    key="role"
+                    name={t('Roles')}
+                    id="role"
+                    footer={{
+                      isNextDisabled: !formData.roles || formData.roles.length === 0,
+                    }}
+                  >
                     <RoleSelectionStepContent onRoleSelect={handleRoleSelect} />
                   </WizardStep>
                 )}
