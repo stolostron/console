@@ -145,7 +145,7 @@ export function AcmPageHeader(props: AcmPageHeaderProps) {
         </SplitItem>
         {(props.controls || props.actions || props.searchbar) && (
           <SplitItem>
-            <PageSection hasBodyWrapper={false} style={{ height: '100%' }}>
+            <PageSection hasBodyWrapper={false} type={'breadcrumb'}>
               <Stack hasGutter>
                 {props.searchbar && (
                   <SplitItem style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>

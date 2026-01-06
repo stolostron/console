@@ -2,6 +2,7 @@
 import { Tab, Tabs, TabTitleText } from '@patternfly/react-core'
 import React, { ReactNode } from 'react'
 import { Path, useNavigate } from 'react-router-dom-v5-compat'
+import { useTranslation } from '../../lib/acm-i18next'
 
 export function AcmSecondaryNav(props: {
   navItems: {
@@ -12,6 +13,7 @@ export function AcmSecondaryNav(props: {
     onClick?: () => void
   }[]
 }) {
+  const { t } = useTranslation()
   const navigate = useNavigate()
 
   // isActive is passed in navItem props - and is set via the browser location
@@ -33,7 +35,7 @@ export function AcmSecondaryNav(props: {
     <Tabs
       activeKey={activeKey}
       onSelect={handleTabClick}
-      aria-label="Secondary page navigation tabs"
+      aria-label={t('Secondary page navigation tabs')}
       style={{ paddingLeft: 'calc(1.5rem - 4px)' }} // should use usePageInsets prop - this is currently a few pixels off.
     >
       {props.navItems.map((item) => (
