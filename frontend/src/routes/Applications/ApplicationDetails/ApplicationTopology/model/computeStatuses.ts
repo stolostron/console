@@ -562,7 +562,7 @@ const getPulseStatusForGenericNode = (
   }
 
   // Check if resource count matches expected (except for pods which are handled specially)
-  if (resourceCount && resourceCount !== Object.keys(resourceMap).length && nodeType !== 'pod') {
+  if (resourceCount && resourceCount > Object.keys(resourceMap).length && nodeType !== 'pod') {
     return yellowPulse
   }
 

@@ -127,6 +127,7 @@ export async function getAppSetTopology(
       specs: {
         isDesign: true,
         raw: placement,
+        isPairedInLayoutWithParent: true,
       },
       placement: relatedPlacement,
     })
@@ -150,7 +151,7 @@ export async function getAppSetTopology(
   ;(nodes[0] as any).isArgoCDPullModelTargetLocalCluster = isArgoCDPullModelTargetLocalCluster
 
   // Determine the parent node for clusters (placement if exists, otherwise ApplicationSet)
-  const clusterParentId = placement ? placementId : appId
+  const clusterParentId = appId
 
   // Extract source path from ApplicationSet template or generators
   const templateSourcePath = (application.app as any)?.spec?.template?.spec?.source?.path ?? ''

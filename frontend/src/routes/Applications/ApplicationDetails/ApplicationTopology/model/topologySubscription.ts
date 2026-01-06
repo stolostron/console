@@ -273,7 +273,7 @@ const addSubscriptionRules = (
       type: 'placements',
       id: ruleId,
       uid: ruleId,
-      specs: { isDesign: true, raw: rule },
+      specs: { isDesign: true, raw: rule, isPairedInLayoutWithParent: true },
       isPlacement,
       placement,
     })

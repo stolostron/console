@@ -92,7 +92,7 @@ export const addClusters = (
       subscription,
       resourceCount: clusterNames.length,
       clustersNames: clusterNames,
-      clusters: deepClone(managedClusters),
+      clusters: deepClone(managedClusters.filter((cluster) => clusterNames.includes(cluster?.name ?? ''))),
       sortedClusterNames,
       appClusters: topoClusterNode ? (topoClusterNode as TopologyNode).specs.appClusters : undefined,
       targetNamespaces: topoClusterNode ? (topoClusterNode as TopologyNode).specs.targetNamespaces : undefined,

@@ -26,6 +26,7 @@ const TREE_LAYOUT_DEFAULTS: TreeLayoutOptions = {
 }
 
 interface LayoutNodeModel extends NodeModel {
+  specs: any
   cycles: boolean
   incoming: LayoutNodeModel[]
   outgoing: LayoutNodeModel[]
@@ -107,7 +108,7 @@ export function calculateNodeOffsets(elements: { nodes: any[]; links: any[] }, o
     const metrics: MetricsType = groupNodesByConnections(_elements)
     addRootsLeavesToConnectedGroups(metrics)
     sortConnectedGroupsIntoRows(metrics, options)
-    const placeLast = filterLastPlaced(metrics, options)
+    const placeLast = filterLastPlaced(metrics)
     setRowY(metrics, nodeOffsetMap, options)
     setRowX(metrics, nodeOffsetMap, options)
     placePairedNodes(metrics, nodeOffsetMap, placeLast, options)
@@ -399,26 +400,25 @@ function sortRowIntoRelatedNodes(data: { newRow: RowType; sortRowsBy: string[] |
 }
 
 // filter out nodes that are placed last
-function filterLastPlaced(metrics: MetricsType, options: TreeLayoutOptions) {
+function filterLastPlaced(metrics: MetricsType) {
   const placeLast: any[] = []
-  if (options?.placeWith) {
-    const { connected } = metrics
-    connected.forEach((group) => {
-      group.rows = group.rows.map((row) => {
-        row.row = row.row.filter((n) => {
-          const isPlaceType = (n: { type: string | undefined }) => n.type === options.placeWith?.childType
-          n.incoming = n.incoming.filter((n) => !isPlaceType(n))
-          n.outgoing = n.outgoing.filter((n) => !isPlaceType(n))
-          if (isPlaceType(n)) {
-            placeLast.push(n)
-            return false
-          }
-          return true
-        })
-        return row
+  const { connected } = metrics
+  connected.forEach((group) => {
+    group.rows = group.rows.map((row) => {
+      row.row = row.row.filter((n) => {
+        const isPairedInLayoutWithParent = (n: { specs: { isPairedInLayoutWithParent: boolean | undefined } }) =>
+          n.specs?.isPairedInLayoutWithParent === true
+        n.incoming = n.incoming.filter((n) => !isPairedInLayoutWithParent(n))
+        n.outgoing = n.outgoing.filter((n) => !isPairedInLayoutWithParent(n))
+        if (isPairedInLayoutWithParent(n)) {
+          placeLast.push(n)
+          return false
+        }
+        return true
       })
+      return row
     })
-  }
+  })
   return placeLast
 }
 
