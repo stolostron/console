@@ -14,5 +14,12 @@
   "timezone": "America/New_York",
   "lockFileMaintenance": {
     "enabled": false
-  }
+  },
+  "ignoreDeps": [
+    "@monaco-editor/react",
+    "@openshift-assisted/ui-lib",
+    "@openshift-assisted/locales",
+    "monaco-editor",
+    "react-monaco-editor"
+  ]
 }
