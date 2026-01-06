@@ -19,7 +19,6 @@ const config: Config.InitialOptions = {
     '^.+\\.[jt]sx?$': [
       'ts-jest',
       {
-        isolatedModules: true,
         tsconfig: '<rootDir>/tsconfig.dev.json',
       },
     ],
