@@ -9,7 +9,7 @@ const config: Config.InitialOptions = {
   setupFilesAfterEnv: ['<rootDir>/src/setupTests.ts'],
   moduleNameMapper: {
     '\\.(css)$': '<rootDir>/__mocks__/file.mock.js',
-    '@console/*': '<rootDir>/__mocks__/dummy.ts',
+    '@console/*': '<rootDir>/__mocks__/sdk-dummy.ts',
   },
   watchAll: false,
   slowTestThreshold: 30,
