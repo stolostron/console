@@ -15,6 +15,7 @@ import { WizSelect } from '@patternfly-labs/react-form-wizard/lib/src/inputs/Wiz
 import { ClusterList } from './Scope/Clusters/ClusterList'
 import { ProjectsList } from './ProjectsList'
 import { ReviewStepContent } from './ReviewStepContent'
+import { IdentitiesList } from './Identities/IdentitiesList'
 import { UserKind, GroupKind } from '../../resources'
 import { useEffect } from 'react'
 
@@ -59,6 +60,36 @@ export const RoleAssignmentWizardModal = ({
     setFormData((prev) => ({
       ...prev,
       roles: prev.roles.includes(roleName) ? prev.roles.filter((r) => r !== roleName) : [...prev.roles, roleName],
+    }))
+  }, [])
+
+  const handleSubjectKindChange = useCallback((kind: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      subject: {
+        ...prev.subject,
+        kind: kind as typeof UserKind | typeof GroupKind,
+      },
+    }))
+  }, [])
+
+  const handleUserChange = useCallback((users: string[]) => {
+    setFormData((prev) => ({
+      ...prev,
+      subject: {
+        ...prev.subject,
+        user: users,
+      },
+    }))
+  }, [])
+
+  const handleGroupChange = useCallback((groups: string[]) => {
+    setFormData((prev) => ({
+      ...prev,
+      subject: {
+        ...prev.subject,
+        group: groups,
+      },
     }))
   }, [])
 
@@ -121,176 +152,153 @@ export const RoleAssignmentWizardModal = ({
   }, [preselected, isOpen])
 
   useEffect(() => {
-    if (formData.scopeType === 'Global access') {
+    const newKind = formData.scopeType === 'Global access' ? 'all' : 'specific'
+    if (formData.scope.kind !== newKind) {
       setFormData((prev) => ({
         ...prev,
         scope: {
-          kind: 'all',
-          clusterNames: prev.scope.clusterNames,
-          namespaces: undefined,
-        },
-      }))
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        scope: {
-          kind: 'specific',
-          clusterNames: prev.scope.clusterNames,
-          namespaces: prev.scope.namespaces,
+          ...prev.scope,
+          kind: newKind,
+          namespaces: newKind === 'all' ? undefined : prev.scope.namespaces,
         },
       }))
     }
-  }, [formData.scopeType])
+  }, [formData.scopeType, formData.scope.kind])
+
+  const showIdentitiesStep = preselected?.roles && preselected.roles.length > 0 && !preselected?.subject
+
+  const hideRolesStep = preselected?.roles && preselected.roles.length > 0
 
   const title = isEditing
     ? t('Edit role assignment')
     : t('Create role assignment for {{preselected}}', { preselected: preselected?.subject?.value })
 
-  const scopeSubSteps =
-    formData.scopeType === 'Select cluster sets'
-      ? [
-          <WizardStep
-            key="cluster-sets"
-            name={t('Select cluster sets')}
-            id="scope-cluster-sets"
-            footer={{ isNextDisabled: selectedClusterSets.length === 0 }}
-          >
-            <ScopeSelectionStepContent
-              isDrawerExpanded={isDrawerExpanded}
-              setIsDrawerExpanded={setIsDrawerExpanded}
-              onSelectClusterSets={handleClusterSetsChange}
-              onSelectClusters={handleClustersChange}
-            />
-          </WizardStep>,
-          <WizardStep
-            key="cluster-set-granularity"
-            name={t('Define cluster set granularity')}
-            id="scope-cluster-set-granularity"
-          >
-            <GranularityStepContent
-              title={t('Choose access level')}
-              description={t('Define the level of access for the 1 selected cluster set.')}
-            />
-            <div style={{ margin: '16px 0' }}>
-              <WizSelect
-                pathValueToInputValue={(pathValue) => pathValue || 'Cluster set role assignment'}
-                path="clusterSetAccessLevel"
-                label="Access level"
-                required
-                options={[
-                  {
-                    label: 'Cluster set role assignment',
-                    value: 'Cluster set role assignment',
-                    description: 'Grant access to all current and future resources on the cluster set',
-                  },
-                  {
-                    label: 'Cluster role assignment',
-                    value: 'Cluster role assignment',
-                    description:
-                      'Grant access to specific clusters on the cluster set. Optionally, narrow this access to projects on the selected clusters',
-                  },
-                ]}
-              />
-            </div>
-            {formData.clusterSetAccessLevel === 'Cluster role assignment' && (
-              <div style={{ marginTop: '16px' }}>
-                <ClusterList
-                  onSelectCluster={(clusters) => {
-                    handleClustersChange(clusters)
-                  }}
-                />
-              </div>
-            )}
-            <ClusterSetAccessLevel />
-          </WizardStep>,
-          ...(formData.clusterSetAccessLevel === 'Cluster role assignment'
-            ? [
-                <WizardStep
-                  key="cluster-granularity"
-                  name={t('Define cluster granularity')}
-                  id="scope-cluster-granularity"
-                >
-                  <GranularityStepContent
-                    title={t('Define cluster granularity')}
-                    description={t('Define cluster granularity options.')}
-                  />
-                  <div style={{ margin: '16px 0' }}>
-                    <WizSelect
-                      pathValueToInputValue={(pathValue) => pathValue || 'Cluster role assignment'}
-                      path="selectedClustersAccessLevel"
-                      label="Access level for selected clusters"
-                      required
-                      options={[
-                        {
-                          label: 'Cluster role assignment',
-                          value: 'Cluster role assignment',
-                          description: 'Grant access to all current and future resources on the cluster',
-                        },
-                        {
-                          label: 'Project role assignment',
-                          value: 'Project role assignment',
-                          description: 'Grant access to specific projects on the cluster',
-                        },
-                      ]}
-                    />
-                  </div>
-                  {formData.selectedClustersAccessLevel === 'Project role assignment' && (
-                    <div style={{ marginTop: '16px' }}>
-                      <ProjectsList selectedClusters={[{ name: 'local-cluster' }]} />
-                    </div>
-                  )}
-                </WizardStep>,
-              ]
-            : []),
-        ]
-      : formData.scopeType === 'Select clusters'
-        ? [
-            <WizardStep
-              key="clusters"
-              name={t('Select clusters')}
-              id="scope-clusters"
-              footer={{ isNextDisabled: selectedClusters.length === 0 }}
-            >
-              <ScopeSelectionStepContent
-                isDrawerExpanded={isDrawerExpanded}
-                setIsDrawerExpanded={setIsDrawerExpanded}
-                onSelectClusterSets={handleClusterSetsChange}
-                onSelectClusters={handleClustersChange}
-              />
-            </WizardStep>,
-            <WizardStep key="cluster-granularity" name={t('Define cluster granularity')} id="scope-cluster-granularity">
-              <GranularityStepContent
-                title={t('Define cluster granularity')}
-                description={t('Define the level of access for the selected cluster(s).')}
-              />
-              <div style={{ margin: '16px 0' }}>
-                <WizSelect
-                  pathValueToInputValue={(pathValue) => pathValue || 'Cluster role assignment'}
-                  path="selectedClustersAccessLevel"
-                  label="Access level for selected clusters"
-                  required
-                  options={[
-                    {
-                      label: 'Cluster role assignment',
-                      value: 'Cluster role assignment',
-                      description: 'Grant access to all current and future resources on the cluster',
-                    },
-                    {
-                      label: 'Project role assignment',
-                      value: 'Project role assignment',
-                      description: 'Grant access to specific projects on the cluster',
-                    },
-                  ]}
-                />
-              </div>
-              {formData.selectedClustersAccessLevel === 'Project role assignment' && (
-                <div style={{ marginTop: '16px' }}>
-                  <ProjectsList selectedClusters={selectedClusters} />
-                </div>
-              )}
-            </WizardStep>,
-          ]
-        : null
+  const scopeSubSteps = [
+    <WizardStep key="scope-selection" name={t('Select scope')} id="scope-selection">
+      <ScopeSelectionStepContent
+        isDrawerExpanded={isDrawerExpanded}
+        setIsDrawerExpanded={setIsDrawerExpanded}
+        onSelectClusterSets={handleClusterSetsChange}
+        onSelectClusters={handleClustersChange}
+      />
+    </WizardStep>,
+    <WizardStep
+      key="cluster-set-granularity"
+      name={t('Define cluster set granularity')}
+      id="scope-cluster-set-granularity"
+      isHidden={formData.scopeType !== 'Select cluster sets'}
+    >
+      <GranularityStepContent
+        title={t('Choose access level')}
+        description={t('Define the level of access for the 1 selected cluster set.')}
+      />
+      <div style={{ margin: '16px 0' }}>
+        <WizSelect
+          pathValueToInputValue={(pathValue) => pathValue || 'Cluster set role assignment'}
+          path="clusterSetAccessLevel"
+          label="Access level"
+          required
+          options={[
+            {
+              label: 'Cluster set role assignment',
+              value: 'Cluster set role assignment',
+              description: 'Grant access to all current and future resources on the cluster set',
+            },
+            {
+              label: 'Cluster role assignment',
+              value: 'Cluster role assignment',
+              description:
+                'Grant access to specific clusters on the cluster set. Optionally, narrow this access to projects on the selected clusters',
+            },
+          ]}
+        />
+      </div>
+      {formData.clusterSetAccessLevel === 'Cluster role assignment' && (
+        <div style={{ marginTop: '16px' }}>
+          <ClusterList
+            onSelectCluster={(clusters) => {
+              handleClustersChange(clusters)
+            }}
+          />
+        </div>
+      )}
+      <ClusterSetAccessLevel />
+    </WizardStep>,
+    <WizardStep
+      key="cluster-set-cluster-granularity"
+      name={t('Define cluster granularity')}
+      id="scope-cluster-set-cluster-granularity"
+      isHidden={
+        formData.scopeType !== 'Select cluster sets' || formData.clusterSetAccessLevel !== 'Cluster role assignment'
+      }
+    >
+      <GranularityStepContent
+        title={t('Define cluster granularity')}
+        description={t('Define cluster granularity options.')}
+      />
+      <div style={{ margin: '16px 0' }}>
+        <WizSelect
+          pathValueToInputValue={(pathValue) => pathValue || 'Cluster role assignment'}
+          path="selectedClustersAccessLevel"
+          label="Access level for selected clusters"
+          required
+          options={[
+            {
+              label: 'Cluster role assignment',
+              value: 'Cluster role assignment',
+              description: 'Grant access to all current and future resources on the cluster',
+            },
+            {
+              label: 'Project role assignment',
+              value: 'Project role assignment',
+              description: 'Grant access to specific projects on the cluster',
+            },
+          ]}
+        />
+      </div>
+      {formData.selectedClustersAccessLevel === 'Project role assignment' && (
+        <div style={{ marginTop: '16px' }}>
+          <ProjectsList selectedClusters={[{ name: 'local-cluster' }]} />
+        </div>
+      )}
+    </WizardStep>,
+    <WizardStep
+      key="cluster-granularity"
+      name={t('Define cluster granularity')}
+      id="scope-cluster-granularity"
+      isHidden={formData.scopeType !== 'Select clusters'}
+    >
+      <GranularityStepContent
+        title={t('Define cluster granularity')}
+        description={t('Define the level of access for the selected cluster(s).')}
+      />
+      <div style={{ margin: '16px 0' }}>
+        <WizSelect
+          pathValueToInputValue={(pathValue) => pathValue || 'Cluster role assignment'}
+          path="selectedClustersAccessLevel"
+          label="Access level for selected clusters"
+          required
+          options={[
+            {
+              label: 'Cluster role assignment',
+              value: 'Cluster role assignment',
+              description: 'Grant access to all current and future resources on the cluster',
+            },
+            {
+              label: 'Project role assignment',
+              value: 'Project role assignment',
+              description: 'Grant access to specific projects on the cluster',
+            },
+          ]}
+        />
+      </div>
+      {formData.selectedClustersAccessLevel === 'Project role assignment' && (
+        <div style={{ marginTop: '16px' }}>
+          <ProjectsList selectedClusters={selectedClusters} />
+        </div>
+      )}
+    </WizardStep>,
+  ]
 
   return (
     <Modal variant={ModalVariant.large} isOpen={isOpen} showClose={false} hasNoBodyWrapper>
@@ -303,7 +311,6 @@ export const RoleAssignmentWizardModal = ({
           <ItemContext.Provider value={formData}>
             <DataContext.Provider value={{ update }}>
               <Wizard
-                key={formData.scopeType}
                 onClose={handleClose}
                 header={
                   <WizardHeader
@@ -327,20 +334,41 @@ export const RoleAssignmentWizardModal = ({
                   />
                 }
               >
-                <WizardStep name={t('Scope')} id="scope" {...(scopeSubSteps ? { steps: scopeSubSteps } : {})}>
-                  <ScopeSelectionStepContent
-                    isDrawerExpanded={isDrawerExpanded}
-                    setIsDrawerExpanded={setIsDrawerExpanded}
-                    onSelectClusterSets={handleClusterSetsChange}
-                    onSelectClusters={handleClustersChange}
-                  />
-                </WizardStep>
-
-                <WizardStep name={t('Roles')} id="role">
-                  <RoleSelectionStepContent onRoleSelect={handleRoleSelect} />
-                </WizardStep>
+                {showIdentitiesStep && (
+                  <WizardStep key="identities" name={t('Identities')} id="identities">
+                    <IdentitiesList
+                      onUserSelect={(user) => {
+                        handleSubjectKindChange('User')
+                        handleUserChange(user.metadata.name ? [user.metadata.name] : [])
+                      }}
+                      onGroupSelect={(group) => {
+                        handleSubjectKindChange('Group')
+                        handleGroupChange(group.metadata.name ? [group.metadata.name] : [])
+                      }}
+                    />
+                  </WizardStep>
+                )}
 
                 <WizardStep
+                  key="scope"
+                  name={t('Scope')}
+                  id="scope"
+                  steps={scopeSubSteps}
+                  footer={{
+                    isNextDisabled:
+                      (formData.scopeType === 'Select cluster sets' && selectedClusterSets.length === 0) ||
+                      (formData.scopeType === 'Select clusters' && selectedClusters.length === 0),
+                  }}
+                />
+
+                {!hideRolesStep && (
+                  <WizardStep key="role" name={t('Roles')} id="role">
+                    <RoleSelectionStepContent onRoleSelect={handleRoleSelect} />
+                  </WizardStep>
+                )}
+
+                <WizardStep
+                  key="review"
                   name={t('Review')}
                   id="review"
                   footer={{ nextButtonText: t('Create'), onNext: handleSubmit }}
