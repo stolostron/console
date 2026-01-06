@@ -319,6 +319,7 @@ export const RoleAssignmentWizardModal = ({
           <ItemContext.Provider value={formData}>
             <DataContext.Provider value={{ update }}>
               <Wizard
+                isVisitRequired
                 onClose={handleClose}
                 header={
                   <WizardHeader
