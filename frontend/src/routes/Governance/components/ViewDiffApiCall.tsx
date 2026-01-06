@@ -105,7 +105,7 @@ export function ViewDiffApiCall({ item }: Readonly<{ item: ResultsTableData }>) 
             </Title>
           </Content>
         </ModalHeader>
-        <ModalBody tabIndex={0} aria-label="policy difference modal">
+        <ModalBody tabIndex={0} aria-label={t('scrollable policy differences')}>
           {isFetching && (
             <div
               style={{ height: '300px', overflowY: 'hidden', marginTop: '30px', flexFlow: 'column', display: 'flex' }}
@@ -127,12 +127,14 @@ export function ViewDiffApiCall({ item }: Readonly<{ item: ResultsTableData }>) 
               {relatedObjs?.map((rOjb: any) =>
                 rOjb.properties?.diff ? (
                   <Grid item key={rOjb.object?.kind + rOjb.object?.metadata.name}>
-                    <Title
-                      headingLevel="h2"
-                      style={{ marginBottom: 10 }}
-                    >{`${t('Difference for the')} ${rOjb.object?.kind} ${
-                      rOjb.object?.metadata?.namespace ? rOjb.object?.metadata?.namespace + '/' : ''
-                    }${rOjb.object?.metadata?.name}`}</Title>
+                    <Title headingLevel="h2" style={{ marginBottom: 10 }}>
+                      {t('Difference for the {{kind}} {{resource}}', {
+                        kind: rOjb.object?.kind,
+                        resource: `${
+                          rOjb.object?.metadata?.namespace ? rOjb.object?.metadata?.namespace + '/' : ''
+                        }${rOjb.object?.metadata?.name}`,
+                      })}
+                    </Title>
                     <CodeBlock>{rOjb.properties?.diff}</CodeBlock>
                   </Grid>
                 ) : (
