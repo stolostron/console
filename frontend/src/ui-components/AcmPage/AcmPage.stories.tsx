@@ -4,22 +4,22 @@ import {
   Bullseye,
   Card,
   CardBody,
-  PageSection,
-  Switch,
   Dropdown,
   DropdownItem,
   MenuToggle,
   MenuToggleElement,
+  PageSection,
+  Switch,
 } from '@patternfly/react-core'
 import '@patternfly/react-core/dist/styles/base.css'
 import { Meta } from '@storybook/react'
 import { Fragment, useState } from 'react'
 import { AlertGroupStory } from '../AcmAlert/AcmAlert.stories'
 import { DescriptionList as DescriptionListStory } from '../AcmDescriptionList/AcmDescriptionList.stories'
-import { FormStory as FormStory } from '../AcmForm/AcmForm.stories'
+import { FormStory } from '../AcmForm/AcmForm.stories'
 import { LoadingPage as LoadingPageStory } from '../AcmLoadingPage/AcmLoadingPage.stories'
 import { AcmRefreshTime } from '../AcmRefreshTime/AcmRefreshTime'
-import { AcmSecondaryNav, AcmSecondaryNavItem } from '../AcmSecondaryNav/AcmSecondaryNav'
+import { AcmSecondaryNav } from '../AcmSecondaryNav/AcmSecondaryNav'
 import { TableStory } from '../AcmTable/AcmTable.stories'
 import { AcmPage, AcmPageContent, AcmPageHeader, AcmPageHeaderProps } from './AcmPage'
 
@@ -113,26 +113,40 @@ export const Page = (args: {
           }
           navigation={
             args.showNavigation && (
-              <AcmSecondaryNav>
-                <AcmSecondaryNavItem isActive={secondaryTab === 'table'} onClick={() => setSecondaryTab('table')}>
-                  Table
-                </AcmSecondaryNavItem>
-                <AcmSecondaryNavItem isActive={secondaryTab === 'form'} onClick={() => setSecondaryTab('form')}>
-                  Form
-                </AcmSecondaryNavItem>
-                <AcmSecondaryNavItem
-                  isActive={secondaryTab === 'descriptionList'}
-                  onClick={() => setSecondaryTab('descriptionList')}
-                >
-                  Details
-                </AcmSecondaryNavItem>
-                <AcmSecondaryNavItem isActive={secondaryTab === 'loading'} onClick={() => setSecondaryTab('loading')}>
-                  Loading
-                </AcmSecondaryNavItem>
-                <AcmSecondaryNavItem isActive={secondaryTab === 'alerts'} onClick={() => setSecondaryTab('alerts')}>
-                  Alerts
-                </AcmSecondaryNavItem>
-              </AcmSecondaryNav>
+              <AcmSecondaryNav
+                navItems={[
+                  {
+                    key: 'page-story-tab-table',
+                    title: 'Table',
+                    isActive: secondaryTab === 'table',
+                    onClick: () => setSecondaryTab('table'),
+                  },
+                  {
+                    key: 'page-story-tab-form',
+                    title: 'Form',
+                    isActive: secondaryTab === 'form',
+                    onClick: () => setSecondaryTab('form'),
+                  },
+                  {
+                    key: 'page-story-tab-details',
+                    title: 'Details',
+                    isActive: secondaryTab === 'descriptionList',
+                    onClick: () => setSecondaryTab('descriptionList'),
+                  },
+                  {
+                    key: 'page-story-tab-loading',
+                    title: 'Loading',
+                    isActive: secondaryTab === 'loading',
+                    onClick: () => setSecondaryTab('loading'),
+                  },
+                  {
+                    key: 'page-story-tab-alerts',
+                    title: 'Alerts',
+                    isActive: secondaryTab === 'alerts',
+                    onClick: () => setSecondaryTab('alerts'),
+                  },
+                ]}
+              />
             )
           }
         />

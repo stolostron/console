@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
-import { Card, CardBody } from '@patternfly/react-core'
+import { PageSection } from '@patternfly/react-core'
 import { Link } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
@@ -38,25 +38,23 @@ export default function HeaderWithNotification(props: { messages: Message[] }) {
         const footerText = t('View clusters with search add-on disabled.')
 
         return (
-          <Card key={msg.id + index} style={{ border: 'none', boxShadow: 'none' }}>
-            <CardBody>
-              <AcmInlineStatus
-                type={StatusType.warning}
-                status={displayShortText}
-                popover={{
-                  headerContent: displayShortText,
-                  bodyContent: displayLongText,
-                  footerContent: msg.id === 'S20' && (
-                    <Link
-                      to={`${NavigationPath.search}?filters={"textsearch":"kind%3ACluster%20addon%3Asearch-collector%3Dfalse%20label%3A!local-cluster%3Dtrue"}`}
-                    >
-                      {footerText}
-                    </Link>
-                  ),
-                }}
-              />
-            </CardBody>
-          </Card>
+          <PageSection key={msg.id + index}>
+            <AcmInlineStatus
+              type={StatusType.warning}
+              status={displayShortText}
+              popover={{
+                headerContent: displayShortText,
+                bodyContent: displayLongText,
+                footerContent: msg.id === 'S20' && (
+                  <Link
+                    to={`${NavigationPath.search}?filters={"textsearch":"kind%3ACluster%20addon%3Asearch-collector%3Dfalse%20label%3A!local-cluster%3Dtrue"}`}
+                  >
+                    {footerText}
+                  </Link>
+                ),
+              }}
+            />
+          </PageSection>
         )
       })}
     </div>

@@ -1,39 +1,47 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
+import { Tab, Tabs, TabTitleText } from '@patternfly/react-core'
 import React, { ReactNode } from 'react'
+import { Path, useNavigate } from 'react-router-dom-v5-compat'
+import { useTranslation } from '../../lib/acm-i18next'
 
-/**
- * This needs to be updated to use Patternfly v6 Tabs component
- * in PF v5 we were using the <Nav>, <NavList> & <NavItem> components.
- * in PF v6 those components are not used for secondary navigation and thus the styling is incorrect.
- * The correct componentry is to use the PF Tabs seen here: https://www.patternfly.org/components/tabs#default-tabs
- * Updating to use Tabs will match the implementation in OCP so we have same look & feel.
- */
-
-export function AcmSecondaryNav(props: { children: ReactNode }) {
-  return (
-    <nav className="pf-v6-c-tabs co-horizontal-nav">
-      <ol className="pf-v6-c-tabs__list">{props.children}</ol>
-    </nav>
-  )
-}
-export function AcmSecondaryNavItem(props: {
-  onClick?: () => void
-  isActive: boolean
-  to?: string
-  children: ReactNode
+export function AcmSecondaryNav(props: {
+  navItems: {
+    key: string
+    title: string | ReactNode
+    isActive: boolean
+    to?: string | Partial<Path>
+    onClick?: () => void
+  }[]
 }) {
-  return (
-    <li className={props.isActive ? 'pf-v6-c-tabs__item pf-m-current' : 'pf-v6-c-tabs__item'}>
-      {/* map loops through the children and injects the .pf-v6-c-tabs__link classname. */}
-      {React.Children.map(props.children, (child) => {
-        if (!React.isValidElement(child)) return child
+  const { t } = useTranslation()
+  const navigate = useNavigate()
 
-        const newClassName = [child.props.className, 'pf-v6-c-tabs__link'].filter(Boolean).join(' ')
-        return React.cloneElement(child as React.ReactElement<any>, {
-          className: newClassName,
-        })
-      })}
-    </li>
+  // isActive is passed in navItem props - and is set via the browser location
+  const activeTab = props.navItems.find((item) => item.isActive)
+  const activeKey = activeTab?.key ?? props.navItems[0]?.key
+
+  const handleTabClick = (_: React.MouseEvent<any> | React.KeyboardEvent | MouseEvent, tabIndex: string | number) => {
+    const selectedTab = props.navItems.find((item) => item.key === tabIndex)
+    if (selectedTab) {
+      if (selectedTab.to) {
+        navigate(selectedTab.to)
+      } else if (selectedTab.onClick) {
+        selectedTab.onClick()
+      }
+    }
+  }
+
+  return (
+    <Tabs
+      activeKey={activeKey}
+      onSelect={handleTabClick}
+      aria-label={t('Secondary page navigation tabs')}
+      style={{ paddingLeft: 'calc(1.5rem - 4px)' }} // should use usePageInsets prop - this is currently a few pixels off.
+    >
+      {props.navItems.map((item) => (
+        // Override aria-controls as we are not rendering TabContent as Child components. If set, a11y breaks.
+        <Tab aria-controls="" key={item.key} eventKey={item.key} title={<TabTitleText>{item.title}</TabTitleText>} />
+      ))}
+    </Tabs>
   )
 }

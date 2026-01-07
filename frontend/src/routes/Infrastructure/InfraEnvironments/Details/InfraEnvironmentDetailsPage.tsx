@@ -14,7 +14,6 @@ import { isMatch } from 'lodash'
 import { Fragment, Suspense, useMemo } from 'react'
 import {
   generatePath,
-  Link,
   Outlet,
   PathParam,
   useLocation,
@@ -28,7 +27,7 @@ import { DOC_VERSION } from '../../../../lib/doc-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
-import { AcmButton, AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../../ui-components'
+import { AcmButton, AcmPage, AcmPageHeader, AcmSecondaryNav } from '../../../../ui-components'
 import {
   getOnCreateBMH,
   getOnSaveISOParams,
@@ -124,17 +123,27 @@ const InfraEnvironmentDetailsPage: React.FC = () => {
             ]}
             title={infraEnv.metadata?.name || ''}
             navigation={
-              <AcmSecondaryNav>
-                <AcmSecondaryNavItem isActive={location.pathname === overviewPath}>
-                  <Link to={overviewPath}>{t('tab.details')}</Link>
-                </AcmSecondaryNavItem>
-                <AcmSecondaryNavItem isActive={location.pathname === hostsPath}>
-                  <Link to={hostsPath}>
-                    {t('tab.hosts')}
-                    <InfraEnvHostsTabAgentsWarning infraAgents={infraAgents} infraBMHs={infraBMHs} />
-                  </Link>
-                </AcmSecondaryNavItem>
-              </AcmSecondaryNav>
+              <AcmSecondaryNav
+                navItems={[
+                  {
+                    key: 'infrastructure-envs-details',
+                    title: t('tab.details'),
+                    isActive: location.pathname === overviewPath,
+                    to: overviewPath,
+                  },
+                  {
+                    key: 'infrastructure-envs-hosts',
+                    title: (
+                      <>
+                        <span style={{ marginRight: '.25rem' }}>{t('tab.hosts')}</span>
+                        <InfraEnvHostsTabAgentsWarning infraAgents={infraAgents} infraBMHs={infraBMHs} />
+                      </>
+                    ),
+                    isActive: location.pathname === hostsPath,
+                    to: hostsPath,
+                  },
+                ]}
+              />
             }
             actions={
               <AddHostDropdown
