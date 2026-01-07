@@ -258,7 +258,7 @@ export const RoleAssignmentWizardModal = ({
     >
       <ClusterGranularityStepContent
         description={t('Define cluster granularity options.')}
-        selectedClusters={[{ name: 'local-cluster' }]}
+        selectedClusters={selectedClusters}
       />
     </WizardStep>,
     <WizardStep
