@@ -68,7 +68,7 @@ export async function getAppSetTopology(
   ////  APPLICATION SET NODE /////////////////
   /////////////////////////////////////////////
   const appId = `application--${name}`
-  nodes.push({
+  const appSetNode: TopologyNode = {
     name,
     namespace,
     type: 'applicationset',
@@ -86,7 +86,8 @@ export async function getAppSetTopology(
       appSetClusters,
       appStatusByNameMap,
     },
-  })
+  }
+  nodes.push(appSetNode)
 
   /////////////////////////////////////////////
   ////  PLACEMENT NODE /////////////////
@@ -230,6 +231,7 @@ export async function getAppSetTopology(
             clusterId,
           },
         },
+        detailsNode: appSetNode,
       }
       nodes.push(appNode)
       links.push({

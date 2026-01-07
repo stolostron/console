@@ -64,9 +64,11 @@ export const getApplication = async (
       },
     }).promise) as Application
     if (app) {
+      // Recursively find any object with clusterDecisionResource within app.spec
+      const generatorWithCDR = findObjectWithKey(safeGet(app, 'spec', {}), 'clusterDecisionResource')
       placementName = safeGet(
-        app,
-        'spec.generators[0].clusterDecisionResource.labelSelector.matchLabels["cluster.open-cluster-management.io/placement"]',
+        generatorWithCDR,
+        'clusterDecisionResource.labelSelector.matchLabels["cluster.open-cluster-management.io/placement"]',
         ''
       )
 
@@ -241,6 +243,21 @@ const getRemoteArgoApp = async (
   if (response) {
     return response.result
   }
+}
+
+/**
+ * Recursively search an object for a property with the given key.
+ * Returns the first matching object that contains the key, or undefined.
+ */
+const findObjectWithKey = (obj: unknown, key: string): Record<string, unknown> | undefined => {
+  if (!obj || typeof obj !== 'object') return undefined
+  const record = obj as Record<string, unknown>
+  if (key in record) return record
+  for (const value of Object.values(record)) {
+    const found = findObjectWithKey(value, key)
+    if (found) return found
+  }
+  return undefined
 }
 
 export default getApplication
