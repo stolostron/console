@@ -1,31 +1,24 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useTranslation } from '../../lib/acm-i18next'
-import { WizardStep } from '@patternfly/react-core'
 import { WizSelect } from '@patternfly-labs/react-form-wizard/lib/src/inputs/WizSelect'
+import { useItem } from '@patternfly-labs/react-form-wizard/lib/src/contexts/ItemContext'
 import { GranularityStepContent } from './GranularityStepContent'
 import { ProjectsList } from './ProjectsList'
 
-interface ClusterGranularityWizardStepProps {
-  stepKey: string
-  id: string
-  isHidden: boolean
+interface ClusterGranularityStepContentProps {
   description: string
   selectedClusters: any[]
-  selectedClustersAccessLevel?: string
 }
 
-export const ClusterGranularityWizardStep = ({
-  stepKey,
-  id,
-  isHidden,
+export const ClusterGranularityStepContent = ({
   description,
   selectedClusters,
-  selectedClustersAccessLevel,
-}: ClusterGranularityWizardStepProps) => {
+}: ClusterGranularityStepContentProps) => {
   const { t } = useTranslation()
+  const item = useItem()
 
   return (
-    <WizardStep key={stepKey} name={t('Define cluster granularity')} id={id} isHidden={isHidden}>
+    <>
       <GranularityStepContent title={t('Define cluster granularity')} description={description} />
       <div style={{ margin: '16px 0' }}>
         <WizSelect
@@ -47,11 +40,11 @@ export const ClusterGranularityWizardStep = ({
           ]}
         />
       </div>
-      {selectedClustersAccessLevel === 'Project role assignment' && (
+      {item?.selectedClustersAccessLevel === 'Project role assignment' && (
         <div style={{ marginTop: '16px' }}>
           <ProjectsList selectedClusters={selectedClusters} />
         </div>
       )}
-    </WizardStep>
+    </>
   )
 }

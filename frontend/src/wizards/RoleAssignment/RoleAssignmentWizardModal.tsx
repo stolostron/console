@@ -13,7 +13,7 @@ import { RoleSelectionStepContent } from './RoleSelectionStepContent'
 import { ClusterSetAccessLevel } from './Scope/AccessLevel/ClusterSetAccessLevel'
 import { WizSelect } from '@patternfly-labs/react-form-wizard/lib/src/inputs/WizSelect'
 import { ClusterList } from './Scope/Clusters/ClusterList'
-import { ClusterGranularityWizardStep } from './ClusterGranularityWizardStep'
+import { ClusterGranularityStepContent } from './ClusterGranularityWizardStep'
 import { ReviewStepContent } from './ReviewStepContent'
 import { IdentitiesList } from './Identities/IdentitiesList'
 import { UserKind, GroupKind } from '../../resources'
@@ -240,26 +240,30 @@ export const RoleAssignmentWizardModal = ({
       {(formData.clusterSetAccessLevel === undefined ||
         formData.clusterSetAccessLevel === 'Cluster set role assignment') && <ClusterSetAccessLevel />}
     </WizardStep>,
-    <ClusterGranularityWizardStep
+    <WizardStep
       key="cluster-set-cluster-granularity"
-      stepKey="cluster-set-cluster-granularity"
+      name={t('Define cluster granularity')}
       id="scope-cluster-set-cluster-granularity"
       isHidden={
         formData.scopeType !== 'Select cluster sets' || formData.clusterSetAccessLevel !== 'Cluster role assignment'
       }
-      description={t('Define cluster granularity options.')}
-      selectedClusters={[{ name: 'local-cluster' }]}
-      selectedClustersAccessLevel={formData.selectedClustersAccessLevel}
-    />,
-    <ClusterGranularityWizardStep
+    >
+      <ClusterGranularityStepContent
+        description={t('Define cluster granularity options.')}
+        selectedClusters={[{ name: 'local-cluster' }]}
+      />
+    </WizardStep>,
+    <WizardStep
       key="cluster-granularity"
-      stepKey="cluster-granularity"
+      name={t('Define cluster granularity')}
       id="scope-cluster-granularity"
       isHidden={formData.scopeType !== 'Select clusters'}
-      description={t('Define the level of access for the selected cluster(s).')}
-      selectedClusters={selectedClusters}
-      selectedClustersAccessLevel={formData.selectedClustersAccessLevel}
-    />,
+    >
+      <ClusterGranularityStepContent
+        description={t('Define the level of access for the selected cluster(s).')}
+        selectedClusters={selectedClusters}
+      />
+    </WizardStep>,
   ]
 
   return (
