@@ -169,7 +169,10 @@ export const RoleAssignmentWizardModal = ({
     }
   }, [formData.scopeType, formData.scope.kind])
 
-  const showIdentitiesStep = preselected?.roles && preselected.roles.length > 0 && !preselected?.subject
+  const showIdentitiesStep =
+    ((preselected?.roles && preselected.roles.length > 0) ||
+      (preselected?.clusterNames && preselected.clusterNames.length > 0)) &&
+    !preselected?.subject
 
   const hideRolesStep = preselected?.roles && preselected.roles.length > 0
 
@@ -186,7 +189,12 @@ export const RoleAssignmentWizardModal = ({
           : t('Create role assignment')
 
   const scopeSubSteps = [
-    <WizardStep key="scope-selection" name={t('Select scope')} id="scope-selection">
+    <WizardStep
+      key="scope-selection"
+      name={t('Select scope')}
+      id="scope-selection"
+      isHidden={!!(preselected?.clusterNames && preselected.clusterNames.length > 0)}
+    >
       <ScopeSelectionStepContent
         isDrawerExpanded={isDrawerExpanded}
         setIsDrawerExpanded={setIsDrawerExpanded}
@@ -347,7 +355,7 @@ export const RoleAssignmentWizardModal = ({
                   id="review"
                   footer={{ nextButtonText: t('Create'), onNext: handleSubmit }}
                 >
-                  <ReviewStepContent formData={formData} />
+                  <ReviewStepContent formData={formData} preselected={preselected} />
                 </WizardStep>
               </Wizard>
             </DataContext.Provider>

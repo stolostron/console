@@ -1,15 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { DescriptionList, DescriptionListGroup, DescriptionListDescription, Title } from '@patternfly/react-core'
 import { useTranslation } from '../../lib/acm-i18next'
-import { RoleAssignmentWizardFormData } from './types'
+import { RoleAssignmentWizardFormData, RoleAssignmentWizardModalProps } from './types'
 import { GranularityStepContent } from './GranularityStepContent'
 import { Divider } from '@patternfly/react-core'
 
 interface ReviewStepContentProps {
   formData: RoleAssignmentWizardFormData
+  preselected?: RoleAssignmentWizardModalProps['preselected']
 }
 
-export const ReviewStepContent = ({ formData }: ReviewStepContentProps) => {
+export const ReviewStepContent = ({ formData, preselected }: ReviewStepContentProps) => {
   const { t } = useTranslation()
 
   return (
@@ -60,15 +61,18 @@ export const ReviewStepContent = ({ formData }: ReviewStepContentProps) => {
                     <div style={{ marginTop: '8px' }}>
                       <div>
                         <strong>
-                          {formData.selectedClusters && formData.selectedClusters.length > 0
+                          {(formData.selectedClusters && formData.selectedClusters.length > 0) ||
+                          (preselected?.clusterNames && preselected.clusterNames.length > 0)
                             ? t('Clusters')
                             : t('Access level')}
                         </strong>{' '}
                       </div>
                       <div>
                         {formData.selectedClusters && formData.selectedClusters.length > 0
-                          ? formData.selectedClusters.map((c) => c.name).join(', ')
-                          : t('Full access to all clusters in selected cluster sets')}
+                          ? formData.selectedClusters.map((c) => c.metadata?.name || c.name || c).join(', ')
+                          : preselected?.clusterNames && preselected.clusterNames.length > 0
+                            ? preselected.clusterNames.join(', ')
+                            : t('Full access to all clusters in selected cluster sets')}
                       </div>
                     </div>
                     <div style={{ marginTop: '8px' }}>
@@ -88,8 +92,10 @@ export const ReviewStepContent = ({ formData }: ReviewStepContentProps) => {
                     <div>
                       <strong>{t('Clusters')}:</strong>{' '}
                       {formData.selectedClusters && formData.selectedClusters.length > 0
-                        ? formData.selectedClusters.map((c) => c.name).join(', ')
-                        : t('None selected')}
+                        ? formData.selectedClusters.map((c) => c.metadata?.name || c.name || c).join(', ')
+                        : preselected?.clusterNames && preselected.clusterNames.length > 0
+                          ? preselected.clusterNames.join(', ')
+                          : t('None selected')}
                     </div>
                     <div style={{ marginTop: '8px' }}>
                       <strong>{t('Projects')}:</strong>{' '}
