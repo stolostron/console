@@ -51,7 +51,14 @@ export async function getAppSetTopology(
 ): Promise<ExtendedTopology> {
   const links: TopologyLink[] = []
   const nodes: TopologyNode[] = []
-  const { name, namespace, appSetClusters = [], appSetApps = [], relatedPlacement } = application
+  const {
+    name,
+    namespace,
+    appSetClusters = [],
+    appSetApps = [],
+    appStatusByNameMap = {},
+    relatedPlacement,
+  } = application
   const allClusterNames = appSetClusters.map((cluster: AppSetCluster) => cluster.name)
   toolbarControl.setAllClusters?.(allClusterNames)
   const { activeTypes, activeClusters, activeApplications } = toolbarControl
@@ -77,6 +84,7 @@ export async function getAppSetTopology(
       clusterNames: allClusterNames,
       appSetApps,
       appSetClusters,
+      appStatusByNameMap,
     },
   })
 
@@ -127,7 +135,6 @@ export async function getAppSetTopology(
       specs: {
         isDesign: true,
         raw: placement,
-        isPairedInLayoutWithParent: true,
       },
       placement: relatedPlacement,
     })
@@ -151,7 +158,7 @@ export async function getAppSetTopology(
   ;(nodes[0] as any).isArgoCDPullModelTargetLocalCluster = isArgoCDPullModelTargetLocalCluster
 
   // Determine the parent node for clusters (placement if exists, otherwise ApplicationSet)
-  const clusterParentId = appId
+  const clusterParentId = placement ? placementId : appId
 
   // Extract source path from ApplicationSet template or generators
   const templateSourcePath = (application.app as any)?.spec?.template?.spec?.source?.path ?? ''
@@ -197,13 +204,10 @@ export async function getAppSetTopology(
     // we need to insert an application node above the resources
     const isApplicationFiltered =
       applicationNames.length > 0 && activeApplications && !activeApplications.includes(appName)
-    if (
-      applicationNames.length > 0 &&
-      !isApplicationFiltered &&
-      (!activeApplications || activeApplications?.length > 1)
-    ) {
+    if (applicationNames.length > 0 && !isApplicationFiltered) {
       // Has application name - create application node
       parentNodeId = `member--application--${clusterNames.join('-')}--${appName}`
+      const healthStatus = appStatusByNameMap[`${name}-${appName}`]?.health.status || 'Healthy'
       const appNode: TopologyNode = {
         name: appName,
         namespace,
@@ -213,6 +217,15 @@ export async function getAppSetTopology(
         specs: {
           isDesign: false,
           clustersNames: clusterNames,
+          raw: {
+            apiVersion: 'argoproj.io/v1alpha1',
+            kind: 'Application',
+            status: {
+              health: {
+                status: healthStatus,
+              },
+            },
+          },
           parent: {
             clusterId,
           },
@@ -233,7 +246,6 @@ export async function getAppSetTopology(
       // Process and create resource nodes under the cluster or application node
       processResources(resources, parentNodeId, clusterNames, hubClusterName, activeTypes ?? [], links, nodes)
     }
-    processResources(resources, parentNodeId, clusterNames, hubClusterName, activeTypes ?? [], links, nodes)
   })
 
   // Set all resource types in toolbar

@@ -11,6 +11,7 @@ const getLayoutModel = (elements: { nodes: any[]; links: any[] }): Model => {
     ySpacer: Y_SPACER,
     nodeWidth: NODE_WIDTH,
     nodeHeight: NODE_HEIGHT,
+    placeWith: { parentType: 'subscription', childType: 'placement' },
     sortRowsBy: ['type', 'name'],
   })
   const nodes: NodeModel[] = elements.nodes.map((d) => {

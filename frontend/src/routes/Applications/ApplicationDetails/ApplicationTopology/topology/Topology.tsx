@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useState, useRef } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import head from 'lodash/head'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import {
@@ -123,9 +123,22 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
     )
   })
 
+  const handleSurfaceClick = useCallback(() => {
+    setSelectedIds([])
+    setDrawerContent('Close', false, true, true, true, undefined, true)
+  }, [setDrawerContent])
+
   return (
     <TopologyView controlBar={<TopologyZoomBar />} contextToolbar={<TopologyToolbar {...topologyProps} />}>
-      <VisualizationSurface state={{ selectedIds }} />
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={handleSurfaceClick}
+        onKeyDown={() => {}}
+        style={{ width: '100%', height: '100%' }}
+      >
+        <VisualizationSurface state={{ selectedIds }} />
+      </div>
     </TopologyView>
   )
 }

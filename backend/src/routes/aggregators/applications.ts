@@ -128,6 +128,7 @@ export interface IUIData {
   appClusterStatuses?: ApplicationStatusMap[]
   appSetRelatedResources: unknown
   appSetApps: IResource[]
+  appStatusByNameMap: Record<string, { health: { status: string }; sync: { status: string } }>
 }
 
 export type ApplicationCache = {

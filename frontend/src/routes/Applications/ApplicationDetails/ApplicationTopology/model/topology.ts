@@ -188,7 +188,7 @@ export const processNodeData = (
   hasHelmReleases: HelmReleasesState,
   topology: Topology
 ): void => {
-  const { name, type } = node
+  const { name, namespace, type } = node
   const isDesign = node.specs?.isDesign ?? false
 
   // Skip certain node types when in design mode
@@ -222,7 +222,7 @@ export const processNodeData = (
       topoResourceMap[`${type}-${clusterName}`] = node
     } else {
       // Individual resources use type-name-cluster key
-      topoResourceMap[`${type}-${keyName}-${clusterName}`] = node
+      topoResourceMap[`${type}-${namespace}-${keyName}-${clusterName}`] = node
     }
 
     // Detect cluster grouping (comma-separated cluster names)

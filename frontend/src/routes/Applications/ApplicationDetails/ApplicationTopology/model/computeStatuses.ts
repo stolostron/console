@@ -304,6 +304,11 @@ export const getShapeTypeForSubscription = (node: TopologyNodeWithStatus): strin
  */
 export const getPulseStatusForArgoApp = (node: TopologyNodeWithStatus, isAppSet?: boolean): PulseColor => {
   const relatedApps: ArgoApplication[] = isAppSet ? safeGet<ArgoApplication[]>(node, 'specs.appSetApps', []) : []
+  const appStatusByNameMap = safeGet<Record<string, { health: { status: string }; sync: { status: string } }>>(
+    node,
+    'specs.appStatusByNameMap',
+    {}
+  )
   const isArgoCDPullModelTargetLocalCluster = safeGet(node, 'isArgoCDPullModelTargetLocalCluster')
 
   if (!isAppSet) {
@@ -340,8 +345,10 @@ export const getPulseStatusForArgoApp = (node: TopologyNodeWithStatus, isAppSet?
 
   // Categorize applications by health status
   relatedApps.forEach((app) => {
-    const relatedAppHealth = safeGet(app, 'status.health.status') || safeGet(app, 'status') || argoAppUnknownStatus
-    const relatedAppConditions = isAppSet ? safeGet(app, 'status.conditions', []) : []
+    const appStatus = app.metadata?.name ? appStatusByNameMap[app.metadata.name] : undefined
+    const relatedAppHealth = appStatus
+      ? appStatus.health.status
+      : safeGet(app, 'status.health.status') || safeGet(app, 'status') || argoAppUnknownStatus
 
     if (relatedAppHealth === argoAppHealthyStatus) {
       healthyCount++
@@ -354,10 +361,6 @@ export const getPulseStatusForArgoApp = (node: TopologyNodeWithStatus, isAppSet?
       missingUnknownProgressingSuspendedCount++
     } else if (relatedAppHealth === argoAppDegradedStatus) {
       degradedCount++
-    }
-
-    if (Array.isArray(relatedAppConditions) && relatedAppConditions.length > 0) {
-      appWithConditions++
     }
   })
 

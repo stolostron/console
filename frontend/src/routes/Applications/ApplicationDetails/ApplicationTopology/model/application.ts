@@ -173,6 +173,7 @@ export const getApplication = async (
 
     if (isAppSet) {
       ;(model as any).appSetApps = uidata.appSetApps
+      ;(model as any).appStatusByNameMap = uidata.appStatusByNameMap
       ;(model as any).appSetClusters = uidata.clusterList.reduce((list: any[], clusterName: string) => {
         const _cluster = (clusters ?? []).find((c) => c.name === clusterName)
         if (_cluster) {

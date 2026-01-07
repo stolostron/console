@@ -133,6 +133,7 @@ export interface ApplicationModel {
   clusterList?: string[]
   appSetApps?: AppSetApplication[]
   appSetClusters?: AppSetCluster[]
+  appStatusByNameMap?: Record<string, { health: { status: string }; sync: { status: string } }>
 }
 
 // Minimal channel kind used to associate subscriptions to channels

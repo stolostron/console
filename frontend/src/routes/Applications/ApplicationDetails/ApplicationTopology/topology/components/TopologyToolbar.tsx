@@ -112,6 +112,7 @@ const TopologyToolbar: FC<TopologyProps> = (topologyProps) => {
     } else {
       toolbarControl.setActiveApplications([...(toolbarControl.activeApplications || []), selection])
     }
+    setDrawerContent?.('Close', false, true, true, true, undefined, true)
   }
 
   const onClustersSelect = (selection: string) => {
@@ -122,6 +123,7 @@ const TopologyToolbar: FC<TopologyProps> = (topologyProps) => {
     } else {
       toolbarControl.setActiveClusters([...(toolbarControl.activeClusters || []), selection])
     }
+    setDrawerContent?.('Close', false, true, true, true, undefined, true)
   }
 
   const onTypesSelect = (selection: string) => {
@@ -132,6 +134,7 @@ const TopologyToolbar: FC<TopologyProps> = (topologyProps) => {
     } else {
       toolbarControl.setActiveTypes([...(toolbarControl.activeTypes || []), selection])
     }
+    setDrawerContent?.('Close', false, true, true, true, undefined, true)
   }
 
   const onDelete = (type: string, id: string) => {
@@ -146,6 +149,7 @@ const TopologyToolbar: FC<TopologyProps> = (topologyProps) => {
       toolbarControl.setActiveApplications(undefined)
       toolbarControl.setActiveTypes(undefined)
     }
+    setDrawerContent?.('Close', false, true, true, true, undefined, true)
   }
 
   const onDeleteGroup = (type: string) => {
@@ -156,6 +160,7 @@ const TopologyToolbar: FC<TopologyProps> = (topologyProps) => {
     } else if (type === 'Types') {
       toolbarControl.setActiveTypes(undefined)
     }
+    setDrawerContent?.('Close', false, true, true, true, undefined, true)
   }
 
   const onClustersToggle = () => {
