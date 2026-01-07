@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Button } from '@patternfly/react-core'
-import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
+import { Button, Modal, ModalBody, ModalFooter, ModalHeader, ModalVariant } from '@patternfly/react-core'
 import { useState } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { CodeBlock } from './CodeBlock'
@@ -27,20 +26,21 @@ export function DiffModal({
           </Button>
         </>
       )}
-      <Modal
-        bodyAriaLabel="policy difference modal"
-        tabIndex={0}
-        variant={ModalVariant.large}
-        title={`${t('Difference for the')} ${kind} ${namespace ? namespace + '/' : ''}${name}`}
-        isOpen={isModalOpen}
-        onClose={handleModalToggle}
-        actions={[
+      <Modal variant={ModalVariant.large} isOpen={isModalOpen} onClose={handleModalToggle}>
+        <ModalHeader
+          title={t('Difference for the {{kind}} {{resource}}', {
+            kind,
+            resource: `${namespace ? namespace + '/' : ''}${name}`,
+          })}
+        />
+        <ModalBody tabIndex={0} aria-label={t('scrollable policy differences')}>
+          <CodeBlock>{diff}</CodeBlock>
+        </ModalBody>
+        <ModalFooter>
           <Button key="Cancel" variant="primary" onClick={handleModalToggle}>
             {t('Close')}
-          </Button>,
-        ]}
-      >
-        <CodeBlock>{diff}</CodeBlock>
+          </Button>
+        </ModalFooter>
       </Modal>
     </>
   )
