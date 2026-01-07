@@ -21,6 +21,8 @@ import {
   reverseStorageClass,
   updateDefaultPodNetwork,
 } from './ControlDataHelpers'
+import { getControlByID } from '../../../../../../lib/temptifly-utils'
+import { getChannelFromReleaseImage } from '../../utils/utils'
 import AvailabilityOptionsForm, { summary } from '../components/AvailabilityOptionsForm'
 
 const operatorAlert = (localCluster, t) => {
@@ -62,6 +64,18 @@ const filterOCPImages = (loadOCPImages, hypershiftSupportedVersions) => {
         )
       })
     },
+  }
+}
+
+// Custom onImageChange that also computes channel from release image
+const onImageChangeWithChannel = (control, controlData) => {
+  // Call the original onImageChange for network type handling
+  onImageChange(control, controlData)
+
+  // Compute and set the channel based on the selected release image
+  const channelControl = getControlByID(controlData, 'channel')
+  if (channelControl && control.active) {
+    channelControl.active = getChannelFromReleaseImage(control.active, 'fast')
   }
 }
 
@@ -166,8 +180,13 @@ export const getControlDataKubeVirt = (
         notification: t('creation.ocp.cluster.must.select.ocp.image'),
         required: true,
       },
-      onSelect: onImageChange,
+      onSelect: onImageChangeWithChannel,
       reverse: reverseImageSet,
+    },
+    {
+      id: 'channel',
+      type: 'hidden',
+      active: '',
     },
     {
       name: t('Etcd storage class'),

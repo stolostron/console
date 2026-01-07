@@ -168,6 +168,11 @@ exports[`Cluster creation control data for KubeVirt generates correctly 1`] = `
     },
   },
   {
+    "active": "",
+    "id": "channel",
+    "type": "hidden",
+  },
+  {
     "fetchAvailable": {
       "emptyDesc": "No etcd storage classes. Enter an etcd storage classes name.",
       "loadingDesc": "Loading etcd storage classes...",
@@ -629,6 +634,11 @@ exports[`Cluster creation control data for KubeVirt generates correctly for MCE 
       "notification": "Select a release image",
       "required": true,
     },
+  },
+  {
+    "active": "",
+    "id": "channel",
+    "type": "hidden",
   },
   {
     "fetchAvailable": {
