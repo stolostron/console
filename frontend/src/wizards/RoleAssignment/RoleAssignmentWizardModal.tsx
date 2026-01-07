@@ -19,6 +19,8 @@ import { IdentitiesList } from './Identities/IdentitiesList'
 import { UserKind, GroupKind } from '../../resources'
 import { useEffect } from 'react'
 import { isType } from '../../lib/is-type'
+import { Link } from 'react-router-dom-v5-compat'
+import { DOC_LINKS } from '../../lib/doc-util'
 
 const getInitialFormData = (): RoleAssignmentWizardFormData => ({
   subject: { kind: UserKind },
@@ -337,9 +339,9 @@ export const RoleAssignmentWizardModal = ({
                             'A role assignment specifies a distinct action users or groups can perform when associated with a particular role.'
                           )}
                         </p>
-                        <a href="https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_management_for_kubernetes/2.0/html/about/welcome-to-red-hat-advanced-cluster-management-for-kubernetes">
-                          Learn more about user management, including an example YAML file.
-                        </a>
+                        <Link to={DOC_LINKS.ACM_WELCOME} target="_blank">
+                          {t('Learn more about user management, including an example YAML file.')}
+                        </Link>
                       </div>
                     }
                     descriptionId="role-assignment-wizard-description"
