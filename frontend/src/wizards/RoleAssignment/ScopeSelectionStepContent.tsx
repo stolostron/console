@@ -48,48 +48,53 @@ export const ScopeSelectionStepContent = ({
         required
         options={[
           {
-            label: 'Global access',
+            label: t('Global access'),
             value: 'Global access',
-            description: 'Grant access to all resources across all clusters registred in ACM',
+            description: t('Grant access to all resources across all clusters registred in ACM'),
           },
           {
-            label: 'Select cluster sets',
+            label: t('Select cluster sets'),
             value: 'Select cluster sets',
-            description:
-              'Grant access to 1 or more cluster sets. Optionally, narrow this access to specific clusters and projects',
+            description: t(
+              'Grant access to 1 or more cluster sets. Optionally, narrow this access to specific clusters and projects'
+            ),
           },
           {
-            label: 'Select clusters',
+            label: t('Select clusters'),
             value: 'Select clusters',
-            description: 'Grant access to 1 or more clusters. Optionally, narrow this access to projects',
+            description: t('Grant access to 1 or more clusters. Optionally, narrow this access to projects'),
           },
         ]}
       />
-      {selectedScope === 'Global access' && (
-        <div style={{ marginTop: '16px' }}>
-          <GlobalScopeSelection />
-        </div>
-      )}
-      {selectedScope === 'Select cluster sets' && (
-        <div style={{ marginTop: '16px' }}>
-          <ClusterSetsList
-            selectedClusterSets={selectedClusterSets}
-            onSelectClusterSet={(clusterSets) => {
-              onSelectClusterSets?.(clusterSets)
-            }}
-          />
-        </div>
-      )}
-      {selectedScope === 'Select clusters' && (
-        <div style={{ marginTop: '16px' }}>
-          <ClusterList
-            selectedClusters={selectedClusters}
-            onSelectCluster={(clusters) => {
-              onSelectClusters?.(clusters)
-            }}
-          />
-        </div>
-      )}
+
+      <div style={{ marginTop: '16px' }}>
+        {(() => {
+          switch (selectedScope) {
+            case 'Global access':
+              return <GlobalScopeSelection />
+            case 'Select cluster sets':
+              return (
+                <ClusterSetsList
+                  selectedClusterSets={selectedClusterSets}
+                  onSelectClusterSet={(clusterSets) => {
+                    onSelectClusterSets?.(clusterSets)
+                  }}
+                />
+              )
+            case 'Select clusters':
+              return (
+                <ClusterList
+                  selectedClusters={selectedClusters}
+                  onSelectCluster={(clusters) => {
+                    onSelectClusters?.(clusters)
+                  }}
+                />
+              )
+            default:
+              return null
+          }
+        })()}
+      </div>
     </div>
   )
 }
