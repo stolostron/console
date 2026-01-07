@@ -81,6 +81,15 @@ export const addClusters = (
     clusterId = 'member--clusters--'
   }
   const topoClusterNode = topology ? topology.nodes.find((node) => node.id === 'member--clusters') : undefined
+  // filter clusters to only include those in the clusterNames array provided by toolbar
+  const clusters = deepClone(
+    managedClusters.filter(
+      (cluster) =>
+        !clusterNames ||
+        clusterNames.length === 0 ||
+        clusterNames.includes(cluster?.name ?? (cluster?.metadata as { name?: string })?.name ?? '')
+    )
+  )
   nodes.push({
     name: clusterNames.length === 1 ? clusterNames[0] : '',
     namespace: '',
@@ -92,11 +101,7 @@ export const addClusters = (
       subscription,
       resourceCount: clusterNames.length,
       clustersNames: clusterNames,
-      clusters: deepClone(
-        managedClusters.filter((cluster) =>
-          clusterNames.includes(cluster?.name ?? (cluster?.metadata as { name?: string })?.name ?? '')
-        )
-      ),
+      clusters,
       sortedClusterNames,
       appClusters: topoClusterNode ? (topoClusterNode as TopologyNode).specs.appClusters : undefined,
       targetNamespaces: topoClusterNode ? (topoClusterNode as TopologyNode).specs.targetNamespaces : undefined,
