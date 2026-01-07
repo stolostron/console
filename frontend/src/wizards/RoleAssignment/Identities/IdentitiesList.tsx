@@ -1,23 +1,43 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Content, PageSection, Tab, Tabs, TabTitleText, Title } from '@patternfly/react-core'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { Group, User } from '../../../resources/rbac'
 import { GroupsTable } from '../../../routes/UserManagement/Identities/Groups/GroupsTable'
 import { UsersTable } from '../../../routes/UserManagement/Identities/Users/UsersTable'
 import { CreatePreAuthorizedUser } from './CreatePreAuthorizedUser'
+import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 
 interface IdentitiesListProps {
   onUserSelect?: (user: User) => void
   onGroupSelect?: (group: Group) => void
+  initialSelectedIdentity?: { kind: 'User' | 'Group'; name: string }
 }
 
-export function IdentitiesList({ onUserSelect, onGroupSelect }: IdentitiesListProps = {}) {
+export function IdentitiesList({ onUserSelect, onGroupSelect, initialSelectedIdentity }: IdentitiesListProps = {}) {
   const { t } = useTranslation()
-  const [activeTabKey, setActiveTabKey] = useState<string | number>('users')
+  const { usersState, groupsState } = useSharedAtoms()
+  const users = useRecoilValue(usersState)
+  const groups = useRecoilValue(groupsState)
+
+  const [activeTabKey, setActiveTabKey] = useState<string | number>(
+    initialSelectedIdentity?.kind === 'Group' ? 'groups' : 'users'
+  )
   const [showCreatePreAuthorized, setShowCreatePreAuthorized] = useState(false)
-  const [selectedUser, setSelectedUser] = useState<User>()
-  const [selectedGroup, setSelectedGroup] = useState<Group>()
+  const [selectedUser, setSelectedUser] = useState<User | undefined>()
+  const [selectedGroup, setSelectedGroup] = useState<Group | undefined>()
+
+  useEffect(() => {
+    if (!initialSelectedIdentity) return
+
+    if (initialSelectedIdentity.kind === 'User' && users && !selectedUser) {
+      const user = users.find((u) => u.metadata.name === initialSelectedIdentity.name)
+      if (user) setSelectedUser(user)
+    } else if (initialSelectedIdentity.kind === 'Group' && groups && !selectedGroup) {
+      const group = groups.find((g) => g.metadata.name === initialSelectedIdentity.name)
+      if (group) setSelectedGroup(group)
+    }
+  }, [initialSelectedIdentity, users, groups, selectedUser, selectedGroup])
 
   const handleTabClick = (_event: React.MouseEvent<HTMLElement, MouseEvent>, tabIndex: string | number) => {
     setActiveTabKey(tabIndex)

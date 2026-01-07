@@ -310,7 +310,15 @@ export const RoleAssignmentWizardModal = ({
                 }
               >
                 {showIdentitiesStep && (
-                  <WizardStep key="identities" name={t('Identities')} id="identities">
+                  <WizardStep
+                    key="identities"
+                    name={t('Identities')}
+                    id="identities"
+                    footer={{
+                      isNextDisabled:
+                        !formData.subject || (!formData.subject.user?.length && !formData.subject.group?.length),
+                    }}
+                  >
                     <IdentitiesList
                       onUserSelect={(user) => {
                         handleSubjectKindChange('User')
@@ -320,6 +328,13 @@ export const RoleAssignmentWizardModal = ({
                         handleSubjectKindChange('Group')
                         handleGroupChange(group.metadata.name ? [group.metadata.name] : [])
                       }}
+                      initialSelectedIdentity={
+                        formData.subject?.kind === 'User' && formData.subject.user?.[0]
+                          ? { kind: 'User', name: formData.subject.user[0] }
+                          : formData.subject?.kind === 'Group' && formData.subject.group?.[0]
+                            ? { kind: 'Group', name: formData.subject.group[0] }
+                            : undefined
+                      }
                     />
                   </WizardStep>
                 )}

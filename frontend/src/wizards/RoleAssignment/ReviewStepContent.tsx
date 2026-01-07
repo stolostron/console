@@ -13,6 +13,18 @@ interface ReviewStepContentProps {
 export const ReviewStepContent = ({ formData, preselected }: ReviewStepContentProps) => {
   const { t } = useTranslation()
 
+  const getClusterNames = () => {
+    if (formData.selectedClusters && formData.selectedClusters.length > 0) {
+      return formData.selectedClusters.map((c) => c.metadata?.name || c.name || c).join(', ')
+    }
+    if (preselected?.clusterNames && preselected.clusterNames.length > 0) {
+      return preselected.clusterNames.join(', ')
+    }
+    return null
+  }
+
+  const clusterNames = getClusterNames()
+
   return (
     <div>
       <GranularityStepContent title={t('Review')} titleSize="lg" description={''} />
@@ -60,20 +72,9 @@ export const ReviewStepContent = ({ formData, preselected }: ReviewStepContentPr
                     </div>
                     <div style={{ marginTop: '8px' }}>
                       <div>
-                        <strong>
-                          {(formData.selectedClusters && formData.selectedClusters.length > 0) ||
-                          (preselected?.clusterNames && preselected.clusterNames.length > 0)
-                            ? t('Clusters')
-                            : t('Access level')}
-                        </strong>{' '}
+                        <strong>{clusterNames ? t('Clusters') : t('Access level')}</strong>{' '}
                       </div>
-                      <div>
-                        {formData.selectedClusters && formData.selectedClusters.length > 0
-                          ? formData.selectedClusters.map((c) => c.metadata?.name || c.name || c).join(', ')
-                          : preselected?.clusterNames && preselected.clusterNames.length > 0
-                            ? preselected.clusterNames.join(', ')
-                            : t('Full access to all clusters in selected cluster sets')}
-                      </div>
+                      <div>{clusterNames || t('Full access to all clusters in selected cluster sets')}</div>
                     </div>
                     <div style={{ marginTop: '8px' }}>
                       <div>
@@ -90,12 +91,7 @@ export const ReviewStepContent = ({ formData, preselected }: ReviewStepContentPr
                 {formData.scopeType === 'Select clusters' && (
                   <>
                     <div>
-                      <strong>{t('Clusters')}:</strong>{' '}
-                      {formData.selectedClusters && formData.selectedClusters.length > 0
-                        ? formData.selectedClusters.map((c) => c.metadata?.name || c.name || c).join(', ')
-                        : preselected?.clusterNames && preselected.clusterNames.length > 0
-                          ? preselected.clusterNames.join(', ')
-                          : t('None selected')}
+                      <strong>{t('Clusters')}:</strong> {clusterNames || t('None selected')}
                     </div>
                     <div style={{ marginTop: '8px' }}>
                       <strong>{t('Projects')}:</strong>{' '}
