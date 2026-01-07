@@ -237,7 +237,8 @@ export const RoleAssignmentWizardModal = ({
           />
         </div>
       )}
-      {formData.clusterSetAccessLevel === 'Cluster set role assignment' && <ClusterSetAccessLevel />}
+      {(formData.clusterSetAccessLevel === undefined ||
+        formData.clusterSetAccessLevel === 'Cluster set role assignment') && <ClusterSetAccessLevel />}
     </WizardStep>,
     <ClusterGranularityWizardStep
       key="cluster-set-cluster-granularity"
