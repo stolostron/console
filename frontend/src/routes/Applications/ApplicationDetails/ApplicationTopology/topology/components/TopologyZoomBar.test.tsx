@@ -107,7 +107,7 @@ describe('TopologyZoomBar tests', () => {
     render(<TopologyZoomBar />)
     const fitToScreenCallback = capturedOptions.fitToScreenCallback as () => void
     fitToScreenCallback()
-    expect(mockFit).toHaveBeenCalledWith(80)
+    expect(mockFit).toHaveBeenCalledWith(90)
   })
 
   test('reset view callback resets graph and calls layout', () => {
