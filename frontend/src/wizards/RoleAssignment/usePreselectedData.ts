@@ -1,8 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { UserKind, GroupKind } from '../../resources'
 import { RoleAssignmentWizardFormData } from './types'
 import { RoleAssignmentPreselected } from '../../routes/UserManagement/RoleAssignments/model/role-assignment-preselected'
+import { useRoleAssignmentData } from '../../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHook'
 
 interface UsePreselectedDataProps {
   isOpen: boolean
@@ -17,6 +18,13 @@ export const usePreselectedData = ({
   setFormData,
   setSelectedClusters,
 }: UsePreselectedDataProps) => {
+  const { roleAssignmentData } = useRoleAssignmentData()
+
+  const allClusters = useMemo(
+    () => roleAssignmentData.clusterSets?.flatMap((cs) => cs.clusters || []) || [],
+    [roleAssignmentData.clusterSets]
+  )
+
   useEffect(() => {
     if (!isOpen) return
 
@@ -42,16 +50,18 @@ export const usePreselectedData = ({
       }
 
       if (preselected?.clusterNames && preselected.clusterNames.length > 0) {
+        const clusterObjects = allClusters.filter((cluster) => preselected.clusterNames?.includes(cluster.name))
+
         updates.scopeType = 'Select clusters'
         updates.scope = {
           kind: 'specific',
           clusterNames: preselected.clusterNames,
         }
         updates.selectedClusters = preselected.clusterNames
-        setSelectedClusters(preselected.clusterNames)
+        setSelectedClusters(clusterObjects)
       }
 
       return { ...prev, ...updates }
     })
-  }, [preselected, isOpen, setFormData, setSelectedClusters])
+  }, [preselected, isOpen, setFormData, setSelectedClusters, allClusters])
 }
