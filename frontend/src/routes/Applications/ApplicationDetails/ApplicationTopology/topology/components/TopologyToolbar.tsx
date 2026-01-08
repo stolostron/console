@@ -185,7 +185,7 @@ const TopologyToolbar: FC<TopologyProps> = (topologyProps) => {
     <SelectList>
       {(allItems?.length ?? 0) > 1 && (
         <SelectOption hasCheckbox key={`${prefix}-all`} value={allValue} isSelected={!activeItems?.length}>
-          {t(allLabel)}
+          {allLabel}
         </SelectOption>
       )}
       {allItems?.map((item) => (
@@ -201,21 +201,21 @@ const TopologyToolbar: FC<TopologyProps> = (topologyProps) => {
     toolbarControl.activeClusters,
     'cluster',
     'all-clusters',
-    'All clusters'
+    t('All clusters')
   )
   const applicationsMenuItems = createMenuItems(
     toolbarControl.allApplications,
     toolbarControl.activeApplications,
     'application',
     'all-applications',
-    'All applications'
+    t('All applications')
   )
   const typesMenuItems = createMenuItems(
     toolbarControl.allTypes,
     toolbarControl.activeTypes,
     'type',
     'all-types',
-    'All types'
+    t('All types')
   )
 
   const toggleGroupItems = (
