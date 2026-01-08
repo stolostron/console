@@ -222,8 +222,8 @@ const TopologyToolbar: FC<TopologyProps> = (topologyProps) => {
     <>
       <ToolbarGroup variant="filter-group">
         <ToolbarFilter
-          chips={toolbarControl.activeClusters}
-          deleteChip={(category, chip) => onDelete(category as string, chip as string)}
+          labels={toolbarControl.activeClusters?.map((cluster) => ({ key: cluster, node: cluster }))}
+          deleteLabel={(category, label) => onDelete(category as string, label as string)}
           categoryName="Clusters"
         >
           <Flex alignItems={{ default: 'alignItemsCenter' }} spaceItems={{ default: 'spaceItemsSm' }}>
@@ -264,9 +264,9 @@ const TopologyToolbar: FC<TopologyProps> = (topologyProps) => {
           </Flex>
         </ToolbarFilter>
         <ToolbarFilter
-          chips={toolbarControl.activeApplications}
-          deleteChip={(category, chip) => onDelete(category as string, chip as string)}
-          deleteChipGroup={(category) => onDeleteGroup(category as string)}
+          labels={toolbarControl.activeApplications?.map((application) => ({ key: application, node: application }))}
+          deleteLabel={(category, label) => onDelete(category as string, label as string)}
+          deleteLabelGroup={(category) => onDeleteGroup(category as string)}
           categoryName="Applications"
         >
           <Flex alignItems={{ default: 'alignItemsCenter' }} spaceItems={{ default: 'spaceItemsSm' }}>
@@ -307,9 +307,9 @@ const TopologyToolbar: FC<TopologyProps> = (topologyProps) => {
           </Flex>
         </ToolbarFilter>
         <ToolbarFilter
-          chips={toolbarControl.activeTypes}
-          deleteChip={(category, chip) => onDelete(category as string, chip as string)}
-          deleteChipGroup={(category) => onDeleteGroup(category as string)}
+          labels={toolbarControl.activeTypes?.map((type) => ({ key: type, node: type }))}
+          deleteLabel={(category, label) => onDelete(category as string, label as string)}
+          deleteLabelGroup={(category) => onDeleteGroup(category as string)}
           categoryName="Types"
         >
           <Flex alignItems={{ default: 'alignItemsCenter' }} spaceItems={{ default: 'spaceItemsSm' }}>

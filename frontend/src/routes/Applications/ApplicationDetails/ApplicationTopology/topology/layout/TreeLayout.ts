@@ -86,7 +86,7 @@ class TreeLayout extends ColaLayout {
       node.setFixed(true)
     })
 
-    graph.fit(160)
+    graph.fit(90)
   }
 
   protected startLayout(graph: Graph, initialRun: boolean, addingNodes: boolean): void {

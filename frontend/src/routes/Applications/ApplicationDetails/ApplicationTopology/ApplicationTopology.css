@@ -1,3 +1,22 @@
+.pf-v6-c-page__main-container {
+  height: 100%;
+}
+
+.pf-v6-c-drawer__body {
+  display: flex;
+  flex-direction: column;
+}
+
+.pf-topology-control-bar {
+  left: 10px;
+  bottom: 10px;
+}
+
+.pf-v6-c-toolbar {
+  padding: 5px 0 0 5px;
+  row-gap: 5px;
+}
+
 .how-to-read-text {
   font-weight: bold;
   color: #06c;

@@ -27,7 +27,6 @@ import { ArgoAppDetailsContainerData, ClusterDetailsContainerData } from '../App
 import TopologyZoomBar from './components/TopologyZoomBar'
 import TopologyToolbar from './components/TopologyToolbar'
 
-import './css/topology-components.css'
 import './css/topology-view.css'
 import { TFunction } from 'react-i18next'
 
@@ -146,15 +145,18 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
 export const Topology = (props: TopologyProps) => {
   const controllerRef = useRef<Controller>()
   let controller = controllerRef.current
-  const nodeIds = props.elements.nodes.map((node) => node.id).join(',')
+  const nodeIds = props.elements.nodes
+    .sort((a, b) => a.id.localeCompare(b.id))
+    .map((node) => `${node.id}-${node.specs.pulse}`)
+    .join(',')
   const currentNodeIds = useRef<string>()
   if (!controller || currentNodeIds.current !== nodeIds) {
     controller = controllerRef.current = new Visualization()
     controller.registerLayoutFactory(layoutFactory)
     controller.registerComponentFactory(componentFactory)
+    controller.fromModel(getLayoutModel(props.elements))
     currentNodeIds.current = nodeIds
   }
-  controller.fromModel(getLayoutModel(props.elements))
 
   return (
     <VisualizationProvider controller={controller}>
