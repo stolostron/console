@@ -1,16 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-  getTopology,
-  getDiagramElements,
-  processNodeData,
-  evaluateSingleAnd,
-  getTopologyElements,
-} from './topology'
+import { getTopology, getDiagramElements, processNodeData, evaluateSingleAnd, getTopologyElements } from './topology'
 import type {
   Topology,
   TopologyNode,
-  TopologyLink,
   TopologyResourceMap,
   ClusterGroupingState,
   HelmReleasesState,
@@ -140,14 +133,7 @@ describe('topology', () => {
 
   describe('getTopology', () => {
     it('should return undefined when application is null', async () => {
-      const result = await getTopology(
-        mockToolbarControl,
-        null,
-        mockManagedClusters,
-        'local-cluster',
-        {},
-        mockArgoData
-      )
+      const result = await getTopology(mockToolbarControl, null, mockManagedClusters, 'local-cluster', {}, mockArgoData)
 
       expect(result).toBeUndefined()
     })
