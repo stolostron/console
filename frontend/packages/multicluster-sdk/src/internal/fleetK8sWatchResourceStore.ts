@@ -18,8 +18,18 @@ const CACHE_TTL = 30 * 1000 // 30 seconds
 const CACHE_REMOVE_GRACE = 10 * 1000 // 10 seconds; wait a bit longer than TTL to remove cache entry so it is not removed between retrieval of initial value and start of watching
 
 export const isCacheEntryValid = (entry: CacheEntry) => {
-  return !entry.result?.loadError && (!!entry.socket || Date.now() - entry.timestamp < CACHE_TTL)
+  return !entry.result?.loadError && (!!entry.socket || isCacheEntryFresh(entry))
 }
+
+export const isCacheEntryFresh = (entry: CacheEntry) => {
+  return getCacheEntryAge(entry) < CACHE_TTL
+}
+
+export const getCacheEntryAge = (entry: CacheEntry) => {
+  return Date.now() - entry.timestamp
+}
+
+export const getSocketMonitoringInterval = () => CACHE_TTL
 
 export type FleetK8sWatchResourceStore = {
   // Cache
