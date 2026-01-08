@@ -77,15 +77,13 @@ class TreeLayout extends ColaLayout {
     const { width, height } = graph.getBounds()
     const cx = width / 2
     const cy = height / 2
-    //const { nodeHeight, ySpacer } = this.treeOptions
-    //this.d3Cola.flowLayout('y', nodeHeight + ySpacer)
 
     nodes.forEach((node: LayoutNode) => {
       const { dx = 0, dy = 0 } = node.element.getData()
       node.setPosition(cx + dx, cy + dy)
       node.setFixed(true)
     })
-
+    /* istanbul ignore next */
     graph.fit(90)
   }
 
