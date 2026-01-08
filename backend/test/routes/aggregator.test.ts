@@ -216,6 +216,7 @@ const uidata = {
       status: {},
     },
   ],
+  appStatusByNameMap: {},
 }
 
 const responseNoFilter = {

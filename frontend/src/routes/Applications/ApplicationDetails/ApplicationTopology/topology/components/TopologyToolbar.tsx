@@ -224,6 +224,7 @@ const TopologyToolbar: FC<TopologyProps> = (topologyProps) => {
         <ToolbarFilter
           labels={toolbarControl.activeClusters?.map((cluster) => ({ key: cluster, node: cluster }))}
           deleteLabel={(category, label) => onDelete(category as string, label as string)}
+          deleteLabelGroup={(category) => onDeleteGroup(category as string)}
           categoryName="Clusters"
         >
           <Flex alignItems={{ default: 'alignItemsCenter' }} spaceItems={{ default: 'spaceItemsSm' }}>

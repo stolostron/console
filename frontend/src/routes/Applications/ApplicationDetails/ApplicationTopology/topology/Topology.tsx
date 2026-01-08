@@ -133,6 +133,10 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
         role="button"
         tabIndex={0}
         onClick={handleSurfaceClick}
+        onDoubleClickCapture={(e) => {
+          e.stopPropagation()
+          e.preventDefault()
+        }}
         onKeyDown={() => {}}
         style={{ width: '100%', height: '100%' }}
       >
