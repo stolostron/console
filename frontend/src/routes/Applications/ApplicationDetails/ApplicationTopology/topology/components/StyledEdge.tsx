@@ -53,9 +53,18 @@ const StyledEdge: React.FunctionComponent<EdgeProps> = ({
   const startPoint = element.getStartPoint()
   const endPoint = element.getEndPoint()
   const bendpoints = element.getBendpoints()
-  const d = `M${startPoint.x} ${startPoint.y} ${bendpoints.map((b: Point) => `L${b.x} ${b.y} `).join('')}L${
-    endPoint.x
-  } ${endPoint.y}`
+
+  // Create curved path segments using quadratic Bezier curves that arc upward
+  const curveOffset = 15 // pixels to curve upward (negative Y direction)
+  const allPoints = [startPoint, ...bendpoints, endPoint]
+  let d = `M${startPoint.x} ${startPoint.y}`
+  for (let i = 0; i < allPoints.length - 1; i++) {
+    const from = allPoints[i]
+    const to = allPoints[i + 1]
+    const midX = (from.x + to.x) / 2
+    const midY = (from.y + to.y) / 2 - curveOffset
+    d += ` Q${midX} ${midY} ${to.x} ${to.y}`
+  }
 
   return (
     <>
