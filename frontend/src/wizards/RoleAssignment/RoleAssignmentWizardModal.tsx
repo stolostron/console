@@ -98,9 +98,6 @@ export const RoleAssignmentWizardModal = ({
   }, [])
 
   const handleClose = useCallback(() => {
-    setFormData(getInitialFormData())
-    setSelectedClusterSets([])
-    setSelectedClusters([])
     setIsDrawerExpanded(false)
     onClose()
   }, [onClose])
@@ -112,6 +109,14 @@ export const RoleAssignmentWizardModal = ({
       handleClose()
     }
   }
+
+  useEffect(() => {
+    if (isOpen && !isEditing) {
+      setFormData(getInitialFormData())
+      setSelectedClusterSets([])
+      setSelectedClusters([])
+    }
+  }, [isOpen, isEditing])
 
   useEffect(() => {
     if (!isOpen) return
