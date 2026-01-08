@@ -184,7 +184,9 @@ export const getAppSetArgoCluster = (search: string, clusters: ManagedCluster[])
 
 // Extract unique resource kinds from resources, sorted with Deployment/ReplicaSet/Pod at end
 export const getResourceTypes = (resources: Array<Record<string, unknown>>): string[] => {
-  const types = Array.from(new Set(resources.map((resource) => resource.kind as string))).sort()
+  const types = Array.from(new Set(resources.map((resource) => resource.kind as string))).sort((a, b) =>
+    a.localeCompare(b)
+  )
   if (types.includes('Deployment')) {
     const priority = ['Deployment', 'ReplicaSet', 'Pod']
     return [...priority, ...types.filter((t) => !priority.includes(t))]
