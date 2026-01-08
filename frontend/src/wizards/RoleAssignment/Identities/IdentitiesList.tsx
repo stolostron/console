@@ -1,12 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Content, PageSection, Tab, Tabs, TabTitleText, Title } from '@patternfly/react-core'
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { Group, User } from '../../../resources/rbac'
 import { GroupsTable } from '../../../routes/UserManagement/Identities/Groups/GroupsTable'
 import { UsersTable } from '../../../routes/UserManagement/Identities/Users/UsersTable'
-import { CreatePreAuthorizedUser } from './CreatePreAuthorizedUser'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { CreatePreAuthorizedUser } from './CreatePreAuthorizedUser'
 
 interface IdentitiesListProps {
   onUserSelect?: (user: User) => void
@@ -91,15 +91,23 @@ export function IdentitiesList({ onUserSelect, onGroupSelect, initialSelectedIde
 
       <Tabs activeKey={activeTabKey} onSelect={handleTabClick} aria-label={t('Identity selection tabs')}>
         <Tab eventKey="users" title={<TabTitleText>{t('Users')}</TabTitleText>} aria-label={t('Users tab')}>
-          {showCreatePreAuthorized ? (
-            <CreatePreAuthorizedUser onCancel={handleCancelPreAuthorized} onSubmit={handlePreAuthorizedSubmit} />
-          ) : (
-            <UsersTable areLinksDisplayed={false} selectedUser={selectedUser} setSelectedUser={handleOnUserSelect} />
-          )}
+          <div style={{ marginTop: 'var(--pf-t--global--spacer--md)' }}>
+            {showCreatePreAuthorized ? (
+              <CreatePreAuthorizedUser onCancel={handleCancelPreAuthorized} onSubmit={handlePreAuthorizedSubmit} />
+            ) : (
+              <UsersTable areLinksDisplayed={false} selectedUser={selectedUser} setSelectedUser={handleOnUserSelect} />
+            )}
+          </div>
         </Tab>
 
         <Tab eventKey="groups" title={<TabTitleText>{t('Groups')}</TabTitleText>} aria-label={t('Groups tab')}>
-          <GroupsTable areLinksDisplayed={false} selectedGroup={selectedGroup} setSelectedGroup={handleOnGroupSelect} />
+          <div style={{ marginTop: 'var(--pf-t--global--spacer--md)' }}>
+            <GroupsTable
+              areLinksDisplayed={false}
+              selectedGroup={selectedGroup}
+              setSelectedGroup={handleOnGroupSelect}
+            />
+          </div>
         </Tab>
       </Tabs>
     </PageSection>
