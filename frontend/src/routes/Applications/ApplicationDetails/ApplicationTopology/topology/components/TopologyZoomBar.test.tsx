@@ -103,11 +103,11 @@ describe('TopologyZoomBar tests', () => {
     expect(mockScaleBy).toHaveBeenCalledWith(0.75)
   })
 
-  test('fit to screen callback calls fit with padding of 80', () => {
+  test('fit to screen callback calls fit with padding of 90', () => {
     render(<TopologyZoomBar />)
     const fitToScreenCallback = capturedOptions.fitToScreenCallback as () => void
     fitToScreenCallback()
-    expect(mockFit).toHaveBeenCalledWith(80)
+    expect(mockFit).toHaveBeenCalledWith(90)
   })
 
   test('reset view callback resets graph and calls layout', () => {
