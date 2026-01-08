@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { Tooltip } from '@patternfly/react-core'
 import { render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
-import { AcmLaunchLink } from './AcmLaunchLink'
-import { Tooltip } from '@patternfly/react-core'
 import RedHatIcon from '../AcmIcons/RedHatIcon'
+import { AcmLaunchLink } from './AcmLaunchLink'
 
 describe('AcmLaunchLink', () => {
   test('renders a link when only one link is provided', async () => {
@@ -32,7 +32,6 @@ describe('AcmLaunchLink', () => {
     )
     expect(queryByTestId('addon-launch-links')).toBeNull()
     expect(queryByTestId('grafana')).toBeInTheDocument()
-    expect(queryByTestId('grafana')).toHaveAttribute('aria-disabled', 'false')
     expect(await axe(container)).toHaveNoViolations()
   })
   test('renders a disabled link when onClick is provided', async () => {
@@ -61,7 +60,6 @@ describe('AcmLaunchLink', () => {
     )
     expect(queryByTestId('addon-launch-links')).toBeNull()
     expect(queryByTestId('grafana')).toBeInTheDocument()
-    expect(queryByTestId('grafana')).toHaveAttribute('aria-disabled', 'false')
     expect(await axe(container)).toHaveNoViolations()
   })
   test('renders a disabled link the link is nested in a label', async () => {
@@ -90,7 +88,6 @@ describe('AcmLaunchLink', () => {
     )
     expect(queryByTestId('addon-launch-links')).toBeNull()
     expect(queryByTestId('grafana')).toBeInTheDocument()
-    expect(queryByTestId('grafana')).toHaveAttribute('aria-disabled', 'false')
     expect(await axe(container)).toHaveNoViolations()
   })
   test('renders a link without icon', async () => {
@@ -111,7 +108,6 @@ describe('AcmLaunchLink', () => {
     )
     expect(queryByTestId('addon-launch-links')).toBeNull()
     expect(queryByTestId('grafana')).toBeInTheDocument()
-    expect(queryByTestId('grafana')).toHaveAttribute('aria-disabled', 'false')
     expect(await axe(container)).toHaveNoViolations()
   })
   test('renders a link with user pass-in icon', async () => {
@@ -133,7 +129,6 @@ describe('AcmLaunchLink', () => {
     )
     expect(queryByTestId('addon-launch-links')).toBeNull()
     expect(queryByTestId('grafana')).toBeInTheDocument()
-    expect(queryByTestId('grafana')).toHaveAttribute('aria-disabled', 'false')
     expect(await axe(container)).toHaveNoViolations()
   })
   test('renders a dropdown when multiple links are provided', async () => {
@@ -165,7 +160,6 @@ describe('AcmLaunchLink', () => {
     )
     expect(queryByTestId('addon-launch-links')).toBeNull()
     expect(queryByTestId('grafana')).toBeInTheDocument()
-    expect(queryByTestId('grafana')).toHaveAttribute('aria-disabled', 'false')
     expect(await axe(container)).toHaveNoViolations()
   })
   test('renders null when no links are provided', () => {

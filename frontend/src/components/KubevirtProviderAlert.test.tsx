@@ -308,7 +308,7 @@ describe('KubevirtProviderAlert', () => {
     expect(container.querySelector(`.${customClass}`)).toBeInTheDocument()
 
     // Test install operator link
-    expect(container.querySelector('.pf-v5-c-alert')).toBeInTheDocument()
+    expect(container.querySelector('.pf-v6-c-alert')).toBeInTheDocument()
   })
 
   it('should call useOperatorCheck with correct parameters', () => {
@@ -501,7 +501,7 @@ describe('KubevirtProviderAlert', () => {
 
       renderKubevirtProviderAlert({ useLabelAlert: true, variant: 'search' })
       expect(screen.getByText('Operator recommended')).toBeInTheDocument()
-      expect(screen.getByText('Operator recommended').closest('.pf-v5-c-label')).toBeInTheDocument()
+      expect(screen.getByText('Operator recommended').closest('.pf-v6-c-label')).toBeInTheDocument()
     })
 
     describe('hideAlertWhenNoVMsExists functionality', () => {

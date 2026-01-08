@@ -89,7 +89,7 @@ export function AcmSelect(props: AcmSelectProps) {
           event.preventDefault()
         }
       }}
-      labelIcon={
+      labelHelp={
         /* istanbul ignore next */
         props.labelHelp ? (
           <Popover id={`${props.id}-label-help-popover`} headerContent={labelHelpTitle} bodyContent={labelHelp}>
@@ -98,8 +98,7 @@ export function AcmSelect(props: AcmSelectProps) {
               id={`${props.id}-label-help-button`}
               aria-label={t('More info')}
               onClick={(e) => e.preventDefault()}
-              className="pf-v5-c-form__group-label-help"
-              style={{ ['--pf-v5-c-form__group-label-help--TranslateY' as any]: 0 }}
+              className="pf-v6-c-form__group-label-help"
               icon={<HelpIcon />}
             />
           </Popover>

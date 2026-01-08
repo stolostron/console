@@ -40,7 +40,7 @@ class ControlPanelCheckbox extends React.Component {
           className="creation-view-controls-checkbox"
           ref={this.setControlRef.bind(this, control)}
         >
-          <div style={{ display: 'flex', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'baseline' }}>
             <Input
               aria-label={name}
               id={controlId}

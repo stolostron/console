@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Card, List, ListItem, Page, PageGroup, Text, TextContent, TextVariants } from '@patternfly/react-core'
+import { Card, Content, ContentVariants, List, ListItem, PageGroup } from '@patternfly/react-core'
 import { ICatalogBreadcrumb, PageHeader } from '@stolostron/react-data-view'
 import * as React from 'react'
 import { useTranslation } from '../../../../../../../../../lib/acm-i18next'
@@ -21,7 +21,7 @@ type DocPageProps = {
 const DocPage: React.FC<DocPageProps> = ({ listItems, breadcrumbs, onCancel, onBack, noMargin }) => {
   const { t } = useTranslation()
   return (
-    <Page>
+    <>
       {breadcrumbs ? (
         <PageHeader
           title={t('Create cluster')}
@@ -44,15 +44,15 @@ const DocPage: React.FC<DocPageProps> = ({ listItems, breadcrumbs, onCancel, onB
         ''
       )}
 
-      <Card style={{ margin: noMargin ? 0 : '2em', padding: '2em' }}>
+      <Card isPlain style={{ margin: noMargin ? 0 : '2em', padding: '2em' }}>
         <List isPlain isBordered iconSize="large">
           {listItems.map((item) => {
             return (
               <ListItem key={item.title} icon={<span className="ocm-icons">{listItems.indexOf(item) + 1}</span>}>
-                <TextContent>
-                  <Text component={TextVariants.h2}>{item.title}</Text>
+                <Content>
+                  <Content component={ContentVariants.h2}>{item.title}</Content>
                   {item.content}
-                </TextContent>
+                </Content>
               </ListItem>
             )
           })}
@@ -65,7 +65,7 @@ const DocPage: React.FC<DocPageProps> = ({ listItems, breadcrumbs, onCancel, onB
       ) : (
         ''
       )}
-    </Page>
+    </>
   )
 }
 

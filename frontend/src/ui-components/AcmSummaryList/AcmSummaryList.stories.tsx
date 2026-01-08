@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { AcmSummaryList } from './AcmSummaryList'
 
 export default {
@@ -17,17 +16,9 @@ export const SummaryList = () => {
     { description: 'Nodes', count: 3, href: '/search?query=nodes' },
     { description: 'Pods', count: 3, href: '/search?query=pods', isLoading: true },
   ]
-  return (
-    <MemoryRouter>
-      <AcmSummaryList title="Summary" list={list} />
-    </MemoryRouter>
-  )
+  return <AcmSummaryList title="Summary" list={list} />
 }
 
 export const SummaryListSkeleton = () => {
-  return (
-    <MemoryRouter>
-      <AcmSummaryList loading={true} title="Summary" list={[]} />
-    </MemoryRouter>
-  )
+  return <AcmSummaryList loading={true} title="Summary" list={[]} />
 }

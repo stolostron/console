@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ActionGroup, Button, ButtonVariant, ModalVariant } from '@patternfly/react-core'
+import { ActionGroup, Button, ButtonVariant } from '@patternfly/react-core'
+import { ModalVariant } from '@patternfly/react-core/deprecated'
 import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { NodePool } from '../../../../../resources'

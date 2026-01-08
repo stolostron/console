@@ -96,7 +96,7 @@ export function AcmLabels(props: {
         flipBehavior={['left', 'left-end', 'left-end']}
         hasAutoWidth
       >
-        <Label style={{ width: 'fit-content' }} isOverflowLabel>
+        <Label style={{ width: 'fit-content' }} variant="overflow">
           {t('{{count}} labels', { count: labelCount })}
         </Label>
       </Popover>

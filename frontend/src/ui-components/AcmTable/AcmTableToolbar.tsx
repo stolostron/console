@@ -8,21 +8,23 @@ import {
   MenuToggleCheckbox,
   Pagination,
   Toolbar,
-  ToolbarChip,
   ToolbarContent,
   ToolbarFilter,
   ToolbarGroup,
   ToolbarItem,
+  ToolbarLabel,
   Tooltip,
 } from '@patternfly/react-core'
 import { ExportIcon } from '@patternfly/react-icons'
 import { ISortBy } from '@patternfly/react-table'
 import { debounce } from 'debounce'
+import { noop } from 'lodash'
 import { parse, ParsedQuery, stringify } from 'query-string'
 import {
   forwardRef,
   Fragment,
   Ref,
+  RefObject,
   useCallback,
   useContext,
   useEffect,
@@ -37,6 +39,7 @@ import { matchesFilterValue, parseLabel } from '../../resources/utils'
 import { AcmButton } from '../AcmButton'
 import { AcmDropdown, AcmDropdownItems } from '../AcmDropdown'
 import { AcmSearchInput, SearchConstraint } from '../AcmSearchInput'
+import { AcmTableStateContext } from './AcmTableStateProvider'
 import {
   AcmTableProps,
   CommonPaginationPropsType,
@@ -54,8 +57,6 @@ import {
 } from './AcmTableTypes'
 import { FilterSelect } from './FilterSelect'
 import { getLocalStorage, setLocalStorage } from './localColumnStorage'
-import { AcmTableStateContext } from './AcmTableStateProvider'
-import { noop } from 'lodash'
 
 // when a filter has more then this many options, give it its own dropdown
 const SPLIT_FILTER_THRESHOLD = 30
@@ -419,7 +420,7 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
       clearFiltersButtonText={t('Clear all filters')}
       clearAllFilters={clearSearchAndFilters}
       collapseListedFiltersBreakpoint={'lg'}
-      inset={{ default: 'insetMd', xl: 'insetLg' }}
+      inset={{ default: 'insetNone' }}
     >
       <ToolbarContent>
         {hasSelectionColumn && (
@@ -462,7 +463,7 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
         {(hasFilter || hasSearch) && (
           <ToolbarGroup variant="filter-group">
             {hasSearch && (
-              <ToolbarItem variant="search-filter">
+              <ToolbarItem>
                 <AcmSearchInput
                   placeholder={searchPlaceholder}
                   spellCheck={false}
@@ -583,7 +584,7 @@ function TableColumnFilters<T>(
   )
 
   const onDelete = useCallback(
-    (filter: string, chip: ToolbarChip) => {
+    (filter: string, chip: ToolbarLabel) => {
       removeFilterValue(filter, chip.key)
     },
     [removeFilterValue]
@@ -699,7 +700,7 @@ function TableColumnFilters<T>(
           .filter((option: TableFilterOption) => {
             return currentCategorySelected.includes(option.value)
           })
-          .map<ToolbarChip>((option: TableFilterOption) => {
+          .map<ToolbarLabel>((option: TableFilterOption) => {
             return { key: option.value, node: option.label }
           })
       }
@@ -715,12 +716,12 @@ function TableColumnFilters<T>(
             (acc, current) => (
               <ToolbarFilter
                 key={`acm-table-filter-key-${current.id}`}
-                chips={createChips(current)}
-                deleteChip={(_category, chip) => {
-                  chip = chip as ToolbarChip
+                labels={createChips(current)}
+                deleteLabel={(_category, chip) => {
+                  chip = chip as ToolbarLabel
                   onDelete(current.id, chip)
                 }}
-                deleteChipGroup={() => onDeleteGroup(current.id)}
+                deleteLabelGroup={() => onDeleteGroup(current.id)}
                 categoryName={current.label}
               >
                 {acc}
@@ -763,7 +764,7 @@ function TableActions<T>(
 
 function TableActionsButtons(props: Readonly<{ actions: IAcmTableButtonAction[]; hasSelections?: boolean }>) {
   return (
-    <ToolbarGroup variant="button-group">
+    <ToolbarGroup variant="action-group">
       {props.actions.map((action) => {
         /* istanbul ignore next */
         const variant = props.hasSelections ? 'secondary' : action.variant
@@ -881,11 +882,12 @@ export function TableSelectionDropdown(props: Readonly<TableSelectionDropdownPro
     return selectedCount > 0 ? t('{{count}} selected', { count: selectedCount }) : ''
   }, [selectedCount, t])
 
-  const toggle = useMemo(() => {
-    return (
-      <MenuToggle
-        splitButtonOptions={{
-          items: [
+  const toggle = useCallback(
+    (toggleRef: RefObject<any>) => {
+      return (
+        <MenuToggle
+          ref={toggleRef}
+          splitButtonItems={[
             <MenuToggleCheckbox
               id="select-all"
               key="select-all"
@@ -893,15 +895,19 @@ export function TableSelectionDropdown(props: Readonly<TableSelectionDropdownPro
               isChecked={selectedCount > 0}
               onChange={onToggleCheckbox}
             />,
-          ],
-        }}
-        aria-label={t('Select')}
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        {toggleText}
-      </MenuToggle>
-    )
-  }, [t, selectedCount, onToggleCheckbox, toggleText, isOpen])
+          ]}
+          aria-label={t('Select')}
+          onClick={(event) => {
+            event.stopPropagation()
+            setIsOpen(!isOpen)
+          }}
+        >
+          {toggleText}
+        </MenuToggle>
+      )
+    },
+    [t, selectedCount, onToggleCheckbox, toggleText, isOpen]
+  )
 
   const selectNoneDropdownItem = useMemo(() => {
     return (
@@ -954,7 +960,17 @@ export function TableSelectionDropdown(props: Readonly<TableSelectionDropdownPro
   )
 
   return (
-    <Dropdown isOpen={isOpen} toggle={() => toggle}>
+    <Dropdown
+      isOpen={isOpen}
+      toggle={(toggleRef) => toggle(toggleRef)}
+      onOpenChange={(isOpen) => {
+        setIsOpen(isOpen)
+      }}
+      onSelect={(event) => {
+        event?.stopPropagation()
+        setIsOpen(false)
+      }}
+    >
       <DropdownList>{dropdownItems}</DropdownList>
     </Dropdown>
   )

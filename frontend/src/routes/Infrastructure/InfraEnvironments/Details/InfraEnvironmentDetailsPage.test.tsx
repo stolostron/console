@@ -1,5 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { render } from '@testing-library/react'
+import { InfraEnvK8sResource } from '@openshift-assisted/ui-lib/cim'
+import * as dynamicPluginSdk from '@openshift-console/dynamic-plugin-sdk'
+import { render, screen, waitFor } from '@testing-library/react'
 import { cloneDeep } from 'lodash'
 import set from 'lodash/set'
 import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
@@ -9,10 +11,8 @@ import { nockGet, nockIgnoreApiPaths, nockPatch } from '../../../../lib/nock-uti
 import { clickByText, clickHostAction, waitForNocks, waitForNotText, waitForText } from '../../../../lib/test-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import { IResource } from '../../../../resources/resource'
-import { mockNMStateConfig } from '../../Clusters/ManagedClusters/components/cim/EditAICluster.sharedmocks'
 import { infraEnvName, mockInfraEnv1, mockPullSecret } from '../../../../test-helpers/infraEnvName'
-import { InfraEnvK8sResource } from '@openshift-assisted/ui-lib/cim'
-import * as dynamicPluginSdk from '@openshift-console/dynamic-plugin-sdk'
+import { mockNMStateConfig } from '../../Clusters/ManagedClusters/components/cim/EditAICluster.sharedmocks'
 import InfraEnvironments from '../InfraEnvironments'
 
 jest.mock('@openshift-console/dynamic-plugin-sdk', () => ({
@@ -115,6 +115,8 @@ describe('Infrastructure Environment Details page', () => {
 
     // The Hosts tab
     await clickByText('Hosts')
-    await waitForText('ai:Hosts may take a few minutes to appear here after booting.')
+    await waitFor(() =>
+      expect(screen.queryByText('ai:Hosts may take a few minutes to appear here after booting.')).toBeDefined()
+    )
   })
 })

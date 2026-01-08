@@ -16,7 +16,7 @@ const DetailsTab: React.FC = () => {
   const { infraEnv, infraAgents, bareMetalHosts } = useInfraEnvironmentDetailsContext()
   return (
     <AcmPageContent id="overview">
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <EnvironmentErrors infraEnv={infraEnv} docVersion={DOC_VERSION} />
         <Card>
           <CardBody>

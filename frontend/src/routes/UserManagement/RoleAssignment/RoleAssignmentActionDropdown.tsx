@@ -3,9 +3,9 @@ import { useCallback } from 'react'
 import { BulkActionModalProps } from '../../../components/BulkActionModal'
 import { RbacDropdown } from '../../../components/Rbac'
 import { useTranslation } from '../../../lib/acm-i18next'
-import { FlattenedRoleAssignment } from '../../../resources/clients/multicluster-role-assignment-client'
 import { IRequestResult } from '../../../resources/utils'
 import { compareStrings } from '../../../ui-components'
+import { FlattenedRoleAssignment } from '../../../resources/clients/model/flattened-role-assignment'
 
 const RoleAssignmentActionDropdown = ({
   roleAssignment,

@@ -3,7 +3,7 @@
 
 import { Divider, Dropdown, DropdownItem, MenuToggle, MenuToggleElement, Tooltip } from '@patternfly/react-core'
 import { Dispatch, Fragment, SetStateAction, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { Link, Outlet, useLocation, useNavigate, useOutletContext } from 'react-router-dom-v5-compat'
+import { Outlet, useLocation, useNavigate, useOutletContext } from 'react-router-dom-v5-compat'
 import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { PluginContext } from '../../../lib/PluginContext'
@@ -12,7 +12,7 @@ import { IResource, IResourceDefinition } from '../../../resources'
 import { fireManagedClusterView } from '../../../resources/managedclusterview'
 import { getBackendUrl, getRequest, getResource } from '../../../resources/utils/resource-request'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
-import { AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../ui-components'
+import { AcmPage, AcmPageHeader, AcmSecondaryNav } from '../../../ui-components'
 import {
   ClosedVMActionModalProps,
   IVMActionModalProps,
@@ -171,6 +171,49 @@ export default function DetailsPage() {
     }),
     [apiversion, cluster, containers, kind, name, namespace, resource, resourceError, isHubClusterResource]
   )
+
+  const navItems = useMemo(() => {
+    const items = [
+      {
+        key: 'search-resource-details',
+        title: t('Details'),
+        isActive: location.pathname === NavigationPath.resources,
+        to: `${NavigationPath.resources}${window.location.search}`,
+      },
+      {
+        key: 'search-resource-yaml',
+        title: t('YAML'),
+        isActive: location.pathname === NavigationPath.resourceYAML,
+        to: `${NavigationPath.resourceYAML}${window.location.search}`,
+      },
+      {
+        key: 'search-resource-related-resources',
+        title: t('Related resources'),
+        isActive: location.pathname === NavigationPath.resourceRelated,
+        to: `${NavigationPath.resourceRelated}${window.location.search}`,
+      },
+    ]
+
+    if (kind.toLowerCase() === 'virtualmachine') {
+      items.push({
+        key: 'search-resource-vm-snapshots',
+        title: t('Snapshots'),
+        isActive: location.pathname === NavigationPath.vmSnapshots,
+        to: `${NavigationPath.vmSnapshots}${window.location.search}`,
+      })
+    }
+
+    if (kind.toLowerCase() === 'pod' || kind.toLowerCase() === 'pods') {
+      items.push({
+        key: 'search-resource-logs',
+        title: t('Logs'),
+        isActive: location.pathname === NavigationPath.resourceLogs,
+        to: `${NavigationPath.resourceLogs}${window.location.search}`,
+      })
+    }
+
+    return items
+  }, [kind, location.pathname, t])
 
   const closeModal = () => {
     setVMAction(ClosedVMActionModalProps)
@@ -395,31 +438,7 @@ export default function DetailsPage() {
                 to: '',
               },
             ]}
-            navigation={
-              <AcmSecondaryNav>
-                <AcmSecondaryNavItem isActive={location.pathname === NavigationPath.resources}>
-                  <Link to={`${NavigationPath.resources}${window.location.search}`}>{t('Details')}</Link>
-                </AcmSecondaryNavItem>
-                <AcmSecondaryNavItem isActive={location.pathname === NavigationPath.resourceYAML}>
-                  <Link to={`${NavigationPath.resourceYAML}${window.location.search}`}>{t('YAML')}</Link>
-                </AcmSecondaryNavItem>
-                <AcmSecondaryNavItem isActive={location.pathname === NavigationPath.resourceRelated}>
-                  <Link to={`${NavigationPath.resourceRelated}${window.location.search}`}>
-                    {t('Related resources')}
-                  </Link>
-                </AcmSecondaryNavItem>
-                {kind.toLowerCase() === 'virtualmachine' && (
-                  <AcmSecondaryNavItem isActive={location.pathname === NavigationPath.vmSnapshots}>
-                    <Link to={`${NavigationPath.vmSnapshots}${window.location.search}`}>{t('Snapshots')}</Link>
-                  </AcmSecondaryNavItem>
-                )}
-                {(kind.toLowerCase() === 'pod' || kind.toLowerCase() === 'pods') && (
-                  <AcmSecondaryNavItem isActive={location.pathname === NavigationPath.resourceLogs}>
-                    <Link to={`${NavigationPath.resourceLogs}${window.location.search}`}>{t('Logs')}</Link>
-                  </AcmSecondaryNavItem>
-                )}
-              </AcmSecondaryNav>
-            }
+            navigation={<AcmSecondaryNav navItems={navItems} />}
             actions={
               <Dropdown
                 isOpen={resourceActionsOpen}

@@ -1,12 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { AcmAlert, AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../../../ui-components'
+import { PageSection } from '@patternfly/react-core'
 import { Fragment, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
-import { generatePath, Link, Outlet, useOutletContext, useParams } from 'react-router-dom-v5-compat'
+import { generatePath, Outlet, useOutletContext, useParams } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { fireManagedClusterView } from '../../../../../resources'
-import { PageSection } from '@patternfly/react-core'
 import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
+import { AcmAlert, AcmPage, AcmPageHeader, AcmSecondaryNav } from '../../../../../ui-components'
 import { TemplateDetailTitle } from '../../../components/TemplateDetailTitle'
 
 export type TemplateDetailsContext = {
@@ -34,6 +34,7 @@ export function PolicyTemplateDetailsPage() {
   const kind = urlParams.kind ?? ''
   const templateName = urlParams.templateName ?? ''
   const isYamlTab = location.pathname.endsWith('/yaml')
+  const isHistoryTab = location.pathname.endsWith('/history')
   const hasParentPolicy = policyNamespace && policyName
   const detailsUrl = hasParentPolicy
     ? generatePath(NavigationPath.policyTemplateDetails, {
@@ -65,6 +66,25 @@ export function PolicyTemplateDetailsPage() {
         templateName,
       })
     : generatePath(NavigationPath.discoveredPolicyYaml, {
+        clusterName,
+        apiGroup,
+        apiVersion,
+        kind,
+        // discovered policy name
+        templateName,
+        templateNamespace: urlParams.templateNamespace ?? '',
+      })
+  const historyUrl = hasParentPolicy
+    ? generatePath(NavigationPath.policyDetailsHistory, {
+        namespace: policyNamespace,
+        name: policyName,
+        clusterName,
+        apiGroup,
+        apiVersion,
+        kind,
+        templateName,
+      })
+    : generatePath(NavigationPath.discoveredPolicyDetailsHistory, {
         clusterName,
         apiGroup,
         apiVersion,
@@ -220,21 +240,35 @@ export function PolicyTemplateDetailsPage() {
           popoverAutoWidth={false}
           popoverPosition="bottom"
           navigation={
-            <AcmSecondaryNav>
-              <AcmSecondaryNavItem isActive={!isYamlTab}>
-                <Link to={detailsUrl}>{t('Details')}</Link>
-              </AcmSecondaryNavItem>
-              <AcmSecondaryNavItem isActive={isYamlTab}>
-                <Link to={yamlUrl}>{t('YAML')}</Link>
-              </AcmSecondaryNavItem>
-            </AcmSecondaryNav>
+            <AcmSecondaryNav
+              navItems={[
+                {
+                  key: 'governance-policies-template-details',
+                  title: t('Details'),
+                  isActive: !isYamlTab && !isHistoryTab,
+                  to: detailsUrl,
+                },
+                {
+                  key: 'governance-policies-template-yaml',
+                  title: t('YAML'),
+                  isActive: isYamlTab && !isHistoryTab,
+                  to: yamlUrl,
+                },
+                {
+                  key: 'governance-policies-template-history',
+                  title: t('History'),
+                  isActive: !isYamlTab && isHistoryTab,
+                  to: historyUrl,
+                },
+              ]}
+            />
           }
         />
       }
     >
       <Suspense fallback={<Fragment />}>
         {templateError ? (
-          <PageSection style={{ paddingBottom: '0' }}>
+          <PageSection hasBodyWrapper={false} style={{ paddingBottom: '0' }}>
             <AcmAlert variant="danger" title={templateError} isInline noClose />
           </PageSection>
         ) : (

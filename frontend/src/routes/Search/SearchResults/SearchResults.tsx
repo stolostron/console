@@ -8,8 +8,6 @@ import {
   AccordionToggle,
   EmptyState,
   EmptyStateBody,
-  EmptyStateHeader,
-  EmptyStateIcon,
   ExpandableSection,
   PageSection,
   Stack,
@@ -63,8 +61,8 @@ const accordionItemKind = css({
 })
 const accordionItemGroup = css({
   marginLeft: '10px',
-  fontSize: 'var(--pf-v5-global--FontSize--sm)',
-  color: 'var(--pf-v5-global--Color--200)',
+  fontSize: 'var(--pf-t--global--font--size--sm)',
+  color: 'var(--pf-t--global--text--color--200)',
 })
 
 function RenderAccordionItem(
@@ -164,12 +162,11 @@ function RenderAccordionItem(
   return (
     <Fragment>
       {pluginModal}
-      <AccordionItem key={`${kind}-accordion-item`}>
+      <AccordionItem isExpanded={isExpanded} key={`${kind}-accordion-item`}>
         <AccordionToggle
           onClick={() => {
             setIsExpanded(!isExpanded)
           }}
-          isExpanded={isExpanded}
           id={accordionItemKey}
         >
           <span className={accordionItemHeader}>
@@ -181,7 +178,7 @@ function RenderAccordionItem(
             </span>
           </span>
         </AccordionToggle>
-        <AccordionContent isHidden={!isExpanded}>{isExpanded && renderContent(kindString, items)}</AccordionContent>
+        <AccordionContent>{isExpanded && renderContent(kindString, items)}</AccordionContent>
       </AccordionItem>
     </Fragment>
   )
@@ -223,7 +220,7 @@ function SearchResultAccordion(
   }, [data])
 
   return (
-    <PageSection isFilled={false} variant={'light'}>
+    <PageSection hasBodyWrapper={false} isFilled={false}>
       <Accordion isBordered asDefinitionList={true}>
         {kinds.map((kind: string, idx: number) => {
           const accordionItemKey = `${kind}-${idx}`
@@ -321,7 +318,7 @@ export default function SearchResults(
 
   if (loading) {
     return (
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <AcmLoadingPage />
       </PageSection>
     )
@@ -329,13 +326,12 @@ export default function SearchResults(
 
   if (error && !hasFederatedError) {
     return (
-      <PageSection>
-        <EmptyState>
-          <EmptyStateHeader
-            titleText={<>{t('Error querying search results')}</>}
-            icon={<EmptyStateIcon icon={ExclamationCircleIcon} color={'var(--pf-v5-global--danger-color--100)'} />}
-            headingLevel="h4"
-          />
+      <PageSection hasBodyWrapper={false}>
+        <EmptyState
+          headingLevel="h4"
+          icon={ExclamationCircleIcon}
+          titleText={<>{t('Error querying search results')}</>}
+        >
           <EmptyStateBody>
             <Stack>
               <StackItem>{t('Error occurred while contacting the search service.')}</StackItem>
@@ -349,14 +345,12 @@ export default function SearchResults(
 
   if (searchResultItems.length === 0) {
     return (
-      <PageSection>
-        <EmptyState>
-          <EmptyStateHeader
-            titleText={<>{t('No results found for the current search criteria.')}</>}
-            icon={<EmptyStateIcon icon={InfoCircleIcon} color={'var(--pf-v5-global--info-color--100)'} />}
-            headingLevel="h4"
-          />
-        </EmptyState>
+      <PageSection hasBodyWrapper={false}>
+        <EmptyState
+          headingLevel="h4"
+          icon={InfoCircleIcon}
+          titleText={<>{t('No results found for the current search criteria.')}</>}
+        ></EmptyState>
       </PageSection>
     )
   }
@@ -383,9 +377,9 @@ export default function SearchResults(
         resource={deleteExternalResource.resource}
         hubCluster={deleteExternalResource.hubCluster}
       />
-      <PageSection className={resultsWrapper}>
-        <Stack hasGutter>
-          <PageSection isFilled={false} variant={'light'}>
+      <PageSection hasBodyWrapper={false} className={resultsWrapper}>
+        <Stack>
+          <PageSection hasBodyWrapper={false} isFilled={false}>
             <div className={relatedExpandableWrapper}>
               <ExpandableSection
                 onToggle={() => setShowRelatedResources(!showRelatedResources)}
@@ -397,7 +391,7 @@ export default function SearchResults(
                   'Related Kubernetes resources can be displayed to help aid in the correlation of data from one object to another.'
                 )}
               >
-                <OutlinedQuestionCircleIcon color={'var(--pf-v5-global--Color--200)'} />
+                <OutlinedQuestionCircleIcon color={'var(--pf-t--global--text--color--200)'} />
               </Tooltip>
             </div>
             {isRelatedSectionOpen && (

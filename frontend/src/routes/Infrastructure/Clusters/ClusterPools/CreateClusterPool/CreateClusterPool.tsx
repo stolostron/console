@@ -10,7 +10,8 @@ import {
   AcmToastContext,
   Provider,
 } from '../../../../../ui-components'
-import { Modal, ModalVariant, PageSection } from '@patternfly/react-core'
+import { PageSection } from '@patternfly/react-core'
+import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
 import { createCluster } from '../../../../../lib/create-cluster'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useNavigate, useLocation } from 'react-router-dom-v5-compat'
@@ -100,7 +101,7 @@ export default function CreateClusterPool(props: { infrastructureType: ClusterPo
     >
       <AcmErrorBoundary>
         <AcmPageContent id="create-cluster-pool">
-          <PageSection variant="light" isFilled type="wizard">
+          <PageSection hasBodyWrapper={false} isFilled type="wizard">
             <CreateClusterPoolWizard {...props} />
           </PageSection>
         </AcmPageContent>

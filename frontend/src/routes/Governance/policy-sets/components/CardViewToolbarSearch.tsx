@@ -251,6 +251,7 @@ export default function CardViewToolbarSearch(props: {
           }}
           onFocus={() => setMenuIsOpen(true)}
           onKeyDown={handleTextInputKeyDown}
+          placeholder={t('Search')}
         >
           <AcmChipGroup aria-label={t('Attribute filters')}>
             {currentChips.map((currentChip) => (
@@ -262,9 +263,12 @@ export default function CardViewToolbarSearch(props: {
         </TextInputGroupMain>
         <TextInputGroupUtilities>
           {showClearButton && (
-            <Button variant="plain" onClick={clearChipsAndInput} aria-label="Clear button and input">
-              <TimesIcon />
-            </Button>
+            <Button
+              icon={<TimesIcon />}
+              variant="plain"
+              onClick={clearChipsAndInput}
+              aria-label="Clear button and input"
+            />
           )}
         </TextInputGroupUtilities>
       </TextInputGroup>

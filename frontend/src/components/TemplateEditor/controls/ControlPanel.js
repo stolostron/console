@@ -88,7 +88,7 @@ class ControlPanel extends React.Component {
     const { controlData, showEditor } = this.props
     const controlClasses = classNames({
       'creation-view-controls': true,
-      'pf-v5-c-form': true,
+      'pf-v6-c-form': true,
       showEditor,
     })
     return (
@@ -758,6 +758,7 @@ class ControlPanel extends React.Component {
     }
     return (
       <Button
+        icon={<TrashIcon />}
         variant="plain"
         className="creation-view-controls-delete-button"
         tabIndex="0"
@@ -765,9 +766,7 @@ class ControlPanel extends React.Component {
         aria-label={deletePrompt}
         onClick={handleGroupChange}
         size="sm"
-      >
-        <TrashIcon />
-      </Button>
+      />
     )
   }
 

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ChartDonut, ChartLabel, ChartLegend } from '@patternfly/react-charts'
+import { ChartDonut, ChartLabel, ChartLegend } from '@patternfly/react-charts/victory'
 import {
   Button,
   Flex,
@@ -10,9 +10,8 @@ import {
   Tab,
   Tabs,
   TabTitleText,
-  Text,
-  TextContent,
-  TextVariants,
+  Content,
+  ContentVariants,
 } from '@patternfly/react-core'
 import { AngleLeftIcon, FlagIcon, ListIcon, OutlinedClockIcon } from '@patternfly/react-icons'
 import { TableGridBreakpoint } from '@patternfly/react-table'
@@ -119,18 +118,18 @@ function DetailsView(props: {
             <Flex>
               <FlexItem>{riskIcon}</FlexItem>
               <FlexItem>
-                <TextContent>
-                  <Text component={TextVariants.h4}>{totalRisk}</Text>
-                </TextContent>
+                <Content>
+                  <Content component={ContentVariants.h4}>{totalRisk}</Content>
+                </Content>
               </FlexItem>
             </Flex>
           </FlexItem>
           <FlexItem>
-            <TextContent>
-              <Text component={TextVariants.p}>
+            <Content>
+              <Content component={ContentVariants.p}>
                 {t('The impact of the problem would be {{totalRisk}} if it occurred', { totalRisk })}
-              </Text>
-            </TextContent>
+              </Content>
+            </Content>
           </FlexItem>
         </Flex>
       )
@@ -197,9 +196,9 @@ function DetailsView(props: {
           </Button>
         </FlexItem>
       </Flex>
-      <TextContent className={titleText}>
-        <Text component={TextVariants.h2}>{_.get(selectedReport, 'message', '')}</Text>
-      </TextContent>
+      <Content className={titleText}>
+        <Content component={ContentVariants.h2}>{_.get(selectedReport, 'message', '')}</Content>
+      </Content>
       <Grid className={subDetailComponents} hasGutter>
         <GridItem span={5}>
           <Flex>
@@ -207,9 +206,9 @@ function DetailsView(props: {
               <FlagIcon />
             </FlexItem>
             <FlexItem>
-              <TextContent>
-                <Text component={TextVariants.small}>{t('Total risk')}</Text>
-              </TextContent>
+              <Content>
+                <Content component={ContentVariants.small}>{t('Total risk')}</Content>
+              </Content>
             </FlexItem>
           </Flex>
           {riskLevel()}
@@ -220,9 +219,9 @@ function DetailsView(props: {
               <ListIcon />
             </FlexItem>
             <FlexItem>
-              <TextContent>
-                <Text component={TextVariants.small}>{t('Category')}</Text>
-              </TextContent>
+              <Content>
+                <Content component={ContentVariants.small}>{t('Category')}</Content>
+              </Content>
             </FlexItem>
           </Flex>
           {categories()}
@@ -233,9 +232,9 @@ function DetailsView(props: {
               <OutlinedClockIcon />
             </FlexItem>
             <FlexItem>
-              <TextContent>
-                <Text component={TextVariants.small}>{t('Matched on')}</Text>
-              </TextContent>
+              <Content>
+                <Content component={ContentVariants.small}>{t('Matched on')}</Content>
+              </Content>
             </FlexItem>
           </Flex>
           {matchedDate()}
@@ -243,14 +242,14 @@ function DetailsView(props: {
       </Grid>
       <Tabs activeKey={tabState} onSelect={(_e, tabIndex) => setTabState(tabIndex)} isFilled={true}>
         <Tab eventKey={0} title={<TabTitleText>{t('How to remediate')}</TabTitleText>}>
-          <TextContent>
+          <Content>
             <Markdown template={selectedReport?.properties?.resolution ?? ''} definitions={getExtraData()} />
-          </TextContent>
+          </Content>
         </Tab>
         <Tab eventKey={1} title={<TabTitleText>{t('Reason')}</TabTitleText>}>
-          <TextContent>
+          <Content>
             <Markdown template={selectedReport?.properties?.reason ?? ''} definitions={getExtraData()} />
-          </TextContent>
+          </Content>
         </Tab>
       </Tabs>
     </div>
@@ -266,20 +265,20 @@ export function ClusterPolicySidebar(props: { data: PolicyReport }) {
     <DetailsView setDetailsView={setDetailsView} selectedReport={selectedReport} />
   ) : (
     <div className={body}>
-      <TextContent className={titleText}>
-        <Text component={TextVariants.h2}>
+      <Content className={titleText}>
+        <Content component={ContentVariants.h2}>
           {t('policy.identified.issues', { count: policyReportViolations.length })}
-        </Text>
-        <Text component={TextVariants.p}>
+        </Content>
+        <Content component={ContentVariants.p}>
           {t(
             'Identified issues from your cluster in different categories. We Identify and prioritize risks and issues to security, configuration, health, performance, availability, and stability of your clusters.'
           )}
-        </Text>
-      </TextContent>
+        </Content>
+      </Content>
       <div className={donutContainer}>{renderDonutChart(policyReportViolations, t)}</div>
-      <TextContent className={tableTitle}>
-        <Text component={TextVariants.h4}>{t('Recommendations with remediation')}</Text>
-      </TextContent>
+      <Content className={tableTitle}>
+        <Content component={ContentVariants.h4}>{t('Recommendations with remediation')}</Content>
+      </Content>
       <AcmTable<PolicyReportResults>
         items={policyReportViolations}
         emptyState={

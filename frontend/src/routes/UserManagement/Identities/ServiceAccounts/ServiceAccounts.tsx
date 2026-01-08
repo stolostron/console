@@ -3,7 +3,7 @@ import { PageSection } from '@patternfly/react-core'
 
 const ServiceAccounts = () => {
   return (
-    <PageSection>
+    <PageSection hasBodyWrapper={false}>
       <div>Service Accounts list</div>
     </PageSection>
   )

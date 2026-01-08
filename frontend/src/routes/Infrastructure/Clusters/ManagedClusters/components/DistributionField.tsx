@@ -1,5 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
+import { Button, ButtonVariant } from '@patternfly/react-core'
+import { ArrowCircleUpIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { Fragment, ReactNode, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom-v5-compat'
+import { RbacButton } from '../../../../../components/Rbac'
+import { useTranslation } from '../../../../../lib/acm-i18next'
+import { rbacCreate, rbacPatch } from '../../../../../lib/rbac-util'
 import {
   ClusterCurator,
   ClusterCuratorApiVersion,
@@ -8,23 +16,15 @@ import {
   NodePool,
 } from '../../../../../resources'
 import { Cluster, ClusterStatus, CuratorCondition } from '../../../../../resources/utils'
+import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
 import { AcmButton, AcmInlineStatus, Provider, StatusType } from '../../../../../ui-components'
-import { Button, ButtonVariant } from '@patternfly/react-core'
-import { ArrowCircleUpIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { Fragment, ReactNode, useMemo, useState } from 'react'
-import { useTranslation } from '../../../../../lib/acm-i18next'
-import { RbacButton } from '../../../../../components/Rbac'
-import { rbacCreate, rbacPatch } from '../../../../../lib/rbac-util'
-import { BatchUpgradeModal } from './BatchUpgradeModal'
-import { useAgentClusterInstall } from '../CreateCluster/components/assisted-installer/utils'
-import { HypershiftUpgradeModal } from './HypershiftUpgradeModal'
-import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
-import { useSharedAtoms, useRecoilValue } from '../../../../../shared-recoil'
-import { Link } from 'react-router-dom-v5-compat'
 import { getSearchLink } from '../../../../Applications/helpers/resource-helper'
-import { getNodepoolStatus } from './NodePoolsTable'
+import { useAgentClusterInstall } from '../CreateCluster/components/assisted-installer/utils'
 import { useHypershiftAvailableUpdates } from '../hooks/useHypershiftAvailableUpdates'
 import { getVersionFromReleaseImage } from '../utils/utils'
+import { BatchUpgradeModal } from './BatchUpgradeModal'
+import { HypershiftUpgradeModal } from './HypershiftUpgradeModal'
+import { getNodepoolStatus } from './NodePoolsTable'
 
 export function DistributionField(props: {
   cluster?: Cluster
@@ -356,6 +356,7 @@ export function DistributionField(props: {
         <div>{props.cluster?.distribution?.displayVersion}</div>
         <span style={{ whiteSpace: 'nowrap', display: 'block' }}>
           <RbacButton
+            role={'button'}
             onClick={toggle}
             icon={<ArrowCircleUpIcon />}
             variant={ButtonVariant.link}

@@ -1,11 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Button, Chip, ChipGroup, PageSection, SelectOption } from '@patternfly/react-core'
+import { Button, Label, LabelGroup, PageSection, SelectOption } from '@patternfly/react-core'
+
 import { FilterIcon } from '@patternfly/react-icons'
 import { Dispatch, SetStateAction, useMemo, useState } from 'react'
+import { AcmSelectBase, SelectVariant } from '../../../components/AcmSelectBase'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { Cluster } from '../../../resources/utils'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
-import { AcmSelectBase, SelectVariant } from '../../../components/AcmSelectBase'
 
 export default function OverviewClusterLabelSelector(props: {
   selectedClusterLabels: Record<string, string[]>
@@ -74,7 +75,7 @@ export default function OverviewClusterLabelSelector(props: {
   }
 
   return (
-    <PageSection variant={'light'}>
+    <PageSection hasBodyWrapper={false}>
       <div style={{ display: 'flex', flexDirection: 'row' }}>
         <AcmSelectBase
           id="cluster-label-key"
@@ -124,19 +125,19 @@ export default function OverviewClusterLabelSelector(props: {
         <div style={{ display: 'flex', flexWrap: 'wrap' }}>
           {Object.keys(selectedClusterLabels).map((label) => {
             return (
-              <div key={label} style={{ marginTop: '0.5rem', marginRight: '.5rem' }}>
-                <ChipGroup key={label} categoryName={label} isClosable onClick={() => deleteChipGroup(label)}>
+              <div key={label} style={{ marginRight: '.5rem' }}>
+                <LabelGroup key={label} categoryName={label} isClosable onClick={() => deleteChipGroup(label)}>
                   {selectedClusterLabels[label].map((value) => (
-                    <Chip key={value} onClick={() => deleteChip(label, value)}>
+                    <Label variant="outline" key={value} onClose={() => deleteChip(label, value)}>
                       {value}
-                    </Chip>
+                    </Label>
                   ))}
-                </ChipGroup>
+                </LabelGroup>
               </div>
             )
           })}
           {Object.values(selectedClusterLabels).length > 0 && (
-            <Button variant={'link'} onClick={() => deleteAllChips()} style={{ marginTop: '0.5rem' }}>
+            <Button variant={'link'} onClick={() => deleteAllChips()}>
               {t('Clear all labels')}
             </Button>
           )}

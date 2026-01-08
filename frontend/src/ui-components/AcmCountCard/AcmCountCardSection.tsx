@@ -7,10 +7,10 @@ import { ExclamationCircleIcon } from '@patternfly/react-icons'
 import { AcmExpandableCard } from '../AcmExpandable'
 
 const section = css({
-  '& > .pf-v5-c-card__body': {
+  '& > .pf-v6-c-card__body': {
     padding: '0 !important',
   },
-  '& > .pf-v5-c-card__expandable-content': {
+  '& > .pf-v6-c-card__expandable-content': {
     padding: '0px',
   },
 })
@@ -31,11 +31,11 @@ const count = css({
   fontWeight: 100,
 })
 const countDanger = css({
-  color: 'var(--pf-v5-global--danger-color--100)',
+  color: 'var(--pf-t--global--icon--color--status--danger--default)',
   textDecoration: 'none !important',
   fontWeight: 100,
   '&:hover': {
-    color: 'var(--pf-v5-global--palette--red-300)',
+    color: 'var(--pf-t--color--red--60)',
   },
 })
 const title = css({

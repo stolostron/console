@@ -351,7 +351,7 @@ const ClusterSelector = (props: {
 
         <div className="clusterSelector-container" style={{ fontSize: '14px', position: 'relative' }}>
           {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
-          <div style={{ display: 'flex', alignItems: 'center' }} onClick={handleMode}>
+          <div style={{ display: 'flex', alignItems: 'baseline' }} onClick={handleMode}>
             <Radio
               className="clusterSelector-checkbox"
               isChecked={modeSelected}
@@ -364,7 +364,7 @@ const ClusterSelector = (props: {
             <FormGroup
               id="clusterSelector-container"
               label={i18n('creation.app.settings.clusterSelector')}
-              labelIcon={
+              labelHelp={
                 /* istanbul ignore next */
                 <Popover
                   id={`${controlId}-label-help-popover`}
@@ -375,8 +375,7 @@ const ClusterSelector = (props: {
                     id={`${controlId}-label-help-button`}
                     aria-label="More info"
                     onClick={(e) => e.preventDefault()}
-                    className="pf-v5-c-form__group-label-help"
-                    style={{ ['--pf-v5-c-form__group-label-help--TranslateY' as any]: 0 }}
+                    className="pf-v6-c-form__group-label-help"
                     icon={<HelpIcon />}
                   />
                 </Popover>
@@ -386,7 +385,7 @@ const ClusterSelector = (props: {
           </div>
           <div style={!modeSelected ? { pointerEvents: 'none', opacity: 0.3 } : {}}>
             <Accordion style={{ display: 'block' }}>
-              <AccordionItem>
+              <AccordionItem isExpanded>
                 <AccordionContent>
                   <div className="clusterSelector-labels-section">
                     <div

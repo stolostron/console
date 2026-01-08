@@ -1,12 +1,21 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { css } from '@emotion/css'
+import { Button, SelectOption, Stack, StackItem } from '@patternfly/react-core'
+import { ModalVariant } from '@patternfly/react-core/deprecated'
+import { cloneDeep } from 'lodash'
+import { JSX, useMemo, useState } from 'react'
+import { generatePath } from 'react-router-dom-v5-compat'
+import { useClusterDistributionColumn, useClusterProviderColumn } from '../../../../../components/Clusters'
+import { useTranslation } from '../../../../../lib/acm-i18next'
+import { NavigationPath } from '../../../../../NavigationPath'
 import {
   ClusterCurator,
   ClusterCuratorDefinition,
+  ClusterCuratorKind,
   createClusterCurator,
   IResource,
   SecretDefinition,
-  ClusterCuratorKind,
 } from '../../../../../resources'
 import {
   Cluster,
@@ -16,7 +25,7 @@ import {
   ResourceError,
   ResourceErrorCode,
 } from '../../../../../resources/utils'
-import { css } from '@emotion/css'
+import { useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../../../shared-recoil'
 import {
   AcmAlert,
   AcmEmptyState,
@@ -27,26 +36,17 @@ import {
   AcmTable,
   IAcmTableColumn,
 } from '../../../../../ui-components'
-import { Button, ModalVariant, Stack, StackItem, SelectOption } from '@patternfly/react-core'
-import { useMemo, useState, JSX } from 'react'
-import { useTranslation } from '../../../../../lib/acm-i18next'
-import { useClusterDistributionColumn, useClusterProviderColumn } from '../ManagedClusters'
-import { cloneDeep } from 'lodash'
-import { useSharedAtoms, useRecoilValue, useSharedSelectors } from '../../../../../shared-recoil'
 import { ClusterAction, clusterSupportsAction } from '../utils/cluster-actions'
-import { NavigationPath } from '../../../../../NavigationPath'
-import { generatePath } from 'react-router-dom-v5-compat'
 
 const select = css({
   '& > div': {
-    alignItems: 'end',
     '& > div:last-child': {
       paddingBottom: '6px',
     },
   },
 })
 const table = css({
-  '& .pf-v5-c-toolbar': {
+  '& .pf-v6-c-toolbar': {
     display: 'none',
   },
 })

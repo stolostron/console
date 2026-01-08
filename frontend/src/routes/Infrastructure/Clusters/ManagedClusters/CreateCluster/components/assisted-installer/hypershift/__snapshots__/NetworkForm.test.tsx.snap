@@ -3,43 +3,43 @@
 exports[`NetworkForm it renders 1`] = `
 <div>
   <form
-    class="pf-v5-c-form"
+    class="pf-v6-c-form"
     novalidate=""
   >
     <div
-      class="pf-v5-c-form__group"
+      class="pf-v6-c-form__group"
     >
       <div
-        class="pf-v5-c-form__group-label"
+        class="pf-v6-c-form__group-label"
       >
         <label
-          class="pf-v5-c-form__label"
+          class="pf-v6-c-form__label"
         >
           <span
-            class="pf-v5-c-form__label-text"
+            class="pf-v6-c-form__label-text"
           >
             ai:API server publishing strategy
           </span>
         </label>
-         
+          
       </div>
       <div
-        class="pf-v5-c-form__group-control"
+        class="pf-v6-c-form__group-control"
       >
         <div
-          class="pf-v5-l-grid pf-m-gutter"
+          class="pf-v6-l-grid pf-m-gutter"
         >
           <div
-            class="pf-v5-l-grid__item"
+            class="pf-v6-l-grid__item"
           >
             <div
-              class="pf-v5-c-radio"
+              class="pf-v6-c-radio"
             >
               <input
                 aria-invalid="false"
-                class="pf-v5-c-radio__input"
+                class="pf-v6-c-radio__input"
                 data-ouia-component-id="OUIA-Generated-Radio-1"
-                data-ouia-component-type="PF5/Radio"
+                data-ouia-component-type="PF6/Radio"
                 data-ouia-safe="true"
                 id="form-radio-apiPublishingStrategy-LoadBalancer-field"
                 name="apiPublishingStrategy"
@@ -47,30 +47,30 @@ exports[`NetworkForm it renders 1`] = `
                 value="LoadBalancer"
               />
               <label
-                class="pf-v5-c-radio__label"
+                class="pf-v6-c-radio__label"
                 for="form-radio-apiPublishingStrategy-LoadBalancer-field"
               >
                 LoadBalancer
               </label>
               <span
-                class="pf-v5-c-radio__description"
+                class="pf-v6-c-radio__description"
               >
                 ai:Exposes the service externally using a cloud provider's load balancer
               </span>
             </div>
           </div>
           <div
-            class="pf-v5-l-grid__item"
+            class="pf-v6-l-grid__item"
           >
             <div
-              class="pf-v5-c-radio ai-nodeport-fields"
+              class="pf-v6-c-radio ai-nodeport-fields"
             >
               <input
                 aria-invalid="false"
                 checked=""
-                class="pf-v5-c-radio__input"
+                class="pf-v6-c-radio__input"
                 data-ouia-component-id="OUIA-Generated-Radio-2"
-                data-ouia-component-type="PF5/Radio"
+                data-ouia-component-type="PF6/Radio"
                 data-ouia-safe="true"
                 id="form-radio-apiPublishingStrategy-NodePort-field"
                 name="apiPublishingStrategy"
@@ -78,102 +78,109 @@ exports[`NetworkForm it renders 1`] = `
                 value="NodePort"
               />
               <label
-                class="pf-v5-c-radio__label"
+                class="pf-v6-c-radio__label"
                 for="form-radio-apiPublishingStrategy-NodePort-field"
               >
                 NodePort
               </label>
               <span
-                class="pf-v5-c-radio__description"
+                class="pf-v6-c-radio__description"
               >
                 ai:Exposes the service on each node's IP at a static port
               </span>
               <span
-                class="pf-v5-c-radio__body"
+                class="pf-v6-c-radio__body"
               >
                 <div
-                  class="pf-v5-l-grid pf-m-gutter"
+                  class="pf-v6-l-grid pf-m-gutter"
                 >
                   <div
-                    class="pf-v5-l-grid__item"
+                    class="pf-v6-l-grid__item"
                   >
                     <div
-                      class="pf-v5-c-form__group"
+                      class="pf-v6-c-form__group"
                       id="form-control__form-input-nodePortAddress-field"
                     >
                       <div
-                        class="pf-v5-c-form__group-label"
+                        class="pf-v6-c-form__group-label"
                       >
                         <label
-                          class="pf-v5-c-form__label"
+                          class="pf-v6-c-form__label"
                           for="form-input-nodePortAddress-field"
                         >
                           <span
-                            class="pf-v5-c-form__label-text"
+                            class="pf-v6-c-form__label-text"
                           >
                             ai:Host address
                           </span>
                           <span
                             aria-hidden="true"
-                            class="pf-v5-c-form__label-required"
+                            class="pf-v6-c-form__label-required"
                           >
                              
                             *
                           </span>
                         </label>
-                         
-                        <div
-                          style="display: contents;"
-                        >
-                          <button
-                            aria-disabled="false"
-                            class="pf-v5-c-button pf-m-plain pf-v5-c-form__group-label-help pf-v5-u-p-0"
-                            data-ouia-component-id="OUIA-Generated-Button-plain-1"
-                            data-ouia-component-type="PF5/Button"
-                            data-ouia-safe="true"
-                            type="button"
-                          >
-                            <span
-                              class="pf-v5-c-icon"
-                            >
-                              <span
-                                class="pf-v5-c-icon__content"
-                              >
-                                <svg
-                                  aria-hidden="true"
-                                  class="pf-v5-svg"
-                                  fill="currentColor"
-                                  height="1em"
-                                  role="img"
-                                  viewBox="0 0 512 512"
-                                  width="1em"
-                                >
-                                  <path
-                                    d="M256 8C119.043 8 8 119.083 8 256c0 136.997 111.043 248 248 248s248-111.003 248-248C504 119.083 392.957 8 256 8zm0 448c-110.532 0-200-89.431-200-200 0-110.495 89.472-200 200-200 110.491 0 200 89.471 200 200 0 110.53-89.431 200-200 200zm107.244-255.2c0 67.052-72.421 68.084-72.421 92.863V300c0 6.627-5.373 12-12 12h-45.647c-6.627 0-12-5.373-12-12v-8.659c0-35.745 27.1-50.034 47.579-61.516 17.561-9.845 28.324-16.541 28.324-29.579 0-17.246-21.999-28.693-39.784-28.693-23.189 0-33.894 10.977-48.942 29.969-4.057 5.12-11.46 6.071-16.666 2.124l-27.824-21.098c-5.107-3.872-6.251-11.066-2.644-16.363C184.846 131.491 214.94 112 261.794 112c49.071 0 101.45 38.304 101.45 88.8zM298 368c0 23.159-18.841 42-42 42s-42-18.841-42-42 18.841-42 42-42 42 18.841 42 42z"
-                                  />
-                                </svg>
-                              </span>
-                            </span>
-                          </button>
-                        </div>
-                      </div>
-                      <div
-                        class="pf-v5-c-form__group-control"
-                      >
-                        <div
-                          class="pf-v5-l-split"
+                          
+                        <span
+                          class="pf-v6-c-form__group-label-help"
                         >
                           <div
-                            class="pf-v5-l-split__item pf-m-fill"
+                            style="display: contents;"
+                          >
+                            <button
+                              class="pf-v6-c-button pf-m-plain pf-v6-c-form__group-label-help pf-v6-u-p-0"
+                              data-ouia-component-id="OUIA-Generated-Button-plain-1"
+                              data-ouia-component-type="PF6/Button"
+                              data-ouia-safe="true"
+                              type="button"
+                            >
+                              <span
+                                class="pf-v6-c-button__icon"
+                              >
+                                <span
+                                  class="pf-v6-c-icon"
+                                >
+                                  <span
+                                    class="pf-v6-c-icon__content"
+                                  >
+                                    <svg
+                                      aria-hidden="true"
+                                      class="pf-v6-svg"
+                                      fill="currentColor"
+                                      height="1em"
+                                      role="img"
+                                      viewBox="0 0 512 512"
+                                      width="1em"
+                                    >
+                                      <path
+                                        d="M256 8C119.043 8 8 119.083 8 256c0 136.997 111.043 248 248 248s248-111.003 248-248C504 119.083 392.957 8 256 8zm0 448c-110.532 0-200-89.431-200-200 0-110.495 89.472-200 200-200 110.491 0 200 89.471 200 200 0 110.53-89.431 200-200 200zm107.244-255.2c0 67.052-72.421 68.084-72.421 92.863V300c0 6.627-5.373 12-12 12h-45.647c-6.627 0-12-5.373-12-12v-8.659c0-35.745 27.1-50.034 47.579-61.516 17.561-9.845 28.324-16.541 28.324-29.579 0-17.246-21.999-28.693-39.784-28.693-23.189 0-33.894 10.977-48.942 29.969-4.057 5.12-11.46 6.071-16.666 2.124l-27.824-21.098c-5.107-3.872-6.251-11.066-2.644-16.363C184.846 131.491 214.94 112 261.794 112c49.071 0 101.45 38.304 101.45 88.8zM298 368c0 23.159-18.841 42-42 42s-42-18.841-42-42 18.841-42 42-42 42 18.841 42 42z"
+                                      />
+                                    </svg>
+                                  </span>
+                                </span>
+                              </span>
+                            </button>
+                          </div>
+                        </span>
+                      </div>
+                      <div
+                        class="pf-v6-c-form__group-control"
+                      >
+                        <div
+                          class="pf-v6-l-split"
+                        >
+                          <div
+                            class="pf-v6-l-split__item pf-m-fill"
                           >
                             <span
-                              class="pf-v5-c-form-control"
+                              class="pf-v6-c-form-control"
                             >
                               <input
                                 aria-describedby="form-input-nodePortAddress-field-helper"
                                 aria-invalid="false"
                                 data-ouia-component-id="OUIA-Generated-TextInputBase-1"
-                                data-ouia-component-type="PF5/TextInput"
+                                data-ouia-component-type="PF6/TextInput"
                                 data-ouia-safe="true"
                                 id="form-input-nodePortAddress-field"
                                 name="nodePortAddress"
@@ -184,127 +191,137 @@ exports[`NetworkForm it renders 1`] = `
                             </span>
                           </div>
                           <div
-                            class="pf-v5-l-split__item"
+                            class="pf-v6-l-split__item"
                           />
                         </div>
                       </div>
                     </div>
                   </div>
                   <div
-                    class="pf-v5-l-grid__item"
+                    class="pf-v6-l-grid__item"
                   >
                     <div
-                      class="pf-v5-c-form__group"
+                      class="pf-v6-c-form__group"
                     >
                       <div
-                        class="pf-v5-c-form__group-label"
+                        class="pf-v6-c-form__group-label"
                       >
                         <label
-                          class="pf-v5-c-form__label"
+                          class="pf-v6-c-form__label"
                           for="form-numberinput-nodePortPort-nodePortPort-field"
                         >
                           <span
-                            class="pf-v5-c-form__label-text"
+                            class="pf-v6-c-form__label-text"
                           >
                             ai:Host port
                           </span>
                         </label>
-                         
-                        <div
-                          style="display: contents;"
-                        >
-                          <button
-                            aria-disabled="false"
-                            class="pf-v5-c-button pf-m-plain pf-v5-c-form__group-label-help pf-v5-u-p-0"
-                            data-ouia-component-id="OUIA-Generated-Button-plain-2"
-                            data-ouia-component-type="PF5/Button"
-                            data-ouia-safe="true"
-                            type="button"
-                          >
-                            <span
-                              class="pf-v5-c-icon"
-                            >
-                              <span
-                                class="pf-v5-c-icon__content"
-                              >
-                                <svg
-                                  aria-hidden="true"
-                                  class="pf-v5-svg"
-                                  fill="currentColor"
-                                  height="1em"
-                                  role="img"
-                                  viewBox="0 0 512 512"
-                                  width="1em"
-                                >
-                                  <path
-                                    d="M256 8C119.043 8 8 119.083 8 256c0 136.997 111.043 248 248 248s248-111.003 248-248C504 119.083 392.957 8 256 8zm0 448c-110.532 0-200-89.431-200-200 0-110.495 89.472-200 200-200 110.491 0 200 89.471 200 200 0 110.53-89.431 200-200 200zm107.244-255.2c0 67.052-72.421 68.084-72.421 92.863V300c0 6.627-5.373 12-12 12h-45.647c-6.627 0-12-5.373-12-12v-8.659c0-35.745 27.1-50.034 47.579-61.516 17.561-9.845 28.324-16.541 28.324-29.579 0-17.246-21.999-28.693-39.784-28.693-23.189 0-33.894 10.977-48.942 29.969-4.057 5.12-11.46 6.071-16.666 2.124l-27.824-21.098c-5.107-3.872-6.251-11.066-2.644-16.363C184.846 131.491 214.94 112 261.794 112c49.071 0 101.45 38.304 101.45 88.8zM298 368c0 23.159-18.841 42-42 42s-42-18.841-42-42 18.841-42 42-42 42 18.841 42 42z"
-                                  />
-                                </svg>
-                              </span>
-                            </span>
-                          </button>
-                        </div>
-                      </div>
-                      <div
-                        class="pf-v5-c-form__group-control"
-                      >
-                        <div
-                          class="pf-v5-l-split"
+                          
+                        <span
+                          class="pf-v6-c-form__group-label-help"
                         >
                           <div
-                            class="pf-v5-l-split__item pf-m-fill"
+                            style="display: contents;"
+                          >
+                            <button
+                              class="pf-v6-c-button pf-m-plain pf-v6-c-form__group-label-help pf-v6-u-p-0"
+                              data-ouia-component-id="OUIA-Generated-Button-plain-2"
+                              data-ouia-component-type="PF6/Button"
+                              data-ouia-safe="true"
+                              type="button"
+                            >
+                              <span
+                                class="pf-v6-c-button__icon"
+                              >
+                                <span
+                                  class="pf-v6-c-icon"
+                                >
+                                  <span
+                                    class="pf-v6-c-icon__content"
+                                  >
+                                    <svg
+                                      aria-hidden="true"
+                                      class="pf-v6-svg"
+                                      fill="currentColor"
+                                      height="1em"
+                                      role="img"
+                                      viewBox="0 0 512 512"
+                                      width="1em"
+                                    >
+                                      <path
+                                        d="M256 8C119.043 8 8 119.083 8 256c0 136.997 111.043 248 248 248s248-111.003 248-248C504 119.083 392.957 8 256 8zm0 448c-110.532 0-200-89.431-200-200 0-110.495 89.472-200 200-200 110.491 0 200 89.471 200 200 0 110.53-89.431 200-200 200zm107.244-255.2c0 67.052-72.421 68.084-72.421 92.863V300c0 6.627-5.373 12-12 12h-45.647c-6.627 0-12-5.373-12-12v-8.659c0-35.745 27.1-50.034 47.579-61.516 17.561-9.845 28.324-16.541 28.324-29.579 0-17.246-21.999-28.693-39.784-28.693-23.189 0-33.894 10.977-48.942 29.969-4.057 5.12-11.46 6.071-16.666 2.124l-27.824-21.098c-5.107-3.872-6.251-11.066-2.644-16.363C184.846 131.491 214.94 112 261.794 112c49.071 0 101.45 38.304 101.45 88.8zM298 368c0 23.159-18.841 42-42 42s-42-18.841-42-42 18.841-42 42-42 42 18.841 42 42z"
+                                      />
+                                    </svg>
+                                  </span>
+                                </span>
+                              </span>
+                            </button>
+                          </div>
+                        </span>
+                      </div>
+                      <div
+                        class="pf-v6-c-form__group-control"
+                      >
+                        <div
+                          class="pf-v6-l-split"
+                        >
+                          <div
+                            class="pf-v6-l-split__item pf-m-fill"
                           >
                             <div
                               aria-describedby="form-numberinput-nodePortPort-nodePortPort-field-helper"
-                              class="pf-v5-c-number-input"
+                              class="pf-v6-c-number-input"
                               id="form-numberinput-nodePortPort-nodePortPort-field"
                               name="nodePortPort"
                             >
                               <div
-                                class="pf-v5-c-input-group"
+                                class="pf-v6-c-input-group"
                               >
                                 <div
-                                  class="pf-v5-c-input-group__item"
+                                  class="pf-v6-c-input-group__item"
                                 >
                                   <button
-                                    aria-disabled="false"
                                     aria-label="Minus"
-                                    class="pf-v5-c-button pf-m-control"
+                                    class="pf-v6-c-button pf-m-control"
                                     data-ouia-component-id="OUIA-Generated-Button-control-1"
-                                    data-ouia-component-type="PF5/Button"
+                                    data-ouia-component-type="PF6/Button"
                                     data-ouia-safe="true"
                                     type="button"
                                   >
                                     <span
-                                      class="pf-v5-c-number-input__icon"
+                                      class="pf-v6-c-button__icon"
                                     >
-                                      <svg
-                                        aria-hidden="true"
-                                        class="pf-v5-svg"
-                                        fill="currentColor"
-                                        height="1em"
-                                        role="img"
-                                        viewBox="0 0 448 512"
-                                        width="1em"
+                                      <span
+                                        class="pf-v6-c-number-input__icon"
                                       >
-                                        <path
-                                          d="M416 208H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h384c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z"
-                                        />
-                                      </svg>
+                                        <svg
+                                          aria-hidden="true"
+                                          class="pf-v6-svg"
+                                          fill="currentColor"
+                                          height="1em"
+                                          role="img"
+                                          viewBox="0 0 448 512"
+                                          width="1em"
+                                        >
+                                          <path
+                                            d="M416 208H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h384c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z"
+                                          />
+                                        </svg>
+                                      </span>
                                     </span>
                                   </button>
                                 </div>
                                 <div
-                                  class="pf-v5-c-input-group__item"
+                                  class="pf-v6-c-input-group__item"
                                 >
                                   <span
-                                    class="pf-v5-c-form-control"
+                                    class="pf-v6-c-form-control"
                                   >
                                     <input
                                       aria-invalid="false"
                                       aria-label="Input"
                                       data-ouia-component-id="OUIA-Generated-TextInputBase-2"
-                                      data-ouia-component-type="PF5/TextInput"
+                                      data-ouia-component-type="PF6/TextInput"
                                       data-ouia-safe="true"
                                       type="number"
                                       value="12"
@@ -312,33 +329,36 @@ exports[`NetworkForm it renders 1`] = `
                                   </span>
                                 </div>
                                 <div
-                                  class="pf-v5-c-input-group__item"
+                                  class="pf-v6-c-input-group__item"
                                 >
                                   <button
-                                    aria-disabled="false"
                                     aria-label="Plus"
-                                    class="pf-v5-c-button pf-m-control"
+                                    class="pf-v6-c-button pf-m-control"
                                     data-ouia-component-id="OUIA-Generated-Button-control-2"
-                                    data-ouia-component-type="PF5/Button"
+                                    data-ouia-component-type="PF6/Button"
                                     data-ouia-safe="true"
                                     type="button"
                                   >
                                     <span
-                                      class="pf-v5-c-number-input__icon"
+                                      class="pf-v6-c-button__icon"
                                     >
-                                      <svg
-                                        aria-hidden="true"
-                                        class="pf-v5-svg"
-                                        fill="currentColor"
-                                        height="1em"
-                                        role="img"
-                                        viewBox="0 0 448 512"
-                                        width="1em"
+                                      <span
+                                        class="pf-v6-c-number-input__icon"
                                       >
-                                        <path
-                                          d="M416 208H272V64c0-17.67-14.33-32-32-32h-32c-17.67 0-32 14.33-32 32v144H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h144v144c0 17.67 14.33 32 32 32h32c17.67 0 32-14.33 32-32V304h144c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z"
-                                        />
-                                      </svg>
+                                        <svg
+                                          aria-hidden="true"
+                                          class="pf-v6-svg"
+                                          fill="currentColor"
+                                          height="1em"
+                                          role="img"
+                                          viewBox="0 0 448 512"
+                                          width="1em"
+                                        >
+                                          <path
+                                            d="M416 208H272V64c0-17.67-14.33-32-32-32h-32c-17.67 0-32 14.33-32 32v144H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h144v144c0 17.67 14.33 32 32 32h32c17.67 0 32-14.33 32-32V304h144c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z"
+                                          />
+                                        </svg>
+                                      </span>
                                     </span>
                                   </button>
                                 </div>
@@ -346,7 +366,7 @@ exports[`NetworkForm it renders 1`] = `
                             </div>
                           </div>
                           <div
-                            class="pf-v5-l-split__item"
+                            class="pf-v6-l-split__item"
                           />
                         </div>
                       </div>
@@ -360,21 +380,21 @@ exports[`NetworkForm it renders 1`] = `
       </div>
     </div>
     <div
-      class="pf-v5-c-form__group"
+      class="pf-v6-c-form__group"
       id="form-control__form-checkbox-isAdvanced-field"
     >
       <div
-        class="pf-v5-c-form__group-control"
+        class="pf-v6-c-form__group-control"
       >
         <div
-          class="pf-v5-c-check ai-advanced-fields"
+          class="pf-v6-c-check ai-advanced-fields"
         >
           <input
             aria-describedby="form-checkbox-isAdvanced-field-helper"
             aria-invalid="false"
-            class="pf-v5-c-check__input"
+            class="pf-v6-c-check__input"
             data-ouia-component-id="OUIA-Generated-Checkbox-1"
-            data-ouia-component-type="PF5/Checkbox"
+            data-ouia-component-type="PF6/Checkbox"
             data-ouia-safe="true"
             id="form-checkbox-isAdvanced-field"
             name="isAdvanced"
@@ -382,16 +402,16 @@ exports[`NetworkForm it renders 1`] = `
             value="false"
           />
           <label
-            class="pf-v5-c-check__label"
+            class="pf-v6-c-check__label"
             for="form-checkbox-isAdvanced-field"
           >
             ai:Use advanced networking
           </label>
           <span
-            class="pf-v5-c-check__description"
+            class="pf-v6-c-check__description"
           >
             <div
-              class="pf-v5-c-helper-text"
+              class="pf-v6-c-helper-text"
             >
               ai:Configure advanced networking properties (e.g. CIDR ranges).
             </div>
@@ -400,22 +420,22 @@ exports[`NetworkForm it renders 1`] = `
       </div>
     </div>
     <div
-      class="pf-v5-c-form__group"
+      class="pf-v6-c-form__group"
       id="form-control__form-checkbox-enableProxy-field"
     >
       <div
-        class="pf-v5-c-form__group-control"
+        class="pf-v6-c-form__group-control"
       >
         <div
-          class="pf-v5-c-check ai-proxy-fields"
+          class="pf-v6-c-check ai-proxy-fields"
         >
           <input
             aria-describedby="form-checkbox-enableProxy-field-helper"
             aria-invalid="false"
             checked=""
-            class="pf-v5-c-check__input"
+            class="pf-v6-c-check__input"
             data-ouia-component-id="OUIA-Generated-Checkbox-2"
-            data-ouia-component-type="PF5/Checkbox"
+            data-ouia-component-type="PF6/Checkbox"
             data-ouia-safe="true"
             id="form-checkbox-enableProxy-field"
             name="enableProxy"
@@ -423,16 +443,16 @@ exports[`NetworkForm it renders 1`] = `
             value="true"
           />
           <label
-            class="pf-v5-c-check__label"
+            class="pf-v6-c-check__label"
             for="form-checkbox-enableProxy-field"
           >
             ai:Show proxy settings
           </label>
           <span
-            class="pf-v5-c-check__description"
+            class="pf-v6-c-check__description"
           >
             <div
-              class="pf-v5-c-helper-text"
+              class="pf-v6-c-helper-text"
             >
               <p>
                 ai:If hosts are behind a firewall that requires the use of a proxy, provide additional information about the proxy.
@@ -440,24 +460,24 @@ exports[`NetworkForm it renders 1`] = `
             </div>
           </span>
           <span
-            class="pf-v5-c-check__body"
+            class="pf-v6-c-check__body"
           >
             <div
-              class="pf-v5-l-grid pf-m-gutter"
+              class="pf-v6-l-grid pf-m-gutter"
             >
               <div
-                class="pf-v5-c-form__group"
+                class="pf-v6-c-form__group"
                 id="form-control__form-input-httpProxy-field"
               >
                 <div
-                  class="pf-v5-c-form__group-label"
+                  class="pf-v6-c-form__group-label"
                 >
                   <label
-                    class="pf-v5-c-form__label"
+                    class="pf-v6-c-form__label"
                     for="form-input-httpProxy-field"
                   >
                     <span
-                      class="pf-v5-c-form__label-text"
+                      class="pf-v6-c-form__label-text"
                     >
                       ai:HTTP proxy URL
                        
@@ -465,57 +485,60 @@ exports[`NetworkForm it renders 1`] = `
                         style="display: contents;"
                       >
                         <button
-                          aria-disabled="false"
-                          class="pf-v5-c-button pf-m-plain pf-v5-c-form__group-label-help pf-v5-u-p-0"
+                          class="pf-v6-c-button pf-m-plain pf-v6-c-form__group-label-help pf-v6-u-p-0"
                           data-ouia-component-id="OUIA-Generated-Button-plain-3"
-                          data-ouia-component-type="PF5/Button"
+                          data-ouia-component-type="PF6/Button"
                           data-ouia-safe="true"
                           type="button"
                         >
                           <span
-                            class="pf-v5-c-icon"
+                            class="pf-v6-c-button__icon"
                           >
                             <span
-                              class="pf-v5-c-icon__content"
+                              class="pf-v6-c-icon"
                             >
-                              <svg
-                                aria-hidden="true"
-                                class="pf-v5-svg"
-                                fill="currentColor"
-                                height="1em"
-                                role="img"
-                                viewBox="0 0 512 512"
-                                width="1em"
+                              <span
+                                class="pf-v6-c-icon__content"
                               >
-                                <path
-                                  d="M256 8C119.043 8 8 119.083 8 256c0 136.997 111.043 248 248 248s248-111.003 248-248C504 119.083 392.957 8 256 8zm0 448c-110.532 0-200-89.431-200-200 0-110.495 89.472-200 200-200 110.491 0 200 89.471 200 200 0 110.53-89.431 200-200 200zm107.244-255.2c0 67.052-72.421 68.084-72.421 92.863V300c0 6.627-5.373 12-12 12h-45.647c-6.627 0-12-5.373-12-12v-8.659c0-35.745 27.1-50.034 47.579-61.516 17.561-9.845 28.324-16.541 28.324-29.579 0-17.246-21.999-28.693-39.784-28.693-23.189 0-33.894 10.977-48.942 29.969-4.057 5.12-11.46 6.071-16.666 2.124l-27.824-21.098c-5.107-3.872-6.251-11.066-2.644-16.363C184.846 131.491 214.94 112 261.794 112c49.071 0 101.45 38.304 101.45 88.8zM298 368c0 23.159-18.841 42-42 42s-42-18.841-42-42 18.841-42 42-42 42 18.841 42 42z"
-                                />
-                              </svg>
+                                <svg
+                                  aria-hidden="true"
+                                  class="pf-v6-svg"
+                                  fill="currentColor"
+                                  height="1em"
+                                  role="img"
+                                  viewBox="0 0 512 512"
+                                  width="1em"
+                                >
+                                  <path
+                                    d="M256 8C119.043 8 8 119.083 8 256c0 136.997 111.043 248 248 248s248-111.003 248-248C504 119.083 392.957 8 256 8zm0 448c-110.532 0-200-89.431-200-200 0-110.495 89.472-200 200-200 110.491 0 200 89.471 200 200 0 110.53-89.431 200-200 200zm107.244-255.2c0 67.052-72.421 68.084-72.421 92.863V300c0 6.627-5.373 12-12 12h-45.647c-6.627 0-12-5.373-12-12v-8.659c0-35.745 27.1-50.034 47.579-61.516 17.561-9.845 28.324-16.541 28.324-29.579 0-17.246-21.999-28.693-39.784-28.693-23.189 0-33.894 10.977-48.942 29.969-4.057 5.12-11.46 6.071-16.666 2.124l-27.824-21.098c-5.107-3.872-6.251-11.066-2.644-16.363C184.846 131.491 214.94 112 261.794 112c49.071 0 101.45 38.304 101.45 88.8zM298 368c0 23.159-18.841 42-42 42s-42-18.841-42-42 18.841-42 42-42 42 18.841 42 42z"
+                                  />
+                                </svg>
+                              </span>
                             </span>
                           </span>
                         </button>
                       </div>
                     </span>
                   </label>
-                   
+                    
                 </div>
                 <div
-                  class="pf-v5-c-form__group-control"
+                  class="pf-v6-c-form__group-control"
                 >
                   <div
-                    class="pf-v5-l-split"
+                    class="pf-v6-l-split"
                   >
                     <div
-                      class="pf-v5-l-split__item pf-m-fill"
+                      class="pf-v6-l-split__item pf-m-fill"
                     >
                       <span
-                        class="pf-v5-c-form-control"
+                        class="pf-v6-c-form-control"
                       >
                         <input
                           aria-describedby="form-input-httpProxy-field-helper"
                           aria-invalid="false"
                           data-ouia-component-id="OUIA-Generated-TextInputBase-3"
-                          data-ouia-component-type="PF5/TextInput"
+                          data-ouia-component-type="PF6/TextInput"
                           data-ouia-safe="true"
                           id="form-input-httpProxy-field"
                           name="httpProxy"
@@ -526,40 +549,48 @@ exports[`NetworkForm it renders 1`] = `
                       </span>
                     </div>
                     <div
-                      class="pf-v5-l-split__item"
+                      class="pf-v6-l-split__item"
                     />
                   </div>
                   <div
-                    class="pf-v5-c-form__helper-text"
+                    class="pf-v6-c-form__helper-text"
                   >
                     <div
-                      class="pf-v5-c-helper-text"
+                      class="pf-v6-c-helper-text"
                     >
                       <div
-                        class="pf-v5-c-helper-text__item pf-m-error"
+                        class="pf-v6-c-helper-text__item"
                         id="form-input-httpProxy-field-helper"
                       >
                         <span
-                          class="pf-v5-c-helper-text__item-text"
-                        />
+                          class="pf-v6-c-helper-text__item-text"
+                        >
+                          <div>
+                            ai:URL must start with 
+                            <strong>
+                              http
+                            </strong>
+                            .
+                          </div>
+                        </span>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
               <div
-                class="pf-v5-c-form__group"
+                class="pf-v6-c-form__group"
                 id="form-control__form-input-httpsProxy-field"
               >
                 <div
-                  class="pf-v5-c-form__group-label"
+                  class="pf-v6-c-form__group-label"
                 >
                   <label
-                    class="pf-v5-c-form__label"
+                    class="pf-v6-c-form__label"
                     for="form-input-httpsProxy-field"
                   >
                     <span
-                      class="pf-v5-c-form__label-text"
+                      class="pf-v6-c-form__label-text"
                     >
                       ai:HTTPS proxy URL
                        
@@ -567,57 +598,60 @@ exports[`NetworkForm it renders 1`] = `
                         style="display: contents;"
                       >
                         <button
-                          aria-disabled="false"
-                          class="pf-v5-c-button pf-m-plain pf-v5-c-form__group-label-help pf-v5-u-p-0"
+                          class="pf-v6-c-button pf-m-plain pf-v6-c-form__group-label-help pf-v6-u-p-0"
                           data-ouia-component-id="OUIA-Generated-Button-plain-4"
-                          data-ouia-component-type="PF5/Button"
+                          data-ouia-component-type="PF6/Button"
                           data-ouia-safe="true"
                           type="button"
                         >
                           <span
-                            class="pf-v5-c-icon"
+                            class="pf-v6-c-button__icon"
                           >
                             <span
-                              class="pf-v5-c-icon__content"
+                              class="pf-v6-c-icon"
                             >
-                              <svg
-                                aria-hidden="true"
-                                class="pf-v5-svg"
-                                fill="currentColor"
-                                height="1em"
-                                role="img"
-                                viewBox="0 0 512 512"
-                                width="1em"
+                              <span
+                                class="pf-v6-c-icon__content"
                               >
-                                <path
-                                  d="M256 8C119.043 8 8 119.083 8 256c0 136.997 111.043 248 248 248s248-111.003 248-248C504 119.083 392.957 8 256 8zm0 448c-110.532 0-200-89.431-200-200 0-110.495 89.472-200 200-200 110.491 0 200 89.471 200 200 0 110.53-89.431 200-200 200zm107.244-255.2c0 67.052-72.421 68.084-72.421 92.863V300c0 6.627-5.373 12-12 12h-45.647c-6.627 0-12-5.373-12-12v-8.659c0-35.745 27.1-50.034 47.579-61.516 17.561-9.845 28.324-16.541 28.324-29.579 0-17.246-21.999-28.693-39.784-28.693-23.189 0-33.894 10.977-48.942 29.969-4.057 5.12-11.46 6.071-16.666 2.124l-27.824-21.098c-5.107-3.872-6.251-11.066-2.644-16.363C184.846 131.491 214.94 112 261.794 112c49.071 0 101.45 38.304 101.45 88.8zM298 368c0 23.159-18.841 42-42 42s-42-18.841-42-42 18.841-42 42-42 42 18.841 42 42z"
-                                />
-                              </svg>
+                                <svg
+                                  aria-hidden="true"
+                                  class="pf-v6-svg"
+                                  fill="currentColor"
+                                  height="1em"
+                                  role="img"
+                                  viewBox="0 0 512 512"
+                                  width="1em"
+                                >
+                                  <path
+                                    d="M256 8C119.043 8 8 119.083 8 256c0 136.997 111.043 248 248 248s248-111.003 248-248C504 119.083 392.957 8 256 8zm0 448c-110.532 0-200-89.431-200-200 0-110.495 89.472-200 200-200 110.491 0 200 89.471 200 200 0 110.53-89.431 200-200 200zm107.244-255.2c0 67.052-72.421 68.084-72.421 92.863V300c0 6.627-5.373 12-12 12h-45.647c-6.627 0-12-5.373-12-12v-8.659c0-35.745 27.1-50.034 47.579-61.516 17.561-9.845 28.324-16.541 28.324-29.579 0-17.246-21.999-28.693-39.784-28.693-23.189 0-33.894 10.977-48.942 29.969-4.057 5.12-11.46 6.071-16.666 2.124l-27.824-21.098c-5.107-3.872-6.251-11.066-2.644-16.363C184.846 131.491 214.94 112 261.794 112c49.071 0 101.45 38.304 101.45 88.8zM298 368c0 23.159-18.841 42-42 42s-42-18.841-42-42 18.841-42 42-42 42 18.841 42 42z"
+                                  />
+                                </svg>
+                              </span>
                             </span>
                           </span>
                         </button>
                       </div>
                     </span>
                   </label>
-                   
+                    
                 </div>
                 <div
-                  class="pf-v5-c-form__group-control"
+                  class="pf-v6-c-form__group-control"
                 >
                   <div
-                    class="pf-v5-l-split"
+                    class="pf-v6-l-split"
                   >
                     <div
-                      class="pf-v5-l-split__item pf-m-fill"
+                      class="pf-v6-l-split__item pf-m-fill"
                     >
                       <span
-                        class="pf-v5-c-form-control"
+                        class="pf-v6-c-form-control"
                       >
                         <input
                           aria-describedby="form-input-httpsProxy-field-helper"
                           aria-invalid="false"
                           data-ouia-component-id="OUIA-Generated-TextInputBase-4"
-                          data-ouia-component-type="PF5/TextInput"
+                          data-ouia-component-type="PF6/TextInput"
                           data-ouia-safe="true"
                           id="form-input-httpsProxy-field"
                           name="httpsProxy"
@@ -628,40 +662,48 @@ exports[`NetworkForm it renders 1`] = `
                       </span>
                     </div>
                     <div
-                      class="pf-v5-l-split__item"
+                      class="pf-v6-l-split__item"
                     />
                   </div>
                   <div
-                    class="pf-v5-c-form__helper-text"
+                    class="pf-v6-c-form__helper-text"
                   >
                     <div
-                      class="pf-v5-c-helper-text"
+                      class="pf-v6-c-helper-text"
                     >
                       <div
-                        class="pf-v5-c-helper-text__item pf-m-error"
+                        class="pf-v6-c-helper-text__item"
                         id="form-input-httpsProxy-field-helper"
                       >
                         <span
-                          class="pf-v5-c-helper-text__item-text"
-                        />
+                          class="pf-v6-c-helper-text__item-text"
+                        >
+                          <div>
+                            ai:URL must start with 
+                            <strong>
+                              http
+                            </strong>
+                             (https schemes are not currently supported).
+                          </div>
+                        </span>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
               <div
-                class="pf-v5-c-form__group"
+                class="pf-v6-c-form__group"
                 id="form-control__form-input-noProxy-field"
               >
                 <div
-                  class="pf-v5-c-form__group-label"
+                  class="pf-v6-c-form__group-label"
                 >
                   <label
-                    class="pf-v5-c-form__label"
+                    class="pf-v6-c-form__label"
                     for="form-input-noProxy-field"
                   >
                     <span
-                      class="pf-v5-c-form__label-text"
+                      class="pf-v6-c-form__label-text"
                     >
                       ai:No proxy domains
                        
@@ -669,57 +711,60 @@ exports[`NetworkForm it renders 1`] = `
                         style="display: contents;"
                       >
                         <button
-                          aria-disabled="false"
-                          class="pf-v5-c-button pf-m-plain pf-v5-c-form__group-label-help pf-v5-u-p-0"
+                          class="pf-v6-c-button pf-m-plain pf-v6-c-form__group-label-help pf-v6-u-p-0"
                           data-ouia-component-id="OUIA-Generated-Button-plain-5"
-                          data-ouia-component-type="PF5/Button"
+                          data-ouia-component-type="PF6/Button"
                           data-ouia-safe="true"
                           type="button"
                         >
                           <span
-                            class="pf-v5-c-icon"
+                            class="pf-v6-c-button__icon"
                           >
                             <span
-                              class="pf-v5-c-icon__content"
+                              class="pf-v6-c-icon"
                             >
-                              <svg
-                                aria-hidden="true"
-                                class="pf-v5-svg"
-                                fill="currentColor"
-                                height="1em"
-                                role="img"
-                                viewBox="0 0 512 512"
-                                width="1em"
+                              <span
+                                class="pf-v6-c-icon__content"
                               >
-                                <path
-                                  d="M256 8C119.043 8 8 119.083 8 256c0 136.997 111.043 248 248 248s248-111.003 248-248C504 119.083 392.957 8 256 8zm0 448c-110.532 0-200-89.431-200-200 0-110.495 89.472-200 200-200 110.491 0 200 89.471 200 200 0 110.53-89.431 200-200 200zm107.244-255.2c0 67.052-72.421 68.084-72.421 92.863V300c0 6.627-5.373 12-12 12h-45.647c-6.627 0-12-5.373-12-12v-8.659c0-35.745 27.1-50.034 47.579-61.516 17.561-9.845 28.324-16.541 28.324-29.579 0-17.246-21.999-28.693-39.784-28.693-23.189 0-33.894 10.977-48.942 29.969-4.057 5.12-11.46 6.071-16.666 2.124l-27.824-21.098c-5.107-3.872-6.251-11.066-2.644-16.363C184.846 131.491 214.94 112 261.794 112c49.071 0 101.45 38.304 101.45 88.8zM298 368c0 23.159-18.841 42-42 42s-42-18.841-42-42 18.841-42 42-42 42 18.841 42 42z"
-                                />
-                              </svg>
+                                <svg
+                                  aria-hidden="true"
+                                  class="pf-v6-svg"
+                                  fill="currentColor"
+                                  height="1em"
+                                  role="img"
+                                  viewBox="0 0 512 512"
+                                  width="1em"
+                                >
+                                  <path
+                                    d="M256 8C119.043 8 8 119.083 8 256c0 136.997 111.043 248 248 248s248-111.003 248-248C504 119.083 392.957 8 256 8zm0 448c-110.532 0-200-89.431-200-200 0-110.495 89.472-200 200-200 110.491 0 200 89.471 200 200 0 110.53-89.431 200-200 200zm107.244-255.2c0 67.052-72.421 68.084-72.421 92.863V300c0 6.627-5.373 12-12 12h-45.647c-6.627 0-12-5.373-12-12v-8.659c0-35.745 27.1-50.034 47.579-61.516 17.561-9.845 28.324-16.541 28.324-29.579 0-17.246-21.999-28.693-39.784-28.693-23.189 0-33.894 10.977-48.942 29.969-4.057 5.12-11.46 6.071-16.666 2.124l-27.824-21.098c-5.107-3.872-6.251-11.066-2.644-16.363C184.846 131.491 214.94 112 261.794 112c49.071 0 101.45 38.304 101.45 88.8zM298 368c0 23.159-18.841 42-42 42s-42-18.841-42-42 18.841-42 42-42 42 18.841 42 42z"
+                                  />
+                                </svg>
+                              </span>
                             </span>
                           </span>
                         </button>
                       </div>
                     </span>
                   </label>
-                   
+                    
                 </div>
                 <div
-                  class="pf-v5-c-form__group-control"
+                  class="pf-v6-c-form__group-control"
                 >
                   <div
-                    class="pf-v5-l-split"
+                    class="pf-v6-l-split"
                   >
                     <div
-                      class="pf-v5-l-split__item pf-m-fill"
+                      class="pf-v6-l-split__item pf-m-fill"
                     >
                       <span
-                        class="pf-v5-c-form-control"
+                        class="pf-v6-c-form-control"
                       >
                         <input
                           aria-describedby="form-input-noProxy-field-helper"
                           aria-invalid="false"
                           data-ouia-component-id="OUIA-Generated-TextInputBase-5"
-                          data-ouia-component-type="PF5/TextInput"
+                          data-ouia-component-type="PF6/TextInput"
                           data-ouia-safe="true"
                           id="form-input-noProxy-field"
                           name="noProxy"
@@ -730,22 +775,34 @@ exports[`NetworkForm it renders 1`] = `
                       </span>
                     </div>
                     <div
-                      class="pf-v5-l-split__item"
+                      class="pf-v6-l-split__item"
                     />
                   </div>
                   <div
-                    class="pf-v5-c-form__helper-text"
+                    class="pf-v6-c-form__helper-text"
                   >
                     <div
-                      class="pf-v5-c-helper-text"
+                      class="pf-v6-c-helper-text"
                     >
                       <div
-                        class="pf-v5-c-helper-text__item pf-m-error"
+                        class="pf-v6-c-helper-text__item"
                         id="form-input-noProxy-field-helper"
                       >
                         <span
-                          class="pf-v5-c-helper-text__item-text"
-                        />
+                          class="pf-v6-c-helper-text__item-text"
+                        >
+                          <div>
+                            ai:Use a comma to separate each listed domain. Preface a domain with 
+                            <strong>
+                              .
+                            </strong>
+                             to include its subdomains. Use 
+                            <strong>
+                              *
+                            </strong>
+                             to bypass the proxy for all destinations.
+                          </div>
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -757,17 +814,17 @@ exports[`NetworkForm it renders 1`] = `
       </div>
     </div>
     <div
-      class="pf-v5-c-form__group"
+      class="pf-v6-c-form__group"
     >
       <div
-        class="pf-v5-c-form__group-label"
+        class="pf-v6-c-form__group-label"
       >
         <label
-          class="pf-v5-c-form__label"
+          class="pf-v6-c-form__label"
           for="form-input-sshPublicKey-discovery-field"
         >
           <span
-            class="pf-v5-c-form__label-text"
+            class="pf-v6-c-form__label-text"
           >
             ai:SSH public key
              
@@ -775,32 +832,35 @@ exports[`NetworkForm it renders 1`] = `
               style="display: contents;"
             >
               <button
-                aria-disabled="false"
-                class="pf-v5-c-button pf-m-plain pf-v5-c-form__group-label-help pf-v5-u-p-0"
+                class="pf-v6-c-button pf-m-plain pf-v6-c-form__group-label-help pf-v6-u-p-0"
                 data-ouia-component-id="OUIA-Generated-Button-plain-6"
-                data-ouia-component-type="PF5/Button"
+                data-ouia-component-type="PF6/Button"
                 data-ouia-safe="true"
                 type="button"
               >
                 <span
-                  class="pf-v5-c-icon"
+                  class="pf-v6-c-button__icon"
                 >
                   <span
-                    class="pf-v5-c-icon__content"
+                    class="pf-v6-c-icon"
                   >
-                    <svg
-                      aria-hidden="true"
-                      class="pf-v5-svg"
-                      fill="currentColor"
-                      height="1em"
-                      role="img"
-                      viewBox="0 0 512 512"
-                      width="1em"
+                    <span
+                      class="pf-v6-c-icon__content"
                     >
-                      <path
-                        d="M256 8C119.043 8 8 119.083 8 256c0 136.997 111.043 248 248 248s248-111.003 248-248C504 119.083 392.957 8 256 8zm0 448c-110.532 0-200-89.431-200-200 0-110.495 89.472-200 200-200 110.491 0 200 89.471 200 200 0 110.53-89.431 200-200 200zm107.244-255.2c0 67.052-72.421 68.084-72.421 92.863V300c0 6.627-5.373 12-12 12h-45.647c-6.627 0-12-5.373-12-12v-8.659c0-35.745 27.1-50.034 47.579-61.516 17.561-9.845 28.324-16.541 28.324-29.579 0-17.246-21.999-28.693-39.784-28.693-23.189 0-33.894 10.977-48.942 29.969-4.057 5.12-11.46 6.071-16.666 2.124l-27.824-21.098c-5.107-3.872-6.251-11.066-2.644-16.363C184.846 131.491 214.94 112 261.794 112c49.071 0 101.45 38.304 101.45 88.8zM298 368c0 23.159-18.841 42-42 42s-42-18.841-42-42 18.841-42 42-42 42 18.841 42 42z"
-                      />
-                    </svg>
+                      <svg
+                        aria-hidden="true"
+                        class="pf-v6-svg"
+                        fill="currentColor"
+                        height="1em"
+                        role="img"
+                        viewBox="0 0 512 512"
+                        width="1em"
+                      >
+                        <path
+                          d="M256 8C119.043 8 8 119.083 8 256c0 136.997 111.043 248 248 248s248-111.003 248-248C504 119.083 392.957 8 256 8zm0 448c-110.532 0-200-89.431-200-200 0-110.495 89.472-200 200-200 110.491 0 200 89.471 200 200 0 110.53-89.431 200-200 200zm107.244-255.2c0 67.052-72.421 68.084-72.421 92.863V300c0 6.627-5.373 12-12 12h-45.647c-6.627 0-12-5.373-12-12v-8.659c0-35.745 27.1-50.034 47.579-61.516 17.561-9.845 28.324-16.541 28.324-29.579 0-17.246-21.999-28.693-39.784-28.693-23.189 0-33.894 10.977-48.942 29.969-4.057 5.12-11.46 6.071-16.666 2.124l-27.824-21.098c-5.107-3.872-6.251-11.066-2.644-16.363C184.846 131.491 214.94 112 261.794 112c49.071 0 101.45 38.304 101.45 88.8zM298 368c0 23.159-18.841 42-42 42s-42-18.841-42-42 18.841-42 42-42 42 18.841 42 42z"
+                        />
+                      </svg>
+                    </span>
                   </span>
                 </span>
               </button>
@@ -808,41 +868,41 @@ exports[`NetworkForm it renders 1`] = `
           </span>
           <span
             aria-hidden="true"
-            class="pf-v5-c-form__label-required"
+            class="pf-v6-c-form__label-required"
           >
              
             *
           </span>
         </label>
-         
+          
       </div>
       <div
-        class="pf-v5-c-form__group-control"
+        class="pf-v6-c-form__group-control"
       >
         <div
           aria-describedby="form-input-sshPublicKey-discovery-field-helper"
-          class="pf-v5-c-file-upload"
+          class="pf-v6-c-file-upload"
+          data-testid="upload-field-form-input-sshPublicKey-discovery-field"
           role="presentation"
           style="resize: vertical;"
         >
           <div
-            class="pf-v5-c-file-upload__file-select"
+            class="pf-v6-c-file-upload__file-select"
           >
             <div
-              class="pf-v5-c-input-group"
+              class="pf-v6-c-input-group"
             >
               <div
-                class="pf-v5-c-input-group__item pf-m-fill"
+                class="pf-v6-c-input-group__item pf-m-fill"
               >
                 <span
-                  class="pf-v5-c-form-control pf-m-readonly"
+                  class="pf-v6-c-form-control pf-m-readonly"
                 >
                   <input
-                    aria-describedby="sshPublicKey-browse-button"
                     aria-invalid="false"
                     aria-label="ai:Drag a file here or browse to upload"
                     data-ouia-component-id="OUIA-Generated-TextInputBase-6"
-                    data-ouia-component-type="PF5/TextInput"
+                    data-ouia-component-type="PF6/TextInput"
                     data-ouia-safe="true"
                     id="sshPublicKey-filename"
                     name="sshPublicKey-filename"
@@ -854,42 +914,47 @@ exports[`NetworkForm it renders 1`] = `
                 </span>
               </div>
               <div
-                class="pf-v5-c-input-group__item"
+                class="pf-v6-c-input-group__item"
               >
                 <button
-                  aria-disabled="false"
-                  class="pf-v5-c-button pf-m-control"
+                  class="pf-v6-c-button pf-m-control"
                   data-ouia-component-id="OUIA-Generated-Button-control-3"
-                  data-ouia-component-type="PF5/Button"
+                  data-ouia-component-type="PF6/Button"
                   data-ouia-safe="true"
-                  id="sshPublicKey-browse-button"
                   type="button"
                 >
-                  ai:Browse...
+                  <span
+                    class="pf-v6-c-button__text"
+                  >
+                    ai:Browse...
+                  </span>
                 </button>
               </div>
               <div
-                class="pf-v5-c-input-group__item"
+                class="pf-v6-c-input-group__item"
               >
                 <button
-                  aria-disabled="true"
-                  class="pf-v5-c-button pf-m-control pf-m-disabled"
+                  class="pf-v6-c-button pf-m-control"
                   data-ouia-component-id="OUIA-Generated-Button-control-4"
-                  data-ouia-component-type="PF5/Button"
+                  data-ouia-component-type="PF6/Button"
                   data-ouia-safe="true"
                   disabled=""
                   type="button"
                 >
-                  ai:Clear
+                  <span
+                    class="pf-v6-c-button__text"
+                  >
+                    ai:Clear
+                  </span>
                 </button>
               </div>
             </div>
           </div>
           <div
-            class="pf-v5-c-file-upload__file-details"
+            class="pf-v6-c-file-upload__file-details"
           >
             <span
-              class="pf-v5-c-form-control pf-m-resize-vertical"
+              class="pf-v6-c-form-control pf-m-textarea pf-m-resize-vertical"
             >
               <textarea
                 aria-invalid="false"
@@ -902,40 +967,43 @@ exports[`NetworkForm it renders 1`] = `
           </div>
           <input
             accept="application/x-ssh-key,.pub"
-            style="display: none;"
+            hidden=""
+            style="border: 0px; clip: rect(0px, 0px, 0px, 0px); clip-path: inset(50%); height: 1px; margin: 0px -1px -1px 0px; overflow: hidden; padding: 0px; position: absolute; width: 1px; white-space: nowrap;"
             tabindex="-1"
             type="file"
           />
         </div>
         <div
-          class="pf-v5-c-form__helper-text"
+          class="pf-v6-c-form__helper-text"
         >
           <div
-            class="pf-v5-c-helper-text"
+            class="pf-v6-c-helper-text"
           >
             <div
-              class="pf-v5-c-helper-text__item"
+              class="pf-v6-c-helper-text__item"
+              data-testid="input-uploadfield-form-input-sshPublicKey-discovery-field-helper-text"
               id="form-input-sshPublicKey-discovery-field-helper"
             >
               <span
-                class="pf-v5-c-helper-text__item-text"
+                class="pf-v6-c-helper-text__item-text"
               >
                 <div
-                  class="pf-v5-c-helper-text"
+                  class="pf-v6-c-helper-text"
                   id="sshPublicKey"
                 >
                   <div
-                    class="pf-v5-c-helper-text__item"
+                    class="pf-v6-c-helper-text__item"
+                    data-testid="ssh-public-key-helper-text"
                   >
                     <span
-                      class="pf-v5-c-helper-text__item-text"
+                      class="pf-v6-c-helper-text__item-text"
                     >
-                      ai:Paste the content of a public ssh key you want to use to connect to the hosts into this field.
+                      ai:Paste the content of a public SSH key you want to use to connect to the hosts into this field.
                        
                       <a
-                        class=""
-                        data-ouia-component-id="OUIA-Generated-Text-1"
-                        data-ouia-component-type="PF5/Text"
+                        class="pf-v6-c-content--a"
+                        data-ouia-component-id="OUIA-Generated-Content-1"
+                        data-ouia-component-type="PF6/Content"
                         data-ouia-safe="true"
                         data-pf-content="true"
                         href="https://www.redhat.com/sysadmin/configure-ssh-keygen"
@@ -946,7 +1014,7 @@ exports[`NetworkForm it renders 1`] = `
                          
                         <svg
                           aria-hidden="true"
-                          class="pf-v5-svg"
+                          class="pf-v6-svg"
                           color="rgb(0, 123, 186)"
                           fill="currentColor"
                           height="1em"

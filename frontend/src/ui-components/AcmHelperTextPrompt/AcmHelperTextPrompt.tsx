@@ -14,16 +14,16 @@ export function AcmHelperTextPrompt(props: AcmHelperTextPromptProps) {
   return (
     <Split>
       <SplitItem isFilled>
-        <span className="pf-v5-c-form__helper-text">{helperText}</span>
+        <span className="pf-v6-c-form__helper-text">{helperText}</span>
       </SplitItem>
       <SplitItem>
         <Button
           variant="link"
-          style={{ paddingRight: '0px' }}
+          isInline
           onClick={() => window.open(prompt?.href)}
           isDisabled={prompt?.isDisabled}
           icon={<ExternalLinkAltIcon />}
-          iconPosition="right"
+          iconPosition="end"
         >
           {prompt?.label}
         </Button>

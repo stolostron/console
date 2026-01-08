@@ -15,16 +15,10 @@ import {
   useState,
 } from 'react'
 import { TFunction } from 'react-i18next'
-import {
-  generatePath,
-  Link,
-  Outlet,
-  useLocation,
-  useNavigate,
-  useOutletContext,
-  useParams,
-} from 'react-router-dom-v5-compat'
+import { generatePath, Outlet, useLocation, useNavigate, useOutletContext, useParams } from 'react-router-dom-v5-compat'
+import { LoadingPage } from '../../../components/LoadingPage'
 import { RbacDropdown } from '../../../components/Rbac'
+import { useLocalHubName } from '../../../hooks/use-local-hub'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { PluginContext } from '../../../lib/PluginContext'
 import { canUser, rbacPatch } from '../../../lib/rbac-util'
@@ -45,7 +39,6 @@ import {
   AcmPage,
   AcmPageHeader,
   AcmSecondaryNav,
-  AcmSecondaryNavItem,
 } from '../../../ui-components'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { searchClient } from '../../Search/search-sdk/search-client'
@@ -53,11 +46,9 @@ import { useSearchCompleteQuery } from '../../Search/search-sdk/search-sdk'
 import { DeleteResourceModal, IDeleteResourceModalProps } from '../components/DeleteResourceModal'
 import { getAppChildResources, getSearchLink, isResourceTypeOf } from '../helpers/resource-helper'
 import { getApplication } from './ApplicationTopology/model/application'
+import { getResourceStatuses } from './ApplicationTopology/model/computeStatuses'
 import { getTopology } from './ApplicationTopology/model/topology'
 import { getApplicationData } from './ApplicationTopology/model/topologyUtils'
-import { useLocalHubName } from '../../../hooks/use-local-hub'
-import { getResourceStatuses } from './ApplicationTopology/model/computeStatuses'
-import { LoadingPage } from '../../../components/LoadingPage'
 import { ToolbarControl, useToolbarControl } from './ApplicationTopology/topology/components/TopologyToolbar'
 
 export const ApplicationContext = createContext<{
@@ -507,14 +498,22 @@ export default function ApplicationDetailsPage() {
           ]}
           title={name}
           navigation={
-            <AcmSecondaryNav>
-              <AcmSecondaryNavItem isActive={location.pathname === topologyPath}>
-                <Link to={{ pathname: topologyPath, search }}>{t('Topology')}</Link>
-              </AcmSecondaryNavItem>
-              <AcmSecondaryNavItem isActive={location.pathname === overviewPath}>
-                <Link to={{ pathname: overviewPath, search }}>{t('Details')}</Link>
-              </AcmSecondaryNavItem>
-            </AcmSecondaryNav>
+            <AcmSecondaryNav
+              navItems={[
+                {
+                  key: 'apps-details-topology',
+                  title: t('Topology'),
+                  isActive: location.pathname === topologyPath,
+                  to: { pathname: topologyPath, search },
+                },
+                {
+                  key: 'apps-details-details',
+                  title: t('Details'),
+                  isActive: location.pathname === overviewPath,
+                  to: { pathname: overviewPath, search },
+                },
+              ]}
+            />
           }
           actions={
             applicationNotFound || !applicationData ? (

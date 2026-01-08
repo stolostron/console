@@ -1,26 +1,29 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
+  Badge,
   Button,
+  Icon,
+  KeyTypes,
+  Label,
+  LabelGroup,
   MenuFooter,
   MenuToggle,
   MenuToggleElement,
   Select,
-  SelectProps,
+  SelectGroup,
   SelectList,
+  SelectOption,
+  SelectOptionProps,
+  SelectProps,
+  Skeleton,
   TextInputGroup,
   TextInputGroupMain,
   TextInputGroupUtilities,
-  SelectOptionProps,
-  SelectOption,
-  Skeleton,
-  ChipGroup,
-  Chip,
-  Icon,
-  SelectGroup,
-  Badge,
-  KeyTypes,
 } from '@patternfly/react-core'
+
+import { css } from '@emotion/css'
+import TimesIcon from '@patternfly/react-icons/dist/esm/icons/times-icon'
 import {
   Children,
   cloneElement,
@@ -34,8 +37,6 @@ import {
   useState,
 } from 'react'
 import { useTranslation } from '../lib/acm-i18next'
-import TimesIcon from '@patternfly/react-icons/dist/esm/icons/times-icon'
-import { css } from '@emotion/css'
 
 export interface SelectOptionObject {
   /** Function returns a string to represent the select option object */
@@ -97,10 +98,10 @@ const placeholderClass = css({
 })
 
 const menuToggleClass = css`
-  span.pf-v5-c-menu-toggle__text {
+  span.pf-v6-c-menu-toggle__text {
     width: 100%;
   }
-  span.pf-v5-c-menu-toggle__controls {
+  span.pf-v6-c-menu-toggle__controls {
     padding-inline-start: 0;
   }
 `
@@ -616,7 +617,13 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
         badge={badge}
         isDisabled={isDisabled}
         onClick={onToggleClick}
-        icon={toggleIcon && <Icon className={filterIconClass}>{toggleIcon}</Icon>}
+        icon={
+          toggleIcon && (
+            <Icon style={{ display: 'flex', alignItems: 'center', height: '100%' }} className={filterIconClass}>
+              {toggleIcon}
+            </Icon>
+          )
+        }
         isExpanded={isOpen}
         className={menuToggleClass}
         style={
@@ -640,6 +647,7 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
         </div>
         <TextInputGroupUtilities {...getClearBtnDisplayStyle()}>
           <Button
+            icon={<TimesIcon aria-hidden />}
             variant="plain"
             onClick={(e) => {
               onClearSelection()
@@ -647,9 +655,7 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
             }}
             aria-label={t('Clear input value')}
             style={{ paddingInlineStart: 0 }}
-          >
-            <TimesIcon aria-hidden />
-          </Button>
+          />
         </TextInputGroupUtilities>
       </TextInputGroup>
     )
@@ -674,25 +680,29 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
           aria-controls="select-multi-typeahead-listbox"
         >
           {variant === SelectVariant.typeaheadMulti && (
-            <ChipGroup aria-label={t('Current selections')}>
+            <LabelGroup aria-label={t('Current selections')}>
               {selectedItems.map((selection) => (
-                <Chip
+                <Label
+                  variant="outline"
                   key={selection}
-                  onClick={(ev) => {
+                  onClose={(ev) => {
                     ev.stopPropagation()
                     _onSelect(ev, selection)
                   }}
                 >
                   {getMultiTypeaheadChildren(selection)}
-                </Chip>
+                </Label>
               ))}
-            </ChipGroup>
+            </LabelGroup>
           )}
         </TextInputGroupMain>
         <TextInputGroupUtilities {...getClearBtnDisplayStyle()}>
-          <Button variant="plain" onClick={() => onClearSelection()} aria-label={t('Clear input value')}>
-            <TimesIcon aria-hidden />
-          </Button>
+          <Button
+            icon={<TimesIcon aria-hidden />}
+            variant="plain"
+            onClick={() => onClearSelection()}
+            aria-label={t('Clear input value')}
+          />
         </TextInputGroupUtilities>
       </TextInputGroup>
     )
@@ -712,6 +722,7 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
       onOpenChange={() => closeMenu()}
       selected={selections}
       onSelect={_onSelect}
+      popperProps={{ appendTo: 'inline' }}
       innerRef={menuRef as React.MutableRefObject<any>}
     >
       {renderSelectList()}

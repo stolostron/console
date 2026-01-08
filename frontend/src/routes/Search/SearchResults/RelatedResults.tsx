@@ -223,7 +223,7 @@ export default function RelatedResults(
           const accordionItemKey = `${currentKind}-${idx}`
           const isExpanded = selectedRelatedKinds.indexOf(currentKind.toLowerCase()) > -1
           return (
-            <AccordionItem key={`${currentKind}-accordion-item`}>
+            <AccordionItem isExpanded={isExpanded} key={`${currentKind}-accordion-item`}>
               <AccordionToggle
                 onClick={() => {
                   const updatedKinds = isExpanded
@@ -231,7 +231,6 @@ export default function RelatedResults(
                     : [currentKind.toLowerCase(), ...selectedRelatedKinds]
                   setSelectedRelatedKinds(updatedKinds)
                 }}
-                isExpanded={isExpanded}
                 id={accordionItemKey}
               >
                 <span style={{ flexDirection: 'row' }}>
@@ -240,8 +239,8 @@ export default function RelatedResults(
                     <div
                       style={{
                         marginLeft: '10px',
-                        fontSize: 'var(--pf-v5-global--FontSize--sm)',
-                        color: 'var(--pf-v5-global--Color--200)',
+                        fontSize: 'var(--pf-t--global--font--size--sm)',
+                        color: 'var(--pf-t--global--text--color--200)',
                       }}
                     >
                       {`(${count!.count})`}
@@ -249,7 +248,7 @@ export default function RelatedResults(
                   </span>
                 </span>
               </AccordionToggle>
-              <AccordionContent isHidden={!isExpanded}>
+              <AccordionContent>
                 {isExpanded && (
                   <RenderItemContent
                     currentQuery={currentQuery}

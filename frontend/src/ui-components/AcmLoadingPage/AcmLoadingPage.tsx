@@ -1,16 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { css } from '@emotion/css'
-import {
-  EmptyState,
-  EmptyStateBody,
-  EmptyStateIcon,
-  Spinner,
-  Title,
-  EmptyStateActions,
-  EmptyStateHeader,
-  EmptyStateFooter,
-} from '@patternfly/react-core'
+import { EmptyState, EmptyStateBody, Spinner, Title, EmptyStateActions, EmptyStateFooter } from '@patternfly/react-core'
 import { useTranslation } from '../../lib/acm-i18next'
 
 const max = css({
@@ -25,8 +16,7 @@ export function AcmLoadingPage(props: {
 }) {
   const { t } = useTranslation()
   return (
-    <EmptyState>
-      <EmptyStateHeader icon={<EmptyStateIcon icon={Spinner} />} />
+    <EmptyState icon={Spinner}>
       <EmptyStateFooter>
         <div className={max}>
           <Title size="lg" headingLevel="h4">

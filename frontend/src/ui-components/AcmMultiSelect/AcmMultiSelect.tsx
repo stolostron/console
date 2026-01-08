@@ -81,7 +81,7 @@ export function AcmMultiSelect(props: AcmMultiSelectProps) {
       isRequired={isRequired}
       fieldId={props.id}
       hidden={props.hidden}
-      labelIcon={
+      labelHelp={
         /* istanbul ignore next */
         props.labelHelp ? (
           <Popover id={`${props.id}-label-help-popover`} headerContent={labelHelpTitle} bodyContent={labelHelp}>
@@ -90,8 +90,7 @@ export function AcmMultiSelect(props: AcmMultiSelectProps) {
               id={`${props.id}-label-help-button`}
               aria-label={t('More info')}
               onClick={(e) => e.preventDefault()}
-              className="pf-v5-c-form__group-label-help"
-              style={{ ['--pf-v5-c-form__group-label-help--TranslateY' as any]: 0 }}
+              className="pf-v6-c-form__group-label-help"
               icon={<HelpIcon />}
             />
           </Popover>

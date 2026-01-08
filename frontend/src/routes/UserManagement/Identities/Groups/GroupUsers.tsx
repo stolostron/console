@@ -79,7 +79,7 @@ const GroupUsers = () => {
   const keyFn = (user: User) => user.metadata.uid ?? ''
 
   return (
-    <PageSection>
+    <PageSection hasBodyWrapper={false}>
       <AcmTable<User>
         key="group-users-table"
         columns={columns}
