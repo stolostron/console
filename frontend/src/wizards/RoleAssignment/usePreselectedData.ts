@@ -1,0 +1,57 @@
+/* Copyright Contributors to the Open Cluster Management project */
+import { useEffect } from 'react'
+import { UserKind, GroupKind } from '../../resources'
+import { RoleAssignmentWizardFormData } from './types'
+import { RoleAssignmentPreselected } from '../../routes/UserManagement/RoleAssignments/model/role-assignment-preselected'
+
+interface UsePreselectedDataProps {
+  isOpen: boolean
+  preselected?: RoleAssignmentPreselected
+  setFormData: React.Dispatch<React.SetStateAction<RoleAssignmentWizardFormData>>
+  setSelectedClusters: React.Dispatch<React.SetStateAction<any[]>>
+}
+
+export const usePreselectedData = ({
+  isOpen,
+  preselected,
+  setFormData,
+  setSelectedClusters,
+}: UsePreselectedDataProps) => {
+  useEffect(() => {
+    if (!isOpen) return
+
+    setFormData((prev) => {
+      const updates: Partial<RoleAssignmentWizardFormData> = {}
+
+      if (preselected?.subject) {
+        updates.subject = {
+          kind: preselected.subject.kind,
+          user:
+            preselected.subject.kind === UserKind && preselected.subject.value
+              ? [preselected.subject.value]
+              : undefined,
+          group:
+            preselected.subject.kind === GroupKind && preselected.subject.value
+              ? [preselected.subject.value]
+              : undefined,
+        }
+      }
+
+      if (preselected?.roles && preselected.roles.length > 0) {
+        updates.roles = preselected.roles
+      }
+
+      if (preselected?.clusterNames && preselected.clusterNames.length > 0) {
+        updates.scopeType = 'Select clusters'
+        updates.scope = {
+          kind: 'specific',
+          clusterNames: preselected.clusterNames,
+        }
+        updates.selectedClusters = preselected.clusterNames
+        setSelectedClusters(preselected.clusterNames)
+      }
+
+      return { ...prev, ...updates }
+    })
+  }, [preselected, isOpen, setFormData, setSelectedClusters])
+}

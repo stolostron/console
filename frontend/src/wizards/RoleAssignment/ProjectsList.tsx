@@ -22,7 +22,7 @@ export const ProjectsList = ({ selectedClusters }: ProjectsListProps) => {
     if (!formData?.scope?.namespaces || formData.scope.namespaces.length === 0) return []
     return formData.scope.namespaces.map((ns: string) => ({
       name: ns,
-      type: 'Namespace' as const,
+      type: 'Namespace',
       clusters: selectedClusters.map((c) => c.name),
     }))
   }, [formData?.scope?.namespaces, selectedClusters])

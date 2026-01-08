@@ -21,6 +21,7 @@ import { useEffect } from 'react'
 import { isType } from '../../lib/is-type'
 import { Link } from 'react-router-dom-v5-compat'
 import { DOC_LINKS } from '../../lib/doc-util'
+import { usePreselectedData } from './usePreselectedData'
 
 const getInitialFormData = (): RoleAssignmentWizardFormData => ({
   subject: { kind: UserKind },
@@ -118,47 +119,12 @@ export const RoleAssignmentWizardModal = ({
     }
   }, [isOpen, isEditing])
 
-  useEffect(() => {
-    if (!isOpen) return
-    const subject = preselected?.subject
-    if (subject) {
-      setFormData((prev) => ({
-        ...prev,
-        subject: {
-          kind: subject.kind,
-          user: subject.kind === UserKind && subject.value ? [subject.value] : undefined,
-          group: subject.kind === GroupKind && subject.value ? [subject.value] : undefined,
-        },
-      }))
-    }
-  }, [preselected, isOpen])
-
-  useEffect(() => {
-    if (!isOpen) return
-    const roles = preselected?.roles
-    if (roles && roles.length > 0) {
-      setFormData((prev) => ({
-        ...prev,
-        roles: roles,
-      }))
-    }
-  }, [preselected, isOpen])
-
-  useEffect(() => {
-    if (!isOpen) return
-    if (preselected?.clusterNames && preselected.clusterNames.length > 0) {
-      setFormData((prev) => ({
-        ...prev,
-        scopeType: 'Select clusters',
-        scope: {
-          kind: 'specific',
-          clusterNames: preselected.clusterNames,
-        },
-        selectedClusters: preselected.clusterNames,
-      }))
-      setSelectedClusters(preselected.clusterNames)
-    }
-  }, [preselected, isOpen])
+  usePreselectedData({
+    isOpen,
+    preselected,
+    setFormData,
+    setSelectedClusters,
+  })
 
   useEffect(() => {
     const newKind = formData.scopeType === 'Global access' ? 'all' : 'specific'
