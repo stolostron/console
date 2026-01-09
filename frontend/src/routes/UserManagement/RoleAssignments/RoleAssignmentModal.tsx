@@ -11,7 +11,7 @@ import { useGetPlacementClusters } from '../../../resources/clients/placement-cl
 import {
   dataToRoleAssignmentToSave,
   existingRoleAssignmentsBySubjectRole,
-  saveRoleAssignment,
+  saveAllRoleAssignments,
 } from './roleAssignmentModalHelper'
 
 type RoleAssignmentModalProps = {
@@ -41,27 +41,13 @@ const RoleAssignmentModal = ({ close, isOpen, isEditing, preselected }: RoleAssi
       placementClusters
     )
 
-    await Promise.all(
-      roleAssignmentsToSave.map((roleAssignment) =>
-        saveRoleAssignment(roleAssignment, existingBySubjectRole, managedClusterSetBindings, placementClusters, {
-          onSuccess: (role) =>
-            toastContext.addAlert({
-              title: t('Role assignment added'),
-              message: t('A role assignment for {{role}} role added.', { role }),
-              type: 'success',
-              autoClose: true,
-            }),
-          onError: (role, error, isDuplicateError) =>
-            toastContext.addAlert({
-              title: t('Role assignment creation failed'),
-              message: isDuplicateError
-                ? t('This role assignment already exists. Please modify the selection to create a unique assignment.')
-                : t('The role assignment creation for {{role}} role failed. Error: {{error}}', { role, error }),
-              type: 'danger',
-              autoClose: true,
-            }),
-        })
-      )
+    await saveAllRoleAssignments(
+      roleAssignmentsToSave,
+      existingBySubjectRole,
+      managedClusterSetBindings,
+      placementClusters,
+      toastContext,
+      t
     )
     close()
   }

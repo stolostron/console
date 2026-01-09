@@ -1,27 +1,28 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { GroupKind, ManagedClusterSetBinding, MulticlusterRoleAssignmentNamespace, UserKind } from '../../../resources'
 import { findManagedClusterSetBinding } from '../../../resources/clients/managed-cluster-set-binding-client'
+import { FlattenedRoleAssignment } from '../../../resources/clients/model/flattened-role-assignment'
+import { PlacementClusters } from '../../../resources/clients/model/placement-clusters'
+import { RoleAssignmentToSave } from '../../../resources/clients/model/role-assignment-to-save'
 import {
   addRoleAssignment,
   findRoleAssignments,
   getPlacementsForRoleAssignment,
 } from '../../../resources/clients/multicluster-role-assignment-client'
-import { FlattenedRoleAssignment } from '../../../resources/clients/model/flattened-role-assignment'
-import { PlacementClusters } from '../../../resources/clients/model/placement-clusters'
-import { RoleAssignmentToSave } from '../../../resources/clients/model/role-assignment-to-save'
+import { Subject } from '../../../resources/kubernetes-client'
 import {
   MulticlusterRoleAssignment,
   MulticlusterRoleAssignmentApiVersion,
   MulticlusterRoleAssignmentKind,
 } from '../../../resources/multicluster-role-assignment'
 import { Placement } from '../../../resources/placement'
+import { RoleAssignmentFormDataType } from './hook/RoleAssignmentFormDataHook'
 import {
   dataToRoleAssignmentToSave,
   existingRoleAssignmentsBySubjectRole,
+  saveAllRoleAssignments,
   saveRoleAssignment,
 } from './roleAssignmentModalHelper'
-import { RoleAssignmentFormDataType } from './hook/RoleAssignmentFormDataHook'
-import { Subject } from '../../../resources/kubernetes-client'
 
 type SaveRoleAssignmentCallbacks = {
   onSuccess: (role: string) => void
@@ -832,6 +833,215 @@ describe('roleAssignmentHelper', () => {
         })
       )
       expect(callbacks.onSuccess).toHaveBeenCalledWith('admin')
+    })
+  })
+
+  describe('saveAllRoleAssignments', () => {
+    const mockAddRoleAssignment = addRoleAssignment as jest.MockedFunction<typeof addRoleAssignment>
+    const mockFindManagedClusterSetBinding = findManagedClusterSetBinding as jest.MockedFunction<
+      typeof findManagedClusterSetBinding
+    >
+    const mockGetPlacementsForRoleAssignment = getPlacementsForRoleAssignment as jest.MockedFunction<
+      typeof getPlacementsForRoleAssignment
+    >
+
+    const mockToastContext = {
+      addAlert: jest.fn(),
+      removeAlert: jest.fn(),
+      activeAlerts: [],
+      alertInfos: [],
+      removeVisibleAlert: jest.fn(),
+      clearAlerts: jest.fn(),
+    }
+
+    const mockT = ((key: string, options?: Record<string, unknown>) => {
+      if (options) {
+        return Object.entries(options).reduce((acc, [k, v]) => acc.replace(`{{${k}}}`, String(v)), key)
+      }
+      return key
+    }) as unknown as jest.MockedFunction<typeof jest.fn>
+
+    beforeEach(() => {
+      jest.clearAllMocks()
+      mockFindManagedClusterSetBinding.mockReturnValue([])
+      mockGetPlacementsForRoleAssignment.mockReturnValue([])
+    })
+
+    it('should save all role assignments and show success toasts', async () => {
+      mockAddRoleAssignment.mockResolvedValue({} as never)
+
+      const roleAssignmentsToSave: RoleAssignmentToSave[] = [
+        {
+          clusterRole: 'admin',
+          clusterNames: ['cluster-1'],
+          clusterSetNames: [],
+          subject: { name: 'user1', kind: UserKind },
+        },
+        {
+          clusterRole: 'viewer',
+          clusterNames: ['cluster-1'],
+          clusterSetNames: [],
+          subject: { name: 'user2', kind: UserKind },
+        },
+      ]
+
+      await saveAllRoleAssignments(roleAssignmentsToSave, new Map(), [], [], mockToastContext, mockT as never)
+
+      expect(mockAddRoleAssignment).toHaveBeenCalledTimes(2)
+      expect(mockToastContext.addAlert).toHaveBeenCalledTimes(2)
+      expect(mockToastContext.addAlert).toHaveBeenCalledWith({
+        title: 'Role assignment added',
+        message: 'A role assignment for admin role added.',
+        type: 'success',
+        autoClose: true,
+      })
+      expect(mockToastContext.addAlert).toHaveBeenCalledWith({
+        title: 'Role assignment added',
+        message: 'A role assignment for viewer role added.',
+        type: 'success',
+        autoClose: true,
+      })
+    })
+
+    it('should show error toast when role assignment fails', async () => {
+      mockAddRoleAssignment.mockRejectedValue(new Error('Network error'))
+
+      const roleAssignmentsToSave: RoleAssignmentToSave[] = [
+        {
+          clusterRole: 'admin',
+          clusterNames: ['cluster-1'],
+          clusterSetNames: [],
+          subject: { name: 'user1', kind: UserKind },
+        },
+      ]
+
+      await saveAllRoleAssignments(roleAssignmentsToSave, new Map(), [], [], mockToastContext, mockT as never)
+
+      expect(mockToastContext.addAlert).toHaveBeenCalledWith({
+        title: 'Role assignment creation failed',
+        message: 'The role assignment creation for admin role failed. Error: Error: Network error',
+        type: 'danger',
+        autoClose: true,
+      })
+    })
+
+    it('should show duplicate error toast when duplicate is detected', async () => {
+      mockAddRoleAssignment.mockRejectedValue(new Error('Duplicate role assignment detected'))
+
+      const roleAssignmentsToSave: RoleAssignmentToSave[] = [
+        {
+          clusterRole: 'editor',
+          clusterNames: ['cluster-1'],
+          clusterSetNames: [],
+          subject: { name: 'user1', kind: UserKind },
+        },
+      ]
+
+      await saveAllRoleAssignments(roleAssignmentsToSave, new Map(), [], [], mockToastContext, mockT as never)
+
+      expect(mockToastContext.addAlert).toHaveBeenCalledWith({
+        title: 'Role assignment creation failed',
+        message: 'This role assignment already exists. Please modify the selection to create a unique assignment.',
+        type: 'danger',
+        autoClose: true,
+      })
+    })
+
+    it('should handle mixed success and failure scenarios', async () => {
+      mockAddRoleAssignment.mockResolvedValueOnce({} as never).mockRejectedValueOnce(new Error('Network error'))
+
+      const roleAssignmentsToSave: RoleAssignmentToSave[] = [
+        {
+          clusterRole: 'admin',
+          clusterNames: ['cluster-1'],
+          clusterSetNames: [],
+          subject: { name: 'user1', kind: UserKind },
+        },
+        {
+          clusterRole: 'viewer',
+          clusterNames: ['cluster-1'],
+          clusterSetNames: [],
+          subject: { name: 'user2', kind: UserKind },
+        },
+      ]
+
+      await saveAllRoleAssignments(roleAssignmentsToSave, new Map(), [], [], mockToastContext, mockT as never)
+
+      expect(mockToastContext.addAlert).toHaveBeenCalledTimes(2)
+      expect(mockToastContext.addAlert).toHaveBeenCalledWith(expect.objectContaining({ type: 'success' }))
+      expect(mockToastContext.addAlert).toHaveBeenCalledWith(expect.objectContaining({ type: 'danger' }))
+    })
+
+    it('should handle empty role assignments array', async () => {
+      await saveAllRoleAssignments([], new Map(), [], [], mockToastContext, mockT as never)
+
+      expect(mockAddRoleAssignment).not.toHaveBeenCalled()
+      expect(mockToastContext.addAlert).not.toHaveBeenCalled()
+    })
+
+    it('should pass existing role assignments to saveRoleAssignment', async () => {
+      const existingMcra: MulticlusterRoleAssignment = {
+        apiVersion: MulticlusterRoleAssignmentApiVersion,
+        kind: MulticlusterRoleAssignmentKind,
+        metadata: { name: 'existing-mcra', namespace: MulticlusterRoleAssignmentNamespace },
+        spec: {
+          subject: { name: 'user1', kind: UserKind },
+          roleAssignments: [],
+        },
+      }
+
+      const existingBySubjectRole = new Map<string, MulticlusterRoleAssignment>()
+      existingBySubjectRole.set(`${UserKind}|user1`, existingMcra)
+
+      mockAddRoleAssignment.mockResolvedValue({} as never)
+
+      const roleAssignmentsToSave: RoleAssignmentToSave[] = [
+        {
+          clusterRole: 'admin',
+          clusterNames: ['cluster-1'],
+          clusterSetNames: [],
+          subject: { name: 'user1', kind: UserKind },
+        },
+      ]
+
+      await saveAllRoleAssignments(
+        roleAssignmentsToSave,
+        existingBySubjectRole,
+        [],
+        [],
+        mockToastContext,
+        mockT as never
+      )
+
+      expect(mockAddRoleAssignment).toHaveBeenCalledWith(
+        roleAssignmentsToSave[0],
+        expect.objectContaining({
+          existingMulticlusterRoleAssignment: existingMcra,
+        })
+      )
+    })
+
+    it('should handle group subjects correctly', async () => {
+      mockAddRoleAssignment.mockResolvedValue({} as never)
+
+      const roleAssignmentsToSave: RoleAssignmentToSave[] = [
+        {
+          clusterRole: 'admin',
+          clusterNames: ['cluster-1'],
+          clusterSetNames: [],
+          subject: { name: 'developers', kind: GroupKind },
+        },
+      ]
+
+      await saveAllRoleAssignments(roleAssignmentsToSave, new Map(), [], [], mockToastContext, mockT as never)
+
+      expect(mockAddRoleAssignment).toHaveBeenCalledWith(
+        expect.objectContaining({
+          subject: { name: 'developers', kind: GroupKind },
+        }),
+        expect.anything()
+      )
+      expect(mockToastContext.addAlert).toHaveBeenCalledWith(expect.objectContaining({ type: 'success' }))
     })
   })
 })

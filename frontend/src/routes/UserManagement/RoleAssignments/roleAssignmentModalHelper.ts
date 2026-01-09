@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { TFunction } from 'react-i18next'
 import { ManagedClusterSetBinding, MulticlusterRoleAssignmentNamespace, UserKind } from '../../../resources'
 import { findManagedClusterSetBinding } from '../../../resources/clients/managed-cluster-set-binding-client'
 import { PlacementClusters } from '../../../resources/clients/model/placement-clusters'
@@ -11,6 +12,7 @@ import {
 import { Subject } from '../../../resources/kubernetes-client'
 import { MulticlusterRoleAssignment } from '../../../resources/multicluster-role-assignment'
 import { Placement } from '../../../resources/placement'
+import { IAlertContext } from '../../../ui-components'
 import { RoleAssignmentFormDataType } from './hook/RoleAssignmentFormDataHook'
 
 /**
@@ -114,4 +116,48 @@ export const saveRoleAssignment = (
       const isDuplicateError = e?.message?.includes('Duplicate role assignment detected')
       callbacks.onError(roleAssignment.clusterRole, e, isDuplicateError)
     })
+}
+
+/**
+ * Saves all role assignments and shows toast notifications for success/error.
+ * This is the common save logic used by both RoleAssignmentModal and RoleAssignmentWizardModalWrapper.
+ *
+ * @param roleAssignmentsToSave - Array of role assignments to save
+ * @param existingBySubjectRole - Map of existing role assignments by subject key
+ * @param managedClusterSetBindings - All managed cluster set bindings
+ * @param placementClusters - PlacementClusters for the placements
+ * @param toastContext - Toast context for showing notifications
+ * @param t - Translation function
+ * @returns Promise that resolves when all operations complete
+ */
+export const saveAllRoleAssignments = async (
+  roleAssignmentsToSave: RoleAssignmentToSave[],
+  existingBySubjectRole: Map<string, MulticlusterRoleAssignment>,
+  managedClusterSetBindings: ManagedClusterSetBinding[],
+  placementClusters: PlacementClusters[],
+  toastContext: IAlertContext,
+  t: TFunction
+): Promise<void> => {
+  await Promise.all(
+    roleAssignmentsToSave.map((roleAssignment) =>
+      saveRoleAssignment(roleAssignment, existingBySubjectRole, managedClusterSetBindings, placementClusters, {
+        onSuccess: (role) =>
+          toastContext.addAlert({
+            title: t('Role assignment added'),
+            message: t('A role assignment for {{role}} role added.', { role }),
+            type: 'success',
+            autoClose: true,
+          }),
+        onError: (role, error, isDuplicateError) =>
+          toastContext.addAlert({
+            title: t('Role assignment creation failed'),
+            message: isDuplicateError
+              ? t('This role assignment already exists. Please modify the selection to create a unique assignment.')
+              : t('The role assignment creation for {{role}} role failed. Error: {{error}}', { role, error }),
+            type: 'danger',
+            autoClose: true,
+          }),
+      })
+    )
+  )
 }
