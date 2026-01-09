@@ -25,9 +25,16 @@ import { ClusterAction, clusterSupportsAction } from '../utils/cluster-actions'
 import { getVersionFromReleaseImage } from '../utils/utils'
 
 const isChannelSelectable = (c: Cluster, hostedCluster?: HostedClusterK8sResource) => {
-  // For hosted clusters without a channel set, allow channel selection
-  if (hostedCluster && !(hostedCluster.spec as { channel?: string } | undefined)?.channel) {
-    return true
+  if (hostedCluster) {
+    const hasChannelSet = !!(hostedCluster.spec as { channel?: string } | undefined)?.channel
+    const hasAvailableChannels = !!c.distribution?.upgradeInfo?.isReadySelectChannels
+
+    // For hosted clusters without a channel set, allow channel selection (will use fallback)
+    if (!hasChannelSet) {
+      return true
+    }
+    // For hosted clusters with a channel set, only allow if MCI has available channels
+    return hasAvailableChannels
   }
   return clusterSupportsAction(c, ClusterAction.SelectChannel)
 }

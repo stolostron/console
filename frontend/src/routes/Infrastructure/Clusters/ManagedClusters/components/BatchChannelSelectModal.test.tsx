@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ClusterCuratorDefinition } from '../../../../../resources'
+import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
+import { ClusterCuratorDefinition, HostedClusterApiVersion, HostedClusterKind } from '../../../../../resources'
 import { Cluster, ClusterStatus } from '../../../../../resources/utils'
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -323,5 +324,217 @@ describe('BatchChannelSelectModal', () => {
     expect(queryByText('cluster-2-ready2')).toBeTruthy()
     expect(queryByText('Error')).toBeTruthy()
     expect(queryByText('cluster-1-ready1')).toBeFalsy()
+  })
+})
+
+// Mock hosted cluster without channel set
+const mockHostedClusterNoChannel: HostedClusterK8sResource = {
+  apiVersion: HostedClusterApiVersion,
+  kind: HostedClusterKind,
+  metadata: {
+    name: 'hosted-cluster-test',
+    namespace: 'clusters',
+  },
+  spec: {
+    services: [],
+    dns: { baseDomain: 'test.com' },
+    pullSecret: { name: 'pull-secret' },
+    release: { image: 'quay.io/openshift-release-dev/ocp-release:4.14.5-x86_64' },
+    sshKey: { name: 'ssh-key' },
+    platform: { type: 'AWS' },
+  },
+  status: {
+    conditions: [{ lastTransitionTime: '', message: '', reason: '', status: 'True', type: 'Available' }],
+  },
+}
+
+// Mock hosted cluster with channel set
+const mockHostedClusterWithChannel: HostedClusterK8sResource = {
+  ...mockHostedClusterNoChannel,
+  spec: {
+    ...mockHostedClusterNoChannel.spec,
+    channel: 'stable-4.14',
+  } as HostedClusterK8sResource['spec'] & { channel: string },
+}
+
+// Mock hypershift cluster without channel and no MCI channels
+const mockHypershiftClusterNoChannel: Cluster = {
+  name: 'hosted-cluster-test',
+  displayName: 'hosted-cluster-test',
+  namespace: 'hosted-cluster-test',
+  uid: 'hosted-cluster-test-uid',
+  status: ClusterStatus.ready,
+  isHive: false,
+  isCurator: false,
+  isHostedCluster: true,
+  isHypershift: true,
+  owner: {},
+  distribution: {
+    k8sVersion: '1.27',
+    displayVersion: 'OpenShift 4.14.5',
+    isManagedOpenShift: false,
+    ocp: {
+      version: '4.14.5',
+      availableUpdates: [],
+      desiredVersion: '4.14.5',
+      upgradeFailed: false,
+    },
+    upgradeInfo: {
+      upgradeFailed: false,
+      isUpgrading: false,
+      isReadyUpdates: false,
+      isReadySelectChannels: false,
+      availableUpdates: [],
+      availableChannels: [],
+      currentVersion: '4.14.5',
+      desiredVersion: '4.14.5',
+      latestJob: {},
+    },
+  },
+  labels: undefined,
+  nodes: undefined,
+  kubeApiServer: '',
+  consoleURL: '',
+  hasAutomationTemplate: false,
+  hive: {
+    isHibernatable: false,
+    clusterPool: undefined,
+    secrets: { installConfig: '' },
+  },
+  isManaged: true,
+  isSNOCluster: false,
+  kubeadmin: '',
+  kubeconfig: '',
+  isRegionalHubCluster: false,
+  hypershift: {
+    agent: false,
+    hostingNamespace: 'clusters',
+    nodePools: [],
+    secretNames: [],
+  },
+}
+
+// Mock hypershift cluster with channel set and MCI channels available
+const mockHypershiftClusterWithMCIChannels: Cluster = {
+  ...mockHypershiftClusterNoChannel,
+  name: 'hosted-cluster-with-mci',
+  displayName: 'hosted-cluster-with-mci',
+  namespace: 'hosted-cluster-with-mci',
+  uid: 'hosted-cluster-with-mci-uid',
+  distribution: {
+    ...mockHypershiftClusterNoChannel.distribution!,
+    upgradeInfo: {
+      ...mockHypershiftClusterNoChannel.distribution!.upgradeInfo!,
+      isReadySelectChannels: true,
+      availableChannels: ['stable-4.14', 'fast-4.14', 'candidate-4.14'],
+      currentChannel: 'stable-4.14',
+    },
+  },
+}
+
+describe('BatchChannelSelectModal - Hosted Clusters', () => {
+  beforeEach(() => nockIgnoreApiPaths())
+
+  it('should show hosted cluster without channel set using fallback fast-X.Y channel', () => {
+    const { queryByText, getByText } = render(
+      <MemoryRouter>
+        <BatchChannelSelectModal
+          clusters={[mockHypershiftClusterNoChannel]}
+          open={true}
+          close={() => {}}
+          hostedCluster={mockHostedClusterNoChannel}
+        />
+      </MemoryRouter>
+    )
+    // Should show the cluster
+    expect(queryByText('hosted-cluster-test')).toBeTruthy()
+    // Should show current channel as dash (no channel set)
+    expect(queryByText('-')).toBeTruthy()
+    // Should show the fallback fast-4.14 channel option
+    expect(getByText('fast-4.14')).toBeTruthy()
+  })
+
+  it('should NOT show hosted cluster with channel set but no MCI channels', () => {
+    const { queryByText } = render(
+      <MemoryRouter>
+        <BatchChannelSelectModal
+          clusters={[mockHypershiftClusterNoChannel]}
+          open={true}
+          close={() => {}}
+          hostedCluster={mockHostedClusterWithChannel}
+        />
+      </MemoryRouter>
+    )
+    // Should NOT show the cluster (empty state)
+    expect(queryByText('hosted-cluster-test')).toBeFalsy()
+    expect(queryByText('No clusters available')).toBeTruthy()
+  })
+
+  it('should show hosted cluster with channel set when MCI has channels', () => {
+    const hostedClusterWithChannelResource: HostedClusterK8sResource = {
+      ...mockHostedClusterNoChannel,
+      metadata: {
+        ...mockHostedClusterNoChannel.metadata,
+        name: 'hosted-cluster-with-mci',
+        namespace: 'clusters',
+      },
+      spec: {
+        ...mockHostedClusterNoChannel.spec,
+        channel: 'stable-4.14',
+      } as HostedClusterK8sResource['spec'] & { channel: string },
+    }
+
+    const { queryByText, queryAllByText } = render(
+      <MemoryRouter>
+        <BatchChannelSelectModal
+          clusters={[mockHypershiftClusterWithMCIChannels]}
+          open={true}
+          close={() => {}}
+          hostedCluster={hostedClusterWithChannelResource}
+        />
+      </MemoryRouter>
+    )
+    // Should show the cluster
+    expect(queryByText('hosted-cluster-with-mci')).toBeTruthy()
+    // Should show current channel (appears in both current channel column and dropdown)
+    expect(queryAllByText('stable-4.14').length).toBeGreaterThanOrEqual(1)
+  })
+
+  it('should patch HostedCluster.spec.channel for hosted clusters', async () => {
+    let isClosed = false
+    const { getByText, queryByText } = render(
+      <MemoryRouter>
+        <BatchChannelSelectModal
+          clusters={[mockHypershiftClusterNoChannel]}
+          open={true}
+          close={() => {
+            isClosed = true
+          }}
+          hostedCluster={mockHostedClusterNoChannel}
+        />
+      </MemoryRouter>
+    )
+
+    const hostedClusterResource = {
+      apiVersion: HostedClusterApiVersion,
+      kind: HostedClusterKind,
+      metadata: {
+        name: mockHostedClusterNoChannel.metadata?.name,
+        namespace: mockHostedClusterNoChannel.metadata?.namespace,
+      },
+    }
+    const patchSpec = { spec: { channel: 'fast-4.14' } }
+    const mockNockPatchHostedCluster = nockPatch(hostedClusterResource, patchSpec)
+
+    expect(getByText('Save')).toBeTruthy()
+    userEvent.click(getByText('Save'))
+
+    await act(async () => {
+      await waitFor(() => expect(mockNockPatchHostedCluster.isDone()).toBeTruthy())
+      await waitFor(() => expect(queryByText('Saving')).toBeFalsy())
+      await waitFor(() => expect(isClosed).toBe(true))
+    })
+
+    expect(isClosed).toBe(true)
   })
 })
