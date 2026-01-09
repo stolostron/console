@@ -19,8 +19,28 @@ import { ClusterSetAccessLevel } from './Scope/AccessLevel/ClusterSetAccessLevel
 import { ClusterList } from './Scope/Clusters/ClusterList'
 import { ExampleScopesPanelContent } from './Scope/ExampleScope/ExampleScopesPanelContent'
 import { ScopeSelectionStepContent } from './ScopeSelectionStepContent'
+import { RoleAssignmentPreselected } from '../../routes/UserManagement/RoleAssignments/model/role-assignment-preselected'
 import { RoleAssignmentWizardFormData, RoleAssignmentWizardModalProps } from './types'
 import { usePreselectedData } from './usePreselectedData'
+
+const getWizardTitle = (
+  isEditing: boolean | undefined,
+  preselected: RoleAssignmentPreselected | undefined,
+  t: (key: string, options?: Record<string, unknown>) => string
+): string => {
+  switch (true) {
+    case isEditing:
+      return t('Edit role assignment')
+    case preselected?.subject?.value !== undefined:
+      return t('Create role assignment for {{preselected}}', { preselected: preselected.subject.value })
+    case preselected?.roles && preselected.roles.length > 0:
+      return t('Create role assignment for {{preselected}}', { preselected: preselected.roles[0] })
+    case preselected?.clusterNames && preselected.clusterNames.length > 0:
+      return t('Create role assignment for {{preselected}}', { preselected: preselected.clusterNames.join(', ') })
+    default:
+      return t('Create role assignment')
+  }
+}
 
 const getInitialFormData = (): RoleAssignmentWizardFormData => ({
   subject: { kind: UserKind },
@@ -146,17 +166,7 @@ export const RoleAssignmentWizardModal = ({
 
   const hideRolesStep = preselected?.roles && preselected.roles.length > 0
 
-  const title = isEditing
-    ? t('Edit role assignment')
-    : preselected?.subject?.value
-      ? t('Create role assignment for {{preselected}}', { preselected: preselected.subject.value })
-      : preselected?.roles && preselected.roles.length > 0
-        ? t('Create role assignment for {{preselected}}', { preselected: preselected.roles[0] })
-        : preselected?.clusterNames && preselected.clusterNames.length > 0
-          ? t('Create role assignment for {{preselected}}', {
-              preselected: preselected.clusterNames.join(', '),
-            })
-          : t('Create role assignment')
+  const title = getWizardTitle(isEditing, preselected, t)
 
   const scopeSubSteps = [
     <WizardStep
