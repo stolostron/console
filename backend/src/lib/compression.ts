@@ -197,7 +197,7 @@ function compressResource(resource: UncompressedResourceType, dictionary: Dictio
 export async function inflateResource(buffer: Buffer, dictionary: Dictionary): Promise<IResource> {
   let inflated
   try {
-    inflated = (await promisify(inflateRaw)(buffer)).toString()
+    inflated = (await promisify(inflateRaw)(new Uint8Array(buffer))).toString()
   } catch (err: unknown) {
     logger.error({
       msg: 'Error from inflateRaw during inflateResource',

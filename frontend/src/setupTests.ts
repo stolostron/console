@@ -63,7 +63,7 @@ global.EventSource = class EventSource {
   removeEventListener = () => {}
 }
 
-global.TextEncoder = TextEncoder
+globalThis.TextEncoder = TextEncoder as unknown as typeof globalThis.TextEncoder
 
 configure({ testIdAttribute: 'id' })
 jest.setTimeout(240 * 1000)

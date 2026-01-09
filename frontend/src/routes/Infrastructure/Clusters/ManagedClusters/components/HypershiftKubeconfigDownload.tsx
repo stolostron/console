@@ -26,7 +26,9 @@ const HypershiftKubeconfigDownload = ({ hostedCluster, fetchSecret }: Hypershift
           throw new Error('Kubeconfig is empty.')
         }
 
-        const blob = new Blob([Buffer.from(kubeconfig, 'base64')], { type: 'text/plain;charset=utf-8' })
+        const blob = new Blob([Uint8Array.from(atob(kubeconfig), (c) => c.codePointAt(0) ?? 0)], {
+          type: 'text/plain;charset=utf-8',
+        })
         saveAs(blob, 'kubeconfig.yaml')
       } catch (e) {
         console.error('Failed to fetch kubeconfig secret.', e)
