@@ -20,6 +20,7 @@ export interface HostedCluster extends IResource {
     labels?: Record<string, string>
   }
   spec?: {
+    channel?: string
     etcd: {
       managed: {
         storage: {

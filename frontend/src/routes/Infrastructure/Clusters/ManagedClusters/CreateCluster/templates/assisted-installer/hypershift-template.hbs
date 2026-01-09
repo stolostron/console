@@ -9,6 +9,9 @@ metadata:
     "cluster.open-cluster-management.io/clusterset": '{{{hypershift.managedClusterSet}}}'
   {{/if}}
 spec:
+  {{#if hypershift.channel}}
+  channel: {{{hypershift.channel}}}
+  {{/if}}
   release:
     image: {{{hypershift.releaseImage}}}
   pullSecret:
