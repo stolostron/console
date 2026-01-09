@@ -404,6 +404,142 @@ describe('ClusterOverview with regional hub cluster information with hostedClust
   })
 })
 
+const mockHypershiftClusterWithOCPVersion: typeof mockAWSHypershiftCluster = {
+  ...mockAWSHypershiftCluster,
+  name: 'hypershift-ocp-test',
+  displayName: 'hypershift-ocp-test',
+  namespace: 'hypershift-ocp-test',
+  distribution: {
+    ...mockAWSHypershiftCluster.distribution!,
+    ocp: {
+      version: '4.14.5',
+      availableUpdates: [],
+      desiredVersion: '',
+      upgradeFailed: false,
+    },
+    upgradeInfo: {
+      upgradeFailed: false,
+      isUpgrading: false,
+      isReadyUpdates: false,
+      isReadySelectChannels: false,
+      availableUpdates: [],
+      availableChannels: [],
+      currentVersion: '4.14.5',
+      desiredVersion: '4.14.5',
+      latestJob: {},
+    },
+  },
+}
+
+const mockHypershiftClusterWithChannel: typeof mockAWSHypershiftCluster = {
+  ...mockHypershiftClusterWithOCPVersion,
+  name: 'hypershift-channel-test',
+  displayName: 'hypershift-channel-test',
+  namespace: 'hypershift-channel-test',
+  distribution: {
+    ...mockHypershiftClusterWithOCPVersion.distribution!,
+    upgradeInfo: {
+      ...mockHypershiftClusterWithOCPVersion.distribution!.upgradeInfo!,
+      currentChannel: 'fast-4.14',
+    },
+  },
+}
+
+describe('ClusterOverview channel display for hypershift clusters', () => {
+  beforeEach(() => {
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+  })
+
+  it('should display "-" when channel is not defined for hypershift cluster', async () => {
+    nockAggegateRequest('statuses', { clusters: ['hypershift-ocp-test'] }, { itemCount: 42, filterCounts: undefined })
+    const context: Partial<ClusterDetailsContext> = {
+      cluster: mockHypershiftClusterWithOCPVersion,
+      hostedCluster: mockAWSHostedCluster,
+      canGetSecret: true,
+    }
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(policyreportState, [])
+          snapshot.set(managedClustersState, [])
+          snapshot.set(clusterDeploymentsState, [])
+          snapshot.set(managedClusterInfosState, [])
+          snapshot.set(certificateSigningRequestsState, [])
+          snapshot.set(managedClusterAddonsState, {})
+          snapshot.set(clusterManagementAddonsState, [])
+          snapshot.set(clusterClaimsState, [])
+          snapshot.set(clusterCuratorsState, [])
+          snapshot.set(agentClusterInstallsState, [])
+          snapshot.set(agentsState, [])
+          snapshot.set(infraEnvironmentsState, [])
+          snapshot.set(hostedClustersState, [])
+          snapshot.set(nodePoolsState, [])
+        }}
+      >
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<ClusterOverviewPageContent />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    // Verify cluster name is shown
+    await waitForText(mockHypershiftClusterWithOCPVersion.name)
+    // Verify channel displays "-" when no channel is defined
+    await waitForText('-')
+  })
+
+  it('should display channel when it is defined for hypershift cluster', async () => {
+    nockAggegateRequest(
+      'statuses',
+      { clusters: ['hypershift-channel-test'] },
+      { itemCount: 42, filterCounts: undefined }
+    )
+    const context: Partial<ClusterDetailsContext> = {
+      cluster: mockHypershiftClusterWithChannel,
+      hostedCluster: mockAWSHostedCluster,
+      canGetSecret: true,
+    }
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(policyreportState, [])
+          snapshot.set(managedClustersState, [])
+          snapshot.set(clusterDeploymentsState, [])
+          snapshot.set(managedClusterInfosState, [])
+          snapshot.set(certificateSigningRequestsState, [])
+          snapshot.set(managedClusterAddonsState, {})
+          snapshot.set(clusterManagementAddonsState, [])
+          snapshot.set(clusterClaimsState, [])
+          snapshot.set(clusterCuratorsState, [])
+          snapshot.set(agentClusterInstallsState, [])
+          snapshot.set(agentsState, [])
+          snapshot.set(infraEnvironmentsState, [])
+          snapshot.set(hostedClustersState, [])
+          snapshot.set(nodePoolsState, [])
+        }}
+      >
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<ClusterOverviewPageContent />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    // Verify cluster name is shown
+    await waitForText(mockHypershiftClusterWithChannel.name)
+    // Verify channel is displayed
+    await waitForText('fast-4.14')
+  })
+})
+
 describe('ClusterOverview with AWS hypershift cluster', () => {
   const mockHostedCluster1: HostedClusterK8sResource = {
     apiVersion: HostedClusterApiVersion,

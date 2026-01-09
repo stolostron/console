@@ -17,7 +17,13 @@ import { ClusterClaim } from '../cluster-claim'
 import { ClusterCurator, isAutomationTemplate } from '../cluster-curator'
 import { ClusterDeployment } from '../cluster-deployment'
 import { ManagedCluster } from '../managed-cluster'
-import { ManagedClusterInfo, NodeInfo, OpenShiftDistributionInfo, getRoles } from '../managed-cluster-info'
+import {
+  ManagedClusterInfo,
+  NodeInfo,
+  OCPVersionRelease,
+  OpenShiftDistributionInfo,
+  getRoles,
+} from '../managed-cluster-info'
 import { managedClusterSetLabel } from '../managed-cluster-set'
 import { getLatest } from './utils'
 import { AddonStatus, mapAddons } from './get-addons'
@@ -338,6 +344,7 @@ export type UpgradeInfo = {
   currentVersion?: string
   desiredVersion?: string
   availableUpdates: string[]
+  versionAvailableUpdates?: OCPVersionRelease[]
   isReadySelectChannels: boolean
   isSelectingChannel?: boolean
   isUpgradeCuration?: boolean
@@ -1016,6 +1023,12 @@ export function getDistributionInfo(
         .filter((version) => {
           return !!version
         }) || []
+
+    // Store full version release data including images for hosted cluster upgrades
+    upgradeInfo.versionAvailableUpdates =
+      managedClusterInfo?.status?.distributionInfo?.ocp?.versionAvailableUpdates?.filter(
+        (versionRelease) => !!versionRelease.version && !!versionRelease.image
+      ) || []
 
     const isAROClassic = productClaim === 'ARO' && !isHostedCluster
 

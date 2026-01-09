@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
-import { Button, ButtonVariant } from '@patternfly/react-core'
-import { ArrowCircleUpIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { Button, ButtonVariant, Icon } from '@patternfly/react-core'
+import { ArrowCircleUpIcon, ExclamationTriangleIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Fragment, ReactNode, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom-v5-compat'
 import { RbacButton } from '../../../../../components/Rbac'
@@ -13,15 +13,17 @@ import {
   ClusterCuratorApiVersion,
   ClusterCuratorDefinition,
   getLatestAnsibleJob,
+  HostedClusterDefinition,
   NodePool,
 } from '../../../../../resources'
-import { Cluster, ClusterStatus, CuratorCondition } from '../../../../../resources/utils'
+import { Cluster, CuratorCondition } from '../../../../../resources/utils'
 import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
 import { AcmButton, AcmInlineStatus, Provider, StatusType } from '../../../../../ui-components'
 import { getSearchLink } from '../../../../Applications/helpers/resource-helper'
 import { useAgentClusterInstall } from '../CreateCluster/components/assisted-installer/utils'
 import { useHypershiftAvailableUpdates } from '../hooks/useHypershiftAvailableUpdates'
 import { getVersionFromReleaseImage } from '../utils/utils'
+import { BatchChannelSelectModal } from './BatchChannelSelectModal'
 import { BatchUpgradeModal } from './BatchUpgradeModal'
 import { HypershiftUpgradeModal } from './HypershiftUpgradeModal'
 import { getNodepoolStatus } from './NodePoolsTable'
@@ -36,6 +38,7 @@ export function DistributionField(props: {
   const { t } = useTranslation()
   const [open, toggleOpen] = useState<boolean>(false)
   const toggle = () => toggleOpen(!open)
+  const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
   const { ansibleJobState, clusterImageSetsState, agentMachinesState, agentsState } = useSharedAtoms()
   const ansibleJobs = useRecoilValue(ansibleJobState)
   const agents = useRecoilValue(agentsState)
@@ -99,7 +102,6 @@ export function DistributionField(props: {
     }
 
     return false
-    //return updateAvailable
   }, [
     props.nodepool,
     props.cluster?.distribution?.ocp?.version,
@@ -108,18 +110,73 @@ export function DistributionField(props: {
     props.resource,
   ])
 
-  if (props.cluster?.provider === Provider.microshift) {
-    const version = props.cluster?.microshiftDistribution?.version
-    return <>{version ? `${microshiftText} ${version}` : '-'}</>
-  }
-
   const latestAnsibleJob =
     props.cluster?.namespace && ansibleJobs
       ? getLatestAnsibleJob(ansibleJobs, props.cluster?.namespace)
       : { prehook: undefined, posthook: undefined }
 
+  // Helper: Check if HostedCluster has no channel set
+  const isHypershiftWithoutChannel = (): boolean => {
+    return !!(
+      props.cluster?.isHypershift &&
+      props.hostedCluster &&
+      !(props.hostedCluster.spec as { channel?: string } | undefined)?.channel &&
+      props.resource !== 'nodepool'
+    )
+  }
+
+  // Helper: Render channel warning for HostedClusters without channel
+  const renderChannelWarning = (): JSX.Element | null => {
+    if (!isHypershiftWithoutChannel()) {
+      return null
+    }
+
+    return (
+      <span style={{ whiteSpace: 'nowrap', display: 'block' }}>
+        <Icon status="warning" size="sm">
+          <ExclamationTriangleIcon />
+        </Icon>{' '}
+        <RbacButton
+          onClick={() => setShowChannelSelectModal(true)}
+          variant={ButtonVariant.link}
+          style={{ padding: 0, margin: 0, fontSize: 'inherit' }}
+          rbac={[rbacPatch(HostedClusterDefinition, props.cluster?.namespace, props.cluster?.name)]}
+        >
+          {t('upgrade.channel.not.set')}
+        </RbacButton>
+        <BatchChannelSelectModal
+          clusters={props.cluster ? [props.cluster] : []}
+          open={showChannelSelectModal}
+          close={() => setShowChannelSelectModal(false)}
+          hostedCluster={props.hostedCluster}
+          warningMessage={t('upgrade.channel.not.set.warning')}
+        />
+      </span>
+    )
+  }
+
+  // === EARLY RETURNS ===
+
+  // Microshift - completely different display
+  if (props.cluster?.provider === Provider.microshift) {
+    const version = props.cluster?.microshiftDistribution?.version
+    return <>{version ? `${microshiftText} ${version}` : '-'}</>
+  }
+
+  // No distribution info - try to get from cluster image or show dash
   if (!props.cluster?.distribution) {
-    //we try to get version from clusterimage
+    // For HostedClusters without channel, show the warning even without distribution
+    const channelWarning = renderChannelWarning()
+    if (channelWarning) {
+      return (
+        <>
+          <div>{displayVersion ?? '-'}</div>
+          {channelWarning}
+        </>
+      )
+    }
+
+    // Try to get version from clusterimage for agent cluster installs
     if (agentClusterInstall) {
       const clusterImage = clusterImageSets.find(
         (clusterImageSet) => clusterImageSet.metadata?.name === agentClusterInstall.spec?.imageSetRef?.name
@@ -132,13 +189,14 @@ export function DistributionField(props: {
     }
     return <>-</>
   }
-  // use display version directly for non-online clusters
-  // Pre/Post hook
+
+  // === ORIGINAL IF/ELSE CHAIN FOR UPGRADE STATUSES ===
+
+  // Pre/Post hook status
   if (
     props.cluster?.distribution?.upgradeInfo?.isUpgradeCuration &&
     (props.cluster?.distribution?.upgradeInfo?.hooksInProgress || props.cluster?.distribution?.upgradeInfo?.hookFailed)
   ) {
-    // hook state
     let statusType = StatusType.progress
     let statusTitle =
       props.cluster?.distribution?.upgradeInfo?.latestJob?.step === CuratorCondition.posthook
@@ -190,6 +248,7 @@ export function DistributionField(props: {
         )
       }
     }
+
     return (
       <>
         <div>{displayVersion}</div>
@@ -204,11 +263,7 @@ export function DistributionField(props: {
         />
       </>
     )
-  }
-  if (props.cluster?.status !== ClusterStatus.ready) {
-    return <>{displayVersion ?? '-'}</>
-  }
-  if (props.cluster?.distribution.upgradeInfo?.upgradeFailed) {
+  } else if (props.cluster?.distribution?.upgradeInfo?.upgradeFailed) {
     // OCP UPGRADE FAILED
     return (
       <>
@@ -222,7 +277,7 @@ export function DistributionField(props: {
                   headerContent: t('upgrade.upgradefailed'),
                   bodyContent: t('upgrade.upgradefailed.message', {
                     clusterName: props.cluster?.name,
-                    version: props.cluster?.distribution.upgradeInfo.desiredVersion,
+                    version: props.cluster?.distribution?.upgradeInfo?.desiredVersion,
                   }),
                   footerContent: (
                     <a href={`${props.cluster?.consoleURL}/settings/cluster`} target="_blank" rel="noreferrer">
@@ -235,9 +290,9 @@ export function DistributionField(props: {
         />
       </>
     )
-  } else if (props.cluster.hypershift?.isUpgrading && props.resource !== 'nodepool') {
+  } else if (props.cluster?.hypershift?.isUpgrading && props.resource !== 'nodepool') {
     // HYPERSHIFT UPGRADE IN PROGRESS
-    const image = props.hostedCluster?.spec.release.image
+    const image = props.hostedCluster?.spec?.release?.image
     const versionNum = getVersionFromReleaseImage(image)
     return (
       <>
@@ -249,18 +304,18 @@ export function DistributionField(props: {
               ? t('upgrade.upgrading.version', {
                   version: versionNum,
                 }) +
-                (props.cluster.hypershift?.upgradePercentage ? ' ' + props.cluster.hypershift?.upgradePercentage : '')
+                (props.cluster?.hypershift?.upgradePercentage ? ' ' + props.cluster?.hypershift?.upgradePercentage : '')
               : t('upgrade.upgrading')
           }
           popover={
             props.cluster?.consoleURL
               ? {
                   headerContent: t('upgrade.upgrading'),
-                  bodyContent: props.cluster.hypershift?.upgradePercentage
+                  bodyContent: props.cluster?.hypershift?.upgradePercentage
                     ? t('upgrade.upgrading.message.percentage', {
                         clusterName: props.cluster?.name,
                         version: versionNum,
-                        percentage: props.cluster.hypershift?.upgradePercentage,
+                        percentage: props.cluster?.hypershift?.upgradePercentage,
                       })
                     : t('upgrade.upgrading.message', {
                         clusterName: props.cluster?.name,
@@ -277,7 +332,7 @@ export function DistributionField(props: {
         />
       </>
     )
-  } else if (props.cluster?.distribution.upgradeInfo?.isUpgrading) {
+  } else if (props.cluster?.distribution?.upgradeInfo?.isUpgrading) {
     // OCP UPGRADE IN PROGRESS
     return (
       <>
@@ -286,25 +341,25 @@ export function DistributionField(props: {
           type={StatusType.progress}
           status={
             t('upgrade.upgrading.version', {
-              version: props.cluster?.distribution.upgradeInfo.desiredVersion,
+              version: props.cluster?.distribution?.upgradeInfo?.desiredVersion,
             }) +
-            (props.cluster?.distribution.upgradeInfo.upgradePercentage
-              ? ' (' + props.cluster?.distribution.upgradeInfo.upgradePercentage + ')'
+            (props.cluster?.distribution?.upgradeInfo?.upgradePercentage
+              ? ' (' + props.cluster?.distribution?.upgradeInfo?.upgradePercentage + ')'
               : '')
           }
           popover={
             props.cluster?.consoleURL
               ? {
                   headerContent: t('upgrade.upgrading'),
-                  bodyContent: props.cluster?.distribution.upgradeInfo.upgradePercentage
+                  bodyContent: props.cluster?.distribution?.upgradeInfo?.upgradePercentage
                     ? t('upgrade.upgrading.message.percentage', {
                         clusterName: props.cluster?.name,
-                        version: props.cluster?.distribution.upgradeInfo.desiredVersion,
-                        percentage: props.cluster?.distribution.upgradeInfo.upgradePercentage,
+                        version: props.cluster?.distribution?.upgradeInfo?.desiredVersion,
+                        percentage: props.cluster?.distribution?.upgradeInfo?.upgradePercentage,
                       })
                     : t('upgrade.upgrading.message', {
                         clusterName: props.cluster?.name,
-                        version: props.cluster?.distribution.upgradeInfo.desiredVersion,
+                        version: props.cluster?.distribution?.upgradeInfo?.desiredVersion,
                       }),
                   footerContent: (
                     <a href={`${props.cluster?.consoleURL}/settings/cluster`} target="_blank" rel="noreferrer">
@@ -317,7 +372,7 @@ export function DistributionField(props: {
         />
       </>
     )
-  } else if (props.cluster.distribution.upgradeInfo?.posthookDidNotRun) {
+  } else if (props.cluster?.distribution?.upgradeInfo?.posthookDidNotRun) {
     // CURATOR POSTHOOK JOB DID NOT RUN
     const [apigroup, apiversion] = ClusterCuratorApiVersion.split('/')
     const targetLink = getSearchLink({
@@ -349,8 +404,8 @@ export function DistributionField(props: {
         />
       </>
     )
-  } else if (props.cluster?.distribution.upgradeInfo?.isReadyUpdates && !props.cluster?.isHostedCluster) {
-    // UPGRADE AVAILABLE
+  } else if (props.cluster?.distribution?.upgradeInfo?.isReadyUpdates && !props.cluster?.isHostedCluster) {
+    // UPGRADE AVAILABLE (standalone clusters)
     return (
       <>
         <div>{props.cluster?.distribution?.displayVersion}</div>
@@ -373,8 +428,7 @@ export function DistributionField(props: {
       </>
     )
   } else if (props.cluster?.isHypershift && isUpdateAvailable) {
-    // UPGRADE AVAILABLE HYPERSHIFT
-
+    // UPGRADE AVAILABLE (hypershift clusters)
     return (
       <>
         {props.nodepool ? (
@@ -397,10 +451,9 @@ export function DistributionField(props: {
           >
             {t('upgrade.available')}
           </RbacButton>
-
           <HypershiftUpgradeModal
             controlPlane={props.cluster}
-            nodepools={props.cluster.hypershift?.nodePools as NodePool[]}
+            nodepools={props.cluster?.hypershift?.nodePools as NodePool[]}
             open={open}
             close={toggle}
             availableUpdates={hypershiftAvailableUpdates}
@@ -412,7 +465,17 @@ export function DistributionField(props: {
       </>
     )
   } else {
-    // NO UPGRADE, JUST VERSION
+    // NO UPGRADE ACTIVITY - Show channel warning for HostedClusters without channel
+    const channelWarning = renderChannelWarning()
+    if (channelWarning) {
+      return (
+        <>
+          <div>{displayVersion ?? '-'}</div>
+          {channelWarning}
+        </>
+      )
+    }
+    // Default: just show version
     return <>{displayVersion ?? '-'}</>
   }
 }
