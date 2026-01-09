@@ -27,7 +27,7 @@ export interface RoleAssignmentWizardFormData extends RoleAssignmentFormData {
 export interface RoleAssignmentWizardModalProps {
   isOpen: boolean
   onClose: () => void
-  onSubmit?: (data: RoleAssignmentFormData) => void
+  onSubmit: (data: RoleAssignmentFormData) => void
   isEditing?: boolean
   preselected?: RoleAssignmentPreselected
 }

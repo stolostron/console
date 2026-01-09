@@ -10,6 +10,7 @@ import { useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS } from '../../lib/doc-util'
 import { isType } from '../../lib/is-type'
 import { GroupKind, UserKind } from '../../resources'
+import { RoleAssignmentPreselected } from '../../routes/UserManagement/RoleAssignments/model/role-assignment-preselected'
 import { ClusterGranularityStepContent } from './ClusterGranularityWizardStep'
 import { GranularityStepContent } from './GranularityStepContent'
 import { IdentitiesList } from './Identities/IdentitiesList'
@@ -19,7 +20,6 @@ import { ClusterSetAccessLevel } from './Scope/AccessLevel/ClusterSetAccessLevel
 import { ClusterList } from './Scope/Clusters/ClusterList'
 import { ExampleScopesPanelContent } from './Scope/ExampleScope/ExampleScopesPanelContent'
 import { ScopeSelectionStepContent } from './ScopeSelectionStepContent'
-import { RoleAssignmentPreselected } from '../../routes/UserManagement/RoleAssignments/model/role-assignment-preselected'
 import { RoleAssignmentWizardFormData, RoleAssignmentWizardModalProps } from './types'
 import { usePreselectedData } from './usePreselectedData'
 
@@ -135,13 +135,7 @@ export const RoleAssignmentWizardModal = ({
     onClose()
   }, [onClose])
 
-  const handleSubmit = async () => {
-    if (onSubmit) {
-      await onSubmit(formData)
-    } else {
-      handleClose()
-    }
-  }
+  const handleSubmit = useCallback(() => onSubmit(formData), [formData, onSubmit])
 
   useEffect(() => {
     if (isOpen && !isEditing) {
