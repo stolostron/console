@@ -495,3 +495,94 @@ export const duplicateDetectionTestCases: DuplicateDetectionTestCase[] = [
     },
   },
 ]
+
+/**
+ * Test case fixture for getClustersForRoleAssignment deduplication
+ * Tests that the function returns unique cluster names without duplicates
+ */
+export interface GetClustersDeduplicationTestCase {
+  description: string
+  placementClusters: PlacementClusters[]
+  placementNames: string[]
+  expectedClusters: string[]
+}
+
+/**
+ * Test cases for getClustersForRoleAssignment deduplication
+ */
+export const getClustersDeduplicationTestCases: GetClustersDeduplicationTestCase[] = [
+  {
+    description: 'should return unique clusters when placements have no overlapping clusters',
+    placementClusters: [
+      createPlacementClusters('placement-1', ['cluster-a', 'cluster-b']),
+      createPlacementClusters('placement-2', ['cluster-c', 'cluster-d']),
+    ],
+    placementNames: ['placement-1', 'placement-2'],
+    expectedClusters: ['cluster-a', 'cluster-b', 'cluster-c', 'cluster-d'],
+  },
+  {
+    description: 'should deduplicate clusters when placements have overlapping clusters',
+    placementClusters: [
+      createPlacementClusters('placement-1', ['cluster-a', 'cluster-b', 'cluster-c']),
+      createPlacementClusters('placement-2', ['cluster-b', 'cluster-c', 'cluster-d']),
+    ],
+    placementNames: ['placement-1', 'placement-2'],
+    expectedClusters: ['cluster-a', 'cluster-b', 'cluster-c', 'cluster-d'],
+  },
+  {
+    description: 'should deduplicate clusters when multiple placements contain the same cluster',
+    placementClusters: [
+      createPlacementClusters('placement-1', ['shared-cluster']),
+      createPlacementClusters('placement-2', ['shared-cluster']),
+      createPlacementClusters('placement-3', ['shared-cluster']),
+    ],
+    placementNames: ['placement-1', 'placement-2', 'placement-3'],
+    expectedClusters: ['shared-cluster'],
+  },
+  {
+    description: 'should deduplicate clusters when all placements have identical cluster lists',
+    placementClusters: [
+      createPlacementClusters('placement-1', ['cluster-a', 'cluster-b']),
+      createPlacementClusters('placement-2', ['cluster-a', 'cluster-b']),
+    ],
+    placementNames: ['placement-1', 'placement-2'],
+    expectedClusters: ['cluster-a', 'cluster-b'],
+  },
+  {
+    description: 'should handle single placement without duplicates',
+    placementClusters: [createPlacementClusters('placement-1', ['cluster-a', 'cluster-b', 'cluster-c'])],
+    placementNames: ['placement-1'],
+    expectedClusters: ['cluster-a', 'cluster-b', 'cluster-c'],
+  },
+  {
+    description: 'should return empty array when placement is not found',
+    placementClusters: [createPlacementClusters('placement-1', ['cluster-a', 'cluster-b'])],
+    placementNames: ['non-existent-placement'],
+    expectedClusters: [],
+  },
+  {
+    description: 'should handle mixed found and not-found placements',
+    placementClusters: [
+      createPlacementClusters('placement-1', ['cluster-a', 'cluster-b']),
+      createPlacementClusters('placement-2', ['cluster-c']),
+    ],
+    placementNames: ['placement-1', 'non-existent', 'placement-2'],
+    expectedClusters: ['cluster-a', 'cluster-b', 'cluster-c'],
+  },
+  {
+    description: 'should return empty array when placements array is empty',
+    placementClusters: [createPlacementClusters('placement-1', ['cluster-a'])],
+    placementNames: [],
+    expectedClusters: [],
+  },
+  {
+    description: 'should deduplicate when same cluster appears in different positions across placements',
+    placementClusters: [
+      createPlacementClusters('placement-1', ['cluster-x', 'cluster-a', 'cluster-y']),
+      createPlacementClusters('placement-2', ['cluster-a', 'cluster-z']),
+      createPlacementClusters('placement-3', ['cluster-z', 'cluster-a', 'cluster-x']),
+    ],
+    placementNames: ['placement-1', 'placement-2', 'placement-3'],
+    expectedClusters: ['cluster-x', 'cluster-a', 'cluster-y', 'cluster-z'],
+  },
+]

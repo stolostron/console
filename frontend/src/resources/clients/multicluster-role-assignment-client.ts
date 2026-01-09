@@ -75,12 +75,15 @@ const roleAssignmentToFlattenedRoleAssignment = (
 const getClustersForRoleAssignment = (
   roleAssignment: RoleAssignment,
   placementClusters: PlacementClusters[]
-): string[] =>
-  roleAssignment.clusterSelection.placements
-    .map((placement) => placement.name)
-    .flatMap(
-      (placementName) => placementClusters.find((pc) => pc.placement.metadata.name === placementName)?.clusters ?? []
-    )
+): string[] => [
+  ...new Set(
+    roleAssignment.clusterSelection.placements
+      .map((placement) => placement.name)
+      .flatMap(
+        (placementName) => placementClusters.find((pc) => pc.placement.metadata.name === placementName)?.clusters ?? []
+      )
+  ),
+]
 
 /**
  * Flattens a MulticlusterRoleAssignment into individual FlattenedRoleAssignment objects,
