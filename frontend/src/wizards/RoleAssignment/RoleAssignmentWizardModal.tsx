@@ -42,6 +42,19 @@ const getWizardTitle = (
   }
 }
 
+const getInitialSelectedIdentity = (
+  formData: RoleAssignmentWizardFormData
+): { kind: 'User' | 'Group'; name: string } | undefined => {
+  switch (true) {
+    case formData.subject?.kind === 'User' && formData.subject.user?.[0] !== undefined:
+      return { kind: 'User', name: formData.subject.user[0] }
+    case formData.subject?.kind === 'Group' && formData.subject.group?.[0] !== undefined:
+      return { kind: 'Group', name: formData.subject.group[0] }
+    default:
+      return undefined
+  }
+}
+
 const getInitialFormData = (): RoleAssignmentWizardFormData => ({
   subject: { kind: UserKind },
   scope: {
@@ -308,13 +321,7 @@ export const RoleAssignmentWizardModal = ({
                         handleSubjectKindChange('Group')
                         handleGroupChange(group.metadata.name ? [group.metadata.name] : [])
                       }}
-                      initialSelectedIdentity={
-                        formData.subject?.kind === 'User' && formData.subject.user?.[0]
-                          ? { kind: 'User', name: formData.subject.user[0] }
-                          : formData.subject?.kind === 'Group' && formData.subject.group?.[0]
-                            ? { kind: 'Group', name: formData.subject.group[0] }
-                            : undefined
-                      }
+                      initialSelectedIdentity={getInitialSelectedIdentity(formData)}
                     />
                   </WizardStep>
                 )}
