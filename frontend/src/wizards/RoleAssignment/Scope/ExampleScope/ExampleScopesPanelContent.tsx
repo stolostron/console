@@ -7,14 +7,11 @@ import {
   DrawerPanelContent,
   Title,
 } from '@patternfly/react-core'
-import React from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { ExampleScopes } from './ExampleScopes'
 
 export interface ExampleScopesDrawerProps {
-  isVisible: boolean
   onClose: () => void
-  children?: React.ReactNode
 }
 
 export const ExampleScopesPanelContent = ({ onClose }: ExampleScopesDrawerProps) => {
