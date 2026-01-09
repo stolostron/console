@@ -40,7 +40,7 @@ export const GranularityStepContent = ({
       )}
       {descriptions.map((desc, index) => (
         <Content
-          key={index}
+          key={desc}
           component="p"
           style={{
             marginTop: index === 0 && !action ? '8px' : undefined,
