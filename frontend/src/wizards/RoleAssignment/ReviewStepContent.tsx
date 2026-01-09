@@ -1,9 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { DescriptionList, DescriptionListGroup, DescriptionListDescription, Title } from '@patternfly/react-core'
+import {
+  DescriptionList,
+  DescriptionListDescription,
+  DescriptionListGroup,
+  Divider,
+  Title,
+} from '@patternfly/react-core'
 import { useTranslation } from '../../lib/acm-i18next'
-import { RoleAssignmentWizardFormData, RoleAssignmentWizardModalProps } from './types'
 import { GranularityStepContent } from './GranularityStepContent'
-import { Divider } from '@patternfly/react-core'
+import { RoleAssignmentWizardFormData, RoleAssignmentWizardModalProps } from './types'
 
 interface ReviewStepContentProps {
   formData: RoleAssignmentWizardFormData
