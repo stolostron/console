@@ -26,7 +26,7 @@
     "find-my-way": "^9.4.0",
     "fuse.js": "6.6.2",
     "get-value": "3.0.1",
-    "got": "^12.6.1",
+    "got": "^14.0.0",
     "http2-proxy": "^5.0.53",
     "https-proxy-agent": "^7.0.4",
     "node-fetch": "2.7.0",
