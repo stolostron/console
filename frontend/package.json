@@ -77,7 +77,7 @@
     "file-saver": "^2.0.2",
     "formik-pf": "0.0.1-alpha9",
     "fuse.js": "6.6.2",
-    "get-value": "3.0.1",
+    "get-value": "4.0.1",
     "graphql": "16.9.0",
     "handlebars": "4.7.8",
     "highlight.js": "^11.11.1",
