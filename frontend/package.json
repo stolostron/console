@@ -173,7 +173,7 @@
     "merge-jsons-webpack-plugin": "2.0.1",
     "mini-css-extract-plugin": "^2.9.4",
     "monaco-editor-webpack-plugin": "^7.1.0",
-    "nock": "13.5.6",
+    "nock": "14.0.10",
     "node-util": "0.0.6",
     "null-loader": "4.0.1",
     "path-browserify": "1.0.1",
