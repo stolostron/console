@@ -17,9 +17,9 @@ export default function IdentitiesPage() {
       header={
         <AcmPageHeader
           title={t('Identities')}
-          description={
+          description={t(
             'Manage all identities including users, groups, and service accounts in one place. Assign access individually or by group, with users automatically inheriting group permissions.'
-          }
+          )}
           breadcrumb={[{ text: t('User Management') }, { text: t('Identities') }]}
           navigation={
             <AcmSecondaryNav
