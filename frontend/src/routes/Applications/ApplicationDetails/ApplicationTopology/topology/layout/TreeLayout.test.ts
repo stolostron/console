@@ -1,8 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+const mockD3Cola = {
+  flowLayout: jest.fn().mockReturnThis(),
+}
+
+const mockStartLayout = jest.fn()
+
 jest.mock('@patternfly/react-topology', () => ({
   ColaLayout: class MockColaLayout {
+    protected d3Cola = mockD3Cola
     constructor() {}
+    startLayout = mockStartLayout
   },
   Graph: class MockGraph {},
   LayoutNode: class MockLayoutNode {},
@@ -10,6 +18,7 @@ jest.mock('@patternfly/react-topology', () => ({
 }))
 
 import * as treeLayoutAPI from './TreeLayout'
+import { TreeLayout, calculateNodeOffsets, TreeLayoutOptions } from './TreeLayout'
 
 describe('TreeLayout tests', () => {
   beforeEach(() => {
@@ -24,6 +33,448 @@ describe('TreeLayout tests', () => {
   test('app subscription 2 subscriptions with placment', async () => {
     const calculateNodeOffsetsFn = jest.spyOn(treeLayoutAPI, 'calculateNodeOffsets') as jest.Mock<any>
     expect(calculateNodeOffsetsFn(...calculateNodeOffsets2.args)).toEqual(calculateNodeOffsets2.ret)
+  })
+})
+
+describe('TreeLayout class', () => {
+  const mockGraph = {
+    getBounds: jest.fn().mockReturnValue({ width: 800, height: 600 }),
+    fit: jest.fn(),
+  }
+
+  test('creates TreeLayout with default options', () => {
+    const layout = new TreeLayout(mockGraph as any)
+    expect(layout).toBeInstanceOf(TreeLayout)
+  })
+
+  test('creates TreeLayout with custom options', () => {
+    const options: Partial<TreeLayoutOptions> = {
+      xSpacer: 100,
+      ySpacer: 80,
+      nodeWidth: 80,
+      nodeHeight: 80,
+      maxColumns: 10,
+      useCola: true,
+    }
+    const layout = new TreeLayout(mockGraph as any, options)
+    expect(layout).toBeInstanceOf(TreeLayout)
+  })
+
+  test('startLayout calls super.startLayout when useCola is true', () => {
+    const layout = new TreeLayout(mockGraph as any, { useCola: true })
+    ;(layout as any).startLayout(mockGraph, true, false)
+    expect(mockStartLayout).toHaveBeenCalledWith(mockGraph, true, false)
+  })
+})
+
+describe('calculateNodeOffsets edge cases', () => {
+  test('returns empty nodeOffsetMap for empty nodes array', () => {
+    const elements = { nodes: [], links: [] }
+    const options: TreeLayoutOptions = {
+      xSpacer: 70,
+      ySpacer: 60,
+      nodeWidth: 65,
+      nodeHeight: 65,
+    }
+    const result = calculateNodeOffsets(elements, options)
+    expect(result.nodeOffsetMap).toEqual({})
+    expect(result.layout).toBe('TreeLayout')
+  })
+
+  test('handles single node with no links', () => {
+    const elements = {
+      nodes: [{ id: 'node1', type: 'application' }],
+      links: [],
+    }
+    const options: TreeLayoutOptions = {
+      xSpacer: 70,
+      ySpacer: 60,
+      nodeWidth: 65,
+      nodeHeight: 65,
+    }
+    const result = calculateNodeOffsets(elements, options)
+    expect(result.nodeOffsetMap).toEqual({})
+    expect(result.layout).toBe('TreeLayout')
+  })
+
+  test('handles two connected nodes (simple parent-child)', () => {
+    const elements = {
+      nodes: [
+        { id: 'parent', type: 'application' },
+        { id: 'child', type: 'subscription' },
+      ],
+      links: [{ source: 'parent', target: 'child' }],
+    }
+    const options: TreeLayoutOptions = {
+      xSpacer: 70,
+      ySpacer: 60,
+      nodeWidth: 65,
+      nodeHeight: 65,
+    }
+    const result = calculateNodeOffsets(elements, options)
+    expect(result.nodeOffsetMap).toHaveProperty('parent')
+    expect(result.nodeOffsetMap).toHaveProperty('child')
+    expect(result.layout).toBe('TreeLayout')
+  })
+
+  test('handles linear chain of nodes', () => {
+    const elements = {
+      nodes: [
+        { id: 'node1', type: 'application' },
+        { id: 'node2', type: 'subscription' },
+        { id: 'node3', type: 'cluster' },
+        { id: 'node4', type: 'deployment' },
+      ],
+      links: [
+        { source: 'node1', target: 'node2' },
+        { source: 'node2', target: 'node3' },
+        { source: 'node3', target: 'node4' },
+      ],
+    }
+    const options: TreeLayoutOptions = {
+      xSpacer: 70,
+      ySpacer: 60,
+      nodeWidth: 65,
+      nodeHeight: 65,
+    }
+    const result = calculateNodeOffsets(elements, options)
+    expect(Object.keys(result.nodeOffsetMap)).toHaveLength(4)
+    // Verify vertical ordering (dy increases down the chain)
+    expect(result.nodeOffsetMap['node1'].dy).toBeLessThan(result.nodeOffsetMap['node2'].dy)
+    expect(result.nodeOffsetMap['node2'].dy).toBeLessThan(result.nodeOffsetMap['node3'].dy)
+    expect(result.nodeOffsetMap['node3'].dy).toBeLessThan(result.nodeOffsetMap['node4'].dy)
+  })
+
+  test('handles branching tree (one parent, multiple children)', () => {
+    const elements = {
+      nodes: [
+        { id: 'root', type: 'application' },
+        { id: 'child1', type: 'subscription' },
+        { id: 'child2', type: 'subscription' },
+        { id: 'child3', type: 'subscription' },
+      ],
+      links: [
+        { source: 'root', target: 'child1' },
+        { source: 'root', target: 'child2' },
+        { source: 'root', target: 'child3' },
+      ],
+    }
+    const options: TreeLayoutOptions = {
+      xSpacer: 70,
+      ySpacer: 60,
+      nodeWidth: 65,
+      nodeHeight: 65,
+    }
+    const result = calculateNodeOffsets(elements, options)
+    expect(Object.keys(result.nodeOffsetMap)).toHaveLength(4)
+    // All children should be at the same Y level
+    expect(result.nodeOffsetMap['child1'].dy).toBe(result.nodeOffsetMap['child2'].dy)
+    expect(result.nodeOffsetMap['child2'].dy).toBe(result.nodeOffsetMap['child3'].dy)
+    // Children should be spread horizontally
+    expect(result.nodeOffsetMap['child1'].dx).not.toBe(result.nodeOffsetMap['child2'].dx)
+  })
+
+  test('handles diamond pattern (converging branches)', () => {
+    const elements = {
+      nodes: [
+        { id: 'root', type: 'application' },
+        { id: 'left', type: 'subscription' },
+        { id: 'right', type: 'subscription' },
+        { id: 'bottom', type: 'cluster' },
+      ],
+      links: [
+        { source: 'root', target: 'left' },
+        { source: 'root', target: 'right' },
+        { source: 'left', target: 'bottom' },
+        { source: 'right', target: 'bottom' },
+      ],
+    }
+    const options: TreeLayoutOptions = {
+      xSpacer: 70,
+      ySpacer: 60,
+      nodeWidth: 65,
+      nodeHeight: 65,
+    }
+    const result = calculateNodeOffsets(elements, options)
+    expect(Object.keys(result.nodeOffsetMap)).toHaveLength(4)
+  })
+
+  test('handles links with missing source or target nodes', () => {
+    const elements = {
+      nodes: [
+        { id: 'node1', type: 'application' },
+        { id: 'node2', type: 'subscription' },
+      ],
+      links: [
+        { source: 'node1', target: 'node2' },
+        { source: 'node1', target: 'nonexistent' }, // target doesn't exist
+        { source: 'missing', target: 'node2' }, // source doesn't exist
+      ],
+    }
+    const options: TreeLayoutOptions = {
+      xSpacer: 70,
+      ySpacer: 60,
+      nodeWidth: 65,
+      nodeHeight: 65,
+    }
+    const result = calculateNodeOffsets(elements, options)
+    expect(Object.keys(result.nodeOffsetMap)).toHaveLength(2)
+  })
+
+  test('handles maxColumns option to limit row width', () => {
+    const nodes = []
+    const links = []
+    // Create a root with many children
+    nodes.push({ id: 'root', type: 'application' })
+    for (let i = 0; i < 20; i++) {
+      nodes.push({ id: `child${i}`, type: 'subscription' })
+      links.push({ source: 'root', target: `child${i}` })
+    }
+    const elements = { nodes, links }
+    const options: TreeLayoutOptions = {
+      xSpacer: 70,
+      ySpacer: 60,
+      nodeWidth: 65,
+      nodeHeight: 65,
+      maxColumns: 8,
+    }
+    const result = calculateNodeOffsets(elements, options)
+    expect(Object.keys(result.nodeOffsetMap)).toHaveLength(21)
+  })
+
+  test('handles sortRowsBy option', () => {
+    const elements = {
+      nodes: [
+        { id: 'root', type: 'application' },
+        { id: 'childZ', type: 'subscription', name: 'Z-name' },
+        { id: 'childA', type: 'subscription', name: 'A-name' },
+        { id: 'childM', type: 'subscription', name: 'M-name' },
+      ],
+      links: [
+        { source: 'root', target: 'childZ' },
+        { source: 'root', target: 'childA' },
+        { source: 'root', target: 'childM' },
+      ],
+    }
+    const options: TreeLayoutOptions = {
+      xSpacer: 70,
+      ySpacer: 60,
+      nodeWidth: 65,
+      nodeHeight: 65,
+      sortRowsBy: ['name'],
+    }
+    const result = calculateNodeOffsets(elements, options)
+    expect(Object.keys(result.nodeOffsetMap)).toHaveLength(4)
+  })
+
+  test('handles placeWith option to filter and place paired nodes', () => {
+    const elements = {
+      nodes: [
+        { id: 'app', type: 'application' },
+        { id: 'sub', type: 'subscription' },
+        { id: 'rule', type: 'placements' },
+      ],
+      links: [
+        { source: 'app', target: 'sub' },
+        { source: 'app', target: 'rule' },
+      ],
+    }
+    const options: TreeLayoutOptions = {
+      xSpacer: 70,
+      ySpacer: 60,
+      nodeWidth: 65,
+      nodeHeight: 65,
+      placeWith: { parentType: 'application', childType: 'placements' },
+    }
+    const result = calculateNodeOffsets(elements, options)
+    // The placements node should be placed with special positioning
+    expect(result.nodeOffsetMap).toHaveProperty('app')
+    expect(result.nodeOffsetMap).toHaveProperty('sub')
+  })
+
+  test('handles multiple disconnected groups', () => {
+    const elements = {
+      nodes: [
+        { id: 'group1-root', type: 'application' },
+        { id: 'group1-child', type: 'subscription' },
+        { id: 'group2-root', type: 'application' },
+        { id: 'group2-child', type: 'subscription' },
+      ],
+      links: [
+        { source: 'group1-root', target: 'group1-child' },
+        { source: 'group2-root', target: 'group2-child' },
+      ],
+    }
+    const options: TreeLayoutOptions = {
+      xSpacer: 70,
+      ySpacer: 60,
+      nodeWidth: 65,
+      nodeHeight: 65,
+    }
+    const result = calculateNodeOffsets(elements, options)
+    expect(Object.keys(result.nodeOffsetMap)).toHaveLength(4)
+  })
+
+  test('returns ColaTreeLayout when placeWith has multiple items', () => {
+    const elements = {
+      nodes: [
+        { id: 'app', type: 'application' },
+        { id: 'sub', type: 'subscription' },
+        { id: 'rule1', type: 'placements' },
+        { id: 'rule2', type: 'placements' },
+      ],
+      links: [
+        { source: 'app', target: 'sub' },
+        { source: 'app', target: 'rule1' },
+        { source: 'app', target: 'rule2' },
+      ],
+    }
+    const options: TreeLayoutOptions = {
+      xSpacer: 70,
+      ySpacer: 60,
+      nodeWidth: 65,
+      nodeHeight: 65,
+      placeWith: { parentType: 'application', childType: 'placements' },
+    }
+    const result = calculateNodeOffsets(elements, options)
+    expect(result.layout).toBe('ColaTreeLayout')
+  })
+
+  test('handles deep tree structure', () => {
+    const nodes = []
+    const links = []
+    // Create a deep chain of 8 nodes
+    for (let i = 0; i < 8; i++) {
+      nodes.push({ id: `level${i}`, type: 'node' })
+      if (i > 0) {
+        links.push({ source: `level${i - 1}`, target: `level${i}` })
+      }
+    }
+    const elements = { nodes, links }
+    const options: TreeLayoutOptions = {
+      xSpacer: 70,
+      ySpacer: 60,
+      nodeWidth: 65,
+      nodeHeight: 65,
+    }
+    const result = calculateNodeOffsets(elements, options)
+    expect(Object.keys(result.nodeOffsetMap)).toHaveLength(8)
+    // Verify each level is below the previous
+    for (let i = 1; i < 8; i++) {
+      expect(result.nodeOffsetMap[`level${i}`].dy).toBeGreaterThan(result.nodeOffsetMap[`level${i - 1}`].dy)
+    }
+  })
+
+  test('handles custom spacer values', () => {
+    const elements = {
+      nodes: [
+        { id: 'parent', type: 'application' },
+        { id: 'child', type: 'subscription' },
+      ],
+      links: [{ source: 'parent', target: 'child' }],
+    }
+    const options: TreeLayoutOptions = {
+      xSpacer: 100,
+      ySpacer: 100,
+      nodeWidth: 100,
+      nodeHeight: 100,
+    }
+    const result = calculateNodeOffsets(elements, options)
+    // Verify spacing is applied (difference in dy should reflect nodeHeight + ySpacer)
+    const dyDiff = result.nodeOffsetMap['child'].dy - result.nodeOffsetMap['parent'].dy
+    expect(dyDiff).toBe(200) // nodeHeight (100) + ySpacer (100)
+  })
+
+  test('handles links with null source or target', () => {
+    const elements = {
+      nodes: [
+        { id: 'node1', type: 'application' },
+        { id: 'node2', type: 'subscription' },
+      ],
+      links: [
+        { source: 'node1', target: 'node2' },
+        { source: null, target: 'node2' },
+        { source: 'node1', target: null },
+      ],
+    }
+    const options: TreeLayoutOptions = {
+      xSpacer: 70,
+      ySpacer: 60,
+      nodeWidth: 65,
+      nodeHeight: 65,
+    }
+    // Should not throw
+    const result = calculateNodeOffsets(elements, options)
+    expect(Object.keys(result.nodeOffsetMap)).toHaveLength(2)
+  })
+
+  test('handles sorting with numeric properties', () => {
+    const elements = {
+      nodes: [
+        { id: 'root', type: 'application' },
+        { id: 'child1', type: 'subscription', priority: 3 },
+        { id: 'child2', type: 'subscription', priority: 1 },
+        { id: 'child3', type: 'subscription', priority: 2 },
+      ],
+      links: [
+        { source: 'root', target: 'child1' },
+        { source: 'root', target: 'child2' },
+        { source: 'root', target: 'child3' },
+      ],
+    }
+    const options: TreeLayoutOptions = {
+      xSpacer: 70,
+      ySpacer: 60,
+      nodeWidth: 65,
+      nodeHeight: 65,
+      sortRowsBy: ['priority'],
+    }
+    const result = calculateNodeOffsets(elements, options)
+    expect(Object.keys(result.nodeOffsetMap)).toHaveLength(4)
+  })
+
+  test('handles mixed connected and unconnected nodes', () => {
+    const elements = {
+      nodes: [
+        { id: 'connected1', type: 'application' },
+        { id: 'connected2', type: 'subscription' },
+        { id: 'unconnected1', type: 'pod' },
+        { id: 'unconnected2', type: 'service' },
+      ],
+      links: [{ source: 'connected1', target: 'connected2' }],
+    }
+    const options: TreeLayoutOptions = {
+      xSpacer: 70,
+      ySpacer: 60,
+      nodeWidth: 65,
+      nodeHeight: 65,
+    }
+    const result = calculateNodeOffsets(elements, options)
+    // Only connected nodes should have offsets
+    expect(result.nodeOffsetMap).toHaveProperty('connected1')
+    expect(result.nodeOffsetMap).toHaveProperty('connected2')
+    expect(result.nodeOffsetMap).not.toHaveProperty('unconnected1')
+    expect(result.nodeOffsetMap).not.toHaveProperty('unconnected2')
+  })
+
+  test('handles wide tree with row chunking', () => {
+    const nodes = [{ id: 'root', type: 'application' }]
+    const links = []
+    // Create 30 children to trigger chunking with default maxColumns
+    for (let i = 0; i < 30; i++) {
+      nodes.push({ id: `child${i}`, type: 'subscription' })
+      links.push({ source: 'root', target: `child${i}` })
+    }
+    const elements = { nodes, links }
+    const options: TreeLayoutOptions = {
+      xSpacer: 70,
+      ySpacer: 60,
+      nodeWidth: 65,
+      nodeHeight: 65,
+      maxColumns: 10,
+    }
+    const result = calculateNodeOffsets(elements, options)
+    expect(Object.keys(result.nodeOffsetMap)).toHaveLength(31)
   })
 })
 const calculateNodeOffsets1 = {
