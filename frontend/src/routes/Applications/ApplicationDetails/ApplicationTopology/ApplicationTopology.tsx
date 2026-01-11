@@ -45,6 +45,7 @@ export function ApplicationTopologyPageContent() {
       statuses: undefined,
     },
     channelControl,
+    toolbarControl,
   } = useApplicationDetailsContext()
   const { t } = useTranslation()
   const { refreshTime, application, appData, topology, statuses } = applicationData
@@ -140,6 +141,7 @@ export function ApplicationTopologyPageContent() {
         argoAppDetailsContainerControl={argoAppDetailsContainerControl}
         clusterDetailsContainerControl={clusterDetailsContainerControl}
         channelControl={channelControl}
+        toolbarControl={toolbarControl}
         nodeDetailsProvider={nodeDetailsProvider}
         setDrawerContent={setDrawerContent}
         hubClusterName={hubClusterName}

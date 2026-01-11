@@ -20,7 +20,10 @@ import type {
   HelmReleasesState,
   ResourceStatuses,
   Translator,
+  ArgoApplicationTopologyData,
+  OCPFluxApplicationModel,
 } from '../types'
+import { ToolbarControl } from '../topology/components/TopologyToolbar'
 
 /**
  * Main function to get topology data for different application types.
@@ -34,6 +37,7 @@ import type {
  * @returns Promise resolving to topology structure or undefined
  */
 export const getTopology = async (
+  toolbarControl: ToolbarControl,
   application: ApplicationModel | null,
   managedClusters: ManagedCluster[],
   localHubName: string,
@@ -41,23 +45,24 @@ export const getTopology = async (
   argoData: ArgoData
 ): Promise<Topology | ExtendedTopology | undefined> => {
   let topology: Topology | ExtendedTopology | undefined
-
   if (application) {
     if (application.isArgoApp) {
       // Generate topology for Argo CD applications
       topology = getArgoTopology(
-        application as unknown as Parameters<typeof getArgoTopology>[0],
+        toolbarControl,
+        application as unknown as ArgoApplicationTopologyData,
         argoData,
         managedClusters,
         localHubName
       )
     } else if (application.isAppSet) {
       // Generate topology for ApplicationSets
-      topology = getAppSetTopology(application, localHubName)
+      topology = await getAppSetTopology(toolbarControl, application, localHubName)
     } else if (application.isOCPApp || application.isFluxApp) {
       // Generate topology for OpenShift or Flux applications (async operation)
       topology = await getOCPFluxAppTopology(
-        application as unknown as Parameters<typeof getOCPFluxAppTopology>[0],
+        toolbarControl,
+        application as unknown as OCPFluxApplicationModel,
         localHubName
       )
     } else {
@@ -183,7 +188,7 @@ export const processNodeData = (
   hasHelmReleases: HelmReleasesState,
   topology: Topology
 ): void => {
-  const { name, type } = node
+  const { name, namespace, type } = node
   const isDesign = node.specs?.isDesign ?? false
 
   // Skip certain node types when in design mode
@@ -217,7 +222,7 @@ export const processNodeData = (
       topoResourceMap[`${type}-${clusterName}`] = node
     } else {
       // Individual resources use type-name-cluster key
-      topoResourceMap[`${type}-${keyName}-${clusterName}`] = node
+      topoResourceMap[`${type}-${namespace}-${keyName}-${clusterName}`] = node
     }
 
     // Detect cluster grouping (comma-separated cluster names)

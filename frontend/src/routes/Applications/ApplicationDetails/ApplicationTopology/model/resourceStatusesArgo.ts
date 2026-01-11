@@ -3,6 +3,7 @@
 import { searchClient } from '../../../../Search/search-sdk/search-client'
 import { SearchResultItemsAndRelatedItemsDocument } from '../../../../Search/search-sdk/search-sdk'
 import { convertStringToQuery } from '../helpers/search-helper'
+import { getQueryStringForResource } from '../model/topologyUtils'
 import type {
   ApplicationModel,
   ArgoApplicationData,
@@ -378,42 +379,4 @@ export const getArgoSecret = (
   }
 
   return Promise.resolve()
-}
-
-/**
- * Constructs a search query string for finding specific Kubernetes resources.
- * This function builds search queries with appropriate filters for resource kind,
- * name, namespace, and cluster to locate deployed resources.
- *
- * @param resourcename - The Kubernetes resource kind or array of kinds to search for
- * @param name - Optional resource name to filter by
- * @param namespace - Optional namespace to filter by (can be comma-separated list)
- * @param cluster - Optional cluster name to filter by
- * @returns Formatted search query object with appropriate filters
- */
-export const getQueryStringForResource = (
-  resourcename: string | string[] | null,
-  name: string | null,
-  namespace: string | null,
-  cluster?: string
-): SearchQuery => {
-  let resource = ''
-  const nameForQuery = name ? `name:${name}` : ''
-  const namespaceForQuery = namespace ? ` namespace:${namespace}` : ''
-  const clusterForQuery = cluster ? ` cluster:${cluster}` : ''
-
-  if (resourcename) {
-    switch (resourcename) {
-      case 'Subscription':
-        resource = 'kind:subscription '
-        break
-      case 'Application':
-        resource = 'kind:application'
-        break
-      default:
-        resource = `kind:${resourcename} `
-    }
-  }
-
-  return convertStringToQuery(`${resource} ${nameForQuery} ${namespaceForQuery} ${clusterForQuery}`)
 }

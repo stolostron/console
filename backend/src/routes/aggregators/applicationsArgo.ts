@@ -100,6 +100,11 @@ export function getPulledAppSetMap() {
   return Object.keys(pulledAppSetMap).length === 0 ? tempPulledAppSetMap : pulledAppSetMap || {}
 }
 
+const appStatusByNameMap: Record<string, Record<string, { health: { status: string }; sync: { status: string } }>> = {}
+export function getAppStatusByNameMap() {
+  return appStatusByNameMap || {}
+}
+
 // filter out ocp apps that are argo apps
 // each entry is a string of the form:
 // <argo app name>-<argo app namespace>-<argo app cluster>
@@ -422,14 +427,20 @@ export function createArgoStatusMap(searchResult: SearchResult) {
   searchResult.items.forEach((app: ISearchResource) => {
     let appKey
     let appName
+    let appCluster = app.cluster
+    let appSetName = ''
+    let appNamespace = app.namespace
     if (app._hostingResource) {
-      appName = `${app._hostingResource.split('/')[1]}/${app._hostingResource.split('/')[2]}`
+      ;[, appNamespace, appSetName] = app._hostingResource.split('/')
+      appName = `${appNamespace}/${appSetName}`
       appKey = `appset/${appName}`
     } else if (app.applicationSet) {
       // don't count the placeholder app on the hub for this pulled appset
       if (!app.label.includes('apps.open-cluster-management.io/pull-to-ocm-managed-cluster=true')) {
         appName = `${app.namespace}/${app.applicationSet}`
         appKey = `appset/${appName}`
+        appCluster = app.name.replace(`${app.applicationSet}-`, '')
+        appSetName = app.applicationSet
       }
     } else {
       appName = `${app.namespace}/${app.name}`
@@ -440,9 +451,9 @@ export function createArgoStatusMap(searchResult: SearchResult) {
       if (!appStatusMap) {
         appStatusMap = argoClusterStatusMap[appKey] = {}
       }
-      let appStatuses = appStatusMap[app.cluster]
+      let appStatuses = appStatusMap[appCluster]
       if (!appStatuses) {
-        appStatuses = appStatusMap[app.cluster] = {
+        appStatuses = appStatusMap[appCluster] = {
           health: [new Array(ScoreColumnSize).fill(0) as number[], []],
           synced: [new Array(ScoreColumnSize).fill(0) as number[], []],
           deployed: [new Array(ScoreColumnSize).fill(0) as number[], []],
@@ -450,6 +461,16 @@ export function createArgoStatusMap(searchResult: SearchResult) {
       }
       computeAppHealthStatus(appStatuses.health, app)
       computeAppSyncStatus(appStatuses.synced, app)
+      // kube status might not be updated to latest search status
+      if (appSetName) {
+        if (!appStatusByNameMap[`${appNamespace}/${appSetName}`]) {
+          appStatusByNameMap[`${appNamespace}/${appSetName}`] = {}
+        }
+        appStatusByNameMap[`${appNamespace}/${appSetName}`][app.name] = {
+          health: { status: app.healthStatus },
+          sync: { status: app.syncStatus },
+        }
+      }
       let appIDMap = statuses2IDMap.get(appStatuses)
       if (!appIDMap) {
         appIDMap = { appName, uids: [] }

@@ -4,11 +4,27 @@
 import { getQueryStringForLabel, processSearchResults, generateTopology } from './topologyOCPFluxApp'
 import type {
   OCPFluxApplicationModel,
-  OCPFluxSearchResult,
+  TopologySearchResult,
   OCPFluxTopologyResult,
   ResourceItem,
   SearchQuery,
 } from '../types'
+import type { ToolbarControl } from '../topology/components/TopologyToolbar'
+
+const mockToolbarControl: ToolbarControl = {
+  allClusters: undefined,
+  activeClusters: undefined,
+  setActiveClusters: () => {},
+  setAllClusters: () => {},
+  allApplications: undefined,
+  activeApplications: undefined,
+  setAllApplications: () => {},
+  setActiveApplications: () => {},
+  allTypes: undefined,
+  activeTypes: undefined,
+  setAllTypes: () => {},
+  setActiveTypes: () => {},
+}
 
 describe('getQueryStringForLabel', () => {
   const label = 'label:app=test-app,app.kubernetes.io/part-of=test-app'
@@ -37,11 +53,11 @@ describe('processSearchResults', () => {
 
 describe('generateTopology', () => {
   it('should generateTopology', () => {
-    expect(generateTopology(application, resources, {}, 'local-cluster')).toEqual(result2)
+    expect(generateTopology(mockToolbarControl, application, resources, {}, 'local-cluster')).toEqual(result2)
   })
 })
 
-const searchResults: OCPFluxSearchResult = {
+const searchResults: TopologySearchResult = {
   data: {
     searchResult: [
       {

@@ -169,7 +169,10 @@ class DetailsView extends Component<DetailsViewProps, DetailsViewState> {
     // Get the current node from layout or nodes array
     const currentNode =
       filteredNode || getLayoutNodes().find((n) => n.uid === selectedNodeId) || ({} as TopologyNodeWithStatus)
-    const currentUpdatedNode = filteredNode || nodes.find((n) => n.uid === selectedNodeId)
+    let currentUpdatedNode = filteredNode || nodes.find((n) => n.uid === selectedNodeId)
+    if (currentUpdatedNode && 'detailsNode' in currentUpdatedNode) {
+      currentUpdatedNode = currentUpdatedNode.detailsNode as TopologyNodeWithStatus
+    }
 
     const { layout = {} } = currentNode as any
     const resourceType = (layout?.type as string) || currentNode.type || currentUpdatedNode?.type || ''

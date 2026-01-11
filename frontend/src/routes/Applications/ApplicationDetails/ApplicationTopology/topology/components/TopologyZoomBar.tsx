@@ -34,7 +34,7 @@ const TopologyZoomBar: React.FC<{ collapseAllCallback?: (collapseAll: boolean) =
         fitToScreenTip: t('Fit to Screen'),
         fitToScreenAriaLabel: t('Fit to Screen'),
         fitToScreenCallback: action(() => {
-          controller.getGraph().fit(80)
+          controller.getGraph().fit(90)
         }),
         resetViewTip: t('Reset View'),
         resetViewAriaLabel: t('Reset View'),

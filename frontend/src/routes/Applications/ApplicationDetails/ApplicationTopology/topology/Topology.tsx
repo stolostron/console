@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useState, useRef } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import head from 'lodash/head'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import {
@@ -21,11 +21,12 @@ import componentFactory from './components/componentFactory'
 import { NodeIcons } from './components/nodeIcons'
 import { NodeStatusIcons } from './components/nodeStatusIcons'
 import DetailsView from '../components/DetailsView'
+import { ToolbarControl } from './components/TopologyToolbar'
+
 import { ArgoAppDetailsContainerData, ClusterDetailsContainerData } from '../ApplicationTopology'
 import TopologyZoomBar from './components/TopologyZoomBar'
 import TopologyToolbar from './components/TopologyToolbar'
 
-import './css/topology-components.css'
 import './css/topology-view.css'
 import { TFunction } from 'react-i18next'
 
@@ -41,6 +42,7 @@ export interface TopologyProps {
     activeChannel: string | undefined
     setActiveChannel: (channel: string) => void
   }
+  toolbarControl: ToolbarControl
   argoAppDetailsContainerControl: {
     argoAppDetailsContainerData: ArgoAppDetailsContainerData
     handleArgoAppDetailsContainerUpdate: React.Dispatch<React.SetStateAction<ArgoAppDetailsContainerData>>
@@ -120,9 +122,26 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
     )
   })
 
+  const handleSurfaceClick = useCallback(() => {
+    setSelectedIds([])
+    setDrawerContent('Close', false, true, true, true, undefined, true)
+  }, [setDrawerContent])
+
   return (
     <TopologyView controlBar={<TopologyZoomBar />} contextToolbar={<TopologyToolbar {...topologyProps} />}>
-      <VisualizationSurface state={{ selectedIds }} />
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={handleSurfaceClick}
+        onDoubleClickCapture={(e) => {
+          e.stopPropagation()
+          e.preventDefault()
+        }}
+        onKeyDown={() => {}}
+        style={{ width: '100%', height: '100%' }}
+      >
+        <VisualizationSurface state={{ selectedIds }} />
+      </div>
     </TopologyView>
   )
 }
@@ -130,15 +149,18 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
 export const Topology = (props: TopologyProps) => {
   const controllerRef = useRef<Controller>()
   let controller = controllerRef.current
-  const nodeIds = props.elements.nodes.map((node) => node.id).join(',')
+  const nodeIds = props.elements.nodes
+    .sort((a, b) => a.id.localeCompare(b.id))
+    .map((node) => `${node.id}-${node.specs.pulse}`)
+    .join(',')
   const currentNodeIds = useRef<string>()
   if (!controller || currentNodeIds.current !== nodeIds) {
     controller = controllerRef.current = new Visualization()
     controller.registerLayoutFactory(layoutFactory)
     controller.registerComponentFactory(componentFactory)
+    controller.fromModel(getLayoutModel(props.elements))
     currentNodeIds.current = nodeIds
   }
-  controller.fromModel(getLayoutModel(props.elements))
 
   return (
     <VisualizationProvider controller={controller}>

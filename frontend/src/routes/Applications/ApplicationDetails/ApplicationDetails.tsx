@@ -4,7 +4,6 @@ import { ApolloError } from '@apollo/client'
 import { Alert } from '@patternfly/react-core'
 import {
   createContext,
-  ElementType,
   Fragment,
   ReactNode,
   Suspense,
@@ -50,6 +49,7 @@ import { getApplication } from './ApplicationTopology/model/application'
 import { getResourceStatuses } from './ApplicationTopology/model/computeStatuses'
 import { getTopology } from './ApplicationTopology/model/topology'
 import { getApplicationData } from './ApplicationTopology/model/topologyUtils'
+import { ToolbarControl, useToolbarControl } from './ApplicationTopology/topology/components/TopologyToolbar'
 
 export const ApplicationContext = createContext<{
   readonly actions: null | ReactNode
@@ -61,17 +61,6 @@ export const ApplicationContext = createContext<{
 
 const namespaceString = ':namespace'
 const nameString = ':name'
-
-export const useApplicationPageContext = (ActionList: ElementType) => {
-  const { setActions } = useContext(ApplicationContext)
-
-  useEffect(() => {
-    setActions(<ActionList />)
-    return () => setActions(null)
-  }, [ActionList, setActions])
-
-  return ActionList
-}
 
 export type ApplicationDataType = {
   refreshTime: number
@@ -88,6 +77,7 @@ export type ApplicationDetailsContext = {
     activeChannel: string | undefined
     setActiveChannel: (channel: string) => void
   }
+  toolbarControl: ToolbarControl
 }
 
 function searchError(completeError: ApolloError | undefined, t: TFunction) {
@@ -118,7 +108,6 @@ export default function ApplicationDetailsPage() {
     placementDecisionsState,
     subscriptionReportsState,
     subscriptionsState,
-    multiclusterApplicationSetReportState,
     THROTTLE_EVENTS_DELAY,
   } = useSharedAtoms()
 
@@ -126,6 +115,7 @@ export default function ApplicationDetailsPage() {
   const [applicationNotFound, setApplicationNotFound] = useState<boolean>(false)
   const [activeChannel, setActiveChannel] = useState<string | undefined>()
   const [allChannels, setAllChannels] = useState<string[]>([])
+  const toolbarControl = useToolbarControl()
   const [applicationData, setApplicationData] = useState<ApplicationDataType>()
   const [modalProps, setModalProps] = useState<IDeleteResourceModalProps | { open: false }>({
     open: false,
@@ -156,7 +146,6 @@ export default function ApplicationDetailsPage() {
   const subscriptionsGetter = useRecoilValueGetter(subscriptionsState)
   const subscriptionReportsGetter = useRecoilValueGetter(subscriptionReportsState)
   const placementDecisionsGetter = useRecoilValueGetter(placementDecisionsState)
-  const multiclusterApplicationSetReportsGetter = useRecoilValueGetter(multiclusterApplicationSetReportState)
 
   const getRecoilStates = useCallback(
     () => ({
@@ -168,7 +157,6 @@ export default function ApplicationDetailsPage() {
       subscriptions: subscriptionsGetter(),
       subscriptionReports: subscriptionReportsGetter(),
       placementDecisions: placementDecisionsGetter(),
-      multiclusterApplicationSetReports: multiclusterApplicationSetReportsGetter(),
     }),
     [
       ansibleJobGetter,
@@ -179,7 +167,6 @@ export default function ApplicationDetailsPage() {
       placementsGetter,
       subscriptionReportsGetter,
       subscriptionsGetter,
-      multiclusterApplicationSetReportsGetter,
     ]
   )
 
@@ -380,6 +367,11 @@ export default function ApplicationDetailsPage() {
     })
   )
   // refresh application the first time and then every n seconds
+  const toolbarActives = JSON.stringify({
+    activeTypes: toolbarControl.activeTypes,
+    activeClusters: toolbarControl.activeClusters,
+    activeApplications: toolbarControl.activeApplications,
+  })
   useEffect(() => {
     const interval = setInterval(
       (function refresh() {
@@ -402,6 +394,7 @@ export default function ApplicationDetailsPage() {
           } else {
             setApplicationNotFound(false)
             const topology: any = await getTopology(
+              toolbarControl,
               application,
               clusters,
               localHubName,
@@ -430,10 +423,17 @@ export default function ApplicationDetailsPage() {
               appData,
               topology
             )
-            const topologyWithRelated = await getTopology(application, clusters, localHubName, relatedResources, {
-              topology,
-              cluster,
-            })
+            const topologyWithRelated = await getTopology(
+              toolbarControl,
+              application,
+              clusters,
+              localHubName,
+              relatedResources,
+              {
+                topology,
+                cluster,
+              }
+            )
             setApplicationData({
               refreshTime: Date.now(),
               application,
@@ -465,6 +465,7 @@ export default function ApplicationDetailsPage() {
     backendUrl,
     clustersString,
     localHubName,
+    toolbarActives,
   ])
 
   const overviewPath = generatePath(NavigationPath.applicationOverview, { name, namespace })
@@ -478,8 +479,9 @@ export default function ApplicationDetailsPage() {
         activeChannel,
         setActiveChannel,
       },
+      toolbarControl,
     }),
-    [activeChannel, allChannels, applicationData]
+    [activeChannel, allChannels, applicationData, toolbarControl]
   )
 
   if (!applicationData) {

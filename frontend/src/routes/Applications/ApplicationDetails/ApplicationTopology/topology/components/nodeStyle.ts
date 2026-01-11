@@ -54,15 +54,9 @@ export const getNodeStyle = (
 function getLabel(type: string | undefined) {
   /* istanbul ignore else */ if (type !== undefined) {
     const label = capitalize(type)
+      .replace('Argocd', 'Argo CD')
+      .replace('Applicationset', 'Application Set')
       .replace('Ocpa', 'OCP A')
-      .replace('stream', 'Stream')
-      .replace('channel', 'Channel')
-      .replace('source', 'Source')
-      .replace('reSource', 'Resource')
-      .replace('definition', 'Definition')
-      .replace('config', 'Config')
-      .replace('account', 'Account')
-      .replace('controller', 'Controller')
     return label
   } else {
     return ''
@@ -70,13 +64,10 @@ function getLabel(type: string | undefined) {
 }
 
 function getSecondaryLabel(node: { name: any }) {
-  let label = ''
-  /* istanbul ignore if */
-  if (get(node, 'type', '') !== 'cluster' || get(node, 'specs.clusterNames', []).length === 1) {
-    label = node?.name ?? ''
-    if (label.length > MAX_LABEL_WIDTH) {
-      label = label.slice(0, MAX_LABEL_WIDTH / 3) + '..' + label.slice((-MAX_LABEL_WIDTH * 2) / 3)
-    }
+  const clusterNames = get(node, 'specs.sortedClusterNames', [])
+  let label = clusterNames.length === 1 ? clusterNames[0] : node?.name ?? ''
+  if (label.length > MAX_LABEL_WIDTH) {
+    label = label.slice(0, MAX_LABEL_WIDTH / 3) + '..' + label.slice((-MAX_LABEL_WIDTH * 2) / 3)
   }
   return label
 }
