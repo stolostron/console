@@ -97,7 +97,7 @@
     "set-value": "^4.1.0",
     "string-similarity": "4.0.4",
     "svg.js": "2.7.1",
-    "validator": "13.15.23",
+    "validator": "13.15.26",
     "victory": "^37.3.6",
     "yaml": "1.10.2",
     "yup": "0.32.11"
