@@ -11,14 +11,15 @@ import { AcmEmptyState } from '../../../../ui-components'
 interface ClusterListProps {
   onSelectCluster: (clusters: Cluster[]) => void
   namespaces?: string[]
+  selectedClusters?: Cluster[]
 }
 
-export const ClusterList = ({ onSelectCluster, namespaces }: ClusterListProps) => {
+export const ClusterList = ({ onSelectCluster, namespaces, selectedClusters }: ClusterListProps) => {
   const clusters = useAllClusters(true)
   const filteredClusters = useMemo(
     () =>
       namespaces
-        ? clusters.filter((cluster) => cluster.namespace !== undefined && namespaces?.includes(cluster.namespace))
+        ? clusters.filter((cluster) => cluster.clusterSet !== undefined && namespaces?.includes(cluster.clusterSet))
         : clusters,
     [clusters, namespaces]
   )
@@ -30,6 +31,7 @@ export const ClusterList = ({ onSelectCluster, namespaces }: ClusterListProps) =
       tableKey="clusterList"
       hideTableActions={true}
       onSelectCluster={onSelectCluster}
+      initialSelectedClusters={selectedClusters}
       showExportButton={false}
       areLinksDisplayed={false}
       hiddenColumns={[

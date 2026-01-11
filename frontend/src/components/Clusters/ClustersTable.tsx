@@ -22,6 +22,7 @@ interface ClustersTableProps {
   hiddenColumns?: string[]
   onSelectCluster?: (clusterList: Cluster[]) => void
   tableKey: string
+  initialSelectedClusters?: Cluster[]
 }
 
 export function ClustersTable({
@@ -34,6 +35,7 @@ export function ClustersTable({
   hiddenColumns = [],
   onSelectCluster,
   tableKey,
+  initialSelectedClusters,
 }: ClustersTableProps) {
   useEffect(() => {
     sessionStorage.removeItem('DiscoveredClusterDisplayName')
@@ -131,6 +133,7 @@ export function ClustersTable({
         secondaryFilterIds={['label']}
         exportFilePrefix={tableKey}
         onSelect={onSelectCluster}
+        initialSelectedItems={initialSelectedClusters}
       />
     </Fragment>
   )

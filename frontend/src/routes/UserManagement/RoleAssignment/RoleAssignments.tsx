@@ -16,7 +16,7 @@ import { IRequestResult } from '../../../resources/utils/resource-request'
 import { AcmButton, AcmEmptyState, AcmTable, compareStrings, IAcmTableColumn } from '../../../ui-components'
 import { IAcmTableAction, IAcmTableButtonAction, ITableFilter } from '../../../ui-components/AcmTable/AcmTableTypes'
 import { RoleAssignmentPreselected } from '../RoleAssignments/model/role-assignment-preselected'
-import { RoleAssignmentModal } from '../RoleAssignments/RoleAssignmentModal'
+import { RoleAssignmentWizardModalWrapper } from '../RoleAssignments/RoleAssignmentWizardModalWrapper'
 import { RoleAssignmentActionDropdown } from './RoleAssignmentActionDropdown'
 import { RoleAssignmentLabel } from './RoleAssignmentLabel'
 import { RoleAssignmentStatusComponent } from './RoleAssignmentStatusComponent'
@@ -442,7 +442,7 @@ const RoleAssignments = ({
           />
         }
       />
-      <RoleAssignmentModal
+      <RoleAssignmentWizardModalWrapper
         close={() => setIsCreateModalOpen(false)}
         isOpen={isCreateModalOpen}
         preselected={preselected}
