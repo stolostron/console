@@ -13,7 +13,7 @@ export interface ExampleScopesDrawerProps {
 export const ExampleScopesDrawer = ({ isVisible, onClose, children }: ExampleScopesDrawerProps) => {
   return (
     <Drawer isExpanded={isVisible}>
-      <DrawerContent panelContent={<ExampleScopesPanelContent onClose={onClose} isVisible={false} />}>
+      <DrawerContent panelContent={<ExampleScopesPanelContent onClose={onClose} />}>
         <DrawerContentBody>{children}</DrawerContentBody>
       </DrawerContent>
     </Drawer>
