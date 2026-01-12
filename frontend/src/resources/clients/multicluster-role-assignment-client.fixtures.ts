@@ -495,3 +495,176 @@ export const duplicateDetectionTestCases: DuplicateDetectionTestCase[] = [
     },
   },
 ]
+
+/**
+ * Test case fixture for getClustersForRoleAssignment deduplication and sorting
+ * Tests that the function returns unique cluster names without duplicates, sorted alphabetically
+ */
+export interface GetClustersDeduplicationTestCase {
+  description: string
+  placementClusters: PlacementClusters[]
+  placementNames: string[]
+  expectedClusters: string[]
+}
+
+/**
+ * Test cases for getClustersForRoleAssignment deduplication
+ */
+export const getClustersDeduplicationTestCases: GetClustersDeduplicationTestCase[] = [
+  {
+    description: 'should return unique clusters when placements have no overlapping clusters',
+    placementClusters: [
+      createPlacementClusters('placement-1', ['cluster-a', 'cluster-b']),
+      createPlacementClusters('placement-2', ['cluster-c', 'cluster-d']),
+    ],
+    placementNames: ['placement-1', 'placement-2'],
+    expectedClusters: ['cluster-a', 'cluster-b', 'cluster-c', 'cluster-d'],
+  },
+  {
+    description: 'should deduplicate clusters when placements have overlapping clusters',
+    placementClusters: [
+      createPlacementClusters('placement-1', ['cluster-a', 'cluster-b', 'cluster-c']),
+      createPlacementClusters('placement-2', ['cluster-b', 'cluster-c', 'cluster-d']),
+    ],
+    placementNames: ['placement-1', 'placement-2'],
+    expectedClusters: ['cluster-a', 'cluster-b', 'cluster-c', 'cluster-d'],
+  },
+  {
+    description: 'should deduplicate clusters when multiple placements contain the same cluster',
+    placementClusters: [
+      createPlacementClusters('placement-1', ['shared-cluster']),
+      createPlacementClusters('placement-2', ['shared-cluster']),
+      createPlacementClusters('placement-3', ['shared-cluster']),
+    ],
+    placementNames: ['placement-1', 'placement-2', 'placement-3'],
+    expectedClusters: ['shared-cluster'],
+  },
+  {
+    description: 'should deduplicate clusters when all placements have identical cluster lists',
+    placementClusters: [
+      createPlacementClusters('placement-1', ['cluster-a', 'cluster-b']),
+      createPlacementClusters('placement-2', ['cluster-a', 'cluster-b']),
+    ],
+    placementNames: ['placement-1', 'placement-2'],
+    expectedClusters: ['cluster-a', 'cluster-b'],
+  },
+  {
+    description: 'should handle single placement without duplicates',
+    placementClusters: [createPlacementClusters('placement-1', ['cluster-a', 'cluster-b', 'cluster-c'])],
+    placementNames: ['placement-1'],
+    expectedClusters: ['cluster-a', 'cluster-b', 'cluster-c'],
+  },
+  {
+    description: 'should return empty array when placement is not found',
+    placementClusters: [createPlacementClusters('placement-1', ['cluster-a', 'cluster-b'])],
+    placementNames: ['non-existent-placement'],
+    expectedClusters: [],
+  },
+  {
+    description: 'should handle mixed found and not-found placements',
+    placementClusters: [
+      createPlacementClusters('placement-1', ['cluster-a', 'cluster-b']),
+      createPlacementClusters('placement-2', ['cluster-c']),
+    ],
+    placementNames: ['placement-1', 'non-existent', 'placement-2'],
+    expectedClusters: ['cluster-a', 'cluster-b', 'cluster-c'],
+  },
+  {
+    description: 'should return empty array when placements array is empty',
+    placementClusters: [createPlacementClusters('placement-1', ['cluster-a'])],
+    placementNames: [],
+    expectedClusters: [],
+  },
+  {
+    description: 'should deduplicate and sort when same cluster appears in different positions across placements',
+    placementClusters: [
+      createPlacementClusters('placement-1', ['cluster-x', 'cluster-a', 'cluster-y']),
+      createPlacementClusters('placement-2', ['cluster-a', 'cluster-z']),
+      createPlacementClusters('placement-3', ['cluster-z', 'cluster-a', 'cluster-x']),
+    ],
+    placementNames: ['placement-1', 'placement-2', 'placement-3'],
+    expectedClusters: ['cluster-a', 'cluster-x', 'cluster-y', 'cluster-z'],
+  },
+]
+
+/**
+ * Test cases for getClustersForRoleAssignment sorting
+ * Tests that the function returns clusters sorted alphabetically using localeCompare
+ */
+export const getClustersSortingTestCases: GetClustersDeduplicationTestCase[] = [
+  {
+    description: 'should sort clusters alphabetically when input is unsorted',
+    placementClusters: [createPlacementClusters('placement-1', ['zebra-cluster', 'alpha-cluster', 'beta-cluster'])],
+    placementNames: ['placement-1'],
+    expectedClusters: ['alpha-cluster', 'beta-cluster', 'zebra-cluster'],
+  },
+  {
+    description: 'should sort clusters alphabetically when input is reverse sorted',
+    placementClusters: [createPlacementClusters('placement-1', ['z-cluster', 'y-cluster', 'x-cluster', 'a-cluster'])],
+    placementNames: ['placement-1'],
+    expectedClusters: ['a-cluster', 'x-cluster', 'y-cluster', 'z-cluster'],
+  },
+  {
+    description: 'should maintain sorted order when input is already sorted',
+    placementClusters: [createPlacementClusters('placement-1', ['aaa-cluster', 'bbb-cluster', 'ccc-cluster'])],
+    placementNames: ['placement-1'],
+    expectedClusters: ['aaa-cluster', 'bbb-cluster', 'ccc-cluster'],
+  },
+  {
+    description: 'should sort clusters from multiple placements into a single sorted list',
+    placementClusters: [
+      createPlacementClusters('placement-1', ['delta', 'alpha']),
+      createPlacementClusters('placement-2', ['gamma', 'beta']),
+    ],
+    placementNames: ['placement-1', 'placement-2'],
+    expectedClusters: ['alpha', 'beta', 'delta', 'gamma'],
+  },
+  {
+    description: 'should handle numeric suffixes correctly with localeCompare',
+    placementClusters: [createPlacementClusters('placement-1', ['cluster-10', 'cluster-2', 'cluster-1', 'cluster-20'])],
+    placementNames: ['placement-1'],
+    expectedClusters: ['cluster-1', 'cluster-10', 'cluster-2', 'cluster-20'],
+  },
+  {
+    description: 'should sort case-sensitively (uppercase before lowercase in default locale)',
+    placementClusters: [createPlacementClusters('placement-1', ['Bravo', 'alpha', 'CHARLIE', 'delta'])],
+    placementNames: ['placement-1'],
+    expectedClusters: ['alpha', 'Bravo', 'CHARLIE', 'delta'],
+  },
+  {
+    description: 'should sort clusters with special characters',
+    placementClusters: [createPlacementClusters('placement-1', ['cluster_b', 'cluster-a', 'cluster.c', 'cluster@d'])],
+    placementNames: ['placement-1'],
+    // localeCompare sorts: '_' comes before '-', '.' and '@'
+    expectedClusters: ['cluster_b', 'cluster-a', 'cluster.c', 'cluster@d'],
+  },
+  {
+    description: 'should sort and deduplicate clusters from overlapping unsorted placements',
+    placementClusters: [
+      createPlacementClusters('placement-1', ['zulu', 'mike', 'alpha']),
+      createPlacementClusters('placement-2', ['alpha', 'yankee', 'mike']),
+      createPlacementClusters('placement-3', ['bravo', 'zulu']),
+    ],
+    placementNames: ['placement-1', 'placement-2', 'placement-3'],
+    expectedClusters: ['alpha', 'bravo', 'mike', 'yankee', 'zulu'],
+  },
+  {
+    description: 'should handle single cluster without changing order',
+    placementClusters: [createPlacementClusters('placement-1', ['only-cluster'])],
+    placementNames: ['placement-1'],
+    expectedClusters: ['only-cluster'],
+  },
+  {
+    description: 'should sort clusters with mixed alphanumeric names',
+    placementClusters: [
+      createPlacementClusters('placement-1', [
+        'prod-us-east-1',
+        'dev-eu-west-2',
+        'staging-ap-south-1',
+        'prod-eu-west-1',
+      ]),
+    ],
+    placementNames: ['placement-1'],
+    expectedClusters: ['dev-eu-west-2', 'prod-eu-west-1', 'prod-us-east-1', 'staging-ap-south-1'],
+  },
+]
