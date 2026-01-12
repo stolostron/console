@@ -42,7 +42,7 @@ jest.mock('../../../wizards/RoleAssignment/RoleAssignmentWizardModal', () => ({
 }))
 
 jest.mock('../../../wizards/RoleAssignment/roleAssignmentWizardHelper', () => ({
-  wizardDataToRoleAssignmentToSave: jest.fn((data, _allClusterNames) => {
+  wizardDataToRoleAssignmentToSave: jest.fn((data) => {
     const subjectNames = data.subject.kind === UserKind ? data.subject.user || [] : data.subject.group || []
     return data.roles.flatMap((role: string) =>
       subjectNames.map((name: string) => ({
