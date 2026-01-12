@@ -1,11 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { useMemo } from 'react'
 import { K8sResourceCommon, useK8sWatchResource } from '@openshift-console/dynamic-plugin-sdk'
-import { V1CustomResourceDefinitionCondition } from '@kubernetes/client-node'
 import { ManagedClusterListGroupVersionKind } from '../internal/models'
-
-// Helper function to check for condition - similar to checkForCondition from status-conditions.ts
-const checkForCondition = (condition: string, conditions: V1CustomResourceDefinitionCondition[], status?: string) =>
-  conditions?.find((c) => c.type === condition)?.status === (status ?? 'True')
+import { filterClusters } from '../internal/clusterUtils'
 
 /**
  * Hook that returns names of managed clusters with optional filtering by cluster proxy addon and availability status.
@@ -58,24 +55,11 @@ export function useFleetClusterNames(returnAllClusters: boolean = false): [strin
     groupVersionKind: ManagedClusterListGroupVersionKind,
     isList: true,
   })
-  const clusterNames = clusters.flatMap((cluster) => {
-    if (!cluster.metadata?.name) {
-      return []
-    }
 
-    if (returnAllClusters) {
-      return [cluster.metadata.name]
-    }
-
-    const hasClusterProxyLabel =
-      cluster.metadata?.labels?.['feature.open-cluster-management.io/addon-cluster-proxy'] === 'available'
-
-    // Check if cluster has ManagedClusterConditionAvailable status: 'True'
-    const conditions = (cluster as any)?.status?.conditions || []
-    const isClusterAvailable = checkForCondition('ManagedClusterConditionAvailable', conditions)
-
-    return hasClusterProxyLabel && isClusterAvailable ? [cluster.metadata.name] : []
-  })
+  const clusterNames = useMemo(() => {
+    const filteredClusters = filterClusters(clusters, returnAllClusters)
+    return filteredClusters.map((cluster) => cluster.metadata!.name!)
+  }, [clusters, returnAllClusters])
 
   return [clusterNames, loaded, error]
 }

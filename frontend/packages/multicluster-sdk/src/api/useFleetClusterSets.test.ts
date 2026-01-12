@@ -612,7 +612,7 @@ describe('useFleetClusterSets', () => {
     })
 
     it('should still filter out clusters without names or clusterset labels', () => {
-      const mockClusters = [
+      const mockClusters: K8sResourceCommon[] = [
         {
           metadata: {
             name: 'cluster-1',

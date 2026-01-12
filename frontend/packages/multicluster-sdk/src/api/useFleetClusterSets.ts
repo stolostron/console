@@ -1,11 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { useMemo } from 'react'
 import { K8sResourceCommon, useK8sWatchResource } from '@openshift-console/dynamic-plugin-sdk'
-import { V1CustomResourceDefinitionCondition } from '@kubernetes/client-node'
 import { ManagedClusterListGroupVersionKind } from '../internal/models'
-
-// Helper function to check for condition - similar to checkForCondition from status-conditions.ts
-const checkForCondition = (condition: string, conditions: V1CustomResourceDefinitionCondition[], status?: string) =>
-  conditions?.find((c) => c.type === condition)?.status === (status ?? 'True')
+import { filterClusters } from '../internal/clusterUtils'
 
 /**
  * Hook that returns unique cluster set names from managed clusters with optional filtering by cluster proxy addon and availability status.
@@ -60,32 +57,16 @@ export function useFleetClusterSets(considerAllClusters: boolean = false): [stri
     isList: true,
   })
 
-  const clusterSetNames = clusters.flatMap((cluster) => {
-    if (!cluster.metadata?.name) {
-      return []
-    }
+  const uniqueClusterSets = useMemo(() => {
+    const filteredClusters = filterClusters(clusters, considerAllClusters)
 
-    const clusterSetLabel = cluster.metadata?.labels?.['cluster.open-cluster-management.io/clusterset']
-    if (!clusterSetLabel) {
-      return []
-    }
+    const clusterSetNames = filteredClusters
+      .map((cluster) => cluster.metadata?.labels?.['cluster.open-cluster-management.io/clusterset'])
+      .filter((label): label is string => Boolean(label))
 
-    if (considerAllClusters) {
-      return [clusterSetLabel]
-    }
-
-    const hasClusterProxyLabel =
-      cluster.metadata?.labels?.['feature.open-cluster-management.io/addon-cluster-proxy'] === 'available'
-
-    // Check if cluster has ManagedClusterConditionAvailable status: 'True'
-    const conditions = (cluster as any)?.status?.conditions || []
-    const isClusterAvailable = checkForCondition('ManagedClusterConditionAvailable', conditions)
-
-    return hasClusterProxyLabel && isClusterAvailable ? [clusterSetLabel] : []
-  })
-
-  // Return unique cluster set names
-  const uniqueClusterSets = Array.from(new Set(clusterSetNames))
+    // Return unique cluster set names
+    return Array.from(new Set(clusterSetNames))
+  }, [clusters, considerAllClusters])
 
   return [uniqueClusterSets, loaded, error]
 }
