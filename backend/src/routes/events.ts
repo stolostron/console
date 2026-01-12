@@ -239,7 +239,6 @@ const definitions: IWatchOptions[] = [
   { kind: 'MulticlusterRoleAssignment', apiVersion: 'rbac.open-cluster-management.io/v1beta1' },
   { kind: 'User', apiVersion: 'user.openshift.io/v1' },
   { kind: 'Group', apiVersion: 'user.openshift.io/v1' },
-  { kind: 'OAuth', apiVersion: 'config.openshift.io/v1' },
   {
     kind: 'ClusterRole',
     apiVersion: 'rbac.authorization.k8s.io/v1',

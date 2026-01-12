@@ -162,7 +162,6 @@ import {
   namespacesState,
   nmStateConfigsState,
   nodePoolsState,
-  oauthState,
   placementBindingsState,
   placementDecisionsState,
   placementRulesState,
@@ -187,7 +186,6 @@ import {
 import { PluginDataContext } from '../lib/PluginDataContext'
 import { useQuery } from '../lib/useQuery'
 import { MultiClusterHubComponent } from '../resources/multi-cluster-hub-component'
-import { OAuthApiVersion, OAuthKind } from '../resources/oauth'
 
 export function LoadData(props: { children?: ReactNode }) {
   const { loadCompleted, setLoadStarted, setLoadCompleted } = useContext(PluginDataContext)
@@ -237,7 +235,6 @@ export function LoadData(props: { children?: ReactNode }) {
   const setNamespaces = useSetRecoilState(namespacesState)
   const setNMStateConfigs = useSetRecoilState(nmStateConfigsState)
   const setNodePoolsState = useSetRecoilState(nodePoolsState)
-  const setOAuth = useSetRecoilState(oauthState)
   const setPlacementBindingsState = useSetRecoilState(placementBindingsState)
   const setPlacementDecisionsState = useSetRecoilState(placementDecisionsState)
   const setPlacementRulesState = useSetRecoilState(placementRulesState)
@@ -337,7 +334,6 @@ export function LoadData(props: { children?: ReactNode }) {
     addSetter(NamespaceApiVersion, NamespaceKind, setNamespaces)
     addSetter(NMStateConfigApiVersion, NMStateConfigKind, setNMStateConfigs)
     addSetter(NodePoolApiVersion, NodePoolKind, setNodePoolsState)
-    addSetter(OAuthApiVersion, OAuthKind, setOAuth)
     addSetter(PlacementApiVersionAlpha, PlacementKind, setPlacementsState)
     addSetter(PlacementBindingApiVersion, PlacementBindingKind, setPlacementBindingsState)
     addSetter(PlacementDecisionApiVersion, PlacementDecisionKind, setPlacementDecisionsState)
