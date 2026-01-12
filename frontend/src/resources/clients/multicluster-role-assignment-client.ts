@@ -516,7 +516,6 @@ export const getPlacementsForRoleAssignment = (
   const placementClustersForClusterSets = relevantPlacementClusters.filter((placementCluster) =>
     isPlacementClusterSetsSubset(placementCluster.clusterSetNames, roleAssignment.clusterSetNames)
   )
-
   return [...placementClustersForClusters, ...placementClustersForClusterSets].map(
     (placementCluster) => placementCluster.placement
   )
