@@ -15,7 +15,7 @@ import { ClusterGranularityStepContent } from './ClusterGranularityWizardStep'
 import { GranularityStepContent } from './GranularityStepContent'
 import { IdentitiesList } from './Identities/IdentitiesList'
 import { ReviewStepContent } from './ReviewStepContent'
-import { RoleSelectionStepContent } from './RoleSelectionStepContent'
+import { RolesList } from './Roles/RolesList'
 import { ClusterSetAccessLevel } from './Scope/AccessLevel/ClusterSetAccessLevel'
 import { ClusterList } from './Scope/Clusters/ClusterList'
 import { ExampleScopesPanelContent } from './Scope/ExampleScope/ExampleScopesPanelContent'
@@ -336,7 +336,7 @@ export const RoleAssignmentWizardModal = ({
                       isNextDisabled: !formData.roles || formData.roles.length === 0,
                     }}
                   >
-                    <RoleSelectionStepContent onRoleSelect={handleRoleSelect} />
+                    <RolesList onRadioSelect={handleRoleSelect} />
                   </WizardStep>
                 )}
 

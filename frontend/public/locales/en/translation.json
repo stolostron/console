@@ -1911,6 +1911,7 @@
   "machinePool.scale": "Scale machine pool",
   "machinePool.view.machines": "View machines",
   "Manage": "Manage",
+  "Manage all identities including users, groups, and service accounts in one place. Assign access individually or by group, with users automatically inheriting group permissions.": "Manage all identities including users, groups, and service accounts in one place. Assign access individually or by group, with users automatically inheriting group permissions.",
   "Manage columns": "Manage columns",
   "Manage node pool": "Manage node pool",
   "Manage policies": "Manage policies",

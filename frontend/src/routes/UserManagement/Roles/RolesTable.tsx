@@ -24,9 +24,7 @@ const RolesTable = ({
   const clusterRoles = useRecoilValue(vmClusterRolesState)
   const [selectedRole, setSelectedRole] = useState<string | undefined>(initialSelectedRole)
 
-  useEffect(() => {
-    setSelectedRole(initialSelectedRole)
-  }, [initialSelectedRole])
+  useEffect(() => setSelectedRole(initialSelectedRole), [initialSelectedRole])
 
   const roles = useMemo(
     () =>

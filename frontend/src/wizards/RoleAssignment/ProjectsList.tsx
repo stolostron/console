@@ -18,14 +18,15 @@ export const ProjectsList = ({ selectedClusters }: ProjectsListProps) => {
   const formData = useItem() as RoleAssignmentWizardFormData
   const [isCreateCommonProject, setIsCreateCommonProject] = useState(false)
 
-  const selectedProjects = useMemo(() => {
-    if (!formData?.scope?.namespaces || formData.scope.namespaces.length === 0) return []
-    return formData.scope.namespaces.map((ns: string) => ({
-      name: ns,
-      type: 'Namespace',
-      clusters: selectedClusters.map((c) => c.name),
-    }))
-  }, [formData?.scope?.namespaces, selectedClusters])
+  const selectedProjects = useMemo(
+    () =>
+      formData.scope.namespaces?.map((ns: string) => ({
+        name: ns,
+        type: 'Namespace',
+        clusters: selectedClusters.map((c) => c.name),
+      })) ?? [],
+    [formData?.scope?.namespaces, selectedClusters]
+  )
 
   const hasSelectedProjects = useMemo(() => selectedProjects.length > 0, [selectedProjects.length])
 
@@ -36,10 +37,7 @@ export const ProjectsList = ({ selectedClusters }: ProjectsListProps) => {
   const handleCreateSuccess = () => setIsCreateCommonProject(false)
 
   const handleSelectionChange = (projects: ProjectTableData[]) => {
-    const namespaces = projects.map((p) => p.name)
-    if (formData?.scope) {
-      formData.scope.namespaces = namespaces.length > 0 ? namespaces : undefined
-    }
+    formData.scope = { ...formData.scope, namespaces: projects.map((p) => p.name) }
   }
 
   const tableActionButtons = useMemo<IAcmTableButtonAction[]>(

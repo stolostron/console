@@ -9,6 +9,8 @@ import {
 import { useTranslation } from '../../lib/acm-i18next'
 import { GranularityStepContent } from './GranularityStepContent'
 import { RoleAssignmentWizardFormData, RoleAssignmentWizardModalProps } from './types'
+import { useMemo } from 'react'
+import { RoleAssignmentPreselected } from '../../routes/UserManagement/RoleAssignments/model/role-assignment-preselected'
 
 interface ReviewStepContentProps {
   formData: RoleAssignmentWizardFormData
@@ -18,17 +20,30 @@ interface ReviewStepContentProps {
 export const ReviewStepContent = ({ formData, preselected }: ReviewStepContentProps) => {
   const { t } = useTranslation()
 
-  const getClusterNames = () => {
-    if (formData.selectedClusters && formData.selectedClusters.length > 0) {
-      return formData.selectedClusters.map((c) => c.metadata?.name || c.name || c).join(', ')
+  const getClusterNames = ({
+    selectedClusters,
+    clusterNames,
+  }: {
+    selectedClusters: RoleAssignmentWizardFormData['selectedClusters']
+    clusterNames: RoleAssignmentPreselected['clusterNames']
+  }): string | null => {
+    switch (true) {
+      case selectedClusters && selectedClusters.length > 0:
+        return selectedClusters.map((c) => c.metadata?.name || c.name || c).join(', ')
+      case clusterNames && clusterNames.length > 0:
+        return clusterNames.join(', ')
+      default:
+        return null
     }
-    if (preselected?.clusterNames && preselected.clusterNames.length > 0) {
-      return preselected.clusterNames.join(', ')
-    }
-    return null
   }
-
-  const clusterNames = getClusterNames()
+  const clusterNames = useMemo(
+    () =>
+      getClusterNames({
+        selectedClusters: formData.selectedClusters,
+        clusterNames: preselected?.clusterNames,
+      }),
+    [formData.selectedClusters, preselected?.clusterNames]
+  )
 
   return (
     <div>
@@ -62,50 +77,59 @@ export const ReviewStepContent = ({ formData, preselected }: ReviewStepContentPr
             </Title>
             <DescriptionListDescription>
               <div style={{ margin: '0 16px' }}>
-                {formData.scopeType === 'Global access' && <div>{t('All clusters')}</div>}
-                {formData.scopeType === 'Select cluster sets' && (
-                  <>
-                    <div>
-                      <div>
-                        <strong>{t('Cluster sets')}</strong>{' '}
-                      </div>
-                      <div>
-                        {formData.selectedClusterSets && formData.selectedClusterSets.length > 0
-                          ? formData.selectedClusterSets.map((cs) => cs.metadata?.name || cs).join(', ')
-                          : t('None selected')}
-                      </div>
-                    </div>
-                    <div style={{ marginTop: '8px' }}>
-                      <div>
-                        <strong>{clusterNames ? t('Clusters') : t('Access level')}</strong>{' '}
-                      </div>
-                      <div>{clusterNames || t('Full access to all clusters in selected cluster sets')}</div>
-                    </div>
-                    <div style={{ marginTop: '8px' }}>
-                      <div>
-                        <strong>{t('Projects')}</strong>{' '}
-                      </div>
-                      <div>
-                        {formData.scope.namespaces && formData.scope.namespaces.length > 0
-                          ? formData.scope.namespaces.join(', ')
-                          : t('Full access')}
-                      </div>
-                    </div>
-                  </>
-                )}
-                {formData.scopeType === 'Select clusters' && (
-                  <>
-                    <div>
-                      <strong>{t('Clusters')}:</strong> {clusterNames || t('None selected')}
-                    </div>
-                    <div style={{ marginTop: '8px' }}>
-                      <strong>{t('Projects')}:</strong>{' '}
-                      {formData.scope.namespaces && formData.scope.namespaces.length > 0
-                        ? formData.scope.namespaces.join(', ')
-                        : t('Full access')}
-                    </div>
-                  </>
-                )}
+                {(() => {
+                  switch (formData.scopeType) {
+                    case 'Global access':
+                      return <div>{t('All clusters')}</div>
+                    case 'Select cluster sets':
+                      return (
+                        <>
+                          <div>
+                            <div>
+                              <strong>{t('Cluster sets')}</strong>{' '}
+                            </div>
+                            <div>
+                              {formData.selectedClusterSets && formData.selectedClusterSets.length > 0
+                                ? formData.selectedClusterSets.map((cs) => cs.metadata?.name || cs).join(', ')
+                                : t('None selected')}
+                            </div>
+                          </div>
+                          <div style={{ marginTop: '8px' }}>
+                            <div>
+                              <strong>{clusterNames ? t('Clusters') : t('Access level')}</strong>{' '}
+                            </div>
+                            <div>{clusterNames || t('Full access to all clusters in selected cluster sets')}</div>
+                          </div>
+                          <div style={{ marginTop: '8px' }}>
+                            <div>
+                              <strong>{t('Projects')}</strong>{' '}
+                            </div>
+                            <div>
+                              {formData.scope.namespaces && formData.scope.namespaces.length > 0
+                                ? formData.scope.namespaces.join(', ')
+                                : t('Full access')}
+                            </div>
+                          </div>
+                        </>
+                      )
+                    case 'Select clusters':
+                      return (
+                        <>
+                          <div>
+                            <strong>{t('Clusters')}:</strong> {clusterNames || t('None selected')}
+                          </div>
+                          <div style={{ marginTop: '8px' }}>
+                            <strong>{t('Projects')}:</strong>{' '}
+                            {formData.scope.namespaces && formData.scope.namespaces.length > 0
+                              ? formData.scope.namespaces.join(', ')
+                              : t('Full access')}
+                          </div>
+                        </>
+                      )
+                    default:
+                      return null
+                  }
+                })()}
               </div>
             </DescriptionListDescription>
           </DescriptionListGroup>
@@ -121,7 +145,7 @@ export const ReviewStepContent = ({ formData, preselected }: ReviewStepContentPr
             <DescriptionListDescription>
               <div style={{ margin: '0 16px' }}>
                 <strong>
-                  {formData.roles && formData.roles.length > 0 ? formData.roles[0] : t('No role selected')}
+                  <strong>{formData.roles?.[0] ?? t('No role selected')}</strong>
                 </strong>
               </div>
             </DescriptionListDescription>
