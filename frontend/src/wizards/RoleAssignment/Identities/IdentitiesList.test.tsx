@@ -64,11 +64,11 @@ jest.mock('../../../routes/UserManagement/Identities/Groups/GroupsTable', () => 
 }))
 
 // Mock CreatePreAuthorizedUser component
-jest.mock('./CreatePreAuthorizedUser', () => ({
-  CreatePreAuthorizedUser: ({ onCancel, onSubmit }: any) => (
+jest.mock('./Users/CreatePreAuthorizedUser', () => ({
+  CreatePreAuthorizedUser: ({ onClose }: any) => (
     <div data-testid="create-pre-authorized">
-      <button onClick={onCancel}>Cancel</button>
-      <button onClick={() => onSubmit('testuser')}>Submit</button>
+      <button onClick={onClose}>Cancel</button>
+      <button onClick={onClose}>Submit</button>
     </div>
   ),
 }))
