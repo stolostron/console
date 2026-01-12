@@ -1,7 +1,24 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { ItemContext } from '@patternfly-labs/react-form-wizard/lib/src/contexts/ItemContext'
 import { ProjectsList } from './ProjectsList'
+import { UserKind } from '../../resources'
+
+const mockFormData = {
+  subject: { kind: UserKind },
+  scope: {
+    kind: 'specific' as const,
+    clusterNames: [],
+    namespaces: [],
+  },
+  roles: [],
+  scopeType: 'Select clusters' as const,
+}
+
+const renderWithContext = (component: React.ReactElement) => {
+  return render(<ItemContext.Provider value={mockFormData}>{component}</ItemContext.Provider>)
+}
 
 jest.mock('../../components/ProjectsTable', () => ({
   ProjectsTable: ({ selectedClusters = [], onCreateClick, onSelectionChange }: any) => (
@@ -33,7 +50,7 @@ jest.mock('./CommonProjectCreate', () => ({
 describe('ProjectsList', () => {
   it('returns to table view when cancel is clicked', async () => {
     // Arrange
-    render(<ProjectsList selectedClusters={[]} />)
+    renderWithContext(<ProjectsList selectedClusters={[]} />)
 
     // Act
     await userEvent.click(screen.getByText('Create common project'))
@@ -51,7 +68,7 @@ describe('ProjectsList', () => {
 
   it('returns to table view when project creation succeeds', async () => {
     // Arrange
-    render(<ProjectsList selectedClusters={[]} />)
+    renderWithContext(<ProjectsList selectedClusters={[]} />)
 
     // Act
     await userEvent.click(screen.getByText('Create common project'))
@@ -67,7 +84,7 @@ describe('ProjectsList', () => {
 
   it('handles project selection changes', async () => {
     // Arrange
-    render(<ProjectsList selectedClusters={[]} />)
+    renderWithContext(<ProjectsList selectedClusters={[]} />)
 
     // Act
     const selectButton = screen.getByText('Select Project')
