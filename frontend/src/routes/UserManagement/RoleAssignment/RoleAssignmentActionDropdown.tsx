@@ -12,17 +12,26 @@ const RoleAssignmentActionDropdown = ({
   setModalProps,
   deleteAction,
   canDelete,
+  onEdit,
 }: {
   roleAssignment: FlattenedRoleAssignment
   setModalProps: (props: BulkActionModalProps<FlattenedRoleAssignment> | { open: false }) => void
   deleteAction: (roleAssignment: FlattenedRoleAssignment) => IRequestResult<unknown>
   canDelete: boolean
+  onEdit?: (roleAssignment: FlattenedRoleAssignment) => void
 }) => {
   const { t } = useTranslation()
 
   const keyFn = useCallback((roleAssignment: FlattenedRoleAssignment) => roleAssignment.name, [])
 
   const actions = [
+    {
+      id: 'edit-role-assignment',
+      text: t('Edit role assignment'),
+      click: (roleAssignment: FlattenedRoleAssignment) => {
+        onEdit?.(roleAssignment)
+      },
+    },
     {
       id: 'delete-role-assignment',
       text: t('Delete role assignment'),
