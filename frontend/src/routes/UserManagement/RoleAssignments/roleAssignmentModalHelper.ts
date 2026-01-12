@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { TFunction } from 'react-i18next'
-import { ManagedClusterSetBinding, MulticlusterRoleAssignmentNamespace, UserKind } from '../../../resources'
+import { ManagedClusterSetBinding, MulticlusterRoleAssignmentNamespace } from '../../../resources'
 import { findManagedClusterSetBinding } from '../../../resources/clients/managed-cluster-set-binding-client'
 import { PlacementClusters } from '../../../resources/clients/model/placement-clusters'
 import { RoleAssignmentToSave } from '../../../resources/clients/model/role-assignment-to-save'
@@ -13,35 +13,6 @@ import { Subject } from '../../../resources/kubernetes-client'
 import { MulticlusterRoleAssignment } from '../../../resources/multicluster-role-assignment'
 import { Placement } from '../../../resources/placement'
 import { IAlertContext } from '../../../ui-components'
-import { RoleAssignmentFormDataType } from './hook/RoleAssignmentFormDataHook'
-
-/**
- * Converts form data from the role assignment form into an array of RoleAssignmentToSave objects.
- * Creates one RoleAssignmentToSave for each combination of role and subject name.
- *
- * @param data - The form data containing subject info, scope, and roles
- * @returns Array of RoleAssignmentToSave objects ready to be saved
- */
-export const dataToRoleAssignmentToSave = (data: RoleAssignmentFormDataType): RoleAssignmentToSave[] => {
-  const subjectNames = data.subject.kind === UserKind ? data.subject.user || [] : data.subject.group || []
-
-  return data.roles.reduce<RoleAssignmentToSave[]>(
-    (acc, role) => [
-      ...acc,
-      ...subjectNames.map((subjectName) => ({
-        clusterRole: role,
-        clusterNames: data.scope.clusterNames,
-        clusterSetNames: [], // TODO: on the new wizard
-        targetNamespaces: data.scope.namespaces,
-        subject: {
-          name: subjectName,
-          kind: data.subject.kind,
-        },
-      })),
-    ],
-    []
-  )
-}
 
 /**
  * Finds existing role assignments for the given subjects and creates a lookup map
