@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Badge, Radio } from '@patternfly/react-core'
+import { Radio } from '@patternfly/react-core'
 import { cellWidth } from '@patternfly/react-table'
 import { useMemo } from 'react'
 import { TFunction } from 'react-i18next'
@@ -45,7 +45,6 @@ const createColumnCells = ({
           whiteSpace: 'nowrap',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
-          maxWidth: '200px',
         }}
       >
         {areLinksDisplayed ? (
@@ -58,37 +57,22 @@ const createColumnCells = ({
       </span>
     </div>
   ),
-  PERMISSIONS: (role: Role) => {
-    const permissionsArray = role.permissions ? role.permissions.split(', ') : []
+  PERMISSIONS: (role: Role, search: string) => {
+    const permissionsArray = role.permissions ? role.permissions.split(', ').filter((e) => e.trim()) : []
 
-    if (permissionsArray.length === 0) {
-      return (
-        <span style={{ whiteSpace: 'nowrap' }}>
-          {areLinksDisplayed ? (
-            <Link to={generatePath(NavigationPath.rolePermissions, { id: role.uid })}>{t('No permissions')}</Link>
-          ) : (
-            t('No permissions')
-          )}
+    return permissionsArray.length === 0 ? (
+      <span style={{ whiteSpace: 'nowrap' }}>
+        {areLinksDisplayed ? (
+          <Link to={generatePath(NavigationPath.rolePermissions, { id: role.uid })}>{t('No permissions')}</Link>
+        ) : (
+          t('No permissions')
+        )}
+      </span>
+    ) : (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+        <span style={{ fontWeight: 'normal', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <HighlightSearchText text={permissionsArray.join(', ')} searchText={search} useFuzzyHighlighting />
         </span>
-      )
-    }
-
-    const firstThree = permissionsArray.slice(0, 3)
-    const hasMore = permissionsArray.length > 3
-
-    return (
-      <div style={{ whiteSpace: 'nowrap' }}>
-        {firstThree.map((permission) => (
-          <span key={permission} style={{ fontSize: '14px', marginRight: '4px' }}>
-            {permission}
-          </span>
-        ))}
-        {hasMore &&
-          (areLinksDisplayed ? (
-            <Link to={generatePath(NavigationPath.rolePermissions, { id: role.uid })}>See All</Link>
-          ) : (
-            <Badge isRead>+{permissionsArray.length - 3}</Badge>
-          ))}
       </div>
     )
   },
@@ -123,7 +107,7 @@ export const rolesTableColumns = ({
     header: t('Role'),
     sort: 'name',
     search: 'name',
-    transforms: [cellWidth(25)],
+    transforms: [cellWidth(45)],
     cell: (role, search) => COLUMN_CELLS.NAME(role, search),
     exportContent: (role) => role.name,
     isHidden: hiddenColumns?.includes('name'),
@@ -132,9 +116,9 @@ export const rolesTableColumns = ({
   columns.push({
     header: t('Permissions'),
     sort: 'permissions',
-    transforms: [cellWidth(15)],
-    cell: (role) => COLUMN_CELLS.PERMISSIONS(role),
-    exportContent: (role) => role.permissions.toString(),
+    transforms: [cellWidth(45)],
+    cell: (role, search) => COLUMN_CELLS.PERMISSIONS(role, search),
+    exportContent: (role) => role.permissions?.toString(),
     isHidden: hiddenColumns?.includes('permissions'),
   })
 
