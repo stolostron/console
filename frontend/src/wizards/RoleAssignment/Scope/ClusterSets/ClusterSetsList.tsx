@@ -9,9 +9,10 @@ import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 
 interface ClusterSetsListProps {
   onSelectClusterSet: (clusters: ManagedClusterSet[]) => void
+  selectedClusterSets?: ManagedClusterSet[]
 }
 
-export const ClusterSetsList = ({ onSelectClusterSet }: ClusterSetsListProps) => {
+export const ClusterSetsList = ({ onSelectClusterSet, selectedClusterSets }: ClusterSetsListProps) => {
   const { managedClusterSetsState } = useSharedAtoms()
   const managedClusterSets = useRecoilValue(managedClusterSetsState)
   const clusters = useAllClusters(true)
@@ -32,6 +33,7 @@ export const ClusterSetsList = ({ onSelectClusterSet }: ClusterSetsListProps) =>
       areLinksDisplayed={false}
       hideTableActions={true}
       onSelectClusterSet={onSelectClusterSet}
+      initialSelectedClusterSets={selectedClusterSets}
       showExportButton={false}
       hiddenColumns={[t('table.cluster.statuses'), t('table.clusterSetBinding')]}
     />
