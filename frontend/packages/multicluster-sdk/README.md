@@ -51,6 +51,7 @@ Setup depends on your usage scenarios.
 - [getFleetK8sAPIPath](#gear-getfleetk8sapipath)
 - [useFleetAccessReview](#gear-usefleetaccessreview)
 - [useFleetClusterNames](#gear-usefleetclusternames)
+- [useFleetClusterSets](#gear-usefleetclustersets)
 - [useFleetK8sAPIPath](#gear-usefleetk8sapipath)
 - [useFleetK8sWatchResource](#gear-usefleetk8swatchresource)
 - [useFleetK8sWatchResources](#gear-usefleetk8swatchresources)
@@ -498,6 +499,67 @@ return (
 
 
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetClusterNames.ts#L56)
+
+### :gear: useFleetClusterSets
+
+Hook that returns unique cluster set names from managed clusters with optional filtering by cluster proxy addon and availability status.
+
+This hook watches ManagedCluster resources and by default filters them to only include clusters
+that have both the label `feature.open-cluster-management.io/addon-cluster-proxy: available` AND
+the condition `ManagedClusterConditionAvailable` with status `True`. It then collects unique
+values from the `cluster.open-cluster-management.io/clusterset` label.
+
+| Function | Type |
+| ---------- | ---------- |
+| `useFleetClusterSets` | `(considerAllClusters?: boolean) => [string[], boolean, any]` |
+
+Parameters:
+
+* `considerAllClusters`: - Optional boolean to consider all clusters regardless of labels and conditions.
+Defaults to false. When false (default), only considers clusters with the
+'feature.open-cluster-management.io/addon-cluster-proxy: available' label AND
+'ManagedClusterConditionAvailable' status: 'True'.
+When true, considers all clusters regardless of labels and conditions.
+
+
+Returns:
+
+A tuple containing:
+- clusterSets: Array of unique cluster set names from the clusterset labels
+- loaded: Boolean indicating if the resource watch has loaded
+- error: Any error that occurred during the watch operation
+
+Examples:
+
+```tsx
+// Get cluster sets from only clusters with cluster proxy addon available AND ManagedClusterConditionAvailable: 'True' (default behavior)
+const [availableClusterSets, loaded, error] = useFleetClusterSets()
+
+// Get cluster sets from all clusters regardless of labels and conditions
+const [allClusterSets, loaded, error] = useFleetClusterSets(true)
+
+// Explicitly filter by cluster proxy addon and availability (same as default)
+const [filteredClusterSets, loaded, error] = useFleetClusterSets(false)
+
+if (!loaded) {
+  return <Loading />
+}
+
+if (error) {
+  return <ErrorState error={error} />
+}
+
+return (
+  <div>
+    {availableClusterSets.map(setName => (
+      <div key={setName}>{setName}</div>
+    ))}
+  </div>
+)
+```
+
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetClusterSets.ts#L57)
 
 ### :gear: useFleetK8sAPIPath
 
