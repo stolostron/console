@@ -5,10 +5,7 @@ import { useState } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { createUser, User } from '../../../../resources/rbac'
 import { AcmForm, AcmSubmit } from '../../../../ui-components/AcmForm/AcmForm'
-import { AcmSelect } from '../../../../ui-components/AcmSelect/AcmSelect'
 import { AcmTextInput } from '../../../../ui-components/AcmTextInput/AcmTextInput'
-import { useGetIdentityProviders } from '../../../../resources/clients/oauth-client'
-import { IdentityProviderSelectOption } from '../common/IdentityProviderSelectOption'
 
 interface CreateUserFormProps {
   saveButtonText: string
@@ -20,7 +17,6 @@ interface CreateUserFormProps {
 
 interface FormData {
   userIdentifier: string
-  identityProvider: string
 }
 
 export function CreateUserForm({
@@ -33,10 +29,7 @@ export function CreateUserForm({
   const { t } = useTranslation()
   const [formData, setFormData] = useState<FormData>({
     userIdentifier: '',
-    identityProvider: '',
   })
-
-  const identityProviders = useGetIdentityProviders()
 
   const validateUserIdentifier = (value: string): string | undefined => {
     if (!value || value.trim() === '') {
@@ -51,7 +44,6 @@ export function CreateUserForm({
         metadata: {
           name: formData.userIdentifier.trim(),
         },
-        identities: formData.identityProvider ? [`${formData.identityProvider}:${formData.userIdentifier.trim()}`] : [],
       }
 
       const newUserRequest = createUser(user)
@@ -73,18 +65,6 @@ export function CreateUserForm({
         validation={validateUserIdentifier}
         isRequired
       />
-
-      <AcmSelect
-        id="identity-provider"
-        label={t('Identity Provider (optional)')}
-        placeholder={t('Any identity provider')}
-        value={formData.identityProvider}
-        onChange={(value) => setFormData({ ...formData, identityProvider: value || '' })}
-      >
-        {identityProviders.map((provider) => (
-          <IdentityProviderSelectOption key={provider.name} identityProvider={provider} />
-        ))}
-      </AcmSelect>
 
       <ActionGroup>
         <ActionList>
