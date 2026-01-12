@@ -221,7 +221,14 @@ const useRoleAssignmentData = (): RoleAssignmentHookReturnType => {
     [isUsersLoading, isRolesLoading, isClusterSetLoading, isGroupsLoading, isAllNamespacesLoading]
   )
 
-  return { roleAssignmentData, isLoading, isUsersLoading, isGroupsLoading, isRolesLoading, isClusterSetLoading }
+  return {
+    roleAssignmentData,
+    isLoading,
+    isUsersLoading,
+    isGroupsLoading,
+    isRolesLoading,
+    isClusterSetLoading,
+  }
 }
 
 export { useRoleAssignmentData }

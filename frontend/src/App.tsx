@@ -2,26 +2,28 @@
 /* istanbul ignore file */
 import { useMediaQuery } from '@mui/material'
 import {
+  Dropdown,
+  DropdownItem,
+  Flex,
+  Masthead,
+  MastheadBrand,
+  MastheadContent,
+  MastheadLogo,
+  MastheadMain,
+  MastheadToggle,
+  MenuToggle,
+  MenuToggleElement,
   Nav,
   NavExpandable,
   NavItem,
   NavList,
   Page,
   PageSidebar,
-  Title,
   PageSidebarBody,
-  Dropdown,
-  MenuToggleElement,
-  MenuToggle,
-  DropdownItem,
-  Masthead,
-  MastheadBrand,
-  MastheadContent,
-  MastheadToggle,
   PageToggleButton,
-  Flex,
+  Title,
 } from '@patternfly/react-core'
-import { BarsIcon, CaretDownIcon } from '@patternfly/react-icons'
+import { CaretDownIcon } from '@patternfly/react-icons'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import React, { lazy, ReactNode, Suspense, useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import { BrowserRouter, Link, Navigate, Route, Routes, useLocation } from 'react-router-dom-v5-compat'
@@ -126,9 +128,9 @@ function UserDropdown() {
           variant="plain"
           isExpanded={userIsOpen}
         >
-          <span className="pf-v5-c-dropdown__toggle">
+          <span className="pf-v6-c-dropdown__toggle">
             <span data-test="username">{name}</span>
-            <CaretDownIcon className="pf-v5-c-dropdown__toggle-icon" />
+            <CaretDownIcon className="pf-v6-c-dropdown__toggle-icon" />
           </span>
         </MenuToggle>
       )}
@@ -272,7 +274,7 @@ export default function App() {
     <PluginDataContextProvider value={pluginDataContextValue}>
       <BrowserRouter>
         <Page
-          header={<AppHeader />}
+          masthead={<AppHeader />}
           sidebar={<AppSidebar routes={routes} />}
           isManagedSidebar
           defaultManagedSidebarIsOpen={true}
@@ -318,30 +320,35 @@ function AppHeader() {
   return (
     <Masthead style={{ gridTemplateColumns: '1fr auto' }}>
       <Flex>
-        <MastheadToggle>
-          <PageToggleButton
-            variant="plain"
-            aria-label="Global navigation"
-            isSidebarOpen={isNavOpen}
-            onSidebarToggle={toggleNav}
-            id="vertical-nav-toggle"
-          >
-            <BarsIcon />
-          </PageToggleButton>
-        </MastheadToggle>
-        <MastheadBrand>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'start' }}>
-            <div style={{ color: 'white' }}>
-              <Title headingLevel="h4" style={{ fontWeight: 'bold', lineHeight: 1.2 }}>
-                @stolostron/console
-              </Title>
-              <Title headingLevel="h3" style={{ fontWeight: 'lighter', lineHeight: 1.2 }}>
-                <Truncate content="Development Console" />
-              </Title>
-            </div>
-          </div>
-        </MastheadBrand>
-        <MastheadContent style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+        <MastheadMain>
+          <MastheadToggle>
+            <PageToggleButton
+              isHamburgerButton
+              variant="plain"
+              aria-label="Global navigation"
+              isSidebarOpen={isNavOpen}
+              onSidebarToggle={toggleNav}
+              id="vertical-nav-toggle"
+            ></PageToggleButton>
+          </MastheadToggle>
+          <MastheadBrand>
+            <MastheadLogo>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'start' }}>
+                <div>
+                  <Title headingLevel="h4" style={{ fontWeight: 'bold', lineHeight: 1.2 }}>
+                    @stolostron/console
+                  </Title>
+                  <Title headingLevel="h3" style={{ fontWeight: 'lighter', lineHeight: 1.2 }}>
+                    <Truncate content="Development Console" />
+                  </Title>
+                </div>
+              </div>
+            </MastheadLogo>
+          </MastheadBrand>
+        </MastheadMain>
+        <MastheadContent
+          style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginLeft: 'auto' }}
+        >
           {process.env.NODE_ENV === 'development' && <ThemeSwitcher />}
           <UserDropdown />
         </MastheadContent>

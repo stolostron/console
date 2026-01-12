@@ -4,7 +4,18 @@ import { useEffect, useRef, useState } from 'react'
 import { fireManagedClusterView } from '../../../resources'
 import { ResultsTableData } from '../policies/policy-details/PolicyDetailsResults'
 import { useTranslation } from '../../../lib/acm-i18next'
-import { Alert, Button, Divider, Modal, ModalVariant, Skeleton, Title } from '@patternfly/react-core'
+import {
+  Alert,
+  Button,
+  Content,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+  ModalVariant,
+  Skeleton,
+  Title,
+} from '@patternfly/react-core'
 import { Grid } from '@mui/material'
 import { TemplateDetailTitle } from './TemplateDetailTitle'
 import { CodeBlock } from './CodeBlock'
@@ -86,60 +97,58 @@ export function ViewDiffApiCall({ item }: Readonly<{ item: ResultsTableData }>) 
         )}
       </div>
 
-      <Modal
-        bodyAriaLabel="policy difference modal"
-        tabIndex={0}
-        header={
-          <>
+      <Modal variant={ModalVariant.large} isOpen={isModalOpen} onClose={handleModalToggle}>
+        <ModalHeader>
+          <Content>
             <Title headingLevel="h1">
               <TemplateDetailTitle policyKind={item.kind} templateName={item.templateName} compliant="NonCompliant" />
             </Title>
-            <Divider style={{ marginTop: '10px' }} />
-            <Divider />
-          </>
-        }
-        variant={ModalVariant.large}
-        isOpen={isModalOpen}
-        onClose={handleModalToggle}
-        actions={[
+          </Content>
+        </ModalHeader>
+        <ModalBody tabIndex={0} aria-label={t('scrollable policy differences')}>
+          {isFetching && (
+            <div
+              style={{ height: '300px', overflowY: 'hidden', marginTop: '30px', flexFlow: 'column', display: 'flex' }}
+            >
+              <Skeleton
+                style={{
+                  borderRadius: '6px',
+                  backgroundColor: '#f6f8fa',
+                  border: '1px solid #d0d7de',
+                  flex: 1,
+                }}
+                screenreaderText={t('Loading Template diff')}
+              />
+            </div>
+          )}
+          {!isFetching && templateErr && <Alert variant="danger" title={templateErr} ouiaId="templateErrAlert" />}
+          {!isFetching && relatedObjs && !templateErr && (
+            <Grid container direction="column" justifyContent="flex-start" alignItems="stretch" spacing={4}>
+              {relatedObjs?.map((rOjb: any) =>
+                rOjb.properties?.diff ? (
+                  <Grid item key={rOjb.object?.kind + rOjb.object?.metadata.name}>
+                    <Title headingLevel="h2" style={{ marginBottom: 10 }}>
+                      {t('Difference for the {{kind}} {{resource}}', {
+                        kind: rOjb.object?.kind,
+                        resource: `${
+                          rOjb.object?.metadata?.namespace ? rOjb.object?.metadata?.namespace + '/' : ''
+                        }${rOjb.object?.metadata?.name}`,
+                      })}
+                    </Title>
+                    <CodeBlock>{rOjb.properties?.diff}</CodeBlock>
+                  </Grid>
+                ) : (
+                  <></>
+                )
+              )}
+            </Grid>
+          )}
+        </ModalBody>
+        <ModalFooter>
           <Button key="Cancel" variant="primary" onClick={handleModalToggle}>
             {t('Close')}
-          </Button>,
-        ]}
-      >
-        {isFetching && (
-          <div style={{ height: '300px', overflowY: 'hidden', marginTop: '30px', flexFlow: 'column', display: 'flex' }}>
-            <Skeleton
-              style={{
-                borderRadius: '6px',
-                backgroundColor: '#f6f8fa',
-                border: '1px solid #d0d7de',
-                flex: 1,
-              }}
-              screenreaderText={t('Loading Template diff')}
-            />
-          </div>
-        )}
-        {!isFetching && templateErr && <Alert variant="danger" title={templateErr} ouiaId="templateErrAlert" />}
-        {!isFetching && relatedObjs && !templateErr && (
-          <Grid container direction="column" justifyContent="flex-start" alignItems="stretch" spacing={4}>
-            {relatedObjs?.map((rOjb: any) =>
-              rOjb.properties?.diff ? (
-                <Grid item key={rOjb.object?.kind + rOjb.object?.metadata.name}>
-                  <Title
-                    headingLevel="h2"
-                    style={{ marginBottom: 10 }}
-                  >{`${t('Difference for the')} ${rOjb.object?.kind} ${
-                    rOjb.object?.metadata?.namespace ? rOjb.object?.metadata?.namespace + '/' : ''
-                  }${rOjb.object?.metadata?.name}`}</Title>
-                  <CodeBlock>{rOjb.properties?.diff}</CodeBlock>
-                </Grid>
-              ) : (
-                <></>
-              )
-            )}
-          </Grid>
-        )}
+          </Button>
+        </ModalFooter>
       </Modal>
     </>
   )

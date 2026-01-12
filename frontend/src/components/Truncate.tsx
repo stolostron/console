@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Tooltip, TooltipPosition } from '@patternfly/react-core'
-import React from 'react'
 import useResizeObserver from '@react-hook/resize-observer'
+import React from 'react'
 import './Truncate.css'
 
 export enum TruncatePosition {
@@ -11,8 +11,8 @@ export enum TruncatePosition {
 }
 
 const truncateStyles = {
-  start: 'pf-v5-c-truncate__end',
-  end: 'pf-v5-c-truncate__start',
+  start: 'pf-v6-c-truncate__end',
+  end: 'pf-v6-c-truncate__start',
 }
 
 const minWidthCharacters = 12
@@ -54,8 +54,8 @@ const sliceContent = (str: string, slice: number) => [str.slice(0, str.length - 
 const createTooltipContent = (children: React.ReactNode, content: string, isLink: boolean) => {
   // Helper to extract text content and create styled HTML
   const createStyledTooltipElement = (element: React.ReactElement): React.ReactElement => {
-    const PF_VAR_WHITE = 'var(--pf-v5-global--palette--white)'
-    const PF_VAR_LINK_COLOR = 'var(--pf-v5-global--link--Color)'
+    const PF_VAR_WHITE = 'var(--pf-t--color--white)'
+    const PF_VAR_LINK_COLOR = 'var(--pf-t--global--text--color--link--default)'
 
     if (React.isValidElement(element)) {
       const props = element.props as any
@@ -157,7 +157,7 @@ export const Truncate: React.FunctionComponent<TruncateProps> = ({
         return
       }
 
-      const truncatedElement = containerElement.querySelector('.pf-v5-c-truncate__start, .pf-v5-c-truncate__end')
+      const truncatedElement = containerElement.querySelector('.pf-v6-c-truncate__start, .pf-v6-c-truncate__end')
 
       if (truncatedElement && truncatedElement.scrollWidth > 0) {
         const isOverflowing = truncatedElement.scrollWidth > truncatedElement.clientWidth
@@ -227,8 +227,8 @@ export const Truncate: React.FunctionComponent<TruncateProps> = ({
   // When children are provided (highlighted content), use PatternFly truncation with children
   if (children) {
     const truncateContent = (
-      <span ref={containerRef} className={`${className || ''} pf-v5-c-truncate`} {...props}>
-        <span className="pf-v5-c-truncate__start">{children}</span>
+      <span ref={containerRef} className={`${className || ''} pf-v6-c-truncate`} {...props}>
+        <span className="pf-v6-c-truncate__start">{children}</span>
       </span>
     )
 
@@ -245,7 +245,7 @@ export const Truncate: React.FunctionComponent<TruncateProps> = ({
 
   // Original truncation logic for plain text
   const plainTextContent = (
-    <span ref={containerRef} className={`${className || ''} pf-v5-c-truncate`} {...props}>
+    <span ref={containerRef} className={`${className || ''} pf-v6-c-truncate`} {...props}>
       {(position === TruncatePosition.end || position === TruncatePosition.start) && (
         <span className={truncateStyles[position]}>
           {content}

@@ -1,6 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { act, ByRoleMatcher, ByRoleOptions, screen, waitFor, within } from '@testing-library/react'
+import {
+  act,
+  ByRoleMatcher,
+  ByRoleOptions,
+  Matcher,
+  screen,
+  SelectorMatcherOptions,
+  waitFor,
+  within,
+} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Scope } from 'nock/types'
 
@@ -28,11 +37,11 @@ export function getFragmentedTextMatcher(text: string) {
   }
 }
 
-export async function waitForText(text: string, multipleAllowed?: boolean) {
+export async function waitForText(text: Matcher, multipleAllowed?: boolean, options?: SelectorMatcherOptions) {
   if (multipleAllowed) {
-    await waitFor(() => expect(screen.queryAllByText(text).length).toBeGreaterThan(0), waitForOptions)
+    await waitFor(() => expect(screen.queryAllByText(text, options).length).toBeGreaterThan(0), waitForOptions)
   } else {
-    await waitFor(() => expect(screen.getByText(text)).toBeDefined(), waitForOptions)
+    await waitFor(() => expect(screen.getByText(text, options)).toBeDefined(), waitForOptions)
   }
 }
 

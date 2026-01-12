@@ -126,7 +126,7 @@ export default function SavedSearchQueries(props: {
 
   if (isUserPreferenceLoading || loading) {
     return (
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <AcmExpandableWrapper id={'loading-wrapper'} withCount={false} expandable={false}>
           <AcmCountCard key={1} loading />
           <AcmCountCard key={2} loading />
@@ -138,7 +138,7 @@ export default function SavedSearchQueries(props: {
     return <Fragment />
   } else {
     return (
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         {editSavedSearch && (
           <SaveAndEditSearchModal
             setSelectedSearch={setSelectedSearch}

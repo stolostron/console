@@ -1,6 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { renderHook, act } from '@testing-library/react-hooks'
-import { useFleetK8sWatchResourceStore, isCacheEntryValid } from './fleetK8sWatchResourceStore'
+import {
+  useFleetK8sWatchResourceStore,
+  isCacheEntryValid,
+  isCacheEntryFresh,
+  getCacheEntryAge,
+  getSocketMonitoringInterval,
+} from './fleetK8sWatchResourceStore'
 
 // Mock WebSocket
 class MockWebSocket {
@@ -295,6 +301,146 @@ describe('isCacheEntryValid function', () => {
     // Even with an active socket, entry should be invalid if it has an error
     // This ensures we retry failed requests instead of serving stale errors
     expect(isCacheEntryValid(entry)).toBe(false)
+  })
+})
+
+describe('isCacheEntryFresh function', () => {
+  beforeEach(() => {
+    jest.useFakeTimers()
+  })
+
+  afterEach(() => {
+    jest.useRealTimers()
+  })
+
+  it('should return true for entry created less than TTL ago', () => {
+    const now = Date.now()
+    jest.setSystemTime(now)
+
+    const entry = {
+      refCount: 1,
+      timestamp: now - 5000, // 5 seconds ago
+    }
+
+    expect(isCacheEntryFresh(entry)).toBe(true)
+  })
+
+  it('should return true for entry created exactly at current time', () => {
+    const now = Date.now()
+    jest.setSystemTime(now)
+
+    const entry = {
+      refCount: 1,
+      timestamp: now,
+    }
+
+    expect(isCacheEntryFresh(entry)).toBe(true)
+  })
+
+  it('should return false for entry created exactly TTL ago', () => {
+    const now = Date.now()
+    jest.setSystemTime(now)
+
+    const entry = {
+      refCount: 1,
+      timestamp: now - getSocketMonitoringInterval(), // Exactly at TTL
+    }
+
+    expect(isCacheEntryFresh(entry)).toBe(false)
+  })
+
+  it('should return false for entry created more than TTL ago', () => {
+    const now = Date.now()
+    jest.setSystemTime(now)
+
+    const entry = {
+      refCount: 1,
+      timestamp: now - 60000, // 60 seconds ago
+    }
+
+    expect(isCacheEntryFresh(entry)).toBe(false)
+  })
+
+  it('should become stale as time passes', () => {
+    const now = Date.now()
+    jest.setSystemTime(now)
+
+    const entry = {
+      refCount: 1,
+      timestamp: now,
+    }
+
+    expect(isCacheEntryFresh(entry)).toBe(true)
+
+    // Advance time past TTL
+    jest.advanceTimersByTime(getSocketMonitoringInterval() + 1000)
+
+    expect(isCacheEntryFresh(entry)).toBe(false)
+  })
+})
+
+describe('getCacheEntryAge function', () => {
+  beforeEach(() => {
+    jest.useFakeTimers()
+  })
+
+  afterEach(() => {
+    jest.useRealTimers()
+  })
+
+  it('should return 0 for entry created at current time', () => {
+    const now = Date.now()
+    jest.setSystemTime(now)
+
+    const entry = {
+      refCount: 1,
+      timestamp: now,
+    }
+
+    expect(getCacheEntryAge(entry)).toBe(0)
+  })
+
+  it('should return correct age in milliseconds', () => {
+    const now = Date.now()
+    jest.setSystemTime(now)
+
+    const entry = {
+      refCount: 1,
+      timestamp: now - 15000, // 15 seconds ago
+    }
+
+    expect(getCacheEntryAge(entry)).toBe(15000)
+  })
+
+  it('should increase as time passes', () => {
+    const now = Date.now()
+    jest.setSystemTime(now)
+
+    const entry = {
+      refCount: 1,
+      timestamp: now,
+    }
+
+    expect(getCacheEntryAge(entry)).toBe(0)
+
+    jest.advanceTimersByTime(10000)
+    expect(getCacheEntryAge(entry)).toBe(10000)
+
+    jest.advanceTimersByTime(5000)
+    expect(getCacheEntryAge(entry)).toBe(15000)
+  })
+})
+
+describe('getSocketMonitoringInterval function', () => {
+  it('should return the cache TTL value', () => {
+    // The monitoring interval should match the cache TTL (30 seconds)
+    expect(getSocketMonitoringInterval()).toBe(30000)
+  })
+
+  it('should return a consistent value', () => {
+    const interval1 = getSocketMonitoringInterval()
+    const interval2 = getSocketMonitoringInterval()
+    expect(interval1).toBe(interval2)
   })
 })
 

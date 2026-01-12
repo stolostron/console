@@ -10,9 +10,9 @@ import {
   SplitItem,
   Stack,
   StackItem,
-  Text,
+  Content,
   TextInput,
-  TextVariants,
+  ContentVariants,
 } from '@patternfly/react-core'
 import { TFunction } from 'react-i18next'
 import { PlusCircleIcon, TrashIcon } from '@patternfly/react-icons'
@@ -93,13 +93,12 @@ const ControlPanelMultiTextInput = (props: {
                           <SplitItem style={{ width: '2em' }}>
                             <Bullseye>
                               <Button
+                                icon={<TrashIcon />}
                                 id="remove-item"
                                 variant="plain"
                                 onClick={() => onDeleteKey(index)}
                                 style={{ alignSelf: 'start' }}
-                              >
-                                <TrashIcon />
-                              </Button>
+                              />
                             </Bullseye>
                           </SplitItem>
                         )}
@@ -121,7 +120,7 @@ const ControlPanelMultiTextInput = (props: {
           onClick={onNewKey}
           icon={<PlusCircleIcon />}
         >
-          <Text component={TextVariants.small}>{addButtonText ?? i18n('Add')}</Text>
+          <Content component={ContentVariants.small}>{addButtonText ?? i18n('Add')}</Content>
         </Button>
       </div>
     </div>

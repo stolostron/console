@@ -22,18 +22,18 @@ describe('ClusterSetAccessLevel', () => {
   it('renders with correct styling', () => {
     const { container } = render(<ClusterSetAccessLevel />)
 
-    const panel = container.querySelector('.pf-v5-c-panel')
+    const panel = container.querySelector('.pf-v6-c-panel')
     expect(panel).toHaveStyle({
-      backgroundColor: 'var(--pf-v5-global--BackgroundColor--200)',
+      backgroundColor: 'var(--pf-t--global--background--color--secondary--default)',
     })
   })
 
   it('has proper structure with Panel, PanelMain, and PanelMainBody', () => {
     const { container } = render(<ClusterSetAccessLevel />)
 
-    const panel = container.querySelector('.pf-v5-c-panel')
-    const panelMain = container.querySelector('.pf-v5-c-panel__main')
-    const panelMainBody = container.querySelector('.pf-v5-c-panel__main-body')
+    const panel = container.querySelector('.pf-v6-c-panel')
+    const panelMain = container.querySelector('.pf-v6-c-panel__main')
+    const panelMainBody = container.querySelector('.pf-v6-c-panel__main-body')
 
     expect(panel).toBeInTheDocument()
     expect(panelMain).toBeInTheDocument()

@@ -4,7 +4,6 @@ import {
   Card,
   EmptyState,
   EmptyStateVariant,
-  EmptyStateIcon,
   EmptyStateBody,
   ExpandableSection,
   Title,
@@ -12,7 +11,6 @@ import {
   ClipboardCopy,
   ClipboardCopyVariant,
   Bullseye,
-  EmptyStateHeader,
 } from '@patternfly/react-core'
 import { ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { css } from '@emotion/css'
@@ -25,7 +23,7 @@ const emptyState = css({
   height: '100%',
   width: '100%',
   maxWidth: 'unset',
-  '& .pf-v5-c-empty-state__content': {
+  '& .pf-v6-c-empty-state__content': {
     width: '100%',
     maxWidth: 'unset',
   },
@@ -80,12 +78,13 @@ export class AcmErrorBoundary extends Component<
     if (this.state.hasError) {
       return (
         <Card className={card}>
-          <EmptyState className={emptyState} variant={EmptyStateVariant.lg}>
-            <EmptyStateHeader
-              titleText="Uh oh, something went wrong..."
-              icon={<EmptyStateIcon icon={ExclamationTriangleIcon} />}
-              headingLevel="h4"
-            />
+          <EmptyState
+            headingLevel="h4"
+            icon={ExclamationTriangleIcon}
+            titleText="Uh oh, something went wrong..."
+            className={emptyState}
+            variant={EmptyStateVariant.lg}
+          >
             <EmptyStateBody className={emptyStateBody}>
               <Bullseye className={actions}>{this.props.actions}</Bullseye>
               <ExpandableSection toggleText="See error details...">

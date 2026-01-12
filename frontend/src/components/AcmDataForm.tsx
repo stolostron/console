@@ -12,6 +12,7 @@ import {
   CodeBlock,
   CodeBlockAction,
   CodeBlockCode,
+  Content,
   DataList,
   DataListAction,
   DataListCell,
@@ -40,7 +41,6 @@ import {
   InputGroup,
   InputGroupItem,
   NumberInput,
-  Page,
   PageSection,
   Popover,
   Radio,
@@ -51,21 +51,19 @@ import {
   Stack,
   StackItem,
   Switch,
-  Text,
   TextArea,
-  TextContent,
   TextInput,
-  Tile,
   Title,
+  ToggleGroup,
+  ToggleGroupItem,
   Wizard,
   WizardFooterType,
   WizardFooterWrapper,
   WizardHeader,
   WizardStep,
   WizardStepProps,
-  ToggleGroup,
-  ToggleGroupItem,
 } from '@patternfly/react-core'
+import { Tile } from '@patternfly/react-core/deprecated'
 import {
   EditIcon,
   ExclamationCircleIcon,
@@ -175,7 +173,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                 defaultSize="600px"
                 maxSize={drawerMaxSize}
                 minSize="400px"
-                colorVariant={DrawerColorVariant.light200}
+                colorVariant={DrawerColorVariant.secondary}
               >
                 {editorTitle ? (
                   <SyncEditor
@@ -234,7 +232,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
         >
           <DrawerContentBody>
             {mode === 'wizard' ? (
-              <PageSection isFilled type="wizard" style={{ height: '100%' }}>
+              <PageSection hasBodyWrapper={false} isFilled type="wizard" style={{ height: '100%' }}>
                 <AcmDataForm
                   {...props}
                   mode={mode}
@@ -247,7 +245,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                 />
               </PageSection>
             ) : (
-              <PageSection variant="light">
+              <PageSection hasBodyWrapper={false}>
                 <AcmDataForm
                   {...props}
                   mode={mode}
@@ -269,54 +267,47 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
       {isModalWizard ? (
         drawerContent()
       ) : (
-        <Page
-          style={{ height: '100%' }}
-          additionalGroupedContent={
-            <Fragment>
-              <AcmPageHeader
-                title={formData.title}
-                titleTooltip={formData.titleTooltip}
-                description={formData.description}
-                breadcrumb={formData.breadcrumb}
-                actions={
-                  <ActionList>
-                    {mode === 'details' && props.edit !== undefined && (
-                      <ActionListItem>
-                        <Button onClick={props.edit}>{t('Edit')}</Button>
-                      </ActionListItem>
-                    )}
-                  </ActionList>
-                }
-                switches={
-                  hideYaml ? undefined : (
-                    <Fragment>
-                      {(editorTitle || process.env.NODE_ENV === 'development') && (
-                        <Switch
-                          label="YAML"
-                          isChecked={drawerExpanded}
-                          onChange={() => {
-                            localStorage.setItem('yaml', (!drawerExpanded).toString())
-                            setDrawerExpanded(!drawerExpanded)
-                          }}
-                        />
-                      )}
-                    </Fragment>
-                  )
-                }
-              />
-              {showFormErrors &&
-                mode === 'form' &&
-                (editorValidationStatus === ValidationStatus.failure || formHasErrors(t, formData)) && (
-                  <PageSection variant="light" style={{ paddingTop: 0 }}>
-                    {renderErrors(true, formHasRequiredErrors(formData))}
-                  </PageSection>
+        <div style={{ height: '100%' }}>
+          <AcmPageHeader
+            title={formData.title}
+            titleTooltip={formData.titleTooltip}
+            description={formData.description}
+            breadcrumb={formData.breadcrumb}
+            actions={
+              <ActionList>
+                {mode === 'details' && props.edit !== undefined && (
+                  <ActionListItem>
+                    <Button onClick={props.edit}>{t('Edit')}</Button>
+                  </ActionListItem>
                 )}
-            </Fragment>
-          }
-          groupProps={{ stickyOnBreakpoint: { default: 'top' } }}
-        >
+              </ActionList>
+            }
+            switches={
+              hideYaml ? undefined : (
+                <Fragment>
+                  {(editorTitle || process.env.NODE_ENV === 'development') && (
+                    <Switch
+                      label="YAML"
+                      isChecked={drawerExpanded}
+                      onChange={() => {
+                        localStorage.setItem('yaml', (!drawerExpanded).toString())
+                        setDrawerExpanded(!drawerExpanded)
+                      }}
+                    />
+                  )}
+                </Fragment>
+              )
+            }
+          />
+          {showFormErrors &&
+            mode === 'form' &&
+            (editorValidationStatus === ValidationStatus.failure || formHasErrors(t, formData)) && (
+              <PageSection hasBodyWrapper={false} style={{ paddingTop: 0 }}>
+                {renderErrors(true, formHasRequiredErrors(formData))}
+              </PageSection>
+            )}
           {drawerContent()}
-        </Page>
+        </div>
       )}
     </div>
   )
@@ -525,7 +516,7 @@ export function AcmDataFormWizard(props: {
           <SplitItem isFilled>{section.title}</SplitItem>
           {hasError && section.type === 'Section' && (
             <span style={{ paddingLeft: '8px' }}>
-              <ExclamationCircleIcon color="var(--pf-v5-global--danger-color--100)" />
+              <ExclamationCircleIcon color="var(--pf-t--global--icon--color--status--danger--default)" />
             </span>
           )}
         </Split>
@@ -541,9 +532,9 @@ export function AcmDataFormWizard(props: {
           {section.alerts && <AlertGroup>{section.alerts}</AlertGroup>}
           <Title headingLevel="h2">{section.wizardTitle ?? section.title}</Title>
           {section.description && (
-            <TextContent>
-              <Text component="small">{section.description}</Text>
-            </TextContent>
+            <Content>
+              <Content component="small">{section.description}</Content>
+            </Content>
           )}
           <AcmDataFormInputs
             inputs={section.inputs}
@@ -700,7 +691,8 @@ export function AcmDataFormWizard(props: {
   return (
     <Fragment>
       {isModalWizard ? (
-        <div ref={wizardRef} style={{ height: '100%' }}>
+        <div ref={wizardRef}>
+          {/* <div ref={wizardRef} style={{ height: '100%' }}> */}
           <Wizard
             height={modalHeight}
             header={<WizardHeader title={formData.title} description={formData.description} onClose={cancel} />}
@@ -736,7 +728,7 @@ export function AcmDataFormDetails(props: { formData: FormData; wizardSummary?: 
       {wizardSummary && formData.reviewTitle !== undefined && (
         <Fragment>
           <Title headingLevel="h2">{formData.reviewTitle}</Title>
-          {formData.reviewDescription && <Text component="p">{formData.reviewDescription}</Text>}
+          {formData.reviewDescription && <Content component="p">{formData.reviewDescription}</Content>}
         </Fragment>
       )}
       {/* <Divider /> */}
@@ -834,9 +826,12 @@ function AcmInputDescription(props: { input: Input }): JSX.Element {
               </SplitItem>
               {input.isSecret && (
                 <Stack>
-                  <Button variant="plain" style={{ marginTop: '-8px' }} onClick={() => setShowSecrets(!showSecrets)}>
-                    {showSecrets ? <EyeIcon /> : <EyeSlashIcon />}
-                  </Button>
+                  <Button
+                    icon={showSecrets ? <EyeIcon /> : <EyeSlashIcon />}
+                    variant="plain"
+                    style={{ marginTop: '-8px' }}
+                    onClick={() => setShowSecrets(!showSecrets)}
+                  />
                   <StackItem isFilled />
                 </Stack>
               )}
@@ -980,7 +975,7 @@ export function AcmDataFormInputs(props: {
                 fieldId={input.id}
                 label={input?.title ?? input.label}
                 isRequired={input.isRequired}
-                labelIcon={
+                labelHelp={
                   <LabelHelp id={input.id} labelHelp={input.labelHelp} labelHelpTitle={input.labelHelpTitle} />
                 }
               >
@@ -1471,8 +1466,7 @@ function LabelHelp(props: { id: string; labelHelp?: string; labelHelpTitle?: str
         id={`${props.id}-label-help-button`}
         aria-label="More info"
         onClick={(e) => e.preventDefault()}
-        className="pf-v5-c-form__group-label-help"
-        style={{ ['--pf-v5-c-form__group-label-help--TranslateY' as any]: 0 }}
+        className="pf-v6-c-form__group-label-help"
         icon={<HelpIcon />}
       />
     </Popover>
@@ -1510,6 +1504,7 @@ function PasteInputButton(props: { setValue: (value: string) => void; setShowSec
   const { setValue, setShowSecrets } = props
   return (
     <Button
+      icon={<PasteIcon />}
       variant="control"
       onClick={() => {
         navigator.clipboard.readText().then((value) => {
@@ -1517,19 +1512,13 @@ function PasteInputButton(props: { setValue: (value: string) => void; setShowSec
           if (value && setShowSecrets) setShowSecrets(false)
         })
       }}
-    >
-      <PasteIcon />
-    </Button>
+    ></Button>
   )
 }
 
 function ClearInputButton(props: { onClick: () => void }) {
   const { onClick } = props
-  return (
-    <Button variant="control" onClick={onClick}>
-      <TimesCircleIcon />
-    </Button>
-  )
+  return <Button icon={<TimesCircleIcon />} variant="control" onClick={onClick}></Button>
 }
 
 function ShowSecretsButton(props: { showSecrets: boolean; setShowSecrets: (value: boolean) => void }) {
@@ -1572,27 +1561,24 @@ function OrderedItemsInput(props: {
                     </DataListCell>
                   ))}
                 />
-                <DataListAction
-                  aria-labelledby="ex-item1 ex-action1"
-                  id="ex-action1"
-                  aria-label="Actions"
-                  isPlainButtonAction
-                >
+                <DataListAction aria-labelledby="ex-item1 ex-action1" id="ex-action1" aria-label="Actions">
                   <Split>
                     {input.onEdit && (
-                      <Button variant="link" aria-label="Action" onClick={() => input.onEdit?.(item)}>
-                        <EditIcon />
-                      </Button>
+                      <Button
+                        icon={<EditIcon />}
+                        variant="link"
+                        aria-label="Action"
+                        onClick={() => input.onEdit?.(item)}
+                      ></Button>
                     )}
                     <Button
+                      icon={<TrashIcon />}
                       variant="plain"
                       aria-label="Action"
                       onClick={() =>
                         input.onChange(input.value.filter((item, index) => input.keyFn(item, index) !== key))
                       }
-                    >
-                      <TrashIcon />
-                    </Button>
+                    />
                   </Split>
                 </DataListAction>
               </DataListItemRow>

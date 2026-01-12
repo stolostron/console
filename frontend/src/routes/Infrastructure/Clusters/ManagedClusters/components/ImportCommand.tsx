@@ -15,9 +15,8 @@ import {
   Tab,
   Tabs,
   TabTitleText,
-  Text,
-  TextContent,
-  TextVariants,
+  Content,
+  ContentVariants,
   Tooltip,
 } from '@patternfly/react-core'
 import { CopyIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
@@ -94,9 +93,9 @@ export function ImportCommand(props: ImportCommandProps) {
               <CardTitle>{t('import.command.generated')}</CardTitle>
               <CardBody>
                 <span>
-                  <TextContent>
-                    <Text
-                      component={TextVariants.a}
+                  <Content>
+                    <Content
+                      component={ContentVariants.a}
                       isVisitedLink
                       href="https://access.redhat.com/support/policy/updates/advanced-cluster-management"
                       target="_blank"
@@ -111,8 +110,8 @@ export function ImportCommand(props: ImportCommandProps) {
                       <strong style={{ marginBottom: '12px', fontSize: '14px', display: 'block' }}>
                         {t('import.command.copy.description')} <ExternalLinkAltIcon />
                       </strong>
-                    </Text>
-                  </TextContent>
+                    </Content>
+                  </Content>
                 </span>
                 <Tooltip isVisible={copied} content={t('copied')} trigger="click">
                   <AcmButton

@@ -1,9 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { fireEvent, render, screen } from '@testing-library/react'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
-import { FlattenedRoleAssignment } from '../../../resources/clients/multicluster-role-assignment-client'
-import { MulticlusterRoleAssignment } from '../../../resources/multicluster-role-assignment'
+import {
+  MulticlusterRoleAssignment,
+  MulticlusterRoleAssignmentNamespace,
+} from '../../../resources/multicluster-role-assignment'
 import { RoleAssignmentActionDropdown } from './RoleAssignmentActionDropdown'
+import { FlattenedRoleAssignment } from '../../../resources/clients/model/flattened-role-assignment'
 
 // Mock Dropdown component to show the key data we want to verify
 jest.mock('@patternfly/react-core', () => ({
@@ -32,7 +35,14 @@ const mockRoleAssignment: FlattenedRoleAssignment = {
   name: 'A1',
   relatedMulticlusterRoleAssignment: {} as MulticlusterRoleAssignment,
   clusterRole: 'admin',
-  clusterSelection: { type: 'clusterNames', clusterNames: ['production', 'staging'] },
+  clusterSelection: {
+    type: 'placements',
+    placements: [
+      { name: 'placement-production', namespace: MulticlusterRoleAssignmentNamespace },
+      { name: 'placement-staging', namespace: MulticlusterRoleAssignmentNamespace },
+    ],
+  },
+  clusterNames: ['production', 'staging'],
   targetNamespaces: ['default', 'kube-system', 'test-ns'],
   subject: { name: 'test-user', kind: 'User' },
 }

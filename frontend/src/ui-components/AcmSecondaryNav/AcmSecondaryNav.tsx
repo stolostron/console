@@ -1,24 +1,47 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { Tab, Tabs, TabTitleText } from '@patternfly/react-core'
+import React, { ReactNode } from 'react'
+import { Path, useNavigate } from 'react-router-dom-v5-compat'
+import { useTranslation } from '../../lib/acm-i18next'
 
-import { Nav, NavItem, NavList } from '@patternfly/react-core'
-import { ReactNode } from 'react'
-
-export function AcmSecondaryNav(props: { children: ReactNode }) {
-  return (
-    <Nav variant="tertiary">
-      <NavList>{props.children}</NavList>
-    </Nav>
-  )
-}
-export function AcmSecondaryNavItem(props: {
-  onClick?: () => void
-  isActive: boolean
-  to?: string
-  children: ReactNode
+export function AcmSecondaryNav(props: {
+  navItems: {
+    key: string
+    title: string | ReactNode
+    isActive: boolean
+    to?: string | Partial<Path>
+    onClick?: () => void
+  }[]
 }) {
+  const { t } = useTranslation()
+  const navigate = useNavigate()
+
+  // isActive is passed in navItem props - and is set via the browser location
+  const activeTab = props.navItems.find((item) => item.isActive)
+  const activeKey = activeTab?.key ?? props.navItems[0]?.key
+
+  const handleTabClick = (_: React.MouseEvent<any> | React.KeyboardEvent | MouseEvent, tabIndex: string | number) => {
+    const selectedTab = props.navItems.find((item) => item.key === tabIndex)
+    if (selectedTab) {
+      if (selectedTab.to) {
+        navigate(selectedTab.to)
+      } else if (selectedTab.onClick) {
+        selectedTab.onClick()
+      }
+    }
+  }
+
   return (
-    <NavItem onClick={props.onClick} isActive={props.isActive} to={props.to}>
-      {props.children}
-    </NavItem>
+    <Tabs
+      activeKey={activeKey}
+      onSelect={handleTabClick}
+      aria-label={t('Secondary page navigation tabs')}
+      style={{ paddingLeft: 'calc(1.5rem - 4px)' }} // should use usePageInsets prop - this is currently a few pixels off.
+    >
+      {props.navItems.map((item) => (
+        // Override aria-controls as we are not rendering TabContent as Child components. If set, a11y breaks.
+        <Tab aria-controls="" key={item.key} eventKey={item.key} title={<TabTitleText>{item.title}</TabTitleText>} />
+      ))}
+    </Tabs>
   )
 }

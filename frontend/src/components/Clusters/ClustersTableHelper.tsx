@@ -5,7 +5,7 @@ import {
   getVersionFromReleaseImage,
   HostedClusterK8sResource,
 } from '@openshift-assisted/ui-lib/cim'
-import { Alert, Label, Text, TextContent, TextVariants, Tooltip } from '@patternfly/react-core'
+import { Alert, Label, Content, ContentVariants, Tooltip } from '@patternfly/react-core'
 import { fitContent, nowrap } from '@patternfly/react-table'
 import { Link } from 'react-router-dom-v5-compat'
 import { useMemo } from 'react'
@@ -98,9 +98,9 @@ export function useClusterNameColumn(areLinksDisplayed: boolean = true): IAcmTab
           )}
         </span>
         {cluster.hive.clusterClaimName && (
-          <TextContent>
-            <Text component={TextVariants.small}>{cluster.hive.clusterClaimName}</Text>
-          </TextContent>
+          <Content>
+            <Content component={ContentVariants.small}>{cluster.hive.clusterClaimName}</Content>
+          </Content>
         )}
       </>
     ),
@@ -128,13 +128,13 @@ export function useClusterNameColumnModal(areLinksDisplayed: boolean = true): IA
           ) : (
             <Tooltip
               content={
-                <Text>
+                <Content component="p">
                   {cluster.isHypershift
                     ? t(
                         'Hosted clusters cannot be destroyed from the console. Use the individual cluster destroy option to see CLI instructions.'
                       )
                     : t('Imported clusters cannot be destroyed.')}
-                </Text>
+                </Content>
               }
             >
               <Label style={{ marginLeft: '5px' }} color="red">
@@ -144,9 +144,9 @@ export function useClusterNameColumnModal(areLinksDisplayed: boolean = true): IA
           )}
         </span>
         {cluster.hive.clusterClaimName && (
-          <TextContent>
-            <Text component={TextVariants.small}>{cluster.hive.clusterClaimName}</Text>
-          </TextContent>
+          <Content>
+            <Content component={ContentVariants.small}>{cluster.hive.clusterClaimName}</Content>
+          </Content>
         )}
       </>
     ),
@@ -581,11 +581,11 @@ export function useTableActions(
                 })}
                 style={{ marginTop: '20px' }}
               >
-                <TextContent>
+                <Content>
                   {t('It will not be destroyed when you perform this action.', {
                     count: unDestroyedClusters.length,
                   })}
-                </TextContent>
+                </Content>
               </Alert>
             ) : undefined,
           title: t('bulk.title.destroy'),

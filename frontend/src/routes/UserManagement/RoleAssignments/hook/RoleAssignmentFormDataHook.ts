@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { get } from 'lodash'
 import { useCallback, useEffect, useState } from 'react'
 import { RoleAssignmentPreselected } from '../model/role-assignment-preselected'
 import { GroupKind, GroupKindType, ServiceAccountKindType, UserKind, UserKindType } from '../../../../resources'
@@ -126,7 +125,7 @@ const useRoleAssignmentFormData = (
 
   // preselected
   useEffect(() => {
-    const subject = get(preselected, 'subject')
+    const subject = preselected?.subject
     if (subject) {
       onChangeSubjectKind(subject.kind)
       switch (subject.kind) {
@@ -141,14 +140,14 @@ const useRoleAssignmentFormData = (
   }, [preselected, onChangeUserValue, onChangeSubjectKind, onChangeGroupValue])
 
   useEffect(() => {
-    const roles = get(preselected, 'roles')
+    const roles = preselected?.roles
     if (roles?.length) {
       onChangeRoles(roles)
     }
   }, [preselected, onChangeRoles])
 
   useEffect(() => {
-    const clusterNames = get(preselected, 'clusterNames')
+    const clusterNames = preselected?.clusterNames
     if (clusterNames?.length) {
       onChangeScopeKind('specific')
       onChangeScopeValues(clusterNames)

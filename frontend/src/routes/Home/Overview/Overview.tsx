@@ -1,8 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useContext, useState } from 'react'
+import { Tab, Tabs, TabTitleText } from '@patternfly/react-core'
+import { useContext, useMemo, useState } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { PluginContext } from '../../../lib/PluginContext'
-import { AcmErrorBoundary, AcmPage, AcmPageHeader, AcmSecondaryNav, AcmSecondaryNavItem } from '../../../ui-components'
+import { AcmErrorBoundary, AcmPage, AcmPageHeader } from '../../../ui-components'
 import ReuseableSearchbar from '../../Search/components/ReuseableSearchbar'
 import OverviewClusterLabelSelector from './OverviewClusterLabelSelector'
 import OverviewPage from './OverviewPage'
@@ -11,13 +12,12 @@ const CLUSTERS_TAB: string = 'overview-tab'
 
 export default function Overview() {
   const { t } = useTranslation()
-  const [selectedTab, setSelectedTab] = useState<string>(CLUSTERS_TAB)
+  const [activeTabKey, setActiveTabKey] = useState<string | number>(CLUSTERS_TAB)
   const [selectedClusterLabels, setSelectedClusterLabels] = useState<Record<string, string[]>>({})
   const { acmExtensions } = useContext(PluginContext)
-
   let content = <OverviewPage selectedClusterLabels={selectedClusterLabels} />
-  if (selectedTab) {
-    const Component = acmExtensions?.overviewTab?.find((o) => o.uid === selectedTab)?.properties.component
+  if (activeTabKey) {
+    const Component = acmExtensions?.overviewTab?.find((o) => o.uid === activeTabKey)?.properties.component
     if (Component) {
       content = (
         <AcmErrorBoundary>
@@ -27,46 +27,60 @@ export default function Overview() {
     }
   }
 
+  const tabItems = useMemo(() => {
+    const items = [
+      {
+        eventKey: CLUSTERS_TAB,
+        title: t('Clusters'),
+      },
+    ]
+
+    acmExtensions?.overviewTab?.forEach((tabExtension) =>
+      items.push({
+        eventKey: tabExtension.uid,
+        title: tabExtension.properties.tabTitle,
+      })
+    )
+
+    return items
+  }, [acmExtensions?.overviewTab, t])
+
   return (
     <AcmPage
       header={
         <div>
-          <div style={{ borderBottom: '1px solid var(--pf-v5-global--BorderColor--100)' }}>
-            <AcmPageHeader
-              title={t('Overview')}
-              searchbar={<ReuseableSearchbar />}
-              navigation={
-                <AcmSecondaryNav>
-                  <AcmSecondaryNavItem
-                    key={CLUSTERS_TAB}
-                    isActive={selectedTab === CLUSTERS_TAB}
-                    onClick={() => setSelectedTab(CLUSTERS_TAB)}
-                  >
-                    {t('Clusters')}
-                  </AcmSecondaryNavItem>
-                  {acmExtensions?.overviewTab?.map((tabExtension) => (
-                    <AcmSecondaryNavItem
-                      key={tabExtension.uid}
-                      isActive={selectedTab === tabExtension.uid}
-                      onClick={() => setSelectedTab(tabExtension.uid)}
-                    >
-                      {tabExtension.properties.tabTitle}
-                    </AcmSecondaryNavItem>
-                  ))}
-                </AcmSecondaryNav>
-              }
-            />
-          </div>
-          {/* Fleet view includes a cluster label filter */}
-          {selectedTab === CLUSTERS_TAB && (
-            <OverviewClusterLabelSelector
-              selectedClusterLabels={selectedClusterLabels}
-              setSelectedClusterLabels={setSelectedClusterLabels}
-            />
-          )}
+          <AcmPageHeader title={t('Overview')} searchbar={<ReuseableSearchbar />} />
         </div>
       }
     >
+      <Tabs
+        activeKey={activeTabKey}
+        onSelect={(_, tabIndex) => setActiveTabKey(tabIndex)}
+        usePageInsets
+        aria-label="Tabs in the default example"
+        role="region"
+        style={{
+          // match page section padding inset
+          paddingInlineStart:
+            'calc(var(--pf-v6-c-page__main-section--PaddingInlineStart) - var(--pf-v6-c-page__main-container--BorderWidth))',
+        }}
+      >
+        {tabItems.map((tab) => (
+          <Tab
+            key={`tab-item-${tab.eventKey}`}
+            eventKey={tab.eventKey}
+            title={<TabTitleText>{tab.title}</TabTitleText>}
+            aria-label={`tab-item-${tab.title}`}
+          />
+        ))}
+      </Tabs>
+      {/* Fleet view includes a cluster label filter */}
+      {activeTabKey === CLUSTERS_TAB && (
+        <OverviewClusterLabelSelector
+          selectedClusterLabels={selectedClusterLabels}
+          setSelectedClusterLabels={setSelectedClusterLabels}
+        />
+      )}
       {content}
     </AcmPage>
   )

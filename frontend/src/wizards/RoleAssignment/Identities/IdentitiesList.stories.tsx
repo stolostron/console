@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { Content, PageSection, Tab, Tabs, TabTitleText, Title } from '@patternfly/react-core'
 import { Meta, StoryObj } from '@storybook/react'
 import React, { useState } from 'react'
-import { PageSection, Tab, Tabs, TabTitleText, Text, Title } from '@patternfly/react-core'
 import { useTranslation } from '../../../lib/acm-i18next'
 
 // Mock the table components for Storybook
@@ -62,12 +62,12 @@ const MockedIdentitiesList = ({ onUserSelect, onGroupSelect }: MockedIdentitiesL
   }
 
   return (
-    <PageSection>
+    <PageSection hasBodyWrapper={false}>
       <Title headingLevel="h1" size="lg" style={{ marginBottom: '0.5rem' }}>
         {t('Identities')}
       </Title>
 
-      <Text style={{ marginBottom: '1.5rem' }}>
+      <Content component="p" style={{ marginBottom: '1.5rem' }}>
         {t('Select a user or group to assign this role, or ')}{' '}
         <button
           type="button"
@@ -84,7 +84,7 @@ const MockedIdentitiesList = ({ onUserSelect, onGroupSelect }: MockedIdentitiesL
         >
           {t('add pre-authorized user')}
         </button>
-      </Text>
+      </Content>
 
       <Tabs activeKey={activeTabKey} onSelect={handleTabClick} aria-label={t('Identity selection tabs')}>
         <Tab eventKey="users" title={<TabTitleText>{t('Users')}</TabTitleText>} aria-label={t('Users tab')}>

@@ -1282,6 +1282,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
       namespace: 'clusters',
     },
     spec: {
+      channel: 'fast-4.15',
       etcd: {
         managed: {
           storage: {
@@ -1808,6 +1809,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
         namespace: 'new-hns',
       },
       spec: {
+        channel: 'fast-4.15',
         etcd: {
           managed: {
             storage: {
@@ -2228,6 +2230,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
       namespace: 'new-ns',
     },
     spec: {
+      channel: 'fast-4.15',
       etcd: {
         managed: {
           storage: {
@@ -2718,6 +2721,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
       namespace: 'clusters',
     },
     spec: {
+      channel: 'fast-4.15',
       etcd: {
         managed: {
           storage: {
@@ -3202,6 +3206,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
       namespace: 'test-namespace',
     },
     spec: {
+      channel: 'fast-4.15',
       etcd: {
         managed: {
           storage: {
@@ -3710,6 +3715,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
       namespace: 'test-namespace',
     },
     spec: {
+      channel: 'fast-4.15',
       etcd: {
         managed: {
           storage: {

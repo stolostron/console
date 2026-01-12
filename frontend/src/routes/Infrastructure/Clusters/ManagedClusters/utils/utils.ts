@@ -52,3 +52,16 @@ export const getVersionFromReleaseImage = (releaseImage = '') => {
     return match[1]
   }
 }
+
+export const getChannelFromReleaseImage = (releaseImage = '', stream = 'fast') => {
+  const version = getVersionFromReleaseImage(releaseImage)
+  if (version) {
+    // Extract major.minor (e.g., "4.20" from "4.20.8")
+    const lastDotIndex = version.lastIndexOf('.')
+    if (lastDotIndex > 0) {
+      const majorMinor = version.substring(0, lastDotIndex)
+      return `${stream}-${majorMinor}`
+    }
+  }
+  return undefined
+}

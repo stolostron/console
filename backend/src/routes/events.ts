@@ -1,12 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import eventStream from 'event-stream'
 import get from 'get-value'
 import got, { CancelError, HTTPError, TimeoutError } from 'got'
 import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import pluralize from 'pluralize'
-import { Stream } from 'stream'
-import { promisify } from 'util'
+import { pipeline } from 'node:stream/promises'
+import { Transform } from 'node:stream'
 import { createDictionary, deflateResource, inflateResource } from '../lib/compression'
 import { jsonPost } from '../lib/json-request'
 import { logger } from '../lib/logger'
@@ -17,9 +16,6 @@ import { IResource } from '../resources/resource'
 import { IWatchOptions } from '../resources/watch-options'
 import { polledAggregation } from './aggregator'
 import { getAppDict, ICompressedResource, ITransformedResource } from './aggregators/applications'
-
-const { map, split } = eventStream
-const pipeline = promisify(Stream.pipeline)
 
 export async function events(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
   const token = await getAuthenticatedToken(req, res)
@@ -240,7 +236,7 @@ const definitions: IWatchOptions[] = [
     apiVersion: 'v1',
     fieldSelector: { 'metadata.name': 'grafana-dashboard-acm-openshift-virtualization-single-vm-view' },
   },
-  { kind: 'MulticlusterRoleAssignment', apiVersion: 'rbac.open-cluster-management.io/v1alpha1' },
+  { kind: 'MulticlusterRoleAssignment', apiVersion: 'rbac.open-cluster-management.io/v1beta1' },
   { kind: 'User', apiVersion: 'user.openshift.io/v1' },
   { kind: 'Group', apiVersion: 'user.openshift.io/v1' },
   { kind: 'OAuth', apiVersion: 'config.openshift.io/v1' },
@@ -351,9 +347,7 @@ async function listKubernetesObjects(serviceAccountToken: string, options: IWatc
     return { size: itemCount }
   }
 
-  for (const item of items) {
-    await cacheResource(item)
-  }
+  await Promise.all(items.map((item) => cacheResource(item)))
 
   // Remove items that are no longer in kubernetes
   const apiVersionPlural = apiVersionPluralFn(options)
@@ -374,9 +368,7 @@ async function listKubernetesObjects(serviceAccountToken: string, options: IWatc
       removeResources.push(resource)
     }
   }
-  for (const resource of removeResources) {
-    await deleteResource(resource)
-  }
+  await Promise.all(removeResources.map((resource) => deleteResource(resource)))
 
   return { resourceVersion, size: items.length }
 }
@@ -416,7 +408,174 @@ async function pollKubernetesObjects(serviceAccountToken: string, options: IWatc
   }
 }
 
-async function watchKubernetesObjects(serviceAccountToken: string, options: IWatchOptions, resourceVersion: string) {
+/**
+ * Creates a Transform stream that splits incoming data by newline characters
+ */
+export function createSplitStream() {
+  let buffer = ''
+  return new Transform({
+    objectMode: true,
+    transform(chunk: Buffer, _encoding, callback) {
+      buffer += chunk.toString()
+      const lines = buffer.split('\n')
+      // Keep the last incomplete line in the buffer
+      buffer = lines.pop() || ''
+      // Push all complete lines
+      for (const line of lines) {
+        if (line.trim()) {
+          this.push(line)
+        }
+      }
+      callback()
+    },
+    flush(callback) {
+      // Push any remaining data in buffer
+      if (buffer.trim()) {
+        this.push(buffer)
+      }
+      callback()
+    },
+  })
+}
+
+/**
+ * Helper to convert unknown error to string
+ */
+export function errorToString(err: unknown): string {
+  if (err instanceof Error) {
+    return err.message
+  }
+  if (typeof err === 'string') {
+    return err
+  }
+  return JSON.stringify(err)
+}
+
+/**
+ * Creates a Transform stream that processes watch events with async operations
+ */
+export function createWatchEventProcessor(options: IWatchOptions, url: string, resourceVersionRef: { value: string }) {
+  return new Transform({
+    objectMode: true,
+    async transform(data: string, _encoding, callback): Promise<void> {
+      try {
+        let watchEvent: WatchEvent
+        try {
+          watchEvent = JSON.parse(data) as WatchEvent
+        } catch (err: unknown) {
+          logger.error({
+            msg: 'JSON.parse failed',
+            error: errorToString(err),
+            data,
+            url,
+          })
+          throw err
+        }
+        pruneResources(options, [watchEvent.object])
+        switch (watchEvent.type) {
+          case 'ADDED':
+          case 'MODIFIED':
+            try {
+              await cacheResource(watchEvent.object)
+            } catch (err: unknown) {
+              logger.error({
+                msg: 'cacheResource failed',
+                error: errorToString(err),
+              })
+              throw err
+            }
+            break
+          case 'DELETED':
+            try {
+              await deleteResource(watchEvent.object)
+            } catch (err: unknown) {
+              logger.error({
+                msg: 'deleteResource failed',
+                error: errorToString(err),
+              })
+              throw err
+            }
+            break
+        }
+
+        switch (watchEvent.type) {
+          case 'ADDED':
+            logger.debug({
+              msg: 'added',
+              kind: watchEvent.object.kind,
+              name: watchEvent.object.metadata.name,
+              namespace: watchEvent.object.metadata.namespace,
+              apiVersion: watchEvent.object.apiVersion,
+            })
+            resourceVersionRef.value = watchEvent.object.metadata.resourceVersion
+            break
+          case 'MODIFIED':
+            logger.debug({
+              msg: 'modify',
+              kind: watchEvent.object.kind,
+              name: watchEvent.object.metadata.name,
+              namespace: watchEvent.object.metadata.namespace,
+              apiVersion: watchEvent.object.apiVersion,
+            })
+            resourceVersionRef.value = watchEvent.object.metadata.resourceVersion
+            break
+          case 'DELETED':
+            logger.debug({
+              msg: 'delete',
+              kind: watchEvent.object.kind,
+              name: watchEvent.object.metadata.name,
+              namespace: watchEvent.object.metadata.namespace,
+              apiVersion: watchEvent.object.apiVersion,
+            })
+            resourceVersionRef.value = watchEvent.object.metadata.resourceVersion
+            break
+          case 'BOOKMARK':
+            logger.trace({
+              msg: watchEvent.type.toLowerCase(),
+              kind: options.kind,
+              apiVersion: options.apiVersion,
+              message: (watchEvent.object as unknown as { message: string }).message,
+              reason: (watchEvent.object as unknown as { reason: string }).reason,
+            })
+            resourceVersionRef.value = watchEvent.object.metadata.resourceVersion
+            break
+          case 'ERROR':
+            if ((watchEvent.object as unknown as { message?: string }).message.startsWith('too old resource version')) {
+              logger.warn({
+                msg: 'watch',
+                warning: (watchEvent.object as unknown as { message?: string }).message,
+                action: 'retrying watch',
+                kind: options.kind,
+                apiVersion: options.apiVersion,
+              })
+            } else {
+              logger.warn({
+                msg: 'watch',
+                action: 'retrying watch',
+                kind: options.kind,
+                apiVersion: options.apiVersion,
+                event: watchEvent,
+              })
+            }
+            break
+        }
+
+        // Don't push anything downstream - we're just processing events
+        callback()
+      } catch (err: unknown) {
+        // Catch any unexpected errors and pass them to the callback
+        callback(err instanceof Error ? err : new Error(errorToString(err)))
+      }
+    },
+  })
+}
+
+async function watchKubernetesObjects(
+  serviceAccountToken: string,
+  options: IWatchOptions,
+  initialResourceVersion: string
+) {
+  const resourceVersionRef = { value: initialResourceVersion }
   while (!stopping) {
     logger.debug({
       msg: 'watch',
@@ -427,7 +586,11 @@ async function watchKubernetesObjects(serviceAccountToken: string, options: IWat
     })
 
     try {
-      const url = resourceUrl(options, { watch: undefined, allowWatchBookmarks: undefined, resourceVersion })
+      const url = resourceUrl(options, {
+        watch: undefined,
+        allowWatchBookmarks: undefined,
+        resourceVersion: resourceVersionRef.value,
+      })
       const request = got.stream(url, {
         headers: { authorization: `Bearer ${serviceAccountToken}` },
         https: { certificateAuthority: getCACertificate() },
@@ -437,87 +600,7 @@ async function watchKubernetesObjects(serviceAccountToken: string, options: IWat
       const cancelObj = { cancel: () => request.destroy() }
       requests.push(cancelObj)
       try {
-        await pipeline(
-          request,
-          split('\n'),
-          map(async (data: string) => {
-            const watchEvent = JSON.parse(data) as WatchEvent
-            pruneResources(options, [watchEvent.object])
-            switch (watchEvent.type) {
-              case 'ADDED':
-              case 'MODIFIED':
-                await cacheResource(watchEvent.object)
-                break
-              case 'DELETED':
-                await deleteResource(watchEvent.object)
-                break
-            }
-
-            switch (watchEvent.type) {
-              case 'ADDED':
-                logger.debug({
-                  msg: 'added',
-                  kind: watchEvent.object.kind,
-                  name: watchEvent.object.metadata.name,
-                  namespace: watchEvent.object.metadata.namespace,
-                  apiVersion: watchEvent.object.apiVersion,
-                })
-                resourceVersion = watchEvent.object.metadata.resourceVersion
-                break
-              case 'MODIFIED':
-                logger.debug({
-                  msg: 'modify',
-                  kind: watchEvent.object.kind,
-                  name: watchEvent.object.metadata.name,
-                  namespace: watchEvent.object.metadata.namespace,
-                  apiVersion: watchEvent.object.apiVersion,
-                })
-                resourceVersion = watchEvent.object.metadata.resourceVersion
-                break
-              case 'DELETED':
-                logger.debug({
-                  msg: 'delete',
-                  kind: watchEvent.object.kind,
-                  name: watchEvent.object.metadata.name,
-                  namespace: watchEvent.object.metadata.namespace,
-                  apiVersion: watchEvent.object.apiVersion,
-                })
-                resourceVersion = watchEvent.object.metadata.resourceVersion
-                break
-              case 'BOOKMARK':
-                logger.trace({
-                  msg: watchEvent.type.toLowerCase(),
-                  kind: options.kind,
-                  apiVersion: options.apiVersion,
-                  message: (watchEvent.object as unknown as { message: string }).message,
-                  reason: (watchEvent.object as unknown as { reason: string }).reason,
-                })
-                resourceVersion = watchEvent.object.metadata.resourceVersion
-                break
-              case 'ERROR':
-                if (
-                  (watchEvent.object as unknown as { message?: string }).message.startsWith('too old resource version')
-                ) {
-                  logger.warn({
-                    msg: 'watch',
-                    warning: (watchEvent.object as unknown as { message?: string }).message,
-                    action: 'retrying watch',
-                    kind: options.kind,
-                    apiVersion: options.apiVersion,
-                  })
-                } else {
-                  logger.warn({
-                    msg: 'watch',
-                    action: 'retrying watch',
-                    kind: options.kind,
-                    apiVersion: options.apiVersion,
-                    event: watchEvent,
-                  })
-                }
-                break
-            }
-          })
-        )
+        await pipeline(request, createSplitStream(), createWatchEventProcessor(options, url, resourceVersionRef))
       } finally {
         requests = requests.filter((r) => r !== cancelObj)
       }

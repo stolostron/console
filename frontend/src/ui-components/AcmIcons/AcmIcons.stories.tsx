@@ -36,7 +36,7 @@ export const Icons = (args: { size: 'lg' | 'md' | 'xl' | 'sm' }) => {
   const rightItems = icons.slice(midpoint)
   return (
     <Page>
-      <PageSection>
+      <PageSection hasBodyWrapper={false}>
         <AcmDescriptionList title="Icons" leftItems={leftItems} rightItems={rightItems} />
       </PageSection>
     </Page>

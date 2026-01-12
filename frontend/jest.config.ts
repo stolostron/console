@@ -28,7 +28,6 @@ const config: Config.InitialOptions = {
     '^.+\\.[jt]sx?$': [
       'ts-jest',
       {
-        isolatedModules: true,
         tsconfig: '<rootDir>/tsconfig.dev.json',
       },
     ],
@@ -41,6 +40,7 @@ const config: Config.InitialOptions = {
   transformIgnorePatterns: [
     'node_modules/(?!d3*|internmap|robust-predicates|react-monaco-editor|@openshift-assisted|lodash-es|@patternfly/react-tokens|@patternfly/react-icons|@patternfly/react-user-feedback|@patternfly/react-icons|@patternfly-labs/react-form-wizard|@juggle/resize-observer|@react-hook/*|uuid|@openshift-console/dynamic-plugin-sdk*|screenfull)',
   ],
+  testPathIgnorePatterns: ['^.+\\.(fixtures?)\\.tsx?$'],
   modulePathIgnorePatterns: ['<rootDir>/plugins'],
   ci: true,
   collectCoverage: true,

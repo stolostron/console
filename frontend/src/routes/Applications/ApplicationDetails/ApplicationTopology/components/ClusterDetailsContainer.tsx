@@ -610,17 +610,13 @@ class ClusterDetailsContainer extends Component<ClusterDetailsContainerProps, Cl
 
       clusterItems.push(
         <div className="clusterDetailItem" style={parentDivStyle} key={clusterName}>
-          <AccordionItem>
-            <AccordionToggle
-              onClick={() => this.handleExpandSectionToggle(toggleItemNum)}
-              isExpanded={expandSectionToggleMap.has(toggleItemNum)}
-              id={clusterName}
-            >
+          <AccordionItem isExpanded={expandSectionToggleMap.has(toggleItemNum)}>
+            <AccordionToggle onClick={() => this.handleExpandSectionToggle(toggleItemNum)} id={clusterName}>
               {this.renderClusterStatusIcon(statusIcon)}
               <span style={{ paddingRight: '10px' }} />
               {clusterName}
             </AccordionToggle>
-            <AccordionContent isHidden={!expandSectionToggleMap.has(toggleItemNum)}>
+            <AccordionContent>
               <span style={namespaceStyle}>{namespaceLabel}</span>
               <span
                 className={labelClass}

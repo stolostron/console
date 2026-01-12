@@ -241,20 +241,19 @@ export default function PolicyDetailsResults() {
           if (prunedMessage && policyName && policyNamespace && cluster && templateName && apiVersion && kind) {
             const templateDetailURL = getTemplateDetailURL(item)
             const templateLink = canCreatePolicy ? (
-              templateDetailURL && (
-                <span>
-                  -<Link to={templateDetailURL}>{` ${t('View details')}`}</Link>
-                </span>
-              )
+              templateDetailURL && <Link to={templateDetailURL}>{t('View details')}</Link>
             ) : (
               <Tooltip content={t('rbac.unauthorized')}>
-                <span className="link-disabled">{`- ${t('View details')}`}</span>
+                <span className="link-disabled">{t('View details')}</span>
               </Tooltip>
             )
+            const renderLink = templateExists(prunedMessage)
             return (
               <div>
                 {/* message may need to be limited to 300 chars? */}
-                {prunedMessage} {templateExists(prunedMessage) && templateLink}
+                {prunedMessage}
+                {renderLink && ' - '}
+                {renderLink && templateLink}
               </div>
             )
           }
@@ -314,7 +313,7 @@ export default function PolicyDetailsResults() {
   )
 
   return (
-    <PageSection>
+    <PageSection hasBodyWrapper={false}>
       <Title headingLevel="h3">{t('Clusters')}</Title>
       <AcmTableStateProvider localStorageKey="grc-status-view">
         <AcmTable<ResultsTableData>

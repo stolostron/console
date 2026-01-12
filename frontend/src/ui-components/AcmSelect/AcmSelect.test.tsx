@@ -2,11 +2,11 @@
 
 import { SelectOption } from '@patternfly/react-core'
 import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
+import { SelectVariant } from '../../components/AcmSelectBase'
 import { AcmForm, AcmSubmit } from '../AcmForm/AcmForm'
 import { AcmSelect } from './AcmSelect'
-import { SelectVariant } from '../../components/AcmSelectBase'
-import userEvent from '@testing-library/user-event'
 
 describe('AcmSelect', () => {
   const Select = () => {
@@ -179,7 +179,33 @@ describe('AcmSelect', () => {
 
     it('is able to create a new option', async () => {
       // Arrange
-      const { getByPlaceholderText, getAllByRole, container } = render(<TypeaheadMultiSelect />)
+      const onChangeMock = jest.fn()
+      const TypeaheadMultiSelectWithMock = () => {
+        const [value, setValue] = useState<string>()
+        const handleChange = (newValue: string | undefined) => {
+          setValue(newValue)
+          onChangeMock(newValue)
+        }
+        return (
+          <AcmSelect
+            variant={SelectVariant.typeaheadMulti}
+            id="acm-select"
+            label="ACM select"
+            value={value}
+            onChange={handleChange}
+            placeholder="Select one"
+            isCreatable
+          >
+            <SelectOption key="red" value="red">
+              Red
+            </SelectOption>
+            <SelectOption key="green" value="green">
+              Green
+            </SelectOption>
+          </AcmSelect>
+        )
+      }
+      const { getByPlaceholderText, getAllByRole } = render(<TypeaheadMultiSelectWithMock />)
 
       // Act
       userEvent.type(getByPlaceholderText('Select one'), 'Yellow')
@@ -187,7 +213,9 @@ describe('AcmSelect', () => {
       // Assert
       await waitFor(() => expect(screen.getByText(/create new yellow/i)).toBeVisible())
       getAllByRole('option')[0].click()
-      expect(container.querySelector('#select-typeahead-Yellow > span')).toBeInTheDocument()
+      await waitFor(() => {
+        expect(onChangeMock).toHaveBeenCalledWith('Yellow')
+      })
     })
   })
 })

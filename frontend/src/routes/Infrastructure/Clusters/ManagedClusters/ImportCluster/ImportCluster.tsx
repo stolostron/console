@@ -6,7 +6,7 @@ import {
   Split,
   SplitItem,
   Switch,
-  Text,
+  Content,
   SelectOption,
 } from '@patternfly/react-core'
 import '@patternfly/react-styles/css/components/CodeEditor/code-editor.css'
@@ -684,9 +684,9 @@ export default function ImportClusterPage() {
                     : t('import.form.managedClusterSet.placeholder')
                 }
                 helperText={
-                  <Text component="small">
+                  <Content component="small">
                     <Link to={NavigationPath.clusterSets}>{t('import.manage.cluster.sets')}</Link>
-                  </Text>
+                  </Content>
                 }
                 disabled={canJoinClusterSets === undefined || canJoinClusterSets.length === 0}
                 hidden={() => canJoinClusterSets === undefined}

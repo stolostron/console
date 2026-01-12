@@ -10,7 +10,6 @@ import {
   ExpandableSection,
   PageSection,
   EmptyStateActions,
-  EmptyStateHeader,
   EmptyStateFooter,
 } from '@patternfly/react-core'
 import { ReactNode, useContext } from 'react'
@@ -127,8 +126,7 @@ export function ErrorState(props: { error: Error; actions?: ReactNode }) {
   const { t } = useTranslation()
   const errorInfo = getErrorInfo(props.error, t)
   return (
-    <EmptyState>
-      <EmptyStateHeader titleText={<>{errorInfo.title}</>} headingLevel="h4" />
+    <EmptyState headingLevel="h4" titleText={<>{errorInfo.title}</>}>
       <EmptyStateBody>{errorInfo.message}</EmptyStateBody>
       <EmptyStateFooter>{props.actions && <EmptyStateActions>{props.actions}</EmptyStateActions>}</EmptyStateFooter>
     </EmptyState>
@@ -139,7 +137,7 @@ export function ErrorPage(props: { error: Error; actions?: ReactNode }) {
   const { dataContext } = useContext(PluginContext)
   const { loadCompleted } = useContext(dataContext)
   return loadCompleted ? (
-    <PageSection>
+    <PageSection hasBodyWrapper={false}>
       <Card>
         <CardBody>
           <ErrorState {...props} />

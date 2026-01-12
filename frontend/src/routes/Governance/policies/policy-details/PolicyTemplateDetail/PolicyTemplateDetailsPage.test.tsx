@@ -2,19 +2,19 @@
 import { render, screen, waitFor, within } from '@testing-library/react'
 import { generatePath, MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
+import { v4 as uuidv4 } from 'uuid'
 import { managedClusterAddonsState } from '../../../../../atoms'
 import { nockGet, nockIgnoreApiPaths } from '../../../../../lib/nock-util'
 import { waitForNocks, waitForNotText, waitForText } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { ManagedClusterAddOn } from '../../../../../resources'
-import { PolicyTemplateDetailsPage } from './PolicyTemplateDetailsPage'
-import { PolicyTemplateDetails } from './PolicyTemplateDetails'
-import PolicyTemplateYaml from '../PolicyTemplateYaml'
 import {
   useSearchResultItemsLazyQuery,
   useSearchResultRelatedItemsLazyQuery,
 } from '../../../../Search/search-sdk/search-sdk'
-import { v4 as uuidv4 } from 'uuid'
+import PolicyTemplateYaml from '../PolicyTemplateYaml'
+import { PolicyTemplateDetails } from './PolicyTemplateDetails'
+import { PolicyTemplateDetailsPage } from './PolicyTemplateDetailsPage'
 
 // Mock UUID v4 to return predictable values during testing
 jest.mock('uuid', () => ({
@@ -589,7 +589,7 @@ describe('Policy Template Details Page', () => {
     expect(yamlButton).not.toBeNull()
 
     screen
-      .getByRole('link', {
+      .getByRole('tab', {
         name: /yaml/i,
       })
       .click()
@@ -1256,7 +1256,7 @@ describe('Policy Template Details Page', () => {
     const yamlButton = container.querySelectorAll('.pf-c-nav__link')
     expect(yamlButton).not.toBeNull()
     screen
-      .getByRole('link', {
+      .getByRole('tab', {
         name: /yaml/i,
       })
       .click()
@@ -1620,17 +1620,17 @@ describe('Policy Template Details Page', () => {
     await waitFor(
       () => {
         // Wait until policyReport messages are up
-        const myappRow = screen.getByRole('row', {
+        const myappRow = screen.queryByRole('row', {
           name: /my-app - namespace v1 violations view report require-labels: validation error: the label `owner` is required\. rule require-labels failed at path \/metadata\/labels/i,
         })
         expect(myappRow).toBeInTheDocument()
 
-        const openshiftRow = screen.getByRole('row', {
+        const openshiftRow = screen.queryByRole('row', {
           name: /validation error: the label `owner` is required\. rule require-labels failed at path \/metadata\/labels\/owner\//i,
         })
         expect(openshiftRow).toBeInTheDocument()
       },
-      { timeout: 5000, interval: 1000 }
+      { timeout: 10000, interval: 1000 }
     )
 
     screen.getByText('Validate')

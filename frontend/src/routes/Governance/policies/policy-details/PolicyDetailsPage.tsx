@@ -1,33 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Fragment, ReactNode, Suspense, useMemo, useState } from 'react'
-import {
-  Link,
-  useLocation,
-  useParams,
-  useNavigate,
-  useOutletContext,
-  Outlet,
-  generatePath,
-} from 'react-router-dom-v5-compat'
+import { generatePath, Outlet, useLocation, useNavigate, useOutletContext, useParams } from 'react-router-dom-v5-compat'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import { Policy } from '../../../../resources'
 import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
-import {
-  AcmActionGroup,
-  AcmButton,
-  AcmPage,
-  AcmPageHeader,
-  AcmSecondaryNav,
-  AcmSecondaryNavItem,
-} from '../../../../ui-components'
-import { getPolicyDetailSourceLabel, getPolicySource } from '../../common/util'
-import { PolicyTableItem } from '../Policies'
-import { PolicyActionDropdown } from '../../components/PolicyActionDropdown'
+import { AcmActionGroup, AcmButton, AcmPage, AcmPageHeader, AcmSecondaryNav } from '../../../../ui-components'
 import { useAddRemediationPolicies } from '../../common/useCustom'
+import { getPolicyDetailSourceLabel, getPolicySource } from '../../common/util'
+import { PolicyActionDropdown } from '../../components/PolicyActionDropdown'
+import { PolicyTableItem } from '../Policies'
 
 export type PolicyDetailsContext = {
   policy: Policy
@@ -104,14 +89,22 @@ export function PolicyDetailsPage() {
           popoverAutoWidth={false}
           popoverPosition="bottom"
           navigation={
-            <AcmSecondaryNav>
-              <AcmSecondaryNavItem isActive={!isResultsTab}>
-                <Link to={detailsUrl}>{t('Details')}</Link>
-              </AcmSecondaryNavItem>
-              <AcmSecondaryNavItem isActive={isResultsTab}>
-                <Link to={resultsUrl}>{t('Results')}</Link>
-              </AcmSecondaryNavItem>
-            </AcmSecondaryNav>
+            <AcmSecondaryNav
+              navItems={[
+                {
+                  key: 'governance-policies-details',
+                  title: t('Details'),
+                  isActive: !isResultsTab,
+                  to: detailsUrl,
+                },
+                {
+                  key: 'governance-policies-results',
+                  title: t('Results'),
+                  isActive: isResultsTab,
+                  to: resultsUrl,
+                },
+              ]}
+            />
           }
           description={getPolicyDetailSourceLabel(selectedPolicy, helmReleases, channels, subscriptions, t)}
           actions={

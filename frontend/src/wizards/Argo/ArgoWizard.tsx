@@ -1,56 +1,46 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-  Button,
-  Flex,
-  FlexItem,
-  TextContent,
-  Text,
-  ToggleGroup,
-  ToggleGroupItem,
-  TextVariants,
-  ModalVariant,
-  Modal,
-} from '@patternfly/react-core'
-import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { Fragment, ReactNode, useMemo, useState } from 'react'
-import {
-  useItem,
-  useData,
-  useEditMode,
-  WizDetailsHidden,
   EditMode,
-  WizItemSelector,
   Section,
   Step,
+  Sync,
+  useData,
+  useEditMode,
+  useItem,
   WizardCancel,
-  WizSelect,
   WizardSubmit,
   WizCheckbox,
+  WizDetailsHidden,
+  WizItemSelector,
+  WizSelect,
   WizTextInput,
-  Sync,
 } from '@patternfly-labs/react-form-wizard'
-import { WizardPage } from '../WizardPage'
-import { IResource } from '../common/resources/IResource'
+import { Button, Content, ContentVariants, Flex, FlexItem, ToggleGroup, ToggleGroupItem } from '@patternfly/react-core'
+import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { get } from 'lodash'
+import { Fragment, ReactNode, useMemo, useState } from 'react'
+import { CreateCredentialModal } from '../../components/CreateCredentialModal'
+import { GitOpsOperatorAlert } from '../../components/GitOpsOperatorAlert'
+import { useTranslation } from '../../lib/acm-i18next'
+import { DOC_LINKS } from '../../lib/doc-util'
+import { SupportedOperator, useOperatorCheck } from '../../lib/operatorCheck'
+import { validateAppSetName } from '../../lib/validation'
+import { useWizardStrings } from '../../lib/wizardStrings'
+import { NavigationPath } from '../../NavigationPath'
+import { ApplicationSetKind, GitOpsCluster } from '../../resources'
+import { useSharedSelectors } from '../../shared-recoil'
+import { AcmAlert } from '../../ui-components'
 import { IClusterSetBinding } from '../common/resources/IClusterSetBinding'
 import { IPlacement, PlacementApiVersion, PlacementKind, PlacementType } from '../common/resources/IPlacement'
-import { validateAppSetName } from '../../lib/validation'
+import { IResource } from '../common/resources/IResource'
 import { Placement } from '../Placement/Placement'
-import { DOC_LINKS } from '../../lib/doc-util'
-import { useTranslation } from '../../lib/acm-i18next'
-import { useWizardStrings } from '../../lib/wizardStrings'
-import { useSharedSelectors } from '../../shared-recoil'
-import { CreateCredentialModal } from '../../components/CreateCredentialModal'
-import { CreateArgoResources } from './CreateArgoResources'
-import { ApplicationSetKind, GitOpsCluster } from '../../resources'
-import { GitOpsOperatorAlert } from '../../components/GitOpsOperatorAlert'
-import { SupportedOperator, useOperatorCheck } from '../../lib/operatorCheck'
-import { get } from 'lodash'
-import { SourceSelector } from './SourceSelector'
-import { MultipleSourcesSelector } from './MultipleSourcesSelector'
-import { NavigationPath } from '../../NavigationPath'
-import { AcmAlert } from '../../ui-components'
+import { WizardPage } from '../WizardPage'
 import { ClusterSetMonitor } from './ClusterSetMonitor'
+import { CreateArgoResources } from './CreateArgoResources'
+import { MultipleSourcesSelector } from './MultipleSourcesSelector'
+import { SourceSelector } from './SourceSelector'
 
 export interface Channel {
   metadata?: {
@@ -476,10 +466,12 @@ export function ArgoWizard(props: ArgoWizardProps) {
                 disabled={disableForm}
                 labelHelp={
                   <Fragment>
-                    <Text>{t('Register a set of one or more managed clusters to Red Hat OpenShift GitOps.')}</Text>
-                    <TextContent>
-                      <Text
-                        component={TextVariants.a}
+                    <Content component="p">
+                      {t('Register a set of one or more managed clusters to Red Hat OpenShift GitOps.')}
+                    </Content>
+                    <Content>
+                      <Content
+                        component={ContentVariants.a}
                         isVisitedLink
                         href={DOC_LINKS.GITOPS_CONFIG}
                         target="_blank"
@@ -492,8 +484,8 @@ export function ArgoWizard(props: ArgoWizardProps) {
                         }}
                       >
                         {t('View documentation')} <ExternalLinkAltIcon />
-                      </Text>
-                    </TextContent>
+                      </Content>
+                    </Content>
                   </Fragment>
                 }
                 options={props.argoServers}
@@ -818,7 +810,7 @@ function ArgoWizardPlacementSection(props: {
         <WizDetailsHidden>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {editMode === EditMode.Create && (
-              <span className="pf-v5-c-form__label pf-v5-c-form__label-text">
+              <span className="pf-v6-c-form__label pf-v6-c-form__label-text">
                 {t('How do you want to select clusters?')}
               </span>
             )}

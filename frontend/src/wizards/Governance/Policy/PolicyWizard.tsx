@@ -4,8 +4,7 @@ import {
   Alert,
   Button,
   Stack,
-  Text,
-  TextContent,
+  Content,
   Title,
   FormFieldGroupHeader,
   Form,
@@ -394,9 +393,9 @@ export function PolicyWizardTemplates(props: { policies: IResource[] }) {
         <WizHidden hidden={(template: any) => template?.objectDefinition?.kind !== 'ConfigurationPolicy'}>
           <div>
             <Title headingLevel="h6">{t('Configuration Policy')}</Title>
-            <Text component="small">
+            <Content component="small">
               {t('A configuration policy creates configuration objects on managed clusters.')}
-            </Text>
+            </Content>
           </div>
 
           <WizTextInput
@@ -522,9 +521,11 @@ export function PolicyWizardTemplates(props: { policies: IResource[] }) {
         </WizHidden>
 
         <WizHidden hidden={(template: any) => !template?.objectDefinition?.apiVersion?.includes('gatekeeper.sh/')}>
-          <TextContent>
-            <Text>{t('Gatekeeper policy templates must be customized using the YAML editor.')}</Text>
-          </TextContent>
+          <Content>
+            <Content component="p">
+              {t('Gatekeeper policy templates must be customized using the YAML editor.')}
+            </Content>
+          </Content>
         </WizHidden>
       </WizArrayInput>
     </Section>
@@ -622,7 +623,7 @@ function OperatorPolicy() {
     <Fragment>
       <div>
         <Title headingLevel="h6">{t('Operator policy')}</Title>
-        <Text component="small">{t('An Operator policy creates operators on managed clusters.')}</Text>
+        <Content component="small">{t('An Operator policy creates operators on managed clusters.')}</Content>
       </div>
 
       <WizTextInput
@@ -745,7 +746,7 @@ function ObjectTemplate() {
     <Fragment>
       <WizHidden hidden={(template: any) => template?.complianceType === undefined}>
         <Stack>
-          <Text component="small">{getComplianceType(template)}</Text>
+          <Content component="small">{getComplianceType(template)}</Content>
           <WizHidden hidden={(template: any) => template?.objectDefinition?.kind === undefined}>
             <Title headingLevel="h6">{pascalCaseToSentenceCase(template?.objectDefinition?.kind)}</Title>
           </WizHidden>
@@ -919,7 +920,7 @@ function PolicyPolicySets() {
               : t('This policy is placed by the policy sets: ')}
             <b>{policySets.join(', ')}</b>
           </p>
-          <p className="pf-v5-c-form__helper-text">
+          <p className="pf-v6-c-form__helper-text">
             {t(
               'Only add placement to this policy if you want it to be placed in addition to the policy set placement.'
             )}

@@ -2,28 +2,70 @@
 
 import { render } from '@testing-library/react'
 import { axe } from 'jest-axe'
-import { AcmSecondaryNav, AcmSecondaryNavItem } from './AcmSecondaryNav'
+import { BrowserRouter } from 'react-router-dom-v5-compat'
+import { AcmSecondaryNav } from './AcmSecondaryNav'
 
 describe('AcmSecondaryNav', () => {
-  const SecondaryNav = () => (
-    <AcmSecondaryNav>
-      <AcmSecondaryNavItem isActive={false} to={'/multicloud/test'}>
-        Tab1
-      </AcmSecondaryNavItem>
-      <AcmSecondaryNavItem isActive={true} to={'/multicloud/foo'}>
-        Tab2
-      </AcmSecondaryNavItem>
-    </AcmSecondaryNav>
+  const SecondaryNavTo = () => (
+    <BrowserRouter>
+      <AcmSecondaryNav
+        navItems={[
+          {
+            key: 'key-tab-1',
+            title: 'Tab1',
+            isActive: false,
+            to: '/multicloud/test',
+          },
+          {
+            key: 'key-tab-2',
+            title: 'Tab2',
+            isActive: true,
+            to: '/multicloud/foo',
+          },
+        ]}
+      />
+    </BrowserRouter>
   )
-  test('renders', () => {
-    const { getByText } = render(<SecondaryNav />)
+  const SecondaryNavOnClick = () => (
+    <BrowserRouter>
+      <AcmSecondaryNav
+        navItems={[
+          {
+            key: 'key-tab-1',
+            title: 'Tab1',
+            isActive: false,
+            onClick: () => {},
+          },
+          {
+            key: 'key-tab-2',
+            title: 'Tab2',
+            isActive: true,
+            onClick: () => {},
+          },
+        ]}
+      />
+    </BrowserRouter>
+  )
+  test('renders with location "to" field', () => {
+    const { getByText } = render(<SecondaryNavTo />)
 
     expect(getByText('Tab1')).toBeInTheDocument()
-    expect(getByText('Tab1')).toBeInstanceOf(HTMLAnchorElement)
-    expect(getByText('Tab1').getAttribute('href')).toEqual('/multicloud/test')
+    expect(getByText('Tab1')).toBeInstanceOf(HTMLSpanElement)
+
+    expect(getByText('Tab2')).toBeInTheDocument()
+    getByText('Tab2').click()
+  })
+  test('renders with onClick', () => {
+    const { getByText } = render(<SecondaryNavOnClick />)
+
+    expect(getByText('Tab1')).toBeInTheDocument()
+    expect(getByText('Tab1')).toBeInstanceOf(HTMLSpanElement)
+
+    expect(getByText('Tab2')).toBeInTheDocument()
+    getByText('Tab2').click()
   })
   test('has zero accessibility defects', async () => {
-    const { container } = render(<SecondaryNav />)
+    const { container } = render(<SecondaryNavTo />)
     expect(await axe(container)).toHaveNoViolations()
   })
 })

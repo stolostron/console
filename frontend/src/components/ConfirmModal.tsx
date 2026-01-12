@@ -2,7 +2,8 @@
 
 import { AcmButton, AcmModal } from '../ui-components'
 import { useTranslation } from '../lib/acm-i18next'
-import { ModalVariant, ButtonVariant } from '@patternfly/react-core'
+import { ButtonVariant } from '@patternfly/react-core'
+import { ModalVariant } from '@patternfly/react-core/deprecated'
 import { ReactNode } from 'react'
 
 export interface IConfirmModalProps {

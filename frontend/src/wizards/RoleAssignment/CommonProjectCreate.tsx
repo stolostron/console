@@ -6,6 +6,7 @@ import { useTranslation } from '../../lib/acm-i18next'
 import { ProjectCreateForm, ProjectFormData } from '../../components/project'
 import { createProject } from '../../resources/project'
 import { AcmToastContext } from '../../ui-components'
+import type { Cluster } from '../../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHook'
 
 interface CommonProjectCreateProps {
   /** Callback function called when the cancel button is clicked */
@@ -14,6 +15,8 @@ interface CommonProjectCreateProps {
   onSuccess?: () => void
   /** Optional callback function called when project creation fails */
   onError?: (error: Error) => void
+  /** Selected clusters to create the common project on */
+  selectedClusters: Cluster[]
 }
 
 export function CommonProjectCreate({ onCancelCallback, onSuccess, onError }: CommonProjectCreateProps) {
@@ -44,9 +47,8 @@ export function CommonProjectCreate({ onCancelCallback, onSuccess, onError }: Co
         autoClose: true,
       })
 
-      if (onSuccess) {
-        onSuccess()
-      }
+      // TODO: Add logic to attach project to selected clusters, ACM-27472
+      onSuccess?.()
     } catch (error) {
       const errorObj = error instanceof Error ? error : new Error('Failed to create project')
       console.error('Project creation failed:', errorObj)
@@ -60,9 +62,7 @@ export function CommonProjectCreate({ onCancelCallback, onSuccess, onError }: Co
         type: 'danger',
       })
 
-      if (onError) {
-        onError(errorObj)
-      }
+      onError?.(errorObj)
     }
   }
 

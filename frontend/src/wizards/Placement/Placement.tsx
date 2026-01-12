@@ -5,12 +5,13 @@ import {
   useEditMode,
   useItem,
   WizArrayInput,
+  WizCheckbox,
   WizKeyValue,
   WizMultiSelect,
   WizNumberInput,
   WizTextInput,
 } from '@patternfly-labs/react-form-wizard'
-import { Alert, Button, Checkbox } from '@patternfly/react-core'
+import { Alert, Button } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import get from 'get-value'
 import { Fragment, ReactNode, useMemo } from 'react'
@@ -137,14 +138,15 @@ export function Placement(props: {
       />
 
       <PlacementPredicate rootPath="spec.predicates.0." clusters={props.clusters} />
-      <Checkbox
+      <WizCheckbox
         id="limit-clusters-checkbox"
         label={t('Set a limit on the number of clusters selected')}
-        isChecked={placement.spec?.numberOfClusters !== undefined}
-        onChange={(_event: any, checked: boolean) => {
-          if (checked) {
+        path="spec.numberOfClusters"
+        pathValueToInputValue={(value) => !!value || value === 0}
+        onValueChange={(value) => {
+          if (value) {
             // Set default value to 1 when checkbox is enabled
-            set(placement, 'spec.numberOfClusters', placement.spec?.numberOfClusters ?? 1, { preservePaths: false })
+            set(placement, 'spec.numberOfClusters', 1, { preservePaths: false })
           } else {
             // Set to undefined when checkbox is disabled
             set(placement, 'spec.numberOfClusters', undefined, { preservePaths: false })
@@ -229,7 +231,7 @@ export function PredicateSummary() {
     <div style={{ display: 'flex', gap: 16, flexDirection: 'column' }}>
       {labelSelectors.length > 0 && (
         <div style={{ display: 'flex', gap: 4, flexDirection: 'column' }}>
-          <div className="pf-v5-c-form__label pf-v5-c-form__label-text">{t('Label selectors')}</div>
+          <div className="pf-v6-c-form__label pf-v6-c-form__label-text">{t('Label selectors')}</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             {labelSelectors.map((labelSelector) => (
               <span key={labelSelector}>{labelSelector}</span>
@@ -239,7 +241,7 @@ export function PredicateSummary() {
       )}
       {labelSelectorExpressions.length > 0 && (
         <div style={{ display: 'flex', gap: 4, flexDirection: 'column' }}>
-          <div className="pf-v5-c-form__label pf-v5-c-form__label-text">{t('Label expressions')}</div>
+          <div className="pf-v6-c-form__label pf-v6-c-form__label-text">{t('Label expressions')}</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             {labelSelectorExpressions.map((expression, index) => (
               <MatchExpressionSummary key={index} expression={expression} />
@@ -249,7 +251,7 @@ export function PredicateSummary() {
       )}
       {claimSelectorExpressions.length > 0 && (
         <div style={{ display: 'flex', gap: 4, flexDirection: 'column' }}>
-          <div className="pf-v5-c-form__label pf-v5-c-form__label-text">{t('Cluster claim expressions')}</div>
+          <div className="pf-v6-c-form__label pf-v6-c-form__label-text">{t('Cluster claim expressions')}</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             {claimSelectorExpressions.map((expression, index) => (
               <MatchExpressionSummary key={index} expression={expression} />

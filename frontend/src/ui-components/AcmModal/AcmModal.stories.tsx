@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ButtonVariant, ModalVariant } from '@patternfly/react-core'
+import { ButtonVariant } from '@patternfly/react-core'
+import { ModalVariant } from '@patternfly/react-core/deprecated'
 import { Meta } from '@storybook/react'
 import { useState } from 'react'
 import { AcmButton } from '../'

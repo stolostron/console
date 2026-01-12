@@ -809,4 +809,352 @@ describe('startWatch and stopWatch', () => {
     // Cleanup
     unsubscribe()
   })
+
+  it('should not open socket when initial data load fails', async () => {
+    const mockResource: FleetWatchK8sResource = {
+      cluster: 'test-cluster',
+      namespace: 'default',
+      isList: true,
+    }
+
+    const mockError = new Error('Network error')
+    mockConsoleFetchJSON.mockRejectedValue(mockError)
+
+    await startWatch(mockResource, mockModel, mockBasePath)
+
+    // Socket should not be opened when initial load fails
+    expect(apiRequests.fleetWatch).not.toHaveBeenCalled()
+
+    const store = useFleetK8sWatchResourceStore.getState()
+    const result = store.getResult(mockRequestPath)
+    expect(result?.loadError).toBe(mockError)
+  })
+
+  it('should open socket when valid cache exists', async () => {
+    const mockResource: FleetWatchK8sResource = {
+      cluster: 'test-cluster',
+      namespace: 'default',
+      isList: true,
+    }
+
+    const mockPod: K8sResourceCommon = {
+      apiVersion: 'v1',
+      kind: 'Pod',
+      metadata: { name: 'test-pod', uid: 'test-uid' },
+    }
+
+    // Pre-populate cache with valid data (no socket, recent timestamp)
+    const store = useFleetK8sWatchResourceStore.getState()
+    store.setResult(mockRequestPath, [{ cluster: 'test-cluster', ...mockPod }], true)
+
+    const mockSocket = {
+      onmessage: null,
+      onclose: null,
+      onerror: null,
+      close: jest.fn(),
+    }
+    ;(apiRequests.fleetWatch as jest.Mock).mockReturnValue(mockSocket)
+
+    await startWatch(mockResource, mockModel, mockBasePath)
+
+    // Should not fetch since cache is valid
+    expect(mockConsoleFetchJSON).not.toHaveBeenCalled()
+    // But should still open socket
+    expect(apiRequests.fleetWatch).toHaveBeenCalled()
+  })
+})
+
+describe('Socket monitoring behavior', () => {
+  const mockModel: K8sModel = {
+    apiVersion: 'v1',
+    apiGroup: 'core',
+    kind: 'Pod',
+    plural: 'pods',
+    namespaced: true,
+    abbr: 'P',
+    label: 'Pod',
+    labelPlural: 'Pods',
+  }
+  const mockBasePath = '/api/fleet'
+  const mockRequestPath = '/api/fleet/api/v1/namespaces/default/pods'
+
+  beforeEach(() => {
+    jest.useFakeTimers()
+    ;(apiRequests.buildResourceURL as jest.Mock).mockReturnValue(mockRequestPath)
+  })
+
+  afterEach(() => {
+    jest.useRealTimers()
+  })
+
+  it('should schedule monitoring check after starting watch', async () => {
+    const mockResource: FleetWatchK8sResource = {
+      cluster: 'test-cluster',
+      namespace: 'default',
+      isList: true,
+    }
+
+    const mockPod: K8sResourceCommon = {
+      apiVersion: 'v1',
+      kind: 'Pod',
+      metadata: { name: 'test-pod', uid: 'test-uid' },
+    }
+
+    mockConsoleFetchJSON.mockResolvedValue({
+      items: [mockPod],
+      metadata: { resourceVersion: '1000' },
+    })
+
+    const mockSocket = {
+      onmessage: null,
+      onclose: null,
+      onerror: null,
+      close: jest.fn(),
+    }
+    ;(apiRequests.fleetWatch as jest.Mock).mockReturnValue(mockSocket)
+
+    await startWatch(mockResource, mockModel, mockBasePath)
+
+    // Verify initial socket was opened
+    expect(apiRequests.fleetWatch).toHaveBeenCalledTimes(1)
+
+    // Clear mock to track subsequent calls
+    ;(apiRequests.fleetWatch as jest.Mock).mockClear()
+    mockConsoleFetchJSON.mockClear()
+
+    // Advance time past the monitoring interval (30 seconds) and flush async
+    await jest.advanceTimersByTimeAsync(31000)
+
+    // The monitor should have checked - since data is now stale,
+    // it should attempt to reload and reconnect
+    expect(mockConsoleFetchJSON).toHaveBeenCalled()
+  })
+
+  it('should stop monitoring when refCount reaches 0', async () => {
+    const mockResource: FleetWatchK8sResource = {
+      cluster: 'test-cluster',
+      namespace: 'default',
+      isList: true,
+    }
+
+    const mockPod: K8sResourceCommon = {
+      apiVersion: 'v1',
+      kind: 'Pod',
+      metadata: { name: 'test-pod', uid: 'test-uid' },
+    }
+
+    mockConsoleFetchJSON.mockResolvedValue({
+      items: [mockPod],
+      metadata: { resourceVersion: '1000' },
+    })
+
+    const mockSocket = {
+      onmessage: null,
+      onclose: null,
+      onerror: null,
+      close: jest.fn(),
+    }
+    ;(apiRequests.fleetWatch as jest.Mock).mockReturnValue(mockSocket)
+
+    await startWatch(mockResource, mockModel, mockBasePath)
+
+    // Stop watching (refCount goes to 0)
+    stopWatch(mockResource, mockModel, mockBasePath)
+
+    // Clear mocks
+    ;(apiRequests.fleetWatch as jest.Mock).mockClear()
+    mockConsoleFetchJSON.mockClear()
+
+    // Advance time past the monitoring interval
+    await jest.advanceTimersByTimeAsync(35000)
+
+    // No reconnection should happen since refCount is 0
+    expect(mockConsoleFetchJSON).not.toHaveBeenCalled()
+    expect(apiRequests.fleetWatch).not.toHaveBeenCalled()
+  })
+
+  it('should close stale socket and reconnect when cache becomes stale', async () => {
+    const mockResource: FleetWatchK8sResource = {
+      cluster: 'test-cluster',
+      namespace: 'default',
+      isList: true,
+    }
+
+    const mockPod: K8sResourceCommon = {
+      apiVersion: 'v1',
+      kind: 'Pod',
+      metadata: { name: 'test-pod', uid: 'test-uid' },
+    }
+
+    mockConsoleFetchJSON.mockResolvedValue({
+      items: [mockPod],
+      metadata: { resourceVersion: '1000' },
+    })
+
+    const mockSocket1 = {
+      onmessage: null,
+      onclose: null,
+      onerror: null,
+      close: jest.fn(),
+    }
+    const mockSocket2 = {
+      onmessage: null,
+      onclose: null,
+      onerror: null,
+      close: jest.fn(),
+    }
+    ;(apiRequests.fleetWatch as jest.Mock).mockReturnValueOnce(mockSocket1).mockReturnValueOnce(mockSocket2)
+
+    await startWatch(mockResource, mockModel, mockBasePath)
+
+    // Verify initial socket was opened
+    expect(apiRequests.fleetWatch).toHaveBeenCalledTimes(1)
+
+    // Advance time past the monitoring interval
+    await jest.advanceTimersByTimeAsync(31000)
+
+    // Old socket should be closed
+    expect(mockSocket1.close).toHaveBeenCalled()
+
+    // New socket should be opened after successful reload
+    expect(apiRequests.fleetWatch).toHaveBeenCalledTimes(2)
+  })
+
+  it('should not open new socket if reload fails during monitoring', async () => {
+    const mockResource: FleetWatchK8sResource = {
+      cluster: 'test-cluster',
+      namespace: 'default',
+      isList: true,
+    }
+
+    const mockPod: K8sResourceCommon = {
+      apiVersion: 'v1',
+      kind: 'Pod',
+      metadata: { name: 'test-pod', uid: 'test-uid' },
+    }
+
+    // First call succeeds
+    mockConsoleFetchJSON.mockResolvedValueOnce({
+      items: [mockPod],
+      metadata: { resourceVersion: '1000' },
+    })
+
+    const mockSocket = {
+      onmessage: null,
+      onclose: null,
+      onerror: null,
+      close: jest.fn(),
+    }
+    ;(apiRequests.fleetWatch as jest.Mock).mockReturnValue(mockSocket)
+
+    await startWatch(mockResource, mockModel, mockBasePath)
+
+    // Subsequent calls fail (network offline)
+    mockConsoleFetchJSON.mockRejectedValue(new Error('Network error'))
+    ;(apiRequests.fleetWatch as jest.Mock).mockClear()
+
+    // Advance time past the monitoring interval
+    await jest.advanceTimersByTimeAsync(31000)
+
+    // Socket should be closed
+    expect(mockSocket.close).toHaveBeenCalled()
+
+    // New socket should NOT be opened since reload failed
+    expect(apiRequests.fleetWatch).not.toHaveBeenCalled()
+
+    // Error should be set in store
+    const store = useFleetK8sWatchResourceStore.getState()
+    const result = store.getResult(mockRequestPath)
+    expect(result?.loadError).toBeDefined()
+  })
+
+  it('should continue monitoring after successful reconnection', async () => {
+    const mockResource: FleetWatchK8sResource = {
+      cluster: 'test-cluster',
+      namespace: 'default',
+      isList: true,
+    }
+
+    const mockPod: K8sResourceCommon = {
+      apiVersion: 'v1',
+      kind: 'Pod',
+      metadata: { name: 'test-pod', uid: 'test-uid' },
+    }
+
+    mockConsoleFetchJSON.mockResolvedValue({
+      items: [mockPod],
+      metadata: { resourceVersion: '1000' },
+    })
+
+    const createMockSocket = () => ({
+      onmessage: null,
+      onclose: null,
+      onerror: null,
+      close: jest.fn(),
+    })
+
+    ;(apiRequests.fleetWatch as jest.Mock).mockImplementation(createMockSocket)
+
+    await startWatch(mockResource, mockModel, mockBasePath)
+
+    // First reconnection
+    await jest.advanceTimersByTimeAsync(31000)
+
+    expect(apiRequests.fleetWatch).toHaveBeenCalledTimes(2)
+
+    // Second reconnection
+    await jest.advanceTimersByTimeAsync(31000)
+
+    expect(apiRequests.fleetWatch).toHaveBeenCalledTimes(3)
+  })
+
+  it('should handle fresh cache entry by scheduling check for remaining TTL', async () => {
+    const mockResource: FleetWatchK8sResource = {
+      cluster: 'test-cluster',
+      namespace: 'default',
+      isList: true,
+    }
+
+    const mockPod: K8sResourceCommon = {
+      apiVersion: 'v1',
+      kind: 'Pod',
+      metadata: { name: 'test-pod', uid: 'test-uid' },
+    }
+
+    mockConsoleFetchJSON.mockResolvedValue({
+      items: [mockPod],
+      metadata: { resourceVersion: '1000' },
+    })
+
+    const mockSocket = {
+      onmessage: null as ((event: any) => void) | null,
+      onclose: null,
+      onerror: null,
+      close: jest.fn(),
+    }
+    ;(apiRequests.fleetWatch as jest.Mock).mockReturnValue(mockSocket)
+
+    await startWatch(mockResource, mockModel, mockBasePath)
+
+    // Simulate WebSocket message that refreshes the timestamp
+    const store = useFleetK8sWatchResourceStore.getState()
+
+    // Advance 15 seconds
+    await jest.advanceTimersByTimeAsync(15000)
+
+    // Simulate a message updating the store (which refreshes timestamp)
+    store.setResult(mockRequestPath, [{ cluster: 'test-cluster', ...mockPod }], true)
+
+    // Clear mocks
+    mockConsoleFetchJSON.mockClear()
+    ;(apiRequests.fleetWatch as jest.Mock).mockClear()
+
+    // Advance another 16 seconds (total 31 from start, but only 16 from last message)
+    await jest.advanceTimersByTimeAsync(16000)
+
+    // The monitoring check should have happened but found fresh data
+    // So no reconnection should occur
+    expect(mockConsoleFetchJSON).not.toHaveBeenCalled()
+    expect(apiRequests.fleetWatch).not.toHaveBeenCalled()
+  })
 })

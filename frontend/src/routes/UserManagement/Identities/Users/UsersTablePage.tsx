@@ -3,7 +3,7 @@ import { PageSection } from '@patternfly/react-core'
 import { UsersTable } from './UsersTable'
 
 const UsersTablePage = () => (
-  <PageSection>
+  <PageSection hasBodyWrapper={false}>
     <UsersTable hiddenColumns={['radio']} />
   </PageSection>
 )
