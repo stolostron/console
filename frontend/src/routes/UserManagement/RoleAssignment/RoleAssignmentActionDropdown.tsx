@@ -18,7 +18,7 @@ const RoleAssignmentActionDropdown = ({
   setModalProps: (props: BulkActionModalProps<FlattenedRoleAssignment> | { open: false }) => void
   deleteAction: (roleAssignment: FlattenedRoleAssignment) => IRequestResult<unknown>
   canDelete: boolean
-  onEdit?: (roleAssignment: FlattenedRoleAssignment) => void
+  onEdit: (roleAssignment: FlattenedRoleAssignment) => void
 }) => {
   const { t } = useTranslation()
 
@@ -28,16 +28,14 @@ const RoleAssignmentActionDropdown = ({
     {
       id: 'edit-role-assignment',
       text: t('Edit role assignment'),
-      click: (roleAssignment: FlattenedRoleAssignment) => {
-        onEdit?.(roleAssignment)
-      },
+      click: onEdit,
     },
     {
       id: 'delete-role-assignment',
       text: t('Delete role assignment'),
       isDisabled: !canDelete,
       tooltip: canDelete ? '' : t('rbac.unauthorized'),
-      click: (roleAssignment: FlattenedRoleAssignment) => {
+      click: (roleAssignment: FlattenedRoleAssignment) =>
         setModalProps({
           open: true,
           title: t('Delete role assignment?'),
@@ -67,8 +65,7 @@ const RoleAssignmentActionDropdown = ({
           isDanger: true,
           icon: 'warning',
           confirmText: t('confirm'),
-        })
-      },
+        }),
     },
   ]
 
