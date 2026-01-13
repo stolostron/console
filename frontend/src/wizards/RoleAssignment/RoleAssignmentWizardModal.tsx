@@ -60,6 +60,7 @@ const getInitialFormData = (): RoleAssignmentWizardFormData => ({
   scope: {
     kind: 'all',
     clusterNames: [],
+    namespaces: [],
   },
   roles: [],
   scopeType: 'Global access',
@@ -78,8 +79,15 @@ export const RoleAssignmentWizardModal = ({
   const [selectedClusterSets, setSelectedClusterSets] = useState<any[]>([])
   const [selectedClusters, setSelectedClusters] = useState<any[]>([])
 
-  const update = useCallback(() => {
-    setFormData((prev) => ({ ...prev }))
+  const update = useCallback((updateFn?: (draft: RoleAssignmentWizardFormData) => void) => {
+    setFormData((prev) => {
+      if (updateFn) {
+        const draft = { ...prev }
+        updateFn(draft)
+        return draft
+      }
+      return { ...prev }
+    })
   }, [])
 
   const handleClusterSetsChange = useCallback((clusterSets: any[]) => {
@@ -138,7 +146,11 @@ export const RoleAssignmentWizardModal = ({
   const handleSubmit = useCallback(() => onSubmit(formData), [formData, onSubmit])
 
   useEffect(() => {
-    if (isOpen && !isEditing) {
+    if (!isOpen) {
+      setFormData(getInitialFormData())
+      setSelectedClusterSets([])
+      setSelectedClusters([])
+    } else if (isOpen && !isEditing) {
       setFormData(getInitialFormData())
       setSelectedClusterSets([])
       setSelectedClusters([])
@@ -167,11 +179,10 @@ export const RoleAssignmentWizardModal = ({
   }, [formData.scopeType, formData.scope.kind])
 
   const showIdentitiesStep =
-    ((preselected?.roles && preselected.roles.length > 0) ||
-      (preselected?.clusterNames && preselected.clusterNames.length > 0)) &&
-    !preselected?.subject
+    preselected?.context !== 'identity' &&
+    (isEditing || (!isEditing && (preselected?.roles?.[0] || preselected?.clusterNames?.[0]) && !preselected?.subject))
 
-  const hideRolesStep = preselected?.roles && preselected.roles.length > 0
+  const hideRolesStep = preselected?.context === 'role'
 
   const title = getWizardTitle(isEditing, preselected, t)
 
@@ -180,7 +191,7 @@ export const RoleAssignmentWizardModal = ({
       key="scope-selection"
       name={t('Select scope')}
       id="scope-selection"
-      isHidden={!!(preselected?.clusterNames && preselected.clusterNames.length > 0)}
+      isHidden={preselected?.context === 'cluster'}
     >
       <ScopeSelectionStepContent
         isDrawerExpanded={isDrawerExpanded}
@@ -267,7 +278,7 @@ export const RoleAssignmentWizardModal = ({
           <ItemContext.Provider value={formData}>
             <DataContext.Provider value={{ update }}>
               <Wizard
-                isVisitRequired
+                isVisitRequired={!isEditing}
                 onClose={handleClose}
                 header={
                   <WizardHeader
@@ -322,8 +333,9 @@ export const RoleAssignmentWizardModal = ({
                   steps={scopeSubSteps}
                   footer={{
                     isNextDisabled:
-                      (formData.scopeType === 'Select cluster sets' && selectedClusterSets.length === 0) ||
-                      (formData.scopeType === 'Select clusters' && selectedClusters.length === 0),
+                      !isEditing &&
+                      ((formData.scopeType === 'Select cluster sets' && selectedClusterSets.length === 0) ||
+                        (formData.scopeType === 'Select clusters' && selectedClusters.length === 0)),
                   }}
                 />
 
@@ -344,7 +356,7 @@ export const RoleAssignmentWizardModal = ({
                   key="review"
                   name={t('Review')}
                   id="review"
-                  footer={{ nextButtonText: t('Create'), onNext: handleSubmit }}
+                  footer={{ nextButtonText: isEditing ? t('Save') : t('Create'), onNext: handleSubmit }}
                 >
                   <ReviewStepContent formData={formData} preselected={preselected} />
                 </WizardStep>

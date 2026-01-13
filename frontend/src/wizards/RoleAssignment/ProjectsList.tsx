@@ -7,6 +7,7 @@ import type { Cluster } from '../../routes/UserManagement/RoleAssignments/hook/R
 import { IAcmTableButtonAction } from '../../ui-components/AcmTable/AcmTableTypes'
 import { CommonProjectCreate } from './CommonProjectCreate'
 import { useItem } from '@patternfly-labs/react-form-wizard/lib/src/contexts/ItemContext'
+import { useData } from '@patternfly-labs/react-form-wizard/lib/src/contexts/DataContext'
 import { RoleAssignmentWizardFormData } from './types'
 
 interface ProjectsListProps {
@@ -16,6 +17,7 @@ interface ProjectsListProps {
 export const ProjectsList = ({ selectedClusters }: ProjectsListProps) => {
   const { t } = useTranslation()
   const formData = useItem() as RoleAssignmentWizardFormData
+  const { update } = useData()
   const [isCreateCommonProject, setIsCreateCommonProject] = useState(false)
 
   const selectedProjects = useMemo(
@@ -37,7 +39,9 @@ export const ProjectsList = ({ selectedClusters }: ProjectsListProps) => {
   const handleCreateSuccess = () => setIsCreateCommonProject(false)
 
   const handleSelectionChange = (projects: ProjectTableData[]) => {
-    formData.scope = { ...formData.scope, namespaces: projects.map((p) => p.name) }
+    update((formData: RoleAssignmentWizardFormData) => {
+      formData.scope.namespaces = projects.map((p) => p.name)
+    })
   }
 
   const tableActionButtons = useMemo<IAcmTableButtonAction[]>(
@@ -63,6 +67,7 @@ export const ProjectsList = ({ selectedClusters }: ProjectsListProps) => {
         />
       ) : (
         <ProjectsTable
+          key={selectedClusters.map((c) => c.name).join(',')}
           selectedClusters={selectedClusters}
           selectedProjects={selectedProjects}
           onCreateClick={handleCreateClick}

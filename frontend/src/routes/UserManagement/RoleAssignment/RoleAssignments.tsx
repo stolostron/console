@@ -459,6 +459,7 @@ const RoleAssignments = ({
         }}
         isOpen={isCreateModalOpen}
         isEditing={!!editingRoleAssignment}
+        editingRoleAssignment={editingRoleAssignment}
         preselected={
           editingRoleAssignment
             ? {
@@ -468,6 +469,8 @@ const RoleAssignments = ({
                   kind: editingRoleAssignment.subject.kind,
                   value: editingRoleAssignment.subject.name,
                 },
+                namespaces: editingRoleAssignment.targetNamespaces,
+                context: preselected?.context,
               }
             : preselected
         }

@@ -56,9 +56,19 @@ export const usePreselectedData = ({
         updates.scope = {
           kind: 'specific',
           clusterNames: preselected.clusterNames,
+          namespaces: preselected.namespaces,
         }
-        updates.selectedClusters = preselected.clusterNames
+        updates.selectedClusters = clusterObjects
         setSelectedClusters(clusterObjects)
+
+        if (preselected.namespaces && preselected.namespaces.length > 0) {
+          updates.selectedClustersAccessLevel = 'Project role assignment'
+        }
+      } else if (preselected?.namespaces && preselected.namespaces.length > 0) {
+        updates.scope = {
+          kind: 'specific',
+          namespaces: preselected.namespaces,
+        }
       }
 
       return { ...prev, ...updates }
