@@ -40,7 +40,7 @@ describe('RolesTableHelper', () => {
   const mockT = (key: string) => key
 
   describe('rolesTableColumns', () => {
-    it('creates columns with links when areLinksDisplayed is true (default)', () => {
+    it('creates columns with links when areLinksDisplayed is true', () => {
       const columns = rolesTableColumns({
         t: mockT,
         hiddenColumns: ['radio'],
@@ -58,12 +58,11 @@ describe('RolesTableHelper', () => {
       render(<div>{nameElement}</div>)
       expect(screen.getByRole('link')).toBeInTheDocument()
 
-      // Test PERMISSIONS column with "See All" link
-      const permissionsCell = columns[2].cell as (role: Role) => React.ReactNode
-      const permissionsElement = permissionsCell(mockRole)
+      // Test PERMISSIONS column - all permissions are displayed via HighlightSearchText
+      const permissionsCell = columns[2].cell as (role: Role, search?: string) => React.ReactNode
+      const permissionsElement = permissionsCell(mockRole, '')
       render(<div>{permissionsElement}</div>)
-      expect(screen.getByText('See All')).toBeInTheDocument()
-      expect(screen.getByRole('link', { name: 'See All' })).toBeInTheDocument()
+      expect(screen.getByText('api1, api2, api3, api4, api5')).toBeInTheDocument()
     })
 
     it('creates columns without links when areLinksDisplayed is false', () => {
@@ -85,12 +84,11 @@ describe('RolesTableHelper', () => {
       expect(screen.queryByRole('link')).not.toBeInTheDocument()
       expect(screen.getByText('test-role')).toBeInTheDocument()
 
-      // Test PERMISSIONS column with Badge instead of "See All" link
-      const permissionsCell = columns[2].cell as (role: Role) => React.ReactNode
-      const permissionsElement = permissionsCell(mockRole)
+      // Test PERMISSIONS column - all permissions are displayed via HighlightSearchText
+      const permissionsCell = columns[2].cell as (role: Role, search?: string) => React.ReactNode
+      const permissionsElement = permissionsCell(mockRole, '')
       render(<div>{permissionsElement}</div>)
-      expect(screen.queryByText('See All')).not.toBeInTheDocument()
-      expect(screen.getByText('+2')).toBeInTheDocument() // 5 permissions - 3 shown = +2
+      expect(screen.getByText('api1, api2, api3, api4, api5')).toBeInTheDocument()
     })
 
     it('handles role with no permissions when areLinksDisplayed is false', () => {
@@ -111,17 +109,17 @@ describe('RolesTableHelper', () => {
       expect(columns[1].isHidden).toBe(true) // name column is hidden
       expect(columns[2].isHidden).toBe(false) // permissions column is visible
 
-      const permissionsCell = columns[2].cell as (role: Role) => React.ReactNode
-      const permissionsElement = permissionsCell(roleWithNoPermissions)
+      const permissionsCell = columns[2].cell as (role: Role, search?: string) => React.ReactNode
+      const permissionsElement = permissionsCell(roleWithNoPermissions, '')
       render(<div>{permissionsElement}</div>)
 
-      // Check that "No permissions" text is present (may be split across elements)
+      // Check that "No permissions" text is present
       expect(screen.getByText(/No permissions/)).toBeInTheDocument()
       // Check that there are no links when areLinksDisplayed is false
       expect(screen.queryByRole('link')).not.toBeInTheDocument()
     })
 
-    it('handles role with 3 or fewer permissions (no badge/link needed)', () => {
+    it('displays all permissions regardless of count', () => {
       const roleWithFewPermissions: Role = {
         name: 'few-perms-role',
         permissions: 'api1, api2, api3',
@@ -139,15 +137,12 @@ describe('RolesTableHelper', () => {
       expect(columns[1].isHidden).toBe(true) // name column is hidden
       expect(columns[2].isHidden).toBe(false) // permissions column is visible
 
-      const permissionsCell = columns[2].cell as (role: Role) => React.ReactNode
-      const permissionsElement = permissionsCell(roleWithFewPermissions)
+      const permissionsCell = columns[2].cell as (role: Role, search?: string) => React.ReactNode
+      const permissionsElement = permissionsCell(roleWithFewPermissions, '')
       render(<div>{permissionsElement}</div>)
 
-      expect(screen.getByText('api1')).toBeInTheDocument()
-      expect(screen.getByText('api2')).toBeInTheDocument()
-      expect(screen.getByText('api3')).toBeInTheDocument()
-      expect(screen.queryByText('See All')).not.toBeInTheDocument()
-      expect(screen.queryByText('+0')).not.toBeInTheDocument()
+      // All permissions are displayed via HighlightSearchText
+      expect(screen.getByText('api1, api2, api3')).toBeInTheDocument()
     })
 
     it('includes radio column when specified', () => {
