@@ -58,9 +58,7 @@ import { useFleetClustersInternal, organizeClustersBySet } from '../internal/use
  * ```
  */
 export function useFleetClusterSets(options: FleetClusterNamesOptions = {}): [ClusterSetData, boolean, any] {
-  const returnAllClusters = options.returnAllClusters ?? false
-
-  const [filteredClusters, loaded, error] = useFleetClustersInternal(returnAllClusters, options)
+  const [filteredClusters, loaded, error] = useFleetClustersInternal(options)
 
   const result = useMemo(() => {
     return organizeClustersBySet(filteredClusters, options)

@@ -9,26 +9,27 @@ import { ClusterSetData, FleetClusterNamesOptions } from '../types/fleet'
  * Internal hook that provides common implementation for fleet cluster operations.
  * This is shared between useFleetClusterNames and useFleetClusterSets.
  */
-export function useFleetClustersInternal(
-  returnAllClusters: boolean,
-  options?: FleetClusterNamesOptions
-): [K8sResourceCommon[], boolean, any, Selector | undefined] {
+export function useFleetClustersInternal({
+  returnAllClusters = false,
+  includeGlobal,
+  clusterSets,
+}: FleetClusterNamesOptions): [K8sResourceCommon[], boolean, any, Selector | undefined] {
   // Build selector for optimization when possible
   const selector = useMemo((): Selector | undefined => {
-    if (!options?.clusterSets?.length) {
+    if (!clusterSets?.length) {
       return undefined
     }
 
     // Only optimize if we're not including global
-    if (options.includeGlobal) {
+    if (includeGlobal) {
       return undefined
     }
 
     // For single cluster set, use exact match
-    if (options.clusterSets.length === 1) {
+    if (clusterSets.length === 1) {
       return {
         matchLabels: {
-          'cluster.open-cluster-management.io/clusterset': options.clusterSets[0],
+          'cluster.open-cluster-management.io/clusterset': clusterSets[0],
         },
       }
     }
@@ -39,11 +40,11 @@ export function useFleetClustersInternal(
         {
           key: 'cluster.open-cluster-management.io/clusterset',
           operator: 'In',
-          values: options.clusterSets,
+          values: clusterSets,
         },
       ],
     }
-  }, [options?.clusterSets, options?.includeGlobal])
+  }, [clusterSets, includeGlobal])
 
   const [clusters, loaded, error] = useK8sWatchResource<K8sResourceCommon[]>({
     groupVersionKind: ManagedClusterListGroupVersionKind,
