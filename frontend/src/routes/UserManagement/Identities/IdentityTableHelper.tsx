@@ -80,6 +80,7 @@ export const getIdentityTableColumns = ({
   columns.push({
     id: 'radio',
     header: ' ',
+    search: 'metadata.uid',
     transforms: [cellWidth(10)],
     cell: (identity) => (
       <Radio
