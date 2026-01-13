@@ -1,72 +1,70 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useMemo } from 'react'
-import { K8sResourceCommon, useK8sWatchResource } from '@openshift-console/dynamic-plugin-sdk'
-import { ManagedClusterListGroupVersionKind } from '../internal/models'
-import { filterClusters } from '../internal/clusterUtils'
+import { FleetClusterNamesOptions, ClusterSetData } from '../types/fleet'
+import { useFleetClustersInternal, organizeClustersBySet } from '../internal/useFleetClustersInternal'
 
 /**
- * Hook that returns unique cluster set names from managed clusters with optional filtering by cluster proxy addon and availability status.
+ * Hook that returns cluster names organized by cluster sets with optional filtering.
  *
  * This hook watches ManagedCluster resources and by default filters them to only include clusters
  * that have both the label `feature.open-cluster-management.io/addon-cluster-proxy: available` AND
- * the condition `ManagedClusterConditionAvailable` with status `True`. It then collects unique
- * values from the `cluster.open-cluster-management.io/clusterset` label.
+ * the condition `ManagedClusterConditionAvailable` with status `True`. It then organizes cluster
+ * names by their cluster set labels.
  *
- * @param considerAllClusters - Optional boolean to consider all clusters regardless of labels and conditions.
- *   Defaults to false. When false (default), only considers clusters with the
- *   'feature.open-cluster-management.io/addon-cluster-proxy: available' label AND
- *   'ManagedClusterConditionAvailable' status: 'True'.
- *   When true, considers all clusters regardless of labels and conditions.
+ * @param options - Configuration object for cluster set organization
+ * @param options.returnAllClusters - Whether to return all clusters regardless of availability status. Defaults to false.
+ * @param options.clusterSets - Specific cluster set names to include. If not specified, includes all cluster sets.
+ * @param options.includeGlobal - Whether to include a special "global" set containing all clusters. Defaults to false.
  *
  * @returns A tuple containing:
- *   - clusterSets: Array of unique cluster set names from the clusterset labels
+ *   - clusterSetData: ClusterSetData object organized by cluster sets
  *   - loaded: Boolean indicating if the resource watch has loaded
  *   - error: Any error that occurred during the watch operation
  *
  * @example
  * ```tsx
- * // Get cluster sets from only clusters with cluster proxy addon available AND ManagedClusterConditionAvailable: 'True' (default behavior)
- * const [availableClusterSets, loaded, error] = useFleetClusterSets()
+ * // Get clusters organized by cluster sets (default behavior)
+ * const [clusterSetData, loaded, error] = useFleetClusterSets({})
  *
- * // Get cluster sets from all clusters regardless of labels and conditions
- * const [allClusterSets, loaded, error] = useFleetClusterSets(true)
+ * // Include global set with all clusters
+ * const [clusterSetsWithGlobal, loaded, error] = useFleetClusterSets({
+ *   includeGlobal: true
+ * })
  *
- * // Explicitly filter by cluster proxy addon and availability (same as default)
- * const [filteredClusterSets, loaded, error] = useFleetClusterSets(false)
+ * // Filter to specific cluster sets
+ * const [productionAndStaging, loaded, error] = useFleetClusterSets({
+ *   clusterSets: ['production', 'staging']
+ * })
  *
- * if (!loaded) {
- *   return <Loading />
- * }
- *
- * if (error) {
- *   return <ErrorState error={error} />
- * }
+ * if (!loaded) return <Loading />
+ * if (error) return <ErrorState error={error} />
  *
  * return (
  *   <div>
- *     {availableClusterSets.map(setName => (
- *       <div key={setName}>{setName}</div>
+ *     {clusterSetData.global && (
+ *       <div>
+ *         <h3>All Clusters</h3>
+ *         {clusterSetData.global.map(name => <div key={name}>{name}</div>)}
+ *       </div>
+ *     )}
+ *     {Object.entries(clusterSetData).filter(([setName]) => setName !== 'global').map(([setName, clusters]) => (
+ *       <div key={setName}>
+ *         <h3>{setName}</h3>
+ *         {clusters.map(name => <div key={name}>{name}</div>)}
+ *       </div>
  *     ))}
  *   </div>
  * )
  * ```
  */
-export function useFleetClusterSets(considerAllClusters: boolean = false): [string[], boolean, any] {
-  const [clusters, loaded, error] = useK8sWatchResource<K8sResourceCommon[]>({
-    groupVersionKind: ManagedClusterListGroupVersionKind,
-    isList: true,
-  })
+export function useFleetClusterSets(options: FleetClusterNamesOptions = {}): [ClusterSetData, boolean, any] {
+  const returnAllClusters = options.returnAllClusters ?? false
 
-  const uniqueClusterSets = useMemo(() => {
-    const filteredClusters = filterClusters(clusters, considerAllClusters)
+  const [filteredClusters, loaded, error] = useFleetClustersInternal(returnAllClusters, options)
 
-    const clusterSetNames = filteredClusters.map(
-      (cluster) => cluster.metadata?.labels?.['cluster.open-cluster-management.io/clusterset'] || 'default'
-    )
+  const result = useMemo(() => {
+    return organizeClustersBySet(filteredClusters, options)
+  }, [filteredClusters, options])
 
-    // Return unique cluster set names
-    return Array.from(new Set(clusterSetNames))
-  }, [clusters, considerAllClusters])
-
-  return [uniqueClusterSets, loaded, error]
+  return [result, loaded, error]
 }

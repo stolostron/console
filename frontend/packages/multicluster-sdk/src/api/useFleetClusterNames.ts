@@ -1,44 +1,28 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useMemo } from 'react'
-import { K8sResourceCommon, useK8sWatchResource, Selector } from '@openshift-console/dynamic-plugin-sdk'
-import { ManagedClusterListGroupVersionKind } from '../internal/models'
-import { filterClusters } from '../internal/clusterUtils'
-import { ClusterSetData, FleetClusterNamesOptions } from '../types/fleet'
-
-// Overload 1: Simple signature returning cluster names as string array
-export function useFleetClusterNames(returnAllClusters?: boolean): [string[], boolean, any]
-
-// Overload 2: Advanced signature returning structured cluster set data
-export function useFleetClusterNames(options: FleetClusterNamesOptions): [ClusterSetData, boolean, any]
+import { useFleetClustersInternal } from '../internal/useFleetClustersInternal'
 
 /**
- * Hook that returns names of managed clusters with optional filtering and cluster set organization.
+ * Hook that returns names of managed clusters with optional filtering.
  *
  * This hook watches ManagedCluster resources and by default filters them to only include clusters
  * that have both the label `feature.open-cluster-management.io/addon-cluster-proxy: available` AND
  * the condition `ManagedClusterConditionAvailable` with status `True`.
  *
- * The hook supports two modes:
- * 1. **Simple mode**: Returns a flat array of cluster names (backward compatible)
- * 2. **Advanced mode**: Returns structured data organized by cluster sets
- *
- * @param returnAllClusters - When using simple mode: optional boolean to return all cluster names
- *   regardless of availability status. Defaults to false.
- * @param options - When using advanced mode: configuration object for cluster set organization
- * @param options.returnAllClusters - Whether to return all clusters regardless of availability status. Defaults to false.
- * @param options.clusterSets - Specific cluster set names to include. If not specified, includes all cluster sets.
- * @param options.includeGlobal - Whether to include a special "global" set containing all clusters. Defaults to false.
+ * @param returnAllClusters - Optional boolean to return all cluster names regardless of availability status. Defaults to false.
  *
  * @returns A tuple containing:
- *   - clusterData: Either string[] (simple mode) or ClusterSetData (advanced mode)
+ *   - clusterNames: Array of cluster names
  *   - loaded: Boolean indicating if the resource watch has loaded
  *   - error: Any error that occurred during the watch operation
  *
  * @example
  * ```tsx
- * // Simple mode examples
+ * // Get available cluster names (default behavior)
  * const [availableClusterNames, loaded, error] = useFleetClusterNames()
- * const [allClusterNames, loaded2, error2] = useFleetClusterNames(true)
+ *
+ * // Get all cluster names regardless of availability
+ * const [allClusterNames, loaded, error] = useFleetClusterNames(true)
  *
  * if (!loaded) return <Loading />
  * if (error) return <ErrorState error={error} />
@@ -51,111 +35,15 @@ export function useFleetClusterNames(options: FleetClusterNamesOptions): [Cluste
  *   </div>
  * )
  * ```
- *
- * @example
- * ```tsx
- * // Advanced mode examples
- * const [clusterSetData, loaded, error] = useFleetClusterNames({
- *   clusterSets: ['production', 'staging'],
- *   includeGlobal: true
- * })
- *
- * if (!loaded) return <Loading />
- * if (error) return <ErrorState error={error} />
- *
- * return (
- *   <div>
- *     {Object.entries(clusterSetData).map(([setName, clusters]) => (
- *       <div key={setName}>
- *         <h3>{setName}</h3>
- *         {clusters.map(name => <div key={name}>{name}</div>)}
- *       </div>
- *     ))}
- *   </div>
- * )
- * ```
  */
-export function useFleetClusterNames(
-  returnAllClustersOrOptions?: boolean | FleetClusterNamesOptions
-): [string[] | ClusterSetData, boolean, any] {
-  // Determine if we're using simple or advanced mode
-  const isAdvancedMode = typeof returnAllClustersOrOptions === 'object'
-  const options = isAdvancedMode ? returnAllClustersOrOptions : undefined
-  const returnAllClusters = isAdvancedMode ? options?.returnAllClusters ?? false : returnAllClustersOrOptions ?? false
+export function useFleetClusterNames(returnAllClusters?: boolean): [string[], boolean, any] {
+  const shouldReturnAllClusters = returnAllClusters ?? false
 
-  // Build selector for optimization when possible
-  const selector = useMemo((): Selector | undefined => {
-    if (!isAdvancedMode || !options?.clusterSets?.length) {
-      return undefined
-    }
-
-    // Only optimize if we're not including global
-    if (options.includeGlobal) {
-      return undefined
-    }
-
-    // For single cluster set, use exact match
-    if (options.clusterSets.length === 1) {
-      return {
-        matchLabels: {
-          'cluster.open-cluster-management.io/clusterset': options.clusterSets[0],
-        },
-      }
-    }
-
-    // For multiple cluster sets, use 'in' operator
-    return {
-      matchExpressions: [
-        {
-          key: 'cluster.open-cluster-management.io/clusterset',
-          operator: 'In',
-          values: options.clusterSets,
-        },
-      ],
-    }
-  }, [isAdvancedMode, options?.clusterSets, options?.includeGlobal])
-
-  const [clusters, loaded, error] = useK8sWatchResource<K8sResourceCommon[]>({
-    groupVersionKind: ManagedClusterListGroupVersionKind,
-    isList: true,
-    ...(selector && { selector }),
-  })
+  const [filteredClusters, loaded, error] = useFleetClustersInternal(shouldReturnAllClusters)
 
   const result = useMemo(() => {
-    const filteredClusters = filterClusters(clusters, returnAllClusters)
-
-    if (!isAdvancedMode) {
-      // Simple mode: return cluster names array
-      return filteredClusters.map((cluster) => cluster.metadata!.name!)
-    }
-
-    // Advanced mode: organize by cluster sets
-    const clusterSetData: ClusterSetData = {}
-
-    // Organize clusters by their cluster set labels
-    for (const cluster of filteredClusters) {
-      const clusterName = cluster.metadata!.name!
-      const clusterSetLabel = cluster.metadata?.labels?.['cluster.open-cluster-management.io/clusterset'] || 'default'
-
-      // Add to global set if requested
-      if (options?.includeGlobal) {
-        if (!clusterSetData.global) {
-          clusterSetData.global = []
-        }
-        clusterSetData.global.push(clusterName)
-      }
-
-      // Check if this cluster set should be included
-      if (!options?.clusterSets || options.clusterSets.includes(clusterSetLabel)) {
-        if (!clusterSetData[clusterSetLabel]) {
-          clusterSetData[clusterSetLabel] = []
-        }
-        clusterSetData[clusterSetLabel].push(clusterName)
-      }
-    }
-
-    return clusterSetData
-  }, [clusters, returnAllClusters, isAdvancedMode, options])
+    return filteredClusters.map((cluster) => cluster.metadata!.name!)
+  }, [filteredClusters])
 
   return [result, loaded, error]
 }

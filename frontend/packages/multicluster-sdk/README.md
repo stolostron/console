@@ -51,8 +51,7 @@ Setup depends on your usage scenarios.
 - [getFleetK8sAPIPath](#gear-getfleetk8sapipath)
 - [useFleetAccessReview](#gear-usefleetaccessreview)
 - [useFleetClusterNames](#gear-usefleetclusternames)
-- [useFleetClusterNames](#gear-usefleetclusternames)
-- [useFleetClusterNames](#gear-usefleetclusternames)
+- [useFleetClusterSetNames](#gear-usefleetclustersetnames)
 - [useFleetClusterSets](#gear-usefleetclustersets)
 - [useFleetK8sAPIPath](#gear-usefleetk8sapipath)
 - [useFleetK8sWatchResource](#gear-usefleetk8swatchresource)
@@ -444,43 +443,36 @@ Array with `isAllowed` and `loading` values.
 
 ### :gear: useFleetClusterNames
 
-Hook that returns names of managed clusters with optional filtering and cluster set organization.
+Hook that returns names of managed clusters with optional filtering.
 
 This hook watches ManagedCluster resources and by default filters them to only include clusters
 that have both the label `feature.open-cluster-management.io/addon-cluster-proxy: available` AND
 the condition `ManagedClusterConditionAvailable` with status `True`.
 
-The hook supports two modes:
-1. **Simple mode**: Returns a flat array of cluster names (backward compatible)
-2. **Advanced mode**: Returns structured data organized by cluster sets
-
 | Function | Type |
 | ---------- | ---------- |
-| `useFleetClusterNames` | `{ (returnAllClusters?: boolean or undefined): [string[], boolean, any]; (options: FleetClusterNamesOptions): [ClusterSetData, boolean, any]; }` |
+| `useFleetClusterNames` | `(returnAllClusters?: boolean or undefined) => [string[], boolean, any]` |
 
 Parameters:
 
-* `returnAllClusters`: - When using simple mode: optional boolean to return all cluster names
-regardless of availability status. Defaults to false.
-* `options`: - When using advanced mode: configuration object for cluster set organization
-* `options.returnAllClusters`: - Whether to return all clusters regardless of availability status. Defaults to false.
-* `options.clusterSets`: - Specific cluster set names to include. If not specified, includes all cluster sets.
-* `options.includeGlobal`: - Whether to include a special "global" set containing all clusters. Defaults to false.
+* `returnAllClusters`: - Optional boolean to return all cluster names regardless of availability status. Defaults to false.
 
 
 Returns:
 
 A tuple containing:
-- clusterData: Either string[] (simple mode) or ClusterSetData (advanced mode)
+- clusterNames: Array of cluster names
 - loaded: Boolean indicating if the resource watch has loaded
 - error: Any error that occurred during the watch operation
 
 Examples:
 
 ```tsx
-// Simple mode examples
+// Get available cluster names (default behavior)
 const [availableClusterNames, loaded, error] = useFleetClusterNames()
-const [allClusterNames, loaded2, error2] = useFleetClusterNames(true)
+
+// Get all cluster names regardless of availability
+const [allClusterNames, loaded, error] = useFleetClusterNames(true)
 
 if (!loaded) return <Loading />
 if (error) return <ErrorState error={error} />
@@ -493,184 +485,11 @@ return (
   </div>
 )
 ```
-```tsx
-// Advanced mode examples
-const [clusterSetData, loaded, error] = useFleetClusterNames({
-  clusterSets: ['production', 'staging'],
-  includeGlobal: true
-})
-
-if (!loaded) return <Loading />
-if (error) return <ErrorState error={error} />
-
-return (
-  <div>
-    {Object.entries(clusterSetData).map(([setName, clusters]) => (
-      <div key={setName}>
-        <h3>{setName}</h3>
-        {clusters.map(name => <div key={name}>{name}</div>)}
-      </div>
-    ))}
-  </div>
-)
-```
 
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetClusterNames.ts#L9)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetClusterNames.ts#L39)
 
-### :gear: useFleetClusterNames
-
-Hook that returns names of managed clusters with optional filtering and cluster set organization.
-
-This hook watches ManagedCluster resources and by default filters them to only include clusters
-that have both the label `feature.open-cluster-management.io/addon-cluster-proxy: available` AND
-the condition `ManagedClusterConditionAvailable` with status `True`.
-
-The hook supports two modes:
-1. **Simple mode**: Returns a flat array of cluster names (backward compatible)
-2. **Advanced mode**: Returns structured data organized by cluster sets
-
-| Function | Type |
-| ---------- | ---------- |
-| `useFleetClusterNames` | `{ (returnAllClusters?: boolean or undefined): [string[], boolean, any]; (options: FleetClusterNamesOptions): [ClusterSetData, boolean, any]; }` |
-
-Parameters:
-
-* `returnAllClusters`: - When using simple mode: optional boolean to return all cluster names
-regardless of availability status. Defaults to false.
-* `options`: - When using advanced mode: configuration object for cluster set organization
-* `options.returnAllClusters`: - Whether to return all clusters regardless of availability status. Defaults to false.
-* `options.clusterSets`: - Specific cluster set names to include. If not specified, includes all cluster sets.
-* `options.includeGlobal`: - Whether to include a special "global" set containing all clusters. Defaults to false.
-
-
-Returns:
-
-A tuple containing:
-- clusterData: Either string[] (simple mode) or ClusterSetData (advanced mode)
-- loaded: Boolean indicating if the resource watch has loaded
-- error: Any error that occurred during the watch operation
-
-Examples:
-
-```tsx
-// Simple mode examples
-const [availableClusterNames, loaded, error] = useFleetClusterNames()
-const [allClusterNames, loaded2, error2] = useFleetClusterNames(true)
-
-if (!loaded) return <Loading />
-if (error) return <ErrorState error={error} />
-
-return (
-  <div>
-    {availableClusterNames.map(name => (
-      <div key={name}>{name}</div>
-    ))}
-  </div>
-)
-```
-```tsx
-// Advanced mode examples
-const [clusterSetData, loaded, error] = useFleetClusterNames({
-  clusterSets: ['production', 'staging'],
-  includeGlobal: true
-})
-
-if (!loaded) return <Loading />
-if (error) return <ErrorState error={error} />
-
-return (
-  <div>
-    {Object.entries(clusterSetData).map(([setName, clusters]) => (
-      <div key={setName}>
-        <h3>{setName}</h3>
-        {clusters.map(name => <div key={name}>{name}</div>)}
-      </div>
-    ))}
-  </div>
-)
-```
-
-
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetClusterNames.ts#L12)
-
-### :gear: useFleetClusterNames
-
-Hook that returns names of managed clusters with optional filtering and cluster set organization.
-
-This hook watches ManagedCluster resources and by default filters them to only include clusters
-that have both the label `feature.open-cluster-management.io/addon-cluster-proxy: available` AND
-the condition `ManagedClusterConditionAvailable` with status `True`.
-
-The hook supports two modes:
-1. **Simple mode**: Returns a flat array of cluster names (backward compatible)
-2. **Advanced mode**: Returns structured data organized by cluster sets
-
-| Function | Type |
-| ---------- | ---------- |
-| `useFleetClusterNames` | `{ (returnAllClusters?: boolean or undefined): [string[], boolean, any]; (options: FleetClusterNamesOptions): [ClusterSetData, boolean, any]; }` |
-
-Parameters:
-
-* `returnAllClusters`: - When using simple mode: optional boolean to return all cluster names
-regardless of availability status. Defaults to false.
-* `options`: - When using advanced mode: configuration object for cluster set organization
-* `options.returnAllClusters`: - Whether to return all clusters regardless of availability status. Defaults to false.
-* `options.clusterSets`: - Specific cluster set names to include. If not specified, includes all cluster sets.
-* `options.includeGlobal`: - Whether to include a special "global" set containing all clusters. Defaults to false.
-
-
-Returns:
-
-A tuple containing:
-- clusterData: Either string[] (simple mode) or ClusterSetData (advanced mode)
-- loaded: Boolean indicating if the resource watch has loaded
-- error: Any error that occurred during the watch operation
-
-Examples:
-
-```tsx
-// Simple mode examples
-const [availableClusterNames, loaded, error] = useFleetClusterNames()
-const [allClusterNames, loaded2, error2] = useFleetClusterNames(true)
-
-if (!loaded) return <Loading />
-if (error) return <ErrorState error={error} />
-
-return (
-  <div>
-    {availableClusterNames.map(name => (
-      <div key={name}>{name}</div>
-    ))}
-  </div>
-)
-```
-```tsx
-// Advanced mode examples
-const [clusterSetData, loaded, error] = useFleetClusterNames({
-  clusterSets: ['production', 'staging'],
-  includeGlobal: true
-})
-
-if (!loaded) return <Loading />
-if (error) return <ErrorState error={error} />
-
-return (
-  <div>
-    {Object.entries(clusterSetData).map(([setName, clusters]) => (
-      <div key={setName}>
-        <h3>{setName}</h3>
-        {clusters.map(name => <div key={name}>{name}</div>)}
-      </div>
-    ))}
-  </div>
-)
-```
-
-
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetClusterNames.ts#L78)
-
-### :gear: useFleetClusterSets
+### :gear: useFleetClusterSetNames
 
 Hook that returns unique cluster set names from managed clusters with optional filtering by cluster proxy addon and availability status.
 
@@ -681,7 +500,7 @@ values from the `cluster.open-cluster-management.io/clusterset` label.
 
 | Function | Type |
 | ---------- | ---------- |
-| `useFleetClusterSets` | `(considerAllClusters?: boolean) => [string[], boolean, any]` |
+| `useFleetClusterSetNames` | `(considerAllClusters?: boolean) => [string[], boolean, any]` |
 
 Parameters:
 
@@ -703,13 +522,13 @@ Examples:
 
 ```tsx
 // Get cluster sets from only clusters with cluster proxy addon available AND ManagedClusterConditionAvailable: 'True' (default behavior)
-const [availableClusterSets, loaded, error] = useFleetClusterSets()
+const [availableClusterSets, loaded, error] = useFleetClusterSetNames()
 
 // Get cluster sets from all clusters regardless of labels and conditions
-const [allClusterSets, loaded, error] = useFleetClusterSets(true)
+const [allClusterSets, loaded, error] = useFleetClusterSetNames(true)
 
 // Explicitly filter by cluster proxy addon and availability (same as default)
-const [filteredClusterSets, loaded, error] = useFleetClusterSets(false)
+const [filteredClusterSets, loaded, error] = useFleetClusterSetNames(false)
 
 if (!loaded) {
   return <Loading />
@@ -729,7 +548,75 @@ return (
 ```
 
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetClusterSets.ts#L54)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetClusterSetNames.ts#L54)
+
+### :gear: useFleetClusterSets
+
+Hook that returns cluster names organized by cluster sets with optional filtering.
+
+This hook watches ManagedCluster resources and by default filters them to only include clusters
+that have both the label `feature.open-cluster-management.io/addon-cluster-proxy: available` AND
+the condition `ManagedClusterConditionAvailable` with status `True`. It then organizes cluster
+names by their cluster set labels.
+
+| Function | Type |
+| ---------- | ---------- |
+| `useFleetClusterSets` | `(options?: FleetClusterNamesOptions) => [ClusterSetData, boolean, any]` |
+
+Parameters:
+
+* `options`: - Configuration object for cluster set organization
+* `options.returnAllClusters`: - Whether to return all clusters regardless of availability status. Defaults to false.
+* `options.clusterSets`: - Specific cluster set names to include. If not specified, includes all cluster sets.
+* `options.includeGlobal`: - Whether to include a special "global" set containing all clusters. Defaults to false.
+
+
+Returns:
+
+A tuple containing:
+- clusterSetData: ClusterSetData object organized by cluster sets
+- loaded: Boolean indicating if the resource watch has loaded
+- error: Any error that occurred during the watch operation
+
+Examples:
+
+```tsx
+// Get clusters organized by cluster sets (default behavior)
+const [clusterSetData, loaded, error] = useFleetClusterSets({})
+
+// Include global set with all clusters
+const [clusterSetsWithGlobal, loaded, error] = useFleetClusterSets({
+  includeGlobal: true
+})
+
+// Filter to specific cluster sets
+const [productionAndStaging, loaded, error] = useFleetClusterSets({
+  clusterSets: ['production', 'staging']
+})
+
+if (!loaded) return <Loading />
+if (error) return <ErrorState error={error} />
+
+return (
+  <div>
+    {clusterSetData.global && (
+      <div>
+        <h3>All Clusters</h3>
+        {clusterSetData.global.map(name => <div key={name}>{name}</div>)}
+      </div>
+    )}
+    {Object.entries(clusterSetData).filter(([setName]) => setName !== 'global').map(([setName, clusters]) => (
+      <div key={setName}>
+        <h3>{setName}</h3>
+        {clusters.map(name => <div key={name}>{name}</div>)}
+      </div>
+    ))}
+  </div>
+)
+```
+
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetClusterSets.ts#L60)
 
 ### :gear: useFleetK8sAPIPath
 
