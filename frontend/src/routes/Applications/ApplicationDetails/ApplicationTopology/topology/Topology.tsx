@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import head from 'lodash/head'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import {
@@ -12,6 +12,13 @@ import {
   Visualization,
   VisualizationProvider,
   isNode,
+  ElementFactory,
+  ModelKind,
+  GraphElement,
+  BaseGraph,
+  BaseNode,
+  BaseEdge,
+  EllipseAnchor,
 } from '@patternfly/react-topology'
 import layoutFactory from './layout/layoutFactory'
 import getLayoutModel from './layout/layoutModel'
@@ -87,6 +94,14 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
   } = topologyProps
   const [selectedIds, setSelectedIds] = useState<string[]>()
 
+  const hasGraph = controller.hasGraph()
+
+  useEffect(() => {
+    if (hasGraph) {
+      controller.getGraph().layout()
+    }
+  }, [hasGraph, controller])
+
   useEventListener<SelectionEventListener>(SELECTION_EVENT, (ids) => {
     setSelectedIds(ids)
     const selectedNodeId = head(ids)
@@ -146,20 +161,35 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
   )
 }
 
+const elementFactory: ElementFactory = (kind: ModelKind): GraphElement | undefined => {
+  switch (kind) {
+    case ModelKind.graph:
+      return new BaseGraph()
+    case ModelKind.node: {
+      const node = new BaseNode()
+      node.setAnchor(new EllipseAnchor(node))
+      return node
+    }
+    case ModelKind.edge: {
+      return new BaseEdge()
+    }
+    default:
+      return undefined
+  }
+}
+
 export const Topology = (props: TopologyProps) => {
   const controllerRef = useRef<Controller>()
   let controller = controllerRef.current
-  const nodeIds = props.elements.nodes
-    .sort((a, b) => a.id.localeCompare(b.id))
-    .map((node) => `${node.id}-${node.specs.pulse}`)
-    .join(',')
-  const currentNodeIds = useRef<string>()
-  if (!controller || currentNodeIds.current !== nodeIds) {
+  if (!controller) {
+    // we can only create once because client size is set only once
     controller = controllerRef.current = new Visualization()
     controller.registerLayoutFactory(layoutFactory)
+    controller.registerElementFactory(elementFactory)
     controller.registerComponentFactory(componentFactory)
+  }
+  if (props.elements.nodes.length > 0) {
     controller.fromModel(getLayoutModel(props.elements))
-    currentNodeIds.current = nodeIds
   }
 
   return (

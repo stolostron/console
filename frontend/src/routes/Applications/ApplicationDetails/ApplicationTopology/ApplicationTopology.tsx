@@ -1,8 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { AcmDrawerContext } from '../../../../ui-components'
-import cloneDeep from 'lodash/cloneDeep'
-import { useContext, useEffect, useState } from 'react'
+import { useContext, useMemo, useState } from 'react'
 import { Topology } from './topology/Topology'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { useApplicationDetailsContext } from '../ApplicationDetails'
@@ -48,16 +47,12 @@ export function ApplicationTopologyPageContent() {
     toolbarControl,
   } = useApplicationDetailsContext()
   const { t } = useTranslation()
-  const { refreshTime, application, appData, topology, statuses } = applicationData
+  const { topology, statuses } = applicationData
   let hubClusterName = ''
   if (topology) {
     hubClusterName = topology.hubClusterName
   }
   const { setDrawerContext } = useContext(AcmDrawerContext)
-  const [elements, setElements] = useState<{
-    nodes: any[]
-    links: any[]
-  }>({ nodes: [], links: [] })
 
   const [argoAppDetailsContainerData, setArgoAppDetailsContainerData] = useState<ArgoAppDetailsContainerData>({
     page: 1,
@@ -124,18 +119,27 @@ export function ApplicationTopologyPageContent() {
   }
 
   const canUpdateStatuses = !!statuses
-  useEffect(() => {
-    if (application && appData && topology) {
-      setElements(cloneDeep(getDiagramElements(cloneDeep(topology), statuses, canUpdateStatuses, t)))
-    }
+  const nodeString = JSON.stringify(topology.nodes)
+  const linkString = JSON.stringify(topology.links)
+  const statusString = JSON.stringify(
+    statuses?.data?.searchResult?.[0]?.items
+      .map((item: any) => item._uid)
+      .sort((a: string, b: string) => a.localeCompare(b))
+      .join(',')
+  )
+  const elements = useMemo(() => {
+    return getDiagramElements(topology, statuses, canUpdateStatuses, t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [refreshTime])
+  }, [nodeString, linkString, statusString])
 
   return (
     <>
       <DrawerShapes />
       <Topology
-        elements={elements}
+        elements={{
+          ...elements,
+          activeChannel: elements.activeChannel ?? undefined,
+        }}
         processActionLink={processActionLink}
         canUpdateStatuses={canUpdateStatuses}
         argoAppDetailsContainerControl={argoAppDetailsContainerControl}
