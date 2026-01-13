@@ -458,7 +458,6 @@ const RoleAssignments = ({
           setEditingRoleAssignment(undefined)
         }}
         isOpen={isCreateModalOpen}
-        isEditing={!!editingRoleAssignment}
         editingRoleAssignment={editingRoleAssignment}
         preselected={
           editingRoleAssignment

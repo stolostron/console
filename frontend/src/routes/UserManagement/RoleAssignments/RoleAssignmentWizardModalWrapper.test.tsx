@@ -378,6 +378,10 @@ describe('RoleAssignmentWizardModalWrapper', () => {
       name: 'test-assignment',
       clusterRole: 'admin',
       clusterNames: ['cluster1'],
+      clusterSelection: {
+        type: 'placements',
+        placements: [],
+      },
       subject: { name: 'test-user', kind: 'User' },
       relatedMulticlusterRoleAssignment: {
         metadata: { name: 'test-mcra', namespace: 'multicluster-global-hub' },
@@ -403,7 +407,6 @@ describe('RoleAssignmentWizardModalWrapper', () => {
           <RoleAssignmentWizardModalWrapper
             close={mockClose}
             isOpen={true}
-            isEditing={true}
             editingRoleAssignment={mockEditingRoleAssignment}
           />
         </TestWrapper>
@@ -420,8 +423,8 @@ describe('RoleAssignmentWizardModalWrapper', () => {
       await waitFor(() => {
         expect(mockDeleteRoleAssignment).toHaveBeenCalledWith(mockEditingRoleAssignment)
         expect(mockToastContext.addAlert).toHaveBeenCalledWith({
-          title: 'Role assignment deleted',
-          message: 'The previous role assignment has been deleted due to the editing procedure.',
+          title: 'Role assignment added',
+          message: 'A role assignment for admin role added.',
           type: 'success',
           autoClose: true,
         })
@@ -444,7 +447,6 @@ describe('RoleAssignmentWizardModalWrapper', () => {
           <RoleAssignmentWizardModalWrapper
             close={mockClose}
             isOpen={true}
-            isEditing={true}
             editingRoleAssignment={mockEditingRoleAssignment}
           />
         </TestWrapper>
@@ -460,8 +462,8 @@ describe('RoleAssignmentWizardModalWrapper', () => {
 
       await waitFor(() => {
         expect(mockToastContext.addAlert).toHaveBeenCalledWith({
-          title: 'Role assignment deletion failed',
-          message: "The previous role assignment can't be edited. Error: Delete failed",
+          title: 'Role assignment update failed',
+          message: "The role assignment can't be updated. Error: Delete failed",
           type: 'danger',
           autoClose: true,
         })
@@ -500,7 +502,6 @@ describe('RoleAssignmentWizardModalWrapper', () => {
           <RoleAssignmentWizardModalWrapper
             close={mockClose}
             isOpen={true}
-            isEditing={true}
             editingRoleAssignment={mockEditingRoleAssignment}
           />
         </TestWrapper>
@@ -528,7 +529,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
 
       render(
         <TestWrapper>
-          <RoleAssignmentWizardModalWrapper close={mockClose} isOpen={true} isEditing={false} />
+          <RoleAssignmentWizardModalWrapper close={mockClose} isOpen={true} />
         </TestWrapper>
       )
 
@@ -554,7 +555,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
 
       render(
         <TestWrapper>
-          <RoleAssignmentWizardModalWrapper close={mockClose} isOpen={true} isEditing={true} />
+          <RoleAssignmentWizardModalWrapper close={mockClose} isOpen={true} />
         </TestWrapper>
       )
 

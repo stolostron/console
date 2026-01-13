@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useContext, useEffect, useState } from 'react'
+import { useContext } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmToastContext } from '../../../ui-components'
@@ -15,7 +15,6 @@ import { deleteRoleAssignment } from '../../../resources/clients/multicluster-ro
 type RoleAssignmentWizardModalWrapperProps = {
   close: () => void
   isOpen: boolean
-  isEditing?: boolean
   preselected?: RoleAssignmentPreselected
   editingRoleAssignment?: FlattenedRoleAssignment
 }
@@ -23,7 +22,6 @@ type RoleAssignmentWizardModalWrapperProps = {
 export const RoleAssignmentWizardModalWrapper = ({
   close,
   isOpen,
-  isEditing,
   preselected,
   editingRoleAssignment,
 }: RoleAssignmentWizardModalWrapperProps) => {
@@ -37,24 +35,16 @@ export const RoleAssignmentWizardModalWrapper = ({
   const toastContext = useContext(AcmToastContext)
   const { t } = useTranslation()
 
-  const [isEditingState, setIsEditingState] = useState(isEditing && editingRoleAssignment)
-  useEffect(() => setIsEditingState(isEditing && editingRoleAssignment), [editingRoleAssignment, isEditing])
+  const isEditing = !!editingRoleAssignment
 
   const saveFromWizard = async (data: RoleAssignmentWizardFormData) => {
-    if (isEditingState) {
+    if (isEditing) {
       try {
-        await deleteRoleAssignment(editingRoleAssignment!).promise.then(() => {
-          toastContext.addAlert({
-            title: t('Role assignment deleted'),
-            message: t('The previous role assignment has been deleted due to the editing procedure.'),
-            type: 'success',
-            autoClose: true,
-          })
-        })
+        await deleteRoleAssignment(editingRoleAssignment!).promise
       } catch (error: any) {
         toastContext.addAlert({
-          title: t('Role assignment deletion failed'),
-          message: t("The previous role assignment can't be edited. Error: {{error}}", {
+          title: t('Role assignment update failed'),
+          message: t("The role assignment can't be updated. Error: {{error}}", {
             error: (error as Error).message,
           }),
           type: 'danger',
@@ -69,7 +59,7 @@ export const RoleAssignmentWizardModalWrapper = ({
 
     const roleAssignmentsToSave = wizardDataToRoleAssignmentToSave(data, allClusterNames)
 
-    const filteredMultiClusterRoleAssignments = isEditingState
+    const filteredMultiClusterRoleAssignments = isEditing
       ? multiClusterRoleAssignments.map((mcra) =>
           mcra.metadata.name === editingRoleAssignment!.relatedMulticlusterRoleAssignment.metadata.name
             ? {
