@@ -423,8 +423,8 @@ describe('RoleAssignmentWizardModalWrapper', () => {
       await waitFor(() => {
         expect(mockDeleteRoleAssignment).toHaveBeenCalledWith(mockEditingRoleAssignment)
         expect(mockToastContext.addAlert).toHaveBeenCalledWith({
-          title: 'Role assignment added',
-          message: 'A role assignment for admin role added.',
+          title: 'Role assignment updated',
+          message: 'A role assignment for admin role updated.',
           type: 'success',
           autoClose: true,
         })
