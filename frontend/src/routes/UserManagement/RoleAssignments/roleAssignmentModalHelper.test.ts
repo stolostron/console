@@ -1,14 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { GroupKind, ManagedClusterSetBinding, MulticlusterRoleAssignmentNamespace, UserKind } from '../../../resources'
 import { findManagedClusterSetBinding } from '../../../resources/clients/managed-cluster-set-binding-client'
+import { FlattenedRoleAssignment } from '../../../resources/clients/model/flattened-role-assignment'
+import { PlacementClusters } from '../../../resources/clients/model/placement-clusters'
+import { RoleAssignmentToSave } from '../../../resources/clients/model/role-assignment-to-save'
 import {
   addRoleAssignment,
   findRoleAssignments,
   getPlacementsForRoleAssignment,
 } from '../../../resources/clients/multicluster-role-assignment-client'
-import { FlattenedRoleAssignment } from '../../../resources/clients/model/flattened-role-assignment'
-import { PlacementClusters } from '../../../resources/clients/model/placement-clusters'
-import { RoleAssignmentToSave } from '../../../resources/clients/model/role-assignment-to-save'
+import { Subject } from '../../../resources/kubernetes-client'
 import {
   MulticlusterRoleAssignment,
   MulticlusterRoleAssignmentApiVersion,
@@ -16,12 +17,10 @@ import {
 } from '../../../resources/multicluster-role-assignment'
 import { Placement } from '../../../resources/placement'
 import {
-  dataToRoleAssignmentToSave,
   existingRoleAssignmentsBySubjectRole,
+  saveAllRoleAssignments,
   saveRoleAssignment,
 } from './roleAssignmentModalHelper'
-import { RoleAssignmentFormDataType } from './hook/RoleAssignmentFormDataHook'
-import { Subject } from '../../../resources/kubernetes-client'
 
 type SaveRoleAssignmentCallbacks = {
   onSuccess: (role: string) => void
@@ -39,325 +38,6 @@ jest.mock('../../../resources/clients/managed-cluster-set-binding-client', () =>
 }))
 
 describe('roleAssignmentHelper', () => {
-  describe('dataToRoleAssignmentToSave', () => {
-    it('should create role assignments for a single user with a single role', () => {
-      const data: RoleAssignmentFormDataType = {
-        subject: {
-          kind: UserKind,
-          user: ['john.doe'],
-        },
-        scope: {
-          kind: 'specific',
-          clusterNames: ['cluster-1'],
-          namespaces: ['namespace-1'],
-        },
-        roles: ['admin'],
-      }
-
-      const result = dataToRoleAssignmentToSave(data)
-
-      expect(result).toHaveLength(1)
-      expect(result[0]).toEqual({
-        clusterRole: 'admin',
-        clusterNames: ['cluster-1'],
-        clusterSetNames: [],
-        targetNamespaces: ['namespace-1'],
-        subject: {
-          name: 'john.doe',
-          kind: UserKind,
-        },
-      })
-    })
-
-    it('should create role assignments for multiple users with a single role', () => {
-      const data: RoleAssignmentFormDataType = {
-        subject: {
-          kind: UserKind,
-          user: ['user1', 'user2', 'user3'],
-        },
-        scope: {
-          kind: 'specific',
-          clusterNames: ['cluster-1'],
-          namespaces: ['namespace-1'],
-        },
-        roles: ['viewer'],
-      }
-
-      const result = dataToRoleAssignmentToSave(data)
-
-      expect(result).toHaveLength(3)
-      expect(result[0].subject.name).toBe('user1')
-      expect(result[1].subject.name).toBe('user2')
-      expect(result[2].subject.name).toBe('user3')
-      expect(result.every((ra) => ra.clusterRole === 'viewer')).toBe(true)
-    })
-
-    it('should create role assignments for a single user with multiple roles', () => {
-      const data: RoleAssignmentFormDataType = {
-        subject: {
-          kind: UserKind,
-          user: ['john.doe'],
-        },
-        scope: {
-          kind: 'specific',
-          clusterNames: ['cluster-1'],
-          namespaces: ['namespace-1'],
-        },
-        roles: ['admin', 'editor', 'viewer'],
-      }
-
-      const result = dataToRoleAssignmentToSave(data)
-
-      expect(result).toHaveLength(3)
-      expect(result[0].clusterRole).toBe('admin')
-      expect(result[1].clusterRole).toBe('editor')
-      expect(result[2].clusterRole).toBe('viewer')
-      expect(result.every((ra) => ra.subject.name === 'john.doe')).toBe(true)
-    })
-
-    it('should create role assignments for multiple users with multiple roles (cartesian product)', () => {
-      const data: RoleAssignmentFormDataType = {
-        subject: {
-          kind: UserKind,
-          user: ['user1', 'user2'],
-        },
-        scope: {
-          kind: 'specific',
-          clusterNames: ['cluster-1'],
-        },
-        roles: ['admin', 'viewer'],
-      }
-
-      const result = dataToRoleAssignmentToSave(data)
-
-      // 2 users × 2 roles = 4 role assignments
-      expect(result).toHaveLength(4)
-
-      // Verify all combinations exist
-      expect(result).toContainEqual(
-        expect.objectContaining({ clusterRole: 'admin', subject: { name: 'user1', kind: UserKind } })
-      )
-      expect(result).toContainEqual(
-        expect.objectContaining({ clusterRole: 'admin', subject: { name: 'user2', kind: UserKind } })
-      )
-      expect(result).toContainEqual(
-        expect.objectContaining({ clusterRole: 'viewer', subject: { name: 'user1', kind: UserKind } })
-      )
-      expect(result).toContainEqual(
-        expect.objectContaining({ clusterRole: 'viewer', subject: { name: 'user2', kind: UserKind } })
-      )
-    })
-
-    it('should handle group subjects correctly', () => {
-      const data: RoleAssignmentFormDataType = {
-        subject: {
-          kind: GroupKind,
-          group: ['developers', 'admins'],
-        },
-        scope: {
-          kind: 'all',
-          clusterNames: ['cluster-1', 'cluster-2'],
-        },
-        roles: ['editor'],
-      }
-
-      const result = dataToRoleAssignmentToSave(data)
-
-      expect(result).toHaveLength(2)
-      expect(result[0].subject.kind).toBe(GroupKind)
-      expect(result[0].subject.name).toBe('developers')
-      expect(result[1].subject.kind).toBe(GroupKind)
-      expect(result[1].subject.name).toBe('admins')
-    })
-
-    it('should return empty array when no users are provided', () => {
-      const data: RoleAssignmentFormDataType = {
-        subject: {
-          kind: UserKind,
-          user: [],
-        },
-        scope: {
-          kind: 'specific',
-          clusterNames: ['cluster-1'],
-        },
-        roles: ['admin'],
-      }
-
-      const result = dataToRoleAssignmentToSave(data)
-
-      expect(result).toHaveLength(0)
-    })
-
-    it('should return empty array when no roles are provided', () => {
-      const data: RoleAssignmentFormDataType = {
-        subject: {
-          kind: UserKind,
-          user: ['user1'],
-        },
-        scope: {
-          kind: 'specific',
-          clusterNames: ['cluster-1'],
-        },
-        roles: [],
-      }
-
-      const result = dataToRoleAssignmentToSave(data)
-
-      expect(result).toHaveLength(0)
-    })
-
-    it('should return empty array when user is undefined', () => {
-      const data: RoleAssignmentFormDataType = {
-        subject: {
-          kind: UserKind,
-          user: undefined,
-        },
-        scope: {
-          kind: 'specific',
-          clusterNames: ['cluster-1'],
-        },
-        roles: ['admin'],
-      }
-
-      const result = dataToRoleAssignmentToSave(data)
-
-      expect(result).toHaveLength(0)
-    })
-
-    it('should preserve multiple cluster names in scope', () => {
-      const data: RoleAssignmentFormDataType = {
-        subject: {
-          kind: UserKind,
-          user: ['user1'],
-        },
-        scope: {
-          kind: 'all',
-          clusterNames: ['cluster-1', 'cluster-2', 'cluster-3'],
-        },
-        roles: ['admin'],
-      }
-
-      const result = dataToRoleAssignmentToSave(data)
-
-      expect(result).toHaveLength(1)
-      expect(result[0].clusterNames).toEqual(['cluster-1', 'cluster-2', 'cluster-3'])
-    })
-
-    it('should preserve multiple namespaces in scope', () => {
-      const data: RoleAssignmentFormDataType = {
-        subject: {
-          kind: UserKind,
-          user: ['user1'],
-        },
-        scope: {
-          kind: 'specific',
-          clusterNames: ['cluster-1'],
-          namespaces: ['ns-1', 'ns-2', 'ns-3'],
-        },
-        roles: ['admin'],
-      }
-
-      const result = dataToRoleAssignmentToSave(data)
-
-      expect(result).toHaveLength(1)
-      expect(result[0].targetNamespaces).toEqual(['ns-1', 'ns-2', 'ns-3'])
-    })
-
-    it('should handle undefined namespaces', () => {
-      const data: RoleAssignmentFormDataType = {
-        subject: {
-          kind: UserKind,
-          user: ['user1'],
-        },
-        scope: {
-          kind: 'all',
-          clusterNames: ['cluster-1'],
-          namespaces: undefined,
-        },
-        roles: ['admin'],
-      }
-
-      const result = dataToRoleAssignmentToSave(data)
-
-      expect(result).toHaveLength(1)
-      expect(result[0].targetNamespaces).toBeUndefined()
-    })
-
-    it('should always set clusterSetNames to empty array', () => {
-      const data: RoleAssignmentFormDataType = {
-        subject: {
-          kind: UserKind,
-          user: ['user1', 'user2'],
-        },
-        scope: {
-          kind: 'specific',
-          clusterNames: ['cluster-1'],
-        },
-        roles: ['admin', 'viewer'],
-      }
-
-      const result = dataToRoleAssignmentToSave(data)
-
-      expect(result).toHaveLength(4)
-      expect(result.every((ra) => ra.clusterSetNames?.length === 0)).toBe(true)
-    })
-
-    it('should handle undefined clusterNames in scope', () => {
-      const data: RoleAssignmentFormDataType = {
-        subject: {
-          kind: UserKind,
-          user: ['user1'],
-        },
-        scope: {
-          kind: 'all',
-          clusterNames: undefined,
-        },
-        roles: ['admin'],
-      }
-
-      const result = dataToRoleAssignmentToSave(data)
-
-      expect(result).toHaveLength(1)
-      expect(result[0].clusterNames).toBeUndefined()
-    })
-
-    it('should return empty array when group is undefined for GroupKind', () => {
-      const data: RoleAssignmentFormDataType = {
-        subject: {
-          kind: GroupKind,
-          group: undefined,
-        },
-        scope: {
-          kind: 'specific',
-          clusterNames: ['cluster-1'],
-        },
-        roles: ['admin'],
-      }
-
-      const result = dataToRoleAssignmentToSave(data)
-
-      expect(result).toHaveLength(0)
-    })
-
-    it('should return empty array when group is empty array for GroupKind', () => {
-      const data: RoleAssignmentFormDataType = {
-        subject: {
-          kind: GroupKind,
-          group: [],
-        },
-        scope: {
-          kind: 'specific',
-          clusterNames: ['cluster-1'],
-        },
-        roles: ['admin'],
-      }
-
-      const result = dataToRoleAssignmentToSave(data)
-
-      expect(result).toHaveLength(0)
-    })
-  })
-
   describe('existingRoleAssignmentsBySubjectRole', () => {
     const mockFindRoleAssignments = findRoleAssignments as jest.MockedFunction<typeof findRoleAssignments>
 
@@ -832,6 +512,215 @@ describe('roleAssignmentHelper', () => {
         })
       )
       expect(callbacks.onSuccess).toHaveBeenCalledWith('admin')
+    })
+  })
+
+  describe('saveAllRoleAssignments', () => {
+    const mockAddRoleAssignment = addRoleAssignment as jest.MockedFunction<typeof addRoleAssignment>
+    const mockFindManagedClusterSetBinding = findManagedClusterSetBinding as jest.MockedFunction<
+      typeof findManagedClusterSetBinding
+    >
+    const mockGetPlacementsForRoleAssignment = getPlacementsForRoleAssignment as jest.MockedFunction<
+      typeof getPlacementsForRoleAssignment
+    >
+
+    const mockToastContext = {
+      addAlert: jest.fn(),
+      removeAlert: jest.fn(),
+      activeAlerts: [],
+      alertInfos: [],
+      removeVisibleAlert: jest.fn(),
+      clearAlerts: jest.fn(),
+    }
+
+    const mockT = ((key: string, options?: Record<string, unknown>) => {
+      if (options) {
+        return Object.entries(options).reduce((acc, [k, v]) => acc.replace(`{{${k}}}`, String(v)), key)
+      }
+      return key
+    }) as unknown as jest.MockedFunction<typeof jest.fn>
+
+    beforeEach(() => {
+      jest.clearAllMocks()
+      mockFindManagedClusterSetBinding.mockReturnValue([])
+      mockGetPlacementsForRoleAssignment.mockReturnValue([])
+    })
+
+    it('should save all role assignments and show success toasts', async () => {
+      mockAddRoleAssignment.mockResolvedValue({} as never)
+
+      const roleAssignmentsToSave: RoleAssignmentToSave[] = [
+        {
+          clusterRole: 'admin',
+          clusterNames: ['cluster-1'],
+          clusterSetNames: [],
+          subject: { name: 'user1', kind: UserKind },
+        },
+        {
+          clusterRole: 'viewer',
+          clusterNames: ['cluster-1'],
+          clusterSetNames: [],
+          subject: { name: 'user2', kind: UserKind },
+        },
+      ]
+
+      await saveAllRoleAssignments(roleAssignmentsToSave, new Map(), [], [], mockToastContext, mockT as never)
+
+      expect(mockAddRoleAssignment).toHaveBeenCalledTimes(2)
+      expect(mockToastContext.addAlert).toHaveBeenCalledTimes(2)
+      expect(mockToastContext.addAlert).toHaveBeenCalledWith({
+        title: 'Role assignment added',
+        message: 'A role assignment for admin role added.',
+        type: 'success',
+        autoClose: true,
+      })
+      expect(mockToastContext.addAlert).toHaveBeenCalledWith({
+        title: 'Role assignment added',
+        message: 'A role assignment for viewer role added.',
+        type: 'success',
+        autoClose: true,
+      })
+    })
+
+    it('should show error toast when role assignment fails', async () => {
+      mockAddRoleAssignment.mockRejectedValue(new Error('Network error'))
+
+      const roleAssignmentsToSave: RoleAssignmentToSave[] = [
+        {
+          clusterRole: 'admin',
+          clusterNames: ['cluster-1'],
+          clusterSetNames: [],
+          subject: { name: 'user1', kind: UserKind },
+        },
+      ]
+
+      await saveAllRoleAssignments(roleAssignmentsToSave, new Map(), [], [], mockToastContext, mockT as never)
+
+      expect(mockToastContext.addAlert).toHaveBeenCalledWith({
+        title: 'Role assignment creation failed',
+        message: 'The role assignment creation for admin role failed. Error: Error: Network error',
+        type: 'danger',
+        autoClose: true,
+      })
+    })
+
+    it('should show duplicate error toast when duplicate is detected', async () => {
+      mockAddRoleAssignment.mockRejectedValue(new Error('Duplicate role assignment detected'))
+
+      const roleAssignmentsToSave: RoleAssignmentToSave[] = [
+        {
+          clusterRole: 'editor',
+          clusterNames: ['cluster-1'],
+          clusterSetNames: [],
+          subject: { name: 'user1', kind: UserKind },
+        },
+      ]
+
+      await saveAllRoleAssignments(roleAssignmentsToSave, new Map(), [], [], mockToastContext, mockT as never)
+
+      expect(mockToastContext.addAlert).toHaveBeenCalledWith({
+        title: 'Role assignment creation failed',
+        message: 'This role assignment already exists. Please modify the selection to create a unique assignment.',
+        type: 'danger',
+        autoClose: true,
+      })
+    })
+
+    it('should handle mixed success and failure scenarios', async () => {
+      mockAddRoleAssignment.mockResolvedValueOnce({} as never).mockRejectedValueOnce(new Error('Network error'))
+
+      const roleAssignmentsToSave: RoleAssignmentToSave[] = [
+        {
+          clusterRole: 'admin',
+          clusterNames: ['cluster-1'],
+          clusterSetNames: [],
+          subject: { name: 'user1', kind: UserKind },
+        },
+        {
+          clusterRole: 'viewer',
+          clusterNames: ['cluster-1'],
+          clusterSetNames: [],
+          subject: { name: 'user2', kind: UserKind },
+        },
+      ]
+
+      await saveAllRoleAssignments(roleAssignmentsToSave, new Map(), [], [], mockToastContext, mockT as never)
+
+      expect(mockToastContext.addAlert).toHaveBeenCalledTimes(2)
+      expect(mockToastContext.addAlert).toHaveBeenCalledWith(expect.objectContaining({ type: 'success' }))
+      expect(mockToastContext.addAlert).toHaveBeenCalledWith(expect.objectContaining({ type: 'danger' }))
+    })
+
+    it('should handle empty role assignments array', async () => {
+      await saveAllRoleAssignments([], new Map(), [], [], mockToastContext, mockT as never)
+
+      expect(mockAddRoleAssignment).not.toHaveBeenCalled()
+      expect(mockToastContext.addAlert).not.toHaveBeenCalled()
+    })
+
+    it('should pass existing role assignments to saveRoleAssignment', async () => {
+      const existingMcra: MulticlusterRoleAssignment = {
+        apiVersion: MulticlusterRoleAssignmentApiVersion,
+        kind: MulticlusterRoleAssignmentKind,
+        metadata: { name: 'existing-mcra', namespace: MulticlusterRoleAssignmentNamespace },
+        spec: {
+          subject: { name: 'user1', kind: UserKind },
+          roleAssignments: [],
+        },
+      }
+
+      const existingBySubjectRole = new Map<string, MulticlusterRoleAssignment>()
+      existingBySubjectRole.set(`${UserKind}|user1`, existingMcra)
+
+      mockAddRoleAssignment.mockResolvedValue({} as never)
+
+      const roleAssignmentsToSave: RoleAssignmentToSave[] = [
+        {
+          clusterRole: 'admin',
+          clusterNames: ['cluster-1'],
+          clusterSetNames: [],
+          subject: { name: 'user1', kind: UserKind },
+        },
+      ]
+
+      await saveAllRoleAssignments(
+        roleAssignmentsToSave,
+        existingBySubjectRole,
+        [],
+        [],
+        mockToastContext,
+        mockT as never
+      )
+
+      expect(mockAddRoleAssignment).toHaveBeenCalledWith(
+        roleAssignmentsToSave[0],
+        expect.objectContaining({
+          existingMulticlusterRoleAssignment: existingMcra,
+        })
+      )
+    })
+
+    it('should handle group subjects correctly', async () => {
+      mockAddRoleAssignment.mockResolvedValue({} as never)
+
+      const roleAssignmentsToSave: RoleAssignmentToSave[] = [
+        {
+          clusterRole: 'admin',
+          clusterNames: ['cluster-1'],
+          clusterSetNames: [],
+          subject: { name: 'developers', kind: GroupKind },
+        },
+      ]
+
+      await saveAllRoleAssignments(roleAssignmentsToSave, new Map(), [], [], mockToastContext, mockT as never)
+
+      expect(mockAddRoleAssignment).toHaveBeenCalledWith(
+        expect.objectContaining({
+          subject: { name: 'developers', kind: GroupKind },
+        }),
+        expect.anything()
+      )
+      expect(mockToastContext.addAlert).toHaveBeenCalledWith(expect.objectContaining({ type: 'success' }))
     })
   })
 })

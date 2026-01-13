@@ -23,6 +23,7 @@ import { Secret } from '../../../../../../../../resources'
 import { getExtensionAfter } from '../DetailsForm'
 import { HypershiftAgentContext } from './HypershiftAgentContext'
 import { getClusterImageVersion, getFieldLabels } from './utils'
+import { getChannelFromReleaseImage } from '../../../../utils/utils'
 import { useSharedAtoms, useRecoilValue } from '../../../../../../../../shared-recoil'
 import { FieldName } from '../types'
 
@@ -35,6 +36,7 @@ type FormControl = {
     releaseImage?: string
     sshPublicKey?: string
     userManagedNetworking?: boolean
+    channel?: string
   }
   disabled?: VoidFunction
   reverse?: (control: { active: ClusterDetailsValues }, templateObject: any) => void
@@ -53,6 +55,7 @@ const fields: any = {
   name: { path: 'HostedCluster[0].metadata.name' },
   baseDnsDomain: { path: 'HostedCluster[0].spec.dns.baseDomain' },
   releaseImage: { path: 'HostedCluster[0].spec.release.image' },
+  channel: { path: 'HostedCluster[0].spec.channel' },
   pullSecret: {},
 }
 
@@ -102,6 +105,10 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
           set(active, key, getValue(templateObject, path) || '')
         }
       })
+      // Compute channel from releaseImage if not already set in the template
+      if (active.releaseImage && !active.channel) {
+        active.channel = getChannelFromReleaseImage(active.releaseImage, 'fast')
+      }
       if (!isEqual(active, control.active)) {
         control.active = active
       }
@@ -151,12 +158,16 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
     setReleaseImage(formikValues.openshiftVersion)
     setSshPublicKey(control.active.sshPublicKey ?? '')
 
+    const selectedReleaseImage = clusterImageSets.find(
+      ({ metadata }) => metadata.name === formikValues.openshiftVersion
+    )?.spec?.releaseImage
+
     const values = {
       ...formikValues,
       managedClusterSet: control.active.managedClusterSet,
       additionalLabels: control.active.additionalLabels,
-      releaseImage: clusterImageSets.find(({ metadata }) => metadata.name === formikValues.openshiftVersion)?.spec
-        ?.releaseImage,
+      releaseImage: selectedReleaseImage,
+      channel: getChannelFromReleaseImage(selectedReleaseImage, 'fast'),
     }
     if (!isEqual(values, control.active)) {
       if (!initRender || control.active.name === '') {

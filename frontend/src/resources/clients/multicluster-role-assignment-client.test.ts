@@ -29,6 +29,8 @@ import {
   createMockMulticlusterRoleAssignment,
   createPlacementClusters,
   findRoleAssignmentsSortTestCases,
+  getClustersDeduplicationTestCases,
+  getClustersSortingTestCases,
 } from './multicluster-role-assignment-client.fixtures'
 
 const mockGetResource = jest.spyOn(req, 'getResource')
@@ -575,6 +577,312 @@ describe('multicluster-role-assignment-client', function () {
     })
   })
 
+  describe('getClustersForRoleAssignment deduplication', () => {
+    /**
+     * Tests cluster deduplication through findRoleAssignments which internally uses getClustersForRoleAssignment.
+     * The goal is to verify that when multiple placements reference overlapping clusters,
+     * the returned clusterNames array contains no duplicates.
+     */
+    it.each(getClustersDeduplicationTestCases)(
+      '$description',
+      ({ placementClusters, placementNames, expectedClusters }) => {
+        // Create a MulticlusterRoleAssignment with a RoleAssignment that references the given placements
+        const mra: MulticlusterRoleAssignment = {
+          apiVersion: 'rbac.open-cluster-management.io/v1beta1',
+          kind: 'MulticlusterRoleAssignment',
+          metadata: { name: 'test-mra', namespace: MulticlusterRoleAssignmentNamespace },
+          spec: {
+            subject: { name: 'test-user', kind: UserKind },
+            roleAssignments: [
+              {
+                name: 'test-role-assignment',
+                clusterRole: 'admin',
+                clusterSelection: {
+                  type: 'placements',
+                  placements: placementNames.map((name) => ({
+                    name,
+                    namespace: MulticlusterRoleAssignmentNamespace,
+                  })),
+                },
+              },
+            ],
+          },
+          status: {},
+        }
+
+        // Call findRoleAssignments which internally uses getClustersForRoleAssignment
+        const result = findRoleAssignments({}, [mra], placementClusters)
+
+        // Verify the result
+        expect(result).toHaveLength(1)
+
+        // Verify no duplicates in clusterNames and proper sorting
+        const clusterNames = result[0].clusterNames
+        const uniqueClusterNames = [...new Set(clusterNames)]
+        expect(clusterNames).toHaveLength(uniqueClusterNames.length)
+        expect(clusterNames).toEqual(expectedClusters)
+        expect(clusterNames).toHaveLength(expectedClusters.length)
+      }
+    )
+
+    it('should return unique cluster names when the same cluster appears in multiple placements', () => {
+      // Arrange: Create placements where the same cluster appears multiple times
+      const placementClusters: PlacementClusters[] = [
+        createPlacementClusters('placement-prod', ['production-cluster', 'shared-cluster']),
+        createPlacementClusters('placement-staging', ['staging-cluster', 'shared-cluster']),
+        createPlacementClusters('placement-dev', ['dev-cluster', 'shared-cluster']),
+      ]
+
+      const mra: MulticlusterRoleAssignment = {
+        apiVersion: 'rbac.open-cluster-management.io/v1beta1',
+        kind: 'MulticlusterRoleAssignment',
+        metadata: { name: 'test-mra', namespace: MulticlusterRoleAssignmentNamespace },
+        spec: {
+          subject: { name: 'test-user', kind: UserKind },
+          roleAssignments: [
+            {
+              name: 'multi-placement-role',
+              clusterRole: 'admin',
+              clusterSelection: {
+                type: 'placements',
+                placements: [
+                  { name: 'placement-prod', namespace: MulticlusterRoleAssignmentNamespace },
+                  { name: 'placement-staging', namespace: MulticlusterRoleAssignmentNamespace },
+                  { name: 'placement-dev', namespace: MulticlusterRoleAssignmentNamespace },
+                ],
+              },
+            },
+          ],
+        },
+        status: {},
+      }
+
+      // Act
+      const result = findRoleAssignments({}, [mra], placementClusters)
+
+      // Assert
+      expect(result).toHaveLength(1)
+
+      // Verify 'shared-cluster' appears only once despite being in all 3 placements
+      const clusterNames = result[0].clusterNames
+      const sharedClusterCount = clusterNames.filter((c) => c === 'shared-cluster').length
+      expect(sharedClusterCount).toBe(1)
+
+      // Verify all unique clusters are present and sorted alphabetically
+      expect(clusterNames).toEqual(['dev-cluster', 'production-cluster', 'shared-cluster', 'staging-cluster'])
+      expect(clusterNames).toHaveLength(4)
+    })
+
+    it('should not have duplicates when placements have completely overlapping clusters', () => {
+      // Arrange: Create placements with identical cluster lists
+      const placementClusters: PlacementClusters[] = [
+        createPlacementClusters('placement-1', ['cluster-a', 'cluster-b', 'cluster-c']),
+        createPlacementClusters('placement-2', ['cluster-a', 'cluster-b', 'cluster-c']),
+        createPlacementClusters('placement-3', ['cluster-a', 'cluster-b', 'cluster-c']),
+      ]
+
+      const mra: MulticlusterRoleAssignment = {
+        apiVersion: 'rbac.open-cluster-management.io/v1beta1',
+        kind: 'MulticlusterRoleAssignment',
+        metadata: { name: 'test-mra', namespace: MulticlusterRoleAssignmentNamespace },
+        spec: {
+          subject: { name: 'test-user', kind: UserKind },
+          roleAssignments: [
+            {
+              name: 'identical-placements-role',
+              clusterRole: 'admin',
+              clusterSelection: {
+                type: 'placements',
+                placements: [
+                  { name: 'placement-1', namespace: MulticlusterRoleAssignmentNamespace },
+                  { name: 'placement-2', namespace: MulticlusterRoleAssignmentNamespace },
+                  { name: 'placement-3', namespace: MulticlusterRoleAssignmentNamespace },
+                ],
+              },
+            },
+          ],
+        },
+        status: {},
+      }
+
+      // Act
+      const result = findRoleAssignments({}, [mra], placementClusters)
+
+      // Assert
+      expect(result).toHaveLength(1)
+
+      // Verify only 3 unique clusters despite 3 placements each having the same 3 clusters, sorted alphabetically
+      const clusterNames = result[0].clusterNames
+      expect(clusterNames).toHaveLength(3)
+      expect(clusterNames).toEqual(['cluster-a', 'cluster-b', 'cluster-c'])
+    })
+  })
+
+  describe('getClustersForRoleAssignment sorting', () => {
+    /**
+     * Tests cluster sorting through findRoleAssignments which internally uses getClustersForRoleAssignment.
+     * The goal is to verify that the returned clusterNames array is sorted alphabetically using localeCompare.
+     */
+    it.each(getClustersSortingTestCases)('$description', ({ placementClusters, placementNames, expectedClusters }) => {
+      // Create a MulticlusterRoleAssignment with a RoleAssignment that references the given placements
+      const mra: MulticlusterRoleAssignment = {
+        apiVersion: 'rbac.open-cluster-management.io/v1beta1',
+        kind: 'MulticlusterRoleAssignment',
+        metadata: { name: 'test-mra', namespace: MulticlusterRoleAssignmentNamespace },
+        spec: {
+          subject: { name: 'test-user', kind: UserKind },
+          roleAssignments: [
+            {
+              name: 'test-role-assignment',
+              clusterRole: 'admin',
+              clusterSelection: {
+                type: 'placements',
+                placements: placementNames.map((name) => ({
+                  name,
+                  namespace: MulticlusterRoleAssignmentNamespace,
+                })),
+              },
+            },
+          ],
+        },
+        status: {},
+      }
+
+      // Call findRoleAssignments which internally uses getClustersForRoleAssignment
+      const result = findRoleAssignments({}, [mra], placementClusters)
+
+      // Verify the result
+      expect(result).toHaveLength(1)
+
+      // Verify clusters are sorted correctly
+      const clusterNames = result[0].clusterNames
+      expect(clusterNames).toEqual(expectedClusters)
+    })
+
+    it('should return clusters in alphabetical order regardless of placement order', () => {
+      // Arrange: Create placements with clusters in various orders
+      const placementClusters: PlacementClusters[] = [
+        createPlacementClusters('placement-z', ['zulu-cluster', 'mike-cluster']),
+        createPlacementClusters('placement-a', ['alpha-cluster', 'yankee-cluster']),
+        createPlacementClusters('placement-m', ['bravo-cluster']),
+      ]
+
+      const mra: MulticlusterRoleAssignment = {
+        apiVersion: 'rbac.open-cluster-management.io/v1beta1',
+        kind: 'MulticlusterRoleAssignment',
+        metadata: { name: 'test-mra', namespace: MulticlusterRoleAssignmentNamespace },
+        spec: {
+          subject: { name: 'test-user', kind: UserKind },
+          roleAssignments: [
+            {
+              name: 'multi-placement-role',
+              clusterRole: 'admin',
+              clusterSelection: {
+                type: 'placements',
+                placements: [
+                  { name: 'placement-z', namespace: MulticlusterRoleAssignmentNamespace },
+                  { name: 'placement-a', namespace: MulticlusterRoleAssignmentNamespace },
+                  { name: 'placement-m', namespace: MulticlusterRoleAssignmentNamespace },
+                ],
+              },
+            },
+          ],
+        },
+        status: {},
+      }
+
+      // Act
+      const result = findRoleAssignments({}, [mra], placementClusters)
+
+      // Assert
+      expect(result).toHaveLength(1)
+      const clusterNames = result[0].clusterNames
+      expect(clusterNames).toEqual(['alpha-cluster', 'bravo-cluster', 'mike-cluster', 'yankee-cluster', 'zulu-cluster'])
+    })
+
+    it('should deduplicate and sort clusters from overlapping placements', () => {
+      // Arrange: Create placements with overlapping unsorted clusters
+      const placementClusters: PlacementClusters[] = [
+        createPlacementClusters('placement-1', ['zebra', 'alpha', 'delta']),
+        createPlacementClusters('placement-2', ['alpha', 'charlie', 'zebra']),
+        createPlacementClusters('placement-3', ['bravo', 'delta', 'echo']),
+      ]
+
+      const mra: MulticlusterRoleAssignment = {
+        apiVersion: 'rbac.open-cluster-management.io/v1beta1',
+        kind: 'MulticlusterRoleAssignment',
+        metadata: { name: 'test-mra', namespace: MulticlusterRoleAssignmentNamespace },
+        spec: {
+          subject: { name: 'test-user', kind: UserKind },
+          roleAssignments: [
+            {
+              name: 'overlapping-role',
+              clusterRole: 'admin',
+              clusterSelection: {
+                type: 'placements',
+                placements: [
+                  { name: 'placement-1', namespace: MulticlusterRoleAssignmentNamespace },
+                  { name: 'placement-2', namespace: MulticlusterRoleAssignmentNamespace },
+                  { name: 'placement-3', namespace: MulticlusterRoleAssignmentNamespace },
+                ],
+              },
+            },
+          ],
+        },
+        status: {},
+      }
+
+      // Act
+      const result = findRoleAssignments({}, [mra], placementClusters)
+
+      // Assert
+      expect(result).toHaveLength(1)
+      const clusterNames = result[0].clusterNames
+
+      // Verify sorted order and no duplicates
+      expect(clusterNames).toEqual(['alpha', 'bravo', 'charlie', 'delta', 'echo', 'zebra'])
+      expect(clusterNames).toHaveLength(6)
+    })
+
+    it('should verify clusters are sorted using localeCompare semantics', () => {
+      // Arrange: Test localeCompare-specific behavior
+      const placementClusters: PlacementClusters[] = [
+        createPlacementClusters('placement-1', ['zzz', 'AAA', 'aaa', 'ZZZ', 'bbb', 'BBB']),
+      ]
+
+      const mra: MulticlusterRoleAssignment = {
+        apiVersion: 'rbac.open-cluster-management.io/v1beta1',
+        kind: 'MulticlusterRoleAssignment',
+        metadata: { name: 'test-mra', namespace: MulticlusterRoleAssignmentNamespace },
+        spec: {
+          subject: { name: 'test-user', kind: UserKind },
+          roleAssignments: [
+            {
+              name: 'locale-compare-role',
+              clusterRole: 'admin',
+              clusterSelection: {
+                type: 'placements',
+                placements: [{ name: 'placement-1', namespace: MulticlusterRoleAssignmentNamespace }],
+              },
+            },
+          ],
+        },
+        status: {},
+      }
+
+      // Act
+      const result = findRoleAssignments({}, [mra], placementClusters)
+
+      // Assert
+      expect(result).toHaveLength(1)
+      const clusterNames = result[0].clusterNames
+
+      // Verify the result matches what localeCompare would produce
+      const expectedOrder = ['zzz', 'AAA', 'aaa', 'ZZZ', 'bbb', 'BBB'].sort((a, b) => a.localeCompare(b))
+      expect(clusterNames).toEqual(expectedOrder)
+    })
+  })
+
   describe('createAdditionalRoleAssignmentResources', () => {
     const mockCreateForClusterSetsBinding = managedClusterSetBindingClient.createForClusterSets as jest.Mock
     const mockCreateForClusters = placementClient.createForClusters as jest.Mock
@@ -974,13 +1282,13 @@ describe('multicluster-role-assignment-client', function () {
       it.each(addRoleAssignmentTestCases.filter((tc) => !tc.shouldSucceed))(
         '$description',
         async ({ roleAssignment, existingPlacements, expectedErrorMessage }) => {
-          const result = await addRoleAssignment(roleAssignment, {
-            existingMulticlusterRoleAssignment: undefined,
-            existingManagedClusterSetBindings: [],
-            existingPlacements,
-          })
-
-          await expect(result.promise).rejects.toThrow(expectedErrorMessage)
+          await expect(
+            addRoleAssignment(roleAssignment, {
+              existingMulticlusterRoleAssignment: undefined,
+              existingManagedClusterSetBindings: [],
+              existingPlacements,
+            })
+          ).rejects.toThrow(expectedErrorMessage)
         }
       )
     })
@@ -1068,13 +1376,13 @@ describe('multicluster-role-assignment-client', function () {
         ]
 
         // Test with existing MRA that has matching role assignment - should reject as duplicate
-        const result = await addRoleAssignment(roleAssignment, {
-          existingMulticlusterRoleAssignment: existingMRA,
-          existingManagedClusterSetBindings: [],
-          existingPlacements: [],
-        })
-
-        await expect(result.promise).rejects.toThrow('Duplicate role assignment detected.')
+        await expect(
+          addRoleAssignment(roleAssignment, {
+            existingMulticlusterRoleAssignment: existingMRA,
+            existingManagedClusterSetBindings: [],
+            existingPlacements: [],
+          })
+        ).rejects.toThrow('Duplicate role assignment detected.')
       })
 
       it('should succeed when role assignment is unique', async () => {

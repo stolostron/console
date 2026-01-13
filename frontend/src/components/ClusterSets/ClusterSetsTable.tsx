@@ -34,6 +34,7 @@ interface ClusterSetsTableProps {
   onSelectClusterSet?: (managedClusterSets: ManagedClusterSet[]) => void
   hiddenColumns?: string[]
   showExportButton?: boolean
+  initialSelectedClusterSets?: ManagedClusterSet[]
 }
 
 export const ClusterSetsTable = ({
@@ -43,6 +44,7 @@ export const ClusterSetsTable = ({
   onSelectClusterSet,
   hiddenColumns = [],
   showExportButton = true,
+  initialSelectedClusterSets,
 }: ClusterSetsTableProps) => {
   const { t } = useTranslation()
   const [modalProps, setModalProps] = useState<BulkActionModalProps<ManagedClusterSet> | { open: false }>({
@@ -303,6 +305,7 @@ export const ClusterSetsTable = ({
         showExportButton={showExportButton}
         exportFilePrefix="clustersets"
         onSelect={onSelectClusterSet}
+        initialSelectedItems={initialSelectedClusterSets}
       />
     </Fragment>
   )

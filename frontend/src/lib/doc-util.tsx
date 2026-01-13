@@ -71,6 +71,9 @@ export const DOC_LINKS = {
   VM_SNAPSHOT: `${OCP_DOC_BASE_PATH}/storage/using-container-storage-interface-csi#persistent-storage-csi-snapshots`,
   // AI doc links
   NUTANIX_POST_INSTALL: `https://docs.redhat.com/en/documentation/assisted_installer_for_openshift_container_platform/2024/html/installing_openshift_container_platform_with_the_assisted_installer/assembly_installing-on-nutanix#nutanix-post-installation-configuration_installing-on-nutanix`,
+  // ACM Welcome doc link
+  ACM_WELCOME:
+    'https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_management_for_kubernetes/2.0/html/about/welcome-to-red-hat-advanced-cluster-management-for-kubernetes',
 }
 
 export function ViewDocumentationLink(props: { doclink: string }): JSX.Element {
