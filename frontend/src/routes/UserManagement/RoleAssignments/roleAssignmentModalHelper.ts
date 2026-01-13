@@ -107,24 +107,29 @@ export const saveAllRoleAssignments = async (
   managedClusterSetBindings: ManagedClusterSetBinding[],
   placementClusters: PlacementClusters[],
   toastContext: IAlertContext,
-  t: TFunction
+  t: TFunction,
+  isEditing = false
 ): Promise<void> => {
   await Promise.all(
     roleAssignmentsToSave.map((roleAssignment) =>
       saveRoleAssignment(roleAssignment, existingBySubjectRole, managedClusterSetBindings, placementClusters, {
         onSuccess: (role) =>
           toastContext.addAlert({
-            title: t('Role assignment added'),
-            message: t('A role assignment for {{role}} role added.', { role }),
+            title: isEditing ? t('Role assignment updated') : t('Role assignment added'),
+            message: isEditing
+              ? t('A role assignment for {{role}} role updated.', { role })
+              : t('A role assignment for {{role}} role added.', { role }),
             type: 'success',
             autoClose: true,
           }),
         onError: (role, error, isDuplicateError) =>
           toastContext.addAlert({
-            title: t('Role assignment creation failed'),
+            title: isEditing ? t('Role assignment update failed') : t('Role assignment creation failed'),
             message: isDuplicateError
               ? t('This role assignment already exists. Please modify the selection to create a unique assignment.')
-              : t('The role assignment creation for {{role}} role failed. Error: {{error}}', { role, error }),
+              : isEditing
+                ? t('The role assignment update for {{role}} role failed. Error: {{error}}', { role, error })
+                : t('The role assignment creation for {{role}} role failed. Error: {{error}}', { role, error }),
             type: 'danger',
             autoClose: true,
           }),

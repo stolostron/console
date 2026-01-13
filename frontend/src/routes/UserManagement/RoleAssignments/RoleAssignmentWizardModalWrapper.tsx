@@ -87,7 +87,8 @@ export const RoleAssignmentWizardModalWrapper = ({
       managedClusterSetBindings,
       placementClusters,
       toastContext,
-      t
+      t,
+      isEditing
     )
     close()
   }
