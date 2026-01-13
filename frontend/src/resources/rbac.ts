@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Metadata } from './metadata'
-import { IResourceDefinition } from './resource'
-import { listResources } from './utils/resource-request'
+import { IResource, IResourceDefinition } from './resource'
+import { createResource, listResources } from './utils/resource-request'
 import { Rule, LocalObjectReference, Subject, RoleRef } from './kubernetes-client'
 import { ObjectReference } from '@openshift-console/dynamic-plugin-sdk'
 
@@ -16,6 +16,12 @@ export type ServiceAccountApiVersionType = 'v1'
 
 export const UserKind = 'User'
 export type UserKindType = 'User'
+
+export interface UserRequest extends IResource {
+  apiVersion: UserApiVersionType
+  kind: UserKindType
+  metadata: Metadata
+}
 
 export const GroupKind = 'Group'
 export type GroupKindType = 'Group'
@@ -151,4 +157,14 @@ export function listRoles() {
 
 export function listRoleBindings() {
   return listResources<RoleBinding>(RoleBindingDefinition)
+}
+
+export const createUser = (user: Pick<User, 'fullName' | 'groups' | 'identities' | 'metadata'>) => {
+  if (!user.metadata.name) throw new Error('User name is undefined')
+
+  return createResource<UserRequest, User>({
+    apiVersion: UserApiVersion,
+    kind: UserKind,
+    ...user,
+  })
 }
