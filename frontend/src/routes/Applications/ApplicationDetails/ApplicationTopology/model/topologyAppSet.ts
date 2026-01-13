@@ -282,7 +282,7 @@ async function getAppSetResources(name: string, namespace: string, appSetApps: a
   const applications = appsetSearchResult.data?.searchResult?.[0]?.items
   // // Filter out excluded kinds from related results
   const excludedKinds = ['application', 'applicationset', 'cluster', 'subscription', 'namespace', 'pod', 'replicaset']
-  const relatedResults = appsetSearchResult.data?.searchResult?.[0]?.related.filter(
+  const relatedResults = appsetSearchResult.data?.searchResult?.[0]?.related?.filter(
     (relatedResult: SearchRelatedResult | null) =>
       relatedResult && !excludedKinds.includes(relatedResult.kind.toLowerCase())
   )

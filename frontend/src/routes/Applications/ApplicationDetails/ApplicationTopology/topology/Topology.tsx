@@ -12,13 +12,6 @@ import {
   Visualization,
   VisualizationProvider,
   isNode,
-  ElementFactory,
-  ModelKind,
-  GraphElement,
-  BaseGraph,
-  BaseNode,
-  BaseEdge,
-  EllipseAnchor,
 } from '@patternfly/react-topology'
 import layoutFactory from './layout/layoutFactory'
 import getLayoutModel from './layout/layoutModel'
@@ -161,35 +154,22 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
   )
 }
 
-const elementFactory: ElementFactory = (kind: ModelKind): GraphElement | undefined => {
-  switch (kind) {
-    case ModelKind.graph:
-      return new BaseGraph()
-    case ModelKind.node: {
-      const node = new BaseNode()
-      node.setAnchor(new EllipseAnchor(node))
-      return node
-    }
-    case ModelKind.edge: {
-      return new BaseEdge()
-    }
-    default:
-      return undefined
-  }
-}
-
 export const Topology = (props: TopologyProps) => {
   const controllerRef = useRef<Controller>()
   let controller = controllerRef.current
+  const nodeIds = props.elements.nodes.map((node) => node.id).join(',')
+  const currentNodeIds = useRef<string>()
   if (!controller) {
-    // we can only create once because client size is set only once
     controller = controllerRef.current = new Visualization()
     controller.registerLayoutFactory(layoutFactory)
-    controller.registerElementFactory(elementFactory)
     controller.registerComponentFactory(componentFactory)
   }
   if (props.elements.nodes.length > 0) {
     controller.fromModel(getLayoutModel(props.elements))
+    if (currentNodeIds.current !== nodeIds) {
+      controller.getGraph().layout()
+      currentNodeIds.current = nodeIds
+    }
   }
 
   return (

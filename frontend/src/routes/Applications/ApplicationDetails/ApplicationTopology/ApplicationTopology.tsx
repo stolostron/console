@@ -1,7 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { AcmDrawerContext } from '../../../../ui-components'
-import { useContext, useMemo, useState } from 'react'
+import cloneDeep from 'lodash/cloneDeep'
+import { useContext, useEffect, useState } from 'react'
 import { Topology } from './topology/Topology'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { useApplicationDetailsContext } from '../ApplicationDetails'
@@ -47,12 +48,16 @@ export function ApplicationTopologyPageContent() {
     toolbarControl,
   } = useApplicationDetailsContext()
   const { t } = useTranslation()
-  const { topology, statuses } = applicationData
+  const { refreshTime, topology, statuses } = applicationData
   let hubClusterName = ''
   if (topology) {
     hubClusterName = topology.hubClusterName
   }
   const { setDrawerContext } = useContext(AcmDrawerContext)
+  const [elements, setElements] = useState<{
+    nodes: any[]
+    links: any[]
+  }>({ nodes: [], links: [] })
 
   const [argoAppDetailsContainerData, setArgoAppDetailsContainerData] = useState<ArgoAppDetailsContainerData>({
     page: 1,
@@ -119,26 +124,18 @@ export function ApplicationTopologyPageContent() {
   }
 
   const canUpdateStatuses = !!statuses
-  const nodeString = topology.nodes.map((node: any) => node.id).join(',')
-  const statusString = JSON.stringify(
-    statuses?.data?.searchResult?.[0]?.items
-      .map((item: any) => item._uid)
-      .sort((a: string, b: string) => a.localeCompare(b))
-      .join(',')
-  )
-  const elements = useMemo(() => {
-    return getDiagramElements(topology, statuses, canUpdateStatuses, t)
+  useEffect(() => {
+    if (topology) {
+      setElements(cloneDeep(getDiagramElements(cloneDeep(topology), statuses, canUpdateStatuses, t)))
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nodeString, statusString])
+  }, [refreshTime])
 
   return (
     <>
       <DrawerShapes />
       <Topology
-        elements={{
-          ...elements,
-          activeChannel: elements.activeChannel ?? undefined,
-        }}
+        elements={elements}
         processActionLink={processActionLink}
         canUpdateStatuses={canUpdateStatuses}
         argoAppDetailsContainerControl={argoAppDetailsContainerControl}

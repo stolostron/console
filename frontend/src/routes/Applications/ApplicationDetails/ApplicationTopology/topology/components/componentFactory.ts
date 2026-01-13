@@ -12,7 +12,7 @@ import {
 } from '@patternfly/react-topology'
 
 import StyledNode from './StyledNode'
-import StyledEdge from './StyledEdge'
+import { DefaultEdge } from '@patternfly/react-topology'
 
 const defaultComponentFactory: ComponentFactory = (
   kind: ModelKind
@@ -25,7 +25,7 @@ const defaultComponentFactory: ComponentFactory = (
     case ModelKind.node:
       return withDragNode()(withSelection()(StyledNode as any as ComponentType<WithSelectionProps>))
     case ModelKind.edge:
-      return StyledEdge as any as ComponentType<{ element: GraphElement }>
+      return DefaultEdge //StyledEdge
     default:
       return undefined
   }
