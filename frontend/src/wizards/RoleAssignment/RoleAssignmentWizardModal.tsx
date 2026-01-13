@@ -146,11 +146,7 @@ export const RoleAssignmentWizardModal = ({
   const handleSubmit = useCallback(() => onSubmit(formData), [formData, onSubmit])
 
   useEffect(() => {
-    if (!isOpen) {
-      setFormData(getInitialFormData())
-      setSelectedClusterSets([])
-      setSelectedClusters([])
-    } else if (isOpen && !isEditing) {
+    if (!isOpen || !isEditing) {
       setFormData(getInitialFormData())
       setSelectedClusterSets([])
       setSelectedClusters([])

@@ -38,9 +38,9 @@ export const RoleAssignmentWizardModalWrapper = ({
   const isEditing = !!editingRoleAssignment
 
   const saveFromWizard = async (data: RoleAssignmentWizardFormData) => {
-    if (isEditing) {
+    if (isEditing && editingRoleAssignment) {
       try {
-        await deleteRoleAssignment(editingRoleAssignment!).promise
+        await deleteRoleAssignment(editingRoleAssignment).promise
       } catch (error: any) {
         toastContext.addAlert({
           title: t('Role assignment update failed'),
@@ -59,20 +59,21 @@ export const RoleAssignmentWizardModalWrapper = ({
 
     const roleAssignmentsToSave = wizardDataToRoleAssignmentToSave(data, allClusterNames)
 
-    const filteredMultiClusterRoleAssignments = isEditing
-      ? multiClusterRoleAssignments.map((mcra) =>
-          mcra.metadata.name === editingRoleAssignment!.relatedMulticlusterRoleAssignment.metadata.name
-            ? {
-                ...mcra,
-                spec: {
-                  ...mcra.spec,
-                  roleAssignments:
-                    mcra.spec.roleAssignments?.filter((ra) => ra.name !== editingRoleAssignment!.name) || [],
-                },
-              }
-            : mcra
-        )
-      : multiClusterRoleAssignments
+    const filteredMultiClusterRoleAssignments =
+      isEditing && editingRoleAssignment
+        ? multiClusterRoleAssignments.map((mcra) =>
+            mcra.metadata.name === editingRoleAssignment.relatedMulticlusterRoleAssignment.metadata.name
+              ? {
+                  ...mcra,
+                  spec: {
+                    ...mcra.spec,
+                    roleAssignments:
+                      mcra.spec.roleAssignments?.filter((ra) => ra.name !== editingRoleAssignment.name) || [],
+                  },
+                }
+              : mcra
+          )
+        : multiClusterRoleAssignments
 
     const existingBySubjectRole = existingRoleAssignmentsBySubjectRole(
       roleAssignmentsToSave,

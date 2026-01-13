@@ -122,17 +122,20 @@ export const saveAllRoleAssignments = async (
             type: 'success',
             autoClose: true,
           }),
-        onError: (role, error, isDuplicateError) =>
+        onError: (role, error, isDuplicateError) => {
+          const errorMessage = isDuplicateError
+            ? t('This role assignment already exists. Please modify the selection to create a unique assignment.')
+            : isEditing
+              ? t('The role assignment update for {{role}} role failed. Error: {{error}}', { role, error })
+              : t('The role assignment creation for {{role}} role failed. Error: {{error}}', { role, error })
+
           toastContext.addAlert({
             title: isEditing ? t('Role assignment update failed') : t('Role assignment creation failed'),
-            message: isDuplicateError
-              ? t('This role assignment already exists. Please modify the selection to create a unique assignment.')
-              : isEditing
-                ? t('The role assignment update for {{role}} role failed. Error: {{error}}', { role, error })
-                : t('The role assignment creation for {{role}} role failed. Error: {{error}}', { role, error }),
+            message: errorMessage,
             type: 'danger',
             autoClose: true,
-          }),
+          })
+        },
       })
     )
   )

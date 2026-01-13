@@ -12,6 +12,15 @@ interface UsePreselectedDataProps {
   setSelectedClusters: React.Dispatch<React.SetStateAction<any[]>>
 }
 
+const buildSubjectUpdate = (subject: RoleAssignmentPreselected['subject']) => {
+  if (!subject) return undefined
+  return {
+    kind: subject.kind,
+    user: subject.kind === UserKind && subject.value ? [subject.value] : undefined,
+    group: subject.kind === GroupKind && subject.value ? [subject.value] : undefined,
+  }
+}
+
 export const usePreselectedData = ({
   isOpen,
   preselected,
@@ -31,18 +40,9 @@ export const usePreselectedData = ({
     setFormData((prev) => {
       const updates: Partial<RoleAssignmentWizardFormData> = {}
 
-      if (preselected?.subject) {
-        updates.subject = {
-          kind: preselected.subject.kind,
-          user:
-            preselected.subject.kind === UserKind && preselected.subject.value
-              ? [preselected.subject.value]
-              : undefined,
-          group:
-            preselected.subject.kind === GroupKind && preselected.subject.value
-              ? [preselected.subject.value]
-              : undefined,
-        }
+      const subjectUpdate = buildSubjectUpdate(preselected?.subject)
+      if (subjectUpdate) {
+        updates.subject = subjectUpdate
       }
 
       if (preselected?.roles && preselected.roles.length > 0) {
