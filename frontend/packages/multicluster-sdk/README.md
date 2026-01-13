@@ -443,7 +443,7 @@ Array with `isAllowed` and `loading` values.
 
 ### :gear: useFleetClusterNames
 
-Hook that returns names of managed clusters with optional filtering.
+Hook that returns names of managed clusters with optional filtering by cluster proxy addon and availability status.
 
 This hook watches ManagedCluster resources and by default filters them to only include clusters
 that have both the label `feature.open-cluster-management.io/addon-cluster-proxy: available` AND
@@ -455,27 +455,39 @@ the condition `ManagedClusterConditionAvailable` with status `True`.
 
 Parameters:
 
-* `returnAllClusters`: - Optional boolean to return all cluster names regardless of availability status. Defaults to false.
+* `returnAllClusters`: - Optional boolean to return all cluster names regardless of labels and conditions.
+Defaults to false. When false (default), only returns clusters with the
+'feature.open-cluster-management.io/addon-cluster-proxy: available' label AND
+'ManagedClusterConditionAvailable' status: 'True'.
+When true, returns all cluster names regardless of labels and conditions.
 
 
 Returns:
 
 A tuple containing:
-- clusterNames: Array of cluster names
+- clusterNames: Array of cluster names (filtered by default, or all clusters if specified)
 - loaded: Boolean indicating if the resource watch has loaded
 - error: Any error that occurred during the watch operation
 
 Examples:
 
 ```tsx
-// Get available cluster names (default behavior)
+// Get only clusters with cluster proxy addon available AND ManagedClusterConditionAvailable: 'True' (default behavior)
 const [availableClusterNames, loaded, error] = useFleetClusterNames()
 
-// Get all cluster names regardless of availability
+// Get all cluster names regardless of labels and conditions
 const [allClusterNames, loaded, error] = useFleetClusterNames(true)
 
-if (!loaded) return <Loading />
-if (error) return <ErrorState error={error} />
+// Explicitly filter by cluster proxy addon and availability (same as default)
+const [filteredClusterNames, loaded, error] = useFleetClusterNames(false)
+
+if (!loaded) {
+  return <Loading />
+}
+
+if (error) {
+  return <ErrorState error={error} />
+}
 
 return (
   <div>
@@ -487,7 +499,7 @@ return (
 ```
 
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetClusterNames.ts#L39)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetClusterNames.ts#L51)
 
 ### :gear: useFleetClusterSetNames
 
@@ -548,7 +560,7 @@ return (
 ```
 
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetClusterSetNames.ts#L54)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetClusterSetNames.ts#L53)
 
 ### :gear: useFleetClusterSets
 

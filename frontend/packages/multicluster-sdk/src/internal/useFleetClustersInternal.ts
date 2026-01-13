@@ -2,7 +2,7 @@
 import { useMemo } from 'react'
 import { K8sResourceCommon, useK8sWatchResource, Selector } from '@openshift-console/dynamic-plugin-sdk'
 import { ManagedClusterListGroupVersionKind } from './models'
-import { filterClusters } from './clusterUtils'
+import { filterClusters, getClusterSetName } from './clusterUtils'
 import { ClusterSetData, FleetClusterNamesOptions } from '../types/fleet'
 
 /**
@@ -71,7 +71,7 @@ export function organizeClustersBySet(
   // Organize clusters by their cluster set labels
   for (const cluster of clusters) {
     const clusterName = cluster.metadata!.name!
-    const clusterSetLabel = cluster.metadata?.labels?.['cluster.open-cluster-management.io/clusterset'] || 'default'
+    const clusterSetLabel = getClusterSetName(cluster)
 
     // Add to global set if requested
     if (options?.includeGlobal) {

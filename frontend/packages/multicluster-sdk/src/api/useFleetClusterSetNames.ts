@@ -1,8 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useMemo } from 'react'
-import { K8sResourceCommon, useK8sWatchResource } from '@openshift-console/dynamic-plugin-sdk'
-import { ManagedClusterListGroupVersionKind } from '../internal/models'
-import { filterClusters } from '../internal/clusterUtils'
+import { useFleetClustersInternal } from '../internal/useFleetClustersInternal'
+import { getClusterSetName } from '../internal/clusterUtils'
 
 /**
  * Hook that returns unique cluster set names from managed clusters with optional filtering by cluster proxy addon and availability status.
@@ -52,21 +51,16 @@ import { filterClusters } from '../internal/clusterUtils'
  * ```
  */
 export function useFleetClusterSetNames(considerAllClusters: boolean = false): [string[], boolean, any] {
-  const [clusters, loaded, error] = useK8sWatchResource<K8sResourceCommon[]>({
-    groupVersionKind: ManagedClusterListGroupVersionKind,
-    isList: true,
+  const [filteredClusters, loaded, error] = useFleetClustersInternal({
+    returnAllClusters: considerAllClusters,
   })
 
   const uniqueClusterSets = useMemo(() => {
-    const filteredClusters = filterClusters(clusters, considerAllClusters)
-
-    const clusterSetNames = filteredClusters.map(
-      (cluster) => cluster.metadata?.labels?.['cluster.open-cluster-management.io/clusterset'] || 'default'
-    )
+    const clusterSetNames = filteredClusters.map(getClusterSetName)
 
     // Return unique cluster set names
     return Array.from(new Set(clusterSetNames))
-  }, [clusters, considerAllClusters])
+  }, [filteredClusters])
 
   return [uniqueClusterSets, loaded, error]
 }

@@ -27,6 +27,14 @@ export const isClusterAvailable = (cluster: K8sResourceCommon): boolean => {
 }
 
 /**
+ * Gets the cluster set name from a ManagedCluster resource.
+ * Returns the cluster set label value or 'default' if not present.
+ */
+export const getClusterSetName = (cluster: K8sResourceCommon): string => {
+  return cluster.metadata?.labels?.['cluster.open-cluster-management.io/clusterset'] || 'default'
+}
+
+/**
  * Filters clusters based on the provided criteria.
  * When includeAll is false, only returns clusters that meet the default availability criteria.
  * When includeAll is true, returns all clusters that have a name.
