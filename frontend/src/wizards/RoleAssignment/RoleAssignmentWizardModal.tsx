@@ -82,7 +82,7 @@ export const RoleAssignmentWizardModal = ({
   const update = useCallback((updateFn?: (draft: RoleAssignmentWizardFormData) => void) => {
     setFormData((prev) => {
       if (updateFn) {
-        const draft = { ...prev }
+        const draft = { ...prev, scope: { ...prev.scope } }
         updateFn(draft)
         return draft
       }
