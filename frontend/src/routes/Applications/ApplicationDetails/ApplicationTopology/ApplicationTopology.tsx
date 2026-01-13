@@ -119,8 +119,7 @@ export function ApplicationTopologyPageContent() {
   }
 
   const canUpdateStatuses = !!statuses
-  const nodeString = JSON.stringify(topology.nodes)
-  const linkString = JSON.stringify(topology.links)
+  const nodeString = topology.nodes.map((node: any) => node.id).join(',')
   const statusString = JSON.stringify(
     statuses?.data?.searchResult?.[0]?.items
       .map((item: any) => item._uid)
@@ -130,7 +129,7 @@ export function ApplicationTopologyPageContent() {
   const elements = useMemo(() => {
     return getDiagramElements(topology, statuses, canUpdateStatuses, t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nodeString, linkString, statusString])
+  }, [nodeString, statusString])
 
   return (
     <>

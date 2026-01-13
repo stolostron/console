@@ -261,6 +261,12 @@ export async function getAppSetTopology(
 
 async function getAppSetResources(name: string, namespace: string, appSetApps: any[], allClusterNames: string[]) {
   // first get all applications that belong to this appset
+  if (appSetApps.length === 0) {
+    return {
+      applicationResourceMap: {},
+      applicationNames: [],
+    }
+  }
   const query: SearchQuery = convertStringToQuery(
     `name:${appSetApps?.map((application: ResourceItem) => application.metadata?.name).join(',')} namespace:${namespace} cluster:${allClusterNames.join(',')} apigroup:argoproj.io`
   )
