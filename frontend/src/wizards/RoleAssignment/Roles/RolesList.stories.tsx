@@ -41,8 +41,8 @@ const InteractiveRolesList = () => {
         <strong>Selected Role:</strong> {selectedRole || 'None'}
         <br />
         <small>
-          Note: Links are disabled in RolesList (areLinksDisplayed=false). Role names and "See All" links are not
-          clickable, and excess permissions show as badges. Selection state is now managed internally by RolesTable.
+          Note: Links are disabled in RolesList (areLinksDisplayed=false). Role names are not clickable and all
+          permissions are displayed inline. Selection state is managed internally by RolesTable.
         </small>
       </div>
       <RolesList
