@@ -86,3 +86,29 @@ export type FleetK8sListOptions = {
   queryParams: { [key: string]: any }
   requestInit?: RequestInit
 }
+
+/**
+ * Structured data containing cluster names organized by cluster sets.
+ */
+export type ClusterSetData = {
+  /** All clusters in a special global set (only included when includeGlobal is true) */
+  global?: string[]
+  /** Clusters that are not assigned to any specific cluster set */
+  clustersNotInSets?: string[]
+  /** Named cluster sets with their associated cluster names */
+  clusterSets: Record<string, string[]>
+}
+
+/**
+ * Options for advanced cluster name retrieval with cluster set organization.
+ */
+export type FleetClusterNamesOptions = {
+  /** Whether to return all clusters regardless of availability status. Defaults to false. */
+  returnAllClusters?: boolean
+  /** Specific cluster set names to include. If not specified, includes all cluster sets. */
+  clusterSets?: string[]
+  /** Whether to include a special "global" set containing all clusters. Defaults to false. */
+  includeGlobal?: boolean
+  /** Whether to include clusters not assigned to any cluster set. Defaults to true. */
+  includeClustersNotInSets?: boolean
+}
