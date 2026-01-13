@@ -89,7 +89,7 @@ export type FleetK8sListOptions = {
 
 /**
  * Structured data containing cluster names organized by cluster sets.
- * 
+ *
  * Clusters without an explicit cluster set label are automatically assigned to the "default" cluster set.
  * The "global" key is a special set that contains all clusters (when includeGlobal is true).
  */

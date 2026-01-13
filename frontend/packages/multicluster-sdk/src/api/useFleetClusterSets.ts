@@ -60,9 +60,9 @@ export function useFleetClusterSets(considerAllClusters: boolean = false): [stri
   const uniqueClusterSets = useMemo(() => {
     const filteredClusters = filterClusters(clusters, considerAllClusters)
 
-    const clusterSetNames = filteredClusters
-      .map((cluster) => cluster.metadata?.labels?.['cluster.open-cluster-management.io/clusterset'])
-      .filter((label): label is string => Boolean(label))
+    const clusterSetNames = filteredClusters.map(
+      (cluster) => cluster.metadata?.labels?.['cluster.open-cluster-management.io/clusterset'] || 'default'
+    )
 
     // Return unique cluster set names
     return Array.from(new Set(clusterSetNames))
