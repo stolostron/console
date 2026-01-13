@@ -466,7 +466,6 @@ regardless of availability status. Defaults to false.
 * `options.returnAllClusters`: - Whether to return all clusters regardless of availability status. Defaults to false.
 * `options.clusterSets`: - Specific cluster set names to include. If not specified, includes all cluster sets.
 * `options.includeGlobal`: - Whether to include a special "global" set containing all clusters. Defaults to false.
-* `options.includeClustersNotInSets`: - Whether to include clusters not assigned to any cluster set. Defaults to true.
 
 
 Returns:
@@ -498,8 +497,7 @@ return (
 // Advanced mode examples
 const [clusterSetData, loaded, error] = useFleetClusterNames({
   clusterSets: ['production', 'staging'],
-  includeGlobal: true,
-  includeClustersNotInSets: false
+  includeGlobal: true
 })
 
 if (!loaded) return <Loading />
@@ -507,13 +505,7 @@ if (error) return <ErrorState error={error} />
 
 return (
   <div>
-    {clusterSetData.global && (
-      <div>
-        <h3>All Clusters</h3>
-        {clusterSetData.global.map(name => <div key={name}>{name}</div>)}
-      </div>
-    )}
-    {Object.entries(clusterSetData.clusterSets).map(([setName, clusters]) => (
+    {Object.entries(clusterSetData).map(([setName, clusters]) => (
       <div key={setName}>
         <h3>{setName}</h3>
         {clusters.map(name => <div key={name}>{name}</div>)}
@@ -550,7 +542,6 @@ regardless of availability status. Defaults to false.
 * `options.returnAllClusters`: - Whether to return all clusters regardless of availability status. Defaults to false.
 * `options.clusterSets`: - Specific cluster set names to include. If not specified, includes all cluster sets.
 * `options.includeGlobal`: - Whether to include a special "global" set containing all clusters. Defaults to false.
-* `options.includeClustersNotInSets`: - Whether to include clusters not assigned to any cluster set. Defaults to true.
 
 
 Returns:
@@ -582,8 +573,7 @@ return (
 // Advanced mode examples
 const [clusterSetData, loaded, error] = useFleetClusterNames({
   clusterSets: ['production', 'staging'],
-  includeGlobal: true,
-  includeClustersNotInSets: false
+  includeGlobal: true
 })
 
 if (!loaded) return <Loading />
@@ -591,13 +581,7 @@ if (error) return <ErrorState error={error} />
 
 return (
   <div>
-    {clusterSetData.global && (
-      <div>
-        <h3>All Clusters</h3>
-        {clusterSetData.global.map(name => <div key={name}>{name}</div>)}
-      </div>
-    )}
-    {Object.entries(clusterSetData.clusterSets).map(([setName, clusters]) => (
+    {Object.entries(clusterSetData).map(([setName, clusters]) => (
       <div key={setName}>
         <h3>{setName}</h3>
         {clusters.map(name => <div key={name}>{name}</div>)}
@@ -634,7 +618,6 @@ regardless of availability status. Defaults to false.
 * `options.returnAllClusters`: - Whether to return all clusters regardless of availability status. Defaults to false.
 * `options.clusterSets`: - Specific cluster set names to include. If not specified, includes all cluster sets.
 * `options.includeGlobal`: - Whether to include a special "global" set containing all clusters. Defaults to false.
-* `options.includeClustersNotInSets`: - Whether to include clusters not assigned to any cluster set. Defaults to true.
 
 
 Returns:
@@ -666,8 +649,7 @@ return (
 // Advanced mode examples
 const [clusterSetData, loaded, error] = useFleetClusterNames({
   clusterSets: ['production', 'staging'],
-  includeGlobal: true,
-  includeClustersNotInSets: false
+  includeGlobal: true
 })
 
 if (!loaded) return <Loading />
@@ -675,13 +657,7 @@ if (error) return <ErrorState error={error} />
 
 return (
   <div>
-    {clusterSetData.global && (
-      <div>
-        <h3>All Clusters</h3>
-        {clusterSetData.global.map(name => <div key={name}>{name}</div>)}
-      </div>
-    )}
-    {Object.entries(clusterSetData.clusterSets).map(([setName, clusters]) => (
+    {Object.entries(clusterSetData).map(([setName, clusters]) => (
       <div key={setName}>
         <h3>{setName}</h3>
         {clusters.map(name => <div key={name}>{name}</div>)}
@@ -692,7 +668,7 @@ return (
 ```
 
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetClusterNames.ts#L86)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetClusterNames.ts#L78)
 
 ### :gear: useFleetClusterSets
 
@@ -1173,11 +1149,14 @@ if (error) {
 
 Structured data containing cluster names organized by cluster sets.
 
+Clusters without an explicit cluster set label are automatically assigned to the "default" cluster set.
+The "global" key is a special set that contains all clusters (when includeGlobal is true).
+
 | Type | Type |
 | ---------- | ---------- |
-| `ClusterSetData` | `{ /** All clusters in a special global set (only included when includeGlobal is true) */ global?: string[] /** Clusters that are not assigned to any specific cluster set */ clustersNotInSets?: string[] /** Named cluster sets with their associated cluster names */ clusterSets: Record<string, string[]> }` |
+| `ClusterSetData` | `Record<string, string[]>` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L93)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L96)
 
 ### :gear: Fleet
 
@@ -1201,9 +1180,9 @@ Options for advanced cluster name retrieval with cluster set organization.
 
 | Type | Type |
 | ---------- | ---------- |
-| `FleetClusterNamesOptions` | `{ /** Whether to return all clusters regardless of availability status. Defaults to false. */ returnAllClusters?: boolean /** Specific cluster set names to include. If not specified, includes all cluster sets. */ clusterSets?: string[] /** Whether to include a special "global" set containing all clusters. Defaults to false. */ includeGlobal?: boolean /** Whether to include clusters not assigned to any cluster set. Defaults to true. */ includeClustersNotInSets?: boolean }` |
+| `FleetClusterNamesOptions` | `{ /** Whether to return all clusters regardless of availability status. Defaults to false. */ returnAllClusters?: boolean /** Specific cluster set names to include. If not specified, includes all cluster sets including "default". Should not include "global" - use includeGlobal instead. */ clusterSets?: string[] /** Whether to include a special "global" set containing all clusters. Defaults to false. */ includeGlobal?: boolean }` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L105)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L101)
 
 ### :gear: FleetK8sCreateUpdateOptions
 

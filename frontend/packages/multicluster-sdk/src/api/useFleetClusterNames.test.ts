@@ -718,11 +718,9 @@ describe('useFleetClusterNames', () => {
       const { result } = renderHook(() => useFleetClusterNames({}))
 
       expect(result.current[0]).toEqual({
-        clustersNotInSets: ['cluster-without-set'],
-        clusterSets: {
-          production: ['cluster-1', 'cluster-3'],
-          staging: ['cluster-2'],
-        },
+        default: ['cluster-without-set'],
+        production: ['cluster-1', 'cluster-3'],
+        staging: ['cluster-2'],
       })
       expect(result.current[1]).toBe(true)
       expect(result.current[2]).toBe(undefined)
@@ -735,37 +733,30 @@ describe('useFleetClusterNames', () => {
 
       expect(result.current[0]).toEqual({
         global: ['cluster-1', 'cluster-2', 'cluster-3', 'cluster-without-set'],
-        clustersNotInSets: ['cluster-without-set'],
-        clusterSets: {
-          production: ['cluster-1', 'cluster-3'],
-          staging: ['cluster-2'],
-        },
-      })
-    })
-
-    it('should exclude clusters not in sets when requested', () => {
-      mockUseK8sWatchResource.mockReturnValue([mockClustersForAdvanced as any, true, undefined])
-
-      const { result } = renderHook(() => useFleetClusterNames({ includeClustersNotInSets: false }))
-
-      expect(result.current[0]).toEqual({
-        clusterSets: {
-          production: ['cluster-1', 'cluster-3'],
-          staging: ['cluster-2'],
-        },
+        default: ['cluster-without-set'],
+        production: ['cluster-1', 'cluster-3'],
+        staging: ['cluster-2'],
       })
     })
 
     it('should filter to specific cluster sets', () => {
       mockUseK8sWatchResource.mockReturnValue([mockClustersForAdvanced as any, true, undefined])
 
+      const { result } = renderHook(() => useFleetClusterNames({ clusterSets: ['production', 'staging'] }))
+
+      expect(result.current[0]).toEqual({
+        production: ['cluster-1', 'cluster-3'],
+        staging: ['cluster-2'],
+      })
+    })
+
+    it('should filter to specific cluster sets only', () => {
+      mockUseK8sWatchResource.mockReturnValue([mockClustersForAdvanced as any, true, undefined])
+
       const { result } = renderHook(() => useFleetClusterNames({ clusterSets: ['production'] }))
 
       expect(result.current[0]).toEqual({
-        clustersNotInSets: ['cluster-without-set'],
-        clusterSets: {
-          production: ['cluster-1', 'cluster-3'],
-        },
+        production: ['cluster-1', 'cluster-3'],
       })
     })
 
@@ -775,12 +766,10 @@ describe('useFleetClusterNames', () => {
       const { result } = renderHook(() => useFleetClusterNames({ returnAllClusters: true }))
 
       expect(result.current[0]).toEqual({
-        clustersNotInSets: ['cluster-without-set'],
-        clusterSets: {
-          production: ['cluster-1', 'cluster-3'],
-          staging: ['cluster-2'],
-          development: ['cluster-unavailable'],
-        },
+        default: ['cluster-without-set'],
+        production: ['cluster-1', 'cluster-3'],
+        staging: ['cluster-2'],
+        development: ['cluster-unavailable'],
       })
     })
 
@@ -790,11 +779,9 @@ describe('useFleetClusterNames', () => {
       const { result } = renderHook(() => useFleetClusterNames({}))
 
       expect(result.current[0]).toEqual({
-        clustersNotInSets: ['cluster-without-set'],
-        clusterSets: {
-          production: ['cluster-1', 'cluster-3'],
-          staging: ['cluster-2'],
-        },
+        default: ['cluster-without-set'],
+        production: ['cluster-1', 'cluster-3'],
+        staging: ['cluster-2'],
       })
     })
 
@@ -804,9 +791,7 @@ describe('useFleetClusterNames', () => {
 
       const { result } = renderHook(() => useFleetClusterNames({ includeGlobal: true }))
 
-      expect(result.current[0]).toEqual({
-        clusterSets: {},
-      })
+      expect(result.current[0]).toEqual({})
       expect(result.current[1]).toBe(false)
       expect(result.current[2]).toBe(mockError)
     })
@@ -818,15 +803,12 @@ describe('useFleetClusterNames', () => {
         useFleetClusterNames({
           clusterSets: ['production', 'nonexistent'],
           includeGlobal: true,
-          includeClustersNotInSets: false,
         })
       )
 
       expect(result.current[0]).toEqual({
         global: ['cluster-1', 'cluster-2', 'cluster-3', 'cluster-without-set'],
-        clusterSets: {
-          production: ['cluster-1', 'cluster-3'],
-        },
+        production: ['cluster-1', 'cluster-3'],
       })
     })
 
@@ -837,18 +819,12 @@ describe('useFleetClusterNames', () => {
       const { result: result1 } = renderHook(() => useFleetClusterNames({ clusterSets: ['production'] }))
       expect(result1.current[0]).not.toHaveProperty('global')
 
-      // Test includeClustersNotInSets defaults to true
-      const { result: result2 } = renderHook(() => useFleetClusterNames({ clusterSets: ['production'] }))
-      expect(result2.current[0]).toHaveProperty('clustersNotInSets', ['cluster-without-set'])
-
       // Test returnAllClusters defaults to false (should not include unavailable clusters)
-      const { result: result3 } = renderHook(() => useFleetClusterNames({}))
-      expect(result3.current[0]).toEqual({
-        clustersNotInSets: ['cluster-without-set'],
-        clusterSets: {
-          production: ['cluster-1', 'cluster-3'],
-          staging: ['cluster-2'],
-        },
+      const { result: result2 } = renderHook(() => useFleetClusterNames({}))
+      expect(result2.current[0]).toEqual({
+        default: ['cluster-without-set'],
+        production: ['cluster-1', 'cluster-3'],
+        staging: ['cluster-2'],
       })
       // cluster-unavailable should not be included because returnAllClusters defaults to false
     })

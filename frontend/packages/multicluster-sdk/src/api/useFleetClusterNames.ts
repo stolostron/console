@@ -28,7 +28,6 @@ export function useFleetClusterNames(options: FleetClusterNamesOptions): [Cluste
  * @param options.returnAllClusters - Whether to return all clusters regardless of availability status. Defaults to false.
  * @param options.clusterSets - Specific cluster set names to include. If not specified, includes all cluster sets.
  * @param options.includeGlobal - Whether to include a special "global" set containing all clusters. Defaults to false.
- * @param options.includeClustersNotInSets - Whether to include clusters not assigned to any cluster set. Defaults to true.
  *
  * @returns A tuple containing:
  *   - clusterData: Either string[] (simple mode) or ClusterSetData (advanced mode)
@@ -58,8 +57,7 @@ export function useFleetClusterNames(options: FleetClusterNamesOptions): [Cluste
  * // Advanced mode examples
  * const [clusterSetData, loaded, error] = useFleetClusterNames({
  *   clusterSets: ['production', 'staging'],
- *   includeGlobal: true,
- *   includeClustersNotInSets: false
+ *   includeGlobal: true
  * })
  *
  * if (!loaded) return <Loading />
@@ -67,13 +65,7 @@ export function useFleetClusterNames(options: FleetClusterNamesOptions): [Cluste
  *
  * return (
  *   <div>
- *     {clusterSetData.global && (
- *       <div>
- *         <h3>All Clusters</h3>
- *         {clusterSetData.global.map(name => <div key={name}>{name}</div>)}
- *       </div>
- *     )}
- *     {Object.entries(clusterSetData.clusterSets).map(([setName, clusters]) => (
+ *     {Object.entries(clusterSetData).map(([setName, clusters]) => (
  *       <div key={setName}>
  *         <h3>{setName}</h3>
  *         {clusters.map(name => <div key={name}>{name}</div>)}
@@ -97,8 +89,8 @@ export function useFleetClusterNames(
       return undefined
     }
 
-    // Only optimize if we're not including global or clusters not in sets
-    if (options.includeGlobal || options.includeClustersNotInSets !== false) {
+    // Only optimize if we're not including global
+    if (options.includeGlobal) {
       return undefined
     }
 
@@ -121,7 +113,7 @@ export function useFleetClusterNames(
         },
       ],
     }
-  }, [isAdvancedMode, options?.clusterSets, options?.includeGlobal, options?.includeClustersNotInSets])
+  }, [isAdvancedMode, options?.clusterSets, options?.includeGlobal])
 
   const [clusters, loaded, error] = useK8sWatchResource<K8sResourceCommon[]>({
     groupVersionKind: ManagedClusterListGroupVersionKind,
@@ -138,14 +130,12 @@ export function useFleetClusterNames(
     }
 
     // Advanced mode: organize by cluster sets
-    const clusterSetData: ClusterSetData = {
-      clusterSets: {},
-    }
+    const clusterSetData: ClusterSetData = {}
 
     // Organize clusters by their cluster set labels
     for (const cluster of filteredClusters) {
       const clusterName = cluster.metadata!.name!
-      const clusterSetLabel = cluster.metadata?.labels?.['cluster.open-cluster-management.io/clusterset']
+      const clusterSetLabel = cluster.metadata?.labels?.['cluster.open-cluster-management.io/clusterset'] || 'default'
 
       // Add to global set if requested
       if (options?.includeGlobal) {
@@ -155,22 +145,12 @@ export function useFleetClusterNames(
         clusterSetData.global.push(clusterName)
       }
 
-      if (clusterSetLabel) {
-        // Check if this cluster set should be included
-        if (!options?.clusterSets || options.clusterSets.includes(clusterSetLabel)) {
-          if (!clusterSetData.clusterSets[clusterSetLabel]) {
-            clusterSetData.clusterSets[clusterSetLabel] = []
-          }
-          clusterSetData.clusterSets[clusterSetLabel].push(clusterName)
+      // Check if this cluster set should be included
+      if (!options?.clusterSets || options.clusterSets.includes(clusterSetLabel)) {
+        if (!clusterSetData[clusterSetLabel]) {
+          clusterSetData[clusterSetLabel] = []
         }
-      } else {
-        // Cluster not in any set
-        if (options?.includeClustersNotInSets !== false) {
-          if (!clusterSetData.clustersNotInSets) {
-            clusterSetData.clustersNotInSets = []
-          }
-          clusterSetData.clustersNotInSets.push(clusterName)
-        }
+        clusterSetData[clusterSetLabel].push(clusterName)
       }
     }
 
