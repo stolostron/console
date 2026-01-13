@@ -442,11 +442,9 @@ const RoleAssignments = ({
           />
         }
       />
-      <RoleAssignmentWizardModalWrapper
-        close={() => setIsCreateModalOpen(false)}
-        isOpen={isCreateModalOpen}
-        preselected={preselected}
-      />
+      {isCreateModalOpen ? (
+        <RoleAssignmentWizardModalWrapper close={() => setIsCreateModalOpen(false)} preselected={preselected} />
+      ) : null}
       <BulkActionModal<FlattenedRoleAssignment> {...deleteModalProps} />
     </>
   )
