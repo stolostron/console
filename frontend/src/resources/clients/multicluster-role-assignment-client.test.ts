@@ -1282,13 +1282,13 @@ describe('multicluster-role-assignment-client', function () {
       it.each(addRoleAssignmentTestCases.filter((tc) => !tc.shouldSucceed))(
         '$description',
         async ({ roleAssignment, existingPlacements, expectedErrorMessage }) => {
-          const result = await addRoleAssignment(roleAssignment, {
-            existingMulticlusterRoleAssignment: undefined,
-            existingManagedClusterSetBindings: [],
-            existingPlacements,
-          })
-
-          await expect(result.promise).rejects.toThrow(expectedErrorMessage)
+          await expect(
+            addRoleAssignment(roleAssignment, {
+              existingMulticlusterRoleAssignment: undefined,
+              existingManagedClusterSetBindings: [],
+              existingPlacements,
+            })
+          ).rejects.toThrow(expectedErrorMessage)
         }
       )
     })
@@ -1376,13 +1376,13 @@ describe('multicluster-role-assignment-client', function () {
         ]
 
         // Test with existing MRA that has matching role assignment - should reject as duplicate
-        const result = await addRoleAssignment(roleAssignment, {
-          existingMulticlusterRoleAssignment: existingMRA,
-          existingManagedClusterSetBindings: [],
-          existingPlacements: [],
-        })
-
-        await expect(result.promise).rejects.toThrow('Duplicate role assignment detected.')
+        await expect(
+          addRoleAssignment(roleAssignment, {
+            existingMulticlusterRoleAssignment: existingMRA,
+            existingManagedClusterSetBindings: [],
+            existingPlacements: [],
+          })
+        ).rejects.toThrow('Duplicate role assignment detected.')
       })
 
       it('should succeed when role assignment is unique', async () => {

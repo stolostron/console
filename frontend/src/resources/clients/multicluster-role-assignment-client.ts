@@ -382,10 +382,7 @@ export const addRoleAssignment = async (
   const isUnique = validateRoleAssignmentName(roleAssignment, existingRoleAssignments)
 
   if (!isUnique) {
-    return {
-      promise: Promise.reject(new ResourceError(ResourceErrorCode.BadRequest, 'Duplicate role assignment detected.')),
-      abort: () => {},
-    }
+    throw new ResourceError(ResourceErrorCode.BadRequest, 'Duplicate role assignment detected.')
   }
 
   if (roleAssignment.clusterNames?.length || roleAssignment.clusterSetNames?.length) {
@@ -420,10 +417,7 @@ export const addRoleAssignment = async (
       return createResource<MulticlusterRoleAssignment>(newMultiClusterRoleAssignment)
     }
   } else {
-    return {
-      promise: Promise.reject(new ResourceError(ResourceErrorCode.BadRequest, 'No cluster or cluster set selected.')),
-      abort: () => {},
-    }
+    throw new ResourceError(ResourceErrorCode.BadRequest, 'No cluster or cluster set selected.')
   }
 }
 
