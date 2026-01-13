@@ -201,7 +201,7 @@ function ManageColumnModal<T>(props: ManageColumnModalProps<T>) {
                       />
                       <DataListCheck
                         aria-labelledby={`table-column-management-${policy.id}`}
-                        checked={
+                        isChecked={
                           requiredColIds.includes(policy.id as string) || localSelectedIds.includes(policy.id as string)
                         }
                         isDisabled={requiredColIds.includes(policy.id!)}

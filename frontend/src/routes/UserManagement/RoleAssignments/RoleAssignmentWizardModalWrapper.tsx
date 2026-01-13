@@ -1,25 +1,23 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useContext } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
+import { useGetPlacementClusters } from '../../../resources/clients/placement-client'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmToastContext } from '../../../ui-components'
-import { RoleAssignmentPreselected } from './model/role-assignment-preselected'
-import { useGetPlacementClusters } from '../../../resources/clients/placement-client'
-import { existingRoleAssignmentsBySubjectRole, saveAllRoleAssignments } from './roleAssignmentModalHelper'
 import { RoleAssignmentWizardModal } from '../../../wizards/RoleAssignment/RoleAssignmentWizardModal'
 import { wizardDataToRoleAssignmentToSave } from '../../../wizards/RoleAssignment/roleAssignmentWizardHelper'
 import { RoleAssignmentWizardFormData } from '../../../wizards/RoleAssignment/types'
+import { RoleAssignmentPreselected } from './model/role-assignment-preselected'
+import { existingRoleAssignmentsBySubjectRole, saveAllRoleAssignments } from './roleAssignmentModalHelper'
 
 type RoleAssignmentWizardModalWrapperProps = {
   close: () => void
-  isOpen: boolean
   isEditing?: boolean
   preselected?: RoleAssignmentPreselected
 }
 
 export const RoleAssignmentWizardModalWrapper = ({
   close,
-  isOpen,
   isEditing,
   preselected,
 }: RoleAssignmentWizardModalWrapperProps) => {
@@ -57,7 +55,7 @@ export const RoleAssignmentWizardModalWrapper = ({
 
   return (
     <RoleAssignmentWizardModal
-      isOpen={isOpen}
+      isOpen
       onClose={close}
       onSubmit={saveFromWizard}
       isEditing={isEditing}
