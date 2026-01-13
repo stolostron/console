@@ -157,19 +157,19 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
 export const Topology = (props: TopologyProps) => {
   const controllerRef = useRef<Controller>()
   let controller = controllerRef.current
-  const nodeIds = props.elements.nodes.map((node) => node.id).join(',')
-  const currentNodeIds = useRef<string>()
+  // const nodeIds = props.elements.nodes.map((node) => node.id).join(',')
+  // const currentNodeIds = useRef<string>()
   if (!controller) {
     controller = controllerRef.current = new Visualization()
     controller.registerLayoutFactory(layoutFactory)
     controller.registerComponentFactory(componentFactory)
   }
   if (props.elements.nodes.length > 0) {
-    controller.fromModel(getLayoutModel(props.elements))
-    if (currentNodeIds.current !== nodeIds) {
-      controller.getGraph().layout()
-      currentNodeIds.current = nodeIds
-    }
+    controller.fromModel(getLayoutModel(props.elements), false)
+    // if (currentNodeIds.current !== nodeIds) {
+    //   controller.getGraph().layout()
+    //   currentNodeIds.current = nodeIds
+    //}
   }
 
   return (

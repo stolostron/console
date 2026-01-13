@@ -29,7 +29,7 @@ export async function getAppSetResourceStatuses(
   application: AppSetApplicationModel,
   appData: AppSetApplicationData
 ): Promise<AppSetResourceStatusResult> {
-  const { name, namespace, appSetApps, appSetClusters } = application
+  const { name, namespace, appSetApps, appSetClusters = [] } = application
 
   // Extract cluster names from the ApplicationSet cluster list
   const appSetClustersList: string[] = []
@@ -68,7 +68,7 @@ export async function getAppSetResourceStatuses(
 async function getResourceStatuses(
   _name: string,
   _namespace: string,
-  appSetApps: AppSetApplication[],
+  appSetApps: AppSetApplication[] = [],
   appData: AppSetApplicationData,
   appSetClusters: string[]
 ): Promise<unknown> {
