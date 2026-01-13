@@ -97,6 +97,7 @@ export const rolesTableColumns = ({
 
   columns.push({
     header: ' ',
+    search: 'uid',
     cell: (role) => COLUMN_CELLS.RADIO_SELECT(role),
     transforms: [cellWidth(10)],
     disableExport: true,
@@ -116,6 +117,7 @@ export const rolesTableColumns = ({
   columns.push({
     header: t('Permissions'),
     sort: 'permissions',
+    search: 'permissions',
     transforms: [cellWidth(45)],
     cell: (role, search) => COLUMN_CELLS.PERMISSIONS(role, search),
     exportContent: (role) => role.permissions?.toString(),

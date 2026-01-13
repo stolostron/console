@@ -6,7 +6,7 @@ import { Group, User } from '../../../resources/rbac'
 import { GroupsTable } from '../../../routes/UserManagement/Identities/Groups/GroupsTable'
 import { UsersTable } from '../../../routes/UserManagement/Identities/Users/UsersTable'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
-import { CreatePreAuthorizedUser } from './CreatePreAuthorizedUser'
+import { CreatePreAuthorizedUser } from './Users/CreatePreAuthorizedUser'
 
 interface IdentitiesListProps {
   onUserSelect?: (user: User) => void
@@ -50,9 +50,7 @@ export function IdentitiesList({ onUserSelect, onGroupSelect, initialSelectedIde
     setShowCreatePreAuthorized(true)
   }
 
-  const handleCancelPreAuthorized = () => setShowCreatePreAuthorized(false)
-
-  const handlePreAuthorizedSubmit = () => setShowCreatePreAuthorized(false)
+  const handleClosePreAuthorizedUser = () => setShowCreatePreAuthorized(false)
 
   const handleOnUserSelect = (user: User) => {
     setSelectedUser(user)
@@ -93,7 +91,7 @@ export function IdentitiesList({ onUserSelect, onGroupSelect, initialSelectedIde
         <Tab eventKey="users" title={<TabTitleText>{t('Users')}</TabTitleText>} aria-label={t('Users tab')}>
           <div style={{ marginTop: 'var(--pf-t--global--spacer--md)' }}>
             {showCreatePreAuthorized ? (
-              <CreatePreAuthorizedUser onCancel={handleCancelPreAuthorized} onSubmit={handlePreAuthorizedSubmit} />
+              <CreatePreAuthorizedUser onClose={handleClosePreAuthorizedUser} />
             ) : (
               <UsersTable areLinksDisplayed={false} selectedUser={selectedUser} setSelectedUser={handleOnUserSelect} />
             )}
