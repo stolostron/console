@@ -28,6 +28,7 @@ interface ProjectsTableProps {
   areLinksDisplayed?: boolean
   useRoleAssignmentDataHook?: typeof useRoleAssignmentData
   tableActionButtons?: IAcmTableButtonAction[]
+  additionalProjects?: string[]
 }
 
 export const ProjectsTable = ({
@@ -39,6 +40,7 @@ export const ProjectsTable = ({
   areLinksDisplayed = true,
   useRoleAssignmentDataHook = useRoleAssignmentData,
   tableActionButtons,
+  additionalProjects,
 }: ProjectsTableProps) => {
   const { t } = useTranslation()
 
@@ -66,16 +68,22 @@ export const ProjectsTable = ({
       return []
     }
 
-    const commonNamespaces: string[] = clusterNamespaceGroupings
-      .reduce((acc, namespaces) => acc.filter((ns) => namespaces.includes(ns)), clusterNamespaceGroupings[0] || [])
-      .sort((a, b) => a.localeCompare(b))
+    const commonNamespaces: string[] = [
+      ...new Set([
+        ...(additionalProjects || []),
+        ...clusterNamespaceGroupings.reduce(
+          (acc, namespaces) => acc.filter((ns) => namespaces.includes(ns)),
+          clusterNamespaceGroupings[0] || []
+        ),
+      ]),
+    ].sort((a, b) => a.localeCompare(b))
 
     return commonNamespaces.map((ns) => ({
       name: ns,
       type: 'Namespace',
       clusters: selectedClusters.map((cluster) => cluster.name),
     }))
-  }, [projects, selectedClusters, clusters])
+  }, [projects, selectedClusters, clusters, additionalProjects])
 
   const filters = useMemo<ITableFilter<ProjectTableData>[]>(() => {
     const allFilters: ITableFilter<ProjectTableData>[] = [

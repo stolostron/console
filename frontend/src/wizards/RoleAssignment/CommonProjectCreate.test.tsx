@@ -25,6 +25,17 @@ jest.mock('../../components/project', () => ({
       >
         Submit
       </button>
+      <button
+        onClick={() =>
+          onSubmit({
+            name: 'my-custom-project',
+            displayName: 'My Custom Project',
+            description: 'Custom Description',
+          })
+        }
+      >
+        Submit Custom
+      </button>
     </div>
   ),
 }))
@@ -60,17 +71,12 @@ const sampleClusters: Cluster[] = [
 describe('CommonProjectCreate', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    jest.useFakeTimers()
     mockFireManagedClusterActionCreate.mockResolvedValue({
       actionDone: 'ActionDone',
       complete: 'Completed',
       message: 'Action completed successfully',
       result: { success: true },
     } as any)
-  })
-
-  afterEach(() => {
-    jest.useRealTimers()
   })
 
   it('renders the component with title', () => {
@@ -112,9 +118,6 @@ describe('CommonProjectCreate', () => {
     const submitButton = screen.getByText('Submit')
     await userEvent.click(submitButton)
 
-    // Advance timers to allow for the 5 second delay
-    jest.advanceTimersByTime(5000)
-
     await waitFor(() => {
       expect(mockFireManagedClusterActionCreate).toHaveBeenCalledTimes(2)
     })
@@ -152,9 +155,6 @@ describe('CommonProjectCreate', () => {
     const submitButton = screen.getByText('Submit')
     await userEvent.click(submitButton)
 
-    // Advance timers to allow for the 5 second delay
-    jest.advanceTimersByTime(5000)
-
     await waitFor(() => {
       // Success toast for cluster-1
       expect(mockAddAlert).toHaveBeenCalledWith({
@@ -176,61 +176,62 @@ describe('CommonProjectCreate', () => {
     })
   })
 
-  it('shows info toast about reconciliation after successful creation', async () => {
-    render(
-      <TestWrapper>
-        <CommonProjectCreate
-          onCancelCallback={mockOnCancel}
-          onSuccess={mockOnSuccess}
-          selectedClusters={sampleClusters}
-        />
-      </TestWrapper>
-    )
+  describe('onSuccess callback with project name', () => {
+    it('calls onSuccess with the created project name when all clusters succeed', async () => {
+      render(
+        <TestWrapper>
+          <CommonProjectCreate
+            onCancelCallback={mockOnCancel}
+            onSuccess={mockOnSuccess}
+            selectedClusters={sampleClusters}
+          />
+        </TestWrapper>
+      )
 
-    const submitButton = screen.getByText('Submit')
-    await userEvent.click(submitButton)
+      const submitButton = screen.getByText('Submit')
+      await userEvent.click(submitButton)
 
-    // Advance timers to allow for the 5 second delay
-    jest.advanceTimersByTime(5000)
-
-    await waitFor(() => {
-      expect(mockAddAlert).toHaveBeenCalledWith({
-        title: 'Waiting for the managed clusters to reconcile',
-        message:
-          'Please wait for a few seconds while the information is propagated to the managed clusters. Refresh the page if the already created project is not displayed.',
-        type: 'info',
-        autoClose: true,
+      await waitFor(() => {
+        expect(mockOnSuccess).toHaveBeenCalledTimes(1)
+        expect(mockOnSuccess).toHaveBeenCalledWith('test-project')
       })
     })
-  })
 
-  it('calls onSuccess after 5 second delay when all clusters succeed', async () => {
-    render(
-      <TestWrapper>
-        <CommonProjectCreate
-          onCancelCallback={mockOnCancel}
-          onSuccess={mockOnSuccess}
-          selectedClusters={sampleClusters}
-        />
-      </TestWrapper>
-    )
+    it('calls onSuccess with a custom project name', async () => {
+      render(
+        <TestWrapper>
+          <CommonProjectCreate
+            onCancelCallback={mockOnCancel}
+            onSuccess={mockOnSuccess}
+            selectedClusters={sampleClusters}
+          />
+        </TestWrapper>
+      )
 
-    const submitButton = screen.getByText('Submit')
-    await userEvent.click(submitButton)
+      const submitButton = screen.getByText('Submit Custom')
+      await userEvent.click(submitButton)
 
-    // Wait for promises to resolve
-    await waitFor(() => {
-      expect(mockFireManagedClusterActionCreate).toHaveBeenCalledTimes(2)
+      await waitFor(() => {
+        expect(mockOnSuccess).toHaveBeenCalledTimes(1)
+        expect(mockOnSuccess).toHaveBeenCalledWith('my-custom-project')
+      })
     })
 
-    // Initially onSuccess should not be called (waiting for 5 second delay)
-    expect(mockOnSuccess).not.toHaveBeenCalled()
+    it('calls onSuccess with project name for empty selectedClusters array', async () => {
+      render(
+        <TestWrapper>
+          <CommonProjectCreate onCancelCallback={mockOnCancel} onSuccess={mockOnSuccess} selectedClusters={[]} />
+        </TestWrapper>
+      )
 
-    // Advance timers to allow for the 5 second delay
-    await jest.advanceTimersByTimeAsync(5000)
+      const submitButton = screen.getByText('Submit')
+      await userEvent.click(submitButton)
 
-    await waitFor(() => {
-      expect(mockOnSuccess).toHaveBeenCalledTimes(1)
+      await waitFor(() => {
+        expect(mockFireManagedClusterActionCreate).not.toHaveBeenCalled()
+        expect(mockOnSuccess).toHaveBeenCalledTimes(1)
+        expect(mockOnSuccess).toHaveBeenCalledWith('test-project')
+      })
     })
   })
 
@@ -302,26 +303,28 @@ describe('CommonProjectCreate', () => {
     })
   })
 
-  it('handles empty selectedClusters array', async () => {
+  it('does not call onSuccess when creation fails', async () => {
+    mockFireManagedClusterActionCreate.mockRejectedValue(new Error('Network error'))
+
     render(
       <TestWrapper>
-        <CommonProjectCreate onCancelCallback={mockOnCancel} onSuccess={mockOnSuccess} selectedClusters={[]} />
+        <CommonProjectCreate
+          onCancelCallback={mockOnCancel}
+          onSuccess={mockOnSuccess}
+          onError={mockOnError}
+          selectedClusters={[{ name: 'cluster-1', namespace: 'cluster-1' }]}
+        />
       </TestWrapper>
     )
 
     const submitButton = screen.getByText('Submit')
     await userEvent.click(submitButton)
 
-    // Advance timers to allow for the 5 second delay
-    jest.advanceTimersByTime(5000)
-
     await waitFor(() => {
-      expect(mockFireManagedClusterActionCreate).not.toHaveBeenCalled()
+      expect(mockOnError).toHaveBeenCalled()
     })
 
-    await waitFor(() => {
-      expect(mockOnSuccess).toHaveBeenCalledTimes(1)
-    })
+    expect(mockOnSuccess).not.toHaveBeenCalled()
   })
 
   it('handles partial failure - one cluster succeeds, one fails', async () => {
@@ -371,5 +374,8 @@ describe('CommonProjectCreate', () => {
     await waitFor(() => {
       expect(mockOnError).toHaveBeenCalled()
     })
+
+    // onSuccess should not be called when there's a partial failure
+    expect(mockOnSuccess).not.toHaveBeenCalled()
   })
 })

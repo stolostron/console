@@ -11,7 +11,7 @@ interface CommonProjectCreateProps {
   /** Callback function called when the cancel button is clicked */
   onCancelCallback: () => void
   /** Optional callback function called when the project is successfully created */
-  onSuccess?: () => void
+  onSuccess?: (newProjectName: string) => void
   /** Optional callback function called when project creation fails */
   onError?: (error: Error) => void
   /** Selected clusters to create the common project on */
@@ -68,16 +68,7 @@ export function CommonProjectCreate({
             })
         )
       )
-      toastContext.addAlert({
-        title: t('Waiting for the managed clusters to reconcile'),
-        message: t(
-          'Please wait for a few seconds while the information is propagated to the managed clusters. Refresh the page if the already created project is not displayed.'
-        ),
-        type: 'info',
-        autoClose: true,
-      })
-      await new Promise((resolve) => setTimeout(resolve, 5000))
-      onSuccess?.()
+      onSuccess?.(data.name)
     } catch (error) {
       const errorObj = error instanceof Error ? error : new Error('Failed to create project')
       onError?.(errorObj)

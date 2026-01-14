@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { useItem } from '@patternfly-labs/react-form-wizard/lib/src/contexts/ItemContext'
 import { ButtonVariant, PageSection } from '@patternfly/react-core'
 import { useMemo, useState } from 'react'
 import { ProjectsTable, ProjectTableData } from '../../components/ProjectsTable'
@@ -6,7 +7,6 @@ import { useTranslation } from '../../lib/acm-i18next'
 import type { Cluster } from '../../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHook'
 import { IAcmTableButtonAction } from '../../ui-components/AcmTable/AcmTableTypes'
 import { CommonProjectCreate } from './CommonProjectCreate'
-import { useItem } from '@patternfly-labs/react-form-wizard/lib/src/contexts/ItemContext'
 import { RoleAssignmentWizardFormData } from './types'
 
 interface ProjectsListProps {
@@ -17,6 +17,8 @@ export const ProjectsList = ({ selectedClusters }: ProjectsListProps) => {
   const { t } = useTranslation()
   const formData = useItem() as RoleAssignmentWizardFormData
   const [isCreateCommonProject, setIsCreateCommonProject] = useState(false)
+  // this is used to display the created projects in the projects table to avoid discrepancies between search results and the already created projects
+  const [createdProjects, setCreatedProjects] = useState<string[]>([])
 
   const selectedProjects = useMemo(
     () =>
@@ -34,7 +36,10 @@ export const ProjectsList = ({ selectedClusters }: ProjectsListProps) => {
 
   const handleModalClose = () => setIsCreateCommonProject(false)
 
-  const handleCreateSuccess = () => setIsCreateCommonProject(false)
+  const handleCreateSuccess = (newProjectName: string) => {
+    setIsCreateCommonProject(false)
+    setCreatedProjects([...createdProjects, newProjectName])
+  }
 
   const handleSelectionChange = (projects: ProjectTableData[]) => {
     formData.scope = { ...formData.scope, namespaces: projects.map((p) => p.name) }
@@ -68,6 +73,7 @@ export const ProjectsList = ({ selectedClusters }: ProjectsListProps) => {
           onCreateClick={handleCreateClick}
           onSelectionChange={handleSelectionChange}
           tableActionButtons={tableActionButtons}
+          additionalProjects={createdProjects}
         />
       )}
     </PageSection>
