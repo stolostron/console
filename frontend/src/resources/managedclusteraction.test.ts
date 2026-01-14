@@ -5,6 +5,7 @@ import { nockCreate, nockDelete, nockGet, nockIgnoreApiPaths } from '../lib/nock
 import { waitForNocks } from '../lib/test-util'
 import {
   fireManagedClusterAction,
+  fireManagedClusterActionCreate,
   ManagedClusterAction,
   ManagedClusterActionApiVersion,
   ManagedClusterActionKind,
@@ -312,6 +313,214 @@ describe('fireManagedClusterAction', () => {
       )
 
       expect(result).toEqual({ message: 'Action failed due to resource conflict' })
+
+      await waitForNocks([createNock, pollNock, deleteNock])
+    })
+  })
+})
+
+describe('fireManagedClusterActionCreate', () => {
+  beforeEach(() => {
+    // Reset the mock before each test
+    mockUuidV4.mockReset()
+    mockUuidV4.mockReturnValue(MOCKED_UUID)
+    nockIgnoreApiPaths()
+  })
+
+  const projectTemplate = {
+    apiVersion: 'project.openshift.io/v1',
+    kind: 'ProjectRequest',
+    metadata: { name: 'test-project' },
+    displayName: 'Test Project',
+    description: 'Test Description',
+  }
+
+  const expectedCreateAction: ManagedClusterAction = {
+    apiVersion: ManagedClusterActionApiVersion,
+    kind: ManagedClusterActionKind,
+    metadata: {
+      name: MOCKED_UUID,
+      namespace: clusterName,
+    },
+    spec: {
+      actionType: 'Create',
+      kube: {
+        template: projectTemplate,
+      },
+    },
+  }
+
+  const completedCreateAction: ManagedClusterAction = {
+    ...expectedCreateAction,
+    status: {
+      conditions: [
+        {
+          lastTransitionTime: '2023-01-01T00:00:00Z' as any,
+          message: 'Action completed successfully',
+          reason: 'ActionDone',
+          status: 'True',
+          type: 'Completed',
+        },
+      ],
+      result: {
+        apiVersion: 'project.openshift.io/v1',
+        kind: 'Project',
+        metadata: { name: 'test-project' },
+      },
+    },
+  }
+
+  describe('successful action execution', () => {
+    it('should create and poll ManagedClusterAction for Create action', async () => {
+      // Mock the create operation
+      const createNock = nockCreate(expectedCreateAction, expectedCreateAction)
+
+      // Mock delete operation that happens during cleanup
+      const deleteNock = nockDelete({
+        apiVersion: ManagedClusterActionApiVersion,
+        kind: ManagedClusterActionKind,
+        metadata: { name: MOCKED_UUID, namespace: clusterName },
+      })
+
+      // Mock the poll operation
+      const pollNock = nockGet(
+        {
+          apiVersion: ManagedClusterActionApiVersion,
+          kind: ManagedClusterActionKind,
+          metadata: { name: MOCKED_UUID, namespace: clusterName },
+        },
+        completedCreateAction
+      )
+
+      const result = await fireManagedClusterActionCreate(clusterName, projectTemplate)
+
+      expect(mockUuidV4).toHaveBeenCalledTimes(1)
+      expect(result).toEqual({
+        complete: 'Completed',
+        actionDone: 'ActionDone',
+        message: 'Action completed successfully',
+        result: {
+          apiVersion: 'project.openshift.io/v1',
+          kind: 'Project',
+          metadata: { name: 'test-project' },
+        },
+      })
+      await waitForNocks([createNock, pollNock, deleteNock])
+    })
+
+    it('should create ManagedClusterAction with minimal template', async () => {
+      const minimalTemplate = {
+        apiVersion: 'v1',
+        kind: 'ConfigMap',
+        metadata: { name: 'test-configmap', namespace: 'default' },
+      }
+
+      const expectedMinimalAction: ManagedClusterAction = {
+        apiVersion: ManagedClusterActionApiVersion,
+        kind: ManagedClusterActionKind,
+        metadata: {
+          name: MOCKED_UUID,
+          namespace: clusterName,
+        },
+        spec: {
+          actionType: 'Create',
+          kube: {
+            template: minimalTemplate,
+          },
+        },
+      }
+
+      const completedMinimalAction: ManagedClusterAction = {
+        ...expectedMinimalAction,
+        status: {
+          conditions: [
+            {
+              lastTransitionTime: '2023-01-01T00:00:00Z' as any,
+              message: 'ConfigMap created',
+              reason: 'ActionDone',
+              status: 'True',
+              type: 'Completed',
+            },
+          ],
+          result: minimalTemplate,
+        },
+      }
+
+      const createNock = nockCreate(expectedMinimalAction, expectedMinimalAction)
+      const deleteNock = nockDelete({
+        apiVersion: ManagedClusterActionApiVersion,
+        kind: ManagedClusterActionKind,
+        metadata: { name: MOCKED_UUID, namespace: clusterName },
+      })
+      const pollNock = nockGet(
+        {
+          apiVersion: ManagedClusterActionApiVersion,
+          kind: ManagedClusterActionKind,
+          metadata: { name: MOCKED_UUID, namespace: clusterName },
+        },
+        completedMinimalAction
+      )
+
+      const result = await fireManagedClusterActionCreate(clusterName, minimalTemplate)
+
+      expect(result).toEqual({
+        complete: 'Completed',
+        actionDone: 'ActionDone',
+        message: 'ConfigMap created',
+        result: minimalTemplate,
+      })
+      await waitForNocks([createNock, pollNock, deleteNock])
+    })
+  })
+
+  describe('error scenarios', () => {
+    it('should handle action creation failure', async () => {
+      const createNock = nockCreate(expectedCreateAction, expectedCreateAction, 500)
+
+      const result = await fireManagedClusterActionCreate(clusterName, projectTemplate)
+
+      // The function catches and returns the error
+      expect(result).toBeDefined()
+      expect(result).toHaveProperty('message')
+      await waitForNocks([createNock])
+    })
+
+    it('should handle action failure during execution', async () => {
+      const failedCreateAction: ManagedClusterAction = {
+        ...expectedCreateAction,
+        status: {
+          conditions: [
+            {
+              lastTransitionTime: '2023-01-01T00:00:00Z' as any,
+              message: 'Project already exists',
+              reason: 'ActionFailed',
+              status: 'False',
+              type: 'Completed',
+            },
+          ],
+        },
+      }
+
+      const createNock = nockCreate(expectedCreateAction, expectedCreateAction)
+      const pollNock = nockGet(
+        {
+          apiVersion: ManagedClusterActionApiVersion,
+          kind: ManagedClusterActionKind,
+          metadata: { name: MOCKED_UUID, namespace: clusterName },
+        },
+        failedCreateAction
+      )
+
+      // Mock the delete operation that happens during cleanup
+      const deleteNock = nockDelete({
+        apiVersion: ManagedClusterActionApiVersion,
+        kind: ManagedClusterActionKind,
+        metadata: { name: MOCKED_UUID, namespace: clusterName },
+      })
+
+      const result = await fireManagedClusterActionCreate(clusterName, projectTemplate)
+
+      expect(result).toEqual({ message: 'Project already exists' })
 
       await waitForNocks([createNock, pollNock, deleteNock])
     })
