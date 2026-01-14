@@ -1,12 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import {
   DescriptionList,
-  DescriptionListTerm,
-  DescriptionListGroup,
   DescriptionListDescription,
+  DescriptionListGroup,
+  DescriptionListTerm,
   PageSection,
   Stack,
-  Content,
+  Title,
 } from '@patternfly/react-core'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { useUserDetailsContext } from './UserPage'
@@ -26,9 +26,7 @@ const UserDetails = () => {
   return (
     <PageSection hasBodyWrapper={false}>
       <PageSection hasBodyWrapper={false}>
-        <Content component="p" style={{ fontFamily: 'RedHatDisplay', marginBottom: '2rem' }}>
-          {t('General information')}
-        </Content>
+        <Title headingLevel="h3">{t('General information')}</Title>
         <Stack hasGutter>
           <DescriptionList isHorizontal={false}>
             <DescriptionListGroup>

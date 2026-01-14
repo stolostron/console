@@ -1,24 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { ItemContext } from '@patternfly-labs/react-form-wizard/lib/src/contexts/ItemContext'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { UserKind } from '../../resources'
 import { ProjectsList } from './ProjectsList'
-
-const mockFormData = {
-  subject: { kind: UserKind },
-  scope: {
-    kind: 'specific' as const,
-    clusterNames: [],
-    namespaces: [],
-  },
-  roles: [],
-  scopeType: 'Select clusters' as const,
-}
-
-const renderWithContext = (component: React.ReactElement) => {
-  return render(<ItemContext.Provider value={mockFormData}>{component}</ItemContext.Provider>)
-}
 
 // Use an object to track captured state (avoids let variables)
 const capturedState = {
@@ -63,13 +46,16 @@ jest.mock('./CommonProjectCreate', () => ({
 }))
 
 describe('ProjectsList', () => {
+  const mockOnSelectionChange = jest.fn()
+
   beforeEach(() => {
     capturedState.additionalProjects = undefined
+    mockOnSelectionChange.mockClear()
   })
 
   it('returns to table view when cancel is clicked', async () => {
     // Arrange
-    renderWithContext(<ProjectsList selectedClusters={[]} />)
+    render(<ProjectsList selectedClusters={[]} onSelectionChange={mockOnSelectionChange} />)
 
     // Act
     await userEvent.click(screen.getByText('Create common project'))
@@ -87,7 +73,7 @@ describe('ProjectsList', () => {
 
   it('returns to table view when project creation succeeds', async () => {
     // Arrange
-    renderWithContext(<ProjectsList selectedClusters={[]} />)
+    render(<ProjectsList selectedClusters={[]} onSelectionChange={mockOnSelectionChange} />)
 
     // Act
     await userEvent.click(screen.getByText('Create common project'))
@@ -103,20 +89,21 @@ describe('ProjectsList', () => {
 
   it('handles project selection changes', async () => {
     // Arrange
-    renderWithContext(<ProjectsList selectedClusters={[]} />)
+    render(<ProjectsList selectedClusters={[]} onSelectionChange={mockOnSelectionChange} />)
 
     // Act
     const selectButton = screen.getByText('Select Project')
     await userEvent.click(selectButton)
 
     // Assert
+    expect(mockOnSelectionChange).toHaveBeenCalledWith(['project-1'])
     expect(screen.getByTestId('projects-table')).toBeInTheDocument()
   })
 
   describe('created projects tracking', () => {
     it('passes created project name to ProjectsTable as additionalProjects after creation', async () => {
       // Arrange
-      renderWithContext(<ProjectsList selectedClusters={[]} />)
+      render(<ProjectsList selectedClusters={[]} onSelectionChange={mockOnSelectionChange} />)
 
       // Initially no additional projects
       expect(capturedState.additionalProjects).toEqual([])
@@ -137,7 +124,7 @@ describe('ProjectsList', () => {
 
     it('passes custom project name to ProjectsTable as additionalProjects', async () => {
       // Arrange
-      renderWithContext(<ProjectsList selectedClusters={[]} />)
+      render(<ProjectsList selectedClusters={[]} onSelectionChange={mockOnSelectionChange} />)
 
       // Act - Create a project with custom name
       await userEvent.click(screen.getByText('Create common project'))
@@ -155,7 +142,7 @@ describe('ProjectsList', () => {
 
     it('accumulates multiple created projects in additionalProjects', async () => {
       // Arrange
-      renderWithContext(<ProjectsList selectedClusters={[]} />)
+      render(<ProjectsList selectedClusters={[]} onSelectionChange={mockOnSelectionChange} />)
 
       // Act - Create first project
       await userEvent.click(screen.getByText('Create common project'))
@@ -188,7 +175,7 @@ describe('ProjectsList', () => {
 
     it('displays additionalProjects in the table UI', async () => {
       // Arrange
-      renderWithContext(<ProjectsList selectedClusters={[]} />)
+      render(<ProjectsList selectedClusters={[]} onSelectionChange={mockOnSelectionChange} />)
 
       // Act - Create a project
       await userEvent.click(screen.getByText('Create common project'))
@@ -206,7 +193,7 @@ describe('ProjectsList', () => {
 
     it('starts with empty additionalProjects array', () => {
       // Arrange & Act
-      renderWithContext(<ProjectsList selectedClusters={[]} />)
+      render(<ProjectsList selectedClusters={[]} onSelectionChange={mockOnSelectionChange} />)
 
       // Assert
       expect(capturedState.additionalProjects).toEqual([])
@@ -215,7 +202,7 @@ describe('ProjectsList', () => {
 
     it('does not lose created projects when canceling new project creation', async () => {
       // Arrange
-      renderWithContext(<ProjectsList selectedClusters={[]} />)
+      render(<ProjectsList selectedClusters={[]} onSelectionChange={mockOnSelectionChange} />)
 
       // Create first project
       await userEvent.click(screen.getByText('Create common project'))

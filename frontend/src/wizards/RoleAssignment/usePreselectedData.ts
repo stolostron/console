@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useEffect, useMemo } from 'react'
+import { useEffect, useRef } from 'react'
 import { UserKind, GroupKind } from '../../resources'
 import { RoleAssignmentWizardFormData } from './types'
 import { RoleAssignmentPreselected } from '../../routes/UserManagement/RoleAssignments/model/role-assignment-preselected'
@@ -12,6 +12,15 @@ interface UsePreselectedDataProps {
   setSelectedClusters: React.Dispatch<React.SetStateAction<any[]>>
 }
 
+const buildSubjectUpdate = (subject: RoleAssignmentPreselected['subject']) =>
+  subject
+    ? {
+        kind: subject.kind,
+        user: subject.kind === UserKind && subject.value ? [subject.value] : undefined,
+        group: subject.kind === GroupKind && subject.value ? [subject.value] : undefined,
+      }
+    : undefined
+
 export const usePreselectedData = ({
   isOpen,
   preselected,
@@ -19,49 +28,52 @@ export const usePreselectedData = ({
   setSelectedClusters,
 }: UsePreselectedDataProps) => {
   const { roleAssignmentData } = useRoleAssignmentData()
-
-  const allClusters = useMemo(
-    () => roleAssignmentData.clusterSets?.flatMap((cs) => cs.clusters || []) || [],
-    [roleAssignmentData.clusterSets]
-  )
+  const hasAppliedPreselection = useRef(false)
 
   useEffect(() => {
-    if (!isOpen) return
+    if (!isOpen) {
+      hasAppliedPreselection.current = false
+    } else if (!hasAppliedPreselection.current) {
+      hasAppliedPreselection.current = true
 
-    setFormData((prev) => {
-      const updates: Partial<RoleAssignmentWizardFormData> = {}
+      const allClusters = roleAssignmentData.clusterSets?.flatMap((cs) => cs.clusters || []) || []
 
-      if (preselected?.subject) {
-        updates.subject = {
-          kind: preselected.subject.kind,
-          user:
-            preselected.subject.kind === UserKind && preselected.subject.value
-              ? [preselected.subject.value]
-              : undefined,
-          group:
-            preselected.subject.kind === GroupKind && preselected.subject.value
-              ? [preselected.subject.value]
-              : undefined,
+      setFormData((prev) => {
+        const updates: Partial<RoleAssignmentWizardFormData> = {}
+
+        const subjectUpdate = buildSubjectUpdate(preselected?.subject)
+        if (subjectUpdate) {
+          updates.subject = subjectUpdate
         }
-      }
 
-      if (preselected?.roles && preselected.roles.length > 0) {
-        updates.roles = preselected.roles
-      }
-
-      if (preselected?.clusterNames && preselected.clusterNames.length > 0) {
-        const clusterObjects = allClusters.filter((cluster) => preselected.clusterNames?.includes(cluster.name))
-
-        updates.scopeType = 'Select clusters'
-        updates.scope = {
-          kind: 'specific',
-          clusterNames: preselected.clusterNames,
+        if (preselected?.roles && preselected.roles.length > 0) {
+          updates.roles = preselected.roles
         }
-        updates.selectedClusters = preselected.clusterNames
-        setSelectedClusters(clusterObjects)
-      }
 
-      return { ...prev, ...updates }
-    })
-  }, [preselected, isOpen, setFormData, setSelectedClusters, allClusters])
+        if (preselected?.clusterNames && preselected.clusterNames.length > 0) {
+          const clusterObjects = allClusters.filter((cluster) => preselected.clusterNames?.includes(cluster.name))
+
+          updates.scopeType = 'Select clusters'
+          updates.scope = {
+            kind: 'specific',
+            clusterNames: preselected.clusterNames,
+            namespaces: preselected.namespaces,
+          }
+          updates.selectedClusters = clusterObjects
+          setSelectedClusters(clusterObjects)
+
+          if (preselected.namespaces && preselected.namespaces.length > 0) {
+            updates.selectedClustersAccessLevel = 'Project role assignment'
+          }
+        } else if (preselected?.namespaces && preselected.namespaces.length > 0) {
+          updates.scope = {
+            kind: 'specific',
+            namespaces: preselected.namespaces,
+          }
+        }
+
+        return { ...prev, ...updates }
+      })
+    }
+  }, [isOpen, preselected, roleAssignmentData.clusterSets, setFormData, setSelectedClusters])
 }

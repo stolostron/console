@@ -6,15 +6,23 @@ import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RoleAssignmentWizardModalWrapper } from './RoleAssignmentWizardModalWrapper'
 import { AcmToastContext } from '../../../ui-components'
 import { UserKind } from '../../../resources'
-import { addRoleAssignment, findRoleAssignments } from '../../../resources/clients/multicluster-role-assignment-client'
+import {
+  addRoleAssignment,
+  findRoleAssignments,
+  deleteRoleAssignment,
+} from '../../../resources/clients/multicluster-role-assignment-client'
+import { FlattenedRoleAssignment } from '../../../resources/clients/model/flattened-role-assignment'
+import { MulticlusterRoleAssignment } from '../../../resources/multicluster-role-assignment'
 
 jest.mock('../../../resources/clients/multicluster-role-assignment-client', () => ({
   addRoleAssignment: jest.fn(),
   findRoleAssignments: jest.fn(() => []),
   getPlacementsForRoleAssignment: jest.fn(() => []),
+  deleteRoleAssignment: jest.fn(),
 }))
 
 const mockFindRoleAssignments = findRoleAssignments as jest.MockedFunction<typeof findRoleAssignments>
+const mockDeleteRoleAssignment = deleteRoleAssignment as jest.MockedFunction<typeof deleteRoleAssignment>
 
 let capturedOnSubmit: any = null
 
@@ -117,7 +125,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
 
       render(
         <TestWrapper>
-          <RoleAssignmentWizardModalWrapper close={mockClose} />
+          <RoleAssignmentWizardModalWrapper close={mockClose} isOpen />
         </TestWrapper>
       )
 
@@ -141,7 +149,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
 
       render(
         <TestWrapper>
-          <RoleAssignmentWizardModalWrapper close={mockClose} />
+          <RoleAssignmentWizardModalWrapper close={mockClose} isOpen />
         </TestWrapper>
       )
 
@@ -165,7 +173,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
 
       render(
         <TestWrapper>
-          <RoleAssignmentWizardModalWrapper close={mockClose} />
+          <RoleAssignmentWizardModalWrapper close={mockClose} isOpen />
         </TestWrapper>
       )
 
@@ -188,7 +196,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
     it('should call close when cancel is clicked', () => {
       render(
         <TestWrapper>
-          <RoleAssignmentWizardModalWrapper close={mockClose} />
+          <RoleAssignmentWizardModalWrapper close={mockClose} isOpen />
         </TestWrapper>
       )
 
@@ -201,7 +209,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
     it('should render the wizard modal', () => {
       render(
         <TestWrapper>
-          <RoleAssignmentWizardModalWrapper close={mockClose} />
+          <RoleAssignmentWizardModalWrapper close={mockClose} isOpen />
         </TestWrapper>
       )
 
@@ -219,7 +227,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
 
       render(
         <TestWrapper>
-          <RoleAssignmentWizardModalWrapper close={mockClose} />
+          <RoleAssignmentWizardModalWrapper close={mockClose} isOpen />
         </TestWrapper>
       )
 
@@ -248,7 +256,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
 
       render(
         <TestWrapper>
-          <RoleAssignmentWizardModalWrapper close={mockClose} />
+          <RoleAssignmentWizardModalWrapper close={mockClose} isOpen />
         </TestWrapper>
       )
 
@@ -289,7 +297,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
 
       render(
         <TestWrapper>
-          <RoleAssignmentWizardModalWrapper close={mockClose} />
+          <RoleAssignmentWizardModalWrapper close={mockClose} isOpen />
         </TestWrapper>
       )
 
@@ -317,7 +325,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
 
       render(
         <TestWrapper>
-          <RoleAssignmentWizardModalWrapper close={mockClose} />
+          <RoleAssignmentWizardModalWrapper close={mockClose} isOpen />
         </TestWrapper>
       )
 
@@ -345,7 +353,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
 
       render(
         <TestWrapper>
-          <RoleAssignmentWizardModalWrapper close={mockClose} />
+          <RoleAssignmentWizardModalWrapper close={mockClose} isOpen />
         </TestWrapper>
       )
 
@@ -361,6 +369,207 @@ describe('RoleAssignmentWizardModalWrapper', () => {
         expect(mockAddRoleAssignment).toHaveBeenCalled()
         expect(mockAddRoleAssignment.mock.calls[0][0].subject.name).toBe('group1')
         expect(mockAddRoleAssignment.mock.calls[0][0].subject.kind).toBe('Group')
+      })
+    })
+  })
+
+  describe('Editing Role Assignments', () => {
+    const mockEditingRoleAssignment: FlattenedRoleAssignment = {
+      name: 'test-assignment',
+      clusterRole: 'admin',
+      clusterNames: ['cluster1'],
+      clusterSelection: {
+        type: 'placements',
+        placements: [],
+      },
+      subject: { name: 'test-user', kind: 'User' },
+      relatedMulticlusterRoleAssignment: {
+        metadata: { name: 'test-mcra', namespace: 'multicluster-global-hub' },
+        spec: {
+          roleAssignments: [{ name: 'test-assignment', clusterRole: 'admin' }],
+        },
+      } as MulticlusterRoleAssignment,
+    }
+
+    it('should delete existing role assignment before saving when editing', async () => {
+      mockDeleteRoleAssignment.mockReturnValue({
+        promise: Promise.resolve({}),
+        abort: jest.fn(),
+      } as any)
+
+      mockAddRoleAssignment.mockResolvedValue({
+        promise: Promise.resolve({}) as any,
+        abort: jest.fn(),
+      })
+
+      render(
+        <TestWrapper>
+          <RoleAssignmentWizardModalWrapper
+            close={mockClose}
+            isOpen={true}
+            editingRoleAssignment={mockEditingRoleAssignment}
+          />
+        </TestWrapper>
+      )
+
+      await waitFor(() => expect(capturedOnSubmit).not.toBeNull())
+
+      await capturedOnSubmit({
+        subject: { kind: UserKind, user: ['test-user'] },
+        scope: { kind: 'specific', clusterNames: ['cluster1'] },
+        roles: ['admin'],
+      })
+
+      await waitFor(() => {
+        expect(mockDeleteRoleAssignment).toHaveBeenCalledWith(mockEditingRoleAssignment)
+        expect(mockToastContext.addAlert).toHaveBeenCalledWith({
+          title: 'Role assignment updated',
+          message: 'A role assignment for admin role updated.',
+          type: 'success',
+          autoClose: true,
+        })
+      })
+    })
+
+    it('should show error and close modal when delete fails during editing', async () => {
+      // Create a rejection that is handled to avoid unhandled rejection warnings
+      const deletePromise = Promise.reject(new Error('Delete failed'))
+      // Attach a catch handler to prevent unhandled rejection
+      deletePromise.catch(() => {})
+
+      mockDeleteRoleAssignment.mockReturnValue({
+        promise: deletePromise,
+        abort: jest.fn(),
+      } as any)
+
+      render(
+        <TestWrapper>
+          <RoleAssignmentWizardModalWrapper
+            close={mockClose}
+            isOpen={true}
+            editingRoleAssignment={mockEditingRoleAssignment}
+          />
+        </TestWrapper>
+      )
+
+      await waitFor(() => expect(capturedOnSubmit).not.toBeNull())
+
+      await capturedOnSubmit({
+        subject: { kind: UserKind, user: ['test-user'] },
+        scope: { kind: 'specific', clusterNames: ['cluster1'] },
+        roles: ['admin'],
+      })
+
+      await waitFor(() => {
+        expect(mockToastContext.addAlert).toHaveBeenCalledWith({
+          title: 'Role assignment update failed',
+          message: "The role assignment can't be updated. Error: Delete failed",
+          type: 'danger',
+          autoClose: true,
+        })
+        expect(mockClose).toHaveBeenCalled()
+      })
+
+      // Should not proceed to add new role assignment
+      expect(mockAddRoleAssignment).not.toHaveBeenCalled()
+    })
+
+    it('should filter out the editing role assignment from existing assignments', async () => {
+      const existingMcra = {
+        metadata: { name: 'test-mcra', namespace: 'multicluster-global-hub' },
+        spec: {
+          roleAssignments: [
+            { name: 'test-assignment', clusterRole: 'admin' },
+            { name: 'other-assignment', clusterRole: 'viewer' },
+          ],
+        },
+      } as MulticlusterRoleAssignment
+
+      mockUseRecoilValue.mockReturnValue([existingMcra])
+
+      mockDeleteRoleAssignment.mockReturnValue({
+        promise: Promise.resolve({}),
+        abort: jest.fn(),
+      } as any)
+
+      mockAddRoleAssignment.mockResolvedValue({
+        promise: Promise.resolve({}) as any,
+        abort: jest.fn(),
+      })
+
+      render(
+        <TestWrapper>
+          <RoleAssignmentWizardModalWrapper
+            close={mockClose}
+            isOpen={true}
+            editingRoleAssignment={mockEditingRoleAssignment}
+          />
+        </TestWrapper>
+      )
+
+      await waitFor(() => expect(capturedOnSubmit).not.toBeNull())
+
+      await capturedOnSubmit({
+        subject: { kind: UserKind, user: ['test-user'] },
+        scope: { kind: 'specific', clusterNames: ['cluster1'] },
+        roles: ['admin'],
+      })
+
+      await waitFor(() => {
+        expect(mockDeleteRoleAssignment).toHaveBeenCalled()
+        expect(mockAddRoleAssignment).toHaveBeenCalled()
+      })
+    })
+
+    it('should not delete when not in editing mode', async () => {
+      mockAddRoleAssignment.mockResolvedValue({
+        promise: Promise.resolve({}) as any,
+        abort: jest.fn(),
+      })
+
+      render(
+        <TestWrapper>
+          <RoleAssignmentWizardModalWrapper close={mockClose} isOpen={true} />
+        </TestWrapper>
+      )
+
+      await waitFor(() => expect(capturedOnSubmit).not.toBeNull())
+
+      await capturedOnSubmit({
+        subject: { kind: UserKind, user: ['test-user'] },
+        scope: { kind: 'specific', clusterNames: ['cluster1'] },
+        roles: ['admin'],
+      })
+
+      await waitFor(() => {
+        expect(mockDeleteRoleAssignment).not.toHaveBeenCalled()
+        expect(mockAddRoleAssignment).toHaveBeenCalled()
+      })
+    })
+
+    it('should not delete when editingRoleAssignment is not provided', async () => {
+      mockAddRoleAssignment.mockResolvedValue({
+        promise: Promise.resolve({}) as any,
+        abort: jest.fn(),
+      })
+
+      render(
+        <TestWrapper>
+          <RoleAssignmentWizardModalWrapper close={mockClose} isOpen />
+        </TestWrapper>
+      )
+
+      await waitFor(() => expect(capturedOnSubmit).not.toBeNull())
+
+      await capturedOnSubmit({
+        subject: { kind: UserKind, user: ['test-user'] },
+        scope: { kind: 'specific', clusterNames: ['cluster1'] },
+        roles: ['admin'],
+      })
+
+      await waitFor(() => {
+        expect(mockDeleteRoleAssignment).not.toHaveBeenCalled()
+        expect(mockAddRoleAssignment).toHaveBeenCalled()
       })
     })
   })
