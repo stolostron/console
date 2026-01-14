@@ -2,12 +2,11 @@
 
 import { Title } from '@patternfly/react-core'
 import { useContext } from 'react'
-import { useTranslation } from '../../lib/acm-i18next'
 import { ProjectCreateForm, ProjectFormData } from '../../components/project'
-import { createProject } from '../../resources/project'
-import { AcmToastContext } from '../../ui-components'
+import { useTranslation } from '../../lib/acm-i18next'
+import { fireManagedClusterAction, ProjectRequestApiVersion, ProjectRequestKind } from '../../resources'
 import type { Cluster } from '../../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHook'
-
+import { AcmToastContext } from '../../ui-components'
 interface CommonProjectCreateProps {
   /** Callback function called when the cancel button is clicked */
   onCancelCallback: () => void
@@ -19,49 +18,78 @@ interface CommonProjectCreateProps {
   selectedClusters: Cluster[]
 }
 
-export function CommonProjectCreate({ onCancelCallback, onSuccess, onError }: CommonProjectCreateProps) {
+export function CommonProjectCreate({
+  onCancelCallback,
+  onSuccess,
+  onError,
+  selectedClusters,
+}: CommonProjectCreateProps) {
   const { t } = useTranslation()
   const toastContext = useContext(AcmToastContext)
 
+  const handleError = (projectName: string, clusterName: string, errorMessage: string) =>
+    toastContext.addAlert({
+      title: t('Failed to create common project'),
+      message: t('Failed to create common project {{name}} for the cluster {{cluster}}. Error: {{error}}.', {
+        name: projectName,
+        cluster: clusterName,
+        error: errorMessage,
+      }),
+      type: 'danger',
+    })
+
   const handleSubmit = async (data: ProjectFormData) => {
+    const kubeResourcePayload = {
+      apiVersion: ProjectRequestApiVersion,
+      kind: ProjectRequestKind,
+      metadata: { name: data.name },
+      displayName: data.displayName || undefined,
+      description: data.description || undefined,
+    }
     try {
-      const response = createProject(
-        data.name,
-        undefined, // labels
-        {
-          displayName: data.displayName || undefined,
-          description: data.description || undefined,
-        }
+      await Promise.all(
+        selectedClusters.map((cluster) =>
+          // createManagedClusterAction(cluster.name, {
+          //   apiVersion: ProjectRequestApiVersion,
+          //   kind: ProjectRequestKind,
+          //   metadata: { name: data.name },
+          //   displayName: data.displayName || undefined,
+          //   description: data.description || undefined,
+          // })
+          fireManagedClusterAction(
+            'Create',
+            cluster.name,
+            ProjectRequestKind,
+            ProjectRequestApiVersion,
+            data.name,
+            data.name,
+            kubeResourcePayload
+          )
+            .then(async (actionResponse) => {
+              if (actionResponse.actionDone === 'ActionDone') {
+                toastContext.addAlert({
+                  title: t('Common project created'),
+                  message: t('{{name}} project has been successfully created for the cluster {{cluster}.', {
+                    name: data.name,
+                    cluster: cluster.name,
+                  }),
+                  type: 'success',
+                  autoClose: true,
+                })
+              } else {
+                handleError(data.name, cluster.name, actionResponse.message)
+                throw new Error(actionResponse.message)
+              }
+            })
+            .catch((err) => {
+              handleError(data.name, cluster.name, err.message)
+              throw err
+            })
+        )
       )
-
-      // Wait for the project creation to complete
-      const project = await response.promise
-
-      // Show success toast
-      toastContext.addAlert({
-        title: t('Common project created'),
-        message: t('{{name}} project has been successfully created.', {
-          name: project.metadata?.name || data.name,
-        }),
-        type: 'success',
-        autoClose: true,
-      })
-
-      // TODO: Add logic to attach project to selected clusters, ACM-27472
       onSuccess?.()
     } catch (error) {
       const errorObj = error instanceof Error ? error : new Error('Failed to create project')
-      console.error('Project creation failed:', errorObj)
-
-      // Show error toast
-      toastContext.addAlert({
-        title: t('Failed to create common project'),
-        message: t('Failed to create common project {{name}}. Please try again.', {
-          name: data.name,
-        }),
-        type: 'danger',
-      })
-
       onError?.(errorObj)
     }
   }
