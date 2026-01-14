@@ -48,9 +48,15 @@ jest.mock('./CommonProjectCreate', () => ({
 }))
 
 describe('ProjectsList', () => {
+  const mockOnSelectionChange = jest.fn()
+
+  beforeEach(() => {
+    mockOnSelectionChange.mockClear()
+  })
+
   it('returns to table view when cancel is clicked', async () => {
     // Arrange
-    renderWithContext(<ProjectsList selectedClusters={[]} />)
+    renderWithContext(<ProjectsList selectedClusters={[]} onSelectionChange={mockOnSelectionChange} />)
 
     // Act
     await userEvent.click(screen.getByText('Create common project'))
@@ -68,7 +74,7 @@ describe('ProjectsList', () => {
 
   it('returns to table view when project creation succeeds', async () => {
     // Arrange
-    renderWithContext(<ProjectsList selectedClusters={[]} />)
+    renderWithContext(<ProjectsList selectedClusters={[]} onSelectionChange={mockOnSelectionChange} />)
 
     // Act
     await userEvent.click(screen.getByText('Create common project'))
@@ -84,13 +90,14 @@ describe('ProjectsList', () => {
 
   it('handles project selection changes', async () => {
     // Arrange
-    renderWithContext(<ProjectsList selectedClusters={[]} />)
+    renderWithContext(<ProjectsList selectedClusters={[]} onSelectionChange={mockOnSelectionChange} />)
 
     // Act
     const selectButton = screen.getByText('Select Project')
     await userEvent.click(selectButton)
 
     // Assert
+    expect(mockOnSelectionChange).toHaveBeenCalledWith(['project-1'])
     expect(screen.getByTestId('projects-table')).toBeInTheDocument()
   })
 })
