@@ -1658,7 +1658,7 @@ describe('DistributionField hypershift clusters', () => {
         false,
         'managedclusterpage'
       )
-      expect(queryAllByText('Set update channel').length).toBe(1)
+      expect(queryAllByText('Set channel').length).toBe(1)
     })
 
     it('should show upgrade status only (no channel warning) when HostedCluster is upgrading', async () => {
@@ -1677,7 +1677,7 @@ describe('DistributionField hypershift clusters', () => {
         'managedclusterpage'
       )
       // Should NOT show channel warning when upgrading
-      expect(queryAllByText('Set update channel').length).toBe(0)
+      expect(queryAllByText('Set channel').length).toBe(0)
       // Should show upgrade progress
       expect(queryAllByText(/upgrading to 4\.11\.22/i).length).toBe(1)
       expect(queryByRole('progressbar')).toBeTruthy()
@@ -1694,7 +1694,7 @@ describe('DistributionField hypershift clusters', () => {
         false,
         'managedclusterpage'
       )
-      expect(queryAllByText('Set update channel').length).toBe(0)
+      expect(queryAllByText('Set channel').length).toBe(0)
     })
 
     it('should not show channel warning for non-hypershift clusters', async () => {
@@ -1714,7 +1714,7 @@ describe('DistributionField hypershift clusters', () => {
         false,
         'managedclusterpage'
       )
-      expect(queryAllByText('Set update channel').length).toBe(0)
+      expect(queryAllByText('Set channel').length).toBe(0)
     })
   })
 })

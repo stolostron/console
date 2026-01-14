@@ -16,7 +16,7 @@ import {
   ResourceErrorCode,
 } from '../../../../../resources/utils'
 import { AcmEmptyState, AcmSelect } from '../../../../../ui-components'
-import { Content, ContentVariants, SelectOption } from '@patternfly/react-core'
+import { Alert, Content, ContentVariants, SelectOption } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { BulkActionModal } from '../../../../../components/BulkActionModal'
@@ -25,16 +25,9 @@ import { ClusterAction, clusterSupportsAction } from '../utils/cluster-actions'
 import { getVersionFromReleaseImage } from '../utils/utils'
 
 const isChannelSelectable = (c: Cluster, hostedCluster?: HostedClusterK8sResource) => {
-  if (hostedCluster) {
-    const hasChannelSet = !!(hostedCluster.spec as { channel?: string } | undefined)?.channel
-    const hasAvailableChannels = !!c.distribution?.upgradeInfo?.isReadySelectChannels
-
-    // For hosted clusters without a channel set, allow channel selection (will use fallback)
-    if (!hasChannelSet) {
-      return true
-    }
-    // For hosted clusters with a channel set, only allow if MCI has available channels
-    return hasAvailableChannels
+  // For hosted clusters without a channel set, allow channel selection
+  if (hostedCluster && !(hostedCluster.spec as { channel?: string } | undefined)?.channel) {
+    return true
   }
   return clusterSupportsAction(c, ClusterAction.SelectChannel)
 }
@@ -114,9 +107,6 @@ export function BatchChannelSelectModal(props: {
     setChannelSelectableClusters(newChannelSelectableClusters || [])
   }, [props.clusters, props.open, props.hostedCluster])
 
-  // Compute description - use warning message for hosted clusters without channel, else default
-  const modalDescription = props.warningMessage || t('bulk.message.selectChannel')
-
   return (
     <BulkActionModal<Cluster>
       open={props.open}
@@ -134,7 +124,8 @@ export function BatchChannelSelectModal(props: {
         setSelectChannels({})
         props.close()
       }}
-      description={modalDescription}
+      description={t('bulk.message.selectChannel')}
+      alert={props.warningMessage && <Alert isInline variant="warning" title={props.warningMessage} />}
       columns={[
         {
           header: t('upgrade.table.name'),
