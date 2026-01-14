@@ -19,6 +19,8 @@ describe('package index', () => {
       'getFleetK8sAPIPath',
       'useFleetAccessReview',
       'useFleetClusterNames',
+      'useFleetClusterSetNames',
+      'useFleetClusterSets',
       'useFleetK8sAPIPath',
       'useFleetK8sWatchResource',
       'useFleetK8sWatchResources',

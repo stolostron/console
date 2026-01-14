@@ -1,11 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { K8sResourceCommon, useK8sWatchResource } from '@openshift-console/dynamic-plugin-sdk'
-import { V1CustomResourceDefinitionCondition } from '@kubernetes/client-node'
-import { ManagedClusterListGroupVersionKind } from '../internal/models'
-
-// Helper function to check for condition - similar to checkForCondition from status-conditions.ts
-const checkForCondition = (condition: string, conditions: V1CustomResourceDefinitionCondition[], status?: string) =>
-  conditions?.find((c) => c.type === condition)?.status === (status ?? 'True')
+import { useMemo } from 'react'
+import { useFleetClustersInternal } from '../internal/useFleetClustersInternal'
 
 /**
  * Hook that returns names of managed clusters with optional filtering by cluster proxy addon and availability status.
@@ -53,29 +48,12 @@ const checkForCondition = (condition: string, conditions: V1CustomResourceDefini
  * )
  * ```
  */
-export function useFleetClusterNames(returnAllClusters: boolean = false): [string[], boolean, any] {
-  const [clusters, loaded, error] = useK8sWatchResource<K8sResourceCommon[]>({
-    groupVersionKind: ManagedClusterListGroupVersionKind,
-    isList: true,
-  })
-  const clusterNames = clusters.flatMap((cluster) => {
-    if (!cluster.metadata?.name) {
-      return []
-    }
+export function useFleetClusterNames(returnAllClusters?: boolean): [string[], boolean, any] {
+  const [filteredClusters, loaded, error] = useFleetClustersInternal({ returnAllClusters })
 
-    if (returnAllClusters) {
-      return [cluster.metadata.name]
-    }
+  const result = useMemo(() => {
+    return filteredClusters.map((cluster) => cluster.metadata!.name!)
+  }, [filteredClusters])
 
-    const hasClusterProxyLabel =
-      cluster.metadata?.labels?.['feature.open-cluster-management.io/addon-cluster-proxy'] === 'available'
-
-    // Check if cluster has ManagedClusterConditionAvailable status: 'True'
-    const conditions = (cluster as any)?.status?.conditions || []
-    const isClusterAvailable = checkForCondition('ManagedClusterConditionAvailable', conditions)
-
-    return hasClusterProxyLabel && isClusterAvailable ? [cluster.metadata.name] : []
-  })
-
-  return [clusterNames, loaded, error]
+  return [result, loaded, error]
 }
