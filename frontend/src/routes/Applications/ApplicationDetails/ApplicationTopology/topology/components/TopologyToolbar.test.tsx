@@ -301,8 +301,8 @@ describe('TopologyToolbar tests', () => {
       render(<TopologyToolbar {...props} />)
 
       // Click on the applications dropdown toggle
-      const toggle = screen.getAllByRole('button').find((btn) => btn.textContent === 'Applications')
-      if (toggle) await userEvent.click(toggle)
+      const toggle = screen.getByText('All applications')
+      await userEvent.click(toggle)
 
       await waitFor(() => {
         expect(screen.getByText('app1')).toBeInTheDocument()
