@@ -11,6 +11,8 @@ import { GranularityStepContent } from './GranularityStepContent'
 interface ScopeSelectionStepContentProps {
   isDrawerExpanded: boolean
   setIsDrawerExpanded: (expanded: boolean) => void
+  selectedClusterSets: any[]
+  selectedClusters: any[]
   onSelectClusterSets?: (clusterSets: any[]) => void
   onSelectClusters?: (clusters: any[]) => void
 }
@@ -18,14 +20,14 @@ interface ScopeSelectionStepContentProps {
 export const ScopeSelectionStepContent = ({
   isDrawerExpanded,
   setIsDrawerExpanded,
+  selectedClusterSets,
+  selectedClusters,
   onSelectClusterSets,
   onSelectClusters,
 }: ScopeSelectionStepContentProps) => {
   const { t } = useTranslation()
   const item = useItem()
   const selectedScope = item?.scopeType
-  const selectedClusterSets = item?.selectedClusterSets
-  const selectedClusters = item?.selectedClusters
 
   return (
     <div>

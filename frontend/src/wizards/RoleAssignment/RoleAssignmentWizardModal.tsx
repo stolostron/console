@@ -192,16 +192,27 @@ export const RoleAssignmentWizardModal = ({
 
   const title = getWizardTitle(isEditing, preselected, t)
 
+  const hasNoClusterSets = selectedClusterSets.length === 0
+  const hasNoClusters = selectedClusters.length === 0
+  const isScopeInvalid =
+    (formData.scopeType === 'Select cluster sets' && hasNoClusterSets) ||
+    (formData.scopeType === 'Select clusters' && hasNoClusters)
+
   const scopeSubSteps = [
     <WizardStep
       key="scope-selection"
       name={t('Select scope')}
       id="scope-selection"
       isHidden={preselected?.context === 'cluster'}
+      footer={{
+        isNextDisabled: !isEditing && isScopeInvalid,
+      }}
     >
       <ScopeSelectionStepContent
         isDrawerExpanded={isDrawerExpanded}
         setIsDrawerExpanded={setIsDrawerExpanded}
+        selectedClusterSets={selectedClusterSets}
+        selectedClusters={selectedClusters}
         onSelectClusterSets={handleClusterSetsChange}
         onSelectClusters={handleClustersChange}
       />
@@ -210,7 +221,10 @@ export const RoleAssignmentWizardModal = ({
       key="cluster-set-granularity"
       name={t('Define cluster set granularity')}
       id="scope-cluster-set-granularity"
-      isHidden={formData.scopeType !== 'Select cluster sets'}
+      isHidden={formData.scopeType !== 'Select cluster sets' || hasNoClusterSets}
+      footer={{
+        isNextDisabled: !isEditing && formData.clusterSetAccessLevel === 'Cluster role assignment' && hasNoClusters,
+      }}
     >
       <GranularityStepContent
         title={t('Choose access level')}
@@ -241,7 +255,7 @@ export const RoleAssignmentWizardModal = ({
       {formData.clusterSetAccessLevel === 'Cluster role assignment' && (
         <div style={{ marginTop: '16px' }}>
           <ClusterList
-            selectedClusters={formData.selectedClusters}
+            selectedClusters={selectedClusters}
             namespaces={formData.selectedClusterSets?.map((cs) => cs.metadata?.name).filter(isType)}
             onSelectCluster={(clusters) => {
               handleClustersChange(clusters)
@@ -256,7 +270,10 @@ export const RoleAssignmentWizardModal = ({
       name={t('Define cluster granularity')}
       id="scope-cluster-set-cluster-granularity"
       isHidden={
-        formData.scopeType !== 'Select cluster sets' || formData.clusterSetAccessLevel !== 'Cluster role assignment'
+        formData.scopeType !== 'Select cluster sets' ||
+        hasNoClusterSets ||
+        formData.clusterSetAccessLevel !== 'Cluster role assignment' ||
+        hasNoClusters
       }
     >
       <ClusterGranularityStepContent
@@ -270,7 +287,7 @@ export const RoleAssignmentWizardModal = ({
       key="cluster-granularity"
       name={t('Define cluster granularity')}
       id="scope-cluster-granularity"
-      isHidden={formData.scopeType !== 'Select clusters'}
+      isHidden={formData.scopeType !== 'Select clusters' || hasNoClusters}
     >
       <ClusterGranularityStepContent
         description={t('Define the level of access for the selected cluster(s).')}
@@ -342,10 +359,7 @@ export const RoleAssignmentWizardModal = ({
                   id="scope"
                   steps={scopeSubSteps}
                   footer={{
-                    isNextDisabled:
-                      !isEditing &&
-                      ((formData.scopeType === 'Select cluster sets' && selectedClusterSets.length === 0) ||
-                        (formData.scopeType === 'Select clusters' && selectedClusters.length === 0)),
+                    isNextDisabled: !isEditing && isScopeInvalid,
                   }}
                 />
 
