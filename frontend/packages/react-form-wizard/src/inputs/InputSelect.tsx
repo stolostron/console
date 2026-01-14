@@ -21,11 +21,9 @@ type InputSelectProps = {
   disabled?: boolean
   validated?: 'error'
   options: string[]
-  setOptions: (options: string[]) => void
+  setOptions: (options: string[], inputValue: string) => void
   placeholder: string
   value: string
-  filterValue: string
-  setFilterValue: React.Dispatch<React.SetStateAction<string>>
   onSelect: (value: string | undefined) => void
   toggleRef: React.Ref<MenuToggleElement>
   open: boolean
@@ -41,15 +39,14 @@ export const InputSelect = ({
   setOptions,
   placeholder,
   value,
-  filterValue,
-  setFilterValue,
   onSelect,
   toggleRef,
   open,
   setOpen,
 }: InputSelectProps) => {
   const { createOption } = useStringContext()
-  const [inputValue, setInputValue] = useState<string>(value || '')
+  const [inputValue, setInputValue] = useState<string>('')
+  const [filterValue, setFilterValue] = useState<string>('')
   const [focusedItemIndex, setFocusedItemIndex] = useState<number | null>(null)
   const [activeItemId, setActiveItemId] = useState<string | null>(null)
   const textInputRef = useRef<HTMLInputElement>(undefined)
@@ -63,11 +60,12 @@ export const InputSelect = ({
       )
       newSelectOptions.push(filterValue)
     }
-    setOptions([...new Set([...newSelectOptions])])
+    setOptions([...new Set([...newSelectOptions])], filterValue)
   }, [filterValue, createOption, options, setOptions, value])
 
   useEffect(() => {
     setInputValue(value)
+    setFilterValue('')
   }, [value])
 
   const createItemId = (value: string) => `select-typeahead-${value.replace(' ', '-')}`
@@ -99,13 +97,7 @@ export const InputSelect = ({
   const onTextInputChange = (_event: React.FormEvent<HTMLInputElement>, v: string) => {
     setInputValue(v)
     setFilterValue(v)
-
     resetActiveAndFocusedItem()
-
-    // refine this
-    // if (v !== value) {
-    //   setSelected('')
-    // }
   }
 
   const handleMenuArrowKeys = (key: string) => {
@@ -204,9 +196,7 @@ export const InputSelect = ({
     >
       <TextInputGroup isPlain>
         <TextInputGroupMain
-          // value={!Array.isArray(value) ? value || inputValue : inputValue}
           value={inputValue}
-          // value={value}
           onClick={onInputClick}
           onChange={onTextInputChange}
           onKeyDown={onInputKeyDown}

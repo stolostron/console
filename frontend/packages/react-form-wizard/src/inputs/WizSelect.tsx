@@ -63,7 +63,6 @@ function WizSelectBase<T = any>(props: SelectProps<T>) {
   const keyPath = props.keyPath ?? props.path
   const isCreatable = props.isCreatable
   const [open, setOpen] = useState(false)
-  const [filterValue, setFilterValue] = useState<string>('')
   const [filteredOptions, setFilteredOptions] = useState<OptionType<T>[]>([])
 
   // The drop down items with descriptions - optionally grouped
@@ -104,7 +103,7 @@ function WizSelectBase<T = any>(props: SelectProps<T>) {
   }, [selectOptions])
 
   const handleSetOptions = useCallback(
-    (op: string[]) => {
+    (op: string[], inputValue: string) => {
       const filtered =
         selectOptions?.filter((option) => {
           const valueStr =
@@ -123,12 +122,12 @@ function WizSelectBase<T = any>(props: SelectProps<T>) {
         ).length === 0
       if (isValueCustomOption) filtered.unshift(value)
       setFilteredOptions(
-        isCreatable && filterValue !== '' && inputSelectOptions.find((o) => o === filterValue) === undefined // && !o.includes(filterValue)
-          ? [...filtered, { id: 'input', label: filterValue, value: filterValue, keyedValue: filterValue }]
+        isCreatable && inputValue !== '' && inputSelectOptions.find((o) => o === inputValue) === undefined
+          ? [...filtered, { id: 'input', label: inputValue, value: inputValue, keyedValue: inputValue }]
           : filtered
       )
     },
-    [filterValue, inputSelectOptions, isCreatable, selectOptions, value]
+    [inputSelectOptions, isCreatable, selectOptions, value]
   )
 
   const onSelect = useCallback(
@@ -141,7 +140,6 @@ function WizSelectBase<T = any>(props: SelectProps<T>) {
         // creating new selectOption
         setValue(selectOptionObject)
       }
-      setFilterValue('')
       setOpen(false)
     },
     [setValue, selectOptions]
@@ -179,8 +177,6 @@ function WizSelectBase<T = any>(props: SelectProps<T>) {
                   setOptions={handleSetOptions}
                   toggleRef={toggleRef}
                   value={value}
-                  filterValue={filterValue}
-                  setFilterValue={setFilterValue}
                   onSelect={onSelect}
                   open={open}
                   setOpen={setOpen}

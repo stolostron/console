@@ -31,13 +31,11 @@ export function WizSingleSelect(props: WizSingleSelectProps) {
   const { label, readonly, isCreatable, options, footer } = props
   const placeholder = getSelectPlaceholder(props)
   const [open, setOpen] = useState(false)
-  const [filterValue, setFilterValue] = useState<string>(value || '')
   const [filteredOptions, setFilteredOptions] = useState<string[]>([])
 
   const onSelect = useCallback(
     (selectedString: string | undefined) => {
       setValue(selectedString)
-      setFilterValue('')
       setOpen(false)
     },
     [setValue]
@@ -86,8 +84,6 @@ export function WizSingleSelect(props: WizSingleSelectProps) {
                   setOptions={handleSetOptions}
                   toggleRef={toggleRef}
                   value={value}
-                  filterValue={filterValue}
-                  setFilterValue={setFilterValue}
                   onSelect={onSelect}
                   open={open}
                   setOpen={setOpen}

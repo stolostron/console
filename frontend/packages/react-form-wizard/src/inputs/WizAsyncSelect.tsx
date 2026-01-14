@@ -34,14 +34,12 @@ export function WizAsyncSelect(props: WizAsyncSelectProps) {
   const placeholder = getSelectPlaceholder(props)
   const [open, setOpen] = useState(false)
   const [options, setOptions] = useState<string[]>([])
-  const [filterValue, setFilterValue] = useState<string>(value || '')
   const [filteredOptions, setFilteredOptions] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
 
   const onSelect = useCallback(
     (selectedString: string | undefined) => {
       setValue(selectedString)
-      setFilterValue('')
       setOpen(false)
     },
     [setValue]
@@ -117,8 +115,6 @@ export function WizAsyncSelect(props: WizAsyncSelectProps) {
                 setOptions={handleSetOptions}
                 toggleRef={toggleRef}
                 value={value}
-                filterValue={filterValue}
-                setFilterValue={setFilterValue}
                 onSelect={onSelect}
                 open={open}
                 setOpen={setOpen}
