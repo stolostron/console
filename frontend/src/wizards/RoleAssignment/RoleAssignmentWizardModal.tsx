@@ -138,6 +138,16 @@ export const RoleAssignmentWizardModal = ({
     }))
   }, [])
 
+  const handleNamespacesChange = useCallback((namespaces: string[]) => {
+    setFormData((prev) => ({
+      ...prev,
+      scope: {
+        ...prev.scope,
+        namespaces,
+      },
+    }))
+  }, [])
+
   const handleClose = useCallback(() => {
     setIsDrawerExpanded(false)
     onClose()
@@ -252,6 +262,8 @@ export const RoleAssignmentWizardModal = ({
       <ClusterGranularityStepContent
         description={t('Define cluster granularity options.')}
         selectedClusters={selectedClusters}
+        selectedNamespaces={formData.scope.namespaces}
+        onNamespacesChange={handleNamespacesChange}
       />
     </WizardStep>,
     <WizardStep
@@ -263,6 +275,8 @@ export const RoleAssignmentWizardModal = ({
       <ClusterGranularityStepContent
         description={t('Define the level of access for the selected cluster(s).')}
         selectedClusters={selectedClusters}
+        selectedNamespaces={formData.scope.namespaces}
+        onNamespacesChange={handleNamespacesChange}
       />
     </WizardStep>,
   ]

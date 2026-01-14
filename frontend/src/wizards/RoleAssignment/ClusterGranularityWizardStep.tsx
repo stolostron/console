@@ -8,11 +8,15 @@ import { ProjectsList } from './ProjectsList'
 interface ClusterGranularityStepContentProps {
   description: string
   selectedClusters: any[]
+  selectedNamespaces?: string[]
+  onNamespacesChange: (namespaces: string[]) => void
 }
 
 export const ClusterGranularityStepContent = ({
   description,
   selectedClusters,
+  selectedNamespaces,
+  onNamespacesChange,
 }: ClusterGranularityStepContentProps) => {
   const { t } = useTranslation()
   const item = useItem()
@@ -42,7 +46,11 @@ export const ClusterGranularityStepContent = ({
       </div>
       {item?.selectedClustersAccessLevel === 'Project role assignment' && (
         <div style={{ marginTop: '16px' }}>
-          <ProjectsList selectedClusters={selectedClusters} />
+          <ProjectsList
+            selectedClusters={selectedClusters}
+            selectedNamespaces={selectedNamespaces}
+            onSelectionChange={onNamespacesChange}
+          />
         </div>
       )}
     </>
