@@ -120,7 +120,17 @@ function WizSelectBase<T = any>(props: SelectProps<T>) {
         (selectOptions as OptionType<any>[]).filter(
           (op) => op.id !== 'input' && (op.value === value || op.label === value)
         ).length === 0
-      if (isValueCustomOption) filtered.unshift(value)
+      if (isValueCustomOption && value) {
+        const valueAsString = String(value)
+        // Check if value already exists in filtered to avoid duplicates
+        const valueExists = selectOptions?.some(
+          (o) => o.id === valueAsString || o.value === value || o.label === valueAsString
+        )
+        if (!valueExists) {
+          filtered.unshift(value)
+        }
+      }
+
       setFilteredOptions(
         isCreatable && inputValue !== '' && inputSelectOptions.find((o) => o === inputValue) === undefined
           ? [...filtered, { id: 'input', label: inputValue, value: inputValue, keyedValue: inputValue }]
