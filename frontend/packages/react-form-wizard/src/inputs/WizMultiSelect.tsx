@@ -29,6 +29,7 @@ export function WizMultiSelect(props: WizMultiSelectProps) {
   const { isCreatable, options, footer } = props
   const placeholder = getSelectPlaceholder(props)
   const [open, setOpen] = useState(false)
+  const [filterValue, setFilterValue] = useState<string>(value || '')
   const [filteredOptions, setFilteredOptions] = useState<string[]>([])
 
   const allOptions = useMemo(() => {
@@ -65,6 +66,8 @@ export function WizMultiSelect(props: WizMultiSelectProps) {
         newValues.push(selectedString)
       }
       setValue(newValues)
+      setFilterValue('')
+      setOpen(false)
     },
     [setValue, value]
   )
@@ -108,6 +111,8 @@ export function WizMultiSelect(props: WizMultiSelectProps) {
               setOptions={handleSetOptions}
               toggleRef={toggleRef}
               value={value}
+              filterValue={filterValue}
+              setFilterValue={setFilterValue}
               onSelect={onSelect}
               open={open}
               setOpen={setOpen}
@@ -120,7 +125,7 @@ export function WizMultiSelect(props: WizMultiSelectProps) {
           <SelectListOptions
             value={value}
             allOptions={options}
-            options={filteredOptions}
+            filteredOptions={filteredOptions}
             isCreatable={isCreatable}
             footer={footer}
             isMultiSelect

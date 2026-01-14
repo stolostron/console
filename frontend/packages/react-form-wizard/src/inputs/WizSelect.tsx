@@ -11,7 +11,6 @@ import {
 import get from 'get-value'
 import { ReactNode, useCallback, useMemo, useState } from 'react'
 import { DisplayMode } from '../contexts/DisplayModeContext'
-import { useStringContext } from '../contexts/StringContext'
 import { getSelectPlaceholder, InputCommonProps, useInput } from './Input'
 import { InputSelect, SelectListOptions } from './InputSelect'
 import { WizFormGroup } from './WizFormGroup'
@@ -60,12 +59,11 @@ type SelectProps<T> = WizSelectSingleProps<T>
 
 function WizSelectBase<T = any>(props: SelectProps<T>) {
   const { displayMode: mode, value, setValue, validated, hidden, id, disabled, required } = useInput(props)
-  const { noResults } = useStringContext()
   const placeholder = getSelectPlaceholder(props)
   const keyPath = props.keyPath ?? props.path
   const isCreatable = props.isCreatable
   const [open, setOpen] = useState(false)
-
+  const [filterValue, setFilterValue] = useState<string>('')
   const [filteredOptions, setFilteredOptions] = useState<OptionType<T>[]>([])
 
   // The drop down items with descriptions - optionally grouped
@@ -101,11 +99,12 @@ function WizSelectBase<T = any>(props: SelectProps<T>) {
   }, [props.options, keyPath])
 
   const inputSelectOptions = useMemo(() => {
-    return selectOptions?.map((option) => option.value?.toString() ?? '') ?? []
+    // **This should probably use option.value but argo server (and maybe other options) .value is a (kube resource) object - so using label to be sure we have a string for later comparison
+    return selectOptions?.map((option) => option.label?.toString() ?? '') ?? []
   }, [selectOptions])
 
   const handleSetOptions = useCallback(
-    (o: string[]) => {
+    (op: string[]) => {
       const filtered =
         selectOptions?.filter((option) => {
           const valueStr =
@@ -113,27 +112,36 @@ function WizSelectBase<T = any>(props: SelectProps<T>) {
               ? option.value
               : typeof option.value === 'number'
               ? option.value.toString()
+              : typeof option.value === 'object'
+              ? option.label
               : String(option.value)
-          return o.includes(valueStr)
+          return op.includes(valueStr)
         }) ?? []
-
-      if (filtered.length > 0) {
-        setFilteredOptions([...filtered, { id: 'input', label: '', value: o[0], keyedValue: '' }])
-      } else {
-        setFilteredOptions([{ id: o[0], label: o[0] ?? noResults, value: o[0], keyedValue: '' }])
-      }
+      const isValueCustomOption =
+        (selectOptions as OptionType<any>[]).filter(
+          (op) => op.id !== 'input' && (op.value === value || op.label === value)
+        ).length === 0
+      if (isValueCustomOption) filtered.unshift(value)
+      setFilteredOptions(
+        isCreatable && filterValue !== '' && inputSelectOptions.find((o) => o === filterValue) === undefined // && !o.includes(filterValue)
+          ? [...filtered, { id: 'input', label: filterValue, value: filterValue, keyedValue: filterValue }]
+          : filtered
+      )
     },
-    [noResults, selectOptions]
+    [filterValue, inputSelectOptions, isCreatable, selectOptions, value]
   )
 
   const onSelect = useCallback(
     (selectOptionObject: string | undefined) => {
+      if (!selectOptionObject) return
       const idOption = selectOptions?.find((o) => o.id === selectOptionObject)
       if (idOption) {
         setValue(idOption.value)
       } else {
+        // creating new selectOption
         setValue(selectOptionObject)
       }
+      setFilterValue('')
       setOpen(false)
     },
     [setValue, selectOptions]
@@ -171,6 +179,8 @@ function WizSelectBase<T = any>(props: SelectProps<T>) {
                   setOptions={handleSetOptions}
                   toggleRef={toggleRef}
                   value={value}
+                  filterValue={filterValue}
+                  setFilterValue={setFilterValue}
                   onSelect={onSelect}
                   open={open}
                   setOpen={setOpen}
@@ -184,7 +194,7 @@ function WizSelectBase<T = any>(props: SelectProps<T>) {
               <SelectListOptions
                 value={value}
                 allOptions={selectOptions ?? []}
-                options={filteredOptions}
+                filteredOptions={filteredOptions}
                 isCreatable={isCreatable}
                 onCreate={props.onCreate}
                 footer={props.footer}

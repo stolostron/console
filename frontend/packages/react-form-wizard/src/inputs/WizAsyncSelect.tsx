@@ -34,12 +34,14 @@ export function WizAsyncSelect(props: WizAsyncSelectProps) {
   const placeholder = getSelectPlaceholder(props)
   const [open, setOpen] = useState(false)
   const [options, setOptions] = useState<string[]>([])
+  const [filterValue, setFilterValue] = useState<string>(value || '')
   const [filteredOptions, setFilteredOptions] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
 
   const onSelect = useCallback(
     (selectedString: string | undefined) => {
       setValue(selectedString)
+      setFilterValue('')
       setOpen(false)
     },
     [setValue]
@@ -65,8 +67,9 @@ export function WizAsyncSelect(props: WizAsyncSelectProps) {
           asyncCallback()
             .then((options) => {
               if (Array.isArray(options) && options.every((option) => typeof option === 'string')) {
-                setOptions(options)
-                setFilteredOptions(options)
+                const ops = isCreatable && value ? [...options, value] : options
+                setOptions(ops)
+                setFilteredOptions(ops)
               } else {
                 // eslint-disable-next-line no-console
                 console.warn('AsyncSelect: options is not an array of strings')
@@ -80,7 +83,7 @@ export function WizAsyncSelect(props: WizAsyncSelectProps) {
         return false
       })
     }
-  }, [asyncCallback, displayMode])
+  }, [asyncCallback, displayMode, isCreatable, value])
 
   useEffect(() => sync(), [sync])
 
@@ -114,6 +117,8 @@ export function WizAsyncSelect(props: WizAsyncSelectProps) {
                 setOptions={handleSetOptions}
                 toggleRef={toggleRef}
                 value={value}
+                filterValue={filterValue}
+                setFilterValue={setFilterValue}
                 onSelect={onSelect}
                 open={open}
                 setOpen={setOpen}
@@ -126,7 +131,7 @@ export function WizAsyncSelect(props: WizAsyncSelectProps) {
           >
             <SelectListOptions
               allOptions={options}
-              options={filteredOptions}
+              filteredOptions={filteredOptions}
               value={value}
               isCreatable={isCreatable}
               footer={footer}
