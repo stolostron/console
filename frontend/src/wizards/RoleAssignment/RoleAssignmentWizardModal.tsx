@@ -199,6 +199,11 @@ export const RoleAssignmentWizardModal = ({
         setIsDrawerExpanded={setIsDrawerExpanded}
         onSelectClusterSets={handleClusterSetsChange}
         onSelectClusters={handleClustersChange}
+        selection={{
+          scopeType: formData.scopeType,
+          selectedClusters: formData.selectedClusters,
+          selectedClusterSets: formData.selectedClusterSets,
+        }}
       />
     </WizardStep>,
     <WizardStep

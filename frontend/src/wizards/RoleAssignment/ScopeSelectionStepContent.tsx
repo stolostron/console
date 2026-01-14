@@ -1,18 +1,23 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useTranslation } from '../../lib/acm-i18next'
-import { Button } from '@patternfly/react-core'
 import { WizSelect } from '@patternfly-labs/react-form-wizard/lib/src/inputs/WizSelect'
-import { useItem } from '@patternfly-labs/react-form-wizard/lib/src/contexts/ItemContext'
+import { Button } from '@patternfly/react-core'
+import { useTranslation } from '../../lib/acm-i18next'
+import { GranularityStepContent } from './GranularityStepContent'
 import { ClusterSetsList } from './Scope/ClusterSets/ClusterSetsList'
 import { ClusterList } from './Scope/Clusters/ClusterList'
 import { GlobalScopeSelection } from './Scope/GlobalScopeSelection'
-import { GranularityStepContent } from './GranularityStepContent'
+import { RoleAssignmentWizardFormData } from './types'
 
 interface ScopeSelectionStepContentProps {
   isDrawerExpanded: boolean
   setIsDrawerExpanded: (expanded: boolean) => void
   onSelectClusterSets?: (clusterSets: any[]) => void
   onSelectClusters?: (clusters: any[]) => void
+  selection: {
+    scopeType: RoleAssignmentWizardFormData['scopeType']
+    selectedClusters: RoleAssignmentWizardFormData['selectedClusters']
+    selectedClusterSets: RoleAssignmentWizardFormData['selectedClusterSets']
+  }
 }
 
 export const ScopeSelectionStepContent = ({
@@ -20,12 +25,9 @@ export const ScopeSelectionStepContent = ({
   setIsDrawerExpanded,
   onSelectClusterSets,
   onSelectClusters,
+  selection,
 }: ScopeSelectionStepContentProps) => {
   const { t } = useTranslation()
-  const item = useItem()
-  const selectedScope = item?.scopeType
-  const selectedClusterSets = item?.selectedClusterSets
-  const selectedClusters = item?.selectedClusters
 
   return (
     <div>
@@ -69,13 +71,13 @@ export const ScopeSelectionStepContent = ({
 
       <div style={{ marginTop: '16px' }}>
         {(() => {
-          switch (selectedScope) {
+          switch (selection.scopeType) {
             case 'Global access':
               return <GlobalScopeSelection />
             case 'Select cluster sets':
               return (
                 <ClusterSetsList
-                  selectedClusterSets={selectedClusterSets}
+                  selectedClusterSets={selection.selectedClusterSets}
                   onSelectClusterSet={(clusterSets) => {
                     onSelectClusterSets?.(clusterSets)
                   }}
@@ -84,7 +86,7 @@ export const ScopeSelectionStepContent = ({
             case 'Select clusters':
               return (
                 <ClusterList
-                  selectedClusters={selectedClusters}
+                  selectedClusters={selection.selectedClusters}
                   onSelectCluster={(clusters) => {
                     onSelectClusters?.(clusters)
                   }}

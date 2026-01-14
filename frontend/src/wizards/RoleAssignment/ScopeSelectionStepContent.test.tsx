@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { DataContext } from '@patternfly-labs/react-form-wizard/lib/src/contexts/DataContext'
-import { ItemContext } from '@patternfly-labs/react-form-wizard/lib/src/contexts/ItemContext'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { ScopeSelectionStepContent } from './ScopeSelectionStepContent'
+import { RoleAssignmentWizardFormData } from './types'
 
 // Mock the translation hook
 jest.mock('../../lib/acm-i18next', () => ({
@@ -82,20 +82,27 @@ jest.mock('@patternfly-labs/react-form-wizard/lib/src/inputs/WizSelect', () => (
   },
 }))
 
-const renderWithContext = (component: React.ReactNode, itemValue: any = {}, updateFn: () => void = jest.fn()) => {
-  return render(
-    <ItemContext.Provider value={itemValue}>
-      <DataContext.Provider value={{ update: updateFn }}>{component}</DataContext.Provider>
-    </ItemContext.Provider>
-  )
+const renderWithContext = (component: React.ReactNode, updateFn: () => void = jest.fn()) => {
+  return render(<DataContext.Provider value={{ update: updateFn }}>{component}</DataContext.Provider>)
 }
 
 describe('ScopeSelectionStepContent', () => {
+  const defaultSelection: {
+    scopeType: RoleAssignmentWizardFormData['scopeType']
+    selectedClusters: RoleAssignmentWizardFormData['selectedClusters']
+    selectedClusterSets: RoleAssignmentWizardFormData['selectedClusterSets']
+  } = {
+    scopeType: undefined,
+    selectedClusters: [],
+    selectedClusterSets: [],
+  }
+
   const defaultProps = {
     isDrawerExpanded: false,
     setIsDrawerExpanded: jest.fn(),
     onSelectClusterSets: jest.fn(),
     onSelectClusters: jest.fn(),
+    selection: defaultSelection,
   }
 
   beforeEach(() => {
@@ -157,7 +164,9 @@ describe('ScopeSelectionStepContent', () => {
   })
 
   it('renders GlobalScopeSelection when scopeType is Global access', () => {
-    renderWithContext(<ScopeSelectionStepContent {...defaultProps} />, { scopeType: 'Global access' })
+    renderWithContext(
+      <ScopeSelectionStepContent {...defaultProps} selection={{ ...defaultSelection, scopeType: 'Global access' }} />
+    )
 
     expect(mockGlobalScopeSelection).toHaveBeenCalled()
     expect(mockClusterSetsList).not.toHaveBeenCalled()
@@ -165,7 +174,12 @@ describe('ScopeSelectionStepContent', () => {
   })
 
   it('renders ClusterSetsList when scopeType is Select cluster sets', () => {
-    renderWithContext(<ScopeSelectionStepContent {...defaultProps} />, { scopeType: 'Select cluster sets' })
+    renderWithContext(
+      <ScopeSelectionStepContent
+        {...defaultProps}
+        selection={{ ...defaultSelection, scopeType: 'Select cluster sets' }}
+      />
+    )
 
     expect(mockClusterSetsList).toHaveBeenCalled()
     expect(mockGlobalScopeSelection).not.toHaveBeenCalled()
@@ -173,7 +187,9 @@ describe('ScopeSelectionStepContent', () => {
   })
 
   it('renders ClusterList when scopeType is Select clusters', () => {
-    renderWithContext(<ScopeSelectionStepContent {...defaultProps} />, { scopeType: 'Select clusters' })
+    renderWithContext(
+      <ScopeSelectionStepContent {...defaultProps} selection={{ ...defaultSelection, scopeType: 'Select clusters' }} />
+    )
 
     expect(mockClusterList).toHaveBeenCalled()
     expect(mockGlobalScopeSelection).not.toHaveBeenCalled()
@@ -181,7 +197,9 @@ describe('ScopeSelectionStepContent', () => {
   })
 
   it('renders nothing for unrecognized scopeType', () => {
-    renderWithContext(<ScopeSelectionStepContent {...defaultProps} />, { scopeType: 'unknown' })
+    renderWithContext(
+      <ScopeSelectionStepContent {...defaultProps} selection={{ ...defaultSelection, scopeType: 'unknown' as any }} />
+    )
 
     expect(mockGlobalScopeSelection).not.toHaveBeenCalled()
     expect(mockClusterSetsList).not.toHaveBeenCalled()
@@ -189,7 +207,7 @@ describe('ScopeSelectionStepContent', () => {
   })
 
   it('renders nothing when scopeType is undefined', () => {
-    renderWithContext(<ScopeSelectionStepContent {...defaultProps} />, {})
+    renderWithContext(<ScopeSelectionStepContent {...defaultProps} selection={{ ...defaultSelection }} />)
 
     expect(mockGlobalScopeSelection).not.toHaveBeenCalled()
     expect(mockClusterSetsList).not.toHaveBeenCalled()
@@ -198,9 +216,13 @@ describe('ScopeSelectionStepContent', () => {
 
   it('calls onSelectClusterSets when cluster sets are selected', () => {
     const onSelectClusterSets = jest.fn()
-    renderWithContext(<ScopeSelectionStepContent {...defaultProps} onSelectClusterSets={onSelectClusterSets} />, {
-      scopeType: 'Select cluster sets',
-    })
+    renderWithContext(
+      <ScopeSelectionStepContent
+        {...defaultProps}
+        onSelectClusterSets={onSelectClusterSets}
+        selection={{ ...defaultSelection, scopeType: 'Select cluster sets' }}
+      />
+    )
 
     fireEvent.click(screen.getByRole('button', { name: 'Select Cluster Set' }))
     expect(onSelectClusterSets).toHaveBeenCalledWith([{ name: 'test-cs' }])
@@ -208,18 +230,26 @@ describe('ScopeSelectionStepContent', () => {
 
   it('calls onSelectClusters when clusters are selected', () => {
     const onSelectClusters = jest.fn()
-    renderWithContext(<ScopeSelectionStepContent {...defaultProps} onSelectClusters={onSelectClusters} />, {
-      scopeType: 'Select clusters',
-    })
+    renderWithContext(
+      <ScopeSelectionStepContent
+        {...defaultProps}
+        onSelectClusters={onSelectClusters}
+        selection={{ ...defaultSelection, scopeType: 'Select clusters' }}
+      />
+    )
 
     fireEvent.click(screen.getByRole('button', { name: 'Select Cluster' }))
     expect(onSelectClusters).toHaveBeenCalledWith([{ name: 'test-cluster' }])
   })
 
   it('does not throw when onSelectClusterSets is undefined', () => {
-    renderWithContext(<ScopeSelectionStepContent {...defaultProps} onSelectClusterSets={undefined} />, {
-      scopeType: 'Select cluster sets',
-    })
+    renderWithContext(
+      <ScopeSelectionStepContent
+        {...defaultProps}
+        onSelectClusterSets={undefined}
+        selection={{ ...defaultSelection, scopeType: 'Select cluster sets' }}
+      />
+    )
 
     expect(() => {
       fireEvent.click(screen.getByRole('button', { name: 'Select Cluster Set' }))
@@ -227,9 +257,13 @@ describe('ScopeSelectionStepContent', () => {
   })
 
   it('does not throw when onSelectClusters is undefined', () => {
-    renderWithContext(<ScopeSelectionStepContent {...defaultProps} onSelectClusters={undefined} />, {
-      scopeType: 'Select clusters',
-    })
+    renderWithContext(
+      <ScopeSelectionStepContent
+        {...defaultProps}
+        onSelectClusters={undefined}
+        selection={{ ...defaultSelection, scopeType: 'Select clusters' }}
+      />
+    )
 
     expect(() => {
       fireEvent.click(screen.getByRole('button', { name: 'Select Cluster' }))
