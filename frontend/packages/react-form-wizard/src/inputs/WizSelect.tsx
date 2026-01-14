@@ -109,7 +109,7 @@ function WizSelectBase<T = any>(props: SelectProps<T>) {
           return op.includes(option.label)
         }) ?? []
       const isValueCustomOption =
-        (selectOptions as OptionType<any>[]).filter(
+        (selectOptions as OptionType<any>[])?.filter(
           (op) => op.id !== 'input' && (op.value === value || op.label === value)
         ).length === 0
       if (isValueCustomOption && value) {
