@@ -106,6 +106,7 @@ const TopologyToolbar: FC<TopologyProps> = (topologyProps) => {
     () => [
       {
         key: 'Clusters',
+        label: t('Clusters'),
         allItems: toolbarControl.allClusters,
         activeItems: toolbarControl.activeClusters,
         setActive: toolbarControl.setActiveClusters,
@@ -114,6 +115,7 @@ const TopologyToolbar: FC<TopologyProps> = (topologyProps) => {
       },
       {
         key: 'Applications',
+        label: t('Applications'),
         allItems: toolbarControl.allApplications,
         activeItems: toolbarControl.activeApplications,
         setActive: toolbarControl.setActiveApplications,
@@ -122,6 +124,7 @@ const TopologyToolbar: FC<TopologyProps> = (topologyProps) => {
       },
       {
         key: 'Types',
+        label: t('Types'),
         allItems: toolbarControl.allTypes,
         activeItems: toolbarControl.activeTypes,
         setActive: toolbarControl.setActiveTypes,
@@ -177,7 +180,7 @@ const TopologyToolbar: FC<TopologyProps> = (topologyProps) => {
             : count === 1
               ? config.allItems![0]
               : activeCount > 0
-                ? t(config.key)
+                ? config.label
                 : config.allLabel
 
         return (
@@ -190,7 +193,7 @@ const TopologyToolbar: FC<TopologyProps> = (topologyProps) => {
           >
             <Flex alignItems={{ default: 'alignItemsCenter' }} spaceItems={{ default: 'spaceItemsSm' }}>
               <FlexItem style={index > 0 ? { marginLeft: '20px' } : undefined}>
-                {t(config.key)} ({count}):
+                {config.label} ({count}):
               </FlexItem>
               <FlexItem>
                 <Select
