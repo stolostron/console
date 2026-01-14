@@ -197,18 +197,19 @@ export const InputSelect = ({
     >
       <TextInputGroup isPlain>
         <TextInputGroupMain
+          id="create-typeahead-select-input"
+          aria-label={placeholder}
+          aria-controls={placeholder}
+          {...(activeItemId && { 'aria-activedescendant': activeItemId })}
+          role="combobox"
           value={inputValue}
           onClick={onInputClick}
           onChange={onTextInputChange}
           onKeyDown={onInputKeyDown}
-          id="create-typeahead-select-input"
           autoComplete="off"
           innerRef={textInputRef}
           placeholder={placeholder}
-          {...(activeItemId && { 'aria-activedescendant': activeItemId })}
-          role="combobox"
           isExpanded={open}
-          aria-controls={placeholder}
         >
           {Array.isArray(value) && (
             <LabelGroup style={{ marginTop: -8, marginBottom: -8 }} numLabels={9999}>
