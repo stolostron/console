@@ -229,7 +229,7 @@ const addOCPFluxResource = (
         clusterId, // Reference to parent cluster for navigation
       },
       resources, // Individual resource instances
-      resourceCount: resourceCount ? resourceCount : clusterNames?.length || 0,
+      resourceCount: resourceCount || clusterNames?.length || 0,
     },
   }
 

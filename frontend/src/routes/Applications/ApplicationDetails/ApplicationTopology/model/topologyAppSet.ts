@@ -281,10 +281,17 @@ async function getAppSetResources(name: string, namespace: string, appSetApps: a
 
   const applications = appsetSearchResult.data?.searchResult?.[0]?.items
   // // Filter out excluded kinds from related results
-  const excludedKinds = ['application', 'applicationset', 'cluster', 'subscription', 'namespace', 'pod', 'replicaset']
+  const excludedKinds = new Set([
+    'application',
+    'applicationset',
+    'cluster',
+    'subscription',
+    'namespace',
+    'pod',
+    'replicaset',
+  ])
   const relatedResults = appsetSearchResult.data?.searchResult?.[0]?.related?.filter(
-    (relatedResult: SearchRelatedResult | null) =>
-      relatedResult && !excludedKinds.includes(relatedResult.kind.toLowerCase())
+    (relatedResult: SearchRelatedResult | null) => relatedResult && !excludedKinds.has(relatedResult.kind.toLowerCase())
   )
 
   // Sort cluster names by length (longest first) to match longer names before shorter ones
@@ -409,7 +416,7 @@ function processResources(
           clusterId: parentId,
         },
         resources: deployableResources,
-        resourceCount: resourceCount ? resourceCount : parentClusterNames.length,
+        resourceCount: resourceCount || parentClusterNames.length,
       },
     }
 

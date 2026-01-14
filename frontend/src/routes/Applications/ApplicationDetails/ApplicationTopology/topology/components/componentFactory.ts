@@ -9,10 +9,10 @@ import {
   withDragNode,
   withSelection,
   WithSelectionProps,
+  DefaultEdge,
 } from '@patternfly/react-topology'
 
 import StyledNode from './StyledNode'
-import { DefaultEdge } from '@patternfly/react-topology'
 
 const defaultComponentFactory: ComponentFactory = (
   kind: ModelKind

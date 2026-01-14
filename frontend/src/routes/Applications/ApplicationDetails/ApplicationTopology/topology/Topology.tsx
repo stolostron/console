@@ -21,11 +21,10 @@ import componentFactory from './components/componentFactory'
 import { NodeIcons } from './components/nodeIcons'
 import { NodeStatusIcons } from './components/nodeStatusIcons'
 import DetailsView from '../components/DetailsView'
-import { ToolbarControl } from './components/TopologyToolbar'
+import TopologyToolbar, { ToolbarControl } from './components/TopologyToolbar'
 
 import { ArgoAppDetailsContainerData, ClusterDetailsContainerData } from '../ApplicationTopology'
 import TopologyZoomBar from './components/TopologyZoomBar'
-import TopologyToolbar from './components/TopologyToolbar'
 
 import './css/topology-view.css'
 import { TFunction } from 'react-i18next'
@@ -157,8 +156,6 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
 export const Topology = (props: TopologyProps) => {
   const controllerRef = useRef<Controller>()
   let controller = controllerRef.current
-  // const nodeIds = props.elements.nodes.map((node) => node.id).join(',')
-  // const currentNodeIds = useRef<string>()
   if (!controller) {
     controller = controllerRef.current = new Visualization()
     controller.registerLayoutFactory(layoutFactory)
@@ -166,10 +163,6 @@ export const Topology = (props: TopologyProps) => {
   }
   if (props.elements.nodes.length > 0) {
     controller.fromModel(getLayoutModel(props.elements), false)
-    // if (currentNodeIds.current !== nodeIds) {
-    //   controller.getGraph().layout()
-    //   currentNodeIds.current = nodeIds
-    //}
   }
 
   return (

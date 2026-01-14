@@ -90,9 +90,7 @@ const TopologyToolbar: FC<TopologyProps> = (topologyProps) => {
     }
   }, [data, clusterNames])
 
-  const [isClustersExpanded, setIsClustersExpanded] = useState(false)
-  const [isApplicationsExpanded, setIsApplicationsExpanded] = useState(false)
-  const [isTypesExpanded, setIsTypesExpanded] = useState(false)
+  const [expandedFilters, setExpandedFilters] = useState<Record<string, boolean>>({})
 
   const { hasToolbarSelection, hasChannelSelection } = useMemo(() => {
     return {
@@ -104,254 +102,142 @@ const TopologyToolbar: FC<TopologyProps> = (topologyProps) => {
     }
   }, [toolbarControl.allClusters, toolbarControl.allApplications, toolbarControl.allTypes, channelControl?.allChannels])
 
-  const onApplicationsSelect = (selection: string) => {
-    if (selection === 'all-applications') {
-      toolbarControl.setActiveApplications(undefined)
-    } else if (toolbarControl.activeApplications?.includes(selection)) {
-      toolbarControl.setActiveApplications(toolbarControl.activeApplications.filter((app) => app !== selection))
-    } else {
-      toolbarControl.setActiveApplications([...(toolbarControl.activeApplications || []), selection])
-    }
-    setDrawerContent?.('Close', false, true, true, true, undefined, true)
-  }
+  const filterConfigs = useMemo(
+    () => [
+      {
+        key: 'Clusters',
+        allItems: toolbarControl.allClusters,
+        activeItems: toolbarControl.activeClusters,
+        setActive: toolbarControl.setActiveClusters,
+        emptyLabel: t('No clusters'),
+        allLabel: t('All clusters'),
+      },
+      {
+        key: 'Applications',
+        allItems: toolbarControl.allApplications,
+        activeItems: toolbarControl.activeApplications,
+        setActive: toolbarControl.setActiveApplications,
+        emptyLabel: t('Applications'),
+        allLabel: t('All applications'),
+      },
+      {
+        key: 'Types',
+        allItems: toolbarControl.allTypes,
+        activeItems: toolbarControl.activeTypes,
+        setActive: toolbarControl.setActiveTypes,
+        emptyLabel: t('No types'),
+        allLabel: t('All types'),
+      },
+    ],
+    [toolbarControl, t]
+  )
 
-  const onClustersSelect = (selection: string) => {
-    if (selection === 'all-clusters') {
-      toolbarControl.setActiveClusters(undefined)
-    } else if (toolbarControl.activeClusters?.includes(selection)) {
-      toolbarControl.setActiveClusters(toolbarControl.activeClusters.filter((cluster) => cluster !== selection))
+  const onSelect = (
+    selection: string,
+    allValue: string,
+    activeItems: string[] | undefined,
+    setActive: (items: string[] | undefined) => void
+  ) => {
+    if (selection === allValue) {
+      setActive(undefined)
+    } else if (activeItems?.includes(selection)) {
+      setActive(activeItems.filter((item) => item !== selection))
     } else {
-      toolbarControl.setActiveClusters([...(toolbarControl.activeClusters || []), selection])
-    }
-    setDrawerContent?.('Close', false, true, true, true, undefined, true)
-  }
-
-  const onTypesSelect = (selection: string) => {
-    if (selection === 'all-types') {
-      toolbarControl.setActiveTypes(undefined)
-    } else if (toolbarControl.activeTypes?.includes(selection)) {
-      toolbarControl.setActiveTypes(toolbarControl.activeTypes.filter((type) => type !== selection))
-    } else {
-      toolbarControl.setActiveTypes([...(toolbarControl.activeTypes || []), selection])
+      setActive([...(activeItems || []), selection])
     }
     setDrawerContent?.('Close', false, true, true, true, undefined, true)
   }
 
   const onDelete = (type: string, id: string) => {
-    if (type === 'Clusters') {
-      toolbarControl.setActiveClusters(toolbarControl.activeClusters?.filter((cluster) => cluster !== id))
-    } else if (type === 'Applications') {
-      toolbarControl.setActiveApplications(toolbarControl.activeApplications?.filter((app) => app !== id))
-    } else if (type === 'Types') {
-      toolbarControl.setActiveTypes(toolbarControl.activeTypes?.filter((t) => t !== id))
+    const config = filterConfigs.find((c) => c.key === type)
+    if (config) {
+      config.setActive(config.activeItems?.filter((item) => item !== id))
     } else {
-      toolbarControl.setActiveClusters(undefined)
-      toolbarControl.setActiveApplications(undefined)
-      toolbarControl.setActiveTypes(undefined)
+      filterConfigs.forEach((c) => c.setActive(undefined))
     }
     setDrawerContent?.('Close', false, true, true, true, undefined, true)
   }
 
   const onDeleteGroup = (type: string) => {
-    if (type === 'Clusters') {
-      toolbarControl.setActiveClusters(undefined)
-    } else if (type === 'Applications') {
-      toolbarControl.setActiveApplications(undefined)
-    } else if (type === 'Types') {
-      toolbarControl.setActiveTypes(undefined)
-    }
+    filterConfigs.find((c) => c.key === type)?.setActive(undefined)
     setDrawerContent?.('Close', false, true, true, true, undefined, true)
   }
 
-  const onClustersToggle = () => {
-    setIsClustersExpanded(!isClustersExpanded)
-  }
-
-  const onApplicationsToggle = () => {
-    setIsApplicationsExpanded(!isApplicationsExpanded)
-  }
-
-  const onTypesToggle = () => {
-    setIsTypesExpanded(!isTypesExpanded)
-  }
-
-  const createMenuItems = (
-    allItems: string[] | undefined,
-    activeItems: string[] | undefined,
-    prefix: string,
-    allValue: string,
-    allLabel: string
-  ) => (
-    <SelectList>
-      {(allItems?.length ?? 0) > 1 && (
-        <SelectOption hasCheckbox key={`${prefix}-all`} value={allValue} isSelected={!activeItems?.length}>
-          {allLabel}
-        </SelectOption>
-      )}
-      {allItems?.map((item) => (
-        <SelectOption hasCheckbox key={`${prefix}-${item}`} value={item} isSelected={activeItems?.includes(item)}>
-          {item}
-        </SelectOption>
-      ))}
-    </SelectList>
-  )
-
-  const clustersMenuItems = createMenuItems(
-    toolbarControl.allClusters,
-    toolbarControl.activeClusters,
-    'cluster',
-    'all-clusters',
-    t('All clusters')
-  )
-  const applicationsMenuItems = createMenuItems(
-    toolbarControl.allApplications,
-    toolbarControl.activeApplications,
-    'application',
-    'all-applications',
-    t('All applications')
-  )
-  const typesMenuItems = createMenuItems(
-    toolbarControl.allTypes,
-    toolbarControl.activeTypes,
-    'type',
-    'all-types',
-    t('All types')
-  )
-
   const toggleGroupItems = (
-    <>
-      <ToolbarGroup variant="filter-group">
-        <ToolbarFilter
-          labels={toolbarControl.activeClusters?.map((cluster) => ({ key: cluster, node: cluster }))}
-          deleteLabel={(category, label) => onDelete(category as string, label as string)}
-          deleteLabelGroup={(category) => onDeleteGroup(category as string)}
-          categoryName="Clusters"
-        >
-          <Flex alignItems={{ default: 'alignItemsCenter' }} spaceItems={{ default: 'spaceItemsSm' }}>
-            <FlexItem>
-              {t('Clusters')} ({toolbarControl.allClusters?.length ?? 0}):
-            </FlexItem>
-            <FlexItem>
-              <Select
-                aria-label="Clusters"
-                role="menu"
-                toggle={(toggleRef: Ref<MenuToggleElement>) => (
-                  <MenuToggle
-                    ref={toggleRef}
-                    onClick={onClustersToggle}
-                    isExpanded={isClustersExpanded}
-                    isDisabled={(toolbarControl.allClusters?.length ?? 0) <= 1}
-                  >
-                    {toolbarControl.allClusters?.length === 0
-                      ? t('No clusters')
-                      : toolbarControl.allClusters?.length === 1
-                        ? toolbarControl.allClusters[0]
-                        : t('All clusters')}
-                    {toolbarControl.allClusters?.length !== 1 && !!toolbarControl.activeClusters?.length && (
-                      <Badge isRead>{toolbarControl.activeClusters?.length ?? 0}</Badge>
+    <ToolbarGroup variant="filter-group">
+      {filterConfigs.map((config, index) => {
+        const allValue = `all-${config.key.toLowerCase()}`
+        const isExpanded = expandedFilters[config.key] ?? false
+        const count = config.allItems?.length ?? 0
+        const activeCount = config.activeItems?.length ?? 0
+
+        const toggleLabel =
+          count === 0
+            ? config.emptyLabel
+            : count === 1
+              ? config.allItems![0]
+              : activeCount > 0
+                ? t(config.key)
+                : config.allLabel
+
+        return (
+          <ToolbarFilter
+            key={config.key}
+            labels={config.activeItems?.map((item) => ({ key: item, node: item }))}
+            deleteLabel={(category, label) => onDelete(category as string, label as string)}
+            deleteLabelGroup={(category) => onDeleteGroup(category as string)}
+            categoryName={config.key}
+          >
+            <Flex alignItems={{ default: 'alignItemsCenter' }} spaceItems={{ default: 'spaceItemsSm' }}>
+              <FlexItem style={index > 0 ? { marginLeft: '20px' } : undefined}>
+                {t(config.key)} ({count}):
+              </FlexItem>
+              <FlexItem>
+                <Select
+                  aria-label={config.key}
+                  role="menu"
+                  toggle={(toggleRef: Ref<MenuToggleElement>) => (
+                    <MenuToggle
+                      ref={toggleRef}
+                      onClick={() => setExpandedFilters((prev) => ({ ...prev, [config.key]: !isExpanded }))}
+                      isExpanded={isExpanded}
+                      isDisabled={count <= 1}
+                    >
+                      {toggleLabel}
+                      {count !== 1 && activeCount > 0 && <Badge isRead>{activeCount}</Badge>}
+                    </MenuToggle>
+                  )}
+                  onSelect={(_e, selection) =>
+                    onSelect(selection as string, allValue, config.activeItems, config.setActive)
+                  }
+                  selected={config.activeItems}
+                  isOpen={isExpanded}
+                  onOpenChange={(open) => setExpandedFilters((prev) => ({ ...prev, [config.key]: open }))}
+                >
+                  <SelectList>
+                    {count > 1 && (
+                      <SelectOption hasCheckbox value={allValue} isSelected={!activeCount}>
+                        {config.allLabel}
+                      </SelectOption>
                     )}
-                  </MenuToggle>
-                )}
-                onSelect={(_e, selection) => {
-                  onClustersSelect(selection as string)
-                }}
-                selected={toolbarControl.activeClusters}
-                isOpen={isClustersExpanded}
-                onOpenChange={(isOpen) => setIsClustersExpanded(isOpen)}
-              >
-                {clustersMenuItems}
-              </Select>
-            </FlexItem>
-          </Flex>
-        </ToolbarFilter>
-        <ToolbarFilter
-          labels={toolbarControl.activeApplications?.map((application) => ({ key: application, node: application }))}
-          deleteLabel={(category, label) => onDelete(category as string, label as string)}
-          deleteLabelGroup={(category) => onDeleteGroup(category as string)}
-          categoryName="Applications"
-        >
-          <Flex alignItems={{ default: 'alignItemsCenter' }} spaceItems={{ default: 'spaceItemsSm' }}>
-            <FlexItem style={{ marginLeft: '20px' }}>
-              {t('Applications')} ({toolbarControl.allApplications?.length ?? 0}):
-            </FlexItem>
-            <FlexItem>
-              <Select
-                aria-label="Applications"
-                role="menu"
-                toggle={(toggleRef: Ref<MenuToggleElement>) => (
-                  <MenuToggle
-                    ref={toggleRef}
-                    onClick={onApplicationsToggle}
-                    isExpanded={isApplicationsExpanded}
-                    isDisabled={(toolbarControl.allApplications?.length ?? 0) <= 1}
-                  >
-                    {toolbarControl.allApplications?.length === 1
-                      ? toolbarControl.allApplications[0]
-                      : toolbarControl.allApplications?.length
-                        ? t('Applications')
-                        : t('All applications')}
-                    {toolbarControl.allApplications?.length !== 1 && !!toolbarControl.activeApplications?.length && (
-                      <Badge isRead>{toolbarControl.activeApplications?.length ?? 0}</Badge>
-                    )}
-                  </MenuToggle>
-                )}
-                onSelect={(_e, selection) => {
-                  onApplicationsSelect(selection as string)
-                }}
-                selected={toolbarControl.activeApplications}
-                isOpen={isApplicationsExpanded}
-                onOpenChange={(isOpen) => setIsApplicationsExpanded(isOpen)}
-              >
-                {applicationsMenuItems}
-              </Select>
-            </FlexItem>
-          </Flex>
-        </ToolbarFilter>
-        <ToolbarFilter
-          labels={toolbarControl.activeTypes?.map((type) => ({ key: type, node: type }))}
-          deleteLabel={(category, label) => onDelete(category as string, label as string)}
-          deleteLabelGroup={(category) => onDeleteGroup(category as string)}
-          categoryName="Types"
-        >
-          <Flex alignItems={{ default: 'alignItemsCenter' }} spaceItems={{ default: 'spaceItemsSm' }}>
-            <FlexItem style={{ marginLeft: '20px' }}>
-              {t('Types')} ({toolbarControl.allTypes?.length ?? 0}):
-            </FlexItem>
-            <FlexItem>
-              <Select
-                aria-label="Types"
-                role="menu"
-                toggle={(toggleRef: Ref<MenuToggleElement>) => (
-                  <MenuToggle
-                    ref={toggleRef}
-                    onClick={onTypesToggle}
-                    isExpanded={isTypesExpanded}
-                    isDisabled={(toolbarControl.allTypes?.length ?? 0) <= 1}
-                  >
-                    {!toolbarControl.allTypes?.length
-                      ? t('No types')
-                      : toolbarControl.activeTypes?.length
-                        ? t('Types')
-                        : t('All types')}
-                    {!!toolbarControl.activeTypes?.length && (
-                      <Badge isRead>{toolbarControl.activeTypes?.length ?? 0}</Badge>
-                    )}
-                  </MenuToggle>
-                )}
-                onSelect={(_e, selection) => {
-                  onTypesSelect(selection as string)
-                }}
-                selected={toolbarControl.activeTypes}
-                isOpen={isTypesExpanded}
-                onOpenChange={(isOpen) => setIsTypesExpanded(isOpen)}
-              >
-                {typesMenuItems}
-              </Select>
-            </FlexItem>
-          </Flex>
-        </ToolbarFilter>
-      </ToolbarGroup>
-    </>
+                    {config.allItems?.map((item) => (
+                      <SelectOption
+                        hasCheckbox
+                        key={`${config.key}-${item}`}
+                        value={item}
+                        isSelected={config.activeItems?.includes(item)}
+                      >
+                        {item}
+                      </SelectOption>
+                    ))}
+                  </SelectList>
+                </Select>
+              </FlexItem>
+            </Flex>
+          </ToolbarFilter>
+        )
+      })}
+    </ToolbarGroup>
   )
 
   const toolbarItems = (

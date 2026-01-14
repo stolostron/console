@@ -230,7 +230,7 @@ export const processMultiples = (
 }
 
 // Resource types that typically have pods as children
-const typesWithPods = ['replicaset', 'replicationcontroller', 'statefulset', 'daemonset']
+const typesWithPods = new Set(['replicaset', 'replicationcontroller', 'statefulset', 'daemonset'])
 
 /**
  * Creates replica child nodes (ReplicaSet/ReplicationController and Pods) for Deployments and DeploymentConfigs
@@ -281,7 +281,7 @@ export const createReplicaChild = (
     } else {
       // Create replica child without template information
       const pNode = createChildNode(parentNode, clustersNames, type, activeTypes, links, nodes)
-      if (typesWithPods.includes(type)) {
+      if (typesWithPods.has(type)) {
         return createChildNode(pNode, clustersNames, 'pod', activeTypes, links, nodes)
       }
     }
@@ -299,7 +299,7 @@ export const createChildNode = (
   nodes: TopologyNode[],
   replicaCount: number = 1
 ): TopologyNode => {
-  const parentType = (parentNode.type ?? '') as string
+  const parentType = parentNode.type
   const { name, namespace, id, specs = {} } = parentNode
   const parentId = id
   const memberId = `${parentId}--${type}--${name}`

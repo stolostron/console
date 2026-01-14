@@ -205,7 +205,7 @@ export function getArgoTopology(
           clusterId,
         },
         resources: deployableResources,
-        resourceCount: resourceCount ? resourceCount : clusterNames.length,
+        resourceCount: resourceCount || clusterNames.length,
       },
     }
 
