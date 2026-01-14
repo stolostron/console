@@ -164,6 +164,7 @@ export const getApplication = async (
     const appForFetch: any = { ...app }
     delete appForFetch.cluster
     delete appForFetch.status
+    delete appForFetch.spec.generators
     delete appForFetch.metadata.managedFields
     const uidata: any = await fetchAggregate(SupportedAggregate.uidata, backendUrl, appForFetch as IResource)
     ;(model as any).clusterList = uidata?.clusterList
