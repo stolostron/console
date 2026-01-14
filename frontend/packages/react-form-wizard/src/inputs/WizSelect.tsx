@@ -106,15 +106,7 @@ function WizSelectBase<T = any>(props: SelectProps<T>) {
     (op: string[], inputValue: string) => {
       const filtered =
         selectOptions?.filter((option) => {
-          const valueStr =
-            typeof option.value === 'string'
-              ? option.value
-              : typeof option.value === 'number'
-              ? option.value.toString()
-              : typeof option.value === 'object'
-              ? option.label
-              : String(option.value)
-          return op.includes(valueStr)
+          return op.includes(option.label)
         }) ?? []
       const isValueCustomOption =
         (selectOptions as OptionType<any>[]).filter(
