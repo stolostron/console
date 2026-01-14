@@ -9,10 +9,11 @@ import { CommonProjectCreate } from './CommonProjectCreate'
 
 interface ProjectsListProps {
   selectedClusters: Cluster[]
-  onSelectedProjects: (projectNames: string[]) => void
+  selectedNamespaces?: string[]
+  onSelectionChange: (namespaces: string[]) => void
 }
 
-export const ProjectsList = ({ selectedClusters, onSelectedProjects }: ProjectsListProps) => {
+export const ProjectsList = ({ selectedClusters, selectedNamespaces, onSelectionChange }: ProjectsListProps) => {
   const { t } = useTranslation()
   const [isCreateCommonProject, setIsCreateCommonProject] = useState(false)
   const [selectedProjects, setSelectedProjects] = useState<ProjectTableData[]>()
@@ -23,12 +24,22 @@ export const ProjectsList = ({ selectedClusters, onSelectedProjects }: ProjectsL
     [selectedProjects, selectedProjects?.length]
   )
 
+  useEffect(() => {
+    setSelectedProjects(
+      selectedNamespaces?.map((ns: string) => ({
+        name: ns,
+        type: 'Namespace',
+        clusters: selectedClusters.map((c) => c.name),
+      })) ?? []
+    )
+  }, [selectedNamespaces, selectedClusters])
+
   const handleCreateClick = () => setIsCreateCommonProject(true)
   const handleModalClose = () => setIsCreateCommonProject(false)
   const handleCreateSuccess = () => setIsCreateCommonProject(false)
   const handleSelectionChange = (projects: ProjectTableData[]) => {
     setSelectedProjects(projects)
-    onSelectedProjects(projects.map((e) => e.name))
+    onSelectionChange(projects.map((p) => p.name))
   }
 
   const tableActionButtons = useMemo<IAcmTableButtonAction[]>(
@@ -54,6 +65,7 @@ export const ProjectsList = ({ selectedClusters, onSelectedProjects }: ProjectsL
         />
       ) : (
         <ProjectsTable
+          key={selectedClusters.map((c) => c.name).join(',')}
           selectedClusters={selectedClusters}
           selectedProjects={selectedProjects}
           onCreateClick={handleCreateClick}

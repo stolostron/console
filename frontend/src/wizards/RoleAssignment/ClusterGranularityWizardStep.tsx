@@ -9,14 +9,16 @@ interface ClusterGranularityWizardStepProps {
   description: string
   selectedClusters: any[]
   selectedClustersAccessLevel: RoleAssignmentWizardFormData['selectedClustersAccessLevel']
-  onSelectedProjects: (projectNames: string[]) => void
+  selectedNamespaces?: string[]
+  onNamespacesChange: (namespaces: string[]) => void
 }
 
 export const ClusterGranularityWizardStep = ({
   description,
   selectedClusters,
   selectedClustersAccessLevel,
-  onSelectedProjects,
+  selectedNamespaces,
+  onNamespacesChange,
 }: ClusterGranularityWizardStepProps) => {
   const { t } = useTranslation()
 
@@ -45,7 +47,11 @@ export const ClusterGranularityWizardStep = ({
       </div>
       {selectedClustersAccessLevel === 'Project role assignment' && (
         <div style={{ marginTop: '16px' }}>
-          <ProjectsList selectedClusters={selectedClusters} onSelectedProjects={onSelectedProjects} />
+          <ProjectsList
+            selectedClusters={selectedClusters}
+            selectedNamespaces={selectedNamespaces}
+            onSelectionChange={onNamespacesChange}
+          />
         </div>
       )}
     </>

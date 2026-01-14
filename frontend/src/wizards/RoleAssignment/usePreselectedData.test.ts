@@ -157,7 +157,10 @@ describe('usePreselectedData', () => {
           kind: 'specific',
           clusterNames: ['cluster-1', 'cluster-2'],
         },
-        selectedClusters: ['cluster-1', 'cluster-2'],
+        selectedClusters: [
+          { name: 'cluster-1', namespaces: ['ns1', 'ns2'] },
+          { name: 'cluster-2', namespaces: ['ns3'] },
+        ],
       })
     )
   })
@@ -209,7 +212,7 @@ describe('usePreselectedData', () => {
           kind: 'specific',
           clusterNames: ['cluster-1'],
         },
-        selectedClusters: ['cluster-1'],
+        selectedClusters: [{ name: 'cluster-1', namespaces: ['ns1', 'ns2'] }],
       })
     )
   })

@@ -6,11 +6,14 @@ import { RoleAssignmentWizardFormData } from './types'
 const getClusterNames = (data: RoleAssignmentWizardFormData, allClusterNames: string[]): string[] | undefined => {
   if (data.scope.kind === 'all') {
     return allClusterNames
-  } else if (data.scopeType === 'Select clusters' && data.selectedClusters) {
+  } else if (data.selectedClusters?.[0]) {
     return data.selectedClusters.map((cluster: any) => cluster.metadata?.name || cluster.name || cluster)
   }
 }
 const getClusterSetNames = (data: RoleAssignmentWizardFormData): string[] | undefined => {
+  if (data.selectedClusters?.[0]) {
+    return undefined
+  }
   return data.scopeType === 'Select cluster sets' && data.selectedClusterSets
     ? data.selectedClusterSets.map((clusterSet: any) => clusterSet.metadata?.name || clusterSet.name || clusterSet)
     : undefined

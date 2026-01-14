@@ -3,51 +3,52 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ProjectsList } from './ProjectsList'
 
-const mockOnSelectedProjects = jest.fn()
-
-const renderComponent = (props: { selectedClusters?: any[]; onSelectedProjects?: (projects: string[]) => void } = {}) =>
-  render(
-    <ProjectsList
-      selectedClusters={props.selectedClusters ?? []}
-      onSelectedProjects={props.onSelectedProjects ?? mockOnSelectedProjects}
-    />
-  )
-
 jest.mock('../../components/ProjectsTable', () => ({
-  ProjectsTable: ({ selectedClusters = [], onCreateClick, onSelectionChange }: any) => (
-    <div id="projects-table">
-      <div>Clusters: {selectedClusters.join(', ')}</div>
-      <button onClick={onCreateClick}>Create common project</button>
-      <button
-        onClick={() => {
-          const mockProjects = [{ name: 'project-1', type: 'Namespace', clusters: ['local-cluster'] }]
-          onSelectionChange(mockProjects)
-        }}
-      >
-        Select Project
-      </button>
-    </div>
-  ),
+  ProjectsTable: ({ selectedClusters = [], onCreateClick, onSelectionChange }: any) => {
+    return (
+      <div id="projects-table" data-testid="projects-table">
+        <div>Clusters: {selectedClusters.map((c: any) => c.name).join(', ')}</div>
+        <button onClick={onCreateClick}>Create common project</button>
+        <button
+          onClick={() => {
+            const mockProjects = [{ name: 'project-1', type: 'Namespace', clusters: ['local-cluster'] }]
+            onSelectionChange(mockProjects)
+          }}
+        >
+          Select Project
+        </button>
+      </div>
+    )
+  },
 }))
 
 jest.mock('./CommonProjectCreate', () => ({
-  CommonProjectCreate: ({ onCancelCallback, onSuccess }: any) => (
-    <div id="common-project-create">
-      <h1>Create common project</h1>
-      <button onClick={onCancelCallback}>Cancel</button>
-      <button onClick={onSuccess}>Submit</button>
-    </div>
-  ),
+  CommonProjectCreate: ({ onCancelCallback, onSuccess }: any) => {
+    return (
+      <div id="common-project-create" data-testid="common-project-create">
+        <h1>Create common project</h1>
+        <button onClick={onCancelCallback}>Cancel</button>
+        <button onClick={() => onSuccess('new-project')}>Submit</button>
+        <button onClick={() => onSuccess('custom-project')}>Submit Custom</button>
+      </div>
+    )
+  },
 }))
 
 describe('ProjectsList', () => {
+  const mockOnSelectionChange = jest.fn()
+  const defaultProps = {
+    selectedClusters: [] as any[],
+    onSelectionChange: mockOnSelectionChange,
+  }
+
   beforeEach(() => {
-    mockOnSelectedProjects.mockClear()
+    mockOnSelectionChange.mockClear()
   })
 
   it('returns to table view when cancel is clicked', async () => {
     // Arrange
-    renderComponent()
+    render(<ProjectsList {...defaultProps} />)
 
     // Act
     await userEvent.click(screen.getByText('Create common project'))
@@ -65,7 +66,7 @@ describe('ProjectsList', () => {
 
   it('returns to table view when project creation succeeds', async () => {
     // Arrange
-    renderComponent()
+    render(<ProjectsList {...defaultProps} />)
 
     // Act
     await userEvent.click(screen.getByText('Create common project'))
@@ -81,14 +82,14 @@ describe('ProjectsList', () => {
 
   it('handles project selection changes', async () => {
     // Arrange
-    renderComponent()
+    render(<ProjectsList {...defaultProps} />)
 
     // Act
     const selectButton = screen.getByText('Select Project')
     await userEvent.click(selectButton)
 
     // Assert
+    expect(mockOnSelectionChange).toHaveBeenCalledWith(['project-1'])
     expect(screen.getByTestId('projects-table')).toBeInTheDocument()
-    expect(mockOnSelectedProjects).toHaveBeenCalledWith(['project-1'])
   })
 })

@@ -55,17 +55,17 @@ const renderWithContext = (component: React.ReactNode, updateFn: () => void = je
 }
 
 describe('ClusterGranularityWizardStep', () => {
-  const mockOnSelectedProjects = jest.fn()
+  const mockOnNamespacesChange = jest.fn()
   const defaultProps = {
     description: 'Test description',
     selectedClusters: [{ name: 'cluster-1' }, { name: 'cluster-2' }],
     selectedClustersAccessLevel: undefined as 'Cluster role assignment' | 'Project role assignment' | undefined,
-    onSelectedProjects: mockOnSelectedProjects,
+    onNamespacesChange: mockOnNamespacesChange,
   }
 
   beforeEach(() => {
     jest.clearAllMocks()
-    mockOnSelectedProjects.mockClear()
+    mockOnNamespacesChange.mockClear()
   })
 
   it('renders with title and description', () => {
@@ -113,7 +113,7 @@ describe('ClusterGranularityWizardStep', () => {
     expect(mockProjectsList).toHaveBeenCalledWith(
       expect.objectContaining({
         selectedClusters: defaultProps.selectedClusters,
-        onSelectedProjects: mockOnSelectedProjects,
+        onSelectionChange: mockOnNamespacesChange,
       })
     )
   })
@@ -125,7 +125,7 @@ describe('ClusterGranularityWizardStep', () => {
         description="Test"
         selectedClusters={clusters}
         selectedClustersAccessLevel="Project role assignment"
-        onSelectedProjects={mockOnSelectedProjects}
+        onNamespacesChange={mockOnNamespacesChange}
       />
     )
 
@@ -142,7 +142,7 @@ describe('ClusterGranularityWizardStep', () => {
         description="Test"
         selectedClusters={[]}
         selectedClustersAccessLevel="Project role assignment"
-        onSelectedProjects={mockOnSelectedProjects}
+        onNamespacesChange={mockOnNamespacesChange}
       />
     )
 

@@ -668,3 +668,172 @@ export const getClustersSortingTestCases: GetClustersDeduplicationTestCase[] = [
     expectedClusters: ['dev-eu-west-2', 'prod-eu-west-1', 'prod-us-east-1', 'staging-ap-south-1'],
   },
 ]
+
+/**
+ * Helper to create a PlacementClusters entry with a specific namespace for testing namespace filtering
+ */
+export const createPlacementClustersWithNamespace = (
+  name: string,
+  namespace: string,
+  clusters: string[],
+  clusterSetNames?: string[]
+): PlacementClusters => ({
+  placement: {
+    apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+    kind: 'Placement',
+    metadata: { name, namespace },
+    spec: { clusterSets: clusterSetNames ?? ['default'] },
+  },
+  clusters,
+  clusterSetNames,
+})
+
+/**
+ * Test case fixture for getPlacementsForRoleAssignment namespace filtering
+ * Tests that only placements in the MulticlusterRoleAssignmentNamespace are returned
+ */
+export interface NamespaceFilteringTestCase {
+  description: string
+  placementClusters: PlacementClusters[]
+  roleAssignment: RoleAssignmentToSave
+  expectedPlacementNames: string[]
+}
+
+/**
+ * Test cases for namespace filtering in getPlacementsForRoleAssignment
+ * These test cases verify that only placements in the correct namespace (open-cluster-management-global-set)
+ * are returned, preventing the bug where all clusters were being saved instead of selected clusters.
+ */
+export const namespaceFilteringTestCases: NamespaceFilteringTestCase[] = [
+  {
+    description:
+      'should only return placements from MulticlusterRoleAssignmentNamespace, ignoring placements from other namespaces',
+    placementClusters: [
+      createPlacementClustersWithNamespace('placement-correct-ns', MulticlusterRoleAssignmentNamespace, [
+        'cluster-a',
+        'cluster-b',
+      ]),
+      createPlacementClustersWithNamespace('placement-wrong-ns', 'other-namespace', ['cluster-a', 'cluster-b']),
+    ],
+    roleAssignment: {
+      clusterRole: 'admin',
+      clusterNames: ['cluster-a', 'cluster-b'],
+      clusterSetNames: [],
+      subject: { name: 'user1', kind: UserKind },
+    },
+    expectedPlacementNames: ['placement-correct-ns'],
+  },
+  {
+    description: 'should return empty array when all matching placements are in wrong namespace',
+    placementClusters: [
+      createPlacementClustersWithNamespace('placement-wrong-ns-1', 'namespace-1', ['cluster-a', 'cluster-b']),
+      createPlacementClustersWithNamespace('placement-wrong-ns-2', 'namespace-2', ['cluster-a', 'cluster-b']),
+    ],
+    roleAssignment: {
+      clusterRole: 'admin',
+      clusterNames: ['cluster-a', 'cluster-b'],
+      clusterSetNames: [],
+      subject: { name: 'user1', kind: UserKind },
+    },
+    expectedPlacementNames: [],
+  },
+  {
+    description: 'should filter by namespace for cluster sets matching as well',
+    placementClusters: [
+      createPlacementClustersWithNamespace('placement-correct-ns', MulticlusterRoleAssignmentNamespace, [], ['cs01']),
+      createPlacementClustersWithNamespace('placement-wrong-ns', 'other-namespace', [], ['cs01']),
+    ],
+    roleAssignment: {
+      clusterRole: 'admin',
+      clusterNames: [],
+      clusterSetNames: ['cs01'],
+      subject: { name: 'user1', kind: UserKind },
+    },
+    expectedPlacementNames: ['placement-correct-ns'],
+  },
+  {
+    description: 'should not return placements from default namespace even if clusters match exactly',
+    placementClusters: [
+      createPlacementClustersWithNamespace('placement-default-ns', 'default', ['cluster-x', 'cluster-y']),
+      createPlacementClustersWithNamespace('placement-global-set', MulticlusterRoleAssignmentNamespace, [
+        'cluster-x',
+        'cluster-y',
+      ]),
+    ],
+    roleAssignment: {
+      clusterRole: 'admin',
+      clusterNames: ['cluster-x', 'cluster-y'],
+      clusterSetNames: [],
+      subject: { name: 'user1', kind: UserKind },
+    },
+    expectedPlacementNames: ['placement-global-set'],
+  },
+  {
+    description: 'should handle mixed namespaces with both cluster names and cluster sets',
+    placementClusters: [
+      createPlacementClustersWithNamespace(
+        'placement-clusters-correct',
+        MulticlusterRoleAssignmentNamespace,
+        ['cluster-a', 'cluster-b'],
+        undefined
+      ),
+      createPlacementClustersWithNamespace(
+        'placement-clusters-wrong',
+        'wrong-ns',
+        ['cluster-a', 'cluster-b'],
+        undefined
+      ),
+      createPlacementClustersWithNamespace('placement-sets-correct', MulticlusterRoleAssignmentNamespace, [], ['cs01']),
+      createPlacementClustersWithNamespace('placement-sets-wrong', 'wrong-ns', [], ['cs01']),
+    ],
+    roleAssignment: {
+      clusterRole: 'admin',
+      clusterNames: ['cluster-a', 'cluster-b'],
+      clusterSetNames: ['cs01', 'cs02'],
+      subject: { name: 'user1', kind: UserKind },
+    },
+    expectedPlacementNames: ['placement-clusters-correct', 'placement-sets-correct'],
+  },
+  {
+    description: 'should return all matching placements from correct namespace when multiple exist',
+    placementClusters: [
+      createPlacementClustersWithNamespace('placement-1', MulticlusterRoleAssignmentNamespace, [], ['cs01']),
+      createPlacementClustersWithNamespace('placement-2', MulticlusterRoleAssignmentNamespace, [], ['cs02']),
+      createPlacementClustersWithNamespace('placement-3', MulticlusterRoleAssignmentNamespace, [], ['cs03']),
+      createPlacementClustersWithNamespace('placement-wrong', 'other-ns', [], ['cs01', 'cs02', 'cs03']),
+    ],
+    roleAssignment: {
+      clusterRole: 'admin',
+      clusterNames: [],
+      clusterSetNames: ['cs01', 'cs02', 'cs03'],
+      subject: { name: 'user1', kind: UserKind },
+    },
+    expectedPlacementNames: ['placement-1', 'placement-2', 'placement-3'],
+  },
+  {
+    description: 'should ignore placements with undefined namespace',
+    placementClusters: [
+      {
+        placement: {
+          apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+          kind: 'Placement',
+          metadata: { name: 'placement-no-ns' },
+          spec: { clusterSets: ['default'] },
+        },
+        clusters: ['cluster-a', 'cluster-b'],
+        clusterSetNames: undefined,
+      },
+      createPlacementClustersWithNamespace('placement-correct', MulticlusterRoleAssignmentNamespace, [
+        'cluster-a',
+        'cluster-b',
+      ]),
+    ],
+    roleAssignment: {
+      clusterRole: 'admin',
+      clusterNames: ['cluster-a', 'cluster-b'],
+      clusterSetNames: [],
+      subject: { name: 'user1', kind: UserKind },
+    },
+    expectedPlacementNames: ['placement-correct'],
+  },
+]
