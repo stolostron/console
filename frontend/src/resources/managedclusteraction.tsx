@@ -80,6 +80,36 @@ function deleteManagedClusterAction(metadata: { name: string; namespace: string 
   })
 }
 
+const createManagedClusterActionResource = (resource: ManagedClusterAction, actionName: string, clusterName: string) =>
+  createResource<ManagedClusterAction>(resource)
+    .promise.then(async () => pollManagedClusterAction(actionName, clusterName))
+    .catch((err) => {
+      console.error(err)
+      return err
+    })
+
+export const fireManagedClusterActionCreate = (clusterName: string, template: Record<string, unknown>) => {
+  const actionName = uuidv4()
+  return createManagedClusterActionResource(
+    {
+      apiVersion: ManagedClusterActionApiVersion,
+      kind: ManagedClusterActionKind,
+      metadata: {
+        name: actionName,
+        namespace: clusterName,
+      },
+      spec: {
+        actionType: 'Create',
+        kube: {
+          template,
+        },
+      },
+    },
+    actionName,
+    clusterName
+  )
+}
+
 export const fireManagedClusterAction = (
   actionType: ActionType,
   clusterName: string,
@@ -91,40 +121,37 @@ export const fireManagedClusterAction = (
 ) => {
   const actionName = uuidv4()
   const { apiGroup, version } = getGroupFromApiVersion(resourceApiVersion)
-  return createResource<ManagedClusterAction>({
-    apiVersion: ManagedClusterActionApiVersion,
-    kind: ManagedClusterActionKind,
-    metadata: {
-      name: actionName,
-      namespace: clusterName,
+  return createManagedClusterActionResource(
+    {
+      apiVersion: ManagedClusterActionApiVersion,
+      kind: ManagedClusterActionKind,
+      metadata: {
+        name: actionName,
+        namespace: clusterName,
+      },
+      spec: {
+        cluster: {
+          name: clusterName,
+        },
+        type: 'Action',
+        scope: {
+          resourceType: apiGroup
+            ? `${resourceKind.toLowerCase()}.${version}.${apiGroup}`
+            : `${resourceKind.toLowerCase()}`,
+          namespace: resourceNamespace,
+        },
+        actionType: actionType,
+        kube: {
+          resource: apiGroup ? `${resourceKind.toLowerCase()}.${version}.${apiGroup}` : `${resourceKind.toLowerCase()}`,
+          name: resourceName,
+          namespace: resourceNamespace,
+          template: resourceBody,
+        },
+      },
     },
-    spec: {
-      cluster: {
-        name: clusterName,
-      },
-      type: 'Action',
-      scope: {
-        resourceType: apiGroup
-          ? `${resourceKind.toLowerCase()}.${version}.${apiGroup}`
-          : `${resourceKind.toLowerCase()}`,
-        namespace: resourceNamespace,
-      },
-      actionType: actionType,
-      kube: {
-        resource: apiGroup ? `${resourceKind.toLowerCase()}.${version}.${apiGroup}` : `${resourceKind.toLowerCase()}`,
-        name: resourceName,
-        namespace: resourceNamespace,
-        template: resourceBody,
-      },
-    },
-  })
-    .promise.then(async () => {
-      return pollManagedClusterAction(actionName, clusterName)
-    })
-    .catch((err) => {
-      console.error(err)
-      return err
-    })
+    actionName,
+    clusterName
+  )
 }
 
 export async function pollManagedClusterAction(actionName: string, clusterName: string): Promise<ManagedClusterAction> {
