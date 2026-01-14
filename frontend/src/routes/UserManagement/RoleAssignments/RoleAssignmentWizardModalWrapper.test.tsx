@@ -125,7 +125,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
 
       render(
         <TestWrapper>
-          <RoleAssignmentWizardModalWrapper close={mockClose} isOpen={true} />
+          <RoleAssignmentWizardModalWrapper close={mockClose} isOpen />
         </TestWrapper>
       )
 
@@ -256,7 +256,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
 
       render(
         <TestWrapper>
-          <RoleAssignmentWizardModalWrapper close={mockClose} isOpen={true} />
+          <RoleAssignmentWizardModalWrapper close={mockClose} isOpen />
         </TestWrapper>
       )
 
