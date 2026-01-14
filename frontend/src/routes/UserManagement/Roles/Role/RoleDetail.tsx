@@ -40,7 +40,7 @@ const RoleDetail = () => {
   return (
     <PageSection hasBodyWrapper={false}>
       <PageSection hasBodyWrapper={false}>
-        <Title headingLevel="h3">{t('Information')}</Title>
+        <Title headingLevel="h3">{t('General information')}</Title>
         <Stack hasGutter>
           <DescriptionList isHorizontal={false}>
             <DescriptionListGroup>
