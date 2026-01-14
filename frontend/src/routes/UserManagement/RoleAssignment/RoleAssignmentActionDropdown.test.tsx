@@ -19,8 +19,13 @@ jest.mock('@patternfly/react-core', () => ({
       </div>
     </div>
   ),
-  DropdownItem: ({ children, onClick }: any) => (
-    <button id="dropdown-item" onClick={onClick} type="button">
+  DropdownItem: ({ children, onClick, isAriaDisabled }: any) => (
+    <button
+      id="dropdown-item"
+      onClick={isAriaDisabled ? undefined : onClick}
+      type="button"
+      aria-disabled={isAriaDisabled ? 'true' : undefined}
+    >
       {children}
     </button>
   ),
@@ -49,6 +54,7 @@ const mockRoleAssignment: FlattenedRoleAssignment = {
 
 const mockSetModalProps = jest.fn()
 const mockDeleteAction = jest.fn()
+const mockOnEdit = jest.fn()
 
 function Component({ canDelete = true }: { canDelete?: boolean }) {
   return (
@@ -57,6 +63,7 @@ function Component({ canDelete = true }: { canDelete?: boolean }) {
       setModalProps={mockSetModalProps}
       deleteAction={mockDeleteAction}
       canDelete={canDelete}
+      onEdit={mockOnEdit}
     />
   )
 }
@@ -199,5 +206,29 @@ describe('RoleAssignmentActionDropdown', () => {
 
     fireEvent.click(deleteButton!)
     expect(mockSetModalProps).toHaveBeenCalled()
+  })
+
+  it('renders edit option in dropdown', () => {
+    render(<Component />)
+
+    const toggleButton = screen.getByRole('button')
+    fireEvent.click(toggleButton)
+
+    expect(screen.getByText(/edit role assignment/i)).toBeInTheDocument()
+  })
+
+  it('calls onEdit when edit option is clicked', () => {
+    render(<Component />)
+
+    // Open dropdown
+    const toggleButton = screen.getByRole('button')
+    fireEvent.click(toggleButton)
+
+    // Click edit option
+    const editOption = screen.getByText(/edit role assignment/i)
+    fireEvent.click(editOption)
+
+    // Verify onEdit was called with the role assignment
+    expect(mockOnEdit).toHaveBeenCalledWith(mockRoleAssignment)
   })
 })

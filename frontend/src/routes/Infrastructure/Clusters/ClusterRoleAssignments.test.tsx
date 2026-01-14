@@ -65,7 +65,7 @@ describe('ClusterRoleAssignments', () => {
       expect.objectContaining({
         roleAssignments: mockAssignments,
         isLoading: false,
-        preselected: { clusterNames: ['local-cluster'] },
+        preselected: { clusterNames: ['local-cluster'], context: 'cluster' },
       })
     )
   })

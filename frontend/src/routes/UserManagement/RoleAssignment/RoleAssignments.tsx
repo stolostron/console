@@ -92,17 +92,20 @@ const ActionCell = ({
   setModalProps,
   deleteAction,
   canDelete,
+  onEdit,
 }: {
   roleAssignment: FlattenedRoleAssignment
   setModalProps: React.Dispatch<React.SetStateAction<BulkActionModalProps<FlattenedRoleAssignment> | { open: false }>>
   deleteAction: (roleAssignment: FlattenedRoleAssignment) => IRequestResult<unknown>
   canDelete: boolean
+  onEdit: (roleAssignment: FlattenedRoleAssignment) => void
 }) => (
   <RoleAssignmentActionDropdown
     roleAssignment={roleAssignment}
     setModalProps={setModalProps}
     deleteAction={deleteAction}
     canDelete={canDelete}
+    onEdit={onEdit}
   />
 )
 
@@ -149,6 +152,7 @@ const RoleAssignments = ({
   })
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [editingRoleAssignment, setEditingRoleAssignment] = useState<FlattenedRoleAssignment>()
 
   // Table actions for bulk operations
   const tableActions = useMemo<IAcmTableAction<FlattenedRoleAssignment>[]>(
@@ -314,6 +318,11 @@ const RoleAssignments = ({
     [t, canCreateRoleAssignment, unauthorizedMessage]
   )
 
+  const handleEdit = useCallback((roleAssignment: FlattenedRoleAssignment) => {
+    setEditingRoleAssignment(roleAssignment)
+    setIsCreateModalOpen(true)
+  }, [])
+
   // Action cell renderer (needs access to component state)
   const renderActionCell = (roleAssignment: FlattenedRoleAssignment) => (
     <ActionCell
@@ -321,6 +330,7 @@ const RoleAssignments = ({
       setModalProps={setDeleteModalProps}
       deleteAction={deleteRoleAssignment}
       canDelete={canDeleteRoleAssignment}
+      onEdit={handleEdit}
     />
   )
 
@@ -442,9 +452,28 @@ const RoleAssignments = ({
           />
         }
       />
-      {isCreateModalOpen ? (
-        <RoleAssignmentWizardModalWrapper close={() => setIsCreateModalOpen(false)} preselected={preselected} />
-      ) : null}
+      <RoleAssignmentWizardModalWrapper
+        close={() => {
+          setIsCreateModalOpen(false)
+          setEditingRoleAssignment(undefined)
+        }}
+        isOpen={isCreateModalOpen}
+        editingRoleAssignment={editingRoleAssignment}
+        preselected={
+          editingRoleAssignment
+            ? {
+                clusterNames: editingRoleAssignment.clusterNames,
+                roles: [editingRoleAssignment.clusterRole],
+                subject: {
+                  kind: editingRoleAssignment.subject.kind,
+                  value: editingRoleAssignment.subject.name,
+                },
+                namespaces: editingRoleAssignment.targetNamespaces,
+                context: preselected?.context,
+              }
+            : preselected
+        }
+      />
       <BulkActionModal<FlattenedRoleAssignment> {...deleteModalProps} />
     </>
   )

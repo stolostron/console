@@ -60,9 +60,11 @@ const renderWithContext = (component: React.ReactNode, itemValue: any = {}, upda
 }
 
 describe('ClusterGranularityStepContent', () => {
+  const mockOnNamespacesChange = jest.fn()
   const defaultProps = {
     description: 'Test description',
     selectedClusters: [{ name: 'cluster-1' }, { name: 'cluster-2' }],
+    onNamespacesChange: mockOnNamespacesChange,
   }
 
   beforeEach(() => {
@@ -120,9 +122,16 @@ describe('ClusterGranularityStepContent', () => {
 
   it('passes selectedClusters to ProjectsList', () => {
     const clusters = [{ name: 'cluster-a' }, { name: 'cluster-b' }, { name: 'cluster-c' }]
-    renderWithContext(<ClusterGranularityStepContent description="Test" selectedClusters={clusters} />, {
-      selectedClustersAccessLevel: 'Project role assignment',
-    })
+    renderWithContext(
+      <ClusterGranularityStepContent
+        description="Test"
+        selectedClusters={clusters}
+        onNamespacesChange={mockOnNamespacesChange}
+      />,
+      {
+        selectedClustersAccessLevel: 'Project role assignment',
+      }
+    )
 
     expect(mockProjectsList).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -132,9 +141,16 @@ describe('ClusterGranularityStepContent', () => {
   })
 
   it('renders with empty selectedClusters array', () => {
-    renderWithContext(<ClusterGranularityStepContent description="Test" selectedClusters={[]} />, {
-      selectedClustersAccessLevel: 'Project role assignment',
-    })
+    renderWithContext(
+      <ClusterGranularityStepContent
+        description="Test"
+        selectedClusters={[]}
+        onNamespacesChange={mockOnNamespacesChange}
+      />,
+      {
+        selectedClustersAccessLevel: 'Project role assignment',
+      }
+    )
 
     expect(mockProjectsList).toHaveBeenCalledWith(
       expect.objectContaining({

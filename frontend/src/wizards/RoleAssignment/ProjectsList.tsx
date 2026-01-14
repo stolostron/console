@@ -6,26 +6,25 @@ import { useTranslation } from '../../lib/acm-i18next'
 import type { Cluster } from '../../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHook'
 import { IAcmTableButtonAction } from '../../ui-components/AcmTable/AcmTableTypes'
 import { CommonProjectCreate } from './CommonProjectCreate'
-import { useItem } from '@patternfly-labs/react-form-wizard/lib/src/contexts/ItemContext'
-import { RoleAssignmentWizardFormData } from './types'
 
 interface ProjectsListProps {
   selectedClusters: Cluster[]
+  selectedNamespaces?: string[]
+  onSelectionChange: (namespaces: string[]) => void
 }
 
-export const ProjectsList = ({ selectedClusters }: ProjectsListProps) => {
+export const ProjectsList = ({ selectedClusters, selectedNamespaces, onSelectionChange }: ProjectsListProps) => {
   const { t } = useTranslation()
-  const formData = useItem() as RoleAssignmentWizardFormData
   const [isCreateCommonProject, setIsCreateCommonProject] = useState(false)
 
   const selectedProjects = useMemo(
     () =>
-      formData.scope.namespaces?.map((ns: string) => ({
+      selectedNamespaces?.map((ns: string) => ({
         name: ns,
         type: 'Namespace',
         clusters: selectedClusters.map((c) => c.name),
       })) ?? [],
-    [formData?.scope?.namespaces, selectedClusters]
+    [selectedNamespaces, selectedClusters]
   )
 
   const hasSelectedProjects = useMemo(() => selectedProjects.length > 0, [selectedProjects.length])
@@ -37,7 +36,7 @@ export const ProjectsList = ({ selectedClusters }: ProjectsListProps) => {
   const handleCreateSuccess = () => setIsCreateCommonProject(false)
 
   const handleSelectionChange = (projects: ProjectTableData[]) => {
-    formData.scope = { ...formData.scope, namespaces: projects.map((p) => p.name) }
+    onSelectionChange(projects.map((p) => p.name))
   }
 
   const tableActionButtons = useMemo<IAcmTableButtonAction[]>(
@@ -63,6 +62,7 @@ export const ProjectsList = ({ selectedClusters }: ProjectsListProps) => {
         />
       ) : (
         <ProjectsTable
+          key={selectedClusters.map((c) => c.name).join(',')}
           selectedClusters={selectedClusters}
           selectedProjects={selectedProjects}
           onCreateClick={handleCreateClick}

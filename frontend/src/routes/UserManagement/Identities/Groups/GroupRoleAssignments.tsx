@@ -20,7 +20,7 @@ const GroupRoleAssignments = () => {
         isLoading={false}
         hiddenColumns={['subject', 'name']}
         hiddenFilters={['identity']}
-        preselected={{ subject: { kind: GroupKind, value: group?.metadata.name } }}
+        preselected={{ subject: { kind: GroupKind, value: group?.metadata.name }, context: 'identity' }}
       />
     </PageSection>
   )
