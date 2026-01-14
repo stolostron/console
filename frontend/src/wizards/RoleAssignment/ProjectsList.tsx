@@ -16,6 +16,8 @@ interface ProjectsListProps {
 export const ProjectsList = ({ selectedClusters, selectedNamespaces, onSelectionChange }: ProjectsListProps) => {
   const { t } = useTranslation()
   const [isCreateCommonProject, setIsCreateCommonProject] = useState(false)
+  // this is used to display the created projects in the projects table to avoid discrepancies between search results and the already created projects
+  const [createdProjects, setCreatedProjects] = useState<string[]>([])
 
   const selectedProjects = useMemo(
     () =>
@@ -33,7 +35,10 @@ export const ProjectsList = ({ selectedClusters, selectedNamespaces, onSelection
 
   const handleModalClose = () => setIsCreateCommonProject(false)
 
-  const handleCreateSuccess = () => setIsCreateCommonProject(false)
+  const handleCreateSuccess = (newProjectName: string) => {
+    setIsCreateCommonProject(false)
+    setCreatedProjects([...createdProjects, newProjectName])
+  }
 
   const handleSelectionChange = (projects: ProjectTableData[]) => {
     onSelectionChange(projects.map((p) => p.name))
@@ -68,6 +73,7 @@ export const ProjectsList = ({ selectedClusters, selectedNamespaces, onSelection
           onCreateClick={handleCreateClick}
           onSelectionChange={handleSelectionChange}
           tableActionButtons={tableActionButtons}
+          additionalProjects={createdProjects}
         />
       )}
     </PageSection>

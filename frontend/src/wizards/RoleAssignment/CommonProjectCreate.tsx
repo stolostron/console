@@ -2,66 +2,75 @@
 
 import { Title } from '@patternfly/react-core'
 import { useContext } from 'react'
-import { useTranslation } from '../../lib/acm-i18next'
 import { ProjectCreateForm, ProjectFormData } from '../../components/project'
-import { createProject } from '../../resources/project'
-import { AcmToastContext } from '../../ui-components'
+import { useTranslation } from '../../lib/acm-i18next'
+import { fireManagedClusterActionCreate, ProjectRequestApiVersion, ProjectRequestKind } from '../../resources'
 import type { Cluster } from '../../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHook'
-
+import { AcmToastContext } from '../../ui-components'
 interface CommonProjectCreateProps {
   /** Callback function called when the cancel button is clicked */
   onCancelCallback: () => void
   /** Optional callback function called when the project is successfully created */
-  onSuccess?: () => void
+  onSuccess?: (newProjectName: string) => void
   /** Optional callback function called when project creation fails */
   onError?: (error: Error) => void
   /** Selected clusters to create the common project on */
   selectedClusters: Cluster[]
 }
 
-export function CommonProjectCreate({ onCancelCallback, onSuccess, onError }: CommonProjectCreateProps) {
+export function CommonProjectCreate({
+  onCancelCallback,
+  onSuccess,
+  onError,
+  selectedClusters,
+}: CommonProjectCreateProps) {
   const { t } = useTranslation()
   const toastContext = useContext(AcmToastContext)
 
   const handleSubmit = async (data: ProjectFormData) => {
     try {
-      const response = createProject(
-        data.name,
-        undefined, // labels
-        {
-          displayName: data.displayName || undefined,
-          description: data.description || undefined,
-        }
+      await Promise.all(
+        selectedClusters.map((cluster) =>
+          fireManagedClusterActionCreate(cluster.name, {
+            apiVersion: ProjectRequestApiVersion,
+            kind: ProjectRequestKind,
+            metadata: { name: data.name },
+            displayName: data.displayName || undefined,
+            description: data.description || undefined,
+          })
+            .then(async (actionResponse) => {
+              if (actionResponse.actionDone === 'ActionDone') {
+                toastContext.addAlert({
+                  title: t('Common project created'),
+                  message: t('{{name}} project has been successfully created for the cluster {{cluster}}.', {
+                    name: data.name,
+                    cluster: cluster.name,
+                  }),
+                  type: 'success',
+                  autoClose: true,
+                })
+              } else {
+                throw new Error(actionResponse.message)
+              }
+            })
+            .catch((err) => {
+              toastContext.addAlert({
+                title: t('Failed to create common project'),
+                message: t('Failed to create common project {{name}} for the cluster {{cluster}}. Error: {{error}}.', {
+                  name: data.name,
+                  cluster: cluster.name,
+                  error: err.message,
+                }),
+                type: 'danger',
+                autoClose: true,
+              })
+              throw err
+            })
+        )
       )
-
-      // Wait for the project creation to complete
-      const project = await response.promise
-
-      // Show success toast
-      toastContext.addAlert({
-        title: t('Common project created'),
-        message: t('{{name}} project has been successfully created.', {
-          name: project.metadata?.name || data.name,
-        }),
-        type: 'success',
-        autoClose: true,
-      })
-
-      // TODO: Add logic to attach project to selected clusters, ACM-27472
-      onSuccess?.()
+      onSuccess?.(data.name)
     } catch (error) {
       const errorObj = error instanceof Error ? error : new Error('Failed to create project')
-      console.error('Project creation failed:', errorObj)
-
-      // Show error toast
-      toastContext.addAlert({
-        title: t('Failed to create common project'),
-        message: t('Failed to create common project {{name}}. Please try again.', {
-          name: data.name,
-        }),
-        type: 'danger',
-      })
-
       onError?.(errorObj)
     }
   }

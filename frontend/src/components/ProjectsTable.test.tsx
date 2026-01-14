@@ -125,4 +125,170 @@ describe('ProjectsTable', () => {
     // Assert
     expect(await screen.findByText('shared')).toBeInTheDocument()
   })
+
+  describe('additionalProjects', () => {
+    it('displays additionalProjects in the list', async () => {
+      // Arrange
+      const mockHook = createMockUseRoleAssignmentDataHook({
+        clusterSets: [
+          {
+            name: 'sample-set',
+            clusters: [
+              { name: 'local-cluster', namespaces: ['shared'] },
+              { name: 'dev-cluster', namespaces: ['shared'] },
+            ],
+          },
+        ],
+      })
+
+      renderProjectsTable({
+        selectedClusters: [{ name: 'local-cluster' }, { name: 'dev-cluster' }],
+        useRoleAssignmentDataHook: mockHook,
+        additionalProjects: ['new-project'],
+      })
+
+      // Assert
+      expect(await screen.findByText('shared')).toBeInTheDocument()
+      expect(screen.getByText('new-project')).toBeInTheDocument()
+    })
+
+    it('displays multiple additionalProjects in the list', async () => {
+      // Arrange
+      const mockHook = createMockUseRoleAssignmentDataHook({
+        clusterSets: [
+          {
+            name: 'sample-set',
+            clusters: [
+              { name: 'local-cluster', namespaces: ['shared'] },
+              { name: 'dev-cluster', namespaces: ['shared'] },
+            ],
+          },
+        ],
+      })
+
+      renderProjectsTable({
+        selectedClusters: [{ name: 'local-cluster' }, { name: 'dev-cluster' }],
+        useRoleAssignmentDataHook: mockHook,
+        additionalProjects: ['project-one', 'project-two', 'project-three'],
+      })
+
+      // Assert
+      expect(await screen.findByText('shared')).toBeInTheDocument()
+      expect(screen.getByText('project-one')).toBeInTheDocument()
+      expect(screen.getByText('project-two')).toBeInTheDocument()
+      expect(screen.getByText('project-three')).toBeInTheDocument()
+    })
+
+    it('does not duplicate projects that already exist in common namespaces', async () => {
+      // Arrange
+      const mockHook = createMockUseRoleAssignmentDataHook({
+        clusterSets: [
+          {
+            name: 'sample-set',
+            clusters: [
+              { name: 'local-cluster', namespaces: ['shared', 'existing-project'] },
+              { name: 'dev-cluster', namespaces: ['shared', 'existing-project'] },
+            ],
+          },
+        ],
+      })
+
+      renderProjectsTable({
+        selectedClusters: [{ name: 'local-cluster' }, { name: 'dev-cluster' }],
+        useRoleAssignmentDataHook: mockHook,
+        additionalProjects: ['existing-project', 'new-project'],
+      })
+
+      // Assert
+      expect(await screen.findByText('shared')).toBeInTheDocument()
+      expect(screen.getByText('new-project')).toBeInTheDocument()
+      expect(screen.getByText('existing-project')).toBeInTheDocument()
+
+      // Verify there's only one row for existing-project (not duplicated)
+      const existingProjectCells = screen.getAllByText('existing-project')
+      expect(existingProjectCells).toHaveLength(1)
+    })
+
+    it('does not duplicate additionalProjects when the same project is added multiple times', async () => {
+      // Arrange
+      const mockHook = createMockUseRoleAssignmentDataHook({
+        clusterSets: [
+          {
+            name: 'sample-set',
+            clusters: [
+              { name: 'local-cluster', namespaces: ['shared'] },
+              { name: 'dev-cluster', namespaces: ['shared'] },
+            ],
+          },
+        ],
+      })
+
+      renderProjectsTable({
+        selectedClusters: [{ name: 'local-cluster' }, { name: 'dev-cluster' }],
+        useRoleAssignmentDataHook: mockHook,
+        additionalProjects: ['new-project', 'new-project', 'new-project'],
+      })
+
+      // Assert
+      expect(await screen.findByText('shared')).toBeInTheDocument()
+      expect(screen.getByText('new-project')).toBeInTheDocument()
+
+      // Verify there's only one row for new-project (not duplicated)
+      const newProjectCells = screen.getAllByText('new-project')
+      expect(newProjectCells).toHaveLength(1)
+    })
+
+    it('displays additionalProjects even when no common namespaces exist', async () => {
+      // Arrange
+      const mockHook = createMockUseRoleAssignmentDataHook({
+        clusterSets: [
+          {
+            name: 'sample-set',
+            clusters: [
+              { name: 'local-cluster', namespaces: ['alpha'] },
+              { name: 'dev-cluster', namespaces: ['beta'] },
+            ],
+          },
+        ],
+      })
+
+      renderProjectsTable({
+        selectedClusters: [{ name: 'local-cluster' }, { name: 'dev-cluster' }],
+        useRoleAssignmentDataHook: mockHook,
+        additionalProjects: ['new-common-project'],
+      })
+
+      // Assert - no common namespaces, but additionalProjects should still appear
+      expect(await screen.findByText('new-common-project')).toBeInTheDocument()
+      expect(screen.queryByText('alpha')).not.toBeInTheDocument()
+      expect(screen.queryByText('beta')).not.toBeInTheDocument()
+    })
+
+    it('sorts additionalProjects alphabetically with existing projects', async () => {
+      // Arrange
+      const mockHook = createMockUseRoleAssignmentDataHook({
+        clusterSets: [
+          {
+            name: 'sample-set',
+            clusters: [
+              { name: 'local-cluster', namespaces: ['delta', 'bravo'] },
+              { name: 'dev-cluster', namespaces: ['delta', 'bravo'] },
+            ],
+          },
+        ],
+      })
+
+      renderProjectsTable({
+        selectedClusters: [{ name: 'local-cluster' }, { name: 'dev-cluster' }],
+        useRoleAssignmentDataHook: mockHook,
+        additionalProjects: ['alpha', 'charlie'],
+      })
+
+      // Assert - all projects should be present
+      expect(await screen.findByText('alpha')).toBeInTheDocument()
+      expect(screen.getByText('bravo')).toBeInTheDocument()
+      expect(screen.getByText('charlie')).toBeInTheDocument()
+      expect(screen.getByText('delta')).toBeInTheDocument()
+    })
+  })
 })

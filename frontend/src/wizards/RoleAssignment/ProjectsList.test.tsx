@@ -1,62 +1,61 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { ItemContext } from '@patternfly-labs/react-form-wizard/lib/src/contexts/ItemContext'
 import { ProjectsList } from './ProjectsList'
-import { UserKind } from '../../resources'
 
-const mockFormData = {
-  subject: { kind: UserKind },
-  scope: {
-    kind: 'specific' as const,
-    clusterNames: [],
-    namespaces: [],
-  },
-  roles: [],
-  scopeType: 'Select clusters' as const,
-}
-
-const renderWithContext = (component: React.ReactElement) => {
-  return render(<ItemContext.Provider value={mockFormData}>{component}</ItemContext.Provider>)
+// Use an object to track captured state (avoids let variables)
+const capturedState = {
+  additionalProjects: undefined as string[] | undefined,
 }
 
 jest.mock('../../components/ProjectsTable', () => ({
-  ProjectsTable: ({ selectedClusters = [], onCreateClick, onSelectionChange }: any) => (
-    <div id="projects-table">
-      <div>Clusters: {selectedClusters.join(', ')}</div>
-      <button onClick={onCreateClick}>Create common project</button>
-      <button
-        onClick={() => {
-          const mockProjects = [{ name: 'project-1', type: 'Namespace', clusters: ['local-cluster'] }]
-          onSelectionChange(mockProjects)
-        }}
-      >
-        Select Project
-      </button>
-    </div>
-  ),
+  ProjectsTable: ({ selectedClusters = [], onCreateClick, onSelectionChange, additionalProjects }: any) => {
+    // Capture additionalProjects for test assertions
+    capturedState.additionalProjects = additionalProjects
+    return (
+      <div id="projects-table" data-testid="projects-table">
+        <div>Clusters: {selectedClusters.map((c: any) => c.name).join(', ')}</div>
+        <div id="additional-projects" data-testid="additional-projects">
+          {additionalProjects?.join(', ') || 'none'}
+        </div>
+        <button onClick={onCreateClick}>Create common project</button>
+        <button
+          onClick={() => {
+            const mockProjects = [{ name: 'project-1', type: 'Namespace', clusters: ['local-cluster'] }]
+            onSelectionChange(mockProjects)
+          }}
+        >
+          Select Project
+        </button>
+      </div>
+    )
+  },
 }))
 
 jest.mock('./CommonProjectCreate', () => ({
-  CommonProjectCreate: ({ onCancelCallback, onSuccess }: any) => (
-    <div id="common-project-create">
-      <h1>Create common project</h1>
-      <button onClick={onCancelCallback}>Cancel</button>
-      <button onClick={onSuccess}>Submit</button>
-    </div>
-  ),
+  CommonProjectCreate: ({ onCancelCallback, onSuccess }: any) => {
+    return (
+      <div id="common-project-create" data-testid="common-project-create">
+        <h1>Create common project</h1>
+        <button onClick={onCancelCallback}>Cancel</button>
+        <button onClick={() => onSuccess('new-project')}>Submit</button>
+        <button onClick={() => onSuccess('custom-project')}>Submit Custom</button>
+      </div>
+    )
+  },
 }))
 
 describe('ProjectsList', () => {
   const mockOnSelectionChange = jest.fn()
 
   beforeEach(() => {
+    capturedState.additionalProjects = undefined
     mockOnSelectionChange.mockClear()
   })
 
   it('returns to table view when cancel is clicked', async () => {
     // Arrange
-    renderWithContext(<ProjectsList selectedClusters={[]} onSelectionChange={mockOnSelectionChange} />)
+    render(<ProjectsList selectedClusters={[]} onSelectionChange={mockOnSelectionChange} />)
 
     // Act
     await userEvent.click(screen.getByText('Create common project'))
@@ -74,7 +73,7 @@ describe('ProjectsList', () => {
 
   it('returns to table view when project creation succeeds', async () => {
     // Arrange
-    renderWithContext(<ProjectsList selectedClusters={[]} onSelectionChange={mockOnSelectionChange} />)
+    render(<ProjectsList selectedClusters={[]} onSelectionChange={mockOnSelectionChange} />)
 
     // Act
     await userEvent.click(screen.getByText('Create common project'))
@@ -90,7 +89,7 @@ describe('ProjectsList', () => {
 
   it('handles project selection changes', async () => {
     // Arrange
-    renderWithContext(<ProjectsList selectedClusters={[]} onSelectionChange={mockOnSelectionChange} />)
+    render(<ProjectsList selectedClusters={[]} onSelectionChange={mockOnSelectionChange} />)
 
     // Act
     const selectButton = screen.getByText('Select Project')
@@ -99,5 +98,136 @@ describe('ProjectsList', () => {
     // Assert
     expect(mockOnSelectionChange).toHaveBeenCalledWith(['project-1'])
     expect(screen.getByTestId('projects-table')).toBeInTheDocument()
+  })
+
+  describe('created projects tracking', () => {
+    it('passes created project name to ProjectsTable as additionalProjects after creation', async () => {
+      // Arrange
+      render(<ProjectsList selectedClusters={[]} onSelectionChange={mockOnSelectionChange} />)
+
+      // Initially no additional projects
+      expect(capturedState.additionalProjects).toEqual([])
+
+      // Act - Create a project
+      await userEvent.click(screen.getByText('Create common project'))
+      await waitFor(() => {
+        expect(screen.getByTestId('common-project-create')).toBeInTheDocument()
+      })
+      await userEvent.click(screen.getByText('Submit'))
+
+      // Assert - ProjectsTable should receive the new project
+      await waitFor(() => {
+        expect(screen.getByTestId('projects-table')).toBeInTheDocument()
+      })
+      expect(capturedState.additionalProjects).toEqual(['new-project'])
+    })
+
+    it('passes custom project name to ProjectsTable as additionalProjects', async () => {
+      // Arrange
+      render(<ProjectsList selectedClusters={[]} onSelectionChange={mockOnSelectionChange} />)
+
+      // Act - Create a project with custom name
+      await userEvent.click(screen.getByText('Create common project'))
+      await waitFor(() => {
+        expect(screen.getByTestId('common-project-create')).toBeInTheDocument()
+      })
+      await userEvent.click(screen.getByText('Submit Custom'))
+
+      // Assert - ProjectsTable should receive the custom project name
+      await waitFor(() => {
+        expect(screen.getByTestId('projects-table')).toBeInTheDocument()
+      })
+      expect(capturedState.additionalProjects).toEqual(['custom-project'])
+    })
+
+    it('accumulates multiple created projects in additionalProjects', async () => {
+      // Arrange
+      render(<ProjectsList selectedClusters={[]} onSelectionChange={mockOnSelectionChange} />)
+
+      // Act - Create first project
+      await userEvent.click(screen.getByText('Create common project'))
+      await waitFor(() => {
+        expect(screen.getByTestId('common-project-create')).toBeInTheDocument()
+      })
+      await userEvent.click(screen.getByText('Submit'))
+
+      // Wait for table to appear
+      await waitFor(() => {
+        expect(screen.getByTestId('projects-table')).toBeInTheDocument()
+      })
+
+      // Verify first project is in the list
+      expect(capturedState.additionalProjects).toEqual(['new-project'])
+
+      // Act - Create second project
+      await userEvent.click(screen.getByText('Create common project'))
+      await waitFor(() => {
+        expect(screen.getByTestId('common-project-create')).toBeInTheDocument()
+      })
+      await userEvent.click(screen.getByText('Submit Custom'))
+
+      // Assert - Both projects should be in additionalProjects
+      await waitFor(() => {
+        expect(screen.getByTestId('projects-table')).toBeInTheDocument()
+      })
+      expect(capturedState.additionalProjects).toEqual(['new-project', 'custom-project'])
+    })
+
+    it('displays additionalProjects in the table UI', async () => {
+      // Arrange
+      render(<ProjectsList selectedClusters={[]} onSelectionChange={mockOnSelectionChange} />)
+
+      // Act - Create a project
+      await userEvent.click(screen.getByText('Create common project'))
+      await waitFor(() => {
+        expect(screen.getByTestId('common-project-create')).toBeInTheDocument()
+      })
+      await userEvent.click(screen.getByText('Submit'))
+
+      // Assert - The additional projects should be visible in the UI
+      await waitFor(() => {
+        expect(screen.getByTestId('projects-table')).toBeInTheDocument()
+      })
+      expect(screen.getByTestId('additional-projects')).toHaveTextContent('new-project')
+    })
+
+    it('starts with empty additionalProjects array', () => {
+      // Arrange & Act
+      render(<ProjectsList selectedClusters={[]} onSelectionChange={mockOnSelectionChange} />)
+
+      // Assert
+      expect(capturedState.additionalProjects).toEqual([])
+      expect(screen.getByTestId('additional-projects')).toHaveTextContent('none')
+    })
+
+    it('does not lose created projects when canceling new project creation', async () => {
+      // Arrange
+      render(<ProjectsList selectedClusters={[]} onSelectionChange={mockOnSelectionChange} />)
+
+      // Create first project
+      await userEvent.click(screen.getByText('Create common project'))
+      await waitFor(() => {
+        expect(screen.getByTestId('common-project-create')).toBeInTheDocument()
+      })
+      await userEvent.click(screen.getByText('Submit'))
+
+      await waitFor(() => {
+        expect(screen.getByTestId('projects-table')).toBeInTheDocument()
+      })
+      expect(capturedState.additionalProjects).toEqual(['new-project'])
+
+      // Start creating another project but cancel
+      await userEvent.click(screen.getByText('Create common project'))
+      await waitFor(() => {
+        expect(screen.getByTestId('common-project-create')).toBeInTheDocument()
+      })
+      await userEvent.click(screen.getByText('Cancel'))
+
+      // Assert - First project should still be in the list
+      await waitFor(() => {
+        expect(screen.getByTestId('projects-table')).toBeInTheDocument()
+      })
+      expect(capturedState.additionalProjects).toEqual(['new-project'])
+    })
   })
 })

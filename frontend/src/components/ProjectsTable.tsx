@@ -4,8 +4,8 @@ import { useCallback, useMemo } from 'react'
 import { generatePath, Link } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../lib/acm-i18next'
 import { NavigationPath } from '../NavigationPath'
-import { useRoleAssignmentData } from '../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHook'
 import type { Cluster } from '../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHook'
+import { useRoleAssignmentData } from '../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHook'
 import { AcmTable, AcmTableStateProvider, IAcmTableColumn } from '../ui-components'
 import { IAcmTableButtonAction, ITableFilter } from '../ui-components/AcmTable/AcmTableTypes'
 import { isClusterInClusters } from '../wizards/RoleAssignment/utils'
@@ -28,6 +28,7 @@ interface ProjectsTableProps {
   areLinksDisplayed?: boolean
   useRoleAssignmentDataHook?: typeof useRoleAssignmentData
   tableActionButtons?: IAcmTableButtonAction[]
+  additionalProjects?: string[]
 }
 
 export const ProjectsTable = ({
@@ -39,6 +40,7 @@ export const ProjectsTable = ({
   areLinksDisplayed = true,
   useRoleAssignmentDataHook = useRoleAssignmentData,
   tableActionButtons,
+  additionalProjects,
 }: ProjectsTableProps) => {
   const { t } = useTranslation()
 
@@ -66,16 +68,22 @@ export const ProjectsTable = ({
       return []
     }
 
-    const commonNamespaces: string[] = clusterNamespaceGroupings
-      .reduce((acc, namespaces) => acc.filter((ns) => namespaces.includes(ns)), clusterNamespaceGroupings[0] || [])
-      .sort((a, b) => a.localeCompare(b))
+    const commonNamespaces: string[] = [
+      ...new Set([
+        ...(additionalProjects || []),
+        ...clusterNamespaceGroupings.reduce(
+          (acc, namespaces) => acc.filter((ns) => namespaces.includes(ns)),
+          clusterNamespaceGroupings[0] || []
+        ),
+      ]),
+    ].sort((a, b) => a.localeCompare(b))
 
     return commonNamespaces.map((ns) => ({
       name: ns,
       type: 'Namespace',
       clusters: selectedClusters.map((cluster) => cluster.name),
     }))
-  }, [projects, selectedClusters, clusters])
+  }, [projects, selectedClusters, clusters, additionalProjects])
 
   const filters = useMemo<ITableFilter<ProjectTableData>[]>(() => {
     const allFilters: ITableFilter<ProjectTableData>[] = [

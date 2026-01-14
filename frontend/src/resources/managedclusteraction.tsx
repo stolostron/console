@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import _ from 'lodash'
+import { v4 as uuidv4 } from 'uuid'
 import { createResource, deleteResource, getResource } from './utils/resource-request'
 import { getGroupFromApiVersion } from './utils/utils'
-import { v4 as uuidv4 } from 'uuid'
 
 export const ManagedClusterActionApiVersion = 'action.open-cluster-management.io/v1beta1'
 export type ManagedClusterActionApiVersionType = 'action.open-cluster-management.io/v1beta1'
@@ -19,6 +19,8 @@ export const ManagedClusterActionConditionType = 'Completed'
 export const ManagedClusterActionApiGroup = 'action.open-cluster-management.io'
 export const ManagedClusterActionVersion = 'v1beta1'
 export const ManagedClusterActionResources = 'managedclusteractions'
+
+type ActionType = 'Update' | 'Delete' | 'Create'
 
 export interface ManagedClusterAction {
   apiVersion: ManagedClusterActionApiVersionType
@@ -38,7 +40,7 @@ export interface ManagedClusterAction {
       name: string
     }
     type?: 'Action'
-    actionType?: 'Update' | 'Delete'
+    actionType?: ActionType
     scope?: {
       resourceType: string
       namespace: string
@@ -78,8 +80,38 @@ function deleteManagedClusterAction(metadata: { name: string; namespace: string 
   })
 }
 
+const createManagedClusterActionResource = (resource: ManagedClusterAction, actionName: string, clusterName: string) =>
+  createResource<ManagedClusterAction>(resource)
+    .promise.then(async () => pollManagedClusterAction(actionName, clusterName))
+    .catch((err) => {
+      console.error(err)
+      return err
+    })
+
+export const fireManagedClusterActionCreate = (clusterName: string, template: Record<string, unknown>) => {
+  const actionName = uuidv4()
+  return createManagedClusterActionResource(
+    {
+      apiVersion: ManagedClusterActionApiVersion,
+      kind: ManagedClusterActionKind,
+      metadata: {
+        name: actionName,
+        namespace: clusterName,
+      },
+      spec: {
+        actionType: 'Create',
+        kube: {
+          template,
+        },
+      },
+    },
+    actionName,
+    clusterName
+  )
+}
+
 export const fireManagedClusterAction = (
-  actionType: 'Update' | 'Delete',
+  actionType: ActionType,
   clusterName: string,
   resourceKind: string,
   resourceApiVersion: string,
@@ -89,40 +121,37 @@ export const fireManagedClusterAction = (
 ) => {
   const actionName = uuidv4()
   const { apiGroup, version } = getGroupFromApiVersion(resourceApiVersion)
-  return createResource<ManagedClusterAction>({
-    apiVersion: ManagedClusterActionApiVersion,
-    kind: ManagedClusterActionKind,
-    metadata: {
-      name: actionName,
-      namespace: clusterName,
+  return createManagedClusterActionResource(
+    {
+      apiVersion: ManagedClusterActionApiVersion,
+      kind: ManagedClusterActionKind,
+      metadata: {
+        name: actionName,
+        namespace: clusterName,
+      },
+      spec: {
+        cluster: {
+          name: clusterName,
+        },
+        type: 'Action',
+        scope: {
+          resourceType: apiGroup
+            ? `${resourceKind.toLowerCase()}.${version}.${apiGroup}`
+            : `${resourceKind.toLowerCase()}`,
+          namespace: resourceNamespace,
+        },
+        actionType: actionType,
+        kube: {
+          resource: apiGroup ? `${resourceKind.toLowerCase()}.${version}.${apiGroup}` : `${resourceKind.toLowerCase()}`,
+          name: resourceName,
+          namespace: resourceNamespace,
+          template: resourceBody,
+        },
+      },
     },
-    spec: {
-      cluster: {
-        name: clusterName,
-      },
-      type: 'Action',
-      scope: {
-        resourceType: apiGroup
-          ? `${resourceKind.toLowerCase()}.${version}.${apiGroup}`
-          : `${resourceKind.toLowerCase()}`,
-        namespace: resourceNamespace,
-      },
-      actionType: actionType,
-      kube: {
-        resource: apiGroup ? `${resourceKind.toLowerCase()}.${version}.${apiGroup}` : `${resourceKind.toLowerCase()}`,
-        name: resourceName,
-        namespace: resourceNamespace,
-        template: resourceBody,
-      },
-    },
-  })
-    .promise.then(async () => {
-      return pollManagedClusterAction(actionName, clusterName)
-    })
-    .catch((err) => {
-      console.error(err)
-      return err
-    })
+    actionName,
+    clusterName
+  )
 }
 
 export async function pollManagedClusterAction(actionName: string, clusterName: string): Promise<ManagedClusterAction> {
