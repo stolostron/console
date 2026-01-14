@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { ClusterCuratorDefinition, HostedClusterApiVersion, HostedClusterKind } from '../../../../../resources'
+import { HostedClusterK8sResourceWithChannel } from '../../../../../resources/hosted-cluster'
 import { Cluster, ClusterStatus } from '../../../../../resources/utils'
 import { render, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -328,7 +328,7 @@ describe('BatchChannelSelectModal', () => {
 })
 
 // Mock hosted cluster without channel set
-const mockHostedClusterNoChannel: HostedClusterK8sResource = {
+const mockHostedClusterNoChannel: HostedClusterK8sResourceWithChannel = {
   apiVersion: HostedClusterApiVersion,
   kind: HostedClusterKind,
   metadata: {
@@ -349,12 +349,12 @@ const mockHostedClusterNoChannel: HostedClusterK8sResource = {
 }
 
 // Mock hosted cluster with channel set
-const mockHostedClusterWithChannel: HostedClusterK8sResource = {
+const mockHostedClusterWithChannel: HostedClusterK8sResourceWithChannel = {
   ...mockHostedClusterNoChannel,
   spec: {
     ...mockHostedClusterNoChannel.spec,
     channel: 'stable-4.14',
-  } as HostedClusterK8sResource['spec'] & { channel: string },
+  },
 }
 
 // Mock hypershift cluster without channel and no MCI channels
@@ -442,7 +442,7 @@ describe('BatchChannelSelectModal - Hosted Clusters', () => {
           clusters={[mockHypershiftClusterNoChannel]}
           open={true}
           close={() => {}}
-          hostedCluster={mockHostedClusterNoChannel}
+          hostedClusters={{ 'hosted-cluster-test': mockHostedClusterNoChannel }}
         />
       </MemoryRouter>
     )
@@ -461,7 +461,7 @@ describe('BatchChannelSelectModal - Hosted Clusters', () => {
           clusters={[mockHypershiftClusterNoChannel]}
           open={true}
           close={() => {}}
-          hostedCluster={mockHostedClusterWithChannel}
+          hostedClusters={{ 'hosted-cluster-test': mockHostedClusterWithChannel }}
         />
       </MemoryRouter>
     )
@@ -471,7 +471,7 @@ describe('BatchChannelSelectModal - Hosted Clusters', () => {
   })
 
   it('should show hosted cluster with channel set when MCI has channels', () => {
-    const hostedClusterWithChannelResource: HostedClusterK8sResource = {
+    const hostedClusterWithChannelResource: HostedClusterK8sResourceWithChannel = {
       ...mockHostedClusterNoChannel,
       metadata: {
         ...mockHostedClusterNoChannel.metadata,
@@ -481,7 +481,7 @@ describe('BatchChannelSelectModal - Hosted Clusters', () => {
       spec: {
         ...mockHostedClusterNoChannel.spec,
         channel: 'stable-4.14',
-      } as HostedClusterK8sResource['spec'] & { channel: string },
+      },
     }
 
     const { queryByText, queryAllByText } = render(
@@ -490,7 +490,7 @@ describe('BatchChannelSelectModal - Hosted Clusters', () => {
           clusters={[mockHypershiftClusterWithMCIChannels]}
           open={true}
           close={() => {}}
-          hostedCluster={hostedClusterWithChannelResource}
+          hostedClusters={{ 'hosted-cluster-with-mci': hostedClusterWithChannelResource }}
         />
       </MemoryRouter>
     )
@@ -510,7 +510,7 @@ describe('BatchChannelSelectModal - Hosted Clusters', () => {
           close={() => {
             isClosed = true
           }}
-          hostedCluster={mockHostedClusterNoChannel}
+          hostedClusters={{ 'hosted-cluster-test': mockHostedClusterNoChannel }}
         />
       </MemoryRouter>
     )

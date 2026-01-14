@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { HostedClusterK8sResource, NodePoolK8sResource } from '@openshift-assisted/ui-lib/cim'
+import { NodePoolK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import * as nock from 'nock'
@@ -20,11 +20,11 @@ import {
   ClusterImageSetApiVersion,
   ClusterImageSetKind,
   HostedClusterApiVersion,
-  HostedClusterK8sResourceWithChannel,
   HostedClusterKind,
   NodePool,
   ResourceAttributes,
 } from '../../../../../resources'
+import { HostedClusterK8sResourceWithChannel } from '../../../../../resources/hosted-cluster'
 import { Cluster, ClusterStatus, CuratorCondition, DistributionInfo } from '../../../../../resources/utils'
 import { DistributionField } from './DistributionField'
 
@@ -835,7 +835,7 @@ describe('DistributionField hypershift clusters', () => {
     hasUpgrade = false,
     clusterCurator?: ClusterCurator,
     nodepool?: NodePool,
-    hostedCluster?: HostedClusterK8sResource,
+    hostedCluster?: HostedClusterK8sResourceWithChannel,
     setClusterImageSet = true,
     resource = 'managedclusterpage'
   ) => {
@@ -1593,7 +1593,7 @@ describe('DistributionField hypershift clusters', () => {
   // Channel warning tests for HostedClusters
   describe('HostedCluster channel warning', () => {
     // Hosted cluster without channel set
-    const mockHostedClusterWithoutChannel: HostedClusterK8sResource = {
+    const mockHostedClusterWithoutChannel: HostedClusterK8sResourceWithChannel = {
       apiVersion: mockHostedCluster.apiVersion,
       kind: mockHostedCluster.kind,
       metadata: mockHostedCluster.metadata,
@@ -1658,7 +1658,7 @@ describe('DistributionField hypershift clusters', () => {
         false,
         'managedclusterpage'
       )
-      expect(queryAllByText('Set channel').length).toBe(1)
+      expect(queryAllByText('Select channel').length).toBe(1)
     })
 
     it('should show upgrade status only (no channel warning) when HostedCluster is upgrading', async () => {
@@ -1677,7 +1677,7 @@ describe('DistributionField hypershift clusters', () => {
         'managedclusterpage'
       )
       // Should NOT show channel warning when upgrading
-      expect(queryAllByText('Set channel').length).toBe(0)
+      expect(queryAllByText('Select channel').length).toBe(0)
       // Should show upgrade progress
       expect(queryAllByText(/upgrading to 4\.11\.22/i).length).toBe(1)
       expect(queryByRole('progressbar')).toBeTruthy()
@@ -1694,7 +1694,7 @@ describe('DistributionField hypershift clusters', () => {
         false,
         'managedclusterpage'
       )
-      expect(queryAllByText('Set channel').length).toBe(0)
+      expect(queryAllByText('Select channel').length).toBe(0)
     })
 
     it('should not show channel warning for non-hypershift clusters', async () => {
@@ -1714,7 +1714,7 @@ describe('DistributionField hypershift clusters', () => {
         false,
         'managedclusterpage'
       )
-      expect(queryAllByText('Set channel').length).toBe(0)
+      expect(queryAllByText('Select channel').length).toBe(0)
     })
   })
 })

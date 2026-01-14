@@ -1,12 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import {
   ClusterCurator,
   ClusterCuratorDefinition,
   HostedClusterApiVersion,
   HostedClusterKind,
 } from '../../../../../resources'
+import { HostedClusterK8sResourceWithChannel } from '../../../../../resources/hosted-cluster'
 import {
   Cluster,
   createResource,
@@ -16,7 +16,7 @@ import {
   ResourceErrorCode,
 } from '../../../../../resources/utils'
 import { AcmEmptyState, AcmSelect } from '../../../../../ui-components'
-import { Alert, Content, ContentVariants, SelectOption } from '@patternfly/react-core'
+import { Content, ContentVariants, SelectOption } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { BulkActionModal } from '../../../../../components/BulkActionModal'
@@ -24,9 +24,28 @@ import './style.css'
 import { ClusterAction, clusterSupportsAction } from '../utils/cluster-actions'
 import { getVersionFromReleaseImage } from '../utils/utils'
 
-const isChannelSelectable = (c: Cluster, hostedCluster?: HostedClusterK8sResource) => {
+/**
+ * Look up the HostedCluster resource for a given cluster from the hostedClusters map.
+ * Matching is done by cluster name.
+ */
+const getHostedClusterForCluster = (
+  cluster: Cluster,
+  hostedClusters?: Record<string, HostedClusterK8sResourceWithChannel>
+): HostedClusterK8sResourceWithChannel | undefined => {
+  return cluster.name ? hostedClusters?.[cluster.name] : undefined
+}
+
+/**
+ * Check if a hosted cluster has a channel set.
+ */
+const hostedClusterHasChannel = (hostedCluster?: HostedClusterK8sResourceWithChannel): boolean => {
+  return !!(hostedCluster?.spec as { channel?: string } | undefined)?.channel
+}
+
+const isChannelSelectable = (c: Cluster, hostedClusters?: Record<string, HostedClusterK8sResourceWithChannel>) => {
+  const hostedCluster = getHostedClusterForCluster(c, hostedClusters)
   // For hosted clusters without a channel set, allow channel selection
-  if (hostedCluster && !(hostedCluster.spec as { channel?: string } | undefined)?.channel) {
+  if (hostedCluster && !hostedClusterHasChannel(hostedCluster)) {
     return true
   }
   return clusterSupportsAction(c, ClusterAction.SelectChannel)
@@ -37,7 +56,7 @@ const isChannelSelectable = (c: Cluster, hostedCluster?: HostedClusterK8sResourc
  * Only returns fast-X.Y channel for hosted clusters without channel set.
  * Falls back to parsing version from hostedCluster.spec.release.image if distribution not available.
  */
-const getFallbackChannels = (cluster: Cluster, hostedCluster?: HostedClusterK8sResource): string[] => {
+const getFallbackChannels = (cluster: Cluster, hostedCluster?: HostedClusterK8sResourceWithChannel): string[] => {
   // Try distribution version first
   let version = cluster.distribution?.ocp?.version
 
@@ -59,7 +78,7 @@ const getFallbackChannels = (cluster: Cluster, hostedCluster?: HostedClusterK8sR
 const setCurrentChannel = (
   clusters: Array<Cluster> | undefined,
   currentMappings: Record<string, string>,
-  hostedCluster?: HostedClusterK8sResource
+  hostedClusters?: Record<string, HostedClusterK8sResourceWithChannel>
 ): Record<string, string> => {
   const res = {} as Record<string, string>
   clusters?.forEach((cluster: Cluster) => {
@@ -69,7 +88,8 @@ const setCurrentChannel = (
       let availableChannels = cluster.distribution?.upgradeInfo?.availableChannels || []
 
       // For hosted clusters without channels, use fallback
-      if (hostedCluster && availableChannels.length === 0) {
+      const hostedCluster = getHostedClusterForCluster(cluster, hostedClusters)
+      if (hostedCluster && !hostedClusterHasChannel(hostedCluster) && availableChannels.length === 0) {
         availableChannels = getFallbackChannels(cluster, hostedCluster)
       }
 
@@ -92,8 +112,7 @@ export function BatchChannelSelectModal(props: {
   close: () => void
   open: boolean
   clusters: Cluster[] | undefined
-  hostedCluster?: HostedClusterK8sResource
-  warningMessage?: string
+  hostedClusters?: Record<string, HostedClusterK8sResourceWithChannel>
 }): JSX.Element {
   const { t } = useTranslation()
   const [selectChannels, setSelectChannels] = useState<Record<string, string>>({})
@@ -102,10 +121,10 @@ export function BatchChannelSelectModal(props: {
   useEffect(() => {
     // set up latest if not selected
     const newChannelSelectableClusters =
-      props.clusters && props.clusters.filter((c) => isChannelSelectable(c, props.hostedCluster))
-    setSelectChannels((s) => setCurrentChannel(newChannelSelectableClusters, s, props.hostedCluster))
+      props.clusters && props.clusters.filter((c) => isChannelSelectable(c, props.hostedClusters))
+    setSelectChannels((s) => setCurrentChannel(newChannelSelectableClusters, s, props.hostedClusters))
     setChannelSelectableClusters(newChannelSelectableClusters || [])
-  }, [props.clusters, props.open, props.hostedCluster])
+  }, [props.clusters, props.open, props.hostedClusters])
 
   return (
     <BulkActionModal<Cluster>
@@ -125,7 +144,6 @@ export function BatchChannelSelectModal(props: {
         props.close()
       }}
       description={t('bulk.message.selectChannel')}
-      alert={props.warningMessage && <Alert isInline variant="warning" title={props.warningMessage} />}
       columns={[
         {
           header: t('upgrade.table.name'),
@@ -155,10 +173,10 @@ export function BatchChannelSelectModal(props: {
             const isReadySelectChannels = cluster.distribution?.upgradeInfo?.isReadySelectChannels
 
             // For hosted clusters without channels, use fallback
-            const isHostedClusterWithoutChannel =
-              props.hostedCluster && !(props.hostedCluster.spec as { channel?: string } | undefined)?.channel
+            const hostedCluster = getHostedClusterForCluster(cluster, props.hostedClusters)
+            const isHostedClusterWithoutChannel = hostedCluster && !hostedClusterHasChannel(hostedCluster)
             if (isHostedClusterWithoutChannel && availableChannels.length === 0) {
-              availableChannels = getFallbackChannels(cluster, props.hostedCluster)
+              availableChannels = getFallbackChannels(cluster, hostedCluster)
             }
 
             // Show channel selector for: standard clusters with isReadySelectChannels OR hosted clusters without channel
@@ -208,14 +226,17 @@ export function BatchChannelSelectModal(props: {
           return emptyRes
         }
 
+        // Look up the hosted cluster for this specific cluster
+        const hostedCluster = getHostedClusterForCluster(cluster, props.hostedClusters)
+
         // For hosted clusters, PATCH HostedCluster.spec.channel directly (this will change when curator support is added)
-        if (props.hostedCluster) {
+        if (hostedCluster) {
           const hostedClusterResource = {
             apiVersion: HostedClusterApiVersion,
             kind: HostedClusterKind,
             metadata: {
-              name: props.hostedCluster.metadata?.name,
-              namespace: props.hostedCluster.metadata?.namespace,
+              name: hostedCluster.metadata?.name,
+              namespace: hostedCluster.metadata?.namespace,
             },
           }
           const patchSpec = {

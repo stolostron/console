@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Fragment, useCallback, useEffect, useState } from 'react'
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
+import { HostedClusterK8sResourceWithChannel } from '../../resources/hosted-cluster'
 import { BulkActionModal, BulkActionModalProps } from '../BulkActionModal'
 import { Cluster } from '../../resources/utils'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
@@ -84,6 +85,19 @@ export function ClustersTable({
   const advancedFilters = useAdvancedFilters(clusters, clusterImageSets, agentClusterInstalls)
   const filters = useFilters(clusters)
 
+  // Create a map of hosted clusters by name for BatchChannelSelectModal
+  const hostedClustersMap = useMemo(() => {
+    return hostedClusters.reduce(
+      (acc, hc) => {
+        if (hc.metadata?.name) {
+          acc[hc.metadata.name] = hc
+        }
+        return acc
+      },
+      {} as Record<string, HostedClusterK8sResourceWithChannel>
+    )
+  }, [hostedClusters])
+
   return (
     <Fragment>
       <BulkActionModal<Cluster> {...modalProps} />
@@ -114,6 +128,7 @@ export function ClustersTable({
         close={() => {
           setSelectChannels(undefined)
         }}
+        hostedClusters={hostedClustersMap}
       />
       <AcmTable<Cluster>
         items={clusters}

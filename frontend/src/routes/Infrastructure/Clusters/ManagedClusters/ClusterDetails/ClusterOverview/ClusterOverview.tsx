@@ -3,7 +3,6 @@
 import {
   ClusterCuratorDefinition,
   ClusterDeployment,
-  HostedClusterDefinition,
   ManagedClusterDefinition,
   isAutomationTemplate,
 } from '../../../../../../resources'
@@ -23,7 +22,7 @@ import {
 import { AlertVariant, ButtonVariant, PageSection, Popover } from '@patternfly/react-core'
 import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
 import { ExternalLinkAltIcon, OutlinedQuestionCircleIcon, PencilAltIcon } from '@patternfly/react-icons'
-import { Fragment, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import {
   AgentClusterInstallK8sResource,
   ClusterDeploymentK8sResource,
@@ -161,7 +160,7 @@ export function ClusterOverviewPageContent() {
               })}
             ></AcmInlineStatus>
           ) : (
-            cluster.distribution?.upgradeInfo?.currentChannel || '-'
+            cluster.distribution?.upgradeInfo?.currentChannel ?? '-'
           )}
           <Popover bodyContent={<Trans i18nKey="table.clusterChannel.helperText" components={{ bold: <strong /> }} />}>
             <AcmButton variant="link" style={{ paddingLeft: '6px' }}>
@@ -170,32 +169,23 @@ export function ClusterOverviewPageContent() {
           </Popover>
         </span>
       ),
-      keyAction: cluster?.isManaged &&
-        (cluster.distribution?.upgradeInfo?.isReadySelectChannels ||
-          (cluster.isHypershift &&
-            cluster?.distribution?.ocp?.version &&
-            // For hosted clusters with channel already set, wait for MCI to populate
-            !(hostedCluster?.spec as { channel?: string } | undefined)?.channel)) && (
-          <RbacButton
-            onClick={() => {
-              if (cluster) {
-                setShowChannelSelectModal(true)
-              }
-            }}
-            variant={ButtonVariant.plain}
-            aria-label={t('bulk.title.selectChannel')}
-            rbac={
-              cluster.isHypershift
-                ? [rbacPatch(HostedClusterDefinition, cluster?.hypershift?.hostingNamespace, cluster?.name)]
-                : [
-                    rbacPatch(ClusterCuratorDefinition, cluster?.namespace, cluster?.name),
-                    rbacCreate(ClusterCuratorDefinition, cluster?.namespace, cluster?.name),
-                  ]
+      keyAction: cluster?.isManaged && cluster.distribution?.upgradeInfo?.isReadySelectChannels && (
+        <RbacButton
+          onClick={() => {
+            if (cluster) {
+              setShowChannelSelectModal(true)
             }
-          >
-            <PencilAltIcon />
-          </RbacButton>
-        ),
+          }}
+          variant={ButtonVariant.plain}
+          aria-label={t('bulk.title.selectChannel')}
+          rbac={[
+            rbacPatch(ClusterCuratorDefinition, cluster?.namespace, cluster?.name),
+            rbacCreate(ClusterCuratorDefinition, cluster?.namespace, cluster?.name),
+          ]}
+        >
+          <PencilAltIcon />
+        </RbacButton>
+      ),
     },
     acmDistribution: {
       key: t('table.acm.distribution'),
@@ -349,8 +339,8 @@ export function ClusterOverviewPageContent() {
     clusterProperties.status,
     clusterProperties.provider,
     clusterProperties.distribution,
-    // should only show channel for ocp clusters with version
-    ...(hasOCPVersion ? [clusterProperties.channel] : []),
+    // should show channel for ocp clusters with version or hypershift clusters
+    ...(hasOCPVersion || cluster?.isHypershift ? [clusterProperties.channel] : []),
     ...(cluster?.isRegionalHubCluster ? [clusterProperties.acmDistribution, clusterProperties.acmChannel] : []),
     clusterProperties.labels,
     ...(hasAIClusterProperties ? clusterClaimedBySetPool : []),
@@ -377,6 +367,14 @@ export function ClusterOverviewPageContent() {
   const handleModalToggle = () => {
     setIsModalOpen(!isModalOpen)
   }
+
+  // Build hostedClusters map for BatchChannelSelectModal
+  const hostedClustersMap = useMemo(() => {
+    if (hostedCluster && cluster?.name) {
+      return { [cluster.name]: hostedCluster }
+    }
+    return undefined
+  }, [hostedCluster, cluster?.name])
 
   let details = <ProgressStepBar />
   if (cluster?.isHypershift) {
@@ -480,7 +478,7 @@ export function ClusterOverviewPageContent() {
             close={() => {
               setShowChannelSelectModal(false)
             }}
-            hostedCluster={cluster.isHypershift ? hostedCluster : undefined}
+            hostedClusters={hostedClustersMap}
           />
         )}
       </PageSection>
