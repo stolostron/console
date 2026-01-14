@@ -35,10 +35,8 @@ export const RoleAssignmentWizardModalWrapper = ({
   const toastContext = useContext(AcmToastContext)
   const { t } = useTranslation()
 
-  const isEditing = !!editingRoleAssignment
-
   const saveFromWizard = async (data: RoleAssignmentWizardFormData) => {
-    if (isEditing && editingRoleAssignment) {
+    if (editingRoleAssignment) {
       try {
         await deleteRoleAssignment(editingRoleAssignment).promise
       } catch (error: any) {
@@ -59,21 +57,20 @@ export const RoleAssignmentWizardModalWrapper = ({
 
     const roleAssignmentsToSave = wizardDataToRoleAssignmentToSave(data, allClusterNames)
 
-    const filteredMultiClusterRoleAssignments =
-      isEditing && editingRoleAssignment
-        ? multiClusterRoleAssignments.map((mcra) =>
-            mcra.metadata.name === editingRoleAssignment.relatedMulticlusterRoleAssignment.metadata.name
-              ? {
-                  ...mcra,
-                  spec: {
-                    ...mcra.spec,
-                    roleAssignments:
-                      mcra.spec.roleAssignments?.filter((ra) => ra.name !== editingRoleAssignment.name) || [],
-                  },
-                }
-              : mcra
-          )
-        : multiClusterRoleAssignments
+    const filteredMultiClusterRoleAssignments = editingRoleAssignment
+      ? multiClusterRoleAssignments.map((mcra) =>
+          mcra.metadata.name === editingRoleAssignment.relatedMulticlusterRoleAssignment.metadata.name
+            ? {
+                ...mcra,
+                spec: {
+                  ...mcra.spec,
+                  roleAssignments:
+                    mcra.spec.roleAssignments?.filter((ra) => ra.name !== editingRoleAssignment.name) || [],
+                },
+              }
+            : mcra
+        )
+      : multiClusterRoleAssignments
 
     const existingBySubjectRole = existingRoleAssignmentsBySubjectRole(
       roleAssignmentsToSave,
@@ -89,7 +86,7 @@ export const RoleAssignmentWizardModalWrapper = ({
       placementClusters,
       toastContext,
       t,
-      isEditing
+      !!editingRoleAssignment
     )
     close()
   }
@@ -99,7 +96,7 @@ export const RoleAssignmentWizardModalWrapper = ({
       isOpen={isOpen}
       onClose={close}
       onSubmit={saveFromWizard}
-      isEditing={isEditing}
+      isEditing={!!editingRoleAssignment}
       preselected={preselected}
     />
   )

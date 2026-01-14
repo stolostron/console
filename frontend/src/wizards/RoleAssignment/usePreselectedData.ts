@@ -12,14 +12,14 @@ interface UsePreselectedDataProps {
   setSelectedClusters: React.Dispatch<React.SetStateAction<any[]>>
 }
 
-const buildSubjectUpdate = (subject: RoleAssignmentPreselected['subject']) => {
-  if (!subject) return undefined
-  return {
-    kind: subject.kind,
-    user: subject.kind === UserKind && subject.value ? [subject.value] : undefined,
-    group: subject.kind === GroupKind && subject.value ? [subject.value] : undefined,
-  }
-}
+const buildSubjectUpdate = (subject: RoleAssignmentPreselected['subject']) =>
+  subject
+    ? {
+        kind: subject.kind,
+        user: subject.kind === UserKind && subject.value ? [subject.value] : undefined,
+        group: subject.kind === GroupKind && subject.value ? [subject.value] : undefined,
+      }
+    : undefined
 
 export const usePreselectedData = ({
   isOpen,
